@@ -15,7 +15,7 @@ import type {
 //region Artifact consolidation polish gate read
 
 /**
- * Polish ballot candidate names.
+ Polish ballot candidate names.
  */
 const POLISH_CHOICES: readonly PolishChoice[] = [
   'polished',
@@ -24,18 +24,18 @@ const POLISH_CHOICES: readonly PolishChoice[] = [
 ];
 
 /**
- * Reads string list.
- *
- * @param value - unknown list
- *
- * @param path - artifact path
- *
- * @returns Strings in stored order
- *
- * @example
- * ```ts
- * const values = parseStringList({ value, path, });
- * ```
+ Reads string list.
+ 
+ @param value - unknown list
+ 
+ @param path - artifact path
+ 
+ @returns Strings in stored order
+ 
+ @example
+ ```ts
+ const values = parseStringList({ value, path, });
+ ```
  */
 function parseStringList(
   {
@@ -47,7 +47,7 @@ function parseStringList(
   },
 ): readonly string[] {
   /**
-   * Unknown rows before string validation.
+   Unknown rows before string validation.
    */
   const rows = requireArray({
     value,
@@ -65,18 +65,18 @@ function parseStringList(
 }
 
 /**
- * Reads polish candidate choice.
- *
- * @param value - unknown candidate name
- *
- * @param path - artifact path
- *
- * @returns Narrow choice
- *
- * @example
- * ```ts
- * const choice = parsePolishChoice({ value, path, });
- * ```
+ Reads polish candidate choice.
+ 
+ @param value - unknown candidate name
+ 
+ @param path - artifact path
+ 
+ @returns Narrow choice
+ 
+ @example
+ ```ts
+ const choice = parsePolishChoice({ value, path, });
+ ```
  */
 function parsePolishChoice(
   {
@@ -88,7 +88,7 @@ function parsePolishChoice(
   },
 ): PolishChoice {
   /**
-   * Known choice matching stored value.
+   Known choice matching stored value.
    */
   const choice = POLISH_CHOICES.find(function matches(name,): boolean {
     return name === value;
@@ -102,18 +102,18 @@ function parsePolishChoice(
 }
 
 /**
- * Reads one fidelity-first naturalness ballot.
- *
- * @param value - unknown ballot
- *
- * @param path - artifact path
- *
- * @returns Parsed ballot
- *
- * @example
- * ```ts
- * const ballot = parsePolishBallot({ value, path, });
- * ```
+ Reads one fidelity-first naturalness ballot.
+ 
+ @param value - unknown ballot
+ 
+ @param path - artifact path
+ 
+ @returns Parsed ballot
+ 
+ @example
+ ```ts
+ const ballot = parsePolishBallot({ value, path, });
+ ```
  */
 function parsePolishBallot(
   {
@@ -125,7 +125,7 @@ function parsePolishBallot(
   },
 ): ConsolidationPolishBallot {
   /**
-   * Ballot record under exact generation-six shape.
+   Ballot record under exact generation-six shape.
    */
   const record = requireRecord({
     value,
@@ -144,14 +144,14 @@ function parsePolishBallot(
     path,
   },);
   /**
-   * Candidate names ballot marked unsupported.
+   Candidate names ballot marked unsupported.
    */
   const unsupportedNames = parseStringList({
     value: record.unsupported,
     path: `${path}.unsupported`,
   },);
   /**
-   * Candidate names narrowed to polish choices.
+   Candidate names narrowed to polish choices.
    */
   const unsupported = unsupportedNames.map(function narrow(candidate,) {
     return parsePolishChoice({
@@ -160,14 +160,14 @@ function parsePolishBallot(
     },);
   },);
   /**
-   * Candidate names ballot marked dropped.
+   Candidate names ballot marked dropped.
    */
   const droppedNames = parseStringList({
     value: record.dropped,
     path: `${path}.dropped`,
   },);
   /**
-   * Candidate names narrowed to polish choices.
+   Candidate names narrowed to polish choices.
    */
   const dropped = droppedNames.map(function narrow(candidate,) {
     return parsePolishChoice({
@@ -198,18 +198,18 @@ function parsePolishBallot(
 }
 
 /**
- * Reads generation-six naturalness gate outcome.
- *
- * @param value - unknown gate
- *
- * @param path - artifact path
- *
- * @returns Parsed gate outcome
- *
- * @example
- * ```ts
- * const gate = parsePolishGate({ value, path, });
- * ```
+ Reads generation-six naturalness gate outcome.
+ 
+ @param value - unknown gate
+ 
+ @param path - artifact path
+ 
+ @returns Parsed gate outcome
+ 
+ @example
+ ```ts
+ const gate = parsePolishGate({ value, path, });
+ ```
  */
 export function parsePolishGate(
   {
@@ -221,7 +221,7 @@ export function parsePolishGate(
   },
 ): ConsolidationPolishGateOutcome {
   /**
-   * Gate record under exact generation-six shape.
+   Gate record under exact generation-six shape.
    */
   const record = requireRecord({
     value,
@@ -239,14 +239,14 @@ export function parsePolishGate(
     path,
   },);
   /**
-   * Panel choice, refusal included.
+   Panel choice, refusal included.
    */
   const choice = parsePolishChoice({
     value: record.choice,
     path: `${path}.choice`,
   },);
   /**
-   * Conservative shipping result.
+   Conservative shipping result.
    */
   const ships = (record.ships === 'polished')
     ? 'polished' as const
@@ -260,14 +260,14 @@ export function parsePolishGate(
     },);
   }
   /**
-   * Every usable gate ballot.
+   Every usable gate ballot.
    */
   const ballotRows = requireArray({
     value: record.ballots,
     path: `${path}.ballots`,
   },);
   /**
-   * Every unknown row parsed as polish ballot.
+   Every unknown row parsed as polish ballot.
    */
   const ballots = ballotRows.map(function readOne(
     entry,
@@ -279,7 +279,7 @@ export function parsePolishGate(
     },);
   },);
   /**
-   * Recorded usable voice count.
+   Recorded usable voice count.
    */
   const usable = requireCount({
     value: record.usable,

@@ -1,16 +1,16 @@
 /**
- * Tests for turning a roster's section pairing into alignment steps, and for
- * the insertion boundary two paired neighbours pin between them.
- *
- * THIS IS WHERE THE PROVEN ANCHOR COMES FROM. Measured over the pinned corpus,
- * the deterministic aligner never proves one: all 11 of its unpaired source
- * sections come back `ambiguous`, every anchor comes back `may-pair`, and the
- * insertion path emits nothing at all. A pairing that names the sections either
- * side of a gap says where the gap is.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for turning a roster's section pairing into alignment steps, and for
+ the insertion boundary two paired neighbours pin between them.
+ 
+ THIS IS WHERE THE PROVEN ANCHOR COMES FROM. Measured over the pinned corpus,
+ the deterministic aligner never proves one: all 11 of its unpaired source
+ sections come back `ambiguous`, every anchor comes back `may-pair`, and the
+ insertion path emits nothing at all. A pairing that names the sections either
+ side of a gap says where the gap is.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -21,7 +21,7 @@ import {
 import { sectionPairingToSteps, } from '../dist/final/node/index.mjs';
 
 /**
- * Four original sections, headed in Chinese as the corpus heads them.
+ Four original sections, headed in Chinese as the corpus heads them.
  */
 const SOURCE_HEADINGS = [
   '## 第一节',
@@ -31,9 +31,9 @@ const SOURCE_HEADINGS = [
 ];
 
 /**
- * Four translation sections, headed in English, sharing no token with any of
- * them. This is the corpus condition: `headingAffinity` is token overlap and
- * reads 0.00 across the whole grid, which is why a model is asked at all.
+ Four translation sections, headed in English, sharing no token with any of
+ them. This is the corpus condition: `headingAffinity` is token overlap and
+ reads 0.00 across the whole grid, which is why a model is asked at all.
  */
 const TARGET_HEADINGS = [
   '## Naps',
@@ -43,16 +43,16 @@ const TARGET_HEADINGS = [
 ];
 
 /**
- * Builds steps over the four-by-four fixture.
- *
- * @param pairs - correspondences a roster agreed on
- *
- * @returns Steps in the order the aligner emits them
- *
- * @example
- * ```ts
- * const steps = stepsFor([{ source: 0, target: 0, },],);
- * ```
+ Builds steps over the four-by-four fixture.
+ 
+ @param pairs - correspondences a roster agreed on
+ 
+ @returns Steps in the order the aligner emits them
+ 
+ @example
+ ```ts
+ const steps = stepsFor([{ source: 0, target: 0, },],);
+ ```
  */
 function stepsFor(pairs: readonly { readonly source: number; readonly target: number; }[],) {
   return sectionPairingToSteps({
@@ -63,21 +63,21 @@ function stepsFor(pairs: readonly { readonly source: number; readonly target: nu
 }
 
 /**
- * Reads one step's anchor, which only a `source-only` step carries.
- *
- * @param steps - what the conversion produced
- *
- * @param sourceIndex - original section to read
- *
- * @returns That section's anchor
- *
- * @throws Error when the step is not an unpaired original, since a case asking
- * for an anchor on a paired section is asking the wrong question
- *
- * @example
- * ```ts
- * const anchor = anchorAt({ steps, sourceIndex: 2, },);
- * ```
+ Reads one step's anchor, which only a `source-only` step carries.
+ 
+ @param steps - what the conversion produced
+ 
+ @param sourceIndex - original section to read
+ 
+ @returns That section's anchor
+ 
+ @throws Error when the step is not an unpaired original, since a case asking
+ for an anchor on a paired section is asking the wrong question
+ 
+ @example
+ ```ts
+ const anchor = anchorAt({ steps, sourceIndex: 2, },);
+ ```
  */
 function anchorAt(
   {
@@ -89,7 +89,7 @@ function anchorAt(
   },
 ) {
   /**
-   * Decision made about that original section.
+   Decision made about that original section.
    */
   const step = steps.find(function names(candidate,): boolean {
     return (candidate.kind === 'source-only') && (candidate.sourceIndex === sourceIndex);

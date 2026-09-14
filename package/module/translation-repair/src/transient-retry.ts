@@ -15,41 +15,41 @@ import type { ModelTransport, } from './synthetic-transport.ts';
 // propagate untouched: user steering is never weather.
 
 /**
- * Request Timeout: the server gave up waiting for the request.
+ Request Timeout: the server gave up waiting for the request.
  */
 const HTTP_REQUEST_TIMEOUT = 408;
 
 /**
- * Too Many Requests: the provider throttled the call.
+ Too Many Requests: the provider throttled the call.
  */
 const HTTP_TOO_MANY_REQUESTS = 429;
 
 /**
- * Internal Server Error: from an inference stack this is routinely a
- * transient upstream failure, not a request defect.
+ Internal Server Error: from an inference stack this is routinely a
+ transient upstream failure, not a request defect.
  */
 const HTTP_INTERNAL_SERVER_ERROR = 500;
 
 /**
- * Bad Gateway: observed live when a 42-stream burst hit the provider.
+ Bad Gateway: observed live when a 42-stream burst hit the provider.
  */
 const HTTP_BAD_GATEWAY = 502;
 
 /**
- * Service Unavailable.
+ Service Unavailable.
  */
 const HTTP_SERVICE_UNAVAILABLE = 503;
 
 /**
- * Gateway Timeout.
+ Gateway Timeout.
  */
 const HTTP_GATEWAY_TIMEOUT = 504;
 
 /**
- * Statuses worth one more try:
- * timeouts, throttles, upstream and gateway hiccups.
- * A live 42-stream burst drew instant 502s on most calls while identical
- * calls succeeded moments later, so these are transient by observation.
+ Statuses worth one more try:
+ timeouts, throttles, upstream and gateway hiccups.
+ A live 42-stream burst drew instant 502s on most calls while identical
+ calls succeeded moments later, so these are transient by observation.
  */
 const RETRYABLE_STATUSES: ReadonlySet<number> = new Set([
   HTTP_REQUEST_TIMEOUT,
@@ -61,40 +61,40 @@ const RETRYABLE_STATUSES: ReadonlySet<number> = new Set([
 ],);
 
 /**
- * Retries granted past the first attempt for transient failures.
- * Four retries ride out a burst gate:
- * at pack-count concurrency the dispatch burst alone can draw a 502 storm,
- * and the equal-jitter ladder spreads the survivors far enough apart.
+ Retries granted past the first attempt for transient failures.
+ Four retries ride out a burst gate:
+ at pack-count concurrency the dispatch burst alone can draw a 502 storm,
+ and the equal-jitter ladder spreads the survivors far enough apart.
  */
 const TRANSIENT_RETRY_LIMIT = 4;
 
 /**
- * Base backoff window before the first retry; doubles per retry.
+ Base backoff window before the first retry; doubles per retry.
  */
 const RETRY_BACKOFF_BASE_MS = 1_000;
 
 /**
- * Retry pacing knobs, injectable so tests run on tiny backoffs.
- *
- * @example
- * ```ts
- * const policy: RetryPolicy = { limit: 2, baseMs: 10, };
- * ```
+ Retry pacing knobs, injectable so tests run on tiny backoffs.
+ 
+ @example
+ ```ts
+ const policy: RetryPolicy = { limit: 2, baseMs: 10, };
+ ```
  */
 export type RetryPolicy = {
   /**
-   * Retries granted past the first attempt.
+   Retries granted past the first attempt.
    */
   readonly limit: number;
 
   /**
-   * Backoff window before the first retry; doubles per retry.
+   Backoff window before the first retry; doubles per retry.
    */
   readonly baseMs: number;
 };
 
 /**
- * Production retry pacing.
+ Production retry pacing.
  */
 export const DEFAULT_RETRY_POLICY: RetryPolicy = {
   limit: TRANSIENT_RETRY_LIMIT,
@@ -102,47 +102,47 @@ export const DEFAULT_RETRY_POLICY: RetryPolicy = {
 };
 
 /**
- * Logger root for the transport retry layer.
+ Logger root for the transport retry layer.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Phrase a rate-limit refusal uses to name its wait:
- * Hyper's 429 body reads "You've hit your hourly rate limit. Please try again
- * in 1s" (also 2s, 3s, 4s; measured on XIEPT2, 2026-09-03), and its daily one
- * "You've hit your daily rate limit. Please try again in 2h25m18s" (measured
- * on Huasheng, 2026-09-07, 84 bodies all counting down to 19:54 UTC).
+ Phrase a rate-limit refusal uses to name its wait:
+ Hyper's 429 body reads "You've hit your hourly rate limit. Please try again
+ in 1s" (also 2s, 3s, 4s; measured on XIEPT2, 2026-09-03), and its daily one
+ "You've hit your daily rate limit. Please try again in 2h25m18s" (measured
+ on Huasheng, 2026-09-07, 84 bodies all counting down to 19:54 UTC).
  */
 const RETRY_AFTER_PHRASE = 'try again in ';
 
 /**
- * Milliseconds in one second.
+ Milliseconds in one second.
  */
 const SECOND_MS = 1_000;
 
 /**
- * Seconds in one minute.
+ Seconds in one minute.
  */
 const MINUTE_S = 60;
 
 /**
- * Minutes in one hour.
+ Minutes in one hour.
  */
 const HOUR_MIN = 60;
 
 /**
- * Milliseconds in one minute.
+ Milliseconds in one minute.
  */
 const MINUTE_MS = MINUTE_S * SECOND_MS;
 
 /**
- * Milliseconds in one hour.
+ Milliseconds in one hour.
  */
 const HOUR_MS = HOUR_MIN * MINUTE_MS;
 
 /**
- * Milliseconds each unit letter of a stated wait stands for, in the order
- * Hyper writes them: hours, minutes, seconds.
+ Milliseconds each unit letter of a stated wait stands for, in the order
+ Hyper writes them: hours, minutes, seconds.
  */
 const WAIT_UNIT_MS: Readonly<Record<string, number>> = {
   h: HOUR_MS,
@@ -151,21 +151,21 @@ const WAIT_UNIT_MS: Readonly<Record<string, number>> = {
 };
 
 /**
- * What `indexOf` returns for an absent phrase.
+ What `indexOf` returns for an absent phrase.
  */
 const NOT_FOUND = -1;
 
 /**
- * Whether one character is an ASCII digit.
- *
- * @param character - one character, or empty past the end of the text
- *
- * @returns Whether it is `0` to `9`
- *
- * @example
- * ```ts
- * const digit = isDigit('7',);
- * ```
+ Whether one character is an ASCII digit.
+ 
+ @param character - one character, or empty past the end of the text
+ 
+ @returns Whether it is `0` to `9`
+ 
+ @example
+ ```ts
+ const digit = isDigit('7',);
+ ```
  */
 function isDigit(character: string,): boolean {
   return (character.length === 1)
@@ -174,18 +174,18 @@ function isDigit(character: string,): boolean {
 }
 
 /**
- * Index just past the run of digits starting at `from`.
- *
- * @param text - text to scan
- *
- * @param from - where the run may start
- *
- * @returns `from` itself when no digit sits there
- *
- * @example
- * ```ts
- * const end = digitRunEnd({ text: '12s', from: 0, },);
- * ```
+ Index just past the run of digits starting at `from`.
+ 
+ @param text - text to scan
+ 
+ @param from - where the run may start
+ 
+ @returns `from` itself when no digit sits there
+ 
+ @example
+ ```ts
+ const end = digitRunEnd({ text: '12s', from: 0, },);
+ ```
  */
 function digitRunEnd(
   {
@@ -204,25 +204,25 @@ function digitRunEnd(
 }
 
 /**
- * Wait the refusal itself asks for, when its body names one.
- *
- * A single forward scan: the phrase, then one or more runs of digits each
- * followed by its unit letter (`h`, `m`, `s`), summed; a body whose first
- * run is followed by anything else names no wait.
- *
- * @param bodyText - reply body of the refused attempt
- *
- * @returns Milliseconds the body asks the caller to wait, or zero
- *
- * @example
- * ```ts
- * const ms = retryAfterMsOf({ bodyText: 'Please try again in 14m40s', },);
- * // => 880_000
- * ```
+ Wait the refusal itself asks for, when its body names one.
+ 
+ A single forward scan: the phrase, then one or more runs of digits each
+ followed by its unit letter (`h`, `m`, `s`), summed; a body whose first
+ run is followed by anything else names no wait.
+ 
+ @param bodyText - reply body of the refused attempt
+ 
+ @returns Milliseconds the body asks the caller to wait, or zero
+ 
+ @example
+ ```ts
+ const ms = retryAfterMsOf({ bodyText: 'Please try again in 14m40s', },);
+ // => 880_000
+ ```
  */
 export function retryAfterMsOf({ bodyText, }: { readonly bodyText: string; },): number {
   /**
-   * Where the phrase sits in the body.
+   Where the phrase sits in the body.
    */
   const at = bodyText.indexOf(RETRY_AFTER_PHRASE,);
   if (at === NOT_FOUND)
@@ -230,12 +230,12 @@ export function retryAfterMsOf({ bodyText, }: { readonly bodyText: string; },): 
 
   return (function sumSegments(): number {
     /**
-     * Milliseconds named by the segments read so far.
+     Milliseconds named by the segments read so far.
      */
     let totalMs = 0;
     for (let cursor = at + RETRY_AFTER_PHRASE.length; cursor < bodyText.length;) {
       /**
-       * Index past the digits starting at the cursor.
+       Index past the digits starting at the cursor.
        */
       const end = digitRunEnd({
         text: bodyText,
@@ -245,8 +245,8 @@ export function retryAfterMsOf({ bodyText, }: { readonly bodyText: string; },): 
         return totalMs;
 
       /**
-       * Milliseconds the letter after the digits stands for, absent when it
-       * is no unit.
+       Milliseconds the letter after the digits stands for, absent when it
+       is no unit.
        */
       const unitMs = WAIT_UNIT_MS[bodyText.charAt(end,)];
       if (unitMs === undefined)
@@ -262,21 +262,21 @@ export function retryAfterMsOf({ bodyText, }: { readonly bodyText: string; },): 
 }
 
 /**
- * Computes one equal-jitter backoff:
- * half the exponential window fixed, half random,
- * so a burst of failing calls decorrelates instead of retrying in
- * lockstep and re-triggering the burst gate.
- *
- * @param baseMs - full window granted before the first retry
- *
- * @param attempt - zero-based index of the attempt that just failed
- *
- * @returns Milliseconds to wait before the next attempt
- *
- * @example
- * ```ts
- * const backoffMs = backoffDelayMs({ baseMs: 1_000, attempt: 0, },);
- * ```
+ Computes one equal-jitter backoff:
+ half the exponential window fixed, half random,
+ so a burst of failing calls decorrelates instead of retrying in
+ lockstep and re-triggering the burst gate.
+ 
+ @param baseMs - full window granted before the first retry
+ 
+ @param attempt - zero-based index of the attempt that just failed
+ 
+ @returns Milliseconds to wait before the next attempt
+ 
+ @example
+ ```ts
+ const backoffMs = backoffDelayMs({ baseMs: 1_000, attempt: 0, },);
+ ```
  */
 function backoffDelayMs(
   {
@@ -288,7 +288,7 @@ function backoffDelayMs(
   },
 ): number {
   /**
-   * Full exponential window for this attempt.
+   Full exponential window for this attempt.
    */
   const windowMs = baseMs * (2 ** attempt);
   return Math.floor(windowMs / 2,)
@@ -296,72 +296,72 @@ function backoffDelayMs(
 }
 
 /**
- * Longest backoff a policy grants on its own: the full exponential window of
- * its last retry. A refusal naming a wait past it is the provider naming its
- * return, which no retry inside the ladder would live to see.
- *
- * @param policy - retry pacing in force
- *
- * @returns Milliseconds of the widest window
- *
- * @example
- * ```ts
- * longestBackoffMs({ policy: DEFAULT_RETRY_POLICY, },);
- * // => 16_000
- * ```
+ Longest backoff a policy grants on its own: the full exponential window of
+ its last retry. A refusal naming a wait past it is the provider naming its
+ return, which no retry inside the ladder would live to see.
+ 
+ @param policy - retry pacing in force
+ 
+ @returns Milliseconds of the widest window
+ 
+ @example
+ ```ts
+ longestBackoffMs({ policy: DEFAULT_RETRY_POLICY, },);
+ // => 16_000
+ ```
  */
 function longestBackoffMs({ policy, }: { readonly policy: RetryPolicy; },): number {
   return policy.baseMs * (2 ** policy.limit);
 }
 
 /**
- * Outcome of one transport attempt with thrown failures captured as data,
- * so the retry loop treats bad statuses and dropped connections uniformly.
+ Outcome of one transport attempt with thrown failures captured as data,
+ so the retry loop treats bad statuses and dropped connections uniformly.
  */
 type ExchangeAttemptOutcome =
   | {
     /**
-     * The transport answered; the status may still be retryable.
+     The transport answered; the status may still be retryable.
      */
     readonly replied: true;
 
     /**
-     * Reply of this attempt.
+     Reply of this attempt.
      */
     readonly reply: Awaited<ReturnType<ModelTransport>>;
   }
   | {
     /**
-     * The transport threw mid-exchange, e.g. a connection reset while
-     * draining the stream.
+     The transport threw mid-exchange, e.g. a connection reset while
+     draining the stream.
      */
     readonly replied: false;
 
     /**
-     * Failure normalized to an Error for rethrow and logging.
+     Failure normalized to an Error for rethrow and logging.
      */
     readonly thrown: Error;
   };
 
 /**
- * Performs one transport attempt, capturing non-abort throws as data.
- * A caller abort rethrows immediately:
- * user steering is never a transient failure.
- *
- * @param transport - HTTP seam performing the attempt
- *
- * @param exchange - request handed to the transport verbatim
- *
- * @mutates exchange - the delegated transport attempt may invoke getters
- * while serializing, and the exchange's `signal` rides into the attempt;
- * see the transport's own contract
- *
- * @returns Reply or captured failure, as data
- *
- * @example
- * ```ts
- * const outcome = await attemptExchange({ transport, exchange, },);
- * ```
+ Performs one transport attempt, capturing non-abort throws as data.
+ A caller abort rethrows immediately:
+ user steering is never a transient failure.
+ 
+ @param transport - HTTP seam performing the attempt
+ 
+ @param exchange - request handed to the transport verbatim
+ 
+ @mutates exchange - the delegated transport attempt may invoke getters
+ while serializing, and the exchange's `signal` rides into the attempt;
+ see the transport's own contract
+ 
+ @returns Reply or captured failure, as data
+ 
+ @example
+ ```ts
+ const outcome = await attemptExchange({ transport, exchange, },);
+ ```
  */
 async function attemptExchange(
   {
@@ -376,7 +376,7 @@ async function attemptExchange(
 ): Promise<ExchangeAttemptOutcome> {
   try {
     /**
-     * Reply this attempt produced, not yet read.
+     Reply this attempt produced, not yet read.
      */
     const reply = await transport(exchange,);
 
@@ -427,34 +427,34 @@ async function attemptExchange(
 }
 
 /**
- * Performs one exchange with bounded retry on transient failures:
- * retryable statuses and thrown transport failures both back off and
- * try again on an equal-jitter ladder.
- * Success and non-retryable statuses return immediately;
- * a caller abort stops retrying at the next boundary.
- *
- * @param transport - HTTP seam performing each attempt
- *
- * @param exchange - request repeated verbatim on every attempt
- *
- * @param policy - retry pacing; production default retries four times
- *
- * @param verify - caller's read of a reply the status accepted, run inside the
- * attempt so an incomplete body counts as a failed attempt rather than a
- * success the caller has to fail on afterwards. Absent leaves every 200 whole
- *
- * @mutates exchange - delegated transport attempts may invoke getters while
- * serializing, and the exchange's `signal` rides into each attempt;
- * see the transport's own contract
- *
- * @returns First success or first non-retryable reply
- *
- * @throws {@link SyntheticHttpError} when retries exhaust on a retryable status
- *
- * @example
- * ```ts
- * const reply = await exchangeWithRetry({ transport, exchange, },);
- * ```
+ Performs one exchange with bounded retry on transient failures:
+ retryable statuses and thrown transport failures both back off and
+ try again on an equal-jitter ladder.
+ Success and non-retryable statuses return immediately;
+ a caller abort stops retrying at the next boundary.
+ 
+ @param transport - HTTP seam performing each attempt
+ 
+ @param exchange - request repeated verbatim on every attempt
+ 
+ @param policy - retry pacing; production default retries four times
+ 
+ @param verify - caller's read of a reply the status accepted, run inside the
+ attempt so an incomplete body counts as a failed attempt rather than a
+ success the caller has to fail on afterwards. Absent leaves every 200 whole
+ 
+ @mutates exchange - delegated transport attempts may invoke getters while
+ serializing, and the exchange's `signal` rides into each attempt;
+ see the transport's own contract
+ 
+ @returns First success or first non-retryable reply
+ 
+ @throws {@link SyntheticHttpError} when retries exhaust on a retryable status
+ 
+ @example
+ ```ts
+ const reply = await exchangeWithRetry({ transport, exchange, },);
+ ```
  */
 export async function exchangeWithRetry(
   {
@@ -470,7 +470,7 @@ export async function exchangeWithRetry(
   },
 ): Promise<Awaited<ReturnType<ModelTransport>>> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: exchangeWithRetry.name,
@@ -483,7 +483,7 @@ export async function exchangeWithRetry(
     attempt += 1
   ) {
     /**
-     * Reply or captured failure of this attempt.
+     Reply or captured failure of this attempt.
      */
     // oxlint-disable-next-line no-await-in-loop -- attempts are inherently sequential; each retry depends on the previous failure
     const outcome = await attemptExchange({
@@ -497,19 +497,19 @@ export async function exchangeWithRetry(
     },);
 
     /**
-     * Whether attempts remain after this one.
+     Whether attempts remain after this one.
      */
     const attemptsRemain = attempt < policy.limit;
 
     /**
-     * Reply of this attempt when the transport answered.
+     Reply of this attempt when the transport answered.
      */
     const reply = outcome.replied
       ? outcome.reply
       : undefined;
 
     /**
-     * Captured failure of this attempt when the transport dropped it.
+     Captured failure of this attempt when the transport dropped it.
      */
     const thrown = outcome.replied
       ? undefined
@@ -520,13 +520,13 @@ export async function exchangeWithRetry(
         return reply;
 
       /**
-       * Wait the reply names for the provider's return, zero when it names
-       * none.
+       Wait the reply names for the provider's return, zero when it names
+       none.
        */
       const statedWaitMs = retryAfterMsOf({ bodyText: reply.bodyText, },);
 
       /**
-       * Widest window this ladder would grant on its own.
+       Widest window this ladder would grant on its own.
        */
       const reachMs = longestBackoffMs({ policy, },);
       // A WAIT PAST THE LADDER'S REACH IS THE PROVIDER NAMING ITS RETURN, and
@@ -550,15 +550,15 @@ export async function exchangeWithRetry(
     }
 
     /**
-     * Failure named in the retry log line.
+     Failure named in the retry log line.
      */
     const failureLabel = reply === undefined
       ? `transport failure: ${String(thrown,)}`
       : `HTTP ${String(reply.status,)}`;
 
     /**
-     * Equal-jitter backoff for the coming retry, stretched to whatever wait
-     * the provider's refusal asked for.
+     Equal-jitter backoff for the coming retry, stretched to whatever wait
+     the provider's refusal asked for.
      */
     const backoffMs = Math.max(
       backoffDelayMs({

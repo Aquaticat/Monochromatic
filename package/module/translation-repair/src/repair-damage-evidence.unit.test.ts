@@ -1,18 +1,18 @@
 /**
- * Tests the evidence lines the lane contest is shown from the
- * introduced-defect probe.
- *
- * THE CASE IS keyword233, 2026-09-03: two probers corroborated that the repair
- * editor had moved a deceased person's paragraph into the present tense, the
- * repair shipped as the design says, and the lane contest chose it 7 of 7
- * without ever seeing the claim. Later that day the naturalness rewrite did
- * the same on another draw, three probers corroborated it under
- * `refinementDefects`, and the contest was shown nothing because only the
- * accuracy probe was read. Here only corroborated claims become lines, from
- * both probes with the edit named, keyed by the slice they concern, and a chunk
- * with none contributes nothing.
- *
- * @module
+ Tests the evidence lines the lane contest is shown from the
+ introduced-defect probe.
+ 
+ THE CASE IS keyword233, 2026-09-03: two probers corroborated that the repair
+ editor had moved a deceased person's paragraph into the present tense, the
+ repair shipped as the design says, and the lane contest chose it 7 of 7
+ without ever seeing the claim. Later that day the naturalness rewrite did
+ the same on another draw, three probers corroborated it under
+ `refinementDefects`, and the contest was shown nothing because only the
+ accuracy probe was read. Here only corroborated claims become lines, from
+ both probes with the edit named, keyed by the slice they concern, and a chunk
+ with none contributes nothing.
+ 
+ @module
  */
 
 import {
@@ -28,20 +28,20 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one screened claim with the given admissibility.
- *
- * @param admissibility - what the deterministic check made of the quote
- *
- * @param evidence - wording quoted from the repair text
- *
- * @param category - defect class in the prober's words
- *
- * @returns Claim as the screen records it
- *
- * @example
- * ```ts
- * const claim = claimOf({ admissibility: 'corroborated', evidence: 'is', },);
- * ```
+ Builds one screened claim with the given admissibility.
+ 
+ @param admissibility - what the deterministic check made of the quote
+ 
+ @param evidence - wording quoted from the repair text
+ 
+ @param category - defect class in the prober's words
+ 
+ @returns Claim as the screen records it
+ 
+ @example
+ ```ts
+ const claim = claimOf({ admissibility: 'corroborated', evidence: 'is', },);
+ ```
  */
 function claimOf(
   {
@@ -66,16 +66,16 @@ function claimOf(
 }
 
 /**
- * Region tally around a set of claims, counts derived from them.
- *
- * @param claims - screened claims
- *
- * @returns Tally as the probe records it
- *
- * @example
- * ```ts
- * const region = regionOf({ claims: [claimOf({ admissibility: 'corroborated', evidence: 'is', },),], },);
- * ```
+ Region tally around a set of claims, counts derived from them.
+ 
+ @param claims - screened claims
+ 
+ @returns Tally as the probe records it
+ 
+ @example
+ ```ts
+ const region = regionOf({ claims: [claimOf({ admissibility: 'corroborated', evidence: 'is', },),], },);
+ ```
  */
 function regionOf(
   { claims, }: { readonly claims: readonly ScreenedDefectClaim[]; },

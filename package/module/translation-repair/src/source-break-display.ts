@@ -10,12 +10,12 @@ import type { DeepReadonlyData, } from './readonly-data.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
 
 /**
- * Module diagnostics expose counts and parser status, never source wording.
+ Module diagnostics expose counts and parser status, never source wording.
  */
 const l = tagged({ tag: 'source-break-display', },);
 
 /**
- * Parser-proven Markdown break span in canonical source coordinates.
+ Parser-proven Markdown break span in canonical source coordinates.
  */
 type BreakSpan = {
   readonly start: number;
@@ -23,35 +23,35 @@ type BreakSpan = {
 };
 
 /**
- * Reads Markdown break spans in source order without interpreting code or attributes.
- *
- * @param text - exact canonical slice used to establish offsets
- *
- * @returns Non-overlapping spans, retaining the original line endings
- *
- * @throws {@link MdxParseError} when the shared slice grammar refuses this input
- *
- * @example
- * ```ts
- * const spans = sourceBreakSpans({ text: sourceText });
- * ```
+ Reads Markdown break spans in source order without interpreting code or attributes.
+ 
+ @param text - exact canonical slice used to establish offsets
+ 
+ @returns Non-overlapping spans, retaining the original line endings
+ 
+ @throws {@link MdxParseError} when the shared slice grammar refuses this input
+ 
+ @example
+ ```ts
+ const spans = sourceBreakSpans({ text: sourceText });
+ ```
  */
 function sourceBreakSpans({ text, }: { readonly text: string; },): readonly BreakSpan[] {
   /**
-   * Masks preserve offsets just as they do for structural admission.
+   Masks preserve offsets just as they do for structural admission.
    */
   const { root, } = parseSliceBody({ text, },);
   /**
-   * Reversed work stack preserves document order through nested containers.
+   Reversed work stack preserves document order through nested containers.
    */
   const pending: DeepReadonlyData<RootContent>[] = [...root.children,].toReversed();
   /**
-   * Only real break nodes can license a presentation replacement.
+   Only real break nodes can license a presentation replacement.
    */
   const spans: BreakSpan[] = [];
   while (pending.length > 0) {
     /**
-     * Parsed node, whose position is supplied by the source parser.
+     Parsed node, whose position is supplied by the source parser.
      */
     const node = nonNullishOrThrow(pending.pop(),);
     if (node.type === 'break') {
@@ -71,25 +71,25 @@ function sourceBreakSpans({ text, }: { readonly text: string; },): readonly Brea
 }
 
 /**
- * Makes source-only Markdown break syntax visible to a whole-slice translator.
- * Canonical source and its offsets remain untouched outside this presentation.
- * Explicit absent-incumbent provenance is required in addition to empty archive
- * wording; omission of that fact conservatively preserves the original view.
- *
- * @param sourceText - canonical original, never modified in place
- *
- * @param archiveText - actual archive wording, not a generated standing
- *
- * @param incumbentKind - caller-established existence of an archival rendering
- *
- * @param syntax - metadata remains outside this Markdown presentation
- *
- * @returns Source view with parsed hard breaks spelled visibly as intrinsic br
- *
- * @example
- * ```ts
- * const view = sourceBreakDisplay({ sourceText, archiveText: '', incumbentKind: 'absent' });
- * ```
+ Makes source-only Markdown break syntax visible to a whole-slice translator.
+ Canonical source and its offsets remain untouched outside this presentation.
+ Explicit absent-incumbent provenance is required in addition to empty archive
+ wording; omission of that fact conservatively preserves the original view.
+ 
+ @param sourceText - canonical original, never modified in place
+ 
+ @param archiveText - actual archive wording, not a generated standing
+ 
+ @param incumbentKind - caller-established existence of an archival rendering
+ 
+ @param syntax - metadata remains outside this Markdown presentation
+ 
+ @returns Source view with parsed hard breaks spelled visibly as intrinsic br
+ 
+ @example
+ ```ts
+ const view = sourceBreakDisplay({ sourceText, archiveText: '', incumbentKind: 'absent' });
+ ```
  */
 export function sourceBreakDisplay(
   {
@@ -111,7 +111,7 @@ export function sourceBreakDisplay(
   if (syntax === 'front-matter')
     return sourceText;
   /**
-   * This function's diagnostics distinguish a display change from a source edit.
+   This function's diagnostics distinguish a display change from a source edit.
    */
   const dl = tagged({
     tag: sourceBreakDisplay.name,
@@ -119,22 +119,22 @@ export function sourceBreakDisplay(
   },);
   try {
     /**
-     * Source-order spans retain every character outside authored break syntax.
+     Source-order spans retain every character outside authored break syntax.
      */
     const spans = sourceBreakSpans({ text: sourceText, },);
     if (spans.length === 0)
       return sourceText;
     /**
-     * Disjoint slices are joined once rather than repeatedly copying the source.
+     Disjoint slices are joined once rather than repeatedly copying the source.
      */
     const parts: string[] = [];
     /**
-     * First canonical character not yet copied to the display view.
+     First canonical character not yet copied to the display view.
      */
     let cursor = 0;
     for (const span of spans) {
       /**
-       * Parsed break positions include their LF, CRLF or CR line ending.
+       Parsed break positions include their LF, CRLF or CR line ending.
        */
       const endingWidth = sourceText.slice(
         span.end - 2,

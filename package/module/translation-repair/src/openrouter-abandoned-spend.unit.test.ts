@@ -1,13 +1,13 @@
 /**
- * Tests for the reckoned spend line an abandoned OpenRouter stream writes.
- *
- * Between the top-up of 2026-09-08 and the refusal of 2026-09-09 the log
- * summed 141.62 USD where the meter moved 199.92, the difference being
- * streams the rounds abandoned and no line recorded. These cases pin the
- * reckoning, the line's mark, the run meter moving, and silence where the
- * error says nothing about what was delivered.
- *
- * @module
+ Tests for the reckoned spend line an abandoned OpenRouter stream writes.
+ 
+ Between the top-up of 2026-09-08 and the refusal of 2026-09-09 the log
+ summed 141.62 USD where the meter moved 199.92, the difference being
+ streams the rounds abandoned and no line recorded. These cases pin the
+ reckoning, the line's mark, the run meter moving, and silence where the
+ error says nothing about what was delivered.
+ 
+ @module
  */
 
 import {
@@ -29,8 +29,8 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * A cut stream that delivered 3,860 raw characters, ten tokens at the anchor
- * judge's measured 386 characters a token.
+ A cut stream that delivered 3,860 raw characters, ten tokens at the anchor
+ judge's measured 386 characters a token.
  */
 const CUT = new StreamCutShortError({
   label: 'deepseek/deepseek-v4-pro-0813',
@@ -45,12 +45,12 @@ const CUT = new StreamCutShortError({
 },);
 
 /**
- * Raw characters the reckoning divides by for the anchor judge.
+ Raw characters the reckoning divides by for the anchor judge.
  */
 const ANCHOR_RAW_CHARS_PER_TOKEN = 386;
 
 /**
- * Tokens in one million, the listing's unit.
+ Tokens in one million, the listing's unit.
  */
 const MILLION = 1_000_000;
 
@@ -84,11 +84,11 @@ await describe({
         + 'body bytes, and prices both at the listing\'s rates',
       fn: async () => {
         /**
-         * Listing prices for the anchor judge.
+         Listing prices for the anchor judge.
          */
         const info = OPENROUTER_MODELS['deepseek/deepseek-v4-pro-0813'];
         /**
-         * Reckoning for ten tokens delivered on a four-thousand-byte body.
+         Reckoning for ten tokens delivered on a four-thousand-byte body.
          */
         const estimate = estimateAbandonedSpend({
           servedId: 'deepseek/deepseek-v4-pro-0813',
@@ -115,7 +115,7 @@ await describe({
       fn: async () => {
         resetRunSpend();
         /**
-         * Line the report logged.
+         Line the report logged.
          */
         const report = reportAbandonedSpend({
           servedId: 'deepseek/deepseek-v4-pro-0813',

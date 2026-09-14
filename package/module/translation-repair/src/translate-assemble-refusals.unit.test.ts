@@ -1,21 +1,21 @@
 /**
- * Tests for what a settled translate document says about slices a GUARD
- * refused, which is three different guards wearing one count.
- *
- * WHY THIS FILE EXISTS. `assembleTranslation` reports `refusedSliceCount` as
- * the size of a filter naming three dispositions, and `alignmentRefusals`
- * writes one finding per refusal in three shapes. Every case reaching either of
- * them before this drove ONE of the three, `refused-alignment`, so dropping
- * either of the other two from the filter would have cost the artifact a
- * refusal and failed nothing. The two other kinds were pinned at the slice that
- * produces them and nowhere downstream.
- *
- * A FOURTH SLICE IS SETTLED NORMALLY so the count cannot pass by counting every
- * slice, and so the finding list cannot pass by naming every slice.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for what a settled translate document says about slices a GUARD
+ refused, which is three different guards wearing one count.
+ 
+ WHY THIS FILE EXISTS. `assembleTranslation` reports `refusedSliceCount` as
+ the size of a filter naming three dispositions, and `alignmentRefusals`
+ writes one finding per refusal in three shapes. Every case reaching either of
+ them before this drove ONE of the three, `refused-alignment`, so dropping
+ either of the other two from the filter would have cost the artifact a
+ refusal and failed nothing. The two other kinds were pinned at the slice that
+ produces them and nowhere downstream.
+ 
+ A FOURTH SLICE IS SETTLED NORMALLY so the count cannot pass by counting every
+ slice, and so the finding list cannot pass by naming every slice.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
@@ -34,7 +34,7 @@ import {
 //region Fixtures
 
 /**
- * Original, four sections, one of them quoting a line.
+ Original, four sections, one of them quoting a line.
  */
 const SOURCE_TEXT = `## 甲
 
@@ -56,7 +56,7 @@ const SOURCE_TEXT = `## 甲
 `;
 
 /**
- * Archive translation of it, which every guard here keeps.
+ Archive translation of it, which every guard here keeps.
  */
 const TARGET_TEXT = `## Alpha
 
@@ -78,16 +78,16 @@ The cat is asleep again.
 `;
 
 /**
- * Declared name the archive carries and one replacement drops.
+ Declared name the archive carries and one replacement drops.
  */
 const DECLARED_NAME = 'Whiskers';
 
 /**
- * What each slice's stage produced and how its slice was disposed of, in
- * document order.
- *
- * ONE SLICE PER REFUSAL KIND, then one settled slice, so the three counts a
- * reader compares (slices, refusals, changes) are three different numbers.
+ What each slice's stage produced and how its slice was disposed of, in
+ document order.
+ 
+ ONE SLICE PER REFUSAL KIND, then one settled slice, so the three counts a
+ reader compares (slices, refusals, changes) are three different numbers.
  */
 const PLANNED = [
   {
@@ -113,28 +113,28 @@ const PLANNED = [
 ] as const;
 
 /**
- * Builds one settled record shaped as the driver settles one.
- *
- * CAST because `TranslateStageResult` carries a producer, a tally and two
- * chosen indices this test never reaches: assembly reads `disposition`,
- * `sliceIndex`, `outputText`, `changed`, `alignment`, `droppedDeclaredNames`
- * and `stageResult.text`, and those are the fields spelled out here. The
- * sibling `translate-lane-wordings.unit.test.ts` builds its records the same
- * way and for the same reason.
- *
- * @param sliceIndex - slice this record settles
- *
- * @param incumbentText - archive wording at that slice, which every refusal
- * here keeps
- *
- * @param at - position in `PLANNED`, which decides the disposition
- *
- * @returns Record the assembly can read
- *
- * @example
- * ```ts
- * const record = recordFor({ sliceIndex: 0, incumbentText: 'The cat naps.', at: 0, },);
- * ```
+ Builds one settled record shaped as the driver settles one.
+ 
+ CAST because `TranslateStageResult` carries a producer, a tally and two
+ chosen indices this test never reaches: assembly reads `disposition`,
+ `sliceIndex`, `outputText`, `changed`, `alignment`, `droppedDeclaredNames`
+ and `stageResult.text`, and those are the fields spelled out here. The
+ sibling `translate-lane-wordings.unit.test.ts` builds its records the same
+ way and for the same reason.
+ 
+ @param sliceIndex - slice this record settles
+ 
+ @param incumbentText - archive wording at that slice, which every refusal
+ here keeps
+ 
+ @param at - position in `PLANNED`, which decides the disposition
+ 
+ @returns Record the assembly can read
+ 
+ @example
+ ```ts
+ const record = recordFor({ sliceIndex: 0, incumbentText: 'The cat naps.', at: 0, },);
+ ```
  */
 function recordFor(
   {
@@ -148,7 +148,7 @@ function recordFor(
   },
 ): TranslateSliceRecord {
   /**
-   * This slice's plan, which the fixture guarantees exists.
+   This slice's plan, which the fixture guarantees exists.
    */
   const planned = PLANNED[at];
   return {
@@ -189,21 +189,21 @@ function recordFor(
 }
 
 /**
- * Collects every line a driver logs, at any level.
- *
- * @param said - array the lines land in
- *
- * @returns Logger writing into it
- *
- * @example
- * ```ts
- * const said: string[] = [];
- * const l = capturingLogger({ said, },);
- * ```
+ Collects every line a driver logs, at any level.
+ 
+ @param said - array the lines land in
+ 
+ @returns Logger writing into it
+ 
+ @example
+ ```ts
+ const said: string[] = [];
+ const l = capturingLogger({ said, },);
+ ```
  */
 function capturingLogger({ said, }: { readonly said: string[]; },): Logger {
   /**
-   * One level's writer, all seven sharing the same array.
+   One level's writer, all seven sharing the same array.
    */
   const keep = (message: string,): void => {
     said.push(message,);
@@ -221,21 +221,21 @@ function capturingLogger({ said, }: { readonly said: string[]; },): Logger {
 }
 
 /**
- * Runs one assembly over the fixture and returns what it said and returned.
- *
- * @returns Assembled result beside every logged line
- *
- * @example
- * ```ts
- * const { result, said, } = await assembledFixture();
- * ```
+ Runs one assembly over the fixture and returns what it said and returned.
+ 
+ @returns Assembled result beside every logged line
+ 
+ @example
+ ```ts
+ const { result, said, } = await assembledFixture();
+ ```
  */
 async function assembledFixture(): Promise<{
   readonly result: ReturnType<typeof assembleTranslation>;
   readonly said: readonly string[];
 }> {
   /**
-   * Pair both lanes would run over.
+   Pair both lanes would run over.
    */
   const prepared = await prepareDocumentPair({
     sourceText: SOURCE_TEXT,
@@ -243,7 +243,7 @@ async function assembledFixture(): Promise<{
   },);
 
   /**
-   * Lines the assembly logged.
+   Lines the assembly logged.
    */
   const said: string[] = [];
   return {
@@ -302,7 +302,7 @@ await describe({
         const { result, } = await assembledFixture();
 
         /**
-         * Every finding this assembly wrote about a refusal.
+         Every finding this assembly wrote about a refusal.
          */
         const refusals = result.findings
           .filter(function namesARefusal(finding,): boolean {

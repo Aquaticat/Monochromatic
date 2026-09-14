@@ -1,24 +1,24 @@
 /**
- * Tests for reading one picture with one model, and screening what comes back.
- *
- * WHAT THESE PIN is that every way a reading can fail to arrive is a NAMED
- * outcome rather than a thrown error or a caveat attached to usable text.
- * Whether a reading is of the RIGHT picture is settled one level up, in
- * `image-reading-pair.ts`, against a second reader rather than against the
- * archive. The
- * stage sits between two things nobody controls, a picture on disk and a model's
- * willingness to read it, and a caller that has to distinguish "nobody could
- * send this" from "nobody could read it" cannot do so from an empty string.
- *
- * THE CAPTURED REQUEST IS THE POINT of the first case. `#107`'s judging window
- * existed for weeks while production never passed it, and nothing failed,
- * because no test asserted on what the call actually carried. A picture that
- * never reaches the wire looks exactly like one the model ignored, so the parts
- * array is asserted rather than assumed.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading one picture with one model, and screening what comes back.
+ 
+ WHAT THESE PIN is that every way a reading can fail to arrive is a NAMED
+ outcome rather than a thrown error or a caveat attached to usable text.
+ Whether a reading is of the RIGHT picture is settled one level up, in
+ `image-reading-pair.ts`, against a second reader rather than against the
+ archive. The
+ stage sits between two things nobody controls, a picture on disk and a model's
+ willingness to read it, and a caller that has to distinguish "nobody could
+ send this" from "nobody could read it" cannot do so from an empty string.
+ 
+ THE CAPTURED REQUEST IS THE POINT of the first case. `#107`'s judging window
+ existed for weeks while production never passed it, and nothing failed,
+ because no test asserted on what the call actually carried. A picture that
+ never reaches the wire looks exactly like one the model ignored, so the parts
+ array is asserted rather than assumed.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -36,86 +36,86 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger the stage writes its progress to.
+ Logger the stage writes its progress to.
  */
 const l = tagged({ tag: 'image-reading-stage-test', },);
 
 /**
- * Model that reads images, per the provider's own `input_modalities`.
+ Model that reads images, per the provider's own `input_modalities`.
  */
 const READER: RosterModelId = 'hf:moonshotai/Kimi-K3';
 
 /**
- * Model that does not, so the catalog refuses before a call is spent.
+ Model that does not, so the catalog refuses before a call is spent.
  */
 const TEXT_ONLY: RosterModelId = 'hf:openai/gpt-oss-120b';
 
 /**
- * Bytes past the reading stage's own ceiling of 8388608.
- *
- * THE CEILING IS NO LONGER PER MODEL and no longer derived from a context. It
- * used to be half a model's context converted to base64 characters, which
- * measured the wrong thing: sent as they are, both readers accept every asset
- * in the corpus, including one of 1274028 bytes that the old derivation refused
- * to the smaller of them at 294912.
- *
- * WHAT REPLACED IT MEASURES THE GATEWAY, since 2026-08-22. A body over the
- * gateway's cap returns `400` naming a parse failure, so the ceiling exists to
- * keep a picture from turning into an error that describes the wrong thing.
- * This number stays above it, and nothing in the corpus approaches either.
+ Bytes past the reading stage's own ceiling of 8388608.
+ 
+ THE CEILING IS NO LONGER PER MODEL and no longer derived from a context. It
+ used to be half a model's context converted to base64 characters, which
+ measured the wrong thing: sent as they are, both readers accept every asset
+ in the corpus, including one of 1274028 bytes that the old derivation refused
+ to the smaller of them at 294912.
+ 
+ WHAT REPLACED IT MEASURES THE GATEWAY, since 2026-08-22. A body over the
+ gateway's cap returns `400` naming a parse failure, so the ceiling exists to
+ keep a picture from turning into an error that describes the wrong thing.
+ This number stays above it, and nothing in the corpus approaches either.
  */
 const OVERSIZED_BYTES = 9_000_000;
 
 /**
- * Size sitting between the ceiling this stage configures and the one it
- * configured until 2026-08-22.
- *
- * BETWEEN THEM ON PURPOSE. 7340032 refuses this and 8388608 admits it, so a
- * case built on this size is the only thing in the suite that can tell the two
- * numbers apart. `OVERSIZED_BYTES` clears both and would pass under either.
+ Size sitting between the ceiling this stage configures and the one it
+ configured until 2026-08-22.
+ 
+ BETWEEN THEM ON PURPOSE. 7340032 refuses this and 8388608 admits it, so a
+ case built on this size is the only thing in the suite that can tell the two
+ numbers apart. `OVERSIZED_BYTES` clears both and would pass under either.
  */
 const PAST_THE_NEW_CEILING_ONLY = 8_000_000;
 
 /**
- * Transcription a reader returns for the picture under test.
+ Transcription a reader returns for the picture under test.
  */
 const A_READING = '虎斑猫 Mittens，2019 年领养，联系方式 @mittenspaw。';
 
 /**
- * Bytes standing in for a picture, whose content no rule here reads.
- *
- * @param length - how many bytes the picture occupies
- *
- * @returns Buffer of that size
- *
- * @example
- * ```ts
- * const bytes = bytesOf({ length: 64, },);
- * ```
+ Bytes standing in for a picture, whose content no rule here reads.
+ 
+ @param length - how many bytes the picture occupies
+ 
+ @returns Buffer of that size
+ 
+ @example
+ ```ts
+ const bytes = bytesOf({ length: 64, },);
+ ```
  */
 function bytesOf({ length, }: { readonly length: number; },): Uint8Array {
   return new Uint8Array(length,).fill(7,);
 }
 
 /**
- * Client answering every reading with one fixed reply, recording what it was
- * asked.
- *
- * @param text - reply the model returns
- *
- * @returns Client and the requests it received
- *
- * @example
- * ```ts
- * const { client, requests, } = replyingClient({ text: A_READING, },);
- * ```
+ Client answering every reading with one fixed reply, recording what it was
+ asked.
+ 
+ @param text - reply the model returns
+ 
+ @returns Client and the requests it received
+ 
+ @example
+ ```ts
+ const { client, requests, } = replyingClient({ text: A_READING, },);
+ ```
  */
 function replyingClient({ text, }: { readonly text: string; },): {
   readonly client: SyntheticClient;
   readonly requests: ChatTextRequest[];
 } {
   /**
-   * Requests the stage sent, for the assertion that a picture reached the wire.
+   Requests the stage sent, for the assertion that a picture reached the wire.
    */
   const requests: ChatTextRequest[] = [];
 
@@ -147,7 +147,7 @@ await describe({
         const { client, requests, } = replyingClient({ text: A_READING, },);
 
         /**
-         * One reading of a picture the archive already transcribes.
+         One reading of a picture the archive already transcribes.
          */
         const reading = await readImageAsset({
           client,
@@ -167,7 +167,7 @@ await describe({
         expect(requests.length,).toBe(1,);
 
         /**
-         * Sole message the reader was sent.
+         Sole message the reader was sent.
          */
         const message = requests[0]
           ?.messages[0];
@@ -175,7 +175,7 @@ await describe({
           throw new Error('one message by construction',);
 
         /**
-         * Its parts, which must be an array rather than a bare string.
+         Its parts, which must be an array rather than a bare string.
          */
         const { content, } = message;
         if ((typeof content) === 'string')
@@ -188,8 +188,8 @@ await describe({
           ?.type,).toBe('image_url',);
 
         /**
-         * Picture part, whose data URI declares the media type it was encoded
-         * under.
+         Picture part, whose data URI declares the media type it was encoded
+         under.
          */
         const [
           ,
@@ -211,7 +211,7 @@ await describe({
         const { client, requests, } = replyingClient({ text: A_READING, },);
 
         /**
-         * Attempt against a model whose `input_modalities` carry no image.
+         Attempt against a model whose `input_modalities` carry no image.
          */
         const reading = await readImageAsset({
           client,
@@ -238,7 +238,7 @@ await describe({
         const { client, requests, } = replyingClient({ text: A_READING, },);
 
         /**
-         * Attempt against a file whose name declares nothing sendable.
+         Attempt against a file whose name declares nothing sendable.
          */
         const reading = await readImageAsset({
           client,
@@ -268,7 +268,7 @@ await describe({
         const { client, requests, } = replyingClient({ text: A_READING, },);
 
         /**
-         * Attempt with a picture past the stage's ceiling.
+         Attempt with a picture past the stage's ceiling.
          */
         const reading = await readImageAsset({
           client,
@@ -299,7 +299,7 @@ await describe({
         const { client, requests, } = replyingClient({ text: A_READING, },);
 
         /**
-         * Attempt with a picture between the two ceilings.
+         Attempt with a picture between the two ceilings.
          */
         const reading = await readImageAsset({
           client,
@@ -327,7 +327,7 @@ await describe({
         const { client, } = replyingClient({ text: '', },);
 
         /**
-         * Attempt whose reply carries no content at all.
+         Attempt whose reply carries no content at all.
          */
         const reading = await readImageAsset({
           client,
@@ -354,7 +354,7 @@ await describe({
         const { client, } = replyingClient({ text: '喵。', },);
 
         /**
-         * Attempt whose reply is content but not a transcription.
+         Attempt whose reply is content but not a transcription.
          */
         const reading = await readImageAsset({
           client,
@@ -381,7 +381,7 @@ await describe({
         const { client, } = replyingClient({ text: 'There is no text visible in this image.', },);
 
         /**
-         * Attempt whose reply reports that the picture carries nothing.
+         Attempt whose reply reports that the picture carries nothing.
          */
         const reading = await readImageAsset({
           client,
@@ -409,7 +409,7 @@ await describe({
         },);
 
         /**
-         * Attempt whose reply is an apology of transcription length.
+         Attempt whose reply is an apology of transcription length.
          */
         const reading = await readImageAsset({
           client,
@@ -435,7 +435,7 @@ await describe({
         const { client, requests, } = replyingClient({ text: A_READING, },);
 
         /**
-         * Attempt against the other extension the corpus uses.
+         Attempt against the other extension the corpus uses.
          */
         const reading = await readImageAsset({
           client,
@@ -450,7 +450,7 @@ await describe({
         expect(reading.kind,).toBe('read',);
 
         /**
-         * Picture part of the sole message, whose media type follows the name.
+         Picture part of the sole message, whose media type follows the name.
          */
         const content = requests[0]
           ?.messages[0]
@@ -459,7 +459,7 @@ await describe({
           throw new Error('a picture cannot travel as a string',);
 
         /**
-         * That part, narrowed to the picture it is.
+         That part, narrowed to the picture it is.
          */
         const [
           ,

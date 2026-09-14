@@ -15,27 +15,27 @@ import {
 // trace anyone would notice.
 
 /**
- * Thrown when an artifact, or a value within it, is structurally malformed.
- * Aborting loudly is deliberate: a skipped accepted issue would bias the
- * precision denominator without a trace.
+ Thrown when an artifact, or a value within it, is structurally malformed.
+ Aborting loudly is deliberate: a skipped accepted issue would bias the
+ precision denominator without a trace.
  */
 export class ArtifactParseError extends Error {
   /**
-   * Declares this message safe to forward: it names the artifact path and the shape the value failed to satisfy, and quotes neither the value nor the file.
+   Declares this message safe to forward: it names the artifact path and the shape the value failed to satisfy, and quotes neither the value nor the file.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds failure naming the malformed path.
-   *
-   * @param path - dotted path to malformed value
-   *
-   * @param reason - what value was expected to be
-   *
-   * @example
-   * ```ts
-   * throw new ArtifactParseError({ path: 'Kitten issues[3].issue.status', reason: 'a string', },);
-   * ```
+   Builds failure naming the malformed path.
+   
+   @param path - dotted path to malformed value
+   
+   @param reason - what value was expected to be
+   
+   @example
+   ```ts
+   throw new ArtifactParseError({ path: 'Kitten issues[3].issue.status', reason: 'a string', },);
+   ```
    */
   public constructor(
     {
@@ -52,20 +52,20 @@ export class ArtifactParseError extends Error {
 }
 
 /**
- * Reads a required string, throwing when the value is any other shape.
- *
- * @param value - value to check
- *
- * @param path - dotted path for error message
- *
- * @returns Value as a string
- *
- * @throws {@link ArtifactParseError} when the value is not a string
- *
- * @example
- * ```ts
- * const id = requireString({ value: artifact.id, path: 'artifact.id', },);
- * ```
+ Reads a required string, throwing when the value is any other shape.
+ 
+ @param value - value to check
+ 
+ @param path - dotted path for error message
+ 
+ @returns Value as a string
+ 
+ @throws {@link ArtifactParseError} when the value is not a string
+ 
+ @example
+ ```ts
+ const id = requireString({ value: artifact.id, path: 'artifact.id', },);
+ ```
  */
 export function requireString(
   {
@@ -85,20 +85,20 @@ export function requireString(
 }
 
 /**
- * Reads a required boolean, throwing when the value is any other shape.
- *
- * @param value - value to check
- *
- * @param path - dotted path for error message
- *
- * @returns Value as a boolean
- *
- * @throws {@link ArtifactParseError} when the value is not a boolean
- *
- * @example
- * ```ts
- * const refined = requireBoolean({ value: record.refined, path: 'refined', },);
- * ```
+ Reads a required boolean, throwing when the value is any other shape.
+ 
+ @param value - value to check
+ 
+ @param path - dotted path for error message
+ 
+ @returns Value as a boolean
+ 
+ @throws {@link ArtifactParseError} when the value is not a boolean
+ 
+ @example
+ ```ts
+ const refined = requireBoolean({ value: record.refined, path: 'refined', },);
+ ```
  */
 export function requireBoolean(
   {
@@ -118,30 +118,30 @@ export function requireBoolean(
 }
 
 /**
- * Reads a required record, throwing when the value is any other shape.
- *
- * Arrays are refused even though they satisfy `isJsonRecord`, whose test is
- * `typeof value === 'object' && value !== null`. Every call site here reads a
- * JSON object: a manifest, an item, a region, a claim, an artifact, an issue, a
- * tally. Letting an array through would return something whose named properties
- * are all `undefined`, so the failure would surface later as a confusing
- * complaint about a missing field rather than here as the shape error it is.
- * The check is local rather than in `isJsonRecord` because nineteen other
- * modules share that guard for values where an array is legitimate.
- *
- * @param value - value to check
- *
- * @param path - dotted path for error message
- *
- * @returns Value as a record
- *
- * @throws {@link ArtifactParseError} when the value is not an object, or is an
- * array
- *
- * @example
- * ```ts
- * const issue = requireRecord({ value: record.issue, path: 'issue', },);
- * ```
+ Reads a required record, throwing when the value is any other shape.
+ 
+ Arrays are refused even though they satisfy `isJsonRecord`, whose test is
+ `typeof value === 'object' && value !== null`. Every call site here reads a
+ JSON object: a manifest, an item, a region, a claim, an artifact, an issue, a
+ tally. Letting an array through would return something whose named properties
+ are all `undefined`, so the failure would surface later as a confusing
+ complaint about a missing field rather than here as the shape error it is.
+ The check is local rather than in `isJsonRecord` because nineteen other
+ modules share that guard for values where an array is legitimate.
+ 
+ @param value - value to check
+ 
+ @param path - dotted path for error message
+ 
+ @returns Value as a record
+ 
+ @throws {@link ArtifactParseError} when the value is not an object, or is an
+ array
+ 
+ @example
+ ```ts
+ const issue = requireRecord({ value: record.issue, path: 'issue', },);
+ ```
  */
 export function requireRecord(
   {
@@ -161,20 +161,20 @@ export function requireRecord(
 }
 
 /**
- * Reads a required array, throwing when the value is any other shape.
- *
- * @param value - value to check
- *
- * @param path - dotted path for error message
- *
- * @returns Value as an array
- *
- * @throws {@link ArtifactParseError} when the value is not an array
- *
- * @example
- * ```ts
- * const spans = requireArray({ value: claim.spans, path: 'claim.spans', },);
- * ```
+ Reads a required array, throwing when the value is any other shape.
+ 
+ @param value - value to check
+ 
+ @param path - dotted path for error message
+ 
+ @returns Value as an array
+ 
+ @throws {@link ArtifactParseError} when the value is not an array
+ 
+ @example
+ ```ts
+ const spans = requireArray({ value: claim.spans, path: 'claim.spans', },);
+ ```
  */
 export function requireArray(
   {
@@ -194,30 +194,30 @@ export function requireArray(
 }
 
 /**
- * Reads a required count, throwing on any other shape.
- *
- * Rejects fractions and negatives as well as non-numbers, because every count
- * this layer reads is a tally of votes or regions. A fractional one means the
- * writer and the reader disagree about what the field holds, and coercing it
- * here would carry that disagreement into a measurement unnoticed.
- *
- * SAFE integers rather than whole ones, which is a narrower rule than it looks:
- * `Number.isInteger` answers true above 2 to the 53rd, where JSON round trips
- * and arithmetic stop being exact, so a value that large is not a count anybody
- * wrote. No tally or slice index this layer reads can legitimately reach it.
- *
- * @param value - value to check
- *
- * @param path - dotted path for error message
- *
- * @returns Value as a non-negative integer
- *
- * @throws {@link ArtifactParseError} when the value is not one
- *
- * @example
- * ```ts
- * const heard = requireCount({ value: probe.heardProbers, path: 'probe.heardProbers', },);
- * ```
+ Reads a required count, throwing on any other shape.
+ 
+ Rejects fractions and negatives as well as non-numbers, because every count
+ this layer reads is a tally of votes or regions. A fractional one means the
+ writer and the reader disagree about what the field holds, and coercing it
+ here would carry that disagreement into a measurement unnoticed.
+ 
+ SAFE integers rather than whole ones, which is a narrower rule than it looks:
+ `Number.isInteger` answers true above 2 to the 53rd, where JSON round trips
+ and arithmetic stop being exact, so a value that large is not a count anybody
+ wrote. No tally or slice index this layer reads can legitimately reach it.
+ 
+ @param value - value to check
+ 
+ @param path - dotted path for error message
+ 
+ @returns Value as a non-negative integer
+ 
+ @throws {@link ArtifactParseError} when the value is not one
+ 
+ @example
+ ```ts
+ const heard = requireCount({ value: probe.heardProbers, path: 'probe.heardProbers', },);
+ ```
  */
 export function requireCount(
   {
@@ -242,25 +242,25 @@ export function requireCount(
 }
 
 /**
- * Reads a value that must be a finite number, of any sign or scale.
- *
- * SEPARATE FROM `requireCount`, which exists for indices and tallies and
- * rejects everything below zero and everything fractional. A ballot's weight
- * is one half when a judge names its own writing, and a ballot naming no
- * candidate records a sentinel index, so neither is a count.
- *
- * @param value - value to check
- *
- * @param path - dotted path for error message
- *
- * @returns Value as a finite number
- *
- * @throws {@link ArtifactParseError} when the value is not one
- *
- * @example
- * ```ts
- * const weight = requireFinite({ value: ballot.weight, path: 'ballot.weight', },);
- * ```
+ Reads a value that must be a finite number, of any sign or scale.
+ 
+ SEPARATE FROM `requireCount`, which exists for indices and tallies and
+ rejects everything below zero and everything fractional. A ballot's weight
+ is one half when a judge names its own writing, and a ballot naming no
+ candidate records a sentinel index, so neither is a count.
+ 
+ @param value - value to check
+ 
+ @param path - dotted path for error message
+ 
+ @returns Value as a finite number
+ 
+ @throws {@link ArtifactParseError} when the value is not one
+ 
+ @example
+ ```ts
+ const weight = requireFinite({ value: ballot.weight, path: 'ballot.weight', },);
+ ```
  */
 export function requireFinite(
   {

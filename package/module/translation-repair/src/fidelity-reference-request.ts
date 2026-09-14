@@ -8,30 +8,30 @@ import { selectReviewedFidelitySpecs, } from './fidelity-reference-select.ts';
 // Usage checks precede all corpus and provider activity, including metadata-only preflight.
 
 /**
- * Validates the fixed calibration request without reading files or creating a model client.
- *
- * @param specs - reviewed manifest, defaulting to the checked-in set
- *
- * @param corpusSha - configured corpus revision, checked without reading any files
- *
- * @param onlyEntryIds - explicit reviewed population filter
- *
- * @param damageKinds - requested reviewed defect families
- *
- * @param judgeModelIds - distinct identities that will judge the comparisons
- *
- * @param cap - nonnegative finite trial bound; zero means preflight only
- *
- * @param withContext - refused until context is independently reviewed with the fixtures
- *
- * @returns Owned selected specifications
- *
- * @throws {@link FidelityReferenceError} for unreviewed inputs or a correction author judging their own fixture
- *
- * @example
- * ```ts
- * const specs = reviewedFidelityRequest({ corpusSha, onlyEntryIds: [], damageKinds, judgeModelIds, cap: 0, withContext: false });
- * ```
+ Validates the fixed calibration request without reading files or creating a model client.
+ 
+ @param specs - reviewed manifest, defaulting to the checked-in set
+ 
+ @param corpusSha - configured corpus revision, checked without reading any files
+ 
+ @param onlyEntryIds - explicit reviewed population filter
+ 
+ @param damageKinds - requested reviewed defect families
+ 
+ @param judgeModelIds - distinct identities that will judge the comparisons
+ 
+ @param cap - nonnegative finite trial bound; zero means preflight only
+ 
+ @param withContext - refused until context is independently reviewed with the fixtures
+ 
+ @returns Owned selected specifications
+ 
+ @throws {@link FidelityReferenceError} for unreviewed inputs or a correction author judging their own fixture
+ 
+ @example
+ ```ts
+ const specs = reviewedFidelityRequest({ corpusSha, onlyEntryIds: [], damageKinds, judgeModelIds, cap: 0, withContext: false });
+ ```
  */
 export function reviewedFidelityRequest({
   specs = REVIEWED_FIDELITY_REFERENCES,
@@ -74,15 +74,15 @@ export function reviewedFidelityRequest({
       operation: 'request',
     },);
   /**
-   * Only reviewed entries may be requested, even during zero-call preflight.
+   Only reviewed entries may be requested, even during zero-call preflight.
    */
   const selected = selectReviewedFidelitySpecs({
     specs,
     onlyEntryIds,
   },);
   /**
-   * Every requested family needs reviewed evidence somewhere in the selected population.
-   * An available deletion does not authorize silently omitting a requested alteration.
+   Every requested family needs reviewed evidence somewhere in the selected population.
+   An available deletion does not authorize silently omitting a requested alteration.
    */
   const unavailable = damageKinds.filter(function missing(kind,): boolean {
     return !selected.some(function supportsRequestedDamage(spec,): boolean {

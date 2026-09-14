@@ -30,8 +30,8 @@ import type {
 
 
 /**
- * Plain-language reading of each disposition, so a grader is told why an item
- * carries no grade box instead of finding one missing.
+ Plain-language reading of each disposition, so a grader is told why an item
+ carries no grade box instead of finding one missing.
  */
 const DISPOSITION_NOTES: Readonly<Record<string, string>> = {
   shipped: 'a targeted repair reached the returned translation',
@@ -44,14 +44,14 @@ const DISPOSITION_NOTES: Readonly<Record<string, string>> = {
 };
 
 /**
- * Renders one replaced region, disclosing when the same edit serves other
- * accepted issues so a shared replacement is never read as this issue's own.
- *
- * @param region - replaced region
- *
- * @param issueId - issue this sheet item is about
- *
- * @returns Markdown lines for the region
+ Renders one replaced region, disclosing when the same edit serves other
+ accepted issues so a shared replacement is never read as this issue's own.
+ 
+ @param region - replaced region
+ 
+ @param issueId - issue this sheet item is about
+ 
+ @returns Markdown lines for the region
  */
 function renderRegion(
   {
@@ -65,7 +65,7 @@ function renderRegion(
   },
 ): string {
   /**
-   * Other accepted issues the same replacement was cut for.
+   Other accepted issues the same replacement was cut for.
    */
   const siblings = region.issueIds
     .filter(function isOther(candidate,) {
@@ -73,16 +73,16 @@ function renderRegion(
     },);
 
   /**
-   * Sheet positions of the siblings that were also drawn, ascending.
-   *
-   * Positions rather than issue ids, because an id is a 64-character hash a
-   * grader cannot look up, and five of them on one line is a third of a
-   * kilobyte of noise obscuring the one fact that matters: this same edit is
-   * about to be shown again under other items.
+   Sheet positions of the siblings that were also drawn, ascending.
+   
+   Positions rather than issue ids, because an id is a 64-character hash a
+   grader cannot look up, and five of them on one line is a third of a
+   kilobyte of noise obscuring the one fact that matters: this same edit is
+   about to be shown again under other items.
    */
   const onSheet = siblings.flatMap(function toPosition(candidate,) {
     /**
-     * Sibling's position, absent when it was not drawn into this sample.
+     Sibling's position, absent when it was not drawn into this sample.
      */
     const position = positionByIssueId.get(candidate,);
     return position === undefined ? [] : [position,];
@@ -124,14 +124,14 @@ function renderRegion(
 }
 
 /**
- * Renders the repair evidence and, when a repair actually shipped, its grade
- * box.
- *
- * @param repair - repair provenance for this issue
- *
- * @param issueId - issue this sheet item is about
- *
- * @returns Markdown lines for the repair block
+ Renders the repair evidence and, when a repair actually shipped, its grade
+ box.
+ 
+ @param repair - repair provenance for this issue
+ 
+ @param issueId - issue this sheet item is about
+ 
+ @returns Markdown lines for the repair block
  */
 function renderRepair(
   {
@@ -145,16 +145,16 @@ function renderRepair(
   },
 ): string {
   /**
-   * Why this item does or does not carry a grade box.
+   Why this item does or does not carry a grade box.
    */
   const note = DISPOSITION_NOTES[repair.disposition]
     ?? 'unrecognized disposition; report this rather than grading it';
 
   /**
-   * Whether this item is gradable at all, which also gates the refinement
-   * caveat: telling a grader to judge the final wording of a repair that never
-   * reached the reader, immediately before telling them not to grade it, is a
-   * contradiction they would have to resolve on their own.
+   Whether this item is gradable at all, which also gates the refinement
+   caveat: telling a grader to judge the final wording of a repair that never
+   reached the reader, immediately before telling them not to grade it, is a
+   contradiction they would have to resolve on their own.
    */
   const gradable = repair.disposition === SHIPPED_DISPOSITION;
 
@@ -203,20 +203,20 @@ function renderRepair(
 }
 
 /**
- * Joins quotes onto one line, or says why there are none.
- *
- * Quotes are short anchored spans rather than whole slices, so they stay inline
- * rather than fenced; newlines are flattened so one quote cannot break the
- * bullet it sits in.
- *
- * @param quotes - distinct quotes for one side
- *
- * @returns Display line
- *
- * @example
- * ```ts
- * const line = quoteList({ quotes: candidate.sourceQuotes, },);
- * ```
+ Joins quotes onto one line, or says why there are none.
+ 
+ Quotes are short anchored spans rather than whole slices, so they stay inline
+ rather than fenced; newlines are flattened so one quote cannot break the
+ bullet it sits in.
+ 
+ @param quotes - distinct quotes for one side
+ 
+ @returns Display line
+ 
+ @example
+ ```ts
+ const line = quoteList({ quotes: candidate.sourceQuotes, },);
+ ```
  */
 function quoteList(
   { quotes, }: { readonly quotes: readonly string[]; },
@@ -234,13 +234,13 @@ function quoteList(
 }
 
 /**
- * Renders one candidate as a repair-sheet block.
- *
- * @param candidate - sampled candidate
- *
- * @param index - 1-based position, matching the detection sheet exactly
- *
- * @returns Markdown lines for the candidate
+ Renders one candidate as a repair-sheet block.
+ 
+ @param candidate - sampled candidate
+ 
+ @param index - 1-based position, matching the detection sheet exactly
+ 
+ @returns Markdown lines for the candidate
  */
 function renderCandidate(
   {
@@ -254,7 +254,7 @@ function renderCandidate(
   },
 ): string {
   /**
-   * Repair block, or the reason this run cannot answer the question at all.
+   Repair block, or the reason this run cannot answer the question at all.
    */
   const body = candidate.repair === undefined
     ? [
@@ -283,29 +283,29 @@ function renderCandidate(
 }
 
 /**
- * Renders the repair grading sheet: the same sample in the same order as the
- * detection sheet, graded on whether the pipeline's text fixes the defect. The
- * sheet quotes UNLICENSED corpus text, so callers write it OUTSIDE the repo.
- *
- * @param sample - drawn candidates, in draw order
- *
- * @param seed - seed the sample was drawn under, recorded for reproduction
- *
- * @param corpusSha - pinned corpus commit artifacts were produced against
- *
- * @param drawDigest - fingerprint binding this sheet to one exact draw
- *
- * @returns Repair grading sheet as markdown text
- *
- * @example
- * ```ts
- * const sheet = formatRepairSheet({
- *   sample,
- *   seed: DEFAULT_SAMPLE_SEED,
- *   corpusSha: 'a41fc60',
- *   drawDigest,
- * },);
- * ```
+ Renders the repair grading sheet: the same sample in the same order as the
+ detection sheet, graded on whether the pipeline's text fixes the defect. The
+ sheet quotes UNLICENSED corpus text, so callers write it OUTSIDE the repo.
+ 
+ @param sample - drawn candidates, in draw order
+ 
+ @param seed - seed the sample was drawn under, recorded for reproduction
+ 
+ @param corpusSha - pinned corpus commit artifacts were produced against
+ 
+ @param drawDigest - fingerprint binding this sheet to one exact draw
+ 
+ @returns Repair grading sheet as markdown text
+ 
+ @example
+ ```ts
+ const sheet = formatRepairSheet({
+   sample,
+   seed: DEFAULT_SAMPLE_SEED,
+   corpusSha: 'a41fc60',
+   drawDigest,
+ },);
+ ```
  */
 export function formatRepairSheet(
   {
@@ -321,7 +321,7 @@ export function formatRepairSheet(
   },
 ): string {
   /**
-   * Header stating the grading order, what the grade means, and the pin.
+   Header stating the grading order, what the grade means, and the pin.
    */
   const header = [
     '# Repair grading sheet',
@@ -347,8 +347,8 @@ export function formatRepairSheet(
   ].join('\n',);
 
   /**
-   * Sheet position of every drawn issue, so a shared edit can name the other
-   * ITEMS a grader will meet it under instead of quoting hashes at them.
+   Sheet position of every drawn issue, so a shared edit can name the other
+   ITEMS a grader will meet it under instead of quoting hashes at them.
    */
   const positionByIssueId = new Map(sample.map(function toEntry(
     candidate,

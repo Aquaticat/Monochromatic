@@ -1,14 +1,14 @@
 /**
- * Tests for the guard that keeps a declared name from being edited away.
- *
- * WHY IT IS A GUARD. Measured against the repair lane's own judge sheet and
- * roster, six of six judges preferred the candidate that dropped a declared
- * alias, and adding a carve-out to the criterion did not flip the vote. The
- * check therefore cannot live in a prompt.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the guard that keeps a declared name from being edited away.
+ 
+ WHY IT IS A GUARD. Measured against the repair lane's own judge sheet and
+ roster, six of six judges preferred the candidate that dropped a declared
+ alias, and adding a carve-out to the criterion did not flip the vote. The
+ check therefore cannot live in a prompt.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -201,7 +201,7 @@ await describe({
         + 'slice never has to tell dropping nothing from nobody writing the field',
       fn: async () => {
         /**
-         * Report for a slice where every declared handle survived.
+         Report for a slice where every declared handle survived.
          */
         const quiet = declaredNameRefusalReport({
           sliceIndex: 3,
@@ -217,7 +217,7 @@ await describe({
         + 'scorecard counts, since a refusal missing from either is one nobody can audit',
       fn: async () => {
         /**
-         * Report for a slice whose replacement lost two declared handles.
+         Report for a slice whose replacement lost two declared handles.
          */
         const refused = declaredNameRefusalReport({
           sliceIndex: 3,

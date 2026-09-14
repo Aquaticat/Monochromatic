@@ -1,11 +1,11 @@
 /**
- * Tests archive-block context, reverse splicing, removal, and the linear
- * two-step preparation: one correction round, one re-preparation, remaining
- * unclaimed blocks recorded as findings instead of a cycle pause.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests archive-block context, reverse splicing, removal, and the linear
+ two-step preparation: one correction round, one re-preparation, remaining
+ unclaimed blocks recorded as findings instead of a cycle pause.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -51,11 +51,11 @@ const GENERATION = `sha256-tree-v1:${'b'.repeat(64,)}` as PipelineDigest;
 const l = tagged({ tag: 'archive-block-repair-test', },);
 
 /**
- * Creates client selecting scripted block replacements.
- *
- * @param replacementFor - replacement derived from exact request prompt
- *
- * @returns Direct scripted client
+ Creates client selecting scripted block replacements.
+ 
+ @param replacementFor - replacement derived from exact request prompt
+ 
+ @returns Direct scripted client
  */
 function correctionClient(
   { replacementFor, }: { readonly replacementFor: (prompt: string) => string; },
@@ -100,15 +100,15 @@ function correctionClient(
 }
 
 /**
- * Constructs block offsets from exact substring.
- *
- * @param targetText - archive containing block once
- *
- * @param blockText - exact block wording
- *
- * @param blockId - parser-like audit id
- *
- * @returns Unclaimed block fixture
+ Constructs block offsets from exact substring.
+ 
+ @param targetText - archive containing block once
+ 
+ @param blockText - exact block wording
+ 
+ @param blockId - parser-like audit id
+ 
+ @returns Unclaimed block fixture
  */
 function blockAt(
   {

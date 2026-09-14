@@ -33,39 +33,39 @@
 // characters of anything that fails to parse.
 
 /**
- * Longest single marker tail considered.
- *
- * `<|im_start|>` is twelve characters, so a whole marker of that family fits
- * and anything longer is prose that happens to contain the closing characters.
+ Longest single marker tail considered.
+ 
+ `<|im_start|>` is twelve characters, so a whole marker of that family fits
+ and anything longer is prose that happens to contain the closing characters.
  */
 const MARKER_TAIL_LIMIT = 12;
 
 /**
- * Most consecutive markers consumed before the run is treated as prose.
- *
- * More than one can leak when two tokens straddle the same delta boundary. The
- * bound exists so a pathological input cannot turn this into an unbounded scan.
+ Most consecutive markers consumed before the run is treated as prose.
+ 
+ More than one can leak when two tokens straddle the same delta boundary. The
+ bound exists so a pathological input cannot turn this into an unbounded scan.
  */
 const MARKER_RUN_LIMIT = 4;
 
 /**
- * Characters every marker of this family ends with.
+ Characters every marker of this family ends with.
  */
 const MARKER_CLOSE = '|>';
 
 /**
- * Characters a whole, untruncated marker begins with.
- *
- * Optional when matching, precisely because the interesting case is the one
- * where the opening did not survive.
+ Characters a whole, untruncated marker begins with.
+ 
+ Optional when matching, precisely because the interesting case is the one
+ where the opening did not survive.
  */
 const MARKER_OPEN = '<|';
 
 /**
- * Openings that mean the marker run has ended and real content has started.
- *
- * A fence is included because the fence stripper runs before this and cannot
- * see a fence hidden behind a marker; the caller unwraps it afterwards.
+ Openings that mean the marker run has ended and real content has started.
+ 
+ A fence is included because the fence stripper runs before this and cannot
+ see a fence hidden behind a marker; the caller unwraps it afterwards.
  */
 const CONTENT_OPENINGS: readonly string[] = [
   '{',
@@ -74,19 +74,19 @@ const CONTENT_OPENINGS: readonly string[] = [
 ];
 
 /**
- * Reports whether a character can appear in a marker's name.
- *
- * Compared by code point rather than by pattern, since the alphabet is three
- * contiguous ranges plus one character and an index scan states that directly.
- *
- * @param character - single character from the candidate marker
- *
- * @returns True for ASCII letters, digits and underscore
- *
- * @example
- * ```ts
- * const ok = isMarkerBodyCharacter({ character: 'p', },);
- * ```
+ Reports whether a character can appear in a marker's name.
+ 
+ Compared by code point rather than by pattern, since the alphabet is three
+ contiguous ranges plus one character and an index scan states that directly.
+ 
+ @param character - single character from the candidate marker
+ 
+ @returns True for ASCII letters, digits and underscore
+ 
+ @example
+ ```ts
+ const ok = isMarkerBodyCharacter({ character: 'p', },);
+ ```
  */
 function isMarkerBodyCharacter(
   {
@@ -102,16 +102,16 @@ function isMarkerBodyCharacter(
 }
 
 /**
- * Measures one marker sitting at the start of the text.
- *
- * @param text - candidate text, already trimmed at its start
- *
- * @returns Length of the marker, zero when the text does not open with one
- *
- * @example
- * ```ts
- * const width = markerWidth({ text: 'ep|>{"count":2}', },);
- * ```
+ Measures one marker sitting at the start of the text.
+ 
+ @param text - candidate text, already trimmed at its start
+ 
+ @returns Length of the marker, zero when the text does not open with one
+ 
+ @example
+ ```ts
+ const width = markerWidth({ text: 'ep|>{"count":2}', },);
+ ```
  */
 function markerWidth(
   {
@@ -121,22 +121,22 @@ function markerWidth(
   },
 ): number {
   /**
-   * Where the marker would close, taking the FIRST closing characters so a
-   * `|>` occurring later inside the JSON cannot extend the candidate.
+   Where the marker would close, taking the FIRST closing characters so a
+   `|>` occurring later inside the JSON cannot extend the candidate.
    */
   const closeAt = text.indexOf(MARKER_CLOSE,);
   if (closeAt === (-1))
     return 0;
 
   /**
-   * Length of the whole candidate marker, closing characters included.
+   Length of the whole candidate marker, closing characters included.
    */
   const width = closeAt + MARKER_CLOSE.length;
   if (width > MARKER_TAIL_LIMIT)
     return 0;
 
   /**
-   * Candidate marker with its closing characters removed.
+   Candidate marker with its closing characters removed.
    */
   const head = text.slice(
     0,
@@ -144,7 +144,7 @@ function markerWidth(
   );
 
   /**
-   * Marker name, with the opening characters removed when they survived.
+   Marker name, with the opening characters removed when they survived.
    */
   const body = head.startsWith(MARKER_OPEN,)
     ? head.slice(MARKER_OPEN.length,)
@@ -159,46 +159,46 @@ function markerWidth(
 }
 
 /**
- * Content with any marker run removed, and the run that was removed.
- *
- * `marker` is empty when nothing was stripped, rather than absent, because the
- * caller logs it and an empty string reads as "nothing to report" at the call
- * site without a nullish check.
- *
- * @example
- * ```ts
- * const { content, marker, } = stripChannelMarker({ text: 'p|>{"count":2}', },);
- * ```
+ Content with any marker run removed, and the run that was removed.
+ 
+ `marker` is empty when nothing was stripped, rather than absent, because the
+ caller logs it and an empty string reads as "nothing to report" at the call
+ site without a nullish check.
+ 
+ @example
+ ```ts
+ const { content, marker, } = stripChannelMarker({ text: 'p|>{"count":2}', },);
+ ```
  */
 export type ChannelMarkerStrip = {
   /**
-   * Content the parser should see.
+   Content the parser should see.
    */
   readonly content: string;
 
   /**
-   * Exact fragment removed, empty when the input was left untouched.
+   Exact fragment removed, empty when the input was left untouched.
    */
   readonly marker: string;
 };
 
 /**
- * Removes truncated provider channel markers sitting in front of content.
- *
- * Strips only when every leading fragment is shaped like the end of a `<|word|>`
- * token AND what follows opens an object, an array or a code fence, so a reply
- * that begins with those characters and then says something else still fails to
- * parse. The decision is transactional: a run that does not reach real content
- * leaves the input untouched rather than partially repaired.
- *
- * @param text - model content, before or after fence removal
- *
- * @returns Content without the markers, plus what was removed for logging
- *
- * @example
- * ```ts
- * const { content, marker, } = stripChannelMarker({ text: 'ep|>{"count":2}', },);
- * ```
+ Removes truncated provider channel markers sitting in front of content.
+ 
+ Strips only when every leading fragment is shaped like the end of a `<|word|>`
+ token AND what follows opens an object, an array or a code fence, so a reply
+ that begins with those characters and then says something else still fails to
+ parse. The decision is transactional: a run that does not reach real content
+ leaves the input untouched rather than partially repaired.
+ 
+ @param text - model content, before or after fence removal
+ 
+ @returns Content without the markers, plus what was removed for logging
+ 
+ @example
+ ```ts
+ const { content, marker, } = stripChannelMarker({ text: 'ep|>{"count":2}', },);
+ ```
  */
 export function stripChannelMarker(
   {
@@ -208,7 +208,7 @@ export function stripChannelMarker(
   },
 ): ChannelMarkerStrip {
   /**
-   * Nothing removed, which every rejection below returns.
+   Nothing removed, which every rejection below returns.
    */
   const untouched: ChannelMarkerStrip = {
     content: text,
@@ -216,23 +216,23 @@ export function stripChannelMarker(
   };
 
   /**
-   * Input without leading whitespace so the first marker sits at column zero.
+   Input without leading whitespace so the first marker sits at column zero.
    */
   const trimmed = text.trimStart();
 
   /**
-   * Characters of leading marker consumed.
-   *
-   * Folded over a fixed number of slots rather than accumulated in a mutable
-   * cursor: once the run ends, every remaining slot returns the width
-   * unchanged, so the bound is expressed by the array length instead of by a
-   * break.
+   Characters of leading marker consumed.
+   
+   Folded over a fixed number of slots rather than accumulated in a mutable
+   cursor: once the run ends, every remaining slot returns the width
+   unchanged, so the bound is expressed by the array length instead of by a
+   break.
    */
   const consumed = Array.from({ length: MARKER_RUN_LIMIT, },)
     .reduce(
       function extend(width: number,): number {
         /**
-         * Width of the next marker, zero once the run has ended.
+         Width of the next marker, zero once the run has ended.
          */
         const next = markerWidth({ text: trimmed.slice(width,), },);
         return (next === 0) ? width : (width + next);
@@ -244,7 +244,7 @@ export function stripChannelMarker(
     return untouched;
 
   /**
-   * What follows the run, which must itself open real content.
+   What follows the run, which must itself open real content.
    */
   const rest = trimmed
     .slice(consumed,)

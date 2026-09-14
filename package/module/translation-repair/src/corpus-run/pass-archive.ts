@@ -15,19 +15,19 @@ import {
 // know a marker was ever there.
 
 /**
- * Normalizes archive bytes before preparation and every downstream decision.
- *
- * @param text - archive English as stored in corpus
- *
- * @param l - entry logger, which records every stub marker removed so a run's
- * log witnesses it
- *
- * @returns Normalized text and retained pinned-line coordinates
- *
- * @example
- * ```ts
- * const archive = passArchiveText({ text: 'non‑binary', l, });
- * ```
+ Normalizes archive bytes before preparation and every downstream decision.
+ 
+ @param text - archive English as stored in corpus
+ 
+ @param l - entry logger, which records every stub marker removed so a run's
+ log witnesses it
+ 
+ @returns Normalized text and retained pinned-line coordinates
+ 
+ @example
+ ```ts
+ const archive = passArchiveText({ text: 'non‑binary', l, });
+ ```
  */
 export function passArchiveWithOrigins(
   {
@@ -42,11 +42,11 @@ export function passArchiveWithOrigins(
   readonly lines: readonly ArchiveRetainedLine[]
 } {
   /**
-   * Visible text from shared fold.
+   Visible text from shared fold.
    */
   const { text: folded, } = foldInvisibleVariants({ text, },);
   /**
-   * Folded text without placeholder paragraphs, and what was removed.
+   Folded text without placeholder paragraphs, and what was removed.
    */
   const {
     text: stripped,
@@ -67,9 +67,9 @@ export function passArchiveWithOrigins(
 }
 
 /**
- * {@inheritDoc passArchiveWithOrigins}
- *
- * @returns Normalized archive text without exposing provenance metadata to existing callers
+ {@inheritDoc passArchiveWithOrigins}
+ 
+ @returns Normalized archive text without exposing provenance metadata to existing callers
  */
 export function passArchiveText({
   text,

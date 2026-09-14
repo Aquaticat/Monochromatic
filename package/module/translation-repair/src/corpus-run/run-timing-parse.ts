@@ -27,173 +27,173 @@
 // construction, and nothing here would print it if it did.
 
 /**
- * Marker that opens a stream completion line's payload.
+ Marker that opens a stream completion line's payload.
  */
 export const STREAM_MARKER = '] [reportStreamProgress] stream ';
 
 /**
- * Marker that opens a round line's payload, after the stage label.
+ Marker that opens a round line's payload, after the stage label.
  */
 const ROUND_MARKER = ' round: ';
 
 /**
- * Field a round line ends with, which tells a complete line from one truncated
- * at the tail of a log still being written.
+ Field a round line ends with, which tells a complete line from one truncated
+ at the tail of a log still being written.
  */
 const GRACE_FIELD = 'ms in grace';
 
 /**
- * Field a completion line carries only since `#215`.
+ Field a completion line carries only since `#215`.
  */
 const ELAPSED_FIELD = 'elapsed ';
 
 /**
- * Value `indexOf` returns for text that is not there.
+ Value `indexOf` returns for text that is not there.
  */
 const NOT_FOUND = -1;
 
 /**
- * One fan-out round, as its own line reported it.
- *
- * @example
- * ```ts
- * const round: RoundTiming = { stage: 'editor', heard: 6, asked: 7, totalMs: 91_402, toQuorumMs: 61_401, inGraceMs: 30_001, };
- * ```
+ One fan-out round, as its own line reported it.
+ 
+ @example
+ ```ts
+ const round: RoundTiming = { stage: 'editor', heard: 6, asked: 7, totalMs: 91_402, toQuorumMs: 61_401, inGraceMs: 30_001, };
+ ```
  */
 export type RoundTiming = {
   /**
-   * Stage that ran this round.
+   Stage that ran this round.
    */
   readonly stage: string;
 
   /**
-   * Voices this round heard, which the grace window can raise past quorum.
+   Voices this round heard, which the grace window can raise past quorum.
    */
   readonly heard: number;
 
   /**
-   * Models this round asked.
+   Models this round asked.
    */
   readonly asked: number;
 
   /**
-   * Wall-clock the whole round took.
+   Wall-clock the whole round took.
    */
   readonly totalMs: number;
 
   /**
-   * Wall-clock before quorum stood, which is the round doing its work.
+   Wall-clock before quorum stood, which is the round doing its work.
    */
   readonly toQuorumMs: number;
 
   /**
-   * Wall-clock after quorum stood, which is the round waiting on voices it may
-   * never hear. THIS IS THE STRAGGLER COST, measured rather than bounded.
+   Wall-clock after quorum stood, which is the round waiting on voices it may
+   never hear. THIS IS THE STRAGGLER COST, measured rather than bounded.
    */
   readonly inGraceMs: number;
 };
 
 /**
- * What one line turned out to say about a round.
- *
- * @example
- * ```ts
- * const reading: RoundReading = readRoundTiming({ line, },);
- * ```
+ What one line turned out to say about a round.
+ 
+ @example
+ ```ts
+ const reading: RoundReading = readRoundTiming({ line, },);
+ ```
  */
 export type RoundReading =
   | {
     readonly kind: 'round';
 
     /**
-     * Numbers the round reported about itself.
+     Numbers the round reported about itself.
      */
     readonly round: RoundTiming;
   }
   | {
     /**
-     * Line says nothing about a round, including a round line truncated by a
-     * log still being written.
+     Line says nothing about a round, including a round line truncated by a
+     log still being written.
      */
     readonly kind: 'other-line';
   };
 
 /**
- * One model call, as its completion line reported it.
- *
- * @example
- * ```ts
- * const call: CallTiming = { label: 'hf:whiskers', outcome: 'completed', endedAt: 1_760_000_000_000, elapsedMs: 4_210, };
- * ```
+ One model call, as its completion line reported it.
+ 
+ @example
+ ```ts
+ const call: CallTiming = { label: 'hf:whiskers', outcome: 'completed', endedAt: 1_760_000_000_000, elapsedMs: 4_210, };
+ ```
  */
 export type CallTiming = {
   /**
-   * Model the call went to.
+   Model the call went to.
    */
   readonly label: string;
 
   /**
-   * How the call ended: `completed`, `cut`, `degenerate`.
+   How the call ended: `completed`, `cut`, `degenerate`.
    */
   readonly outcome: string;
 
   /**
-   * Epoch milliseconds the completion line was written, which is when the call
-   * ended.
+   Epoch milliseconds the completion line was written, which is when the call
+   ended.
    */
   readonly endedAt: number;
 
   /**
-   * How long the call ran, from arming to its end.
+   How long the call ran, from arming to its end.
    */
   readonly elapsedMs: number;
 };
 
 /**
- * What one line turned out to say about a call.
- *
- * @example
- * ```ts
- * const reading: CallReading = readCallTiming({ line, },);
- * ```
+ What one line turned out to say about a call.
+ 
+ @example
+ ```ts
+ const reading: CallReading = readCallTiming({ line, },);
+ ```
  */
 export type CallReading =
   | {
     readonly kind: 'timed';
 
     /**
-     * Interval the call occupied, which is what an overlap count needs.
+     Interval the call occupied, which is what an overlap count needs.
      */
     readonly call: CallTiming;
   }
   | {
     /**
-     * Completion line carrying no duration, which every log written before
-     * `#215` is made of. Counted rather than skipped, so a report can say how
-     * much of an archive it could not read.
+     Completion line carrying no duration, which every log written before
+     `#215` is made of. Counted rather than skipped, so a report can say how
+     much of an archive it could not read.
      */
     readonly kind: 'untimed';
   }
   | {
     /**
-     * Line is not a completion at all.
+     Line is not a completion at all.
      */
     readonly kind: 'other-line';
   };
 
 /**
- * Reads one field as a whole number, refusing anything else.
- *
- * @param field - digits and nothing else
- *
- * @returns Count the field carries
- *
- * @throws Error when the field is empty or carries anything but digits
- *
- * @example
- * ```ts
- * const heard = countIn({ field: '5', },);
- * ```
+ Reads one field as a whole number, refusing anything else.
+ 
+ @param field - digits and nothing else
+ 
+ @returns Count the field carries
+ 
+ @throws Error when the field is empty or carries anything but digits
+ 
+ @example
+ ```ts
+ const heard = countIn({ field: '5', },);
+ ```
  */
 function countIn({ field, }: { readonly field: string; },): number {
   if (field === '')
@@ -206,23 +206,23 @@ function countIn({ field, }: { readonly field: string; },): number {
 }
 
 /**
- * Reads one field's number, given the unit it must carry.
- *
- * NAMES THE FIELD IT COULD NOT READ rather than returning a zero, because a
- * silent zero in a timing report reads as a measurement of nothing happening.
- *
- * @param field - one comma-separated field, shaped `<number>ms <name>`
- *
- * @param unit - text the number is followed by
- *
- * @returns Number the field opened with
- *
- * @throws Error when the field does not carry that unit
- *
- * @example
- * ```ts
- * const ms = durationIn({ field: '30001ms in grace', unit: 'ms ', },);
- * ```
+ Reads one field's number, given the unit it must carry.
+ 
+ NAMES THE FIELD IT COULD NOT READ rather than returning a zero, because a
+ silent zero in a timing report reads as a measurement of nothing happening.
+ 
+ @param field - one comma-separated field, shaped `<number>ms <name>`
+ 
+ @param unit - text the number is followed by
+ 
+ @returns Number the field opened with
+ 
+ @throws Error when the field does not carry that unit
+ 
+ @example
+ ```ts
+ const ms = durationIn({ field: '30001ms in grace', unit: 'ms ', },);
+ ```
  */
 function durationIn(
   {
@@ -234,7 +234,7 @@ function durationIn(
   },
 ): number {
   /**
-   * Digits ahead of the unit, or the whole field when the unit is absent.
+   Digits ahead of the unit, or the whole field when the unit is absent.
    */
   const digits = field
     .split(unit,)[0] ?? '';
@@ -245,25 +245,25 @@ function durationIn(
 }
 
 /**
- * Reads one round line, or says the line is not one.
- *
- * @param line - one log line
- *
- * @returns What the line turned out to say about a round
- *
- * @throws Error when a round line's own fields will not read, since a round
- * reporting a partial straggler cost is worse than one reporting none
- *
- * @example
- * ```ts
- * const reading = readRoundTiming({ line, },);
- * ```
+ Reads one round line, or says the line is not one.
+ 
+ @param line - one log line
+ 
+ @returns What the line turned out to say about a round
+ 
+ @throws Error when a round line's own fields will not read, since a round
+ reporting a partial straggler cost is worse than one reporting none
+ 
+ @example
+ ```ts
+ const reading = readRoundTiming({ line, },);
+ ```
  */
 export function readRoundTiming(
   { line, }: { readonly line: string; },
 ): RoundReading {
   /**
-   * Where the round payload starts, after the tagged prefix and stage label.
+   Where the round payload starts, after the tagged prefix and stage label.
    */
   const at = line.indexOf(ROUND_MARKER,);
   if (at === NOT_FOUND)
@@ -275,7 +275,7 @@ export function readRoundTiming(
     return { kind: 'other-line', };
 
   /**
-   * Words ahead of the marker, whose last one names the stage.
+   Words ahead of the marker, whose last one names the stage.
    */
   const beforeMarker = line
     .slice(
@@ -285,12 +285,12 @@ export function readRoundTiming(
     .split(' ',);
 
   /**
-   * Stage label, which is the last word before the marker.
+   Stage label, which is the last word before the marker.
    */
   const stage = beforeMarker.at(-1,) ?? '';
 
   /**
-   * Comma-separated fields of the payload, one per reported number.
+   Comma-separated fields of the payload, one per reported number.
    */
   const [
     ratioField,
@@ -302,14 +302,14 @@ export function readRoundTiming(
     .split(', ',);
 
   /**
-   * Ratio the first field opens with, ahead of the word `heard`.
+   Ratio the first field opens with, ahead of the word `heard`.
    */
   const ratio = (ratioField ?? '')
     .split(' heard',)
     .at(0,);
 
   /**
-   * Heard and asked counts, which the ratio joins with a slash.
+   Heard and asked counts, which the ratio joins with a slash.
    */
   const counts = ratio?.split('/',) ?? [];
 
@@ -350,29 +350,29 @@ export function readRoundTiming(
 }
 
 /**
- * Reads one stream completion line, saying whether it carried a duration.
- *
- * @param line - one log line
- *
- * @returns What the line turned out to say about a call
- *
- * @example
- * ```ts
- * const reading = readCallTiming({ line, },);
- * ```
+ Reads one stream completion line, saying whether it carried a duration.
+ 
+ @param line - one log line
+ 
+ @returns What the line turned out to say about a call
+ 
+ @example
+ ```ts
+ const reading = readCallTiming({ line, },);
+ ```
  */
 export function readCallTiming(
   { line, }: { readonly line: string; },
 ): CallReading {
   /**
-   * Where the stream payload starts, after the tagged prefix.
+   Where the stream payload starts, after the tagged prefix.
    */
   const at = line.indexOf(STREAM_MARKER,);
   if (at === NOT_FOUND)
     return { kind: 'other-line', };
 
   /**
-   * Bracketed fields of the tagged prefix, in the order the logger writes them.
+   Bracketed fields of the tagged prefix, in the order the logger writes them.
    */
   const prefixFields = line
     .slice(
@@ -382,12 +382,12 @@ export function readCallTiming(
     .split('] [',);
 
   /**
-   * Timestamp the line was written, which the logger prints second.
+   Timestamp the line was written, which the logger prints second.
    */
   const stamp = prefixFields.at(1,) ?? '';
 
   /**
-   * Comma-separated fields of the payload, the first pairing label to outcome.
+   Comma-separated fields of the payload, the first pairing label to outcome.
    */
   const [
     namedField,
@@ -400,7 +400,7 @@ export function readCallTiming(
     return { kind: 'untimed', };
 
   /**
-   * Label and outcome, which the first field joins with a colon.
+   Label and outcome, which the first field joins with a colon.
    */
   const named = (namedField ?? '')
     .split(': ',);

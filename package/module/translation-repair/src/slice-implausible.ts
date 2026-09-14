@@ -26,36 +26,36 @@ import type { SliceSize, } from './displacement-ratio.ts';
 // describe a fault in the rendering itself.
 
 /**
- * Lowest translated-to-original ratio a real translation still reaches.
- *
- * Chinese into English expands, so a slice below this is not dense prose: it is
- * a section left mostly untranslated, or one whose content moved elsewhere.
+ Lowest translated-to-original ratio a real translation still reaches.
+ 
+ Chinese into English expands, so a slice below this is not dense prose: it is
+ a section left mostly untranslated, or one whose content moved elsewhere.
  */
 const IMPLAUSIBLE_MIN_RATIO = 0.8;
 
 /**
- * Highest translated-to-original ratio a real translation still reaches.
- *
- * Above this the translated side carries text the original cannot account for,
- * which is content relocated into this slice or added outright.
+ Highest translated-to-original ratio a real translation still reaches.
+ 
+ Above this the translated side carries text the original cannot account for,
+ which is content relocated into this slice or added outright.
  */
 const IMPLAUSIBLE_MAX_RATIO = 10;
 
 /**
- * Largest block-count difference a trustworthy pairing leaves behind.
- *
- * One block of slack absorbs an ordinary paragraph split. Beyond that the two
- * sides are not the same passage, so their ratio measures the pairing rather
- * than the translation.
+ Largest block-count difference a trustworthy pairing leaves behind.
+ 
+ One block of slack absorbs an ordinary paragraph split. Beyond that the two
+ sides are not the same passage, so their ratio measures the pairing rather
+ than the translation.
  */
 const MAX_BLOCK_COUNT_GAP = 1;
 
 /**
- * Evidence on which a slice's sizes are called implausible.
- *
- * NAMED FOR WHAT WAS OBSERVED rather than for what it implies about whoever
- * wrote the text, because these names reach a judge's prompt and a name that
- * characterizes the author biases the reading it is meant to inform.
+ Evidence on which a slice's sizes are called implausible.
+ 
+ NAMED FOR WHAT WAS OBSERVED rather than for what it implies about whoever
+ wrote the text, because these names reach a judge's prompt and a name that
+ characterizes the author biases the reading it is meant to inform.
  */
 export type SliceImplausibility
   = 'target-far-shorter'
@@ -63,22 +63,22 @@ export type SliceImplausibility
     | 'block-count-gap';
 
 /**
- * Reads one slice's sizes for every way they fail to be plausible.
- *
- * A SLICE WITH AN EMPTY SIDE RAISES NOTHING. No original means no ratio, and no
- * translation means the section was never rendered, which is a different
- * phenomenon that the displacement classifier already names. Reporting it here
- * as well would double-count it and pull the whole class into a rendering fault
- * it is not.
- *
- * @param slice - sizes of one paired slice
- *
- * @returns Every reason its sizes are implausible, empty when they are ordinary
- *
- * @example
- * ```ts
- * const reasons = sliceImplausibility({ slice: { sourceChars: 129, targetChars: 268, sourceBlocks: 2, targetBlocks: 2, }, },);
- * ```
+ Reads one slice's sizes for every way they fail to be plausible.
+ 
+ A SLICE WITH AN EMPTY SIDE RAISES NOTHING. No original means no ratio, and no
+ translation means the section was never rendered, which is a different
+ phenomenon that the displacement classifier already names. Reporting it here
+ as well would double-count it and pull the whole class into a rendering fault
+ it is not.
+ 
+ @param slice - sizes of one paired slice
+ 
+ @returns Every reason its sizes are implausible, empty when they are ordinary
+ 
+ @example
+ ```ts
+ const reasons = sliceImplausibility({ slice: { sourceChars: 129, targetChars: 268, sourceBlocks: 2, targetBlocks: 2, }, },);
+ ```
  */
 export function sliceImplausibility(
   { slice, }: { readonly slice: SliceSize; },
@@ -87,12 +87,12 @@ export function sliceImplausibility(
     return [];
 
   /**
-   * Translated characters per original character on this slice.
+   Translated characters per original character on this slice.
    */
   const ratio = slice.targetChars / slice.sourceChars;
 
   /**
-   * How far the two sides disagree about how many blocks they hold.
+   How far the two sides disagree about how many blocks they hold.
    */
   const blockGap = Math.abs(slice.sourceBlocks - slice.targetBlocks,);
 
@@ -108,26 +108,26 @@ export function sliceImplausibility(
 }
 
 /**
- * Whether a slice's sizes are ordinary enough for it to say what normal is.
- *
- * SEPARATE FROM READING THE REASONS, because the baseline cares only that a
- * slice is clean while a judge needs to be told which evidence was seen.
- *
- * @param slice - sizes of one paired slice
- *
- * @returns True when no implausibility was raised
- *
- * @example
- * ```ts
- * const eligible = slices.filter(function clean(slice,) { return isPlausibleSlice({ slice, },); },);
- * ```
+ Whether a slice's sizes are ordinary enough for it to say what normal is.
+ 
+ SEPARATE FROM READING THE REASONS, because the baseline cares only that a
+ slice is clean while a judge needs to be told which evidence was seen.
+ 
+ @param slice - sizes of one paired slice
+ 
+ @returns True when no implausibility was raised
+ 
+ @example
+ ```ts
+ const eligible = slices.filter(function clean(slice,) { return isPlausibleSlice({ slice, },); },);
+ ```
  */
 export function isPlausibleSlice(
   { slice, }: { readonly slice: SliceSize; },
 ): boolean {
   /**
-   * Every reason this slice's sizes are implausible, which the baseline needs
-   * only the emptiness of.
+   Every reason this slice's sizes are implausible, which the baseline needs
+   only the emptiness of.
    */
   const reasons = sliceImplausibility({ slice, },);
 

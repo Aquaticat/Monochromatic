@@ -29,15 +29,15 @@ import type { IssueProbeReading, } from './repair-record.ts';
 // off disk.
 
 /**
- * Who filed a screened claim and what the differential check made of it.
- *
- * The two fields the majority rule needs, and the only two that carry no
- * corpus text.
- *
- * @example
- * ```ts
- * const attribution: ProbeClaimAttribution = { modelId: 'hf:vendor/model', admissibility: 'corroborated', };
- * ```
+ Who filed a screened claim and what the differential check made of it.
+ 
+ The two fields the majority rule needs, and the only two that carry no
+ corpus text.
+ 
+ @example
+ ```ts
+ const attribution: ProbeClaimAttribution = { modelId: 'hf:vendor/model', admissibility: 'corroborated', };
+ ```
  */
 export type ProbeClaimAttribution = Pick<
   ScreenedDefectClaim,
@@ -45,39 +45,39 @@ export type ProbeClaimAttribution = Pick<
 >;
 
 /**
- * A region tally whose claims carry attribution only.
- *
- * Every count is unchanged, because counts are what the summary reports and
- * they are derived by the screen from the same claims. Only the claim list is
- * narrowed.
- *
- * @example
- * ```ts
- * const tally: TelemetryRegionTally = { envelopeId: 'envelope/1', claims: [], corroborated: 0, ... };
- * ```
+ A region tally whose claims carry attribution only.
+ 
+ Every count is unchanged, because counts are what the summary reports and
+ they are derived by the screen from the same claims. Only the claim list is
+ narrowed.
+ 
+ @example
+ ```ts
+ const tally: TelemetryRegionTally = { envelopeId: 'envelope/1', claims: [], corroborated: 0, ... };
+ ```
  */
 export type TelemetryRegionTally =
   & Omit<RegionDefectTally, 'claims'>
   & {
     /**
-     * Screened claims of this region, attribution only.
+     Screened claims of this region, attribution only.
      */
     readonly claims: readonly ProbeClaimAttribution[];
   };
 
 /**
- * A probe reading whose region claims carry attribution only.
- *
- * @example
- * ```ts
- * const reading: TelemetryProbeReading = { heardProbers: 3, configuredProbers: 3, regions: [], };
- * ```
+ A probe reading whose region claims carry attribution only.
+ 
+ @example
+ ```ts
+ const reading: TelemetryProbeReading = { heardProbers: 3, configuredProbers: 3, regions: [], };
+ ```
  */
 export type TelemetryProbeReading =
   & Omit<IssueProbeReading, 'regions'>
   & {
     /**
-     * Region tallies as the reader lifts them.
+     Region tallies as the reader lifts them.
      */
     readonly regions: readonly TelemetryRegionTally[];
   };

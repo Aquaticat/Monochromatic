@@ -1,19 +1,19 @@
 /**
- * Tests for the guarded single exchange every pipeline stage runs through.
- *
- * `attemptStageCall` had no test, and it decides the one thing the ensemble
- * design depends on: which failures become a missing voice and which propagate.
- * The ensemble tolerates missing panelists and critics, so turning a failure
- * into an absent voice is correct. Turning a CALLER ABORT into an absent voice
- * would not be: the fan-out would carry on answering after the user asked it to
- * stop, and quorum would be reached from voices nobody wanted.
- *
- * So the cases below separate those two, and check that a lost voice is always
- * logged rather than silently swallowed.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the guarded single exchange every pipeline stage runs through.
+ 
+ `attemptStageCall` had no test, and it decides the one thing the ensemble
+ design depends on: which failures become a missing voice and which propagate.
+ The ensemble tolerates missing panelists and critics, so turning a failure
+ into an absent voice is correct. Turning a CALLER ABORT into an absent voice
+ would not be: the fan-out would carry on answering after the user asked it to
+ stop, and quorum would be reached from voices nobody wanted.
+ 
+ So the cases below separate those two, and check that a lost voice is always
+ logged rather than silently swallowed.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -32,33 +32,33 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the exchanges under test.
+ Logger for the exchanges under test.
  */
 const l = tagged({ tag: 'stage-call-test', },);
 
 /**
- * Model the exchanges address.
+ Model the exchanges address.
  */
 const MODEL_ID = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
- * Trivial reply payload the scripted clients emit.
+ Trivial reply payload the scripted clients emit.
  */
 type PurrReply = {
   readonly purr: string;
 };
 
 /**
- * Guards the trivial payload.
- *
- * @param value - candidate reply
- *
- * @returns Whether value carries a string purr
- *
- * @example
- * ```ts
- * isPurrReply({ purr: 'loud', },);
- * ```
+ Guards the trivial payload.
+ 
+ @param value - candidate reply
+ 
+ @returns Whether value carries a string purr
+ 
+ @example
+ ```ts
+ isPurrReply({ purr: 'loud', },);
+ ```
  */
 function isPurrReply(value: unknown,): value is PurrReply {
   return ((typeof value) === 'object') && (value !== null)
@@ -66,7 +66,7 @@ function isPurrReply(value: unknown,): value is PurrReply {
 }
 
 /**
- * Response format naming the test stage.
+ Response format naming the test stage.
  */
 const PURR_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',
@@ -77,18 +77,18 @@ const PURR_FORMAT: JsonSchemaResponseFormat = {
 };
 
 /**
- * Client answering with one scripted outcome, or throwing one scripted error.
- *
- * @param outcome - outcome to return, when the client answers
- *
- * @param thrown - error to throw instead, when the client fails
- *
- * @returns Client honoring exactly that script
- *
- * @example
- * ```ts
- * const client = scriptedClient({ outcome: { kind: 'refusal-shaped', rawText: '', detail: '', }, },);
- * ```
+ Client answering with one scripted outcome, or throwing one scripted error.
+ 
+ @param outcome - outcome to return, when the client answers
+ 
+ @param thrown - error to throw instead, when the client fails
+ 
+ @returns Client honoring exactly that script
+ 
+ @example
+ ```ts
+ const client = scriptedClient({ outcome: { kind: 'refusal-shaped', rawText: '', detail: '', }, },);
+ ```
  */
 function scriptedClient(
   {
@@ -110,7 +110,7 @@ function scriptedClient(
         throw thrown;
       if (outcome === undefined) {
         /**
-         * Payload for the default success path.
+         Payload for the default success path.
          */
         const scripted: unknown = { purr: 'loud', };
         if (!request.validate(scripted,))
@@ -130,18 +130,18 @@ function scriptedClient(
 }
 
 /**
- * Runs one exchange against a scripted client.
- *
- * @param client - scripted client
- *
- * @param signal - caller abort handle
- *
- * @returns Voice as data
- *
- * @example
- * ```ts
- * const voice = await callWith({ client, signal: new AbortController().signal, },);
- * ```
+ Runs one exchange against a scripted client.
+ 
+ @param client - scripted client
+ 
+ @param signal - caller abort handle
+ 
+ @returns Voice as data
+ 
+ @example
+ ```ts
+ const voice = await callWith({ client, signal: new AbortController().signal, },);
+ ```
  */
 async function callWith(
   {
@@ -173,22 +173,22 @@ async function callWith(
 }
 
 /**
- * Logger that keeps its warnings, so a case can read WHAT a lost voice
- * recorded rather than only that a voice was lost.
- *
- * @returns Logger plus the array its warnings land in
- *
- * @example
- * ```ts
- * const { logger, warnings, } = capturingLogger();
- * ```
+ Logger that keeps its warnings, so a case can read WHAT a lost voice
+ recorded rather than only that a voice was lost.
+ 
+ @returns Logger plus the array its warnings land in
+ 
+ @example
+ ```ts
+ const { logger, warnings, } = capturingLogger();
+ ```
  */
 function capturingLogger(): {
   readonly logger: typeof l;
   readonly warnings: readonly string[];
 } {
   /**
-   * Warnings recorded so far.
+   Warnings recorded so far.
    */
   const warnings: string[] = [];
   return {
@@ -209,7 +209,7 @@ await describe({
       name: 'returns the validated reply as a heard voice',
       fn: async () => {
         /**
-         * Voice from a clean exchange.
+         Voice from a clean exchange.
          */
         const voice = await callWith({
           client: scriptedClient({},),
@@ -227,8 +227,8 @@ await describe({
         + 'every panelist and one model refusing must not take the stage down',
       fn: async () => {
         /**
-         * Voices from each scripted non-ok outcome; concurrent because the
-         * scripted clients share no state and nothing here is a sequence.
+         Voices from each scripted non-ok outcome; concurrent because the
+         scripted clients share no state and nothing here is a sequence.
          */
         const voices = await Promise.all([
           {
@@ -317,7 +317,7 @@ await describe({
         },);
 
         /**
-         * Warning the lost voice recorded.
+         Warning the lost voice recorded.
          */
         const warning = warnings[0] ?? '';
         expect(warning.length,).toBeLessThan(300,);
@@ -353,7 +353,7 @@ await describe({
         + 'this helper sees the error',
       fn: async () => {
         /**
-         * Voice from a client that threw.
+         Voice from a client that threw.
          */
         const voice = await callWith({
           client: scriptedClient({ thrown: new Error('connection reset',), },),
@@ -371,14 +371,14 @@ await describe({
         + 'reached from voices nobody wanted',
       fn: async () => {
         /**
-         * Abort handle already tripped when the exchange fails.
+         Abort handle already tripped when the exchange fails.
          */
         const controller = new AbortController();
         controller.abort();
 
         /**
-         * Exactly the failure the transport raised, held so the assertion can prove
-         * THAT object propagated rather than a wrapper quoting its words.
+         Exactly the failure the transport raised, held so the assertion can prove
+         THAT object propagated rather than a wrapper quoting its words.
          */
         const abortFailure = new Error('aborted',);
 
@@ -397,7 +397,7 @@ await describe({
         + 'under a tripped signal propagates',
       fn: async () => {
         /**
-         * Voice from an abort-sounding failure with no abort in fact.
+         Voice from an abort-sounding failure with no abort in fact.
          */
         const voice = await callWith({
           client: scriptedClient({ thrown: new Error('AbortError: upstream said so',), },),
@@ -407,15 +407,15 @@ await describe({
         expect(voice.heard,).toBe(false,);
 
         /**
-         * Abort handle tripped while the failure says nothing about aborting.
+         Abort handle tripped while the failure says nothing about aborting.
          */
         const controller = new AbortController();
         controller.abort();
 
         /**
-         * Failure saying nothing about aborting, held by identity because the claim
-         * under test is that the SIGNAL decides: a wrapper mentioning these words
-         * would satisfy a wording assertion while breaking the contract.
+         Failure saying nothing about aborting, held by identity because the claim
+         under test is that the SIGNAL decides: a wrapper mentioning these words
+         would satisfy a wording assertion while breaking the contract.
          */
         const unrelatedFailure = new Error('connection reset',);
 
@@ -434,18 +434,18 @@ await describe({
         + 'holds rather than a derived handle it cannot trip',
       fn: async () => {
         /**
-         * Requests the client received, held in a list because a binding
-         * assigned only inside a callback narrows to never at the read.
+         Requests the client received, held in a list because a binding
+         assigned only inside a callback narrows to never at the read.
          */
         const seen: ChatJsonRequest<PurrReply>[] = [];
 
         /**
-         * Caller's own abort handle.
+         Caller's own abort handle.
          */
         const controller = new AbortController();
 
         /**
-         * Client recording the request it was handed.
+         Client recording the request it was handed.
          */
         const client: SyntheticClient = {
           chatText: async () => {
@@ -457,7 +457,7 @@ await describe({
             seen.push(request as unknown as ChatJsonRequest<PurrReply>,);
 
             /**
-             * Payload satisfying the guard.
+             Payload satisfying the guard.
              */
             const scripted: unknown = { purr: 'loud', };
             if (!request.validate(scripted,))

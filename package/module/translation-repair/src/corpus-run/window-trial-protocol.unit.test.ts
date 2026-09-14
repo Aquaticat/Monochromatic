@@ -1,12 +1,12 @@
 /**
- * Tests for the window trial's two protocol rules.
- *
- * The digest decides which ledger rows a resumed run may pool with its own;
- * the streak rule decides when a run of refusals is the run's fault. The
- * second held a defect: a slice the ledger already held reset the streak, so a
- * resumed run could refuse every new slice without ever reaching the stop.
- *
- * @module
+ Tests for the window trial's two protocol rules.
+ 
+ The digest decides which ledger rows a resumed run may pool with its own;
+ the streak rule decides when a run of refusals is the run's fault. The
+ second held a defect: a slice the ledger already held reset the streak, so a
+ resumed run could refuse every new slice without ever reaching the stop.
+ 
+ @module
  */
 
 import {
@@ -21,7 +21,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Hex characters in a SHA-256 digest.
+ Hex characters in a SHA-256 digest.
  */
 const SHA256_HEX_LENGTH = 64;
 
@@ -63,8 +63,8 @@ await describe({
       name: 'reaches the stop across a resumed run whose held slices interleave with refusals of every new one',
       fn: async () => {
         /**
-         * What a resumed run sees: every slice the ledger held, then every new
-         * slice refused, alternating.
+         What a resumed run sees: every slice the ledger held, then every new
+         slice refused, alternating.
          */
         const walk = [
           'already-held',

@@ -17,62 +17,62 @@ import type { SliceDeliveryRecord, } from './slice-delivery.ts';
 // accepts a row rather than building one asserts it.
 
 /**
- * What a delivery row claims that cannot all be true.
- *
- * @example
- * ```ts
- * const fault: DeliveryCoherenceFault = { kind: 'gap-with-wording', };
- * ```
+ What a delivery row claims that cannot all be true.
+ 
+ @example
+ ```ts
+ const fault: DeliveryCoherenceFault = { kind: 'gap-with-wording', };
+ ```
  */
 export type DeliveryCoherenceFault = {
   /**
-   * Row reports a replacement while its outcome is not a decision.
+   Row reports a replacement while its outcome is not a decision.
    */
   readonly kind: 'replacement-without-decision';
 
   /**
-   * Outcome the row reports instead.
+   Outcome the row reports instead.
    */
   readonly outcomeKind: LaneSliceOutcome['kind'];
 } | {
   /**
-   * Row reports a replacement whose wording is the archive's own.
+   Row reports a replacement whose wording is the archive's own.
    */
   readonly kind: 'replacement-of-archive-wording';
 } | {
   /**
-   * Row's text is not the one its delivery says it carries.
+   Row's text is not the one its delivery says it carries.
    */
   readonly kind: 'delivery-text-mismatch';
 } | {
   /**
-   * Row decided wording of its own and reports the document unchanged.
+   Row decided wording of its own and reports the document unchanged.
    */
   readonly kind: 'hidden-decision';
 } | {
   /**
-   * Row reports the archive's wording retained where the archive holds none.
+   Row reports the archive's wording retained where the archive holds none.
    */
   readonly kind: 'retained-without-archive';
 } | {
   /**
-   * Row reports the archive's wording retained and carries different text.
+   Row reports the archive's wording retained and carries different text.
    */
   readonly kind: 'retained-differs';
 } | {
   /**
-   * Row reports a gap where the archive holds wording.
+   Row reports a gap where the archive holds wording.
    */
   readonly kind: 'gap-with-archive';
 } | {
   /**
-   * Row reports a gap and carries wording anyway.
+   Row reports a gap and carries wording anyway.
    */
   readonly kind: 'gap-with-wording';
 };
 
 /**
- * Sentence for each fault that carries no field, keyed by kind.
+ Sentence for each fault that carries no field, keyed by kind.
  */
 const COHERENCE_SENTENCES: Record<Exclude<DeliveryCoherenceFault['kind'], 'replacement-without-decision'>, string> = {
   'replacement-of-archive-wording': "reports a replacement whose wording is the archive's own, so nothing was replaced",
@@ -86,16 +86,16 @@ const COHERENCE_SENTENCES: Record<Exclude<DeliveryCoherenceFault['kind'], 'repla
 };
 
 /**
- * Words a coherence fault, after the slice the class prefixes.
- *
- * @param fault - what the row claims that cannot all be true
- *
- * @returns Sentence written here, naming at most an outcome kind
- *
- * @example
- * ```ts
- * const sentence = coherenceSentence({ fault: { kind: 'gap-with-wording', }, },);
- * ```
+ Words a coherence fault, after the slice the class prefixes.
+ 
+ @param fault - what the row claims that cannot all be true
+ 
+ @returns Sentence written here, naming at most an outcome kind
+ 
+ @example
+ ```ts
+ const sentence = coherenceSentence({ fault: { kind: 'gap-with-wording', }, },);
+ ```
  */
 export function coherenceSentence({ fault, }: { readonly fault: DeliveryCoherenceFault; },): string {
   if (fault.kind === 'replacement-without-decision')
@@ -106,37 +106,37 @@ export function coherenceSentence({ fault, }: { readonly fault: DeliveryCoherenc
 }
 
 /**
- * Refusal of a delivery row that contradicts itself.
- *
- * MARKED: its message is a slice index and the sentence `coherenceSentence`
- * writes from a fault kind and, at most, an outcome kind.
- *
- * @example
- * ```ts
- * throw new DeliveryCoherenceError({ sliceIndex: 4, fault: { kind: 'gap-with-wording', }, },);
- * ```
+ Refusal of a delivery row that contradicts itself.
+ 
+ MARKED: its message is a slice index and the sentence `coherenceSentence`
+ writes from a fault kind and, at most, an outcome kind.
+ 
+ @example
+ ```ts
+ throw new DeliveryCoherenceError({ sliceIndex: 4, fault: { kind: 'gap-with-wording', }, },);
+ ```
  */
 export class DeliveryCoherenceError extends Error {
   /**
-   * Declares this message safe to forward: a slice index and kinds, in a
-   * sentence written here.
+   Declares this message safe to forward: a slice index and kinds, in a
+   sentence written here.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Slice whose row contradicts itself.
+   Slice whose row contradicts itself.
    */
   readonly sliceIndex: number;
 
   /**
-   * What the row claims that cannot all be true.
+   What the row claims that cannot all be true.
    */
   readonly fault: DeliveryCoherenceFault;
 
   /**
-   * @param sliceIndex - slice whose row contradicts itself
-   *
-   * @param fault - what the row claims that cannot all be true
+   @param sliceIndex - slice whose row contradicts itself
+   
+   @param fault - what the row claims that cannot all be true
    */
   constructor(
     {
@@ -155,24 +155,24 @@ export class DeliveryCoherenceError extends Error {
 }
 
 /**
- * Refuses a shipped or withdrawn row whose decision cannot support it.
- *
- * Both cases need the same two things and differ only in which text the
- * document ends up with, so they are checked together rather than twice.
- *
- * @param record - row being checked
- *
- * @param sliceIndex - slice whose row is checked
- *
- * @param carries - which text this delivery leaves the document with
- *
- * @throws {@link DeliveryCoherenceError} when the row decided nothing, decided
- * the archive's own wording, or carries text the delivery does not allow
- *
- * @example
- * ```ts
- * assertReplacementRow({ record, at, carries: 'incumbent', },);
- * ```
+ Refuses a shipped or withdrawn row whose decision cannot support it.
+ 
+ Both cases need the same two things and differ only in which text the
+ document ends up with, so they are checked together rather than twice.
+ 
+ @param record - row being checked
+ 
+ @param sliceIndex - slice whose row is checked
+ 
+ @param carries - which text this delivery leaves the document with
+ 
+ @throws {@link DeliveryCoherenceError} when the row decided nothing, decided
+ the archive's own wording, or carries text the delivery does not allow
+ 
+ @example
+ ```ts
+ assertReplacementRow({ record, at, carries: 'incumbent', },);
+ ```
  */
 function assertReplacementRow(
   {
@@ -206,8 +206,8 @@ function assertReplacementRow(
     },);
   }
   /**
-   * Text this delivery leaves the document with, which the check above proves
-   * the decision can supply.
+   Text this delivery leaves the document with, which the check above proves
+   the decision can supply.
    */
   const expected = (carries === 'accepted')
     ? record.outcome
@@ -231,19 +231,19 @@ function assertReplacementRow(
 }
 
 /**
- * Refuses a row that keeps the archive while hiding a decision to change it.
- *
- * @param record - row being checked
- *
- * @param sliceIndex - slice whose row is checked
- *
- * @throws {@link DeliveryCoherenceError} when a changed decision sits behind an
- * unchanged document with nothing saying what took it back
- *
- * @example
- * ```ts
- * assertNothingHidden({ record, at, },);
- * ```
+ Refuses a row that keeps the archive while hiding a decision to change it.
+ 
+ @param record - row being checked
+ 
+ @param sliceIndex - slice whose row is checked
+ 
+ @throws {@link DeliveryCoherenceError} when a changed decision sits behind an
+ unchanged document with nothing saying what took it back
+ 
+ @example
+ ```ts
+ assertNothingHidden({ record, at, },);
+ ```
  */
 function assertNothingHidden(
   {
@@ -255,7 +255,7 @@ function assertNothingHidden(
   },
 ): void {
   /**
-   * What the lane decided here, if anything.
+   What the lane decided here, if anything.
    */
   const { outcome, } = record;
   if ((outcome.kind === 'decided') && (outcome.acceptedText !== record.incumbentText)) {
@@ -267,28 +267,28 @@ function assertNothingHidden(
 }
 
 /**
- * Refuses a delivery row whose four fields cannot describe one slice.
- *
- * @param record - one row of a delivery ledger, from wherever it came
- *
- * @throws {@link DeliveryCoherenceError} when the delivery, the outcome, the
- * archive state and the shipped text cannot all be true at once
- *
- * @example
- * ```ts
- * assertDeliveryCoherent({ record, },);
- * ```
+ Refuses a delivery row whose four fields cannot describe one slice.
+ 
+ @param record - one row of a delivery ledger, from wherever it came
+ 
+ @throws {@link DeliveryCoherenceError} when the delivery, the outcome, the
+ archive state and the shipped text cannot all be true at once
+ 
+ @example
+ ```ts
+ assertDeliveryCoherent({ record, },);
+ ```
  */
 export function assertDeliveryCoherent(
   { record, }: { readonly record: SliceDeliveryRecord; },
 ): void {
   /**
-   * Slice this record describes.
+   Slice this record describes.
    */
   const { sliceIndex, } = record;
 
   /**
-   * What the document ended up with here.
+   What the document ended up with here.
    */
   const { delivery, } = record;
   if (delivery.kind === 'replacement-shipped') {

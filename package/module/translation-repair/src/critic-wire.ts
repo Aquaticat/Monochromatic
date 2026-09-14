@@ -28,74 +28,74 @@ import {
 // exceptions.
 
 /**
- * One issue as a critic reports it on the wire.
- *
- * @example
- * ```ts
- * const wire: CriticIssueWire = {
- *   category: 'accuracy/omission',
- *   severity: 'major',
- *   summary: 'Second clause is untranslated.',
- *   sourceQuote: '也喜欢追蝴蝶',
- *   targetQuote: 'The cat likes to nap in the sun.',
- * };
- * ```
+ One issue as a critic reports it on the wire.
+ 
+ @example
+ ```ts
+ const wire: CriticIssueWire = {
+   category: 'accuracy/omission',
+   severity: 'major',
+   summary: 'Second clause is untranslated.',
+   sourceQuote: '也喜欢追蝴蝶',
+   targetQuote: 'The cat likes to nap in the sun.',
+ };
+ ```
  */
 export type CriticIssueWire = {
   /**
-   * Category slug; validated against the closed taxonomy at resolution.
+   Category slug; validated against the closed taxonomy at resolution.
    */
   readonly category: string;
 
   /**
-   * Severity; validated at resolution.
+   Severity; validated at resolution.
    */
   readonly severity: string;
 
   /**
-   * One-sentence statement of the single defect claimed.
+   One-sentence statement of the single defect claimed.
    */
   readonly summary: string;
 
   /**
-   * Exact substring of the original document, when the defect has a
-   * source-side anchor.
+   Exact substring of the original document, when the defect has a
+   source-side anchor.
    */
   readonly sourceQuote?: string;
 
   /**
-   * Exact substring of the translation, when the defect has a
-   * target-side anchor.
+   Exact substring of the translation, when the defect has a
+   target-side anchor.
    */
   readonly targetQuote?: string;
 };
 
 /**
- * Whole critic reply on the wire.
- *
- * @example
- * ```ts
- * const report: CriticReportWire = { issues: [], };
- * ```
+ Whole critic reply on the wire.
+ 
+ @example
+ ```ts
+ const report: CriticReportWire = { issues: [], };
+ ```
  */
 export type CriticReportWire = {
   /**
-   * Every issue found; empty means the critic found nothing.
+   Every issue found; empty means the critic found nothing.
    */
   readonly issues: readonly CriticIssueWire[];
 };
 
 /**
- * Guards one wire issue.
- *
- * @param value - candidate from parsed model JSON
- *
- * @returns Whether value carries the required wire fields
- *
- * @example
- * ```ts
- * isCriticIssueWire({ category: 'x', severity: 'y', summary: 'z', },);
- * ```
+ Guards one wire issue.
+ 
+ @param value - candidate from parsed model JSON
+ 
+ @returns Whether value carries the required wire fields
+ 
+ @example
+ ```ts
+ isCriticIssueWire({ category: 'x', severity: 'y', summary: 'z', },);
+ ```
  */
 function isCriticIssueWire(value: unknown,): value is CriticIssueWire {
   if (!isJsonRecord(value,))
@@ -112,16 +112,16 @@ function isCriticIssueWire(value: unknown,): value is CriticIssueWire {
 }
 
 /**
- * Guards a whole critic reply.
- *
- * @param value - parsed model JSON
- *
- * @returns Whether value is a wire report
- *
- * @example
- * ```ts
- * const outcome = await client.chatJson({ ..., validate: isCriticReportWire, },);
- * ```
+ Guards a whole critic reply.
+ 
+ @param value - parsed model JSON
+ 
+ @returns Whether value is a wire report
+ 
+ @example
+ ```ts
+ const outcome = await client.chatJson({ ..., validate: isCriticReportWire, },);
+ ```
  */
 export function isCriticReportWire(value: unknown,): value is CriticReportWire {
   if (!isJsonRecord(value,))
@@ -136,9 +136,9 @@ export function isCriticReportWire(value: unknown,): value is CriticReportWire {
 }
 
 /**
- * Structured-output constraint for critic calls;
- * client-side validation through {@link isCriticReportWire} stays regardless,
- * because per-model schema strictness is unverified.
+ Structured-output constraint for critic calls;
+ client-side validation through {@link isCriticReportWire} stays regardless,
+ because per-model schema strictness is unverified.
  */
 export const CRITIC_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',
@@ -174,54 +174,54 @@ export const CRITIC_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 };
 
 /**
- * Outcome of resolving one wire issue into an anchored claim.
- *
- * @example
- * ```ts
- * const resolution: CriticIssueResolution = { resolved: false, reason: 'quote-not-found (target)', };
- * ```
+ Outcome of resolving one wire issue into an anchored claim.
+ 
+ @example
+ ```ts
+ const resolution: CriticIssueResolution = { resolved: false, reason: 'quote-not-found (target)', };
+ ```
  */
 export type CriticIssueResolution =
   | {
     /**
-     * Every quote anchored and validated.
+     Every quote anchored and validated.
      */
     readonly resolved: true;
 
     /**
-     * Anchored atomic claim ready for adjudication or grading.
+     Anchored atomic claim ready for adjudication or grading.
      */
     readonly claim: IssueClaim;
   }
   | {
     /**
-     * Some step refused; the reason feeds the scorecard.
+     Some step refused; the reason feeds the scorecard.
      */
     readonly resolved: false;
 
     /**
-     * Which step failed and why, in scorecard-stable wording.
+     Which step failed and why, in scorecard-stable wording.
      */
     readonly reason: string;
   };
 
 /**
- * Resolves one wire issue into an anchored, validated claim.
- * Category and severity must belong to the closed vocabularies;
- * each present quote must locate uniquely inside one block;
- * the assembled claim must pass deterministic span validation.
- *
- * @param wire - issue as the critic reported it
- *
- * @param documents - current pair anchors resolve against
- *
- * @returns Anchored claim, or the failure reason as data
- *
- * @example
- * ```ts
- * const resolution = resolveCriticIssue({ wire, documents, },);
- * if (resolution.resolved) grade(resolution.claim,);
- * ```
+ Resolves one wire issue into an anchored, validated claim.
+ Category and severity must belong to the closed vocabularies;
+ each present quote must locate uniquely inside one block;
+ the assembled claim must pass deterministic span validation.
+ 
+ @param wire - issue as the critic reported it
+ 
+ @param documents - current pair anchors resolve against
+ 
+ @returns Anchored claim, or the failure reason as data
+ 
+ @example
+ ```ts
+ const resolution = resolveCriticIssue({ wire, documents, },);
+ if (resolution.resolved) grade(resolution.claim,);
+ ```
  */
 export function resolveCriticIssue(
   {
@@ -233,10 +233,10 @@ export function resolveCriticIssue(
   },
 ): CriticIssueResolution {
   /**
-   * Category after tolerant family remap:
-   * models slip families on known leaves (fluency/awkward-phrasing for
-   * style/awkward-phrasing), and a leaf owned by exactly one family maps
-   * onto its owner; unknown or ambiguous leaves stay rejected.
+   Category after tolerant family remap:
+   models slip families on known leaves (fluency/awkward-phrasing for
+   style/awkward-phrasing), and a leaf owned by exactly one family maps
+   onto its owner; unknown or ambiguous leaves stay rejected.
    */
   const remap = isIssueCategory(wire.category,)
     ? {
@@ -258,7 +258,7 @@ export function resolveCriticIssue(
   }
 
   /**
-   * Quotes present on the wire, paired with their sides.
+   Quotes present on the wire, paired with their sides.
    */
   const quotes: readonly {
     readonly side: DocumentSide;
@@ -285,7 +285,7 @@ export function resolveCriticIssue(
   }
 
   /**
-   * Located anchors in side order; first failure wins.
+   Located anchors in side order; first failure wins.
    */
   const anchors: SpanAnchor[] = [];
   for (
@@ -295,7 +295,7 @@ export function resolveCriticIssue(
     } of quotes
   ) {
     /**
-     * Location attempt for this side's quote.
+     Location attempt for this side's quote.
      */
     const located = locateQuote({
       document: documents[side],
@@ -312,7 +312,7 @@ export function resolveCriticIssue(
   }
 
   /**
-   * Assembled claim awaiting the deterministic gate.
+   Assembled claim awaiting the deterministic gate.
    */
   const claim: IssueClaim = {
     category: remap.category,
@@ -322,8 +322,8 @@ export function resolveCriticIssue(
   };
 
   /**
-   * Final deterministic gate; failures here mean resolution built a bad
-   * anchor, and the claim must not pass as if it were validated.
+   Final deterministic gate; failures here mean resolution built a bad
+   anchor, and the claim must not pass as if it were validated.
    */
   const rejections = validateIssueClaim({
     claim,

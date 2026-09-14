@@ -26,34 +26,34 @@ import { refusalText, } from './refusal-text.ts';
 // read is worse than none, because it looks like the question is covered.
 
 /**
- * Threshold below which a first byte never arrived at all.
- *
- * The guard reports a negative time rather than zero when nothing came, so a
- * call cut during its very first millisecond still reads as having started.
+ Threshold below which a first byte never arrived at all.
+ 
+ The guard reports a negative time rather than zero when nothing came, so a
+ call cut during its very first millisecond still reads as having started.
  */
 const NO_FIRST_BYTE_MS = 0;
 
 /**
- * Decimal places the distinct ratio is reported to, enough to tell the
- * degenerate range near 0.001 from the threshold at 0.1.
+ Decimal places the distinct ratio is reported to, enough to tell the
+ degenerate range near 0.001 from the threshold at 0.1.
  */
 const RATIO_DIGITS = 4;
 
 /**
- * Names why a voice was lost, in a phrase a log can be grouped by.
- *
- * FALLS BACK TO THE ERROR'S OWN TEXT rather than to a catch-all name, because
- * an unrecognised failure that all read `other` would be invisible in exactly
- * the way this exists to prevent.
- *
- * @param error - whatever the call threw
- *
- * @returns Short cause, safe to put in a log line
- *
- * @example
- * ```ts
- * const cause = describeAbandon({ error, },);
- * ```
+ Names why a voice was lost, in a phrase a log can be grouped by.
+ 
+ FALLS BACK TO THE ERROR'S OWN TEXT rather than to a catch-all name, because
+ an unrecognised failure that all read `other` would be invisible in exactly
+ the way this exists to prevent.
+ 
+ @param error - whatever the call threw
+ 
+ @returns Short cause, safe to put in a log line
+ 
+ @example
+ ```ts
+ const cause = describeAbandon({ error, },);
+ ```
  */
 export function describeAbandon({ error, }: { readonly error: unknown; },): string {
   if (error instanceof StreamOverrunError)
@@ -62,12 +62,12 @@ export function describeAbandon({ error, }: { readonly error: unknown; },): stri
 
   if (error instanceof StreamDegenerateError) {
     /**
-     * Share of recent windows that were distinct when the call was ended.
+     Share of recent windows that were distinct when the call was ended.
      */
     const { distinctRatio, } = error;
 
     /**
-     * That share, rendered.
+     That share, rendered.
      */
     const ratio = distinctRatio.toFixed(RATIO_DIGITS,);
     return `degenerate in ${error.channel} at ${ratio} distinct over `
@@ -81,19 +81,19 @@ export function describeAbandon({ error, }: { readonly error: unknown; },): stri
     return refusalText({ error, },);
 
   /**
-   * When the first byte arrived, negative when none ever did.
+   When the first byte arrived, negative when none ever did.
    */
   const { firstByteMs, } = error.progress;
   if (firstByteMs < NO_FIRST_BYTE_MS)
     return 'no-first-byte, nothing was ever delivered';
 
   /**
-   * How much the call had delivered before it was cut.
+   How much the call had delivered before it was cut.
    */
   const { partialText, } = error;
 
   /**
-   * How much of it there was.
+   How much of it there was.
    */
   const delivered = partialText.length;
   return `cut-mid-reply after ${String(delivered,)} delivered chars, `

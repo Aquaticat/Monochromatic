@@ -20,22 +20,22 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 // the user's cache home instead, overridable for tests.
 
 /**
- * Logger root for the cache.
+ Logger root for the cache.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Environment variable overriding where lookups are cached.
+ Environment variable overriding where lookups are cached.
  */
 export const LOOKUP_CACHE_DIR_VAR = 'TRANSLATION_REPAIR_LOOKUP_CACHE_DIR';
 
 /**
- * One result the lookup keeps.
- *
- * @example
- * ```ts
- * const hit: LookupHit = { title: 'To Live (novel) - Wikipedia', url: 'https://en.wikipedia.org/wiki/To_Live_(novel)', highlight: 'To Live is a novel by Yu Hua...', };
- * ```
+ One result the lookup keeps.
+ 
+ @example
+ ```ts
+ const hit: LookupHit = { title: 'To Live (novel) - Wikipedia', url: 'https://en.wikipedia.org/wiki/To_Live_(novel)', highlight: 'To Live is a novel by Yu Hua...', };
+ ```
  */
 export type LookupHit = {
   readonly title: string;
@@ -44,12 +44,12 @@ export type LookupHit = {
 };
 
 /**
- * What the cache stores for one query.
- *
- * @example
- * ```ts
- * const record: LookupRecord = { query: '《活着》 official English title', fetchedAt: '2026-09-02T10:00:00.000Z', hits: [], };
- * ```
+ What the cache stores for one query.
+ 
+ @example
+ ```ts
+ const record: LookupRecord = { query: '《活着》 official English title', fetchedAt: '2026-09-02T10:00:00.000Z', hits: [], };
+ ```
  */
 export type LookupRecord = {
   readonly query: string;
@@ -58,12 +58,12 @@ export type LookupRecord = {
 };
 
 /**
- * What a cache read answers: the record, or that there is none.
- *
- * @example
- * ```ts
- * const answer: CachedLookup = { kind: 'miss', };
- * ```
+ What a cache read answers: the record, or that there is none.
+ 
+ @example
+ ```ts
+ const answer: CachedLookup = { kind: 'miss', };
+ ```
  */
 export type CachedLookup =
   | {
@@ -73,32 +73,32 @@ export type CachedLookup =
   | { readonly kind: 'miss'; };
 
 /**
- * Cache directory, from the override or the user's cache home.
- *
- * @param env - environment to read
- *
- * @returns Directory lookups are cached in
- *
- * @example
- * ```ts
- * lookupCacheDir({ env: process.env, },);
- * ```
+ Cache directory, from the override or the user's cache home.
+ 
+ @param env - environment to read
+ 
+ @returns Directory lookups are cached in
+ 
+ @example
+ ```ts
+ lookupCacheDir({ env: process.env, },);
+ ```
  */
 export function lookupCacheDir(
   { env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },
 ): string {
   /**
-   * Explicit override when set and non-empty.
+   Explicit override when set and non-empty.
    */
   const override = env[LOOKUP_CACHE_DIR_VAR] ?? '';
   if (override !== '')
     return override;
   /**
-   * XDG cache home when set, the conventional default otherwise.
+   XDG cache home when set, the conventional default otherwise.
    */
   const cacheHome = env.XDG_CACHE_HOME ?? '';
   /**
-   * Base the cache sits under.
+   Base the cache sits under.
    */
   const base = (cacheHome === '')
     ? join(
@@ -114,18 +114,18 @@ export function lookupCacheDir(
 }
 
 /**
- * Cache file for one query.
- *
- * @param dir - cache directory
- *
- * @param query - query the record answers
- *
- * @returns Path named by the query's digest
- *
- * @example
- * ```ts
- * lookupCachePath({ dir, query: '《活着》 official English title', },);
- * ```
+ Cache file for one query.
+ 
+ @param dir - cache directory
+ 
+ @param query - query the record answers
+ 
+ @returns Path named by the query's digest
+ 
+ @example
+ ```ts
+ lookupCachePath({ dir, query: '《活着》 official English title', },);
+ ```
  */
 export function lookupCachePath(
   {
@@ -137,7 +137,7 @@ export function lookupCachePath(
   },
 ): string {
   /**
-   * Digest naming the file, so any query is a safe file name.
+   Digest naming the file, so any query is a safe file name.
    */
   const digest = createHash('sha256',)
     .update(
@@ -152,23 +152,23 @@ export function lookupCachePath(
 }
 
 /**
- * Whether a parsed value is one hit.
- *
- * @param value - element of a record's hits
- *
- * @returns Whether it carries the three strings
- *
- * @example
- * ```ts
- * isLookupHit({ title: 'a', url: 'https://x', highlight: '', },);
- * // => true
- * ```
+ Whether a parsed value is one hit.
+ 
+ @param value - element of a record's hits
+ 
+ @returns Whether it carries the three strings
+ 
+ @example
+ ```ts
+ isLookupHit({ title: 'a', url: 'https://x', highlight: '', },);
+ // => true
+ ```
  */
 export function isLookupHit(value: unknown,): value is LookupHit {
   if (((typeof value) !== 'object') || (value === null))
     return false;
   /**
-   * Candidate fields.
+   Candidate fields.
    */
   const hit = value as {
     readonly title?: unknown;
@@ -181,22 +181,22 @@ export function isLookupHit(value: unknown,): value is LookupHit {
 }
 
 /**
- * Whether a parsed value is a cache record.
- *
- * @param value - parsed JSON
- *
- * @returns Whether it carries a query, a time and hits of the right shape
- *
- * @example
- * ```ts
- * if (isLookupRecord(JSON.parse(text,),)) { }
- * ```
+ Whether a parsed value is a cache record.
+ 
+ @param value - parsed JSON
+ 
+ @returns Whether it carries a query, a time and hits of the right shape
+ 
+ @example
+ ```ts
+ if (isLookupRecord(JSON.parse(text,),)) { }
+ ```
  */
 export function isLookupRecord(value: unknown,): value is LookupRecord {
   if (((typeof value) !== 'object') || (value === null))
     return false;
   /**
-   * Candidate fields.
+   Candidate fields.
    */
   const record = value as {
     readonly query?: unknown;
@@ -206,7 +206,7 @@ export function isLookupRecord(value: unknown,): value is LookupRecord {
   if (!Array.isArray(record.hits,))
     return false;
   /**
-   * Hits as unknowns, each checked.
+   Hits as unknowns, each checked.
    */
   const hits: readonly unknown[] = record.hits;
   return ((typeof record.query) === 'string')
@@ -215,22 +215,22 @@ export function isLookupRecord(value: unknown,): value is LookupRecord {
 }
 
 /**
- * File text, or nothing when the file cannot be read.
- *
- * @param path - file to read
- *
- * @returns Text, or an empty string for a file that is not there
- *
- * @example
- * ```ts
- * const text = await textOrNothing({ path, },);
- * ```
+ File text, or nothing when the file cannot be read.
+ 
+ @param path - file to read
+ 
+ @returns Text, or an empty string for a file that is not there
+ 
+ @example
+ ```ts
+ const text = await textOrNothing({ path, },);
+ ```
  */
 async function textOrNothing(
   { path, }: { readonly path: string; },
 ): Promise<string> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: textOrNothing.name,
@@ -248,18 +248,18 @@ async function textOrNothing(
 }
 
 /**
- * Reads the cached record for a query.
- *
- * @param dir - cache directory
- *
- * @param query - query to look for
- *
- * @returns The record, or a miss when the file is absent or is not a record
- *
- * @example
- * ```ts
- * const cached = await readCachedLookup({ dir, query, },);
- * ```
+ Reads the cached record for a query.
+ 
+ @param dir - cache directory
+ 
+ @param query - query to look for
+ 
+ @returns The record, or a miss when the file is absent or is not a record
+ 
+ @example
+ ```ts
+ const cached = await readCachedLookup({ dir, query, },);
+ ```
  */
 export async function readCachedLookup(
   {
@@ -271,27 +271,27 @@ export async function readCachedLookup(
   },
 ): Promise<CachedLookup> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: readCachedLookup.name,
     l,
   },);
   /**
-   * File the record would be in.
+   File the record would be in.
    */
   const path = lookupCachePath({
     dir,
     query,
   },);
   /**
-   * File text, empty when absent.
+   File text, empty when absent.
    */
   const text = await textOrNothing({ path, },);
   if (text === '')
     return { kind: 'miss', };
   /**
-   * Parsed record, refused when the file is not one.
+   Parsed record, refused when the file is not one.
    */
   const parsed: unknown = JSON.parse(text,);
   if (!isLookupRecord(parsed,)) {
@@ -305,16 +305,16 @@ export async function readCachedLookup(
 }
 
 /**
- * Writes a record for its query.
- *
- * @param dir - cache directory, created when missing
- *
- * @param record - record to keep
- *
- * @example
- * ```ts
- * await writeCachedLookup({ dir, record, },);
- * ```
+ Writes a record for its query.
+ 
+ @param dir - cache directory, created when missing
+ 
+ @param record - record to keep
+ 
+ @example
+ ```ts
+ await writeCachedLookup({ dir, record, },);
+ ```
  */
 export async function writeCachedLookup(
   {
@@ -330,7 +330,7 @@ export async function writeCachedLookup(
     { recursive: true, },
   );
   /**
-   * Pretty JSON, so a reader can open the file.
+   Pretty JSON, so a reader can open the file.
    */
   const text = JSON.stringify(
     record,

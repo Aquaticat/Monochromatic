@@ -16,28 +16,28 @@ import { mapOverlapped, } from './overlapped-map.ts';
 // Calibration owns a fixed reviewed manifest, not an opportunistic first-long-archive selection.
 
 /**
- * Reads reviewed reference inputs from their immutable corpus pin.
- * Custom manifests are explicit caller-owned review evidence; this loader proves byte identity,
- * not semantic correctness of arbitrary supplied prose.
- *
- * @param pin - local clone and immutable review revision
- *
- * @param specs - reviewed manifest, defaulting to the checked-in source-reviewed set
- *
- * @param onlyEntryIds - optional filter that may name only reviewed entries
- *
- * @param signal - caller cancellation
- *
- * @returns References in manifest order with all reviewed variants verified
- *
- * @throws {@link FidelityReferenceError} for unreviewed filters, pin drift or invalid metadata
- *
- * @throws {@link CorpusReadError} when a pinned file is unavailable
- *
- * @example
- * ```ts
- * const references = await readReviewedFidelityReferences({ pin });
- * ```
+ Reads reviewed reference inputs from their immutable corpus pin.
+ Custom manifests are explicit caller-owned review evidence; this loader proves byte identity,
+ not semantic correctness of arbitrary supplied prose.
+ 
+ @param pin - local clone and immutable review revision
+ 
+ @param specs - reviewed manifest, defaulting to the checked-in source-reviewed set
+ 
+ @param onlyEntryIds - optional filter that may name only reviewed entries
+ 
+ @param signal - caller cancellation
+ 
+ @returns References in manifest order with all reviewed variants verified
+ 
+ @throws {@link FidelityReferenceError} for unreviewed filters, pin drift or invalid metadata
+ 
+ @throws {@link CorpusReadError} when a pinned file is unavailable
+ 
+ @example
+ ```ts
+ const references = await readReviewedFidelityReferences({ pin });
+ ```
  */
 export async function readReviewedFidelityReferences({
   pin,
@@ -52,14 +52,14 @@ export async function readReviewedFidelityReferences({
 },): Promise<readonly ReviewedFidelityReference[]> {
   signal?.throwIfAborted();
   /**
-   * Own and validate metadata selection before any pinned-file reads.
+   Own and validate metadata selection before any pinned-file reads.
    */
   const selected = selectReviewedFidelitySpecs({
     specs,
     onlyEntryIds,
   },);
   /**
-   * Pin fields cannot be redirected while the reads are in flight.
+   Pin fields cannot be redirected while the reads are in flight.
    */
   const fixedPin = { ...pin, };
   return await mapOverlapped({
@@ -87,7 +87,7 @@ export async function readReviewedFidelityReferences({
         },);
       }
       /**
-       * Both files use the same intrinsic, no-fetch corpus read boundary.
+       Both files use the same intrinsic, no-fetch corpus read boundary.
        */
       const [sourceRead, archiveRead,] = await Promise.allSettled([
         readCorpusFile({

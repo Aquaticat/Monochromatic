@@ -1,33 +1,33 @@
 /**
- * Tests for whether a run left anything to verify, and how it says so.
- *
- * `#217` IS THE WHOLE POINT. `verify-published.ts` answered an absent
- * artifacts directory with an empty list and printed the absence on stderr, so
- * a directory that was never a run printed the same stdout summary as a run
- * whose every page agreed, and left the same exit code behind. Anything using
- * the check as a gate passed the run that was never examined.
- *
- * THREE POPULATIONS HAVE TO STAY APART, and no two of them may collapse: a run
- * that is not there, a run that settled nothing, and a run with entries to
- * check. The first two are both "nothing verified" and the third is not, but
- * the first two still differ in what an operator does next, so the reason
- * rides along in the verdict rather than being thrown away.
- *
- * THE REASON IS A FILESYSTEM CODE, NOT A CLASS NAME. `errorName` answers
- * `Error` for every filesystem failure, so the report used to separate
- * "pointed at the wrong directory" from "cannot read this directory" not at
- * all. Two cases here pin `ENOENT` against `ENOTDIR` for exactly that.
- *
- * AN ABSENT PUBLISHED TREE IS DELIBERATELY NOT SILENCE. Beside real artifacts
- * it means every settled entry was never published, which is this check's most
- * serious finding, so it stays checkable with an empty tree.
- *
- * DISPOSABLE FIXTURES ONLY: every case writes into its own `mkdtemp`
- * directory, and nothing here reads a real run.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for whether a run left anything to verify, and how it says so.
+ 
+ `#217` IS THE WHOLE POINT. `verify-published.ts` answered an absent
+ artifacts directory with an empty list and printed the absence on stderr, so
+ a directory that was never a run printed the same stdout summary as a run
+ whose every page agreed, and left the same exit code behind. Anything using
+ the check as a gate passed the run that was never examined.
+ 
+ THREE POPULATIONS HAVE TO STAY APART, and no two of them may collapse: a run
+ that is not there, a run that settled nothing, and a run with entries to
+ check. The first two are both "nothing verified" and the third is not, but
+ the first two still differ in what an operator does next, so the reason
+ rides along in the verdict rather than being thrown away.
+ 
+ THE REASON IS A FILESYSTEM CODE, NOT A CLASS NAME. `errorName` answers
+ `Error` for every filesystem failure, so the report used to separate
+ "pointed at the wrong directory" from "cannot read this directory" not at
+ all. Two cases here pin `ENOENT` against `ENOTDIR` for exactly that.
+ 
+ AN ABSENT PUBLISHED TREE IS DELIBERATELY NOT SILENCE. Beside real artifacts
+ it means every settled entry was never published, which is this check's most
+ serious finding, so it stays checkable with an empty tree.
+ 
+ DISPOSABLE FIXTURES ONLY: every case writes into its own `mkdtemp`
+ directory, and nothing here reads a real run.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -54,29 +54,29 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Fixed tree directory a run publishes under, as `publish-fixed.ts` names it.
+ Fixed tree directory a run publishes under, as `publish-fixed.ts` names it.
  */
 const FIXED_TREE = 'fixed';
 
 /**
- * People directory inside that tree.
+ People directory inside that tree.
  */
 const PEOPLE = 'people';
 
 /**
- * Artifacts directory a run settles into.
+ Artifacts directory a run settles into.
  */
 const ARTIFACTS = 'artifacts';
 
 /**
- * Makes one disposable run directory for a case to populate.
- *
- * @returns Directory that no other case shares
- *
- * @example
- * ```ts
- * const runsDir = await disposableRun();
- * ```
+ Makes one disposable run directory for a case to populate.
+ 
+ @returns Directory that no other case shares
+ 
+ @example
+ ```ts
+ const runsDir = await disposableRun();
+ ```
  */
 async function disposableRun(): Promise<string> {
   return await mkdtemp(join(
@@ -86,23 +86,23 @@ async function disposableRun(): Promise<string> {
 }
 
 /**
- * Writes a run directory holding exactly these artifact file names.
- *
- * @param names - file names to write, verbatim, so a case can write something
- * that is not an artifact at all
- *
- * @returns Run directory holding them under its artifacts directory
- *
- * @example
- * ```ts
- * const runsDir = await runSettling({ names: ['Mittens.json',], },);
- * ```
+ Writes a run directory holding exactly these artifact file names.
+ 
+ @param names - file names to write, verbatim, so a case can write something
+ that is not an artifact at all
+ 
+ @returns Run directory holding them under its artifacts directory
+ 
+ @example
+ ```ts
+ const runsDir = await runSettling({ names: ['Mittens.json',], },);
+ ```
  */
 async function runSettling(
   { names, }: { readonly names: readonly string[]; },
 ): Promise<string> {
   /**
-   * Disposable root for this case.
+   Disposable root for this case.
    */
   const runsDir = await disposableRun();
 
@@ -128,16 +128,16 @@ async function runSettling(
 }
 
 /**
- * Writes a run directory whose published tree holds exactly these entries.
- *
- * @param runsDir - run directory to publish into
- *
- * @param entryIds - entry directories to create under the people directory
- *
- * @example
- * ```ts
- * await publishInto({ runsDir, entryIds: ['Mittens',], },);
- * ```
+ Writes a run directory whose published tree holds exactly these entries.
+ 
+ @param runsDir - run directory to publish into
+ 
+ @param entryIds - entry directories to create under the people directory
+ 
+ @example
+ ```ts
+ await publishInto({ runsDir, entryIds: ['Mittens',], },);
+ ```
  */
 async function publishInto(
   {
@@ -162,19 +162,19 @@ async function publishInto(
 }
 
 /**
- * Names read off a listing, or a marker saying it was not readable.
- *
- * Keeps every case's assertion one line, and fails loudly rather than
- * silently reading `[]` off a refusal, which is the defect under test.
- *
- * @param reading - what a listing returned
- *
- * @returns Its names, or a marker naming the refusal
- *
- * @example
- * ```ts
- * expect(namesOf({ reading, },),).toEqual(['Mittens',],);
- * ```
+ Names read off a listing, or a marker saying it was not readable.
+ 
+ Keeps every case's assertion one line, and fails loudly rather than
+ silently reading `[]` off a refusal, which is the defect under test.
+ 
+ @param reading - what a listing returned
+ 
+ @returns Its names, or a marker naming the refusal
+ 
+ @example
+ ```ts
+ expect(namesOf({ reading, },),).toEqual(['Mittens',],);
+ ```
  */
 function namesOf(
   { reading, }: { readonly reading: DirectoryReading; },

@@ -1,19 +1,19 @@
 /**
- * Tests that `#107`'s neighbouring window actually REACHES the three repair-lane
- * sheets, and that a slice with no neighbours is asked exactly what it was asked
- * before the window existed.
- *
- * WHY THIS FILE EXISTS SEPARATELY from each builder's own tests. The window is
- * threaded through five call sites as an optional property spread into an object
- * literal, and TypeScript does not excess-property-check a spread. A stage that
- * silently dropped the parameter would compile, lint and pass every existing
- * test while sending the models exactly the sheet they got before. The failure
- * mode is a change that looks landed and does nothing, so the assertion has to
- * be made against the rendered text.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests that `#107`'s neighbouring window actually REACHES the three repair-lane
+ sheets, and that a slice with no neighbours is asked exactly what it was asked
+ before the window existed.
+ 
+ WHY THIS FILE EXISTS SEPARATELY from each builder's own tests. The window is
+ threaded through five call sites as an optional property spread into an object
+ literal, and TypeScript does not excess-property-check a spread. A stage that
+ silently dropped the parameter would compile, lint and pass every existing
+ test while sending the models exactly the sheet they got before. The failure
+ mode is a change that looks landed and does nothing, so the assertion has to
+ be made against the rendered text.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -29,56 +29,56 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Invented zh original of the slice under review.
+ Invented zh original of the slice under review.
  */
 const SOURCE_TEXT = '小猫在窗台上打盹。\n';
 
 /**
- * Invented English already in the archive for it.
+ Invented English already in the archive for it.
  */
 const TARGET_TEXT = 'The kitten dozes on the windowsill.\n';
 
 /**
- * Invented original of the passages either side.
- *
- * DELIBERATELY UNMISTAKABLE. Every string asserted on is one no other fixture
- * or prompt constant contains, so a match cannot come from the sheet's own
- * boilerplate.
+ Invented original of the passages either side.
+ 
+ DELIBERATELY UNMISTAKABLE. Every string asserted on is one no other fixture
+ or prompt constant contains, so a match cannot come from the sheet's own
+ boilerplate.
  */
 const NEARBY_SOURCE = '邻居的橘猫在门口等鱼干。\n';
 
 /**
- * Invented archive English of those same two passages.
+ Invented archive English of those same two passages.
  */
 const NEARBY_INCUMBENT = 'The tabby next door waits by the gate for dried fish.\n';
 
 /**
- * Empty claim set, since these tests probe the evidence blocks rather than
- * claim rendering.
+ Empty claim set, since these tests probe the evidence blocks rather than
+ claim rendering.
  */
 const NO_CLUSTERS = [] as const;
 
 /**
- * Empty envelope set, for the same reason.
+ Empty envelope set, for the same reason.
  */
 const NO_ENVELOPES = [] as const;
 
 /**
- * Empty issue set, for the same reason.
+ Empty issue set, for the same reason.
  */
 const NO_ISSUES = [] as const;
 
 /**
- * User sheet of one built message list.
- *
- * @param messages - what a builder returned
- *
- * @returns Concatenated user content
- *
- * @example
- * ```ts
- * const sheet = userSheet({ messages, },);
- * ```
+ User sheet of one built message list.
+ 
+ @param messages - what a builder returned
+ 
+ @returns Concatenated user content
+ 
+ @example
+ ```ts
+ const sheet = userSheet({ messages, },);
+ ```
  */
 function userSheet(
   { messages, }: { readonly messages: readonly { readonly role: string; readonly content: string; }[]; },

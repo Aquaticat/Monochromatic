@@ -1,21 +1,21 @@
 /**
- * Tests for the second signature at block scale.
- *
- * `doc/decision/translation-repair-absence-verdict.md` requires two independent
- * readings before anything is written into a page. Subdivision supplies the
- * first, a pairing that left an original unplaced; this supplies the second, a
- * page measurably shorter than its source predicts. Both are required, and
- * these cases pin that the second one can actually refuse.
- *
- * WHAT WOULD GO WRONG WITHOUT THEM. A gate admitting everything is
- * indistinguishable from no gate, and a gate admitting nothing silently
- * disables the whole insertion path; neither raises anything, so both look
- * identical from outside. The cases below exercise both directions on one
- * fixture.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the second signature at block scale.
+ 
+ `doc/decision/translation-repair-absence-verdict.md` requires two independent
+ readings before anything is written into a page. Subdivision supplies the
+ first, a pairing that left an original unplaced; this supplies the second, a
+ page measurably shorter than its source predicts. Both are required, and
+ these cases pin that the second one can actually refuse.
+ 
+ WHAT WOULD GO WRONG WITHOUT THEM. A gate admitting everything is
+ indistinguishable from no gate, and a gate admitting nothing silently
+ disables the whole insertion path; neither raises anything, so both look
+ identical from outside. The cases below exercise both directions on one
+ fixture.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -31,23 +31,23 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original standing in for a page.
+ Original standing in for a page.
  */
 const SOURCE = '橘猫在窗台上睡了整个下午，阳光把它的毛烤得暖烘烘的。';
 
 /**
- * Builds a slice whose translation side is a place rather than text.
- *
- * @param sliceIndex - position this slice holds
- *
- * @param sourceText - original with no translation beside it
- *
- * @returns Slice the admission can weigh
- *
- * @example
- * ```ts
- * const slice = anchoredSlice({ sliceIndex: 1, sourceText: '第一只猫。', },);
- * ```
+ Builds a slice whose translation side is a place rather than text.
+ 
+ @param sliceIndex - position this slice holds
+ 
+ @param sourceText - original with no translation beside it
+ 
+ @returns Slice the admission can weigh
+ 
+ @example
+ ```ts
+ const slice = anchoredSlice({ sliceIndex: 1, sourceText: '第一只猫。', },);
+ ```
  */
 function anchoredSlice(
   {
@@ -75,16 +75,16 @@ function anchoredSlice(
 }
 
 /**
- * Builds a slice both sides of which carry text, which the gate never weighs.
- *
- * @param sliceIndex - position this slice holds
- *
- * @returns Ordinary paired slice
- *
- * @example
- * ```ts
- * const slice = pairedSlice({ sliceIndex: 0, },);
- * ```
+ Builds a slice both sides of which carry text, which the gate never weighs.
+ 
+ @param sliceIndex - position this slice holds
+ 
+ @returns Ordinary paired slice
+ 
+ @example
+ ```ts
+ const slice = pairedSlice({ sliceIndex: 0, },);
+ ```
  */
 function pairedSlice({ sliceIndex, }: { readonly sliceIndex: number; },): ChunkPair {
   return {
@@ -154,7 +154,7 @@ await describe({
         + 'separately would write in several times what the page is missing',
       fn: async () => {
         /**
-         * A page short by roughly one of these passages.
+         A page short by roughly one of these passages.
          */
         const targetText = 'x'.repeat(Math.floor(SOURCE.length * 2,),);
 

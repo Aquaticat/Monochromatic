@@ -17,69 +17,69 @@ import type { PreparationRootRawDocument, } from './preparation-root-population-
 //region Native raw corpus reads retain text-transform provenance
 
 /**
- * One effective text is owned with its raw committed-byte identity.
- *
- * @example
- * ```ts
- * const read: PreparationRootTextRead = { text, identity };
- * ```
+ One effective text is owned with its raw committed-byte identity.
+ 
+ @example
+ ```ts
+ const read: PreparationRootTextRead = { text, identity };
+ ```
  */
 export type PreparationRootTextRead = {
   /**
-   * Native UTF-8 decoding followed by shared CRLF folding.
+   Native UTF-8 decoding followed by shared CRLF folding.
    */
   readonly text: string;
   /**
-   * Raw and effective identities describe different representations.
+   Raw and effective identities describe different representations.
    */
   readonly identity: PreparationRootRawDocument;
 };
 
 /**
- * Missing corpus sides remain explicit, while unreadable repositories never become eligibility exclusions.
- *
- * @example
- * ```ts
- * const read = await readPreparationRootCorpusPair({ pin, entryId, l });
- * ```
+ Missing corpus sides remain explicit, while unreadable repositories never become eligibility exclusions.
+ 
+ @example
+ ```ts
+ const read = await readPreparationRootCorpusPair({ pin, entryId, l });
+ ```
  */
 export type PreparationRootCorpusPair = {
   /**
-   * Both files are physically readable at the independent pin.
+   Both files are physically readable at the independent pin.
    */
   readonly kind: 'complete';
   /**
-   * Current effective source and its raw identity.
+   Current effective source and its raw identity.
    */
   readonly source: PreparationRootTextRead;
   /**
-   * Current effective archive and its raw identity.
+   Current effective archive and its raw identity.
    */
   readonly archive: PreparationRootTextRead;
 } | {
   /**
-   * At least one object is absent at a readable pinned commit.
+   At least one object is absent at a readable pinned commit.
    */
   readonly kind: 'missing';
   /**
-   * Successful sides retain their identities even when the pair is incomplete.
+   Successful sides retain their identities even when the pair is incomplete.
    */
   readonly rawDocuments: readonly PreparationRootRawDocument[];
 };
 
 /**
- * Applies precisely the shared corpus reader's text transformations to owned raw bytes.
- *
- * @param bytes - native committed blob bytes
- *
- * @param relPath - independently constructed corpus-relative locator
- *
- * @returns Effective text with raw and normalized identities
- *
- * @example
- * ```ts
- * const read = preparationRootText({ bytes, relPath });
- * ```
+ Applies precisely the shared corpus reader's text transformations to owned raw bytes.
+ 
+ @param bytes - native committed blob bytes
+ 
+ @param relPath - independently constructed corpus-relative locator
+ 
+ @returns Effective text with raw and normalized identities
+ 
+ @example
+ ```ts
+ const read = preparationRootText({ bytes, relPath });
+ ```
  */
 function preparationRootText({
   bytes,
@@ -89,12 +89,12 @@ function preparationRootText({
   readonly relPath: string;
 },): PreparationRootTextRead {
   /**
-   * Decoding matches readCorpusFile rather than inventing a new text policy.
+   Decoding matches readCorpusFile rather than inventing a new text policy.
    */
   const decoded = Buffer.from(bytes,)
     .toString('utf8',);
   /**
-   * The native CRLF fold preserves the existing lone-CR behavior and line numbering.
+   The native CRLF fold preserves the existing lone-CR behavior and line numbering.
    */
   const folded = foldCarriageReturns({ text: decoded, },);
   return {
@@ -113,23 +113,23 @@ function preparationRootText({
 }
 
 /**
- * Reads both native corpus objects without resolving Git per file or exposing input-bearing subprocess causes.
- * The caller owns one already-resolved, snapshotted pin for the population operation.
- *
- * @param pin - independent native corpus location and commit
- *
- * @param entryId - checked native corpus entry component
- *
- * @param l - caller logger retaining population scope
- *
- * @returns Explicit complete or missing-side evidence
- *
- * @throws PreparationRootError when a failure is not an ordinary missing pinned object
- *
- * @example
- * ```ts
- * const read = await readPreparationRootCorpusPair({ pin, entryId, l });
- * ```
+ Reads both native corpus objects without resolving Git per file or exposing input-bearing subprocess causes.
+ The caller owns one already-resolved, snapshotted pin for the population operation.
+ 
+ @param pin - independent native corpus location and commit
+ 
+ @param entryId - checked native corpus entry component
+ 
+ @param l - caller logger retaining population scope
+ 
+ @returns Explicit complete or missing-side evidence
+ 
+ @throws PreparationRootError when a failure is not an ordinary missing pinned object
+ 
+ @example
+ ```ts
+ const read = await readPreparationRootCorpusPair({ pin, entryId, l });
+ ```
  */
 export async function readPreparationRootCorpusPair({
   pin,
@@ -141,14 +141,14 @@ export async function readPreparationRootCorpusPair({
   readonly l: Logger;
 },): Promise<PreparationRootCorpusPair> {
   /**
-   * All logs retain the owning read operation without corpus text or subprocess excerpts.
+   All logs retain the owning read operation without corpus text or subprocess excerpts.
    */
   const pl = tagged({
     tag: readPreparationRootCorpusPair.name,
     l,
   },);
   /**
-   * Native order fixes source and archive roles before asynchronous reads begin.
+   Native order fixes source and archive roles before asynchronous reads begin.
    */
   const paths = [
     `people/${entryId}/page.md`,
@@ -156,7 +156,7 @@ export async function readPreparationRootCorpusPair({
   ] as const;
   pl.debug(`reading pinned source and archive bytes for ${JSON.stringify(entryId,)}`,);
   /**
-   * Only the two sides of this entry overlap; population iteration remains bounded.
+   Only the two sides of this entry overlap; population iteration remains bounded.
    */
   const reads = await Promise.allSettled(paths.map(async function read(relPath,): Promise<Uint8Array> {
     return await readCorpusBytes({
@@ -168,7 +168,7 @@ export async function readPreparationRootCorpusPair({
     if (read.status === 'fulfilled')
       continue;
     /**
-     * Rejection data stays opaque until the existing missing-object classifier establishes its scope.
+     Rejection data stays opaque until the existing missing-object classifier establishes its scope.
      */
     const failure: unknown = read.reason;
     if (!isMissingCorpusObject(failure,)) {
@@ -181,7 +181,7 @@ export async function readPreparationRootCorpusPair({
     pl.info(`pinned corpus object is absent: ${nonNullishOrThrow(paths[index],)}`,);
   }
   /**
-   * Every successfully read side is converted without accepting a failed side as empty text.
+   Every successfully read side is converted without accepting a failed side as empty text.
    */
   const texts = reads.flatMap(function successful(
     read,

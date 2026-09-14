@@ -15,25 +15,25 @@ import {
 // reproducible and auditable for a fixed candidate pool.
 
 /**
- * Allocates a total sample size across the size bands as evenly as
- * availability allows. Slots go one at a time round-robin in band order to any
- * band with a candidate to spare, so the result is the most even
- * availability-capped split and is deterministic. When candidates are scarce
- * the total falls to what exists rather than over-drawing a band.
- *
- * @param available - candidate count per band
- *
- * @param size - total slots desired across all bands
- *
- * @returns Slots allocated per band, summing to `min(size, total available)`
- *
- * @example
- * ```ts
- * const quota = allocateBandQuota({
- *   available: { small: 200, medium: 180, large: 90, },
- *   size: 50,
- * },); // { small: 17, medium: 17, large: 16 }
- * ```
+ Allocates a total sample size across the size bands as evenly as
+ availability allows. Slots go one at a time round-robin in band order to any
+ band with a candidate to spare, so the result is the most even
+ availability-capped split and is deterministic. When candidates are scarce
+ the total falls to what exists rather than over-drawing a band.
+ 
+ @param available - candidate count per band
+ 
+ @param size - total slots desired across all bands
+ 
+ @returns Slots allocated per band, summing to `min(size, total available)`
+ 
+ @example
+ ```ts
+ const quota = allocateBandQuota({
+   available: { small: 200, medium: 180, large: 90, },
+   size: 50,
+ },); // { small: 17, medium: 17, large: 16 }
+ ```
  */
 export function allocateBandQuota(
   {
@@ -45,7 +45,7 @@ export function allocateBandQuota(
   },
 ): BandQuota {
   /**
-   * Slots handed out so far, mutated in place as the round-robin proceeds.
+   Slots handed out so far, mutated in place as the round-robin proceeds.
    */
   const quota: Record<SizeBand, number> = {
     small: 0,
@@ -54,7 +54,7 @@ export function allocateBandQuota(
   };
 
   /**
-   * Slots still to hand out, capped at what the bands can collectively hold.
+   Slots still to hand out, capped at what the bands can collectively hold.
    */
   let remaining = Math.min(
     size,
@@ -71,8 +71,8 @@ export function allocateBandQuota(
 
   while (remaining > 0) {
     /**
-     * Whether this pass placed at least one slot; a pass that places none
-     * means every band is at capacity and the loop must stop.
+     Whether this pass placed at least one slot; a pass that places none
+     means every band is at capacity and the loop must stop.
      */
     let progressed = false;
     for (const band of SIZE_BANDS) {
@@ -93,18 +93,18 @@ export function allocateBandQuota(
 }
 
 /**
- * Deterministic shuffle key for an id under a seed: the sha256 hex of
- * `seed:kind:id`. Lexicographic order over the hex gives a stable
- * pseudo-random order that is a pure function of the seed, matching the
- * codebase's `createHash` idiom without a stateful generator.
- *
- * @param seed - draw seed
- *
- * @param kind - namespace separating entry keys from issue keys
- *
- * @param id - the entry or issue id
- *
- * @returns Hex sha256 digest to sort by
+ Deterministic shuffle key for an id under a seed: the sha256 hex of
+ `seed:kind:id`. Lexicographic order over the hex gives a stable
+ pseudo-random order that is a pure function of the seed, matching the
+ codebase's `createHash` idiom without a stateful generator.
+ 
+ @param seed - draw seed
+ 
+ @param kind - namespace separating entry keys from issue keys
+ 
+ @param id - the entry or issue id
+ 
+ @returns Hex sha256 digest to sort by
  */
 function shuffleKey(
   {
@@ -123,53 +123,53 @@ function shuffleKey(
 }
 
 /**
- * One candidate paired with its issue shuffle key, before ranking.
+ One candidate paired with its issue shuffle key, before ranking.
  */
 type KeyedCandidate = {
   /**
-   * The candidate under consideration.
+   The candidate under consideration.
    */
   readonly candidate: GradingCandidate;
 
   /**
-   * Shuffle key of the candidate's issue.
+   Shuffle key of the candidate's issue.
    */
   readonly issueKey: string;
 };
 
 /**
- * One candidate decorated with the keys the stratified draw sorts by.
+ One candidate decorated with the keys the stratified draw sorts by.
  */
 type RankedCandidate = {
   /**
-   * The candidate under consideration.
+   The candidate under consideration.
    */
   readonly candidate: GradingCandidate;
 
   /**
-   * Shuffle order of this issue within its entry (0 is picked first).
+   Shuffle order of this issue within its entry (0 is picked first).
    */
   readonly rank: number;
 
   /**
-   * Shuffle key of the candidate's entry, breaking ties between entries.
+   Shuffle key of the candidate's entry, breaking ties between entries.
    */
   readonly entryKey: string;
 
   /**
-   * Shuffle key of the candidate's issue, breaking ties within an entry.
+   Shuffle key of the candidate's issue, breaking ties within an entry.
    */
   readonly issueKey: string;
 };
 
 /**
- * Compares two hex shuffle keys lexicographically.
- *
- * @param a - first key
- *
- * @param b - second key
- *
- * @returns Negative, zero, or positive ordering
+ Compares two hex shuffle keys lexicographically.
+ 
+ @param a - first key
+ 
+ @param b - second key
+ 
+ @returns Negative, zero, or positive ordering
  */
 function compareKeys(
   {
@@ -188,18 +188,18 @@ function compareKeys(
 }
 
 /**
- * Selects `count` candidates from one band, spreading across its entries: each
- * entry's issues are shuffle-ordered and ranked, then selection takes every
- * entry's rank-0 issue before any rank-1 issue. So one issue-heavy entry never
- * dominates the band's slots, and the order is a pure function of the seed.
- *
- * @param candidates - every candidate in the band
- *
- * @param count - slots to fill from the band
- *
- * @param seed - draw seed
- *
- * @returns The selected candidates in round-robin draw order
+ Selects `count` candidates from one band, spreading across its entries: each
+ entry's issues are shuffle-ordered and ranked, then selection takes every
+ entry's rank-0 issue before any rank-1 issue. So one issue-heavy entry never
+ dominates the band's slots, and the order is a pure function of the seed.
+ 
+ @param candidates - every candidate in the band
+ 
+ @param count - slots to fill from the band
+ 
+ @param seed - draw seed
+ 
+ @returns The selected candidates in round-robin draw order
  */
 function selectFromBand(
   {
@@ -213,13 +213,13 @@ function selectFromBand(
   },
 ): readonly GradingCandidate[] {
   /**
-   * Candidates grouped by entry, so each entry's issues can be ranked among
-   * themselves before the round-robin.
+   Candidates grouped by entry, so each entry's issues can be ranked among
+   themselves before the round-robin.
    */
   const byEntry = new Map<string, GradingCandidate[]>();
   for (const candidate of candidates) {
     /**
-     * The entry's bucket, created on first sighting.
+     The entry's bucket, created on first sighting.
      */
     const bucket = byEntry.get(candidate.entryId,) ?? [];
     bucket.push(candidate,);
@@ -230,8 +230,8 @@ function selectFromBand(
   }
 
   /**
-   * Every candidate decorated with its within-entry rank and both shuffle
-   * keys, ready for the global round-robin sort.
+   Every candidate decorated with its within-entry rank and both shuffle
+   keys, ready for the global round-robin sort.
    */
   const ranked: readonly RankedCandidate[] = [
     ...byEntry.values(),
@@ -285,7 +285,7 @@ function selectFromBand(
       if (a.rank !== b.rank)
         return a.rank - b.rank;
       /**
-       * Entry-key ordering, breaking rank ties between entries.
+       Entry-key ordering, breaking rank ties between entries.
        */
       const entryOrder = compareKeys({
         a: a.entryKey,
@@ -308,27 +308,27 @@ function selectFromBand(
 }
 
 /**
- * Draws a stratified sample of grading candidates. Slots split across bands by
- * {@link allocateBandQuota}, then each band fills by round-robin across its
- * entries, so the draw is representative across size bands and spread across
- * entries within each band. Fully deterministic in the seed.
- *
- * @param candidates - the full accepted-issue pool
- *
- * @param size - total sample size desired
- *
- * @param seed - draw seed
- *
- * @returns The sampled candidates, small band first
- *
- * @example
- * ```ts
- * const sample = drawStratifiedSample({
- *   candidates: pool,
- *   size: DEFAULT_SAMPLE_SIZE,
- *   seed: DEFAULT_SAMPLE_SEED,
- * },);
- * ```
+ Draws a stratified sample of grading candidates. Slots split across bands by
+ {@link allocateBandQuota}, then each band fills by round-robin across its
+ entries, so the draw is representative across size bands and spread across
+ entries within each band. Fully deterministic in the seed.
+ 
+ @param candidates - the full accepted-issue pool
+ 
+ @param size - total sample size desired
+ 
+ @param seed - draw seed
+ 
+ @returns The sampled candidates, small band first
+ 
+ @example
+ ```ts
+ const sample = drawStratifiedSample({
+   candidates: pool,
+   size: DEFAULT_SAMPLE_SIZE,
+   seed: DEFAULT_SAMPLE_SEED,
+ },);
+ ```
  */
 export function drawStratifiedSample(
   {
@@ -342,7 +342,7 @@ export function drawStratifiedSample(
   },
 ): readonly GradingCandidate[] {
   /**
-   * Candidate count present in each band.
+   Candidate count present in each band.
    */
   const available: BandQuota = {
     small: candidates
@@ -363,7 +363,7 @@ export function drawStratifiedSample(
   };
 
   /**
-   * Slots allocated to each band under the availability cap.
+   Slots allocated to each band under the availability cap.
    */
   const quota = allocateBandQuota({
     available,

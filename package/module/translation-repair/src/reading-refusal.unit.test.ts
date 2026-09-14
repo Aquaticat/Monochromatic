@@ -1,22 +1,22 @@
 /**
- * Tests for telling a model declining to read a picture from a model reading
- * one.
- *
- * WHY THIS IS ITS OWN SCREEN. Two refusals corroborate each other. Real traffic
- * on 2026-08-19 returned `There is no text visible in this image.` from one
- * reader and `No legible text is visible.` from the other, and the pair stage
- * marked them corroborated at 0.565 trigram overlap, because two ways of saying
- * "there is nothing here" share their vocabulary exactly as two transcriptions
- * of one passage do. Both had slipped the phrase list by a single word.
- *
- * SO THESE PIN THE SHAPE, not a wording. A refusal negates, names the picture
- * or its text, and is a sentence rather than a passage. All three are required,
- * and one case here removes each in turn to show that each is load-bearing.
- *
- * Fixtures are cat-themed invention, except the two refusals, which are the
- * exact replies that caused this and carry no corpus content.
- *
- * @module
+ Tests for telling a model declining to read a picture from a model reading
+ one.
+ 
+ WHY THIS IS ITS OWN SCREEN. Two refusals corroborate each other. Real traffic
+ on 2026-08-19 returned `There is no text visible in this image.` from one
+ reader and `No legible text is visible.` from the other, and the pair stage
+ marked them corroborated at 0.565 trigram overlap, because two ways of saying
+ "there is nothing here" share their vocabulary exactly as two transcriptions
+ of one passage do. Both had slipped the phrase list by a single word.
+ 
+ SO THESE PIN THE SHAPE, not a wording. A refusal negates, names the picture
+ or its text, and is a sentence rather than a passage. All three are required,
+ and one case here removes each in turn to show that each is load-bearing.
+ 
+ Fixtures are cat-themed invention, except the two refusals, which are the
+ exact replies that caused this and carry no corpus content.
+ 
+ @module
  */
 
 import {
@@ -34,19 +34,19 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * What one reader answered when it would not read a picture.
+ What one reader answered when it would not read a picture.
  */
 const QWEN_REFUSAL = '\n\nThere is no text visible in this image.';
 
 /**
- * What the other reader answered about the same picture, worded differently and
- * meaning the same.
+ What the other reader answered about the same picture, worded differently and
+ meaning the same.
  */
 const KIMI_REFUSAL = 'No legible text is visible.';
 
 /**
- * A transcription long enough that no word list is consulted, which happens to
- * discuss both a picture and an absence.
+ A transcription long enough that no word list is consulted, which happens to
+ discuss both a picture and an absence.
  */
 const LONG_TRANSCRIPTION = 'Lost: one tabby cat, answers to Mittens, last seen '
   + 'near the vet on Pearl Street. There is no photo of her winter coat, and the '
@@ -182,7 +182,7 @@ await describe({
         + 'and a decline caught either way is a refusal',
       fn: async () => {
         /**
-         * Verdict on the reply that slipped the phrase list in production.
+         Verdict on the reply that slipped the phrase list in production.
          */
         const shape = readingMakesSense({ reading: QWEN_REFUSAL, },);
         expect(shape.kind,).toBe('refused',);
@@ -191,7 +191,7 @@ await describe({
         expect(shape.clause,).toBe('reports-no-text',);
 
         /**
-         * Verdict on a reply the phrase list catches.
+         Verdict on a reply the phrase list catches.
          */
         const phrase = readingMakesSense({ reading: 'No text is visible here.', },);
         expect(phrase.kind,).toBe('refused',);
@@ -200,8 +200,8 @@ await describe({
         expect(phrase.clause,).toBe('reports-no-text',);
 
         /**
-         * Verdict on a decline, the one reply of fifteen on the probe of
-         * 2026-09-04 that named no text.
+         Verdict on a decline, the one reply of fifteen on the probe of
+         2026-09-04 that named no text.
          */
         const decline = readingMakesSense({ reading: 'I cannot read the image.', },);
         expect(decline.kind,).toBe('refused',);

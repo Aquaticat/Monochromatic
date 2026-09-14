@@ -1,24 +1,24 @@
 /**
- * Tests for reading a run's ledger directory without raising on a bad file.
- *
- * THE PARTITION IS WHAT THESE CHECK. A directory holding one good file beside
- * two unreadable ones is the case the reader exists for, and a reader that threw
- * on the first refusal would answer nothing about the rest while looking exactly
- * like a run that recorded nothing.
- *
- * ORDER IS CHECKED TOO. Files are named by a zero-padded ordinal and that
- * ordering is contest order, so a reader that partitioned correctly but lost the
- * sequence would still misreport which contest came first.
- *
- * THE REFUSAL TEXT IS CHECKED FOR WHAT IT DOES NOT SAY. A ledger file holds
- * corpus wording, so a refusal that forwarded a foreign class's message could
- * carry a passage into a log.
- *
- * Model identifiers are cat-themed invention rather than catalog entries here,
- * because nothing in this file judges a seat; passages are invention too, so no
- * corpus content appears.
- *
- * @module
+ Tests for reading a run's ledger directory without raising on a bad file.
+ 
+ THE PARTITION IS WHAT THESE CHECK. A directory holding one good file beside
+ two unreadable ones is the case the reader exists for, and a reader that threw
+ on the first refusal would answer nothing about the rest while looking exactly
+ like a run that recorded nothing.
+ 
+ ORDER IS CHECKED TOO. Files are named by a zero-padded ordinal and that
+ ordering is contest order, so a reader that partitioned correctly but lost the
+ sequence would still misreport which contest came first.
+ 
+ THE REFUSAL TEXT IS CHECKED FOR WHAT IT DOES NOT SAY. A ledger file holds
+ corpus wording, so a refusal that forwarded a foreign class's message could
+ carry a passage into a log.
+ 
+ Model identifiers are cat-themed invention rather than catalog entries here,
+ because nothing in this file judges a seat; passages are invention too, so no
+ corpus content appears.
+ 
+ @module
  */
 
 import {
@@ -45,7 +45,7 @@ import {
 //region Ledger directory tests
 
 /**
- * One contest, written the way the recorder writes them.
+ One contest, written the way the recorder writes them.
  */
 const ONE_ROUND = JSON.stringify({
   task: 'whiskerfield-0',
@@ -68,25 +68,25 @@ const ONE_ROUND = JSON.stringify({
 },);
 
 /**
- * Builds a disposable ledger directory holding exactly these files.
- *
- * ON A THROWAWAY, never a run directory: these cases write malformed files on
- * purpose, and a real ledger is what the reader is protecting.
- *
- * @param files - file names mapped to their exact bytes
- *
- * @returns Ledger directory the case should read
- *
- * @example
- * ```ts
- * const dir = await ledgerOf({ files: { '000001.json': ONE_ROUND, }, },);
- * ```
+ Builds a disposable ledger directory holding exactly these files.
+ 
+ ON A THROWAWAY, never a run directory: these cases write malformed files on
+ purpose, and a real ledger is what the reader is protecting.
+ 
+ @param files - file names mapped to their exact bytes
+ 
+ @returns Ledger directory the case should read
+ 
+ @example
+ ```ts
+ const dir = await ledgerOf({ files: { '000001.json': ONE_ROUND, }, },);
+ ```
  */
 async function ledgerOf(
   { files, }: { readonly files: Readonly<Record<string, string>>; },
 ): Promise<string> {
   /**
-   * Disposable root for this case.
+   Disposable root for this case.
    */
   const root = await mkdtemp(join(
     tmpdir(),
@@ -94,7 +94,7 @@ async function ledgerOf(
   ),);
 
   /**
-   * Where the files land.
+   Where the files land.
    */
   const dir = join(
     root,
@@ -124,7 +124,7 @@ await describe({
       name: 'READS an absent directory as empty rather than raising, since a run may have written none',
       fn: async () => {
         /**
-         * Reading of a directory that was never created.
+         Reading of a directory that was never created.
          */
         const reading = await readLedgerDirectory({
           dir: join(
@@ -144,7 +144,7 @@ await describe({
       name: 'READS a clean directory with nothing refused',
       fn: async () => {
         /**
-         * Reading of two well-formed contests.
+         Reading of two well-formed contests.
          */
         const reading = await readLedgerDirectory({
           dir: await ledgerOf({
@@ -163,9 +163,9 @@ await describe({
       name: 'READS EVERY FILE past a refusal, so one bad file costs only itself',
       fn: async () => {
         /**
-         * Reading of a good file sitting between two unreadable ones, so a
-         * reader that stopped at the first refusal would report zero contests
-         * and a reader that stopped at the last would report one refusal.
+         Reading of a good file sitting between two unreadable ones, so a
+         reader that stopped at the first refusal would report zero contests
+         and a reader that stopped at the last would report one refusal.
          */
         const reading = await readLedgerDirectory({
           dir: await ledgerOf({
@@ -190,7 +190,7 @@ await describe({
       name: 'REFUSES well-formed JSON that is not a contest, naming the field rather than the value',
       fn: async () => {
         /**
-         * Reading of a file that parses but holds no contest.
+         Reading of a file that parses but holds no contest.
          */
         const reading = await readLedgerDirectory({
           dir: await ledgerOf({
@@ -208,7 +208,7 @@ await describe({
       name: 'KEEPS contest order, which is the order the recorder stamped',
       fn: async () => {
         /**
-         * Reading whose files were written out of order on disk.
+         Reading whose files were written out of order on disk.
          */
         const reading = await readLedgerDirectory({
           dir: await ledgerOf({
@@ -273,12 +273,12 @@ await describe({
       name: 'REFUSES to forward a foreign message, naming only the class',
       fn: async () => {
         /**
-         * Wording a foreign error carries, which must not reach the report.
-         *
-         * A CLASS FROM OUTSIDE THIS PACKAGE writes whatever it likes into its
-         * message, and a run directory is full of text nobody here chose. The
-         * two cases above pass a message through BECAUSE those two classes
-         * promise not to quote; this one proves the promise is what earns it.
+         Wording a foreign error carries, which must not reach the report.
+         
+         A CLASS FROM OUTSIDE THIS PACKAGE writes whatever it likes into its
+         message, and a run directory is full of text nobody here chose. The
+         two cases above pass a message through BECAUSE those two classes
+         promise not to quote; this one proves the promise is what earns it.
          */
         const { says, } = refusalOf({
           error: new RangeError('Bixbyfluff dozed by the radiator',),

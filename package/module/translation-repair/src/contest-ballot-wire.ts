@@ -21,22 +21,22 @@ import {
 // in the user message and in the reply instruction, where the caller puts them.
 
 /**
- * Answer a judge gives when neither candidate is better.
- *
- * A VERDICT, not a failure to answer. Two candidates that differ only in
- * wording have no better one, and a judge forced to pick would be inventing a
- * preference the evidence does not carry.
+ Answer a judge gives when neither candidate is better.
+ 
+ A VERDICT, not a failure to answer. Two candidates that differ only in
+ wording have no better one, and a judge forced to pick would be inventing a
+ preference the evidence does not carry.
  */
 export const CONTEST_REFUSAL = 'neither';
 
 /**
- * What every two-way contest tells its judges.
- *
- * THE ORIGINAL IS THE STANDARD, per `doc/decision/translation-repair-output-goal.md`.
- * The archive rendering is shown as EVIDENCE about what the original says and a
- * starting point worth keeping where it is right, never as the thing a
- * candidate is scored against. Accurate detail the archive adds is kept rather
- * than stripped, which is the one place a candidate may exceed the original.
+ What every two-way contest tells its judges.
+ 
+ THE ORIGINAL IS THE STANDARD, per `doc/decision/translation-repair-output-goal.md`.
+ The archive rendering is shown as EVIDENCE about what the original says and a
+ starting point worth keeping where it is right, never as the thing a
+ candidate is scored against. Accurate detail the archive adds is kept rather
+ than stripped, which is the one place a candidate may exceed the original.
  */
 export const CONTEST_POLICY: string = [
   'You are choosing which of two English renderings of a Chinese passage should be published.',
@@ -75,22 +75,22 @@ export const CONTEST_POLICY: string = [
 ].join('\n',);
 
 /**
- * Builds the reply schema one contest asks for.
- *
- * NAMED PER CONTEST, because the schema name is what a provider log and a
- * degradation finding call this stage, and two stages sharing one name are two
- * stages nobody can tell apart afterwards.
- *
- * @param schemaName - name this contest's replies are recorded under
- *
- * @param asksArchive - whether this contest also judges the archive rendering
- *
- * @returns Response format for the round
- *
- * @example
- * ```ts
- * const format = contestResponseFormat({ schemaName: 'lane_contest', asksArchive: true, },);
- * ```
+ Builds the reply schema one contest asks for.
+ 
+ NAMED PER CONTEST, because the schema name is what a provider log and a
+ degradation finding call this stage, and two stages sharing one name are two
+ stages nobody can tell apart afterwards.
+ 
+ @param schemaName - name this contest's replies are recorded under
+ 
+ @param asksArchive - whether this contest also judges the archive rendering
+ 
+ @returns Response format for the round
+ 
+ @example
+ ```ts
+ const format = contestResponseFormat({ schemaName: 'lane_contest', asksArchive: true, },);
+ ```
  */
 export function contestResponseFormat(
   {
@@ -102,21 +102,21 @@ export function contestResponseFormat(
   },
 ): JsonSchemaResponseFormat {
   /**
-   * Archive property, present only for the contest that asks about it.
-   *
-   * NOT DEFAULTED. Both contests state the answer at their own call site,
-   * so a third contest added later cannot inherit a choice nobody made.
+   Archive property, present only for the contest that asks about it.
+   
+   NOT DEFAULTED. Both contests state the answer at their own call site,
+   so a third contest added later cannot inherit a choice nobody made.
    */
   const archiveProperty = asksArchive
     ? { archive: { type: 'string', }, }
     : {};
 
   /**
-   * Archive entry in the required list, matching the property.
-   *
-   * REQUIRED HERE THOUGH THE LANE GUARD READS ITS ABSENCE LENIENTLY. The
-   * schema is how a compliant model is told to answer; the guard is how a
-   * model that ignores it is kept from losing its lane ballot too.
+   Archive entry in the required list, matching the property.
+   
+   REQUIRED HERE THOUGH THE LANE GUARD READS ITS ABSENCE LENIENTLY. The
+   schema is how a compliant model is told to answer; the guard is how a
+   model that ignores it is kept from losing its lane ballot too.
    */
   const archiveRequired: readonly string[] = asksArchive
     ? ['archive',]
@@ -154,23 +154,23 @@ export function contestResponseFormat(
 }
 
 /**
- * Whether a value is a list of strings, whatever those strings say.
- *
- * SHAPE, NOT VOCABULARY. An earlier form of the lane contest's guard demanded
- * that every member name a candidate, so a judge that filled the findings with
- * the offending phrases instead lost its whole ballot, choice included. Two of
- * the first sixty calibration voices went that way, both carrying a usable
- * choice. The choice is the thing a contest counts, and no wording of a finding
- * may cost a voice.
- *
- * @param value - list from a reply
- *
- * @returns Whether it is a list of strings
- *
- * @example
- * ```ts
- * const shaped = isStringList([ 'repair', ],);
- * ```
+ Whether a value is a list of strings, whatever those strings say.
+ 
+ SHAPE, NOT VOCABULARY. An earlier form of the lane contest's guard demanded
+ that every member name a candidate, so a judge that filled the findings with
+ the offending phrases instead lost its whole ballot, choice included. Two of
+ the first sixty calibration voices went that way, both carrying a usable
+ choice. The choice is the thing a contest counts, and no wording of a finding
+ may cost a voice.
+ 
+ @param value - list from a reply
+ 
+ @returns Whether it is a list of strings
+ 
+ @example
+ ```ts
+ const shaped = isStringList([ 'repair', ],);
+ ```
  */
 export function isStringList(value: unknown,): value is readonly string[] {
   return Array.isArray(value,)
@@ -180,22 +180,22 @@ export function isStringList(value: unknown,): value is readonly string[] {
 }
 
 /**
- * Whether a value is one of the names this contest allows.
- *
- * RETURNS A PLAIN BOOLEAN rather than narrowing, because a type predicate has
- * to name a parameter and this one reads a property of a destructured object.
- * Each contest wraps it in its own one-line predicate over its own union.
- *
- * @param value - candidate name from a reply
- *
- * @param names - names this contest allows
- *
- * @returns Whether the value is one of them
- *
- * @example
- * ```ts
- * const allowed = namesOneOf({ value: 'repair', names: [ 'repair', 'translate', ], },);
- * ```
+ Whether a value is one of the names this contest allows.
+ 
+ RETURNS A PLAIN BOOLEAN rather than narrowing, because a type predicate has
+ to name a parameter and this one reads a property of a destructured object.
+ Each contest wraps it in its own one-line predicate over its own union.
+ 
+ @param value - candidate name from a reply
+ 
+ @param names - names this contest allows
+ 
+ @returns Whether the value is one of them
+ 
+ @example
+ ```ts
+ const allowed = namesOneOf({ value: 'repair', names: [ 'repair', 'translate', ], },);
+ ```
  */
 export function namesOneOf(
   {
@@ -211,22 +211,22 @@ export function namesOneOf(
 }
 
 /**
- * Whether the character at one offset could continue a word.
- *
- * READS PAST THE END SAFELY, because `charAt` answers an empty string beyond
- * the last index and an empty string continues nothing. A candidate name
- * filling a finding entirely therefore needs no separate case.
- *
- * @param text - finding being read
- *
- * @param at - offset just past a candidate name
- *
- * @returns Whether the character there extends that name into a longer word
- *
- * @example
- * ```ts
- * const continues = continuesWord({ text: 'repairing', at: 'repair'.length, },);
- * ```
+ Whether the character at one offset could continue a word.
+ 
+ READS PAST THE END SAFELY, because `charAt` answers an empty string beyond
+ the last index and an empty string continues nothing. A candidate name
+ filling a finding entirely therefore needs no separate case.
+ 
+ @param text - finding being read
+ 
+ @param at - offset just past a candidate name
+ 
+ @returns Whether the character there extends that name into a longer word
+ 
+ @example
+ ```ts
+ const continues = continuesWord({ text: 'repairing', at: 'repair'.length, },);
+ ```
  */
 function continuesWord(
   {
@@ -238,7 +238,7 @@ function continuesWord(
   },
 ): boolean {
   /**
-   * Case-folded character at that offset, empty past the end.
+   Case-folded character at that offset, empty past the end.
    */
   const folded = text
     .charAt(at,)
@@ -248,23 +248,23 @@ function continuesWord(
 }
 
 /**
- * Whether one finding blames one candidate.
- *
- * ANNOTATION IS NOT REFUSAL. Judges write `repair`, and they write
- * `repair (changes the bottle to a can)`, and both name the same candidate.
- * A finding naming a phrase rather than a candidate blames nobody, and says so
- * by matching none of them.
- *
- * @param finding - what a judge wrote
- *
- * @param name - candidate to test for
- *
- * @returns Whether this finding names this candidate
- *
- * @example
- * ```ts
- * const blamed = namesCandidate({ finding: 'repair (adds a season)', name: 'repair', },);
- * ```
+ Whether one finding blames one candidate.
+ 
+ ANNOTATION IS NOT REFUSAL. Judges write `repair`, and they write
+ `repair (changes the bottle to a can)`, and both name the same candidate.
+ A finding naming a phrase rather than a candidate blames nobody, and says so
+ by matching none of them.
+ 
+ @param finding - what a judge wrote
+ 
+ @param name - candidate to test for
+ 
+ @returns Whether this finding names this candidate
+ 
+ @example
+ ```ts
+ const blamed = namesCandidate({ finding: 'repair (adds a season)', name: 'repair', },);
+ ```
  */
 function namesCandidate(
   {
@@ -276,7 +276,7 @@ function namesCandidate(
   },
 ): boolean {
   /**
-   * Finding with surrounding space and case removed.
+   Finding with surrounding space and case removed.
    */
   const folded = finding
     .trim()
@@ -289,18 +289,18 @@ function namesCandidate(
 }
 
 /**
- * Reads which candidates a list of findings blames.
- *
- * @param findings - findings exactly as a judge wrote them
- *
- * @param names - candidate names this contest allows, in canonical order
- *
- * @returns Names blamed, in that order and without repeats
- *
- * @example
- * ```ts
- * const blamed = readCandidateNames({ findings: [ 'repair (adds a season)', ], names, },);
- * ```
+ Reads which candidates a list of findings blames.
+ 
+ @param findings - findings exactly as a judge wrote them
+ 
+ @param names - candidate names this contest allows, in canonical order
+ 
+ @returns Names blamed, in that order and without repeats
+ 
+ @example
+ ```ts
+ const blamed = readCandidateNames({ findings: [ 'repair (adds a season)', ], names, },);
+ ```
  */
 export function readCandidateNames<NameT extends string,>(
   {

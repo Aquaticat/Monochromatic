@@ -1,11 +1,11 @@
 /**
- * Tests for the contest ledger's file names.
- *
- * `#246`: the ordinal restarted at zero per process, so a relaunch into the
- * same runs directory overwrote the earlier launch's contests one by one. The
- * cases hold the name to the launch it was written by and to text order.
- *
- * @module
+ Tests for the contest ledger's file names.
+ 
+ `#246`: the ordinal restarted at zero per process, so a relaunch into the
+ same runs directory overwrote the earlier launch's contests one by one. The
+ cases hold the name to the launch it was written by and to text order.
+ 
+ @module
  */
 
 import {
@@ -39,7 +39,7 @@ await describe({
       name: 'SORTS as text by launch and then by ordinal, which is contest order across relaunches',
       fn: async () => {
         /**
-         * Names written by an earlier and a later launch, shuffled.
+         Names written by an earlier and a later launch, shuffled.
          */
         const names = [
           ledgerFileName({

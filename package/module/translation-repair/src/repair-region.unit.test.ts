@@ -1,9 +1,9 @@
 /**
- * Tests for attributing applied operations to the accepted issues their
- * envelope was cut for.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for attributing applied operations to the accepted issues their
+ envelope was cut for.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -20,20 +20,20 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one envelope over the given base text and served issues.
- *
- * @param envelopeId - envelope identity operations name
- *
- * @param baseText - text occupying the envelope
- *
- * @param issueIds - accepted issues the envelope was cut for
- *
- * @returns Envelope the collector reads
- *
- * @example
- * ```ts
- * const envelope = catEnvelope({ envelopeId: 'envelope/nap', baseText: 'naps', issueIds: [], },);
- * ```
+ Builds one envelope over the given base text and served issues.
+ 
+ @param envelopeId - envelope identity operations name
+ 
+ @param baseText - text occupying the envelope
+ 
+ @param issueIds - accepted issues the envelope was cut for
+ 
+ @returns Envelope the collector reads
+ 
+ @example
+ ```ts
+ const envelope = catEnvelope({ envelopeId: 'envelope/nap', baseText: 'naps', issueIds: [], },);
+ ```
  */
 function catEnvelope(
   {
@@ -57,18 +57,18 @@ function catEnvelope(
 }
 
 /**
- * Builds one applied operation against an envelope.
- *
- * @param envelopeId - envelope the operation targets
- *
- * @param newText - replacement text
- *
- * @returns Operation the collector reads
- *
- * @example
- * ```ts
- * const operation = catOperation({ envelopeId: 'envelope/nap', newText: 'sleeps', },);
- * ```
+ Builds one applied operation against an envelope.
+ 
+ @param envelopeId - envelope the operation targets
+ 
+ @param newText - replacement text
+ 
+ @returns Operation the collector reads
+ 
+ @example
+ ```ts
+ const operation = catOperation({ envelopeId: 'envelope/nap', newText: 'sleeps', },);
+ ```
  */
 function catOperation(
   {

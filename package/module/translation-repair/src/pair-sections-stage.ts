@@ -35,17 +35,17 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // and 5 of the remaining 7 align with no refusal. Two entries are ever asked.
 
 /**
- * Voices that must name a correspondence before it is kept.
- *
- * TWO, matching the block stage, and for its reason: a pairing one model
- * invented is the risk, and a correspondence two models reached independently
- * is not plausibly coincidence when each is choosing from every section on the
- * other side.
+ Voices that must name a correspondence before it is kept.
+ 
+ TWO, matching the block stage, and for its reason: a pairing one model
+ invented is the risk, and a correspondence two models reached independently
+ is not plausibly coincidence when each is choosing from every section on the
+ other side.
  */
 const AGREEMENT_NEEDED = 2;
 
 /**
- * Schema the reply must satisfy before it reaches the reader.
+ Schema the reply must satisfy before it reaches the reader.
  */
 const SECTION_PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',
@@ -77,81 +77,81 @@ const SECTION_PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 };
 
 /**
- * What the roster settled on for one document's sections.
- *
- * @example
- * ```ts
- * const outcome: SectionPairingOutcome = { pairs: [], heard: 0, usable: 0, findings: [], };
- * ```
+ What the roster settled on for one document's sections.
+ 
+ @example
+ ```ts
+ const outcome: SectionPairingOutcome = { pairs: [], heard: 0, usable: 0, findings: [], };
+ ```
  */
 export type SectionPairingOutcome = {
   /**
-   * Correspondences enough voices named, in document order.
+   Correspondences enough voices named, in document order.
    */
   readonly pairs: readonly SectionPair[];
 
   /**
-   * Voices that answered at all.
+   Voices that answered at all.
    */
   readonly heard: number;
 
   /**
-   * Voices whose answer survived the reader.
+   Voices whose answer survived the reader.
    */
   readonly usable: number;
 
   /**
-   * What went wrong, in scorecard-stable wording.
+   What went wrong, in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * One document's settled section pairing as the cache stores it.
- *
- * THE FINDINGS ARE HALF THE RECORD, for the reason `PairedSectionRecord` gives
- * at block scale: a resumed run makes no calls, so anything this round reported
- * the first time is reported by nothing on the second unless it was stored.
- *
- * @example
- * ```ts
- * const settled: PairedDocumentRecord = { pairs: [], findings: [], };
- * ```
+ One document's settled section pairing as the cache stores it.
+ 
+ THE FINDINGS ARE HALF THE RECORD, for the reason `PairedSectionRecord` gives
+ at block scale: a resumed run makes no calls, so anything this round reported
+ the first time is reported by nothing on the second unless it was stored.
+ 
+ @example
+ ```ts
+ const settled: PairedDocumentRecord = { pairs: [], findings: [], };
+ ```
  */
 export type PairedDocumentRecord = {
   /**
-   * Correspondences the roster agreed on, in document order.
+   Correspondences the roster agreed on, in document order.
    */
   readonly pairs: readonly SectionPair[];
 
   /**
-   * Findings this round contributed, in the order a cold run emitted them.
+   Findings this round contributed, in the order a cold run emitted them.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Reads every heard reply, keeping the usable ones and reporting the rest.
- *
- * @param outcomes - one round result per voice
- *
- * @param sourceCount - original sections the sheet numbered
- *
- * @param targetCount - translation sections the sheet numbered
- *
- * @param findings - accumulator an unusable reply appends its notice to
- *
- * @param l - stage logger
- *
- * @returns Pairings that survived the reader, one per usable voice
- *
- * @throws Error when a reader raises anything other than a
- * {@link SectionPairingError}, since that is a defect rather than a bad reply
- *
- * @example
- * ```ts
- * const pairings = readUsablePairings({ outcomes, sourceCount, targetCount, findings, l, },);
- * ```
+ Reads every heard reply, keeping the usable ones and reporting the rest.
+ 
+ @param outcomes - one round result per voice
+ 
+ @param sourceCount - original sections the sheet numbered
+ 
+ @param targetCount - translation sections the sheet numbered
+ 
+ @param findings - accumulator an unusable reply appends its notice to
+ 
+ @param l - stage logger
+ 
+ @returns Pairings that survived the reader, one per usable voice
+ 
+ @throws Error when a reader raises anything other than a
+ {@link SectionPairingError}, since that is a defect rather than a bad reply
+ 
+ @example
+ ```ts
+ const pairings = readUsablePairings({ outcomes, sourceCount, targetCount, findings, l, },);
+ ```
  */
 function readUsablePairings(
   {
@@ -169,12 +169,12 @@ function readUsablePairings(
   },
 ): readonly (readonly SectionPair[])[] {
   /**
-   * Pairings that survived the reader, one per usable voice.
+   Pairings that survived the reader, one per usable voice.
    */
   const pairings: (readonly SectionPair[])[] = [];
   for (const outcome of outcomes) {
     /**
-     * This voice's reply, heard or lost.
+     This voice's reply, heard or lost.
      */
     const { voice, } = outcome;
     if (!voice.heard)
@@ -201,37 +201,37 @@ function readUsablePairings(
 }
 
 /**
- * Asks the roster to pair two documents' sections and keeps the agreed ones.
- *
- * REFUSES RATHER THAN GUESSES. When no voice answers usably the outcome carries
- * no pairs and says why, and the caller keeps the deterministic aligner's own
- * refusals rather than proceeding on one model's word. `#71` recorded the rule:
- * a wrong pairing is worse than no pairing, because it manufactures issues
- * rather than skipping work.
- *
- * @param client - injected model client
- *
- * @param modelIds - roster to ask
- *
- * @param sourceSections - original sections in document order
- *
- * @param targetSections - translation sections in document order
- *
- * @param signal - caller's steering
- *
- * @param exchangeTimeoutMs - per-call bound
- *
- * @param l - driver logger
- *
- * @param fanOut - seats a round asks: the window of quorum plus one by
- * default, or the whole bench a fixture scripting every seat asks for
- *
- * @returns What the roster agreed on, with what it lost
- *
- * @example
- * ```ts
- * const outcome = await pairSectionsWithRoster({ client, modelIds, sourceSections, targetSections, signal, exchangeTimeoutMs, l, },);
- * ```
+ Asks the roster to pair two documents' sections and keeps the agreed ones.
+ 
+ REFUSES RATHER THAN GUESSES. When no voice answers usably the outcome carries
+ no pairs and says why, and the caller keeps the deterministic aligner's own
+ refusals rather than proceeding on one model's word. `#71` recorded the rule:
+ a wrong pairing is worse than no pairing, because it manufactures issues
+ rather than skipping work.
+ 
+ @param client - injected model client
+ 
+ @param modelIds - roster to ask
+ 
+ @param sourceSections - original sections in document order
+ 
+ @param targetSections - translation sections in document order
+ 
+ @param signal - caller's steering
+ 
+ @param exchangeTimeoutMs - per-call bound
+ 
+ @param l - driver logger
+ 
+ @param fanOut - seats a round asks: the window of quorum plus one by
+ default, or the whole bench a fixture scripting every seat asks for
+ 
+ @returns What the roster agreed on, with what it lost
+ 
+ @example
+ ```ts
+ const outcome = await pairSectionsWithRoster({ client, modelIds, sourceSections, targetSections, signal, exchangeTimeoutMs, l, },);
+ ```
  */
 export async function pairSectionsWithRoster(
   {
@@ -255,7 +255,7 @@ export async function pairSectionsWithRoster(
   }>,
 ): Promise<SectionPairingOutcome> {
   /**
-   * Logger tagged with this stage.
+   Logger tagged with this stage.
    */
   const pl = tagged({
     tag: pairSectionsWithRoster.name,
@@ -263,7 +263,7 @@ export async function pairSectionsWithRoster(
   },);
 
   /**
-   * Every voice's reply, heard or lost.
+   Every voice's reply, heard or lost.
    */
   const outcomes = await runWindowedRounds({
     client,
@@ -284,12 +284,12 @@ export async function pairSectionsWithRoster(
   },);
 
   /**
-   * Voices that arrived and validated in shape.
+   Voices that arrived and validated in shape.
    */
   const heard = outcomes
     .filter(function wasHeard(outcome,) {
       /**
-       * This voice's reply, heard or lost.
+       This voice's reply, heard or lost.
        */
       const { voice, } = outcome;
       return voice.heard;
@@ -297,12 +297,12 @@ export async function pairSectionsWithRoster(
     .length;
 
   /**
-   * Findings accumulated while reading replies.
+   Findings accumulated while reading replies.
    */
   const findings: string[] = [];
 
   /**
-   * Pairings that survived the reader, one per usable voice.
+   Pairings that survived the reader, one per usable voice.
    */
   const pairings = readUsablePairings({
     outcomes,
@@ -325,8 +325,8 @@ export async function pairSectionsWithRoster(
   }
 
   /**
-   * Pairs the roster agreed on, counted over every usable voice's pairs and
-   * kept strictly increasing on both sides (`#245`).
+   Pairs the roster agreed on, counted over every usable voice's pairs and
+   kept strictly increasing on both sides (`#245`).
    */
   const agreement = agreePairs({
     pairings,
@@ -334,12 +334,12 @@ export async function pairSectionsWithRoster(
     pairingShape: 'one-to-one',
   },);
   /**
-   * What agreement dropped, in its own words.
+   What agreement dropped, in its own words.
    */
   const { findings: dropped, } = agreement;
 
   /**
-   * The same, in this stage's vocabulary.
+   The same, in this stage's vocabulary.
    */
   const prefixed = dropped.map(function prefix(finding,): string {
     return `section-pairing ${finding}`;
@@ -347,7 +347,7 @@ export async function pairSectionsWithRoster(
   findings.push(...prefixed,);
 
   /**
-   * Pairs that survived agreement and ordering.
+   Pairs that survived agreement and ordering.
    */
   const agreed = agreement.pairs;
   pl.info(

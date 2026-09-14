@@ -1,11 +1,11 @@
 /**
- * Tests for folding a footnote label to the spelling mdast keys its nodes by.
- *
- * The claim under test is an agreement with another library, so the cases here
- * are the ones where a hand-rolled fold and the parser's would part company.
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for folding a footnote label to the spelling mdast keys its nodes by.
+ 
+ The claim under test is an agreement with another library, so the cases here
+ are the ones where a hand-rolled fold and the parser's would part company.
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -20,48 +20,48 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Folds a label the way this module does.
- *
- * @param identifier - label as written
- *
- * @returns Folded label
- *
- * @example
- * ```ts
- * const folded = fold('Note',);
- * ```
+ Folds a label the way this module does.
+ 
+ @param identifier - label as written
+ 
+ @returns Folded label
+ 
+ @example
+ ```ts
+ const folded = fold('Note',);
+ ```
  */
 function fold(identifier: string,): string {
   return normalizeFootnoteIdentifier({ identifier, },);
 }
 
 /**
- * Identifier mdast gives a document whose reference carries this label.
- *
- * Goes through a real parse rather than a restated rule, since the whole point
- * of this module is to agree with the parser rather than with a description of
- * it.
- *
- * @param identifier - label to write into both halves of a footnote pair
- *
- * @returns Identifier mdast keyed the definition by
- *
- * @example
- * ```ts
- * const parsed = parsedIdentifier('Note',);
- * ```
+ Identifier mdast gives a document whose reference carries this label.
+ 
+ Goes through a real parse rather than a restated rule, since the whole point
+ of this module is to agree with the parser rather than with a description of
+ it.
+ 
+ @param identifier - label to write into both halves of a footnote pair
+ 
+ @returns Identifier mdast keyed the definition by
+ 
+ @example
+ ```ts
+ const parsed = parsedIdentifier('Note',);
+ ```
  */
 function parsedIdentifier(identifier: string,): string {
   /**
-   * Document carrying one footnote written with this exact label.
+   Document carrying one footnote written with this exact label.
    */
   const parsed = parseDocument({
     text: `The cat naps[^${identifier}] here.\n\n[^${identifier}]: Its spot.\n`,
   },);
 
   /**
-   * Definition hit the parse produced, which is the node whose identifier is
-   * being compared.
+   Definition hit the parse produced, which is the node whose identifier is
+   being compared.
    */
   const [definition,] = parsed.footnoteGraph
     .definitions;

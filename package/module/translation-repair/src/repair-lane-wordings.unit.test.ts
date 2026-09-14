@@ -1,22 +1,22 @@
 /**
- * Tests for the repair lane's per-slice wordings.
- *
- * WHAT THESE PIN is that this lane's silence at a passage the archive never
- * translated is reported as silence. It mends existing English, so where there
- * is none it has no work to do and no opinion to record; its settled outcome
- * carries the empty string for want of anything else, and passing that through
- * as a decision said the lane chose the wording it found. A lane comparison
- * then read that against a translate lane that had actually filled the passage
- * and reported the two lanes choosing DIFFERENT wordings.
- *
- * The second thing they pin is the intersection. The blocked exit settles a
- * prefix and stops, so an anchor before the crossing was reached and one after
- * it was not, and naming every anchor in the preparation would report the lane
- * as having visited slices it never got to.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the repair lane's per-slice wordings.
+ 
+ WHAT THESE PIN is that this lane's silence at a passage the archive never
+ translated is reported as silence. It mends existing English, so where there
+ is none it has no work to do and no opinion to record; its settled outcome
+ carries the empty string for want of anything else, and passing that through
+ as a decision said the lane chose the wording it found. A lane comparison
+ then read that against a translate lane that had actually filled the passage
+ and reported the two lanes choosing DIFFERENT wordings.
+ 
+ The second thing they pin is the intersection. The blocked exit settles a
+ prefix and stops, so an anchor before the crossing was reached and one after
+ it was not, and naming every anchor in the preparation would report the lane
+ as having visited slices it never got to.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -34,7 +34,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Archive wording of each content slice, by index; the odd ones are anchors.
+ Archive wording of each content slice, by index; the odd ones are anchors.
  */
 const INCUMBENTS: Readonly<Record<number, string>> = {
   0: 'The cat sleeps on the sill.',
@@ -42,14 +42,14 @@ const INCUMBENTS: Readonly<Record<number, string>> = {
 };
 
 /**
- * Four prepared slices: content, anchor, content, anchor.
- *
- * @returns Pairs shaped as preparation produces them
- *
- * @example
- * ```ts
- * const slices = alternatingSlices();
- * ```
+ Four prepared slices: content, anchor, content, anchor.
+ 
+ @returns Pairs shaped as preparation produces them
+ 
+ @example
+ ```ts
+ const slices = alternatingSlices();
+ ```
  */
 function alternatingSlices(): readonly ChunkPair[] {
   return [
@@ -59,7 +59,7 @@ function alternatingSlices(): readonly ChunkPair[] {
     3,
   ].map(function toPair(sliceIndex,): ChunkPair {
     /**
-     * Archive wording here, absent at every anchor.
+     Archive wording here, absent at every anchor.
      */
     const incumbentText = INCUMBENTS[sliceIndex];
     return {
@@ -87,23 +87,23 @@ function alternatingSlices(): readonly ChunkPair[] {
 }
 
 /**
- * One settled slice a critic answered on, which is what makes it a decision.
- *
- * WRITTEN OUT rather than defaulted, because the field it fills is exactly what
- * separates a slice the lane examined from one it heard nobody about, and a
- * fixture that left it implicit would stop testing the distinction the moment
- * the default changed.
- *
- * @param sliceIndex - slice this settled
- *
- * @param repairedText - wording the lane settled on
- *
- * @returns Outcome carrying one heard critic and no refinement
- *
- * @example
- * ```ts
- * const outcome = heard({ sliceIndex: 0, repairedText: 'The cat naps.', },);
- * ```
+ One settled slice a critic answered on, which is what makes it a decision.
+ 
+ WRITTEN OUT rather than defaulted, because the field it fills is exactly what
+ separates a slice the lane examined from one it heard nobody about, and a
+ fixture that left it implicit would stop testing the distinction the moment
+ the default changed.
+ 
+ @param sliceIndex - slice this settled
+ 
+ @param repairedText - wording the lane settled on
+ 
+ @returns Outcome carrying one heard critic and no refinement
+ 
+ @example
+ ```ts
+ const outcome = heard({ sliceIndex: 0, repairedText: 'The cat naps.', },);
+ ```
  */
 function heard(
   {
@@ -124,19 +124,19 @@ function heard(
 }
 
 /**
- * One settled slice no stage spoke about, which leaves the archive standing.
- *
- * @param sliceIndex - slice this settled
- *
- * @param repairedText - wording the lane settled on, which for a silent slice
- * has to be the archive's own
- *
- * @returns Outcome carrying no heard critic and no refinement
- *
- * @example
- * ```ts
- * const outcome = unheard({ sliceIndex: 0, repairedText: ARCHIVE_NAP, },);
- * ```
+ One settled slice no stage spoke about, which leaves the archive standing.
+ 
+ @param sliceIndex - slice this settled
+ 
+ @param repairedText - wording the lane settled on, which for a silent slice
+ has to be the archive's own
+ 
+ @returns Outcome carrying no heard critic and no refinement
+ 
+ @example
+ ```ts
+ const outcome = unheard({ sliceIndex: 0, repairedText: ARCHIVE_NAP, },);
+ ```
  */
 function unheard(
   {
@@ -167,7 +167,7 @@ await describe({
         + 'choosing a wording where it had no opinion at all',
       fn: async () => {
         /**
-         * Wordings for a run that visited every slice.
+         Wordings for a run that visited every slice.
          */
         const wordings = repairLaneWordings({
           slices: alternatingSlices(),
@@ -209,7 +209,7 @@ await describe({
         + 'visited that never were',
       fn: async () => {
         /**
-         * Wordings for a run blocked after the third slice.
+         Wordings for a run blocked after the third slice.
          */
         const wordings = repairLaneWordings({
           slices: alternatingSlices(),
@@ -239,7 +239,7 @@ await describe({
         + 'having examined a passage it never saw an answer about',
       fn: async () => {
         /**
-         * Wordings for a run whose second content slice heard nobody.
+         Wordings for a run whose second content slice heard nobody.
          */
         const wordings = repairLaneWordings({
           slices: alternatingSlices(),
@@ -269,7 +269,7 @@ await describe({
         + 'lost stage would make the two indistinguishable in exactly the direction that flatters the run',
       fn: async () => {
         /**
-         * Wordings where every content slice was examined and kept.
+         Wordings where every content slice was examined and kept.
          */
         const wordings = repairLaneWordings({
           slices: alternatingSlices(),
@@ -294,7 +294,7 @@ await describe({
         + 'a ledger, a comparison and a rate before anyone notices',
       fn: async () => {
         /**
-         * What silentSliceCarriesText raised, read for its class as well as its wording.
+         What silentSliceCarriesText raised, read for its class as well as its wording.
          */
         const refusalOfSilentSliceCarriesText = caught(function silentSliceCarriesText() {
           repairLaneWordings({
@@ -320,7 +320,7 @@ await describe({
         + 'passage as the archive standing untouched',
       fn: async () => {
         /**
-         * Wordings where the refiner acted on a slice no critic raised.
+         Wordings where the refiner acted on a slice no critic raised.
          */
         const wordings = repairLaneWordings({
           slices: alternatingSlices(),
@@ -347,7 +347,7 @@ await describe({
         + 'away, and here the text matches, so the claim is the only thing wrong with the row',
       fn: async () => {
         /**
-         * What silentSliceClaimsChange raised, read for its class as well as its wording.
+         What silentSliceClaimsChange raised, read for its class as well as its wording.
          */
         const refusalOfSilentSliceClaimsChange = caught(function silentSliceClaimsChange() {
           repairLaneWordings({

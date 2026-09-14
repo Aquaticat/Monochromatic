@@ -1,20 +1,20 @@
 /**
- * Tests for judging a slate that already exists.
- *
- * WHAT THIS FILE IS FOR, and it is one claim: the same slate can be judged more
- * than once, and the second judging sees the same candidates as the first. That
- * is the whole reason the stage was split. While producing and judging were one
- * call, a caller asking the same question twice bought two slates, so the two
- * answers differed in the candidates as well as in whatever the caller meant to
- * vary. `#108` varies the judges' evidence; a position-bias probe would vary
- * ballot position. Neither means anything if the texts move underneath.
- *
- * `translate-stage.unit.test.ts` still covers what the composed stage decides,
- * unchanged, and is the evidence that splitting changed no behaviour.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for judging a slate that already exists.
+ 
+ WHAT THIS FILE IS FOR, and it is one claim: the same slate can be judged more
+ than once, and the second judging sees the same candidates as the first. That
+ is the whole reason the stage was split. While producing and judging were one
+ call, a caller asking the same question twice bought two slates, so the two
+ answers differed in the candidates as well as in whatever the caller meant to
+ vary. `#108` varies the judges' evidence; a position-bias probe would vary
+ ballot position. Neither means anything if the texts move underneath.
+ 
+ `translate-stage.unit.test.ts` still covers what the composed stage decides,
+ unchanged, and is the evidence that splitting changed no behaviour.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -38,27 +38,27 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger the halves write their progress to.
+ Logger the halves write their progress to.
  */
 const l = tagged({ tag: 'translate-judge-test', },);
 
 /**
- * Schema name the producing half asks translators for.
+ Schema name the producing half asks translators for.
  */
 const TRANSLATE_SCHEMA = 'translation_report';
 
 /**
- * Original slice both halves work over.
+ Original slice both halves work over.
  */
 const SOURCE_TEXT = '猫猫在窗台上打盹，尾巴垂在暖气片旁边。';
 
 /**
- * Translation already in the archive, awkward but present.
+ Translation already in the archive, awkward but present.
  */
 const INCUMBENT_TEXT = 'The cat is doing the sleeping on the windowsill, with tail hanging by the radiator.';
 
 /**
- * Models that render the slice.
+ Models that render the slice.
  */
 const TRANSLATORS: readonly RosterModelId[] = [
   'hf:cat/Cat-A',
@@ -68,7 +68,7 @@ const TRANSLATORS: readonly RosterModelId[] = [
 },);
 
 /**
- * Judges, three so selection can reach its minimum weight.
+ Judges, three so selection can reach its minimum weight.
  */
 const JUDGES: readonly RosterModelId[] = [
   'hf:cat/Cat-A',
@@ -79,11 +79,11 @@ const JUDGES: readonly RosterModelId[] = [
 },);
 
 /**
- * What each translator renders, keyed by model.
- *
- * DIFFERENT PER MODEL AND PER CALL COUNT, so a second production would be
- * visibly different from the first. That is what lets the test tell a reused
- * slate from a rebought one rather than assuming it.
+ What each translator renders, keyed by model.
+ 
+ DIFFERENT PER MODEL AND PER CALL COUNT, so a second production would be
+ visibly different from the first. That is what lets the test tell a reused
+ slate from a rebought one rather than assuming it.
  */
 const RENDERINGS: readonly string[] = [
   'The cat dozes on the windowsill, tail draped beside the radiator.',
@@ -93,30 +93,30 @@ const RENDERINGS: readonly string[] = [
 ];
 
 /**
- * Client whose translators answer differently on every call, and whose judges
- * abstain so the incumbent stands.
- *
- * @returns Client plus the judge sheets it was sent
- *
- * @example
- * ```ts
- * const rig = driftingClient();
- * ```
+ Client whose translators answer differently on every call, and whose judges
+ abstain so the incumbent stands.
+ 
+ @returns Client plus the judge sheets it was sent
+ 
+ @example
+ ```ts
+ const rig = driftingClient();
+ ```
  */
 function driftingClient(): {
   readonly client: SyntheticClient;
   readonly judgeSheets: string[];
 } {
   /**
-   * Translator calls served so far, which drives the drift.
-   *
-   * A `const` holding a mutable field rather than a root `let`, which
-   * `no-function-root-let` forbids.
+   Translator calls served so far, which drives the drift.
+   
+   A `const` holding a mutable field rather than a root `let`, which
+   `no-function-root-let` forbids.
    */
   const served = { count: 0, };
 
   /**
-   * Sheets the judges received.
+   Sheets the judges received.
    */
   const judgeSheets: string[] = [];
 
@@ -133,14 +133,14 @@ function driftingClient(): {
         request: ChatJsonRequest<ValueT>,
       ): Promise<ChatJsonOutcome<ValueT>> => {
         /**
-         * Schema the caller asked for, which names the role.
+         Schema the caller asked for, which names the role.
          */
         const schema = request.responseFormat
           ?.json_schema
           .name;
         if (schema === TRANSLATE_SCHEMA) {
           /**
-           * Rendering for this call, different from the last one.
+           Rendering for this call, different from the last one.
            */
           const translation = RENDERINGS[served.count % RENDERINGS.length]
             ?? RENDERINGS[0]
@@ -148,7 +148,7 @@ function driftingClient(): {
           served.count += 1;
 
           /**
-           * Wire reply carrying it.
+           Wire reply carrying it.
            */
           const value: unknown = { translation, };
           if (!request.validate(value,)) {
@@ -172,8 +172,8 @@ function driftingClient(): {
           .join('\n',),);
 
         /**
-         * Ballot declining every candidate, so the incumbent stands and no case
-         * here depends on which candidate wins.
+         Ballot declining every candidate, so the incumbent stands and no case
+         here depends on which candidate wins.
          */
         const ballot: unknown = {
           best: 0,
@@ -197,20 +197,20 @@ function driftingClient(): {
 }
 
 /**
- * Buys one slate and reports the sheet its judges were sent.
- *
- * READS THE REQUEST, NOT THE RESULT. What a judge decided is a fact about the
- * fixture; what a judge was SHOWN is the fact these cases are about, and the two
- * are only connected while the wiring is right, which is the thing under test.
- *
- * @param lineStructured - whether this round is governed by the verse rule
- *
- * @returns Sheet the judges received, joined as they read it
- *
- * @example
- * ```ts
- * const sheet = await judgeSheetFor({ lineStructured: true, },);
- * ```
+ Buys one slate and reports the sheet its judges were sent.
+ 
+ READS THE REQUEST, NOT THE RESULT. What a judge decided is a fact about the
+ fixture; what a judge was SHOWN is the fact these cases are about, and the two
+ are only connected while the wiring is right, which is the thing under test.
+ 
+ @param lineStructured - whether this round is governed by the verse rule
+ 
+ @returns Sheet the judges received, joined as they read it
+ 
+ @example
+ ```ts
+ const sheet = await judgeSheetFor({ lineStructured: true, },);
+ ```
  */
 async function judgeSheetFor(
   { lineStructured, }: { readonly lineStructured: boolean; },
@@ -218,7 +218,7 @@ async function judgeSheetFor(
   const rig = driftingClient();
 
   /**
-   * Slate for the judges to decide over.
+   Slate for the judges to decide over.
    */
   const produced = await produceTranslateSlate({
     client: rig.client,
@@ -232,9 +232,9 @@ async function judgeSheetFor(
   },);
 
   /**
-   * Where the producer sheets end, so the verse rule reaching a TRANSLATOR
-   * cannot be mistaken for it reaching a judge. Both carry the same fact and
-   * only one of them is what these cases are about.
+   Where the producer sheets end, so the verse rule reaching a TRANSLATOR
+   cannot be mistaken for it reaching a judge. Both carry the same fact and
+   only one of them is what these cases are about.
    */
   const beforeJudging = rig.judgeSheets.length;
 
@@ -258,12 +258,12 @@ async function judgeSheetFor(
 
 
 /**
- * Client that fails if anything asks it a question.
- *
- * THE POINT OF THE TWO CASES BELOW IS THAT NO ROUND IS BOUGHT. An empty slate
- * has nothing to judge, so a judge that called a model would be spending on a
- * question with no candidates in it, and this turns that into a failure rather
- * than a slower green.
+ Client that fails if anything asks it a question.
+ 
+ THE POINT OF THE TWO CASES BELOW IS THAT NO ROUND IS BOUGHT. An empty slate
+ has nothing to judge, so a judge that called a model would be spending on a
+ question with no candidates in it, and this turns that into a failure rather
+ than a slower green.
  */
 const NOBODY_TO_ASK: SyntheticClient = {
   chatText: async () => {
@@ -275,18 +275,18 @@ const NOBODY_TO_ASK: SyntheticClient = {
 } as unknown as SyntheticClient;
 
 /**
- * Builds an empty slate that reports how many translators were heard producing
- * it.
- *
- * @param heardTranslators - translators that answered usably, zero when every
- * voice on the slate was lost
- *
- * @returns Slate carrying no candidates
- *
- * @example
- * ```ts
- * const produced = emptySlate({ heardTranslators: 0, },);
- * ```
+ Builds an empty slate that reports how many translators were heard producing
+ it.
+ 
+ @param heardTranslators - translators that answered usably, zero when every
+ voice on the slate was lost
+ 
+ @returns Slate carrying no candidates
+ 
+ @example
+ ```ts
+ const produced = emptySlate({ heardTranslators: 0, },);
+ ```
  */
 function emptySlate(
   { heardTranslators, }: { readonly heardTranslators: number; },
@@ -299,17 +299,17 @@ function emptySlate(
 }
 
 /**
- * Judges an empty slate over a passage the archive has no English for, and
- * returns whatever it refused with.
- *
- * @param heardTranslators - translators that answered usably
- *
- * @returns Refusal raised, so a case can name its class and reason
- *
- * @example
- * ```ts
- * const refusal = await refusalOverAnchor({ heardTranslators: 0, },);
- * ```
+ Judges an empty slate over a passage the archive has no English for, and
+ returns whatever it refused with.
+ 
+ @param heardTranslators - translators that answered usably
+ 
+ @returns Refusal raised, so a case can name its class and reason
+ 
+ @example
+ ```ts
+ const refusal = await refusalOverAnchor({ heardTranslators: 0, },);
+ ```
  */
 async function refusalOverAnchor(
   { heardTranslators, }: { readonly heardTranslators: number; },
@@ -401,7 +401,7 @@ await describe({
         const rig = driftingClient();
 
         /**
-         * Slate bought once.
+         Slate bought once.
          */
         const produced = await produceTranslateSlate({
           client: rig.client,
@@ -417,7 +417,7 @@ await describe({
           .length,).toBeGreaterThan(1,);
 
         /**
-         * Judge sheets before the first judging, so the two arms can be split.
+         Judge sheets before the first judging, so the two arms can be split.
          */
         const beforeFirst = rig.judgeSheets.length;
 
@@ -435,7 +435,7 @@ await describe({
         },);
 
         /**
-         * Boundary between the two judgings.
+         Boundary between the two judgings.
          */
         const betweenArms = rig.judgeSheets.length;
 
@@ -453,7 +453,7 @@ await describe({
         },);
 
         /**
-         * Sheets each judging sent.
+         Sheets each judging sent.
          */
         const first = rig.judgeSheets.slice(
           beforeFirst,
@@ -461,7 +461,7 @@ await describe({
         );
 
         /**
-         * Second judging's sheets.
+         Second judging's sheets.
          */
         const second = rig.judgeSheets.slice(betweenArms,);
         expect(first.length,).toBe(JUDGES.length,);
@@ -525,7 +525,7 @@ await describe({
         },);
 
         /**
-         * Narrow arm's sheets.
+         Narrow arm's sheets.
          */
         const narrow = rig.judgeSheets.slice(
           beforeNarrow,
@@ -533,7 +533,7 @@ await describe({
         );
 
         /**
-         * Wide arm's sheets.
+         Wide arm's sheets.
          */
         const wide = rig.judgeSheets.slice(betweenArms,);
         expect(narrow.filter(function carries(sheet,) {
@@ -565,7 +565,7 @@ await describe({
         },);
 
         /**
-         * Where the narrow arm's sheets begin.
+         Where the narrow arm's sheets begin.
          */
         const beforeNarrow = rig.judgeSheets.length;
         await judgeTranslateSlate({
@@ -582,7 +582,7 @@ await describe({
         },);
 
         /**
-         * Where the narrow arm's sheets end and the wide arm's begin.
+         Where the narrow arm's sheets end and the wide arm's begin.
          */
         const betweenArms = rig.judgeSheets.length;
         await judgeTranslateSlate({
@@ -600,7 +600,7 @@ await describe({
         },);
 
         /**
-         * Narrow arm's sheets.
+         Narrow arm's sheets.
          */
         const narrow = rig.judgeSheets.slice(
           beforeNarrow,
@@ -608,7 +608,7 @@ await describe({
         );
 
         /**
-         * Wide arm's sheets.
+         Wide arm's sheets.
          */
         const wide = rig.judgeSheets.slice(betweenArms,);
 
@@ -637,16 +637,16 @@ await describe({
         + 'invariant stops holding, rather than trusting it to hold forever',
       fn: async () => {
         /**
-         * Model this hand-built candidate is credited to, disjoint from every
-         * judge so its win is a plain majority rather than a discounted
-         * self-vote.
+         Model this hand-built candidate is credited to, disjoint from every
+         judge so its win is a plain majority rather than a discounted
+         self-vote.
          */
         const soleProposer = 'hf:cat/Cat-D' as unknown as RosterModelId;
 
         /**
-         * Client whose one judge call always names the sole candidate.
-         * `produceTranslateSlate` is never called in this case, so no
-         * translator schema request ever reaches this client.
+         Client whose one judge call always names the sole candidate.
+         `produceTranslateSlate` is never called in this case, so no
+         translator schema request ever reaches this client.
          */
         const client: SyntheticClient = {
           chatText: async () => {
@@ -659,7 +659,7 @@ await describe({
             request: ChatJsonRequest<ValueT>,
           ): Promise<ChatJsonOutcome<ValueT>> => {
             /**
-             * Ballot naming the only candidate on the hand-built slate.
+             Ballot naming the only candidate on the hand-built slate.
              */
             const ballot: unknown = {
               best: 1,
@@ -681,9 +681,9 @@ await describe({
         };
 
         /**
-         * Slate built by hand rather than bought from `produceTranslateSlate`,
-         * since that producer is exactly what keeps a blank candidate off a
-         * real slate. Its sole candidate says nothing at all.
+         Slate built by hand rather than bought from `produceTranslateSlate`,
+         since that producer is exactly what keeps a blank candidate off a
+         real slate. Its sole candidate says nothing at all.
          */
         const produced: ProducedSlate = {
           candidates: [
@@ -704,7 +704,7 @@ await describe({
         };
 
         /**
-         * Failure the judging half raised.
+         Failure the judging half raised.
          */
         let caught: unknown;
         try {

@@ -29,46 +29,46 @@ import { rm, } from 'node:fs/promises';
 // leave exactly that file behind.
 
 /**
- * Files a draw has written, and whether it finished writing all of them.
- *
- * @example
- * ```ts
- * await using outputs: DrawOutputs = trackDrawOutputs();
- * ```
+ Files a draw has written, and whether it finished writing all of them.
+ 
+ @example
+ ```ts
+ await using outputs: DrawOutputs = trackDrawOutputs();
+ ```
  */
 export type DrawOutputs = AsyncDisposable & {
   /**
-   * Notes a file this draw created.
+   Notes a file this draw created.
    */
   readonly record: ({ path, }: { readonly path: string; },) => void;
 
   /**
-   * Marks the set complete, so nothing is removed on the way out.
+   Marks the set complete, so nothing is removed on the way out.
    */
   readonly commit: () => void;
 };
 
 /**
- * Tracks the files a draw writes and removes them unless it finished.
- *
- * @param enabled - whether this draw's outputs are exclusively created, which
- * is true of a final draw and false of a preliminary one; a disabled tracker
- * records nothing and removes nothing
- *
- * @returns Tracker to be held with `await using`
- *
- * @example
- * ```ts
- * await using outputs = trackDrawOutputs({ enabled: isFinal, },);
- * outputs.record({ path: sheetPath, },);
- * outputs.commit();
- * ```
+ Tracks the files a draw writes and removes them unless it finished.
+ 
+ @param enabled - whether this draw's outputs are exclusively created, which
+ is true of a final draw and false of a preliminary one; a disabled tracker
+ records nothing and removes nothing
+ 
+ @returns Tracker to be held with `await using`
+ 
+ @example
+ ```ts
+ await using outputs = trackDrawOutputs({ enabled: isFinal, },);
+ outputs.record({ path: sheetPath, },);
+ outputs.commit();
+ ```
  */
 export function trackDrawOutputs(
   { enabled, }: { readonly enabled: boolean; },
 ): DrawOutputs {
   /**
-   * Paths written so far, and whether the set completed.
+   Paths written so far, and whether the set completed.
    */
   const state = {
     paths: [] as string[],

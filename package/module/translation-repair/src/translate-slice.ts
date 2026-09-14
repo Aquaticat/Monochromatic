@@ -34,50 +34,50 @@ import { translateSliceInput, } from './translate-slice-input.ts';
 // exactly what says the pairing was wrong.
 
 /**
- * Translates one slice and settles what the driver accepts for it.
- *
- * @param client - injected model client
- *
- * @param slice - prepared slice pair
- *
- * @param prepared - document the slice came from, for declared names and
- * governance
- *
- * @param models - translator and judge rosters
- *
- * @param neighbouringSourceText - original of the sections either side, shown to
- * the judges as context they are not asked to render. Absent by default, so the
- * lane behaves exactly as it did; `#108` supplies it on the slices `#107`'s
- * screen flags, to read whether the replacement rate falls when a judge can see
- * that the archive put this slice's content next door
- *
- * @param neighbouringIncumbentText - archive English of the sections either
- * side, shown so a passage missing here can be recognised next door rather than
- * read as one the archive never had
- *
- * @param pictureContext - what the pictures this slice and its neighbours show
- * were read as, shown to translators and judges as source evidence they could
- * otherwise not see
- *
- * @param pictureFindings - one line per picture no reading is available for,
- * carried into the record so a run says which pictures went unread rather than
- * leaving their absence indistinguishable from a slice showing none
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - driver logger
- *
- * @returns Settled record, whether the stage's text was accepted or refused
- *
- * @throws {@link import('./translation-repair-interrupted-error.ts').TranslationRepairInterruptedError}
- * when absent-passage correction repeats exact task or providers remain unavailable
- *
- * @example
- * ```ts
- * const record = await settleTranslateSlice({ client, slice, prepared, models, signal, perCallTimeoutMs, l, },);
- * ```
+ Translates one slice and settles what the driver accepts for it.
+ 
+ @param client - injected model client
+ 
+ @param slice - prepared slice pair
+ 
+ @param prepared - document the slice came from, for declared names and
+ governance
+ 
+ @param models - translator and judge rosters
+ 
+ @param neighbouringSourceText - original of the sections either side, shown to
+ the judges as context they are not asked to render. Absent by default, so the
+ lane behaves exactly as it did; `#108` supplies it on the slices `#107`'s
+ screen flags, to read whether the replacement rate falls when a judge can see
+ that the archive put this slice's content next door
+ 
+ @param neighbouringIncumbentText - archive English of the sections either
+ side, shown so a passage missing here can be recognised next door rather than
+ read as one the archive never had
+ 
+ @param pictureContext - what the pictures this slice and its neighbours show
+ were read as, shown to translators and judges as source evidence they could
+ otherwise not see
+ 
+ @param pictureFindings - one line per picture no reading is available for,
+ carried into the record so a run says which pictures went unread rather than
+ leaving their absence indistinguishable from a slice showing none
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - driver logger
+ 
+ @returns Settled record, whether the stage's text was accepted or refused
+ 
+ @throws {@link import('./translation-repair-interrupted-error.ts').TranslationRepairInterruptedError}
+ when absent-passage correction repeats exact task or providers remain unavailable
+ 
+ @example
+ ```ts
+ const record = await settleTranslateSlice({ client, slice, prepared, models, signal, perCallTimeoutMs, l, },);
+ ```
  */
 export async function settleTranslateSlice(
   {
@@ -107,12 +107,12 @@ export async function settleTranslateSlice(
   }>,
 ): Promise<TranslateSliceRecord> {
   /**
-   * Global slice index every record and replacement names.
+   Global slice index every record and replacement names.
    */
   const { sliceIndex, } = slice.target;
 
   /**
-   * Shared pre-stage protection and governance, without publication-disposition decisions.
+   Shared pre-stage protection and governance, without publication-disposition decisions.
    */
   const {
     archiveText,
@@ -126,7 +126,7 @@ export async function settleTranslateSlice(
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
   },);
   /**
-   * The exact staged surface is also what later publication guards compare.
+   The exact staged surface is also what later publication guards compare.
    */
   const {
     sourceText,
@@ -143,7 +143,7 @@ export async function settleTranslateSlice(
     );
 
   /**
-   * What the translators wrote and the judges decided, through the unchanged stage operation.
+   What the translators wrote and the judges decided, through the unchanged stage operation.
    */
   const stageResult = await runTranslateStage({
     client,
@@ -156,13 +156,13 @@ export async function settleTranslateSlice(
   },);
 
   /**
-   * What this slice reports, the stage's own findings plus one line per picture
-   * nobody could read.
-   *
-   * A PICTURE THAT WENT UNREAD IS NOT THE SAME AS A SLICE SHOWING NONE, and
-   * without this line the two are identical in every artifact. The reading is
-   * evidence the translators and judges were promised and did not get, so a
-   * reader asking why a slice decided as it did needs to know it was missing.
+   What this slice reports, the stage's own findings plus one line per picture
+   nobody could read.
+   
+   A PICTURE THAT WENT UNREAD IS NOT THE SAME AS A SLICE SHOWING NONE, and
+   without this line the two are identical in every artifact. The reading is
+   evidence the translators and judges were promised and did not get, so a
+   reader asking why a slice decided as it did needs to know it was missing.
    */
   const findings: readonly string[] = [
     ...stageResult.findings,
@@ -170,7 +170,7 @@ export async function settleTranslateSlice(
   ];
 
   /**
-   * Whether this slice's two sides can be the same passage.
+   Whether this slice's two sides can be the same passage.
    */
   const alignment = assessSliceAlignment({
     sourceText,
@@ -178,37 +178,37 @@ export async function settleTranslateSlice(
   },);
 
   /**
-   * Whether the stage wants to change the archive text at all.
+   Whether the stage wants to change the archive text at all.
    */
   const wantsReplacement = stageResult.text !== incumbentText;
 
   /**
-   * Whether the guard stands in the way of that.
-   *
-   * Only a REPLACEMENT can be refused. A slice the judges left alone needs no
-   * permission to stay as it is, and refusing it would report a protection that
-   * protected nothing.
-   *
-   * AND ONLY WHERE THERE IS SOMETHING TO PROTECT. The guard exists to stop a
-   * short source replacing a long translation the source cannot account for; at
-   * an anchor there is no translation to lose, so a refusal there would put the
-   * empty string back over a rendering the judges chose and settle the slice as
-   * an ordinary unchanged one, which is the exact wrong-success state absent
-   * mode exists to remove.
+   Whether the guard stands in the way of that.
+   
+   Only a REPLACEMENT can be refused. A slice the judges left alone needs no
+   permission to stay as it is, and refusing it would report a protection that
+   protected nothing.
+   
+   AND ONLY WHERE THERE IS SOMETHING TO PROTECT. The guard exists to stop a
+   short source replacing a long translation the source cannot account for; at
+   an anchor there is no translation to lose, so a refusal there would put the
+   empty string back over a rendering the judges chose and settle the slice as
+   an ordinary unchanged one, which is the exact wrong-success state absent
+   mode exists to remove.
    */
   const refused = (incumbentKind === 'present')
     && wantsReplacement
     && (alignment.kind === 'incumbent-dominates-source');
 
   /**
-   * Whether the replacement would leave the document with fewer quoted
-   * passages than the archive carries.
-   *
-   * A SEPARATE GUARD FROM THE ALIGNMENT ONE, because a ratio and a structure
-   * catch different things. The alignment guard refuses above sixteen times the
-   * source length, and the two transcripts measured on 2026-08-18 sat at 15.49
-   * and 8.71: a near miss and nowhere near. Counting quoted passages catches
-   * both, and over sixty-nine natural rows it caught nothing else.
+   Whether the replacement would leave the document with fewer quoted
+   passages than the archive carries.
+   
+   A SEPARATE GUARD FROM THE ALIGNMENT ONE, because a ratio and a structure
+   catch different things. The alignment guard refuses above sixteen times the
+   source length, and the two transcripts measured on 2026-08-18 sat at 15.49
+   and 8.71: a near miss and nowhere near. Counting quoted passages catches
+   both, and over sixty-nine natural rows it caught nothing else.
    */
   const losesQuote = (incumbentKind === 'present')
     && wantsReplacement
@@ -239,32 +239,32 @@ export async function settleTranslateSlice(
     };
   }
   /**
-   * Whether this slice is one the declared-name guard applies to at all.
-   *
-   * Only a slice whose archive text is being replaced can lose a name from it.
+   Whether this slice is one the declared-name guard applies to at all.
+   
+   Only a slice whose archive text is being replaced can lose a name from it.
    */
   const guardsThisSlice = (incumbentKind === 'present')
     && wantsReplacement
     && (!refused);
   /**
-   * Declared names the archive text carries and the replacement does not.
-   *
-   * CHECKED RATHER THAN ASKED FOR. Probed against the repair lane's own judge
-   * sheet and roster, six of six judges preferred a candidate that dropped a
-   * declared alias, and stating the exception in the criterion moved their
-   * reasoning without moving the vote.
+   Declared names the archive text carries and the replacement does not.
+   
+   CHECKED RATHER THAN ASKED FOR. Probed against the repair lane's own judge
+   sheet and roster, six of six judges preferred a candidate that dropped a
+   declared alias, and stating the exception in the criterion moved their
+   reasoning without moving the vote.
    */
   /**
-   * Whether target-declared forms govern this ordinary prose slice.
-   *
-   * Front matter is where declarations themselves are corrected from source,
-   * so protecting target values there would make metadata unrepairable.
+   Whether target-declared forms govern this ordinary prose slice.
+   
+   Front matter is where declarations themselves are corrected from source,
+   so protecting target values there would make metadata unrepairable.
    */
   const guardDeclaredNames = slice.syntax === 'front-matter'
     ? false
     : guardsThisSlice;
   /**
-   * Target-declared forms ordinary prose replacement would drop.
+   Target-declared forms ordinary prose replacement would drop.
    */
   const droppedDeclaredNames = guardDeclaredNames
     ? findDroppedDeclaredNames({
@@ -337,12 +337,12 @@ export async function settleTranslateSlice(
   }
 
   /**
-   * What this slice leaves the document with.
-   *
-   * THE ARCHIVE'S OWN BYTES WHEN NOTHING CHANGED, rather than a reconstruction
-   * of them. Restoring a protected run onto an unchanged judged part rebuilds
-   * the same passage, and a rebuild that differs by so much as a trailing
-   * newline reports a change nobody made.
+   What this slice leaves the document with.
+   
+   THE ARCHIVE'S OWN BYTES WHEN NOTHING CHANGED, rather than a reconstruction
+   of them. Restoring a protected run onto an unchanged judged part rebuilds
+   the same passage, and a rebuild that differs by so much as a trailing
+   newline reports a change nobody made.
    */
   const outputText = wantsReplacement
     ? restoreTargetOnlyRun({

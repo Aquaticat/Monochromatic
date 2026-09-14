@@ -42,57 +42,57 @@ import {
 // with its vote screening in chunk-critic-phase.ts.
 
 /**
- * Runs one chunk pair through the whole repair loop.
- *
- * @param client - injected model client
- *
- * @param sliceIndex - chunk position carried onto the outcome
- *
- * @param sourceText - original chunk text
- *
- * @param targetText - translation chunk text
- *
- * @param lineStructured - whether the ENCLOSING chunk's original is
- * line-structured, decided by the caller because a slice is too small a unit to
- * decide it on; see `buildEditorAddendum`
- *
- * @param models - role roster
- *
- * @param adjudicationConfig - tally thresholds and weights
- *
- * @param identityContext - declared names from both sides' front matter,
- * passed down from the whole document because chunk text carries no front
- * matter of its own
- *
- * @param declaredNames - same declarations as strings to compare rather than
- * prose to read, which is a different job: one tells a model what is true, the
- * other decides whether a patch may ship
- *
- * @param neighbouringSourceText - original of the passages either side, shown to
- * the critic, panel and editor as CONTEXT they may neither quote against nor
- * edit. `#107` is why it exists: shown one slice alone, a critic reads a passage
- * the archive carried in from next door as an addition with no source, and the
- * editor then removes wording that the document does need, just not here
- *
- * @param neighbouringIncumbentText - archive English of those same two passages,
- * which is the half that shows the relocation rather than merely the subject:
- * the original says each thing once in its own place while the archive says it
- * next door
- *
- * @param documentSourceText - same-entry factual evidence for panels and repair selectors, not extra coverage
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Chunk outcome with the winning text
- *
- * @example
- * ```ts
- * const outcome = await repairChunk({ ... },);
- * ```
+ Runs one chunk pair through the whole repair loop.
+ 
+ @param client - injected model client
+ 
+ @param sliceIndex - chunk position carried onto the outcome
+ 
+ @param sourceText - original chunk text
+ 
+ @param targetText - translation chunk text
+ 
+ @param lineStructured - whether the ENCLOSING chunk's original is
+ line-structured, decided by the caller because a slice is too small a unit to
+ decide it on; see `buildEditorAddendum`
+ 
+ @param models - role roster
+ 
+ @param adjudicationConfig - tally thresholds and weights
+ 
+ @param identityContext - declared names from both sides' front matter,
+ passed down from the whole document because chunk text carries no front
+ matter of its own
+ 
+ @param declaredNames - same declarations as strings to compare rather than
+ prose to read, which is a different job: one tells a model what is true, the
+ other decides whether a patch may ship
+ 
+ @param neighbouringSourceText - original of the passages either side, shown to
+ the critic, panel and editor as CONTEXT they may neither quote against nor
+ edit. `#107` is why it exists: shown one slice alone, a critic reads a passage
+ the archive carried in from next door as an addition with no source, and the
+ editor then removes wording that the document does need, just not here
+ 
+ @param neighbouringIncumbentText - archive English of those same two passages,
+ which is the half that shows the relocation rather than merely the subject:
+ the original says each thing once in its own place while the archive says it
+ next door
+ 
+ @param documentSourceText - same-entry factual evidence for panels and repair selectors, not extra coverage
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - pipeline logger
+ 
+ @returns Chunk outcome with the winning text
+ 
+ @example
+ ```ts
+ const outcome = await repairChunk({ ... },);
+ ```
  */
 export async function repairChunk(
   {
@@ -137,13 +137,13 @@ export async function repairChunk(
   assertCheckerQuorumReachable({ checkerModelIds: models.checkerModelIds, },);
 
   /**
-   * Neighbouring evidence, spread into every stage that has to reason about it.
-   *
-   * BUILT ONCE RATHER THAN PASSED THREE TIMES. The critic, the panel and the
-   * editor must see the SAME window or they contradict each other: a critic that
-   * can see next door raises a relocation claim, and a panel that cannot see it
-   * rejects that claim as unfounded. Three call sites spreading one value cannot
-   * drift the way three separate arguments can.
+   Neighbouring evidence, spread into every stage that has to reason about it.
+   
+   BUILT ONCE RATHER THAN PASSED THREE TIMES. The critic, the panel and the
+   editor must see the SAME window or they contradict each other: a critic that
+   can see next door raises a relocation claim, and a panel that cannot see it
+   rejects that claim as unfounded. Three call sites spreading one value cannot
+   drift the way three separate arguments can.
    */
   const windowFragment = {
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
@@ -151,7 +151,7 @@ export async function repairChunk(
   };
 
   /**
-   * Parsed chunk pair claims anchor against.
+   Parsed chunk pair claims anchor against.
    */
   const documents = {
     source: parseDocument({ text: sourceText, },),
@@ -159,7 +159,7 @@ export async function repairChunk(
   };
 
   /**
-   * Critics plus the deterministic screen over their non-translation votes.
+   Critics plus the deterministic screen over their non-translation votes.
    */
   const critic = await runChunkCriticPhase({
     client,
@@ -176,7 +176,7 @@ export async function repairChunk(
   },);
 
   /**
-   * Unchanged outcome shared by every early exit.
+   Unchanged outcome shared by every early exit.
    */
   const unchangedOutcome = unchangedChunkOutcome({
     sliceIndex,
@@ -217,12 +217,12 @@ export async function repairChunk(
   }
 
   /**
-   * Merge-proposal clusters over the validated claims.
+   Merge-proposal clusters over the validated claims.
    */
   const { clusters, } = aggregateClaims({ claims: critic.claims, },);
 
   /**
-   * Panel decision over the clusters.
+   Panel decision over the clusters.
    */
   const panel = await runPanelStage({
     ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
@@ -239,17 +239,17 @@ export async function repairChunk(
   },);
 
   /**
-   * Panel issues with same-place accepted duplicates merged into one.
-   *
-   * Applied HERE, before envelopes are cut, because the cost a duplicate
-   * imposes is the editor repairing one defect twice and cutting two
-   * overlapping envelopes for it. Deduplicating after that work is done would
-   * correct the arithmetic and keep the waste.
+   Panel issues with same-place accepted duplicates merged into one.
+   
+   Applied HERE, before envelopes are cut, because the cost a duplicate
+   imposes is the editor repairing one defect twice and cutting two
+   overlapping envelopes for it. Deduplicating after that work is done would
+   correct the arithmetic and keep the waste.
    */
   const deduped = dedupeAcceptedIssues({ issues: panel.issues, },);
 
   /**
-   * Findings across the stages so far.
+   Findings across the stages so far.
    */
   const stageFindings = [
     ...critic.findings,
@@ -267,7 +267,7 @@ export async function repairChunk(
   ];
 
   /**
-   * Envelopes cut from accepted issues.
+   Envelopes cut from accepted issues.
    */
   const {
     envelopes,
@@ -286,7 +286,7 @@ export async function repairChunk(
   }
 
   /**
-   * Accepted issues, the editor's and checkers' work list.
+   Accepted issues, the editor's and checkers' work list.
    */
   const acceptedIssues = deduped.issues
     .filter(function isAccepted(issue,) {
@@ -294,8 +294,8 @@ export async function repairChunk(
   },);
 
   /**
-   * Editor rules for this slice, with the line-structure fact appended when the
-   * enclosing chunk's ORIGINAL is line-structured.
+   Editor rules for this slice, with the line-structure fact appended when the
+   enclosing chunk's ORIGINAL is line-structured.
    */
   const editorAddendum = buildEditorAddendum({
     baseAddendum: models.editorRuleAddendum ?? '',
@@ -303,7 +303,7 @@ export async function repairChunk(
   },);
 
   /**
-   * Editor result through the apply gate.
+   Editor result through the apply gate.
    */
   const editor = await runEditorStage({
     ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
@@ -337,9 +337,9 @@ export async function repairChunk(
   }
 
   /**
-   * What the applied envelopes bought: issues eligible to count toward the
-   * patched candidate, and who wrote the text answering for them. See
-   * `selectCreditableIssues` for why the rest are excluded.
+   What the applied envelopes bought: issues eligible to count toward the
+   patched candidate, and who wrote the text answering for them. See
+   `selectCreditableIssues` for why the rest are excluded.
    */
   const appliedEnvelopes = readAppliedEnvelopes({
     acceptedIssues,
@@ -348,7 +348,7 @@ export async function repairChunk(
   },);
 
   /**
-   * Checker proof over the patched candidate.
+   Checker proof over the patched candidate.
    */
   const checker = await runCheckerStage({
     client,
@@ -364,7 +364,7 @@ export async function repairChunk(
   },);
 
   /**
-   * Regions the accuracy stage replaced.
+   Regions the accuracy stage replaced.
    */
   const repairRegions = collectRepairRegions({
     envelopes,
@@ -373,10 +373,10 @@ export async function repairChunk(
   },);
 
   /**
-   * Shadow-mode audit of damage the edit itself caused.
-   *
-   * Nothing downstream reads this to decide what ships, on purpose: see
-   * `introduced-defect-probe.ts` for why an unmeasured probe must not gate.
+   Shadow-mode audit of damage the edit itself caused.
+   
+   Nothing downstream reads this to decide what ships, on purpose: see
+   `introduced-defect-probe.ts` for why an unmeasured probe must not gate.
    */
   const introducedDefects = await runIntroducedDefectProbe({
     client,
@@ -400,12 +400,12 @@ export async function repairChunk(
   },);
 
   /**
-   * Which candidate won, whether the returned text moved at all, and which
-   * issues the checkers confirmed.
-   *
-   * Several verdicts rather than one: a patch whose envelope operations cancel
-   * can win selection and write no byte, and a patch that drops a declared name
-   * is refused whatever it won. See `settleChunkFromChecks`.
+   Which candidate won, whether the returned text moved at all, and which
+   issues the checkers confirmed.
+   
+   Several verdicts rather than one: a patch whose envelope operations cancel
+   can win selection and write no byte, and a patch that drops a declared name
+   is refused whatever it won. See `settleChunkFromChecks`.
    */
   const {
     repairedText,
@@ -427,7 +427,7 @@ export async function repairChunk(
     targetDocument: documents.target,
   },);
   /**
-   * What the declared-name refusal owes this slice's record and findings.
+   What the declared-name refusal owes this slice's record and findings.
    */
   const refusal = declaredNameRefusalReport({
     sliceIndex,

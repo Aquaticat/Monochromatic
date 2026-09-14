@@ -1,15 +1,15 @@
 /**
- * Tests for when a section-pairing round is bought at all, and for what a
- * resumed one republishes.
- *
- * ASKED ONLY WHERE THE DETERMINISTIC ALIGNER REFUSED. Measured over the pinned
- * corpus, 85 of 92 entries have equal section shape and never reach the aligner,
- * and 5 of the remaining 7 align with no refusal. Two entries are ever asked, so
- * a gate that leaked would multiply this stage's cost by forty-six.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for when a section-pairing round is bought at all, and for what a
+ resumed one republishes.
+ 
+ ASKED ONLY WHERE THE DETERMINISTIC ALIGNER REFUSED. Measured over the pinned
+ corpus, 85 of 92 entries have equal section shape and never reach the aligner,
+ and 5 of the remaining 7 align with no refusal. Two entries are ever asked, so
+ a gate that leaked would multiply this stage's cost by forty-six.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -26,7 +26,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original with three sections, headed in Chinese.
+ Original with three sections, headed in Chinese.
  */
 const SOURCE_TEXT = `## 第一节
 
@@ -42,8 +42,8 @@ const SOURCE_TEXT = `## 第一节
 `;
 
 /**
- * Translation carrying only two of them, so the aligner faces a count mismatch
- * it has no affinity to resolve.
+ Translation carrying only two of them, so the aligner faces a count mismatch
+ it has no affinity to resolve.
  */
 const TARGET_TEXT = `## Naps
 
@@ -55,8 +55,8 @@ A bird sits on the windowsill.
 `;
 
 /**
- * Translation of the same shape, which pairs by index without the aligner
- * being consulted at all.
+ Translation of the same shape, which pairs by index without the aligner
+ being consulted at all.
  */
 const EQUAL_SHAPE_TARGET = `## Naps
 
@@ -72,11 +72,11 @@ The cat likes the sun too.
 `;
 
 /**
- * One settled round as the cache stores it, which is what a resume reads back.
+ One settled round as the cache stores it, which is what a resume reads back.
  */
 type StoredRound = {
   /**
-   * Correspondences the roster agreed on.
+   Correspondences the roster agreed on.
    */
   readonly pairs: readonly {
     readonly source: number;
@@ -84,29 +84,29 @@ type StoredRound = {
   }[];
 
   /**
-   * What the round reported when it was bought.
+   What the round reported when it was bought.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Reads one stored record back, refusing anything the cache would not write.
- *
- * @param serialized - bytes the round persisted
- *
- * @returns That round
- *
- * @throws Error when the bytes are not a stored round, since a resume built on
- * a guess would test the guess rather than the round
- *
- * @example
- * ```ts
- * const stored = storedRoundOf('{"pairs":[],"findings":[]}',);
- * ```
+ Reads one stored record back, refusing anything the cache would not write.
+ 
+ @param serialized - bytes the round persisted
+ 
+ @returns That round
+ 
+ @throws Error when the bytes are not a stored round, since a resume built on
+ a guess would test the guess rather than the round
+ 
+ @example
+ ```ts
+ const stored = storedRoundOf('{"pairs":[],"findings":[]}',);
+ ```
  */
 function storedRoundOf(serialized: string,): StoredRound {
   /**
-   * Whatever those bytes hold.
+   Whatever those bytes hold.
    */
   const parsed: unknown = JSON.parse(serialized,);
   if (!isSectionPairingWire(parsed,))
@@ -119,7 +119,7 @@ function storedRoundOf(serialized: string,): StoredRound {
 }
 
 /**
- * Roster of two, which is the smallest that can agree or disagree.
+ Roster of two, which is the smallest that can agree or disagree.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -127,35 +127,35 @@ const ROSTER = [
 ] as const;
 
 /**
- * Logger for the round under test.
+ Logger for the round under test.
  */
 const l = tagged({ tag: 'prepare-section-round-test', },);
 
 /**
- * Per-call bound, generous because the transport answers instantly.
+ Per-call bound, generous because the transport answers instantly.
  */
 const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
- * Pairing both canned voices return, leaving the third original out.
+ Pairing both canned voices return, leaving the third original out.
  */
 const AGREED_REPLY = '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}';
 
 /**
- * Builds a client that counts calls and answers each with the same pairing.
- *
- * @param reply - body every model returns
- *
- * @returns Client over a canned transport, beside the call log
- *
- * @example
- * ```ts
- * const { client, calls, } = countingClient({ reply: AGREED_REPLY, },);
- * ```
+ Builds a client that counts calls and answers each with the same pairing.
+ 
+ @param reply - body every model returns
+ 
+ @returns Client over a canned transport, beside the call log
+ 
+ @example
+ ```ts
+ const { client, calls, } = countingClient({ reply: AGREED_REPLY, },);
+ ```
  */
 function countingClient({ reply, }: { readonly reply: string; },) {
   /**
-   * Calls this client served.
+   Calls this client served.
    */
   const calls = { count: 0, };
   return {
@@ -186,24 +186,24 @@ function countingClient({ reply, }: { readonly reply: string; },) {
 }
 
 /**
- * Runs the round over a document pair.
- *
- * @param sourceText - whole original
- *
- * @param targetText - whole translation
- *
- * @param reply - what every canned voice answers
- *
- * @param resumed - pairings an earlier run stored
- *
- * @param persisted - store this run writes into
- *
- * @returns What the round settled, beside how many calls it cost
- *
- * @example
- * ```ts
- * const { round, calls, } = await runRound({},);
- * ```
+ Runs the round over a document pair.
+ 
+ @param sourceText - whole original
+ 
+ @param targetText - whole translation
+ 
+ @param reply - what every canned voice answers
+ 
+ @param resumed - pairings an earlier run stored
+ 
+ @param persisted - store this run writes into
+ 
+ @returns What the round settled, beside how many calls it cost
+ 
+ @example
+ ```ts
+ const { round, calls, } = await runRound({},);
+ ```
  */
 async function runRound(
   {
@@ -221,7 +221,7 @@ async function runRound(
   },
 ) {
   /**
-   * Client and its call log.
+   Client and its call log.
    */
   const {
     client,
@@ -229,7 +229,7 @@ async function runRound(
   } = countingClient({ reply, },);
 
   /**
-   * What the round settled.
+   What the round settled.
    */
   const round = await buySectionPairing({
     client,

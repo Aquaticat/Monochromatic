@@ -39,12 +39,12 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // the quantity that prices a seat, and is not the same as availability.
 
 /**
- * Exit code left behind when the logs held no reading at all.
+ Exit code left behind when the logs held no reading at all.
  */
 const NOTHING_RECORDED = 1;
 
 /**
- * Milliseconds in each unit a duration is rendered in.
+ Milliseconds in each unit a duration is rendered in.
  */
 const UNIT_MS = {
   h: 3_600_000,
@@ -53,38 +53,38 @@ const UNIT_MS = {
 } as const;
 
 /**
- * Renders a duration in hours, minutes and seconds, dropping empty leaders.
- *
- * @param ms - duration to render
- *
- * @returns Compact duration, `0s` for nothing
- *
- * @example
- * ```ts
- * spanText({ ms: 3_720_000, },);
- * // => '1h2m'
- * ```
+ Renders a duration in hours, minutes and seconds, dropping empty leaders.
+ 
+ @param ms - duration to render
+ 
+ @returns Compact duration, `0s` for nothing
+ 
+ @example
+ ```ts
+ spanText({ ms: 3_720_000, },);
+ // => '1h2m'
+ ```
  */
 function spanText(
   { ms, }: { readonly ms: number; },
 ): string {
   /**
-   * Whole hours the duration covers.
+   Whole hours the duration covers.
    */
   const hours = Math.floor(ms / UNIT_MS.h,);
 
   /**
-   * Whole minutes left after those hours.
+   Whole minutes left after those hours.
    */
   const minutes = Math.floor((ms % UNIT_MS.h) / UNIT_MS.m,);
 
   /**
-   * Whole seconds left after those minutes.
+   Whole seconds left after those minutes.
    */
   const seconds = Math.floor((ms % UNIT_MS.m) / UNIT_MS.s,);
 
   /**
-   * Units that carry anything, so `2h0m5s` reads as `2h5s`.
+   Units that carry anything, so `2h0m5s` reads as `2h5s`.
    */
   const carried = ((hours > 0) ? `${String(hours,)}h` : '')
     + ((minutes > 0) ? `${String(minutes,)}m` : '')
@@ -97,16 +97,16 @@ function spanText(
 }
 
 /**
- * Renders an epoch stamp the way the log wrote it.
- *
- * @param at - epoch milliseconds
- *
- * @returns ISO stamp
- *
- * @example
- * ```ts
- * stampText({ at, },);
- * ```
+ Renders an epoch stamp the way the log wrote it.
+ 
+ @param at - epoch milliseconds
+ 
+ @returns ISO stamp
+ 
+ @example
+ ```ts
+ stampText({ at, },);
+ ```
  */
 function stampText(
   { at, }: { readonly at: number; },
@@ -115,22 +115,22 @@ function stampText(
 }
 
 /**
- * Renders what is known about the longest outage, bounds and open ends both.
- *
- * NAMES AN OPEN END RATHER THAN PRINTING A NUMBER FOR IT. A stretch with no
- * wet reading before it may have started before the record; one with none
- * after it may still be running now. Either way the upper bound is not a
- * number, and printing the confirmed length alone would read as the whole
- * outage.
- *
- * @param span - longest stretch, absent where none was found
- *
- * @returns Lines describing it
- *
- * @example
- * ```ts
- * for (const line of outageLines({ span, },)) console.log(line,);
- * ```
+ Renders what is known about the longest outage, bounds and open ends both.
+ 
+ NAMES AN OPEN END RATHER THAN PRINTING A NUMBER FOR IT. A stretch with no
+ wet reading before it may have started before the record; one with none
+ after it may still be running now. Either way the upper bound is not a
+ number, and printing the confirmed length alone would read as the whole
+ outage.
+ 
+ @param span - longest stretch, absent where none was found
+ 
+ @returns Lines describing it
+ 
+ @example
+ ```ts
+ for (const line of outageLines({ span, },)) console.log(line,);
+ ```
  */
 function outageLines(
   { span, }: { readonly span: DrySpan | 'no-outage'; },
@@ -139,14 +139,14 @@ function outageLines(
     return ['  longest outage: none, no reading found this provider out',];
 
   /**
-   * How the upper bound reads, which is a number only when both ends closed.
+   How the upper bound reads, which is a number only when both ends closed.
    */
   const upper = (span.boundedByMs === undefined)
     ? 'and NOT BOUNDED ABOVE'
     : `at most ${spanText({ ms: span.boundedByMs, },)}`;
 
   /**
-   * Why the bound is open, named so the reader knows which way to doubt it.
+   Why the bound is open, named so the reader knows which way to doubt it.
    */
   const openness = [
     ...(span.openBefore
@@ -165,66 +165,66 @@ function outageLines(
 }
 
 /**
- * One reading that named a level for the provider being reported on.
+ One reading that named a level for the provider being reported on.
  */
 type LevelReading = {
   /**
-   * Epoch milliseconds the reading was taken at.
+   Epoch milliseconds the reading was taken at.
    */
   readonly at: number;
 
   /**
-   * That provider's fields on that reading.
+   That provider's fields on that reading.
    */
   readonly fields: readonly string[];
 };
 
 /**
- * A reading, or that it named no level for this provider.
+ A reading, or that it named no level for this provider.
  */
 type LevelLookup = LevelReading | 'no-level';
 
 /**
- * Narrows a lookup to a reading that named something.
- *
- * POSITIONAL RATHER THAN DESTRUCTURED, for the reason `isMeterState` in
- * `meter-sample-read.ts` is: TypeScript refuses a type predicate naming an
- * element of a binding pattern.
- *
- * @param lookup - what one reading yielded
- *
- * @returns Whether it named a level
- *
- * @example
- * ```ts
- * lookups.filter(namedALevel,);
- * ```
+ Narrows a lookup to a reading that named something.
+ 
+ POSITIONAL RATHER THAN DESTRUCTURED, for the reason `isMeterState` in
+ `meter-sample-read.ts` is: TypeScript refuses a type predicate naming an
+ element of a binding pattern.
+ 
+ @param lookup - what one reading yielded
+ 
+ @returns Whether it named a level
+ 
+ @example
+ ```ts
+ lookups.filter(namedALevel,);
+ ```
  */
 function namedALevel(lookup: LevelLookup,): lookup is LevelReading {
   return lookup !== 'no-level';
 }
 
 /**
- * Renders what one provider's meter was reading, at both ends of the record.
- *
- * TWO ENDS RATHER THAN ONE. The last reading answers what the budget is now;
- * the first says which way it moved to get there, which is the difference
- * between a budget this run drained and one that was empty before it started.
- *
- * SAYS SO WHEN NOTHING WAS RECORDED. A run written before the levels were
- * added carries states and no numbers, and silence there would read as a
- * provider whose meter never said anything.
- *
- * @param samples - every reading, from every log
- *
- * @param provider - provider to report on
- *
- * @returns Lines describing what its meter read
- *
- * @example
- * ```ts
- * for (const line of levelLines({ samples, provider, },)) console.log(line,);
- * ```
+ Renders what one provider's meter was reading, at both ends of the record.
+ 
+ TWO ENDS RATHER THAN ONE. The last reading answers what the budget is now;
+ the first says which way it moved to get there, which is the difference
+ between a budget this run drained and one that was empty before it started.
+ 
+ SAYS SO WHEN NOTHING WAS RECORDED. A run written before the levels were
+ added carries states and no numbers, and silence there would read as a
+ provider whose meter never said anything.
+ 
+ @param samples - every reading, from every log
+ 
+ @param provider - provider to report on
+ 
+ @returns Lines describing what its meter read
+ 
+ @example
+ ```ts
+ for (const line of levelLines({ samples, provider, },)) console.log(line,);
+ ```
  */
 function levelLines(
   {
@@ -236,15 +236,15 @@ function levelLines(
   },
 ): readonly string[] {
   /**
-   * Readings that named a level for this provider, in time order.
-   *
-   * ATTRIBUTED BY NAME PREFIX, which the record's field names are built to
-   * carry: neither provider's name is a prefix of the other's.
+   Readings that named a level for this provider, in time order.
+   
+   ATTRIBUTED BY NAME PREFIX, which the record's field names are built to
+   carry: neither provider's name is a prefix of the other's.
    */
   const carried = samples
     .map(function forProvider(sample,): LevelLookup {
       /**
-       * This provider's level fields on that reading.
+       This provider's level fields on that reading.
        */
       const fields = sample
         .levels
@@ -263,12 +263,12 @@ function levelLines(
     .filter(namedALevel,);
 
   /**
-   * Earliest reading that named a level.
+   Earliest reading that named a level.
    */
   const first = carried.at(0,);
 
   /**
-   * Latest reading that named a level.
+   Latest reading that named a level.
    */
   const last = carried.at(-1,);
 
@@ -279,7 +279,7 @@ function levelLines(
     ];
 
   /**
-   * Earliest reading's numbers, rendered for the line.
+   Earliest reading's numbers, rendered for the line.
    */
   const firstFields = first
     .fields
@@ -289,7 +289,7 @@ function levelLines(
     return [`  level ${stampText({ at: first.at, },)}: ${firstFields}`,];
 
   /**
-   * Latest reading's numbers, rendered the same way.
+   Latest reading's numbers, rendered the same way.
    */
   const lastFields = last
     .fields
@@ -302,16 +302,16 @@ function levelLines(
 }
 
 /**
- * Reports one provider's availability across the whole record.
- *
- * @param samples - every reading, from every log
- *
- * @param provider - provider to report on
- *
- * @example
- * ```ts
- * reportProvider({ samples, provider: 'hyper', },);
- * ```
+ Reports one provider's availability across the whole record.
+ 
+ @param samples - every reading, from every log
+ 
+ @param provider - provider to report on
+ 
+ @example
+ ```ts
+ reportProvider({ samples, provider: 'hyper', },);
+ ```
  */
 function reportProvider(
   {
@@ -323,7 +323,7 @@ function reportProvider(
   },
 ): void {
   /**
-   * That provider's readings in time order.
+   That provider's readings in time order.
    */
   const series = seriesFor({
     samples,
@@ -331,17 +331,17 @@ function reportProvider(
   },);
 
   /**
-   * How many readings fell in each state.
+   How many readings fell in each state.
    */
   const counts = countStates({ series, },);
 
   /**
-   * Fraction of answering readings that found budget, absent where none did.
+   Fraction of answering readings that found budget, absent where none did.
    */
   const wetFraction = dutyCycle({ counts, },);
 
   /**
-   * Readings whose meter answered, which is the fraction's denominator.
+   Readings whose meter answered, which is the fraction's denominator.
    */
   const answered = counts.wet + counts.dry;
 
@@ -369,20 +369,20 @@ function reportProvider(
 }
 
 /**
- * Reads every named log and reports both providers.
- *
- * Returns nothing: the report on stdout and the exit code ARE the output.
- *
- * @throws {@link Error} when no log path was named
- *
- * @example
- * ```ts
- * await reportMeters();
- * ```
+ Reads every named log and reports both providers.
+ 
+ Returns nothing: the report on stdout and the exit code ARE the output.
+ 
+ @throws {@link Error} when no log path was named
+ 
+ @example
+ ```ts
+ await reportMeters();
+ ```
  */
 async function reportMeters(): Promise<void> {
   /**
-   * Logs to read, named on the command line.
+   Logs to read, named on the command line.
    */
   const paths = process
     .argv
@@ -396,7 +396,7 @@ async function reportMeters(): Promise<void> {
   }
 
   /**
-   * Everything every named log held.
+   Everything every named log held.
    */
   const readings = await Promise.all(paths.map(async function one(path,) {
     return readMeterLog({
@@ -408,8 +408,8 @@ async function reportMeters(): Promise<void> {
   },),);
 
   /**
-   * Every reading from every log, with exact repeats collapsed so passing one
-   * log twice cannot double its weight.
+   Every reading from every log, with exact repeats collapsed so passing one
+   log twice cannot double its weight.
    */
   const samples = [
     ...new Map(readings
@@ -437,7 +437,7 @@ async function reportMeters(): Promise<void> {
   },);
 
   /**
-   * Marked lines no log would yield a reading from.
+   Marked lines no log would yield a reading from.
    */
   const skipped = readings.reduce(
     function addSkipped(
@@ -455,12 +455,12 @@ async function reportMeters(): Promise<void> {
   );
 
   /**
-   * Earliest reading, which opens the window everything below sits in.
+   Earliest reading, which opens the window everything below sits in.
    */
   const first = samples.at(0,);
 
   /**
-   * Latest reading, which closes it.
+   Latest reading, which closes it.
    */
   const last = samples.at(-1,);
 

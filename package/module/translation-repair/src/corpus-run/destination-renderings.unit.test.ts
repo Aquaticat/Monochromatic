@@ -1,16 +1,16 @@
 /**
- * Tests for the document-level either-rendering rule over destinations.
- *
- * WHAT THESE PIN: a source destination the archive rendered another way is
- * owed as one rendering from either side; carrying neither drops it, carrying
- * both is a finding; a destination both sides carry as written stays owed
- * outright; with no archive every source destination is owed, as the check
- * always demanded; and an archive addition the page lost is not a source
- * destination and is not reported.
- *
- * Fixtures are invented addresses, so there is no corpus text here.
- *
- * @module
+ Tests for the document-level either-rendering rule over destinations.
+ 
+ WHAT THESE PIN: a source destination the archive rendered another way is
+ owed as one rendering from either side; carrying neither drops it, carrying
+ both is a finding; a destination both sides carry as written stays owed
+ outright; with no archive every source destination is owed, as the check
+ always demanded; and an archive addition the page lost is not a source
+ destination and is not reported.
+ 
+ Fixtures are invented addresses, so there is no corpus text here.
+ 
+ @module
  */
 
 import {
@@ -28,22 +28,22 @@ import {
 //region Fixtures
 
 /**
- * Address the source links to.
+ Address the source links to.
  */
 const HOME = 'https://example.org/tabby';
 
 /**
- * How the archive rendered the same reference.
+ How the archive rendered the same reference.
  */
 const HOME_MOVED = 'https://example.net/tabby';
 
 /**
- * Address both sides carry as written.
+ Address both sides carry as written.
  */
 const ALBUM = 'https://example.org/album';
 
 /**
- * Address only the archive carries.
+ Address only the archive carries.
  */
 const SHOP = 'https://example.org/shop';
 
@@ -200,7 +200,7 @@ await describe({
       name: 'owes the larger side where the archive split one reference into two',
       fn: async () => {
         /**
-         * Pool of one source rendering and two archive renderings: two owed.
+         Pool of one source rendering and two archive renderings: two owed.
          */
         const ask = {
           source: [HOME,],

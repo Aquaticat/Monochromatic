@@ -10,16 +10,16 @@ import {
 // tally rather than refusing the page.
 
 /**
- * Reports whether contest explicitly endorsed archive fallback.
- *
- * @param verdict - contest result for slice
- *
- * @returns Whether archive won explicit semantic endorsement
- *
- * @example
- * ```ts
- * const endorsed = archiveWasEndorsed({ verdict: { kind: 'settled-neither', archive: 'endorsed', }, });
- * ```
+ Reports whether contest explicitly endorsed archive fallback.
+ 
+ @param verdict - contest result for slice
+ 
+ @returns Whether archive won explicit semantic endorsement
+ 
+ @example
+ ```ts
+ const endorsed = archiveWasEndorsed({ verdict: { kind: 'settled-neither', archive: 'endorsed', }, });
+ ```
  */
 function archiveWasEndorsed(
   { verdict, }: { readonly verdict: ArtifactContestVerdict; },
@@ -28,27 +28,27 @@ function archiveWasEndorsed(
 }
 
 /**
- * Reports slices whose final selection keeps archive wording without contest
- * endorsement, as findings rather than a refusal.
- *
- * The contest verdict is recorded evidence, never withholding authority:
- * the page ships and the reading judges the recorded non-endorsements
- * (doc/planning/translation-repair-no-loop-design.md).
- *
- * @param artifact - comparison and deciding stages used by final assembly
- *
- * @returns One finding per slice standing without endorsement, empty when none
- *
- * @example
- * ```ts
- * const findings = finalSelectionFindings({ artifact, });
- * ```
+ Reports slices whose final selection keeps archive wording without contest
+ endorsement, as findings rather than a refusal.
+ 
+ The contest verdict is recorded evidence, never withholding authority:
+ the page ships and the reading judges the recorded non-endorsements
+ (doc/planning/translation-repair-no-loop-design.md).
+ 
+ @param artifact - comparison and deciding stages used by final assembly
+ 
+ @returns One finding per slice standing without endorsement, empty when none
+ 
+ @example
+ ```ts
+ const findings = finalSelectionFindings({ artifact, });
+ ```
  */
 export function finalSelectionFindings(
   { artifact, }: { readonly artifact: WouldShipSource; },
 ): readonly string[] {
   /**
-   * Final reading by slice index.
+   Final reading by slice index.
    */
   const readings = new Map(wouldShipTextPerSlice({ artifact, },)
     .map(function nameReading(slice,) {
@@ -59,35 +59,35 @@ export function finalSelectionFindings(
     },),);
 
   /**
-   * Lane-selection stage this artifact carries.
+   Lane-selection stage this artifact carries.
    */
   const { laneSelection, } = artifact;
 
   /**
-   * Contest records, absent when contest has not run.
+   Contest records, absent when contest has not run.
    */
   const contests = (laneSelection.kind === 'contested')
     ? laneSelection.slices
     : [];
 
   /**
-   * Consolidation and optional polish records final reading derives from.
+   Consolidation and optional polish records final reading derives from.
    */
   const { consolidation, } = artifact;
 
   /**
-   * Slices where archive would stand despite no contest endorsement.
+   Slices where archive would stand despite no contest endorsement.
    */
   const unresolved = contests.flatMap(function unresolvedArchive(contest,): readonly number[] {
     /**
-     * Final wording source after consolidation.
+     Final wording source after consolidation.
      */
     const reading = readings.get(contest.sliceIndex,);
     if (reading?.kind !== 'wording')
       return [];
     if (reading.decidedBy === 'polish') {
       /**
-       * Initial consolidation result polish rewrote, when stage recorded one.
+       Initial consolidation result polish rewrote, when stage recorded one.
        */
       const consolidated = (consolidation.kind === 'settled')
         ? consolidation.slices
@@ -98,7 +98,7 @@ export function finalSelectionFindings(
       if (consolidated?.terminal === 'consolidated')
         return [];
       /**
-       * Contest verdict deciding whether baseline had prior endorsement.
+       Contest verdict deciding whether baseline had prior endorsement.
        */
       const { verdict, } = contest;
       if (verdict.kind === 'lane-won')

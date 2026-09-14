@@ -1,9 +1,9 @@
 /**
- * Tests final-selection recovery state and provider-identity anonymization.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests final-selection recovery state and provider-identity anonymization.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -25,9 +25,9 @@ const MODEL_ID = 'hf:zai-org/GLM-5.3-Flash';
 const JUDGE_ID = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * Builds failed settlement with attributed slate and ballots.
- *
- * @returns Unsafe standing settlement carrying model identity in every free-form field
+ Builds failed settlement with attributed slate and ballots.
+ 
+ @returns Unsafe standing settlement carrying model identity in every free-form field
  */
 function failedSettlement(): ConsolidationSettlement {
   return {

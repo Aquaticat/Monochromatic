@@ -41,149 +41,149 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // SPENDS QUOTA. Point `TRANSLATION_REPAIR_RUNS_DIR` at a throwaway directory.
 
 /**
- * Slices drawn when the caller names no count.
+ Slices drawn when the caller names no count.
  */
 const DEFAULT_SLICES = 10;
 
 /**
- * One slice run at one width, with everything the report reads.
- *
- * @example
- * ```ts
- * const row: BenchRow = { width: 3, entryId: 'Mittens', ... };
- * ```
- *
- * @internal
+ One slice run at one width, with everything the report reads.
+ 
+ @example
+ ```ts
+ const row: BenchRow = { width: 3, entryId: 'Mittens', ... };
+ ```
+ 
+ @internal
  */
 export type BenchRow = {
   /**
-   * Producers seated for this run.
+   Producers seated for this run.
    */
   readonly width: number;
 
   /**
-   * Which pass over this width, so a repeat is distinguishable.
+   Which pass over this width, so a repeat is distinguishable.
    */
   readonly pass: number;
 
   /**
-   * Entry the slice came from.
+   Entry the slice came from.
    */
   readonly entryId: string;
 
   /**
-   * Slice position within that entry.
+   Slice position within that entry.
    */
   readonly index: number;
 
   /**
-   * Source characters, since decline rates may well move with size.
+   Source characters, since decline rates may well move with size.
    */
   readonly sourceChars: number;
 
   /**
-   * Incumbent characters, zero when the archive has no translation here.
+   Incumbent characters, zero when the archive has no translation here.
    */
   readonly incumbentChars: number;
 
   /**
-   * Exact seats, so a report can say who width 3 was.
+   Exact seats, so a report can say who width 3 was.
    */
   readonly translators: readonly string[];
 
   /**
-   * How the round ended.
+   How the round ended.
    */
   readonly decision: string;
 
   /**
-   * Whether the text that shipped was the one already there.
+   Whether the text that shipped was the one already there.
    */
   readonly keptIncumbent: boolean;
 
   /**
-   * Weight the winner drew.
+   Weight the winner drew.
    */
   readonly voteWeight: number;
 
   /**
-   * Judges seated, ballots cast, abstentions and self-votes.
+   Judges seated, ballots cast, abstentions and self-votes.
    */
   readonly judgesAvailable: number;
 
   /**
-   * Ballots that arrived.
+   Ballots that arrived.
    */
   readonly ballots: number;
 
   /**
-   * Ballots naming no usable candidate.
+   Ballots naming no usable candidate.
    */
   readonly abstentions: number;
 
   /**
-   * Ballots a judge cast for its own work.
+   Ballots a judge cast for its own work.
    */
   readonly selfVotes: number;
 
   /**
-   * This round as {@link selfPreference} needs to read it: who wrote each
-   * candidate, and every ballot cast over that slate.
-   *
-   * KEPT RATHER THAN COUNTED, because the total above cannot answer the
-   * question it looks like it answers. How often a producer backs its own work
-   * says nothing alone: a model whose translations are better would do that
-   * without any favouritism. The paired comparison needs to know what judges
-   * holding NO stake in the same candidate thought of it, and that needs the
-   * slate and the ballots rather than a sum.
-   *
-   * This is the cheaper of the two routes to that number. The other is `#83`'s
-   * per-slice selection field in the settled artifact, which answers it
-   * corpus-wide instead of on a bench and is blocked behind `#89`.
+   This round as {@link selfPreference} needs to read it: who wrote each
+   candidate, and every ballot cast over that slate.
+   
+   KEPT RATHER THAN COUNTED, because the total above cannot answer the
+   question it looks like it answers. How often a producer backs its own work
+   says nothing alone: a model whose translations are better would do that
+   without any favouritism. The paired comparison needs to know what judges
+   holding NO stake in the same candidate thought of it, and that needs the
+   slate and the ballots rather than a sum.
+   
+   This is the cheaper of the two routes to that number. The other is `#83`'s
+   per-slice selection field in the settled artifact, which answers it
+   corpus-wide instead of on a bench and is blocked behind `#89`.
    */
   readonly round: SelectionRound;
 
   /**
-   * Distinct proposals the judges saw.
+   Distinct proposals the judges saw.
    */
   readonly candidateCount: number;
 
   /**
-   * Translators heard out of those seated.
+   Translators heard out of those seated.
    */
   readonly heardTranslators: number;
 
   /**
-   * Everything the stage recorded, verbatim.
+   Everything the stage recorded, verbatim.
    */
   readonly findings: readonly string[];
 
   /**
-   * Exchanges this row cost.
+   Exchanges this row cost.
    */
   readonly calls: readonly BenchCall[];
 
   /**
-   * Wall time of the whole stage call.
+   Wall time of the whole stage call.
    */
   readonly ms: number;
 };
 
 /**
- * Runs one slice at one width and records what it cost.
- *
- * @param slice - slice to translate
- *
- * @param width - producers to seat, taken from the head of the roster
- *
- * @param pass - which pass over this width
- *
- * @returns Row for the report
- *
- * @example
- * ```ts
- * const row = await runOne({ slice, width: 3, pass: 1, },);
- * ```
+ Runs one slice at one width and records what it cost.
+ 
+ @param slice - slice to translate
+ 
+ @param width - producers to seat, taken from the head of the roster
+ 
+ @param pass - which pass over this width
+ 
+ @returns Row for the report
+ 
+ @example
+ ```ts
+ const row = await runOne({ slice, width: 3, pass: 1, },);
+ ```
  */
 async function runOne(
   {
@@ -197,18 +197,18 @@ async function runOne(
   },
 ): Promise<BenchRow> {
   /**
-   * Logger tagged for this run.
+   Logger tagged for this run.
    */
   const l = tagged({ tag: `bench-w${String(width,)}p${String(pass,)}`, },);
 
   /**
-   * Client recording every exchange this row makes.
+   Client recording every exchange this row makes.
    */
   const recorder = recordingClient({ inner: createRunClient(), },);
 
   /**
-   * Seats for this width, from the head of the roster so the sequence is
-   * nested: width 3 is width 2 plus one model.
+   Seats for this width, from the head of the roster so the sequence is
+   nested: width 3 is width 2 plus one model.
    */
   const translators = RUN_ROSTER.slice(
     0,
@@ -216,12 +216,12 @@ async function runOne(
   );
 
   /**
-   * Start of the stage call.
+   Start of the stage call.
    */
   const began = performance.now();
 
   /**
-   * What the stage decided for this slice.
+   What the stage decided for this slice.
    */
   const result = await runTranslateStage({
     client: recorder.client,
@@ -276,16 +276,16 @@ async function runOne(
 }
 
 /**
- * Runs the whole bench and writes its report.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Runs the whole bench and writes its report.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Slices asked for on the command line, or the default.
+   Slices asked for on the command line, or the default.
    */
   const wanted = readAskedCount({
     argv: process.argv,
@@ -294,7 +294,7 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * Widths this roster supports, and which of them is run twice.
+   Widths this roster supports, and which of them is run twice.
    */
   const {
     widths,
@@ -302,7 +302,7 @@ async function main(): Promise<void> {
   } = benchWidths({ roster: RUN_ROSTER, },);
 
   /**
-   * Slices every width sees.
+   Slices every width sees.
    */
   const sample = await sampleBenchSlices({ count: wanted, },);
   console.log(
@@ -314,18 +314,18 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Every row, accumulated as they finish so a killed run still has a report.
+   Every row, accumulated as they finish so a killed run still has a report.
    */
   const rows: BenchRow[] = [];
 
   /**
-   * Pipeline commit these rows were produced by.
+   Pipeline commit these rows were produced by.
    */
   const headSha = await readHeadSha();
 
   /**
-   * Every run this bench will make, width inner so each width meets the same
-   * provider weather rather than its own hour of the night.
+   Every run this bench will make, width inner so each width meets the same
+   provider weather rather than its own hour of the night.
    */
   const runs = sample.flatMap(function toRuns(slice,) {
     return widths.flatMap(function toWidthRuns(width,) {
@@ -347,7 +347,7 @@ async function main(): Promise<void> {
   for (const run of runs) {
     /* oxlint-disable no-await-in-loop -- sequential by design: each benchmark row is written before the next starts so a killed bench keeps every complete purchase; provider capacity is not the reason */
     /**
-     * What this slice decided at this width.
+     What this slice decided at this width.
      */
     const row = await runOne(run,);
     rows.push(row,);

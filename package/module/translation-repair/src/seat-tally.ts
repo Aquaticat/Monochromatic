@@ -36,66 +36,66 @@ import type { RosterModelId, } from './roster-id.ts';
 // fact looks like. Tests that need isolation pass their own tally.
 
 /**
- * What one call to a seat came back as.
- *
- * `usable` is text returned or a JSON outcome of kind `ok`; `unusable` is a
- * JSON outcome the guard rejected (refusal-shaped or off-schema); `threw` is a
- * call that never returned an outcome at all.
- *
- * @example
- * ```ts
- * const outcome: SeatOutcome = 'threw';
- * ```
+ What one call to a seat came back as.
+ 
+ `usable` is text returned or a JSON outcome of kind `ok`; `unusable` is a
+ JSON outcome the guard rejected (refusal-shaped or off-schema); `threw` is a
+ call that never returned an outcome at all.
+ 
+ @example
+ ```ts
+ const outcome: SeatOutcome = 'threw';
+ ```
  */
 export type SeatOutcome = 'usable' | 'unusable' | 'threw';
 
 /**
- * Counts for one seat over the life of the tally.
- *
- * @example
- * ```ts
- * const dark = counts.filter(function isDark(count,) { return count.usable === 0; },);
- * ```
+ Counts for one seat over the life of the tally.
+ 
+ @example
+ ```ts
+ const dark = counts.filter(function isDark(count,) { return count.usable === 0; },);
+ ```
  */
 export type SeatCount = {
   /**
-   * Seat these counts describe.
+   Seat these counts describe.
    */
   readonly modelId: RosterModelId;
 
   /**
-   * Calls made, whatever came back.
+   Calls made, whatever came back.
    */
   readonly asked: number;
 
   /**
-   * Calls that returned text or an `ok` outcome.
+   Calls that returned text or an `ok` outcome.
    */
   readonly usable: number;
 
   /**
-   * Calls that returned an outcome the guard rejected.
+   Calls that returned an outcome the guard rejected.
    */
   readonly unusable: number;
 
   /**
-   * Calls that threw instead of returning.
+   Calls that threw instead of returning.
    */
   readonly threw: number;
 };
 
 /**
- * Running counts per seat, with the two readings the report needs.
- *
- * @example
- * ```ts
- * const tally = createSeatTally();
- * tally.record({ modelId: 'minimax-m3', outcome: 'threw', },);
- * ```
+ Running counts per seat, with the two readings the report needs.
+ 
+ @example
+ ```ts
+ const tally = createSeatTally();
+ tally.record({ modelId: 'minimax-m3', outcome: 'threw', },);
+ ```
  */
 export type SeatTally = {
   /**
-   * Counts one settled call.
+   Counts one settled call.
    */
   readonly record: (args: {
     readonly modelId: RosterModelId;
@@ -103,23 +103,23 @@ export type SeatTally = {
   },) => void;
 
   /**
-   * Every seat asked at least once, in first-asked order.
+   Every seat asked at least once, in first-asked order.
    */
   readonly counts: () => readonly SeatCount[];
 
   /**
-   * Seats asked at least once that never produced a usable answer.
+   Seats asked at least once that never produced a usable answer.
    */
   readonly dark: () => readonly SeatCount[];
 
   /**
-   * Forgets every count, for a new command in the same process.
+   Forgets every count, for a new command in the same process.
    */
   readonly reset: () => void;
 };
 
 /**
- * Mutable counts behind one seat.
+ Mutable counts behind one seat.
  */
 type SeatCounter = {
   asked: number;
@@ -129,43 +129,43 @@ type SeatCounter = {
 };
 
 /**
- * Builds an empty tally.
- *
- * @returns Tally counting from zero
- *
- * @example
- * ```ts
- * const tally = createSeatTally();
- * ```
+ Builds an empty tally.
+ 
+ @returns Tally counting from zero
+ 
+ @example
+ ```ts
+ const tally = createSeatTally();
+ ```
  */
 export function createSeatTally(): SeatTally {
   /**
-   * Counter per seat, keyed by model id, in first-asked order.
+   Counter per seat, keyed by model id, in first-asked order.
    */
   const counters = new Map<RosterModelId, SeatCounter>();
 
   /**
-   * Returns the seat's counter, creating it on first use.
-   *
-   * @param modelId - seat being counted
-   *
-   * @returns Counter to increment
-   *
-   * @example
-   * ```ts
-   * counterFor('minimax-m3',).asked += 1;
-   * ```
+   Returns the seat's counter, creating it on first use.
+   
+   @param modelId - seat being counted
+   
+   @returns Counter to increment
+   
+   @example
+   ```ts
+   counterFor('minimax-m3',).asked += 1;
+   ```
    */
   function counterFor(modelId: RosterModelId,): SeatCounter {
     /**
-     * Existing counter when this seat was asked before.
+     Existing counter when this seat was asked before.
      */
     const existing = counters.get(modelId,);
     if (existing !== undefined)
       return existing;
 
     /**
-     * Fresh counter for a seat's first call.
+     Fresh counter for a seat's first call.
      */
     const created: SeatCounter = {
       asked: 0,
@@ -181,14 +181,14 @@ export function createSeatTally(): SeatTally {
   }
 
   /**
-   * Snapshot of every counter as immutable counts.
-   *
-   * @returns Counts in first-asked order
-   *
-   * @example
-   * ```ts
-   * const all = snapshot();
-   * ```
+   Snapshot of every counter as immutable counts.
+   
+   @returns Counts in first-asked order
+   
+   @example
+   ```ts
+   const all = snapshot();
+   ```
    */
   function snapshot(): readonly SeatCount[] {
     return [...counters.entries(),].map(function toCount([modelId, counter,],): SeatCount {
@@ -208,7 +208,7 @@ export function createSeatTally(): SeatTally {
       outcome,
     },): void {
       /**
-       * Counter for the seat this call went to.
+       Counter for the seat this call went to.
        */
       const counter = counterFor(modelId,);
       counter.asked += 1;
@@ -233,32 +233,32 @@ export function createSeatTally(): SeatTally {
 }
 
 /**
- * Tally shared by every client the corpus-run factory builds in this process.
- *
- * @example
- * ```ts
- * const darkSeats = RUN_SEATS.dark();
- * ```
+ Tally shared by every client the corpus-run factory builds in this process.
+ 
+ @example
+ ```ts
+ const darkSeats = RUN_SEATS.dark();
+ ```
  */
 export const RUN_SEATS: SeatTally = createSeatTally();
 
 /**
- * Wraps a client so every call it makes is counted against its seat.
- *
- * COUNTS AFTER THE CALL SETTLES, never before, so a call still in flight when
- * the process ends is not counted as anything. The wrapped client is otherwise
- * untouched: the same reply, the same outcome, the same throw.
- *
- * @param inner - client whose calls are counted
- *
- * @param tally - where the counts go
- *
- * @returns Client with the same surface, counting into `tally`
- *
- * @example
- * ```ts
- * const counted = seatTallyClient({ inner: client, tally: RUN_SEATS, },);
- * ```
+ Wraps a client so every call it makes is counted against its seat.
+ 
+ COUNTS AFTER THE CALL SETTLES, never before, so a call still in flight when
+ the process ends is not counted as anything. The wrapped client is otherwise
+ untouched: the same reply, the same outcome, the same throw.
+ 
+ @param inner - client whose calls are counted
+ 
+ @param tally - where the counts go
+ 
+ @returns Client with the same surface, counting into `tally`
+ 
+ @example
+ ```ts
+ const counted = seatTallyClient({ inner: client, tally: RUN_SEATS, },);
+ ```
  */
 export function seatTallyClient(
   {
@@ -273,7 +273,7 @@ export function seatTallyClient(
     async chatText(request: ForeignBorrowed<ChatTextRequest>,): Promise<ChatTextReply> {
       try {
         /**
-         * Reply from the wrapped client.
+         Reply from the wrapped client.
          */
         const reply = await inner.chatText(request,);
         tally.record({
@@ -295,7 +295,7 @@ export function seatTallyClient(
     ): Promise<ChatJsonOutcome<ValueT>> {
       try {
         /**
-         * Outcome from the wrapped client, usable only when `ok`.
+         Outcome from the wrapped client, usable only when `ok`.
          */
         const outcome = await inner.chatJson(request,);
         tally.record({
@@ -317,38 +317,38 @@ export function seatTallyClient(
 }
 
 /**
- * Renders the tally as the lines a command prints when it ends.
- *
- * ONE LINE PER SEAT, then one line naming the dark seats when there are any.
- * Nothing at all when no seat was asked, so a command that never built a
- * client prints nothing extra. Model ids and numbers only.
- *
- * @param tally - counts to render
- *
- * @returns Lines in print order, empty when nothing was asked
- *
- * @example
- * ```ts
- * for (const line of seatReportLines({ tally: RUN_SEATS, },)) console.error(line,);
- * ```
+ Renders the tally as the lines a command prints when it ends.
+ 
+ ONE LINE PER SEAT, then one line naming the dark seats when there are any.
+ Nothing at all when no seat was asked, so a command that never built a
+ client prints nothing extra. Model ids and numbers only.
+ 
+ @param tally - counts to render
+ 
+ @returns Lines in print order, empty when nothing was asked
+ 
+ @example
+ ```ts
+ for (const line of seatReportLines({ tally: RUN_SEATS, },)) console.error(line,);
+ ```
  */
 export function seatReportLines(
   { tally, }: { readonly tally: SeatTally; },
 ): readonly string[] {
   /**
-   * Every seat asked this run.
+   Every seat asked this run.
    */
   const counts = tally.counts();
   if (counts.length === 0)
     return [];
 
   /**
-   * Seats that never produced a usable answer.
+   Seats that never produced a usable answer.
    */
   const dark = tally.dark();
 
   /**
-   * One line per seat, whatever it produced.
+   One line per seat, whatever it produced.
    */
   const perSeat = counts.map(function toLine(count,): string {
     return `SEAT ${count.modelId} asked=${String(count.asked,)} usable=${String(count.usable,)} `
@@ -359,7 +359,7 @@ export function seatReportLines(
     return perSeat;
 
   /**
-   * Dark seats with the counts that make them dark.
+   Dark seats with the counts that make them dark.
    */
   const named = dark
     .map(function describe(count,): string {
@@ -370,7 +370,7 @@ export function seatReportLines(
     .join('; ',);
 
   /**
-   * The one line a reader who is not grepping must see.
+   The one line a reader who is not grepping must see.
    */
   const darkLine = `SEATS DARK: ${String(dark.length,)} of ${String(counts.length,)} seats asked `
     + `produced nothing usable this run: ${named}. A seat that fails every call is a provider that `

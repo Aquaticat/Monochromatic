@@ -3,12 +3,12 @@ import { archiveContributorNameForms, } from './contributor-name-authority.ts';
 //region Archive block evidence
 
 /**
- * Minimum Unicode characters an exact source anchor must carry.
+ Minimum Unicode characters an exact source anchor must carry.
  */
 const MINIMUM_SOURCE_QUOTE_CHARACTERS = 4;
 
 /**
- * Translation-side apparatus prefixes accepted only with roster agreement.
+ Translation-side apparatus prefixes accepted only with roster agreement.
  */
 const EDITORIAL_PREFIXES: readonly string[] = [
   'contributor:',
@@ -25,18 +25,18 @@ const EDITORIAL_PREFIXES: readonly string[] = [
 ];
 
 /**
- * Checks exact source support is substantive and inside expected aligned section.
- *
- * @param sourceContext - expected source section
- *
- * @param sourceQuote - provider's exact support claim
- *
- * @returns Whether quote is long enough and anchored in expected section
- *
- * @example
- * ```ts
- * isArchiveSourceQuoteAnchored({ sourceContext: '猫在窗边睡觉。', sourceQuote: '窗边睡觉', });
- * ```
+ Checks exact source support is substantive and inside expected aligned section.
+ 
+ @param sourceContext - expected source section
+ 
+ @param sourceQuote - provider's exact support claim
+ 
+ @returns Whether quote is long enough and anchored in expected section
+ 
+ @example
+ ```ts
+ isArchiveSourceQuoteAnchored({ sourceContext: '猫在窗边睡觉。', sourceQuote: '窗边睡觉', });
+ ```
  */
 export function isArchiveSourceQuoteAnchored(
   {
@@ -48,7 +48,7 @@ export function isArchiveSourceQuoteAnchored(
   },
 ): boolean {
   /**
-   * Quote without accidental boundary whitespace.
+   Quote without accidental boundary whitespace.
    */
   const normalizedQuote = sourceQuote.trim();
   return (normalizedQuote.length >= MINIMUM_SOURCE_QUOTE_CHARACTERS)
@@ -56,22 +56,22 @@ export function isArchiveSourceQuoteAnchored(
 }
 
 /**
- * Deterministically corroborates narrow translation-side apparatus category.
- *
- * @param blockText - exact unclaimed archive block
- *
- * @returns Whether block has contributor, citation, media, or comment shape
- *
- * @example
- * ```ts
- * isVerifiableEditorialArchiveBlock({ blockText: 'Translator: Cat Friend', });
- * ```
+ Deterministically corroborates narrow translation-side apparatus category.
+ 
+ @param blockText - exact unclaimed archive block
+ 
+ @returns Whether block has contributor, citation, media, or comment shape
+ 
+ @example
+ ```ts
+ isVerifiableEditorialArchiveBlock({ blockText: 'Translator: Cat Friend', });
+ ```
  */
 export function isVerifiableEditorialArchiveBlock(
   { blockText, }: { readonly blockText: string; },
 ): boolean {
   /**
-   * Case-folded visible block used only for fixed apparatus labels.
+   Case-folded visible block used only for fixed apparatus labels.
    */
   const normalized = blockText.trim()
     .toLowerCase();

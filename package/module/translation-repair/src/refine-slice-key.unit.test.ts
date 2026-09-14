@@ -1,30 +1,30 @@
 /**
- * Tests for what makes two runs' refinements the same refinement.
- *
- * WHAT THESE PIN is the half of a cache that fails silently. A key that is too
- * WIDE discards settled work on an unrelated change, which is expensive and
- * obvious. A key that is too NARROW returns a rewrite reached under a different
- * question, and nothing looks wrong: the slice text matches, so the key
- * matches, and a run publishes wording it never bought.
- *
- * The INCUMBENT is the member that looks wrong. It reaches no prompt in this
- * stage at all, and it is in the key because the settlement stores a `changed`
- * flag computed against it and drops the confirmed set wherever a rewrite
- * lands back on the archive wording. A key blind to it returns a verdict
- * reached against wording this run no longer carries, and the resume then
- * throws rather than correcting itself.
- *
- * The DEFINITIONS are the case this stage adds over the others. They are
- * collected from the whole assembled document rather than from this slice, so a
- * neighbouring slice settling differently changes what this rewriter is shown.
- * A key blind to that resumes a stale rewrite after its neighbour moves, which
- * is the failure `#126` already recorded once at the accuracy window.
- *
- * Content fixtures are cat-themed invention. No corpus content appears here.
- * Model identifiers come from the catalog, because `RosterModelId` is a
- * closed union and an invented one does not typecheck.
- *
- * @module
+ Tests for what makes two runs' refinements the same refinement.
+ 
+ WHAT THESE PIN is the half of a cache that fails silently. A key that is too
+ WIDE discards settled work on an unrelated change, which is expensive and
+ obvious. A key that is too NARROW returns a rewrite reached under a different
+ question, and nothing looks wrong: the slice text matches, so the key
+ matches, and a run publishes wording it never bought.
+ 
+ The INCUMBENT is the member that looks wrong. It reaches no prompt in this
+ stage at all, and it is in the key because the settlement stores a `changed`
+ flag computed against it and drops the confirmed set wherever a rewrite
+ lands back on the archive wording. A key blind to it returns a verdict
+ reached against wording this run no longer carries, and the resume then
+ throws rather than correcting itself.
+ 
+ The DEFINITIONS are the case this stage adds over the others. They are
+ collected from the whole assembled document rather than from this slice, so a
+ neighbouring slice settling differently changes what this rewriter is shown.
+ A key blind to that resumes a stale rewrite after its neighbour moves, which
+ is the failure `#126` already recorded once at the accuracy window.
+ 
+ Content fixtures are cat-themed invention. No corpus content appears here.
+ Model identifiers come from the catalog, because `RosterModelId` is a
+ closed union and an invented one does not typecheck.
+ 
+ @module
  */
 
 import {
@@ -40,7 +40,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Roster this run asks, as the phase assembles one.
+ Roster this run asks, as the phase assembles one.
  */
 const RUN_SHAPE = refineRunShape({
   refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
@@ -49,7 +49,7 @@ const RUN_SHAPE = refineRunShape({
 },);
 
 /**
- * One accepted claim, whose wording reaches the checkers.
+ One accepted claim, whose wording reaches the checkers.
  */
 const ISSUE = {
   issueId: 'adjudicated/one',
@@ -60,7 +60,7 @@ const ISSUE = {
 } as unknown as AdjudicatedIssue;
 
 /**
- * Every input the key covers, as one run supplies them.
+ Every input the key covers, as one run supplies them.
  */
 const BASE = {
   runShape: RUN_SHAPE,
@@ -280,8 +280,8 @@ await describe({
         + 'anchor has original text and no archive text',
       fn: async () => {
         /**
-         * Text placed on one side of the window and then the other, so only
-         * the LABEL differs between the two keys.
+         Text placed on one side of the window and then the other, so only
+         the LABEL differs between the two keys.
          */
         const nearby = '邻居的橘猫在门口等鱼干。';
 

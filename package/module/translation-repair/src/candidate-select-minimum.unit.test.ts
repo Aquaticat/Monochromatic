@@ -1,9 +1,9 @@
 /**
- * Tests for the selection minimum on a short bench: the absolute minimum
- * stands wherever the reachable bench reaches quorum, and scales by reachable
- * over quorum where it does not (owner, 2026-09-09).
- *
- * @module
+ Tests for the selection minimum on a short bench: the absolute minimum
+ stands wherever the reachable bench reaches quorum, and scales by reachable
+ over quorum where it does not (owner, 2026-09-09).
+ 
+ @module
  */
 
 import {
@@ -20,12 +20,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Seated wide bench the production run carries, as a size.
+ Seated wide bench the production run carries, as a size.
  */
 const SEATED_BENCH = 11;
 
 /**
- * Seats Bedrock alone reaches on that bench.
+ Seats Bedrock alone reaches on that bench.
  */
 const BEDROCK_REACHABLE = 3;
 

@@ -78,25 +78,25 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // from such a verdict, exactly as from the deterministic one.
 
 /**
- * Decimal places an agreement figure is logged to.
- *
- * THREE, because the measured gap runs from 0.129 to 0.643 and two places would
- * round several distinct readings to the same line.
+ Decimal places an agreement figure is logged to.
+ 
+ THREE, because the measured gap runs from 0.129 to 0.643 and two places would
+ round several distinct readings to the same line.
  */
 const LOGGED_OVERLAP_PLACES = 3;
 
 /**
- * Reads a picture without a model, which is what gates the model calls.
- *
- * PASSED IN RATHER THAN REACHED FOR, because the real one shells out to
- * `dwebp` and `tesseract`. Injecting it keeps this function testable on a
- * machine that has neither, and keeps a test that forgets to supply one a TYPE
- * ERROR rather than a slow, machine-dependent pass.
- *
- * @example
- * ```ts
- * const readOcr: OcrReader = async () => ({ kind: 'no-text', characters: 0, });
- * ```
+ Reads a picture without a model, which is what gates the model calls.
+ 
+ PASSED IN RATHER THAN REACHED FOR, because the real one shells out to
+ `dwebp` and `tesseract`. Injecting it keeps this function testable on a
+ machine that has neither, and keeps a test that forgets to supply one a TYPE
+ ERROR rather than a slow, machine-dependent pass.
+ 
+ @example
+ ```ts
+ const readOcr: OcrReader = async () => ({ kind: 'no-text', characters: 0, });
+ ```
  */
 export type OcrReader = (
   input: {
@@ -107,90 +107,90 @@ export type OcrReader = (
 ) => Promise<OcrReading>;
 
 /**
- * One model's reading of one picture.
- *
- * @example
- * ```ts
- * const reading: ModelReading = { modelId: 'hf:moonshotai/Kimi-K3', text: '喵。', };
- * ```
+ One model's reading of one picture.
+ 
+ @example
+ ```ts
+ const reading: ModelReading = { modelId: 'hf:moonshotai/Kimi-K3', text: '喵。', };
+ ```
  */
 export type ModelReading = {
   /**
-   * Model that produced it.
+   Model that produced it.
    */
   readonly modelId: RosterModelId;
 
   /**
-   * What it transcribed.
+   What it transcribed.
    */
   readonly text: string;
 };
 
 /**
- * What reading one picture with the whole sub-roster produced.
- *
- * @example
- * ```ts
- * const paired: PairedReading = { kind: 'corroborated', readings, overlap: 0.97, };
- * ```
+ What reading one picture with the whole sub-roster produced.
+ 
+ @example
+ ```ts
+ const paired: PairedReading = { kind: 'corroborated', readings, overlap: 0.97, };
+ ```
  */
 export type PairedReading = {
   /**
-   * Both readers read the picture and agree about what it says.
+   Both readers read the picture and agree about what it says.
    */
   readonly kind: 'corroborated';
 
   /**
-   * Every reading, labelled by its model, in roster order.
-   *
-   * BOTH RATHER THAN THE LONGER ONE. Corroboration establishes that the two
-   * describe the same picture, not that they describe the same AMOUNT of it: on
-   * `Mio/photo7.webp` one reader returned 178 characters and the other 590. The
-   * shorter vouches for what it carries and the longer carries more, so a stage
-   * shown both learns more than one shown either.
+   Every reading, labelled by its model, in roster order.
+   
+   BOTH RATHER THAN THE LONGER ONE. Corroboration establishes that the two
+   describe the same picture, not that they describe the same AMOUNT of it: on
+   `Mio/photo7.webp` one reader returned 178 characters and the other 590. The
+   shorter vouches for what it carries and the longer carries more, so a stage
+   shown both learns more than one shown either.
    */
   readonly readings: readonly ModelReading[];
 
   /**
-   * How far above the threshold they agreed, recorded so a run can be read for
-   * how close its corroborations ran.
+   How far above the threshold they agreed, recorded so a run can be read for
+   how close its corroborations ran.
    */
   readonly overlap: number;
 } | {
   /**
-   * The picture carries no text, so there was nothing to read and no model was
-   * asked.
-   *
-   * A VERDICT RATHER THAN A FAILURE, and the distinction is not cosmetic. Two
-   * thirds of this corpus's pictures are photographs of people: 119 of 191
-   * assets return nothing from the deterministic reader. Recording those as
-   * `unavailable` would report a correct answer as a shortfall, and would leave
-   * anyone reading a run unable to tell a picture nobody could read from one
-   * with nothing on it.
+   The picture carries no text, so there was nothing to read and no model was
+   asked.
+   
+   A VERDICT RATHER THAN A FAILURE, and the distinction is not cosmetic. Two
+   thirds of this corpus's pictures are photographs of people: 119 of 191
+   assets return nothing from the deterministic reader. Recording those as
+   `unavailable` would report a correct answer as a shortfall, and would leave
+   anyone reading a run unable to tell a picture nobody could read from one
+   with nothing on it.
    */
   readonly kind: 'no-text';
 
   /**
-   * How much the deterministic reader did return, so a clean nothing is
-   * distinguishable from a few characters below the line, and a confirmed
-   * textless picture from its noise above it.
+   How much the deterministic reader did return, so a clean nothing is
+   distinguishable from a few characters below the line, and a confirmed
+   textless picture from its noise above it.
    */
   readonly characters: number;
 
   /**
-   * Readers that confirmed it, when the deterministic reader found enough to
-   * ask them; absent when no model was asked.
+   Readers that confirmed it, when the deterministic reader found enough to
+   ask them; absent when no model was asked.
    */
   readonly confirmedBy?: readonly RosterModelId[];
 } | {
   /**
-   * No reading may be used, for a reason a finding can name.
+   No reading may be used, for a reason a finding can name.
    */
   readonly kind: 'unavailable';
 
   /**
-   * Which of the ways it failed, so a reader can tell a picture nobody could
-   * send from one the readers disagreed about.
+   Which of the ways it failed, so a reader can tell a picture nobody could
+   send from one the readers disagreed about.
    */
   readonly reason:
     | 'no-reader-available'
@@ -198,61 +198,61 @@ export type PairedReading = {
     | 'readers-disagree';
 
   /**
-   * Whether this verdict rests on a reader that produced nothing for a reason
-   * that may not hold tomorrow: one that threw, answered nothing, answered too
-   * little, or refused.
-   *
-   * WHAT DECIDES WHETHER THE VERDICT IS REMEMBERED. A transient verdict
-   * describes the provider's evening and is read again on the next run; a
-   * stable one describes the picture and the roster and is resumed. Until
-   * this field every `unavailable` verdict was persisted, so one reader
-   * timing out once left a picture unread on every later run until a rebuild
-   * retired the cache.
+   Whether this verdict rests on a reader that produced nothing for a reason
+   that may not hold tomorrow: one that threw, answered nothing, answered too
+   little, or refused.
+   
+   WHAT DECIDES WHETHER THE VERDICT IS REMEMBERED. A transient verdict
+   describes the provider's evening and is read again on the next run; a
+   stable one describes the picture and the roster and is resumed. Until
+   this field every `unavailable` verdict was persisted, so one reader
+   timing out once left a picture unread on every later run until a rebuild
+   retired the cache.
    */
   readonly transient: boolean;
 
   /**
-   * Why each reader produced nothing usable, in roster order, empty for a reader
-   * that did produce one.
+   Why each reader produced nothing usable, in roster order, empty for a reader
+   that did produce one.
    */
   readonly perReader: readonly string[];
 
   /**
-   * Agreement measured between the readings, when there were two to compare.
-   * Absent when there were not, so a zero never reads as disagreement that was
-   * actually a missing reading.
+   Agreement measured between the readings, when there were two to compare.
+   Absent when there were not, so a zero never reads as disagreement that was
+   actually a missing reading.
    */
   readonly overlap?: number;
 
   /**
-   * What the readers said, kept even though none of it may be used.
-   *
-   * SO A DISAGREEMENT CAN BE DIAGNOSED RATHER THAN ONLY COUNTED. Discarding
-   * these left a run reporting `readers-disagree` at some number and nothing
-   * else, and the first time that happened on a picture already known to read
-   * well, no evidence survived to say whether the models had genuinely differed
-   * or something had gone wrong upstream of them. The number alone cannot tell
-   * those apart.
-   *
-   * NOTHING DOWNSTREAM READS THIS. `slicePictures` builds its context from
-   * corroborated readings only, so these travel into the stored record and no
-   * further. Absent when no reading arrived at all.
+   What the readers said, kept even though none of it may be used.
+   
+   SO A DISAGREEMENT CAN BE DIAGNOSED RATHER THAN ONLY COUNTED. Discarding
+   these left a run reporting `readers-disagree` at some number and nothing
+   else, and the first time that happened on a picture already known to read
+   well, no evidence survived to say whether the models had genuinely differed
+   or something had gone wrong upstream of them. The number alone cannot tell
+   those apart.
+   
+   NOTHING DOWNSTREAM READS THIS. `slicePictures` builds its context from
+   corroborated readings only, so these travel into the stored record and no
+   further. Absent when no reading arrived at all.
    */
   readonly readings?: readonly ModelReading[];
 };
 
 /**
- * Whether a paired reading is a fact worth resuming on a later run.
- *
- * @param reading - what reading one picture produced
- *
- * @returns False only for an unavailable verdict that rests on a transient
- * reader failure, which a later run should read again
- *
- * @example
- * ```ts
- * if (isResumableReading({ reading: paired, },)) await cache.persist({ key, serialized, },);
- * ```
+ Whether a paired reading is a fact worth resuming on a later run.
+ 
+ @param reading - what reading one picture produced
+ 
+ @returns False only for an unavailable verdict that rests on a transient
+ reader failure, which a later run should read again
+ 
+ @example
+ ```ts
+ if (isResumableReading({ reading: paired, },)) await cache.persist({ key, serialized, },);
+ ```
  */
 export function isResumableReading({ reading, }: { readonly reading: PairedReading; },): boolean {
   if (reading.kind !== 'unavailable')
@@ -261,37 +261,37 @@ export function isResumableReading({ reading, }: { readonly reading: PairedReadi
 }
 
 /**
- * Reads one picture with every reader and settles whether either reading is
- * usable.
- *
- * @param client - transport to the provider
- *
- * @param readerModelIds - vision sub-roster, asked in this order
- *
- * @param readOcr - deterministic reader consulted before any model, which
- * decides whether the picture is worth asking about at all
- *
- * @param bytes - picture as read from disk
- *
- * @param assetName - its file name, which carries the media type
- *
- * @param signal - abort honoured for every exchange
- *
- * @param perCallTimeoutMs - deadline bounding each exchange
- *
- * @param l - lane logger
- *
- * @returns Corroborated readings, or why none may be used
- *
- * @throws {@link DOMException} when `signal` aborts, since a run told to stop
- * must not settle a document on the readings that beat the stop. Every other
- * failure a reader raises is contained as an unavailable reading for that
- * reader alone
- *
- * @example
- * ```ts
- * const paired = await readImagePair({ client, readerModelIds, readOcr, bytes, assetName, signal, perCallTimeoutMs, l, },);
- * ```
+ Reads one picture with every reader and settles whether either reading is
+ usable.
+ 
+ @param client - transport to the provider
+ 
+ @param readerModelIds - vision sub-roster, asked in this order
+ 
+ @param readOcr - deterministic reader consulted before any model, which
+ decides whether the picture is worth asking about at all
+ 
+ @param bytes - picture as read from disk
+ 
+ @param assetName - its file name, which carries the media type
+ 
+ @param signal - abort honoured for every exchange
+ 
+ @param perCallTimeoutMs - deadline bounding each exchange
+ 
+ @param l - lane logger
+ 
+ @returns Corroborated readings, or why none may be used
+ 
+ @throws {@link DOMException} when `signal` aborts, since a run told to stop
+ must not settle a document on the readings that beat the stop. Every other
+ failure a reader raises is contained as an unavailable reading for that
+ reader alone
+ 
+ @example
+ ```ts
+ const paired = await readImagePair({ client, readerModelIds, readOcr, bytes, assetName, signal, perCallTimeoutMs, l, },);
+ ```
  */
 export async function readImagePair(
   {
@@ -315,7 +315,7 @@ export async function readImagePair(
   },
 ): Promise<PairedReading> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: readImagePair.name,
@@ -330,19 +330,19 @@ export async function readImagePair(
   signal.throwIfAborted();
 
   /**
-   * What the deterministic reader made of the picture, asked before any model.
-   *
-   * A GATE RATHER THAN A THIRD READER, which is the opposite of what it looks
-   * like it should be and was settled by measurement. Its readings do not
-   * corroborate the models': on `Word1.webp` it returns 405 characters against
-   * their 390 and 394, so it reads the same text, and still scores 0.019 and
-   * 0.023 against them while they score 0.643 against each other. Tesseract on
-   * handwritten Chinese recovers the layout and substitutes lookalike glyphs,
-   * which leaves length intact and destroys trigram overlap. Letting it vote
-   * would refuse readings that are fine.
-   *
-   * WHAT IT IS RELIABLE AT IS PRESENCE, six of six against the models in both
-   * directions, which is the question worth asking first.
+   What the deterministic reader made of the picture, asked before any model.
+   
+   A GATE RATHER THAN A THIRD READER, which is the opposite of what it looks
+   like it should be and was settled by measurement. Its readings do not
+   corroborate the models': on `Word1.webp` it returns 405 characters against
+   their 390 and 394, so it reads the same text, and still scores 0.019 and
+   0.023 against them while they score 0.643 against each other. Tesseract on
+   handwritten Chinese recovers the layout and substitutes lookalike glyphs,
+   which leaves length intact and destroys trigram overlap. Letting it vote
+   would refuse readings that are fine.
+   
+   WHAT IT IS RELIABLE AT IS PRESENCE, six of six against the models in both
+   directions, which is the question worth asking first.
    */
   const ocr = await readOcr({
     bytes,
@@ -362,11 +362,11 @@ export async function readImagePair(
   }
 
   /**
-   * How each reader's exchange ended, asked concurrently.
-   *
-   * CONCURRENTLY BECAUSE THE LIMITER IS PER MODEL. Different models hold
-   * different slots, so asking them in sequence would double a reading's
-   * latency for nothing.
+   How each reader's exchange ended, asked concurrently.
+   
+   CONCURRENTLY BECAUSE THE LIMITER IS PER MODEL. Different models hold
+   different slots, so asking them in sequence would double a reading's
+   latency for nothing.
    */
   const settled = await Promise.allSettled(readerModelIds.map(async function ask(modelId,): Promise<{
     readonly modelId: RosterModelId;
@@ -395,18 +395,18 @@ export async function readImagePair(
   signal.throwIfAborted();
 
   /**
-   * What every reader made of the picture, with a reader that failed outright
-   * carrying its failure rather than taking the others down with it.
-   *
-   * A READING IS EVIDENCE, NEVER A GATE, so a reader that throws costs its own
-   * reading and nothing else. Measured on `wangzihao980` before this changed:
-   * one reader looped on `picture1.webp`, the client's runaway guard ended the
-   * call, `Promise.all` rejected, and the rejection travelled through
-   * `readDocumentPictures` into `settleEntry`. The entry finished
-   * `status=ERROR` with `processed=0`, so BOTH LANES were lost to a
-   * transcription nobody needed. Nothing downstream reads a picture as
-   * required, which is what makes containing it here correct rather than
-   * merely convenient.
+   What every reader made of the picture, with a reader that failed outright
+   carrying its failure rather than taking the others down with it.
+   
+   A READING IS EVIDENCE, NEVER A GATE, so a reader that throws costs its own
+   reading and nothing else. Measured on `wangzihao980` before this changed:
+   one reader looped on `picture1.webp`, the client's runaway guard ended the
+   call, `Promise.all` rejected, and the rejection travelled through
+   `readDocumentPictures` into `settleEntry`. The entry finished
+   `status=ERROR` with `processed=0`, so BOTH LANES were lost to a
+   transcription nobody needed. Nothing downstream reads a picture as
+   required, which is what makes containing it here correct rather than
+   merely convenient.
    */
   const outcomes: readonly {
     readonly modelId: RosterModelId;
@@ -423,8 +423,8 @@ export async function readImagePair(
     }
 
     /**
-     * Reader whose exchange threw, taken by position because a rejected
-     * settlement carries no label of its own.
+     Reader whose exchange threw, taken by position because a rejected
+     settlement carries no label of its own.
      */
     const modelId = readerModelIds[index];
     if (modelId === undefined) {
@@ -448,7 +448,7 @@ export async function readImagePair(
   },);
 
   /**
-   * Readings that arrived, labelled by model.
+   Readings that arrived, labelled by model.
    */
   const readings: readonly ModelReading[] = outcomes
     .flatMap(function labelled(
@@ -475,8 +475,8 @@ export async function readImagePair(
     },);
 
   /**
-   * Readers that answered there is little or nothing to read: an absence
-   * report, or a reply shorter than a transcript that refused nothing.
+   Readers that answered there is little or nothing to read: an absence
+   report, or a reply shorter than a transcript that refused nothing.
    */
   const littleText: readonly RosterModelId[] = outcomes.flatMap(function reportsLittle(
     {
@@ -492,7 +492,7 @@ export async function readImagePair(
   },);
   if ((readings.length < 2) && (littleText.length >= 2)) {
     /**
-     * What the deterministic reader had found, which the readers now overrule.
+     What the deterministic reader had found, which the readers now overrule.
      */
     const characters = (ocr.kind === 'read') ? solidCharacters({ text: ocr.text, },) : 0;
     rl.info(
@@ -508,7 +508,7 @@ export async function readImagePair(
   }
 
   /**
-   * Why each reader produced nothing usable, empty for one that did.
+   Why each reader produced nothing usable, empty for one that did.
    */
   const perReader: readonly string[] = outcomes.map(function reason(
     {
@@ -520,7 +520,7 @@ export async function readImagePair(
       return `${modelId}: ${reading.reason}`;
     if (reading.kind === 'short') {
       /**
-       * The few characters it read.
+       The few characters it read.
        */
       const { text, } = reading;
       return `${modelId}: short reading of ${String(text.length,)} characters`;
@@ -530,8 +530,8 @@ export async function readImagePair(
 
   if (readings.length < 2) {
     /**
-     * Which shortfall this is, since one reading and none are different
-     * situations for anyone reading the finding.
+     Which shortfall this is, since one reading and none are different
+     situations for anyone reading the finding.
      */
     const reason = (readings.length === 1) ? 'one-reader-only' : 'no-reader-available';
     rl.warn(
@@ -556,8 +556,8 @@ export async function readImagePair(
   }
 
   /**
-   * First two readings, which is the whole roster today and the first two of a
-   * larger one.
+   First two readings, which is the whole roster today and the first two of a
+   larger one.
    */
   const [
     left,
@@ -571,7 +571,7 @@ export async function readImagePair(
   }
 
   /**
-   * Whether they describe the same picture.
+   Whether they describe the same picture.
    */
   const verdict = readingsCorroborate({
     left: left.text,

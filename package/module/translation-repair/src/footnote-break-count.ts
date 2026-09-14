@@ -17,30 +17,30 @@ import type { RepairDocument, } from './parse-document.ts';
 // every repair of the chunk holding it.
 
 /**
- * Count of footnote integrity findings a document carries.
- *
- * Every kind counts alike: an unresolved reference, an orphaned definition and
- * a duplicated definition are all damage when a patch introduces one.
- *
- * @param document - parsed document under inspection
- *
- * @returns Footnote finding count
- *
- * @example
- * ```ts
- * footnoteBreakCount({ document, },);
- * ```
+ Count of footnote integrity findings a document carries.
+ 
+ Every kind counts alike: an unresolved reference, an orphaned definition and
+ a duplicated definition are all damage when a patch introduces one.
+ 
+ @param document - parsed document under inspection
+ 
+ @returns Footnote finding count
+ 
+ @example
+ ```ts
+ footnoteBreakCount({ document, },);
+ ```
  */
 export function footnoteBreakCount(
   { document, }: { readonly document: RepairDocument; },
 ): number {
   /**
-   * Graph the parse already built for this document.
+   Graph the parse already built for this document.
    */
   const { footnoteGraph, } = document;
 
   /**
-   * Integrity findings it carries.
+   Integrity findings it carries.
    */
   const { findings, } = footnoteGraph;
 

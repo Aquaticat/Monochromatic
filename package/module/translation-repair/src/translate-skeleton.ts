@@ -53,11 +53,11 @@ import type {
 // translation; wording does not, and the judges are the instrument for wording.
 
 /**
- * Atom kinds that must survive a translation.
- *
- * Every one of them is a machine-readable identity rather than prose: a URL, a
- * reference label, a footnote marker, or code the author fenced precisely so it
- * would not be rewritten.
+ Atom kinds that must survive a translation.
+ 
+ Every one of them is a machine-readable identity rather than prose: a URL, a
+ reference label, a footnote marker, or code the author fenced precisely so it
+ would not be rewritten.
  */
 const TRANSLATABLE_ATOM_KINDS: ReadonlySet<AtomKind> = new Set<AtomKind>([
   'link-url',
@@ -69,70 +69,70 @@ const TRANSLATABLE_ATOM_KINDS: ReadonlySet<AtomKind> = new Set<AtomKind>([
 ],);
 
 /**
- * One top-level block's shape.
- *
- * @example
- * ```ts
- * const shape: BlockShape = { kind: 'heading', detail: 'level 2', };
- * ```
+ One top-level block's shape.
+ 
+ @example
+ ```ts
+ const shape: BlockShape = { kind: 'heading', detail: 'level 2', };
+ ```
  */
 export type BlockShape = {
   /**
-   * mdast node type, kept as a plain string because remark plugins extend the
-   * vocabulary.
+   mdast node type, kept as a plain string because remark plugins extend the
+   vocabulary.
    */
   readonly kind: string;
 
   /**
-   * What distinguishes two blocks of the same kind, empty when nothing does.
-   *
-   * A heading carries its level and a list carries whether it is ordered,
-   * because a translation that turns a level-two heading into a level-three one
-   * or a bulleted list into a numbered one has changed the document while
-   * matching on kind alone.
+   What distinguishes two blocks of the same kind, empty when nothing does.
+   
+   A heading carries its level and a list carries whether it is ordered,
+   because a translation that turns a level-two heading into a level-three one
+   or a bulleted list into a numbered one has changed the document while
+   matching on kind alone.
    */
   readonly detail: string;
 };
 
 /**
- * What one slice carries across a translation.
- *
- * @example
- * ```ts
- * const skeleton: SliceSkeleton = { blocks, atoms, explicitBreaks, };
- * ```
+ What one slice carries across a translation.
+ 
+ @example
+ ```ts
+ const skeleton: SliceSkeleton = { blocks, atoms, explicitBreaks, };
+ ```
  */
 export type SliceSkeleton = {
   /**
-   * Top-level blocks in document order.
+   Top-level blocks in document order.
    */
   readonly blocks: readonly BlockShape[];
 
   /**
-   * References and code in document order.
+   References and code in document order.
    */
   readonly atoms: readonly ProtectedAtom[];
 
   /**
-   * Explicit rendered breaks within each corresponding top-level block.
+   Explicit rendered breaks within each corresponding top-level block.
    */
   readonly explicitBreaks: readonly number[];
 };
 
 /**
- * Outcome of reading one slice.
- *
- * @example
- * ```ts
- * const read: SkeletonRead = { kind: 'unparseable', detail: 'unexpected `{`', };
- * ```
+ Outcome of reading one slice.
+ 
+ @example
+ ```ts
+ const read: SkeletonRead = { kind: 'unparseable', detail: 'unexpected `{`', };
+ ```
  */
 export type SkeletonRead =
   | {
     readonly kind: 'read';
 
     /**
-     * What the slice carries.
+     What the slice carries.
      */
     readonly skeleton: SliceSkeleton;
   }
@@ -140,44 +140,44 @@ export type SkeletonRead =
     readonly kind: 'unparseable';
 
     /**
-     * Parser's own account, for a finding a model can act on.
+     Parser's own account, for a finding a model can act on.
      */
     readonly detail: string;
   };
 
 /**
- * Recursively readonly mdast root, as this module BORROWS the parse result.
- *
- * @example
- * ```ts
- * const root: ReadonlyMdastRoot = parsed.root;
- * ```
+ Recursively readonly mdast root, as this module BORROWS the parse result.
+ 
+ @example
+ ```ts
+ const root: ReadonlyMdastRoot = parsed.root;
+ ```
  */
 type ReadonlyMdastRoot = DeepReadonlyData<Root>;
 
 /**
- * Recursively readonly mdast content node.
- *
- * @example
- * ```ts
- * const node: ReadonlyMdastContent = root.children[0];
- * ```
+ Recursively readonly mdast content node.
+ 
+ @example
+ ```ts
+ const node: ReadonlyMdastContent = root.children[0];
+ ```
  */
 type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
 
 /**
- * @internal
- *
- * Names what distinguishes this block from another of the same kind.
- *
- * @param node - top-level mdast block
- *
- * @returns Distinguishing detail, empty when the kind says everything
- *
- * @example
- * ```ts
- * const detail = blockDetail({ node, },);
- * ```
+ @internal
+ 
+ Names what distinguishes this block from another of the same kind.
+ 
+ @param node - top-level mdast block
+ 
+ @returns Distinguishing detail, empty when the kind says everything
+ 
+ @example
+ ```ts
+ const detail = blockDetail({ node, },);
+ ```
  */
 export function blockDetail({ node, }: { readonly node: ReadonlyMdastContent; },): string {
   if (node.type === 'heading')
@@ -188,16 +188,16 @@ export function blockDetail({ node, }: { readonly node: ReadonlyMdastContent; },
 }
 
 /**
- * Reads one node into the atoms it contributes, if any.
- *
- * @param node - mdast node at any depth
- *
- * @returns Atoms this node contributes
- *
- * @example
- * ```ts
- * const atoms = atomsOfNode({ node, },);
- * ```
+ Reads one node into the atoms it contributes, if any.
+ 
+ @param node - mdast node at any depth
+ 
+ @returns Atoms this node contributes
+ 
+ @example
+ ```ts
+ const atoms = atomsOfNode({ node, },);
+ ```
  */
 function atomsOfNode(
   { node, }: { readonly node: ReadonlyMdastContent; },
@@ -236,31 +236,31 @@ function atomsOfNode(
 }
 
 /**
- * Walks a parsed slice into its ordered atoms.
- *
- * @param root - parsed slice
- *
- * @returns Atoms in document order
- *
- * @example
- * ```ts
- * const atoms = walkAtoms({ root, },);
- * ```
+ Walks a parsed slice into its ordered atoms.
+ 
+ @param root - parsed slice
+ 
+ @returns Atoms in document order
+ 
+ @example
+ ```ts
+ const atoms = walkAtoms({ root, },);
+ ```
  */
 function walkAtoms({ root, }: { readonly root: ReadonlyMdastRoot; },): readonly ProtectedAtom[] {
   /**
-   * Nodes still to visit, held as a stack so the walk stays iterative over a
-   * tree of unknown depth; children push reversed to keep document order.
+   Nodes still to visit, held as a stack so the walk stays iterative over a
+   tree of unknown depth; children push reversed to keep document order.
    */
   const pending: ReadonlyMdastContent[] = [...root.children,].toReversed();
 
   /**
-   * Atoms in document order.
+   Atoms in document order.
    */
   const atoms: ProtectedAtom[] = [];
   while (pending.length > 0) {
     /**
-     * Next node in document order.
+     Next node in document order.
      */
     const node = pending.pop();
     if (node === undefined)
@@ -278,18 +278,18 @@ function walkAtoms({ root, }: { readonly root: ReadonlyMdastRoot; },): readonly 
 }
 
 /**
- * Lone container tags of one kind as atoms, in document order.
- *
- * @param tags - lone tags the mask reported
- *
- * @param kind - which half of a container to keep
- *
- * @returns Those tags as `container-tag` atoms
- *
- * @example
- * ```ts
- * const openers = tagAtomsOf({ tags, kind: 'open', },);
- * ```
+ Lone container tags of one kind as atoms, in document order.
+ 
+ @param tags - lone tags the mask reported
+ 
+ @param kind - which half of a container to keep
+ 
+ @returns Those tags as `container-tag` atoms
+ 
+ @example
+ ```ts
+ const openers = tagAtomsOf({ tags, kind: 'open', },);
+ ```
  */
 function tagAtomsOf(
   {
@@ -313,23 +313,23 @@ function tagAtomsOf(
 }
 
 /**
- * Reads one slice into the shape a translation of it has to match.
- *
- * @param text - exact slice source, original or candidate
- *
- * @returns Blocks and atoms, or the parser's refusal
- *
- * @example
- * ```ts
- * const read = readSliceSkeleton({ text: candidate, },);
- * ```
+ Reads one slice into the shape a translation of it has to match.
+ 
+ @param text - exact slice source, original or candidate
+ 
+ @returns Blocks and atoms, or the parser's refusal
+ 
+ @example
+ ```ts
+ const read = readSliceSkeleton({ text: candidate, },);
+ ```
  */
 export function readSliceSkeleton(
   { text, }: { readonly text: string; },
 ): SkeletonRead {
   try {
     /**
-     * Shared offset-preserving slice grammar also used by source presentation.
+     Shared offset-preserving slice grammar also used by source presentation.
      */
     const {
       root,

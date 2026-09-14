@@ -1,22 +1,22 @@
 /**
- * Tests for grouping an aligned block pair into budget-bounded slice runs.
- *
- * `groupNodesAligned` had no test. Its contract is a coverage claim: the runs
- * cover every block on both sides exactly once. That claim is what makes the
- * rest of the pipeline safe, because a slice's text is cut from its first to
- * its last offset, so a block left out of a run is NOT left out of the text the
- * critics read. It is only left out of the record of what the slice was built
- * from, which means a claim anchored to it has nowhere to land.
- *
- * So the coverage invariant gets asserted on every shape below rather than
- * once, and the module's own stated exception, an entirely one-sided section,
- * is asserted as the exception it is.
- *
- * Fixtures go through `parseDocument`, so the nodes carry the offsets and text
- * the aligner really scores on rather than offsets I chose to make a case pass.
- * Cat-themed invention throughout.
- *
- * @module
+ Tests for grouping an aligned block pair into budget-bounded slice runs.
+ 
+ `groupNodesAligned` had no test. Its contract is a coverage claim: the runs
+ cover every block on both sides exactly once. That claim is what makes the
+ rest of the pipeline safe, because a slice's text is cut from its first to
+ its last offset, so a block left out of a run is NOT left out of the text the
+ critics read. It is only left out of the record of what the slice was built
+ from, which means a claim anchored to it has nowhere to land.
+ 
+ So the coverage invariant gets asserted on every shape below rather than
+ once, and the module's own stated exception, an entirely one-sided section,
+ is asserted as the exception it is.
+ 
+ Fixtures go through `parseDocument`, so the nodes carry the offsets and text
+ the aligner really scores on rather than offsets I chose to make a case pass.
+ Cat-themed invention throughout.
+ 
+ @module
  */
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
@@ -35,43 +35,43 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Budget large enough that nothing splits, for shape cases.
+ Budget large enough that nothing splits, for shape cases.
  */
 const WIDE_BUDGET = 100_000;
 
 /**
- * Parses a document and hands back its blocks.
- *
- * @param text - markdown source
- *
- * @returns Blocks in document order
- *
- * @example
- * ```ts
- * const nodes = blocksOf({ text: 'The cat naps.\n', },);
- * ```
+ Parses a document and hands back its blocks.
+ 
+ @param text - markdown source
+ 
+ @returns Blocks in document order
+ 
+ @example
+ ```ts
+ const nodes = blocksOf({ text: 'The cat naps.\n', },);
+ ```
  */
 function blocksOf({ text, }: { readonly text: string; },): readonly DocumentNode[] {
   return parseDocument({ text, },).nodes;
 }
 
 /**
- * Asserts the coverage contract: every block appears exactly once, in order.
- *
- * This is the invariant worth repeating on every shape. A dropped block still
- * reaches the critics through the slice text, so its absence shows up only
- * later, as a claim that cannot anchor.
- *
- * @param runs - grouped runs under test
- *
- * @param sourceNodes - original blocks handed to grouping
- *
- * @param targetNodes - translation blocks handed to grouping
- *
- * @example
- * ```ts
- * expectCoversEveryBlockOnce({ runs, sourceNodes, targetNodes, },);
- * ```
+ Asserts the coverage contract: every block appears exactly once, in order.
+ 
+ This is the invariant worth repeating on every shape. A dropped block still
+ reaches the critics through the slice text, so its absence shows up only
+ later, as a claim that cannot anchor.
+ 
+ @param runs - grouped runs under test
+ 
+ @param sourceNodes - original blocks handed to grouping
+ 
+ @param targetNodes - translation blocks handed to grouping
+ 
+ @example
+ ```ts
+ expectCoversEveryBlockOnce({ runs, sourceNodes, targetNodes, },);
+ ```
  */
 function expectCoversEveryBlockOnce(
   {
@@ -114,13 +114,13 @@ function expectCoversEveryBlockOnce(
 }
 
 /**
- * Original with four paragraphs.
+ Original with four paragraphs.
  */
 const SOURCE_TEXT = '猫猫在窗台上睡觉。\n\n太阳移动时她会醒来。\n\n'
   + '她追蝴蝶，很喜欢它们。\n\n晚上她在门口等着。\n';
 
 /**
- * Translation with the same four paragraphs.
+ Translation with the same four paragraphs.
  */
 const TARGET_TEXT = 'The cat sleeps on the windowsill.\n\n'
   + 'She wakes when the sun moves.\n\n'
@@ -128,7 +128,7 @@ const TARGET_TEXT = 'The cat sleeps on the windowsill.\n\n'
   + 'In the evening she waits by the door.\n';
 
 /**
- * Stands for "no insertion run was produced", which no offset can be.
+ Stands for "no insertion run was produced", which no offset can be.
  */
 const NO_RUN = -1;
 
@@ -140,17 +140,17 @@ await describe({
         + 'covers every block on both sides exactly once',
       fn: async () => {
         /**
-         * Original blocks.
+         Original blocks.
          */
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
 
         /**
-         * Translation blocks.
+         Translation blocks.
          */
         const targetNodes = blocksOf({ text: TARGET_TEXT, },);
 
         /**
-         * Runs under a budget nothing can exceed.
+         Runs under a budget nothing can exceed.
          */
         const runs = groupNodesAligned({
           sourceNodes,
@@ -174,17 +174,17 @@ await describe({
         + 'grouping bug would drop or duplicate a block',
       fn: async () => {
         /**
-         * Original blocks.
+         Original blocks.
          */
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
 
         /**
-         * Translation blocks.
+         Translation blocks.
          */
         const targetNodes = blocksOf({ text: TARGET_TEXT, },);
 
         /**
-         * Runs under a budget roughly one paragraph wide.
+         Runs under a budget roughly one paragraph wide.
          */
         const runs = groupNodesAligned({
           sourceNodes,
@@ -209,17 +209,17 @@ await describe({
         + 'the translation side run away',
       fn: async () => {
         /**
-         * Original blocks.
+         Original blocks.
          */
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
 
         /**
-         * Translation blocks.
+         Translation blocks.
          */
         const targetNodes = blocksOf({ text: TARGET_TEXT, },);
 
         /**
-         * Runs where only the translation side is constrained.
+         Runs where only the translation side is constrained.
          */
         const runs = groupNodesAligned({
           sourceNodes,
@@ -245,12 +245,12 @@ await describe({
         + 'critic reads, only from the record of what the slice was built from',
       fn: async () => {
         /**
-         * Original blocks.
+         Original blocks.
          */
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
 
         /**
-         * Translation missing the butterflies paragraph entirely.
+         Translation missing the butterflies paragraph entirely.
          */
         const targetNodes = blocksOf({
           text: 'The cat sleeps on the windowsill.\n\n'
@@ -259,7 +259,7 @@ await describe({
         },);
 
         /**
-         * Runs over the mismatched pair.
+         Runs over the mismatched pair.
          */
         const runs = groupNodesAligned({
           sourceNodes,
@@ -282,14 +282,14 @@ await describe({
         + 'somewhere',
       fn: async () => {
         /**
-         * Original missing its second paragraph.
+         Original missing its second paragraph.
          */
         const sourceNodes = blocksOf({
           text: '猫猫在窗台上睡觉。\n\n她追蝴蝶，很喜欢它们。\n\n晚上她在门口等着。\n',
         },);
 
         /**
-         * Translation missing its third paragraph instead.
+         Translation missing its third paragraph instead.
          */
         const targetNodes = blocksOf({
           text: 'The cat sleeps on the windowsill.\n\n'
@@ -298,7 +298,7 @@ await describe({
         },);
 
         /**
-         * Runs over the doubly-mismatched pair.
+         Runs over the doubly-mismatched pair.
          */
         const runs = groupNodesAligned({
           sourceNodes,
@@ -330,12 +330,12 @@ await describe({
         + 'can review',
       fn: async () => {
         /**
-         * Original blocks.
+         Original blocks.
          */
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
 
         /**
-         * Translation that folded four paragraphs into one.
+         Translation that folded four paragraphs into one.
          */
         const targetNodes = blocksOf({
           text: 'The cat sleeps on the windowsill, wakes when the sun moves, '
@@ -347,7 +347,7 @@ await describe({
           20,
         ]) {
           /**
-           * Runs at this budget.
+           Runs at this budget.
            */
           const runs = groupNodesAligned({
             sourceNodes,
@@ -421,17 +421,17 @@ await describe({
         + 'cannot be made to fit',
       fn: async () => {
         /**
-         * Original blocks.
+         Original blocks.
          */
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
 
         /**
-         * Translation blocks.
+         Translation blocks.
          */
         const targetNodes = blocksOf({ text: TARGET_TEXT, },);
 
         /**
-         * Runs under a budget no single paragraph fits inside.
+         Runs under a budget no single paragraph fits inside.
          */
         const runs = groupNodesAligned({
           sourceNodes,
@@ -452,12 +452,12 @@ await describe({
         + 'pairing that pairs nothing produces once the budget splits the unpaired blocks',
       fn: async () => {
         /**
-         * Original blocks.
+         Original blocks.
          */
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
 
         /**
-         * Translation blocks.
+         Translation blocks.
          */
         const targetNodes = blocksOf({ text: TARGET_TEXT, },);
 
@@ -504,12 +504,12 @@ await describe({
         + 'no later stage could tell a missing passage from part of the one beside it',
       fn: async () => {
         /**
-         * Original blocks.
+         Original blocks.
          */
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
 
         /**
-         * Translation missing the third paragraph entirely.
+         Translation missing the third paragraph entirely.
          */
         const targetNodes = blocksOf({
           text: 'The cat sleeps on the windowsill.\n\n'
@@ -518,7 +518,7 @@ await describe({
         },);
 
         /**
-         * A roster pairing leaving the third original unplaced.
+         A roster pairing leaving the third original unplaced.
          */
         const runs = groupNodesAligned({
           sourceNodes,
@@ -558,7 +558,7 @@ await describe({
           ],);
 
         /**
-         * The insertion run.
+         The insertion run.
          */
         const anchored = runs.find(function isInsertion(run,) {
           return run.kind === 'insertion';
@@ -580,12 +580,12 @@ await describe({
         + 'again would put a second rendering of that passage into a memorial document',
       fn: async () => {
         /**
-         * Original blocks.
+         Original blocks.
          */
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
 
         /**
-         * Translation folding the first two originals into one block.
+         Translation folding the first two originals into one block.
          */
         const targetNodes = blocksOf({
           text: 'The cat sleeps on the windowsill, and wakes when the sun moves.\n\n'
@@ -594,7 +594,7 @@ await describe({
         },);
 
         /**
-         * A pairing whose second original continues the first one's block.
+         A pairing whose second original continues the first one's block.
          */
         const runs = groupNodesAligned({
           sourceNodes,
@@ -638,12 +638,12 @@ await describe({
         + 'passage above the paragraph it comes after',
       fn: async () => {
         /**
-         * Original blocks.
+         Original blocks.
          */
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
 
         /**
-         * Translation missing the last paragraph.
+         Translation missing the last paragraph.
          */
         const targetNodes = blocksOf({
           text: 'The cat sleeps on the windowsill.\n\n'
@@ -652,7 +652,7 @@ await describe({
         },);
 
         /**
-         * A pairing leaving the final original unplaced.
+         A pairing leaving the final original unplaced.
          */
         const runs = groupNodesAligned({
           sourceNodes,
@@ -683,7 +683,7 @@ await describe({
         },);
 
         /**
-         * The insertion run.
+         The insertion run.
          */
         const anchored = runs.find(function isInsertion(run,) {
           return run.kind === 'insertion';
@@ -702,13 +702,13 @@ await describe({
 // the deterministic scorer never produces.
 
 /**
- * Six originals, which is the smallest count reaching every disposal site.
+ Six originals, which is the smallest count reaching every disposal site.
  */
 const SIX_SOURCE_TEXT = '猫猫一号在窗台上睡觉。\n\n猫猫二号追蝴蝶。\n\n猫猫三号在门口等着。\n\n'
   + '猫猫四号喝牛奶。\n\n猫猫五号爬树。\n\n猫猫六号晒太阳。\n';
 
 /**
- * Five translations, so two originals have no counterpart.
+ Five translations, so two originals have no counterpart.
  */
 const FIVE_TARGET_TEXT = 'Cat one sleeps on the windowsill.\n\n'
   + 'Cat two chases butterflies.\n\n'
@@ -717,27 +717,27 @@ const FIVE_TARGET_TEXT = 'Cat one sleeps on the windowsill.\n\n'
   + 'Cat five climbs the tree.\n';
 
 /**
- * Three translations, the shape that leaves an unclaimed one at the very end.
+ Three translations, the shape that leaves an unclaimed one at the very end.
  */
 const THREE_TARGET_TEXT = 'Cat one sleeps on the windowsill.\n\n'
   + 'Cat two chases butterflies.\n\n'
   + 'Cat three waits by the door.\n';
 
 /**
- * Groups a document pair under a roster pairing, at a budget nothing splits.
- *
- * @param sourceText - whole original
- *
- * @param targetText - whole translation
- *
- * @param pairs - correspondences a roster agreed on
- *
- * @returns Runs, beside the blocks they were built from
- *
- * @example
- * ```ts
- * const { runs, } = groupUnderPairing({ sourceText, targetText, pairs, },);
- * ```
+ Groups a document pair under a roster pairing, at a budget nothing splits.
+ 
+ @param sourceText - whole original
+ 
+ @param targetText - whole translation
+ 
+ @param pairs - correspondences a roster agreed on
+ 
+ @returns Runs, beside the blocks they were built from
+ 
+ @example
+ ```ts
+ const { runs, } = groupUnderPairing({ sourceText, targetText, pairs, },);
+ ```
  */
 function groupUnderPairing(
   {
@@ -751,12 +751,12 @@ function groupUnderPairing(
   },
 ) {
   /**
-   * Original blocks in document order.
+   Original blocks in document order.
    */
   const sourceNodes = blocksOf({ text: sourceText, },);
 
   /**
-   * Translation blocks in document order.
+   Translation blocks in document order.
    */
   const targetNodes = blocksOf({ text: targetText, },);
   return {

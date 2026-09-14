@@ -1,7 +1,7 @@
 /**
- * Tests explicit provider requirements for validation and performance arms.
- *
- * @module
+ Tests explicit provider requirements for validation and performance arms.
+ 
+ @module
  */
 
 import {
@@ -19,7 +19,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Each provider's key environment name.
+ Each provider's key environment name.
  */
 const KEY_NAMES = {
   synthetic: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY',
@@ -29,16 +29,16 @@ const KEY_NAMES = {
 } as const;
 
 /**
- * Installs provider keys for scope and restores prior environment.
- *
- * @param keys - key value per provider, absent to unset
- *
- * @returns Disposable restoring every variable
- *
- * @example
- * ```ts
- * using _keys = withProviderKeys({ synthetic: 'test', hyper: 'test', });
- * ```
+ Installs provider keys for scope and restores prior environment.
+ 
+ @param keys - key value per provider, absent to unset
+ 
+ @returns Disposable restoring every variable
+ 
+ @example
+ ```ts
+ using _keys = withProviderKeys({ synthetic: 'test', hyper: 'test', });
+ ```
  */
 function withProviderKeys(
   keys: {
@@ -49,12 +49,12 @@ function withProviderKeys(
   },
 ): Disposable {
   /**
-   * What each variable held before, absent from the map where it was unset.
+   What each variable held before, absent from the map where it was unset.
    */
   const prior = new Map<string, string>();
   for (const name of Object.values(KEY_NAMES,)) {
     /**
-     * Value the variable holds now, if any.
+     Value the variable holds now, if any.
      */
     const held = process.env[name];
     if (held !== undefined)
@@ -64,7 +64,7 @@ function withProviderKeys(
       );
   }
   /**
-   * Values to install, keyed by variable name.
+   Values to install, keyed by variable name.
    */
   const wanted = new Map<string, string>();
   if (keys.synthetic !== undefined)
@@ -106,7 +106,7 @@ function withProviderKeys(
 }
 
 /**
- * Wet Synthetic meter response fixture.
+ Wet Synthetic meter response fixture.
  */
 const WET_SYNTHETIC_BODY = JSON.stringify({
   weeklyTokenLimit: {

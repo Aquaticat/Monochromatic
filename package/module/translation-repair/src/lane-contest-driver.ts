@@ -57,7 +57,7 @@ import {
 // asks again exactly as a warm run would.
 
 /**
- * Candidate names deterministic syntax admission classifies.
+ Candidate names deterministic syntax admission classifies.
  */
 const CONTEST_CANDIDATES = [
   'archive',
@@ -66,24 +66,24 @@ const CONTEST_CANDIDATES = [
 ] as const;
 
 /**
- * Whether a bought outcome is worth keeping across runs.
- *
- * SETTLED VERDICTS ONLY. An unheard roster is a transient fact about a provider
- * on one night, not a property of the question, and writing it to the cache
- * would freeze that night into every later resume of the entry. The ballots
- * that did arrive are discarded with it, which is the point: half a panel is
- * not an answer, and re-asking is what the quorum is for.
- *
- * @param outcome - what the roster settled
- *
- * @param choiceMayShip - whether selected lane passes publication invariants
- *
- * @returns Whether to persist it
- *
- * @example
- * ```ts
- * const keep = worthResuming({ outcome, },);
- * ```
+ Whether a bought outcome is worth keeping across runs.
+ 
+ SETTLED VERDICTS ONLY. An unheard roster is a transient fact about a provider
+ on one night, not a property of the question, and writing it to the cache
+ would freeze that night into every later resume of the entry. The ballots
+ that did arrive are discarded with it, which is the point: half a panel is
+ not an answer, and re-asking is what the quorum is for.
+ 
+ @param outcome - what the roster settled
+ 
+ @param choiceMayShip - whether selected lane passes publication invariants
+ 
+ @returns Whether to persist it
+ 
+ @example
+ ```ts
+ const keep = worthResuming({ outcome, },);
+ ```
  */
 function worthResuming(
   {
@@ -98,12 +98,12 @@ function worthResuming(
 }
 
 /**
- * Fresh contest outcome beside whether it became warm-run evidence.
- *
- * @example
- * ```ts
- * const bought: BoughtLaneContest = { outcome, persisted: true, };
- * ```
+ Fresh contest outcome beside whether it became warm-run evidence.
+ 
+ @example
+ ```ts
+ const bought: BoughtLaneContest = { outcome, persisted: true, };
+ ```
  */
 type BoughtLaneContest = {
   readonly outcome: LaneContestOutcome;
@@ -111,16 +111,16 @@ type BoughtLaneContest = {
 };
 
 /**
- * Reads cache-eligible record from fresh contest purchase.
- *
- * @param bought - fresh result beside persistence status
- *
- * @returns Record a twin may reuse, or deliberate nothing
- *
- * @example
- * ```ts
- * const stored = storedContestOf({ outcome, persisted: true, },);
- * ```
+ Reads cache-eligible record from fresh contest purchase.
+ 
+ @param bought - fresh result beside persistence status
+ 
+ @returns Record a twin may reuse, or deliberate nothing
+ 
+ @example
+ ```ts
+ const stored = storedContestOf({ outcome, persisted: true, },);
+ ```
  */
 function storedContestOf(
   bought: BoughtLaneContest,
@@ -134,33 +134,33 @@ function storedContestOf(
 }
 
 /**
- * Persists a bought contest only when caller remains live and quorum made its
- * ballots reusable.
- *
- * Kept as a testable boundary because gather rounds normally surface an abort
- * before returning, making the final pre-write defense unreachable in a
- * transport fixture.
- *
- * @param key - exact contest question this outcome answers
- *
- * @param outcome - bought ballots and their settled choice
- *
- * @param cache - contest persistence boundary
- *
- * @param choiceMayShip - whether selected lane passes publication invariants
- *
- * @param signal - caller abort checked before write
- *
- * @returns Whether outcome was persisted and may be reused by a twin
- *
- * @throws Whatever caller abort reason or persistence throws
- *
- * @example
- * ```ts
- * await persistLaneContestOutcome({ key, outcome, cache, signal, },);
- * ```
- *
- * @internal
+ Persists a bought contest only when caller remains live and quorum made its
+ ballots reusable.
+ 
+ Kept as a testable boundary because gather rounds normally surface an abort
+ before returning, making the final pre-write defense unreachable in a
+ transport fixture.
+ 
+ @param key - exact contest question this outcome answers
+ 
+ @param outcome - bought ballots and their settled choice
+ 
+ @param cache - contest persistence boundary
+ 
+ @param choiceMayShip - whether selected lane passes publication invariants
+ 
+ @param signal - caller abort checked before write
+ 
+ @returns Whether outcome was persisted and may be reused by a twin
+ 
+ @throws Whatever caller abort reason or persistence throws
+ 
+ @example
+ ```ts
+ await persistLaneContestOutcome({ key, outcome, cache, signal, },);
+ ```
+ 
+ @internal
  */
 export async function persistLaneContestOutcome(
   {
@@ -191,38 +191,38 @@ export async function persistLaneContestOutcome(
 }
 
 /**
- * Asks the roster which lane should ship, at every slice the two lanes worded
- * differently.
- *
- * @param client - synthetic chat client
- *
- * @param projected - both ledgers as version 2 rows, beside their comparison
- *
- * @param modelIds - roster to ask
- *
- * @param identityContext - names and handles both documents declare
- *
- * @param frontMatterSlices - syntax-bearing metadata slice indexes
- *
- * @param cache - per-entry store of ballots already bought
- *
- * @param signal - abort shared with the rest of the entry
- *
- * @param perCallTimeoutMs - per-call ceiling
- *
- * @param overlap - most contested slices in flight; one reproduces former loop
- *
- * @param l - logger to tag
- *
- * @param fanOut - seats a contest round asks: the window of quorum plus one
- * by default, or the whole bench a fixture scripting every seat asks for
- *
- * @returns One record per contested slice, in comparison-row order
- *
- * @example
- * ```ts
- * const slices = await contestDocumentLanes({ client, projected, modelIds, frontMatterSlices, cache, signal, perCallTimeoutMs, l, },);
- * ```
+ Asks the roster which lane should ship, at every slice the two lanes worded
+ differently.
+ 
+ @param client - synthetic chat client
+ 
+ @param projected - both ledgers as version 2 rows, beside their comparison
+ 
+ @param modelIds - roster to ask
+ 
+ @param identityContext - names and handles both documents declare
+ 
+ @param frontMatterSlices - syntax-bearing metadata slice indexes
+ 
+ @param cache - per-entry store of ballots already bought
+ 
+ @param signal - abort shared with the rest of the entry
+ 
+ @param perCallTimeoutMs - per-call ceiling
+ 
+ @param overlap - most contested slices in flight; one reproduces former loop
+ 
+ @param l - logger to tag
+ 
+ @param fanOut - seats a contest round asks: the window of quorum plus one
+ by default, or the whole bench a fixture scripting every seat asks for
+ 
+ @returns One record per contested slice, in comparison-row order
+ 
+ @example
+ ```ts
+ const slices = await contestDocumentLanes({ client, projected, modelIds, frontMatterSlices, cache, signal, perCallTimeoutMs, l, },);
+ ```
  */
 export async function contestDocumentLanes(
   {
@@ -246,8 +246,8 @@ export async function contestDocumentLanes(
     readonly frontMatterSlices: ReadonlySet<number>;
     readonly cache: SliceCache<LaneContestOutcome>;
     /**
-     * Corroborated added-damage claims against the repair lane, per slice,
-     * shown to the judges as evidence (`repair-damage-evidence.ts`).
+     Corroborated added-damage claims against the repair lane, per slice,
+     shown to the judges as evidence (`repair-damage-evidence.ts`).
      */
     readonly damageClaimsBySlice?: ReadonlyMap<number, readonly string[]>;
     readonly signal: AbortSignal;
@@ -258,7 +258,7 @@ export async function contestDocumentLanes(
   },
 ): Promise<readonly ArtifactContestSlice[]> {
   /**
-   * Logger naming this driver.
+   Logger naming this driver.
    */
   const dl = tagged({
     l,
@@ -266,8 +266,8 @@ export async function contestDocumentLanes(
   },);
 
   /**
-   * Original of each slice, which the comparison does not carry and the ledger
-   * does.
+   Original of each slice, which the comparison does not carry and the ledger
+   does.
    */
   const sourceTexts = new Map(projected.delivery
     .repair
@@ -282,12 +282,12 @@ export async function contestDocumentLanes(
     },),);
 
   /**
-   * Slices worth asking about.
+   Slices worth asking about.
    */
   const eligible = new Set(contestEligibleIndexes({ comparison: projected.comparison, },),);
 
   /**
-   * What this run asks, folded into every key.
+   What this run asks, folded into every key.
    */
   const runShape = laneContestRunShape({
     modelIds,
@@ -295,7 +295,7 @@ export async function contestDocumentLanes(
   },);
 
   /**
-   * Comparison rows whose lane wordings differ, in document order.
+   Comparison rows whose lane wordings differ, in document order.
    */
   const eligibleRows = projected.comparison
     .filter(function isEligible(row,): boolean {
@@ -303,15 +303,15 @@ export async function contestDocumentLanes(
     },);
 
   /**
-   * Slices the two lanes covered at all, which the eligible count is read
-   * against.
+   Slices the two lanes covered at all, which the eligible count is read
+   against.
    */
   const compared = projected.comparison
     .length;
   dl.info(`lane contest: ${String(eligible.size,)}/${String(compared,)} slices differ`,);
 
   /**
-   * Cache-eligible purchases in this document, shared by every contested row.
+   Cache-eligible purchases in this document, shared by every contested row.
    */
   const twins: TwinMemo<LaneContestOutcome> = new Map();
 
@@ -320,7 +320,7 @@ export async function contestDocumentLanes(
     overlap,
     oneItem: async function contestOne({ item: row, }): Promise<ArtifactContestSlice> {
       /**
-       * Original of this slice, which every ledger row carries.
+       Original of this slice, which every ledger row carries.
        */
       const sourceText = sourceTexts.get(row.sliceIndex,);
       if (sourceText === undefined) {
@@ -330,13 +330,13 @@ export async function contestDocumentLanes(
       }
 
       /**
-       * Syntax role shared by prompt and cache key.
+       Syntax role shared by prompt and cache key.
        */
       const syntax = frontMatterSlices.has(row.sliceIndex,)
         ? 'front-matter' as const
         : undefined;
       /**
-       * Source-backed candidate admission for syntax-bearing contest.
+       Source-backed candidate admission for syntax-bearing contest.
        */
       const eligibility = (syntax === 'front-matter')
         ? frontMatterContestEligibility({
@@ -347,7 +347,7 @@ export async function contestDocumentLanes(
         },)
         : undefined;
       /**
-       * Candidate names prompt marks unavailable before panel votes.
+       Candidate names prompt marks unavailable before panel votes.
        */
       const ineligibleCandidates = (eligibility === undefined)
         ? []
@@ -356,7 +356,7 @@ export async function contestDocumentLanes(
             return eligibility[candidate] === 'ineligible';
           },);
       /**
-       * Probe claims against this slice's repair text, empty for most slices.
+       Probe claims against this slice's repair text, empty for most slices.
        */
       const repairDamageClaims = damageClaimsBySlice.get(row.sliceIndex,) ?? [];
       // Logged so a run's log witnesses whether the judges were shown any claim,
@@ -368,13 +368,13 @@ export async function contestDocumentLanes(
         );
       }
       /**
-       * Those claims as the optional subject and key field, absent when none.
+       Those claims as the optional subject and key field, absent when none.
        */
       const damageFragment = (repairDamageClaims.length === 0)
         ? {}
         : { repairDamageClaims, };
       /**
-       * Key these ballots resume under.
+       Key these ballots resume under.
        */
       const key = laneContestSliceKey({
         runShape,
@@ -388,27 +388,27 @@ export async function contestDocumentLanes(
       },);
 
       /**
-       * Ballots an earlier run already bought for this slice, if any.
+       Ballots an earlier run already bought for this slice, if any.
        */
       const resumed = cache
         .resumed
         .get(key,);
 
       /**
-       * What the roster settled here, bought, resumed, or reused from a twin.
+       What the roster settled here, bought, resumed, or reused from a twin.
        */
       const outcome = await (async function resumeOrBuy(): Promise<LaneContestOutcome> {
         if (resumed !== undefined)
           return resumed;
         /**
-         * Twin's persisted ballots or this row's fresh purchase.
+         Twin's persisted ballots or this row's fresh purchase.
          */
         const asked = await reuseTwinOrBuy({
           key,
           memo: twins,
           buy: async function buyThisRow(): Promise<BoughtLaneContest> {
             /**
-             * Ballots bought for this question.
+             Ballots bought for this question.
              */
             const rawBought = await contestLaneSlice({
               client,
@@ -430,7 +430,7 @@ export async function contestDocumentLanes(
               ...((fanOut === undefined) ? {} : { fanOut, }),
             },);
             /**
-             * Effective result after inadmissible raw choices are excluded.
+             Effective result after inadmissible raw choices are excluded.
              */
             const bought = applyLaneContestEligibility({
               outcome: rawBought,
@@ -440,8 +440,8 @@ export async function contestDocumentLanes(
             // arrived before the abort must not make the abandoned entry look
             // done or become warm-run evidence.
             /**
-             * Verdict on whether selected lane can cross final publication
-             * boundary, with the findings for the log.
+             Verdict on whether selected lane can cross final publication
+             boundary, with the findings for the log.
              */
             const choiceVerdict = laneContestChoiceVerdict({
               outcome: bought,
@@ -452,19 +452,19 @@ export async function contestDocumentLanes(
               ...((syntax === undefined) ? {} : { syntax, }),
             },);
             /**
-             * Whether selected lane can cross final publication boundary.
+             Whether selected lane can cross final publication boundary.
              */
             const choiceMayShip = choiceVerdict.mayShip;
             if (!choiceMayShip) {
               /**
-               * Findings joined for the log line.
+               Findings joined for the log line.
                */
               const findings = choiceVerdict.findings
                 .join(' ',);
 
               /**
-               * Why each excluded lane was inadmissible, which the floor
-               * finding alone does not say; empty off the metadata slice.
+               Why each excluded lane was inadmissible, which the floor
+               finding alone does not say; empty off the metadata slice.
                */
               const inadmissible = (syntax === 'front-matter')
                 ? describeInadmissibleLanes({
@@ -476,7 +476,7 @@ export async function contestDocumentLanes(
                 : [];
 
               /**
-               * Verdict findings and the lanes' reasons as one line.
+               Verdict findings and the lanes' reasons as one line.
                */
               const reported = [
                 findings,
@@ -487,7 +487,7 @@ export async function contestDocumentLanes(
               );
             }
             /**
-             * Whether this purchase became reusable evidence.
+             Whether this purchase became reusable evidence.
              */
             const persisted = await persistLaneContestOutcome({
               key,

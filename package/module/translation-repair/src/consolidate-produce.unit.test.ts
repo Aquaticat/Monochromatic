@@ -1,14 +1,14 @@
 /**
- * Tests for the producing half of the consolidation.
- *
- * Three branches, each asserted on its own rather than through the driver:
- * every proposal valid, so the repair round changes nothing; a proposal
- * refused for shape, so the verdicts before and after the repair diverge; and
- * the findings of the gather ahead of the repair's.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the producing half of the consolidation.
+ 
+ Three branches, each asserted on its own rather than through the driver:
+ every proposal valid, so the repair round changes nothing; a proposal
+ refused for shape, so the verdicts before and after the repair diverge; and
+ the findings of the gather ahead of the repair's.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -26,23 +26,23 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the producers under test.
+ Logger for the producers under test.
  */
 const l = tagged({ tag: 'consolidate-produce-test', },);
 
 /**
- * One producer.
+ One producer.
  */
 const ROSTER = ['hf:zai-org/GLM-5.3-Flash',] as const;
 
 /**
- * Two-line page, the structural standard a line-structured slice is held to.
+ Two-line page, the structural standard a line-structured slice is held to.
  */
 const PAGE_TEXT = 'The cat sleeps.\nThe cat wakes at dusk.';
 
 /**
- * Slice as the producers see it: line-structured, so a one-line proposal is
- * refused for shape and sent back to its author.
+ Slice as the producers see it: line-structured, so a one-line proposal is
+ refused for shape and sent back to its author.
  */
 const SUBJECT: ConsolidateSubject = {
   sourceText: '猫猫睡觉。\n猫猫黄昏醒来。',
@@ -54,16 +54,16 @@ const SUBJECT: ConsolidateSubject = {
 };
 
 /**
- * Client answering each producer call with the next scripted translation.
- *
- * @param answers - translations, one per call in order; the last repeats
- *
- * @returns Client plus the count of calls made
- *
- * @example
- * ```ts
- * const rig = scriptedProducer({ answers: ['The cat sleeps.\nThe cat wakes at dusk.',], },);
- * ```
+ Client answering each producer call with the next scripted translation.
+ 
+ @param answers - translations, one per call in order; the last repeats
+ 
+ @returns Client plus the count of calls made
+ 
+ @example
+ ```ts
+ const rig = scriptedProducer({ answers: ['The cat sleeps.\nThe cat wakes at dusk.',], },);
+ ```
  */
 function scriptedProducer(
   { answers, }: { readonly answers: readonly string[]; },
@@ -72,7 +72,7 @@ function scriptedProducer(
   readonly calls: { count: number; };
 } {
   /**
-   * Calls served so far.
+   Calls served so far.
    */
   const calls = { count: 0, };
   return {
@@ -81,14 +81,14 @@ function scriptedProducer(
       apiKey: 'test-key',
       transport: async function answerInOrder(exchange,) {
         /**
-         * Translation this call gets.
+         Translation this call gets.
          */
         const translation = answers[Math.min(calls.count, answers.length - 1,)] ?? '';
         calls.count += 1;
 
         /**
-         * Reply in the shape the call asked for: a repair round asks its own
-         * report, with a resolution beside the revised text.
+         Reply in the shape the call asked for: a repair round asks its own
+         report, with a resolution beside the revised text.
          */
         const reply = (exchange.bodyJson ?? '').includes('translation_repair_report',)
           ? {
@@ -116,19 +116,19 @@ function scriptedProducer(
 }
 
 /**
- * Produces the fixture slate under one script.
- *
- * @param answers - translations per call
- *
- * @param subject - consolidation evidence,
- * defaulting to line-structure fixture
- *
- * @returns Slate plus the calls it cost
- *
- * @example
- * ```ts
- * const { produced, } = await producedUnder({ answers: [PAGE_TEXT,], },);
- * ```
+ Produces the fixture slate under one script.
+ 
+ @param answers - translations per call
+ 
+ @param subject - consolidation evidence,
+ defaulting to line-structure fixture
+ 
+ @returns Slate plus the calls it cost
+ 
+ @example
+ ```ts
+ const { produced, } = await producedUnder({ answers: [PAGE_TEXT,], },);
+ ```
  */
 async function producedUnder(
   {
@@ -140,12 +140,12 @@ async function producedUnder(
   },
 ) {
   /**
-   * Scripted client and its counter.
+   Scripted client and its counter.
    */
   const rig = scriptedProducer({ answers, },);
 
   /**
-   * What the producing half returned.
+   What the producing half returned.
    */
   const produced = await produceConsolidations({
     client: rig.client,

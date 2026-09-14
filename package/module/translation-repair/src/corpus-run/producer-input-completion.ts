@@ -14,29 +14,29 @@ import type { ProducerInputHost, } from './producer-input-host-init.ts';
 import type { ProducerInputCompletion, } from './producer-input-model.ts';
 
 /**
- * Completion metadata is bounded separately from the corpus-derived artifact it describes.
+ Completion metadata is bounded separately from the corpus-derived artifact it describes.
  */
 const MAX_COMPLETION_BYTES = 1_048_576;
 /**
- * Completed output retains the exact private directory mode, without special permission bits.
+ Completed output retains the exact private directory mode, without special permission bits.
  */
 const OUTPUT_DIRECTORY_MODE = 0o700;
 /**
- * Permission comparison includes special bits rather than only group/other access.
+ Permission comparison includes special bits rather than only group/other access.
  */
 const PERMISSION_MASK = 0o7777;
 
 /**
- * Checks only the exact allowed output inventory and caller-owned private directories.
- *
- * @param host - owning run identity
- *
- * @throws ProducerInputRunError when extra files, home contents, ownership or modes differ
- *
- * @example
- * ```ts
- * await completionDirectories(host);
- * ```
+ Checks only the exact allowed output inventory and caller-owned private directories.
+ 
+ @param host - owning run identity
+ 
+ @throws ProducerInputRunError when extra files, home contents, ownership or modes differ
+ 
+ @example
+ ```ts
+ await completionDirectories(host);
+ ```
  */
 async function completionDirectories(host: ProducerInputHost): Promise<void> {
   try {
@@ -50,7 +50,7 @@ async function completionDirectories(host: ProducerInputHost): Promise<void> {
       )
     ].map(async function verifyDirectory(path): Promise<void> {
       /**
-       * Directory checks do not follow a symlink leaf or accept a different group.
+       Directory checks do not follow a symlink leaf or accept a different group.
        */
       const state = await lstat(path);
       if ((!state.isDirectory()) || (state.uid
@@ -94,24 +94,24 @@ async function completionDirectories(host: ProducerInputHost): Promise<void> {
 }
 
 /**
- * Checks the private output and its internal completion identity without loading corpus-derived bodies.
- * Complete producer output is retained even when this consistency check fails.
- *
- * @param host - owning launch and exclusive output
- *
- * @returns Internally consistent unqualified metadata, never review or execution authority
- *
- * @throws ProducerInputRunError when inventory, identity, ownership or modes differ
- *
- * @example
- * ```ts
- * const completion = await verifyProducerInputCompletion(host);
- * ```
+ Checks the private output and its internal completion identity without loading corpus-derived bodies.
+ Complete producer output is retained even when this consistency check fails.
+ 
+ @param host - owning launch and exclusive output
+ 
+ @returns Internally consistent unqualified metadata, never review or execution authority
+ 
+ @throws ProducerInputRunError when inventory, identity, ownership or modes differ
+ 
+ @example
+ ```ts
+ const completion = await verifyProducerInputCompletion(host);
+ ```
  */
 export async function verifyProducerInputCompletion(host: ProducerInputHost): Promise<ProducerInputCompletion> {
   await completionDirectories(host);
   /**
-   * Completion has its own metadata ceiling; artifact hashing remains streamed.
+   Completion has its own metadata ceiling; artifact hashing remains streamed.
    */
   const text = await readProducerInputMetadata({
     path: join(
@@ -127,7 +127,7 @@ export async function verifyProducerInputCompletion(host: ProducerInputHost): Pr
     operation: 'read-output'
   });
   /**
-   * Run identity is reconstructed from host-owned state rather than accepted from a completion certificate.
+   Run identity is reconstructed from host-owned state rather than accepted from a completion certificate.
    */
   const completion = parseProducerInputCompletion({
     text,

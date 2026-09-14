@@ -1,34 +1,34 @@
 /**
- * Tests for publishing one settled entry as a page in the mirrored corpus tree.
- *
- * DRIVEN THROUGH THE REAL ASSEMBLER, `spliceSlices`, rather than a stub of it.
- * The publisher's whole job is to put the deciders' answers back where they
- * came from, and every way of getting that wrong lives in the join between a
- * reading and the span it belongs to: an index read positionally, an offset
- * recovered by searching for text, a slice written twice. A fixture assembler
- * would agree with whatever the publisher did.
- *
- * THE ARCHIVE HERE IS A WHOLE LITTLE DOCUMENT, not one paragraph, because the
- * property that matters most is what the publisher does NOT touch. A page
- * assembled correctly is byte-identical outside the slices that were replaced,
- * and only text either side of a replaced span can show that.
- *
- * THE TWO PURE SUBJECTS LIVE IN `publish-fixed-replacements.unit.test.ts`, apart
- * from these. A file is abandoned once any describe in it fails, so while they
- * shared one, a break in the replacement builder left every case here unrun and
- * unreported: the runner named one narrow failure where the real blast radius
- * was every page the pass writes.
- *
- * ONE CASE PROVES A BRANCH THE CORPUS CANNOT REACH. No slice in any settled
- * artifact on disk carries an archive that holds no wording, 249 of 249 at the
- * last count, so the silent readings are unreachable there and a measurement
- * over real output can only report zero. Whether the publisher does the right
- * thing when a decider ships nothing into a passage the original speaks is
- * therefore settled here, by a fixture built to be in that state.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for publishing one settled entry as a page in the mirrored corpus tree.
+ 
+ DRIVEN THROUGH THE REAL ASSEMBLER, `spliceSlices`, rather than a stub of it.
+ The publisher's whole job is to put the deciders' answers back where they
+ came from, and every way of getting that wrong lives in the join between a
+ reading and the span it belongs to: an index read positionally, an offset
+ recovered by searching for text, a slice written twice. A fixture assembler
+ would agree with whatever the publisher did.
+ 
+ THE ARCHIVE HERE IS A WHOLE LITTLE DOCUMENT, not one paragraph, because the
+ property that matters most is what the publisher does NOT touch. A page
+ assembled correctly is byte-identical outside the slices that were replaced,
+ and only text either side of a replaced span can show that.
+ 
+ THE TWO PURE SUBJECTS LIVE IN `publish-fixed-replacements.unit.test.ts`, apart
+ from these. A file is abandoned once any describe in it fails, so while they
+ shared one, a break in the replacement builder left every case here unrun and
+ unreported: the runner named one narrow failure where the real blast radius
+ was every page the pass writes.
+ 
+ ONE CASE PROVES A BRANCH THE CORPUS CANNOT REACH. No slice in any settled
+ artifact on disk carries an archive that holds no wording, 249 of 249 at the
+ last count, so the silent readings are unreachable there and a measurement
+ over real output can only report zero. Whether the publisher does the right
+ thing when a decider ships nothing into a passage the original speaks is
+ therefore settled here, by a fixture built to be in that state.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { existsSync, } from 'node:fs';
@@ -67,63 +67,63 @@ import {
 //region The archive this entry starts from
 
 /**
- * Opening paragraph, which no case ever replaces.
- *
- * ITS JOB IS TO STAY PUT. Every case that replaces a later slice asserts this
- * text survived unchanged, which is what distinguishes a publisher that wrote
- * one span from one that rebuilt the document out of the pieces it knew about.
+ Opening paragraph, which no case ever replaces.
+ 
+ ITS JOB IS TO STAY PUT. Every case that replaces a later slice asserts this
+ text survived unchanged, which is what distinguishes a publisher that wrote
+ one span from one that rebuilt the document out of the pieces it knew about.
  */
 const OPENING = '## Description\n\nA tabby who kept the bookshop company for eleven years.\n';
 
 /**
- * Middle paragraph, the slice the deciders act on.
+ Middle paragraph, the slice the deciders act on.
  */
 const ARCHIVE_MIDDLE = '\nShe slept on the counter by the till.\n';
 
 /**
- * Closing paragraph, which no case replaces either.
+ Closing paragraph, which no case replaces either.
  */
 const CLOSING = '\n## Remembered by\n\nEveryone who came in out of the rain.\n';
 
 /**
- * Whole archive English, as the corpus holds it.
- *
- * ENDS IN EXACTLY ONE NEWLINE, and every case that publishes an untouched
- * entry asserts the published bytes still do. Nothing in the publisher may
- * normalize a document's ending: the corpus went to subprocess-level lengths
- * to preserve it on the way in.
+ Whole archive English, as the corpus holds it.
+ 
+ ENDS IN EXACTLY ONE NEWLINE, and every case that publishes an untouched
+ entry asserts the published bytes still do. Nothing in the publisher may
+ normalize a document's ending: the corpus went to subprocess-level lengths
+ to preserve it on the way in.
  */
 const ARCHIVE = `${OPENING}${ARCHIVE_MIDDLE}${CLOSING}`;
 
 /**
- * Source page the archive translates, linking nowhere, so the destination check
- * has nothing to report unless a case says otherwise.
+ Source page the archive translates, linking nowhere, so the destination check
+ has nothing to report unless a case says otherwise.
  */
 const SOURCE_PAGE = '## 简介\n\n一只在书店陪了十一年的虎斑猫。\n';
 
 /**
- * Where the middle paragraph starts.
+ Where the middle paragraph starts.
  */
 const MIDDLE_START = OPENING.length;
 
 /**
- * Where it ends.
+ Where it ends.
  */
 const MIDDLE_END = MIDDLE_START + ARCHIVE_MIDDLE.length;
 
 /**
- * Wording a decider settled on for that middle slice.
+ Wording a decider settled on for that middle slice.
  */
 const DECIDED_MIDDLE = '\nShe slept on the counter beside the till, in the sun.\n';
 
 /**
- * Closing paragraph of an archive that rendered the source's home link at
- * another address, the shape the either-rendering rule of 2026-09-04 accepts.
+ Closing paragraph of an archive that rendered the source's home link at
+ another address, the shape the either-rendering rule of 2026-09-04 accepts.
  */
 const CLOSING_LINKED = '\n## Remembered by\n\nEveryone who came in out of the rain, and [her page](https://example.net/tabby).\n';
 
 /**
- * Archive whose closing carries that rendering.
+ Archive whose closing carries that rendering.
  */
 const ARCHIVE_LINKED = `${OPENING}${ARCHIVE_MIDDLE}${CLOSING_LINKED}`;
 
@@ -132,22 +132,22 @@ const ARCHIVE_LINKED = `${OPENING}${ARCHIVE_MIDDLE}${CLOSING_LINKED}`;
 //region Fixtures
 
 /**
- * Builds one pair from a translation-side span.
- *
- * THE SOURCE SIDE ALWAYS SAYS SOMETHING, deliberately: `spliceSlices` reads the
- * original to decide whether writing nothing into a place is a deletion or a
- * passage lost, so a silent source would make the refusal case below
- * untestable. Its offsets are the Chinese document's and nothing here reads
- * them, since only the translation side is written into.
- *
- * @param target - translation-side chunk, carrying the span to write into
- *
- * @returns Pair the publisher may write into
- *
- * @example
- * ```ts
- * const pair = pairOver({ target: { sliceIndex: 0, ... }, },);
- * ```
+ Builds one pair from a translation-side span.
+ 
+ THE SOURCE SIDE ALWAYS SAYS SOMETHING, deliberately: `spliceSlices` reads the
+ original to decide whether writing nothing into a place is a deletion or a
+ passage lost, so a silent source would make the refusal case below
+ untestable. Its offsets are the Chinese document's and nothing here reads
+ them, since only the translation side is written into.
+ 
+ @param target - translation-side chunk, carrying the span to write into
+ 
+ @returns Pair the publisher may write into
+ 
+ @example
+ ```ts
+ const pair = pairOver({ target: { sliceIndex: 0, ... }, },);
+ ```
  */
 function pairOver(
   { target, }: { readonly target: Record<string, unknown>; },
@@ -165,20 +165,20 @@ function pairOver(
 }
 
 /**
- * Builds the whole document's slices, opening and closing included.
- *
- * SLICED WHOLE RATHER THAN AT THE ONE PARAGRAPH UNDER TEST, because the
- * assembler refuses any other shape: it reads a slice's index as its position,
- * so a list holding only the middle slice is a caller disagreeing with the
- * slicer. Prepared documents are sliced whole too, which is what makes this the
- * faithful fixture rather than the convenient one.
- *
- * @returns Three pairs covering the archive end to end
- *
- * @example
- * ```ts
- * const slices = documentSlices();
- * ```
+ Builds the whole document's slices, opening and closing included.
+ 
+ SLICED WHOLE RATHER THAN AT THE ONE PARAGRAPH UNDER TEST, because the
+ assembler refuses any other shape: it reads a slice's index as its position,
+ so a list holding only the middle slice is a caller disagreeing with the
+ slicer. Prepared documents are sliced whole too, which is what makes this the
+ faithful fixture rather than the convenient one.
+ 
+ @returns Three pairs covering the archive end to end
+ 
+ @example
+ ```ts
+ const slices = documentSlices();
+ ```
  */
 function documentSlices(): readonly ChunkPair[] {
   return [
@@ -213,14 +213,14 @@ function documentSlices(): readonly ChunkPair[] {
 }
 
 /**
- * Builds the slices of the archive whose closing carries the moved link.
- *
- * @returns Three pairs covering that archive end to end
- *
- * @example
- * ```ts
- * const slices = linkedDocumentSlices();
- * ```
+ Builds the slices of the archive whose closing carries the moved link.
+ 
+ @returns Three pairs covering that archive end to end
+ 
+ @example
+ ```ts
+ const slices = linkedDocumentSlices();
+ ```
  */
 function linkedDocumentSlices(): readonly ChunkPair[] {
   return [
@@ -241,19 +241,19 @@ function linkedDocumentSlices(): readonly ChunkPair[] {
 }
 
 /**
- * Builds a document whose middle section the archive never translated.
- *
- * THE SECOND SLICE IS A ZERO-WIDTH PLACE at the boundary rather than a span
- * over wording, which is what a preparation produces where a source section has
- * no translation to pair with. The archive's own middle paragraph is left
- * unsliced, so a rendering written here lands AHEAD of it rather than over it.
- *
- * @returns Two pairs, the second of them a place rather than wording
- *
- * @example
- * ```ts
- * const slices = documentSlicesWithAGap();
- * ```
+ Builds a document whose middle section the archive never translated.
+ 
+ THE SECOND SLICE IS A ZERO-WIDTH PLACE at the boundary rather than a span
+ over wording, which is what a preparation produces where a source section has
+ no translation to pair with. The archive's own middle paragraph is left
+ unsliced, so a rendering written here lands AHEAD of it rather than over it.
+ 
+ @returns Two pairs, the second of them a place rather than wording
+ 
+ @example
+ ```ts
+ const slices = documentSlicesWithAGap();
+ ```
  */
 function documentSlicesWithAGap(): readonly ChunkPair[] {
   return [
@@ -280,23 +280,23 @@ function documentSlicesWithAGap(): readonly ChunkPair[] {
 }
 
 /**
- * Builds an artifact whose one slice reads as the wording given.
- *
- * GOES THROUGH THE CONTEST rather than the consolidation, because the contest
- * is the shortest path to a chosen wording and this file is about what happens
- * AFTER a decider spoke, not about which decider spoke. Whether each stage is
- * read correctly is `would-ship-text.unit.test.ts`.
- *
- * @param translateText - wording the translate lane offered and the contest picked
- *
- * @param incumbentKind - whether the archive holds wording at this slice
- *
- * @returns Artifact the publisher reads
- *
- * @example
- * ```ts
- * const artifact = artifactShipping({ translateText: DECIDED_MIDDLE, },);
- * ```
+ Builds an artifact whose one slice reads as the wording given.
+ 
+ GOES THROUGH THE CONTEST rather than the consolidation, because the contest
+ is the shortest path to a chosen wording and this file is about what happens
+ AFTER a decider spoke, not about which decider spoke. Whether each stage is
+ read correctly is `would-ship-text.unit.test.ts`.
+ 
+ @param translateText - wording the translate lane offered and the contest picked
+ 
+ @param incumbentKind - whether the archive holds wording at this slice
+ 
+ @returns Artifact the publisher reads
+ 
+ @example
+ ```ts
+ const artifact = artifactShipping({ translateText: DECIDED_MIDDLE, },);
+ ```
  */
 function artifactShipping(
   {
@@ -351,20 +351,20 @@ function artifactShipping(
 }
 
 /**
- * Builds an artifact whose one slice is an ANCHOR nobody filled.
- *
- * REACHES THE SILENCE THROUGH A DECLINED CONTEST OVER AN ARCHIVE THAT HOLDS
- * NOTHING. `XIEPT2` reached exactly this state live: its translate lane backed
- * no candidate at slice 12 and recorded the slice unfilled, which left the
- * contest two blank lanes to choose between and no archive wording to fall back
- * on.
- *
- * @returns Artifact whose one slice is an unfilled anchor
- *
- * @example
- * ```ts
- * const artifact = artifactWithAnUnfilledAnchor();
- * ```
+ Builds an artifact whose one slice is an ANCHOR nobody filled.
+ 
+ REACHES THE SILENCE THROUGH A DECLINED CONTEST OVER AN ARCHIVE THAT HOLDS
+ NOTHING. `XIEPT2` reached exactly this state live: its translate lane backed
+ no candidate at slice 12 and recorded the slice unfilled, which left the
+ contest two blank lanes to choose between and no archive wording to fall back
+ on.
+ 
+ @returns Artifact whose one slice is an unfilled anchor
+ 
+ @example
+ ```ts
+ const artifact = artifactWithAnUnfilledAnchor();
+ ```
  */
 function artifactWithAnUnfilledAnchor(): WouldShipSource {
   return {
@@ -402,18 +402,18 @@ function artifactWithAnUnfilledAnchor(): WouldShipSource {
 }
 
 /**
- * Throwaway tree root for one case.
- *
- * @returns Root nothing outside the case writes into, plus how to remove it
- *
- * @example
- * ```ts
- * await using tree = await throwawayTree();
- * ```
+ Throwaway tree root for one case.
+ 
+ @returns Root nothing outside the case writes into, plus how to remove it
+ 
+ @example
+ ```ts
+ await using tree = await throwawayTree();
+ ```
  */
 async function throwawayTree(): Promise<{ readonly publishDir: string; } & AsyncDisposable> {
   /**
-   * Directory this case owns.
+   Directory this case owns.
    */
   const publishDir = await mkdtemp(join(
     tmpdir(),
@@ -435,32 +435,32 @@ async function throwawayTree(): Promise<{ readonly publishDir: string; } & Async
 }
 
 /**
- * Characters the disagreeing fixture claims the archive holds beyond what it
- * does, chosen large enough to be unambiguous and small enough to be a
- * plausible drift rather than a rewrite.
+ Characters the disagreeing fixture claims the archive holds beyond what it
+ does, chosen large enough to be unambiguous and small enough to be a
+ plausible drift rather than a rewrite.
  */
 const OVERSTATED_BY = 5;
 
 /**
- * Builds an artifact whose comparison row claims MORE archive wording at the
- * slice than the archive actually holds there.
- *
- * MODELS THE `#194` CLASS RATHER THAN A TYPO: an artifact and the publisher
- * disagreeing about what a slice covers is exactly the state that cost XIEPT2
- * four hours and forty-eight minutes, and it is invisible to every check that
- * reads only one of the two. The wording still ships and still lands in order,
- * so the occurrence scan passes and only the arithmetic notices.
- *
- * @returns Artifact that disagrees with the archive the publisher splices
- *
- * @example
- * ```ts
- * const artifact = artifactOverstatingTheArchive();
- * ```
+ Builds an artifact whose comparison row claims MORE archive wording at the
+ slice than the archive actually holds there.
+ 
+ MODELS THE `#194` CLASS RATHER THAN A TYPO: an artifact and the publisher
+ disagreeing about what a slice covers is exactly the state that cost XIEPT2
+ four hours and forty-eight minutes, and it is invisible to every check that
+ reads only one of the two. The wording still ships and still lands in order,
+ so the occurrence scan passes and only the arithmetic notices.
+ 
+ @returns Artifact that disagrees with the archive the publisher splices
+ 
+ @example
+ ```ts
+ const artifact = artifactOverstatingTheArchive();
+ ```
  */
 function artifactOverstatingTheArchive(): WouldShipSource {
   /**
-   * The honest fixture, whose one row is then overstated.
+   The honest fixture, whose one row is then overstated.
    */
   const honest = artifactShipping({ translateText: DECIDED_MIDDLE, },) as unknown as {
     readonly comparison: readonly Record<string, unknown>[];
@@ -479,20 +479,20 @@ function artifactOverstatingTheArchive(): WouldShipSource {
 }
 
 /**
- * Publishes one entry and reads back what landed.
- *
- * @param artifact - settled entry to publish
- *
- * @param publishDir - tree root to write into
- *
- * @param slices - pairs the entry was prepared into
- *
- * @returns Path written and the bytes at it
- *
- * @example
- * ```ts
- * const { text, } = await publishAndRead({ artifact, publishDir, },);
- * ```
+ Publishes one entry and reads back what landed.
+ 
+ @param artifact - settled entry to publish
+ 
+ @param publishDir - tree root to write into
+ 
+ @param slices - pairs the entry was prepared into
+ 
+ @returns Path written and the bytes at it
+ 
+ @example
+ ```ts
+ const { text, } = await publishAndRead({ artifact, publishDir, },);
+ ```
  */
 async function publishAndRead(
   {
@@ -508,7 +508,7 @@ async function publishAndRead(
   },
 ): Promise<{ readonly path: string; readonly text: string; readonly destinations: DestinationCheck; }> {
   /**
-   * Where the publisher put it, and what the page carries of the source's links.
+   Where the publisher put it, and what the page carries of the source's links.
    */
   const {
     path,
@@ -690,7 +690,7 @@ await describe({
         await using tree = await throwawayTree();
 
         /**
-         * Page the publisher wrote over an archive with an unfilled anchor in it.
+         Page the publisher wrote over an archive with an unfilled anchor in it.
          */
         const published = await publishAndRead({
           artifact: artifactWithAnUnfilledAnchor(),
@@ -710,8 +710,8 @@ await describe({
         + 'guard now only ever sees a caller that really did claim one',
       fn: async () => {
         /**
-         * What the splice refused when handed the row this publisher no longer
-         * emits, held so the class and the wording can both be asserted.
+         What the splice refused when handed the row this publisher no longer
+         emits, held so the class and the wording can both be asserted.
          */
         const refusalOfWritingNothingAtAnAnchor = async (): Promise<string> => spliceSlices({
           targetText: ARCHIVE,
@@ -736,19 +736,19 @@ await describe({
       fn: async () => {
         await using tree = await throwawayTree();
         /**
-         * Existing English attribution establishing chosen public handle.
+         Existing English attribution establishing chosen public handle.
          */
         const contributorArchive = 'Contributors for this entry: [Snow](https://example.test/snow)\n';
         /**
-         * Candidate literally respelling contributor while retaining destination.
+         Candidate literally respelling contributor while retaining destination.
          */
         const renamed = 'Contributors for this entry: [Snowflake](https://example.test/snow)\n';
         /**
-         * Baseline artifact shape reused with single whole-page attribution slice.
+         Baseline artifact shape reused with single whole-page attribution slice.
          */
         const baseline = artifactShipping({ translateText: renamed, });
         /**
-         * Comparison row adapted to attribution fixture.
+         Comparison row adapted to attribution fixture.
          */
         const [baselineRow,] = baseline.comparison;
         if (baselineRow === undefined)
@@ -784,7 +784,7 @@ await describe({
           },
         } as WouldShipSource;
         /**
-         * Publication attempt that must fail before atomic write.
+         Publication attempt that must fail before atomic write.
          */
         const refused = publishFixedPage({
           artifact,
@@ -805,7 +805,7 @@ await describe({
         },);
         await expect(refused,).rejects.toBeInstanceOf(ContributorCompletenessError,);
         /**
-         * Path contributor-invalid page must never reach.
+         Path contributor-invalid page must never reach.
          */
         const refusedPath = fixedPagePath({
           publishDir: tree.publishDir,
@@ -825,9 +825,9 @@ await describe({
         await using tree = await throwawayTree();
 
         /**
-         * What publishAndRead refused with, held so the class and the wording
-         * can both be asserted: `.rejects` awaits afresh on every matcher call,
-         * so one promise serves two assertions and no capture helper is needed.
+         What publishAndRead refused with, held so the class and the wording
+         can both be asserted: `.rejects` awaits afresh on every matcher call,
+         so one promise serves two assertions and no capture helper is needed.
          */
         const refusalOfPublishingPastTheSlices = publishAndRead({
           artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
@@ -855,12 +855,12 @@ await describe({
         await using tree = await throwawayTree();
 
         /**
-         * Where this case would have published.
+         Where this case would have published.
          */
         const { publishDir, } = tree;
 
         /**
-         * Whatever the publisher raised, caught so its class can be checked.
+         Whatever the publisher raised, caught so its class can be checked.
          */
         const refusal = await (async (): Promise<unknown> => {
           try {
@@ -885,7 +885,7 @@ await describe({
         // not learn. A guard that raised after `writeFileAtomic` would satisfy
         // the assertion above and still leave the page behind.
         /**
-         * Where the page would have landed had the guard let it through.
+         Where the page would have landed had the guard let it through.
          */
         const wouldBeAt = fixedPagePath({
           publishDir,
@@ -937,7 +937,7 @@ await describe({
         await using tree = await throwawayTree();
 
         /**
-         * Page whose closing keeps the archive's address for the source's home link.
+         Page whose closing keeps the archive's address for the source's home link.
          */
         const published = await publishFixedPage({
           artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
@@ -962,7 +962,7 @@ await describe({
         await using tree = await throwawayTree();
 
         /**
-         * Page published from the linkless source page.
+         Page published from the linkless source page.
          */
         const published = await publishAndRead({
           artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
@@ -984,7 +984,7 @@ await describe({
         await using tree = await throwawayTree();
 
         /**
-         * What the publisher threw for the wording no grammar reads.
+         What the publisher threw for the wording no grammar reads.
          */
         const thrown = await (async (): Promise<unknown> => {
           try {
@@ -1006,7 +1006,7 @@ await describe({
         })();
 
         /**
-         * Where the page would have landed.
+         Where the page would have landed.
          */
         const path = fixedPagePath({
           publishDir: tree.publishDir,

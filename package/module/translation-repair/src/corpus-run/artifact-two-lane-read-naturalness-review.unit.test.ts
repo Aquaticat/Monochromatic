@@ -1,7 +1,7 @@
 /**
- * Tests absolute naturalness review recomputation, correction binding, and acceptance confirmation.
- *
- * @module
+ Tests absolute naturalness review recomputation, correction binding, and acceptance confirmation.
+ 
+ @module
  */
 
 import {
@@ -17,26 +17,26 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Exact final text review binds to.
+ Exact final text review binds to.
  */
 const FINAL_TEXT = 'The cat slept peacefully on the windowsill.';
 
 /**
- * Initial wording rejected before bounded corrections.
+ Initial wording rejected before bounded corrections.
  */
 const INITIAL_TEXT = 'The cat conducted peaceful sleeping on the windowsill.';
 
 /**
- * First correction whose exact review exposes another defect.
+ First correction whose exact review exposes another defect.
  */
 const FIRST_CORRECTION_TEXT = 'The cat was sleeping peacefully upon the windowsill.';
 
 /**
- * One acceptable reviewer seat.
- *
- * @param modelId - invented distinct reviewer id
- *
- * @returns Schema-eight acceptable seat
+ One acceptable reviewer seat.
+ 
+ @param modelId - invented distinct reviewer id
+ 
+ @returns Schema-eight acceptable seat
  */
 function acceptableSeat(
   { modelId, }: { readonly modelId: string; },
@@ -50,11 +50,11 @@ function acceptableSeat(
 }
 
 /**
- * One unavailable requested reviewer seat.
- *
- * @param modelId - invented distinct reviewer id
- *
- * @returns Accounted seat without usable verdict
+ One unavailable requested reviewer seat.
+ 
+ @param modelId - invented distinct reviewer id
+ 
+ @returns Accounted seat without usable verdict
  */
 function unusableSeat(
   { modelId, }: { readonly modelId: string; },
@@ -68,7 +68,7 @@ function unusableSeat(
 }
 
 /**
- * Valid no-correction review fixture.
+ Valid no-correction review fixture.
  */
 const REVIEW = {
   correctionCount: 0,
@@ -86,13 +86,13 @@ const REVIEW = {
 } as const;
 
 /**
- * Builds one rejecting seat for located fixture finding.
- *
- * @param modelId - invented distinct reviewer id
- *
- * @param problem - actionable defect
- *
- * @returns Unacceptable seat with one paragraph finding
+ Builds one rejecting seat for located fixture finding.
+ 
+ @param modelId - invented distinct reviewer id
+ 
+ @param problem - actionable defect
+ 
+ @returns Unacceptable seat with one paragraph finding
  */
 function unacceptableSeat(
   {
@@ -112,27 +112,27 @@ function unacceptableSeat(
 }
 
 /**
- * First exact review finding.
+ First exact review finding.
  */
 const INITIAL_FINDINGS = [{ paragraph: 1, problem: 'Replace nominalized verb phrase.', },] as const;
 
 /**
- * Finding exposed by first correction.
+ Finding exposed by first correction.
  */
 const SECOND_FINDINGS = [{ paragraph: 1, problem: 'Use ordinary location preposition.', },] as const;
 
 /**
- * Second correction whose review exposes one final defect.
+ Second correction whose review exposes one final defect.
  */
 const SECOND_CORRECTION_TEXT = 'The cat slept peacefully upon the windowsill.';
 
 /**
- * Finding exposed by second correction.
+ Finding exposed by second correction.
  */
 const THIRD_FINDINGS = [{ paragraph: 1, problem: 'Replace marked location preposition.', },] as const;
 
 /**
- * Valid schema-nine two-correction digest chain.
+ Valid schema-nine two-correction digest chain.
  */
 const CHAINED_REVIEW = {
   correctionCount: 2,
@@ -192,7 +192,7 @@ const CHAINED_REVIEW = {
 } as const;
 
 /**
- * Valid schema-nine three-correction digest chain.
+ Valid schema-nine three-correction digest chain.
  */
 const THREE_CORRECTION_REVIEW = {
   correctionCount: 3,
@@ -230,11 +230,11 @@ const THREE_CORRECTION_REVIEW = {
 } as const;
 
 /**
- * Builds acceptable schema-nine reading of exact candidate.
- *
- * @param text - exact candidate independently reviewed
- *
- * @returns Candidate and paragraph-bound acceptable round
+ Builds acceptable schema-nine reading of exact candidate.
+ 
+ @param text - exact candidate independently reviewed
+ 
+ @returns Candidate and paragraph-bound acceptable round
  */
 function acceptableRound({ text, }: { readonly text: string; },) {
   return {
@@ -253,7 +253,7 @@ function acceptableRound({ text, }: { readonly text: string; },) {
 }
 
 /**
- * Schema-nine chain retaining earlier acceptances before decisive reviews.
+ Schema-nine chain retaining earlier acceptances before decisive reviews.
  */
 const CONFIRMED_CHAINED_REVIEW = {
   ...CHAINED_REVIEW,

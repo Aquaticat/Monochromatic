@@ -1,15 +1,15 @@
 /**
- * Tests for the check that says a slice's surplus translation may have been read
- * out of a PICTURE rather than moved from its neighbour.
- *
- * WHAT THESE PIN is that the signal is the SAME component on both sides. Media
- * in the translation alone is content the original lacks; media in the original
- * alone is something the translation dropped. Only a shared component, with more
- * prose beside it on one side, says the prose came out of the image.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the check that says a slice's surplus translation may have been read
+ out of a PICTURE rather than moved from its neighbour.
+ 
+ WHAT THESE PIN is that the signal is the SAME component on both sides. Media
+ in the translation alone is content the original lacks; media in the original
+ alone is something the translation dropped. Only a shared component, with more
+ prose beside it on one side, says the prose came out of the image.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {

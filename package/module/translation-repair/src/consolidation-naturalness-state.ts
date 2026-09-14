@@ -4,16 +4,16 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 //region Consolidation naturalness state helpers
 
 /**
- * Deduplicates model credits while preserving first occurrence.
- *
- * @param modelIds - credits across bounded generations
- *
- * @returns Stable unique model ids
- *
- * @example
- * ```ts
- * const unique = uniqueRosterModelIds({ modelIds, });
- * ```
+ Deduplicates model credits while preserving first occurrence.
+ 
+ @param modelIds - credits across bounded generations
+ 
+ @returns Stable unique model ids
+ 
+ @example
+ ```ts
+ const unique = uniqueRosterModelIds({ modelIds, });
+ ```
  */
 export function uniqueRosterModelIds(
   { modelIds, }: { readonly modelIds: readonly RosterModelId[]; },
@@ -22,16 +22,16 @@ export function uniqueRosterModelIds(
 }
 
 /**
- * Renders latest structured findings for stage telemetry.
- *
- * @param review - exact rejected review feeding correction
- *
- * @returns Paragraph-located descriptions
- *
- * @example
- * ```ts
- * const findings = describeReviewFindings({ review, });
- * ```
+ Renders latest structured findings for stage telemetry.
+ 
+ @param review - exact rejected review feeding correction
+ 
+ @returns Paragraph-located descriptions
+ 
+ @example
+ ```ts
+ const findings = describeReviewFindings({ review, });
+ ```
  */
 export function describeReviewFindings(
   { review, }: { readonly review: AbsoluteNaturalnessReviewOutcome; },

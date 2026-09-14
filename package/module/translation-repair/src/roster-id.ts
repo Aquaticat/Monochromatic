@@ -19,24 +19,24 @@
 // `roster-reach.ts` translates when a call actually goes to the other provider.
 
 /**
- * Roster models Synthetic serves.
- *
- * `hf:zai-org/GLM-4.7-Flash` WAS REMOVED 2026-08-24 at the owner's instruction,
- * which reverses `#136`'s finding that it should stay. That finding compared it
- * against five peers; that wider roster later changed independently.
- *
- * `hf:zai-org/GLM-5.2` WAS REPLACED 2026-08-29 by GLM-5.3-Flash after the
- * live endpoint confirmed the successor and the operational request reported
- * Synthetic's plan to retire the older model.
- *
- * `hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` WAS REMOVED 2026-08-29
- * at the owner's instruction after contradicting its own concrete wording
- * recommendation in adjacent required-correction reviews.
- *
- * @example
- * ```ts
- * const modelId: SyntheticServedId = 'hf:zai-org/GLM-5.3-Flash';
- * ```
+ Roster models Synthetic serves.
+ 
+ `hf:zai-org/GLM-4.7-Flash` WAS REMOVED 2026-08-24 at the owner's instruction,
+ which reverses `#136`'s finding that it should stay. That finding compared it
+ against five peers; that wider roster later changed independently.
+ 
+ `hf:zai-org/GLM-5.2` WAS REPLACED 2026-08-29 by GLM-5.3-Flash after the
+ live endpoint confirmed the successor and the operational request reported
+ Synthetic's plan to retire the older model.
+ 
+ `hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` WAS REMOVED 2026-08-29
+ at the owner's instruction after contradicting its own concrete wording
+ recommendation in adjacent required-correction reviews.
+ 
+ @example
+ ```ts
+ const modelId: SyntheticServedId = 'hf:zai-org/GLM-5.3-Flash';
+ ```
  */
 export type SyntheticServedId =
   | 'hf:zai-org/GLM-5.3-Flash'
@@ -45,14 +45,14 @@ export type SyntheticServedId =
   | 'hf:openai/gpt-oss-120b';
 
 /**
- * Roster identities introduced through Charm Hyper without a Synthetic spelling.
- * The historical bucket name is not exclusive reach: OpenRouter serves several too.
- * Keeping the original roster spelling preserves one identity across providers.
- *
- * @example
- * ```ts
- * const everyone = HYPER_ORIGIN_ROSTER_IDS;
- * ```
+ Roster identities introduced through Charm Hyper without a Synthetic spelling.
+ The historical bucket name is not exclusive reach: OpenRouter serves several too.
+ Keeping the original roster spelling preserves one identity across providers.
+ 
+ @example
+ ```ts
+ const everyone = HYPER_ORIGIN_ROSTER_IDS;
+ ```
  */
 export const HYPER_ORIGIN_ROSTER_IDS = [
   // qwen3.8-max WAS CULLED 2026-08-28 at owner's instruction because its
@@ -74,33 +74,33 @@ export const HYPER_ORIGIN_ROSTER_IDS = [
 ] as const;
 
 /**
- * Union of Hyper-origin roster identities, derived from
- * {@link HYPER_ORIGIN_ROSTER_IDS} so a new one is added in exactly one place.
- *
- * DERIVED FROM THE RUNTIME LIST rather than declared beside it, matching
- * `CHAT_ROLES` in `@monochromatic-dev/module-llm-type`. A separately declared
- * union and list drift, and the drift shows up as a roster that types correctly
- * and seats the wrong models.
- *
- * @example
- * ```ts
- * const modelId: HyperOriginRosterId = 'minimax-m3';
- * ```
+ Union of Hyper-origin roster identities, derived from
+ {@link HYPER_ORIGIN_ROSTER_IDS} so a new one is added in exactly one place.
+ 
+ DERIVED FROM THE RUNTIME LIST rather than declared beside it, matching
+ `CHAT_ROLES` in `@monochromatic-dev/module-llm-type`. A separately declared
+ union and list drift, and the drift shows up as a roster that types correctly
+ and seats the wrong models.
+ 
+ @example
+ ```ts
+ const modelId: HyperOriginRosterId = 'minimax-m3';
+ ```
  */
 export type HyperOriginRosterId = typeof HYPER_ORIGIN_ROSTER_IDS[number];
 
 /**
- * Roster models only Amazon Bedrock serves, spelled as that provider spells
- * them for the reason the Hyper-only list gives: no other spelling exists.
- * THE TWO GEMMA 4 SIZES THE OWNER APPROVED ON 2026-09-07 that no other
- * provider serves; the third size and gpt-oss-120b are reached under seats
- * the roster already names. Listed here is seatable, not seated: which roles
- * they take is decided on evidence, as the roster calibration record has it.
- *
- * @example
- * ```ts
- * const everyone = BEDROCK_ONLY_ROSTER_IDS;
- * ```
+ Roster models only Amazon Bedrock serves, spelled as that provider spells
+ them for the reason the Hyper-only list gives: no other spelling exists.
+ THE TWO GEMMA 4 SIZES THE OWNER APPROVED ON 2026-09-07 that no other
+ provider serves; the third size and gpt-oss-120b are reached under seats
+ the roster already names. Listed here is seatable, not seated: which roles
+ they take is decided on evidence, as the roster calibration record has it.
+ 
+ @example
+ ```ts
+ const everyone = BEDROCK_ONLY_ROSTER_IDS;
+ ```
  */
 export const BEDROCK_ONLY_ROSTER_IDS = [
   'google.gemma-4-e2b',
@@ -108,53 +108,53 @@ export const BEDROCK_ONLY_ROSTER_IDS = [
 ] as const;
 
 /**
- * Union of the models only Amazon Bedrock serves, derived from
- * {@link BEDROCK_ONLY_ROSTER_IDS} for the reason the Hyper-only union gives.
- *
- * @example
- * ```ts
- * const modelId: BedrockOnlyRosterId = 'google.gemma-4-31b';
- * ```
+ Union of the models only Amazon Bedrock serves, derived from
+ {@link BEDROCK_ONLY_ROSTER_IDS} for the reason the Hyper-only union gives.
+ 
+ @example
+ ```ts
+ const modelId: BedrockOnlyRosterId = 'google.gemma-4-31b';
+ ```
  */
 export type BedrockOnlyRosterId = typeof BEDROCK_ONLY_ROSTER_IDS[number];
 
 /**
- * Roster models only OpenRouter serves, spelled as that provider spells them
- * for the reason the Hyper-only list gives: no other spelling exists.
- * MERCURY 2.5, WHICH THE OWNER APPROVED ON 2026-09-09 ("Mercury 2.5 is out
- * and approved") in the same breath as the final OpenRouter top-up: the
- * cheapest seat on the per-token provider, 0.04 and 0.15 USD per million
- * against the anchor judge's 0.58 and 1.74. Listed here is seatable, not
- * seated: which roles it takes is decided on the judge fidelity probe and the
- * producer calibration, as the roster calibration record has it.
- *
- * @example
- * ```ts
- * const everyone = OPENROUTER_ONLY_ROSTER_IDS;
- * ```
+ Roster models only OpenRouter serves, spelled as that provider spells them
+ for the reason the Hyper-only list gives: no other spelling exists.
+ MERCURY 2.5, WHICH THE OWNER APPROVED ON 2026-09-09 ("Mercury 2.5 is out
+ and approved") in the same breath as the final OpenRouter top-up: the
+ cheapest seat on the per-token provider, 0.04 and 0.15 USD per million
+ against the anchor judge's 0.58 and 1.74. Listed here is seatable, not
+ seated: which roles it takes is decided on the judge fidelity probe and the
+ producer calibration, as the roster calibration record has it.
+ 
+ @example
+ ```ts
+ const everyone = OPENROUTER_ONLY_ROSTER_IDS;
+ ```
  */
 export const OPENROUTER_ONLY_ROSTER_IDS = [
   'inception/mercury-2.5',
 ] as const;
 
 /**
- * Union of the models only OpenRouter serves, derived from
- * {@link OPENROUTER_ONLY_ROSTER_IDS} for the reason the Hyper-only union gives.
- *
- * @example
- * ```ts
- * const modelId: OpenRouterOnlyRosterId = 'inception/mercury-2.5';
- * ```
+ Union of the models only OpenRouter serves, derived from
+ {@link OPENROUTER_ONLY_ROSTER_IDS} for the reason the Hyper-only union gives.
+ 
+ @example
+ ```ts
+ const modelId: OpenRouterOnlyRosterId = 'inception/mercury-2.5';
+ ```
  */
 export type OpenRouterOnlyRosterId = typeof OPENROUTER_ONLY_ROSTER_IDS[number];
 
 /**
- * Every model this pipeline may seat, whoever serves it.
- *
- * @example
- * ```ts
- * const modelId: RosterModelId = 'hf:moonshotai/Kimi-K3';
- * ```
+ Every model this pipeline may seat, whoever serves it.
+ 
+ @example
+ ```ts
+ const modelId: RosterModelId = 'hf:moonshotai/Kimi-K3';
+ ```
  */
 export type RosterModelId =
   | SyntheticServedId

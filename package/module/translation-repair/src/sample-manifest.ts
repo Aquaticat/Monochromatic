@@ -29,139 +29,139 @@ import type { GradingCandidate, } from './sample-grading.ts';
 // git, under the same rule they do.
 
 /**
- * One drawn item's identity at its sheet position.
- *
- * @example
- * ```ts
- * const item: SampleManifestItem = { position: 1, entryId: 'Kitten', issueId: 'adjudicated/nap', };
- * ```
+ One drawn item's identity at its sheet position.
+ 
+ @example
+ ```ts
+ const item: SampleManifestItem = { position: 1, entryId: 'Kitten', issueId: 'adjudicated/nap', };
+ ```
  */
 export type SampleManifestItem = {
   /**
-   * One-based sheet position, identical on both sheets.
+   One-based sheet position, identical on both sheets.
    */
   readonly position: number;
 
   /**
-   * Corpus entry the issue came from.
+   Corpus entry the issue came from.
    */
   readonly entryId: string;
 
   /**
-   * Adjudicated issue at this position, the key every machine verdict uses.
+   Adjudicated issue at this position, the key every machine verdict uses.
    */
   readonly issueId: string;
 };
 
 /**
- * Which built pipeline settled the entries a sample was drawn from.
- *
- * A TAGGED ABSENCE rather than an optional string, for the reason this whole
- * generation runs on: a manifest written before this field existed cannot claim
- * a generation, and reading its silence as any particular one would attribute a
- * sample to a pipeline nobody checked. `#60` records exactly this gap, that
- * `EligibleEntries` already carries the selection and the digests while the
- * manifest wrote neither.
- *
- * @example
- * ```ts
- * const generation: SampleGeneration = { kind: 'recorded', digest, entries: 15, };
- * ```
+ Which built pipeline settled the entries a sample was drawn from.
+ 
+ A TAGGED ABSENCE rather than an optional string, for the reason this whole
+ generation runs on: a manifest written before this field existed cannot claim
+ a generation, and reading its silence as any particular one would attribute a
+ sample to a pipeline nobody checked. `#60` records exactly this gap, that
+ `EligibleEntries` already carries the selection and the digests while the
+ manifest wrote neither.
+ 
+ @example
+ ```ts
+ const generation: SampleGeneration = { kind: 'recorded', digest, entries: 15, };
+ ```
  */
 export type SampleGeneration = {
   readonly kind: 'recorded';
 
   /**
-   * Digest of the built output that settled every entry in the pool.
-   *
-   * ONE DIGEST FOR THE POOL, not one per entry, because a pool holding two
-   * generations is refused before a draw can reach it. If that ever stops being
-   * true this field is the thing that has to grow, and a reader comparing it
-   * against an artifact will notice before a rate does.
+   Digest of the built output that settled every entry in the pool.
+   
+   ONE DIGEST FOR THE POOL, not one per entry, because a pool holding two
+   generations is refused before a draw can reach it. If that ever stops being
+   true this field is the thing that has to grow, and a reader comparing it
+   against an artifact will notice before a rate does.
    */
   readonly digest: string;
 
   /**
-   * How many entries the pool offered, which is not how many the sample took.
-   *
-   * Kept because a sample of fifty issues drawn from fifteen entries and one
-   * drawn from ninety are different evidence, and the items alone cannot say
-   * which, since one entry contributes many issues.
+   How many entries the pool offered, which is not how many the sample took.
+   
+   Kept because a sample of fifty issues drawn from fifteen entries and one
+   drawn from ninety are different evidence, and the items alone cannot say
+   which, since one entry contributes many issues.
    */
   readonly entries: number;
 } | {
   readonly kind: 'unrecorded';
 
   /**
-   * Why, so a reader can tell an old manifest from a draw that could not
-   * determine its pool.
+   Why, so a reader can tell an old manifest from a draw that could not
+   determine its pool.
    */
   readonly reason: string;
 };
 
 /**
- * Everything needed to join a graded sheet back to the run that produced it.
- *
- * @example
- * ```ts
- * const manifest: SampleManifest = buildSampleManifest({ sample, seed, corpusSha, },);
- * ```
+ Everything needed to join a graded sheet back to the run that produced it.
+ 
+ @example
+ ```ts
+ const manifest: SampleManifest = buildSampleManifest({ sample, seed, corpusSha, },);
+ ```
  */
 export type SampleManifest = {
   /**
-   * Draw seed, so a manifest cannot be paired with another draw's sheets.
+   Draw seed, so a manifest cannot be paired with another draw's sheets.
    */
   readonly seed: string;
 
   /**
-   * Corpus commit the entries were read at.
+   Corpus commit the entries were read at.
    */
   readonly corpusSha: string;
 
   /**
-   * Fingerprint of this exact draw, absent on manifests written before the
-   * binding existed.
-   *
-   * Optional rather than defaulted to an empty string, because absence and a
-   * value are genuinely different states and the scorers act differently on
-   * them. A manifest drawn before this field existed can still be scored, under
-   * the weaker seed-and-pin check and a printed note saying so; a manifest that
-   * carries a digest disagreeing with its own items is malformed and refused.
+   Fingerprint of this exact draw, absent on manifests written before the
+   binding existed.
+   
+   Optional rather than defaulted to an empty string, because absence and a
+   value are genuinely different states and the scorers act differently on
+   them. A manifest drawn before this field existed can still be scored, under
+   the weaker seed-and-pin check and a printed note saying so; a manifest that
+   carries a digest disagreeing with its own items is malformed and refused.
    */
   readonly drawDigest?: string;
 
   /**
-   * Pipeline that settled the entries this sample was drawn from.
-   *
-   * DELIBERATELY OUTSIDE `drawDigest`. That fingerprint binds seed, corpus pin
-   * and items, and every sheet already drawn is bound by it; folding a new field
-   * into it would change the digest of manifests whose sheets are already
-   * graded, and every one of those bindings would break at once. So the
-   * generation sits beside it and is checked separately.
+   Pipeline that settled the entries this sample was drawn from.
+   
+   DELIBERATELY OUTSIDE `drawDigest`. That fingerprint binds seed, corpus pin
+   and items, and every sheet already drawn is bound by it; folding a new field
+   into it would change the digest of manifests whose sheets are already
+   graded, and every one of those bindings would break at once. So the
+   generation sits beside it and is checked separately.
    */
   readonly generation: SampleGeneration;
 
   /**
-   * Items in sheet order.
+   Items in sheet order.
    */
   readonly items: readonly SampleManifestItem[];
 };
 
 /**
- * Records what sat at each sheet position.
- *
- * @param sample - drawn candidates, in the order both sheets render them
- *
- * @param seed - draw seed
- *
- * @param corpusSha - pinned corpus commit
- *
- * @returns Manifest to write beside the sheets
- *
- * @example
- * ```ts
- * const manifest = buildSampleManifest({ sample, seed, corpusSha, },);
- * ```
+ Records what sat at each sheet position.
+ 
+ @param sample - drawn candidates, in the order both sheets render them
+ 
+ @param seed - draw seed
+ 
+ @param corpusSha - pinned corpus commit
+ 
+ @returns Manifest to write beside the sheets
+ 
+ @example
+ ```ts
+ const manifest = buildSampleManifest({ sample, seed, corpusSha, },);
+ ```
  */
 export function buildSampleManifest(
   {
@@ -177,7 +177,7 @@ export function buildSampleManifest(
   },
 ): SampleManifest {
   /**
-   * Items in sheet order, which is the order the digest is taken over.
+   Items in sheet order, which is the order the digest is taken over.
    */
   const items: readonly SampleManifestItem[] = sample.map(function toItem(
     candidate,
@@ -204,19 +204,19 @@ export function buildSampleManifest(
 }
 
 /**
- * Reads a manifest's generation, naming its absence rather than guessing one.
- *
- * @param manifest - manifest as a record
- *
- * @returns Recorded generation, or why there is none
- *
- * @throws {@link ArtifactParseError} when a present generation is malformed,
- * since a half-written one is worse than none: it would be read as evidence
- *
- * @example
- * ```ts
- * const generation = readGeneration({ manifest, },);
- * ```
+ Reads a manifest's generation, naming its absence rather than guessing one.
+ 
+ @param manifest - manifest as a record
+ 
+ @returns Recorded generation, or why there is none
+ 
+ @throws {@link ArtifactParseError} when a present generation is malformed,
+ since a half-written one is worse than none: it would be read as evidence
+ 
+ @example
+ ```ts
+ const generation = readGeneration({ manifest, },);
+ ```
  */
 function readGeneration(
   { manifest, }: { readonly manifest: Readonly<Record<string, unknown>>; },
@@ -228,7 +228,7 @@ function readGeneration(
     };
 
   /**
-   * Generation as a record.
+   Generation as a record.
    */
   const generation = requireRecord({
     value: manifest.generation,
@@ -258,28 +258,28 @@ function readGeneration(
 }
 
 /**
- * Reads a manifest back, throwing rather than skipping a malformed item.
- *
- * Strict for the reason `artifact-read.ts` is strict: a dropped item shifts
- * every later position silently, which turns a join into a mislabelling rather
- * than a gap anyone would notice.
- *
- * @param value - parsed manifest JSON
- *
- * @returns Manifest as written
- *
- * @throws {@link ArtifactParseError} when any field is malformed
- *
- * @example
- * ```ts
- * const manifest = parseSampleManifest({ value: parseRunJson({ text, from, },), },);
- * ```
+ Reads a manifest back, throwing rather than skipping a malformed item.
+ 
+ Strict for the reason `artifact-read.ts` is strict: a dropped item shifts
+ every later position silently, which turns a join into a mislabelling rather
+ than a gap anyone would notice.
+ 
+ @param value - parsed manifest JSON
+ 
+ @returns Manifest as written
+ 
+ @throws {@link ArtifactParseError} when any field is malformed
+ 
+ @example
+ ```ts
+ const manifest = parseSampleManifest({ value: parseRunJson({ text, from, },), },);
+ ```
  */
 export function parseSampleManifest(
   { value, }: { readonly value: unknown; },
 ): SampleManifest {
   /**
-   * Manifest as a record.
+   Manifest as a record.
    */
   const manifest = requireRecord({
     value,
@@ -287,7 +287,7 @@ export function parseSampleManifest(
   },);
 
   /**
-   * Draw seed as written.
+   Draw seed as written.
    */
   const seed = requireString({
     value: manifest.seed,
@@ -295,7 +295,7 @@ export function parseSampleManifest(
   },);
 
   /**
-   * Corpus commit as written.
+   Corpus commit as written.
    */
   const corpusSha = requireString({
     value: manifest.corpusSha,
@@ -303,7 +303,7 @@ export function parseSampleManifest(
   },);
 
   /**
-   * Items in the order they were written, which is the order they are scored.
+   Items in the order they were written, which is the order they are scored.
    */
   const items = requireArray({
     value: manifest.items,
@@ -314,7 +314,7 @@ export function parseSampleManifest(
       index,
     ): SampleManifestItem {
       /**
-       * Item as a record.
+       Item as a record.
        */
       const item = requireRecord({
         value: entry,
@@ -322,7 +322,7 @@ export function parseSampleManifest(
       },);
 
       /**
-       * Position as written, before it is checked against where it sits.
+       Position as written, before it is checked against where it sits.
        */
       const position = requireCount({
         value: item.position,
@@ -356,7 +356,7 @@ export function parseSampleManifest(
     },);
 
   /**
-   * Which pipeline settled the pool, or a named absence.
+   Which pipeline settled the pool, or a named absence.
    */
   const generation = readGeneration({ manifest, },);
 
@@ -369,7 +369,7 @@ export function parseSampleManifest(
     };
 
   /**
-   * Digest as the manifest declares it.
+   Digest as the manifest declares it.
    */
   const declared = requireString({
     value: manifest.drawDigest,
@@ -377,7 +377,7 @@ export function parseSampleManifest(
   },);
 
   /**
-   * Digest these items actually produce.
+   Digest these items actually produce.
    */
   const recomputed = computeDrawDigest({
     seed,

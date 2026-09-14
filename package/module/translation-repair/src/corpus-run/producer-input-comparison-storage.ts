@@ -24,23 +24,23 @@ import {
 //region Fixed comparison records remain outside completed producer namespaces
 
 /**
- * Private directory permissions include no special or shared-access bits.
+ Private directory permissions include no special or shared-access bits.
  */
 const DIRECTORY_MODE = 0o700;
 /**
- * Every comparison record is created without group or other access.
+ Every comparison record is created without group or other access.
  */
 const FILE_MODE = 0o600;
 /**
- * Permissions are compared with special bits included.
+ Permissions are compared with special bits included.
  */
 const MODE_MASK = 0o7777;
 /**
- * Comparison metadata does not consume the separate corpus/support byte allowance.
+ Comparison metadata does not consume the separate corpus/support byte allowance.
  */
 const MAX_RECORD_BYTES = 1_048_576;
 /**
- * No caller-supplied filename can turn this writer into a general output interface.
+ No caller-supplied filename can turn this writer into a general output interface.
  */
 const RECORD_FILES = [
   'created.json',
@@ -54,61 +54,61 @@ const RECORD_FILES = [
 ] as const;
 
 /**
- * Owned directory observation belongs to this invocation, not a caller certificate.
- *
- * @example
- * ```ts
- * const path = run.directory;
- * ```
+ Owned directory observation belongs to this invocation, not a caller certificate.
+ 
+ @example
+ ```ts
+ const path = run.directory;
+ ```
  */
 export type ProducerInputComparisonRun = {
   /**
-   * Exclusive comparison namespace, never the completed input-run directory.
+   Exclusive comparison namespace, never the completed input-run directory.
    */
   readonly directory: string;
   /**
-   * Dedicated initially empty parent associates retained input runs even without success stdout.
+   Dedicated initially empty parent associates retained input runs even without success stdout.
    */
   readonly inputParent: string;
   /**
-   * Observed child-parent inode is distinct from the comparison directory's identity.
+   Observed child-parent inode is distinct from the comparison directory's identity.
    */
   readonly inputParentInode: bigint;
   /**
-   * Fresh comparison identifier is not an acquisition-attempt identity.
+   Fresh comparison identifier is not an acquisition-attempt identity.
    */
   readonly runId: string;
   /**
-   * Independently captured caller ownership.
+   Independently captured caller ownership.
    */
   readonly uid: number;
   /**
-   * Independently captured caller group.
+   Independently captured caller group.
    */
   readonly gid: number;
   /**
-   * Observed device is compared only with another filesystem observation.
+   Observed device is compared only with another filesystem observation.
    */
   readonly device: bigint;
   /**
-   * Directory replacement is checked before each fixed record write.
+   Directory replacement is checked before each fixed record write.
    */
   readonly inode: bigint;
 };
 
 /**
- * Rechecks the created directory without claiming hostile-host immunity or a filesystem lease.
- *
- * @param run - owned creation observation
- *
- * @param l - invoking record owner's logger
- *
- * @throws ProducerInputComparisonError when directory observation, identity or privacy differs
- *
- * @example
- * ```ts
- * await verifyProducerInputComparisonRun({ run, l });
- * ```
+ Rechecks the created directory without claiming hostile-host immunity or a filesystem lease.
+ 
+ @param run - owned creation observation
+ 
+ @param l - invoking record owner's logger
+ 
+ @throws ProducerInputComparisonError when directory observation, identity or privacy differs
+ 
+ @example
+ ```ts
+ await verifyProducerInputComparisonRun({ run, l });
+ ```
  */
 export async function verifyProducerInputComparisonRun({
   run,
@@ -118,7 +118,7 @@ export async function verifyProducerInputComparisonRun({
   readonly l: Logger;
 },): Promise<void> {
   /**
-   * No filesystem error body is needed to describe a refused directory observation.
+   No filesystem error body is needed to describe a refused directory observation.
    */
   const pl = tagged({
     tag: verifyProducerInputComparisonRun.name,
@@ -126,7 +126,7 @@ export async function verifyProducerInputComparisonRun({
   });
   try {
     /**
-     * Both directory identities remain owned while the child adds its input-run namespace.
+     Both directory identities remain owned while the child adds its input-run namespace.
      */
     const directories = [
       {
@@ -140,7 +140,7 @@ export async function verifyProducerInputComparisonRun({
     ] as const;
     await Promise.all(directories.map(async function verifyDirectory(directory): Promise<void> {
       /**
-       * Metadata checks neither follow a leaf symlink nor read a corpus-derived body.
+       Metadata checks neither follow a leaf symlink nor read a corpus-derived body.
        */
       const state = await lstat(
         directory.path,
@@ -169,23 +169,23 @@ export async function verifyProducerInputComparisonRun({
 }
 
 /**
- * Persists one fixed record exclusively and synchronizes its content before returning.
- * Existing output and partial records are never removed or overwritten on failure.
- *
- * @param run - private namespace created by this operation
- *
- * @param file - fixed record role, not an input-selected locator
- *
- * @param value - owned JSON metadata without environment values or corpus contents
- *
- * @param l - invoking operation logger
- *
- * @throws ProducerInputComparisonError when observation, serialization, exclusive write or sync fails
- *
- * @example
- * ```ts
- * await writeProducerInputComparisonRecord({ run, file: 'comparison.json', value, l });
- * ```
+ Persists one fixed record exclusively and synchronizes its content before returning.
+ Existing output and partial records are never removed or overwritten on failure.
+ 
+ @param run - private namespace created by this operation
+ 
+ @param file - fixed record role, not an input-selected locator
+ 
+ @param value - owned JSON metadata without environment values or corpus contents
+ 
+ @param l - invoking operation logger
+ 
+ @throws ProducerInputComparisonError when observation, serialization, exclusive write or sync fails
+ 
+ @example
+ ```ts
+ await writeProducerInputComparisonRecord({ run, file: 'comparison.json', value, l });
+ ```
  */
 export async function writeProducerInputComparisonRecord({
   run,
@@ -199,7 +199,7 @@ export async function writeProducerInputComparisonRecord({
   readonly l: Logger;
 },): Promise<void> {
   /**
-   * Fixed role telemetry never serializes the record payload into logs.
+   Fixed role telemetry never serializes the record payload into logs.
    */
   const pl = tagged({
     tag: writeProducerInputComparisonRecord.name,
@@ -216,7 +216,7 @@ export async function writeProducerInputComparisonRecord({
       l: pl
     });
     /**
-     * Serialize before exclusive creation so over-bound metadata does not create an empty record.
+     Serialize before exclusive creation so over-bound metadata does not create an empty record.
      */
     const text = JSON.stringify(value);
     if (Buffer.byteLength(
@@ -228,7 +228,7 @@ export async function writeProducerInputComparisonRecord({
         directory: run.directory
       });
     /**
-     * Persisted byte identity is computed from the exact UTF-8 serialization before creation.
+     Persisted byte identity is computed from the exact UTF-8 serialization before creation.
      */
     const expected = {
       bytes: Buffer.byteLength(
@@ -243,7 +243,7 @@ export async function writeProducerInputComparisonRecord({
         .digest('hex'),
     };
     /**
-     * Fixed record role cannot select a different output location.
+     Fixed record role cannot select a different output location.
      */
     const path = join(
       run.directory,
@@ -251,7 +251,7 @@ export async function writeProducerInputComparisonRecord({
     );
     pl.debug(`writing exclusive comparison record ${JSON.stringify(file)}`);
     /**
-     * Exclusive record descriptor preserves existing and partial metadata on every failure path.
+     Exclusive record descriptor preserves existing and partial metadata on every failure path.
      */
     await using handle = await open(
       path,
@@ -264,7 +264,7 @@ export async function writeProducerInputComparisonRecord({
     );
     await handle.sync();
     /**
-     * Descriptor identity remains independent of any replacement at its pathname.
+     Descriptor identity remains independent of any replacement at its pathname.
      */
     const descriptor = await handle.stat({ bigint: true });
     await verifyProducerInputOutputFile({
@@ -295,25 +295,25 @@ export async function writeProducerInputComparisonRecord({
 }
 
 /**
- * Creates one private comparison namespace after its caller's metadata-only launch preflight.
- * This is neither a preparation attempt nor permission to construct a provider client.
- *
- * @param parent - authorized canonical output parent from the matched input launch
- *
- * @param baseLaunchIdentity - independently matched base launch metadata
- *
- * @param reference - separately retained input artifact identity
- *
- * @param l - invoking operation logger
- *
- * @returns Exclusive directory observation after creation-marker content synchronization
- *
- * @throws ProducerInputComparisonError when ownership, creation or marker persistence fails
- *
- * @example
- * ```ts
- * const run = await createProducerInputComparisonRun({ parent, baseLaunchIdentity, reference, l });
- * ```
+ Creates one private comparison namespace after its caller's metadata-only launch preflight.
+ This is neither a preparation attempt nor permission to construct a provider client.
+ 
+ @param parent - authorized canonical output parent from the matched input launch
+ 
+ @param baseLaunchIdentity - independently matched base launch metadata
+ 
+ @param reference - separately retained input artifact identity
+ 
+ @param l - invoking operation logger
+ 
+ @returns Exclusive directory observation after creation-marker content synchronization
+ 
+ @throws ProducerInputComparisonError when ownership, creation or marker persistence fails
+ 
+ @example
+ ```ts
+ const run = await createProducerInputComparisonRun({ parent, baseLaunchIdentity, reference, l });
+ ```
  */
 export async function createProducerInputComparisonRun({
   parent,
@@ -327,28 +327,28 @@ export async function createProducerInputComparisonRun({
   readonly l: Logger;
 },): Promise<ProducerInputComparisonRun> {
   /**
-   * Capture supported native ownership before logging or filesystem work.
+   Capture supported native ownership before logging or filesystem work.
    */
   const uid = process.getuid?.();
   /**
-   * Group is independently required rather than guessed from user identity.
+   Group is independently required rather than guessed from user identity.
    */
   const gid = process.getgid?.();
   if ((uid === undefined) || (gid === undefined))
     throw new ProducerInputComparisonError({ kind: 'contract' });
   /**
-   * Fresh random identity never reopens a previous comparison.
+   Fresh random identity never reopens a previous comparison.
    */
   const runId = randomUUID();
   /**
-   * Only a generated child name is added to the authorized output parent.
+   Only a generated child name is added to the authorized output parent.
    */
   const directory = join(
     parent,
     `producer-input-comparison-${runId}`
   );
   /**
-   * Namespace telemetry names no input document or provider body.
+   Namespace telemetry names no input document or provider body.
    */
   const pl = tagged({
     tag: createProducerInputComparisonRun.name,
@@ -360,14 +360,14 @@ export async function createProducerInputComparisonRun({
       { mode: DIRECTORY_MODE }
     );
     /**
-     * Creation identity is retained for point-in-time replacement checks.
+     Creation identity is retained for point-in-time replacement checks.
      */
     const state = await lstat(
       directory,
       { bigint: true }
     );
     /**
-     * A dedicated native output parent removes ambiguity after bootstrap failure or timeout.
+     A dedicated native output parent removes ambiguity after bootstrap failure or timeout.
      */
     const inputParent = join(
       directory,
@@ -378,7 +378,7 @@ export async function createProducerInputComparisonRun({
       { mode: DIRECTORY_MODE }
     );
     /**
-     * Parent identity is retained independently of the comparison directory.
+     Parent identity is retained independently of the comparison directory.
      */
     const inputParentState = await lstat(
       inputParent,
@@ -390,7 +390,7 @@ export async function createProducerInputComparisonRun({
         directory
       });
     /**
-     * Only current observations, not self-asserted marker fields, drive later writes.
+     Only current observations, not self-asserted marker fields, drive later writes.
      */
     const run: ProducerInputComparisonRun = {
       directory,

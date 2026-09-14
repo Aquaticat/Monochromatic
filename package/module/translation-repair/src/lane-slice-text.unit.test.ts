@@ -1,15 +1,15 @@
 /**
- * Tests for the per-slice wording both lanes report.
- *
- * This is the join key of every two-lane comparison, so its failure mode is a
- * comparison that reads clean while lining up two different passages. The
- * coverage checks are the whole point: a lane that skipped a slice, or reported
- * one its preparation never produced, must say so rather than produce a shorter
- * list nobody counts.
- *
- * Fixtures are invented. No corpus content appears here.
- *
- * @module
+ Tests for the per-slice wording both lanes report.
+ 
+ This is the join key of every two-lane comparison, so its failure mode is a
+ comparison that reads clean while lining up two different passages. The
+ coverage checks are the whole point: a lane that skipped a slice, or reported
+ one its preparation never produced, must say so rather than produce a shorter
+ list nobody counts.
+ 
+ Fixtures are invented. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -25,20 +25,20 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one prepared slice pair.
- *
- * @param index - global slice index both sides carry
- *
- * @param source - original text of this slice
- *
- * @param target - archive translation of it
- *
- * @returns Pair shaped as preparation produces
- *
- * @example
- * ```ts
- * const pair = pairOf({ index: 0, source: '猫', target: 'The cat.', },);
- * ```
+ Builds one prepared slice pair.
+ 
+ @param index - global slice index both sides carry
+ 
+ @param source - original text of this slice
+ 
+ @param target - archive translation of it
+ 
+ @returns Pair shaped as preparation produces
+ 
+ @example
+ ```ts
+ const pair = pairOf({ index: 0, source: '猫', target: 'The cat.', },);
+ ```
  */
 function pairOf(
   {
@@ -85,7 +85,7 @@ function pairOf(
 }
 
 /**
- * Two prepared slices about a cat.
+ Two prepared slices about a cat.
  */
 const CAT_SLICES = [
   pairOf({
@@ -101,8 +101,8 @@ const CAT_SLICES = [
 ];
 
 /**
- * The same pair with the second slice a place rather than existing text, which
- * is the only kind of slice a lane may report as unfilled.
+ The same pair with the second slice a place rather than existing text, which
+ is the only kind of slice a lane may report as unfilled.
  */
 const ANCHORED_SLICES = [
   CAT_SLICES[0] ?? pairOf({
@@ -135,7 +135,7 @@ await describe({
         + 'and leaving a slice alone is a decision rather than an absence',
       fn: async () => {
         /**
-         * Wordings for a lane that changed the first slice only.
+         Wordings for a lane that changed the first slice only.
          */
         const wordings = buildLaneSliceTexts({
           slices: CAT_SLICES,
@@ -167,7 +167,7 @@ await describe({
         + 'rather than the position within this list',
       fn: async () => {
         /**
-         * Wordings built from decisions given out of order.
+         Wordings built from decisions given out of order.
          */
         const wordings = buildLaneSliceTexts({
           slices: CAT_SLICES,
@@ -188,7 +188,7 @@ await describe({
         + 'that every later count silently reads as a smaller document',
       fn: async () => {
         /**
-         * Failure the builder raised.
+         Failure the builder raised.
          */
         let caught: unknown;
         try {
@@ -211,7 +211,7 @@ await describe({
         + 'preparations of one entry would otherwise be joined without anything noticing',
       fn: async () => {
         /**
-         * Failure the builder raised.
+         Failure the builder raised.
          */
         let caught: unknown;
         try {
@@ -240,7 +240,7 @@ await describe({
         + 'decision would state a choice nobody took',
       fn: async () => {
         /**
-         * Wordings for a lane that stopped after the first slice.
+         Wordings for a lane that stopped after the first slice.
          */
         const wordings = buildLaneSliceTexts({
           slices: CAT_SLICES,
@@ -270,7 +270,7 @@ await describe({
         + 'accepting it would let that pass as an early stop',
       fn: async () => {
         /**
-         * Failure the builder raised.
+         Failure the builder raised.
          */
         let caught: unknown;
         try {
@@ -293,7 +293,7 @@ await describe({
         + 'forgives a lane that stopped early and not one that describes another slicing',
       fn: async () => {
         /**
-         * Failure the builder raised.
+         Failure the builder raised.
          */
         let caught: unknown;
         try {
@@ -317,8 +317,8 @@ await describe({
         + 'one: the first can say which slices, the second cannot',
       fn: async () => {
         /**
-         * Wordings where the lane decided the first slice and could not fill
-         * the second.
+         Wordings where the lane decided the first slice and could not fill
+         the second.
          */
         const wordings = buildLaneSliceTexts({
           slices: ANCHORED_SLICES,
@@ -334,7 +334,7 @@ await describe({
         expect(wordings[1]?.incumbentText,).toBe('',);
 
         /**
-         * Failure the same gap raises when nothing names it.
+         Failure the same gap raises when nothing names it.
          */
         let caught: unknown;
         try {
@@ -357,7 +357,7 @@ await describe({
         + 'decision naming a foreign slice',
       fn: async () => {
         /**
-         * Failure raised by a slice claimed twice.
+         Failure raised by a slice claimed twice.
          */
         let both: unknown;
         try {
@@ -377,7 +377,7 @@ await describe({
         expect(both,).toBeInstanceOf(LaneSliceCoverageError,);
 
         /**
-         * Failure raised by an unfilled index from another slicing.
+         Failure raised by an unfilled index from another slicing.
          */
         let foreign: unknown;
         try {
@@ -405,7 +405,7 @@ await describe({
         + 'outcome carries no wording for a reader to mistake for one',
       fn: async () => {
         /**
-         * Wordings where the second slice met silence.
+         Wordings where the second slice met silence.
          */
         const wordings = buildLaneSliceTexts({
           slices: CAT_SLICES,
@@ -427,7 +427,7 @@ await describe({
         + 'unstated, and refuses an unheard index this preparation never produced',
       fn: async () => {
         /**
-         * Failure raised by a slice claimed both ways.
+         Failure raised by a slice claimed both ways.
          */
         let both: unknown;
         try {
@@ -448,7 +448,7 @@ await describe({
         expect(String(both,),).toContain('unheard and decided at once',);
 
         /**
-         * Failure raised by an unheard index from another slicing.
+         Failure raised by an unheard index from another slicing.
          */
         let foreign: unknown;
         try {
@@ -475,7 +475,7 @@ await describe({
         + 'stand on and the two disagree about whether the archive translates the passage at all',
       fn: async () => {
         /**
-         * Failure raised by the contradiction.
+         Failure raised by the contradiction.
          */
         let caught: unknown;
         try {
@@ -502,7 +502,7 @@ await describe({
         + 'archive wording would record a passage as covered by a translation that does not exist',
       fn: async () => {
         /**
-         * Failure raised by a fallback with nothing to fall back on.
+         Failure raised by a fallback with nothing to fall back on.
          */
         let caught: unknown;
         try {
@@ -527,7 +527,7 @@ await describe({
         + 'an unexamined one asserts the lane resumed after stopping',
       fn: async () => {
         /**
-         * Failure raised by reaching a slice after the stop.
+         Failure raised by reaching a slice after the stop.
          */
         let caught: unknown;
         try {
@@ -551,7 +551,7 @@ await describe({
         + 'slice still means the lane got there',
       fn: async () => {
         /**
-         * Failure raised by reaching a slice after the stop.
+         Failure raised by reaching a slice after the stop.
          */
         let caught: unknown;
         try {

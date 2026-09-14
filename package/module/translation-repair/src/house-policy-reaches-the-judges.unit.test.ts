@@ -1,23 +1,23 @@
 /**
- * Tests that the stages deciding what SHIPS are told what this corpus is
- * written under.
- *
- * WHY THIS FILE EXISTS. Every producing sheet splices `HOUSE_POLICY_BLOCK`, and
- * for a long time no judging sheet did. The judges were therefore the only
- * stages that had never been told about reader protection, while criterion one
- * asks them for every proposition of the original with nothing left out. A
- * candidate keeping a suicide method vague, exactly as the corpus's own rule
- * demands, reads as an omission to a judge with only the numbered list.
- *
- * AND THE TENSE HALF, which was measured rather than imagined. Of the four
- * slates a judge refused ENTIRELY on the consolidation bed, three were refused
- * over tense, one saying every candidate had altered the time reference by
- * rendering a tenseless Chinese copula in the past. The rule that answers that
- * lived in the critic's sheet and reached no judge.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests that the stages deciding what SHIPS are told what this corpus is
+ written under.
+ 
+ WHY THIS FILE EXISTS. Every producing sheet splices `HOUSE_POLICY_BLOCK`, and
+ for a long time no judging sheet did. The judges were therefore the only
+ stages that had never been told about reader protection, while criterion one
+ asks them for every proposition of the original with nothing left out. A
+ candidate keeping a suicide method vague, exactly as the corpus's own rule
+ demands, reads as an omission to a judge with only the numbered list.
+ 
+ AND THE TENSE HALF, which was measured rather than imagined. Of the four
+ slates a judge refused ENTIRELY on the consolidation bed, three were refused
+ over tense, one saying every candidate had altered the time reference by
+ rendering a tenseless Chinese copula in the past. The rule that answers that
+ lived in the critic's sheet and reached no judge.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -29,7 +29,7 @@ import {
 import { buildCandidateSelectMessages, } from '../dist/final/node/index.mjs';
 
 /**
- * System half of one judge exchange, which is where standing rules live.
+ System half of one judge exchange, which is where standing rules live.
  */
 const system = buildCandidateSelectMessages({
   task: 'Each candidate is a rendering of the passage below.',

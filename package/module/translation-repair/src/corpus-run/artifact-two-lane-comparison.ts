@@ -34,23 +34,23 @@ import { comparisonRowDifferences, } from './artifact-two-lane-row-equality.ts';
 // writing artifacts that mean something new under an unchanged version number.
 
 /**
- * Names how one slice's two carried wordings relate, as version 2 decides it.
- *
- * @param repairText - wording the repair document carries
- *
- * @param translateText - wording the translate document carries
- *
- * @param incumbentKind - whether the archive holds any wording here, which is
- * what separates its wording standing from a passage still missing
- *
- * @param incumbentText - archive wording both fall back to
- *
- * @returns Verdict for this slice
- *
- * @example
- * ```ts
- * const verdict = judgeTwoLaneSlice({ repairText, translateText, incumbentKind, incumbentText, },);
- * ```
+ Names how one slice's two carried wordings relate, as version 2 decides it.
+ 
+ @param repairText - wording the repair document carries
+ 
+ @param translateText - wording the translate document carries
+ 
+ @param incumbentKind - whether the archive holds any wording here, which is
+ what separates its wording standing from a passage still missing
+ 
+ @param incumbentText - archive wording both fall back to
+ 
+ @returns Verdict for this slice
+ 
+ @example
+ ```ts
+ const verdict = judgeTwoLaneSlice({ repairText, translateText, incumbentKind, incumbentText, },);
+ ```
  */
 function judgeTwoLaneSlice(
   {
@@ -66,12 +66,12 @@ function judgeTwoLaneSlice(
   },
 ): ArtifactLaneRelation {
   /**
-   * Whether the repair document moved off the archive wording.
+   Whether the repair document moved off the archive wording.
    */
   const repairMoved = repairText !== incumbentText;
 
   /**
-   * Whether the translate document did.
+   Whether the translate document did.
    */
   const translateMoved = translateText !== incumbentText;
   if (repairMoved && translateMoved)
@@ -89,18 +89,18 @@ function judgeTwoLaneSlice(
 }
 
 /**
- * Compares what the two lanes DECIDED, as version 2 records it.
- *
- * @param repair - what the repair lane did about this slice
- *
- * @param translate - what the translate lane did
- *
- * @returns Whether the two decisions were comparable, and how they came out
- *
- * @example
- * ```ts
- * const decisions = compareTwoLaneDecisions({ repair, translate, },);
- * ```
+ Compares what the two lanes DECIDED, as version 2 records it.
+ 
+ @param repair - what the repair lane did about this slice
+ 
+ @param translate - what the translate lane did
+ 
+ @returns Whether the two decisions were comparable, and how they came out
+ 
+ @example
+ ```ts
+ const decisions = compareTwoLaneDecisions({ repair, translate, },);
+ ```
  */
 function compareTwoLaneDecisions(
   {
@@ -112,8 +112,8 @@ function compareTwoLaneDecisions(
   },
 ): ArtifactDecisionComparison {
   /**
-   * Lanes with no wording to compare, collected rather than returned at the
-   * first one found: a slice neither lane decided is a fact about both.
+   Lanes with no wording to compare, collected rather than returned at the
+   first one found: a slice neither lane decided is a fact about both.
    */
   const undecidedLanes = [
     ...(repair.kind === 'decided') ? [] : ['repair',] as const,
@@ -132,26 +132,26 @@ function compareTwoLaneDecisions(
 }
 
 /**
- * Reports a pair of version 2 ledgers that cannot be compared row for row.
- *
- * @example
- * ```ts
- * throw new ArtifactComparisonError({ message: 'ledgers cover 3 and 4 slices', },);
- * ```
+ Reports a pair of version 2 ledgers that cannot be compared row for row.
+ 
+ @example
+ ```ts
+ throw new ArtifactComparisonError({ message: 'ledgers cover 3 and 4 slices', },);
+ ```
  */
 export class ArtifactComparisonError extends Error {
   /**
-   * Names this error for a caller matching on it.
+   Names this error for a caller matching on it.
    */
   public override readonly name = 'ArtifactComparisonError';
 
   /**
-   * @param message - what disagreed, naming the position
-   *
-   * @example
-   * ```ts
-   * new ArtifactComparisonError({ message: 'position 2 names different slices', },);
-   * ```
+   @param message - what disagreed, naming the position
+   
+   @example
+   ```ts
+   new ArtifactComparisonError({ message: 'position 2 names different slices', },);
+   ```
    */
   public constructor({ message, }: { readonly message: string; },) {
     super(message,);
@@ -159,27 +159,27 @@ export class ArtifactComparisonError extends Error {
 }
 
 /**
- * Derives the whole comparison from two version 2 delivery ledgers.
- *
- * OVER PROJECTED ROWS rather than live records, so what it reads is exactly
- * what the artifact carries: a reader holding only the file can run this and
- * get the same answer the writer did, which is what makes the persisted copy
- * checkable rather than merely present.
- *
- * @param repair - repair lane's rows, in document order
- *
- * @param translate - translate lane's rows, in the same order
- *
- * @returns One row per slice, in the order the repair ledger reports them
- *
- * @throws {@link ArtifactComparisonError} when the two ledgers differ in
- * length or disagree at any position about which slice it is or what the
- * archive holds there
- *
- * @example
- * ```ts
- * const rows = compareLanes({ repair: lanes.repair.delivery, translate: lanes.translate.delivery, },);
- * ```
+ Derives the whole comparison from two version 2 delivery ledgers.
+ 
+ OVER PROJECTED ROWS rather than live records, so what it reads is exactly
+ what the artifact carries: a reader holding only the file can run this and
+ get the same answer the writer did, which is what makes the persisted copy
+ checkable rather than merely present.
+ 
+ @param repair - repair lane's rows, in document order
+ 
+ @param translate - translate lane's rows, in the same order
+ 
+ @returns One row per slice, in the order the repair ledger reports them
+ 
+ @throws {@link ArtifactComparisonError} when the two ledgers differ in
+ length or disagree at any position about which slice it is or what the
+ archive holds there
+ 
+ @example
+ ```ts
+ const rows = compareLanes({ repair: lanes.repair.delivery, translate: lanes.translate.delivery, },);
+ ```
  */
 export function compareLanes(
   {
@@ -202,8 +202,8 @@ export function compareLanes(
     position,
   ): ArtifactComparisonRow {
     /**
-     * Row the other ledger holds at this POSITION, which is where a ledger
-     * built over the same preparation holds the same slice.
+     Row the other ledger holds at this POSITION, which is where a ledger
+     built over the same preparation holds the same slice.
      */
     const theirs = translate[position];
     if (theirs === undefined) {
@@ -267,32 +267,32 @@ export function compareLanes(
 }
 
 /**
- * Refuses a run whose frozen and live comparisons disagree.
- *
- * The one place the duplication is worth its cost. Version 2's rules are frozen
- * here and the pipeline's live rules keep evolving; while they agree, either
- * derivation answers for the other, and the moment they stop, an artifact
- * written under the live rules would mean something the version number does not
- * say. A stopped pass is the cheap outcome: whoever changed the rules decides
- * whether version 2 changed with them, which is a version 3, or whether the
- * change was a defect.
- *
- * COMPARED FIELD BY FIELD through {@link comparisonRowDifferences}, so key order
- * does not decide it: two rows carrying the same values in a different order
- * are the same row, and the reader comparing a recorded row read off disk
- * against a derived one needs exactly that reading.
- *
- * @param frozen - rows version 2's own rules produced
- *
- * @param live - rows the pipeline's comparator produced, projected into version
- * 2's vocabulary
- *
- * @throws {@link ArtifactComparisonError} at the first row they disagree on
- *
- * @example
- * ```ts
- * assertDerivationsAgree({ frozen, live, },);
- * ```
+ Refuses a run whose frozen and live comparisons disagree.
+ 
+ The one place the duplication is worth its cost. Version 2's rules are frozen
+ here and the pipeline's live rules keep evolving; while they agree, either
+ derivation answers for the other, and the moment they stop, an artifact
+ written under the live rules would mean something the version number does not
+ say. A stopped pass is the cheap outcome: whoever changed the rules decides
+ whether version 2 changed with them, which is a version 3, or whether the
+ change was a defect.
+ 
+ COMPARED FIELD BY FIELD through {@link comparisonRowDifferences}, so key order
+ does not decide it: two rows carrying the same values in a different order
+ are the same row, and the reader comparing a recorded row read off disk
+ against a derived one needs exactly that reading.
+ 
+ @param frozen - rows version 2's own rules produced
+ 
+ @param live - rows the pipeline's comparator produced, projected into version
+ 2's vocabulary
+ 
+ @throws {@link ArtifactComparisonError} at the first row they disagree on
+ 
+ @example
+ ```ts
+ assertDerivationsAgree({ frozen, live, },);
+ ```
  */
 export function assertDerivationsAgree(
   {
@@ -315,7 +315,7 @@ export function assertDerivationsAgree(
     row,
   ] of frozen.entries()) {
     /**
-     * What the live comparator said about the same position.
+     What the live comparator said about the same position.
      */
     const theirs = live[position];
     if (theirs === undefined) {
@@ -324,8 +324,8 @@ export function assertDerivationsAgree(
       },);
     }
     /**
-     * Fields the two derivations disagree on, named and never quoted: the rows
-     * carry slice text, and this message reaches the pass's stdout (`#237`).
+     Fields the two derivations disagree on, named and never quoted: the rows
+     carry slice text, and this message reaches the pass's stdout (`#237`).
      */
     const differing = comparisonRowDifferences({
       left: row,

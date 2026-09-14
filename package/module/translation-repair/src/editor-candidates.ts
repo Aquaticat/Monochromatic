@@ -30,64 +30,64 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // and the fallback choice all vary between runs over identical inputs.
 
 /**
- * Editor candidates with the wire irregularities found while building them.
- *
- * @example
- * ```ts
- * const { candidates, findings, } = buildEditorCandidates({ voices, ... },);
- * ```
+ Editor candidates with the wire irregularities found while building them.
+ 
+ @example
+ ```ts
+ const { candidates, findings, } = buildEditorCandidates({ voices, ... },);
+ ```
  */
 export type EditorCandidateSet = {
   /**
-   * One candidate per heard editor, in roster order.
+   One candidate per heard editor, in roster order.
    */
   readonly candidates: readonly EditorCandidate[];
 
   /**
-   * Wire irregularities across every editor, in scorecard-stable wording.
+   Wire irregularities across every editor, in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * One editor's candidate paired with the findings its own reply raised.
- *
- * Named rather than inferred, because an inferred object literal carries
- * writable properties and the two unwrapping maps that read this list then take
- * mutable parameters they never mutate.
+ One editor's candidate paired with the findings its own reply raised.
+ 
+ Named rather than inferred, because an inferred object literal carries
+ writable properties and the two unwrapping maps that read this list then take
+ mutable parameters they never mutate.
  */
 type ResolvedVoice = Readonly<{
   /**
-   * Patched candidate this voice proposed.
+   Patched candidate this voice proposed.
    */
   candidate: EditorCandidate;
 
   /**
-   * Wire irregularities attributed to this voice.
+   Wire irregularities attributed to this voice.
    */
   findings: readonly string[];
 }>;
 
 /**
- * Resolves every heard editor's reply into its own patch through the same
- * deterministic gate, so the candidates are directly comparable.
- *
- * @param voices - heard editor replies in arrival order
- *
- * @param editorModelIds - roster, fixing candidate order
- *
- * @param promptEnvelopes - envelopes in prompt numbering order
- *
- * @param targetText - translation chunk text
- *
- * @param envelopes - envelopes of this chunk
- *
- * @returns Candidates in roster order plus findings
- *
- * @example
- * ```ts
- * const set = buildEditorCandidates({ voices, editorModelIds, ... },);
- * ```
+ Resolves every heard editor's reply into its own patch through the same
+ deterministic gate, so the candidates are directly comparable.
+ 
+ @param voices - heard editor replies in arrival order
+ 
+ @param editorModelIds - roster, fixing candidate order
+ 
+ @param promptEnvelopes - envelopes in prompt numbering order
+ 
+ @param targetText - translation chunk text
+ 
+ @param envelopes - envelopes of this chunk
+ 
+ @returns Candidates in roster order plus findings
+ 
+ @example
+ ```ts
+ const set = buildEditorCandidates({ voices, editorModelIds, ... },);
+ ```
  */
 export function buildEditorCandidates(
   {
@@ -107,8 +107,8 @@ export function buildEditorCandidates(
   },
 ): EditorCandidateSet {
   /**
-   * Voices sorted by roster position so downstream order never depends on
-   * which model answered first.
+   Voices sorted by roster position so downstream order never depends on
+   which model answered first.
    */
   const ordered = [...voices,].toSorted(function byRoster(
     left,
@@ -119,11 +119,11 @@ export function buildEditorCandidates(
   },);
 
   /**
-   * One resolved candidate per voice, each carrying its own findings.
+   One resolved candidate per voice, each carrying its own findings.
    */
   const resolved = ordered.map(function toCandidate(voice,): ResolvedVoice {
     /**
-     * Operations bound through the prompt plan.
+     Operations bound through the prompt plan.
      */
     const resolution = resolveEditorEdits({
       wire: voice.value,
@@ -157,46 +157,46 @@ export function buildEditorCandidates(
 }
 
 /**
- * Chunk-level candidate set after duplicates were collapsed.
- *
- * @example
- * ```ts
- * const { candidates, collapsed, } = buildChunkCandidates({ candidates, composite, },);
- * ```
+ Chunk-level candidate set after duplicates were collapsed.
+ 
+ @example
+ ```ts
+ const { candidates, collapsed, } = buildChunkCandidates({ candidates, composite, },);
+ ```
  */
 export type ChunkCandidateSet = {
   /**
-   * Distinct proposals judges will compare, in roster order with the
-   * composite last.
+   Distinct proposals judges will compare, in roster order with the
+   composite last.
    */
   readonly candidates: readonly Candidate<PatchOutcome>[];
 
   /**
-   * Proposals collapsed into an earlier identical one; several models writing
-   * the same text is real agreement worth recording, but showing judges the
-   * same text twice would only split the ballot into a spurious tie.
+   Proposals collapsed into an earlier identical one; several models writing
+   the same text is real agreement worth recording, but showing judges the
+   same text twice would only split the ballot into a spurious tie.
    */
   readonly collapsed: number;
 };
 
 /**
- * Presents one editor's patch as a judgeable candidate.
- *
- * SHARED BY THE SLATE AND THE FALLBACK, deliberately. The whole-chunk judges
- * see candidates built here, and the patch that ships when they decline is
- * built here too, so the producer recorded against shipped text is the same
- * shape either way. Building the fallback's producer separately is how the two
- * drift, and the discount on a checker judging its own work reads that
- * producer.
- *
- * @param candidate - one editor's proposal, already through the apply gate
- *
- * @returns Candidate naming that editor as its sole producer
- *
- * @example
- * ```ts
- * const offered = chunkCandidateOf(candidate,);
- * ```
+ Presents one editor's patch as a judgeable candidate.
+ 
+ SHARED BY THE SLATE AND THE FALLBACK, deliberately. The whole-chunk judges
+ see candidates built here, and the patch that ships when they decline is
+ built here too, so the producer recorded against shipped text is the same
+ shape either way. Building the fallback's producer separately is how the two
+ drift, and the discount on a checker judging its own work reads that
+ producer.
+ 
+ @param candidate - one editor's proposal, already through the apply gate
+ 
+ @returns Candidate naming that editor as its sole producer
+ 
+ @example
+ ```ts
+ const offered = chunkCandidateOf(candidate,);
+ ```
  */
 export function chunkCandidateOf(candidate: EditorCandidate,): Candidate<PatchOutcome> {
   return {
@@ -211,21 +211,21 @@ export function chunkCandidateOf(candidate: EditorCandidate,): Candidate<PatchOu
 }
 
 /**
- * Assembles the whole-chunk candidate set, dropping the composite when it
- * repairs nothing and collapsing candidates whose text is identical.
- *
- * @param candidates - editor candidates in roster order
- *
- * @param composite - patch assembled from per-envelope winners
- *
- * @param contributors - models whose operations the composite carries
- *
- * @returns Distinct candidates plus how many collapsed
- *
- * @example
- * ```ts
- * const set = buildChunkCandidates({ candidates, composite, contributors, },);
- * ```
+ Assembles the whole-chunk candidate set, dropping the composite when it
+ repairs nothing and collapsing candidates whose text is identical.
+ 
+ @param candidates - editor candidates in roster order
+ 
+ @param composite - patch assembled from per-envelope winners
+ 
+ @param contributors - models whose operations the composite carries
+ 
+ @returns Distinct candidates plus how many collapsed
+ 
+ @example
+ ```ts
+ const set = buildChunkCandidates({ candidates, composite, contributors, },);
+ ```
  */
 export function buildChunkCandidates(
   {
@@ -239,10 +239,10 @@ export function buildChunkCandidates(
   },
 ): ChunkCandidateSet {
   /**
-   * Every proposal worth judging: each editor's own patch, then the composite
-   * when per-envelope selection actually assembled a repair. An empty
-   * composite is the untouched translation, which competes later against the
-   * repaired candidate and must not displace it here.
+   Every proposal worth judging: each editor's own patch, then the composite
+   when per-envelope selection actually assembled a repair. An empty
+   composite is the untouched translation, which competes later against the
+   repaired candidate and must not displace it here.
    */
   const offered: readonly Candidate<PatchOutcome>[] = [
     ...candidates.map(function toChunkCandidate(candidate,): Candidate<PatchOutcome> {
@@ -265,13 +265,13 @@ export function buildChunkCandidates(
   ];
 
   /**
-   * Kept candidates by their rendered text, merging the stakes of every
-   * duplicate into the survivor.
+   Kept candidates by their rendered text, merging the stakes of every
+   duplicate into the survivor.
    */
   const byText = new Map<string, Candidate<PatchOutcome>>();
   for (const candidate of offered) {
     /**
-     * Earlier candidate with identical text, when one exists.
+     Earlier candidate with identical text, when one exists.
      */
     const kept = byText.get(candidate.rendered,);
     if (kept === undefined) {
@@ -300,23 +300,23 @@ export function buildChunkCandidates(
 }
 
 /**
- * Picks the editor whose patch ships when chunk-level judges decline.
- *
- * The fallback must repair something. Falling back to the untouched
- * translation would discard fixes the panel already ruled real, turning a
- * disagreement about wording into a lost repair, so this picks the editor that
- * landed the most operations and breaks ties by roster order.
- *
- * @param candidates - editor candidates in roster order, none empty
- *
- * @returns Candidate with the most applied operations, named so shipped text has an author
- *
- * @throws {@link Error} when handed an empty candidate list
- *
- * @example
- * ```ts
- * const fallback = pickFallbackCandidate({ candidates, },);
- * ```
+ Picks the editor whose patch ships when chunk-level judges decline.
+ 
+ The fallback must repair something. Falling back to the untouched
+ translation would discard fixes the panel already ruled real, turning a
+ disagreement about wording into a lost repair, so this picks the editor that
+ landed the most operations and breaks ties by roster order.
+ 
+ @param candidates - editor candidates in roster order, none empty
+ 
+ @returns Candidate with the most applied operations, named so shipped text has an author
+ 
+ @throws {@link Error} when handed an empty candidate list
+ 
+ @example
+ ```ts
+ const fallback = pickFallbackCandidate({ candidates, },);
+ ```
  */
 export function pickFallbackCandidate(
   {
@@ -326,8 +326,8 @@ export function pickFallbackCandidate(
   },
 ): EditorCandidate {
   /**
-   * Roster-first candidate and the rest, so the fold starts from a real
-   * incumbent instead of an absent one.
+   Roster-first candidate and the rest, so the fold starts from a real
+   incumbent instead of an absent one.
    */
   const [
     first,
@@ -335,8 +335,8 @@ export function pickFallbackCandidate(
   ] = candidates;
 
   /**
-   * Editor that landed the most operations, earliest in roster order winning
-   * ties because `>` leaves an equal count with the incumbent.
+   Editor that landed the most operations, earliest in roster order winning
+   ties because `>` leaves an equal count with the incumbent.
    */
   const best = rest.reduce(
     function moreApplied(

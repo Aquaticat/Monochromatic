@@ -40,12 +40,12 @@ import {
 // change, and a slice that was already wrapped is left exactly as it was.
 
 /**
- * Rule this applies, named by the id its own registry keys it under.
+ Rule this applies, named by the id its own registry keys it under.
  */
 const RULE_ID = 'semantic-line-breaks';
 
 /**
- * The one rule, resolved once at module load.
+ The one rule, resolved once at module load.
  */
 const RULE = rulesById.get(RULE_ID,);
 
@@ -58,27 +58,27 @@ if (RULE === undefined)
   );
 
 /**
- * That rule as the fixer takes its roster.
+ That rule as the fixer takes its roster.
  */
 const WRAP_RULES: readonly Rule[] = [RULE,];
 
 /**
- * Wraps one passage at its semantic boundaries.
- *
- * NEVER APPLIED TO TEXT A LANE DECIDED TO KEEP. Wrapping a retained passage
- * would turn a decision to change nothing into a change, which the delivery
- * coherence check and the assembly assertion both refuse by design, and it
- * would also manufacture the one kind of edit a human grader cannot usefully
- * judge. Callers pass only wording a lane produced.
- *
- * @param text - passage as the lane produced it
- *
- * @returns Same passage with semantic line breaks inserted
- *
- * @example
- * ```ts
- * const wrapped = wrapReplacementText({ text: 'It naps. It wakes.', },);
- * ```
+ Wraps one passage at its semantic boundaries.
+ 
+ NEVER APPLIED TO TEXT A LANE DECIDED TO KEEP. Wrapping a retained passage
+ would turn a decision to change nothing into a change, which the delivery
+ coherence check and the assembly assertion both refuse by design, and it
+ would also manufacture the one kind of edit a human grader cannot usefully
+ judge. Callers pass only wording a lane produced.
+ 
+ @param text - passage as the lane produced it
+ 
+ @returns Same passage with semantic line breaks inserted
+ 
+ @example
+ ```ts
+ const wrapped = wrapReplacementText({ text: 'It naps. It wakes.', },);
+ ```
  */
 export function wrapReplacementText({ text, }: { readonly text: string; },): string {
   return fixSource({

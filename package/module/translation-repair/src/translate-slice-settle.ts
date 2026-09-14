@@ -61,22 +61,22 @@ import {
 // persisted, which is what the warm run does.
 
 /**
- * Reads what a purchase left for its twins: a record only where the lane
- * persisted one, since an in-run twin may reuse only what a warm run would
- * have resumed.
- *
- * AT MODULE SCOPE because it closes over nothing, which is also what makes it
- * readable: the rule it states is about purchases in general, not about the
- * slice being settled.
- *
- * @param bought - purchase to read
- *
- * @returns Record when it was persisted
- *
- * @example
- * ```ts
- * const stored = storedRecord({ kind: 'settled', record, persisted: true, },);
- * ```
+ Reads what a purchase left for its twins: a record only where the lane
+ persisted one, since an in-run twin may reuse only what a warm run would
+ have resumed.
+ 
+ AT MODULE SCOPE because it closes over nothing, which is also what makes it
+ readable: the rule it states is about purchases in general, not about the
+ slice being settled.
+ 
+ @param bought - purchase to read
+ 
+ @returns Record when it was persisted
+ 
+ @example
+ ```ts
+ const stored = storedRecord({ kind: 'settled', record, persisted: true, },);
+ ```
  */
 function storedRecord(bought: BoughtSlice,): TwinStored<TranslateSliceRecord> {
   return ((bought.kind === 'settled') && bought.persisted)
@@ -88,103 +88,103 @@ function storedRecord(bought: BoughtSlice,): TwinStored<TranslateSliceRecord> {
 }
 
 /**
- * What one slice settled to.
+ What one slice settled to.
  */
 export type TranslateSliceOutcome = {
   readonly kind: 'settled';
 
   /**
-   * Record for this slice, stamped with its own index.
+   Record for this slice, stamped with its own index.
    */
   readonly record: TranslateSliceRecord;
 
   /**
-   * Whether the record came off disk, which is what the resumed count
-   * reports. A twin's record settled in this run does not count: nothing was
-   * recovered from disk, and counting it would overstate what resumption buys.
+   Whether the record came off disk, which is what the resumed count
+   reports. A twin's record settled in this run does not count: nothing was
+   recovered from disk, and counting it would overstate what resumption buys.
    */
   readonly resumedFromDisk: boolean;
 } | {
   /**
-   * Coverage proved source-only passage already rendered elsewhere.
+   Coverage proved source-only passage already rendered elsewhere.
    */
   readonly kind: 'carried';
 
   /**
-   * Slice whose insertion is unnecessary.
+   Slice whose insertion is unnecessary.
    */
   readonly sliceIndex: number;
 } | {
   readonly kind: 'unfilled';
 
   /**
-   * Passage this run left missing, and why.
+   Passage this run left missing, and why.
    */
   readonly unfilled: UnfilledSlice;
 };
 
 /**
- * One slice's outcome beside what it reported on the way.
+ One slice's outcome beside what it reported on the way.
  */
 export type TranslateSliceSettlement = {
   readonly outcome: TranslateSliceOutcome;
 
   /**
-   * Cached records refused for contradicting themselves or for having heard
-   * nobody, so a recomputed slice is distinguishable from a never-cached one.
+   Cached records refused for contradicting themselves or for having heard
+   nobody, so a recomputed slice is distinguishable from a never-cached one.
    */
   readonly refusedCacheFindings: readonly string[];
 
   /**
-   * What an unfilled slice reported before giving up, plus one sentence
-   * naming it; empty for a settled slice.
+   What an unfilled slice reported before giving up, plus one sentence
+   naming it; empty for a settled slice.
    */
   readonly unfilledFindings: readonly string[];
 };
 
 /**
- * Settles one slice of the translate lane: resumed from disk, reused from a
- * twin, or bought.
- *
- * @param client - injected model client
- *
- * @param prepared - slices, governance and declared names
- *
- * @param models - translator and judge rosters
- *
- * @param slice - slice to settle
- *
- * @param slicePosition - where it sits in `prepared.slices`, which the window
- * is addressed by
- *
- * @param insertionAdmitted - whether source-only passage may be inserted
- *
- * @param insertionCarried - whether passage is fully rendered elsewhere
- *
- * @param pictureReadings - what the document's pictures were read as
- *
- * @param runShape - what this run asks, folded into the key
- *
- * @param sliceCache - resumable per-slice cache, absent when a caller wants no
- * resumption
- *
- * @param twins - memo of purchases in this run, shared by every slice
- *
- * @param signal - entry deadline and caller abort
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - lane logger
- *
- * @returns Outcome beside what the slice reported
- *
- * @throws Whatever `signal.reason` carries, once the caller aborts with this
- * slice still unbought
- *
- * @example
- * ```ts
- * const settlement = await settleTranslateSlice({ ..., slice, slicePosition: 0, },);
- * ```
+ Settles one slice of the translate lane: resumed from disk, reused from a
+ twin, or bought.
+ 
+ @param client - injected model client
+ 
+ @param prepared - slices, governance and declared names
+ 
+ @param models - translator and judge rosters
+ 
+ @param slice - slice to settle
+ 
+ @param slicePosition - where it sits in `prepared.slices`, which the window
+ is addressed by
+ 
+ @param insertionAdmitted - whether source-only passage may be inserted
+ 
+ @param insertionCarried - whether passage is fully rendered elsewhere
+ 
+ @param pictureReadings - what the document's pictures were read as
+ 
+ @param runShape - what this run asks, folded into the key
+ 
+ @param sliceCache - resumable per-slice cache, absent when a caller wants no
+ resumption
+ 
+ @param twins - memo of purchases in this run, shared by every slice
+ 
+ @param signal - entry deadline and caller abort
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - lane logger
+ 
+ @returns Outcome beside what the slice reported
+ 
+ @throws Whatever `signal.reason` carries, once the caller aborts with this
+ slice still unbought
+ 
+ @example
+ ```ts
+ const settlement = await settleTranslateSlice({ ..., slice, slicePosition: 0, },);
+ ```
  */
 export async function settleTranslateSlice(
   {
@@ -220,7 +220,7 @@ export async function settleTranslateSlice(
   }>,
 ): Promise<TranslateSliceSettlement> {
   /**
-   * Global index of this slice, which every record and replacement names.
+   Global index of this slice, which every record and replacement names.
    */
   const { sliceIndex, } = slice.target;
 
@@ -262,7 +262,7 @@ export async function settleTranslateSlice(
   }
 
   /**
-   * What this slice cost, reported however this function is left.
+   What this slice cost, reported however this function is left.
    */
   using cost = armSliceCost({
     l,
@@ -275,19 +275,19 @@ export async function settleTranslateSlice(
   },);
 
   /**
-   * Whether the archive holds a translation for this slice at all, which
-   * decides both what its key answers and what a fruitless round means.
+   Whether the archive holds a translation for this slice at all, which
+   decides both what its key answers and what a fruitless round means.
    */
   const incumbentKind: IncumbentKind = isInsertionChunk(slice.target,)
     ? 'absent'
     : 'present';
 
   /**
-   * Original of the passages either side.
-   *
-   * COMPUTED HERE RATHER THAN INSIDE THE ATTEMPT, so the cache key and the
-   * call are provably given the same window. A key that did not name the
-   * evidence would let a narrow run's answer be resumed for a wide one.
+   Original of the passages either side.
+   
+   COMPUTED HERE RATHER THAN INSIDE THE ATTEMPT, so the cache key and the
+   call are provably given the same window. A key that did not name the
+   evidence would let a narrow run's answer be resumed for a wide one.
    */
   const neighbouringSourceText = neighbouringSource({
     slices: prepared.slices,
@@ -295,9 +295,9 @@ export async function settleTranslateSlice(
   },);
 
   /**
-   * What the pictures this slice and its neighbours show were read as, and
-   * which of them nobody could read. One value feeds both the key and the
-   * call, for the same reason the window does (`#107`).
+   What the pictures this slice and its neighbours show were read as, and
+   which of them nobody could read. One value feeds both the key and the
+   call, for the same reason the window does (`#107`).
    */
   const pictures = slicePictures({
     slices: prepared.slices,
@@ -306,8 +306,8 @@ export async function settleTranslateSlice(
   },);
 
   /**
-   * Archive English of the passages either side, which is the half that shows
-   * a relocation.
+   Archive English of the passages either side, which is the half that shows
+   a relocation.
    */
   const neighbouringIncumbentText = neighbouringIncumbent({
     slices: prepared.slices,
@@ -315,7 +315,7 @@ export async function settleTranslateSlice(
   },);
 
   /**
-   * Cross-run key for it.
+   Cross-run key for it.
    */
   const key = translateSliceKey({
     runShape,
@@ -333,13 +333,13 @@ export async function settleTranslateSlice(
   },);
 
   /**
-   * Record an earlier RUN settled for this question.
+   Record an earlier RUN settled for this question.
    */
   const cached = sliceCache?.resumed
     .get(key,);
 
   /**
-   * Why a cached record was not resumed, empty when none was refused.
+   Why a cached record was not resumed, empty when none was refused.
    */
   const refusedCacheFindings: string[] = [];
   if (cached !== undefined) {
@@ -349,7 +349,7 @@ export async function settleTranslateSlice(
     // without anybody having asked again.
     if (heardNobody({ record: cached, },)) {
       /**
-       * Why this slice is being asked again rather than resumed.
+       Why this slice is being asked again rather than resumed.
        */
       const unheard = unheardCacheDiscardFinding({ sliceIndex, },);
       l.warn(unheard,);
@@ -380,7 +380,7 @@ export async function settleTranslateSlice(
     }
 
     /**
-     * Why this slice was recomputed, which a cache miss would not explain.
+     Why this slice was recomputed, which a cache miss would not explain.
      */
     const discarded = resumedSliceDiscardFinding({
       lane: 'translate',
@@ -392,7 +392,7 @@ export async function settleTranslateSlice(
   }
 
   /**
-   * A twin's stored record, or this slice's own purchase.
+   A twin's stored record, or this slice's own purchase.
    */
   const asked = await reuseTwinOrBuy({
     key,
@@ -434,7 +434,7 @@ export async function settleTranslateSlice(
   }
 
   /**
-   * This slice's own purchase.
+   This slice's own purchase.
    */
   const { bought, } = asked;
   if (bought.kind === 'unfilled') {

@@ -1,15 +1,15 @@
 /**
- * Tests for one editor roster's arm over one slice.
- *
- * `runArm` is the editor stage plus one reduction, and the reduction is where
- * the comparison's two conventions live: an arm that shipped the translation
- * untouched reads as blank, and the producer is read off the stage's own answer
- * rather than off a slate index. Both are checked here on a scripted client.
- *
- * Fixtures are cat-themed invention, the same two-sentence chunk the editor
- * stage's composite case uses.
- *
- * @module
+ Tests for one editor roster's arm over one slice.
+ 
+ `runArm` is the editor stage plus one reduction, and the reduction is where
+ the comparison's two conventions live: an arm that shipped the translation
+ untouched reads as blank, and the producer is read off the stage's own answer
+ rather than off a slate index. Both are checked here on a scripted client.
+ 
+ Fixtures are cat-themed invention, the same two-sentence chunk the editor
+ stage's composite case uses.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -31,32 +31,32 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Logger for the arms under test.
+ Logger for the arms under test.
  */
 const l = tagged({ tag: 'editor-width-arm-test', },);
 
 /**
- * First sentence, whose only defect is one mistranslated word.
+ First sentence, whose only defect is one mistranslated word.
  */
 const SENTENCE_ONE = 'The cat is doing the sleeping on the windowsill.';
 
 /**
- * Second sentence, with a different single-word defect.
+ Second sentence, with a different single-word defect.
  */
 const SENTENCE_TWO = 'The dog is doing the barking in the yard.';
 
 /**
- * Translation the arms repair.
+ Translation the arms repair.
  */
 const TARGET_TEXT = `${SENTENCE_ONE} ${SENTENCE_TWO}`;
 
 /**
- * Original the edits answer to.
+ Original the edits answer to.
  */
 const SOURCE_TEXT = '猫猫在窗台上睡觉。狗狗在院子里叫。';
 
 /**
- * One envelope per sentence, in document order.
+ One envelope per sentence, in document order.
  */
 const ENVELOPES: readonly EditableEnvelope[] = [
   {
@@ -78,7 +78,7 @@ const ENVELOPES: readonly EditableEnvelope[] = [
 ];
 
 /**
- * Accepted issues, one per envelope, neither quoting anything.
+ Accepted issues, one per envelope, neither quoting anything.
  */
 const ISSUES: readonly AdjudicatedIssue[] = [
   {
@@ -98,7 +98,7 @@ const ISSUES: readonly AdjudicatedIssue[] = [
 ];
 
 /**
- * Slice the arms run over.
+ Slice the arms run over.
  */
 const INPUT: WidthProbeInput = {
   entryId: 'whiskers',
@@ -111,7 +111,7 @@ const INPUT: WidthProbeInput = {
 };
 
 /**
- * Editors seated on the arm.
+ Editors seated on the arm.
  */
 const EDITORS = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -119,7 +119,7 @@ const EDITORS = [
 ] as const;
 
 /**
- * Panel with no stake in either editor's output.
+ Panel with no stake in either editor's output.
  */
 const JUDGES = [
   'hf:Qwen/Qwen3.8-27B',
@@ -127,22 +127,22 @@ const JUDGES = [
 ] as const;
 
 /**
- * Validates a scripted reply against the live request's wire guard and wraps
- * it as an outcome.
- *
- * @param report - scripted reply for this call
- *
- * @param request - live request, whose guard the reply must satisfy
- *
- * @returns Outcome carrying the validated reply
- *
- * @throws {@link Error} when the fixture itself fails the guard it is meant
- * to satisfy
- *
- * @example
- * ```ts
- * return replyWith({ report: { edits: [], }, request, },);
- * ```
+ Validates a scripted reply against the live request's wire guard and wraps
+ it as an outcome.
+ 
+ @param report - scripted reply for this call
+ 
+ @param request - live request, whose guard the reply must satisfy
+ 
+ @returns Outcome carrying the validated reply
+ 
+ @throws {@link Error} when the fixture itself fails the guard it is meant
+ to satisfy
+ 
+ @example
+ ```ts
+ return replyWith({ report: { edits: [], }, request, },);
+ ```
  */
 function replyWith<ValueT,>(
   {
@@ -163,16 +163,16 @@ function replyWith<ValueT,>(
 }
 
 /**
- * Client answering each seat by model id.
- *
- * @param answers - reply per model id; a model with no entry is a fixture bug
- *
- * @returns Client honoring that script
- *
- * @example
- * ```ts
- * const client = scriptedClient({ answers: { [EDITORS[0]]: { edits: [], }, }, },);
- * ```
+ Client answering each seat by model id.
+ 
+ @param answers - reply per model id; a model with no entry is a fixture bug
+ 
+ @returns Client honoring that script
+ 
+ @example
+ ```ts
+ const client = scriptedClient({ answers: { [EDITORS[0]]: { edits: [], }, }, },);
+ ```
  */
 function scriptedClient(
   { answers, }: { readonly answers: Readonly<Record<string, unknown>>; },

@@ -15,65 +15,65 @@ import { openRouterChunksOf, } from './openrouter-chunk-scan.ts';
 // 2026-09-03), so the attribution was on the wire all along.
 
 /**
- * Field OpenRouter puts the upstream's display name in, on every chunk.
+ Field OpenRouter puts the upstream's display name in, on every chunk.
  */
 const ENDPOINT_KEY = 'provider';
 
 /**
- * What the stream said about its upstream.
- *
- * A DISCRIMINATED RECORD RATHER THAN A STRING SENTINEL, unlike the cost
- * reader's `number | 'unreported'`: the name is the gateway's free text, so
- * any string chosen to mean "none" could one day be an upstream's real name.
- *
- * @example
- * ```ts
- * const reading: EndpointReading = { reported: true, name: 'ModelRun', };
- * ```
+ What the stream said about its upstream.
+ 
+ A DISCRIMINATED RECORD RATHER THAN A STRING SENTINEL, unlike the cost
+ reader's `number | 'unreported'`: the name is the gateway's free text, so
+ any string chosen to mean "none" could one day be an upstream's real name.
+ 
+ @example
+ ```ts
+ const reading: EndpointReading = { reported: true, name: 'ModelRun', };
+ ```
  */
 export type EndpointReading =
   | {
     readonly reported: true;
 
     /**
-     * Display name as the gateway spelled it.
+     Display name as the gateway spelled it.
      */
     readonly name: string;
   }
   | { readonly reported: false; };
 
 /**
- * Reading given when no chunk named an upstream.
+ Reading given when no chunk named an upstream.
  */
 export const ENDPOINT_UNREPORTED: EndpointReading = { reported: false, };
 
 /**
- * Upstream endpoint one completed stream says served it.
- *
- * THE FIRST NAME WINS. The gateway names the same upstream on every chunk of
- * one call; a stream that changed upstreams mid-call would be a gateway bug
- * this reader has no evidence of, and the first name is the one that
- * accepted the request.
- *
- * @param bodyText - whole drained `text/event-stream` body
- *
- * @returns Display name as the gateway spelled it, or that no chunk carried one
- *
- * @example
- * ```ts
- * const endpoint = openRouterEndpointOf({ bodyText: reply.bodyText, },);
- * ```
+ Upstream endpoint one completed stream says served it.
+ 
+ THE FIRST NAME WINS. The gateway names the same upstream on every chunk of
+ one call; a stream that changed upstreams mid-call would be a gateway bug
+ this reader has no evidence of, and the first name is the one that
+ accepted the request.
+ 
+ @param bodyText - whole drained `text/event-stream` body
+ 
+ @returns Display name as the gateway spelled it, or that no chunk carried one
+ 
+ @example
+ ```ts
+ const endpoint = openRouterEndpointOf({ bodyText: reply.bodyText, },);
+ ```
  */
 export function openRouterEndpointOf(
   { bodyText, }: { readonly bodyText: string; },
 ): EndpointReading {
   /**
-   * Names each chunk carried, in arrival order, empty strings dropped.
+   Names each chunk carried, in arrival order, empty strings dropped.
    */
   const names = openRouterChunksOf({ bodyText, },)
     .flatMap(function nameOf(chunk,): readonly string[] {
       /**
-       * Whatever sits at the field, of unknown type until checked.
+       Whatever sits at the field, of unknown type until checked.
        */
       const name = chunk[ENDPOINT_KEY];
       if ((typeof name) !== 'string')
@@ -84,7 +84,7 @@ export function openRouterEndpointOf(
     },);
 
   /**
-   * First name, when any chunk carried one.
+   First name, when any chunk carried one.
    */
   const [first,] = names;
   if (first === undefined)

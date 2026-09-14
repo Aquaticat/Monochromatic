@@ -23,50 +23,50 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 // The order and the reasons are that file's; this one only carries them out.
 
 /**
- * Gates the consolidation the judges chose, wraps what ships, and polishes it.
- *
- * @param client - provider client the gate borrows
- *
- * @param judgeModelIds - voices seated for the gate
- *
- * @param subject - slice in the archive's terms
- *
- * @param decided - what the slate judges settled, a fresh consolidation
- *
- * @param standingText - wording the consolidation has to beat
- *
- * @param lineStructured - whether structural rule forbids merged lines
- *
- * @param floor - what the validity floor made of the slate
- *
- * @param verdicts - every voice's verdict without its text
- *
- * @param sliceIndex - prepared position used by records and refusals
- *
- * @param polishConfig - final body polish roles and document guard facts
- *
- * @param standingMayShip - whether unchanged baseline has prior endorsement
- *
- * @param standingEligible - whether the standing passed the deterministic
- * gate; a gate that keeps an ineligible standing ends the slice
- *
- * @param identity - front matter identity as the gate takes it
- *
- * @param signal - cancellation for the whole settlement
- *
- * @param perCallTimeoutMs - bound on any single exchange
- *
- * @param l - stage logger
- *
- * @returns What ships, and every round that decided it
- *
- * @throws {@link import('./consolidate-ineligible-standing.ts').ConsolidationStandingIneligibleError}
- * when the gate keeps a standing the deterministic gate refused
- *
- * @example
- * ```ts
- * const settled = await gateAndShip({ client, judgeModelIds, subject, decided, standingText, lineStructured, floor, verdicts, sliceIndex, standingMayShip, standingEligible, identity, signal, perCallTimeoutMs, l, },);
- * ```
+ Gates the consolidation the judges chose, wraps what ships, and polishes it.
+ 
+ @param client - provider client the gate borrows
+ 
+ @param judgeModelIds - voices seated for the gate
+ 
+ @param subject - slice in the archive's terms
+ 
+ @param decided - what the slate judges settled, a fresh consolidation
+ 
+ @param standingText - wording the consolidation has to beat
+ 
+ @param lineStructured - whether structural rule forbids merged lines
+ 
+ @param floor - what the validity floor made of the slate
+ 
+ @param verdicts - every voice's verdict without its text
+ 
+ @param sliceIndex - prepared position used by records and refusals
+ 
+ @param polishConfig - final body polish roles and document guard facts
+ 
+ @param standingMayShip - whether unchanged baseline has prior endorsement
+ 
+ @param standingEligible - whether the standing passed the deterministic
+ gate; a gate that keeps an ineligible standing ends the slice
+ 
+ @param identity - front matter identity as the gate takes it
+ 
+ @param signal - cancellation for the whole settlement
+ 
+ @param perCallTimeoutMs - bound on any single exchange
+ 
+ @param l - stage logger
+ 
+ @returns What ships, and every round that decided it
+ 
+ @throws {@link import('./consolidate-ineligible-standing.ts').ConsolidationStandingIneligibleError}
+ when the gate keeps a standing the deterministic gate refused
+ 
+ @example
+ ```ts
+ const settled = await gateAndShip({ client, judgeModelIds, subject, decided, standingText, lineStructured, floor, verdicts, sliceIndex, standingMayShip, standingEligible, identity, signal, perCallTimeoutMs, l, },);
+ ```
  */
 export async function gateAndShip(
   {
@@ -106,7 +106,7 @@ export async function gateAndShip(
   }>,
 ): Promise<ConsolidationSettlement> {
   /**
-   * What the gate made of the consolidation that won the slate.
+   What the gate made of the consolidation that won the slate.
    */
   const gate = await gateConsolidatedSlice({
     client,
@@ -125,7 +125,7 @@ export async function gateAndShip(
   },);
 
   /**
-   * What ships once the semantic wrap has been applied and demotion re-derived.
+   What ships once the semantic wrap has been applied and demotion re-derived.
    */
   const wrapped = wrapConsolidation({
     outcome: gate,
@@ -136,8 +136,8 @@ export async function gateAndShip(
   },);
 
   /**
-   * Which of the three ways this slice could keep its standing text it took,
-   * kept apart because they answer different questions about the roster.
+   Which of the three ways this slice could keep its standing text it took,
+   kept apart because they answer different questions about the roster.
    */
   const terminal: ConsolidationTerminal = (wrapped.ships === 'consolidated')
     ? 'consolidated'

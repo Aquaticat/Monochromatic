@@ -111,27 +111,27 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // throwaway directory.
 
 /**
- * Slices drawn when the caller names no count.
- *
- * SMALLER THAN THE WRITER CALIBRATION'S DEFAULT, because a slice here buys a
- * whole lane rather than one stage.
+ Slices drawn when the caller names no count.
+ 
+ SMALLER THAN THE WRITER CALIBRATION'S DEFAULT, because a slice here buys a
+ whole lane rather than one stage.
  */
 const DEFAULT_SLICES = 6;
 
 /**
- * Runs one slice through the whole repair lane, every model editing and
- * every model judging.
- *
- * @param slice - passage to repair, with the archive text it stands against
- *
- * @param client - client every slice of the run shares
- *
- * @returns Rounds that slice produced, split by seat
- *
- * @example
- * ```ts
- * const rounds = await runOne({ slice, client, },);
- * ```
+ Runs one slice through the whole repair lane, every model editing and
+ every model judging.
+ 
+ @param slice - passage to repair, with the archive text it stands against
+ 
+ @param client - client every slice of the run shares
+ 
+ @returns Rounds that slice produced, split by seat
+ 
+ @example
+ ```ts
+ const rounds = await runOne({ slice, client, },);
+ ```
  */
 async function runOne(
   {
@@ -143,17 +143,17 @@ async function runOne(
   },
 ): Promise<SliceRounds> {
   /**
-   * Logger tagged for this slice.
+   Logger tagged for this slice.
    */
   const l = tagged({ tag: `editor-calibrate-${slice.entryId}-${String(slice.index,)}`, },);
 
   /**
-   * Abort signal for the whole slice.
+   Abort signal for the whole slice.
    */
   const { signal, } = new AbortController();
 
   /**
-   * Every seat filled by every model, matching the module note.
+   Every seat filled by every model, matching the module note.
    */
   const models = {
     criticModelIds: RUN_ROSTER,
@@ -168,7 +168,7 @@ async function runOne(
   };
 
   /**
-   * Everything the accuracy lane decided about this passage.
+   Everything the accuracy lane decided about this passage.
    */
   const outcome = await repairChunk({
     client,
@@ -184,8 +184,8 @@ async function runOne(
   },);
 
   /**
-   * Same slice after the naturalness lane, whose rounds land on the outcome
-   * beside the accuracy lane's own.
+   Same slice after the naturalness lane, whose rounds land on the outcome
+   beside the accuracy lane's own.
    */
   const refined = await settleRefinedSlice({
     client,
@@ -221,26 +221,26 @@ async function runOne(
 }
 
 /**
- * Prints how many slices the naturalness lane could reach at all.
- *
- * THE REFINER STANDING'S DENOMINATOR, and it is not the slice count. A
- * paragraph under the eligibility floor is never offered to a rewriter, so a
- * slice can buy the whole accuracy lane and reach no refiner. Without this an
- * empty refiner standing reads as a rewriter roster that answered nothing,
- * which is a different and much worse fact.
- *
- * @param perSlice - what every slice produced
- *
- * @example
- * ```ts
- * reportRefineReach({ perSlice, },);
- * ```
+ Prints how many slices the naturalness lane could reach at all.
+ 
+ THE REFINER STANDING'S DENOMINATOR, and it is not the slice count. A
+ paragraph under the eligibility floor is never offered to a rewriter, so a
+ slice can buy the whole accuracy lane and reach no refiner. Without this an
+ empty refiner standing reads as a rewriter roster that answered nothing,
+ which is a different and much worse fact.
+ 
+ @param perSlice - what every slice produced
+ 
+ @example
+ ```ts
+ reportRefineReach({ perSlice, },);
+ ```
  */
 function reportRefineReach(
   { perSlice, }: { readonly perSlice: readonly SliceRounds[]; },
 ): void {
   /**
-   * Slices carrying a paragraph the lane was willing to offer a rewriter.
+   Slices carrying a paragraph the lane was willing to offer a rewriter.
    */
   const asked = perSlice.filter(function eligible(slice,): boolean {
     return slice.refineAsked;
@@ -254,30 +254,30 @@ function reportRefineReach(
 }
 
 /**
- * Prints what shipped, and how much of it no vote ever touched.
- *
- * THE STANDING'S BLIND SPOT, MEASURED. `selectChunkPatch` ships outright when
- * every proposal is identical, recording no round because there was nothing to
- * choose between. A slice like that repairs and contributes nothing to a
- * standing, so without this line a converged run reads as a lane that did no
- * work. It was found live: a slice whose panel adjudicated seven issues
- * repaired one of them and reported zero editor rounds.
- *
- * SHIPPING IS NOT WINNING. Nobody preferred this text to anything, so these
- * counts must never be read as a rate against the standing above.
- *
- * @param perSlice - what every slice produced
- *
- * @example
- * ```ts
- * reportShipped({ perSlice, },);
- * ```
+ Prints what shipped, and how much of it no vote ever touched.
+ 
+ THE STANDING'S BLIND SPOT, MEASURED. `selectChunkPatch` ships outright when
+ every proposal is identical, recording no round because there was nothing to
+ choose between. A slice like that repairs and contributes nothing to a
+ standing, so without this line a converged run reads as a lane that did no
+ work. It was found live: a slice whose panel adjudicated seven issues
+ repaired one of them and reported zero editor rounds.
+ 
+ SHIPPING IS NOT WINNING. Nobody preferred this text to anything, so these
+ counts must never be read as a rate against the standing above.
+ 
+ @param perSlice - what every slice produced
+ 
+ @example
+ ```ts
+ reportShipped({ perSlice, },);
+ ```
  */
 function reportShipped(
   { perSlice, }: { readonly perSlice: readonly SliceRounds[]; },
 ): void {
   /**
-   * Slices that shipped a repair without any editor round being judged.
+   Slices that shipped a repair without any editor round being judged.
    */
   const unvoted = perSlice.filter(function converged(slice,): boolean {
     return (slice.editor
@@ -288,7 +288,7 @@ function reportShipped(
   },);
 
   /**
-   * Slices that shipped a repair at all.
+   Slices that shipped a repair at all.
    */
   const shipping = perSlice.filter(function repaired(slice,): boolean {
     return slice.editorShipped
@@ -307,7 +307,7 @@ function reportShipped(
   }
 
   /**
-   * How many slices each model wrote shipping text on.
+   How many slices each model wrote shipping text on.
    */
   const credits = new Map<RosterModelId, number>();
 
@@ -340,18 +340,18 @@ function reportShipped(
 }
 
 /**
- * Runs the calibration and prints both standings.
- *
- * Returns nothing: the report on stdout IS the output.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Runs the calibration and prints both standings.
+ 
+ Returns nothing: the report on stdout IS the output.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Slices asked for on the command line, or the default.
+   Slices asked for on the command line, or the default.
    */
   const wanted = readAskedCount({
     argv: process.argv,
@@ -360,18 +360,18 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * How many slices may be in flight at once.
-   *
-   * FOUR BY THE OWNER'S DECISION OF 2026-08-26, read from the environment so
-   * one build still serves both arms of a comparison: `1` reproduces the
-   * sequential driver exactly, which is what makes the sequential arm a control
-   * rather than a different program. Read before the sample is drawn, so a
-   * value nothing can read refuses before any work is done.
+   How many slices may be in flight at once.
+   
+   FOUR BY THE OWNER'S DECISION OF 2026-08-26, read from the environment so
+   one build still serves both arms of a comparison: `1` reproduces the
+   sequential driver exactly, which is what makes the sequential arm a control
+   rather than a different program. Read before the sample is drawn, so a
+   value nothing can read refuses before any work is done.
    */
   const overlap = readOverlap({ fallback: CALIBRATION_OVERLAP, },);
 
   /**
-   * Slices every model edits.
+   Slices every model edits.
    */
   const sample = await sampleBenchSlices({ count: wanted, },);
 
@@ -382,13 +382,13 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Straggler window this run's rounds wait under, and where it came from.
-   *
-   * ADOPTED HERE, before any round, so an unreadable override refuses the run
-   * before it spends anything, and printed so the log says which window this
-   * run was under whether or not a voice was ever cut. The calibration's own
-   * window is 300000 ms under four slices in flight, the owner's decision of
-   * 2026-08-26 on arm D; a launch that sets the variable is honored instead.
+   Straggler window this run's rounds wait under, and where it came from.
+   
+   ADOPTED HERE, before any round, so an unreadable override refuses the run
+   before it spends anything, and printed so the log says which window this
+   run was under whether or not a voice was ever cut. The calibration's own
+   window is 300000 ms under four slices in flight, the owner's decision of
+   2026-08-26 on arm D; a launch that sets the variable is honored instead.
    */
   const grace = adoptCalibrationGrace();
   console.log(
@@ -398,52 +398,52 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Note naming the writer rounds' window when a launch gave them their own.
-   *
-   * PRINTED because this run's editor and refiner rounds ARE writer rounds: a
-   * launch that set the dial changed what the standing measures, and a reader
-   * must be able to tell that from the log alone.
+   Note naming the writer rounds' window when a launch gave them their own.
+   
+   PRINTED because this run's editor and refiner rounds ARE writer rounds: a
+   launch that set the dial changed what the standing measures, and a reader
+   must be able to tell that from the log alone.
    */
   const writerNote = writerGraceOverrideNote({ grace: readWriterGrace(), },);
   if (writerNote !== '')
     console.log(writerNote,);
 
   /**
-   * Client every slice shares, built once for the run.
-   *
-   * ONCE RATHER THAN PER SLICE, because the client holds the budget cooldowns,
-   * the meter caches and the per-model limiters: built per slice, a provider
-   * held out on one slice was re-asked immediately on the next, and every
-   * slice re-read the meters. The two probes already build theirs in `main`.
-   *
-   * SHARED ACROSS SLICES IN FLIGHT TOO, on purpose. The per-model limiter is
-   * what production routes through, so a slice overlapping another meets the
-   * same slot rule a corpus pass would, and the comparison describes the
-   * program that would ship rather than one with the limiter taken out.
+   Client every slice shares, built once for the run.
+   
+   ONCE RATHER THAN PER SLICE, because the client holds the budget cooldowns,
+   the meter caches and the per-model limiters: built per slice, a provider
+   held out on one slice was re-asked immediately on the next, and every
+   slice re-read the meters. The two probes already build theirs in `main`.
+   
+   SHARED ACROSS SLICES IN FLIGHT TOO, on purpose. The per-model limiter is
+   what production routes through, so a slice overlapping another meets the
+   same slot rule a corpus pass would, and the comparison describes the
+   program that would ship rather than one with the limiter taken out.
    */
   const client = createRunClient();
 
   /**
-   * Admits at most `overlap` slices at a time.
+   Admits at most `overlap` slices at a time.
    */
   const inFlight = pLimit(overlap,);
 
   /**
-   * What every slice produced, IN SAMPLE ORDER rather than completion order.
-   *
-   * ORDER MATTERS HERE AND NOWHERE ELSE IN THE RUN. Every standing below is
-   * computed off this array, so a report that depended on which slice happened
-   * to finish first would not be comparable between two runs of one sample,
-   * which is exactly what the overlap dial measures. `Promise.all` keeps input
-   * order whatever order the work completes in.
-   *
-   * WHAT THE SEQUENTIAL DRIVER'S NOTE SAID, kept because it is the claim under
-   * test: slices ran one at a time because one slice already fans eight models
-   * across several stages, and stacking whole lanes was expected to queue
-   * behind the per-model concurrency the client enforces anyway. That was
-   * written before the multi-provider routing existed, and the run `#215`
-   * measured spends 87.2% of its round time waiting after quorum, at a mean of
-   * 2.56 calls in flight.
+   What every slice produced, IN SAMPLE ORDER rather than completion order.
+   
+   ORDER MATTERS HERE AND NOWHERE ELSE IN THE RUN. Every standing below is
+   computed off this array, so a report that depended on which slice happened
+   to finish first would not be comparable between two runs of one sample,
+   which is exactly what the overlap dial measures. `Promise.all` keeps input
+   order whatever order the work completes in.
+   
+   WHAT THE SEQUENTIAL DRIVER'S NOTE SAID, kept because it is the claim under
+   test: slices ran one at a time because one slice already fans eight models
+   across several stages, and stacking whole lanes was expected to queue
+   behind the per-model concurrency the client enforces anyway. That was
+   written before the multi-provider routing existed, and the run `#215`
+   measured spends 87.2% of its round time waiting after quorum, at a mean of
+   2.56 calls in flight.
    */
   const perSlice: readonly SliceRounds[] = await Promise.all(
     sample.map(function runSlice(
@@ -452,7 +452,7 @@ async function main(): Promise<void> {
     ): Promise<SliceRounds> {
       return inFlight(async function admitted(): Promise<SliceRounds> {
         /**
-         * Rounds this slice produced, both seats.
+         Rounds this slice produced, both seats.
          */
         const rounds = await runOne({
           slice,
@@ -476,14 +476,14 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Editor rounds, grouped by the slice that bought them.
+   Editor rounds, grouped by the slice that bought them.
    */
   const editorPerSlice = perSlice.map(function editorRounds(rounds,): readonly SelectionRound[] {
     return rounds.editor;
   },);
 
   /**
-   * Refiner rounds, grouped the same way.
+   Refiner rounds, grouped the same way.
    */
   const refinerPerSlice = perSlice.map(function refinerRounds(rounds,): readonly SelectionRound[] {
     return rounds.refiner;

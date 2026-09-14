@@ -1,21 +1,21 @@
 /**
- * Tests for the fault that names a flattened line-structured rendering.
- *
- * WHAT THESE PIN is the shape the corpus measurement forced. The recorded
- * prescription was a line-count check against the original; measured over the
- * 211 line-structured slices of the pinned corpus, the archive's own English
- * matches its Chinese line for line on only 115, and 80 of the 96 that differ
- * carry MORE lines, because an English rendering of Chinese verse legitimately
- * expands. So the check names a SHORTFALL and nothing else, and the case that
- * proves it is the one accepting a longer rendering.
- *
- * The blind spot has a test of its own rather than a comment, so a later
- * instrument that closes it fails here and has to say so.
- *
- * Fixtures are cat-themed invention, with the original in Simplified Chinese as
- * every source in this corpus is. No corpus content appears here.
- *
- * @module
+ Tests for the fault that names a flattened line-structured rendering.
+ 
+ WHAT THESE PIN is the shape the corpus measurement forced. The recorded
+ prescription was a line-count check against the original; measured over the
+ 211 line-structured slices of the pinned corpus, the archive's own English
+ matches its Chinese line for line on only 115, and 80 of the 96 that differ
+ carry MORE lines, because an English rendering of Chinese verse legitimately
+ expands. So the check names a SHORTFALL and nothing else, and the case that
+ proves it is the one accepting a longer rendering.
+ 
+ The blind spot has a test of its own rather than a comment, so a later
+ instrument that closes it fails here and has to say so.
+ 
+ Fixtures are cat-themed invention, with the original in Simplified Chinese as
+ every source in this corpus is. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -30,7 +30,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One original whose six lines each stand as a unit.
+ One original whose six lines each stand as a unit.
  */
 const ORIGINAL = [
   '猫醒了。',
@@ -44,7 +44,7 @@ const ORIGINAL = [
 ].join('\n',);
 
 /**
- * Rendering that kept every line apart, as the rule asks.
+ Rendering that kept every line apart, as the rule asks.
  */
 const KEPT_APART = [
   'The cat wakes.',
@@ -58,7 +58,7 @@ const KEPT_APART = [
 ].join('\n',);
 
 /**
- * Rendering that merged each pair into one line, which is the fault.
+ Rendering that merged each pair into one line, which is the fault.
  */
 const MERGED = [
   'The cat wakes. The sun is warm.',

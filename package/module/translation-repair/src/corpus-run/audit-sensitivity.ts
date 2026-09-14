@@ -74,16 +74,16 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // bundler's entry list stood between an ordinary import and the spend.
 
 /**
- * Wording one side of a finding rests on, empty where it rests on none.
- *
- * @param reading - one side of a screened finding
- *
- * @returns Focus wording, or empty for a side the category does not use
- *
- * @example
- * ```ts
- * const quoted = focusText({ reading: finding.source, },);
- * ```
+ Wording one side of a finding rests on, empty where it rests on none.
+ 
+ @param reading - one side of a screened finding
+ 
+ @returns Focus wording, or empty for a side the category does not use
+ 
+ @example
+ ```ts
+ const quoted = focusText({ reading: finding.source, },);
+ ```
  */
 function focusText({ reading, }: { readonly reading: SideReading; },): string {
   if (reading.kind !== 'anchored')
@@ -94,18 +94,18 @@ function focusText({ reading, }: { readonly reading: SideReading; },): string {
 }
 
 /**
- * Whether one quoted span and the oracle span are about the same wording.
- *
- * @param span - oracle wording
- *
- * @param quoted - wording the auditor pointed at
- *
- * @returns Whether either contains the other
- *
- * @example
- * ```ts
- * const near = meetsOracle({ span: ORACLE_SOURCE_SPAN, quoted, },);
- * ```
+ Whether one quoted span and the oracle span are about the same wording.
+ 
+ @param span - oracle wording
+ 
+ @param quoted - wording the auditor pointed at
+ 
+ @returns Whether either contains the other
+ 
+ @example
+ ```ts
+ const near = meetsOracle({ span: ORACLE_SOURCE_SPAN, quoted, },);
+ ```
  */
 function meetsOracle(
   {
@@ -123,20 +123,20 @@ function meetsOracle(
 }
 
 /**
- * Wording to print for one side, or a dash where it rests on none.
- *
- * @param reading - one side of a screened finding
- *
- * @returns Focus wording, or a dash
- *
- * @example
- * ```ts
- * const shown = shownText({ reading: defect.source, },);
- * ```
+ Wording to print for one side, or a dash where it rests on none.
+ 
+ @param reading - one side of a screened finding
+ 
+ @returns Focus wording, or a dash
+ 
+ @example
+ ```ts
+ const shown = shownText({ reading: defect.source, },);
+ ```
  */
 function shownText({ reading, }: { readonly reading: SideReading; },): string {
   /**
-   * What this side rests on.
+   What this side rests on.
    */
   const quoted = focusText({ reading, },);
 
@@ -144,25 +144,25 @@ function shownText({ reading, }: { readonly reading: SideReading; },): string {
 }
 
 /**
- * Whether one screened finding points at the planted defect.
- *
- * BY CONTAINMENT EITHER WAY, deliberately loose: this is not the matcher and
- * must not inherit its strictness. The question here is whether the auditor
- * looked in the right place at all, so a voice quoting the whole clause and one
- * quoting the negator both count.
- *
- * @param finding - claim to check
- *
- * @returns Whether either side's focus meets the oracle span
- *
- * @example
- * ```ts
- * const hit = pointsAtOracle({ finding, },);
- * ```
+ Whether one screened finding points at the planted defect.
+ 
+ BY CONTAINMENT EITHER WAY, deliberately loose: this is not the matcher and
+ must not inherit its strictness. The question here is whether the auditor
+ looked in the right place at all, so a voice quoting the whole clause and one
+ quoting the negator both count.
+ 
+ @param finding - claim to check
+ 
+ @returns Whether either side's focus meets the oracle span
+ 
+ @example
+ ```ts
+ const hit = pointsAtOracle({ finding, },);
+ ```
  */
 function pointsAtOracle({ finding, }: { readonly finding: ScreenedFinding; },): boolean {
   /**
-   * Whether the original side names the planted clause.
+   Whether the original side names the planted clause.
    */
   const source = meetsOracle({
     span: ORACLE_SOURCE_SPAN,
@@ -170,7 +170,7 @@ function pointsAtOracle({ finding, }: { readonly finding: ScreenedFinding; },): 
   },);
 
   /**
-   * Whether the candidate side names it.
+   Whether the candidate side names it.
    */
   const candidate = meetsOracle({
     span: ORACLE_CANDIDATE_SPAN,
@@ -181,17 +181,17 @@ function pointsAtOracle({ finding, }: { readonly finding: ScreenedFinding; },): 
 }
 
 /**
- * Prints one voice's row, so a failed arm can be attributed rather than guessed
- * at.
- *
- * @param row - one auditor's screened answer
- *
- * @param arm - which arm this row came from
- *
- * @example
- * ```ts
- * reportVoice({ row, arm: 'flipped', },);
- * ```
+ Prints one voice's row, so a failed arm can be attributed rather than guessed
+ at.
+ 
+ @param row - one auditor's screened answer
+ 
+ @param arm - which arm this row came from
+ 
+ @example
+ ```ts
+ reportVoice({ row, arm: 'flipped', },);
+ ```
  */
 function reportVoice(
   {
@@ -203,7 +203,7 @@ function reportVoice(
   },
 ): void {
   /**
-   * Claims from this voice that point at the planted defect.
+   Claims from this voice that point at the planted defect.
    */
   const hits = row.findings
     .filter(function atOracle(finding,): boolean {
@@ -211,7 +211,7 @@ function reportVoice(
     },);
 
   /**
-   * Why this voice's claims fell, when any did.
+   Why this voice's claims fell, when any did.
    */
   const dropped = row.dropped
     .join(', ',);
@@ -236,58 +236,58 @@ function reportVoice(
 }
 
 /**
- * What one arm produced, kept whole so a later reader can rescore it.
- *
- * `oracleVoices` is carried beside the report rather than left to be recomputed,
- * because deciding whether a claim points at the planted defect depends on the
- * oracle spans in `audit-sensitivity-input.ts`, and a fixture edit would silently
- * change what an old run appears to have said.
- *
- * @example
- * ```ts
- * const row: AuditArmRow = { arm: 'flipped', expectation: '...', oracleVoices: 3, report, };
- * ```
+ What one arm produced, kept whole so a later reader can rescore it.
+ 
+ `oracleVoices` is carried beside the report rather than left to be recomputed,
+ because deciding whether a claim points at the planted defect depends on the
+ oracle spans in `audit-sensitivity-input.ts`, and a fixture edit would silently
+ change what an old run appears to have said.
+ 
+ @example
+ ```ts
+ const row: AuditArmRow = { arm: 'flipped', expectation: '...', oracleVoices: 3, report, };
+ ```
  */
 type AuditArmRow = {
   /**
-   * Which arm this was.
+   Which arm this was.
    */
   readonly arm: string;
 
   /**
-   * What a working instrument should have concluded.
+   What a working instrument should have concluded.
    */
   readonly expectation: string;
 
   /**
-   * Voices that pointed at the planted defect at least once, as scored against
-   * the oracle spans this run used.
+   Voices that pointed at the planted defect at least once, as scored against
+   the oracle spans this run used.
    */
   readonly oracleVoices: number;
 
   /**
-   * Everything the audit returned, unreduced.
+   Everything the audit returned, unreduced.
    */
   readonly report: RenderingAuditReport;
 };
 
 /**
- * Runs one arm and reports what the instrument said about it.
- *
- * @param candidateText - rendering under audit
- *
- * @param arm - label for the arm
- *
- * @param expectation - what a working instrument should conclude, printed only;
- * nothing branches on it
- *
- * @returns Arm's whole result, for the record rather than for a caller to
- * branch on
- *
- * @example
- * ```ts
- * const row = await auditOne({ candidateText: FLIPPED_CANDIDATE, arm: 'flipped', expectation: 'defect', },);
- * ```
+ Runs one arm and reports what the instrument said about it.
+ 
+ @param candidateText - rendering under audit
+ 
+ @param arm - label for the arm
+ 
+ @param expectation - what a working instrument should conclude, printed only;
+ nothing branches on it
+ 
+ @returns Arm's whole result, for the record rather than for a caller to
+ branch on
+ 
+ @example
+ ```ts
+ const row = await auditOne({ candidateText: FLIPPED_CANDIDATE, arm: 'flipped', expectation: 'defect', },);
+ ```
  */
 async function auditOne(
   {
@@ -301,7 +301,7 @@ async function auditOne(
   },
 ): Promise<AuditArmRow> {
   /**
-   * What the roster said about this rendering.
+   What the roster said about this rendering.
    */
   const report = await runRenderingAudit({
     client: createRunClient(),
@@ -316,7 +316,7 @@ async function auditOne(
   },);
 
   /**
-   * Voices that pointed at the planted defect at least once.
+   Voices that pointed at the planted defect at least once.
    */
   const sighted = report.rows
     .filter(function sawIt(row,): boolean {
@@ -418,46 +418,46 @@ async function auditOne(
 }
 
 /**
- * Runs both arms and keeps what they said.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Runs both arms and keeps what they said.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * When this invocation began, read before any call so the record dates the
-   * run rather than the moment it happened to finish.
+   When this invocation began, read before any call so the record dates the
+   run rather than the moment it happened to finish.
    */
   const startedAt = new Date().toISOString();
 
   /**
-   * Digest over built output, which is the only identity that moves when the
-   * code moves but the commit does not.
-   *
-   * READ AT THE START, not at the end. A long run gives a developer plenty of
-   * time to rebuild, and `rendering-audit-settled` was caught doing exactly
-   * that: `dist` was rebuilt while a run was in flight, so the digest it was
-   * about to stamp described a build that had never probed anything. Node loads
-   * the code once, at startup; the identity that answers for a run is the one
-   * present THEN.
+   Digest over built output, which is the only identity that moves when the
+   code moves but the commit does not.
+   
+   READ AT THE START, not at the end. A long run gives a developer plenty of
+   time to rebuild, and `rendering-audit-settled` was caught doing exactly
+   that: `dist` was rebuilt while a run was in flight, so the digest it was
+   about to stamp described a build that had never probed anything. Node loads
+   the code once, at startup; the identity that answers for a run is the one
+   present THEN.
    */
   const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
 
   /**
-   * Chunks this entry imports, read from the executing file at run START for
-   * the same reason the digest is: a rebuild mid-run would otherwise stamp a
-   * build that never ran. `#116`.
+   Chunks this entry imports, read from the executing file at run START for
+   the same reason the digest is: a rebuild mid-run would otherwise stamp a
+   build that never ran. `#116`.
    */
   const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
 
   /**
-   * Both arms, in the order they ran.
-   *
-   * SEQUENTIAL rather than concurrent, because the two arms share one roster
-   * and interleaving their progress lines would make the stream unreadable,
-   * which is the whole point of printing it.
+   Both arms, in the order they ran.
+   
+   SEQUENTIAL rather than concurrent, because the two arms share one roster
+   and interleaving their progress lines would make the stream unreadable,
+   which is the whole point of printing it.
    */
   const rows: readonly AuditArmRow[] = [
     await auditOne({
@@ -474,7 +474,7 @@ async function main(): Promise<void> {
 
 
   /**
-   * Where this run was kept, said out loud so the answers are findable.
+   Where this run was kept, said out loud so the answers are findable.
    */
   const keptAt = await persistProbeRun({
     runsDir: await resolveRunsDir(),

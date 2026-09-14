@@ -1,15 +1,15 @@
 /**
- * Tests for the cross-provider roster lookup.
- *
- * EACH PROVIDER'S CATALOG REMAINS AUTHORITATIVE for its own serving stack.
- * GLM-5.3-Flash is verified only on Synthetic and reads images there; no
- * predecessor route or modality may be inherited from GLM-5.2.
- *
- * THE COUNTS ARE PINNED ON PURPOSE. A roster that silently gains or loses a
- * seat changes what a quorum means, and this derivation is exactly where such a
- * change would enter without anyone writing it down.
- *
- * @module
+ Tests for the cross-provider roster lookup.
+ 
+ EACH PROVIDER'S CATALOG REMAINS AUTHORITATIVE for its own serving stack.
+ GLM-5.3-Flash is verified only on Synthetic and reads images there; no
+ predecessor route or modality may be inherited from GLM-5.2.
+ 
+ THE COUNTS ARE PINNED ON PURPOSE. A roster that silently gains or loses a
+ seat changes what a quorum means, and this derivation is exactly where such a
+ change would enter without anyone writing it down.
+ 
+ @module
  */
 
 import {
@@ -35,7 +35,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Models the owner removed from every active stage.
+ Models the owner removed from every active stage.
  */
 const DEPARTED_MODEL_IDS = [
   'hf:zai-org/GLM-4.7-Flash',
@@ -53,7 +53,7 @@ await describe({
         + 'row fails here rather than as one lost voice per call (`#241`)',
       fn: async () => {
         /**
-         * Roster ids no catalog has a row for under the roster's own spelling.
+         Roster ids no catalog has a row for under the roster's own spelling.
          */
         const unserved = ROSTER_MODEL_IDS.filter(function nobodyServes(modelId,): boolean {
           return (!syntheticServes(modelId,)) && (!hyperServesLabel(modelId,)) && (!bedrockServesLabel(modelId,))
@@ -67,7 +67,7 @@ await describe({
         + 'other provider to fall back to',
       fn: async () => {
         /**
-         * Hyper-only labels the Hyper catalog does not carry.
+         Hyper-only labels the Hyper catalog does not carry.
          */
         const missing = HYPER_ORIGIN_ROSTER_IDS.filter(function noRow(modelId,): boolean {
           return !hyperServesLabel(modelId,);
@@ -143,9 +143,9 @@ await describe({
       name: 'KEEPS owner-removed models out of callable production roster and benchmark defaults',
       fn: async () => {
         /**
-         * Every model reachable through whole-roster production stages or
-         * explicit benchmark defaults. Narrow production roles are statically
-         * constrained to same roster type, so a departed literal fails types.
+         Every model reachable through whole-roster production stages or
+         explicit benchmark defaults. Narrow production roles are statically
+         constrained to same roster type, so a departed literal fails types.
          */
         const activeStageModelIds = new Set<string>([
           ...ROSTER_MODEL_IDS,
@@ -266,7 +266,7 @@ await describe({
       fn: async () => {
         for (const modelId of ROSTER_MODEL_IDS) {
           /**
-           * Where this model can be reached at all.
+           Where this model can be reached at all.
            */
           const reach = reachOf({ modelId, },);
 

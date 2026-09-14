@@ -4,22 +4,22 @@
 // part of what a census MEANS.
 
 /**
- * Middle of a sample.
+ Middle of a sample.
  */
 const HALF_PERCENTILE = 50;
 
 /**
- * Where a tail starts being worth naming.
+ Where a tail starts being worth naming.
  */
 const NINETIETH_PERCENTILE = 90;
 
 /**
- * Far tail, which is where a per-call deadline is met.
+ Far tail, which is where a per-call deadline is met.
  */
 const NINETY_NINTH_PERCENTILE = 99;
 
 /**
- * Percentiles reported for every distribution here.
+ Percentiles reported for every distribution here.
  */
 export const REPORTED_PERCENTILES: readonly number[] = [
   HALF_PERCENTILE,
@@ -28,23 +28,23 @@ export const REPORTED_PERCENTILES: readonly number[] = [
 ];
 
 /**
- * Highest percentile denominator, so a rank lands inside the sample.
+ Highest percentile denominator, so a rank lands inside the sample.
  */
 const PERCENT_WHOLE = 100;
 
 /**
- * Reads one percentile from a sorted sample.
- *
- * @param sorted - values in ascending order
- *
- * @param percentile - percentile to read
- *
- * @returns Value at that rank, zero for an empty sample
- *
- * @example
- * ```ts
- * const p90 = percentileOf({ sorted, percentile: 90, },);
- * ```
+ Reads one percentile from a sorted sample.
+ 
+ @param sorted - values in ascending order
+ 
+ @param percentile - percentile to read
+ 
+ @returns Value at that rank, zero for an empty sample
+ 
+ @example
+ ```ts
+ const p90 = percentileOf({ sorted, percentile: 90, },);
+ ```
  */
 export function percentileOf(
   {
@@ -59,7 +59,7 @@ export function percentileOf(
     return 0;
 
   /**
-   * Rank of that percentile inside the sample.
+   Rank of that percentile inside the sample.
    */
   const rank = Math.min(
     sorted.length - 1,
@@ -69,18 +69,18 @@ export function percentileOf(
 }
 
 /**
- * Renders one distribution as a line.
- *
- * @param label - what the numbers describe
- *
- * @param values - sample
- *
- * @returns Line naming count, percentiles and maximum
- *
- * @example
- * ```ts
- * const line = describeSpread({ label: 'slice source chars', values, },);
- * ```
+ Renders one distribution as a line.
+ 
+ @param label - what the numbers describe
+ 
+ @param values - sample
+ 
+ @returns Line naming count, percentiles and maximum
+ 
+ @example
+ ```ts
+ const line = describeSpread({ label: 'slice source chars', values, },);
+ ```
  */
 export function describeSpread(
   {
@@ -92,7 +92,7 @@ export function describeSpread(
   },
 ): string {
   /**
-   * Sample in ascending order.
+   Sample in ascending order.
    */
   const sorted = values.toSorted(function ascending(
     left,
@@ -102,7 +102,7 @@ export function describeSpread(
   },);
 
   /**
-   * Percentile readings in the reported order.
+   Percentile readings in the reported order.
    */
   const readings = REPORTED_PERCENTILES.map(function toReading(percentile,): string {
     return `p${String(percentile,)} ${

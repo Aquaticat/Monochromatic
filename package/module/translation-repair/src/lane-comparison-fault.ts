@@ -4,141 +4,141 @@
 // types and has no room left under the file-length limit.
 
 /**
- * Lane a ledger belongs to.
- *
- * @example
- * ```ts
- * const lane: ComparedLane = 'repair';
- * ```
+ Lane a ledger belongs to.
+ 
+ @example
+ ```ts
+ const lane: ComparedLane = 'repair';
+ ```
  */
 export type ComparedLane = 'repair' | 'translate';
 
 /**
- * Why two ledgers cannot be compared slice by slice.
- *
- * @example
- * ```ts
- * const fault: LaneComparisonFault = { kind: 'missing-from-translate', sliceIndex: 4, };
- * ```
+ Why two ledgers cannot be compared slice by slice.
+ 
+ @example
+ ```ts
+ const fault: LaneComparisonFault = { kind: 'missing-from-translate', sliceIndex: 4, };
+ ```
  */
 export type LaneComparisonFault = {
   /**
-   * Ledgers name different slicings.
+   Ledgers name different slicings.
    */
   readonly kind: 'different-slicings';
 } | {
   /**
-   * Ledgers report different slice counts.
+   Ledgers report different slice counts.
    */
   readonly kind: 'slice-counts-differ';
 
   /**
-   * Slices the repair ledger reports.
+   Slices the repair ledger reports.
    */
   readonly repair: number;
 
   /**
-   * Slices the translate ledger reports.
+   Slices the translate ledger reports.
    */
   readonly translate: number;
 } | {
   /**
-   * One ledger reports more rows than distinct slices.
+   One ledger reports more rows than distinct slices.
    */
   readonly kind: 'rows-repeat';
 
   /**
-   * Ledger that repeats.
+   Ledger that repeats.
    */
   readonly lane: ComparedLane;
 
   /**
-   * Rows it reports.
+   Rows it reports.
    */
   readonly rows: number;
 
   /**
-   * Distinct slices among them.
+   Distinct slices among them.
    */
   readonly distinct: number;
 } | {
   /**
-   * Repair ledger names a slice the translate ledger lacks.
+   Repair ledger names a slice the translate ledger lacks.
    */
   readonly kind: 'missing-from-translate';
 
   /**
-   * Slice missing.
+   Slice missing.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * Slice sits at different positions in the two ledgers.
+   Slice sits at different positions in the two ledgers.
    */
   readonly kind: 'position-differs';
 
   /**
-   * Slice out of place.
+   Slice out of place.
    */
   readonly sliceIndex: number;
 
   /**
-   * Where the repair ledger holds it.
+   Where the repair ledger holds it.
    */
   readonly position: number;
 } | {
   /**
-   * Slice covers a different original in each lane.
+   Slice covers a different original in each lane.
    */
   readonly kind: 'source-differs';
 
   /**
-   * Slice affected.
+   Slice affected.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * Slice carries a different incumbent in each lane.
+   Slice carries a different incumbent in each lane.
    */
   readonly kind: 'incumbent-differs';
 
   /**
-   * Slice affected.
+   Slice affected.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * Lanes disagree about whether the archive translates the slice.
+   Lanes disagree about whether the archive translates the slice.
    */
   readonly kind: 'incumbent-kind-differs';
 
   /**
-   * Slice affected.
+   Slice affected.
    */
   readonly sliceIndex: number;
 
   /**
-   * What the repair ledger says.
+   What the repair ledger says.
    */
   readonly repair: 'present' | 'absent';
 
   /**
-   * What the translate ledger says.
+   What the translate ledger says.
    */
   readonly translate: 'present' | 'absent';
 };
 
 /**
- * Words a comparison fault from its kinds and numbers.
- *
- * @param fault - why the ledgers cannot be compared
- *
- * @returns Sentence written here
- *
- * @example
- * ```ts
- * const sentence = comparisonSentence({ fault: { kind: 'different-slicings', }, },);
- * ```
+ Words a comparison fault from its kinds and numbers.
+ 
+ @param fault - why the ledgers cannot be compared
+ 
+ @returns Sentence written here
+ 
+ @example
+ ```ts
+ const sentence = comparisonSentence({ fault: { kind: 'different-slicings', }, },);
+ ```
  */
 export function comparisonSentence({ fault, }: { readonly fault: LaneComparisonFault; },): string {
   if (fault.kind === 'different-slicings')

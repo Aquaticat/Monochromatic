@@ -1,16 +1,16 @@
 /**
- * Tests for the two verdicts on a standing text and the log line each
- * refusal writes.
- *
- * WHAT THESE PIN: an invalid standing and an unendorsed one are refused
- * for different reasons and the log says which, with the deterministic
- * findings on the first. One warning covered both on the 2026-09-04
- * luxuanwen3 pass, and the cause (a link destination the archive had
- * rewritten) had to be read out of the slice records.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the two verdicts on a standing text and the log line each
+ refusal writes.
+ 
+ WHAT THESE PIN: an invalid standing and an unendorsed one are refused
+ for different reasons and the log says which, with the deterministic
+ findings on the first. One warning covered both on the 2026-09-04
+ luxuanwen3 pass, and the cause (a link destination the archive had
+ rewritten) had to be read out of the slice records.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -29,41 +29,41 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original slice, linking one destination.
+ Original slice, linking one destination.
  */
 const SOURCE = '她的头像由[画师](https://twitter.com/cat)绘制。';
 
 /**
- * Page rendering that kept the destination.
+ Page rendering that kept the destination.
  */
 const PAGE_KEPT = 'Her avatar was drawn by [the artist](https://twitter.com/cat).';
 
 /**
- * Rendering that carries neither destination, invalid under the
- * either-rendering rule of 2026-09-04 as under the rule before it.
+ Rendering that carries neither destination, invalid under the
+ either-rendering rule of 2026-09-04 as under the rule before it.
  */
 const LINK_DROPPED = 'Her avatar was drawn by the artist.';
 
 /**
- * Logger whose warnings are kept for the assertions, the rest forwarded.
- *
- * @returns Logger and the warnings it received
- *
- * @example
- * ```ts
- * const { l, warnings, } = capturing();
- * ```
+ Logger whose warnings are kept for the assertions, the rest forwarded.
+ 
+ @returns Logger and the warnings it received
+ 
+ @example
+ ```ts
+ const { l, warnings, } = capturing();
+ ```
  */
 function capturing(): {
   readonly l: Logger;
   readonly warnings: string[];
 } {
   /**
-   * Warnings in the order written.
+   Warnings in the order written.
    */
   const warnings: string[] = [];
   /**
-   * Forwarding logger for every level but warn.
+   Forwarding logger for every level but warn.
    */
   const l: Logger = {
     ...tagged({ tag: 'consolidate-standing-verdict-test', },),

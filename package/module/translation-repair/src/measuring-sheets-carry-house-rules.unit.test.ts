@@ -1,27 +1,27 @@
 /**
- * Tests that the sheets which MEASURE are told what this corpus is written
- * under, and told how the rules land on their own verdicts.
- *
- * WHY THIS FILE EXISTS. The rendering auditor, the resolution checker and the
- * introduced-defect prober all grade text against the ORIGINAL, and none had
- * ever been shown the house rules. Nothing ships from any of the three, which
- * is why they were fixed after the deciding sheets rather than with them; what
- * they do decide is which defects get worked on next. An auditor that has not
- * been told reader protection exists scores a deliberately vague passage as an
- * omission, and that grade is then quoted as a measurement of the pipeline.
- *
- * THE VERDICT MAPPING IS ASSERTED SEPARATELY from the shared block. The three
- * verdict vocabularies are disjoint, so the block deliberately names none of
- * them and each sheet supplies its own line. A splice alone would leave a
- * checker knowing the rule and not knowing what to answer.
- *
- * ONE SENTENCE PER SHEET stands for the block, so rewording the house rules
- * does not break three tests at once. The sentence chosen is the one that
- * decides the protected case.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests that the sheets which MEASURE are told what this corpus is written
+ under, and told how the rules land on their own verdicts.
+ 
+ WHY THIS FILE EXISTS. The rendering auditor, the resolution checker and the
+ introduced-defect prober all grade text against the ORIGINAL, and none had
+ ever been shown the house rules. Nothing ships from any of the three, which
+ is why they were fixed after the deciding sheets rather than with them; what
+ they do decide is which defects get worked on next. An auditor that has not
+ been told reader protection exists scores a deliberately vague passage as an
+ omission, and that grade is then quoted as a measurement of the pipeline.
+ 
+ THE VERDICT MAPPING IS ASSERTED SEPARATELY from the shared block. The three
+ verdict vocabularies are disjoint, so the block deliberately names none of
+ them and each sheet supplies its own line. A splice alone would leave a
+ checker knowing the rule and not knowing what to answer.
+ 
+ ONE SENTENCE PER SHEET stands for the block, so rewording the house rules
+ does not break three tests at once. The sentence chosen is the one that
+ decides the protected case.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -38,27 +38,27 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Sentence of the house rules that decides the protected case.
+ Sentence of the house rules that decides the protected case.
  */
 const READER_PROTECTION = 'Reader protection outranks completeness';
 
 /**
- * Sentence the measuring sheets get and the judging sheets do not.
+ Sentence the measuring sheets get and the judging sheets do not.
  */
 const SUPPORTED_IS_NOT_ENOUGH = 'SUPPORTED BY THE ORIGINAL IS NOT ENOUGH TO MAKE SOMETHING MISSING A DEFECT';
 
 /**
- * Invented passage standing in for corpus text.
+ Invented passage standing in for corpus text.
  */
 const SOURCE_TEXT = '猫猫在窗台上睡觉，太阳移动时她会醒来。';
 
 /**
- * Rendering of that passage.
+ Rendering of that passage.
  */
 const CANDIDATE_TEXT = 'The cat sleeps on the windowsill and wakes when the sun moves.';
 
 /**
- * Accepted issue the checker and the prober are asked about.
+ Accepted issue the checker and the prober are asked about.
  */
 const NAPPING_ISSUE: AdjudicatedIssue = {
   issueId: 'adjudicated/napping',
@@ -79,16 +79,16 @@ const NAPPING_ISSUE: AdjudicatedIssue = {
 };
 
 /**
- * Pulls the standing rules out of one built exchange.
- *
- * @param messages - exchange as its builder returned it
- *
- * @returns System half, empty when the builder sent none
- *
- * @example
- * ```ts
- * const system = systemOf({ messages, },);
- * ```
+ Pulls the standing rules out of one built exchange.
+ 
+ @param messages - exchange as its builder returned it
+ 
+ @returns System half, empty when the builder sent none
+ 
+ @example
+ ```ts
+ const system = systemOf({ messages, },);
+ ```
  */
 function systemOf(
   { messages, }: { readonly messages: readonly { readonly role: string; readonly content: string; }[]; },
@@ -102,7 +102,7 @@ function systemOf(
 }
 
 /**
- * System half the rendering auditor is sent.
+ System half the rendering auditor is sent.
  */
 const auditSystem = systemOf({
   messages: buildRenderingAuditMessages({
@@ -114,7 +114,7 @@ const auditSystem = systemOf({
 },);
 
 /**
- * System half every resolution checker is sent.
+ System half every resolution checker is sent.
  */
 const checkerSystem = systemOf({
   messages: buildResolutionMessages({
@@ -125,7 +125,7 @@ const checkerSystem = systemOf({
 },);
 
 /**
- * System half the introduced-defect prober is sent.
+ System half the introduced-defect prober is sent.
  */
 const proberSystem = systemOf({
   messages: buildIntroducedDefectMessages({

@@ -13,41 +13,41 @@ import {
 // drift, and the denominator is the part a reader has to trust.
 
 /**
- * Percent, for rendering a share as one.
+ Percent, for rendering a share as one.
  */
 const AS_PERCENT = 100;
 
 /**
- * Decimal places a reported share carries.
+ Decimal places a reported share carries.
  */
 const SHARE_PLACES = 1;
 
 /**
- * Renders one model's standing as a report line.
- *
- * CARRIES ITS OWN DENOMINATOR. A share with no count beside it cannot be told
- * apart from a share one ballot wide, and a lead smaller than its denominator
- * supports is not a lead.
- *
- * @param standing - counts for one model
- *
- * @returns Line naming the share and the evidence behind it
- *
- * @example
- * ```ts
- * console.log(standingLine({ standing, },),);
- * ```
+ Renders one model's standing as a report line.
+ 
+ CARRIES ITS OWN DENOMINATOR. A share with no count beside it cannot be told
+ apart from a share one ballot wide, and a lead smaller than its denominator
+ supports is not a lead.
+ 
+ @param standing - counts for one model
+ 
+ @returns Line naming the share and the evidence behind it
+ 
+ @example
+ ```ts
+ console.log(standingLine({ standing, },),);
+ ```
  */
 export function standingLine(
   { standing, }: { readonly standing: ProducerStanding; },
 ): string {
   /**
-   * Share of disinterested ballots, where anything was cast.
+   Share of disinterested ballots, where anything was cast.
    */
   const rate = preferenceRate({ standing, },);
 
   /**
-   * That share rendered, or a mark saying nothing was cast.
+   That share rendered, or a mark saying nothing was cast.
    */
   const share = rate.measured
     ? `${(rate.share * AS_PERCENT).toFixed(SHARE_PLACES,)}%`
@@ -59,20 +59,20 @@ export function standingLine(
 }
 
 /**
- * Orders standings best first, with unjudged models last.
- *
- * AN UNJUDGED MODEL IS NOT A ZERO. It wrote candidates no disinterested judge
- * ever voted on, which is absence of evidence rather than evidence of a poor
- * showing, so it sorts to the end instead of to the bottom.
- *
- * @param standings - what the tally produced
- *
- * @returns Same standings, sorted
- *
- * @example
- * ```ts
- * const ranked = rankStandings({ standings, },);
- * ```
+ Orders standings best first, with unjudged models last.
+ 
+ AN UNJUDGED MODEL IS NOT A ZERO. It wrote candidates no disinterested judge
+ ever voted on, which is absence of evidence rather than evidence of a poor
+ showing, so it sorts to the end instead of to the bottom.
+ 
+ @param standings - what the tally produced
+ 
+ @returns Same standings, sorted
+ 
+ @example
+ ```ts
+ const ranked = rankStandings({ standings, },);
+ ```
  */
 export function rankStandings(
   { standings, }: { readonly standings: readonly ProducerStanding[]; },
@@ -82,12 +82,12 @@ export function rankStandings(
     right,
   ): number {
     /**
-     * Left-hand share, read so an unjudged model sorts last.
+     Left-hand share, read so an unjudged model sorts last.
      */
     const leftRate = preferenceRate({ standing: left, },);
 
     /**
-     * Right-hand share, read the same way.
+     Right-hand share, read the same way.
      */
     const rightRate = preferenceRate({ standing: right, },);
 

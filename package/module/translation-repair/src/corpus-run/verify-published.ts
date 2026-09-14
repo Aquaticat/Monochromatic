@@ -56,33 +56,33 @@ import {
 // holds unlicensed corpus wording.
 
 /**
- * Exit code a run with something wrong in its published tree leaves behind.
+ Exit code a run with something wrong in its published tree leaves behind.
  */
 const PUBLISHED_TREE_DISAGREES = 1;
 
 /**
- * Exit code a run that could not be checked at all leaves behind.
- *
- * SEPARATE FROM DISAGREEMENT, because the two ask different things of whoever
- * reads it. A disagreement says the run shipped something wrong. This says the
- * run was never examined, and a gate that treats the two alike either ships an
- * unchecked run or refuses a good one.
+ Exit code a run that could not be checked at all leaves behind.
+ 
+ SEPARATE FROM DISAGREEMENT, because the two ask different things of whoever
+ reads it. A disagreement says the run shipped something wrong. This says the
+ run was never examined, and a gate that treats the two alike either ships an
+ unchecked run or refuses a good one.
  */
 const NOTHING_WAS_VERIFIED = 2;
 
 /**
- * Reads one entry's artifact and page, or names the class that refused them.
- *
- * @param runsDir - run directory both halves live under
- *
- * @param entryId - person entry to read
- *
- * @returns Both halves, or the refusal
- *
- * @example
- * ```ts
- * const read = await readEntry({ runsDir, entryId, },);
- * ```
+ Reads one entry's artifact and page, or names the class that refused them.
+ 
+ @param runsDir - run directory both halves live under
+ 
+ @param entryId - person entry to read
+ 
+ @returns Both halves, or the refusal
+ 
+ @example
+ ```ts
+ const read = await readEntry({ runsDir, entryId, },);
+ ```
  */
 async function readEntry(
   {
@@ -102,8 +102,8 @@ async function readEntry(
     readonly kind: 'refused';
 
     /**
-     * Class that refused this entry, named rather than quoted: a refusal
-     * message quotes the passage it disagrees about.
+     Class that refused this entry, named rather than quoted: a refusal
+     message quotes the passage it disagrees about.
      */
     readonly refusedBy: string;
   }
@@ -141,20 +141,20 @@ async function readEntry(
 }
 
 /**
- * Renders the length column, which says three different things.
- *
- * NAMES AN UNWEIGHED ENTRY RATHER THAN PRINTING ITS SIZE, so a run of
- * artifacts written before the archive text was stored cannot be read as a run
- * that was checked and agreed.
- *
- * @param weight - what `pageWeighsWhatItShould` returned
- *
- * @returns Column text for the entry line
- *
- * @example
- * ```ts
- * console.log(weighedAs({ weight, },),);
- * ```
+ Renders the length column, which says three different things.
+ 
+ NAMES AN UNWEIGHED ENTRY RATHER THAN PRINTING ITS SIZE, so a run of
+ artifacts written before the archive text was stored cannot be read as a run
+ that was checked and agreed.
+ 
+ @param weight - what `pageWeighsWhatItShould` returned
+ 
+ @returns Column text for the entry line
+ 
+ @example
+ ```ts
+ console.log(weighedAs({ weight, },),);
+ ```
  */
 function weighedAs(
   { weight, }: { readonly weight: PageLengthCheck; },
@@ -163,14 +163,14 @@ function weighedAs(
     return 'chars=UNWEIGHED(artifact predates stored archive text)';
 
   /**
-   * Expected length, or a mark saying the page already matches it.
+   Expected length, or a mark saying the page already matches it.
    */
   const against = (weight.actual === weight.expected)
     ? '=expected'
     : `/expected ${String(weight.expected,)}`;
 
   /**
-   * Note that a filled anchor makes the expectation a floor.
+   Note that a filled anchor makes the expectation a floor.
    */
   const floor = weight.exact ? '' : '+separators';
 
@@ -178,32 +178,32 @@ function weighedAs(
 }
 
 /**
- * What one entry's report concluded.
- *
- * THREE ANSWERS, NOT TWO. A page that carries every wording but whose length
- * could not be checked is not the evidence a weighed page is, and the closing
- * line used to claim the length for both.
- *
- * @example
- * ```ts
- * const agreement: EntryAgreement = 'agreed-unweighed';
- * ```
+ What one entry's report concluded.
+ 
+ THREE ANSWERS, NOT TWO. A page that carries every wording but whose length
+ could not be checked is not the evidence a weighed page is, and the closing
+ line used to claim the length for both.
+ 
+ @example
+ ```ts
+ const agreement: EntryAgreement = 'agreed-unweighed';
+ ```
  */
 type EntryAgreement = 'agreed-weighed' | 'agreed-unweighed' | 'disagreed';
 
 /**
- * Reports one entry, returning whether its page agreed with its artifact.
- *
- * @param runsDir - run directory both halves live under
- *
- * @param entryId - person entry to read
- *
- * @returns Whether the page carries everything the artifact promised
- *
- * @example
- * ```ts
- * const agreed = await reportEntry({ runsDir, entryId, },);
- * ```
+ Reports one entry, returning whether its page agreed with its artifact.
+ 
+ @param runsDir - run directory both halves live under
+ 
+ @param entryId - person entry to read
+ 
+ @returns Whether the page carries everything the artifact promised
+ 
+ @example
+ ```ts
+ const agreed = await reportEntry({ runsDir, entryId, },);
+ ```
  */
 async function reportEntry(
   {
@@ -215,7 +215,7 @@ async function reportEntry(
   },
 ): Promise<EntryAgreement> {
   /**
-   * Artifact and page as they sit on disk, or the class that refused them.
+   Artifact and page as they sit on disk, or the class that refused them.
    */
   const read = await readEntry({
     runsDir,
@@ -228,7 +228,7 @@ async function reportEntry(
   }
 
   /**
-   * What the page turned out to carry.
+   What the page turned out to carry.
    */
   const {
     wordings,
@@ -240,8 +240,8 @@ async function reportEntry(
   },);
 
   /**
-   * What the page should weigh against what it does, or that the artifact
-   * predates the stored archive text and nothing can be weighed.
+   What the page should weigh against what it does, or that the artifact
+   predates the stored archive text and nothing can be weighed.
    */
   const weight = pageWeighsWhatItShould({
     artifact: read.artifact,
@@ -252,7 +252,7 @@ async function reportEntry(
   },);
 
   /**
-   * Whether the length says the page lost or gained text nobody decided on.
+   Whether the length says the page lost or gained text nobody decided on.
    */
   const wrongLength = pageWeightRefutes({ weight, },);
 
@@ -280,24 +280,24 @@ async function reportEntry(
 }
 
 /**
- * Reads a run's published tree back and reports whether it agrees with its
- * artifacts.
- *
- * Returns nothing: the report on stdout and the exit code ARE the output.
- *
- * @example
- * ```ts
- * await verifyPublished();
- * ```
+ Reads a run's published tree back and reports whether it agrees with its
+ artifacts.
+ 
+ Returns nothing: the report on stdout and the exit code ARE the output.
+ 
+ @example
+ ```ts
+ await verifyPublished();
+ ```
  */
 async function verifyPublished(): Promise<void> {
   /**
-   * Run directory to read, from the environment or the default.
+   Run directory to read, from the environment or the default.
    */
   const runsDir = await resolveRunsDir();
 
   /**
-   * What the run left on disk, or why each half could not be read.
+   What the run left on disk, or why each half could not be read.
    */
   const [
     settled,
@@ -308,7 +308,7 @@ async function verifyPublished(): Promise<void> {
   ],);
 
   /**
-   * Ids to check, or why this run leaves nothing to check.
+   Ids to check, or why this run leaves nothing to check.
    */
   const toVerify = whatThereIsToVerify({
     settled,
@@ -329,7 +329,7 @@ async function verifyPublished(): Promise<void> {
   // settled entry" when none was settled is a claim about an empty set that
   // reads as a finding.
   /**
-   * Entries the run settled, which is what an absent tree loses all of.
+   Entries the run settled, which is what an absent tree loses all of.
    */
   const settledCount = toVerify
     .settled
@@ -343,7 +343,7 @@ async function verifyPublished(): Promise<void> {
     );
 
   /**
-   * Which entries were settled and which were published.
+   Which entries were settled and which were published.
    */
   const {
     matched,
@@ -355,9 +355,9 @@ async function verifyPublished(): Promise<void> {
   },);
 
   /**
-   * Entries the pipeline declined to repair (the archive's note says the page
-   * is the author's own English), which carry no artifact and must carry no
-   * page: the archive stands.
+   Entries the pipeline declined to repair (the archive's note says the page
+   is the author's own English), which carry no artifact and must carry no
+   page: the archive stands.
    */
   const declined = await declinedEntryIds({
     declinedDir: join(
@@ -388,11 +388,11 @@ async function verifyPublished(): Promise<void> {
   }
 
   /**
-   * Whether every matched entry's page carried what its artifact promised.
-   *
-   * EVERY ENTRY IS READ before the verdict, rather than stopping at the first
-   * disagreement, because a run is verified to decide whether to ship it and a
-   * partial answer decides nothing.
+   Whether every matched entry's page carried what its artifact promised.
+   
+   EVERY ENTRY IS READ before the verdict, rather than stopping at the first
+   disagreement, because a run is verified to decide whether to ship it and a
+   partial answer decides nothing.
    */
   const agreements = await Promise.all(matched.map(function one(entryId,): Promise<EntryAgreement> {
     return reportEntry({
@@ -402,7 +402,7 @@ async function verifyPublished(): Promise<void> {
   },),);
 
   /**
-   * Entries whose page disagreed with their artifact, or could not be read.
+   Entries whose page disagreed with their artifact, or could not be read.
    */
   const disagreed = agreements
     .filter(function isBad(agreed,): boolean {
@@ -411,9 +411,9 @@ async function verifyPublished(): Promise<void> {
     .length;
 
   /**
-   * Entries whose page carried every wording but could not be weighed, because
-   * the artifact predates the stored archive text. Counted apart so the closing
-   * line claims a length check only for the pages that had one.
+   Entries whose page carried every wording but could not be weighed, because
+   the artifact predates the stored archive text. Counted apart so the closing
+   line claims a length check only for the pages that had one.
    */
   const unweighed = agreements
     .filter(function wasUnweighed(agreed,): boolean {
@@ -422,12 +422,12 @@ async function verifyPublished(): Promise<void> {
     .length;
 
   /**
-   * Pages that carried every wording, weighed or not.
+   Pages that carried every wording, weighed or not.
    */
   const agreed = agreements.length - disagreed;
 
   /**
-   * Pages that carried every wording and weighed what the artifact implies.
+   Pages that carried every wording and weighed what the artifact implies.
    */
   const weighed = agreed - unweighed;
 

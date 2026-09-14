@@ -44,29 +44,29 @@ import { readdirArtifacts, } from './artifact-placement.ts';
 
 
 /**
- * Reads every settled artifact of a run.
- *
- * @param artifactsDir - directory the pass writes entries into
- *
- * @returns Readings and coverage counts across every artifact
- *
- * @throws {@link ArtifactParseError} when a present probe field is malformed,
- * because a count nobody can trust is worse than no count
- *
- * @example
- * ```ts
- * const gathered = await gatherReadings({ artifactsDir, },);
- * ```
+ Reads every settled artifact of a run.
+ 
+ @param artifactsDir - directory the pass writes entries into
+ 
+ @returns Readings and coverage counts across every artifact
+ 
+ @throws {@link ArtifactParseError} when a present probe field is malformed,
+ because a count nobody can trust is worse than no count
+ 
+ @example
+ ```ts
+ const gathered = await gatherReadings({ artifactsDir, },);
+ ```
  */
 async function gatherReadings(
   { artifactsDir, }: { readonly artifactsDir: string; },
 ): Promise<GatheredProbe> {
   /**
-   * One directory listing, shared with the census.
-   *
-   * Taken once and threaded through, because the accumulation writes into this
-   * directory continuously: a second listing inside the census would classify a
-   * different set of files from the one this reader goes on to read.
+   One directory listing, shared with the census.
+   
+   Taken once and threaded through, because the accumulation writes into this
+   directory continuously: a second listing inside the census would classify a
+   different set of files from the one this reader goes on to read.
    */
   const listed = (await readdirArtifacts({ artifactsDir, },))
     .filter(function isArtifact(name,) {
@@ -75,7 +75,7 @@ async function gatherReadings(
     .toSorted();
 
   /**
-   * Artifact file names, JSON only.
+   Artifact file names, JSON only.
    */
   const names = keepEligible({
     names: listed,
@@ -86,12 +86,12 @@ async function gatherReadings(
   },);
 
   /**
-   * One reading set per artifact, read concurrently.
-   *
-   * Every parse failure carries the artifact path it came from, so a malformed
-   * file names itself regardless of read order. Which of several malformed
-   * files reports first is not fixed, since `Promise.all` rejects with whichever
-   * rejected soonest rather than the earliest in the sorted list.
+   One reading set per artifact, read concurrently.
+   
+   Every parse failure carries the artifact path it came from, so a malformed
+   file names itself regardless of read order. Which of several malformed
+   files reports first is not fixed, since `Promise.all` rejects with whichever
+   rejected soonest rather than the earliest in the sorted list.
    */
   const perEntry = await Promise.all(names.map(async function toReading(name,) {
     return readArtifactProbe({
@@ -106,12 +106,12 @@ async function gatherReadings(
   },),);
 
   /**
-   * Readings grouped by the artifact that carried them.
-   *
-   * Grouped rather than flattened, because envelope ids are derived from the
-   * text they cover and so repeat across documents that share a paragraph.
-   * Flattening let the summary collapse two entries' unrelated regions into
-   * one.
+   Readings grouped by the artifact that carried them.
+   
+   Grouped rather than flattened, because envelope ids are derived from the
+   text they cover and so repeat across documents that share a paragraph.
+   Flattening let the summary collapse two entries' unrelated regions into
+   one.
    */
   const readings = names.map(function toGroup(
     name,
@@ -126,14 +126,14 @@ async function gatherReadings(
   },);
 
   /**
-   * Every reading paired with its owning issue, across every artifact.
+   Every reading paired with its owning issue, across every artifact.
    */
   const owned = perEntry.flatMap(function toOwned(entry,) {
     return entry.owned;
   },);
 
   /**
-   * Stage findings, one list per artifact.
+   Stage findings, one list per artifact.
    */
   const findingsPerEntry = perEntry.map(function toFindings(entry,) {
     return entry.findings;
@@ -198,21 +198,21 @@ async function gatherReadings(
 }
 
 /**
- * Reads one command-line option's value.
- *
- * @param flag - long-form flag, including leading dashes
- *
- * @returns Value following the flag; empty when absent, which is also how a
- * flag left blank is treated, since neither names a file
- *
- * @example
- * ```ts
- * const sheet = optionValue({ flag: '--repair-sheet', },);
- * ```
+ Reads one command-line option's value.
+ 
+ @param flag - long-form flag, including leading dashes
+ 
+ @returns Value following the flag; empty when absent, which is also how a
+ flag left blank is treated, since neither names a file
+ 
+ @example
+ ```ts
+ const sheet = optionValue({ flag: '--repair-sheet', },);
+ ```
  */
 function optionValue({ flag, }: { readonly flag: string; },): string {
   /**
-   * Where the flag sits among the arguments.
+   Where the flag sits among the arguments.
    */
   const at = process.argv
     .indexOf(flag,);
@@ -222,16 +222,16 @@ function optionValue({ flag, }: { readonly flag: string; },): string {
 }
 
 /**
- * Reads a run's artifacts and prints the probe summary.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Reads a run's artifacts and prints the probe summary.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Directory this run wrote artifacts into.
+   Directory this run wrote artifacts into.
    */
   const artifactsDir = join(
     await resolveRunsDir(),
@@ -247,13 +247,13 @@ async function main(): Promise<void> {
   console.log(`SOURCE ${artifactsDir}`,);
 
   /**
-   * Readings across every settled artifact.
+   Readings across every settled artifact.
    */
   const gathered = await gatherReadings({ artifactsDir, },);
 
   reportProbeTelemetry({ gathered, },);
   /**
-   * Graded repair sheet and its draw manifest, when both were passed.
+   Graded repair sheet and its draw manifest, when both were passed.
    */
   const joinPaths = {
     sheet: optionValue({ flag: '--repair-sheet', },),
@@ -269,14 +269,14 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Draw manifest, the only record of which issue sat at which position.
+   Draw manifest, the only record of which issue sat at which position.
    */
   const manifest = parseSampleManifest({
     value: await readRunJson({ path: joinPaths.manifest, },),
   },);
 
   /**
-   * Sheet contents, read once and used for both identity and verdicts.
+   Sheet contents, read once and used for both identity and verdicts.
    */
   const sheetText = await readFile(
     joinPaths.sheet,
@@ -284,7 +284,7 @@ async function main(): Promise<void> {
   );
 
   /**
-   * How firmly the sheet is tied to this manifest; refuses if it is not.
+   How firmly the sheet is tied to this manifest; refuses if it is not.
    */
   const binding = assertSheetMatchesManifest({
     identity: readSheetIdentity({ text: sheetText, },),
@@ -295,7 +295,7 @@ async function main(): Promise<void> {
     console.log(HEADER_ONLY_BINDING_NOTE,);
 
   /**
-   * Human verdicts in sheet order.
+   Human verdicts in sheet order.
    */
   const graded = parseGradedRepairSheet({ text: sheetText, },);
   if (graded.length
@@ -311,7 +311,7 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Graded issues paired with the probe reading of the same issue.
+   Graded issues paired with the probe reading of the same issue.
    */
   const items: readonly ProbeAgreementItem[] = manifest.items
     .map(function toItem(
@@ -319,7 +319,7 @@ async function main(): Promise<void> {
       index,
     ): ProbeAgreementItem {
     /**
-     * Probe reading covering this issue, absent when unprobed.
+     Probe reading covering this issue, absent when unprobed.
      */
     const reading = gathered.byIssueId
       .get(entry.issueId,);
@@ -332,18 +332,18 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * Joint counts across both instruments.
+   Joint counts across both instruments.
    */
   const agreement = scoreProbeAgainstGrades({ items, },);
 
   /**
-   * Joined positions whose slice the naturalness lane rewrote after probing.
-   *
-   * Reported rather than silently folded in. The probe runs inside the accuracy
-   * stage and the lane runs after it, so on these positions the probe judged
-   * one text while the repair sheet asked the human to grade another. Every
-   * cell of the agreement table treats the two as being about the same wording,
-   * which is true everywhere except here.
+   Joined positions whose slice the naturalness lane rewrote after probing.
+   
+   Reported rather than silently folded in. The probe runs inside the accuracy
+   stage and the lane runs after it, so on these positions the probe judged
+   one text while the repair sheet asked the human to grade another. Every
+   cell of the agreement table treats the two as being about the same wording,
+   which is true everywhere except here.
    */
   const refinedJoined = manifest.items
     .filter(function wasRefined(entry,) {

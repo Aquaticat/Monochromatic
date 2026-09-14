@@ -1,9 +1,9 @@
 /**
- * Tests for the draw manifest, the only record of which issue sat at which
- * sheet position.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the draw manifest, the only record of which issue sat at which
+ sheet position.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -20,18 +20,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one drawn candidate carrying only what the manifest reads.
- *
- * @param issueId - adjudicated identity
- *
- * @param entryId - corpus entry it came from
- *
- * @returns Candidate the manifest records
- *
- * @example
- * ```ts
- * const candidate = catCandidate({ issueId: 'adjudicated/nap', },);
- * ```
+ Builds one drawn candidate carrying only what the manifest reads.
+ 
+ @param issueId - adjudicated identity
+ 
+ @param entryId - corpus entry it came from
+ 
+ @returns Candidate the manifest records
+ 
+ @example
+ ```ts
+ const candidate = catCandidate({ issueId: 'adjudicated/nap', },);
+ ```
  */
 function catCandidate(
   {
@@ -56,8 +56,8 @@ function catCandidate(
 }
 
 /**
- * A recorded generation, so every fixture manifest says which pipeline settled
- * the pool it was drawn from.
+ A recorded generation, so every fixture manifest says which pipeline settled
+ the pool it was drawn from.
  */
 const CAT_GENERATION = {
   kind: 'recorded',
@@ -118,7 +118,7 @@ await describe({
         + 'it does not know, because only the second stops a reader quoting it',
       fn: async () => {
         /**
-         * A manifest as it was written before the field existed.
+         A manifest as it was written before the field existed.
          */
         const older = buildSampleManifest({
           sample: [catCandidate({ issueId: 'adjudicated/nap', },),],
@@ -128,12 +128,12 @@ await describe({
         },);
 
         /**
-         * The same manifest with the generation removed, which is exactly what
-         * an older draw wrote.
-         *
-         * Destructured rather than deleted from a clone, so the field's absence
-         * is a fact about this binding rather than a mutation a reader has to
-         * trace.
+         The same manifest with the generation removed, which is exactly what
+         an older draw wrote.
+         
+         Destructured rather than deleted from a clone, so the field's absence
+         is a fact about this binding rather than a mutation a reader has to
+         trace.
          */
         const {
           generation: _dropped,
@@ -141,7 +141,7 @@ await describe({
         } = older;
 
         /**
-         * What the parser makes of it.
+         What the parser makes of it.
          */
         const parsed = parseSampleManifest({ value: withoutGeneration, },);
 
@@ -165,11 +165,11 @@ await describe({
         },);
 
         /**
-         * Manifest text exactly as the draw writes it beside the sheets.
-         *
-         * Serialized and re-read rather than cloned, for the same reason the
-         * provenance suite is: the file is the boundary under test, and a deep
-         * clone would keep what a file drops.
+         Manifest text exactly as the draw writes it beside the sheets.
+         
+         Serialized and re-read rather than cloned, for the same reason the
+         provenance suite is: the file is the boundary under test, and a deep
+         clone would keep what a file drops.
          */
         const onDisk = JSON.stringify(built,);
 

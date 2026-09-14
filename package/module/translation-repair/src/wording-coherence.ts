@@ -16,28 +16,28 @@ import type { LaneSliceText, } from './lane-slice-text.ts';
 // that no reader has to trust the writer.
 
 /**
- * Raised when one slice's outcome contradicts what the archive holds there.
- *
- * SEPARATE FROM COVERAGE. A coverage failure means the lane and the preparation
- * disagree about which slices exist; this means one wording disagrees with
- * itself, which no join or count could detect afterwards because every field is
- * individually well formed.
- *
- * @example
- * ```ts
- * throw new WordingCoherenceError({ message: 'slice 4 falls back on wording the archive lacks', },);
- * ```
+ Raised when one slice's outcome contradicts what the archive holds there.
+ 
+ SEPARATE FROM COVERAGE. A coverage failure means the lane and the preparation
+ disagree about which slices exist; this means one wording disagrees with
+ itself, which no join or count could detect afterwards because every field is
+ individually well formed.
+ 
+ @example
+ ```ts
+ throw new WordingCoherenceError({ message: 'slice 4 falls back on wording the archive lacks', },);
+ ```
  */
 export class WordingCoherenceError extends Error {
   /**
-   * Builds the error with a message naming the slice and the contradiction.
-   *
-   * @param message - what contradicts what, naming the slice index
-   *
-   * @example
-   * ```ts
-   * throw new WordingCoherenceError({ message: 'slice 4 falls back on wording the archive lacks', },);
-   * ```
+   Builds the error with a message naming the slice and the contradiction.
+   
+   @param message - what contradicts what, naming the slice index
+   
+   @example
+   ```ts
+   throw new WordingCoherenceError({ message: 'slice 4 falls back on wording the archive lacks', },);
+   ```
    */
   constructor({ message, }: { readonly message: string; },) {
     super(message,);
@@ -46,31 +46,31 @@ export class WordingCoherenceError extends Error {
 }
 
 /**
- * Refuses a wording whose outcome and incumbent describe different slices.
- *
- * @param wording - one lane's record of one slice, naming both what the lane
- * did and whether the archive holds anything there
- *
- * @throws {@link WordingCoherenceError} when the lane falls back on an
- * incumbent that does not exist, reports a passage the archive translates as
- * unfilled, or claims a decision that filled a gap with nothing
- *
- * @example
- * ```ts
- * assertWordingCoherent({ wording, },);
- * ```
+ Refuses a wording whose outcome and incumbent describe different slices.
+ 
+ @param wording - one lane's record of one slice, naming both what the lane
+ did and whether the archive holds anything there
+ 
+ @throws {@link WordingCoherenceError} when the lane falls back on an
+ incumbent that does not exist, reports a passage the archive translates as
+ unfilled, or claims a decision that filled a gap with nothing
+ 
+ @example
+ ```ts
+ assertWordingCoherent({ wording, },);
+ ```
  */
 export function assertWordingCoherent(
   { wording, }: { readonly wording: LaneSliceText; },
 ): void {
   /**
-   * Slice being checked, named in every message so a failure points at a row.
+   Slice being checked, named in every message so a failure points at a row.
    */
   const at = `slice ${String(wording.sliceIndex,)}`;
 
   /**
-   * What the lane did here, and whether the archive holds anything here, which
-   * are the two axes this rule relates.
+   What the lane did here, and whether the archive holds anything here, which
+   are the two axes this rule relates.
    */
   const {
     outcome,

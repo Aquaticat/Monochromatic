@@ -33,20 +33,20 @@ import type { AnchorTarget, } from './validate-issue.ts';
 // the wrong scope but proves the probe can see ambiguity, reports 566.
 
 /**
- * Located-quote outcome: anchors, or the failure reason.
- *
- * @example
- * ```ts
- * const location: QuoteLocation = { located: false, reason: 'quote-not-found (target)', };
- * ```
+ Located-quote outcome: anchors, or the failure reason.
+ 
+ @example
+ ```ts
+ const location: QuoteLocation = { located: false, reason: 'quote-not-found (target)', };
+ ```
  */
 export type QuoteLocation =
   | {
     readonly located: true;
 
     /**
-     * One anchor per block the quoted region touches;
-     * block-crossing quotes split into per-node spans.
+     One anchor per block the quoted region touches;
+     block-crossing quotes split into per-node spans.
      */
     readonly anchors: readonly SpanAnchor[];
   }
@@ -54,32 +54,32 @@ export type QuoteLocation =
     readonly located: false;
 
     /**
-     * Which check refused, in scorecard-stable wording.
+     Which check refused, in scorecard-stable wording.
      */
     readonly reason: string;
   };
 
 /**
- * Binds one located region to its blocks.
- * A region inside one block yields one anchor;
- * a region crossing blocks splits into one anchor per touched block,
- * each carrying the document's own bytes for its intersection
- * (inter-block gaps are simply not covered by any span).
- *
- * @param document - side being anchored
- *
- * @param side - which side the anchors belong to
- *
- * @param at - region start in document offsets
- *
- * @param end - exclusive region end
- *
- * @returns Anchors, or the outside-blocks failure
- *
- * @example
- * ```ts
- * const bound = bindQuoteRegion({ document, side: 'target', at, end, },);
- * ```
+ Binds one located region to its blocks.
+ A region inside one block yields one anchor;
+ a region crossing blocks splits into one anchor per touched block,
+ each carrying the document's own bytes for its intersection
+ (inter-block gaps are simply not covered by any span).
+ 
+ @param document - side being anchored
+ 
+ @param side - which side the anchors belong to
+ 
+ @param at - region start in document offsets
+ 
+ @param end - exclusive region end
+ 
+ @returns Anchors, or the outside-blocks failure
+ 
+ @example
+ ```ts
+ const bound = bindQuoteRegion({ document, side: 'target', at, end, },);
+ ```
  */
 function bindQuoteRegion(
   {
@@ -95,7 +95,7 @@ function bindQuoteRegion(
   },
 ): QuoteLocation {
   /**
-   * Blocks the region touches, in document order.
+   Blocks the region touches, in document order.
    */
   const touched = document
     .nodes
@@ -113,7 +113,7 @@ function bindQuoteRegion(
     located: true,
     anchors: touched.map(function toAnchor(node,): SpanAnchor {
       /**
-       * Start of this block's share of the region.
+       Start of this block's share of the region.
        */
       const spanStart = Math.max(
         at,
@@ -121,7 +121,7 @@ function bindQuoteRegion(
       );
 
       /**
-       * Exclusive end of this block's share.
+       Exclusive end of this block's share.
        */
       const spanEnd = Math.min(
         end,
@@ -144,16 +144,16 @@ function bindQuoteRegion(
 }
 
 /**
- * Whether a character belongs to a Latin token: an ASCII letter or digit.
- *
- * @param character - one character
- *
- * @returns Whether it continues a Latin token
- *
- * @example
- * ```ts
- * const inToken = isLatinTokenCharacter({ character: 'a', },);
- * ```
+ Whether a character belongs to a Latin token: an ASCII letter or digit.
+ 
+ @param character - one character
+ 
+ @returns Whether it continues a Latin token
+ 
+ @example
+ ```ts
+ const inToken = isLatinTokenCharacter({ character: 'a', },);
+ ```
  */
 function isLatinTokenCharacter({ character, }: { readonly character: string; },): boolean {
   return ((character >= 'a') && (character <= 'z'))
@@ -162,25 +162,25 @@ function isLatinTokenCharacter({ character, }: { readonly character: string; },)
 }
 
 /**
- * Describes the missed quote into the failure finding by its shape, so a miss
- * can be diagnosed by size and script rather than only counted, and without
- * writing corpus text into a finding.
- *
- * NO TEXT, BY THE RULE FINDINGS LIVE UNDER. An earlier version quoted up to
- * sixty characters of the needle; findings travel into logs, artifacts and any
- * command that prints them, none of which may carry corpus text. The length,
- * counted once over the one-line form, and the count of Latin tokens say what
- * kind of quote missed (a paragraph, a name, a number) and nothing of its
- * wording.
- *
- * @param needle - punctuation-normalized quote that was not found
- *
- * @returns Shape note prefixed with a space, ready to append to a reason
- *
- * @example
- * ```ts
- * needlePreview({ needle: 'a quote that missed', },);
- * ```
+ Describes the missed quote into the failure finding by its shape, so a miss
+ can be diagnosed by size and script rather than only counted, and without
+ writing corpus text into a finding.
+ 
+ NO TEXT, BY THE RULE FINDINGS LIVE UNDER. An earlier version quoted up to
+ sixty characters of the needle; findings travel into logs, artifacts and any
+ command that prints them, none of which may carry corpus text. The length,
+ counted once over the one-line form, and the count of Latin tokens say what
+ kind of quote missed (a paragraph, a name, a number) and nothing of its
+ wording.
+ 
+ @param needle - punctuation-normalized quote that was not found
+ 
+ @returns Shape note prefixed with a space, ready to append to a reason
+ 
+ @example
+ ```ts
+ needlePreview({ needle: 'a quote that missed', },);
+ ```
  */
 function needlePreview(
   {
@@ -190,13 +190,13 @@ function needlePreview(
   },
 ): string {
   /**
-   * Needle flattened to one line, the form a finding would have shown.
+   Needle flattened to one line, the form a finding would have shown.
    */
   const flat = collapseLineBreaks({ text: needle, },);
 
   /**
-   * Latin tokens in it, counted as runs of ASCII letters and digits in one
-   * linear pass.
+   Latin tokens in it, counted as runs of ASCII letters and digits in one
+   linear pass.
    */
   const counted = {
     tokens: 0,
@@ -204,7 +204,7 @@ function needlePreview(
   };
   for (const character of flat) {
     /**
-     * Whether this character continues a token.
+     Whether this character continues a token.
      */
     const inToken = isLatinTokenCharacter({ character, },);
     if (inToken && (!counted.inToken))
@@ -215,27 +215,27 @@ function needlePreview(
 }
 
 /**
- * Locates one quote inside one document and binds it to its blocks.
- *
- * Searches the document and the quote in one canonical form, where curly and
- * ASCII punctuation are the same character and a soft line break is a space, so
- * a quote copied out of a wrapped paragraph still anchors. Refuses a quote that
- * occurs more than once in THAT form, whatever the stored punctuation and
- * wrapping happen to be, because a model's own punctuation and line breaks do
- * not say which occurrence it read.
- *
- * @param document - side being searched
- *
- * @param side - which side the anchors belong to
- *
- * @param quote - substring the critic claims
- *
- * @returns Anchors, or the failure reason
- *
- * @example
- * ```ts
- * const located = locateQuote({ document, side: 'target', quote, },);
- * ```
+ Locates one quote inside one document and binds it to its blocks.
+ 
+ Searches the document and the quote in one canonical form, where curly and
+ ASCII punctuation are the same character and a soft line break is a space, so
+ a quote copied out of a wrapped paragraph still anchors. Refuses a quote that
+ occurs more than once in THAT form, whatever the stored punctuation and
+ wrapping happen to be, because a model's own punctuation and line breaks do
+ not say which occurrence it read.
+ 
+ @param document - side being searched
+ 
+ @param side - which side the anchors belong to
+ 
+ @param quote - substring the critic claims
+ 
+ @returns Anchors, or the failure reason
+ 
+ @example
+ ```ts
+ const located = locateQuote({ document, side: 'target', quote, },);
+ ```
  */
 export function locateQuote(
   {
@@ -256,20 +256,20 @@ export function locateQuote(
   }
 
   /**
-   * Document read in the broadest form this function accepts: punctuation
-   * variants canonical, soft line breaks read as spaces. Both maps replace one
-   * UTF-16 unit with one, so every offset here indexes the stored document and
-   * anchors still carry its own characters.
+   Document read in the broadest form this function accepts: punctuation
+   variants canonical, soft line breaks read as spaces. Both maps replace one
+   UTF-16 unit with one, so every offset here indexes the stored document and
+   anchors still carry its own characters.
    */
   const haystack = collapseSoftLineBreaks({ text: normalizePunctuation({ text: document.text, },), },);
 
   /**
-   * Quote read the same way.
+   Quote read the same way.
    */
   const needle = collapseSoftLineBreaks({ text: normalizePunctuation({ text: quote, },), },);
 
   /**
-   * Where the quote sits once both are read that way.
+   Where the quote sits once both are read that way.
    */
   const at = haystack.indexOf(needle,);
   if (at === (-1)) {

@@ -1,12 +1,12 @@
 /**
- * Tests for what the repair lane says about a passage the archive never
- * translated.
- *
- * The outcome is read by position and its finding is what says why, so both
- * are pinned: every count zero, every list empty, nothing changed, and the
- * finding in its scorecard-stable wording.
- *
- * @module
+ Tests for what the repair lane says about a passage the archive never
+ translated.
+ 
+ The outcome is read by position and its finding is what says why, so both
+ are pinned: every count zero, every list empty, nothing changed, and the
+ finding in its scorecard-stable wording.
+ 
+ @module
  */
 
 import {

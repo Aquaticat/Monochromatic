@@ -1,8 +1,8 @@
 /**
- * Tests for category-leaf remapping of untrusted model categories onto
- * the listed taxonomy.
- *
- * @module
+ Tests for category-leaf remapping of untrusted model categories onto
+ the listed taxonomy.
+ 
+ @module
  */
 
 import {

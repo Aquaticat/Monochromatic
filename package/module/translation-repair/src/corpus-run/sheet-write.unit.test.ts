@@ -1,10 +1,10 @@
 /**
- * Tests for the refusing sheet-pair writer.
- *
- * A grading sheet is a grader's work in progress the moment it lands, so the
- * writer lands both files once and refuses to replace either on a rerun.
- *
- * @module
+ Tests for the refusing sheet-pair writer.
+ 
+ A grading sheet is a grader's work in progress the moment it lands, so the
+ writer lands both files once and refuses to replace either on a rerun.
+ 
+ @module
  */
 
 import {
@@ -33,7 +33,7 @@ await describe({
         + 'and leaves both files as they were',
       fn: async () => {
         /**
-         * Disposable directory the pair lands in.
+         Disposable directory the pair lands in.
          */
         const dir = await mkdtemp(join(tmpdir(), 'sheet-write-',),);
         await writeSheetPair({
@@ -60,12 +60,12 @@ await describe({
       name: 'lands both files with their text and returns the sheet path',
       fn: async () => {
         /**
-         * Disposable directory the pair lands in.
+         Disposable directory the pair lands in.
          */
         const dir = await mkdtemp(join(tmpdir(), 'sheet-write-',),);
 
         /**
-         * Where the sheet landed.
+         Where the sheet landed.
          */
         const at = await writeSheetPair({
           dir,

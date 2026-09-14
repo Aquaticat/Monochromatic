@@ -1,15 +1,15 @@
 /**
- * Tests for the deterministic gate against edits that delete what nobody
- * complained about.
- *
- * Every threshold this guards was calibrated on 50 real graded repairs rather
- * than chosen, and two of the cases below are bugs that calibration run caught
- * in earlier drafts of the gate. Both would have rejected repairs a human
- * graded sound, which for a gate is the expensive direction.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the deterministic gate against edits that delete what nobody
+ complained about.
+ 
+ Every threshold this guards was calibrated on 50 real graded repairs rather
+ than chosen, and two of the cases below are bugs that calibration run caught
+ in earlier drafts of the gate. Both would have rejected repairs a human
+ graded sound, which for a gate is the expensive direction.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -28,7 +28,7 @@ await describe({
         + 'point of the edit and a gate that refused would refuse every repair',
       fn: async () => {
         /**
-         * Edit that removes exactly what the issue complained about.
+         Edit that removes exactly what the issue complained about.
          */
         const verdict = checkPreservation({
           before: 'Mittens napped on the sill and often shared her opinions loudly.',
@@ -46,7 +46,7 @@ await describe({
         + 'mark, the editor fixed it and deleted a person from the line',
       fn: async () => {
         /**
-         * Colon fixed, name silently removed.
+         Colon fixed, name silently removed.
          */
         const verdict = checkPreservation({
           before: 'Contributor for this entry：Whiskers - the Cat Archive',
@@ -65,7 +65,7 @@ await describe({
         + 'clause the source supported',
       fn: async () => {
         /**
-         * Four sentences collapsed into one.
+         Four sentences collapsed into one.
          */
         const verdict = checkPreservation({
           before: 'Mittens was not merely a napper but a climber. '
@@ -86,7 +86,7 @@ await describe({
         + 'otherwise would mean tuning it until it rejected sound repairs too',
       fn: async () => {
         /**
-         * Same content, different words.
+         Same content, different words.
          */
         const verdict = checkPreservation({
           before: 'Her purr was faint, as though she were dozing and dreaming at once.',
@@ -104,7 +104,7 @@ await describe({
         + 'ordinary words wearing a capital because of where they sit',
       fn: async () => {
         /**
-         * Sentence-opening capitals that the edit drops.
+         Sentence-opening capitals that the edit drops.
          */
         const verdict = checkPreservation({
           before: 'The cat slept. Yet the garden stayed loud. Moreover the birds returned.',
@@ -123,7 +123,7 @@ await describe({
         + 'number and rejected a repair a human graded sound over exactly this',
       fn: async () => {
         /**
-         * Ordinal rewritten as a bare numeral.
+         Ordinal rewritten as a bare numeral.
          */
         const verdict = checkPreservation({
           before: 'On the evening of July 10th, she climbed the tallest fence.',
@@ -141,7 +141,7 @@ await describe({
         + 'does not amount to ignoring digits',
       fn: async () => {
         /**
-         * Catalogue number silently dropped.
+         Catalogue number silently dropped.
          */
         const verdict = checkPreservation({
           before: 'Contributor for this entry：the Cat Archive (catalogue 611)',
@@ -158,7 +158,7 @@ await describe({
       name: 'REJECTS a wholesale deletion, where the edit wrote nothing at all',
       fn: async () => {
         /**
-         * Envelope emptied rather than rewritten.
+         Envelope emptied rather than rewritten.
          */
         const verdict = checkPreservation({
           before: 'Mittens knew every branch of the garden oak, from root to crown.',
@@ -177,7 +177,7 @@ await describe({
         + 'nothing about whether anything was deleted',
       fn: async () => {
         /**
-         * Two-token residual, one token changed.
+         Two-token residual, one token changed.
          */
         const verdict = checkPreservation({
           before: 'She purred softly.',
@@ -196,7 +196,7 @@ await describe({
         + 'unlicensed and trip the gate on its own licence',
       fn: async () => {
         /**
-         * One quote contained within another.
+         One quote contained within another.
          */
         const verdict = checkPreservation({
           before: 'She knew every branch of the garden oak, from root to crown.',

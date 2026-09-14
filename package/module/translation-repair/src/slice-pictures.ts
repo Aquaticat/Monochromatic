@@ -23,48 +23,48 @@ import { photoReferences, } from './photo-reference.ts';
 // that WERE read, and the run records the rest where a person reads findings.
 
 /**
- * How a picture's readings are labelled for the model shown them.
+ How a picture's readings are labelled for the model shown them.
  */
 const PICTURE_HEADING = 'PICTURE';
 
 /**
- * What one slice is shown about the pictures around it.
- *
- * @example
- * ```ts
- * const pictures: SlicePictures = { context: '', findings: [], };
- * ```
+ What one slice is shown about the pictures around it.
+ 
+ @example
+ ```ts
+ const pictures: SlicePictures = { context: '', findings: [], };
+ ```
  */
 export type SlicePictures = {
   /**
-   * Readings rendered for a prompt, empty when nothing was corroborated.
+   Readings rendered for a prompt, empty when nothing was corroborated.
    */
   readonly context: string;
 
   /**
-   * One line per picture no reading is available for, naming which picture and
-   * why, in the wording a scorecard can group.
+   One line per picture no reading is available for, naming which picture and
+   why, in the wording a scorecard can group.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Pictures named by one slice and by the slices either side of it.
- *
- * @param slices - prepared slice pairs of one entry
- *
- * @param slicePosition - POSITION IN `slices`, never a stamped `sliceIndex`
- *
- * @returns Asset names in document order, each once
- *
- * @throws {@link RangeError} when `slicePosition` is not a position in `slices`,
- * since an index stamped elsewhere would silently name no pictures and read as
- * a slice that shows none
- *
- * @example
- * ```ts
- * const names = slicePictureNames({ slices, slicePosition, },);
- * ```
+ Pictures named by one slice and by the slices either side of it.
+ 
+ @param slices - prepared slice pairs of one entry
+ 
+ @param slicePosition - POSITION IN `slices`, never a stamped `sliceIndex`
+ 
+ @returns Asset names in document order, each once
+ 
+ @throws {@link RangeError} when `slicePosition` is not a position in `slices`,
+ since an index stamped elsewhere would silently name no pictures and read as
+ a slice that shows none
+ 
+ @example
+ ```ts
+ const names = slicePictureNames({ slices, slicePosition, },);
+ ```
  */
 export function slicePictureNames(
   {
@@ -87,14 +87,14 @@ export function slicePictureNames(
   }
 
   /**
-   * Slice whose picture window was requested.
+   Slice whose picture window was requested.
    */
   const current = slices[slicePosition];
   if (current?.syntax === 'front-matter')
     return [];
 
   /**
-   * Names gathered so far, in order, each once.
+   Names gathered so far, in order, each once.
    */
   const named = new Set<string>();
 
@@ -104,7 +104,7 @@ export function slicePictureNames(
     slicePosition + 1,
   ]) {
     /**
-     * That slice, absent at either end of the document.
+     That slice, absent at either end of the document.
      */
     const beside = slices[at];
     if ((beside === undefined) || (beside.syntax === 'front-matter'))
@@ -120,22 +120,22 @@ export function slicePictureNames(
 }
 
 /**
- * Renders what is known about one slice's pictures, and names what is not.
- *
- * @param slices - prepared slice pairs of one entry
- *
- * @param slicePosition - POSITION IN `slices`
- *
- * @param readings - what reading produced per asset name, for this entry
- *
- * @returns Prompt block for corroborated readings, plus findings for the rest
- *
- * @throws {@link RangeError} by way of {@link slicePictureNames}
- *
- * @example
- * ```ts
- * const pictures = slicePictures({ slices, slicePosition, readings, },);
- * ```
+ Renders what is known about one slice's pictures, and names what is not.
+ 
+ @param slices - prepared slice pairs of one entry
+ 
+ @param slicePosition - POSITION IN `slices`
+ 
+ @param readings - what reading produced per asset name, for this entry
+ 
+ @returns Prompt block for corroborated readings, plus findings for the rest
+ 
+ @throws {@link RangeError} by way of {@link slicePictureNames}
+ 
+ @example
+ ```ts
+ const pictures = slicePictures({ slices, slicePosition, readings, },);
+ ```
  */
 export function slicePictures(
   {
@@ -149,7 +149,7 @@ export function slicePictures(
   },
 ): SlicePictures {
   /**
-   * Pictures this slice and its neighbours show.
+   Pictures this slice and its neighbours show.
    */
   const names = slicePictureNames({
     slices,
@@ -157,19 +157,19 @@ export function slicePictures(
   },);
 
   /**
-   * Rendered blocks, one per picture that was read.
+   Rendered blocks, one per picture that was read.
    */
   const blocks: string[] = [];
 
   /**
-   * Findings, one per picture that was not.
+   Findings, one per picture that was not.
    */
   const findings: string[] = [];
 
   for (const assetName of names) {
     /**
-     * What reading this picture produced, absent when the entry's readings were
-     * never gathered.
+     What reading this picture produced, absent when the entry's readings were
+     never gathered.
      */
     const reading = readings.get(assetName,);
     if (reading === undefined) {
@@ -190,9 +190,9 @@ export function slicePictures(
     }
 
     /**
-     * Each reader's transcription, named by the model that produced it, since
-     * agreement establishes that two readers describe the same picture rather
-     * than the same AMOUNT of it: the shorter vouches, the longer informs.
+     Each reader's transcription, named by the model that produced it, since
+     agreement establishes that two readers describe the same picture rather
+     than the same AMOUNT of it: the shorter vouches, the longer informs.
      */
     const transcriptions = reading.readings
       .map(function labelled(one,): string {
@@ -208,40 +208,40 @@ export function slicePictures(
 }
 
 /**
- * Every slice's picture block, keyed by the index its consumers read.
- *
- * TWO INDEX SPACES MEET HERE, which is the whole reason this exists.
- * {@link slicePictures} takes a POSITION, because a window is defined by who sits
- * either side in the array. A stage downstream of preparation holds no array: it
- * holds rows stamped with `sliceIndex`, and `#99` is the record of what happens
- * when those two are assumed equal by someone holding neither.
- *
- * THEY ARE EQUAL, AND ENFORCED SO. `assertSliceIndexing` refuses any preparation
- * whose slice at a position is stamped with a different index, so this reads the
- * stamp rather than the position and gets the same number by a route that would
- * break loudly if the invariant ever did.
- *
- * THE FINDINGS ARE DROPPED, deliberately. A refused reading is already reported
- * once by the stage that windows it for itself, and a second stage reporting the
- * same refusal would have a run count one unread picture twice.
- *
- * @param slices - prepared slice pairs of one entry, indexed as prepared
- *
- * @param readings - what reading produced per asset name, for this entry
- *
- * @returns Picture block per slice, keyed by stamped index, empty where a slice
- * neighbours no readable picture
- *
- * @throws {@link RangeError} by way of {@link slicePictures}
- *
- * @throws Error - when two slices carry one stamped index, which
- * `assertSliceIndexing` already forbids and which would otherwise silently drop
- * one slice's pictures
- *
- * @example
- * ```ts
- * const contexts = slicePictureContexts({ slices, readings, },);
- * ```
+ Every slice's picture block, keyed by the index its consumers read.
+ 
+ TWO INDEX SPACES MEET HERE, which is the whole reason this exists.
+ {@link slicePictures} takes a POSITION, because a window is defined by who sits
+ either side in the array. A stage downstream of preparation holds no array: it
+ holds rows stamped with `sliceIndex`, and `#99` is the record of what happens
+ when those two are assumed equal by someone holding neither.
+ 
+ THEY ARE EQUAL, AND ENFORCED SO. `assertSliceIndexing` refuses any preparation
+ whose slice at a position is stamped with a different index, so this reads the
+ stamp rather than the position and gets the same number by a route that would
+ break loudly if the invariant ever did.
+ 
+ THE FINDINGS ARE DROPPED, deliberately. A refused reading is already reported
+ once by the stage that windows it for itself, and a second stage reporting the
+ same refusal would have a run count one unread picture twice.
+ 
+ @param slices - prepared slice pairs of one entry, indexed as prepared
+ 
+ @param readings - what reading produced per asset name, for this entry
+ 
+ @returns Picture block per slice, keyed by stamped index, empty where a slice
+ neighbours no readable picture
+ 
+ @throws {@link RangeError} by way of {@link slicePictures}
+ 
+ @throws Error - when two slices carry one stamped index, which
+ `assertSliceIndexing` already forbids and which would otherwise silently drop
+ one slice's pictures
+ 
+ @example
+ ```ts
+ const contexts = slicePictureContexts({ slices, readings, },);
+ ```
  */
 export function slicePictureContexts(
   {
@@ -253,7 +253,7 @@ export function slicePictureContexts(
   },
 ): ReadonlyMap<number, string> {
   /**
-   * One pair per slice, stamped index against rendered block.
+   One pair per slice, stamped index against rendered block.
    */
   const entries = slices.map(function nameSlicePictures(
     slice,
@@ -263,7 +263,7 @@ export function slicePictureContexts(
     string,
   ] {
     /**
-     * Block this slice would be shown, windowed positionally.
+     Block this slice would be shown, windowed positionally.
      */
     const rendered = slicePictures({
       slices,
@@ -279,7 +279,7 @@ export function slicePictureContexts(
   },);
 
   /**
-   * Those pairs as a lookup.
+   Those pairs as a lookup.
    */
   const contexts = new Map(entries,);
 

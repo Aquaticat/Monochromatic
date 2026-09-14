@@ -1,5 +1,5 @@
 /**
- * Test-only archive review clients exercising real stage boundaries.
+ Test-only archive review clients exercising real stage boundaries.
  */
 import {
   type ChatJsonOutcome,
@@ -9,27 +9,27 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Source containing every fact the complete replacement preserves.
+ Source containing every fact the complete replacement preserves.
  */
 export const ARCHIVE_TEST_SOURCE = '猫猫有柔软的毛，也很勇敢。';
 /**
- * Original with one unintended spelling error.
+ Original with one unintended spelling error.
  */
 export const ARCHIVE_TEST_BLOCK = '> Cat has soft fur and is couragous.';
 /**
- * Complete correction, not an excerpt.
+ Complete correction, not an excerpt.
  */
 export const ARCHIVE_TEST_CORRECTION = '> Cat has soft fur and is courageous.';
 /**
- * Incomplete proposal the selector must see as a competing proposal.
+ Incomplete proposal the selector must see as a competing proposal.
  */
 export const ARCHIVE_TEST_PARTIAL = 'Cat.';
 /**
- * Archive context already available to the review stage.
+ Archive context already available to the review stage.
  */
 export const ARCHIVE_TEST_PAGE: string = `Earlier archive context.\n\n${ARCHIVE_TEST_BLOCK}\n\nFollowing archive context.`;
 /**
- * Eleven seats require six schema-valid review voices.
+ Eleven seats require six schema-valid review voices.
  */
 export const ARCHIVE_TEST_ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -46,22 +46,22 @@ export const ARCHIVE_TEST_ROSTER = [
 ] as const;
 
 /**
- * Review shapes vary evidence, never the configured quorum.
+ Review shapes vary evidence, never the configured quorum.
  */
 export type ArchiveReviewFixtureMode = 'mixed' | 'retention-only' | 'unavailable' | 'all-anchored' | 'single' | 'echo';
 /**
- * Selector can deliberately choose original or lose quorum.
+ Selector can deliberately choose original or lose quorum.
  */
 export type ArchiveSelectionFixtureMode = 'revision' | 'original' | 'unavailable';
 
 /**
- * Locates an actual numbered candidate rather than assuming proposal order.
- *
- * @param text - selector's user message
- *
- * @param wanted - exact candidate value expected on its slate
- *
- * @returns One-based candidate number
+ Locates an actual numbered candidate rather than assuming proposal order.
+ 
+ @param text - selector's user message
+ 
+ @param wanted - exact candidate value expected on its slate
+ 
+ @returns One-based candidate number
  */
 function candidateNumber({
   text,
@@ -71,7 +71,7 @@ function candidateNumber({
   readonly wanted: string
 },): number {
   /**
-   * Controlled fixtures contain no candidate-header text in their prose.
+   Controlled fixtures contain no candidate-header text in their prose.
    */
   const match = text.split('CANDIDATE ',)
     .slice(1,)
@@ -87,36 +87,36 @@ function candidateNumber({
 }
 
 /**
- * Rejects text-only calls outside this fixture's protocol.
- *
- * @throws Error on any invocation
+ Rejects text-only calls outside this fixture's protocol.
+ 
+ @throws Error on any invocation
  */
 function unexpectedText(): never {
   throw new Error('Unexpected text call',);
 }
 
 /**
- * Prevents accidental access to live quota resources.
- *
- * @throws Error on any invocation
+ Prevents accidental access to live quota resources.
+ 
+ @throws Error on any invocation
  */
 function unexpectedQuotas(): never {
   throw new Error('Unexpected quota read',);
 }
 
 /**
- * Builds schema-valid review replies and captures the real selection message.
- *
- * @param review - anchor and revision mixture
- *
- * @param selection - selector result independent of review replies
- *
- * @returns Scripted client and observable selector inputs
- *
- * @example
- * ```ts
- * const fixture = archiveSelectionFixture({ review: 'mixed' });
- * ```
+ Builds schema-valid review replies and captures the real selection message.
+ 
+ @param review - anchor and revision mixture
+ 
+ @param selection - selector result independent of review replies
+ 
+ @returns Scripted client and observable selector inputs
+ 
+ @example
+ ```ts
+ const fixture = archiveSelectionFixture({ review: 'mixed' });
+ ```
  */
 export function archiveSelectionFixture(
   {
@@ -132,15 +132,15 @@ export function archiveSelectionFixture(
   readonly reviews: () => number
 } {
   /**
-   * First-window review callbacks, with all seven schema-valid replies delivered.
+   First-window review callbacks, with all seven schema-valid replies delivered.
    */
   const reviewRequests: string[] = [];
   /**
-   * One entry for every selector request, containing no system instructions.
+   One entry for every selector request, containing no system instructions.
    */
   const selections: string[] = [];
   /**
-   * Source-supported replies whose literal anchor is present.
+   Source-supported replies whose literal anchor is present.
    */
   const retained = {
     disposition: 'source-supported',
@@ -149,7 +149,7 @@ export function archiveSelectionFixture(
     finding: 'Valid retention opinion.',
   };
   /**
-   * Invalid retention evidence remains in audit findings, not selector authority.
+   Invalid retention evidence remains in audit findings, not selector authority.
    */
   const unanchored = {
     ...retained,
@@ -157,7 +157,7 @@ export function archiveSelectionFixture(
     finding: 'Unanchored retention opinion.',
   };
   /**
-   * Both complete and incomplete schema-valid revisions require independent selection.
+   Both complete and incomplete schema-valid revisions require independent selection.
    */
   const corrected = {
     disposition: 'revise',
@@ -166,7 +166,7 @@ export function archiveSelectionFixture(
     finding: 'Correct the spelling without changing meaning.',
   };
   /**
-   * Incomplete value tests that independent selection receives the actual proposal.
+   Incomplete value tests that independent selection receives the actual proposal.
    */
   const partial = {
     ...corrected,
@@ -174,7 +174,7 @@ export function archiveSelectionFixture(
     finding: 'A competing partial proposal.',
   };
   /**
-   * Fixed review shapes make the guard independent of prompt-rotated model order.
+   Fixed review shapes make the guard independent of prompt-rotated model order.
    */
   const replies = review === 'retention-only'
     ? [
@@ -216,22 +216,22 @@ export function archiveSelectionFixture(
           partial,
         ];
   /**
-   * Synchronous fixture logic, adapted to the provider's asynchronous interface.
-   *
-   * @param request - actual production role and schema
-   *
-   * @returns Scripted schema-valid outcome or explicit unavailable voice
+   Synchronous fixture logic, adapted to the provider's asynchronous interface.
+   
+   @param request - actual production role and schema
+   
+   @returns Scripted schema-valid outcome or explicit unavailable voice
    */
   function respond<ValueT,>(request: ChatJsonRequest<ValueT>,): ChatJsonOutcome<ValueT> {
       /**
-       * Role is identified by the actual production schema, not call order.
+       Role is identified by the actual production schema, not call order.
        */
       const schema = request.responseFormat
         ?.json_schema
         .name;
       if (schema === 'archive_block_review') {
         /**
-         * First-window position, independent of the prompt-rotated model identity.
+         First-window position, independent of the prompt-rotated model identity.
          */
         const index = reviewRequests.length;
         reviewRequests.push(request.modelId,);
@@ -242,7 +242,7 @@ export function archiveSelectionFixture(
             detail: 'Review quorum unavailable in fixture',
           };
         /**
-         * Echoes remain actual revision replies but do not change the block.
+         Echoes remain actual revision replies but do not change the block.
          */
         const value: unknown = review === 'unavailable' ? corrected : review === 'echo'
           ? {
@@ -261,7 +261,7 @@ export function archiveSelectionFixture(
       if (schema !== 'candidate_ballot')
         throw new Error(`Unexpected schema ${String(schema,)}`,);
       /**
-       * Actual candidate/evidence data used to identify the intended choice.
+       Actual candidate/evidence data used to identify the intended choice.
        */
       const text = request.messages
         .filter(function user(message,) {
@@ -279,7 +279,7 @@ export function archiveSelectionFixture(
           detail: 'Selector quorum unavailable in fixture',
         };
       /**
-       * Decision binds to the candidate's content rather than assumed order.
+       Decision binds to the candidate's content rather than assumed order.
        */
       const value: unknown = {
         best: candidateNumber({
@@ -297,19 +297,19 @@ export function archiveSelectionFixture(
       };
   }
   /**
-   * No external provider is reachable through this fixture.
+   No external provider is reachable through this fixture.
    */
   const client: SyntheticClient = {
     /**
-     * Text-only calls are outside this scripted protocol.
+     Text-only calls are outside this scripted protocol.
      */
     chatText: unexpectedText,
     /**
-     * Fixtures cannot query live provider resources.
+     Fixtures cannot query live provider resources.
      */
     quotas: unexpectedQuotas,
     /**
-     * Adapts deterministic reply construction to the provider interface.
+     Adapts deterministic reply construction to the provider interface.
      */
     chatJson: function chatJson<ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> {
       return Promise.resolve(respond(request,),);
@@ -319,7 +319,7 @@ export function archiveSelectionFixture(
     client,
     selections,
     /**
-     * Read-only view of how many review calls the stage made.
+     Read-only view of how many review calls the stage made.
      */
     reviews: function reviews(): number {
       return reviewRequests.length;

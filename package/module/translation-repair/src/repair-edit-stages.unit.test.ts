@@ -1,20 +1,20 @@
 /**
- * Tests for the resolution checker stage.
- *
- * `runCheckerStage` had no test, and it produces `tallies`, which decide
- * `resolvedIssueIds`. Those feed candidate selection AND the milestone's
- * headline resolution rate, so a defect here does not break a run; it moves the
- * number the milestone is judged on.
- *
- * The stage's own arithmetic lives in `tallyResolutionChecks`, which is tested
- * separately. What is untested here is the wiring: that every heard checker
- * becomes exactly one ballot, that a lost voice reduces the count rather than
- * silently counting as agreement, and that ballot irregularities reach the
- * findings rather than being dropped between the two halves.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the resolution checker stage.
+ 
+ `runCheckerStage` had no test, and it produces `tallies`, which decide
+ `resolvedIssueIds`. Those feed candidate selection AND the milestone's
+ headline resolution rate, so a defect here does not break a run; it moves the
+ number the milestone is judged on.
+ 
+ The stage's own arithmetic lives in `tallyResolutionChecks`, which is tested
+ separately. What is untested here is the wiring: that every heard checker
+ becomes exactly one ballot, that a lost voice reduces the count rather than
+ silently counting as agreement, and that ballot irregularities reach the
+ findings rather than being dropped between the two halves.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -35,22 +35,22 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the stages under test.
+ Logger for the stages under test.
  */
 const l = tagged({ tag: 'checker-stage-test', },);
 
 /**
- * Original the checkers judge against.
+ Original the checkers judge against.
  */
 const SOURCE_TEXT = '猫猫在窗台上睡觉。';
 
 /**
- * Candidate under check.
+ Candidate under check.
  */
 const PATCHED_TEXT = 'The cat sleeps on the windowsill.';
 
 /**
- * Checker roster, larger than a majority so quorum arithmetic is visible.
+ Checker roster, larger than a majority so quorum arithmetic is visible.
  */
 const CHECKERS = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -59,16 +59,16 @@ const CHECKERS = [
 ] as const;
 
 /**
- * Builds one accepted issue the checkers rule on.
- *
- * @param issueId - handle the tallies are keyed by
- *
- * @returns Accepted issue
- *
- * @example
- * ```ts
- * const issue = catIssue({ issueId: 'adjudicated/tense', },);
- * ```
+ Builds one accepted issue the checkers rule on.
+ 
+ @param issueId - handle the tallies are keyed by
+ 
+ @returns Accepted issue
+ 
+ @example
+ ```ts
+ const issue = catIssue({ issueId: 'adjudicated/tense', },);
+ ```
  */
 function catIssue({ issueId, }: { readonly issueId: string; },): AdjudicatedIssue {
   return {
@@ -81,16 +81,16 @@ function catIssue({ issueId, }: { readonly issueId: string; },): AdjudicatedIssu
 }
 
 /**
- * Client answering each checker with a scripted report, or losing its voice.
- *
- * @param reportFor - report per model; returning undefined loses that voice
- *
- * @returns Client honoring that script
- *
- * @example
- * ```ts
- * const client = checkerClient({ reportFor: () => ({ checks: [], }), },);
- * ```
+ Client answering each checker with a scripted report, or losing its voice.
+ 
+ @param reportFor - report per model; returning undefined loses that voice
+ 
+ @returns Client honoring that script
+ 
+ @example
+ ```ts
+ const client = checkerClient({ reportFor: () => ({ checks: [], }), },);
+ ```
  */
 function checkerClient(
   { reportFor, }: { readonly reportFor: (modelId: string,) => unknown; },
@@ -103,7 +103,7 @@ function checkerClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Scripted report for the answering model.
+       Scripted report for the answering model.
        */
       const scripted = reportFor(request.modelId,);
       if (scripted === undefined) {
@@ -128,18 +128,18 @@ function checkerClient(
 }
 
 /**
- * Runs the checker stage against a scripted client.
- *
- * @param client - scripted checker client
- *
- * @param issues - accepted issues under check
- *
- * @returns Stage result
- *
- * @example
- * ```ts
- * const result = await runStage({ client, issues, },);
- * ```
+ Runs the checker stage against a scripted client.
+ 
+ @param client - scripted checker client
+ 
+ @param issues - accepted issues under check
+ 
+ @returns Stage result
+ 
+ @example
+ ```ts
+ const result = await runStage({ client, issues, },);
+ ```
  */
 async function runStage(
   {
@@ -168,25 +168,25 @@ async function runStage(
 }
 
 /**
- * Logger that keeps every line so a case can read what the stage published.
- *
- * @returns Logger beside its captured lines
- *
- * @example
- * ```ts
- * const { logger, lines, } = capturingLogger();
- * ```
+ Logger that keeps every line so a case can read what the stage published.
+ 
+ @returns Logger beside its captured lines
+ 
+ @example
+ ```ts
+ const { logger, lines, } = capturingLogger();
+ ```
  */
 function capturingLogger() {
   /**
-   * Lines the stage emitted, in order.
+   Lines the stage emitted, in order.
    */
   const lines: string[] = [];
 
   /**
-   * Records one line and discards its level, which no case here asks about.
-   *
-   * @param message - line the stage published
+   Records one line and discards its level, which no case here asks about.
+   
+   @param message - line the stage published
    */
   function record(message: string,): void {
     lines.push(message,);
@@ -213,7 +213,7 @@ await describe({
         + 'ordinary case the resolution rate is built from',
       fn: async () => {
         /**
-         * Stage where all three checkers agree the defect is gone.
+         Stage where all three checkers agree the defect is gone.
          */
         const result = await runStage({
           client: checkerClient({
@@ -245,9 +245,9 @@ await describe({
         } = capturingLogger();
 
         /**
-         * Authorship making the first checker an author of this issue's text
-         * and leaving the other two outsiders, which is the mixed shape a
-         * roster permitted to self-certify produces.
+         Authorship making the first checker an author of this issue's text
+         and leaving the other two outsiders, which is the mixed shape a
+         roster permitted to self-certify produces.
          */
         const mixedAuthorship: IssueAuthorship = {
           perIssue: { 'adjudicated/tense': [CHECKERS[0],], },
@@ -327,12 +327,12 @@ await describe({
         + 'agreed had landed',
       fn: async () => {
         /**
-         * Checkers that call the issue fixed; the rest disagree.
+         Checkers that call the issue fixed; the rest disagree.
          */
         const agreeing: ReadonlySet<string> = new Set([CHECKERS[0],],);
 
         /**
-         * Stage where one checker says fixed and two say not.
+         Stage where one checker says fixed and two say not.
          */
         const result = await runStage({
           client: checkerClient({
@@ -361,12 +361,12 @@ await describe({
         + 'the resolution rate',
       fn: async () => {
         /**
-         * Checker that answers; the others lose their voices.
+         Checker that answers; the others lose their voices.
          */
         const answering: ReadonlySet<string> = new Set([CHECKERS[0],],);
 
         /**
-         * Stage where only one of three checkers replied.
+         Stage where only one of three checkers replied.
          */
         const result = await runStage({
           client: checkerClient({
@@ -398,7 +398,7 @@ await describe({
         + 'denominator',
       fn: async () => {
         /**
-         * Stage over two issues where every reply mentions only the first.
+         Stage over two issues where every reply mentions only the first.
          */
         const result = await runStage({
           client: checkerClient({
@@ -432,7 +432,7 @@ await describe({
         + 'and the tally',
       fn: async () => {
         /**
-         * Stage where every checker names an issue number off the sheet.
+         Stage where every checker names an issue number off the sheet.
          */
         const result = await runStage({
           client: checkerClient({
@@ -460,7 +460,7 @@ await describe({
         + 'resolution and needs the two told apart',
       fn: async () => {
         /**
-         * Stage where every checker says the revision damaged the region.
+         Stage where every checker says the revision damaged the region.
          */
         const result = await runStage({
           client: checkerClient({
@@ -487,7 +487,7 @@ await describe({
         + 'resolutions',
       fn: async () => {
         /**
-         * Stage over an empty issue list.
+         Stage over an empty issue list.
          */
         const result = await runStage({
           client: checkerClient({ reportFor: () => ({ checks: [], }), },),

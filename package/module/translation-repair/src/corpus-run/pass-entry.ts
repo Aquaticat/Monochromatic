@@ -56,43 +56,43 @@ import { readLanesSeats, } from './pass-reseat.ts';
 // success path does and the failure path has no write at all.
 
 /**
- * Runs one chosen entry as far as its artifact, and says whether it got there.
- *
- * SEPARATE FROM THE CACHE DISCARD that follows it, which is the whole reason
- * this function exists rather than one longer body. The discard is destructive
- * and belongs only to the settled path, and a `catch` wide enough to cover both
- * cannot tell a pipeline failure from a failed unlink.
- *
- * @param client - shared model client
- *
- * @param entry - corpus pair to settle, text already read
- *
- * @param artifactsDir - directory one JSON per settled entry is written into
- *
- * @param publishDir - root of the mirrored corpus tree each fixed page is written into
- *
- * @param declinedDir - directory a decline record is written into when the
- * archive's note says the whole page is the author's own English
- *
- * @param entryCacheDir - this entry's own cache directory
- *
- * @param tip - repository head recorded into the artifact
- *
- * @param pipelineDigest - identity of the built pipeline, which also generation
- * -stamps the slice cache so a changed pipeline cannot resume foreign slices
- *
- * @param hardCapMs - wall time this entry may run before its exchanges abort
- *
- * @param baseSignal - abort this entry's deadline forwards from
- *
- * @param overlap - most slices each per-slice driver keeps in flight
- *
- * @returns Whether an artifact was written
- *
- * @example
- * ```ts
- * const outcome = await runEntryPipeline({ client, entry, artifactsDir, entryCacheDir, ... },);
- * ```
+ Runs one chosen entry as far as its artifact, and says whether it got there.
+ 
+ SEPARATE FROM THE CACHE DISCARD that follows it, which is the whole reason
+ this function exists rather than one longer body. The discard is destructive
+ and belongs only to the settled path, and a `catch` wide enough to cover both
+ cannot tell a pipeline failure from a failed unlink.
+ 
+ @param client - shared model client
+ 
+ @param entry - corpus pair to settle, text already read
+ 
+ @param artifactsDir - directory one JSON per settled entry is written into
+ 
+ @param publishDir - root of the mirrored corpus tree each fixed page is written into
+ 
+ @param declinedDir - directory a decline record is written into when the
+ archive's note says the whole page is the author's own English
+ 
+ @param entryCacheDir - this entry's own cache directory
+ 
+ @param tip - repository head recorded into the artifact
+ 
+ @param pipelineDigest - identity of the built pipeline, which also generation
+ -stamps the slice cache so a changed pipeline cannot resume foreign slices
+ 
+ @param hardCapMs - wall time this entry may run before its exchanges abort
+ 
+ @param baseSignal - abort this entry's deadline forwards from
+ 
+ @param overlap - most slices each per-slice driver keeps in flight
+ 
+ @returns Whether an artifact was written
+ 
+ @example
+ ```ts
+ const outcome = await runEntryPipeline({ client, entry, artifactsDir, entryCacheDir, ... },);
+ ```
  */
 async function runEntryPipeline(
   {
@@ -124,20 +124,20 @@ async function runEntryPipeline(
   },
 ): Promise<EntryOutcome> {
   /**
-   * Start time of this entry, for its duration.
+   Start time of this entry, for its duration.
    */
   const t0 = Date.now();
 
   /**
-   * Per-entry hard-cap deadline. Disposal at return defuses the timer and
-   * detaches its listener; the repo bans try/finally, so cleanup rides on
-   * `using` instead.
-   *
-   * ARMED BEFORE THE CACHE OPENS rather than after. Opening reads and may
-   * discard a directory of settled slices, and on a large entry that is real
-   * wall time; a ceiling armed afterwards would not be counting it, so the cap
-   * would mean something slightly different for a resumed entry than for a
-   * fresh one.
+   Per-entry hard-cap deadline. Disposal at return defuses the timer and
+   detaches its listener; the repo bans try/finally, so cleanup rides on
+   `using` instead.
+   
+   ARMED BEFORE THE CACHE OPENS rather than after. Opening reads and may
+   discard a directory of settled slices, and on a large entry that is real
+   wall time; a ceiling armed afterwards would not be counting it, so the cap
+   would mean something slightly different for a resumed entry than for a
+   fresh one.
    */
   using deadline = armCallDeadline({
     signal: baseSignal,
@@ -146,10 +146,10 @@ async function runEntryPipeline(
   },);
   try {
     /**
-     * What the archive's translators' notes say about whose text the page is,
-     * read BEFORE ANY PURCHASE: a page the note calls the author's own English
-     * is declined here, and nothing below runs for it (the owner's rule of
-     * 2026-09-08, `pass-decline.ts`).
+     What the archive's translators' notes say about whose text the page is,
+     read BEFORE ANY PURCHASE: a page the note calls the author's own English
+     is declined here, and nothing below runs for it (the owner's rule of
+     2026-09-08, `pass-decline.ts`).
      */
     const archiveOriginal = entryArchiveOriginalOf({ entry, },);
     if (archiveOriginal.kind === 'whole-page')
@@ -163,12 +163,12 @@ async function runEntryPipeline(
       },);
 
     /**
-     * The four stores this entry resumes from (`pass-entry-caches.ts`).
-     *
-     * INSIDE the try, because opening touches the filesystem and can fail.
-     * Opened outside, one unreadable cache directory ended the whole pass at
-     * whatever entry happened to hold it, which is the opposite of this
-     * function's contract.
+     The four stores this entry resumes from (`pass-entry-caches.ts`).
+     
+     INSIDE the try, because opening touches the filesystem and can fail.
+     Opened outside, one unreadable cache directory ended the whole pass at
+     whatever entry happened to hold it, which is the opposite of this
+     function's contract.
      */
     const {
       sliceCache,
@@ -181,9 +181,9 @@ async function runEntryPipeline(
     },);
 
     /**
-     * The roster preparation asks, read off the meters first of all
-     * (`run-seats.ts`): a withheld model pairs no blocks and reviews no
-     * archive either, and the pairing round is the entry's first purchase.
+     The roster preparation asks, read off the meters first of all
+     (`run-seats.ts`): a withheld model pairs no blocks and reviews no
+     archive either, and the pairing round is the entry's first purchase.
      */
     const preparationSeats = await readJudgeSeats({
       client,
@@ -193,7 +193,7 @@ async function runEntryPipeline(
     },);
 
     /**
-     * Entry-scoped evidence reader shared by archive review and final slices.
+     Entry-scoped evidence reader shared by archive review and final slices.
      */
     const readPictures = createPassPictureReader({
       client,
@@ -205,26 +205,26 @@ async function runEntryPipeline(
     },);
 
     /**
-     * Slicing BOTH lanes run over, prepared once here rather than inside
-     * either.
-     *
-     * That is the entire reason the driver exists: one slicing, one alignment
-     * and one identity block mean a difference between the two documents is a
-     * difference between the LANES rather than between two runs of the aligner.
-     *
-     * No slice budget is passed, and that is checked rather than assumed:
-     * `prepareDocumentPair` defaults to the same `SLICE_CHAR_BUDGET` that
-     * `repairTranslation` passed down when it did this itself, so entries
-     * settled before and after this change were sliced the same way.
-     *
-     * THE ROSTER DECIDES WHICH PARAGRAPH RENDERS WHICH, per
-     * `doc/decision/llm-assisted-block-pairing.md`, because the deterministic
-     * scorer is exhausted on this corpus: block kind is constant across
-     * paragraphs, Chinese and English prose share no Latin tokens, and length
-     * alone reached four correct pairings in eight on `saurikissa` and went no
-     * further at any weight. Six of eleven slices there paired unrelated
-     * paragraphs, and every stage downstream then behaved correctly on wrong
-     * input. A section the roster cannot pair keeps the scorer and says so.
+     Slicing BOTH lanes run over, prepared once here rather than inside
+     either.
+     
+     That is the entire reason the driver exists: one slicing, one alignment
+     and one identity block mean a difference between the two documents is a
+     difference between the LANES rather than between two runs of the aligner.
+     
+     No slice budget is passed, and that is checked rather than assumed:
+     `prepareDocumentPair` defaults to the same `SLICE_CHAR_BUDGET` that
+     `repairTranslation` passed down when it did this itself, so entries
+     settled before and after this change were sliced the same way.
+     
+     THE ROSTER DECIDES WHICH PARAGRAPH RENDERS WHICH, per
+     `doc/decision/llm-assisted-block-pairing.md`, because the deterministic
+     scorer is exhausted on this corpus: block kind is constant across
+     paragraphs, Chinese and English prose share no Latin tokens, and length
+     alone reached four correct pairings in eight on `saurikissa` and went no
+     further at any weight. Six of eleven slices there paired unrelated
+     paragraphs, and every stage downstream then behaved correctly on wrong
+     input. A section the roster cannot pair keeps the scorer and says so.
      */
     const {
       prepared,
@@ -245,21 +245,21 @@ async function runEntryPipeline(
       l: tagged({ tag: entry.id, },),
     },);
     /**
-     * Archive after preparation-stage review corrections.
+     Archive after preparation-stage review corrections.
      */
     const settledArchiveText = prepared.targetText;
 
     /**
-     * Complete reviewed visual evidence required before insertion and lanes,
-     * read by the readers the meters seat (`pass-seated-pictures.ts`): a model
-     * withheld on the provider that would serve it reads no picture either.
+     Complete reviewed visual evidence required before insertion and lanes,
+     read by the readers the meters seat (`pass-seated-pictures.ts`): a model
+     withheld on the provider that would serve it reads no picture either.
      */
     const pictureReadings = await readPictures({ slices: prepared.slices, },);
 
     /**
-     * The lanes' judge benches, read off Synthetic's meter (`run-seats.ts`).
-     * The contest and the consolidation seams read their own: XIEPT2 on
-     * 2026-09-03 ran Synthetic dry seven minutes into a 219-minute entry.
+     The lanes' judge benches, read off Synthetic's meter (`run-seats.ts`).
+     The contest and the consolidation seams read their own: XIEPT2 on
+     2026-09-03 ran Synthetic dry seven minutes into a 219-minute entry.
      */
     const {
       seats,
@@ -271,12 +271,12 @@ async function runEntryPipeline(
     },);
 
     /**
-     * Semantic and deterministic proof for every source-only slice.
-     *
-     * BOUGHT BEFORE THE LANES so known omission is licensed for translation or
-     * unresolved placement pauses stage as incomplete. Coverage roster searches
-     * whole target, independent of pairing;
-     * page shortfall or a missing destination supplies second corroboration.
+     Semantic and deterministic proof for every source-only slice.
+     
+     BOUGHT BEFORE THE LANES so known omission is licensed for translation or
+     unresolved placement pauses stage as incomplete. Coverage roster searches
+     whole target, independent of pairing;
+     page shortfall or a missing destination supplies second corroboration.
      */
     const translateInsertionAdmission = await decidePassInsertionAdmission({
       client,
@@ -289,7 +289,7 @@ async function runEntryPipeline(
     },);
 
     /**
-     * What both lanes made of that slicing, with neither preferred.
+     What both lanes made of that slicing, with neither preferred.
      */
     const lanes = await runDocumentLanes({
       client,
@@ -325,7 +325,7 @@ async function runEntryPipeline(
     // 2026-09-02 over one passage two judge rounds tied on, and an earlier
     // XIEPT2 attempt after four hours forty-eight minutes.
     /**
-     * Source passages translation could not fill, each named in the log.
+     Source passages translation could not fill, each named in the log.
      */
     const { unfilled, } = lanes.translate;
     for (const finding of unfilledPageFindings({ unfilled, },)) {
@@ -334,23 +334,23 @@ async function runEntryPipeline(
     }
 
     /**
-     * Both ledgers as version 2 rows, beside the comparison they derive.
-     *
-     * DERIVED HERE AND HANDED TO THE BUILDER`S OWN CALL rather than passed
-     * along, because the builder derives it again from the same function. The
-     * contest needs it first, to know which slices are worth asking about.
+     Both ledgers as version 2 rows, beside the comparison they derive.
+     
+     DERIVED HERE AND HANDED TO THE BUILDER`S OWN CALL rather than passed
+     along, because the builder derives it again from the same function. The
+     contest needs it first, to know which slices are worth asking about.
      */
     const projected = projectLanes({ lanes, },);
 
     /**
-     * Syntax-bearing metadata slice indexes shared by final quality stages.
+     Syntax-bearing metadata slice indexes shared by final quality stages.
      */
     const frontMatterSlices = frontMatterSliceIndexes({
       slices: prepared.slices,
     },);
 
     /**
-     * What the roster said at every slice the two lanes worded differently.
+     What the roster said at every slice the two lanes worded differently.
      */
     const contestSlices = await runPassContest({
       client,
@@ -368,7 +368,7 @@ async function runEntryPipeline(
     },);
 
     /**
-     * Third rendering and final naturalness decisions for contested slices.
+     Third rendering and final naturalness decisions for contested slices.
      */
     const consolidateSlices = await runPassConsolidation({
       client,
@@ -385,12 +385,12 @@ async function runEntryPipeline(
     },);
 
     /**
-     * Wall time this entry took, both lanes and the contest included.
+     Wall time this entry took, both lanes and the contest included.
      */
     const durationMs = Date.now() - t0;
 
     /**
-     * Rich artifact for later grading (`pass-entry-artifact.ts`).
+     Rich artifact for later grading (`pass-entry-artifact.ts`).
      */
     const artifact = settledPageArtifact({
       entryId: entry.id,
@@ -406,21 +406,21 @@ async function runEntryPipeline(
     },);
 
     /**
-     * This entry's TALLY line, read off the artifact BEFORE it is written.
-     *
-     * NOT INLINED INTO THE `console.log` BELOW, which is where it sat until
-     * 2026-08-22 and where the obvious tidying would put it back. The line asks
-     * what each slice would carry, and that question raises
-     * `UnansweredContestSliceError` on a document whose lanes differ at a slice
-     * the contest names nowhere. Raised after the write, that lands in the catch
-     * below, which prints `status=ERROR` for an entry whose complete artifact is
-     * already on disk: every later reader would then find a settled file the
-     * pass reported as failed.
-     *
-     * Asking first makes the refusal truthful. A contest that cannot account for
-     * a slice it was obliged to decide has not settled the document, and no
-     * artifact should claim it did; the stage caches still hold every answer, so
-     * a re-run reproduces the contradiction rather than losing it.
+     This entry's TALLY line, read off the artifact BEFORE it is written.
+     
+     NOT INLINED INTO THE `console.log` BELOW, which is where it sat until
+     2026-08-22 and where the obvious tidying would put it back. The line asks
+     what each slice would carry, and that question raises
+     `UnansweredContestSliceError` on a document whose lanes differ at a slice
+     the contest names nowhere. Raised after the write, that lands in the catch
+     below, which prints `status=ERROR` for an entry whose complete artifact is
+     already on disk: every later reader would then find a settled file the
+     pass reported as failed.
+     
+     Asking first makes the refusal truthful. A contest that cannot account for
+     a slice it was obliged to decide has not settled the document, and no
+     artifact should claim it did; the stage caches still hold every answer, so
+     a re-run reproduces the contradiction rather than losing it.
      */
     assertPageGuards({
       artifact,
@@ -429,7 +429,7 @@ async function runEntryPipeline(
       carried: translateInsertionAdmission.carried ?? [],
     },);
     /**
-     * Tally proven readable before any persistence.
+     Tally proven readable before any persistence.
      */
     const tally = settledTallyLine({ artifact, },);
 
@@ -440,7 +440,7 @@ async function runEntryPipeline(
     // with no page ever produced; written first, every entry the pass calls
     // settled has its page, by construction rather than by luck.
     /**
-     * Where the page went and what it carries of the source's destinations.
+     Where the page went and what it carries of the source's destinations.
      */
     const destinations = await persistSettledEntry({
       artifact,
@@ -475,50 +475,50 @@ async function runEntryPipeline(
 }
 
 /**
- * Runs one chosen entry to settlement, then retires its cache if it settled.
- *
- * Never throws for a failed entry. A pass over a corpus stops for a broken
- * SCHEDULER, not for a broken document: an entry that aborts on its ceiling or
- * raises out of a stage records `status=ERROR` and the pass continues to the
- * next one. Anything raised here would therefore end the run, which is why
- * nothing is.
- *
- * Returns scheduling disposition so quality interruption cannot masquerade as
- * cache-progress reason for fresh whole-entry attempt.
- *
- * @param client - shared model client
- *
- * @param entry - corpus pair to settle, text already read
- *
- * @param artifactsDir - directory one JSON per settled entry is written into
- *
- * @param publishDir - root of the mirrored corpus tree each fixed page is written into
- *
- * @param declinedDir - directory a decline record is written into when the
- * archive's note says the whole page is the author's own English
- *
- * @param sliceCacheDir - root under which this entry claims its own cache
- * subdirectory
- *
- * @param tip - repository head recorded into the artifact
- *
- * @param pipelineDigest - identity of the built pipeline, which also generation
- * -stamps the slice cache so a changed pipeline cannot resume foreign slices
- *
- * @param hardCapMs - wall time this entry may run before its exchanges abort
- *
- * @param baseSignal - abort every entry deadline forwards from; the pass never
- * aborts it, so only a per-entry timeout ever fires
- *
- * @throws StatedRefusalError before entry work when overlap environment value
- * is invalid launch configuration
- *
- * @returns Settlement, resumable operational failure, or stopped incomplete work
- *
- * @example
- * ```ts
- * const outcome = await settleEntry({ client, entry, artifactsDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, },);
- * ```
+ Runs one chosen entry to settlement, then retires its cache if it settled.
+ 
+ Never throws for a failed entry. A pass over a corpus stops for a broken
+ SCHEDULER, not for a broken document: an entry that aborts on its ceiling or
+ raises out of a stage records `status=ERROR` and the pass continues to the
+ next one. Anything raised here would therefore end the run, which is why
+ nothing is.
+ 
+ Returns scheduling disposition so quality interruption cannot masquerade as
+ cache-progress reason for fresh whole-entry attempt.
+ 
+ @param client - shared model client
+ 
+ @param entry - corpus pair to settle, text already read
+ 
+ @param artifactsDir - directory one JSON per settled entry is written into
+ 
+ @param publishDir - root of the mirrored corpus tree each fixed page is written into
+ 
+ @param declinedDir - directory a decline record is written into when the
+ archive's note says the whole page is the author's own English
+ 
+ @param sliceCacheDir - root under which this entry claims its own cache
+ subdirectory
+ 
+ @param tip - repository head recorded into the artifact
+ 
+ @param pipelineDigest - identity of the built pipeline, which also generation
+ -stamps the slice cache so a changed pipeline cannot resume foreign slices
+ 
+ @param hardCapMs - wall time this entry may run before its exchanges abort
+ 
+ @param baseSignal - abort every entry deadline forwards from; the pass never
+ aborts it, so only a per-entry timeout ever fires
+ 
+ @throws StatedRefusalError before entry work when overlap environment value
+ is invalid launch configuration
+ 
+ @returns Settlement, resumable operational failure, or stopped incomplete work
+ 
+ @example
+ ```ts
+ const outcome = await settleEntry({ client, entry, artifactsDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, },);
+ ```
  */
 export async function settleEntry(
   {
@@ -548,13 +548,13 @@ export async function settleEntry(
   },
 ): Promise<EntryOutcome> {
   /**
-   * Slice overlap read once for this entry and shared by every per-slice driver.
+   Slice overlap read once for this entry and shared by every per-slice driver.
    */
   const overlap = readPassOverlap({ entryId: entry.id, },);
 
   /**
-   * Per-entry slice-cache directory; earlier runs' finished slices live here so
-   * a large document resumes instead of restarting.
+   Per-entry slice-cache directory; earlier runs' finished slices live here so
+   a large document resumes instead of restarting.
    */
   const entryCacheDir = join(
     sliceCacheDir,
@@ -562,7 +562,7 @@ export async function settleEntry(
   );
 
   /**
-   * Whether this entry reached its artifact.
+   Whether this entry reached its artifact.
    */
   const outcome = await runEntryPipeline({
     client,

@@ -1,14 +1,14 @@
 /**
- * Tests for keeping what a quota-spending probe measured.
- *
- * The defect this module exists to close is not a crash: it is a measurement
- * that was bought, printed, and then existed nowhere. So the cases that matter
- * most are the ones about NOT LOSING a run, and the sharpest of them is the
- * second run of the same probe, which a fixed filename would quietly destroy.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for keeping what a quota-spending probe measured.
+ 
+ The defect this module exists to close is not a crash: it is a measurement
+ that was bought, printed, and then existed nowhere. So the cases that matter
+ most are the ones about NOT LOSING a run, and the sharpest of them is the
+ second run of the same probe, which a fixed filename would quietly destroy.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -31,14 +31,14 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Makes a throwaway runs directory for one case.
- *
- * @returns Path of the directory
- *
- * @example
- * ```ts
- * const runsDir = await scratch();
- * ```
+ Makes a throwaway runs directory for one case.
+ 
+ @returns Path of the directory
+ 
+ @example
+ ```ts
+ const runsDir = await scratch();
+ ```
  */
 async function scratch(): Promise<string> {
   return await mkdtemp(join(
@@ -48,12 +48,12 @@ async function scratch(): Promise<string> {
 }
 
 /**
- * Complete run record every case starts from.
- *
- * SPREAD AND OVERRIDDEN rather than built by a helper taking optional fields:
- * a partial-shaped parameter would reopen exactly the holes this codebase
- * closes, and a case that varies one field reads perfectly well as this record
- * with that field replaced.
+ Complete run record every case starts from.
+ 
+ SPREAD AND OVERRIDDEN rather than built by a helper taking optional fields:
+ a partial-shaped parameter would reopen exactly the holes this codebase
+ closes, and a case that varies one field reads perfectly well as this record
+ with that field replaced.
  */
 const BASE_RUN: ProbeRun = {
   startedAt: '2026-08-17T09:00:00.000Z',
@@ -70,20 +70,20 @@ const BASE_RUN: ProbeRun = {
 };
 
 /**
- * Reads a persisted run back as a later reader holding only the file would.
- *
- * The cast is the claim under test rather than a shortcut: this module wrote
- * the bytes, and whether they still parse as the record it was handed is the
- * whole round trip.
- *
- * @param path - file a persist call reported writing
- *
- * @returns Run as parsed from disk
- *
- * @example
- * ```ts
- * const read = await readRun({ path: at, },);
- * ```
+ Reads a persisted run back as a later reader holding only the file would.
+ 
+ The cast is the claim under test rather than a shortcut: this module wrote
+ the bytes, and whether they still parse as the record it was handed is the
+ whole round trip.
+ 
+ @param path - file a persist call reported writing
+ 
+ @returns Run as parsed from disk
+ 
+ @example
+ ```ts
+ const read = await readRun({ path: at, },);
+ ```
  */
 async function readRun({ path, }: { readonly path: string; },): Promise<ProbeRun> {
   return JSON.parse(await readFile(
@@ -93,18 +93,18 @@ async function readRun({ path, }: { readonly path: string; },): Promise<ProbeRun
 }
 
 /**
- * Lists what one probe's directory holds.
- *
- * @param runsDir - throwaway runs directory
- *
- * @param probeName - subdirectory a persist call wrote into
- *
- * @returns Filenames present
- *
- * @example
- * ```ts
- * const kept = await keptFiles({ runsDir, probeName: 'coverage-probe', },);
- * ```
+ Lists what one probe's directory holds.
+ 
+ @param runsDir - throwaway runs directory
+ 
+ @param probeName - subdirectory a persist call wrote into
+ 
+ @returns Filenames present
+ 
+ @example
+ ```ts
+ const kept = await keptFiles({ runsDir, probeName: 'coverage-probe', },);
+ ```
  */
 async function keptFiles(
   {
@@ -137,7 +137,7 @@ await describe({
         },);
 
         /**
-         * Directory the run should have landed in.
+         Directory the run should have landed in.
          */
         const expected = join(
           runsDir,
@@ -147,7 +147,7 @@ await describe({
         expect(at.endsWith('.json',),).toBe(true,);
 
         /**
-         * What that directory holds afterwards.
+         What that directory holds afterwards.
          */
         const kept = await keptFiles({
           runsDir,
@@ -170,7 +170,7 @@ await describe({
         },);
 
         /**
-         * Top level of the runs directory, which had nothing in it.
+         Top level of the runs directory, which had nothing in it.
          */
         const top = await readdir(runsDir,);
         expect(top,).toContain('audit-sensitivity',);
@@ -207,7 +207,7 @@ await describe({
           .toBe(second,);
 
         /**
-         * Both files, neither having overwritten the other.
+         Both files, neither having overwritten the other.
          */
         const kept = await keptFiles({
           runsDir,
@@ -249,7 +249,7 @@ await describe({
         },);
 
         /**
-         * Both builds' files, at one instant.
+         Both builds' files, at one instant.
          */
         const kept = await keptFiles({
           runsDir,
@@ -272,7 +272,7 @@ await describe({
         },);
 
         /**
-         * Run as a later reader holding only this file would find it.
+         Run as a later reader holding only this file would find it.
          */
         const read = await readRun({ path: at, },);
         expect(read.pipelineDigest,).toBe('sha256-tree-v1:cafef00d',);
@@ -296,7 +296,7 @@ await describe({
         },);
 
         /**
-         * Filename alone, which is what a reader types.
+         Filename alone, which is what a reader types.
          */
         const name = at.split('/',)
           .at(-1,) ?? at;

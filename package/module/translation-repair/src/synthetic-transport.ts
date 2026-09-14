@@ -11,134 +11,134 @@ import { armIdleGuard, } from './stream-idle-guard.ts';
 // traffic and every parsing branch above the seam is exercised by unit tests.
 
 /**
- * Raw reply from one HTTP exchange, before any parsing.
- *
- * @example
- * ```ts
- * const reply: TransportReply = { status: 200, bodyText: '{"choices":[]}', };
- * ```
+ Raw reply from one HTTP exchange, before any parsing.
+ 
+ @example
+ ```ts
+ const reply: TransportReply = { status: 200, bodyText: '{"choices":[]}', };
+ ```
  */
 export type TransportReply = {
   /**
-   * HTTP status code.
+   HTTP status code.
    */
   readonly status: number;
 
   /**
-   * Response body as text; JSON parsing happens above the transport seam.
+   Response body as text; JSON parsing happens above the transport seam.
    */
   readonly bodyText: string;
 };
 
 /**
- * One HTTP exchange the client asks a transport to perform.
- * `signal` is mandatory so no call can be constructed that user steering
- * cannot abort.
- *
- * @example
- * ```ts
- * const exchange: TransportExchange = {
- *   url: SYNTHETIC_QUOTAS_URL,
- *   method: 'GET',
- *   headers: { Authorization: 'Bearer test-key', },
- *   signal: AbortSignal.timeout(30_000,),
- * };
- * ```
+ One HTTP exchange the client asks a transport to perform.
+ `signal` is mandatory so no call can be constructed that user steering
+ cannot abort.
+ 
+ @example
+ ```ts
+ const exchange: TransportExchange = {
+   url: SYNTHETIC_QUOTAS_URL,
+   method: 'GET',
+   headers: { Authorization: 'Bearer test-key', },
+   signal: AbortSignal.timeout(30_000,),
+ };
+ ```
  */
 export type TransportExchange = {
   /**
-   * Absolute request URL.
+   Absolute request URL.
    */
   readonly url: string;
 
   /**
-   * What this call is FOR, in the caller's own vocabulary, which for a chat
-   * exchange is the model id.
-   *
-   * REQUIRED RATHER THAN OPTIONAL, so no call site can quietly fall back to the
-   * endpoint. Every chat exchange goes to one URL, so labelling by URL made
-   * per-model latency unreadable, and reasoning from abandon counts instead is
-   * what produced the retracted conclusion that one vendor's models were slow.
+   What this call is FOR, in the caller's own vocabulary, which for a chat
+   exchange is the model id.
+   
+   REQUIRED RATHER THAN OPTIONAL, so no call site can quietly fall back to the
+   endpoint. Every chat exchange goes to one URL, so labelling by URL made
+   per-model latency unreadable, and reasoning from abandon counts instead is
+   what produced the retracted conclusion that one vendor's models were slow.
    */
   readonly label: string;
 
   /**
-   * HTTP method; the Synthetic surface needs only these two.
+   HTTP method; the Synthetic surface needs only these two.
    */
   readonly method: 'GET' | 'POST';
 
   /**
-   * Request headers, auth included.
+   Request headers, auth included.
    */
   readonly headers: Readonly<Record<string, string>>;
 
   /**
-   * Serialized JSON request body; absent on GET exchanges.
+   Serialized JSON request body; absent on GET exchanges.
    */
   readonly bodyJson?: string;
 
   /**
-   * Abort signal honored for the whole exchange.
+   Abort signal honored for the whole exchange.
    */
   readonly signal: AbortSignal;
 
   /**
-   * Characters the answer channel may produce before the drain ends the
-   * call, when the caller knows its own input size well enough to bound
-   * the reply against it.
+   Characters the answer channel may produce before the drain ends the
+   call, when the caller knows its own input size well enough to bound
+   the reply against it.
    */
   readonly maxAnswerChars?: number;
 
   /**
-   * Event grammar this endpoint's stream speaks, which is a property of the
-   * PROVIDER rather than of the request, and absent means the older one.
-   *
-   * NAMED BY THE CALLER because only the client knows which provider it is
-   * addressing; the transport is one function serving both.
+   Event grammar this endpoint's stream speaks, which is a property of the
+   PROVIDER rather than of the request, and absent means the older one.
+   
+   NAMED BY THE CALLER because only the client knows which provider it is
+   addressing; the transport is one function serving both.
    */
   readonly wireFormat?: StreamWireFormat;
 };
 
 /**
- * Transport function the client is parameterized over.
- *
- * @example
- * ```ts
- * const recorded: ModelTransport = async () => ({ status: 200, bodyText: '{}', });
- * ```
+ Transport function the client is parameterized over.
+ 
+ @example
+ ```ts
+ const recorded: ModelTransport = async () => ({ status: 200, bodyText: '{}', });
+ ```
  */
 export type ModelTransport = (
   exchange: ForeignBorrowed<TransportExchange>,
 ) => Promise<TransportReply>;
 
 /**
- * Default fetch-backed transport.
- * `fetch` receives only locally owned values:
- * primitive strings, a fresh headers copy, and a dependent signal,
- * so caller-owned objects are never retained by the platform request.
- *
- * @param exchange - request to perform
- *
- * @mutates exchange - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain the exchange signal, and undiciFetch retains the derived signal and may invoke abort listeners through it for the request lifetime.
- *
- * @returns Status and body text, whatever the status was
- *
- * @example
- * ```ts
- * const reply = await fetchTransport({
- *   url: SYNTHETIC_QUOTAS_URL,
- *   method: 'GET',
- *   headers: { Authorization: `Bearer ${apiKey}`, },
- *   signal,
- * },);
- * ```
+ Default fetch-backed transport.
+ `fetch` receives only locally owned values:
+ primitive strings, a fresh headers copy, and a dependent signal,
+ so caller-owned objects are never retained by the platform request.
+ 
+ @param exchange - request to perform
+ 
+ @mutates exchange - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain the exchange signal, and undiciFetch retains the derived signal and may invoke abort listeners through it for the request lifetime.
+ 
+ @returns Status and body text, whatever the status was
+ 
+ @example
+ ```ts
+ const reply = await fetchTransport({
+   url: SYNTHETIC_QUOTAS_URL,
+   method: 'GET',
+   headers: { Authorization: `Bearer ${apiKey}`, },
+   signal,
+ },);
+ ```
  */
 export async function fetchTransport(
   exchange: ForeignBorrowed<TransportExchange>,
 ): Promise<TransportReply> {
   /**
-   * Fields extracted after naming the effect boundary;
-   * url, method, and body are primitives.
+   Fields extracted after naming the effect boundary;
+   url, method, and body are primitives.
    */
   const {
     url,
@@ -152,16 +152,16 @@ export async function fetchTransport(
   } = exchange;
 
   /**
-   * Silence guard for this exchange. Armed before the request so its window
-   * also covers a provider that never sends response headers.
+   Silence guard for this exchange. Armed before the request so its window
+   also covers a provider that never sends response headers.
    */
   using guard = armIdleGuard({ label, },);
 
   /**
-   * Dependent signal derived locally so the platform request never holds the
-   * caller's own signal handle. The guard rides along so a stalled stream
-   * tears the request down without touching the caller's signal, which is what
-   * lets the retry layer treat it as transient.
+   Dependent signal derived locally so the platform request never holds the
+   caller's own signal handle. The guard rides along so a stalled stream
+   tears the request down without touching the caller's signal, which is what
+   lets the retry layer treat it as transient.
    */
   const dependentSignal = AbortSignal.any([
     signal,
@@ -169,10 +169,10 @@ export async function fetchTransport(
   ],);
 
   /**
-   * Raw fetch response; body is read as text so callers decide how to parse.
-   * Chat exchanges stream (the provider is finicky without streaming, and
-   * headers on a stream arrive before fetch's default headers timeout);
-   * reading to text drains the whole event stream.
+   Raw fetch response; body is read as text so callers decide how to parse.
+   Chat exchanges stream (the provider is finicky without streaming, and
+   headers on a stream arrive before fetch's default headers timeout);
+   reading to text drains the whole event stream.
    */
   const response = await fetch(
     url,

@@ -4,18 +4,18 @@ import { foldCarriageReturns, } from './line-endings.ts';
 // Protocol newlines must not turn a real bare-CR EOF into an invented CRLF ending.
 
 /**
- * Applies corpus line-ending normalization with known physical termination.
- *
- * @param text - document line without Git's protocol newline
- *
- * @param terminated - whether the physical line actually had a newline
- *
- * @returns Normalized line without its physical separator
- *
- * @example
- * ```ts
- * foldGitDocumentLine({ text: 'cat\r', terminated: false }); // retains bare CR
- * ```
+ Applies corpus line-ending normalization with known physical termination.
+ 
+ @param text - document line without Git's protocol newline
+ 
+ @param terminated - whether the physical line actually had a newline
+ 
+ @returns Normalized line without its physical separator
+ 
+ @example
+ ```ts
+ foldGitDocumentLine({ text: 'cat\r', terminated: false }); // retains bare CR
+ ```
  */
 export function foldGitDocumentLine({
   text,
@@ -25,7 +25,7 @@ export function foldGitDocumentLine({
   readonly terminated: boolean;
 },): string {
   /**
-   * Restore only a proven physical separator before using shared normalization.
+   Restore only a proven physical separator before using shared normalization.
    */
   const normalized = foldCarriageReturns({ text: terminated ? `${text}\n` : text, },)
     .text;

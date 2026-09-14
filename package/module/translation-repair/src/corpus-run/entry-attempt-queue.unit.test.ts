@@ -1,21 +1,21 @@
 /**
- * Tests for the order a run attempts its entries in.
- *
- * `entry-reattempt.ts` decides whether ONE attempt earned another, and its own
- * tests cover that arithmetic. This covers the sequence those verdicts produce,
- * which is a separate thing that can be wrong on its own: a correct verdict
- * driven by a loop that never comes back settles nothing, and a loop that comes
- * back too eagerly spends a three-day budget on one entry.
- *
- * THE ORDERING CASE IS THE ONE THAT WOULD COST MOST IF WRONG. A re-attempt that
- * jumped the queue would let the largest entry in the corpus take attempt after
- * attempt while entries that fit in one were never tried at all, which is worse
- * than the cap this replaced: the cap at least moved on.
- *
- * Every effect is injected, so no case here reads a corpus, calls a provider,
- * or waits on anything.
- *
- * @module
+ Tests for the order a run attempts its entries in.
+ 
+ `entry-reattempt.ts` decides whether ONE attempt earned another, and its own
+ tests cover that arithmetic. This covers the sequence those verdicts produce,
+ which is a separate thing that can be wrong on its own: a correct verdict
+ driven by a loop that never comes back settles nothing, and a loop that comes
+ back too eagerly spends a three-day budget on one entry.
+ 
+ THE ORDERING CASE IS THE ONE THAT WOULD COST MOST IF WRONG. A re-attempt that
+ jumped the queue would let the largest entry in the corpus take attempt after
+ attempt while entries that fit in one were never tried at all, which is worse
+ than the cap this replaced: the cap at least moved on.
+ 
+ Every effect is injected, so no case here reads a corpus, calls a provider,
+ or waits on anything.
+ 
+ @module
  */
 
 import {
@@ -27,7 +27,7 @@ import {
 import { runAttemptQueue, } from '../../dist/final/node/index.mjs';
 
 /**
- * Scheduler disposition returned by scripted attempt.
+ Scheduler disposition returned by scripted attempt.
  */
 type AttemptOutcome =
   | { readonly kind: 'settled'; }
@@ -35,44 +35,44 @@ type AttemptOutcome =
   | { readonly kind: 'stopped'; };
 
 /**
- * What one stub entry does on each successive attempt.
+ What one stub entry does on each successive attempt.
  */
 type Script = {
   /**
-   * Entry id.
+   Entry id.
    */
   readonly id: string;
 
   /**
-   * Cached slice count after each attempt, read in order.
+   Cached slice count after each attempt, read in order.
    */
   readonly cachedAfter: readonly number[];
 
   /**
-   * Attempt number, one-based, that settles this entry; zero for never.
+   Attempt number, one-based, that settles this entry; zero for never.
    */
   readonly settlesOn: number;
 
   /**
-   * Attempt number, one-based, that stops whole-entry retry; zero or absent for never.
+   Attempt number, one-based, that stops whole-entry retry; zero or absent for never.
    */
   readonly stopsOn?: number;
 };
 
 /**
- * Builds a queue harness driving `runAttemptQueue` from a script.
- *
- * @param scripts - what each entry does, in the order they are pending
- *
- * @param stopAfter - attempts to allow before the budget ends the run; zero
- * allows every attempt
- *
- * @returns Order attempts were made in, once the queue has drained
- *
- * @example
- * ```ts
- * const order = await attemptOrder({ scripts, },);
- * ```
+ Builds a queue harness driving `runAttemptQueue` from a script.
+ 
+ @param scripts - what each entry does, in the order they are pending
+ 
+ @param stopAfter - attempts to allow before the budget ends the run; zero
+ allows every attempt
+ 
+ @returns Order attempts were made in, once the queue has drained
+ 
+ @example
+ ```ts
+ const order = await attemptOrder({ scripts, },);
+ ```
  */
 async function attemptOrder(
   {
@@ -84,21 +84,21 @@ async function attemptOrder(
   },
 ): Promise<readonly string[]> {
   /**
-   * Ids in the order they were attempted.
+   Ids in the order they were attempted.
    */
   const order: string[] = [];
 
   /**
-   * How many times each entry has been attempted so far.
+   How many times each entry has been attempted so far.
    */
   const tries = new Map<string, number>();
 
   /**
-   * Script for one id.
+   Script for one id.
    */
   function scriptFor({ id, }: { readonly id: string; },): Script {
     /**
-     * Matching script, which the cases always provide.
+     Matching script, which the cases always provide.
      */
     const found = scripts.find(function byId(script,): boolean {
       return script.id === id;
@@ -116,7 +116,7 @@ async function attemptOrder(
 
     cachedCountFor: async function cachedCountFor({ entry, },): Promise<number> {
       /**
-       * Attempts made against this entry so far.
+       Attempts made against this entry so far.
        */
       const made = tries.get(entry.id,) ?? 0;
 
@@ -137,7 +137,7 @@ async function attemptOrder(
       order.push(entry.id,);
 
       /**
-       * Attempt number this is, one-based.
+       Attempt number this is, one-based.
        */
       const made = (tries.get(entry.id,) ?? 0) + 1;
       tries.set(

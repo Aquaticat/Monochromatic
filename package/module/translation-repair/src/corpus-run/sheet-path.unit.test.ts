@@ -1,16 +1,16 @@
 /**
- * Tests for where a draw writes its outputs and, more importantly, when it
- * refuses to.
- *
- * Imports the built artifact like every other suite here. The guard is exported
- * through `sheet-barrel.ts` and marked `@internal`: it is run-driving tooling
- * rather than package API, but it is also the check standing between a routine
- * redraw and hours of human grading, so it is worth testing as what ships
- * rather than as what compiles.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for where a draw writes its outputs and, more importantly, when it
+ refuses to.
+ 
+ Imports the built artifact like every other suite here. The guard is exported
+ through `sheet-barrel.ts` and marked `@internal`: it is run-driving tooling
+ rather than package API, but it is also the check standing between a routine
+ redraw and hours of human grading, so it is worth testing as what ships
+ rather than as what compiles.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -33,16 +33,16 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Fresh throwaway directory standing in for a runs directory.
- *
- * Never the real one: these cases plant files that would read as graded work.
- *
- * @returns Directory path
- *
- * @example
- * ```ts
- * const runsDir = await throwawayRunsDir();
- * ```
+ Fresh throwaway directory standing in for a runs directory.
+ 
+ Never the real one: these cases plant files that would read as graded work.
+ 
+ @returns Directory path
+ 
+ @example
+ ```ts
+ const runsDir = await throwawayRunsDir();
+ ```
  */
 async function throwawayRunsDir(): Promise<string> {
   return mkdtemp(join(

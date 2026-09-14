@@ -1,9 +1,9 @@
 /**
- * Tests for flattening slice outcomes into the whole-document issue report,
- * and for the disposition that says what became of each issue's repair.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for flattening slice outcomes into the whole-document issue report,
+ and for the disposition that says what became of each issue's repair.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -20,36 +20,36 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Slice text after the naturalness lane rewrote it.
+ Slice text after the naturalness lane rewrote it.
  */
 const REFINED_TEXT = 'The cat naps in the sun and chases butterflies.';
 
 /**
- * Slice text a shipped, unrefined repair returns: it CONTAINS the region's
- * replacement verbatim, which is the property the conditional `finalSliceText`
- * rests on. Using the refined wording here regardless would let the conditional
- * test pass while the fixture modelled a state that cannot occur.
+ Slice text a shipped, unrefined repair returns: it CONTAINS the region's
+ replacement verbatim, which is the property the conditional `finalSliceText`
+ rests on. Using the refined wording here regardless would let the conditional
+ test pass while the fixture modelled a state that cannot occur.
  */
 const PATCHED_TEXT = 'The cat is asleep. She wakes at dusk.';
 
 /**
- * Replacement the fixture region writes, and a substring of
- * {@link PATCHED_TEXT}.
+ Replacement the fixture region writes, and a substring of
+ {@link PATCHED_TEXT}.
  */
 const REPLACEMENT = 'The cat is asleep.';
 
 /**
- * Builds one accepted issue with no claims, since nothing under test reads
- * them.
- *
- * @param issueId - adjudicated identity
- *
- * @returns Issue the report carries
- *
- * @example
- * ```ts
- * const issue = catIssue({ issueId: 'adjudicated/nap', },);
- * ```
+ Builds one accepted issue with no claims, since nothing under test reads
+ them.
+ 
+ @param issueId - adjudicated identity
+ 
+ @returns Issue the report carries
+ 
+ @example
+ ```ts
+ const issue = catIssue({ issueId: 'adjudicated/nap', },);
+ ```
  */
 function catIssue({ issueId, }: { readonly issueId: string; },): AdjudicatedIssue {
   return {
@@ -62,16 +62,16 @@ function catIssue({ issueId, }: { readonly issueId: string; },): AdjudicatedIssu
 }
 
 /**
- * Builds one region serving the given issues.
- *
- * @param issueIds - accepted issues the envelope was cut for
- *
- * @returns Region the report filters by issue
- *
- * @example
- * ```ts
- * const region = catRegion({ issueIds: ['adjudicated/nap',], },);
- * ```
+ Builds one region serving the given issues.
+ 
+ @param issueIds - accepted issues the envelope was cut for
+ 
+ @returns Region the report filters by issue
+ 
+ @example
+ ```ts
+ const region = catRegion({ issueIds: ['adjudicated/nap',], },);
+ ```
  */
 function catRegion(
   { issueIds, }: { readonly issueIds: readonly string[]; },
@@ -85,24 +85,24 @@ function catRegion(
 }
 
 /**
- * Builds one settled slice outcome.
- *
- * @param issues - adjudicated issues of this slice
- *
- * @param repairRegions - regions the accuracy stage replaced
- *
- * @param accuracyPatchSelected - whether the patched candidate won its slice
- *
- * @param resolvedIssueIds - issues the checkers confirmed fixed
- *
- * @param refined - whether the naturalness lane rewrote this slice
- *
- * @returns Outcome the builder flattens
- *
- * @example
- * ```ts
- * const outcome = catOutcome({ issues: [], repairRegions: [], },);
- * ```
+ Builds one settled slice outcome.
+ 
+ @param issues - adjudicated issues of this slice
+ 
+ @param repairRegions - regions the accuracy stage replaced
+ 
+ @param accuracyPatchSelected - whether the patched candidate won its slice
+ 
+ @param resolvedIssueIds - issues the checkers confirmed fixed
+ 
+ @param refined - whether the naturalness lane rewrote this slice
+ 
+ @returns Outcome the builder flattens
+ 
+ @example
+ ```ts
+ const outcome = catOutcome({ issues: [], repairRegions: [], },);
+ ```
  */
 function catOutcome(
   {
@@ -324,7 +324,7 @@ await describe({
         + 'must not name its rewrite as the shipped wording',
       fn: async () => {
         /**
-         * Refined slice the assembly guard took back to keep a footnote whole.
+         Refined slice the assembly guard took back to keep a footnote whole.
          */
         const withdrawn = buildIssueRecords({
           outcomes: [

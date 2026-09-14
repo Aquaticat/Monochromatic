@@ -18,38 +18,38 @@ import type { EntryOutcome, } from './pass-entry-contract.ts';
 // defect worth catching.
 
 /**
- * Least a queued entry must carry: something to name it by in a log line.
+ Least a queued entry must carry: something to name it by in a log line.
  */
 export type QueueableEntry = {
   /**
-   * Entry id, used only for reporting.
+   Entry id, used only for reporting.
    */
   readonly id: string;
 };
 
 /**
- * Runs every pending entry once, then re-runs the ones that earned it.
- *
- * RE-ATTEMPTS GO TO THE BACK. Coverage of the corpus is what a first attempt
- * buys, so an oversized entry must not spend the run's budget before every
- * other entry has been tried at all. A queue gives that ordering for free:
- * pushing to the back cannot overtake anything still waiting.
- *
- * @param pending - entries to attempt, in the order the caller ranked them
- *
- * @param cachedCountFor - slices one entry holds, asked before and after each
- * attempt so progress is measured rather than assumed
- *
- * @param attempt - runs one attempt, reporting settlement or retry disposition
- *
- * @param stopBeforeNext - asked before each attempt; true ends the run. Owned
- * by the caller so the reason and its wording stay with the budget that knows
- * them, and it may log
- *
- * @example
- * ```ts
- * await runAttemptQueue({ pending, cachedCountFor, attempt, stopBeforeNext, },);
- * ```
+ Runs every pending entry once, then re-runs the ones that earned it.
+ 
+ RE-ATTEMPTS GO TO THE BACK. Coverage of the corpus is what a first attempt
+ buys, so an oversized entry must not spend the run's budget before every
+ other entry has been tried at all. A queue gives that ordering for free:
+ pushing to the back cannot overtake anything still waiting.
+ 
+ @param pending - entries to attempt, in the order the caller ranked them
+ 
+ @param cachedCountFor - slices one entry holds, asked before and after each
+ attempt so progress is measured rather than assumed
+ 
+ @param attempt - runs one attempt, reporting settlement or retry disposition
+ 
+ @param stopBeforeNext - asked before each attempt; true ends the run. Owned
+ by the caller so the reason and its wording stay with the budget that knows
+ them, and it may log
+ 
+ @example
+ ```ts
+ await runAttemptQueue({ pending, cachedCountFor, attempt, stopBeforeNext, },);
+ ```
  */
 export async function runAttemptQueue<EntryT extends QueueableEntry,>(
   {
@@ -65,13 +65,13 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
   },
 ): Promise<void> {
   /**
-   * Attempts still to make, growing at the back as entries earn another.
+   Attempts still to make, growing at the back as entries earn another.
    */
   const queue: EntryT[] = [...pending,];
 
   while (queue.length > 0) {
     /**
-     * Next attempt, taken from the front.
+     Next attempt, taken from the front.
      */
     const entry = nonNullishOrThrow(queue.shift(),);
 
@@ -79,25 +79,25 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
       return;
 
     /**
-     * Slices this entry already holds.
+     Slices this entry already holds.
      */
     /* oxlint-disable-next-line no-await-in-loop -- one cheap read per attempt, against an attempt that may run seven hours */
     const cachedBefore = await cachedCountFor({ entry, },);
 
     /**
-     * Settlement or retry disposition from this attempt.
+     Settlement or retry disposition from this attempt.
      */
     /* oxlint-disable-next-line no-await-in-loop -- entries run sequentially by design; that is the point of a queue */
     const outcome = await attempt({ entry, },);
 
     /**
-     * Slices present now the attempt has stopped.
+     Slices present now the attempt has stopped.
      */
     /* oxlint-disable-next-line no-await-in-loop -- pairs with the read bracketing the other side of this attempt */
     const cachedAfter = await cachedCountFor({ entry, },);
 
     /**
-     * What the attempt earned.
+     What the attempt earned.
      */
     const verdict = readAttemptOutcome({
       outcome,

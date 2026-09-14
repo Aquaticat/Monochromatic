@@ -14,32 +14,32 @@
 // guarantee, and two copies of a security boundary is one copy too many.
 
 /**
- * Shortest fence used when nothing enclosed competes with it.
+ Shortest fence used when nothing enclosed competes with it.
  */
 const PROMPT_FENCE_MIN = 5;
 
 /**
- * Fence character.
+ Fence character.
  */
 const FENCE_CHARACTER = '=';
 
 /**
- * Longest unbroken run of the fence character anywhere in one text.
- *
- * Single linear pass, because the input is unbounded corpus prose.
- *
- * @param text - content that will be fenced
- *
- * @returns Longest run length, zero when the character never appears
- *
- * @example
- * ```ts
- * const longest = longestFenceRun('a ==== b',);
- * ```
+ Longest unbroken run of the fence character anywhere in one text.
+ 
+ Single linear pass, because the input is unbounded corpus prose.
+ 
+ @param text - content that will be fenced
+ 
+ @returns Longest run length, zero when the character never appears
+ 
+ @example
+ ```ts
+ const longest = longestFenceRun('a ==== b',);
+ ```
  */
 export function longestFenceRun(text: string,): number {
   /**
-   * Best and running run lengths across one linear pass.
+   Best and running run lengths across one linear pass.
    */
   const counters = {
     best: 0,
@@ -60,20 +60,20 @@ export function longestFenceRun(text: string,): number {
 }
 
 /**
- * Chooses a fence no enclosed text can reproduce.
- *
- * @param texts - every text this prompt will fence
- *
- * @returns Fence strictly longer than any run inside them
- *
- * @example
- * ```ts
- * const fence = selectFence({ texts: [sourceText, ...rendered,], },);
- * ```
+ Chooses a fence no enclosed text can reproduce.
+ 
+ @param texts - every text this prompt will fence
+ 
+ @returns Fence strictly longer than any run inside them
+ 
+ @example
+ ```ts
+ const fence = selectFence({ texts: [sourceText, ...rendered,], },);
+ ```
  */
 export function selectFence({ texts, }: { readonly texts: readonly string[]; },): string {
   /**
-   * Longest fence-character run anywhere in the enclosed content.
+   Longest fence-character run anywhere in the enclosed content.
    */
   const longest = texts.reduce(
     function longerRun(

@@ -18,19 +18,19 @@ import type {
 //region Artifact naturalness digest chain
 
 /**
- * Paragraphs a generation showed its reviewers, re-derived from the text.
- *
- * @param text - reviewed candidate text
- *
- * @param everyBodyBlockReviewed - whether the writing generation showed every
- * body block (generation ten) rather than the refinable paragraphs alone
- *
- * @returns Paragraph texts in display order
- *
- * @example
- * ```ts
- * const paragraphs = reviewedParagraphsOf({ text, everyBodyBlockReviewed: true, },);
- * ```
+ Paragraphs a generation showed its reviewers, re-derived from the text.
+ 
+ @param text - reviewed candidate text
+ 
+ @param everyBodyBlockReviewed - whether the writing generation showed every
+ body block (generation ten) rather than the refinable paragraphs alone
+ 
+ @returns Paragraph texts in display order
+ 
+ @example
+ ```ts
+ const paragraphs = reviewedParagraphsOf({ text, everyBodyBlockReviewed: true, },);
+ ```
  */
 function reviewedParagraphsOf(
   {
@@ -47,21 +47,21 @@ function reviewedParagraphsOf(
 }
 
 /**
- * Character length of lowercase hexadecimal SHA-256 digest.
+ Character length of lowercase hexadecimal SHA-256 digest.
  */
 const SHA256_HEX_LENGTH = 64;
 
 /**
- * Characters allowed in lowercase hexadecimal digest.
+ Characters allowed in lowercase hexadecimal digest.
  */
 const LOWER_HEX_CHARACTERS = '0123456789abcdef';
 
 /**
- * Checks lowercase hexadecimal SHA-256 shape without regular expression.
- *
- * @param value - candidate digest
- *
- * @returns Whether exact ASCII digest shape matches
+ Checks lowercase hexadecimal SHA-256 shape without regular expression.
+ 
+ @param value - candidate digest
+ 
+ @returns Whether exact ASCII digest shape matches
  */
 function isLowerHexDigest(
   { value, }: { readonly value: string; },
@@ -76,18 +76,18 @@ function isLowerHexDigest(
 }
 
 /**
- * Requires one lowercase hexadecimal SHA-256 digest.
- *
- * @param value - unknown digest
- *
- * @param path - artifact path
- *
- * @returns Validated digest
- *
- * @example
- * ```ts
- * const digest = requireNaturalnessDigest({ value, path, });
- * ```
+ Requires one lowercase hexadecimal SHA-256 digest.
+ 
+ @param value - unknown digest
+ 
+ @param path - artifact path
+ 
+ @returns Validated digest
+ 
+ @example
+ ```ts
+ const digest = requireNaturalnessDigest({ value, path, });
+ ```
  */
 export function requireNaturalnessDigest(
   {
@@ -99,7 +99,7 @@ export function requireNaturalnessDigest(
   },
 ): string {
   /**
-   * String before digest-shape validation.
+   String before digest-shape validation.
    */
   const digest = requireString({
     value,
@@ -115,20 +115,20 @@ export function requireNaturalnessDigest(
 }
 
 /**
- * Reads reviewed paragraph identity digests.
- *
- * @param value - unknown digest array
- *
- * @param path - artifact path
- *
- * @param paragraphCount - exact number of reviewed paragraphs
- *
- * @returns Validated paragraph digests
- *
- * @example
- * ```ts
- * const digests = parseParagraphDigests({ value, path, paragraphCount, });
- * ```
+ Reads reviewed paragraph identity digests.
+ 
+ @param value - unknown digest array
+ 
+ @param path - artifact path
+ 
+ @param paragraphCount - exact number of reviewed paragraphs
+ 
+ @returns Validated paragraph digests
+ 
+ @example
+ ```ts
+ const digests = parseParagraphDigests({ value, path, paragraphCount, });
+ ```
  */
 export function parseParagraphDigests(
   {
@@ -142,7 +142,7 @@ export function parseParagraphDigests(
   },
 ): readonly string[] {
   /**
-   * Unknown rows parsed as exact digests.
+   Unknown rows parsed as exact digests.
    */
   const digests = requireArray({
     value,
@@ -167,18 +167,18 @@ export function parseParagraphDigests(
 }
 
 /**
- * Reads one generation-nine digest-bound correction transition.
- *
- * @param value - unknown transition
- *
- * @param path - artifact path
- *
- * @returns Validated transition digests
- *
- * @example
- * ```ts
- * const correction = parseNaturalnessCorrection({ value, path, });
- * ```
+ Reads one generation-nine digest-bound correction transition.
+ 
+ @param value - unknown transition
+ 
+ @param path - artifact path
+ 
+ @returns Validated transition digests
+ 
+ @example
+ ```ts
+ const correction = parseNaturalnessCorrection({ value, path, });
+ ```
  */
 export function parseNaturalnessCorrection(
   {
@@ -190,7 +190,7 @@ export function parseNaturalnessCorrection(
   },
 ): ArtifactNaturalnessCorrection {
   /**
-   * Transition under exact generation-nine shape.
+   Transition under exact generation-nine shape.
    */
   const record = requireRecord({
     value,
@@ -222,18 +222,18 @@ export function parseNaturalnessCorrection(
 }
 
 /**
- * Verifies correction transitions against adjacent exact review rounds.
- *
- * @param corrections - stored digest transitions
- *
- * @param rounds - stored exact candidate reviews
- *
- * @param path - artifact review path
- *
- * @example
- * ```ts
- * assertNaturalnessCorrectionChain({ corrections, rounds, path, });
- * ```
+ Verifies correction transitions against adjacent exact review rounds.
+ 
+ @param corrections - stored digest transitions
+ 
+ @param rounds - stored exact candidate reviews
+ 
+ @param path - artifact review path
+ 
+ @example
+ ```ts
+ assertNaturalnessCorrectionChain({ corrections, rounds, path, });
+ ```
  */
 export function assertNaturalnessCorrectionChain(
   {
@@ -251,11 +251,11 @@ export function assertNaturalnessCorrectionChain(
     index,
   ): void {
     /**
-     * Rejected review feeding this correction.
+     Rejected review feeding this correction.
      */
     const input = rounds[index];
     /**
-     * Review over exact gated correction output.
+     Review over exact gated correction output.
      */
     const output = rounds[index + 1];
     if ((input === undefined) || (output === undefined)) {
@@ -265,7 +265,7 @@ export function assertNaturalnessCorrectionChain(
       },);
     }
     /**
-     * Canonical digest of findings correction received.
+     Canonical digest of findings correction received.
      */
     const findingsDigest = hashContent({
       content: JSON.stringify(input.findings,),
@@ -282,22 +282,22 @@ export function assertNaturalnessCorrectionChain(
 }
 
 /**
- * Verifies one reviewed candidate and paragraph identity list from exact text.
- *
- * @param candidateText - exact reviewed candidate
- *
- * @param candidateDigest - stored candidate digest
- *
- * @param paragraphCount - stored correctable paragraph count
- *
- * @param paragraphDigests - stored correctable paragraph identities
- *
- * @param path - review round path
- *
- * @example
- * ```ts
- * assertReviewedCandidateDigests({ candidateText, candidateDigest, paragraphCount, paragraphDigests, path, });
- * ```
+ Verifies one reviewed candidate and paragraph identity list from exact text.
+ 
+ @param candidateText - exact reviewed candidate
+ 
+ @param candidateDigest - stored candidate digest
+ 
+ @param paragraphCount - stored correctable paragraph count
+ 
+ @param paragraphDigests - stored correctable paragraph identities
+ 
+ @param path - review round path
+ 
+ @example
+ ```ts
+ assertReviewedCandidateDigests({ candidateText, candidateDigest, paragraphCount, paragraphDigests, path, });
+ ```
  */
 export function assertReviewedCandidateDigests(
   {
@@ -317,15 +317,15 @@ export function assertReviewedCandidateDigests(
   },
 ): void {
   /**
-   * Exact reviewed paragraphs re-derived from candidate text, under the set
-   * the writing generation showed its reviewers.
+   Exact reviewed paragraphs re-derived from candidate text, under the set
+   the writing generation showed its reviewers.
    */
   const paragraphs = reviewedParagraphsOf({
     text: candidateText,
     everyBodyBlockReviewed,
   },);
   /**
-   * Digests independently re-derived from candidate paragraph text.
+   Digests independently re-derived from candidate paragraph text.
    */
   const derivedParagraphDigests = paragraphs
     .map(function digestParagraph(paragraph,): string {
@@ -352,20 +352,20 @@ export function assertReviewedCandidateDigests(
 }
 
 /**
- * Verifies final candidate and paragraph digests against exact final text.
- *
- * @param final - final accepted review
- *
- * @param finalText - exact polish text artifact says ships
- *
- * @param path - final review round path
- *
- * @param paragraphDigestsRequired - whether generation records paragraph identities
- *
- * @example
- * ```ts
- * assertFinalNaturalnessDigests({ final, finalText, path, paragraphDigestsRequired: true, });
- * ```
+ Verifies final candidate and paragraph digests against exact final text.
+ 
+ @param final - final accepted review
+ 
+ @param finalText - exact polish text artifact says ships
+ 
+ @param path - final review round path
+ 
+ @param paragraphDigestsRequired - whether generation records paragraph identities
+ 
+ @example
+ ```ts
+ assertFinalNaturalnessDigests({ final, finalText, path, paragraphDigestsRequired: true, });
+ ```
  */
 export function assertFinalNaturalnessDigests(
   {
@@ -406,7 +406,7 @@ export function assertFinalNaturalnessDigests(
     return;
   }
   /**
-   * Exact reviewed paragraphs from legacy final text.
+   Exact reviewed paragraphs from legacy final text.
    */
   const paragraphs = reviewedParagraphsOf({
     text: finalText,

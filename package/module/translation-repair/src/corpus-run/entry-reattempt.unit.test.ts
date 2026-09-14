@@ -1,26 +1,26 @@
 /**
- * Tests for whether a capped entry earns another attempt inside one invocation.
- *
- * `#196` measured the largest entries as unable to settle inside the 420-minute
- * hard cap, and the way out it ranked first needs a build that does not move
- * between attempts. One invocation IS such a window, so the pass now re-queues
- * an entry that made progress. What that costs if it is wrong is the whole
- * three-day soft budget spent on one entry, so the stop condition is the part
- * worth testing hardest.
- *
- * THE TWO CASES THAT MATTER ARE BOTH COUNTERINTUITIVE, and both are about a
- * cache count that FELL. A settled entry discards its cache on the way out, so
- * inferring progress from the count alone would read the one outcome the pass
- * exists to reach as the sharpest possible stall. A reset cache, from an entry
- * carrying slices of an older build, reads as negative progress while actually
- * being a fresh generation's first attempt.
- *
- * `countCachedSlices` is tested against a real directory rather than a stub
- * because the thing it has to get right is which files are slices, and the
- * generation markers that must not be counted are real files with a real
- * suffix sitting in the same directory.
- *
- * @module
+ Tests for whether a capped entry earns another attempt inside one invocation.
+ 
+ `#196` measured the largest entries as unable to settle inside the 420-minute
+ hard cap, and the way out it ranked first needs a build that does not move
+ between attempts. One invocation IS such a window, so the pass now re-queues
+ an entry that made progress. What that costs if it is wrong is the whole
+ three-day soft budget spent on one entry, so the stop condition is the part
+ worth testing hardest.
+ 
+ THE TWO CASES THAT MATTER ARE BOTH COUNTERINTUITIVE, and both are about a
+ cache count that FELL. A settled entry discards its cache on the way out, so
+ inferring progress from the count alone would read the one outcome the pass
+ exists to reach as the sharpest possible stall. A reset cache, from an entry
+ carrying slices of an older build, reads as negative progress while actually
+ being a fresh generation's first attempt.
+ 
+ `countCachedSlices` is tested against a real directory rather than a stub
+ because the thing it has to get right is which files are slices, and the
+ generation markers that must not be counted are real files with a real
+ suffix sitting in the same directory.
+ 
+ @module
  */
 
 import {
@@ -158,7 +158,7 @@ await describe({
         + 'in one lane counts while the `.txt` markers beside them do not',
       fn: async () => {
         /**
-         * Throwaway cache directory standing in for one entry's.
+         Throwaway cache directory standing in for one entry's.
          */
         const dir = await mkdtemp(join(
           tmpdir(),

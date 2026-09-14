@@ -38,137 +38,137 @@ import type { DocumentNode, } from './document-node.ts';
 // preparation disagree about where it went.
 
 /**
- * How one side's blocks failed to reach the carved slices.
- *
- * BLOCK IDS ARE POSITIONS: `document-node.ts` stamps every block `block/N`
- * from its place in top-level order, so a list of them names positions and
- * never wording, and the sentence may print them.
- *
- * @example
- * ```ts
- * const placement: BlockPlacementFault = { kind: 'missing', missing: ['block/6',], expected: 7, };
- * ```
+ How one side's blocks failed to reach the carved slices.
+ 
+ BLOCK IDS ARE POSITIONS: `document-node.ts` stamps every block `block/N`
+ from its place in top-level order, so a list of them names positions and
+ never wording, and the sentence may print them.
+ 
+ @example
+ ```ts
+ const placement: BlockPlacementFault = { kind: 'missing', missing: ['block/6',], expected: 7, };
+ ```
  */
 export type BlockPlacementFault = {
   /**
-   * Blocks the side was given that no slice placed.
+   Blocks the side was given that no slice placed.
    */
   readonly kind: 'missing';
 
   /**
-   * Ids of the blocks that reached no slice.
+   Ids of the blocks that reached no slice.
    */
   readonly missing: readonly string[];
 
   /**
-   * Blocks the side was given.
+   Blocks the side was given.
    */
   readonly expected: number;
 } | {
   /**
-   * Blocks placed in more than one slice.
+   Blocks placed in more than one slice.
    */
   readonly kind: 'repeated';
 
   /**
-   * Ids of the blocks placed again.
+   Ids of the blocks placed again.
    */
   readonly repeated: readonly string[];
 } | {
   /**
-   * Every block placed once, out of document order.
+   Every block placed once, out of document order.
    */
   readonly kind: 'out-of-order';
 
   /**
-   * Ids in the order the slices placed them.
+   Ids in the order the slices placed them.
    */
   readonly placed: readonly string[];
 };
 
 /**
- * Why a chunk's carved slices do not cover it.
- *
- * @example
- * ```ts
- * const fault: SliceCoverageFault = { kind: 'declined-reached', sliceIndex: 3, contradicted: ['block/2',], };
- * ```
+ Why a chunk's carved slices do not cover it.
+ 
+ @example
+ ```ts
+ const fault: SliceCoverageFault = { kind: 'declined-reached', sliceIndex: 3, contradicted: ['block/2',], };
+ ```
  */
 export type SliceCoverageFault = {
   /**
-   * Target blocks the pairing declined reached a slice anyway.
+   Target blocks the pairing declined reached a slice anyway.
    */
   readonly kind: 'declined-reached';
 
   /**
-   * Chunk being sliced.
+   Chunk being sliced.
    */
   readonly sliceIndex: number;
 
   /**
-   * Ids of the declined blocks a slice placed.
+   Ids of the declined blocks a slice placed.
    */
   readonly contradicted: readonly string[];
 } | {
   /**
-   * Blocks the archive's note sealed reached a slice anyway.
+   Blocks the archive's note sealed reached a slice anyway.
    */
   readonly kind: 'sealed-reached';
 
   /**
-   * Chunk being sliced.
+   Chunk being sliced.
    */
   readonly sliceIndex: number;
 
   /**
-   * Side whose sealed blocks a slice placed.
+   Side whose sealed blocks a slice placed.
    */
   readonly side: 'source' | 'target';
 
   /**
-   * Ids of the sealed blocks a slice placed.
+   Ids of the sealed blocks a slice placed.
    */
   readonly contradicted: readonly string[];
 } | {
   /**
-   * One side's blocks were not placed exactly once, in order.
+   One side's blocks were not placed exactly once, in order.
    */
   readonly kind: 'placement';
 
   /**
-   * Chunk being sliced.
+   Chunk being sliced.
    */
   readonly sliceIndex: number;
 
   /**
-   * Side whose blocks went astray.
+   Side whose blocks went astray.
    */
   readonly side: 'source' | 'target';
 
   /**
-   * How they went astray.
+   How they went astray.
    */
   readonly placement: BlockPlacementFault;
 };
 
 /**
- * Words a placement fault.
- *
- * @param placement - how one side's blocks went astray
- *
- * @returns Sentence composed from counts and block ids
- *
- * @example
- * ```ts
- * const sentence = blockPlacementSentence({ placement: { kind: 'repeated', repeated: ['block/2',], }, },);
- * ```
+ Words a placement fault.
+ 
+ @param placement - how one side's blocks went astray
+ 
+ @returns Sentence composed from counts and block ids
+ 
+ @example
+ ```ts
+ const sentence = blockPlacementSentence({ placement: { kind: 'repeated', repeated: ['block/2',], }, },);
+ ```
  */
 export function blockPlacementSentence(
   { placement, }: { readonly placement: BlockPlacementFault; },
 ): string {
   if (placement.kind === 'missing') {
     /**
-     * Ids that reached no slice, and how many blocks the side was given.
+     Ids that reached no slice, and how many blocks the side was given.
      */
     const {
       missing,
@@ -178,42 +178,42 @@ export function blockPlacementSentence(
   }
   if (placement.kind === 'repeated') {
     /**
-     * Ids placed more than once.
+     Ids placed more than once.
      */
     const { repeated, } = placement;
     return `${String(repeated.length,)} blocks were placed more than once: ${repeated.join(', ',)}`;
   }
 
   /**
-   * Ids in the order the slices placed them.
+   Ids in the order the slices placed them.
    */
   const { placed, } = placement;
   return `blocks were placed out of document order: ${placed.join(', ',)}`;
 }
 
 /**
- * Words a coverage fault, after the chunk the class prefixes.
- *
- * @param fault - why the carved slices do not cover the chunk
- *
- * @returns Sentence composed from a side name, counts and block ids
- *
- * @example
- * ```ts
- * const sentence = coverageSentence({ fault, },);
- * ```
+ Words a coverage fault, after the chunk the class prefixes.
+ 
+ @param fault - why the carved slices do not cover the chunk
+ 
+ @returns Sentence composed from a side name, counts and block ids
+ 
+ @example
+ ```ts
+ const sentence = coverageSentence({ fault, },);
+ ```
  */
 export function coverageSentence({ fault, }: { readonly fault: SliceCoverageFault; },): string {
   if (fault.kind === 'declined-reached') {
     /**
-     * Ids of the declined blocks a slice placed.
+     Ids of the declined blocks a slice placed.
      */
     const { contradicted, } = fault;
     return `target ${String(contradicted.length,)} declined blocks reached a slice: ${contradicted.join(', ',)}`;
   }
   if (fault.kind === 'sealed-reached') {
     /**
-     * Ids of the sealed blocks a slice placed.
+     Ids of the sealed blocks a slice placed.
      */
     const { contradicted, } = fault;
     return `${fault.side} ${String(contradicted.length,)} sealed blocks reached a slice: ${contradicted.join(', ',)}`;
@@ -222,30 +222,30 @@ export function coverageSentence({ fault, }: { readonly fault: SliceCoverageFaul
 }
 
 /**
- * Failure of slice coverage: a side's blocks went missing, repeated or moved.
- *
- * MARKED: its message is a chunk index and the sentence `coverageSentence`
- * writes from a side name, counts and positional block ids.
- *
- * @example
- * ```ts
- * throw new SliceCoverageError({ fault: { kind: 'declined-reached', sliceIndex: 3, contradicted: ['block/2',], }, },);
- * ```
+ Failure of slice coverage: a side's blocks went missing, repeated or moved.
+ 
+ MARKED: its message is a chunk index and the sentence `coverageSentence`
+ writes from a side name, counts and positional block ids.
+ 
+ @example
+ ```ts
+ throw new SliceCoverageError({ fault: { kind: 'declined-reached', sliceIndex: 3, contradicted: ['block/2',], }, },);
+ ```
  */
 export class SliceCoverageError extends Error {
   /**
-   * Declares this message safe to forward: an index, a side name, counts and
-   * positional block ids, in a sentence written here.
+   Declares this message safe to forward: an index, a side name, counts and
+   positional block ids, in a sentence written here.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Why the carved slices do not cover the chunk.
+   Why the carved slices do not cover the chunk.
    */
   readonly fault: SliceCoverageFault;
 
   /**
-   * @param fault - why the carved slices do not cover the chunk
+   @param fault - why the carved slices do not cover the chunk
    */
   public constructor({ fault, }: { readonly fault: SliceCoverageFault; },) {
     super(`slicing chunk ${String(fault.sliceIndex,)}: ${coverageSentence({ fault, },)}`,);
@@ -255,16 +255,16 @@ export class SliceCoverageError extends Error {
 }
 
 /**
- * Reads the ids of node runs, in the order they were placed.
- *
- * @param runs - node runs, one per slice
- *
- * @returns Ids in placement order
- *
- * @example
- * ```ts
- * const placed = idsOf({ runs: [pair.source.nodes,], },);
- * ```
+ Reads the ids of node runs, in the order they were placed.
+ 
+ @param runs - node runs, one per slice
+ 
+ @returns Ids in placement order
+ 
+ @example
+ ```ts
+ const placed = idsOf({ runs: [pair.source.nodes,], },);
+ ```
  */
 function idsOf(
   { runs, }: { readonly runs: readonly (readonly DocumentNode[])[]; },
@@ -277,18 +277,18 @@ function idsOf(
 }
 
 /**
- * Names how a side's placement departs from the blocks it was given.
- *
- * @param expected - ids the chunk pair carried, in document order
- *
- * @param placed - ids the slices carry, in placement order
- *
- * @returns Every way this side departed, empty when placement is exact
- *
- * @example
- * ```ts
- * const faults = describePlacement({ expected: ['block/0',], placed: [], },);
- * ```
+ Names how a side's placement departs from the blocks it was given.
+ 
+ @param expected - ids the chunk pair carried, in document order
+ 
+ @param placed - ids the slices carry, in placement order
+ 
+ @returns Every way this side departed, empty when placement is exact
+ 
+ @example
+ ```ts
+ const faults = describePlacement({ expected: ['block/0',], placed: [], },);
+ ```
  */
 function describePlacement(
   {
@@ -300,7 +300,7 @@ function describePlacement(
   },
 ): readonly BlockPlacementFault[] {
   /**
-   * Ids the slices never carried.
+   Ids the slices never carried.
    */
   const missing = expected.filter(function unplaced(id,): boolean {
     return !placed.includes(id,);
@@ -315,7 +315,7 @@ function describePlacement(
     ];
 
   /**
-   * Ids carried by more than one slice, or twice by one.
+   Ids carried by more than one slice, or twice by one.
    */
   const repeated = placed.filter(function isRepeat(
     id,
@@ -341,24 +341,24 @@ function describePlacement(
 }
 
 /**
- * Asserts that slices carved from a chunk pair carry its blocks exactly once.
- *
- * @param pair - chunk pair that went in
- *
- * @param carved - slices it was carved into
- *
- * @param declined - ids of translation blocks the pairing accounted for
- * nowhere, which reach no slice by decision
- *
- * @param sealed - ids, per side, of the blocks the archive's note seals,
- * which reach no slice by the owner's rule of 2026-09-08
- *
- * @throws SliceCoverageError when either side loses, repeats or reorders a block
- *
- * @example
- * ```ts
- * assertSliceCoverage({ pair, carved, },);
- * ```
+ Asserts that slices carved from a chunk pair carry its blocks exactly once.
+ 
+ @param pair - chunk pair that went in
+ 
+ @param carved - slices it was carved into
+ 
+ @param declined - ids of translation blocks the pairing accounted for
+ nowhere, which reach no slice by decision
+ 
+ @param sealed - ids, per side, of the blocks the archive's note seals,
+ which reach no slice by the owner's rule of 2026-09-08
+ 
+ @throws SliceCoverageError when either side loses, repeats or reorders a block
+ 
+ @example
+ ```ts
+ assertSliceCoverage({ pair, carved, },);
+ ```
  */
 export function assertSliceCoverage(
   {
@@ -380,8 +380,8 @@ export function assertSliceCoverage(
   },
 ): void {
   /**
-   * Translation blocks the slices carry, needed before the sides are built so a
-   * declined block turning up in one can be named as its own fault.
+   Translation blocks the slices carry, needed before the sides are built so a
+   declined block turning up in one can be named as its own fault.
    */
   const placedTargets = idsOf({
     runs: carved.map(function toRun(slice,): readonly DocumentNode[] {
@@ -391,7 +391,7 @@ export function assertSliceCoverage(
   },);
 
   /**
-   * Original blocks the slices carry.
+   Original blocks the slices carry.
    */
   const placedSources = idsOf({
     runs: carved.map(function toRun(slice,): readonly DocumentNode[] {
@@ -401,7 +401,7 @@ export function assertSliceCoverage(
   },);
 
   /**
-   * Declined blocks a slice carries anyway, which contradicts the decline.
+   Declined blocks a slice carries anyway, which contradicts the decline.
    */
   const contradicted = placedTargets.filter(function isDeclined(id,): boolean {
     return declined.has(id,);
@@ -416,7 +416,7 @@ export function assertSliceCoverage(
       },
     },);
   /**
-   * Sealed blocks a slice carries anyway, per side, which contradicts the seal.
+   Sealed blocks a slice carries anyway, per side, which contradicts the seal.
    */
   const sealedReached = [
     {
@@ -449,7 +449,7 @@ export function assertSliceCoverage(
       },);
   }
   /**
-   * Both sides, each with the blocks it was given and the blocks it placed.
+   Both sides, each with the blocks it was given and the blocks it placed.
    */
   const sides = [
     {
@@ -483,7 +483,7 @@ export function assertSliceCoverage(
   ];
   for (const side of sides) {
     /**
-     * How this side departed from its blocks, empty when it did not.
+     How this side departed from its blocks, empty when it did not.
      */
     const faults = describePlacement({
       expected: side.expected,

@@ -1,15 +1,15 @@
 /**
- * Tests for the runner closure reading.
- *
- * The case that matters is the MINIFIED import form. Built runners here are one
- * long line whose imports read `from"./chunk.mjs"` with no space, and a scan
- * expecting `from './` finds nothing and reports a clean closure for a file full
- * of imports. That false null was hit while measuring `#115`, and it looks
- * exactly like a self-contained bundle, which is a legitimate state.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the runner closure reading.
+ 
+ The case that matters is the MINIFIED import form. Built runners here are one
+ long line whose imports read `from"./chunk.mjs"` with no space, and a scan
+ expecting `from './` finds nothing and reports a clean closure for a file full
+ of imports. That false null was hit while measuring `#115`, and it looks
+ exactly like a self-contained bundle, which is a legitimate state.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -28,25 +28,25 @@ import {
 import { readRunnerClosure, } from '../../dist/final/node/index.mjs';
 
 /**
- * Writes one throwaway entry file and returns its path.
- *
- * ON A THROWAWAY, per `THR`: this reads files, so it gets its own directory
- * rather than any path the repository cares about.
- *
- * @param text - entry contents
- *
- * @returns Path written
- *
- * @example
- * ```ts
- * const path = await entryWith({ text: 'export {};', },);
- * ```
+ Writes one throwaway entry file and returns its path.
+ 
+ ON A THROWAWAY, per `THR`: this reads files, so it gets its own directory
+ rather than any path the repository cares about.
+ 
+ @param text - entry contents
+ 
+ @returns Path written
+ 
+ @example
+ ```ts
+ const path = await entryWith({ text: 'export {};', },);
+ ```
  */
 async function entryWith(
   { text, }: { readonly text: string; },
 ): Promise<string> {
   /**
-   * Fresh directory nobody else writes to.
+   Fresh directory nobody else writes to.
    */
   const dir = await mkdtemp(join(
     tmpdir(),
@@ -54,7 +54,7 @@ async function entryWith(
   ),);
 
   /**
-   * Where the fixture entry goes.
+   Where the fixture entry goes.
    */
   const path = join(
     dir,
@@ -77,7 +77,7 @@ await describe({
         + 'clean closure for a file full of them',
       fn: async () => {
         /**
-         * An entry shaped the way the bundler actually emits one.
+         An entry shaped the way the bundler actually emits one.
          */
         const path = await entryWith({
           text: 'import{a as tagged}from"./run-config-ABC123.mjs";import{b}from"./whisker-DEF456.mjs";'
@@ -85,7 +85,7 @@ await describe({
         },);
 
         /**
-         * What it imports.
+         What it imports.
          */
         const closure = await readRunnerClosure({ entryPath: path, },);
 
@@ -105,7 +105,7 @@ await describe({
         + 'importing nothing',
       fn: async () => {
         /**
-         * Ordinary readable source.
+         Ordinary readable source.
          */
         const path = await entryWith({
           text: 'import { tagged, } from \'./run-config.mjs\';\n'
@@ -113,7 +113,7 @@ await describe({
         },);
 
         /**
-         * What it imports.
+         What it imports.
          */
         const closure = await readRunnerClosure({ entryPath: path, },);
         if (closure.kind !== 'read')
@@ -160,7 +160,7 @@ await describe({
         + 'builds the same',
       fn: async () => {
         /**
-         * A real entry that genuinely imports nothing relative.
+         A real entry that genuinely imports nothing relative.
          */
         const inlined = await readRunnerClosure({
           entryPath: await entryWith({ text: 'const x=1;export{};', },),
@@ -170,7 +170,7 @@ await describe({
           expect(inlined.chunks,).toEqual([],);
 
         /**
-         * A path that is not there.
+         A path that is not there.
          */
         const missing = await readRunnerClosure({
           entryPath: join(
@@ -181,7 +181,7 @@ await describe({
         expect(missing.kind,).toBe('unavailable',);
 
         /**
-         * No path at all, which is what a source run gives.
+         No path at all, which is what a source run gives.
          */
         const none = await readRunnerClosure({ entryPath: '', },);
         expect(none.kind,).toBe('unavailable',);

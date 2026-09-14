@@ -8,22 +8,22 @@ import { footnoteRewriteMap, } from './footnote-rewrite-map.ts';
 // Bytes outside active marker spans are copied unchanged; no later replacement sees an earlier replacement's output.
 
 /**
- * Applies an injective simultaneous rename to active references and definition openers only.
- * Code, metadata, attributes, URLs, comments and escaped openings remain byte-identical.
- * Reparsed marker roles and identities must equal the intended renamed graph before text is returned.
- *
- * @param text - canonical archive or slice bytes
- *
- * @param map - operational rewrites whose changing source keys occur in the current document
- *
- * @returns Rewritten text with every unrelated byte retained
- *
- * @throws FootnoteRewriteError when syntax, map domains, labels, injectivity or the resulting graph cannot be verified
- *
- * @example
- * ```ts
- * const rewritten = applyFootnoteRelabel({ text, map: [{ from: '1', to: '2' }, { from: '2', to: '1' }] });
- * ```
+ Applies an injective simultaneous rename to active references and definition openers only.
+ Code, metadata, attributes, URLs, comments and escaped openings remain byte-identical.
+ Reparsed marker roles and identities must equal the intended renamed graph before text is returned.
+ 
+ @param text - canonical archive or slice bytes
+ 
+ @param map - operational rewrites whose changing source keys occur in the current document
+ 
+ @returns Rewritten text with every unrelated byte retained
+ 
+ @throws FootnoteRewriteError when syntax, map domains, labels, injectivity or the resulting graph cannot be verified
+ 
+ @example
+ ```ts
+ const rewritten = applyFootnoteRelabel({ text, map: [{ from: '1', to: '2' }, { from: '2', to: '1' }] });
+ ```
  */
 export function applyFootnoteRelabel(
   {
@@ -37,35 +37,35 @@ export function applyFootnoteRelabel(
   if (map.length === 0)
     return text;
   /**
-   * Exact input spans and logical identities.
+   Exact input spans and logical identities.
    */
   const markers = activeFootnoteMarkers({ text, },);
   /**
-   * Validated destinations, including checks against unmoved occupants.
+   Validated destinations, including checks against unmoved occupants.
    */
   const lookup = footnoteRewriteMap({
     map,
     markers,
   },);
   /**
-   * Disjoint copied prefixes and marker replacements, joined only once.
+   Disjoint copied prefixes and marker replacements, joined only once.
    */
   const pieces = markers.map(function piece(
     marker,
     index,
   ): string {
     /**
-     * End of the preceding copied marker, or start of the document.
+     End of the preceding copied marker, or start of the document.
      */
     const start = markers[index - 1]
       ?.endOffset
       ?? 0;
     /**
-     * Raw destination, absent for an untouched identity.
+     Raw destination, absent for an untouched identity.
      */
     const destination = lookup.get(marker.identifier,);
     /**
-     * Normalization-equivalent identities preserve their original spelling.
+     Normalization-equivalent identities preserve their original spelling.
      */
     const replacement = (destination === undefined) || (normalizeFootnoteIdentifier({ identifier: destination, },) === marker.identifier)
       ? text.slice(
@@ -79,13 +79,13 @@ export function applyFootnoteRelabel(
     )}${replacement}`;
   },);
   /**
-   * Trailing bytes include every definition body and final line ending.
+   Trailing bytes include every definition body and final line ending.
    */
   const suffix = text.slice(markers.at(-1,)
     ?.endOffset
     ?? 0,);
   /**
-   * Candidate remains local until the resulting syntax graph is verified.
+   Candidate remains local until the resulting syntax graph is verified.
    */
   const rewritten = [
     ...pieces,
@@ -94,7 +94,7 @@ export function applyFootnoteRelabel(
   if (rewritten === text)
     return text;
   /**
-   * Actual output marker sequence after parsing, not inferred from the replacement plan.
+   Actual output marker sequence after parsing, not inferred from the replacement plan.
    */
   const after = activeFootnoteMarkers({ text: rewritten, },);
   if ((after.length !== markers.length) || markers.some(function differs(
@@ -102,7 +102,7 @@ export function applyFootnoteRelabel(
     index,
   ): boolean {
     /**
-     * Output role and normalized destination must preserve this original occurrence.
+     Output role and normalized destination must preserve this original occurrence.
      */
     const actual = after[index];
     return (actual?.kind !== marker.kind) || (actual.identifier !== normalizeFootnoteIdentifier({ identifier: lookup.get(marker.identifier,) ?? marker.identifier, },));

@@ -1,29 +1,29 @@
 /**
- * Tests for reading the judged-contest ledger back.
- *
- * THE JOIN IS WHAT THESE CHECK. A ballot names a POSITION and the summary
- * speaks about MODELS, so every case here is built so a reader that lost the
- * `candidates[best - 1]` step would answer differently rather than merely
- * answer late.
- *
- * THE COMPOSITE CANDIDATE IS DELIBERATE. One candidate is written by two
- * models at once, so a ballot for it credits both, and a ballot cast BY either
- * of them is a self-vote for both. A reader crediting only the first author
- * would pass every single-author case and fail here.
- *
- * THE TWO BALLOT FAULTS ARE SEPARATED ON PURPOSE. One judge names nothing and
- * one names a fourth candidate on a three-candidate slate. Both are recorded
- * rather than corrected, and a reader folding them together would report one
- * count of two where the contest had one of each.
- *
- * THE DISINTERESTED DENOMINATOR IS CHECKED, not just the numerator. A seat
- * every judge could weigh and a seat most judges wrote are different, and only
- * the denominator tells them apart.
- *
- * Model identifiers come from the catalog. Passages are cat-themed invention,
- * so no corpus content appears here.
- *
- * @module
+ Tests for reading the judged-contest ledger back.
+ 
+ THE JOIN IS WHAT THESE CHECK. A ballot names a POSITION and the summary
+ speaks about MODELS, so every case here is built so a reader that lost the
+ `candidates[best - 1]` step would answer differently rather than merely
+ answer late.
+ 
+ THE COMPOSITE CANDIDATE IS DELIBERATE. One candidate is written by two
+ models at once, so a ballot for it credits both, and a ballot cast BY either
+ of them is a self-vote for both. A reader crediting only the first author
+ would pass every single-author case and fail here.
+ 
+ THE TWO BALLOT FAULTS ARE SEPARATED ON PURPOSE. One judge names nothing and
+ one names a fourth candidate on a three-candidate slate. Both are recorded
+ rather than corrected, and a reader folding them together would report one
+ count of two where the contest had one of each.
+ 
+ THE DISINTERESTED DENOMINATOR IS CHECKED, not just the numerator. A seat
+ every judge could weigh and a seat most judges wrote are different, and only
+ the denominator tells them apart.
+ 
+ Model identifiers come from the catalog. Passages are cat-themed invention,
+ so no corpus content appears here.
+ 
+ @module
  */
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
@@ -47,55 +47,55 @@ import {
 //region Ledger read tests
 
 /**
- * Index a ballot carries when its judge named nothing.
+ Index a ballot carries when its judge named nothing.
  */
 const ABSTAINED = 0;
 
 /**
- * Seat writing on its own in every fixture.
+ Seat writing on its own in every fixture.
  */
 const SOLO = 'hf:moonshotai/Kimi-K3';
 
 /**
- * First author of the jointly written candidate.
+ First author of the jointly written candidate.
  */
 const JOINT_ONE = 'hf:openai/gpt-oss-120b';
 
 /**
- * Second author of the jointly written candidate.
+ Second author of the jointly written candidate.
  */
 const JOINT_TWO = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * Seat writing the third candidate, and the one read in full.
+ Seat writing the third candidate, and the one read in full.
  */
 const THIRD = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
- * Judge with no candidate of its own in any fixture.
+ Judge with no candidate of its own in any fixture.
  */
 const OUTSIDER = 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4';
 
 /**
- * Position of the candidate no slate here holds, named by one judge anyway.
+ Position of the candidate no slate here holds, named by one judge anyway.
  */
 const PAST_THE_END = 4;
 
 /**
- * Builds one ballot without restating the fields every case shares.
- *
- * @param modelId - judge casting it
- *
- * @param best - one-based position named, or zero for an abstention
- *
- * @param reason - verbatim stated reason
- *
- * @returns Ballot as a ledger file records it
- *
- * @example
- * ```ts
- * const cast = ballot({ modelId: OUTSIDER, best: 1, reason: 'clearest', },);
- * ```
+ Builds one ballot without restating the fields every case shares.
+ 
+ @param modelId - judge casting it
+ 
+ @param best - one-based position named, or zero for an abstention
+ 
+ @param reason - verbatim stated reason
+ 
+ @returns Ballot as a ledger file records it
+ 
+ @example
+ ```ts
+ const cast = ballot({ modelId: OUTSIDER, best: 1, reason: 'clearest', },);
+ ```
  */
 function ballot(
   {
@@ -116,11 +116,11 @@ function ballot(
 }
 
 /**
- * One contest: three candidates, one of them written by two seats at once.
- *
- * Position 1 wins. `OUTSIDER` and `THIRD` back it, `JOINT_ONE` backs its own
- * joint work, `SOLO` abstains, and `JOINT_TWO` names a fourth candidate the
- * slate does not have.
+ One contest: three candidates, one of them written by two seats at once.
+ 
+ Position 1 wins. `OUTSIDER` and `THIRD` back it, `JOINT_ONE` backs its own
+ joint work, `SOLO` abstains, and `JOINT_TWO` names a fourth candidate the
+ slate does not have.
  */
 const CONTEST: ReadRound = {
   task: 'render this passage',
@@ -176,7 +176,7 @@ const CONTEST: ReadRound = {
 };
 
 /**
- * A second contest where the panel declined outright, so nothing won.
+ A second contest where the panel declined outright, so nothing won.
  */
 const DECLINED: ReadRound = {
   task: 'render this passage',
@@ -199,23 +199,23 @@ const DECLINED: ReadRound = {
 };
 
 /**
- * Looks one seat up in a summary.
- *
- * THROWS RATHER THAN RETURNING AN ABSENCE, because every case here names a
- * seat that wrote something, so a missing row is the reader losing it.
- *
- * @param summary - what `summariseLedger` returned
- *
- * @param model - seat wanted
- *
- * @returns That seat's counts
- *
- * @throws {@link Error} when the summary holds no row for that seat
- *
- * @example
- * ```ts
- * const seat = seatOf({ summary, model: SOLO, },);
- * ```
+ Looks one seat up in a summary.
+ 
+ THROWS RATHER THAN RETURNING AN ABSENCE, because every case here names a
+ seat that wrote something, so a missing row is the reader losing it.
+ 
+ @param summary - what `summariseLedger` returned
+ 
+ @param model - seat wanted
+ 
+ @returns That seat's counts
+ 
+ @throws {@link Error} when the summary holds no row for that seat
+ 
+ @example
+ ```ts
+ const seat = seatOf({ summary, model: SOLO, },);
+ ```
  */
 function seatOf(
   {
@@ -227,7 +227,7 @@ function seatOf(
   },
 ): ModelWork {
   /**
-   * Row for that seat, absent when the reader never saw it write anything.
+   Row for that seat, absent when the reader never saw it write anything.
    */
   const found = summary
     .models
@@ -242,27 +242,27 @@ function seatOf(
 }
 
 /**
- * Renders a contest the way a ledger file holds it, then reads it back.
- *
- * WRITES AND RE-READS RATHER THAN CLONING. A clone would hand the parser the
- * very objects the fixture built, which is not what a file does: the parser's
- * real input has been through a text form, and surviving that round trip is
- * exactly what the recorder promises and what this checks.
- *
- * @param round - contest to render and read back
- *
- * @returns Whatever the text form parsed to, still unchecked
- *
- * @example
- * ```ts
- * const value = asFileWould({ round: CONTEST, },);
- * ```
+ Renders a contest the way a ledger file holds it, then reads it back.
+ 
+ WRITES AND RE-READS RATHER THAN CLONING. A clone would hand the parser the
+ very objects the fixture built, which is not what a file does: the parser's
+ real input has been through a text form, and surviving that round trip is
+ exactly what the recorder promises and what this checks.
+ 
+ @param round - contest to render and read back
+ 
+ @returns Whatever the text form parsed to, still unchecked
+ 
+ @example
+ ```ts
+ const value = asFileWould({ round: CONTEST, },);
+ ```
  */
 function asFileWould(
   { round, }: { readonly round: ReadRound; },
 ): unknown {
   /**
-   * Exactly the bytes the recorder would write.
+   Exactly the bytes the recorder would write.
    */
   const text = JSON.stringify(round,);
 
@@ -270,21 +270,21 @@ function asFileWould(
 }
 
 /**
- * Runs the parser over a value that must be refused, and hands back the
- * refusal's message.
- *
- * @param value - malformed contest
- *
- * @param from - file name the refusal should carry
- *
- * @returns Message the refusal was raised with
- *
- * @throws {@link Error} when the parser accepted a value it should refuse
- *
- * @example
- * ```ts
- * const message = refusalMessageFor({ value, from, },);
- * ```
+ Runs the parser over a value that must be refused, and hands back the
+ refusal's message.
+ 
+ @param value - malformed contest
+ 
+ @param from - file name the refusal should carry
+ 
+ @returns Message the refusal was raised with
+ 
+ @throws {@link Error} when the parser accepted a value it should refuse
+ 
+ @example
+ ```ts
+ const message = refusalMessageFor({ value, from, },);
+ ```
  */
 function refusalMessageFor(
   {
@@ -316,7 +316,7 @@ await describe({
         + 'that kept only the first author would under-count the second',
       fn: async () => {
         /**
-         * One contest read.
+         One contest read.
          */
         const summary = summariseLedger({ rounds: [CONTEST,], },);
 
@@ -342,12 +342,12 @@ await describe({
         + 'seat, matching what the standing does with the same rounds',
       fn: async () => {
         /**
-         * One contest read.
+         One contest read.
          */
         const summary = summariseLedger({ rounds: [CONTEST,], },);
 
         /**
-         * First author of the joint candidate, which voted for its own work.
+         First author of the joint candidate, which voted for its own work.
          */
         const seat = seatOf({
           summary,
@@ -370,7 +370,7 @@ await describe({
         + 'a seat two judges wrote is weighed by the three that did not',
       fn: async () => {
         /**
-         * One contest read.
+         One contest read.
          */
         const summary = summariseLedger({ rounds: [CONTEST,], },);
 
@@ -396,7 +396,7 @@ await describe({
         + 'the losing seats no win',
       fn: async () => {
         /**
-         * One contest read.
+         One contest read.
          */
         const summary = summariseLedger({ rounds: [CONTEST,], },);
 
@@ -422,12 +422,12 @@ await describe({
         + 'a seat winning on other judges alone',
       fn: async () => {
         /**
-         * One contest read.
+         One contest read.
          */
         const summary = summariseLedger({ rounds: [CONTEST,], },);
 
         /**
-         * Solo seat, whose author named nothing at all.
+         Solo seat, whose author named nothing at all.
          */
         const seat = seatOf({
           summary,
@@ -450,7 +450,7 @@ await describe({
         + 'slate does not have, since only the second is a fault in the judge',
       fn: async () => {
         /**
-         * One contest read.
+         One contest read.
          */
         const summary = summariseLedger({ rounds: [CONTEST,], },);
 
@@ -470,12 +470,12 @@ await describe({
         + 'ballot that backed the candidate it refused',
       fn: async () => {
         /**
-         * One contest whose panel chose nothing.
+         One contest whose panel chose nothing.
          */
         const summary = summariseLedger({ rounds: [DECLINED,], },);
 
         /**
-         * Only seat that wrote anything in it.
+         Only seat that wrote anything in it.
          */
         const seat = seatOf({
           summary,
@@ -515,7 +515,7 @@ await describe({
         + 'not by how often they were chosen',
       fn: async () => {
         /**
-         * Both contests read, so the third seat wrote twice and the rest once.
+         Both contests read, so the third seat wrote twice and the rest once.
          */
         const summary = summariseLedger({
           rounds: [
@@ -543,7 +543,7 @@ await describe({
         + 'refusing, since a run that judged nothing is an ordinary run',
       fn: async () => {
         /**
-         * No contests at all.
+         No contests at all.
          */
         const summary = summariseLedger({ rounds: [], },);
 
@@ -567,7 +567,7 @@ await describe({
         + 'candidate it named, which is the evidence a roster question needs',
       fn: async () => {
         /**
-         * Everything the solo seat wrote across one contest.
+         Everything the solo seat wrote across one contest.
          */
         const written = workOfModel({
           rounds: [CONTEST,],
@@ -595,7 +595,7 @@ await describe({
         + 'seat cannot supply its own evidence',
       fn: async () => {
         /**
-         * Everything the joint candidate's first author wrote.
+         Everything the joint candidate's first author wrote.
          */
         const written = workOfModel({
           rounds: [CONTEST,],
@@ -615,7 +615,7 @@ await describe({
         + 'they were deciding and whether it was chosen',
       fn: async () => {
         /**
-         * Everything the solo seat wrote.
+         Everything the solo seat wrote.
          */
         const written = workOfModel({
           rounds: [CONTEST,],
@@ -646,7 +646,7 @@ await describe({
         + 'the refusal as a loss to some other seat',
       fn: async () => {
         /**
-         * Everything the third seat wrote across both contests.
+         Everything the third seat wrote across both contests.
          */
         const written = workOfModel({
           rounds: [
@@ -674,7 +674,7 @@ await describe({
         + 'silent answer and not an empty candidate',
       fn: async () => {
         /**
-         * A judge that never produced a candidate of its own.
+         A judge that never produced a candidate of its own.
          */
         const written = workOfModel({
           rounds: [CONTEST,],
@@ -696,7 +696,7 @@ await describe({
         + 'the ballots back in the order they were written',
       fn: async () => {
         /**
-         * A contest round-tripped through the JSON a ledger file holds.
+         A contest round-tripped through the JSON a ledger file holds.
          */
         const round = parseLedgerRound({
           value: asFileWould({ round: CONTEST, },),
@@ -713,7 +713,7 @@ await describe({
         + 'refusing the file for holding no winning position',
       fn: async () => {
         /**
-         * The contest whose panel chose nothing.
+         The contest whose panel chose nothing.
          */
         const round = parseLedgerRound({
           value: asFileWould({ round: DECLINED, },),
@@ -809,8 +809,8 @@ await describe({
         + 'passage nor the reason, since a ledger holds corpus wording',
       fn: async () => {
         /**
-         * A contest whose ballots field is a string, carrying a passage in a
-         * field beside it that the refusal must not echo.
+         A contest whose ballots field is a string, carrying a passage in a
+         field beside it that the refusal must not echo.
          */
         const message = refusalMessageFor({
           value: {

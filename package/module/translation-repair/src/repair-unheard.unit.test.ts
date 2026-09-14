@@ -1,11 +1,11 @@
 /**
- * Tests for the repair lane's silence check.
- *
- * A slice nobody spoke about must carry the archive's own wording and claim no
- * change; anything else is a contradiction, and the two ways it can happen are
- * refused apart. Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the repair lane's silence check.
+ 
+ A slice nobody spoke about must carry the archive's own wording and claim no
+ change; anything else is a contradiction, and the two ways it can happen are
+ refused apart. Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -22,12 +22,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Archive wording of the fixture slice.
+ Archive wording of the fixture slice.
  */
 const ARCHIVE_TEXT = 'The tabby slept on the windowsill.';
 
 /**
- * Slice nobody spoke about, carrying the archive wording.
+ Slice nobody spoke about, carrying the archive wording.
  */
 const SILENT: RepairVoiceRecord = {
   sliceIndex: 2,

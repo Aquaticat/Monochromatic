@@ -21,7 +21,7 @@ import type {
 // what the roster made of a set of them.
 
 /**
- * Candidate names a ballot may carry.
+ Candidate names a ballot may carry.
  */
 const LANE_CHOICES: readonly LaneChoice[] = [
   'repair',
@@ -30,7 +30,7 @@ const LANE_CHOICES: readonly LaneChoice[] = [
 ];
 
 /**
- * Archive verdicts a ballot may carry.
+ Archive verdicts a ballot may carry.
  */
 const ARCHIVE_VERDICTS: readonly ArchiveVerdict[] = [
   'publishable',
@@ -38,20 +38,20 @@ const ARCHIVE_VERDICTS: readonly ArchiveVerdict[] = [
 ];
 
 /**
- * Reads one list of strings a judge wrote.
- *
- * @param value - recorded list
- *
- * @param path - dotted path of that list
- *
- * @returns Strings it carries
- *
- * @throws {@link ArtifactParseError} when it is not a list of strings
- *
- * @example
- * ```ts
- * const reasons = parseStringList({ value, path, },);
- * ```
+ Reads one list of strings a judge wrote.
+ 
+ @param value - recorded list
+ 
+ @param path - dotted path of that list
+ 
+ @returns Strings it carries
+ 
+ @throws {@link ArtifactParseError} when it is not a list of strings
+ 
+ @example
+ ```ts
+ const reasons = parseStringList({ value, path, },);
+ ```
  */
 function parseStringList(
   {
@@ -78,20 +78,20 @@ function parseStringList(
 }
 
 /**
- * Reads one list of candidate names a judge wrote.
- *
- * @param value - recorded list
- *
- * @param path - dotted path of that list
- *
- * @returns Candidate names it carries
- *
- * @throws {@link ArtifactParseError} when any entry names no candidate
- *
- * @example
- * ```ts
- * const named = parseChoiceList({ value, path, },);
- * ```
+ Reads one list of candidate names a judge wrote.
+ 
+ @param value - recorded list
+ 
+ @param path - dotted path of that list
+ 
+ @returns Candidate names it carries
+ 
+ @throws {@link ArtifactParseError} when any entry names no candidate
+ 
+ @example
+ ```ts
+ const named = parseChoiceList({ value, path, },);
+ ```
  */
 function parseChoiceList(
   {
@@ -119,20 +119,20 @@ function parseChoiceList(
 }
 
 /**
- * Reads one judge`s ballot.
- *
- * @param value - recorded ballot
- *
- * @param path - dotted path of that ballot
- *
- * @returns Ballot as the judge left it
- *
- * @throws {@link ArtifactParseError} when any field is missing or unreadable
- *
- * @example
- * ```ts
- * const ballot = parseContestBallot({ value, path, },);
- * ```
+ Reads one judge`s ballot.
+ 
+ @param value - recorded ballot
+ 
+ @param path - dotted path of that ballot
+ 
+ @returns Ballot as the judge left it
+ 
+ @throws {@link ArtifactParseError} when any field is missing or unreadable
+ 
+ @example
+ ```ts
+ const ballot = parseContestBallot({ value, path, },);
+ ```
  */
 export function parseContestBallot(
   {
@@ -144,7 +144,7 @@ export function parseContestBallot(
   },
 ): LaneContestBallot {
   /**
-   * Ballot as a record, before any field is read.
+   Ballot as a record, before any field is read.
    */
   const ballot = requireRecord({
     value,
@@ -164,12 +164,12 @@ export function parseContestBallot(
     path,
   },);
   /**
-   * Archive verdict this ballot carries, present only when it recorded one.
-   *
-   * SPREAD RATHER THAN SET TO UNDEFINED, because the property is optional
-   * under `exactOptionalPropertyTypes`. A ballot written before the question
-   * existed carries no such key, and reading it back as absent is what makes
-   * the verdict derived from it agree with the one recorded beside it.
+   Archive verdict this ballot carries, present only when it recorded one.
+   
+   SPREAD RATHER THAN SET TO UNDEFINED, because the property is optional
+   under `exactOptionalPropertyTypes`. A ballot written before the question
+   existed carries no such key, and reading it back as absent is what makes
+   the verdict derived from it agree with the one recorded beside it.
    */
   const archive = (ballot.archive === undefined)
     ? {}

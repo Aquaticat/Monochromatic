@@ -1,12 +1,12 @@
 /**
- * Tests for production proof before translating source-only passages.
- *
- * A live page had one wholly omitted linked factual paragraph, but verbose
- * English elsewhere made whole-page length look complete. These cat fixtures
- * pin that local destination evidence rescues that class only when whole-page
- * coverage independently says the passage is absent.
- *
- * @module
+ Tests for production proof before translating source-only passages.
+ 
+ A live page had one wholly omitted linked factual paragraph, but verbose
+ English elsewhere made whole-page length look complete. These cat fixtures
+ pin that local destination evidence rescues that class only when whole-page
+ coverage independently says the passage is absent.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -30,7 +30,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Production-shaped test roster.
+ Production-shaped test roster.
  */
 const ROSTER: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -39,7 +39,7 @@ const ROSTER: readonly RosterModelId[] = [
 ];
 
 /**
- * Coverage reply one roster seat returns.
+ Coverage reply one roster seat returns.
  */
 type ScriptedCoverage = {
   readonly coverage: 'full' | 'partial' | 'none';
@@ -47,38 +47,38 @@ type ScriptedCoverage = {
 };
 
 /**
- * Scripted provider voice that fails before returning coverage.
+ Scripted provider voice that fails before returning coverage.
  */
 const COVERAGE_VOICE_LOST: unique symbol = Symbol('scripted coverage voice lost',);
 
 /**
- * One scripted seat outcome.
+ One scripted seat outcome.
  */
 type ScriptedCoverageOutcome = ScriptedCoverage | typeof COVERAGE_VOICE_LOST;
 
 /**
- * No-op logger accepted by production module.
+ No-op logger accepted by production module.
  */
 const l = tagged({ tag: 'pass-insertion-admission-test', },);
 
 /**
- * Whole target carrying enough unrelated prose to defeat page shortfall.
+ Whole target carrying enough unrelated prose to defeat page shortfall.
  */
 const LONG_TARGET = `## Cats\n\n${'The cat sleeps in warm sunlight. '.repeat(20,)}`;
 
 /**
- * Builds one prepared source-only passage.
- *
- * @param sourcePassage - original with no target wording beside it
- *
- * @param targetText - whole translation searched by coverage
- *
- * @returns Preparation holding one insertion slice
- *
- * @example
- * ```ts
- * const prepared = preparedGap({ sourcePassage: '猫。', targetText: '' });
- * ```
+ Builds one prepared source-only passage.
+ 
+ @param sourcePassage - original with no target wording beside it
+ 
+ @param targetText - whole translation searched by coverage
+ 
+ @returns Preparation holding one insertion slice
+ 
+ @example
+ ```ts
+ const prepared = preparedGap({ sourcePassage: '猫。', targetText: '' });
+ ```
  */
 function preparedGap(
   {
@@ -115,18 +115,18 @@ function preparedGap(
 }
 
 /**
- * Client returning one scripted coverage reply per seat, or failing that seat.
- *
- * @param replies - initial roster-order replies
- *
- * @param followupReplies - replies to prior-verdict challenge
- *
- * @returns Client serving only coverage stage
- *
- * @example
- * ```ts
- * const client = coverageClient({ replies: [{ coverage: 'none', quote: '' }] });
- * ```
+ Client returning one scripted coverage reply per seat, or failing that seat.
+ 
+ @param replies - initial roster-order replies
+ 
+ @param followupReplies - replies to prior-verdict challenge
+ 
+ @returns Client serving only coverage stage
+ 
+ @example
+ ```ts
+ const client = coverageClient({ replies: [{ coverage: 'none', quote: '' }] });
+ ```
  */
 function coverageClient(
   {
@@ -138,11 +138,11 @@ function coverageClient(
   },
 ): SyntheticClient {
   /**
-   * Iterator advancing one response per roster seat.
+   Iterator advancing one response per roster seat.
    */
   const responses = replies.values();
   /**
-   * Follow-up responses advanced independently from initial recovery retries.
+   Follow-up responses advanced independently from initial recovery retries.
    */
   const followups = followupReplies.values();
   return {
@@ -153,10 +153,10 @@ function coverageClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Next scripted seat outcome, which must exist for every requested seat.
+       Next scripted seat outcome, which must exist for every requested seat.
        */
       /**
-       * Whether latest unresolved verdict is present in this prompt.
+       Whether latest unresolved verdict is present in this prompt.
        */
       const isFollowup = request.messages.some(function hasPriorVerdict(message,): boolean {
         return messageText({ message, },).includes('PRIOR UNRESOLVED VERDICT',);
@@ -189,22 +189,22 @@ function coverageClient(
 }
 
 /**
- * Runs one admission case.
- *
- * @param sourcePassage - insertion source
- *
- * @param targetText - whole target page
- *
- * @param replies - initial roster replies
- *
- * @param followupReplies - replies to prior-verdict challenge
- *
- * @returns Admission from production module
- *
- * @example
- * ```ts
- * const admission = await runAdmission({ sourcePassage: '猫。', targetText: '', replies: [] });
- * ```
+ Runs one admission case.
+ 
+ @param sourcePassage - insertion source
+ 
+ @param targetText - whole target page
+ 
+ @param replies - initial roster replies
+ 
+ @param followupReplies - replies to prior-verdict challenge
+ 
+ @returns Admission from production module
+ 
+ @example
+ ```ts
+ const admission = await runAdmission({ sourcePassage: '猫。', targetText: '', replies: [] });
+ ```
  */
 async function runAdmission(
   {
@@ -234,16 +234,16 @@ async function runAdmission(
 }
 
 /**
- * Repeats one reply across whole roster.
- *
- * @param reply - answer every seat gives
- *
- * @returns One answer per roster seat
- *
- * @example
- * ```ts
- * const replies = unanimous({ coverage: 'none', quote: '' });
- * ```
+ Repeats one reply across whole roster.
+ 
+ @param reply - answer every seat gives
+ 
+ @returns One answer per roster seat
+ 
+ @example
+ ```ts
+ const replies = unanimous({ coverage: 'none', quote: '' });
+ ```
  */
 function unanimous(reply: ScriptedCoverage,): readonly ScriptedCoverage[] {
   return ROSTER.map(function sameReply(): ScriptedCoverage {

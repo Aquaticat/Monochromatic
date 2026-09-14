@@ -1,11 +1,11 @@
 /**
- * Tests for the derivability probe sheet and its wire constants:
- * the sheet shows the source and the deleted needles only (never any
- * repaired text), seed ids bind by candidate number, and the response
- * format names the judgment schema.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the derivability probe sheet and its wire constants:
+ the sheet shows the source and the deleted needles only (never any
+ repaired text), seed ids bind by candidate number, and the response
+ format names the judgment schema.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
@@ -23,12 +23,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Invented zh source the probe judges against.
+ Invented zh source the probe judges against.
  */
 const SOURCE_TEXT = '## 猫的日常\n\n小猫喜欢晒太阳。小猫也喜欢追蝴蝶。\n';
 
 /**
- * Deleted needles whose derivability the probe questions.
+ Deleted needles whose derivability the probe questions.
  */
 const REFERENCES = [
   {
@@ -69,7 +69,7 @@ await describe({
             },);
 
             /**
-             * User sheet carrying source and candidates.
+             User sheet carrying source and candidates.
              */
             const sheet = plan.messages[1]?.content ?? '';
             expect(sheet,).toContain(SOURCE_TEXT,);
@@ -127,28 +127,28 @@ await describe({
 },);
 
 /**
- * Original carrying a row of five equals signs, the fence the builder once
- * used, on a line of its own.
+ Original carrying a row of five equals signs, the fence the builder once
+ used, on a line of its own.
  */
 const RULED_SOURCE = '第一行。\n=====\n第二行。';
 
 /**
- * User message of a plan, as text.
- *
- * @param messages - messages the builder returned
- *
- * @returns Last message's text
- *
- * @throws {@link Error} when the builder returned no message
- *
- * @example
- * ```ts
- * const content = userText({ messages, },);
- * ```
+ User message of a plan, as text.
+ 
+ @param messages - messages the builder returned
+ 
+ @returns Last message's text
+ 
+ @throws {@link Error} when the builder returned no message
+ 
+ @example
+ ```ts
+ const content = userText({ messages, },);
+ ```
  */
 function userText({ messages, }: { readonly messages: readonly ChatMessage[]; },): string {
   /**
-   * Last message, which is the user turn.
+   Last message, which is the user turn.
    */
   const asked = messages.at(-1,);
   if (asked === undefined)

@@ -17,9 +17,9 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // this output is safe to paste anywhere the artifacts themselves are not.
 
 /**
- * Column widths of the critic table, wide enough that no row runs into its
- * neighbour. Object-literal values, so the width numbers stay readable here
- * rather than becoming named constants nobody can picture.
+ Column widths of the critic table, wide enough that no row runs into its
+ neighbour. Object-literal values, so the width numbers stay readable here
+ rather than becoming named constants nobody can picture.
  */
 const COLUMN = {
   model: 42,
@@ -32,24 +32,24 @@ const COLUMN = {
 } as const;
 
 /**
- * Digits kept on per-chunk rates.
- *
- * These are RATES, not percentages, and the distinction is not pedantic: one
- * critic can raise many claims in a single chunk, so claims per chunk heard
- * legitimately exceeds one and rendering it as a percentage produced readings
- * like "3400%" the first time this ran.
+ Digits kept on per-chunk rates.
+ 
+ These are RATES, not percentages, and the distinction is not pedantic: one
+ critic can raise many claims in a single chunk, so claims per chunk heard
+ legitimately exceeds one and rendering it as a percentage produced readings
+ like "3400%" the first time this ran.
  */
 const RATE_DIGITS = 2;
 
 /**
- * Renders the table header.
- *
- * @returns Header line
- *
- * @example
- * ```ts
- * console.log(headerLine(),);
- * ```
+ Renders the table header.
+ 
+ @returns Header line
+ 
+ @example
+ ```ts
+ console.log(headerLine(),);
+ ```
  */
 function headerLine(): string {
   return [
@@ -71,20 +71,20 @@ function headerLine(): string {
 }
 
 /**
- * Renders one critic's row.
- *
- * Rates divide by chunks HEARD rather than by chunks in the run, so a critic
- * that lost voices on half the run is not read as half as willing to raise a
- * claim.
- *
- * @param critic - tally for one critic
- *
- * @returns Row line
- *
- * @example
- * ```ts
- * console.log(criticLine({ critic, },),);
- * ```
+ Renders one critic's row.
+ 
+ Rates divide by chunks HEARD rather than by chunks in the run, so a critic
+ that lost voices on half the run is not read as half as willing to raise a
+ claim.
+ 
+ @param critic - tally for one critic
+ 
+ @returns Row line
+ 
+ @example
+ ```ts
+ console.log(criticLine({ critic, },),);
+ ```
  */
 function criticLine(
   {
@@ -94,23 +94,23 @@ function criticLine(
   },
 ): string {
   /**
-   * Renders one rate, or names it undefined rather than inventing a zero.
-   *
-   * A critic heard on no chunk has no rate. Printing `0.00` for it would be
-   * FALSE rather than merely uninformative, and it would be indistinguishable
-   * from a critic that was heard often and raised nothing, which is the exact
-   * conflation the heard roster exists to prevent. Worse, a nonzero numerator
-   * over a zero denominator means the artifact is internally inconsistent, and
-   * that must never render as a tidy zero.
-   *
-   * @param count - numerator
-   *
-   * @returns Rendered rate
-   *
-   * @example
-   * ```ts
-   * const rendered = rate(critic.claimsRaised,);
-   * ```
+   Renders one rate, or names it undefined rather than inventing a zero.
+   
+   A critic heard on no chunk has no rate. Printing `0.00` for it would be
+   FALSE rather than merely uninformative, and it would be indistinguishable
+   from a critic that was heard often and raised nothing, which is the exact
+   conflation the heard roster exists to prevent. Worse, a nonzero numerator
+   over a zero denominator means the artifact is internally inconsistent, and
+   that must never render as a tidy zero.
+   
+   @param count - numerator
+   
+   @returns Rendered rate
+   
+   @example
+   ```ts
+   const rendered = rate(critic.claimsRaised,);
+   ```
    */
   function rate(count: number,): string {
     if (critic.chunksHeard === 0)
@@ -137,16 +137,16 @@ function criticLine(
 }
 
 /**
- * Reads a run's artifacts and prints per-critic calibration.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Reads a run's artifacts and prints per-critic calibration.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Directory this run wrote artifacts into.
+   Directory this run wrote artifacts into.
    */
   const artifactsDir = join(
     await resolveRunsDir(),
@@ -162,7 +162,7 @@ async function main(): Promise<void> {
   console.log(`SOURCE ${artifactsDir}`,);
 
   /**
-   * Entries that parsed, and the artifacts that did not.
+   Entries that parsed, and the artifacts that did not.
    */
   const {
     entries,
@@ -170,7 +170,7 @@ async function main(): Promise<void> {
   } = await gatherAttributionEntries({ artifactsDir, },);
 
   /**
-   * Report over every settled artifact.
+   Report over every settled artifact.
    */
   const report = buildAttributionReport({ entries, },);
 

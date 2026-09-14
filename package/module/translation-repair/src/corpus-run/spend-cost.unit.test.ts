@@ -1,23 +1,23 @@
 /**
- * Tests for pricing a spend tally.
- *
- * THE ORDERING CASE IS BUILT TO FAIL IF THE SORT IS INHERITED. `tallySpend`
- * already returns seats by completion tokens, so a `priceTally` that kept that
- * order would pass any case where the two agree. The seats here disagree on
- * purpose: the one with ten times the tokens costs a quarter as much, because
- * the output rates it sits between differ by forty times.
- *
- * THE THREE BUCKETS ARE THE POINT. Metered and priced, metered and unknown to
- * the table, and flat-subscription. Only the first has a credit figure, and a
- * case for each is what stops the third being converted into a currency it does
- * not bill in.
- *
- * THE ROUND TRIP BINDS THE WHOLE CHAIN: a line `reportSpend` wrote, read by
- * `tallySpend`, priced by `priceTally`. That is the path a real report walks.
- *
- * Model identifiers come from the catalog. No corpus content appears here.
- *
- * @module
+ Tests for pricing a spend tally.
+ 
+ THE ORDERING CASE IS BUILT TO FAIL IF THE SORT IS INHERITED. `tallySpend`
+ already returns seats by completion tokens, so a `priceTally` that kept that
+ order would pass any case where the two agree. The seats here disagree on
+ purpose: the one with ten times the tokens costs a quarter as much, because
+ the output rates it sits between differ by forty times.
+ 
+ THE THREE BUCKETS ARE THE POINT. Metered and priced, metered and unknown to
+ the table, and flat-subscription. Only the first has a credit figure, and a
+ case for each is what stops the third being converted into a currency it does
+ not bill in.
+ 
+ THE ROUND TRIP BINDS THE WHOLE CHAIN: a line `reportSpend` wrote, read by
+ `tallySpend`, priced by `priceTally`. That is the path a real report walks.
+ 
+ Model identifiers come from the catalog. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -34,16 +34,16 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Builds a tally from record tails, which is how every case here starts.
- *
- * @param tails - record text of each line, marker word onward
- *
- * @returns Tally over those records
- *
- * @example
- * ```ts
- * const tally = tallyOf({ tails: ['SPEND provider=hyper model=kimi-k3 prompt=0 completion=1',], },);
- * ```
+ Builds a tally from record tails, which is how every case here starts.
+ 
+ @param tails - record text of each line, marker word onward
+ 
+ @returns Tally over those records
+ 
+ @example
+ ```ts
+ const tally = tallyOf({ tails: ['SPEND provider=hyper model=kimi-k3 prompt=0 completion=1',], },);
+ ```
  */
 function tallyOf(
   { tails, }: { readonly tails: readonly string[]; },
@@ -85,7 +85,7 @@ await describe({
         + 'provider bills a weekly allowance and no credits at all',
       fn: async () => {
         /**
-         * Tally holding one seat of each provider, same model spelling apart.
+         Tally holding one seat of each provider, same model spelling apart.
          */
         const cost = priceTally({
           tally: tallyOf({
@@ -120,7 +120,7 @@ await describe({
         + 'the total reads as incomplete rather than as cheap',
       fn: async () => {
         /**
-         * Tally holding one priced seat and one the table never heard of.
+         Tally holding one priced seat and one the table never heard of.
          */
         const cost = priceTally({
           tally: tallyOf({
@@ -171,7 +171,7 @@ await describe({
         + 'shape every log written before the writer landed produces',
       fn: async () => {
         /**
-         * Cost of a log that carried no record at all.
+         Cost of a log that carried no record at all.
          */
         const cost = priceTally({ tally: tallyOf({ tails: ['ordinary log line',], },), },);
 
@@ -251,7 +251,7 @@ await describe({
         + 'never added to the credit total, since the two are different currencies',
       fn: async () => {
         /**
-         * Tally holding one seat per currency.
+         Tally holding one seat per currency.
          */
         const cost = priceTally({
           tally: tallyOf({

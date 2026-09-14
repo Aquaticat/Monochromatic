@@ -1,16 +1,16 @@
 /**
- * End-to-end test of the repair-provenance chain: slice outcomes into issue
- * records, records into artifact JSON, artifact JSON back into grading
- * candidates, candidates into both sheets.
- *
- * Every other suite fixes its own fixture at one module's boundary, so all of
- * them can agree with the code they test and disagree with each other. This one
- * runs the real path a corpus entry takes, which is the only place a field
- * renamed on one side and read on the other actually shows up.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ End-to-end test of the repair-provenance chain: slice outcomes into issue
+ records, records into artifact JSON, artifact JSON back into grading
+ candidates, candidates into both sheets.
+ 
+ Every other suite fixes its own fixture at one module's boundary, so all of
+ them can agree with the code they test and disagree with each other. This one
+ runs the real path a corpus entry takes, which is the only place a field
+ renamed on one side and read on the other actually shows up.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -40,20 +40,20 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Bands a raw byte count, stating the unit explicitly.
- *
- * These cases probe the band BOUNDARIES, which are byte counts by
- * definition and cannot be produced from text, so the assertion is the
- * honest way to reach `classifyBand` rather than a cast around its guard.
- *
- * @param count - UTF-8 byte length under test
- *
- * @returns Band that count falls in
- *
- * @example
- * ```ts
- * expect(bandAt(1_842,),).toBe('small',);
- * ```
+ Bands a raw byte count, stating the unit explicitly.
+ 
+ These cases probe the band BOUNDARIES, which are byte counts by
+ definition and cannot be produced from text, so the assertion is the
+ honest way to reach `classifyBand` rather than a cast around its guard.
+ 
+ @param count - UTF-8 byte length under test
+ 
+ @returns Band that count falls in
+ 
+ @example
+ ```ts
+ expect(bandAt(1_842,),).toBe('small',);
+ ```
  */
 function bandAt(count: number,): SizeBand {
   assertSourceBytes(count,);
@@ -62,30 +62,30 @@ function bandAt(count: number,): SizeBand {
 
 
 /**
- * Translation before repair.
+ Translation before repair.
  */
 const TARGET_TEXT = 'The cat is doing the sleeping. She wakes at dusk.';
 
 /**
- * Envelope content the editor replaced.
+ Envelope content the editor replaced.
  */
 const REPLACED = 'The cat is doing the sleeping.';
 
 /**
- * Replacement the accuracy stage wrote.
+ Replacement the accuracy stage wrote.
  */
 const REPLACEMENT = 'The cat is asleep.';
 
 /**
- * Slice text after applying that replacement.
+ Slice text after applying that replacement.
  */
 const PATCHED_TEXT = 'The cat is asleep. She wakes at dusk.';
 
 /**
- * Accepted issue the replacement was written for.
+ Accepted issue the replacement was written for.
  */
 /**
- * Weighted mass behind this fixture's claim, as the panel summed it.
+ Weighted mass behind this fixture's claim, as the panel summed it.
  */
 const PANEL_TALLY = {
   supported: 2,
@@ -96,11 +96,11 @@ const PANEL_TALLY = {
 };
 
 /**
- * Ballots behind {@link PANEL_TALLY}, one panelist having abstained.
- *
- * THE ABSTENTION IS THE POINT. It leaves a ballot, while a panelist whose
- * reply never arrived leaves none, and a reader holding only the sums cannot
- * tell those apart at all.
+ Ballots behind {@link PANEL_TALLY}, one panelist having abstained.
+ 
+ THE ABSTENTION IS THE POINT. It leaves a ballot, while a panelist whose
+ reply never arrived leaves none, and a reader holding only the sums cannot
+ tell those apart at all.
  */
 const PANEL_READING = {
   ballots: [
@@ -164,7 +164,7 @@ const ISSUE: AdjudicatedIssue = {
 };
 
 /**
- * Envelope cut from that issue's target-side evidence.
+ Envelope cut from that issue's target-side evidence.
  */
 const ENVELOPE: EditableEnvelope = {
   envelopeId: 'envelope/nap',
@@ -176,7 +176,7 @@ const ENVELOPE: EditableEnvelope = {
 };
 
 /**
- * Operation the apply gate accepted.
+ Operation the apply gate accepted.
  */
 const OPERATION: PatchOperation = {
   envelopeId: ENVELOPE.envelopeId,
@@ -185,10 +185,10 @@ const OPERATION: PatchOperation = {
 };
 
 /**
- * Checker round behind this fixture's verdict: resolved two to one.
- *
- * Cat-themed invention. Model ids come from the catalog because that union is
- * closed.
+ Checker round behind this fixture's verdict: resolved two to one.
+ 
+ Cat-themed invention. Model ids come from the catalog because that union is
+ closed.
  */
 const CHECKER_READING = {
   ballots: [
@@ -219,13 +219,13 @@ const CHECKER_READING = {
 } as const satisfies IssueCheckerReading;
 
 /**
- * What the same three said when asked again about the REFINED text.
- *
- * DELIBERATELY NOT THE SAME SHAPE as `CHECKER_READING`, and one voice changed
- * its answer between them. That is the state the second field exists to keep:
- * two rounds rule on the same issue id, so a reader holding one merged record
- * could not tell which round said what, and the dissent that the deciding round
- * carried would look as though it had never happened.
+ What the same three said when asked again about the REFINED text.
+ 
+ DELIBERATELY NOT THE SAME SHAPE as `CHECKER_READING`, and one voice changed
+ its answer between them. That is the state the second field exists to keep:
+ two rounds rule on the same issue id, so a reader holding one merged record
+ could not tell which round said what, and the dissent that the deciding round
+ carried would look as though it had never happened.
  */
 const RECHECK_READING = {
   ballots: [
@@ -256,16 +256,16 @@ const RECHECK_READING = {
 } as const satisfies IssueCheckerReading;
 
 /**
- * Builds the settled slice outcome the way `repairChunk` returns it.
- *
- * @param accuracyPatchSelected - whether the patched candidate won
- *
- * @returns Outcome the driver flattens
- *
- * @example
- * ```ts
- * const outcome = settledOutcome({ accuracyPatchSelected: true, },);
- * ```
+ Builds the settled slice outcome the way `repairChunk` returns it.
+ 
+ @param accuracyPatchSelected - whether the patched candidate won
+ 
+ @returns Outcome the driver flattens
+ 
+ @example
+ ```ts
+ const outcome = settledOutcome({ accuracyPatchSelected: true, },);
+ ```
  */
 function settledOutcome(
   { accuracyPatchSelected, }: { readonly accuracyPatchSelected: boolean; },
@@ -305,23 +305,23 @@ function settledOutcome(
 }
 
 /**
- * Runs the whole chain a corpus entry takes: outcome to records, records
- * through the artifact JSON the pass writes, artifact back to candidates.
- *
- * @param accuracyPatchSelected - whether the patched candidate won
- *
- * @returns Candidates the sheets render
- *
- * @example
- * ```ts
- * const candidates = throughArtifact({ accuracyPatchSelected: true, },);
- * ```
+ Runs the whole chain a corpus entry takes: outcome to records, records
+ through the artifact JSON the pass writes, artifact back to candidates.
+ 
+ @param accuracyPatchSelected - whether the patched candidate won
+ 
+ @returns Candidates the sheets render
+ 
+ @example
+ ```ts
+ const candidates = throughArtifact({ accuracyPatchSelected: true, },);
+ ```
  */
 function throughArtifact(
   { accuracyPatchSelected, }: { readonly accuracyPatchSelected: boolean; },
 ) {
   /**
-   * Whole-document issue report, exactly as the driver builds it.
+   Whole-document issue report, exactly as the driver builds it.
    */
   const issues = buildIssueRecords({
     outcomes: [settledOutcome({ accuracyPatchSelected, },),],
@@ -329,14 +329,14 @@ function throughArtifact(
   },);
 
   /**
-   * Artifact text exactly as the corpus pass writes it to disk.
-   *
-   * Serialized and re-read rather than passed as an object on purpose, and NOT
-   * a deep clone the way `structuredClone` would be: JSON drops what
-   * `structuredClone` keeps, and every optional field on a repair record
-   * (`introducedDefects`, `finalSliceText`) is exactly the kind of thing that
-   * survives a clone and vanishes through a file. The disk boundary is the
-   * thing under test.
+   Artifact text exactly as the corpus pass writes it to disk.
+   
+   Serialized and re-read rather than passed as an object on purpose, and NOT
+   a deep clone the way `structuredClone` would be: JSON drops what
+   `structuredClone` keeps, and every optional field on a repair record
+   (`introducedDefects`, `finalSliceText`) is exactly the kind of thing that
+   survives a clone and vanishes through a file. The disk boundary is the
+   thing under test.
    */
   const onDisk = JSON.stringify({
     id: 'Kitten',
@@ -347,19 +347,19 @@ function throughArtifact(
   },);
 
   /**
-   * Artifact read back out of that text.
+   Artifact read back out of that text.
    */
   const artifact: unknown = JSON.parse(onDisk,);
 
   /**
-   * Accepted issues read back out.
+   Accepted issues read back out.
    */
   const parsed = parseSettledArtifact({ value: artifact, },);
 
   return parsed.acceptedIssues
     .map(function toCandidate(accepted,) {
       /**
-       * What the artifact recorded about this issue's repair.
+       What the artifact recorded about this issue's repair.
        */
       const reading = accepted.repair;
 
@@ -497,9 +497,9 @@ await describe({
         + 'field that survives a clone can still vanish through a file',
       fn: async () => {
         /**
-         * Issue report as bytes. Written and re-read rather than cloned: JSON
-         * drops what `structuredClone` keeps, and an optional field is exactly
-         * what survives a clone and vanishes through a file.
+         Issue report as bytes. Written and re-read rather than cloned: JSON
+         drops what `structuredClone` keeps, and an optional field is exactly
+         what survives a clone and vanishes through a file.
          */
         const onDisk = JSON.stringify(buildIssueRecords({
           outcomes: [settledOutcome({ accuracyPatchSelected: true, },),],

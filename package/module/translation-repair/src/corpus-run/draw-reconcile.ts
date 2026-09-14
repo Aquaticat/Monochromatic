@@ -11,57 +11,57 @@
 // stray value there could be anything, so only its `typeof` name travels.
 
 /**
- * Name `typeof` gives a value.
- *
- * @example
- * ```ts
- * const found: TypeofName = typeof 'one';
- * ```
+ Name `typeof` gives a value.
+ 
+ @example
+ ```ts
+ const found: TypeofName = typeof 'one';
+ ```
  */
 export type TypeofName = 'bigint' | 'boolean' | 'function' | 'number' | 'object' | 'string' | 'symbol' | 'undefined';
 
 /**
- * Why an artifact could not be reconciled with the population parsed from it.
- *
- * @example
- * ```ts
- * const fault: DrawReconcileFault = { kind: 'count-disagrees', declared: 4, parsed: 1, };
- * ```
+ Why an artifact could not be reconciled with the population parsed from it.
+ 
+ @example
+ ```ts
+ const fault: DrawReconcileFault = { kind: 'count-disagrees', declared: 4, parsed: 1, };
+ ```
  */
 export type DrawReconcileFault = {
   /**
-   * Artifact file holds something other than an object.
+   Artifact file holds something other than an object.
    */
   readonly kind: 'not-an-object';
 } | {
   /**
-   * Artifact records no number under `acceptedCount`.
+   Artifact records no number under `acceptedCount`.
    */
   readonly kind: 'no-numeric-count';
 
   /**
-   * `typeof` name of what sat there instead.
+   `typeof` name of what sat there instead.
    */
   readonly foundType: TypeofName;
 } | {
   /**
-   * Recorded count and parsed accepted population disagree.
+   Recorded count and parsed accepted population disagree.
    */
   readonly kind: 'count-disagrees';
 
   /**
-   * Count the artifact recorded.
+   Count the artifact recorded.
    */
   readonly declared: number;
 
   /**
-   * Accepted issues parsing found.
+   Accepted issues parsing found.
    */
   readonly parsed: number;
 };
 
 /**
- * Sentence for each fault, keyed by kind so every kind has exactly one.
+ Sentence for each fault, keyed by kind so every kind has exactly one.
  */
 const RECONCILE_SENTENCES: {
   readonly [K in DrawReconcileFault['kind']]: (fault: Extract<DrawReconcileFault, { kind: K; }>) => string;
@@ -84,16 +84,16 @@ const RECONCILE_SENTENCES: {
 };
 
 /**
- * Words a reconcile fault, from its kind and numbers alone.
- *
- * @param fault - why the artifact could not be reconciled
- *
- * @returns Sentence naming the fault, without the entry
- *
- * @example
- * ```ts
- * const sentence = reconcileSentence({ fault: { kind: 'not-an-object', }, },);
- * ```
+ Words a reconcile fault, from its kind and numbers alone.
+ 
+ @param fault - why the artifact could not be reconciled
+ 
+ @returns Sentence naming the fault, without the entry
+ 
+ @example
+ ```ts
+ const sentence = reconcileSentence({ fault: { kind: 'not-an-object', }, },);
+ ```
  */
 export function reconcileSentence({ fault, }: { readonly fault: DrawReconcileFault; },): string {
   if (fault.kind === 'not-an-object')
@@ -104,38 +104,38 @@ export function reconcileSentence({ fault, }: { readonly fault: DrawReconcileFau
 }
 
 /**
- * Refusal of a final draw whose artifact cannot be reconciled with the
- * accepted population parsed from it.
- *
- * MARKED, because its message is composed of the entry id, which these tools
- * report by design, and sentences written here from a kind and numbers.
- *
- * @example
- * ```ts
- * throw new DrawReconcileError({ entryId: 'Toka_ls', fault: { kind: 'not-an-object', }, },);
- * ```
+ Refusal of a final draw whose artifact cannot be reconciled with the
+ accepted population parsed from it.
+ 
+ MARKED, because its message is composed of the entry id, which these tools
+ report by design, and sentences written here from a kind and numbers.
+ 
+ @example
+ ```ts
+ throw new DrawReconcileError({ entryId: 'Toka_ls', fault: { kind: 'not-an-object', }, },);
+ ```
  */
 export class DrawReconcileError extends Error {
   /**
-   * Declares this message safe to forward: an entry id and a sentence composed
-   * here from a kind and numbers.
+   Declares this message safe to forward: an entry id and a sentence composed
+   here from a kind and numbers.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Entry whose artifact was refused.
+   Entry whose artifact was refused.
    */
   readonly entryId: string;
 
   /**
-   * Why it was refused.
+   Why it was refused.
    */
   readonly fault: DrawReconcileFault;
 
   /**
-   * @param entryId - entry whose artifact was refused
-   *
-   * @param fault - why it could not be reconciled
+   @param entryId - entry whose artifact was refused
+   
+   @param fault - why it could not be reconciled
    */
   constructor(
     {

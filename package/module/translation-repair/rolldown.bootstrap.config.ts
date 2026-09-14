@@ -13,16 +13,16 @@ import type {
 //region Separate single-file preparation bootstrap packaging
 
 /**
- * Build evidence cannot be emitted for an unexpected executable closure.
+ Build evidence cannot be emitted for an unexpected executable closure.
  */
 class PreparationBootstrapBuildError extends Error {
   /**
-   * @param message - fixed build-contract diagnostic, never input data
-   *
-   * @example
-   * ```ts
-   * throw new PreparationBootstrapBuildError('Unexpected bootstrap chunks.');
-   * ```
+   @param message - fixed build-contract diagnostic, never input data
+   
+   @example
+   ```ts
+   throw new PreparationBootstrapBuildError('Unexpected bootstrap chunks.');
+   ```
    */
   constructor(message: string) {
     super(message);
@@ -31,16 +31,16 @@ class PreparationBootstrapBuildError extends Error {
 }
 
 /**
- * Readonly plugin view includes only the generated closure fields inspected by this build.
+ Readonly plugin view includes only the generated closure fields inspected by this build.
  */
 type BootstrapBundle = Readonly<Record<string,
   (Readonly<Pick<OutputChunk, 'type' | 'fileName' | 'code'>> & {
     /**
-     * Static import names are observed without mutating the bundler's array.
+     Static import names are observed without mutating the bundler's array.
      */
     readonly imports: readonly string[];
     /**
-     * Statically resolved dynamic imports must remain absent.
+     Statically resolved dynamic imports must remain absent.
      */
     readonly dynamicImports: readonly string[];
   })
@@ -48,12 +48,12 @@ type BootstrapBundle = Readonly<Record<string,
 >>;
 
 /**
- * Describes the generated bootstrap without treating its self-digest as review or authentication.
- *
- * @example
- * ```ts
- * const plugins = [config.plugins, bootstrapManifest];
- * ```
+ Describes the generated bootstrap without treating its self-digest as review or authentication.
+ 
+ @example
+ ```ts
+ const plugins = [config.plugins, bootstrapManifest];
+ ```
  */
 const bootstrapManifest: Plugin = {
   name: 'preparation-input-bootstrap-manifest',
@@ -64,7 +64,7 @@ const bootstrapManifest: Plugin = {
       bundle: BootstrapBundle,
     ): void {
       /**
-       * Declaration output is not executable bootstrap content.
+       Declaration output is not executable bootstrap content.
        */
       const chunks = Object.values(bundle)
         .filter(function executable(value): boolean {
@@ -73,7 +73,7 @@ const bootstrapManifest: Plugin = {
             .endsWith('.mjs');
         });
       /**
-       * The host and child execute the same one-file bootstrap.
+       The host and child execute the same one-file bootstrap.
        */
       const [entry] = chunks;
       if ((chunks.length !== 1)
@@ -90,7 +90,7 @@ const bootstrapManifest: Plugin = {
           > 0))
         throw new PreparationBootstrapBuildError('Preparation bootstrap contains an external or statically resolved application dependency.');
       /**
-       * The guarded application import remains an opaque fixed URL expression, audited separately at the consumer boundary.
+       The guarded application import remains an opaque fixed URL expression, audited separately at the consumer boundary.
        */
       const manifest = {
         version: 1,
@@ -128,7 +128,7 @@ const bootstrapManifest: Plugin = {
 };
 
 /**
- * Candidate packaging never overwrites an executing frozen bootstrap or normal application dist.
+ Candidate packaging never overwrites an executing frozen bootstrap or normal application dist.
  */
 const config: ReturnType<typeof nodeConfig> = nodeConfig({
   input: { 'producer-prepare': './src/corpus-run/producer-prepare.ts' },
@@ -137,7 +137,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
   outputOverrides: { codeSplitting: false },
 });
 /**
- * Explicit output type keeps declaration inference independent from plugin object spreads.
+ Explicit output type keeps declaration inference independent from plugin object spreads.
  */
 const bootstrapConfig: ReturnType<typeof nodeConfig> = {
   ...config,

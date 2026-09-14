@@ -26,13 +26,13 @@ const CLUSTERS: readonly ClaimCluster[] = [
 /** Captured packet plus actual responding identity. */
 type Capture = { readonly prompt: string; readonly modelId: string; readonly claims: readonly string[]; };
 /**
- * Supplies deterministic votes over whichever claims the real packet actually contains.
- * @param input - optional per-packet availability restriction
- * @returns Capturing client and evidence
- * @example
- * ```ts
- * const fixture = panelFixture({});
- * ```
+ Supplies deterministic votes over whichever claims the real packet actually contains.
+ @param input - optional per-packet availability restriction
+ @returns Capturing client and evidence
+ @example
+ ```ts
+ const fixture = panelFixture({});
+ ```
  */
 function panelFixture(input: { readonly disjoint?: boolean; readonly rejectThird?: boolean; } = {}): { client: SyntheticClient; captures: Capture[]; } {
   const captures: Capture[] = [];

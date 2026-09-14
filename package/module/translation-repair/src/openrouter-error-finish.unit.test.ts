@@ -1,14 +1,14 @@
 /**
- * Tests for reading an error finish off a whole OpenRouter stream.
- *
- * WHAT THESE PIN is the eighteenth class (2026-09-08): a stream that reasons,
- * writes no content, closes its choice with `finish_reason: "error"`, carries
- * no error object and sends `[DONE]`, which the reply ladder had been reading
- * as the model's own empty answer and counting as a lost voice.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading an error finish off a whole OpenRouter stream.
+ 
+ WHAT THESE PIN is the eighteenth class (2026-09-08): a stream that reasons,
+ writes no content, closes its choice with `finish_reason: "error"`, carries
+ no error object and sends `[DONE]`, which the reply ladder had been reading
+ as the model's own empty answer and counting as a lost voice.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -23,34 +23,34 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One chunk as the gateway frames it.
- *
- * @param chunk - object to frame
- *
- * @returns Framed event line
- *
- * @example
- * ```ts
- * const line = framed({ chunk: { provider: 'Sill', }, },);
- * ```
+ One chunk as the gateway frames it.
+ 
+ @param chunk - object to frame
+ 
+ @returns Framed event line
+ 
+ @example
+ ```ts
+ const line = framed({ chunk: { provider: 'Sill', }, },);
+ ```
  */
 function framed({ chunk, }: { readonly chunk: Readonly<Record<string, unknown>>; },): string {
   return `data: ${JSON.stringify(chunk,)}\n\n`;
 }
 
 /**
- * A closing chunk whose choice stopped on the given reasons.
- *
- * @param finish - gateway's normalized stop reason
- *
- * @param native - upstream's own stop reason, when forwarded
- *
- * @returns Framed closing chunk followed by the terminator
- *
- * @example
- * ```ts
- * const stream = closedWith({ finish: 'error', native: 'upstream_error', },);
- * ```
+ A closing chunk whose choice stopped on the given reasons.
+ 
+ @param finish - gateway's normalized stop reason
+ 
+ @param native - upstream's own stop reason, when forwarded
+ 
+ @returns Framed closing chunk followed by the terminator
+ 
+ @example
+ ```ts
+ const stream = closedWith({ finish: 'error', native: 'upstream_error', },);
+ ```
  */
 function closedWith(
   {
@@ -134,7 +134,7 @@ await describe({
         + 'before the closing chunk names the failure',
       fn: async () => {
         /**
-         * A reasoning delta with no stop reason yet, ahead of the closing chunk.
+         A reasoning delta with no stop reason yet, ahead of the closing chunk.
          */
         const reasoned = framed({
           chunk: {

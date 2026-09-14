@@ -5,28 +5,28 @@ import { parseNaturalnessReview, } from './artifact-two-lane-read-naturalness-re
 //region Final naturalness completeness
 
 /**
- * Refuses schema-eight artifact without absolute approval of every consolidated body slice.
- *
- * Parser recomputes final review verdict and exact-text digest rather than
- * trusting writer aggregate. Syntax-bearing front matter remains explicitly
- * exempt, an unendorsed standing that shipped with its finding under the
- * no-loop design is accepted as recorded, and every other absent review fails
- * closed.
- *
- * @param artifact - in-memory artifact before page or artifact persistence
- *
- * @throws {@link NaturalnessCompletenessError} when body polish lacks approval
- *
- * @example
- * ```ts
- * assertFinalNaturalnessComplete({ artifact, });
- * ```
+ Refuses schema-eight artifact without absolute approval of every consolidated body slice.
+ 
+ Parser recomputes final review verdict and exact-text digest rather than
+ trusting writer aggregate. Syntax-bearing front matter remains explicitly
+ exempt, an unendorsed standing that shipped with its finding under the
+ no-loop design is accepted as recorded, and every other absent review fails
+ closed.
+ 
+ @param artifact - in-memory artifact before page or artifact persistence
+ 
+ @throws {@link NaturalnessCompletenessError} when body polish lacks approval
+ 
+ @example
+ ```ts
+ assertFinalNaturalnessComplete({ artifact, });
+ ```
  */
 export function assertFinalNaturalnessComplete(
   { artifact, }: { readonly artifact: SettledArtifact; },
 ): void {
   /**
-   * Deciding stages artifact records.
+   Deciding stages artifact records.
    */
   const {
     consolidation,
@@ -36,13 +36,13 @@ export function assertFinalNaturalnessComplete(
     if (laneSelection.kind !== 'contested')
       return;
     /**
-     * First contested body slice proving final naturalness never ran.
+     First contested body slice proving final naturalness never ran.
      */
     const missing = laneSelection
       .slices
       .find(function body(slice,): boolean {
         /**
-         * Syntax eligibility recorded only for front matter.
+         Syntax eligibility recorded only for front matter.
          */
         const { eligibility, } = slice;
         return eligibility?.syntax !== 'front-matter';
@@ -52,7 +52,7 @@ export function assertFinalNaturalnessComplete(
     return;
   }
   /**
-   * Contest syntax by slice, absent for ordinary body text.
+   Contest syntax by slice, absent for ordinary body text.
    */
   const syntaxBySlice = new Map((laneSelection.kind === 'contested')
     ? laneSelection
@@ -67,7 +67,7 @@ export function assertFinalNaturalnessComplete(
     : [],);
   for (const slice of consolidation.slices) {
     /**
-     * Recorded final polish for this consolidated slice.
+     Recorded final polish for this consolidated slice.
      */
     const { polish, } = slice;
     if (syntaxBySlice.get(slice.sliceIndex,) === 'front-matter') {

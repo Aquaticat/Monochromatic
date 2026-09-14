@@ -21,56 +21,56 @@ import { rosterQuorumSize, } from './roster-quorum-size.ts';
 // is an outage rather than a quorum.
 
 /**
- * Fewest heard voices a stage may close on, whatever the bench.
+ Fewest heard voices a stage may close on, whatever the bench.
  */
 export const MIN_STAGE_VOICES = 2;
 
 /**
- * Quorum a gather needs once the seats no provider serves are known.
- *
- * @example
- * ```ts
- * const quorum: ReachableQuorum = reachableQuorum({ benchSize: 11, unreachable: 7, },);
- * ```
+ Quorum a gather needs once the seats no provider serves are known.
+ 
+ @example
+ ```ts
+ const quorum: ReachableQuorum = reachableQuorum({ benchSize: 11, unreachable: 7, },);
+ ```
  */
 export type ReachableQuorum = {
   /**
-   * Heard voices the gather needs to close.
+   Heard voices the gather needs to close.
    */
   readonly needed: number;
 
   /**
-   * Seats a wet provider could serve.
+   Seats a wet provider could serve.
    */
   readonly reachable: number;
 
   /**
-   * Quorum the seated bench would have needed with every seat reachable.
+   Quorum the seated bench would have needed with every seat reachable.
    */
   readonly benchQuorum: number;
 
   /**
-   * Whether the reachable bench is short of that quorum, which is the only
-   * case in which `needed` differs from `benchQuorum`.
+   Whether the reachable bench is short of that quorum, which is the only
+   case in which `needed` differs from `benchQuorum`.
    */
   readonly short: boolean;
 };
 
 /**
- * Sizes a gather's quorum to the seats that could answer.
- *
- * @param benchSize - seats the stage seated, unreachable seats included
- *
- * @param unreachable - seats the router refused for want of a wet provider
- *
- * @returns Voices needed, the reachable count and bench quorum it was sized
- * by, and whether the bench was short
- *
- * @example
- * ```ts
- * reachableQuorum({ benchSize: 11, unreachable: 7, },);
- * // => { needed: 2, reachable: 4, benchQuorum: 6, short: true, }
- * ```
+ Sizes a gather's quorum to the seats that could answer.
+ 
+ @param benchSize - seats the stage seated, unreachable seats included
+ 
+ @param unreachable - seats the router refused for want of a wet provider
+ 
+ @returns Voices needed, the reachable count and bench quorum it was sized
+ by, and whether the bench was short
+ 
+ @example
+ ```ts
+ reachableQuorum({ benchSize: 11, unreachable: 7, },);
+ // => { needed: 2, reachable: 4, benchQuorum: 6, short: true, }
+ ```
  */
 export function reachableQuorum(
   {
@@ -82,12 +82,12 @@ export function reachableQuorum(
   },
 ): ReachableQuorum {
   /**
-   * Seats a wet provider could serve.
+   Seats a wet provider could serve.
    */
   const reachable = benchSize - unreachable;
 
   /**
-   * Voices the seated bench needs for a quorum.
+   Voices the seated bench needs for a quorum.
    */
   const benchQuorum = rosterQuorumSize({ rosterSize: benchSize, },);
   if (reachable >= benchQuorum) {
@@ -110,23 +110,23 @@ export function reachableQuorum(
 }
 
 /**
- * Finding a gather closed short of its bench quorum carries, so an artifact
- * decided on a short bench is told apart in its findings rather than only in
- * a log line.
- *
- * @param stage - stage the gather served
- *
- * @param quorum - quorum the gather applied
- *
- * @param benchSize - seats the stage seated
- *
- * @returns Finding in scorecard-stable wording
- *
- * @example
- * ```ts
- * shortBenchStageFinding({ stage: 'critic', quorum, benchSize: 11, },);
- * // => 'stage-short-bench (critic reachable 4 of 11, quorum 2)'
- * ```
+ Finding a gather closed short of its bench quorum carries, so an artifact
+ decided on a short bench is told apart in its findings rather than only in
+ a log line.
+ 
+ @param stage - stage the gather served
+ 
+ @param quorum - quorum the gather applied
+ 
+ @param benchSize - seats the stage seated
+ 
+ @returns Finding in scorecard-stable wording
+ 
+ @example
+ ```ts
+ shortBenchStageFinding({ stage: 'critic', quorum, benchSize: 11, },);
+ // => 'stage-short-bench (critic reachable 4 of 11, quorum 2)'
+ ```
  */
 export function shortBenchStageFinding(
   {

@@ -1,8 +1,8 @@
 /**
- * Tests for the publication guard that keeps a sealed span as the archive has
- * it.
- *
- * @module
+ Tests for the publication guard that keeps a sealed span as the archive has
+ it.
+ 
+ @module
  */
 
 import {
@@ -17,12 +17,12 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive with a sealed letter.
+ Archive with a sealed letter.
  */
 const ARCHIVE = 'Intro.\n\n<!-- note -->\n\n> I am never gone,\n\nTime to sleep friends.\n';
 
 /**
- * The sealed span: from the note's end to the archive's end.
+ The sealed span: from the note's end to the archive's end.
  */
 const SPAN = {
   startOffset: ARCHIVE.indexOf('-->',) + '-->'.length,

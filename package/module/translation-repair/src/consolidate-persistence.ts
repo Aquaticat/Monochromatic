@@ -14,7 +14,7 @@ import type { TranslateDecision, } from './translate-stage-result.ts';
 // baseline had prior approval.
 
 /**
- * Judge decisions second panel might change.
+ Judge decisions second panel might change.
  */
 const UNSETTLED_DECISIONS: readonly TranslateDecision[] = [
   'declined-indecision',
@@ -22,7 +22,7 @@ const UNSETTLED_DECISIONS: readonly TranslateDecision[] = [
 ];
 
 /**
- * Terminals settled enough to keep without reading judged round.
+ Terminals settled enough to keep without reading judged round.
  */
 const SETTLED_WITHOUT_A_GATE: readonly ConsolidationTerminal[] = [
   'incumbent-only',
@@ -32,22 +32,22 @@ const SETTLED_WITHOUT_A_GATE: readonly ConsolidationTerminal[] = [
 ];
 
 /**
- * Whether settlement is worth keeping across runs.
- *
- * SETTLED VERDICTS ONLY. Thin panel is transient provider fact. Settlement
- * retaining unendorsed baseline is nonterminal even when its own panel reached
- * quorum, because final-selection guard will refuse same result.
- *
- * @param settlement - what stage settled
- *
- * @param standingMayShip - whether standing baseline has prior endorsement
- *
- * @returns Whether to persist it
- *
- * @example
- * ```ts
- * const keep = consolidationWorthResuming({ settlement, standingMayShip: true, });
- * ```
+ Whether settlement is worth keeping across runs.
+ 
+ SETTLED VERDICTS ONLY. Thin panel is transient provider fact. Settlement
+ retaining unendorsed baseline is nonterminal even when its own panel reached
+ quorum, because final-selection guard will refuse same result.
+ 
+ @param settlement - what stage settled
+ 
+ @param standingMayShip - whether standing baseline has prior endorsement
+ 
+ @returns Whether to persist it
+ 
+ @example
+ ```ts
+ const keep = consolidationWorthResuming({ settlement, standingMayShip: true, });
+ ```
  */
 export function consolidationWorthResuming(
   {
@@ -59,19 +59,19 @@ export function consolidationWorthResuming(
   },
 ): boolean {
   /**
-   * Post-consolidation polish, absent before final candidate.
+   Post-consolidation polish, absent before final candidate.
    */
   const { polish, } = settlement;
   if (polish?.kind === 'unsettled')
     return false;
   /**
-   * Whether post-consolidation polish replaced otherwise unsafe baseline.
+   Whether post-consolidation polish replaced otherwise unsafe baseline.
    */
   const polishSettled = (polish !== undefined)
     && (polish.kind === 'settled')
     && polish.changed;
   /**
-   * Whether unchanged standing baseline is terminal for this question.
+   Whether unchanged standing baseline is terminal for this question.
    */
   const baselineSettled = standingMayShip
     ? true
@@ -79,14 +79,14 @@ export function consolidationWorthResuming(
   if (!baselineSettled)
     return false;
   /**
-   * What gate settled, absent where slice never reached it.
+   What gate settled, absent where slice never reached it.
    */
   const { gate, } = settlement;
   if (gate !== undefined)
     return gate.usable >= CONSOLIDATE_GATE_QUORUM;
 
   /**
-   * How slice left stage.
+   How slice left stage.
    */
   const { terminal, } = settlement;
   if (SETTLED_WITHOUT_A_GATE.some(function matches(settled,): boolean {
@@ -98,7 +98,7 @@ export function consolidationWorthResuming(
     return false;
 
   /**
-   * What judges decided, absent when no decision reached.
+   What judges decided, absent when no decision reached.
    */
   const { decided, } = settlement;
   if (decided === undefined)
@@ -110,27 +110,27 @@ export function consolidationWorthResuming(
 }
 
 /**
- * Persists bought consolidation only while caller remains live and settlement
- * is stable enough for warm run.
- *
- * @param key - exact consolidation question
- *
- * @param settlement - complete stage answer
- *
- * @param cache - consolidation persistence boundary
- *
- * @param standingMayShip - whether unchanged baseline may become final output
- *
- * @param signal - caller abort checked before write
- *
- * @returns Whether settlement persisted and may be reused
- *
- * @throws Whatever caller abort reason or persistence throws
- *
- * @example
- * ```ts
- * await persistConsolidationSettlement({ key, settlement, cache, standingMayShip: true, signal, });
- * ```
+ Persists bought consolidation only while caller remains live and settlement
+ is stable enough for warm run.
+ 
+ @param key - exact consolidation question
+ 
+ @param settlement - complete stage answer
+ 
+ @param cache - consolidation persistence boundary
+ 
+ @param standingMayShip - whether unchanged baseline may become final output
+ 
+ @param signal - caller abort checked before write
+ 
+ @returns Whether settlement persisted and may be reused
+ 
+ @throws Whatever caller abort reason or persistence throws
+ 
+ @example
+ ```ts
+ await persistConsolidationSettlement({ key, settlement, cache, standingMayShip: true, signal, });
+ ```
  */
 export async function persistConsolidationSettlement(
   {

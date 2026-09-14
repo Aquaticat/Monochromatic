@@ -1,7 +1,7 @@
 /**
- * Checks source facts, anonymous labels, and the no-prompt-change boundaries.
- *
- * @module
+ Checks source facts, anonymous labels, and the no-prompt-change boundaries.
+ 
+ @module
  */
 
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';

@@ -1,7 +1,7 @@
 /**
- * Tests for deterministic refusal-shape detection.
- *
- * @module
+ Tests for deterministic refusal-shape detection.
+ 
+ @module
  */
 
 import {

@@ -565,7 +565,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     if (child === undefined) throw new Error('Expected retained useful output');
     const artifact = await readFile(join(directory, 'producer-runs', child, 'output/unqualified-inputs.json'));
     expect(identity(artifact)).toEqual(artifactIdentity);
-    expect(existsSync(join(directory, 'failure.json'))).toBe(true);
+    expect(
+      existsSync(join(directory, 'failure.json')),
+    ).toBe(true);
     expect((await readRecord(join(directory, 'failure.json'))).failure).toBe(expectedKind);
     expect(warning.callCount).toBeGreaterThan(0);
     if (result?.status !== 'rejected') throw new Error('Expected failed comparison');
@@ -602,9 +604,15 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     const [comparisonName] = await readdir(f.output);
     if (comparisonName === undefined) throw new Error('Expected acquired namespace');
     const directory = join(f.output, comparisonName);
-    expect(existsSync(join(directory, 'created.json'))).toBe(true);
-    expect(existsSync(join(directory, 'failure.json'))).toBe(true);
-    expect(existsSync(join(directory, 'invoked.json'))).toBe(false);
+    expect(
+      existsSync(join(directory, 'created.json')),
+    ).toBe(true);
+    expect(
+      existsSync(join(directory, 'failure.json')),
+    ).toBe(true);
+    expect(
+      existsSync(join(directory, 'invoked.json')),
+    ).toBe(false);
     if (result?.status !== 'rejected') throw new Error('Expected logging refusal');
     expect(result.reason).toBeInstanceOf(ProducerInputComparisonError);
     if (!(result.reason instanceof ProducerInputComparisonError)) throw new Error('Expected names-only logging refusal');

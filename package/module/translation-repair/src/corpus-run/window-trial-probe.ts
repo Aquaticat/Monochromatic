@@ -57,87 +57,87 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // checks that can only be made against a live run.
 
 /**
- * Controls drawn per entry that contributes any flagged slice.
- *
- * Small on purpose. Controls exist to detect a general context-induced
- * conservatism, which would show across many entries rather than within one, so
- * breadth is worth more here than depth.
+ Controls drawn per entry that contributes any flagged slice.
+ 
+ Small on purpose. Controls exist to detect a general context-induced
+ conservatism, which would show across many entries rather than within one, so
+ breadth is worth more here than depth.
  */
 const CONTROLS_PER_ENTRY = 1;
 
 /**
- * Decimal places the paired estimate is printed to.
- *
- * Two, because the draw cannot resolve a third: at the size measured here the
- * spread on this estimate is larger than a hundredth, and printing more digits
- * would suggest a precision the sample does not have.
+ Decimal places the paired estimate is printed to.
+ 
+ Two, because the draw cannot resolve a third: at the size measured here the
+ spread on this estimate is larger than a hundredth, and printing more digits
+ would suggest a precision the sample does not have.
  */
 const EXCESS_DIGITS = 2;
 
 /**
- * Refusals in a row that end the run.
- *
- * Small, because slices that genuinely cannot be tried do not cluster: the draw
- * interleaves entries and classes, so several in a row is a provider or a
- * roster, not a run of awkward slices.
+ Refusals in a row that end the run.
+ 
+ Small, because slices that genuinely cannot be tried do not cluster: the draw
+ interleaves entries and classes, so several in a row is a provider or a
+ roster, not a run of awkward slices.
  */
 const REFUSALS_BEFORE_STOPPING = 5;
 
 /**
- * Digest characters printed in the run's opening line.
- *
- * Enough to tell two protocols apart at a glance in a log, and short enough that
- * the line stays readable; the ledger carries the whole digest either way.
+ Digest characters printed in the run's opening line.
+ 
+ Enough to tell two protocols apart at a glance in a log, and short enough that
+ the line stays readable; the ledger carries the whole digest either way.
  */
 const PROTOCOL_LOG_CHARS = 12;
 
 /**
- * Logger the run writes under.
+ Logger the run writes under.
  */
 const l = tagged({ tag: 'window-trial', },);
 
 /**
- * Both sides of one entry, or the fact that it carries only one.
- *
- * @example
- * ```ts
- * const texts: PairTexts = { kind: 'missing', };
- * ```
+ Both sides of one entry, or the fact that it carries only one.
+ 
+ @example
+ ```ts
+ const texts: PairTexts = { kind: 'missing', };
+ ```
  */
 type PairTexts = {
   /**
-   * Entry carries both sides.
+   Entry carries both sides.
    */
   readonly kind: 'read';
 
   /**
-   * Original page.
+   Original page.
    */
   readonly source: string;
 
   /**
-   * Translated page.
+   Translated page.
    */
   readonly target: string;
 } | {
   /**
-   * Entry carries one side, which is an ordinary state of this corpus.
+   Entry carries one side, which is an ordinary state of this corpus.
    */
   readonly kind: 'missing';
 };
 
 /**
- * Slices one entry contributes, flagged plus its controls.
- *
- * @param entryId - entry to read
- *
- * @returns Slices to buy and the preparation they index into, empty when the
- * entry cannot be read or the screen flagged nothing
- *
- * @example
- * ```ts
- * const drawn = await drawEntry({ entryId, },);
- * ```
+ Slices one entry contributes, flagged plus its controls.
+ 
+ @param entryId - entry to read
+ 
+ @returns Slices to buy and the preparation they index into, empty when the
+ entry cannot be read or the screen flagged nothing
+ 
+ @example
+ ```ts
+ const drawn = await drawEntry({ entryId, },);
+ ```
  */
 async function drawEntry(
   { entryId, }: { readonly entryId: string; },
@@ -146,7 +146,7 @@ async function drawEntry(
   readonly slices: readonly ChunkPair[];
 }> {
   /**
-   * Both sides, absent when this entry carries only one.
+   Both sides, absent when this entry carries only one.
    */
   const texts = await readPairTexts({ entryId, },);
   if (texts.kind === 'missing') {
@@ -157,7 +157,7 @@ async function drawEntry(
   }
 
   /**
-   * Slices exactly as the lanes would see them.
+   Slices exactly as the lanes would see them.
    */
   const prepared = prepareDocumentPair({
     sourceText: texts.source,
@@ -165,7 +165,7 @@ async function drawEntry(
   },);
 
   /**
-   * What the screen makes of their sizes.
+   What the screen makes of their sizes.
    */
   const displacement = classifyDisplacement({
     slices: prepared.slices
@@ -180,7 +180,7 @@ async function drawEntry(
   },);
 
   /**
-   * Flagged slices, deduplicated across overlapping candidates.
+   Flagged slices, deduplicated across overlapping candidates.
    */
   const flagged = flaggedSlices({
     entryId,
@@ -210,18 +210,18 @@ async function drawEntry(
 }
 
 /**
- * Reads both sides of one entry.
- *
- * @param entryId - entry to read
- *
- * @returns Both texts, absent when either side is missing
- *
- * @throws Whatever the read threw, when it was not a corpus read failure
- *
- * @example
- * ```ts
- * const texts = await readPairTexts({ entryId, },);
- * ```
+ Reads both sides of one entry.
+ 
+ @param entryId - entry to read
+ 
+ @returns Both texts, absent when either side is missing
+ 
+ @throws Whatever the read threw, when it was not a corpus read failure
+ 
+ @example
+ ```ts
+ const texts = await readPairTexts({ entryId, },);
+ ```
  */
 async function readPairTexts(
   { entryId, }: { readonly entryId: string; },
@@ -248,16 +248,16 @@ async function readPairTexts(
 }
 
 /**
- * Runs the trial over the pinned corpus.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Runs the trial over the pinned corpus.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Where this run's ledger lives.
+   Where this run's ledger lives.
    */
   const ledgerPath = join(
     await resolveRunsDir(),
@@ -266,12 +266,12 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Digest this run buys under.
+   Digest this run buys under.
    */
   const protocol = protocolDigest({ headSha: await readHeadSha(), },);
 
   /**
-   * Arms already bought under it.
+   Arms already bought under it.
    */
   const done = completedArms({
     rows: await readTrialLedger({ path: ledgerPath, },),
@@ -287,30 +287,30 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Client every call goes through.
+   Client every call goes through.
    */
   const client = createRunClient();
 
   /**
-   * Nothing here aborts the run, so a kill is what stops it.
+   Nothing here aborts the run, so a kill is what stops it.
    */
   const { signal, } = new AbortController();
 
   /**
-   * Wrapper the run buys under until the window is seen on the wire.
+   Wrapper the run buys under until the window is seen on the wire.
    */
   const witness = witnessSheets({ client, },);
 
   /**
-   * Slices bought so far, which the first-slice check reads, and slices that
-   * refused.
-   *
-   * A REFUSAL IS COUNTED AND WALKED PAST, never fatal to the run. A slice can
-   * refuse for reasons that are properties of the slice rather than of the
-   * trial: no neighbouring section to widen to, or a slice with no incumbent
-   * whose judges all declined. Aborting the walk on one of those would stop the
-   * run at the same slice on every resumption, and since the refusal is never
-   * recorded, no amount of restarting would ever get past it.
+   Slices bought so far, which the first-slice check reads, and slices that
+   refused.
+   
+   A REFUSAL IS COUNTED AND WALKED PAST, never fatal to the run. A slice can
+   refuse for reasons that are properties of the slice rather than of the
+   trial: no neighbouring section to widen to, or a slice with no incumbent
+   whose judges all declined. Aborting the walk on one of those would stop the
+   run at the same slice on every resumption, and since the refusal is never
+   recorded, no amount of restarting would ever get past it.
    */
   const bought = {
     count: 0,
@@ -319,8 +319,8 @@ async function main(): Promise<void> {
   };
 
   /**
-   * State of the live window check: wide arms bought under the witness, and
-   * whether the check has passed and the wrapper been dropped.
+   State of the live window check: wide arms bought under the witness, and
+   whether the check has passed and the wrapper been dropped.
    */
   const witnessed = {
     wideArms: 0,
@@ -330,15 +330,15 @@ async function main(): Promise<void> {
   for (const entryId of await listCorpusPeople({ pin: RUN_CORPUS_PIN, },)) {
     /* oxlint-disable no-await-in-loop -- entries are walked in order so a kill leaves a prefix */
     /**
-     * Slices this entry contributes, with the preparation they index into.
+     Slices this entry contributes, with the preparation they index into.
      */
     const drawn = await drawEntry({ entryId, },);
     /* oxlint-enable no-await-in-loop */
     for (const pick of drawn.picks) {
       /* oxlint-disable no-await-in-loop -- arms are bought one slice at a time and appended as they complete */
       /**
-       * What this slice yielded: arms it bought, empty when the ledger already
-       * held them all, or a refusal the walk steps over.
+       What this slice yielded: arms it bought, empty when the ledger already
+       held them all, or a refusal the walk steps over.
        */
       const outcome = await runPick({
         client: witnessed.passed ? client : witness.client,
@@ -377,7 +377,7 @@ async function main(): Promise<void> {
         continue;
       }
       /**
-       * Arms this call bought.
+       Arms this call bought.
        */
       const { rows, } = outcome;
 

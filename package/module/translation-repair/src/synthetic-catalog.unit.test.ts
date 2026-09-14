@@ -1,7 +1,7 @@
 /**
- * Tests for the verified model catalog and request-weight estimation.
- *
- * @module
+ Tests for the verified model catalog and request-weight estimation.
+ 
+ @module
  */
 
 import {

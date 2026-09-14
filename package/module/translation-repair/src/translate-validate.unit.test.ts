@@ -1,21 +1,21 @@
 /**
- * Tests for the structural comparison between a translated slice and its
- * original.
- *
- * What this can and cannot claim is the whole design, so the cases are chosen
- * to pin both edges. It compares what survives a translation, meaning block
- * structure, footnote markers, link and image destinations, and inline code. It
- * says nothing about wording, and the numbers-and-names atoms that
- * `inspect-paragraph.ts` protects are deliberately absent here, because 三只猫
- * becomes "three cats" and no digit survives on either side.
- *
- * Findings are written for the MODEL that produced the candidate rather than
- * for a log, since an invalid candidate is handed back to its author rather
- * than dropped, so the cases assert on what those sentences say.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the structural comparison between a translated slice and its
+ original.
+ 
+ What this can and cannot claim is the whole design, so the cases are chosen
+ to pin both edges. It compares what survives a translation, meaning block
+ structure, footnote markers, link and image destinations, and inline code. It
+ says nothing about wording, and the numbers-and-names atoms that
+ `inspect-paragraph.ts` protects are deliberately absent here, because 三只猫
+ becomes "three cats" and no digit survives on either side.
+ 
+ Findings are written for the MODEL that produced the candidate rather than
+ for a log, since an invalid candidate is handed back to its author rather
+ than dropped, so the cases assert on what those sentences say.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -27,8 +27,8 @@ import {
 import { validateTranslatedSlice, } from '../dist/final/node/index.mjs';
 
 /**
- * Original carrying a heading, a paragraph with a footnote marker, and that
- * footnote's definition.
+ Original carrying a heading, a paragraph with a footnote marker, and that
+ footnote's definition.
  */
 const SOURCE_TEXT = `## 猫猫的一天
 
@@ -87,7 +87,7 @@ In the morning Ta dozes on the windowsill[^1], and Ta's DATA stays with @ta_cat.
         + '2026-09-02 shipped `so-called \\"common sense.\\"` through every guard',
       fn: async () => {
         /**
-         * Verdict over a candidate carrying the leaked escape.
+         Verdict over a candidate carrying the leaked escape.
          */
         const leaked = validateTranslatedSlice({
           sourceText: '早上它在所谓的“窗台”上打盹。',
@@ -100,8 +100,8 @@ In the morning Ta dozes on the windowsill[^1], and Ta's DATA stays with @ta_cat.
         ).toContain('backslash before a quotation mark',);
 
         /**
-         * Verdict over the same candidate where the original carries the
-         * sequence, so it is a rendering rather than a leak.
+         Verdict over the same candidate where the original carries the
+         sequence, so it is a rendering rather than a leak.
          */
         const carried = validateTranslatedSlice({
           sourceText: '早上它在所谓的 \\"窗台\\" 上打盹。',
@@ -119,7 +119,7 @@ In the morning Ta dozes on the windowsill[^1], and Ta's DATA stays with @ta_cat.
         + 'asked rather than a rendering choice',
       fn: async () => {
         /**
-         * Verdict over a candidate that dropped the heading level.
+         Verdict over a candidate that dropped the heading level.
          */
         const validation = validateTranslatedSlice({
           sourceText: SOURCE_TEXT,
@@ -140,8 +140,8 @@ In the morning Ta dozes on the windowsill[^1], and Ta's DATA stays with @ta_cat.
         + 'is left pointing at nothing once the slice is spliced back in',
       fn: async () => {
         /**
-         * Verdict over a candidate that dropped the reference but kept the
-         * definition.
+         Verdict over a candidate that dropped the reference but kept the
+         definition.
          */
         const validation = validateTranslatedSlice({
           sourceText: SOURCE_TEXT,
@@ -164,7 +164,7 @@ In the morning it dozes on the windowsill.
         + 'than from the passage',
       fn: async () => {
         /**
-         * Verdict over a candidate carrying a link the original never had.
+         Verdict over a candidate carrying a link the original never had.
          */
         const validation = validateTranslatedSlice({
           sourceText: '猫猫在窗台上打盹。',
@@ -198,11 +198,11 @@ In the morning it dozes on the windowsill.
         + 'original links twitter.com, and owing a candidate both left nothing that could ship',
       fn: async () => {
         /**
-         * Original linking one destination.
+         Original linking one destination.
          */
         const sourceText = '她的头像由[画师](https://twitter.com/cat)绘制。';
         /**
-         * Page that rewrote the destination.
+         Page that rewrote the destination.
          */
         const pageText = 'Her avatar was drawn by [the artist](https://x.com/cat).';
         expect(validateTranslatedSlice({
@@ -216,7 +216,7 @@ In the morning it dozes on the windowsill.
           candidateText: 'Her avatar was drawn by [the artist](https://twitter.com/cat).',
         },).kind,).toBe('valid',);
         /**
-         * Verdict over a candidate carrying no link at all.
+         Verdict over a candidate carrying no link at all.
          */
         const neither = validateTranslatedSlice({
           sourceText,
@@ -228,7 +228,7 @@ In the morning it dozes on the windowsill.
           (neither.kind === 'invalid') ? neither.findings.join('\n',) : '',
         ).toContain('must carry exactly 1 of these, taken from either side; it carries 0',);
         /**
-         * Verdict over a candidate carrying both renderings.
+         Verdict over a candidate carrying both renderings.
          */
         const both = validateTranslatedSlice({
           sourceText,
@@ -249,7 +249,7 @@ In the morning it dozes on the windowsill.
         + 'passage it was given',
       fn: async () => {
         /**
-         * Verdict where the original itself refuses the strict grammar.
+         Verdict where the original itself refuses the strict grammar.
          */
         const validation = validateTranslatedSlice({
           sourceText: '猫猫 <未闭合 的标签 在这里。',
@@ -266,7 +266,7 @@ In the morning it dozes on the windowsill.
         + '(yulianNyanner, 2026-09-06: every commented slice was inadmissible on both gates)',
       fn: async () => {
         /**
-         * Original with a translator note between its blocks.
+         Original with a translator note between its blocks.
          */
         const sourceText = '## 猫猫\n\n<!-- （本段为客观叙述） -->\n\n猫猫在窗台上打盹。';
 
@@ -310,7 +310,7 @@ In the morning it dozes on the windowsill.
         + 'something was wrong',
       fn: async () => {
         /**
-         * Verdict where the candidate refuses the strict grammar.
+         Verdict where the candidate refuses the strict grammar.
          */
         const validation = validateTranslatedSlice({
           sourceText: '猫猫在窗台上打盹。',
@@ -344,8 +344,8 @@ In the morning it dozes on the windowsill.
         + 'than wrote it, and a kind the original lacks is not a split',
       fn: async () => {
         /**
-         * Verdict where the candidate keeps the original's shape and loses the
-         * page's quote.
+         Verdict where the candidate keeps the original's shape and loses the
+         page's quote.
          */
         const validation = validateTranslatedSlice({
           sourceText: '猫猫在窗台上打盹。\n\n（邻居留）',
@@ -378,8 +378,8 @@ In the morning it dozes on the windowsill.
         + 'looks like and what the sixth consolidation bed shipped',
       fn: async () => {
         /**
-         * Verdict where the candidate carries one paragraph against two on
-         * each side.
+         Verdict where the candidate carries one paragraph against two on
+         each side.
          */
         const validation = validateTranslatedSlice({
           sourceText: '猫猫在窗台上打盹。\n\n（邻居留）',
@@ -398,12 +398,12 @@ In the morning it dozes on the windowsill.
         + 'five paragraphs, and still REFUSES one stanza (Huasheng, 2026-09-07)',
       fn: async () => {
         /**
-         * Poem as the source writes it, lines ending in `<br/>`.
+         Poem as the source writes it, lines ending in `<br/>`.
          */
         const source = '春风又来，<br/>\n却唤不回你。\n\n此生太短，<br/>\n此别太长。';
 
         /**
-         * Poem as the archive writes it, one couplet per paragraph and more.
+         Poem as the archive writes it, one couplet per paragraph and more.
          */
         const page = 'The spring wind returns,\n\nbut cannot call you back.\n\nThis life was too short,'
           + '\n\nthis parting too long.\n\nWritten in tears.';
@@ -443,7 +443,7 @@ In the morning it dozes on the windowsill.
         + 'restoring stays restoring rather than becoming licence to invent',
       fn: async () => {
         /**
-         * Verdict where the candidate adds a block from nowhere.
+         Verdict where the candidate adds a block from nowhere.
          */
         const validation = validateTranslatedSlice({
           sourceText: '猫猫在窗台上打盹。',
@@ -463,7 +463,7 @@ In the morning it dozes on the windowsill.
         + 'drop',
       fn: async () => {
         /**
-         * Verdict where the candidate carries the page's own footnote.
+         Verdict where the candidate carries the page's own footnote.
          */
         const validation = validateTranslatedSlice({
           sourceText: '猫猫在窗台上打盹。',
@@ -481,7 +481,7 @@ In the morning it dozes on the windowsill.
         + 'naming both references so the model knows which text asked for it',
       fn: async () => {
         /**
-         * Verdict where the candidate drops the page's footnote.
+         Verdict where the candidate drops the page's footnote.
          */
         const validation = validateTranslatedSlice({
           sourceText: '猫猫在窗台上打盹。',
@@ -504,8 +504,8 @@ In the morning it dozes on the windowsill.
         + 'accepted, not that a reader can see it happened',
       fn: async () => {
         /**
-         * Pass at a slice the archive never translated, where there is no page
-         * to read at all.
+         Pass at a slice the archive never translated, where there is no page
+         to read at all.
          */
         const absent = validateTranslatedSlice({
           sourceText: '猫猫在窗台上打盹。',
@@ -514,7 +514,7 @@ In the morning it dozes on the windowsill.
         },);
 
         /**
-         * Pass over a page this grammar reads as written.
+         Pass over a page this grammar reads as written.
          */
         const strict = validateTranslatedSlice({
           sourceText: '猫猫在窗台上打盹。',
@@ -523,7 +523,7 @@ In the morning it dozes on the windowsill.
         },);
 
         /**
-         * Pass over a page only the relaxed reading gets through.
+         Pass over a page only the relaxed reading gets through.
          */
         const relaxed = validateTranslatedSlice({
           sourceText: '猫猫在窗台上打盹。',

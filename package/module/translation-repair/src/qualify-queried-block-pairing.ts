@@ -21,29 +21,29 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 // Recompute existing production agreement and ownership without buying calls or changing fallback policy.
 
 /**
- * Qualifies a questioned parent using its exact current final seat outcomes.
- * Supplied summaries cannot replace replay, and cache eligibility never establishes qualification.
- *
- * @param pair - current parser-owned complete parent
- *
- * @param prepared - actual production question result, not a claimed frozen-file certificate
- *
- * @param pairIndex - current alignment index bound into the full production handoff
- *
- * @param modelIds - configured preparation electorate
- *
- * @param targetContainers - current complete target parser's media ownership spans
- *
- * @param l - caller logger retaining parent identity
- *
- * @returns Owned evidence with existing insertions, declines and relation provenance
- *
- * @throws PreparationQualificationError when current evidence cannot qualify this parent
- *
- * @example
- * ```ts
- * const result = qualifyQueriedBlockPairing({ pair, pairIndex, prepared, modelIds, targetContainers, l });
- * ```
+ Qualifies a questioned parent using its exact current final seat outcomes.
+ Supplied summaries cannot replace replay, and cache eligibility never establishes qualification.
+ 
+ @param pair - current parser-owned complete parent
+ 
+ @param prepared - actual production question result, not a claimed frozen-file certificate
+ 
+ @param pairIndex - current alignment index bound into the full production handoff
+ 
+ @param modelIds - configured preparation electorate
+ 
+ @param targetContainers - current complete target parser's media ownership spans
+ 
+ @param l - caller logger retaining parent identity
+ 
+ @returns Owned evidence with existing insertions, declines and relation provenance
+ 
+ @throws PreparationQualificationError when current evidence cannot qualify this parent
+ 
+ @example
+ ```ts
+ const result = qualifyQueriedBlockPairing({ pair, pairIndex, prepared, modelIds, targetContainers, l });
+ ```
  */
 export function qualifyQueriedBlockPairing({
   pair,
@@ -61,15 +61,15 @@ export function qualifyQueriedBlockPairing({
   readonly l: Logger;
 },): Extract<QualifiedBlockPairing, { readonly kind: 'queried'; }> {
   /**
-   * Current interpretation logger, separate from model acquisition.
+   Current interpretation logger, separate from model acquisition.
    */
   const pl = tagged({
     tag: qualifyQueriedBlockPairing.name,
     l,
   },);
   /**
-   * Shared current-question replay checks acquisition origin, independent outcomes and configured usable quorum.
-   * Placement and full-parent coverage remain this consumer's responsibility.
+   Shared current-question replay checks acquisition origin, independent outcomes and configured usable quorum.
+   Placement and full-parent coverage remain this consumer's responsibility.
    */
   const {
     question,
@@ -82,7 +82,7 @@ export function qualifyQueriedBlockPairing({
     l: pl,
   },);
   /**
-   * Every current media, coverage, cache and fallback finding is reconstructed, not trusted.
+   Every current media, coverage, cache and fallback finding is reconstructed, not trusted.
    */
   const details = queriedBlockPairingDetails({
     outcome,
@@ -91,7 +91,7 @@ export function qualifyQueriedBlockPairing({
     targetContainers,
   },);
   /**
-   * Full production result, including definition separation and its diagnostic lineage.
+   Full production result, including definition separation and its diagnostic lineage.
    */
   const expected = finishPreparedBlockPairing({
     pairs: details.pairs,
@@ -106,11 +106,11 @@ export function qualifyQueriedBlockPairing({
     l: pl,
   },);
   /**
-   * Complete handoff shape also includes keys that ordinary JSON serialization would discard.
+   Complete handoff shape also includes keys that ordinary JSON serialization would discard.
    */
   const expectedKeys = new Set(Reflect.ownKeys(expected,),);
   /**
-   * Supplied fields cannot hide additional state outside the reconstructed handoff.
+   Supplied fields cannot hide additional state outside the reconstructed handoff.
    */
   const preparedKeys = Reflect.ownKeys(prepared,);
   if ((preparedKeys.length !== expectedKeys.size)
@@ -123,17 +123,17 @@ export function qualifyQueriedBlockPairing({
   if (expected.kind !== 'paired')
     throw new PreparationQualificationError({ kind: 'fallback', },);
   /**
-   * Original claims before definitions are separated from body placement.
+   Original claims before definitions are separated from body placement.
    */
   const claimedSources = new Set(details.pairs
     .map(function sourceOf(relation,): number { return relation.source; },),);
   /**
-   * Target claims include deterministic media ownership but no scorer guesses.
+   Target claims include deterministic media ownership but no scorer guesses.
    */
   const claimedTargets = new Set(details.pairs
     .map(function targetOf(relation,): number { return relation.target; },),);
   /**
-   * Existing decline policy refuses to discard targets while any original is unplaced.
+   Existing decline policy refuses to discard targets while any original is unplaced.
    */
   const declined = declinedTargetIdsOfPairing({
     pairs: details.pairs,
@@ -152,14 +152,14 @@ export function qualifyQueriedBlockPairing({
   },))
     throw new PreparationQualificationError({ kind: 'unclaimed-target', },);
   /**
-   * Validated integer relation keys distinguish endorsement from later media widening.
+   Validated integer relation keys distinguish endorsement from later media widening.
    */
   const endorsed = new Set(outcome.pairs
     .map(function relationKey(relation,): string {
     return `${String(relation.source,)}/${String(relation.target,)}`;
   },),);
   /**
-   * Every included relation identifies its actual placement authority.
+   Every included relation identifies its actual placement authority.
    */
   const relations = details.pairs
     .map(function authorityOf(relation,): QualifiedBlockRelation {
@@ -171,7 +171,7 @@ export function qualifyQueriedBlockPairing({
     };
   },);
   /**
-   * Original blocks not claimed remain writing insertions under existing preparation.
+   Original blocks not claimed remain writing insertions under existing preparation.
    */
   const sourceInsertions = pair.source
     .nodes

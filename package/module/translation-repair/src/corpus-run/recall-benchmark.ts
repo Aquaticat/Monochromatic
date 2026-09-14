@@ -39,49 +39,49 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // (append `-- --plan` for a zero-quota setup check).
 
 /**
- * Entries drawn from each size band. Nine entries keeps a run inside a few
- * hours at the measured per-entry cost while still covering every band.
+ Entries drawn from each size band. Nine entries keeps a run inside a few
+ hours at the measured per-entry cost while still covering every band.
  */
 const ENTRIES_PER_BAND = 3;
 
 /**
- * Seeds planted per entry. Each is a whole deleted sentence, so a handful per
- * document gives a usable denominator without turning the translation into
- * something no reviewer would call a translation.
+ Seeds planted per entry. Each is a whole deleted sentence, so a handful per
+ document gives a usable denominator without turning the translation into
+ something no reviewer would call a translation.
  */
 const SEEDS_PER_ENTRY = 3;
 
 /**
- * Milliseconds in one second.
+ Milliseconds in one second.
  */
 const MS_PER_SECOND = 1_000;
 
 /**
- * Seconds in one minute.
+ Seconds in one minute.
  */
 const SECONDS_PER_MINUTE = 60;
 
 /**
- * Minutes in one hour.
+ Minutes in one hour.
  */
 const MINUTES_PER_HOUR = 60;
 
 /**
- * Hours the whole benchmark may run.
- *
- * Raised from 4 on run 001's own timing: it settled seven of nine entries in
- * 252 minutes and recorded the other two as skipped, coverage 0.778. Detection
- * has to be re-measured anyway after the slice-index fix, and the rerun also
- * carries the ensemble and the naturalness lane, both of which only add wall
- * time, so a four-hour budget would lose more than two entries next time.
- * Coverage is the thing this protects; the plan is flat rate, so a longer run
- * costs nothing but waiting.
+ Hours the whole benchmark may run.
+ 
+ Raised from 4 on run 001's own timing: it settled seven of nine entries in
+ 252 minutes and recorded the other two as skipped, coverage 0.778. Detection
+ has to be re-measured anyway after the slice-index fix, and the rerun also
+ carries the ensemble and the naturalness lane, both of which only add wall
+ time, so a four-hour budget would lose more than two entries next time.
+ Coverage is the thing this protects; the plan is flat rate, so a longer run
+ costs nothing but waiting.
  */
 const BUDGET_HOURS = 12;
 
 /**
- * Wall budget for the whole benchmark; entries the budget cannot fit record as
- * skipped and the scorecard reports the resulting coverage honestly.
+ Wall budget for the whole benchmark; entries the budget cannot fit record as
+ skipped and the scorecard reports the resulting coverage honestly.
  */
 const RUN_BUDGET_MS = BUDGET_HOURS
   * MINUTES_PER_HOUR
@@ -89,12 +89,12 @@ const RUN_BUDGET_MS = BUDGET_HOURS
   * MS_PER_SECOND;
 
 /**
- * Decimal places rates are reported to.
+ Decimal places rates are reported to.
  */
 const RATE_DECIMALS = 3;
 
 /**
- * Bands in report order.
+ Bands in report order.
  */
 const BANDS = [
   'small',
@@ -103,9 +103,9 @@ const BANDS = [
 ] as const;
 
 /**
- * Outcome of trying to seed one corpus id. A discriminated result rather than
- * a nullish return, because "this entry cannot be seeded" is an ordinary,
- * expected answer that the caller must branch on, not an absence.
+ Outcome of trying to seed one corpus id. A discriminated result rather than
+ a nullish return, because "this entry cannot be seeded" is an ordinary,
+ expected answer that the caller must branch on, not an absence.
  */
 type SeedOutcome =
   | {
@@ -119,19 +119,19 @@ type SeedOutcome =
   };
 
 /**
- * Builds the seeded benchmark entry for one corpus id, reporting why when it
- * cannot be seeded.
- *
- * @param id - corpus person id
- *
- * @param sizer - shared encoder measuring source bytes for banding
- *
- * @returns Seeded entry with its band, or the reason it was skipped
- *
- * @example
- * ```ts
- * const outcome = await buildEntry({ id: 'Whiskers', sizer, },);
- * ```
+ Builds the seeded benchmark entry for one corpus id, reporting why when it
+ cannot be seeded.
+ 
+ @param id - corpus person id
+ 
+ @param sizer - shared encoder measuring source bytes for banding
+ 
+ @returns Seeded entry with its band, or the reason it was skipped
+ 
+ @example
+ ```ts
+ const outcome = await buildEntry({ id: 'Whiskers', sizer, },);
+ ```
  */
 async function buildEntry(
   {
@@ -144,7 +144,7 @@ async function buildEntry(
 ): Promise<SeedOutcome> {
   try {
     /**
-     * Original zh page, front matter included: the repair loop reads it whole.
+     Original zh page, front matter included: the repair loop reads it whole.
      */
     const sourceText = await readCorpusFile({
       pin: RUN_CORPUS_PIN,
@@ -152,7 +152,7 @@ async function buildEntry(
     },);
 
     /**
-     * Clean en translation, the text seeds are planted into.
+     Clean en translation, the text seeds are planted into.
      */
     const targetText = await readCorpusFile({
       pin: RUN_CORPUS_PIN,
@@ -160,13 +160,13 @@ async function buildEntry(
     },);
 
     /**
-     * Body only. Seeds must come from prose, never from front matter, whose
-     * deletion would break identity rather than plant an omission.
+     Body only. Seeds must come from prose, never from front matter, whose
+     deletion would break identity rather than plant an omission.
      */
     const { body, } = splitFrontMatter({ text: targetText, },);
 
     /**
-     * Deletions to plant, longest sentences first.
+     Deletions to plant, longest sentences first.
      */
     const seeds = deriveOmissionSeeds({
       text: body,
@@ -206,24 +206,24 @@ async function buildEntry(
 }
 
 /**
- * Runs the recall benchmark over a band-stratified corpus sample and writes its
- * scorecard beside the other run artifacts.
- *
- * @throws {@link Error} when the API key env var is unset
- *
- * @example
- * ```ts
- * await runRecallBenchmark();
- * ```
+ Runs the recall benchmark over a band-stratified corpus sample and writes its
+ scorecard beside the other run artifacts.
+ 
+ @throws {@link Error} when the API key env var is unset
+ 
+ @example
+ ```ts
+ await runRecallBenchmark();
+ ```
  */
 async function runRecallBenchmark(): Promise<void> {
   /**
-   * When this run began, which names its scorecard file.
+   When this run began, which names its scorecard file.
    */
   const startedAt = new Date().toISOString();
 
   /**
-   * Durable, gitignored output root.
+   Durable, gitignored output root.
    */
   const runsDir = await resolveRunsDir();
   await mkdir(
@@ -232,28 +232,28 @@ async function runRecallBenchmark(): Promise<void> {
   );
 
   /**
-   * Pipeline tip recorded into the scorecard.
+   Pipeline tip recorded into the scorecard.
    */
   const tip = await readHeadSha();
 
   /**
-   * Every person id at the pinned commit.
+   Every person id at the pinned commit.
    */
   const people = await listCorpusPeople({ pin: RUN_CORPUS_PIN, },);
 
   /**
-   * Encoder measuring page-source bytes for banding.
+   Encoder measuring page-source bytes for banding.
    */
   const sizer = new TextEncoder();
 
   /**
-   * Seeded entries chosen per band, filled in corpus order so the selection is
-   * deterministic for a given pin.
+   Seeded entries chosen per band, filled in corpus order so the selection is
+   deterministic for a given pin.
    */
   const chosen: BenchmarkEntry[] = [];
 
   /**
-   * How many entries each band has contributed so far.
+   How many entries each band has contributed so far.
    */
   const perBand: Record<string, number> = {
     small: 0,
@@ -265,7 +265,7 @@ async function runRecallBenchmark(): Promise<void> {
       break;
 
     /**
-     * This id's seeding outcome, carrying its band when it is usable.
+     This id's seeding outcome, carrying its band when it is usable.
      */
     /* oxlint-disable-next-line no-await-in-loop -- corpus reads are sequential git shows and this selection runs once at setup */
     const outcome = await buildEntry({
@@ -281,7 +281,7 @@ async function runRecallBenchmark(): Promise<void> {
   }
 
   /**
-   * Total seeds this run will plant, the detection denominator.
+   Total seeds this run will plant, the detection denominator.
    */
   const plannedSeeds = chosen.reduce(
     function addSeeds(
@@ -300,7 +300,7 @@ async function runRecallBenchmark(): Promise<void> {
   );
 
   /**
-   * Shared client using measured production provider concurrency.
+   Shared client using measured production provider concurrency.
    */
   const client = createRunClient();
 
@@ -319,7 +319,7 @@ async function runRecallBenchmark(): Promise<void> {
   }
 
   /**
-   * Graded attempts and the aggregate scorecard.
+   Graded attempts and the aggregate scorecard.
    */
   const {
     records,
@@ -334,9 +334,9 @@ async function runRecallBenchmark(): Promise<void> {
   },);
 
   /**
-   * Where the scorecard was kept: a stamped name of its own, written
-   * atomically, so a rerun sits beside the run it is compared against rather
-   * than over it.
+   Where the scorecard was kept: a stamped name of its own, written
+   atomically, so a rerun sits beside the run it is compared against rather
+   than over it.
    */
   const keptAt = await persistRecallScorecard({
     runsDir,

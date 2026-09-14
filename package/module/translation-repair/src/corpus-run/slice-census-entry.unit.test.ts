@@ -1,25 +1,25 @@
 /**
- * Tests for measuring one corpus entry after slicing.
- *
- * THE CENSUS IS THE INSTRUMENT EVERY SIZE CLAIM RESTS ON, and its most valuable
- * column is the one that used to read zero for the wrong reason.
- * `unpairedSourceSections` counts sections the aligner REFUSED to pair, and
- * those are absent from `alignment.pairs` entirely rather than present with an
- * empty side. An earlier counter walked the pairs, so it could only ever report
- * zero, and zero read as "nothing went unpaired" instead of "this cannot see
- * them". The case below gives the census a page whose sections genuinely do not
- * pair and requires a number greater than zero.
- *
- * THE PIN IS INJECTED, which is why any of this can be tested. `censusEntry`
- * read `RUN_CORPUS_PIN` directly, so exercising it meant having the unlicensed
- * corpus clone on disk and a suite that passed on one machine only. It now takes
- * the pin the way `readAuditArguments` takes `argv`, and the cases below point
- * it at a throwaway git repository built in a temp directory.
- *
- * FIXTURE CONTENT IS CAT-THEMED INVENTION mirroring corpus structure only:
- * Simplified Chinese against English, one entry, committed once.
- *
- * @module
+ Tests for measuring one corpus entry after slicing.
+ 
+ THE CENSUS IS THE INSTRUMENT EVERY SIZE CLAIM RESTS ON, and its most valuable
+ column is the one that used to read zero for the wrong reason.
+ `unpairedSourceSections` counts sections the aligner REFUSED to pair, and
+ those are absent from `alignment.pairs` entirely rather than present with an
+ empty side. An earlier counter walked the pairs, so it could only ever report
+ zero, and zero read as "nothing went unpaired" instead of "this cannot see
+ them". The case below gives the census a page whose sections genuinely do not
+ pair and requires a number greater than zero.
+ 
+ THE PIN IS INJECTED, which is why any of this can be tested. `censusEntry`
+ read `RUN_CORPUS_PIN` directly, so exercising it meant having the unlicensed
+ corpus clone on disk and a suite that passed on one machine only. It now takes
+ the pin the way `readAuditArguments` takes `argv`, and the cases below point
+ it at a throwaway git repository built in a temp directory.
+ 
+ FIXTURE CONTENT IS CAT-THEMED INVENTION mirroring corpus structure only:
+ Simplified Chinese against English, one entry, committed once.
+ 
+ @module
  */
 
 import {
@@ -50,20 +50,20 @@ import {
 //region Slice census entry tests
 
 /**
- * Real git binary for fixture setup and pinned reads.
- *
- * The repo PATH exposes a policy shim whose staging guards reject the staging
- * patterns a fixture needs.
+ Real git binary for fixture setup and pinned reads.
+ 
+ The repo PATH exposes a policy shim whose staging guards reject the staging
+ patterns a fixture needs.
  */
 const REAL_GIT = await resolveGit();
 
 /**
- * Entry the throwaway clone carries.
+ Entry the throwaway clone carries.
  */
 const ENTRY_ID = 'whiskers';
 
 /**
- * Original page: three sections, in the Simplified Chinese the corpus uses.
+ Original page: three sections, in the Simplified Chinese the corpus uses.
  */
 const SOURCE_PAGE = [
   '---',
@@ -85,7 +85,7 @@ const SOURCE_PAGE = [
 ].join('\n',);
 
 /**
- * Translation carrying every section of the original.
+ Translation carrying every section of the original.
  */
 const FULL_TARGET_PAGE = [
   '---',
@@ -107,8 +107,8 @@ const FULL_TARGET_PAGE = [
 ].join('\n',);
 
 /**
- * Original page with one section of three blocks, so a block pairing that
- * declines the middle one changes what the slice carries.
+ Original page with one section of three blocks, so a block pairing that
+ declines the middle one changes what the slice carries.
  */
 const BLOCKY_SOURCE_PAGE = [
   '---',
@@ -126,7 +126,7 @@ const BLOCKY_SOURCE_PAGE = [
 ].join('\n',);
 
 /**
- * Translation of the same three blocks.
+ Translation of the same three blocks.
  */
 const BLOCKY_TARGET_PAGE = [
   '---',
@@ -144,7 +144,7 @@ const BLOCKY_TARGET_PAGE = [
 ].join('\n',);
 
 /**
- * Translation that stops after the first section, so two go unpaired.
+ Translation that stops after the first section, so two go unpaired.
  */
 const SHORT_TARGET_PAGE = [
   '---',
@@ -158,21 +158,21 @@ const SHORT_TARGET_PAGE = [
 ].join('\n',);
 
 /**
- * Runs one git command inside the throwaway clone.
- *
- * Hermetic against user and system git configuration, so a contributor's own
- * settings cannot change what the fixture commits.
- *
- * @param cloneDir - throwaway repository directory
- *
- * @param args - git argument vector
- *
- * @returns Captured stdout
- *
- * @example
- * ```ts
- * const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
- * ```
+ Runs one git command inside the throwaway clone.
+ 
+ Hermetic against user and system git configuration, so a contributor's own
+ settings cannot change what the fixture commits.
+ 
+ @param cloneDir - throwaway repository directory
+ 
+ @param args - git argument vector
+ 
+ @returns Captured stdout
+ 
+ @example
+ ```ts
+ const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
+ ```
  */
 async function fixtureGit(
   {
@@ -184,7 +184,7 @@ async function fixtureGit(
   },
 ): Promise<string> {
   /**
-   * Subprocess result; only stdout is consumed.
+   Subprocess result; only stdout is consumed.
    */
   const { stdout, } = await spawn(
     REAL_GIT,
@@ -204,17 +204,17 @@ async function fixtureGit(
 }
 
 /**
- * Builds a throwaway corpus-shaped repository holding one entry.
- *
- * @param targetPage - translation to commit beside the original, which decides
- * how many sections pair
- *
- * @returns Pin naming the clone and its one commit, and an async disposer
- *
- * @example
- * ```ts
- * await using corpus = await throwawayCorpus({ targetPage: FULL_TARGET_PAGE, },);
- * ```
+ Builds a throwaway corpus-shaped repository holding one entry.
+ 
+ @param targetPage - translation to commit beside the original, which decides
+ how many sections pair
+ 
+ @returns Pin naming the clone and its one commit, and an async disposer
+ 
+ @example
+ ```ts
+ await using corpus = await throwawayCorpus({ targetPage: FULL_TARGET_PAGE, },);
+ ```
  */
 async function throwawayCorpus(
   {
@@ -233,7 +233,7 @@ async function throwawayCorpus(
   }
 > {
   /**
-   * Fresh temp directory holding the throwaway repository.
+   Fresh temp directory holding the throwaway repository.
    */
   const cloneDir = await mkdtemp(join(
     tmpdir(),
@@ -304,7 +304,7 @@ async function throwawayCorpus(
   },);
 
   /**
-   * Commit every read below pins to.
+   Commit every read below pins to.
    */
   const commitSha = (await fixtureGit({
     cloneDir,
@@ -341,7 +341,7 @@ await describe({
         await using corpus = await throwawayCorpus({ targetPage: FULL_TARGET_PAGE, },);
 
         /**
-         * What the census made of that entry.
+         What the census made of that entry.
          */
         const row = await censusEntry({
           entryId: ENTRY_ID,
@@ -359,7 +359,7 @@ await describe({
         await using corpus = await throwawayCorpus({ targetPage: FULL_TARGET_PAGE, },);
 
         /**
-         * What the census made of that entry.
+         What the census made of that entry.
          */
         const row = await censusEntry({
           entryId: ENTRY_ID,
@@ -384,7 +384,7 @@ await describe({
         await using corpus = await throwawayCorpus({ targetPage: SHORT_TARGET_PAGE, },);
 
         /**
-         * What the census made of a half-translated entry.
+         What the census made of a half-translated entry.
          */
         const row = await censusEntry({
           entryId: ENTRY_ID,
@@ -415,8 +415,8 @@ await describe({
         await using corpus = await throwawayCorpus({ targetPage: FULL_TARGET_PAGE, },);
 
         /**
-         * Deterministic carve, which pairs the three equal-shaped sections by
-         * index and leaves nothing unpaired.
+         Deterministic carve, which pairs the three equal-shaped sections by
+         index and leaves nothing unpaired.
          */
         const baseline = await censusEntry({
           entryId: ENTRY_ID,
@@ -426,8 +426,8 @@ await describe({
         expect(baseline.unpairedSourceSections,).toBe(0,);
 
         /**
-         * Carve through a recipe whose section round paired the outer two
-         * sections and left the middle one unclaimed.
+         Carve through a recipe whose section round paired the outer two
+         sections and left the middle one unclaimed.
          */
         const settled = await censusEntry({
           entryId: ENTRY_ID,
@@ -464,7 +464,7 @@ await describe({
         },);
 
         /**
-         * Deterministic carve: one slice carrying all three blocks.
+         Deterministic carve: one slice carrying all three blocks.
          */
         const baseline = await censusEntry({
           entryId: ENTRY_ID,
@@ -472,8 +472,8 @@ await describe({
         },);
 
         /**
-         * Carve through a recipe that declines the middle block, recorded
-         * without a section decider.
+         Carve through a recipe that declines the middle block, recorded
+         without a section decider.
          */
         const settled = await censusEntry({
           entryId: ENTRY_ID,
@@ -498,7 +498,7 @@ await describe({
         expect(settled.carve,).toBe('settled-partial',);
 
         /**
-         * Translation characters the two carves put into slices.
+         Translation characters the two carves put into slices.
          */
         const [baselineChars, settledChars,] = [
           baseline,

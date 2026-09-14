@@ -1,17 +1,17 @@
 /**
- * Tests for running items with a bounded number in flight.
- *
- * WHAT THESE PIN: at overlap 1 the helper is the sequential loop it replaced;
- * at a higher overlap items start in item order and never more than the
- * overlap at once; results come back in item order whatever order the items
- * finished in; a failure stops further items from starting, lets the ones in
- * flight finish, and throws the lowest position's error; and an overlap that
- * cannot bound anything is refused before any item runs.
- *
- * Every item waits at a gate the test opens, so completion order is the
- * test's to choose rather than the scheduler's.
- *
- * @module
+ Tests for running items with a bounded number in flight.
+ 
+ WHAT THESE PIN: at overlap 1 the helper is the sequential loop it replaced;
+ at a higher overlap items start in item order and never more than the
+ overlap at once; results come back in item order whatever order the items
+ finished in; a failure stops further items from starting, lets the ones in
+ flight finish, and throws the lowest position's error; and an overlap that
+ cannot bound anything is refused before any item runs.
+ 
+ Every item waits at a gate the test opens, so completion order is the
+ test's to choose rather than the scheduler's.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -31,7 +31,7 @@ import {
 // flight, and returns once the test opens its gate.
 
 /**
- * Items every case runs over, in the order results must come back.
+ Items every case runs over, in the order results must come back.
  */
 const ITEMS = [
   'a',
@@ -41,27 +41,27 @@ const ITEMS = [
 ] as const;
 
 /**
- * What one gated run exposes to the assertions.
+ What one gated run exposes to the assertions.
  */
 type Gated = {
   /**
-   * Positions in the order their jobs started.
+   Positions in the order their jobs started.
    */
   readonly started: readonly number[];
 
   /**
-   * Most jobs seen in flight at once.
+   Most jobs seen in flight at once.
    */
   readonly inFlight: { readonly peak: number; };
 
   /**
-   * One gate per item; a job returns once its gate is opened, or throws once
-   * its gate is broken.
+   One gate per item; a job returns once its gate is opened, or throws once
+   its gate is broken.
    */
   readonly gates: readonly PromiseWithResolvers<string>[];
 
   /**
-   * Job handed to the helper.
+   Job handed to the helper.
    */
   readonly oneItem: (row: {
     readonly item: string;
@@ -70,25 +70,25 @@ type Gated = {
 };
 
 /**
- * Builds the gated job and the records it fills.
- *
- * @param count - how many gates to build, one per item
- *
- * @returns Records and the job
- *
- * @example
- * ```ts
- * const run = gatedRun({ count: 3, },);
- * ```
+ Builds the gated job and the records it fills.
+ 
+ @param count - how many gates to build, one per item
+ 
+ @returns Records and the job
+ 
+ @example
+ ```ts
+ const run = gatedRun({ count: 3, },);
+ ```
  */
 function gatedRun({ count, }: { readonly count: number; },): Gated {
   /**
-   * Positions in start order, filled by the job.
+   Positions in start order, filled by the job.
    */
   const started: number[] = [];
 
   /**
-   * Jobs in flight now and the most seen at once.
+   Jobs in flight now and the most seen at once.
    */
   const inFlight = {
     now: 0,
@@ -96,7 +96,7 @@ function gatedRun({ count, }: { readonly count: number; },): Gated {
   };
 
   /**
-   * One gate per item.
+   One gate per item.
    */
   const gates = Array.from(
     { length: count, },
@@ -120,7 +120,7 @@ function gatedRun({ count, }: { readonly count: number; },): Gated {
       );
 
       /**
-       * What the test opened this gate with.
+       What the test opened this gate with.
        */
       const answer = await nonNullishOrThrow(gates[position],).promise;
       inFlight.now -= 1;
@@ -130,32 +130,32 @@ function gatedRun({ count, }: { readonly count: number; },): Gated {
 }
 
 /**
- * Lets every settled continuation run, so the records reflect what the
- * scheduler did with what the test just opened.
- *
- * @example
- * ```ts
- * await settle();
- * ```
+ Lets every settled continuation run, so the records reflect what the
+ scheduler did with what the test just opened.
+ 
+ @example
+ ```ts
+ await settle();
+ ```
  */
 async function settle(): Promise<void> {
   await wait(0,);
 }
 
 /**
- * Resolves with what a run threw, or `undefined` when it finished.
- *
- * ATTACHED BEFORE ANY GATE IS OPENED in every failing case, so the rejection
- * is never unhandled between the moment it happens and the assertion.
- *
- * @param run - mapping under test
- *
- * @returns What it threw
- *
- * @example
- * ```ts
- * const failure = collected({ run, },);
- * ```
+ Resolves with what a run threw, or `undefined` when it finished.
+ 
+ ATTACHED BEFORE ANY GATE IS OPENED in every failing case, so the rejection
+ is never unhandled between the moment it happens and the assertion.
+ 
+ @param run - mapping under test
+ 
+ @returns What it threw
+ 
+ @example
+ ```ts
+ const failure = collected({ run, },);
+ ```
  */
 async function collected({ run, }: { readonly run: Promise<unknown>; },): Promise<unknown> {
   try {
@@ -302,7 +302,7 @@ await describe({
         await settle();
 
         /**
-         * What the second item throws.
+         What the second item throws.
          */
         const fault = new Error('the second item broke',);
         nonNullishOrThrow(run.gates[1],).reject(fault,);
@@ -338,14 +338,14 @@ await describe({
         await settle();
 
         /**
-         * What the second item throws, first in time.
+         What the second item throws, first in time.
          */
         const later = new Error('the second item broke first',);
         nonNullishOrThrow(run.gates[1],).reject(later,);
         await settle();
 
         /**
-         * What the first item throws, second in time.
+         What the first item throws, second in time.
          */
         const earlier = new Error('the first item broke after it',);
         nonNullishOrThrow(run.gates[0],).reject(earlier,);

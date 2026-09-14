@@ -12,29 +12,29 @@ import { abbreviate, } from './artifact-provenance.ts';
 // paragraphs while the selection reads as a few filters.
 
 /**
- * Column width for an entry count, so generations line up under each other.
+ Column width for an entry count, so generations line up under each other.
  */
 export const COUNT_WIDTH = 3;
 
 /**
- * Width of the longest noun {@link pluralEntries} returns, so a count and its
- * noun keep a fixed column in a report listing several generations.
+ Width of the longest noun {@link pluralEntries} returns, so a count and its
+ noun keep a fixed column in a report listing several generations.
  */
 export const ENTRY_NOUN_WIDTH: number = 'entries'.length;
 
 /**
- * Names a count of entries with the matching noun.
- *
- * @param count - how many entries
- *
- * @returns Singular noun at one, plural otherwise
- *
- * @example
- * ```ts
- * const noun = pluralEntries({ count: 1, },);
- * ```
- *
- * @internal
+ Names a count of entries with the matching noun.
+ 
+ @param count - how many entries
+ 
+ @returns Singular noun at one, plural otherwise
+ 
+ @example
+ ```ts
+ const noun = pluralEntries({ count: 1, },);
+ ```
+ 
+ @internal
  */
 export function pluralEntries(
   { count, }: { readonly count: number; },
@@ -43,17 +43,17 @@ export function pluralEntries(
 }
 
 /**
- * Every built pipeline a census holds, for sizing an abbreviation that cannot
- * collide.
- *
- * @param census - what the directory holds
- *
- * @returns Digests in group order
- *
- * @example
- * ```ts
- * const short = abbreviate({ ids: censusDigests({ census, },), },);
- * ```
+ Every built pipeline a census holds, for sizing an abbreviation that cannot
+ collide.
+ 
+ @param census - what the directory holds
+ 
+ @returns Digests in group order
+ 
+ @example
+ ```ts
+ const short = abbreviate({ ids: censusDigests({ census, },), },);
+ ```
  */
 export function censusDigests(
   { census, }: { readonly census: GenerationCensus; },
@@ -65,20 +65,20 @@ export function censusDigests(
 }
 
 /**
- * Renders one line per generation: its pipeline and how many entries it holds.
- *
- * @param census - what the directory holds
- *
- * @param short - abbreviator sized over everything this report prints
- *
- * @returns One line per generation, largest first
- *
- * @example
- * ```ts
- * const lines = generationLines({ census, short, },);
- * ```
- *
- * @internal
+ Renders one line per generation: its pipeline and how many entries it holds.
+ 
+ @param census - what the directory holds
+ 
+ @param short - abbreviator sized over everything this report prints
+ 
+ @returns One line per generation, largest first
+ 
+ @example
+ ```ts
+ const lines = generationLines({ census, short, },);
+ ```
+ 
+ @internal
  */
 export function generationLines(
   {
@@ -92,7 +92,7 @@ export function generationLines(
   return census.groups
     .map(function toLine(group,): string {
       /**
-       * Entries this generation holds.
+       Entries this generation holds.
        */
       const size = group.entryIds
         .length;
@@ -104,49 +104,49 @@ export function generationLines(
 }
 
 /**
- * Artifacts excluded for one reason, named together so a refusal lists them by
- * remedy rather than as one undifferentiated pile.
- *
- * @example
- * ```ts
- * const group: ExclusionGroup = { reason: 'unreadable', entryIds: ['Mittens',], };
- * ```
+ Artifacts excluded for one reason, named together so a refusal lists them by
+ remedy rather than as one undifferentiated pile.
+ 
+ @example
+ ```ts
+ const group: ExclusionGroup = { reason: 'unreadable', entryIds: ['Mittens',], };
+ ```
  */
 type ExclusionGroup = Readonly<{
   /**
-   * Why these artifacts could not be placed, as a clause.
+   Why these artifacts could not be placed, as a clause.
    */
   reason: string;
 
   /**
-   * Entries excluded for it.
+   Entries excluded for it.
    */
   entryIds: readonly string[];
 }>;
 
 /**
- * Explains a census that placed nothing, distinguishing empty from excluded.
- *
- * `total` counts PLACED entries only, so a directory holding nothing but
- * unplaceable artifacts reports zero. Saying "nothing has settled yet" there
- * would be false in the one case an operator most needs the truth: the files
- * are present, and every one of them was excluded for a reason with a remedy.
- *
- * @param census - what the directory holds, having placed no entry
- *
- * @returns Lines naming what is present, or that nothing is
- *
- * @example
- * ```ts
- * const lines = emptyCensusLines({ census, },);
- * ```
+ Explains a census that placed nothing, distinguishing empty from excluded.
+ 
+ `total` counts PLACED entries only, so a directory holding nothing but
+ unplaceable artifacts reports zero. Saying "nothing has settled yet" there
+ would be false in the one case an operator most needs the truth: the files
+ are present, and every one of them was excluded for a reason with a remedy.
+ 
+ @param census - what the directory holds, having placed no entry
+ 
+ @returns Lines naming what is present, or that nothing is
+ 
+ @example
+ ```ts
+ const lines = emptyCensusLines({ census, },);
+ ```
  */
 function emptyCensusLines(
   { census, }: { readonly census: GenerationCensus; },
 ): readonly string[] {
   /**
-   * Every way an artifact can fail to be placed, in the order a refusal lists
-   * them.
+   Every way an artifact can fail to be placed, in the order a refusal lists
+   them.
    */
   const kinds: readonly ExclusionGroup[] = [
     {
@@ -164,11 +164,11 @@ function emptyCensusLines(
   ];
 
   /**
-   * The ones that actually occurred here.
+   The ones that actually occurred here.
    */
   const excluded = kinds.filter(function present(group,): boolean {
     /**
-     * Entries excluded this way.
+     Entries excluded this way.
      */
     const { entryIds, } = group;
 
@@ -176,7 +176,7 @@ function emptyCensusLines(
   },);
 
   /**
-   * How many artifacts are present but unplaceable.
+   How many artifacts are present but unplaceable.
    */
   const total = excluded.reduce(
     function add(
@@ -184,7 +184,7 @@ function emptyCensusLines(
       group,
     ): number {
       /**
-       * Entries excluded this way.
+       Entries excluded this way.
        */
       const { entryIds, } = group;
 
@@ -210,32 +210,32 @@ function emptyCensusLines(
 }
 
 /**
- * Raised when a pool spans pipeline generations and the caller named none.
+ Raised when a pool spans pipeline generations and the caller named none.
  */
 export class MixedGenerationError extends Error {
   /**
-   * Declares this message safe to forward: it counts generations and names none of their contents.
+   Declares this message safe to forward: it counts generations and names none of their contents.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Names every generation present and how to proceed.
-   *
-   * @param census - what the pool actually holds
-   *
-   * @example
-   * ```ts
-   * throw new MixedGenerationError({ census, },);
-   * ```
+   Names every generation present and how to proceed.
+   
+   @param census - what the pool actually holds
+   
+   @example
+   ```ts
+   throw new MixedGenerationError({ census, },);
+   ```
    */
   constructor({ census, }: { readonly census: GenerationCensus; },) {
     /**
-     * Width at which these pipelines stay distinguishable.
+     Width at which these pipelines stay distinguishable.
      */
     const short = abbreviate({ ids: censusDigests({ census, },), },);
 
     /**
-     * How many distinct pipeline versions the directory holds.
+     How many distinct pipeline versions the directory holds.
      */
     const generationCount = census.groups
       .length;
@@ -268,25 +268,25 @@ export class MixedGenerationError extends Error {
 }
 
 /**
- * Raised when generation filtering leaves no entry to pool at all.
+ Raised when generation filtering leaves no entry to pool at all.
  */
 export class EmptyPoolError extends Error {
   /**
-   * Declares this message safe to forward: it names a commit and a count.
+   Declares this message safe to forward: it names a commit and a count.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Names why the pool came out empty and what would refill it.
-   *
-   * @param census - what the directory actually holds
-   *
-   * @param requiredCommit - commit that was required, absent when none was
-   *
-   * @example
-   * ```ts
-   * throw new EmptyPoolError({ census, requiredCommit, },);
-   * ```
+   Names why the pool came out empty and what would refill it.
+   
+   @param census - what the directory actually holds
+   
+   @param requiredCommit - commit that was required, absent when none was
+   
+   @example
+   ```ts
+   throw new EmptyPoolError({ census, requiredCommit, },);
+   ```
    */
   constructor(
     {
@@ -298,8 +298,8 @@ export class EmptyPoolError extends Error {
     },
   ) {
     /**
-     * Width at which everything this report prints stays distinguishable,
-     * including the required commit, which is not a digest but shares the page.
+     Width at which everything this report prints stays distinguishable,
+     including the required commit, which is not a digest but shares the page.
      */
     const short = abbreviate({
       ids: [

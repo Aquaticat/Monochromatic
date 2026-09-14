@@ -1,15 +1,15 @@
 /**
- * Tests for block pairing: what the sheet carries, and what the reader refuses.
- *
- * WHY REFUSAL MATTERS MORE THAN ACCEPTANCE HERE. A wrong pairing puts two
- * passages that were never about the same thing in front of the critics, which
- * then report differences between them and are right to. `#71` recorded that a
- * wrong pairing is worse than no pairing for exactly this reason, so every
- * malformed reply below must throw rather than be tidied into something usable.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for block pairing: what the sheet carries, and what the reader refuses.
+ 
+ WHY REFUSAL MATTERS MORE THAN ACCEPTANCE HERE. A wrong pairing puts two
+ passages that were never about the same thing in front of the critics, which
+ then report differences between them and are right to. `#71` recorded that a
+ wrong pairing is worse than no pairing for exactly this reason, so every
+ malformed reply below must throw rather than be tidied into something usable.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -25,7 +25,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Three blocks standing in for an original side.
+ Three blocks standing in for an original side.
  */
 const SOURCE = [
   {
@@ -43,7 +43,7 @@ const SOURCE = [
 ];
 
 /**
- * Four blocks standing in for a translation that split one paragraph.
+ Four blocks standing in for a translation that split one paragraph.
  */
 const TARGET = [
   {
@@ -95,7 +95,7 @@ await describe({
       name: 'CHOOSES a fence no block can close, since blocks are arbitrary prose',
       fn: async () => {
         /**
-         * A block carrying a fence run of the kind the sheet itself uses.
+         A block carrying a fence run of the kind the sheet itself uses.
          */
         const awkward = 'A block whose own line reads ===== and continues.';
         const messages = buildBlockPairingMessages({
@@ -109,11 +109,11 @@ await describe({
         },);
 
         /**
-         * Delimiter the sheet chose.
-         *
-         * The sheet reads header, blank, `[0]`, fence, so the fence is the
-         * fourth line. Reading the second returns the blank line, and
-         * `includes('')` is true of everything, which is a test that cannot fail.
+         Delimiter the sheet chose.
+         
+         The sheet reads header, blank, `[0]`, fence, so the fence is the
+         fourth line. Reading the second returns the blank line, and
+         `includes('')` is true of everything, which is a test that cannot fail.
          */
         const fence = String(messages[1]?.content,)
           .split('\n',)
@@ -121,7 +121,7 @@ await describe({
         expect(fence,).toBeDefined();
 
         /**
-         * Whether the enclosed text could close the sheet's own delimiter.
+         Whether the enclosed text could close the sheet's own delimiter.
          */
         const closable = awkward.includes(String(fence,),);
         // THE INVARIANT, not the character: whatever it picked, the enclosed
@@ -185,7 +185,7 @@ await describe({
         + 'eight voices to the order rule), and still refuses a body pair that steps backwards',
       fn: async () => {
         /**
-         * Body in order, the two definitions paired by content, crossing.
+         Body in order, the two definitions paired by content, crossing.
          */
         const crossing = {
           pairs: [
@@ -208,7 +208,7 @@ await describe({
           ],
         };
         /**
-         * Which blocks are definitions on each side.
+         Which blocks are definitions on each side.
          */
         const freeOrder = {
           source: new Set([
@@ -325,8 +325,8 @@ await describe({
         + 'and this is where that is decided',
       fn: async () => {
         /**
-         * The three ways a reply can cross, each one a real reading a model
-         * could hold and none of them expressible in document order.
+         The three ways a reply can cross, each one a real reading a model
+         could hold and none of them expressible in document order.
          */
         const crossings = [
           [

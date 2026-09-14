@@ -36,30 +36,30 @@ import {
 // document otherwise measures as one that examined everything and approved.
 
 /**
- * Builds the repair lane's per-slice wordings from its settled outcomes.
- *
- * @param slices - preparation the lane ran over, which supplies every incumbent
- * and says which slices the archive never translated
- *
- * @param outcomes - what the lane settled, anchors included, in any order,
- * each carrying who was heard about it
- *
- * @param undecided - what an unnamed gap means; `refuse` after assembly, where
- * every slice was visited, and `not-evaluated` at the blocked exit, which stops
- * partway through by design
- *
- * @returns One wording per prepared slice, in document order
- *
- * @throws {@link LaneSliceCoverageError} when the outcomes do not cover the
- * preparation as the policy requires
- *
- * @throws {@link RepairUnheardError} when a slice nobody spoke about carries a
- * wording that is not the archive's
- *
- * @example
- * ```ts
- * const wordings = repairLaneWordings({ slices, outcomes, undecided: 'refuse', },);
- * ```
+ Builds the repair lane's per-slice wordings from its settled outcomes.
+ 
+ @param slices - preparation the lane ran over, which supplies every incumbent
+ and says which slices the archive never translated
+ 
+ @param outcomes - what the lane settled, anchors included, in any order,
+ each carrying who was heard about it
+ 
+ @param undecided - what an unnamed gap means; `refuse` after assembly, where
+ every slice was visited, and `not-evaluated` at the blocked exit, which stops
+ partway through by design
+ 
+ @returns One wording per prepared slice, in document order
+ 
+ @throws {@link LaneSliceCoverageError} when the outcomes do not cover the
+ preparation as the policy requires
+ 
+ @throws {@link RepairUnheardError} when a slice nobody spoke about carries a
+ wording that is not the archive's
+ 
+ @example
+ ```ts
+ const wordings = repairLaneWordings({ slices, outcomes, undecided: 'refuse', },);
+ ```
  */
 export function repairLaneWordings(
   {
@@ -73,7 +73,7 @@ export function repairLaneWordings(
   },
 ): readonly LaneSliceText[] {
   /**
-   * Slices the archive never translated, which this lane cannot work on.
+   Slices the archive never translated, which this lane cannot work on.
    */
   const anchored = new Set(slices
     .filter(function hasNoWording(slice,): boolean {
@@ -85,7 +85,7 @@ export function repairLaneWordings(
     },),);
 
   /**
-   * Archive's own wording per slice, which an unheard outcome has to match.
+   Archive's own wording per slice, which an unheard outcome has to match.
    */
   const incumbents = new Map(slices.map(function toEntry(slice,): [
     number,
@@ -100,8 +100,8 @@ export function repairLaneWordings(
   },),);
 
   /**
-   * Outcomes at a slice the archive does translate, which are the only ones
-   * that can be a decision or a fallback: an anchor is neither.
+   Outcomes at a slice the archive does translate, which are the only ones
+   that can be a decision or a fallback: an anchor is neither.
    */
   const mendable = outcomes.filter(function hadSomethingToRepair(outcome,): boolean {
     return !anchored.has(outcome.sliceIndex,);

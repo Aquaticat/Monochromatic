@@ -1,26 +1,26 @@
 /**
- * Tests that a judge is told deleting page-only content is a fault.
- *
- * WHAT THIS FILE EXISTS TO STOP, measured on the sixth consolidation bed. One
- * slice's ORIGINAL is a single parenthetical note; its archive page is that note
- * followed by an entire will. A consolidation rendered the note alone and the
- * gate voted six to nil to ship it, deleting the will from the page.
- *
- * TWO BALLOTS ON THAT SLICE REASONED IN OPPOSITE DIRECTIONS, and both were
- * correct under the rules they had. One objected that rival candidates add a
- * whole document "not present in the ORIGINAL". Another objected that rival
- * candidates "omit the body of the will". Nothing said which reading governs.
- *
- * THE GAP WAS NARROWER THAN IT LOOKED. The policy already said a detail the
- * archive supplies is not unsupported, so keeping was licensed. But DROPPED was
- * defined purely as omitting something THE CHINESE says, so deleting page-only
- * content was not a fault of any named kind, and its examples were all small: a
- * name, a spelled-out referent. Facing a whole will, a judge did not read them
- * as covering it.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests that a judge is told deleting page-only content is a fault.
+ 
+ WHAT THIS FILE EXISTS TO STOP, measured on the sixth consolidation bed. One
+ slice's ORIGINAL is a single parenthetical note; its archive page is that note
+ followed by an entire will. A consolidation rendered the note alone and the
+ gate voted six to nil to ship it, deleting the will from the page.
+ 
+ TWO BALLOTS ON THAT SLICE REASONED IN OPPOSITE DIRECTIONS, and both were
+ correct under the rules they had. One objected that rival candidates add a
+ whole document "not present in the ORIGINAL". Another objected that rival
+ candidates "omit the body of the will". Nothing said which reading governs.
+ 
+ THE GAP WAS NARROWER THAN IT LOOKED. The policy already said a detail the
+ archive supplies is not unsupported, so keeping was licensed. But DROPPED was
+ defined purely as omitting something THE CHINESE says, so deleting page-only
+ content was not a fault of any named kind, and its examples were all small: a
+ name, a spelled-out referent. Facing a whole will, a judge did not read them
+ as covering it.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {

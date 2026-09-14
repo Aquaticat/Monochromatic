@@ -1,10 +1,10 @@
 /**
- * Tests for the per-entry destinations line.
- *
- * WHAT THESE PIN: the line carries the three counts under stable names a grep
- * can total, carries no address, and appends findings after the counts.
- *
- * @module
+ Tests for the per-entry destinations line.
+ 
+ WHAT THESE PIN: the line carries the three counts under stable names a grep
+ can total, carries no address, and appends findings after the counts.
+ 
+ @module
  */
 
 import {

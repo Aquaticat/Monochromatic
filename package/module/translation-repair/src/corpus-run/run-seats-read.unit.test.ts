@@ -1,14 +1,14 @@
 /**
- * Tests for the seat readings a phase and a chunk take past a named hold.
- *
- * THE THIRTEENTH CLASS IN BOTH ITS FACES. Before a phase (the third hakureico
- * pass of 2026-09-07, translate lane and consolidation on nobody under a
- * 538 s hold) and inside one (the fourth pass, a 923 s hold two minutes into
- * consolidation, slice 5 stopping the entry). The phase reading waits when a
- * bench it leans on cannot reach quorum; the chunk reading does the same and
- * costs nothing while nothing is held.
- *
- * @module
+ Tests for the seat readings a phase and a chunk take past a named hold.
+ 
+ THE THIRTEENTH CLASS IN BOTH ITS FACES. Before a phase (the third hakureico
+ pass of 2026-09-07, translate lane and consolidation on nobody under a
+ 538 s hold) and inside one (the fourth pass, a 923 s hold two minutes into
+ consolidation, slice 5 stopping the entry). The phase reading waits when a
+ bench it leans on cannot reach quorum; the chunk reading does the same and
+ costs nothing while nothing is held.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -31,12 +31,12 @@ import {
 //region Seat reading tests
 
 /**
- * The Hyper-slow judge.
+ The Hyper-slow judge.
  */
 const QWEN = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * Every provider wet.
+ Every provider wet.
  */
 const ALL_WET: BudgetView = {
   synthetic: false,
@@ -46,7 +46,7 @@ const ALL_WET: BudgetView = {
 };
 
 /**
- * Synthetic alone dry.
+ Synthetic alone dry.
  */
 const SYNTHETIC_DRY: BudgetView = {
   synthetic: true,
@@ -56,7 +56,7 @@ const SYNTHETIC_DRY: BudgetView = {
 };
 
 /**
- * No provider held out.
+ No provider held out.
  */
 const NO_HOLDS = {
   synthetic: 0,
@@ -66,8 +66,8 @@ const NO_HOLDS = {
 };
 
 /**
- * The third hakureico pass at 22:00 UTC: Synthetic's week spent, Hyper held
- * out by its daily limit, OpenRouter at 0.01 USD, Bedrock alone wet.
+ The third hakureico pass at 22:00 UTC: Synthetic's week spent, Hyper held
+ out by its daily limit, OpenRouter at 0.01 USD, Bedrock alone wet.
  */
 const BEDROCK_ALONE: BudgetView = {
   synthetic: true,
@@ -77,23 +77,23 @@ const BEDROCK_ALONE: BudgetView = {
 };
 
 /**
- * Logger the readings write to.
+ Logger the readings write to.
  */
 const l = tagged({ tag: 'run-seats-read-test', },);
 
 /**
- * Builds a client whose dryness view and holds answer as scripted.
- *
- * @param providerDryness - scripted view
- *
- * @param providerHolds - scripted holds, none when absent
- *
- * @returns Client with only the seat reader's surface
- *
- * @example
- * ```ts
- * const client = viewClient({ providerDryness: async () => ALL_WET, },);
- * ```
+ Builds a client whose dryness view and holds answer as scripted.
+ 
+ @param providerDryness - scripted view
+ 
+ @param providerHolds - scripted holds, none when absent
+ 
+ @returns Client with only the seat reader's surface
+ 
+ @example
+ ```ts
+ const client = viewClient({ providerDryness: async () => ALL_WET, },);
+ ```
  */
 function viewClient(
   {
@@ -111,25 +111,25 @@ function viewClient(
 }
 
 /**
- * Logger that keeps every line so a case can read what the reading said.
- *
- * @returns Logger beside its captured lines
- *
- * @example
- * ```ts
- * const { logger, lines, } = capturingLogger();
- * ```
+ Logger that keeps every line so a case can read what the reading said.
+ 
+ @returns Logger beside its captured lines
+ 
+ @example
+ ```ts
+ const { logger, lines, } = capturingLogger();
+ ```
  */
 function capturingLogger() {
   /**
-   * Lines the reading emitted, in order.
+   Lines the reading emitted, in order.
    */
   const lines: string[] = [];
 
   /**
-   * Records one line and discards its level.
-   *
-   * @param message - line the reading published
+   Records one line and discards its level.
+   
+   @param message - line the reading published
    */
   function record(message: string,): void {
     lines.push(message,);
@@ -149,16 +149,16 @@ function capturingLogger() {
 }
 
 /**
- * Dryness views handed out in order, the last one repeated, counting reads.
- *
- * @param views - views in the order they are read
- *
- * @returns Reader and the count of reads so far
- *
- * @example
- * ```ts
- * const script = scriptedViews({ views: [BEDROCK_ALONE, ALL_WET,], },);
- * ```
+ Dryness views handed out in order, the last one repeated, counting reads.
+ 
+ @param views - views in the order they are read
+ 
+ @returns Reader and the count of reads so far
+ 
+ @example
+ ```ts
+ const script = scriptedViews({ views: [BEDROCK_ALONE, ALL_WET,], },);
+ ```
  */
 function scriptedViews(
   { views, }: { readonly views: readonly BudgetView[]; },
@@ -299,7 +299,7 @@ await describe({
         expect(script.counter.reads,).toBe(1,);
         expect(seats.wideSeats.length,).toBe(RUN_WIDE_SEATS.length,);
         /**
-         * The line that names the shortfall, if the reading said so.
+         The line that names the shortfall, if the reading said so.
          */
         const said = lines.find(function namesShortfall(line: string,): boolean {
           return line.includes(`JUDGE SEATS phase=preparation short of quorum: wide 3 of ${

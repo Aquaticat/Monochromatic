@@ -45,88 +45,88 @@ import type { RunnerClosure, } from './runner-closure.ts';
 // would turn each field change into a two-file change for no reader's benefit.
 
 /**
- * Identity and answers of one probe invocation.
- *
- * @example
- * ```ts
- * const run: ProbeRun = { startedAt, finishedAt, pipelineDigest, roster, subject, rows, };
- * ```
+ Identity and answers of one probe invocation.
+ 
+ @example
+ ```ts
+ const run: ProbeRun = { startedAt, finishedAt, pipelineDigest, roster, subject, rows, };
+ ```
  */
 export type ProbeRun = {
   /**
-   * When this invocation began, ISO 8601.
+   When this invocation began, ISO 8601.
    */
   readonly startedAt: string;
 
   /**
-   * When it finished, so a later reader can price a rerun without timing one.
+   When it finished, so a later reader can price a rerun without timing one.
    */
   readonly finishedAt: string;
 
   /**
-   * Digest over built output, which moves whenever anything that ran changed.
-   *
-   * Stronger than a commit: a worktree can be clean at a known commit and still
-   * build something else.
+   Digest over built output, which moves whenever anything that ran changed.
+   
+   Stronger than a commit: a worktree can be clean at a known commit and still
+   build something else.
    */
   readonly pipelineDigest: string;
 
   /**
-   * Chunks the executing entry imports, which is the identity a COMPARISON
-   * needs and the tree digest cannot give.
-   *
-   * The digest moves whenever anything in the tree moves, including code this
-   * run never loaded, so two runs of byte-identical probe code carry different
-   * digests and nothing tells that apart from a real change. The closure moves
-   * only when this runner's own code does. `#116`.
+   Chunks the executing entry imports, which is the identity a COMPARISON
+   needs and the tree digest cannot give.
+   
+   The digest moves whenever anything in the tree moves, including code this
+   run never loaded, so two runs of byte-identical probe code carry different
+   digests and nothing tells that apart from a real change. The closure moves
+   only when this runner's own code does. `#116`.
    */
   readonly runnerClosure: RunnerClosure;
 
   /**
-   * Models asked, in roster order, since a verdict over six voices is not
-   * comparable to one over three.
+   Models asked, in roster order, since a verdict over six voices is not
+   comparable to one over three.
    */
   readonly roster: readonly string[];
 
   /**
-   * What this invocation was pointed at, in the probe's own terms: a corpus
-   * commit and entry ids, fixture names, a cap, whatever bounds what its rows
-   * can be read to say.
-   *
-   * OPEN RATHER THAN NAMED because probes are pointed at different kinds of
-   * thing. Forcing a corpus commit here would make a fixture-only probe record
-   * one it never read.
+   What this invocation was pointed at, in the probe's own terms: a corpus
+   commit and entry ids, fixture names, a cap, whatever bounds what its rows
+   can be read to say.
+   
+   OPEN RATHER THAN NAMED because probes are pointed at different kinds of
+   thing. Forcing a corpus commit here would make a fixture-only probe record
+   one it never read.
    */
   readonly subject: Readonly<Record<string, unknown>>;
 
   /**
-   * Answers, one per attempt, failures included.
-   *
-   * Failures belong here rather than being dropped: a probe whose roster fell
-   * over reads exactly like a quiet one once the failures are gone.
+   Answers, one per attempt, failures included.
+   
+   Failures belong here rather than being dropped: a probe whose roster fell
+   over reads exactly like a quiet one once the failures are gone.
    */
   readonly rows: readonly unknown[];
 };
 
 /**
- * Renders an instant into something safe and sortable as a filename.
- *
- * Colons are legal in a POSIX filename and awful to quote, copy and complete,
- * so they become hyphens. Nothing else is dropped, which keeps the name
- * lexically sortable and losslessly readable back to the instant.
- *
- * @param startedAt - ISO 8601 instant
- *
- * @returns Filename-safe rendering
- *
- * @example
- * ```ts
- * stampFor({ startedAt: '2026-08-17T12:00:00.000Z', },);
- * ```
- *
- * Shared with the recall scorecard store, which stamps its files the same way.
- *
- * @internal
+ Renders an instant into something safe and sortable as a filename.
+ 
+ Colons are legal in a POSIX filename and awful to quote, copy and complete,
+ so they become hyphens. Nothing else is dropped, which keeps the name
+ lexically sortable and losslessly readable back to the instant.
+ 
+ @param startedAt - ISO 8601 instant
+ 
+ @returns Filename-safe rendering
+ 
+ @example
+ ```ts
+ stampFor({ startedAt: '2026-08-17T12:00:00.000Z', },);
+ ```
+ 
+ Shared with the recall scorecard store, which stamps its files the same way.
+ 
+ @internal
  */
 export function stampFor({ startedAt, }: { readonly startedAt: string; },): string {
   return startedAt
@@ -135,30 +135,30 @@ export function stampFor({ startedAt, }: { readonly startedAt: string; },): stri
 }
 
 /**
- * How many trailing digest characters go in a filename.
- *
- * Enough to separate two builds of one afternoon by eye. The whole digest is
- * inside the file, so this only has to disambiguate, never to identify.
+ How many trailing digest characters go in a filename.
+ 
+ Enough to separate two builds of one afternoon by eye. The whole digest is
+ inside the file, so this only has to disambiguate, never to identify.
  */
 const DIGEST_IN_NAME = 8;
 
 /**
- * Writes one probe run beside the run directory's other artifacts.
- *
- * @param runsDir - resolved runs directory, owned by whoever resolved it
- *
- * @param probeName - names the subdirectory runs of one probe collect in, so
- * two probes cannot interleave their files
- *
- * @param run - everything this invocation asked and heard
- *
- * @returns Path written, so a caller can say where the answers went instead of
- * leaving a reader to search for them
- *
- * @example
- * ```ts
- * const at = await persistProbeRun({ runsDir, probeName: 'coverage-probe', run, },);
- * ```
+ Writes one probe run beside the run directory's other artifacts.
+ 
+ @param runsDir - resolved runs directory, owned by whoever resolved it
+ 
+ @param probeName - names the subdirectory runs of one probe collect in, so
+ two probes cannot interleave their files
+ 
+ @param run - everything this invocation asked and heard
+ 
+ @returns Path written, so a caller can say where the answers went instead of
+ leaving a reader to search for them
+ 
+ @example
+ ```ts
+ const at = await persistProbeRun({ runsDir, probeName: 'coverage-probe', run, },);
+ ```
  */
 export async function persistProbeRun(
   {
@@ -172,7 +172,7 @@ export async function persistProbeRun(
   },
 ): Promise<string> {
   /**
-   * Where runs of this probe collect.
+   Where runs of this probe collect.
    */
   const probeDir = join(
     runsDir,
@@ -184,8 +184,8 @@ export async function persistProbeRun(
   );
 
   /**
-   * Name carrying both when it ran and which build ran it, so two runs of one
-   * day and two builds of one minute stay distinguishable on sight.
+   Name carrying both when it ran and which build ran it, so two runs of one
+   day and two builds of one minute stay distinguishable on sight.
    */
   const path = join(
     probeDir,

@@ -1,8 +1,8 @@
 /**
- * Tests for restoring the quote style an editor flattened.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for restoring the quote style an editor flattened.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -14,38 +14,38 @@ import {
 import { restoreTypography, } from '../dist/final/node/index.mjs';
 
 /**
- * Right single quotation mark, the apostrophe the corpus uses.
+ Right single quotation mark, the apostrophe the corpus uses.
  */
 const APOSTROPHE = '\u{2019}';
 
 /**
- * Left double quotation mark.
+ Left double quotation mark.
  */
 const OPEN = '\u{201C}';
 
 /**
- * Right double quotation mark.
+ Right double quotation mark.
  */
 const CLOSE = '\u{201D}';
 
 /**
- * Restores using the replaced region as its own convention.
- *
- * Every case below was written before the convention widened to the whole
- * document, and each asserts REGION-scoped behaviour, so passing the replaced
- * text as the convention keeps each assertion testing what it was written to
- * test.
- *
- * @param replacement - text the editor wrote
- *
- * @param replaced - text it replaces, standing as its own convention
- *
- * @returns Restored replacement
- *
- * @example
- * ```ts
- * restoreFromRegion({ replacement: "didn't", replaced: "did not", },);
- * ```
+ Restores using the replaced region as its own convention.
+ 
+ Every case below was written before the convention widened to the whole
+ document, and each asserts REGION-scoped behaviour, so passing the replaced
+ text as the convention keeps each assertion testing what it was written to
+ test.
+ 
+ @param replacement - text the editor wrote
+ 
+ @param replaced - text it replaces, standing as its own convention
+ 
+ @returns Restored replacement
+ 
+ @example
+ ```ts
+ restoreFromRegion({ replacement: "didn't", replaced: "did not", },);
+ ```
  */
 function restoreFromRegion(
   {
@@ -182,7 +182,7 @@ await describe({
         + 'page, since a literal in typographic quotes compiles nowhere (yulianNyanner, 2026-09-06)',
       fn: async () => {
         /**
-         * Component line as the archives write it.
+         Component line as the archives write it.
          */
         const line = `> <PhotoScroll photos={["\${path}/photos/photo3.webp"]} />\n`;
 
@@ -211,7 +211,7 @@ await describe({
         + 'not end it early',
       fn: async () => {
         /**
-         * Component whose array runs over three quoted lines.
+         Component whose array runs over three quoted lines.
          */
         const block = `> <PhotoScroll photos={[\n>     "\${path}/a.webp",\n>     "\${path}/b.webp",\n> ]} />\n`;
 

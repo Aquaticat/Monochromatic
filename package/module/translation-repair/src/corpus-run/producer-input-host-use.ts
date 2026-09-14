@@ -15,22 +15,22 @@ import { writeProducerInputControl, } from './producer-input-run.ts';
 import { assertProducerInputNotInterrupted, } from './producer-input-signals.ts';
 
 /**
- * Checks the actual created contract, revalidates host bindings, then starts the child and checks its output.
- *
- * @param host - initialized input-run owner
- *
- * @param id - this run's confirmed native creation identity
- *
- * @param signal - host interruption
- *
- * @returns Unqualified completion after host-side private-file consistency checks
- *
- * @throws ProducerInputRunError when startup or output evidence differs
- *
- * @example
- * ```ts
- * const completion = await executeCreatedInput({ host, id, signal });
- * ```
+ Checks the actual created contract, revalidates host bindings, then starts the child and checks its output.
+ 
+ @param host - initialized input-run owner
+ 
+ @param id - this run's confirmed native creation identity
+ 
+ @param signal - host interruption
+ 
+ @returns Unqualified completion after host-side private-file consistency checks
+ 
+ @throws ProducerInputRunError when startup or output evidence differs
+ 
+ @example
+ ```ts
+ const completion = await executeCreatedInput({ host, id, signal });
+ ```
  */
 async function executeCreatedInput({
   host,
@@ -98,7 +98,7 @@ async function executeCreatedInput({
     signal
   });
   /**
-   * A native zero exit does not establish valid artifact or completion files.
+   A native zero exit does not establish valid artifact or completion files.
    */
   const completion = await verifyProducerInputCompletion(host);
   assertProducerInputNotInterrupted(signal);
@@ -112,23 +112,23 @@ async function executeCreatedInput({
 }
 
 /**
- * Runs and settles only a confirmed owned container, retaining operation and cleanup evidence separately.
- * Input files and incomplete producer output are never removed or automatically resumed.
- *
- * @param host - one input-run owner
- *
- * @param id - confirmed native creation identity
- *
- * @param signal - operation cancellation
- *
- * @returns Complete unqualified metadata only after native removal succeeds
- *
- * @throws ProducerInputRunError when operation, terminal evidence or cleanup fails
- *
- * @example
- * ```ts
- * const completion = await useProducerInputContainer({ host, id, signal });
- * ```
+ Runs and settles only a confirmed owned container, retaining operation and cleanup evidence separately.
+ Input files and incomplete producer output are never removed or automatically resumed.
+ 
+ @param host - one input-run owner
+ 
+ @param id - confirmed native creation identity
+ 
+ @param signal - operation cancellation
+ 
+ @returns Complete unqualified metadata only after native removal succeeds
+ 
+ @throws ProducerInputRunError when operation, terminal evidence or cleanup fails
+ 
+ @example
+ ```ts
+ const completion = await useProducerInputContainer({ host, id, signal });
+ ```
  */
 export async function useProducerInputContainer({
   host,
@@ -140,7 +140,7 @@ export async function useProducerInputContainer({
   readonly signal: AbortSignal
 },): Promise<ProducerInputCompletion> {
   /**
-   * Both native cleanup and original operation outcome must be retained, even when one fails.
+   Both native cleanup and original operation outcome must be retained, even when one fails.
    */
   const [operation] = await Promise.allSettled([executeCreatedInput({
     host,
@@ -148,7 +148,7 @@ export async function useProducerInputContainer({
     signal
   })]);
   /**
-   * Cleanup observes current native state instead of assuming an attached client owned process lifetime.
+   Cleanup observes current native state instead of assuming an attached client owned process lifetime.
    */
   const [settlement] = await Promise.allSettled([stopAndObserveInput({
     host,
@@ -160,7 +160,7 @@ export async function useProducerInputContainer({
       locator: 'native lifecycle outcome',
     });
   /**
-   * Rejected native promise reasons remain unknown and pass only through the names-only renderer.
+   Rejected native promise reasons remain unknown and pass only through the names-only renderer.
    */
   const operationEvidence = operation.status === 'fulfilled'
     ? {
@@ -172,7 +172,7 @@ export async function useProducerInputContainer({
       refusal: refusalText({ error: operation.reason as unknown })
     };
   /**
-   * Failure to inspect a container withholds automated removal, not the retained application files.
+   Failure to inspect a container withholds automated removal, not the retained application files.
    */
   const containerEvidence = settlement.status === 'fulfilled'
     ? {
@@ -204,7 +204,7 @@ export async function useProducerInputContainer({
   if (settlement.status === 'rejected')
     throw settlement.reason;
   /**
-   * Removal occurs only after synchronized terminal evidence identifies a nonrunning owned container.
+   Removal occurs only after synchronized terminal evidence identifies a nonrunning owned container.
    */
   const cleanup = new AbortController();
   await runProducerInputCommand({

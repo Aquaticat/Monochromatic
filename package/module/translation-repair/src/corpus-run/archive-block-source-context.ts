@@ -8,21 +8,21 @@ import { archiveBlockIdentity, } from './archive-block-repair.ts';
 //region Archive block source context
 
 /**
- * Maps each unclaimed archive block to source section it was expected to render.
- *
- * Target-only sections map to empty context because no source section can license
- * factual wording there.
- *
- * @param prepared - current paired preparation
- *
- * @param pictureReadings - completed entry evidence, restricted to each section's references
- *
- * @returns Exact block identity to source-section text and corroborated picture support
- *
- * @example
- * ```ts
- * const contexts = archiveBlockSourceContexts({ prepared, });
- * ```
+ Maps each unclaimed archive block to source section it was expected to render.
+ 
+ Target-only sections map to empty context because no source section can license
+ factual wording there.
+ 
+ @param prepared - current paired preparation
+ 
+ @param pictureReadings - completed entry evidence, restricted to each section's references
+ 
+ @returns Exact block identity to source-section text and corroborated picture support
+ 
+ @example
+ ```ts
+ const contexts = archiveBlockSourceContexts({ prepared, });
+ ```
  */
 export function archiveBlockSourceContexts(
   {
@@ -34,7 +34,7 @@ export function archiveBlockSourceContexts(
   },
 ): ReadonlyMap<string, string> {
   /**
-   * Section alignment preparation consumed.
+   Section alignment preparation consumed.
    */
   const alignment = alignDocumentSections({
     source: parseDocument({ text: prepared.sourceText, },),
@@ -49,7 +49,7 @@ export function archiveBlockSourceContexts(
       string
     ] {
     /**
-     * Source section paired with archive block location.
+     Source section paired with archive block location.
      */
     const sourceContext = block.location
       .kind
@@ -62,18 +62,18 @@ export function archiveBlockSourceContexts(
         ?? '')
       : '';
     /**
-     * Names this source section alone authorizes, each once.
+     Names this source section alone authorizes, each once.
      */
     const names = new Set(photoReferences({ text: sourceContext, },)
       .map(function asset(reference,): string {
         return reference.assetName;
       },),);
     /**
-     * Every corroborating reader's text, never unrelated or unavailable evidence.
+     Every corroborating reader's text, never unrelated or unavailable evidence.
      */
     const support = [...names,].flatMap(function pictureSupport(assetName,): readonly string[] {
       /**
-       * Completed reading for this section's reference.
+       Completed reading for this section's reference.
        */
       const reading = pictureReadings.get(assetName,);
       if (reading?.kind !== 'corroborated')

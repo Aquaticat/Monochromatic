@@ -29,43 +29,43 @@ import type {
 // numbers.
 
 /**
- * Logger root for the meter readers.
+ Logger root for the meter readers.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * What one provider's meter said, keeping a meter that could not be read
- * distinct from one that answered.
- *
- * THREE STATES RATHER THAN A BOOLEAN, because routing and measurement want
- * different things out of the same read. Routing needs one bit, spend here or
- * do not, and an unreachable meter has to fall on the spendable side of it for
- * the reason `drynessOf` was written with. Measurement needs to know that the
- * bit was a guess: a duty cycle counting an unreadable meter as an available
- * provider reports an outage as uptime, which is backwards for the one number
- * it exists to produce.
- *
- * @internal
+ What one provider's meter said, keeping a meter that could not be read
+ distinct from one that answered.
+ 
+ THREE STATES RATHER THAN A BOOLEAN, because routing and measurement want
+ different things out of the same read. Routing needs one bit, spend here or
+ do not, and an unreachable meter has to fall on the spendable side of it for
+ the reason `drynessOf` was written with. Measurement needs to know that the
+ bit was a guess: a duty cycle counting an unreadable meter as an available
+ provider reports an outage as uptime, which is backwards for the one number
+ it exists to produce.
+ 
+ @internal
  */
 export type MeterState = 'wet' | 'dry' | 'unreadable';
 
 /**
- * Whether a meter state stops us spending on that provider.
- *
- * ONLY A METER THAT ANSWERED AND SAID DRY holds a provider out, so this file's
- * routing policy is unchanged by the third state existing.
- *
- * @param state - what the meter said, or that it said nothing
- *
- * @returns Whether the router should treat this provider as out of budget
- *
- * @example
- * ```ts
- * const dry = routesAsDry({ state: 'unreadable', },);
- * // => false
- * ```
- *
- * @internal
+ Whether a meter state stops us spending on that provider.
+ 
+ ONLY A METER THAT ANSWERED AND SAID DRY holds a provider out, so this file's
+ routing policy is unchanged by the third state existing.
+ 
+ @param state - what the meter said, or that it said nothing
+ 
+ @returns Whether the router should treat this provider as out of budget
+ 
+ @example
+ ```ts
+ const dry = routesAsDry({ state: 'unreadable', },);
+ // => false
+ ```
+ 
+ @internal
  */
 export function routesAsDry(
   { state, }: { readonly state: MeterState; },
@@ -74,63 +74,63 @@ export function routesAsDry(
 }
 
 /**
- * What one meter answered: the verdict, and the numbers it was drawn from.
- *
- * BOTH COME OUT OF ONE READ so they cannot disagree. A verdict rendered from
- * one snapshot beside a level rendered from a later one would record a moment
- * that never happened, which is worse evidence than recording no level at all.
- *
- * @internal
+ What one meter answered: the verdict, and the numbers it was drawn from.
+ 
+ BOTH COME OUT OF ONE READ so they cannot disagree. A verdict rendered from
+ one snapshot beside a level rendered from a later one would record a moment
+ that never happened, which is worse evidence than recording no level at all.
+ 
+ @internal
  */
 export type MeterLevel = {
   /**
-   * Whether this reading holds the provider out of spending.
+   Whether this reading holds the provider out of spending.
    */
   readonly dry: boolean;
 
   /**
-   * `key=value` tokens naming what was read, no value carrying a space.
+   `key=value` tokens naming what was read, no value carrying a space.
    */
   readonly fields: readonly string[];
 };
 
 /**
- * One meter as the availability record should carry it.
- *
- * @internal
+ One meter as the availability record should carry it.
+ 
+ @internal
  */
 export type MeterRecord = {
   /**
-   * What the meter said, or that it said nothing.
+   What the meter said, or that it said nothing.
    */
   readonly state: MeterState;
 
   /**
-   * Numbers behind the state, in the order they should be written.
-   *
-   * EMPTY IS NOT AN ABSENCE SENTINEL HERE. A meter that did not answer has no
-   * numbers to report, and `state` already carries the fact that it did not,
-   * so nothing is being encoded twice and nothing is lost.
+   Numbers behind the state, in the order they should be written.
+   
+   EMPTY IS NOT AN ABSENCE SENTINEL HERE. A meter that did not answer has no
+   numbers to report, and `state` already carries the fact that it did not,
+   so nothing is being encoded twice and nothing is lost.
    */
   readonly fields: readonly string[];
 };
 
 /**
- * Reads one provider's meter, naming an unreachable meter rather than
- * flattening it into the answer a working meter would have given.
- *
- * @param name - provider being read, for the log line
- *
- * @param readLevel - meter read, which may reject
- *
- * @returns What that meter said and was reading, or that it could not be read
- *
- * @example
- * ```ts
- * const meter = await meterRecordOf({ name: 'hyper', readLevel, },);
- * ```
- *
- * @internal
+ Reads one provider's meter, naming an unreachable meter rather than
+ flattening it into the answer a working meter would have given.
+ 
+ @param name - provider being read, for the log line
+ 
+ @param readLevel - meter read, which may reject
+ 
+ @returns What that meter said and was reading, or that it could not be read
+ 
+ @example
+ ```ts
+ const meter = await meterRecordOf({ name: 'hyper', readLevel, },);
+ ```
+ 
+ @internal
  */
 export async function meterRecordOf(
   {
@@ -142,7 +142,7 @@ export async function meterRecordOf(
   },
 ): Promise<MeterRecord> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: meterRecordOf.name,
@@ -151,7 +151,7 @@ export async function meterRecordOf(
 
   try {
     /**
-     * Verdict and numbers, both off the same read.
+     Verdict and numbers, both off the same read.
      */
     const level = await readLevel();
 
@@ -177,11 +177,11 @@ export async function meterRecordOf(
 }
 
 /**
- * Meter of a provider that was never configured: dry, with nothing to report.
- *
- * DRY RATHER THAN UNREADABLE, because absence is known rather than failed: the
- * router must never send a call to a provider with no key, and a seat reader
- * must count that provider as unable to serve.
+ Meter of a provider that was never configured: dry, with nothing to report.
+ 
+ DRY RATHER THAN UNREADABLE, because absence is known rather than failed: the
+ router must never send a call to a provider with no key, and a seat reader
+ must count that provider as unable to serve.
  */
 export const UNCONFIGURED_METER: MeterRecord = {
   state: 'dry',
@@ -189,26 +189,26 @@ export const UNCONFIGURED_METER: MeterRecord = {
 };
 
 /**
- * Reads every configured provider's meter together, so one slow endpoint
- * does not serialise behind another, and names a provider that was never
- * configured as dry with nothing to report.
- *
- * @param synthetic - first provider's quota reader, absent when unconfigured
- *
- * @param hyper - second provider's balance reader, absent when unconfigured
- *
- * @param bedrock - fourth provider's ledger reader, absent when unconfigured
- *
- * @param openrouter - third provider's credits reader, absent when unconfigured
- *
- * @param signal - abort signal of whichever call started this reading
- *
- * @returns Every provider's meter record, keyed by name
- *
- * @example
- * ```ts
- * const meters = await readEveryMeter({ synthetic, hyper, bedrock, openrouter, signal, },);
- * ```
+ Reads every configured provider's meter together, so one slow endpoint
+ does not serialise behind another, and names a provider that was never
+ configured as dry with nothing to report.
+ 
+ @param synthetic - first provider's quota reader, absent when unconfigured
+ 
+ @param hyper - second provider's balance reader, absent when unconfigured
+ 
+ @param bedrock - fourth provider's ledger reader, absent when unconfigured
+ 
+ @param openrouter - third provider's credits reader, absent when unconfigured
+ 
+ @param signal - abort signal of whichever call started this reading
+ 
+ @returns Every provider's meter record, keyed by name
+ 
+ @example
+ ```ts
+ const meters = await readEveryMeter({ synthetic, hyper, bedrock, openrouter, signal, },);
+ ```
  */
 export async function readEveryMeter(
   {
@@ -226,8 +226,8 @@ export async function readEveryMeter(
   },
 ): Promise<ProviderRecord<MeterRecord>> {
   /**
-   * Every meter, read together so one slow endpoint does not serialise
-   * behind another.
+   Every meter, read together so one slow endpoint does not serialise
+   behind another.
    */
   const [syntheticMeter, hyperMeter, bedrockMeter, openrouterMeter,] = await Promise.all([
     (synthetic === undefined)
@@ -236,7 +236,7 @@ export async function readEveryMeter(
         name: 'synthetic',
         readLevel: async function readQuota(): Promise<MeterLevel> {
           /**
-           * Snapshot the verdict and the numbers are both drawn from.
+           Snapshot the verdict and the numbers are both drawn from.
            */
           const quota = await synthetic.quotas({ signal, },);
 
@@ -252,7 +252,7 @@ export async function readEveryMeter(
         name: 'hyper',
         readLevel: async function readCredits(): Promise<MeterLevel> {
           /**
-           * Balance the verdict and the number are both drawn from.
+           Balance the verdict and the number are both drawn from.
            */
           const credits = await hyper.credits({ signal, },);
 
@@ -268,7 +268,7 @@ export async function readEveryMeter(
         name: 'bedrock',
         readLevel: async function readBedrockCredits(): Promise<MeterLevel> {
           /**
-           * Ledger reading the verdict and the number are both drawn from.
+           Ledger reading the verdict and the number are both drawn from.
            */
           const credits = await bedrock.credits({ signal, },);
 
@@ -284,7 +284,7 @@ export async function readEveryMeter(
         name: 'openrouter',
         readLevel: async function readOpenRouterCredits(): Promise<MeterLevel> {
           /**
-           * Credits the verdict and the number are both drawn from.
+           Credits the verdict and the number are both drawn from.
            */
           const credits = await openrouter.credits({ signal, },);
 

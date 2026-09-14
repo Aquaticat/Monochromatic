@@ -55,31 +55,31 @@ import {
 // Reads corpus text through git at the pinned commit and writes nothing.
 
 /**
- * Disclosure production does not send, for the arm that measures the other prompt.
+ Disclosure production does not send, for the arm that measures the other prompt.
  */
 const OTHER_DISCLOSURE: PriorIssueDisclosure = (PRODUCTION_PRIOR_ISSUE_DISCLOSURE === 'rendered')
   ? 'withheld'
   : 'rendered';
 
 /**
- * Runs one probe call over one region and returns a printable tally.
- *
- * @param region - region under test
- *
- * @param issues - accepted issues the region was cut for; empty when nothing is known
- *
- * @param disclosure - whether the list is written into the prompt or only known to the screen
- *
- * @param sourceText - slice original
- *
- * @param baselineText - slice translation before replacement
- *
- * @returns One line of counts
- *
- * @example
- * ```ts
- * const line = await probeOnce({ region, issues: [], disclosure: 'withheld', sourceText, baselineText, },);
- * ```
+ Runs one probe call over one region and returns a printable tally.
+ 
+ @param region - region under test
+ 
+ @param issues - accepted issues the region was cut for; empty when nothing is known
+ 
+ @param disclosure - whether the list is written into the prompt or only known to the screen
+ 
+ @param sourceText - slice original
+ 
+ @param baselineText - slice translation before replacement
+ 
+ @returns One line of counts
+ 
+ @example
+ ```ts
+ const line = await probeOnce({ region, issues: [], disclosure: 'withheld', sourceText, baselineText, },);
+ ```
  */
 async function probeOnce(
   {
@@ -97,7 +97,7 @@ async function probeOnce(
   },
 ): Promise<string> {
   /**
-   * Report for this single region.
+   Report for this single region.
    */
   const report = await runIntroducedDefectProbe({
     client: createRunClient(),
@@ -113,7 +113,7 @@ async function probeOnce(
   },);
 
   /**
-   * Screened tally of the single region.
+   Screened tally of the single region.
    */
   const [tally,] = report.regions;
 
@@ -138,20 +138,20 @@ async function probeOnce(
 }
 
 /**
- * Probes one case under both conditions and prints the pair.
- *
- * @param relabelCase - rebuilt damaged-region case
- *
- * @example
- * ```ts
- * await probePair({ relabelCase, },);
- * ```
+ Probes one case under both conditions and prints the pair.
+ 
+ @param relabelCase - rebuilt damaged-region case
+ 
+ @example
+ ```ts
+ await probePair({ relabelCase, },);
+ ```
  */
 async function probePair(
   { relabelCase, }: { readonly relabelCase: RelabelCase; },
 ): Promise<void> {
   /**
-   * Header naming the edit under test and what the run said about it.
+   Header naming the edit under test and what the run said about it.
    */
   const header = `RELABEL ${relabelCase.entryId} positions=${
     relabelCase.positions
@@ -172,7 +172,7 @@ async function probePair(
   console.log(`  run-recorded  ${relabelCase.recorded}`,);
 
   /**
-   * Production condition: the list under the disclosure the pass sends.
+   Production condition: the list under the disclosure the pass sends.
    */
   const production = await probeOnce({
     region: relabelCase.region,
@@ -184,7 +184,7 @@ async function probePair(
   console.log(`  issues-${PRODUCTION_PRIOR_ISSUE_DISCLOSURE} ${production}`,);
 
   /**
-   * The other prompt: the same list under the disclosure production does not send.
+   The other prompt: the same list under the disclosure production does not send.
    */
   const otherPrompt = await probeOnce({
     region: relabelCase.region,
@@ -196,7 +196,7 @@ async function probePair(
   console.log(`  issues-${OTHER_DISCLOSURE} ${otherPrompt}`,);
 
   /**
-   * Counterfactual: nothing known, so nothing rendered and nothing screened.
+   Counterfactual: nothing known, so nothing rendered and nothing screened.
    */
   const absent = await probeOnce({
     region: relabelCase.region,
@@ -209,21 +209,21 @@ async function probePair(
 }
 
 /**
- * Rebuilds every damaged-region case and probes each under both conditions.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Rebuilds every damaged-region case and probes each under both conditions.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Run artifact root for this checkout.
+   Run artifact root for this checkout.
    */
   const dir = await resolveRunsDir();
 
   /**
-   * Damaged regions rebuilt from the round-three draw.
+   Damaged regions rebuilt from the round-three draw.
    */
   const cases = await gatherRelabelCases({
     manifestPath:
@@ -234,12 +234,12 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Regions from the same entries that the reader did NOT flag.
-   *
-   * The arm that decides whether the damaged result means anything: every
-   * damaged region is damaged by construction, so no claim raised there could
-   * be wrong, and only unflagged regions can show whether the withheld arm is
-   * detecting damage or re-reporting the defect the region was cut for.
+   Regions from the same entries that the reader did NOT flag.
+   
+   The arm that decides whether the damaged result means anything: every
+   damaged region is damaged by construction, so no claim raised there could
+   be wrong, and only unflagged regions can show whether the withheld arm is
+   detecting damage or re-reporting the defect the region was cut for.
    */
   const controls = await gatherControlCases({
     manifestPath:

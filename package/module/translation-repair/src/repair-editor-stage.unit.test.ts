@@ -1,23 +1,23 @@
 /**
- * Tests for the editor stage's guards, its early exits, and the composite it
- * assembles once judging actually runs.
- *
- * `runEditorStage` had no test. Its judged path is covered PIECEWISE through
- * `selectPerEnvelope` and `selectChunkPatch`, which have their own suites, but
- * neither drives the WIRING between them: `applyCandidate` rebuilding
- * per-envelope winners into a composite, and that composite then competing at
- * chunk level, only happens inside `runEditorStage` itself. The rest of what
- * this file adds is the two places the stage decides NOT to go there.
- *
- * Both of those are cost properties as much as correctness ones. The provider is
- * flat-rate but not unlimited, and a run spends its capacity on judge calls it
- * did not need or on a fan-out against a roster that could never have been
- * judged. Neither shows up as an error; both show up as a pass that ran out of
- * budget with fewer entries settled.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the editor stage's guards, its early exits, and the composite it
+ assembles once judging actually runs.
+ 
+ `runEditorStage` had no test. Its judged path is covered PIECEWISE through
+ `selectPerEnvelope` and `selectChunkPatch`, which have their own suites, but
+ neither drives the WIRING between them: `applyCandidate` rebuilding
+ per-envelope winners into a composite, and that composite then competing at
+ chunk level, only happens inside `runEditorStage` itself. The rest of what
+ this file adds is the two places the stage decides NOT to go there.
+ 
+ Both of those are cost properties as much as correctness ones. The provider is
+ flat-rate but not unlimited, and a run spends its capacity on judge calls it
+ did not need or on a fan-out against a roster that could never have been
+ judged. Neither shows up as an error; both show up as a pass that ran out of
+ budget with fewer entries settled.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -39,22 +39,22 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the stages under test.
+ Logger for the stages under test.
  */
 const l = tagged({ tag: 'editor-stage-test', },);
 
 /**
- * Translation chunk the editors propose against.
+ Translation chunk the editors propose against.
  */
 const TARGET_TEXT = 'The cat is doing the sleeping on the windowsill.';
 
 /**
- * Original the edits answer to.
+ Original the edits answer to.
  */
 const SOURCE_TEXT = '猫猫在窗台上睡觉。';
 
 /**
- * Single editable envelope covering the whole chunk.
+ Single editable envelope covering the whole chunk.
  */
 const ENVELOPES: readonly EditableEnvelope[] = [
   {
@@ -68,7 +68,7 @@ const ENVELOPES: readonly EditableEnvelope[] = [
 ];
 
 /**
- * Accepted issue the edit answers.
+ Accepted issue the edit answers.
  */
 const ISSUES: readonly AdjudicatedIssue[] = [
   {
@@ -81,7 +81,7 @@ const ISSUES: readonly AdjudicatedIssue[] = [
 ];
 
 /**
- * Editors that propose candidates.
+ Editors that propose candidates.
  */
 const EDITORS = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -89,7 +89,7 @@ const EDITORS = [
 ] as const;
 
 /**
- * Judges with no stake in either editor's output.
+ Judges with no stake in either editor's output.
  */
 const JUDGES = [
   'hf:Qwen/Qwen3.8-27B',
@@ -97,18 +97,18 @@ const JUDGES = [
 ] as const;
 
 /**
- * Client answering every editor with one scripted report, counting calls.
- *
- * @param report - report each editor returns
- *
- * @param calls - shared counter the cases assert on
- *
- * @returns Client honoring that script
- *
- * @example
- * ```ts
- * const client = editorClient({ report: { edits: [], }, calls, },);
- * ```
+ Client answering every editor with one scripted report, counting calls.
+ 
+ @param report - report each editor returns
+ 
+ @param calls - shared counter the cases assert on
+ 
+ @returns Client honoring that script
+ 
+ @example
+ ```ts
+ const client = editorClient({ report: { edits: [], }, calls, },);
+ ```
  */
 function editorClient(
   {
@@ -142,14 +142,14 @@ function editorClient(
 }
 
 /**
- * Client that fails the moment it is called, proving a guard ran first.
- *
- * @returns Client refusing every exchange
- *
- * @example
- * ```ts
- * const client = neverCalledClient();
- * ```
+ Client that fails the moment it is called, proving a guard ran first.
+ 
+ @returns Client refusing every exchange
+ 
+ @example
+ ```ts
+ const client = neverCalledClient();
+ ```
  */
 function neverCalledClient(): SyntheticClient {
   return {
@@ -166,22 +166,22 @@ function neverCalledClient(): SyntheticClient {
 }
 
 /**
- * Validates a scripted reply against the live request's wire guard and wraps
- * it as an outcome.
- *
- * @param report - scripted reply for this call
- *
- * @param request - live request, whose guard the reply must satisfy
- *
- * @returns Outcome carrying the validated reply
- *
- * @throws {@link Error} when the fixture itself fails the guard it is meant
- * to satisfy
- *
- * @example
- * ```ts
- * return replyWith({ report: catEditorReport, request, },);
- * ```
+ Validates a scripted reply against the live request's wire guard and wraps
+ it as an outcome.
+ 
+ @param report - scripted reply for this call
+ 
+ @param request - live request, whose guard the reply must satisfy
+ 
+ @returns Outcome carrying the validated reply
+ 
+ @throws {@link Error} when the fixture itself fails the guard it is meant
+ to satisfy
+ 
+ @example
+ ```ts
+ return replyWith({ report: catEditorReport, request, },);
+ ```
  */
 function replyWith<ValueT,>(
   {
@@ -235,12 +235,12 @@ await describe({
         + 'editor round and not a judging round on top of it',
       fn: async () => {
         /**
-         * Exchange counter, so judge calls would be visible as extra calls.
+         Exchange counter, so judge calls would be visible as extra calls.
          */
         const calls = { count: 0, };
 
         /**
-         * Stage where both editors returned an empty edit list.
+         Stage where both editors returned an empty edit list.
          */
         const result = await runEditorStage({
           client: editorClient({
@@ -273,12 +273,12 @@ await describe({
         + 'would spend calls to learn nothing',
       fn: async () => {
         /**
-         * Exchange counter for this case.
+         Exchange counter for this case.
          */
         const calls = { count: 0, };
 
         /**
-         * Stage where both editors named a region that is not on the sheet.
+         Stage where both editors named a region that is not on the sheet.
          */
         const result = await runEditorStage({
           client: editorClient({
@@ -315,12 +315,12 @@ await describe({
         + 'than reading like a full-roster result',
       fn: async () => {
         /**
-         * Exchange counter for this case.
+         Exchange counter for this case.
          */
         const calls = { count: 0, };
 
         /**
-         * Stage where both editors declined to propose anything.
+         Stage where both editors declined to propose anything.
          */
         const result = await runEditorStage({
           client: editorClient({
@@ -354,26 +354,26 @@ await describe({
         + 'were rebuilt into one candidate rather than one editor\'s whole patch winning outright',
       fn: async () => {
         /**
-         * First sentence, whose only defect is one mistranslated word.
+         First sentence, whose only defect is one mistranslated word.
          */
         const sentenceOne = 'The cat is doing the sleeping on the windowsill.';
 
         /**
-         * Second sentence, whose only defect is a different mistranslated
-         * word, so nothing here overlaps what the first sentence tests.
+         Second sentence, whose only defect is a different mistranslated
+         word, so nothing here overlaps what the first sentence tests.
          */
         const sentenceTwo = 'The dog is doing the barking in the yard.';
 
         /**
-         * Two-envelope chunk. Every other case in this file uses the shared
-         * single-envelope fixture, which can never reach the composite: with
-         * one envelope, per-envelope selection has only one winner to adopt
-         * and there is nothing for `applyCandidate` to assemble.
+         Two-envelope chunk. Every other case in this file uses the shared
+         single-envelope fixture, which can never reach the composite: with
+         one envelope, per-envelope selection has only one winner to adopt
+         and there is nothing for `applyCandidate` to assemble.
          */
         const targetText = `${sentenceOne} ${sentenceTwo}`;
 
         /**
-         * Envelope covering the first sentence, region 1 on the editor sheet.
+         Envelope covering the first sentence, region 1 on the editor sheet.
          */
         const envelopeOne: EditableEnvelope = {
           envelopeId: 'envelope/cat',
@@ -385,8 +385,8 @@ await describe({
         };
 
         /**
-         * Envelope covering the second sentence, region 2 on the editor
-         * sheet.
+         Envelope covering the second sentence, region 2 on the editor
+         sheet.
          */
         const envelopeTwo: EditableEnvelope = {
           envelopeId: 'envelope/dog',
@@ -398,7 +398,7 @@ await describe({
         };
 
         /**
-         * Both envelopes, in document order.
+         Both envelopes, in document order.
          */
         const envelopes: readonly EditableEnvelope[] = [
           envelopeOne,
@@ -406,9 +406,9 @@ await describe({
         ];
 
         /**
-         * Accepted issues, one per envelope. Neither quotes anything: both
-         * fixes are single-word swaps, well inside what the preservation gate
-         * allows without a licensed quote.
+         Accepted issues, one per envelope. Neither quotes anything: both
+         fixes are single-word swaps, well inside what the preservation gate
+         allows without a licensed quote.
          */
         const issues: readonly AdjudicatedIssue[] = [
           {
@@ -428,7 +428,7 @@ await describe({
         ];
 
         /**
-         * First editor's fix, touching only the cat sentence.
+         First editor's fix, touching only the cat sentence.
          */
         const catEditorReport = {
           edits: [
@@ -440,7 +440,7 @@ await describe({
         };
 
         /**
-         * Second editor's fix, touching only the dog sentence.
+         Second editor's fix, touching only the dog sentence.
          */
         const dogEditorReport = {
           edits: [
@@ -452,12 +452,12 @@ await describe({
         };
 
         /**
-         * Client answering each editor with its own single-sentence fix and,
-         * once selection reaches the chunk-level ballot, naming the
-         * composite: the only whole-chunk candidate that repairs both
-         * sentences. No per-envelope ballot is ever asked for here, since
-         * each envelope has exactly one editor's operation and
-         * `selectPerEnvelope` adopts a sole proposal without a vote.
+         Client answering each editor with its own single-sentence fix and,
+         once selection reaches the chunk-level ballot, naming the
+         composite: the only whole-chunk candidate that repairs both
+         sentences. No per-envelope ballot is ever asked for here, since
+         each envelope has exactly one editor's operation and
+         `selectPerEnvelope` adopts a sole proposal without a vote.
          */
         const client: SyntheticClient = {
           chatText: async () => {

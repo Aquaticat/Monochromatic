@@ -22,36 +22,36 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 // Full-document preparation and bounded calibration pools share acquisition, cache and normalization rules.
 
 /**
- * Prepares one already-aligned parent without buying unrelated section or block questions.
- * Singletons and empty sides retain their zero-call paths.
- * Historical cache records remain historical; only a queried result carries final seat outcomes.
- *
- * @param client - existing production model client
- *
- * @param modelIds - configured preparation electorate, unchanged by this operation
- *
- * @param pair - complete aligned source and target parent
- *
- * @param pairIndex - original alignment index used for findings and map identity
- *
- * @param targetContainers - complete target parser containers for media-adjacency ownership
- *
- * @param signal - caller cancellation
- *
- * @param exchangeTimeoutMs - existing per-call ceiling
- *
- * @param l - caller logger preserving entry identity
- *
- * @param pairingCache - existing versioned block cache, absent for an uncached probe
- *
- * @returns Explicit slicer pairing or the existing implicit, empty or fallback state
- *
- * @throws Error when acquisition, cancellation or cache persistence fails unexpectedly
- *
- * @example
- * ```ts
- * const result = await prepareBlockPairing({ client, modelIds, pair, pairIndex: 2, targetContainers, signal, exchangeTimeoutMs, l });
- * ```
+ Prepares one already-aligned parent without buying unrelated section or block questions.
+ Singletons and empty sides retain their zero-call paths.
+ Historical cache records remain historical; only a queried result carries final seat outcomes.
+ 
+ @param client - existing production model client
+ 
+ @param modelIds - configured preparation electorate, unchanged by this operation
+ 
+ @param pair - complete aligned source and target parent
+ 
+ @param pairIndex - original alignment index used for findings and map identity
+ 
+ @param targetContainers - complete target parser containers for media-adjacency ownership
+ 
+ @param signal - caller cancellation
+ 
+ @param exchangeTimeoutMs - existing per-call ceiling
+ 
+ @param l - caller logger preserving entry identity
+ 
+ @param pairingCache - existing versioned block cache, absent for an uncached probe
+ 
+ @returns Explicit slicer pairing or the existing implicit, empty or fallback state
+ 
+ @throws Error when acquisition, cancellation or cache persistence fails unexpectedly
+ 
+ @example
+ ```ts
+ const result = await prepareBlockPairing({ client, modelIds, pair, pairIndex: 2, targetContainers, signal, exchangeTimeoutMs, l });
+ ```
  */
 export async function prepareBlockPairing(
   {
@@ -77,19 +77,19 @@ export async function prepareBlockPairing(
   }>,
 ): Promise<PreparedBlockPairing> {
   /**
-   * Logger naming this parent's shared preparation operation.
+   Logger naming this parent's shared preparation operation.
    */
   const pl = tagged({
     tag: prepareBlockPairing.name,
     l,
   },);
   /**
-   * Parsed source blocks whose local indexes the question uses.
+   Parsed source blocks whose local indexes the question uses.
    */
   const sourceNodes = pair.source
     .nodes;
   /**
-   * Parsed incumbent blocks under the same local-index convention.
+   Parsed incumbent blocks under the same local-index convention.
    */
   const targetNodes = pair.target
     .nodes;
@@ -110,7 +110,7 @@ export async function prepareBlockPairing(
     };
   }
   /**
-   * Shared current numbering, definition exemptions and unchanged cache identity.
+   Shared current numbering, definition exemptions and unchanged cache identity.
    */
   const {
     sourceBlocks,
@@ -119,14 +119,14 @@ export async function prepareBlockPairing(
     key,
   } = blockPairingQuestion({ pair, },);
   /**
-   * Historical round, which carries no invented new electorate evidence.
+   Historical round, which carries no invented new electorate evidence.
    */
   const cached = pairingCache?.resumed
     .get(key,);
   if (cached !== undefined) {
     pl.debug(`section ${String(pairIndex,)} resumes block pairing ${key}`,);
     /**
-     * Current media ownership applied to the cached relations, as on the cold path.
+     Current media ownership applied to the cached relations, as on the cold path.
      */
     const media = claimMediaAdjacentTargets({
       pairs: cached.pairs,
@@ -154,7 +154,7 @@ export async function prepareBlockPairing(
     },);
   }
   /**
-   * Final outcomes and agreement from the unchanged configured pairing stage.
+   Final outcomes and agreement from the unchanged configured pairing stage.
    */
   const outcome = await pairBlocksWithRoster({
     client,
@@ -167,7 +167,7 @@ export async function prepareBlockPairing(
     l: pl,
   },);
   /**
-   * Shared normalization retains the exact findings and cache gate before persistence.
+   Shared normalization retains the exact findings and cache gate before persistence.
    */
   const {
     pairs,

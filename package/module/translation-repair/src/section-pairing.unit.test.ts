@@ -1,14 +1,14 @@
 /**
- * Tests for ordering a pairing map into the shape that gets written down.
- *
- * WHAT THESE PIN is that the recorded order is SORTED rather than inherited.
- * Insertion order happens to be section order today, because the shell walks
- * aligned sections in order, so a test that only fed an already-ordered map
- * would pass against a function that did no sorting at all.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for ordering a pairing map into the shape that gets written down.
+ 
+ WHAT THESE PIN is that the recorded order is SORTED rather than inherited.
+ Insertion order happens to be section order today, because the shell walks
+ aligned sections in order, so a test that only fed an already-ordered map
+ would pass against a function that did no sorting at all.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {

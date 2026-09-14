@@ -20,59 +20,59 @@
 // had stopped being an ensemble.
 
 /**
- * Text that closes the heard count in a stage finding.
+ Text that closes the heard count in a stage finding.
  */
 const HEARD_SUFFIX = ' heard';
 
 /**
- * Separator between voices heard and voices asked.
+ Separator between voices heard and voices asked.
  */
 const HEARD_SEPARATOR = '/';
 
 /**
- * How a fan-out stage fared across the artifacts read.
- *
- * @example
- * ```ts
- * const roster: StageRosterCoverage = { offered: 101, degraded: 12, silent: 6, };
- * ```
+ How a fan-out stage fared across the artifacts read.
+ 
+ @example
+ ```ts
+ const roster: StageRosterCoverage = { offered: 101, degraded: 12, silent: 6, };
+ ```
  */
 export type StageRosterCoverage = {
   /**
-   * Units of work the stage was asked to do.
+   Units of work the stage was asked to do.
    */
   readonly offered: number;
 
   /**
-   * Units where fewer voices answered than were configured.
+   Units where fewer voices answered than were configured.
    */
   readonly degraded: number;
 
   /**
-   * Units where NO voice answered, so the stage did not run at all there.
+   Units where NO voice answered, so the stage did not run at all there.
    */
   readonly silent: number;
 };
 
 /**
- * Reads the heard and configured counts out of one stage finding.
- *
- * Scanned by index rather than matched by pattern. The two numbers sit between
- * a known prefix and a known suffix, which an index scan states directly, and a
- * finding this reader cannot parse must be skipped rather than throw: this
- * count exists to notice a stage going quiet, so refusing to read drifted
- * wording would silence it in exactly the case it was built for.
- *
- * @param finding - stage finding, already known to carry the prefix
- *
- * @param prefix - stage prefix the finding opens with
- *
- * @returns Voices heard and voices asked, or nothing when unreadable
- *
- * @example
- * ```ts
- * const voices = readVoices({ finding, prefix: 'editor-candidates (', },);
- * ```
+ Reads the heard and configured counts out of one stage finding.
+ 
+ Scanned by index rather than matched by pattern. The two numbers sit between
+ a known prefix and a known suffix, which an index scan states directly, and a
+ finding this reader cannot parse must be skipped rather than throw: this
+ count exists to notice a stage going quiet, so refusing to read drifted
+ wording would silence it in exactly the case it was built for.
+ 
+ @param finding - stage finding, already known to carry the prefix
+ 
+ @param prefix - stage prefix the finding opens with
+ 
+ @returns Voices heard and voices asked, or nothing when unreadable
+ 
+ @example
+ ```ts
+ const voices = readVoices({ finding, prefix: 'editor-candidates (', },);
+ ```
  */
 function readVoices(
   {
@@ -87,7 +87,7 @@ function readVoices(
   readonly asked: number
 }[] {
   /**
-   * Where the heard count ends.
+   Where the heard count ends.
    */
   const suffixAt = finding.indexOf(
     HEARD_SUFFIX,
@@ -97,7 +97,7 @@ function readVoices(
     return [];
 
   /**
-   * The `heard/asked` pair, without its surroundings.
+   The `heard/asked` pair, without its surroundings.
    */
   const pair = finding.slice(
     prefix.length,
@@ -105,14 +105,14 @@ function readVoices(
   );
 
   /**
-   * Where the two counts divide.
+   Where the two counts divide.
    */
   const separatorAt = pair.indexOf(HEARD_SEPARATOR,);
   if (separatorAt === (-1))
     return [];
 
   /**
-   * Counts as written.
+   Counts as written.
    */
   const counts = {
     heard: Number(pair.slice(
@@ -127,18 +127,18 @@ function readVoices(
 }
 
 /**
- * Counts how often one fan-out stage ran below its configured roster.
- *
- * @param entries - per-artifact findings, verbatim
- *
- * @param stage - stage prefix as the pipeline writes it, such as `editor`
- *
- * @returns Units offered, units run degraded, and units nobody answered
- *
- * @example
- * ```ts
- * const roster = summarizeStageRoster({ entries, stage: 'editor', },);
- * ```
+ Counts how often one fan-out stage ran below its configured roster.
+ 
+ @param entries - per-artifact findings, verbatim
+ 
+ @param stage - stage prefix as the pipeline writes it, such as `editor`
+ 
+ @returns Units offered, units run degraded, and units nobody answered
+ 
+ @example
+ ```ts
+ const roster = summarizeStageRoster({ entries, stage: 'editor', },);
+ ```
  */
 export function summarizeStageRoster(
   {
@@ -150,12 +150,12 @@ export function summarizeStageRoster(
   },
 ): StageRosterCoverage {
   /**
-   * Prefix every finding of this stage opens with.
+   Prefix every finding of this stage opens with.
    */
   const prefix = `${stage}-candidates (`;
 
   /**
-   * Voice counts of every readable finding this stage wrote.
+   Voice counts of every readable finding this stage wrote.
    */
   const voices = entries
     .flat()

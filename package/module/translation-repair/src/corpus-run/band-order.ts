@@ -23,31 +23,31 @@ import {
 // rather than seventy-one.
 
 /**
- * Page-source byte size below which an entry sits in the small band. The
- * corpus page.md sizes fall into rough tertiles with the lower cut near
- * 1.8 KiB.
- *
- * Takes its value from `sample-grading.ts` rather than restating it. The bands
- * a pass FILLS have to be the bands a sample STRATIFIES over, or the graded
- * sheet is drawn from a population the accumulation never balanced. Two
- * literals kept equal by a doc comment is the arrangement that fails silently,
- * because nothing about a wrong number looks wrong.
+ Page-source byte size below which an entry sits in the small band. The
+ corpus page.md sizes fall into rough tertiles with the lower cut near
+ 1.8 KiB.
+ 
+ Takes its value from `sample-grading.ts` rather than restating it. The bands
+ a pass FILLS have to be the bands a sample STRATIFIES over, or the graded
+ sheet is drawn from a population the accumulation never balanced. Two
+ literals kept equal by a doc comment is the arrangement that fails silently,
+ because nothing about a wrong number looks wrong.
  */
 export const SMALL_PAGE_BYTES: typeof SMALL_BAND_MAX_BYTES = SMALL_BAND_MAX_BYTES;
 
 /**
- * Page-source byte size at or above which an entry sits in the large band, the
- * upper tertile cut.
- *
- * Shares its definition with the sampler for the reason given on
- * {@link SMALL_PAGE_BYTES}.
+ Page-source byte size at or above which an entry sits in the large band, the
+ upper tertile cut.
+ 
+ Shares its definition with the sampler for the reason given on
+ {@link SMALL_PAGE_BYTES}.
  */
 export const MEDIUM_PAGE_BYTES: typeof MEDIUM_BAND_MAX_BYTES = MEDIUM_BAND_MAX_BYTES;
 
 /**
- * Size bands in the order they lead within one rank. The larger band goes
- * first because a large entry may need a second run to settle, so starting it
- * earlier costs nothing and lets it resume sooner.
+ Size bands in the order they lead within one rank. The larger band goes
+ first because a large entry may need a second run to settle, so starting it
+ earlier costs nothing and lets it resume sooner.
  */
 const BANDS = [
   'large',
@@ -56,36 +56,36 @@ const BANDS = [
 ] as const;
 
 /**
- * One entry reduced to what ordering needs.
- *
- * @example
- * ```ts
- * const sized: SizedEntry = { id: 'Kitten', sourceBytes: 1_920, };
- * ```
+ One entry reduced to what ordering needs.
+ 
+ @example
+ ```ts
+ const sized: SizedEntry = { id: 'Kitten', sourceBytes: 1_920, };
+ ```
  */
 export type SizedEntry = {
   /**
-   * Corpus entry id.
+   Corpus entry id.
    */
   readonly id: string;
 
   /**
-   * Page source size in UTF-8 bytes.
+   Page source size in UTF-8 bytes.
    */
   readonly sourceBytes: number;
 };
 
 /**
- * Band an entry's page source falls in.
- *
- * @param sourceBytes - page source size in UTF-8 bytes
- *
- * @returns Band name
- *
- * @example
- * ```ts
- * const band = bandOf({ sourceBytes: 1_920, },); // 'medium'
- * ```
+ Band an entry's page source falls in.
+ 
+ @param sourceBytes - page source size in UTF-8 bytes
+ 
+ @returns Band name
+ 
+ @example
+ ```ts
+ const band = bandOf({ sourceBytes: 1_920, },); // 'medium'
+ ```
  */
 export function bandOf(
   { sourceBytes, }: { readonly sourceBytes: number; },
@@ -98,17 +98,17 @@ export function bandOf(
 }
 
 /**
- * Ids sitting in the small band, held as a set so a comparator is a lookup
- * rather than a re-measurement on every compare.
- *
- * @param entries - eligible entries with their page sizes
- *
- * @returns Ids whose page source is under the small-band cut
- *
- * @example
- * ```ts
- * const small = smallBandIds({ entries, },);
- * ```
+ Ids sitting in the small band, held as a set so a comparator is a lookup
+ rather than a re-measurement on every compare.
+ 
+ @param entries - eligible entries with their page sizes
+ 
+ @returns Ids whose page source is under the small-band cut
+ 
+ @example
+ ```ts
+ const small = smallBandIds({ entries, },);
+ ```
  */
 export function smallBandIds(
   { entries, }: { readonly entries: readonly SizedEntry[]; },
@@ -125,17 +125,17 @@ export function smallBandIds(
 }
 
 /**
- * Ranks every entry within its own size band, so a comparator can interleave
- * the bands by rank instead of draining one before starting the next.
- *
- * @param entries - eligible entries with their page sizes
- *
- * @returns Entry id to zero-based rank within its band
- *
- * @example
- * ```ts
- * const ranks = rankWithinBands({ entries, },);
- * ```
+ Ranks every entry within its own size band, so a comparator can interleave
+ the bands by rank instead of draining one before starting the next.
+ 
+ @param entries - eligible entries with their page sizes
+ 
+ @returns Entry id to zero-based rank within its band
+ 
+ @example
+ ```ts
+ const ranks = rankWithinBands({ entries, },);
+ ```
  */
 export function rankWithinBands(
   {
@@ -149,13 +149,13 @@ export function rankWithinBands(
   return new Map(
     BANDS.flatMap(function rankBand(band,) {
       /**
-       * How many of this band already settled. Ranking runs over the
-       * REMAINING entries only, so without this offset every run restarts each
-       * band at zero and the within-rank tiebreak hands every run to the same
-       * band, reproducing the starvation this ordering exists to prevent.
-       * Offsetting by the settled count makes the rank an entry's position in
-       * its band's whole fill order, so the band that is furthest behind
-       * always leads.
+       How many of this band already settled. Ranking runs over the
+       REMAINING entries only, so without this offset every run restarts each
+       band at zero and the within-rank tiebreak hands every run to the same
+       band, reproducing the starvation this ordering exists to prevent.
+       Offsetting by the settled count makes the rank an entry's position in
+       its band's whole fill order, so the band that is furthest behind
+       always leads.
        */
       const settled = settledPerBand.get(band,) ?? 0;
       return entries
@@ -176,17 +176,17 @@ export function rankWithinBands(
 }
 
 /**
- * Counts settled entries per band, the offset {@link rankWithinBands} needs to
- * keep ordering fair across runs.
- *
- * @param entries - already-settled entries with their page sizes
- *
- * @returns Band name to settled count
- *
- * @example
- * ```ts
- * const settled = countSettledPerBand({ entries: done, },);
- * ```
+ Counts settled entries per band, the offset {@link rankWithinBands} needs to
+ keep ordering fair across runs.
+ 
+ @param entries - already-settled entries with their page sizes
+ 
+ @returns Band name to settled count
+ 
+ @example
+ ```ts
+ const settled = countSettledPerBand({ entries: done, },);
+ ```
  */
 export function countSettledPerBand(
   { entries, }: { readonly entries: readonly SizedEntry[]; },

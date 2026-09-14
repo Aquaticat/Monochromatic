@@ -49,58 +49,58 @@ import {
 // short.
 
 /**
- * Draws the stratified precision sample and writes the grading sheet outside
- * the repo. Reads config and artifacts from the environment; `--final` writes
- * the gate sheet, otherwise a labelled preliminary sheet.
- *
- * @example
- * ```ts
- * await drawGradingSample();
- * ```
+ Draws the stratified precision sample and writes the grading sheet outside
+ the repo. Reads config and artifacts from the environment; `--final` writes
+ the gate sheet, otherwise a labelled preliminary sheet.
+ 
+ @example
+ ```ts
+ await drawGradingSample();
+ ```
  */
 async function drawGradingSample(): Promise<void> {
   /**
-   * Whether this run writes the final gate sheet rather than a preliminary one.
+   Whether this run writes the final gate sheet rather than a preliminary one.
    */
   const isFinal = process.argv
     .includes('--final',);
 
   /**
-   * Seed the DRAW uses, which is deliberately NOT the gate seed on a
-   * preliminary run.
-   *
-   * A preliminary draw exists to check that the sheets render and that the pool
-   * reconciles, and it is run repeatedly while the pool grows. Drawing it with
-   * the gate seed would make each one a preview of the gate sample over the
-   * pool of the moment, and choosing when to finalize after seeing those
-   * previews is selecting the sample on its contents. The file naming still
-   * keys on {@link DEFAULT_SAMPLE_SEED} so one round cannot target another
-   * round's path; only the shuffle differs.
+   Seed the DRAW uses, which is deliberately NOT the gate seed on a
+   preliminary run.
+   
+   A preliminary draw exists to check that the sheets render and that the pool
+   reconciles, and it is run repeatedly while the pool grows. Drawing it with
+   the gate seed would make each one a preview of the gate sample over the
+   pool of the moment, and choosing when to finalize after seeing those
+   previews is selecting the sample on its contents. The file naming still
+   keys on {@link DEFAULT_SAMPLE_SEED} so one round cannot target another
+   round's path; only the shuffle differs.
    */
   const drawSeed = isFinal
     ? DEFAULT_SAMPLE_SEED
     : `${DEFAULT_SAMPLE_SEED}-preliminary`;
 
   /**
-   * Write mode for this draw's outputs.
-   *
-   * Final outputs are created exclusively. `resolveSheetPath` already refuses a
-   * path that exists, but that check and this write are separate steps, so two
-   * draws racing each other can both see absence and both truncate. The whole
-   * purpose of the refusal is that human grades exist nowhere else, which makes
-   * the narrow race worth closing rather than reasoning about.
+   Write mode for this draw's outputs.
+   
+   Final outputs are created exclusively. `resolveSheetPath` already refuses a
+   path that exists, but that check and this write are separate steps, so two
+   draws racing each other can both see absence and both truncate. The whole
+   purpose of the refusal is that human grades exist nowhere else, which makes
+   the narrow race worth closing rather than reasoning about.
    */
   const writeFlag = isFinal
     ? 'wx'
     : 'w';
 
   /**
-   * Durable, gitignored output root.
+   Durable, gitignored output root.
    */
   const runsDir = await resolveRunsDir();
 
   /**
-   * Per-entry artifact directory.
+   Per-entry artifact directory.
    */
   const artifactsDir = join(
     runsDir,
@@ -108,13 +108,13 @@ async function drawGradingSample(): Promise<void> {
   );
 
   /**
-   * One directory listing, shared with the census.
-   *
-   * Taken once and threaded through, because the accumulation writes into this
-   * directory continuously: a second listing inside the census would classify a
-   * different set of files from the one this draw goes on to read, so an
-   * artifact arriving between the two would join the census while never
-   * entering the candidate pool.
+   One directory listing, shared with the census.
+   
+   Taken once and threaded through, because the accumulation writes into this
+   directory continuously: a second listing inside the census would classify a
+   different set of files from the one this draw goes on to read, so an
+   artifact arriving between the two would join the census while never
+   entering the candidate pool.
    */
   const listed = (await readdirArtifacts({ artifactsDir, },))
     .filter(function isArtifact(name,) {
@@ -127,7 +127,7 @@ async function drawGradingSample(): Promise<void> {
     .toSorted();
 
   /**
-   * Entries this draw may pool, with the commit each recorded.
+   Entries this draw may pool, with the commit each recorded.
    */
   const eligible = await resolvePool({
     artifactsDir,
@@ -135,7 +135,7 @@ async function drawGradingSample(): Promise<void> {
   },);
 
   /**
-   * Artifact file names present in the run.
+   Artifact file names present in the run.
    */
   const names = keepEligible({
     names: listed,
@@ -143,7 +143,7 @@ async function drawGradingSample(): Promise<void> {
   },);
 
   /**
-   * Every settled entry banded with its candidates.
+   Every settled entry banded with its candidates.
    */
   const entries = await Promise.all(
     names.map(function load(name,) {
@@ -156,7 +156,7 @@ async function drawGradingSample(): Promise<void> {
   );
 
   /**
-   * The full accepted-issue pool across every entry.
+   The full accepted-issue pool across every entry.
    */
   const pool = entries.flatMap(function candidates(entry,) {
     return entry.candidates;
@@ -164,13 +164,13 @@ async function drawGradingSample(): Promise<void> {
 
   for (const band of SIZE_BANDS) {
     /**
-     * Entries whose size band is the current band.
+     Entries whose size band is the current band.
      */
     const bandEntries = entries.filter(function inBand(entry,) {
       return entry.band === band;
     },);
     /**
-     * Accepted issues those entries contribute to the pool.
+     Accepted issues those entries contribute to the pool.
      */
     const bandAccepted = bandEntries.reduce(
       function addCandidates(
@@ -184,11 +184,11 @@ async function drawGradingSample(): Promise<void> {
       0,
     );
     /**
-     * Entries actually contributing a candidate.
-     *
-     * An entry that settled `unchanged` accepts nothing, so it raises the entry
-     * count while adding no candidate and no spread. Reading readiness off the
-     * raw count would credit it for coverage it does not provide.
+     Entries actually contributing a candidate.
+     
+     An entry that settled `unchanged` accepts nothing, so it raises the entry
+     count while adding no candidate and no spread. Reading readiness off the
+     raw count would credit it for coverage it does not provide.
      */
     const contributing = bandEntries.filter(function hasCandidates(
       { candidates, },
@@ -196,12 +196,12 @@ async function drawGradingSample(): Promise<void> {
       return candidates.length > 0;
     },);
     /**
-     * Per-entry candidate counts, heaviest first.
-     *
-     * Printed because the band totals hide how lopsided a band is: the draw
-     * round-robins across entries, so a band's spread comes from how many
-     * entries contribute, not from how many candidates they brought. Seeing the
-     * shape here is what keeps that distinction from being guessed at.
+     Per-entry candidate counts, heaviest first.
+     
+     Printed because the band totals hide how lopsided a band is: the draw
+     round-robins across entries, so a band's spread comes from how many
+     entries contribute, not from how many candidates they brought. Seeing the
+     shape here is what keeps that distinction from being guessed at.
      */
     const composition = contributing
       .map(function toCount(
@@ -237,7 +237,7 @@ async function drawGradingSample(): Promise<void> {
   }
 
   /**
-   * The drawn stratified sample.
+   The drawn stratified sample.
    */
   const sample = drawStratifiedSample({
     candidates: pool,
@@ -246,27 +246,27 @@ async function drawGradingSample(): Promise<void> {
   },);
 
   /**
-   * Sampled items carrying no recorded repair at all, which is what a draw over
-   * pre-recording artifacts looks like.
+   Sampled items carrying no recorded repair at all, which is what a draw over
+   pre-recording artifacts looks like.
    */
   const unrecorded = countUnrecordedRepairs({ sample, },);
 
   /**
-   * Pool-wide candidates carrying no recorded repair.
-   *
-   * Reported because {@link assertRepairMeasurable} only inspects what was
-   * DRAWN, so pre-recording candidates left in the pool escape it whenever the
-   * seed happens not to select them. Seeing the pool figure says whether a
-   * clean sample means a clean pool or a lucky draw, and it is the number that
-   * predicts whether the final draw will abort.
+   Pool-wide candidates carrying no recorded repair.
+   
+   Reported because {@link assertRepairMeasurable} only inspects what was
+   DRAWN, so pre-recording candidates left in the pool escape it whenever the
+   seed happens not to select them. Seeing the pool figure says whether a
+   clean sample means a clean pool or a lucky draw, and it is the number that
+   predicts whether the final draw will abort.
    */
   const unrecordedPool = countUnrecordedRepairs({ sample: pool, },);
   if (isFinal)
     assertRepairMeasurable({ sample, },);
 
   /**
-   * Banner marking a scratch draw, prepended to BOTH sheets so neither can be
-   * mistaken for the gate sheet on its contents alone.
+   Banner marking a scratch draw, prepended to BOTH sheets so neither can be
+   mistaken for the gate sheet on its contents alone.
    */
   const banner = isFinal
     ? ''
@@ -281,8 +281,8 @@ async function drawGradingSample(): Promise<void> {
   // sheet first would leave it in place, and protected against overwrite, when
   // the repair path turns out to be refused.
   /**
-   * Output path, named after the draw seed so one round cannot target another
-   * round's sheet, and refused outright when a final sheet is already there.
+   Output path, named after the draw seed so one round cannot target another
+   round's sheet, and refused outright when a final sheet is already there.
    */
   const outPath = await resolveSheetPath({
     runsDir,
@@ -291,11 +291,11 @@ async function drawGradingSample(): Promise<void> {
   },);
 
   /**
-   * Companion repair sheet path. The repair sheet is its own file rather than
-   * extra boxes on the detection sheet: a visible correction makes an alleged
-   * defect look more real, so folding the two together would change what the
-   * detection number measures and break comparison with the rounds already
-   * graded.
+   Companion repair sheet path. The repair sheet is its own file rather than
+   extra boxes on the detection sheet: a visible correction makes an alleged
+   defect look more real, so folding the two together would change what the
+   detection number measures and break comparison with the rounds already
+   graded.
    */
   const repairPath = await resolveSheetPath({
     runsDir,
@@ -305,13 +305,13 @@ async function drawGradingSample(): Promise<void> {
   },);
 
   /**
-   * Companion manifest path.
-   *
-   * Resolved with the sheets and BEFORE any write, never after. Every one of
-   * these throws when a final file already exists, which is the protection
-   * against overwriting graded work, and a path resolved after a write turns
-   * that protection into damage: the sheets would be replaced and the run would
-   * then abort, leaving a graded set half rewritten.
+   Companion manifest path.
+   
+   Resolved with the sheets and BEFORE any write, never after. Every one of
+   these throws when a final file already exists, which is the protection
+   against overwriting graded work, and a path resolved after a write turns
+   that protection into damage: the sheets would be replaced and the run would
+   then abort, leaving a graded set half rewritten.
    */
   const manifestPath = await resolveSheetPath({
     runsDir,
@@ -321,8 +321,8 @@ async function drawGradingSample(): Promise<void> {
   },);
 
   /**
-   * Files this invocation creates, removed on the way out unless all three
-   * land.
+   Files this invocation creates, removed on the way out unless all three
+   land.
    */
   await using outputs = trackDrawOutputs({ enabled: isFinal, },);
 
@@ -330,12 +330,12 @@ async function drawGradingSample(): Promise<void> {
   // three files carry. Computing it twice would let the sheets and the manifest
   // disagree about the very thing that exists to prove they agree.
   /**
-   * Which built pipeline settled this pool.
-   *
-   * ONE DIGEST FOR THE WHOLE POOL, taken from the entries the draw actually
-   * kept. The pool refuses a mixed generation before a draw can reach it, so
-   * every kept entry carries the same digest and disagreement here would mean
-   * that guard had failed rather than that a choice was needed.
+   Which built pipeline settled this pool.
+   
+   ONE DIGEST FOR THE WHOLE POOL, taken from the entries the draw actually
+   kept. The pool refuses a mixed generation before a draw can reach it, so
+   every kept entry carries the same digest and disagreement here would mean
+   that guard had failed rather than that a choice was needed.
    */
   const generation = poolGeneration({
     eligible,
@@ -343,7 +343,7 @@ async function drawGradingSample(): Promise<void> {
   },);
 
   /**
-   * What sat at each sheet position, and the fingerprint of this exact draw.
+   What sat at each sheet position, and the fingerprint of this exact draw.
    */
   const manifest = buildSampleManifest({
     sample,
@@ -353,10 +353,10 @@ async function drawGradingSample(): Promise<void> {
   },);
 
   /**
-   * Draw fingerprint printed into both sheet headers.
-   *
-   * Non-null because `buildSampleManifest` always computes one; the field is
-   * optional only so manifests written before the binding can still be read.
+   Draw fingerprint printed into both sheet headers.
+   
+   Non-null because `buildSampleManifest` always computes one; the field is
+   optional only so manifests written before the binding can still be read.
    */
   const drawDigest = nonNullishOrThrow(manifest.drawDigest,);
 

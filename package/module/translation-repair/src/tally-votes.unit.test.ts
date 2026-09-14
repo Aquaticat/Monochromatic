@@ -1,8 +1,8 @@
 /**
- * Tests for pure ballot aggregation into adjudicated issues.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for pure ballot aggregation into adjudicated issues.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -21,7 +21,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Invented member claim with chosen id suffix and severity.
+ Invented member claim with chosen id suffix and severity.
  */
 function member(
   {
@@ -53,7 +53,7 @@ function member(
 }
 
 /**
- * Single-member cluster around one claim.
+ Single-member cluster around one claim.
  */
 function soloCluster(
   { claimMember, }: { readonly claimMember: AggregatedClaim; },
@@ -66,7 +66,7 @@ function soloCluster(
 }
 
 /**
- * Ballot voting one state on every listed claim.
+ Ballot voting one state on every listed claim.
  */
 function uniformBallot(
   {

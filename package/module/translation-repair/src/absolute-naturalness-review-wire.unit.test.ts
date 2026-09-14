@@ -1,7 +1,7 @@
 /**
- * Tests absolute naturalness reviewer prompt and reply consistency guard.
- *
- * @module
+ Tests absolute naturalness reviewer prompt and reply consistency guard.
+ 
+ @module
  */
 
 import {
@@ -63,7 +63,7 @@ await describe({
           },
         },);
         /**
-         * Complete reviewer sheet across system and user messages.
+         Complete reviewer sheet across system and user messages.
          */
         const sheet = messages.map(function text(message,): string {
           return messageText({ message, },);

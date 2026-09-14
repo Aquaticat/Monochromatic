@@ -17,37 +17,37 @@
 // would convert agent inference into owner instruction.
 
 /**
- * One blocked model spelling beside the owner's reason for it.
- *
- * @example
- * ```ts
- * const entry: RosterBlocklistEntry = { id: 'qwen3.8-max', reason: 'absurd cost in money', };
- * ```
+ One blocked model spelling beside the owner's reason for it.
+ 
+ @example
+ ```ts
+ const entry: RosterBlocklistEntry = { id: 'qwen3.8-max', reason: 'absurd cost in money', };
+ ```
  */
 export type RosterBlocklistEntry = {
   /**
-   * Spelling a provider serves the blocked model under.
+   Spelling a provider serves the blocked model under.
    */
   readonly id: string;
 
   /**
-   * Owner's stated reason, verbatim from the decision.
+   Owner's stated reason, verbatim from the decision.
    */
   readonly reason: string;
 };
 
 /**
- * Owner's reason attached to the whole "too outdated" group.
+ Owner's reason attached to the whole "too outdated" group.
  */
 const TOO_OUTDATED = 'too outdated';
 
 /**
- * Every blocked spelling either provider serves as of 2026-09-01.
- *
- * @example
- * ```ts
- * const everyEntry = ROSTER_BLOCKLIST;
- * ```
+ Every blocked spelling either provider serves as of 2026-09-01.
+ 
+ @example
+ ```ts
+ const everyEntry = ROSTER_BLOCKLIST;
+ ```
  */
 export const ROSTER_BLOCKLIST: readonly RosterBlocklistEntry[] = [
   {
@@ -125,78 +125,78 @@ export const ROSTER_BLOCKLIST: readonly RosterBlocklistEntry[] = [
 ];
 
 /**
- * Trailing provider-path segment, lowercased, for family matching.
- *
- * Both providers embed the model name last: Synthetic as
- * `hf:vendor/Name`, Hyper as the bare name.
- *
- * @param id - spelling as a provider serves it
- *
- * @returns Name segment in lowercase
- *
- * @example
- * ```ts
- * const name = modelNameOf({ id: 'hf:Qwen/Qwen3.6-Plus', },);
- * ```
+ Trailing provider-path segment, lowercased, for family matching.
+ 
+ Both providers embed the model name last: Synthetic as
+ `hf:vendor/Name`, Hyper as the bare name.
+ 
+ @param id - spelling as a provider serves it
+ 
+ @returns Name segment in lowercase
+ 
+ @example
+ ```ts
+ const name = modelNameOf({ id: 'hf:Qwen/Qwen3.6-Plus', },);
+ ```
  */
 function modelNameOf(
   { id, }: { readonly id: string; },
 ): string {
   /**
-   * Path segments; the last one is the model name under both spellings.
+   Path segments; the last one is the model name under both spellings.
    */
   const segments = id.split('/',);
   return (segments.at(-1,) ?? id).toLowerCase();
 }
 
 /**
- * Whether the owner blocklist bars one spelling, beside the stated reason.
- *
- * @example
- * ```ts
- * const verdict: BlocklistVerdict = { blocked: true, reason: 'too outdated', };
- * ```
+ Whether the owner blocklist bars one spelling, beside the stated reason.
+ 
+ @example
+ ```ts
+ const verdict: BlocklistVerdict = { blocked: true, reason: 'too outdated', };
+ ```
  */
 export type BlocklistVerdict =
   | {
     /**
-     * Discriminator marking a spelling the owner barred.
+     Discriminator marking a spelling the owner barred.
      */
     readonly blocked: true;
 
     /**
-     * Owner's stated reason, verbatim from the decision.
+     Owner's stated reason, verbatim from the decision.
      */
     readonly reason: string;
   }
   | {
     /**
-     * Discriminator marking an eligible spelling.
+     Discriminator marking an eligible spelling.
      */
     readonly blocked: false;
   };
 
 /**
- * Owner's verdict on one spelling.
- *
- * Family predicates cover the entries the owner phrased as families:
- * Llama as a whole, and the Qwen3 line through 3.7 while every Qwen3.8
- * variant except the exact-listed Max stays eligible.
- *
- * @param id - spelling a provider serves or could serve
- *
- * @returns Blocked with the verbatim reason, or eligible
- *
- * @example
- * ```ts
- * const verdict = blocklistVerdictFor({ id: 'llama-5-800b', },);
- * ```
+ Owner's verdict on one spelling.
+ 
+ Family predicates cover the entries the owner phrased as families:
+ Llama as a whole, and the Qwen3 line through 3.7 while every Qwen3.8
+ variant except the exact-listed Max stays eligible.
+ 
+ @param id - spelling a provider serves or could serve
+ 
+ @returns Blocked with the verbatim reason, or eligible
+ 
+ @example
+ ```ts
+ const verdict = blocklistVerdictFor({ id: 'llama-5-800b', },);
+ ```
  */
 export function blocklistVerdictFor(
   { id, }: { readonly id: string; },
 ): BlocklistVerdict {
   /**
-   * Exact-spelling entry when the owner named this model singly.
+   Exact-spelling entry when the owner named this model singly.
    */
   const exact = ROSTER_BLOCKLIST.find(function sameId(entry,): boolean {
     return entry.id === id;
@@ -208,11 +208,11 @@ export function blocklistVerdictFor(
     };
 
   /**
-   * Name half of the spelling, provider prefix removed.
+   Name half of the spelling, provider prefix removed.
    */
   const name = modelNameOf({ id, },);
   /**
-   * Whole spelling lowercased, for the vendor-prefixed Llama form.
+   Whole spelling lowercased, for the vendor-prefixed Llama form.
    */
   const lowered = id.toLowerCase();
   if (name.startsWith('llama',) || lowered.includes('meta-llama/',))

@@ -24,17 +24,17 @@
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
- * What a silent slice may wrongly claim.
- *
- * @example
- * ```ts
- * const claim: UnheardClaim = 'change';
- * ```
+ What a silent slice may wrongly claim.
+ 
+ @example
+ ```ts
+ const claim: UnheardClaim = 'change';
+ ```
  */
 export type UnheardClaim = 'foreign-wording' | 'change';
 
 /**
- * Sentence ending for each claim, fixed text keyed by the literal.
+ Sentence ending for each claim, fixed text keyed by the literal.
  */
 const UNHEARD_CLAIMS: Readonly<Record<UnheardClaim, string>> = {
   'foreign-wording': 'carries a wording that is not the archive\'s, so something produced text no stage was '
@@ -43,35 +43,35 @@ const UNHEARD_CLAIMS: Readonly<Record<UnheardClaim, string>> = {
 };
 
 /**
- * Reports a slice the repair lane heard nobody about that carries a wording
- * anyway.
- *
- * @example
- * ```ts
- * throw new RepairUnheardError({ sliceIndex: 3, claim: 'foreign-wording', },);
- * ```
+ Reports a slice the repair lane heard nobody about that carries a wording
+ anyway.
+ 
+ @example
+ ```ts
+ throw new RepairUnheardError({ sliceIndex: 3, claim: 'foreign-wording', },);
+ ```
  */
 export class RepairUnheardError extends Error {
   /**
-   * Names this error for a caller matching on it.
+   Names this error for a caller matching on it.
    */
   public override readonly name = 'RepairUnheardError';
 
   /**
-   * Declares this message safe to print whole at a boundary: it names a slice
-   * index and one of two fixed claims, and quotes nothing.
+   Declares this message safe to print whole at a boundary: it names a slice
+   index and one of two fixed claims, and quotes nothing.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * @param sliceIndex - slice nobody spoke about
-   *
-   * @param claim - what the outcome nevertheless claimed
-   *
-   * @example
-   * ```ts
-   * new RepairUnheardError({ sliceIndex: 3, claim: 'change', },);
-   * ```
+   @param sliceIndex - slice nobody spoke about
+   
+   @param claim - what the outcome nevertheless claimed
+   
+   @example
+   ```ts
+   new RepairUnheardError({ sliceIndex: 3, claim: 'change', },);
+   ```
    */
   public constructor(
     {
@@ -87,64 +87,64 @@ export class RepairUnheardError extends Error {
 }
 
 /**
- * What this reads off one settled slice, which is the whole of what it needs.
- *
- * A STRUCTURAL SUBSET of `ChunkRepairOutcome` rather than that type, so this
- * file does not depend on the whole repair contract to ask one question of it.
- *
- * @example
- * ```ts
- * const outcome: RepairVoiceRecord = { sliceIndex: 0, repairedText, changed: false, ... };
- * ```
+ What this reads off one settled slice, which is the whole of what it needs.
+ 
+ A STRUCTURAL SUBSET of `ChunkRepairOutcome` rather than that type, so this
+ file does not depend on the whole repair contract to ask one question of it.
+ 
+ @example
+ ```ts
+ const outcome: RepairVoiceRecord = { sliceIndex: 0, repairedText, changed: false, ... };
+ ```
  */
 export type RepairVoiceRecord = {
   /**
-   * Slice this settled.
+   Slice this settled.
    */
   readonly sliceIndex: number;
 
   /**
-   * Wording the lane settled on.
+   Wording the lane settled on.
    */
   readonly repairedText: string;
 
   /**
-   * Whether the lane reports having changed anything here.
+   Whether the lane reports having changed anything here.
    */
   readonly changed: boolean;
 
   /**
-   * Critics that answered on this slice, empty when none did.
+   Critics that answered on this slice, empty when none did.
    */
   readonly heardCriticIds: readonly RosterModelId[];
 
   /**
-   * Whether the naturalness lane rewrote this slice after the accuracy pass.
+   Whether the naturalness lane rewrote this slice after the accuracy pass.
    */
   readonly refined: boolean;
 };
 
 /**
- * Whether the lane heard no voice at all about this slice.
- *
- * ONE DEFINITION for every reader, because the question is asked in more than
- * one place and each spelling of it is a chance for two readers to disagree
- * about what silence was.
- *
- * @param outcome - what the lane settled for one slice
- *
- * @returns Whether both producing stages were silent here
- *
- * @example
- * ```ts
- * const silent = heardNobodyAbout({ outcome, },);
- * ```
+ Whether the lane heard no voice at all about this slice.
+ 
+ ONE DEFINITION for every reader, because the question is asked in more than
+ one place and each spelling of it is a chance for two readers to disagree
+ about what silence was.
+ 
+ @param outcome - what the lane settled for one slice
+ 
+ @returns Whether both producing stages were silent here
+ 
+ @example
+ ```ts
+ const silent = heardNobodyAbout({ outcome, },);
+ ```
  */
 export function heardNobodyAbout(
   { outcome, }: { readonly outcome: RepairVoiceRecord; },
 ): boolean {
   /**
-   * Whether any critic answered here.
+   Whether any critic answered here.
    */
   const criticsAnswered = outcome.heardCriticIds
     .length
@@ -153,25 +153,25 @@ export function heardNobodyAbout(
 }
 
 /**
- * Refuses a slice the lane heard nobody about that carries anything but the
- * archive's own wording.
- *
- * The counterpart of `assertUnheardKeptIncumbent` on the translate side, and it
- * exists for the same reason: a silent stage having produced a wording is a
- * contradiction, and one caught here is one that never reaches a ledger, a
- * comparison or a rate.
- *
- * @param outcome - what the lane settled for one slice
- *
- * @param incumbentText - archive's own wording for that slice
- *
- * @throws {@link RepairUnheardError} when a slice nobody spoke about carries a
- * different wording or claims a change
- *
- * @example
- * ```ts
- * assertUnheardKeptArchive({ outcome, incumbentText, },);
- * ```
+ Refuses a slice the lane heard nobody about that carries anything but the
+ archive's own wording.
+ 
+ The counterpart of `assertUnheardKeptIncumbent` on the translate side, and it
+ exists for the same reason: a silent stage having produced a wording is a
+ contradiction, and one caught here is one that never reaches a ledger, a
+ comparison or a rate.
+ 
+ @param outcome - what the lane settled for one slice
+ 
+ @param incumbentText - archive's own wording for that slice
+ 
+ @throws {@link RepairUnheardError} when a slice nobody spoke about carries a
+ different wording or claims a change
+ 
+ @example
+ ```ts
+ assertUnheardKeptArchive({ outcome, incumbentText, },);
+ ```
  */
 export function assertUnheardKeptArchive(
   {
@@ -186,7 +186,7 @@ export function assertUnheardKeptArchive(
     return;
 
   /**
-   * Where the contradiction is, for a message that names one slice.
+   Where the contradiction is, for a message that names one slice.
    */
   if (outcome.repairedText !== incumbentText) {
     throw new RepairUnheardError({

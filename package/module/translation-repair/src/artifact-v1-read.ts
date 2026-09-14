@@ -30,13 +30,13 @@ import type {
 // off-taxonomy value is ever a reason to drop an issue.
 
 /**
- * Parses one span, requiring a known side and a quoted-text string.
- *
- * @param value - the span JSON
- *
- * @param path - dotted path for the error message
- *
- * @returns The gradable span
+ Parses one span, requiring a known side and a quoted-text string.
+ 
+ @param value - the span JSON
+ 
+ @param path - dotted path for the error message
+ 
+ @returns The gradable span
  */
 function parseSpan(
   {
@@ -48,7 +48,7 @@ function parseSpan(
   },
 ): GradableSpan {
   /**
-   * The span as a record.
+   The span as a record.
    */
   const record = requireRecord({
     value,
@@ -56,7 +56,7 @@ function parseSpan(
   },);
 
   /**
-   * The claimed document side; only source and target are valid.
+   The claimed document side; only source and target are valid.
    */
   const {side} = record;
   if ((side !== 'source') && (side !== 'target'))
@@ -75,13 +75,13 @@ function parseSpan(
 }
 
 /**
- * Parses one member claim wrapper into its gradable claim.
- *
- * @param value - the member (aggregated-claim) JSON
- *
- * @param path - dotted path for the error message
- *
- * @returns The wrapped gradable claim
+ Parses one member claim wrapper into its gradable claim.
+ 
+ @param value - the member (aggregated-claim) JSON
+ 
+ @param path - dotted path for the error message
+ 
+ @returns The wrapped gradable claim
  */
 function parseMember(
   {
@@ -93,7 +93,7 @@ function parseMember(
   },
 ): { readonly claim: GradableClaim; } {
   /**
-   * The member as a record.
+   The member as a record.
    */
   const member = requireRecord({
     value,
@@ -101,7 +101,7 @@ function parseMember(
   },);
 
   /**
-   * The inner claim as a record.
+   The inner claim as a record.
    */
   const claim = requireRecord({
     value: member.claim,
@@ -109,7 +109,7 @@ function parseMember(
   },);
 
   /**
-   * The claim's anchored spans.
+   The claim's anchored spans.
    */
   const spans = requireArray({
     value: claim.spans,
@@ -141,13 +141,13 @@ function parseMember(
 }
 
 /**
- * Parses one accepted issue into its gradable shape.
- *
- * @param issue - the issue record (already confirmed accepted)
- *
- * @param path - dotted path for the error message
- *
- * @returns The gradable issue
+ Parses one accepted issue into its gradable shape.
+ 
+ @param issue - the issue record (already confirmed accepted)
+ 
+ @param path - dotted path for the error message
+ 
+ @returns The gradable issue
  */
 function parseAcceptedIssue(
   {
@@ -184,107 +184,107 @@ function parseAcceptedIssue(
 }
 
 /**
- * One accepted issue with whatever the run recorded about repairing it.
- *
- * Kept a wrapper rather than folded into {@link GradableIssue} so the issue
- * shape stays the thing a pipeline `AdjudicatedIssue` satisfies structurally,
- * and so repair provenance stays visibly a property of the RECORD the driver
- * built rather than of the panel's decision.
- *
- * @example
- * ```ts
- * const accepted: ParsedAcceptedIssue = { issue, repair: { kind: 'unrecorded', }, };
- * ```
+ One accepted issue with whatever the run recorded about repairing it.
+ 
+ Kept a wrapper rather than folded into {@link GradableIssue} so the issue
+ shape stays the thing a pipeline `AdjudicatedIssue` satisfies structurally,
+ and so repair provenance stays visibly a property of the RECORD the driver
+ built rather than of the panel's decision.
+ 
+ @example
+ ```ts
+ const accepted: ParsedAcceptedIssue = { issue, repair: { kind: 'unrecorded', }, };
+ ```
  */
 export type ParsedAcceptedIssue = {
   /**
-   * Accepted issue as the panel decided it.
+   Accepted issue as the panel decided it.
    */
   readonly issue: GradableIssue;
 
   /**
-   * What became of its repair, carried as the READING rather than as an
-   * optional field.
-   *
-   * The reading already distinguishes an artifact written before repair
-   * recording existed from one recording a repair, and `parseRecordRepair`
-   * names that distinction for the stated reason that an absent field is the
-   * one thing a caller can forget to check. This used to hold
-   * `repair?: GradableRepair`, which threw the distinction away one call after
-   * it was drawn: a caller then met `undefined` and had to decide for itself
-   * whether that meant an older artifact or a run that repaired nothing, which
-   * is the question the reading answers.
+   What became of its repair, carried as the READING rather than as an
+   optional field.
+   
+   The reading already distinguishes an artifact written before repair
+   recording existed from one recording a repair, and `parseRecordRepair`
+   names that distinction for the stated reason that an absent field is the
+   one thing a caller can forget to check. This used to hold
+   `repair?: GradableRepair`, which threw the distinction away one call after
+   it was drawn: a caller then met `undefined` and had to decide for itself
+   whether that meant an older artifact or a run that repaired nothing, which
+   is the question the reading answers.
    */
   readonly repair: RecordRepairReading;
 };
 
 /**
- * One artifact's settled identity and its accepted issues.
- *
- * @example
- * ```ts
- * const parsed: ParsedArtifact = {
- *   id: 'MushroomGuuuu',
- *   status: 'repaired',
- *   acceptedIssues: [],
- *   changeSets: { kind: 'unrecorded', },
- * };
- * ```
+ One artifact's settled identity and its accepted issues.
+ 
+ @example
+ ```ts
+ const parsed: ParsedArtifact = {
+   id: 'MushroomGuuuu',
+   status: 'repaired',
+   acceptedIssues: [],
+   changeSets: { kind: 'unrecorded', },
+ };
+ ```
  */
 export type ParsedArtifact = {
   /**
-   * Corpus entry id.
+   Corpus entry id.
    */
   readonly id: string;
 
   /**
-   * Settled status the artifact carries (repaired, unchanged, or blocked).
+   Settled status the artifact carries (repaired, unchanged, or blocked).
    */
   readonly status: string;
 
   /**
-   * Every accepted issue, the precision denominator for this entry.
+   Every accepted issue, the precision denominator for this entry.
    */
   readonly acceptedIssues: readonly ParsedAcceptedIssue[];
 
   /**
-   * Which slices the settled document changed, with its generation named.
-   *
-   * A DOCUMENT fact rather than an issue one, which is why it rides here beside
-   * the issues rather than inside them: a slice can be withdrawn while carrying
-   * no accepted issue of its own, and a run that recorded nothing is not a run
-   * that changed nothing.
+   Which slices the settled document changed, with its generation named.
+   
+   A DOCUMENT fact rather than an issue one, which is why it rides here beside
+   the issues rather than inside them: a slice can be withdrawn while carrying
+   no accepted issue of its own, and a run that recorded nothing is not a run
+   that changed nothing.
    */
   readonly changeSets: ArtifactChangeSets;
 };
 
 /**
- * Parses a run artifact into its accepted issues. Every issue is inspected: a
- * malformed accepted issue throws {@link ArtifactParseError} rather than being
- * skipped, so the accepted population is never silently short. Non-accepted
- * issues are excluded because they are not part of the precision denominator.
- *
- * @param value - the artifact JSON, freshly parsed and still untyped
- *
- * @returns Entry id, status, accepted issues, and which slices the document
- * changed
- *
- * @throws {@link ArtifactParseError} when the artifact or an accepted issue is
- * structurally malformed, when it carries one index set without the other, or
- * when the two sets break a rule the writing lanes hold them to
- *
- * @example
- * ```ts
- * const parsed = parseSettledArtifact({
- *   value: await readRunJson({ path, },),
- * },);
- * ```
+ Parses a run artifact into its accepted issues. Every issue is inspected: a
+ malformed accepted issue throws {@link ArtifactParseError} rather than being
+ skipped, so the accepted population is never silently short. Non-accepted
+ issues are excluded because they are not part of the precision denominator.
+ 
+ @param value - the artifact JSON, freshly parsed and still untyped
+ 
+ @returns Entry id, status, accepted issues, and which slices the document
+ changed
+ 
+ @throws {@link ArtifactParseError} when the artifact or an accepted issue is
+ structurally malformed, when it carries one index set without the other, or
+ when the two sets break a rule the writing lanes hold them to
+ 
+ @example
+ ```ts
+ const parsed = parseSettledArtifact({
+   value: await readRunJson({ path, },),
+ },);
+ ```
  */
 export function parseSettledArtifact(
   { value, }: { readonly value: unknown; },
 ): ParsedArtifact {
   /**
-   * The artifact as a record.
+   The artifact as a record.
    */
   const artifact = requireRecord({
     value,
@@ -292,7 +292,7 @@ export function parseSettledArtifact(
   },);
 
   /**
-   * Entry id, used both in the result and in nested error paths.
+   Entry id, used both in the result and in nested error paths.
    */
   const id = requireString({
     value: artifact.id,
@@ -300,7 +300,7 @@ export function parseSettledArtifact(
   },);
 
   /**
-   * Settled status string.
+   Settled status string.
    */
   const status = requireString({
     value: artifact.status,
@@ -308,7 +308,7 @@ export function parseSettledArtifact(
   },);
 
   /**
-   * Accepted issues gathered across every issue record.
+   Accepted issues gathered across every issue record.
    */
   const acceptedIssues: readonly ParsedAcceptedIssue[] = requireArray({
     value: artifact.issues,
@@ -319,7 +319,7 @@ export function parseSettledArtifact(
       recordIndex,
     ) {
       /**
-       * The issue record wrapper at this index.
+       The issue record wrapper at this index.
        */
       const record = requireRecord({
         value: recordValue,
@@ -327,7 +327,7 @@ export function parseSettledArtifact(
       },);
 
       /**
-       * The adjudicated issue inside the record.
+       The adjudicated issue inside the record.
        */
       const issue = requireRecord({
         value: record.issue,
@@ -335,7 +335,7 @@ export function parseSettledArtifact(
       },);
 
       /**
-       * The issue's fate; must be readable to classify it.
+       The issue's fate; must be readable to classify it.
        */
       const issueStatus = requireString({
         value: issue.status,
@@ -346,8 +346,8 @@ export function parseSettledArtifact(
         return [];
 
       /**
-       * Repair provenance of this record, or a named absence when the artifact
-       * predates repair recording.
+       Repair provenance of this record, or a named absence when the artifact
+       predates repair recording.
        */
       const reading = parseRecordRepair({
         record,

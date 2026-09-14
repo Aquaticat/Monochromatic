@@ -12,17 +12,17 @@ import { silentStagesOf, } from './stage-silence.ts';
 // resumed as "examined and found nothing to change".
 
 /**
- * Reasons a settled slice must not be cached, empty when it may be.
- *
- * @param outcome - settlement the driver is about to persist
- *
- * @returns Reasons in the words the warn line prints
- *
- * @example
- * ```ts
- * const refusals = cacheRefusalsOf({ outcome, },);
- * if (refusals.length === 0) await cache.persist(...);
- * ```
+ Reasons a settled slice must not be cached, empty when it may be.
+ 
+ @param outcome - settlement the driver is about to persist
+ 
+ @returns Reasons in the words the warn line prints
+ 
+ @example
+ ```ts
+ const refusals = cacheRefusalsOf({ outcome, },);
+ if (refusals.length === 0) await cache.persist(...);
+ ```
  */
 export function cacheRefusalsOf(
   { outcome, }: { readonly outcome: ChunkRepairOutcome; },

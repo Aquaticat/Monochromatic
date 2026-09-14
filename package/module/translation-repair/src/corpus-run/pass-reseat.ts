@@ -20,21 +20,21 @@ import type { JudgeSeatPhase, } from './run-seats-wait.ts';
 // which waits out a named hold when the bench cannot reach quorum.
 
 /**
- * Builds the re-seating the lanes driver calls when the translate lane is
- * about to start.
- *
- * @param client - run client whose dryness view and holds are the router's own
- *
- * @param signal - entry abort the reading honours
- *
- * @param entryId - entry the log line is tagged with
- *
- * @returns Reader of the translate lane's roster as of the moment it is called
- *
- * @example
- * ```ts
- * const reseatTranslate = translateReseatFor({ client, signal, entryId: entry.id, },);
- * ```
+ Builds the re-seating the lanes driver calls when the translate lane is
+ about to start.
+ 
+ @param client - run client whose dryness view and holds are the router's own
+ 
+ @param signal - entry abort the reading honours
+ 
+ @param entryId - entry the log line is tagged with
+ 
+ @returns Reader of the translate lane's roster as of the moment it is called
+ 
+ @example
+ ```ts
+ const reseatTranslate = translateReseatFor({ client, signal, entryId: entry.id, },);
+ ```
  */
 export function translateReseatFor(
   {
@@ -49,7 +49,7 @@ export function translateReseatFor(
 ): () => Promise<TranslateModels> {
   return async function reseat(): Promise<TranslateModels> {
     /**
-     * Benches as of the translate lane's start.
+     Benches as of the translate lane's start.
      */
     const reseated = await readJudgeSeats({
       client,
@@ -62,7 +62,7 @@ export function translateReseatFor(
 }
 
 /**
- * Which seat reading a lane's chunks wait on.
+ Which seat reading a lane's chunks wait on.
  */
 const LANE_PHASE: Readonly<Record<'repair' | 'translate', JudgeSeatPhase>> = {
   repair: 'lanes',
@@ -70,14 +70,14 @@ const LANE_PHASE: Readonly<Record<'repair' | 'translate', JudgeSeatPhase>> = {
 };
 
 /**
- * Hooks the lanes driver calls: the translate lane's re-seating when it is
- * about to start, and the wait each chunk of either lane takes before it
- * starts while a named hold keeps its bench from quorum.
- *
- * @example
- * ```ts
- * const hooks: LanesHooks = lanesHooksFor({ client, signal, entryId, },);
- * ```
+ Hooks the lanes driver calls: the translate lane's re-seating when it is
+ about to start, and the wait each chunk of either lane takes before it
+ starts while a named hold keeps its bench from quorum.
+ 
+ @example
+ ```ts
+ const hooks: LanesHooks = lanesHooksFor({ client, signal, entryId, },);
+ ```
  */
 export type LanesHooks = {
   readonly reseatTranslate: () => Promise<TranslateModels>;
@@ -85,20 +85,20 @@ export type LanesHooks = {
 };
 
 /**
- * Builds the hooks the lanes driver calls.
- *
- * @param client - run client whose dryness view and holds are the router's own
- *
- * @param signal - entry abort the readings honour
- *
- * @param entryId - entry the log lines are tagged with
- *
- * @returns Re-seating and per-chunk wait for both lanes
- *
- * @example
- * ```ts
- * const hooks = lanesHooksFor({ client, signal, entryId: entry.id, },);
- * ```
+ Builds the hooks the lanes driver calls.
+ 
+ @param client - run client whose dryness view and holds are the router's own
+ 
+ @param signal - entry abort the readings honour
+ 
+ @param entryId - entry the log lines are tagged with
+ 
+ @returns Re-seating and per-chunk wait for both lanes
+ 
+ @example
+ ```ts
+ const hooks = lanesHooksFor({ client, signal, entryId: entry.id, },);
+ ```
  */
 export function lanesHooksFor(
   {
@@ -131,25 +131,25 @@ export function lanesHooksFor(
 }
 
 /**
- * Reads the lanes' benches and builds the lanes driver's hooks in one call,
- * so the pass entry names both in one place.
- *
- * The contest and the consolidation seams read their own benches: XIEPT2 on
- * 2026-09-03 ran Synthetic dry seven minutes into a 219-minute entry.
- *
- * @param client - run client whose dryness view and holds are the router's own
- *
- * @param signal - entry abort the readings honour
- *
- * @param entryId - entry the log lines are tagged with
- *
- * @returns Benches for both lanes as of now, and the hooks for when each
- * lane and chunk starts
- *
- * @example
- * ```ts
- * const { seats, lanesHooks, } = await readLanesSeats({ client, signal, entryId: entry.id, },);
- * ```
+ Reads the lanes' benches and builds the lanes driver's hooks in one call,
+ so the pass entry names both in one place.
+ 
+ The contest and the consolidation seams read their own benches: XIEPT2 on
+ 2026-09-03 ran Synthetic dry seven minutes into a 219-minute entry.
+ 
+ @param client - run client whose dryness view and holds are the router's own
+ 
+ @param signal - entry abort the readings honour
+ 
+ @param entryId - entry the log lines are tagged with
+ 
+ @returns Benches for both lanes as of now, and the hooks for when each
+ lane and chunk starts
+ 
+ @example
+ ```ts
+ const { seats, lanesHooks, } = await readLanesSeats({ client, signal, entryId: entry.id, },);
+ ```
  */
 export async function readLanesSeats(
   {
@@ -166,7 +166,7 @@ export async function readLanesSeats(
   readonly lanesHooks: LanesHooks;
 }> {
   /**
-   * Benches for both lanes as of now.
+   Benches for both lanes as of now.
    */
   const seats = await readJudgeSeats({
     client,

@@ -1,38 +1,38 @@
 /**
- * Tests for how one settled artifact answers "which pipeline produced you".
- *
- * FOUR ANSWERS, NOT TWO, and the difference between them is what an operator
- * does next. A `placed` artifact belongs to a named generation. A `legacy` one
- * is a perfectly good result whose pipeline can no longer be named, and the
- * remedy is a fresh directory. An `untagged` one belongs nowhere and is
- * deleted. A `malformed` one belongs to the reader that reports malformed
- * files. Collapsing any pair of those tells an operator to delete good work or
- * to keep a file the pool would admit under a name its bytes never claimed.
- *
- * THE CENSUS IS THE ONLY CALLER, and it aggregates: it counts artifacts per
- * generation and reports totals. Every rule here reaches the suite as a count,
- * which is why a rule that placed a file in the wrong bucket could survive as
- * long as the total stayed right.
- *
- * THREE CASES PIN DOCUMENTED REGRESSIONS the module's own comments describe.
- * A tip of `HEAD` resolves against the READER's checkout rather than against
- * whatever produced the artifact. An artifact carrying no id at all used to
- * skip the identity check and be placed on its file name alone. A digest this
- * build cannot read is legacy rather than garbage, because the recorded value
- * names the scheme that produced it.
- *
- * THE POOL LINES NAME A SHAPE AND NEVER A VALUE. A malformed id or digest is
- * whatever bytes a bad file carries, and `readPlacement` runs inside the pass
- * as well as in the readers, so those lines reach a pass's stdout. Four cases
- * capture what is printed and pin both halves: the type and length are there,
- * the recorded value is not.
- *
- * DISPOSABLE FIXTURES ONLY: every case writes into its own `mkdtemp` directory
- * and nothing here reads a real run.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for how one settled artifact answers "which pipeline produced you".
+ 
+ FOUR ANSWERS, NOT TWO, and the difference between them is what an operator
+ does next. A `placed` artifact belongs to a named generation. A `legacy` one
+ is a perfectly good result whose pipeline can no longer be named, and the
+ remedy is a fresh directory. An `untagged` one belongs nowhere and is
+ deleted. A `malformed` one belongs to the reader that reports malformed
+ files. Collapsing any pair of those tells an operator to delete good work or
+ to keep a file the pool would admit under a name its bytes never claimed.
+ 
+ THE CENSUS IS THE ONLY CALLER, and it aggregates: it counts artifacts per
+ generation and reports totals. Every rule here reaches the suite as a count,
+ which is why a rule that placed a file in the wrong bucket could survive as
+ long as the total stayed right.
+ 
+ THREE CASES PIN DOCUMENTED REGRESSIONS the module's own comments describe.
+ A tip of `HEAD` resolves against the READER's checkout rather than against
+ whatever produced the artifact. An artifact carrying no id at all used to
+ skip the identity check and be placed on its file name alone. A digest this
+ build cannot read is legacy rather than garbage, because the recorded value
+ names the scheme that produced it.
+ 
+ THE POOL LINES NAME A SHAPE AND NEVER A VALUE. A malformed id or digest is
+ whatever bytes a bad file carries, and `readPlacement` runs inside the pass
+ as well as in the readers, so those lines reach a pass's stdout. Four cases
+ capture what is printed and pin both halves: the type and length are there,
+ the recorded value is not.
+ 
+ DISPOSABLE FIXTURES ONLY: every case writes into its own `mkdtemp` directory
+ and nothing here reads a real run.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -57,38 +57,38 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Commit a fixture records, spelled the way git writes one.
+ Commit a fixture records, spelled the way git writes one.
  */
 const FIXED_TIP = 'a'.repeat(40,);
 
 /**
- * Same commit in the longer hash git also writes.
+ Same commit in the longer hash git also writes.
  */
 const LONG_TIP = 'b'.repeat(64,);
 
 /**
- * Built output a fixture records, in the scheme this build reads.
+ Built output a fixture records, in the scheme this build reads.
  */
 const FIXED_DIGEST = `sha256-tree-v1:${'c'.repeat(64,)}`;
 
 /**
- * Writes one disposable artifacts directory holding exactly these files.
- *
- * @param files - file name to raw contents, written verbatim so a case can
- * write something that is not JSON at all
- *
- * @returns Directory holding them
- *
- * @example
- * ```ts
- * const dir = await artifactsDirWith({ files: { 'Mittens.json': '{}', }, },);
- * ```
+ Writes one disposable artifacts directory holding exactly these files.
+ 
+ @param files - file name to raw contents, written verbatim so a case can
+ write something that is not JSON at all
+ 
+ @returns Directory holding them
+ 
+ @example
+ ```ts
+ const dir = await artifactsDirWith({ files: { 'Mittens.json': '{}', }, },);
+ ```
  */
 async function artifactsDirWith(
   { files, }: { readonly files: Readonly<Record<string, string>>; },
 ): Promise<string> {
   /**
-   * Disposable root for this case.
+   Disposable root for this case.
    */
   const dir = await mkdtemp(join(
     tmpdir(),
@@ -113,18 +113,18 @@ async function artifactsDirWith(
 }
 
 /**
- * Places one artifact written from a record, which is what a real one is.
- *
- * @param body - fields this artifact records
- *
- * @param name - file name to write it under, which the identity check reads
- *
- * @returns How it places
- *
- * @example
- * ```ts
- * const placement = await placementOf({ body: { id: 'Mittens', }, name: 'Mittens.json', },);
- * ```
+ Places one artifact written from a record, which is what a real one is.
+ 
+ @param body - fields this artifact records
+ 
+ @param name - file name to write it under, which the identity check reads
+ 
+ @returns How it places
+ 
+ @example
+ ```ts
+ const placement = await placementOf({ body: { id: 'Mittens', }, name: 'Mittens.json', },);
+ ```
  */
 async function placementOf(
   {
@@ -142,43 +142,43 @@ async function placementOf(
 }
 
 /**
- * Captures what `readPlacement` prints, forwarding every line onward so a
- * concurrent case, and the runner, still see their own.
- *
- * CHAINED RATHER THAN REPLACED, because the cases of one suite run at once:
- * each capture wraps whatever reporter it finds, which may be another case's
- * wrapper, and on disposal it stops recording and unwraps only if it is still
- * the outermost. A capture that restored the real reporter outright would
- * silently cut a sibling's capture out of the chain mid-case, which is how a
- * first version of these cases captured nothing or six lines.
- *
- * Callers filter by their own file name, since the chain records everything.
- *
- * @param lines - where captured lines go
- *
- * @returns Captured lines, disposable
- *
- * @example
- * ```ts
- * using printed = collectingLogs({ lines: [], },);
- * ```
+ Captures what `readPlacement` prints, forwarding every line onward so a
+ concurrent case, and the runner, still see their own.
+ 
+ CHAINED RATHER THAN REPLACED, because the cases of one suite run at once:
+ each capture wraps whatever reporter it finds, which may be another case's
+ wrapper, and on disposal it stops recording and unwraps only if it is still
+ the outermost. A capture that restored the real reporter outright would
+ silently cut a sibling's capture out of the chain mid-case, which is how a
+ first version of these cases captured nothing or six lines.
+ 
+ Callers filter by their own file name, since the chain records everything.
+ 
+ @param lines - where captured lines go
+ 
+ @returns Captured lines, disposable
+ 
+ @example
+ ```ts
+ using printed = collectingLogs({ lines: [], },);
+ ```
  */
 function collectingLogs(
   { lines, }: { readonly lines: string[]; },
 ): { readonly lines: readonly string[]; } & Disposable {
   /**
-   * Reporter found on entry, which every line is forwarded to.
+   Reporter found on entry, which every line is forwarded to.
    */
   const previous = console.log;
 
   /**
-   * Whether this capture is still recording.
+   Whether this capture is still recording.
    */
   const recording = { open: true, };
 
   /**
-   * This capture's own wrapper, kept so disposal can tell whether it is still
-   * the outermost.
+   This capture's own wrapper, kept so disposal can tell whether it is still
+   the outermost.
    */
   const mine = (...parts: readonly unknown[]): void => {
     if (recording.open) {
@@ -199,18 +199,18 @@ function collectingLogs(
 }
 
 /**
- * Keeps the lines a placement printed about one file.
- *
- * @param lines - everything captured while the case ran
- *
- * @param name - file the case placed
- *
- * @returns Lines naming that file
- *
- * @example
- * ```ts
- * const own = linesAbout({ lines: printed.lines, name: 'Mismatch.json', },);
- * ```
+ Keeps the lines a placement printed about one file.
+ 
+ @param lines - everything captured while the case ran
+ 
+ @param name - file the case placed
+ 
+ @returns Lines naming that file
+ 
+ @example
+ ```ts
+ const own = linesAbout({ lines: printed.lines, name: 'Mismatch.json', },);
+ ```
  */
 function linesAbout(
   {
@@ -490,7 +490,7 @@ await describe({
         + 'than throwing EISDIR out of the census',
       fn: async () => {
         /**
-         * Disposable root holding a directory where an artifact should be.
+         Disposable root holding a directory where an artifact should be.
          */
         const dir = await artifactsDirWith({ files: {}, },);
         await mkdir(join(
@@ -602,7 +602,7 @@ await describe({
           },);
 
         /**
-         * What was printed about this file.
+         What was printed about this file.
          */
         const own = linesAbout({
           lines: printed.lines,
@@ -647,7 +647,7 @@ await describe({
         + 'reached the read and threw EISDIR out of the whole census',
       fn: async () => {
         /**
-         * Disposable root holding one artifact and one impostor directory.
+         Disposable root holding one artifact and one impostor directory.
          */
         const dir = await artifactsDirWith({ files: { 'Mittens.json': '{}', }, },);
         await mkdir(join(
@@ -666,7 +666,7 @@ await describe({
         + 'leave the directory entirely',
       fn: async () => {
         /**
-         * Disposable root holding one artifact and a link to it.
+         Disposable root holding one artifact and a link to it.
          */
         const dir = await artifactsDirWith({ files: { 'Mittens.json': '{}', }, },);
         await symlink(

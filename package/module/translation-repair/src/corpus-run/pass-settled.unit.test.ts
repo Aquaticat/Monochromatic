@@ -1,14 +1,14 @@
 /**
- * Tests for what the scheduler counts as settled.
- *
- * The module note records a past silent defect: a directory or a symlink named
- * `<id>.json` once marked the entry settled, and the entry was never run again.
- * These cases hold that line, and the agreement between the id set and the
- * count that the against-target line reads.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for what the scheduler counts as settled.
+ 
+ The module note records a past silent defect: a directory or a symlink named
+ `<id>.json` once marked the entry settled, and the entry was never run again.
+ These cases hold that line, and the agreement between the id set and the
+ count that the against-target line reads.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -32,20 +32,20 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Fresh artifacts directory holding two regular artifacts, one directory named
- * like one, one symlink named like one, and one regular file without the
- * suffix.
- *
- * @returns Directory path
- *
- * @example
- * ```ts
- * const artifactsDir = await mixedDirectory();
- * ```
+ Fresh artifacts directory holding two regular artifacts, one directory named
+ like one, one symlink named like one, and one regular file without the
+ suffix.
+ 
+ @returns Directory path
+ 
+ @example
+ ```ts
+ const artifactsDir = await mixedDirectory();
+ ```
  */
 async function mixedDirectory(): Promise<string> {
   /**
-   * Disposable root, never the package's own runs directory.
+   Disposable root, never the package's own runs directory.
    */
   const artifactsDir = await mkdtemp(join(tmpdir(), 'pass-settled-',),);
   await writeFile(join(artifactsDir, 'whiskers.json',), '{}', 'utf8',);
@@ -100,7 +100,7 @@ await describe({
         + 'skip set cannot drift apart again',
       fn: async () => {
         /**
-         * One directory read by both.
+         One directory read by both.
          */
         const artifactsDir = await mixedDirectory();
 

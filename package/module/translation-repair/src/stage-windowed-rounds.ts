@@ -38,43 +38,43 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // same seat twice and never records a silence nobody was asked to break.
 
 /**
- * Asks a bench through windowed rounds and returns one outcome per seat
- * asked.
- *
- * @param client - provider client every ask goes through
- *
- * @param modelIds - bench in roster order
- *
- * @param messages - prompt every seat is asked, which also fixes the rotation
- *
- * @param signal - caller cancellation every ask honors
- *
- * @param exchangeTimeoutMs - deadline per exchange
- *
- * @param maxAnswerChars - answer volume bound, when the stage sets one
- *
- * @param responseFormat - schema every reply must fit
- *
- * @param validate - guard a reply must pass to count as heard
- *
- * @param stage - stage name for log lines
- *
- * @param l - stage logger
- *
- * @param heardNeeded - voices quorum needs, computed over the whole bench
- *
- * @param graceMs - straggler window after quorum, when a test bounds it
- *
- * @param fanOut - window by default; whole bench once for a fixture scripting
- * every seat
- *
- * @returns Outcomes for the seats asked, in roster order, heard where a
- * round heard them and lost otherwise
- *
- * @example
- * ```ts
- * const outcomes = await runWindowedRounds({ client, modelIds, messages, signal, exchangeTimeoutMs, responseFormat, validate, stage: 'gate', l, heardNeeded: 3, },);
- * ```
+ Asks a bench through windowed rounds and returns one outcome per seat
+ asked.
+ 
+ @param client - provider client every ask goes through
+ 
+ @param modelIds - bench in roster order
+ 
+ @param messages - prompt every seat is asked, which also fixes the rotation
+ 
+ @param signal - caller cancellation every ask honors
+ 
+ @param exchangeTimeoutMs - deadline per exchange
+ 
+ @param maxAnswerChars - answer volume bound, when the stage sets one
+ 
+ @param responseFormat - schema every reply must fit
+ 
+ @param validate - guard a reply must pass to count as heard
+ 
+ @param stage - stage name for log lines
+ 
+ @param l - stage logger
+ 
+ @param heardNeeded - voices quorum needs, computed over the whole bench
+ 
+ @param graceMs - straggler window after quorum, when a test bounds it
+ 
+ @param fanOut - window by default; whole bench once for a fixture scripting
+ every seat
+ 
+ @returns Outcomes for the seats asked, in roster order, heard where a
+ round heard them and lost otherwise
+ 
+ @example
+ ```ts
+ const outcomes = await runWindowedRounds({ client, modelIds, messages, signal, exchangeTimeoutMs, responseFormat, validate, stage: 'gate', l, heardNeeded: 3, },);
+ ```
  */
 export async function runWindowedRounds<ValueT,>(
   {
@@ -108,7 +108,7 @@ export async function runWindowedRounds<ValueT,>(
   }>,
 ): Promise<readonly RoundOutcome<ValueT>[]> {
   /**
-   * Everything a round needs except who to ask and how many to wait for.
+   Everything a round needs except who to ask and how many to wait for.
    */
   const roundRequest = {
     client,
@@ -131,26 +131,26 @@ export async function runWindowedRounds<ValueT,>(
   }
 
   /**
-   * Seats still owed an answer: unasked first, in the prompt's rotation,
-   * then lost, so a fresh seat is tried before a seat that just failed.
+   Seats still owed an answer: unasked first, in the prompt's rotation,
+   then lost, so a fresh seat is tried before a seat that just failed.
    */
   const pending: RosterModelId[] = [...rotatedBench({
     modelIds,
     messages,
   },),];
   /**
-   * Latest outcome per seat asked.
+   Latest outcome per seat asked.
    */
   const latest = new Map<RosterModelId, RoundOutcome<ValueT>>();
   /**
-   * Seats heard so far.
+   Seats heard so far.
    */
   const heardSeats = new Set<RosterModelId>();
   for (let round = 0; round <= STAGE_RETRY_ROUNDS; round += 1) {
     if ((heardSeats.size >= heardNeeded) || (pending.length === 0))
       break;
     /**
-     * Seats this round asks: what quorum still needs plus the spare.
+     Seats this round asks: what quorum still needs plus the spare.
      */
     const asking = askingWindow({
       pending,
@@ -165,7 +165,7 @@ export async function runWindowedRounds<ValueT,>(
     }
     /* oxlint-disable no-await-in-loop -- rounds are sequential by design: each round asks the seats the previous round left unasked or lost */
     /**
-     * This round's outcomes, one per seat asked.
+     This round's outcomes, one per seat asked.
      */
     const outcomes = await runGatherRound<ValueT>({
       ...roundRequest,
@@ -179,7 +179,7 @@ export async function runWindowedRounds<ValueT,>(
     );
     for (const outcome of outcomes) {
       /**
-       * Seat and voice of this outcome.
+       Seat and voice of this outcome.
        */
       const {
         modelId,
@@ -199,7 +199,7 @@ export async function runWindowedRounds<ValueT,>(
   }
   return modelIds.flatMap(function inRosterOrder(modelId,): readonly RoundOutcome<ValueT>[] {
     /**
-     * What this seat's last ask came to, absent when the window spared it.
+     What this seat's last ask came to, absent when the window spared it.
      */
     const outcome = latest.get(modelId,);
     return (outcome === undefined) ? [] : [outcome,];

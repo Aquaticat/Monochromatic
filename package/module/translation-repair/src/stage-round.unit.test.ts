@@ -1,21 +1,21 @@
 /**
- * Tests for the round boundary line, the only place a log says how long a
- * fan-out took and how much of that was spent waiting after quorum already
- * stood.
- *
- * `#215` OPENED ON A LOG THAT COULD NOT ANSWER ITS OWN QUESTION.
- * `doc/audit/every-volume-guard-is-blind-to-one-model.md` had to bound the
- * straggler cost from above, at the grace window times the number of cut
- * events, and recorded that confirming it "needs the dispatch timestamps the
- * run does not currently record". These cases pin the line that records them.
- *
- * BOTH DIRECTIONS ARE COVERED, because only the pair shows the grace figure is
- * a measurement rather than a constant: a round that loses a voice spends the
- * whole window, and a round whose roster all answers spends almost none of it.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the round boundary line, the only place a log says how long a
+ fan-out took and how much of that was spent waiting after quorum already
+ stood.
+ 
+ `#215` OPENED ON A LOG THAT COULD NOT ANSWER ITS OWN QUESTION.
+ `doc/audit/every-volume-guard-is-blind-to-one-model.md` had to bound the
+ straggler cost from above, at the grace window times the number of cut
+ events, and recorded that confirming it "needs the dispatch timestamps the
+ run does not currently record". These cases pin the line that records them.
+ 
+ BOTH DIRECTIONS ARE COVERED, because only the pair shows the grace figure is
+ a measurement rather than a constant: a round that loses a voice spends the
+ whole window, and a round whose roster all answers spends almost none of it.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -38,34 +38,34 @@ import {
 //region Fixtures
 
 /**
- * Grace short enough to finish a test in well under a second, standing in for
- * the three real minutes.
+ Grace short enough to finish a test in well under a second, standing in for
+ the three real minutes.
  */
 const GRACE_MS = 250;
 
 /**
- * Delay a slow-but-working voice takes, comfortably inside the grace.
+ Delay a slow-but-working voice takes, comfortably inside the grace.
  */
 const SLOW_MS = 40;
 
 /**
- * Milliseconds a measured wait may fall short of the delay that produced it.
- *
- * NOT A TOLERANCE ON THE BEHAVIOUR, a tolerance on the CLOCK. `stage-round.ts`
- * reads both ends of every figure with `Date.now()`, which truncates to whole
- * milliseconds, and Node's timer list may fire a delay fractionally early. The
- * two together let a 40 ms wait report 39, which this suite did on 2026-08-25
- * under load while the rest of the package was building.
- *
- * Two rather than one, because each end can lose a fraction and the early fire
- * is its own. It leaves every floor here far above the figure it has to be
- * distinguished from, which is a round that did not wait at all.
+ Milliseconds a measured wait may fall short of the delay that produced it.
+ 
+ NOT A TOLERANCE ON THE BEHAVIOUR, a tolerance on the CLOCK. `stage-round.ts`
+ reads both ends of every figure with `Date.now()`, which truncates to whole
+ milliseconds, and Node's timer list may fire a delay fractionally early. The
+ two together let a 40 ms wait report 39, which this suite did on 2026-08-25
+ under load while the rest of the package was building.
+ 
+ Two rather than one, because each end can lose a fraction and the early fire
+ is its own. It leaves every floor here far above the figure it has to be
+ distinguished from, which is a round that did not wait at all.
  */
 const CLOCK_SLACK_MS = 2;
 
 /**
- * Roster the rounds ask, named from the catalog because model identifiers are
- * never invented.
+ Roster the rounds ask, named from the catalog because model identifiers are
+ never invented.
  */
 const ROSTER: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -74,14 +74,14 @@ const ROSTER: readonly RosterModelId[] = [
 ];
 
 /**
- * Trivial reply payload the scripted client emits.
+ Trivial reply payload the scripted client emits.
  */
 type MeowReply = {
   readonly meow: string;
 };
 
 /**
- * Guards the trivial payload.
+ Guards the trivial payload.
  */
 function isMeowReply(value: unknown,): value is MeowReply {
   return ((typeof value) === 'object') && (value !== null)
@@ -89,7 +89,7 @@ function isMeowReply(value: unknown,): value is MeowReply {
 }
 
 /**
- * Response format naming the test stage.
+ Response format naming the test stage.
  */
 const MEOW_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',
@@ -100,22 +100,22 @@ const MEOW_FORMAT: JsonSchemaResponseFormat = {
 };
 
 /**
- * Logger that keeps every message it was handed, so a case can assert on the
- * line rather than on whatever a sink did with it.
- *
- * @param said - array every level appends to, newest last
- *
- * @returns Logger writing into that array
- *
- * @example
- * ```ts
- * const said: string[] = [];
- * const l = capturingLogger({ said, },);
- * ```
+ Logger that keeps every message it was handed, so a case can assert on the
+ line rather than on whatever a sink did with it.
+ 
+ @param said - array every level appends to, newest last
+ 
+ @returns Logger writing into that array
+ 
+ @example
+ ```ts
+ const said: string[] = [];
+ const l = capturingLogger({ said, },);
+ ```
  */
 function capturingLogger({ said, }: { readonly said: string[]; },): Logger {
   /**
-   * One level's writer, all seven sharing the same array.
+   One level's writer, all seven sharing the same array.
    */
   const keep = (message: string,): void => {
     said.push(message,);
@@ -133,23 +133,23 @@ function capturingLogger({ said, }: { readonly said: string[]; },): Logger {
 }
 
 /**
- * Resolves when a signal aborts, and never otherwise.
- *
- * @param signal - call signal the round owns
- *
- * @returns Nothing, once the call is cut
- *
- * @example
- * ```ts
- * await untilAborted({ signal, },);
- * ```
+ Resolves when a signal aborts, and never otherwise.
+ 
+ @param signal - call signal the round owns
+ 
+ @returns Nothing, once the call is cut
+ 
+ @example
+ ```ts
+ await untilAborted({ signal, },);
+ ```
  */
 async function untilAborted({ signal, }: { readonly signal: AbortSignal; },): Promise<void> {
   if (signal.aborted)
     return;
 
   /**
-   * Capability resolved by the abort listener.
+   Capability resolved by the abort listener.
    */
   const {
     promise,
@@ -166,23 +166,23 @@ async function untilAborted({ signal, }: { readonly signal: AbortSignal; },): Pr
 }
 
 /**
- * Client answering each model on its own schedule: at once, after a delay, or
- * never until the round cuts it.
- *
- * The never-answering arm has NO TIMER OF ITS OWN, deliberately. A stub that
- * also gave up after some duration would report a grace window whether or not
- * the cut ever reached the call, which is the one thing these cases measure.
- *
- * @param slowModelId - model that answers after {@link SLOW_MS}
- *
- * @param hangingModelId - model that answers only when the round abandons it
- *
- * @returns Client the round can drive
- *
- * @example
- * ```ts
- * const client = scheduledClient({ slowModelId, hangingModelId, },);
- * ```
+ Client answering each model on its own schedule: at once, after a delay, or
+ never until the round cuts it.
+ 
+ The never-answering arm has NO TIMER OF ITS OWN, deliberately. A stub that
+ also gave up after some duration would report a grace window whether or not
+ the cut ever reached the call, which is the one thing these cases measure.
+ 
+ @param slowModelId - model that answers after {@link SLOW_MS}
+ 
+ @param hangingModelId - model that answers only when the round abandons it
+ 
+ @returns Client the round can drive
+ 
+ @example
+ ```ts
+ const client = scheduledClient({ slowModelId, hangingModelId, },);
+ ```
  */
 function scheduledClient(
   {
@@ -208,7 +208,7 @@ function scheduledClient(
         await wait(SLOW_MS,);
 
       /**
-       * Scripted payload for the answering call.
+       Scripted payload for the answering call.
        */
       const scripted: unknown = { meow: request.modelId, };
       if (!request.validate(scripted,))
@@ -226,7 +226,7 @@ function scheduledClient(
 }
 
 /**
- * Numbers the round line carries, pulled back out of it.
+ Numbers the round line carries, pulled back out of it.
  */
 type RoundTimings = {
   readonly heard: number;
@@ -237,26 +237,26 @@ type RoundTimings = {
 };
 
 /**
- * Reads the round line back into its numbers.
- *
- * SCANNED RATHER THAN MATCHED. A pattern would accept a line whose fields had
- * drifted into a different order and would say nothing useful when the line is
- * absent, while splitting on the separators names the missing field.
- *
- * @param said - every message the logger kept
- *
- * @returns Numbers the single round line carried
- *
- * @throws Error when no round line was logged, or its fields are not readable
- *
- * @example
- * ```ts
- * const timings = readRoundLine({ said, },);
- * ```
+ Reads the round line back into its numbers.
+ 
+ SCANNED RATHER THAN MATCHED. A pattern would accept a line whose fields had
+ drifted into a different order and would say nothing useful when the line is
+ absent, while splitting on the separators names the missing field.
+ 
+ @param said - every message the logger kept
+ 
+ @returns Numbers the single round line carried
+ 
+ @throws Error when no round line was logged, or its fields are not readable
+ 
+ @example
+ ```ts
+ const timings = readRoundLine({ said, },);
+ ```
  */
 function readRoundLine({ said, }: { readonly said: readonly string[]; },): RoundTimings {
   /**
-   * Lines that look like a round report.
+   Lines that look like a round report.
    */
   const rounds = said.filter(function isRound(message,): boolean {
     return message.includes(' round: ',) && message.includes('ms in grace',);
@@ -265,7 +265,7 @@ function readRoundLine({ said, }: { readonly said: readonly string[]; },): Round
     throw new Error(`expected exactly one round line, got ${String(rounds.length,)}`,);
 
   /**
-   * Fields of that line, in the order it writes them.
+   Fields of that line, in the order it writes them.
    */
   const fields = (rounds[0] ?? '')
     .split(', ',)
@@ -274,13 +274,13 @@ function readRoundLine({ said, }: { readonly said: readonly string[]; },): Round
     },);
 
   /**
-   * Reads one field's leading number, so a renamed field fails loudly.
+   Reads one field's leading number, so a renamed field fails loudly.
    */
   const numberIn = (
     { index, expect: expected, }: { readonly index: number; readonly expect: string; },
   ): number => {
     /**
-     * Field text at that position.
+     Field text at that position.
      */
     const field = fields[index] ?? '';
     if (!field.includes(expected,))
@@ -292,14 +292,14 @@ function readRoundLine({ said, }: { readonly said: readonly string[]; },): Round
   };
 
   /**
-   * First field with its stage label removed, leaving the ratio.
+   First field with its stage label removed, leaving the ratio.
    */
   const afterStage = (fields[0] ?? '')
     .split(' round: ',)
     .at(-1,) ?? '';
 
   /**
-   * Heard and asked counts, which the first field carries as a ratio.
+   Heard and asked counts, which the first field carries as a ratio.
    */
   const counts = afterStage
     .split(' ',)[0]
@@ -325,7 +325,7 @@ await describe({
         + 'of cut events, which is all `#215` found the log able to support',
       fn: async () => {
         /**
-         * Every message the round logged.
+         Every message the round logged.
          */
         const said: string[] = [];
 
@@ -347,7 +347,7 @@ await describe({
         },);
 
         /**
-         * What the round said about itself.
+         What the round said about itself.
          */
         const timings = readRoundLine({ said, },);
 
@@ -369,7 +369,7 @@ await describe({
         + 'constant wearing a measurement\'s name',
       fn: async () => {
         /**
-         * Every message the round logged.
+         Every message the round logged.
          */
         const said: string[] = [];
 
@@ -388,7 +388,7 @@ await describe({
         },);
 
         /**
-         * What the round said about itself.
+         What the round said about itself.
          */
         const timings = readRoundLine({ said, },);
 

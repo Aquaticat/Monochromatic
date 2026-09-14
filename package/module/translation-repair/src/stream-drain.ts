@@ -26,27 +26,27 @@ import {
 // because the chunks are concatenated and handed back whole.
 
 /**
- * Logger root for the stream drain.
+ Logger root for the stream drain.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Stops pulling from a stream that will not stop on its own.
- *
- * ITS OWN FUNCTION, and it swallows nothing: a cancel that fails is logged
- * rather than allowed to replace the reason the stream is being abandoned,
- * which is the more useful of the two errors.
- *
- * @param reader - reader to release
- *
- * @param url - stream being abandoned, for the log line
- *
- * @mutates reader - cancels it, so the body cannot be read further
- *
- * @example
- * ```ts
- * await stopReading({ reader, url: response.url, },);
- * ```
+ Stops pulling from a stream that will not stop on its own.
+ 
+ ITS OWN FUNCTION, and it swallows nothing: a cancel that fails is logged
+ rather than allowed to replace the reason the stream is being abandoned,
+ which is the more useful of the two errors.
+ 
+ @param reader - reader to release
+ 
+ @param url - stream being abandoned, for the log line
+ 
+ @mutates reader - cancels it, so the body cannot be read further
+ 
+ @example
+ ```ts
+ await stopReading({ reader, url: response.url, },);
+ ```
  */
 async function stopReading(
   {
@@ -62,7 +62,7 @@ async function stopReading(
   }
   catch (error) {
     /**
-     * Logger tagged with this drain.
+     Logger tagged with this drain.
      */
     const cl = tagged({
       tag: drainBody.name,
@@ -73,23 +73,23 @@ async function stopReading(
 }
 
 /**
- * Turns a runaway verdict into the error that ends the call.
- *
- * ONE PLACE THE MAPPING LIVES, so the drain's read loop stays a single
- * decision: stop reading, then report. A verdict carries the evidence its own
- * kind gathered, and each error class takes exactly that evidence, which is
- * why neither can be built from the other.
- *
- * @param label - what was being called, for the message
- *
- * @param verdict - runaway verdict to report
- *
- * @returns Error naming why this call was ended
- *
- * @example
- * ```ts
- * throw runawayError({ label, verdict, },);
- * ```
+ Turns a runaway verdict into the error that ends the call.
+ 
+ ONE PLACE THE MAPPING LIVES, so the drain's read loop stays a single
+ decision: stop reading, then report. A verdict carries the evidence its own
+ kind gathered, and each error class takes exactly that evidence, which is
+ why neither can be built from the other.
+ 
+ @param label - what was being called, for the message
+ 
+ @param verdict - runaway verdict to report
+ 
+ @returns Error naming why this call was ended
+ 
+ @example
+ ```ts
+ throw runawayError({ label, verdict, },);
+ ```
  */
 function runawayError(
   {
@@ -117,22 +117,22 @@ function runawayError(
 }
 
 /**
- * Names how a stream ended, for the progress line.
- *
- * SEPARATE FROM {@link isSelfEndedStream}, which answers whether to retry.
- * This answers what to call it, and the two questions have different shapes:
- * a reader counting `cut` lines to measure stalls needs the chosen endings
- * kept apart from stalls AND from each other, while the retry ladder only
- * needs to know that we chose it.
- *
- * @param error - whatever the drain caught
- *
- * @returns Outcome name for this ending
- *
- * @example
- * ```ts
- * const outcome = endedOutcome({ error, },);
- * ```
+ Names how a stream ended, for the progress line.
+ 
+ SEPARATE FROM {@link isSelfEndedStream}, which answers whether to retry.
+ This answers what to call it, and the two questions have different shapes:
+ a reader counting `cut` lines to measure stalls needs the chosen endings
+ kept apart from stalls AND from each other, while the retry ladder only
+ needs to know that we chose it.
+ 
+ @param error - whatever the drain caught
+ 
+ @returns Outcome name for this ending
+ 
+ @example
+ ```ts
+ const outcome = endedOutcome({ error, },);
+ ```
  */
 function endedOutcome({ error, }: { readonly error: unknown; },): StreamOutcome {
   if (error instanceof StreamOverrunError)
@@ -145,48 +145,48 @@ function endedOutcome({ error, }: { readonly error: unknown; },): StreamOutcome 
 }
 
 /**
- * Drains a response body chunk by chunk, telling the guard about each arrival
- * so silence is measured rather than inferred from total elapsed time. The
- * decoded text is concatenated and handed back whole, so every parser above
- * the transport seam sees exactly what it saw when the body was read with
- * `response.text()`.
- *
- * @param response - response whose body is drained
- *
- * @param guard - silence guard notified per chunk
- *
- * @param callerSignal - caller's own signal, to tell steering from a stall
- *
- * @param label - model this call went to, so a latency figure can be read per
- * model rather than per endpoint. Reasoning from abandon counts instead is what
- * produced the retracted conclusion that one vendor's models were slow
- *
- * @mutates guard - each chunk resets the guard's silence window via
- * guard.notify, and guard.progress reads the totals it accumulated
- *
- * @mutates response - body.getReader locks the body stream to this reader and
- * every read consumes from it, so the response's body is drained and cannot be
- * read again by anyone else
- *
- * @returns Whole decoded body
- *
- * @throws `StreamCutShortError` when the stream was cut off, carrying whatever
- * it had already delivered and wrapping the original failure as its cause
- *
- * @throws `StreamDegenerateError` when the model stopped saying anything new,
- * which no silence window can detect because such a stream is never silent
- *
- * @throws `StreamOverrunError` when the answer channel passed its content
- * bound, which catches a runaway whose period is too long to repeat inside
- * what the repetition detectors can hold
- *
- * @param maxAnswerChars - bound for this one call, when the caller knows its
- * own input size; the module default polices every call that names none
- *
- * @example
- * ```ts
- * const bodyText = await drainBody({ response, guard, callerSignal, },);
- * ```
+ Drains a response body chunk by chunk, telling the guard about each arrival
+ so silence is measured rather than inferred from total elapsed time. The
+ decoded text is concatenated and handed back whole, so every parser above
+ the transport seam sees exactly what it saw when the body was read with
+ `response.text()`.
+ 
+ @param response - response whose body is drained
+ 
+ @param guard - silence guard notified per chunk
+ 
+ @param callerSignal - caller's own signal, to tell steering from a stall
+ 
+ @param label - model this call went to, so a latency figure can be read per
+ model rather than per endpoint. Reasoning from abandon counts instead is what
+ produced the retracted conclusion that one vendor's models were slow
+ 
+ @mutates guard - each chunk resets the guard's silence window via
+ guard.notify, and guard.progress reads the totals it accumulated
+ 
+ @mutates response - body.getReader locks the body stream to this reader and
+ every read consumes from it, so the response's body is drained and cannot be
+ read again by anyone else
+ 
+ @returns Whole decoded body
+ 
+ @throws `StreamCutShortError` when the stream was cut off, carrying whatever
+ it had already delivered and wrapping the original failure as its cause
+ 
+ @throws `StreamDegenerateError` when the model stopped saying anything new,
+ which no silence window can detect because such a stream is never silent
+ 
+ @throws `StreamOverrunError` when the answer channel passed its content
+ bound, which catches a runaway whose period is too long to repeat inside
+ what the repetition detectors can hold
+ 
+ @param maxAnswerChars - bound for this one call, when the caller knows its
+ own input size; the module default polices every call that names none
+ 
+ @example
+ ```ts
+ const bodyText = await drainBody({ response, guard, callerSignal, },);
+ ```
  */
 export async function drainBody(
   {
@@ -206,37 +206,37 @@ export async function drainBody(
   },
 ): Promise<string> {
   /**
-   * Body stream; absent on a reply the platform gave no body at all, which
-   * still has to read as the empty string rather than fail.
+   Body stream; absent on a reply the platform gave no body at all, which
+   still has to read as the empty string rather than fail.
    */
   const { body, } = response;
   if (body === null)
     return await response.text();
 
   /**
-   * Reader pulling one chunk at a time.
+   Reader pulling one chunk at a time.
    */
   const reader = body.getReader();
 
   /**
-   * Incremental decoder, so a multi-byte character split across chunks is
-   * still decoded correctly.
+   Incremental decoder, so a multi-byte character split across chunks is
+   still decoded correctly.
    */
   const decoder = new TextDecoder();
 
   /**
-   * Decoded chunks, joined once at the end: repeated string concatenation
-   * would rebuild the whole accumulated body on every chunk.
+   Decoded chunks, joined once at the end: repeated string concatenation
+   would rebuild the whole accumulated body on every chunk.
    */
   const parts: string[] = [];
 
   /**
-   * Watches for a model that has stopped saying anything new, on either the
-   * answer channel or the thinking one.
-   *
-   * SEPARATE FROM THE IDLE GUARD because they detect opposite things. The idle
-   * guard asks whether bytes are arriving; a degenerating model answers yes
-   * forever. Neither can stand in for the other.
+   Watches for a model that has stopped saying anything new, on either the
+   answer channel or the thinking one.
+   
+   SEPARATE FROM THE IDLE GUARD because they detect opposite things. The idle
+   guard asks whether bytes are arriving; a degenerating model answers yes
+   forever. Neither can stand in for the other.
    */
   // GIVEN THIS CALL'S OWN BOUND WHEN THE CALLER KNOWS ONE, and policed at the
   // module default otherwise. The default is absolute, and an absolute number
@@ -254,14 +254,14 @@ export async function drainBody(
   },);
 
   /**
-   * Loop cursor, a named record so the body-root binding stays immutable.
+   Loop cursor, a named record so the body-root binding stays immutable.
    */
   const cursor = { done: false, };
 
   try {
     while (!cursor.done) {
       /**
-       * Next chunk, or the end-of-stream marker.
+       Next chunk, or the end-of-stream marker.
        */
       // oxlint-disable-next-line no-await-in-loop -- chunks arrive in order; each read depends on the previous one completing
       const chunk = await reader.read();
@@ -270,7 +270,7 @@ export async function drainBody(
         continue;
 
       /**
-       * This chunk decoded, held so its length feeds the guard.
+       This chunk decoded, held so its length feeds the guard.
        */
       const text = decoder.decode(
         chunk.value,
@@ -280,7 +280,7 @@ export async function drainBody(
       parts.push(text,);
 
       /**
-       * Whether this call has stopped producing anything new.
+       Whether this call has stopped producing anything new.
        */
       const runaway = watch.notifyChunk({ chunk: text, },);
       if (runaway.kind !== 'continuing') {
@@ -307,20 +307,20 @@ export async function drainBody(
   }
   catch (error) {
     /**
-     * Guard's own signal, whose abort means silence rather than steering.
+     Guard's own signal, whose abort means silence rather than steering.
      */
     const guardSignal = guard.signal;
 
     /**
-     * What the stream had already delivered, which used to be discarded here.
+     What the stream had already delivered, which used to be discarded here.
      */
     const partialText = parts.join('',);
 
     /**
-     * Whether this catch is a termination THIS SYSTEM CHOSE rather than a
-     * stall or steering, decided once so the logged outcome and the rethrow
-     * below agree with each other by construction rather than by staying in
-     * sync across two separate checks.
+     Whether this catch is a termination THIS SYSTEM CHOSE rather than a
+     stall or steering, decided once so the logged outcome and the rethrow
+     below agree with each other by construction rather than by staying in
+     sync across two separate checks.
      */
     const isSelfEnded = isSelfEndedStream({ error, },);
 
@@ -363,7 +363,7 @@ export async function drainBody(
   parts.push(decoder.decode(),);
 
   /**
-   * Whole decoded body.
+   Whole decoded body.
    */
   const bodyText = parts.join('',);
 

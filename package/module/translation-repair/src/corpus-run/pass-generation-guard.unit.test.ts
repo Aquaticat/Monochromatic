@@ -1,16 +1,16 @@
 /**
- * Tests for the resume guard that keeps one accumulation at one built pipeline.
- *
- * The failure these exist for was measured, not imagined. One accumulation
- * directory held 22 settled entries across FOUR generations. None of the four
- * was a decision: the pass stops at its soft budget, a fresh invocation resumes
- * it, and that invocation builds again. Four resumes across an evening of
- * ordinary commits produced four generations, and every reader that computes a
- * rate then refuses the whole pool.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the resume guard that keeps one accumulation at one built pipeline.
+ 
+ The failure these exist for was measured, not imagined. One accumulation
+ directory held 22 settled entries across FOUR generations. None of the four
+ was a decision: the pass stops at its soft budget, a fresh invocation resumes
+ it, and that invocation builds again. Four resumes across an evening of
+ ordinary commits produced four generations, and every reader that computes a
+ rate then refuses the whole pool.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { mkdtemp, writeFile, } from 'node:fs/promises';
@@ -32,49 +32,49 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * One built pipeline, as a digest-shaped invention.
+ One built pipeline, as a digest-shaped invention.
  */
 const DIGEST_A = `sha256-tree-v1:${'a'.repeat(64,)}`;
 
 /**
- * A second built pipeline, differing from {@link DIGEST_A} everywhere.
+ A second built pipeline, differing from {@link DIGEST_A} everywhere.
  */
 const DIGEST_B = `sha256-tree-v1:${'b'.repeat(64,)}`;
 
 /**
- * A third, for the case where a directory is already mixed before this run.
+ A third, for the case where a directory is already mixed before this run.
  */
 const DIGEST_C = `sha256-tree-v1:${'c'.repeat(64,)}`;
 
 /**
- * Commit every fixture artifact records, since these cases turn on the build
- * rather than on provenance.
+ Commit every fixture artifact records, since these cases turn on the build
+ rather than on provenance.
  */
 const FIXED_TIP = '1111111111111111111111111111111111111111';
 
 /**
- * Environment variable the guard reads for an explicit drift opt-in.
+ Environment variable the guard reads for an explicit drift opt-in.
  */
 const ALLOW_DRIFT_VAR = 'TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT';
 
 /**
- * Sets the drift opt-in for the life of a scope and restores it on exit.
- *
- * Restored rather than left set, since a leaked opt-in would silently disarm
- * the guard for every later case in this process.
- *
- * @param value - value to set, exact opt-in or otherwise
- *
- * @returns Disposable restoring the previous value, including its absence
- *
- * @example
- * ```ts
- * using _override = withDriftVar({ value: 'yes', },);
- * ```
+ Sets the drift opt-in for the life of a scope and restores it on exit.
+ 
+ Restored rather than left set, since a leaked opt-in would silently disarm
+ the guard for every later case in this process.
+ 
+ @param value - value to set, exact opt-in or otherwise
+ 
+ @returns Disposable restoring the previous value, including its absence
+ 
+ @example
+ ```ts
+ using _override = withDriftVar({ value: 'yes', },);
+ ```
  */
 function withDriftVar({ value, }: { readonly value: string; },): Disposable {
   /**
-   * Value before this scope; absent means the variable was unset.
+   Value before this scope; absent means the variable was unset.
    */
   const original = process.env[ALLOW_DRIFT_VAR];
   process.env[ALLOW_DRIFT_VAR] = value;
@@ -89,20 +89,20 @@ function withDriftVar({ value, }: { readonly value: string; },): Disposable {
 }
 
 /**
- * Writes a throwaway artifacts directory.
- *
- * Written to a fresh temporary directory every time rather than to any real runs
- * directory, which holds hours of ungraded work.
- *
- * @param generations - one artifact per entry, each recording the given built
- * pipeline alongside a fixed commit
- *
- * @returns Path of the artifacts directory
- *
- * @example
- * ```ts
- * const dir = await writeArtifacts({ generations: { Mittens: DIGEST_A, }, },);
- * ```
+ Writes a throwaway artifacts directory.
+ 
+ Written to a fresh temporary directory every time rather than to any real runs
+ directory, which holds hours of ungraded work.
+ 
+ @param generations - one artifact per entry, each recording the given built
+ pipeline alongside a fixed commit
+ 
+ @returns Path of the artifacts directory
+ 
+ @example
+ ```ts
+ const dir = await writeArtifacts({ generations: { Mittens: DIGEST_A, }, },);
+ ```
  */
 async function writeArtifacts(
   { generations, }: {
@@ -110,7 +110,7 @@ async function writeArtifacts(
   },
 ): Promise<string> {
   /**
-   * Disposable root for this case.
+   Disposable root for this case.
    */
   const dir = await mkdtemp(join(
     tmpdir(),
@@ -188,7 +188,7 @@ await describe({
         },);
 
         /**
-         * What assertResumableGeneration refused with, read for class as well as wording.
+         What assertResumableGeneration refused with, read for class as well as wording.
          */
         const refusalOfAssertResumableGeneration = assertResumableGeneration({
           artifactsDir: dir,
@@ -213,7 +213,7 @@ await describe({
         },);
 
         /**
-         * What assertResumableGeneration refused with, read for class as well as wording.
+         What assertResumableGeneration refused with, read for class as well as wording.
          */
         const refusalOfAssertResumableGeneration = assertResumableGeneration({
           artifactsDir: dir,
@@ -252,7 +252,7 @@ await describe({
         const dir = await writeArtifacts({ generations: { Mittens: DIGEST_A, }, },);
 
         /**
-         * What assertResumableGeneration refused with, read for class as well as wording.
+         What assertResumableGeneration refused with, read for class as well as wording.
          */
         const refusalOfAssertResumableGeneration = assertResumableGeneration({
           artifactsDir: dir,
@@ -287,7 +287,7 @@ await describe({
         );
 
         /**
-         * What assertResumableGeneration refused with, read for class as well as wording.
+         What assertResumableGeneration refused with, read for class as well as wording.
          */
         const refusalOfAssertResumableGeneration = assertResumableGeneration({
           artifactsDir: dir,
@@ -318,7 +318,7 @@ await describe({
         );
 
         /**
-         * What assertResumableGeneration refused with, read for class as well as wording.
+         What assertResumableGeneration refused with, read for class as well as wording.
          */
         const refusalOfAssertResumableGeneration = assertResumableGeneration({
           artifactsDir: dir,
@@ -346,7 +346,7 @@ await describe({
         );
 
         /**
-         * What assertResumableGeneration refused with, read for class as well as wording.
+         What assertResumableGeneration refused with, read for class as well as wording.
          */
         const refusalOfAssertResumableGeneration = assertResumableGeneration({
           artifactsDir: dir,

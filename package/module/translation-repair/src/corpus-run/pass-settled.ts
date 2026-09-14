@@ -17,35 +17,35 @@ import { readdirArtifacts, } from './artifact-placement.ts';
 // listing with the reader that judges those files.
 
 /**
- * Whether a directory entry name is one of our artifact files.
- *
- * Applied to names already known to be REGULAR FILES, since the listing filters
- * directory entries by type first.
- *
- * @param name - regular file name
- *
- * @returns True for `*.json` artifacts
- *
- * @example
- * ```ts
- * const artifacts = names.filter(isArtifactFile,);
- * ```
+ Whether a directory entry name is one of our artifact files.
+ 
+ Applied to names already known to be REGULAR FILES, since the listing filters
+ directory entries by type first.
+ 
+ @param name - regular file name
+ 
+ @returns True for `*.json` artifacts
+ 
+ @example
+ ```ts
+ const artifacts = names.filter(isArtifactFile,);
+ ```
  */
 function isArtifactFile(name: string,): boolean {
   return name.endsWith('.json',);
 }
 
 /**
- * Artifact file names a directory actually holds as regular files.
- *
- * @param artifactsDir - directory holding one JSON per settled entry
- *
- * @returns Artifact names, unsorted
- *
- * @example
- * ```ts
- * const names = await settledArtifactNames({ artifactsDir, },);
- * ```
+ Artifact file names a directory actually holds as regular files.
+ 
+ @param artifactsDir - directory holding one JSON per settled entry
+ 
+ @returns Artifact names, unsorted
+ 
+ @example
+ ```ts
+ const names = await settledArtifactNames({ artifactsDir, },);
+ ```
  */
 async function settledArtifactNames(
   { artifactsDir, }: { readonly artifactsDir: string; },
@@ -55,22 +55,22 @@ async function settledArtifactNames(
 }
 
 /**
- * Entry ids this directory already carries an artifact for.
- *
- * Unfiltered by generation ON PURPOSE. A scheduler that skipped entries settled
- * by another pipeline would re-run them into the same directory and mix
- * generations, which is the failure the resume guard refuses outright.
- *
- * @param artifactsDir - directory holding one JSON per settled entry
- *
- * @returns Ids already settled, whatever produced them
- *
- * @internal
- *
- * @example
- * ```ts
- * const done = await artifactBackedIds({ artifactsDir, },);
- * ```
+ Entry ids this directory already carries an artifact for.
+ 
+ Unfiltered by generation ON PURPOSE. A scheduler that skipped entries settled
+ by another pipeline would re-run them into the same directory and mix
+ generations, which is the failure the resume guard refuses outright.
+ 
+ @param artifactsDir - directory holding one JSON per settled entry
+ 
+ @returns Ids already settled, whatever produced them
+ 
+ @internal
+ 
+ @example
+ ```ts
+ const done = await artifactBackedIds({ artifactsDir, },);
+ ```
  */
 export async function artifactBackedIds(
   { artifactsDir, }: { readonly artifactsDir: string; },
@@ -87,18 +87,18 @@ export async function artifactBackedIds(
 }
 
 /**
- * How many entries this directory holds, for the against-target line.
- *
- * @param artifactsDir - directory holding one JSON per settled entry
- *
- * @returns Count of artifacts present
- *
- * @internal
- *
- * @example
- * ```ts
- * const total = await countSettled({ artifactsDir, },);
- * ```
+ How many entries this directory holds, for the against-target line.
+ 
+ @param artifactsDir - directory holding one JSON per settled entry
+ 
+ @returns Count of artifacts present
+ 
+ @internal
+ 
+ @example
+ ```ts
+ const total = await countSettled({ artifactsDir, },);
+ ```
  */
 export async function countSettled(
   { artifactsDir, }: { readonly artifactsDir: string; },

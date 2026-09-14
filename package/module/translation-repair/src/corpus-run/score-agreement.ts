@@ -34,37 +34,37 @@ import { resolveRunsDir, } from './run-config.ts';
 // present.
 
 /**
- * File name pattern for the blind pre-grades of one draw.
- *
- * @param seed - draw seed the pre-grades belong to
- *
- * @returns File name beside the sheet
- *
- * @example
- * ```ts
- * const name = preGradeName({ seed: DEFAULT_SAMPLE_SEED, },);
- * ```
+ File name pattern for the blind pre-grades of one draw.
+ 
+ @param seed - draw seed the pre-grades belong to
+ 
+ @returns File name beside the sheet
+ 
+ @example
+ ```ts
+ const name = preGradeName({ seed: DEFAULT_SAMPLE_SEED, },);
+ ```
  */
 function preGradeName({ seed, }: { readonly seed: string; },): string {
   return `pre-grades-${seed}.json`;
 }
 
 /**
- * Reads one command-line option's value.
- *
- * @param flag - long-form flag, including leading dashes
- *
- * @returns Value following the flag; empty when the flag was not passed, which
- * is also how an override left blank is treated, since neither names a file
- *
- * @example
- * ```ts
- * const sheet = optionValue({ flag: '--sheet', },);
- * ```
+ Reads one command-line option's value.
+ 
+ @param flag - long-form flag, including leading dashes
+ 
+ @returns Value following the flag; empty when the flag was not passed, which
+ is also how an override left blank is treated, since neither names a file
+ 
+ @example
+ ```ts
+ const sheet = optionValue({ flag: '--sheet', },);
+ ```
  */
 function optionValue({ flag, }: { readonly flag: string; },): string {
   /**
-   * Where the flag sits among the arguments.
+   Where the flag sits among the arguments.
    */
   const at = process.argv
     .indexOf(flag,);
@@ -76,46 +76,46 @@ function optionValue({ flag, }: { readonly flag: string; },): string {
 }
 
 /**
- * What reading an optional file found.
- *
- * @example
- * ```ts
- * const reading: FileReading = { found: false, };
- * ```
+ What reading an optional file found.
+ 
+ @example
+ ```ts
+ const reading: FileReading = { found: false, };
+ ```
  */
 type FileReading =
   | {
     /**
-     * File is not there, which for pre-grades is the ordinary case.
+     File is not there, which for pre-grades is the ordinary case.
      */
     readonly found: false;
   }
   | {
     /**
-     * File was read.
+     File was read.
      */
     readonly found: true;
 
     /**
-     * Its contents.
+     Its contents.
      */
     readonly text: string;
   };
 
 /**
- * Reads a file, naming its absence rather than returning nothing.
- *
- * @param path - file to read
- *
- * @returns Contents, or a named absence when the file does not exist
- *
- * @throws Whatever `readFile` raised when the failure was not a plain absence,
- * because a permissions or IO fault must not read as "no pre-grades recorded"
- *
- * @example
- * ```ts
- * const reading = await readOptional({ path, },);
- * ```
+ Reads a file, naming its absence rather than returning nothing.
+ 
+ @param path - file to read
+ 
+ @returns Contents, or a named absence when the file does not exist
+ 
+ @throws Whatever `readFile` raised when the failure was not a plain absence,
+ because a permissions or IO fault must not read as "no pre-grades recorded"
+ 
+ @example
+ ```ts
+ const reading = await readOptional({ path, },);
+ ```
  */
 async function readOptional(
   { path, }: { readonly path: string; },
@@ -140,27 +140,27 @@ async function readOptional(
 }
 
 /**
- * Decimal places every printed rate carries.
- *
- * Three, because the gate bar is quoted to one place (0.9) and a reading has to
- * be comparable across rounds without a tie at the bar reading as a pass.
+ Decimal places every printed rate carries.
+ 
+ Three, because the gate bar is quoted to one place (0.9) and a reading has to
+ be comparable across rounds without a tie at the bar reading as a pass.
  */
 const RATE_DECIMALS = 3;
 
 /**
- * Renders one rate to three places, naming an empty denominator rather than
- * printing a division by zero.
- *
- * @param numerator - items counted in favor
- *
- * @param denominator - items the rate is taken over
- *
- * @returns Rate text
- *
- * @example
- * ```ts
- * const text = rate({ numerator: 37, denominator: 47, },);
- * ```
+ Renders one rate to three places, naming an empty denominator rather than
+ printing a division by zero.
+ 
+ @param numerator - items counted in favor
+ 
+ @param denominator - items the rate is taken over
+ 
+ @returns Rate text
+ 
+ @example
+ ```ts
+ const text = rate({ numerator: 37, denominator: 47, },);
+ ```
  */
 function rate(
   {
@@ -178,21 +178,21 @@ function rate(
 }
 
 /**
- * Prints precision and, when pre-grades exist, agreement against them.
- *
- * @example
- * ```ts
- * await reportGrades();
- * ```
+ Prints precision and, when pre-grades exist, agreement against them.
+ 
+ @example
+ ```ts
+ await reportGrades();
+ ```
  */
 async function reportGrades(): Promise<void> {
   /**
-   * Durable, gitignored output root.
+   Durable, gitignored output root.
    */
   const runsDir = await resolveRunsDir();
 
   /**
-   * Graded sheet path, defaulting to this seed's final sheet.
+   Graded sheet path, defaulting to this seed's final sheet.
    */
   const sheetPath = optionValue({ flag: '--sheet', },)
     || join(
@@ -201,7 +201,7 @@ async function reportGrades(): Promise<void> {
     );
 
   /**
-   * Sheet contents, read once and used for both identity and verdicts.
+   Sheet contents, read once and used for both identity and verdicts.
    */
   const sheetText = await readFile(
     sheetPath,
@@ -209,19 +209,19 @@ async function reportGrades(): Promise<void> {
   );
 
   /**
-   * Draw this sheet declares, which decides which pre-grades may be joined to
-   * it.
-   *
-   * Read off the sheet rather than assumed from {@link DEFAULT_SAMPLE_SEED}.
-   * `--sheet` can point anywhere, and a fixed default seed meant an earlier
-   * round's graded sheet could be scored against THIS round's pre-grades, by
-   * position, reporting a confident agreement rate between two unrelated
-   * draws.
+   Draw this sheet declares, which decides which pre-grades may be joined to
+   it.
+   
+   Read off the sheet rather than assumed from {@link DEFAULT_SAMPLE_SEED}.
+   `--sheet` can point anywhere, and a fixed default seed meant an earlier
+   round's graded sheet could be scored against THIS round's pre-grades, by
+   position, reporting a confident agreement rate between two unrelated
+   draws.
    */
   const identity = readSheetIdentity({ text: sheetText, },);
 
   /**
-   * Seed the pre-grades and manifest are looked up under.
+   Seed the pre-grades and manifest are looked up under.
    */
   const seed = requireSheetSeed({
     identity,
@@ -233,7 +233,7 @@ async function reportGrades(): Promise<void> {
   // return taken when no pre-grades exist, so the run that most looks like a
   // plain precision reading was exactly the one that checked nothing.
   /**
-   * Manifest of the draw this sheet came from, when one sits beside it.
+   Manifest of the draw this sheet came from, when one sits beside it.
    */
   const manifest = await readOptional({
     path: optionValue({ flag: '--manifest', },)
@@ -244,7 +244,7 @@ async function reportGrades(): Promise<void> {
   },);
   if (manifest.found) {
     /**
-     * How firmly the sheet is tied to that manifest; refuses if it is not.
+     How firmly the sheet is tied to that manifest; refuses if it is not.
      */
     const binding = assertSheetMatchesManifest({
       identity,
@@ -267,12 +267,12 @@ async function reportGrades(): Promise<void> {
     );
 
   /**
-   * Human's grades read off the sheet.
+   Human's grades read off the sheet.
    */
   const human = parseGradedSheet({ text: sheetText, },);
 
   /**
-   * Precision over the items the human scored.
+   Precision over the items the human scored.
    */
   const precision = scoreGradedPrecision({ human, },);
 
@@ -320,7 +320,7 @@ async function reportGrades(): Promise<void> {
   );
 
   /**
-   * Blind pre-grades, when calibration recorded any for this draw.
+   Blind pre-grades, when calibration recorded any for this draw.
    */
   const preGrades = await readOptional({
     path: optionValue({ flag: '--pre-grades', },)
@@ -335,7 +335,7 @@ async function reportGrades(): Promise<void> {
   }
 
   /**
-   * Agreement between the blind pre-grades and the human's grades.
+   Agreement between the blind pre-grades and the human's grades.
    */
   const agreement = scoreGradeAgreement({
     agent: parsePreGrades({ text: preGrades.text, },),

@@ -1,15 +1,15 @@
 /**
- * Tests for the one-pass-at-a-time claim on a runs directory.
- *
- * Two passes sharing a directory never collide loudly. They overwrite each
- * other's attempt counts, delete each other's cached slices whenever their
- * pipelines differ, and the later write of any entry replaces the earlier one.
- * Every one of those looks like ordinary output, which is why the refusal has
- * to happen before any of it starts.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the one-pass-at-a-time claim on a runs directory.
+ 
+ Two passes sharing a directory never collide loudly. They overwrite each
+ other's attempt counts, delete each other's cached slices whenever their
+ pipelines differ, and the later write of any entry replaces the earlier one.
+ Every one of those looks like ordinary output, which is why the refusal has
+ to happen before any of it starts.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -35,14 +35,14 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Makes a throwaway runs directory for one case.
- *
- * @returns Path of the directory
- *
- * @example
- * ```ts
- * const runsDir = await scratch();
- * ```
+ Makes a throwaway runs directory for one case.
+ 
+ @returns Path of the directory
+ 
+ @example
+ ```ts
+ const runsDir = await scratch();
+ ```
  */
 async function scratch(): Promise<string> {
   return await mkdtemp(join(
@@ -52,11 +52,11 @@ async function scratch(): Promise<string> {
 }
 
 /**
- * Process id no process can hold.
- *
- * Zero is not a process on Linux: signalling it addresses the caller's own
- * process group, so a lock file naming it is a lock naming nothing, which is
- * what a stale-takeover case needs.
+ Process id no process can hold.
+ 
+ Zero is not a process on Linux: signalling it addresses the caller's own
+ process group, so a lock file naming it is a lock naming nothing, which is
+ what a stale-takeover case needs.
  */
 const GONE_PID = 2_147_483_646;
 
@@ -90,7 +90,7 @@ await describe({
         await using _lock = await lockRunsDir({ runsDir, },);
 
         /**
-         * What lockRunsDir refused with, read for class as well as wording.
+         What lockRunsDir refused with, read for class as well as wording.
          */
         const refusalOfLockRunsDir = lockRunsDir({ runsDir, },);
 
@@ -170,7 +170,7 @@ await describe({
       fn: async () => {
         const runsDir = await scratch();
         /**
-         * Lock file both starters find stale.
+         Lock file both starters find stale.
          */
         const path = join(
           runsDir,
@@ -184,7 +184,7 @@ await describe({
           },)}\n`,
         );
         /**
-         * What each concurrent eviction reported.
+         What each concurrent eviction reported.
          */
         const outcomes = await Promise.all([
           evictStaleLock({ path, },),
@@ -200,14 +200,14 @@ await describe({
       fn: async () => {
         const runsDir = await scratch();
         /**
-         * Lock file under test.
+         Lock file under test.
          */
         const path = join(
           runsDir,
           'pass.lock',
         );
         /**
-         * Acquisition whose release is under test.
+         Acquisition whose release is under test.
          */
         const lock = await lockRunsDir({ runsDir, },);
         // Another holder took the file over underneath this acquisition.
@@ -248,20 +248,20 @@ await describe({
           },)}\n`,
         );
         /**
-         * Both starters, settled.
+         Both starters, settled.
          */
         const settled = await Promise.allSettled([
           lockRunsDir({ runsDir, },),
           lockRunsDir({ runsDir, },),
         ],);
         /**
-         * The one that acquired.
+         The one that acquired.
          */
         const winners = settled.filter(function won(outcome,): boolean {
           return outcome.status === 'fulfilled';
         },);
         /**
-         * The one that was refused.
+         The one that was refused.
          */
         const losers = settled.filter(function lost(outcome,): boolean {
           return outcome.status === 'rejected';

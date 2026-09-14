@@ -1,14 +1,14 @@
 /**
- * Tests for the availability arithmetic: what a series of meter readings says
- * about how much of the time a provider could be spent on, and about the
- * longest stretch it could not.
- *
- * THE CASES THAT MATTER ARE THE BOUNDS. Sampling is irregular, so an outage is
- * only ever known to lie between two readings. Every test below checks both
- * ends of that range, and the open-ended cases check that a stretch running off
- * either end of the record is reported as open rather than as a number.
- *
- * @module
+ Tests for the availability arithmetic: what a series of meter readings says
+ about how much of the time a provider could be spent on, and about the
+ longest stretch it could not.
+ 
+ THE CASES THAT MATTER ARE THE BOUNDS. Sampling is irregular, so an outage is
+ only ever known to lie between two readings. Every test below checks both
+ ends of that range, and the open-ended cases check that a stretch running off
+ either end of the record is reported as open rather than as a number.
+ 
+ @module
  */
 
 import {
@@ -25,22 +25,22 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * One minute in milliseconds, so a fixture reads as minutes.
+ One minute in milliseconds, so a fixture reads as minutes.
  */
 const MINUTE = 60_000;
 
 /**
- * Builds a sample series for one provider from a list of states, one per
- * minute, with the other provider held wet throughout.
- *
- * @param states - what the provider's meter said, minute by minute
- *
- * @returns Samples ready for `seriesFor`
- *
- * @example
- * ```ts
- * const samples = minuteByMinute({ states: ['wet', 'dry', 'wet',], },);
- * ```
+ Builds a sample series for one provider from a list of states, one per
+ minute, with the other provider held wet throughout.
+ 
+ @param states - what the provider's meter said, minute by minute
+ 
+ @returns Samples ready for `seriesFor`
+ 
+ @example
+ ```ts
+ const samples = minuteByMinute({ states: ['wet', 'dry', 'wet',], },);
+ ```
  */
 function minuteByMinute(
   { states, }: { readonly states: readonly ('wet' | 'dry' | 'unreadable')[]; },
@@ -74,7 +74,7 @@ await describe({
       name: 'finds no stretch in a record where the meter never ran out',
       fn: async () => {
         /**
-         * Three readings, all reporting budget left.
+         Three readings, all reporting budget left.
          */
         const spans = drySpans({
           series: seriesFor({
@@ -91,7 +91,7 @@ await describe({
       name: 'bounds a single dry reading by the wet readings either side of it',
       fn: async () => {
         /**
-         * One outage caught by exactly one reading, between two wet ones.
+         One outage caught by exactly one reading, between two wet ones.
          */
         const spans = drySpans({
           series: seriesFor({
@@ -117,7 +117,7 @@ await describe({
       name: 'confirms the stretch between the first and last dry reading',
       fn: async () => {
         /**
-         * An outage caught by three consecutive readings.
+         An outage caught by three consecutive readings.
          */
         const spans = drySpans({
           series: seriesFor({
@@ -136,8 +136,8 @@ await describe({
       name: 'REFUSES to bound a stretch that runs off the start of the record',
       fn: async () => {
         /**
-         * A record that opens with the provider already out, so nothing says
-         * when the outage began.
+         A record that opens with the provider already out, so nothing says
+         when the outage began.
          */
         const spans = drySpans({
           series: seriesFor({
@@ -156,8 +156,8 @@ await describe({
       name: 'REFUSES to bound a stretch still running at the end of the record',
       fn: async () => {
         /**
-         * A record that ends with the provider out, which is the live case:
-         * the outage may still be going.
+         A record that ends with the provider out, which is the live case:
+         the outage may still be going.
          */
         const spans = drySpans({
           series: seriesFor({
@@ -175,10 +175,10 @@ await describe({
       name: 'splits confirmation across an unreadable meter while keeping one shared bound',
       fn: async () => {
         /**
-         * An outage with a reading in the middle that answered nothing. The
-         * provider might have recovered and failed again behind it, so
-         * neither stretch is confirmed through it, and both are bounded by
-         * the same pair of wet readings.
+         An outage with a reading in the middle that answered nothing. The
+         provider might have recovered and failed again behind it, so
+         neither stretch is confirmed through it, and both are bounded by
+         the same pair of wet readings.
          */
         const spans = drySpans({
           series: seriesFor({
@@ -208,8 +208,8 @@ await describe({
       name: 'ranks by what is confirmed rather than by the widest bound',
       fn: async () => {
         /**
-         * A short outage sampled sparsely, then a long one sampled closely.
-         * The first has the wider bound; the second is the longer outage.
+         A short outage sampled sparsely, then a long one sampled closely.
+         The first has the wider bound; the second is the longer outage.
          */
         const spans = drySpans({
           series: seriesFor({
@@ -221,7 +221,7 @@ await describe({
         },);
 
         /**
-         * Whichever stretch the ranking picked.
+         Whichever stretch the ranking picked.
          */
         const worst = longestDrySpan({ spans, },);
 
@@ -245,8 +245,8 @@ await describe({
       name: 'counts only readings whose meter answered',
       fn: async () => {
         /**
-         * Four readings, one of which answered nothing. The fraction is over
-         * the three that did.
+         Four readings, one of which answered nothing. The fraction is over
+         the three that did.
          */
         const counts = countStates({
           series: seriesFor({
@@ -270,8 +270,8 @@ await describe({
       name: 'REFUSES a fraction where no reading answered at all',
       fn: async () => {
         /**
-         * A record where the meter endpoint was down throughout. There is no
-         * honest fraction to report.
+         A record where the meter endpoint was down throughout. There is no
+         honest fraction to report.
          */
         const counts = countStates({
           series: seriesFor({

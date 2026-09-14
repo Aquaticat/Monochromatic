@@ -20,21 +20,21 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
 //region One bounded consolidation polish round
 
 /**
- * Final polish reviews every structurally eligible body paragraph.
+ Final polish reviews every structurally eligible body paragraph.
  */
 const FINAL_POLISH_MINIMUM_CHARS = 0;
 
 /**
- * Result of one generation, selection, structural check and fidelity gate.
- *
- * @example
- * ```ts
- * const result: ConsolidationPolishRoundResult = { disposition: 'fallback', text: 'The cat slept.', proposedText: 'The cat slept.', changed: false, refinersHeard: [], contributors: [], rounds: [], findings: [] };
- * ```
+ Result of one generation, selection, structural check and fidelity gate.
+ 
+ @example
+ ```ts
+ const result: ConsolidationPolishRoundResult = { disposition: 'fallback', text: 'The cat slept.', proposedText: 'The cat slept.', changed: false, refinersHeard: [], contributors: [], rounds: [], findings: [] };
+ ```
  */
 export type ConsolidationPolishRoundResult = {
   /**
-   * Whether round selected text, retained admissible fallback, or found no correction.
+   Whether round selected text, retained admissible fallback, or found no correction.
    */
   readonly disposition:
     | 'selected'
@@ -42,57 +42,57 @@ export type ConsolidationPolishRoundResult = {
     | 'no-correction';
 
   /**
-   * Exact text selected after fidelity gate.
+   Exact text selected after fidelity gate.
    */
   readonly text: string;
 
   /**
-   * Selected refinement before structural and fidelity gates.
+   Selected refinement before structural and fidelity gates.
    */
   readonly proposedText: string;
 
   /**
-   * Whether round replaced its input base.
+   Whether round replaced its input base.
    */
   readonly changed: boolean;
 
   /**
-   * Rewriters returning usable structured reply.
+   Rewriters returning usable structured reply.
    */
   readonly refinersHeard: readonly RosterModelId[];
 
   /**
-   * Models whose work selected text carries.
+   Models whose work selected text carries.
    */
   readonly contributors: readonly RosterModelId[];
 
   /**
-   * Candidate-selection round, when candidates reached judges.
+   Candidate-selection round, when candidates reached judges.
    */
   readonly rounds: readonly RepairJudgedRound[];
 
   /**
-   * Fidelity-first comparative gate, when selected proposal passed structure.
+   Fidelity-first comparative gate, when selected proposal passed structure.
    */
   readonly gate?: ConsolidationPolishGateOutcome;
 
   /**
-   * Stable generation, selection and gate findings.
+   Stable generation, selection and gate findings.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Reads exact structurally correctable body paragraphs in display order.
- *
- * @param text - would-ship Markdown slice
- *
- * @returns Paragraph texts reviewer numbers and correction stage envelopes
- *
- * @example
- * ```ts
- * const paragraphs = finalPolishParagraphs({ text: 'The cat slept.' });
- * ```
+ Reads exact structurally correctable body paragraphs in display order.
+ 
+ @param text - would-ship Markdown slice
+ 
+ @returns Paragraph texts reviewer numbers and correction stage envelopes
+ 
+ @example
+ ```ts
+ const paragraphs = finalPolishParagraphs({ text: 'The cat slept.' });
+ ```
  */
 export function finalPolishParagraphs(
   { text, }: { readonly text: string; },
@@ -108,28 +108,28 @@ export function finalPolishParagraphs(
 }
 
 /**
- * Reads every body block of a would-ship slice in display order, which is
- * what the absolute reviewer is shown and may cite.
- *
- * EVERY BODY BLOCK, NOT ONLY THE REFINABLE ONES. The reviewer judges the whole
- * candidate and locates each finding by paragraph number, and the stage
- * refuses a finding that names a paragraph it did not show. Numbering only
- * the refinable paragraphs left a blockquote poem with nothing to cite: on the
- * Toka_ls rerun of 2026-09-02, slice 10 (a 29-line letter in blockquote) had
- * zero refinable paragraphs, so six of nine reviewers who located their
- * findings by stanza were refused as out of range and only the three
- * "acceptable" ballots survived. A block the polish may not edit can still be
- * judged and cited.
- *
- * @param text - would-ship Markdown slice
- *
- * @returns Block texts reviewer numbers, empty for a slice with no body block
- *
- * @example
- * ```ts
- * const paragraphs = reviewParagraphsOf({ text: '> A poem.\n\nA paragraph.' });
- * // => ['> A poem.', 'A paragraph.']
- * ```
+ Reads every body block of a would-ship slice in display order, which is
+ what the absolute reviewer is shown and may cite.
+ 
+ EVERY BODY BLOCK, NOT ONLY THE REFINABLE ONES. The reviewer judges the whole
+ candidate and locates each finding by paragraph number, and the stage
+ refuses a finding that names a paragraph it did not show. Numbering only
+ the refinable paragraphs left a blockquote poem with nothing to cite: on the
+ Toka_ls rerun of 2026-09-02, slice 10 (a 29-line letter in blockquote) had
+ zero refinable paragraphs, so six of nine reviewers who located their
+ findings by stanza were refused as out of range and only the three
+ "acceptable" ballots survived. A block the polish may not edit can still be
+ judged and cited.
+ 
+ @param text - would-ship Markdown slice
+ 
+ @returns Block texts reviewer numbers, empty for a slice with no body block
+ 
+ @example
+ ```ts
+ const paragraphs = reviewParagraphsOf({ text: '> A poem.\n\nA paragraph.' });
+ // => ['> A poem.', 'A paragraph.']
+ ```
  */
 export function reviewParagraphsOf(
   { text, }: { readonly text: string; },
@@ -145,40 +145,40 @@ export function reviewParagraphsOf(
 }
 
 /**
- * Runs exactly one final-polish generation and its existing deterministic gates.
- *
- * @param client - provider client
- *
- * @param sourceText - Chinese fidelity anchor
- *
- * @param archiveText - archived English evidence
- *
- * @param baseText - exact would-ship input to this round
- *
- * @param syntax - syntax role, absent for body prose
- *
- * @param lineStructured - source line-boundary policy
- *
- * @param identityContext - declared identities and contributor forms
- *
- * @param mode - comparative polish or required correction findings
- *
- * @param sliceIndex - prepared slice position
- *
- * @param config - model roles and document-wide definitions
- *
- * @param signal - caller cancellation
- *
- * @param perCallTimeoutMs - per-exchange deadline
- *
- * @param l - stage logger
- *
- * @returns One bounded proposal round after structure and fidelity selection
- *
- * @example
- * ```ts
- * const round = await runConsolidationPolishRound({ client, sourceText, archiveText, baseText, mode: { kind: 'comparative' }, lineStructured: false, sliceIndex: 1, config, signal, perCallTimeoutMs, l, });
- * ```
+ Runs exactly one final-polish generation and its existing deterministic gates.
+ 
+ @param client - provider client
+ 
+ @param sourceText - Chinese fidelity anchor
+ 
+ @param archiveText - archived English evidence
+ 
+ @param baseText - exact would-ship input to this round
+ 
+ @param syntax - syntax role, absent for body prose
+ 
+ @param lineStructured - source line-boundary policy
+ 
+ @param identityContext - declared identities and contributor forms
+ 
+ @param mode - comparative polish or required correction findings
+ 
+ @param sliceIndex - prepared slice position
+ 
+ @param config - model roles and document-wide definitions
+ 
+ @param signal - caller cancellation
+ 
+ @param perCallTimeoutMs - per-exchange deadline
+ 
+ @param l - stage logger
+ 
+ @returns One bounded proposal round after structure and fidelity selection
+ 
+ @example
+ ```ts
+ const round = await runConsolidationPolishRound({ client, sourceText, archiveText, baseText, mode: { kind: 'comparative' }, lineStructured: false, sliceIndex: 1, config, signal, perCallTimeoutMs, l, });
+ ```
  */
 export async function runConsolidationPolishRound(
   {
@@ -212,7 +212,7 @@ export async function runConsolidationPolishRound(
   }>,
 ): Promise<ConsolidationPolishRoundResult> {
   /**
-   * Paragraphs eligible under final-polish zero-length floor.
+   Paragraphs eligible under final-polish zero-length floor.
    */
   const {
     envelopes,
@@ -222,7 +222,7 @@ export async function runConsolidationPolishRound(
     minimumChars: FINAL_POLISH_MINIMUM_CHARS,
   },);
   /**
-   * Archive-wide and current-base definitions visible to structural guards.
+   Archive-wide and current-base definitions visible to structural guards.
    */
   const definitions = [
     config.definitions,
@@ -233,7 +233,7 @@ export async function runConsolidationPolishRound(
     },)
     .join('\n',);
   /**
-   * One refinement generation and candidate selection.
+   One refinement generation and candidate selection.
    */
   const refined = await runRefineStage({
     client,
@@ -264,29 +264,29 @@ export async function runConsolidationPolishRound(
     };
   }
   /**
-   * Refinement as it would ship: wrapped at its semantic boundaries unless the
-   * line-structure rule governs the slice, in which case as the refiner wrote
-   * it, on the evidence `wrapConsolidation` cites.
-   *
-   * BEFORE THE GATE, on the rule `wrapConsolidationProposals` states: the
-   * deciders judge the bytes that ship. Measured on keyword233, 2026-09-03: the
-   * consolidation slate shipped wrapped, this round then handed the refiner's
-   * single-line rewrite to the gate beside that wrapped base, a gate judge
-   * chose it because it "removes the stilted line breaks", and the page
-   * shipped single-line where the 2026-09-02 landing had one clause per line.
-   * Wrapped here, the comparison is between two texts written to the same
-   * rule, and what the gate approves is what the page carries.
+   Refinement as it would ship: wrapped at its semantic boundaries unless the
+   line-structure rule governs the slice, in which case as the refiner wrote
+   it, on the evidence `wrapConsolidation` cites.
+   
+   BEFORE THE GATE, on the rule `wrapConsolidationProposals` states: the
+   deciders judge the bytes that ship. Measured on keyword233, 2026-09-03: the
+   consolidation slate shipped wrapped, this round then handed the refiner's
+   single-line rewrite to the gate beside that wrapped base, a gate judge
+   chose it because it "removes the stilted line breaks", and the page
+   shipped single-line where the 2026-09-02 landing had one clause per line.
+   Wrapped here, the comparison is between two texts written to the same
+   rule, and what the gate approves is what the page carries.
    */
   const polished = lineStructured
     ? refined.refinedText
     : wrapReplacementText({ text: refined.refinedText, },);
   /**
-   * Whether the wrap altered what the refiner emitted.
+   Whether the wrap altered what the refiner emitted.
    */
   const rewrapped = polished !== refined.refinedText;
   /**
-   * Whether the wrap left nothing between the refinement and the base, which
-   * may itself stand unwrapped where it is the archive's own wording.
+   Whether the wrap left nothing between the refinement and the base, which
+   may itself stand unwrapped where it is the archive's own wording.
    */
   const demoted = (polished === baseText)
     || ((!lineStructured) && (polished === wrapReplacementText({ text: baseText, },)));
@@ -308,13 +308,13 @@ export async function runConsolidationPolishRound(
   }
   if (rewrapped) {
     /**
-     * Lines the refiner wrote.
+     Lines the refiner wrote.
      */
     const emittedLines = refined.refinedText
       .split('\n',)
       .length;
     /**
-     * Lines the rule would have it written on.
+     Lines the rule would have it written on.
      */
     const writtenLines = polished
       .split('\n',)
@@ -325,7 +325,7 @@ export async function runConsolidationPolishRound(
     );
   }
   /**
-   * Structural validity before semantic comparative gate.
+   Structural validity before semantic comparative gate.
    */
   const validation = validateTranslatedSlice({
     sourceText,
@@ -351,7 +351,7 @@ export async function runConsolidationPolishRound(
     };
   }
   /**
-   * Existing fidelity-first comparative panel.
+   Existing fidelity-first comparative panel.
    */
   const gate = await gateConsolidationPolish({
     client,
@@ -369,7 +369,7 @@ export async function runConsolidationPolishRound(
     l,
   },);
   /**
-   * Exact text selected by comparative gate.
+   Exact text selected by comparative gate.
    */
   const text = (gate.ships === 'polished')
     ? polished

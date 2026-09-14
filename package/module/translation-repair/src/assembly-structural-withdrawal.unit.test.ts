@@ -1,8 +1,8 @@
 /**
- * Whole-document proof that one structural withdrawal preserves unrelated translations.
- * Fixtures are cat-themed invention.
- *
- * @module
+ Whole-document proof that one structural withdrawal preserves unrelated translations.
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { type ChunkPair, guardFootnoteAssembly, prepareDocumentPair, singleStructuralWithdrawal, } from '../dist/final/node/index.mjs';

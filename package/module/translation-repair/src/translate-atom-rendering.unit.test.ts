@@ -1,14 +1,14 @@
 /**
- * Tests for the pools of renderings the original and the page disagree on,
- * and the findings drawn from them.
- *
- * WHAT THESE PIN is the owner's rule of 2026-09-04: where the page rendered
- * a reference another way, a candidate owes one rendering and not both;
- * a kind that diverges one way only stays owed as an addition or a drop.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the pools of renderings the original and the page disagree on,
+ and the findings drawn from them.
+ 
+ WHAT THESE PIN is the owner's rule of 2026-09-04: where the page rendered
+ a reference another way, a candidate owes one rendering and not both;
+ a kind that diverges one way only stays owed as an addition or a drop.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -24,16 +24,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Link atom for a destination.
- *
- * @param url - destination
- *
- * @returns Atom as the skeleton reader emits it
- *
- * @example
- * ```ts
- * const atom = link('https://a.example');
- * ```
+ Link atom for a destination.
+ 
+ @param url - destination
+ 
+ @returns Atom as the skeleton reader emits it
+ 
+ @example
+ ```ts
+ const atom = link('https://a.example');
+ ```
  */
 function link(url: string,): ProtectedAtom {
   return {
@@ -43,16 +43,16 @@ function link(url: string,): ProtectedAtom {
 }
 
 /**
- * Footnote atom for a marker.
- *
- * @param marker - footnote label
- *
- * @returns Atom as the skeleton reader emits it
- *
- * @example
- * ```ts
- * const atom = footnote('1');
- * ```
+ Footnote atom for a marker.
+ 
+ @param marker - footnote label
+ 
+ @returns Atom as the skeleton reader emits it
+ 
+ @example
+ ```ts
+ const atom = footnote('1');
+ ```
  */
 function footnote(marker: string,): ProtectedAtom {
   return {
@@ -62,17 +62,17 @@ function footnote(marker: string,): ProtectedAtom {
 }
 
 /**
- * Original's destination.
+ Original's destination.
  */
 const A = 'https://twitter.example/cat';
 
 /**
- * Page's rewritten destination.
+ Page's rewritten destination.
  */
 const B = 'https://x.example/cat';
 
 /**
- * Destination neither carries.
+ Destination neither carries.
  */
 const C = 'https://cats.example/naps';
 
@@ -145,7 +145,7 @@ await describe({
       name: 'REFUSES NEITHER AND BOTH, naming the two renderings and the count owed',
       fn: async () => {
         /**
-         * Findings over a candidate that dropped the reference.
+         Findings over a candidate that dropped the reference.
          */
         const neither = atomFindings({
           source: [link(A,),],
@@ -159,7 +159,7 @@ await describe({
             + 'either side; it carries 0.',
         ],);
         /**
-         * Findings over a candidate that carried both renderings.
+         Findings over a candidate that carried both renderings.
          */
         const both = atomFindings({
           source: [link(A,),],

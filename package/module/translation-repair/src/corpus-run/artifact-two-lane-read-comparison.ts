@@ -26,27 +26,27 @@ import type {
 // account for.
 
 /**
- * Derives the comparison from two ledgers, reporting a refusal as a parse
- * failure.
- *
- * Separate from the caller so the translation happens once and around the one
- * call that can raise the comparison's own error type.
- *
- * @param repair - repair lane's ledger
- *
- * @param translate - translate lane's ledger
- *
- * @param path - dotted path of the recorded comparison
- *
- * @returns Comparison version 2's rules derive
- *
- * @throws {@link ArtifactParseError} when the two ledgers cannot be compared at
- * all, carrying what the comparison said
- *
- * @example
- * ```ts
- * const derived = deriveComparison({ repair, translate, path, },);
- * ```
+ Derives the comparison from two ledgers, reporting a refusal as a parse
+ failure.
+ 
+ Separate from the caller so the translation happens once and around the one
+ call that can raise the comparison's own error type.
+ 
+ @param repair - repair lane's ledger
+ 
+ @param translate - translate lane's ledger
+ 
+ @param path - dotted path of the recorded comparison
+ 
+ @returns Comparison version 2's rules derive
+ 
+ @throws {@link ArtifactParseError} when the two ledgers cannot be compared at
+ all, carrying what the comparison said
+ 
+ @example
+ ```ts
+ const derived = deriveComparison({ repair, translate, path, },);
+ ```
  */
 function deriveComparison(
   {
@@ -75,26 +75,26 @@ function deriveComparison(
 }
 
 /**
- * Refuses an artifact whose recorded comparison disagrees with its ledgers.
- *
- * @param recorded - comparison the artifact carries
- *
- * @param repair - repair lane's ledger
- *
- * @param translate - translate lane's ledger
- *
- * @param path - dotted path of the recorded comparison
- *
- * @returns Comparison derived from the two ledgers, proven equal to the
- * recorded one
- *
- * @throws {@link ArtifactParseError} when the two ledgers cannot be compared at
- * all, when the counts differ, or when any row disagrees
- *
- * @example
- * ```ts
- * const comparison = assertRecordedComparisonMatches({ recorded, repair, translate, path, },);
- * ```
+ Refuses an artifact whose recorded comparison disagrees with its ledgers.
+ 
+ @param recorded - comparison the artifact carries
+ 
+ @param repair - repair lane's ledger
+ 
+ @param translate - translate lane's ledger
+ 
+ @param path - dotted path of the recorded comparison
+ 
+ @returns Comparison derived from the two ledgers, proven equal to the
+ recorded one
+ 
+ @throws {@link ArtifactParseError} when the two ledgers cannot be compared at
+ all, when the counts differ, or when any row disagrees
+ 
+ @example
+ ```ts
+ const comparison = assertRecordedComparisonMatches({ recorded, repair, translate, path, },);
+ ```
  */
 export function assertRecordedComparisonMatches(
   {
@@ -110,7 +110,7 @@ export function assertRecordedComparisonMatches(
   },
 ): readonly ArtifactComparisonRow[] {
   /**
-   * What version 2's own rules say about these two ledgers.
+   What version 2's own rules say about these two ledgers.
    */
   const derived = deriveComparison({
     repair,
@@ -130,7 +130,7 @@ export function assertRecordedComparisonMatches(
     row,
   ] of derived.entries()) {
     /**
-     * Row the artifact recorded at the same position.
+     Row the artifact recorded at the same position.
      */
     const theirs = recorded[position];
     if (theirs === undefined) {
@@ -144,9 +144,9 @@ export function assertRecordedComparisonMatches(
     // disk in whatever key order the file wrote them and key order is not part
     // of what a row says.
     /**
-     * Fields on which the stored row and the derived one disagree. NAMES ONLY:
-     * the rows carry the archive text and both lanes' output, and this reason
-     * reaches a marked class whose message every CLI prints (`#237`).
+     Fields on which the stored row and the derived one disagree. NAMES ONLY:
+     the rows carry the archive text and both lanes' output, and this reason
+     reaches a marked class whose message every CLI prints (`#237`).
      */
     const differing = comparisonRowDifferences({
       left: row,

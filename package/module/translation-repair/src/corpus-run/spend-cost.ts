@@ -30,108 +30,108 @@ import type {
 // ignores it will underread a run by however much the quiet calls cost.
 
 /**
- * One metered seat with what its tokens came to.
- *
- * @example
- * ```ts
- * const seat: PricedSeat = { ...spend, inputCredits: 3.4, outputCredits: 6.1, totalCredits: 9.5, };
- * ```
+ One metered seat with what its tokens came to.
+ 
+ @example
+ ```ts
+ const seat: PricedSeat = { ...spend, inputCredits: 3.4, outputCredits: 6.1, totalCredits: 9.5, };
+ ```
  */
 export type PricedSeat = SeatSpend & {
   /**
-   * Credits the prompt half came to at this model's input rate.
+   Credits the prompt half came to at this model's input rate.
    */
   readonly inputCredits: number;
 
   /**
-   * Credits the answer half came to, thinking included.
+   Credits the answer half came to, thinking included.
    */
   readonly outputCredits: number;
 
   /**
-   * Both halves together, which is what the balance actually moved by.
+   Both halves together, which is what the balance actually moved by.
    */
   readonly totalCredits: number;
 };
 
 /**
- * Everything a tally cost, with the seats no price could be put on kept apart.
- *
- * @example
- * ```ts
- * const cost = priceTally({ tally, },);
- * ```
+ Everything a tally cost, with the seats no price could be put on kept apart.
+ 
+ @example
+ ```ts
+ const cost = priceTally({ tally, },);
+ ```
  */
 export type SpendCost = {
   /**
-   * Metered seats the price table knew, costliest first.
+   Metered seats the price table knew, costliest first.
    */
   readonly priced: readonly PricedSeat[];
 
   /**
-   * Metered seats the price table had no row for.
-   *
-   * NAMED RATHER THAN COUNTED AT ZERO. A model the provider added after the
-   * table was read still bills, and a total that skipped it silently would
-   * report a cheaper run rather than an incomplete one.
+   Metered seats the price table had no row for.
+   
+   NAMED RATHER THAN COUNTED AT ZERO. A model the provider added after the
+   table was read still bills, and a total that skipped it silently would
+   report a cheaper run rather than an incomplete one.
    */
   readonly unpriced: readonly SeatSpend[];
 
   /**
-   * Seats on the flat subscription, carried with their tokens and no credits.
+   Seats on the flat subscription, carried with their tokens and no credits.
    */
   readonly subscription: readonly SeatSpend[];
 
   /**
-   * Seats billed in USD per token, on OpenRouter or on Bedrock, costliest
-   * first, each carrying the USD its lines reported.
-   *
-   * A FOURTH BUCKET AND A SECOND CURRENCY. Hypercredits and USD are never
-   * summed: the credit figure below stays a credit figure, and this bucket's
-   * total is `totalUsd`.
+   Seats billed in USD per token, on OpenRouter or on Bedrock, costliest
+   first, each carrying the USD its lines reported.
+   
+   A FOURTH BUCKET AND A SECOND CURRENCY. Hypercredits and USD are never
+   summed: the credit figure below stays a credit figure, and this bucket's
+   total is `totalUsd`.
    */
   readonly openRouter: readonly SeatSpend[];
 
   /**
-   * Credits every priced seat came to.
+   Credits every priced seat came to.
    */
   readonly totalCredits: number;
 
   /**
-   * USD every OpenRouter seat's lines reported, a floor over the calls whose
-   * line carried a cost.
+   USD every OpenRouter seat's lines reported, a floor over the calls whose
+   line carried a cost.
    */
   readonly totalUsd: number;
 
   /**
-   * Calls across every seat whose provider reported no usage at all, so a
-   * reader can see how much of the run the totals are a floor over.
+   Calls across every seat whose provider reported no usage at all, so a
+   reader can see how much of the run the totals are a floor over.
    */
   readonly unreportedCalls: number;
 
   /**
-   * Date the rates came from, carried so a report can print how old they are.
+   Date the rates came from, carried so a report can print how old they are.
    */
   readonly pricedAsOf: string;
 };
 
 /**
- * Prices one metered seat, or reports that the table has no row for it.
- *
- * @param seat - one seat's totals as `tallySpend` summed them
- *
- * @returns Seat with its credits, or that this model is not in the table
- *
- * @example
- * ```ts
- * const priced = priceSeat({ seat, },);
- * ```
+ Prices one metered seat, or reports that the table has no row for it.
+ 
+ @param seat - one seat's totals as `tallySpend` summed them
+ 
+ @returns Seat with its credits, or that this model is not in the table
+ 
+ @example
+ ```ts
+ const priced = priceSeat({ seat, },);
+ ```
  */
 function priceSeat(
   { seat, }: { readonly seat: SeatSpend; },
 ): PricedSeat | 'unpriced' {
   /**
-   * What this seat's two halves came to, absent where the model has no row.
+   What this seat's two halves came to, absent where the model has no row.
    */
   const credits = creditsFor({
     model: seat.model,
@@ -151,23 +151,23 @@ function priceSeat(
 }
 
 /**
- * Puts a price on every metered seat a tally holds.
- *
- * @param tally - per-seat totals read out of a run log
- *
- * @returns Priced seats costliest first, the metered seats no price covered,
- * the subscription seats, and what the priced ones came to
- *
- * @example
- * ```ts
- * const cost = priceTally({ tally: tallySpend({ lines, },), },);
- * ```
+ Puts a price on every metered seat a tally holds.
+ 
+ @param tally - per-seat totals read out of a run log
+ 
+ @returns Priced seats costliest first, the metered seats no price covered,
+ the subscription seats, and what the priced ones came to
+ 
+ @example
+ ```ts
+ const cost = priceTally({ tally: tallySpend({ lines, },), },);
+ ```
  */
 export function priceTally(
   { tally, }: { readonly tally: SpendTally; },
 ): SpendCost {
   /**
-   * Seats billed per token, which are the only ones a credit figure applies to.
+   Seats billed per token, which are the only ones a credit figure applies to.
    */
   const metered = tally
     .seats
@@ -176,7 +176,7 @@ export function priceTally(
     },);
 
   /**
-   * Seats on the flat subscription, kept with their tokens and no credits.
+   Seats on the flat subscription, kept with their tokens and no credits.
    */
   const subscription = tally
     .seats
@@ -185,7 +185,7 @@ export function priceTally(
     },);
 
   /**
-   * Seats billed in USD, costliest first by what their lines reported.
+   Seats billed in USD, costliest first by what their lines reported.
    */
   const openRouter = tally
     .seats
@@ -200,7 +200,7 @@ export function priceTally(
     },);
 
   /**
-   * What every OpenRouter seat's lines reported together.
+   What every OpenRouter seat's lines reported together.
    */
   const totalUsd = openRouter.reduce(
     function addUsd(
@@ -213,7 +213,7 @@ export function priceTally(
   );
 
   /**
-   * Metered seats paired with what they came to, priced or not.
+   Metered seats paired with what they came to, priced or not.
    */
   const attempted = metered.map(function price(seat,): {
     readonly seat: SeatSpend;
@@ -226,7 +226,7 @@ export function priceTally(
   },);
 
   /**
-   * Seats the table could price, costliest first.
+   Seats the table could price, costliest first.
    */
   const priced = attempted
     .flatMap(function keepPriced(attempt,): readonly PricedSeat[] {
@@ -240,8 +240,8 @@ export function priceTally(
     },);
 
   /**
-   * Seats the table had no row for, kept so the total reads as incomplete
-   * rather than as cheap.
+   Seats the table had no row for, kept so the total reads as incomplete
+   rather than as cheap.
    */
   const unpriced = attempted
     .filter(function isUnpriced(attempt,): boolean {
@@ -252,7 +252,7 @@ export function priceTally(
     },);
 
   /**
-   * What every priced seat came to together.
+   What every priced seat came to together.
    */
   const totalCredits = priced.reduce(
     function addCredits(
@@ -265,11 +265,11 @@ export function priceTally(
   );
 
   /**
-   * Calls across every seat whose provider reported no usage at all.
-   *
-   * COUNTED OVER EVERY SEAT rather than the priced ones, because a quiet call
-   * on a subscription seat is just as invisible to a reader as a quiet metered
-   * one, and the figure exists to say how much went unseen.
+   Calls across every seat whose provider reported no usage at all.
+   
+   COUNTED OVER EVERY SEAT rather than the priced ones, because a quiet call
+   on a subscription seat is just as invisible to a reader as a quiet metered
+   one, and the figure exists to say how much went unseen.
    */
   const unreportedCalls = tally
     .seats

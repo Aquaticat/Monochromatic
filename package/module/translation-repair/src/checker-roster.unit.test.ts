@@ -1,18 +1,18 @@
 /**
- * Tests for what a checker roster may look like: when a checker is allowed to
- * have written the text it grades, and how small the roster may get.
- *
- * TWO REFUSALS BEHAVE DIFFERENTLY AND THE DIFFERENCE IS THE POINT. Overlap is a
- * question about evidence quality, and `tallyResolutionChecks` can answer it by
- * halving a self-vote per issue, so the owner's ruling of 2026-08-23 sent it to
- * measurement behind a switch. A repeated id and a roster too small to decide
- * are not that kind of question: the first makes the quorum count disagree with
- * the ballot count, and the second makes disagreement return nothing at all.
- * Neither is rescued by any weighting, so neither honours the switch.
- *
- * Model ids come from the catalog because `RosterModelId` is a closed union.
- *
- * @module
+ Tests for what a checker roster may look like: when a checker is allowed to
+ have written the text it grades, and how small the roster may get.
+ 
+ TWO REFUSALS BEHAVE DIFFERENTLY AND THE DIFFERENCE IS THE POINT. Overlap is a
+ question about evidence quality, and `tallyResolutionChecks` can answer it by
+ halving a self-vote per issue, so the owner's ruling of 2026-08-23 sent it to
+ measurement behind a switch. A repeated id and a roster too small to decide
+ are not that kind of question: the first makes the quorum count disagree with
+ the ballot count, and the second makes disagreement return nothing at all.
+ Neither is rescued by any weighting, so neither honours the switch.
+ 
+ Model ids come from the catalog because `RosterModelId` is a closed union.
+ 
+ @module
  */
 
 import {
@@ -29,7 +29,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Writers as production seats them: three models that edit and refine.
+ Writers as production seats them: three models that edit and refine.
  */
 const WRITERS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
@@ -38,7 +38,7 @@ const WRITERS: readonly RosterModelId[] = [
 ];
 
 /**
- * Checkers as production seats them, disjoint from every writer.
+ Checkers as production seats them, disjoint from every writer.
  */
 const DISJOINT_CHECKERS: readonly RosterModelId[] = [
   'hf:Qwen/Qwen3.8-27B',
@@ -47,7 +47,7 @@ const DISJOINT_CHECKERS: readonly RosterModelId[] = [
 ];
 
 /**
- * Whole roster checking, which is the arm the measurement exists to price.
+ Whole roster checking, which is the arm the measurement exists to price.
  */
 const EVERY_MODEL: readonly RosterModelId[] = [
   ...WRITERS,

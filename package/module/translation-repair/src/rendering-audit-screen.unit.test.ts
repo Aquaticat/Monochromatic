@@ -1,16 +1,16 @@
 /**
- * Tests for what survives screening of one auditor's answer.
- *
- * THE OBLIGATION RUNS BOTH WAYS, and half of these cases exist for the
- * direction the first version left unenforced: a category resting on one side
- * must not carry a quote on the other. An `omission` arriving with candidate
- * text contradicts itself, and silently erasing that text let a voice file a
- * paired claim under a one-sided category and escape the evidence the paired
- * one asks for.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for what survives screening of one auditor's answer.
+ 
+ THE OBLIGATION RUNS BOTH WAYS, and half of these cases exist for the
+ direction the first version left unenforced: a category resting on one side
+ must not carry a quote on the other. An `omission` arriving with candidate
+ text contradicts itself, and silently erasing that text let a voice file a
+ paired claim under a one-sided category and escape the evidence the paired
+ one asks for.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -25,81 +25,81 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original every case screens against.
+ Original every case screens against.
  */
 const SOURCE_TEXT = '三只猫住在书店的阁楼里。她们不吃罐头，只喝温牛奶。';
 
 /**
- * Rendering with the negation dropped.
+ Rendering with the negation dropped.
  */
 const CANDIDATE_TEXT = 'Three cats live in the bookshop attic. They eat canned food, and drink warm milk.';
 
 /**
- * Characters of a model-supplied word a drop reason may repeat, as the screen
- * bounds it.
+ Characters of a model-supplied word a drop reason may repeat, as the screen
+ bounds it.
  */
 const DROPPED_WORD_LIMIT = 32;
 
 /**
- * Length of a single token that overruns that bound.
+ Length of a single token that overruns that bound.
  */
 const OVERLONG_LENGTH = 40;
 
 /**
- * Fields a case may replace on the sound finding.
- *
- * SPELLED OUT rather than derived from the wire type, because every property
- * here is genuinely optional to a case: one that changes only the category
- * should not restate four quotes it does not care about.
- *
- * @example
- * ```ts
- * const overrides: FindingOverrides = { category: 'omission', };
- * ```
+ Fields a case may replace on the sound finding.
+ 
+ SPELLED OUT rather than derived from the wire type, because every property
+ here is genuinely optional to a case: one that changes only the category
+ should not restate four quotes it does not care about.
+ 
+ @example
+ ```ts
+ const overrides: FindingOverrides = { category: 'omission', };
+ ```
  */
 type FindingOverrides = {
   /**
-   * Category this case names.
+   Category this case names.
    */
   readonly category?: string;
 
   /**
-   * Original span identifying the occurrence.
+   Original span identifying the occurrence.
    */
   readonly sourceLocator?: string;
 
   /**
-   * Original span carrying the change.
+   Original span carrying the change.
    */
   readonly sourceFocus?: string;
 
   /**
-   * Candidate span identifying the occurrence.
+   Candidate span identifying the occurrence.
    */
   readonly candidateLocator?: string;
 
   /**
-   * Candidate span carrying the change.
+   Candidate span carrying the change.
    */
   readonly candidateFocus?: string;
 
   /**
-   * What the voice says the spans amount to.
+   What the voice says the spans amount to.
    */
   readonly reason?: string;
 };
 
 /**
- * One finding with every field, which each case overrides one part of.
- *
- * @param overrides - fields this case changes
- *
- * @returns Finding as a voice would send it
- *
- * @example
- * ```ts
- * const finding = claim({ overrides: { category: 'omission', }, },);
- * ```
+ One finding with every field, which each case overrides one part of.
+ 
+ @param overrides - fields this case changes
+ 
+ @returns Finding as a voice would send it
+ 
+ @example
+ ```ts
+ const finding = claim({ overrides: { category: 'omission', }, },);
+ ```
  */
 function claim(
   { overrides, }: { readonly overrides: FindingOverrides; },
@@ -116,18 +116,18 @@ function claim(
 }
 
 /**
- * Screens one answer carrying one finding.
- *
- * @param overrides - fields that finding changes
- *
- * @param verdict - what the voice cast
- *
- * @returns Screened report
- *
- * @example
- * ```ts
- * const screened = screenOne({ overrides: {}, },);
- * ```
+ Screens one answer carrying one finding.
+ 
+ @param overrides - fields that finding changes
+ 
+ @param verdict - what the voice cast
+ 
+ @returns Screened report
+ 
+ @example
+ ```ts
+ const screened = screenOne({ overrides: {}, },);
+ ```
  */
 function screenOne(
   {

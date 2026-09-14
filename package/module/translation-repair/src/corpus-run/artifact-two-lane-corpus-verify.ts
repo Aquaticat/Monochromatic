@@ -32,18 +32,18 @@ import {
 // internals.
 
 /**
- * Runs one writer-side check and reports its refusal as a parse failure.
- *
- * @param check - check to run, which raises the writer's mismatch error
- *
- * @param path - dotted path the failure is reported under
- *
- * @throws {@link ArtifactParseError} carrying whatever the check said
- *
- * @example
- * ```ts
- * translating({ check: function counts() { assertResultCountsPreparation({ ... },); }, path, },);
- * ```
+ Runs one writer-side check and reports its refusal as a parse failure.
+ 
+ @param check - check to run, which raises the writer's mismatch error
+ 
+ @param path - dotted path the failure is reported under
+ 
+ @throws {@link ArtifactParseError} carrying whatever the check said
+ 
+ @example
+ ```ts
+ translating({ check: function counts() { assertResultCountsPreparation({ ... },); }, path, },);
+ ```
  */
 function translating(
   {
@@ -65,20 +65,20 @@ function translating(
 }
 
 /**
- * Refuses a measurement the preparation does not agree with.
- *
- * @param recorded - what the artifact says
- *
- * @param actual - what the preparation says
- *
- * @param path - dotted path of the recorded measurement
- *
- * @throws {@link ArtifactParseError} when they differ, naming both
- *
- * @example
- * ```ts
- * assertMeasured({ recorded: preparation.sliceCount, actual: prepared.slices.length, path, },);
- * ```
+ Refuses a measurement the preparation does not agree with.
+ 
+ @param recorded - what the artifact says
+ 
+ @param actual - what the preparation says
+ 
+ @param path - dotted path of the recorded measurement
+ 
+ @throws {@link ArtifactParseError} when they differ, naming both
+ 
+ @example
+ ```ts
+ assertMeasured({ recorded: preparation.sliceCount, actual: prepared.slices.length, path, },);
+ ```
  */
 function assertMeasured(
   {
@@ -102,31 +102,31 @@ function assertMeasured(
 }
 
 /**
- * Checks a parsed version 2 artifact against the preparation it claims to
- * describe.
- *
- * WHAT THIS ADDS over reading the file: the recorded identity is RECOMPUTED
- * rather than syntax-checked, every per-slice row is checked against the slice
- * the preparation actually produced, and every recorded measurement is checked
- * against the documents themselves.
- *
- * WHAT IT STILL CANNOT SAY: that the two raw lane results came from the same
- * run as the ledgers beside them. Each result reports the slice count of its
- * own preparation and that is checked here, which refuses a grossly mismatched
- * pairing and proves nothing finer.
- *
- * @param artifact - artifact as the version 2 reader returned it
- *
- * @param prepared - preparation whoever holds the corpus rebuilt
- *
- * @throws {@link ArtifactParseError} when the artifact describes a different
- * slicing, a different pair of documents, or measurements these documents do
- * not have
- *
- * @example
- * ```ts
- * verifyArtifactAgainstPreparation({ artifact, prepared, },);
- * ```
+ Checks a parsed version 2 artifact against the preparation it claims to
+ describe.
+ 
+ WHAT THIS ADDS over reading the file: the recorded identity is RECOMPUTED
+ rather than syntax-checked, every per-slice row is checked against the slice
+ the preparation actually produced, and every recorded measurement is checked
+ against the documents themselves.
+ 
+ WHAT IT STILL CANNOT SAY: that the two raw lane results came from the same
+ run as the ledgers beside them. Each result reports the slice count of its
+ own preparation and that is checked here, which refuses a grossly mismatched
+ pairing and proves nothing finer.
+ 
+ @param artifact - artifact as the version 2 reader returned it
+ 
+ @param prepared - preparation whoever holds the corpus rebuilt
+ 
+ @throws {@link ArtifactParseError} when the artifact describes a different
+ slicing, a different pair of documents, or measurements these documents do
+ not have
+ 
+ @example
+ ```ts
+ verifyArtifactAgainstPreparation({ artifact, prepared, },);
+ ```
  */
 export function verifyArtifactAgainstPreparation(
   {
@@ -138,13 +138,13 @@ export function verifyArtifactAgainstPreparation(
   },
 ): void {
   /**
-   * Name this preparation gives itself, recomputed from the documents rather
-   * than read out of the artifact.
+   Name this preparation gives itself, recomputed from the documents rather
+   than read out of the artifact.
    */
   const expected = preparationIdentity({ prepared, },);
 
   /**
-   * What the artifact says about the slicing.
+   What the artifact says about the slicing.
    */
   const { preparation, } = artifact;
   if (preparation.identity !== expected) {

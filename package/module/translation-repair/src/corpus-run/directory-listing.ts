@@ -21,24 +21,24 @@ import { errorName, } from '../error-name.ts';
 // name a person.
 
 /**
- * What listing one directory produced.
- *
- * ABSENCE IS A KIND rather than an empty list of names, because the two decide
- * different things. A directory that holds nothing and a directory that is not
- * there both yield nothing to work on, but only one of them says the caller
- * was pointed somewhere real.
- *
- * @example
- * ```ts
- * const reading: DirectoryReading = { kind: 'read', names: [], };
- * ```
+ What listing one directory produced.
+ 
+ ABSENCE IS A KIND rather than an empty list of names, because the two decide
+ different things. A directory that holds nothing and a directory that is not
+ there both yield nothing to work on, but only one of them says the caller
+ was pointed somewhere real.
+ 
+ @example
+ ```ts
+ const reading: DirectoryReading = { kind: 'read', names: [], };
+ ```
  */
 export type DirectoryReading =
   | {
     readonly kind: 'read';
 
     /**
-     * Everything the directory holds, in whatever order it gave them.
+     Everything the directory holds, in whatever order it gave them.
      */
     readonly names: readonly string[];
   }
@@ -46,27 +46,27 @@ export type DirectoryReading =
     readonly kind: 'unreadable';
 
     /**
-     * Filesystem reason, as a bounded token: `ENOENT`, `EACCES`, `ENOTDIR`.
+     Filesystem reason, as a bounded token: `ENOENT`, `EACCES`, `ENOTDIR`.
      */
     readonly reason: string;
   };
 
 /**
- * Narrows a caught value to one carrying a filesystem error code.
- *
- * POSITIONAL BY NECESSITY, against the house preference for a destructured
- * parameter: a type guard narrows the binding it names, and a parameter
- * destructured out of an object narrows nothing the caller holds.
- *
- * @param error - caught value, of unknown type by construction
- *
- * @returns Whether a `code` string can be read off it
- *
- * @example
- * ```ts
- * if (carriesFilesystemCode(error,))
- *   console.log(error.code,);
- * ```
+ Narrows a caught value to one carrying a filesystem error code.
+ 
+ POSITIONAL BY NECESSITY, against the house preference for a destructured
+ parameter: a type guard narrows the binding it names, and a parameter
+ destructured out of an object narrows nothing the caller holds.
+ 
+ @param error - caught value, of unknown type by construction
+ 
+ @returns Whether a `code` string can be read off it
+ 
+ @example
+ ```ts
+ if (carriesFilesystemCode(error,))
+   console.log(error.code,);
+ ```
  */
 function carriesFilesystemCode(error: unknown,): error is { readonly code: string; } {
   return ((typeof error) === 'object')
@@ -76,16 +76,16 @@ function carriesFilesystemCode(error: unknown,): error is { readonly code: strin
 }
 
 /**
- * Names why an operation on a path failed, for a reader deciding what to do.
- *
- * @param error - caught value, of unknown type by construction
- *
- * @returns Filesystem code, falling back to the class where there is none
- *
- * @example
- * ```ts
- * console.log(filesystemReason({ error, },),);
- * ```
+ Names why an operation on a path failed, for a reader deciding what to do.
+ 
+ @param error - caught value, of unknown type by construction
+ 
+ @returns Filesystem code, falling back to the class where there is none
+ 
+ @example
+ ```ts
+ console.log(filesystemReason({ error, },),);
+ ```
  */
 export function filesystemReason(
   { error, }: { readonly error: unknown; },
@@ -96,16 +96,16 @@ export function filesystemReason(
 }
 
 /**
- * Lists one directory, reporting an absent one rather than raising.
- *
- * @param dir - directory to list
- *
- * @returns Its names, or why it could not be listed
- *
- * @example
- * ```ts
- * const reading = await namesIn({ dir, },);
- * ```
+ Lists one directory, reporting an absent one rather than raising.
+ 
+ @param dir - directory to list
+ 
+ @returns Its names, or why it could not be listed
+ 
+ @example
+ ```ts
+ const reading = await namesIn({ dir, },);
+ ```
  */
 export async function namesIn(
   { dir, }: { readonly dir: string; },

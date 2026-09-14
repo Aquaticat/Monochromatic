@@ -1,9 +1,9 @@
 /**
- * Tests for the seal as the preparation applies it: a span the archive's note
- * calls the English original reaches no slice, is recorded on the
- * preparation, and is named in a finding.
- *
- * @module
+ Tests for the seal as the preparation applies it: a span the archive's note
+ calls the English original reaches no slice, is recorded on the
+ preparation, and is named in a finding.
+ 
+ @module
  */
 
 import {
@@ -20,19 +20,19 @@ import {
 //region Fixtures
 
 /**
- * hakureico's note above the letter.
+ hakureico's note above the letter.
  */
 const SPAN_NOTE = '这段话以下全部，包括结尾的两句祝愿，原文都是英文，中文是反向翻译的，请仅修可能造成误解或明显的非刻意语法错误，不大修';
 
 /**
- * Original: an intro, the back-translated letter and closing, and a footnote
- * definition the archive never rendered.
+ Original: an intro, the back-translated letter and closing, and a footnote
+ definition the archive never rendered.
  */
 const SOURCE_TEXT = '## 千歌的信\n\n千歌给她的朋友留下了一封信：\n\n> 我其实未曾离去\n>\n> 只是换了地方\n\n'
   + '是时候说晚安了，愿大家都能保持微笑。\n\n[^1]: 即 Google App Engine\n';
 
 /**
- * Archive: the intro, the note, the English letter and closing.
+ Archive: the intro, the note, the English letter and closing.
  */
 const TARGET_TEXT = '## Her Letter\n\nHanasaka left a letter for her only friend:\n\n'
   + `<!-- ${SPAN_NOTE}-->\n\n> I am never gone,\n>\n> Just changed where I live,\n\nTime to sleep friends, and keep smiling.\n`;
@@ -47,7 +47,7 @@ await describe({
         + 'to seal, and slices everything when not asked',
       fn: async () => {
         /**
-         * Sealed preparation.
+         Sealed preparation.
          */
         const sealed = prepareDocumentPair({
           sourceText: SOURCE_TEXT,
@@ -55,7 +55,7 @@ await describe({
           sealArchiveOriginal: true,
         },);
         /**
-         * Archive blocks the seal should cover: the letter and the closing.
+         Archive blocks the seal should cover: the letter and the closing.
          */
         const archive = parseDocument({ text: TARGET_TEXT, },);
         const sealedIds = archive.nodes
@@ -67,7 +67,7 @@ await describe({
           },);
         expect(sealedIds.length,).toBe(2,);
         /**
-         * Every archive block id the slices carry.
+         Every archive block id the slices carry.
          */
         const slicedTargetIds = sealed.slices
           .flatMap(function toIds(slice,): readonly string[] {
@@ -92,7 +92,7 @@ await describe({
           },),).toBe(false,);
 
         /**
-         * The same pair, unsealed.
+         The same pair, unsealed.
          */
         const open = prepareDocumentPair({
           sourceText: SOURCE_TEXT,
@@ -100,7 +100,7 @@ await describe({
         },);
         expect(open.archiveOriginalSpans,).toBeUndefined();
         /**
-         * Every archive block id the open slices carry.
+         Every archive block id the open slices carry.
          */
         const openTargetIds = open.slices
           .flatMap(function toIds(slice,): readonly string[] {
@@ -119,7 +119,7 @@ await describe({
       name: 'records nothing on an archive with no such note, sealed or not',
       fn: async () => {
         /**
-         * Archive without the note.
+         Archive without the note.
          */
         const plain = TARGET_TEXT.replace(
           `<!-- ${SPAN_NOTE}-->\n\n`,

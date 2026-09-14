@@ -1,7 +1,7 @@
 /**
- * Integration test for front matter through translate ensemble and assembly.
- *
- * @module
+ Integration test for front matter through translate ensemble and assembly.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -22,22 +22,22 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Source metadata under translation.
+ Source metadata under translation.
  */
 const SOURCE_TEXT = '---\nname: 猫猫\ninfo:\n  alias: 猫\n---\n';
 
 /**
- * Archive metadata carrying entry id as visible name.
+ Archive metadata carrying entry id as visible name.
  */
 const TARGET_TEXT = '---\nname: EntryId\ninfo:\n  alias: Maomao\n---\n';
 
 /**
- * Source-faithful candidate retaining target shape.
+ Source-faithful candidate retaining target shape.
  */
 const CORRECTED_TEXT = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
 
 /**
- * Models producing and judging fixture slate.
+ Models producing and judging fixture slate.
  */
 const ROSTER: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
@@ -49,21 +49,21 @@ const ROSTER: readonly RosterModelId[] = [
 ];
 
 /**
- * Finds candidate containing expected corrected metadata.
- *
- * @param content - complete judge sheet
- *
- * @returns One-based candidate position
+ Finds candidate containing expected corrected metadata.
+ 
+ @param content - complete judge sheet
+ 
+ @returns One-based candidate position
  */
 function correctedCandidate({ content, }: { readonly content: string; }): number {
   const [, ...blocks] = content.split('CANDIDATE ',);
   for (const block of blocks) {
     /**
-     * Candidate heading carrying one-based position.
+     Candidate heading carrying one-based position.
      */
     const [heading = '',] = block.split('\n',);
     /**
-     * Parsed candidate position.
+     Parsed candidate position.
      */
     const position = Math.trunc(Number(heading,),);
     if (Number.isInteger(position,) && block.includes('name: Maomao',))
@@ -73,11 +73,11 @@ function correctedCandidate({ content, }: { readonly content: string; }): number
 }
 
 /**
- * Client returning corrected metadata and selecting it.
- *
- * @param prompts - model prompts captured for rule reach assertion
- *
- * @returns Scripted client
+ Client returning corrected metadata and selecting it.
+ 
+ @param prompts - model prompts captured for rule reach assertion
+ 
+ @returns Scripted client
  */
 function frontMatterClient({ prompts, }: { readonly prompts: string[]; }): SyntheticClient {
   return {

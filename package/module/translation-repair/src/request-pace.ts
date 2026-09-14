@@ -30,73 +30,73 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 // the retry ladder honours the refusal's own wait for that.
 
 /**
- * Logger root for the pacer.
+ Logger root for the pacer.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Length of Hyper's window: a rolling hour, in milliseconds.
+ Length of Hyper's window: a rolling hour, in milliseconds.
  */
 export const HYPER_PACE_WINDOW_MS = 3_600_000;
 
 /**
- * Environment variable overriding how many Hyper requests may start in any
- * rolling hour.
+ Environment variable overriding how many Hyper requests may start in any
+ rolling hour.
  */
 export const HYPER_REQUESTS_PER_HOUR_VAR = 'TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR';
 
 /**
- * Requests in any rolling hour the pacer allows Hyper by default: the account's
- * limit as the owner stated it and as the 2026-09-03 refusals bear out.
+ Requests in any rolling hour the pacer allows Hyper by default: the account's
+ limit as the owner stated it and as the 2026-09-03 refusals bear out.
  */
 export const HYPER_REQUESTS_PER_HOUR = 1_000;
 
 /**
- * What a pacer offers: a turn to start one request, granted when the window
- * has room.
- *
- * @example
- * ```ts
- * const pace: RequestPace = createRequestPace({ perWindow: 1_000, windowMs: 3_600_000, },);
- * await pace.take({ signal, },);
- * ```
+ What a pacer offers: a turn to start one request, granted when the window
+ has room.
+ 
+ @example
+ ```ts
+ const pace: RequestPace = createRequestPace({ perWindow: 1_000, windowMs: 3_600_000, },);
+ await pace.take({ signal, },);
+ ```
  */
 export type RequestPace = {
   /**
-   * Waits until one more request may start inside the window, then records
-   * the start.
-   *
-   * @throws The signal's reason when the caller aborts while waiting
+   Waits until one more request may start inside the window, then records
+   the start.
+   
+   @throws The signal's reason when the caller aborts while waiting
    */
   readonly take: (input: { readonly signal: AbortSignal; }) => Promise<void>;
 
   /**
-   * How many starts the window currently holds.
+   How many starts the window currently holds.
    */
   readonly inWindow: () => number;
 };
 
 /**
- * Builds a pacer over a sliding window.
- *
- * TAKES ARE SERIALISED through one promise chain, so two calls arriving
- * together cannot both read a window with one free place and both start.
- *
- * @param perWindow - starts allowed in any window; not positive means no
- * pacing, which is what tests and a provider without a rate limit want
- *
- * @param windowMs - window length
- *
- * @param now - clock, injectable for tests
- *
- * @param wait - sleeper, injectable for tests
- *
- * @returns Pacer
- *
- * @example
- * ```ts
- * const pace = createRequestPace({ perWindow: 1_000, windowMs: 3_600_000, },);
- * ```
+ Builds a pacer over a sliding window.
+ 
+ TAKES ARE SERIALISED through one promise chain, so two calls arriving
+ together cannot both read a window with one free place and both start.
+ 
+ @param perWindow - starts allowed in any window; not positive means no
+ pacing, which is what tests and a provider without a rate limit want
+ 
+ @param windowMs - window length
+ 
+ @param now - clock, injectable for tests
+ 
+ @param wait - sleeper, injectable for tests
+ 
+ @returns Pacer
+ 
+ @example
+ ```ts
+ const pace = createRequestPace({ perWindow: 1_000, windowMs: 3_600_000, },);
+ ```
  */
 export function createRequestPace(
   {
@@ -112,27 +112,27 @@ export function createRequestPace(
   },
 ): RequestPace {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: createRequestPace.name,
     l,
   },);
   /**
-   * Start times inside the window, oldest first.
+   Start times inside the window, oldest first.
    */
   const starts: number[] = [];
   /**
-   * The chain every take joins, so takes resolve in arrival order.
+   The chain every take joins, so takes resolve in arrival order.
    */
   const turn: { current: Promise<void>; } = { current: Promise.resolve(), };
 
   /**
-   * Drops starts that have left the window.
+   Drops starts that have left the window.
    */
   function prune(): void {
     /**
-     * Oldest moment still inside the window.
+     Oldest moment still inside the window.
      */
     const edge = now() - windowMs;
     while ((starts.length > 0) && ((starts[0] ?? edge) <= edge))
@@ -140,9 +140,9 @@ export function createRequestPace(
   }
 
   /**
-   * Waits for room in the window, then records this start.
-   *
-   * @param signal - the caller's abort
+   Waits for room in the window, then records this start.
+   
+   @param signal - the caller's abort
    */
   async function admit({ signal, }: { readonly signal: AbortSignal; },): Promise<void> {
     // A caller that gave up while queued behind the chain must not take a
@@ -151,11 +151,11 @@ export function createRequestPace(
     prune();
     if ((perWindow > 0) && (starts.length >= perWindow)) {
       /**
-       * When the oldest start leaves the window.
+       When the oldest start leaves the window.
        */
       const until = (starts[0] ?? now()) + windowMs;
       /**
-       * How long until then.
+       How long until then.
        */
       const ms = Math.max(
         0,
@@ -173,11 +173,11 @@ export function createRequestPace(
     take: async function take({ signal, },): Promise<void> {
       signal.throwIfAborted();
       /**
-       * The take ahead of this one.
+       The take ahead of this one.
        */
       const previous = turn.current;
       /**
-       * This take, queued behind it.
+       This take, queued behind it.
        */
       const mine = (async function queued(): Promise<void> {
         await previous;
@@ -200,28 +200,28 @@ export function createRequestPace(
 }
 
 /**
- * Requests per rolling hour the environment asks for, or the default.
- *
- * @param env - environment to read
- *
- * @returns Positive number from the variable, else the default
- *
- * @example
- * ```ts
- * const perHour = hyperRequestsPerHour({ env: process.env, },);
- * ```
+ Requests per rolling hour the environment asks for, or the default.
+ 
+ @param env - environment to read
+ 
+ @returns Positive number from the variable, else the default
+ 
+ @example
+ ```ts
+ const perHour = hyperRequestsPerHour({ env: process.env, },);
+ ```
  */
 export function hyperRequestsPerHour(
   { env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },
 ): number {
   /**
-   * Raw value when set.
+   Raw value when set.
    */
   const raw = env[HYPER_REQUESTS_PER_HOUR_VAR] ?? '';
   if (raw === '')
     return HYPER_REQUESTS_PER_HOUR;
   /**
-   * Parsed value.
+   Parsed value.
    */
   const parsed = Number(raw,);
   return (Number.isFinite(parsed,) && (parsed > 0)) ? parsed : HYPER_REQUESTS_PER_HOUR;

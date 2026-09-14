@@ -21,7 +21,7 @@ import { parseConsolidationPolish, } from './artifact-two-lane-read-polish.ts';
 //region Artifact consolidated slice read
 
 /**
- * Ways settlement can leave stage, including retired artifact spelling.
+ Ways settlement can leave stage, including retired artifact spelling.
  */
 const TERMINAL_NAMES: readonly ArtifactConsolidationTerminal[] = [
   'incumbent-only',
@@ -36,18 +36,18 @@ const TERMINAL_NAMES: readonly ArtifactConsolidationTerminal[] = [
 ];
 
 /**
- * Reads what fidelity gate settled or that it was never asked.
- *
- * @param value - gate field
- *
- * @param path - artifact path
- *
- * @returns Parsed gate record
- *
- * @example
- * ```ts
- * const gate = parseGate({ value, path, });
- * ```
+ Reads what fidelity gate settled or that it was never asked.
+ 
+ @param value - gate field
+ 
+ @param path - artifact path
+ 
+ @returns Parsed gate record
+ 
+ @example
+ ```ts
+ const gate = parseGate({ value, path, });
+ ```
  */
 function parseGate(
   {
@@ -59,7 +59,7 @@ function parseGate(
   },
 ): ArtifactConsolidateSlice['gate'] {
   /**
-   * Gate field as record.
+   Gate field as record.
    */
   const record = requireRecord({
     value,
@@ -89,14 +89,14 @@ function parseGate(
     path,
   },);
   /**
-   * Every gate ballot.
+   Every gate ballot.
    */
   const ballotRows = requireArray({
     value: record.ballots,
     path: `${path}.ballots`,
   },);
   /**
-   * Parsed gate ballots.
+   Parsed gate ballots.
    */
   const ballots = ballotRows.map(function readOne(
     entry,
@@ -108,7 +108,7 @@ function parseGate(
     },);
   },);
   /**
-   * Recorded usable voice count.
+   Recorded usable voice count.
    */
   const usable = requireCount({
     value: record.usable,
@@ -128,31 +128,31 @@ function parseGate(
 }
 
 /**
- * Reads one consolidated slice under generation-selected shape.
- *
- * @param value - slice record
- *
- * @param path - artifact path
- *
- * @param keys - generation key spellings
- *
- * @param polishRequired - whether generation records final body polish
- *
- * @param reviewRequired - whether polish record carries absolute naturalness review
- *
- * @param correctionChainRequired - whether review carries digest-bound corrections
- *
- * @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
- * block rather than the refinable paragraphs alone
- *
- * @param quorumBasisRequired - whether review rounds retain their wider quorum
- *
- * @returns Parsed consolidation slice
- *
- * @example
- * ```ts
- * const slice = parseConsolidateSlice({ value, path, keys, polishRequired: true, });
- * ```
+ Reads one consolidated slice under generation-selected shape.
+ 
+ @param value - slice record
+ 
+ @param path - artifact path
+ 
+ @param keys - generation key spellings
+ 
+ @param polishRequired - whether generation records final body polish
+ 
+ @param reviewRequired - whether polish record carries absolute naturalness review
+ 
+ @param correctionChainRequired - whether review carries digest-bound corrections
+ 
+ @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
+ block rather than the refinable paragraphs alone
+ 
+ @param quorumBasisRequired - whether review rounds retain their wider quorum
+ 
+ @returns Parsed consolidation slice
+ 
+ @example
+ ```ts
+ const slice = parseConsolidateSlice({ value, path, keys, polishRequired: true, });
+ ```
  */
 export function parseConsolidateSlice(
   {
@@ -176,7 +176,7 @@ export function parseConsolidateSlice(
   },
 ): ArtifactConsolidateSlice {
   /**
-   * Slice as exact record.
+   Slice as exact record.
    */
   const record = requireRecord({
     value,
@@ -197,7 +197,7 @@ export function parseConsolidateSlice(
     path,
   },);
   /**
-   * Known terminal name.
+   Known terminal name.
    */
   const terminal = TERMINAL_NAMES.find(function matches(known,): boolean {
     return known === record.terminal;
@@ -209,14 +209,14 @@ export function parseConsolidateSlice(
     },);
   }
   /**
-   * Unknown proposal verdict rows.
+   Unknown proposal verdict rows.
    */
   const verdictRows = requireArray({
     value: record.verdicts,
     path: `${path}.verdicts`,
   },);
   /**
-   * Parsed structural verdicts.
+   Parsed structural verdicts.
    */
   const verdicts = verdictRows.map(function readOne(
     entry,

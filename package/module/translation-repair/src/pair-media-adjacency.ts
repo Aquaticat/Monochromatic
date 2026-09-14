@@ -13,58 +13,58 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 // stages. Ambiguous gaps remain unclaimed and fail closed later.
 
 /**
- * Pairing after structural media claims, with count-only findings.
- *
- * @example
- * ```ts
- * const claimed: MediaAdjacentClaim = { pairs: [], findings: [], };
- * ```
+ Pairing after structural media claims, with count-only findings.
+ 
+ @example
+ ```ts
+ const claimed: MediaAdjacentClaim = { pairs: [], findings: [], };
+ ```
  */
 export type MediaAdjacentClaim = {
   /**
-   * Original pairs plus safely claimed target blocks.
+   Original pairs plus safely claimed target blocks.
    */
   readonly pairs: readonly BlockPair[];
 
   /**
-   * One finding per claimed run.
+   One finding per claimed run.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Inclusive run of unclaimed target indices.
+ Inclusive run of unclaimed target indices.
  */
 type TargetRun = {
   /**
-   * First target index.
+   First target index.
    */
   readonly start: number;
 
   /**
-   * Last target index.
+   Last target index.
    */
   readonly end: number;
 };
 
 /**
- * Sentinel for run with no unambiguous media owner.
+ Sentinel for run with no unambiguous media owner.
  */
 const MEDIA_OWNER_UNRESOLVED: unique symbol = Symbol('media owner unresolved');
 
 /**
- * Finds contiguous target-index runs no pair claims.
- *
- * @param targetCount - target block count
- *
- * @param claimed - target indices already paired
- *
- * @returns Unclaimed runs in target order
- *
- * @example
- * ```ts
- * const runs = unclaimedRuns({ targetCount: 4, claimed: new Set([0, 3]), });
- * ```
+ Finds contiguous target-index runs no pair claims.
+ 
+ @param targetCount - target block count
+ 
+ @param claimed - target indices already paired
+ 
+ @returns Unclaimed runs in target order
+ 
+ @example
+ ```ts
+ const runs = unclaimedRuns({ targetCount: 4, claimed: new Set([0, 3]), });
+ ```
  */
 function unclaimedRuns(
   {
@@ -76,15 +76,15 @@ function unclaimedRuns(
   },
 ): readonly TargetRun[] {
   /**
-   * Runs found so far.
+   Runs found so far.
    */
   const runs: TargetRun[] = [];
   /**
-   * Last possible target index.
+   Last possible target index.
    */
   const lastTargetIndex = targetCount - 1;
   /**
-   * Target index under inspection.
+   Target index under inspection.
    */
   let cursor = 0;
   while (cursor < targetCount) {
@@ -93,12 +93,12 @@ function unclaimedRuns(
       continue;
     }
     /**
-     * First unclaimed target in this run.
+     First unclaimed target in this run.
      */
     const start = cursor;
     while (cursor < lastTargetIndex) {
       /**
-       * Candidate next target in this run.
+       Candidate next target in this run.
        */
       const next = cursor + 1;
       if (claimed.has(next,))
@@ -115,20 +115,20 @@ function unclaimedRuns(
 }
 
 /**
- * Reports whether paired blocks share at least one named picture asset.
- *
- * @param pair - source and target indices
- *
- * @param sourceBlocks - source block list
- *
- * @param targetBlocks - target block list
- *
- * @returns Whether both blocks name same asset
- *
- * @example
- * ```ts
- * const shared = pairSharesMedia({ pair, sourceBlocks, targetBlocks, });
- * ```
+ Reports whether paired blocks share at least one named picture asset.
+ 
+ @param pair - source and target indices
+ 
+ @param sourceBlocks - source block list
+ 
+ @param targetBlocks - target block list
+ 
+ @returns Whether both blocks name same asset
+ 
+ @example
+ ```ts
+ const shared = pairSharesMedia({ pair, sourceBlocks, targetBlocks, });
+ ```
  */
 function pairSharesMedia(
   {
@@ -142,17 +142,17 @@ function pairSharesMedia(
   },
 ): boolean {
   /**
-   * Source block this pair names.
+   Source block this pair names.
    */
   const source = sourceBlocks[pair.source];
   /**
-   * Target block this pair names.
+   Target block this pair names.
    */
   const target = targetBlocks[pair.target];
   if ((source === undefined) || (target === undefined))
     return false;
   /**
-   * Source asset names.
+   Source asset names.
    */
   const sourceAssets = new Set(photoReferences({ text: source.text, })
     .map(function toAsset(reference,): string {
@@ -167,20 +167,20 @@ function pairSharesMedia(
 }
 
 /**
- * Reports whether run exactly occupies one details container.
- *
- * @param run - unclaimed target run
- *
- * @param targetBlocks - parsed target blocks
- *
- * @param targetContainers - parsed target containers
- *
- * @returns Whether run is explicit archive transcript container
- *
- * @example
- * ```ts
- * const enclosed = isDetailsRun({ run, targetBlocks, targetContainers, });
- * ```
+ Reports whether run exactly occupies one details container.
+ 
+ @param run - unclaimed target run
+ 
+ @param targetBlocks - parsed target blocks
+ 
+ @param targetContainers - parsed target containers
+ 
+ @returns Whether run is explicit archive transcript container
+ 
+ @example
+ ```ts
+ const enclosed = isDetailsRun({ run, targetBlocks, targetContainers, });
+ ```
  */
 function isDetailsRun(
   {
@@ -194,11 +194,11 @@ function isDetailsRun(
   },
 ): boolean {
   /**
-   * First block in run.
+   First block in run.
    */
   const first = targetBlocks[run.start];
   /**
-   * Last block in run.
+   Last block in run.
    */
   const last = targetBlocks[run.end];
   if ((first === undefined) || (last === undefined))
@@ -211,20 +211,20 @@ function isDetailsRun(
 }
 
 /**
- * Finds one source owning run from media anchors on run boundaries.
- *
- * @param run - unclaimed target run
- *
- * @param pairs - roster-agreed pairs
- *
- * @param mediaPairs - subset sharing media
- *
- * @returns Source index when every media boundary names same source
- *
- * @example
- * ```ts
- * const owner = mediaOwner({ run, pairs, mediaPairs, });
- * ```
+ Finds one source owning run from media anchors on run boundaries.
+ 
+ @param run - unclaimed target run
+ 
+ @param pairs - roster-agreed pairs
+ 
+ @param mediaPairs - subset sharing media
+ 
+ @returns Source index when every media boundary names same source
+ 
+ @example
+ ```ts
+ const owner = mediaOwner({ run, pairs, mediaPairs, });
+ ```
  */
 function mediaOwner(
   {
@@ -238,19 +238,19 @@ function mediaOwner(
   },
 ): number | typeof MEDIA_OWNER_UNRESOLVED {
   /**
-   * Claimed pair immediately before run.
+   Claimed pair immediately before run.
    */
   const before = pairs.findLast(function beforeRun(pair,): boolean {
     return pair.target < run.start;
   },);
   /**
-   * Claimed pair immediately after run.
+   Claimed pair immediately after run.
    */
   const after = pairs.find(function afterRun(pair,): boolean {
     return pair.target > run.end;
   },);
   /**
-   * Boundary media pairs, absent for non-media boundaries.
+   Boundary media pairs, absent for non-media boundaries.
    */
   const mediaBoundaries = [
     before,
@@ -259,7 +259,7 @@ function mediaOwner(
     return (pair !== undefined) && mediaPairs.has(pair,);
   },);
   /**
-   * Distinct source indices media boundaries name.
+   Distinct source indices media boundaries name.
    */
   const owners = [...new Set(mediaBoundaries.map(function toSource(pair,): number {
     return pair.source;
@@ -270,24 +270,24 @@ function mediaOwner(
 }
 
 /**
- * Claims unpaired target runs next to source-matched media marker.
- *
- * @param pairs - roster-agreed block correspondences
- *
- * @param sourceBlocks - parsed source blocks
- *
- * @param targetBlocks - parsed target blocks
- *
- * @param targetContainers - parsed target containers proving transcript boundary
- *
- * @returns Pairing widened only across unambiguous media transcript gaps
- *
- * @throws BlockPairingError if widened result is not monotone
- *
- * @example
- * ```ts
- * const claim = claimMediaAdjacentTargets({ pairs, sourceBlocks, targetBlocks, targetContainers, });
- * ```
+ Claims unpaired target runs next to source-matched media marker.
+ 
+ @param pairs - roster-agreed block correspondences
+ 
+ @param sourceBlocks - parsed source blocks
+ 
+ @param targetBlocks - parsed target blocks
+ 
+ @param targetContainers - parsed target containers proving transcript boundary
+ 
+ @returns Pairing widened only across unambiguous media transcript gaps
+ 
+ @throws BlockPairingError if widened result is not monotone
+ 
+ @example
+ ```ts
+ const claim = claimMediaAdjacentTargets({ pairs, sourceBlocks, targetBlocks, targetContainers, });
+ ```
  */
 export function claimMediaAdjacentTargets(
   {
@@ -303,13 +303,13 @@ export function claimMediaAdjacentTargets(
   },
 ): MediaAdjacentClaim {
   /**
-   * Existing target claims.
+   Existing target claims.
    */
   const claimed = new Set(pairs.map(function toTarget(pair,): number {
     return pair.target;
   },),);
   /**
-   * Existing pairs whose blocks share media.
+   Existing pairs whose blocks share media.
    */
   const mediaPairs = new Set(pairs.filter(function sharesMedia(pair,): boolean {
     return pairSharesMedia({
@@ -326,7 +326,7 @@ export function claimMediaAdjacentTargets(
   }
 
   /**
-   * Target runs no roster pair claims.
+   Target runs no roster pair claims.
    */
   const runs = unclaimedRuns({
     targetCount: targetBlocks.length,
@@ -334,7 +334,7 @@ export function claimMediaAdjacentTargets(
   },);
 
   /**
-   * New pairs contributed by unambiguous media gaps.
+   New pairs contributed by unambiguous media gaps.
    */
   const added = runs.flatMap(function claimRun(run,): readonly BlockPair[] {
     if (!isDetailsRun({
@@ -344,7 +344,7 @@ export function claimMediaAdjacentTargets(
     },))
       return [];
     /**
-     * Source marker owning this run.
+     Source marker owning this run.
      */
     const source = mediaOwner({
       run,
@@ -357,11 +357,11 @@ export function claimMediaAdjacentTargets(
       return [];
     }
     /**
-     * Distance from first to last target.
+     Distance from first to last target.
      */
     const inclusiveSpan = run.end - run.start;
     /**
-     * Count of targets in run.
+     Count of targets in run.
      */
     const runLength = inclusiveSpan + 1;
     return Array.from(
@@ -385,7 +385,7 @@ export function claimMediaAdjacentTargets(
   }
 
   /**
-   * Original and structural pairs in monotone order.
+   Original and structural pairs in monotone order.
    */
   const widened = [
     ...pairs,
@@ -395,7 +395,7 @@ export function claimMediaAdjacentTargets(
     right,
   ): number {
     /**
-     * Source ordering, zero when both name same source.
+     Source ordering, zero when both name same source.
      */
     const sourceOrder = left.source - right.source;
     if (sourceOrder !== 0)
@@ -403,7 +403,7 @@ export function claimMediaAdjacentTargets(
     return left.target - right.target;
   },);
   /**
-   * Result re-read through same monotonicity guard model replies use.
+   Result re-read through same monotonicity guard model replies use.
    */
   const checked = readBlockPairing({
     value: { pairs: widened, },

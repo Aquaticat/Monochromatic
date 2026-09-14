@@ -1,19 +1,19 @@
 /**
- * Tests for what one auditor is actually asked.
- *
- * WHY THESE ARE WORTH PINNING: the taxonomy in this prompt is what decides
- * whether two voices describing one defect describe it the same way, and a
- * vocabulary that grows without its definition growing too would fragment the
- * labels silently. The drift cases below fail the moment a category is added to
- * the wire and not defined here.
- *
- * THE FENCE CASE IS ADVERSARIAL: both texts are pasted into a fenced block, and
- * a passage carrying its own fence run would otherwise close the block early
- * and turn its own tail into instructions.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for what one auditor is actually asked.
+ 
+ WHY THESE ARE WORTH PINNING: the taxonomy in this prompt is what decides
+ whether two voices describing one defect describe it the same way, and a
+ vocabulary that grows without its definition growing too would fragment the
+ labels silently. The drift cases below fail the moment a category is added to
+ the wire and not defined here.
+ 
+ THE FENCE CASE IS ADVERSARIAL: both texts are pasted into a fenced block, and
+ a passage carrying its own fence run would otherwise close the block early
+ and turn its own tail into instructions.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -31,28 +31,28 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original every case is built from.
+ Original every case is built from.
  */
 const SOURCE_TEXT = '三只猫住在书店的阁楼里。她们不吃罐头。';
 
 /**
- * Rendering of it.
+ Rendering of it.
  */
 const CANDIDATE_TEXT = 'Three cats live in the bookshop attic. They do not eat canned food.';
 
 /**
- * One turn of one audit call.
- *
- * @param role - which turn to read
- *
- * @param subject - what to ask about
- *
- * @returns Content of that turn
- *
- * @example
- * ```ts
- * const asked = turn({ role: 'user', subject, },);
- * ```
+ One turn of one audit call.
+ 
+ @param role - which turn to read
+ 
+ @param subject - what to ask about
+ 
+ @returns Content of that turn
+ 
+ @example
+ ```ts
+ const asked = turn({ role: 'user', subject, },);
+ ```
  */
 function turn(
   {
@@ -78,7 +78,7 @@ function turn(
 }
 
 /**
- * Subject every case without its own texts uses.
+ Subject every case without its own texts uses.
  */
 const PLAIN_SUBJECT = {
   sourceText: SOURCE_TEXT,
@@ -204,8 +204,8 @@ await describe({
         + 'close the block it was pasted into and have its tail read as instructions',
       fn: async () => {
         /**
-         * Candidate carrying a longer fence run than the default, followed by an
-         * instruction it would like the auditor to obey.
+         Candidate carrying a longer fence run than the default, followed by an
+         instruction it would like the auditor to obey.
          */
         const fencedCandidate = [
           '````',

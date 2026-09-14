@@ -1,19 +1,19 @@
 /**
- * Tests for the content volume bound and the shared self-ended predicate.
- *
- * The bound exists because repetition cannot see this failure: a model writing
- * ten times more answer than any legitimate call is not repeating itself, so
- * every window is distinct and both detectors report a healthy stream while it
- * runs to the wall clock.
- *
- * The reasoning half of the same idea was measured and REFUSED, and one test
- * here pins that refusal so it cannot be reintroduced by someone reading only
- * the symmetry. `doc/decision/translation-repair-runaway-call-termination.md`
- * carries the numbers.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the content volume bound and the shared self-ended predicate.
+ 
+ The bound exists because repetition cannot see this failure: a model writing
+ ten times more answer than any legitimate call is not repeating itself, so
+ every window is distinct and both detectors report a healthy stream while it
+ runs to the wall clock.
+ 
+ The reasoning half of the same idea was measured and REFUSED, and one test
+ here pins that refusal so it cannot be reintroduced by someone reading only
+ the symmetry. `doc/decision/translation-repair-runaway-call-termination.md`
+ carries the numbers.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -32,18 +32,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one server-sent event frame carrying text on one channel.
- *
- * @param channel - which channel the text arrives on
- *
- * @param text - text the frame carries
- *
- * @returns Frame as the wire sends it
- *
- * @example
- * ```ts
- * const raw = frameOf({ channel: 'content', text: 'The cat sat. ', },);
- * ```
+ Builds one server-sent event frame carrying text on one channel.
+ 
+ @param channel - which channel the text arrives on
+ 
+ @param text - text the frame carries
+ 
+ @returns Frame as the wire sends it
+ 
+ @example
+ ```ts
+ const raw = frameOf({ channel: 'content', text: 'The cat sat. ', },);
+ ```
  */
 function frameOf(
   {
@@ -55,7 +55,7 @@ function frameOf(
   },
 ): string {
   /**
-   * Delta object, whose field name distinguishes the channels.
+   Delta object, whose field name distinguishes the channels.
    */
   const delta = (channel === 'content') ? { content: text, } : { reasoning_content: text, };
 
@@ -71,30 +71,30 @@ function frameOf(
 }
 
 /**
- * Builds internally varied cat-themed text of at least `length` characters.
- *
- * VARIED BY CONSTRUCTION, so a volume test measures volume rather than
- * tripping the repetition detectors on the way past the bound. A padded single
- * sentence would end the stream as degenerate long before the bound was
- * reached, and the test would pass while proving nothing about volume.
- *
- * @param length - characters to reach
- *
- * @returns Varied text of at least that many characters
- *
- * @example
- * ```ts
- * const answer = variedText({ length: 11_000, },);
- * ```
+ Builds internally varied cat-themed text of at least `length` characters.
+ 
+ VARIED BY CONSTRUCTION, so a volume test measures volume rather than
+ tripping the repetition detectors on the way past the bound. A padded single
+ sentence would end the stream as degenerate long before the bound was
+ reached, and the test would pass while proving nothing about volume.
+ 
+ @param length - characters to reach
+ 
+ @returns Varied text of at least that many characters
+ 
+ @example
+ ```ts
+ const answer = variedText({ length: 11_000, },);
+ ```
  */
 function variedText({ length, }: { readonly length: number; },): string {
   /**
-   * Sentences built so far, joined once at the end.
+   Sentences built so far, joined once at the end.
    */
   const parts: string[] = [];
 
   /**
-   * Generator's counter and how many characters it has produced.
+   Generator's counter and how many characters it has produced.
    */
   const cursor = {
     at: 1,
@@ -103,7 +103,7 @@ function variedText({ length, }: { readonly length: number; },): string {
 
   while (cursor.sized < length) {
     /**
-     * One varied sentence, built from the current counter.
+     One varied sentence, built from the current counter.
      */
     const piece = `Cat ${String(cursor.at,)} moved basket ${String((cursor.at * 7) % 991,)} on day `
       + `${String(cursor.at % 31,)} while cat ${String((cursor.at * 13) % 877,)} watched the window. `;
@@ -116,25 +116,25 @@ function variedText({ length, }: { readonly length: number; },): string {
 }
 
 /**
- * Feeds text to a watch on one channel and returns the last verdict.
- *
- * FED IN PIECES, the way the drain feeds it, so a bound that only reads a
- * whole-stream total would fail here rather than pass.
- *
- * @param watch - watch under test
- *
- * @param channel - channel to feed
- *
- * @param text - text to deliver
- *
- * @param pieceSize - characters per frame
- *
- * @returns Verdict after the last piece, or the first non-continuing one
- *
- * @example
- * ```ts
- * const verdict = feed({ watch, channel: 'content', text, pieceSize: 500, },);
- * ```
+ Feeds text to a watch on one channel and returns the last verdict.
+ 
+ FED IN PIECES, the way the drain feeds it, so a bound that only reads a
+ whole-stream total would fail here rather than pass.
+ 
+ @param watch - watch under test
+ 
+ @param channel - channel to feed
+ 
+ @param text - text to deliver
+ 
+ @param pieceSize - characters per frame
+ 
+ @returns Verdict after the last piece, or the first non-continuing one
+ 
+ @example
+ ```ts
+ const verdict = feed({ watch, channel: 'content', text, pieceSize: 500, },);
+ ```
  */
 function feed(
   {
@@ -150,8 +150,8 @@ function feed(
   },
 ): ReturnType<ReturnType<typeof watchRunaway>['notifyChunk']> {
   /**
-   * Last verdict seen, kept in a record so the function root holds no
-   * reassigned binding.
+   Last verdict seen, kept in a record so the function root holds no
+   reassigned binding.
    */
   const seen = { verdict: { kind: 'continuing', } as ReturnType<ReturnType<typeof watchRunaway>['notifyChunk']>, };
 
@@ -241,8 +241,8 @@ await describe({
         const watch = watchRunaway();
 
         /**
-         * A model repeating one sentence into the answer, the shape that used
-         * to run to 131078 characters before either detector called it.
+         A model repeating one sentence into the answer, the shape that used
+         to run to 131078 characters before either detector called it.
          */
         const repeated = 'The cat sat on the mat and said nothing at all. '.repeat(800,);
 
@@ -270,12 +270,12 @@ await describe({
         const watch = watchRunaway();
 
         /**
-         * A model thinking one sentence forever, which is the case the ratio
-         * detector was built for and still owns.
-         *
-         * SIZED PAST 131072 CHARACTERS on purpose: that is where the detector
-         * actually fires, measured, and it is the same figure the two real
-         * degenerate calls reached before anything stopped them.
+         A model thinking one sentence forever, which is the case the ratio
+         detector was built for and still owns.
+         
+         SIZED PAST 131072 CHARACTERS on purpose: that is where the detector
+         actually fires, measured, and it is the same figure the two real
+         degenerate calls reached before anything stopped them.
          */
         const verdict = feed({
           watch,
@@ -378,7 +378,7 @@ await describe({
         + 'by cause does not report a distinct-window share that was never computed',
       fn: async () => {
         /**
-         * How the log line reads for a call the volume bound ended.
+         How the log line reads for a call the volume bound ended.
          */
         const described = describeAbandon({
           error: new StreamOverrunError({

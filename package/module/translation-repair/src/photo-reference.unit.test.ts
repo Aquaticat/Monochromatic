@@ -1,25 +1,25 @@
 /**
- * Tests for reading which images a passage shows.
- *
- * WHAT THESE PIN is the reader that lets `#111` hand a stage the picture rather
- * than the markup naming it. Validated against the pinned corpus before these
- * were written: 380 references found, 380 present in the tree, none missing,
- * matching an independent count of the same construct.
- *
- * The stray-space case is not defensiveness. One reference in the corpus writes
- * the placeholder with a space before the directory, and a reader that missed it
- * would report that entry as showing one image fewer than it does, which is the
- * kind of quiet undercount that makes a later measurement wrong rather than
- * absent.
- *
- * The double-quote cases are the same lesson learnt again. Four source pages at
- * pin `a41fc607` quote their paths with double marks, seven paths in all, and a
- * reader that took single marks only sent one of them (BI4PBV, 2026-09-04)
- * through its picture stage with nothing to read and nothing to say about it.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading which images a passage shows.
+ 
+ WHAT THESE PIN is the reader that lets `#111` hand a stage the picture rather
+ than the markup naming it. Validated against the pinned corpus before these
+ were written: 380 references found, 380 present in the tree, none missing,
+ matching an independent count of the same construct.
+ 
+ The stray-space case is not defensiveness. One reference in the corpus writes
+ the placeholder with a space before the directory, and a reader that missed it
+ would report that entry as showing one image fewer than it does, which is the
+ kind of quiet undercount that makes a later measurement wrong rather than
+ absent.
+ 
+ The double-quote cases are the same lesson learnt again. Four source pages at
+ pin `a41fc607` quote their paths with double marks, seven paths in all, and a
+ reader that took single marks only sent one of them (BI4PBV, 2026-09-04)
+ through its picture stage with nothing to read and nothing to say about it.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -34,24 +34,24 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Placeholder the corpus writes an entry's own directory as.
- *
- * AN ESCAPED TEMPLATE LITERAL, so the characters are the ones the corpus
- * carries without this file appearing to leave a placeholder uninterpolated.
+ Placeholder the corpus writes an entry's own directory as.
+ 
+ AN ESCAPED TEMPLATE LITERAL, so the characters are the ones the corpus
+ carries without this file appearing to leave a placeholder uninterpolated.
  */
 const ENTRY = `\${path}`;
 
 /**
- * Builds one photo element naming the given assets.
- *
- * @param assets - asset paths as the element carries them
- *
- * @returns Element as a page writes it
- *
- * @example
- * ```ts
- * const element = elementOf({ assets: [`${ENTRY}/photos/tabby.webp`,], },);
- * ```
+ Builds one photo element naming the given assets.
+ 
+ @param assets - asset paths as the element carries them
+ 
+ @returns Element as a page writes it
+ 
+ @example
+ ```ts
+ const element = elementOf({ assets: [`${ENTRY}/photos/tabby.webp`,], },);
+ ```
  */
 function elementOf({ assets, }: { readonly assets: readonly string[]; },): string {
   return `<PhotoScroll photos={[ ${
@@ -70,7 +70,7 @@ await describe({
         + 'showing several pictures is transcribed from all of them',
       fn: async () => {
         /**
-         * One element naming three pictures.
+         One element naming three pictures.
          */
         const text = elementOf({
           assets: [
@@ -97,7 +97,7 @@ await describe({
         + 'does, and an undercount is worse than a gap because nothing looks wrong',
       fn: async () => {
         /**
-         * The stray-space spelling, verbatim.
+         The stray-space spelling, verbatim.
          */
         const text = elementOf({ assets: [`${ENTRY} /photos/tabby.webp`,], },);
 
@@ -112,7 +112,7 @@ await describe({
         + 'picture stage with nothing to read',
       fn: async () => {
         /**
-         * The double-quoted, one-path-per-line spelling, as those pages lay it out.
+         The double-quoted, one-path-per-line spelling, as those pages lay it out.
          */
         const text = `<PhotoScroll photos={[\n`
           + `    "${ENTRY}/photos/tabby.webp",\n`
@@ -136,7 +136,7 @@ await describe({
         + 'page may mix the two spellings across its sections',
       fn: async () => {
         /**
-         * One element of each spelling.
+         One element of each spelling.
          */
         const text = `<PhotoScroll photos={["${ENTRY}/photos/one.webp"]} />\n\n`
           + `She also drew this.\n\n${elementOf({ assets: [`${ENTRY}/photos/two.webp`,], },)}`;
@@ -156,7 +156,7 @@ await describe({
         + 'in the other, or an apostrophe inside a double-quoted name, never splits a path in two',
       fn: async () => {
         /**
-         * A double-quoted caption beside single-quoted paths.
+         A double-quoted caption beside single-quoted paths.
          */
         const captioned = `<PhotoScroll caption="Her cats' drawings" photos={[ '${ENTRY}/photos/one.webp' ]} />`;
 
@@ -166,7 +166,7 @@ await describe({
           },),).toEqual(['one.webp',],);
 
         /**
-         * A double-quoted path carrying an apostrophe.
+         A double-quoted path carrying an apostrophe.
          */
         const apostrophe = `<PhotoScroll photos={["${ENTRY}/photos/tabby's-sill.webp"]} />`;
 
@@ -181,7 +181,7 @@ await describe({
       name: 'READS SEVERAL ELEMENTS in one passage, since a slice may show two sets of pictures',
       fn: async () => {
         /**
-         * Two elements with prose between them.
+         Two elements with prose between them.
          */
         const text = `${
           elementOf({ assets: [`${ENTRY}/photos/one.webp`,], },)
@@ -198,7 +198,7 @@ await describe({
         + 'never arrives as a file this pipeline would try to open',
       fn: async () => {
         /**
-         * An element carrying a caption beside its pictures.
+         An element carrying a caption beside its pictures.
          */
         const text = `<PhotoScroll caption='Her drawings' photos={[ '${ENTRY}/photos/one.webp' ]} />`;
 
@@ -229,7 +229,7 @@ await describe({
         + 'attributes, so one malformed page cannot make every later quotation look like a file',
       fn: async () => {
         /**
-         * An element nobody closed, followed by ordinary prose in quotes.
+         An element nobody closed, followed by ordinary prose in quotes.
          */
         const text = `<PhotoScroll photos={[ '${ENTRY}/photos/one.webp'\n\n`
           + `She said '${ENTRY}/photos/not-a-picture.webp' in passing.`;

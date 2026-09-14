@@ -25,71 +25,71 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
 // settlement runs against, with the replacement recorded and no endorsement.
 
 /**
- * Both verdicts on a slice's standing text, and the wording the settlement
- * runs against once the incumbent has been read beside it.
+ Both verdicts on a slice's standing text, and the wording the settlement
+ runs against once the incumbent has been read beside it.
  */
 export type StandingVerdict = {
   /**
-   * Whether the wording in {@link StandingVerdict.settlementText} passes the
-   * deterministic publication rules.
+   Whether the wording in {@link StandingVerdict.settlementText} passes the
+   deterministic publication rules.
    */
   readonly standingValid: boolean;
 
   /**
-   * Whether that wording has prior approval and may ship unchanged.
+   Whether that wording has prior approval and may ship unchanged.
    */
   readonly standingMayShip: boolean;
 
   /**
-   * Wording the settlement runs against: the standing, or the incumbent
-   * where the standing failed the gate and the incumbent passes it.
+   Wording the settlement runs against: the standing, or the incumbent
+   where the standing failed the gate and the incumbent passes it.
    */
   readonly settlementText: string;
 
   /**
-   * Findings this reading adds to the settlement: the replacement, when it
-   * happened.
+   Findings this reading adds to the settlement: the replacement, when it
+   happened.
    */
   readonly findings: readonly string[];
 
   /**
-   * Whether the incumbent stood in, so the artifact can say a kept standing
-   * is text to write.
+   Whether the incumbent stood in, so the artifact can say a kept standing
+   is text to write.
    */
   readonly incumbentStandsIn: boolean;
 };
 
 /**
- * Reads both verdicts on a standing text and logs a refusal by name.
- *
- * @param sourceText - original slice
- *
- * @param standingText - wording in place when consolidation begins
- *
- * @param incumbentText - page text this slice replaces
- *
- * @param syntax - explicit syntax role, absent for ordinary prose
- *
- * @param lineStructured - whether line-structure rule governs this slice
- *
- * @param choice - lane the contest chose
- *
- * @param contestVerdict - how the contest ended
- *
- * @param sliceIndex - prepared position of the slice, for the log line
- *
- * @param l - logger a refusal is written through
- *
- * @returns Deterministic eligibility and contest endorsement of the wording
- * the settlement runs against, that wording, and the replacement finding
- * when the incumbent stands in
- *
- * @example
- * ```ts
- * const { standingValid, standingMayShip, settlementText, } = readStandingVerdict({
- *   sourceText, standingText, incumbentText, lineStructured: false, choice, contestVerdict, sliceIndex: 1, l,
- * },);
- * ```
+ Reads both verdicts on a standing text and logs a refusal by name.
+ 
+ @param sourceText - original slice
+ 
+ @param standingText - wording in place when consolidation begins
+ 
+ @param incumbentText - page text this slice replaces
+ 
+ @param syntax - explicit syntax role, absent for ordinary prose
+ 
+ @param lineStructured - whether line-structure rule governs this slice
+ 
+ @param choice - lane the contest chose
+ 
+ @param contestVerdict - how the contest ended
+ 
+ @param sliceIndex - prepared position of the slice, for the log line
+ 
+ @param l - logger a refusal is written through
+ 
+ @returns Deterministic eligibility and contest endorsement of the wording
+ the settlement runs against, that wording, and the replacement finding
+ when the incumbent stands in
+ 
+ @example
+ ```ts
+ const { standingValid, standingMayShip, settlementText, } = readStandingVerdict({
+   sourceText, standingText, incumbentText, lineStructured: false, choice, contestVerdict, sliceIndex: 1, l,
+ },);
+ ```
  */
 export function readStandingVerdict(
   {
@@ -115,7 +115,7 @@ export function readStandingVerdict(
   },
 ): StandingVerdict {
   /**
-   * Syntax verdict for standing text, or ordinary prose admission.
+   Syntax verdict for standing text, or ordinary prose admission.
    */
   const validation = validateTranslatedSlice({
     sourceText,
@@ -125,12 +125,12 @@ export function readStandingVerdict(
     lineStructured,
   },);
   /**
-   * Whether standing text itself passes syntax-bearing publication rules.
+   Whether standing text itself passes syntax-bearing publication rules.
    */
   const standingValid = validation.kind === 'valid';
   if (standingValid) {
     /**
-     * Whether this baseline has prior approval and may ship unchanged.
+     Whether this baseline has prior approval and may ship unchanged.
      */
     const standingMayShip = contestStandingMayShip({
       choice,
@@ -152,14 +152,14 @@ export function readStandingVerdict(
   }
 
   /**
-   * Why the gate refused the standing, for both lines below.
+   Why the gate refused the standing, for both lines below.
    */
   const refusal = describeStandingVerdict({ validation, },);
 
   /**
-   * Gate's verdict on the incumbent, read only where it is a different text
-   * the slate could keep instead: an absent incumbent has nothing to offer,
-   * and a standing that IS the incumbent was refused as one text.
+   Gate's verdict on the incumbent, read only where it is a different text
+   the slate could keep instead: an absent incumbent has nothing to offer,
+   and a standing that IS the incumbent was refused as one text.
    */
   const incumbentValidation = ((incumbentText === '') || (incumbentText === standingText))
     ? undefined

@@ -28,107 +28,107 @@ import type { TranslateReportWire, } from './translate-wire.ts';
 // position preference the judges have.
 
 /**
- * Where one candidate translation came from.
- *
- * @example
- * ```ts
- * const origin: TranslateOrigin = 'incumbent';
- * ```
+ Where one candidate translation came from.
+ 
+ @example
+ ```ts
+ const origin: TranslateOrigin = 'incumbent';
+ ```
  */
 export type TranslateOrigin =
   | 'incumbent'
   | 'fresh';
 
 /**
- * One candidate translation with the fact that decides whether the slice was
- * kept or replaced.
- *
- * Origin rides on the VALUE rather than being inferred from the producer,
- * because the two answer different questions: the producer says who must not
- * judge this text, and the origin says whether shipping it changes the
- * document. They come apart exactly when a model reproduces the incumbent.
- *
- * @example
- * ```ts
- * const value: TranslateCandidateValue = { text: 'The cat naps.', origin: 'fresh', };
- * ```
+ One candidate translation with the fact that decides whether the slice was
+ kept or replaced.
+ 
+ Origin rides on the VALUE rather than being inferred from the producer,
+ because the two answer different questions: the producer says who must not
+ judge this text, and the origin says whether shipping it changes the
+ document. They come apart exactly when a model reproduces the incumbent.
+ 
+ @example
+ ```ts
+ const value: TranslateCandidateValue = { text: 'The cat naps.', origin: 'fresh', };
+ ```
  */
 export type TranslateCandidateValue = {
   /**
-   * Text that ships when this candidate wins.
+   Text that ships when this candidate wins.
    */
   readonly text: string;
 
   /**
-   * Whether this text was already there.
+   Whether this text was already there.
    */
   readonly origin: TranslateOrigin;
 };
 
 /**
- * Slate judges compare, plus what building it revealed.
- *
- * @example
- * ```ts
- * const { candidates, collapsed, } = buildTranslateCandidates({ voices, ... },);
- * ```
+ Slate judges compare, plus what building it revealed.
+ 
+ @example
+ ```ts
+ const { candidates, collapsed, } = buildTranslateCandidates({ voices, ... },);
+ ```
  */
 export type TranslateCandidateSet = {
   /**
-   * Distinct proposals, incumbent first when it has text, then fresh
-   * translations in roster order.
+   Distinct proposals, incumbent first when it has text, then fresh
+   translations in roster order.
    */
   readonly candidates: readonly Candidate<TranslateCandidateValue>[];
 
   /**
-   * Proposals collapsed into an earlier identical one; showing judges the same
-   * text twice would only split the ballot into a spurious tie.
+   Proposals collapsed into an earlier identical one; showing judges the same
+   text twice would only split the ballot into a spurious tie.
    */
   readonly collapsed: number;
 
   /**
-   * Blank replies and incumbent matches, in scorecard-stable wording.
+   Blank replies and incumbent matches, in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Whether a candidate proposes any text at all.
- *
- * A BACKSTOP SINCE THE WIRE GUARD TIGHTENED. A reply of `{"translation": ""}`
- * used to satisfy the guard and arrive as a heard voice proposing to delete the
- * slice; it is now refused there and the model is re-asked, so nothing blank
- * reaches this filter through the ordinary path. It stays because judges cannot
- * be shown an empty candidate whatever the route: it reads as a legitimate
- * option to render nothing, and a slice whose incumbent is also empty would
- * then have a whole ballot of nothing.
- *
- * @param text - candidate text as the model returned it
- *
- * @returns Whether anything but whitespace is present
- *
- * @example
- * ```ts
- * const usable = proposesText({ text: report.translation, },);
- * ```
+ Whether a candidate proposes any text at all.
+ 
+ A BACKSTOP SINCE THE WIRE GUARD TIGHTENED. A reply of `{"translation": ""}`
+ used to satisfy the guard and arrive as a heard voice proposing to delete the
+ slice; it is now refused there and the model is re-asked, so nothing blank
+ reaches this filter through the ordinary path. It stays because judges cannot
+ be shown an empty candidate whatever the route: it reads as a legitimate
+ option to render nothing, and a slice whose incumbent is also empty would
+ then have a whole ballot of nothing.
+ 
+ @param text - candidate text as the model returned it
+ 
+ @returns Whether anything but whitespace is present
+ 
+ @example
+ ```ts
+ const usable = proposesText({ text: report.translation, },);
+ ```
  */
 function proposesText({ text, }: { readonly text: string; },): boolean {
   return text.trim() !== '';
 }
 
 /**
- * Whether a line carries nothing but blockquote marks and spaces, so that its
- * trailing whitespace is formatting churn rather than a Markdown hard break.
- *
- * @param line - one line, whitespace included
- *
- * @returns Whether every character is `>` or a space
- *
- * @example
- * ```ts
- * isBlankQuoteLine({ line: '> ', },);
- * // => true
- * ```
+ Whether a line carries nothing but blockquote marks and spaces, so that its
+ trailing whitespace is formatting churn rather than a Markdown hard break.
+ 
+ @param line - one line, whitespace included
+ 
+ @returns Whether every character is `>` or a space
+ 
+ @example
+ ```ts
+ isBlankQuoteLine({ line: '> ', },);
+ // => true
+ ```
  */
 function isBlankQuoteLine({ line, }: { readonly line: string; },): boolean {
   for (const character of line) {
@@ -139,33 +139,33 @@ function isBlankQuoteLine({ line, }: { readonly line: string; },): boolean {
 }
 
 /**
- * Key two candidates share when their texts differ only in trailing whitespace
- * at the end of the text or on blank lines and blank quote lines.
- *
- * Trailing newlines vary between models for reasons no judge should be asked to
- * rank, and a fresh candidate differing from the incumbent by one of them would
- * otherwise be counted as replacing it. BLANK QUOTE LINES TOO, since
- * 2026-09-02: the Toka_ls reading found a candidate judged a replacement five
- * ballots to two that differed from the archive in exactly two bytes, a
- * trailing space after `>` on two blank quote lines copied from the source's
- * formatting. Lines carrying content keep their trailing spaces: 65 of the
- * pinned corpus's pages use Markdown hard breaks (two trailing spaces before a
- * newline; saurikissa's archive has 35 such lines), and those are content.
- * Leading whitespace is NOT stripped, since Markdown list indentation is
- * content.
- *
- * @param text - candidate text
- *
- * @returns Comparison key
- *
- * @example
- * ```ts
- * const key = collapseKey({ text, },);
- * ```
+ Key two candidates share when their texts differ only in trailing whitespace
+ at the end of the text or on blank lines and blank quote lines.
+ 
+ Trailing newlines vary between models for reasons no judge should be asked to
+ rank, and a fresh candidate differing from the incumbent by one of them would
+ otherwise be counted as replacing it. BLANK QUOTE LINES TOO, since
+ 2026-09-02: the Toka_ls reading found a candidate judged a replacement five
+ ballots to two that differed from the archive in exactly two bytes, a
+ trailing space after `>` on two blank quote lines copied from the source's
+ formatting. Lines carrying content keep their trailing spaces: 65 of the
+ pinned corpus's pages use Markdown hard breaks (two trailing spaces before a
+ newline; saurikissa's archive has 35 such lines), and those are content.
+ Leading whitespace is NOT stripped, since Markdown list indentation is
+ content.
+ 
+ @param text - candidate text
+ 
+ @returns Comparison key
+ 
+ @example
+ ```ts
+ const key = collapseKey({ text, },);
+ ```
  */
 export function collapseKey({ text, }: { readonly text: string; },): string {
   /**
-   * Each line, blank and blank-quote lines without their trailing spaces.
+   Each line, blank and blank-quote lines without their trailing spaces.
    */
   const lines = text
     .split('\n',)
@@ -178,21 +178,21 @@ export function collapseKey({ text, }: { readonly text: string; },): string {
 }
 
 /**
- * Assembles the candidate slate for one slice.
- *
- * @param voices - heard translator replies in arrival order
- *
- * @param translatorModelIds - roster, fixing candidate order
- *
- * @param incumbentText - translation as it stands, blank when this slice has
- * none
- *
- * @returns Distinct candidates, how many collapsed, and what that revealed
- *
- * @example
- * ```ts
- * const set = buildTranslateCandidates({ voices, translatorModelIds, incumbentText, },);
- * ```
+ Assembles the candidate slate for one slice.
+ 
+ @param voices - heard translator replies in arrival order
+ 
+ @param translatorModelIds - roster, fixing candidate order
+ 
+ @param incumbentText - translation as it stands, blank when this slice has
+ none
+ 
+ @returns Distinct candidates, how many collapsed, and what that revealed
+ 
+ @example
+ ```ts
+ const set = buildTranslateCandidates({ voices, translatorModelIds, incumbentText, },);
+ ```
  */
 export function buildTranslateCandidates(
   {
@@ -206,8 +206,8 @@ export function buildTranslateCandidates(
   },
 ): TranslateCandidateSet {
   /**
-   * Voices sorted by roster position so candidate numbering never depends on
-   * which model answered first.
+   Voices sorted by roster position so candidate numbering never depends on
+   which model answered first.
    */
   const ordered = [...voices,].toSorted(function byRoster(
     left,
@@ -218,7 +218,7 @@ export function buildTranslateCandidates(
   },);
 
   /**
-   * Translators that answered with nothing to ship.
+   Translators that answered with nothing to ship.
    */
   const blank = ordered.filter(function isBlank(voice,): boolean {
     return !proposesText({ text: voice.value
@@ -226,8 +226,8 @@ export function buildTranslateCandidates(
   },);
 
   /**
-   * Translators that proposed text, each with its translation folded at
-   * intake so the judges see the bytes that would ship (`#264`).
+   Translators that proposed text, each with its translation folded at
+   intake so the judges see the bytes that would ship (`#264`).
    */
   const folded = ordered
     .filter(function isUsable(voice,): boolean {
@@ -246,12 +246,12 @@ export function buildTranslateCandidates(
     },);
 
   /**
-   * Every proposal worth judging: the incumbent when it has text, then each
-   * translator's own rendering.
-   *
-   * A blank incumbent is the case this lane exists for, a passage nobody has
-   * translated, and offering it as a candidate would put "leave it untranslated"
-   * on the ballot.
+   Every proposal worth judging: the incumbent when it has text, then each
+   translator's own rendering.
+   
+   A blank incumbent is the case this lane exists for, a passage nobody has
+   translated, and offering it as a candidate would put "leave it untranslated"
+   on the ballot.
    */
   const offered: readonly Candidate<TranslateCandidateValue>[] = [
     ...(proposesText({ text: incumbentText, },)
@@ -288,25 +288,25 @@ export function buildTranslateCandidates(
   ];
 
   /**
-   * Kept candidates by comparison key, merging the stakes of every duplicate
-   * into the survivor. First seen wins the text, which puts the incumbent's
-   * exact bytes on the ballot whenever a model matched it.
+   Kept candidates by comparison key, merging the stakes of every duplicate
+   into the survivor. First seen wins the text, which puts the incumbent's
+   exact bytes on the ballot whenever a model matched it.
    */
   const byText = new Map<string, Candidate<TranslateCandidateValue>>();
 
   /**
-   * Models whose rendering turned out to be the incumbent's, which is the
-   * measurement telling a kept translation apart from an unexamined one.
+   Models whose rendering turned out to be the incumbent's, which is the
+   measurement telling a kept translation apart from an unexamined one.
    */
   const matchedIncumbent: RosterModelId[] = [];
   for (const candidate of offered) {
     /**
-     * Key this candidate competes under.
+     Key this candidate competes under.
      */
     const key = collapseKey({ text: candidate.rendered, },);
 
     /**
-     * Earlier candidate with the same key, when one exists.
+     Earlier candidate with the same key, when one exists.
      */
     const kept = byText.get(key,);
     if (kept === undefined) {

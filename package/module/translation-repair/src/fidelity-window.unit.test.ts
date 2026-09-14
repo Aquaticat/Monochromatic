@@ -1,18 +1,18 @@
 /**
- * Tests for how much of the ORIGINAL a fidelity judge is shown.
- *
- * Two things are pinned here, and they are the two halves of one claim. First,
- * that {@link neighbouringSource} takes one section each way and nothing more,
- * including at both ends of a document where there is no such section. Second,
- * that the trial's sheet carries the surrounding text ONLY when a caller
- * supplied it, which is what lets a narrow arm and a wide arm be compared as
- * differing in exactly one thing. That second claim was argued in a comment and
- * enforced nowhere, so the measured 12-of-16 against 15-of-16 rested on it
- * without evidence.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for how much of the ORIGINAL a fidelity judge is shown.
+ 
+ Two things are pinned here, and they are the two halves of one claim. First,
+ that {@link neighbouringSource} takes one section each way and nothing more,
+ including at both ends of a document where there is no such section. Second,
+ that the trial's sheet carries the surrounding text ONLY when a caller
+ supplied it, which is what lets a narrow arm and a wide arm be compared as
+ differing in exactly one thing. That second claim was argued in a comment and
+ enforced nowhere, so the measured 12-of-16 against 15-of-16 rested on it
+ without evidence.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -36,25 +36,25 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger the trial writes its progress to.
+ Logger the trial writes its progress to.
  */
 const l = tagged({ tag: 'fidelity-window-test', },);
 
 /**
- * Label the sheet gives the neighbouring sections.
- *
- * Matched on its distinctive opening rather than in full, so rewording the
- * explanatory tail does not fail a test that is about presence.
+ Label the sheet gives the neighbouring sections.
+ 
+ Matched on its distinctive opening rather than in full, so rewording the
+ explanatory tail does not fail a test that is about presence.
  */
 const SURROUNDING_LABEL = 'SURROUNDING ORIGINAL';
 
 /**
- * Roster the sheets go to.
- *
- * THREE RATHER THAN ONE because selection requires a minimum weight of two: a
- * lone judge backing a candidate at full weight still falls short, and the
- * trial declines. A one-model roster would make every sheet assertion here read
- * a declined run.
+ Roster the sheets go to.
+ 
+ THREE RATHER THAN ONE because selection requires a minimum weight of two: a
+ lone judge backing a candidate at full weight still falls short, and the
+ trial declines. A one-model roster would make every sheet assertion here read
+ a declined run.
  */
 const ROSTER = [
   'hf:cat/Cat-A',
@@ -65,22 +65,22 @@ const ROSTER = [
 },);
 
 /**
- * Builds one slice pair carrying given original text.
- *
- * Offsets and nodes are named directly rather than parsed, which
- * {@link ContentChunk} documents as a legitimate value of the type: what this
- * function is under test for is which TEXTS come back, and from where.
- *
- * @param text - original-side text this slice covers
- *
- * @param sliceIndex - position of this slice in its document
- *
- * @returns Pair whose original side carries that text
- *
- * @example
- * ```ts
- * const pair = sliceOf({ text: '## 简介\n', sliceIndex: 0, },);
- * ```
+ Builds one slice pair carrying given original text.
+ 
+ Offsets and nodes are named directly rather than parsed, which
+ {@link ContentChunk} documents as a legitimate value of the type: what this
+ function is under test for is which TEXTS come back, and from where.
+ 
+ @param text - original-side text this slice covers
+ 
+ @param sliceIndex - position of this slice in its document
+ 
+ @returns Pair whose original side carries that text
+ 
+ @example
+ ```ts
+ const pair = sliceOf({ text: '## 简介\n', sliceIndex: 0, },);
+ ```
  */
 function sliceOf(
   {
@@ -110,7 +110,7 @@ function sliceOf(
 }
 
 /**
- * Three-slice document, so a middle slice has a neighbour either way.
+ Three-slice document, so a middle slice has a neighbour either way.
  */
 const SLICES: readonly ChunkPair[] = [
   '小猫在窗台上睡觉。\n',
@@ -191,12 +191,12 @@ await describe({
         + 'silently read the wrong neighbours or none',
       fn: async () => {
         /**
-         * Two slices of one section, stamped with the document-wide indices they
-         * would carry in an entry whose earlier sections were not sliced.
-         *
-         * Passing `sliceIndex` here rather than the array position is the whole
-         * hazard: `11` and `12` are ordinary stamps, and both are outside a
-         * two-element array.
+         Two slices of one section, stamped with the document-wide indices they
+         would carry in an entry whose earlier sections were not sliced.
+         
+         Passing `sliceIndex` here rather than the array position is the whole
+         hazard: `11` and `12` are ordinary stamps, and both are outside a
+         two-element array.
          */
         const stamped: readonly ChunkPair[] = [
           sliceOf({
@@ -209,7 +209,7 @@ await describe({
           },),
         ];
         /**
-         * What askByStamp raised, read for its class as well as its wording.
+         What askByStamp raised, read for its class as well as its wording.
          */
         const refusalOfAskByStamp = caught(function askByStamp() {
           return neighbouringSource({
@@ -240,37 +240,37 @@ await describe({
 },);
 
 /**
- * Every sheet a run sent, in call order.
+ Every sheet a run sent, in call order.
  */
 type SentSheets = {
   /**
-   * Sheets captured so far.
+   Sheets captured so far.
    */
   readonly sheets: string[];
 
   /**
-   * Client that records them and votes for the first candidate.
+   Client that records them and votes for the first candidate.
    */
   readonly client: SyntheticClient;
 };
 
 /**
- * Builds a client that records each sheet and always backs candidate one.
- *
- * WHAT IT DOES NOT DO is judge. The vote is fixed because this test is about
- * what the judges are SHOWN; `judge-fidelity.unit.test.ts` covers what the
- * trial makes of what they say.
- *
- * @returns Recorder and the client writing into it
- *
- * @example
- * ```ts
- * const recorder = recordingClient();
- * ```
+ Builds a client that records each sheet and always backs candidate one.
+ 
+ WHAT IT DOES NOT DO is judge. The vote is fixed because this test is about
+ what the judges are SHOWN; `judge-fidelity.unit.test.ts` covers what the
+ trial makes of what they say.
+ 
+ @returns Recorder and the client writing into it
+ 
+ @example
+ ```ts
+ const recorder = recordingClient();
+ ```
  */
 function recordingClient(): SentSheets {
   /**
-   * Sheets this client was sent.
+   Sheets this client was sent.
    */
   const sheets: string[] = [];
   return {
@@ -292,7 +292,7 @@ function recordingClient(): SentSheets {
           .join('\n',),);
 
         /**
-         * Wire value backing the first candidate.
+         Wire value backing the first candidate.
          */
         const value: unknown = {
           best: 1,
@@ -316,21 +316,21 @@ function recordingClient(): SentSheets {
 }
 
 /**
- * Runs one trial and answers every sheet it sent, with what the trial made of
- * the replies.
- *
- * The verdict comes back so a test can show the sheets were captured from a
- * COMPLETED trial: a run that failed every call would also record sheets, and
- * an assertion that some label is absent would pass on the wreckage.
- *
- * @param contextText - surrounding original, empty for a narrow run
- *
- * @returns Sheets the judges were sent, and the trial's verdict
- *
- * @example
- * ```ts
- * const run = await sheetsFor({ contextText: '', },);
- * ```
+ Runs one trial and answers every sheet it sent, with what the trial made of
+ the replies.
+ 
+ The verdict comes back so a test can show the sheets were captured from a
+ COMPLETED trial: a run that failed every call would also record sheets, and
+ an assertion that some label is absent would pass on the wreckage.
+ 
+ @param contextText - surrounding original, empty for a narrow run
+ 
+ @returns Sheets the judges were sent, and the trial's verdict
+ 
+ @example
+ ```ts
+ const run = await sheetsFor({ contextText: '', },);
+ ```
  */
 async function sheetsFor(
   { contextText, }: { readonly contextText: string; },
@@ -339,12 +339,12 @@ async function sheetsFor(
   readonly verdict: FidelityOutcome['verdict'];
 }> {
   /**
-   * Recorder capturing this run.
+   Recorder capturing this run.
    */
   const recorder = recordingClient();
 
   /**
-   * What the trial made of a roster backing the first candidate.
+   What the trial made of a roster backing the first candidate.
    */
   const outcome = await runFidelityTrial({
     client: recorder.client,
@@ -416,7 +416,7 @@ await describe({
         + 'replacing what the judges were already reading',
       fn: async () => {
         /**
-         * Both arms, run together because neither reads the other.
+         Both arms, run together because neither reads the other.
          */
         const runs = await Promise.all([
           '',
@@ -437,23 +437,23 @@ await describe({
 },);
 
 /**
- * Pairs carrying wording on BOTH sides, which `SLICES` deliberately does not:
- * that fixture leaves the target empty because the source window is all it
- * needs, and reusing it here would assert against the empty string and pass for
- * a function that returned nothing.
- *
- * @param text - original of this slice
- *
- * @param wording - archive English of this slice
- *
- * @param sliceIndex - slice index
- *
- * @returns Pair with both sides populated
- *
- * @example
- * ```ts
- * const pair = pairOf({ text: '猫。', wording: 'A cat.', sliceIndex: 0, },);
- * ```
+ Pairs carrying wording on BOTH sides, which `SLICES` deliberately does not:
+ that fixture leaves the target empty because the source window is all it
+ needs, and reusing it here would assert against the empty string and pass for
+ a function that returned nothing.
+ 
+ @param text - original of this slice
+ 
+ @param wording - archive English of this slice
+ 
+ @param sliceIndex - slice index
+ 
+ @returns Pair with both sides populated
+ 
+ @example
+ ```ts
+ const pair = pairOf({ text: '猫。', wording: 'A cat.', sliceIndex: 0, },);
+ ```
  */
 function pairOf(
   {
@@ -485,7 +485,7 @@ function pairOf(
 }
 
 /**
- * Three slices with an archive translation on every one.
+ Three slices with an archive translation on every one.
  */
 const TRANSLATED: readonly ChunkPair[] = [
   {
@@ -520,7 +520,7 @@ await describe({
         + 'say it next door, and only the English side reveals where a missing passage went',
       fn: async () => {
         /**
-         * Archive wording either side of the middle slice.
+         Archive wording either side of the middle slice.
          */
         const beside = neighbouringIncumbent({
           slices: TRANSLATED,
@@ -537,7 +537,7 @@ await describe({
         + 'start of a document must not read the end of the array',
       fn: async () => {
         /**
-         * Archive wording beside the opening slice.
+         Archive wording beside the opening slice.
          */
         const beside = neighbouringIncumbent({
           slices: TRANSLATED,
@@ -554,7 +554,7 @@ await describe({
         + 'measured null instead of the mistake it is',
       fn: async () => {
         /**
-         * What the call did, as a value, since the throw is what is asserted.
+         What the call did, as a value, since the throw is what is asserted.
          */
         const outcome = (() => {
           try {

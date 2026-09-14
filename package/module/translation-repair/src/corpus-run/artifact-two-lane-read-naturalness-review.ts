@@ -20,27 +20,27 @@ import { parseNaturalnessReviewRound, } from './artifact-two-lane-read-naturalne
 //region Artifact absolute naturalness review read
 
 /**
- * Reads schema-eight or later absolute review and binds final round to final text.
- *
- * @param value - unknown review field
- *
- * @param path - artifact path
- *
- * @param finalText - exact polish text artifact says ships
- *
- * @param correctionChainRequired - whether generation requires transition digests
- *
- * @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
- * block (generation ten) rather than the refinable paragraphs alone
- *
- * @param quorumBasisRequired - whether generation stores the effective wider quorum
- *
- * @returns Cross-validated review audit
- *
- * @example
- * ```ts
- * const review = parseNaturalnessReview({ value, path, finalText, });
- * ```
+ Reads schema-eight or later absolute review and binds final round to final text.
+ 
+ @param value - unknown review field
+ 
+ @param path - artifact path
+ 
+ @param finalText - exact polish text artifact says ships
+ 
+ @param correctionChainRequired - whether generation requires transition digests
+ 
+ @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
+ block (generation ten) rather than the refinable paragraphs alone
+ 
+ @param quorumBasisRequired - whether generation stores the effective wider quorum
+ 
+ @returns Cross-validated review audit
+ 
+ @example
+ ```ts
+ const review = parseNaturalnessReview({ value, path, finalText, });
+ ```
  */
 export function parseNaturalnessReview(
   {
@@ -60,17 +60,17 @@ export function parseNaturalnessReview(
   },
 ): ArtifactNaturalnessReview {
   /**
-   * Reads one schema-nine-or-later confirmation round under this review's
-   * paragraph set.
-   *
-   * @param round - unknown confirmation round and its path
-   *
-   * @returns Exact candidate and paragraph-bound round
-   *
-   * @example
-   * ```ts
-   * const parsed = parseConfirmationRound({ value, path, },);
-   * ```
+   Reads one schema-nine-or-later confirmation round under this review's
+   paragraph set.
+   
+   @param round - unknown confirmation round and its path
+   
+   @returns Exact candidate and paragraph-bound round
+   
+   @example
+   ```ts
+   const parsed = parseConfirmationRound({ value, path, },);
+   ```
    */
   function parseConfirmationRound(
     round: {
@@ -87,7 +87,7 @@ export function parseNaturalnessReview(
     },);
   }
   /**
-   * Review under exact schema-eight shape.
+   Review under exact schema-eight shape.
    */
   const record = requireRecord({
     value,
@@ -108,7 +108,7 @@ export function parseNaturalnessReview(
     path,
   },);
   /**
-   * Correction count under artifact generation policy.
+   Correction count under artifact generation policy.
    */
   const correctionCount = requireCount({
     value: record.correctionCount,
@@ -121,7 +121,7 @@ export function parseNaturalnessReview(
     },);
   }
   /**
-   * Decisive initial and post-correction reviews.
+   Decisive initial and post-correction reviews.
    */
   const rounds = requireArray({
     value: record.rounds,
@@ -146,7 +146,7 @@ export function parseNaturalnessReview(
     },);
   }
   /**
-   * Digest-bound correction transitions under generation-nine shape.
+   Digest-bound correction transitions under generation-nine shape.
    */
   const corrections = correctionChainRequired
     ? requireArray({
@@ -170,15 +170,15 @@ export function parseNaturalnessReview(
     },);
   }
   /**
-   * Whether artifact carries post-generation-nine acceptance confirmation.
+   Whether artifact carries post-generation-nine acceptance confirmation.
    */
   const confirmationsPresent = correctionChainRequired && ('confirmations' in record);
   /**
-   * Initial review, always present by length check.
+   Initial review, always present by length check.
    */
   const [initial,] = rounds;
   /**
-   * Final review, always present by length check.
+   Final review, always present by length check.
    */
   const final = rounds.at(-1,);
   if ((initial === undefined) || (final === undefined)) {
@@ -188,7 +188,7 @@ export function parseNaturalnessReview(
     },);
   }
   /**
-   * Reviews that each authorized one correction generation.
+   Reviews that each authorized one correction generation.
    */
   const priorRounds = rounds.slice(
     0,
@@ -211,7 +211,7 @@ export function parseNaturalnessReview(
   // design demoted review authority, so a rejected or quorumless final round
   // is a valid record rather than a malformed one.
   /**
-   * Earlier acceptable readings bound to decisive reviewed candidates.
+   Earlier acceptable readings bound to decisive reviewed candidates.
    */
   const confirmations = parseNaturalnessConfirmations({
     value: record.confirmations,
@@ -221,7 +221,7 @@ export function parseNaturalnessReview(
     parseRound: parseConfirmationRound,
   },);
   /**
-   * Path of final accepted exact-text review.
+   Path of final accepted exact-text review.
    */
   const finalPath = `${path}.rounds[${String(rounds.length - 1,)}]`;
   assertFinalNaturalnessDigests({

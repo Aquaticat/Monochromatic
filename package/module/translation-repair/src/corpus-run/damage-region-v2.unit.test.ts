@@ -1,16 +1,16 @@
 /**
- * Tests for reading damage regions out of a version 2 delivery ledger.
- *
- * The case that matters is WHICH ROWS COUNT. The version 1 draw read a
- * repair-lane issue list, and carrying that habit forward would have produced a
- * draw covering less than half the regions where this pipeline replaced text,
- * while describing itself as a draw over the shipped regions. Measured over the
- * six settled entries the split is 32 repair against 37 translate, so the error
- * would not have been small and nothing in the output would have shown it.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading damage regions out of a version 2 delivery ledger.
+ 
+ The case that matters is WHICH ROWS COUNT. The version 1 draw read a
+ repair-lane issue list, and carrying that habit forward would have produced a
+ draw covering less than half the regions where this pipeline replaced text,
+ while describing itself as a draw over the shipped regions. Measured over the
+ six settled entries the split is 32 repair against 37 translate, so the error
+ would not have been small and nothing in the output would have shown it.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -27,20 +27,20 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Builds one delivery row.
- *
- * @param sliceIndex - slice index
- *
- * @param kind - what the lane did with the slice
- *
- * @param incumbentKind - whether the archive had wording there at all
- *
- * @returns Row shaped as the ledger carries it
- *
- * @example
- * ```ts
- * const row = rowOf({ sliceIndex: 0, kind: 'replacement-shipped', },);
- * ```
+ Builds one delivery row.
+ 
+ @param sliceIndex - slice index
+ 
+ @param kind - what the lane did with the slice
+ 
+ @param incumbentKind - whether the archive had wording there at all
+ 
+ @returns Row shaped as the ledger carries it
+ 
+ @example
+ ```ts
+ const row = rowOf({ sliceIndex: 0, kind: 'replacement-shipped', },);
+ ```
  */
 function rowOf(
   {
@@ -54,7 +54,7 @@ function rowOf(
   },
 ): Parameters<typeof regionsOfLane>[0]['rows'][number] {
   /**
-   * Delivery, whose withdrawn form carries a reason the others do not.
+   Delivery, whose withdrawn form carries a reason the others do not.
    */
   const delivery = (kind === 'replacement-withdrawn')
     ? {
@@ -77,41 +77,41 @@ function rowOf(
 }
 
 /**
- * Selection an artifact carries once a contest has settled it.
+ Selection an artifact carries once a contest has settled it.
  */
 const CONTESTED = { kind: 'contested', slices: [], } as unknown as
   Parameters<typeof regionsOfLane>[0]['laneSelection'];
 
 /**
- * Selection an artifact carries while nobody has decided it.
+ Selection an artifact carries while nobody has decided it.
  */
 const UNDECIDED = { kind: 'pending-human-decision', } as unknown as
   Parameters<typeof regionsOfLane>[0]['laneSelection'];
 
 /**
- * How many slice indices the shared readings cover, which is more than any
- * case here uses so a new case need not extend it.
+ How many slice indices the shared readings cover, which is more than any
+ case here uses so a new case need not extend it.
  */
 const COVERED_SLICES = 16;
 
 /**
- * Builds a reading carrying wording for every slice a case might use.
- *
- * DEFAULTS TO EACH ROW'S OWN SHIPPED WORDING, so the annotation reads
- * `survives` unless a case deliberately says otherwise. `rowOf` generates its
- * texts from the index, so the reading can be built without the rows.
- *
- * @param text - wording to claim would stand, defaulting to what the lane
- * shipped at that index
- *
- * @param decidedBy - stage whose decision survived
- *
- * @returns Readings by chunk index
- *
- * @example
- * ```ts
- * const readings = readingsOf({ text: 'Something else entirely.', },);
- * ```
+ Builds a reading carrying wording for every slice a case might use.
+ 
+ DEFAULTS TO EACH ROW'S OWN SHIPPED WORDING, so the annotation reads
+ `survives` unless a case deliberately says otherwise. `rowOf` generates its
+ texts from the index, so the reading can be built without the rows.
+ 
+ @param text - wording to claim would stand, defaulting to what the lane
+ shipped at that index
+ 
+ @param decidedBy - stage whose decision survived
+ 
+ @returns Readings by chunk index
+ 
+ @example
+ ```ts
+ const readings = readingsOf({ text: 'Something else entirely.', },);
+ ```
  */
 function readingsOf(
   {
@@ -143,8 +143,8 @@ function readingsOf(
 }
 
 /**
- * Readings under which every lane wording survives, which is what the cases
- * about population and text want: they are not about the annotation.
+ Readings under which every lane wording survives, which is what the cases
+ about population and text want: they are not about the annotation.
  */
 const SURVIVING = readingsOf();
 
@@ -157,7 +157,7 @@ await describe({
         + 'damaged the text asks about an edit that never happened',
       fn: async () => {
         /**
-         * One of each disposition.
+         One of each disposition.
          */
         const census = regionsOfLane({
           entryId: 'Tabby',
@@ -220,7 +220,7 @@ await describe({
         + 'apart once it is written down',
       fn: async () => {
         /**
-         * The same slice index, shipped by both lanes, which happens.
+         The same slice index, shipped by both lanes, which happens.
          */
         const repair = regionsOfLane({
           entryId: 'Tabby',
@@ -268,7 +268,7 @@ await describe({
         },);
 
         /**
-         * Region built from the row.
+         Region built from the row.
          */
         const [region,] = census.regions;
         expect(region?.entryId,).toBe('Tabby',);
@@ -336,7 +336,7 @@ await describe({
         + 'population for a reason nobody would see',
       fn: async () => {
         /**
-         * What unnamedSlice raised, read for its class as well as its wording.
+         What unnamedSlice raised, read for its class as well as its wording.
          */
         const refusalOfUnnamedSlice = caught(function unnamedSlice() {
           regionsOfLane({

@@ -45,49 +45,49 @@ import type { SliceValidation, } from './translate-validate.ts';
 // had been paid for.
 
 /**
- * Finding recorded on a settlement whose standing was withheld from the slate.
+ Finding recorded on a settlement whose standing was withheld from the slate.
  */
 export const INELIGIBLE_STANDING_WITHHELD_FINDING: string = 'ineligible-standing-withheld: the standing text failed the '
   + 'deterministic publication rule, so it was not offered to the slate judges; only valid proposals were';
 
 /**
- * Finding recorded on a settlement whose ineligible standing was replaced
- * by the slice's incumbent, which passed the gate (owner, 2026-09-09).
+ Finding recorded on a settlement whose ineligible standing was replaced
+ by the slice's incumbent, which passed the gate (owner, 2026-09-09).
  */
 export const INELIGIBLE_STANDING_REPLACED_FINDING: string = 'ineligible-standing-replaced-by-incumbent: the '
   + 'standing text failed the deterministic publication rule and the incumbent passed it, so the incumbent stands '
   + 'in as the wording the slate judges may keep';
 
 /**
- * Raised when a slice's standing text has failed the deterministic gate and
- * the settlement still ends with nothing valid to ship.
+ Raised when a slice's standing text has failed the deterministic gate and
+ the settlement still ends with nothing valid to ship.
  */
 export class ConsolidationStandingIneligibleError extends Error {
   /**
-   * Declares this message safe to forward: it names a slice index and a
-   * terminal state, never a passage.
+   Declares this message safe to forward: it names a slice index and a
+   terminal state, never a passage.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Slice whose settlement ended with nothing shippable.
+   Slice whose settlement ended with nothing shippable.
    */
   readonly sliceIndex: number;
 
   /**
-   * Names the slice and how its settlement ended.
-   *
-   * @param sliceIndex - prepared position of the slice
-   *
-   * @param terminal - how the settlement ended, which says whether the slate
-   * was empty, declined, or gated back to the standing
-   *
-   * @param cause - the judges' own refusal, when a decline is what ended it
-   *
-   * @example
-   * ```ts
-   * throw new ConsolidationStandingIneligibleError({ sliceIndex: 0, terminal: 'slate-declined-standing', },);
-   * ```
+   Names the slice and how its settlement ended.
+   
+   @param sliceIndex - prepared position of the slice
+   
+   @param terminal - how the settlement ended, which says whether the slate
+   was empty, declined, or gated back to the standing
+   
+   @param cause - the judges' own refusal, when a decline is what ended it
+   
+   @example
+   ```ts
+   throw new ConsolidationStandingIneligibleError({ sliceIndex: 0, terminal: 'slate-declined-standing', },);
+   ```
    */
   constructor(
     {
@@ -113,19 +113,19 @@ export class ConsolidationStandingIneligibleError extends Error {
 }
 
 /**
- * What the slate offers as its incumbent: the standing text when it may
- * ship, nothing when the gate has refused it.
- *
- * @param standingEligible - whether the standing passed the deterministic gate
- *
- * @param standingText - wording in place when the stage began
- *
- * @returns Incumbent text and kind as the slate builder and the judges take them
- *
- * @example
- * ```ts
- * const incumbent = slateIncumbentFor({ standingEligible: false, standingText, },);
- * ```
+ What the slate offers as its incumbent: the standing text when it may
+ ship, nothing when the gate has refused it.
+ 
+ @param standingEligible - whether the standing passed the deterministic gate
+ 
+ @param standingText - wording in place when the stage began
+ 
+ @returns Incumbent text and kind as the slate builder and the judges take them
+ 
+ @example
+ ```ts
+ const incumbent = slateIncumbentFor({ standingEligible: false, standingText, },);
+ ```
  */
 export function slateIncumbentFor(
   {
@@ -152,26 +152,26 @@ export function slateIncumbentFor(
 }
 
 /**
- * Refuses a settlement that would ship an ineligible standing text.
- *
- * ASKED AT EVERY EXIT THAT KEEPS THE STANDING: the empty floor, the judges'
- * decline, and the gate's refusal of the consolidation they chose. A
- * `consolidated` terminal ships fresh wording the floor passed, which is the
- * one outcome the rule allows.
- *
- * @param standingEligible - whether the standing passed the deterministic gate
- *
- * @param terminal - how the settlement is about to end
- *
- * @param sliceIndex - prepared position of the slice, for the error
- *
- * @throws {@link ConsolidationStandingIneligibleError} when the standing is
- * ineligible and the terminal keeps it
- *
- * @example
- * ```ts
- * requireShippableTerminal({ standingEligible, terminal: 'consolidated', sliceIndex, },);
- * ```
+ Refuses a settlement that would ship an ineligible standing text.
+ 
+ ASKED AT EVERY EXIT THAT KEEPS THE STANDING: the empty floor, the judges'
+ decline, and the gate's refusal of the consolidation they chose. A
+ `consolidated` terminal ships fresh wording the floor passed, which is the
+ one outcome the rule allows.
+ 
+ @param standingEligible - whether the standing passed the deterministic gate
+ 
+ @param terminal - how the settlement is about to end
+ 
+ @param sliceIndex - prepared position of the slice, for the error
+ 
+ @throws {@link ConsolidationStandingIneligibleError} when the standing is
+ ineligible and the terminal keeps it
+ 
+ @example
+ ```ts
+ requireShippableTerminal({ standingEligible, terminal: 'consolidated', sliceIndex, },);
+ ```
  */
 export function requireShippableTerminal(
   {
@@ -193,24 +193,24 @@ export function requireShippableTerminal(
 }
 
 /**
- * One line saying why the deterministic gate refused a standing text, for
- * the run log.
- *
- * WRITTEN FOR THE READING, not the judges: on 2026-09-04 the luxuanwen3 log
- * said only that a standing "fails publication eligibility", and learning
- * that the cause was a link destination the archive had rewritten took
- * opening the slice records. A refusal the log names is a defect class the
- * next reading finds in one grep.
- *
- * @param validation - deterministic verdict on the standing text
- *
- * @returns Findings joined into one line, the reason no comparison was
- * possible, or a word for a pass
- *
- * @example
- * ```ts
- * dl.warn(`slice 1: ${describeStandingVerdict({ validation, },)}`,);
- * ```
+ One line saying why the deterministic gate refused a standing text, for
+ the run log.
+ 
+ WRITTEN FOR THE READING, not the judges: on 2026-09-04 the luxuanwen3 log
+ said only that a standing "fails publication eligibility", and learning
+ that the cause was a link destination the archive had rewritten took
+ opening the slice records. A refusal the log names is a defect class the
+ next reading finds in one grep.
+ 
+ @param validation - deterministic verdict on the standing text
+ 
+ @returns Findings joined into one line, the reason no comparison was
+ possible, or a word for a pass
+ 
+ @example
+ ```ts
+ dl.warn(`slice 1: ${describeStandingVerdict({ validation, },)}`,);
+ ```
  */
 export function describeStandingVerdict(
   { validation, }: { readonly validation: SliceValidation; },

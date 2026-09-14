@@ -38,35 +38,35 @@ import { reportingRefusals, } from './cli-refusal.ts';
 //   be protected.
 
 /**
- * Size at which a translate call is known to be at risk.
- *
- * The translate probe asked for a 4641-character section in one call and lost
- * two voices of three: one timed out at six minutes, one returned
- * schema-invalid output. That is the only measured point on this curve, so it
- * is the threshold rather than a round number.
+ Size at which a translate call is known to be at risk.
+ 
+ The translate probe asked for a 4641-character section in one call and lost
+ two voices of three: one timed out at six minutes, one returned
+ schema-invalid output. That is the only measured point on this curve, so it
+ is the threshold rather than a round number.
  */
 const PROBE_TIMEOUT_CHARS = 4_641;
 
 /**
- * How many entries the unpaired-section list names, which is enough to show
- * whether that text is one outlier or spread across the corpus.
+ How many entries the unpaired-section list names, which is enough to show
+ whether that text is one outlier or spread across the corpus.
  */
 const UNPAIRED_ENTRIES_LISTED = 5;
 
 
 /**
- * Counts the rows whose sizes describe one carve.
- *
- * @param rows - census rows
- *
- * @param carve - carve to count
- *
- * @returns How many rows carry it
- *
- * @example
- * ```ts
- * const complete = countCarve({ rows, carve: 'settled-complete', },);
- * ```
+ Counts the rows whose sizes describe one carve.
+ 
+ @param rows - census rows
+ 
+ @param carve - carve to count
+ 
+ @returns How many rows carry it
+ 
+ @example
+ ```ts
+ const complete = countCarve({ rows, carve: 'settled-complete', },);
+ ```
  */
 function countCarve(
   {
@@ -85,64 +85,64 @@ function countCarve(
 }
 
 /**
- * One entry with the largest single slice it produced.
- *
- * Named rather than inferred, because an inferred object literal carries
- * writable properties and the comparator that sorts these then takes mutable
- * parameters it never mutates.
- *
- * @example
- * ```ts
- * const widest: WidestSlice = { entryId: 'shihai4h', largest: 10_959, };
- * ```
+ One entry with the largest single slice it produced.
+ 
+ Named rather than inferred, because an inferred object literal carries
+ writable properties and the comparator that sorts these then takes mutable
+ parameters it never mutates.
+ 
+ @example
+ ```ts
+ const widest: WidestSlice = { entryId: 'shihai4h', largest: 10_959, };
+ ```
  */
 type WidestSlice = Readonly<{
   /**
-   * Corpus id.
+   Corpus id.
    */
   entryId: string;
 
   /**
-   * Characters in its largest slice, on either side.
+   Characters in its largest slice, on either side.
    */
   largest: number;
 }>;
 
 /**
- * Measures every complete pair at the pin and prints the census.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Measures every complete pair at the pin and prints the census.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Every corpus id at the pinned commit.
+   Every corpus id at the pinned commit.
    */
   const entryIds = await listCorpusPeople({ pin: RUN_CORPUS_PIN, },);
 
   /**
-   * Entries that carry both sides, measured.
+   Entries that carry both sides, measured.
    */
   const rows: EntryCensus[] = [];
 
   /**
-   * Ids missing one side, which is ordinary rather than a fault.
+   Ids missing one side, which is ordinary rather than a fault.
    */
   const incomplete: string[] = [];
   /**
-   * Runs directory whose settled artifacts carry each entry's recipe.
+   Runs directory whose settled artifacts carry each entry's recipe.
    */
   const runsDir = await resolveRunsDir();
 
   /**
-   * Entries whose artifact predates the recipe, carved deterministically.
+   Entries whose artifact predates the recipe, carved deterministically.
    */
   const legacy: string[] = [];
   for (const entryId of entryIds) {
     /**
-     * Recipe the entry's settled artifact records, if any.
+     Recipe the entry's settled artifact records, if any.
      */
     /* oxlint-disable-next-line no-await-in-loop -- sequential by design: this reads git at a pinned commit and a fan-out would only contend for the same object store */
     const settled = await readSettledRecipe({
@@ -176,14 +176,14 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Every slice's source characters, corpus-wide.
+   Every slice's source characters, corpus-wide.
    */
   const sourceChars = rows.flatMap(function toSourceChars(row,) {
     return [...row.sliceSourceChars,];
   },);
 
   /**
-   * Every slice's target characters.
+   Every slice's target characters.
    */
   const targetChars = rows.flatMap(function toTargetChars(row,) {
     return [...row.sliceTargetChars,];
@@ -195,7 +195,7 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Rows by which carve their sizes describe.
+   Rows by which carve their sizes describe.
    */
   const carved = {
     complete: countCarve({
@@ -233,7 +233,7 @@ async function main(): Promise<void> {
   },),);
 
   /**
-   * Entries carrying a section the aligner would not pair, on either side.
+   Entries carrying a section the aligner would not pair, on either side.
    */
   const unpaired = rows.filter(function hasUnpaired(row,) {
     return (row.unpairedSourceSections > 0)
@@ -305,7 +305,7 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Entries carrying blocks only the translation has.
+   Entries carrying blocks only the translation has.
    */
   const targetOnly = rows
     .filter(function hasTargetOnly(row,) {
@@ -358,8 +358,8 @@ async function main(): Promise<void> {
   },),);
 
   /**
-   * Entries ordered by their largest slice, since the tail is what a per-call
-   * deadline meets first and a percentile hides which entry owns it.
+   Entries ordered by their largest slice, since the tail is what a per-call
+   deadline meets first and a percentile hides which entry owns it.
    */
   const widest = rows
     .map(function toWidest(row,): WidestSlice {
@@ -380,8 +380,8 @@ async function main(): Promise<void> {
     },);
 
   /**
-   * Slices carrying more than the whole-section call the translate probe
-   * already saw time out at six minutes.
+   Slices carrying more than the whole-section call the translate probe
+   already saw time out at six minutes.
    */
   const oversized = rows.flatMap(function toOversized(row,) {
     return row.sliceTargetChars

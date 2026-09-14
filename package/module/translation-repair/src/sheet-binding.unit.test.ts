@@ -1,9 +1,9 @@
 /**
- * Tests for the check that refuses a graded sheet scored against the wrong
- * manifest.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the check that refuses a graded sheet scored against the wrong
+ manifest.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -24,16 +24,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one drawn candidate carrying only what the manifest reads.
- *
- * @param issueId - adjudicated identity
- *
- * @returns Candidate the manifest records
- *
- * @example
- * ```ts
- * const candidate = catCandidate({ issueId: 'adjudicated/nap', },);
- * ```
+ Builds one drawn candidate carrying only what the manifest reads.
+ 
+ @param issueId - adjudicated identity
+ 
+ @returns Candidate the manifest records
+ 
+ @example
+ ```ts
+ const candidate = catCandidate({ issueId: 'adjudicated/nap', },);
+ ```
  */
 function catCandidate(
   { issueId, }: { readonly issueId: string; },
@@ -52,16 +52,16 @@ function catCandidate(
 }
 
 /**
- * Manifest of a one-item draw, digest included.
- *
- * @param issueId - issue drawn at position one
- *
- * @returns Manifest as the draw writes it
- *
- * @example
- * ```ts
- * const manifest = catManifest({ issueId: 'adjudicated/nap', },);
- * ```
+ Manifest of a one-item draw, digest included.
+ 
+ @param issueId - issue drawn at position one
+ 
+ @returns Manifest as the draw writes it
+ 
+ @example
+ ```ts
+ const manifest = catManifest({ issueId: 'adjudicated/nap', },);
+ ```
  */
 function catManifest(
   { issueId, }: { readonly issueId: string; },
@@ -75,8 +75,8 @@ function catManifest(
 }
 
 /**
- * A recorded generation, so every fixture manifest says which pipeline settled
- * the pool it was drawn from.
+ A recorded generation, so every fixture manifest says which pipeline settled
+ the pool it was drawn from.
  */
 const CAT_GENERATION = {
   kind: 'recorded',
@@ -119,7 +119,7 @@ await describe({
         const manifest = catManifest({ issueId: 'adjudicated/nap', },);
 
         /**
-         * What scoresAnotherDraw raised, read for its class as well as its wording.
+         What scoresAnotherDraw raised, read for its class as well as its wording.
          */
         const refusalOfScoresAnotherDraw = caught(function scoresAnotherDraw() {
           assertSheetMatchesManifest({
@@ -203,7 +203,7 @@ await describe({
         };
 
         /**
-         * What legacySheetWithBoundManifest raised, read for its class as well as its wording.
+         What legacySheetWithBoundManifest raised, read for its class as well as its wording.
          */
         const refusalOfLegacySheetWithBoundManifest = caught(function legacySheetWithBoundManifest() {
           assertSheetMatchesManifest({
@@ -221,7 +221,7 @@ await describe({
         expect((refusalOfLegacySheetWithBoundManifest as Error).message,).toContain('disagree about whether this draw is bound',);
 
         /**
-         * What boundSheetWithLegacyManifest raised, read for its class as well as its wording.
+         What boundSheetWithLegacyManifest raised, read for its class as well as its wording.
          */
         const refusalOfBoundSheetWithLegacyManifest = caught(function boundSheetWithLegacyManifest() {
           assertSheetMatchesManifest({
@@ -249,7 +249,7 @@ await describe({
         const manifest = catManifest({ issueId: 'adjudicated/nap', },);
 
         /**
-         * What scoresAnotherSeed raised, read for its class as well as its wording.
+         What scoresAnotherSeed raised, read for its class as well as its wording.
          */
         const refusalOfScoresAnotherSeed = caught(function scoresAnotherSeed() {
           assertSheetMatchesManifest({
@@ -267,7 +267,7 @@ await describe({
         expect((refusalOfScoresAnotherSeed as Error).message,).toContain('different draws',);
 
         /**
-         * What scoresAnotherPin raised, read for its class as well as its wording.
+         What scoresAnotherPin raised, read for its class as well as its wording.
          */
         const refusalOfScoresAnotherPin = caught(function scoresAnotherPin() {
           assertSheetMatchesManifest({
@@ -314,7 +314,7 @@ await describe({
         + 'arriving through the back door',
       fn: async () => {
         /**
-         * What scoresAnUnplaceableSheet raised, read for its class as well as its wording.
+         What scoresAnUnplaceableSheet raised, read for its class as well as its wording.
          */
         const refusalOfScoresAnUnplaceableSheet = caught(function scoresAnUnplaceableSheet() {
           requireSheetSeed({

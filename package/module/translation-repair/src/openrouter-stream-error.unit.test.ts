@@ -1,15 +1,15 @@
 /**
- * Tests for reading a provider failure off a success-status OpenRouter stream.
- *
- * WHAT THESE PIN is the difference between "the reply was cut off" and "the
- * upstream failed with code 504": on 2026-09-04, 114 of 115 truncation retries
- * in a day's runs were one endpoint's timeouts, and the log could not say so.
- * The recorded frame is the shape a direct probe of that endpoint captured the
- * same day, with the upstream's free text replaced.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading a provider failure off a success-status OpenRouter stream.
+ 
+ WHAT THESE PIN is the difference between "the reply was cut off" and "the
+ upstream failed with code 504": on 2026-09-04, 114 of 115 truncation retries
+ in a day's runs were one endpoint's timeouts, and the log could not say so.
+ The recorded frame is the shape a direct probe of that endpoint captured the
+ same day, with the upstream's free text replaced.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,24 +26,24 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One chunk as the gateway frames it.
- *
- * @param chunk - object to frame
- *
- * @returns Framed event line
- *
- * @example
- * ```ts
- * const line = framed({ chunk: { provider: 'Sill', }, },);
- * ```
+ One chunk as the gateway frames it.
+ 
+ @param chunk - object to frame
+ 
+ @returns Framed event line
+ 
+ @example
+ ```ts
+ const line = framed({ chunk: { provider: 'Sill', }, },);
+ ```
  */
 function framed({ chunk, }: { readonly chunk: Readonly<Record<string, unknown>>; },): string {
   return `data: ${JSON.stringify(chunk,)}\n\n`;
 }
 
 /**
- * The failing stream's shape: one chunk carrying the error and the upstream's
- * name, no terminator.
+ The failing stream's shape: one chunk carrying the error and the upstream's
+ name, no terminator.
  */
 const FAILED_STREAM = `: OPENROUTER PROCESSING\n\n${
   framed({
@@ -64,7 +64,7 @@ const FAILED_STREAM = `: OPENROUTER PROCESSING\n\n${
 }`;
 
 /**
- * An ordinary stream: content and the terminator, no error.
+ An ordinary stream: content and the terminator, no error.
  */
 const WHOLE_STREAM = `${
   framed({
@@ -77,9 +77,9 @@ const WHOLE_STREAM = `${
 }data: [DONE]\n\n`;
 
 /**
- * The eighteenth class's shape (2026-09-08): reasoning, no content, a choice
- * closed with `finish_reason: "error"` and no error object, then the
- * terminator.
+ The eighteenth class's shape (2026-09-08): reasoning, no content, a choice
+ closed with `finish_reason: "error"` and no error object, then the
+ terminator.
  */
 const ERROR_FINISH_STREAM = `${
   framed({
@@ -140,7 +140,7 @@ await describe({
         + 'code, no kind and the chunks no upstream',
       fn: async () => {
         /**
-         * An error chunk stripped to the bare object.
+         An error chunk stripped to the bare object.
          */
         const bare = framed({ chunk: { error: { message: 'the sill was busy', }, }, },);
 
@@ -164,7 +164,7 @@ await describe({
           endpoint: 'Sill',
         },);
         /**
-         * The same closing choice with no native reason and no upstream named.
+         The same closing choice with no native reason and no upstream named.
          */
         const unnamed = `${
           framed({
@@ -196,7 +196,7 @@ await describe({
         + 'as fields a reader can act on, and a message that names them and nothing else',
       fn: async () => {
         /**
-         * What the failed stream produces.
+         What the failed stream produces.
          */
         let thrown: unknown;
         try {
@@ -230,7 +230,7 @@ await describe({
         + 'under its own name instead of reaching the reply ladder as an empty answer',
       fn: async () => {
         /**
-         * What the error-finish stream produces.
+         What the error-finish stream produces.
          */
         let thrown: unknown;
         try {

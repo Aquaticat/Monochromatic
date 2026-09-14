@@ -11,16 +11,16 @@ import {
 //region Current native evidence compared with historical frozen population
 
 /**
- * Entry projection matches the original producer schema without treating extra current provenance as legacy data.
- *
- * @param entry - current selected entry
- *
- * @returns Exact historical entry projection for whole-record comparison
- *
- * @example
- * ```ts
- * const legacy = frozenRootEntryProjection(entry);
- * ```
+ Entry projection matches the original producer schema without treating extra current provenance as legacy data.
+ 
+ @param entry - current selected entry
+ 
+ @returns Exact historical entry projection for whole-record comparison
+ 
+ @example
+ ```ts
+ const legacy = frozenRootEntryProjection(entry);
+ ```
  */
 function frozenRootEntryProjection(entry: PreparationRootEntry,): Pick<PreparationRootEntry,
   'entryId' | 'sourceText' | 'archiveText' | 'targetText' | 'sourceHash' | 'archiveHash' | 'targetHash' | 'originalPolicy'
@@ -38,23 +38,23 @@ function frozenRootEntryProjection(entry: PreparationRootEntry,): Pick<Preparati
 }
 
 /**
- * Validates the complete consumed population semantics without running the historical sampler or repair code.
- * Legacy JSON-based digests are reproduced only under their original producer representation.
- *
- * @param selection - independently byte-bound parent selection
- *
- * @param record - owned complete frozen JSON, including fields absent from its partial projection
- *
- * @param artifacts - owned semantic documents from registered supporting bytes
- *
- * @param current - independently reconstructed native pinned population
- *
- * @throws PreparationRootError when policy, counts, hashes, node membership or frozen parent order differs
- *
- * @example
- * ```ts
- * matchPreparationRootPopulation({ selection, record, artifacts, current });
- * ```
+ Validates the complete consumed population semantics without running the historical sampler or repair code.
+ Legacy JSON-based digests are reproduced only under their original producer representation.
+ 
+ @param selection - independently byte-bound parent selection
+ 
+ @param record - owned complete frozen JSON, including fields absent from its partial projection
+ 
+ @param artifacts - owned semantic documents from registered supporting bytes
+ 
+ @param current - independently reconstructed native pinned population
+ 
+ @throws PreparationRootError when policy, counts, hashes, node membership or frozen parent order differs
+ 
+ @example
+ ```ts
+ matchPreparationRootPopulation({ selection, record, artifacts, current });
+ ```
  */
 export function matchPreparationRootPopulation({
   selection,
@@ -68,7 +68,7 @@ export function matchPreparationRootPopulation({
   readonly current: PreparationRootPopulation;
 },): void {
   /**
-   * The historical pool is selection evidence, not a promoted execution plan.
+   The historical pool is selection evidence, not a promoted execution plan.
    */
   const {
     pool,
@@ -100,7 +100,7 @@ export function matchPreparationRootPopulation({
     kind: 'reference-role',
   },);
   /**
-   * Historical order is a checked description; no invocation redraws its frozen membership.
+   Historical order is a checked description; no invocation redraws its frozen membership.
    */
   const sampler = preparationRootRecord(record.sampler,);
   assertPreparationRootEqual({
@@ -118,7 +118,7 @@ export function matchPreparationRootPopulation({
     kind: 'reference-role',
   },);
   /**
-   * Reported complete population counts are checked against actual native reads, not each other.
+   Reported complete population counts are checked against actual native reads, not each other.
    */
   const census = {
     listed: current.listedEntryIds
@@ -169,7 +169,7 @@ export function matchPreparationRootPopulation({
     kind: 'population',
   },);
   /**
-   * Frozen parent and exclusion records must identity-bind every listed entry, including unselected entries.
+   Frozen parent and exclusion records must identity-bind every listed entry, including unselected entries.
    */
   const coveredEntries = new Set([
     ...current.population
@@ -185,7 +185,7 @@ export function matchPreparationRootPopulation({
     input: 'frozen entry identity coverage',
   },);
   /**
-   * This is the original task40 population digest representation, not a new ambiguous sampler digest.
+   This is the original task40 population digest representation, not a new ambiguous sampler digest.
    */
   const populationDigest = hashContent({ content: JSON.stringify(current.population
     .map(function legacy(parent,): unknown {
@@ -217,7 +217,7 @@ export function matchPreparationRootPopulation({
     kind: 'population',
   },);
   /**
-   * Selected pool bytes preserve their original record order and producer key order.
+   Selected pool bytes preserve their original record order and producer key order.
    */
   const poolDigest = hashContent({ content: JSON.stringify(current.parents,), },);
   assertPreparationRootEqual({

@@ -16,18 +16,18 @@ import type {
 //region Artifact absolute naturalness seat read
 
 /**
- * Reads paragraph-located finding.
- *
- * @param value - unknown finding
- *
- * @param path - artifact path
- *
- * @returns Validated finding
- *
- * @example
- * ```ts
- * const finding = parseFinding({ value, path, });
- * ```
+ Reads paragraph-located finding.
+ 
+ @param value - unknown finding
+ 
+ @param path - artifact path
+ 
+ @returns Validated finding
+ 
+ @example
+ ```ts
+ const finding = parseFinding({ value, path, });
+ ```
  */
 function parseFinding(
   {
@@ -39,7 +39,7 @@ function parseFinding(
   },
 ): ArtifactNaturalnessFinding {
   /**
-   * Finding under exact schema-eight shape.
+   Finding under exact schema-eight shape.
    */
   const record = requireRecord({
     value,
@@ -54,7 +54,7 @@ function parseFinding(
     path,
   },);
   /**
-   * One-based paragraph position.
+   One-based paragraph position.
    */
   const paragraph = requireCount({
     value: record.paragraph,
@@ -67,7 +67,7 @@ function parseFinding(
     },);
   }
   /**
-   * Concise actionable problem.
+   Concise actionable problem.
    */
   const problem = requireString({
     value: record.problem,
@@ -86,18 +86,18 @@ function parseFinding(
 }
 
 /**
- * Reads finding list in stored order.
- *
- * @param value - unknown list
- *
- * @param path - artifact path
- *
- * @returns Validated findings
- *
- * @example
- * ```ts
- * const findings = parseFindings({ value: [], path: 'review.findings', });
- * ```
+ Reads finding list in stored order.
+ 
+ @param value - unknown list
+ 
+ @param path - artifact path
+ 
+ @returns Validated findings
+ 
+ @example
+ ```ts
+ const findings = parseFindings({ value: [], path: 'review.findings', });
+ ```
  */
 export function parseNaturalnessFindings(
   {
@@ -124,18 +124,18 @@ export function parseNaturalnessFindings(
 }
 
 /**
- * Reads one accounted reviewer seat and cross-validates status fields.
- *
- * @param value - unknown seat
- *
- * @param path - artifact path
- *
- * @returns Validated seat
- *
- * @example
- * ```ts
- * const seat = parseNaturalnessReviewSeat({ value, path, });
- * ```
+ Reads one accounted reviewer seat and cross-validates status fields.
+ 
+ @param value - unknown seat
+ 
+ @param path - artifact path
+ 
+ @returns Validated seat
+ 
+ @example
+ ```ts
+ const seat = parseNaturalnessReviewSeat({ value, path, });
+ ```
  */
 export function parseNaturalnessReviewSeat(
   {
@@ -147,7 +147,7 @@ export function parseNaturalnessReviewSeat(
   },
 ): ArtifactNaturalnessReviewSeat {
   /**
-   * Seat under exact schema-eight shape.
+   Seat under exact schema-eight shape.
    */
   const record = requireRecord({
     value,
@@ -172,14 +172,14 @@ export function parseNaturalnessReviewSeat(
     },);
   }
   /**
-   * Findings under status consistency check.
+   Findings under status consistency check.
    */
   const findings = parseNaturalnessFindings({
     value: record.findings,
     path: `${path}.findings`,
   },);
   /**
-   * Explanation under status consistency check.
+   Explanation under status consistency check.
    */
   const reason = requireString({
     value: record.reason,
@@ -215,18 +215,18 @@ export function parseNaturalnessReviewSeat(
 }
 
 /**
- * Tests exact ordered equality between located finding lists.
- *
- * @param left - first list
- *
- * @param right - second list
- *
- * @returns Whether same findings occupy same positions
- *
- * @example
- * ```ts
- * sameNaturalnessFindings({ left, right, });
- * ```
+ Tests exact ordered equality between located finding lists.
+ 
+ @param left - first list
+ 
+ @param right - second list
+ 
+ @returns Whether same findings occupy same positions
+ 
+ @example
+ ```ts
+ sameNaturalnessFindings({ left, right, });
+ ```
  */
 export function sameNaturalnessFindings(
   {
@@ -242,7 +242,7 @@ export function sameNaturalnessFindings(
     index,
   ): boolean {
     /**
-     * Finding at same stored position.
+     Finding at same stored position.
      */
     const candidate = right[index];
     return (candidate !== undefined)
@@ -252,16 +252,16 @@ export function sameNaturalnessFindings(
 }
 
 /**
- * Deduplicates exact located findings in first occurrence order.
- *
- * @param findings - roster-ordered findings
- *
- * @returns First copy of each exact finding
- *
- * @example
- * ```ts
- * const unique = uniqueNaturalnessFindings({ findings, });
- * ```
+ Deduplicates exact located findings in first occurrence order.
+ 
+ @param findings - roster-ordered findings
+ 
+ @returns First copy of each exact finding
+ 
+ @example
+ ```ts
+ const unique = uniqueNaturalnessFindings({ findings, });
+ ```
  */
 export function uniqueNaturalnessFindings(
   { findings, }: { readonly findings: readonly ArtifactNaturalnessFinding[]; },
@@ -278,18 +278,18 @@ export function uniqueNaturalnessFindings(
 }
 
 /**
- * Derives fail-closed verdict from accounted seats.
- *
- * @param seats - every requested reviewer seat
- *
- * @param quorumOver - explicit wider basis, or legacy interpretation from recorded seats
- *
- * @returns Verdict implied by quorum and rejection
- *
- * @example
- * ```ts
- * const verdict = naturalnessVerdictOf({ seats, });
- * ```
+ Derives fail-closed verdict from accounted seats.
+ 
+ @param seats - every requested reviewer seat
+ 
+ @param quorumOver - explicit wider basis, or legacy interpretation from recorded seats
+ 
+ @returns Verdict implied by quorum and rejection
+ 
+ @example
+ ```ts
+ const verdict = naturalnessVerdictOf({ seats, });
+ ```
  */
 export function naturalnessVerdictOf(
   {
@@ -301,13 +301,13 @@ export function naturalnessVerdictOf(
   },
 ): ArtifactNaturalnessReviewRound['verdict'] {
   /**
-   * Seats carrying usable verdict.
+   Seats carrying usable verdict.
    */
   const usable = seats.filter(function usableSeat(seat,): boolean {
     return seat.status !== 'unusable';
   },);
   /**
-   * Same exact-half quorum runtime used for requested roster.
+   Same exact-half quorum runtime used for requested roster.
    */
   const quorumNeeded = rosterQuorumSize({ rosterSize: quorumOver, },);
   if (usable.length < quorumNeeded)

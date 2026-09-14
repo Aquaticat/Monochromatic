@@ -1,14 +1,14 @@
 /**
- * Tests for the pieces every two-way contest shares.
- *
- * WHAT THIS FILE EXISTS TO STOP. These were private to the lane contest until a
- * second contest needed the same question over a different pair of names.
- * Sharing them is only safe while the reading stays vocabulary-agnostic, so
- * these exercise it on a vocabulary the lane contest never sees.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the pieces every two-way contest shares.
+ 
+ WHAT THIS FILE EXISTS TO STOP. These were private to the lane contest until a
+ second contest needed the same question over a different pair of names.
+ Sharing them is only safe while the reading stays vocabulary-agnostic, so
+ these exercise it on a vocabulary the lane contest never sees.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -26,7 +26,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * A vocabulary neither shipped contest uses.
+ A vocabulary neither shipped contest uses.
  */
 const NAMES = [
   'tabby',

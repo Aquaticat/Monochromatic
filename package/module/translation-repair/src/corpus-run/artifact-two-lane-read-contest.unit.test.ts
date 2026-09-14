@@ -1,14 +1,14 @@
 /**
- * Tests for reading a recorded contest back out of a settled artifact.
- *
- * WHAT IS UNDER TEST is what the reader refuses. A recorded verdict is a claim
- * about ballots stored beside it and a recorded contest is a claim about which
- * slices the two lanes worded differently, so both are re-derived here and a
- * disagreement is an error rather than a reading.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading a recorded contest back out of a settled artifact.
+ 
+ WHAT IS UNDER TEST is what the reader refuses. A recorded verdict is a claim
+ about ballots stored beside it and a recorded contest is a claim about which
+ slices the two lanes worded differently, so both are re-derived here and a
+ disagreement is an error rather than a reading.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,27 +26,27 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive`s own English for the slice every fixture here describes.
+ Archive`s own English for the slice every fixture here describes.
  */
 const ARCHIVE_NAP = 'The cat sleeps in the bookshop attic.';
 
 /**
- * Wording the repair lane left.
+ Wording the repair lane left.
  */
 const REPAIR_NAP = 'The cat naps in the bookshop attic.';
 
 /**
- * Wording the translate lane left, differing from both.
+ Wording the translate lane left, differing from both.
  */
 const TRANSLATE_NAP = 'The cat dozes in the attic of the bookshop.';
 
 /**
- * Path every message under test is built against.
+ Path every message under test is built against.
  */
 const SELECTION_PATH = 'CatEntry1.laneSelection';
 
 /**
- * Ballot backing the repair lane, in the recorded rather than the typed form.
+ Ballot backing the repair lane, in the recorded rather than the typed form.
  */
 const FOR_REPAIR = {
   choice: 'repair',
@@ -58,7 +58,7 @@ const FOR_REPAIR = {
 };
 
 /**
- * Ballot backing the translate lane.
+ Ballot backing the translate lane.
  */
 const FOR_TRANSLATE = {
   choice: 'translate',
@@ -70,7 +70,7 @@ const FOR_TRANSLATE = {
 };
 
 /**
- * Ballot backing neither, which is a reading rather than a silence.
+ Ballot backing neither, which is a reading rather than a silence.
  */
 const FOR_NEITHER = {
   choice: 'neither',
@@ -85,20 +85,20 @@ const FOR_NEITHER = {
 };
 
 /**
- * Builds a comparison row carrying the two lane wordings a test needs.
- *
- * @param sliceIndex - slice this names
- *
- * @param repairText - wording the repair document carries
- *
- * @param translateText - wording the translate document carries
- *
- * @returns Row with the rest of its fields held constant
- *
- * @example
- * ```ts
- * const row = catRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
- * ```
+ Builds a comparison row carrying the two lane wordings a test needs.
+ 
+ @param sliceIndex - slice this names
+ 
+ @param repairText - wording the repair document carries
+ 
+ @param translateText - wording the translate document carries
+ 
+ @returns Row with the rest of its fields held constant
+ 
+ @example
+ ```ts
+ const row = catRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
+ ```
  */
 function catRow(
   {
@@ -136,7 +136,7 @@ function catRow(
 }
 
 /**
- * Slice both lanes worded differently, which a contest may answer.
+ Slice both lanes worded differently, which a contest may answer.
  */
 const CONTESTED_ROW = catRow({
   sliceIndex: 0,
@@ -145,8 +145,8 @@ const CONTESTED_ROW = catRow({
 },);
 
 /**
- * Comparison where slice 0 and slice 2 are worded differently by the two lanes
- * and slice 1 is not, so eligibility is neither every slice nor none of them.
+ Comparison where slice 0 and slice 2 are worded differently by the two lanes
+ and slice 1 is not, so eligibility is neither every slice nor none of them.
  */
 const MIXED: readonly ArtifactComparisonRow[] = [
   CONTESTED_ROW,
@@ -163,27 +163,27 @@ const MIXED: readonly ArtifactComparisonRow[] = [
 ];
 
 /**
- * Comparison whose one slice the two lanes worded differently.
+ Comparison whose one slice the two lanes worded differently.
  */
 const ONE_CONTESTED: readonly ArtifactComparisonRow[] = [CONTESTED_ROW,];
 
 /**
- * Source metadata making archive and repair identities inadmissible.
+ Source metadata making archive and repair identities inadmissible.
  */
 const FRONT_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
 
 /**
- * Archive metadata retaining directory id as visible name.
+ Archive metadata retaining directory id as visible name.
  */
 const FRONT_ARCHIVE = '---\nname: CatEntry\ninfo:\n  alias: Maomao\n---\n';
 
 /**
- * Source-backed translated metadata.
+ Source-backed translated metadata.
  */
 const FRONT_TRANSLATE = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
 
 /**
- * Front matter row whose only admissible lane is translate.
+ Front matter row whose only admissible lane is translate.
  */
 const FRONT_ROW: ArtifactComparisonRow = {
   ...catRow({
@@ -216,7 +216,7 @@ await describe({
         + 'unheard roster side by side',
       fn: async () => {
         /**
-         * Selection the reader returned, narrowed before its slices are read.
+         Selection the reader returned, narrowed before its slices are read.
          */
         const selection = parseLaneSelection({
           value: {
@@ -365,7 +365,7 @@ await describe({
       name: 'ACCEPTS a slice too few of whose voices arrived, recording it as unsettled rather than as a refusal',
       fn: async () => {
         /**
-         * Selection the reader returned, narrowed before its slices are read.
+         Selection the reader returned, narrowed before its slices are read.
          */
         const selection = parseLaneSelection({
           value: {
@@ -398,7 +398,7 @@ await describe({
         + 'to undefined is not silence to anything that asks whether the ballot answered',
       fn: async () => {
         /**
-         * Selection whose one ballot judged the archive beside the two lanes.
+         Selection whose one ballot judged the archive beside the two lanes.
          */
         const judged = parseLaneSelection({
           value: {
@@ -428,7 +428,7 @@ await describe({
           ?.archive,).toBe('flawed',);
 
         /**
-         * Same selection with the ballot silent about the archive.
+         Same selection with the ballot silent about the archive.
          */
         const silent = parseLaneSelection({
           value: {
@@ -450,7 +450,7 @@ await describe({
           throw new Error('reader returned a pending selection for a contested one',);
 
         /**
-         * Ballot the reader gave back, whose KEYS are what this half reads.
+         Ballot the reader gave back, whose KEYS are what this half reads.
          */
         const ballot = silent.slices
           .at(0,)
@@ -471,7 +471,7 @@ await describe({
         + 'archive question with a lane name would otherwise be recorded as having judged it',
       fn: async () => {
         /**
-         * What archiveVerdictUnknown raised, read for its class as well as its wording.
+         What archiveVerdictUnknown raised, read for its class as well as its wording.
          */
         const refusalOfArchiveVerdictUnknown = caught(function archiveVerdictUnknown() {
           parseLaneSelection({
@@ -503,7 +503,7 @@ await describe({
       name: 'REFUSES a kind this version does not describe, rather than reading it as pending',
       fn: async () => {
         /**
-         * What parseLaneSelection raised, read for its class as well as its wording.
+         What parseLaneSelection raised, read for its class as well as its wording.
          */
         const refusalOfParseLaneSelection = caught(() => {
           parseLaneSelection({

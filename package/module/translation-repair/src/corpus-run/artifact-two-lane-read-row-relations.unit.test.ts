@@ -1,16 +1,16 @@
 /**
- * Tests for the two row relations at the level they are written, rather than
- * through a whole artifact.
- *
- * WHY NOT THROUGH THE READER: both cases here are about what an error MESSAGE
- * says and about what happens when something unexpected is thrown inside a
- * check. Neither is reachable by handing `parseSettledTwoLaneArtifact` a file, since
- * one needs a value the file format cannot express and the other needs a
- * failure that is not the file's fault at all.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the two row relations at the level they are written, rather than
+ through a whole artifact.
+ 
+ WHY NOT THROUGH THE READER: both cases here are about what an error MESSAGE
+ says and about what happens when something unexpected is thrown inside a
+ check. Neither is reachable by handing `parseSettledTwoLaneArtifact` a file, since
+ one needs a value the file format cannot express and the other needs a
+ failure that is not the file's fault at all.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -29,34 +29,34 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Original of the slice every row here describes.
+ Original of the slice every row here describes.
  */
 const SOURCE_NAP = '猫猫在书店的阁楼里睡觉。';
 
 /**
- * Archive's own English for it.
+ Archive's own English for it.
  */
 const ARCHIVE_NAP = 'The cat sleeps in the bookshop attic.';
 
 /**
- * Wording one lane decided on.
+ Wording one lane decided on.
  */
 const FRESH_NAP = 'The cat naps in the attic of the bookshop.';
 
 /**
- * Different wording of the same length as {@link FRESH_NAP}, so a message that
- * distinguishes two decisions cannot do it by counting characters.
+ Different wording of the same length as {@link FRESH_NAP}, so a message that
+ distinguishes two decisions cannot do it by counting characters.
  */
 const OTHER_NAP = 'The cat dozes in the attic of the bookshop';
 
 /**
- * Path every message under test is built against.
+ Path every message under test is built against.
  */
 const LANE_PATH = 'lanes.translate';
 
 /**
- * Row where the lane produced nothing and the archive's wording stands, which
- * both coherence rules accept.
+ Row where the lane produced nothing and the archive's wording stands, which
+ both coherence rules accept.
  */
 const RETAINED_ROW: ArtifactDeliveryRow = {
   sliceIndex: 0,
@@ -92,7 +92,7 @@ await describe({
         + 'position so a reader of a long ledger can find it',
       fn: async () => {
         /**
-         * What assertRowsCoherent raised, read for its class as well as its wording.
+         What assertRowsCoherent raised, read for its class as well as its wording.
          */
         const refusalOfAssertRowsCoherent = caught(() => {
           assertRowsCoherent({
@@ -119,9 +119,9 @@ await describe({
         + 'was fine, and buries the real fault under a message about the file',
       fn: async () => {
         /**
-         * Row that fails while being read rather than while being judged, which
-         * is what a defect inside either coherence rule would look like from
-         * here.
+         Row that fails while being read rather than while being judged, which
+         is what a defect inside either coherence rule would look like from
+         here.
          */
         const unreadable: ArtifactDeliveryRow = {
           ...RETAINED_ROW,
@@ -154,7 +154,7 @@ await describe({
         'NAMES BOTH KINDS when the raw result and the ledger disagree about what the lane did',
       fn: async () => {
         /**
-         * Raw result saying the lane decided a wording here.
+         Raw result saying the lane decided a wording here.
          */
         const evidence: readonly ArtifactEvidenceRow[] = [
           {
@@ -169,7 +169,7 @@ await describe({
         ];
 
         /**
-         * What assertEvidenceMatchesLedger raised, read for its class as well as its wording.
+         What assertEvidenceMatchesLedger raised, read for its class as well as its wording.
          */
         const refusalOfAssertEvidenceMatchesLedger = caught(() => {
           assertEvidenceMatchesLedger({
@@ -190,7 +190,7 @@ await describe({
         + 'refuses to say what it is',
       fn: async () => {
         /**
-         * Raw result and ledger that agree on the member and not on the wording.
+         Raw result and ledger that agree on the member and not on the wording.
          */
         const evidence: readonly ArtifactEvidenceRow[] = [
           {
@@ -205,7 +205,7 @@ await describe({
         ];
 
         /**
-         * Ledger row deciding different wording, shipped as a replacement.
+         Ledger row deciding different wording, shipped as a replacement.
          */
         const ledger: readonly ArtifactDeliveryRow[] = [
           {
@@ -220,7 +220,7 @@ await describe({
         ];
 
         /**
-         * What assertEvidenceMatchesLedger raised, read for its class as well as its wording.
+         What assertEvidenceMatchesLedger raised, read for its class as well as its wording.
          */
         const refusalOfAssertEvidenceMatchesLedger = caught(() => {
           assertEvidenceMatchesLedger({

@@ -27,25 +27,25 @@ const ENVELOPE: EditableEnvelope = { envelopeId: 'envelope/greeting', startOffse
 const JUDGES: readonly RosterModelId[] = ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b',];
 
 /**
- * Builds an applied candidate rather than an unverified raw replacement.
- * @param input - actual producer and proposed sentence
- * @returns Gated fixture patch
- * @example
- * ```ts
- * const candidate = proposed({ modelId: JUDGES[0], text: 'Her friend greeted her.' });
- * ```
+ Builds an applied candidate rather than an unverified raw replacement.
+ @param input - actual producer and proposed sentence
+ @returns Gated fixture patch
+ @example
+ ```ts
+ const candidate = proposed({ modelId: JUDGES[0], text: 'Her friend greeted her.' });
+ ```
  */
 function proposed({ modelId, text, }: { readonly modelId: RosterModelId; readonly text: string; }): EditorCandidate {
   return { modelId, patch: applyPatchOperations({ targetText: TARGET, envelopes: [ENVELOPE,], operations: [{ envelopeId: ENVELOPE.envelopeId, baseHash: ENVELOPE.baseHash, newText: text, },], preservation: { mode: 'skip', }, }), };
 }
 
 /**
- * Chooses the source-correct fixture only when its deciding evidence reaches the actual call.
- * @returns Client and captured user sheets
- * @example
- * ```ts
- * const fixture = judges();
- * ```
+ Chooses the source-correct fixture only when its deciding evidence reaches the actual call.
+ @returns Client and captured user sheets
+ @example
+ ```ts
+ const fixture = judges();
+ ```
  */
 function judges(): { readonly client: SyntheticClient; readonly prompts: string[]; } {
   const prompts: string[] = [];

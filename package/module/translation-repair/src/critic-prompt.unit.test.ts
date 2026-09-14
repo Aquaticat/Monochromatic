@@ -1,10 +1,10 @@
 /**
- * Tests for the shared critic prompt sheet:
- * closed vocabularies embedded, quote rules stated, both documents
- * fenced verbatim, JSON-only reply demanded.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the shared critic prompt sheet:
+ closed vocabularies embedded, quote rules stated, both documents
+ fenced verbatim, JSON-only reply demanded.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
@@ -21,17 +21,17 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Invented zh source shown to critics.
+ Invented zh source shown to critics.
  */
 const SOURCE_TEXT = '## 猫的日常\n\n小猫喜欢晒太阳。\n';
 
 /**
- * Invented translation under review.
+ Invented translation under review.
  */
 const TARGET_TEXT = '## A cat\'s day\n\nThe kitten loves sunbathing.\n';
 
 /**
- * Messages the prompt tests probe.
+ Messages the prompt tests probe.
  */
 const MESSAGES = buildCriticMessages({
   sourceText: SOURCE_TEXT,
@@ -53,7 +53,7 @@ await describe({
       name: 'embeds every listed category and severity in the instructions',
       fn: async () => {
         /**
-         * System instructions under vocabulary probing.
+         System instructions under vocabulary probing.
          */
         const system = MESSAGES[0]?.content ?? '';
         for (const category of ISSUE_CATEGORIES)
@@ -67,7 +67,7 @@ await describe({
       name: 'states the emotional-completeness and foreign-phrase policy',
       fn: async () => {
         /**
-         * System instructions under policy probing.
+         System instructions under policy probing.
          */
         const system = MESSAGES[0]?.content ?? '';
         // Naturalness outranks literalness, in both directions:
@@ -89,7 +89,7 @@ await describe({
       name: 'requires spans be judged in context and community usage be respected',
       fn: async () => {
         /**
-         * System instructions under policy probing.
+         System instructions under policy probing.
          */
         const system = MESSAGES[0]?.content ?? '';
         // A word choice licensed by an adjacent clause read as a wrong term
@@ -105,7 +105,7 @@ await describe({
       name: 'states that the original is not golden and obligatory differences are not defects',
       fn: async () => {
         /**
-         * System instructions under policy probing.
+         System instructions under policy probing.
          */
         const system = MESSAGES[0]?.content ?? '';
         // A translation repairing a deficiency in the original is doing its
@@ -125,7 +125,7 @@ await describe({
       name: 'fences both documents verbatim on the user sheet',
       fn: async () => {
         /**
-         * User sheet carrying the fenced pair.
+         User sheet carrying the fenced pair.
          */
         const sheet = MESSAGES[1]?.content ?? '';
         expect(sheet,).toContain(`===== ORIGINAL =====\n${SOURCE_TEXT}`,);
@@ -137,28 +137,28 @@ await describe({
 },);
 
 /**
- * Original carrying a row of five equals signs, the fence the builder once
- * used, on a line of its own.
+ Original carrying a row of five equals signs, the fence the builder once
+ used, on a line of its own.
  */
 const RULED_SOURCE = '第一行。\n=====\n第二行。';
 
 /**
- * User message of a plan, as text.
- *
- * @param messages - messages the builder returned
- *
- * @returns Last message's text
- *
- * @throws {@link Error} when the builder returned no message
- *
- * @example
- * ```ts
- * const content = userText({ messages, },);
- * ```
+ User message of a plan, as text.
+ 
+ @param messages - messages the builder returned
+ 
+ @returns Last message's text
+ 
+ @throws {@link Error} when the builder returned no message
+ 
+ @example
+ ```ts
+ const content = userText({ messages, },);
+ ```
  */
 function userText({ messages, }: { readonly messages: readonly ChatMessage[]; },): string {
   /**
-   * Last message, which is the user turn.
+   Last message, which is the user turn.
    */
   const asked = messages.at(-1,);
   if (asked === undefined)

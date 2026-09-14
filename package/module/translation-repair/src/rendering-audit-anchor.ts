@@ -30,90 +30,90 @@ import { RenderingAuditInvariantError, } from './rendering-audit-invariant.ts';
 // which word of it, and neither has to be unique in the document alone.
 
 /**
- * What `indexOf` answers when a needle is absent.
+ What `indexOf` answers when a needle is absent.
  */
 const NOT_FOUND = -1;
 
 /**
- * One span of a document, located.
- *
- * @example
- * ```ts
- * const span: AnchoredSpan = { text: '不吃罐头', start: 12, end: 16, };
- * ```
+ One span of a document, located.
+ 
+ @example
+ ```ts
+ const span: AnchoredSpan = { text: '不吃罐头', start: 12, end: 16, };
+ ```
  */
 export type AnchoredSpan = {
   /**
-   * Wording the DOCUMENT holds here, rather than what the auditor typed, so a
-   * report never quotes a text back with characters it does not carry.
+   Wording the DOCUMENT holds here, rather than what the auditor typed, so a
+   report never quotes a text back with characters it does not carry.
    */
   readonly text: string;
 
   /**
-   * Where the span begins.
+   Where the span begins.
    */
   readonly start: number;
 
   /**
-   * Where it ends, exclusive.
+   Where it ends, exclusive.
    */
   readonly end: number;
 };
 
 /**
- * What locating one claim's two spans in one text found.
- *
- * @example
- * ```ts
- * const anchor: RenderingAuditSpanAnchor = { anchored: false, reason: 'ambiguous-locator (source)', };
- * ```
+ What locating one claim's two spans in one text found.
+ 
+ @example
+ ```ts
+ const anchor: RenderingAuditSpanAnchor = { anchored: false, reason: 'ambiguous-locator (source)', };
+ ```
  */
 export type RenderingAuditSpanAnchor = {
   /**
-   * Both spans were found, and the focus sits inside the locator.
+   Both spans were found, and the focus sits inside the locator.
    */
   readonly anchored: true;
 
   /**
-   * Span that identifies which occurrence is meant.
+   Span that identifies which occurrence is meant.
    */
   readonly locator: AnchoredSpan;
 
   /**
-   * Smallest span carrying the claimed change.
+   Smallest span carrying the claimed change.
    */
   readonly focus: AnchoredSpan;
 } | {
   /**
-   * Nothing was located, for the stated reason.
+   Nothing was located, for the stated reason.
    */
   readonly anchored: false;
 
   /**
-   * Which check refused, in wording a tally can group by.
+   Which check refused, in wording a tally can group by.
    */
   readonly reason: string;
 };
 
 /**
- * One text in the broadest form the anchoring accepts.
- *
- * @param text - text to canonicalize
- *
- * @returns Same text with punctuation variants folded and sole line breaks read
- * as spaces
- *
- * @throws {@link Error} when canonicalization changed the length, since every
- * offset here indexes the stored text through the canonical one
- *
- * @example
- * ```ts
- * const canonical = canonicalize({ text: quote, },);
- * ```
+ One text in the broadest form the anchoring accepts.
+ 
+ @param text - text to canonicalize
+ 
+ @returns Same text with punctuation variants folded and sole line breaks read
+ as spaces
+ 
+ @throws {@link Error} when canonicalization changed the length, since every
+ offset here indexes the stored text through the canonical one
+ 
+ @example
+ ```ts
+ const canonical = canonicalize({ text: quote, },);
+ ```
  */
 function canonicalize({ text, }: { readonly text: string; },): string {
   /**
-   * Text with both maps applied.
+   Text with both maps applied.
    */
   const folded = collapseSoftLineBreaks({ text: normalizePunctuation({ text, },), },);
 
@@ -133,22 +133,22 @@ function canonicalize({ text, }: { readonly text: string; },): string {
 }
 
 /**
- * Locates one span inside another, both already canonical.
- *
- * @param haystack - canonical text being searched
- *
- * @param needle - canonical span to find
- *
- * @param from - where to start, so a focus is searched inside its locator only
- *
- * @param to - where to stop, exclusive
- *
- * @returns Where it occurs uniquely, or which check refused
- *
- * @example
- * ```ts
- * const found = locateUnique({ haystack, needle, from: 0, to: haystack.length, },);
- * ```
+ Locates one span inside another, both already canonical.
+ 
+ @param haystack - canonical text being searched
+ 
+ @param needle - canonical span to find
+ 
+ @param from - where to start, so a focus is searched inside its locator only
+ 
+ @param to - where to stop, exclusive
+ 
+ @returns Where it occurs uniquely, or which check refused
+ 
+ @example
+ ```ts
+ const found = locateUnique({ haystack, needle, from: 0, to: haystack.length, },);
+ ```
  */
 function locateUnique(
   {
@@ -164,7 +164,7 @@ function locateUnique(
   },
 ): { readonly at: number; } | { readonly refused: 'absent' | 'repeated'; } {
   /**
-   * Window the needle has to occur in.
+   Window the needle has to occur in.
    */
   const window = haystack.slice(
     from,
@@ -172,7 +172,7 @@ function locateUnique(
   );
 
   /**
-   * Where it first occurs in that window.
+   Where it first occurs in that window.
    */
   const at = window.indexOf(needle,);
 
@@ -189,22 +189,22 @@ function locateUnique(
 }
 
 /**
- * Locates one claim's locator and focus in the text it names.
- *
- * @param text - side the claim names
- *
- * @param locator - span identifying which occurrence is meant
- *
- * @param focus - smallest span carrying the claimed change
- *
- * @param side - which side this is, for the refusal wording
- *
- * @returns Both spans as the text holds them, or why nothing was located
- *
- * @example
- * ```ts
- * const anchor = anchorLocatedSpan({ text: sourceText, locator, focus, side: 'source', },);
- * ```
+ Locates one claim's locator and focus in the text it names.
+ 
+ @param text - side the claim names
+ 
+ @param locator - span identifying which occurrence is meant
+ 
+ @param focus - smallest span carrying the claimed change
+ 
+ @param side - which side this is, for the refusal wording
+ 
+ @returns Both spans as the text holds them, or why nothing was located
+ 
+ @example
+ ```ts
+ const anchor = anchorLocatedSpan({ text: sourceText, locator, focus, side: 'source', },);
+ ```
  */
 export function anchorLocatedSpan(
   {
@@ -220,12 +220,12 @@ export function anchorLocatedSpan(
   },
 ): RenderingAuditSpanAnchor {
   /**
-   * Text in the form quotes are matched against.
+   Text in the form quotes are matched against.
    */
   const haystack = canonicalize({ text, },);
 
   /**
-   * Locator in the same form.
+   Locator in the same form.
    */
   const locatorNeedle = canonicalize({ text: locator, },);
 
@@ -237,7 +237,7 @@ export function anchorLocatedSpan(
   }
 
   /**
-   * Where the locator is, if it identifies one span.
+   Where the locator is, if it identifies one span.
    */
   const located = locateUnique({
     haystack,
@@ -254,12 +254,12 @@ export function anchorLocatedSpan(
   }
 
   /**
-   * End of the located span, which is the window a focus must fall inside.
+   End of the located span, which is the window a focus must fall inside.
    */
   const locatorEnd = located.at + locatorNeedle.length;
 
   /**
-   * Focus in canonical form.
+   Focus in canonical form.
    */
   const focusNeedle = canonicalize({ text: focus, },);
 
@@ -271,7 +271,7 @@ export function anchorLocatedSpan(
   }
 
   /**
-   * Where the focus is within the locator.
+   Where the focus is within the locator.
    */
   const focused = locateUnique({
     haystack,

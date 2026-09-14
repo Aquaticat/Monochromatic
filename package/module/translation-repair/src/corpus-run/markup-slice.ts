@@ -16,49 +16,49 @@
 // dropped pairs would report a smaller number nobody could audit.
 
 /**
- * Share of a slice's solid lines that must be structural before its original
- * counts as markup rather than prose.
- *
- * NOT 1.0. A photo block commonly carries one caption or attribution line, and
- * a slice that is nine parts component to one part caption still cannot expand
- * enough to be a donor. Measured against the corpus at the pinned commit, this
- * threshold selects exactly the two pairs `#107` identified by hand and nothing
- * else, so it is not doing any work beyond the class it was written for.
+ Share of a slice's solid lines that must be structural before its original
+ counts as markup rather than prose.
+ 
+ NOT 1.0. A photo block commonly carries one caption or attribution line, and
+ a slice that is nine parts component to one part caption still cannot expand
+ enough to be a donor. Measured against the corpus at the pinned commit, this
+ threshold selects exactly the two pairs `#107` identified by hand and nothing
+ else, so it is not doing any work beyond the class it was written for.
  */
 const MARKUP_LINE_SHARE = 0.8;
 
 /**
- * Whether one line is structure rather than prose.
- *
- * DELIBERATELY CRUDE, and prefix-based rather than parsed. The question is not
- * what this markup means, only whether the translator had any prose here to
- * move; a component tag, an image, a fence, a table row and the inside of a
- * props array all answer no. Parsing the document to decide that would be a
- * larger instrument than the reading it serves.
- *
- * @param line - one line of a slice's original
- *
- * @returns Whether it carries structure rather than translatable prose
- *
- * @example
- * ```ts
- * const structural = isStructuralLine({ line: '<PhotoScroll photos={[', },);
- * ```
+ Whether one line is structure rather than prose.
+ 
+ DELIBERATELY CRUDE, and prefix-based rather than parsed. The question is not
+ what this markup means, only whether the translator had any prose here to
+ move; a component tag, an image, a fence, a table row and the inside of a
+ props array all answer no. Parsing the document to decide that would be a
+ larger instrument than the reading it serves.
+ 
+ @param line - one line of a slice's original
+ 
+ @returns Whether it carries structure rather than translatable prose
+ 
+ @example
+ ```ts
+ const structural = isStructuralLine({ line: '<PhotoScroll photos={[', },);
+ ```
  */
 function isStructuralLine(
   { line, }: { readonly line: string; },
 ): boolean {
   /**
-   * Line without its indentation, since indentation is what nests markup.
+   Line without its indentation, since indentation is what nests markup.
    */
   const trimmed = line.trim();
 
   /**
-   * Whether the line is one quoted path inside a props array. EITHER QUOTE
-   * MARK: four source pages at pin `a41fc607` quote their photo paths with
-   * double marks, and this screen, like the photo reference reader until
-   * 2026-09-04, knew only the single one, so a double-quoted photo block
-   * read as three parts prose to two parts markup.
+   Whether the line is one quoted path inside a props array. EITHER QUOTE
+   MARK: four source pages at pin `a41fc607` quote their photo paths with
+   double marks, and this screen, like the photo reference reader until
+   2026-09-04, knew only the single one, so a double-quoted photo block
+   read as three parts prose to two parts markup.
    */
   const quotedPath = (trimmed.startsWith('\'',) || trimmed.startsWith('"',))
     && trimmed.includes('/',);
@@ -74,27 +74,27 @@ function isStructuralLine(
 }
 
 /**
- * Share of a slice's non-blank lines that are structural.
- *
- * BLANK LINES ARE EXCLUDED FROM BOTH SIDES rather than counted as markup. A
- * slice separated into paragraphs would otherwise read as more structural the
- * more readable it is, which inverts the measurement.
- *
- * @param sourceText - slice's original
- *
- * @returns Fraction from 0 to 1, and 1 for a slice with no solid lines at all,
- * since a slice with nothing in it has no prose to give up either
- *
- * @example
- * ```ts
- * const share = markupFraction({ sourceText, },);
- * ```
+ Share of a slice's non-blank lines that are structural.
+ 
+ BLANK LINES ARE EXCLUDED FROM BOTH SIDES rather than counted as markup. A
+ slice separated into paragraphs would otherwise read as more structural the
+ more readable it is, which inverts the measurement.
+ 
+ @param sourceText - slice's original
+ 
+ @returns Fraction from 0 to 1, and 1 for a slice with no solid lines at all,
+ since a slice with nothing in it has no prose to give up either
+ 
+ @example
+ ```ts
+ const share = markupFraction({ sourceText, },);
+ ```
  */
 export function markupFraction(
   { sourceText, }: { readonly sourceText: string; },
 ): number {
   /**
-   * Lines carrying anything.
+   Lines carrying anything.
    */
   const solid = sourceText
     .split('\n',)
@@ -106,7 +106,7 @@ export function markupFraction(
     return 1;
 
   /**
-   * Those of them that are structure.
+   Those of them that are structure.
    */
   const structural = solid.filter(function isStructure(line,): boolean {
     return isStructuralLine({ line, },);
@@ -116,17 +116,17 @@ export function markupFraction(
 }
 
 /**
- * Whether a slice's original is markup rather than prose, so it cannot have
- * given a passage up.
- *
- * @param sourceText - slice's original
- *
- * @returns Whether this slice is disqualified as a relocation donor
- *
- * @example
- * ```ts
- * if (isMarkupOnly({ sourceText, },)) console.log('cannot be a donor',);
- * ```
+ Whether a slice's original is markup rather than prose, so it cannot have
+ given a passage up.
+ 
+ @param sourceText - slice's original
+ 
+ @returns Whether this slice is disqualified as a relocation donor
+ 
+ @example
+ ```ts
+ if (isMarkupOnly({ sourceText, },)) console.log('cannot be a donor',);
+ ```
  */
 export function isMarkupOnly(
   { sourceText, }: { readonly sourceText: string; },

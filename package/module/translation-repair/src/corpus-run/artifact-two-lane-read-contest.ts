@@ -41,29 +41,29 @@ import {
 // field nobody re-derives is a field that can quietly become a lie.
 
 /**
- * Reads one contested slice and re-derives its verdict from its own ballots.
- *
- * @param value - recorded slice
- *
- * @param path - dotted path of that slice
- *
- * @param keys - field spellings this artifact's generation uses, so an older
- * file is read by its own names rather than by today's
- *
- * @param generation - artifact generation deciding eligibility field support
- *
- * @param comparison - recomputed lane rows eligibility is checked against
- *
- * @returns Slice record, proven to agree with the ballots it carries
- *
- * @throws {@link ArtifactParseError} when a field is unreadable, when the usable
- * count disagrees with the ballots, or when the stored verdict is not the one
- * those ballots settle on
- *
- * @example
- * ```ts
- * const slice = parseContestSlice({ value, path, },);
- * ```
+ Reads one contested slice and re-derives its verdict from its own ballots.
+ 
+ @param value - recorded slice
+ 
+ @param path - dotted path of that slice
+ 
+ @param keys - field spellings this artifact's generation uses, so an older
+ file is read by its own names rather than by today's
+ 
+ @param generation - artifact generation deciding eligibility field support
+ 
+ @param comparison - recomputed lane rows eligibility is checked against
+ 
+ @returns Slice record, proven to agree with the ballots it carries
+ 
+ @throws {@link ArtifactParseError} when a field is unreadable, when the usable
+ count disagrees with the ballots, or when the stored verdict is not the one
+ those ballots settle on
+ 
+ @example
+ ```ts
+ const slice = parseContestSlice({ value, path, },);
+ ```
  */
 function parseContestSlice(
   {
@@ -81,7 +81,7 @@ function parseContestSlice(
   },
 ): ArtifactContestSlice {
   /**
-   * Slice as a record, before any field is read.
+   Slice as a record, before any field is read.
    */
   const slice = requireRecord({
     value,
@@ -100,14 +100,14 @@ function parseContestSlice(
   },);
 
   /**
-   * Slice index this record answers.
+   Slice index this record answers.
    */
   const sliceIndex = requireCount({
     value: slice[keys.sliceIndex],
     path: `${path}.${keys.sliceIndex}`,
   },);
   /**
-   * Lane row carrying candidate texts for eligibility recomputation.
+   Lane row carrying candidate texts for eligibility recomputation.
    */
   const row = comparison.find(function namesSlice(candidate,): boolean {
     return candidate.sliceIndex === sliceIndex;
@@ -119,7 +119,7 @@ function parseContestSlice(
     },);
   }
   /**
-   * Source-backed syntax eligibility, absent on ordinary and older records.
+   Source-backed syntax eligibility, absent on ordinary and older records.
    */
   const eligibility = (slice.eligibility === undefined)
     ? undefined
@@ -129,7 +129,7 @@ function parseContestSlice(
       path: `${path}.eligibility`,
     },);
   /**
-   * Whether artifact generation requires syntax eligibility evidence.
+   Whether artifact generation requires syntax eligibility evidence.
    */
   const eligibilityRequired = generation >= ARTIFACT_SCHEMA_VERSION_V7;
   if (eligibilityRequired
@@ -142,7 +142,7 @@ function parseContestSlice(
   }
 
   /**
-   * Ballots this slice carries.
+   Ballots this slice carries.
    */
   const ballots = requireArray({
     value: slice.ballots,
@@ -159,7 +159,7 @@ function parseContestSlice(
     },);
 
   /**
-   * Count the record claims for those ballots.
+   Count the record claims for those ballots.
    */
   const usable = requireCount({
     value: slice.usable,
@@ -175,7 +175,7 @@ function parseContestSlice(
   }
 
   /**
-   * Verdict the stored ballots settle on under the stage`s own rule.
+   Verdict the stored ballots settle on under the stage`s own rule.
    */
   const derived = describeContestSlice({
     sliceIndex,
@@ -200,22 +200,22 @@ function parseContestSlice(
 }
 
 /**
- * Refuses a contest that does not answer exactly the slices where the two lanes
- * left different wording.
- *
- * @param slices - records the contest carries
- *
- * @param comparison - rows the reader recomputed from both ledgers
- *
- * @param path - dotted path of the recorded slices
- *
- * @throws {@link ArtifactParseError} when the answered slices are not the
- * eligible ones, in eligible order
- *
- * @example
- * ```ts
- * assertContestCoversEligible({ slices, comparison, path, },);
- * ```
+ Refuses a contest that does not answer exactly the slices where the two lanes
+ left different wording.
+ 
+ @param slices - records the contest carries
+ 
+ @param comparison - rows the reader recomputed from both ledgers
+ 
+ @param path - dotted path of the recorded slices
+ 
+ @throws {@link ArtifactParseError} when the answered slices are not the
+ eligible ones, in eligible order
+ 
+ @example
+ ```ts
+ assertContestCoversEligible({ slices, comparison, path, },);
+ ```
  */
 function assertContestCoversEligible(
   {
@@ -229,13 +229,13 @@ function assertContestCoversEligible(
   },
 ): void {
   /**
-   * Slices a contest may answer, named by the comparison this reader derived.
+   Slices a contest may answer, named by the comparison this reader derived.
    */
   const eligible = contestEligibleIndexes({ comparison, },)
     .join(',',);
 
   /**
-   * Slices it does answer.
+   Slices it does answer.
    */
   const answered = slices
     .map(function nameIt(slice,): number {
@@ -251,29 +251,29 @@ function assertContestCoversEligible(
 }
 
 /**
- * Reads which lane ships, and refuses a contest that does not cover exactly the
- * slices where the two lanes left different wording.
- *
- * @param value - recorded selection
- *
- * @param comparison - rows the reader recomputed from both ledgers
- *
- * @param path - dotted path of the recorded selection
- *
- * @param keys - field spellings this artifact's generation uses, so an older
- * file is read by its own names rather than by today's
- *
- * @param generation - artifact generation deciding eligibility field support
- *
- * @returns Selection, proven to agree with the ballots and the comparison
- *
- * @throws {@link ArtifactParseError} when the kind is unknown, when any slice is
- * unreadable, or when the slices covered are not the eligible ones
- *
- * @example
- * ```ts
- * const selection = parseLaneSelection({ value, comparison, path, keys, },);
- * ```
+ Reads which lane ships, and refuses a contest that does not cover exactly the
+ slices where the two lanes left different wording.
+ 
+ @param value - recorded selection
+ 
+ @param comparison - rows the reader recomputed from both ledgers
+ 
+ @param path - dotted path of the recorded selection
+ 
+ @param keys - field spellings this artifact's generation uses, so an older
+ file is read by its own names rather than by today's
+ 
+ @param generation - artifact generation deciding eligibility field support
+ 
+ @returns Selection, proven to agree with the ballots and the comparison
+ 
+ @throws {@link ArtifactParseError} when the kind is unknown, when any slice is
+ unreadable, or when the slices covered are not the eligible ones
+ 
+ @example
+ ```ts
+ const selection = parseLaneSelection({ value, comparison, path, keys, },);
+ ```
  */
 export function parseLaneSelection(
   {
@@ -291,7 +291,7 @@ export function parseLaneSelection(
   },
 ): ArtifactLaneSelection {
   /**
-   * Selection as a record, before its kind is known.
+   Selection as a record, before its kind is known.
    */
   const selection = requireRecord({
     value,
@@ -299,7 +299,7 @@ export function parseLaneSelection(
   },);
 
   /**
-   * Kind it claims, which decides what else it may carry.
+   Kind it claims, which decides what else it may carry.
    */
   const kind = requireOneOf({
     value: selection.kind,
@@ -327,7 +327,7 @@ export function parseLaneSelection(
   },);
 
   /**
-   * One record per slice the contest answered.
+   One record per slice the contest answered.
    */
   const slices = requireArray({
     value: selection.slices,

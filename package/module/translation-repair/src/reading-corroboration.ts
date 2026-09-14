@@ -36,82 +36,82 @@
 // single linear passes, which a scan states more plainly than a pattern does.
 
 /**
- * Share of the smaller reading's trigrams the larger has to carry.
- *
- * THIRTY PERCENT, from the measured gap rather than from taste. The lowest
- * same-picture pair scored 0.643 and the highest different-picture pair 0.129,
- * so this sits roughly a factor of two from each. Stated as revisitable: five
- * same-picture pairs show the separation exists without placing the boundary
- * precisely.
+ Share of the smaller reading's trigrams the larger has to carry.
+ 
+ THIRTY PERCENT, from the measured gap rather than from taste. The lowest
+ same-picture pair scored 0.643 and the highest different-picture pair 0.129,
+ so this sits roughly a factor of two from each. Stated as revisitable: five
+ same-picture pairs show the separation exists without placing the boundary
+ precisely.
  */
 export const CORROBORATION_TRIGRAM_SHARE = 0.3;
 
 /**
- * Characters a gram spans.
- *
- * THREE, because two is too weak and four too brittle. Measured over the same
- * pairs, bigrams separate 0.746-and-up from 0.292-and-below, a narrower gap,
- * while trigrams separate 0.643 from 0.129.
+ Characters a gram spans.
+ 
+ THREE, because two is too weak and four too brittle. Measured over the same
+ pairs, bigrams separate 0.746-and-up from 0.292-and-below, a narrower gap,
+ while trigrams separate 0.643 from 0.129.
  */
 const GRAM_LENGTH = 3;
 
 /**
- * How a reading may fail to be corroborated, or that it was.
- *
- * @example
- * ```ts
- * const verdict: CorroborationVerdict = { kind: 'corroborated', overlap: 0.97, };
- * ```
+ How a reading may fail to be corroborated, or that it was.
+ 
+ @example
+ ```ts
+ const verdict: CorroborationVerdict = { kind: 'corroborated', overlap: 0.97, };
+ ```
  */
 export type CorroborationVerdict = {
   /**
-   * Both readings describe the same picture.
+   Both readings describe the same picture.
    */
   readonly kind: 'corroborated';
 
   /**
-   * Share of the smaller reading's trigrams the larger carried, recorded so a
-   * run can be read for how close its corroborations ran to the threshold.
+   Share of the smaller reading's trigrams the larger carried, recorded so a
+   run can be read for how close its corroborations ran to the threshold.
    */
   readonly overlap: number;
 } | {
   /**
-   * The two readings do not describe the same picture.
+   The two readings do not describe the same picture.
    */
   readonly kind: 'disagree';
 
   /**
-   * That same share, which is what disagreement means here.
+   That same share, which is what disagreement means here.
    */
   readonly overlap: number;
 };
 
 /**
- * Text with every whitespace run collapsed to one space, trimmed.
- *
- * WHY COLLAPSE AT ALL. Models differ in how they lay a transcription out, one
- * preserving the picture's line breaks and another running lines together, and
- * a trigram spanning a newline would differ from the same trigram spanning a
- * space. Collapsing makes the comparison about the words rather than the layout.
- *
- * @param text - reading as the model returned it
- *
- * @returns Same characters with runs of whitespace flattened
- *
- * @example
- * ```ts
- * const flat = collapsedWhitespace({ text: reading, },);
- * ```
+ Text with every whitespace run collapsed to one space, trimmed.
+ 
+ WHY COLLAPSE AT ALL. Models differ in how they lay a transcription out, one
+ preserving the picture's line breaks and another running lines together, and
+ a trigram spanning a newline would differ from the same trigram spanning a
+ space. Collapsing makes the comparison about the words rather than the layout.
+ 
+ @param text - reading as the model returned it
+ 
+ @returns Same characters with runs of whitespace flattened
+ 
+ @example
+ ```ts
+ const flat = collapsedWhitespace({ text: reading, },);
+ ```
  */
 function collapsedWhitespace({ text, }: { readonly text: string; },): string {
   /**
-   * Characters kept so far.
+   Characters kept so far.
    */
   const kept: string[] = [];
 
   /**
-   * Whether the last character emitted was a space, which is what stops a run
-   * of whitespace producing more than one.
+   Whether the last character emitted was a space, which is what stops a run
+   of whitespace producing more than one.
    */
   const run = { spaced: true, };
 
@@ -128,24 +128,24 @@ function collapsedWhitespace({ text, }: { readonly text: string; },): string {
   }
 
   /**
-   * Those characters as one string, whose leading and trailing space is an
-   * artefact of the collapse rather than content.
+   Those characters as one string, whose leading and trailing space is an
+   artefact of the collapse rather than content.
    */
   const joined = kept.join('',);
   return joined.trim();
 }
 
 /**
- * Segmenter cutting text into user-perceived characters.
- *
- * GRAPHEMES RATHER THAN UTF-16 UNITS OR CODE POINTS. Indexing a string splits a
- * character outside the basic plane in half, and code points split a flag or a
- * modified emoji into its parts, so both would cut grams neither reader would
- * produce. A grapheme is what a person reading the picture would call one
- * character, which is the unit the comparison is about.
- *
- * BUILT ONCE, because constructing a segmenter is far more expensive than using
- * one and every reading is cut the same way.
+ Segmenter cutting text into user-perceived characters.
+ 
+ GRAPHEMES RATHER THAN UTF-16 UNITS OR CODE POINTS. Indexing a string splits a
+ character outside the basic plane in half, and code points split a flag or a
+ modified emoji into its parts, so both would cut grams neither reader would
+ produce. A grapheme is what a person reading the picture would call one
+ character, which is the unit the comparison is about.
+ 
+ BUILT ONCE, because constructing a segmenter is far more expensive than using
+ one and every reading is cut the same way.
  */
 const GRAPHEMES = new Intl.Segmenter(
   undefined,
@@ -153,31 +153,31 @@ const GRAPHEMES = new Intl.Segmenter(
 );
 
 /**
- * Distinct character trigrams of one reading.
- *
- * @param text - reading to cut
- *
- * @returns Its distinct trigrams, empty when it is shorter than one
- *
- * @example
- * ```ts
- * const grams = characterTrigrams({ text: reading, },);
- * ```
+ Distinct character trigrams of one reading.
+ 
+ @param text - reading to cut
+ 
+ @returns Its distinct trigrams, empty when it is shorter than one
+ 
+ @example
+ ```ts
+ const grams = characterTrigrams({ text: reading, },);
+ ```
  */
 export function characterTrigrams({ text, }: { readonly text: string; },): ReadonlySet<string> {
   /**
-   * Reading with its whitespace flattened, which is what gets cut.
+   Reading with its whitespace flattened, which is what gets cut.
    */
   const flat = collapsedWhitespace({ text, },);
 
   /**
-   * Its graphemes, in order.
+   Its graphemes, in order.
    */
   const segments = [...GRAPHEMES.segment(flat,)];
 
   /**
-   * Each grapheme as a plain string, since a segment carries an index and an
-   * input alongside the characters themselves.
+   Each grapheme as a plain string, since a segment carries an index and an
+   input alongside the characters themselves.
    */
   const points = segments.map(function ofSegment(
     { segment, }: { readonly segment: string; },
@@ -186,13 +186,13 @@ export function characterTrigrams({ text, }: { readonly text: string; },): Reado
   },);
 
   /**
-   * Grams found so far.
+   Grams found so far.
    */
   const grams = new Set<string>();
 
   for (let at = 0; (at + GRAM_LENGTH) <= points.length; at += 1) {
     /**
-     * Graphemes this gram spans.
+     Graphemes this gram spans.
      */
     const span = points.slice(
       at,
@@ -205,24 +205,24 @@ export function characterTrigrams({ text, }: { readonly text: string; },): Reado
 }
 
 /**
- * Share of the smaller reading's trigrams the larger one carries.
- *
- * THE SMALLER SIDE IS THE DENOMINATOR, deliberately. One model transcribes more
- * of a picture than the other: Kimi-K3 read `Mio/photo7.webp` as 178 characters
- * against Qwen's 590. Dividing by the union would score that pair as
- * disagreement when what it shows is one reader stopping early, and the shorter
- * reading still vouches for every word it does carry.
- *
- * @param left - one reading
- *
- * @param right - the other
- *
- * @returns Share between zero and one; zero when either carries no trigram
- *
- * @example
- * ```ts
- * const overlap = trigramOverlap({ left, right, },);
- * ```
+ Share of the smaller reading's trigrams the larger one carries.
+ 
+ THE SMALLER SIDE IS THE DENOMINATOR, deliberately. One model transcribes more
+ of a picture than the other: Kimi-K3 read `Mio/photo7.webp` as 178 characters
+ against Qwen's 590. Dividing by the union would score that pair as
+ disagreement when what it shows is one reader stopping early, and the shorter
+ reading still vouches for every word it does carry.
+ 
+ @param left - one reading
+ 
+ @param right - the other
+ 
+ @returns Share between zero and one; zero when either carries no trigram
+ 
+ @example
+ ```ts
+ const overlap = trigramOverlap({ left, right, },);
+ ```
  */
 export function trigramOverlap(
   {
@@ -234,29 +234,29 @@ export function trigramOverlap(
   },
 ): number {
   /**
-   * Grams of one side.
+   Grams of one side.
    */
   const leftGrams = characterTrigrams({ text: left, },);
 
   /**
-   * Grams of the other.
+   Grams of the other.
    */
   const rightGrams = characterTrigrams({ text: right, },);
   if ((leftGrams.size === 0) || (rightGrams.size === 0))
     return 0;
 
   /**
-   * Smaller side, whose grams are the ones asked about.
+   Smaller side, whose grams are the ones asked about.
    */
   const smaller = (leftGrams.size <= rightGrams.size) ? leftGrams : rightGrams;
 
   /**
-   * Larger side, which is asked whether it carries them.
+   Larger side, which is asked whether it carries them.
    */
   const larger = (leftGrams.size <= rightGrams.size) ? rightGrams : leftGrams;
 
   /**
-   * Grams of the smaller side the larger also carries.
+   Grams of the smaller side the larger also carries.
    */
   const carried = [...smaller].filter(function inBoth(gram,): boolean {
     return larger.has(gram,);
@@ -266,18 +266,18 @@ export function trigramOverlap(
 }
 
 /**
- * Whether two readings describe the same picture.
- *
- * @param left - one reading
- *
- * @param right - the other, from a different model shown the same picture
- *
- * @returns Whether they agree, and by how much
- *
- * @example
- * ```ts
- * const verdict = readingsCorroborate({ left, right, },);
- * ```
+ Whether two readings describe the same picture.
+ 
+ @param left - one reading
+ 
+ @param right - the other, from a different model shown the same picture
+ 
+ @returns Whether they agree, and by how much
+ 
+ @example
+ ```ts
+ const verdict = readingsCorroborate({ left, right, },);
+ ```
  */
 export function readingsCorroborate(
   {
@@ -289,7 +289,7 @@ export function readingsCorroborate(
   },
 ): CorroborationVerdict {
   /**
-   * How much of the smaller reading the larger carried.
+   How much of the smaller reading the larger carried.
    */
   const overlap = trigramOverlap({
     left,

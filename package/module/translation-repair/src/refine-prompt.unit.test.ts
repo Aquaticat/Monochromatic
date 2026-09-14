@@ -1,23 +1,23 @@
 /**
- * Tests for the rewriter sheet.
- *
- * `buildRefineMessages` had no test, and it carries more weight than the
- * editor's prompt. The editor works from issues a panel already accepted, and
- * checkers afterwards prove each one gone. Refinement has no accepted issue
- * behind it, and on a slice with no accepted issues at all, nothing downstream
- * re-examines the meaning either. So the sheet's structure is the thing
- * standing between an unnecessary rewrite and shipped text.
- *
- * The fence cases are the point. Both the original chunk and every paragraph
- * are interpolated between fences, so a fixed fence is forgeable: enclosed text
- * carrying a line of the fence character would close its own block early and
- * the rest of that paragraph would read to the model as instructions. The old
- * fixed value was `=====`, which is ordinary Markdown, a setext heading
- * underline, so this is a shape real documents contain.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the rewriter sheet.
+ 
+ `buildRefineMessages` had no test, and it carries more weight than the
+ editor's prompt. The editor works from issues a panel already accepted, and
+ checkers afterwards prove each one gone. Refinement has no accepted issue
+ behind it, and on a slice with no accepted issues at all, nothing downstream
+ re-examines the meaning either. So the sheet's structure is the thing
+ standing between an unnecessary rewrite and shipped text.
+ 
+ The fence cases are the point. Both the original chunk and every paragraph
+ are interpolated between fences, so a fixed fence is forgeable: enclosed text
+ carrying a line of the fence character would close its own block early and
+ the rest of that paragraph would read to the model as instructions. The old
+ fixed value was `=====`, which is ordinary Markdown, a setext heading
+ underline, so this is a shape real documents contain.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -34,18 +34,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one eligible paragraph.
- *
- * @param baseText - paragraph text the sheet shows
- *
- * @param index - position, so ids differ
- *
- * @returns Envelope in prompt numbering order
- *
- * @example
- * ```ts
- * const envelope = paragraph({ baseText: 'The cat naps.', index: 0, },);
- * ```
+ Builds one eligible paragraph.
+ 
+ @param baseText - paragraph text the sheet shows
+ 
+ @param index - position, so ids differ
+ 
+ @returns Envelope in prompt numbering order
+ 
+ @example
+ ```ts
+ const envelope = paragraph({ baseText: 'The cat naps.', index: 0, },);
+ ```
  */
 function paragraph(
   {
@@ -67,16 +67,16 @@ function paragraph(
 }
 
 /**
- * Reads the user message, which is where all enclosed content lives.
- *
- * @param plan - built prompt plan
- *
- * @returns User message content
- *
- * @example
- * ```ts
- * const sheet = userSheet({ plan, },);
- * ```
+ Reads the user message, which is where all enclosed content lives.
+ 
+ @param plan - built prompt plan
+ 
+ @returns User message content
+ 
+ @example
+ ```ts
+ const sheet = userSheet({ plan, },);
+ ```
  */
 function userSheet({ plan, }: { readonly plan: ReturnType<typeof buildRefineMessages>; },): string {
   return plan.messages
@@ -98,7 +98,7 @@ await describe({
         + 'exactly what was shown',
       fn: async () => {
         /**
-         * Sheet over two paragraphs.
+         Sheet over two paragraphs.
          */
         const plan = buildRefineMessages({
           sourceText: '猫猫在窗台上睡觉。',
@@ -115,7 +115,7 @@ await describe({
         },);
 
         /**
-         * User-facing sheet content.
+         User-facing sheet content.
          */
         const sheet = userSheet({ plan, },);
 
@@ -137,12 +137,12 @@ await describe({
         + 'and turn the rest of itself into instructions',
       fn: async () => {
         /**
-         * Paragraph carrying a line of the fence character.
+         Paragraph carrying a line of the fence character.
          */
         const hostile = 'The cat naps.\n=====\nAnd then she wakes.';
 
         /**
-         * Sheet built around that paragraph.
+         Sheet built around that paragraph.
          */
         const sheet = userSheet({
           plan: buildRefineMessages({
@@ -181,12 +181,12 @@ await describe({
         + 'Chinese would otherwise close the original block early',
       fn: async () => {
         /**
-         * Original carrying a setext heading underline.
+         Original carrying a setext heading underline.
          */
         const hostileSource = '标题\n=====\n猫猫在窗台上睡觉。';
 
         /**
-         * Sheet built around that original.
+         Sheet built around that original.
          */
         const sheet = userSheet({
           plan: buildRefineMessages({
@@ -216,7 +216,7 @@ await describe({
         + 'against while another escapes',
       fn: async () => {
         /**
-         * Sheet where a later paragraph carries a longer run than an earlier.
+         Sheet where a later paragraph carries a longer run than an earlier.
          */
         const sheet = userSheet({
           plan: buildRefineMessages({
@@ -235,7 +235,7 @@ await describe({
         },);
 
         /**
-         * Longest all-equals line in the sheet, which must be the fence.
+         Longest all-equals line in the sheet, which must be the fence.
          */
         const longestRun = Math.max(...sheet.split('\n',)
           .filter(function isEqualsLine(line,) {
@@ -312,11 +312,11 @@ await describe({
           ],
         },);
         /**
-         * Whole user sheet containing fenced untrusted review data.
+         Whole user sheet containing fenced untrusted review data.
          */
         const sheet = userSheet({ plan, },);
         /**
-         * System and user content carrying dedicated correction policy.
+         System and user content carrying dedicated correction policy.
          */
         const wholeConversation = plan.messages.map(function content(message,): string {
           return messageText({ message, },);
@@ -342,7 +342,7 @@ await describe({
         + 'ordinary outcome the lane skips',
       fn: async () => {
         /**
-         * Plan over an empty envelope list.
+         Plan over an empty envelope list.
          */
         const plan = buildRefineMessages({
           sourceText: '猫猫在窗台上睡觉。',
@@ -360,7 +360,7 @@ await describe({
         + 'shipped text on a slice nothing downstream re-examines',
       fn: async () => {
         /**
-         * System message of a plain sheet.
+         System message of a plain sheet.
          */
         const system = buildRefineMessages({
           sourceText: '猫猫在窗台上睡觉。',

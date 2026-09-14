@@ -16,16 +16,16 @@ import type {
 //region Native parent snapshots under the frozen producer's schema
 
 /**
- * Projects native node identity without carrying unrelated node text into population accounting.
- *
- * @param node - node reconstructed from a complete pinned document
- *
- * @returns Exact historical node projection
- *
- * @example
- * ```ts
- * const identity = preparationRootNode(node);
- * ```
+ Projects native node identity without carrying unrelated node text into population accounting.
+ 
+ @param node - node reconstructed from a complete pinned document
+ 
+ @returns Exact historical node projection
+ 
+ @example
+ ```ts
+ const identity = preparationRootNode(node);
+ ```
  */
 export function preparationRootNode(node: DocumentNode,): PreparationRootNode {
   return {
@@ -39,22 +39,22 @@ export function preparationRootNode(node: DocumentNode,): PreparationRootNode {
 }
 
 /**
- * Reconstructs one parent without changing native section, insertion or protected-original semantics.
- *
- * @param entryId - current corpus entry
- *
- * @param pairIndex - combined native parent position
- *
- * @param pair - current complete source/target parent
- *
- * @param spans - current original-English declarations
- *
- * @returns Exact frozen pool representation for later whole-record comparison
- *
- * @example
- * ```ts
- * const parent = preparationRootParent({ entryId, pairIndex, pair, spans });
- * ```
+ Reconstructs one parent without changing native section, insertion or protected-original semantics.
+ 
+ @param entryId - current corpus entry
+ 
+ @param pairIndex - combined native parent position
+ 
+ @param pair - current complete source/target parent
+ 
+ @param spans - current original-English declarations
+ 
+ @returns Exact frozen pool representation for later whole-record comparison
+ 
+ @example
+ ```ts
+ const parent = preparationRootParent({ entryId, pairIndex, pair, spans });
+ ```
  */
 export function preparationRootParent({
   entryId,
@@ -68,7 +68,7 @@ export function preparationRootParent({
   readonly spans: readonly ArchiveOriginalSpan[];
 },): PreparationRootParent {
   /**
-   * Native whole-node protection is distinct from a straddling declaration.
+   Native whole-node protection is distinct from a straddling declaration.
    */
   const sealed = sealedNodeIds({
     nodes: pair.target
@@ -76,7 +76,7 @@ export function preparationRootParent({
     spans,
   },);
   /**
-   * Parent-local intersections retain the complete declaration identity.
+   Parent-local intersections retain the complete declaration identity.
    */
   const intersections = spans.filter(function intersects(span,): boolean {
     return (span.startOffset
@@ -97,7 +97,7 @@ export function preparationRootParent({
     };
   },);
   /**
-   * A partly protected node must not become an unqualified writable fragment.
+   A partly protected node must not become an unqualified writable fragment.
    */
   const straddlingNodeIds = pair.target
     .nodes
@@ -161,16 +161,16 @@ export function preparationRootParent({
 }
 
 /**
- * Preserves the frozen full-population projection without widening its retained prose scope.
- *
- * @param parent - independently reconstructed parent
- *
- * @returns Metadata used by the original population record
- *
- * @example
- * ```ts
- * const row = preparationRootPopulationParent(parent);
- * ```
+ Preserves the frozen full-population projection without widening its retained prose scope.
+ 
+ @param parent - independently reconstructed parent
+ 
+ @returns Metadata used by the original population record
+ 
+ @example
+ ```ts
+ const row = preparationRootPopulationParent(parent);
+ ```
  */
 export function preparationRootPopulationParent(parent: PreparationRootParent,): PreparationRootPopulationParent {
   return structuredClone({

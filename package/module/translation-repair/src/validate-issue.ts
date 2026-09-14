@@ -14,36 +14,36 @@ import type {
 // against.
 
 /**
- * Minimal document surface anchors validate against;
- * `RepairDocument` satisfies it structurally,
- * and the narrower shape keeps validation decoupled from parsing.
- *
- * @example
- * ```ts
- * const target: AnchorTarget = parseDocument({ text, },);
- * ```
+ Minimal document surface anchors validate against;
+ `RepairDocument` satisfies it structurally,
+ and the narrower shape keeps validation decoupled from parsing.
+ 
+ @example
+ ```ts
+ const target: AnchorTarget = parseDocument({ text, },);
+ ```
  */
 export type AnchorTarget = {
   /**
-   * Full document source anchors quote from.
+   Full document source anchors quote from.
    */
   readonly text: string;
 
   /**
-   * Block nodes with ids, absolute offsets, and content hashes.
+   Block nodes with ids, absolute offsets, and content hashes.
    */
   readonly nodes: readonly DocumentNode[];
 };
 
 /**
- * Defect class of one rejected anchor.
- * `quote-mismatch` also covers non-empty quotes on zero-width spans,
- * because a zero-width slice is always empty.
- *
- * @example
- * ```ts
- * const kind: AnchorRejectionKind = 'quote-mismatch';
- * ```
+ Defect class of one rejected anchor.
+ `quote-mismatch` also covers non-empty quotes on zero-width spans,
+ because a zero-width slice is always empty.
+ 
+ @example
+ ```ts
+ const kind: AnchorRejectionKind = 'quote-mismatch';
+ ```
  */
 export type AnchorRejectionKind =
   | 'anchorless-issue'
@@ -55,53 +55,53 @@ export type AnchorRejectionKind =
   | 'quote-mismatch';
 
 /**
- * One reason a claim failed deterministic validation.
- *
- * @example
- * ```ts
- * const rejection: AnchorRejection = {
- *   kind: 'quote-mismatch',
- *   spanIndex: 0,
- *   detail: 'span 0 (target) quotes "…" but document holds "…" at [42, 45)',
- * };
- * ```
+ One reason a claim failed deterministic validation.
+ 
+ @example
+ ```ts
+ const rejection: AnchorRejection = {
+   kind: 'quote-mismatch',
+   spanIndex: 0,
+   detail: 'span 0 (target) quotes "…" but document holds "…" at [42, 45)',
+ };
+ ```
  */
 export type AnchorRejection = {
   /**
-   * Defect class driving scorecard buckets and retry prompts.
+   Defect class driving scorecard buckets and retry prompts.
    */
   readonly kind: AnchorRejectionKind;
 
   /**
-   * Index into claim spans;
-   * absent for claim-level defects such as anchorless issues.
+   Index into claim spans;
+   absent for claim-level defects such as anchorless issues.
    */
   readonly spanIndex?: number;
 
   /**
-   * Plain statement naming affected span, both texts on mismatch, and offsets;
-   * fed back to proposers on retry, so precision matters more than brevity.
+   Plain statement naming affected span, both texts on mismatch, and offsets;
+   fed back to proposers on retry, so precision matters more than brevity.
    */
   readonly detail: string;
 };
 
 /**
- * Validates one span against current documents, first defect wins:
- * later checks presume earlier ones (range needs an existing node,
- * quotes mean nothing against a drifted base).
- *
- * @param span - anchor under validation
- *
- * @param spanIndex - position within owning claim for diagnostics
- *
- * @param documents - current pair anchors must hold against
- *
- * @returns Empty when span holds; exactly one rejection otherwise
- *
- * @example
- * ```ts
- * const rejections = validateSpanAnchor({ span, spanIndex: 0, documents, },);
- * ```
+ Validates one span against current documents, first defect wins:
+ later checks presume earlier ones (range needs an existing node,
+ quotes mean nothing against a drifted base).
+ 
+ @param span - anchor under validation
+ 
+ @param spanIndex - position within owning claim for diagnostics
+ 
+ @param documents - current pair anchors must hold against
+ 
+ @returns Empty when span holds; exactly one rejection otherwise
+ 
+ @example
+ ```ts
+ const rejections = validateSpanAnchor({ span, spanIndex: 0, documents, },);
+ ```
  */
 function validateSpanAnchor(
   {
@@ -115,13 +115,13 @@ function validateSpanAnchor(
   },
 ): readonly AnchorRejection[] {
   /**
-   * Diagnostic prefix naming span position and side plainly.
+   Diagnostic prefix naming span position and side plainly.
    */
   const label = `span ${String(spanIndex,)} (${span.side})`;
 
   /**
-   * Whether both offsets are non-negative integers;
-   * anything else came from malformed model JSON.
+   Whether both offsets are non-negative integers;
+   anything else came from malformed model JSON.
    */
   const offsetsWellFormed = Number.isInteger(span.startOffset,)
     && Number.isInteger(span.endOffset,)
@@ -147,12 +147,12 @@ function validateSpanAnchor(
   }
 
   /**
-   * Document of the pair this span claims to point into.
+   Document of the pair this span claims to point into.
    */
   const document = documents[span.side];
 
   /**
-   * Node the span claims to live in, when it exists.
+   Node the span claims to live in, when it exists.
    */
   const node = document
     .nodes
@@ -190,7 +190,7 @@ function validateSpanAnchor(
   }
 
   /**
-   * Text the current document actually holds at the claimed offsets.
+   Text the current document actually holds at the claimed offsets.
    */
   const actual = document
     .text
@@ -215,25 +215,25 @@ function validateSpanAnchor(
 }
 
 /**
- * Validates one claim against current documents,
- * returning every rejection as data;
- * empty result admits the claim to adjudication.
- * Spans are checked independently so retry feedback covers all defects at once.
- *
- * @param claim - atomic claim from one critic
- *
- * @param documents - current pair anchors must hold against
- *
- * @returns Rejections in span order; empty when claim anchors hold
- *
- * @example
- * ```ts
- * const rejections = validateIssueClaim({
- *   claim,
- *   documents: { source: sourceDocument, target: targetDocument, },
- * },);
- * if (rejections.length === 0) admit(claim,);
- * ```
+ Validates one claim against current documents,
+ returning every rejection as data;
+ empty result admits the claim to adjudication.
+ Spans are checked independently so retry feedback covers all defects at once.
+ 
+ @param claim - atomic claim from one critic
+ 
+ @param documents - current pair anchors must hold against
+ 
+ @returns Rejections in span order; empty when claim anchors hold
+ 
+ @example
+ ```ts
+ const rejections = validateIssueClaim({
+   claim,
+   documents: { source: sourceDocument, target: targetDocument, },
+ },);
+ if (rejections.length === 0) admit(claim,);
+ ```
  */
 export function validateIssueClaim(
   {
@@ -245,7 +245,7 @@ export function validateIssueClaim(
   },
 ): readonly AnchorRejection[] {
   /**
-   * Count of anchored spans; zero means the claim asserts without evidence.
+   Count of anchored spans; zero means the claim asserts without evidence.
    */
   const spanCount = claim
     .spans

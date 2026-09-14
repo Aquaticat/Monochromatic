@@ -1,18 +1,18 @@
 /**
- * Tests for the provider decision.
- *
- * THESE CASES ARE THE OWNER'S POLICY, stated as a table. Synthetic first until
- * its per-model concurrency limit is taken, then overflow to Hyper, which has
- * no such limit; either of Synthetic's two limits emptying is a reason to fail
- * over; Hyper dry too sends the call to OpenRouter (2026-09-03); every
- * provider empty at once ends the run.
- *
- * THE ASYMMETRY IS DELIBERATE and worth reading twice: a model that some
- * providers do not serve loses its voice when the ones that do are dry, and
- * the run continues. Only every budget being empty throws, because only then
- * is nothing buyable at all.
- *
- * @module
+ Tests for the provider decision.
+ 
+ THESE CASES ARE THE OWNER'S POLICY, stated as a table. Synthetic first until
+ its per-model concurrency limit is taken, then overflow to Hyper, which has
+ no such limit; either of Synthetic's two limits emptying is a reason to fail
+ over; Hyper dry too sends the call to OpenRouter (2026-09-03); every
+ provider empty at once ends the run.
+ 
+ THE ASYMMETRY IS DELIBERATE and worth reading twice: a model that some
+ providers do not serve loses its voice when the ones that do are dry, and
+ the run continues. Only every budget being empty throws, because only then
+ is nothing buyable at all.
+ 
+ @module
  */
 
 import {
@@ -33,7 +33,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Budget reading with room left on both of Synthetic's limits.
+ Budget reading with room left on both of Synthetic's limits.
  */
 const roomyQuota = {
   fiveHour: {
@@ -49,8 +49,8 @@ const roomyQuota = {
 } as const;
 
 /**
- * Every provider reachable, which is true of the shared seats since OpenRouter
- * serves the whole roster.
+ Every provider reachable, which is true of the shared seats since OpenRouter
+ serves the whole roster.
  */
 const everyReach = {
   synthetic: true,
@@ -60,7 +60,7 @@ const everyReach = {
 } as const;
 
 /**
- * Nobody dry.
+ Nobody dry.
  */
 const allWet = {
   synthetic: false,
@@ -70,7 +70,7 @@ const allWet = {
 } as const;
 
 /**
- * Nobody saturated.
+ Nobody saturated.
  */
 const noneSaturated = allWet;
 
@@ -504,8 +504,8 @@ await describe({
       name: 'separates active throttling from an emptied budget, which route the same way',
       fn: async () => {
         /**
-         * A reading whose window is full and whose account is being throttled,
-         * which `syntheticIsDry` calls dry for a reason the state cannot show.
+         A reading whose window is full and whose account is being throttled,
+         which `syntheticIsDry` calls dry for a reason the state cannot show.
          */
         const throttled = syntheticMeterLevel({
           quota: {

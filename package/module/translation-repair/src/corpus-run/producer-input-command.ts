@@ -14,27 +14,27 @@ import type { ProducerInputHost, } from './producer-input-host-init.ts';
 //region Finite native Podman stages owned by one input reconstruction
 
 /**
- * Each fixed command stage has one exclusive record and cannot be retried in place.
+ Each fixed command stage has one exclusive record and cannot be retried in place.
  */
 export type ProducerInputCommandStage = 'image' | 'create' | 'inspect-created' | 'start' | 'stop' | 'inspect-terminal' | 'inspect-stopped' | 'remove' | 'verify-removed';
 /**
- * Native command records carry no corpus bodies and remain private.
+ Native command records carry no corpus bodies and remain private.
  */
 const PRIVATE_MODE = 0o600;
 
 /**
- * Writes one exclusive synchronized native-command metadata file.
- *
- * @param path - fixed stage-owned file path
- *
- * @param text - owned command metadata, never a provider payload
- *
- * @throws ProducerInputRunError when private stage evidence cannot be retained
- *
- * @example
- * ```ts
- * await commandRecord({ path, text });
- * ```
+ Writes one exclusive synchronized native-command metadata file.
+ 
+ @param path - fixed stage-owned file path
+ 
+ @param text - owned command metadata, never a provider payload
+ 
+ @throws ProducerInputRunError when private stage evidence cannot be retained
+ 
+ @example
+ ```ts
+ await commandRecord({ path, text });
+ ```
  */
 async function commandRecord({
   path,
@@ -44,7 +44,7 @@ async function commandRecord({
   readonly text: string
 },): Promise<void> {
   /**
-   * Exclusive descriptor keeps one command record independent from any existing file.
+   Exclusive descriptor keeps one command record independent from any existing file.
    */
   await using file = await open(
     path,
@@ -59,24 +59,24 @@ async function commandRecord({
 }
 
 /**
- * Executes one fixed host-owned Podman stage and retains command, output and termination before returning.
- * The owning caller supplies only its predefined image/create/inspect/start/stop/remove operations.
- * There is no public arbitrary-command or live-provider entry.
- *
- * @param host - cross-bound initialized host context
- *
- * @param stage - unique finite command role
- *
- * @param arguments_ - native argv built by the owning stage, never shell text
- *
- * @param signal - owning host cancellation; cleanup uses a separate uncancelled signal
- *
- * @throws ProducerInputRunError when cancellation, spawn or native status prevents completion
- *
- * @example
- * ```ts
- * await runProducerInputCommand({ host, stage: 'start', arguments_, signal });
- * ```
+ Executes one fixed host-owned Podman stage and retains command, output and termination before returning.
+ The owning caller supplies only its predefined image/create/inspect/start/stop/remove operations.
+ There is no public arbitrary-command or live-provider entry.
+ 
+ @param host - cross-bound initialized host context
+ 
+ @param stage - unique finite command role
+ 
+ @param arguments_ - native argv built by the owning stage, never shell text
+ 
+ @param signal - owning host cancellation; cleanup uses a separate uncancelled signal
+ 
+ @throws ProducerInputRunError when cancellation, spawn or native status prevents completion
+ 
+ @example
+ ```ts
+ await runProducerInputCommand({ host, stage: 'start', arguments_, signal });
+ ```
  */
 export async function runProducerInputCommand({
   host,
@@ -90,7 +90,7 @@ export async function runProducerInputCommand({
   readonly signal: AbortSignal;
 },): Promise<void> {
   /**
-   * Stage names are closed in both runtime and declaration space.
+   Stage names are closed in both runtime and declaration space.
    */
   const stages: readonly ProducerInputCommandStage[] = [
     'image',
@@ -109,7 +109,7 @@ export async function runProducerInputCommand({
       locator: 'native stage',
     });
   /**
-   * Record paths cannot be selected through an argv value.
+   Record paths cannot be selected through an argv value.
    */
   const prefix = join(
     host.run
@@ -117,7 +117,7 @@ export async function runProducerInputCommand({
     stage
   );
   /**
-   * Owned argv preserves the invocation even if a caller changes an array during I/O.
+   Owned argv preserves the invocation even if a caller changes an array during I/O.
    */
   const argv = [
     ...host.podman
@@ -125,15 +125,15 @@ export async function runProducerInputCommand({
     ...arguments_
   ];
   /**
-   * Native command lifetime is bounded independently from the container's own execution timeout.
+   Native command lifetime is bounded independently from the container's own execution timeout.
    */
   const timeoutMilliseconds = stage === 'start' ? PRODUCER_INPUT_COMMAND_TIMES.attachedMilliseconds : PRODUCER_INPUT_COMMAND_TIMES.metadataMilliseconds;
   /**
-   * Deadline is separate from caller interruption so records retain both causes.
+   Deadline is separate from caller interruption so records retain both causes.
    */
   const deadline = AbortSignal.timeout(timeoutMilliseconds);
   /**
-   * Either cause stops this one native stage, without cancelling later cleanup.
+   Either cause stops this one native stage, without cancelling later cleanup.
    */
   const effective = AbortSignal.any([
     signal,
@@ -152,7 +152,7 @@ export async function runProducerInputCommand({
       })
     });
     /**
-     * Native stdout remains private and owned until actual process close.
+     Native stdout remains private and owned until actual process close.
      */
     await using stdout = await open(
       `${prefix}.stdout`,
@@ -160,7 +160,7 @@ export async function runProducerInputCommand({
       PRIVATE_MODE
     );
     /**
-     * Native diagnostics are retained independently from their public names-only rendering.
+     Native diagnostics are retained independently from their public names-only rendering.
      */
     await using stderr = await open(
       `${prefix}.stderr`,
@@ -183,7 +183,7 @@ export async function runProducerInputCommand({
       });
     }
     /**
-     * The independently checked binary is invoked directly without PATH or a shell.
+     The independently checked binary is invoked directly without PATH or a shell.
      */
     const child = spawn(
       host.launch
@@ -203,18 +203,18 @@ export async function runProducerInputCommand({
       }
     );
     /**
-     * An earlier native error cannot detach the actual close observation.
+     An earlier native error cannot detach the actual close observation.
      */
     const closed = producerInputCommandClose(child);
     /**
-     * Native interruption resources never outlive this stage's close observation.
+     Native interruption resources never outlive this stage's close observation.
      */
     using _listener = interruptProducerInputCommand({
       child,
       signal: effective
     });
     /**
-     * Native output descriptors and error evidence remain owned until actual close.
+     Native output descriptors and error evidence remain owned until actual close.
      */
     const nativeErrors = await closed;
     await stdout.sync();
@@ -237,7 +237,7 @@ export async function runProducerInputCommand({
         locator: stage,
       });
     /**
-     * Podman's fixed absence query succeeds with its documented nonexistence code.
+     Podman's fixed absence query succeeds with its documented nonexistence code.
      */
     const expectedExitCode = stage === 'verify-removed' ? 1 : 0;
     if ((child.exitCode !== expectedExitCode) || (child.signalCode !== null)
@@ -263,21 +263,21 @@ export async function runProducerInputCommand({
 }
 
 /**
- * Reads only bounded metadata from an already completed native stage.
- * This function never reads application stdout or stderr as a JSON result.
- *
- * @param host - owning private run
- *
- * @param stage - metadata-producing stage
- *
- * @returns Exact native UTF-8 metadata after extent and file-shape checks
- *
- * @throws ProducerInputRunError when metadata cannot be read within the declared internal bound
- *
- * @example
- * ```ts
- * const text = await readProducerInputCommand({ host, stage: 'image' });
- * ```
+ Reads only bounded metadata from an already completed native stage.
+ This function never reads application stdout or stderr as a JSON result.
+ 
+ @param host - owning private run
+ 
+ @param stage - metadata-producing stage
+ 
+ @returns Exact native UTF-8 metadata after extent and file-shape checks
+ 
+ @throws ProducerInputRunError when metadata cannot be read within the declared internal bound
+ 
+ @example
+ ```ts
+ const text = await readProducerInputCommand({ host, stage: 'image' });
+ ```
  */
 export async function readProducerInputCommand({
   host,
@@ -287,7 +287,7 @@ export async function readProducerInputCommand({
   readonly stage: 'image' | 'create' | 'inspect-created' | 'inspect-terminal' | 'inspect-stopped';
 },): Promise<string> {
   /**
-   * The fixed native role determines its output path.
+   The fixed native role determines its output path.
    */
   const path = join(
     host.run

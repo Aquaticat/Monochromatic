@@ -1,14 +1,14 @@
 /**
- * Tests for the translate lane's document driver.
- *
- * What this covers that the stage tests cannot: that EVERY slice is visited,
- * that the alignment guard protects archive text the source cannot account for,
- * that a cached slice costs no calls, and that the document reassembles from
- * per-slice decisions rather than from one whole-document rewrite.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the translate lane's document driver.
+ 
+ What this covers that the stage tests cannot: that EVERY slice is visited,
+ that the alignment guard protects archive text the source cannot account for,
+ that a cached slice costs no calls, and that the document reassembles from
+ per-slice decisions rather than from one whole-document rewrite.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -37,12 +37,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the driver under test.
+ Logger for the driver under test.
  */
 const l = tagged({ tag: 'translate-document-test', },);
 
 /**
- * Original document: two sections, each one paragraph.
+ Original document: two sections, each one paragraph.
  */
 const SOURCE_TEXT = `## 第一节
 
@@ -54,7 +54,7 @@ const SOURCE_TEXT = `## 第一节
 `;
 
 /**
- * Translation as it stands, awkward but complete.
+ Translation as it stands, awkward but complete.
  */
 const TARGET_TEXT = `## Section one
 
@@ -66,32 +66,32 @@ On the windowsill there is being a bird.
 `;
 
 /**
- * Sentence every translator returns for the first section, so the slate
- * collapses to one fresh candidate and the judges have a clear winner.
+ Sentence every translator returns for the first section, so the slate
+ collapses to one fresh candidate and the judges have a clear winner.
  */
 const FRESH = 'The cat naps on the windowsill.';
 
 /**
- * Original the anchored case leaves untranslated, and the section it belongs
- * to.
+ Original the anchored case leaves untranslated, and the section it belongs
+ to.
  */
 const MISSING_SOURCE = '## 第三节\n\n猫猫也喜欢晒太阳。';
 
 /**
- * Translation scripted for source-only third section once admitted.
+ Translation scripted for source-only third section once admitted.
  */
 const MISSING_FRESH = '## Section three\n\nThe cat also likes basking in sunlight.';
 
 /**
- * Original of a page whose translation is measurably too short to hold it.
- *
- * ITS OWN PAIR rather than {@link SOURCE_TEXT}. The corroboration gate admits
- * an insertion only where the page LACKS about as much English as the passage
- * would render into, and {@link TARGET_TEXT} is deliberately verbose: it runs
- * 3.4 English code points per source point against a corpus median of 2.65, so
- * that page is not missing anything and no insertion may be written into it.
- * Measured: this pair runs 1.09, leaving a shortfall of 156 against the 45
- * points {@link MISSING_SOURCE} would render into.
+ Original of a page whose translation is measurably too short to hold it.
+ 
+ ITS OWN PAIR rather than {@link SOURCE_TEXT}. The corroboration gate admits
+ an insertion only where the page LACKS about as much English as the passage
+ would render into, and {@link TARGET_TEXT} is deliberately verbose: it runs
+ 3.4 English code points per source point against a corpus median of 2.65, so
+ that page is not missing anything and no insertion may be written into it.
+ Measured: this pair runs 1.09, leaving a shortfall of 156 against the 45
+ points {@link MISSING_SOURCE} would render into.
  */
 const SHORT_SOURCE = `## 第一节
 
@@ -103,8 +103,8 @@ const SHORT_SOURCE = `## 第一节
 `;
 
 /**
- * Translation of {@link SHORT_SOURCE}, terse enough that the page reads as
- * missing English rather than as merely brief.
+ Translation of {@link SHORT_SOURCE}, terse enough that the page reads as
+ missing English rather than as merely brief.
  */
 const SHORT_TARGET = `## Section one
 
@@ -116,28 +116,28 @@ A bird sits outside, and the cat watches it.
 `;
 
 /**
- * Stand-in for "no slice is silenced", which every case but the anchored one
- * uses.
- *
- * A NEEDLE NO PROMPT CARRIES rather than an empty string, since every prompt
- * contains an empty string and every translator would fall silent.
+ Stand-in for "no slice is silenced", which every case but the anchored one
+ uses.
+ 
+ A NEEDLE NO PROMPT CARRIES rather than an empty string, since every prompt
+ contains an empty string and every translator would fall silent.
  */
 const SILENT_FOR_NOTHING = 'a passage no fixture contains';
 
 /**
- * Renders one slice the way a translator that respected block structure would.
- *
- * A slice carries its heading, so a rendering that dropped it would fail
- * structural validation rather than test the driver.
- *
- * @param content - translator prompt, which carries the slice original
- *
- * @returns Rendering for that slice
- *
- * @example
- * ```ts
- * const rendering = renderingFor({ content, },);
- * ```
+ Renders one slice the way a translator that respected block structure would.
+ 
+ A slice carries its heading, so a rendering that dropped it would fail
+ structural validation rather than test the driver.
+ 
+ @param content - translator prompt, which carries the slice original
+ 
+ @returns Rendering for that slice
+ 
+ @example
+ ```ts
+ const rendering = renderingFor({ content, },);
+ ```
  */
 function renderingFor({ content, }: { readonly content: string; },): string {
   // A notes section is rendered faithfully, marker and all, which is what makes
@@ -155,15 +155,15 @@ function renderingFor({ content, }: { readonly content: string; },): string {
 }
 
 /**
- * Models that render each slice.
+ Models that render each slice.
  */
 /**
- * Exactly the failure an entry deadline trips with.
- *
- * HELD AT MODULE SCOPE so the fixture that aborts and the case that asserts
- * name one object. The driver's contract is that it surfaces the abort reason
- * ITSELF; a wording assertion is satisfied by any lookalike, including a
- * wrapper built from the reason, which is the failure worth ruling out.
+ Exactly the failure an entry deadline trips with.
+ 
+ HELD AT MODULE SCOPE so the fixture that aborts and the case that asserts
+ name one object. The driver's contract is that it surfaces the abort reason
+ ITSELF; a wording assertion is satisfied by any lookalike, including a
+ wrapper built from the reason, which is the failure worth ruling out.
  */
 const ENTRY_DEADLINE_FAILURE = new Error('entry deadline reached',);
 
@@ -174,7 +174,7 @@ const TRANSLATORS: readonly RosterModelId[] = [
 ];
 
 /**
- * Rosters the driver seats.
+ Rosters the driver seats.
  */
 const MODELS: TranslateModels = {
   translatorModelIds: TRANSLATORS,
@@ -187,28 +187,28 @@ const MODELS: TranslateModels = {
 };
 
 /**
- * Calls the driver made, so a case can prove a resumed slice bought nothing.
+ Calls the driver made, so a case can prove a resumed slice bought nothing.
  */
 type CallLog = {
   translate: number;
 
   /**
-   * Translate calls ATTEMPTED, whether or not one came back. The only counter
-   * that moves when every translator is down, which is what lets a case ask
-   * whether a slice was asked at all rather than whether it was answered.
+   Translate calls ATTEMPTED, whether or not one came back. The only counter
+   that moves when every translator is down, which is what lets a case ask
+   whether a slice was asked at all rather than whether it was answered.
    */
   translateAttempts: number;
   select: number;
 
   /**
-   * Judge calls ATTEMPTED, whether or not one came back. A stage that keeps
-   * fanning out after the run was stopped shows up here and nowhere else.
+   Judge calls ATTEMPTED, whether or not one came back. A stage that keeps
+   fanning out after the run was stopped shows up here and nowhere else.
    */
   selectAttempts: number;
 };
 
 /**
- * Successful translator calls in flight, and peak observed by fixture.
+ Successful translator calls in flight, and peak observed by fixture.
  */
 type TranslateConcurrency = {
   now: number;
@@ -216,20 +216,20 @@ type TranslateConcurrency = {
 };
 
 /**
- * Finds the one-based candidate index whose rendered text carries a needle,
- * reading the judge sheet the way a judge does rather than assuming an order the
- * lane deliberately varies.
- *
- * @param content - judge user message
- *
- * @param needle - text the wanted candidate contains
- *
- * @returns One-based index, or zero when no candidate carries it
- *
- * @example
- * ```ts
- * const best = pickCandidate({ content, needle: FRESH, },);
- * ```
+ Finds the one-based candidate index whose rendered text carries a needle,
+ reading the judge sheet the way a judge does rather than assuming an order the
+ lane deliberately varies.
+ 
+ @param content - judge user message
+ 
+ @param needle - text the wanted candidate contains
+ 
+ @returns One-based index, or zero when no candidate carries it
+ 
+ @example
+ ```ts
+ const best = pickCandidate({ content, needle: FRESH, },);
+ ```
  */
 function pickCandidate(
   {
@@ -241,17 +241,17 @@ function pickCandidate(
   },
 ): number {
   /**
-   * Sheet split at each candidate heading; the first piece is the evidence.
+   Sheet split at each candidate heading; the first piece is the evidence.
    */
   const [, ...blocks] = content.split('CANDIDATE ',);
   for (const block of blocks) {
     /**
-     * Heading line carrying this candidate's number.
+     Heading line carrying this candidate's number.
      */
     const [heading = '',] = block.split('\n',);
 
     /**
-     * Number the heading states.
+     Number the heading states.
      */
     const index = Math.trunc(Number(heading,),);
     if (Number.isInteger(index,) && block.includes(needle,))
@@ -261,31 +261,31 @@ function pickCandidate(
 }
 
 /**
- * Client serving both stages of the lane from one script.
- *
- * @param calls - shared call log the cases assert on
- *
- * @param controller - abort the script may fire, standing in for the entry
- * deadline the corpus pass imposes
- *
- * @param abortAfterTranslateCalls - translate calls served before the script
- * aborts; absent means it never does
- *
- * @param silentTranslators - whether every translate call fails, standing in for
- * a provider that is down while the signal stays live
- *
- * @param silentForSource - original whose slice every translator fails on,
- * absent when none does; this is how one slice is made unfillable while the
- * rest of the document translates normally
- *
- * @param translateConcurrency - optional successful-call overlap instrument
- *
- * @returns Client honoring the script
- *
- * @example
- * ```ts
- * const client = laneClient({ calls, controller, },);
- * ```
+ Client serving both stages of the lane from one script.
+ 
+ @param calls - shared call log the cases assert on
+ 
+ @param controller - abort the script may fire, standing in for the entry
+ deadline the corpus pass imposes
+ 
+ @param abortAfterTranslateCalls - translate calls served before the script
+ aborts; absent means it never does
+ 
+ @param silentTranslators - whether every translate call fails, standing in for
+ a provider that is down while the signal stays live
+ 
+ @param silentForSource - original whose slice every translator fails on,
+ absent when none does; this is how one slice is made unfillable while the
+ rest of the document translates normally
+ 
+ @param translateConcurrency - optional successful-call overlap instrument
+ 
+ @returns Client honoring the script
+ 
+ @example
+ ```ts
+ const client = laneClient({ calls, controller, },);
+ ```
  */
 function laneClient(
   {
@@ -312,13 +312,13 @@ function laneClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Schema the caller asked for, which names the stage.
+       Schema the caller asked for, which names the stage.
        */
       const schema = request.responseFormat
         ?.json_schema
         .name;
       /**
-       * Everything the caller sent, which carries the slice original.
+       Everything the caller sent, which carries the slice original.
        */
       const content = request.messages
         .map(function toContent(message,) {
@@ -356,7 +356,7 @@ function laneClient(
         calls.translate += 1;
 
         /**
-         * Wire reply carrying scripted rendering.
+         Wire reply carrying scripted rendering.
          */
         const value: unknown = { translation: renderingFor({ content, },), };
         if (!request.validate(value,))
@@ -374,13 +374,13 @@ function laneClient(
       calls.select += 1;
 
       /**
-       * Fresh rendering belonging to ordinary or admitted insertion slice.
+       Fresh rendering belonging to ordinary or admitted insertion slice.
        */
       const wantedRendering = content.includes(MISSING_FRESH,)
         ? MISSING_FRESH
         : FRESH;
       /**
-       * Ballot naming the fresh rendering.
+       Ballot naming the fresh rendering.
        */
       const ballot: unknown = {
         best: pickCandidate({
@@ -404,38 +404,38 @@ function laneClient(
 }
 
 /**
- * Runs the driver over a document pair.
- *
- * @param sourceText - original document
- *
- * @param targetText - translation as it stands
- *
- * @param resumed - records a previous run settled, keyed as the driver keys
- * them
- *
- * @param abortAfterTranslateCalls - translate calls served before the script
- * aborts the run
- *
- * @param silentTranslators - whether every translate call fails while the signal
- * stays live
- *
- * @param overlap - most slices the driver may run at once
- *
- * @param insertionAdmission - caller evidence overriding deterministic insertion gate
- *
- * @param translateConcurrency - optional successful-call overlap instrument
- *
- * @param persisted - map the run writes settled records into; passed in so a
- * case that expects a REJECTION can still read what reached the cache
- *
- * @param calls - log the run counts into, passed in for the same reason
- *
- * @returns Result, the call log, and everything persisted
- *
- * @example
- * ```ts
- * const { result, calls, } = await runDriver({},);
- * ```
+ Runs the driver over a document pair.
+ 
+ @param sourceText - original document
+ 
+ @param targetText - translation as it stands
+ 
+ @param resumed - records a previous run settled, keyed as the driver keys
+ them
+ 
+ @param abortAfterTranslateCalls - translate calls served before the script
+ aborts the run
+ 
+ @param silentTranslators - whether every translate call fails while the signal
+ stays live
+ 
+ @param overlap - most slices the driver may run at once
+ 
+ @param insertionAdmission - caller evidence overriding deterministic insertion gate
+ 
+ @param translateConcurrency - optional successful-call overlap instrument
+ 
+ @param persisted - map the run writes settled records into; passed in so a
+ case that expects a REJECTION can still read what reached the cache
+ 
+ @param calls - log the run counts into, passed in for the same reason
+ 
+ @returns Result, the call log, and everything persisted
+ 
+ @example
+ ```ts
+ const { result, calls, } = await runDriver({},);
+ ```
  */
 async function runDriver(
   {
@@ -474,12 +474,12 @@ async function runDriver(
   },
 ) {
   /**
-   * Run steering, which the script may abort part way through the document.
+   Run steering, which the script may abort part way through the document.
    */
   const controller = new AbortController();
 
   /**
-   * Preparation as the slicer produces it today, with only content slices.
+   Preparation as the slicer produces it today, with only content slices.
    */
   const sliced = prepareDocumentPair({
     sourceText,
@@ -487,12 +487,12 @@ async function runDriver(
   },);
 
   /**
-   * That preparation, with one source section the archive never translated
-   * appended as an anchor at the end of the document.
-   *
-   * BUILT BY HAND because nothing produces an anchor yet: landings four and
-   * five of `#100` are the producers, and this driver has to refuse the wrong
-   * answers before they arrive.
+   That preparation, with one source section the archive never translated
+   appended as an anchor at the end of the document.
+   
+   BUILT BY HAND because nothing produces an anchor yet: landings four and
+   five of `#100` are the producers, and this driver has to refuse the wrong
+   answers before they arrive.
    */
   const prepared = (anchorSource === undefined) ? sliced : {
     ...sliced,
@@ -517,7 +517,7 @@ async function runDriver(
   };
 
   /**
-   * What the lane decided for the whole document.
+   What the lane decided for the whole document.
    */
   const result = await translateDocument({
     client: laneClient({
@@ -628,8 +628,8 @@ await describe({
         + 'every later reader would take them for pages that needed no work',
       fn: async () => {
         /**
-         * Client that fails any exchange, so the case proves nothing was bought
-         * rather than only that the run refused.
+         Client that fails any exchange, so the case proves nothing was bought
+         rather than only that the run refused.
          */
         const client: SyntheticClient = {
           chatText: async () => {
@@ -644,7 +644,7 @@ await describe({
         };
 
         /**
-         * Failure the driver raised.
+         Failure the driver raised.
          */
         let caught: unknown;
         try {
@@ -708,9 +708,9 @@ await describe({
         const { persisted, } = await runDriver({},);
 
         /**
-         * The same records under the same keys, each with its voices taken
-         * away and nothing else touched, so whatever the run recomputes it
-         * recomputes for having heard nobody rather than for any other fault.
+         The same records under the same keys, each with its voices taken
+         away and nothing else touched, so whatever the run recomputes it
+         recomputes for having heard nobody rather than for any other fault.
          */
         const unheard = new Map(
           [...persisted.entries(),].map(function toUnheard([
@@ -732,7 +732,7 @@ await describe({
         expect(unheard.size,).toBeGreaterThan(0,);
 
         /**
-         * Run offered nothing but unheard records.
+         Run offered nothing but unheard records.
          */
         const asked = await runDriver({ resumed: unheard, },);
         expect(asked.result
@@ -773,8 +773,8 @@ await describe({
         expect(result.resumedSliceCount,).toBe(result.sliceCount,);
 
         /**
-         * Same records under the same keys, each carrying an index that names
-         * some other slice.
+         Same records under the same keys, each carrying an index that names
+         some other slice.
          */
         const misfiled = new Map(
           [...persisted.entries(),].map(function toMisfiled([key, record,],) {
@@ -789,7 +789,7 @@ await describe({
         );
 
         /**
-         * Run resuming every slice from those records.
+         Run resuming every slice from those records.
          */
         const restamped = await runDriver({ resumed: misfiled, },);
         expect(restamped.result
@@ -938,8 +938,8 @@ await describe({
         const { persisted, } = await runDriver({},);
 
         /**
-         * Archive wording of each prepared slice, read from the same
-         * preparation the driver builds rather than assumed from the fixture.
+         Archive wording of each prepared slice, read from the same
+         preparation the driver builds rather than assumed from the fixture.
          */
         const incumbentByIndex = new Map(
           prepareDocumentPair({
@@ -956,8 +956,8 @@ await describe({
         );
 
         /**
-         * Same records under the same keys, each claiming its change while
-         * carrying the wording it claims to have replaced.
+         Same records under the same keys, each claiming its change while
+         carrying the wording it claims to have replaced.
          */
         const overClaiming = new Map(
           [...persisted.entries(),].map(function toPoisoned([key, record,],) {
@@ -973,12 +973,12 @@ await describe({
         );
 
         /**
-         * Records the poisoning actually put in a contradictory state.
-         *
-         * Not every record reaches one: rewriting the wording of a record that
-         * already claimed no change leaves it consistent. Counted rather than
-         * assumed, so the case says exactly how many slices should be bought
-         * again instead of asserting a number the fixture happens to produce.
+         Records the poisoning actually put in a contradictory state.
+         
+         Not every record reaches one: rewriting the wording of a record that
+         already claimed no change leaves it consistent. Counted rather than
+         assumed, so the case says exactly how many slices should be bought
+         again instead of asserting a number the fixture happens to produce.
          */
         const overClaimingPoisoned = [...overClaiming.values(),]
           .filter(function wasPoisoned(record,): boolean {
@@ -989,7 +989,7 @@ await describe({
         expect(overClaimingPoisoned,).toBeGreaterThan(0,);
 
         /**
-         * Run resuming the over-claiming records.
+         Run resuming the over-claiming records.
          */
         const overClaimed = await runDriver({ resumed: overClaiming, },);
         expect(overClaimed.result
@@ -1005,9 +1005,9 @@ await describe({
           .length,).toBe(overClaimingPoisoned,);
 
         /**
-         * The QUIETER direction: records denying a change they did make. Only
-         * `changed` records become replacements, so this one used to have its
-         * wording dropped at assembly with nothing said.
+         The QUIETER direction: records denying a change they did make. Only
+         `changed` records become replacements, so this one used to have its
+         wording dropped at assembly with nothing said.
          */
         const underClaiming = new Map(
           [...persisted.entries(),].map(function toPoisoned([key, record,],) {
@@ -1022,7 +1022,7 @@ await describe({
         );
 
         /**
-         * Records that direction puts in a contradictory state.
+         Records that direction puts in a contradictory state.
          */
         const underClaimingPoisoned = [...underClaiming.values(),]
           .filter(function wasPoisoned(record,): boolean {
@@ -1052,7 +1052,7 @@ await describe({
         + 'cache, where the next attempt reads it as finished work',
       fn: async () => {
         /**
-         * Records that reached the cache before the abort.
+         Records that reached the cache before the abort.
          */
         const persisted = new Map<string, TranslateSliceRecord>();
         await expect(runDriver({
@@ -1075,18 +1075,18 @@ await describe({
         + 'the abort chose',
       fn: async () => {
         /**
-         * Records that reached the cache before the abort.
+         Records that reached the cache before the abort.
          */
         const persisted = new Map<string, TranslateSliceRecord>();
 
         /**
-         * Voices a three-model roster needs, which the second slice hears
-         * before the abort lands on its last translator.
+         Voices a three-model roster needs, which the second slice hears
+         before the abort lands on its last translator.
          */
         const quorum = Math.ceil(TRANSLATORS.length / 2,);
 
         /**
-         * Calls the run made, which say where it stopped.
+         Calls the run made, which say where it stopped.
          */
         const calls: CallLog = {
           translate: 0,
@@ -1116,7 +1116,7 @@ await describe({
         + 'asks again rather than reading a provider outage as a decision',
       fn: async () => {
         /**
-         * Records that reached the cache with every translator down.
+         Records that reached the cache with every translator down.
          */
         const persisted = new Map<string, TranslateSliceRecord>();
         const { result, } = await runDriver({
@@ -1232,7 +1232,7 @@ On the windowsill there is being a bird.
         expect(result.refusedSliceCount,).toBe(1,);
 
         /**
-         * Slice the guard protected.
+         Slice the guard protected.
          */
         const [refused,] = result.slices
           .filter(function wasRefused(record,): boolean {
@@ -1277,7 +1277,7 @@ But we must remember that the cat sleeping on the windowsill has been there `
         expect(result.refusedSliceCount,).toBe(2,);
 
         /**
-         * Refusal sentences the document reports.
+         Refusal sentences the document reports.
          */
         const refusals = result.findings
           .filter(function isRefusal(finding,): boolean {
@@ -1309,10 +1309,10 @@ The cat is doing the sleeping on the windowsill.
 `;
 
           /**
-           * One slice, which calibrates what asking once costs.
-           *
-           * Measured rather than assumed: roster retries a lost voice, so count
-           * per slice is property of gather rather than translator list length.
+           One slice, which calibrates what asking once costs.
+           
+           Measured rather than assumed: roster retries a lost voice, so count
+           per slice is property of gather rather than translator list length.
            */
           const single = await runDriver({
             sourceText: SECTION,
@@ -1322,7 +1322,7 @@ The cat is doing the sleeping on the windowsill.
           },);
 
           /**
-           * Same section twice.
+           Same section twice.
            */
           const twin = await runDriver({
             sourceText: `${SECTION}\n${SECTION}`,
@@ -1416,8 +1416,8 @@ The cat is doing the sleeping on the windowsill.
         const plain = await runDriver({});
 
         /**
-         * Same document with an untranslated passage anchored at the end, on
-         * the VERBOSE pair rather than {@link SHORT_SOURCE}'s.
+         Same document with an untranslated passage anchored at the end, on
+         the VERBOSE pair rather than {@link SHORT_SOURCE}'s.
          */
         const anchored = await runDriver({ anchorSource: MISSING_SOURCE, },);
 

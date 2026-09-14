@@ -1,8 +1,8 @@
 /**
- * Tests for the selection fan-out: when a judge bench is too thin for the
- * window to carry a unanimous self-written slate.
- *
- * @module
+ Tests for the selection fan-out: when a judge bench is too thin for the
+ window to carry a unanimous self-written slate.
+ 
+ @module
  */
 
 import {
@@ -19,14 +19,14 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Seats whose self-votes alone reach the minimum.
+ Seats whose self-votes alone reach the minimum.
  */
 const SEATS_CARRYING_MINIMUM = Math.ceil(MIN_SELECTION_WEIGHT / SELF_VOTE_WEIGHT,);
 
 /**
- * Smallest bench whose window holds those seats: the window is half the bench
- * rounded up plus the spare, so an odd bench one short of twice the seats
- * less the spare already carries it.
+ Smallest bench whose window holds those seats: the window is half the bench
+ rounded up plus the spare, so an odd bench one short of twice the seats
+ less the spare already carries it.
  */
 const THINNEST_WINDOWED_BENCH = (2 * (SEATS_CARRYING_MINIMUM - FANOUT_SPARE)) - 1;
 

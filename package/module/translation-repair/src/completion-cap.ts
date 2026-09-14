@@ -41,25 +41,25 @@ import type { RosterModelId, } from './roster-id.ts';
 // between its seating and 20:05 UTC on 2026-09-09.
 
 /**
- * Pooled 90th percentile of completion tokens over every completed call in
- * the measurement, the floor under a model's own cap.
+ Pooled 90th percentile of completion tokens over every completed call in
+ the measurement, the floor under a model's own cap.
  */
 const POOLED_P90 = 3_831;
 
 /**
- * Existing pooled 99th percentile for a new model without its own completed-call distribution.
- * `~/temp/agent/cap-measure-20260909.txt` records 142437 completed samples and p99 13082.
+ Existing pooled 99th percentile for a new model without its own completed-call distribution.
+ `~/temp/agent/cap-measure-20260909.txt` records 142437 completed samples and p99 13082.
  */
 const POOLED_P99 = 13_082;
 
 /**
- * Completion token ceiling per roster model, sent as `max_tokens` by every
- * client.
- *
- * @example
- * ```ts
- * const cap = COMPLETION_CAP['deepseek-v4-pro-0813'];
- * ```
+ Completion token ceiling per roster model, sent as `max_tokens` by every
+ client.
+ 
+ @example
+ ```ts
+ const cap = COMPLETION_CAP['deepseek-v4-pro-0813'];
+ ```
  */
 export const COMPLETION_CAP: Readonly<Record<RosterModelId, number>> = {
   // Hyper p99 over 886 calls; Synthetic 16,342 over 4,775; OpenRouter 13,070
@@ -100,18 +100,18 @@ export const COMPLETION_CAP: Readonly<Record<RosterModelId, number>> = {
 };
 
 /**
- * Ceiling one call carries: the measured cap, or a caller's own when lower.
- *
- * @param modelId - roster model the call is for
- *
- * @param requested - caller's ceiling, which only ever lowers the cap
- *
- * @returns Value for the request body's `max_tokens`
- *
- * @example
- * ```ts
- * const maxTokens = completionCapFor({ modelId: 'minimax-m3', requested: 500, },);
- * ```
+ Ceiling one call carries: the measured cap, or a caller's own when lower.
+ 
+ @param modelId - roster model the call is for
+ 
+ @param requested - caller's ceiling, which only ever lowers the cap
+ 
+ @returns Value for the request body's `max_tokens`
+ 
+ @example
+ ```ts
+ const maxTokens = completionCapFor({ modelId: 'minimax-m3', requested: 500, },);
+ ```
  */
 export function completionCapFor(
   {
@@ -123,7 +123,7 @@ export function completionCapFor(
   },
 ): number {
   /**
-   * Measured ceiling for this model.
+   Measured ceiling for this model.
    */
   const cap = COMPLETION_CAP[modelId];
   if (requested === undefined)

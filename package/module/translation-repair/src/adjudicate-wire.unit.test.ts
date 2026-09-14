@@ -1,8 +1,8 @@
 /**
- * Tests for the panel ballot wire format and its fail-closed resolution.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the panel ballot wire format and its fail-closed resolution.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -16,7 +16,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Claim ids in prompt numbering order for resolution tests.
+ Claim ids in prompt numbering order for resolution tests.
  */
 const CLAIM_IDS = [
   'issue/whisker',
@@ -25,7 +25,7 @@ const CLAIM_IDS = [
 ] as const;
 
 /**
- * Cluster ids in prompt numbering order for resolution tests.
+ Cluster ids in prompt numbering order for resolution tests.
  */
 const CLUSTER_IDS = [
   'cluster/nap',

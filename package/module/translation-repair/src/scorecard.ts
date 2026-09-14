@@ -8,12 +8,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // milestone go/no-go number.
 
 /**
- * How one critic attempt ended.
- *
- * @example
- * ```ts
- * const kind: CriticAttemptOutcomeKind = 'ok';
- * ```
+ How one critic attempt ended.
+ 
+ @example
+ ```ts
+ const kind: CriticAttemptOutcomeKind = 'ok';
+ ```
  */
 export type CriticAttemptOutcomeKind =
   | 'ok'
@@ -28,182 +28,182 @@ export type CriticAttemptOutcomeKind =
   | 'skipped';
 
 /**
- * One critic call graded against the seeds planted for its entry.
- *
- * @example
- * ```ts
- * const record: CriticAttemptRecord = {
- *   modelId: 'hf:zai-org/GLM-5.3-Flash',
- *   entryId: 'whiskers',
- *   outcomeKind: 'ok',
- *   detail: '',
- *   resolvedClaimCount: 3,
- *   unresolvedReasons: ['ambiguous-quote (target)',],
- *   seededHitIds: ['seed/omission-0',],
- *   plantedSeedIds: ['seed/omission-0', 'seed/omission-1',],
- * };
- * ```
+ One critic call graded against the seeds planted for its entry.
+ 
+ @example
+ ```ts
+ const record: CriticAttemptRecord = {
+   modelId: 'hf:zai-org/GLM-5.3-Flash',
+   entryId: 'whiskers',
+   outcomeKind: 'ok',
+   detail: '',
+   resolvedClaimCount: 3,
+   unresolvedReasons: ['ambiguous-quote (target)',],
+   seededHitIds: ['seed/omission-0',],
+   plantedSeedIds: ['seed/omission-0', 'seed/omission-1',],
+ };
+ ```
  */
 export type CriticAttemptRecord = {
   /**
-   * Model that made the attempt.
+   Model that made the attempt.
    */
   readonly modelId: RosterModelId;
 
   /**
-   * Corpus entry the attempt reviewed.
+   Corpus entry the attempt reviewed.
    */
   readonly entryId: string;
 
   /**
-   * How the exchange ended.
+   How the exchange ended.
    */
   readonly outcomeKind: CriticAttemptOutcomeKind;
 
   /**
-   * Marker, mismatch detail, or HTTP failure text; empty on clean ok.
+   Marker, mismatch detail, or HTTP failure text; empty on clean ok.
    */
   readonly detail: string;
 
   /**
-   * Claims that survived quote resolution and span validation.
+   Claims that survived quote resolution and span validation.
    */
   readonly resolvedClaimCount: number;
 
   /**
-   * Resolution failure reasons in wire order; feeds prompt iteration.
+   Resolution failure reasons in wire order; feeds prompt iteration.
    */
   readonly unresolvedReasons: readonly string[];
 
   /**
-   * Seed ids this attempt detected.
+   Seed ids this attempt detected.
    */
   readonly seededHitIds: readonly string[];
 
   /**
-   * Seed ids planted for this entry.
+   Seed ids planted for this entry.
    */
   readonly plantedSeedIds: readonly string[];
 
   /**
-   * Completion tokens when reported; thinking-inflated on these models.
+   Completion tokens when reported; thinking-inflated on these models.
    */
   readonly completionTokens?: number;
 
   /**
-   * Failure detail of the discarded first attempt when this record came
-   * out of the single transient retry (truncation, HTTP failure, dropped
-   * transport, or forfeited deadline); absent when the first attempt
-   * stood on its own.
+   Failure detail of the discarded first attempt when this record came
+   out of the single transient retry (truncation, HTTP failure, dropped
+   transport, or forfeited deadline); absent when the first attempt
+   stood on its own.
    */
   readonly retriedFirstAttemptDetail?: string;
 };
 
 /**
- * Aggregated quality of one model across attempts.
- *
- * @example
- * ```ts
- * const row: ModelScorecardRow = {
- *   modelId: 'hf:zai-org/GLM-5.3-Flash',
- *   attempts: 4,
- *   schemaOkRate: 0.75,
- *   refusalRate: 0.25,
- *   seededRecall: 0.5,
- *   resolvedClaimsPerAttempt: 2.5,
- *   unresolvedPerAttempt: 0.5,
- * };
- * ```
+ Aggregated quality of one model across attempts.
+ 
+ @example
+ ```ts
+ const row: ModelScorecardRow = {
+   modelId: 'hf:zai-org/GLM-5.3-Flash',
+   attempts: 4,
+   schemaOkRate: 0.75,
+   refusalRate: 0.25,
+   seededRecall: 0.5,
+   resolvedClaimsPerAttempt: 2.5,
+   unresolvedPerAttempt: 0.5,
+ };
+ ```
  */
 export type ModelScorecardRow = {
   /**
-   * Model graded by this row.
+   Model graded by this row.
    */
   readonly modelId: RosterModelId;
 
   /**
-   * Dispatched attempt count behind the rates; skipped records excluded.
+   Dispatched attempt count behind the rates; skipped records excluded.
    */
   readonly attempts: number;
 
   /**
-   * Records never dispatched because the run budget ran out.
+   Records never dispatched because the run budget ran out.
    */
   readonly skipped: number;
 
   /**
-   * Fraction of attempts ending `ok`.
+   Fraction of attempts ending `ok`.
    */
   readonly schemaOkRate: number;
 
   /**
-   * Fraction of attempts ending refusal-shaped.
+   Fraction of attempts ending refusal-shaped.
    */
   readonly refusalRate: number;
 
   /**
-   * Seeds detected over seeds planted, refusals and failures counted
-   * against the denominator: effective recall.
+   Seeds detected over seeds planted, refusals and failures counted
+   against the denominator: effective recall.
    */
   readonly seededRecall: number;
 
   /**
-   * Mean validated claims per attempt.
+   Mean validated claims per attempt.
    */
   readonly resolvedClaimsPerAttempt: number;
 
   /**
-   * Mean resolution failures per attempt; high values mean sloppy quoting.
+   Mean resolution failures per attempt; high values mean sloppy quoting.
    */
   readonly unresolvedPerAttempt: number;
 };
 
 /**
- * Whole benchmark scorecard.
- *
- * @example
- * ```ts
- * const scorecard = computeScorecard({ attempts, },);
- * console.log(scorecard.ensembleRecall,);
- * ```
+ Whole benchmark scorecard.
+ 
+ @example
+ ```ts
+ const scorecard = computeScorecard({ attempts, },);
+ console.log(scorecard.ensembleRecall,);
+ ```
  */
 export type BenchmarkScorecard = {
   /**
-   * Per-model rows in first-attempt order.
+   Per-model rows in first-attempt order.
    */
   readonly rows: readonly ModelScorecardRow[];
 
   /**
-   * Distinct planted seeds across entries.
+   Distinct planted seeds across entries.
    */
   readonly seedUniverse: number;
 
   /**
-   * Seeds any model detected over the seed universe:
-   * the recall ceiling of the whole ensemble, the milestone go/no-go number.
+   Seeds any model detected over the seed universe:
+   the recall ceiling of the whole ensemble, the milestone go/no-go number.
    */
   readonly ensembleRecall: number;
 
   /**
-   * Dispatched records over all records:
-   * 1 when the run budget never cut anything, lower on time-boxed runs.
+   Dispatched records over all records:
+   1 when the run budget never cut anything, lower on time-boxed runs.
    */
   readonly coverage: number;
 };
 
 /**
- * Counts bucket attempts ending in one outcome kind.
- *
- * @param bucket - one model's attempts
- *
- * @param kind - outcome under count
- *
- * @returns Matching attempt count
- *
- * @example
- * ```ts
- * countOutcomeKind({ bucket, kind: 'refusal-shaped', },);
- * ```
+ Counts bucket attempts ending in one outcome kind.
+ 
+ @param bucket - one model's attempts
+ 
+ @param kind - outcome under count
+ 
+ @returns Matching attempt count
+ 
+ @example
+ ```ts
+ countOutcomeKind({ bucket, kind: 'refusal-shaped', },);
+ ```
  */
 function countOutcomeKind(
   {
@@ -222,18 +222,18 @@ function countOutcomeKind(
 }
 
 /**
- * Sums one numeric aspect over a bucket.
- *
- * @param bucket - one model's attempts
- *
- * @param pick - aspect read from each record
- *
- * @returns Sum over the bucket
- *
- * @example
- * ```ts
- * sumOver({ bucket, pick: plantedCountOf, },);
- * ```
+ Sums one numeric aspect over a bucket.
+ 
+ @param bucket - one model's attempts
+ 
+ @param pick - aspect read from each record
+ 
+ @returns Sum over the bucket
+ 
+ @example
+ ```ts
+ sumOver({ bucket, pick: plantedCountOf, },);
+ ```
  */
 function sumOver(
   {
@@ -256,16 +256,16 @@ function sumOver(
 }
 
 /**
- * Reads planted seed count off one record.
- *
- * @param record - graded attempt
- *
- * @returns Planted seed count
- *
- * @example
- * ```ts
- * plantedCountOf(record,);
- * ```
+ Reads planted seed count off one record.
+ 
+ @param record - graded attempt
+ 
+ @returns Planted seed count
+ 
+ @example
+ ```ts
+ plantedCountOf(record,);
+ ```
  */
 function plantedCountOf(record: CriticAttemptRecord,): number {
   return record
@@ -274,16 +274,16 @@ function plantedCountOf(record: CriticAttemptRecord,): number {
 }
 
 /**
- * Reads detected seed count off one record.
- *
- * @param record - graded attempt
- *
- * @returns Detected seed count
- *
- * @example
- * ```ts
- * hitCountOf(record,);
- * ```
+ Reads detected seed count off one record.
+ 
+ @param record - graded attempt
+ 
+ @returns Detected seed count
+ 
+ @example
+ ```ts
+ hitCountOf(record,);
+ ```
  */
 function hitCountOf(record: CriticAttemptRecord,): number {
   return record
@@ -292,32 +292,32 @@ function hitCountOf(record: CriticAttemptRecord,): number {
 }
 
 /**
- * Reads validated claim count off one record.
- *
- * @param record - graded attempt
- *
- * @returns Validated claim count
- *
- * @example
- * ```ts
- * claimCountOf(record,);
- * ```
+ Reads validated claim count off one record.
+ 
+ @param record - graded attempt
+ 
+ @returns Validated claim count
+ 
+ @example
+ ```ts
+ claimCountOf(record,);
+ ```
  */
 function claimCountOf(record: CriticAttemptRecord,): number {
   return record.resolvedClaimCount;
 }
 
 /**
- * Reads resolution failure count off one record.
- *
- * @param record - graded attempt
- *
- * @returns Resolution failure count
- *
- * @example
- * ```ts
- * unresolvedCountOf(record,);
- * ```
+ Reads resolution failure count off one record.
+ 
+ @param record - graded attempt
+ 
+ @returns Resolution failure count
+ 
+ @example
+ ```ts
+ unresolvedCountOf(record,);
+ ```
  */
 function unresolvedCountOf(record: CriticAttemptRecord,): number {
   return record
@@ -326,27 +326,27 @@ function unresolvedCountOf(record: CriticAttemptRecord,): number {
 }
 
 /**
- * Aggregates attempts into the scorecard.
- *
- * @param attempts - graded critic attempts across models and entries
- *
- * @returns Per-model rows plus the ensemble recall ceiling
- *
- * @example
- * ```ts
- * const scorecard = computeScorecard({ attempts, },);
- * ```
+ Aggregates attempts into the scorecard.
+ 
+ @param attempts - graded critic attempts across models and entries
+ 
+ @returns Per-model rows plus the ensemble recall ceiling
+ 
+ @example
+ ```ts
+ const scorecard = computeScorecard({ attempts, },);
+ ```
  */
 export function computeScorecard(
   { attempts, }: { readonly attempts: readonly CriticAttemptRecord[]; },
 ): BenchmarkScorecard {
   /**
-   * Attempts grouped by model in first-attempt order.
+   Attempts grouped by model in first-attempt order.
    */
   const byModel = new Map<RosterModelId, CriticAttemptRecord[]>();
   for (const attempt of attempts) {
     /**
-     * Bucket for this attempt's model, created on first sight.
+     Bucket for this attempt's model, created on first sight.
      */
     const bucket = byModel.get(attempt.modelId,) ?? [];
     bucket.push(attempt,);
@@ -357,25 +357,25 @@ export function computeScorecard(
   }
 
   /**
-   * Per-model rows computed from each bucket.
-   * Skipped records back only the skipped count;
-   * every rate divides by dispatched attempts.
+   Per-model rows computed from each bucket.
+   Skipped records back only the skipped count;
+   every rate divides by dispatched attempts.
    */
   const rows = [...byModel.entries(),].map(function toRow([modelId, bucket,],) {
     /**
-     * Records actually dispatched to the model.
+     Records actually dispatched to the model.
      */
     const dispatched = bucket.filter(function wasDispatched(record,) {
       return record.outcomeKind !== 'skipped';
     },);
 
     /**
-     * Dispatched attempt count backing every rate in this row.
+     Dispatched attempt count backing every rate in this row.
      */
     const attemptCount = dispatched.length;
 
     /**
-     * Divisor guarding fully skipped buckets against division by zero.
+     Divisor guarding fully skipped buckets against division by zero.
      */
     const rateDivisor = Math.max(
       attemptCount,
@@ -383,7 +383,7 @@ export function computeScorecard(
     );
 
     /**
-     * Seeds planted across this model's dispatched attempts.
+     Seeds planted across this model's dispatched attempts.
      */
     const seededTotal = sumOver({
       bucket: dispatched,
@@ -391,7 +391,7 @@ export function computeScorecard(
     },);
 
     /**
-     * Seeds this model detected.
+     Seeds this model detected.
      */
     const seededHits = sumOver({
       bucket: dispatched,
@@ -425,16 +425,16 @@ export function computeScorecard(
   },);
 
   /**
-   * Records actually dispatched across all models;
-   * seeds of never-dispatched records were never examined,
-   * so they stay out of the recall universe.
+   Records actually dispatched across all models;
+   seeds of never-dispatched records were never examined,
+   so they stay out of the recall universe.
    */
   const dispatchedAttempts = attempts.filter(function wasDispatched(record,) {
     return record.outcomeKind !== 'skipped';
   },);
 
   /**
-   * Distinct planted seeds keyed by entry and seed id.
+   Distinct planted seeds keyed by entry and seed id.
    */
   const seedUniverse = new Set(dispatchedAttempts.flatMap(function seedKeys(attempt,) {
     return attempt
@@ -445,7 +445,7 @@ export function computeScorecard(
   },),);
 
   /**
-   * Seeds any model detected, keyed by entry and seed id.
+   Seeds any model detected, keyed by entry and seed id.
    */
   const ensembleHits = new Set(dispatchedAttempts.flatMap(function hitKeys(attempt,) {
     return attempt

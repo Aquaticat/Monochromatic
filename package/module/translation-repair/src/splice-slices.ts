@@ -26,23 +26,23 @@ import { assertSliceIndexing, } from './slice-indexing.ts';
 // whether some stage considers its work a change.
 
 /**
- * Raised when replacements cannot be written into the slices they name.
- *
- * @example
- * ```ts
- * throw new SliceSpliceError({ message: 'two replacements name one slice', },);
- * ```
+ Raised when replacements cannot be written into the slices they name.
+ 
+ @example
+ ```ts
+ throw new SliceSpliceError({ message: 'two replacements name one slice', },);
+ ```
  */
 export class SliceSpliceError extends Error {
   /**
-   * Builds refusal carrying what could not hold.
-   *
-   * @param message - which replacement cannot land, and what makes it impossible
-   *
-   * @example
-   * ```ts
-   * throw new SliceSpliceError({ message: 'two replacements name one slice', },);
-   * ```
+   Builds refusal carrying what could not hold.
+   
+   @param message - which replacement cannot land, and what makes it impossible
+   
+   @example
+   ```ts
+   throw new SliceSpliceError({ message: 'two replacements name one slice', },);
+   ```
    */
   public constructor({ message, }: { readonly message: string; },) {
     super(message,);
@@ -51,145 +51,145 @@ export class SliceSpliceError extends Error {
 }
 
 /**
- * Text to write over one slice's span.
- *
- * Carries no `changed` flag: presence in the list IS the instruction to apply
- * it, so a lane decides what changed and assembly decides where it goes.
- *
- * @example
- * ```ts
- * const replacement: SliceReplacement = { sliceIndex: 4, replacementText: 'The cat naps.', };
- * ```
+ Text to write over one slice's span.
+ 
+ Carries no `changed` flag: presence in the list IS the instruction to apply
+ it, so a lane decides what changed and assembly decides where it goes.
+ 
+ @example
+ ```ts
+ const replacement: SliceReplacement = { sliceIndex: 4, replacementText: 'The cat naps.', };
+ ```
  */
 export type SliceReplacement = {
   /**
-   * Global slice index, as `prepareDocumentPair` stamped it.
+   Global slice index, as `prepareDocumentPair` stamped it.
    */
   readonly sliceIndex: number;
 
   /**
-   * Text that replaces that slice's target span.
-   *
-   * May be empty, which deletes the span. May be written into a zero-length
-   * span, which inserts at that offset: that is how a slice with no existing
-   * translation receives one.
+   Text that replaces that slice's target span.
+   
+   May be empty, which deletes the span. May be written into a zero-length
+   span, which inserts at that offset: that is how a slice with no existing
+   translation receives one.
    */
   readonly replacementText: string;
 };
 
 /**
- * One replacement joined to the span it names.
- *
- * @example
- * ```ts
- * const placed: PlacedReplacement = { replacement, span: slice.target, };
- * ```
+ One replacement joined to the span it names.
+ 
+ @example
+ ```ts
+ const placed: PlacedReplacement = { replacement, span: slice.target, };
+ ```
  */
 type PlacedReplacement = {
   /**
-   * Text to write, as its lane emitted it.
+   Text to write, as its lane emitted it.
    */
   readonly replacement: SliceReplacement;
 
   /**
-   * Target span it goes into, resolved from the slice list.
-   *
-   * NO SOURCE TEXT BESIDE IT. The original decides whether blank text may be
-   * written into a place that has nothing yet, and that question is answered
-   * where the pair is still in hand; carrying the answer's input forward would
-   * be a field nothing reads.
+   Target span it goes into, resolved from the slice list.
+   
+   NO SOURCE TEXT BESIDE IT. The original decides whether blank text may be
+   written into a place that has nothing yet, and that question is answered
+   where the pair is still in hand; carrying the answer's input forward would
+   be a field nothing reads.
    */
   readonly span: DocumentChunk;
 };
 
 /**
- * One write assembly performs, which is not one replacement.
- *
- * Several anchors can share a boundary, and their separators are decided once
- * for the whole group rather than by each in turn, so the group is ONE edit.
- *
- * @example
- * ```ts
- * const edit: SpliceEdit = { kind: 'insertion', startOffset: 12, endOffset: 12, orderIndex: 3, fragments, };
- * ```
+ One write assembly performs, which is not one replacement.
+ 
+ Several anchors can share a boundary, and their separators are decided once
+ for the whole group rather than by each in turn, so the group is ONE edit.
+ 
+ @example
+ ```ts
+ const edit: SpliceEdit = { kind: 'insertion', startOffset: 12, endOffset: 12, orderIndex: 3, fragments, };
+ ```
  */
 type SpliceEdit = {
   /**
-   * Whether this writes over existing text or into a place where none is.
+   Whether this writes over existing text or into a place where none is.
    */
   readonly kind: 'content';
 
   /**
-   * Where the span being written over starts.
+   Where the span being written over starts.
    */
   readonly startOffset: number;
 
   /**
-   * Where it ends, exclusive.
+   Where it ends, exclusive.
    */
   readonly endOffset: number;
 
   /**
-   * Slice this edit is ordered by, which for a group is its earliest.
+   Slice this edit is ordered by, which for a group is its earliest.
    */
   readonly orderIndex: number;
 
   /**
-   * Text to write, exactly as its lane produced it.
+   Text to write, exactly as its lane produced it.
    */
   readonly text: string;
 } | {
   /**
-   * Whether this writes over existing text or into a place where none is.
+   Whether this writes over existing text or into a place where none is.
    */
   readonly kind: 'insertion';
 
   /**
-   * Boundary the anchors share.
+   Boundary the anchors share.
    */
   readonly startOffset: number;
 
   /**
-   * Same boundary, since an anchor covers nothing.
+   Same boundary, since an anchor covers nothing.
    */
   readonly endOffset: number;
 
   /**
-   * Earliest slice anchored here, which orders this group against the rest.
+   Earliest slice anchored here, which orders this group against the rest.
    */
   readonly orderIndex: number;
 
   /**
-   * What the lanes produced for those slices, in document order.
+   What the lanes produced for those slices, in document order.
    */
   readonly fragments: readonly string[];
 };
 
 /**
- * Plans every write, in the order they can be made without moving each other.
- *
- * DESCENDING, so writing one never shifts the offsets of those still pending.
- * At one boundary the later slice is written first, which leaves the earlier
- * one ahead of it: document order, and true only because an index IS a
- * position, which {@link spliceSlices} asserts before this runs.
- *
- * @param placed - replacements joined to the spans they name
- *
- * @returns Edits in application order
- *
- * @throws {@link Error} when a boundary group holds nothing, which grouping
- * cannot produce
- *
- * @example
- * ```ts
- * const edits = plannedEdits({ placed, },);
- * ```
+ Plans every write, in the order they can be made without moving each other.
+ 
+ DESCENDING, so writing one never shifts the offsets of those still pending.
+ At one boundary the later slice is written first, which leaves the earlier
+ one ahead of it: document order, and true only because an index IS a
+ position, which {@link spliceSlices} asserts before this runs.
+ 
+ @param placed - replacements joined to the spans they name
+ 
+ @returns Edits in application order
+ 
+ @throws {@link Error} when a boundary group holds nothing, which grouping
+ cannot produce
+ 
+ @example
+ ```ts
+ const edits = plannedEdits({ placed, },);
+ ```
  */
 function plannedEdits(
   { placed, }: { readonly placed: readonly PlacedReplacement[]; },
 ): readonly SpliceEdit[] {
   /**
-   * Writes over existing text, one per replacement.
+   Writes over existing text, one per replacement.
    */
   const overText = placed
     .filter(function coversText(entry,): boolean {
@@ -210,7 +210,7 @@ function plannedEdits(
     },);
 
   /**
-   * Writes into a place, gathered by the boundary they share.
+   Writes into a place, gathered by the boundary they share.
    */
   const byBoundary = Map.groupBy(
     placed.filter(function namesAPlace(entry,): boolean {
@@ -223,29 +223,29 @@ function plannedEdits(
   );
 
   /**
-   * One edit per boundary, carrying its fragments in document order.
+   One edit per boundary, carrying its fragments in document order.
    */
   const intoPlaces = [...byBoundary,].map(function toInsertionEdit(entry,): SpliceEdit {
     /**
-     * Boundary and the replacements anchored there.
+     Boundary and the replacements anchored there.
      */
     const [offset, group,] = entry;
 
     /**
-     * Those replacements in document order, which is slice order.
+     Those replacements in document order, which is slice order.
      */
     const inOrder = group.toSorted(function byIndex(
       left,
       right,
     ): number {
       /**
-       * Slice the left replacement names.
+       Slice the left replacement names.
        */
       const leftIndex = left.replacement
         .sliceIndex;
 
       /**
-       * Slice the right one names.
+       Slice the right one names.
        */
       const rightIndex = right.replacement
         .sliceIndex;
@@ -253,7 +253,7 @@ function plannedEdits(
     },);
 
     /**
-     * Earliest of them, which orders the whole group.
+     Earliest of them, which orders the whole group.
      */
     const [first,] = inOrder;
     if (first === undefined)
@@ -278,7 +278,7 @@ function plannedEdits(
     right,
   ): number {
     /**
-     * Offset gap, which decides every pair of distinct boundaries.
+     Offset gap, which decides every pair of distinct boundaries.
      */
     const byOffset = right.startOffset - left.startOffset;
     if (byOffset !== 0)
@@ -288,30 +288,30 @@ function plannedEdits(
 }
 
 /**
- * Rebuilds the translation with every replacement written in.
- *
- * Edits apply in DESCENDING document order, so writing one never shifts the
- * offsets of those still pending. An edit is not a replacement: every anchor
- * sharing one boundary becomes a SINGLE edit whose fragments are joined in
- * slice order, because the separators between them are decided once for the
- * whole group rather than guessed at by each write in turn.
- *
- * @param targetText - translation the slices were cut from
- *
- * @param slices - slice pairs in document order
- *
- * @param replacements - text to write, in any order
- *
- * @returns Translation with every replacement applied
- *
- * @throws {@link Error} when a replacement names a slice that does not exist,
- * when two name the same slice, or when two slices carry one index: each means
- * the caller and the slicing disagree, and each silently drops text
- *
- * @example
- * ```ts
- * const assembled = spliceSlices({ targetText, slices, replacements, },);
- * ```
+ Rebuilds the translation with every replacement written in.
+ 
+ Edits apply in DESCENDING document order, so writing one never shifts the
+ offsets of those still pending. An edit is not a replacement: every anchor
+ sharing one boundary becomes a SINGLE edit whose fragments are joined in
+ slice order, because the separators between them are decided once for the
+ whole group rather than guessed at by each write in turn.
+ 
+ @param targetText - translation the slices were cut from
+ 
+ @param slices - slice pairs in document order
+ 
+ @param replacements - text to write, in any order
+ 
+ @returns Translation with every replacement applied
+ 
+ @throws {@link Error} when a replacement names a slice that does not exist,
+ when two name the same slice, or when two slices carry one index: each means
+ the caller and the slicing disagree, and each silently drops text
+ 
+ @example
+ ```ts
+ const assembled = spliceSlices({ targetText, slices, replacements, },);
+ ```
  */
 export function spliceSlices(
   {
@@ -325,8 +325,8 @@ export function spliceSlices(
   },
 ): string {
   /**
-   * Target span per slice index, so a replacement is resolved by the index it
-   * names rather than by its position in the slice list.
+   Target span per slice index, so a replacement is resolved by the index it
+   names rather than by its position in the slice list.
    */
   const spans = new Map(slices.map(function toSpan(slice,) {
     return [
@@ -362,16 +362,16 @@ export function spliceSlices(
   },);
 
   /**
-   * Replacements paired with the span each names, refusing anything that
-   * cannot be placed.
-   *
-   * Resolved BEFORE sorting. Sorting first would have to invent an offset for
-   * an unresolvable index, and every fabricated offset orders the rest wrongly
-   * while looking like an ordinary sort.
+   Replacements paired with the span each names, refusing anything that
+   cannot be placed.
+   
+   Resolved BEFORE sorting. Sorting first would have to invent an offset for
+   an unresolvable index, and every fabricated offset orders the rest wrongly
+   while looking like an ordinary sort.
    */
   const placed = replacements.map(function toPlaced(replacement,): PlacedReplacement {
     /**
-     * Span this replacement names.
+     Span this replacement names.
      */
     const slice = spans.get(replacement.sliceIndex,);
     if (slice === undefined) {
@@ -382,29 +382,29 @@ export function spliceSlices(
     }
 
     /**
-     * Where it goes.
+     Where it goes.
      */
     const span = slice.target;
 
     /**
-     * Whether this is a place rather than existing wording.
+     Whether this is a place rather than existing wording.
      */
     const missingTranslation = isInsertionChunk(span,);
 
     /**
-     * Original this slice renders.
+     Original this slice renders.
      */
     const sourceText = slice.source
       .text;
     /**
-     * Whether the text offered for this slice says nothing.
+     Whether the text offered for this slice says nothing.
      */
     const writesNothing = replacement.replacementText
       .trim()
       === '';
 
     /**
-     * Whether the original says something.
+     Whether the original says something.
      */
     const sourceSaysSomething = sourceText.trim() !== '';
     if (missingTranslation
@@ -432,17 +432,17 @@ export function spliceSlices(
   }
 
   /**
-   * Every edit this call makes, with the anchors sharing one boundary gathered
-   * into a single one.
-   *
-   * GATHERED RATHER THAN SEQUENCED, because the separators between them are
-   * decided once for the whole group: written one at a time, each would have to
-   * guess what the others had already put there.
+   Every edit this call makes, with the anchors sharing one boundary gathered
+   into a single one.
+   
+   GATHERED RATHER THAN SEQUENCED, because the separators between them are
+   decided once for the whole group: written one at a time, each would have to
+   guess what the others had already put there.
    */
   const edits = plannedEdits({ placed, },);
 
   /**
-   * Line ending this document separates its blocks with.
+   Line ending this document separates its blocks with.
    */
   const eol = documentLineEnding({ targetText, },);
 
@@ -452,8 +452,8 @@ export function spliceSlices(
       edit,
     ): string {
       /**
-       * Everything before this edit, which no earlier write has touched: edits
-       * run backwards through the document, so the prefix is still the archive.
+       Everything before this edit, which no earlier write has touched: edits
+       run backwards through the document, so the prefix is still the archive.
        */
       const head = text.slice(
         0,
@@ -461,15 +461,15 @@ export function spliceSlices(
       );
 
       /**
-       * Everything after it, as it will stand: later offsets were written
-       * first, so this is what the edit's text will actually meet.
+       Everything after it, as it will stand: later offsets were written
+       first, so this is what the edit's text will actually meet.
        */
       const tail = text.slice(edit.endOffset,);
 
       /**
-       * Text going in. A content span carries its lane's text verbatim, which
-       * is what every replacement did before anchors existed. An anchor has no
-       * span to sit between, so assembly composes its separators.
+       Text going in. A content span carries its lane's text verbatim, which
+       is what every replacement did before anchors existed. An anchor has no
+       span to sit between, so assembly composes its separators.
        */
       const written = (edit.kind === 'insertion')
         ? composeInsertion({

@@ -1,7 +1,7 @@
 /**
- * Tests for many-to-many block diagnostic counts.
- *
- * @module
+ Tests for many-to-many block diagnostic counts.
+ 
+ @module
  */
 
 import {

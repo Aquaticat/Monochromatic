@@ -1,26 +1,26 @@
 /**
- * Tests that the width probe REFUSES a slice whose panel accepted nothing.
- *
- * WHY THIS MATTERS. The repair lane edits accepted issues and nothing else, so
- * a slice whose critics filed claims the panel then threw out has no work in it
- * either. It looks different from a silent slice, though: claims were filed, a
- * panel round was bought, and the only thing separating the two is what the
- * panel decided. The refusal has to name THAT, because a reader of the probe's
- * rows is trying to tell a corpus with nothing wrong in it from a critic roster
- * whose claims never survive adjudication, and those are opposite findings.
- *
- * WHAT WAS MEASURED. On 2026-08-25, inverting the test that keeps only accepted
- * issues, so REJECTED ones are the ones an envelope may be cut from, failed no
- * test in this package. Under that inversion this slice stops being refused for
- * the reason it was refused, and the probe reports the wrong wall.
- *
- * NO NETWORK. The critics file one anchorable claim and every panelist votes it
- * unsupported. Any other stage is refused by name, so a guard that let rejected
- * issues through would be caught reaching for the editors.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests that the width probe REFUSES a slice whose panel accepted nothing.
+ 
+ WHY THIS MATTERS. The repair lane edits accepted issues and nothing else, so
+ a slice whose critics filed claims the panel then threw out has no work in it
+ either. It looks different from a silent slice, though: claims were filed, a
+ panel round was bought, and the only thing separating the two is what the
+ panel decided. The refusal has to name THAT, because a reader of the probe's
+ rows is trying to tell a corpus with nothing wrong in it from a critic roster
+ whose claims never survive adjudication, and those are opposite findings.
+ 
+ WHAT WAS MEASURED. On 2026-08-25, inverting the test that keeps only accepted
+ issues, so REJECTED ones are the ones an envelope may be cut from, failed no
+ test in this package. Under that inversion this slice stops being refused for
+ the reason it was refused, and the probe reports the wrong wall.
+ 
+ NO NETWORK. The critics file one anchorable claim and every panelist votes it
+ unsupported. Any other stage is refused by name, so a guard that let rejected
+ issues through would be caught reaching for the editors.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -38,14 +38,14 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Logger for the probe under test.
+ Logger for the probe under test.
  */
 const l = tagged({ tag: 'editor-width-input-panel-test', },);
 
 //region Fixtures
 
 /**
- * Slice drawn for the bench, with a translation already in the archive.
+ Slice drawn for the bench, with a translation already in the archive.
  */
 const SLICE: BenchSlice = {
   entryId: 'mittens-window',
@@ -56,14 +56,14 @@ const SLICE: BenchSlice = {
 };
 
 /**
- * Target-side wording the critics anchor their claim on, present exactly once
- * in the translation so it locates without ambiguity.
+ Target-side wording the critics anchor their claim on, present exactly once
+ in the translation so it locates without ambiguity.
  */
 const ANCHOR = 'dozes on the windowsill';
 
 /**
- * Answers per stage, so an unexpected round is refused by name rather than
- * silently served something shaped like an answer.
+ Answers per stage, so an unexpected round is refused by name rather than
+ silently served something shaped like an answer.
  */
 const SCRIPT: Readonly<Record<string, unknown>> = {
   critic_report: {
@@ -87,7 +87,7 @@ const SCRIPT: Readonly<Record<string, unknown>> = {
 };
 
 /**
- * Client filing one claim and then voting it down.
+ Client filing one claim and then voting it down.
  */
 const CLIENT: SyntheticClient = {
   chatText: async () => {
@@ -97,7 +97,7 @@ const CLIENT: SyntheticClient = {
     request: ChatJsonRequest<ValueT>,
   ): Promise<ChatJsonOutcome<ValueT>> => {
     /**
-     * Stage name from the structured-output constraint.
+     Stage name from the structured-output constraint.
      */
     const stage = request.responseFormat
       ?.json_schema
@@ -105,8 +105,8 @@ const CLIENT: SyntheticClient = {
       ?? '';
 
     /**
-     * Scripted answer for that stage, absent when the probe asked for a round
-     * a slice with no accepted work has no business buying.
+     Scripted answer for that stage, absent when the probe asked for a round
+     a slice with no accepted work has no business buying.
      */
     const scripted = SCRIPT[stage];
 
@@ -141,7 +141,7 @@ await describe({
         + 'claims never survive the panel are opposite findings that would otherwise print alike',
       fn: async () => {
         /**
-         * What the probe made of a slice whose claims were all voted down.
+         What the probe made of a slice whose claims were all voted down.
          */
         const outcome = await gatherWidthInput({
           client: CLIENT,

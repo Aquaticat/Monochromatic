@@ -1,16 +1,16 @@
 /**
- * Tests for carving a document pair the way the run that settled it did.
- *
- * WHAT THESE PIN is that a recorded recipe reproduces the run's own slicing,
- * proved by the identity hash rather than by inspection, and that a missing
- * recipe half is named rather than guessed silently. Every rebuild case carries
- * a positive control showing the recipe actually moved the slicing, since a
- * fixture the deterministic aligner slices identically would pass for the
- * wrong reason.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for carving a document pair the way the run that settled it did.
+ 
+ WHAT THESE PIN is that a recorded recipe reproduces the run's own slicing,
+ proved by the identity hash rather than by inspection, and that a missing
+ recipe half is named rather than guessed silently. Every rebuild case carries
+ a positive control showing the recipe actually moved the slicing, since a
+ fixture the deterministic aligner slices identically would pass for the
+ wrong reason.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -33,53 +33,53 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Two sections, equal shape, so the deterministic aligner pairs by index and a
- * supplied crossing is visibly different.
+ Two sections, equal shape, so the deterministic aligner pairs by index and a
+ supplied crossing is visibly different.
  */
 const SOURCE_DOC = '## 第一节\n\n猫猫在窗台上睡觉。\n\n## 第二节\n\n猫猫有自己的碗。\n';
 
 /**
- * Translation of the same shape.
+ Translation of the same shape.
  */
 const TARGET_DOC = '## Section one\n\nThe cat sleeps on the sill.\n\n## Section two\n\nThe cat has a bowl.\n';
 
 /**
- * One section of three blocks each side, so a block pairing that declines the
- * middle block changes what the slice carries.
+ One section of three blocks each side, so a block pairing that declines the
+ middle block changes what the slice carries.
  */
 const BLOCKY_SOURCE = '## 第一节\n\n猫猫在窗台上睡觉。\n\n猫猫喜欢晒太阳。\n\n猫猫有自己的碗。\n';
 
 /**
- * Translation of the same three blocks.
+ Translation of the same three blocks.
  */
 const BLOCKY_TARGET = '## Section one\n\nThe cat sleeps on the sill.\n\nThe cat likes the sun.\n\nThe cat has a bowl.\n';
 
 /**
- * Digest every fixture artifact claims.
+ Digest every fixture artifact claims.
  */
 const DIGEST = 'sha256-tree-v1:'.concat('c'.repeat(64,),) as unknown as PipelineDigest;
 
 /**
- * Wording a lane writes where the archive holds none.
+ Wording a lane writes where the archive holds none.
  */
 const FRESH_LINE = 'The cat has been given a line.';
 
 /**
- * Rows that keep every slice the archive has wording for, and fill every
- * insertion, which is enough for the builder's own checks.
- *
- * A PAIRED PREPARATION LEAVES INSERTIONS: a section or block the pairing did
- * not claim is placed as an insertion slice whose archive wording is absent,
- * and the builder refuses a row calling that wording present.
- *
- * @param prepared - preparation the rows describe
- *
- * @returns One row per slice
- *
- * @example
- * ```ts
- * const rows = keptEverything({ prepared, },);
- * ```
+ Rows that keep every slice the archive has wording for, and fill every
+ insertion, which is enough for the builder's own checks.
+ 
+ A PAIRED PREPARATION LEAVES INSERTIONS: a section or block the pairing did
+ not claim is placed as an insertion slice whose archive wording is absent,
+ and the builder refuses a row calling that wording present.
+ 
+ @param prepared - preparation the rows describe
+ 
+ @returns One row per slice
+ 
+ @example
+ ```ts
+ const rows = keptEverything({ prepared, },);
+ ```
  */
 function keptEverything(
   { prepared, }: { readonly prepared: PreparedDocumentPair; },
@@ -87,13 +87,13 @@ function keptEverything(
   return prepared.slices
     .map(function toRow(slice,): SliceDeliveryRecord {
       /**
-       * Archive wording of this slice, empty at an insertion.
+       Archive wording of this slice, empty at an insertion.
        */
       const incumbentText = slice.target
         .text;
 
       /**
-       * Whether the archive holds wording here at all.
+       Whether the archive holds wording here at all.
        */
       const absent = slice.target
         .kind === 'insertion';
@@ -130,22 +130,22 @@ function keptEverything(
 }
 
 /**
- * Raw lane result consistent with rows that kept everything.
- *
- * @param rows - rows the result reports
- *
- * @returns Evidence core the builder projects
- *
- * @example
- * ```ts
- * const result = rawResultFor({ rows, },);
- * ```
+ Raw lane result consistent with rows that kept everything.
+ 
+ @param rows - rows the result reports
+ 
+ @returns Evidence core the builder projects
+ 
+ @example
+ ```ts
+ const result = rawResultFor({ rows, },);
+ ```
  */
 function rawResultFor(
   { rows, }: { readonly rows: readonly SliceDeliveryRecord[]; },
 ): Record<string, unknown> {
   /**
-   * Slices the rows say shipped a replacement, which are the insertions.
+   Slices the rows say shipped a replacement, which are the insertions.
    */
   const shipped = rows
     .filter(function wasShipped(row,): boolean {
@@ -173,21 +173,21 @@ function rawResultFor(
 }
 
 /**
- * Builds an artifact over a preparation and reads it back through JSON.
- *
- * @param prepared - preparation the artifact records
- *
- * @param strip - preparation keys to delete before parsing, which is how a
- * file written before those fields existed looks to a reader
- *
- * @param generation - schema generation to label fixture with
- *
- * @returns Parsed artifact
- *
- * @example
- * ```ts
- * const artifact = writeAndRead({ prepared, strip: [], },);
- * ```
+ Builds an artifact over a preparation and reads it back through JSON.
+ 
+ @param prepared - preparation the artifact records
+ 
+ @param strip - preparation keys to delete before parsing, which is how a
+ file written before those fields existed looks to a reader
+ 
+ @param generation - schema generation to label fixture with
+ 
+ @returns Parsed artifact
+ 
+ @example
+ ```ts
+ const artifact = writeAndRead({ prepared, strip: [], },);
+ ```
  */
 function writeAndRead(
   {
@@ -201,17 +201,17 @@ function writeAndRead(
   },
 ): ReturnType<typeof parseSettledTwoLaneArtifact> {
   /**
-   * Rows the lanes report.
+   Rows the lanes report.
    */
   const rows = keptEverything({ prepared, },);
 
   /**
-   * Identity both ledgers claim.
+   Identity both ledgers claim.
    */
   const identity = preparationIdentity({ prepared, },);
 
   /**
-   * Lanes consistent with the preparation.
+   Lanes consistent with the preparation.
    */
   const lanes = {
     alignmentFindings: [...prepared.alignmentFindings,],
@@ -236,8 +236,8 @@ function writeAndRead(
   } as unknown as DocumentLanesResult;
 
   /**
-   * Artifact as the builder writes it, in its serialized form: what a reader
-   * holds is the bytes a file carries, and a clone would keep things JSON drops.
+   Artifact as the builder writes it, in its serialized form: what a reader
+   holds is the bytes a file carries, and a clone would keep things JSON drops.
    */
   const serialized = JSON.stringify(buildSettledTwoLaneArtifact({
     pageAssembly: NO_PAGE_ASSEMBLY,
@@ -254,12 +254,12 @@ function writeAndRead(
   },),);
 
   /**
-   * Those bytes read back.
+   Those bytes read back.
    */
   const written = JSON.parse(serialized,) as Record<string, unknown>;
 
   /**
-   * Preparation record, with the named keys removed.
+   Preparation record, with the named keys removed.
    */
   const preparation = Object.fromEntries(
     Object.entries(written.preparation as Record<string, unknown>,)
@@ -283,15 +283,15 @@ await describe({
       name: 'REBUILDS GENERATION 4 WITHOUT FRONT MATTER SLICE and generation 5 with it',
       fn: async () => {
         /**
-         * Original carrying visible metadata.
+         Original carrying visible metadata.
          */
         const sourceText = '---\nname: 猫猫\n---\n\n猫睡了。\n';
         /**
-         * Translation carrying corresponding metadata.
+         Translation carrying corresponding metadata.
          */
         const targetText = '---\nname: Maomao\n---\n\nThe cat slept.\n';
         /**
-         * Body-only slicing generation 4 recorded.
+         Body-only slicing generation 4 recorded.
          */
         const legacyPrepared = prepareDocumentPair({
           sourceText,
@@ -299,14 +299,14 @@ await describe({
           includeFrontMatter: false,
         },);
         /**
-         * Metadata-inclusive slicing generation 5 records.
+         Metadata-inclusive slicing generation 5 records.
          */
         const currentPrepared = prepareDocumentPair({
           sourceText,
           targetText,
         },);
         /**
-         * Rebuild under generation 4 semantics.
+         Rebuild under generation 4 semantics.
          */
         const legacy = rebuildPreparation({
           artifact: writeAndRead({
@@ -318,7 +318,7 @@ await describe({
           targetText,
         },);
         /**
-         * Rebuild under generation 5 semantics.
+         Rebuild under generation 5 semantics.
          */
         const current = rebuildPreparation({
           artifact: writeAndRead({
@@ -346,15 +346,15 @@ await describe({
         + 'record says nothing',
       fn: async () => {
         /**
-         * Original carrying visible metadata.
+         Original carrying visible metadata.
          */
         const sourceText = '---\nname: 猫猫\n---\n\n猫睡了。\n';
         /**
-         * Translation whose metadata the archive already translated.
+         Translation whose metadata the archive already translated.
          */
         const targetText = '---\nname: Maomao\n---\n\nThe cat slept.\n';
         /**
-         * Slicing that left the archive's front matter alone.
+         Slicing that left the archive's front matter alone.
          */
         const standingPrepared = prepareDocumentPair({
           sourceText,
@@ -362,14 +362,14 @@ await describe({
           frontMatterAuthority: 'archive',
         },);
         /**
-         * Slicing that rendered it, as every generation before eleven did.
+         Slicing that rendered it, as every generation before eleven did.
          */
         const renderedPrepared = prepareDocumentPair({
           sourceText,
           targetText,
         },);
         /**
-         * The standing record read back.
+         The standing record read back.
          */
         const standingArtifact = writeAndRead({
           prepared: standingPrepared,
@@ -378,7 +378,7 @@ await describe({
         },);
         expect(standingArtifact.preparation.frontMatterAuthority,).toBe('archive',);
         /**
-         * Rebuild off the standing record.
+         Rebuild off the standing record.
          */
         const standing = rebuildPreparation({
           artifact: standingArtifact,
@@ -392,7 +392,7 @@ await describe({
         expect(preparationIdentity({ prepared: standing.prepared, }),)
           .toBe(preparationIdentity({ prepared: standingPrepared, }),);
         /**
-         * Rebuild off a record that says nothing, which renders.
+         Rebuild off a record that says nothing, which renders.
          */
         const rendered = rebuildPreparation({
           artifact: writeAndRead({
@@ -414,8 +414,8 @@ await describe({
         + 'rebuild lands on the crossing rather than the index order',
       fn: async () => {
         /**
-         * How the run carved it: sections crossed, block rounds asked and
-         * silent.
+         How the run carved it: sections crossed, block rounds asked and
+         silent.
          */
         const crossed = prepareDocumentPair({
           sourceText: SOURCE_DOC,
@@ -428,7 +428,7 @@ await describe({
         },);
 
         /**
-         * How the bare aligner carves it.
+         How the bare aligner carves it.
          */
         const bare = prepareDocumentPair({
           sourceText: SOURCE_DOC,
@@ -440,7 +440,7 @@ await describe({
           .toBe(preparationIdentity({ prepared: bare, },),);
 
         /**
-         * Rebuild from what the artifact recorded.
+         Rebuild from what the artifact recorded.
          */
         const rebuilt = rebuildPreparation({
           artifact: writeAndRead({
@@ -462,7 +462,7 @@ await describe({
         + 'middle block takes it out of the slice, and the rebuild carries the same slice text',
       fn: async () => {
         /**
-         * How the run carved it: the middle block declined by the roster.
+         How the run carved it: the middle block declined by the roster.
          */
         const declined = prepareDocumentPair({
           sourceText: BLOCKY_SOURCE,
@@ -483,7 +483,7 @@ await describe({
         },);
 
         /**
-         * How the bare aligner carves it.
+         How the bare aligner carves it.
          */
         const bare = prepareDocumentPair({
           sourceText: BLOCKY_SOURCE,
@@ -495,7 +495,7 @@ await describe({
           .toBe(preparationIdentity({ prepared: bare, },),);
 
         /**
-         * Rebuild from what the artifact recorded.
+         Rebuild from what the artifact recorded.
          */
         const rebuilt = rebuildPreparation({
           artifact: writeAndRead({
@@ -517,7 +517,7 @@ await describe({
         + 'which is what every artifact settled before the fields existed looks like',
       fn: async () => {
         /**
-         * Run carved deterministically, then recorded as an old file would be.
+         Run carved deterministically, then recorded as an old file would be.
          */
         const bare = prepareDocumentPair({
           sourceText: SOURCE_DOC,
@@ -525,7 +525,7 @@ await describe({
         },);
 
         /**
-         * Rebuild from a file carrying neither half.
+         Rebuild from a file carrying neither half.
          */
         const rebuilt = rebuildPreparation({
           artifact: writeAndRead({
@@ -553,8 +553,8 @@ await describe({
         + 'guessed rather than reporting a whole recipe as absent',
       fn: async () => {
         /**
-         * Run that asked the block rounds and recorded them, read through a
-         * file that lost the section decider.
+         Run that asked the block rounds and recorded them, read through a
+         file that lost the section decider.
          */
         const asked = prepareDocumentPair({
           sourceText: SOURCE_DOC,

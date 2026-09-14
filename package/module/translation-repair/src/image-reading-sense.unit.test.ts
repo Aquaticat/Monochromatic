@@ -1,21 +1,21 @@
 /**
- * Tests for deciding whether a model's reading of a picture may be used.
- *
- * WHAT THESE PIN is a rule whose two branches cost very different things.
- * Trusting a bad reading licenses replacing a human's careful transcription with
- * something derived from a misreading, and the judges cannot tell, because the
- * reading is the only evidence they are given about the picture. Falling back
- * costs nothing that exists today, since the block is then protected and left
- * alone, which is where every transcript already stands. So the rule is
- * deliberately eager to fall back, and these tests pin that direction rather
- * than a balance.
- *
- * The rule itself is written out in
- * `doc/planning/when-an-image-reading-makes-no-sense.md`.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for deciding whether a model's reading of a picture may be used.
+ 
+ WHAT THESE PIN is a rule whose two branches cost very different things.
+ Trusting a bad reading licenses replacing a human's careful transcription with
+ something derived from a misreading, and the judges cannot tell, because the
+ reading is the only evidence they are given about the picture. Falling back
+ costs nothing that exists today, since the block is then protected and left
+ alone, which is where every transcript already stands. So the rule is
+ deliberately eager to fall back, and these tests pin that direction rather
+ than a balance.
+ 
+ The rule itself is written out in
+ `doc/planning/when-an-image-reading-makes-no-sense.md`.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -59,7 +59,7 @@ await describe({
         expect(readingMakesSense({ reading: 'I can\'t.', },).kind,).toBe('refused',);
 
         /**
-         * What the rule decided about an apology fragment the list does not know.
+         What the rule decided about an apology fragment the list does not know.
          */
         const verdict = readingMakesSense({ reading: 'None.', },);
 
@@ -81,7 +81,7 @@ await describe({
           + 'words, names, signatures, dates, or inscriptions.',
         ]) {
           /**
-           * Verdict on an absence report.
+           Verdict on an absence report.
            */
           const verdict = readingMakesSense({ reading, },);
           expect(verdict.kind,).toBe('refused',);
@@ -97,7 +97,7 @@ await describe({
         + 'because a model apologising at length is still telling us it has nothing',
       fn: async () => {
         /**
-         * What the rule decided about a fluent apology.
+         What the rule decided about a fluent apology.
          */
         const verdict = readingMakesSense({
           reading: 'I cannot make out the text in this image. The photograph appears to show a '

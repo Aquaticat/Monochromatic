@@ -30,157 +30,157 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // distinguishable from favouritism by ballots alone.
 
 /**
- * One candidate on one slice, with the ballots cast over that slate.
- *
- * @example
- * ```ts
- * const round: SelectionRound = { producers: [producer,], ballots, };
- * ```
+ One candidate on one slice, with the ballots cast over that slate.
+ 
+ @example
+ ```ts
+ const round: SelectionRound = { producers: [producer,], ballots, };
+ ```
  */
 export type SelectionRound = {
   /**
-   * Each candidate's provenance, in slate order, so a one-based ballot index
-   * names `producers[best - 1]`.
+   Each candidate's provenance, in slate order, so a one-based ballot index
+   names `producers[best - 1]`.
    */
   readonly producers: readonly CandidateProducer[];
 
   /**
-   * Every ballot cast over that slate.
+   Every ballot cast over that slate.
    */
   readonly ballots: readonly SelectionBallot[];
 };
 
 /**
- * Ballot counts every outcome carries, whether or not a rate could be taken.
- *
- * @example
- * ```ts
- * const counts: SelfPreferenceCounts = { opportunities: 4, ownVotes: 3, otherBallots: 12, otherVotes: 5, };
- * ```
+ Ballot counts every outcome carries, whether or not a rate could be taken.
+ 
+ @example
+ ```ts
+ const counts: SelfPreferenceCounts = { opportunities: 4, ownVotes: 3, otherBallots: 12, otherVotes: 5, };
+ ```
  */
 export type SelfPreferenceCounts = {
   /**
-   * Occasions a model held a stake in a candidate AND cast a ballot on that
-   * slate, which is the only situation where self-preference can be expressed.
+   Occasions a model held a stake in a candidate AND cast a ballot on that
+   slate, which is the only situation where self-preference can be expressed.
    */
   readonly opportunities: number;
 
   /**
-   * Occasions it named its own candidate.
+   Occasions it named its own candidate.
    */
   readonly ownVotes: number;
 
   /**
-   * Ballots cast over those same candidates by judges holding no stake.
+   Ballots cast over those same candidates by judges holding no stake.
    */
   readonly otherBallots: number;
 
   /**
-   * How many of those named the candidate.
+   How many of those named the candidate.
    */
   readonly otherVotes: number;
 };
 
 /**
- * What the paired comparison found.
- *
- * THREE OUTCOMES RATHER THAN OPTIONAL NUMBERS, because the two ways this fails
- * to produce a rate are different facts and a reader has to tell them apart. No
- * stakeholder ever voting means the question was never put; every judge holding
- * a stake means it was put with no one left to answer it, which is a roster
- * shape rather than missing data. Both carry their counts, so a caller can
- * report what was seen either way.
- *
- * @example
- * ```ts
- * const measured: SelfPreference = selfPreference({ rounds, },);
- * ```
+ What the paired comparison found.
+ 
+ THREE OUTCOMES RATHER THAN OPTIONAL NUMBERS, because the two ways this fails
+ to produce a rate are different facts and a reader has to tell them apart. No
+ stakeholder ever voting means the question was never put; every judge holding
+ a stake means it was put with no one left to answer it, which is a roster
+ shape rather than missing data. Both carry their counts, so a caller can
+ report what was seen either way.
+ 
+ @example
+ ```ts
+ const measured: SelfPreference = selfPreference({ rounds, },);
+ ```
  */
 export type SelfPreference =
   | ({
     readonly kind: 'measured';
 
     /**
-     * Share of stakeholder ballots naming their own candidate.
+     Share of stakeholder ballots naming their own candidate.
      */
     readonly ownRate: number;
 
     /**
-     * Share of the SAME candidates taken by judges holding no stake in them,
-     * measured on the same texts rather than assumed from the slate size.
+     Share of the SAME candidates taken by judges holding no stake in them,
+     measured on the same texts rather than assumed from the slate size.
      */
     readonly disinterestedRate: number;
 
     /**
-     * Own rate minus disinterested rate.
-     *
-     * Positive means producers favoured their own work beyond what judges with
-     * no stake in it thought of the same text. Zero means the half-weight
-     * discount is correcting nothing this measurement can see.
+     Own rate minus disinterested rate.
+     
+     Positive means producers favoured their own work beyond what judges with
+     no stake in it thought of the same text. Zero means the half-weight
+     discount is correcting nothing this measurement can see.
      */
     readonly excess: number;
   } & SelfPreferenceCounts)
   | ({
     /**
-     * No model both held a stake in a candidate and cast a ballot on its slate,
-     * so no self-vote was ever possible.
+     No model both held a stake in a candidate and cast a ballot on its slate,
+     so no self-vote was ever possible.
      */
     readonly kind: 'no-stakeholder-ballots';
   } & SelfPreferenceCounts)
   | ({
     /**
-     * Every judge over these candidates held a stake in them, so nothing
-     * disinterested is left to compare against. A roster where producers judge
-     * their own work and nobody else does cannot be measured this way.
+     Every judge over these candidates held a stake in them, so nothing
+     disinterested is left to compare against. A roster where producers judge
+     their own work and nobody else does cannot be measured this way.
      */
     readonly kind: 'no-disinterested-ballots';
   } & SelfPreferenceCounts);
 
 /**
- * Ballots a candidate drew, split by whether the judge had a stake in it.
- *
- * @example
- * ```ts
- * const drawn: CandidateDraw = { ownVotes: 1, opportunities: 1, otherVotes: 2, otherBallots: 5, };
- * ```
+ Ballots a candidate drew, split by whether the judge had a stake in it.
+ 
+ @example
+ ```ts
+ const drawn: CandidateDraw = { ownVotes: 1, opportunities: 1, otherVotes: 2, otherBallots: 5, };
+ ```
  */
 type CandidateDraw = {
   /**
-   * Stakeholder ballots naming this candidate.
+   Stakeholder ballots naming this candidate.
    */
   readonly ownVotes: number;
 
   /**
-   * Stakeholder ballots cast at all, whatever they named.
+   Stakeholder ballots cast at all, whatever they named.
    */
   readonly opportunities: number;
 
   /**
-   * Disinterested ballots naming this candidate.
+   Disinterested ballots naming this candidate.
    */
   readonly otherVotes: number;
 
   /**
-   * Disinterested ballots cast at all.
+   Disinterested ballots cast at all.
    */
   readonly otherBallots: number;
 };
 
 /**
- * Scores one candidate against the slate it stood on.
- *
- * @param producer - that candidate's provenance
- *
- * @param candidateIndex - one-based slate position ballots name it by
- *
- * @param ballots - every ballot cast over the slate
- *
- * @returns How the candidate fared with stakeholders and with everyone else
- *
- * @example
- * ```ts
- * const drawn = drawForCandidate({ producer, candidateIndex: 1, ballots, },);
- * ```
+ Scores one candidate against the slate it stood on.
+ 
+ @param producer - that candidate's provenance
+ 
+ @param candidateIndex - one-based slate position ballots name it by
+ 
+ @param ballots - every ballot cast over the slate
+ 
+ @returns How the candidate fared with stakeholders and with everyone else
+ 
+ @example
+ ```ts
+ const drawn = drawForCandidate({ producer, candidateIndex: 1, ballots, },);
+ ```
  */
 function drawForCandidate(
   {
@@ -194,35 +194,35 @@ function drawForCandidate(
   },
 ): CandidateDraw {
   /**
-   * Models whose ballot for this candidate would be a self-vote.
+   Models whose ballot for this candidate would be a self-vote.
    */
   const stakeholders: readonly RosterModelId[] = producerModelIds(producer,);
 
   /**
-   * Ballots from judges who helped write this candidate.
+   Ballots from judges who helped write this candidate.
    */
   const held = ballots.filter(function holdsStake(ballot,): boolean {
     return stakeholders.includes(ballot.modelId,);
   },);
 
   /**
-   * Ballots from judges with no stake in it, which is the baseline population.
+   Ballots from judges with no stake in it, which is the baseline population.
    */
   const disinterested = ballots.filter(function holdsNoStake(ballot,): boolean {
     return !stakeholders.includes(ballot.modelId,);
   },);
 
   /**
-   * Whether one ballot named the candidate being scored.
-   *
-   * @param ballot - cast over this slate
-   *
-   * @returns True when it names this candidate's slate position
-   *
-   * @example
-   * ```ts
-   * const chose = namedIt(ballot,);
-   * ```
+   Whether one ballot named the candidate being scored.
+   
+   @param ballot - cast over this slate
+   
+   @returns True when it names this candidate's slate position
+   
+   @example
+   ```ts
+   const chose = namedIt(ballot,);
+   ```
    */
   function namedIt(ballot: SelectionBallot,): boolean {
     return ballot.best === candidateIndex;
@@ -239,29 +239,29 @@ function drawForCandidate(
 }
 
 /**
- * Measures self-preference over a set of selection rounds.
- *
- * ONLY CANDIDATES WITH A STAKEHOLDER WHO VOTED CONTRIBUTE, on either side. A
- * candidate nobody had a stake in cannot express self-preference, and counting
- * its disinterested ballots into the baseline would dilute the comparison with
- * texts the measurement is not about. That restriction is what keeps the two
- * rates paired on the same candidates.
- *
- * @param rounds - one entry per judged slice, with its slate and its ballots
- *
- * @returns Own rate, the disinterested rate over the same candidates, and the
- * difference
- *
- * @example
- * ```ts
- * const measured = selfPreference({ rounds, },);
- * ```
+ Measures self-preference over a set of selection rounds.
+ 
+ ONLY CANDIDATES WITH A STAKEHOLDER WHO VOTED CONTRIBUTE, on either side. A
+ candidate nobody had a stake in cannot express self-preference, and counting
+ its disinterested ballots into the baseline would dilute the comparison with
+ texts the measurement is not about. That restriction is what keeps the two
+ rates paired on the same candidates.
+ 
+ @param rounds - one entry per judged slice, with its slate and its ballots
+ 
+ @returns Own rate, the disinterested rate over the same candidates, and the
+ difference
+ 
+ @example
+ ```ts
+ const measured = selfPreference({ rounds, },);
+ ```
  */
 export function selfPreference(
   { rounds, }: { readonly rounds: readonly SelectionRound[]; },
 ): SelfPreference {
   /**
-   * Every candidate that had at least one stakeholder ballot, scored.
+   Every candidate that had at least one stakeholder ballot, scored.
    */
   const draws = rounds.flatMap(function roundDraws(round,): readonly CandidateDraw[] {
     return round.producers
@@ -281,7 +281,7 @@ export function selfPreference(
   },);
 
   /**
-   * Stakeholder ballots across every contributing candidate.
+   Stakeholder ballots across every contributing candidate.
    */
   const opportunities = draws.reduce(
     function sumOpportunities(
@@ -294,7 +294,7 @@ export function selfPreference(
   );
 
   /**
-   * Stakeholder ballots that named their own candidate.
+   Stakeholder ballots that named their own candidate.
    */
   const ownVotes = draws.reduce(
     function sumOwn(
@@ -307,7 +307,7 @@ export function selfPreference(
   );
 
   /**
-   * Disinterested ballots over those same candidates.
+   Disinterested ballots over those same candidates.
    */
   const otherBallots = draws.reduce(
     function sumOtherBallots(
@@ -320,7 +320,7 @@ export function selfPreference(
   );
 
   /**
-   * Disinterested ballots naming them.
+   Disinterested ballots naming them.
    */
   const otherVotes = draws.reduce(
     function sumOtherVotes(
@@ -333,7 +333,7 @@ export function selfPreference(
   );
 
   /**
-   * Ballot counts every outcome reports.
+   Ballot counts every outcome reports.
    */
   const counts: SelfPreferenceCounts = {
     opportunities,
@@ -355,12 +355,12 @@ export function selfPreference(
   }
 
   /**
-   * Share of stakeholder ballots naming their own candidate.
+   Share of stakeholder ballots naming their own candidate.
    */
   const ownRate = ownVotes / opportunities;
 
   /**
-   * Share of disinterested ballots naming the same candidates.
+   Share of disinterested ballots naming the same candidates.
    */
   const disinterestedRate = otherVotes / otherBallots;
 

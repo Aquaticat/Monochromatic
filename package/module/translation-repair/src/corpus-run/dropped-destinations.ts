@@ -49,17 +49,17 @@ import {
 // to restore a source destination. Reporting tools may still read all fields.
 
 /**
- * Parsed page, read-only.
+ Parsed page, read-only.
  */
 type ReadonlyMdastRoot = DeepReadonlyData<Root>;
 
 /**
- * Any node of a parsed page, read-only.
+ Any node of a parsed page, read-only.
  */
 type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
 
 /**
- * Schemes a bare run may start with.
+ Schemes a bare run may start with.
  */
 const SCHEMES = [
   'https://',
@@ -67,8 +67,8 @@ const SCHEMES = [
 ] as const;
 
 /**
- * Characters that end a bare run: whitespace, Markdown and HTML delimiters, and
- * the full-width punctuation Chinese prose sets a link off with.
+ Characters that end a bare run: whitespace, Markdown and HTML delimiters, and
+ the full-width punctuation Chinese prose sets a link off with.
  */
 const RUN_STOPPERS: ReadonlySet<string> = new Set([
   ' ',
@@ -98,8 +98,8 @@ const RUN_STOPPERS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Trailing characters a run sheds, since sentence punctuation follows a link
- * more often than it belongs to one.
+ Trailing characters a run sheds, since sentence punctuation follows a link
+ more often than it belongs to one.
  */
 const RUN_TRAILERS: ReadonlySet<string> = new Set([
   '.',
@@ -111,50 +111,50 @@ const RUN_TRAILERS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * What the check found on both sides.
- *
- * @example
- * ```ts
- * const check: DestinationCheck = droppedDestinations({ sourceText, pageText, },);
- * ```
+ What the check found on both sides.
+ 
+ @example
+ ```ts
+ const check: DestinationCheck = droppedDestinations({ sourceText, pageText, },);
+ ```
  */
 export type DestinationCheck = {
   /**
-   * Distinct destinations the source carries, in first-seen order.
+   Distinct destinations the source carries, in first-seen order.
    */
   readonly source: readonly string[];
 
   /**
-   * Distinct destinations the page carries, in first-seen order.
+   Distinct destinations the page carries, in first-seen order.
    */
   readonly page: readonly string[];
 
   /**
-   * Source destinations the page does not carry.
+   Source destinations the page does not carry.
    */
   readonly dropped: readonly string[];
 
   /**
-   * Telemetry in scorecard-stable wording, empty unless the strict grammar
-   * downgraded a side to plain markdown.
+   Telemetry in scorecard-stable wording, empty unless the strict grammar
+   downgraded a side to plain markdown.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Position of the nearest scheme at or after `from`, or positive infinity when
- * none remains.
- *
- * @param text - text scanned
- *
- * @param from - offset to scan from
- *
- * @returns Offset of the scheme that starts first
- *
- * @example
- * ```ts
- * const at = nearestScheme({ text, from: 0, },);
- * ```
+ Position of the nearest scheme at or after `from`, or positive infinity when
+ none remains.
+ 
+ @param text - text scanned
+ 
+ @param from - offset to scan from
+ 
+ @returns Offset of the scheme that starts first
+ 
+ @example
+ ```ts
+ const at = nearestScheme({ text, from: 0, },);
+ ```
  */
 function nearestScheme(
   {
@@ -187,34 +187,34 @@ function nearestScheme(
 }
 
 /**
- * Bare web addresses in the text, as one linear pass.
- *
- * COVERS WHAT THE TREE CANNOT: front matter and HTML attributes. A Markdown
- * destination shows up here too, because its
- * address starts with a scheme like any other; the union dedupes it.
- *
- * @param text - text scanned
- *
- * @returns Runs in the order found, repeats kept
- *
- * @example
- * ```ts
- * const runs = scanUrlRuns({ text: 'see https://example.org/a, then https://example.org/b', },);
- * ```
+ Bare web addresses in the text, as one linear pass.
+ 
+ COVERS WHAT THE TREE CANNOT: front matter and HTML attributes. A Markdown
+ destination shows up here too, because its
+ address starts with a scheme like any other; the union dedupes it.
+ 
+ @param text - text scanned
+ 
+ @returns Runs in the order found, repeats kept
+ 
+ @example
+ ```ts
+ const runs = scanUrlRuns({ text: 'see https://example.org/a, then https://example.org/b', },);
+ ```
  */
 export function scanUrlRuns({ text, }: { readonly text: string; },): readonly string[] {
   /**
-   * Runs found so far.
+   Runs found so far.
    */
   const runs: string[] = [];
 
   /**
-   * Cursor, advanced past every run or scheme examined.
+   Cursor, advanced past every run or scheme examined.
    */
   let at = 0;
   while (at < text.length) {
     /**
-     * Where the next run starts, infinite when no scheme remains.
+     Where the next run starts, infinite when no scheme remains.
      */
     const start = nearestScheme({
       text,
@@ -224,7 +224,7 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
       break;
 
     /**
-     * End of the run, exclusive: the first stopper after the scheme.
+     End of the run, exclusive: the first stopper after the scheme.
      */
     let end = start;
     while ((end < text.length) && (!RUN_STOPPERS.has(text.charAt(end,),)))
@@ -240,32 +240,32 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
 }
 
 /**
- * Destination as a reader would follow it: cut at the first stopper, trailing
- * sentence punctuation shed.
- *
- * A GFM autolink literal runs until whitespace, so in Chinese prose it swallows
- * the full-width comma or stop after the address; the scanner never does, and
- * the two readers must agree on the address or the union counts one link twice.
- *
- * @param url - destination as the tree or the scan produced it
- *
- * @returns Destination ending where a reader's address ends
- *
- * @example
- * ```ts
- * const clean = trimDestination({ url: 'https://example.org/a\uff0c', },);
- * ```
+ Destination as a reader would follow it: cut at the first stopper, trailing
+ sentence punctuation shed.
+ 
+ A GFM autolink literal runs until whitespace, so in Chinese prose it swallows
+ the full-width comma or stop after the address; the scanner never does, and
+ the two readers must agree on the address or the union counts one link twice.
+ 
+ @param url - destination as the tree or the scan produced it
+ 
+ @returns Destination ending where a reader's address ends
+ 
+ @example
+ ```ts
+ const clean = trimDestination({ url: 'https://example.org/a\uff0c', },);
+ ```
  */
 function trimDestination({ url, }: { readonly url: string; },): string {
   /**
-   * End of the address, exclusive: the first stopper.
+   End of the address, exclusive: the first stopper.
    */
   let end = 0;
   while ((end < url.length) && (!RUN_STOPPERS.has(url.charAt(end,),)))
     end += 1;
 
   /**
-   * Address with its trailing sentence punctuation shed.
+   Address with its trailing sentence punctuation shed.
    */
   let run = url.slice(
     0,
@@ -280,17 +280,17 @@ function trimDestination({ url, }: { readonly url: string; },): string {
 }
 
 /**
- * Link, image and definition destinations off the tree the pipeline parses.
- *
- * @param text - page or source text, front matter included
- *
- * @returns Destinations in document order, and the downgrade finding when the
- * strict grammar refused the body
- *
- * @example
- * ```ts
- * const { urls, findings, } = markdownDestinations({ text, },);
- * ```
+ Link, image and definition destinations off the tree the pipeline parses.
+ 
+ @param text - page or source text, front matter included
+ 
+ @returns Destinations in document order, and the downgrade finding when the
+ strict grammar refused the body
+ 
+ @example
+ ```ts
+ const { urls, findings, } = markdownDestinations({ text, },);
+ ```
  */
 export function markdownDestinations(
   { text, }: { readonly text: string; },
@@ -299,22 +299,22 @@ export function markdownDestinations(
   readonly findings: readonly string[];
 } {
   /**
-   * Front matter and body apart, as `parseDocument` splits them.
+   Front matter and body apart, as `parseDocument` splits them.
    */
   const split = splitFrontMatter({ text, },);
 
   /**
-   * Body with the lines that show nothing masked, as `parseDocument` does.
+   Body with the lines that show nothing masked, as `parseDocument` does.
    */
   const { masked: unwelded, } = maskInvisibleLines({ text: split.body, },);
 
   /**
-   * Body with HTML comments masked to whitespace, as `parseDocument` does.
+   Body with HTML comments masked to whitespace, as `parseDocument` does.
    */
   const { masked, } = maskHtmlComments({ text: unwelded, },);
 
   /**
-   * Tree and any downgrade finding, under the pipeline's own grammar.
+   Tree and any downgrade finding, under the pipeline's own grammar.
    */
   const parsed = parseBodyTolerant({
     body: masked,
@@ -322,22 +322,22 @@ export function markdownDestinations(
   },);
 
   /**
-   * Parsed body, read-only.
+   Parsed body, read-only.
    */
   const root: ReadonlyMdastRoot = parsed.root;
 
   /**
-   * Destinations in document order.
+   Destinations in document order.
    */
   const urls: string[] = [];
 
   /**
-   * Nodes still to visit, top of the stack first, so the walk is document order.
+   Nodes still to visit, top of the stack first, so the walk is document order.
    */
   const pending: ReadonlyMdastContent[] = [...root.children,].toReversed();
   while (pending.length > 0) {
     /**
-     * Node under visit.
+     Node under visit.
      */
     const node = pending.pop();
     if (node === undefined)
@@ -348,7 +348,7 @@ export function markdownDestinations(
       urls.push(trimDestination({ url: node.url, },),);
     if ('children' in node) {
       /**
-       * Children in document order, pushed reversed so the first is visited first.
+       Children in document order, pushed reversed so the first is visited first.
        */
       const children = [...node.children,];
       pending.push(...children.toReversed(),);
@@ -365,19 +365,19 @@ export function markdownDestinations(
 }
 
 /**
- * Every destination a text carries, from both readers, deduped in first-seen
- * order.
- *
- * @param text - page or source text
- *
- * @param side - which side, for the finding when the strict grammar downgraded
- *
- * @returns Destinations and any finding
- *
- * @example
- * ```ts
- * const { urls, findings, } = collectDestinations({ text, side: 'source', },);
- * ```
+ Every destination a text carries, from both readers, deduped in first-seen
+ order.
+ 
+ @param text - page or source text
+ 
+ @param side - which side, for the finding when the strict grammar downgraded
+ 
+ @returns Destinations and any finding
+ 
+ @example
+ ```ts
+ const { urls, findings, } = collectDestinations({ text, side: 'source', },);
+ ```
  */
 export function collectDestinations(
   {
@@ -392,12 +392,12 @@ export function collectDestinations(
   readonly findings: readonly string[];
 } {
   /**
-   * Tree destinations and any downgrade finding.
+   Tree destinations and any downgrade finding.
    */
   const parsed = markdownDestinations({ text, },);
 
   /**
-   * Both readers' output, tree first so a definition precedes its bare run.
+   Both readers' output, tree first so a definition precedes its bare run.
    */
   const combined = [
     ...parsed.urls,
@@ -405,16 +405,16 @@ export function collectDestinations(
   ];
 
   /**
-   * Addresses already kept, compared with the trailing slash shed.
+   Addresses already kept, compared with the trailing slash shed.
    */
   const seen = new Set<string>();
 
   /**
-   * Distinct destinations in first-seen order.
+   Distinct destinations in first-seen order.
    */
   const urls = combined.filter(function firstSeen(url,): boolean {
     /**
-     * Address compared, trailing slash shed.
+     Address compared, trailing slash shed.
      */
     const key = sameAddress({ url, },);
     if (seen.has(key,))
@@ -434,23 +434,23 @@ export function collectDestinations(
 }
 
 /**
- * Source destinations the published page does not carry, an archive's
- * rendering of one accepted in its place.
- *
- * @param sourceText - whole source page
- *
- * @param pageText - whole published page
- *
- * @param archiveText - whole archive page before the run, whose renderings the
- * page may keep; absent when the page is judged against the source alone
- *
- * @returns Both sides' destinations, the dropped ones, and any finding
- *
- * @example
- * ```ts
- * const check = droppedDestinations({ sourceText, pageText, archiveText, },);
- * if (check.dropped.length > 0) l.warn(`${String(check.dropped.length,)} destinations dropped`,);
- * ```
+ Source destinations the published page does not carry, an archive's
+ rendering of one accepted in its place.
+ 
+ @param sourceText - whole source page
+ 
+ @param pageText - whole published page
+ 
+ @param archiveText - whole archive page before the run, whose renderings the
+ page may keep; absent when the page is judged against the source alone
+ 
+ @returns Both sides' destinations, the dropped ones, and any finding
+ 
+ @example
+ ```ts
+ const check = droppedDestinations({ sourceText, pageText, archiveText, },);
+ if (check.dropped.length > 0) l.warn(`${String(check.dropped.length,)} destinations dropped`,);
+ ```
  */
 export function droppedDestinations(
   {
@@ -464,7 +464,7 @@ export function droppedDestinations(
   },
 ): DestinationCheck {
   /**
-   * What the source carries.
+   What the source carries.
    */
   const source = collectDestinations({
     text: sourceText,
@@ -472,7 +472,7 @@ export function droppedDestinations(
   },);
 
   /**
-   * What the page carries.
+   What the page carries.
    */
   const page = collectDestinations({
     text: pageText,
@@ -480,7 +480,7 @@ export function droppedDestinations(
   },);
 
   /**
-   * What the archive carried before the run, nothing when there is none.
+   What the archive carried before the run, nothing when there is none.
    */
   const archive = (archiveText === undefined)
     ? {
@@ -493,7 +493,7 @@ export function droppedDestinations(
     },);
 
   /**
-   * What the page owes and lacks, the archive's renderings counted.
+   What the page owes and lacks, the archive's renderings counted.
    */
   const verdict = judgeDestinationRenderings({
     source: source.urls,

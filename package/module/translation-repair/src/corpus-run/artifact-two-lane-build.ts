@@ -46,22 +46,22 @@ import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
 // texts came from, how the models were called, and how long it took.
 
 /**
- * Records which decider chose the aligned sections.
- *
- * DERIVED FROM PRESENCE rather than carried as a third state on the
- * preparation, because on the preparation absence already means exactly one
- * thing: `prepareDocumentPair` ran its deterministic aligner. The artifact
- * cannot afford the same spelling, since there absence also means "written
- * before the field", so the builder says it out loud.
- *
- * @param prepared - preparation the artifact records
- *
- * @returns Deterministic when no pairing was supplied, else the pairs consumed
- *
- * @example
- * ```ts
- * const alignment = sectionAlignmentOf({ prepared, },);
- * ```
+ Records which decider chose the aligned sections.
+ 
+ DERIVED FROM PRESENCE rather than carried as a third state on the
+ preparation, because on the preparation absence already means exactly one
+ thing: `prepareDocumentPair` ran its deterministic aligner. The artifact
+ cannot afford the same spelling, since there absence also means "written
+ before the field", so the builder says it out loud.
+ 
+ @param prepared - preparation the artifact records
+ 
+ @returns Deterministic when no pairing was supplied, else the pairs consumed
+ 
+ @example
+ ```ts
+ const alignment = sectionAlignmentOf({ prepared, },);
+ ```
  */
 function sectionAlignmentOf(
   { prepared, }: { readonly prepared: PreparedDocumentPair; },
@@ -81,45 +81,45 @@ function sectionAlignmentOf(
 }
 
 /**
- * Assembles one settled entry's version 2 artifact.
- *
- * @param entryId - corpus entry this covers
- *
- * @param tip - repository head when the pass started, as provenance
- *
- * @param pipelineDigest - built output that ran, as identity
- *
- * @param corpusSha - corpus commit the two texts were read at
- *
- * @param callConfig - model call configuration this run used
- *
- * @param durationMs - wall time the entry took, both lanes included
- *
- * @param prepared - preparation both lanes ran over, which supplies the
- * identity and every measurement rather than being measured by the caller
- *
- * @param lanes - what both lanes returned, with the ledgers derived from them
- *
- * @param laneSelection - which lane ships, or that nobody has asked
- *
- * @param consolidation - what the third rendering settled, or that it never ran
- *
- * @param pageAssembly - what the page-level assembly guard did to the composed
- * page
- *
- * @returns Artifact ready to serialize
- *
- * @throws {@link LaneComparisonError} when the two ledgers cannot be compared,
- * which is a defect in the run rather than in this artifact: an entry whose
- * lanes disagree about their own preparation has nothing worth writing
- *
- * @throws {@link ArtifactPreparationMismatchError} when either ledger, or the
- * run's alignment findings, describe a preparation other than the one passed
- *
- * @example
- * ```ts
- * const artifact = buildSettledTwoLaneArtifact({ entryId, tip, pipelineDigest, ... },);
- * ```
+ Assembles one settled entry's version 2 artifact.
+ 
+ @param entryId - corpus entry this covers
+ 
+ @param tip - repository head when the pass started, as provenance
+ 
+ @param pipelineDigest - built output that ran, as identity
+ 
+ @param corpusSha - corpus commit the two texts were read at
+ 
+ @param callConfig - model call configuration this run used
+ 
+ @param durationMs - wall time the entry took, both lanes included
+ 
+ @param prepared - preparation both lanes ran over, which supplies the
+ identity and every measurement rather than being measured by the caller
+ 
+ @param lanes - what both lanes returned, with the ledgers derived from them
+ 
+ @param laneSelection - which lane ships, or that nobody has asked
+ 
+ @param consolidation - what the third rendering settled, or that it never ran
+ 
+ @param pageAssembly - what the page-level assembly guard did to the composed
+ page
+ 
+ @returns Artifact ready to serialize
+ 
+ @throws {@link LaneComparisonError} when the two ledgers cannot be compared,
+ which is a defect in the run rather than in this artifact: an entry whose
+ lanes disagree about their own preparation has nothing worth writing
+ 
+ @throws {@link ArtifactPreparationMismatchError} when either ledger, or the
+ run's alignment findings, describe a preparation other than the one passed
+ 
+ @example
+ ```ts
+ const artifact = buildSettledTwoLaneArtifact({ entryId, tip, pipelineDigest, ... },);
+ ```
  */
 export function buildSettledTwoLaneArtifact(
   {
@@ -145,30 +145,30 @@ export function buildSettledTwoLaneArtifact(
     readonly lanes: DocumentLanesResult;
 
     /**
-     * Which lane ships, which the caller states rather than the builder
-     * assuming. A pass that has not run the contest says so out loud here, so
-     * the pending state is a decision somebody made rather than a default
-     * nobody chose.
+     Which lane ships, which the caller states rather than the builder
+     assuming. A pass that has not run the contest says so out loud here, so
+     the pending state is a decision somebody made rather than a default
+     nobody chose.
      */
     readonly laneSelection: ArtifactLaneSelection;
 
     /**
-     * What the consolidation settled, stated by the caller for the same reason
-     * `laneSelection` is: a pass that never asked for a third rendering says so
-     * out loud rather than leaving an absence the reader has to interpret.
+     What the consolidation settled, stated by the caller for the same reason
+     `laneSelection` is: a pass that never asked for a third rendering says so
+     out loud rather than leaving an absence the reader has to interpret.
      */
     readonly consolidation: ArtifactConsolidation;
 
     /**
-     * What the page-level guard did to the page these sections compose.
+     What the page-level guard did to the page these sections compose.
      */
     readonly pageAssembly: ArtifactPageAssembly;
   },
 ): SettledArtifact {
   /**
-   * Name this slicing gives itself, computed from the preparation rather than
-   * taken from a caller, so the identity an artifact records is the identity of
-   * the thing the artifact describes.
+   Name this slicing gives itself, computed from the preparation rather than
+   taken from a caller, so the identity an artifact records is the identity of
+   the thing the artifact describes.
    */
   const identity = preparationIdentity({ prepared, },);
 
@@ -218,15 +218,15 @@ export function buildSettledTwoLaneArtifact(
   },);
 
   /**
-   * The two lanes compared, derived here rather than accepted as a parameter.
-   *
-   * A comparison supplied beside the ledgers it describes could disagree with
-   * them, and a reader has no way to tell which of the two to believe. Derived,
-   * there is only one answer, and a reader that recomputes it is checking this
-   * code rather than adjudicating between two stored claims.
-   *
-   * The ledgers go in AS THEY CAME, names included, so the comparison's own
-   * refusal is doing work rather than reading back what this function wrote.
+   The two lanes compared, derived here rather than accepted as a parameter.
+   
+   A comparison supplied beside the ledgers it describes could disagree with
+   them, and a reader has no way to tell which of the two to believe. Derived,
+   there is only one answer, and a reader that recomputes it is checking this
+   code rather than adjudicating between two stored claims.
+   
+   The ledgers go in AS THEY CAME, names included, so the comparison's own
+   refusal is doing work rather than reading back what this function wrote.
    */
   const comparison = compareDocumentLanes({
     repair: lanes.repairDelivery,
@@ -234,11 +234,11 @@ export function buildSettledTwoLaneArtifact(
   },);
 
   /**
-   * Both ledgers as version 2 rows, beside the comparison they derive.
-   *
-   * SHARED WITH THE CONTEST DRIVER, which needs the same comparison to know
-   * which slices are worth asking a roster about. Two derivations here would
-   * let the writer and the driver disagree about which slices those are.
+   Both ledgers as version 2 rows, beside the comparison they derive.
+   
+   SHARED WITH THE CONTEST DRIVER, which needs the same comparison to know
+   which slices are worth asking a roster about. Two derivations here would
+   let the writer and the driver disagree about which slices those are.
    */
   const {
     delivery,

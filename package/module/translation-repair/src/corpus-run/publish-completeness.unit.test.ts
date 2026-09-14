@@ -1,12 +1,12 @@
 /**
- * Tests for the last source-coverage guard before a corpus page is published.
- *
- * A live `Toka_ls` run recorded one source-only factual paragraph as unfilled,
- * then published a page omitting its death date, time, cause, age and source
- * link. These fixtures keep the corpus wording out while pinning that exact
- * semantic failure: known missing source content cannot become a settled page.
- *
- * @module
+ Tests for the last source-coverage guard before a corpus page is published.
+ 
+ A live `Toka_ls` run recorded one source-only factual paragraph as unfilled,
+ then published a page omitting its death date, time, cause, age and source
+ link. These fixtures keep the corpus wording out while pinning that exact
+ semantic failure: known missing source content cannot become a settled page.
+ 
+ @module
  */
 
 import {

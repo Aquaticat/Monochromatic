@@ -1,9 +1,9 @@
 /**
- * Tests for the deterministic half of the introduced-defect probe: what a
- * prober's quote actually proves about the region it names.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the deterministic half of the introduced-defect probe: what a
+ prober's quote actually proves about the region it names.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -22,8 +22,8 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Region whose replacement fixed a tense error and, for the damage fixtures,
- * dropped the second clause.
+ Region whose replacement fixed a tense error and, for the damage fixtures,
+ dropped the second clause.
  */
 const REGION: RepairRegion = {
   envelopeId: 'envelope/nap',
@@ -33,22 +33,22 @@ const REGION: RepairRegion = {
 };
 
 /**
- * Builds one prober check with empty text fields unless overridden.
- *
- * @param verdict - closed-vocabulary verdict, or a wire fault to be dropped
- *
- * @param evidence - wording quoted from the replacement
- *
- * @param omittedText - wording quoted from the text the replacement replaced
- *
- * @param region - one-based region number on the sheet
- *
- * @returns Check the screen reads
- *
- * @example
- * ```ts
- * const check = catCheck({ verdict: 'uncertain', },);
- * ```
+ Builds one prober check with empty text fields unless overridden.
+ 
+ @param verdict - closed-vocabulary verdict, or a wire fault to be dropped
+ 
+ @param evidence - wording quoted from the replacement
+ 
+ @param omittedText - wording quoted from the text the replacement replaced
+ 
+ @param region - one-based region number on the sheet
+ 
+ @returns Check the screen reads
+ 
+ @example
+ ```ts
+ const check = catCheck({ verdict: 'uncertain', },);
+ ```
  */
 function catCheck(
   {
@@ -75,20 +75,20 @@ function catCheck(
 }
 
 /**
- * Wording the critic objected to, quoted target-side, as an accepted issue the
- * region serves.
- *
- * Only the fields `collectPriorQuotes` reads are populated. Widening it would
- * make the fixture harder to read without testing anything more.
- *
- * @param quotedText - target-side wording the critic complained about
- *
- * @returns Issue shaped as the screen reads it
- *
- * @example
- * ```ts
- * const issues = [catIssue({ quotedText: 'is doing the sleeping', },),];
- * ```
+ Wording the critic objected to, quoted target-side, as an accepted issue the
+ region serves.
+ 
+ Only the fields `collectPriorQuotes` reads are populated. Widening it would
+ make the fixture harder to read without testing anything more.
+ 
+ @param quotedText - target-side wording the critic complained about
+ 
+ @returns Issue shaped as the screen reads it
+ 
+ @example
+ ```ts
+ const issues = [catIssue({ quotedText: 'is doing the sleeping', },),];
+ ```
  */
 function catIssue(
   { quotedText, }: { readonly quotedText: string; },
@@ -453,8 +453,8 @@ await describe({
         + 'skipped the region as uncertain, so the tallies never exceed nor undercount the probers heard',
       fn: async () => {
         /**
-         * Tally of the one region under two probers: one answering twice, one
-         * saying nothing about it.
+         Tally of the one region under two probers: one answering twice, one
+         saying nothing about it.
          */
         const [tally,] = screenIntroducedDefects({
           regions: [REGION,],

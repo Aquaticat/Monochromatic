@@ -31,20 +31,20 @@ import type { SourceFirstUnit, } from './source-first-unit.ts';
 // alternative was tried first.
 
 /**
- * Adds blocks to a paired unit's target side.
- *
- * @param unit - paired unit gaining blocks
- *
- * @param leading - blocks joining before its own
- *
- * @param trailing - blocks joining after its own
- *
- * @returns Unit covering its own blocks plus the given ones
- *
- * @example
- * ```ts
- * const wider = extendPaired({ unit, leading: [], trailing: orphans, },);
- * ```
+ Adds blocks to a paired unit's target side.
+ 
+ @param unit - paired unit gaining blocks
+ 
+ @param leading - blocks joining before its own
+ 
+ @param trailing - blocks joining after its own
+ 
+ @returns Unit covering its own blocks plus the given ones
+ 
+ @example
+ ```ts
+ const wider = extendPaired({ unit, leading: [], trailing: orphans, },);
+ ```
  */
 function extendPaired(
   {
@@ -71,33 +71,33 @@ function extendPaired(
 }
 
 /**
- * Attaches target blocks no source block accounts for to a neighbour in their
- * own anchor-delimited region, dropping the ones no such neighbour exists for.
- *
- * CONTIGUITY SURVIVES because groups partition the target indices into
- * consecutive ranges: every index is consumed by exactly one step, in order, so
- * an orphan run sits immediately after the previous unit's interval and
- * immediately before the next one's.
- *
- * @param units - units as grouped, possibly including source-less ones
- *
- * @returns Units that all carry original blocks, in document order
- *
- * @example
- * ```ts
- * const usable = reflowOrphans({ units, },);
- * ```
+ Attaches target blocks no source block accounts for to a neighbour in their
+ own anchor-delimited region, dropping the ones no such neighbour exists for.
+ 
+ CONTIGUITY SURVIVES because groups partition the target indices into
+ consecutive ranges: every index is consumed by exactly one step, in order, so
+ an orphan run sits immediately after the previous unit's interval and
+ immediately before the next one's.
+ 
+ @param units - units as grouped, possibly including source-less ones
+ 
+ @returns Units that all carry original blocks, in document order
+ 
+ @example
+ ```ts
+ const usable = reflowOrphans({ units, },);
+ ```
  */
 export function reflowOrphans(
   { units, }: { readonly units: readonly SourceFirstUnit[]; },
 ): readonly SourceFirstUnit[] {
   /**
-   * Units that carry original blocks, rebuilt as orphans are attached.
+   Units that carry original blocks, rebuilt as orphans are attached.
    */
   const kept: SourceFirstUnit[] = [];
 
   /**
-   * Translation blocks waiting for a paired unit later in their own region.
+   Translation blocks waiting for a paired unit later in their own region.
    */
   let held: readonly DocumentNode[] = [];
   for (const unit of units) {
@@ -122,8 +122,8 @@ export function reflowOrphans(
     }
 
     /**
-     * Unit immediately before this orphan run, which is in its region exactly
-     * when it is paired: an anchor would have ended the region.
+     Unit immediately before this orphan run, which is in its region exactly
+     when it is paired: an anchor would have ended the region.
      */
     const previous = kept.at(-1,);
     if (previous?.kind === 'paired') {

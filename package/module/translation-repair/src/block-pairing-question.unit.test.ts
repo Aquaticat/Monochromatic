@@ -8,18 +8,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one complete parser-backed parent without transport.
- *
- * @param sourceText - original fixture
- *
- * @param targetText - incumbent fixture
- *
- * @returns Corresponding first parent
- *
- * @example
- * ```ts
- * const pair = parent({ sourceText: '猫。', targetText: 'Cat.', });
- * ```
+ Builds one complete parser-backed parent without transport.
+ 
+ @param sourceText - original fixture
+ 
+ @param targetText - incumbent fixture
+ 
+ @returns Corresponding first parent
+ 
+ @example
+ ```ts
+ const pair = parent({ sourceText: '猫。', targetText: 'Cat.', });
+ ```
  */
 function parent({ sourceText, targetText, }: {
   readonly sourceText: string;

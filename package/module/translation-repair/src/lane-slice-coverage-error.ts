@@ -8,18 +8,18 @@
 // other.
 
 /**
- * Sets a lane may name slices under, beside its decisions.
- *
- * @example
- * ```ts
- * const label: NamedSliceSetLabel = 'unfilled';
- * ```
+ Sets a lane may name slices under, beside its decisions.
+ 
+ @example
+ ```ts
+ const label: NamedSliceSetLabel = 'unfilled';
+ ```
  */
 export type NamedSliceSetLabel = 'unfilled' | 'unheard' | 'not-applicable';
 
 /**
- * What each set says about a slice it names beside a decision, and what the
- * archive must hold for it to be named at all.
+ What each set says about a slice it names beside a decision, and what the
+ archive must hold for it to be named at all.
  */
 const SET_CLAUSES: Record<NamedSliceSetLabel, {
   readonly decided: string;
@@ -40,181 +40,181 @@ const SET_CLAUSES: Record<NamedSliceSetLabel, {
 };
 
 /**
- * Why a lane's slice report does not cover its preparation.
- *
- * @example
- * ```ts
- * const fault: LaneSliceCoverageFault = { kind: 'left-undecided', sliceIndex: 4, };
- * ```
+ Why a lane's slice report does not cover its preparation.
+ 
+ @example
+ ```ts
+ const fault: LaneSliceCoverageFault = { kind: 'left-undecided', sliceIndex: 4, };
+ ```
  */
 export type LaneSliceCoverageFault = {
   /**
-   * A set names more slices than distinct indices.
+   A set names more slices than distinct indices.
    */
   readonly kind: 'set-repeats';
 
   /**
-   * Set that repeats.
+   Set that repeats.
    */
   readonly set: NamedSliceSetLabel;
 
   /**
-   * Slices it claims.
+   Slices it claims.
    */
   readonly claimed: number;
 
   /**
-   * Distinct indices among them.
+   Distinct indices among them.
    */
   readonly distinct: number;
 } | {
   /**
-   * A set names a slice the preparation never produced.
+   A set names a slice the preparation never produced.
    */
   readonly kind: 'set-names-unproduced';
 
   /**
-   * Set naming it.
+   Set naming it.
    */
   readonly set: NamedSliceSetLabel;
 
   /**
-   * Slice named.
+   Slice named.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * A set names a slice the lane also decided.
+   A set names a slice the lane also decided.
    */
   readonly kind: 'set-and-decided';
 
   /**
-   * Set naming it.
+   Set naming it.
    */
   readonly set: NamedSliceSetLabel;
 
   /**
-   * Slice named.
+   Slice named.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * A set names a slice whose archive wording contradicts the set.
+   A set names a slice whose archive wording contradicts the set.
    */
   readonly kind: 'set-against-archive';
 
   /**
-   * Set naming it.
+   Set naming it.
    */
   readonly set: NamedSliceSetLabel;
 
   /**
-   * Slice named.
+   Slice named.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * Two sets name one slice.
+   Two sets name one slice.
    */
   readonly kind: 'two-sets';
 
   /**
-   * First set naming it.
+   First set naming it.
    */
   readonly set: NamedSliceSetLabel;
 
   /**
-   * Second set naming it.
+   Second set naming it.
    */
   readonly other: NamedSliceSetLabel;
 
   /**
-   * Slice named twice.
+   Slice named twice.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * Lane decided a slice and recorded no wording for it.
+   Lane decided a slice and recorded no wording for it.
    */
   readonly kind: 'decided-without-wording';
 
   /**
-   * Slice decided.
+   Slice decided.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * Lane left a prepared slice undecided under a policy that refuses that.
+   Lane left a prepared slice undecided under a policy that refuses that.
    */
   readonly kind: 'left-undecided';
 
   /**
-   * Slice left.
+   Slice left.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * Preparation produced more slices than distinct indices.
+   Preparation produced more slices than distinct indices.
    */
   readonly kind: 'preparation-repeats';
 
   /**
-   * Slices produced.
+   Slices produced.
    */
   readonly slices: number;
 
   /**
-   * Distinct indices among them.
+   Distinct indices among them.
    */
   readonly distinct: number;
 } | {
   /**
-   * Lane decided more times than distinct slices.
+   Lane decided more times than distinct slices.
    */
   readonly kind: 'decisions-repeat';
 
   /**
-   * Decisions made.
+   Decisions made.
    */
   readonly decisions: number;
 
   /**
-   * Distinct slices among them.
+   Distinct slices among them.
    */
   readonly distinct: number;
 } | {
   /**
-   * Lane decided a slice the preparation never produced.
+   Lane decided a slice the preparation never produced.
    */
   readonly kind: 'decided-unproduced';
 
   /**
-   * Slice decided.
+   Slice decided.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * Lane reports reaching a slice after leaving an earlier one unexamined.
+   Lane reports reaching a slice after leaving an earlier one unexamined.
    */
   readonly kind: 'reached-after-stop';
 
   /**
-   * Slice reached.
+   Slice reached.
    */
   readonly sliceIndex: number;
 };
 
 /**
- * Words a lane slice coverage fault from set labels, kinds and numbers.
- *
- * @param fault - why the lane's report does not cover its preparation
- *
- * @returns Sentence written here
- *
- * @example
- * ```ts
- * const sentence = laneCoverageSentence({ fault: { kind: 'left-undecided', sliceIndex: 4, }, },);
- * ```
+ Words a lane slice coverage fault from set labels, kinds and numbers.
+ 
+ @param fault - why the lane's report does not cover its preparation
+ 
+ @returns Sentence written here
+ 
+ @example
+ ```ts
+ const sentence = laneCoverageSentence({ fault: { kind: 'left-undecided', sliceIndex: 4, }, },);
+ ```
  */
 export function laneCoverageSentence({ fault, }: { readonly fault: LaneSliceCoverageFault; },): string {
   if (fault.kind === 'set-repeats')
@@ -225,14 +225,14 @@ export function laneCoverageSentence({ fault, }: { readonly fault: LaneSliceCove
     return `lane reports slice ${String(fault.sliceIndex,)} ${fault.set}, which this preparation never produced`;
   if (fault.kind === 'set-and-decided') {
     /**
-     * What this set says about a slice it names beside a decision.
+     What this set says about a slice it names beside a decision.
      */
     const { decided, } = SET_CLAUSES[fault.set];
     return `lane reports slice ${String(fault.sliceIndex,)} as ${fault.set} and decided at once, ${decided}`;
   }
   if (fault.kind === 'set-against-archive') {
     /**
-     * What the archive must hold for this set to name a slice.
+     What the archive must hold for this set to name a slice.
      */
     const { incumbent, } = SET_CLAUSES[fault.set];
     return `lane reports slice ${String(fault.sliceIndex,)} ${fault.set}, ${incumbent}`;
@@ -257,30 +257,30 @@ export function laneCoverageSentence({ fault, }: { readonly fault: LaneSliceCove
 }
 
 /**
- * Refusal of a lane report that does not cover its preparation.
- *
- * MARKED: its message is the sentence `laneCoverageSentence` writes from set
- * labels, kinds and numbers.
- *
- * @example
- * ```ts
- * throw new LaneSliceCoverageError({ fault: { kind: 'left-undecided', sliceIndex: 4, }, },);
- * ```
+ Refusal of a lane report that does not cover its preparation.
+ 
+ MARKED: its message is the sentence `laneCoverageSentence` writes from set
+ labels, kinds and numbers.
+ 
+ @example
+ ```ts
+ throw new LaneSliceCoverageError({ fault: { kind: 'left-undecided', sliceIndex: 4, }, },);
+ ```
  */
 export class LaneSliceCoverageError extends Error {
   /**
-   * Declares this message safe to forward: set labels, kinds and numbers in
-   * a sentence written here.
+   Declares this message safe to forward: set labels, kinds and numbers in
+   a sentence written here.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Why the report does not cover the preparation.
+   Why the report does not cover the preparation.
    */
   readonly fault: LaneSliceCoverageFault;
 
   /**
-   * @param fault - why the report does not cover the preparation
+   @param fault - why the report does not cover the preparation
    */
   constructor({ fault, }: { readonly fault: LaneSliceCoverageFault; },) {
     super(laneCoverageSentence({ fault, },),);

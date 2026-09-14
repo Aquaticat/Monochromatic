@@ -1,15 +1,15 @@
 /**
- * Tests for what the contest reader refuses, which is the reason it re-derives
- * anything at all.
- *
- * SPLIT FROM THE ACCEPTANCE CASES on the line budget. A stored verdict is a
- * claim about ballots the same record carries, and a stored contest is a claim
- * about which slices the two lanes worded differently; each refusal here is one
- * of those claims caught disagreeing with what it describes.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for what the contest reader refuses, which is the reason it re-derives
+ anything at all.
+ 
+ SPLIT FROM THE ACCEPTANCE CASES on the line budget. A stored verdict is a
+ claim about ballots the same record carries, and a stored contest is a claim
+ about which slices the two lanes worded differently; each refusal here is one
+ of those claims caught disagreeing with what it describes.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -27,27 +27,27 @@ type ArtifactComparisonRow,
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive`s own English for the slice every fixture here describes.
+ Archive`s own English for the slice every fixture here describes.
  */
 const ARCHIVE_NAP = 'The cat sleeps in the bookshop attic.';
 
 /**
- * Wording the repair lane left.
+ Wording the repair lane left.
  */
 const REPAIR_NAP = 'The cat naps in the bookshop attic.';
 
 /**
- * Wording the translate lane left, differing from both.
+ Wording the translate lane left, differing from both.
  */
 const TRANSLATE_NAP = 'The cat dozes in the attic of the bookshop.';
 
 /**
- * Path every message under test is built against.
+ Path every message under test is built against.
  */
 const SELECTION_PATH = 'CatEntry1.laneSelection';
 
 /**
- * Ballot backing the translate lane, in the recorded rather than typed form.
+ Ballot backing the translate lane, in the recorded rather than typed form.
  */
 const FOR_TRANSLATE = {
   choice: 'translate',
@@ -59,20 +59,20 @@ const FOR_TRANSLATE = {
 };
 
 /**
- * Builds a comparison row carrying the two lane wordings a test needs.
- *
- * @param sliceIndex - slice this names
- *
- * @param repairText - wording the repair document carries
- *
- * @param translateText - wording the translate document carries
- *
- * @returns Row with the rest of its fields held constant
- *
- * @example
- * ```ts
- * const row = catRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
- * ```
+ Builds a comparison row carrying the two lane wordings a test needs.
+ 
+ @param sliceIndex - slice this names
+ 
+ @param repairText - wording the repair document carries
+ 
+ @param translateText - wording the translate document carries
+ 
+ @returns Row with the rest of its fields held constant
+ 
+ @example
+ ```ts
+ const row = catRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
+ ```
  */
 function catRow(
   {
@@ -110,7 +110,7 @@ function catRow(
 }
 
 /**
- * Slice both lanes worded differently, which a contest may answer.
+ Slice both lanes worded differently, which a contest may answer.
  */
 const CONTESTED_ROW = catRow({
   sliceIndex: 0,
@@ -119,13 +119,13 @@ const CONTESTED_ROW = catRow({
 },);
 
 /**
- * Comparison whose one slice the two lanes worded differently.
+ Comparison whose one slice the two lanes worded differently.
  */
 const ONE_CONTESTED: readonly ArtifactComparisonRow[] = [CONTESTED_ROW,];
 
 /**
- * Comparison whose second slice the two lanes worded identically, so a contest
- * naming it is naming a slice with nothing to choose between.
+ Comparison whose second slice the two lanes worded identically, so a contest
+ naming it is naming a slice with nothing to choose between.
  */
 const ONE_CONTESTED_ONE_AGREED: readonly ArtifactComparisonRow[] = [
   CONTESTED_ROW,
@@ -137,18 +137,18 @@ const ONE_CONTESTED_ONE_AGREED: readonly ArtifactComparisonRow[] = [
 ];
 
 /**
- * Reads a selection whose one slice carries whatever a test hands it.
- *
- * @param slice - recorded slice, valid or not
- *
- * @param comparison - rows the contest is checked against
- *
- * @returns Nothing a caller uses; every case here expects a throw
- *
- * @example
- * ```ts
- * readOneSlice({ slice, comparison: ONE_CONTESTED, },);
- * ```
+ Reads a selection whose one slice carries whatever a test hands it.
+ 
+ @param slice - recorded slice, valid or not
+ 
+ @param comparison - rows the contest is checked against
+ 
+ @returns Nothing a caller uses; every case here expects a throw
+ 
+ @example
+ ```ts
+ readOneSlice({ slice, comparison: ONE_CONTESTED, },);
+ ```
  */
 function readOneSlice(
   {
@@ -179,7 +179,7 @@ await describe({
         + 're-derives is a field that can quietly become a lie',
       fn: async () => {
         /**
-         * What readOneSlice refused with, read for class as well as wording.
+         What readOneSlice refused with, read for class as well as wording.
          */
         const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
@@ -209,7 +209,7 @@ await describe({
         + 'cannot carry a roster that chose one',
       fn: async () => {
         /**
-         * What readOneSlice refused with, read for class as well as wording.
+         What readOneSlice refused with, read for class as well as wording.
          */
         const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
@@ -236,7 +236,7 @@ await describe({
         + 'that number and a raised one turns an unheard roster into a verdict',
       fn: async () => {
         /**
-         * What readOneSlice refused with, read for class as well as wording.
+         What readOneSlice refused with, read for class as well as wording.
          */
         const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
@@ -260,7 +260,7 @@ await describe({
         + 'question to ask and therefore no answer to record',
       fn: async () => {
         /**
-         * What parseLaneSelection refused with, read for class as well as wording.
+         What parseLaneSelection refused with, read for class as well as wording.
          */
         const refusalOfParseLaneSelection = caught(() => {
           parseLaneSelection({
@@ -291,7 +291,7 @@ await describe({
         + 'nobody had to decide rather than as one the record dropped',
       fn: async () => {
         /**
-         * What parseLaneSelection refused with, read for class as well as wording.
+         What parseLaneSelection refused with, read for class as well as wording.
          */
         const refusalOfParseLaneSelection = caught(() => {
           parseLaneSelection({
@@ -313,7 +313,7 @@ await describe({
       name: 'REFUSES a won verdict that does not say which lane won, rather than reading the omission as a refusal',
       fn: async () => {
         /**
-         * What readOneSlice refused with, read for class as well as wording.
+         What readOneSlice refused with, read for class as well as wording.
          */
         const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
@@ -338,7 +338,7 @@ await describe({
       name: 'REFUSES a ballot naming a candidate that is neither lane nor the refusal',
       fn: async () => {
         /**
-         * What readOneSlice refused with, read for class as well as wording.
+         What readOneSlice refused with, read for class as well as wording.
          */
         const refusalOfReadOneSlice = caught(() => {
           readOneSlice({

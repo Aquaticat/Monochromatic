@@ -1,8 +1,8 @@
 /**
- * Tests the page assembly section: its parsing across generations and the
- * per-slice override reading.
- *
- * @module
+ Tests the page assembly section: its parsing across generations and the
+ per-slice override reading.
+ 
+ @module
  */
 
 import {
@@ -19,7 +19,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * A recorded section with one trim and one withdrawal.
+ A recorded section with one trim and one withdrawal.
  */
 const RECORDED = {
   trimmed: [{ sliceIndex: 14, replacementText: '[^1]: The note.', },],

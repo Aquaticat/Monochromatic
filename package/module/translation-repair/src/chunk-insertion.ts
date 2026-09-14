@@ -32,90 +32,90 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 // unreadable.
 
 /**
- * Why an untranslated section was not given a place to be written at.
+ Why an untranslated section was not given a place to be written at.
  */
 export type InsertionRefusal =
   /**
-   * Some optimal alignment pairs it with existing translation, so whatever it
-   * says may already be on the page and writing it in would duplicate content.
+   Some optimal alignment pairs it with existing translation, so whatever it
+   says may already be on the page and writing it in would duplicate content.
    */
   | 'may-pair'
   /**
-   * Nothing pairs it, but the optimal alignments disagree about where it sits,
-   * so writing it in risks filing real content under the wrong section.
+   Nothing pairs it, but the optimal alignments disagree about where it sits,
+   so writing it in risks filing real content under the wrong section.
    */
   | 'several-boundaries'
   /**
-   * The page carries at least as much English as its source predicts, so it has
-   * no room to be missing anything and the aligner is likelier to have found a
-   * merge than an omission.
+   The page carries at least as much English as its source predicts, so it has
+   no room to be missing anything and the aligner is likelier to have found a
+   merge than an omission.
    */
   | 'page-not-short'
   /**
-   * The page is short, but earlier sections already account for the whole
-   * shortfall, so writing this in as well would add more English than the page
-   * is missing.
+   The page is short, but earlier sections already account for the whole
+   shortfall, so writing this in as well would add more English than the page
+   is missing.
    */
   | 'beyond-shortfall';
 
 /**
- * What was decided about one untranslated source section.
+ What was decided about one untranslated source section.
  */
 export type InsertionPlacement =
   | {
     /**
-     * Both signatures agree, and this is where it goes.
+     Both signatures agree, and this is where it goes.
      */
     readonly kind: 'placed';
 
     /**
-     * Section this describes.
+     Section this describes.
      */
     readonly sourceIndex: number;
 
     /**
-     * Boundary in the translation new text is written at.
+     Boundary in the translation new text is written at.
      */
     readonly offset: number;
   }
   | {
     /**
-     * One of the signatures refused.
+     One of the signatures refused.
      */
     readonly kind: 'unplaced';
 
     /**
-     * Section this describes.
+     Section this describes.
      */
     readonly sourceIndex: number;
 
     /**
-     * Which signature refused, and how.
+     Which signature refused, and how.
      */
     readonly refusal: InsertionRefusal;
   };
 
 /**
- * Turns a proven section boundary into a document offset.
- *
- * A boundary EQUAL to the section count means the section belongs after
- * everything the translation carries, which is the end of the last section
- * rather than the start of a section that does not exist.
- *
- * @param beforeTargetIndex - section the insertion precedes
- *
- * @param targetChunks - translation sections in document order, never empty
- *
- * @returns Offset in the translation text
- *
- * @throws Error when the boundary names no section and is not the end, since a
- * silent fallback there would write a whole section at whatever offset happened
- * to be reachable
- *
- * @example
- * ```ts
- * const offset = offsetOfBoundary({ beforeTargetIndex: 2, targetChunks, },);
- * ```
+ Turns a proven section boundary into a document offset.
+ 
+ A boundary EQUAL to the section count means the section belongs after
+ everything the translation carries, which is the end of the last section
+ rather than the start of a section that does not exist.
+ 
+ @param beforeTargetIndex - section the insertion precedes
+ 
+ @param targetChunks - translation sections in document order, never empty
+ 
+ @returns Offset in the translation text
+ 
+ @throws Error when the boundary names no section and is not the end, since a
+ silent fallback there would write a whole section at whatever offset happened
+ to be reachable
+ 
+ @example
+ ```ts
+ const offset = offsetOfBoundary({ beforeTargetIndex: 2, targetChunks, },);
+ ```
  */
 function offsetOfBoundary(
   {
@@ -127,14 +127,14 @@ function offsetOfBoundary(
   },
 ): number {
   /**
-   * Section the insertion sits before, absent when it sits after everything.
+   Section the insertion sits before, absent when it sits after everything.
    */
   const following = targetChunks[beforeTargetIndex];
   if (following !== undefined)
     return following.startOffset;
 
   /**
-   * Last section, whose end is where a trailing insertion lands.
+   Last section, whose end is where a trailing insertion lands.
    */
   const last = targetChunks.at(-1,);
   if ((beforeTargetIndex !== targetChunks.length) || (last === undefined))
@@ -147,24 +147,24 @@ function offsetOfBoundary(
 }
 
 /**
- * Decides which untranslated sections get an anchor, and names every refusal.
- *
- * @param steps - aligner output for the whole document
- *
- * @param sourceChunks - original sections in document order
- *
- * @param targetChunks - translation sections in document order, never empty
- *
- * @param sourceText - whole original page
- *
- * @param targetText - whole translation as it stands
- *
- * @returns One decision per untranslated section, in document order
- *
- * @example
- * ```ts
- * const placements = placeInsertions({ steps, sourceChunks, targetChunks, sourceText, targetText, },);
- * ```
+ Decides which untranslated sections get an anchor, and names every refusal.
+ 
+ @param steps - aligner output for the whole document
+ 
+ @param sourceChunks - original sections in document order
+ 
+ @param targetChunks - translation sections in document order, never empty
+ 
+ @param sourceText - whole original page
+ 
+ @param targetText - whole translation as it stands
+ 
+ @returns One decision per untranslated section, in document order
+ 
+ @example
+ ```ts
+ const placements = placeInsertions({ steps, sourceChunks, targetChunks, sourceText, targetText, },);
+ ```
  */
 export function placeInsertions(
   {
@@ -182,16 +182,16 @@ export function placeInsertions(
   },
 ): readonly InsertionPlacement[] {
   /**
-   * Sections the aligner refused to pair, with the anchor it proved or the
-   * uncertainty it hit.
+   Sections the aligner refused to pair, with the anchor it proved or the
+   uncertainty it hit.
    */
   const unpaired = steps.flatMap(function toUnpaired(step,) {
     return (step.kind === 'source-only') ? [step,] : [];
   },);
 
   /**
-   * Those whose place every optimal alignment agrees on, which are the only
-   * ones the size test is asked about.
+   Those whose place every optimal alignment agrees on, which are the only
+   ones the size test is asked about.
    */
   const anchored = unpaired.filter(function isProven(step,): boolean {
     return step.anchor
@@ -200,8 +200,8 @@ export function placeInsertions(
   },);
 
   /**
-   * Which of them the page has room to be missing, by source index rendered as
-   * text so the admission can be matched back.
+   Which of them the page has room to be missing, by source index rendered as
+   text so the admission can be matched back.
    */
   const admitted = new Set(admitWithinShortfall({
     sourceText,
@@ -218,14 +218,14 @@ export function placeInsertions(
   },),);
 
   /**
-   * Whether the page is short at all.
-   *
-   * MEASURED RATHER THAN INFERRED FROM THE ADMISSIONS. Reading "nothing was
-   * admitted" as "the page is not short" is wrong exactly when the first
-   * candidate is larger than the whole shortfall: the page is genuinely short,
-   * nothing fits, and the run would report a complete-looking page. That is the
-   * same collapse the refusal union exists to prevent, so it must not be
-   * reintroduced by the code that fills it in.
+   Whether the page is short at all.
+   
+   MEASURED RATHER THAN INFERRED FROM THE ADMISSIONS. Reading "nothing was
+   admitted" as "the page is not short" is wrong exactly when the first
+   candidate is larger than the whole shortfall: the page is genuinely short,
+   nothing fits, and the run would report a complete-looking page. That is the
+   same collapse the refusal union exists to prevent, so it must not be
+   reintroduced by the code that fills it in.
    */
   const pageIsShort = pageShortfall({
     sourceText,
@@ -234,7 +234,7 @@ export function placeInsertions(
 
   return unpaired.map(function decide(step,): InsertionPlacement {
     /**
-     * What the aligner proved about where this section sits.
+     What the aligner proved about where this section sits.
      */
     const { anchor, } = step;
 
@@ -264,16 +264,16 @@ export function placeInsertions(
 }
 
 /**
- * Names one placement for an alignment finding.
- *
- * @param placement - what was decided about one section
- *
- * @returns Sentence a reader can act on
- *
- * @example
- * ```ts
- * const detail = describePlacement(placement,);
- * ```
+ Names one placement for an alignment finding.
+ 
+ @param placement - what was decided about one section
+ 
+ @returns Sentence a reader can act on
+ 
+ @example
+ ```ts
+ const detail = describePlacement(placement,);
+ ```
  */
 export function describePlacement(placement: InsertionPlacement,): string {
   if (placement.kind === 'placed')

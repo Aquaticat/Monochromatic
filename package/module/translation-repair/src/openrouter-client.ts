@@ -84,46 +84,46 @@ import {
 // is why the limiter seam stays injectable.
 
 /**
- * Local representation of this provider's absence of a per-model ceiling.
- *
- * @example
- * ```ts
- * const width = OPENROUTER_PER_MODEL_CONCURRENCY;
- * ```
+ Local representation of this provider's absence of a per-model ceiling.
+ 
+ @example
+ ```ts
+ const width = OPENROUTER_PER_MODEL_CONCURRENCY;
+ ```
  */
 export const OPENROUTER_PER_MODEL_CONCURRENCY: number = Number.POSITIVE_INFINITY;
 
 /**
- * Logger root for this package's model-facing shell.
+ Logger root for this package's model-facing shell.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Refusal raised when a roster model has no spelling on this provider.
- *
- * A THROW RATHER THAN A DATA OUTCOME, because it is a routing mistake in our
- * own code and not a thing a model did.
- *
- * @example
- * ```ts
- * throw new OpenRouterModelNotServedError({ modelId, },);
- * ```
+ Refusal raised when a roster model has no spelling on this provider.
+ 
+ A THROW RATHER THAN A DATA OUTCOME, because it is a routing mistake in our
+ own code and not a thing a model did.
+ 
+ @example
+ ```ts
+ throw new OpenRouterModelNotServedError({ modelId, },);
+ ```
  */
 export class OpenRouterModelNotServedError extends Error {
   /**
-   * Declares this message safe to forward: it names a model.
+   Declares this message safe to forward: it names a model.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds failure naming the model this provider has no spelling for.
-   *
-   * @param modelId - roster model that was addressed here
-   *
-   * @example
-   * ```ts
-   * new OpenRouterModelNotServedError({ modelId: 'hf:Qwen/Qwen3.8-27B', },);
-   * ```
+   Builds failure naming the model this provider has no spelling for.
+   
+   @param modelId - roster model that was addressed here
+   
+   @example
+   ```ts
+   new OpenRouterModelNotServedError({ modelId: 'hf:Qwen/Qwen3.8-27B', },);
+   ```
    */
   public constructor({ modelId, }: { readonly modelId: string; },) {
     super(`OpenRouter does not serve ${modelId}; route it to another provider or pick another model`,);
@@ -132,43 +132,43 @@ export class OpenRouterModelNotServedError extends Error {
 }
 
 /**
- * Client surface for the per-token USD provider.
- *
- * @example
- * ```ts
- * const client: OpenRouterClient = createOpenRouterClient({ apiKey, },);
- * ```
+ Client surface for the per-token USD provider.
+ 
+ @example
+ ```ts
+ const client: OpenRouterClient = createOpenRouterClient({ apiKey, },);
+ ```
  */
 export type OpenRouterClient = ModelCaller & {
   /**
-   * Credits purchased, used and remaining, which is this provider's whole
-   * budget signal.
+   Credits purchased, used and remaining, which is this provider's whole
+   budget signal.
    */
   readonly credits: (args: { readonly signal: AbortSignal; },) => Promise<OpenRouterCredits>;
 };
 
 /**
- * Refuses a success reply whose server-sent stream carried a provider failure
- * or stopped before its terminator.
- *
- * THE FAILURE IS ASKED FIRST. A stream the upstream failed mid-way carries an
- * `error` chunk and no terminator, so the terminator check alone would name
- * the framing ("cut off") where the wire named the cause (a code and an
- * endpoint); `openrouter-stream-error.ts` records the day that misnaming cost.
- *
- * @param attemptReply - one attempt's reply, read before the ladder returns it
- *
- * @throws InStreamProviderError - when a success body carries the gateway's
- * error chunk, which puts the failed call on the retry path under its own name
- *
- * @throws MalformedCompletionError - when a success body stops before
- * `[DONE]`, which is what puts a truncated stream on the retry path
- * instead of past it
- *
- * @example
- * ```ts
- * const reply = await exchangeWithRetry({ transport, exchange, policy, verify: wholeMessage, },);
- * ```
+ Refuses a success reply whose server-sent stream carried a provider failure
+ or stopped before its terminator.
+ 
+ THE FAILURE IS ASKED FIRST. A stream the upstream failed mid-way carries an
+ `error` chunk and no terminator, so the terminator check alone would name
+ the framing ("cut off") where the wire named the cause (a code and an
+ endpoint); `openrouter-stream-error.ts` records the day that misnaming cost.
+ 
+ @param attemptReply - one attempt's reply, read before the ladder returns it
+ 
+ @throws InStreamProviderError - when a success body carries the gateway's
+ error chunk, which puts the failed call on the retry path under its own name
+ 
+ @throws MalformedCompletionError - when a success body stops before
+ `[DONE]`, which is what puts a truncated stream on the retry path
+ instead of past it
+ 
+ @example
+ ```ts
+ const reply = await exchangeWithRetry({ transport, exchange, policy, verify: wholeMessage, },);
+ ```
  */
 function wholeMessage(attemptReply: TransportReply,): void {
   if (!isSuccessStatus({ status: attemptReply.status, },))
@@ -178,27 +178,27 @@ function wholeMessage(attemptReply: TransportReply,): void {
 }
 
 /**
- * Builds one client over injected transport, speaking chat completions.
- *
- * @param apiKey - bearer token; never logged
- *
- * @param transport - HTTP seam; tests inject recorded replies
- *
- * @param chatUrl - completion endpoint, overridable for tests
- *
- * @param creditsUrl - credits endpoint, overridable for tests
- *
- * @param perModelConcurrency - optional local test or caller bound; normal
- * operation is unbounded because the provider states no ceiling
- *
- * @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
- *
- * @returns Client surface with chatText, chatJson, and credits
- *
- * @example
- * ```ts
- * const client = createOpenRouterClient({ apiKey: process.env['TRANSLATION_REPAIR_OPENROUTER_API_KEY'] ?? '', },);
- * ```
+ Builds one client over injected transport, speaking chat completions.
+ 
+ @param apiKey - bearer token; never logged
+ 
+ @param transport - HTTP seam; tests inject recorded replies
+ 
+ @param chatUrl - completion endpoint, overridable for tests
+ 
+ @param creditsUrl - credits endpoint, overridable for tests
+ 
+ @param perModelConcurrency - optional local test or caller bound; normal
+ operation is unbounded because the provider states no ceiling
+ 
+ @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
+ 
+ @returns Client surface with chatText, chatJson, and credits
+ 
+ @example
+ ```ts
+ const client = createOpenRouterClient({ apiKey: process.env['TRANSLATION_REPAIR_OPENROUTER_API_KEY'] ?? '', },);
+ ```
  */
 export function createOpenRouterClient(
   {
@@ -218,12 +218,12 @@ export function createOpenRouterClient(
   },
 ): OpenRouterClient {
   /**
-   * Per-model limiters keyed by roster model, created lazily.
+   Per-model limiters keyed by roster model, created lazily.
    */
   const limiters = new Map<RosterModelId, LimitFunction>();
 
   /**
-   * Headers shared by every exchange, auth included.
+   Headers shared by every exchange, auth included.
    */
   const headers: Readonly<Record<string, string>> = {
     [OPENROUTER_AUTH_HEADER]: `Bearer ${apiKey}`,
@@ -231,27 +231,27 @@ export function createOpenRouterClient(
   };
 
   /**
-   * Returns the model's limiter, creating its slots on first use.
-   *
-   * @param modelId - model whose slot the exchange needs
-   *
-   * @returns Limiter granting the model `perModelConcurrency` slots
-   *
-   * @example
-   * ```ts
-   * const limit = limiterFor('minimax-m3',);
-   * ```
+   Returns the model's limiter, creating its slots on first use.
+   
+   @param modelId - model whose slot the exchange needs
+   
+   @returns Limiter granting the model `perModelConcurrency` slots
+   
+   @example
+   ```ts
+   const limit = limiterFor('minimax-m3',);
+   ```
    */
   function limiterFor(modelId: RosterModelId,): LimitFunction {
     /**
-     * Existing limiter when this model was called before.
+     Existing limiter when this model was called before.
      */
     const existing = limiters.get(modelId,);
     if (existing !== undefined)
       return existing;
 
     /**
-     * Fresh limiter for first use of this model.
+     Fresh limiter for first use of this model.
      */
     const created = pLimit(perModelConcurrency,);
     limiters.set(
@@ -262,24 +262,24 @@ export function createOpenRouterClient(
   }
 
   /**
-   * Spells one roster model the way this provider names it.
-   *
-   * @param modelId - roster model the caller addressed
-   *
-   * @returns Wire identifier for the request body
-   *
-   * @throws {@link OpenRouterModelNotServedError} when this provider serves no such model
-   *
-   * @example
-   * ```ts
-   * const served = servedIdFor({ modelId, },);
-   * ```
+   Spells one roster model the way this provider names it.
+   
+   @param modelId - roster model the caller addressed
+   
+   @returns Wire identifier for the request body
+   
+   @throws {@link OpenRouterModelNotServedError} when this provider serves no such model
+   
+   @example
+   ```ts
+   const served = servedIdFor({ modelId, },);
+   ```
    */
   function servedIdFor(
     { modelId, }: { readonly modelId: RosterModelId; },
   ): OpenRouterServedId {
     /**
-     * Spelling this provider uses, or that it serves no such model.
+     Spelling this provider uses, or that it serves no such model.
      */
     const spelling = openRouterIdFor({ modelId, },);
 
@@ -289,28 +289,28 @@ export function createOpenRouterClient(
   }
 
   /**
-   * Free-text chat exchange; bounded per model where a bound was given.
-   *
-   * @param request - exchange to perform
-   *
-   * @mutates request - `JSON.stringify` may invoke toJSON methods or getters while serializing messages and response format
-   *
-   * @returns Content text and usage when reported
-   *
-   * @throws {@link OpenRouterModelNotServedError} when this provider serves no such model
-   *
-   * @throws {@link SyntheticHttpError} on non-success status
-   *
-   * @throws {@link import('./completion-shape.ts').MalformedCompletionError} on a stream that never terminated
-   *
-   * @example
-   * ```ts
-   * const reply = await client.chatText({ modelId, messages, signal, },);
-   * ```
+   Free-text chat exchange; bounded per model where a bound was given.
+   
+   @param request - exchange to perform
+   
+   @mutates request - `JSON.stringify` may invoke toJSON methods or getters while serializing messages and response format
+   
+   @returns Content text and usage when reported
+   
+   @throws {@link OpenRouterModelNotServedError} when this provider serves no such model
+   
+   @throws {@link SyntheticHttpError} on non-success status
+   
+   @throws {@link import('./completion-shape.ts').MalformedCompletionError} on a stream that never terminated
+   
+   @example
+   ```ts
+   const reply = await client.chatText({ modelId, messages, signal, },);
+   ```
    */
   async function chatText(request: ForeignBorrowed<ChatTextRequest>,): Promise<ChatTextReply> {
     /**
-     * Logger pre-tagged with this function's name.
+     Logger pre-tagged with this function's name.
      */
     const rl = tagged({
       tag: chatText.name,
@@ -318,14 +318,14 @@ export function createOpenRouterClient(
     },);
 
     /**
-     * Wire spelling, resolved BEFORE the slot is taken so a misrouted call
-     * fails at once instead of queueing behind live ones.
+     Wire spelling, resolved BEFORE the slot is taken so a misrouted call
+     fails at once instead of queueing behind live ones.
      */
     const servedId = servedIdFor({ modelId: request.modelId, },);
 
     return await limiterFor(request.modelId,)(async function performExchange() {
       /**
-       * Message count for the entry log line.
+       Message count for the entry log line.
        */
       const messageCount = request
         .messages
@@ -334,9 +334,9 @@ export function createOpenRouterClient(
       rl.debug(`-> ${servedId}: ${String(messageCount,)} messages`,);
 
       /**
-       * Per-exchange deadline armed inside the slot so local queue wait
-       * behind concurrent same-model calls never counts against it;
-       * absent when the caller set no deadline.
+       Per-exchange deadline armed inside the slot so local queue wait
+       behind concurrent same-model calls never counts against it;
+       absent when the caller set no deadline.
        */
       using deadline = request.exchangeTimeoutMs === undefined
         ? undefined
@@ -347,15 +347,15 @@ export function createOpenRouterClient(
         },);
 
       /**
-       * Signal the exchange honors: deadline-joined when armed.
+       Signal the exchange honors: deadline-joined when armed.
        */
       const exchangeSignal = deadline === undefined
         ? request.signal
         : deadline.callSignal;
 
       /**
-       * Messages as they go on the wire, carrying this call's own response
-       * schema inside the system prompt, as on the Synthetic path (`#216`).
+       Messages as they go on the wire, carrying this call's own response
+       schema inside the system prompt, as on the Synthetic path (`#216`).
        */
       const asked = withSchemaInSystemPrompt({
         messages: request.messages,
@@ -366,14 +366,14 @@ export function createOpenRouterClient(
       },);
 
       /**
-       * Exactly what goes on the wire, hoisted so its size can be measured.
-       *
-       * NO THINKING PARAMETER AND NO REASONING BUDGET, EVER, the owner's
-       * standing instruction of 2026-08-25, recorded in full at the Synthetic
-       * body. `max_tokens` IS ALWAYS SENT since 2026-09-09, at the measured
-       * ceiling in `completion-cap.ts` or a caller's lower one:
-       * this is the per-token provider, and a stream a round abandoned kept
-       * billing to its own end on the endpoints that do not honour a cancel.
+       Exactly what goes on the wire, hoisted so its size can be measured.
+       
+       NO THINKING PARAMETER AND NO REASONING BUDGET, EVER, the owner's
+       standing instruction of 2026-08-25, recorded in full at the Synthetic
+       body. `max_tokens` IS ALWAYS SENT since 2026-09-09, at the measured
+       ceiling in `completion-cap.ts` or a caller's lower one:
+       this is the per-token provider, and a stream a round abandoned kept
+       billing to its own end on the endpoints that do not honour a cancel.
        */
       const bodyJson = JSON.stringify({
         model: servedId,
@@ -395,9 +395,9 @@ export function createOpenRouterClient(
       },);
 
       /**
-       * Raw reply from the transport seam, retried on transient statuses;
-       * a stream that ends before its usage block writes its reckoned spend
-       * line on the way out, since 2026-09-09.
+       Raw reply from the transport seam, retried on transient statuses;
+       a stream that ends before its usage block writes its reckoned spend
+       line on the way out, since 2026-09-09.
        */
       const reply = await exchangeReportingAbandon({
         servedId,
@@ -438,27 +438,27 @@ export function createOpenRouterClient(
       }
 
       /**
-       * Content and usage reassembled from the drained event stream.
+       Content and usage reassembled from the drained event stream.
        */
       const extracted = extractStreamedCompletion({ bodyText: reply.bodyText, },);
 
       /**
-       * USD this call was charged, as the final chunk reported it.
+       USD this call was charged, as the final chunk reported it.
        */
       const cost = openRouterCostOf({ bodyText: reply.bodyText, },);
 
       /**
-       * Upstream the gateway named as serving this call.
+       Upstream the gateway named as serving this call.
        */
       const endpoint = openRouterEndpointOf({ bodyText: reply.bodyText, },);
 
       /**
-       * Prompt tokens the upstream served from its cache, where it said.
+       Prompt tokens the upstream served from its cache, where it said.
        */
       const cachedTokens = openRouterCachedTokensOf({ bodyText: reply.bodyText, },);
 
       /**
-       * Content length for the completion log line.
+       Content length for the completion log line.
        */
       const textLength = extracted
         .text
@@ -487,28 +487,28 @@ export function createOpenRouterClient(
   }
 
   /**
-   * Schema-validated chat exchange.
-   *
-   * @param request - exchange plus content guard
-   *
-   * @mutates request - `JSON.stringify` may invoke toJSON methods or getters while the delegated exchange serializes messages and response format
-   *
-   * @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
-   *
-   * @throws {@link OpenRouterModelNotServedError} when this provider serves no such model
-   *
-   * @throws {@link SyntheticHttpError} on non-success status
-   *
-   * @example
-   * ```ts
-   * const outcome = await client.chatJson({ modelId, messages, signal, validate: isVerdict, },);
-   * ```
+   Schema-validated chat exchange.
+   
+   @param request - exchange plus content guard
+   
+   @mutates request - `JSON.stringify` may invoke toJSON methods or getters while the delegated exchange serializes messages and response format
+   
+   @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
+   
+   @throws {@link OpenRouterModelNotServedError} when this provider serves no such model
+   
+   @throws {@link SyntheticHttpError} on non-success status
+   
+   @example
+   ```ts
+   const outcome = await client.chatJson({ modelId, messages, signal, validate: isVerdict, },);
+   ```
    */
   async function chatJson<ValueT,>(
     request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
   ): Promise<ChatJsonOutcome<ValueT>> {
     /**
-     * Raw text reply of the underlying exchange.
+     Raw text reply of the underlying exchange.
      */
     const reply = await chatText({
       modelId: request.modelId,
@@ -537,27 +537,27 @@ export function createOpenRouterClient(
   }
 
   /**
-   * Reads credits purchased and used, which is this provider's whole budget
-   * signal.
-   *
-   * @param signal - abort signal honored for the read
-   *
-   * @returns Typed credits
-   *
-   * @throws {@link SyntheticHttpError} on non-success status
-   *
-   * @throws {@link import('./openrouter-credits.ts').OpenRouterCreditsShapeError} on contract-violating bodies
-   *
-   * @example
-   * ```ts
-   * const { remainingUsd, } = await client.credits({ signal, },);
-   * ```
+   Reads credits purchased and used, which is this provider's whole budget
+   signal.
+   
+   @param signal - abort signal honored for the read
+   
+   @returns Typed credits
+   
+   @throws {@link SyntheticHttpError} on non-success status
+   
+   @throws {@link import('./openrouter-credits.ts').OpenRouterCreditsShapeError} on contract-violating bodies
+   
+   @example
+   ```ts
+   const { remainingUsd, } = await client.credits({ signal, },);
+   ```
    */
   async function credits(
     { signal, }: { readonly signal: AbortSignal; },
   ): Promise<OpenRouterCredits> {
     /**
-     * Logger pre-tagged with this function's name.
+     Logger pre-tagged with this function's name.
      */
     const rl = tagged({
       tag: credits.name,
@@ -565,7 +565,7 @@ export function createOpenRouterClient(
     },);
 
     /**
-     * Raw reply from the credits endpoint, retried on transient statuses.
+     Raw reply from the credits endpoint, retried on transient statuses.
      */
     const reply = await exchangeWithRetry({
       transport,
@@ -587,12 +587,12 @@ export function createOpenRouterClient(
       },);
 
     /**
-     * Typed credits parsed from the verified body shape.
+     Typed credits parsed from the verified body shape.
      */
     const parsed = parseOpenRouterCredits({ bodyText: reply.bodyText, },);
 
     /**
-     * What is left, for the log line.
+     What is left, for the log line.
      */
     const { remainingUsd, } = parsed;
 

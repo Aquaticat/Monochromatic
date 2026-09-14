@@ -1,14 +1,14 @@
 /**
- * Tests for the content-block translation.
- *
- * THE DATA URI CASES ARE THE POINT. Pictures reach the models as data URIs
- * built by `encodeImageAsset`, and the Messages API wants that URI taken apart
- * into a media type and a payload. Reassembling it wrongly does not fail
- * loudly: the provider answers, and the model describes a picture it could not
- * see. So every way the split can go wrong is checked here rather than left to
- * be noticed in an answer.
- *
- * @module
+ Tests for the content-block translation.
+ 
+ THE DATA URI CASES ARE THE POINT. Pictures reach the models as data URIs
+ built by `encodeImageAsset`, and the Messages API wants that URI taken apart
+ into a media type and a payload. Reassembling it wrongly does not fail
+ loudly: the provider answers, and the model describes a picture it could not
+ see. So every way the split can go wrong is checked here rather than left to
+ be noticed in an answer.
+ 
+ @module
  */
 
 import {

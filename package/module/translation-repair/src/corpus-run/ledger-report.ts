@@ -32,66 +32,66 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // keeps that true when a file will not read.
 
 /**
- * Exit code left behind when there is no ledger to read.
+ Exit code left behind when there is no ledger to read.
  */
 const NOTHING_TO_READ = 1;
 
 /**
- * Exit code left behind when the ledger was read but not all of it.
- *
- * SEPARATE FROM AN ABSENT LEDGER, on the same grounds `verify-published.ts`
- * separates its two: a run that recorded nothing and a run whose record is
- * part unreadable answer a roster question differently, and a gate treating
- * them alike either trusts a partial standing or discards a whole one.
+ Exit code left behind when the ledger was read but not all of it.
+ 
+ SEPARATE FROM AN ABSENT LEDGER, on the same grounds `verify-published.ts`
+ separates its two: a run that recorded nothing and a run whose record is
+ part unreadable answer a roster question differently, and a gate treating
+ them alike either trusts a partial standing or discards a whole one.
  */
 const LEDGER_INCOMPLETE = 2;
 
 /**
- * Exit code left behind when the seat flag arrived with no seat after it.
+ Exit code left behind when the seat flag arrived with no seat after it.
  */
 const ASKED_WITHOUT_A_SEAT = 3;
 
 /**
- * Directory under a runs dir the ledger lives in.
+ Directory under a runs dir the ledger lives in.
  */
 const LEDGER_DIR = 'ledger';
 
 /**
- * Flag naming a single seat to read in full.
+ Flag naming a single seat to read in full.
  */
 const MODEL_FLAG = '--model';
 
 /**
- * Answer `indexOf` gives for a flag that was never passed.
+ Answer `indexOf` gives for a flag that was never passed.
  */
 const NO_FLAG = -1;
 
 /**
- * First argument that is not the runtime or the script path.
+ First argument that is not the runtime or the script path.
  */
 const FLAGS_START = 2;
 
 /**
- * Characters of a candidate shown before it is cut.
+ Characters of a candidate shown before it is cut.
  */
 const EXCERPT_CHARS = 400;
 
 /**
- * Multiplier turning a fraction into a percentage.
+ Multiplier turning a fraction into a percentage.
  */
 const PERCENT = 100;
 
 /**
- * Prints one candidate a named seat wrote, with what judges said about it.
- *
- * @param reading - candidate and the remarks about it
- *
- * @param at - position in this seat's output, so a reader can cite one
- *
- * @example
- * ```ts
- * printReading({ reading, at: 0, },);
- * ```
+ Prints one candidate a named seat wrote, with what judges said about it.
+ 
+ @param reading - candidate and the remarks about it
+ 
+ @param at - position in this seat's output, so a reader can cite one
+ 
+ @example
+ ```ts
+ printReading({ reading, at: 0, },);
+ ```
  */
 function printReading(
   {
@@ -113,7 +113,7 @@ function printReading(
       EXCERPT_CHARS,
     ),);
   /**
-   * Disinterested judges that named this candidate.
+   Disinterested judges that named this candidate.
    */
   const { remarks, } = reading;
 
@@ -125,25 +125,25 @@ function printReading(
 }
 
 /**
- * Reports the files that would not read, and what their absence costs.
- *
- * NAMED AS A SHORTFALL RATHER THAN LISTED AND DROPPED. Every figure this report
- * prints is computed over the files that read, so an unreadable contest silently
- * lowers a seat's candidate count and its ballot count together. A reader who
- * did not know that would take a partial standing for a whole one.
- *
- * @param reading - what the ledger directory yielded
- *
- * @example
- * ```ts
- * printRefusals({ reading, },);
- * ```
+ Reports the files that would not read, and what their absence costs.
+ 
+ NAMED AS A SHORTFALL RATHER THAN LISTED AND DROPPED. Every figure this report
+ prints is computed over the files that read, so an unreadable contest silently
+ lowers a seat's candidate count and its ballot count together. A reader who
+ did not know that would take a partial standing for a whole one.
+ 
+ @param reading - what the ledger directory yielded
+ 
+ @example
+ ```ts
+ printRefusals({ reading, },);
+ ```
  */
 function printRefusals(
   { reading, }: { readonly reading: LedgerReading; },
 ): void {
   /**
-   * Both halves of the reading, named so no member chain runs two steps deep.
+   Both halves of the reading, named so no member chain runs two steps deep.
    */
   const {
     refused,
@@ -167,20 +167,20 @@ function printRefusals(
 }
 
 /**
- * Prints what every seat did, over the contests that read.
- *
- * @param reading - what the ledger directory yielded
- *
- * @example
- * ```ts
- * printSummary({ reading, },);
- * ```
+ Prints what every seat did, over the contests that read.
+ 
+ @param reading - what the ledger directory yielded
+ 
+ @example
+ ```ts
+ printSummary({ reading, },);
+ ```
  */
 function printSummary(
   { reading, }: { readonly reading: LedgerReading; },
 ): void {
   /**
-   * What every seat did.
+   What every seat did.
    */
   const summary = summariseLedger({ rounds: reading.rounds, },);
 
@@ -190,7 +190,7 @@ function printSummary(
   );
   for (const work of summary.models) {
     /**
-     * Share of disinterested ballots that named this seat's work.
+     Share of disinterested ballots that named this seat's work.
      */
     const share = (work.ballots === 0)
       ? 'UNJUDGED'
@@ -209,16 +209,16 @@ function printSummary(
 }
 
 /**
- * Prints one seat's candidates and the reasons judges gave for choosing them.
- *
- * @param reading - what the ledger directory yielded
- *
- * @param wanted - seat to read in full
- *
- * @example
- * ```ts
- * printSeat({ reading, wanted, },);
- * ```
+ Prints one seat's candidates and the reasons judges gave for choosing them.
+ 
+ @param reading - what the ledger directory yielded
+ 
+ @param wanted - seat to read in full
+ 
+ @example
+ ```ts
+ printSeat({ reading, wanted, },);
+ ```
  */
 function printSeat(
   {
@@ -230,7 +230,7 @@ function printSeat(
   },
 ): void {
   /**
-   * Everything that seat wrote.
+   Everything that seat wrote.
    */
   const written = workOfModel({
     rounds: reading.rounds,
@@ -238,7 +238,7 @@ function printSeat(
   },);
 
   /**
-   * Its candidates the panel chose.
+   Its candidates the panel chose.
    */
   const chosen = written.filter(function won(reading_,): boolean {
     return reading_.won;
@@ -260,36 +260,36 @@ function printSeat(
 }
 
 /**
- * Reads a run's ledger and reports what it holds.
- *
- * Returns nothing: the report on stdout and the exit code ARE the output.
- *
- * @example
- * ```ts
- * await reportLedger();
- * ```
+ Reads a run's ledger and reports what it holds.
+ 
+ Returns nothing: the report on stdout and the exit code ARE the output.
+ 
+ @example
+ ```ts
+ await reportLedger();
+ ```
  */
 async function reportLedger(): Promise<void> {
   /**
-   * Arguments after the runtime and script paths.
+   Arguments after the runtime and script paths.
    */
   const args = process
     .argv
     .slice(FLAGS_START,);
 
   /**
-   * Run directory to read, from the environment or the house default, which is
-   * the same resolution every other reader in this family uses.
+   Run directory to read, from the environment or the house default, which is
+   the same resolution every other reader in this family uses.
    */
   const runsDir = await resolveRunsDir();
 
   /**
-   * Position of the seat flag, absent when the whole ledger was asked for.
+   Position of the seat flag, absent when the whole ledger was asked for.
    */
   const flagAt = args.indexOf(MODEL_FLAG,);
 
   /**
-   * Seat to read in full, absent when no flag was passed.
+   Seat to read in full, absent when no flag was passed.
    */
   const wanted = (flagAt === NO_FLAG) ? undefined : args[flagAt + 1];
 
@@ -306,7 +306,7 @@ async function reportLedger(): Promise<void> {
   }
 
   /**
-   * Every contest the ledger holds, beside the files that would not read.
+   Every contest the ledger holds, beside the files that would not read.
    */
   const reading = await readLedgerDirectory({
     dir: join(
@@ -316,7 +316,7 @@ async function reportLedger(): Promise<void> {
   },);
 
   /**
-   * Both halves of the reading, named so no member chain runs two steps deep.
+   Both halves of the reading, named so no member chain runs two steps deep.
    */
   const {
     refused,

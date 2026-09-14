@@ -24,55 +24,55 @@ import { abbreviate, } from './artifact-provenance.ts';
 // the budget is already spent.
 
 /**
- * Environment variable opting into resuming under a different build.
+ Environment variable opting into resuming under a different build.
  */
 const ALLOW_DRIFT_VAR = 'TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT';
 
 /**
- * Value that opts in, spelled out so a stray `0` cannot silently disable the
- * guard.
+ Value that opts in, spelled out so a stray `0` cannot silently disable the
+ guard.
  */
 const ALLOW_DRIFT_VALUE = 'yes';
 
 /**
- * Whether this process was started with the drift opt-in.
- *
- * Separated from the guard so the environment is read in exactly one place. The
- * environment is process-wide, so a guard that read it internally could not be
- * exercised by two callers at once, and its own tests had to mutate a shared
- * variable to reach either branch.
- *
- * @returns Whether the variable carries the exact opt-in
- *
- * @example
- * ```ts
- * const driftAllowed = readDriftOptIn();
- * ```
+ Whether this process was started with the drift opt-in.
+ 
+ Separated from the guard so the environment is read in exactly one place. The
+ environment is process-wide, so a guard that read it internally could not be
+ exercised by two callers at once, and its own tests had to mutate a shared
+ variable to reach either branch.
+ 
+ @returns Whether the variable carries the exact opt-in
+ 
+ @example
+ ```ts
+ const driftAllowed = readDriftOptIn();
+ ```
  */
 export function readDriftOptIn(): boolean {
   return process.env[ALLOW_DRIFT_VAR] === ALLOW_DRIFT_VALUE;
 }
 
 /**
- * Raised when a resume would stamp a second pipeline into one pool.
+ Raised when a resume would stamp a second pipeline into one pool.
  */
 export class GenerationDriftError extends Error {
   /**
-   * Declares this message safe to forward: it names two digests and the variable that would allow the drift.
+   Declares this message safe to forward: it names two digests and the variable that would allow the drift.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Names what is already there, what would be added, and every way forward.
-   *
-   * @param digests - built pipelines the settled entries already record
-   *
-   * @param digest - built pipeline this invocation would stamp
-   *
-   * @example
-   * ```ts
-   * throw new GenerationDriftError({ digests: ['53b5a4752...',], digest, },);
-   * ```
+   Names what is already there, what would be added, and every way forward.
+   
+   @param digests - built pipelines the settled entries already record
+   
+   @param digest - built pipeline this invocation would stamp
+   
+   @example
+   ```ts
+   throw new GenerationDriftError({ digests: ['53b5a4752...',], digest, },);
+   ```
    */
   constructor(
     {
@@ -84,7 +84,7 @@ export class GenerationDriftError extends Error {
     },
   ) {
     /**
-     * Width at which these pipelines stay distinguishable.
+     Width at which these pipelines stay distinguishable.
      */
     const short = abbreviate({
       ids: [
@@ -126,23 +126,23 @@ export class GenerationDriftError extends Error {
 }
 
 /**
- * Raised when a directory holds artifacts from before builds were recorded.
+ Raised when a directory holds artifacts from before builds were recorded.
  */
 export class LegacyPipelineError extends Error {
   /**
-   * Declares this message safe to forward: it names entry ids and counts them.
+   Declares this message safe to forward: it names entry ids and counts them.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Names the entries that predate generation identity and what to do.
-   *
-   * @param entryIds - entries recording a commit but no build
-   *
-   * @example
-   * ```ts
-   * throw new LegacyPipelineError({ entryIds: ['Mittens',], },);
-   * ```
+   Names the entries that predate generation identity and what to do.
+   
+   @param entryIds - entries recording a commit but no build
+   
+   @example
+   ```ts
+   throw new LegacyPipelineError({ entryIds: ['Mittens',], },);
+   ```
    */
   constructor({ entryIds, }: { readonly entryIds: readonly string[]; },) {
     super(
@@ -171,23 +171,23 @@ export class LegacyPipelineError extends Error {
 }
 
 /**
- * Raised when an artifact records nothing that could identify it.
+ Raised when an artifact records nothing that could identify it.
  */
 export class UnplaceableArtifactError extends Error {
   /**
-   * Declares this message safe to forward: it names entry ids and counts them.
+   Declares this message safe to forward: it names entry ids and counts them.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Names every unplaceable artifact and what removing it restores.
-   *
-   * @param entryIds - entries whose artifact carries nothing usable
-   *
-   * @example
-   * ```ts
-   * throw new UnplaceableArtifactError({ entryIds: ['Mittens',], },);
-   * ```
+   Names every unplaceable artifact and what removing it restores.
+   
+   @param entryIds - entries whose artifact carries nothing usable
+   
+   @example
+   ```ts
+   throw new UnplaceableArtifactError({ entryIds: ['Mittens',], },);
+   ```
    */
   constructor({ entryIds, }: { readonly entryIds: readonly string[]; },) {
     super(
@@ -219,31 +219,31 @@ export class UnplaceableArtifactError extends Error {
 }
 
 /**
- * Refuses a resume that would add a second pipeline to one pool.
- *
- * Silent on a fresh directory and on a resume under the same build, which are
- * the two ordinary cases. It reads the settled artifacts rather than trusting a
- * recorded marker, so a directory assembled by hand is judged on what it holds.
- *
- * @param artifactsDir - directory holding one JSON per settled entry
- *
- * @param digest - built pipeline this invocation would stamp on everything it
- * settles
- *
- * @param driftAllowed - whether a mixed directory was asked for, defaulting to
- * this process's opt-in
- *
- * @throws UnplaceableArtifactError when an artifact records nothing usable
- *
- * @throws LegacyPipelineError when artifacts predate generation identity
- *
- * @throws GenerationDriftError when settled entries record any other build and
- * the caller has not opted into drift
- *
- * @example
- * ```ts
- * await assertResumableGeneration({ artifactsDir, digest, },);
- * ```
+ Refuses a resume that would add a second pipeline to one pool.
+ 
+ Silent on a fresh directory and on a resume under the same build, which are
+ the two ordinary cases. It reads the settled artifacts rather than trusting a
+ recorded marker, so a directory assembled by hand is judged on what it holds.
+ 
+ @param artifactsDir - directory holding one JSON per settled entry
+ 
+ @param digest - built pipeline this invocation would stamp on everything it
+ settles
+ 
+ @param driftAllowed - whether a mixed directory was asked for, defaulting to
+ this process's opt-in
+ 
+ @throws UnplaceableArtifactError when an artifact records nothing usable
+ 
+ @throws LegacyPipelineError when artifacts predate generation identity
+ 
+ @throws GenerationDriftError when settled entries record any other build and
+ the caller has not opted into drift
+ 
+ @example
+ ```ts
+ await assertResumableGeneration({ artifactsDir, digest, },);
+ ```
  */
 export async function assertResumableGeneration(
   {
@@ -267,29 +267,29 @@ export async function assertResumableGeneration(
 }
 
 /**
- * Refuses a directory holding an artifact nothing can place, and reports what
- * the rest record.
- *
- * THE FIRST HALF of the resume guard, split out because something has to run
- * BETWEEN the two halves. The second half's refusal is overridable, and its
- * message tells an operator so; a schema check that refuses after they take
- * that advice makes the first message a lie and the second run's "resuming
- * across a foreign pipeline" line describe a resume that never happens. These
- * refusals are not overridable and belong before it.
- *
- * @param artifactsDir - directory holding one JSON per settled entry
- *
- * @returns What every placeable artifact records, so the second half need not
- * read the directory again
- *
- * @throws UnplaceableArtifactError when an artifact records nothing usable
- *
- * @throws LegacyPipelineError when artifacts predate generation identity
- *
- * @example
- * ```ts
- * const census = await assertArtifactsPlaceable({ artifactsDir, },);
- * ```
+ Refuses a directory holding an artifact nothing can place, and reports what
+ the rest record.
+ 
+ THE FIRST HALF of the resume guard, split out because something has to run
+ BETWEEN the two halves. The second half's refusal is overridable, and its
+ message tells an operator so; a schema check that refuses after they take
+ that advice makes the first message a lie and the second run's "resuming
+ across a foreign pipeline" line describe a resume that never happens. These
+ refusals are not overridable and belong before it.
+ 
+ @param artifactsDir - directory holding one JSON per settled entry
+ 
+ @returns What every placeable artifact records, so the second half need not
+ read the directory again
+ 
+ @throws UnplaceableArtifactError when an artifact records nothing usable
+ 
+ @throws LegacyPipelineError when artifacts predate generation identity
+ 
+ @example
+ ```ts
+ const census = await assertArtifactsPlaceable({ artifactsDir, },);
+ ```
  */
 export async function assertArtifactsPlaceable(
   { artifactsDir, }: { readonly artifactsDir: string; },
@@ -302,13 +302,13 @@ export async function assertArtifactsPlaceable(
   // and neither of which drift is an opinion about.
 
   /**
-   * Pipelines the settled entries already record, and the artifacts none could
-   * be read from.
+   Pipelines the settled entries already record, and the artifacts none could
+   be read from.
    */
   const census = await censusByGeneration({ artifactsDir, },);
 
   /**
-   * The three lists this half refuses on.
+   The three lists this half refuses on.
    */
   const {
     untaggedIds,
@@ -325,7 +325,7 @@ export async function assertArtifactsPlaceable(
   // absent from every rate. The entry silently ceases to exist, and no count
   // anywhere says so. Deleting the file is the whole remedy.
   /**
-   * Artifacts carrying nothing usable, whatever the reason.
+   Artifacts carrying nothing usable, whatever the reason.
    */
   const unplaceable = [
     ...untaggedIds,
@@ -342,27 +342,27 @@ export async function assertArtifactsPlaceable(
 }
 
 /**
- * Refuses a resume that would add a second BUILD to one pool.
- *
- * THE SECOND HALF, and the overridable one. It says nothing about artifacts
- * that cannot be placed, which the first half already refused, and nothing
- * about their SHAPE, which is a third question with a third remedy.
- *
- * @param census - what the first half read off the directory
- *
- * @param digest - built pipeline this invocation would stamp on everything it
- * settles
- *
- * @param driftAllowed - whether a mixed directory was asked for, defaulting to
- * this process's opt-in
- *
- * @throws GenerationDriftError when settled entries record any other build and
- * the caller has not opted into drift
- *
- * @example
- * ```ts
- * assertBuildGenerationResumable({ census, digest, },);
- * ```
+ Refuses a resume that would add a second BUILD to one pool.
+ 
+ THE SECOND HALF, and the overridable one. It says nothing about artifacts
+ that cannot be placed, which the first half already refused, and nothing
+ about their SHAPE, which is a third question with a third remedy.
+ 
+ @param census - what the first half read off the directory
+ 
+ @param digest - built pipeline this invocation would stamp on everything it
+ settles
+ 
+ @param driftAllowed - whether a mixed directory was asked for, defaulting to
+ this process's opt-in
+ 
+ @throws GenerationDriftError when settled entries record any other build and
+ the caller has not opted into drift
+ 
+ @example
+ ```ts
+ assertBuildGenerationResumable({ census, digest, },);
+ ```
  */
 export function assertBuildGenerationResumable(
   {
@@ -376,7 +376,7 @@ export function assertBuildGenerationResumable(
   },
 ): void {
   /**
-   * Recorded pipelines that are not the one this invocation would stamp.
+   Recorded pipelines that are not the one this invocation would stamp.
    */
   const foreign = census.groups
     .map(function toDigest(group,): string {

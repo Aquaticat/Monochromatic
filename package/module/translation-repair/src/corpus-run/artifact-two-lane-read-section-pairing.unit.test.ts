@@ -1,15 +1,15 @@
 /**
- * Tests for reading which decider chose a settled preparation's sections.
- *
- * WHAT THESE PIN is the three-way reading, unrecorded against deterministic
- * against supplied, and the shapes the reader refuses because this pipeline
- * cannot write them. Each refusal mirrors an invariant the section round
- * already holds, so a refusal that fired on a shape the producer CAN emit
- * would reject valid artifacts, which is the failure these are pointed at.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading which decider chose a settled preparation's sections.
+ 
+ WHAT THESE PIN is the three-way reading, unrecorded against deterministic
+ against supplied, and the shapes the reader refuses because this pipeline
+ cannot write them. Each refusal mirrors an invariant the section round
+ already holds, so a refusal that fired on a shape the producer CAN emit
+ would reject valid artifacts, which is the failure these are pointed at.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -25,12 +25,12 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Sections a fixture may name, wide enough that no case is bounded by accident.
+ Sections a fixture may name, wide enough that no case is bounded by accident.
  */
 const ALIGNED_SECTIONS = 4;
 
 /**
- * Where every case reports from.
+ Where every case reports from.
  */
 const PATH = 'Whiskers.preparation.sectionPairing';
 
@@ -121,7 +121,7 @@ await describe({
         + 'read as one of the two this generation understands',
       fn: async () => {
         /**
-         * Refusal of an unknown decider.
+         Refusal of an unknown decider.
          */
         const refusalOfUnknownDecider = caught(function unknownDecider() {
           parseSectionPairing({
@@ -140,7 +140,7 @@ await describe({
         + 'each is a record no builder writes and the exact-key guard is what keeps the file meaning one thing',
       fn: async () => {
         /**
-         * Refusal of pairs the deterministic decider cannot carry.
+         Refusal of pairs the deterministic decider cannot carry.
          */
         const refusalOfStrayPairs = caught(function strayPairs() {
           parseSectionPairing({
@@ -156,7 +156,7 @@ await describe({
         expect((refusalOfStrayPairs as Error).message,).toContain('no key here beyond kind',);
 
         /**
-         * Refusal of a supplied decider with nothing supplied.
+         Refusal of a supplied decider with nothing supplied.
          */
         const refusalOfMissingPairs = caught(function missingPairs() {
           parseSectionPairing({
@@ -219,7 +219,7 @@ await describe({
           ] as const
         ) {
           /**
-           * Refusal of the shape this case names.
+           Refusal of the shape this case names.
            */
           const refusalOfShape = caught(function shape() {
             parseSectionPairing({
@@ -244,7 +244,7 @@ await describe({
         + 'section and a longer list describes some other pair of documents',
       fn: async () => {
         /**
-         * Refusal of a pairing longer than the alignment.
+         Refusal of a pairing longer than the alignment.
          */
         const refusalOfOverlongPairing = caught(function overlong() {
           parseSectionPairing({
@@ -275,7 +275,7 @@ await describe({
         + 'block pairing reader gives: an unknown key is a claim this generation cannot interpret',
       fn: async () => {
         /**
-         * Refusal of a pair with an invented field.
+         Refusal of a pair with an invented field.
          */
         const refusalOfGrownPair = caught(function grownPair() {
           parseSectionPairing({

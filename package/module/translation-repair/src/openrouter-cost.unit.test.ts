@@ -1,7 +1,7 @@
 /**
- * Tests for the per-call cost read off an OpenRouter stream.
- *
- * @module
+ Tests for the per-call cost read off an OpenRouter stream.
+ 
+ @module
  */
 
 import {

@@ -1,22 +1,22 @@
 /**
- * Tests that the stage which REWRITES memorial text is told what this corpus is
- * written under.
- *
- * THE FAILURE THIS GUARDS is the one `house-policy.ts` was written for, stated
- * in its own header: a page that keeps a suicide method vague is obeying the
- * corpus's rule, a critic ignorant of that rule files it as an omission, and
- * the editor RESTORES the detail the rule exists to remove. The critic was
- * given the block. The editor was not, while five rules in its own sheet told
- * it that every detail of the original must survive and that an omission must
- * be translated in full sentences with nothing dropped.
- *
- * BOTH PATHS ARE COVERED. A calibration addendum builds a different system
- * prompt, and a policy that reached only one of the two would be absent from
- * every call in a run that uses an addendum.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests that the stage which REWRITES memorial text is told what this corpus is
+ written under.
+ 
+ THE FAILURE THIS GUARDS is the one `house-policy.ts` was written for, stated
+ in its own header: a page that keeps a suicide method vague is obeying the
+ corpus's rule, a critic ignorant of that rule files it as an omission, and
+ the editor RESTORES the detail the rule exists to remove. The critic was
+ given the block. The editor was not, while five rules in its own sheet told
+ it that every detail of the original must survive and that an omission must
+ be translated in full sentences with nothing dropped.
+ 
+ BOTH PATHS ARE COVERED. A calibration addendum builds a different system
+ prompt, and a policy that reached only one of the two would be absent from
+ every call in a run that uses an addendum.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -28,7 +28,7 @@ import {
 import { buildEditorMessages, } from '../dist/final/node/index.mjs';
 
 /**
- * One region the editor is asked to fix, standing in for a real envelope.
+ One region the editor is asked to fix, standing in for a real envelope.
  */
 const ENVELOPE = {
   envelopeId: 'cat-region-1',
@@ -40,7 +40,7 @@ const ENVELOPE = {
 };
 
 /**
- * Builds the system half for one editor call.
+ Builds the system half for one editor call.
  */
 function systemFor({ addendum, }: { readonly addendum?: string; },): string {
   return buildEditorMessages({

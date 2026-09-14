@@ -1,15 +1,15 @@
 /**
- * Tests for the runaway watch.
- *
- * This is the piece the drain calls, so it is tested the way the drain drives
- * it: chunk by chunk, stopping at the first runaway verdict rather than reading
- * the whole stream and asking afterwards. A watch that only reached the right
- * answer at the end would be useless, since the streams it exists to end never
- * reach an end.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the runaway watch.
+ 
+ This is the piece the drain calls, so it is tested the way the drain drives
+ it: chunk by chunk, stopping at the first runaway verdict rather than reading
+ the whole stream and asking afterwards. A watch that only reached the right
+ answer at the end would be useless, since the streams it exists to end never
+ reach an end.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -24,18 +24,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one server-sent event frame carrying text on one channel.
- *
- * @param channel - which channel the text arrives on
- *
- * @param text - text the frame carries
- *
- * @returns Frame as the wire sends it
- *
- * @example
- * ```ts
- * const raw = frameOf({ channel: 'reasoning', text: 'I will output. ', },);
- * ```
+ Builds one server-sent event frame carrying text on one channel.
+ 
+ @param channel - which channel the text arrives on
+ 
+ @param text - text the frame carries
+ 
+ @returns Frame as the wire sends it
+ 
+ @example
+ ```ts
+ const raw = frameOf({ channel: 'reasoning', text: 'I will output. ', },);
+ ```
  */
 function frameOf(
   {
@@ -47,7 +47,7 @@ function frameOf(
   },
 ): string {
   /**
-   * Delta object, whose field name distinguishes the channels.
+   Delta object, whose field name distinguishes the channels.
    */
   const delta = (channel === 'content') ? { content: text, } : { reasoning_content: text, };
 
@@ -63,26 +63,26 @@ function frameOf(
 }
 
 /**
- * Builds internally varied cat-themed text of exactly `length` characters,
- * so a block built from it is never itself internally repetitive.
- *
- * THE BLOCK MUST BE VARIED or a test built from it measures the block's own
- * repetition rather than whatever pattern the test arranges around it: this
- * mirrors the probe kept at `~/temp/agent/degeneration-period-probe.mjs`,
- * whose first attempt padded a single sentence and proved nothing for
- * exactly this reason.
- *
- * @param length - exact character count to build
- *
- * @param from - starting index the generator counts up from, so two blocks
- * built from different `from` values share no content
- *
- * @returns Varied text of exactly `length` characters
- *
- * @example
- * ```ts
- * const block = variedBlock({ length: 501, from: 1, },);
- * ```
+ Builds internally varied cat-themed text of exactly `length` characters,
+ so a block built from it is never itself internally repetitive.
+ 
+ THE BLOCK MUST BE VARIED or a test built from it measures the block's own
+ repetition rather than whatever pattern the test arranges around it: this
+ mirrors the probe kept at `~/temp/agent/degeneration-period-probe.mjs`,
+ whose first attempt padded a single sentence and proved nothing for
+ exactly this reason.
+ 
+ @param length - exact character count to build
+ 
+ @param from - starting index the generator counts up from, so two blocks
+ built from different `from` values share no content
+ 
+ @returns Varied text of exactly `length` characters
+ 
+ @example
+ ```ts
+ const block = variedBlock({ length: 501, from: 1, },);
+ ```
  */
 function variedBlock(
   {
@@ -94,12 +94,12 @@ function variedBlock(
   },
 ): string {
   /**
-   * Sentences built so far, joined once at the end.
+   Sentences built so far, joined once at the end.
    */
   const parts: string[] = [];
 
   /**
-   * Generator's own counter and how many characters it has produced.
+   Generator's own counter and how many characters it has produced.
    */
   const cursor = {
     at: from,
@@ -108,7 +108,7 @@ function variedBlock(
 
   while (cursor.sized < length) {
     /**
-     * One varied sentence, built from the current counter.
+     One varied sentence, built from the current counter.
      */
     const piece = `Cat ${String(cursor.at,)} inspected shelf ${String((cursor.at * 7) % 991,)} at hour `
       + `${String(cursor.at % 24,)} and reported nothing of note to cat ${String((cursor.at * 13) % 877,)}. `;
@@ -124,20 +124,20 @@ function variedBlock(
 }
 
 /**
- * Builds text that cycles a varied block of the given period, for exactly
- * `total` characters.
- *
- * @param period - length of the repeating block
- *
- * @param total - exact character count of the whole cycling text
- *
- * @returns Text repeating a `period`-character varied block for `total`
- * characters
- *
- * @example
- * ```ts
- * const cycling = cyclingText({ period: 501, total: 200_000, },);
- * ```
+ Builds text that cycles a varied block of the given period, for exactly
+ `total` characters.
+ 
+ @param period - length of the repeating block
+ 
+ @param total - exact character count of the whole cycling text
+ 
+ @returns Text repeating a `period`-character varied block for `total`
+ characters
+ 
+ @example
+ ```ts
+ const cycling = cyclingText({ period: 501, total: 200_000, },);
+ ```
  */
 function cyclingText(
   {
@@ -149,7 +149,7 @@ function cyclingText(
   },
 ): string {
   /**
-   * One period's worth of varied text, repeated to cover the whole length.
+   One period's worth of varied text, repeated to cover the whole length.
    */
   const block = variedBlock({
     length: period,
@@ -163,29 +163,29 @@ function cyclingText(
 }
 
 /**
- * Wraps long text as many small frames rather than one, so the scanner
- * reading complete lines sees it progressively.
- *
- * ONE FRAME CANNOT CARRY ARBITRARILY LONG TEXT AND STILL BE READ AS IT
- * ARRIVES. `scanStreamDeltas` only extracts a frame's text once it has seen
- * that frame's whole line, so a single frame carrying an entire long reply
- * would hand every detector the whole reply in one `notifyText` call at the
- * very end, which is not how a real stream delivers it and not what any of
- * these detectors are checked against. This is the same reason every other
- * fixture in this file builds many small frames rather than one large one.
- *
- * @param channel - which channel the text arrives on
- *
- * @param text - whole text to frame
- *
- * @param pieceChars - characters carried by each frame
- *
- * @returns Raw stream body, one frame per piece
- *
- * @example
- * ```ts
- * const raw = framedText({ channel: 'reasoning', text, pieceChars: 501, },);
- * ```
+ Wraps long text as many small frames rather than one, so the scanner
+ reading complete lines sees it progressively.
+ 
+ ONE FRAME CANNOT CARRY ARBITRARILY LONG TEXT AND STILL BE READ AS IT
+ ARRIVES. `scanStreamDeltas` only extracts a frame's text once it has seen
+ that frame's whole line, so a single frame carrying an entire long reply
+ would hand every detector the whole reply in one `notifyText` call at the
+ very end, which is not how a real stream delivers it and not what any of
+ these detectors are checked against. This is the same reason every other
+ fixture in this file builds many small frames rather than one large one.
+ 
+ @param channel - which channel the text arrives on
+ 
+ @param text - whole text to frame
+ 
+ @param pieceChars - characters carried by each frame
+ 
+ @returns Raw stream body, one frame per piece
+ 
+ @example
+ ```ts
+ const raw = framedText({ channel: 'reasoning', text, pieceChars: 501, },);
+ ```
  */
 function framedText(
   {
@@ -216,33 +216,33 @@ function framedText(
 }
 
 /**
- * Feeds a raw stream chunk by chunk, stopping at the first runaway verdict.
- *
- * @param raw - whole stream body
- *
- * @returns Verdict reached, and how much of the stream had been read
- *
- * @example
- * ```ts
- * const { verdict, readBytes, } = drive({ raw, },);
- * ```
+ Feeds a raw stream chunk by chunk, stopping at the first runaway verdict.
+ 
+ @param raw - whole stream body
+ 
+ @returns Verdict reached, and how much of the stream had been read
+ 
+ @example
+ ```ts
+ const { verdict, readBytes, } = drive({ raw, },);
+ ```
  */
 function drive({ raw, }: { readonly raw: string; },): {
   readonly verdict: ReturnType<ReturnType<typeof watchRunaway>['notifyChunk']>;
   readonly readBytes: number;
 } {
   /**
-   * Watch under test.
+   Watch under test.
    */
   const watch = watchRunaway();
 
   /**
-   * Chunk width, near what a socket actually delivers.
+   Chunk width, near what a socket actually delivers.
    */
   const width = 4_096;
 
   /**
-   * Where the read stopped, and what it concluded.
+   Where the read stopped, and what it concluded.
    */
   const outcome = Array.from(
     { length: Math.ceil(raw.length / width,), },
@@ -293,7 +293,7 @@ await describe({
         + 'is the case that produces no answer at all, so nothing downstream would ever notice it',
       fn: async () => {
         /**
-         * A model that thinks the same sentence forever.
+         A model that thinks the same sentence forever.
          */
         const raw = Array.from(
           { length: 30_000, },
@@ -330,7 +330,7 @@ await describe({
         + 'and this is what pins that refusal',
       fn: async () => {
         /**
-         * Long, varied thinking followed by a long, varied answer.
+         Long, varied thinking followed by a long, varied answer.
          */
         const raw = Array.from(
           { length: 6_000, },
@@ -367,9 +367,9 @@ await describe({
         + 'distinct. This is the escape the ratio detector window arithmetic cannot close alone',
       fn: async () => {
         /**
-         * A model looping a 501-character paragraph forever, well past the
-         * length bar both detectors share, delivered as many small frames
-         * so the checks run progressively rather than all at once.
+         A model looping a 501-character paragraph forever, well past the
+         length bar both detectors share, delivered as many small frames
+         so the checks run progressively rather than all at once.
          */
         const raw = framedText({
           channel: 'reasoning',
@@ -402,8 +402,8 @@ await describe({
         + 'produces approaches the bar, so a reply this short is never judged by either detector',
       fn: async () => {
         /**
-         * The same period-501 pattern as the refused case, kept well under
-         * the length bar.
+         The same period-501 pattern as the refused case, kept well under
+         the length bar.
          */
         const raw = framedText({
           channel: 'reasoning',
@@ -424,15 +424,15 @@ await describe({
         + 'slice or candidate a second time must not read as a loop for doing its job',
       fn: async () => {
         /**
-         * Varied filler well past the length bar, an 8000-character varied
-         * block quoted twice back to back, and more varied filler after it.
-         * The duplication happens AFTER the bar is crossed: were it before,
-         * the bar alone would explain a `continuing` verdict and this test
-         * would say nothing about the persistence check specifically. At
-         * 8000 characters the candidate is far past the roughly 3072-
-         * character window where a back-to-back requote can produce any hit
-         * at all, so the earlier copy has already scrolled out of the
-         * recurrence buffer entirely by the time the second copy finishes.
+         Varied filler well past the length bar, an 8000-character varied
+         block quoted twice back to back, and more varied filler after it.
+         The duplication happens AFTER the bar is crossed: were it before,
+         the bar alone would explain a `continuing` verdict and this test
+         would say nothing about the persistence check specifically. At
+         8000 characters the candidate is far past the roughly 3072-
+         character window where a back-to-back requote can produce any hit
+         at all, so the earlier copy has already scrolled out of the
+         recurrence buffer entirely by the time the second copy finishes.
          */
         const prefix = variedBlock({
           length: 140_000,
@@ -464,12 +464,12 @@ await describe({
         + 'one past that exact figure so this still reads as continuing rather than runaway',
       fn: async () => {
         /**
-         * Filler well past the length bar, delivered as one whole frame so
-         * the recurrence check that fires at the end of it lands on a clean
-         * phase: sinceLastCheck resets to exactly zero the instant the
-         * candidate starts arriving, which is what lets the fixture below
-         * land on the exact worst-case alignment rather than an arbitrary
-         * one.
+         Filler well past the length bar, delivered as one whole frame so
+         the recurrence check that fires at the end of it lands on a clean
+         phase: sinceLastCheck resets to exactly zero the instant the
+         candidate starts arriving, which is what lets the fixture below
+         land on the exact worst-case alignment rather than an arbitrary
+         one.
          */
         const prefix = variedBlock({
           length: 140_000,
@@ -477,14 +477,14 @@ await describe({
         },);
 
         /**
-         * A candidate of exactly 3072 characters: BUFFER_CHARS (4096) minus
-         * TAIL_CHARS (1024) in `stream-recurrence-watch.ts`, the one length
-         * at which a back-to-back requote's consecutive-hit count reaches
-         * its proven maximum rather than staying below it. Quoted twice back
-         * to back and delivered one character per frame, so the checks stay
-         * locked to the exact 512-character grid the whole-frame prefix
-         * above established, landing on that worst-case alignment rather
-         * than being blurred by a coarser frame size that could skip past it.
+         A candidate of exactly 3072 characters: BUFFER_CHARS (4096) minus
+         TAIL_CHARS (1024) in `stream-recurrence-watch.ts`, the one length
+         at which a back-to-back requote's consecutive-hit count reaches
+         its proven maximum rather than staying below it. Quoted twice back
+         to back and delivered one character per frame, so the checks stay
+         locked to the exact 512-character grid the whole-frame prefix
+         above established, landing on that worst-case alignment rather
+         than being blurred by a coarser frame size that could skip past it.
          */
         const candidate = variedBlock({
           length: 3_072,
@@ -524,7 +524,7 @@ await describe({
         ).join('',);
 
         /**
-         * What the watch concluded.
+         What the watch concluded.
          */
         const { verdict, } = drive({ raw, },);
         expect(verdict.kind,).toBe('runaway',);
@@ -542,8 +542,8 @@ await describe({
         const watch = watchRunaway();
 
         /**
-         * Two channels' worth of ordinary, non-repeating text, well short of
-         * anything a verdict would notice.
+         Two channels' worth of ordinary, non-repeating text, well short of
+         anything a verdict would notice.
          */
         const said = 'Whiskers dozed on the windowsill. ';
         const thought = 'Considering whether the shelf holds. ';
@@ -596,16 +596,16 @@ await describe({
         const watch = watchRunaway();
 
         /**
-         * What the model actually said.
+         What the model actually said.
          */
         const said = 'Whiskers considered the shelf at length. ';
 
         /**
-         * One frame as the wire actually sends it, `id` included. Production
-         * ids are a bare hexadecimal string; this fixture spells it
-         * `chatcmpl-tabby`, matching the shape recorded in the decision
-         * document, precisely so that the id would show up in the excerpt if
-         * this were reading the envelope rather than the generated text.
+         One frame as the wire actually sends it, `id` included. Production
+         ids are a bare hexadecimal string; this fixture spells it
+         `chatcmpl-tabby`, matching the shape recorded in the decision
+         document, precisely so that the id would show up in the excerpt if
+         this were reading the envelope rather than the generated text.
          */
         const raw = `data: ${
           JSON.stringify({
@@ -622,7 +622,7 @@ await describe({
         watch.notifyChunk({ chunk: raw, },);
 
         /**
-         * What the opening excerpt would show.
+         What the opening excerpt would show.
          */
         const opening = watch.openingText();
 
@@ -640,7 +640,7 @@ await describe({
         + 'the call had already cost when it was ended, and which model ran away',
       fn: async () => {
         /**
-         * Error as the drain would raise it.
+         Error as the drain would raise it.
          */
         const error = new StreamDegenerateError({
           label: 'critic hf:zai-org/GLM-5.3-Flash',

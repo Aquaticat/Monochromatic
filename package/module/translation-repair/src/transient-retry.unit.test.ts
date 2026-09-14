@@ -1,27 +1,27 @@
 /**
- * Tests for the transport-level transient retry.
- *
- * `exchangeWithRetry` had no test. It sits under every model call in the
- * pipeline, so its two failure modes are both expensive: retrying something
- * permanent burns the flat-rate provider's capacity on a guaranteed rejection,
- * and NOT retrying something transient throws away a voice the ensemble needed,
- * which shows up much later as a thinner quorum rather than as an error.
- *
- * The abort case gets the most attention. A caller abort during backoff must
- * stop the loop rather than burn the remaining attempts, and it must surface
- * the failure that actually happened rather than a generic one.
- *
- * The two guard errors, degeneration and overrun, are both ends this system
- * chose rather than weather. They ride one predicate instead of two separate
- * class checks, so both get a case here: a check that named only one of them
- * would pass this whole suite while the ladder re-bought every overrun.
- *
- * Every case uses a tiny backoff base so the suite stays fast; the delay
- * arithmetic is jittered and is not what these assert.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the transport-level transient retry.
+ 
+ `exchangeWithRetry` had no test. It sits under every model call in the
+ pipeline, so its two failure modes are both expensive: retrying something
+ permanent burns the flat-rate provider's capacity on a guaranteed rejection,
+ and NOT retrying something transient throws away a voice the ensemble needed,
+ which shows up much later as a thinner quorum rather than as an error.
+ 
+ The abort case gets the most attention. A caller abort during backoff must
+ stop the loop rather than burn the remaining attempts, and it must surface
+ the failure that actually happened rather than a generic one.
+ 
+ The two guard errors, degeneration and overrun, are both ends this system
+ chose rather than weather. They ride one predicate instead of two separate
+ class checks, so both get a case here: a check that named only one of them
+ would pass this whole suite while the ladder re-bought every overrun.
+ 
+ Every case uses a tiny backoff base so the suite stays fast; the delay
+ arithmetic is jittered and is not what these assert.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -42,7 +42,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Retry policy with a backoff small enough to keep the suite quick.
+ Retry policy with a backoff small enough to keep the suite quick.
  */
 const FAST_POLICY = {
   limit: 2,
@@ -50,9 +50,9 @@ const FAST_POLICY = {
 };
 
 /**
- * Retry policy whose reach, the widest backoff window it grants on its own,
- * covers the one-second wait Hyper's hourly refusal names, so the ladder
- * sleeps that wait instead of ending on it.
+ Retry policy whose reach, the widest backoff window it grants on its own,
+ covers the one-second wait Hyper's hourly refusal names, so the ladder
+ sleeps that wait instead of ending on it.
  */
 const WAIT_POLICY = {
   limit: 2,
@@ -60,16 +60,16 @@ const WAIT_POLICY = {
 };
 
 /**
- * Builds the exchange every case sends.
- *
- * @param signal - caller abort handle
- *
- * @returns Exchange the transport receives
- *
- * @example
- * ```ts
- * const exchange = exchangeWith({ signal: new AbortController().signal, },);
- * ```
+ Builds the exchange every case sends.
+ 
+ @param signal - caller abort handle
+ 
+ @returns Exchange the transport receives
+ 
+ @example
+ ```ts
+ const exchange = exchangeWith({ signal: new AbortController().signal, },);
+ ```
  */
 function exchangeWith({ signal, }: { readonly signal: AbortSignal; },) {
   return {
@@ -83,20 +83,20 @@ function exchangeWith({ signal, }: { readonly signal: AbortSignal; },) {
 }
 
 /**
- * Transport replaying a scripted list of replies and failures, recording how
- * many times it was called.
- *
- * @param script - one entry per expected attempt; an Error is thrown, a reply
- * is returned
- *
- * @param calls - shared counter the cases assert on
- *
- * @returns Transport honoring the script
- *
- * @example
- * ```ts
- * const transport = scriptedTransport({ script: [okReply,], calls, },);
- * ```
+ Transport replaying a scripted list of replies and failures, recording how
+ many times it was called.
+ 
+ @param script - one entry per expected attempt; an Error is thrown, a reply
+ is returned
+ 
+ @param calls - shared counter the cases assert on
+ 
+ @returns Transport honoring the script
+ 
+ @example
+ ```ts
+ const transport = scriptedTransport({ script: [okReply,], calls, },);
+ ```
  */
 function scriptedTransport(
   {
@@ -109,7 +109,7 @@ function scriptedTransport(
 ): ModelTransport {
   return async function transport() {
     /**
-     * Entry for this attempt; the last entry repeats once the script runs out.
+     Entry for this attempt; the last entry repeats once the script runs out.
      */
     const entry = script[calls.count] ?? script.at(-1,);
     calls.count += 1;
@@ -122,7 +122,7 @@ function scriptedTransport(
 }
 
 /**
- * Successful reply used wherever the content does not matter.
+ Successful reply used wherever the content does not matter.
  */
 const OK_REPLY: TransportReply = {
   status: 200,
@@ -137,7 +137,7 @@ await describe({
         + 'healthy call costs exactly one request',
       fn: async () => {
         /**
-         * Attempt counter for this case.
+         Attempt counter for this case.
          */
         const calls = { count: 0, };
 
@@ -169,12 +169,12 @@ await describe({
           422,
         ].map(async function expectNoRetry(status,) {
           /**
-           * Attempt counter for this status.
+           Attempt counter for this status.
            */
           const calls = { count: 0, };
 
           /**
-           * Reply carrying the non-retryable status.
+           Reply carrying the non-retryable status.
            */
           const reply: TransportReply = {
             status,
@@ -211,7 +211,7 @@ await describe({
           504,
         ].map(async function expectRetry(status,) {
           /**
-           * Attempt counter for this status.
+           Attempt counter for this status.
            */
           const calls = { count: 0, };
 
@@ -242,12 +242,12 @@ await describe({
         + 'see it (Huasheng, 2026-09-07: 2,693 refused attempts over 2h53m)',
       fn: async () => {
         /**
-         * Attempt counter.
+         Attempt counter.
          */
         const calls = { count: 0, };
 
         /**
-         * Refusal naming a wait of fourteen minutes and forty seconds.
+         Refusal naming a wait of fourteen minutes and forty seconds.
          */
         const dailyRefusal = {
           status: 429,
@@ -256,7 +256,7 @@ await describe({
         };
 
         /**
-         * When the exchange started.
+         When the exchange started.
          */
         const startedAt = Date.now();
         expect(
@@ -292,11 +292,11 @@ await describe({
         expect(retryAfterMsOf({ bodyText: 'try again in 2h', },),).toBe(7_200_000,);
 
         /**
-         * Attempt counter.
+         Attempt counter.
          */
         const calls = { count: 0, };
         /**
-         * When the exchange started.
+         When the exchange started.
          */
         const startedAt = Date.now();
         expect(
@@ -329,12 +329,12 @@ await describe({
         + 'gave and can record it instead of guessing',
       fn: async () => {
         /**
-         * Attempt counter across the exhausted budget.
+         Attempt counter across the exhausted budget.
          */
         const calls = { count: 0, };
 
         /**
-         * Reply the provider keeps giving.
+         Reply the provider keeps giving.
          */
         const busy: TransportReply = {
           status: 503,
@@ -362,7 +362,7 @@ await describe({
         + 'arrives as a status at all',
       fn: async () => {
         /**
-         * Attempt counter for this case.
+         Attempt counter for this case.
          */
         const calls = { count: 0, };
 
@@ -388,15 +388,15 @@ await describe({
         + 'a wrapper, so the cause survives to whoever reads the log',
       fn: async () => {
         /**
-         * Attempt counter across the exhausted budget.
+         Attempt counter across the exhausted budget.
          */
         const calls = { count: 0, };
 
         /**
-         * Exactly the failure the transport raised, held so the assertion can
-         * prove THAT object came back. A wrapper quoting it reads identically
-         * to a matcher that only checks wording, and a wrapper is what this
-         * case exists to rule out.
+         Exactly the failure the transport raised, held so the assertion can
+         prove THAT object came back. A wrapper quoting it reads identically
+         to a matcher that only checks wording, and a wrapper is what this
+         case exists to rule out.
          */
         const transportFailure = new Error('connection reset',);
 
@@ -421,17 +421,17 @@ await describe({
         + 'to the rest of the run',
       fn: async () => {
         /**
-         * Attempt counter, so a stopped loop is visible as a call count.
+         Attempt counter, so a stopped loop is visible as a call count.
          */
         const calls = { count: 0, };
 
         /**
-         * Caller abort tripped as soon as the first attempt fails.
+         Caller abort tripped as soon as the first attempt fails.
          */
         const controller = new AbortController();
 
         /**
-         * Transport that aborts the caller while failing transiently.
+         Transport that aborts the caller while failing transiently.
          */
         const transport: ModelTransport = async () => {
           calls.count += 1;
@@ -463,12 +463,12 @@ await describe({
         + 'limit rather than as a bare cancellation',
       fn: async () => {
         /**
-         * Caller abort tripped during the first backoff.
+         Caller abort tripped during the first backoff.
          */
         const controller = new AbortController();
 
         /**
-         * Transport reporting rate limiting, then aborting the caller.
+         Transport reporting rate limiting, then aborting the caller.
          */
         const transport: ModelTransport = async () => {
           controller.abort();
@@ -494,19 +494,19 @@ await describe({
         + 'never received',
       fn: async () => {
         /**
-         * Caller abort tripped during the first backoff.
+         Caller abort tripped during the first backoff.
          */
         const controller = new AbortController();
 
         /**
-         * Exactly the failure the transport raised, held so the assertion can
-         * prove the retry layer surfaced THAT object rather than the HTTP error
-         * the case name says it never received.
+         Exactly the failure the transport raised, held so the assertion can
+         prove the retry layer surfaced THAT object rather than the HTTP error
+         the case name says it never received.
          */
         const transportFailure = new Error('connection reset',);
 
         /**
-         * Transport dropping the connection, then aborting the caller.
+         Transport dropping the connection, then aborting the caller.
          */
         const transport: ModelTransport = async () => {
           controller.abort();
@@ -528,7 +528,7 @@ await describe({
         + 'that omits it gets the tuned budget rather than no retries at all',
       fn: async () => {
         /**
-         * Attempt counter under the default policy.
+         Attempt counter under the default policy.
          */
         const calls = { count: 0, };
 
@@ -556,16 +556,16 @@ await describe({
         + 'degeneration guard exists to avoid',
       fn: async () => {
         /**
-         * Attempt counter, which is the whole assertion: the error's identity
-         * would look right even if the transport had been called five times.
+         Attempt counter, which is the whole assertion: the error's identity
+         would look right even if the transport had been called five times.
          */
         const calls = { count: 0, };
 
         /**
-         * What the drain throws once it has cancelled a runaway reader. The
-         * caller's signal is NOT aborted on this path, because the termination
-         * is ours rather than the caller's steering, so nothing else in the
-         * retry loop marks it as permanent.
+         What the drain throws once it has cancelled a runaway reader. The
+         caller's signal is NOT aborted on this path, because the termination
+         is ours rather than the caller's steering, so nothing else in the
+         retry loop marks it as permanent.
          */
         const runaway = new StreamDegenerateError({
           label: 'hf:whiskers',
@@ -575,8 +575,8 @@ await describe({
         },);
 
         /**
-         * What the call did, as a value, so the assertion reads as an
-         * expectation rather than as control flow.
+         What the call did, as a value, so the assertion reads as an
+         expectation rather than as control flow.
          */
         const raised = await (async function attempt(): Promise<unknown> {
           try {
@@ -607,17 +607,17 @@ await describe({
         + 'the unbounded call it replaced',
       fn: async () => {
         /**
-         * Attempt counter, which is the whole assertion: the error's identity
-         * arrives unchanged whether the ladder re-dispatched or not, so only
-         * the count separates a guard that holds from one that does not.
+         Attempt counter, which is the whole assertion: the error's identity
+         arrives unchanged whether the ladder re-dispatched or not, so only
+         the count separates a guard that holds from one that does not.
          */
         const calls = { count: 0, };
 
         /**
-         * What the drain throws once it has cancelled a reader that crossed the
-         * content bound. The caller's signal is NOT aborted on this path, the
-         * termination being ours rather than the caller's steering, so nothing
-         * else in the retry loop marks it permanent.
+         What the drain throws once it has cancelled a reader that crossed the
+         content bound. The caller's signal is NOT aborted on this path, the
+         termination being ours rather than the caller's steering, so nothing
+         else in the retry loop marks it permanent.
          */
         const overrun = new StreamOverrunError({
           label: 'hf:whiskers',
@@ -627,8 +627,8 @@ await describe({
         },);
 
         /**
-         * What the call did, as a value, so the assertion reads as an
-         * expectation rather than as control flow.
+         What the call did, as a value, so the assertion reads as an
+         expectation rather than as control flow.
          */
         const raised = await (async function attempt(): Promise<unknown> {
           try {

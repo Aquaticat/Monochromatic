@@ -20,29 +20,29 @@ import {
 // be read side by side.
 
 /**
- * Everything about this run that changes what the models are ASKED, folded into
- * every cache key.
- *
- * Without it a resumed slice could return a record produced under a different
- * roster or a different alignment threshold, and nothing would look wrong: the
- * texts match, so the key matches. Identity context belongs here for the same
- * reason, since it is front-matter-derived prompt content that varies per pair.
- *
- * `perCallTimeoutMs` is deliberately ABSENT. It changes how long a voice has to
- * answer, not what it is asked, and the roster retries to quorum, so the heard
- * set already varies between runs over one key. Including it would make every
- * deadline change discard every settled translation in the corpus.
- *
- * @param models - translator and judge rosters
- *
- * @param identityContext - declared names travelling with every slice
- *
- * @returns Stable string for the key
- *
- * @example
- * ```ts
- * const runShape = translateRunShape({ models, identityContext, },);
- * ```
+ Everything about this run that changes what the models are ASKED, folded into
+ every cache key.
+ 
+ Without it a resumed slice could return a record produced under a different
+ roster or a different alignment threshold, and nothing would look wrong: the
+ texts match, so the key matches. Identity context belongs here for the same
+ reason, since it is front-matter-derived prompt content that varies per pair.
+ 
+ `perCallTimeoutMs` is deliberately ABSENT. It changes how long a voice has to
+ answer, not what it is asked, and the roster retries to quorum, so the heard
+ set already varies between runs over one key. Including it would make every
+ deadline change discard every settled translation in the corpus.
+ 
+ @param models - translator and judge rosters
+ 
+ @param identityContext - declared names travelling with every slice
+ 
+ @returns Stable string for the key
+ 
+ @example
+ ```ts
+ const runShape = translateRunShape({ models, identityContext, },);
+ ```
  */
 export function translateRunShape(
   {
@@ -63,59 +63,59 @@ export function translateRunShape(
 }
 
 /**
- * Cross-run key for one slice under the translate lane.
- *
- * THE SLICE INDEX IS NOT IN IT, since version 2, and that is the whole design.
- * A key is what makes two runs' slices the same slice, and what a translator is
- * asked is the source text, the incumbent, the governance flag and the run
- * shape. Where the slice happens to sit changes none of it.
- *
- * WHAT KEEPING IT COST. Any renumbering invalidated every slice after the
- * change however untouched its text: inserting one slice at the top of a
- * document discarded the whole document's settled work, and `#100` inserts
- * slices for every untranslated section. The corpus would have been rebought on
- * that change and on every slicing change after it.
- *
- * WHAT DROPPING IT COSTS, measured rather than assumed: two slices carrying
- * identical source text, identical incumbent and identical governance inside
- * one document now share an entry. Their models would decide identically, so
- * the shared record is right rather than merely cheap, and the caller stamps
- * the index it asked under onto what it resumes. Across the 92 pinned documents
- * and 1260 slices there is not one such pair; the probe was validated first on
- * an invented document with two identical sections, where it finds the pair.
- *
- * @param runShape - what this run asks, from {@link translateRunShape}
- *
- * @param sourceText - slice original
- *
- * @param incumbentText - translation already there
- *
- * @param incumbentKind - whether there is a translation to fall back on
- *
- * @param syntax - syntax role changing model instructions and validation
- *
- * @param lineStructured - whether the enclosing chunk is line-structured
- *
- * @param neighbouringSourceText - original of the sections either side, shown to
- * the judges as context. Absent for every ordinary run, and absence is
- * serialized as though this parameter did not exist, so a settled corpus keyed
- * before it existed stays valid
- *
- * @param pictureContext - what the pictures this slice and its neighbours show
- * were read as, appended only when a reading was corroborated. A slice judged
- * with a picture's text in front of it can reach a different answer than one
- * judged without, so the two are not the same question and must not share a key
- *
- * @param neighbouringIncumbentText - archive English of the sections either
- * side, shown so a passage missing here can be recognised next door rather than
- * read as one the archive never had
- *
- * @returns Hash keying this slice's record
- *
- * @example
- * ```ts
- * const key = translateSliceKey({ runShape, sourceText, incumbentText, incumbentKind, lineStructured, },);
- * ```
+ Cross-run key for one slice under the translate lane.
+ 
+ THE SLICE INDEX IS NOT IN IT, since version 2, and that is the whole design.
+ A key is what makes two runs' slices the same slice, and what a translator is
+ asked is the source text, the incumbent, the governance flag and the run
+ shape. Where the slice happens to sit changes none of it.
+ 
+ WHAT KEEPING IT COST. Any renumbering invalidated every slice after the
+ change however untouched its text: inserting one slice at the top of a
+ document discarded the whole document's settled work, and `#100` inserts
+ slices for every untranslated section. The corpus would have been rebought on
+ that change and on every slicing change after it.
+ 
+ WHAT DROPPING IT COSTS, measured rather than assumed: two slices carrying
+ identical source text, identical incumbent and identical governance inside
+ one document now share an entry. Their models would decide identically, so
+ the shared record is right rather than merely cheap, and the caller stamps
+ the index it asked under onto what it resumes. Across the 92 pinned documents
+ and 1260 slices there is not one such pair; the probe was validated first on
+ an invented document with two identical sections, where it finds the pair.
+ 
+ @param runShape - what this run asks, from {@link translateRunShape}
+ 
+ @param sourceText - slice original
+ 
+ @param incumbentText - translation already there
+ 
+ @param incumbentKind - whether there is a translation to fall back on
+ 
+ @param syntax - syntax role changing model instructions and validation
+ 
+ @param lineStructured - whether the enclosing chunk is line-structured
+ 
+ @param neighbouringSourceText - original of the sections either side, shown to
+ the judges as context. Absent for every ordinary run, and absence is
+ serialized as though this parameter did not exist, so a settled corpus keyed
+ before it existed stays valid
+ 
+ @param pictureContext - what the pictures this slice and its neighbours show
+ were read as, appended only when a reading was corroborated. A slice judged
+ with a picture's text in front of it can reach a different answer than one
+ judged without, so the two are not the same question and must not share a key
+ 
+ @param neighbouringIncumbentText - archive English of the sections either
+ side, shown so a passage missing here can be recognised next door rather than
+ read as one the archive never had
+ 
+ @returns Hash keying this slice's record
+ 
+ @example
+ ```ts
+ const key = translateSliceKey({ runShape, sourceText, incumbentText, incumbentKind, lineStructured, },);
+ ```
  */
 export function translateSliceKey(
   {

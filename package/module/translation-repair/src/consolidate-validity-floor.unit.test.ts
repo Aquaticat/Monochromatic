@@ -1,19 +1,19 @@
 /**
- * Tests for the floor under a consolidation slate.
- *
- * WHAT THIS PINS is the case the band pair actually hit: every proposal
- * refused by the structural guard, and a consolidation shipping anyway. The
- * floor is what makes that impossible, so the case where nothing survives
- * matters more here than the case where something does.
- *
- * The policy is inherited rather than invented, so these also pin the half
- * that is easy to lose in a refactor: a slate with even one survivor is NOT
- * refused, however many of its siblings failed. A floor that tripped on any
- * invalid proposal would throw away the ensemble.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the floor under a consolidation slate.
+ 
+ WHAT THIS PINS is the case the band pair actually hit: every proposal
+ refused by the structural guard, and a consolidation shipping anyway. The
+ floor is what makes that impossible, so the case where nothing survives
+ matters more here than the case where something does.
+ 
+ The policy is inherited rather than invented, so these also pin the half
+ that is easy to lose in a refactor: a slate with even one survivor is NOT
+ refused, however many of its siblings failed. A floor that tripped on any
+ invalid proposal would throw away the ensemble.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -29,23 +29,23 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger these hand to the stage, whose output is not what is under test.
+ Logger these hand to the stage, whose output is not what is under test.
  */
 const l = tagged({ tag: 'consolidate-floor-test', },);
 
 /**
- * Builds one checked proposal.
- *
- * @param modelId - voice that wrote it
- *
- * @param valid - whether the structural guard passed it
- *
- * @returns Proposal shaped as the produce half reports one
- *
- * @example
- * ```ts
- * const checked = checkedAs({ modelId: 'hf:cat/Cat-A', valid: true, },);
- * ```
+ Builds one checked proposal.
+ 
+ @param modelId - voice that wrote it
+ 
+ @param valid - whether the structural guard passed it
+ 
+ @returns Proposal shaped as the produce half reports one
+ 
+ @example
+ ```ts
+ const checked = checkedAs({ modelId: 'hf:cat/Cat-A', valid: true, },);
+ ```
  */
 function checkedAs(
   { modelId, valid, }: { readonly modelId: string; readonly valid: boolean; },

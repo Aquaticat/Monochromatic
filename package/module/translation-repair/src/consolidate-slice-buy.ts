@@ -17,7 +17,7 @@ import { TranslationRepairInterruptedError, } from './translation-repair-interru
 //region Consolidate slice buy
 
 /**
- * Inputs shared by initial and continued consolidation attempts.
+ Inputs shared by initial and continued consolidation attempts.
  */
 type ConsolidationBuyInput = {
   readonly client: SyntheticClient;
@@ -39,61 +39,61 @@ type ConsolidationBuyInput = {
 // eligibility and ordered document aggregation remain driver responsibilities.
 
 /**
- * Buys and settles one third-rendering slate, or settles no standing text
- * without asking producers.
- *
- * @param client - provider client borrowed by every round
- *
- * @param roster - voices producing, and judging and gating when no narrower
- * judge roster is given
- *
- * @param judgeModelIds - voices judging the slate and gating the winner; the
- * producers' roster by default
- *
- * @param subject - slice and both lane candidates as every round sees them
- *
- * @param standingText - wording this consolidation must beat
- *
- * @param lineStructured - whether structural rule forbids merged lines
- *
- * @param sliceIndex - index used by logs and final polish records
- *
- * @param polishConfig - final body polish roles and guard facts
- *
- * @param standingMayShip - whether unchanged baseline has prior endorsement
- *
- * @param standingFindings - what reading the standing recorded, the
- * incumbent's replacement of an ineligible standing among them
- *
- * @param standingEligible - whether the baseline passed the deterministic
- * publication gate; a baseline that did not is withheld from the slate
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - driver logger
- *
- * @returns Complete settlement for this question
- *
- * @throws Whatever producer, judging, gate, or caller abort throws
- *
- * @example
- * ```ts
- * const settlement = await buyConsolidationSlice({
- *   client,
- *   roster,
- *   subject,
- *   standingText,
- *   lineStructured,
- *   sliceIndex,
- *   signal,
- *   perCallTimeoutMs,
- *   l,
- * },);
- * ```
- *
- * @internal
+ Buys and settles one third-rendering slate, or settles no standing text
+ without asking producers.
+ 
+ @param client - provider client borrowed by every round
+ 
+ @param roster - voices producing, and judging and gating when no narrower
+ judge roster is given
+ 
+ @param judgeModelIds - voices judging the slate and gating the winner; the
+ producers' roster by default
+ 
+ @param subject - slice and both lane candidates as every round sees them
+ 
+ @param standingText - wording this consolidation must beat
+ 
+ @param lineStructured - whether structural rule forbids merged lines
+ 
+ @param sliceIndex - index used by logs and final polish records
+ 
+ @param polishConfig - final body polish roles and guard facts
+ 
+ @param standingMayShip - whether unchanged baseline has prior endorsement
+ 
+ @param standingFindings - what reading the standing recorded, the
+ incumbent's replacement of an ineligible standing among them
+ 
+ @param standingEligible - whether the baseline passed the deterministic
+ publication gate; a baseline that did not is withheld from the slate
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - driver logger
+ 
+ @returns Complete settlement for this question
+ 
+ @throws Whatever producer, judging, gate, or caller abort throws
+ 
+ @example
+ ```ts
+ const settlement = await buyConsolidationSlice({
+   client,
+   roster,
+   subject,
+   standingText,
+   lineStructured,
+   sliceIndex,
+   signal,
+   perCallTimeoutMs,
+   l,
+ },);
+ ```
+ 
+ @internal
  */
 async function buyConsolidationAttempt(
   {
@@ -140,7 +140,7 @@ async function buyConsolidationAttempt(
   }
 
   /**
-   * Slate produced once and judged once for this question.
+   Slate produced once and judged once for this question.
    */
   const produced = await produceConsolidations({
     client,
@@ -186,37 +186,37 @@ async function buyConsolidationAttempt(
 }
 
 /**
- * Buys one consolidation and settles it in a single attempt.
- *
- * SINGLE ATTEMPT BY DESIGN: when the standing baseline lacks contest
- * endorsement and the judged round still keeps it, the settlement returns
- * as it is with the non-endorsement recorded as a finding, because the
- * standing text is the only wording the deterministic gate has passed and
- * quality machinery may not withhold the entry over it
- * (doc/planning/translation-repair-no-loop-design.md). Zero produced voices
- * under a barred standing remain the bounded provider error inside the
- * attempt.
- *
- * @param input - stage clients, candidates, standing policy, and operation bounds
- *
- * @returns Complete settlement for this question
- *
- * @throws {@link TranslationRepairInterruptedError} when a barred standing hears no producer voice
- *
- * @example
- * ```ts
- * const settlement = await buyConsolidationSlice(input);
- * ```
+ Buys one consolidation and settles it in a single attempt.
+ 
+ SINGLE ATTEMPT BY DESIGN: when the standing baseline lacks contest
+ endorsement and the judged round still keeps it, the settlement returns
+ as it is with the non-endorsement recorded as a finding, because the
+ standing text is the only wording the deterministic gate has passed and
+ quality machinery may not withhold the entry over it
+ (doc/planning/translation-repair-no-loop-design.md). Zero produced voices
+ under a barred standing remain the bounded provider error inside the
+ attempt.
+ 
+ @param input - stage clients, candidates, standing policy, and operation bounds
+ 
+ @returns Complete settlement for this question
+ 
+ @throws {@link TranslationRepairInterruptedError} when a barred standing hears no producer voice
+ 
+ @example
+ ```ts
+ const settlement = await buyConsolidationSlice(input);
+ ```
  */
 export async function buyConsolidationSlice(
   input: ForeignBorrowed<ConsolidationBuyInput>,
 ): Promise<ConsolidationSettlement> {
   /**
-   * Whether archive or lane standing may already ship.
+   Whether archive or lane standing may already ship.
    */
   const standingMayShip = input.standingMayShip ?? true;
   /**
-   * Settlement from the single attempt.
+   Settlement from the single attempt.
    */
   const settlement = await buyConsolidationAttempt(input,);
   if (!consolidationNeedsRecovery({

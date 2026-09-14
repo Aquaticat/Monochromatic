@@ -10,19 +10,19 @@ import type { CriticAttemptRecord, } from './scorecard.ts';
 // live here so they stay testable in isolation.
 
 /**
- * Completion-token ceiling that blowout runs land on exactly;
- * a schema mismatch reporting this many completion tokens is truncation
- * even when its detail text is unrecognized.
+ Completion-token ceiling that blowout runs land on exactly;
+ a schema mismatch reporting this many completion tokens is truncation
+ even when its detail text is unrecognized.
  */
 export const COMPLETION_TOKEN_CEILING = 65_536;
 
 /**
- * Detail fragments marking truncated output:
- * the client's own truncated-thinking and truncated-completion diagnoses,
- * plus the JSON parser messages cut-off answers produce.
- * The completion marker matters below the global ceiling too,
- * because model-specific caps stop generation at token counts the
- * ceiling check never reaches.
+ Detail fragments marking truncated output:
+ the client's own truncated-thinking and truncated-completion diagnoses,
+ plus the JSON parser messages cut-off answers produce.
+ The completion marker matters below the global ceiling too,
+ because model-specific caps stop generation at token counts the
+ ceiling check never reaches.
  */
 const TRUNCATION_DETAIL_MARKERS: readonly string[] = [
   'truncated inside its thinking block',
@@ -32,20 +32,20 @@ const TRUNCATION_DETAIL_MARKERS: readonly string[] = [
 ];
 
 /**
- * Decides whether one graded attempt failed because the model's output was
- * cut off, as opposed to being well-formed garbage.
- * Only schema mismatches qualify:
- * refusals and HTTP failures have their own handling,
- * and retrying them here would double-spend quota for nothing.
- *
- * @param record - graded attempt under inspection
- *
- * @returns Whether the attempt deserves the single truncation retry
- *
- * @example
- * ```ts
- * if (isTruncatedAttempt({ record: first, },)) retryOnce();
- * ```
+ Decides whether one graded attempt failed because the model's output was
+ cut off, as opposed to being well-formed garbage.
+ Only schema mismatches qualify:
+ refusals and HTTP failures have their own handling,
+ and retrying them here would double-spend quota for nothing.
+ 
+ @param record - graded attempt under inspection
+ 
+ @returns Whether the attempt deserves the single truncation retry
+ 
+ @example
+ ```ts
+ if (isTruncatedAttempt({ record: first, },)) retryOnce();
+ ```
  */
 export function isTruncatedAttempt(
   { record, }: { readonly record: CriticAttemptRecord; },
@@ -66,23 +66,23 @@ export function isTruncatedAttempt(
 }
 
 /**
- * Decides whether one graded attempt deserves the benchmark's single
- * second attempt.
- * Two transient shapes qualify:
- * truncated output, and HTTP-failure records
- * (exhausted transient statuses, dropped transports, forfeited deadlines),
- * each already backed by the client's own transport-level retries.
- * Refusals reroute cross-family and well-formed-garbage mismatches are
- * model behavior the ensemble absorbs; retrying either buys nothing.
- *
- * @param record - graded attempt under inspection
- *
- * @returns Whether the attempt deserves the single second attempt
- *
- * @example
- * ```ts
- * if (isRetryableAttempt({ record: first, },)) retryOnce();
- * ```
+ Decides whether one graded attempt deserves the benchmark's single
+ second attempt.
+ Two transient shapes qualify:
+ truncated output, and HTTP-failure records
+ (exhausted transient statuses, dropped transports, forfeited deadlines),
+ each already backed by the client's own transport-level retries.
+ Refusals reroute cross-family and well-formed-garbage mismatches are
+ model behavior the ensemble absorbs; retrying either buys nothing.
+ 
+ @param record - graded attempt under inspection
+ 
+ @returns Whether the attempt deserves the single second attempt
+ 
+ @example
+ ```ts
+ if (isRetryableAttempt({ record: first, },)) retryOnce();
+ ```
  */
 export function isRetryableAttempt(
   { record, }: { readonly record: CriticAttemptRecord; },

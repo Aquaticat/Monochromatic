@@ -39,111 +39,111 @@ import {
 // answers look like agreement that a rendering is sound.
 
 /**
- * What one side of a screened finding rests on.
- *
- * NAMED ABSENCE rather than an optional field: a side a category does not use
- * is a different thing from a side that happens to be missing, and a reader
- * that has to tell them apart from `undefined` will eventually get it wrong.
- *
- * @example
- * ```ts
- * const reading: SideReading = { kind: 'unused', };
- * ```
+ What one side of a screened finding rests on.
+ 
+ NAMED ABSENCE rather than an optional field: a side a category does not use
+ is a different thing from a side that happens to be missing, and a reader
+ that has to tell them apart from `undefined` will eventually get it wrong.
+ 
+ @example
+ ```ts
+ const reading: SideReading = { kind: 'unused', };
+ ```
  */
 export type SideReading = {
   /**
-   * Category does not rest on this side at all.
+   Category does not rest on this side at all.
    */
   readonly kind: 'unused';
 } | {
   /**
-   * Category rests on this side, and both spans were located.
+   Category rests on this side, and both spans were located.
    */
   readonly kind: 'anchored';
 
   /**
-   * Span that identified which occurrence was meant.
+   Span that identified which occurrence was meant.
    */
   readonly locator: AnchoredSpan;
 
   /**
-   * Smallest span carrying the claimed change, which is what corroboration
-   * compares.
+   Smallest span carrying the claimed change, which is what corroboration
+   compares.
    */
   readonly focus: AnchoredSpan;
 };
 
 /**
- * One finding that survived screening.
- *
- * @example
- * ```ts
- * const finding: ScreenedFinding = { category: 'omission', source, candidate: { kind: 'unused', }, reason, };
- * ```
+ One finding that survived screening.
+ 
+ @example
+ ```ts
+ const finding: ScreenedFinding = { category: 'omission', source, candidate: { kind: 'unused', }, reason, };
+ ```
  */
 export type ScreenedFinding = {
   /**
-   * Category, narrowed to the vocabulary.
+   Category, narrowed to the vocabulary.
    */
   readonly category: RenderingAuditCategory;
 
   /**
-   * What this rests on in the original.
+   What this rests on in the original.
    */
   readonly source: SideReading;
 
   /**
-   * What it rests on in the candidate.
+   What it rests on in the candidate.
    */
   readonly candidate: SideReading;
 
   /**
-   * What the auditor said the spans amount to.
+   What the auditor said the spans amount to.
    */
   readonly reason: string;
 };
 
 /**
- * What one auditor's answer amounts to once screened.
- *
- * @example
- * ```ts
- * const screened: ScreenedReport = { verdict: 'defects-found', findings: [], dropped: [], };
- * ```
+ What one auditor's answer amounts to once screened.
+ 
+ @example
+ ```ts
+ const screened: ScreenedReport = { verdict: 'defects-found', findings: [], dropped: [], };
+ ```
  */
 export type ScreenedReport = {
   /**
-   * Verdict, narrowed to the vocabulary, or `uncertain` when the voice cast one
-   * this version does not know.
+   Verdict, narrowed to the vocabulary, or `uncertain` when the voice cast one
+   this version does not know.
    */
   readonly verdict: RenderingAuditVerdict;
 
   /**
-   * Findings that proved themselves.
+   Findings that proved themselves.
    */
   readonly findings: readonly ScreenedFinding[];
 
   /**
-   * Why each dropped claim was dropped, kept because a voice whose every claim
-   * fell is a different fact from a voice that claimed nothing.
+   Why each dropped claim was dropped, kept because a voice whose every claim
+   fell is a different fact from a voice that claimed nothing.
    */
   readonly dropped: readonly string[];
 };
 
 /**
- * Which sides a category rests on.
- *
- * @param category - category to ask about
- *
- * @returns Whether each side is required
- *
- * @throws {@link Error} when a category belongs to no anchoring rule, which is
- * a vocabulary that grew without this rule growing with it
- *
- * @example
- * ```ts
- * const { needsSource, } = quotesRequired({ category: 'omission', },);
- * ```
+ Which sides a category rests on.
+ 
+ @param category - category to ask about
+ 
+ @returns Whether each side is required
+ 
+ @throws {@link Error} when a category belongs to no anchoring rule, which is
+ a vocabulary that grew without this rule growing with it
+ 
+ @example
+ ```ts
+ const { needsSource, } = quotesRequired({ category: 'omission', },);
+ ```
  */
 function quotesRequired(
   { category, }: { readonly category: RenderingAuditCategory; },
@@ -186,24 +186,24 @@ function quotesRequired(
 }
 
 /**
- * Reads one side of one claim.
- *
- * @param text - side the claim names
- *
- * @param locator - span identifying which occurrence is meant
- *
- * @param focus - smallest span carrying the claimed change
- *
- * @param side - which side this is, for the refusal wording
- *
- * @param needed - whether this category rests on this side
- *
- * @returns What the side rests on, or why the claim falls
- *
- * @example
- * ```ts
- * const reading = readSide({ text, locator, focus, side: 'source', needed: true, },);
- * ```
+ Reads one side of one claim.
+ 
+ @param text - side the claim names
+ 
+ @param locator - span identifying which occurrence is meant
+ 
+ @param focus - smallest span carrying the claimed change
+ 
+ @param side - which side this is, for the refusal wording
+ 
+ @param needed - whether this category rests on this side
+ 
+ @returns What the side rests on, or why the claim falls
+ 
+ @example
+ ```ts
+ const reading = readSide({ text, locator, focus, side: 'source', needed: true, },);
+ ```
  */
 function readSide(
   {
@@ -231,7 +231,7 @@ function readSide(
   }
 
   /**
-   * Where the claim says it is.
+   Where the claim says it is.
    */
   const anchor = anchorLocatedSpan({
     text,
@@ -251,31 +251,31 @@ function readSide(
 }
 
 /**
- * Characters of a model-supplied word a drop reason may repeat.
+ Characters of a model-supplied word a drop reason may repeat.
  */
 const DROPPED_WORD_LIMIT = 32;
 
 /**
- * Bounds a word a model supplied to what a drop reason needs.
- *
- * THE DIAGNOSTIC EXISTS TO SAY WHICH WORD, not to store prose. A drop reason
- * is persisted in every run row, and a model answering the category or verdict
- * field with a sentence would put that sentence in the run file whole. One
- * token, cut at a fixed length, names the word and carries nothing after it.
- *
- * @param word - category or verdict as the model wrote it
- *
- * @returns Its first whitespace-delimited token, at most the limit long
- *
- * @example
- * ```ts
- * const named = boundedWord({ word: 'altered whiskers, and more', },);
- * ```
+ Bounds a word a model supplied to what a drop reason needs.
+ 
+ THE DIAGNOSTIC EXISTS TO SAY WHICH WORD, not to store prose. A drop reason
+ is persisted in every run row, and a model answering the category or verdict
+ field with a sentence would put that sentence in the run file whole. One
+ token, cut at a fixed length, names the word and carries nothing after it.
+ 
+ @param word - category or verdict as the model wrote it
+ 
+ @returns Its first whitespace-delimited token, at most the limit long
+ 
+ @example
+ ```ts
+ const named = boundedWord({ word: 'altered whiskers, and more', },);
+ ```
  */
 function boundedWord({ word, }: { readonly word: string; },): string {
   /**
-   * Tokens, after folding newlines and tabs to spaces so a line break cannot
-   * carry a second one through.
+   Tokens, after folding newlines and tabs to spaces so a line break cannot
+   carry a second one through.
    */
   const tokens = word
     .split('\n',)
@@ -286,7 +286,7 @@ function boundedWord({ word, }: { readonly word: string; },): string {
     .split(' ',);
 
   /**
-   * First of them, empty for an empty word.
+   First of them, empty for an empty word.
    */
   const token = tokens[0] ?? '';
 
@@ -297,20 +297,20 @@ function boundedWord({ word, }: { readonly word: string; },): string {
 }
 
 /**
- * Screens one claimed finding against both texts.
- *
- * @param finding - claim as the auditor sent it
- *
- * @param sourceText - original
- *
- * @param candidateText - rendering under audit
- *
- * @returns The finding with the texts' own spans, or why it was dropped
- *
- * @example
- * ```ts
- * const screened = screenFinding({ finding, sourceText, candidateText, },);
- * ```
+ Screens one claimed finding against both texts.
+ 
+ @param finding - claim as the auditor sent it
+ 
+ @param sourceText - original
+ 
+ @param candidateText - rendering under audit
+ 
+ @returns The finding with the texts' own spans, or why it was dropped
+ 
+ @example
+ ```ts
+ const screened = screenFinding({ finding, sourceText, candidateText, },);
+ ```
  */
 function screenFinding(
   {
@@ -324,10 +324,10 @@ function screenFinding(
   },
 ): ScreenedFinding | { readonly dropped: string; } {
   /**
-   * Category, when it is one this version names.
-   *
-   * FOUND RATHER THAN ASSERTED: the member comes back out of the vocabulary
-   * itself, so nothing here claims a string is a category it never checked.
+   Category, when it is one this version names.
+   
+   FOUND RATHER THAN ASSERTED: the member comes back out of the vocabulary
+   itself, so nothing here claims a string is a category it never checked.
    */
   const category = RENDERING_AUDIT_CATEGORIES.find(function isNamed(one,): boolean {
     return one === finding.category;
@@ -337,7 +337,7 @@ function screenFinding(
     return { dropped: `unknown-category (${boundedWord({ word: finding.category, },)})`, };
 
   /**
-   * Which sides this category rests on.
+   Which sides this category rests on.
    */
   const {
     needsSource,
@@ -345,7 +345,7 @@ function screenFinding(
   } = quotesRequired({ category, },);
 
   /**
-   * What the original side amounts to.
+   What the original side amounts to.
    */
   const source = readSide({
     text: sourceText,
@@ -359,7 +359,7 @@ function screenFinding(
     return source;
 
   /**
-   * What the candidate side amounts to.
+   What the candidate side amounts to.
    */
   const candidate = readSide({
     text: candidateText,
@@ -381,20 +381,20 @@ function screenFinding(
 }
 
 /**
- * Screens one auditor's whole answer.
- *
- * @param report - reply as the wire guard accepted it
- *
- * @param sourceText - original
- *
- * @param candidateText - rendering under audit
- *
- * @returns Findings that proved themselves, and why the rest fell
- *
- * @example
- * ```ts
- * const screened = screenRenderingAudit({ report, sourceText, candidateText, },);
- * ```
+ Screens one auditor's whole answer.
+ 
+ @param report - reply as the wire guard accepted it
+ 
+ @param sourceText - original
+ 
+ @param candidateText - rendering under audit
+ 
+ @returns Findings that proved themselves, and why the rest fell
+ 
+ @example
+ ```ts
+ const screened = screenRenderingAudit({ report, sourceText, candidateText, },);
+ ```
  */
 export function screenRenderingAudit(
   {
@@ -408,7 +408,7 @@ export function screenRenderingAudit(
   },
 ): ScreenedReport {
   /**
-   * Every claim, screened.
+   Every claim, screened.
    */
   const screened = report.findings
     .map(function screenOne(finding,) {
@@ -420,14 +420,14 @@ export function screenRenderingAudit(
     },);
 
   /**
-   * Verdict this version knows, or the absence of one.
-   *
-   * A VERDICT THIS VERSION DOES NOT KNOW READS AS `uncertain` rather than as a
-   * refusal of the whole answer: the findings underneath it are checked against
-   * the texts either way, and a mis-cast verdict is not a reason to discard
-   * evidence that anchors. The substitution is RECORDED in the drop list, since
-   * an unknown verdict is a protocol failure and silently reading it as an
-   * epistemic state would hide one instrument defect behind a vocabulary word.
+   Verdict this version knows, or the absence of one.
+   
+   A VERDICT THIS VERSION DOES NOT KNOW READS AS `uncertain` rather than as a
+   refusal of the whole answer: the findings underneath it are checked against
+   the texts either way, and a mis-cast verdict is not a reason to discard
+   evidence that anchors. The substitution is RECORDED in the drop list, since
+   an unknown verdict is a protocol failure and silently reading it as an
+   epistemic state would hide one instrument defect behind a vocabulary word.
    */
   const cast = RENDERING_AUDIT_VERDICTS.find(function isCast(one,): boolean {
     return one === report.verdict;

@@ -17,30 +17,30 @@ import { publishFixedPage, } from './publish-fixed.ts';
 // a pass never skips an entry whose page write did not complete.
 
 /**
- * Publishes one settled page, then persists artifact that makes entry skippable.
- *
- * @param artifact - settled evidence and chosen wordings
- *
- * @param slices - preparation spans used to splice page
- *
- * @param archiveText - English page before changes
- *
- * @param sourceText - original page used for destination check
- *
- * @param entryId - corpus entry being persisted
- *
- * @param publishDir - mirrored page root
- *
- * @param artifactsDir - settled artifact root
- *
- * @param l - entry logger
- *
- * @returns Destination comparison from published page
- *
- * @example
- * ```ts
- * const destinations = await persistSettledEntry({ artifact, slices, archiveText, sourceText, entryId, publishDir, artifactsDir, l, },);
- * ```
+ Publishes one settled page, then persists artifact that makes entry skippable.
+ 
+ @param artifact - settled evidence and chosen wordings
+ 
+ @param slices - preparation spans used to splice page
+ 
+ @param archiveText - English page before changes
+ 
+ @param sourceText - original page used for destination check
+ 
+ @param entryId - corpus entry being persisted
+ 
+ @param publishDir - mirrored page root
+ 
+ @param artifactsDir - settled artifact root
+ 
+ @param l - entry logger
+ 
+ @returns Destination comparison from published page
+ 
+ @example
+ ```ts
+ const destinations = await persistSettledEntry({ artifact, slices, archiveText, sourceText, entryId, publishDir, artifactsDir, l, },);
+ ```
  */
 export async function persistSettledEntry(
   {
@@ -72,7 +72,7 @@ export async function persistSettledEntry(
   assertFinalNaturalnessComplete({ artifact, },);
 
   /**
-   * Page write and its source-destination comparison.
+   Page write and its source-destination comparison.
    */
   const published = await publishFixedPage({
     artifact,

@@ -21,33 +21,33 @@
 // renderings are the archive's first, then forms the community also uses.
 
 /**
- * One community term and how the community renders it.
- *
- * @example
- * ```ts
- * const term: CommunityTerm = { term: '自切', renderings: ['self-surgery',], why: '...', };
- * ```
+ One community term and how the community renders it.
+ 
+ @example
+ ```ts
+ const term: CommunityTerm = { term: '自切', renderings: ['self-surgery',], why: '...', };
+ ```
  */
 export type CommunityTerm = {
   /**
-   * Term as the original writes it.
+   Term as the original writes it.
    */
   readonly term: string;
 
   /**
-   * Renderings the community accepts, the archive's first; a candidate
-   * carrying any of them, in any casing, carries the word.
+   Renderings the community accepts, the archive's first; a candidate
+   carrying any of them, in any casing, carries the word.
    */
   readonly renderings: readonly string[];
 
   /**
-   * One line of why, for the sheet.
+   One line of why, for the sheet.
    */
   readonly why: string;
 };
 
 /**
- * Community terms the pinned corpus carries, curated by the owner.
+ Community terms the pinned corpus carries, curated by the owner.
  */
 export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
   {
@@ -68,41 +68,41 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
 ];
 
 /**
- * One text a judge is shown, by the label the sheet gives it.
- *
- * @example
- * ```ts
- * const candidate: RenderingCandidate = { label: 'CANDIDATE 1', text, };
- * ```
+ One text a judge is shown, by the label the sheet gives it.
+ 
+ @example
+ ```ts
+ const candidate: RenderingCandidate = { label: 'CANDIDATE 1', text, };
+ ```
  */
 export type RenderingCandidate = {
   /**
-   * Label the sheet shows the text under.
+   Label the sheet shows the text under.
    */
   readonly label: string;
 
   /**
-   * Text as the judge sees it.
+   Text as the judge sees it.
    */
   readonly text: string;
 };
 
 /**
- * Glossary terms a text carries.
- *
- * AN INDEX SCAN PER TERM, since each term is a fixed string and the glossary
- * is short.
- *
- * @param text - original text to read
- *
- * @param glossary - terms to look for; defaults to the corpus glossary
- *
- * @returns Terms present, in glossary order
- *
- * @example
- * ```ts
- * communityTermsIn({ text: '在她自切后', },);
- * ```
+ Glossary terms a text carries.
+ 
+ AN INDEX SCAN PER TERM, since each term is a fixed string and the glossary
+ is short.
+ 
+ @param text - original text to read
+ 
+ @param glossary - terms to look for; defaults to the corpus glossary
+ 
+ @returns Terms present, in glossary order
+ 
+ @example
+ ```ts
+ communityTermsIn({ text: '在她自切后', },);
+ ```
  */
 export function communityTermsIn(
   {
@@ -119,17 +119,17 @@ export function communityTermsIn(
 }
 
 /**
- * Quotes every accepted rendering for a sheet line.
- *
- * @param entry - term whose renderings are listed
- *
- * @returns Renderings quoted and comma-joined
- *
- * @example
- * ```ts
- * quotedRenderings({ entry, },);
- * // => '"KAngel", "Needy Streamer Overload"'
- * ```
+ Quotes every accepted rendering for a sheet line.
+ 
+ @param entry - term whose renderings are listed
+ 
+ @returns Renderings quoted and comma-joined
+ 
+ @example
+ ```ts
+ quotedRenderings({ entry, },);
+ // => '"KAngel", "Needy Streamer Overload"'
+ ```
  */
 function quotedRenderings(
   { entry, }: { readonly entry: CommunityTerm; },
@@ -142,19 +142,19 @@ function quotedRenderings(
 }
 
 /**
- * Identity-context lines for the terms an entry's source carries, so every
- * sheet that carries the declared names carries the community's words.
- *
- * @param text - whole original document
- *
- * @param glossary - terms to look for; defaults to the corpus glossary
- *
- * @returns Heading and one line per term present, empty when none is
- *
- * @example
- * ```ts
- * const lines = communityTermLines({ text: sourceText, },);
- * ```
+ Identity-context lines for the terms an entry's source carries, so every
+ sheet that carries the declared names carries the community's words.
+ 
+ @param text - whole original document
+ 
+ @param glossary - terms to look for; defaults to the corpus glossary
+ 
+ @returns Heading and one line per term present, empty when none is
+ 
+ @example
+ ```ts
+ const lines = communityTermLines({ text: sourceText, },);
+ ```
  */
 export function communityTermLines(
   {
@@ -166,7 +166,7 @@ export function communityTermLines(
   },
 ): readonly string[] {
   /**
-   * Terms this entry carries.
+   Terms this entry carries.
    */
   const present = communityTermsIn({
     text,
@@ -183,19 +183,19 @@ export function communityTermLines(
 }
 
 /**
- * Whether a text carries any accepted rendering of a term, in any casing.
- *
- * @param text - candidate text
- *
- * @param entry - term whose renderings are looked for
- *
- * @returns Whether one rendering occurs
- *
- * @example
- * ```ts
- * carriesRendering({ text: 'She attempted self-surgery.', entry, },);
- * // => true
- * ```
+ Whether a text carries any accepted rendering of a term, in any casing.
+ 
+ @param text - candidate text
+ 
+ @param entry - term whose renderings are looked for
+ 
+ @returns Whether one rendering occurs
+ 
+ @example
+ ```ts
+ carriesRendering({ text: 'She attempted self-surgery.', entry, },);
+ // => true
+ ```
  */
 function carriesRendering(
   {
@@ -207,7 +207,7 @@ function carriesRendering(
   },
 ): boolean {
   /**
-   * Candidate lowered once for every rendering.
+   Candidate lowered once for every rendering.
    */
   const lowered = text.toLowerCase();
   return entry.renderings
@@ -217,24 +217,24 @@ function carriesRendering(
 }
 
 /**
- * Names each candidate lacking every accepted rendering of a term the source
- * carries.
- *
- * AN EMPTY CANDIDATE IS SKIPPED: an absent archive rendering carries no word
- * and is not departing from one.
- *
- * @param sourceText - original the candidates render
- *
- * @param candidates - texts the judge is shown, by label
- *
- * @param glossary - terms to look for; defaults to the corpus glossary
- *
- * @returns One line per candidate and term, in candidate then glossary order
- *
- * @example
- * ```ts
- * const departures = communityRenderingDepartures({ sourceText, candidates, },);
- * ```
+ Names each candidate lacking every accepted rendering of a term the source
+ carries.
+ 
+ AN EMPTY CANDIDATE IS SKIPPED: an absent archive rendering carries no word
+ and is not departing from one.
+ 
+ @param sourceText - original the candidates render
+ 
+ @param candidates - texts the judge is shown, by label
+ 
+ @param glossary - terms to look for; defaults to the corpus glossary
+ 
+ @returns One line per candidate and term, in candidate then glossary order
+ 
+ @example
+ ```ts
+ const departures = communityRenderingDepartures({ sourceText, candidates, },);
+ ```
  */
 export function communityRenderingDepartures(
   {
@@ -248,7 +248,7 @@ export function communityRenderingDepartures(
   },
 ): readonly string[] {
   /**
-   * Terms the source carries.
+   Terms the source carries.
    */
   const present = communityTermsIn({
     text: sourceText,
@@ -273,22 +273,22 @@ export function communityRenderingDepartures(
 }
 
 /**
- * Sheet block naming the departures, for the judge to weigh after the
- * passages.
- *
- * @param sourceText - original the candidates render
- *
- * @param candidates - texts the judge is shown, by label
- *
- * @param glossary - terms to look for; defaults to the corpus glossary
- *
- * @returns Heading, one line per departure, the inflection note and a blank
- * line; empty when no candidate departs
- *
- * @example
- * ```ts
- * const block = communityRenderingsBlock({ sourceText, candidates, },);
- * ```
+ Sheet block naming the departures, for the judge to weigh after the
+ passages.
+ 
+ @param sourceText - original the candidates render
+ 
+ @param candidates - texts the judge is shown, by label
+ 
+ @param glossary - terms to look for; defaults to the corpus glossary
+ 
+ @returns Heading, one line per departure, the inflection note and a blank
+ line; empty when no candidate departs
+ 
+ @example
+ ```ts
+ const block = communityRenderingsBlock({ sourceText, candidates, },);
+ ```
  */
 export function communityRenderingsBlock(
   {
@@ -302,7 +302,7 @@ export function communityRenderingsBlock(
   },
 ): readonly string[] {
   /**
-   * Departures to name.
+   Departures to name.
    */
   const departures = communityRenderingDepartures({
     sourceText,

@@ -26,29 +26,29 @@ import {
 // under load will otherwise write its weather into whichever arm ran later.
 
 /**
- * Runs one slice at both widths and reads the result.
- *
- * @param client - injected model client
- *
- * @param input - slice with its accepted issues
- *
- * @param narrowEditorIds - seats for the narrow arm
- *
- * @param wideEditorIds - seats for the wide arm
- *
- * @param judgeModelIds - panel, held fixed throughout, which is what makes a
- * difference between the arms attributable to the seats
- *
- * @param signal - cancellation
- *
- * @param l - logger
- *
- * @returns Row this slice contributed
- *
- * @example
- * ```ts
- * const row = await runWidthSlice({ client, input, narrowEditorIds, wideEditorIds, judgeModelIds, signal, l, },);
- * ```
+ Runs one slice at both widths and reads the result.
+ 
+ @param client - injected model client
+ 
+ @param input - slice with its accepted issues
+ 
+ @param narrowEditorIds - seats for the narrow arm
+ 
+ @param wideEditorIds - seats for the wide arm
+ 
+ @param judgeModelIds - panel, held fixed throughout, which is what makes a
+ difference between the arms attributable to the seats
+ 
+ @param signal - cancellation
+ 
+ @param l - logger
+ 
+ @returns Row this slice contributed
+ 
+ @example
+ ```ts
+ const row = await runWidthSlice({ client, input, narrowEditorIds, wideEditorIds, judgeModelIds, signal, l, },);
+ ```
  */
 export async function runWidthSlice(
   {
@@ -70,7 +70,7 @@ export async function runWidthSlice(
   }>,
 ): Promise<WidthRow> {
   /**
-   * The narrow arm.
+   The narrow arm.
    */
   const narrow = await runArm({
     client,
@@ -82,7 +82,7 @@ export async function runWidthSlice(
   },);
 
   /**
-   * The narrow arm again, which is the null band.
+   The narrow arm again, which is the null band.
    */
   const narrowAgain = await runArm({
     client,
@@ -94,7 +94,7 @@ export async function runWidthSlice(
   },);
 
   /**
-   * The wide arm.
+   The wide arm.
    */
   const wide = await runArm({
     client,
@@ -106,7 +106,7 @@ export async function runWidthSlice(
   },);
 
   /**
-   * Which of the three cases this slice is.
+   Which of the three cases this slice is.
    */
   const comparison = classifyWidths({
     narrowText: narrow.text,
@@ -114,10 +114,10 @@ export async function runWidthSlice(
   },);
 
   /**
-   * Everything the head-to-head decided, absent where none was earned.
-   *
-   * Slices whose arms shipped the same text are answered already, and judging
-   * a text against itself would spend twelve ballots to learn that twice.
+   Everything the head-to-head decided, absent where none was earned.
+   
+   Slices whose arms shipped the same text are answered already, and judging
+   a text against itself would spend twelve ballots to learn that twice.
    */
   const contested = (comparison === 'differs')
     ? await bothOrders({
@@ -135,7 +135,7 @@ export async function runWidthSlice(
     };
 
   /**
-   * Issues the editors were actually given work by.
+   Issues the editors were actually given work by.
    */
   const acceptedIssues = input
     .issues

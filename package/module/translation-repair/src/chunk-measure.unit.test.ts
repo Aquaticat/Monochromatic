@@ -1,9 +1,9 @@
 /**
- * Tests for the deterministic measurements candidate selection ranks a patched
- * chunk by.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the deterministic measurements candidate selection ranks a patched
+ chunk by.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -24,19 +24,19 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one checker tally with the vote counts a majority of that shape would
- * have produced; only the two verdict flags are read here.
- *
- * @param resolved - whether the checkers judged the defect gone
- *
- * @param regressed - whether they judged the revision damaged the region
- *
- * @returns Tally the measurement reads
- *
- * @example
- * ```ts
- * const tally = catTally({ resolved: true, regressed: false, },);
- * ```
+ Builds one checker tally with the vote counts a majority of that shape would
+ have produced; only the two verdict flags are read here.
+ 
+ @param resolved - whether the checkers judged the defect gone
+ 
+ @param regressed - whether they judged the revision damaged the region
+ 
+ @returns Tally the measurement reads
+ 
+ @example
+ ```ts
+ const tally = catTally({ resolved: true, regressed: false, },);
+ ```
  */
 function catTally(
   {
@@ -57,23 +57,23 @@ function catTally(
 }
 
 /**
- * Translation the patched candidate is measured against.
+ Translation the patched candidate is measured against.
  */
 const TARGET_TEXT = 'The cat is doing the sleeping.\n';
 
 /**
- * Builds one accepted issue at the given severity.
- *
- * @param issueId - adjudicated identity
- *
- * @param severity - adjudicated severity
- *
- * @returns Issue the checkers reported on
- *
- * @example
- * ```ts
- * const issue = catIssue({ issueId: 'adjudicated/nap', severity: 'major', },);
- * ```
+ Builds one accepted issue at the given severity.
+ 
+ @param issueId - adjudicated identity
+ 
+ @param severity - adjudicated severity
+ 
+ @returns Issue the checkers reported on
+ 
+ @example
+ ```ts
+ const issue = catIssue({ issueId: 'adjudicated/nap', severity: 'major', },);
+ ```
  */
 function catIssue(
   {
@@ -94,16 +94,16 @@ function catIssue(
 }
 
 /**
- * Builds one envelope over the given base text.
- *
- * @param baseText - text occupying the envelope
- *
- * @returns Envelope the measurement reads lengths from
- *
- * @example
- * ```ts
- * const envelope = catEnvelope({ baseText: 'naps', },);
- * ```
+ Builds one envelope over the given base text.
+ 
+ @param baseText - text occupying the envelope
+ 
+ @returns Envelope the measurement reads lengths from
+ 
+ @example
+ ```ts
+ const envelope = catEnvelope({ baseText: 'naps', },);
+ ```
  */
 function catEnvelope({ baseText, }: { readonly baseText: string; },): EditableEnvelope {
   return {
@@ -117,16 +117,16 @@ function catEnvelope({ baseText, }: { readonly baseText: string; },): EditableEn
 }
 
 /**
- * Builds one applied operation against the fixture envelope.
- *
- * @param newText - replacement text
- *
- * @returns Operation the measurement reads lengths from
- *
- * @example
- * ```ts
- * const operation = catOperation({ newText: 'sleeps', },);
- * ```
+ Builds one applied operation against the fixture envelope.
+ 
+ @param newText - replacement text
+ 
+ @returns Operation the measurement reads lengths from
+ 
+ @example
+ ```ts
+ const operation = catOperation({ newText: 'sleeps', },);
+ ```
  */
 function catOperation({ newText, }: { readonly newText: string; },): PatchOperation {
   return {
@@ -307,17 +307,17 @@ await describe({
         + 'reference invented in a page carrying no footnotes at all',
       fn: async () => {
         /**
-         * Translation whose one reference resolves.
+         Translation whose one reference resolves.
          */
         const wholeText = 'Whiskers naps here[^1]\n\n[^1]: On the windowsill.\n';
 
         /**
-         * Same translation with the definition gone, as a patch might drop it.
+         Same translation with the definition gone, as a patch might drop it.
          */
         const droppedText = 'Whiskers naps here[^1]\n';
 
         /**
-         * Same translation with a reference invented, as one patch really did.
+         Same translation with a reference invented, as one patch really did.
          */
         const inventedText = 'Whiskers naps here[^1] and there[^2]\n\n[^1]: On the windowsill.\n';
 
@@ -347,12 +347,12 @@ await describe({
         + 'it would discard work over a defect the repair did not cause',
       fn: async () => {
         /**
-         * Translation arriving already broken, and a patch that only rewords.
+         Translation arriving already broken, and a patch that only rewords.
          */
         const before = 'Whiskers naps here[^1]\n';
 
         /**
-         * Same damage, different wording, which is what a repair looks like.
+         Same damage, different wording, which is what a repair looks like.
          */
         const after = 'Whiskers dozes here[^1]\n';
 
@@ -473,7 +473,7 @@ await describe({
         + 'happened to write its operations',
       fn: async () => {
         /**
-         * Envelope naming both issues, so both are served by one operation.
+         Envelope naming both issues, so both are served by one operation.
          */
         const envelope = {
           ...catEnvelope({ baseText: 'naps', },),

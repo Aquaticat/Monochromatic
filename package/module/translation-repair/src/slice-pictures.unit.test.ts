@@ -1,25 +1,25 @@
 /**
- * Tests for which pictures one slice is shown, and what a stage is told about
- * a picture nobody could corroborate.
- *
- * WHAT THESE PIN is two claims bolted together. First, that
- * `slicePictureNames` takes one section each way exactly the way
- * `fidelity-window.ts`'s `neighbouringSource` does, including its RangeError
- * contract: an index that is not a position in `slices` must never silently
- * name no pictures, because that reads as a slice that shows none rather than
- * the mistake it is. Second, that `slicePictures` keeps a picture nobody could
- * corroborate out of the rendered prompt entirely and names it in `findings`
- * instead, since a stage handed a hedge it cannot weigh is worse off than one
- * simply not told the picture existed.
- *
- * BOTH READINGS TRAVEL for a picture that was corroborated, labelled by
- * model, which one case here asserts on an exact rendered block: the shorter
- * reading vouches for what it carries and the longer carries more, so a stage
- * shown only one of them loses either the vouching or the content.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for which pictures one slice is shown, and what a stage is told about
+ a picture nobody could corroborate.
+ 
+ WHAT THESE PIN is two claims bolted together. First, that
+ `slicePictureNames` takes one section each way exactly the way
+ `fidelity-window.ts`'s `neighbouringSource` does, including its RangeError
+ contract: an index that is not a position in `slices` must never silently
+ name no pictures, because that reads as a slice that shows none rather than
+ the mistake it is. Second, that `slicePictures` keeps a picture nobody could
+ corroborate out of the rendered prompt entirely and names it in `findings`
+ instead, since a stage handed a hedge it cannot weigh is worse off than one
+ simply not told the picture existed.
+ 
+ BOTH READINGS TRAVEL for a picture that was corroborated, labelled by
+ model, which one case here asserts on an exact rendered block: the shorter
+ reading vouches for what it carries and the longer carries more, so a stage
+ shown only one of them loses either the vouching or the content.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -38,49 +38,49 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Heading `slicePictures` renders before each picture's transcriptions.
- *
- * MIRRORS THE MODULE'S OWN CONSTANT, kept private in `slice-pictures.ts`: this
- * file states same literal directly rather than importing something not
- * exported.
+ Heading `slicePictures` renders before each picture's transcriptions.
+ 
+ MIRRORS THE MODULE'S OWN CONSTANT, kept private in `slice-pictures.ts`: this
+ file states same literal directly rather than importing something not
+ exported.
  */
 const PICTURE_HEADING = 'PICTURE';
 
 /**
- * Placeholder corpus pages write for an entry's own directory.
- *
- * AN ESCAPED TEMPLATE LITERAL, so characters landing in a slice's text are
- * what corpus text carries rather than an interpolation this file performs
- * by accident. Mirrors `photo-reference.unit.test.ts`.
+ Placeholder corpus pages write for an entry's own directory.
+ 
+ AN ESCAPED TEMPLATE LITERAL, so characters landing in a slice's text are
+ what corpus text carries rather than an interpolation this file performs
+ by accident. Mirrors `photo-reference.unit.test.ts`.
  */
 const ENTRY = `\${path}`;
 
 /**
- * Cat-themed stand-in for one vision reader's model id.
- *
- * A CAST THROUGH `unknown`, since `RosterModelId` is a closed union of
- * production identifiers and neither function under test validates one
- * against real roster: `slicePictures` only folds a reading's model id into a
- * rendered label.
+ Cat-themed stand-in for one vision reader's model id.
+ 
+ A CAST THROUGH `unknown`, since `RosterModelId` is a closed union of
+ production identifiers and neither function under test validates one
+ against real roster: `slicePictures` only folds a reading's model id into a
+ rendered label.
  */
 const WHISKERS = 'hf:cat/Whiskers' as unknown as RosterModelId;
 
 /**
- * Cat-themed stand-in for other vision reader's model id.
+ Cat-themed stand-in for other vision reader's model id.
  */
 const MARMALADE = 'hf:cat/Marmalade' as unknown as RosterModelId;
 
 /**
- * Builds one photo element naming given assets, in corpus's only form.
- *
- * @param assetNames - file names within entry's photos directory
- *
- * @returns Element as a page writes it
- *
- * @example
- * ```ts
- * const element = photoElement({ assetNames: ['sunbeam.webp',], },);
- * ```
+ Builds one photo element naming given assets, in corpus's only form.
+ 
+ @param assetNames - file names within entry's photos directory
+ 
+ @returns Element as a page writes it
+ 
+ @example
+ ```ts
+ const element = photoElement({ assetNames: ['sunbeam.webp',], },);
+ ```
  */
 function photoElement({ assetNames, }: { readonly assetNames: readonly string[]; },): string {
   return `<PhotoScroll photos={[ ${
@@ -92,22 +92,22 @@ function photoElement({ assetNames, }: { readonly assetNames: readonly string[];
 }
 
 /**
- * Builds one slice pair carrying given original text, target side empty.
- *
- * Offsets and nodes are named directly rather than parsed, mirroring
- * `fidelity-window.unit.test.ts`: what is under test here is which pictures a
- * slice's own and neighbouring text show, not how a slice was carved.
- *
- * @param text - original-side text this slice covers
- *
- * @param sliceIndex - position of this slice in its document
- *
- * @returns Pair whose original side carries that text
- *
- * @example
- * ```ts
- * const pair = sliceOf({ text: 'Tabby naps.\n', sliceIndex: 0, },);
- * ```
+ Builds one slice pair carrying given original text, target side empty.
+ 
+ Offsets and nodes are named directly rather than parsed, mirroring
+ `fidelity-window.unit.test.ts`: what is under test here is which pictures a
+ slice's own and neighbouring text show, not how a slice was carved.
+ 
+ @param text - original-side text this slice covers
+ 
+ @param sliceIndex - position of this slice in its document
+ 
+ @returns Pair whose original side carries that text
+ 
+ @example
+ ```ts
+ const pair = sliceOf({ text: 'Tabby naps.\n', sliceIndex: 0, },);
+ ```
  */
 function sliceOf(
   {
@@ -137,9 +137,9 @@ function sliceOf(
 }
 
 /**
- * Three-slice document where every slice names a DIFFERENT picture, so
- * document order is visible in a returned name list rather than hidden
- * behind a repeat.
+ Three-slice document where every slice names a DIFFERENT picture, so
+ document order is visible in a returned name list rather than hidden
+ behind a repeat.
  */
 const ORDERED_SLICES: readonly ChunkPair[] = [
   `Tabby suns herself on the windowsill.\n\n${photoElement({ assetNames: ['sunbeam.webp',], },)}\n`,
@@ -156,9 +156,9 @@ const ORDERED_SLICES: readonly ChunkPair[] = [
 },);
 
 /**
- * Three-slice document where the slices EITHER SIDE of the middle one name
- * the SAME picture and the middle slice names none itself, so a returned
- * name list can be checked for exactly one entry rather than two.
+ Three-slice document where the slices EITHER SIDE of the middle one name
+ the SAME picture and the middle slice names none itself, so a returned
+ name list can be checked for exactly one entry rather than two.
  */
 const DUPING_SLICES: readonly ChunkPair[] = [
   `Tabby watches from the sill.\n\n${photoElement({ assetNames: ['perch.webp',], },)}\n`,
@@ -175,9 +175,9 @@ const DUPING_SLICES: readonly ChunkPair[] = [
 },);
 
 /**
- * Three-slice document whose middle slice names no picture itself but sits
- * between two that do, so `slicePictures` on the middle slice renders both
- * neighbours' pictures into one context block.
+ Three-slice document whose middle slice names no picture itself but sits
+ between two that do, so `slicePictures` on the middle slice renders both
+ neighbours' pictures into one context block.
  */
 const MULTI_PICTURE_SLICES: readonly ChunkPair[] = [
   `Tabby dozes in a sunbeam.\n\n${photoElement({ assetNames: ['sunbeam.webp',], },)}\n`,
@@ -194,31 +194,31 @@ const MULTI_PICTURE_SLICES: readonly ChunkPair[] = [
 },);
 
 /**
- * What shorter reader transcribed from sunbeam picture, vouching for what it
- * carries without contradicting longer reading.
+ What shorter reader transcribed from sunbeam picture, vouching for what it
+ carries without contradicting longer reading.
  */
 const SUNBEAM_SHORT = 'A tabby cat dozes in a sunbeam.';
 
 /**
- * What longer reader transcribed from same picture, carrying more than
- * shorter reading without contradicting it.
+ What longer reader transcribed from same picture, carrying more than
+ shorter reading without contradicting it.
  */
 const SUNBEAM_LONG = 'A tabby cat lies curled and dozing in a warm patch of sun by the window.';
 
 /**
- * What shorter reader transcribed from nap picture.
+ What shorter reader transcribed from nap picture.
  */
 const NAP_SHORT = 'The cat naps beside the door.';
 
 /**
- * What longer reader transcribed from same picture, carrying more than
- * shorter reading without contradicting it.
+ What longer reader transcribed from same picture, carrying more than
+ shorter reading without contradicting it.
  */
 const NAP_LONG = 'The tabby cat has curled up for a nap on the mat right beside the door.';
 
 /**
- * Readings this document's slices resolve against: both neighbours of the
- * middle slice corroborated, so its rendered context carries both blocks.
+ Readings this document's slices resolve against: both neighbours of the
+ middle slice corroborated, so its rendered context carries both blocks.
  */
 const MULTI_PICTURE_READINGS: ReadonlyMap<string, PairedReading> = new Map<string, PairedReading>([
   [
@@ -258,8 +258,8 @@ const MULTI_PICTURE_READINGS: ReadonlyMap<string, PairedReading> = new Map<strin
 ],);
 
 /**
- * Reading naming one picture unavailable, carrying reason a finding must
- * surface.
+ Reading naming one picture unavailable, carrying reason a finding must
+ surface.
  */
 const UNAVAILABLE_READINGS: ReadonlyMap<string, PairedReading> = new Map<string, PairedReading>([
   [
@@ -385,7 +385,7 @@ await describe({
         + 'that rendered',
       fn: async () => {
         /**
-         * What middle slice and both its neighbours resolve to.
+         What middle slice and both its neighbours resolve to.
          */
         const rendered = slicePictures({
           slices: MULTI_PICTURE_SLICES,
@@ -394,8 +394,8 @@ await describe({
         },);
 
         /**
-         * Exact rendered context: two blocks in document order, each
-         * carrying both readings under their own model id.
+         Exact rendered context: two blocks in document order, each
+         carrying both readings under their own model id.
          */
         const expectedContext = `${PICTURE_HEADING} sunbeam.webp\n${WHISKERS}:\n${SUNBEAM_SHORT}`
           + `\n\n${MARMALADE}:\n${SUNBEAM_LONG}\n\n${PICTURE_HEADING} nap.webp\n${WHISKERS}:\n`
@@ -412,7 +412,7 @@ await describe({
         + 'one simply not told the picture existed',
       fn: async () => {
         /**
-         * What one slice naming an unavailable picture resolves to.
+         What one slice naming an unavailable picture resolves to.
          */
         const rendered = slicePictures({
           slices: [sliceOf({
@@ -435,8 +435,8 @@ await describe({
         + 'gathered from one nobody could corroborate',
       fn: async () => {
         /**
-         * What one slice naming a picture absent from the readings map
-         * entirely resolves to.
+         What one slice naming a picture absent from the readings map
+         entirely resolves to.
          */
         const rendered = slicePictures({
           slices: [sliceOf({
@@ -458,8 +458,8 @@ await describe({
         + 'which is most slices in the corpus',
       fn: async () => {
         /**
-         * What a single quiet slice, naming no picture itself and standing
-         * alone with no neighbours, resolves to.
+         What a single quiet slice, naming no picture itself and standing
+         alone with no neighbours, resolves to.
          */
         const rendered = slicePictures({
           slices: [sliceOf({
@@ -489,8 +489,8 @@ await describe({
         + 'mean it had stopped doing that',
       fn: async () => {
         /**
-         * Fold over the three-slice document whose middle slice names no
-         * picture of its own.
+         Fold over the three-slice document whose middle slice names no
+         picture of its own.
          */
         const contexts = slicePictureContexts({
           slices: MULTI_PICTURE_SLICES,

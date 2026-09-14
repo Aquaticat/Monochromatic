@@ -15,46 +15,46 @@ import { assertVisualEvidenceComplete, } from './visual-evidence-completeness.ts
 //region Pass visual evidence
 
 /**
- * Test seam supplying reviewed visual evidence without corpus asset I/O.
+ Test seam supplying reviewed visual evidence without corpus asset I/O.
  */
 export type PassVisualEvidenceReader = (args: {
   readonly slices: readonly ChunkPair[];
 },) => Promise<ReadonlyMap<string, PairedReading>>;
 
 /**
- * Reads and requires complete visual evidence before any lane work.
- *
- * @param client - provider client for image readers
- *
- * @param slices - prepared entry slices naming assets
- *
- * @param pin - corpus commit assets belong to
- *
- * @param entryId - corpus entry whose asset directory is read
- *
- * @param readerModelIds - vision roster
- *
- * @param cache - durable paired reading cache
- *
- * @param signal - entry cancellation
- *
- * @param perCallTimeoutMs - image exchange deadline
- *
- * @param l - entry logger
- *
- * @param visualEvidenceReader - optional integration-test evidence seam
- *
- * @param priorReadings - completed evidence retained within this pinned entry
- *
- * @returns Corroborated or reviewed no-text evidence by asset
- *
- * @throws {@link import('./visual-evidence-completeness.ts').VisualEvidenceInterruptedError}
- * when any referenced asset lacks usable evidence
- *
- * @example
- * ```ts
- * const readings = await readPassVisualEvidence({ client, slices, pin, entryId, readerModelIds, cache, signal, perCallTimeoutMs, l, });
- * ```
+ Reads and requires complete visual evidence before any lane work.
+ 
+ @param client - provider client for image readers
+ 
+ @param slices - prepared entry slices naming assets
+ 
+ @param pin - corpus commit assets belong to
+ 
+ @param entryId - corpus entry whose asset directory is read
+ 
+ @param readerModelIds - vision roster
+ 
+ @param cache - durable paired reading cache
+ 
+ @param signal - entry cancellation
+ 
+ @param perCallTimeoutMs - image exchange deadline
+ 
+ @param l - entry logger
+ 
+ @param visualEvidenceReader - optional integration-test evidence seam
+ 
+ @param priorReadings - completed evidence retained within this pinned entry
+ 
+ @returns Corroborated or reviewed no-text evidence by asset
+ 
+ @throws {@link import('./visual-evidence-completeness.ts').VisualEvidenceInterruptedError}
+ when any referenced asset lacks usable evidence
+ 
+ @example
+ ```ts
+ const readings = await readPassVisualEvidence({ client, slices, pin, entryId, readerModelIds, cache, signal, perCallTimeoutMs, l, });
+ ```
  */
 export async function readPassVisualEvidence(
   {
@@ -84,14 +84,14 @@ export async function readPassVisualEvidence(
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
   /**
-   * Whether earlier preparation already completed every reference now in scope.
+   Whether earlier preparation already completed every reference now in scope.
    */
   const alreadyRead = slices.every(function covered(slice,): boolean {
     return photoReferences({ text: slice.source
       .text, },)
       .every(function complete(reference,): boolean {
       /**
-       * Evidence from this entry, never a failed reading carried forward as support.
+       Evidence from this entry, never a failed reading carried forward as support.
        */
       const prior = priorReadings.get(reference.assetName,);
       return (prior !== undefined) && (prior.kind !== 'unavailable');
@@ -102,7 +102,7 @@ export async function readPassVisualEvidence(
     return priorReadings;
   }
   /**
-   * Assets read only on production path.
+   Assets read only on production path.
    */
   const assets = (visualEvidenceReader === undefined)
     ? await gatherEntryPictures({
@@ -113,7 +113,7 @@ export async function readPassVisualEvidence(
     },)
     : new Map<string, Uint8Array>();
   /**
-   * Paired visual evidence from production or integration seam.
+   Paired visual evidence from production or integration seam.
    */
   const readings = (visualEvidenceReader === undefined)
     ? await readDocumentPictures({

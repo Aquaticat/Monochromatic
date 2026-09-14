@@ -1,8 +1,8 @@
 /**
- * Tests for choosing a prompt fence no enclosed text can reproduce.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for choosing a prompt fence no enclosed text can reproduce.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {

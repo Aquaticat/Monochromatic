@@ -1,22 +1,22 @@
 /**
- * Tests for the disk-backed slice cache that makes a long entry resumable.
- *
- * None of these three had a test. Their failure is expensive but silent: if
- * `persist` and the resume loader ever disagree about how a key becomes a file
- * name, resume simply never hits, every run recomputes every slice from
- * scratch, and the only symptom is that a pass costs hours more than it should.
- * Nothing errors. So the round trip gets asserted directly rather than each
- * half separately.
- *
- * The stale-schema case matters for the same reason the module comment warns
- * about it: the cache stores repair OUTCOMES, so a pipeline change invalidates
- * them. A file missing a field the current outcome carries must be treated as
- * absent and recomputed, never resumed, or a run would silently mix outputs
- * from two versions of the pipeline.
- *
- * Fixtures are cat-themed invention written into throwaway directories.
- *
- * @module
+ Tests for the disk-backed slice cache that makes a long entry resumable.
+ 
+ None of these three had a test. Their failure is expensive but silent: if
+ `persist` and the resume loader ever disagree about how a key becomes a file
+ name, resume simply never hits, every run recomputes every slice from
+ scratch, and the only symptom is that a pass costs hours more than it should.
+ Nothing errors. So the round trip gets asserted directly rather than each
+ half separately.
+ 
+ The stale-schema case matters for the same reason the module comment warns
+ about it: the cache stores repair OUTCOMES, so a pipeline change invalidates
+ them. A file missing a field the current outcome carries must be treated as
+ absent and recomputed, never resumed, or a run would silently mix outputs
+ from two versions of the pipeline.
+ 
+ Fixtures are cat-themed invention written into throwaway directories.
+ 
+ @module
  */
 
 import {
@@ -43,29 +43,29 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Built pipeline the fixtures are filled under.
- *
- * Every case that resumes a cache has to agree with the marker, since a cache
- * filled by another pipeline is discarded rather than resumed.
+ Built pipeline the fixtures are filled under.
+ 
+ Every case that resumes a cache has to agree with the marker, since a cache
+ filled by another pipeline is discarded rather than resumed.
  */
 const TEST_GENERATION = `sha256-tree-v1:${'a'.repeat(64,)}`;
 
 /**
- * Throwaway directory removed on scope exit.
- *
- * @returns Disposable directory handle
- *
- * @example
- * ```ts
- * await using scratch = await scratchDir();
- * ```
+ Throwaway directory removed on scope exit.
+ 
+ @returns Disposable directory handle
+ 
+ @example
+ ```ts
+ await using scratch = await scratchDir();
+ ```
  */
 async function scratchDir(): Promise<{
   readonly path: string;
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 }> {
   /**
-   * Fresh directory under the platform temp root.
+   Fresh directory under the platform temp root.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -86,17 +86,17 @@ async function scratchDir(): Promise<{
 }
 
 /**
- * A complete outcome, carrying every field the loader checks before trusting a
- * cache file.
- *
- * @param sliceIndex - slice position this outcome belongs to
- *
- * @returns Outcome shaped as the pipeline writes it
- *
- * @example
- * ```ts
- * const outcome = catOutcome({ sliceIndex: 0, },);
- * ```
+ A complete outcome, carrying every field the loader checks before trusting a
+ cache file.
+ 
+ @param sliceIndex - slice position this outcome belongs to
+ 
+ @returns Outcome shaped as the pipeline writes it
+ 
+ @example
+ ```ts
+ const outcome = catOutcome({ sliceIndex: 0, },);
+ ```
  */
 function catOutcome({ sliceIndex, }: { readonly sliceIndex: number; },) {
   return {
@@ -132,16 +132,16 @@ function catOutcome({ sliceIndex, }: { readonly sliceIndex: number; },) {
 }
 
 /**
- * A complete translate record, carrying every field its loader checks.
- *
- * @param sliceIndex - slice position this record belongs to
- *
- * @returns Record shaped as the translate driver writes it
- *
- * @example
- * ```ts
- * const record = catTranslateRecord({ sliceIndex: 0, },);
- * ```
+ A complete translate record, carrying every field its loader checks.
+ 
+ @param sliceIndex - slice position this record belongs to
+ 
+ @returns Record shaped as the translate driver writes it
+ 
+ @example
+ ```ts
+ const record = catTranslateRecord({ sliceIndex: 0, },);
+ ```
  */
 function catTranslateRecord({ sliceIndex, }: { readonly sliceIndex: number; },) {
   return {
@@ -183,7 +183,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry cache directory.
+         Entry cache directory.
          */
         const dir = join(
           scratch.path,
@@ -191,7 +191,7 @@ await describe({
         );
 
         /**
-         * Cache opened on a directory that does not exist yet.
+         Cache opened on a directory that does not exist yet.
          */
         const first = await openSliceCache({ dir, generation: TEST_GENERATION, },);
 
@@ -202,7 +202,7 @@ await describe({
         },);
 
         /**
-         * Cache reopened, which is what a resumed run does.
+         Cache reopened, which is what a resumed run does.
          */
         const second = await openSliceCache({ dir, generation: TEST_GENERATION, },);
 
@@ -219,14 +219,14 @@ await describe({
       fn: async () => {
         await using scratch = await scratchDir();
         /**
-         * Entry directory for this case.
+         Entry directory for this case.
          */
         const dir = join(
           scratch.path,
           'Mittens',
         );
         /**
-         * Cache as a run that lost its critic stage would have written it.
+         Cache as a run that lost its critic stage would have written it.
          */
         const first = await openSliceCache({ dir, generation: TEST_GENERATION, },);
         await first.persist({
@@ -241,7 +241,7 @@ await describe({
           serialized: JSON.stringify(catOutcome({ sliceIndex: 1, },),),
         },);
         /**
-         * Cache reopened, which is what a resumed run does.
+         Cache reopened, which is what a resumed run does.
          */
         const second = await openSliceCache({ dir, generation: TEST_GENERATION, },);
         expect(second.resumed.size,).toBe(1,);
@@ -258,7 +258,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry cache directory.
+         Entry cache directory.
          */
         const dir = join(
           scratch.path,
@@ -266,7 +266,7 @@ await describe({
         );
 
         /**
-         * Cache that stamps this pipeline's marker on a fresh directory.
+         Cache that stamps this pipeline's marker on a fresh directory.
          */
         const opened = await openSliceCache({ dir, generation: TEST_GENERATION, },);
         await opened.persist({
@@ -275,8 +275,8 @@ await describe({
         },);
 
         /**
-         * That very file, rewritten so its envelope answers a different key
-         * while its name still claims this one.
+         That very file, rewritten so its envelope answers a different key
+         while its name still claims this one.
          */
         const foreign = JSON.stringify({
           cacheKey: 'slice-hash-bbb',
@@ -291,7 +291,7 @@ await describe({
         );
 
         /**
-         * Cache reopened, which is what a resumed run does.
+         Cache reopened, which is what a resumed run does.
          */
         const reopened = await openSliceCache({ dir, generation: TEST_GENERATION, },);
         expect(reopened.resumed
@@ -309,7 +309,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry cache directory.
+         Entry cache directory.
          */
         const dir = join(
           scratch.path,
@@ -317,7 +317,7 @@ await describe({
         );
 
         /**
-         * Cache filled by the pipeline that is about to be replaced.
+         Cache filled by the pipeline that is about to be replaced.
          */
         const before = await openSliceCache({
           dir,
@@ -330,8 +330,8 @@ await describe({
         },);
 
         /**
-         * Same directory reopened by a different build, which is what a resume
-         * after any behaviour change looks like.
+         Same directory reopened by a different build, which is what a resume
+         after any behaviour change looks like.
          */
         const after = await openSliceCache({
           dir,
@@ -341,8 +341,8 @@ await describe({
         expect(after.resumed.size,).toBe(0,);
 
         /**
-         * Reopening under the SAME new pipeline, which must now resume nothing
-         * either: the discarded slices are gone rather than merely skipped.
+         Reopening under the SAME new pipeline, which must now resume nothing
+         either: the discarded slices are gone rather than merely skipped.
          */
         const again = await openSliceCache({
           dir,
@@ -361,7 +361,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry cache directory, filled by hand without a marker.
+         Entry cache directory, filled by hand without a marker.
          */
         const dir = join(
           scratch.path,
@@ -394,7 +394,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Cache over a directory nested two levels below anything existing.
+         Cache over a directory nested two levels below anything existing.
          */
         const cache = await openSliceCache({
           dir: join(
@@ -419,7 +419,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry cache directory holding one outdated file.
+         Entry cache directory holding one outdated file.
          */
         const dir = join(
           scratch.path,
@@ -431,7 +431,7 @@ await describe({
         );
 
         /**
-         * Outcome from an older pipeline, missing the refinement fields.
+         Outcome from an older pipeline, missing the refinement fields.
          */
         const stale = {
           sliceIndex: 0,
@@ -461,7 +461,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry cache directory holding one truncated file.
+         Entry cache directory holding one truncated file.
          */
         const dir = join(
           scratch.path,
@@ -491,7 +491,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry cache directory holding one real slice and one stray file.
+         Entry cache directory holding one real slice and one stray file.
          */
         const dir = join(
           scratch.path,
@@ -522,7 +522,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry cache directory holding one outcome of the older shape.
+         Entry cache directory holding one outcome of the older shape.
          */
         const dir = join(
           scratch.path,
@@ -531,9 +531,9 @@ await describe({
         const cache = await openSliceCache({ dir, generation: TEST_GENERATION, },);
 
         /**
-         * Complete outcome with exactly the two fields the newer shape added
-         * taken back out, so a refusal here is attributable to them and to
-         * nothing else about the record.
+         Complete outcome with exactly the two fields the newer shape added
+         taken back out, so a refusal here is attributable to them and to
+         nothing else about the record.
          */
         const {
           rounds,
@@ -581,7 +581,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Cache for an entry that finished one slice.
+         Cache for an entry that finished one slice.
          */
         const cache = await openSliceCache({
           dir: join(
@@ -653,7 +653,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry cache directory to be discarded.
+         Entry cache directory to be discarded.
          */
         const dir = join(
           scratch.path,
@@ -661,7 +661,7 @@ await describe({
         );
 
         /**
-         * Cache holding one finished slice.
+         Cache holding one finished slice.
          */
         const cache = await openSliceCache({ dir, generation: TEST_GENERATION, },);
         await cache.persist({
@@ -708,7 +708,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry directory both lanes share.
+         Entry directory both lanes share.
          */
         const dir = join(
           scratch.path,
@@ -716,7 +716,7 @@ await describe({
         );
 
         /**
-         * Cache this run writes into.
+         Cache this run writes into.
          */
         const first = await openTranslateSliceCache({
           dir,
@@ -728,7 +728,7 @@ await describe({
         },);
 
         /**
-         * Same cache reopened, as the next attempt does.
+         Same cache reopened, as the next attempt does.
          */
         const second = await openTranslateSliceCache({
           dir,
@@ -748,7 +748,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry directory both lanes share.
+         Entry directory both lanes share.
          */
         const dir = join(
           scratch.path,
@@ -774,7 +774,7 @@ await describe({
         );
 
         /**
-         * Cache opened over that misfiled outcome.
+         Cache opened over that misfiled outcome.
          */
         const cache = await openTranslateSliceCache({
           dir,
@@ -793,7 +793,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry directory both lanes share.
+         Entry directory both lanes share.
          */
         const dir = join(
           scratch.path,
@@ -801,7 +801,7 @@ await describe({
         );
 
         /**
-         * Repair slice settled under the current pipeline.
+         Repair slice settled under the current pipeline.
          */
         const repair = await openSliceCache({
           dir,
@@ -813,7 +813,7 @@ await describe({
         },);
 
         /**
-         * Translate slice settled under the same one.
+         Translate slice settled under the same one.
          */
         const translate = await openTranslateSliceCache({
           dir,
@@ -833,7 +833,7 @@ await describe({
         expect(moved.resumed.size,).toBe(0,);
 
         /**
-         * Repair cache reopened after that discard.
+         Repair cache reopened after that discard.
          */
         const survived = await openSliceCache({
           dir,
@@ -852,7 +852,7 @@ await describe({
         await using scratch = await scratchDir();
 
         /**
-         * Entry directory both lanes share.
+         Entry directory both lanes share.
          */
         const dir = join(
           scratch.path,
@@ -860,7 +860,7 @@ await describe({
         );
 
         /**
-         * Translate slice settled first.
+         Translate slice settled first.
          */
         const translate = await openTranslateSliceCache({
           dir,
@@ -872,7 +872,7 @@ await describe({
         },);
 
         /**
-         * Repair cache opened over the same directory.
+         Repair cache opened over the same directory.
          */
         const repair = await openSliceCache({
           dir,

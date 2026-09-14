@@ -33,29 +33,29 @@ import { heardNobody, } from './translate-unheard.ts';
 // refuses, and what a reader is told about each. Nothing here buys anything.
 
 /**
- * Assembles settled translate records into the document and its report.
- *
- * @param prepared - preparation both the slices and the incumbents come from
- *
- * @param settled - one record per slice the lane settled, in document order
- *
- * @param unfilled - passages lane reached and could not fill
- *
- * @param carriedChunkIndices - source-only passages rendered elsewhere
- *
- * @param resumedSliceCount - slices answered from the cache, for the log line
- *
- * @param findings - run-level findings gathered before assembly, which lead the
- * list ahead of every slice's own
- *
- * @param l - driver logger
- *
- * @returns Translated document with its per-slice report and status
- *
- * @example
- * ```ts
- * const result = assembleTranslation({ prepared, settled, unfilled, resumedSliceCount, findings, l, },);
- * ```
+ Assembles settled translate records into the document and its report.
+ 
+ @param prepared - preparation both the slices and the incumbents come from
+ 
+ @param settled - one record per slice the lane settled, in document order
+ 
+ @param unfilled - passages lane reached and could not fill
+ 
+ @param carriedChunkIndices - source-only passages rendered elsewhere
+ 
+ @param resumedSliceCount - slices answered from the cache, for the log line
+ 
+ @param findings - run-level findings gathered before assembly, which lead the
+ list ahead of every slice's own
+ 
+ @param l - driver logger
+ 
+ @returns Translated document with its per-slice report and status
+ 
+ @example
+ ```ts
+ const result = assembleTranslation({ prepared, settled, unfilled, resumedSliceCount, findings, l, },);
+ ```
  */
 export function assembleTranslation(
   {
@@ -77,11 +77,11 @@ export function assembleTranslation(
   },
 ): TranslateDocumentResult {
   /**
-   * Records with produced wording wrapped at its semantic boundaries.
-   *
-   * BEFORE ANYTHING READS THEM, because the replacements, the wordings and the
-   * per-slice findings all come out of this one list, and the delivery
-   * invariant requires the first two to agree byte for byte.
+   Records with produced wording wrapped at its semantic boundaries.
+   
+   BEFORE ANYTHING READS THEM, because the replacements, the wordings and the
+   per-slice findings all come out of this one list, and the delivery
+   invariant requires the first two to agree byte for byte.
    */
   const settled = wrapTranslateRecords({
     slices: prepared.slices,
@@ -91,14 +91,14 @@ export function assembleTranslation(
   },);
 
   /**
-   * Slices whose accepted text differs from the archive's.
+   Slices whose accepted text differs from the archive's.
    */
   const changed = settled.filter(function isChanged(record,): boolean {
     return record.changed;
   },);
 
   /**
-   * Slices where the guard refused a replacement the judges chose.
+   Slices where the guard refused a replacement the judges chose.
    */
   const refused = settled.filter(function wasRefused(record,): boolean {
     return (record.disposition === 'refused-alignment')
@@ -107,8 +107,8 @@ export function assembleTranslation(
   },);
 
   /**
-   * Slices no translator answered for, which stand on the incumbent and are
-   * deliberately absent from the cache.
+   Slices no translator answered for, which stand on the incumbent and are
+   deliberately absent from the cache.
    */
   const unheard = settled.filter(function answeredByNobody(record,): boolean {
     return heardNobody({ record, },);
@@ -123,12 +123,12 @@ export function assembleTranslation(
   );
 
   /**
-   * What this lane wants written, checked before the guard sees it.
-   *
-   * A BACKSTOP rather than the defence it used to be. Every record reaching
-   * here has already been checked against its own text, whether it came from
-   * the stage or from the cache, so a contradiction at this point means a
-   * defect between those checks and this line rather than a bad cache file.
+   What this lane wants written, checked before the guard sees it.
+   
+   A BACKSTOP rather than the defence it used to be. Every record reaching
+   here has already been checked against its own text, whether it came from
+   the stage or from the cache, so a contradiction at this point means a
+   defect between those checks and this line rather than a bad cache file.
    */
   const replacements = changed.map(function toReplacement(record,) {
     return {
@@ -142,13 +142,13 @@ export function assembleTranslation(
   },);
 
   /**
-   * Assembly with any replacement withdrawn that the whole document refuses.
-   *
-   * Runs here rather than inside a slice because everything it checks is a
-   * relation BETWEEN slices: a footnote's reference and definition are settled
-   * separately, so a candidate that drops or renumbers a marker validates
-   * perfectly on its own, and a set that reassembles to the archive text is a
-   * fact no single slice can see.
+   Assembly with any replacement withdrawn that the whole document refuses.
+   
+   Runs here rather than inside a slice because everything it checks is a
+   relation BETWEEN slices: a footnote's reference and definition are settled
+   separately, so a candidate that drops or renumbers a marker validates
+   perfectly on its own, and a set that reassembles to the archive text is a
+   fact no single slice can see.
    */
   const guarded = guardFootnoteAssembly({
     targetText: prepared.targetText,
@@ -176,11 +176,11 @@ export function assembleTranslation(
     l.warn(finding,);
 
   /**
-   * Slices the returned document carries a change for, derived from the
-   * surviving replacements and checked against the document's own bytes.
-   *
-   * Derived here rather than mapped by this driver, so the text and the index
-   * set cannot disagree about which slices moved.
+   Slices the returned document carries a change for, derived from the
+   surviving replacements and checked against the document's own bytes.
+   
+   Derived here rather than mapped by this driver, so the text and the index
+   set cannot disagree about which slices moved.
    */
   const shipped = deriveShippedIndices({
     incumbentText: prepared.targetText,
@@ -190,17 +190,17 @@ export function assembleTranslation(
   },);
 
   /**
-   * What each slice contributed to the assembled document, in document order.
-   *
-   * Read off the SURVIVING replacements rather than the lane's wishes, so a
-   * translation the footnote guard took back is not counted as wording that
-   * shipped.
+   What each slice contributed to the assembled document, in document order.
+   
+   Read off the SURVIVING replacements rather than the lane's wishes, so a
+   translation the footnote guard took back is not counted as wording that
+   shipped.
    */
   const shippedSlices: readonly AdjacentSliceText[] = prepared
     .slices
     .map(function shippedFor(slice,): AdjacentSliceText {
       /**
-       * This slice's index and the wording the archive had there.
+       This slice's index and the wording the archive had there.
        */
       const {
         sliceIndex,
@@ -208,7 +208,7 @@ export function assembleTranslation(
       } = slice.target;
 
       /**
-       * Surviving replacement for this slice, absent when the incumbent stood.
+       Surviving replacement for this slice, absent when the incumbent stood.
        */
       const replacement = guarded
         .replacements
@@ -224,10 +224,10 @@ export function assembleTranslation(
     },);
 
   /**
-   * Both index sets, checked against each other and put in document order.
-   *
-   * The guard returns each in the order it worked, and a reader comparing two
-   * lanes wants document order for both.
+   Both index sets, checked against each other and put in document order.
+   
+   The guard returns each in the order it worked, and a reader comparing two
+   lanes wants document order for both.
    */
   const ordered = orderedChangeSets({
     sliceCount: prepared.slices

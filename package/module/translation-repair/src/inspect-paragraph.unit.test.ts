@@ -1,8 +1,8 @@
 /**
- * Tests for paragraph inspection and the ordered protected-atom gate.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for paragraph inspection and the ordered protected-atom gate.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -17,16 +17,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Atom values of one paragraph, for order-sensitive assertions.
- *
- * @param text - paragraph source
- *
- * @returns `kind:value` tokens in document order
- *
- * @example
- * ```ts
- * expect(atomTokens('she was 17',),).toEqual(['number:17',],);
- * ```
+ Atom values of one paragraph, for order-sensitive assertions.
+ 
+ @param text - paragraph source
+ 
+ @returns `kind:value` tokens in document order
+ 
+ @example
+ ```ts
+ expect(atomTokens('she was 17',),).toEqual(['number:17',],);
+ ```
  */
 function atomTokens(
   text: string,

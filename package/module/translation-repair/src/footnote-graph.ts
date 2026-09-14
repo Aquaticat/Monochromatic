@@ -18,87 +18,87 @@ import type {
 // offsets faithful when values and source diverge through escapes.
 
 /**
- * Opening bracket of archive-convention footnote markers.
+ Opening bracket of archive-convention footnote markers.
  */
 const FULLWIDTH_OPEN = '〔';
 
 /**
- * Closing bracket of archive-convention footnote markers.
+ Closing bracket of archive-convention footnote markers.
  */
 const FULLWIDTH_CLOSE = '〕';
 
 /**
- * Digit characters accepted inside markers:
- * ASCII first, full-width second, index modulo base yields digit value.
+ Digit characters accepted inside markers:
+ ASCII first, full-width second, index modulo base yields digit value.
  */
 const DIGIT_CHARS = '0123456789０１２３４５６７８９';
 
 /**
- * Numeric base folding full-width digit indexes onto ASCII digit values.
+ Numeric base folding full-width digit indexes onto ASCII digit values.
  */
 const DECIMAL_BASE = 10;
 
 /**
- * One raw full-width marker found in a source slice.
- *
- * @example
- * ```ts
- * const hit: TextMarkerHit = { identifier: '1', localOffset: 2, };
- * ```
+ One raw full-width marker found in a source slice.
+ 
+ @example
+ ```ts
+ const hit: TextMarkerHit = { identifier: '1', localOffset: 2, };
+ ```
  */
 export type TextMarkerHit = {
   /**
-   * Marker number normalized to ASCII digits.
+   Marker number normalized to ASCII digits.
    */
   readonly identifier: string;
 
   /**
-   * Offset of opening bracket within scanned slice.
+   Offset of opening bracket within scanned slice.
    */
   readonly localOffset: number;
 };
 
 /**
- * Scans one source slice for `〔N〕` markers in a single linear pass.
- * Accepts ASCII and full-width digits;
- * brackets without digits between them are ordinary text, not markers.
- *
- * @param slice - exact source text of one mdast text node
- *
- * @returns Hits in source order with slice-local offsets
- *
- * @example
- * ```ts
- * scanFullwidthMarkers({ slice: '文学上的折扣〔1〕', },);
- * ```
+ Scans one source slice for `〔N〕` markers in a single linear pass.
+ Accepts ASCII and full-width digits;
+ brackets without digits between them are ordinary text, not markers.
+ 
+ @param slice - exact source text of one mdast text node
+ 
+ @returns Hits in source order with slice-local offsets
+ 
+ @example
+ ```ts
+ scanFullwidthMarkers({ slice: '文学上的折扣〔1〕', },);
+ ```
  */
 export function scanFullwidthMarkers(
   { slice, }: { readonly slice: string; },
 ): readonly TextMarkerHit[] {
   /**
-   * Accumulated hits in source order.
+   Accumulated hits in source order.
    */
   const hits: TextMarkerHit[] = [];
 
   /**
-   * Scan cursor advanced past each examined opening bracket.
+   Scan cursor advanced past each examined opening bracket.
    */
   let cursor = slice.indexOf(FULLWIDTH_OPEN,);
 
   while (cursor !== (-1)) {
     /**
-     * Digits collected between brackets, normalized to ASCII, joined once.
+     Digits collected between brackets, normalized to ASCII, joined once.
      */
     const digitParts: string[] = [];
 
     /**
-     * Cursor walking characters after opening bracket.
+     Cursor walking characters after opening bracket.
      */
     let probe = cursor + 1;
 
     while (probe < slice.length) {
       /**
-       * Digit-table index of probed character; -1 ends digit collection.
+       Digit-table index of probed character; -1 ends digit collection.
        */
       const digitIndex = DIGIT_CHARS.indexOf(nonNullishOrThrow(slice[probe],),);
       if (digitIndex === (-1))
@@ -109,7 +109,7 @@ export function scanFullwidthMarkers(
     }
 
     /**
-     * Identifier the digits spell.
+     Identifier the digits spell.
      */
     const digits = digitParts.join('',);
     if ((digits !== '') && (slice[probe] === FULLWIDTH_CLOSE))
@@ -128,21 +128,21 @@ export function scanFullwidthMarkers(
 }
 
 /**
- * Scans one source slice for literal `[^identifier]` sequences.
- *
- * micromark consumes every `[^identifier]` whose definition exists into a
- * footnoteReference node, so a literal surviving inside a text node is an
- * unresolved reference by construction:
- * scanning literals is exactly how dropped or mistranslated definitions surface.
- *
- * @param slice - exact source text of one mdast text node
- *
- * @returns Hits in source order with slice-local offsets
- *
- * @example
- * ```ts
- * scanGfmReferenceLiterals({ slice: '引用[^7]没有定义。', },);
- * ```
+ Scans one source slice for literal `[^identifier]` sequences.
+ 
+ micromark consumes every `[^identifier]` whose definition exists into a
+ footnoteReference node, so a literal surviving inside a text node is an
+ unresolved reference by construction:
+ scanning literals is exactly how dropped or mistranslated definitions surface.
+ 
+ @param slice - exact source text of one mdast text node
+ 
+ @returns Hits in source order with slice-local offsets
+ 
+ @example
+ ```ts
+ scanGfmReferenceLiterals({ slice: '引用[^7]没有定义。', },);
+ ```
  */
 export function scanGfmReferenceLiterals(
   { slice, }: { readonly slice: string; },
@@ -161,18 +161,18 @@ export function scanGfmReferenceLiterals(
 //region Graph construction
 
 /**
- * Composite key joining convention and identifier for grouping.
- *
- * @param convention - syntax family
- *
- * @param identifier - normalized identifier
- *
- * @returns Collision-free grouping key
- *
- * @example
- * ```ts
- * graphKey({ convention: 'gfm', identifier: '1', },);
- * ```
+ Composite key joining convention and identifier for grouping.
+ 
+ @param convention - syntax family
+ 
+ @param identifier - normalized identifier
+ 
+ @returns Collision-free grouping key
+ 
+ @example
+ ```ts
+ graphKey({ convention: 'gfm', identifier: '1', },);
+ ```
  */
 function graphKey(
   {
@@ -187,47 +187,47 @@ function graphKey(
 }
 
 /**
- * Mutable accumulator threaded through one document walk.
- *
- * @example
- * ```ts
- * const acc: GraphAccumulator = { references: [], definitions: [], };
- * ```
+ Mutable accumulator threaded through one document walk.
+ 
+ @example
+ ```ts
+ const acc: GraphAccumulator = { references: [], definitions: [], };
+ ```
  */
 type GraphAccumulator = {
   /**
-   * References collected so far in source order.
+   References collected so far in source order.
    */
   readonly references: FootnoteReferenceHit[];
 
   /**
-   * Definitions collected so far in source order.
+   Definitions collected so far in source order.
    */
   readonly definitions: FootnoteDefinitionHit[];
 };
 
 /**
- * Walks one top-level block with an explicit work-stack,
- * collecting GFM footnote references and full-width markers from text nodes.
- * Code and inline-code nodes never enter text scanning because only `text` nodes are
- * scanned, which is what makes marker look-alikes inside code harmless.
- *
- * @param block - top-level mdast block to walk
- *
- * @param blockIndex - index of block among top-level children
- *
- * @param blockStart - body-relative start offset of block
- *
- * @param bodyText - body source for faithful slice scanning
- *
- * @param bodyOffset - absolute offset of body start in full document source
- *
- * @param acc - accumulator receiving hits
- *
- * @example
- * ```ts
- * collectBlockHits({ block, blockIndex: 0, blockStart: 0, bodyText, bodyOffset: 0, acc, },);
- * ```
+ Walks one top-level block with an explicit work-stack,
+ collecting GFM footnote references and full-width markers from text nodes.
+ Code and inline-code nodes never enter text scanning because only `text` nodes are
+ scanned, which is what makes marker look-alikes inside code harmless.
+ 
+ @param block - top-level mdast block to walk
+ 
+ @param blockIndex - index of block among top-level children
+ 
+ @param blockStart - body-relative start offset of block
+ 
+ @param bodyText - body source for faithful slice scanning
+ 
+ @param bodyOffset - absolute offset of body start in full document source
+ 
+ @param acc - accumulator receiving hits
+ 
+ @example
+ ```ts
+ collectBlockHits({ block, blockIndex: 0, blockStart: 0, bodyText, bodyOffset: 0, acc, },);
+ ```
  */
 function collectBlockHits(
   {
@@ -247,18 +247,18 @@ function collectBlockHits(
   },
 ): void {
   /**
-   * Structural identifier shared by every hit inside this block.
+   Structural identifier shared by every hit inside this block.
    */
   const nodeId = `block/${String(blockIndex,)}`;
 
   /**
-   * Explicit work-stack replacing recursion for this bounded structural walk.
+   Explicit work-stack replacing recursion for this bounded structural walk.
    */
   const stack: RootContent[] = [block,];
 
   while (stack.length > 0) {
     /**
-     * Node under examination, proven present by loop condition.
+     Node under examination, proven present by loop condition.
      */
     const node = nonNullishOrThrow(stack.pop(),);
 
@@ -275,14 +275,14 @@ function collectBlockHits(
     }
     else if (node.type === 'text') {
       /**
-       * Body-relative start of this text node.
+       Body-relative start of this text node.
        */
       const textStart = nonNullishOrThrow(node.position
         ?.start
         .offset,);
 
       /**
-       * Body-relative end of this text node.
+       Body-relative end of this text node.
        */
       const textEnd = nonNullishOrThrow(node.position
         ?.end
@@ -293,9 +293,9 @@ function collectBlockHits(
         textEnd,
       ), },)) {
         /**
-         * Text between block start and marker;
-         * all-whitespace prefix means marker opens its block,
-         * which is how archive-convention definitions are written.
+         Text between block start and marker;
+         all-whitespace prefix means marker opens its block,
+         which is how archive-convention definitions are written.
          */
         const prefix = bodyText.slice(
           blockStart,
@@ -353,18 +353,18 @@ function collectBlockHits(
 }
 
 /**
- * Computes integrity findings from collected references and definitions.
- *
- * @param references - every reference in source order
- *
- * @param definitions - every definition in source order
- *
- * @returns Findings for unresolved references, orphan definitions, and duplicates
- *
- * @example
- * ```ts
- * computeFindings({ references, definitions, },);
- * ```
+ Computes integrity findings from collected references and definitions.
+ 
+ @param references - every reference in source order
+ 
+ @param definitions - every definition in source order
+ 
+ @returns Findings for unresolved references, orphan definitions, and duplicates
+ 
+ @example
+ ```ts
+ computeFindings({ references, definitions, },);
+ ```
  */
 function computeFindings(
   {
@@ -376,12 +376,12 @@ function computeFindings(
   },
 ): readonly FootnoteGraphFinding[] {
   /**
-   * Definition count per grouping key, driving duplicate detection.
+   Definition count per grouping key, driving duplicate detection.
    */
   const definitionCounts = new Map<string, number>();
   for (const definition of definitions) {
     /**
-     * Grouping key of this definition.
+     Grouping key of this definition.
      */
     const key = graphKey(definition,);
     definitionCounts.set(
@@ -391,14 +391,14 @@ function computeFindings(
   }
 
   /**
-   * Keys of identifiers referenced at least once, driving orphan detection.
+   Keys of identifiers referenced at least once, driving orphan detection.
    */
   const referencedKeys = new Set(references.map(function toKey(reference,): string {
     return graphKey(reference,);
   },),);
 
   /**
-   * Unresolved references: no definition carries their key.
+   Unresolved references: no definition carries their key.
    */
   const unresolved = references
     .filter(function lacksDefinition(reference,): boolean {
@@ -414,7 +414,7 @@ function computeFindings(
     },);
 
   /**
-   * Orphan definitions: never referenced anywhere.
+   Orphan definitions: never referenced anywhere.
    */
   const orphans = definitions
     .filter(function neverReferenced(definition,): boolean {
@@ -430,7 +430,7 @@ function computeFindings(
     },);
 
   /**
-   * Duplicate definitions: identifier defined more than once.
+   Duplicate definitions: identifier defined more than once.
    */
   const duplicates = definitions
     .filter(function definedTwice(definition,): boolean {
@@ -453,22 +453,22 @@ function computeFindings(
 }
 
 /**
- * Builds complete footnote graph of one parsed document:
- * GFM reference and definition nodes plus archive-convention `〔N〕` text markers,
- * validated as a reference-to-definition graph rather than by marker counting.
- *
- * @param children - top-level mdast blocks in source order
- *
- * @param bodyText - body source the blocks were parsed from
- *
- * @param bodyOffset - absolute offset of body start in full document source
- *
- * @returns Graph with references, definitions, and integrity findings
- *
- * @example
- * ```ts
- * const graph = buildFootnoteGraph({ children: root.children, bodyText: body, bodyOffset, },);
- * ```
+ Builds complete footnote graph of one parsed document:
+ GFM reference and definition nodes plus archive-convention `〔N〕` text markers,
+ validated as a reference-to-definition graph rather than by marker counting.
+ 
+ @param children - top-level mdast blocks in source order
+ 
+ @param bodyText - body source the blocks were parsed from
+ 
+ @param bodyOffset - absolute offset of body start in full document source
+ 
+ @returns Graph with references, definitions, and integrity findings
+ 
+ @example
+ ```ts
+ const graph = buildFootnoteGraph({ children: root.children, bodyText: body, bodyOffset, },);
+ ```
  */
 export function buildFootnoteGraph(
   {
@@ -482,7 +482,7 @@ export function buildFootnoteGraph(
   },
 ): FootnoteGraph {
   /**
-   * Accumulator receiving hits from every block walk.
+   Accumulator receiving hits from every block walk.
    */
   const acc: GraphAccumulator = {
     references: [],

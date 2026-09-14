@@ -1,29 +1,29 @@
 /**
- * Tests for finding the slice a recorded replacement was made in.
- *
- * THE PROBE RE-CARVES WHAT THE RUN CARVED, which is the only reason this
- * function exists: a relabelling asks a fresh reader about a region production
- * already edited, and if the re-carve landed on different text the reader would
- * be answering about a passage production never sent. So the lookup is by TEXT
- * rather than by index, and the two returned halves must come from ONE slice.
- * A function that returned the whole document for both would satisfy a
- * careless test and quietly widen every prompt the probe sends.
- *
- * THE REFUSAL IS A SECURITY BOUNDARY, not just a diagnostic.
- * `ArtifactParseError` carries `messageNamesOnly`, which `reportingRefusals`
- * reads as permission to print the whole message, and the marker's justification
- * is that the class "names the artifact path and the shape the value failed to
- * satisfy, and quotes neither the value nor the file". Until 2026-08-25 this
- * site put 80 characters of the replaced TRANSLATION into that path, so a probe
- * that could not find its slice printed a memorial page's wording to a terminal
- * and into the run's log. Sweeping the package found it was the only one of 47
- * interpolating paths that quoted text rather than a structural position. One
- * case below is that guard, and it is the reason this file is worth its length.
- *
- * FIXTURES ARE INVENTED AND CAT-THEMED, in Simplified Chinese against English,
- * because the real inputs are unlicensed corpus pages.
- *
- * @module
+ Tests for finding the slice a recorded replacement was made in.
+ 
+ THE PROBE RE-CARVES WHAT THE RUN CARVED, which is the only reason this
+ function exists: a relabelling asks a fresh reader about a region production
+ already edited, and if the re-carve landed on different text the reader would
+ be answering about a passage production never sent. So the lookup is by TEXT
+ rather than by index, and the two returned halves must come from ONE slice.
+ A function that returned the whole document for both would satisfy a
+ careless test and quietly widen every prompt the probe sends.
+ 
+ THE REFUSAL IS A SECURITY BOUNDARY, not just a diagnostic.
+ `ArtifactParseError` carries `messageNamesOnly`, which `reportingRefusals`
+ reads as permission to print the whole message, and the marker's justification
+ is that the class "names the artifact path and the shape the value failed to
+ satisfy, and quotes neither the value nor the file". Until 2026-08-25 this
+ site put 80 characters of the replaced TRANSLATION into that path, so a probe
+ that could not find its slice printed a memorial page's wording to a terminal
+ and into the run's log. Sweeping the package found it was the only one of 47
+ interpolating paths that quoted text rather than a structural position. One
+ case below is that guard, and it is the reason this file is worth its length.
+ 
+ FIXTURES ARE INVENTED AND CAT-THEMED, in Simplified Chinese against English,
+ because the real inputs are unlicensed corpus pages.
+ 
+ @module
  */
 
 import {
@@ -40,7 +40,7 @@ import {
 //region Relabel case location tests
 
 /**
- * Source page, two sections, as the corpus writes one.
+ Source page, two sections, as the corpus writes one.
  */
 const SOURCE_TEXT = [
   '## 第一节',
@@ -54,7 +54,7 @@ const SOURCE_TEXT = [
 ].join('\n',);
 
 /**
- * Translation of that page, section for section.
+ Translation of that page, section for section.
  */
 const TARGET_TEXT = [
   '## Section One',
@@ -68,30 +68,30 @@ const TARGET_TEXT = [
 ].join('\n',);
 
 /**
- * Wording the first section carries, which an edit replaced.
+ Wording the first section carries, which an edit replaced.
  */
 const FIRST_WORDING = 'The cat sat on the mat.';
 
 /**
- * Wording the second section carries, so a lookup has to choose.
+ Wording the second section carries, so a lookup has to choose.
  */
 const SECOND_WORDING = 'The kitten watched from the stairs.';
 
 /**
- * Source of the section holding {@link FIRST_WORDING}.
+ Source of the section holding {@link FIRST_WORDING}.
  */
 const FIRST_SOURCE = '## 第一节\n\n猫坐在垫子上。';
 
 /**
- * Source of the section holding {@link SECOND_WORDING}.
+ Source of the section holding {@link SECOND_WORDING}.
  */
 const SECOND_SOURCE = '## 第二节\n\n小猫在楼梯上看着。';
 
 /**
- * Wording no slice carries, standing in for a re-carve that drifted.
- *
- * Written as a sentence a search can find whole, so a message that quoted it
- * back could not be mistaken for a coincidence.
+ Wording no slice carries, standing in for a re-carve that drifted.
+ 
+ Written as a sentence a search can find whole, so a message that quoted it
+ back could not be mistaken for a coincidence.
  */
 const ABSENT_WORDING = 'the dog barked once at the gate and then lay down again';
 
@@ -130,7 +130,7 @@ await describe({
       name: 'PAIRS the source and the translation of ONE slice, never across two',
       fn: async () => {
         /**
-         * Second section's slice, found by its own wording.
+         Second section's slice, found by its own wording.
          */
         const found = locateSlice({
           sourceText: SOURCE_TEXT,
@@ -161,7 +161,7 @@ await describe({
       name: 'REFUSES to quote the text it could not find, naming only its length',
       fn: async () => {
         /**
-         * Refusal the missing lookup raised, or nothing when it did not raise.
+         Refusal the missing lookup raised, or nothing when it did not raise.
          */
         let said = '';
 

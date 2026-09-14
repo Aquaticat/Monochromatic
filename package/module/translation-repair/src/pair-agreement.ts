@@ -25,12 +25,12 @@ import {
 // pair on the floor as "non-monotone".
 
 /**
- * A correspondence between one source position and one target position.
- *
- * @example
- * ```ts
- * const pair: IndexPair = { source: 3, target: 4, };
- * ```
+ A correspondence between one source position and one target position.
+ 
+ @example
+ ```ts
+ const pair: IndexPair = { source: 3, target: 4, };
+ ```
  */
 export type IndexPair = {
   readonly source: number;
@@ -38,64 +38,64 @@ export type IndexPair = {
 };
 
 /**
- * Multiplicity pairing consumer can represent.
- *
- * @example
- * ```ts
- * const shape: PairingShape = 'many-to-many';
- * ```
+ Multiplicity pairing consumer can represent.
+ 
+ @example
+ ```ts
+ const shape: PairingShape = 'many-to-many';
+ ```
  */
 export type PairingShape = 'one-to-one' | 'many-to-many';
 
 /**
- * Pairs the roster agreed on, with the findings for agreed pairs that could
- * not be kept.
- *
- * @example
- * ```ts
- * const { pairs, findings, } = agreePairs({ pairings, needed: 2, },);
- * ```
+ Pairs the roster agreed on, with the findings for agreed pairs that could
+ not be kept.
+ 
+ @example
+ ```ts
+ const { pairs, findings, } = agreePairs({ pairings, needed: 2, },);
+ ```
  */
 export type PairAgreement<PairT extends IndexPair,> = {
   /**
-   * Agreed pairs, strictly increasing for one-to-one and monotone otherwise.
+   Agreed pairs, strictly increasing for one-to-one and monotone otherwise.
    */
   readonly pairs: readonly PairT[];
 
   /**
-   * One line per agreed pair that was dropped, naming why.
+   One line per agreed pair that was dropped, naming why.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Counts every distinct pair across every voice's pairing.
- *
- * @param pairings - one pairing per usable voice
- *
- * @returns Distinct pairs with their vote counts, in first-named order
- *
- * @example
- * ```ts
- * const voted = countAcrossVoices({ pairings, },);
- * ```
+ Counts every distinct pair across every voice's pairing.
+ 
+ @param pairings - one pairing per usable voice
+ 
+ @returns Distinct pairs with their vote counts, in first-named order
+ 
+ @example
+ ```ts
+ const voted = countAcrossVoices({ pairings, },);
+ ```
  */
 function countAcrossVoices<PairT extends IndexPair,>(
   { pairings, }: { readonly pairings: readonly (readonly PairT[])[]; },
 ): readonly VotedPair<PairT>[] {
   /**
-   * Votes per pair, keyed by both positions, the pair object kept from its
-   * first naming.
+   Votes per pair, keyed by both positions, the pair object kept from its
+   first naming.
    */
   const byKey = new Map<string, VotedPair<PairT>>();
   for (const pairing of pairings)
     for (const pair of pairing) {
       /**
-       * Key naming both positions.
+       Key naming both positions.
        */
       const key = `${String(pair.source,)},${String(pair.target,)}`;
       /**
-       * Count so far, absent on first naming.
+       Count so far, absent on first naming.
        */
       const seen = byKey.get(key,);
       byKey.set(
@@ -110,20 +110,20 @@ function countAcrossVoices<PairT extends IndexPair,>(
 }
 
 /**
- * Reports whether enough voices named every candidate together.
- *
- * @param candidates - pairs whose co-occurrence is being tested
- *
- * @param pairings - one pairing per usable voice
- *
- * @param needed - voices required
- *
- * @returns Whether candidates are corroborated as one relation
- *
- * @example
- * ```ts
- * const together = candidatesCoOccur({ candidates, pairings, needed: 2, });
- * ```
+ Reports whether enough voices named every candidate together.
+ 
+ @param candidates - pairs whose co-occurrence is being tested
+ 
+ @param pairings - one pairing per usable voice
+ 
+ @param needed - voices required
+ 
+ @returns Whether candidates are corroborated as one relation
+ 
+ @example
+ ```ts
+ const together = candidatesCoOccur({ candidates, pairings, needed: 2, });
+ ```
  */
 function candidatesCoOccur<PairT extends IndexPair,>(
   {
@@ -137,12 +137,12 @@ function candidatesCoOccur<PairT extends IndexPair,>(
   },
 ): boolean {
   /**
-   * Voices naming every candidate as one relation.
+   Voices naming every candidate as one relation.
    */
   const matching = pairings.filter(function namesEveryCandidate(pairing,): boolean {
     return candidates.every(function namesCandidate(candidate,): boolean {
       /**
-       * Candidate pair this voice must name.
+       Candidate pair this voice must name.
        */
       const { pair: candidatePair, } = candidate;
       return pairing.some(function isSamePair(pair,): boolean {
@@ -155,22 +155,22 @@ function candidatesCoOccur<PairT extends IndexPair,>(
 }
 
 /**
- * Of candidates naming one source, set to keep under consumer multiplicity.
- *
- * @param candidates - agreed pairs sharing source
- *
- * @param pairings - one pairing per usable voice
- *
- * @param needed - voices required
- *
- * @param pairingShape - multiplicity consumer can represent
- *
- * @returns Corroborated set, best-voted singleton, or nothing for tie
- *
- * @example
- * ```ts
- * const winner = bestVoted({ candidates, },);
- * ```
+ Of candidates naming one source, set to keep under consumer multiplicity.
+ 
+ @param candidates - agreed pairs sharing source
+ 
+ @param pairings - one pairing per usable voice
+ 
+ @param needed - voices required
+ 
+ @param pairingShape - multiplicity consumer can represent
+ 
+ @returns Corroborated set, best-voted singleton, or nothing for tie
+ 
+ @example
+ ```ts
+ const winner = bestVoted({ candidates, },);
+ ```
  */
 function bestVoted<PairT extends IndexPair,>(
   {
@@ -193,7 +193,7 @@ function bestVoted<PairT extends IndexPair,>(
     },))
     return candidates;
   /**
-   * Candidates from the most-voted down.
+   Candidates from the most-voted down.
    */
   const ranked = candidates.toSorted(function byVotesDesc(
     left,
@@ -202,7 +202,7 @@ function bestVoted<PairT extends IndexPair,>(
     return right.votes - left.votes;
   },);
   /**
-   * The two best, either possibly absent.
+   The two best, either possibly absent.
    */
   const [first, second,] = ranked;
   if (first === undefined)
@@ -213,20 +213,20 @@ function bestVoted<PairT extends IndexPair,>(
 }
 
 /**
- * Pairs enough voices named, kept strictly increasing on both sides.
- *
- * @param pairings - one pairing per usable voice
- *
- * @param needed - voices a pair needs to count as agreed
- *
- * @param pairingShape - multiplicity consumer can represent
- *
- * @returns Agreed pairs in source order, plus a finding per agreed pair dropped
- *
- * @example
- * ```ts
- * const agreement = agreePairs({ pairings, needed: 2, },);
- * ```
+ Pairs enough voices named, kept strictly increasing on both sides.
+ 
+ @param pairings - one pairing per usable voice
+ 
+ @param needed - voices a pair needs to count as agreed
+ 
+ @param pairingShape - multiplicity consumer can represent
+ 
+ @returns Agreed pairs in source order, plus a finding per agreed pair dropped
+ 
+ @example
+ ```ts
+ const agreement = agreePairs({ pairings, needed: 2, },);
+ ```
  */
 export function agreePairs<PairT extends IndexPair,>(
   {
@@ -240,7 +240,7 @@ export function agreePairs<PairT extends IndexPair,>(
   },
 ): PairAgreement<PairT> {
   /**
-   * Agreed pairs in source, then target, order.
+   Agreed pairs in source, then target, order.
    */
   const agreed = countAcrossVoices({ pairings, },)
     .filter(function enoughAgree(voted,): boolean {
@@ -251,55 +251,55 @@ export function agreePairs<PairT extends IndexPair,>(
       right,
     ): number {
       /**
-       * Pair on the left of the comparison.
+       Pair on the left of the comparison.
        */
       const { pair: before, } = left;
       /**
-       * Pair on the right of the comparison.
+       Pair on the right of the comparison.
        */
       const { pair: after, } = right;
       return (before.source - after.source) || (before.target - after.target);
     },);
 
   /**
-   * Source of every agreed pair, in order, repeats included.
+   Source of every agreed pair, in order, repeats included.
    */
   const named = agreed.map(function toSource(voted,): number {
     /**
-     * Pair this vote names.
+     Pair this vote names.
      */
     const { pair, } = voted;
     return pair.source;
   },);
 
   /**
-   * Distinct sources in ascending order.
+   Distinct sources in ascending order.
    */
   const sources = [...new Set(named,),];
 
   /**
-   * Pairs kept so far with their votes, monotone on both sides.
+   Pairs kept so far with their votes, monotone on both sides.
    */
   const kept: VotedPair<PairT>[] = [];
 
   /**
-   * Findings for agreed pairs that could not be kept.
+   Findings for agreed pairs that could not be kept.
    */
   const findings: string[] = [];
 
   for (const source of sources) {
     /**
-     * Agreed pairs naming this source.
+     Agreed pairs naming this source.
      */
     const candidates = agreed.filter(function namesSource(voted,): boolean {
       /**
-       * Pair this vote names.
+       Pair this vote names.
        */
       const { pair, } = voted;
       return pair.source === source;
     },);
     /**
-     * The one to keep for this source, absent on a tie.
+     The one to keep for this source, absent on a tie.
      */
     const winners = bestVoted({
       candidates,
@@ -313,7 +313,7 @@ export function agreePairs<PairT extends IndexPair,>(
     }
     for (const winner of winners) {
       /**
-       * Last pair kept, absent before first.
+       Last pair kept, absent before first.
        */
       const last = kept.at(-1,);
       if (last === undefined) {
@@ -321,11 +321,11 @@ export function agreePairs<PairT extends IndexPair,>(
         continue;
       }
       /**
-       * Pair this winner names.
+       Pair this winner names.
        */
       const { pair: chosen, } = winner;
       /**
-       * Pair kept last.
+       Pair kept last.
        */
       const { pair: previous, } = last;
       if (chosen.target < previous.target) {
@@ -339,8 +339,8 @@ export function agreePairs<PairT extends IndexPair,>(
         continue;
       }
       /**
-       * Whether the repeated target is a merge enough voices named together,
-       * which the block wire represents and the section wire does not.
+       Whether the repeated target is a merge enough voices named together,
+       which the block wire represents and the section wire does not.
        */
       const corroboratedMerge = (pairingShape === 'many-to-many')
         && candidatesCoOccur({
@@ -356,7 +356,7 @@ export function agreePairs<PairT extends IndexPair,>(
         continue;
       }
       /**
-       * Which of the two uncorroborated claims on this target survives.
+       Which of the two uncorroborated claims on this target survives.
        */
       const outcome = settleContestedTarget({
         earlier: last,
@@ -373,7 +373,7 @@ export function agreePairs<PairT extends IndexPair,>(
   return {
     pairs: kept.map(function toPair(voted,): PairT {
       /**
-       * Pair this vote names.
+       Pair this vote names.
        */
       const { pair, } = voted;
       return pair;

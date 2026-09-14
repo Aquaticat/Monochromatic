@@ -1,16 +1,16 @@
 /**
- * Tests for the section-pairing reader: what a model may return and what it may
- * not.
- *
- * STRICTER THAN THE BLOCK READER ON EXACTLY ONE POINT, and these cases pin it.
- * The block reader permits a repeat on either side, because a translation
- * splitting or merging paragraphs is a correspondence the slice machinery can
- * carry. A `ChunkPair` carries ONE section on each side, so a repeat here has
- * nowhere to go and would silently drop whichever section lost the race.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the section-pairing reader: what a model may return and what it may
+ not.
+ 
+ STRICTER THAN THE BLOCK READER ON EXACTLY ONE POINT, and these cases pin it.
+ The block reader permits a repeat on either side, because a translation
+ splitting or merging paragraphs is a correspondence the slice machinery can
+ carry. A `ChunkPair` carries ONE section on each side, so a repeat here has
+ nowhere to go and would silently drop whichever section lost the race.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -25,28 +25,28 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Sections on the original side, as a count the reader bounds indices against.
+ Sections on the original side, as a count the reader bounds indices against.
  */
 const SOURCE_COUNT = 3;
 
 /**
- * Sections on the translation side.
+ Sections on the translation side.
  */
 const TARGET_COUNT = 4;
 
 /**
- * Reads a pairing against the fixture's counts.
- *
- * @param value - what a model returned
- *
- * @returns Pairs the reader accepted
- *
- * @throws SectionPairingError when it refuses
- *
- * @example
- * ```ts
- * const pairs = read({ pairs: [], },);
- * ```
+ Reads a pairing against the fixture's counts.
+ 
+ @param value - what a model returned
+ 
+ @returns Pairs the reader accepted
+ 
+ @throws SectionPairingError when it refuses
+ 
+ @example
+ ```ts
+ const pairs = read({ pairs: [], },);
+ ```
  */
 function read(value: unknown,) {
   return readSectionPairing({

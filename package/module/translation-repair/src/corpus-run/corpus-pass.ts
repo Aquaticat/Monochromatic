@@ -82,83 +82,83 @@ import {
 // zero-quota setup check).
 
 /**
- * Minutes expressed in milliseconds, for the wall-time budgets.
+ Minutes expressed in milliseconds, for the wall-time budgets.
  */
 const MS_PER_MINUTE = 60_000;
 
 /**
- * Minutes of wall time after which no new entry starts.
- *
- * Was 25, which throttled the whole accumulation to about one entry per launch.
- * The interaction that caused it: `BANDS` puts the large band first within a
- * rank, so a run starts a large entry, that entry alone runs past 25 minutes,
- * and this check then refuses to start anything else. Runs 010 and 011 both
- * show exactly that, one settling a single entry and one settling none.
- *
- * A long budget lets a run chain several entries instead. It is scheduling
- * only: it changes when a run stops starting work, never what the pipeline
- * finds, so unlike the per-call deadline it can move without splitting the pool
- * into incomparable cohorts. The per-entry hard cap still bounds any single
- * runaway, and slice-level resumability means an entry cut by that cap resumes
- * on the next run rather than restarting.
- *
- * Raised from 240 alongside the hard cap, and for the same measured reason.
- * Recall run 001 spent 252 minutes settling SEVEN of nine entries under a
- * four-hour budget and recorded the other two as skipped, coverage 0.778. The
- * ensemble and the naturalness lane only make each entry slower, so holding
- * 240 would have shrunk that further. Twelve hours leaves room for a full
- * nine-entry pass.
- *
- * A skipped entry is lost coverage in the verdict, not saved money: the plan
- * is flat rate, quota regenerates faster than runs spend, and the user
- * confirmed cost does not matter.
- *
- * Raised from 720 because twelve hours could not clear the corpus in ONE
- * invocation, and every extra invocation was fragmenting the pool. Measured
- * from artifact mtimes across an evening: about 27 minutes per entry over a
- * clean stretch and about 53 averaged over a whole span including stalls. At
- * 92 pending entries that is 41 to 81 hours, so a twelve-hour budget settles
- * roughly 13 to 26 and stops, and reaching the full corpus needs four to seven
- * resumes. Each resume re-reads HEAD, so under a policy of restarting whenever
- * a fix lands, each one stamped a new commit: that is precisely how one
- * directory came to hold 22 entries across four tips.
- *
- * Three days covers the pessimistic rate with room to spare. It is not a
- * prediction that a run will take three days; `assertResumableGeneration` is
- * what protects the pool now, and this only stops the BUDGET from being the
- * thing that forces a fragmenting resume.
+ Minutes of wall time after which no new entry starts.
+ 
+ Was 25, which throttled the whole accumulation to about one entry per launch.
+ The interaction that caused it: `BANDS` puts the large band first within a
+ rank, so a run starts a large entry, that entry alone runs past 25 minutes,
+ and this check then refuses to start anything else. Runs 010 and 011 both
+ show exactly that, one settling a single entry and one settling none.
+ 
+ A long budget lets a run chain several entries instead. It is scheduling
+ only: it changes when a run stops starting work, never what the pipeline
+ finds, so unlike the per-call deadline it can move without splitting the pool
+ into incomparable cohorts. The per-entry hard cap still bounds any single
+ runaway, and slice-level resumability means an entry cut by that cap resumes
+ on the next run rather than restarting.
+ 
+ Raised from 240 alongside the hard cap, and for the same measured reason.
+ Recall run 001 spent 252 minutes settling SEVEN of nine entries under a
+ four-hour budget and recorded the other two as skipped, coverage 0.778. The
+ ensemble and the naturalness lane only make each entry slower, so holding
+ 240 would have shrunk that further. Twelve hours leaves room for a full
+ nine-entry pass.
+ 
+ A skipped entry is lost coverage in the verdict, not saved money: the plan
+ is flat rate, quota regenerates faster than runs spend, and the user
+ confirmed cost does not matter.
+ 
+ Raised from 720 because twelve hours could not clear the corpus in ONE
+ invocation, and every extra invocation was fragmenting the pool. Measured
+ from artifact mtimes across an evening: about 27 minutes per entry over a
+ clean stretch and about 53 averaged over a whole span including stalls. At
+ 92 pending entries that is 41 to 81 hours, so a twelve-hour budget settles
+ roughly 13 to 26 and stops, and reaching the full corpus needs four to seven
+ resumes. Each resume re-reads HEAD, so under a policy of restarting whenever
+ a fix lands, each one stamped a new commit: that is precisely how one
+ directory came to hold 22 entries across four tips.
+ 
+ Three days covers the pessimistic rate with room to spare. It is not a
+ prediction that a run will take three days; `assertResumableGeneration` is
+ what protects the pool now, and this only stops the BUDGET from being the
+ thing that forces a fragmenting resume.
  */
 const SOFT_BUDGET_MINUTES = 4_320;
 
 /**
- * Minutes of wall time ONE entry may run before its exchanges abort.
- * Per entry, not per run: the ceiling was previously armed once for the
- * whole loop, so an entry that started near the soft budget got only the
- * remaining sliver, and Arita (12 slices, ~68 min) could never finish. A
- * fresh timer per entry gives each its full budget regardless of start
- * time. Entries far larger than the cap clears (aiyysk 77 slices,
- * hulicaijia 65, ...) still exceed any single-run ceiling and need
- * slice-level resumability, tracked separately.
- *
- * Raised from 90 on measurement rather than on feel. Recall run 001 timed
- * seven entries end to end: per-slice rate ran 3.25 min at best, 5.56 at the
- * median, and 8.56 at the worst, and its longest entry took 74.7 minutes for
- * 12 slices. The old 90 was therefore ALREADY marginal before this branch
- * changed anything: at the worst observed rate a 12-slice entry needs 103
- * minutes and would have been cut. The measured median also confirms the
- * ~5.5 min/slice figure the old comment claimed.
- *
- * That rate is PRE-ENSEMBLE. It predates per-envelope judge rounds, the
- * chunk-level round, and the whole naturalness lane, every one of which only
- * adds. How much they add is unmeasured, so this is a bound against runaway
- * rather than a tuned value: 180 clears 21 slices even at the worst observed
- * rate, and 32 at the median.
- *
- * Cost is not the constraint being traded here. The plan is flat rate and
- * quota regenerates faster than runs spend, and the user confirmed cost does
- * not matter, so the thing a low cap actually costs is entries covered per
- * run. Slice-level resumability means a capped entry resumes next run, so a
- * generous cap risks wall time and never work.
+ Minutes of wall time ONE entry may run before its exchanges abort.
+ Per entry, not per run: the ceiling was previously armed once for the
+ whole loop, so an entry that started near the soft budget got only the
+ remaining sliver, and Arita (12 slices, ~68 min) could never finish. A
+ fresh timer per entry gives each its full budget regardless of start
+ time. Entries far larger than the cap clears (aiyysk 77 slices,
+ hulicaijia 65, ...) still exceed any single-run ceiling and need
+ slice-level resumability, tracked separately.
+ 
+ Raised from 90 on measurement rather than on feel. Recall run 001 timed
+ seven entries end to end: per-slice rate ran 3.25 min at best, 5.56 at the
+ median, and 8.56 at the worst, and its longest entry took 74.7 minutes for
+ 12 slices. The old 90 was therefore ALREADY marginal before this branch
+ changed anything: at the worst observed rate a 12-slice entry needs 103
+ minutes and would have been cut. The measured median also confirms the
+ ~5.5 min/slice figure the old comment claimed.
+ 
+ That rate is PRE-ENSEMBLE. It predates per-envelope judge rounds, the
+ chunk-level round, and the whole naturalness lane, every one of which only
+ adds. How much they add is unmeasured, so this is a bound against runaway
+ rather than a tuned value: 180 clears 21 slices even at the worst observed
+ rate, and 32 at the median.
+ 
+ Cost is not the constraint being traded here. The plan is flat rate and
+ quota regenerates faster than runs spend, and the user confirmed cost does
+ not matter, so the thing a low cap actually costs is entries covered per
+ run. Slice-level resumability means a capped entry resumes next run, so a
+ generous cap risks wall time and never work.
  */
 const HARD_CAP_MINUTES = 420;
 
@@ -171,56 +171,56 @@ const HARD_CAP_MINUTES = 420;
 // nothing except a shorter run and costs entries covered by it.
 
 /**
- * Soft budget in milliseconds.
+ Soft budget in milliseconds.
  */
 const SOFT_BUDGET_MS = SOFT_BUDGET_MINUTES * MS_PER_MINUTE;
 
 /**
- * Hard ceiling in milliseconds, after any environment override.
- *
- * OVERRIDABLE so the re-attempt queue can be exercised against an entry that
- * fits in one run: the queue only does anything to an entry the cap CUTS, and
- * the shipped ceiling means the smallest such entry needs thirteen hours.
- * `cap-override.ts` carries why an unreadable override throws.
+ Hard ceiling in milliseconds, after any environment override.
+ 
+ OVERRIDABLE so the re-attempt queue can be exercised against an entry that
+ fits in one run: the queue only does anything to an entry the cap CUTS, and
+ the shipped ceiling means the smallest such entry needs thirteen hours.
+ `cap-override.ts` carries why an unreadable override throws.
  */
 const HARD_CAP_MS = resolveHardCapMinutes({ fallback: HARD_CAP_MINUTES, },)
   * MS_PER_MINUTE;
 
 /**
- * USD this run may spend on the provider that bills in USD before it stops
- * starting entries, after any environment override (`spend-ceiling.ts`).
+ USD this run may spend on the provider that bills in USD before it stops
+ starting entries, after any environment override (`spend-ceiling.ts`).
  */
 const RUN_SPEND_CEILING_USD = resolveSpendCeilingUsd({ fallback: SPEND_CEILING_USD, },);
 
 /**
- * Complete zh/en pairs present at the pinned commit; the run target.
+ Complete zh/en pairs present at the pinned commit; the run target.
  */
 const CORPUS_PAIR_TARGET = 92;
 
 /**
- * Entry ids previewed on the `--plan` line.
+ Entry ids previewed on the `--plan` line.
  */
 const PLAN_PREVIEW_COUNT = 5;
 
 /**
- * Runs one accumulation pass over the corpus, writing artifacts and TALLY lines.
- * Reads config and the API key from the environment; performs model calls unless
- * `--plan` is passed, which verifies setup at zero quota and returns.
- *
- * @throws {@link Error} when the API key env var is unset
- *
- * @example
- * ```ts
- * await runCorpusPass();
- * ```
+ Runs one accumulation pass over the corpus, writing artifacts and TALLY lines.
+ Reads config and the API key from the environment; performs model calls unless
+ `--plan` is passed, which verifies setup at zero quota and returns.
+ 
+ @throws {@link Error} when the API key env var is unset
+ 
+ @example
+ ```ts
+ await runCorpusPass();
+ ```
  */
 async function runCorpusPass(): Promise<void> {
   /**
-   * Note naming the straggler window when it is not the built-in one.
-   *
-   * RESOLVED FIRST, before the lock and before anything is read, so an
-   * unreadable override refuses the pass before it claims a directory or
-   * spends anything. Printed after START, where the cap note is.
+   Note naming the straggler window when it is not the built-in one.
+   
+   RESOLVED FIRST, before the lock and before anything is read, so an
+   unreadable override refuses the pass before it claims a directory or
+   spends anything. Printed after START, where the cap note is.
    */
   const graceNote = graceOverrideNote({
     effectiveMs: resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
@@ -228,13 +228,13 @@ async function runCorpusPass(): Promise<void> {
   },);
 
   /**
-   * Note naming the writer rounds' window when a launch gave them their own,
-   * resolved here for the same reason as `graceNote` and printed beside it.
+   Note naming the writer rounds' window when a launch gave them their own,
+   resolved here for the same reason as `graceNote` and printed beside it.
    */
   const writerNote = writerGraceOverrideNote({ grace: readWriterGrace(), },);
 
   /**
-   * Durable, gitignored output root for this run.
+   Durable, gitignored output root for this run.
    */
   const runsDir = await resolveRunsDir();
 
@@ -243,14 +243,14 @@ async function runCorpusPass(): Promise<void> {
   // other cached slices whenever their pipelines differ, and the later write of
   // any entry replaces the earlier one, all of it looking like ordinary output.
   /**
-   * Exclusive claim on this runs directory, released when the pass returns.
+   Exclusive claim on this runs directory, released when the pass returns.
    */
   await using _lock = await lockRunsDir({ runsDir, },);
 
   /**
-   * Every path this pass reads and writes under its runs dir; the artifacts
-   * directory and the published tree are created now so a pass that settles
-   * nothing still leaves what it promised (`runs-layout.ts`).
+   Every path this pass reads and writes under its runs dir; the artifacts
+   directory and the published tree are created now so a pass that settles
+   nothing still leaves what it promised (`runs-layout.ts`).
    */
   const {
     artifactsDir,
@@ -261,18 +261,18 @@ async function runCorpusPass(): Promise<void> {
   } = await prepareRunsLayout({ runsDir, },);
 
   /**
-   * Pipeline tip recorded into every artifact.
+   Pipeline tip recorded into every artifact.
    */
   const tip = await readHeadSha();
 
   /**
-   * Identity of the built pipeline this invocation is running, taken over the
-   * directory the runner was loaded from.
-   *
-   * `tip` cannot answer this and never could: it moves for a documentation
-   * commit that changes nothing that runs, and stays put across an uncommitted
-   * edit that changes everything. Every corpus-run task builds before it runs
-   * and runs its built file, so the files beside this one ARE the pipeline.
+   Identity of the built pipeline this invocation is running, taken over the
+   directory the runner was loaded from.
+   
+   `tip` cannot answer this and never could: it moves for a documentation
+   commit that changes nothing that runs, and stays put across an uncommitted
+   edit that changes everything. Every corpus-run task builds before it runs
+   and runs its built file, so the files beside this one ARE the pipeline.
    */
   const {
     digest: pipelineDigest,
@@ -284,15 +284,15 @@ async function runCorpusPass(): Promise<void> {
   // a second pipeline into one pool and every reader that computes a rate would
   // then refuse the lot.
   /**
-   * What every placeable artifact records, read once for both guards.
-   *
-   * THE THREE REFUSALS RUN IN ORDER OF HOW LITTLE CHOICE THE OPERATOR HAS.
-   * First an artifact nothing can place, which no opt-in is an opinion about.
-   * Then the SHAPE, which no commit can reconcile. Only then the BUILD, whose
-   * refusal is overridable and whose message says so; running that one first
-   * offered an operator an opt-in that the shape check then refused anyway, so
-   * the advice was a lie and the second run logged a resume that never
-   * happened.
+   What every placeable artifact records, read once for both guards.
+   
+   THE THREE REFUSALS RUN IN ORDER OF HOW LITTLE CHOICE THE OPERATOR HAS.
+   First an artifact nothing can place, which no opt-in is an opinion about.
+   Then the SHAPE, which no commit can reconcile. Only then the BUILD, whose
+   refusal is overridable and whose message says so; running that one first
+   offered an operator an opt-in that the shape check then refused anyway, so
+   the advice was a lie and the second run logged a resume that never
+   happened.
    */
   const generationCensus = await assertArtifactsPlaceable({ artifactsDir, },);
   await assertResumableSchemaGeneration({ artifactsDir, },);
@@ -302,7 +302,7 @@ async function runCorpusPass(): Promise<void> {
   },);
 
   /**
-   * Entry ids already carrying an artifact this pass, or a decline record.
+   Entry ids already carrying an artifact this pass, or a decline record.
    */
   const done = new Set([
     ...(await artifactBackedIds({ artifactsDir, },)),
@@ -310,22 +310,22 @@ async function runCorpusPass(): Promise<void> {
   ],);
 
   /**
-   * Attempt counts from prior runs, or empty on the first.
+   Attempt counts from prior runs, or empty on the first.
    */
   const attempts: AttemptMap = await readAttemptMap(attemptsPath,);
 
   /**
-   * Every person id at the pinned commit.
+   Every person id at the pinned commit.
    */
   const people = await listCorpusPeople({ pin: RUN_CORPUS_PIN, },);
 
   /**
-   * Entry ids this invocation is restricted to, empty when unrestricted.
+   Entry ids this invocation is restricted to, empty when unrestricted.
    */
   const onlyIds = readOnlyIds({ argv: process.argv, },);
   if (onlyIds.size > 0) {
     /**
-     * Chosen ids in a stable order, so two runs of one selection log alike.
+     Chosen ids in a stable order, so two runs of one selection log alike.
      */
     const chosen = [...onlyIds,]
       .toSorted()
@@ -339,20 +339,20 @@ async function runCorpusPass(): Promise<void> {
   }
 
   /**
-   * Encoder measuring page-source byte size once per entry.
+   Encoder measuring page-source byte size once per entry.
    */
   const sizer = new TextEncoder();
 
   /**
-   * Complete unsettled pairs, already-settled sizes (ordering needs these:
-   * ranking runs over the REMAINING entries, so without knowing what each band
-   * already settled every run would restart each band at rank zero), and the
-   * entries missing a side at the pin.
-   *
-   * ONLY A MISSING OBJECT DROPS OUT, and it is printed. Any other read
-   * failure propagates: until 2026-08-26 every read failure read as the
-   * expected missing side, so a clone that had gone away shrank the corpus
-   * to nothing without a line saying so.
+   Complete unsettled pairs, already-settled sizes (ordering needs these:
+   ranking runs over the REMAINING entries, so without knowing what each band
+   already settled every run would restart each band at rank zero), and the
+   entries missing a side at the pin.
+   
+   ONLY A MISSING OBJECT DROPS OUT, and it is printed. Any other read
+   failure propagates: until 2026-08-26 every read failure read as the
+   expected missing side, so a clone that had gone away shrank the corpus
+   to nothing without a line saying so.
    */
   const {
     eligible,
@@ -371,8 +371,8 @@ async function runCorpusPass(): Promise<void> {
     console.log(`INCOMPLETE ${gap.id}: ${gap.side} page absent at the pin (${gap.detail})`,);
 
   /**
-   * Every eligible entry reduced to its id and page-source byte size, measured
-   * once so ordering never re-encodes text on a compare.
+   Every eligible entry reduced to its id and page-source byte size, measured
+   once so ordering never re-encodes text on a compare.
    */
   const sized = eligible.map(function toSized(entry,) {
     return {
@@ -383,14 +383,14 @@ async function runCorpusPass(): Promise<void> {
   },);
 
   /**
-   * Ids whose page source is under the small-band cut.
+   Ids whose page source is under the small-band cut.
    */
   const smallIds = smallBandIds({ entries: sized, },);
 
   /**
-   * Each entry's rank within its own size band, so ordering interleaves the
-   * bands instead of draining one before starting the next. Rationale for
-   * interleaving lives in `band-order.ts`.
+   Each entry's rank within its own size band, so ordering interleaves the
+   bands instead of draining one before starting the next. Rationale for
+   interleaving lives in `band-order.ts`.
    */
   const bandRank = rankWithinBands({
     entries: sized,
@@ -398,54 +398,54 @@ async function runCorpusPass(): Promise<void> {
   },);
 
   /**
-   * Ids with cached slices from an earlier aborted run. These resume first so
-   * an in-flight large document finishes before a fresh entry starts, rather
-   * than every large entry taking one partial attempt while none settles.
-   *
-   * NO PROGRESS GUARANTEE IS CLAIMED HERE, and one used to be: this said a
-   * cap-abort always completes at least one new slice, which is false. An abort
-   * can land before the first persistence, and the slices a lane deliberately
-   * leaves uncached, the unfilled and the unheard, produce no cache entry
-   * however long they took. What actually bounds it is that a stuck entry
-   * surfaces: `repairChunk` degrades and persists rather than throwing on a
-   * lost quorum, the translate lane's refusal counter bounds its retries within
-   * a slice, and an entry that keeps failing writes a repeated same-entry ERROR
-   * line across runs, which is read by inspection.
+   Ids with cached slices from an earlier aborted run. These resume first so
+   an in-flight large document finishes before a fresh entry starts, rather
+   than every large entry taking one partial attempt while none settles.
+   
+   NO PROGRESS GUARANTEE IS CLAIMED HERE, and one used to be: this said a
+   cap-abort always completes at least one new slice, which is false. An abort
+   can land before the first persistence, and the slices a lane deliberately
+   leaves uncached, the unfilled and the unheard, produce no cache entry
+   however long they took. What actually bounds it is that a stuck entry
+   surfaces: `repairChunk` degrades and persists rather than throwing on a
+   lost quorum, the translate lane's refusal counter bounds its retries within
+   a slice, and an entry that keeps failing writes a repeated same-entry ERROR
+   line across runs, which is read by inspection.
    */
   const resumableIds = await listResumableEntries({ dir: sliceCacheDir, },);
 
   /**
-   * Pending entries: cached progress resumes first, then the bands interleave
-   * by within-band rank so coverage fills evenly, then the larger band leads
-   * within one rank (a large entry may need a second run, so starting it
-   * earlier costs nothing), then fewest attempts first so flaky ones
-   * deprioritize.
+   Pending entries: cached progress resumes first, then the bands interleave
+   by within-band rank so coverage fills evenly, then the larger band leads
+   within one rank (a large entry may need a second run, so starting it
+   earlier costs nothing), then fewest attempts first so flaky ones
+   deprioritize.
    */
   const pending = eligible.toSorted(function byResumeThenBandThenAttempts(
     a,
     b,
   ) {
     /**
-     * Negative when only `a` has cached progress (so it resumes first),
-     * positive when only `b` does; zero when neither or both do.
+     Negative when only `a` has cached progress (so it resumes first),
+     positive when only `b` does; zero when neither or both do.
      */
     const resumeDelta = Number(resumableIds.has(b.id,),)
       - Number(resumableIds.has(a.id,),);
     if (resumeDelta !== 0)
       return resumeDelta;
     /**
-     * Difference in within-band rank. Interleaving on this fills every band
-     * at the same pace, so the tenth entry of each band arrives at roughly
-     * the same time rather than one band starving.
+     Difference in within-band rank. Interleaving on this fills every band
+     at the same pace, so the tenth entry of each band arrives at roughly
+     the same time rather than one band starving.
      */
     const rankDelta = (bandRank.get(a.id,) ?? 0) - (bandRank.get(b.id,) ?? 0);
     if (rankDelta !== 0)
       return rankDelta;
 
     /**
-     * Within one rank, the larger band goes first: a large entry may need a
-     * second run to settle, so starting it earlier costs nothing and lets it
-     * resume sooner.
+     Within one rank, the larger band goes first: a large entry may need a
+     second run to settle, so starting it earlier costs nothing and lets it
+     resume sooner.
      */
     const bandDelta = Number(smallIds.has(a.id,),)
       - Number(smallIds.has(b.id,),);
@@ -469,7 +469,7 @@ async function runCorpusPass(): Promise<void> {
   }
 
   /**
-   * The spend allowance, named only when a launch overrode it.
+   The spend allowance, named only when a launch overrode it.
    */
   const ceilingNote = spendCeilingOverrideNote({ ceilingUsd: RUN_SPEND_CEILING_USD, },);
   if (ceilingNote !== '')
@@ -494,7 +494,7 @@ async function runCorpusPass(): Promise<void> {
   }
 
   /**
-   * Providers validation or performance arm explicitly requires wet.
+   Providers validation or performance arm explicitly requires wet.
    */
   const requiredProviders = readRequiredProviders({ argv: process.argv, },);
   await assertRequiredProvidersReady({
@@ -506,7 +506,7 @@ async function runCorpusPass(): Promise<void> {
   }
 
   /**
-   * Shared client using measured production provider concurrency.
+   Shared client using measured production provider concurrency.
    */
   const client = createRunClient({
     promptPayloadDir: join(
@@ -534,13 +534,13 @@ async function runCorpusPass(): Promise<void> {
   }
 
   /**
-   * Wall-clock start of the processing loop.
+   Wall-clock start of the processing loop.
    */
   const start = Date.now();
 
   /**
-   * Shared base signal each entry's deadline forwards from; the driver
-   * never aborts it, so only a per-entry timeout ever fires.
+   Shared base signal each entry's deadline forwards from; the driver
+   never aborts it, so only a per-entry timeout ever fires.
    */
   const neverAbort = new AbortController().signal;
 
@@ -592,13 +592,13 @@ async function runCorpusPass(): Promise<void> {
   },);
 
   /**
-   * Artifacts present after this run, against the pair target.
+   Artifacts present after this run, against the pair target.
    */
   const total = await countSettled({ artifactsDir, },);
 
   /**
-   * New artifacts written this run: every settled entry adds one, and only
-   * not-yet-done entries were eligible.
+   New artifacts written this run: every settled entry adds one, and only
+   not-yet-done entries were eligible.
    */
   const processed = total - done.size;
   console.log(

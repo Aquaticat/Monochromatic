@@ -12,56 +12,56 @@ import type {
 // happens once the runs exist and some of them have an empty side.
 
 /**
- * Mutable run under construction, plus the character counts deciding when it
- * closes.
+ Mutable run under construction, plus the character counts deciding when it
+ closes.
  */
 export type OpenRun = {
   /**
-   * Original-side blocks gathered so far.
+   Original-side blocks gathered so far.
    */
   readonly sourceRun: DocumentNode[];
 
   /**
-   * Translation-side blocks gathered so far.
+   Translation-side blocks gathered so far.
    */
   readonly targetRun: DocumentNode[];
 
   /**
-   * Where this run's rendering belongs when it holds only unplaced originals,
-   * or {@link NOT_AN_INSERTION} when it is an ordinary run.
+   Where this run's rendering belongs when it holds only unplaced originals,
+   or {@link NOT_AN_INSERTION} when it is an ordinary run.
    */
   readonly anchor: number;
 
   /**
-   * Whether this run holds sealed blocks, which no neighbour may join.
+   Whether this run holds sealed blocks, which no neighbour may join.
    */
   readonly sealed: boolean;
 };
 
 /**
- * Anchor value for a run that is not an insertion, which no document offset can
- * collide with.
+ Anchor value for a run that is not an insertion, which no document offset can
+ collide with.
  */
 export const NOT_AN_INSERTION = -1;
 
 /**
- * Where a sealed run ends in the translation, which is where originals held
- * behind it are written.
- *
- * @param run - sealed run
- *
- * @returns End offset of its last block
- *
- * @example
- * ```ts
- * const boundary = sealedEnd({ run, },);
- * ```
+ Where a sealed run ends in the translation, which is where originals held
+ behind it are written.
+ 
+ @param run - sealed run
+ 
+ @returns End offset of its last block
+ 
+ @example
+ ```ts
+ const boundary = sealedEnd({ run, },);
+ ```
  */
 function sealedEnd(
   { run, }: { readonly run: SealedRun; },
 ): number {
   /**
-   * Last sealed block, present because a sealed run is built from at least one.
+   Last sealed block, present because a sealed run is built from at least one.
    */
   const last = run.targetRun
     .at(-1,);
@@ -71,39 +71,39 @@ function sealedEnd(
 }
 
 /**
- * Places blocks held from one-sided runs, never emitting a run with an empty
- * side and never dropping one.
- *
- * TWO SIDES MAKE A SLICE AND ONE SIDE FOLDS. Held blocks on both sides are a
- * reviewable slice of their own. A single side is not: `runToChunk` builds a
- * span from a run's first and last node, so a run with an empty side has no
- * span and throws. Dropping it instead is the opposite failure, and it defeats
- * `declinedTargetIds` refusing to decline a block precisely so it stays in
- * review.
- *
- * THE TWO SIDES FOLD DIFFERENTLY, because an insertion run carries originals
- * and a translation OFFSET rather than translation blocks. Held translations
- * may fold back past an insertion, which contributes none of them. Held
- * originals may not: that insertion's own originals sit between, so reaching
- * past them would report the two groups out of document order. They join the
- * insertion instead, which is where the nearest place for a rendering is.
- *
- * NEITHER SIDE FOLDS PAST A SEAL. A held translation looks for a host after
- * the last sealed run, since folding it backwards would stretch a span over
- * the sealed bytes; held originals behind a sealed run become an insertion
- * written at the seal's end, which is the page shape a footnote definition
- * after a sealed letter needs.
- *
- * @param merged - runs settled so far, extended in place
- *
- * @param heldSource - original blocks waiting for somewhere to go, emptied here
- *
- * @param heldTarget - translation-side counterpart, emptied here
- *
- * @example
- * ```ts
- * placeHeldRuns({ merged, heldSource, heldTarget, },);
- * ```
+ Places blocks held from one-sided runs, never emitting a run with an empty
+ side and never dropping one.
+ 
+ TWO SIDES MAKE A SLICE AND ONE SIDE FOLDS. Held blocks on both sides are a
+ reviewable slice of their own. A single side is not: `runToChunk` builds a
+ span from a run's first and last node, so a run with an empty side has no
+ span and throws. Dropping it instead is the opposite failure, and it defeats
+ `declinedTargetIds` refusing to decline a block precisely so it stays in
+ review.
+ 
+ THE TWO SIDES FOLD DIFFERENTLY, because an insertion run carries originals
+ and a translation OFFSET rather than translation blocks. Held translations
+ may fold back past an insertion, which contributes none of them. Held
+ originals may not: that insertion's own originals sit between, so reaching
+ past them would report the two groups out of document order. They join the
+ insertion instead, which is where the nearest place for a rendering is.
+ 
+ NEITHER SIDE FOLDS PAST A SEAL. A held translation looks for a host after
+ the last sealed run, since folding it backwards would stretch a span over
+ the sealed bytes; held originals behind a sealed run become an insertion
+ written at the seal's end, which is the page shape a footnote definition
+ after a sealed letter needs.
+ 
+ @param merged - runs settled so far, extended in place
+ 
+ @param heldSource - original blocks waiting for somewhere to go, emptied here
+ 
+ @param heldTarget - translation-side counterpart, emptied here
+ 
+ @example
+ ```ts
+ placeHeldRuns({ merged, heldSource, heldTarget, },);
+ ```
  */
 function placeHeldRuns(
   {
@@ -130,15 +130,15 @@ function placeHeldRuns(
   }
 
   /**
-   * Last sealed run, which no held block folds past.
+   Last sealed run, which no held block folds past.
    */
   const lastSealedAt = merged.findLastIndex(function isSealed(candidate,): boolean {
     return candidate.kind === 'sealed';
   },);
 
   /**
-   * Where the held blocks fold, before the last position when only
-   * translations are held and an insertion closed the list.
+   Where the held blocks fold, before the last position when only
+   translations are held and an insertion closed the list.
    */
   const at = (heldTarget.length > 0)
     ? merged.findLastIndex(function isPaired(candidate,): boolean {
@@ -147,8 +147,8 @@ function placeHeldRuns(
     : merged.length - 1;
 
   /**
-   * Run absorbing them, absent when nothing settled yet can carry them, which
-   * leaves them held for a later run or for the caller's one-sided fallback.
+   Run absorbing them, absent when nothing settled yet can carry them, which
+   leaves them held for a later run or for the caller's one-sided fallback.
    */
   const host = merged[at];
   if ((host === undefined) || (at < lastSealedAt))
@@ -189,49 +189,49 @@ function placeHeldRuns(
 }
 
 /**
- * Folds runs that ended up with nothing on one side into a neighbour, EXCEPT
- * the ones holding originals nothing rendered, and EXCEPT across a seal.
- *
- * A run of purely unpartnered TRANSLATION blocks has no original to compare
- * against and nothing to write, so it joins the run beside it rather than
- * becoming a slice nobody can review. It merges backwards when a previous run
- * exists and forwards otherwise, which keeps a leading run of skips attached to
- * the first reviewable slice.
- *
- * A run of unplaced ORIGINALS is the opposite case and `#100` landing 4 stops
- * folding it. Those blocks have something to write and nowhere yet to write it;
- * folding them into a neighbour puts them inside that slice's span, where no
- * later stage can tell them apart from the passage they were folded into.
- *
- * A SEALED RUN stands where it is: nothing folds into it and it folds into
- * nothing, and the runs either side of it never meet.
- *
- * @param runs - runs as grouped, possibly one-sided
- *
- * @returns Runs that all carry blocks on both sides, sealed runs among them
- *
- * @example
- * ```ts
- * const usable = mergeOneSidedRuns({ runs, },);
- * ```
+ Folds runs that ended up with nothing on one side into a neighbour, EXCEPT
+ the ones holding originals nothing rendered, and EXCEPT across a seal.
+ 
+ A run of purely unpartnered TRANSLATION blocks has no original to compare
+ against and nothing to write, so it joins the run beside it rather than
+ becoming a slice nobody can review. It merges backwards when a previous run
+ exists and forwards otherwise, which keeps a leading run of skips attached to
+ the first reviewable slice.
+ 
+ A run of unplaced ORIGINALS is the opposite case and `#100` landing 4 stops
+ folding it. Those blocks have something to write and nowhere yet to write it;
+ folding them into a neighbour puts them inside that slice's span, where no
+ later stage can tell them apart from the passage they were folded into.
+ 
+ A SEALED RUN stands where it is: nothing folds into it and it folds into
+ nothing, and the runs either side of it never meet.
+ 
+ @param runs - runs as grouped, possibly one-sided
+ 
+ @returns Runs that all carry blocks on both sides, sealed runs among them
+ 
+ @example
+ ```ts
+ const usable = mergeOneSidedRuns({ runs, },);
+ ```
  */
 export function mergeOneSidedRuns(
   { runs, }: { readonly runs: readonly OpenRun[]; },
 ): readonly GroupedRun[] {
   /**
-   * Runs that carry both sides, each replaced wholesale when it absorbs a
-   * one-sided neighbour so no run is ever mutated in place.
+   Runs that carry both sides, each replaced wholesale when it absorbs a
+   one-sided neighbour so no run is ever mutated in place.
    */
   const merged: GroupedRun[] = [];
 
   /**
-   * Blocks from leading one-sided runs, waiting for the first run that can
-   * carry them.
+   Blocks from leading one-sided runs, waiting for the first run that can
+   carry them.
    */
   const heldSource: DocumentNode[] = [];
 
   /**
-   * Translation-side counterpart of the held blocks.
+   Translation-side counterpart of the held blocks.
    */
   const heldTarget: DocumentNode[] = [];
   for (const run of runs) {
@@ -273,7 +273,7 @@ export function mergeOneSidedRuns(
     }
 
     /**
-     * Whether this run can stand as a slice of its own.
+     Whether this run can stand as a slice of its own.
      */
     const twoSided = (run.sourceRun
       .length
@@ -283,7 +283,7 @@ export function mergeOneSidedRuns(
         > 0);
 
     /**
-     * Previous complete run, which absorbs a one-sided run when one exists.
+     Previous complete run, which absorbs a one-sided run when one exists.
      */
     const previous = merged.at(-1,);
     if ((!twoSided)

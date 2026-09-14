@@ -16,39 +16,39 @@ export type { RelabelClosure, } from './footnote-closure-model.ts';
 // Existing one-pair elimination stays distinct from collision avoidance and never gains extra votes.
 
 /**
- * Distinct labels a text carries, references and definition openers alike,
- * in order of first appearance.
- *
- * @param text - document to read
- *
- * @returns Labels, each once
- *
- * @example
- * ```ts
- * documentLabels({ text: 'A[^2].\n\n[^1]: one\n\n[^2]: two\n' });
- * ```
+ Distinct labels a text carries, references and definition openers alike,
+ in order of first appearance.
+ 
+ @param text - document to read
+ 
+ @returns Labels, each once
+ 
+ @example
+ ```ts
+ documentLabels({ text: 'A[^2].\n\n[^1]: one\n\n[^2]: two\n' });
+ ```
  */
 export function documentLabels({ text, }: { readonly text: string; },): readonly string[] {
   return footnoteMarkerLabels({ markers: activeFootnoteMarkers({ text, },), },);
 }
 
 /**
- * Builds an injective simultaneous label rewrite without inventing source correspondence for archive apparatus.
- * The existing one-remaining-label elimination is allowed. Fresh displacement is allowed only when
- * every original label is accounted for and destination occupancy is the remaining obstacle.
- *
- * @param map - supplied positive correspondences, including identity relations when known
- *
- * @param archiveLabels - complete archive identifier universe
- *
- * @param originalLabels - complete original identifier universe
- *
- * @returns Closed operational map with separate provenance, or an explicit refusal
- *
- * @example
- * ```ts
- * const closure = closeFootnoteRelabel({ map: [{ from: '2', to: '1' }], archiveLabels: ['1', '2'], originalLabels: ['2', '1'] });
- * ```
+ Builds an injective simultaneous label rewrite without inventing source correspondence for archive apparatus.
+ The existing one-remaining-label elimination is allowed. Fresh displacement is allowed only when
+ every original label is accounted for and destination occupancy is the remaining obstacle.
+ 
+ @param map - supplied positive correspondences, including identity relations when known
+ 
+ @param archiveLabels - complete archive identifier universe
+ 
+ @param originalLabels - complete original identifier universe
+ 
+ @returns Closed operational map with separate provenance, or an explicit refusal
+ 
+ @example
+ ```ts
+ const closure = closeFootnoteRelabel({ map: [{ from: '2', to: '1' }], archiveLabels: ['1', '2'], originalLabels: ['2', '1'] });
+ ```
  */
 export function closeFootnoteRelabel(
   {
@@ -62,7 +62,7 @@ export function closeFootnoteRelabel(
   },
 ): RelabelClosure {
   /**
-   * Membership and injectivity checked under the parser's identifier normalization.
+   Membership and injectivity checked under the parser's identifier normalization.
    */
   const input = readFootnoteClosureInput({
     map,
@@ -72,45 +72,45 @@ export function closeFootnoteRelabel(
   if (input.kind === 'open')
     return input;
   /**
-   * Distinct supplied relations, including identities that establish source coverage.
+   Distinct supplied relations, including identities that establish source coverage.
    */
   const { correspondences, } = input;
   /**
-   * Archive identities already placed by supplied evidence.
+   Archive identities already placed by supplied evidence.
    */
   const suppliedFrom = new Set(correspondences.map(function archiveKey(relation,): string {
     return normalizeFootnoteIdentifier({ identifier: relation.from, },);
   },),);
   /**
-   * Original identities already accounted for by supplied evidence.
+   Original identities already accounted for by supplied evidence.
    */
   const suppliedTo = new Set(correspondences.map(function originalKey(relation,): string {
     return normalizeFootnoteIdentifier({ identifier: relation.to, },);
   },),);
   /**
-   * Unmapped archive identities retain their first observed spellings.
+   Unmapped archive identities retain their first observed spellings.
    */
   const archiveLeft = [...input.archive
     .entries(),].filter(function unplaced([key,],): boolean {
     return !suppliedFrom.has(key,);
   },);
   /**
-   * Original identities still needing correspondence.
+   Original identities still needing correspondence.
    */
   const originalLeft = [...input.original
     .entries(),].filter(function unaccounted([key,],): boolean {
     return !suppliedTo.has(key,);
   },);
   /**
-   * The sole remaining archive candidate, when one exists.
+   The sole remaining archive candidate, when one exists.
    */
   const [archiveOnly,] = archiveLeft;
   /**
-   * The sole remaining original candidate, when one exists.
+   The sole remaining original candidate, when one exists.
    */
   const [originalOnly,] = originalLeft;
   /**
-   * Existing forced move; equal unmapped spellings do not invent identity correspondence.
+   Existing forced move; equal unmapped spellings do not invent identity correspondence.
    */
   const eliminated: readonly FootnoteRelabel[] = ((archiveLeft.length === 1) && (originalLeft.length === 1)
     && (archiveOnly !== undefined)
@@ -122,26 +122,26 @@ export function closeFootnoteRelabel(
     },]
     : [];
   /**
-   * Positive relations after the existing forced elimination, never after displacement.
+   Positive relations after the existing forced elimination, never after displacement.
    */
   const established = [
     ...correspondences,
     ...eliminated,
   ];
   /**
-   * Archive identities accounted for by correspondence or elimination.
+   Archive identities accounted for by correspondence or elimination.
    */
   const establishedFrom = new Set(established.map(function archiveKey(relation,): string {
     return normalizeFootnoteIdentifier({ identifier: relation.from, },);
   },),);
   /**
-   * Original identities accounted for by those same relations.
+   Original identities accounted for by those same relations.
    */
   const establishedTo = new Set(established.map(function originalKey(relation,): string {
     return normalizeFootnoteIdentifier({ identifier: relation.to, },);
   },),);
   /**
-   * Occupied destinations that no positive relation moves away, in archive order.
+   Occupied destinations that no positive relation moves away, in archive order.
    */
   const collisions = [...input.archive
     .entries(),]
@@ -150,7 +150,7 @@ export function closeFootnoteRelabel(
     },)
     .map(function spelling([, label,],): string { return label; },);
   /**
-   * Source identities not explained by any correspondence or existing elimination.
+   Source identities not explained by any correspondence or existing elimination.
    */
   const unaccounted = [...input.original
     .keys(),].filter(function unknown(key,): boolean {
@@ -163,7 +163,7 @@ export function closeFootnoteRelabel(
         .join(', ',)} while original correspondence remains incomplete (${String(unaccounted.length,)} original labels unaccounted for)`,
     };
   /**
-   * Both logical namespaces are reserved, including labels whose current spelling will move.
+   Both logical namespaces are reserved, including labels whose current spelling will move.
    */
   const reserved = new Set([
     ...input.archive
@@ -172,14 +172,14 @@ export function closeFootnoteRelabel(
       .keys(),
   ]);
   /**
-   * Operational displacements, deliberately excluded from source correspondence evidence.
+   Operational displacements, deliberately excluded from source correspondence evidence.
    */
   const retained = retainedFootnoteLabels({
     labels: collisions,
     reserved,
   },);
   /**
-   * Actual simultaneous rewrites; identity relations carry evidence but change no bytes.
+   Actual simultaneous rewrites; identity relations carry evidence but change no bytes.
    */
   const rewrites: readonly FootnoteLabelRewrite[] = [
     ...established.filter(function changes(relation,): boolean {
@@ -194,7 +194,7 @@ export function closeFootnoteRelabel(
     },),
   ];
   /**
-   * Logical destinations of all actual moves.
+   Logical destinations of all actual moves.
    */
   const lookup = new Map(rewrites.map(function destination(move,): readonly [
     string,
@@ -206,7 +206,7 @@ export function closeFootnoteRelabel(
     ];
   },),);
   /**
-   * Every archive identity must retain a distinct final destination, including identities that stay.
+   Every archive identity must retain a distinct final destination, including identities that stay.
    */
   const destinations = new Set([...input.archive
     .keys(),].map(function destination(key,): string {

@@ -1,22 +1,22 @@
 /**
- * Tests for collecting a slice's link and footnote definitions.
- *
- * `collectDefinitions` had no test, and its failure is invisible. The
- * refinement gate compares a paragraph before and after a rewrite; a paragraph
- * parsed alone cannot resolve a reference whose definition lives elsewhere, so
- * the definitions are appended to give the parser something to resolve
- * against. If collection returns nothing, both sides of the comparison parse as
- * referencing nothing, they still match, and the gate passes a rewrite that
- * broke a link.
- *
- * Every fixture goes through `parseDocument` rather than being hand-built. The
- * whole function turns on whether the strings in `DEFINITION_KINDS` equal the
- * `kind` values the parser actually emits, and a hand-built node would assert
- * my belief about those strings instead of the parser's behavior.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for collecting a slice's link and footnote definitions.
+ 
+ `collectDefinitions` had no test, and its failure is invisible. The
+ refinement gate compares a paragraph before and after a rewrite; a paragraph
+ parsed alone cannot resolve a reference whose definition lives elsewhere, so
+ the definitions are appended to give the parser something to resolve
+ against. If collection returns nothing, both sides of the comparison parse as
+ referencing nothing, they still match, and the gate passes a rewrite that
+ broke a link.
+ 
+ Every fixture goes through `parseDocument` rather than being hand-built. The
+ whole function turns on whether the strings in `DEFINITION_KINDS` equal the
+ `kind` values the parser actually emits, and a hand-built node would assert
+ my belief about those strings instead of the parser's behavior.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -39,7 +39,7 @@ await describe({
         + 'module believes it emits',
       fn: async () => {
         /**
-         * Slice referencing a link defined at the bottom.
+         Slice referencing a link defined at the bottom.
          */
         const document = parseDocument({
           text: 'The cat naps on the [windowsill][sill].\n\n[sill]: https://example.invalid/sill\n',
@@ -56,7 +56,7 @@ await describe({
         + 'since an unresolvable footnote reference parses as ordinary text',
       fn: async () => {
         /**
-         * Slice referencing a footnote defined at the bottom.
+         Slice referencing a footnote defined at the bottom.
          */
         const document = parseDocument({
           text: 'The cat naps all afternoon.[^nap]\n\n[^nap]: Roughly sixteen hours a day.\n',
@@ -73,7 +73,7 @@ await describe({
         + 'than a stray newline, so appending it to a paragraph adds nothing',
       fn: async () => {
         /**
-         * Ordinary prose slice with nothing to resolve.
+         Ordinary prose slice with nothing to resolve.
          */
         const document = parseDocument({
           text: 'The cat naps on the windowsill.\n\nShe wakes when the sun moves.\n',
@@ -90,7 +90,7 @@ await describe({
         + 'dropped',
       fn: async () => {
         /**
-         * Slice referencing two links and a footnote.
+         Slice referencing two links and a footnote.
          */
         const document = parseDocument({
           text: 'The [cat][a] naps by the [window][b].[^why]\n\n'
@@ -100,7 +100,7 @@ await describe({
         },);
 
         /**
-         * Collected definition block.
+         Collected definition block.
          */
         const definitions = collectDefinitions({ document, },);
 
@@ -117,7 +117,7 @@ await describe({
         + 'compares rather than only what it can resolve',
       fn: async () => {
         /**
-         * Slice mixing prose, a heading, and one definition.
+         Slice mixing prose, a heading, and one definition.
          */
         const document = parseDocument({
           text: '# The cat\n\nShe naps on the [windowsill][sill].\n\n'
@@ -125,7 +125,7 @@ await describe({
         },);
 
         /**
-         * Collected definition block.
+         Collected definition block.
          */
         const definitions = collectDefinitions({ document, },);
 
@@ -141,7 +141,7 @@ await describe({
         + 'about which references happen to be used in this slice',
       fn: async () => {
         /**
-         * Slice whose definition is never referenced.
+         Slice whose definition is never referenced.
          */
         const document = parseDocument({
           text: 'The cat naps on the windowsill.\n\n[unused]: https://example.invalid/nowhere\n',

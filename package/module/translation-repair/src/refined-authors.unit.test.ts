@@ -1,8 +1,8 @@
 /**
- * Tests for layering the naturalness lane's rewriters onto the authorship the
- * editor stage already established.
- *
- * @module
+ Tests for layering the naturalness lane's rewriters onto the authorship the
+ editor stage already established.
+ 
+ @module
  */
 
 import {
@@ -17,22 +17,22 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Issue the cases below credit.
+ Issue the cases below credit.
  */
 const WHISKER = 'adjudicated/whisker';
 
 /**
- * Model that repaired the text the refiners rewrote.
+ Model that repaired the text the refiners rewrote.
  */
 const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
- * Second repairing model, for the case where nothing was rewritten at all.
+ Second repairing model, for the case where nothing was rewritten at all.
  */
 const HELPER: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * Model that only ever rewrites, never repairs.
+ Model that only ever rewrites, never repairs.
  */
 const REFINER: RosterModelId = 'hf:openai/gpt-oss-120b';
 

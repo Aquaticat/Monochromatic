@@ -1,10 +1,10 @@
 /**
- * Tests the single fixed polish round: refiners propose, judges select,
- * the deterministic gate applies, and the absolute review that follows is
- * recorded evidence on the settlement, never withholding authority and
- * never buying a correction round.
- *
- * @module
+ Tests the single fixed polish round: refiners propose, judges select,
+ the deterministic gate applies, and the absolute review that follows is
+ recorded evidence on the settlement, never withholding authority and
+ never buying a correction round.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -26,7 +26,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Active invented-size roster for every synthetic role.
+ Active invented-size roster for every synthetic role.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -35,48 +35,48 @@ const ROSTER = [
 ] as const;
 
 /**
- * Literal but faithful base wording.
+ Literal but faithful base wording.
  */
 const BASE = 'She faced life proactively and spent a good time with everyone, while doing her best to stay hopeful and connected to the people around her.';
 
 /**
- * Faithful idiomatic rewrite, as a refiner emits it: one line.
+ Faithful idiomatic rewrite, as a refiner emits it: one line.
  */
 const POLISHED = 'She maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
 
 /**
- * The same rewrite as the page carries it: wrapped at its semantic boundary
- * before the gate sees it (keyword233, 2026-09-03: a gate judge preferred the
- * unwrapped rewrite for "removing the stilted line breaks" and the page
- * shipped single-line).
+ The same rewrite as the page carries it: wrapped at its semantic boundary
+ before the gate sees it (keyword233, 2026-09-03: a gate judge preferred the
+ unwrapped rewrite for "removing the stilted line breaks" and the page
+ shipped single-line).
  */
 const WRAPPED_POLISHED = 'She maintained a positive outlook on life and spent some good times with everyone,\n'
   + 'doing her best to stay hopeful and connected to those around her.';
 
 /**
- * The base wording as the wrap would write it: a refinement that is exactly
- * this changes nothing and must not ship as a change.
+ The base wording as the wrap would write it: a refinement that is exactly
+ this changes nothing and must not ship as a change.
  */
 const WRAPPED_BASE = 'She faced life proactively and spent a good time with everyone,\n'
   + 'while doing her best to stay hopeful and connected to the people around her.';
 
 /**
- * Short literal prose final polish must still review.
+ Short literal prose final polish must still review.
  */
 const SHORT_BASE = 'She had a good time with everyone.';
 
 /**
- * Faithful idiomatic rewrite of short prose.
+ Faithful idiomatic rewrite of short prose.
  */
 const SHORT_POLISHED = 'She spent some happy times with everyone.';
 
 /**
- * Target-authoritative contributor attribution baseline.
+ Target-authoritative contributor attribution baseline.
  */
 const CONTRIBUTOR_BASE = 'Contributors for this entry: [Snow](https://example.test/snow)';
 
 /**
- * Client serving rewrite, selection and final gate schemas.
+ Client serving rewrite, selection and final gate schemas.
  */
 const client: SyntheticClient = {
   chatText: async () => {
@@ -86,13 +86,13 @@ const client: SyntheticClient = {
     request: ChatJsonRequest<ValueT>,
   ): Promise<ChatJsonOutcome<ValueT>> => {
     /**
-     * Schema identifying stage role.
+     Schema identifying stage role.
      */
     const schema = request.responseFormat
       ?.json_schema
       .name;
     /**
-     * Whether request carries sentence-scale final polish fixture.
+     Whether request carries sentence-scale final polish fixture.
      */
     const short = JSON.stringify(request.messages,).includes(SHORT_BASE,);
     const value: unknown = (schema === 'refine_report')
@@ -137,26 +137,26 @@ const client: SyntheticClient = {
 };
 
 /**
- * Builds a client whose absolute reviews follow a per-round verdict script
- * and whose refiners may answer exactly once.
- *
- * A SECOND REFINE CALL THROWS: the fixed polish round buys one proposal, so
- * any correction re-ask is a regression this harness turns into a failure.
- *
- * @param reviewAcceptableByRound - acceptable status per one-based review round; absent rounds throw as lost seats
- *
- * @returns Scripted single-round client
- *
- * @example
- * ```ts
- * const rejecting = singleRoundClient({ reviewAcceptableByRound: [false,], },);
- * ```
+ Builds a client whose absolute reviews follow a per-round verdict script
+ and whose refiners may answer exactly once.
+ 
+ A SECOND REFINE CALL THROWS: the fixed polish round buys one proposal, so
+ any correction re-ask is a regression this harness turns into a failure.
+ 
+ @param reviewAcceptableByRound - acceptable status per one-based review round; absent rounds throw as lost seats
+ 
+ @returns Scripted single-round client
+ 
+ @example
+ ```ts
+ const rejecting = singleRoundClient({ reviewAcceptableByRound: [false,], },);
+ ```
  */
 function singleRoundClient(
   { reviewAcceptableByRound, }: { readonly reviewAcceptableByRound: readonly boolean[]; },
 ): SyntheticClient {
   /**
-   * Stateful call counts separating refine and review rounds.
+   Stateful call counts separating refine and review rounds.
    */
   const calls = {
     refine: 0,
@@ -170,13 +170,13 @@ function singleRoundClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Schema identifying stage role.
+       Schema identifying stage role.
        */
       const schema = request.responseFormat
         ?.json_schema
         .name;
       /**
-       * Scripted stage reply.
+       Scripted stage reply.
        */
       const value: unknown = (() => {
         if (schema === 'refine_report') {
@@ -207,11 +207,11 @@ function singleRoundClient(
         if (schema === 'absolute_naturalness_review') {
           calls.review += 1;
           /**
-           * One-based absolute review round across every roster seat.
+           One-based absolute review round across every roster seat.
            */
           const reviewRound = Math.ceil(calls.review / ROSTER.length,);
           /**
-           * Scripted acceptance for this round, absent to lose the seat.
+           Scripted acceptance for this round, absent to lose the seat.
            */
           const acceptable = reviewAcceptableByRound.at(reviewRound - 1,);
           if (acceptable === undefined)
@@ -249,7 +249,7 @@ function singleRoundClient(
 }
 
 /**
- * Model roles shared by every case.
+ Model roles shared by every case.
  */
 const CONFIG = {
   refinerModelIds: [ROSTER[0],],
@@ -260,16 +260,16 @@ const CONFIG = {
 } as const;
 
 /**
- * Wraps one settled polish in the minimal artifact the completeness guard reads.
- *
- * @param polish - settled polish record as the pipeline would persist it
- *
- * @returns Artifact whose only consolidated body slice carries that polish
- *
- * @example
- * ```ts
- * const artifact = artifactCarrying({ polish, },);
- * ```
+ Wraps one settled polish in the minimal artifact the completeness guard reads.
+ 
+ @param polish - settled polish record as the pipeline would persist it
+ 
+ @returns Artifact whose only consolidated body slice carries that polish
+ 
+ @example
+ ```ts
+ const artifact = artifactCarrying({ polish, },);
+ ```
  */
 function artifactCarrying(
   { polish, }: { readonly polish: unknown; },
@@ -340,17 +340,17 @@ await describe({
         + 'only the base re-wrapped',
       fn: async () => {
         /**
-         * Gate subjects the scripted gate was shown, so the test can prove
-         * the wrapped bytes reached the deciders rather than only the page.
+         Gate subjects the scripted gate was shown, so the test can prove
+         the wrapped bytes reached the deciders rather than only the page.
          */
         const gateSubjects: string[] = [];
         /**
-         * Client answering the refine schema with a given rewrite and
-         * recording what the polish gate is asked about.
-         *
-         * @param newText - rewrite the refiner returns for paragraph 1
-         *
-         * @returns Scripted client
+         Client answering the refine schema with a given rewrite and
+         recording what the polish gate is asked about.
+         
+         @param newText - rewrite the refiner returns for paragraph 1
+         
+         @returns Scripted client
          */
         function rewritingClient({ newText, }: { readonly newText: string; },): SyntheticClient {
           return {
@@ -359,7 +359,7 @@ await describe({
               request: ChatJsonRequest<ValueT>,
             ): Promise<ChatJsonOutcome<ValueT>> => {
               /**
-               * Schema identifying stage role.
+               Schema identifying stage role.
                */
               const schema = request.responseFormat
                 ?.json_schema
@@ -369,7 +369,7 @@ await describe({
               if (schema !== 'refine_report')
                 return await client.chatJson(request,);
               /**
-               * Scripted rewrite.
+               Scripted rewrite.
                */
               const value: unknown = {
                 rewrites: [{
@@ -695,8 +695,8 @@ await describe({
         + 'completeness guard recomputes the same set',
       fn: async () => {
         /**
-         * A letter in blockquote, which the polish may not edit but a reviewer
-         * must still be able to cite.
+         A letter in blockquote, which the polish may not edit but a reviewer
+         must still be able to cite.
          */
         const poem = '> By the time you read this letter,\n> I should already be living on in everyone’s memories.\n>\n> From the moment we met,\n> time really flew by.';
         expect(reviewParagraphsOf({ text: poem, },),).toEqual([poem,],);

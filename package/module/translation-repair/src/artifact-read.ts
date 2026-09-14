@@ -30,75 +30,75 @@ import { parseSettledTwoLaneArtifact, } from './corpus-run/artifact-two-lane-rea
 // question either one can answer.
 
 /**
- * One artifact, read by whichever generation's reader owns it.
- *
- * @example
- * ```ts
- * const reading: ParsedArtifactReading = readSettledArtifact({ value, },);
- * ```
+ One artifact, read by whichever generation's reader owns it.
+ 
+ @example
+ ```ts
+ const reading: ParsedArtifactReading = readSettledArtifact({ value, },);
+ ```
  */
 export type ParsedArtifactReading = {
   /**
-   * Artifact predates the schema version field, so its generation is legible
-   * only from which fields it carries.
+   Artifact predates the schema version field, so its generation is legible
+   only from which fields it carries.
    */
   readonly kind: 'legacy';
 
   /**
-   * What the version 1 reader made of it.
+   What the version 1 reader made of it.
    */
   readonly artifact: ParsedArtifact;
 } | {
   /**
-   * Artifact states version 1.
+   Artifact states version 1.
    */
   readonly kind: 'version-1';
 
   /**
-   * What the version 1 reader made of it.
+   What the version 1 reader made of it.
    */
   readonly artifact: ParsedArtifact;
 } | {
   /**
-   * Artifact states one of the two-lane generations, which is every version
-   * from 2 onwards. The kind names the SHAPE rather than the integer, since
-   * three versions record it and differ only in how four keys are spelled.
+   Artifact states one of the two-lane generations, which is every version
+   from 2 onwards. The kind names the SHAPE rather than the integer, since
+   three versions record it and differ only in how four keys are spelled.
    */
   readonly kind: 'version-2';
 
   /**
-   * What the two-lane reader made of it, comparison recomputed.
+   What the two-lane reader made of it, comparison recomputed.
    */
   readonly artifact: ParsedTwoLaneArtifact;
 };
 
 /**
- * Reads one artifact of any generation this reader understands.
- *
- * ACCEPTS AN EXPLICIT VERSION 1, which is not the same as there being version 1
- * artifacts on disk: a reader that understands a generation should read it, and
- * how many files of it exist is a fact about one corpus rather than about the
- * format. An unknown version is refused by the version reading itself.
- *
- * @param value - artifact JSON, freshly parsed and still untyped
- *
- * @returns Which generation it is, and what that generation's reader made of it
- *
- * @throws {@link ArtifactParseError} when the value is not a record, when it
- * names a generation this reader does not know, or when the chosen reader
- * refuses it
- *
- * @example
- * ```ts
- * const reading = readSettledArtifact({ value: parseRunJson({ text, from, },), },);
- * ```
+ Reads one artifact of any generation this reader understands.
+ 
+ ACCEPTS AN EXPLICIT VERSION 1, which is not the same as there being version 1
+ artifacts on disk: a reader that understands a generation should read it, and
+ how many files of it exist is a fact about one corpus rather than about the
+ format. An unknown version is refused by the version reading itself.
+ 
+ @param value - artifact JSON, freshly parsed and still untyped
+ 
+ @returns Which generation it is, and what that generation's reader made of it
+ 
+ @throws {@link ArtifactParseError} when the value is not a record, when it
+ names a generation this reader does not know, or when the chosen reader
+ refuses it
+ 
+ @example
+ ```ts
+ const reading = readSettledArtifact({ value: parseRunJson({ text, from, },), },);
+ ```
  */
 export function readSettledArtifact(
   { value, }: { readonly value: unknown; },
 ): ParsedArtifactReading {
   /**
-   * Artifact as a record, read once here so the version can be looked at
-   * before any generation's reader runs.
+   Artifact as a record, read once here so the version can be looked at
+   before any generation's reader runs.
    */
   const artifact = requireRecord({
     value,
@@ -106,7 +106,7 @@ export function readSettledArtifact(
   },);
 
   /**
-   * Which generation it states, or that it states none.
+   Which generation it states, or that it states none.
    */
   const reading = readArtifactSchemaVersion({
     artifact,

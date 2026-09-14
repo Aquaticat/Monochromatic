@@ -1,16 +1,16 @@
 /**
- * Tests for removing a truncated provider channel marker ahead of JSON.
- *
- * The case that matters is the one the previous implementation could not
- * handle. It matched the exact string `|>`, which is what survived on
- * 2026-08-12; on 2026-08-13 the surviving tail grew to `p|>` and `ep|>` and the
- * exact match stopped firing, losing 21 of the 23 voices lost in that run
- * window. The rule under test is therefore the SHAPE of a `<|word|>` tail
- * rather than a vocabulary of known markers.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for removing a truncated provider channel marker ahead of JSON.
+ 
+ The case that matters is the one the previous implementation could not
+ handle. It matched the exact string `|>`, which is what survived on
+ 2026-08-12; on 2026-08-13 the surviving tail grew to `p|>` and `ep|>` and the
+ exact match stopped firing, losing 21 of the 23 voices lost in that run
+ window. The rule under test is therefore the SHAPE of a `<|word|>` tail
+ rather than a vocabulary of known markers.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {

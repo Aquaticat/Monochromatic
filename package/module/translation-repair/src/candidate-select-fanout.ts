@@ -21,20 +21,20 @@ import {
 // whole bench is asked, which on such a bench is one seat more.
 
 /**
- * Chooses how many judges a selection round asks.
- *
- * @param judgeCount - seats on the judge bench
- *
- * @param requested - what the caller asked for; absent for the production
- * default
- *
- * @returns Whole bench where the window's self-votes alone could not reach
- * the minimum; the request otherwise
- *
- * @example
- * ```ts
- * const mode = selectionFanOut({ judgeCount: 4, },);
- * ```
+ Chooses how many judges a selection round asks.
+ 
+ @param judgeCount - seats on the judge bench
+ 
+ @param requested - what the caller asked for; absent for the production
+ default
+ 
+ @returns Whole bench where the window's self-votes alone could not reach
+ the minimum; the request otherwise
+ 
+ @example
+ ```ts
+ const mode = selectionFanOut({ judgeCount: 4, },);
+ ```
  */
 export function selectionFanOut(
   {
@@ -48,7 +48,7 @@ export function selectionFanOut(
   if (requested === 'whole-bench')
     return 'whole-bench';
   /**
-   * Weight the window's seats carry when every one of them wrote the slate.
+   Weight the window's seats carry when every one of them wrote the slate.
    */
   const windowSelfWeight = firstRoundWindow({ benchSize: judgeCount, },) * SELF_VOTE_WEIGHT;
   return (windowSelfWeight < MIN_SELECTION_WEIGHT) ? 'whole-bench' : 'window';

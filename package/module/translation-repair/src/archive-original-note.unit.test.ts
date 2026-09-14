@@ -1,14 +1,14 @@
 /**
- * Tests for where the archive is the original, said by its translators' note.
- *
- * THE OWNER'S RULE OF 2026-09-08, after the twelfth hakureico pass rewrote
- * Hanasaka's letter in five places under a note saying everything below it
- * was written in English: a span such a note seals ships as the archive has
- * it, and a page such a note calls the author's own English is declined. The
- * two wordings the pinned corpus carries are the fixtures, and the quotes note
- * hakureico also carries is the case that must NOT seal.
- *
- * @module
+ Tests for where the archive is the original, said by its translators' note.
+ 
+ THE OWNER'S RULE OF 2026-09-08, after the twelfth hakureico pass rewrote
+ Hanasaka's letter in five places under a note saying everything below it
+ was written in English: a span such a note seals ships as the archive has
+ it, and a page such a note calls the author's own English is declined. The
+ two wordings the pinned corpus carries are the fixtures, and the quotes note
+ hakureico also carries is the case that must NOT seal.
+ 
+ @module
  */
 
 import {
@@ -27,24 +27,24 @@ import {
 //region Fixtures
 
 /**
- * cheonwoomaeng's note: the whole page is the author's English.
+ cheonwoomaeng's note: the whole page is the author's English.
  */
 const WHOLE_PAGE_NOTE = '这篇文章的原文即英文，作者的第一语言为英语，请翻译时不要动本篇。';
 
 /**
- * hakureico's note above the letter: everything below is the English original.
+ hakureico's note above the letter: everything below is the English original.
  */
 const SPAN_NOTE = '这段话以下全部，包括结尾的两句祝愿，原文都是英文，中文是反向翻译的，请仅修可能造成误解或明显的非刻意语法错误，不大修';
 
 /**
- * hakureico's first note: most quotes were English; names no span.
+ hakureico's first note: most quotes were English; names no span.
  */
 const QUOTES_NOTE = '本文的大部分引用原文都是英文，引用部分请仅修语法和可能造成误解的错误';
 
 /**
- * An archive shaped like hakureico's last section: an intro paragraph, the
- * span note, a letter and a closing line, then a heading and a paragraph the
- * seal must not reach.
+ An archive shaped like hakureico's last section: an intro paragraph, the
+ span note, a letter and a closing line, then a heading and a paragraph the
+ seal must not reach.
  */
 const SPAN_ARCHIVE = '## Her Letter\n\nShe left a letter for her friend:\n\n'
   + `<!-- ${SPAN_NOTE}-->\n\n> I am never gone,\n>\n> Just changed where I live,\n\nTime to sleep friends.\n\n`
@@ -81,7 +81,7 @@ await describe({
       name: 'reads a whole-page note as the whole page, outranking any span note beside it',
       fn: async () => {
         /**
-         * Both notes on one page.
+         Both notes on one page.
          */
         const document = parseDocument({
           text: `<!-- ${WHOLE_PAGE_NOTE} -->\n\nBody.\n\n<!-- ${SPAN_NOTE}-->\n\nMore.\n`,
@@ -97,18 +97,18 @@ await describe({
       name: 'seals from the end of a span note to the next heading, and no further',
       fn: async () => {
         /**
-         * Parsed fixture.
+         Parsed fixture.
          */
         const document = parseDocument({ text: SPAN_ARCHIVE, },);
         /**
-         * The reading.
+         The reading.
          */
         const reading = archiveOriginalReadingOf({ document, },);
         if (reading.kind !== 'spans')
           throw new Error(`expected spans, read ${reading.kind}`,);
         expect(reading.spans.length,).toBe(1,);
         /**
-         * The one span.
+         The one span.
          */
         const [span,] = reading.spans;
         if (span === undefined)
@@ -132,14 +132,14 @@ await describe({
       name: 'seals to the end of the archive when no heading follows the note',
       fn: async () => {
         /**
-         * The fixture without its afterword.
+         The fixture without its afterword.
          */
         const text = SPAN_ARCHIVE.slice(
           0,
           SPAN_ARCHIVE.indexOf('## Afterword',),
         );
         /**
-         * The reading.
+         The reading.
          */
         const reading = archiveOriginalReadingOf({ document: parseDocument({ text, },), },);
         if (reading.kind !== 'spans')
@@ -167,13 +167,13 @@ await describe({
       name: 'keeps one span where a second span note sits inside the first reach',
       fn: async () => {
         /**
-         * Two span notes under one heading.
+         Two span notes under one heading.
          */
         const document = parseDocument({
           text: `Intro.\n\n<!-- ${SPAN_NOTE}-->\n\n> One.\n\n<!-- ${SPAN_NOTE}-->\n\n> Two.\n`,
         },);
         /**
-         * The reading.
+         The reading.
          */
         const reading = archiveOriginalReadingOf({ document, },);
         if (reading.kind !== 'spans')
@@ -191,24 +191,24 @@ await describe({
       name: 'names every block lying wholly inside a span and none outside it',
       fn: async () => {
         /**
-         * Parsed fixture.
+         Parsed fixture.
          */
         const document = parseDocument({ text: SPAN_ARCHIVE, },);
         /**
-         * The reading.
+         The reading.
          */
         const reading = archiveOriginalReadingOf({ document, },);
         if (reading.kind !== 'spans')
           throw new Error(`expected spans, read ${reading.kind}`,);
         /**
-         * Sealed ids.
+         Sealed ids.
          */
         const sealed = sealedNodeIds({
           nodes: document.nodes,
           spans: reading.spans,
         },);
         /**
-         * Texts of the sealed blocks.
+         Texts of the sealed blocks.
          */
         const sealedTexts = document.nodes
           .filter(function isSealed(node,): boolean {

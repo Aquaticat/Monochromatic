@@ -15,43 +15,43 @@ import type { UnfilledSlice, } from '../translate-document-contract.ts';
 // publishes; the refusal is kept for callers that still want to fail closed.
 
 /**
- * Raised before publication when translation left a source passage unfilled.
- *
- * @example
- * ```ts
- * const error = new UnfilledPageError({
- *   entryId: 'CatEntry',
- *   unfilled: [{ sliceIndex: 2, reason: 'not-corroborated', findings: [], }],
- * },);
- * ```
+ Raised before publication when translation left a source passage unfilled.
+ 
+ @example
+ ```ts
+ const error = new UnfilledPageError({
+   entryId: 'CatEntry',
+   unfilled: [{ sliceIndex: 2, reason: 'not-corroborated', findings: [], }],
+ },);
+ ```
  */
 export class UnfilledPageError extends Error {
   /**
-   * Declares this message safe to forward: it names entry id, counts and slice indexes.
+   Declares this message safe to forward: it names entry id, counts and slice indexes.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Stable error class name after serialization.
+   Stable error class name after serialization.
    */
   public override readonly name = 'UnfilledPageError';
 
   /**
-   * Corpus entry whose page remains incomplete.
+   Corpus entry whose page remains incomplete.
    */
   readonly entryId: string;
 
   /**
-   * Slice indexes whose source content has no shipped rendering.
+   Slice indexes whose source content has no shipped rendering.
    */
   readonly sliceIndices: readonly number[];
 
   /**
-   * Builds one publication refusal.
-   *
-   * @param entryId - corpus entry being protected
-   *
-   * @param unfilled - source passages with no shipped rendering
+   Builds one publication refusal.
+   
+   @param entryId - corpus entry being protected
+   
+   @param unfilled - source passages with no shipped rendering
    */
   constructor(
     {
@@ -63,7 +63,7 @@ export class UnfilledPageError extends Error {
     },
   ) {
     /**
-     * Slice indexes carried in message and fields.
+     Slice indexes carried in message and fields.
      */
     const sliceIndices = unfilled.map(function toSliceIndex(passage,): number {
       return passage.sliceIndex;
@@ -77,18 +77,18 @@ export class UnfilledPageError extends Error {
 }
 
 /**
- * Refuses publication when a translation records any source passage unfilled.
- *
- * @param entryId - corpus entry being protected
- *
- * @param unfilled - source passages with no shipped rendering
- *
- * @throws {@link UnfilledPageError} when any passage remains unfilled
- *
- * @example
- * ```ts
- * assertPublishableTranslation({ entryId: 'CatEntry', unfilled: [], });
- * ```
+ Refuses publication when a translation records any source passage unfilled.
+ 
+ @param entryId - corpus entry being protected
+ 
+ @param unfilled - source passages with no shipped rendering
+ 
+ @throws {@link UnfilledPageError} when any passage remains unfilled
+ 
+ @example
+ ```ts
+ assertPublishableTranslation({ entryId: 'CatEntry', unfilled: [], });
+ ```
  */
 export function assertPublishableTranslation(
   {
@@ -108,17 +108,17 @@ export function assertPublishableTranslation(
 }
 
 /**
- * Findings that record each unfilled source passage a page ships without.
- *
- * @param unfilled - source passages with no shipped rendering
- *
- * @returns One finding per passage, naming the slice and why it is unfilled
- *
- * @example
- * ```ts
- * unfilledPageFindings({ unfilled: [{ sliceIndex: 15, reason: 'no-candidate-backed', findings: [], }], },);
- * // => ['source-passage-unfilled (slice 15, no-candidate-backed): the page ships without this passage, recorded as a gap']
- * ```
+ Findings that record each unfilled source passage a page ships without.
+ 
+ @param unfilled - source passages with no shipped rendering
+ 
+ @returns One finding per passage, naming the slice and why it is unfilled
+ 
+ @example
+ ```ts
+ unfilledPageFindings({ unfilled: [{ sliceIndex: 15, reason: 'no-candidate-backed', findings: [], }], },);
+ // => ['source-passage-unfilled (slice 15, no-candidate-backed): the page ships without this passage, recorded as a gap']
+ ```
  */
 export function unfilledPageFindings(
   { unfilled, }: { readonly unfilled: readonly UnfilledSlice[]; },

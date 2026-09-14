@@ -22,7 +22,7 @@ import { PRODUCER_INPUT_PATHS, } from './producer-input-paths.ts';
 //region Native created-container evidence before Node startup
 
 /**
- * Default capabilities removed by the pinned Podman implementation's ALL request.
+ Default capabilities removed by the pinned Podman implementation's ALL request.
  */
 const REMOVED_CAPABILITIES = [
   'CAP_CHOWN',
@@ -39,21 +39,21 @@ const REMOVED_CAPABILITIES = [
 ] as const;
 
 /**
- * Cross-checks native creation metadata before starting the fixed Node process.
- * This is point-in-time host observation, not protection against a hostile host replacing the container afterward.
- *
- * @param host - one initialized host owner
- *
- * @param id - identity returned by this run's successful exclusive create operation
- *
- * @param text - bounded native inspection response
- *
- * @throws ProducerInputRunError when image, command, environment, resource or mount bindings differ
- *
- * @example
- * ```ts
- * verifyCreatedProducerInputContainer({ host, id, text });
- * ```
+ Cross-checks native creation metadata before starting the fixed Node process.
+ This is point-in-time host observation, not protection against a hostile host replacing the container afterward.
+ 
+ @param host - one initialized host owner
+ 
+ @param id - identity returned by this run's successful exclusive create operation
+ 
+ @param text - bounded native inspection response
+ 
+ @throws ProducerInputRunError when image, command, environment, resource or mount bindings differ
+ 
+ @example
+ ```ts
+ verifyCreatedProducerInputContainer({ host, id, text });
+ ```
  */
 export function verifyCreatedProducerInputContainer({
   host,
@@ -65,7 +65,7 @@ export function verifyCreatedProducerInputContainer({
   readonly text: string
 },): void {
   /**
-   * No complete inspection object is logged before its environment and mounts are checked.
+   No complete inspection object is logged before its environment and mounts are checked.
    */
   const inspection = inspectionRecord(text);
   for (const [name, expected] of Object.entries({
@@ -86,7 +86,7 @@ export function verifyCreatedProducerInputContainer({
       expected
     });
   /**
-   * These native records are checked before any nested field receives a typed interpretation.
+   These native records are checked before any nested field receives a typed interpretation.
    */
   const {
     Config: config,
@@ -166,7 +166,7 @@ export function verifyCreatedProducerInputContainer({
     name: 'GidMap'
   });
   /**
-   * Environment values are independently reconstructed, not accepted merely because names are familiar.
+   Environment values are independently reconstructed, not accepted merely because names are familiar.
    */
   const environment = producerInputChildEnvironment({
     runId: host.run
@@ -260,40 +260,40 @@ export function verifyCreatedProducerInputContainer({
 }
 
 /**
- * Current native state is not represented by fabricated optional exit fields.
+ Current native state is not represented by fabricated optional exit fields.
  */
 export type ProducerInputContainerState = { readonly state: 'created'; } | { readonly state: 'running'; } | {
   /**
-   * Native process lifecycle has ended.
+   Native process lifecycle has ended.
    */
   readonly state: 'exited';
   /**
-   * Native exit status, including the runtime's negative termination sentinel.
+   Native exit status, including the runtime's negative termination sentinel.
    */
   readonly exitCode: number;
   /**
-   * Runtime-reported OOM status supplements, not replaces, retained resource evidence.
+   Runtime-reported OOM status supplements, not replaces, retained resource evidence.
    */
   readonly oomKilled: boolean;
 };
 
 /**
- * Reads current state only for the container returned by this run's create operation.
- *
- * @param host - owning launch and run
- *
- * @param id - already verified created container identity
- *
- * @param text - bounded terminal inspection
- *
- * @returns Native terminal evidence without returning the environment or other unconsumed fields
- *
- * @throws ProducerInputRunError when identity or terminal state cannot be established
- *
- * @example
- * ```ts
- * const terminal = readProducerInputContainerTerminal({ host, id, text });
- * ```
+ Reads current state only for the container returned by this run's create operation.
+ 
+ @param host - owning launch and run
+ 
+ @param id - already verified created container identity
+ 
+ @param text - bounded terminal inspection
+ 
+ @returns Native terminal evidence without returning the environment or other unconsumed fields
+ 
+ @throws ProducerInputRunError when identity or terminal state cannot be established
+ 
+ @example
+ ```ts
+ const terminal = readProducerInputContainerTerminal({ host, id, text });
+ ```
  */
 export function readProducerInputContainerTerminal({
   host,
@@ -305,7 +305,7 @@ export function readProducerInputContainerTerminal({
   readonly text: string
 },): ProducerInputContainerState {
   /**
-   * Terminal inspection cannot select a different container by name alone.
+   Terminal inspection cannot select a different container by name alone.
    */
   const inspection = inspectionRecord(text);
   fieldMatches({
@@ -326,7 +326,7 @@ export function readProducerInputContainerTerminal({
       .runId}`
   });
   /**
-   * The host stops running containers before recording their terminal state or removing them.
+   The host stops running containers before recording their terminal state or removing them.
    */
   const state = inspection.State;
   if (!record(state))

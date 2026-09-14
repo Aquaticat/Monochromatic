@@ -15,45 +15,45 @@ import { parseDocument, } from '../parse-document.ts';
 // own the question and this one says nothing rather than pair by position.
 
 /**
- * Node kind the parser gives a heading.
+ Node kind the parser gives a heading.
  */
 const HEADING_KIND = 'heading';
 
 /**
- * Refusal when a would-ship page renders distinct source headings as one.
- *
- * @example
- * ```ts
- * throw new CollapsedHeadingError({ entryId: 'Cat', sourceDistinct: 2, pageDistinct: 1, },);
- * ```
+ Refusal when a would-ship page renders distinct source headings as one.
+ 
+ @example
+ ```ts
+ throw new CollapsedHeadingError({ entryId: 'Cat', sourceDistinct: 2, pageDistinct: 1, },);
+ ```
  */
 export class CollapsedHeadingError extends Error {
   /**
-   * Message contains operation names and counts only.
+   Message contains operation names and counts only.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Entry whose page failed the invariant.
+   Entry whose page failed the invariant.
    */
   readonly entryId: string;
 
   /**
-   * Distinct headings the source carries.
+   Distinct headings the source carries.
    */
   readonly sourceDistinct: number;
 
   /**
-   * Distinct headings the would-ship page carries.
+   Distinct headings the would-ship page carries.
    */
   readonly pageDistinct: number;
 
   /**
-   * @param entryId - affected entry
-   *
-   * @param sourceDistinct - distinct heading count in the source
-   *
-   * @param pageDistinct - distinct heading count on the page
+   @param entryId - affected entry
+   
+   @param sourceDistinct - distinct heading count in the source
+   
+   @param pageDistinct - distinct heading count on the page
    */
   public constructor(
     {
@@ -78,17 +78,17 @@ export class CollapsedHeadingError extends Error {
 }
 
 /**
- * Words of every heading in one document, in document order.
- *
- * @param text - whole document, front matter included
- *
- * @returns Heading words, marks stripped
- *
- * @example
- * ```ts
- * headingWordsOf({ text: '## 简介\n\n正文。\n', },);
- * // => ['简介']
- * ```
+ Words of every heading in one document, in document order.
+ 
+ @param text - whole document, front matter included
+ 
+ @returns Heading words, marks stripped
+ 
+ @example
+ ```ts
+ headingWordsOf({ text: '## 简介\n\n正文。\n', },);
+ // => ['简介']
+ ```
  */
 function headingWordsOf(
   { text, }: { readonly text: string; },
@@ -104,22 +104,22 @@ function headingWordsOf(
 }
 
 /**
- * Refuses a would-ship page on which two different source headings read the
- * same.
- *
- * @param entryId - entry about to publish
- *
- * @param sourceText - whole original
- *
- * @param pageText - whole would-ship page
- *
- * @throws {@link CollapsedHeadingError} when two headings that differ in the
- * source are identical on the page
- *
- * @example
- * ```ts
- * assertHeadingsStayDistinct({ entryId: 'Cat', sourceText, pageText, },);
- * ```
+ Refuses a would-ship page on which two different source headings read the
+ same.
+ 
+ @param entryId - entry about to publish
+ 
+ @param sourceText - whole original
+ 
+ @param pageText - whole would-ship page
+ 
+ @throws {@link CollapsedHeadingError} when two headings that differ in the
+ source are identical on the page
+ 
+ @example
+ ```ts
+ assertHeadingsStayDistinct({ entryId: 'Cat', sourceText, pageText, },);
+ ```
  */
 export function assertHeadingsStayDistinct(
   {
@@ -133,12 +133,12 @@ export function assertHeadingsStayDistinct(
   },
 ): void {
   /**
-   * Source headings by position.
+   Source headings by position.
    */
   const source = headingWordsOf({ text: sourceText, },);
 
   /**
-   * Page headings by position.
+   Page headings by position.
    */
   const page = headingWordsOf({ text: pageText, },);
 
@@ -146,7 +146,7 @@ export function assertHeadingsStayDistinct(
     return;
 
   /**
-   * Whether some later page heading repeats an earlier one whose source differed.
+   Whether some later page heading repeats an earlier one whose source differed.
    */
   const collapsed = page.some(function repeatsAnother(
     words,

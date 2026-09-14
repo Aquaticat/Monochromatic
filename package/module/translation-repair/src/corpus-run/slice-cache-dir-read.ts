@@ -13,16 +13,16 @@ import type { SliceNamespace, } from './slice-cache-claims.ts';
 // no call site moved.
 
 /**
- * Lists a directory, reporting an absent one as empty.
- *
- * @param dir - directory to list
- *
- * @returns File names, empty when the directory does not exist
- *
- * @example
- * ```ts
- * const names = await readDirectoryNames({ dir, },);
- * ```
+ Lists a directory, reporting an absent one as empty.
+ 
+ @param dir - directory to list
+ 
+ @returns File names, empty when the directory does not exist
+ 
+ @example
+ ```ts
+ const names = await readDirectoryNames({ dir, },);
+ ```
  */
 export async function readDirectoryNames(
   { dir, }: { readonly dir: string; },
@@ -42,21 +42,21 @@ export async function readDirectoryNames(
 }
 
 /**
- * Reads the pipeline that filled one lane's slices.
- *
- * @param dir - per-entry cache directory
- *
- * @param namespace - lane asking
- *
- * @returns Recorded digest, empty when this lane never wrote here
- *
- * @throws Error when the marker exists and cannot be read, since treating an
- * unreadable marker as absent would DELETE the lane's settled slices
- *
- * @example
- * ```ts
- * const cached = await readNamespaceGeneration({ dir, namespace, },);
- * ```
+ Reads the pipeline that filled one lane's slices.
+ 
+ @param dir - per-entry cache directory
+ 
+ @param namespace - lane asking
+ 
+ @returns Recorded digest, empty when this lane never wrote here
+ 
+ @throws Error when the marker exists and cannot be read, since treating an
+ unreadable marker as absent would DELETE the lane's settled slices
+ 
+ @example
+ ```ts
+ const cached = await readNamespaceGeneration({ dir, namespace, },);
+ ```
  */
 export async function readNamespaceGeneration(
   {
@@ -69,7 +69,7 @@ export async function readNamespaceGeneration(
 ): Promise<string> {
   try {
     /**
-     * Raw marker text, including its trailing newline.
+     Raw marker text, including its trailing newline.
      */
     const text = await readFile(
       join(

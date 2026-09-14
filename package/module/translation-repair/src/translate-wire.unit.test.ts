@@ -1,15 +1,15 @@
 /**
- * Tests for what the translator sheet says about the shape of a passage.
- *
- * WHY THE SHEET AND THE GUARD HAVE TO AGREE. `validateTranslatedSlice` floors a
- * candidate on the PAGE AS IT STANDS: every block of the existing translation
- * must appear in the rendering, in order. A translator told only that the
- * ORIGINAL's structure is preserved drops the archive's own splits and merges
- * by following its instructions, fails the guard, and buys a repair round at
- * every reshaped slice. The two texts disagree about shape on real entries, so
- * this is not a hypothetical.
- *
- * @module
+ Tests for what the translator sheet says about the shape of a passage.
+ 
+ WHY THE SHEET AND THE GUARD HAVE TO AGREE. `validateTranslatedSlice` floors a
+ candidate on the PAGE AS IT STANDS: every block of the existing translation
+ must appear in the rendering, in order. A translator told only that the
+ ORIGINAL's structure is preserved drops the archive's own splits and merges
+ by following its instructions, fails the guard, and buys a repair round at
+ every reshaped slice. The two texts disagree about shape on real entries, so
+ this is not a hypothetical.
+ 
+ @module
  */
 
 import {
@@ -20,18 +20,18 @@ import {
 import { buildTranslateMessages, } from '../dist/final/node/index.mjs';
 
 /**
- * Cat-themed passage standing in for a source, since the sheet does not vary
- * with what it is given.
+ Cat-themed passage standing in for a source, since the sheet does not vary
+ with what it is given.
  */
 const SOURCE_TEXT = '猫在窗台上睡觉。';
 
 /**
- * Existing translation shaped differently from the source: one block quoted.
+ Existing translation shaped differently from the source: one block quoted.
  */
 const EXISTING_TEXT = '> The cat sleeps on the windowsill.';
 
 /**
- * System half of the sheet, which is where every standing rule lives.
+ System half of the sheet, which is where every standing rule lives.
  */
 const system = buildTranslateMessages({
   sourceText: SOURCE_TEXT,
@@ -47,8 +47,8 @@ const system = buildTranslateMessages({
   .join('\n',);
 
 /**
- * Same sheet for a chunk whose ORIGINAL is verse, where a second shape rule
- * arrives and points the other way.
+ Same sheet for a chunk whose ORIGINAL is verse, where a second shape rule
+ arrives and points the other way.
  */
 const verseSystem = buildTranslateMessages({
   sourceText: SOURCE_TEXT,
@@ -65,7 +65,7 @@ const verseSystem = buildTranslateMessages({
   .join('\n',);
 
 /**
- * Syntax-specific sheet for visible page metadata.
+ Syntax-specific sheet for visible page metadata.
  */
 const frontMatterSystem = buildTranslateMessages({
   sourceText: '---\nname: 猫猫\n---\n',
@@ -82,7 +82,7 @@ const frontMatterSystem = buildTranslateMessages({
   .join('\n',);
 
 /**
- * Follow-up sheet grounded in exact latest rejection evidence.
+ Follow-up sheet grounded in exact latest rejection evidence.
  */
 const followupMessages = buildTranslateMessages({
   sourceText: SOURCE_TEXT,

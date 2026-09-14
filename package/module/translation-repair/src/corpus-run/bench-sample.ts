@@ -23,60 +23,60 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 // Spends no quota. Reads the pinned corpus only.
 
 /**
- * Characters of a read failure kept when an entry is skipped, enough to name
- * the missing side without printing a stack per entry.
+ Characters of a read failure kept when an entry is skipped, enough to name
+ the missing side without printing a stack per entry.
  */
 const SKIP_DETAIL_CHARS = 80;
 
 /**
- * One slice the bench translates, with the facts a stage call needs.
- *
- * @example
- * ```ts
- * const slice: BenchSlice = { entryId: 'Mittens', index: 3, ... };
- * ```
- *
- * @internal
+ One slice the bench translates, with the facts a stage call needs.
+ 
+ @example
+ ```ts
+ const slice: BenchSlice = { entryId: 'Mittens', index: 3, ... };
+ ```
+ 
+ @internal
  */
 export type BenchSlice = {
   /**
-   * Entry this slice was cut from.
+   Entry this slice was cut from.
    */
   readonly entryId: string;
 
   /**
-   * Position within that entry's slices, so a row can be traced back.
+   Position within that entry's slices, so a row can be traced back.
    */
   readonly index: number;
 
   /**
-   * Original passage to render.
+   Original passage to render.
    */
   readonly sourceText: string;
 
   /**
-   * Translation as it stands, blank when the archive has none here.
+   Translation as it stands, blank when the archive has none here.
    */
   readonly incumbentText: string;
 
   /**
-   * Whether the line-structure rule governs this slice, inherited from its
-   * chunk exactly as `repairTranslation` inherits it.
+   Whether the line-structure rule governs this slice, inherited from its
+   chunk exactly as `repairTranslation` inherits it.
    */
   readonly lineStructured: boolean;
 };
 
 /**
- * Cuts one entry into slices, or returns none when either side is unreadable.
- *
- * @param entryId - corpus entry
- *
- * @returns Every slice of that entry
- *
- * @example
- * ```ts
- * const slices = await sliceEntry({ entryId: 'Mittens', },);
- * ```
+ Cuts one entry into slices, or returns none when either side is unreadable.
+ 
+ @param entryId - corpus entry
+ 
+ @returns Every slice of that entry
+ 
+ @example
+ ```ts
+ const slices = await sliceEntry({ entryId: 'Mittens', },);
+ ```
  */
 async function sliceEntry(
   {
@@ -88,7 +88,7 @@ async function sliceEntry(
   },
 ): Promise<readonly BenchSlice[]> {
   /**
-   * Both sides at the pin; an entry missing either is simply not sampled.
+   Both sides at the pin; an entry missing either is simply not sampled.
    */
   const [sourceText, targetText,] = await Promise.all([
     readCorpusFile({
@@ -102,7 +102,7 @@ async function sliceEntry(
   ],);
 
   /**
-   * Aligned sections, exactly as the pipeline pairs them.
+   Aligned sections, exactly as the pipeline pairs them.
    */
   const alignment = alignDocumentSections({
     source: parseDocument({ text: sourceText, },),
@@ -110,13 +110,13 @@ async function sliceEntry(
   },);
 
   /**
-   * Slices accumulated across this entry's sections.
+   Slices accumulated across this entry's sections.
    */
   const slices: BenchSlice[] = [];
   for (const pair of alignment.pairs) {
     /**
-     * Whether the whole section reads as line-structured, which its slices
-     * inherit.
+     Whether the whole section reads as line-structured, which its slices
+     inherit.
      */
     const chunkGoverns = isLineStructured({ text: pair.source
       .text, },);
@@ -146,27 +146,27 @@ async function sliceEntry(
 }
 
 /**
- * Draws the bench sample across the whole pinned corpus.
- *
- * @param count - slices wanted; fewer come back only when the corpus holds
- * fewer
- *
- * @param pin - corpus clone and commit to read, defaulting to the run pin;
- * passed rather than read so this is testable against a throwaway clone instead
- * of the unlicensed one
- *
- * @returns Sample ordered by source size, smallest first
- *
- * @throws Error when the pinned corpus yields no slice at all, since a bench
- * drawn over nothing would report widths as indistinguishable while having
- * compared them on no work
- *
- * @example
- * ```ts
- * const sample = await sampleBenchSlices({ count: 12, },);
- * ```
- *
- * @internal
+ Draws the bench sample across the whole pinned corpus.
+ 
+ @param count - slices wanted; fewer come back only when the corpus holds
+ fewer
+ 
+ @param pin - corpus clone and commit to read, defaulting to the run pin;
+ passed rather than read so this is testable against a throwaway clone instead
+ of the unlicensed one
+ 
+ @returns Sample ordered by source size, smallest first
+ 
+ @throws Error when the pinned corpus yields no slice at all, since a bench
+ drawn over nothing would report widths as indistinguishable while having
+ compared them on no work
+ 
+ @example
+ ```ts
+ const sample = await sampleBenchSlices({ count: 12, },);
+ ```
+ 
+ @internal
  */
 export async function sampleBenchSlices(
   {
@@ -178,24 +178,24 @@ export async function sampleBenchSlices(
   },
 ): Promise<readonly BenchSlice[]> {
   /**
-   * Own the batch's revision and resolve its native executable before concurrent reads.
-   * Self-shim detection decodes candidate files; repeating it per page can exhaust the heap.
+   Own the batch's revision and resolve its native executable before concurrent reads.
+   Self-shim detection decodes candidate files; repeating it per page can exhaust the heap.
    */
   const resolvedPin: CorpusPin = {
     ...pin,
     gitPath: pin.gitPath ?? await resolveGit(),
   };
   /**
-   * Entries at the pin, in the order the corpus lists them.
+   Entries at the pin, in the order the corpus lists them.
    */
   const entryIds = await listCorpusPeople({ pin: resolvedPin, },);
 
   /**
-   * Every entry sliced, or reported as unreadable.
-   *
-   * An entry missing one side is not a bench failure: the census reports the
-   * same gap, and refusing to draw a sample over it would make the bench depend
-   * on corpus completeness it does not need.
+   Every entry sliced, or reported as unreadable.
+   
+   An entry missing one side is not a bench failure: the census reports the
+   same gap, and refusing to draw a sample over it would make the bench depend
+   on corpus completeness it does not need.
    */
   const sliced = await Promise.all(
     entryIds.map(async function sliceOne(entryId,): Promise<readonly BenchSlice[]> {
@@ -207,7 +207,7 @@ export async function sampleBenchSlices(
       }
       catch (error) {
         /**
-         * Why this entry could not be sliced, trimmed for one log line.
+         Why this entry could not be sliced, trimmed for one log line.
          */
         const detail = String(error,)
           .slice(
@@ -221,7 +221,7 @@ export async function sampleBenchSlices(
   );
 
   /**
-   * Every slice of every readable entry.
+   Every slice of every readable entry.
    */
   const all = sliced.flat();
   if (all.length === 0)

@@ -1,21 +1,21 @@
 /**
- * Tests for the catalog report an operator reads before changing the roster.
- *
- * WHAT THESE PIN is which list each section is rendered from. The report has
- * three sections built from three arrays whose members are the same shape, so
- * rendering the aliases where the unlisted models belong produces a report that
- * reads perfectly and tells an operator to seat an alias. Its own comparison
- * says what that costs: one model would vote twice on a panel, and a single
- * opinion would read as two independent confirmations.
- *
- * SEPARATE FROM `model-catalog-compare.unit.test.ts` on purpose. `await
- * describe` throws, so a failing suite aborts its whole file, and a `GFP` round
- * over this report must not depend on the suites above it having passed.
- *
- * Fixtures are cat-themed invention in the shape of provider ids. No corpus
- * content appears here.
- *
- * @module
+ Tests for the catalog report an operator reads before changing the roster.
+ 
+ WHAT THESE PIN is which list each section is rendered from. The report has
+ three sections built from three arrays whose members are the same shape, so
+ rendering the aliases where the unlisted models belong produces a report that
+ reads perfectly and tells an operator to seat an alias. Its own comparison
+ says what that costs: one model would vote twice on a panel, and a single
+ opinion would read as two independent confirmations.
+ 
+ SEPARATE FROM `model-catalog-compare.unit.test.ts` on purpose. `await
+ describe` throws, so a failing suite aborts its whole file, and a `GFP` round
+ over this report must not depend on the suites above it having passed.
+ 
+ Fixtures are cat-themed invention in the shape of provider ids. No corpus
+ content appears here.
+ 
+ @module
  */
 
 import {
@@ -27,27 +27,27 @@ import {
 import { formatCatalogReport, } from '../../dist/final/node/index.mjs';
 
 /**
- * Catalog id the provider stopped serving.
+ Catalog id the provider stopped serving.
  */
 const DEPARTED = 'hf:someone/Departed-1';
 
 /**
- * Id the provider serves that the catalog does not list, on a model of its own.
+ Id the provider serves that the catalog does not list, on a model of its own.
  */
 const NEWCOMER = 'syn:newcomer:text';
 
 /**
- * Model behind it, which nothing seated shares.
+ Model behind it, which nothing seated shares.
  */
 const NEWCOMER_MODEL = 'someone/Newcomer-1';
 
 /**
- * Id the provider serves that resolves onto a model already seated.
+ Id the provider serves that resolves onto a model already seated.
  */
 const SECOND_NAME = 'syn:large:text';
 
 /**
- * Model it resolves onto, which the catalog already lists under another id.
+ Model it resolves onto, which the catalog already lists under another id.
  */
 const SEATED_MODEL = 'zai-org/GLM-5.2';
 

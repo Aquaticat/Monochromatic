@@ -7,22 +7,22 @@
 // (a critic citing translated dialogue) from being misclassified.
 
 /**
- * Character count of the opening window scanned for refusal markers.
- * Refusals lead with the apology;
- * markers deeper than this are treated as quoted content, not refusal.
+ Character count of the opening window scanned for refusal markers.
+ Refusals lead with the apology;
+ markers deeper than this are treated as quoted content, not refusal.
  */
 export const REFUSAL_SCAN_WINDOW = 400;
 
 /**
- * Lowercase markers whose presence in the opening window classifies a reply as
- * refusal-shaped.
- * Grown from observed failures; scorecard records which marker fired so the list
- * stays evidence-driven.
- *
- * @example
- * ```ts
- * REFUSAL_MARKERS.includes("i can't assist",);
- * ```
+ Lowercase markers whose presence in the opening window classifies a reply as
+ refusal-shaped.
+ Grown from observed failures; scorecard records which marker fired so the list
+ stays evidence-driven.
+ 
+ @example
+ ```ts
+ REFUSAL_MARKERS.includes("i can't assist",);
+ ```
  */
 export const REFUSAL_MARKERS: readonly string[] = [
   "i can't help",
@@ -48,51 +48,51 @@ export const REFUSAL_MARKERS: readonly string[] = [
 ];
 
 /**
- * Classification of one model reply's opening window.
- *
- * @example
- * ```ts
- * const scan: RefusalScan = { refusalShaped: true, marker: 'as an ai', };
- * ```
+ Classification of one model reply's opening window.
+ 
+ @example
+ ```ts
+ const scan: RefusalScan = { refusalShaped: true, marker: 'as an ai', };
+ ```
  */
 export type RefusalScan =
   | {
     /**
-     * Reply opens like a refusal.
+     Reply opens like a refusal.
      */
     readonly refusalShaped: true;
 
     /**
-     * First marker that fired; feeds the scorecard.
+     First marker that fired; feeds the scorecard.
      */
     readonly marker: string;
   }
   | {
     /**
-     * No marker fired in the opening window.
+     No marker fired in the opening window.
      */
     readonly refusalShaped: false;
   };
 
 /**
- * Scans one reply's opening window for refusal markers.
- * Case-insensitive; first marker in list order wins so results are deterministic.
- *
- * @param text - full model reply
- *
- * @returns Whether the opening reads as refusal, and which marker fired
- *
- * @example
- * ```ts
- * const scan = detectRefusalShape({ text: reply, },);
- * if (scan.refusalShaped) reroute(scan.marker,);
- * ```
+ Scans one reply's opening window for refusal markers.
+ Case-insensitive; first marker in list order wins so results are deterministic.
+ 
+ @param text - full model reply
+ 
+ @returns Whether the opening reads as refusal, and which marker fired
+ 
+ @example
+ ```ts
+ const scan = detectRefusalShape({ text: reply, },);
+ if (scan.refusalShaped) reroute(scan.marker,);
+ ```
  */
 export function detectRefusalShape(
   { text, }: { readonly text: string; },
 ): RefusalScan {
   /**
-   * Lowercased opening window; markers are stored lowercase.
+   Lowercased opening window; markers are stored lowercase.
    */
   const opening = text
     .slice(
@@ -102,7 +102,7 @@ export function detectRefusalShape(
     .toLowerCase();
 
   /**
-   * First marker present in the opening window, when any.
+   First marker present in the opening window, when any.
    */
   const marker = REFUSAL_MARKERS.find(function firesIn(candidate,) {
     return opening.includes(candidate,);

@@ -1,22 +1,22 @@
 /**
- * Tests for holding target-only English out of translation.
- *
- * WHAT THESE PIN is that a passage the source cannot account for survives. The
- * translate lane writes each slice fresh from its source, so a transcript a
- * human added to the English has nothing to produce it: measured on the pool
- * settled 2026-08-18, one slice went from 1766 archive characters to 215
- * shipped and another from 1228 to 175. Both are memorial pages and the lost
- * blocks are the accessible reading of an image.
- *
- * The second thing they pin is the anchor comparison. A byte-identical
- * comparison was written first and it MISSED the very case that prompted this,
- * because the source writes two spaces inside a component where the archive
- * writes one. That case has its own test, since it is the difference between
- * this working and this looking like it works.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for holding target-only English out of translation.
+ 
+ WHAT THESE PIN is that a passage the source cannot account for survives. The
+ translate lane writes each slice fresh from its source, so a transcript a
+ human added to the English has nothing to produce it: measured on the pool
+ settled 2026-08-18, one slice went from 1766 archive characters to 215
+ shipped and another from 1228 to 175. Both are memorial pages and the lost
+ blocks are the accessible reading of an image.
+ 
+ The second thing they pin is the anchor comparison. A byte-identical
+ comparison was written first and it MISSED the very case that prompted this,
+ because the source writes two spaces inside a component where the archive
+ writes one. That case has its own test, since it is the difference between
+ this working and this looking like it works.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -31,8 +31,8 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Component ending a source slice, which the archive repeats because markup is
- * not prose.
+ Component ending a source slice, which the archive repeats because markup is
+ not prose.
  */
 const COMPONENT = '<PhotoScroll photos={[ \'/photos/tabby.webp\' ]} />';
 
@@ -45,12 +45,12 @@ await describe({
         + 'source alone deletes it',
       fn: async () => {
         /**
-         * Source ending on the component, with no transcript after it.
+         Source ending on the component, with no transcript after it.
          */
         const sourceText = `窗台上的猫。\n\n${COMPONENT}`;
 
         /**
-         * Archive carrying the same blocks plus a lead-in and a transcript.
+         Archive carrying the same blocks plus a lead-in and a transcript.
          */
         const incumbentText = `The cat on the sill.\n\n${COMPONENT}\n\n`
           + 'English transcript of the photo above:\n\n'
@@ -73,7 +73,7 @@ await describe({
         + 'and one on the other, so an exact comparison protected nothing and looked correct',
       fn: async () => {
         /**
-         * Source spelling the component with two spaces before its closer.
+         Source spelling the component with two spaces before its closer.
          */
         const spaced = '<PhotoScroll photos={[ \'/photos/tabby.webp\'  ]} />';
 
@@ -92,7 +92,7 @@ await describe({
         + 'retention has to leave the document byte-identical',
       fn: async () => {
         /**
-         * Archive as it stands.
+         Archive as it stands.
          */
         const incumbentText = `The cat on the sill.\n\n${COMPONENT}\n\n`
           + 'Transcript:\n\n> Name: Mittens.';
@@ -114,7 +114,7 @@ await describe({
         + 'the archive beyond every lane and freeze wording that has a source and can be improved',
       fn: async () => {
         /**
-         * A pair with no markup and no surplus.
+         A pair with no markup and no surplus.
          */
         const incumbentText = 'The cat naps.\n\nIt wakes at dusk.';
 

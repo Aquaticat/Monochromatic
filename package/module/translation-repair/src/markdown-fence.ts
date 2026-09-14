@@ -15,33 +15,33 @@
 // read as sheet.
 
 /**
- * Shortest fence used when nothing enclosed competes with it, which is also
- * Markdown's own minimum for a fenced block.
+ Shortest fence used when nothing enclosed competes with it, which is also
+ Markdown's own minimum for a fenced block.
  */
 const MARKDOWN_FENCE_MIN = 3;
 
 /**
- * Fence character; backticks are what Markdown fences with.
+ Fence character; backticks are what Markdown fences with.
  */
 const FENCE_CHARACTER = '`';
 
 /**
- * Longest unbroken run of the fence character anywhere in one text.
- *
- * Single linear pass, because the input is unbounded corpus prose.
- *
- * @param text - content that will be fenced
- *
- * @returns Longest run length, zero when the character never appears
- *
- * @example
- * ```ts
- * const longest = longestBacktickRun('a ``` b',);
- * ```
+ Longest unbroken run of the fence character anywhere in one text.
+ 
+ Single linear pass, because the input is unbounded corpus prose.
+ 
+ @param text - content that will be fenced
+ 
+ @returns Longest run length, zero when the character never appears
+ 
+ @example
+ ```ts
+ const longest = longestBacktickRun('a ``` b',);
+ ```
  */
 export function longestBacktickRun(text: string,): number {
   /**
-   * Best and running run lengths across the pass.
+   Best and running run lengths across the pass.
    */
   const counters = {
     best: 0,
@@ -62,20 +62,20 @@ export function longestBacktickRun(text: string,): number {
 }
 
 /**
- * Wraps text in a fenced block no enclosed content can close.
- *
- * @param text - content to enclose
- *
- * @returns Fenced block, opening and closing fences on their own lines
- *
- * @example
- * ```ts
- * const block = fenceForMarkdown({ text: '### not a heading here', },);
- * ```
+ Wraps text in a fenced block no enclosed content can close.
+ 
+ @param text - content to enclose
+ 
+ @returns Fenced block, opening and closing fences on their own lines
+ 
+ @example
+ ```ts
+ const block = fenceForMarkdown({ text: '### not a heading here', },);
+ ```
  */
 export function fenceForMarkdown({ text, }: { readonly text: string; },): string {
   /**
-   * Fence strictly longer than any run inside the content.
+   Fence strictly longer than any run inside the content.
    */
   const fence = FENCE_CHARACTER.repeat(Math.max(
     MARKDOWN_FENCE_MIN,

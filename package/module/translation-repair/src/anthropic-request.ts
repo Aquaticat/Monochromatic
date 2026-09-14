@@ -41,33 +41,33 @@ import {
 // so a non-streaming body would be a call none of them cover.
 
 /**
- * Roles the Messages API accepts inside `messages`.
+ Roles the Messages API accepts inside `messages`.
  */
 type SpeakingRole = 'user' | 'assistant';
 
 /**
- * Refusal raised when the messages cannot form a Messages API conversation.
- *
- * @example
- * ```ts
- * throw new EmptyConversationError({ detail: 'no message outside the system prompt', },);
- * ```
+ Refusal raised when the messages cannot form a Messages API conversation.
+ 
+ @example
+ ```ts
+ throw new EmptyConversationError({ detail: 'no message outside the system prompt', },);
+ ```
  */
 export class EmptyConversationError extends Error {
   /**
-   * Declares this message safe to forward: it names which structural rule the request broke, never a message's content.
+   Declares this message safe to forward: it names which structural rule the request broke, never a message's content.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds failure naming what the conversation was missing.
-   *
-   * @param detail - which requirement the message array failed
-   *
-   * @example
-   * ```ts
-   * new EmptyConversationError({ detail: 'opens on an assistant turn', },);
-   * ```
+   Builds failure naming what the conversation was missing.
+   
+   @param detail - which requirement the message array failed
+   
+   @example
+   ```ts
+   new EmptyConversationError({ detail: 'opens on an assistant turn', },);
+   ```
    */
   public constructor(
     { detail, }: { readonly detail: string; },
@@ -78,111 +78,111 @@ export class EmptyConversationError extends Error {
 }
 
 /**
- * How the model is told to choose among the tools offered.
- *
- * @example
- * ```ts
- * const choice: AnthropicToolChoice = { type: 'tool', name: 'repair', };
- * ```
+ How the model is told to choose among the tools offered.
+ 
+ @example
+ ```ts
+ const choice: AnthropicToolChoice = { type: 'tool', name: 'repair', };
+ ```
  */
 export type AnthropicToolChoice =
   | {
     /**
-     * Discriminator marking a named tool the model must call.
+     Discriminator marking a named tool the model must call.
      */
     readonly type: 'tool';
 
     /**
-     * Tool it is required to call.
+     Tool it is required to call.
      */
     readonly name: string;
   }
   | {
     /**
-     * Discriminator leaving the choice to the model.
+     Discriminator leaving the choice to the model.
      */
     readonly type: 'auto';
   };
 
 /**
- * One turn as the Messages API takes it.
- *
- * @example
- * ```ts
- * const turn: AnthropicMessage = { role: 'user', content: [{ type: 'text', text, },], };
- * ```
+ One turn as the Messages API takes it.
+ 
+ @example
+ ```ts
+ const turn: AnthropicMessage = { role: 'user', content: [{ type: 'text', text, },], };
+ ```
  */
 export type AnthropicMessage = {
   /**
-   * Who is speaking, which excludes the system role by construction.
+   Who is speaking, which excludes the system role by construction.
    */
   readonly role: SpeakingRole;
 
   /**
-   * What they said, in the order the model reads it.
+   What they said, in the order the model reads it.
    */
   readonly content: readonly AnthropicContentBlock[];
 };
 
 /**
- * Whole body of one Messages API call.
- *
- * @example
- * ```ts
- * const body: AnthropicRequestBody = buildAnthropicBody({ modelId, messages, },);
- * ```
+ Whole body of one Messages API call.
+ 
+ @example
+ ```ts
+ const body: AnthropicRequestBody = buildAnthropicBody({ modelId, messages, },);
+ ```
  */
 export type AnthropicRequestBody = {
   /**
-   * Model serving this call, as this provider spells it.
+   Model serving this call, as this provider spells it.
    */
   readonly model: HyperServedId;
 
   /**
-   * Token ceiling, required by this protocol and never above either bound.
+   Token ceiling, required by this protocol and never above either bound.
    */
   readonly max_tokens: number;
 
   /**
-   * Always on, so every stream guard covers this transport too.
+   Always on, so every stream guard covers this transport too.
    */
   readonly stream: true;
 
   /**
-   * Instruction and, where a schema was stated, the whole answer protocol.
+   Instruction and, where a schema was stated, the whole answer protocol.
    */
   readonly system: string;
 
   /**
-   * Conversation, opening on a user turn and alternating from there.
+   Conversation, opening on a user turn and alternating from there.
    */
   readonly messages: readonly AnthropicMessage[];
 
   /**
-   * Answer tool, absent where the caller stated no schema.
+   Answer tool, absent where the caller stated no schema.
    */
   readonly tools?: readonly AnthropicToolDefinition[];
 
   /**
-   * How to choose among them, absent for the same reason.
+   How to choose among them, absent for the same reason.
    */
   readonly tool_choice?: AnthropicToolChoice;
 };
 
 /**
- * Joins every system message into the one instruction this protocol takes.
- *
- * @param messages - conversation as the caller built it
- *
- * @returns Instruction text, empty where the caller sent no system message
- *
- * @throws {@link EmptyConversationError} where a system message carries
- * pictures, which the `system` field has no shape for
- *
- * @example
- * ```ts
- * const instruction = systemTextOf({ messages, },);
- * ```
+ Joins every system message into the one instruction this protocol takes.
+ 
+ @param messages - conversation as the caller built it
+ 
+ @returns Instruction text, empty where the caller sent no system message
+ 
+ @throws {@link EmptyConversationError} where a system message carries
+ pictures, which the `system` field has no shape for
+ 
+ @example
+ ```ts
+ const instruction = systemTextOf({ messages, },);
+ ```
  */
 export function systemTextOf(
   { messages, }: { readonly messages: readonly (ChatMessage | VisionMessage)[]; },
@@ -202,24 +202,24 @@ export function systemTextOf(
 }
 
 /**
- * Folds one turn into the turns before it, merging a repeated role.
- *
- * MERGING RATHER THAN REFUSING, because the OpenAI-compatible provider accepts
- * consecutive same-role messages and a caller routed to either provider must be
- * asked the same question by both.
- *
- * @param merged - turns folded so far
- *
- * @param turn - turn to fold in
- *
- * @returns Turns with this one appended or merged into the last
- *
- * @example
- * ```ts
- * const turns = converted.reduce(function fold(merged, turn,) {
- *   return foldTurn({ merged, turn, },);
- * }, [],);
- * ```
+ Folds one turn into the turns before it, merging a repeated role.
+ 
+ MERGING RATHER THAN REFUSING, because the OpenAI-compatible provider accepts
+ consecutive same-role messages and a caller routed to either provider must be
+ asked the same question by both.
+ 
+ @param merged - turns folded so far
+ 
+ @param turn - turn to fold in
+ 
+ @returns Turns with this one appended or merged into the last
+ 
+ @example
+ ```ts
+ const turns = converted.reduce(function fold(merged, turn,) {
+   return foldTurn({ merged, turn, },);
+ }, [],);
+ ```
  */
 function foldTurn(
   {
@@ -231,7 +231,7 @@ function foldTurn(
   },
 ): readonly AnthropicMessage[] {
   /**
-   * Turn this one may belong to.
+   Turn this one may belong to.
    */
   const previous = merged.at(-1,);
 
@@ -257,25 +257,25 @@ function foldTurn(
 }
 
 /**
- * Conversation the Messages API takes, system messages already lifted out.
- *
- * @param messages - conversation as the caller built it
- *
- * @returns Turns, opening on a user turn and alternating from there
- *
- * @throws {@link EmptyConversationError} where nothing is left outside the
- * system prompt, or the conversation opens on an assistant turn
- *
- * @example
- * ```ts
- * const turns = speakingTurns({ messages, },);
- * ```
+ Conversation the Messages API takes, system messages already lifted out.
+ 
+ @param messages - conversation as the caller built it
+ 
+ @returns Turns, opening on a user turn and alternating from there
+ 
+ @throws {@link EmptyConversationError} where nothing is left outside the
+ system prompt, or the conversation opens on an assistant turn
+ 
+ @example
+ ```ts
+ const turns = speakingTurns({ messages, },);
+ ```
  */
 export function speakingTurns(
   { messages, }: { readonly messages: readonly (ChatMessage | VisionMessage)[]; },
 ): readonly AnthropicMessage[] {
   /**
-   * Every turn that is not the system prompt, converted and merged.
+   Every turn that is not the system prompt, converted and merged.
    */
   const turns = messages
     // FLAT-MAPPED RATHER THAN FILTERED so the surviving role narrows to a
@@ -306,7 +306,7 @@ export function speakingTurns(
     );
 
   /**
-   * Turn the conversation opens on, which this protocol requires to be a user.
+   Turn the conversation opens on, which this protocol requires to be a user.
    */
   const [opening,] = turns;
 
@@ -324,16 +324,16 @@ export function speakingTurns(
 }
 
 /**
- * Forces current model to call answer tool.
- *
- * @param name - answer tool model must call
- *
- * @returns Forced tool choice
- *
- * @example
- * ```ts
- * const choice = toolChoiceFor({ name, },);
- * ```
+ Forces current model to call answer tool.
+ 
+ @param name - answer tool model must call
+ 
+ @returns Forced tool choice
+ 
+ @example
+ ```ts
+ const choice = toolChoiceFor({ name, },);
+ ```
  */
 function toolChoiceFor(
   { name, }: { readonly name: string; },
@@ -345,23 +345,23 @@ function toolChoiceFor(
 }
 
 /**
- * Tool fields of the body, for a call that stated a schema.
- *
- * BUILDS THE TOOL ONCE and names it in both fields, so `tool_choice` cannot
- * force a tool spelled differently from the one offered.
- *
- * TAKES A SCHEMA RATHER THAN AN ABSENCE. Whether a call has one is decided by
- * the caller that also decides the system field, and threading the absence
- * through here would put that decision in two places.
- *
- * @param responseFormat - structured-output constraint caller stated
- *
- * @returns Both tool fields
- *
- * @example
- * ```ts
- * const fields = toolFieldsFor({ responseFormat, },);
- * ```
+ Tool fields of the body, for a call that stated a schema.
+ 
+ BUILDS THE TOOL ONCE and names it in both fields, so `tool_choice` cannot
+ force a tool spelled differently from the one offered.
+ 
+ TAKES A SCHEMA RATHER THAN AN ABSENCE. Whether a call has one is decided by
+ the caller that also decides the system field, and threading the absence
+ through here would put that decision in two places.
+ 
+ @param responseFormat - structured-output constraint caller stated
+ 
+ @returns Both tool fields
+ 
+ @example
+ ```ts
+ const fields = toolFieldsFor({ responseFormat, },);
+ ```
  */
 function toolFieldsFor(
   { responseFormat, }: { readonly responseFormat: ReadableResponseFormat; },
@@ -370,7 +370,7 @@ function toolFieldsFor(
   readonly tool_choice: AnthropicToolChoice;
 } {
   /**
-   * Answer tool, whose name both fields carry.
+   Answer tool, whose name both fields carry.
    */
   const tool = answerToolDefinition({ responseFormat, },);
 
@@ -381,37 +381,37 @@ function toolFieldsFor(
 }
 
 /**
- * Assembles the whole body of one Messages API call.
- *
- * @param modelId - model serving this call
- *
- * @param messages - conversation as the caller built it, system message included
- *
- * @param responseFormat - structured-output constraint, omitted for free text
- *
- * @param maxTokens - caller's own ceiling, which only ever lowers the ask
- *
- * @returns Body to serialise
- *
- * @throws {@link EmptyConversationError} where the messages cannot form a
- * conversation
- *
- * @example
- * ```ts
- * const body = buildAnthropicBody({ modelId, messages, responseFormat, },);
- * ```
- *
- * @remarks
- * NO THINKING PARAMETER AND NO TOKEN BUDGET, EVER. The owner's standing
- * instruction, 2026-08-25: "Please don't set any thinking parameter or budget
- * tokens... These providers and models have known issues with non-default
- * thinking or budget tokens and we'd rather not step on the mines."
- *
- * That covers `reasoning_effort` on the OpenAI-shaped side, which is the same
- * lever under the name that provider documents it by. Recorded at the build
- * site rather than only in a document, because this is where someone would add
- * one. `doc/audit/where-a-round-spends-its-wall-clock.md` carries the
- * measurements that led here and the levers that stay open.
+ Assembles the whole body of one Messages API call.
+ 
+ @param modelId - model serving this call
+ 
+ @param messages - conversation as the caller built it, system message included
+ 
+ @param responseFormat - structured-output constraint, omitted for free text
+ 
+ @param maxTokens - caller's own ceiling, which only ever lowers the ask
+ 
+ @returns Body to serialise
+ 
+ @throws {@link EmptyConversationError} where the messages cannot form a
+ conversation
+ 
+ @example
+ ```ts
+ const body = buildAnthropicBody({ modelId, messages, responseFormat, },);
+ ```
+ 
+ @remarks
+ NO THINKING PARAMETER AND NO TOKEN BUDGET, EVER. The owner's standing
+ instruction, 2026-08-25: "Please don't set any thinking parameter or budget
+ tokens... These providers and models have known issues with non-default
+ thinking or budget tokens and we'd rather not step on the mines."
+ 
+ That covers `reasoning_effort` on the OpenAI-shaped side, which is the same
+ lever under the name that provider documents it by. Recorded at the build
+ site rather than only in a document, because this is where someone would add
+ one. `doc/audit/where-a-round-spends-its-wall-clock.md` carries the
+ measurements that led here and the levers that stay open.
  */
 export function buildAnthropicBody(
   {
@@ -427,12 +427,12 @@ export function buildAnthropicBody(
   },
 ): AnthropicRequestBody {
   /**
-   * Per-model ceiling the owner decided on, lowered by the caller's own.
+   Per-model ceiling the owner decided on, lowered by the caller's own.
    */
   const ceiling = answerCeilingFor({ modelId, },);
 
   /**
-   * Every system message, joined into the one field this protocol takes.
+   Every system message, joined into the one field this protocol takes.
    */
   const instruction = systemTextOf({ messages, },);
 

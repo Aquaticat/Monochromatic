@@ -1,14 +1,14 @@
 /**
- * Tests for the gateway's size refusal, which arrives disguised as a parse
- * failure.
- *
- * THE DISCRIMINATORS ARE THE POINT. Re-raising every `400` as a size problem
- * would be worse than saying nothing, because a body we genuinely malformed
- * would then be reported as too big and whoever chased it would go looking for
- * a limit rather than for their own bug. Three cases here each break one of the
- * three signals and demand the plain failure back.
- *
- * @module
+ Tests for the gateway's size refusal, which arrives disguised as a parse
+ failure.
+ 
+ THE DISCRIMINATORS ARE THE POINT. Re-raising every `400` as a size problem
+ would be worse than saying nothing, because a body we genuinely malformed
+ would then be reported as too big and whoever chased it would go looking for
+ a limit rather than for their own bug. Three cases here each break one of the
+ three signals and demand the plain failure back.
+ 
+ @module
  */
 
 import {
@@ -24,16 +24,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Largest body measured to pass, mirrored from the module under test.
- *
- * SPELLED OUT RATHER THAN IMPORTED, deliberately. The module keeps this
- * private, and a test that read the same constant it asserts against would
- * agree with any value the module happened to hold, including a wrong one.
+ Largest body measured to pass, mirrored from the module under test.
+ 
+ SPELLED OUT RATHER THAN IMPORTED, deliberately. The module keeps this
+ private, and a test that read the same constant it asserts against would
+ agree with any value the module happened to hold, including a wrong one.
  */
 const PASSING_BODY_BYTES = 10_485_760;
 
 /**
- * What the gateway says when a body exceeds its cap, offset and all.
+ What the gateway says when a body exceeds its cap, offset and all.
  */
 const PARSE_FAILURE = 'Could not parse request as valid JSON. Unterminated string in JSON at position 10444203';
 
@@ -47,7 +47,7 @@ await describe({
         + 'not there',
       fn: async () => {
         /**
-         * Failure built for a body over the passing size.
+         Failure built for a body over the passing size.
          */
         const failure = failureForReply({
           status: 400,
@@ -70,7 +70,7 @@ await describe({
         + 'defect, which is the exact confusion this module was built to end',
       fn: async () => {
         /**
-         * Failure built for a small body the gateway could not parse.
+         Failure built for a small body the gateway could not parse.
          */
         const failure = failureForReply({
           status: 400,
@@ -89,7 +89,7 @@ await describe({
         + 'Size is only the explanation when the gateway offers the explanation it offers for size',
       fn: async () => {
         /**
-         * Failure built for a large body rejected on its content.
+         Failure built for a large body rejected on its content.
          */
         const failure = failureForReply({
           status: 400,
@@ -108,7 +108,7 @@ await describe({
         + 'nothing here may quietly change what it sees',
       fn: async () => {
         /**
-         * Failure built for a throttle on a large body.
+         Failure built for a throttle on a large body.
          */
         const failure = failureForReply({
           status: 429,
@@ -129,7 +129,7 @@ await describe({
         + 'may not repeat (`#244`)',
       fn: async () => {
         /**
-         * Message composed for a body 699575 bytes past the passing size.
+         Message composed for a body 699575 bytes past the passing size.
          */
         const { message, } = failureForReply({
           status: 400,
@@ -152,7 +152,7 @@ await describe({
         + 'gateway that repeats request bytes cannot put corpus text on a CLI line (`#244`)',
       fn: async () => {
         /**
-         * Refusal built from a gateway body that echoes something of ours.
+         Refusal built from a gateway body that echoes something of ours.
          */
         const failure = failureForReply({
           status: 400,

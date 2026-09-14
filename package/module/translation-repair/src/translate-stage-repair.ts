@@ -23,7 +23,7 @@ import type { TranslateFollowupEvidence, } from './translate-wire.ts';
 // rather than a thrown entry.
 
 /**
- * Everything one produce-and-judge round needs, shared by both rounds.
+ Everything one produce-and-judge round needs, shared by both rounds.
  */
 type TranslateRoundInput = ForeignBorrowed<{
   readonly client: SyntheticClient;
@@ -45,20 +45,20 @@ type TranslateRoundInput = ForeignBorrowed<{
 }>;
 
 /**
- * Produces one slate and judges it, optionally under rejection evidence.
- *
- * @param input - round configuration shared by both fixed rounds
- *
- * @param followupEvidence - located rejection evidence, absent on the initial round
- *
- * @returns Settled text and evidence
- *
- * @throws {@link TranslateAbsenceError} when judging leaves an absent passage unwritten
- *
- * @example
- * ```ts
- * const result = await produceAndJudgeOnce({ input, },);
- * ```
+ Produces one slate and judges it, optionally under rejection evidence.
+ 
+ @param input - round configuration shared by both fixed rounds
+ 
+ @param followupEvidence - located rejection evidence, absent on the initial round
+ 
+ @returns Settled text and evidence
+ 
+ @throws {@link TranslateAbsenceError} when judging leaves an absent passage unwritten
+ 
+ @example
+ ```ts
+ const result = await produceAndJudgeOnce({ input, },);
+ ```
  */
 async function produceAndJudgeOnce(
   {
@@ -76,7 +76,7 @@ async function produceAndJudgeOnce(
   readonly candidateTexts: readonly string[];
 }> {
   /**
-   * Slate produced initially or from the located rejection evidence.
+   Slate produced initially or from the located rejection evidence.
    */
   const produced = await produceTranslateSlate({
     client: input.client,
@@ -95,7 +95,7 @@ async function produceAndJudgeOnce(
     l: input.l,
   },);
   /**
-   * Rejected candidate texts in deterministic slate order, for evidence.
+   Rejected candidate texts in deterministic slate order, for evidence.
    */
   const candidateTexts = produced
     .candidates
@@ -153,43 +153,43 @@ async function produceAndJudgeOnce(
 }
 
 /**
- * Produces and judges an absent passage at fixed depth two.
- *
- * The follow-up round carries the judges' located rejection evidence,
- * the form the redesign measured as the one safe re-ask shape;
- * a second rejection rethrows so the slice settles unfilled,
- * never as a thrown entry.
- *
- * @param client - injected model client
- *
- * @param translatorModelIds - models rendering each task independently
- *
- * @param judgeModelIds - models judging each produced slate
- *
- * @param sourceText - original passage to render
- *
- * @param incumbentText - existing translation, blank for absent passage
- *
- * @param incumbentKind - whether fallback text exists and passes deterministic source floor
- *
- * @param incumbentEligible - whether existing text may appear on candidate slate
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Settled text and evidence
- *
- * @throws {@link TranslateAbsenceError} when both fixed rounds leave the passage unwritten
- *
- * @throws {@link TranslationRepairInterruptedError} when no judging voice was heard
- *
- * @example
- * ```ts
- * const result = await runTranslateRepairs({ ...inputs, });
- * ```
+ Produces and judges an absent passage at fixed depth two.
+ 
+ The follow-up round carries the judges' located rejection evidence,
+ the form the redesign measured as the one safe re-ask shape;
+ a second rejection rethrows so the slice settles unfilled,
+ never as a thrown entry.
+ 
+ @param client - injected model client
+ 
+ @param translatorModelIds - models rendering each task independently
+ 
+ @param judgeModelIds - models judging each produced slate
+ 
+ @param sourceText - original passage to render
+ 
+ @param incumbentText - existing translation, blank for absent passage
+ 
+ @param incumbentKind - whether fallback text exists and passes deterministic source floor
+ 
+ @param incumbentEligible - whether existing text may appear on candidate slate
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - pipeline logger
+ 
+ @returns Settled text and evidence
+ 
+ @throws {@link TranslateAbsenceError} when both fixed rounds leave the passage unwritten
+ 
+ @throws {@link TranslationRepairInterruptedError} when no judging voice was heard
+ 
+ @example
+ ```ts
+ const result = await runTranslateRepairs({ ...inputs, });
+ ```
  */
 export async function runTranslateRepairs(
   {
@@ -229,7 +229,7 @@ export async function runTranslateRepairs(
   }>,
 ): Promise<TranslateStageResult> {
   /**
-   * Round configuration shared by the initial and follow-up rounds.
+   Round configuration shared by the initial and follow-up rounds.
    */
   const input: TranslateRoundInput = {
     client,
@@ -250,7 +250,7 @@ export async function runTranslateRepairs(
     l,
   };
   /**
-   * Initial round with no rejection evidence.
+   Initial round with no rejection evidence.
    */
   const first = await produceAndJudgeOnce({ input, },);
   if ('result' in first)
@@ -262,7 +262,7 @@ export async function runTranslateRepairs(
         .length,)} rejected candidates`,
   );
   /**
-   * Single follow-up round carrying the located rejection evidence.
+   Single follow-up round carrying the located rejection evidence.
    */
   const second = await produceAndJudgeOnce({
     input,

@@ -12,27 +12,27 @@ import { isJsonRecord, } from './json-guard.ts';
 // it cannot fill.
 
 /**
- * Prefix marking a line that carries an event payload.
+ Prefix marking a line that carries an event payload.
  */
 const DATA_PREFIX = 'data:';
 
 /**
- * Every chunk of one drained stream that parses as a JSON object, in arrival
- * order.
- *
- * NOTHING HERE THROWS: a chunk that does not parse was already refused or
- * accepted by the completion reader, and this scan reports nothing about it.
- * The `[DONE]` sentinel, blank keep-alives and comment lines carry no JSON and
- * are skipped by the opening-brace check.
- *
- * @param bodyText - whole drained `text/event-stream` body
- *
- * @returns Parsed chunks that are objects
- *
- * @example
- * ```ts
- * const chunks = openRouterChunksOf({ bodyText: reply.bodyText, },);
- * ```
+ Every chunk of one drained stream that parses as a JSON object, in arrival
+ order.
+ 
+ NOTHING HERE THROWS: a chunk that does not parse was already refused or
+ accepted by the completion reader, and this scan reports nothing about it.
+ The `[DONE]` sentinel, blank keep-alives and comment lines carry no JSON and
+ are skipped by the opening-brace check.
+ 
+ @param bodyText - whole drained `text/event-stream` body
+ 
+ @returns Parsed chunks that are objects
+ 
+ @example
+ ```ts
+ const chunks = openRouterChunksOf({ bodyText: reply.bodyText, },);
+ ```
  */
 export function openRouterChunksOf(
   { bodyText, }: { readonly bodyText: string; },
@@ -41,13 +41,13 @@ export function openRouterChunksOf(
     .split('\n',)
     .flatMap(function chunkOf(rawLine,): readonly Readonly<Record<string, unknown>>[] {
       /**
-       * Line without surrounding whitespace and carriage returns.
+       Line without surrounding whitespace and carriage returns.
        */
       const line = rawLine.trim();
       if (!line.startsWith(DATA_PREFIX,))
         return [];
       /**
-       * Payload after the prefix; the sentinel and blanks carry no JSON.
+       Payload after the prefix; the sentinel and blanks carry no JSON.
        */
       const payload = line
         .slice(DATA_PREFIX.length,)
@@ -55,7 +55,7 @@ export function openRouterChunksOf(
       if (!payload.startsWith('{',))
         return [];
       /**
-       * Parsed chunk, or nothing when the payload does not parse.
+       Parsed chunk, or nothing when the payload does not parse.
        */
       const chunk: unknown = (function parseChunk(): unknown {
         try {

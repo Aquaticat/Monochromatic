@@ -60,12 +60,12 @@ import { NaturalnessCompletenessError, } from './naturalness-completeness-error.
 // memoized, so its twin asks again exactly as a warm run would.
 
 /**
- * Fresh consolidation beside whether it became warm-run evidence.
- *
- * @example
- * ```ts
- * const bought: BoughtConsolidation = { settlement, persisted: true, };
- * ```
+ Fresh consolidation beside whether it became warm-run evidence.
+ 
+ @example
+ ```ts
+ const bought: BoughtConsolidation = { settlement, persisted: true, };
+ ```
  */
 type BoughtConsolidation = {
   readonly settlement: ConsolidationSettlement;
@@ -73,16 +73,16 @@ type BoughtConsolidation = {
 };
 
 /**
- * Reads cache-eligible record from fresh consolidation.
- *
- * @param bought - fresh result beside persistence status
- *
- * @returns Record a twin may reuse, or deliberate nothing
- *
- * @example
- * ```ts
- * const stored = storedConsolidationOf({ settlement, persisted: true, },);
- * ```
+ Reads cache-eligible record from fresh consolidation.
+ 
+ @param bought - fresh result beside persistence status
+ 
+ @returns Record a twin may reuse, or deliberate nothing
+ 
+ @example
+ ```ts
+ const stored = storedConsolidationOf({ settlement, persisted: true, },);
+ ```
  */
 function storedConsolidationOf(
   bought: BoughtConsolidation,
@@ -96,23 +96,23 @@ function storedConsolidationOf(
 }
 
 /**
- * Reads which lane the contest backed out of the verdict it recorded.
- *
- * BOTH WAYS OF NOT SETTLING READ AS `neither`, deliberately. The record keeps
- * `settled-neither` apart from `quorum-not-met` because they are different
- * facts about the run, but this function asks which LANE stood. Neither did.
- * `standingTextFor` then uses archive as comparison baseline so consolidation
- * can recover, while final-selection guard prevents that unendorsed baseline
- * from becoming publication fallback.
- *
- * @param verdict - what the contest recorded for this slice
- *
- * @returns Lane the contest backed, or the refusal
- *
- * @example
- * ```ts
- * const choice = laneChoiceOf({ verdict, },);
- * ```
+ Reads which lane the contest backed out of the verdict it recorded.
+ 
+ BOTH WAYS OF NOT SETTLING READ AS `neither`, deliberately. The record keeps
+ `settled-neither` apart from `quorum-not-met` because they are different
+ facts about the run, but this function asks which LANE stood. Neither did.
+ `standingTextFor` then uses archive as comparison baseline so consolidation
+ can recover, while final-selection guard prevents that unendorsed baseline
+ from becoming publication fallback.
+ 
+ @param verdict - what the contest recorded for this slice
+ 
+ @returns Lane the contest backed, or the refusal
+ 
+ @example
+ ```ts
+ const choice = laneChoiceOf({ verdict, },);
+ ```
  */
 function laneChoiceOf(
   { verdict, }: { readonly verdict: ArtifactContestVerdict; },
@@ -123,58 +123,58 @@ function laneChoiceOf(
 }
 
 /**
- * Asks the roster for a third rendering at every slice the contest was asked
- * about, settled or not; a slice the contest left with no standing text is
- * settled as `no-standing-text` without a producer being asked.
- *
- * @param client - synthetic chat client
- *
- * @param projected - both ledgers as version 2 rows, beside their comparison
- *
- * @param contests - one record per contested slice, as the contest wrote them
- * for the artifact
- *
- * @param modelIds - roster to ask for consolidations
- *
- * @param judgeModelIds - roster that judges each slate and gates its winner;
- * `modelIds` when not given
- *
- * @param identityContext - names and handles both documents declare
- *
- * @param polishConfig - final body naturalness roles and document guard facts
- *
- * @param frontMatterSlices - syntax-bearing metadata slice indexes
- *
- * @param lineStructuredSlices - chunk indices whose original is verse or
- * otherwise line-structured, which decides whether a producer is shown the rule
- * against merging lines
- *
- * @param pictureContextBySlice - what the pictures near each slice were read to
- * say, keyed by chunk index and already windowed by the caller, since the window
- * is positional in the prepared slices and this driver holds none of them
- *
- * @param neighbourContextBySlice - passages either side of each slice, keyed the
- * same way and computed by the same caller for the same reason
- *
- * @param cache - per-entry store of settlements already bought
- *
- * @param signal - abort shared with the rest of the entry
- *
- * @param perCallTimeoutMs - per-call ceiling
- *
- * @param overlap - most contested slices in flight; one reproduces former loop
- *
- * @param l - logger to tag
- *
- * @returns One record per consolidated slice, in comparison-row order
- *
- * @throws Error - when a contested slice has no row in the repair ledger, which
- * means the comparison and the ledger disagree about which slices exist
- *
- * @example
- * ```ts
- * const slices = await consolidateDocument({ client, projected, contests, modelIds, frontMatterSlices, lineStructuredSlices, pictureContextBySlice, neighbourContextBySlice, cache, signal, perCallTimeoutMs, l, },);
- * ```
+ Asks the roster for a third rendering at every slice the contest was asked
+ about, settled or not; a slice the contest left with no standing text is
+ settled as `no-standing-text` without a producer being asked.
+ 
+ @param client - synthetic chat client
+ 
+ @param projected - both ledgers as version 2 rows, beside their comparison
+ 
+ @param contests - one record per contested slice, as the contest wrote them
+ for the artifact
+ 
+ @param modelIds - roster to ask for consolidations
+ 
+ @param judgeModelIds - roster that judges each slate and gates its winner;
+ `modelIds` when not given
+ 
+ @param identityContext - names and handles both documents declare
+ 
+ @param polishConfig - final body naturalness roles and document guard facts
+ 
+ @param frontMatterSlices - syntax-bearing metadata slice indexes
+ 
+ @param lineStructuredSlices - chunk indices whose original is verse or
+ otherwise line-structured, which decides whether a producer is shown the rule
+ against merging lines
+ 
+ @param pictureContextBySlice - what the pictures near each slice were read to
+ say, keyed by chunk index and already windowed by the caller, since the window
+ is positional in the prepared slices and this driver holds none of them
+ 
+ @param neighbourContextBySlice - passages either side of each slice, keyed the
+ same way and computed by the same caller for the same reason
+ 
+ @param cache - per-entry store of settlements already bought
+ 
+ @param signal - abort shared with the rest of the entry
+ 
+ @param perCallTimeoutMs - per-call ceiling
+ 
+ @param overlap - most contested slices in flight; one reproduces former loop
+ 
+ @param l - logger to tag
+ 
+ @returns One record per consolidated slice, in comparison-row order
+ 
+ @throws Error - when a contested slice has no row in the repair ledger, which
+ means the comparison and the ledger disagree about which slices exist
+ 
+ @example
+ ```ts
+ const slices = await consolidateDocument({ client, projected, contests, modelIds, frontMatterSlices, lineStructuredSlices, pictureContextBySlice, neighbourContextBySlice, cache, signal, perCallTimeoutMs, l, },);
+ ```
  */
 export async function consolidateDocument(
   {
@@ -213,15 +213,15 @@ export async function consolidateDocument(
     readonly overlap?: number;
 
     /**
-     * Awaited before each slice starts, so a caller can hold the slice back
-     * while a named provider hold keeps the bench from quorum.
+     Awaited before each slice starts, so a caller can hold the slice back
+     while a named provider hold keeps the bench from quorum.
      */
     readonly beforeSlice?: () => Promise<void>;
     readonly l: Logger;
   },
 ): Promise<readonly ArtifactConsolidateSlice[]> {
   /**
-   * Logger naming this driver.
+   Logger naming this driver.
    */
   const dl = tagged({
     l,
@@ -229,7 +229,7 @@ export async function consolidateDocument(
   },);
 
   /**
-   * Original of each slice, which only the repair ledger carries.
+   Original of each slice, which only the repair ledger carries.
    */
   const sourceTexts = new Map(projected.delivery
     .repair
@@ -244,7 +244,7 @@ export async function consolidateDocument(
     },),);
 
   /**
-   * Contest record for each slice it answered.
+   Contest record for each slice it answered.
    */
   const contestBySlice = new Map(contests.map(function nameSlice(slice,): readonly [
     number,
@@ -257,7 +257,7 @@ export async function consolidateDocument(
   },),);
 
   /**
-   * What this run asks, folded into every key.
+   What this run asks, folded into every key.
    */
   const runShape = consolidateRunShape({
     modelIds,
@@ -266,12 +266,12 @@ export async function consolidateDocument(
   },);
 
   /**
-   * Comparison rows beside contests that selected them, in document order.
+   Comparison rows beside contests that selected them, in document order.
    */
   const eligibleRows = projected.comparison
     .flatMap(function withContest(row,) {
       /**
-       * What the contest settled here, absent where it never ran.
+       What the contest settled here, absent where it never ran.
        */
       const contest = contestBySlice.get(row.sliceIndex,);
       return (contest === undefined)
@@ -283,7 +283,7 @@ export async function consolidateDocument(
     },);
 
   /**
-   * Cache-eligible purchases in this document, shared by identical questions.
+   Cache-eligible purchases in this document, shared by identical questions.
    */
   const twins: TwinMemo<ConsolidationSettlement> = new Map();
 
@@ -300,14 +300,14 @@ export async function consolidateDocument(
     if (beforeSlice !== undefined)
       await beforeSlice();
     /**
-     * Original of this slice, which every ledger row carries.
+     Original of this slice, which every ledger row carries.
      */
     const sourceText = sourceTexts.get(row.sliceIndex,);
     if (sourceText === undefined)
       throw new ConsolidationLedgerGapError({ sliceIndex: row.sliceIndex, },);
 
     /**
-     * Wall-time bracket making this slice visible before and after settlement.
+     Wall-time bracket making this slice visible before and after settlement.
      */
     using cost = armSliceCost({
       l: dl,
@@ -319,12 +319,12 @@ export async function consolidateDocument(
     cost.left({ exit: 'failed', },);
 
     /**
-     * Lane contest selected, or refusal of both.
+     Lane contest selected, or refusal of both.
      */
     const choice = laneChoiceOf({ verdict: contest.verdict, },);
     /**
-     * Wording the contest left standing, which ships without this stage
-     * where the gate passes it.
+     Wording the contest left standing, which ships without this stage
+     where the gate passes it.
      */
     const laneStanding = standingTextFor({
       choice,
@@ -333,26 +333,26 @@ export async function consolidateDocument(
       incumbentText: row.incumbentText,
     },);
     /**
-     * Whether the line-structure rule governs this slice.
-     *
-     * READ ONCE, because four places below need this same answer: the sheet
-     * the producers are shown, the guard that reads their proposals, the key
-     * the settlement resumes under, and the wrap. Asking the set four times
-     * is how four answers drift into three.
+     Whether the line-structure rule governs this slice.
+     
+     READ ONCE, because four places below need this same answer: the sheet
+     the producers are shown, the guard that reads their proposals, the key
+     the settlement resumes under, and the wrap. Asking the set four times
+     is how four answers drift into three.
      */
     const lineStructured = lineStructuredSlices.has(row.sliceIndex,);
     /**
-     * Syntax role shared by every consolidation phase and cache key.
+     Syntax role shared by every consolidation phase and cache key.
      */
     const syntax = frontMatterSlices.has(row.sliceIndex,)
       ? 'front-matter' as const
       : undefined;
 
     /**
-     * Deterministic eligibility and contest endorsement of the standing text,
-     * and the wording the settlement runs against: the lane's standing, or
-     * the incumbent where the standing failed the gate and the incumbent
-     * passes it (owner, 2026-09-09).
+     Deterministic eligibility and contest endorsement of the standing text,
+     and the wording the settlement runs against: the lane's standing, or
+     the incumbent where the standing failed the gate and the incumbent
+     passes it (owner, 2026-09-09).
      */
     const {
       standingValid,
@@ -373,21 +373,21 @@ export async function consolidateDocument(
     },);
 
     /**
-     * What the pictures near this slice were read to say, empty where none
-     * were.
-     *
-     * MISSING AND EMPTY ARE ONE STATE, folded here on purpose. A slice near no
-     * readable picture gets an empty block from the windowing, and a slice the
-     * map never mentions is a slice in exactly that position, so distinguishing
-     * them would only let the sheet and the key disagree about which spelling
-     * the caller happened to use.
+     What the pictures near this slice were read to say, empty where none
+     were.
+     
+     MISSING AND EMPTY ARE ONE STATE, folded here on purpose. A slice near no
+     readable picture gets an empty block from the windowing, and a slice the
+     map never mentions is a slice in exactly that position, so distinguishing
+     them would only let the sheet and the key disagree about which spelling
+     the caller happened to use.
      */
     const pictureContext = pictureContextBySlice.get(row.sliceIndex,) ?? '';
 
     /**
-     * Passages either side of this slice, folded the same way and for the same
-     * reason: a lone slice has an empty window and a slice the map never
-     * mentions is a slice in exactly that position.
+     Passages either side of this slice, folded the same way and for the same
+     reason: a lone slice has an empty window and a slice the map never
+     mentions is a slice in exactly that position.
      */
     const neighbours = neighbourContextBySlice.get(row.sliceIndex,)
       ?? {
@@ -396,7 +396,7 @@ export async function consolidateDocument(
       };
 
     /**
-     * Slice as both halves take it.
+     Slice as both halves take it.
      */
     const subject = {
       sourceText,
@@ -422,7 +422,7 @@ export async function consolidateDocument(
     };
 
     /**
-     * Key this settlement resumes under.
+     Key this settlement resumes under.
      */
     const key = consolidateSliceKey({
       runShape,
@@ -440,14 +440,14 @@ export async function consolidateDocument(
     },);
 
     /**
-     * A settlement an earlier run already bought for this slice, if any.
+     A settlement an earlier run already bought for this slice, if any.
      */
     const resumed = cache
       .resumed
       .get(key,);
 
     /**
-     * What the roster settled here, bought, resumed, or reused from a twin.
+     What the roster settled here, bought, resumed, or reused from a twin.
      */
     const acquired = await (async function resumeOrBuy(): Promise<{
       readonly settlement: ConsolidationSettlement;
@@ -461,14 +461,14 @@ export async function consolidateDocument(
       }
 
       /**
-       * Twin's persisted settlement or this row's fresh purchase.
+       Twin's persisted settlement or this row's fresh purchase.
        */
       const asked = await reuseTwinOrBuy({
         key,
         memo: twins,
         buy: async function buyThisRow(): Promise<BoughtConsolidation> {
           /**
-           * Settlement bought for this question.
+           Settlement bought for this question.
            */
           const bought = await buyConsolidationSlice({
             client,
@@ -488,7 +488,7 @@ export async function consolidateDocument(
           },);
 
           /**
-           * Whether purchase became reusable evidence.
+           Whether purchase became reusable evidence.
            */
           const persisted = await persistConsolidationSettlement({
             key,
@@ -512,7 +512,7 @@ export async function consolidateDocument(
         };
       }
       /**
-       * Fresh settlement unwrapped after memo accounting.
+       Fresh settlement unwrapped after memo accounting.
        */
       const { settlement, } = asked.bought;
       return {
@@ -521,11 +521,11 @@ export async function consolidateDocument(
       };
     })();
     /**
-     * Final polish decision before artifact projection.
+     Final polish decision before artifact projection.
      */
     const { settlement, } = acquired;
     /**
-     * Final polish state deciding whether any exact text may leave stage.
+     Final polish state deciding whether any exact text may leave stage.
      */
     const { polish, } = settlement;
     if (polish?.kind === 'unsettled') {

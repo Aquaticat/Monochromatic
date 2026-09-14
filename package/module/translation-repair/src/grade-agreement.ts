@@ -23,92 +23,92 @@ import { StatedRefusalError, } from './stated-refusal.ts';
 // agent influenced would certify the agent on its own suggestion.
 
 /**
- * How a pre-grade compared against the human's grades.
- *
- * @example
- * ```ts
- * const tally: AgreementTally = {
- *   compared: 48, agreed: 44, disagreed: [3, 17,], unscored: [10, 12,],
- * };
- * ```
+ How a pre-grade compared against the human's grades.
+ 
+ @example
+ ```ts
+ const tally: AgreementTally = {
+   compared: 48, agreed: 44, disagreed: [3, 17,], unscored: [10, 12,],
+ };
+ ```
  */
 export type AgreementTally = {
   /**
-   * Items the human scored, which is the agreement denominator.
+   Items the human scored, which is the agreement denominator.
    */
   readonly compared: number;
 
   /**
-   * Items where the pre-grade matched.
+   Items where the pre-grade matched.
    */
   readonly agreed: number;
 
   /**
-   * Sheet positions where the two disagreed, in order. Named rather than
-   * counted, because every disagreement is a calibration case worth reading.
+   Sheet positions where the two disagreed, in order. Named rather than
+   counted, because every disagreement is a calibration case worth reading.
    */
   readonly disagreed: readonly number[];
 
   /**
-   * Sheet positions the human declined to score, excluded from the denominator
-   * and reported so their number is never invisible.
+   Sheet positions the human declined to score, excluded from the denominator
+   and reported so their number is never invisible.
    */
   readonly unscored: readonly number[];
 };
 
 /**
- * Precision over the items a human actually scored.
- *
- * @example
- * ```ts
- * const precision: PrecisionTally = { scored: 48, realDefects: 39, unscored: [10,], };
- * ```
+ Precision over the items a human actually scored.
+ 
+ @example
+ ```ts
+ const precision: PrecisionTally = { scored: 48, realDefects: 39, unscored: [10,], };
+ ```
  */
 export type PrecisionTally = {
   /**
-   * Items carrying a verdict, the precision denominator.
+   Items carrying a verdict, the precision denominator.
    */
   readonly scored: number;
 
   /**
-   * Items graded a real defect, the numerator.
+   Items graded a real defect, the numerator.
    */
   readonly realDefects: number;
 
   /**
-   * Sheet positions the human declined to score.
+   Sheet positions the human declined to score.
    */
   readonly unscored: readonly number[];
 
   /**
-   * Sheet positions the human marked as the same defect as an earlier item.
-   *
-   * Reported apart from `unscored` and excluded from every denominator, on the
-   * user's decision of 2026-08-12. A duplicate is a defect already counted at
-   * another position, so counting it again measures how often the pipeline
-   * repeats itself rather than how often it is right.
+   Sheet positions the human marked as the same defect as an earlier item.
+   
+   Reported apart from `unscored` and excluded from every denominator, on the
+   user's decision of 2026-08-12. A duplicate is a defect already counted at
+   another position, so counting it again measures how often the pipeline
+   repeats itself rather than how often it is right.
    */
   readonly duplicates: readonly number[];
 
   /**
-   * Items the rates are taken over: everything drawn, less the duplicates.
+   Items the rates are taken over: everything drawn, less the duplicates.
    */
   readonly gradeable: number;
 };
 
 /**
- * Verdict meaning the grader declined to answer.
+ Verdict meaning the grader declined to answer.
  */
 const UNSCORED: GradeVerdict = 'unscored';
 
 /**
- * Verdict meaning the item repeats a defect graded at an earlier position.
+ Verdict meaning the item repeats a defect graded at an earlier position.
  */
 const DUPLICATE: GradeVerdict = 'duplicate';
 
 /**
- * Verdicts a recorded pre-grade may carry, which are exactly the verdicts a
- * sheet reader produces.
+ Verdicts a recorded pre-grade may carry, which are exactly the verdicts a
+ sheet reader produces.
  */
 const KNOWN_VERDICTS = [
   'real-defect',
@@ -117,21 +117,21 @@ const KNOWN_VERDICTS = [
 ] as const satisfies readonly GradeVerdict[];
 
 /**
- * Guards an untrusted verdict string from a recorded pre-grade file.
- *
- * A guard rather than a membership test plus an assertion: `Set.has` on a set
- * of strings proves nothing to the type system, so the assertion it forced was
- * the only thing tying the runtime check to the type, and nothing would have
- * caught the two drifting apart.
- *
- * @param value - candidate from parsed JSON
- *
- * @returns Whether value names one known verdict
- *
- * @example
- * ```ts
- * isGradeVerdict('real-defect',);
- * ```
+ Guards an untrusted verdict string from a recorded pre-grade file.
+ 
+ A guard rather than a membership test plus an assertion: `Set.has` on a set
+ of strings proves nothing to the type system, so the assertion it forced was
+ the only thing tying the runtime check to the type, and nothing would have
+ caught the two drifting apart.
+ 
+ @param value - candidate from parsed JSON
+ 
+ @returns Whether value names one known verdict
+ 
+ @example
+ ```ts
+ isGradeVerdict('real-defect',);
+ ```
  */
 function isGradeVerdict(value: unknown,): value is GradeVerdict {
   if ((typeof value) !== 'string')
@@ -141,29 +141,29 @@ function isGradeVerdict(value: unknown,): value is GradeVerdict {
 }
 
 /**
- * Parses recorded blind pre-grades.
- *
- * Strict for the same reason `artifact-read.ts` is strict: this is a
- * measurement instrument, and a pre-grade quietly dropped for being malformed
- * would shift the agreement denominator without leaving a trace. Every failure
- * names the position it happened at.
- *
- * @param text - pre-grade file contents, as JSON
- *
- * @returns Pre-graded items in file order
- *
- * @throws {@link Error} when the file is not an array of usable pre-grades
- *
- * @example
- * ```ts
- * const agent = parsePreGrades({ text: await readFile(path, 'utf8',), },);
- * ```
+ Parses recorded blind pre-grades.
+ 
+ Strict for the same reason `artifact-read.ts` is strict: this is a
+ measurement instrument, and a pre-grade quietly dropped for being malformed
+ would shift the agreement denominator without leaving a trace. Every failure
+ names the position it happened at.
+ 
+ @param text - pre-grade file contents, as JSON
+ 
+ @returns Pre-graded items in file order
+ 
+ @throws {@link Error} when the file is not an array of usable pre-grades
+ 
+ @example
+ ```ts
+ const agent = parsePreGrades({ text: await readFile(path, 'utf8',), },);
+ ```
  */
 export function parsePreGrades(
   { text, }: { readonly text: string; },
 ): readonly GradedItem[] {
   /**
-   * Raw parsed file, untyped until checked.
+   Raw parsed file, untyped until checked.
    */
   const raw: unknown = parseRunJson({
     text,
@@ -180,7 +180,7 @@ export function parsePreGrades(
       throw new StatedRefusalError({ says: `pre-grade ${String(position,)} is not an object`, },);
 
     /**
-     * Fields one recorded pre-grade carries.
+     Fields one recorded pre-grade carries.
      */
     const {
       index,
@@ -204,16 +204,16 @@ export function parsePreGrades(
 }
 
 /**
- * Sheet positions the human declined to score.
- *
- * @param human - human's graded items
- *
- * @returns Positions carrying no verdict, in sheet order
- *
- * @example
- * ```ts
- * const declined = unscoredPositions({ human, },);
- * ```
+ Sheet positions the human declined to score.
+ 
+ @param human - human's graded items
+ 
+ @returns Positions carrying no verdict, in sheet order
+ 
+ @example
+ ```ts
+ const declined = unscoredPositions({ human, },);
+ ```
  */
 function unscoredPositions(
   { human, }: { readonly human: readonly GradedItem[]; },
@@ -227,21 +227,21 @@ function unscoredPositions(
 }
 
 /**
- * Scores a blind pre-grade against the human's grades.
- *
- * @param agent - pre-grades, keyed by sheet position
- *
- * @param human - human's graded items off the same sheet
- *
- * @returns Agreement over the items the human scored
- *
- * @throws {@link StatedRefusalError} when the two sets cover different sheet positions,
- * which would silently compare one round's grades against another's
- *
- * @example
- * ```ts
- * const tally = scoreGradeAgreement({ agent, human, },);
- * ```
+ Scores a blind pre-grade against the human's grades.
+ 
+ @param agent - pre-grades, keyed by sheet position
+ 
+ @param human - human's graded items off the same sheet
+ 
+ @returns Agreement over the items the human scored
+ 
+ @throws {@link StatedRefusalError} when the two sets cover different sheet positions,
+ which would silently compare one round's grades against another's
+ 
+ @example
+ ```ts
+ const tally = scoreGradeAgreement({ agent, human, },);
+ ```
  */
 export function scoreGradeAgreement(
   {
@@ -253,7 +253,7 @@ export function scoreGradeAgreement(
   },
 ): AgreementTally {
   /**
-   * Pre-grades by sheet position.
+   Pre-grades by sheet position.
    */
   const byIndex = new Map(agent.map(function toEntry(item,) {
     return [
@@ -278,22 +278,22 @@ export function scoreGradeAgreement(
   }
 
   /**
-   * Items the human scored, which is the only population an agreement rate
-   * means anything over.
-   *
-   * Duplicates are excluded for the same reason declines are, and it is not a
-   * technicality: on a duplicate the human answered a question about the SHEET,
-   * that this defect was already graded elsewhere, while the pre-grade answered
-   * the question the item asks. Counting those as disagreements charged the
-   * agent seven wrong answers for reaching the same conclusion by another
-   * route, since its notes named the same seven as repeats.
+   Items the human scored, which is the only population an agreement rate
+   means anything over.
+   
+   Duplicates are excluded for the same reason declines are, and it is not a
+   technicality: on a duplicate the human answered a question about the SHEET,
+   that this defect was already graded elsewhere, while the pre-grade answered
+   the question the item asks. Counting those as disagreements charged the
+   agent seven wrong answers for reaching the same conclusion by another
+   route, since its notes named the same seven as repeats.
    */
   const scored = human.filter(function hasVerdict(item,) {
     return (item.verdict !== UNSCORED) && (item.verdict !== DUPLICATE);
   },);
 
   /**
-   * Positions where the pre-grade differed.
+   Positions where the pre-grade differed.
    */
   const disagreed = scored.filter(function differs(item,) {
     return byIndex.get(item.index,) !== item.verdict;
@@ -311,22 +311,22 @@ export function scoreGradeAgreement(
 }
 
 /**
- * Scores accepted-issue precision off a graded sheet.
- *
- * @param human - human's graded items
- *
- * @returns Precision counts over the items carrying a verdict
- *
- * @example
- * ```ts
- * const tally = scoreGradedPrecision({ human, },);
- * ```
+ Scores accepted-issue precision off a graded sheet.
+ 
+ @param human - human's graded items
+ 
+ @returns Precision counts over the items carrying a verdict
+ 
+ @example
+ ```ts
+ const tally = scoreGradedPrecision({ human, },);
+ ```
  */
 export function scoreGradedPrecision(
   { human, }: { readonly human: readonly GradedItem[]; },
 ): PrecisionTally {
   /**
-   * Items the rates are taken over, duplicates removed.
+   Items the rates are taken over, duplicates removed.
    */
   const gradeable = human.filter(function notDuplicate(item,) {
     return item.verdict !== DUPLICATE;

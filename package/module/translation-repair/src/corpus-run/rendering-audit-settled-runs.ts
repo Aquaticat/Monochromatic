@@ -24,31 +24,31 @@ import {
 // barrel imports stops being an entry, and the command stops running.
 
 /**
- * Reads the persisted rows of one run.
- *
- * VALIDATES ONLY WHAT THE READINGS TOUCH, and says so: a full parser for a
- * shape this module also writes would be two copies of one contract, and the
- * questions here are answered from a handful of fields.
- *
- * Exported through the barrel for the built bundle's tests; `main` and
- * `printAcross` are its callers.
- *
- * @internal
- *
- * @param path - persisted run file
- *
- * @returns Rows as the probe wrote them, the archive that run named, and the
- * roster it asked, empty for a run written before the roster was kept
- *
- * @throws {@link ArtifactParseError} when the file is not an object
- *
- * @throws {@link StatedRefusalError} when it carries no rows array, which
- * means it is not a run of this probe rather than that the run was quiet
- *
- * @example
- * ```ts
- * const { rows, archiveDir, roster, } = await readRunRows({ path, },);
- * ```
+ Reads the persisted rows of one run.
+ 
+ VALIDATES ONLY WHAT THE READINGS TOUCH, and says so: a full parser for a
+ shape this module also writes would be two copies of one contract, and the
+ questions here are answered from a handful of fields.
+ 
+ Exported through the barrel for the built bundle's tests; `main` and
+ `printAcross` are its callers.
+ 
+ @internal
+ 
+ @param path - persisted run file
+ 
+ @returns Rows as the probe wrote them, the archive that run named, and the
+ roster it asked, empty for a run written before the roster was kept
+ 
+ @throws {@link ArtifactParseError} when the file is not an object
+ 
+ @throws {@link StatedRefusalError} when it carries no rows array, which
+ means it is not a run of this probe rather than that the run was quiet
+ 
+ @example
+ ```ts
+ const { rows, archiveDir, roster, } = await readRunRows({ path, },);
+ ```
  */
 export async function readRunRows(
   { path, }: { readonly path: string; },
@@ -58,7 +58,7 @@ export async function readRunRows(
   readonly roster: readonly string[];
 }> {
   /**
-   * Run as written.
+   Run as written.
    */
   const run = requireRecord({
     value: await readRunJson({ path, },),
@@ -66,22 +66,22 @@ export async function readRunRows(
   },);
 
   /**
-   * Rows the run carries, still untyped.
+   Rows the run carries, still untyped.
    */
   const rows: unknown = run.rows;
   if (!Array.isArray(rows,))
     throw new StatedRefusalError({ says: `${path} carries no rows array`, },);
 
   /**
-   * Roster the run asked, read tolerantly: the field was persisted from the
-   * first run of this probe, but a file that lacks it is still a run whose
-   * other readings all answer, and the voice rates then say only what the
-   * rows say.
+   Roster the run asked, read tolerantly: the field was persisted from the
+   first run of this probe, but a file that lacks it is still a run whose
+   other readings all answer, and the voice rates then say only what the
+   rows say.
    */
   const recordedRoster: unknown = run.roster;
 
   /**
-   * Model ids the roster names, which is everything in it that is a string.
+   Model ids the roster names, which is everything in it that is a string.
    */
   const roster = Array.isArray(recordedRoster,)
     ? recordedRoster.filter(function isId(one: unknown,): one is string {
@@ -90,12 +90,12 @@ export async function readRunRows(
     : [];
 
   /**
-   * What that run was pointed at, in its own words.
-   *
-   * FROM THE FILE, never from this invocation's arguments. Reading an old run
-   * with `--run` would otherwise print the archive THIS command defaulted to
-   * and attribute the rows to it, which is a confident misstatement of where
-   * they came from.
+   What that run was pointed at, in its own words.
+   
+   FROM THE FILE, never from this invocation's arguments. Reading an old run
+   with `--run` would otherwise print the archive THIS command defaulted to
+   and attribute the rows to it, which is a confident misstatement of where
+   they came from.
    */
   const subject = requireRecord({
     value: run.subject,
@@ -113,31 +113,31 @@ export async function readRunRows(
 }
 
 /**
- * Finds the newest run of this probe.
- *
- * Names sort lexically by the instant they carry, so the last name is the
- * newest run without reading a single file.
- *
- * Exported through the barrel for the built bundle's tests; `main` is its
- * only caller.
- *
- * @internal
- *
- * @param runsDir - resolved runs directory
- *
- * @returns Path of the newest run
- *
- * @throws {@link StatedRefusalError} when the probe has never run, since
- * reporting nothing would look exactly like reporting a clean run
- *
- * @example
- * ```ts
- * const path = await newestRun({ runsDir, },);
- * ```
+ Finds the newest run of this probe.
+ 
+ Names sort lexically by the instant they carry, so the last name is the
+ newest run without reading a single file.
+ 
+ Exported through the barrel for the built bundle's tests; `main` is its
+ only caller.
+ 
+ @internal
+ 
+ @param runsDir - resolved runs directory
+ 
+ @returns Path of the newest run
+ 
+ @throws {@link StatedRefusalError} when the probe has never run, since
+ reporting nothing would look exactly like reporting a clean run
+ 
+ @example
+ ```ts
+ const path = await newestRun({ runsDir, },);
+ ```
  */
 export async function newestRun({ runsDir, }: { readonly runsDir: string; },): Promise<string> {
   /**
-   * Where runs of this probe collect.
+   Where runs of this probe collect.
    */
   const probeDir = join(
     runsDir,
@@ -145,7 +145,7 @@ export async function newestRun({ runsDir, }: { readonly runsDir: string; },): P
   );
 
   /**
-   * Every run kept, oldest first.
+   Every run kept, oldest first.
    */
   const kept = (await readdir(probeDir,))
     .filter(function isRun(name,): boolean {
@@ -154,7 +154,7 @@ export async function newestRun({ runsDir, }: { readonly runsDir: string; },): P
     .toSorted();
 
   /**
-   * Newest, which is the last name.
+   Newest, which is the last name.
    */
   const newest = kept.at(-1,);
   if (newest === undefined)
@@ -166,16 +166,16 @@ export async function newestRun({ runsDir, }: { readonly runsDir: string; },): P
 }
 
 /**
- * Counts slots in a phrase that reads correctly at one.
- *
- * @param count - how many slots
- *
- * @returns Phrase to open a sentence with
- *
- * @example
- * ```ts
- * console.log(`${slotsPhrase({ count: 1, },)} that cannot be checked`,);
- * ```
+ Counts slots in a phrase that reads correctly at one.
+ 
+ @param count - how many slots
+ 
+ @returns Phrase to open a sentence with
+ 
+ @example
+ ```ts
+ console.log(`${slotsPhrase({ count: 1, },)} that cannot be checked`,);
+ ```
  */
 function slotsPhrase(
   { count, }: { readonly count: number; },
@@ -186,21 +186,21 @@ function slotsPhrase(
 }
 
 /**
- * Pairs this run against an earlier one and prints the spread.
- *
- * Exported through the barrel for the built bundle's tests; `main` is its
- * only caller.
- *
- * @internal
- *
- * @param rows - rows of the run being reported
- *
- * @param against - path of the run to pair against
- *
- * @example
- * ```ts
- * await printAcross({ rows, against, },);
- * ```
+ Pairs this run against an earlier one and prints the spread.
+ 
+ Exported through the barrel for the built bundle's tests; `main` is its
+ only caller.
+ 
+ @internal
+ 
+ @param rows - rows of the run being reported
+ 
+ @param against - path of the run to pair against
+ 
+ @example
+ ```ts
+ await printAcross({ rows, against, },);
+ ```
  */
 export async function printAcross(
   {
@@ -212,12 +212,12 @@ export async function printAcross(
   },
 ): Promise<void> {
   /**
-   * Rows of the run being compared against.
+   Rows of the run being compared against.
    */
   const { rows: earlier, } = await readRunRows({ path: against, },);
 
   /**
-   * Subjects both runs bought, split three ways.
+   Subjects both runs bought, split three ways.
    */
   const {
     paired,

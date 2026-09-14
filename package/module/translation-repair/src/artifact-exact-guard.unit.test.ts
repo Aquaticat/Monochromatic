@@ -1,16 +1,16 @@
 /**
- * Tests for the two checks a versioned artifact reader needs.
- *
- * WHAT THESE PIN is the TOLERANCE BOUNDARY, which is the part of a schema
- * reader that is easy to get backwards: the fields version 2 owns refuse
- * anything they do not name, and the two fields it deliberately leaves open
- * accept what a later pipeline writes there. A reader strict everywhere refuses
- * valid artifacts as the pipeline grows; a reader tolerant everywhere accepts
- * files nobody wrote.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the two checks a versioned artifact reader needs.
+ 
+ WHAT THESE PIN is the TOLERANCE BOUNDARY, which is the part of a schema
+ reader that is easy to get backwards: the fields version 2 owns refuse
+ anything they do not name, and the two fields it deliberately leaves open
+ accept what a later pipeline writes there. A reader strict everywhere refuses
+ valid artifacts as the pipeline grows; a reader tolerant everywhere accepts
+ files nobody wrote.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -39,7 +39,7 @@ await describe({
         + 'both produce a confident answer about a file nobody wrote',
       fn: async () => {
         /**
-         * What unknownKey raised, read for its class as well as its wording.
+         What unknownKey raised, read for its class as well as its wording.
          */
         const refusalOfUnknownKeyInLane = caught(function unknownKeyInLane() {
           requireExactKeys({
@@ -59,7 +59,7 @@ await describe({
         expect(refusalOfUnknownKeyInLane,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfUnknownKeyInLane as Error).message,).toContain('lanes.repair.whiskers',);
         /**
-         * What unknownKey raised, read for its class as well as its wording.
+         What unknownKey raised, read for its class as well as its wording.
          */
         const refusalOfUnknownKeyBeyondResult = caught(function unknownKeyBeyondResult() {
           requireExactKeys({
@@ -108,7 +108,7 @@ await describe({
         + 'as a value and the writer of this field leaves an unset key out instead',
       fn: async () => {
         /**
-         * What nullAtTop raised, read for its class as well as its wording.
+         What nullAtTop raised, read for its class as well as its wording.
          */
         const refusalOfNullAtTop = caught(function nullAtTop() {
           requireArtifactJsonValue({
@@ -120,7 +120,7 @@ await describe({
         expect(refusalOfNullAtTop,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfNullAtTop as Error).message,).toContain('callConfig',);
         /**
-         * What nullInObject raised, read for its class as well as its wording.
+         What nullInObject raised, read for its class as well as its wording.
          */
         const refusalOfNullInObject = caught(function nullInObject() {
           requireArtifactJsonValue({
@@ -132,7 +132,7 @@ await describe({
         expect(refusalOfNullInObject,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfNullInObject as Error).message,).toContain('callConfig.roster.critic',);
         /**
-         * What nullInArray raised, read for its class as well as its wording.
+         What nullInArray raised, read for its class as well as its wording.
          */
         const refusalOfNullInArray = caught(function nullInArray() {
           requireArtifactJsonValue({
@@ -154,7 +154,7 @@ await describe({
         + 'only learning it was well formed',
       fn: async () => {
         /**
-         * One nested configuration with every accepted shape in it.
+         One nested configuration with every accepted shape in it.
          */
         const value = requireArtifactJsonValue({
           value: {
@@ -187,7 +187,7 @@ await describe({
         + 'live object rather than on parsed text, and is worth refusing there rather than serializing',
       fn: async () => {
         /**
-         * What undefinedHeld raised, read for its class as well as its wording.
+         What undefinedHeld raised, read for its class as well as its wording.
          */
         const refusalOfUndefinedHeld = caught(function undefinedHeld() {
           requireArtifactJsonValue({
@@ -199,7 +199,7 @@ await describe({
         expect(refusalOfUndefinedHeld,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfUndefinedHeld as Error).message,).toContain('callConfig.retries',);
         /**
-         * What functionHeld raised, read for its class as well as its wording.
+         What functionHeld raised, read for its class as well as its wording.
          */
         const refusalOfFunctionHeld = caught(function functionHeld() {
           requireArtifactJsonValue({
@@ -241,7 +241,7 @@ await describe({
         + 'version knows, since a vocabulary a reader cannot name is a vocabulary it cannot report on',
       fn: async () => {
         /**
-         * What unknownWord raised, read for its class as well as its wording.
+         What unknownWord raised, read for its class as well as its wording.
          */
         const refusalOfUnknownWord = caught(function unknownWord() {
           requireOneOf({
@@ -257,7 +257,7 @@ await describe({
         expect(refusalOfUnknownWord,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfUnknownWord as Error).message,).toContain('decided, unfilled',);
         /**
-         * What notAWord raised, read for its class as well as its wording.
+         What notAWord raised, read for its class as well as its wording.
          */
         const refusalOfNotAWord = caught(function notAWord() {
           requireOneOf({
@@ -294,7 +294,7 @@ await describe({
           budgets: { slice: 4_000, },
         },);
         /**
-         * What nullBeneath raised, read for its class as well as its wording.
+         What nullBeneath raised, read for its class as well as its wording.
          */
         const refusalOfNullBeneath = caught(function nullBeneath() {
           requireArtifactJsonRecord({
@@ -313,7 +313,7 @@ await describe({
         + 'bare word as a configuration with every field missing',
       fn: async () => {
         /**
-         * What arrayGiven raised, read for its class as well as its wording.
+         What arrayGiven raised, read for its class as well as its wording.
          */
         const refusalOfArrayGiven = caught(function arrayGiven() {
           requireArtifactJsonRecord({
@@ -339,8 +339,8 @@ await describe({
         + 'there would refuse artifacts version 2 legitimately covers',
       fn: async () => {
         /**
-         * A raw result carrying a field version 2 never described, holding a
-         * null a later pipeline is free to write.
+         A raw result carrying a field version 2 never described, holding a
+         null a later pipeline is free to write.
          */
         const raw = requireOpenRecord({
           value: {
@@ -360,7 +360,7 @@ await describe({
         + 'here as the shape error it is',
       fn: async () => {
         /**
-         * What arrayGiven raised, read for its class as well as its wording.
+         What arrayGiven raised, read for its class as well as its wording.
          */
         const refusalOfArrayGiven = caught(function arrayGiven() {
           requireOpenRecord({

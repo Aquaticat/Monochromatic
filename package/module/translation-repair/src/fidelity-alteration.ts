@@ -26,61 +26,61 @@
 // decide.
 
 /**
- * Shortest digit run worth altering.
- *
- * Two, because a lone digit collides constantly: it appears inside longer
- * numbers, in list markers and in dates on both sides, so neither the
- * occurrence check nor the support check would mean anything.
+ Shortest digit run worth altering.
+ 
+ Two, because a lone digit collides constantly: it appears inside longer
+ numbers, in list markers and in dates on both sides, so neither the
+ occurrence check nor the support check would mean anything.
  */
 const MIN_DIGITS = 2;
 
 /**
- * How many replacement values are tried before giving up on one number.
+ How many replacement values are tried before giving up on one number.
  */
 const REPLACEMENT_TRIES = 9;
 
 /**
- * Digits this fixture recognizes, which are the ones a Chinese source carries
- * unchanged into English.
+ Digits this fixture recognizes, which are the ones a Chinese source carries
+ unchanged into English.
  */
 const DIGITS = '0123456789';
 
 /**
- * Whether one character is one of {@link DIGITS}.
- *
- * @param character - single character to test
- *
- * @returns Whether it is an ASCII digit
- *
- * @example
- * ```ts
- * const digit = isDigit({ character: '4', },);
- * ```
+ Whether one character is one of {@link DIGITS}.
+ 
+ @param character - single character to test
+ 
+ @returns Whether it is an ASCII digit
+ 
+ @example
+ ```ts
+ const digit = isDigit({ character: '4', },);
+ ```
  */
 function isDigit({ character, }: { readonly character: string; },): boolean {
   return DIGITS.includes(character,);
 }
 
 /**
- * Every maximal run of digits in a passage, in the order they appear.
- *
- * @param text - passage to scan
- *
- * @returns Digit runs, duplicates included
- *
- * @example
- * ```ts
- * const runs = digitRuns({ text: cleanText, },);
- * ```
+ Every maximal run of digits in a passage, in the order they appear.
+ 
+ @param text - passage to scan
+ 
+ @returns Digit runs, duplicates included
+ 
+ @example
+ ```ts
+ const runs = digitRuns({ text: cleanText, },);
+ ```
  */
 export function digitRuns({ text, }: { readonly text: string; },): readonly string[] {
   /**
-   * Runs collected so far, and where the run in progress began.
+   Runs collected so far, and where the run in progress began.
    */
   const collected: string[] = [];
 
   /**
-   * Start of the run in progress, or minus one between runs.
+   Start of the run in progress, or minus one between runs.
    */
   let runStart = -1;
   for (
@@ -89,19 +89,19 @@ export function digitRuns({ text, }: { readonly text: string; },): readonly stri
     cursor += 1
   ) {
     /**
-     * Character at the cursor, empty once past the end so the last run closes.
+     Character at the cursor, empty once past the end so the last run closes.
      */
     const character = text.charAt(cursor,);
 
     /**
-     * Whether the scan is inside a run.
+     Whether the scan is inside a run.
      */
     const inRun = (character !== '') && isDigit({ character, },);
     if (inRun && (runStart === (-1)))
       runStart = cursor;
 
     /**
-     * Whether a run just ended at this cursor.
+     Whether a run just ended at this cursor.
      */
     const runEnded = (!inRun) && (runStart !== (-1));
     if (runEnded) {
@@ -116,18 +116,18 @@ export function digitRuns({ text, }: { readonly text: string; },): readonly stri
 }
 
 /**
- * Whether a passage carries a string exactly once.
- *
- * @param text - passage to search
- *
- * @param needle - string to count
- *
- * @returns Whether exactly one occurrence exists
- *
- * @example
- * ```ts
- * const unique = occursOnce({ text: cleanText, needle: '2004', },);
- * ```
+ Whether a passage carries a string exactly once.
+ 
+ @param text - passage to search
+ 
+ @param needle - string to count
+ 
+ @returns Whether exactly one occurrence exists
+ 
+ @example
+ ```ts
+ const unique = occursOnce({ text: cleanText, needle: '2004', },);
+ ```
  */
 function occursOnce(
   {
@@ -139,7 +139,7 @@ function occursOnce(
   },
 ): boolean {
   /**
-   * Where it first appears, or minus one.
+   Where it first appears, or minus one.
    */
   const first = text.indexOf(needle,);
   if (first === (-1))
@@ -151,18 +151,18 @@ function occursOnce(
 }
 
 /**
- * Number the original states and the translation renders exactly once.
- *
- * @param cleanText - archive English for this slice
- *
- * @param sourceText - Chinese original for the same slice
- *
- * @returns Longest such number, empty when the slice carries none
- *
- * @example
- * ```ts
- * const shared = sharedNumber({ cleanText, sourceText, },);
- * ```
+ Number the original states and the translation renders exactly once.
+ 
+ @param cleanText - archive English for this slice
+ 
+ @param sourceText - Chinese original for the same slice
+ 
+ @returns Longest such number, empty when the slice carries none
+ 
+ @example
+ ```ts
+ const shared = sharedNumber({ cleanText, sourceText, },);
+ ```
  */
 export function sharedNumber(
   {
@@ -174,19 +174,19 @@ export function sharedNumber(
   },
 ): string {
   /**
-   * Numbers the ORIGINAL states in its own right.
-   *
-   * WHOLE RUNS RATHER THAN SUBSTRINGS, which decides whether the fixture has
-   * ground truth at all. `sourceText.includes('2004')` is true of a Chinese
-   * carrying `120045`, a QQ number or a phone number, and this corpus carries
-   * plenty; altering a year on that evidence damages a claim the original never
-   * made, so neither candidate would be source-supported and a judge that
-   * refused to choose would be scored wrong for being right.
+   Numbers the ORIGINAL states in its own right.
+   
+   WHOLE RUNS RATHER THAN SUBSTRINGS, which decides whether the fixture has
+   ground truth at all. `sourceText.includes('2004')` is true of a Chinese
+   carrying `120045`, a QQ number or a phone number, and this corpus carries
+   plenty; altering a year on that evidence damages a claim the original never
+   made, so neither candidate would be source-supported and a judge that
+   refused to choose would be scored wrong for being right.
    */
   const statedNumbers = digitRuns({ text: sourceText, },);
 
   /**
-   * Numbers in the English that the Chinese also carries and that appear once.
+   Numbers in the English that the Chinese also carries and that appear once.
    */
   const shared = digitRuns({ text: cleanText, },)
     .filter(function longEnough(run,) {
@@ -203,8 +203,8 @@ export function sharedNumber(
     },);
 
   /**
-   * Longest of them, since a longer number is likelier to be a year or a count
-   * than an accident of formatting.
+   Longest of them, since a longer number is likelier to be a year or a count
+   than an accident of formatting.
    */
   const longest = shared.toSorted(function byLengthDescending(
     a,
@@ -217,20 +217,20 @@ export function sharedNumber(
 }
 
 /**
- * A different number of the same shape that neither side supports.
- *
- * @param original - number as both sides state it
- *
- * @param cleanText - archive English, which must not already carry the result
- *
- * @param sourceText - Chinese original, which must not state it either
- *
- * @returns Replacement, empty when every candidate collides
- *
- * @example
- * ```ts
- * const wrong = unsupportedVariant({ original: '2004', cleanText, sourceText, },);
- * ```
+ A different number of the same shape that neither side supports.
+ 
+ @param original - number as both sides state it
+ 
+ @param cleanText - archive English, which must not already carry the result
+ 
+ @param sourceText - Chinese original, which must not state it either
+ 
+ @returns Replacement, empty when every candidate collides
+ 
+ @example
+ ```ts
+ const wrong = unsupportedVariant({ original: '2004', cleanText, sourceText, },);
+ ```
  */
 export function unsupportedVariant(
   {
@@ -244,12 +244,12 @@ export function unsupportedVariant(
   },
 ): string {
   /**
-   * Last digit as a number, which is what the tries walk.
+   Last digit as a number, which is what the tries walk.
    */
   const lastDigit = Number(original.slice(-1,),);
 
   /**
-   * Every same-length variant differing in the final digit, nearest first.
+   Every same-length variant differing in the final digit, nearest first.
    */
   const variants = Array.from(
     { length: REPLACEMENT_TRIES, },
@@ -258,12 +258,12 @@ export function unsupportedVariant(
       step,
     ): string {
       /**
-       * How far past the original digit this step reaches, from one.
+       How far past the original digit this step reaches, from one.
        */
       const distance = step + 1;
 
       /**
-       * Digit this step lands on, wrapping through ten.
+       Digit this step lands on, wrapping through ten.
        */
       const digit = (lastDigit + distance) % 10;
       return original.slice(
@@ -274,8 +274,8 @@ export function unsupportedVariant(
   );
 
   /**
-   * First variant neither side carries, so the damaged text states something no
-   * reading of the original supports.
+   First variant neither side carries, so the damaged text states something no
+   reading of the original supports.
    */
   const unsupported = variants.find(function isUnsupported(variant,) {
     if (sourceText.includes(variant,))

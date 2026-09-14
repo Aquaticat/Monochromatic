@@ -1,14 +1,14 @@
 /**
- * Tests for merging accepted issues that name one defect several times.
- *
- * The measurement behind this is that 13.4% of accepted issues are exact-place
- * duplicates, and the human grader independently marked 14% of a 50-item draw
- * as duplicates. The cost is not the arithmetic: it is the editor repairing one
- * defect twice and cutting two overlapping envelopes for it.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for merging accepted issues that name one defect several times.
+ 
+ The measurement behind this is that 13.4% of accepted issues are exact-place
+ duplicates, and the human grader independently marked 14% of a 50-item draw
+ as duplicates. The cost is not the arithmetic: it is the editor repairing one
+ defect twice and cutting two overlapping envelopes for it.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -23,24 +23,24 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds an adjudicated issue over one span.
- *
- * @param issueId - issue identity
- *
- * @param claimId - single member claim identity
- *
- * @param category - claimed category
- *
- * @param startOffset - span start, which distinguishes places
- *
- * @param status - adjudication status
- *
- * @returns Issue
- *
- * @example
- * ```ts
- * const issue = issueAt({ issueId: 'i/1', claimId: 'c/1', },);
- * ```
+ Builds an adjudicated issue over one span.
+ 
+ @param issueId - issue identity
+ 
+ @param claimId - single member claim identity
+ 
+ @param category - claimed category
+ 
+ @param startOffset - span start, which distinguishes places
+ 
+ @param status - adjudication status
+ 
+ @returns Issue
+ 
+ @example
+ ```ts
+ const issue = issueAt({ issueId: 'i/1', claimId: 'c/1', },);
+ ```
  */
 function issueAt(
   {
@@ -92,7 +92,7 @@ await describe({
         + 'repeating itself or several critics agreeing',
       fn: async () => {
         /**
-         * One defect accepted twice.
+         One defect accepted twice.
          */
         const outcome = dedupeAcceptedIssues({
           issues: [
@@ -118,7 +118,7 @@ await describe({
         + 'not proof that two complaints are one defect',
       fn: async () => {
         /**
-         * Two different complaints about one sentence.
+         Two different complaints about one sentence.
          */
         const outcome = dedupeAcceptedIssues({
           issues: [
@@ -142,7 +142,7 @@ await describe({
         + 'defect counted twice',
       fn: async () => {
         /**
-         * Same complaint, two places.
+         Same complaint, two places.
          */
         const outcome = dedupeAcceptedIssues({
           issues: [
@@ -161,7 +161,7 @@ await describe({
         + 'rejections would change what the precision denominator counts',
       fn: async () => {
         /**
-         * Two identical rejections.
+         Two identical rejections.
          */
         const outcome = dedupeAcceptedIssues({
           issues: [
@@ -180,7 +180,7 @@ await describe({
         + 'merging cannot inflate the very count attribution reads',
       fn: async () => {
         /**
-         * Duplicates that share a member claim.
+         Duplicates that share a member claim.
          */
         const outcome = dedupeAcceptedIssues({
           issues: [
@@ -198,7 +198,7 @@ await describe({
         + 'duplicates, so an ordinary chunk passes through untouched',
       fn: async () => {
         /**
-         * Three distinct defects.
+         Three distinct defects.
          */
         const outcome = dedupeAcceptedIssues({
           issues: [

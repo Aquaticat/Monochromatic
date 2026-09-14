@@ -39,91 +39,91 @@ import { applySeededErrors, } from './seeded-error.ts';
 // is wrong about redundancy rather than about coverage.
 
 /**
- * Which constructed defect a trial carries.
- *
- * @example
- * ```ts
- * const damageKind: FidelityDamageKind = 'insertion';
- * ```
+ Which constructed defect a trial carries.
+ 
+ @example
+ ```ts
+ const damageKind: FidelityDamageKind = 'insertion';
+ ```
  */
 export type FidelityDamageKind = 'deletion' | 'insertion' | 'alteration';
 
 /**
- * One damaged twin, or the fact that this slice admits none.
- *
- * @example
- * ```ts
- * const attempt: DamageAttempt = deleteOneSentence({ cleanText, },);
- * ```
+ One damaged twin, or the fact that this slice admits none.
+ 
+ @example
+ ```ts
+ const attempt: DamageAttempt = deleteOneSentence({ cleanText, },);
+ ```
  */
 export type DamageAttempt = {
   /**
-   * A defect was planted.
+   A defect was planted.
    */
   readonly kind: 'damaged';
 
   /**
-   * Which defect it is.
+   Which defect it is.
    */
   readonly damageKind: FidelityDamageKind;
 
   /**
-   * Slice text carrying it.
+   Slice text carrying it.
    */
   readonly damagedText: string;
 
   /**
-   * Characters the edit removed or added, so a trial can report how much text
-   * separates the candidates.
+   Characters the edit removed or added, so a trial can report how much text
+   separates the candidates.
    */
   readonly changedChars: number;
 
   /**
-   * What the edit did, in enough detail to compare two runs without reading
-   * their prose.
-   *
-   * WHY THIS EXISTS. Comparing a narrow-window arm against a wide one required
-   * knowing that both had damaged the SAME thing, and the only record of that
-   * was whichever numbers the judges happened to quote in their reasons.
-   * Recovering picks by parsing judge prose worked three times and was three
-   * times too many: it can only find what a judge chose to mention.
-   *
-   * SAFE TO PRINT, which is why it is a field rather than a log line. Every
-   * producer writes structure rather than archive prose: the alteration writes
-   * the two numbers, and the deletion and insertion write lengths alone. No
-   * sentence of the corpus reaches it.
+   What the edit did, in enough detail to compare two runs without reading
+   their prose.
+   
+   WHY THIS EXISTS. Comparing a narrow-window arm against a wide one required
+   knowing that both had damaged the SAME thing, and the only record of that
+   was whichever numbers the judges happened to quote in their reasons.
+   Recovering picks by parsing judge prose worked three times and was three
+   times too many: it can only find what a judge chose to mention.
+   
+   SAFE TO PRINT, which is why it is a field rather than a log line. Every
+   producer writes structure rather than archive prose: the alteration writes
+   the two numbers, and the deletion and insertion write lengths alone. No
+   sentence of the corpus reaches it.
    */
   readonly damageDetail: string;
 } | {
   /**
-   * Nothing could be planted here. An ordinary property of a slice rather than
-   * a failure: every sentence may be too short, or occur more than once, or the
-   * donor may already be saying what this slice says.
+   Nothing could be planted here. An ordinary property of a slice rather than
+   a failure: every sentence may be too short, or occur more than once, or the
+   donor may already be saying what this slice says.
    */
   readonly kind: 'undamageable';
 
   /**
-   * Which of those it was, kept so a run that damages little says why.
+   Which of those it was, kept so a run that damages little says why.
    */
   readonly reason: string;
 };
 
 /**
- * Longest sentence a text admits as an unambiguous needle.
- *
- * @param text - passage to draw from
- *
- * @returns Sentence, or empty when the text admits none
- *
- * @example
- * ```ts
- * const sentence = anchorSentence({ text: cleanText, },);
- * ```
+ Longest sentence a text admits as an unambiguous needle.
+ 
+ @param text - passage to draw from
+ 
+ @returns Sentence, or empty when the text admits none
+ 
+ @example
+ ```ts
+ const sentence = anchorSentence({ text: cleanText, },);
+ ```
  */
 function anchorSentence({ text, }: { readonly text: string; },): string {
   /**
-   * Seed carrying that sentence, absent when every sentence is short or
-   * repeated.
+   Seed carrying that sentence, absent when every sentence is short or
+   repeated.
    */
   const seed = deriveOmissionSeeds({
     text,
@@ -134,22 +134,22 @@ function anchorSentence({ text, }: { readonly text: string; },): string {
 }
 
 /**
- * Removes one whole sentence, which is the coverage defect.
- *
- * @param cleanText - slice English as the archive holds it
- *
- * @returns Damaged twin and what it cost, or why none could be built
- *
- * @example
- * ```ts
- * const attempt = deleteOneSentence({ cleanText, },);
- * ```
+ Removes one whole sentence, which is the coverage defect.
+ 
+ @param cleanText - slice English as the archive holds it
+ 
+ @returns Damaged twin and what it cost, or why none could be built
+ 
+ @example
+ ```ts
+ const attempt = deleteOneSentence({ cleanText, },);
+ ```
  */
 export function deleteOneSentence(
   { cleanText, }: { readonly cleanText: string; },
 ): DamageAttempt {
   /**
-   * Sentence to remove.
+   Sentence to remove.
    */
   const needle = anchorSentence({ text: cleanText, },);
   if (needle === '')
@@ -159,13 +159,13 @@ export function deleteOneSentence(
     };
 
   /**
-   * Slice with that sentence gone and the join left unmarked.
-   *
-   * NOT `applySeededErrors`, which cuts the sentence and leaves both separators:
-   * that left a double space mid-paragraph and three consecutive newlines where
-   * a whole paragraph went, either of which a judge can see without reading the
-   * original. `spliceOutSentence` says why the shared primitive is not the place
-   * to fix it.
+   Slice with that sentence gone and the join left unmarked.
+   
+   NOT `applySeededErrors`, which cuts the sentence and leaves both separators:
+   that left a double space mid-paragraph and three consecutive newlines where
+   a whole paragraph went, either of which a judge can see without reading the
+   original. `spliceOutSentence` says why the shared primitive is not the place
+   to fix it.
    */
   const damagedText = spliceOutSentence({
     text: cleanText,
@@ -191,21 +191,21 @@ export function deleteOneSentence(
 }
 
 /**
- * Splices a sentence borrowed from elsewhere in the document into the clean
- * text, which is the addition defect and the one whose correct answer is the
- * SHORTER candidate.
- *
- * @param cleanText - slice English as the archive holds it
- *
- * @param donorTexts - English of other slices of the same document, FURTHEST
- * FIRST, of which the first usable one donates
- *
- * @returns Damaged twin and what it cost, or why none could be built
- *
- * @example
- * ```ts
- * const attempt = insertBorrowedSentence({ cleanText, donorTexts, },);
- * ```
+ Splices a sentence borrowed from elsewhere in the document into the clean
+ text, which is the addition defect and the one whose correct answer is the
+ SHORTER candidate.
+ 
+ @param cleanText - slice English as the archive holds it
+ 
+ @param donorTexts - English of other slices of the same document, FURTHEST
+ FIRST, of which the first usable one donates
+ 
+ @returns Damaged twin and what it cost, or why none could be built
+ 
+ @example
+ ```ts
+ const attempt = insertBorrowedSentence({ cleanText, donorTexts, },);
+ ```
  */
 export function insertBorrowedSentence(
   {
@@ -217,17 +217,17 @@ export function insertBorrowedSentence(
   },
 ): DamageAttempt {
   /**
-   * Sentence to borrow, drawn the same way the deletion draws its own so both
-   * fixtures move a comparable amount of text.
-   *
-   * THE FIRST USABLE DONOR RATHER THAN THE FURTHEST ONE FULL STOP. Measured on
-   * the corpus, taking only the furthest slice refused fifteen of sixteen
-   * attempts: the last slice of a memorial entry is often a short list, a
-   * credit line or a single sentence, and none of those offers a borrowable
-   * sentence. Refusing there would have sampled only documents that happen to
-   * end in prose, which is a selection rule nobody chose. Order still carries
-   * the preference, so the borrowed sentence is as far from the damaged slice
-   * as the document allows.
+   Sentence to borrow, drawn the same way the deletion draws its own so both
+   fixtures move a comparable amount of text.
+   
+   THE FIRST USABLE DONOR RATHER THAN THE FURTHEST ONE FULL STOP. Measured on
+   the corpus, taking only the furthest slice refused fifteen of sixteen
+   attempts: the last slice of a memorial entry is often a short list, a
+   credit line or a single sentence, and none of those offers a borrowable
+   sentence. Refusing there would have sampled only documents that happen to
+   end in prose, which is a selection rule nobody chose. Order still carries
+   the preference, so the borrowed sentence is as far from the damaged slice
+   as the document allows.
    */
   const offered = donorTexts
     .map(function toSentence(donorText,) {
@@ -235,8 +235,8 @@ export function insertBorrowedSentence(
     },);
 
   /**
-   * First offered sentence this slice does not already carry, absent when every
-   * donor is empty or repeats something here.
+   First offered sentence this slice does not already carry, absent when every
+   donor is empty or repeats something here.
    */
   const usable = offered.find(function isUsable(sentence,) {
     if (sentence === '')
@@ -245,7 +245,7 @@ export function insertBorrowedSentence(
   },);
 
   /**
-   * That sentence, or empty when no donor offered one.
+   That sentence, or empty when no donor offered one.
    */
   const borrowed = usable ?? '';
   if (borrowed === '')
@@ -255,8 +255,8 @@ export function insertBorrowedSentence(
     };
 
   /**
-   * Sentence the borrowed one is placed after, which must occur exactly once
-   * for the splice point to be defined.
+   Sentence the borrowed one is placed after, which must occur exactly once
+   for the splice point to be defined.
    */
   const anchor = anchorSentence({ text: cleanText, },);
   if (anchor === '')
@@ -266,7 +266,7 @@ export function insertBorrowedSentence(
     };
 
   /**
-   * Slice carrying the borrowed sentence.
+   Slice carrying the borrowed sentence.
    */
   const seeded = applySeededErrors({
     text: cleanText,
@@ -297,26 +297,26 @@ export function insertBorrowedSentence(
 }
 
 /**
- * English of every other slice, FURTHEST FIRST, which is where the insertion
- * fixture borrows its sentence.
- *
- * FURTHEST FIRST, because the borrowed sentence must be unsupported by the
- * damaged slice's own original. Neighbouring slices of a biography often restate
- * the same fact in different words, and a judge that kept the longer text on
- * those would be right about the document while the trial recorded it as wrong.
- * Ordering rather than selecting is what keeps that preference without letting
- * one unusable slice refuse the whole entry.
- *
- * @param slices - prepared slice pairs of one entry
- *
- * @param slicePosition - slice being damaged, which cannot donate to itself
- *
- * @returns English of every other slice that carries some, furthest first
- *
- * @example
- * ```ts
- * const donorTexts = donorTextsFor({ slices, slicePosition, },);
- * ```
+ English of every other slice, FURTHEST FIRST, which is where the insertion
+ fixture borrows its sentence.
+ 
+ FURTHEST FIRST, because the borrowed sentence must be unsupported by the
+ damaged slice's own original. Neighbouring slices of a biography often restate
+ the same fact in different words, and a judge that kept the longer text on
+ those would be right about the document while the trial recorded it as wrong.
+ Ordering rather than selecting is what keeps that preference without letting
+ one unusable slice refuse the whole entry.
+ 
+ @param slices - prepared slice pairs of one entry
+ 
+ @param slicePosition - slice being damaged, which cannot donate to itself
+ 
+ @returns English of every other slice that carries some, furthest first
+ 
+ @example
+ ```ts
+ const donorTexts = donorTextsFor({ slices, slicePosition, },);
+ ```
  */
 export function donorTextsFor(
   {
@@ -336,9 +336,9 @@ export function donorTextsFor(
       readonly text: string;
     } {
       /**
-       * English this slice carries, EMPTY on an insertion anchor rather than
-       * absent: both members of `DocumentChunk` declare `text`, and an anchor
-       * names a boundary where text is not.
+       English this slice carries, EMPTY on an insertion anchor rather than
+       absent: both members of `DocumentChunk` declare `text`, and an anchor
+       names a boundary where text is not.
        */
       const carried = slice.target
         .text;
@@ -362,19 +362,19 @@ export function donorTextsFor(
 }
 
 /**
- * Changes a number the original also states, which is the fixture no amount of
- * reading the English can decide.
- *
- * @param cleanText - archive English for this slice
- *
- * @param sourceText - Chinese original for the same slice
- *
- * @returns Damaged twin and what it cost, or why none could be built
- *
- * @example
- * ```ts
- * const attempt = alterSharedNumber({ cleanText, sourceText, },);
- * ```
+ Changes a number the original also states, which is the fixture no amount of
+ reading the English can decide.
+ 
+ @param cleanText - archive English for this slice
+ 
+ @param sourceText - Chinese original for the same slice
+ 
+ @returns Damaged twin and what it cost, or why none could be built
+ 
+ @example
+ ```ts
+ const attempt = alterSharedNumber({ cleanText, sourceText, },);
+ ```
  */
 export function alterSharedNumber(
   {
@@ -386,7 +386,7 @@ export function alterSharedNumber(
   },
 ): DamageAttempt {
   /**
-   * Number both sides carry, which the English states exactly once.
+   Number both sides carry, which the English states exactly once.
    */
   const original = sharedNumber({
     cleanText,
@@ -399,8 +399,8 @@ export function alterSharedNumber(
     };
 
   /**
-   * Same-shape number NEITHER side supports, so the damaged text asserts
-   * something no reading of the original can back.
+   Same-shape number NEITHER side supports, so the damaged text asserts
+   something no reading of the original can back.
    */
   const variant = unsupportedVariant({
     original,
@@ -414,12 +414,12 @@ export function alterSharedNumber(
     };
 
   /**
-   * Where the number sits, which is unique by construction.
+   Where the number sits, which is unique by construction.
    */
   const at = cleanText.indexOf(original,);
 
   /**
-   * Slice stating the wrong number and nothing else changed.
+   Slice stating the wrong number and nothing else changed.
    */
   const damagedText = cleanText.slice(
     0,

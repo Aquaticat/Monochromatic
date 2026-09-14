@@ -34,110 +34,110 @@ import { openRouterErrorFinishOf, } from './openrouter-error-finish.ts';
 // no chunk carried an error object, so both shapes throw the same failure.
 
 /**
- * Field OpenRouter puts the upstream's failure in, on the chunk that ends
- * a failed stream.
+ Field OpenRouter puts the upstream's failure in, on the chunk that ends
+ a failed stream.
  */
 const ERROR_KEY = 'error';
 
 /**
- * Field inside the error object naming the failure class.
+ Field inside the error object naming the failure class.
  */
 const CODE_KEY = 'code';
 
 /**
- * Field inside the error object carrying the gateway's own metadata.
+ Field inside the error object carrying the gateway's own metadata.
  */
 const METADATA_KEY = 'metadata';
 
 /**
- * Field inside the metadata naming the failure kind.
+ Field inside the metadata naming the failure kind.
  */
 const ERROR_TYPE_KEY = 'error_type';
 
 /**
- * Value written where the wire carried no usable field.
+ Value written where the wire carried no usable field.
  */
 const UNNAMED = 'unnamed';
 
 /**
- * Failure kind written when a choice stopped on an error finish and the wire
- * forwarded no native reason for it.
+ Failure kind written when a choice stopped on an error finish and the wire
+ forwarded no native reason for it.
  */
 const ERROR_FINISH_KIND = 'error-finish';
 
 /**
- * What one stream's error chunk said, reduced to names.
- *
- * @example
- * ```ts
- * const found: StreamErrorReading = { found: true, code: 504, errorType: 'timeout', endpoint: 'ModelRun', };
- * ```
+ What one stream's error chunk said, reduced to names.
+ 
+ @example
+ ```ts
+ const found: StreamErrorReading = { found: true, code: 504, errorType: 'timeout', endpoint: 'ModelRun', };
+ ```
  */
 export type StreamErrorReading =
   | {
     readonly found: true;
 
     /**
-     * Numeric failure class the gateway reported, or that it reported none.
+     Numeric failure class the gateway reported, or that it reported none.
      */
     readonly code: number | typeof UNNAMED;
 
     /**
-     * Gateway's failure kind, or that it named none.
+     Gateway's failure kind, or that it named none.
      */
     readonly errorType: string;
 
     /**
-     * Upstream the gateway named as serving the call, or that it named none.
+     Upstream the gateway named as serving the call, or that it named none.
      */
     readonly endpoint: string;
   }
   | { readonly found: false; };
 
 /**
- * Reading given when no chunk carried an error object.
+ Reading given when no chunk carried an error object.
  */
 export const STREAM_ERROR_ABSENT: StreamErrorReading = { found: false, };
 
 /**
- * Raised when a success-status stream carried a provider failure instead of
- * a completion.
- *
- * DISTINCT FROM `MalformedCompletionError`, which names a body this client
- * cannot read; this body was read fine and says the upstream failed. Both
- * ride the retry ladder as thrown transport failures, because the ladder
- * retries whatever `verify` throws.
+ Raised when a success-status stream carried a provider failure instead of
+ a completion.
+ 
+ DISTINCT FROM `MalformedCompletionError`, which names a body this client
+ cannot read; this body was read fine and says the upstream failed. Both
+ ride the retry ladder as thrown transport failures, because the ladder
+ retries whatever `verify` throws.
  */
 export class InStreamProviderError extends Error {
   /**
-   * Declares this message safe to forward: it carries a code, a failure kind
-   * and an endpoint's display name, never the upstream's text.
+   Declares this message safe to forward: it carries a code, a failure kind
+   and an endpoint's display name, never the upstream's text.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Numeric failure class the gateway reported, or that it reported none.
+   Numeric failure class the gateway reported, or that it reported none.
    */
   readonly code: number | typeof UNNAMED;
 
   /**
-   * Upstream the gateway named as serving the call, or that it named none.
+   Upstream the gateway named as serving the call, or that it named none.
    */
   readonly endpoint: string;
 
   /**
-   * Names the failure the stream carried.
-   *
-   * @param code - numeric failure class, or that none was reported
-   *
-   * @param errorType - gateway's failure kind, or that none was named
-   *
-   * @param endpoint - upstream display name, or that none was named
-   *
-   * @example
-   * ```ts
-   * throw new InStreamProviderError({ code: 504, errorType: 'timeout', endpoint: 'ModelRun', },);
-   * ```
+   Names the failure the stream carried.
+   
+   @param code - numeric failure class, or that none was reported
+   
+   @param errorType - gateway's failure kind, or that none was named
+   
+   @param endpoint - upstream display name, or that none was named
+   
+   @example
+   ```ts
+   throw new InStreamProviderError({ code: 504, errorType: 'timeout', endpoint: 'ModelRun', },);
+   ```
    */
   constructor(
     {
@@ -161,54 +161,54 @@ export class InStreamProviderError extends Error {
 }
 
 /**
- * Reads the failure a stream's error chunk carried, if any chunk carried one.
- *
- * THE FIRST ERROR CHUNK WINS, as the endpoint reader's first name does: the
- * gateway writes one and closes. A choice that stopped on an error finish
- * with no error object beside it counts as a failure too, with no code and
- * the upstream's own reason as its kind.
- *
- * @param bodyText - whole drained `text/event-stream` body
- *
- * @returns Code, kind and endpoint of the failure, or that none was carried
- *
- * @example
- * ```ts
- * const reading = openRouterStreamErrorOf({ bodyText: reply.bodyText, },);
- * ```
+ Reads the failure a stream's error chunk carried, if any chunk carried one.
+ 
+ THE FIRST ERROR CHUNK WINS, as the endpoint reader's first name does: the
+ gateway writes one and closes. A choice that stopped on an error finish
+ with no error object beside it counts as a failure too, with no code and
+ the upstream's own reason as its kind.
+ 
+ @param bodyText - whole drained `text/event-stream` body
+ 
+ @returns Code, kind and endpoint of the failure, or that none was carried
+ 
+ @example
+ ```ts
+ const reading = openRouterStreamErrorOf({ bodyText: reply.bodyText, },);
+ ```
  */
 export function openRouterStreamErrorOf(
   { bodyText, }: { readonly bodyText: string; },
 ): StreamErrorReading {
   /**
-   * Error objects the chunks carried, in arrival order.
+   Error objects the chunks carried, in arrival order.
    */
   const errors = openRouterChunksOf({ bodyText, },)
     .flatMap(function errorOf(chunk,): readonly Readonly<Record<string, unknown>>[] {
       /**
-       * Whatever sits at the field, of unknown type until checked.
+       Whatever sits at the field, of unknown type until checked.
        */
       const error = chunk[ERROR_KEY];
       return isJsonRecord(error,) ? [error,] : [];
     },);
 
   /**
-   * Upstream named on the chunks, or that none was.
+   Upstream named on the chunks, or that none was.
    */
   const endpoint = openRouterEndpointOf({ bodyText, },);
 
   /**
-   * Upstream's display name as the reading carries it.
+   Upstream's display name as the reading carries it.
    */
   const endpointName = endpoint.reported ? endpoint.name : UNNAMED;
 
   /**
-   * First error object, or none.
+   First error object, or none.
    */
   const [first,] = errors;
   if (first === undefined) {
     /**
-     * Whether a choice stopped on an error finish with no error object beside it.
+     Whether a choice stopped on an error finish with no error object beside it.
      */
     const finish = openRouterErrorFinishOf({ bodyText, },);
     if (!finish.found)
@@ -222,17 +222,17 @@ export function openRouterStreamErrorOf(
   }
 
   /**
-   * Numeric code, or that none was reported.
+   Numeric code, or that none was reported.
    */
   const code = first[CODE_KEY];
 
   /**
-   * Gateway metadata, of unknown shape until checked.
+   Gateway metadata, of unknown shape until checked.
    */
   const metadata = first[METADATA_KEY];
 
   /**
-   * Failure kind, or that none was named.
+   Failure kind, or that none was named.
    */
   const errorType = isJsonRecord(metadata,) ? metadata[ERROR_TYPE_KEY] : undefined;
 
@@ -245,27 +245,27 @@ export function openRouterStreamErrorOf(
 }
 
 /**
- * Refuses a success body whose stream carried a provider failure.
- *
- * ASKED BEFORE THE TERMINATOR CHECK, because such a stream also lacks its
- * terminator and the terminator check would otherwise name the framing
- * rather than the failure.
- *
- * @param bodyText - whole drained `text/event-stream` body
- *
- * @throws {@link InStreamProviderError} when a chunk carried an error object
- * or a choice stopped on an error finish
- *
- * @example
- * ```ts
- * requireNoStreamError({ bodyText, },);
- * ```
+ Refuses a success body whose stream carried a provider failure.
+ 
+ ASKED BEFORE THE TERMINATOR CHECK, because such a stream also lacks its
+ terminator and the terminator check would otherwise name the framing
+ rather than the failure.
+ 
+ @param bodyText - whole drained `text/event-stream` body
+ 
+ @throws {@link InStreamProviderError} when a chunk carried an error object
+ or a choice stopped on an error finish
+ 
+ @example
+ ```ts
+ requireNoStreamError({ bodyText, },);
+ ```
  */
 export function requireNoStreamError(
   { bodyText, }: { readonly bodyText: string; },
 ): void {
   /**
-   * What the stream said about failing.
+   What the stream said about failing.
    */
   const reading = openRouterStreamErrorOf({ bodyText, },);
   if (reading.found) {

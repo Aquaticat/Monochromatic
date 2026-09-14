@@ -21,7 +21,7 @@ import { ROSTER_MODEL_IDS, } from '../roster-reach.ts';
 // checked against. So a record from an older roster is NAMED, not read.
 
 /**
- * Provenance kinds a recorded candidate can name.
+ Provenance kinds a recorded candidate can name.
  */
 const PRODUCER_KINDS = [
   'model',
@@ -30,35 +30,35 @@ const PRODUCER_KINDS = [
 ] as const;
 
 /**
- * Signals a recorded model that no longer holds a place in the roster.
- *
- * ITS OWN CLASS, so a caller can tell "this artifact predates the current
- * roster" from "this artifact is malformed". The first is expected of anything
- * settled before a seating change and says nothing bad about the record; the
- * second is a defect.
- *
- * @example
- * ```ts
- * throw new OffRosterModelError({ modelId: 'hf:zai-org/GLM-4.7-Flash', path, },);
- * ```
+ Signals a recorded model that no longer holds a place in the roster.
+ 
+ ITS OWN CLASS, so a caller can tell "this artifact predates the current
+ roster" from "this artifact is malformed". The first is expected of anything
+ settled before a seating change and says nothing bad about the record; the
+ second is a defect.
+ 
+ @example
+ ```ts
+ throw new OffRosterModelError({ modelId: 'hf:zai-org/GLM-4.7-Flash', path, },);
+ ```
  */
 export class OffRosterModelError extends Error {
   /**
-   * Declares this message safe to forward: it names a model and the artifact path that recorded it.
+   Declares this message safe to forward: it names a model and the artifact path that recorded it.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds failure naming the id and where it was read.
-   *
-   * @param modelId - id the record carried
-   *
-   * @param path - dotted path it was read at
-   *
-   * @example
-   * ```ts
-   * new OffRosterModelError({ modelId, path: 'chunks[0].rounds[1]', },);
-   * ```
+   Builds failure naming the id and where it was read.
+   
+   @param modelId - id the record carried
+   
+   @param path - dotted path it was read at
+   
+   @example
+   ```ts
+   new OffRosterModelError({ modelId, path: 'chunks[0].rounds[1]', },);
+   ```
    */
   public constructor(
     {
@@ -78,24 +78,24 @@ export class OffRosterModelError extends Error {
 }
 
 /**
- * Reads one model id, refusing one the roster no longer seats.
- *
- * @param value - id as recorded
- *
- * @param path - dotted path for error messages
- *
- * @returns Id, narrowed to the roster
- *
- * @throws {@link OffRosterModelError} when the roster no longer seats it
- *
- * @throws {@link ArtifactParseError} when it is not a string at all
- *
- * @example
- * ```ts
- * const modelId = requireRosterModelId({ value, path, },);
- * ```
- *
- * @internal
+ Reads one model id, refusing one the roster no longer seats.
+ 
+ @param value - id as recorded
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Id, narrowed to the roster
+ 
+ @throws {@link OffRosterModelError} when the roster no longer seats it
+ 
+ @throws {@link ArtifactParseError} when it is not a string at all
+ 
+ @example
+ ```ts
+ const modelId = requireRosterModelId({ value, path, },);
+ ```
+ 
+ @internal
  */
 export function requireRosterModelId(
   {
@@ -107,7 +107,7 @@ export function requireRosterModelId(
   },
 ): RosterModelId {
   /**
-   * Id as written, before it is checked against the roster.
+   Id as written, before it is checked against the roster.
    */
   const written = requireString({
     value,
@@ -126,18 +126,18 @@ export function requireRosterModelId(
 }
 
 /**
- * Reads every model id in one list.
- *
- * @param value - list as recorded
- *
- * @param path - dotted path for error messages
- *
- * @returns Ids, each narrowed to the roster
- *
- * @example
- * ```ts
- * const contributors = requireRosterModelIds({ value, path, },);
- * ```
+ Reads every model id in one list.
+ 
+ @param value - list as recorded
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Ids, each narrowed to the roster
+ 
+ @example
+ ```ts
+ const contributors = requireRosterModelIds({ value, path, },);
+ ```
  */
 function requireRosterModelIds(
   {
@@ -164,20 +164,20 @@ function requireRosterModelIds(
 }
 
 /**
- * Reads one candidate's provenance.
- *
- * @param value - producer as recorded
- *
- * @param path - dotted path for error messages
- *
- * @returns Provenance in its three-way shape
- *
- * @example
- * ```ts
- * const producer = requireProducer({ value, path, },);
- * ```
- *
- * @internal
+ Reads one candidate's provenance.
+ 
+ @param value - producer as recorded
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Provenance in its three-way shape
+ 
+ @example
+ ```ts
+ const producer = requireProducer({ value, path, },);
+ ```
+ 
+ @internal
  */
 export function requireProducer(
   {
@@ -189,7 +189,7 @@ export function requireProducer(
   },
 ): CandidateProducer {
   /**
-   * Producer as a record.
+   Producer as a record.
    */
   const record = requireRecord({
     value,
@@ -197,7 +197,7 @@ export function requireProducer(
   },);
 
   /**
-   * Which of the three shapes it claims.
+   Which of the three shapes it claims.
    */
   const kind = requireOneOf({
     value: record.kind,

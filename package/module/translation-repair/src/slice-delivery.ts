@@ -17,7 +17,7 @@ import type { SliceReplacement, } from './splice-slices.ts';
 import { assertWordingCoherent, } from './wording-coherence.ts';
 
 /**
- * No shipped slice trimmed, which is every lane whose guard cut nothing.
+ No shipped slice trimmed, which is every lane whose guard cut nothing.
  */
 const NO_TRIMS: readonly SliceReplacement[] = [];
 
@@ -53,89 +53,89 @@ export { SliceDeliveryError, } from './slice-delivery-fault.ts';
 // replaced had to report one of those facts and drop the other.
 
 /**
- * One slice as a grader needs to read it.
- *
- * @example
- * ```ts
- * const record: SliceDeliveryRecord = {
- *   sliceIndex: 3,
- *   sourceText: '猫猫在睡觉。',
- *   incumbentKind: 'present',
- *   incumbentText: 'The cat sleeps.',
- *   outcome: { kind: 'decided', acceptedText: 'The cat is asleep.', },
- *   shippedText: 'The cat is asleep.',
- *   delivery: { kind: 'replacement-shipped', },
- * };
- * ```
+ One slice as a grader needs to read it.
+ 
+ @example
+ ```ts
+ const record: SliceDeliveryRecord = {
+   sliceIndex: 3,
+   sourceText: '猫猫在睡觉。',
+   incumbentKind: 'present',
+   incumbentText: 'The cat sleeps.',
+   outcome: { kind: 'decided', acceptedText: 'The cat is asleep.', },
+   shippedText: 'The cat is asleep.',
+   delivery: { kind: 'replacement-shipped', },
+ };
+ ```
  */
 export type SliceDeliveryRecord = {
   /**
-   * Global slice index, which every other per-slice record names it by.
+   Global slice index, which every other per-slice record names it by.
    */
   readonly sliceIndex: number;
 
   /**
-   * Original this slice was translated from.
-   *
-   * Stored as TEXT rather than as offsets, which is not a preference: the
-   * artifact keeps neither document, only their lengths, so an offset would
-   * need a matching corpus checkout, matching preparation code and a matching
-   * slice budget before it meant anything, and could never recover an accepted
-   * wording that did not ship.
+   Original this slice was translated from.
+   
+   Stored as TEXT rather than as offsets, which is not a preference: the
+   artifact keeps neither document, only their lengths, so an offset would
+   need a matching corpus checkout, matching preparation code and a matching
+   slice budget before it meant anything, and could never recover an accepted
+   wording that did not ship.
    */
   readonly sourceText: string;
 
   /**
-   * Whether the archive holds any wording at this slice at all, carried through
-   * from the preparation so a reader need not guess it from blank text.
+   Whether the archive holds any wording at this slice at all, carried through
+   from the preparation so a reader need not guess it from blank text.
    */
   readonly incumbentKind: 'present' | 'absent';
 
   /**
-   * Archive's own English for this slice.
+   Archive's own English for this slice.
    */
   readonly incumbentText: string;
 
   /**
-   * What the LANE did about this slice, exactly as the lane reported it.
+   What the LANE did about this slice, exactly as the lane reported it.
    */
   readonly outcome: LaneSliceOutcome;
 
   /**
-   * Wording the returned document carries for this slice.
-   *
-   * Empty where {@link SliceDeliveryRecord.delivery} says the gap remains,
-   * which is why that field and not this one answers whether a passage is
-   * missing: an empty translation and no translation are the same string.
+   Wording the returned document carries for this slice.
+   
+   Empty where {@link SliceDeliveryRecord.delivery} says the gap remains,
+   which is why that field and not this one answers whether a passage is
+   missing: an empty translation and no translation are the same string.
    */
   readonly shippedText: string;
 
   /**
-   * What the DOCUMENT ends up carrying, and by which route.
+   What the DOCUMENT ends up carrying, and by which route.
    */
   readonly delivery: SliceDelivery;
 };
 
 /**
- * Refuses an index set that names one slice more than once.
- *
- * TAKES BOTH THE ARRAY AND THE SET rather than deriving the second here, so the
- * caller's own deduplicated set is what the length is compared against. Building
- * a second set to check the first would be checking this function's work instead
- * of the work that matters.
- *
- * @param indices - index set as the lane reported it
- *
- * @param unique - same indices deduplicated, which the caller already built
- *
- * @param named - which set this is, for the message
- *
- * @throws {@link SliceDeliveryError} when a slice is named twice
- *
- * @example
- * ```ts
- * assertNoRepeat({ indices: changedSliceIndices, unique: shipped, named: 'shipped', },);
- * ```
+ Refuses an index set that names one slice more than once.
+ 
+ TAKES BOTH THE ARRAY AND THE SET rather than deriving the second here, so the
+ caller's own deduplicated set is what the length is compared against. Building
+ a second set to check the first would be checking this function's work instead
+ of the work that matters.
+ 
+ @param indices - index set as the lane reported it
+ 
+ @param unique - same indices deduplicated, which the caller already built
+ 
+ @param named - which set this is, for the message
+ 
+ @throws {@link SliceDeliveryError} when a slice is named twice
+ 
+ @example
+ ```ts
+ assertNoRepeat({ indices: changedSliceIndices, unique: shipped, named: 'shipped', },);
+ ```
  */
 function assertNoRepeat(
   {
@@ -161,41 +161,41 @@ function assertNoRepeat(
 }
 
 /**
- * Builds one delivery record per prepared slice.
- *
- * BUILT FROM WHAT THE LANE REPORTED rather than recomputed beside it. Every
- * field here is a join of the preparation, the lane's per-slice wordings and
- * its two index sets, so a ledger that disagrees with the returned document is
- * a contradiction inside one result rather than two independent derivations
- * drifting apart.
- *
- * @param slices - prepared slice pairs, which supply the original
- *
- * @param wordings - what the lane decided per slice
- *
- * @param changedSliceIndices - slices the returned document carries a change
- * for
- *
- * @param withdrawnSliceIndices - slices whose change the assembly guard took
- * back
- *
- * @param trimmedReplacements - shipped slices whose text the assembly guard
- * trimmed, with the text the document carries; a shipped row reads its text
- * here before it reads the decision
- *
- * @param blocked - whether the run refused the whole document before assembly,
- * which makes an unshipped decision a withdrawal rather than a contradiction
- *
- * @returns One record per prepared slice, in document order
- *
- * @throws {@link SliceDeliveryError} when the wordings do not cover the
- * preparation one for one, when an index set names a slice twice or names one
- * the preparation never produced, or when a slice's reports contradict
- *
- * @example
- * ```ts
- * const ledger = buildSliceDelivery({ slices, wordings, changedSliceIndices, withdrawnSliceIndices, blocked, },);
- * ```
+ Builds one delivery record per prepared slice.
+ 
+ BUILT FROM WHAT THE LANE REPORTED rather than recomputed beside it. Every
+ field here is a join of the preparation, the lane's per-slice wordings and
+ its two index sets, so a ledger that disagrees with the returned document is
+ a contradiction inside one result rather than two independent derivations
+ drifting apart.
+ 
+ @param slices - prepared slice pairs, which supply the original
+ 
+ @param wordings - what the lane decided per slice
+ 
+ @param changedSliceIndices - slices the returned document carries a change
+ for
+ 
+ @param withdrawnSliceIndices - slices whose change the assembly guard took
+ back
+ 
+ @param trimmedReplacements - shipped slices whose text the assembly guard
+ trimmed, with the text the document carries; a shipped row reads its text
+ here before it reads the decision
+ 
+ @param blocked - whether the run refused the whole document before assembly,
+ which makes an unshipped decision a withdrawal rather than a contradiction
+ 
+ @returns One record per prepared slice, in document order
+ 
+ @throws {@link SliceDeliveryError} when the wordings do not cover the
+ preparation one for one, when an index set names a slice twice or names one
+ the preparation never produced, or when a slice's reports contradict
+ 
+ @example
+ ```ts
+ const ledger = buildSliceDelivery({ slices, wordings, changedSliceIndices, withdrawnSliceIndices, blocked, },);
+ ```
  */
 export function buildSliceDelivery(
   {
@@ -225,12 +225,12 @@ export function buildSliceDelivery(
   }
 
   /**
-   * Slices the document carries a change for.
+   Slices the document carries a change for.
    */
   const shipped = new Set(changedSliceIndices,);
 
   /**
-   * Slices whose change was taken back.
+   Slices whose change was taken back.
    */
   const withdrawn = new Set(withdrawnSliceIndices,);
 
@@ -266,7 +266,7 @@ export function buildSliceDelivery(
     }
   }
   /**
-   * Text the document carries at each trimmed slice, by slice.
+   Text the document carries at each trimmed slice, by slice.
    */
   const trimmedText = new Map(trimmedReplacements.map(function toEntry(replacement,) {
     return [
@@ -289,12 +289,12 @@ export function buildSliceDelivery(
   }
 
   /**
-   * Indices the preparation actually produced.
-   *
-   * MEMBERSHIP, not a numeric range. A range check assumes the prepared indices
-   * are exactly `0` to `length - 1`, which is a property of today's stamping
-   * rather than a contract, so a renumbered preparation would let an index that
-   * names no slice pass as in range.
+   Indices the preparation actually produced.
+   
+   MEMBERSHIP, not a numeric range. A range check assumes the prepared indices
+   are exactly `0` to `length - 1`, which is a property of today's stamping
+   rather than a contract, so a renumbered preparation would let an index that
+   names no slice pass as in range.
    */
   const preparedIndices = new Set(slices.map(function toIndex(slice,): number {
     return slice.target
@@ -320,7 +320,7 @@ export function buildSliceDelivery(
     position,
   ): SliceDeliveryRecord {
     /**
-     * What the lane decided for this position.
+     What the lane decided for this position.
      */
     const wording = wordings[position];
     if (wording === undefined)
@@ -332,7 +332,7 @@ export function buildSliceDelivery(
       },);
 
     /**
-     * Index and archive wording this slice carries.
+     Index and archive wording this slice carries.
      */
     const {
       sliceIndex,
@@ -382,7 +382,7 @@ export function buildSliceDelivery(
     assertWordingCoherent({ wording, },);
 
     /**
-     * What the document carries here, and by which route.
+     What the document carries here, and by which route.
      */
     const delivery = decideDelivery({
       sliceIndex,

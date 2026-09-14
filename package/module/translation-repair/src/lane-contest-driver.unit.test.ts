@@ -1,15 +1,15 @@
 /**
- * Tests for the contest driver: which slices it asks about, what it resumes,
- * and what it refuses to write down.
- *
- * WHAT IS UNDER TEST IS SPENDING. Every case here is about a call that must or
- * must not be made, which is the one property a driver has that its stage does
- * not: the stage answers whatever it is handed, and the driver decides what it
- * is worth handing over.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the contest driver: which slices it asks about, what it resumes,
+ and what it refuses to write down.
+ 
+ WHAT IS UNDER TEST IS SPENDING. Every case here is about a call that must or
+ must not be made, which is the one property a driver has that its stage does
+ not: the stage answers whatever it is handed, and the driver decides what it
+ is worth handing over.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -34,7 +34,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Roster of three, the smallest that can produce a two-to-one split.
+ Roster of three, the smallest that can produce a two-to-one split.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -43,22 +43,22 @@ const ROSTER = [
 ] as const;
 
 /**
- * Logger for the driver under test.
+ Logger for the driver under test.
  */
 const l = tagged({ tag: 'lane-contest-driver-test', },);
 
 /**
- * Per-call bound, generous because the transport answers instantly.
+ Per-call bound, generous because the transport answers instantly.
  */
 const PER_CALL_TIMEOUT_MS = 5_000;
 
 /**
- * Exact caller abort reason used by driver guard case.
+ Exact caller abort reason used by driver guard case.
  */
 const CONTEST_ABORT = new Error('caller stopped lane contest',);
 
 /**
- * Successful contest calls in flight and peak observed by fixture.
+ Successful contest calls in flight and peak observed by fixture.
  */
 type ContestConcurrency = {
   now: number;
@@ -67,53 +67,53 @@ type ContestConcurrency = {
 };
 
 /**
- * Original of the slice the two lanes disagree about.
+ Original of the slice the two lanes disagree about.
  */
 const SOURCE_NAP = '猫猫在书店的阁楼里睡觉。';
 
 /**
- * Archive`s own English for it.
+ Archive`s own English for it.
  */
 const ARCHIVE_NAP = 'The cat sleeps in the bookshop attic.';
 
 /**
- * Wording the repair lane left.
+ Wording the repair lane left.
  */
 const REPAIR_NAP = 'The cat naps in the bookshop attic.';
 
 /**
- * Wording the translate lane left.
+ Wording the translate lane left.
  */
 const TRANSLATE_NAP = 'The cat dozes in the attic of the bookshop.';
 
 /**
- * Source metadata repeating one identity as visible name and alias.
+ Source metadata repeating one identity as visible name and alias.
  */
 const METADATA_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
 
 /**
- * Archive metadata retaining entry id beside translated alias.
+ Archive metadata retaining entry id beside translated alias.
  */
 const METADATA_ARCHIVE = '---\nname: CatEntry\ninfo:\n  alias: Maomao\n---\n';
 
 /**
- * Translate lane metadata preserving source identity relation.
+ Translate lane metadata preserving source identity relation.
  */
 const METADATA_TRANSLATED = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
 
 /**
- * Builds one ledger row, which is where the driver reads the original.
- *
- * @param sliceIndex - slice this row names
- *
- * @param shippedText - wording this lane`s document carries
- *
- * @returns Version 2 delivery row
- *
- * @example
- * ```ts
- * const row = catLedgerRow({ sliceIndex: 0, shippedText: REPAIR_NAP, },);
- * ```
+ Builds one ledger row, which is where the driver reads the original.
+ 
+ @param sliceIndex - slice this row names
+ 
+ @param shippedText - wording this lane`s document carries
+ 
+ @returns Version 2 delivery row
+ 
+ @example
+ ```ts
+ const row = catLedgerRow({ sliceIndex: 0, shippedText: REPAIR_NAP, },);
+ ```
  */
 function catLedgerRow(
   {
@@ -139,20 +139,20 @@ function catLedgerRow(
 }
 
 /**
- * Builds one comparison row carrying the two lane wordings.
- *
- * @param sliceIndex - slice this row names
- *
- * @param repairText - wording the repair document carries
- *
- * @param translateText - wording the translate document carries
- *
- * @returns Version 2 comparison row
- *
- * @example
- * ```ts
- * const row = catComparisonRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
- * ```
+ Builds one comparison row carrying the two lane wordings.
+ 
+ @param sliceIndex - slice this row names
+ 
+ @param repairText - wording the repair document carries
+ 
+ @param translateText - wording the translate document carries
+ 
+ @returns Version 2 comparison row
+ 
+ @example
+ ```ts
+ const row = catComparisonRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
+ ```
  */
 function catComparisonRow(
   {
@@ -190,39 +190,39 @@ function catComparisonRow(
 }
 
 /**
- * Builds both lanes as version 2 rows over a list of wording pairs.
- *
- * @param pairs - wording each lane left, slice by slice
- *
- * @returns Projection the driver reads
- *
- * @example
- * ```ts
- * const projected = catProjection({ pairs: [[REPAIR_NAP, TRANSLATE_NAP,],], },);
- * ```
+ Builds both lanes as version 2 rows over a list of wording pairs.
+ 
+ @param pairs - wording each lane left, slice by slice
+ 
+ @returns Projection the driver reads
+ 
+ @example
+ ```ts
+ const projected = catProjection({ pairs: [[REPAIR_NAP, TRANSLATE_NAP,],], },);
+ ```
  */
 /**
- * Builds repeated syntax-bearing contest question at requested positions.
- *
- * @param sliceCount - document positions carrying same question
- *
- * @returns Projection whose position-free keys match
- *
- * @example
- * ```ts
- * const projected = metadataProjection({ sliceCount: 2, });
- * ```
+ Builds repeated syntax-bearing contest question at requested positions.
+ 
+ @param sliceCount - document positions carrying same question
+ 
+ @returns Projection whose position-free keys match
+ 
+ @example
+ ```ts
+ const projected = metadataProjection({ sliceCount: 2, });
+ ```
  */
 function metadataProjection(
   { sliceCount, }: { readonly sliceCount: number; },
 ): ProjectedLanes {
   /**
-   * Positions this synthetic document carries.
+   Positions this synthetic document carries.
    */
   const positions = Array.from({ length: sliceCount, },)
     .keys();
   /**
-   * Repeated comparison row differing only by position.
+   Repeated comparison row differing only by position.
    */
   const comparison = Array.from(positions, function toRow(sliceIndex,) {
     return {
@@ -292,57 +292,57 @@ function catProjection(
 }
 
 /**
- * Client and cache a case drives the driver with, plus what each recorded.
+ Client and cache a case drives the driver with, plus what each recorded.
  */
 type CatRig = {
   /**
-   * Calls the transport served, including provider retries.
+   Calls the transport served, including provider retries.
    */
   readonly calls: readonly string[];
 
   /**
-   * Model calls admitted by contest stage before provider retries.
+   Model calls admitted by contest stage before provider retries.
    */
   readonly admitted: number;
 
   /**
-   * Keys the driver asked to persist.
+   Keys the driver asked to persist.
    */
   readonly persisted: readonly string[];
 
   /**
-   * Records the driver produced.
+   Records the driver produced.
    */
   readonly slices: readonly ArtifactContestSlice[];
 };
 
 /**
- * Drives the contest over one projection, counting what it spent.
- *
- * @param pairs - wording each lane left, slice by slice
- *
- * @param answering - whether the transport serves ballots or fails every call
- *
- * @param resumed - ballots an earlier run already bought
- *
- * @param projected - optional explicit lane projection
- *
- * @param frontMatterSlices - syntax-bearing positions
- *
- * @param answerChoice - lane every scripted ballot selects
- *
- * @param overlap - most contested slices in flight
- *
- * @param activity - optional successful-call overlap instrument
- *
- * @param abortOnCall - one-based admitted call that aborts caller signal
- *
- * @returns What the driver called, persisted and recorded
- *
- * @example
- * ```ts
- * const rig = await drive({ pairs, answering: true, },);
- * ```
+ Drives the contest over one projection, counting what it spent.
+ 
+ @param pairs - wording each lane left, slice by slice
+ 
+ @param answering - whether the transport serves ballots or fails every call
+ 
+ @param resumed - ballots an earlier run already bought
+ 
+ @param projected - optional explicit lane projection
+ 
+ @param frontMatterSlices - syntax-bearing positions
+ 
+ @param answerChoice - lane every scripted ballot selects
+ 
+ @param overlap - most contested slices in flight
+ 
+ @param activity - optional successful-call overlap instrument
+ 
+ @param abortOnCall - one-based admitted call that aborts caller signal
+ 
+ @returns What the driver called, persisted and recorded
+ 
+ @example
+ ```ts
+ const rig = await drive({ pairs, answering: true, },);
+ ```
  */
 async function drive(
   {
@@ -371,17 +371,17 @@ async function drive(
   },
 ): Promise<CatRig> {
   /**
-   * Calls the transport served.
+   Calls the transport served.
    */
   const calls: string[] = [];
 
   /**
-   * Keys the driver asked to persist.
+   Keys the driver asked to persist.
    */
   const persisted: string[] = [];
 
   /**
-   * Cache recording what it was asked to keep.
+   Cache recording what it was asked to keep.
    */
   const cache: SliceCache<LaneContestOutcome> = {
     resumed,
@@ -391,7 +391,7 @@ async function drive(
   };
 
   /**
-   * Client answering every judge the same way, or failing every call.
+   Client answering every judge the same way, or failing every call.
    */
   const inner = createSyntheticClient({
     apiKey: 'test-key',
@@ -427,21 +427,21 @@ async function drive(
   },);
 
   /**
-   * Client-level activity instrument, outside provider slot limiting so it
-   * measures slices admitted by the driver rather than transport concurrency.
+   Client-level activity instrument, outside provider slot limiting so it
+   measures slices admitted by the driver rather than transport concurrency.
    */
   /**
-   * Caller signal a fixture may abort after enough contest calls were admitted.
+   Caller signal a fixture may abort after enough contest calls were admitted.
    */
   const controller = new AbortController();
 
   /**
-   * Calls admitted at client boundary.
+   Calls admitted at client boundary.
    */
   const admitted = { count: 0, };
 
   /**
-   * Client-level fixture outside provider slot limiting.
+   Client-level fixture outside provider slot limiting.
    */
   const client: SyntheticClient = {
     chatText: inner.chatText,
@@ -451,7 +451,7 @@ async function drive(
         controller.abort(CONTEST_ABORT,);
       if (activity !== undefined) {
         /**
-         * Start position making second slice finish before first under overlap.
+         Start position making second slice finish before first under overlap.
          */
         const startPosition = activity.started;
         activity.started += 1;
@@ -469,12 +469,12 @@ async function drive(
   };
 
   /**
-   * Projection supplied by syntax case or ordinary cat fixture.
+   Projection supplied by syntax case or ordinary cat fixture.
    */
   const askedProjection = projected ?? catProjection({ pairs, },);
 
   /**
-   * Records the driver produced.
+   Records the driver produced.
    */
   const slices = await contestDocumentLanes({
     client,
@@ -509,7 +509,7 @@ await describe({
         + 'contest between two identical candidates has no question to put',
       fn: async () => {
         /**
-         * Two slices both lanes agree on.
+         Two slices both lanes agree on.
          */
         const rig = await drive({
           pairs: [
@@ -532,7 +532,7 @@ await describe({
       name: 'ASKS ONLY the slices that differ, leaving the agreed ones out of the record entirely',
       fn: async () => {
         /**
-         * Three slices, of which the middle one differs.
+         Three slices, of which the middle one differs.
          */
         const rig = await drive({
           pairs: [
@@ -571,7 +571,7 @@ await describe({
         + 'and returns records in comparison order when the second slice finishes first',
       fn: async () => {
         /**
-         * Distinct questions preventing cache-key aliasing from affecting order.
+         Distinct questions preventing cache-key aliasing from affecting order.
          */
         const pairs = [
           [
@@ -585,7 +585,7 @@ await describe({
         ] as const;
 
         /**
-         * Serial positive-control activity.
+         Serial positive-control activity.
          */
         const serial: ContestConcurrency = {
           now: 0,
@@ -600,7 +600,7 @@ await describe({
         },);
 
         /**
-         * Two-slice activity.
+         Two-slice activity.
          */
         const overlapped: ContestConcurrency = {
           now: 0,
@@ -711,7 +711,7 @@ await describe({
       name: 'REBUYS IDENTICAL FRONT MATTER winner that cannot ship instead of persisting or twin-memoizing it',
       fn: async () => {
         /**
-         * One unsafe contest as purchase positive control.
+         One unsafe contest as purchase positive control.
          */
         const single = await drive({
           pairs: [],
@@ -722,7 +722,7 @@ await describe({
           overlap: 2,
         },);
         /**
-         * Same unsafe question repeated at two positions.
+         Same unsafe question repeated at two positions.
          */
         const twin = await drive({
           pairs: [],
@@ -754,7 +754,7 @@ await describe({
       name: 'PERSISTS a settled verdict, since ballots are the purchased thing and the next resume must not re-buy them',
       fn: async () => {
         /**
-         * One contested slice, answered.
+         One contested slice, answered.
          */
         const rig = await drive({
           pairs: [
@@ -773,7 +773,7 @@ await describe({
       name: 'REFUSES TO PERSIST winner that final publication cannot ship',
       fn: async () => {
         /**
-         * Cache writes attempted by unsafe winner.
+         Cache writes attempted by unsafe winner.
          */
         const persisted: string[] = [];
         await persistLaneContestOutcome({
@@ -838,14 +838,14 @@ await describe({
         + 'outcome returned, preserving the final pre-write defense',
       fn: async () => {
         /**
-         * Exact caller reason helper must surface.
+         Exact caller reason helper must surface.
          */
         const stopped = new Error('caller abandoned completed contest',);
         const controller = new AbortController();
         controller.abort(stopped,);
 
         /**
-         * Writes attempted after abort.
+         Writes attempted after abort.
          */
         const persisted: string[] = [];
         await expect(persistLaneContestOutcome({
@@ -893,7 +893,7 @@ await describe({
         + 'of the question and caching it would freeze that night into every later resume',
       fn: async () => {
         /**
-         * One contested slice nobody answered.
+         One contested slice nobody answered.
          */
         const rig = await drive({
           pairs: [
@@ -916,7 +916,7 @@ await describe({
         + 'read: a re-persisted resume is a write per slice per run for nothing',
       fn: async () => {
         /**
-         * Ballots an earlier run bought, under the key this run derives.
+         Ballots an earlier run bought, under the key this run derives.
          */
         const bought: LaneContestOutcome = {
           choice: 'repair',
@@ -957,7 +957,7 @@ await describe({
         },);
 
         /**
-         * Same slice, with those ballots already on disk.
+         Same slice, with those ballots already on disk.
          */
         const rig = await drive({
           pairs: [
@@ -991,7 +991,7 @@ await describe({
         + 'only the fresh question while returning both in comparison order',
       fn: async () => {
         /**
-         * Two distinct contest questions.
+         Two distinct contest questions.
          */
         const pairs = [
           [
@@ -1005,7 +1005,7 @@ await describe({
         ] as const;
 
         /**
-         * Fresh pass used only to derive both production keys.
+         Fresh pass used only to derive both production keys.
          */
         const learned = await drive({
           pairs,
@@ -1013,7 +1013,7 @@ await describe({
         },);
 
         /**
-         * Quorum-complete first-row outcome already on disk.
+         Quorum-complete first-row outcome already on disk.
          */
         const bought: LaneContestOutcome = {
           choice: 'repair',

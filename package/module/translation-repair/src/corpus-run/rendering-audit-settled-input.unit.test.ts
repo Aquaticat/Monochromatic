@@ -1,17 +1,17 @@
 /**
- * Tests for turning an archive of settled artifacts into audit subjects.
- *
- * What matters here is not that the reader parses. It is that every claim a
- * persisted audit row will later make about its own provenance is true: that
- * the text audited is the text the judges saw, that the corpus commit read is
- * the artifact's own rather than whatever the pin says today, that a retained
- * slice is marked as the archive's wording rather than a fresh rendering, and
- * that a preparation which no longer matches is REPORTED rather than thrown.
- *
- * Fixtures are cat-themed invention on a throwaway git repository. No corpus
- * content appears here.
- *
- * @module
+ Tests for turning an archive of settled artifacts into audit subjects.
+ 
+ What matters here is not that the reader parses. It is that every claim a
+ persisted audit row will later make about its own provenance is true: that
+ the text audited is the text the judges saw, that the corpus commit read is
+ the artifact's own rather than whatever the pin says today, that a retained
+ slice is marked as the archive's wording rather than a fresh rendering, and
+ that a preparation which no longer matches is REPORTED rather than thrown.
+ 
+ Fixtures are cat-themed invention on a throwaway git repository. No corpus
+ content appears here.
+ 
+ @module
  */
 
 import {
@@ -45,33 +45,33 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Real git binary every fixture command runs through.
- *
- * RESOLVED rather than taken from PATH, which in this repository exposes a
- * policy shim. The shim rejects fixture staging patterns and settles worktree
- * copies against the REAL repository, so a throwaway corpus built through it
- * races other cases on a lock that has nothing to do with this test.
+ Real git binary every fixture command runs through.
+ 
+ RESOLVED rather than taken from PATH, which in this repository exposes a
+ policy shim. The shim rejects fixture staging patterns and settles worktree
+ copies against the REAL repository, so a throwaway corpus built through it
+ races other cases on a lock that has nothing to do with this test.
  */
 const REAL_GIT = await resolveGit();
 
 /**
- * Configuration sink keeping fixture repositories away from real git config.
+ Configuration sink keeping fixture repositories away from real git config.
  */
 const DEV_NULL = '/dev/null';
 
 /**
- * Built pipeline these fixtures claim to have run under.
+ Built pipeline these fixtures claim to have run under.
  */
 const DIGEST = 'sha256-tree-v1:'.concat('c'.repeat(64,),) as unknown as PipelineDigest;
 
 /**
- * Entry every fixture artifact is written for.
+ Entry every fixture artifact is written for.
  */
 const ENTRY_ID = 'mittens';
 
 /**
- * Original page, whose front matter declares a name, an alias and a location so
- * the identity block has something to carry.
+ Original page, whose front matter declares a name, an alias and a location so
+ the identity block has something to carry.
  */
 const SOURCE_PAGE = `---
 name: 毛毛
@@ -91,7 +91,7 @@ desc: 窗台上的猫。
 `;
 
 /**
- * Archive translation of it, structured the same way.
+ Archive translation of it, structured the same way.
  */
 const TARGET_PAGE = `---
 name: Mittens
@@ -111,29 +111,29 @@ The cat has a bowl.
 `;
 
 /**
- * A second pair with no front matter at all, for the entry that declares
- * nothing.
+ A second pair with no front matter at all, for the entry that declares
+ nothing.
  */
 const BARE_SOURCE_PAGE = '## 第一节\n\n猫猫在门口等着。\n\n## 第二节\n\n猫猫喜欢晒太阳。\n';
 
 /**
- * Archive translation of the bare pair.
+ Archive translation of the bare pair.
  */
 const BARE_TARGET_PAGE = '## Section one\n\nThe cat waits at the door.\n\n## Section two\n\nThe cat likes the sun.\n';
 
 /**
- * Runs one git command inside a fixture repository.
- *
- * @param cloneDir - repository the command runs in
- *
- * @param args - arguments after the directory selector
- *
- * @returns Standard output
- *
- * @example
- * ```ts
- * await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
- * ```
+ Runs one git command inside a fixture repository.
+ 
+ @param cloneDir - repository the command runs in
+ 
+ @param args - arguments after the directory selector
+ 
+ @returns Standard output
+ 
+ @example
+ ```ts
+ await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
+ ```
  */
 async function fixtureGit(
   {
@@ -145,7 +145,7 @@ async function fixtureGit(
   },
 ): Promise<string> {
   /**
-   * Subprocess result; only stdout is consumed.
+   Subprocess result; only stdout is consumed.
    */
   const { stdout, } = await spawn(
     REAL_GIT,
@@ -165,22 +165,22 @@ async function fixtureGit(
 }
 
 /**
- * Commits one entry's two pages into a fixture repository.
- *
- * @param cloneDir - repository to write into
- *
- * @param entryId - entry directory name
- *
- * @param sourcePage - original page content
- *
- * @param targetPage - archive translation content
- *
- * @returns Commit the write landed in
- *
- * @example
- * ```ts
- * const sha = await commitEntry({ cloneDir, entryId, sourcePage, targetPage, },);
- * ```
+ Commits one entry's two pages into a fixture repository.
+ 
+ @param cloneDir - repository to write into
+ 
+ @param entryId - entry directory name
+ 
+ @param sourcePage - original page content
+ 
+ @param targetPage - archive translation content
+ 
+ @returns Commit the write landed in
+ 
+ @example
+ ```ts
+ const sha = await commitEntry({ cloneDir, entryId, sourcePage, targetPage, },);
+ ```
  */
 async function commitEntry(
   {
@@ -196,7 +196,7 @@ async function commitEntry(
   },
 ): Promise<string> {
   /**
-   * Entry directory inside the fixture repository.
+   Entry directory inside the fixture repository.
    */
   const dir = join(
     cloneDir,
@@ -261,14 +261,14 @@ async function commitEntry(
 }
 
 /**
- * Throwaway corpus holding the cat pair, removed on dispose.
- *
- * @returns Clone directory, the commit holding the pair, and a disposer
- *
- * @example
- * ```ts
- * await using corpus = await makeCorpus();
- * ```
+ Throwaway corpus holding the cat pair, removed on dispose.
+ 
+ @returns Clone directory, the commit holding the pair, and a disposer
+ 
+ @example
+ ```ts
+ await using corpus = await makeCorpus();
+ ```
  */
 async function makeCorpus(): Promise<
   AsyncDisposable & {
@@ -277,7 +277,7 @@ async function makeCorpus(): Promise<
   }
 > {
   /**
-   * Fresh temp directory holding the throwaway repository.
+   Fresh temp directory holding the throwaway repository.
    */
   const cloneDir = await mkdtemp(join(
     tmpdir(),
@@ -299,7 +299,7 @@ async function makeCorpus(): Promise<
   );
 
   /**
-   * Commit the pair landed in, which every fixture artifact pins.
+   Commit the pair landed in, which every fixture artifact pins.
    */
   const commitSha = await commitEntry({
     cloneDir,
@@ -324,18 +324,18 @@ async function makeCorpus(): Promise<
 }
 
 /**
- * Throwaway archive directory, removed on dispose.
- *
- * @returns Archive directory and a disposer
- *
- * @example
- * ```ts
- * await using archive = await makeArchive();
- * ```
+ Throwaway archive directory, removed on dispose.
+ 
+ @returns Archive directory and a disposer
+ 
+ @example
+ ```ts
+ await using archive = await makeArchive();
+ ```
  */
 async function makeArchive(): Promise<AsyncDisposable & { readonly archiveDir: string; }> {
   /**
-   * Fresh temp directory standing in for the run archive.
+   Fresh temp directory standing in for the run archive.
    */
   const archiveDir = await mkdtemp(join(
     tmpdir(),
@@ -356,20 +356,20 @@ async function makeArchive(): Promise<AsyncDisposable & { readonly archiveDir: s
 }
 
 /**
- * Builds a ledger where the lane replaced the archive at the FIRST slice and
- * kept it everywhere else.
- *
- * Both delivery kinds in one artifact, so the retained-versus-replaced split
- * has something to separate.
- *
- * @param prepared - preparation to build rows from
- *
- * @returns One row per prepared slice, in document order
- *
- * @example
- * ```ts
- * const rows = replacedFirstSlice({ prepared, },);
- * ```
+ Builds a ledger where the lane replaced the archive at the FIRST slice and
+ kept it everywhere else.
+ 
+ Both delivery kinds in one artifact, so the retained-versus-replaced split
+ has something to separate.
+ 
+ @param prepared - preparation to build rows from
+ 
+ @returns One row per prepared slice, in document order
+ 
+ @example
+ ```ts
+ const rows = replacedFirstSlice({ prepared, },);
+ ```
  */
 function replacedFirstSlice(
   { prepared, }: { readonly prepared: PreparedDocumentPair; },
@@ -377,31 +377,31 @@ function replacedFirstSlice(
   return prepared.slices
     .map(function toRow(slice, position,): SliceDeliveryRecord {
       /**
-       * Archive wording at this slice.
+       Archive wording at this slice.
        */
       const incumbentText = slice.target
         .text;
 
       /**
-       * Whether the archive holds wording here at all.
-       *
-       * A PAIRED PREPARATION LEAVES INSERTIONS: a section the pairing did not
-       * claim is placed as an insertion slice whose archive wording is absent,
-       * and the builder refuses a row calling that wording present. Such a
-       * slice ships fresh wording, as the lanes do.
+       Whether the archive holds wording here at all.
+       
+       A PAIRED PREPARATION LEAVES INSERTIONS: a section the pairing did not
+       claim is placed as an insertion slice whose archive wording is absent,
+       and the builder refuses a row calling that wording present. Such a
+       slice ships fresh wording, as the lanes do.
        */
       const absent = slice.target
         .kind === 'insertion';
 
       /**
-       * Whether this row ships a replacement: every insertion, and the first
-       * slice.
+       Whether this row ships a replacement: every insertion, and the first
+       slice.
        */
       const replaced = absent || (position === 0);
 
       /**
-       * Wording the lane decided on, which differs at the first slice and at
-       * every insertion.
+       Wording the lane decided on, which differs at the first slice and at
+       every insertion.
        */
       const acceptedText = absent
         ? 'The cat has been given a line.'
@@ -427,22 +427,22 @@ function replacedFirstSlice(
 }
 
 /**
- * What one lane's raw result reports about those rows.
- *
- * @param rows - ledger the result describes
- *
- * @returns Raw result fields version 2 requires
- *
- * @example
- * ```ts
- * const raw = rawResultFor({ rows, },);
- * ```
+ What one lane's raw result reports about those rows.
+ 
+ @param rows - ledger the result describes
+ 
+ @returns Raw result fields version 2 requires
+ 
+ @example
+ ```ts
+ const raw = rawResultFor({ rows, },);
+ ```
  */
 function rawResultFor(
   { rows, }: { readonly rows: readonly SliceDeliveryRecord[]; },
 ): Record<string, unknown> {
   /**
-   * Slices whose replacement the document carries.
+   Slices whose replacement the document carries.
    */
   const shipped = rows
     .filter(function wasShipped(row,): boolean {
@@ -471,24 +471,24 @@ function rawResultFor(
 }
 
 /**
- * Writes one artifact into an archive run set.
- *
- * @param archiveDir - throwaway archive
- *
- * @param runSet - subdirectory to write into
- *
- * @param prepared - preparation both lanes ran over
- *
- * @param corpusSha - commit the artifact claims its pair was read at
- *
- * @param entryId - entry the artifact is written for
- *
- * @returns Nothing; the file is the result
- *
- * @example
- * ```ts
- * await writeArtifact({ archiveDir, runSet, prepared, corpusSha, entryId, },);
- * ```
+ Writes one artifact into an archive run set.
+ 
+ @param archiveDir - throwaway archive
+ 
+ @param runSet - subdirectory to write into
+ 
+ @param prepared - preparation both lanes ran over
+ 
+ @param corpusSha - commit the artifact claims its pair was read at
+ 
+ @param entryId - entry the artifact is written for
+ 
+ @returns Nothing; the file is the result
+ 
+ @example
+ ```ts
+ await writeArtifact({ archiveDir, runSet, prepared, corpusSha, entryId, },);
+ ```
  */
 async function writeArtifact(
   {
@@ -508,17 +508,17 @@ async function writeArtifact(
   },
 ): Promise<void> {
   /**
-   * Rows both lanes report.
+   Rows both lanes report.
    */
   const rows = replacedFirstSlice({ prepared, },);
 
   /**
-   * Name this preparation gives itself, stamped on both ledgers.
+   Name this preparation gives itself, stamped on both ledgers.
    */
   const identity = preparationIdentity({ prepared, },);
 
   /**
-   * What the driver would have returned.
+   What the driver would have returned.
    */
   const lanes = {
     alignmentFindings: [...prepared.alignmentFindings,],
@@ -543,7 +543,7 @@ async function writeArtifact(
   } as unknown as Parameters<typeof buildSettledTwoLaneArtifact>[0]['lanes'];
 
   /**
-   * Run-set directory this artifact lands in.
+   Run-set directory this artifact lands in.
    */
   const dir = join(
     archiveDir,
@@ -554,8 +554,8 @@ async function writeArtifact(
     { recursive: true, },
   );
   /**
-   * Artifact as the builder writes it, in its serialized form: what a reader
-   * holds is the bytes a file carries, and a clone would keep things JSON drops.
+   Artifact as the builder writes it, in its serialized form: what a reader
+   holds is the bytes a file carries, and a clone would keep things JSON drops.
    */
   const serialized = JSON.stringify(buildSettledTwoLaneArtifact({
     pageAssembly: NO_PAGE_ASSEMBLY,
@@ -572,13 +572,13 @@ async function writeArtifact(
   },),);
 
   /**
-   * Those bytes read back.
+   Those bytes read back.
    */
   const written = JSON.parse(serialized,) as Record<string, unknown>;
 
   /**
-   * Preparation record with the named keys removed, which is how a file
-   * written before those fields existed looks to a reader.
+   Preparation record with the named keys removed, which is how a file
+   written before those fields existed looks to a reader.
    */
   const preparation = Object.fromEntries(
     Object.entries(written.preparation as Record<string, unknown>,)
@@ -614,7 +614,7 @@ await describe({
         await using archive = await makeArchive();
 
         /**
-         * Preparation the fixture artifact was written over.
+         Preparation the fixture artifact was written over.
          */
         const prepared = prepareDocumentPair({
           sourceText: SOURCE_PAGE,
@@ -629,7 +629,7 @@ await describe({
         },);
 
         /**
-         * Artifact as the reader returns it.
+         Artifact as the reader returns it.
          */
         const reading = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
@@ -643,7 +643,7 @@ await describe({
         expect(reading.subjects.length,).toBe(prepared.slices.length,);
 
         /**
-         * First slice, which the lane replaced.
+         First slice, which the lane replaced.
          */
         const [first,] = reading.subjects;
         expect(first?.candidateText,).toContain('It purrs.',);
@@ -672,7 +672,7 @@ await describe({
         },);
 
         /**
-         * Subjects the artifact offers.
+         Subjects the artifact offers.
          */
         const { subjects, } = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
@@ -686,13 +686,13 @@ await describe({
         expect(subjects[0]?.auditsArchiveText,).toBe(false,);
 
         /**
-         * Every slice after the first, all of which kept the archive.
+         Every slice after the first, all of which kept the archive.
          */
         const retained = subjects.slice(1,);
         expect(retained.length > 0,).toBe(true,);
 
         /**
-         * Whether every one of them is marked as the archive's own wording.
+         Whether every one of them is marked as the archive's own wording.
          */
         const allArchive = retained.every(function keptArchive(subject,): boolean {
           return subject.auditsArchiveText;
@@ -720,7 +720,7 @@ await describe({
         },);
 
         /**
-         * Subjects the artifact offers.
+         Subjects the artifact offers.
          */
         const { subjects, } = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
@@ -731,7 +731,7 @@ await describe({
         },);
 
         /**
-         * Identity block the first subject carries.
+         Identity block the first subject carries.
          */
         const identity = subjects[0]?.identity;
         expect(identity?.kind,).toBe('declared',);
@@ -748,8 +748,8 @@ await describe({
         await using archive = await makeArchive();
 
         /**
-         * A second entry whose pages carry no front matter, committed after the
-         * first.
+         A second entry whose pages carry no front matter, committed after the
+         first.
          */
         const bareSha = await commitEntry({
           cloneDir: corpus.cloneDir,
@@ -769,7 +769,7 @@ await describe({
         },);
 
         /**
-         * Subjects that artifact offers.
+         Subjects that artifact offers.
          */
         const { subjects, } = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
@@ -815,7 +815,7 @@ await describe({
         },);
 
         /**
-         * Artifact read after the clone moved on.
+         Artifact read after the clone moved on.
          */
         const reading = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
@@ -829,7 +829,7 @@ await describe({
           .kind,).toBe('verified',);
 
         /**
-         * Identity block, which must still name the cat the run licensed.
+         Identity block, which must still name the cat the run licensed.
          */
         const identity = reading.subjects[0]?.identity;
         expect(identity?.kind === 'declared' ? identity.context : '',).toContain('Mittens',);
@@ -864,7 +864,7 @@ await describe({
         },);
 
         /**
-         * Artifact read against a preparation it does not describe.
+         Artifact read against a preparation it does not describe.
          */
         const reading = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
@@ -890,7 +890,7 @@ await describe({
         await using archive = await makeArchive();
 
         /**
-         * How a roster run carved it: sections crossed, block rounds asked.
+         How a roster run carved it: sections crossed, block rounds asked.
          */
         const paired = prepareDocumentPair({
           sourceText: SOURCE_PAGE,
@@ -920,7 +920,7 @@ await describe({
         },);
 
         /**
-         * Artifact read against the corpus with its own recipe.
+         Artifact read against the corpus with its own recipe.
          */
         const reading = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
@@ -960,7 +960,7 @@ await describe({
         },);
 
         /**
-         * Artifact read against a pair it does not describe, with no recipe.
+         Artifact read against a pair it does not describe, with no recipe.
          */
         const reading = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
@@ -971,7 +971,7 @@ await describe({
         },);
 
         /**
-         * Verdict, narrowed for its fields.
+         Verdict, narrowed for its fields.
          */
         const { verification, } = reading;
         expect(verification.kind,).toBe('unverifiable',);
@@ -998,7 +998,7 @@ await describe({
         await using archive = await makeArchive();
 
         /**
-         * Preparation both run sets were settled over.
+         Preparation both run sets were settled over.
          */
         const prepared = prepareDocumentPair({
           sourceText: SOURCE_PAGE,
@@ -1023,7 +1023,7 @@ await describe({
         },);
 
         /**
-         * Everything the archive holds.
+         Everything the archive holds.
          */
         const readings = await readArchiveSubjects({
           archiveDir: archive.archiveDir,
@@ -1068,7 +1068,7 @@ await describe({
         );
 
         /**
-         * Everything the archive holds.
+         Everything the archive holds.
          */
         const readings = await readArchiveSubjects({
           archiveDir: archive.archiveDir,
@@ -1090,7 +1090,7 @@ await describe({
         await using archive = await makeArchive();
 
         /**
-         * Pair both sides describe.
+         Pair both sides describe.
          */
         const prepared = prepareDocumentPair({
           sourceText: SOURCE_PAGE,
@@ -1108,7 +1108,7 @@ await describe({
         },);
 
         /**
-         * Everything the flat directory holds.
+         Everything the flat directory holds.
          */
         const readings = await readArchiveSubjects({
           archiveDir: archive.archiveDir,
@@ -1134,7 +1134,7 @@ await describe({
         await using archive = await makeArchive();
 
         /**
-         * Pair both sides describe.
+         Pair both sides describe.
          */
         const prepared = prepareDocumentPair({
           sourceText: SOURCE_PAGE,
@@ -1157,7 +1157,7 @@ await describe({
         },);
 
         /**
-         * What the reader says about the mixture.
+         What the reader says about the mixture.
          */
         const refusal = await readArchiveSubjects({
           archiveDir: archive.archiveDir,

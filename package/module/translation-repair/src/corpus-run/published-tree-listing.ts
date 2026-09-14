@@ -30,34 +30,34 @@ import {
 // directory holds unlicensed corpus wording.
 
 /**
- * Directory under a runs dir holding one settled artifact per entry.
+ Directory under a runs dir holding one settled artifact per entry.
  */
 export const ARTIFACTS_DIR = 'artifacts';
 
 /**
- * Suffix every settled artifact file carries.
+ Suffix every settled artifact file carries.
  */
 export const ARTIFACT_SUFFIX = '.json';
 
 /**
- * What a run leaves to verify, or why it leaves nothing.
- *
- * @example
- * ```ts
- * const run: VerifiableRun = { kind: 'nothing-verified', why: 'no run', };
- * ```
+ What a run leaves to verify, or why it leaves nothing.
+ 
+ @example
+ ```ts
+ const run: VerifiableRun = { kind: 'nothing-verified', why: 'no run', };
+ ```
  */
 export type VerifiableRun =
   | {
     readonly kind: 'checkable';
 
     /**
-     * Entry ids the run settled, sorted.
+     Entry ids the run settled, sorted.
      */
     readonly settled: readonly string[];
 
     /**
-     * Entry ids the run published, sorted, empty where the tree is absent.
+     Entry ids the run published, sorted, empty where the tree is absent.
      */
     readonly published: readonly string[];
   }
@@ -65,28 +65,28 @@ export type VerifiableRun =
     readonly kind: 'nothing-verified';
 
     /**
-     * Why nothing could be checked, phrased as a clause a report can carry.
+     Why nothing could be checked, phrased as a clause a report can carry.
      */
     readonly why: string;
   };
 
 /**
- * Lists the entries a run settled, by the artifacts it wrote.
- *
- * @param runsDir - run directory holding the artifacts
- *
- * @returns Entry ids, sorted, or why the artifacts directory could not be read
- *
- * @example
- * ```ts
- * const settled = await settledEntryIds({ runsDir, },);
- * ```
+ Lists the entries a run settled, by the artifacts it wrote.
+ 
+ @param runsDir - run directory holding the artifacts
+ 
+ @returns Entry ids, sorted, or why the artifacts directory could not be read
+ 
+ @example
+ ```ts
+ const settled = await settledEntryIds({ runsDir, },);
+ ```
  */
 export async function settledEntryIds(
   { runsDir, }: { readonly runsDir: string; },
 ): Promise<DirectoryReading> {
   /**
-   * Everything the artifacts directory holds, or why it holds nothing here.
+   Everything the artifacts directory holds, or why it holds nothing here.
    */
   const reading = await namesIn({
     dir: join(
@@ -116,22 +116,22 @@ export async function settledEntryIds(
 }
 
 /**
- * Lists the entries a run published, by the pages it wrote.
- *
- * @param runsDir - run directory holding the fixed tree
- *
- * @returns Entry ids, sorted, or why the published tree could not be read
- *
- * @example
- * ```ts
- * const published = await publishedEntryIds({ runsDir, },);
- * ```
+ Lists the entries a run published, by the pages it wrote.
+ 
+ @param runsDir - run directory holding the fixed tree
+ 
+ @returns Entry ids, sorted, or why the published tree could not be read
+ 
+ @example
+ ```ts
+ const published = await publishedEntryIds({ runsDir, },);
+ ```
  */
 export async function publishedEntryIds(
   { runsDir, }: { readonly runsDir: string; },
 ): Promise<DirectoryReading> {
   /**
-   * Everything the people directory of the fixed tree holds.
+   Everything the people directory of the fixed tree holds.
    */
   const reading = await namesIn({
     dir: join(
@@ -153,30 +153,30 @@ export async function publishedEntryIds(
 }
 
 /**
- * Decides whether a run has anything to verify at all.
- *
- * TWO WAYS TO VERIFY NOTHING, and both have to leave a verdict a gate can
- * refuse on. An artifacts directory that is not there means the caller is
- * pointed at something that is not a run. An artifacts directory holding no
- * artifact means the run settled no entry. Neither is a clean run, and before
- * `#217` both read as one.
- *
- * AN ABSENT PUBLISHED TREE IS DELIBERATELY NOT ONE OF THEM. Beside real
- * artifacts it means every settled entry was never published, and a resumed
- * pass skips exactly those entries, so no reader will ever find a page for
- * them. Reporting that as an empty tree keeps it a finding the caller counts,
- * rather than a silence that ends the report.
- *
- * @param settled - what the artifacts directory listed
- *
- * @param published - what the published tree listed
- *
- * @returns Ids to check, or why there are none
- *
- * @example
- * ```ts
- * const run = whatThereIsToVerify({ settled, published, },);
- * ```
+ Decides whether a run has anything to verify at all.
+ 
+ TWO WAYS TO VERIFY NOTHING, and both have to leave a verdict a gate can
+ refuse on. An artifacts directory that is not there means the caller is
+ pointed at something that is not a run. An artifacts directory holding no
+ artifact means the run settled no entry. Neither is a clean run, and before
+ `#217` both read as one.
+ 
+ AN ABSENT PUBLISHED TREE IS DELIBERATELY NOT ONE OF THEM. Beside real
+ artifacts it means every settled entry was never published, and a resumed
+ pass skips exactly those entries, so no reader will ever find a page for
+ them. Reporting that as an empty tree keeps it a finding the caller counts,
+ rather than a silence that ends the report.
+ 
+ @param settled - what the artifacts directory listed
+ 
+ @param published - what the published tree listed
+ 
+ @returns Ids to check, or why there are none
+ 
+ @example
+ ```ts
+ const run = whatThereIsToVerify({ settled, published, },);
+ ```
  */
 export function whatThereIsToVerify(
   {
@@ -194,7 +194,7 @@ export function whatThereIsToVerify(
     };
 
   /**
-   * How many artifacts the directory turned out to hold.
+   How many artifacts the directory turned out to hold.
    */
   const settledCount = settled
     .names

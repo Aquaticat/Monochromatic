@@ -1,25 +1,25 @@
 /**
- * Tests for reading every optimal alignment out of the heading table.
- *
- * WHY THIS ONE IS WORTH PINNING DIRECTLY. `#71` is what a wrong answer here
- * costs: facing 14 source sections and 12 target ones, the old aligner slid
- * every pairing by two, so every critic call afterwards compared the wrong
- * original against the wrong translation and every issue it filed was noise. A
- * gap belongs where it is, and the sections around it keep their partners.
- *
- * The other half is WIDTH. This is exported so a probe can ask how wide an
- * ambiguity is rather than only that there was one, and hesitating between two
- * adjacent boundaries wants a different remedy from hesitating across a page.
- * Width shows up as a partner set larger than one.
- *
- * THIS TABLE ANSWERS "what does SOME optimal alignment do", not "what may we
- * claim". Two headings sharing nothing still pair here, and the caller decides
- * whether that pairing is admissible. A case at the end pins that boundary so a
- * reader does not mistake this for the policy.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading every optimal alignment out of the heading table.
+ 
+ WHY THIS ONE IS WORTH PINNING DIRECTLY. `#71` is what a wrong answer here
+ costs: facing 14 source sections and 12 target ones, the old aligner slid
+ every pairing by two, so every critic call afterwards compared the wrong
+ original against the wrong translation and every issue it filed was noise. A
+ gap belongs where it is, and the sections around it keep their partners.
+ 
+ The other half is WIDTH. This is exported so a probe can ask how wide an
+ ambiguity is rather than only that there was one, and hesitating between two
+ adjacent boundaries wants a different remedy from hesitating across a page.
+ Width shows up as a partner set larger than one.
+ 
+ THIS TABLE ANSWERS "what does SOME optimal alignment do", not "what may we
+ claim". Two headings sharing nothing still pair here, and the caller decides
+ whether that pairing is admissible. A case at the end pins that boundary so a
+ reader does not mistake this for the policy.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -31,16 +31,16 @@ import {
 import { scanOptimalPaths, } from '../dist/final/node/index.mjs';
 
 /**
- * Renders one side's sets as plain arrays, so a case reads as what it claims.
- *
- * @param sets - partner or gap sets in unit order
- *
- * @returns Same sets as sorted arrays
- *
- * @example
- * ```ts
- * expect(listed({ sets: paths.partnersOfSource, },),).toEqual([[0,], [1,],],);
- * ```
+ Renders one side's sets as plain arrays, so a case reads as what it claims.
+ 
+ @param sets - partner or gap sets in unit order
+ 
+ @returns Same sets as sorted arrays
+ 
+ @example
+ ```ts
+ expect(listed({ sets: paths.partnersOfSource, },),).toEqual([[0,], [1,],],);
+ ```
  */
 function listed(
   { sets, }: { readonly sets: readonly ReadonlySet<number>[]; },
@@ -56,7 +56,7 @@ function listed(
 }
 
 /**
- * Three sections a document might carry.
+ Three sections a document might carry.
  */
 const THREE = [
   'Sill',
@@ -95,7 +95,7 @@ await describe({
         + 'the shape most of the corpus has and the one every other case is a departure from',
       fn: async () => {
         /**
-         * What the table says about two identical sides.
+         What the table says about two identical sides.
          */
         const paths = scanOptimalPaths({
           sourceHeadings: THREE,
@@ -127,7 +127,7 @@ await describe({
         + 'so a document lost its alignment from the first section rather than the last',
       fn: async () => {
         /**
-         * What the table says when the translation stops early.
+         What the table says when the translation stops early.
          */
         const paths = scanOptimalPaths({
           sourceHeadings: THREE,
@@ -178,7 +178,7 @@ await describe({
         + 'rather than pairing it with a source section that means something else',
       fn: async () => {
         /**
-         * What the table says when the translation carries an extra section.
+         What the table says when the translation carries an extra section.
          */
         const paths = scanOptimalPaths({
           sourceHeadings: [
@@ -207,7 +207,7 @@ await describe({
         + 'caller tell a hesitation between neighbours from a hesitation across a page',
       fn: async () => {
         /**
-         * What the table says when two sections are indistinguishable.
+         What the table says when two sections are indistinguishable.
          */
         const paths = scanOptimalPaths({
           sourceHeadings: [
@@ -239,7 +239,7 @@ await describe({
         + 'document with no headings at all is a shape the corpus has, and it is not a malformed input',
       fn: async () => {
         /**
-         * Original with nothing to pair.
+         Original with nothing to pair.
          */
         const noSource = scanOptimalPaths({
           sourceHeadings: [],
@@ -250,7 +250,7 @@ await describe({
         expect(noSource.targetCanGap,).toEqual([true,],);
 
         /**
-         * Translation with nothing to pair.
+         Translation with nothing to pair.
          */
         const noTarget = scanOptimalPaths({
           sourceHeadings: ['Sill',],

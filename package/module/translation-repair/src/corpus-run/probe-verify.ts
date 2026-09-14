@@ -38,20 +38,20 @@ import {
 // quotes that text and lands outside the repository.
 
 /**
- * Admissible claims, which are the only ones worth putting to a human.
- *
- * A contradicted claim is one the differential already refuted, and an
- * unanchored one quotes nothing checkable. Asking about either would spend a
- * reader's attention on a claim the deterministic screen has already settled.
- *
- * @param claims - screened claims of one region
- *
- * @returns Claims the screen corroborated
- *
- * @example
- * ```ts
- * const admissible = keepAdmissible({ claims, },);
- * ```
+ Admissible claims, which are the only ones worth putting to a human.
+ 
+ A contradicted claim is one the differential already refuted, and an
+ unanchored one quotes nothing checkable. Asking about either would spend a
+ reader's attention on a claim the deterministic screen has already settled.
+ 
+ @param claims - screened claims of one region
+ 
+ @returns Claims the screen corroborated
+ 
+ @example
+ ```ts
+ const admissible = keepAdmissible({ claims, },);
+ ```
  */
 function keepAdmissible(
   { claims, }: { readonly claims: readonly ScreenedDefectClaim[]; },
@@ -64,22 +64,22 @@ function keepAdmissible(
 }
 
 /**
- * Probes one region with the accepted issues withheld.
- *
- * @param relabelCase - region and its surrounding texts
- *
- * @returns Admissible claims raised, empty when the probe found nothing
- *
- * @example
- * ```ts
- * const claims = await probeWithheld({ relabelCase, },);
- * ```
+ Probes one region with the accepted issues withheld.
+ 
+ @param relabelCase - region and its surrounding texts
+ 
+ @returns Admissible claims raised, empty when the probe found nothing
+ 
+ @example
+ ```ts
+ const claims = await probeWithheld({ relabelCase, },);
+ ```
  */
 async function probeWithheld(
   { relabelCase, }: { readonly relabelCase: RelabelCase; },
 ): Promise<readonly ScreenedDefectClaim[]> {
   /**
-   * Report for this single region, with nothing labelled pre-existing.
+   Report for this single region, with nothing labelled pre-existing.
    */
   const report = await runIntroducedDefectProbe({
     client: createRunClient(),
@@ -94,7 +94,7 @@ async function probeWithheld(
   },);
 
   /**
-   * Screened tally of the single region.
+   Screened tally of the single region.
    */
   const [tally,] = report.regions;
 
@@ -102,18 +102,18 @@ async function probeWithheld(
 }
 
 /**
- * Probes every case and keeps the ones the probe flagged.
- *
- * @param cases - regions to probe
- *
- * @param kind - which set these came from, for the manifest
- *
- * @returns Sheet items, one per flagged region
- *
- * @example
- * ```ts
- * const items = await collectFlagged({ cases, kind: 'control', },);
- * ```
+ Probes every case and keeps the ones the probe flagged.
+ 
+ @param cases - regions to probe
+ 
+ @param kind - which set these came from, for the manifest
+ 
+ @returns Sheet items, one per flagged region
+ 
+ @example
+ ```ts
+ const items = await collectFlagged({ cases, kind: 'control', },);
+ ```
  */
 async function collectFlagged(
   {
@@ -125,7 +125,7 @@ async function collectFlagged(
   },
 ): Promise<readonly VerifyItem[]> {
   /**
-   * Items gathered so far.
+   Items gathered so far.
    */
   const items: VerifyItem[] = [];
   // Sequential so this never competes with a running corpus pass for the
@@ -133,7 +133,7 @@ async function collectFlagged(
   /* oxlint-disable no-await-in-loop -- sequential by design, see comment */
   for (const relabelCase of cases) {
     /**
-     * Admissible claims on this region.
+     Admissible claims on this region.
      */
     const claims = await probeWithheld({ relabelCase, },);
     console.log(
@@ -156,32 +156,32 @@ async function collectFlagged(
 }
 
 /**
- * Builds the blind verification sheet and its scoring manifest.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Builds the blind verification sheet and its scoring manifest.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Run artifact root for this checkout.
+   Run artifact root for this checkout.
    */
   const dir = await resolveRunsDir();
 
   /**
-   * Manifest the damaged positions index into.
+   Manifest the damaged positions index into.
    */
   const manifestPath =
     `${dir}/sample-manifest-milestone-three-precision-round-three.json`;
 
   /**
-   * Regions a human read as damaged.
+   Regions a human read as damaged.
    */
   const damaged = await gatherRelabelCases({ manifestPath, },);
 
   /**
-   * Regions from the same entries that nobody read.
+   Regions from the same entries that nobody read.
    */
   const controls = await gatherControlCases({
     manifestPath,
@@ -194,7 +194,7 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Flagged regions from both sets.
+   Flagged regions from both sets.
    */
   const items = [
     ...await collectFlagged({

@@ -1,14 +1,14 @@
 /**
- * Tests for the rendering audit stage, driven through the whole instrument.
- *
- * WHY END TO END rather than through the matcher alone: the question this exists
- * to answer is whether a defect survives the trip from a scripted reply, through
- * anchoring, into an aggregate. The pieces are tested apart in their own files;
- * these cases exist to catch a seam between them.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the rendering audit stage, driven through the whole instrument.
+ 
+ WHY END TO END rather than through the matcher alone: the question this exists
+ to answer is whether a defect survives the trip from a scripted reply, through
+ anchoring, into an aggregate. The pieces are tested apart in their own files;
+ these cases exist to catch a seam between them.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -27,12 +27,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the audits under test.
+ Logger for the audits under test.
  */
 const l = tagged({ tag: 'rendering-audit-test', },);
 
 /**
- * Auditors the fixtures configure.
+ Auditors the fixtures configure.
  */
 const AUDITORS: readonly RosterModelId[] = [
   'hf:Qwen/Qwen3.8-27B',
@@ -41,51 +41,51 @@ const AUDITORS: readonly RosterModelId[] = [
 ];
 
 /**
- * Original passage, carrying a negation the candidate can drop.
+ Original passage, carrying a negation the candidate can drop.
  */
 const SOURCE_TEXT = '三只猫住在书店的阁楼里。她们不吃罐头，每天傍晚只喝一碗温牛奶。';
 
 /**
- * Rendering with the negation dropped.
+ Rendering with the negation dropped.
  */
 const CANDIDATE_TEXT = 'Three cats live in the attic of the bookshop. They eat canned food, '
   + 'and every evening they drink one bowl of warm milk.';
 
 /**
- * Deadline every fixture call runs under.
+ Deadline every fixture call runs under.
  */
 const CALL_TIMEOUT_MS = 4_000;
 
 /**
- * What one scripted auditor answers.
+ What one scripted auditor answers.
  */
 type ScriptedVoice = {
   /**
-   * Verdict it casts.
+   Verdict it casts.
    */
   readonly verdict: string;
 
   /**
-   * Findings it claims, already in wire shape.
+   Findings it claims, already in wire shape.
    */
   readonly findings: readonly Readonly<Record<string, string>>[];
 };
 
 /**
- * One honest polarity finding, located however this voice chose to locate it.
- *
- * @param sourceLocator - original span this voice quotes
- *
- * @param candidateLocator - candidate span it quotes
- *
- * @param reason - what it says the spans amount to
- *
- * @returns Finding in wire shape
- *
- * @example
- * ```ts
- * const finding = polarityFinding({ sourceLocator, candidateLocator, reason, },);
- * ```
+ One honest polarity finding, located however this voice chose to locate it.
+ 
+ @param sourceLocator - original span this voice quotes
+ 
+ @param candidateLocator - candidate span it quotes
+ 
+ @param reason - what it says the spans amount to
+ 
+ @returns Finding in wire shape
+ 
+ @example
+ ```ts
+ const finding = polarityFinding({ sourceLocator, candidateLocator, reason, },);
+ ```
  */
 function polarityFinding(
   {
@@ -109,7 +109,7 @@ function polarityFinding(
 }
 
 /**
- * A voice that found nothing.
+ A voice that found nothing.
  */
 const QUIET_VOICE: ScriptedVoice = {
   verdict: 'no-defect-found',
@@ -117,16 +117,16 @@ const QUIET_VOICE: ScriptedVoice = {
 };
 
 /**
- * Client answering with one scripted reply per auditor.
- *
- * @param script - what each auditor answers, keyed by model id
- *
- * @returns Client the stage calls
- *
- * @example
- * ```ts
- * const client = catClient({ script, },);
- * ```
+ Client answering with one scripted reply per auditor.
+ 
+ @param script - what each auditor answers, keyed by model id
+ 
+ @returns Client the stage calls
+ 
+ @example
+ ```ts
+ const client = catClient({ script, },);
+ ```
  */
 function catClient(
   { script, }: { readonly script: Readonly<Record<string, ScriptedVoice>>; },
@@ -139,7 +139,7 @@ function catClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * What this auditor was scripted to answer, or silence.
+       What this auditor was scripted to answer, or silence.
        */
       const scripted: unknown = script[request.modelId];
 
@@ -166,16 +166,16 @@ function catClient(
 }
 
 /**
- * Runs one audit over the flipped rendering.
- *
- * @param script - what each auditor answers
- *
- * @returns What the stage reported
- *
- * @example
- * ```ts
- * const report = await auditWith({ script, },);
- * ```
+ Runs one audit over the flipped rendering.
+ 
+ @param script - what each auditor answers
+ 
+ @returns What the stage reported
+ 
+ @example
+ ```ts
+ const report = await auditWith({ script, },);
+ ```
  */
 async function auditWith(
   { script, }: { readonly script: Readonly<Record<string, ScriptedVoice>>; },
@@ -306,7 +306,7 @@ await describe({
         + 'is not in the documents',
       fn: async () => {
         /**
-         * Two voices quoting a rendering nobody was shown.
+         Two voices quoting a rendering nobody was shown.
          */
         const invented = {
           category: 'unsupported-addition',

@@ -27,17 +27,17 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 // is invisible, since a cheap run and a well cached one look identical.
 
 /**
- * Every lane that can pay for a slice.
- *
- * DECLARED AS VALUES with the type derived from them, rather than the other way
- * round, because the reader validates against this list and the writer is typed
- * by it. Two hand-kept copies would drift the moment a lane is added, and the
- * failure would be a reader silently refusing lines a lane really writes.
- *
- * @example
- * ```ts
- * const known = SLICE_COST_LANES.includes(raw,);
- * ```
+ Every lane that can pay for a slice.
+ 
+ DECLARED AS VALUES with the type derived from them, rather than the other way
+ round, because the reader validates against this list and the writer is typed
+ by it. Two hand-kept copies would drift the moment a lane is added, and the
+ failure would be a reader silently refusing lines a lane really writes.
+ 
+ @example
+ ```ts
+ const known = SLICE_COST_LANES.includes(raw,);
+ ```
  */
 export const SLICE_COST_LANES = [
   'translate',
@@ -46,23 +46,23 @@ export const SLICE_COST_LANES = [
 ] as const;
 
 /**
- * Which lane paid for a slice.
- *
- * @example
- * ```ts
- * const lane: SliceCostLane = 'translate';
- * ```
+ Which lane paid for a slice.
+ 
+ @example
+ ```ts
+ const lane: SliceCostLane = 'translate';
+ ```
  */
 export type SliceCostLane = typeof SLICE_COST_LANES[number];
 
 /**
- * Every way a lane can leave a slice, kept as values for the same reason
- * {@link SLICE_COST_LANES} is.
- *
- * @example
- * ```ts
- * const known = SLICE_COST_EXITS.includes(raw,);
- * ```
+ Every way a lane can leave a slice, kept as values for the same reason
+ {@link SLICE_COST_LANES} is.
+ 
+ @example
+ ```ts
+ const known = SLICE_COST_EXITS.includes(raw,);
+ ```
  */
 export const SLICE_COST_EXITS = [
   'computed',
@@ -76,115 +76,115 @@ export const SLICE_COST_EXITS = [
 ] as const;
 
 /**
- * How a lane left one slice, which decides whether its cost is a measurement of
- * anything.
- *
- * Only `computed` prices fresh completed work. `resumed` answered from cache,
- * `reused` shared an identical purchase in same run, and `no-translation`
- * found nothing to repair. `unfilled`, `unsettled`, and `failed` bought work but
- * produced no final answer. `aborted` was cut mid-flight and prices deadline.
- *
- * @example
- * ```ts
- * const exit: SliceCostExit = 'resumed';
- * ```
+ How a lane left one slice, which decides whether its cost is a measurement of
+ anything.
+ 
+ Only `computed` prices fresh completed work. `resumed` answered from cache,
+ `reused` shared an identical purchase in same run, and `no-translation`
+ found nothing to repair. `unfilled`, `unsettled`, and `failed` bought work but
+ produced no final answer. `aborted` was cut mid-flight and prices deadline.
+ 
+ @example
+ ```ts
+ const exit: SliceCostExit = 'resumed';
+ ```
  */
 export type SliceCostExit = typeof SLICE_COST_EXITS[number];
 
 /**
- * Exit assumed when a lane leaves a slice without naming one, which is the
- * ordinary path through both loop bodies.
+ Exit assumed when a lane leaves a slice without naming one, which is the
+ ordinary path through both loop bodies.
  */
 const DEFAULT_EXIT: SliceCostExit = 'computed';
 
 /**
- * Exit assumed when a lane leaves a slice without naming one WHILE THE RUN IS
- * BEING TORN DOWN.
- *
- * Read from the signal rather than named at each throw site, deliberately. A
- * slice can leave its loop body by throwing from several places (an abort check
- * before the stages, the stages themselves, an assertion after them), and
- * `Symbol.dispose` is not told which exception took it there. Naming each site
- * would record whichever ones someone remembered, which is the failure the
- * scope binding exists to avoid.
+ Exit assumed when a lane leaves a slice without naming one WHILE THE RUN IS
+ BEING TORN DOWN.
+ 
+ Read from the signal rather than named at each throw site, deliberately. A
+ slice can leave its loop body by throwing from several places (an abort check
+ before the stages, the stages themselves, an assertion after them), and
+ `Symbol.dispose` is not told which exception took it there. Naming each site
+ would record whichever ones someone remembered, which is the failure the
+ scope binding exists to avoid.
  */
 const ABORTED_EXIT: SliceCostExit = 'aborted';
 
 /**
- * Token every cost line opens with, so a reader can find them among unrelated
- * logging without matching on wording that may be reworded.
- *
- * @example
- * ```ts
- * const isCostLine = line.includes(SLICE_COST_MARKER,);
- * ```
+ Token every cost line opens with, so a reader can find them among unrelated
+ logging without matching on wording that may be reworded.
+ 
+ @example
+ ```ts
+ const isCostLine = line.includes(SLICE_COST_MARKER,);
+ ```
  */
 export const SLICE_COST_MARKER = 'SLICE-COST';
 
 /**
- * Token every slice opening line starts with.
- *
- * Paired with {@link SLICE_COST_MARKER} so an operator can identify current
- * slice before it finishes rather than infer progress from cache modification
- * times.
- *
- * @example
- * ```ts
- * const isStartLine = line.includes(SLICE_START_MARKER,);
- * ```
+ Token every slice opening line starts with.
+ 
+ Paired with {@link SLICE_COST_MARKER} so an operator can identify current
+ slice before it finishes rather than infer progress from cache modification
+ times.
+ 
+ @example
+ ```ts
+ const isStartLine = line.includes(SLICE_START_MARKER,);
+ ```
  */
 export const SLICE_START_MARKER = 'SLICE-START';
 
 /**
- * Open cost measurement, which reports when it leaves scope.
- *
- * @example
- * ```ts
- * using span: SliceCostSpan = armSliceCost({ l, lane: 'repair', sliceIndex, sourceChars, },);
- * ```
+ Open cost measurement, which reports when it leaves scope.
+ 
+ @example
+ ```ts
+ using span: SliceCostSpan = armSliceCost({ l, lane: 'repair', sliceIndex, sourceChars, },);
+ ```
  */
 export type SliceCostSpan = {
   /**
-   * Reports elapsed time for this slice.
+   Reports elapsed time for this slice.
    */
   readonly [Symbol.dispose]: () => void;
 
   /**
-   * Names how this slice was left, for a path that is not ordinary completion.
-   *
-   * Called BEFORE leaving, since the report is written on scope exit and cannot
-   * ask afterwards which branch took it there. Calling more than once keeps the
-   * last name, so a path that refines its own answer reports the refined one.
+   Names how this slice was left, for a path that is not ordinary completion.
+   
+   Called BEFORE leaving, since the report is written on scope exit and cannot
+   ask afterwards which branch took it there. Calling more than once keeps the
+   last name, so a path that refines its own answer reports the refined one.
    */
   readonly left: ({ exit, }: { readonly exit: SliceCostExit; },) => void;
 };
 
 /**
- * Starts measuring one slice, reporting when the measurement leaves scope.
- *
- * BOUND TO SCOPE RATHER THAN TO A CALL AT THE END, because slice-paying stages
- * leave by more than one path: a cached answer, a slice no lane applies to, and
- * an ordinary completion all exit the same loop body. A closing call would
- * record whichever paths someone remembered.
- *
- * @param l - logger already tagged with the calling lane
- *
- * @param lane - which lane is paying
- *
- * @param sliceIndex - slice this measures, named as every record names it
- *
- * @param sourceChars - size of what was translated, so cost can be read against
- * it
- *
- * @param signal - run's abort, read on scope exit so a slice cut mid-flight
- * reports itself rather than passing as ordinary work
- *
- * @returns Measurement reporting on scope exit
- *
- * @example
- * ```ts
- * using span = armSliceCost({ l: rl, lane: 'repair', sliceIndex: 3, sourceChars: 812, signal, },);
- * ```
+ Starts measuring one slice, reporting when the measurement leaves scope.
+ 
+ BOUND TO SCOPE RATHER THAN TO A CALL AT THE END, because slice-paying stages
+ leave by more than one path: a cached answer, a slice no lane applies to, and
+ an ordinary completion all exit the same loop body. A closing call would
+ record whichever paths someone remembered.
+ 
+ @param l - logger already tagged with the calling lane
+ 
+ @param lane - which lane is paying
+ 
+ @param sliceIndex - slice this measures, named as every record names it
+ 
+ @param sourceChars - size of what was translated, so cost can be read against
+ it
+ 
+ @param signal - run's abort, read on scope exit so a slice cut mid-flight
+ reports itself rather than passing as ordinary work
+ 
+ @returns Measurement reporting on scope exit
+ 
+ @example
+ ```ts
+ using span = armSliceCost({ l: rl, lane: 'repair', sliceIndex: 3, sourceChars: 812, signal, },);
+ ```
  */
 export function armSliceCost(
   {
@@ -202,7 +202,7 @@ export function armSliceCost(
   },
 ): SliceCostSpan {
   /**
-   * When this slice began, against which the report is measured.
+   When this slice began, against which the report is measured.
    */
   const startedAt = Date.now();
 
@@ -211,11 +211,11 @@ export function armSliceCost(
   );
 
   /**
-   * How this slice was left, until a path says otherwise.
-   *
-   * A NAMED CELL rather than a bare binding, because this value is written by
-   * one function and read by another, which makes it state the measurement
-   * holds rather than a local of either.
+   How this slice was left, until a path says otherwise.
+   
+   A NAMED CELL rather than a bare binding, because this value is written by
+   one function and read by another, which makes it state the measurement
+   holds rather than a local of either.
    */
   const taken = { exit: DEFAULT_EXIT, };
 
@@ -225,17 +225,17 @@ export function armSliceCost(
     },
     [Symbol.dispose](): void {
       /**
-       * Exit this line reports.
-       *
-       * A TERMINAL NAMED PATH WINS over signal, since a lane that said
-       * `resumed` bought nothing whether run was later torn down or not.
-       * Ordinary work and provisional `failed` both remain in flight until
-       * scope exit, so caller abort decides those paths.
+       Exit this line reports.
+       
+       A TERMINAL NAMED PATH WINS over signal, since a lane that said
+       `resumed` bought nothing whether run was later torn down or not.
+       Ordinary work and provisional `failed` both remain in flight until
+       scope exit, so caller abort decides those paths.
        */
       const mayStillBeInFlight = (taken.exit === DEFAULT_EXIT)
         || (taken.exit === 'failed');
       /**
-       * Exit after caller abort takes precedence over in-flight fallback.
+       Exit after caller abort takes precedence over in-flight fallback.
        */
       const exit = mayStillBeInFlight && signal.aborted
         ? ABORTED_EXIT

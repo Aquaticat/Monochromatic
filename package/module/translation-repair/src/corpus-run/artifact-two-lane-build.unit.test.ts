@@ -1,19 +1,19 @@
 /**
- * Tests for the two-lane settled artifact.
- *
- * WHAT THESE PIN is what the builder DERIVES rather than accepts. Version 1
- * took a status and two counts beside the result they described, so a caller
- * could state a status the result contradicted and counts nothing had counted.
- * The version 2 builder takes only what cannot be computed from the run, and
- * everything else, the preparation identity and the whole lane comparison
- * included, comes off the preparation and the two ledgers.
- *
- * They also pin the shape the generation exists for: no lane at the top level,
- * and a lane selection that says out loud that nobody has picked one.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the two-lane settled artifact.
+ 
+ WHAT THESE PIN is what the builder DERIVES rather than accepts. Version 1
+ took a status and two counts beside the result they described, so a caller
+ could state a status the result contradicted and counts nothing had counted.
+ The version 2 builder takes only what cannot be computed from the run, and
+ everything else, the preparation identity and the whole lane comparison
+ included, comes off the preparation and the two ledgers.
+ 
+ They also pin the shape the generation exists for: no lane at the top level,
+ and a lane selection that says out loud that nobody has picked one.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -37,34 +37,34 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive wording of the first slice, which the archive does translate.
+ Archive wording of the first slice, which the archive does translate.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
 /**
- * Original of that slice.
+ Original of that slice.
  */
 const SOURCE_NAP = '猫猫在窗台上睡觉。';
 
 /**
- * Original of the second slice, which the archive never translated.
+ Original of the second slice, which the archive never translated.
  */
 const SOURCE_BOWL = '猫猫有自己的碗。';
 
 /**
- * Built pipeline these fixtures claim to have run under.
+ Built pipeline these fixtures claim to have run under.
  */
 const DIGEST = 'sha256-tree-v1:'.concat('c'.repeat(64,),) as unknown as PipelineDigest;
 
 /**
- * Two prepared slices: one the archive translates, one it never did.
- *
- * @returns Pairs shaped as preparation produces them
- *
- * @example
- * ```ts
- * const slices = catSlices();
- * ```
+ Two prepared slices: one the archive translates, one it never did.
+ 
+ @returns Pairs shaped as preparation produces them
+ 
+ @example
+ ```ts
+ const slices = catSlices();
+ ```
  */
 function catSlices(): readonly ChunkPair[] {
   return [
@@ -101,14 +101,14 @@ function catSlices(): readonly ChunkPair[] {
 }
 
 /**
- * Preparation both lanes claim to have run over.
- *
- * @returns Preparation shaped as `prepareDocumentPair` returns one
- *
- * @example
- * ```ts
- * const prepared = catPreparation();
- * ```
+ Preparation both lanes claim to have run over.
+ 
+ @returns Preparation shaped as `prepareDocumentPair` returns one
+ 
+ @example
+ ```ts
+ const prepared = catPreparation();
+ ```
  */
 function catPreparation(): PreparedDocumentPair {
   return {
@@ -123,29 +123,29 @@ function catPreparation(): PreparedDocumentPair {
 }
 
 /**
- * Name the cat preparation gives itself, which the driver stamps on both
- * ledgers it builds.
- *
- * @returns Identity of {@link catPreparation}'s slicing
- *
- * @example
- * ```ts
- * const identity = catIdentity();
- * ```
+ Name the cat preparation gives itself, which the driver stamps on both
+ ledgers it builds.
+ 
+ @returns Identity of {@link catPreparation}'s slicing
+ 
+ @example
+ ```ts
+ const identity = catIdentity();
+ ```
  */
 function catIdentity(): PreparationIdentity {
   return preparationIdentity({ prepared: catPreparation(), },);
 }
 
 /**
- * Repair lane ledger: it mended the first slice and had no work at the anchor.
- *
- * @returns Two rows, one per prepared slice
- *
- * @example
- * ```ts
- * const rows = repairLedger();
- * ```
+ Repair lane ledger: it mended the first slice and had no work at the anchor.
+ 
+ @returns Two rows, one per prepared slice
+ 
+ @example
+ ```ts
+ const rows = repairLedger();
+ ```
  */
 function repairLedger(): readonly SliceDeliveryRecord[] {
   return [
@@ -174,14 +174,14 @@ function repairLedger(): readonly SliceDeliveryRecord[] {
 }
 
 /**
- * Translate lane ledger: it kept the archive's first slice and filled the gap.
- *
- * @returns Two rows, one per prepared slice
- *
- * @example
- * ```ts
- * const rows = translateLedger();
- * ```
+ Translate lane ledger: it kept the archive's first slice and filled the gap.
+ 
+ @returns Two rows, one per prepared slice
+ 
+ @example
+ ```ts
+ const rows = translateLedger();
+ ```
  */
 function translateLedger(): readonly SliceDeliveryRecord[] {
   return [
@@ -213,14 +213,14 @@ function translateLedger(): readonly SliceDeliveryRecord[] {
 }
 
 /**
- * What both lanes returned over that preparation.
- *
- * @returns Driver result shaped as `runDocumentLanes` returns one
- *
- * @example
- * ```ts
- * const lanes = catLanes();
- * ```
+ What both lanes returned over that preparation.
+ 
+ @returns Driver result shaped as `runDocumentLanes` returns one
+ 
+ @example
+ ```ts
+ const lanes = catLanes();
+ ```
  */
 function catLanes(): DocumentLanesResult {
   return {
@@ -241,14 +241,14 @@ function catLanes(): DocumentLanesResult {
 }
 
 /**
- * Builds the artifact these cases read.
- *
- * @returns Artifact over the cat preparation and both lanes
- *
- * @example
- * ```ts
- * const artifact = catArtifact();
- * ```
+ Builds the artifact these cases read.
+ 
+ @returns Artifact over the cat preparation and both lanes
+ 
+ @example
+ ```ts
+ const artifact = catArtifact();
+ ```
  */
 function catArtifact(): ReturnType<typeof buildSettledTwoLaneArtifact> {
   return buildSettledTwoLaneArtifact({
@@ -277,7 +277,7 @@ await describe({
         + 'as the output and never learn a second lane existed',
       fn: async () => {
         /**
-         * Artifact over both lanes.
+         Artifact over both lanes.
          */
         const artifact = catArtifact();
         expect(Object.keys(artifact.lanes,)
@@ -317,7 +317,7 @@ await describe({
         + 'artifact records is the identity of the thing the artifact describes',
       fn: async () => {
         /**
-         * Artifact over the cat preparation.
+         Artifact over the cat preparation.
          */
         const artifact = catArtifact();
         expect(artifact.preparation
@@ -337,7 +337,7 @@ await describe({
         + 'way to tell which of the two to believe',
       fn: async () => {
         /**
-         * Artifact over one mended slice and one filled gap.
+         Artifact over one mended slice and one filled gap.
          */
         const artifact = catArtifact();
         expect(artifact.comparison,).toHaveLength(2,);
@@ -364,7 +364,7 @@ await describe({
         + 'actually takes, which are routinely mistaken for each other',
       fn: async () => {
         /**
-         * Artifact over a two-slice preparation.
+         Artifact over a two-slice preparation.
          */
         const artifact = catArtifact();
         expect(artifact.preparation
@@ -384,10 +384,10 @@ await describe({
         + 'whose lanes disagree about their own preparation has nothing worth writing',
       fn: async () => {
         /**
-         * Repair ledger whose anchor row agrees with the preparation on every
-         * per-slice fact and contradicts ITSELF: a lane with no work to do
-         * there, over a passage the archive never had, reported as a
-         * replacement the document carries.
+         Repair ledger whose anchor row agrees with the preparation on every
+         per-slice fact and contradicts ITSELF: a lane with no work to do
+         there, over a passage the archive never had, reported as a
+         replacement the document carries.
          */
         const incoherent = {
           preparationIdentity: catIdentity(),
@@ -429,8 +429,8 @@ await describe({
         + 'short ledgers line up perfectly while describing a document with slices missing',
       fn: async () => {
         /**
-         * Both lanes truncated to the same single row, so nothing about them
-         * disagrees except with the preparation they are filed under.
+         Both lanes truncated to the same single row, so nothing about them
+         disagrees except with the preparation they are filed under.
          */
         const bothShort = {
           ...catLanes(),
@@ -447,7 +447,7 @@ await describe({
         };
 
         /**
-         * What bothLedgersAreShort raised, read for its class as well as its wording.
+         What bothLedgersAreShort raised, read for its class as well as its wording.
          */
         const refusalOfBothLedgersAreShort = caught(function bothLedgersAreShort() {
           buildSettledTwoLaneArtifact({
@@ -476,8 +476,8 @@ await describe({
         + 'preparation agree with each other perfectly',
       fn: async () => {
         /**
-         * Preparation whose first slice renders a different original, which is
-         * a whole other pair of documents wearing the same slice count.
+         Preparation whose first slice renders a different original, which is
+         a whole other pair of documents wearing the same slice count.
          */
         const foreign = {
           ...catPreparation(),
@@ -496,7 +496,7 @@ await describe({
         } as unknown as PreparedDocumentPair;
 
         /**
-         * What ledgersDescribeAnotherPreparation raised, read for its class as well as its wording.
+         What ledgersDescribeAnotherPreparation raised, read for its class as well as its wording.
          */
         const refusalOfLedgersDescribeAnotherPreparation = caught(function ledgersDescribeAnotherPreparation() {
           buildSettledTwoLaneArtifact({
@@ -524,18 +524,18 @@ await describe({
         + 'equal identity is a hash claim and the per-slice facts are what every row is filed under',
       fn: async () => {
         /**
-         * Renumbers a ledger's anchor row, so BOTH lanes name a slice the
-         * preparation does not have there and agree with each other about it.
-         *
-         * @param records - one lane's rows
-         *
-         * @returns Ledger wearing the right name over rows the preparation
-         * contradicts
-         *
-         * @example
-         * ```ts
-         * const misfiled = renumbered({ records: repairLedger(), },);
-         * ```
+         Renumbers a ledger's anchor row, so BOTH lanes name a slice the
+         preparation does not have there and agree with each other about it.
+         
+         @param records - one lane's rows
+         
+         @returns Ledger wearing the right name over rows the preparation
+         contradicts
+         
+         @example
+         ```ts
+         const misfiled = renumbered({ records: repairLedger(), },);
+         ```
          */
         function renumbered(
           { records, }: { readonly records: readonly SliceDeliveryRecord[]; },
@@ -554,7 +554,7 @@ await describe({
         }
 
         /**
-         * What rowsContradictTheName raised, read for its class as well as its wording.
+         What rowsContradictTheName raised, read for its class as well as its wording.
          */
         const refusalOfRowsContradictTheName = caught(function rowsContradictTheName() {
           buildSettledTwoLaneArtifact({
@@ -587,7 +587,7 @@ await describe({
         + 'structurally valid and describes two different runs',
       fn: async () => {
         /**
-         * What resultCountsAnotherRun raised, read for its class as well as its wording.
+         What resultCountsAnotherRun raised, read for its class as well as its wording.
          */
         const refusalOfResultCountsAnotherRun = caught(function resultCountsAnotherRun() {
           buildSettledTwoLaneArtifact({
@@ -622,9 +622,9 @@ await describe({
         + 'them, and the version 2 parser rejects keys the schema does not describe',
       fn: async () => {
         /**
-         * Lanes whose rows, outcomes and deliveries each carry a field no
-         * version 2 reader has heard of, standing in for what a live record
-         * looks like one commit after it grows.
+         Lanes whose rows, outcomes and deliveries each carry a field no
+         version 2 reader has heard of, standing in for what a live record
+         looks like one commit after it grows.
          */
         const overgrown = {
           ...catLanes(),
@@ -649,7 +649,7 @@ await describe({
         } as unknown as DocumentLanesResult;
 
         /**
-         * Exactly what would be written to disk.
+         Exactly what would be written to disk.
          */
         const written = JSON.stringify(buildSettledTwoLaneArtifact({
           pageAssembly: NO_PAGE_ASSEMBLY,
@@ -695,7 +695,7 @@ await describe({
         + 'later stage can repair survives the slice cache being discarded at settlement',
       fn: async () => {
         /**
-         * Preparation carrying a pairing, as the roster shell returns one.
+         Preparation carrying a pairing, as the roster shell returns one.
          */
         const paired = {
           ...catPreparation(),
@@ -757,8 +757,8 @@ await describe({
         + 'pairing is keyed by aligned section and those keys only mean something under this alignment',
       fn: async () => {
         /**
-         * Preparation carrying a section pairing, as the roster shell returns
-         * one when its section round agreed.
+         Preparation carrying a section pairing, as the roster shell returns
+         one when its section round agreed.
          */
         const sectioned = {
           ...catPreparation(),

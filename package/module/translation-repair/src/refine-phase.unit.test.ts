@@ -1,9 +1,9 @@
 /**
- * Tests for the naturalness phase: when it runs, when it rolls back, and that
- * a refinement-only change reaches the shipped text.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the naturalness phase: when it runs, when it rolls back, and that
+ a refinement-only change reaches the shipped text.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -32,43 +32,43 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the phase under test.
+ Logger for the phase under test.
  */
 const l = tagged({ tag: 'refine-phase-test', },);
 
 /**
- * Repaired slice text, one long single-line paragraph so it is eligible.
+ Repaired slice text, one long single-line paragraph so it is eligible.
  */
 const REPAIRED_TEXT =
   'The cat is doing the sunbathing on the windowsill in every afternoon, and when the light is moving across the floor she is following it without any hurry at all.';
 
 /**
- * Smoother rendering of the same content.
+ Smoother rendering of the same content.
  */
 const SMOOTH_TEXT =
   'The cat sunbathes on the windowsill every afternoon, and when the light moves across the floor she follows it without hurry.';
 
 /**
- * Original the refinement is checked against.
+ Original the refinement is checked against.
  */
 const SOURCE_TEXT = '猫猫每天下午都在窗台上晒太阳。';
 
 /**
- * Editor named as the author of `T1` where a case sets one.
- *
- * KEPT OUT OF THE REFINER ROSTER so a stored authorship carries two
- * distinguishable ids, which is what lets an assertion tell a union of both
- * stages apart from either stage alone.
+ Editor named as the author of `T1` where a case sets one.
+ 
+ KEPT OUT OF THE REFINER ROSTER so a stored authorship carries two
+ distinguishable ids, which is what lets an assertion tell a union of both
+ stages apart from either stage alone.
  */
 const EDITOR_WHO_DID_NOT_REFINE: RosterModelId = 'minimax-m3';
 
 /**
- * Refiner the scripted client answers as, which is the fixture's other editor.
+ Refiner the scripted client answers as, which is the fixture's other editor.
  */
 const REFINER_THAT_REWROTE: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
- * Roster with the lane on, refiners disjoint from checkers.
+ Roster with the lane on, refiners disjoint from checkers.
  */
 const MODELS: RepairModels = {
   criticModelIds: ['hf:zai-org/GLM-5.3-Flash',],
@@ -92,7 +92,7 @@ const MODELS: RepairModels = {
 };
 
 /**
- * Slice pair covering the whole fixture translation.
+ Slice pair covering the whole fixture translation.
  */
 const SLICES: readonly ChunkPair[] = [
   {
@@ -114,8 +114,8 @@ const SLICES: readonly ChunkPair[] = [
 ];
 
 /**
- * Authorship of hand-written fixture text: no model wrote it, so no checker
- * in a case that leaves this alone is judging its own work.
+ Authorship of hand-written fixture text: no model wrote it, so no checker
+ in a case that leaves this alone is judging its own work.
  */
 const NO_MODEL_WROTE_THE_FIXTURE: IssueAuthorship = {
   perIssue: {},
@@ -123,7 +123,7 @@ const NO_MODEL_WROTE_THE_FIXTURE: IssueAuthorship = {
 };
 
 /**
- * Successful refiner calls in flight and peak observed by fixture.
+ Successful refiner calls in flight and peak observed by fixture.
  */
 type RefinerConcurrency = {
   now: number;
@@ -132,21 +132,21 @@ type RefinerConcurrency = {
 };
 
 /**
- * Delays refiner answers so a test can observe driver overlap.
- *
- * First refiner waits longer than second, making completion order differ from
- * input order when both are active.
- *
- * @param inner - client providing scripted answers
- *
- * @param activity - mutable test instrument for active refiner calls
- *
- * @returns Client forwarding every call after measuring refiners
- *
- * @example
- * ```ts
- * const client = measuringRefiners({ inner, activity, },);
- * ```
+ Delays refiner answers so a test can observe driver overlap.
+ 
+ First refiner waits longer than second, making completion order differ from
+ input order when both are active.
+ 
+ @param inner - client providing scripted answers
+ 
+ @param activity - mutable test instrument for active refiner calls
+ 
+ @returns Client forwarding every call after measuring refiners
+ 
+ @example
+ ```ts
+ const client = measuringRefiners({ inner, activity, },);
+ ```
  */
 function measuringRefiners(
   {
@@ -165,7 +165,7 @@ function measuringRefiners(
         .name
         === 'refine_report') {
         /**
-         * Start position deciding deterministic delay.
+         Start position deciding deterministic delay.
          */
         const startPosition = activity.started;
         activity.started += 1;
@@ -184,19 +184,19 @@ function measuringRefiners(
 }
 
 /**
- * Builds one settled accuracy outcome.
- *
- * @param resolvedIssueIds - issues the checkers confirmed in `T1`
- *
- * @param authorship - who wrote `T1`, which the phase must union with its
- * own refiners on any slice where the rewrite ships
- *
- * @returns Outcome the phase refines
- *
- * @example
- * ```ts
- * const outcome = settledOutcome({ resolvedIssueIds: [], authorship, },);
- * ```
+ Builds one settled accuracy outcome.
+ 
+ @param resolvedIssueIds - issues the checkers confirmed in `T1`
+ 
+ @param authorship - who wrote `T1`, which the phase must union with its
+ own refiners on any slice where the rewrite ships
+ 
+ @returns Outcome the phase refines
+ 
+ @example
+ ```ts
+ const outcome = settledOutcome({ resolvedIssueIds: [], authorship, },);
+ ```
  */
 function settledOutcome(
   {
@@ -242,16 +242,16 @@ function settledOutcome(
 }
 
 /**
- * Client scripting the rewriter, the judges, and the recheck.
- *
- * @param checkerVerdict - verdict every checker casts during the recheck
- *
- * @returns Client usable by the phase
- *
- * @example
- * ```ts
- * const client = scriptedPhase({ checkerVerdict: 'fixed', },);
- * ```
+ Client scripting the rewriter, the judges, and the recheck.
+ 
+ @param checkerVerdict - verdict every checker casts during the recheck
+ 
+ @returns Client usable by the phase
+ 
+ @example
+ ```ts
+ const client = scriptedPhase({ checkerVerdict: 'fixed', },);
+ ```
  */
 function scriptedPhase(
   {
@@ -268,7 +268,7 @@ function scriptedPhase(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Stage name from the structured-output constraint.
+       Stage name from the structured-output constraint.
        */
       const stage = request.responseFormat
         ?.json_schema
@@ -276,13 +276,13 @@ function scriptedPhase(
         ?? '';
 
       /**
-       * User prompt, for counting the issues a checker sheet lists.
+       User prompt, for counting the issues a checker sheet lists.
        */
       const asked = request.messages.at(-1,);
       const content = (asked === undefined) ? '' : messageText({ message: asked, },);
 
       /**
-       * Scripted reply for the stage.
+       Scripted reply for the stage.
        */
       const scripted: unknown = stage === 'refine_report'
         ? {
@@ -343,22 +343,22 @@ function scriptedPhase(
 }
 
 /**
- * Runs the phase over one settled outcome.
- *
- * @param resolvedIssueIds - issues the checkers confirmed in `T1`
- *
- * @param checkerVerdict - verdict the recheck receives
- *
- * @param models - roster override, defaulting to the lane-on roster
- *
- * @param authorship - who wrote `T1`, defaulting to nobody
- *
- * @returns Phase result
- *
- * @example
- * ```ts
- * const phase = await runPhase({ resolvedIssueIds: [], checkerVerdict: 'fixed', },);
- * ```
+ Runs the phase over one settled outcome.
+ 
+ @param resolvedIssueIds - issues the checkers confirmed in `T1`
+ 
+ @param checkerVerdict - verdict the recheck receives
+ 
+ @param models - roster override, defaulting to the lane-on roster
+ 
+ @param authorship - who wrote `T1`, defaulting to nobody
+ 
+ @returns Phase result
+ 
+ @example
+ ```ts
+ const phase = await runPhase({ resolvedIssueIds: [], checkerVerdict: 'fixed', },);
+ ```
  */
 async function runPhase(
   {
@@ -579,7 +579,7 @@ await describe({
 
         expect(phase.outcomes[0]?.refined,).toBe(true,);
         /**
-         * Report the lane attached for its own rewrite.
+         Report the lane attached for its own rewrite.
          */
         const report = phase.outcomes[0]
           ?.refinementDefects;
@@ -643,12 +643,12 @@ await describe({
         + 'work cannot make invalid caller configuration valid',
       fn: async () => {
         /**
-         * Calls made before refusal, which must stay at zero.
+         Calls made before refusal, which must stay at zero.
          */
         const calls = { count: 0, };
 
         /**
-         * Roster turning naturalness lane off.
+         Roster turning naturalness lane off.
          */
         const laneOff: RepairModels = {
           ...MODELS,
@@ -684,7 +684,7 @@ await describe({
         + 'and still returns outcomes in input order when the second refiner answers first',
       fn: async () => {
         /**
-         * Two prepared slices carrying independently refinable paragraphs.
+         Two prepared slices carrying independently refinable paragraphs.
          */
         const twoSlices: readonly ChunkPair[] = [
           ...SLICES,
@@ -707,7 +707,7 @@ await describe({
         ];
 
         /**
-         * Accuracy outcomes corresponding to prepared input order.
+         Accuracy outcomes corresponding to prepared input order.
          */
         const firstOutcome = settledOutcome({
           resolvedIssueIds: [],
@@ -722,7 +722,7 @@ await describe({
         ];
 
         /**
-         * Serial positive-control activity.
+         Serial positive-control activity.
          */
         const serial: RefinerConcurrency = {
           now: 0,
@@ -746,7 +746,7 @@ await describe({
         },);
 
         /**
-         * Overlapped activity.
+         Overlapped activity.
          */
         const overlapped: RefinerConcurrency = {
           now: 0,
@@ -784,7 +784,7 @@ await describe({
         + 'the last slice in document order was ineligible and asked nobody',
       fn: async () => {
         /**
-         * Eligible first outcome followed by non-translation standing outcome.
+         Eligible first outcome followed by non-translation standing outcome.
          */
         const eligible = settledOutcome({
           resolvedIssueIds: [],
@@ -797,7 +797,7 @@ await describe({
         };
 
         /**
-         * Second prepared pair matching ineligible outcome index.
+         Second prepared pair matching ineligible outcome index.
          */
         const second: ChunkPair = {
           source: {
@@ -846,8 +846,8 @@ await describe({
         + 'right would fail the whole document',
       fn: async () => {
         /**
-         * Slices whose archive wording is the SMOOTH text, so the accuracy
-         * stage moved off it and the refinement lands back on it.
+         Slices whose archive wording is the SMOOTH text, so the accuracy
+         stage moved off it and the refinement lands back on it.
          */
         const archiveSlices: readonly ChunkPair[] = [
           {
@@ -869,8 +869,8 @@ await describe({
         ];
 
         /**
-         * Accuracy outcome that changed the archive wording and had an issue
-         * confirmed resolved in the text it produced.
+         Accuracy outcome that changed the archive wording and had an issue
+         confirmed resolved in the text it produced.
          */
         const accuracy: ChunkRepairOutcome = {
           ...settledOutcome({ resolvedIssueIds: ['issue-1',], authorship: NO_MODEL_WROTE_THE_FIXTURE, },),
@@ -878,7 +878,7 @@ await describe({
         };
 
         /**
-         * Phase over that outcome, whose rewriter returns the archive wording.
+         Phase over that outcome, whose rewriter returns the archive wording.
          */
         const phase = await runRefinePhase({
           declaredNames: [],
@@ -905,7 +905,7 @@ await describe({
         + 'where it used to refine against an empty original and be refused by the step afterwards',
       fn: async () => {
         /**
-         * Calls made, which must stay at zero.
+         Calls made, which must stay at zero.
          */
         const calls = { count: 0, };
 
@@ -937,19 +937,19 @@ await describe({
         + 'accuracy pass makes before its own write',
       fn: async () => {
         /**
-         * Cache that must stay empty.
+         Cache that must stay empty.
          */
         const stored = new Map<string, RefinedSliceSettlement>();
 
         /**
-         * Abort raised from inside the first call, after which the scripted
-         * client still answers, so the stage settles and the guard before the
-         * write is what has to refuse.
+         Abort raised from inside the first call, after which the scripted
+         client still answers, so the stage settles and the guard before the
+         write is what has to refuse.
          */
         const controller = new AbortController();
 
         /**
-         * Scripted client whose first exchange aborts the run.
+         Scripted client whose first exchange aborts the run.
          */
         const inner = scriptedPhase({ checkerVerdict: 'fixed', },);
 
@@ -981,14 +981,14 @@ await describe({
         + 'complete settlement, preserving the final defense against future stages that settle silence',
       fn: async () => {
         /**
-         * Exact caller abort reason whose identity must surface.
+         Exact caller abort reason whose identity must surface.
          */
         const stopped = new Error('caller stopped refinement',);
         const controller = new AbortController();
         controller.abort(stopped,);
 
         /**
-         * Cache that aborted settlement must not reach.
+         Cache that aborted settlement must not reach.
          */
         const stored = new Map<string, RefinedSliceSettlement>();
         await expect(persistRefinePhaseSlice({
@@ -1016,17 +1016,17 @@ await describe({
         + 'provider outage is reconsidered rather than resumed as a decision',
       fn: async () => {
         /**
-         * Cache writes made by this run.
+         Cache writes made by this run.
          */
         const stored = new Map<string, RefinedSliceSettlement>();
 
         /**
-         * Refiner calls proving eligible work was attempted.
+         Refiner calls proving eligible work was attempted.
          */
         const calls = { count: 0, };
 
         /**
-         * Scripted client with only rewriters unavailable.
+         Scripted client with only rewriters unavailable.
          */
         const inner = scriptedPhase({ checkerVerdict: 'fixed', },);
         const phase = await runRefinePhase({
@@ -1067,23 +1067,23 @@ await describe({
 },);
 
 /**
- * Counts every model call a client is asked to make.
- *
- * WHAT IT IS FOR: a resumed slice is only resumed if it bought NOTHING. Reading
- * the returned text alone cannot tell a cache hit from a rewriter that happened
- * to answer the same way twice, and the scripted client here answers the same
- * way every time by construction, so the text would match either way.
- *
- * @param inner - client doing the actual scripted answering
- *
- * @param calls - counter this bumps on every structured call
- *
- * @returns Client forwarding to `inner` and counting
- *
- * @example
- * ```ts
- * const client = countingClient({ inner, calls, },);
- * ```
+ Counts every model call a client is asked to make.
+ 
+ WHAT IT IS FOR: a resumed slice is only resumed if it bought NOTHING. Reading
+ the returned text alone cannot tell a cache hit from a rewriter that happened
+ to answer the same way twice, and the scripted client here answers the same
+ way every time by construction, so the text would match either way.
+ 
+ @param inner - client doing the actual scripted answering
+ 
+ @param calls - counter this bumps on every structured call
+ 
+ @returns Client forwarding to `inner` and counting
+ 
+ @example
+ ```ts
+ const client = countingClient({ inner, calls, },);
+ ```
  */
 function countingClient(
   {
@@ -1105,16 +1105,16 @@ function countingClient(
 }
 
 /**
- * In-memory refinement cache behaving as the disk-backed one does.
- *
- * @param stored - map surviving between the two runs of a case
- *
- * @returns Cache resuming from `stored` and writing back into it
- *
- * @example
- * ```ts
- * const cache = memoryRefineCache({ stored, },);
- * ```
+ In-memory refinement cache behaving as the disk-backed one does.
+ 
+ @param stored - map surviving between the two runs of a case
+ 
+ @returns Cache resuming from `stored` and writing back into it
+ 
+ @example
+ ```ts
+ const cache = memoryRefineCache({ stored, },);
+ ```
  */
 function memoryRefineCache(
   { stored, }: { readonly stored: Map<string, RefinedSliceSettlement>; },
@@ -1131,27 +1131,27 @@ function memoryRefineCache(
 }
 
 /**
- * Runs the phase once against a shared cache, counting what it bought.
- *
- * @param stored - cache contents carried between runs
- *
- * @returns Phase result beside the number of calls this run made
- *
- * @example
- * ```ts
- * const first = await runCachedPhase({ stored, },);
- * ```
+ Runs the phase once against a shared cache, counting what it bought.
+ 
+ @param stored - cache contents carried between runs
+ 
+ @returns Phase result beside the number of calls this run made
+ 
+ @example
+ ```ts
+ const first = await runCachedPhase({ stored, },);
+ ```
  */
 async function runCachedPhase(
   { stored, }: { readonly stored: Map<string, RefinedSliceSettlement>; },
 ) {
   /**
-   * Calls this run made, which is what separates a resume from a rebuy.
+   Calls this run made, which is what separates a resume from a rebuy.
    */
   const calls = { count: 0, };
 
   /**
-   * What the phase settled this run.
+   What the phase settled this run.
    */
   const phase = await runRefinePhase({
     declaredNames: [],
@@ -1185,7 +1185,7 @@ await describe({
         + 'repair-lane slices across two runs on identical inputs',
       fn: async () => {
         /**
-         * Cache both runs share, as one entry directory would be.
+         Cache both runs share, as one entry directory would be.
          */
         const stored = new Map<string, RefinedSliceSettlement>();
 

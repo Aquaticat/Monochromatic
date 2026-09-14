@@ -2,12 +2,12 @@
 // Qualification failures stop a frozen calibration plan without changing production preparation policy.
 
 /**
- * Closed reasons why current preparation cannot certify a calibration recipe.
- *
- * @example
- * ```ts
- * const kind: PreparationQualificationFailure = 'usable-quorum';
- * ```
+ Closed reasons why current preparation cannot certify a calibration recipe.
+ 
+ @example
+ ```ts
+ const kind: PreparationQualificationFailure = 'usable-quorum';
+ ```
  */
 export type PreparationQualificationFailure =
   | 'historical-cache'
@@ -22,7 +22,7 @@ export type PreparationQualificationFailure =
   | 'definition-domain-empty';
 
 /**
- * Fixed diagnostics name inputs and valid recovery without reproducing archive content.
+ Fixed diagnostics name inputs and valid recovery without reproducing archive content.
  */
 const QUALIFICATION_MESSAGES: Readonly<Record<PreparationQualificationFailure, string>> = {
   'historical-cache': 'Preparation used a historical pairing cache without current seat outcomes. Acquire current correspondence for the frozen parent; do not promote the cache record or replace the parent.',
@@ -38,32 +38,32 @@ const QUALIFICATION_MESSAGES: Readonly<Record<PreparationQualificationFailure, s
 };
 
 /**
- * Refusal at the current-evidence qualification seam, not a production fallback policy change.
- *
- * @example
- * ```ts
- * throw new PreparationQualificationError({ kind: 'historical-cache', });
- * ```
+ Refusal at the current-evidence qualification seam, not a production fallback policy change.
+ 
+ @example
+ ```ts
+ throw new PreparationQualificationError({ kind: 'historical-cache', });
+ ```
  */
 export class PreparationQualificationError extends Error {
   /**
-   * Fixed diagnostics never contain source or archive passages.
+   Fixed diagnostics never contain source or archive passages.
    */
   public readonly messageNamesOnly: true = true;
   /**
-   * Machine-readable operation that could not qualify.
+   Machine-readable operation that could not qualify.
    */
   public readonly kind: PreparationQualificationFailure;
 
   /**
-   * Builds a refusal with its complete operation-specific recovery guidance.
-   *
-   * @param kind - failed qualification invariant
-   *
-   * @example
-   * ```ts
-   * new PreparationQualificationError({ kind: 'result', });
-   * ```
+   Builds a refusal with its complete operation-specific recovery guidance.
+   
+   @param kind - failed qualification invariant
+   
+   @example
+   ```ts
+   new PreparationQualificationError({ kind: 'result', });
+   ```
    */
   public constructor({ kind, }: { readonly kind: PreparationQualificationFailure; },) {
     super(QUALIFICATION_MESSAGES[kind],);

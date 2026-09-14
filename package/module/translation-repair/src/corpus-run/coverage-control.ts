@@ -29,218 +29,218 @@ import { decoyCut, } from './coverage-control-decoy.ts';
 // SPENDS QUOTA: two roster rounds per case.
 
 /**
- * Cases the control is tried on.
- *
- * Several rather than one, because a single case answered by a coin is
- * indistinguishable from a wire that works; few rather than many, because this
- * gates a reading rather than being the measurement itself.
+ Cases the control is tried on.
+ 
+ Several rather than one, because a single case answered by a coin is
+ indistinguishable from a wire that works; few rather than many, because this
+ gates a reading rather than being the measurement itself.
  */
 const CONTROL_CASES = 3;
 
 /**
- * One passage, with the translation it is asked about.
+ One passage, with the translation it is asked about.
  */
 export type CoverageControlCase = {
   /**
-   * Where the passage sits, in the terms the probe's rows print.
+   Where the passage sits, in the terms the probe's rows print.
    */
   readonly where: string;
 
   /**
-   * Original-side text whose coverage is in question.
+   Original-side text whose coverage is in question.
    */
   readonly sourcePassage: string;
 
   /**
-   * Whole translation, undamaged, as the first round sees it.
+   Whole translation, undamaged, as the first round sees it.
    */
   readonly translation: AnchorTarget;
 };
 
 /**
- * What deleting one passage's rendering did to its verdict.
+ What deleting one passage's rendering did to its verdict.
  */
 export type CoverageControlRow = {
   /**
-   * Where the passage sits.
+   Where the passage sits.
    */
   readonly where: string;
 
   /**
-   * Verdict before the rendering was deleted, always `carried`, since the
-   * control skips cases it cannot damage.
+   Verdict before the rendering was deleted, always `carried`, since the
+   control skips cases it cannot damage.
    */
   readonly before: CoverageVerdict['kind'];
 
   /**
-   * Verdict once the rendering was gone.
+   Verdict once the rendering was gone.
    */
   readonly after: CoverageVerdict['kind'];
 
   /**
-   * Voices reporting nothing rendered the passage, before the deletion.
+   Voices reporting nothing rendered the passage, before the deletion.
    */
   readonly absentBefore: number;
 
   /**
-   * Voices reporting nothing rendered the passage, after it.
-   *
-   * THIS IS THE NUMBER THE CONTROL TURNS ON, rather than the verdict kind: the
-   * recorded null is about ballots, not about how they were rolled up, so a
-   * wire that produces a single absence vote it did not produce before has
-   * shown the vote to be reachable.
+   Voices reporting nothing rendered the passage, after it.
+   
+   THIS IS THE NUMBER THE CONTROL TURNS ON, rather than the verdict kind: the
+   recorded null is about ballots, not about how they were rolled up, so a
+   wire that produces a single absence vote it did not produce before has
+   shown the vote to be reachable.
    */
   readonly absentAfter: number;
 
   /**
-   * Verdict when an EQUALLY LARGE cut was taken where the roster did not point,
-   * or `no-room` when the page had nowhere to take one clear of the anchored
-   * spans.
-   *
-   * A sound wire keeps saying `carried` here: the rendering is untouched, so
-   * nothing about the passage changed. This is what separates a wire that reads
-   * the passage from one that answers `absent` to any damaged document.
+   Verdict when an EQUALLY LARGE cut was taken where the roster did not point,
+   or `no-room` when the page had nowhere to take one clear of the anchored
+   spans.
+   
+   A sound wire keeps saying `carried` here: the rendering is untouched, so
+   nothing about the passage changed. This is what separates a wire that reads
+   the passage from one that answers `absent` to any damaged document.
    */
   readonly decoy: CoverageVerdict['kind'] | 'no-room';
 
   /**
-   * Voices reporting nothing rendered the passage, after the decoy cut.
+   Voices reporting nothing rendered the passage, after the decoy cut.
    */
   readonly absentAfterDecoy: number;
 
   /**
-   * Offset the decoy cut was taken at, or `-1` when there was no room.
-   *
-   * KEPT so a decoy that does move the verdict can be diagnosed rather than
-   * guessed at: a cut landing on a title or a frontmatter block is structural
-   * damage of a different kind, and its offset is what says so.
+   Offset the decoy cut was taken at, or `-1` when there was no room.
+   
+   KEPT so a decoy that does move the verdict can be diagnosed rather than
+   guessed at: a cut landing on a title or a frontmatter block is structural
+   damage of a different kind, and its offset is what says so.
    */
   readonly decoyAt: number;
 
   /**
-   * Spans deleted from the translation.
+   Spans deleted from the translation.
    */
   readonly removedSpans: number;
 
   /**
-   * Characters the deletion took out, so a cut that removed almost nothing
-   * cannot be mistaken for one that removed a passage.
+   Characters the deletion took out, so a cut that removed almost nothing
+   cannot be mistaken for one that removed a passage.
    */
   readonly removedChars: number;
 };
 
 /**
- * Why a case could not be damaged.
- *
- * TWO OPPOSITE MEANINGS used to print as one line saying "not damageable", and
- * the difference is the whole question. A roster that did not say `carried` is
- * a roster VOTING ABSENCE on undamaged corpus text, which is the strongest form
- * of the thing this control was built to look for. A quote that cannot be found
- * in the page is an anchoring problem and says nothing about coverage.
+ Why a case could not be damaged.
+ 
+ TWO OPPOSITE MEANINGS used to print as one line saying "not damageable", and
+ the difference is the whole question. A roster that did not say `carried` is
+ a roster VOTING ABSENCE on undamaged corpus text, which is the strongest form
+ of the thing this control was built to look for. A quote that cannot be found
+ in the page is an anchoring problem and says nothing about coverage.
  */
 export type CoverageControlRefusal = {
   /**
-   * Where the passage sits.
+   Where the passage sits.
    */
   readonly where: string;
 
   /**
-   * `not-carried` when the roster declined to call it covered before any damage
-   * was done; `evidence-not-locatable` when it did, but none of the spans it
-   * offered could be found in the page to delete.
+   `not-carried` when the roster declined to call it covered before any damage
+   was done; `evidence-not-locatable` when it did, but none of the spans it
+   offered could be found in the page to delete.
    */
   readonly reason: 'not-carried' | 'evidence-not-locatable';
 
   /**
-   * Verdict the roster reached on the undamaged page.
+   Verdict the roster reached on the undamaged page.
    */
   readonly verdict: CoverageVerdict['kind'];
 
   /**
-   * Voices reporting nothing rendered the passage, undamaged.
+   Voices reporting nothing rendered the passage, undamaged.
    */
   readonly absent: number;
 
   /**
-   * Spans the roster offered as evidence.
+   Spans the roster offered as evidence.
    */
   readonly offeredSpans: number;
 };
 
 /**
- * Decoy round reduced to what the row records.
- *
- * The no-room case is given the shape of a verdict so the row does not have to
- * branch twice over one condition, once per field.
+ Decoy round reduced to what the row records.
+ 
+ The no-room case is given the shape of a verdict so the row does not have to
+ branch twice over one condition, once per field.
  */
 type DecoyReading = {
   /**
-   * Verdict kind, or `no-room` when the page had nowhere to take the cut.
+   Verdict kind, or `no-room` when the page had nowhere to take the cut.
    */
   readonly kind: CoverageVerdict['kind'] | 'no-room';
 
   /**
-   * Voices reporting nothing rendered the passage.
+   Voices reporting nothing rendered the passage.
    */
   readonly absent: number;
 };
 
 /**
- * Whether the wire proved able to see the damage, with its working.
+ Whether the wire proved able to see the damage, with its working.
  */
 export type CoverageControlResult = {
   /**
-   * Whether a majority of tried cases voted absence once their rendering was
-   * deleted.
+   Whether a majority of tried cases voted absence once their rendering was
+   deleted.
    */
   readonly held: boolean;
 
   /**
-   * Cases where deleting the anchored spans produced absence votes that were
-   * not there before.
+   Cases where deleting the anchored spans produced absence votes that were
+   not there before.
    */
   readonly sawAbsenceOnTarget: number;
 
   /**
-   * Cases where the equally large cut taken ELSEWHERE also produced them,
-   * which a sound wire keeps at zero.
+   Cases where the equally large cut taken ELSEWHERE also produced them,
+   which a sound wire keeps at zero.
    */
   readonly sawAbsenceOnDecoy: number;
 
   /**
-   * Every case the control managed to damage and re-ask.
+   Every case the control managed to damage and re-ask.
    */
   readonly rows: readonly CoverageControlRow[];
 
   /**
-   * Cases it could not damage, each carrying why.
-   *
-   * NOT A FAILURE LOG. A page whose passages the roster never calls covered
-   * produces nothing to damage and is reported entirely here, and that is a
-   * result rather than an empty run.
+   Cases it could not damage, each carrying why.
+   
+   NOT A FAILURE LOG. A page whose passages the roster never calls covered
+   produces nothing to damage and is reported entirely here, and that is a
+   result rather than an empty run.
    */
   readonly refusals: readonly CoverageControlRefusal[];
 };
 
 /**
- * Deletes named spans from a document, or reports that none were there.
- *
- * Exported so the cut can be tested directly. This decides what the control is
- * actually asking about, and a version that quietly returned the text unchanged
- * would turn the whole gate into a formality that passes whatever it is handed.
- *
- * @internal
- *
- * @param text - document to cut from
- *
- * @param spans - exact document text of each region to remove
- *
- * @returns Text with every span gone, or blank when no span was present
- *
- * @example
- * ```ts
- * const damaged = withoutSpans({ text, spans, },);
- * ```
+ Deletes named spans from a document, or reports that none were there.
+ 
+ Exported so the cut can be tested directly. This decides what the control is
+ actually asking about, and a version that quietly returned the text unchanged
+ would turn the whole gate into a formality that passes whatever it is handed.
+ 
+ @internal
+ 
+ @param text - document to cut from
+ 
+ @param spans - exact document text of each region to remove
+ 
+ @returns Text with every span gone, or blank when no span was present
+ 
+ @example
+ ```ts
+ const damaged = withoutSpans({ text, spans, },);
+ ```
  */
 export function withoutSpans(
   {
@@ -252,11 +252,11 @@ export function withoutSpans(
   },
 ): string {
   /**
-   * Spans worth cutting, longest first.
-   *
-   * ORDER MATTERS: a short span sitting inside a longer one would be gone
-   * already by the time its own turn came, and the count of what was removed
-   * would then depend on which order the roster happened to answer in.
+   Spans worth cutting, longest first.
+   
+   ORDER MATTERS: a short span sitting inside a longer one would be gone
+   already by the time its own turn came, and the count of what was removed
+   would then depend on which order the roster happened to answer in.
    */
   const ordered = spans
     .filter(function isCuttable(span,): boolean {
@@ -270,7 +270,7 @@ export function withoutSpans(
     },);
 
   /**
-   * Document with every span taken out, all occurrences of each.
+   Document with every span taken out, all occurrences of each.
    */
   const cut = ordered.reduce(
     function without(
@@ -291,26 +291,26 @@ export function withoutSpans(
 }
 
 /**
- * Asks one case before and after its rendering is deleted.
- *
- * @param client - injected model client
- *
- * @param probe - passage and the translation it is asked about
- *
- * @param modelIds - roster asked, the same one the reading under test used
- *
- * @param signal - cancellation
- *
- * @param exchangeTimeoutMs - deadline per exchange
- *
- * @param l - logger
- *
- * @returns Row for this case, or nothing when it could not be damaged
- *
- * @example
- * ```ts
- * const row = await tryCase({ client, probe, modelIds, signal, exchangeTimeoutMs, l, },);
- * ```
+ Asks one case before and after its rendering is deleted.
+ 
+ @param client - injected model client
+ 
+ @param probe - passage and the translation it is asked about
+ 
+ @param modelIds - roster asked, the same one the reading under test used
+ 
+ @param signal - cancellation
+ 
+ @param exchangeTimeoutMs - deadline per exchange
+ 
+ @param l - logger
+ 
+ @returns Row for this case, or nothing when it could not be damaged
+ 
+ @example
+ ```ts
+ const row = await tryCase({ client, probe, modelIds, signal, exchangeTimeoutMs, l, },);
+ ```
  */
 async function tryCase(
   {
@@ -330,7 +330,7 @@ async function tryCase(
   }>,
 ): Promise<CoverageControlRow | CoverageControlRefusal> {
   /**
-   * What the roster says about the passage as it stands.
+   What the roster says about the passage as it stands.
    */
   const before = await runCoverageStage({
     client,
@@ -343,13 +343,13 @@ async function tryCase(
   },);
 
   /**
-   * That answer's verdict, read out once so no expression walks two members of
-   * it at a time.
+   That answer's verdict, read out once so no expression walks two members of
+   it at a time.
    */
   const { verdict: beforeVerdict, } = before;
 
   /**
-   * Spans the roster anchored on, which are exactly what the cut removes.
+   Spans the roster anchored on, which are exactly what the cut removes.
    */
   const { evidence, } = beforeVerdict;
 
@@ -367,12 +367,12 @@ async function tryCase(
     };
 
   /**
-   * Translation as it stands, kept so the size of the cut can be reported.
+   Translation as it stands, kept so the size of the cut can be reported.
    */
   const { text: standingText, } = probe.translation;
 
   /**
-   * Translation with every span the roster anchored on taken out.
+   Translation with every span the roster anchored on taken out.
    */
   const damagedText = withoutSpans({
     text: standingText,
@@ -389,7 +389,7 @@ async function tryCase(
     };
 
   /**
-   * What the roster says once the rendering it pointed at is gone.
+   What the roster says once the rendering it pointed at is gone.
    */
   const after = await runCoverageStage({
     client,
@@ -402,17 +402,17 @@ async function tryCase(
   },);
 
   /**
-   * Verdict once the rendering was gone.
+   Verdict once the rendering was gone.
    */
   const { verdict: afterVerdict, } = after;
 
   /**
-   * Characters the targeted cut took, which the decoy cut matches exactly.
+   Characters the targeted cut took, which the decoy cut matches exactly.
    */
   const removedChars = standingText.length - damagedText.length;
 
   /**
-   * Where an equally large cut can be taken clear of the anchored spans.
+   Where an equally large cut can be taken clear of the anchored spans.
    */
   const {
     span: decoySpan,
@@ -424,11 +424,11 @@ async function tryCase(
   },);
 
   /**
-   * What the roster says with that unrelated cut made instead.
-   *
-   * SPLICED BY OFFSET rather than by text, so exactly as many characters go as
-   * the targeted cut took. Deleting by span would take every occurrence and the
-   * two cuts would stop being the same size.
+   What the roster says with that unrelated cut made instead.
+   
+   SPLICED BY OFFSET rather than by text, so exactly as many characters go as
+   the targeted cut took. Deleting by span would take every occurrence and the
+   two cuts would stop being the same size.
    */
   const decoyAnswer = (decoySpan === '')
     ? 'no-room' as const
@@ -448,7 +448,7 @@ async function tryCase(
     },);
 
   /**
-   * That answer read as a verdict.
+   That answer read as a verdict.
    */
   const decoyVerdict = (function readDecoy(): DecoyReading {
     if (decoyAnswer === 'no-room')
@@ -458,7 +458,7 @@ async function tryCase(
       };
 
     /**
-     * Verdict the decoy round returned.
+     Verdict the decoy round returned.
      */
     const { verdict, } = decoyAnswer;
 
@@ -483,26 +483,26 @@ async function tryCase(
 }
 
 /**
- * Asks whether deleting a passage's rendering changes what the roster votes.
- *
- * @param client - injected model client
- *
- * @param cases - passages to try, of which the first few damageable ones are used
- *
- * @param modelIds - roster asked
- *
- * @param signal - cancellation
- *
- * @param exchangeTimeoutMs - deadline per exchange
- *
- * @param l - logger
- *
- * @returns Whether the wire voted absence once the rendering was gone
- *
- * @example
- * ```ts
- * const control = await coverageControlHolds({ client, cases, modelIds, signal, exchangeTimeoutMs, l, },);
- * ```
+ Asks whether deleting a passage's rendering changes what the roster votes.
+ 
+ @param client - injected model client
+ 
+ @param cases - passages to try, of which the first few damageable ones are used
+ 
+ @param modelIds - roster asked
+ 
+ @param signal - cancellation
+ 
+ @param exchangeTimeoutMs - deadline per exchange
+ 
+ @param l - logger
+ 
+ @returns Whether the wire voted absence once the rendering was gone
+ 
+ @example
+ ```ts
+ const control = await coverageControlHolds({ client, cases, modelIds, signal, exchangeTimeoutMs, l, },);
+ ```
  */
 export async function coverageControlHolds(
   {
@@ -522,12 +522,12 @@ export async function coverageControlHolds(
   }>,
 ): Promise<CoverageControlResult> {
   /**
-   * Cases that were damaged and re-asked.
+   Cases that were damaged and re-asked.
    */
   const rows: CoverageControlRow[] = [];
 
   /**
-   * Cases that could not be damaged, with why.
+   Cases that could not be damaged, with why.
    */
   const refusals: CoverageControlRefusal[] = [];
 
@@ -536,7 +536,7 @@ export async function coverageControlHolds(
       break;
 
     /**
-     * This case's before and after, or a refusal.
+     This case's before and after, or a refusal.
      */
     // oxlint-disable-next-line eslint/no-await-in-loop -- sequential by design: this gate decides whether a reading may be trusted, and the cases must meet the same provider conditions as each other for their agreement to mean anything
     const row = await tryCase({
@@ -571,8 +571,8 @@ export async function coverageControlHolds(
   }
 
   /**
-   * Cases where deleting the rendering produced absence votes that were not
-   * there before.
+   Cases where deleting the rendering produced absence votes that were not
+   there before.
    */
   const sawAbsenceOnTarget = rows
     .filter(function noticed(row,): boolean {
@@ -581,7 +581,7 @@ export async function coverageControlHolds(
     .length;
 
   /**
-   * Cases where the cut taken ELSEWHERE produced them too.
+   Cases where the cut taken ELSEWHERE produced them too.
    */
   const sawAbsenceOnDecoy = rows
     .filter(function criedWolf(row,): boolean {

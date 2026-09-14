@@ -10,58 +10,58 @@ import type { SliceValidation, } from './translate-validate.ts';
 // strips proposals to the verdicts a run may record.
 
 /**
- * One voice's structural verdict WITHOUT its text, which is what a record of
- * this stage may carry.
- *
- * The proposals themselves are corpus renderings and do not belong in a
- * settlement a run writes out. Who was refused and why does: run 8 carried 7
- * invalid candidates across slices that all shipped normally, and nothing
- * downstream could see them.
- *
- * @example
- * ```ts
- * const verdict: ProposalVerdict = { modelId: 'hf:cat/Cat-A', kind: 'valid', findings: [], };
- * ```
+ One voice's structural verdict WITHOUT its text, which is what a record of
+ this stage may carry.
+ 
+ The proposals themselves are corpus renderings and do not belong in a
+ settlement a run writes out. Who was refused and why does: run 8 carried 7
+ invalid candidates across slices that all shipped normally, and nothing
+ downstream could see them.
+ 
+ @example
+ ```ts
+ const verdict: ProposalVerdict = { modelId: 'hf:cat/Cat-A', kind: 'valid', findings: [], };
+ ```
  */
 export type ProposalVerdict = {
   /**
-   * Voice that wrote the proposal.
+   Voice that wrote the proposal.
    */
   readonly modelId: string;
 
   /**
-   * What the structural guard made of it.
+   What the structural guard made of it.
    */
   readonly kind: SliceValidation['kind'];
 
   /**
-   * Why it was refused, empty when it was not.
+   Why it was refused, empty when it was not.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Identity and evidence as the two rounds take them.
- *
- * SPREAD PER FIELD RATHER THAN PASSED WHOLE. An absent identity is absent
- * rather than declared empty, and an absent picture and an empty picture are
- * the same state and must render as no heading at all, since a heading
- * promising readings and carrying none reads as a picture nobody could make
- * sense of.
- *
- * ONE VALUE FEEDS THE SHEET AND THE KEY, which is `#107`'s lesson stated in
- * `translate-document.ts` as well: a key that did not name the evidence would
- * let a narrow run's answer be resumed for a wide one, and nothing anywhere
- * would report the two as different questions.
- *
- * @param subject - slice in the archive's terms
- *
- * @returns Identity fields and evidence fields, each present only when carried
- *
- * @example
- * ```ts
- * const { identity, evidence, } = settlementContextOf({ subject, },);
- * ```
+ Identity and evidence as the two rounds take them.
+ 
+ SPREAD PER FIELD RATHER THAN PASSED WHOLE. An absent identity is absent
+ rather than declared empty, and an absent picture and an empty picture are
+ the same state and must render as no heading at all, since a heading
+ promising readings and carrying none reads as a picture nobody could make
+ sense of.
+ 
+ ONE VALUE FEEDS THE SHEET AND THE KEY, which is `#107`'s lesson stated in
+ `translate-document.ts` as well: a key that did not name the evidence would
+ let a narrow run's answer be resumed for a wide one, and nothing anywhere
+ would report the two as different questions.
+ 
+ @param subject - slice in the archive's terms
+ 
+ @returns Identity fields and evidence fields, each present only when carried
+ 
+ @example
+ ```ts
+ const { identity, evidence, } = settlementContextOf({ subject, },);
+ ```
  */
 export function settlementContextOf(
   { subject, }: { readonly subject: ConsolidationSubject; },
@@ -74,15 +74,15 @@ export function settlementContextOf(
   };
 } {
   /**
-   * Identity as the two rounds take it.
+   Identity as the two rounds take it.
    */
   const identity = (subject.identityContext === undefined)
     ? {}
     : { identityContext: subject.identityContext, };
 
   /**
-   * Words about this passage that are not the passage: what its pictures were
-   * read to say and what stands either side of it.
+   Words about this passage that are not the passage: what its pictures were
+   read to say and what stands either side of it.
    */
   const evidence = {
     ...(((subject.pictureContext === undefined) || (subject.pictureContext === ''))
@@ -104,16 +104,16 @@ export function settlementContextOf(
 }
 
 /**
- * Every voice's verdict without its text, which is what a run may record.
- *
- * @param validity - each voice's structural verdict, keyed by model id
- *
- * @returns Verdicts in the same order, refusals carrying their findings
- *
- * @example
- * ```ts
- * const verdicts = verdictsOf({ validity, },);
- * ```
+ Every voice's verdict without its text, which is what a run may record.
+ 
+ @param validity - each voice's structural verdict, keyed by model id
+ 
+ @returns Verdicts in the same order, refusals carrying their findings
+ 
+ @example
+ ```ts
+ const verdicts = verdictsOf({ validity, },);
+ ```
  */
 export function verdictsOf(
   { validity, }: { readonly validity: readonly ProposalValidity[]; },

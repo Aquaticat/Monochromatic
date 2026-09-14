@@ -36,24 +36,24 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 // extents or ranges are derived, which is exactly what they are for.
 
 /**
- * Raised when a container tag is not wholly owned by the block or range that
- * reaches it.
- *
- * @example
- * ```ts
- * throw new ContainerIntegrityError({ message: 'no block owns the opening tag of details', },);
- * ```
+ Raised when a container tag is not wholly owned by the block or range that
+ reaches it.
+ 
+ @example
+ ```ts
+ throw new ContainerIntegrityError({ message: 'no block owns the opening tag of details', },);
+ ```
  */
 export class ContainerIntegrityError extends Error {
   /**
-   * Builds the failure naming which element is not owned whole.
-   *
-   * @param message - which tag of which element is unowned or cut
-   *
-   * @example
-   * ```ts
-   * throw new ContainerIntegrityError({ message: 'slice 1 cuts the closing tag of details', },);
-   * ```
+   Builds the failure naming which element is not owned whole.
+   
+   @param message - which tag of which element is unowned or cut
+   
+   @example
+   ```ts
+   throw new ContainerIntegrityError({ message: 'slice 1 cuts the closing tag of details', },);
+   ```
    */
   public constructor({ message, }: { readonly message: string; },) {
     super(message,);
@@ -62,33 +62,33 @@ export class ContainerIntegrityError extends Error {
 }
 
 /**
- * Half-open range, named so the two questions asked of it read plainly.
+ Half-open range, named so the two questions asked of it read plainly.
  */
 type Range = {
   /**
-   * Absolute inclusive start.
+   Absolute inclusive start.
    */
   readonly startOffset: number;
 
   /**
-   * Absolute exclusive end.
+   Absolute exclusive end.
    */
   readonly endOffset: number;
 };
 
 /**
- * Whether an outer range holds an inner one whole.
- *
- * @param outer - range doing the holding
- *
- * @param inner - range that must fit inside
- *
- * @returns Whether every character of inner lies in outer
- *
- * @example
- * ```ts
- * if (covers({ outer: span, inner: opener, },)) { }
- * ```
+ Whether an outer range holds an inner one whole.
+ 
+ @param outer - range doing the holding
+ 
+ @param inner - range that must fit inside
+ 
+ @returns Whether every character of inner lies in outer
+ 
+ @example
+ ```ts
+ if (covers({ outer: span, inner: opener, },)) { }
+ ```
  */
 function covers(
   {
@@ -104,22 +104,22 @@ function covers(
 }
 
 /**
- * Whether two ranges share any character at all.
- *
- * ASKED BESIDE {@link covers} rather than instead of it, because the two differ
- * exactly where a range ends part way through a tag. That range neither holds
- * the tag nor leaves it alone, and assembly would write over half of it.
- *
- * @param outer - range doing the overlapping
- *
- * @param inner - range being overlapped
- *
- * @returns Whether any character is common to both
- *
- * @example
- * ```ts
- * if (touches({ outer: span, inner: closer, },)) { }
- * ```
+ Whether two ranges share any character at all.
+ 
+ ASKED BESIDE {@link covers} rather than instead of it, because the two differ
+ exactly where a range ends part way through a tag. That range neither holds
+ the tag nor leaves it alone, and assembly would write over half of it.
+ 
+ @param outer - range doing the overlapping
+ 
+ @param inner - range being overlapped
+ 
+ @returns Whether any character is common to both
+ 
+ @example
+ ```ts
+ if (touches({ outer: span, inner: closer, },)) { }
+ ```
  */
 function touches(
   {
@@ -135,16 +135,16 @@ function touches(
 }
 
 /**
- * Names a container in a form a reader can find on the page.
- *
- * @param container - container being reported
- *
- * @returns Element name in angle brackets, or a neutral phrase when unnamed
- *
- * @example
- * ```ts
- * const named = nameOf({ container, },);
- * ```
+ Names a container in a form a reader can find on the page.
+ 
+ @param container - container being reported
+ 
+ @returns Element name in angle brackets, or a neutral phrase when unnamed
+ 
+ @example
+ ```ts
+ const named = nameOf({ container, },);
+ ```
  */
 function nameOf({ container, }: { readonly container: ContainerSpan; },): string {
   return container.name === ''
@@ -153,31 +153,31 @@ function nameOf({ container, }: { readonly container: ContainerSpan; },): string
 }
 
 /**
- * One container tag, named so a message can say which half is at fault.
+ One container tag, named so a message can say which half is at fault.
  */
 type LabelledTag = {
   /**
-   * Which half of the element this is, in a word a message can use.
+   Which half of the element this is, in a word a message can use.
    */
   readonly label: string;
 
   /**
-   * Range that tag occupies.
+   Range that tag occupies.
    */
   readonly range: Range;
 };
 
 /**
- * Reads both tags of a container as ranges, in document order.
- *
- * @param container - container whose tags are wanted
- *
- * @returns Opening tag range then closing tag range, each labelled
- *
- * @example
- * ```ts
- * for (const tag of tagsOf({ container, },)) { }
- * ```
+ Reads both tags of a container as ranges, in document order.
+ 
+ @param container - container whose tags are wanted
+ 
+ @returns Opening tag range then closing tag range, each labelled
+ 
+ @example
+ ```ts
+ for (const tag of tagsOf({ container, },)) { }
+ ```
  */
 function tagsOf(
   { container, }: { readonly container: ContainerSpan; },
@@ -201,23 +201,23 @@ function tagsOf(
 }
 
 /**
- * Refuses a document whose container tags are owned by no block.
- *
- * A container holding no blocks is left alone deliberately: its tags belong to
- * nothing, but no range can reach them either, so assembly copies the region
- * through untouched.
- *
- * @param blocks - document blocks carrying absolute offsets
- *
- * @param containers - every container the parse dissolved, absolute offsets
- *
- * @throws {@link ContainerIntegrityError} when a tag of a container holding
- * blocks is owned by no block, or is only partly covered by one
- *
- * @example
- * ```ts
- * assertTagsRideInBlocks({ blocks, containers, },);
- * ```
+ Refuses a document whose container tags are owned by no block.
+ 
+ A container holding no blocks is left alone deliberately: its tags belong to
+ nothing, but no range can reach them either, so assembly copies the region
+ through untouched.
+ 
+ @param blocks - document blocks carrying absolute offsets
+ 
+ @param containers - every container the parse dissolved, absolute offsets
+ 
+ @throws {@link ContainerIntegrityError} when a tag of a container holding
+ blocks is owned by no block, or is only partly covered by one
+ 
+ @example
+ ```ts
+ assertTagsRideInBlocks({ blocks, containers, },);
+ ```
  */
 function assertTagsRideInBlocks(
   {
@@ -230,8 +230,8 @@ function assertTagsRideInBlocks(
 ): void {
   for (const container of containers) {
     /**
-     * Whether any block lies within this container's whole span, which is what
-     * separates a container with contents from an empty one.
+     Whether any block lies within this container's whole span, which is what
+     separates a container with contents from an empty one.
      */
     const holdsBlocks = blocks.some(function isInside(block,): boolean {
       return (block.startOffset >= container.openerStartOffset)
@@ -239,7 +239,7 @@ function assertTagsRideInBlocks(
     },);
     for (const tag of tagsOf({ container, },)) {
       /**
-       * Whether some block owns this tag whole.
+       Whether some block owns this tag whole.
        */
       const owned = blocks.some(function ownsTag(block,): boolean {
         return covers({
@@ -251,7 +251,7 @@ function assertTagsRideInBlocks(
         continue;
 
       /**
-       * Whether some block covers part of this tag without owning it.
+       Whether some block covers part of this tag without owning it.
        */
       const cut = blocks.some(function cutsTag(block,): boolean {
         return touches({
@@ -275,18 +275,18 @@ function assertTagsRideInBlocks(
 }
 
 /**
- * Refuses any slice whose range ends part way through a container tag.
- *
- * @param slices - prepared slice pairs
- *
- * @param containers - every container the parse dissolved, absolute offsets
- *
- * @throws {@link ContainerIntegrityError} when a range covers part of a tag
- *
- * @example
- * ```ts
- * assertNoSliceCutsATag({ slices, containers, },);
- * ```
+ Refuses any slice whose range ends part way through a container tag.
+ 
+ @param slices - prepared slice pairs
+ 
+ @param containers - every container the parse dissolved, absolute offsets
+ 
+ @throws {@link ContainerIntegrityError} when a range covers part of a tag
+ 
+ @example
+ ```ts
+ assertNoSliceCutsATag({ slices, containers, },);
+ ```
  */
 function assertNoSliceCutsATag(
   {
@@ -299,7 +299,7 @@ function assertNoSliceCutsATag(
 ): void {
   for (const slice of slices) {
     /**
-     * Target side of this pair, which is the side assembly writes over.
+     Target side of this pair, which is the side assembly writes over.
      */
     const span = slice.target;
 
@@ -311,8 +311,8 @@ function assertNoSliceCutsATag(
     for (const container of containers) {
       for (const tag of tagsOf({ container, },)) {
         /**
-         * Whether this range reaches the tag without owning all of it, which is
-         * the only way a range built from whole blocks could carry half a tag.
+         Whether this range reaches the tag without owning all of it, which is
+         the only way a range built from whole blocks could carry half a tag.
          */
         const cuts = (touches({
           outer: span,
@@ -334,25 +334,25 @@ function assertNoSliceCutsATag(
 }
 
 /**
- * Refuses a prepared pair whose container tags are not owned whole.
- *
- * CALLED AT PREPARATION, where the parsed document still remembers which
- * containers were dissolved. Nothing later can: the slices carry blocks and
- * offsets, and a tag is neither.
- *
- * @param slices - prepared slice pairs
- *
- * @param containers - every container the parse dissolved, absolute offsets
- *
- * @param blocks - target document blocks carrying absolute offsets
- *
- * @throws {@link ContainerIntegrityError} when a tag is owned by no block, or a
- * range ends part way through one
- *
- * @example
- * ```ts
- * assertContainerIntegrity({ slices, containers: doc.containers, blocks: doc.nodes, },);
- * ```
+ Refuses a prepared pair whose container tags are not owned whole.
+ 
+ CALLED AT PREPARATION, where the parsed document still remembers which
+ containers were dissolved. Nothing later can: the slices carry blocks and
+ offsets, and a tag is neither.
+ 
+ @param slices - prepared slice pairs
+ 
+ @param containers - every container the parse dissolved, absolute offsets
+ 
+ @param blocks - target document blocks carrying absolute offsets
+ 
+ @throws {@link ContainerIntegrityError} when a tag is owned by no block, or a
+ range ends part way through one
+ 
+ @example
+ ```ts
+ assertContainerIntegrity({ slices, containers: doc.containers, blocks: doc.nodes, },);
+ ```
  */
 export function assertContainerIntegrity(
   {

@@ -1,7 +1,7 @@
 /**
- * Tests the page-level footnote guard and the page guards it runs beside.
- *
- * @module
+ Tests the page-level footnote guard and the page guards it runs beside.
+ 
+ @module
  */
 
 import {
@@ -19,26 +19,26 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive wording with no footnote at all.
+ Archive wording with no footnote at all.
  */
 const TARGET = 'The cat sleeps in warm sunlight.\n';
 
 /**
- * Archive wording that already refers to a note it never defines.
+ Archive wording that already refers to a note it never defines.
  */
 const DANGLING = 'The cat sleeps in warm sunlight[^1].\n';
 
 /**
- * One content slice spanning the whole target.
- *
- * @param targetText - archive the slice covers
- *
- * @returns Single-slice preparation
- *
- * @example
- * ```ts
- * const slices = slicesOver({ targetText: TARGET, },);
- * ```
+ One content slice spanning the whole target.
+ 
+ @param targetText - archive the slice covers
+ 
+ @returns Single-slice preparation
+ 
+ @example
+ ```ts
+ const slices = slicesOver({ targetText: TARGET, },);
+ ```
  */
 function slicesOver({ targetText, }: { readonly targetText: string; },): readonly ChunkPair[] {
   return [{
@@ -62,18 +62,18 @@ function slicesOver({ targetText, }: { readonly targetText: string; },): readonl
 }
 
 /**
- * Builds a final-stage source selecting one replacement over one slice.
- *
- * @param incumbent - archive text of the slice
- *
- * @param text - wording the final contest selects
- *
- * @returns Narrow artifact source read by the publication assembler
- *
- * @example
- * ```ts
- * const artifact = artifactShipping({ incumbent: TARGET, text: TARGET, });
- * ```
+ Builds a final-stage source selecting one replacement over one slice.
+ 
+ @param incumbent - archive text of the slice
+ 
+ @param text - wording the final contest selects
+ 
+ @returns Narrow artifact source read by the publication assembler
+ 
+ @example
+ ```ts
+ const artifact = artifactShipping({ incumbent: TARGET, text: TARGET, });
+ ```
  */
 function artifactShipping(
   {
@@ -112,16 +112,16 @@ function artifactShipping(
 }
 
 /**
- * Reads the interruption a guard throws, or fails the case.
- *
- * @param run - guard call under test
- *
- * @returns The interruption thrown
- *
- * @example
- * ```ts
- * const error = interruptionOf({ run: () => assertPageFootnotesIntact({ ... },), },);
- * ```
+ Reads the interruption a guard throws, or fails the case.
+ 
+ @param run - guard call under test
+ 
+ @returns The interruption thrown
+ 
+ @example
+ ```ts
+ const error = interruptionOf({ run: () => assertPageFootnotesIntact({ ... },), },);
+ ```
  */
 function interruptionOf({ run, }: { readonly run: () => void; },): TranslationRepairInterruptedError {
   try {
@@ -152,7 +152,7 @@ await describe({
         + 'hakureico pass of 2026-09-09 shipped “Mayday”[^1] with no [^1] definition anywhere)',
       fn: async () => {
         /**
-         * The interruption the guard raises.
+         The interruption the guard raises.
          */
         const error = interruptionOf({
           run: () => assertPageFootnotesIntact({
@@ -190,7 +190,7 @@ await describe({
         + 'pauses on a dangling reference',
       fn: async () => {
         /**
-         * The interruption the guards raise.
+         The interruption the guards raise.
          */
         const error = interruptionOf({
           run: () => assertPageGuards({
@@ -212,7 +212,7 @@ await describe({
       name: 'raises the carried guard first when the page lost its carried region',
       fn: async () => {
         /**
-         * The interruption the guards raise.
+         The interruption the guards raise.
          */
         const error = interruptionOf({
           run: () => assertPageGuards({

@@ -13,131 +13,131 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // driver does not want the cache reasoning in the middle of it.
 
 /**
- * Generation of the consolidation cache.
- *
- * MOVES WHEN THE QUESTION MOVES: either sheet, either schema, the structural
- * guard, the validity floor, the gate's settling rule, or the wrap. Every one
- * of those changes what a voice is asked or how its answer is read.
- *
- * IT MOVES FOR THE WRAP TOO, which is the case worth naming. The wrap runs
- * after both rounds and looks like a recording change, but it can demote a
- * consolidation to the standing text, which is a different settlement and not a
- * different way of writing the same one.
- *
- * VERSION 3 adds target-authoritative contributor spelling to producer,
- * selector, validity floor and gate. Version 2 settlements did not answer it.
- *
- * VERSION 4 adds body naturalness polish after fidelity gate. Earlier
- * settlements never bought that stage and cannot resume as though they did.
- *
- * VERSION 5 gives final polish every structurally eligible body paragraph and
- * makes target contributor public identities explicit in producer rule.
- *
- * VERSION 6 asks final polish to remove source-grammar calques and finish every
- * clear issue in a changed paragraph. Version 5 asked a weaker question.
- *
- * VERSION 7 adds candidate-bound absolute review and one bounded correction.
- * Earlier settlements could approve relative improvement with defects remaining.
- *
- * VERSION 8 makes absolute-review correction a distinct non-fallback mode and
- * gives selectors its required findings. Version 7 selectors answered generic polish question.
- *
- * VERSION 9 permits a second candidate-bound correction when first correction
- * exposes further material defects. Version 8 exhausted after one generation.
- *
- * VERSION 10 binds revised absolute-review and required-correction questions:
- * Markdown soft breaks render as spaces, rejected base is not approved fallback,
- * and findings are a minimum rather than an edit whitelist.
- *
- * VERSION 11 requires absolute reviewers and correction rewriters to perform
- * separate local and whole-passage scans, makes publication-quality
- * naturalness a hard selector eligibility floor rather than relative ranking,
- * and requires a second acceptance before publication approval.
- *
- * VERSION 12 starts every direct roster round and absolute acceptance at
- * exact-half quorum rather than requiring every provider seat.
- *
- * VERSION 13 replaces two-correction terminal refusal with continuous
- * latest-rejection correction and distinct acceptance-challenge review.
- *
- * VERSION 14 threads every reviewed rejection into failed-strategy evidence
- * and adds durable raw-payload replay across interrupted invocations.
- *
- * VERSION 15 floors every candidate on target-authoritative contributor identity.
- * Earlier settlements could resume wording final publication guard rejects.
- *
- * VERSION 16 continuously replaces unendorsed standing wording using prior
- * consolidation slate, ballots, gate ballots, terminal, and findings.
- * Version 15 could resume settlement final publication guard rejects.
+ Generation of the consolidation cache.
+ 
+ MOVES WHEN THE QUESTION MOVES: either sheet, either schema, the structural
+ guard, the validity floor, the gate's settling rule, or the wrap. Every one
+ of those changes what a voice is asked or how its answer is read.
+ 
+ IT MOVES FOR THE WRAP TOO, which is the case worth naming. The wrap runs
+ after both rounds and looks like a recording change, but it can demote a
+ consolidation to the standing text, which is a different settlement and not a
+ different way of writing the same one.
+ 
+ VERSION 3 adds target-authoritative contributor spelling to producer,
+ selector, validity floor and gate. Version 2 settlements did not answer it.
+ 
+ VERSION 4 adds body naturalness polish after fidelity gate. Earlier
+ settlements never bought that stage and cannot resume as though they did.
+ 
+ VERSION 5 gives final polish every structurally eligible body paragraph and
+ makes target contributor public identities explicit in producer rule.
+ 
+ VERSION 6 asks final polish to remove source-grammar calques and finish every
+ clear issue in a changed paragraph. Version 5 asked a weaker question.
+ 
+ VERSION 7 adds candidate-bound absolute review and one bounded correction.
+ Earlier settlements could approve relative improvement with defects remaining.
+ 
+ VERSION 8 makes absolute-review correction a distinct non-fallback mode and
+ gives selectors its required findings. Version 7 selectors answered generic polish question.
+ 
+ VERSION 9 permits a second candidate-bound correction when first correction
+ exposes further material defects. Version 8 exhausted after one generation.
+ 
+ VERSION 10 binds revised absolute-review and required-correction questions:
+ Markdown soft breaks render as spaces, rejected base is not approved fallback,
+ and findings are a minimum rather than an edit whitelist.
+ 
+ VERSION 11 requires absolute reviewers and correction rewriters to perform
+ separate local and whole-passage scans, makes publication-quality
+ naturalness a hard selector eligibility floor rather than relative ranking,
+ and requires a second acceptance before publication approval.
+ 
+ VERSION 12 starts every direct roster round and absolute acceptance at
+ exact-half quorum rather than requiring every provider seat.
+ 
+ VERSION 13 replaces two-correction terminal refusal with continuous
+ latest-rejection correction and distinct acceptance-challenge review.
+ 
+ VERSION 14 threads every reviewed rejection into failed-strategy evidence
+ and adds durable raw-payload replay across interrupted invocations.
+ 
+ VERSION 15 floors every candidate on target-authoritative contributor identity.
+ Earlier settlements could resume wording final publication guard rejects.
+ 
+ VERSION 16 continuously replaces unendorsed standing wording using prior
+ consolidation slate, ballots, gate ballots, terminal, and findings.
+ Version 15 could resume settlement final publication guard rejects.
  */
 export const CONSOLIDATE_CACHE_VERSION = 16;
 
 /**
- * What a line-structured slice appends to its key material.
- *
- * APPENDED, NEVER INSERTED, and only when the rule governs. A prose slice
- * therefore hashes exactly the material it hashed before this mark existed,
- * so every prose consolidation already settled stays resumable. Only the
- * governed slices, whose producer sheet genuinely gained a rule, are re-bought.
- *
- * NOT A CACHE VERSION BUMP, which would have been correct and wasteful: it
- * would discard the prose settlements too, and they were bought under a sheet
- * identical to the one they would be re-bought under.
+ What a line-structured slice appends to its key material.
+ 
+ APPENDED, NEVER INSERTED, and only when the rule governs. A prose slice
+ therefore hashes exactly the material it hashed before this mark existed,
+ so every prose consolidation already settled stays resumable. Only the
+ governed slices, whose producer sheet genuinely gained a rule, are re-bought.
+ 
+ NOT A CACHE VERSION BUMP, which would have been correct and wasteful: it
+ would discard the prose settlements too, and they were bought under a sheet
+ identical to the one they would be re-bought under.
  */
 const LINE_STRUCTURED_KEY_MARK = 'line-structured';
 
 /**
- * What a slice carrying picture readings labels them with.
- *
- * LABELLED AND PAIRED, unlike the mark above it, because this append carries
- * CONTENT rather than a fact. A bare append of the readings could collide with
- * the mark for a reading whose words happen to be `line-structured`, and a
- * label in front of them costs one array element to make that impossible.
+ What a slice carrying picture readings labels them with.
+ 
+ LABELLED AND PAIRED, unlike the mark above it, because this append carries
+ CONTENT rather than a fact. A bare append of the readings could collide with
+ the mark for a reading whose words happen to be `line-structured`, and a
+ label in front of them costs one array element to make that impossible.
  */
 const PICTURE_KEY_LABEL = 'pictures';
 
 /**
- * What a slice carrying a window labels its ORIGINAL side with.
- *
- * TWO LABELS RATHER THAN ONE, because the two sides are independently absent:
- * a slice can stand beside a section the archive never translated, and folding
- * them under a single label would let a source-only window and an
- * incumbent-only one collide.
- *
- * SPELLED AS `translateSliceKey` SPELLS IT, so a reader tracing one window
- * through both keys meets the same two words.
+ What a slice carrying a window labels its ORIGINAL side with.
+ 
+ TWO LABELS RATHER THAN ONE, because the two sides are independently absent:
+ a slice can stand beside a section the archive never translated, and folding
+ them under a single label would let a source-only window and an
+ incumbent-only one collide.
+ 
+ SPELLED AS `translateSliceKey` SPELLS IT, so a reader tracing one window
+ through both keys meets the same two words.
  */
 const NEIGHBOURING_SOURCE_KEY_LABEL = 'neighbouring';
 
 /**
- * What a slice carrying a window labels its ARCHIVE side with.
+ What a slice carrying a window labels its ARCHIVE side with.
  */
 const NEIGHBOURING_INCUMBENT_KEY_LABEL = 'neighbouring-incumbent';
 
 /**
- * Everything about this run that changes what the voices are ASKED.
- *
- * Without it a resumed slice could return a settlement reached by a different
- * roster and nothing would look wrong, since the texts match and so the key
- * matches. Identity context belongs here for the same reason the contest gives:
- * it is front-matter-derived prompt content that varies per pair and measurably
- * changes the answer.
- *
- * `perCallTimeoutMs` is deliberately ABSENT, on the reasoning every other lane
- * gives: it changes how long a voice has to answer, not what it is asked.
- *
- * @param modelIds - roster asked to produce, judge and gate
- *
- * @param identityContext - names and handles both documents declare
- *
- * @param polishConfig - naturalness roles and document guard facts
- *
- * @returns Stable string for the key
- *
- * @example
- * ```ts
- * const runShape = consolidateRunShape({ modelIds, identityContext, },);
- * ```
+ Everything about this run that changes what the voices are ASKED.
+ 
+ Without it a resumed slice could return a settlement reached by a different
+ roster and nothing would look wrong, since the texts match and so the key
+ matches. Identity context belongs here for the same reason the contest gives:
+ it is front-matter-derived prompt content that varies per pair and measurably
+ changes the answer.
+ 
+ `perCallTimeoutMs` is deliberately ABSENT, on the reasoning every other lane
+ gives: it changes how long a voice has to answer, not what it is asked.
+ 
+ @param modelIds - roster asked to produce, judge and gate
+ 
+ @param identityContext - names and handles both documents declare
+ 
+ @param polishConfig - naturalness roles and document guard facts
+ 
+ @returns Stable string for the key
+ 
+ @example
+ ```ts
+ const runShape = consolidateRunShape({ modelIds, identityContext, },);
+ ```
  */
 export function consolidateRunShape(
   {
@@ -166,57 +166,57 @@ export function consolidateRunShape(
 }
 
 /**
- * Cross-run key for one consolidated slice.
- *
- * THE CONTEST BALLOTS ARE IN IT, which is what separates this key from the
- * contest's own. The consolidation sheet shows the producers what the contest
- * judges said about each lane, as claims rather than as verdicts, so two
- * consolidations over identical candidates and different ballots are not the
- * same question and must not resume into one another.
- *
- * THE STANDING TEXT IS IN IT SEPARATELY from the two lane renderings, because
- * it is not derivable from them here: the contest may have declined, in which
- * case nothing stands, and the deciding half behaves differently.
- *
- * THE SLICE INDEX IS NOT IN IT, matching every other lane. Where a slice sits
- * changes nothing a voice is asked, and keeping the index would discard every
- * settled consolidation after a renumbering.
- *
- * @param runShape - what this run asks, from {@link consolidateRunShape}
- *
- * @param sourceText - slice original, which is the standard
- *
- * @param incumbentText - archive rendering, which is the structural standard
- *
- * @param syntax - syntax role changing producer, judge and gate policies
- *
- * @param repairText - what the repair lane would ship
- *
- * @param translateText - what the translate lane would ship
- *
- * @param standingText - what ships today, empty where the contest declined
- *
- * @param ballots - what the contest judges said, shown to the producers
- *
- * @param lineStructured - whether the enclosing chunk is line-structured,
- * which decides whether the producer sheet carries the rule against merging
- * lines, and so decides what was bought
- *
- * @param pictureContext - what the pictures this slice and its neighbours
- * show were read to say, absent where none were read
- *
- * @param neighbouringSourceText - original of the passages either side, absent
- * where the slice stands alone, since the window is shown to the producers
- *
- * @param neighbouringIncumbentText - archive rendering of the passages either
- * side, absent for the same reason
- *
- * @returns Hash keying this slice's settlement
- *
- * @example
- * ```ts
- * const key = consolidateSliceKey({ runShape, sourceText, incumbentText, repairText, translateText, standingText, ballots, lineStructured, },);
- * ```
+ Cross-run key for one consolidated slice.
+ 
+ THE CONTEST BALLOTS ARE IN IT, which is what separates this key from the
+ contest's own. The consolidation sheet shows the producers what the contest
+ judges said about each lane, as claims rather than as verdicts, so two
+ consolidations over identical candidates and different ballots are not the
+ same question and must not resume into one another.
+ 
+ THE STANDING TEXT IS IN IT SEPARATELY from the two lane renderings, because
+ it is not derivable from them here: the contest may have declined, in which
+ case nothing stands, and the deciding half behaves differently.
+ 
+ THE SLICE INDEX IS NOT IN IT, matching every other lane. Where a slice sits
+ changes nothing a voice is asked, and keeping the index would discard every
+ settled consolidation after a renumbering.
+ 
+ @param runShape - what this run asks, from {@link consolidateRunShape}
+ 
+ @param sourceText - slice original, which is the standard
+ 
+ @param incumbentText - archive rendering, which is the structural standard
+ 
+ @param syntax - syntax role changing producer, judge and gate policies
+ 
+ @param repairText - what the repair lane would ship
+ 
+ @param translateText - what the translate lane would ship
+ 
+ @param standingText - what ships today, empty where the contest declined
+ 
+ @param ballots - what the contest judges said, shown to the producers
+ 
+ @param lineStructured - whether the enclosing chunk is line-structured,
+ which decides whether the producer sheet carries the rule against merging
+ lines, and so decides what was bought
+ 
+ @param pictureContext - what the pictures this slice and its neighbours
+ show were read to say, absent where none were read
+ 
+ @param neighbouringSourceText - original of the passages either side, absent
+ where the slice stands alone, since the window is shown to the producers
+ 
+ @param neighbouringIncumbentText - archive rendering of the passages either
+ side, absent for the same reason
+ 
+ @returns Hash keying this slice's settlement
+ 
+ @example
+ ```ts
+ const key = consolidateSliceKey({ runShape, sourceText, incumbentText, repairText, translateText, standingText, ballots, lineStructured, },);
+ ```
  */
 export function consolidateSliceKey(
   {

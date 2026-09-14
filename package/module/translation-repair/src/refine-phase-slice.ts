@@ -38,48 +38,48 @@ import { UnpreparedSliceError, } from './unprepared-slice.ts';
 // overlap one and may buy concurrently at higher overlap, preserving that rule.
 
 /**
- * One slice as current run reports it to phase aggregation.
- *
- * @example
- * ```ts
- * const result: RefinePhaseSliceResult = { outcome, findings: [], asked: true, };
- * ```
+ One slice as current run reports it to phase aggregation.
+ 
+ @example
+ ```ts
+ const result: RefinePhaseSliceResult = { outcome, findings: [], asked: true, };
+ ```
  */
 export type RefinePhaseSliceResult = RefinedSliceSettlement & {
   /**
-   * Whether current run reached a rewriter for this slice.
+   Whether current run reached a rewriter for this slice.
    */
   readonly asked: boolean;
 };
 
 /**
- * Persists one naturalness settlement only when caller remains live and every
- * stage reached quorum.
- *
- * Separated from model work so abort-safe persistence is directly testable:
- * transport usually throws before settlement returns, which otherwise makes
- * this final defense unreachable in a model-client fixture.
- *
- * @param key - exact question this settlement answers
- *
- * @param settled - outcome and findings eligible for serialization
- *
- * @param sliceIndex - index named in refusal warning
- *
- * @param refineCache - naturalness persistence boundary, when configured
- *
- * @param signal - caller abort checked before write
- *
- * @param l - phase logger receiving eligibility warning
- *
- * @throws Whatever caller abort reason or persistence throws
- *
- * @example
- * ```ts
- * await persistRefinePhaseSlice({ key, settled, sliceIndex, refineCache, signal, l, },);
- * ```
- *
- * @internal
+ Persists one naturalness settlement only when caller remains live and every
+ stage reached quorum.
+ 
+ Separated from model work so abort-safe persistence is directly testable:
+ transport usually throws before settlement returns, which otherwise makes
+ this final defense unreachable in a model-client fixture.
+ 
+ @param key - exact question this settlement answers
+ 
+ @param settled - outcome and findings eligible for serialization
+ 
+ @param sliceIndex - index named in refusal warning
+ 
+ @param refineCache - naturalness persistence boundary, when configured
+ 
+ @param signal - caller abort checked before write
+ 
+ @param l - phase logger receiving eligibility warning
+ 
+ @throws Whatever caller abort reason or persistence throws
+ 
+ @example
+ ```ts
+ await persistRefinePhaseSlice({ key, settled, sliceIndex, refineCache, signal, l, },);
+ ```
+ 
+ @internal
  */
 export async function persistRefinePhaseSlice(
   {
@@ -112,7 +112,7 @@ export async function persistRefinePhaseSlice(
   }
 
   /**
-   * Stages whose silence makes this settlement ineligible for reuse.
+   Stages whose silence makes this settlement ineligible for reuse.
    */
   const silent = silentStagesOf({ findings: settled.findings, },)
     .join('; ',);
@@ -124,60 +124,60 @@ export async function persistRefinePhaseSlice(
 }
 
 /**
- * Resumes or buys one naturalness settlement and persists only decisions a warm
- * run may reuse.
- *
- * @param client - injected model client
- *
- * @param outcome - accuracy settlement this slice refines
- *
- * @param slices - prepared pairs used to refuse unknown indices and derive
- * neighbouring fidelity window
- *
- * @param models - stage rosters deciding rewrite and checks
- *
- * @param refinerModelIds - already-validated non-empty rewriter roster
- *
- * @param runShape - model-facing governance folded into cache key
- *
- * @param definitions - whole-document references rewriter and guards resolve
- *
- * @param identityContext - declared identities model prompts preserve
- *
- * @param declaredNames - exact declarations deterministic guard preserves
- *
- * @param refineCache - prior settlements and persistence boundary
- *
- * @param signal - caller abort checked before any persistence
- *
- * @param perCallTimeoutMs - per-exchange deadline
- *
- * @param l - phase logger receiving cache-refusal warning
- *
- * @returns Slice outcome and findings plus whether current run asked rewriters
- *
- * @throws UnpreparedSliceError when outcome index has no prepared pair
- *
- * @throws Whatever settlement, persistence, or caller abort throws
- *
- * @example
- * ```ts
- * const settled = await settleRefinePhaseSlice({
- *   client,
- *   outcome,
- *   slices,
- *   models,
- *   refinerModelIds,
- *   runShape,
- *   definitions,
- *   declaredNames,
- *   signal,
- *   perCallTimeoutMs,
- *   l,
- * },);
- * ```
- *
- * @internal
+ Resumes or buys one naturalness settlement and persists only decisions a warm
+ run may reuse.
+ 
+ @param client - injected model client
+ 
+ @param outcome - accuracy settlement this slice refines
+ 
+ @param slices - prepared pairs used to refuse unknown indices and derive
+ neighbouring fidelity window
+ 
+ @param models - stage rosters deciding rewrite and checks
+ 
+ @param refinerModelIds - already-validated non-empty rewriter roster
+ 
+ @param runShape - model-facing governance folded into cache key
+ 
+ @param definitions - whole-document references rewriter and guards resolve
+ 
+ @param identityContext - declared identities model prompts preserve
+ 
+ @param declaredNames - exact declarations deterministic guard preserves
+ 
+ @param refineCache - prior settlements and persistence boundary
+ 
+ @param signal - caller abort checked before any persistence
+ 
+ @param perCallTimeoutMs - per-exchange deadline
+ 
+ @param l - phase logger receiving cache-refusal warning
+ 
+ @returns Slice outcome and findings plus whether current run asked rewriters
+ 
+ @throws UnpreparedSliceError when outcome index has no prepared pair
+ 
+ @throws Whatever settlement, persistence, or caller abort throws
+ 
+ @example
+ ```ts
+ const settled = await settleRefinePhaseSlice({
+   client,
+   outcome,
+   slices,
+   models,
+   refinerModelIds,
+   runShape,
+   definitions,
+   declaredNames,
+   signal,
+   perCallTimeoutMs,
+   l,
+ },);
+ ```
+ 
+ @internal
  */
 export async function settleRefinePhaseSlice(
   {
@@ -211,7 +211,7 @@ export async function settleRefinePhaseSlice(
   }>,
 ): Promise<RefinePhaseSliceResult> {
   /**
-   * Prepared pair this outcome claims to settle.
+   Prepared pair this outcome claims to settle.
    */
   const prepared = slices[outcome.sliceIndex];
   if (prepared === undefined)
@@ -225,19 +225,19 @@ export async function settleRefinePhaseSlice(
   }
 
   /**
-   * Source wording serving as faithfulness anchor.
+   Source wording serving as faithfulness anchor.
    */
   const sourceText = prepared.source
     .text;
 
   /**
-   * Archive wording deciding whether returned text changed this slice.
+   Archive wording deciding whether returned text changed this slice.
    */
   const incumbentText = prepared.target
     .text;
 
   /**
-   * Nearby original and archive passages used by damage probe.
+   Nearby original and archive passages used by damage probe.
    */
   const windowFragment = {
     neighbouringSourceText: neighbouringSource({
@@ -251,7 +251,7 @@ export async function settleRefinePhaseSlice(
   };
 
   /**
-   * Exact refinement question this settlement answers.
+   Exact refinement question this settlement answers.
    */
   const key = refineSliceKey({
     runShape,
@@ -267,7 +267,7 @@ export async function settleRefinePhaseSlice(
   },);
 
   /**
-   * Earlier decision for same question, when cache carries one.
+   Earlier decision for same question, when cache carries one.
    */
   const stored = refineCache?.resumed
     .get(key,);
@@ -280,7 +280,7 @@ export async function settleRefinePhaseSlice(
   }
 
   /**
-   * Decision bought by current run.
+   Decision bought by current run.
    */
   const settled = await settleRefinedSlice({
     client,

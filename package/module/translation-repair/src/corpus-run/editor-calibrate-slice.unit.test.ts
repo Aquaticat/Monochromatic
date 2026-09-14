@@ -1,16 +1,16 @@
 /**
- * Tests for the progress line the editor calibration prints per slice.
- *
- * WHY THE NUMBER IS THE THING UNDER TEST. Above an overlap of one, slices
- * finish out of order, and a line numbered by arrival would claim a position
- * another slice owns while nothing claimed the one still running. The line is
- * numbered by position in the sample, and the cases pin that the number comes
- * from the position and from nothing else about the slice.
- *
- * Fixtures are cat-themed invention: the entry id names no real person and no
- * corpus content appears here.
- *
- * @module
+ Tests for the progress line the editor calibration prints per slice.
+ 
+ WHY THE NUMBER IS THE THING UNDER TEST. Above an overlap of one, slices
+ finish out of order, and a line numbered by arrival would claim a position
+ another slice owns while nothing claimed the one still running. The line is
+ numbered by position in the sample, and the cases pin that the number comes
+ from the position and from nothing else about the slice.
+ 
+ Fixtures are cat-themed invention: the entry id names no real person and no
+ corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -30,18 +30,18 @@ import {
 //region Fixtures
 
 /**
- * Entry the fixture slice is drawn from, invented.
+ Entry the fixture slice is drawn from, invented.
  */
 const ENTRY_ID = 'whisker-ledger';
 
 /**
- * Chunk of that entry the fixture slice is, chosen apart from every position
- * the cases use so a line quoting the wrong number is caught.
+ Chunk of that entry the fixture slice is, chosen apart from every position
+ the cases use so a line quoting the wrong number is caught.
  */
 const CHUNK_INDEX = 7;
 
 /**
- * Slice every case prints a line about.
+ Slice every case prints a line about.
  */
 const SLICE = {
   entryId: ENTRY_ID,
@@ -49,7 +49,7 @@ const SLICE = {
 };
 
 /**
- * One judged round with nobody in it: the line counts rounds, not voters.
+ One judged round with nobody in it: the line counts rounds, not voters.
  */
 const EMPTY_ROUND: SelectionRound = {
   producers: [],
@@ -57,7 +57,7 @@ const EMPTY_ROUND: SelectionRound = {
 };
 
 /**
- * Editors credited with shipping text, in the order they are credited.
+ Editors credited with shipping text, in the order they are credited.
  */
 const SHIPPERS: readonly RosterModelId[] = [
   'minimax-m3',
@@ -65,23 +65,23 @@ const SHIPPERS: readonly RosterModelId[] = [
 ];
 
 /**
- * Builds what a slice produced from counts alone.
- *
- * @param editor - editor rounds judged
- *
- * @param refiner - refiner rounds judged
- *
- * @param refineAsked - whether the naturalness lane reached a rewriter
- *
- * @param shipping - editors credited with shipping text, at most the fixture
- * roster's length
- *
- * @returns Rounds shaped as the driver collects them
- *
- * @example
- * ```ts
- * const rounds = roundsOf({ editor: 2, refiner: 1, refineAsked: true, shipping: 2, },);
- * ```
+ Builds what a slice produced from counts alone.
+ 
+ @param editor - editor rounds judged
+ 
+ @param refiner - refiner rounds judged
+ 
+ @param refineAsked - whether the naturalness lane reached a rewriter
+ 
+ @param shipping - editors credited with shipping text, at most the fixture
+ roster's length
+ 
+ @returns Rounds shaped as the driver collects them
+ 
+ @example
+ ```ts
+ const rounds = roundsOf({ editor: 2, refiner: 1, refineAsked: true, shipping: 2, },);
+ ```
  */
 function roundsOf(
   {
@@ -129,7 +129,7 @@ await describe({
         + 'chunk it is or the order it finished in',
       fn: async () => {
         /**
-         * Line for the third slice of four.
+         Line for the third slice of four.
          */
         const line = sliceProgressLine({
           position: 2,
@@ -153,7 +153,7 @@ await describe({
       name: 'RENDERS the whole line as the report reads it: entry, chunk, both seats, shippers',
       fn: async () => {
         /**
-         * Line for a slice that produced rounds on both seats and shipped.
+         Line for a slice that produced rounds on both seats and shipped.
          */
         const line = sliceProgressLine({
           position: 0,
@@ -178,7 +178,7 @@ await describe({
         + 'empty refiner count can be told from a rewriter roster that answered nothing',
       fn: async () => {
         /**
-         * Line for a slice the naturalness lane could not offer anybody.
+         Line for a slice the naturalness lane could not offer anybody.
          */
         const unreached = sliceProgressLine({
           position: 1,
@@ -193,7 +193,7 @@ await describe({
         },);
 
         /**
-         * Line for a slice the lane did offer, where nobody was judged.
+         Line for a slice the lane did offer, where nobody was judged.
          */
         const reached = sliceProgressLine({
           position: 1,
@@ -223,8 +223,8 @@ await describe({
         + 'that wrote the chunk and served an issue inside it is one shipper rather than two',
       fn: async () => {
         /**
-         * Authorship where one model wrote the whole chunk and also served an
-         * issue, and another served an issue only.
+         Authorship where one model wrote the whole chunk and also served an
+         issue, and another served an issue only.
          */
         const authorship: IssueAuthorship = {
           everyIssue: [SHIPPERS[0] as RosterModelId,],

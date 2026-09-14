@@ -1,14 +1,14 @@
 /**
- * Tests for the lane-neutral preparation both drivers slice from.
- *
- * The property that matters is that ONE document pair yields ONE slicing. Two
- * lanes preparing separately would each report slices that look right on their
- * own, and nothing downstream could tell that a repair outcome and a translate
- * outcome for "slice 4" described different spans.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the lane-neutral preparation both drivers slice from.
+ 
+ The property that matters is that ONE document pair yields ONE slicing. Two
+ lanes preparing separately would each report slices that look right on their
+ own, and nothing downstream could tell that a repair outcome and a translate
+ outcome for "slice 4" described different spans.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -20,7 +20,7 @@ import {
 import { prepareDocumentPair, } from '../dist/final/node/index.mjs';
 
 /**
- * Original with front matter declaring a name, and two sections.
+ Original with front matter declaring a name, and two sections.
  */
 const SOURCE_TEXT = `---
 name: 猫猫
@@ -39,7 +39,7 @@ handle: mao
 `;
 
 /**
- * Translation of the same document, section for section.
+ Translation of the same document, section for section.
  */
 const TARGET_TEXT = `---
 name: Maomao
@@ -121,7 +121,7 @@ await describe({
         expect(prepared.frontMatterAuthority,).toBe('archive',);
         expect(prepared.legacyIdentity,).toBeUndefined();
         /**
-         * The same pair rendered, for the count the archive's authority removes.
+         The same pair rendered, for the count the archive's authority removes.
          */
         const rendered = prepareDocumentPair({
           sourceText: SOURCE_TEXT,
@@ -261,8 +261,8 @@ The cat also likes sunbathing.
         },);
 
         /**
-         * Findings the ALIGNER wrote, which are the ones that reported a side
-         * index under the pair wording.
+         Findings the ALIGNER wrote, which are the ones that reported a side
+         index under the pair wording.
          */
         const mismatches = alignmentFindings
           .filter(function isMismatch(finding,): boolean {
@@ -382,8 +382,8 @@ The cat also likes sunbathing.
         + 'on the slices that need it most',
       fn: async () => {
         /**
-         * Verse-shaped section: many short lines, which is what the predicate
-         * reads.
+         Verse-shaped section: many short lines, which is what the predicate
+         reads.
          */
         const verse = `## 诗
 
@@ -432,17 +432,17 @@ The cat comes home
           + `${'Next morning she returned to the sill, and the bird had gone. '.repeat(3,)}\n`;
 
         /**
-         * Reads a slicing as the spans it carries, which is what a later stage
-         * sees; counts alone would pass a slicing that moved every boundary.
-         *
-         * @param prepared - preparation to read
-         *
-         * @returns One span per slice, in slice order
-         *
-         * @example
-         * ```ts
-         * const spans = spansOf(prepared,);
-         * ```
+         Reads a slicing as the spans it carries, which is what a later stage
+         sees; counts alone would pass a slicing that moved every boundary.
+         
+         @param prepared - preparation to read
+         
+         @returns One span per slice, in slice order
+         
+         @example
+         ```ts
+         const spans = spansOf(prepared,);
+         ```
          */
         function spansOf(prepared: ReturnType<typeof prepareDocumentPair>,): readonly string[] {
           return prepared.slices
@@ -452,7 +452,7 @@ The cat comes home
         }
 
         /**
-         * How the deterministic aligner slices this pair.
+         How the deterministic aligner slices this pair.
          */
         const scorer = prepareDocumentPair({
           sourceText: source,
@@ -483,7 +483,7 @@ The cat comes home
         + 'so an artifact records the value slicing was built on rather than a copy assembled beside it',
       fn: async () => {
         /**
-         * Prepared by the deterministic aligner, which supplies no pairing.
+         Prepared by the deterministic aligner, which supplies no pairing.
          */
         const deterministic = prepareDocumentPair({
           sourceText: SOURCE_TEXT,
@@ -495,8 +495,8 @@ The cat comes home
         ),).toBe(false,);
 
         /**
-         * Pairing a caller supplies, crossing the sections on purpose so the
-         * echo cannot be mistaken for the aligner's own index order.
+         Pairing a caller supplies, crossing the sections on purpose so the
+         echo cannot be mistaken for the aligner's own index order.
          */
         const supplied = [
           {
@@ -513,7 +513,7 @@ The cat comes home
         );
 
         /**
-         * Prepared on that pairing.
+         Prepared on that pairing.
          */
         const paired = prepareDocumentPair({
           sourceText: SOURCE_TEXT,

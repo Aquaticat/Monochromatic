@@ -35,34 +35,34 @@ import { TranslationRepairInterruptedError, } from './translation-repair-interru
 //region Archive block review stage
 
 /**
- * Evidence marker assigning distinct prior-decline selection responsibility.
+ Evidence marker assigning distinct prior-decline selection responsibility.
  */
 const PRIOR_CORRECTION_DECLINE = 'archive correction slate declined';
 
 /**
- * Settled review of one unclaimed archive block.
+ Settled review of one unclaimed archive block.
  */
 export type ArchiveBlockReviewOutcome = {
   /**
-   * Whether exact archived text stands or a different replacement was selected.
+   Whether exact archived text stands or a different replacement was selected.
    */
   readonly kind: 'retained' | 'revised';
   /**
-   * Original or selected replacement text.
+   Original or selected replacement text.
    */
   readonly text: string;
   /**
-   * Review and selection evidence.
+   Review and selection evidence.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Collapses byte-identical replacement proposals while preserving authorship.
- *
- * @param voices - review replies eligible to revise
- *
- * @returns Distinct replacement candidates
+ Collapses byte-identical replacement proposals while preserving authorship.
+ 
+ @param voices - review replies eligible to revise
+ 
+ @returns Distinct replacement candidates
  */
 function replacementCandidates(
   {
@@ -77,11 +77,11 @@ function replacementCandidates(
   },
 ): readonly Candidate<string>[] {
   /**
-   * Contributor identities current block makes authoritative.
+   Contributor identities current block makes authoritative.
    */
   const contributorNames = archiveContributorNameForms({ text: blockText, });
   /**
-   * Distinct candidates accumulated in roster order.
+   Distinct candidates accumulated in roster order.
    */
   const candidates: Candidate<string>[] = [];
   for (const voice of voices) {
@@ -99,7 +99,7 @@ function replacementCandidates(
       > 0)
       continue;
     /**
-     * Earlier byte-identical correction.
+     Earlier byte-identical correction.
      */
     const existing = candidates.find(function sameReplacement(candidate,): boolean {
       return candidate.value
@@ -142,37 +142,37 @@ function replacementCandidates(
 }
 
 /**
- * Reviews one archive-only block once and selects a correction when any voice rejects it.
- *
- * SINGLE ROUND BY DESIGN: a declined correction slate or an empty one retains
- * the original block with the decline recorded as a finding, because archive
- * wording is the shipping default and reviewer indecision must not withhold
- * the entry (doc/planning/translation-repair-no-loop-design.md).
- *
- * @param client - provider client
- *
- * @param modelIds - reviewers and correction judges
- *
- * @param sourceText - whole source searched for support
- *
- * @param targetText - whole archive supplying context
- *
- * @param blockText - exact block under review
- *
- * @param priorFindings - latest failed-strategy evidence
- *
- * @param signal - caller cancellation
- *
- * @param exchangeTimeoutMs - per-call bound
- *
- * @param l - stage logger
- *
- * @returns Retained original or independently selected replacement
- *
- * @example
- * ```ts
- * const result = await runArchiveBlockReviewStage({ ...input, priorFindings: [], });
- * ```
+ Reviews one archive-only block once and selects a correction when any voice rejects it.
+ 
+ SINGLE ROUND BY DESIGN: a declined correction slate or an empty one retains
+ the original block with the decline recorded as a finding, because archive
+ wording is the shipping default and reviewer indecision must not withhold
+ the entry (doc/planning/translation-repair-no-loop-design.md).
+ 
+ @param client - provider client
+ 
+ @param modelIds - reviewers and correction judges
+ 
+ @param sourceText - whole source searched for support
+ 
+ @param targetText - whole archive supplying context
+ 
+ @param blockText - exact block under review
+ 
+ @param priorFindings - latest failed-strategy evidence
+ 
+ @param signal - caller cancellation
+ 
+ @param exchangeTimeoutMs - per-call bound
+ 
+ @param l - stage logger
+ 
+ @returns Retained original or independently selected replacement
+ 
+ @example
+ ```ts
+ const result = await runArchiveBlockReviewStage({ ...input, priorFindings: [], });
+ ```
  */
 export async function runArchiveBlockReviewStage(
   {
@@ -198,14 +198,14 @@ export async function runArchiveBlockReviewStage(
   }>,
 ): Promise<ArchiveBlockReviewOutcome> {
   /**
-   * Stage boundary for review and independent-selection diagnostics.
+   Stage boundary for review and independent-selection diagnostics.
    */
   const reviewLog = tagged({
     l,
     tag: runArchiveBlockReviewStage.name,
   },);
   /**
-   * Quorum-bounded review voices.
+   Quorum-bounded review voices.
    */
   const gather = await gatherStageVoices<ArchiveBlockReviewWire>({
     client,
@@ -224,7 +224,7 @@ export async function runArchiveBlockReviewStage(
     l: reviewLog,
   },);
   /**
-   * Replies whose claimed source support exists verbatim.
+   Replies whose claimed source support exists verbatim.
    */
   const anchoredVoices = gather.voices
     .filter(function supportIsAnchored(voice,): boolean {
@@ -244,7 +244,7 @@ export async function runArchiveBlockReviewStage(
     return true;
   },);
   /**
-   * Evidence carried into selection and later strategies.
+   Evidence carried into selection and later strategies.
    */
   const findings = [...new Set([
     ...priorFindings,
@@ -273,17 +273,17 @@ export async function runArchiveBlockReviewStage(
     },);
   }
   /**
-   * Participation required after unsupported anchors are removed.
+   Participation required after unsupported anchors are removed.
    */
   const requiredParticipation = rosterQuorumSize({ rosterSize: modelIds.length, });
   /**
-   * Replies heard at all, anchored or not.
+   Replies heard at all, anchored or not.
    */
   const heardCount = gather.voices
     .length;
   /**
-   * Revisions earn publication through the independent selector, not through
-   * other reviewers' retention anchors. The initial review quorum still holds.
+   Revisions earn publication through the independent selector, not through
+   other reviewers' retention anchors. The initial review quorum still holds.
    */
   const revisions = replacementCandidates({
     voices: anchoredVoices,
@@ -309,7 +309,7 @@ export async function runArchiveBlockReviewStage(
       !== 'revise';
   },)) {
     /**
-     * Independent wording review after provenance acceptance.
+     Independent wording review after provenance acceptance.
      */
     const naturalnessFindings = await recordArchiveBlockNaturalness({
       client,
@@ -330,7 +330,7 @@ export async function runArchiveBlockReviewStage(
     };
   }
   /**
-   * Existing wording is an explicit choice, never an automatically approved one.
+   Existing wording is an explicit choice, never an automatically approved one.
    */
   const candidates = withArchiveOriginal({
     revisions,
@@ -340,7 +340,7 @@ export async function runArchiveBlockReviewStage(
     `archive review: comparing ${String(revisions.length,)} admissible revisions in ${String(candidates.length,)} candidates; ${String(anchoredVoices.length,)} eligible assessments from ${String(heardCount,)} heard reviews`,
   );
   /**
-   * Independently judged correction slate under the unchanged selector quorum.
+   Independently judged correction slate under the unchanged selector quorum.
    */
   const selection = await decideBestCandidate({
     client,
@@ -368,7 +368,7 @@ export async function runArchiveBlockReviewStage(
     l: reviewLog,
   },);
   /**
-   * Review plus candidate-selection evidence.
+   Review plus candidate-selection evidence.
    */
   const settledFindings = [...new Set([
     ...findings,

@@ -6,19 +6,19 @@ import type { DestinationCheck, } from './dropped-destinations.ts';
 // publisher writes them; stdout carries what a grep over a pass can total.
 
 /**
- * Renders the `DESTINATIONS` line for one published entry.
- *
- * @param entryId - person entry the line is about
- *
- * @param destinations - what the publisher found on both sides
- *
- * @returns One line, `DESTINATIONS <id> source=N page=M dropped=K`, followed by
- * any finding
- *
- * @example
- * ```ts
- * console.log(destinationsLine({ entryId: 'BookshopCat', destinations, },),);
- * ```
+ Renders the `DESTINATIONS` line for one published entry.
+ 
+ @param entryId - person entry the line is about
+ 
+ @param destinations - what the publisher found on both sides
+ 
+ @returns One line, `DESTINATIONS <id> source=N page=M dropped=K`, followed by
+ any finding
+ 
+ @example
+ ```ts
+ console.log(destinationsLine({ entryId: 'BookshopCat', destinations, },),);
+ ```
  */
 export function destinationsLine(
   {
@@ -30,28 +30,28 @@ export function destinationsLine(
   },
 ): string {
   /**
-   * Destinations the source carries.
+   Destinations the source carries.
    */
   const sourceCount = destinations
     .source
     .length;
 
   /**
-   * Destinations the page carries.
+   Destinations the page carries.
    */
   const pageCount = destinations
     .page
     .length;
 
   /**
-   * Source destinations the page lacks.
+   Source destinations the page lacks.
    */
   const droppedCount = destinations
     .dropped
     .length;
 
   /**
-   * Findings, each set off by a space, empty when there are none.
+   Findings, each set off by a space, empty when there are none.
    */
   const noted = destinations
     .findings

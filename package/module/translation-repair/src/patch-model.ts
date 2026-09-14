@@ -10,114 +10,114 @@ import { hashContent, } from './document-node.ts';
 // against.
 
 /**
- * One region of the translation an editor may rewrite.
- * Zero-width envelopes (`startOffset === endOffset`, empty base) are
- * insertion points for omitted content.
- *
- * @example
- * ```ts
- * const envelope: EditableEnvelope = {
- *   envelopeId: 'envelope/abc',
- *   startOffset: 42,
- *   endOffset: 42,
- *   baseText: '',
- *   baseHash: hashContent({ content: '', },),
- *   issueIds: ['adjudicated/def',],
- * };
- * ```
+ One region of the translation an editor may rewrite.
+ Zero-width envelopes (`startOffset === endOffset`, empty base) are
+ insertion points for omitted content.
+ 
+ @example
+ ```ts
+ const envelope: EditableEnvelope = {
+   envelopeId: 'envelope/abc',
+   startOffset: 42,
+   endOffset: 42,
+   baseText: '',
+   baseHash: hashContent({ content: '', },),
+   issueIds: ['adjudicated/def',],
+ };
+ ```
  */
 export type EditableEnvelope = {
   /**
-   * Deterministic `envelope/<hash>` identity over offsets and base text.
+   Deterministic `envelope/<hash>` identity over offsets and base text.
    */
   readonly envelopeId: string;
 
   /**
-   * Absolute start within the full translation text.
+   Absolute start within the full translation text.
    */
   readonly startOffset: number;
 
   /**
-   * Absolute end (exclusive); equal to start for insertion envelopes.
+   Absolute end (exclusive); equal to start for insertion envelopes.
    */
   readonly endOffset: number;
 
   /**
-   * Exact text currently occupying the envelope.
+   Exact text currently occupying the envelope.
    */
   readonly baseText: string;
 
   /**
-   * Content hash of the base text; editors echo it so application can
-   * prove the edit was written against the text it replaces.
+   Content hash of the base text; editors echo it so application can
+   prove the edit was written against the text it replaces.
    */
   readonly baseHash: string;
 
   /**
-   * Accepted issues this envelope serves, in issue order.
+   Accepted issues this envelope serves, in issue order.
    */
   readonly issueIds: readonly string[];
 };
 
 /**
- * Envelopes plus the accepted issues no envelope could serve.
- *
- * @example
- * ```ts
- * const plan: EnvelopePlan = deriveEditableEnvelopes({ issues, targetText, },);
- * ```
+ Envelopes plus the accepted issues no envelope could serve.
+ 
+ @example
+ ```ts
+ const plan: EnvelopePlan = deriveEditableEnvelopes({ issues, targetText, },);
+ ```
  */
 export type EnvelopePlan = {
   /**
-   * Non-overlapping envelopes in document order.
+   Non-overlapping envelopes in document order.
    */
   readonly envelopes: readonly EditableEnvelope[];
 
   /**
-   * Accepted issues without any target-side anchor;
-   * they stay unresolved because no envelope can host their repair.
+   Accepted issues without any target-side anchor;
+   they stay unresolved because no envelope can host their repair.
    */
   readonly unenveloped: readonly string[];
 };
 
 /**
- * One target-side interval contributed by one accepted issue.
+ One target-side interval contributed by one accepted issue.
  */
 type IssueInterval = {
   /**
-   * Absolute start of the contributed span.
+   Absolute start of the contributed span.
    */
   readonly start: number;
 
   /**
-   * Absolute end (exclusive).
+   Absolute end (exclusive).
    */
   readonly end: number;
 
   /**
-   * Issue contributing the span.
+   Issue contributing the span.
    */
   readonly issueId: string;
 };
 
 /**
- * Derives editable envelopes from accepted issues:
- * every accepted issue's target-side spans become intervals, overlapping or
- * touching intervals merge into one envelope carrying every contributing
- * issue, and non-accepted issues contribute nothing.
- * Merging keeps envelopes non-overlapping by construction, which the
- * deterministic apply gate relies on.
- *
- * @param issues - adjudicated issues; only accepted ones contribute
- *
- * @param targetText - full translation the envelopes cut from
- *
- * @returns Envelopes in document order plus unenveloped accepted issues
- *
- * @example
- * ```ts
- * const { envelopes, unenveloped, } = deriveEditableEnvelopes({ issues, targetText, },);
- * ```
+ Derives editable envelopes from accepted issues:
+ every accepted issue's target-side spans become intervals, overlapping or
+ touching intervals merge into one envelope carrying every contributing
+ issue, and non-accepted issues contribute nothing.
+ Merging keeps envelopes non-overlapping by construction, which the
+ deterministic apply gate relies on.
+ 
+ @param issues - adjudicated issues; only accepted ones contribute
+ 
+ @param targetText - full translation the envelopes cut from
+ 
+ @returns Envelopes in document order plus unenveloped accepted issues
+ 
+ @example
+ ```ts
+ const { envelopes, unenveloped, } = deriveEditableEnvelopes({ issues, targetText, },);
+ ```
  */
 export function deriveEditableEnvelopes(
   {
@@ -129,14 +129,14 @@ export function deriveEditableEnvelopes(
   },
 ): EnvelopePlan {
   /**
-   * Accepted issues in adjudication order.
+   Accepted issues in adjudication order.
    */
   const accepted = issues.filter(function isAccepted(issue,) {
     return issue.status === 'accepted';
   },);
 
   /**
-   * Target-side intervals contributed by every accepted issue.
+   Target-side intervals contributed by every accepted issue.
    */
   const intervals: readonly IssueInterval[] = accepted
     .flatMap(function toIntervals(issue,): readonly IssueInterval[] {
@@ -166,7 +166,7 @@ export function deriveEditableEnvelopes(
     },);
 
   /**
-   * Accepted issues that contributed no target-side interval.
+   Accepted issues that contributed no target-side interval.
    */
   const unenveloped = accepted
     .filter(function lacksInterval(issue,) {
@@ -179,7 +179,7 @@ export function deriveEditableEnvelopes(
     },);
 
   /**
-   * One merged region under construction.
+   One merged region under construction.
    */
   type IntervalGroup = {
     readonly start: number;
@@ -188,14 +188,14 @@ export function deriveEditableEnvelopes(
   };
 
   /**
-   * Merged interval groups: overlapping or touching intervals coalesce.
-   * Single linear pass over the sorted intervals; the trailing group is
-   * replaced in place while it keeps absorbing neighbors.
+   Merged interval groups: overlapping or touching intervals coalesce.
+   Single linear pass over the sorted intervals; the trailing group is
+   replaced in place while it keeps absorbing neighbors.
    */
   const merged: IntervalGroup[] = [];
   for (const interval of intervals) {
     /**
-     * Group currently open for merging, when one exists.
+     Group currently open for merging, when one exists.
      */
     const last = merged.at(-1,);
     if ((last !== undefined) && (interval.start <= last.end)) {
@@ -225,7 +225,7 @@ export function deriveEditableEnvelopes(
   return {
     envelopes: merged.map(function toEnvelope(group,): EditableEnvelope {
       /**
-       * Exact text currently occupying the group's region.
+       Exact text currently occupying the group's region.
        */
       const baseText = targetText.slice(
         group.start,

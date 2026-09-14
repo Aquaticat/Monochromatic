@@ -43,38 +43,38 @@ import type { QuotaSnapshot, } from './synthetic-quota.ts';
 // that point nothing can be bought at all.
 
 /**
- * Refusal raised when no provider has budget left.
- *
- * ENDS THE RUN, at the owner's instruction. Every other budget state leaves
- * something buyable, and this one leaves nothing.
- *
- * RENAMED 2026-09-03 from the two-provider name when OpenRouter joined; the
- * old name is in the local forbidden-strings appendix so it cannot come back.
- *
- * @example
- * ```ts
- * throw new EveryProviderDryError();
- * ```
+ Refusal raised when no provider has budget left.
+ 
+ ENDS THE RUN, at the owner's instruction. Every other budget state leaves
+ something buyable, and this one leaves nothing.
+ 
+ RENAMED 2026-09-03 from the two-provider name when OpenRouter joined; the
+ old name is in the local forbidden-strings appendix so it cannot come back.
+ 
+ @example
+ ```ts
+ throw new EveryProviderDryError();
+ ```
  */
 export class EveryProviderDryError extends Error {
   /**
-   * Declares this message safe to forward: fixed sentences plus, at most, the
-   * meter states and hold lengths the decision was made on, never content.
+   Declares this message safe to forward: fixed sentences plus, at most, the
+   meter states and hold lengths the decision was made on, never content.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds failure stating that no provider can serve any call.
-   *
-   * @param measured - meter states and holds at the decision, stated so a
-   * reader can tell exhaustion from refusal holds (#474, option 3);
-   * composed by the caller from the dryness record and the holds, and "no
-   * reading cited" where the caller has none
-   *
-   * @example
-   * ```ts
-   * new EveryProviderDryError({ measured: 'meters read synthetic dry, hyper dry, openrouter dry; holds synthetic 0ms, hyper 0ms, openrouter 0ms', },);
-   * ```
+   Builds failure stating that no provider can serve any call.
+   
+   @param measured - meter states and holds at the decision, stated so a
+   reader can tell exhaustion from refusal holds (#474, option 3);
+   composed by the caller from the dryness record and the holds, and "no
+   reading cited" where the caller has none
+   
+   @example
+   ```ts
+   new EveryProviderDryError({ measured: 'meters read synthetic dry, hyper dry, openrouter dry; holds synthetic 0ms, hyper 0ms, openrouter 0ms', },);
+   ```
    */
   public constructor(
     { measured = 'no reading cited', }: { readonly measured?: string; } = {},
@@ -87,71 +87,71 @@ export class EveryProviderDryError extends Error {
 }
 
 /**
- * Which providers can serve one model at all, before budget is considered.
- *
- * STATED RATHER THAN DERIVED, so this decision is testable without a roster and
- * keeps answering correctly while the roster is being widened.
- *
- * @example
- * ```ts
- * const reach: ModelReach = { synthetic: true, hyper: true, openrouter: true, };
- * ```
+ Which providers can serve one model at all, before budget is considered.
+ 
+ STATED RATHER THAN DERIVED, so this decision is testable without a roster and
+ keeps answering correctly while the roster is being widened.
+ 
+ @example
+ ```ts
+ const reach: ModelReach = { synthetic: true, hyper: true, openrouter: true, };
+ ```
  */
 export type ModelReach = ProviderRecord<boolean>;
 
 /**
- * Reading given when no provider in order both serves a model and has budget.
+ Reading given when no provider in order both serves a model and has budget.
  */
 export const NO_PROVIDER = 'none';
 
 /**
- * Where one call goes, or why it can go nowhere.
- *
- * @example
- * ```ts
- * const choice: ProviderChoice = { kind: 'hyper', };
- * ```
+ Where one call goes, or why it can go nowhere.
+ 
+ @example
+ ```ts
+ const choice: ProviderChoice = { kind: 'hyper', };
+ ```
  */
 export type ProviderChoice =
   | {
     /**
-     * Provider that takes the call.
+     Provider that takes the call.
      */
     readonly kind: ProviderName;
   }
   | {
     /**
-     * Discriminator marking a call no live provider can take.
+     Discriminator marking a call no live provider can take.
      */
     readonly kind: 'unreachable';
 
     /**
-     * Why, in terms a voice-loss record can carry.
+     Why, in terms a voice-loss record can carry.
      */
     readonly reason: string;
   };
 
 /**
- * Whether Synthetic's budget reading says nothing more can be bought there.
- *
- * READS BOTH LIMITS. The provider throttling the account, an empty five-hour
- * window and an empty weekly budget are three separate ways to be out, and the
- * one that actually emptied was the weekly budget.
- *
- * @param quota - most recent budget reading
- *
- * @returns Whether that reading leaves nothing buyable
- *
- * @example
- * ```ts
- * const dry = syntheticIsDry({ quota, },);
- * ```
+ Whether Synthetic's budget reading says nothing more can be bought there.
+ 
+ READS BOTH LIMITS. The provider throttling the account, an empty five-hour
+ window and an empty weekly budget are three separate ways to be out, and the
+ one that actually emptied was the weekly budget.
+ 
+ @param quota - most recent budget reading
+ 
+ @returns Whether that reading leaves nothing buyable
+ 
+ @example
+ ```ts
+ const dry = syntheticIsDry({ quota, },);
+ ```
  */
 export function syntheticIsDry(
   { quota, }: { readonly quota: QuotaSnapshot; },
 ): boolean {
   /**
-   * Rolling window, whose emptiness is stated two ways.
+   Rolling window, whose emptiness is stated two ways.
    */
   const {
     limited,
@@ -165,7 +165,7 @@ export function syntheticIsDry(
     return true;
 
   /**
-   * Weekly budget, the limit that actually emptied.
+   Weekly budget, the limit that actually emptied.
    */
   const { percentRemaining, } = quota.weekly;
 
@@ -173,21 +173,21 @@ export function syntheticIsDry(
 }
 
 /**
- * Whether Hyper's balance says nothing more can be bought there.
- *
- * NO MARGIN ABOVE ZERO. What one call costs has not been measured, so any
- * cushion would be a number nobody established. A balance too small for the
- * next call surfaces as a refusal at the wire, which the caller ORs into the
- * dryness it passes back in.
- *
- * @param credits - most recent balance reading
- *
- * @returns Whether that reading leaves nothing buyable
- *
- * @example
- * ```ts
- * const dry = hyperIsDry({ credits, },);
- * ```
+ Whether Hyper's balance says nothing more can be bought there.
+ 
+ NO MARGIN ABOVE ZERO. What one call costs has not been measured, so any
+ cushion would be a number nobody established. A balance too small for the
+ next call surfaces as a refusal at the wire, which the caller ORs into the
+ dryness it passes back in.
+ 
+ @param credits - most recent balance reading
+ 
+ @returns Whether that reading leaves nothing buyable
+ 
+ @example
+ ```ts
+ const dry = hyperIsDry({ credits, },);
+ ```
  */
 export function hyperIsDry(
   { credits, }: { readonly credits: HyperCredits; },
@@ -196,20 +196,20 @@ export function hyperIsDry(
 }
 
 /**
- * Whether OpenRouter's credits say nothing more can be bought there.
- *
- * THE SAME RULE AS HYPER'S, for the same reason: a balance too small for the
- * next call answers `402` at the wire, and that refusal holds the provider
- * out through the budget layer.
- *
- * @param credits - most recent credits reading
- *
- * @returns Whether that reading leaves nothing buyable
- *
- * @example
- * ```ts
- * const dry = openRouterIsDry({ credits, },);
- * ```
+ Whether OpenRouter's credits say nothing more can be bought there.
+ 
+ THE SAME RULE AS HYPER'S, for the same reason: a balance too small for the
+ next call answers `402` at the wire, and that refusal holds the provider
+ out through the budget layer.
+ 
+ @param credits - most recent credits reading
+ 
+ @returns Whether that reading leaves nothing buyable
+ 
+ @example
+ ```ts
+ const dry = openRouterIsDry({ credits, },);
+ ```
  */
 export function openRouterIsDry(
   { credits, }: { readonly credits: OpenRouterCredits; },
@@ -218,19 +218,19 @@ export function openRouterIsDry(
 }
 
 /**
- * Whether Bedrock's ledger says nothing more can be bought there.
- * THE SAME RULE AS THE OTHER TWO BALANCES, on a balance this package keeps
- * itself: past the owner's credit the account would bill the owner's card,
- * which the owner said never to reach ("I will NEVER top it up").
- *
- * @param credits - most recent ledger reading
- *
- * @returns Whether that reading leaves nothing buyable
- *
- * @example
- * ```ts
- * const dry = bedrockIsDry({ credits, },);
- * ```
+ Whether Bedrock's ledger says nothing more can be bought there.
+ THE SAME RULE AS THE OTHER TWO BALANCES, on a balance this package keeps
+ itself: past the owner's credit the account would bill the owner's card,
+ which the owner said never to reach ("I will NEVER top it up").
+ 
+ @param credits - most recent ledger reading
+ 
+ @returns Whether that reading leaves nothing buyable
+ 
+ @example
+ ```ts
+ const dry = bedrockIsDry({ credits, },);
+ ```
  */
 export function bedrockIsDry(
   { credits, }: { readonly credits: BedrockCredits; },
@@ -239,23 +239,23 @@ export function bedrockIsDry(
 }
 
 /**
- * First provider in spending order that serves a model and has budget.
- *
- * THE SEAT READER'S QUESTION AS WELL AS THE ROUTER'S: `run-seats.ts` asks
- * where each judge would be served before a phase starts, because a seat that
- * one provider serves too slowly for the round window is withheld only while
- * that provider is the one that would take its calls.
- *
- * @param reach - providers that serve this model at all
- *
- * @param dry - which providers have nothing buyable right now
- *
- * @returns Provider that would take a call with a free slot, or none
- *
- * @example
- * ```ts
- * const provider = providerServing({ reach, dry, },);
- * ```
+ First provider in spending order that serves a model and has budget.
+ 
+ THE SEAT READER'S QUESTION AS WELL AS THE ROUTER'S: `run-seats.ts` asks
+ where each judge would be served before a phase starts, because a seat that
+ one provider serves too slowly for the round window is withheld only while
+ that provider is the one that would take its calls.
+ 
+ @param reach - providers that serve this model at all
+ 
+ @param dry - which providers have nothing buyable right now
+ 
+ @returns Provider that would take a call with a free slot, or none
+ 
+ @example
+ ```ts
+ const provider = providerServing({ reach, dry, },);
+ ```
  */
 export function providerServing(
   {
@@ -272,26 +272,26 @@ export function providerServing(
 }
 
 /**
- * Decides which provider serves one call.
- *
- * @param reach - providers that serve this model at all
- *
- * @param dry - which providers have nothing buyable, budget reading and
- * anything just learned at the wire taken together
- *
- * @param saturated - which providers have this model's per-model concurrency
- * limit already taken, which is the overflow trigger; a provider with no such
- * limit is never saturated
- *
- * @returns Provider to call, or why none can be
- *
- * @throws {@link EveryProviderDryError} when no provider has budget left,
- * which ends the run
- *
- * @example
- * ```ts
- * const choice = routeProviderFor({ reach, dry, saturated, },);
- * ```
+ Decides which provider serves one call.
+ 
+ @param reach - providers that serve this model at all
+ 
+ @param dry - which providers have nothing buyable, budget reading and
+ anything just learned at the wire taken together
+ 
+ @param saturated - which providers have this model's per-model concurrency
+ limit already taken, which is the overflow trigger; a provider with no such
+ limit is never saturated
+ 
+ @returns Provider to call, or why none can be
+ 
+ @throws {@link EveryProviderDryError} when no provider has budget left,
+ which ends the run
+ 
+ @example
+ ```ts
+ const choice = routeProviderFor({ reach, dry, saturated, },);
+ ```
  */
 export function routeProviderFor(
   {
@@ -310,14 +310,14 @@ export function routeProviderFor(
     throw new EveryProviderDryError();
 
   /**
-   * Providers that both serve this model and have budget, in spending order.
+   Providers that both serve this model and have budget, in spending order.
    */
   const usable = PROVIDER_ORDER.filter(function serves(provider,): boolean {
     return reach[provider] && (!dry[provider]);
   },);
 
   /**
-   * First usable provider, or nothing when every serving provider is dry.
+   First usable provider, or nothing when every serving provider is dry.
    */
   const [preferred,] = usable;
 
@@ -332,7 +332,7 @@ export function routeProviderFor(
     };
 
   /**
-   * First usable provider with a free slot, which overflow prefers.
+   First usable provider with a free slot, which overflow prefers.
    */
   const unsaturated = usable.find(function hasRoom(provider,): boolean {
     return !saturated[provider];
@@ -344,34 +344,34 @@ export function routeProviderFor(
 }
 
 /**
- * Renders what the first provider's meter actually said, as record fields.
- *
- * A VERDICT ALONE CANNOT BE DIAGNOSED. `wet` and `dry` say what routing did,
- * not what was read: a dry reading could be an emptied weekly budget, an
- * emptied rolling window, an account this provider is actively throttling, or
- * a threshold in this file being wrong about a budget that was fine. Only a
- * second live call separates those, and once the moment has passed there is no
- * second call to make.
- *
- * BOTH LIMITS EVERY TIME, including whichever one is full. A record naming
- * only the limit that emptied would leave a reader unable to watch the other
- * one approach.
- *
- * @param quota - snapshot the dryness verdict was read from
- *
- * @returns `key=value` tokens, no value carrying a space
- *
- * @example
- * ```ts
- * syntheticMeterLevel({ quota, },);
- * // => ['syntheticWeekly=97%', 'syntheticFiveHour=48/50', 'syntheticThrottled=no',]
- * ```
+ Renders what the first provider's meter actually said, as record fields.
+ 
+ A VERDICT ALONE CANNOT BE DIAGNOSED. `wet` and `dry` say what routing did,
+ not what was read: a dry reading could be an emptied weekly budget, an
+ emptied rolling window, an account this provider is actively throttling, or
+ a threshold in this file being wrong about a budget that was fine. Only a
+ second live call separates those, and once the moment has passed there is no
+ second call to make.
+ 
+ BOTH LIMITS EVERY TIME, including whichever one is full. A record naming
+ only the limit that emptied would leave a reader unable to watch the other
+ one approach.
+ 
+ @param quota - snapshot the dryness verdict was read from
+ 
+ @returns `key=value` tokens, no value carrying a space
+ 
+ @example
+ ```ts
+ syntheticMeterLevel({ quota, },);
+ // => ['syntheticWeekly=97%', 'syntheticFiveHour=48/50', 'syntheticThrottled=no',]
+ ```
  */
 export function syntheticMeterLevel(
   { quota, }: { readonly quota: QuotaSnapshot; },
 ): readonly string[] {
   /**
-   * Rolling window and weekly budget, either of which emptying is a dry meter.
+   Rolling window and weekly budget, either of which emptying is a dry meter.
    */
   const {
     fiveHour,
@@ -386,21 +386,21 @@ export function syntheticMeterLevel(
 }
 
 /**
- * Renders what the second provider's meter actually said, as record fields.
- *
- * ONE NUMBER, because this provider reports one. Read back later, a recorded
- * balance of zero is what separates a provider that was genuinely empty from a
- * threshold here that was wrong about a balance that was not.
- *
- * @param credits - balance the dryness verdict was read from
- *
- * @returns `key=value` tokens, no value carrying a space
- *
- * @example
- * ```ts
- * hyperMeterLevel({ credits, },);
- * // => ['hyperBalance=0',]
- * ```
+ Renders what the second provider's meter actually said, as record fields.
+ 
+ ONE NUMBER, because this provider reports one. Read back later, a recorded
+ balance of zero is what separates a provider that was genuinely empty from a
+ threshold here that was wrong about a balance that was not.
+ 
+ @param credits - balance the dryness verdict was read from
+ 
+ @returns `key=value` tokens, no value carrying a space
+ 
+ @example
+ ```ts
+ hyperMeterLevel({ credits, },);
+ // => ['hyperBalance=0',]
+ ```
  */
 export function hyperMeterLevel(
   { credits, }: { readonly credits: HyperCredits; },
@@ -409,27 +409,27 @@ export function hyperMeterLevel(
 }
 
 /**
- * Renders what the third provider's meter actually said, as record fields.
- *
- * WHAT IS LEFT, IN USD, TO TWO PLACES. The provider reports purchased and used
- * to nine decimals; a record field is for watching a balance approach zero
- * across readings, and cents are the unit the owner tops up in.
- *
- * @param credits - credits the dryness verdict was read from
- *
- * @returns `key=value` tokens, no value carrying a space
- *
- * @example
- * ```ts
- * openRouterMeterLevel({ credits, },);
- * // => ['openrouterUsd=57.62',]
- * ```
+ Renders what the third provider's meter actually said, as record fields.
+ 
+ WHAT IS LEFT, IN USD, TO TWO PLACES. The provider reports purchased and used
+ to nine decimals; a record field is for watching a balance approach zero
+ across readings, and cents are the unit the owner tops up in.
+ 
+ @param credits - credits the dryness verdict was read from
+ 
+ @returns `key=value` tokens, no value carrying a space
+ 
+ @example
+ ```ts
+ openRouterMeterLevel({ credits, },);
+ // => ['openrouterUsd=57.62',]
+ ```
  */
 export function openRouterMeterLevel(
   { credits, }: { readonly credits: OpenRouterCredits; },
 ): readonly string[] {
   /**
-   * What is left, which is the one number the record watches.
+   What is left, which is the one number the record watches.
    */
   const { remainingUsd, } = credits;
 
@@ -437,25 +437,25 @@ export function openRouterMeterLevel(
 }
 
 /**
- * Renders what the fourth provider's meter actually said, as record fields.
- * WHAT IS LEFT, IN USD, TO TWO PLACES, as for OpenRouter; the figure is the
- * ledger's, not the account's, which is worth remembering when reading one.
- *
- * @param credits - ledger reading the dryness verdict was read from
- *
- * @returns `key=value` tokens, no value carrying a space
- *
- * @example
- * ```ts
- * bedrockMeterLevel({ credits, },);
- * // => ['bedrockUsd=198.50',]
- * ```
+ Renders what the fourth provider's meter actually said, as record fields.
+ WHAT IS LEFT, IN USD, TO TWO PLACES, as for OpenRouter; the figure is the
+ ledger's, not the account's, which is worth remembering when reading one.
+ 
+ @param credits - ledger reading the dryness verdict was read from
+ 
+ @returns `key=value` tokens, no value carrying a space
+ 
+ @example
+ ```ts
+ bedrockMeterLevel({ credits, },);
+ // => ['bedrockUsd=198.50',]
+ ```
  */
 export function bedrockMeterLevel(
   { credits, }: { readonly credits: BedrockCredits; },
 ): readonly string[] {
   /**
-   * What is left, which is the one number the record watches.
+   What is left, which is the one number the record watches.
    */
   const { remainingUsd, } = credits;
 

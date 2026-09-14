@@ -1,18 +1,18 @@
 /**
- * Tests for the size screen that says WHAT a translation's size anomalies are:
- * a passage moved across a section boundary, a section nobody translated,
- * content that exists only in the translation, or nothing at all.
- *
- * WHAT THESE ARE FOR. The screen's first version reported one bucket, and its
- * count went into `#107` and Question 5 before anyone checked what was in it.
- * These fixtures are the labelled cases that check came back with: the two
- * relocations verified by reading both documents, the three anomalous entries
- * that turned out to be other phenomena, and an ordinary document that must stay
- * silent. Each carries the shape of a real reading with invented counts.
- *
- * Fixtures are invented counts, not corpus text.
- *
- * @module
+ Tests for the size screen that says WHAT a translation's size anomalies are:
+ a passage moved across a section boundary, a section nobody translated,
+ content that exists only in the translation, or nothing at all.
+ 
+ WHAT THESE ARE FOR. The screen's first version reported one bucket, and its
+ count went into `#107` and Question 5 before anyone checked what was in it.
+ These fixtures are the labelled cases that check came back with: the two
+ relocations verified by reading both documents, the three anomalous entries
+ that turned out to be other phenomena, and an ordinary document that must stay
+ silent. Each carries the shape of a real reading with invented counts.
+ 
+ Fixtures are invented counts, not corpus text.
+ 
+ @module
  */
 
 import {
@@ -29,26 +29,26 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds a slice of a given original length at a given expansion.
- *
- * BLOCKS DEFAULT TO ONE ON EACH SIDE, which is a slice the pairing agrees about.
- * A test wanting the block-count evidence passes them, so that every fixture not
- * naming blocks is stating that blocks are not what it is about.
- *
- * @param sourceChars - original characters
- *
- * @param ratio - translated characters per original character
- *
- * @param sourceBlocks - blocks on the original side, defaulting to one
- *
- * @param targetBlocks - blocks on the translated side, defaulting to one
- *
- * @returns Slice sizes carrying that expansion
- *
- * @example
- * ```ts
- * const slice = at({ sourceChars: 300, ratio: 3, },);
- * ```
+ Builds a slice of a given original length at a given expansion.
+ 
+ BLOCKS DEFAULT TO ONE ON EACH SIDE, which is a slice the pairing agrees about.
+ A test wanting the block-count evidence passes them, so that every fixture not
+ naming blocks is stating that blocks are not what it is about.
+ 
+ @param sourceChars - original characters
+ 
+ @param ratio - translated characters per original character
+ 
+ @param sourceBlocks - blocks on the original side, defaulting to one
+ 
+ @param targetBlocks - blocks on the translated side, defaulting to one
+ 
+ @returns Slice sizes carrying that expansion
+ 
+ @example
+ ```ts
+ const slice = at({ sourceChars: 300, ratio: 3, },);
+ ```
  */
 function at(
   {

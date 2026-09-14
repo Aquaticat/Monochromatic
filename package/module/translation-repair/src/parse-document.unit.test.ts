@@ -1,9 +1,9 @@
 /**
- * Tests for document parsing over both corpus shapes:
- * memorial-shaped MDX with GFM footnotes and JSX,
- * and archive-shaped text with full-width bracket markers.
- *
- * @module
+ Tests for document parsing over both corpus shapes:
+ memorial-shaped MDX with GFM footnotes and JSX,
+ and archive-shaped text with full-width bracket markers.
+ 
+ @module
  */
 
 import {
@@ -17,10 +17,10 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Memorial-shaped fixture mirroring corpus structure with cat-themed invention:
- * front matter, section heading, paragraph with GFM footnote reference,
- * inline-code marker look-alike, self-closing JSX element,
- * blockquote, and link-wrapped footnote definition mirroring corpus style.
+ Memorial-shaped fixture mirroring corpus structure with cat-themed invention:
+ front matter, section heading, paragraph with GFM footnote reference,
+ inline-code marker look-alike, self-closing JSX element,
+ blockquote, and link-wrapped footnote definition mirroring corpus style.
  */
 const MEMORIAL_FIXTURE = `---
 name: whiskers
@@ -38,9 +38,9 @@ name: whiskers
 `;
 
 /**
- * Archive-shaped fixture with cat-themed invention:
- * heading with marker reference, body reference, indented definitions,
- * one resolving pair, one unresolved reference, one orphan, one duplicated pair.
+ Archive-shaped fixture with cat-themed invention:
+ heading with marker reference, body reference, indented definitions,
+ one resolving pair, one unresolved reference, one orphan, one duplicated pair.
  */
 const ARCHIVE_FIXTURE = `## 猫须考〔1〕
 
@@ -179,9 +179,9 @@ await describe({
 },);
 
 /**
- * Comment-bearing fixture with cat-themed invention:
- * front matter, a standalone comment hiding a footnote-marker look-alike,
- * and a real resolving footnote pair.
+ Comment-bearing fixture with cat-themed invention:
+ front matter, a standalone comment hiding a footnote-marker look-alike,
+ and a real resolving footnote pair.
  */
 const COMMENTED_FIXTURE = `---
 name: whiskers
@@ -199,8 +199,8 @@ name: whiskers
 `;
 
 /**
- * Fixture whose body carries an unclosed MDX brace expression,
- * failing the strict grammar without any HTML comment involved.
+ Fixture whose body carries an unclosed MDX brace expression,
+ failing the strict grammar without any HTML comment involved.
  */
 const BROKEN_EXPRESSION_FIXTURE = `## 简介
 

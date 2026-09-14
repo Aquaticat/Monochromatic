@@ -29,72 +29,72 @@ import type { TranslateReportWire, } from './translate-wire.ts';
 // as a consolidation would report a change nobody decided on.
 
 /**
- * What ships for one gated slice once the wrap has been applied.
- *
- * @example
- * ```ts
- * const shipped: WrappedConsolidation = { ships: 'standing', text: 'It naps.', rewrapped: false, demoted: false, };
- * ```
+ What ships for one gated slice once the wrap has been applied.
+ 
+ @example
+ ```ts
+ const shipped: WrappedConsolidation = { ships: 'standing', text: 'It naps.', rewrapped: false, demoted: false, };
+ ```
  */
 export type WrappedConsolidation = {
   /**
-   * Rendering that ships, after a wrap that erased the difference sends the
-   * slice back to its standing text.
+   Rendering that ships, after a wrap that erased the difference sends the
+   slice back to its standing text.
    */
   readonly ships: GateShipped;
 
   /**
-   * Wording that ships, wrapped when a consolidation won and untouched when
-   * the standing text did.
+   Wording that ships, wrapped when a consolidation won and untouched when
+   the standing text did.
    */
   readonly text: string;
 
   /**
-   * Whether the wrap altered what the producer emitted, which separates a
-   * producer that already wrapped from one this rule had to correct.
+   Whether the wrap altered what the producer emitted, which separates a
+   producer that already wrapped from one this rule had to correct.
    */
   readonly rewrapped: boolean;
 
   /**
-   * Whether wrapping left nothing between the consolidation and the standing
-   * text, so what the gate called a change was only a re-wrapping.
+   Whether wrapping left nothing between the consolidation and the standing
+   text, so what the gate called a change was only a re-wrapping.
    */
   readonly demoted: boolean;
 };
 
 /**
- * Wraps a winning consolidation, re-deriving whether it still changes anything.
- *
- * NEVER APPLIED TO THE STANDING TEXT. A slice the gate settled on its standing
- * text keeps that wording byte for byte: wrapping it would turn a decision to
- * change nothing into a change, which is what `wrapReplacementText` refuses by
- * contract and what the delivery coherence check refuses by measurement.
- *
- * NEVER APPLIED TO A LINE-STRUCTURED SLICE EITHER, at this site or at the two
- * lane sites. The pipeline hands a governed producer `TRANSLATE_LINE_STRUCTURE_RULE`,
- * one output line per original line, and then broke that work afterwards: over
- * the 211 line-structured slices of the pinned corpus the wrap changed 189 and
- * broke 470 of 1091 lines, after every decider had approved them.
- *
- * @param outcome - what the gate settled, whose `ships` decides whether there
- * is anything to wrap
- *
- * @param consolidatedText - wording the consolidation produced, as emitted
- *
- * @param standingText - wording already in place, which a wrapped
- * consolidation may turn out to equal
- *
- * @param lineStructured - whether the line-structure rule governs this slice,
- * which forbids the wrap outright rather than narrowing it
- *
- * @param l - stage logger
- *
- * @returns What ships, with the wrap applied and demotion re-derived
- *
- * @example
- * ```ts
- * const shipped = wrapConsolidation({ outcome, consolidatedText, standingText, lineStructured, l, },);
- * ```
+ Wraps a winning consolidation, re-deriving whether it still changes anything.
+ 
+ NEVER APPLIED TO THE STANDING TEXT. A slice the gate settled on its standing
+ text keeps that wording byte for byte: wrapping it would turn a decision to
+ change nothing into a change, which is what `wrapReplacementText` refuses by
+ contract and what the delivery coherence check refuses by measurement.
+ 
+ NEVER APPLIED TO A LINE-STRUCTURED SLICE EITHER, at this site or at the two
+ lane sites. The pipeline hands a governed producer `TRANSLATE_LINE_STRUCTURE_RULE`,
+ one output line per original line, and then broke that work afterwards: over
+ the 211 line-structured slices of the pinned corpus the wrap changed 189 and
+ broke 470 of 1091 lines, after every decider had approved them.
+ 
+ @param outcome - what the gate settled, whose `ships` decides whether there
+ is anything to wrap
+ 
+ @param consolidatedText - wording the consolidation produced, as emitted
+ 
+ @param standingText - wording already in place, which a wrapped
+ consolidation may turn out to equal
+ 
+ @param lineStructured - whether the line-structure rule governs this slice,
+ which forbids the wrap outright rather than narrowing it
+ 
+ @param l - stage logger
+ 
+ @returns What ships, with the wrap applied and demotion re-derived
+ 
+ @example
+ ```ts
+ const shipped = wrapConsolidation({ outcome, consolidatedText, standingText, lineStructured, l, },);
+ ```
  */
 export function wrapConsolidation(
   {
@@ -121,18 +121,18 @@ export function wrapConsolidation(
 
   if (lineStructured) {
     /**
-     * Whether the producer proposed exactly what already stands.
-     *
-     * RAW, AGAINST BOTH TEXTS UNWRAPPED, because neither has been through the
-     * wrap on this path. The comparison the wrapped path makes is wider on
-     * purpose: it also catches a proposal that is a pure re-wrapping of the
-     * standing text. No re-wrapping can reach here, so the only way a
-     * proposal changes nothing is by being the standing text itself.
-     *
-     * THAT CASE STILL DEMOTES. A replacement identical to its incumbent
-     * survives the footnote guard and lands in the shipped set beside a
-     * document nobody changed, which is the fault the demote exists for and
-     * which skipping the wrap does not make go away.
+     Whether the producer proposed exactly what already stands.
+     
+     RAW, AGAINST BOTH TEXTS UNWRAPPED, because neither has been through the
+     wrap on this path. The comparison the wrapped path makes is wider on
+     purpose: it also catches a proposal that is a pure re-wrapping of the
+     standing text. No re-wrapping can reach here, so the only way a
+     proposal changes nothing is by being the standing text itself.
+     
+     THAT CASE STILL DEMOTES. A replacement identical to its incumbent
+     survives the footnote guard and lands in the shipped set beside a
+     document nobody changed, which is the fault the demote exists for and
+     which skipping the wrap does not make go away.
      */
     const unchanged = consolidatedText === standingText;
 
@@ -150,8 +150,8 @@ export function wrapConsolidation(
     }
 
     /**
-     * Lines the producer wrote, which is the whole point of the skip and so
-     * the one number worth printing beside it.
+     Lines the producer wrote, which is the whole point of the skip and so
+     the one number worth printing beside it.
      */
     const producedLines = consolidatedText
       .split('\n',)
@@ -171,35 +171,35 @@ export function wrapConsolidation(
   }
 
   /**
-   * Consolidation as the rule would have it written.
+   Consolidation as the rule would have it written.
    */
   const wrapped = wrapReplacementText({ text: consolidatedText, },);
 
   /**
-   * Whether the producer had already written it that way.
+   Whether the producer had already written it that way.
    */
   const rewrapped = wrapped !== consolidatedText;
 
   /**
-   * Standing text as the rule would have written it, COMPARED AND NEVER
-   * SHIPPED.
-   *
-   * The standing text is not always lane output. Where a lane contest settled
-   * on the incumbent, what stands is the archive's own wording, which nothing
-   * has ever wrapped, because wrapping a retained passage would report a
-   * change nobody decided on. A consolidation that is a pure re-wrapping of
-   * THAT text matches neither `standingText` nor anything else this function
-   * holds, so without this key it escapes demotion and ships as a change.
-   *
-   * Only the comparison uses it. The demoted branch below returns
-   * `standingText` itself, so the retained wording still leaves here byte for
-   * byte and `wrapReplacementText`'s contract holds.
+   Standing text as the rule would have written it, COMPARED AND NEVER
+   SHIPPED.
+   
+   The standing text is not always lane output. Where a lane contest settled
+   on the incumbent, what stands is the archive's own wording, which nothing
+   has ever wrapped, because wrapping a retained passage would report a
+   change nobody decided on. A consolidation that is a pure re-wrapping of
+   THAT text matches neither `standingText` nor anything else this function
+   holds, so without this key it escapes demotion and ships as a change.
+   
+   Only the comparison uses it. The demoted branch below returns
+   `standingText` itself, so the retained wording still leaves here byte for
+   byte and `wrapReplacementText`'s contract holds.
    */
   const standingAsWritten = wrapReplacementText({ text: standingText, },);
 
   /**
-   * Whether anything but the wrapping still separates it from what stands,
-   * against a standing text that may itself be wrapped or unwrapped.
+   Whether anything but the wrapping still separates it from what stands,
+   against a standing text that may itself be wrapped or unwrapped.
    */
   const demoted = (wrapped === standingText) || (wrapped === standingAsWritten);
 
@@ -216,15 +216,15 @@ export function wrapConsolidation(
   }
 
   /**
-   * Lines the producer wrote, which makes a rewrap legible in a log rather
-   * than a claim the reader has to take on faith.
+   Lines the producer wrote, which makes a rewrap legible in a log rather
+   than a claim the reader has to take on faith.
    */
   const emittedLines = consolidatedText
     .split('\n',)
     .length;
 
   /**
-   * Lines the rule would have it written on.
+   Lines the rule would have it written on.
    */
   const writtenLines = wrapped
     .split('\n',)
@@ -245,50 +245,50 @@ export function wrapConsolidation(
 }
 
 /**
- * Wraps every proposal on a slate, so both deciders judge the bytes that ship.
- *
- * THE DEFECT THIS CLOSES, measured 2026-08-22 over the two most recent runs of
- * the band pair's six entries: 15 of the 16 consolidations that shipped had
- * their bytes changed by {@link wrapConsolidation} AFTER the slate judges had
- * chosen them and the gate had approved them, 9 of 9 in one run and 6 of 7 in
- * the other. Both deciders were reading text the run does not publish.
- *
- * THE SAME WRAPPER, AND NO CONFIGURATION TO DRIFT. `wrapReplacementText` takes
- * a text and nothing else, so this cannot fall out of step with what
- * {@link wrapConsolidation} applies afterwards. If the two ever did disagree,
- * the candidate dedup would collapse proposals against bytes that never ship,
- * which inverts the point of wrapping them early at all.
- *
- * SAFE TO APPLY TWICE, and it is applied twice: a winner wrapped here reaches
- * {@link wrapConsolidation} and is wrapped again. Measured rather than assumed
- * over twelve representative passages, seven of which the first application
- * moved and none of which a second application moved again.
- *
- * THE INCUMBENT IS NEITHER WRAPPED NOR PASSED HERE. Wrapping text a lane
- * decided to keep would report a change nobody decided on, which
- * `wrapReplacementText`'s own contract refuses. So a proposal that is a pure
- * re-wrapping of an UNWRAPPED archive standing text still fails to collapse
- * into it, and {@link wrapConsolidation}'s `standingAsWritten` key stays as the
- * thing that catches that case.
- *
- * A GOVERNED SLICE IS LEFT ALONE, on the same evidence that stops the shipping
- * wrap touching one: over the 211 line-structured slices of the pinned corpus
- * this rule changes 189 and breaks 470 of the 1091 lines they already carry.
- * Wrapping their proposals would put text in front of the judges that breaks
- * the very rule `#177` gave them to enforce.
- *
- * @param voices - proposals that passed the validity floor
- *
- * @param lineStructured - whether the verse rule governs this slice, which
- * forbids the wrap outright rather than narrowing it
- *
- * @returns Same voices carrying proposals as they would ship, or that array
- * untouched where the verse rule governs
- *
- * @example
- * ```ts
- * const onTheSlate = wrapConsolidationProposals({ voices, lineStructured, },);
- * ```
+ Wraps every proposal on a slate, so both deciders judge the bytes that ship.
+ 
+ THE DEFECT THIS CLOSES, measured 2026-08-22 over the two most recent runs of
+ the band pair's six entries: 15 of the 16 consolidations that shipped had
+ their bytes changed by {@link wrapConsolidation} AFTER the slate judges had
+ chosen them and the gate had approved them, 9 of 9 in one run and 6 of 7 in
+ the other. Both deciders were reading text the run does not publish.
+ 
+ THE SAME WRAPPER, AND NO CONFIGURATION TO DRIFT. `wrapReplacementText` takes
+ a text and nothing else, so this cannot fall out of step with what
+ {@link wrapConsolidation} applies afterwards. If the two ever did disagree,
+ the candidate dedup would collapse proposals against bytes that never ship,
+ which inverts the point of wrapping them early at all.
+ 
+ SAFE TO APPLY TWICE, and it is applied twice: a winner wrapped here reaches
+ {@link wrapConsolidation} and is wrapped again. Measured rather than assumed
+ over twelve representative passages, seven of which the first application
+ moved and none of which a second application moved again.
+ 
+ THE INCUMBENT IS NEITHER WRAPPED NOR PASSED HERE. Wrapping text a lane
+ decided to keep would report a change nobody decided on, which
+ `wrapReplacementText`'s own contract refuses. So a proposal that is a pure
+ re-wrapping of an UNWRAPPED archive standing text still fails to collapse
+ into it, and {@link wrapConsolidation}'s `standingAsWritten` key stays as the
+ thing that catches that case.
+ 
+ A GOVERNED SLICE IS LEFT ALONE, on the same evidence that stops the shipping
+ wrap touching one: over the 211 line-structured slices of the pinned corpus
+ this rule changes 189 and breaks 470 of the 1091 lines they already carry.
+ Wrapping their proposals would put text in front of the judges that breaks
+ the very rule `#177` gave them to enforce.
+ 
+ @param voices - proposals that passed the validity floor
+ 
+ @param lineStructured - whether the verse rule governs this slice, which
+ forbids the wrap outright rather than narrowing it
+ 
+ @returns Same voices carrying proposals as they would ship, or that array
+ untouched where the verse rule governs
+ 
+ @example
+ ```ts
+ const onTheSlate = wrapConsolidationProposals({ voices, lineStructured, },);
+ ```
  */
 export function wrapConsolidationProposals(
   {

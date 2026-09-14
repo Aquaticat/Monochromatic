@@ -1,20 +1,20 @@
 /**
- * Tests for the adjudication panel stage.
- *
- * `runPanelStage` had no test. It decides which critic claims become accepted
- * issues, so it sets the numerator of the precision the milestone is graded on:
- * an accepted issue a human later calls wrong is a false positive, and one the
- * panel wrongly rejected never reaches the sheet to be counted either way.
- *
- * The vote arithmetic lives in `tallyVotes`, which has its own suite. What is
- * untested here is the wiring: that a heard panelist becomes exactly one
- * ballot, that a lost voice shrinks the electorate rather than passing as an
- * abstention nobody notices, and that a panelist voting on a claim number it
- * was never shown reaches the findings.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the adjudication panel stage.
+ 
+ `runPanelStage` had no test. It decides which critic claims become accepted
+ issues, so it sets the numerator of the precision the milestone is graded on:
+ an accepted issue a human later calls wrong is a false positive, and one the
+ panel wrongly rejected never reaches the sheet to be counted either way.
+ 
+ The vote arithmetic lives in `tallyVotes`, which has its own suite. What is
+ untested here is the wiring: that a heard panelist becomes exactly one
+ ballot, that a lost voice shrinks the electorate rather than passing as an
+ abstention nobody notices, and that a panelist voting on a claim number it
+ was never shown reaches the findings.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -35,22 +35,22 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the stages under test.
+ Logger for the stages under test.
  */
 const l = tagged({ tag: 'panel-stage-test', },);
 
 /**
- * Original the panel judges against.
+ Original the panel judges against.
  */
 const SOURCE_TEXT = '猫猫在窗台上睡觉。太阳移动时她会醒来。';
 
 /**
- * Translation under adjudication.
+ Translation under adjudication.
  */
 const TARGET_TEXT = 'The cat sleeps on the windowsill.';
 
 /**
- * Panel roster large enough for a majority to be visible.
+ Panel roster large enough for a majority to be visible.
  */
 const PANELISTS = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -59,16 +59,16 @@ const PANELISTS = [
 ] as const;
 
 /**
- * Builds one aggregated claim.
- *
- * @param suffix - id suffix, so claims differ
- *
- * @returns Claim the panel votes on
- *
- * @example
- * ```ts
- * const claim = catClaim({ suffix: 'waking', },);
- * ```
+ Builds one aggregated claim.
+ 
+ @param suffix - id suffix, so claims differ
+ 
+ @returns Claim the panel votes on
+ 
+ @example
+ ```ts
+ const claim = catClaim({ suffix: 'waking', },);
+ ```
  */
 function catClaim({ suffix, }: { readonly suffix: string; },): AggregatedClaim {
   return {
@@ -92,16 +92,16 @@ function catClaim({ suffix, }: { readonly suffix: string; },): AggregatedClaim {
 }
 
 /**
- * Single-member cluster around one claim.
- *
- * @param suffix - id suffix of the member claim
- *
- * @returns Cluster the panel is shown
- *
- * @example
- * ```ts
- * const cluster = soloCluster({ suffix: 'waking', },);
- * ```
+ Single-member cluster around one claim.
+ 
+ @param suffix - id suffix of the member claim
+ 
+ @returns Cluster the panel is shown
+ 
+ @example
+ ```ts
+ const cluster = soloCluster({ suffix: 'waking', },);
+ ```
  */
 function soloCluster({ suffix, }: { readonly suffix: string; },): ClaimCluster {
   return {
@@ -112,16 +112,16 @@ function soloCluster({ suffix, }: { readonly suffix: string; },): ClaimCluster {
 }
 
 /**
- * Client answering each panelist with a scripted ballot, or losing its voice.
- *
- * @param ballotFor - ballot per model; returning undefined loses that voice
- *
- * @returns Client honoring that script
- *
- * @example
- * ```ts
- * const client = panelClient({ ballotFor: () => ({ verdicts: [], }), },);
- * ```
+ Client answering each panelist with a scripted ballot, or losing its voice.
+ 
+ @param ballotFor - ballot per model; returning undefined loses that voice
+ 
+ @returns Client honoring that script
+ 
+ @example
+ ```ts
+ const client = panelClient({ ballotFor: () => ({ verdicts: [], }), },);
+ ```
  */
 function panelClient(
   { ballotFor, }: { readonly ballotFor: (modelId: string,) => unknown; },
@@ -134,7 +134,7 @@ function panelClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Scripted ballot for the answering model.
+       Scripted ballot for the answering model.
        */
       const scripted = ballotFor(request.modelId,);
       if (scripted === undefined) {
@@ -159,18 +159,18 @@ function panelClient(
 }
 
 /**
- * Runs the panel stage against a scripted client.
- *
- * @param client - scripted panel client
- *
- * @param clusters - clusters the panel is shown
- *
- * @returns Stage result
- *
- * @example
- * ```ts
- * const result = await runStage({ client, clusters, },);
- * ```
+ Runs the panel stage against a scripted client.
+ 
+ @param client - scripted panel client
+ 
+ @param clusters - clusters the panel is shown
+ 
+ @returns Stage result
+ 
+ @example
+ ```ts
+ const result = await runStage({ client, clusters, },);
+ ```
  */
 async function runStage(
   {
@@ -201,7 +201,7 @@ await describe({
         + 'becomes an issue the editors are allowed to act on',
       fn: async () => {
         /**
-         * Stage where every panelist supported the single claim.
+         Stage where every panelist supported the single claim.
          */
         const result = await runStage({
           client: panelClient({
@@ -230,7 +230,7 @@ await describe({
         + 'sheet is a false positive against the precision bar',
       fn: async () => {
         /**
-         * Stage where every panelist rejected the claim.
+         Stage where every panelist rejected the claim.
          */
         const result = await runStage({
           client: panelClient({
@@ -257,12 +257,12 @@ await describe({
         + 'one model decide what reaches the editors',
       fn: async () => {
         /**
-         * Panelist that answers; the others lose their voices.
+         Panelist that answers; the others lose their voices.
          */
         const answering: ReadonlySet<string> = new Set([PANELISTS[0],],);
 
         /**
-         * Stage where only one of three panelists replied.
+         Stage where only one of three panelists replied.
          */
         const result = await runStage({
           client: panelClient({
@@ -294,7 +294,7 @@ await describe({
         + 'never judged',
       fn: async () => {
         /**
-         * Stage over two clusters where ballots mention only the first.
+         Stage over two clusters where ballots mention only the first.
          */
         const result = await runStage({
           client: panelClient({
@@ -324,7 +324,7 @@ await describe({
         + 'rather than being dropped between the fan-out and the tally',
       fn: async () => {
         /**
-         * Stage where every panelist numbered a claim off the sheet.
+         Stage where every panelist numbered a claim off the sheet.
          */
         const result = await runStage({
           client: panelClient({
@@ -352,7 +352,7 @@ await describe({
         + 'slice whose critics found nothing costs no panel decision',
       fn: async () => {
         /**
-         * Stage over an empty cluster list.
+         Stage over an empty cluster list.
          */
         const result = await runStage({
           client: panelClient({ ballotFor: () => ({ verdicts: [], }), },),

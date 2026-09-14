@@ -1,9 +1,9 @@
 /**
- * Tests for comparing the probe's verdicts with the human's repair grades,
- * where exactly one cell of the table is clean evidence.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for comparing the probe's verdicts with the human's repair grades,
+ where exactly one cell of the table is clean evidence.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -20,21 +20,21 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds upheld claims, one per DISTINCT prober.
- *
- * The majority rule counts probers, so a region's corroborated COUNT has to be
- * backed by claims carrying that many distinct model ids. A fixture pairing a
- * count with an empty claim list describes a state the screen cannot emit and
- * reads as nobody having corroborated anything.
- *
- * @param count - claims to build, each from its own prober
- *
- * @returns Claims carrying distinct model ids
- *
- * @example
- * ```ts
- * const claims = catClaims({ count: 3, },);
- * ```
+ Builds upheld claims, one per DISTINCT prober.
+ 
+ The majority rule counts probers, so a region's corroborated COUNT has to be
+ backed by claims carrying that many distinct model ids. A fixture pairing a
+ count with an empty claim list describes a state the screen cannot emit and
+ reads as nobody having corroborated anything.
+ 
+ @param count - claims to build, each from its own prober
+ 
+ @returns Claims carrying distinct model ids
+ 
+ @example
+ ```ts
+ const claims = catClaims({ count: 3, },);
+ ```
  */
 function catClaims(
   { count, }: { readonly count: number; },
@@ -59,18 +59,18 @@ function catClaims(
 }
 
 /**
- * Builds a probe reading whose single region carries the given corroboration.
- *
- * @param corroborated - upheld claims of damage on that region
- *
- * @param configuredProbers - roster the majority is measured against
- *
- * @returns Reading the agreement scorer reads
- *
- * @example
- * ```ts
- * const reading = catReading({ corroborated: 2, },);
- * ```
+ Builds a probe reading whose single region carries the given corroboration.
+ 
+ @param corroborated - upheld claims of damage on that region
+ 
+ @param configuredProbers - roster the majority is measured against
+ 
+ @returns Reading the agreement scorer reads
+ 
+ @example
+ ```ts
+ const reading = catReading({ corroborated: 2, },);
+ ```
  */
 function catReading(
   {

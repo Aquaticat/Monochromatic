@@ -24,94 +24,94 @@
 // its honest value was empty, a second call carrying the rest.
 
 /**
- * Indent the embedded schema is printed at, so a model reads its structure
- * rather than one very long line.
+ Indent the embedded schema is printed at, so a model reads its structure
+ rather than one very long line.
  */
 const SCHEMA_INDENT = 2;
 
 /**
- * Characters the Messages API accepts in a tool name.
- *
- * SPELLED OUT RATHER THAN MATCHED, because a character-class regex over an
- * externally supplied name is exactly the shape `RG1` asks to be written as a
- * scan instead, and a scan over a name this short costs nothing.
+ Characters the Messages API accepts in a tool name.
+ 
+ SPELLED OUT RATHER THAN MATCHED, because a character-class regex over an
+ externally supplied name is exactly the shape `RG1` asks to be written as a
+ scan instead, and a scan over a name this short costs nothing.
  */
 const NAME_CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-';
 
 /**
- * Longest tool name the Messages API accepts.
+ Longest tool name the Messages API accepts.
  */
 const NAME_LIMIT = 64;
 
 /**
- * Structured-output constraint, projected so every path through it is readonly.
- *
- * WHY THIS EXISTS RATHER THAN THE OPENAI-SIDE TYPE ITSELF: that type carries the
- * schema body as an ordinary record, whose index signature is writable, and a
- * writable index signature reachable from a parameter describes a function that
- * could rewrite its caller's schema. Nothing here does, and this projection is
- * how that is stated rather than promised. Every OpenAI-side constraint
- * satisfies it structurally, so no caller changes.
- *
- * @example
- * ```ts
- * const format: ReadableResponseFormat = { type: 'json_schema', json_schema, };
- * ```
+ Structured-output constraint, projected so every path through it is readonly.
+ 
+ WHY THIS EXISTS RATHER THAN THE OPENAI-SIDE TYPE ITSELF: that type carries the
+ schema body as an ordinary record, whose index signature is writable, and a
+ writable index signature reachable from a parameter describes a function that
+ could rewrite its caller's schema. Nothing here does, and this projection is
+ how that is stated rather than promised. Every OpenAI-side constraint
+ satisfies it structurally, so no caller changes.
+ 
+ @example
+ ```ts
+ const format: ReadableResponseFormat = { type: 'json_schema', json_schema, };
+ ```
  */
 export type ReadableResponseFormat = {
   /**
-   * Discriminator the OpenAI-compatible API expects, carried through unread.
+   Discriminator the OpenAI-compatible API expects, carried through unread.
    */
   readonly type: 'json_schema';
 
   /**
-   * Schema envelope: name, optional strictness, JSON schema body.
+   Schema envelope: name, optional strictness, JSON schema body.
    */
   readonly json_schema: {
     /**
-     * Identifier this schema was given, which becomes the tool name.
+     Identifier this schema was given, which becomes the tool name.
      */
     readonly name: string;
 
     /**
-     * Whether the OpenAI side asked its server to enforce strictly.
+     Whether the OpenAI side asked its server to enforce strictly.
      */
     readonly strict?: boolean;
 
     /**
-     * JSON schema of the answer object.
+     JSON schema of the answer object.
      */
     readonly schema: Readonly<Record<string, unknown>>;
   };
 };
 
 /**
- * Refusal raised when a schema cannot be offered to Anthropic as a tool.
- *
- * THROWN RATHER THAN RETURNED, unlike a model's refusal: a name the protocol
- * rejects is our own construction error, not an unreliable model's answer, and
- * it would otherwise surface as a provider `400` on every call of that stage.
- *
- * @example
- * ```ts
- * throw new UnnameableToolError({ detail: 'name is empty', },);
- * ```
+ Refusal raised when a schema cannot be offered to Anthropic as a tool.
+ 
+ THROWN RATHER THAN RETURNED, unlike a model's refusal: a name the protocol
+ rejects is our own construction error, not an unreliable model's answer, and
+ it would otherwise surface as a provider `400` on every call of that stage.
+ 
+ @example
+ ```ts
+ throw new UnnameableToolError({ detail: 'name is empty', },);
+ ```
  */
 export class UnnameableToolError extends Error {
   /**
-   * Declares this message safe to forward: it names which rule the tool name broke.
+   Declares this message safe to forward: it names which rule the tool name broke.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds failure naming what disqualified the schema's name.
-   *
-   * @param detail - which naming rule the schema violated
-   *
-   * @example
-   * ```ts
-   * new UnnameableToolError({ detail: 'name exceeds 64 characters', },);
-   * ```
+   Builds failure naming what disqualified the schema's name.
+   
+   @param detail - which naming rule the schema violated
+   
+   @example
+   ```ts
+   new UnnameableToolError({ detail: 'name exceeds 64 characters', },);
+   ```
    */
   public constructor(
     { detail, }: { readonly detail: string; },
@@ -122,57 +122,57 @@ export class UnnameableToolError extends Error {
 }
 
 /**
- * Tool entry the Messages API takes, carrying the answer schema.
- *
- * FIELD NAMES ARE THE WIRE'S, not the repo's, for the same reason
- * `JsonSchemaResponseFormat` carries `json_schema`: this value is serialised
- * as-is and a camel-cased copy would need a second translation nobody reads.
- *
- * @example
- * ```ts
- * const tool: AnthropicToolDefinition = { name: 'repair', description, input_schema, };
- * ```
+ Tool entry the Messages API takes, carrying the answer schema.
+ 
+ FIELD NAMES ARE THE WIRE'S, not the repo's, for the same reason
+ `JsonSchemaResponseFormat` carries `json_schema`: this value is serialised
+ as-is and a camel-cased copy would need a second translation nobody reads.
+ 
+ @example
+ ```ts
+ const tool: AnthropicToolDefinition = { name: 'repair', description, input_schema, };
+ ```
  */
 export type AnthropicToolDefinition = {
   /**
-   * Name the model calls, and the one `tool_choice` names when forcing.
+   Name the model calls, and the one `tool_choice` names when forcing.
    */
   readonly name: string;
 
   /**
-   * What calling it means, read by the model when choosing whether to.
+   What calling it means, read by the model when choosing whether to.
    */
   readonly description: string;
 
   /**
-   * JSON schema of the single object the call carries.
+   JSON schema of the single object the call carries.
    */
   readonly input_schema: Readonly<Record<string, unknown>>;
 };
 
 /**
- * Name the answer tool takes, refusing one the protocol would reject.
- *
- * READS THE SCHEMA'S OWN NAME rather than inventing one, so a stage that is
- * routed to either provider is described to the model identically by both.
- *
- * @param responseFormat - structured-output constraint the caller stated
- *
- * @returns Validated tool name
- *
- * @throws {@link UnnameableToolError} where the name is empty, too long, or
- * carries a character the Messages API rejects
- *
- * @example
- * ```ts
- * const name = answerToolName({ responseFormat, },);
- * ```
+ Name the answer tool takes, refusing one the protocol would reject.
+ 
+ READS THE SCHEMA'S OWN NAME rather than inventing one, so a stage that is
+ routed to either provider is described to the model identically by both.
+ 
+ @param responseFormat - structured-output constraint the caller stated
+ 
+ @returns Validated tool name
+ 
+ @throws {@link UnnameableToolError} where the name is empty, too long, or
+ carries a character the Messages API rejects
+ 
+ @example
+ ```ts
+ const name = answerToolName({ responseFormat, },);
+ ```
  */
 export function answerToolName(
   { responseFormat, }: { readonly responseFormat: ReadableResponseFormat; },
 ): string {
   /**
-   * Name the OpenAI-compatible constraint gave this schema.
+   Name the OpenAI-compatible constraint gave this schema.
    */
   const { name, } = responseFormat.json_schema;
 
@@ -195,24 +195,24 @@ export function answerToolName(
 }
 
 /**
- * Answer tool as the Messages API takes it.
- *
- * @param responseFormat - structured-output constraint the caller stated
- *
- * @returns Tool entry for the request body
- *
- * @throws {@link UnnameableToolError} where the schema name is unusable
- *
- * @example
- * ```ts
- * const tools = [answerToolDefinition({ responseFormat, },),];
- * ```
+ Answer tool as the Messages API takes it.
+ 
+ @param responseFormat - structured-output constraint the caller stated
+ 
+ @returns Tool entry for the request body
+ 
+ @throws {@link UnnameableToolError} where the schema name is unusable
+ 
+ @example
+ ```ts
+ const tools = [answerToolDefinition({ responseFormat, },),];
+ ```
  */
 export function answerToolDefinition(
   { responseFormat, }: { readonly responseFormat: ReadableResponseFormat; },
 ): AnthropicToolDefinition {
   /**
-   * Validated name, shared with the system prompt and with `tool_choice`.
+   Validated name, shared with the system prompt and with `tool_choice`.
    */
   const name = answerToolName({ responseFormat, },);
 
@@ -227,28 +227,28 @@ export function answerToolDefinition(
 }
 
 /**
- * System prompt carrying the caller's instruction and the whole answer schema.
- *
- * THE INSTRUCTION COMES FIRST because it is the task; the answer protocol is
- * how to hand the task's result back, and a model that reads only the opening
- * of a long system prompt should meet the work rather than the envelope.
- *
- * `strict` is deliberately not represented. It is an OpenAI-side server flag
- * with no Messages counterpart, and the pipeline validates every answer
- * client-side regardless, so nothing here weakens by dropping it.
- *
- * @param instruction - caller's own system text, empty where it sent none
- *
- * @param responseFormat - structured-output constraint the caller stated
- *
- * @returns System text for the request body
- *
- * @throws {@link UnnameableToolError} where the schema name is unusable
- *
- * @example
- * ```ts
- * const system = renderToolSystemPrompt({ instruction, responseFormat, },);
- * ```
+ System prompt carrying the caller's instruction and the whole answer schema.
+ 
+ THE INSTRUCTION COMES FIRST because it is the task; the answer protocol is
+ how to hand the task's result back, and a model that reads only the opening
+ of a long system prompt should meet the work rather than the envelope.
+ 
+ `strict` is deliberately not represented. It is an OpenAI-side server flag
+ with no Messages counterpart, and the pipeline validates every answer
+ client-side regardless, so nothing here weakens by dropping it.
+ 
+ @param instruction - caller's own system text, empty where it sent none
+ 
+ @param responseFormat - structured-output constraint the caller stated
+ 
+ @returns System text for the request body
+ 
+ @throws {@link UnnameableToolError} where the schema name is unusable
+ 
+ @example
+ ```ts
+ const system = renderToolSystemPrompt({ instruction, responseFormat, },);
+ ```
  */
 export function renderToolSystemPrompt(
   {
@@ -260,12 +260,12 @@ export function renderToolSystemPrompt(
   },
 ): string {
   /**
-   * Validated name, the same one `tools` and `tool_choice` carry.
+   Validated name, the same one `tools` and `tool_choice` carry.
    */
   const name = answerToolName({ responseFormat, },);
 
   /**
-   * Schema as the model reads it, printed rather than described.
+   Schema as the model reads it, printed rather than described.
    */
   const printedSchema = JSON.stringify(
     responseFormat
@@ -276,7 +276,7 @@ export function renderToolSystemPrompt(
   );
 
   /**
-   * Answer protocol, schema included in full.
+   Answer protocol, schema included in full.
    */
   const protocol = `HOW TO ANSWER. Deliver your whole answer by calling the tool named ${name}, `
     + 'once. That tool takes one object, and that object is the answer. Nothing you write '

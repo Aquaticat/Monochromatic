@@ -1,26 +1,26 @@
 /**
- * Tests for the join rule that removes a sentence without leaving an edit-mark.
- *
- * REACHED ONLY THROUGH `fidelity-damage.ts`, whose own cases ask whether a
- * sentence disappeared. Every join rule answers that question identically,
- * including no join rule at all, so the whitespace decision this module exists
- * for is invisible to them.
- *
- * WHAT A DIAGNOSTIC MUTATION FOUND. Removing the line-break precedence from the
- * private `survivingRun`, leaving only the two boundary rules and the length
- * tiebreak, left the whole suite green. That branch decides whether a paragraph
- * cut from the middle of a page leaves a paragraph break behind or collapses two
- * paragraphs into one line, which is the visible edit-mark the module was
- * written to prevent. Both of its arms are pinned here.
- *
- * WHY THE TWO EXOTIC SPACES GET CASES. The corpus is Chinese, and Chinese prose
- * separates sentences with `\u3000`. A separator set that missed it would cut
- * the sentence and leave BOTH ideographic spaces behind, a doubled gap visible
- * only on the half of the corpus this pipeline exists for.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the join rule that removes a sentence without leaving an edit-mark.
+ 
+ REACHED ONLY THROUGH `fidelity-damage.ts`, whose own cases ask whether a
+ sentence disappeared. Every join rule answers that question identically,
+ including no join rule at all, so the whitespace decision this module exists
+ for is invisible to them.
+ 
+ WHAT A DIAGNOSTIC MUTATION FOUND. Removing the line-break precedence from the
+ private `survivingRun`, leaving only the two boundary rules and the length
+ tiebreak, left the whole suite green. That branch decides whether a paragraph
+ cut from the middle of a page leaves a paragraph break behind or collapses two
+ paragraphs into one line, which is the visible edit-mark the module was
+ written to prevent. Both of its arms are pinned here.
+ 
+ WHY THE TWO EXOTIC SPACES GET CASES. The corpus is Chinese, and Chinese prose
+ separates sentences with `\u3000`. A separator set that missed it would cut
+ the sentence and leave BOTH ideographic spaces behind, a doubled gap visible
+ only on the half of the corpus this pipeline exists for.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -32,18 +32,18 @@ import {
 import { spliceOutSentence, } from '../dist/final/node/index.mjs';
 
 /**
- * Ideographic space, written as an escape so no invisible character hides in a
- * fixture the way the module keeps none in its own separator set.
+ Ideographic space, written as an escape so no invisible character hides in a
+ fixture the way the module keeps none in its own separator set.
  */
 const IDEOGRAPHIC_SPACE = '\u3000';
 
 /**
- * No-break space, written as an escape for the same reason.
+ No-break space, written as an escape for the same reason.
  */
 const NO_BREAK_SPACE = '\u00A0';
 
 /**
- * Sentence every fixture cuts, so each case differs only in what surrounds it.
+ Sentence every fixture cuts, so each case differs only in what surrounds it.
  */
 const CUT = 'The cat slept.';
 

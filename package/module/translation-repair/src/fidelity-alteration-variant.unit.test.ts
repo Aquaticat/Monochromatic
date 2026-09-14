@@ -1,18 +1,18 @@
 /**
- * Tests for the digit the damage lands on when the original ends in nine.
- *
- * WHY THIS SITS APART from `fidelity-alteration.unit.test.ts`: a GFP round that
- * needs to read one of these suites cannot afford the other aborting the file,
- * since `await describe` throws and the second suite would then never run.
- *
- * WHAT IT PINS. Variants walk the final digit forward and wrap THROUGH TEN, so
- * a year ending in nine offers zero first. Wrapping through nine instead skips
- * zero entirely and was measured on 2026-08-25 to fail no case, which left the
- * nearest variant of every such number untested.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the digit the damage lands on when the original ends in nine.
+ 
+ WHY THIS SITS APART from `fidelity-alteration.unit.test.ts`: a GFP round that
+ needs to read one of these suites cannot afford the other aborting the file,
+ since `await describe` throws and the second suite would then never run.
+ 
+ WHAT IT PINS. Variants walk the final digit forward and wrap THROUGH TEN, so
+ a year ending in nine offers zero first. Wrapping through nine instead skips
+ zero entirely and was measured on 2026-08-25 to fail no case, which left the
+ nearest variant of every such number untested.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,12 +26,12 @@ import { unsupportedVariant, } from '../dist/final/node/index.mjs';
 //region Fixtures
 
 /**
- * Archive English stating the year, and nothing near it.
+ Archive English stating the year, and nothing near it.
  */
 const CLEAN_TEXT = 'Mittens counted 2009 birds from the sill that winter.';
 
 /**
- * Chinese original stating the same year.
+ Chinese original stating the same year.
  */
 const SOURCE_TEXT = '2009 年冬天，小猫在窗台上数了很多鸟。';
 

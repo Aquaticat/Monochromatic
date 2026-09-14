@@ -1,23 +1,23 @@
 /**
- * Tests for reading how many units a bench or calibration was asked for.
- *
- * THE REFUSAL IS THE POINT, and it replaced four copies of a silent fallback.
- * `editor-calibrate`, `producer-calibrate`, `roster-bench` and
- * `editor-width-probe` each spelled this `Number(process.argv[2] ?? default)`
- * and none checked the result. `Number('fourty')` is `NaN`, and
- * `pickSpreadSample` with a count of `NaN` returns nothing, measured: `count
- * NaN -> picked 0`. So a typo ran the whole calibration over an empty sample,
- * printed its roster and its totals, and exited zero.
- *
- * WHY REFUSING BEATS FALLING BACK. A fallback also hides the typo, and it
- * spends a roster while hiding it. The operator who typed `fourty` wanted forty
- * slices, and would read a clean six-slice default as the forty they asked for.
- *
- * ZERO IS REFUSED, WHICH THE AUDIT'S `--cap 0` IS NOT. That cap reads a whole
- * archive and buys nothing, which is a real use. A bench over zero slices asks
- * nobody anything, so there is nothing for it to mean.
- *
- * @module
+ Tests for reading how many units a bench or calibration was asked for.
+ 
+ THE REFUSAL IS THE POINT, and it replaced four copies of a silent fallback.
+ `editor-calibrate`, `producer-calibrate`, `roster-bench` and
+ `editor-width-probe` each spelled this `Number(process.argv[2] ?? default)`
+ and none checked the result. `Number('fourty')` is `NaN`, and
+ `pickSpreadSample` with a count of `NaN` returns nothing, measured: `count
+ NaN -> picked 0`. So a typo ran the whole calibration over an empty sample,
+ printed its roster and its totals, and exited zero.
+ 
+ WHY REFUSING BEATS FALLING BACK. A fallback also hides the typo, and it
+ spends a roster while hiding it. The operator who typed `fourty` wanted forty
+ slices, and would read a clean six-slice default as the forty they asked for.
+ 
+ ZERO IS REFUSED, WHICH THE AUDIT'S `--cap 0` IS NOT. That cap reads a whole
+ archive and buys nothing, which is a real use. A bench over zero slices asks
+ nobody anything, so there is nothing for it to mean.
+ 
+ @module
  */
 
 import {
@@ -34,7 +34,7 @@ import {
 //region Asked count tests
 
 /**
- * What `process.argv` carries before anything a person typed.
+ What `process.argv` carries before anything a person typed.
  */
 const BEFORE_COUNT: readonly string[] = [
   '/usr/bin/node',
@@ -42,36 +42,36 @@ const BEFORE_COUNT: readonly string[] = [
 ];
 
 /**
- * Count a run does when nobody names one.
+ Count a run does when nobody names one.
  */
 const FALLBACK = 6;
 
 /**
- * Count one operator asked for instead.
+ Count one operator asked for instead.
  */
 const ASKED_FOR = 40;
 
 /**
- * What the counted things are called, which the refusal has to name.
+ What the counted things are called, which the refusal has to name.
  */
 const ASKS = 'slices';
 
 /**
- * A count typed the way a person mistypes one.
+ A count typed the way a person mistypes one.
  */
 const MISTYPED = 'fourty';
 
 /**
- * Builds a command line the way `process.argv` presents one.
- *
- * @param typed - what the operator wrote after the script path
- *
- * @returns Whole argument vector, script path and all
- *
- * @example
- * ```ts
- * const argv = commandLine({ typed: ['40',], },);
- * ```
+ Builds a command line the way `process.argv` presents one.
+ 
+ @param typed - what the operator wrote after the script path
+ 
+ @returns Whole argument vector, script path and all
+ 
+ @example
+ ```ts
+ const argv = commandLine({ typed: ['40',], },);
+ ```
  */
 function commandLine(
   { typed, }: { readonly typed: readonly string[]; },
@@ -83,18 +83,18 @@ function commandLine(
 }
 
 /**
- * Reads a count off a command line carrying only what was typed.
- *
- * @param typed - what the operator wrote after the script path
- *
- * @returns Count the reader settled on
- *
- * @throws StatedRefusalError when the reader refuses what was typed
- *
- * @example
- * ```ts
- * const wanted = countFrom({ typed: ['40',], },);
- * ```
+ Reads a count off a command line carrying only what was typed.
+ 
+ @param typed - what the operator wrote after the script path
+ 
+ @returns Count the reader settled on
+ 
+ @throws StatedRefusalError when the reader refuses what was typed
+ 
+ @example
+ ```ts
+ const wanted = countFrom({ typed: ['40',], },);
+ ```
  */
 function countFrom(
   { typed, }: { readonly typed: readonly string[]; },

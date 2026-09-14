@@ -1,25 +1,25 @@
 /**
- * Tests for the ends of the two helpers that decide WHICH number a fidelity
- * probe may damage.
- *
- * WHY THIS FILE EXISTS. The probe damages a passage on purpose so the critics
- * can be scored on whether they catch it, which means the damage has to sit
- * somewhere the text really carries. Two ends decide that and were measured on
- * 2026-08-25 to decide nothing any case asserts: the scan bound that closes a
- * digit run ending the passage, and the floor that says how short a number may
- * be and still count as one both sides state.
- *
- * `unsupportedVariant`, which chooses the wrong number to put there, is pinned
- * in `fidelity-alteration-variant.unit.test.ts` beside this.
- *
- * BOTH FAILURES ARE SILENT. A run left unclosed, or a number refused at the
- * floor, is a number the probe never damages, so the entry scores as clean
- * while carrying an untested claim rather than reporting that it found nothing
- * to damage.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the ends of the two helpers that decide WHICH number a fidelity
+ probe may damage.
+ 
+ WHY THIS FILE EXISTS. The probe damages a passage on purpose so the critics
+ can be scored on whether they catch it, which means the damage has to sit
+ somewhere the text really carries. Two ends decide that and were measured on
+ 2026-08-25 to decide nothing any case asserts: the scan bound that closes a
+ digit run ending the passage, and the floor that says how short a number may
+ be and still count as one both sides state.
+ 
+ `unsupportedVariant`, which chooses the wrong number to put there, is pinned
+ in `fidelity-alteration-variant.unit.test.ts` beside this.
+ 
+ BOTH FAILURES ARE SILENT. A run left unclosed, or a number refused at the
+ floor, is a number the probe never damages, so the entry scores as clean
+ while carrying an untested claim rather than reporting that it found nothing
+ to damage.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {

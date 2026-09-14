@@ -25,8 +25,8 @@
 // could open a word and what follows it could close one.
 
 /**
- * Spellings the sources give the neutral pronoun, and so the spellings an
- * untranslated one keeps.
+ Spellings the sources give the neutral pronoun, and so the spellings an
+ untranslated one keeps.
  */
 const PRONOUN_SPELLINGS = [
   'TA',
@@ -35,27 +35,27 @@ const PRONOUN_SPELLINGS = [
 ] as const;
 
 /**
- * What English makes of the pronoun, told to the model that left it.
+ What English makes of the pronoun, told to the model that left it.
  */
 const RENDERING_RULE: string = 'the ORIGINAL writes its neutral pronoun as TA, Ta or ta, and English renders it as '
   + 'singular they (they, them, their), with TA 们 as plural they; a Ta left standing in the English is an '
   + 'untranslated word, not a preserved choice.';
 
 /**
- * What `indexOf` answers when the spelling is not found.
+ What `indexOf` answers when the spelling is not found.
  */
 const NOT_FOUND = -1;
 
 /**
- * First character of the CJK ranges (U+2E80), at or above which a character
- * is taken as script rather than as part of a Latin word. A pronoun beside a
- * han character is still a word of its own. Compared as a string, which orders
- * one-unit characters by code point.
+ First character of the CJK ranges (U+2E80), at or above which a character
+ is taken as script rather than as part of a Latin word. A pronoun beside a
+ han character is still a word of its own. Compared as a string, which orders
+ one-unit characters by code point.
  */
 const CJK_FLOOR = '\u2E80';
 
 /**
- * Marks that may open a word in English prose: quotes and brackets.
+ Marks that may open a word in English prose: quotes and brackets.
  */
 const OPENING_MARKS = new Set([
   '"',
@@ -68,8 +68,8 @@ const OPENING_MARKS = new Set([
 ],);
 
 /**
- * Marks that may close a word in English prose: sentence and clause
- * punctuation, quotes and brackets. An apostrophe closes too, so "Ta's" counts.
+ Marks that may close a word in English prose: sentence and clause
+ punctuation, quotes and brackets. An apostrophe closes too, so "Ta's" counts.
  */
 const CLOSING_MARKS = new Set([
   ',',
@@ -88,17 +88,17 @@ const CLOSING_MARKS = new Set([
 ],);
 
 /**
- * Whether a character is whitespace, which bounds a word on either side.
- *
- * @param character - one character, empty at either end of the text
- *
- * @returns Whether it is a space, a tab or a line break
- *
- * @example
- * ```ts
- * isBlank({ character: ' ', },);
- * // => true
- * ```
+ Whether a character is whitespace, which bounds a word on either side.
+ 
+ @param character - one character, empty at either end of the text
+ 
+ @returns Whether it is a space, a tab or a line break
+ 
+ @example
+ ```ts
+ isBlank({ character: ' ', },);
+ // => true
+ ```
  */
 function isBlank({ character, }: { readonly character: string; },): boolean {
   return (character === ' ')
@@ -108,34 +108,34 @@ function isBlank({ character, }: { readonly character: string; },): boolean {
 }
 
 /**
- * Whether a character belongs to a CJK range.
- *
- * @param character - one character, empty at either end of the text
- *
- * @returns Whether it sits at or above the CJK floor; empty never does
- *
- * @example
- * ```ts
- * isHan({ character: '的', },);
- * // => true
- * ```
+ Whether a character belongs to a CJK range.
+ 
+ @param character - one character, empty at either end of the text
+ 
+ @returns Whether it sits at or above the CJK floor; empty never does
+ 
+ @example
+ ```ts
+ isHan({ character: '的', },);
+ // => true
+ ```
  */
 function isHan({ character, }: { readonly character: string; },): boolean {
   return (character !== '') && (character >= CJK_FLOOR);
 }
 
 /**
- * Whether what precedes an occurrence lets it be a word of its own.
- *
- * @param character - character before the occurrence, empty at the start
- *
- * @returns Whether the occurrence may begin here
- *
- * @example
- * ```ts
- * opensWord({ character: '', },);
- * // => true
- * ```
+ Whether what precedes an occurrence lets it be a word of its own.
+ 
+ @param character - character before the occurrence, empty at the start
+ 
+ @returns Whether the occurrence may begin here
+ 
+ @example
+ ```ts
+ opensWord({ character: '', },);
+ // => true
+ ```
  */
 function opensWord({ character, }: { readonly character: string; },): boolean {
   return (character === '')
@@ -145,17 +145,17 @@ function opensWord({ character, }: { readonly character: string; },): boolean {
 }
 
 /**
- * Whether what follows an occurrence lets it be a word of its own.
- *
- * @param character - character after the occurrence, empty at the end
- *
- * @returns Whether the occurrence may end here
- *
- * @example
- * ```ts
- * closesWord({ character: '\'', },);
- * // => true
- * ```
+ Whether what follows an occurrence lets it be a word of its own.
+ 
+ @param character - character after the occurrence, empty at the end
+ 
+ @returns Whether the occurrence may end here
+ 
+ @example
+ ```ts
+ closesWord({ character: '\'', },);
+ // => true
+ ```
  */
 function closesWord({ character, }: { readonly character: string; },): boolean {
   return (character === '')
@@ -165,22 +165,22 @@ function closesWord({ character, }: { readonly character: string; },): boolean {
 }
 
 /**
- * Counts how often one spelling stands as a word of its own.
- *
- * ONE LINEAR PASS with the string API: each occurrence is found from the end
- * of the previous one and its two neighbours are read once.
- *
- * @param text - candidate translation
- *
- * @param spelling - fixed form to count
- *
- * @returns Occurrences bounded as words
- *
- * @example
- * ```ts
- * countSpelling({ text: 'Ta smiled. DATA', spelling: 'Ta', },);
- * // => 1
- * ```
+ Counts how often one spelling stands as a word of its own.
+ 
+ ONE LINEAR PASS with the string API: each occurrence is found from the end
+ of the previous one and its two neighbours are read once.
+ 
+ @param text - candidate translation
+ 
+ @param spelling - fixed form to count
+ 
+ @returns Occurrences bounded as words
+ 
+ @example
+ ```ts
+ countSpelling({ text: 'Ta smiled. DATA', spelling: 'Ta', },);
+ // => 1
+ ```
  */
 function countSpelling(
   {
@@ -192,7 +192,7 @@ function countSpelling(
   },
 ): number {
   /**
-   * Occurrences and the position to search from, advanced together.
+   Occurrences and the position to search from, advanced together.
    */
   const scan = {
     count: 0,
@@ -210,7 +210,7 @@ function countSpelling(
     )
   ) {
     /**
-     * Whether both neighbours let this stand as a word.
+     Whether both neighbours let this stand as a word.
      */
     const standsAlone = opensWord({ character: text.charAt(at - 1,), },)
       && closesWord({ character: text.charAt(at + spelling.length,), },);
@@ -222,25 +222,25 @@ function countSpelling(
 }
 
 /**
- * Names an untranslated neutral pronoun in a candidate, written for the model
- * that wrote the candidate.
- *
- * @param candidateText - translation as the model returned it
- *
- * @returns One finding naming each spelling found with its count, or nothing
- * when the candidate carries none
- *
- * @example
- * ```ts
- * neutralPronounFindings({ candidateText: 'We set up a room for Ta.', },);
- * // => ['Your translation carries the pronoun untranslated as "Ta" (1 time): ...']
- * ```
+ Names an untranslated neutral pronoun in a candidate, written for the model
+ that wrote the candidate.
+ 
+ @param candidateText - translation as the model returned it
+ 
+ @returns One finding naming each spelling found with its count, or nothing
+ when the candidate carries none
+ 
+ @example
+ ```ts
+ neutralPronounFindings({ candidateText: 'We set up a room for Ta.', },);
+ // => ['Your translation carries the pronoun untranslated as "Ta" (1 time): ...']
+ ```
  */
 export function neutralPronounFindings(
   { candidateText, }: { readonly candidateText: string; },
 ): readonly string[] {
   /**
-   * Each spelling the candidate keeps, with its count.
+   Each spelling the candidate keeps, with its count.
    */
   const kept = PRONOUN_SPELLINGS
     .map(function counted(spelling,): {
@@ -262,7 +262,7 @@ export function neutralPronounFindings(
     return [];
 
   /**
-   * Spellings and counts as one phrase.
+   Spellings and counts as one phrase.
    */
   const named = kept
     .map(function phrase(entry,): string {

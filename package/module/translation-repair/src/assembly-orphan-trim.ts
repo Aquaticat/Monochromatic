@@ -25,84 +25,84 @@ import type { SliceReplacement, } from './splice-slices.ts';
 // whole, as before.
 
 /**
- * Replacements after the trim, and what the trim did.
- *
- * @example
- * ```ts
- * const trimmed: TrimmedReplacements = trimOrphanDefinitions({ findings, replacements, incumbentBySlice, },);
- * ```
+ Replacements after the trim, and what the trim did.
+ 
+ @example
+ ```ts
+ const trimmed: TrimmedReplacements = trimOrphanDefinitions({ findings, replacements, incumbentBySlice, },);
+ ```
  */
 export type TrimmedReplacements = {
   /**
-   * Replacements with the orphan blocks cut out of definitions-only texts.
+   Replacements with the orphan blocks cut out of definitions-only texts.
    */
   readonly replacements: readonly SliceReplacement[];
 
   /**
-   * Slices whose trimmed text repeats their incumbent, withdrawn instead of
-   * shipped as a change the document does not carry.
+   Slices whose trimmed text repeats their incumbent, withdrawn instead of
+   shipped as a change the document does not carry.
    */
   readonly withdrawn: readonly number[];
 
   /**
-   * One finding per trimmed block, and one per withdrawn slice.
+   One finding per trimmed block, and one per withdrawn slice.
    */
   readonly findings: readonly string[];
 
   /**
-   * Whether any replacement changed.
+   Whether any replacement changed.
    */
   readonly trimmed: boolean;
 };
 
 /**
- * What follows a marker that opens a definition.
+ What follows a marker that opens a definition.
  */
 const DEFINITION_SEPARATOR = ':';
 
 /**
- * Convention whose definitions open a block with `[^id]:`.
+ Convention whose definitions open a block with `[^id]:`.
  */
 const GFM = 'gfm';
 
 /**
- * Characters of the marker frame around an identifier.
+ Characters of the marker frame around an identifier.
  */
 const MARKER_FRAME_LENGTH = '[^]'.length;
 
 /**
- * Line break between lines of a text.
+ Line break between lines of a text.
  */
 const LINE_BREAK = '\n';
 
 /**
- * Label a line opens a definition with, empty when the line is anything else
- * (prose, a heading, a definition's continuation).
- *
- * @param line - one line of a replacement
- *
- * @returns The label alone, or the empty string
- *
- * @example
- * ```ts
- * definitionLabelOfLine({ line: '[^2]: the note', },);
- * // => '2'
- * ```
+ Label a line opens a definition with, empty when the line is anything else
+ (prose, a heading, a definition's continuation).
+ 
+ @param line - one line of a replacement
+ 
+ @returns The label alone, or the empty string
+ 
+ @example
+ ```ts
+ definitionLabelOfLine({ line: '[^2]: the note', },);
+ // => '2'
+ ```
  */
 function definitionLabelOfLine({ line, }: { readonly line: string; },): string {
   /**
-   * The first marker literal, the opener when it sits at offset zero.
+   The first marker literal, the opener when it sits at offset zero.
    */
   const [first,] = scanGfmReferenceLiterals({ slice: line, },);
   if ((first === undefined) || (first.localOffset !== 0))
     return '';
   /**
-   * Characters of the identifier between the brackets.
+   Characters of the identifier between the brackets.
    */
   const identifierLength = first.identifier
     .length;
   /**
-   * Offset just past the closing bracket, since the marker opens the line.
+   Offset just past the closing bracket, since the marker opens the line.
    */
   const after = MARKER_FRAME_LENGTH + identifierLength;
   if (line.slice(
@@ -114,97 +114,97 @@ function definitionLabelOfLine({ line, }: { readonly line: string; },): string {
 }
 
 /**
- * One block of a replacement beside the gap that preceded it and the
- * definition label it opens with.
- *
- * @example
- * ```ts
- * const labelled: LabelledBlock = { gapBefore: '\n\n', block: '[^2]: the note', label: '2', };
- * ```
+ One block of a replacement beside the gap that preceded it and the
+ definition label it opens with.
+ 
+ @example
+ ```ts
+ const labelled: LabelledBlock = { gapBefore: '\n\n', block: '[^2]: the note', label: '2', };
+ ```
  */
 type LabelledBlock = {
   /**
-   * Text between the previous block and this one, empty for the first.
+   Text between the previous block and this one, empty for the first.
    */
   readonly gapBefore: string;
 
   /**
-   * The block's text, without its trailing line break.
+   The block's text, without its trailing line break.
    */
   readonly block: string;
 
   /**
-   * Label the block defines, empty when it defines none.
+   Label the block defines, empty when it defines none.
    */
   readonly label: string;
 };
 
 /**
- * Blocks of a text with the text after the last block.
- *
- * @example
- * ```ts
- * const layout: BlockLayout = { blocks, tail: '\n', };
- * ```
+ Blocks of a text with the text after the last block.
+ 
+ @example
+ ```ts
+ const layout: BlockLayout = { blocks, tail: '\n', };
+ ```
  */
 type BlockLayout = {
   /**
-   * Blocks in order.
+   Blocks in order.
    */
   readonly blocks: readonly LabelledBlock[];
 
   /**
-   * Text after the last block, which is its trailing line breaks.
+   Text after the last block, which is its trailing line breaks.
    */
   readonly tail: string;
 };
 
 /**
- * Where the line walk stands: the open block's span, if any, and the end of
- * the last closed one.
- *
- * @example
- * ```ts
- * const walk: BlockWalk = { openStart: -1, openEnd: -1, lastEnd: 0, offset: 0, };
- * ```
+ Where the line walk stands: the open block's span, if any, and the end of
+ the last closed one.
+ 
+ @example
+ ```ts
+ const walk: BlockWalk = { openStart: -1, openEnd: -1, lastEnd: 0, offset: 0, };
+ ```
  */
 type BlockWalk = {
   /**
-   * Offset the open block began at, negative when none is open.
+   Offset the open block began at, negative when none is open.
    */
   readonly openStart: number;
 
   /**
-   * Offset the open block's last line ends at.
+   Offset the open block's last line ends at.
    */
   readonly openEnd: number;
 
   /**
-   * Offset the last closed block ended at.
+   Offset the last closed block ended at.
    */
   readonly lastEnd: number;
 
   /**
-   * Offset the next line begins at.
+   Offset the next line begins at.
    */
   readonly offset: number;
 };
 
 /**
- * Closes the open block into the list, if one is open.
- *
- * @param text - whole text
- *
- * @param walk - where the walk stands
- *
- * @param blocks - list the block joins
- *
- * @returns The walk with no block open
- *
- * @example
- * ```ts
- * const closed = closeBlock({ text, walk, blocks, },);
- * ```
+ Closes the open block into the list, if one is open.
+ 
+ @param text - whole text
+ 
+ @param walk - where the walk stands
+ 
+ @param blocks - list the block joins
+ 
+ @returns The walk with no block open
+ 
+ @example
+ ```ts
+ const closed = closeBlock({ text, walk, blocks, },);
+ ```
  */
 function closeBlock(
   {
@@ -220,7 +220,7 @@ function closeBlock(
   if (walk.openStart < 0)
     return walk;
   /**
-   * The block's text.
+   The block's text.
    */
   const block = text.slice(
     walk.openStart,
@@ -243,26 +243,26 @@ function closeBlock(
 }
 
 /**
- * Blocks of a text: a block ends at a blank line or where a definition line
- * begins, and every gap between blocks is kept as written.
- *
- * @param text - replacement text
- *
- * @returns Blocks in order with the trailing text
- *
- * @example
- * ```ts
- * labelledBlocksOf({ text: '[^1]: one\n[^2]: two\n', },);
- * // => two blocks labelled 1 and 2, the second's gap '\n', the tail '\n'
- * ```
+ Blocks of a text: a block ends at a blank line or where a definition line
+ begins, and every gap between blocks is kept as written.
+ 
+ @param text - replacement text
+ 
+ @returns Blocks in order with the trailing text
+ 
+ @example
+ ```ts
+ labelledBlocksOf({ text: '[^1]: one\n[^2]: two\n', },);
+ // => two blocks labelled 1 and 2, the second's gap '\n', the tail '\n'
+ ```
  */
 function labelledBlocksOf({ text, }: { readonly text: string; },): BlockLayout {
   /**
-   * Blocks closed so far.
+   Blocks closed so far.
    */
   const blocks: LabelledBlock[] = [];
   /**
-   * The walk after the last line.
+   The walk after the last line.
    */
   const ended = text
     .split(LINE_BREAK,)
@@ -272,11 +272,11 @@ function labelledBlocksOf({ text, }: { readonly text: string; },): BlockLayout {
         line,
       ): BlockWalk {
         /**
-         * Offset just past this line's text.
+         Offset just past this line's text.
          */
         const lineEnd = walk.offset + line.length;
         /**
-         * Offset the next line begins at.
+         Offset the next line begins at.
          */
         const next = lineEnd + LINE_BREAK.length;
         if (line.trim() === '') {
@@ -290,7 +290,7 @@ function labelledBlocksOf({ text, }: { readonly text: string; },): BlockLayout {
           };
         }
         /**
-         * The walk once a definition line has closed what was open.
+         The walk once a definition line has closed what was open.
          */
         const closed = ((walk.openStart >= 0) && (definitionLabelOfLine({ line, },) !== ''))
           ? closeBlock({
@@ -314,7 +314,7 @@ function labelledBlocksOf({ text, }: { readonly text: string; },): BlockLayout {
       },
     );
   /**
-   * The walk with the last block closed.
+   The walk with the last block closed.
    */
   const final = closeBlock({
     text,
@@ -328,44 +328,44 @@ function labelledBlocksOf({ text, }: { readonly text: string; },): BlockLayout {
 }
 
 /**
- * Kept text and the gap owed before the next kept block.
- *
- * @example
- * ```ts
- * const state: KeptText = { text: '[^1]: one', pendingGap: '\n\n', };
- * ```
+ Kept text and the gap owed before the next kept block.
+ 
+ @example
+ ```ts
+ const state: KeptText = { text: '[^1]: one', pendingGap: '\n\n', };
+ ```
  */
 type KeptText = {
   /**
-   * Text kept so far.
+   Text kept so far.
    */
   readonly text: string;
 
   /**
-   * Gap that stood before the first block of the cut run just walked, empty
-   * when the last block walked was kept.
+   Gap that stood before the first block of the cut run just walked, empty
+   when the last block walked was kept.
    */
   readonly pendingGap: string;
 };
 
 /**
- * Cuts every definition block carrying one of the labels out of a text,
- * keeping the gaps between the blocks that stay and the trailing text.
- *
- * A kept block that follows cut blocks takes the gap that stood before the
- * first of them, so a paragraph break survives the cut of what followed it.
- *
- * @param text - replacement text
- *
- * @param labels - definition labels whose blocks go
- *
- * @returns Text without those blocks
- *
- * @example
- * ```ts
- * cutDefinitionBlocks({ text: '[^1]: one\n\n[^2]: two\n', labels: new Set(['2',],), },);
- * // => '[^1]: one\n'
- * ```
+ Cuts every definition block carrying one of the labels out of a text,
+ keeping the gaps between the blocks that stay and the trailing text.
+ 
+ A kept block that follows cut blocks takes the gap that stood before the
+ first of them, so a paragraph break survives the cut of what followed it.
+ 
+ @param text - replacement text
+ 
+ @param labels - definition labels whose blocks go
+ 
+ @returns Text without those blocks
+ 
+ @example
+ ```ts
+ cutDefinitionBlocks({ text: '[^1]: one\n\n[^2]: two\n', labels: new Set(['2',],), },);
+ // => '[^1]: one\n'
+ ```
  */
 export function cutDefinitionBlocks(
   {
@@ -377,11 +377,11 @@ export function cutDefinitionBlocks(
   },
 ): string {
   /**
-   * The text's blocks and trailing text.
+   The text's blocks and trailing text.
    */
   const layout = labelledBlocksOf({ text, },);
   /**
-   * What stays, joined.
+   What stays, joined.
    */
   const joined = layout.blocks
     .reduce(
@@ -396,11 +396,11 @@ export function cutDefinitionBlocks(
           };
         }
         /**
-         * Gap owed by the cut run just walked, else this block's own.
+         Gap owed by the cut run just walked, else this block's own.
          */
         const owed = (state.pendingGap === '') ? entry.gapBefore : state.pendingGap;
         /**
-         * Gap written before this block, none at the start of the text.
+         Gap written before this block, none at the start of the text.
          */
         const gap = (state.text === '') ? '' : owed;
         return {
@@ -417,21 +417,21 @@ export function cutDefinitionBlocks(
 }
 
 /**
- * Whether a carried text is a decided text with definition blocks cut and
- * nothing else changed, which is the one difference the assembly guard's trim
- * makes between what a lane decided and what its document carries.
- *
- * @param decided - text the lane decided
- *
- * @param carried - text the document carries
- *
- * @returns Whether the carried text is the decided text under a definition trim
- *
- * @example
- * ```ts
- * isDefinitionTrim({ decided: 'a[^1].\n\n[^1]: one\n\n[^2]: two', carried: 'a[^1].\n\n[^1]: one', },);
- * // => true
- * ```
+ Whether a carried text is a decided text with definition blocks cut and
+ nothing else changed, which is the one difference the assembly guard's trim
+ makes between what a lane decided and what its document carries.
+ 
+ @param decided - text the lane decided
+ 
+ @param carried - text the document carries
+ 
+ @returns Whether the carried text is the decided text under a definition trim
+ 
+ @example
+ ```ts
+ isDefinitionTrim({ decided: 'a[^1].\n\n[^1]: one\n\n[^2]: two', carried: 'a[^1].\n\n[^1]: one', },);
+ // => true
+ ```
  */
 export function isDefinitionTrim(
   {
@@ -443,7 +443,7 @@ export function isDefinitionTrim(
   },
 ): boolean {
   /**
-   * Blocks the carried text holds.
+   Blocks the carried text holds.
    */
   const carriedBlocks = new Set(
     labelledBlocksOf({ text: carried, },)
@@ -455,7 +455,7 @@ export function isDefinitionTrim(
   if (carriedBlocks.size === 0)
     return false;
   /**
-   * Labels of the decided text's definition blocks the carried text lacks.
+   Labels of the decided text's definition blocks the carried text lacks.
    */
   const cut = new Set(
     labelledBlocksOf({ text: decided, },)
@@ -478,17 +478,17 @@ export function isDefinitionTrim(
 }
 
 /**
- * Count of definition blocks across every replacement, the most trims the
- * assembly guard can make.
- *
- * @param replacements - replacements the guard walks
- *
- * @returns Definition blocks in all of them
- *
- * @example
- * ```ts
- * definitionBlockCount({ replacements, },);
- * ```
+ Count of definition blocks across every replacement, the most trims the
+ assembly guard can make.
+ 
+ @param replacements - replacements the guard walks
+ 
+ @returns Definition blocks in all of them
+ 
+ @example
+ ```ts
+ definitionBlockCount({ replacements, },);
+ ```
  */
 export function definitionBlockCount(
   { replacements, }: { readonly replacements: readonly SliceReplacement[]; },
@@ -499,7 +499,7 @@ export function definitionBlockCount(
       replacement,
     ): number {
       /**
-       * Definition blocks in this replacement.
+       Definition blocks in this replacement.
        */
       const definitions = labelledBlocksOf({ text: replacement.replacementText, },)
         .blocks
@@ -513,24 +513,24 @@ export function definitionBlockCount(
 }
 
 /**
- * Cuts the orphan definitions' blocks out of every replacement that is
- * nothing but definition blocks, leaving any other replacement for the
- * guard to withdraw whole.
- *
- * @param findings - footnote findings the assembly introduced
- *
- * @param replacements - replacements standing this round
- *
- * @param incumbentBySlice - archive text of every slice, by chunk index as a
- * string, so a trim that lands on the incumbent is withdrawn rather than shipped
- *
- * @returns Replacements after the trim
- *
- * @example
- * ```ts
- * const trimmed = trimOrphanDefinitions({ findings: introduced, replacements: standing, incumbentBySlice, },);
- * if (trimmed.trimmed) surviving = trimmed.replacements;
- * ```
+ Cuts the orphan definitions' blocks out of every replacement that is
+ nothing but definition blocks, leaving any other replacement for the
+ guard to withdraw whole.
+ 
+ @param findings - footnote findings the assembly introduced
+ 
+ @param replacements - replacements standing this round
+ 
+ @param incumbentBySlice - archive text of every slice, by chunk index as a
+ string, so a trim that lands on the incumbent is withdrawn rather than shipped
+ 
+ @returns Replacements after the trim
+ 
+ @example
+ ```ts
+ const trimmed = trimOrphanDefinitions({ findings: introduced, replacements: standing, incumbentBySlice, },);
+ if (trimmed.trimmed) surviving = trimmed.replacements;
+ ```
  */
 export function trimOrphanDefinitions(
   {
@@ -544,7 +544,7 @@ export function trimOrphanDefinitions(
   },
 ): TrimmedReplacements {
   /**
-   * Labels of the orphaned GFM definitions.
+   Labels of the orphaned GFM definitions.
    */
   const orphans = new Set(
     findings
@@ -563,15 +563,15 @@ export function trimOrphanDefinitions(
       trimmed: false,
     };
   /**
-   * Findings for each block cut.
+   Findings for each block cut.
    */
   const cuts: string[] = [];
   /**
-   * Replacements with the orphan blocks cut.
+   Replacements with the orphan blocks cut.
    */
   const trimmed = replacements.map(function trim(replacement,): SliceReplacement {
     /**
-     * The replacement's blocks, each beside its label.
+     The replacement's blocks, each beside its label.
      */
     const { blocks, } = labelledBlocksOf({ text: replacement.replacementText, },);
     if (blocks.some(function isProse(entry,): boolean {
@@ -579,7 +579,7 @@ export function trimOrphanDefinitions(
     },))
       return replacement;
     /**
-     * Blocks whose label is not an orphan.
+     Blocks whose label is not an orphan.
      */
     const kept = blocks.filter(function keeps(entry,): boolean {
       return !orphans.has(entry.label,);
@@ -603,7 +603,7 @@ export function trimOrphanDefinitions(
     };
   },);
   /**
-   * Trimmed replacements that now repeat their incumbent.
+   Trimmed replacements that now repeat their incumbent.
    */
   const emptied = trimmed.filter(function repeatsIncumbent(replacement,): boolean {
     return replacement.replacementText === incumbentBySlice.get(String(replacement.sliceIndex,),);

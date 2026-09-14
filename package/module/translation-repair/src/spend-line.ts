@@ -33,69 +33,69 @@ import { noteRunSpend, } from './run-spend-meter.ts';
 // a corpus pass, and a run log holds unlicensed wording.
 
 /**
- * Logger root for spend reporting.
+ Logger root for spend reporting.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Marker word a reader finds the line by.
- *
- * EXPORTED RATHER THAN RESTATED IN THE READER, so the writer and the reader
- * cannot drift apart the way two spellings of one literal always eventually do.
- *
- * NO LEADING SPACE, unlike METERS_MARKER in corpus-run/meter-sample-read.ts.
- * That one only ever meets lines carrying a logger tag prefix, so it can demand
- * the space in front. This marker opens the line this module RETURNS, and
- * `readSpendLine` accepts it at the start of a line or after a space, so the
- * writer's own output round-trips through the reader instead of reading as
- * prose.
+ Marker word a reader finds the line by.
+ 
+ EXPORTED RATHER THAN RESTATED IN THE READER, so the writer and the reader
+ cannot drift apart the way two spellings of one literal always eventually do.
+ 
+ NO LEADING SPACE, unlike METERS_MARKER in corpus-run/meter-sample-read.ts.
+ That one only ever meets lines carrying a logger tag prefix, so it can demand
+ the space in front. This marker opens the line this module RETURNS, and
+ `readSpendLine` accepts it at the start of a line or after a space, so the
+ writer's own output round-trips through the reader instead of reading as
+ prose.
  */
 export const SPEND_MARKER = 'SPEND ';
 
 /**
- * Value written where the provider returned no usage block at all.
- *
- * NAMED RATHER THAN OMITTED, and the line is printed anyway. A run whose
- * provider stayed quiet and a run that spent nothing produce the same total,
- * and only this tells them apart. Leaving the line out would let a reader
- * report a cheap run when what happened was an unreported one.
+ Value written where the provider returned no usage block at all.
+ 
+ NAMED RATHER THAN OMITTED, and the line is printed anyway. A run whose
+ provider stayed quiet and a run that spent nothing produce the same total,
+ and only this tells them apart. Leaving the line out would let a reader
+ report a cheap run when what happened was an unreported one.
  */
 const UNREPORTED = 'unreported';
 
 /**
- * Records what one completed exchange cost, on its own line.
- *
- * @param provider - meter this call drew on, since only one of the two is
- * priced per token and a reader totalling credits must not add the other
- *
- * @param label - model as the serving provider names it, matching the label
- * `reportStreamProgress` already prints so the two lines can be joined
- *
- * @param extracted - completion whose `usage` block the provider filled in,
- * or did not
- *
- * @param costUsd - USD the wire reported for this call, on the provider that
- * bills in USD and said so
- *
- * @param endpoint - upstream the gateway named as serving this call, on the
- * provider that fronts many; percent-encoded on the line because a display
- * name may hold a space and this line's grammar splits on spaces
- *
- * @param estimated - why the counts and cost are reckoned rather than
- * reported, on a call the wire never finished; the line carries it as a
- * trailing field so a reader can total such lines beside the others or apart
- *
- * @param cachedTokens - prompt tokens the upstream served from its cache,
- * where the wire reported the count, so the saving price-sorted routing and
- * a stable sheet buy can be read off the line
- *
- * @returns Line that was logged, so a test can assert what a reader will parse
- * rather than a paraphrase of it
- *
- * @example
- * ```ts
- * reportSpend({ provider: 'hyper', label: 'qwen3.8-max', extracted, },);
- * ```
+ Records what one completed exchange cost, on its own line.
+ 
+ @param provider - meter this call drew on, since only one of the two is
+ priced per token and a reader totalling credits must not add the other
+ 
+ @param label - model as the serving provider names it, matching the label
+ `reportStreamProgress` already prints so the two lines can be joined
+ 
+ @param extracted - completion whose `usage` block the provider filled in,
+ or did not
+ 
+ @param costUsd - USD the wire reported for this call, on the provider that
+ bills in USD and said so
+ 
+ @param endpoint - upstream the gateway named as serving this call, on the
+ provider that fronts many; percent-encoded on the line because a display
+ name may hold a space and this line's grammar splits on spaces
+ 
+ @param estimated - why the counts and cost are reckoned rather than
+ reported, on a call the wire never finished; the line carries it as a
+ trailing field so a reader can total such lines beside the others or apart
+ 
+ @param cachedTokens - prompt tokens the upstream served from its cache,
+ where the wire reported the count, so the saving price-sorted routing and
+ a stable sheet buy can be read off the line
+ 
+ @returns Line that was logged, so a test can assert what a reader will parse
+ rather than a paraphrase of it
+ 
+ @example
+ ```ts
+ reportSpend({ provider: 'hyper', label: 'qwen3.8-max', extracted, },);
+ ```
  */
 export function reportSpend(
   {
@@ -117,21 +117,21 @@ export function reportSpend(
   },
 ): string {
   /**
-   * Usage block as the provider reported it, absent where it did not.
+   Usage block as the provider reported it, absent where it did not.
    */
   const { usage, } = extracted;
 
   /**
-   * Prompt and completion counts, or the mark saying nobody reported them.
+   Prompt and completion counts, or the mark saying nobody reported them.
    */
   const counts = (usage === undefined)
     ? `prompt=${UNREPORTED} completion=${UNREPORTED}`
     : `prompt=${String(usage.prompt_tokens,)} completion=${String(usage.completion_tokens,)}`;
 
   /**
-   * USD the wire reported for this call, as a trailing field only where a
-   * provider bills in USD and said so; older lines and the other providers
-   * carry no such field, and the reader treats its absence as unreported.
+   USD the wire reported for this call, as a trailing field only where a
+   provider bills in USD and said so; older lines and the other providers
+   carry no such field, and the reader treats its absence as unreported.
    */
   const cost = (costUsd === undefined)
     ? ''
@@ -148,34 +148,34 @@ export function reportSpend(
   }
 
   /**
-   * Upstream that served the call, as a trailing field only where a gateway
-   * named one; encoded so a name with a space stays one field.
+   Upstream that served the call, as a trailing field only where a gateway
+   named one; encoded so a name with a space stays one field.
    */
   const servedBy = (endpoint === undefined)
     ? ''
     : ` endpoint=${encodeURIComponent(endpoint,)}`;
 
   /**
-   * Mark for a reckoned line, absent on a reported one.
+   Mark for a reckoned line, absent on a reported one.
    */
   const reckoned = (estimated === undefined)
     ? ''
     : ` estimated=${estimated}`;
 
   /**
-   * Cached prompt tokens, as a trailing field where the wire reported them.
+   Cached prompt tokens, as a trailing field where the wire reported them.
    */
   const cached = (cachedTokens === undefined)
     ? ''
     : ` cached=${String(cachedTokens,)}`;
 
   /**
-   * Line assembled before the call so the logger chain stays one step per line.
+   Line assembled before the call so the logger chain stays one step per line.
    */
   const line = `${SPEND_MARKER}provider=${provider} model=${label} ${counts}${cost}${servedBy}${reckoned}${cached}`;
 
   /**
-   * Logger tagged with this report.
+   Logger tagged with this report.
    */
   const rl = tagged({
     tag: reportSpend.name,

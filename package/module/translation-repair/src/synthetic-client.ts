@@ -53,59 +53,59 @@ import {
 // matching the pack count keeps queues short and aborts responsive).
 
 /**
- * Concurrent requests available to each Synthetic model on current account.
- *
- * Measured live on 2026-08-30 with two zero-retry aggregate arms:
- * 5 calls on each of 4 active models completed together,
- * while raising gpt-oss alone to 10 produced HTTP 429 responses.
- *
- * @example
- * ```ts
- * const slots = SYNTHETIC_PER_MODEL_CONCURRENCY;
- * ```
+ Concurrent requests available to each Synthetic model on current account.
+ 
+ Measured live on 2026-08-30 with two zero-retry aggregate arms:
+ 5 calls on each of 4 active models completed together,
+ while raising gpt-oss alone to 10 produced HTTP 429 responses.
+ 
+ @example
+ ```ts
+ const slots = SYNTHETIC_PER_MODEL_CONCURRENCY;
+ ```
  */
 export const SYNTHETIC_PER_MODEL_CONCURRENCY = 5;
 
 /**
- * Logger root for this package's model-facing shell.
+ Logger root for this package's model-facing shell.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Raised when a roster model is addressed to Synthetic and Synthetic has no row for it.
- *
- * BEFORE THE WIRE, NOT AFTER. The provider answers such a request with an HTTP
- * 400 saying the name should start with `hf:`, which the retry ladder does not
- * retry and the stage layer records as one lost voice; over a run that is a
- * seat failing every call while quorum is met by the rest (`#235`). Refusing
- * here names the actual condition, and a routed client never reaches it
- * because reach is decided before the provider is chosen.
- *
- * @example
- * ```ts
- * throw new SyntheticModelNotServedError({ modelId: 'minimax-m3', },);
- * ```
+ Raised when a roster model is addressed to Synthetic and Synthetic has no row for it.
+ 
+ BEFORE THE WIRE, NOT AFTER. The provider answers such a request with an HTTP
+ 400 saying the name should start with `hf:`, which the retry ladder does not
+ retry and the stage layer records as one lost voice; over a run that is a
+ seat failing every call while quorum is met by the rest (`#235`). Refusing
+ here names the actual condition, and a routed client never reaches it
+ because reach is decided before the provider is chosen.
+ 
+ @example
+ ```ts
+ throw new SyntheticModelNotServedError({ modelId: 'minimax-m3', },);
+ ```
  */
 export class SyntheticModelNotServedError extends Error {
   /**
-   * Declares this message safe to forward: a catalog id and our own words.
+   Declares this message safe to forward: a catalog id and our own words.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Roster model this provider cannot serve.
+   Roster model this provider cannot serve.
    */
   public readonly modelId: RosterModelId;
 
   /**
-   * Builds the refusal naming the model.
-   *
-   * @param modelId - roster model addressed to this provider
-   *
-   * @example
-   * ```ts
-   * throw new SyntheticModelNotServedError({ modelId: 'minimax-m3', },);
-   * ```
+   Builds the refusal naming the model.
+   
+   @param modelId - roster model addressed to this provider
+   
+   @example
+   ```ts
+   throw new SyntheticModelNotServedError({ modelId: 'minimax-m3', },);
+   ```
    */
   public constructor({ modelId, }: { readonly modelId: RosterModelId; },) {
     super(
@@ -118,25 +118,25 @@ export class SyntheticModelNotServedError extends Error {
 }
 
 /**
- * Refuses a success reply whose server-sent stream stopped before its terminator.
- *
- * MODULE SCOPE BECAUSE IT CAPTURES NOTHING. The reply handed in is its whole
- * input, so nesting it at the call site would make a closure over an empty set.
- *
- * ONLY A BODY THE STATUS ALREADY ACCEPTED. A non-success reply is reported by
- * the status branch at the call site, which names the HTTP code; reading it
- * here would replace that with a parse failure about an error page.
- *
- * @param attemptReply - one attempt's reply, read before the ladder returns it
- *
- * @throws MalformedCompletionError - when a success body stops before
- * `[DONE]`, which is what puts a truncated stream on the retry path
- * instead of past it
- *
- * @example
- * ```ts
- * const reply = await exchangeWithRetry({ transport, exchange, policy, verify: wholeMessage, },);
- * ```
+ Refuses a success reply whose server-sent stream stopped before its terminator.
+ 
+ MODULE SCOPE BECAUSE IT CAPTURES NOTHING. The reply handed in is its whole
+ input, so nesting it at the call site would make a closure over an empty set.
+ 
+ ONLY A BODY THE STATUS ALREADY ACCEPTED. A non-success reply is reported by
+ the status branch at the call site, which names the HTTP code; reading it
+ here would replace that with a parse failure about an error page.
+ 
+ @param attemptReply - one attempt's reply, read before the ladder returns it
+ 
+ @throws MalformedCompletionError - when a success body stops before
+ `[DONE]`, which is what puts a truncated stream on the retry path
+ instead of past it
+ 
+ @example
+ ```ts
+ const reply = await exchangeWithRetry({ transport, exchange, policy, verify: wholeMessage, },);
+ ```
  */
 function wholeMessage(attemptReply: TransportReply,): void {
   if (isSuccessStatus({ status: attemptReply.status, },))
@@ -144,31 +144,31 @@ function wholeMessage(attemptReply: TransportReply,): void {
 }
 
 /**
- * Builds one client over injected transport.
- * Requests to the same model flow through a local limiter whose slot count
- * matches the account's subscribed pack count;
- * different models run fully parallel, matching provider concurrency rules.
- *
- * @param apiKey - bearer token; never logged
- *
- * @param transport - HTTP seam; tests inject recorded replies
- *
- * @param chatBaseUrl - OpenAI-compatible base, overridable for tests
- *
- * @param quotasUrl - quota endpoint, overridable for tests
- *
- * @param perModelConcurrency - concurrent requests granted to each model;
- * the provider serves one request per model per subscribed pack at full
- * speed and queues the excess server-side, so match this to the pack count
- *
- * @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
- *
- * @returns Client surface with chatText, chatJson, and quotas
- *
- * @example
- * ```ts
- * const client = createSyntheticClient({ apiKey: process.env['TRANSLATION_REPAIR_SYNTHETIC_API_KEY'] ?? '', },);
- * ```
+ Builds one client over injected transport.
+ Requests to the same model flow through a local limiter whose slot count
+ matches the account's subscribed pack count;
+ different models run fully parallel, matching provider concurrency rules.
+ 
+ @param apiKey - bearer token; never logged
+ 
+ @param transport - HTTP seam; tests inject recorded replies
+ 
+ @param chatBaseUrl - OpenAI-compatible base, overridable for tests
+ 
+ @param quotasUrl - quota endpoint, overridable for tests
+ 
+ @param perModelConcurrency - concurrent requests granted to each model;
+ the provider serves one request per model per subscribed pack at full
+ speed and queues the excess server-side, so match this to the pack count
+ 
+ @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
+ 
+ @returns Client surface with chatText, chatJson, and quotas
+ 
+ @example
+ ```ts
+ const client = createSyntheticClient({ apiKey: process.env['TRANSLATION_REPAIR_SYNTHETIC_API_KEY'] ?? '', },);
+ ```
  */
 export function createSyntheticClient(
   {
@@ -188,13 +188,13 @@ export function createSyntheticClient(
   },
 ): SyntheticClient {
   /**
-   * Per-model limiters keyed by model, created lazily;
-   * bounded by catalog size.
+   Per-model limiters keyed by model, created lazily;
+   bounded by catalog size.
    */
   const limiters = new Map<RosterModelId, LimitFunction>();
 
   /**
-   * Headers shared by every exchange.
+   Headers shared by every exchange.
    */
   const headers: Readonly<Record<string, string>> = {
     'Authorization': `Bearer ${apiKey}`,
@@ -202,27 +202,27 @@ export function createSyntheticClient(
   };
 
   /**
-   * Returns the model's limiter, creating its slots on first use.
-   *
-   * @param modelId - model whose slot the exchange needs
-   *
-   * @returns Limiter granting the model `perModelConcurrency` slots
-   *
-   * @example
-   * ```ts
-   * const limit = limiterFor('hf:zai-org/GLM-5.3-Flash',);
-   * ```
+   Returns the model's limiter, creating its slots on first use.
+   
+   @param modelId - model whose slot the exchange needs
+   
+   @returns Limiter granting the model `perModelConcurrency` slots
+   
+   @example
+   ```ts
+   const limit = limiterFor('hf:zai-org/GLM-5.3-Flash',);
+   ```
    */
   function limiterFor(modelId: RosterModelId,): LimitFunction {
     /**
-     * Existing limiter when this model was called before.
+     Existing limiter when this model was called before.
      */
     const existing = limiters.get(modelId,);
     if (existing !== undefined)
       return existing;
 
     /**
-     * Fresh limiter for first use of this model.
+     Fresh limiter for first use of this model.
      */
     const created = pLimit(perModelConcurrency,);
     limiters.set(
@@ -233,26 +233,26 @@ export function createSyntheticClient(
   }
 
   /**
-   * Free-text chat exchange; bounded per model.
-   *
-   * @param request - exchange to perform
-   *
-   * @mutates request - `JSON.stringify` may invoke toJSON methods or getters while serializing messages and response format
-   *
-   * @returns Content text and usage when reported
-   *
-   * @throws {@link SyntheticHttpError} on non-success status
-   *
-   * @throws {@link import('./completion-shape.ts').MalformedCompletionError} on contract-violating bodies
-   *
-   * @example
-   * ```ts
-   * const reply = await client.chatText({ modelId, messages, signal, },);
-   * ```
+   Free-text chat exchange; bounded per model.
+   
+   @param request - exchange to perform
+   
+   @mutates request - `JSON.stringify` may invoke toJSON methods or getters while serializing messages and response format
+   
+   @returns Content text and usage when reported
+   
+   @throws {@link SyntheticHttpError} on non-success status
+   
+   @throws {@link import('./completion-shape.ts').MalformedCompletionError} on contract-violating bodies
+   
+   @example
+   ```ts
+   const reply = await client.chatText({ modelId, messages, signal, },);
+   ```
    */
   function chatText(request: ForeignBorrowed<ChatTextRequest>,): Promise<ChatTextReply> {
     /**
-     * Logger pre-tagged with this function's name.
+     Logger pre-tagged with this function's name.
      */
     const rl = tagged({
       tag: chatText.name,
@@ -260,7 +260,7 @@ export function createSyntheticClient(
     },);
 
     /**
-     * Message count for the entry log line.
+     Message count for the entry log line.
      */
     const messageCount = request
       .messages
@@ -279,9 +279,9 @@ export function createSyntheticClient(
       );
 
       /**
-       * Per-exchange deadline armed inside the slot so local queue wait
-       * behind concurrent same-model calls never counts against it;
-       * absent when the caller set no deadline.
+       Per-exchange deadline armed inside the slot so local queue wait
+       behind concurrent same-model calls never counts against it;
+       absent when the caller set no deadline.
        */
       using deadline = request.exchangeTimeoutMs === undefined
         ? undefined
@@ -292,20 +292,20 @@ export function createSyntheticClient(
         },);
 
       /**
-       * Signal the exchange honors: deadline-joined when armed.
+       Signal the exchange honors: deadline-joined when armed.
        */
       const exchangeSignal = deadline === undefined
         ? request.signal
         : deadline.callSignal;
 
       /**
-       * Messages as they go on the wire, carrying this call's own response
-       * schema inside the system prompt.
-       *
-       * THIS PROTOCOL HAS NOWHERE ELSE TO PUT IT. The Anthropic path states the
-       * schema in its own `system` field through `renderToolSystemPrompt`; an
-       * OpenAI-compatible body carries only `response_format`, which a model
-       * that does not honour that field never sees. `#216`.
+       Messages as they go on the wire, carrying this call's own response
+       schema inside the system prompt.
+       
+       THIS PROTOCOL HAS NOWHERE ELSE TO PUT IT. The Anthropic path states the
+       schema in its own `system` field through `renderToolSystemPrompt`; an
+       OpenAI-compatible body carries only `response_format`, which a model
+       that does not honour that field never sees. `#216`.
        */
       const asked = withSchemaInSystemPrompt({
         messages: request.messages,
@@ -316,11 +316,11 @@ export function createSyntheticClient(
       },);
 
       /**
-       * Exactly what goes on the wire, hoisted so its size can be measured.
-       *
-       * MEASURED, NOT ESTIMATED. The gateway caps this body and reports a body
-       * over the cap as a parse failure naming our JSON, so the only way to tell
-       * that refusal from a real malformation is to know how big this was.
+       Exactly what goes on the wire, hoisted so its size can be measured.
+       
+       MEASURED, NOT ESTIMATED. The gateway caps this body and reports a body
+       over the cap as a parse failure naming our JSON, so the only way to tell
+       that refusal from a real malformation is to know how big this was.
        */
       // NO THINKING PARAMETER AND NO TOKEN BUDGET, EVER. The owner's standing
       // instruction, 2026-08-25: "Please don't set any thinking parameter or
@@ -354,7 +354,7 @@ export function createSyntheticClient(
       },);
 
       /**
-       * Raw reply from the transport seam, retried on transient statuses.
+       Raw reply from the transport seam, retried on transient statuses.
        */
       const reply = await exchangeWithRetry({
         transport,
@@ -391,12 +391,12 @@ export function createSyntheticClient(
       }
 
       /**
-       * Content and usage reassembled from the drained event stream.
+       Content and usage reassembled from the drained event stream.
        */
       const extracted = extractStreamedCompletion({ bodyText: reply.bodyText, },);
 
       /**
-       * Content length for the completion log line.
+       Content length for the completion log line.
        */
       const textLength = extracted
         .text
@@ -414,33 +414,33 @@ export function createSyntheticClient(
   }
 
   /**
-   * Schema-validated chat exchange.
-   * Content that parses and passes the guard wins even when it quotes
-   * refusal-like phrasing; the refusal scan runs only on parse failure.
-   *
-   * THE LADDER ITSELF LIVES IN `chat-json-outcome.ts`, because none of it is
-   * about this provider: it reads text a model wrote and decides whether that
-   * text is an answer. The second provider runs the same steps on replies that
-   * arrived over a different protocol entirely.
-   *
-   * @param request - exchange plus content guard
-   *
-   * @mutates request - `JSON.stringify` may invoke toJSON methods or getters while the delegated exchange serializes messages and response format
-   *
-   * @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
-   *
-   * @throws {@link SyntheticHttpError} on non-success status
-   *
-   * @example
-   * ```ts
-   * const outcome = await client.chatJson({ modelId, messages, signal, validate: isVerdict, },);
-   * ```
+   Schema-validated chat exchange.
+   Content that parses and passes the guard wins even when it quotes
+   refusal-like phrasing; the refusal scan runs only on parse failure.
+   
+   THE LADDER ITSELF LIVES IN `chat-json-outcome.ts`, because none of it is
+   about this provider: it reads text a model wrote and decides whether that
+   text is an answer. The second provider runs the same steps on replies that
+   arrived over a different protocol entirely.
+   
+   @param request - exchange plus content guard
+   
+   @mutates request - `JSON.stringify` may invoke toJSON methods or getters while the delegated exchange serializes messages and response format
+   
+   @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
+   
+   @throws {@link SyntheticHttpError} on non-success status
+   
+   @example
+   ```ts
+   const outcome = await client.chatJson({ modelId, messages, signal, validate: isVerdict, },);
+   ```
    */
   async function chatJson<ValueT,>(
     request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
   ): Promise<ChatJsonOutcome<ValueT>> {
     /**
-     * Raw text reply of the underlying exchange.
+     Raw text reply of the underlying exchange.
      */
     const reply = await chatText({
       modelId: request.modelId,
@@ -469,26 +469,26 @@ export function createSyntheticClient(
   }
 
   /**
-   * Reads the current quota snapshot.
-   *
-   * @param signal - abort signal honored for the read
-   *
-   * @returns Typed budget-relevant quota state
-   *
-   * @throws {@link SyntheticHttpError} on non-success status
-   *
-   * @throws {@link import('./synthetic-quota.ts').QuotaShapeError} on contract-violating bodies
-   *
-   * @example
-   * ```ts
-   * const snapshot = await client.quotas({ signal, },);
-   * ```
+   Reads the current quota snapshot.
+   
+   @param signal - abort signal honored for the read
+   
+   @returns Typed budget-relevant quota state
+   
+   @throws {@link SyntheticHttpError} on non-success status
+   
+   @throws {@link import('./synthetic-quota.ts').QuotaShapeError} on contract-violating bodies
+   
+   @example
+   ```ts
+   const snapshot = await client.quotas({ signal, },);
+   ```
    */
   async function quotas(
     { signal, }: { readonly signal: AbortSignal; },
   ): Promise<QuotaSnapshot> {
     /**
-     * Logger pre-tagged with this function's name.
+     Logger pre-tagged with this function's name.
      */
     const rl = tagged({
       tag: quotas.name,
@@ -496,7 +496,7 @@ export function createSyntheticClient(
     },);
 
     /**
-     * Raw reply from the quota endpoint, retried on transient statuses.
+     Raw reply from the quota endpoint, retried on transient statuses.
      */
     const reply = await exchangeWithRetry({
       transport,
@@ -519,12 +519,12 @@ export function createSyntheticClient(
     }
 
     /**
-     * Typed snapshot parsed from the verified body shape.
+     Typed snapshot parsed from the verified body shape.
      */
     const snapshot = parseQuotaSnapshot({ bodyText: reply.bodyText, },);
 
     /**
-     * Snapshot blocks pulled out for the log line.
+     Snapshot blocks pulled out for the log line.
      */
     const {
       fiveHour,

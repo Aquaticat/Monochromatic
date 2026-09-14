@@ -10,20 +10,20 @@ import type { SliceReplacement, } from './splice-slices.ts';
 // `repairedText`, becomes the neutral instruction to write text over a span.
 
 /**
- * Turns repair outcomes into the replacements assembly applies.
- *
- * Outcomes that changed nothing are dropped rather than passed with their
- * original text: writing a slice back over itself is a no-op that still reads,
- * in every later diff and count, as a slice this lane touched.
- *
- * @param outcomes - per-slice repair outcomes in any order
- *
- * @returns One replacement per changed slice
- *
- * @example
- * ```ts
- * const replacements = repairReplacements({ outcomes, },);
- * ```
+ Turns repair outcomes into the replacements assembly applies.
+ 
+ Outcomes that changed nothing are dropped rather than passed with their
+ original text: writing a slice back over itself is a no-op that still reads,
+ in every later diff and count, as a slice this lane touched.
+ 
+ @param outcomes - per-slice repair outcomes in any order
+ 
+ @returns One replacement per changed slice
+ 
+ @example
+ ```ts
+ const replacements = repairReplacements({ outcomes, },);
+ ```
  */
 export function repairReplacements(
   { outcomes, }: { readonly outcomes: readonly ChunkRepairOutcome[]; },

@@ -1,14 +1,14 @@
 /**
- * Tests for the sentence a non-translation-blocked document carries.
- *
- * WHAT THESE PIN is a claim about the READER rather than about arithmetic. The
- * two numbers are sums over the prepared slices, not over the translation, and
- * a reader who takes them for the document draws the opposite conclusion from
- * the true one: that most of the entry is not a translation, when it may be
- * that most of what could be examined was not. Question 7 answer B kept the
- * slice denominator and required the wording to say so.
- *
- * @module
+ Tests for the sentence a non-translation-blocked document carries.
+ 
+ WHAT THESE PIN is a claim about the READER rather than about arithmetic. The
+ two numbers are sums over the prepared slices, not over the translation, and
+ a reader who takes them for the document draws the opposite conclusion from
+ the true one: that most of the entry is not a translation, when it may be
+ that most of what could be examined was not. Question 7 answer B kept the
+ slice denominator and required the wording to say so.
+ 
+ @module
  */
 
 import {
@@ -27,7 +27,7 @@ await describe({
         + 'a section the aligner refused to pair appears in neither',
       fn: async () => {
         /**
-         * Finding for a document blocked on most of what it examined.
+         Finding for a document blocked on most of what it examined.
          */
         const finding = nonTranslationDominanceFinding({
           standingChars: 900,
@@ -53,7 +53,7 @@ await describe({
         + 'finding is comparing two renderings of one fact and they have to agree',
       fn: async () => {
         /**
-         * Finding whose numbers are distinctive enough to spot a swapped pair.
+         Finding whose numbers are distinctive enough to spot a swapped pair.
          */
         const finding = nonTranslationDominanceFinding({
           standingChars: 417,

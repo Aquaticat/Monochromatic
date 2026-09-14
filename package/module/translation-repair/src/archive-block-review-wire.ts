@@ -8,42 +8,42 @@ import { selectFence, } from './prompt-fence.ts';
 //region Archive block review wire
 
 /**
- * Review disposition for target wording no source block claims.
+ Review disposition for target wording no source block claims.
  */
 export type ArchiveBlockDisposition = 'editorial-context' | 'revise' | 'source-supported';
 
 /**
- * One archive-block review reply.
- *
- * @example
- * ```ts
- * const report: ArchiveBlockReviewWire = {
- *   disposition: 'revise', sourceQuote: '', replacementText: '', finding: 'Unsupported claim.',
- * };
- * ```
+ One archive-block review reply.
+ 
+ @example
+ ```ts
+ const report: ArchiveBlockReviewWire = {
+   disposition: 'revise', sourceQuote: '', replacementText: '', finding: 'Unsupported claim.',
+ };
+ ```
  */
 export type ArchiveBlockReviewWire = {
   /**
-   * Review decision.
+   Review decision.
    */
   readonly disposition: ArchiveBlockDisposition;
   /**
-   * Exact source support, required for retention. A revision may also quote
-   * the supported part it preserves without claiming the whole block stands.
+   Exact source support, required for retention. A revision may also quote
+   the supported part it preserves without claiming the whole block stands.
    */
   readonly sourceQuote: string;
   /**
-   * Complete replacement, used only for revise decision and possibly empty.
+   Complete replacement, used only for revise decision and possibly empty.
    */
   readonly replacementText: string;
   /**
-   * Concise reason for audit and follow-up.
+   Concise reason for audit and follow-up.
    */
   readonly finding: string;
 };
 
 /**
- * Allowed wire decisions.
+ Allowed wire decisions.
  */
 const DISPOSITIONS: readonly string[] = [
   'editorial-context',
@@ -52,22 +52,22 @@ const DISPOSITIONS: readonly string[] = [
 ];
 
 /**
- * Builds distinct initial or continuation review messages.
- *
- * @param sourceText - aligned source section and corroborated readings of its pictures
- *
- * @param targetText - whole archive providing editorial context
- *
- * @param blockText - exact unclaimed block under review
- *
- * @param priorFindings - latest unsuccessful review evidence
- *
- * @returns Review request messages
- *
- * @example
- * ```ts
- * buildArchiveBlockReviewMessages({ sourceText, targetText, blockText, priorFindings: [], });
- * ```
+ Builds distinct initial or continuation review messages.
+ 
+ @param sourceText - aligned source section and corroborated readings of its pictures
+ 
+ @param targetText - whole archive providing editorial context
+ 
+ @param blockText - exact unclaimed block under review
+ 
+ @param priorFindings - latest unsuccessful review evidence
+ 
+ @returns Review request messages
+ 
+ @example
+ ```ts
+ buildArchiveBlockReviewMessages({ sourceText, targetText, blockText, priorFindings: [], });
+ ```
  */
 export function buildArchiveBlockReviewMessages(
   {
@@ -83,7 +83,7 @@ export function buildArchiveBlockReviewMessages(
   },
 ): readonly ChatMessage[] {
   /**
-   * Fence absent from every enclosed value.
+   Fence absent from every enclosed value.
    */
   const fence = selectFence({ texts: [
     sourceText,
@@ -92,7 +92,7 @@ export function buildArchiveBlockReviewMessages(
     ...priorFindings,
   ], },);
   /**
-   * Latest failed strategy, absent on initial review.
+   Latest failed strategy, absent on initial review.
    */
   const continuation = priorFindings.length === 0
     ? ''
@@ -121,16 +121,16 @@ Reply with JSON only: {"disposition":"source-supported"|"editorial-context"|"rev
 }
 
 /**
- * Guards archive-block review JSON.
- *
- * @param value - parsed provider value
- *
- * @returns Whether required fields and disposition agree
- *
- * @example
- * ```ts
- * isArchiveBlockReviewWire(JSON.parse(text,));
- * ```
+ Guards archive-block review JSON.
+ 
+ @param value - parsed provider value
+ 
+ @returns Whether required fields and disposition agree
+ 
+ @example
+ ```ts
+ isArchiveBlockReviewWire(JSON.parse(text,));
+ ```
  */
 export function isArchiveBlockReviewWire(value: unknown,): value is ArchiveBlockReviewWire {
   if (!isJsonRecord(value,))
@@ -151,7 +151,7 @@ export function isArchiveBlockReviewWire(value: unknown,): value is ArchiveBlock
 }
 
 /**
- * Structured output constraint for archive-block reviews.
+ Structured output constraint for archive-block reviews.
  */
 export const ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',

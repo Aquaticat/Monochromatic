@@ -15,47 +15,47 @@
 // output.
 
 /**
- * Fewest characters of a commit ever shown, so short reports stay scannable.
- *
- * Nine rather than seven because this repository already has commits colliding
- * at seven. It is a FLOOR, not the answer: see {@link abbreviate}.
+ Fewest characters of a commit ever shown, so short reports stay scannable.
+ 
+ Nine rather than seven because this repository already has commits colliding
+ at seven. It is a FLOOR, not the answer: see {@link abbreviate}.
  */
 const MIN_ABBREVIATION = 9;
 
 /**
- * Shortens hex ids just enough that the ones being shown stay distinguishable.
- *
- * Takes ids rather than commits because a report names two kinds of them now:
- * the digest identifying a built pipeline, and the commit the pass that ran it
- * started under. Both are lowercase hex nobody wants printed in full, and
- * sizing them together is the point, since what has to stay distinguishable is
- * whatever appears side by side.
- *
- * A fixed width is a bet that no two ids in a report share a prefix, and the
- * bet has already been lost once here at seven characters. Widening to nine
- * only moved the bet. Two generations rendering as the same string is worse
- * than a long string: a report whose two lines read alike is a report nobody
- * can act on, and this one is read precisely when a pool is suspected of
- * spanning versions.
- *
- * Grows from {@link MIN_ABBREVIATION} until every input is unique, so an
- * ordinary report is short and only an actual collision pays for length.
- *
- * @param ids - every hex id that will appear in this report
- *
- * @returns Function shortening one id to the agreed width
- *
- * @example
- * ```ts
- * const short = abbreviate({ ids: census.groups.map(toDigest), },);
- * console.log(short({ id, },),);
- * ```
+ Shortens hex ids just enough that the ones being shown stay distinguishable.
+ 
+ Takes ids rather than commits because a report names two kinds of them now:
+ the digest identifying a built pipeline, and the commit the pass that ran it
+ started under. Both are lowercase hex nobody wants printed in full, and
+ sizing them together is the point, since what has to stay distinguishable is
+ whatever appears side by side.
+ 
+ A fixed width is a bet that no two ids in a report share a prefix, and the
+ bet has already been lost once here at seven characters. Widening to nine
+ only moved the bet. Two generations rendering as the same string is worse
+ than a long string: a report whose two lines read alike is a report nobody
+ can act on, and this one is read precisely when a pool is suspected of
+ spanning versions.
+ 
+ Grows from {@link MIN_ABBREVIATION} until every input is unique, so an
+ ordinary report is short and only an actual collision pays for length.
+ 
+ @param ids - every hex id that will appear in this report
+ 
+ @returns Function shortening one id to the agreed width
+ 
+ @example
+ ```ts
+ const short = abbreviate({ ids: census.groups.map(toDigest), },);
+ console.log(short({ id, },),);
+ ```
  */
 export function abbreviate(
   { ids, }: { readonly ids: readonly string[]; },
 ): (input: { readonly id: string; }) => string {
   /**
-   * Longest id shown, the point past which growing cannot help.
+   Longest id shown, the point past which growing cannot help.
    */
   const longest = ids.reduce(
     function toLongest(
@@ -71,7 +71,7 @@ export function abbreviate(
   );
 
   /**
-   * Every width worth testing, shortest first.
+   Every width worth testing, shortest first.
    */
   const candidates = Array.from(
     { length: (longest - MIN_ABBREVIATION) + 1, },
@@ -84,14 +84,14 @@ export function abbreviate(
   );
 
   /**
-   * Shortest width at which no two DISTINCT ids read alike.
-   *
-   * Distinct is what the comparison measures, and deliberately: a report
-   * naming one pipeline twice should print it the same way both times, so a
-   * repeated id is separated at the floor rather than growing the whole
-   * report chasing a difference that does not exist. Full length is reached
-   * only for ids in a prefix relation, and reaching it always separates them,
-   * so the fallback is a guard rather than an outcome.
+   Shortest width at which no two DISTINCT ids read alike.
+   
+   Distinct is what the comparison measures, and deliberately: a report
+   naming one pipeline twice should print it the same way both times, so a
+   repeated id is separated at the floor rather than growing the whole
+   report chasing a difference that does not exist. Full length is reached
+   only for ids in a prefix relation, and reaching it always separates them,
+   so the fallback is a guard rather than an outcome.
    */
   const width = candidates.find(function separates(candidate,): boolean {
     return new Set(ids.map(function toPrefix(id,): string {
@@ -110,73 +110,73 @@ export function abbreviate(
 }
 
 /**
- * How a reader chose which pipeline generations it would pool.
- *
- * Recorded rather than inferred from the required commit alone, because the
- * three modes are not distinguishable after the fact and they license different
- * claims. Only `single-generation` licenses "produced by pipeline X".
- *
- * @example
- * ```ts
- * const selection: GenerationSelection = { kind: 'single-generation', digest, };
- * ```
+ How a reader chose which pipeline generations it would pool.
+ 
+ Recorded rather than inferred from the required commit alone, because the
+ three modes are not distinguishable after the fact and they license different
+ claims. Only `single-generation` licenses "produced by pipeline X".
+ 
+ @example
+ ```ts
+ const selection: GenerationSelection = { kind: 'single-generation', digest, };
+ ```
  */
 export type GenerationSelection =
   | Readonly<{
     /**
-     * Entries whose recorded pipeline CONTAINS a named commit.
-     *
-     * This is an ancestry floor, not a generation. Every descendant tip
-     * qualifies, and descendants may differ from each other arbitrarily, so a
-     * pool selected this way is a post-baseline cohort rather than one version.
+     Entries whose recorded pipeline CONTAINS a named commit.
+     
+     This is an ancestry floor, not a generation. Every descendant tip
+     qualifies, and descendants may differ from each other arbitrarily, so a
+     pool selected this way is a post-baseline cohort rather than one version.
      */
     kind: 'required-commit';
 
     /**
-     * Commit an entry's pipeline must contain.
+     Commit an entry's pipeline must contain.
      */
     commit: string;
   }>
   | Readonly<{
     /**
-     * Entries recording exactly one built pipeline, the only selection that
-     * licenses describing a rate as belonging to that pipeline.
+     Entries recording exactly one built pipeline, the only selection that
+     licenses describing a rate as belonging to that pipeline.
      */
     kind: 'single-generation';
 
     /**
-     * Digest of the built output every pooled entry ran.
+     Digest of the built output every pooled entry ran.
      */
     digest: string;
   }>
   | Readonly<{
     /**
-     * Every generation present, pooled deliberately. Legitimate for a census,
-     * never for a rate.
+     Every generation present, pooled deliberately. Legitimate for a census,
+     never for a rate.
      */
     kind: 'all-generations';
   }>;
 
 /**
- * Raised when loaded bytes disagree with what the pool said about them.
+ Raised when loaded bytes disagree with what the pool said about them.
  */
 export class ArtifactProvenanceError extends Error {
   /**
-   * Names the artifact, the disagreement, and why it is fatal rather than
-   * skippable.
-   *
-   * @param name - artifact file name as read from disk
-   *
-   * @param field - what disagreed
-   *
-   * @param expected - value the pool recorded
-   *
-   * @param observed - value the loaded bytes carry
-   *
-   * @example
-   * ```ts
-   * throw new ArtifactProvenanceError({ name, field: 'tip', expected, observed, },);
-   * ```
+   Names the artifact, the disagreement, and why it is fatal rather than
+   skippable.
+   
+   @param name - artifact file name as read from disk
+   
+   @param field - what disagreed
+   
+   @param expected - value the pool recorded
+   
+   @param observed - value the loaded bytes carry
+   
+   @example
+   ```ts
+   throw new ArtifactProvenanceError({ name, field: 'tip', expected, observed, },);
+   ```
    */
   constructor(
     {
@@ -209,35 +209,35 @@ export class ArtifactProvenanceError extends Error {
 }
 
 /**
- * Refuses a loaded artifact that is not the one the pool admitted.
- *
- * Called by READERS rather than by the census, deliberately. The census now
- * runs inside `assertResumableGeneration` at pass startup, and a throw there
- * would abort an accumulation over a telemetry invariant; a throw here costs
- * only the report.
- *
- * @param name - artifact file name, whose stem is the id the pool keyed on
- *
- * @param observedId - entry id the loaded bytes record
- *
- * @param observedTip - pipeline commit the loaded bytes record
- *
- * @param expectedTip - pipeline commit the pool recorded for this entry, absent
- * when the pool carried no tip for it
- *
- * @param observedDigest - built pipeline the loaded bytes record, empty when
- * they record none
- *
- * @param expectedDigest - built pipeline the pool recorded for this entry,
- * absent when the pool carried no digest for it
- *
- * @throws ArtifactProvenanceError when the file name, the recorded id, the
- * recorded tip, or the recorded pipeline disagree
- *
- * @example
- * ```ts
- * assertArtifactProvenance({ name, observedId, observedTip, expectedTip, },);
- * ```
+ Refuses a loaded artifact that is not the one the pool admitted.
+ 
+ Called by READERS rather than by the census, deliberately. The census now
+ runs inside `assertResumableGeneration` at pass startup, and a throw there
+ would abort an accumulation over a telemetry invariant; a throw here costs
+ only the report.
+ 
+ @param name - artifact file name, whose stem is the id the pool keyed on
+ 
+ @param observedId - entry id the loaded bytes record
+ 
+ @param observedTip - pipeline commit the loaded bytes record
+ 
+ @param expectedTip - pipeline commit the pool recorded for this entry, absent
+ when the pool carried no tip for it
+ 
+ @param observedDigest - built pipeline the loaded bytes record, empty when
+ they record none
+ 
+ @param expectedDigest - built pipeline the pool recorded for this entry,
+ absent when the pool carried no digest for it
+ 
+ @throws ArtifactProvenanceError when the file name, the recorded id, the
+ recorded tip, or the recorded pipeline disagree
+ 
+ @example
+ ```ts
+ assertArtifactProvenance({ name, observedId, observedTip, expectedTip, },);
+ ```
  */
 export function assertArtifactProvenance(
   {
@@ -257,7 +257,7 @@ export function assertArtifactProvenance(
   },
 ): void {
   /**
-   * Entry id the pool keyed on, which is the artifact's own file name.
+   Entry id the pool keyed on, which is the artifact's own file name.
    */
   const keyedId = name.endsWith('.json',)
     ? name.slice(

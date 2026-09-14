@@ -37,55 +37,55 @@ import {
 // misaligned with their own text, and is what the whole comparison rests on.
 
 /**
- * One slice with real work attached, ready to hand to editors at any width.
+ One slice with real work attached, ready to hand to editors at any width.
  */
 export type WidthProbeInput = {
   /**
-   * Entry the slice came from.
+   Entry the slice came from.
    */
   readonly entryId: string;
 
   /**
-   * Position within that entry.
+   Position within that entry.
    */
   readonly sliceIndex: number;
 
   /**
-   * Original passage.
+   Original passage.
    */
   readonly sourceText: string;
 
   /**
-   * Translation the editors repair.
+   Translation the editors repair.
    */
   readonly targetText: string;
 
   /**
-   * Accepted issues, deduplicated exactly as `repairChunk` deduplicates them.
+   Accepted issues, deduplicated exactly as `repairChunk` deduplicates them.
    */
   readonly issues: readonly AdjudicatedIssue[];
 
   /**
-   * Envelopes cut from those issues.
+   Envelopes cut from those issues.
    */
   readonly envelopes: readonly EditableEnvelope[];
 
   /**
-   * Everything the critic and panel rounds recorded.
+   Everything the critic and panel rounds recorded.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Why one slice contributed no input, named rather than returned as an empty
- * list, so a draw that produced nothing reports which wall it hit.
+ Why one slice contributed no input, named rather than returned as an empty
+ list, so a draw that produced nothing reports which wall it hit.
  */
 export type WidthInputRefusal = 'no-claims' | 'no-accepted-issues' | 'no-envelopes';
 
 /**
- * A slice with work, or the reason it has none.
- *
- * @internal
+ A slice with work, or the reason it has none.
+ 
+ @internal
  */
 export type WidthInputOutcome =
   | {
@@ -100,29 +100,29 @@ export type WidthInputOutcome =
   };
 
 /**
- * Runs the critics and the panel over one slice, as production does.
- *
- * ROSTERS ARE PRODUCTION'S, not the probe's arms. Whatever the editors are
- * later asked at, the work put in front of them has to be the work the corpus
- * would really produce; drawing issues from a narrower or wider critic roster
- * would change the input alongside the variable under test.
- *
- * @param client - injected model client
- *
- * @param slice - drawn slice to find work in
- *
- * @param signal - cancellation for every call this makes
- *
- * @param l - logger
- *
- * @returns Slice with its accepted issues, or why it has none
- *
- * @example
- * ```ts
- * const outcome = await gatherWidthInput({ client, slice, signal, l, },);
- * ```
- *
- * @internal
+ Runs the critics and the panel over one slice, as production does.
+ 
+ ROSTERS ARE PRODUCTION'S, not the probe's arms. Whatever the editors are
+ later asked at, the work put in front of them has to be the work the corpus
+ would really produce; drawing issues from a narrower or wider critic roster
+ would change the input alongside the variable under test.
+ 
+ @param client - injected model client
+ 
+ @param slice - drawn slice to find work in
+ 
+ @param signal - cancellation for every call this makes
+ 
+ @param l - logger
+ 
+ @returns Slice with its accepted issues, or why it has none
+ 
+ @example
+ ```ts
+ const outcome = await gatherWidthInput({ client, slice, signal, l, },);
+ ```
+ 
+ @internal
  */
 export async function gatherWidthInput(
   {
@@ -138,11 +138,11 @@ export async function gatherWidthInput(
   }>,
 ): Promise<WidthInputOutcome> {
   /**
-   * Both sides parsed, which the critics need for offsets and containers.
-   *
-   * The slice stands as its own document here. A bench has no surrounding page
-   * to place it in, and the critic phase reads these for structure rather than
-   * for position within a larger file.
+   Both sides parsed, which the critics need for offsets and containers.
+   
+   The slice stands as its own document here. A bench has no surrounding page
+   to place it in, and the critic phase reads these for structure rather than
+   for position within a larger file.
    */
   const documents = {
     source: parseDocument({ text: slice.sourceText, },),
@@ -150,7 +150,7 @@ export async function gatherWidthInput(
   };
 
   /**
-   * Critic claims plus the non-translation screen.
+   Critic claims plus the non-translation screen.
    */
   const critic = await runChunkCriticPhase({
     client,
@@ -165,7 +165,7 @@ export async function gatherWidthInput(
   },);
 
   /**
-   * Claims the critics filed and the screen let through.
+   Claims the critics filed and the screen let through.
    */
   const { claims, } = critic;
 
@@ -178,12 +178,12 @@ export async function gatherWidthInput(
     };
 
   /**
-   * Merge-proposal clusters over the validated claims.
+   Merge-proposal clusters over the validated claims.
    */
   const { clusters, } = aggregateClaims({ claims, },);
 
   /**
-   * Panel decision over those clusters.
+   Panel decision over those clusters.
    */
   const panel = await runPanelStage({
     client,
@@ -197,13 +197,13 @@ export async function gatherWidthInput(
   },);
 
   /**
-   * Same-place accepted duplicates merged, before envelopes are cut, exactly
-   * where `repairChunk` does it.
+   Same-place accepted duplicates merged, before envelopes are cut, exactly
+   where `repairChunk` does it.
    */
   const deduped = dedupeAcceptedIssues({ issues: panel.issues, },);
 
   /**
-   * Accepted issues, which are the only ones an envelope can be cut from.
+   Accepted issues, which are the only ones an envelope can be cut from.
    */
   const accepted = deduped
     .issues
@@ -220,7 +220,7 @@ export async function gatherWidthInput(
     };
 
   /**
-   * Envelopes cut from those issues.
+   Envelopes cut from those issues.
    */
   const { envelopes, } = deriveEditableEnvelopes({
     issues: deduped.issues,

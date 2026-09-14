@@ -67,50 +67,50 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // `TRANSLATION_REPAIR_RUNS_DIR` at a throwaway directory.
 
 /**
- * Slices drawn when the caller names no count.
+ Slices drawn when the caller names no count.
  */
 const DEFAULT_SLICES = 10;
 
 /**
- * What one slice produced, with everyone who wrote on it.
- *
- * THE AUTHORS ARE CARRIED APART FROM THE ROUND, because a standing is summed
- * from ballots and a slate can hold a candidate no ballot ever named. Without
- * this list a model its provider refused and a model whose wording every peer
- * proposed word for word are both simply absent from the table, and the two
- * call for opposite readings.
- *
- * @example
- * ```ts
- * const { round, authors, } = await runOne({ slice, roster, },);
- * ```
+ What one slice produced, with everyone who wrote on it.
+ 
+ THE AUTHORS ARE CARRIED APART FROM THE ROUND, because a standing is summed
+ from ballots and a slate can hold a candidate no ballot ever named. Without
+ this list a model its provider refused and a model whose wording every peer
+ proposed word for word are both simply absent from the table, and the two
+ call for opposite readings.
+ 
+ @example
+ ```ts
+ const { round, authors, } = await runOne({ slice, roster, },);
+ ```
  */
 type SliceRound = {
   /**
-   * Slate and ballots, in the shape a standing is summed from.
+   Slate and ballots, in the shape a standing is summed from.
    */
   readonly round: SelectionRound;
 
   /**
-   * Every model holding a stake in any candidate on that slate, including one
-   * whose text was collapsed into an identical peer's.
+   Every model holding a stake in any candidate on that slate, including one
+   whose text was collapsed into an identical peer's.
    */
   readonly authors: readonly RosterModelId[];
 };
 
 /**
- * Runs one slice with every model writing and every model judging.
- *
- * @param slice - passage to translate
- *
- * @param roster - every model that writes and judges it
- *
- * @returns Slate, ballots and authors of that round
- *
- * @example
- * ```ts
- * const round = await runOne({ slice, roster, },);
- * ```
+ Runs one slice with every model writing and every model judging.
+ 
+ @param slice - passage to translate
+ 
+ @param roster - every model that writes and judges it
+ 
+ @returns Slate, ballots and authors of that round
+ 
+ @example
+ ```ts
+ const round = await runOne({ slice, roster, },);
+ ```
  */
 async function runOne(
   {
@@ -122,12 +122,12 @@ async function runOne(
   },
 ): Promise<SliceRound> {
   /**
-   * Logger tagged for this slice.
+   Logger tagged for this slice.
    */
   const l = tagged({ tag: `calibrate-${slice.entryId}-${String(slice.index,)}`, },);
 
   /**
-   * What the stage decided, with every seat filled.
+   What the stage decided, with every seat filled.
    */
   const result = await runTranslateStage({
     client: createRunClient(),
@@ -145,7 +145,7 @@ async function runOne(
   },);
 
   /**
-   * Provenance of every candidate the judges were shown, in slate order.
+   Provenance of every candidate the judges were shown, in slate order.
    */
   const producers = result
     .slate
@@ -165,18 +165,18 @@ async function runOne(
 }
 
 /**
- * Runs the calibration and prints the standing.
- *
- * Returns nothing: the report on stdout IS the output.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Runs the calibration and prints the standing.
+ 
+ Returns nothing: the report on stdout IS the output.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Slices asked for on the command line, or the default.
+   Slices asked for on the command line, or the default.
    */
   const wanted = readAskedCount({
     argv: process.argv,
@@ -185,9 +185,9 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * Every model writing and judging: the seated roster and any seatable
-   * candidate named after `--candidates`, measured beside it for this run only,
-   * or the candidates alone under `--candidates-alone`.
+   Every model writing and judging: the seated roster and any seatable
+   candidate named after `--candidates`, measured beside it for this run only,
+   or the candidates alone under `--candidates-alone`.
    */
   const roster = probeRosterWith({
     candidates: readCandidateIds({ argv: process.argv, },),
@@ -195,12 +195,12 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * Slices every model writes.
+   Slices every model writes.
    */
   const sample = await sampleBenchSlices({ count: wanted, },);
 
   /**
-   * Pipeline commit this calibration was produced by.
+   Pipeline commit this calibration was produced by.
    */
   const headSha = await readHeadSha();
 
@@ -210,11 +210,11 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Rounds accumulated as they finish, so a killed run still reports.
-   *
-   * SEQUENTIAL rather than fanned out: each round already asks twenty models,
-   * and running slices concurrently on top would multiply that into the
-   * providers at once for no gain in what is being measured.
+   Rounds accumulated as they finish, so a killed run still reports.
+   
+   SEQUENTIAL rather than fanned out: each round already asks twenty models,
+   and running slices concurrently on top would multiply that into the
+   providers at once for no gain in what is being measured.
    */
   const rounds: SliceRound[] = [];
 
@@ -241,7 +241,7 @@ async function main(): Promise<void> {
   }
 
   /**
-   * What the surviving rounds came to.
+   What the surviving rounds came to.
    */
   const standings = producerStandings({
     rounds: rounds.map(function toRound(sliceRound,): SelectionRound {
@@ -255,11 +255,11 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Which of the seated models that table actually describes.
-   *
-   * READ AFTER THE TABLE IS PRINTED, so a run whose evidence disagrees with its
-   * own roster still leaves every standing it paid for on stdout before the
-   * refusal.
+   Which of the seated models that table actually describes.
+   
+   READ AFTER THE TABLE IS PRINTED, so a run whose evidence disagrees with its
+   own roster still leaves every standing it paid for on stdout before the
+   refusal.
    */
   const coverage = readStandingCoverage({
     roster,

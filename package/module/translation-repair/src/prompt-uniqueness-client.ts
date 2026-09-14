@@ -20,23 +20,23 @@ import {
 //region Model-prompt uniqueness boundary
 
 /**
- * Logger root for privacy-safe payload reuse telemetry.
+ Logger root for privacy-safe payload reuse telemetry.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Serializes JSON-like prompt value with stable object-key order.
- *
- * Arrays preserve semantic order while object construction order does not affect identity.
- *
- * @param value - message value composed from protocol primitives
- *
- * @returns Stable structural serialization
- *
- * @example
- * ```ts
- * const serialized = canonicalPromptValue({ role: 'user', content: 'Hello' });
- * ```
+ Serializes JSON-like prompt value with stable object-key order.
+ 
+ Arrays preserve semantic order while object construction order does not affect identity.
+ 
+ @param value - message value composed from protocol primitives
+ 
+ @returns Stable structural serialization
+ 
+ @example
+ ```ts
+ const serialized = canonicalPromptValue({ role: 'user', content: 'Hello' });
+ ```
  */
 function canonicalPromptValue(value: unknown,): string {
   if (value === null)
@@ -49,7 +49,7 @@ function canonicalPromptValue(value: unknown,): string {
     return JSON.stringify(value,);
   if (Array.isArray(value,)) {
     /**
-     * Canonically serialized array items in semantic order.
+     Canonically serialized array items in semantic order.
      */
     const items = value.map(function serializeItem(item,): string {
       return canonicalPromptValue(item,);
@@ -73,27 +73,27 @@ function canonicalPromptValue(value: unknown,): string {
 }
 
 /**
- * Canonical model and ordered-message identity shared by text and JSON calls.
- *
- * Request metadata is deliberately excluded.
- * Changing response schema,
- * timeout,
- * or output cap does not turn same substantive conversation into independent evidence.
- *
- * @param request - model request whose exact message bytes form prompt
- *
- * @returns Privacy-safe digest used only for duplicate accounting
- *
- * @example
- * ```ts
- * const digest = modelPromptDigest({ request, });
- * ```
+ Canonical model and ordered-message identity shared by text and JSON calls.
+ 
+ Request metadata is deliberately excluded.
+ Changing response schema,
+ timeout,
+ or output cap does not turn same substantive conversation into independent evidence.
+ 
+ @param request - model request whose exact message bytes form prompt
+ 
+ @returns Privacy-safe digest used only for duplicate accounting
+ 
+ @example
+ ```ts
+ const digest = modelPromptDigest({ request, });
+ ```
  */
 export function modelPromptDigest(
   { request, }: ForeignBorrowed<{ readonly request: ChatTextRequest; }>,
 ): string {
   /**
-   * Ordered messages reduced to destination-relevant role and content.
+   Ordered messages reduced to destination-relevant role and content.
    */
   const messages = request.messages
     .map(function canonicalMessage(message,) {
@@ -111,25 +111,25 @@ export function modelPromptDigest(
 }
 
 /**
- * Prevents one model and one completed prompt from being sampled twice.
- *
- * Concurrent and completed duplicates reuse first payload before second provider call.
- * Provider-level delivery retries remain inside wrapped call;
- * when wrapped call throws without outcome,
- * identity is released so operational recovery may retry it.
- * Any returned outcome claims identity permanently for client lifetime,
- * including schema mismatch or refusal.
- *
- * @param inner - routed provider client performing first unique call
- *
- * @param store - optional durable raw-payload checkpoint across invocations
- *
- * @returns Client enforcing model-prompt uniqueness by reuse
- *
- * @example
- * ```ts
- * const client = promptUniqueClient({ inner, });
- * ```
+ Prevents one model and one completed prompt from being sampled twice.
+ 
+ Concurrent and completed duplicates reuse first payload before second provider call.
+ Provider-level delivery retries remain inside wrapped call;
+ when wrapped call throws without outcome,
+ identity is released so operational recovery may retry it.
+ Any returned outcome claims identity permanently for client lifetime,
+ including schema mismatch or refusal.
+ 
+ @param inner - routed provider client performing first unique call
+ 
+ @param store - optional durable raw-payload checkpoint across invocations
+ 
+ @returns Client enforcing model-prompt uniqueness by reuse
+ 
+ @example
+ ```ts
+ const client = promptUniqueClient({ inner, });
+ ```
  */
 export function promptUniqueClient(
   {
@@ -141,7 +141,7 @@ export function promptUniqueClient(
   }>,
 ): SyntheticClient {
   /**
-   * Prompt identities mapped to first in-flight or completed provider payload.
+   Prompt identities mapped to first in-flight or completed provider payload.
    */
   const claimed = new Map<string, Promise<ChatTextReply>>();
 
@@ -150,28 +150,28 @@ export function promptUniqueClient(
       request: ChatTextRequest,
     ): Promise<ChatTextReply> {
       /**
-       * Canonical model and prompt identity.
+       Canonical model and prompt identity.
        */
       const promptDigest = modelPromptDigest({ request, },);
       /**
-       * Earlier in-flight or completed payload for same identity.
+       Earlier in-flight or completed payload for same identity.
        */
       const existing = claimed.get(promptDigest,);
       if (existing !== undefined) {
         /**
-         * Reused payload after owner call completed successfully.
+         Reused payload after owner call completed successfully.
          */
         const reply = await existing;
         l.info(`PROMPT-REUSE source=memory model=${request.modelId} digest=${promptDigest}`,);
         return reply;
       }
       /**
-       * Durable payload replay or first provider exchange,
-       * claimed synchronously before any await.
+       Durable payload replay or first provider exchange,
+       claimed synchronously before any await.
        */
       const pending = (async function buyOrResumeText(): Promise<ChatTextReply> {
         /**
-         * Durable payload or explicit absence when store is configured.
+         Durable payload or explicit absence when store is configured.
          */
         const stored = await store?.read({ promptDigest, },)
           ?? PROMPT_PAYLOAD_MISSING;
@@ -180,7 +180,7 @@ export function promptUniqueClient(
           return stored;
         }
         /**
-         * First provider payload for this prompt identity.
+         First provider payload for this prompt identity.
          */
         const reply = await inner.chatText(request,);
         await store?.write({
@@ -198,7 +198,7 @@ export function promptUniqueClient(
       }
       catch (error) {
         /**
-         * Whether provider completed payload or durable store failed after claim.
+         Whether provider completed payload or durable store failed after claim.
          */
         const retainsClaim = (error instanceof MalformedCompletionError)
           || (error instanceof PromptPayloadStoreError);
@@ -211,16 +211,16 @@ export function promptUniqueClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> {
       /**
-       * Canonical model and prompt identity.
+       Canonical model and prompt identity.
        */
       const promptDigest = modelPromptDigest({ request, },);
       /**
-       * Earlier in-flight or completed payload for same identity.
+       Earlier in-flight or completed payload for same identity.
        */
       const existing = claimed.get(promptDigest,);
       if (existing !== undefined) {
         /**
-         * Reused payload after owner call completed successfully.
+         Reused payload after owner call completed successfully.
          */
         const reply = await existing;
         l.info(`PROMPT-REUSE source=memory model=${request.modelId} digest=${promptDigest}`,);
@@ -231,12 +231,12 @@ export function promptUniqueClient(
         },);
       }
       /**
-       * Durable payload replay or first provider exchange,
-       * claimed synchronously before any await.
+       Durable payload replay or first provider exchange,
+       claimed synchronously before any await.
        */
       const pending = (async function buyOrResumeJson(): Promise<ChatTextReply> {
         /**
-         * Durable payload or explicit absence when store is configured.
+         Durable payload or explicit absence when store is configured.
          */
         const stored = await store?.read({ promptDigest, },)
           ?? PROMPT_PAYLOAD_MISSING;
@@ -245,7 +245,7 @@ export function promptUniqueClient(
           return stored;
         }
         /**
-         * First provider payload for this prompt identity.
+         First provider payload for this prompt identity.
          */
         const reply = await inner.chatText(request,);
         await store?.write({
@@ -267,7 +267,7 @@ export function promptUniqueClient(
       }
       catch (error) {
         /**
-         * Whether provider completed payload or durable store failed after claim.
+         Whether provider completed payload or durable store failed after claim.
          */
         const retainsClaim = (error instanceof MalformedCompletionError)
           || (error instanceof PromptPayloadStoreError);

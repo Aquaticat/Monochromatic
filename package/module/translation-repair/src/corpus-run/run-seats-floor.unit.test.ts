@@ -1,13 +1,13 @@
 /**
- * Tests for the writing-bench floor.
- *
- * THE FIFTEENTH CLASS, the owner's decision of 2026-09-08: the eighth
- * hakureico pass on Bedrock alone settled a page one translator wrote and
- * three judges chose, with no editor or refiner reachable, as `SETTLED`. A
- * writing bench below the pair a slate needs, with no provider naming its
- * return, stops the entry for a pass that has the bench.
- *
- * @module
+ Tests for the writing-bench floor.
+ 
+ THE FIFTEENTH CLASS, the owner's decision of 2026-09-08: the eighth
+ hakureico pass on Bedrock alone settled a page one translator wrote and
+ three judges chose, with no editor or refiner reachable, as `SETTLED`. A
+ writing bench below the pair a slate needs, with no provider naming its
+ return, stops the entry for a pass that has the bench.
+ 
+ @module
  */
 
 import {
@@ -33,7 +33,7 @@ import {
 //region Writing-bench floor tests
 
 /**
- * Every provider wet.
+ Every provider wet.
  */
 const ALL_WET: BudgetView = {
   synthetic: false,
@@ -43,7 +43,7 @@ const ALL_WET: BudgetView = {
 };
 
 /**
- * The eighth hakureico pass: Bedrock alone wet.
+ The eighth hakureico pass: Bedrock alone wet.
  */
 const BEDROCK_ALONE: BudgetView = {
   synthetic: true,
@@ -86,7 +86,7 @@ await describe({
       fn: async () => {
         const benches = benchesOf({ seats: judgeSeatsFor({ dry: BEDROCK_ALONE, },), },);
         /**
-         * Translators Bedrock serves under that view: the pair the floor asks for.
+         Translators Bedrock serves under that view: the pair the floor asks for.
          */
         const translatorsReachable = reachableSeats({
           seats: RUN_TRANSLATORS,
@@ -114,7 +114,7 @@ await describe({
           dry: BEDROCK_ALONE,
         },),).toEqual([],);
         /**
-         * The eighth pass's translators bench, the roster of that day: one Bedrock seat.
+         The eighth pass's translators bench, the roster of that day: one Bedrock seat.
          */
         const thatDay = RUN_TRANSLATORS.filter(function seatedBefore(modelId,): boolean {
           return modelId !== 'google.gemma-4-e2b';
@@ -143,7 +143,7 @@ await describe({
         ],);
         const benches = benchesOf({ seats: judgeSeatsFor({ dry: BEDROCK_ALONE, },), },);
         /**
-         * The translators bench with two Bedrock-served seats.
+         The translators bench with two Bedrock-served seats.
          */
         const pair = [
           'gemma-4-26b-a4b-it',

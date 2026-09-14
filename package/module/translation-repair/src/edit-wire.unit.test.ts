@@ -1,8 +1,8 @@
 /**
- * Tests for the editor prompt sheet and its wire resolution.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the editor prompt sheet and its wire resolution.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -21,12 +21,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Invented translation the fixtures cut regions from.
+ Invented translation the fixtures cut regions from.
  */
 const TARGET_TEXT = 'The cat naps in the sun. It chases red butterflies. The bowl stays full.';
 
 /**
- * Envelope over chosen offsets of the fixture translation.
+ Envelope over chosen offsets of the fixture translation.
  */
 function envelopeAt(
   {
@@ -40,7 +40,7 @@ function envelopeAt(
   },
 ): EditableEnvelope {
   /**
-   * Exact text occupying the region.
+   Exact text occupying the region.
    */
   const baseText = TARGET_TEXT.slice(startOffset, endOffset,);
 
@@ -63,7 +63,7 @@ function envelopeAt(
 }
 
 /**
- * Accepted single-claim issue for prompt rendering.
+ Accepted single-claim issue for prompt rendering.
  */
 function acceptedIssue(
   { suffix, }: { readonly suffix: string; },
@@ -88,7 +88,7 @@ function acceptedIssue(
 }
 
 /**
- * Fixture regions: a replacement then an insertion point.
+ Fixture regions: a replacement then an insertion point.
  */
 const ENVELOPES: readonly EditableEnvelope[] = [
   envelopeAt({

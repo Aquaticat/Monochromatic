@@ -67,48 +67,48 @@ import { unclaimedOutsideAlignment, } from './preparation-unclaimed.ts';
 // exclusion is the boundary: anything needing one of those is lane work.
 
 /**
- * Parses, aligns and subdivides a document pair.
- *
- * @param sourceText - whole original document
- *
- * @param targetText - whole translation as it stands
- *
- * @param sliceCharBudget - target characters a slice may carry; defaults to
- * {@link SLICE_CHAR_BUDGET}
- *
- * @param includeFrontMatter - whether visible metadata becomes explicit slice;
- * false only when rebuilding pre-generation-5 artifacts
- *
- * @param frontMatterAuthority - whose front matter the page carries: under
- * `archive` no metadata slice is made and the archive's bytes ship as they
- * stand (the owner's rule of 2026-09-08); under `rendered` slice zero is the
- * lanes' to write
- *
- * @param blockPairings - correspondences a roster agreed on WITHIN each aligned
- * section, keyed by section index
- *
- * @param sectionPairing - correspondences a roster agreed on BETWEEN the two
- * sides' sections, which decides what the aligned sections are in the first
- * place. Kept apart from `blockPairings` because the two answer different
- * questions and are bought in that order: which sections correspond, and then
- * which blocks within one do.
- *
- * @param contextLines - evidence lines a caller bought outside preparation
- * (web lookups of the works the original names), appended to the identity
- * context after the notes both documents carry
- *
- * @param sealArchiveOriginal - whether a span the archive's translators' note
- * calls the English original is sealed out of every slice so it ships as it
- * stands (the owner's rule of 2026-09-08, `archive-original-note.ts`); false
- * when rebuilding an artifact written before generation twelve, whose slicing
- * sealed nothing
- *
- * @returns Slices, governance, declared names and alignment findings
- *
- * @example
- * ```ts
- * const { slices, lineStructuredSliceIndices, } = prepareDocumentPair({ sourceText, targetText, },);
- * ```
+ Parses, aligns and subdivides a document pair.
+ 
+ @param sourceText - whole original document
+ 
+ @param targetText - whole translation as it stands
+ 
+ @param sliceCharBudget - target characters a slice may carry; defaults to
+ {@link SLICE_CHAR_BUDGET}
+ 
+ @param includeFrontMatter - whether visible metadata becomes explicit slice;
+ false only when rebuilding pre-generation-5 artifacts
+ 
+ @param frontMatterAuthority - whose front matter the page carries: under
+ `archive` no metadata slice is made and the archive's bytes ship as they
+ stand (the owner's rule of 2026-09-08); under `rendered` slice zero is the
+ lanes' to write
+ 
+ @param blockPairings - correspondences a roster agreed on WITHIN each aligned
+ section, keyed by section index
+ 
+ @param sectionPairing - correspondences a roster agreed on BETWEEN the two
+ sides' sections, which decides what the aligned sections are in the first
+ place. Kept apart from `blockPairings` because the two answer different
+ questions and are bought in that order: which sections correspond, and then
+ which blocks within one do.
+ 
+ @param contextLines - evidence lines a caller bought outside preparation
+ (web lookups of the works the original names), appended to the identity
+ context after the notes both documents carry
+ 
+ @param sealArchiveOriginal - whether a span the archive's translators' note
+ calls the English original is sealed out of every slice so it ships as it
+ stands (the owner's rule of 2026-09-08, `archive-original-note.ts`); false
+ when rebuilding an artifact written before generation twelve, whose slicing
+ sealed nothing
+ 
+ @returns Slices, governance, declared names and alignment findings
+ 
+ @example
+ ```ts
+ const { slices, lineStructuredSliceIndices, } = prepareDocumentPair({ sourceText, targetText, },);
+ ```
  */
 export function prepareDocumentPair(
   {
@@ -134,19 +134,19 @@ export function prepareDocumentPair(
   },
 ): PreparedDocumentPair {
   /**
-   * Whole original document, parsed once and reused for both alignment and the
-   * identity block chunk text cannot supply.
+   Whole original document, parsed once and reused for both alignment and the
+   identity block chunk text cannot supply.
    */
   const sourceDocument = parseDocument({ text: sourceText, },);
 
   /**
-   * Whole translation document, parsed once for the same two uses.
+   Whole translation document, parsed once for the same two uses.
    */
   const targetDocument = parseDocument({ text: targetText, },);
 
   /**
-   * Spans of the archive that ship as they stand, EMPTY when no note seals
-   * one or the caller asked for no seal (`preparation-seal.ts`).
+   Spans of the archive that ship as they stand, EMPTY when no note seals
+   one or the caller asked for no seal (`preparation-seal.ts`).
    */
   const archiveOriginalSpans = archiveOriginalSpansOf({
     document: targetDocument,
@@ -154,7 +154,7 @@ export function prepareDocumentPair(
   },);
 
   /**
-   * Ids of every translation block a seal covers, across the whole archive.
+   Ids of every translation block a seal covers, across the whole archive.
    */
   const sealedTargetIds = sealedNodeIds({
     nodes: targetDocument.nodes,
@@ -162,10 +162,10 @@ export function prepareDocumentPair(
   },);
 
   /**
-   * Declared names and handles from both sides' front matter. Front matter is
-   * document-level while stages see slice text, so this is the only path by
-   * which a declared correspondence reaches them. Empty when neither side
-   * declares anything.
+   Declared names and handles from both sides' front matter. Front matter is
+   document-level while stages see slice text, so this is the only path by
+   which a declared correspondence reaches them. Empty when neither side
+   declares anything.
    */
   const identityLines = collectIdentityLines({
     sourceData: sourceDocument.frontMatter
@@ -175,13 +175,13 @@ export function prepareDocumentPair(
   },);
 
   /**
-   * Contributor public handles existing English attribution establishes.
+   Contributor public handles existing English attribution establishes.
    */
   const contributorNames = archiveContributorNameForms({ text: targetText, });
 
   /**
-   * Prompt lines adding target-authoritative contributor spellings beside
-   * front matter correspondence.
+   Prompt lines adding target-authoritative contributor spellings beside
+   front matter correspondence.
    */
   const identityContextLines = [
     ...identityLines,
@@ -207,8 +207,8 @@ export function prepareDocumentPair(
   ];
 
   /**
-   * Target-authoritative identity forms guards preserve wherever archive body
-   * already carries them.
+   Target-authoritative identity forms guards preserve wherever archive body
+   already carries them.
    */
   const declaredNames = [
     ...declaredNameForms({
@@ -234,7 +234,7 @@ export function prepareDocumentPair(
     },);
 
   /**
-   * Aligned chunk pairs covering both documents totally.
+   Aligned chunk pairs covering both documents totally.
    */
   const alignment = alignDocumentSections({
     source: sourceDocument,
@@ -243,7 +243,7 @@ export function prepareDocumentPair(
   },);
 
   /**
-   * Alignment findings in scorecard-stable wording.
+   Alignment findings in scorecard-stable wording.
    */
   const sectionFindings = alignment.findings
     .map(function toText(finding,): string {
@@ -253,23 +253,23 @@ export function prepareDocumentPair(
     },);
 
   /**
-   * One finding per chunk whose pairing accounted for translation blocks
-   * nowhere, so the decision is legible from the artifact alone.
-   *
-   * `Zha_Ke` settled with this list EMPTY while two of its six English blocks,
-   * 2943 characters of dense text between them, had been declined.
-   * Reconstructing that took the pairing cache and the parser. Recording it
-   * here is what `#135` asks for, at the one place that already knows both the
-   * pairing and the blocks.
-   *
-   * The finding itself counts OFFSET SPANS, which run wider than dense text
-   * because they carry the markdown a block is written in.
+   One finding per chunk whose pairing accounted for translation blocks
+   nowhere, so the decision is legible from the artifact alone.
+   
+   `Zha_Ke` settled with this list EMPTY while two of its six English blocks,
+   2943 characters of dense text between them, had been declined.
+   Reconstructing that took the pairing cache and the parser. Recording it
+   here is what `#135` asks for, at the one place that already knows both the
+   pairing and the blocks.
+   
+   The finding itself counts OFFSET SPANS, which run wider than dense text
+   because they carry the markdown a block is written in.
    */
   const declinedFindings: string[] = [];
 
   /**
-   * Target blocks outside every aligned section, which no slice can review,
-   * less the sealed ones (`preparation-unclaimed.ts`).
+   Target blocks outside every aligned section, which no slice can review,
+   less the sealed ones (`preparation-unclaimed.ts`).
    */
   const unclaimedTargetBlocks: UnclaimedTargetBlock[] = [
     ...unclaimedOutsideAlignment({
@@ -280,11 +280,11 @@ export function prepareDocumentPair(
   ];
 
   /**
-   * Slice pairs accumulated across front matter and aligned body sections.
+   Slice pairs accumulated across front matter and aligned body sections.
    */
   const slices: ChunkPair[] = [];
   /**
-   * Visible localized metadata excluded from Markdown nodes.
+   Visible localized metadata excluded from Markdown nodes.
    */
   const metadataSlice = (includeFrontMatter && (frontMatterAuthority === 'rendered'))
     ? frontMatterSlice({
@@ -296,15 +296,15 @@ export function prepareDocumentPair(
     slices.push(metadataSlice.slice,);
 
   /**
-   * Slices whose enclosing CHUNK's original is line-structured.
-   *
-   * Decided on the chunk and inherited by its slices, because the predicate
-   * needs at least five blocks and subdivision routinely leaves fewer. Measured
-   * on `Toka_ls`: the verse chunk trips at 21 blocks, median 22, then
-   * subdivides into seven slices of which one still trips, while four more sit
-   * at medians 20, 22, 23 and 29 and fail only for want of a fifth block.
-   * Deciding per slice therefore dropped the instruction on most of the verse
-   * it exists for.
+   Slices whose enclosing CHUNK's original is line-structured.
+   
+   Decided on the chunk and inherited by its slices, because the predicate
+   needs at least five blocks and subdivision routinely leaves fewer. Measured
+   on `Toka_ls`: the verse chunk trips at 21 blocks, median 22, then
+   subdivides into seven slices of which one still trips, while four more sit
+   at medians 20, 22, 23 and 29 and fail only for want of a fifth block.
+   Deciding per slice therefore dropped the instruction on most of the verse
+   it exists for.
    */
   const governance: ChunkGovernance[] = [];
   for (
@@ -313,24 +313,24 @@ export function prepareDocumentPair(
       .entries()
   ) {
     /**
-     * Correspondences the roster agreed for this chunk, ABSENT when it agreed
-     * none.
-     *
-     * ABSENCE HAS TO STAY ABSENCE all the way to subdivision. A section the
-     * roster could not pair is left OUT of the map, and `prepare-with-pairing`
-     * says what it means by that: it records `fell back to scoring` and logs
-     * "keeping the deterministic aligner". Reading the miss as an EMPTY pairing
-     * says something else entirely, because `blockPairingToSteps` reads zero
-     * pairs as every block unpartnered on both sides, every run then comes out
-     * one-sided, `mergeOneSidedRuns` folds them all together, and the section
-     * becomes ONE slice. Measured on `Zha_Ke`: four slices become one, 262
-     * characters of original against 4340 of translation, which is the largest
-     * slice in the document at exactly the section nobody could pair.
+     Correspondences the roster agreed for this chunk, ABSENT when it agreed
+     none.
+     
+     ABSENCE HAS TO STAY ABSENCE all the way to subdivision. A section the
+     roster could not pair is left OUT of the map, and `prepare-with-pairing`
+     says what it means by that: it records `fell back to scoring` and logs
+     "keeping the deterministic aligner". Reading the miss as an EMPTY pairing
+     says something else entirely, because `blockPairingToSteps` reads zero
+     pairs as every block unpartnered on both sides, every run then comes out
+     one-sided, `mergeOneSidedRuns` folds them all together, and the section
+     becomes ONE slice. Measured on `Zha_Ke`: four slices become one, 262
+     characters of original against 4340 of translation, which is the largest
+     slice in the document at exactly the section nobody could pair.
      */
     const blockPairing = blockPairings?.get(pairIndex,);
 
     /**
-     * Translation blocks of this chunk the archive's note seals.
+     Translation blocks of this chunk the archive's note seals.
      */
     const sealedTargets = chunkSealedTargets({
       pair,
@@ -338,7 +338,7 @@ export function prepareDocumentPair(
     },);
 
     /**
-     * Slices carved from this chunk, and the originals the seal took.
+     Slices carved from this chunk, and the originals the seal took.
      */
     const {
       slices: carved,
@@ -360,8 +360,8 @@ export function prepareDocumentPair(
       },),);
 
     /**
-     * Translation blocks this chunk's pairing accounted for nowhere, less the
-     * sealed ones (`preparation-seal.ts`).
+     Translation blocks this chunk's pairing accounted for nowhere, less the
+     sealed ones (`preparation-seal.ts`).
      */
     const declined = declinedLessSealed({
       pair,
@@ -370,7 +370,7 @@ export function prepareDocumentPair(
     },);
     if (declined.size > 0) {
       /**
-       * Declined blocks of this chunk, for the characters they hold.
+       Declined blocks of this chunk, for the characters they hold.
        */
       const blocks = pair.target
         .nodes
@@ -427,13 +427,13 @@ export function prepareDocumentPair(
     },);
 
     /**
-     * Those slices renamed by where they actually landed.
-     *
-     * Subdivision was handed a base index and added its own offset, which is
-     * the same answer this produces today. It stops being the same answer the
-     * moment a section contributes a slice the base index did not count, which
-     * is exactly what `#100`'s insertions do, so the preparation stamps the
-     * final name itself rather than trusting arithmetic it handed out.
+     Those slices renamed by where they actually landed.
+     
+     Subdivision was handed a base index and added its own offset, which is
+     the same answer this produces today. It stops being the same answer the
+     moment a section contributes a slice the base index did not count, which
+     is exactly what `#100`'s insertions do, so the preparation stamps the
+     final name itself rather than trusting arithmetic it handed out.
      */
     const stamped = carved.map(function toStamped(
       carvedSlice,

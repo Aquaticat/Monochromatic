@@ -22,31 +22,31 @@
 // artifact and page all carry bytes the deciders saw.
 
 /**
- * Code point folded to its visible counterpart, with the reason.
+ Code point folded to its visible counterpart, with the reason.
  */
 type Fold = {
   /**
-   * Character as a model writes it.
+   Character as a model writes it.
    */
   readonly from: string;
 
   /**
-   * What a reader would have typed.
+   What a reader would have typed.
    */
   readonly to: string;
 
   /**
-   * Name, for the finding.
+   Name, for the finding.
    */
   readonly name: string;
 };
 
 /**
- * Every fold, in the order applied. Order does not matter: no `to` is any
- * other entry's `from`. SPELLED AS ESCAPES on purpose: as the characters
- * themselves they are invisible in a diff, and the first version of this module's
- * test lost its literal fixtures to the tool that wrote it, which is the failure
- * the fold exists to catch.
+ Every fold, in the order applied. Order does not matter: no `to` is any
+ other entry's `from`. SPELLED AS ESCAPES on purpose: as the characters
+ themselves they are invisible in a diff, and the first version of this module's
+ test lost its literal fixtures to the tool that wrote it, which is the failure
+ the fold exists to catch.
  */
 const FOLDS: readonly Fold[] = [
   {
@@ -87,39 +87,39 @@ const FOLDS: readonly Fold[] = [
 ];
 
 /**
- * What folding a text produced.
- *
- * @example
- * ```ts
- * const { text, findings, } = foldInvisibleVariants({ text: answer, },);
- * ```
+ What folding a text produced.
+ 
+ @example
+ ```ts
+ const { text, findings, } = foldInvisibleVariants({ text: answer, },);
+ ```
  */
 export type FoldedText = {
   /**
-   * Text with every invisible variant replaced by its plain counterpart.
+   Text with every invisible variant replaced by its plain counterpart.
    */
   readonly text: string;
 
   /**
-   * One finding per code point folded, naming it and how often, empty when
-   * nothing was folded.
+   One finding per code point folded, naming it and how often, empty when
+   nothing was folded.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Counts how often `needle` occurs in `text`, as one linear pass.
- *
- * @param text - text scanned
- *
- * @param needle - single character looked for
- *
- * @returns Occurrences
- *
- * @example
- * ```ts
- * const hyphens = occurrences({ text, needle: '\u2011', },);
- * ```
+ Counts how often `needle` occurs in `text`, as one linear pass.
+ 
+ @param text - text scanned
+ 
+ @param needle - single character looked for
+ 
+ @returns Occurrences
+ 
+ @example
+ ```ts
+ const hyphens = occurrences({ text, needle: '\u2011', },);
+ ```
  */
 function occurrences(
   {
@@ -131,12 +131,12 @@ function occurrences(
   },
 ): number {
   /**
-   * Occurrences seen so far.
+   Occurrences seen so far.
    */
   let count = 0;
 
   /**
-   * Cursor, advanced past each occurrence.
+   Cursor, advanced past each occurrence.
    */
   let at = text.indexOf(needle,);
   while (at >= 0) {
@@ -150,18 +150,18 @@ function occurrences(
 }
 
 /**
- * Replaces every invisible variant in a model's text with its plain
- * counterpart, and says what it replaced.
- *
- * @param text - text as the model wrote it
- *
- * @returns Folded text and one finding per code point folded
- *
- * @example
- * ```ts
- * const folded = foldInvisibleVariants({ text: 'non\u2011binary', },);
- * // folded.text === 'non-binary', folded.findings deep-equals ['invisible-variant-folded (U+2011 x1)']
- * ```
+ Replaces every invisible variant in a model's text with its plain
+ counterpart, and says what it replaced.
+ 
+ @param text - text as the model wrote it
+ 
+ @returns Folded text and one finding per code point folded
+ 
+ @example
+ ```ts
+ const folded = foldInvisibleVariants({ text: 'non\u2011binary', },);
+ // folded.text === 'non-binary', folded.findings deep-equals ['invisible-variant-folded (U+2011 x1)']
+ ```
  */
 export function foldInvisibleVariants({ text, }: { readonly text: string; },): FoldedText {
   return FOLDS.reduce(
@@ -170,7 +170,7 @@ export function foldInvisibleVariants({ text, }: { readonly text: string; },): F
       entry: Fold,
     ): FoldedText {
       /**
-       * How often this code point occurs in the text as it stands.
+       How often this code point occurs in the text as it stands.
        */
       const count = occurrences({
         text: folded.text,

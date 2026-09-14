@@ -20,21 +20,21 @@ import {
 // dotted path of the field rather than its content.
 
 /**
- * Reads the digest naming the built output that ran.
- *
- * @param value - recorded digest
- *
- * @param path - dotted path for error message
- *
- * @returns Digest, narrowed by the same check a fresh one passes
- *
- * @throws {@link ArtifactParseError} when the value is not a string, or not
- * shaped like a digest
- *
- * @example
- * ```ts
- * const digest = requireDigest({ value: artifact.pipelineDigest, path, },);
- * ```
+ Reads the digest naming the built output that ran.
+ 
+ @param value - recorded digest
+ 
+ @param path - dotted path for error message
+ 
+ @returns Digest, narrowed by the same check a fresh one passes
+ 
+ @throws {@link ArtifactParseError} when the value is not a string, or not
+ shaped like a digest
+ 
+ @example
+ ```ts
+ const digest = requireDigest({ value: artifact.pipelineDigest, path, },);
+ ```
  */
 export function requireDigest(
   {
@@ -46,7 +46,7 @@ export function requireDigest(
   },
 ): PipelineDigest {
   /**
-   * Recorded string, before it is known to be a digest.
+   Recorded string, before it is known to be a digest.
    */
   const held = requireString({
     value,
@@ -64,20 +64,20 @@ export function requireDigest(
 }
 
 /**
- * Reads the recorded front matter authority, which can only be the archive's.
- *
- * @param value - recorded authority
- *
- * @param path - dotted path for error messages
- *
- * @returns The one authority a record carries
- *
- * @throws {@link ArtifactParseError} when the record carries anything else
- *
- * @example
- * ```ts
- * const authority = requireArchiveAuthority({ value: record.frontMatterAuthority, path, },);
- * ```
+ Reads the recorded front matter authority, which can only be the archive's.
+ 
+ @param value - recorded authority
+ 
+ @param path - dotted path for error messages
+ 
+ @returns The one authority a record carries
+ 
+ @throws {@link ArtifactParseError} when the record carries anything else
+ 
+ @example
+ ```ts
+ const authority = requireArchiveAuthority({ value: record.frontMatterAuthority, path, },);
+ ```
  */
 export function requireArchiveAuthority(
   {
@@ -97,22 +97,22 @@ export function requireArchiveAuthority(
 }
 
 /**
- * Reads the recorded archive-original spans: a non-empty list of offset pairs,
- * each with the note that sealed it.
- *
- * @param value - recorded list
- *
- * @param path - dotted path for error messages
- *
- * @returns Spans as recorded
- *
- * @throws {@link ArtifactParseError} when the list is empty, or a span lacks
- * its offsets or note, or ends before it starts
- *
- * @example
- * ```ts
- * const spans = requireArchiveOriginalSpans({ value: record.archiveOriginalSpans, path, },);
- * ```
+ Reads the recorded archive-original spans: a non-empty list of offset pairs,
+ each with the note that sealed it.
+ 
+ @param value - recorded list
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Spans as recorded
+ 
+ @throws {@link ArtifactParseError} when the list is empty, or a span lacks
+ its offsets or note, or ends before it starts
+ 
+ @example
+ ```ts
+ const spans = requireArchiveOriginalSpans({ value: record.archiveOriginalSpans, path, },);
+ ```
  */
 export function requireArchiveOriginalSpans(
   {
@@ -124,7 +124,7 @@ export function requireArchiveOriginalSpans(
   },
 ): readonly ArchiveOriginalSpan[] {
   /**
-   * Recorded entries, before each is known to be a span.
+   Recorded entries, before each is known to be a span.
    */
   const entries = requireArray({
     value,
@@ -140,25 +140,25 @@ export function requireArchiveOriginalSpans(
     at,
   ): ArchiveOriginalSpan {
     /**
-     * Dotted path of this span.
+     Dotted path of this span.
      */
     const spanPath = `${path}[${String(at,)}]`;
     /**
-     * Span as a record.
+     Span as a record.
      */
     const record = requireRecord({
       value: entry,
       path: spanPath,
     },);
     /**
-     * Where the seal starts.
+     Where the seal starts.
      */
     const startOffset = requireCount({
       value: record.startOffset,
       path: `${spanPath}.startOffset`,
     },);
     /**
-     * Where the seal ends, exclusive.
+     Where the seal ends, exclusive.
      */
     const endOffset = requireCount({
       value: record.endOffset,

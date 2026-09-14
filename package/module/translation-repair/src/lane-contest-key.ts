@@ -12,50 +12,50 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // cache reasoning in the middle of it.
 
 /**
- * Generation of the contest cache.
- *
- * MOVES WHEN THE QUESTION MOVES: the prompt, the schema, the ballot reader, the
- * quorum, or anything else that changes what a judge is asked or how its answer
- * is read. It does NOT move for a change to how a settled outcome is RECORDED,
- * since the ballots on disk still answer the question that bought them.
- *
- * VERSION 2 adds target-authoritative contributor spelling to metadata policy.
- * Version 1 ballots never answered that question and cannot settle it now.
- *
- * VERSION 3 tells judges which syntax candidates deterministic publication
- * guard rejects. Earlier ballots spent votes on candidates unable to ship.
- *
- * VERSION 4 starts straggler grace at exact-half participation even when
- * deterministic eligibility excludes one lane.
- *
- * VERSION 5 excludes candidate that drops target-authoritative contributor form.
+ Generation of the contest cache.
+ 
+ MOVES WHEN THE QUESTION MOVES: the prompt, the schema, the ballot reader, the
+ quorum, or anything else that changes what a judge is asked or how its answer
+ is read. It does NOT move for a change to how a settled outcome is RECORDED,
+ since the ballots on disk still answer the question that bought them.
+ 
+ VERSION 2 adds target-authoritative contributor spelling to metadata policy.
+ Version 1 ballots never answered that question and cannot settle it now.
+ 
+ VERSION 3 tells judges which syntax candidates deterministic publication
+ guard rejects. Earlier ballots spent votes on candidates unable to ship.
+ 
+ VERSION 4 starts straggler grace at exact-half participation even when
+ deterministic eligibility excludes one lane.
+ 
+ VERSION 5 excludes candidate that drops target-authoritative contributor form.
  */
 export const LANE_CONTEST_CACHE_VERSION = 5;
 
 /**
- * Everything about this run that changes what the judges are ASKED, folded into
- * every contest key.
- *
- * Without it a resumed slice could return ballots cast by a different roster,
- * and nothing would look wrong: the texts match, so the key matches. Identity
- * context belongs here for the same reason, since it is front-matter-derived
- * prompt content that varies per pair and measurably changes the answer.
- *
- * `perCallTimeoutMs` is deliberately ABSENT, on the same reasoning the other
- * two lanes give: it changes how long a voice has to answer, not what it is
- * asked, and including it would discard every settled contest on a deadline
- * change.
- *
- * @param modelIds - roster asked to judge
- *
- * @param identityContext - names and handles both documents declare
- *
- * @returns Stable string for the key
- *
- * @example
- * ```ts
- * const runShape = laneContestRunShape({ modelIds, identityContext, },);
- * ```
+ Everything about this run that changes what the judges are ASKED, folded into
+ every contest key.
+ 
+ Without it a resumed slice could return ballots cast by a different roster,
+ and nothing would look wrong: the texts match, so the key matches. Identity
+ context belongs here for the same reason, since it is front-matter-derived
+ prompt content that varies per pair and measurably changes the answer.
+ 
+ `perCallTimeoutMs` is deliberately ABSENT, on the same reasoning the other
+ two lanes give: it changes how long a voice has to answer, not what it is
+ asked, and including it would discard every settled contest on a deadline
+ change.
+ 
+ @param modelIds - roster asked to judge
+ 
+ @param identityContext - names and handles both documents declare
+ 
+ @returns Stable string for the key
+ 
+ @example
+ ```ts
+ const runShape = laneContestRunShape({ modelIds, identityContext, },);
+ ```
  */
 export function laneContestRunShape(
   {
@@ -73,39 +73,39 @@ export function laneContestRunShape(
 }
 
 /**
- * Cross-run key for one contested slice.
- *
- * THE SLICE INDEX IS NOT IN IT, matching both lanes. A key is what makes two
- * runs` slices the same slice, and what a contest judge is asked is the
- * original, the archive rendering and the two candidates. Where the slice
- * happens to sit changes none of it, and keeping the index would discard every
- * settled contest after any renumbering.
- *
- * THE ARCHIVE RENDERING IS IN IT even though the contest never ships it. The
- * judge is shown it as evidence about what the passage has said before, so two
- * contests over identical candidates and different archive wording are not the
- * same question.
- *
- * @param runShape - what this run asks, from {@link laneContestRunShape}
- *
- * @param sourceText - slice original, which is the standard
- *
- * @param incumbentText - archive rendering shown as evidence
- *
- * @param incumbentKind - whether the archive has wording here at all
- *
- * @param syntax - syntax role changing judge policy
- *
- * @param repairText - what the repair lane would ship
- *
- * @param translateText - what the translate lane would ship
- *
- * @returns Hash keying this slice`s ballots
- *
- * @example
- * ```ts
- * const key = laneContestSliceKey({ runShape, sourceText, incumbentText, incumbentKind, repairText, translateText, },);
- * ```
+ Cross-run key for one contested slice.
+ 
+ THE SLICE INDEX IS NOT IN IT, matching both lanes. A key is what makes two
+ runs` slices the same slice, and what a contest judge is asked is the
+ original, the archive rendering and the two candidates. Where the slice
+ happens to sit changes none of it, and keeping the index would discard every
+ settled contest after any renumbering.
+ 
+ THE ARCHIVE RENDERING IS IN IT even though the contest never ships it. The
+ judge is shown it as evidence about what the passage has said before, so two
+ contests over identical candidates and different archive wording are not the
+ same question.
+ 
+ @param runShape - what this run asks, from {@link laneContestRunShape}
+ 
+ @param sourceText - slice original, which is the standard
+ 
+ @param incumbentText - archive rendering shown as evidence
+ 
+ @param incumbentKind - whether the archive has wording here at all
+ 
+ @param syntax - syntax role changing judge policy
+ 
+ @param repairText - what the repair lane would ship
+ 
+ @param translateText - what the translate lane would ship
+ 
+ @returns Hash keying this slice`s ballots
+ 
+ @example
+ ```ts
+ const key = laneContestSliceKey({ runShape, sourceText, incumbentText, incumbentKind, repairText, translateText, },);
+ ```
  */
 export function laneContestSliceKey(
   {

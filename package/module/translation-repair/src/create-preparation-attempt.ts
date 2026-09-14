@@ -19,52 +19,52 @@ import {
 //region Exclusive preparation attempt namespace
 
 /**
- * Location returned after root-plan bytes and the identity marker have been written and synced.
- * This is not a phase review, acquisition receipt or writer-admission capability.
- *
- * @example
- * ```ts
- * const attempt = await createPreparationAttempt({ parentDir, rootPlanText, l });
- * ```
+ Location returned after root-plan bytes and the identity marker have been written and synced.
+ This is not a phase review, acquisition receipt or writer-admission capability.
+ 
+ @example
+ ```ts
+ const attempt = await createPreparationAttempt({ parentDir, rootPlanText, l });
+ ```
  */
 export type PreparationAttemptLocation = {
   /**
-   * Fresh exclusively created directory; incomplete prior attempts are never reopened here.
+   Fresh exclusively created directory; incomplete prior attempts are never reopened here.
    */
   readonly dir: string;
   /**
-   * Independent identity of this newly created namespace.
+   Independent identity of this newly created namespace.
    */
   readonly attemptId: string;
   /**
-   * Hash of exact serialized root-plan bytes, without canonicalizing or dropping fields.
+   Hash of exact serialized root-plan bytes, without canonicalizing or dropping fields.
    */
   readonly rootPlanDigest: string;
   /**
-   * Measured UTF-8 extent; later verification rejects a different file size before reading plan bytes.
+   Measured UTF-8 extent; later verification rejects a different file size before reading plan bytes.
    */
   readonly rootPlanBytes: number;
 };
 
 /**
- * Writes a fixed namespace file and preserves the failed operation in its diagnostic.
- *
- * @param storage - trusted namespace-only adapter
- *
- * @param dir - freshly owned directory
- *
- * @param file - fixed internal filename
- *
- * @param text - complete encoded content
- *
- * @param operation - diagnostic stage with no private text
- *
- * @throws PreparationAttemptError when opening, writing, syncing or closing fails
- *
- * @example
- * ```ts
- * await writeAttemptFile({ storage, dir, file: 'root-plan.json', text, operation: 'write-plan' });
- * ```
+ Writes a fixed namespace file and preserves the failed operation in its diagnostic.
+ 
+ @param storage - trusted namespace-only adapter
+ 
+ @param dir - freshly owned directory
+ 
+ @param file - fixed internal filename
+ 
+ @param text - complete encoded content
+ 
+ @param operation - diagnostic stage with no private text
+ 
+ @throws PreparationAttemptError when opening, writing, syncing or closing fails
+ 
+ @example
+ ```ts
+ await writeAttemptFile({ storage, dir, file: 'root-plan.json', text, operation: 'write-plan' });
+ ```
  */
 async function writeAttemptFile({
   storage,
@@ -96,24 +96,24 @@ async function writeAttemptFile({
 }
 
 /**
- * Generates and persists identity only after the root-plan write has completed.
- *
- * @param storage - trusted namespace-only adapter
- *
- * @param dir - owned directory retained on any failure
- *
- * @param rootPlanDigest - exact complete root-plan digest
- *
- * @param rootPlanBytes - exact encoded root-plan extent
- *
- * @returns Persisted independent attempt identity
- *
- * @throws PreparationAttemptError when identity generation or persistence fails
- *
- * @example
- * ```ts
- * const attemptId = await writeAttemptIdentity({ storage, dir, rootPlanDigest, rootPlanBytes });
- * ```
+ Generates and persists identity only after the root-plan write has completed.
+ 
+ @param storage - trusted namespace-only adapter
+ 
+ @param dir - owned directory retained on any failure
+ 
+ @param rootPlanDigest - exact complete root-plan digest
+ 
+ @param rootPlanBytes - exact encoded root-plan extent
+ 
+ @returns Persisted independent attempt identity
+ 
+ @throws PreparationAttemptError when identity generation or persistence fails
+ 
+ @example
+ ```ts
+ const attemptId = await writeAttemptIdentity({ storage, dir, rootPlanDigest, rootPlanBytes });
+ ```
  */
 async function writeAttemptIdentity({
   storage,
@@ -128,7 +128,7 @@ async function writeAttemptIdentity({
 },): Promise<string> {
   try {
     /**
-     * Namespace identity never enters a model message.
+     Namespace identity never enters a model message.
      */
     const attemptId = randomUUID();
     await writeAttemptFile({
@@ -158,20 +158,20 @@ async function writeAttemptIdentity({
 }
 
 /**
- * Allocates a new namespace without converting failed creation into an open of old state.
- *
- * @param storage - trusted allocator preserving exclusive creation
- *
- * @param parentDir - caller-owned existing parent
- *
- * @returns Fresh directory
- *
- * @throws PreparationAttemptError when allocation fails
- *
- * @example
- * ```ts
- * const dir = await allocateAttemptDirectory({ storage, parentDir });
- * ```
+ Allocates a new namespace without converting failed creation into an open of old state.
+ 
+ @param storage - trusted allocator preserving exclusive creation
+ 
+ @param parentDir - caller-owned existing parent
+ 
+ @returns Fresh directory
+ 
+ @throws PreparationAttemptError when allocation fails
+ 
+ @example
+ ```ts
+ const dir = await allocateAttemptDirectory({ storage, parentDir });
+ ```
  */
 async function allocateAttemptDirectory({
   storage,
@@ -195,27 +195,27 @@ async function allocateAttemptDirectory({
 }
 
 /**
- * Creates the journal's exclusive namespace without providers, acquisition claims or approval.
- * Only JSON object syntax is checked here; the phase materializer must validate root-plan semantics first.
- * The identity marker follows a file-content-synced complete plan. Failures retain incomplete owned files.
- * Containing directory entries are not synced here; this operation does not promise power-loss durability.
- *
- * @param parentDir - existing caller-owned runs directory
- *
- * @param rootPlanText - exact serialized root plan validated by the phase materializer
- *
- * @param l - caller logger retaining preparation scope
- *
- * @param storage - trusted namespace-only I/O, native by default; permits controlled fault/ordering tests
- *
- * @returns New namespace identity after both file writes and syncs complete
- *
- * @throws PreparationAttemptError when syntax or exclusive namespace creation fails
- *
- * @example
- * ```ts
- * const attempt = await createPreparationAttempt({ parentDir, rootPlanText: JSON.stringify(rootPlan), l });
- * ```
+ Creates the journal's exclusive namespace without providers, acquisition claims or approval.
+ Only JSON object syntax is checked here; the phase materializer must validate root-plan semantics first.
+ The identity marker follows a file-content-synced complete plan. Failures retain incomplete owned files.
+ Containing directory entries are not synced here; this operation does not promise power-loss durability.
+ 
+ @param parentDir - existing caller-owned runs directory
+ 
+ @param rootPlanText - exact serialized root plan validated by the phase materializer
+ 
+ @param l - caller logger retaining preparation scope
+ 
+ @param storage - trusted namespace-only I/O, native by default; permits controlled fault/ordering tests
+ 
+ @returns New namespace identity after both file writes and syncs complete
+ 
+ @throws PreparationAttemptError when syntax or exclusive namespace creation fails
+ 
+ @example
+ ```ts
+ const attempt = await createPreparationAttempt({ parentDir, rootPlanText: JSON.stringify(rootPlan), l });
+ ```
  */
 export async function createPreparationAttempt({
   parentDir: requestedParentDir,
@@ -236,11 +236,11 @@ export async function createPreparationAttempt({
       dir: requestedParentDir,
     },);
   /**
-   * Pin relative input before asynchronous I/O can observe a process-wide cwd change.
+   Pin relative input before asynchronous I/O can observe a process-wide cwd change.
    */
   const parentDir = resolve(requestedParentDir,);
   /**
-   * Lifecycle messages never include root-plan content.
+   Lifecycle messages never include root-plan content.
    */
   const pl = tagged({
     tag: createPreparationAttempt.name,
@@ -249,7 +249,7 @@ export async function createPreparationAttempt({
   pl.debug('validating root-plan object syntax before creating a namespace',);
   try {
     /**
-     * Syntax validity is deliberately separate from semantic plan authority.
+     Syntax validity is deliberately separate from semantic plan authority.
      */
     const parsed: unknown = JSON.parse(rootPlanText,);
     if (Array.isArray(parsed,) || (!isJsonRecord(parsed,)))
@@ -272,18 +272,18 @@ export async function createPreparationAttempt({
     },);
   }
   /**
-   * Bind original bytes before allocation so a digest failure cannot leave an unreported directory.
+   Bind original bytes before allocation so a digest failure cannot leave an unreported directory.
    */
   const rootPlanDigest = hashContent({ content: rootPlanText, },);
   /**
-   * Exact independently returned extent avoids arbitrary verifier-wide size ceilings.
+   Exact independently returned extent avoids arbitrary verifier-wide size ceilings.
    */
   const rootPlanBytes = Buffer.byteLength(
     rootPlanText,
     'utf8',
   );
   /**
-   * Allocation is never an idempotent resume of an existing attempt.
+   Allocation is never an idempotent resume of an existing attempt.
    */
   const dir = await allocateAttemptDirectory({
     storage,
@@ -297,7 +297,7 @@ export async function createPreparationAttempt({
     operation: 'write-plan',
   },);
   /**
-   * Identity generation and marker persistence now share failure context for the already written plan.
+   Identity generation and marker persistence now share failure context for the already written plan.
    */
   const attemptId = await writeAttemptIdentity({
     storage,

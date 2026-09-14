@@ -28,10 +28,10 @@ export {
 } from './tally-resolution.ts';
 
 /**
- * Slate shapes the selection stage decides over.
- *
- * @internal Exported so tests and the ledger can name what a contest held;
- * production callers reach these through `selectBestCandidate`.
+ Slate shapes the selection stage decides over.
+ 
+ @internal Exported so tests and the ledger can name what a contest held;
+ production callers reach these through `selectBestCandidate`.
  */
 export type {
   Candidate,
@@ -42,10 +42,10 @@ export { countCandidateWeights, } from './candidate-weights.ts';
 export { selectionFanOut, } from './candidate-select-fanout.ts';
 
 /**
- * Reading the recorded contests back.
- *
- * @internal Exported so tests exercise the shipped artifact. The report CLI is
- * the production reader; nothing in the pipeline itself reads its own ledger.
+ Reading the recorded contests back.
+ 
+ @internal Exported so tests exercise the shipped artifact. The report CLI is
+ the production reader; nothing in the pipeline itself reads its own ledger.
  */
 export {
   LedgerShapeError,

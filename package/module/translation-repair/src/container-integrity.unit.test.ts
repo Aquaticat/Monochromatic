@@ -1,17 +1,17 @@
 /**
- * Tests for the check that every container tag is owned whole by the block and
- * range that reach it.
- *
- * A dissolved container leaves its opening and closing tags belonging to no
- * block, and every range here is minted from block offsets, so a boundary could
- * fall between an opener and its closer while satisfying every node-level rule.
- * `container-extents.ts` fixes that by handing each tag to the block beside it;
- * this check asks whether that still happened, and is expected to fire only on
- * a regression in how extents or ranges are derived.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the check that every container tag is owned whole by the block and
+ range that reach it.
+ 
+ A dissolved container leaves its opening and closing tags belonging to no
+ block, and every range here is minted from block offsets, so a boundary could
+ fall between an opener and its closer while satisfying every node-level rule.
+ `container-extents.ts` fixes that by handing each tag to the block beside it;
+ this check asks whether that still happened, and is expected to fire only on
+ a regression in how extents or ranges are derived.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
@@ -31,8 +31,8 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Translation packaging two of its four blocks inside a disclosure element, so
- * the element's tags are handed to the outer two of those blocks.
+ Translation packaging two of its four blocks inside a disclosure element, so
+ the element's tags are handed to the outer two of those blocks.
  */
 const TARGET_TEXT = `The cat sleeps on the windowsill.
 
@@ -48,32 +48,32 @@ She purrs at nothing in particular.
 `;
 
 /**
- * Parsed fixture, read once so blocks and containers describe the same parse.
+ Parsed fixture, read once so blocks and containers describe the same parse.
  */
 const TARGET = parseDocument({ text: TARGET_TEXT, },);
 
 /**
- * Blocks of that translation, each already owning any tag it carries.
+ Blocks of that translation, each already owning any tag it carries.
  */
 const TARGET_NODES = TARGET.nodes;
 
 /**
- * Container spans the parse reported, which is the whole point of the fixture.
+ Container spans the parse reported, which is the whole point of the fixture.
  */
 const TARGET_CONTAINERS = TARGET.containers;
 
 /**
- * Single container of the fixture, which every case is stated against.
- *
- * @returns Its two tag spans
- *
- * @throws {@link Error} when the fixture parsed no container, which would make
- * every case here pass for the wrong reason
- *
- * @example
- * ```ts
- * const container = onlyContainer();
- * ```
+ Single container of the fixture, which every case is stated against.
+ 
+ @returns Its two tag spans
+ 
+ @throws {@link Error} when the fixture parsed no container, which would make
+ every case here pass for the wrong reason
+ 
+ @example
+ ```ts
+ const container = onlyContainer();
+ ```
  */
 function onlyContainer(): ContainerSpan {
   const [container,] = TARGET_CONTAINERS;
@@ -83,23 +83,23 @@ function onlyContainer(): ContainerSpan {
 }
 
 /**
- * Finds the block that owns one offset, which is how each case names a slice
- * boundary without hard-coding a number the fixture could drift away from.
- *
- * @param offset - absolute offset the wanted block covers
- *
- * @returns Block covering that offset
- *
- * @throws {@link Error} when no block covers it
- *
- * @example
- * ```ts
- * const node = blockAt({ offset: container.openerStartOffset, },);
- * ```
+ Finds the block that owns one offset, which is how each case names a slice
+ boundary without hard-coding a number the fixture could drift away from.
+ 
+ @param offset - absolute offset the wanted block covers
+ 
+ @returns Block covering that offset
+ 
+ @throws {@link Error} when no block covers it
+ 
+ @example
+ ```ts
+ const node = blockAt({ offset: container.openerStartOffset, },);
+ ```
  */
 function blockAt({ offset, }: { readonly offset: number; },): DocumentNode {
   /**
-   * First block whose range holds the offset.
+   First block whose range holds the offset.
    */
   const found = TARGET_NODES.find(function holds(node,): boolean {
     return (node.startOffset <= offset)
@@ -111,18 +111,18 @@ function blockAt({ offset, }: { readonly offset: number; },): DocumentNode {
 }
 
 /**
- * Builds one pair whose target side covers the given range.
- *
- * @param startOffset - absolute start of range assembly would replace
- *
- * @param endOffset - absolute exclusive end
- *
- * @returns Pair carrying that span
- *
- * @example
- * ```ts
- * const pair = rangeOf({ startOffset: 0, endOffset: 20, },);
- * ```
+ Builds one pair whose target side covers the given range.
+ 
+ @param startOffset - absolute start of range assembly would replace
+ 
+ @param endOffset - absolute exclusive end
+ 
+ @returns Pair carrying that span
+ 
+ @example
+ ```ts
+ const pair = rangeOf({ startOffset: 0, endOffset: 20, },);
+ ```
  */
 function rangeOf(
   {
@@ -158,19 +158,19 @@ function rangeOf(
 }
 
 /**
- * Rebuilds the fixture's blocks as they looked BEFORE tags were handed out, so
- * one case can state the regression this check exists to catch.
- *
- * @returns Blocks whose edges stop at the container's tags instead of covering them
- *
- * @example
- * ```ts
- * const orphaning = blocksWithoutTags();
- * ```
+ Rebuilds the fixture's blocks as they looked BEFORE tags were handed out, so
+ one case can state the regression this check exists to catch.
+ 
+ @returns Blocks whose edges stop at the container's tags instead of covering them
+ 
+ @example
+ ```ts
+ const orphaning = blocksWithoutTags();
+ ```
  */
 function blocksWithoutTags(): readonly DocumentNode[] {
   /**
-   * Container whose tags are about to be taken back off the blocks.
+   Container whose tags are about to be taken back off the blocks.
    */
   const container = onlyContainer();
   return TARGET_NODES.map(function shrink(node,): DocumentNode {

@@ -1,17 +1,17 @@
 /**
- * Tests for the window trial's durable ledger.
- *
- * WHAT THESE PIN is survivability of a run that spends roughly 1760 real
- * exchanges and has no cache behind it, because `#108` calls the stage directly
- * and the slice cache is read by the document driver. Everything here is about
- * what happens when the process does NOT reach the end, which is the case the
- * ledger exists for and the case that never happens in a passing test unless it
- * is written on purpose.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only. Each case
- * writes into its own throwaway directory.
- *
- * @module
+ Tests for the window trial's durable ledger.
+ 
+ WHAT THESE PIN is survivability of a run that spends roughly 1760 real
+ exchanges and has no cache behind it, because `#108` calls the stage directly
+ and the slice cache is read by the document driver. Everything here is about
+ what happens when the process does NOT reach the end, which is the case the
+ ledger exists for and the case that never happens in a passing test unless it
+ is written on purpose.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only. Each case
+ writes into its own throwaway directory.
+ 
+ @module
  */
 
 import {
@@ -39,25 +39,25 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Protocol digest the ordinary cases buy under.
+ Protocol digest the ordinary cases buy under.
  */
 const PROTOCOL = 'protocol-one';
 
 /**
- * Builds one completed arm.
- *
- * @param arm - which arm this row is
- *
- * @param sliceIndex - slice position
- *
- * @param protocol - digest it was bought under
- *
- * @returns Row shaped like one a runner appends
- *
- * @example
- * ```ts
- * const row = rowFor({ arm: 'wide', sliceIndex: 3, },);
- * ```
+ Builds one completed arm.
+ 
+ @param arm - which arm this row is
+ 
+ @param sliceIndex - slice position
+ 
+ @param protocol - digest it was bought under
+ 
+ @returns Row shaped like one a runner appends
+ 
+ @example
+ ```ts
+ const row = rowFor({ arm: 'wide', sliceIndex: 3, },);
+ ```
  */
 function rowFor(
   {
@@ -86,14 +86,14 @@ function rowFor(
 }
 
 /**
- * Fresh throwaway ledger path, so no case can read another's writes.
- *
- * @returns Path inside a new temporary directory
- *
- * @example
- * ```ts
- * const path = await freshLedger();
- * ```
+ Fresh throwaway ledger path, so no case can read another's writes.
+ 
+ @returns Path inside a new temporary directory
+ 
+ @example
+ ```ts
+ const path = await freshLedger();
+ ```
  */
 async function freshLedger(): Promise<string> {
   return join(
@@ -171,7 +171,7 @@ await describe({
         expect(whole.length,).toBe(2,);
 
         /**
-         * The same file with its last line truncated mid-JSON.
+         The same file with its last line truncated mid-JSON.
          */
         const torn = `${JSON.stringify(rowFor({
           arm: 'narrow-a',
@@ -208,7 +208,7 @@ await describe({
         );
 
         /**
-         * Read that must not succeed.
+         Read that must not succeed.
          */
         const read = readTrialLedger({ path, },);
         await expect(read,).rejects
@@ -237,7 +237,7 @@ await describe({
         },);
 
         /**
-         * Arms the current run may skip.
+         Arms the current run may skip.
          */
         const done = completedArms({
           rows: await readTrialLedger({ path, },),
@@ -246,7 +246,7 @@ await describe({
         expect(done.size,).toBe(1,);
 
         /**
-         * Key of the arm this run bought.
+         Key of the arm this run bought.
          */
         const ownKey = trialKey({
           row: rowFor({
@@ -256,7 +256,7 @@ await describe({
         },);
 
         /**
-         * Key of the arm an earlier protocol bought.
+         Key of the arm an earlier protocol bought.
          */
         const otherKey = trialKey({
           row: rowFor({

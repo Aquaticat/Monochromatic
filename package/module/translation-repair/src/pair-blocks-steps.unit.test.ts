@@ -1,13 +1,13 @@
 /**
- * Tests for converting a roster's pairing into alignment steps.
- *
- * THE PROPERTY THAT MATTERS: every block appears exactly once on its own side.
- * The grouper measures characters per step, so a block counted twice inflates a
- * run past its budget and cuts the document somewhere it should not.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for converting a roster's pairing into alignment steps.
+ 
+ THE PROPERTY THAT MATTERS: every block appears exactly once on its own side.
+ The grouper measures characters per step, so a block counted twice inflates a
+ run past its budget and cuts the document somewhere it should not.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -18,18 +18,18 @@ import {
 import { blockPairingToSteps, } from '../dist/final/node/index.mjs';
 
 /**
- * Counts how often each index appears on one side of the steps.
- *
- * @param steps - converted steps
- *
- * @param side - which side to count
- *
- * @returns Appearances per index
- *
- * @example
- * ```ts
- * const seen = appearances({ steps, side: 'source', },);
- * ```
+ Counts how often each index appears on one side of the steps.
+ 
+ @param steps - converted steps
+ 
+ @param side - which side to count
+ 
+ @returns Appearances per index
+ 
+ @example
+ ```ts
+ const seen = appearances({ steps, side: 'source', },);
+ ```
  */
 function appearances(
   {
@@ -41,12 +41,12 @@ function appearances(
   },
 ): ReadonlyMap<number, number> {
   /**
-   * Appearances so far.
+   Appearances so far.
    */
   const seen = new Map<number, number>();
   for (const step of steps) {
     /**
-     * Index this step contributes on the side being counted.
+     Index this step contributes on the side being counted.
      */
     const index = (side === 'source') ? step.sourceIndex : step.targetIndex;
     if (index === undefined)
@@ -86,7 +86,7 @@ await describe({
         expect(steps[1]?.kind,).toBe('target-only',);
 
         /**
-         * The continuation step, narrowed so its own field is readable.
+         The continuation step, narrowed so its own field is readable.
          */
         const continuation = steps.find(function isContinuation(step,) {
           return (step.kind === 'target-only') && (step.targetIndex === 1);
@@ -164,7 +164,7 @@ await describe({
         },);
 
         /**
-         * The genuinely unpaired translation block.
+         The genuinely unpaired translation block.
          */
         const lone = steps.find(function isLast(step,) {
           return (step.kind === 'target-only') && (step.targetIndex === 1);
@@ -212,7 +212,7 @@ await describe({
         },);
 
         /**
-         * Translation indices in the order the steps emit them.
+         Translation indices in the order the steps emit them.
          */
         const order = steps
           .flatMap(function toTarget(step,): readonly number[] {
@@ -267,7 +267,7 @@ await describe({
         },);
 
         /**
-         * Appearances of each original among the steps.
+         Appearances of each original among the steps.
          */
         const sources = appearances({
           steps,
@@ -277,7 +277,7 @@ await describe({
         expect(sources.get(1,),).toBe(1,);
 
         /**
-         * Appearances of each translation block among the steps.
+         Appearances of each translation block among the steps.
          */
         const targets = appearances({
           steps,

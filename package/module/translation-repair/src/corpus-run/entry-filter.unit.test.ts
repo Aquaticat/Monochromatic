@@ -1,14 +1,14 @@
 /**
- * Tests for the pass entry allowlist.
- *
- * The cases that matter are the ones where a misread flag runs the WHOLE
- * corpus instead of one entry. That is expensive to discover afterwards and
- * looks like an ordinary long pass while it happens, so every shape that could
- * parse to nothing throws instead.
- *
- * Entry ids are real corpus ids, since the flag's whole job is to name them.
- *
- * @module
+ Tests for the pass entry allowlist.
+ 
+ The cases that matter are the ones where a misread flag runs the WHOLE
+ corpus instead of one entry. That is expensive to discover afterwards and
+ looks like an ordinary long pass while it happens, so every shape that could
+ parse to nothing throws instead.
+ 
+ Entry ids are real corpus ids, since the flag's whole job is to name them.
+ 
+ @module
  */
 
 import {
@@ -23,16 +23,16 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Builds an argv with the runtime and script path a real invocation carries.
- *
- * @param rest - arguments following the script path
- *
- * @returns Full argv
- *
- * @example
- * ```ts
- * const argv = argvWith({ rest: ['--only', 'Toka_ls',], },);
- * ```
+ Builds an argv with the runtime and script path a real invocation carries.
+ 
+ @param rest - arguments following the script path
+ 
+ @returns Full argv
+ 
+ @example
+ ```ts
+ const argv = argvWith({ rest: ['--only', 'Toka_ls',], },);
+ ```
  */
 function argvWith({ rest, }: { readonly rest: readonly string[]; },): readonly string[] {
   return [

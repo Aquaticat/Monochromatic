@@ -1,12 +1,12 @@
 /**
- * Tests for the community glossary: the terms an entry carries reach the
- * identity context, and a candidate lacking every accepted rendering is named
- * on the sheet as evidence, in any casing, with an empty candidate skipped
- * (owner, 2026-09-09).
- *
- * Fixtures quote the two seeded terms and cat-themed invention otherwise.
- *
- * @module
+ Tests for the community glossary: the terms an entry carries reach the
+ identity context, and a candidate lacking every accepted rendering is named
+ on the sheet as evidence, in any casing, with an empty candidate skipped
+ (owner, 2026-09-09).
+ 
+ Fixtures quote the two seeded terms and cat-themed invention otherwise.
+ 
+ @module
  */
 
 import {
@@ -23,17 +23,17 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original carrying one seeded term.
+ Original carrying one seeded term.
  */
 const SOURCE = '在她自切后，家人的态度好转很多。';
 
 /**
- * Rendering that carries the community's word.
+ Rendering that carries the community's word.
  */
 const KEPT = 'After she attempted self-surgery, her family became more accepting.';
 
 /**
- * Rendering that lost it, as the seventh yuki page shipped.
+ Rendering that lost it, as the seventh yuki page shipped.
  */
 const LOST = 'After she began cutting herself, her family became more accepting.';
 

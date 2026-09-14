@@ -1,15 +1,15 @@
 /**
- * Tests for the lane contest: what the roster has to agree on before one
- * candidate is called the winner, and what a decline means.
- *
- * WHY DECLINING IS COUNTED RATHER THAN DISCARDED. A judge answering `neither`
- * has said something: that the two candidates differ only in wording. Treating
- * that as a lost voice would make an undecidable slice indistinguishable from
- * an unanswered one, and those need opposite handling.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the lane contest: what the roster has to agree on before one
+ candidate is called the winner, and what a decline means.
+ 
+ WHY DECLINING IS COUNTED RATHER THAN DISCARDED. A judge answering `neither`
+ has said something: that the two candidates differ only in wording. Treating
+ that as a lost voice would make an undecidable slice indistinguishable from
+ an unanswered one, and those need opposite handling.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -26,7 +26,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One contested slice, standing in for a corpus passage.
+ One contested slice, standing in for a corpus passage.
  */
 const SUBJECT = {
   sourceText: '猫睡了。',
@@ -36,7 +36,7 @@ const SUBJECT = {
 };
 
 /**
- * Roster of three, the smallest that can produce a two-to-one split.
+ Roster of three, the smallest that can produce a two-to-one split.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -45,7 +45,7 @@ const ROSTER = [
 ] as const;
 
 /**
- * Roster with two delayed eligible voices after two fast inadmissible ones.
+ Roster with two delayed eligible voices after two fast inadmissible ones.
  */
 const ELIGIBILITY_ROSTER = [
   ...ROSTER,
@@ -53,26 +53,26 @@ const ELIGIBILITY_ROSTER = [
 ] as const;
 
 /**
- * Logger for the stage under test.
+ Logger for the stage under test.
  */
 const l = tagged({ tag: 'lane-contest-stage-test', },);
 
 /**
- * Per-call bound, generous because the transport answers instantly.
+ Per-call bound, generous because the transport answers instantly.
  */
 const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
- * Builds one ballot body.
- *
- * @param choice - candidate this judge names
- *
- * @returns Reply body a judge would return
- *
- * @example
- * ```ts
- * const body = ballot({ choice: 'repair', },);
- * ```
+ Builds one ballot body.
+ 
+ @param choice - candidate this judge names
+ 
+ @returns Reply body a judge would return
+ 
+ @example
+ ```ts
+ const body = ballot({ choice: 'repair', },);
+ ```
  */
 function ballot({ choice, }: { readonly choice: string; },): string {
   return JSON.stringify({
@@ -84,18 +84,18 @@ function ballot({ choice, }: { readonly choice: string; },): string {
 }
 
 /**
- * Builds a client whose models reply in roster order.
- *
- * @param replyByModel - reply body per model
- *
- * @param delayByModel - response delay per model position
- *
- * @returns Client over a canned transport
- *
- * @example
- * ```ts
- * const client = cannedClient({ replyByModel: [ballot({ choice: 'repair', },),], },);
- * ```
+ Builds a client whose models reply in roster order.
+ 
+ @param replyByModel - reply body per model
+ 
+ @param delayByModel - response delay per model position
+ 
+ @returns Client over a canned transport
+ 
+ @example
+ ```ts
+ const client = cannedClient({ replyByModel: [ballot({ choice: 'repair', },),], },);
+ ```
  */
 function cannedClient(
   {
@@ -107,20 +107,20 @@ function cannedClient(
   },
 ) {
   /**
-   * Calls served so far, so each model gets its own reply.
+   Calls served so far, so each model gets its own reply.
    */
   const served: string[] = [];
   return createSyntheticClient({
     apiKey: 'test-key',
     transport: async function cannedTransport(exchange,) {
       /**
-       * Which reply this call receives.
+       Which reply this call receives.
        */
       const at = served.length;
       served.push(exchange.label,);
 
       /**
-       * This model's reply text.
+       This model's reply text.
        */
       const content = replyByModel[at] ?? replyByModel[0] ?? '';
       await wait(delayByModel[at] ?? 0,);
@@ -142,16 +142,16 @@ function cannedClient(
 }
 
 /**
- * Runs one contest over a canned roster.
- *
- * @param replyByModel - reply body per model
- *
- * @returns What the roster settled on
- *
- * @example
- * ```ts
- * const outcome = await contest({ replyByModel: [], },);
- * ```
+ Runs one contest over a canned roster.
+ 
+ @param replyByModel - reply body per model
+ 
+ @returns What the roster settled on
+ 
+ @example
+ ```ts
+ const outcome = await contest({ replyByModel: [], },);
+ ```
  */
 async function contest(
   { replyByModel, }: { readonly replyByModel: readonly string[]; },
@@ -355,18 +355,18 @@ await describe({
 },);
 
 /**
- * Builds one ballot body that also answers the archive question.
- *
- * @param choice - candidate this judge names
- *
- * @param archive - what this judge makes of the archive rendering
- *
- * @returns Reply body a judge would return
- *
- * @example
- * ```ts
- * const body = archiveBallot({ choice: 'neither', archive: 'flawed', },);
- * ```
+ Builds one ballot body that also answers the archive question.
+ 
+ @param choice - candidate this judge names
+ 
+ @param archive - what this judge makes of the archive rendering
+ 
+ @returns Reply body a judge would return
+ 
+ @example
+ ```ts
+ const body = archiveBallot({ choice: 'neither', archive: 'flawed', },);
+ ```
  */
 function archiveBallot(
   {
@@ -387,16 +387,16 @@ function archiveBallot(
 }
 
 /**
- * Runs one contest over a slice whose archive rendering is absent.
- *
- * @param replyByModel - reply body per model
- *
- * @returns What the roster settled on
- *
- * @example
- * ```ts
- * const outcome = await contestWithNoArchive({ replyByModel: [], },);
- * ```
+ Runs one contest over a slice whose archive rendering is absent.
+ 
+ @param replyByModel - reply body per model
+ 
+ @returns What the roster settled on
+ 
+ @example
+ ```ts
+ const outcome = await contestWithNoArchive({ replyByModel: [], },);
+ ```
  */
 async function contestWithNoArchive(
   { replyByModel, }: { readonly replyByModel: readonly string[]; },

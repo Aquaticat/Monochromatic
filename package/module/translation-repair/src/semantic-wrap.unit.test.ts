@@ -1,20 +1,20 @@
 /**
- * Tests for the semantic wrap applied to shipped text.
- *
- * WHAT THESE PIN is the property the whole change rests on: the fix is
- * ADD-ONLY. Every passage a lane produces goes through it without anybody
- * reading them first, which is only safe because it cannot delete, move or join
- * anything. A rule that rewrote text instead of inserting into it would be a
- * silent editor sitting after every judge in the pipeline.
- *
- * The second thing they pin is idempotence, which is what lets this run on a
- * cache replay. A resumed slice is wrapped on the way OUT of the cache, so a
- * pool written before this existed needs no migration, and a slice already
- * wrapped has to come back unchanged.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the semantic wrap applied to shipped text.
+ 
+ WHAT THESE PIN is the property the whole change rests on: the fix is
+ ADD-ONLY. Every passage a lane produces goes through it without anybody
+ reading them first, which is only safe because it cannot delete, move or join
+ anything. A rule that rewrote text instead of inserting into it would be a
+ silent editor sitting after every judge in the pipeline.
+ 
+ The second thing they pin is idempotence, which is what lets this run on a
+ cache replay. A resumed slice is wrapped on the way OUT of the cache, so a
+ pool written before this existed needs no migration, and a slice already
+ wrapped has to come back unchanged.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,17 +26,17 @@ import {
 import { wrapReplacementText, } from '../dist/final/node/index.mjs';
 
 /**
- * Characters of a passage other than its line breaks, which an add-only fix may
- * only grow, by the continuation prefixes it inserts.
- *
- * @param text - passage to weigh
- *
- * @returns Its length with newlines removed
- *
- * @example
- * ```ts
- * const size = withoutBreaks({ text: 'a\nb', },);
- * ```
+ Characters of a passage other than its line breaks, which an add-only fix may
+ only grow, by the continuation prefixes it inserts.
+ 
+ @param text - passage to weigh
+ 
+ @returns Its length with newlines removed
+ 
+ @example
+ ```ts
+ const size = withoutBreaks({ text: 'a\nb', },);
+ ```
  */
 function withoutBreaks({ text, }: { readonly text: string; },): number {
   return text.split('\n',)
@@ -44,22 +44,22 @@ function withoutBreaks({ text, }: { readonly text: string; },): number {
 }
 
 /**
- * Reads a passage as content alone, with spacing and block markers discounted.
- *
- * WHITESPACE GOES because a break replaces the space that separated two
- * sentences, so comparing spaces would call that replacement a deletion.
- * `>` GOES because a break inside a blockquote carries the marker onto the new
- * line, which is a character the wrapper legitimately ADDS. What is left is the
- * content, and content must survive wrapping exactly.
- *
- * @param text - passage to reduce
- *
- * @returns Content characters, spacing and blockquote markers removed
- *
- * @example
- * ```ts
- * const content = contentOnly({ text: '> It naps.', },);
- * ```
+ Reads a passage as content alone, with spacing and block markers discounted.
+ 
+ WHITESPACE GOES because a break replaces the space that separated two
+ sentences, so comparing spaces would call that replacement a deletion.
+ `>` GOES because a break inside a blockquote carries the marker onto the new
+ line, which is a character the wrapper legitimately ADDS. What is left is the
+ content, and content must survive wrapping exactly.
+ 
+ @param text - passage to reduce
+ 
+ @returns Content characters, spacing and blockquote markers removed
+ 
+ @example
+ ```ts
+ const content = contentOnly({ text: '> It naps.', },);
+ ```
  */
 function contentOnly({ text, }: { readonly text: string; },): string {
   return text.split('\n',)
@@ -82,12 +82,12 @@ await describe({
         + 'point: a model returns a paragraph as one line and the archive it replaces was wrapped',
       fn: async () => {
         /**
-         * One line, as a model hands it over.
+         One line, as a model hands it over.
          */
         const flat = 'The tabby naps on the sill. It wakes at dusk, stretches, and goes hunting.';
 
         /**
-         * Same passage as the rule would have it written.
+         Same passage as the rule would have it written.
          */
         const wrapped = wrapReplacementText({ text: flat, },);
 
@@ -111,7 +111,7 @@ await describe({
         + 'would be an unreviewed editor standing after every judge in the pipeline',
       fn: async () => {
         /**
-         * A passage carrying punctuation the rule looks at, in several shapes.
+         A passage carrying punctuation the rule looks at, in several shapes.
          */
         const passages = [
           'It naps. It wakes. It eats.',
@@ -123,7 +123,7 @@ await describe({
 
         for (const text of passages) {
           /**
-           * Wrapped form of this passage.
+           Wrapped form of this passage.
            */
           const wrapped = wrapReplacementText({ text, },);
           // EQUALITY RATHER THAN A FLOOR. The older form counted characters
@@ -148,7 +148,7 @@ await describe({
         + 'one wrapped already must not drift further on every resume',
       fn: async () => {
         /**
-         * A passage wrapped once.
+         A passage wrapped once.
          */
         const once = wrapReplacementText({
           text: 'The tabby naps on the sill. It wakes at dusk, stretches, and goes hunting.',
@@ -172,7 +172,7 @@ await describe({
         + 'HTML: breaking those changes what they render as rather than only how they are stored',
       fn: async () => {
         /**
-         * A heading carrying punctuation the rule would otherwise break at.
+         A heading carrying punctuation the rule would otherwise break at.
          */
         const heading = '## The cat, the bowl, and the sill.';
         expect(wrapReplacementText({ text: heading, },),).toBe(heading,);
@@ -186,14 +186,14 @@ await describe({
         + 'at the pinned corpus share that shape',
       fn: async () => {
         /**
-         * A one-line element with the comma-and-space shape, trailing hard-break
-         * spaces included, between two prose paragraphs the rule does wrap.
+         A one-line element with the comma-and-space shape, trailing hard-break
+         spaces included, between two prose paragraphs the rule does wrap.
          */
         const element = `<PhotoScroll photos={[ '\${path}/photos/sill.webp',]} />  `;
         const text = `She drew this, and posted it:\n\n${element}\n\nThe cat, as ever, approved.`;
 
         /**
-         * What the wrapper returned.
+         What the wrapper returned.
          */
         const wrapped = wrapReplacementText({ text, },);
         expect(wrapped.includes(element,),).toBe(true,);

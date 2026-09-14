@@ -20,28 +20,28 @@
 // than guess.
 
 /**
- * Shortest Latin run worth treating as a name.
- *
- * One and two letter runs are mostly noise from markup and initials, and they
- * match far too freely across unrelated headings.
+ Shortest Latin run worth treating as a name.
+ 
+ One and two letter runs are mostly noise from markup and initials, and they
+ match far too freely across unrelated headings.
  */
 const MIN_TOKEN_LENGTH = 3;
 
 /**
- * Whether a character is an ASCII letter.
- *
- * @param character - character to classify
- *
- * @returns Whether it belongs to a Latin run
- *
- * @example
- * ```ts
- * isLatinLetter({ character: 'w', },);
- * ```
+ Whether a character is an ASCII letter.
+ 
+ @param character - character to classify
+ 
+ @returns Whether it belongs to a Latin run
+ 
+ @example
+ ```ts
+ isLatinLetter({ character: 'w', },);
+ ```
  */
 function isLatinLetter({ character, }: { readonly character: string; },): boolean {
   /**
-   * Lowercased form, so one comparison covers both cases.
+   Lowercased form, so one comparison covers both cases.
    */
   const lower = character.toLowerCase();
 
@@ -49,35 +49,35 @@ function isLatinLetter({ character, }: { readonly character: string; },): boolea
 }
 
 /**
- * Extracts lowercase Latin runs from a heading.
- *
- * Written as an index scan rather than a pattern: the rule is one predicate per
- * character with one run buffer, and a heading is arbitrary text that must not
- * be able to make the scan backtrack.
- *
- * @param text - heading text
- *
- * @returns Distinct lowercase runs of at least {@link MIN_TOKEN_LENGTH}
- *
- * @example
- * ```ts
- * latinTokens({ text: '### 其八：白毛 suki', },);
- * ```
+ Extracts lowercase Latin runs from a heading.
+ 
+ Written as an index scan rather than a pattern: the rule is one predicate per
+ character with one run buffer, and a heading is arbitrary text that must not
+ be able to make the scan backtrack.
+ 
+ @param text - heading text
+ 
+ @returns Distinct lowercase runs of at least {@link MIN_TOKEN_LENGTH}
+ 
+ @example
+ ```ts
+ latinTokens({ text: '### 其八：白毛 suki', },);
+ ```
  */
 export function latinTokens({ text, }: { readonly text: string; },): ReadonlySet<string> {
   return (function scan(): ReadonlySet<string> {
     /**
-     * Runs found so far.
+     Runs found so far.
      */
     const found = new Set<string>();
 
     /**
-     * Characters of the run currently open.
+     Characters of the run currently open.
      */
     let run = '';
     for (let index = 0; index < text.length; index += 1) {
       /**
-       * Character under the cursor.
+       Character under the cursor.
        */
       const character = text.charAt(index,);
       if (isLatinLetter({ character, },)) {
@@ -97,24 +97,24 @@ export function latinTokens({ text, }: { readonly text: string; },): ReadonlySet
 }
 
 /**
- * Scores how much two headings look like the same section.
- *
- * Overlap of Latin runs, scaled by the smaller heading's run count, so a
- * heading carrying one name and matching it scores as strongly as one carrying
- * three and matching all three. Zero when either side offers no runs, which is
- * the honest answer for a heading written entirely in Chinese: no evidence is
- * not weak evidence.
- *
- * @param source - original-side heading
- *
- * @param target - translation-side heading
- *
- * @returns Affinity from 0 to 1
- *
- * @example
- * ```ts
- * headingAffinity({ source: '### 其七：wing', target: '### wing', },);
- * ```
+ Scores how much two headings look like the same section.
+ 
+ Overlap of Latin runs, scaled by the smaller heading's run count, so a
+ heading carrying one name and matching it scores as strongly as one carrying
+ three and matching all three. Zero when either side offers no runs, which is
+ the honest answer for a heading written entirely in Chinese: no evidence is
+ not weak evidence.
+ 
+ @param source - original-side heading
+ 
+ @param target - translation-side heading
+ 
+ @returns Affinity from 0 to 1
+ 
+ @example
+ ```ts
+ headingAffinity({ source: '### 其七：wing', target: '### wing', },);
+ ```
  */
 export function headingAffinity(
   {
@@ -126,19 +126,19 @@ export function headingAffinity(
   },
 ): number {
   /**
-   * Runs each heading carries.
+   Runs each heading carries.
    */
   const sourceTokens = latinTokens({ text: source, },);
 
   /**
-   * Same for the translation side.
+   Same for the translation side.
    */
   const targetTokens = latinTokens({ text: target, },);
   if ((sourceTokens.size === 0) || (targetTokens.size === 0))
     return 0;
 
   /**
-   * Runs present on both sides.
+   Runs present on both sides.
    */
   const shared = [...sourceTokens,]
     .filter(function isShared(token,) {

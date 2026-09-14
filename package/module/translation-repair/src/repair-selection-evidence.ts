@@ -1,18 +1,18 @@
 import type { SelectEvidence, } from './candidate-select-wire.ts';
 
 /**
- * Supplies factual support without making neighboring passages additional translation obligations.
- *
- * @param neighbouringSourceText - local source evidence for interpreting current claims
- *
- * @param documentSourceText - same-entry original checking claims outside the local window
- *
- * @returns Additional evidence blocks in the measured order
- *
- * @example
- * ```ts
- * const evidence = repairSelectionSourceEvidence({ neighbouringSourceText, documentSourceText });
- * ```
+ Supplies factual support without making neighboring passages additional translation obligations.
+ 
+ @param neighbouringSourceText - local source evidence for interpreting current claims
+ 
+ @param documentSourceText - same-entry original checking claims outside the local window
+ 
+ @returns Additional evidence blocks in the measured order
+ 
+ @example
+ ```ts
+ const evidence = repairSelectionSourceEvidence({ neighbouringSourceText, documentSourceText });
+ ```
  */
 export function repairSelectionSourceEvidence(
   {

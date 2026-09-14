@@ -5,17 +5,17 @@ import type { RepairDocument, } from './parse-document.ts';
 // that orchestration file under its line budget.
 
 /**
- * Count of `mdx-downgraded` findings, the integrity signal:
- * a patch that forces markdown fallback broke document grammar.
- *
- * @param document - parsed document under inspection
- *
- * @returns Downgrade finding count
- *
- * @example
- * ```ts
- * downgradeCount({ document, },);
- * ```
+ Count of `mdx-downgraded` findings, the integrity signal:
+ a patch that forces markdown fallback broke document grammar.
+ 
+ @param document - parsed document under inspection
+ 
+ @returns Downgrade finding count
+ 
+ @example
+ ```ts
+ downgradeCount({ document, },);
+ ```
  */
 export function downgradeCount(
   { document, }: { readonly document: RepairDocument; },

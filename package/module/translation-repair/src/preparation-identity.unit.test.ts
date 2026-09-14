@@ -1,21 +1,21 @@
 /**
- * Tests for the name a slicing gives itself.
- *
- * WHAT THESE PIN is one property in each direction. A preparation that differs
- * anywhere a lane can see must get a different name, or two slicings join
- * silently and every row of the comparison is individually well formed while
- * describing two different documents. A preparation that is the same must get
- * the same name however the run around it differed, or the field answers "was
- * this the same attempt" rather than "was this the same slicing", and no
- * resumed run could ever be compared with a cold one.
- *
- * The blank-content case is the one this exists for: a content slice that
- * happens to be empty and a place the archive never translated both carry the
- * empty string, and only the placement kind separates them.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the name a slicing gives itself.
+ 
+ WHAT THESE PIN is one property in each direction. A preparation that differs
+ anywhere a lane can see must get a different name, or two slicings join
+ silently and every row of the comparison is individually well formed while
+ describing two different documents. A preparation that is the same must get
+ the same name however the run around it differed, or the field answers "was
+ this the same attempt" rather than "was this the same slicing", and no
+ resumed run could ever be compared with a cold one.
+ 
+ The blank-content case is the one this exists for: a content slice that
+ happens to be empty and a place the archive never translated both carry the
+ empty string, and only the placement kind separates them.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -31,20 +31,20 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds a content slice pair.
- *
- * @param index - global slice index
- *
- * @param source - original text
- *
- * @param target - archive translation
- *
- * @returns Pair with content on both sides
- *
- * @example
- * ```ts
- * const pair = contentPair({ index: 0, source: '猫', target: 'The cat.', },);
- * ```
+ Builds a content slice pair.
+ 
+ @param index - global slice index
+ 
+ @param source - original text
+ 
+ @param target - archive translation
+ 
+ @returns Pair with content on both sides
+ 
+ @example
+ ```ts
+ const pair = contentPair({ index: 0, source: '猫', target: 'The cat.', },);
+ ```
  */
 function contentPair(
   {
@@ -76,24 +76,24 @@ function contentPair(
 }
 
 /**
- * Builds a preparation around given slices.
- *
- * @param slices - prepared pairs
- *
- * @param sourceText - whole original document
- *
- * @param targetText - whole archive translation
- *
- * @param lineStructured - indices governed line by line
- *
- * @param identityContext - declared names, absent when omitted
- *
- * @returns Preparation shaped as `prepareDocumentPair` returns one
- *
- * @example
- * ```ts
- * const prepared = preparationOf({ slices, sourceText: '猫', targetText: 'The cat.', },);
- * ```
+ Builds a preparation around given slices.
+ 
+ @param slices - prepared pairs
+ 
+ @param sourceText - whole original document
+ 
+ @param targetText - whole archive translation
+ 
+ @param lineStructured - indices governed line by line
+ 
+ @param identityContext - declared names, absent when omitted
+ 
+ @returns Preparation shaped as `prepareDocumentPair` returns one
+ 
+ @example
+ ```ts
+ const prepared = preparationOf({ slices, sourceText: '猫', targetText: 'The cat.', },);
+ ```
  */
 function preparationOf(
   {
@@ -123,14 +123,14 @@ function preparationOf(
 }
 
 /**
- * Preparation every case here is compared against.
- *
- * @returns Two content slices about a cat
- *
- * @example
- * ```ts
- * const prepared = catPreparation();
- * ```
+ Preparation every case here is compared against.
+ 
+ @returns Two content slices about a cat
+ 
+ @example
+ ```ts
+ const prepared = catPreparation();
+ ```
  */
 function catPreparation(): PreparedDocumentPair {
   return preparationOf({
@@ -171,7 +171,7 @@ await describe({
         + 'whether the archive translates the passage at all',
       fn: async () => {
         /**
-         * Second slice as a content slice the archive left blank.
+         Second slice as a content slice the archive left blank.
          */
         const blankContent = preparationOf({
           sourceText: '猫猫在睡觉。猫猫在吃饭。',
@@ -191,7 +191,7 @@ await describe({
         },);
 
         /**
-         * Same document with that slice as an anchor instead.
+         Same document with that slice as an anchor instead.
          */
         const anchored = preparationOf({
           sourceText: '猫猫在睡觉。猫猫在吃饭。',
@@ -226,7 +226,7 @@ await describe({
         + 'equal texts cannot: the same wordings joined the other way round is a different document',
       fn: async () => {
         /**
-         * The cat preparation with its two targets swapped.
+         The cat preparation with its two targets swapped.
          */
         const swapped = preparationOf({
           sourceText: '猫猫在睡觉。猫猫在吃饭。',
@@ -255,7 +255,7 @@ await describe({
         + 'boundaries fell decides what every stage was asked and a total is not a slicing',
       fn: async () => {
         /**
-         * Both sentences in one slice rather than two.
+         Both sentences in one slice rather than two.
          */
         const merged = preparationOf({
           sourceText: '猫猫在睡觉。猫猫在吃饭。',
@@ -279,7 +279,7 @@ await describe({
         + 'changes what every stage is allowed to do to the passage',
       fn: async () => {
         /**
-         * Same slicing with its first slice under line governance.
+         Same slicing with its first slice under line governance.
          */
         const governed = preparationOf({
           sourceText: '猫猫在睡觉。猫猫在吃饭。',
@@ -309,7 +309,7 @@ await describe({
         + 'with no identity context and the other about one whose context is nothing',
       fn: async () => {
         /**
-         * Same slicing carrying an empty identity context.
+         Same slicing carrying an empty identity context.
          */
         const empty = preparationOf({
           sourceText: '猫猫在睡觉。猫猫在吃饭。',
@@ -328,7 +328,7 @@ await describe({
         + 'neither side sliced appears in no row at all, so the whole texts are named beside them',
       fn: async () => {
         /**
-         * Same slices under a document carrying an extra unsliced heading.
+         Same slices under a document carrying an extra unsliced heading.
          */
         const extra = preparationOf({
           sourceText: '猫猫在睡觉。猫猫在吃饭。猫猫在看鸟。',
@@ -344,11 +344,11 @@ await describe({
       name: 'KEEPS LEGACY BODY-ONLY REBUILD under version 1 identity scheme',
       fn: async () => {
         /**
-         * Current metadata-aware preparation.
+         Current metadata-aware preparation.
          */
         const current = catPreparation();
         /**
-         * Same rows interpreted under legacy body-only scheme.
+         Same rows interpreted under legacy body-only scheme.
          */
         const legacy = {
           ...current,

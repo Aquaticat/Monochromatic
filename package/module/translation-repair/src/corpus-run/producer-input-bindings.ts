@@ -2,34 +2,34 @@ import type { ProducerInputHost, } from './producer-input-host-init.ts';
 import { PRODUCER_INPUT_PATHS, } from './producer-input-paths.ts';
 
 /**
- * One fixed host-to-child filesystem role, not an arbitrary mount request.
+ One fixed host-to-child filesystem role, not an arbitrary mount request.
  */
 export type ProducerInputBinding = {
   /**
-   * Canonical authorized source selected by the host owner.
+   Canonical authorized source selected by the host owner.
    */
   readonly source: string;
   /**
-   * Fixed child role path.
+   Fixed child role path.
    */
   readonly target: string;
   /**
-   * Only the private output role is writable.
+   Only the private output role is writable.
    */
   readonly writable: boolean;
 };
 
 /**
- * Derives the entire application mount set from one initialized host instead of independent path arguments.
- *
- * @param host - owned launch, executable locations and exclusive run
- *
- * @returns Fixed mount roles shared by command construction and pre-start inspection
- *
- * @example
- * ```ts
- * const bindings = producerInputBindings(host);
- * ```
+ Derives the entire application mount set from one initialized host instead of independent path arguments.
+ 
+ @param host - owned launch, executable locations and exclusive run
+ 
+ @returns Fixed mount roles shared by command construction and pre-start inspection
+ 
+ @example
+ ```ts
+ const bindings = producerInputBindings(host);
+ ```
  */
 export function producerInputBindings(host: ProducerInputHost): readonly ProducerInputBinding[] {
   return [

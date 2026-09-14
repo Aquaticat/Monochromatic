@@ -16,21 +16,21 @@ import { selectFence, } from './prompt-fence.ts';
 
 
 /**
- * What the neighbouring blocks are for, stated inside the editor sheet.
- *
- * THE EDITOR IS WHERE THE WINDOW EITHER PAYS OR DOES HARM, so its rule is the
- * strictest of the three. `#107`'s `lintong` damage is an editor outcome: handed
- * a one-sentence original against a four-sentence incumbent, it repaired the
- * sentence it could match and left the other three in place, and the neighbour's
- * own new translation then said them a second time. Seeing next door is what
- * lets it recognise that case.
- *
- * THE OPPOSITE FAILURE IS WORSE AND IS NAMED HERE TOO. An editor that removes a
- * passage because it can see it next door, when the neighbouring slice does not
- * in fact keep it, deletes content the document had. Removal is therefore
- * allowed only against wording the NEARBY EXISTING TRANSLATION already carries,
- * which is text that is already in the document rather than text some other
- * stage might yet produce.
+ What the neighbouring blocks are for, stated inside the editor sheet.
+ 
+ THE EDITOR IS WHERE THE WINDOW EITHER PAYS OR DOES HARM, so its rule is the
+ strictest of the three. `#107`'s `lintong` damage is an editor outcome: handed
+ a one-sentence original against a four-sentence incumbent, it repaired the
+ sentence it could match and left the other three in place, and the neighbour's
+ own new translation then said them a second time. Seeing next door is what
+ lets it recognise that case.
+ 
+ THE OPPOSITE FAILURE IS WORSE AND IS NAMED HERE TOO. An editor that removes a
+ passage because it can see it next door, when the neighbouring slice does not
+ in fact keep it, deletes content the document had. Removal is therefore
+ allowed only against wording the NEARBY EXISTING TRANSLATION already carries,
+ which is text that is already in the document rather than text some other
+ stage might yet produce.
  */
 const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT AND MUST NOT BE EDITED. '
   + 'Never copy them into your output. If a region here repeats wording the '
@@ -39,14 +39,14 @@ const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT AND MUST NOT BE EDITED. '
   + 'neighbour OUGHT to carry it';
 
 /**
- * Characters of surrounding document shown on each side of a region,
- * so editors locate it even when the base text recurs elsewhere.
+ Characters of surrounding document shown on each side of a region,
+ so editors locate it even when the base text recurs elsewhere.
  */
 const REGION_CONTEXT_CHARS = 40;
 
 /**
- * Rule list of the editor system prompt; a calibration addendum splices after
- * its last rule line, which is why the house rules are NOT part of it.
+ Rule list of the editor system prompt; a calibration addendum splices after
+ its last rule line, which is why the house rules are NOT part of it.
  */
 const EDITOR_RULES_HEAD = `You are a careful bilingual translation editor.
 Reviewers confirmed the numbered issues below in the TRANSLATION of the ORIGINAL document.
@@ -69,76 +69,76 @@ Rules, strictly enforced by a machine:
 - THE HOUSE RULES BELOW OUTRANK EVERY RULE IN THIS LIST. Where a detail is absent from the TRANSLATION because reader protection asks for it, the region is not an omission to fill and the issue reporting it is wrong: omit that region entirely rather than restoring the detail.`;
 
 /**
- * Rule list followed by the rules this corpus is written under.
- *
- * WHY THE EDITOR NEEDED THEM, and why this is the stage that needed them most.
- * `house-policy.ts` names the failure it exists to stop: a critic ignorant of
- * reader protection reports a deliberately vague passage as an omission, and
- * the editor RESTORES the detail the rule exists to remove. The critic was
- * given the block. The editor never was, though the block's own comment claims
- * it as a consumer, so the second half of that sentence ran unguarded while
- * five separate rules here told the editor that every detail of the original
- * must survive and that an omission must be filled in full.
+ Rule list followed by the rules this corpus is written under.
+ 
+ WHY THE EDITOR NEEDED THEM, and why this is the stage that needed them most.
+ `house-policy.ts` names the failure it exists to stop: a critic ignorant of
+ reader protection reports a deliberately vague passage as an omission, and
+ the editor RESTORES the detail the rule exists to remove. The critic was
+ given the block. The editor never was, though the block's own comment claims
+ it as a consumer, so the second half of that sentence ran unguarded while
+ five separate rules here told the editor that every detail of the original
+ must survive and that an omission must be filled in full.
  */
 const EDITOR_RULES_BLOCK = `${EDITOR_RULES_HEAD}
 
 ${HOUSE_POLICY_BLOCK}`;
 
 /**
- * Reply-shape block closing the editor system prompt.
+ Reply-shape block closing the editor system prompt.
  */
 const EDITOR_REPLY_BLOCK = `Reply with ONLY a JSON object of shape {"edits": [{"region": 1, "newText": "..."}]}. No prose, no code fences.`;
 
 /**
- * System instructions shared by every baseline editor call.
+ System instructions shared by every baseline editor call.
  */
 const EDITOR_SYSTEM_PROMPT = `${EDITOR_RULES_BLOCK}
 
 ${EDITOR_REPLY_BLOCK}`;
 
 /**
- * Messages plus the envelope order edits resolve through:
- * region number N on the wire means `envelopes[N - 1]`.
- *
- * @example
- * ```ts
- * const plan: EditorPromptPlan = buildEditorMessages({
- *   sourceText,
- *   targetText,
- *   envelopes,
- *   issues,
- * },);
- * ```
+ Messages plus the envelope order edits resolve through:
+ region number N on the wire means `envelopes[N - 1]`.
+ 
+ @example
+ ```ts
+ const plan: EditorPromptPlan = buildEditorMessages({
+   sourceText,
+   targetText,
+   envelopes,
+   issues,
+ },);
+ ```
  */
 export type EditorPromptPlan = {
   /**
-   * Messages ready for `chatJson`.
+   Messages ready for `chatJson`.
    */
   readonly messages: readonly ChatMessage[];
 
   /**
-   * Envelopes in prompt numbering order.
+   Envelopes in prompt numbering order.
    */
   readonly envelopes: readonly EditableEnvelope[];
 };
 
 /**
- * One region block of the prompt sheet.
- *
- * @param envelope - envelope under presentation
- *
- * @param regionNumber - one-based number on the sheet
- *
- * @param targetText - full translation for context extraction
- *
- * @param issues - adjudicated issues for summary lookup
- *
- * @returns Rendered region block
- *
- * @example
- * ```ts
- * regionBlock({ envelope, regionNumber: 1, targetText, issues, },);
- * ```
+ One region block of the prompt sheet.
+ 
+ @param envelope - envelope under presentation
+ 
+ @param regionNumber - one-based number on the sheet
+ 
+ @param targetText - full translation for context extraction
+ 
+ @param issues - adjudicated issues for summary lookup
+ 
+ @returns Rendered region block
+ 
+ @example
+ ```ts
+ regionBlock({ envelope, regionNumber: 1, targetText, issues, },);
+ ```
  */
 function regionBlock(
   {
@@ -154,13 +154,13 @@ function regionBlock(
   },
 ): string {
   /**
-   * Issue lines for every issue this envelope serves.
+   Issue lines for every issue this envelope serves.
    */
   const issueLines = envelope
     .issueIds
     .flatMap(function toLine(issueId,) {
       /**
-       * Issue behind this id, when the caller supplied it.
+       Issue behind this id, when the caller supplied it.
        */
       const issue = issues.find(function matches(candidate,) {
         return candidate.issueId === issueId;
@@ -176,7 +176,7 @@ function regionBlock(
     },);
 
   /**
-   * Document context before the region.
+   Document context before the region.
    */
   const before = targetText.slice(
     Math.max(
@@ -187,7 +187,7 @@ function regionBlock(
   );
 
   /**
-   * Document context after the region.
+   Document context after the region.
    */
   const after = targetText.slice(
     envelope.endOffset,
@@ -195,7 +195,7 @@ function regionBlock(
   );
 
   /**
-   * Current-text line; insertions present their emptiness explicitly.
+   Current-text line; insertions present their emptiness explicitly.
    */
   const currentLine = envelope.baseText === ''
     ? 'CURRENT TEXT: (empty; content is missing here)'
@@ -208,27 +208,27 @@ CONTEXT: ...${before}«REGION ${regionNumber}»${after}...`;
 }
 
 /**
- * Builds the editor sheet for one chunk:
- * documents fenced, envelopes as numbered regions with their issues,
- * current text, and disambiguating context.
- *
- * @param sourceText - original chunk text
- *
- * @param targetText - translation chunk text the envelopes were cut from
- *
- * @param envelopes - non-overlapping envelopes in document order
- *
- * @param issues - adjudicated issues referenced by the envelopes
- *
- * @param editorRuleAddendum - extra rule line appended to the enforced
- * rule list, for prompt calibration experiments
- *
- * @returns Messages plus the envelope numbering order
- *
- * @example
- * ```ts
- * const plan = buildEditorMessages({ sourceText, targetText, envelopes, issues, },);
- * ```
+ Builds the editor sheet for one chunk:
+ documents fenced, envelopes as numbered regions with their issues,
+ current text, and disambiguating context.
+ 
+ @param sourceText - original chunk text
+ 
+ @param targetText - translation chunk text the envelopes were cut from
+ 
+ @param envelopes - non-overlapping envelopes in document order
+ 
+ @param issues - adjudicated issues referenced by the envelopes
+ 
+ @param editorRuleAddendum - extra rule line appended to the enforced
+ rule list, for prompt calibration experiments
+ 
+ @returns Messages plus the envelope numbering order
+ 
+ @example
+ ```ts
+ const plan = buildEditorMessages({ sourceText, targetText, envelopes, issues, },);
+ ```
  */
 export function buildEditorMessages(
   {
@@ -250,7 +250,7 @@ export function buildEditorMessages(
   },
 ): EditorPromptPlan {
   /**
-   * Rendered region blocks in envelope order.
+   Rendered region blocks in envelope order.
    */
   const blocks = envelopes.map(function toBlock(
     envelope,
@@ -265,8 +265,8 @@ export function buildEditorMessages(
   },);
 
   /**
-   * Fence no enclosed text can reproduce, chosen against every text below,
-   * the rendered regions included.
+   Fence no enclosed text can reproduce, chosen against every text below,
+   the rendered regions included.
    */
   const fence = selectFence({
     texts: [
@@ -279,7 +279,7 @@ export function buildEditorMessages(
   },);
 
   /**
-   * The passages either side, or nothing when this slice stands alone.
+   The passages either side, or nothing when this slice stands alone.
    */
   const nearbyBlock = ((neighbouringSourceText === undefined)
       || (neighbouringSourceText === ''))
@@ -294,8 +294,8 @@ ${fence} ${NEARBY_RULE} ${fence}
 `;
 
   /**
-   * System prompt with the calibration addendum composed in as one more
-   * machine-enforced rule, before the reply-shape block.
+   System prompt with the calibration addendum composed in as one more
+   machine-enforced rule, before the reply-shape block.
    */
   const systemPrompt = editorRuleAddendum === undefined
     ? EDITOR_SYSTEM_PROMPT

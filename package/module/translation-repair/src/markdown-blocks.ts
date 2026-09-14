@@ -16,26 +16,26 @@
 // an error, because a guard counting zero quotes reports nothing wrong.
 
 /**
- * Separator between top-level blocks, which is a blank line.
+ Separator between top-level blocks, which is a blank line.
  */
 const BLOCK_SEPARATOR = '\n\n';
 
 /**
- * Marker opening a blockquote.
+ Marker opening a blockquote.
  */
 const QUOTE_MARKER = '>';
 
 /**
- * Splits a passage into its top-level blocks, keeping no empty ones.
- *
- * @param text - passage to split
- *
- * @returns Its blocks, in order, each trimmed
- *
- * @example
- * ```ts
- * const blocks = topLevelBlocks({ text: 'One.\n\nTwo.', },);
- * ```
+ Splits a passage into its top-level blocks, keeping no empty ones.
+ 
+ @param text - passage to split
+ 
+ @returns Its blocks, in order, each trimmed
+ 
+ @example
+ ```ts
+ const blocks = topLevelBlocks({ text: 'One.\n\nTwo.', },);
+ ```
  */
 export function topLevelBlocks({ text, }: { readonly text: string; },): readonly string[] {
   return text
@@ -51,24 +51,24 @@ export function topLevelBlocks({ text, }: { readonly text: string; },): readonly
 }
 
 /**
- * How many top-level blocks of a passage are blockquotes.
- *
- * COUNTED AS BLOCKS RATHER THAN LINES, because a lane may legitimately reflow a
- * quotation and change its line count while keeping every word. What no lane may
- * do is leave the document with fewer quoted passages than the archive had.
- *
- * @param text - passage to count
- *
- * @returns Number of blockquote blocks
- *
- * @example
- * ```ts
- * const quotes = quoteBlockCount({ text: '> She said so.', },);
- * ```
+ How many top-level blocks of a passage are blockquotes.
+ 
+ COUNTED AS BLOCKS RATHER THAN LINES, because a lane may legitimately reflow a
+ quotation and change its line count while keeping every word. What no lane may
+ do is leave the document with fewer quoted passages than the archive had.
+ 
+ @param text - passage to count
+ 
+ @returns Number of blockquote blocks
+ 
+ @example
+ ```ts
+ const quotes = quoteBlockCount({ text: '> She said so.', },);
+ ```
  */
 export function quoteBlockCount({ text, }: { readonly text: string; },): number {
   /**
-   * Blocks that open with a quote marker.
+   Blocks that open with a quote marker.
    */
   const quotes = topLevelBlocks({ text, },)
     .filter(function isQuote(block,): boolean {

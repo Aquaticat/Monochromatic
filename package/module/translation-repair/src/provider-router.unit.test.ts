@@ -1,8 +1,8 @@
 /**
- * Tests for the provider router: which provider takes a call, what happens
- * when one refuses, and what a picture narrows.
- *
- * @module
+ Tests for the provider router: which provider takes a call, what happens
+ when one refuses, and what a picture narrows.
+ 
+ @module
  */
 
 import {
@@ -23,7 +23,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Plain text conversation reused across routed calls.
+ Plain text conversation reused across routed calls.
  */
 const MESSAGES = [
   {
@@ -33,7 +33,7 @@ const MESSAGES = [
 ];
 
 /**
- * Conversation carrying a picture, which narrows where it can go.
+ Conversation carrying a picture, which narrows where it can go.
  */
 const PICTURE_MESSAGES = [
   {
@@ -46,23 +46,23 @@ const PICTURE_MESSAGES = [
 ];
 
 /**
- * Abort signal every routed call in these tests carries.
+ Abort signal every routed call in these tests carries.
  */
 const SIGNAL = new AbortController().signal;
 
 /**
- * How long the slow first-provider stub holds its slot: long enough for a
- * concurrent caller to find it busy, short enough not to slow the suite.
+ How long the slow first-provider stub holds its slot: long enough for a
+ concurrent caller to find it busy, short enough not to slow the suite.
  */
 const SLOT_HOLD_MS = 50;
 
 /**
- * Production Synthetic slots measured per active model.
+ Production Synthetic slots measured per active model.
  */
 const EXPECTED_SYNTHETIC_SLOTS = 5;
 
 /**
- * One Synthetic slot per model, no ceiling elsewhere.
+ One Synthetic slot per model, no ceiling elsewhere.
  */
 const ONE_SYNTHETIC_SLOT = {
   synthetic: 1,
@@ -72,8 +72,8 @@ const ONE_SYNTHETIC_SLOT = {
 };
 
 /**
- * A value per provider, each one optional because a case names only the
- * providers it scripts.
+ A value per provider, each one optional because a case names only the
+ providers it scripts.
  */
 type PerProvider<ValueT,> = {
   readonly synthetic?: ValueT;
@@ -83,23 +83,23 @@ type PerProvider<ValueT,> = {
 };
 
 /**
- * Builds stub providers recording which took each call.
- *
- * @param status - status each provider refuses with, zero to answer
- *
- * @param refusals - how many calls each provider refuses before answering,
- * every call by default when it has a refusing status
- *
- * @param text - what each provider answers when it answers
- *
- * @param bodyText - what each provider's refusal says, `refused` by default
- *
- * @returns Every provider's caller plus the log of who was called
- *
- * @example
- * ```ts
- * const { callers, called, } = stubProviders({},);
- * ```
+ Builds stub providers recording which took each call.
+ 
+ @param status - status each provider refuses with, zero to answer
+ 
+ @param refusals - how many calls each provider refuses before answering,
+ every call by default when it has a refusing status
+ 
+ @param text - what each provider answers when it answers
+ 
+ @param bodyText - what each provider's refusal says, `refused` by default
+ 
+ @returns Every provider's caller plus the log of who was called
+ 
+ @example
+ ```ts
+ const { callers, called, } = stubProviders({},);
+ ```
  */
 function stubProviders(
   {
@@ -115,12 +115,12 @@ function stubProviders(
   },
 ) {
   /**
-   * Providers asked, in call order.
+   Providers asked, in call order.
    */
   const called: ProviderName[] = [];
 
   /**
-   * Answers each provider gives, distinguishable by default.
+   Answers each provider gives, distinguishable by default.
    */
   const answers: ProviderRecord<string> = {
     synthetic: text.synthetic ?? '{"spot":"windowsill"}',
@@ -130,7 +130,7 @@ function stubProviders(
   };
 
   /**
-   * How many more calls each provider refuses before answering.
+   How many more calls each provider refuses before answering.
    */
   const refusalsLeft: Record<ProviderName, number> = {
     synthetic: refusals.synthetic ?? (((status.synthetic ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
@@ -140,11 +140,11 @@ function stubProviders(
   };
 
   /**
-   * Builds one provider's caller.
-   *
-   * @param provider - provider this caller stands for
-   *
-   * @returns Caller that records itself, refuses as told, then answers
+   Builds one provider's caller.
+   
+   @param provider - provider this caller stands for
+   
+   @returns Caller that records itself, refuses as told, then answers
    */
   function callerFor(provider: ProviderName,) {
     return {
@@ -174,20 +174,20 @@ function stubProviders(
 }
 
 /**
- * Builds a budget view that answers as told and records refusals.
- *
- * @param dry - which providers read as out of budget
- *
- * @param holdsMs - what the holds report
- *
- * @param onHoldEnd - what a read after the holds were asked for does first
- *
- * @returns Budget view plus the providers marked as having refused us
- *
- * @example
- * ```ts
- * const { budgets, refused, } = stubBudgets({},);
- * ```
+ Builds a budget view that answers as told and records refusals.
+ 
+ @param dry - which providers read as out of budget
+ 
+ @param holdsMs - what the holds report
+ 
+ @param onHoldEnd - what a read after the holds were asked for does first
+ 
+ @returns Budget view plus the providers marked as having refused us
+ 
+ @example
+ ```ts
+ const { budgets, refused, } = stubBudgets({},);
+ ```
  */
 function stubBudgets(
   {
@@ -206,17 +206,17 @@ function stubBudgets(
   },
 ) {
   /**
-   * Providers that reported themselves out of budget, in order.
+   Providers that reported themselves out of budget, in order.
    */
   const refused: ProviderName[] = [];
 
   /**
-   * Wait each refusal named, in the same order, zero for none.
+   Wait each refusal named, in the same order, zero for none.
    */
   const statedWaits: number[] = [];
 
   /**
-   * View as the meters read it, which a refusal then overrides.
+   View as the meters read it, which a refusal then overrides.
    */
   const view: Record<ProviderName, boolean> = {
     synthetic: dry.synthetic ?? false,
@@ -229,7 +229,7 @@ function stubBudgets(
   };
 
   /**
-   * How many times the holds were asked for.
+   How many times the holds were asked for.
    */
   const holdReads = { count: 0, };
 
@@ -269,35 +269,35 @@ function stubBudgets(
 }
 
 /**
- * Guards a routed JSON answer.
- *
- * @param value - parsed candidate
- *
- * @returns Whether value carries a string spot
- *
- * @example
- * ```ts
- * isNapSpot({ spot: 'windowsill', },);
- * ```
+ Guards a routed JSON answer.
+ 
+ @param value - parsed candidate
+ 
+ @returns Whether value carries a string spot
+ 
+ @example
+ ```ts
+ isNapSpot({ spot: 'windowsill', },);
+ ```
  */
 function isNapSpot(value: unknown,): value is { readonly spot: string; } {
   return isJsonRecord(value,) && ((typeof value.spot) === 'string');
 }
 
 /**
- * Routes one text call for GLM-5.3-Flash, which every provider but Bedrock
- * serves and the run buys from each, and reports what happened.
- *
- * @param client - router under test
- *
- * @param modelId - model to ask
- *
- * @returns Reply text, or the error thrown
- *
- * @example
- * ```ts
- * const outcome = await ask({ client, },);
- * ```
+ Routes one text call for GLM-5.3-Flash, which every provider but Bedrock
+ serves and the run buys from each, and reports what happened.
+ 
+ @param client - router under test
+ 
+ @param modelId - model to ask
+ 
+ @returns Reply text, or the error thrown
+ 
+ @example
+ ```ts
+ const outcome = await ask({ client, },);
+ ```
  */
 async function ask(
   {
@@ -686,7 +686,7 @@ await describe({
         },);
 
         /**
-         * What a picture to a model no provider shows pictures to produces.
+         What a picture to a model no provider shows pictures to produces.
          */
         let thrown: unknown;
         try {
@@ -842,12 +842,12 @@ await describe({
         + 'negative and overflow to Hyper keeps working afterwards (`#240`)',
       fn: async () => {
         /**
-         * Providers asked, in call order.
+         Providers asked, in call order.
          */
         const called: ProviderName[] = [];
         /**
-         * First provider, holding its one slot long enough for a concurrent
-         * caller to find it busy.
+         First provider, holding its one slot long enough for a concurrent
+         caller to find it busy.
          */
         const synthetic = {
           chatText: async function chatText() {
@@ -857,8 +857,8 @@ await describe({
           },
         };
         /**
-         * Second provider, answering at once and unparseably, so the caller
-         * re-asks the first.
+         Second provider, answering at once and unparseably, so the caller
+         re-asks the first.
          */
         const hyper = {
           chatText: async function chatText() {

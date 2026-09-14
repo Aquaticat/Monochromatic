@@ -20,22 +20,22 @@ import type { ModelTransport, } from '../synthetic-transport.ts';
 //region Required providers for measured arms
 
 /**
- * Provider identities a validation arm may require before calls.
+ Provider identities a validation arm may require before calls.
  */
 export type RequiredProvider = ProviderName;
 
 /**
- * CLI token selecting required provider set.
+ CLI token selecting required provider set.
  */
 const REQUIRED_PROVIDERS_FLAG = '--require-providers';
 
 /**
- * Array index result when flag is absent.
+ Array index result when flag is absent.
  */
 const FLAG_NOT_FOUND = -1;
 
 /**
- * Environment variable carrying each provider's key.
+ Environment variable carrying each provider's key.
  */
 const KEY_VARIABLES: Readonly<Record<ProviderName, string>> = {
   synthetic: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY',
@@ -45,30 +45,30 @@ const KEY_VARIABLES: Readonly<Record<ProviderName, string>> = {
 };
 
 /**
- * Raised before model calls when measured arm provider requirement is not wet.
- *
- * @example
- * ```ts
- * throw new RequiredProviderError({ provider: 'hyper', reason: 'key missing', });
- * ```
+ Raised before model calls when measured arm provider requirement is not wet.
+ 
+ @example
+ ```ts
+ throw new RequiredProviderError({ provider: 'hyper', reason: 'key missing', });
+ ```
  */
 export class RequiredProviderError extends StatedRefusalError {
   /**
-   * Declares message safe because provider and reason are closed vocabulary.
+   Declares message safe because provider and reason are closed vocabulary.
    */
   override readonly messageNamesOnly: true = true;
 
   /**
-   * Constructs provider requirement refusal.
-   *
-   * @param provider - required provider
-   *
-   * @param reason - closed launch reason
-   *
-   * @example
-   * ```ts
-   * new RequiredProviderError({ provider, reason: 'budget dry', });
-   * ```
+   Constructs provider requirement refusal.
+   
+   @param provider - required provider
+   
+   @param reason - closed launch reason
+   
+   @example
+   ```ts
+   new RequiredProviderError({ provider, reason: 'budget dry', });
+   ```
    */
   public constructor(
     {
@@ -85,30 +85,30 @@ export class RequiredProviderError extends StatedRefusalError {
 }
 
 /**
- * Parses measured-arm provider requirement from CLI.
- *
- * @param argv - process arguments after executable and entrypoint included
- *
- * @returns Required providers in caller order without duplicates
- *
- * @throws {@link StatedRefusalError} when flag value is missing or unknown
- *
- * @example
- * ```ts
- * const required = readRequiredProviders({ argv: ['node', 'pass', '--require-providers', 'synthetic,hyper'], });
- * ```
+ Parses measured-arm provider requirement from CLI.
+ 
+ @param argv - process arguments after executable and entrypoint included
+ 
+ @returns Required providers in caller order without duplicates
+ 
+ @throws {@link StatedRefusalError} when flag value is missing or unknown
+ 
+ @example
+ ```ts
+ const required = readRequiredProviders({ argv: ['node', 'pass', '--require-providers', 'synthetic,hyper'], });
+ ```
  */
 export function readRequiredProviders(
   { argv, }: { readonly argv: readonly string[]; },
 ): readonly RequiredProvider[] {
   /**
-   * Flag position in argument list.
+   Flag position in argument list.
    */
   const at = argv.indexOf(REQUIRED_PROVIDERS_FLAG,);
   if (at === FLAG_NOT_FOUND)
     return [];
   /**
-   * Comma-separated provider value after flag.
+   Comma-separated provider value after flag.
    */
   const value = argv.at(at + 1,);
   if ((value === undefined) || (value === ''))
@@ -116,7 +116,7 @@ export function readRequiredProviders(
       says: `${REQUIRED_PROVIDERS_FLAG} needs one or more of ${PROVIDER_ORDER.join(', ',)}`,
     },);
   /**
-   * Parsed provider names before stable deduplication.
+   Parsed provider names before stable deduplication.
    */
   const parsedProviders = value
     .split(',',)
@@ -136,18 +136,18 @@ export function readRequiredProviders(
 }
 
 /**
- * Reads one provider's meter and refuses when it is dry or unreadable.
- *
- * @param provider - provider being gated
- *
- * @param readDry - live meter read answering whether the provider is dry
- *
- * @throws {@link RequiredProviderError} when the meter reads dry or cannot be read
- *
- * @example
- * ```ts
- * await gateProvider({ provider: 'hyper', readDry, },);
- * ```
+ Reads one provider's meter and refuses when it is dry or unreadable.
+ 
+ @param provider - provider being gated
+ 
+ @param readDry - live meter read answering whether the provider is dry
+ 
+ @throws {@link RequiredProviderError} when the meter reads dry or cannot be read
+ 
+ @example
+ ```ts
+ await gateProvider({ provider: 'hyper', readDry, },);
+ ```
  */
 async function gateProvider(
   {
@@ -159,7 +159,7 @@ async function gateProvider(
   },
 ): Promise<void> {
   /**
-   * Whether the live meter reads dry, or that it could not be read.
+   Whether the live meter reads dry, or that it could not be read.
    */
   const dry = await (async function read(): Promise<boolean | 'unreadable'> {
     try {
@@ -183,23 +183,23 @@ async function gateProvider(
 }
 
 /**
- * Requires selected provider keys and live non-dry meters before model calls.
- *
- * Ordinary runs pass empty requirement and retain any-provider behavior.
- * Validation and performance arms name the providers they require explicitly.
- *
- * @param required - providers measured arm requires wet
- *
- * @param transport - optional HTTP seam for tests
- *
- * @param signal - meter cancellation
- *
- * @throws {@link RequiredProviderError} before model call when requirement fails
- *
- * @example
- * ```ts
- * await assertRequiredProvidersReady({ required: ['synthetic', 'hyper'], signal, });
- * ```
+ Requires selected provider keys and live non-dry meters before model calls.
+ 
+ Ordinary runs pass empty requirement and retain any-provider behavior.
+ Validation and performance arms name the providers they require explicitly.
+ 
+ @param required - providers measured arm requires wet
+ 
+ @param transport - optional HTTP seam for tests
+ 
+ @param signal - meter cancellation
+ 
+ @throws {@link RequiredProviderError} before model call when requirement fails
+ 
+ @example
+ ```ts
+ await assertRequiredProvidersReady({ required: ['synthetic', 'hyper'], signal, });
+ ```
  */
 export async function assertRequiredProvidersReady(
   {
@@ -215,11 +215,11 @@ export async function assertRequiredProvidersReady(
   if (required.length === 0)
     return;
   /**
-   * Process environment read once for configured key names.
+   Process environment read once for configured key names.
    */
   const environment = process.env;
   /**
-   * Each required provider's key, read without exposing its value.
+   Each required provider's key, read without exposing its value.
    */
   const keys = required.map(function keyOf(provider,): {
     readonly provider: ProviderName;
@@ -243,7 +243,7 @@ export async function assertRequiredProvidersReady(
       },);
   }
   /**
-   * Optional transport forwarded only in tests.
+   Optional transport forwarded only in tests.
    */
   const seam = (transport === undefined) ? {} : { transport, };
   await Promise.all(keys.map(async function checkProvider(
@@ -254,7 +254,7 @@ export async function assertRequiredProvidersReady(
   ): Promise<void> {
     if (provider === 'synthetic') {
       /**
-       * Required Synthetic meter client.
+       Required Synthetic meter client.
        */
       const client = createSyntheticClient({
         apiKey: key,
@@ -270,7 +270,7 @@ export async function assertRequiredProvidersReady(
     }
     if (provider === 'hyper') {
       /**
-       * Required Hyper meter client.
+       Required Hyper meter client.
        */
       const client = createHyperClient({
         apiKey: key,
@@ -286,7 +286,7 @@ export async function assertRequiredProvidersReady(
     }
     if (provider === 'bedrock') {
       /**
-       * Required Bedrock meter client, over the ledger the environment names.
+       Required Bedrock meter client, over the ledger the environment names.
        */
       const client = createBedrockClient({
         apiKey: key,
@@ -302,7 +302,7 @@ export async function assertRequiredProvidersReady(
       return;
     }
     /**
-     * Required OpenRouter meter client.
+     Required OpenRouter meter client.
      */
     const client = createOpenRouterClient({
       apiKey: key,

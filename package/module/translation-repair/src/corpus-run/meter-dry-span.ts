@@ -31,91 +31,91 @@ import type { MeterSample, } from './meter-sample-read.ts';
 // form in `doc/research/optionality-enforcement.md`.
 
 /**
- * How many readings fell in each state.
+ How many readings fell in each state.
  */
 export type StateCounts = {
   /**
-   * Readings where the meter reported budget left.
+   Readings where the meter reported budget left.
    */
   readonly wet: number;
 
   /**
-   * Readings where the meter reported nothing left.
+   Readings where the meter reported nothing left.
    */
   readonly dry: number;
 
   /**
-   * Readings where the meter could not be reached at all.
+   Readings where the meter could not be reached at all.
    */
   readonly unreadable: number;
 };
 
 /**
- * One stretch a provider is known to have been out for.
+ One stretch a provider is known to have been out for.
  */
 export type DrySpan = {
   /**
-   * Milliseconds between the first and last reading that confirmed the outage.
-   * Zero where a single reading caught it.
+   Milliseconds between the first and last reading that confirmed the outage.
+   Zero where a single reading caught it.
    */
   readonly confirmedMs: number;
 
   /**
-   * Milliseconds between the last wet reading before and the first wet reading
-   * after, absent where the record does not carry one of them.
+   Milliseconds between the last wet reading before and the first wet reading
+   after, absent where the record does not carry one of them.
    */
   readonly boundedByMs?: number;
 
   /**
-   * Whether no wet reading precedes this stretch, so it may have started
-   * before the record does.
+   Whether no wet reading precedes this stretch, so it may have started
+   before the record does.
    */
   readonly openBefore: boolean;
 
   /**
-   * Whether no wet reading follows this stretch, so it may still be running.
+   Whether no wet reading follows this stretch, so it may still be running.
    */
   readonly openAfter: boolean;
 
   /**
-   * When the outage was first confirmed.
+   When the outage was first confirmed.
    */
   readonly firstAt: number;
 
   /**
-   * When the outage was last confirmed.
+   When the outage was last confirmed.
    */
   readonly lastAt: number;
 };
 
 /**
- * One provider's reading at one moment.
+ One provider's reading at one moment.
  */
 export type StateReading = {
   /**
-   * Epoch milliseconds the reading was taken at.
+   Epoch milliseconds the reading was taken at.
    */
   readonly at: number;
 
   /**
-   * What that provider's meter said.
+   What that provider's meter said.
    */
   readonly state: MeterState;
 };
 
 /**
- * One provider's readings in time order.
+ One provider's readings in time order.
  */
 export type StateSeries = readonly StateReading[];
 
 /**
- * When the nearest wet reading on one side was, or that there is none.
+ When the nearest wet reading on one side was, or that there is none.
  */
 type WetNeighbour = number | 'none';
 
 /**
- * One reading with the nearest wet reading on each side already attached, so
- * a span can be closed without indexing back into the series.
+ One reading with the nearest wet reading on each side already attached, so
+ a span can be closed without indexing back into the series.
  */
 type BoundedReading = {
   readonly at: number;
@@ -125,7 +125,7 @@ type BoundedReading = {
 };
 
 /**
- * A stretch being confirmed, or that none is open.
+ A stretch being confirmed, or that none is open.
  */
 type OpenSpan = {
   readonly first: BoundedReading;
@@ -133,18 +133,18 @@ type OpenSpan = {
 } | 'none';
 
 /**
- * Pulls one provider's column out of the samples, in time order.
- *
- * @param samples - readings of both providers
- *
- * @param provider - which column to read
- *
- * @returns That provider's states, sorted by when they were read
- *
- * @example
- * ```ts
- * const series = seriesFor({ samples, provider: 'hyper', },);
- * ```
+ Pulls one provider's column out of the samples, in time order.
+ 
+ @param samples - readings of both providers
+ 
+ @param provider - which column to read
+ 
+ @returns That provider's states, sorted by when they were read
+ 
+ @example
+ ```ts
+ const series = seriesFor({ samples, provider: 'hyper', },);
+ ```
  */
 export function seriesFor(
   {
@@ -160,7 +160,7 @@ export function seriesFor(
     // no reading for it, rather than a reading in a state that never was.
     .flatMap(function toReading(sample,): readonly StateReading[] {
       /**
-       * What this sample said about the provider, or that it said nothing.
+       What this sample said about the provider, or that it said nothing.
        */
       const state = sample[provider];
       if (state === 'absent')
@@ -181,16 +181,16 @@ export function seriesFor(
 }
 
 /**
- * Counts a provider's readings by state.
- *
- * @param series - that provider's readings
- *
- * @returns How many fell in each state
- *
- * @example
- * ```ts
- * const counts = countStates({ series, },);
- * ```
+ Counts a provider's readings by state.
+ 
+ @param series - that provider's readings
+ 
+ @returns How many fell in each state
+ 
+ @example
+ ```ts
+ const counts = countStates({ series, },);
+ ```
  */
 export function countStates(
   { series, }: { readonly series: StateSeries; },
@@ -215,22 +215,22 @@ export function countStates(
 }
 
 /**
- * Fraction of answering readings that found budget left.
- *
- * @param counts - readings by state
- *
- * @returns Wet fraction, or that no reading answered
- *
- * @example
- * ```ts
- * const wetFraction = dutyCycle({ counts, },);
- * ```
+ Fraction of answering readings that found budget left.
+ 
+ @param counts - readings by state
+ 
+ @returns Wet fraction, or that no reading answered
+ 
+ @example
+ ```ts
+ const wetFraction = dutyCycle({ counts, },);
+ ```
  */
 export function dutyCycle(
   { counts, }: { readonly counts: StateCounts; },
 ): number | 'none-answered' {
   /**
-   * Readings whose meter answered, which is the only honest denominator.
+   Readings whose meter answered, which is the only honest denominator.
    */
   const answered = counts.wet + counts.dry;
 
@@ -241,28 +241,28 @@ export function dutyCycle(
 }
 
 /**
- * For each reading, when the nearest wet reading before it was, walking
- * forward once.
- *
- * @param series - that provider's readings
- *
- * @returns Neighbours aligned to `series`
- *
- * @example
- * ```ts
- * const before = wetBefore({ series, },);
- * ```
+ For each reading, when the nearest wet reading before it was, walking
+ forward once.
+ 
+ @param series - that provider's readings
+ 
+ @returns Neighbours aligned to `series`
+ 
+ @example
+ ```ts
+ const before = wetBefore({ series, },);
+ ```
  */
 function wetBefore(
   { series, }: { readonly series: StateSeries; },
 ): readonly WetNeighbour[] {
   /**
-   * Nearest preceding wet reading per index, filled as the walk proceeds.
+   Nearest preceding wet reading per index, filled as the walk proceeds.
    */
   const found: WetNeighbour[] = [];
 
   /**
-   * Most recent wet reading seen so far.
+   Most recent wet reading seen so far.
    */
   let seen: WetNeighbour = 'none';
 
@@ -277,22 +277,22 @@ function wetBefore(
 }
 
 /**
- * For each reading, when the nearest wet reading after it was.
- *
- * @param series - that provider's readings
- *
- * @returns Neighbours aligned to `series`
- *
- * @example
- * ```ts
- * const after = wetAfter({ series, },);
- * ```
+ For each reading, when the nearest wet reading after it was.
+ 
+ @param series - that provider's readings
+ 
+ @returns Neighbours aligned to `series`
+ 
+ @example
+ ```ts
+ const after = wetAfter({ series, },);
+ ```
  */
 function wetAfter(
   { series, }: { readonly series: StateSeries; },
 ): readonly WetNeighbour[] {
   /**
-   * Neighbours read off the series walked backwards.
+   Neighbours read off the series walked backwards.
    */
   const backwards = wetBefore({ series: series.toReversed(), },);
 
@@ -300,18 +300,18 @@ function wetAfter(
 }
 
 /**
- * Closes one confirmed stretch into a span.
- *
- * @param first - reading that first confirmed the outage
- *
- * @param last - reading that last confirmed it
- *
- * @returns Stretch with both bounds and whether either end is open
- *
- * @example
- * ```ts
- * const span = closeSpan({ first, last, },);
- * ```
+ Closes one confirmed stretch into a span.
+ 
+ @param first - reading that first confirmed the outage
+ 
+ @param last - reading that last confirmed it
+ 
+ @returns Stretch with both bounds and whether either end is open
+ 
+ @example
+ ```ts
+ const span = closeSpan({ first, last, },);
+ ```
  */
 function closeSpan(
   {
@@ -323,12 +323,12 @@ function closeSpan(
   },
 ): DrySpan {
   /**
-   * Last moment the provider was known up before this stretch.
+   Last moment the provider was known up before this stretch.
    */
   const opened = first.wetBefore;
 
   /**
-   * First moment it was known up again after it.
+   First moment it was known up again after it.
    */
   const closed = last.wetAfter;
 
@@ -347,32 +347,32 @@ function closeSpan(
 }
 
 /**
- * Every stretch a provider is known to have been out for.
- *
- * @param series - that provider's readings
- *
- * @returns Stretches in time order, empty where no reading found it out
- *
- * @example
- * ```ts
- * const spans = drySpans({ series, },);
- * ```
+ Every stretch a provider is known to have been out for.
+ 
+ @param series - that provider's readings
+ 
+ @returns Stretches in time order, empty where no reading found it out
+ 
+ @example
+ ```ts
+ const spans = drySpans({ series, },);
+ ```
  */
 export function drySpans(
   { series, }: { readonly series: StateSeries; },
 ): readonly DrySpan[] {
   /**
-   * Nearest wet reading before each position.
+   Nearest wet reading before each position.
    */
   const before = wetBefore({ series, },);
 
   /**
-   * Nearest wet reading after each position.
+   Nearest wet reading after each position.
    */
   const after = wetAfter({ series, },);
 
   /**
-   * Readings carrying their own bounds, so closing a span never indexes back.
+   Readings carrying their own bounds, so closing a span never indexes back.
    */
   const bounded: readonly BoundedReading[] = series
     .map(function attach(
@@ -388,12 +388,12 @@ export function drySpans(
     },);
 
   /**
-   * Stretches closed so far.
+   Stretches closed so far.
    */
   const spans: DrySpan[] = [];
 
   /**
-   * Stretch currently being confirmed.
+   Stretch currently being confirmed.
    */
   let open: OpenSpan = 'none';
 
@@ -422,20 +422,20 @@ export function drySpans(
 }
 
 /**
- * Longest stretch a provider is known to have been out for.
- *
- * RANKED BY CONFIRMED LENGTH, not by upper bound, because the upper bound of a
- * stretch surrounded by distant readings can exceed the confirmed length of a
- * genuinely longer outage that happened to be sampled closely.
- *
- * @param spans - stretches to rank
- *
- * @returns Longest stretch, or that the provider was never found out
- *
- * @example
- * ```ts
- * const worst = longestDrySpan({ spans, },);
- * ```
+ Longest stretch a provider is known to have been out for.
+ 
+ RANKED BY CONFIRMED LENGTH, not by upper bound, because the upper bound of a
+ stretch surrounded by distant readings can exceed the confirmed length of a
+ genuinely longer outage that happened to be sampled closely.
+ 
+ @param spans - stretches to rank
+ 
+ @returns Longest stretch, or that the provider was never found out
+ 
+ @example
+ ```ts
+ const worst = longestDrySpan({ spans, },);
+ ```
  */
 export function longestDrySpan(
   { spans, }: { readonly spans: readonly DrySpan[]; },

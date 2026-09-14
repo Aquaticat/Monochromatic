@@ -4,25 +4,25 @@ import type { ProducerInputCompletion, } from './producer-input-model.ts';
 //region Completion syntax shared by the producer and its persisted-output consumer
 
 /**
- * Raw SHA-256 identity width does not come from supplied completion content.
+ Raw SHA-256 identity width does not come from supplied completion content.
  */
 const SHA256_WIDTH = 64;
 
 /**
- * Checks a closed native JSON record before its fields receive authority.
- *
- * @param value - decoded completion field
- *
- * @param keys - fixed schema keys
- *
- * @returns Checked native JSON record
- *
- * @throws ProducerInputRunError when object or key shape differs
- *
- * @example
- * ```ts
- * const valid = completionRecord({ value, keys: ['file', 'bytes', 'sha256'] });
- * ```
+ Checks a closed native JSON record before its fields receive authority.
+ 
+ @param value - decoded completion field
+ 
+ @param keys - fixed schema keys
+ 
+ @returns Checked native JSON record
+ 
+ @throws ProducerInputRunError when object or key shape differs
+ 
+ @example
+ ```ts
+ const valid = completionRecord({ value, keys: ['file', 'bytes', 'sha256'] });
+ ```
  */
 function completionRecord({
   value,
@@ -38,7 +38,7 @@ function completionRecord({
       locator: 'completion record',
     });
   /**
-   * Native own-property projection preserves unknown values without asserting a record shape.
+   Native own-property projection preserves unknown values without asserting a record shape.
    */
   const fields: Readonly<Record<string, unknown>> = Object.fromEntries(Object.entries(value));
   if ((Object.keys(fields)
@@ -55,16 +55,16 @@ function completionRecord({
 }
 
 /**
- * Checks the artifact identity without accepting alternate digest spellings.
- *
- * @param value - decoded SHA-256 field
- *
- * @returns Whether its spelling is canonical
- *
- * @example
- * ```ts
- * const valid = completionDigest(value);
- * ```
+ Checks the artifact identity without accepting alternate digest spellings.
+ 
+ @param value - decoded SHA-256 field
+ 
+ @returns Whether its spelling is canonical
+ 
+ @example
+ ```ts
+ const valid = completionDigest(value);
+ ```
  */
 function completionDigest(value: unknown): value is string {
   if (((typeof value) !== 'string') || (value.length !== SHA256_WIDTH))
@@ -77,24 +77,24 @@ function completionDigest(value: unknown): value is string {
 }
 
 /**
- * Parses completion against independently owned run and launch primitives.
- * Filesystem observation and artifact hashing remain with the I/O owner;
- * this reader never turns a completion record into a creation or review certificate.
- *
- * @param text - bounded completion JSON, never logged as a parse diagnostic
- *
- * @param runId - current exclusive run identity established outside the supplied completion
- *
- * @param launchSha256 - independently matched launch digest for that run
- *
- * @returns Owned completion metadata with no phase or writer authority
- *
- * @throws ProducerInputRunError when identity or schema differs
- *
- * @example
- * ```ts
- * const completion = parseProducerInputCompletion({ text, runId, launchSha256 });
- * ```
+ Parses completion against independently owned run and launch primitives.
+ Filesystem observation and artifact hashing remain with the I/O owner;
+ this reader never turns a completion record into a creation or review certificate.
+ 
+ @param text - bounded completion JSON, never logged as a parse diagnostic
+ 
+ @param runId - current exclusive run identity established outside the supplied completion
+ 
+ @param launchSha256 - independently matched launch digest for that run
+ 
+ @returns Owned completion metadata with no phase or writer authority
+ 
+ @throws ProducerInputRunError when identity or schema differs
+ 
+ @example
+ ```ts
+ const completion = parseProducerInputCompletion({ text, runId, launchSha256 });
+ ```
  */
 export function parseProducerInputCompletion({
   text,
@@ -107,11 +107,11 @@ export function parseProducerInputCompletion({
 },): ProducerInputCompletion {
   try {
     /**
-     * Decoder output remains unknown until every consumed field is checked.
+     Decoder output remains unknown until every consumed field is checked.
      */
     const decoded: unknown = JSON.parse(text);
     /**
-     * Root keys are owned before any nested identity is interpreted.
+     Root keys are owned before any nested identity is interpreted.
      */
     const value = completionRecord({
       value: decoded,
@@ -126,7 +126,7 @@ export function parseProducerInputCompletion({
       ]
     });
     /**
-     * Artifact identity describes an existing fixed filename, never another output path.
+     Artifact identity describes an existing fixed filename, never another output path.
      */
     const artifact = completionRecord({
       value: value.artifact,

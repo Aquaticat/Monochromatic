@@ -10,47 +10,47 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 // Live acquisition and qualification share all findings without moving definition separation ahead of persistence.
 
 /**
- * Existing queried-parent normalization and persistence eligibility.
- *
- * @example
- * ```ts
- * const details = queriedBlockPairingDetails({ outcome, pair, pairIndex, targetContainers });
- * ```
+ Existing queried-parent normalization and persistence eligibility.
+ 
+ @example
+ ```ts
+ const details = queriedBlockPairingDetails({ outcome, pair, pairIndex, targetContainers });
+ ```
  */
 export type QueriedBlockPairingDetails = {
   /**
-   * Normalized relations before definition-order separation.
+   Normalized relations before definition-order separation.
    */
   readonly pairs: readonly BlockPair[];
   /**
-   * Exact stage, media, coverage and fallback findings in production order.
+   Exact stage, media, coverage and fallback findings in production order.
    */
   readonly findings: readonly string[];
   /**
-   * Existing cache gate, not semantic qualification.
+   Existing cache gate, not semantic qualification.
    */
   readonly canPersistPairing: boolean;
 };
 
 /**
- * Derives the current queried handoff without persisting or changing its ordering.
- *
- * @param outcome - current pairing stage result
- *
- * @param pair - current complete parent
- *
- * @param pairIndex - original alignment position used in findings
- *
- * @param targetContainers - complete target parser's media ownership spans
- *
- * @returns Production normalization and unchanged cache gate
- *
- * @throws Error when existing structural media validation fails
- *
- * @example
- * ```ts
- * const { pairs, findings, canPersistPairing, } = queriedBlockPairingDetails({ outcome, pair, pairIndex, targetContainers });
- * ```
+ Derives the current queried handoff without persisting or changing its ordering.
+ 
+ @param outcome - current pairing stage result
+ 
+ @param pair - current complete parent
+ 
+ @param pairIndex - original alignment position used in findings
+ 
+ @param targetContainers - complete target parser's media ownership spans
+ 
+ @returns Production normalization and unchanged cache gate
+ 
+ @throws Error when existing structural media validation fails
+ 
+ @example
+ ```ts
+ const { pairs, findings, canPersistPairing, } = queriedBlockPairingDetails({ outcome, pair, pairIndex, targetContainers });
+ ```
  */
 export function queriedBlockPairingDetails({
   outcome,
@@ -64,17 +64,17 @@ export function queriedBlockPairingDetails({
   readonly targetContainers: readonly ContainerSpan[];
 },): QueriedBlockPairingDetails {
   /**
-   * Source blocks retain their current local indexes.
+   Source blocks retain their current local indexes.
    */
   const sourceNodes = pair.source
     .nodes;
   /**
-   * Target blocks retain the same current-question convention.
+   Target blocks retain the same current-question convention.
    */
   const targetNodes = pair.target
     .nodes;
   /**
-   * Media ownership joined to the relations the roster actually supplied.
+   Media ownership joined to the relations the roster actually supplied.
    */
   const media = claimMediaAdjacentTargets({
     pairs: outcome.pairs,
@@ -83,11 +83,11 @@ export function queriedBlockPairingDetails({
     targetContainers,
   },);
   /**
-   * Normalized relations the cache retains before definition-order separation.
+   Normalized relations the cache retains before definition-order separation.
    */
   const { pairs, } = media;
   /**
-   * Archive blocks still outside a source claim prevent terminal caching.
+   Archive blocks still outside a source claim prevent terminal caching.
    */
   const unclaimed = declinedTargetIdsOfPairing({
     pairs,
@@ -95,7 +95,7 @@ export function queriedBlockPairingDetails({
     targetNodes,
   },);
   /**
-   * Findings retain exactly the cold path's stage-then-media order.
+   Findings retain exactly the cold path's stage-then-media order.
    */
   const findings: string[] = [
     ...outcome.findings,
@@ -104,7 +104,7 @@ export function queriedBlockPairingDetails({
   ];
   if (outcome.usable > 0) {
     /**
-     * Counts describe roster relations, not additional structural media claims.
+     Counts describe roster relations, not additional structural media claims.
      */
     const counts = countPairedBlocks({ pairs: outcome.pairs, },);
     findings.push(
@@ -112,7 +112,7 @@ export function queriedBlockPairingDetails({
     );
   }
   /**
-   * Existing cache gate excludes unresolved agreement and unclaimed archive blocks.
+   Existing cache gate excludes unresolved agreement and unclaimed archive blocks.
    */
   const canPersistPairing = outcome.cacheEligible ? unclaimed.size === 0 : false;
   if ((!canPersistPairing) && (outcome.usable > 0))

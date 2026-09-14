@@ -8,31 +8,31 @@
 // can disagree.
 
 /**
- * Lowest HTTP status treated as success.
+ Lowest HTTP status treated as success.
  */
 const HTTP_SUCCESS_MIN = 200;
 
 /**
- * First HTTP status past the success family.
+ First HTTP status past the success family.
  */
 const HTTP_SUCCESS_MAX_EXCLUSIVE = 300;
 
 /**
- * Whether a status says the body is worth reading as an answer.
- *
- * A REDIRECT IS NOT A SUCCESS HERE. Neither provider redirects an API call,
- * and a 3xx body carries no completion, so admitting one would send an empty
- * or HTML body into a parser that reports it as a provider contract violation
- * rather than as the misrouted request it is.
- *
- * @param status - HTTP status the transport reported
- *
- * @returns Whether the reply carries an answer rather than a failure
- *
- * @example
- * ```ts
- * if (!isSuccessStatus({ status: reply.status, },)) throw new SyntheticHttpError({ status, bodyText, },);
- * ```
+ Whether a status says the body is worth reading as an answer.
+ 
+ A REDIRECT IS NOT A SUCCESS HERE. Neither provider redirects an API call,
+ and a 3xx body carries no completion, so admitting one would send an empty
+ or HTML body into a parser that reports it as a provider contract violation
+ rather than as the misrouted request it is.
+ 
+ @param status - HTTP status the transport reported
+ 
+ @returns Whether the reply carries an answer rather than a failure
+ 
+ @example
+ ```ts
+ if (!isSuccessStatus({ status: reply.status, },)) throw new SyntheticHttpError({ status, bodyText, },);
+ ```
  */
 export function isSuccessStatus(
   { status, }: { readonly status: number; },

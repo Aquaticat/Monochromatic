@@ -1,22 +1,22 @@
 /**
- * Tests for naming the one built pipeline a draw's pool was settled under.
- *
- * THE FUNCTION IS KEYED ON THE KEPT NAMES, NOT ON THE LOOKUP, and that is the
- * property most worth pinning. `EligibleEntries.digestByEntry` answers for every
- * entry the pool ADMITTED, while a draw keeps a subset of those; reading the
- * lookup's values directly would let an entry the draw never touched decide the
- * pool's generation, or turn a clean single-generation draw into the
- * two-generation refusal below. Every case here therefore hands over a lookup
- * wider than the kept names.
- *
- * THE COUNT AND THE DIGEST ARE COUNTED OVER DIFFERENT SETS, deliberately. The
- * digest comes from kept entries that recorded one, and `entries` comes from
- * every kept name. A pool where half the artifacts predate digest recording
- * still has one generation and still offered the sample its full width, so
- * collapsing the two counts would understate the pool a graded sheet was drawn
- * from. `#60` is the gap this closes, and that asymmetry is the closing.
- *
- * @module
+ Tests for naming the one built pipeline a draw's pool was settled under.
+ 
+ THE FUNCTION IS KEYED ON THE KEPT NAMES, NOT ON THE LOOKUP, and that is the
+ property most worth pinning. `EligibleEntries.digestByEntry` answers for every
+ entry the pool ADMITTED, while a draw keeps a subset of those; reading the
+ lookup's values directly would let an entry the draw never touched decide the
+ pool's generation, or turn a clean single-generation draw into the
+ two-generation refusal below. Every case here therefore hands over a lookup
+ wider than the kept names.
+ 
+ THE COUNT AND THE DIGEST ARE COUNTED OVER DIFFERENT SETS, deliberately. The
+ digest comes from kept entries that recorded one, and `entries` comes from
+ every kept name. A pool where half the artifacts predate digest recording
+ still has one generation and still offered the sample its full width, so
+ collapsing the two counts would understate the pool a graded sheet was drawn
+ from. `#60` is the gap this closes, and that asymmetry is the closing.
+ 
+ @module
  */
 
 import {
@@ -33,55 +33,55 @@ import {
 //region Pool generation tests
 
 /**
- * Artifact one household's draw kept.
+ Artifact one household's draw kept.
  */
 const WHISKERS = 'whiskers.json';
 
 /**
- * Second artifact of that draw.
+ Second artifact of that draw.
  */
 const MITTENS = 'mittens.json';
 
 /**
- * Third artifact of that draw.
+ Third artifact of that draw.
  */
 const SAFFRON = 'saffron.json';
 
 /**
- * Artifact the pool admitted and the draw did NOT keep.
- *
- * Present in every lookup below, so any case that starts reading the lookup
- * rather than the kept names fails on the extra generation it introduces.
+ Artifact the pool admitted and the draw did NOT keep.
+ 
+ Present in every lookup below, so any case that starts reading the lookup
+ rather than the kept names fails on the extra generation it introduces.
  */
 const UNDRAWN = 'pepperbox.json';
 
 /**
- * Built pipeline most of these artifacts were settled under.
+ Built pipeline most of these artifacts were settled under.
  */
 const SETTLED_UNDER = 'c4f9e1a7b2d6';
 
 /**
- * A different built pipeline, which a pool may not span.
+ A different built pipeline, which a pool may not span.
  */
 const OTHER_BUILD = '8e3a0d5c17bf';
 
 /**
- * Third build, carried only by the entry no draw kept.
+ Third build, carried only by the entry no draw kept.
  */
 const UNDRAWN_BUILD = 'fa27b9046e3d';
 
 /**
- * Why a pool that recorded nothing cannot name a generation.
+ Why a pool that recorded nothing cannot name a generation.
  */
 const NOTHING_RECORDED = 'no kept entry recorded a pipeline digest';
 
 /**
- * Why a pool spanning builds cannot name one either.
+ Why a pool spanning builds cannot name one either.
  */
 const TWO_GENERATIONS = 'pool holds 2 generations, which the pool guard should have refused';
 
 /**
- * Artifacts the whole-household draw kept.
+ Artifacts the whole-household draw kept.
  */
 const WHOLE_HOUSEHOLD: readonly string[] = [
   WHISKERS,
@@ -90,27 +90,27 @@ const WHOLE_HOUSEHOLD: readonly string[] = [
 ];
 
 /**
- * How many that comes to, which is what a manifest reports as the pool width.
+ How many that comes to, which is what a manifest reports as the pool width.
  */
 const HOUSEHOLD_SIZE = 3;
 
 /**
- * Builds an eligibility result carrying one digest lookup and nothing else the
- * function reads.
- *
- * The other fields are filled with what an empty pool would carry rather than
- * with the kept names, precisely because `poolGeneration` must not consult
- * them: a fixture that agreed with the kept names could not tell a reader of
- * `entryIds` from a reader of `names`.
- *
- * @param digests - what each admitted entry recorded, keyed by artifact name
- *
- * @returns Eligibility result shaped for this function's one question
- *
- * @example
- * ```ts
- * const eligible = pooled({ digests: [[WHISKERS, SETTLED_UNDER,],], },);
- * ```
+ Builds an eligibility result carrying one digest lookup and nothing else the
+ function reads.
+ 
+ The other fields are filled with what an empty pool would carry rather than
+ with the kept names, precisely because `poolGeneration` must not consult
+ them: a fixture that agreed with the kept names could not tell a reader of
+ `entryIds` from a reader of `names`.
+ 
+ @param digests - what each admitted entry recorded, keyed by artifact name
+ 
+ @returns Eligibility result shaped for this function's one question
+ 
+ @example
+ ```ts
+ const eligible = pooled({ digests: [[WHISKERS, SETTLED_UNDER,],], },);
+ ```
  */
 function pooled(
   {

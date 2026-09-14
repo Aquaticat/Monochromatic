@@ -1,8 +1,8 @@
 /**
- * Tests for the derivability probe wire and ensemble stage.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the derivability probe wire and ensemble stage.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -22,12 +22,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the stage under test.
+ Logger for the stage under test.
  */
 const l = tagged({ tag: 'derivability-probe-test', },);
 
 /**
- * References for a two-seed entry.
+ References for a two-seed entry.
  */
 const REFERENCES = [
   {
@@ -41,12 +41,12 @@ const REFERENCES = [
 ] as const;
 
 /**
- * Client scripted per model with a fixed verdict list; a model in the
- * silent set loses its voice so quorum paths can be exercised.
- *
- * @param verdictsByModel - verdicts each model casts, seed order
- *
- * @param silent - models whose calls fail
+ Client scripted per model with a fixed verdict list; a model in the
+ silent set loses its voice so quorum paths can be exercised.
+ 
+ @param verdictsByModel - verdicts each model casts, seed order
+ 
+ @param silent - models whose calls fail
  */
 function probingClient(
   {
@@ -73,12 +73,12 @@ function probingClient(
       }
 
       /**
-       * Verdicts this model casts, defaulting to all derivable.
+       Verdicts this model casts, defaulting to all derivable.
        */
       const verdicts = verdictsByModel[request.modelId] ?? ['derivable', 'derivable',];
 
       /**
-       * Scripted wire report over the candidate numbering.
+       Scripted wire report over the candidate numbering.
        */
       const scripted: unknown = {
         judgments: verdicts.map(function toJudgment(verdict, index,) {
@@ -103,7 +103,7 @@ function probingClient(
 }
 
 /**
- * Three-judge roster for the stage tests.
+ Three-judge roster for the stage tests.
  */
 const JUDGES: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.3-Flash',

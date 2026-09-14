@@ -1,8 +1,8 @@
 /**
- * Tests for the naturalness refinement stage over a scripted client.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the naturalness refinement stage over a scripted client.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -23,29 +23,29 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the stage under test.
+ Logger for the stage under test.
  */
 const l = tagged({ tag: 'refine-stage-test', },);
 
 /**
- * Original the refinement is checked against.
+ Original the refinement is checked against.
  */
 const SOURCE_TEXT = '猫猫每天下午都在窗台上晒太阳，光移动的时候她也跟着移动。';
 
 /**
- * Repaired slice, one long single-line paragraph so it clears eligibility.
+ Repaired slice, one long single-line paragraph so it clears eligibility.
  */
 const REPAIRED_TEXT =
   'The cat is doing the sunbathing on the windowsill in every afternoon, and when the light is moving across the floor she is following it without any hurry at all.';
 
 /**
- * A more natural rendering carrying the same content.
+ A more natural rendering carrying the same content.
  */
 const SMOOTH_TEXT =
   'The cat sunbathes on the windowsill every afternoon, and when the light moves across the floor she follows it without hurry.';
 
 /**
- * Roster judges are drawn from.
+ Roster judges are drawn from.
  */
 const JUDGES: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -55,39 +55,39 @@ const JUDGES: readonly RosterModelId[] = [
 ];
 
 /**
- * Refiners proposing rewrites.
+ Refiners proposing rewrites.
  */
 const REFINERS: readonly RosterModelId[] = ['hf:zai-org/GLM-5.3-Flash',];
 
 /**
- * Envelopes and definitions of the repaired fixture slice.
- *
- * @returns Refinable slice derived from the fixture
- *
- * @example
- * ```ts
- * const slice = fixtureSlice();
- * ```
+ Envelopes and definitions of the repaired fixture slice.
+ 
+ @returns Refinable slice derived from the fixture
+ 
+ @example
+ ```ts
+ const slice = fixtureSlice();
+ ```
  */
 function fixtureSlice() {
   return deriveRefinableEnvelopes({ document: parseDocument({ text: REPAIRED_TEXT, },), },);
 }
 
 /**
- * Client scripting one rewriter reply and one ballot per judge.
- *
- * @param newText - replacement or per-model replacement, absent to propose none
- *
- * @param ballot - fixed or per-model one-based choice, zero to decline
- *
- * @param selectionSheets - optional sink receiving selector conversations
- *
- * @returns Client usable by the refinement stage
- *
- * @example
- * ```ts
- * const client = scriptedRefiner({ newText: SMOOTH_TEXT, ballot: 1, },);
- * ```
+ Client scripting one rewriter reply and one ballot per judge.
+ 
+ @param newText - replacement or per-model replacement, absent to propose none
+ 
+ @param ballot - fixed or per-model one-based choice, zero to decline
+ 
+ @param selectionSheets - optional sink receiving selector conversations
+ 
+ @returns Client usable by the refinement stage
+ 
+ @example
+ ```ts
+ const client = scriptedRefiner({ newText: SMOOTH_TEXT, ballot: 1, },);
+ ```
  */
 function scriptedRefiner(
   {
@@ -112,7 +112,7 @@ function scriptedRefiner(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Stage name from the structured-output constraint.
+       Stage name from the structured-output constraint.
        */
       const stage = request.responseFormat
         ?.json_schema
@@ -120,18 +120,18 @@ function scriptedRefiner(
         ?? '';
 
       /**
-       * Scripted reply for the stage.
+       Scripted reply for the stage.
        */
       if ((stage !== 'refine_report') && (selectionSheets !== undefined))
         selectionSheets.push(JSON.stringify(request.messages,),);
       /**
-       * Replacement this particular rewriter returns.
+       Replacement this particular rewriter returns.
        */
       const modelText = ((typeof newText) === 'function')
         ? newText(request.modelId,)
         : newText;
       /**
-       * Choice this particular selector casts.
+       Choice this particular selector casts.
        */
       const modelBallot = ((typeof ballot) === 'function')
         ? ballot(request.modelId,)
@@ -164,16 +164,16 @@ function scriptedRefiner(
 }
 
 /**
- * Runs the stage over the fixture slice.
- *
- * @param client - scripted client
- *
- * @returns Stage result
- *
- * @example
- * ```ts
- * const result = await runFixture(scriptedRefiner({ ballot: 1, },),);
- * ```
+ Runs the stage over the fixture slice.
+ 
+ @param client - scripted client
+ 
+ @returns Stage result
+ 
+ @example
+ ```ts
+ const result = await runFixture(scriptedRefiner({ ballot: 1, },),);
+ ```
  */
 async function runFixture(client: SyntheticClient,) {
   /** Envelopes and definitions of the fixture. */
@@ -266,7 +266,7 @@ await describe({
         + 'judges would have taken it',
       fn: async () => {
         /**
-         * Repaired text carrying a number, and a rewrite that loses it.
+         Repaired text carrying a number, and a rewrite that loses it.
          */
         const withNumber = `${REPAIRED_TEXT} She was 17 that year.`;
 
@@ -305,7 +305,7 @@ await describe({
         + 'times out of six prefer the shorter wording that leaves it out',
       fn: async () => {
         /**
-         * Repaired text carrying a declared alias, and a rewrite that loses it.
+         Repaired text carrying a declared alias, and a rewrite that loses it.
          */
         const withAlias = `${REPAIRED_TEXT} Everyone called her Dumpling.`;
 
@@ -353,7 +353,7 @@ await describe({
         + 'judges would have turned down anyway',
       fn: async () => {
         /**
-         * Same text and same rewrite, with no declaration behind the alias.
+         Same text and same rewrite, with no declaration behind the alias.
          */
         const withAlias = `${REPAIRED_TEXT} Everyone called her Dumpling.`;
 

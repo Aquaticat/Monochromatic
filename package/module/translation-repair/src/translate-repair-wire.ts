@@ -19,12 +19,12 @@ import { isJsonRecord, } from './json-guard.ts';
 // the candidate would have destroyed the only report of it.
 
 /**
- * Answers a model may give when handed its own candidate's findings.
- *
- * @example
- * ```ts
- * const resolution: RepairResolution = 'as-intended';
- * ```
+ Answers a model may give when handed its own candidate's findings.
+ 
+ @example
+ ```ts
+ const resolution: RepairResolution = 'as-intended';
+ ```
  */
 export type RepairResolution =
   | 'revised'
@@ -32,7 +32,7 @@ export type RepairResolution =
   | 'as-intended';
 
 /**
- * Every answer, for the schema and the guard to share one list.
+ Every answer, for the schema and the guard to share one list.
  */
 const REPAIR_RESOLUTIONS: readonly RepairResolution[] = [
   'revised',
@@ -41,57 +41,57 @@ const REPAIR_RESOLUTIONS: readonly RepairResolution[] = [
 ];
 
 /**
- * One repair reply on the wire.
- *
- * Flat rather than a discriminated union of shapes, because every stage in this
- * pipeline sends flat schemas and the providers handle them reliably. The union
- * is enforced by {@link isTranslateRepairWire} instead: a `revised` reply
- * carrying no translation is not a revision.
- *
- * @example
- * ```ts
- * const wire: TranslateRepairWire = {
- *   resolution: 'unable',
- *   translation: '',
- *   explanation: 'the footnote definition is not in this passage',
- * };
- * ```
+ One repair reply on the wire.
+ 
+ Flat rather than a discriminated union of shapes, because every stage in this
+ pipeline sends flat schemas and the providers handle them reliably. The union
+ is enforced by {@link isTranslateRepairWire} instead: a `revised` reply
+ carrying no translation is not a revision.
+ 
+ @example
+ ```ts
+ const wire: TranslateRepairWire = {
+   resolution: 'unable',
+   translation: '',
+   explanation: 'the footnote definition is not in this passage',
+ };
+ ```
  */
 export type TranslateRepairWire = {
   /**
-   * What the model decided to do about the findings.
+   What the model decided to do about the findings.
    */
   readonly resolution: RepairResolution;
 
   /**
-   * Replacement translation, empty unless the resolution is `revised`.
+   Replacement translation, empty unless the resolution is `revised`.
    */
   readonly translation: string;
 
   /**
-   * Why, in the model's own words; recorded whatever the resolution.
+   Why, in the model's own words; recorded whatever the resolution.
    */
   readonly explanation: string;
 };
 
 /**
- * Guards a repair reply.
- *
- * @param value - parsed model JSON
- *
- * @returns Whether value is a well-formed repair reply
- *
- * @example
- * ```ts
- * const ok = isTranslateRepairWire(JSON.parse(text,),);
- * ```
+ Guards a repair reply.
+ 
+ @param value - parsed model JSON
+ 
+ @returns Whether value is a well-formed repair reply
+ 
+ @example
+ ```ts
+ const ok = isTranslateRepairWire(JSON.parse(text,),);
+ ```
  */
 export function isTranslateRepairWire(value: unknown,): value is TranslateRepairWire {
   if (!isJsonRecord(value,))
     return false;
 
   /**
-   * Fields as the model sent them.
+   Fields as the model sent them.
    */
   const {
     resolution,
@@ -106,7 +106,7 @@ export function isTranslateRepairWire(value: unknown,): value is TranslateRepair
     return false;
 
   /**
-   * Whether the resolution names one of the three answers.
+   Whether the resolution names one of the three answers.
    */
   const named = REPAIR_RESOLUTIONS.some(function matches(allowed,): boolean {
     return allowed === resolution;
@@ -122,12 +122,12 @@ export function isTranslateRepairWire(value: unknown,): value is TranslateRepair
 }
 
 /**
- * Instructions for the follow-up turn.
- *
- * Says the checks are MECHANICAL on purpose. A model told only that its work is
- * wrong tends to rewrite whatever it can see; told that a specific structural
- * comparison produced these lines, it can answer that the comparison is the
- * thing at fault, which is an answer worth having.
+ Instructions for the follow-up turn.
+ 
+ Says the checks are MECHANICAL on purpose. A model told only that its work is
+ wrong tends to rewrite whatever it can see; told that a specific structural
+ comparison produced these lines, it can answer that the comparison is the
+ thing at fault, which is an answer worth having.
  */
 const REPAIR_RULES =
   `The translation you just produced went through a mechanical structural check, not a reader. The check compares Markdown block structure, footnote markers, link and image destinations, and inline code against the ORIGINAL and against the PAGE AS IT STANDS, and every finding names which of the two it came from. Where the two carry different destinations for one reference, the check accepts either and refuses both. It knows nothing about wording, and it can be wrong about what this passage needed.
@@ -143,20 +143,20 @@ Do not rewrite for style, and do not translate anything you were not given.
 Reply with ONLY a JSON object of shape {"resolution": "...", "translation": "...", "explanation": "..."}. Use an empty string for "translation" unless the resolution is "revised". No prose, no code fences, no commentary.`;
 
 /**
- * Builds the follow-up turn for one candidate's author.
- *
- * @param priorMessages - exact messages that produced the candidate
- *
- * @param priorTranslation - candidate this model returned
- *
- * @param findings - structural divergences, written for the model
- *
- * @returns Messages continuing that same exchange
- *
- * @example
- * ```ts
- * const messages = buildTranslateRepairMessages({ priorMessages, priorTranslation, findings, },);
- * ```
+ Builds the follow-up turn for one candidate's author.
+ 
+ @param priorMessages - exact messages that produced the candidate
+ 
+ @param priorTranslation - candidate this model returned
+ 
+ @param findings - structural divergences, written for the model
+ 
+ @returns Messages continuing that same exchange
+ 
+ @example
+ ```ts
+ const messages = buildTranslateRepairMessages({ priorMessages, priorTranslation, findings, },);
+ ```
  */
 export function buildTranslateRepairMessages(
   {
@@ -170,7 +170,7 @@ export function buildTranslateRepairMessages(
   },
 ): readonly ChatMessage[] {
   /**
-   * Findings as a list the model reads rather than a sentence it skims.
+   Findings as a list the model reads rather than a sentence it skims.
    */
   const listed = findings
     .map(function toLine(finding,): string {
@@ -199,7 +199,7 @@ ${listed}`,
 }
 
 /**
- * Structured-output constraint for repair replies.
+ Structured-output constraint for repair replies.
  */
 export const TRANSLATE_REPAIR_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',

@@ -6,118 +6,118 @@ import { ArchiveNamingEvidenceError, } from './archive-naming-error.ts';
 // Keep literal path, line and revision facts; never retain author or commit-message data.
 
 /**
- * Complete SHA-1 object-name width.
+ Complete SHA-1 object-name width.
  */
 const SHA1_WIDTH = 40;
 /**
- * Complete SHA-256 object-name width.
+ Complete SHA-256 object-name width.
  */
 const SHA256_WIDTH = 64;
 /**
- * Ordinary porcelain header without an explicit group count.
+ Ordinary porcelain header without an explicit group count.
  */
 const MINIMUM_HEADER_FIELDS = 3;
 /**
- * Ordinary porcelain header with its optional group count.
+ Ordinary porcelain header with its optional group count.
  */
 const MAXIMUM_HEADER_FIELDS = 4;
 
 /**
- * Exact line-porcelain origin for a pinned archive line.
- *
- * @example
- * ```ts
- * const origin = origins[currentLine - 1];
- * ```
+ Exact line-porcelain origin for a pinned archive line.
+ 
+ @example
+ ```ts
+ const origin = origins[currentLine - 1];
+ ```
  */
 export type ArchiveLineOrigin = {
   /**
-   * Intrinsic commit responsible for the current line.
+   Intrinsic commit responsible for the current line.
    */
   readonly commit: string;
   /**
-   * One-based line in that origin commit.
+   One-based line in that origin commit.
    */
   readonly originalLine: number;
   /**
-   * One-based line in the requested pin.
+   One-based line in the requested pin.
    */
   readonly finalLine: number;
   /**
-   * Filename in Git's canonical quoted spelling.
+   Filename in Git's canonical quoted spelling.
    */
   readonly filename: string;
   /**
-   * Root or shallow traversal boundary.
+   Root or shallow traversal boundary.
    */
   readonly boundary: boolean;
   /**
-   * Ignored or unassignable origin.
+   Ignored or unassignable origin.
    */
   readonly ignored: boolean;
   /**
-   * Exact current line after shared corpus CRLF normalization.
+   Exact current line after shared corpus CRLF normalization.
    */
   readonly text: string;
 };
 
 /**
- * Required filename is explicitly missing until metadata supplies it.
+ Required filename is explicitly missing until metadata supplies it.
  */
 type OriginFilename = { readonly kind: 'missing'; } | {
   /**
-   * Filename was supplied exactly once.
+   Filename was supplied exactly once.
    */
   readonly kind: 'known';
   /**
-   * Exact wire spelling, not a decoded alias.
+   Exact wire spelling, not a decoded alias.
    */
   readonly value: string;
 };
 
 /**
- * Owned origin metadata awaiting its document line.
+ Owned origin metadata awaiting its document line.
  */
 type PendingOrigin = Omit<ArchiveLineOrigin, 'filename' | 'text' | 'boundary' | 'ignored'> & {
   /**
-   * Required metadata state.
+   Required metadata state.
    */
   filename: OriginFilename;
   /**
-   * Whether Git marked a traversal boundary.
+   Whether Git marked a traversal boundary.
    */
   boundary: boolean;
   /**
-   * Whether Git marked unreliable assignment.
+   Whether Git marked unreliable assignment.
    */
   ignored: boolean;
 };
 
 /**
- * Parser state distinguishes a header from an in-progress metadata record.
+ Parser state distinguishes a header from an in-progress metadata record.
  */
 type OriginState = { readonly kind: 'header'; } | {
   /**
-   * One line's metadata is being collected.
+   One line's metadata is being collected.
    */
   readonly kind: 'metadata';
   /**
-   * Owned record completed by its following tab-prefixed document line.
+   Owned record completed by its following tab-prefixed document line.
    */
   readonly record: PendingOrigin;
 };
 
 /**
- * Checks complete intrinsic IDs, excluding synthetic all-zero uncommitted origins.
- *
- * @param value - proposed object ID
- *
- * @returns Whether it is a complete nonzero lowercase Git object name
- *
- * @example
- * ```ts
- * if (!isArchiveGitObjectId(commit)) throw malformed;
- * ```
+ Checks complete intrinsic IDs, excluding synthetic all-zero uncommitted origins.
+ 
+ @param value - proposed object ID
+ 
+ @returns Whether it is a complete nonzero lowercase Git object name
+ 
+ @example
+ ```ts
+ if (!isArchiveGitObjectId(commit)) throw malformed;
+ ```
  */
 export function isArchiveGitObjectId(value: string,): boolean {
   if (((value.length !== SHA1_WIDTH) && (value.length !== SHA256_WIDTH))
@@ -132,20 +132,20 @@ export function isArchiveGitObjectId(value: string,): boolean {
 }
 
 /**
- * Reads a strict ordinary header without accepting revision expressions.
- *
- * @param line - metadata header, not document prose
- *
- * @param relPath - archive named for malformed output
- *
- * @returns Owned pending origin
- *
- * @throws {@link ArchiveNamingEvidenceError} for invalid headers
- *
- * @example
- * ```ts
- * const pending = originHeader({ line, relPath });
- * ```
+ Reads a strict ordinary header without accepting revision expressions.
+ 
+ @param line - metadata header, not document prose
+ 
+ @param relPath - archive named for malformed output
+ 
+ @returns Owned pending origin
+ 
+ @throws {@link ArchiveNamingEvidenceError} for invalid headers
+ 
+ @example
+ ```ts
+ const pending = originHeader({ line, relPath });
+ ```
  */
 function originHeader({
   line,
@@ -155,29 +155,29 @@ function originHeader({
   readonly relPath: string;
 },): PendingOrigin {
   /**
-   * Named fields avoid accidentally accepting extra metadata as a group count.
+   Named fields avoid accidentally accepting extra metadata as a group count.
    */
   const fields = line.split(' ',);
   /**
-   * Header's object and numeric tokens.
+   Header's object and numeric tokens.
    */
   const [commit = '', original = '', final = '', group = '1',] = fields;
   /**
-   * Origin's one-based line.
+   Origin's one-based line.
    */
   const originalLine = archiveGitInteger({
     text: original,
     relPath,
   },);
   /**
-   * Pin's one-based line.
+   Pin's one-based line.
    */
   const finalLine = archiveGitInteger({
     text: final,
     relPath,
   },);
   /**
-   * Optional group count remains validated.
+   Optional group count remains validated.
    */
   const count = archiveGitInteger({
     text: group,
@@ -204,22 +204,22 @@ function originHeader({
 }
 
 /**
- * Reads full-file porcelain and verifies every current line and its physical termination.
- *
- * @param porcelain - complete raw protocol output
- *
- * @param archiveText - pinned archive after shared corpus CRLF normalization
- *
- * @param relPath - literal requested path
- *
- * @returns Ordered origins without author metadata
- *
- * @throws {@link ArchiveNamingEvidenceError} for incomplete or inconsistent output
- *
- * @example
- * ```ts
- * const origins = archiveBlameOrigins({ porcelain, archiveText, relPath });
- * ```
+ Reads full-file porcelain and verifies every current line and its physical termination.
+ 
+ @param porcelain - complete raw protocol output
+ 
+ @param archiveText - pinned archive after shared corpus CRLF normalization
+ 
+ @param relPath - literal requested path
+ 
+ @returns Ordered origins without author metadata
+ 
+ @throws {@link ArchiveNamingEvidenceError} for incomplete or inconsistent output
+ 
+ @example
+ ```ts
+ const origins = archiveBlameOrigins({ porcelain, archiveText, relPath });
+ ```
  */
 export function archiveBlameOrigins({
   porcelain,
@@ -231,26 +231,26 @@ export function archiveBlameOrigins({
   readonly relPath: string;
 },): readonly ArchiveLineOrigin[] {
   /**
-   * Physical EOF state cannot be inferred from porcelain's output newline.
+   Physical EOF state cannot be inferred from porcelain's output newline.
    */
   const terminated = archiveText.endsWith('\n',);
   /**
-   * Git omits the phantom line after a terminating separator.
+   Git omits the phantom line after a terminating separator.
    */
   const lines = archiveText === '' ? [] : archiveText.split('\n',);
   if (terminated)
     lines.pop();
   /**
-   * Completed origins in pinned line order.
+   Completed origins in pinned line order.
    */
   const origins: ArchiveLineOrigin[] = [];
   /**
-   * Explicit owned parse state, never a nullish pending-record sentinel.
+   Explicit owned parse state, never a nullish pending-record sentinel.
    */
   const cursor: { state: OriginState; } = { state: { kind: 'header', }, };
   for (const line of porcelain.split('\n',)) {
     /**
-     * State before consuming this protocol line.
+     State before consuming this protocol line.
      */
     const { state, } = cursor;
     if (state.kind === 'header') {
@@ -265,12 +265,12 @@ export function archiveBlameOrigins({
       continue;
     }
     /**
-     * Metadata belongs to exactly one forthcoming document line.
+     Metadata belongs to exactly one forthcoming document line.
      */
     const pending = state.record;
     if (line.startsWith('\t',)) {
       /**
-       * Restore only the physical separator proven by the pinned blob.
+       Restore only the physical separator proven by the pinned blob.
        */
       const text = foldGitDocumentLine({
         text: line.slice(1,),

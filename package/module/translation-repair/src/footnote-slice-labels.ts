@@ -7,19 +7,19 @@ import { FootnoteRewriteError, } from './footnote-rewrite-error.ts';
 // Prepared fragments may contain container halves. Their evidence comes from positioned whole-document syntax.
 
 /**
- * Finds the first marker whose end crosses the requested boundary, or the append position.
- * Sorted disjoint marker spans make this a binary search rather than a full scan per slice.
- *
- * @param markers - source-ordered active reference markers
- *
- * @param offset - slice opening boundary
- *
- * @returns First potentially intersecting marker index, including the valid end position
- *
- * @example
- * ```ts
- * const start = markerBoundaryIndex({ markers, offset: chunk.startOffset });
- * ```
+ Finds the first marker whose end crosses the requested boundary, or the append position.
+ Sorted disjoint marker spans make this a binary search rather than a full scan per slice.
+ 
+ @param markers - source-ordered active reference markers
+ 
+ @param offset - slice opening boundary
+ 
+ @returns First potentially intersecting marker index, including the valid end position
+ 
+ @example
+ ```ts
+ const start = markerBoundaryIndex({ markers, offset: chunk.startOffset });
+ ```
  */
 function markerBoundaryIndex(
   {
@@ -31,7 +31,7 @@ function markerBoundaryIndex(
   },
 ): number {
   /**
-   * Owned half-open search interval, narrowed together as one algorithmic state.
+   Owned half-open search interval, narrowed together as one algorithmic state.
    */
   const bounds = {
     start: 0,
@@ -39,11 +39,11 @@ function markerBoundaryIndex(
   };
   while (bounds.start < bounds.end) {
     /**
-     * Midpoint remains inside the current nonempty search interval.
+     Midpoint remains inside the current nonempty search interval.
      */
     const middle = Math.floor((bounds.start + bounds.end) / 2,);
     /**
-     * Current boundary comparison never needs decoded label lengths.
+     Current boundary comparison never needs decoded label lengths.
      */
     const marker = nonNullishOrThrow(markers[middle],);
     if (marker.endOffset <= offset)
@@ -55,23 +55,23 @@ function markerBoundaryIndex(
 }
 
 /**
- * Projects full-document reference evidence into an exact current prepared range.
- * A fragment is never reparsed as a complete MDX document or rescued by masking container halves.
- *
- * @param chunk - prepared canonical range and text
- *
- * @param documentText - complete current source or archive backing the range
- *
- * @param markers - active references parsed from that complete document
- *
- * @returns Distinct raw reference labels in occurrence order
- *
- * @throws FootnoteRewriteError when text, range bounds or marker containment disagree with the document
- *
- * @example
- * ```ts
- * const labels = sliceFootnoteLabels({ chunk: slice.source, documentText: prepared.sourceText, markers });
- * ```
+ Projects full-document reference evidence into an exact current prepared range.
+ A fragment is never reparsed as a complete MDX document or rescued by masking container halves.
+ 
+ @param chunk - prepared canonical range and text
+ 
+ @param documentText - complete current source or archive backing the range
+ 
+ @param markers - active references parsed from that complete document
+ 
+ @returns Distinct raw reference labels in occurrence order
+ 
+ @throws FootnoteRewriteError when text, range bounds or marker containment disagree with the document
+ 
+ @example
+ ```ts
+ const labels = sliceFootnoteLabels({ chunk: slice.source, documentText: prepared.sourceText, markers });
+ ```
  */
 export function sliceFootnoteLabels(
   {
@@ -85,7 +85,7 @@ export function sliceFootnoteLabels(
   },
 ): readonly string[] {
   /**
-   * Both range endpoints belong to the supplied current document.
+   Both range endpoints belong to the supplied current document.
    */
   const {
     startOffset,
@@ -101,7 +101,7 @@ export function sliceFootnoteLabels(
     )))
     throw new FootnoteRewriteError({ kind: 'slice-scope', },);
   /**
-   * First spelling per normalized identity within this slice.
+   First spelling per normalized identity within this slice.
    */
   const labels = new Map<string, string>();
   for (let index = markerBoundaryIndex({
@@ -109,7 +109,7 @@ export function sliceFootnoteLabels(
     offset: startOffset,
   },); index < markers.length; index += 1) {
     /**
-     * Only intersecting markers are inspected after the initial binary search.
+     Only intersecting markers are inspected after the initial binary search.
      */
     const marker = nonNullishOrThrow(markers[index],);
     if (marker.startOffset >= endOffset)

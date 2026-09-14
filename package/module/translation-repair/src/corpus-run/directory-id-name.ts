@@ -21,8 +21,8 @@ import type { FrontMatterBlock, } from '../front-matter.ts';
 // the archive carries a Latin-script alias other than the id.
 
 /**
- * Separators an alias list is written with in the corpus: the comma, the
- * full-width comma and the enumeration comma.
+ Separators an alias list is written with in the corpus: the comma, the
+ full-width comma and the enumeration comma.
  */
 const ALIAS_SEPARATORS = [
   ',',
@@ -31,25 +31,25 @@ const ALIAS_SEPARATORS = [
 ];
 
 /**
- * Whether a character is an ASCII letter.
- *
- * @param character - one UTF-16 unit
- *
- * @returns Whether it is in the Latin alphabet
- *
- * @example
- * ```ts
- * isLatinLetter({ character: 'h', },);
- * ```
+ Whether a character is an ASCII letter.
+ 
+ @param character - one UTF-16 unit
+ 
+ @returns Whether it is in the Latin alphabet
+ 
+ @example
+ ```ts
+ isLatinLetter({ character: 'h', },);
+ ```
  */
 function isLatinLetter({ character, }: { readonly character: string; },): boolean {
   /**
-   * Whether it is lower-case.
+   Whether it is lower-case.
    */
   const lower = (character >= 'a') && (character <= 'z');
 
   /**
-   * Whether it is upper-case.
+   Whether it is upper-case.
    */
   const upper = (character >= 'A') && (character <= 'Z');
 
@@ -57,33 +57,33 @@ function isLatinLetter({ character, }: { readonly character: string; },): boolea
 }
 
 /**
- * Lower-cases a rendering and keeps its Latin letters only, so `Lin Tong`,
- * `lintong` and `Lin-Tong` read the same and a name with no Latin letter
- * reads as nothing.
- *
- * @param text - rendering to normalise
- *
- * @returns Its Latin letters, lower-cased
- *
- * @example
- * ```ts
- * latinLettersOf({ text: 'Lan Gou (blue dog)', },);
- * // => 'langoubluedog'
- * ```
+ Lower-cases a rendering and keeps its Latin letters only, so `Lin Tong`,
+ `lintong` and `Lin-Tong` read the same and a name with no Latin letter
+ reads as nothing.
+ 
+ @param text - rendering to normalise
+ 
+ @returns Its Latin letters, lower-cased
+ 
+ @example
+ ```ts
+ latinLettersOf({ text: 'Lan Gou (blue dog)', },);
+ // => 'langoubluedog'
+ ```
  */
 function latinLettersOf({ text, }: { readonly text: string; },): string {
   /**
-   * Text lower-cased, scanned by UTF-16 unit since only ASCII is kept.
+   Text lower-cased, scanned by UTF-16 unit since only ASCII is kept.
    */
   const lowered = text.toLowerCase();
 
   /**
-   * Letters kept so far.
+   Letters kept so far.
    */
   const kept: string[] = [];
   for (let index = 0; index < lowered.length; index += 1) {
     /**
-     * Unit under the cursor.
+     Unit under the cursor.
      */
     const character = lowered.charAt(index,);
     if (isLatinLetter({ character, },))
@@ -93,20 +93,20 @@ function latinLettersOf({ text, }: { readonly text: string; },): string {
 }
 
 /**
- * Reads the `name` of a front matter block, empty when absent or not a string.
- *
- * @param metadata - parsed front matter
- *
- * @returns Declared name
- *
- * @example
- * ```ts
- * nameOf({ metadata, },);
- * ```
+ Reads the `name` of a front matter block, empty when absent or not a string.
+ 
+ @param metadata - parsed front matter
+ 
+ @returns Declared name
+ 
+ @example
+ ```ts
+ nameOf({ metadata, },);
+ ```
  */
 function nameOf({ metadata, }: { readonly metadata: FrontMatterBlock; },): string {
   /**
-   * Parsed YAML, unknown until proven a record with a name.
+   Parsed YAML, unknown until proven a record with a name.
    */
   const { data, } = metadata;
   if (((typeof data) !== 'object') || (data === null))
@@ -115,25 +115,25 @@ function nameOf({ metadata, }: { readonly metadata: FrontMatterBlock; },): strin
     return '';
 
   /**
-   * Whatever the YAML put under `name`.
+   Whatever the YAML put under `name`.
    */
   const { name, } = data as { readonly name: unknown; };
   return ((typeof name) === 'string') ? name : '';
 }
 
 /**
- * Whether metadata still shows the directory id where a person's name goes.
- *
- * @param metadata - parsed front matter block
- *
- * @param entryId - directory id of the entry
- *
- * @returns Whether the visible name is the directory id
- *
- * @example
- * ```ts
- * namesDirectoryId({ metadata, entryId: 'Cat', },);
- * ```
+ Whether metadata still shows the directory id where a person's name goes.
+ 
+ @param metadata - parsed front matter block
+ 
+ @param entryId - directory id of the entry
+ 
+ @returns Whether the visible name is the directory id
+ 
+ @example
+ ```ts
+ namesDirectoryId({ metadata, entryId: 'Cat', },);
+ ```
  */
 export function namesDirectoryId(
   {
@@ -148,21 +148,21 @@ export function namesDirectoryId(
 }
 
 /**
- * Reads the aliases of a front matter block, split on every separator the
- * corpus uses and trimmed; empty when there are none.
- *
- * @param metadata - parsed front matter
- *
- * @returns Alias renderings in declared order
- *
- * @example
- * ```ts
- * aliasesOf({ metadata, },);
- * ```
+ Reads the aliases of a front matter block, split on every separator the
+ corpus uses and trimmed; empty when there are none.
+ 
+ @param metadata - parsed front matter
+ 
+ @returns Alias renderings in declared order
+ 
+ @example
+ ```ts
+ aliasesOf({ metadata, },);
+ ```
  */
 function aliasesOf({ metadata, }: { readonly metadata: FrontMatterBlock; },): readonly string[] {
   /**
-   * Parsed YAML, unknown until proven a record with an alias.
+   Parsed YAML, unknown until proven a record with an alias.
    */
   const { data, } = metadata;
   if (((typeof data) !== 'object') || (data === null))
@@ -171,7 +171,7 @@ function aliasesOf({ metadata, }: { readonly metadata: FrontMatterBlock; },): re
     return [];
 
   /**
-   * Whatever the YAML put under `info`.
+   Whatever the YAML put under `info`.
    */
   const { info, } = data as { readonly info: unknown; };
   if (((typeof info) !== 'object') || (info === null))
@@ -180,13 +180,13 @@ function aliasesOf({ metadata, }: { readonly metadata: FrontMatterBlock; },): re
     return [];
 
   /**
-   * Whatever the YAML put under `alias`: a string in the corpus, a list in
-   * principle.
+   Whatever the YAML put under `alias`: a string in the corpus, a list in
+   principle.
    */
   const { alias, } = info as { readonly alias: unknown; };
 
   /**
-   * Alias text joined on the plain comma when a list was given.
+   Alias text joined on the plain comma when a list was given.
    */
   const joined = ((typeof alias) === 'string')
     ? alias
@@ -217,23 +217,23 @@ function aliasesOf({ metadata, }: { readonly metadata: FrontMatterBlock; },): re
 }
 
 /**
- * Whether a Latin string is a pinyin reading of a name, every heteronym of
- * every character allowed.
- *
- * Walks the name one character at a time keeping the set of positions in the
- * string each reading could have reached, so the check is linear in the name
- * and never enumerates the readings' product.
- *
- * @param name - name in the source script
- *
- * @param letters - Latin letters, lower-cased, tone marks absent
- *
- * @returns Whether some reading of the whole name spells exactly the letters
- *
- * @example
- * ```ts
- * readsAs({ name: '林童', letters: 'lintong', },);
- * ```
+ Whether a Latin string is a pinyin reading of a name, every heteronym of
+ every character allowed.
+ 
+ Walks the name one character at a time keeping the set of positions in the
+ string each reading could have reached, so the check is linear in the name
+ and never enumerates the readings' product.
+ 
+ @param name - name in the source script
+ 
+ @param letters - Latin letters, lower-cased, tone marks absent
+ 
+ @returns Whether some reading of the whole name spells exactly the letters
+ 
+ @example
+ ```ts
+ readsAs({ name: '林童', letters: 'lintong', },);
+ ```
  */
 function readsAs(
   {
@@ -249,14 +249,14 @@ function readsAs(
 
   return (function walk(): boolean {
     /**
-     * Positions in the letters some reading of the characters so far ends at.
+     Positions in the letters some reading of the characters so far ends at.
      */
     let positions: readonly number[] = [0,];
     for (const character of name) {
       /**
-       * Every reading pinyin-pro knows for this character; a character it
-       * cannot read (punctuation, a Latin letter, a kana) yields itself, which
-       * spells nothing in the letters and so ends the walk here.
+       Every reading pinyin-pro knows for this character; a character it
+       cannot read (punctuation, a Latin letter, a kana) yields itself, which
+       spells nothing in the letters and so ends the walk here.
        */
       const readings = pinyin(
         character,
@@ -293,25 +293,25 @@ function readsAs(
 }
 
 /**
- * Whether a page may keep the directory id as its visible name although the
- * source names the person otherwise.
- *
- * @param entryId - directory id
- *
- * @param source - original's front matter
- *
- * @param page - would-ship page's front matter
- *
- * @param archives - archive's front matter, the original English, as a list
- * that is empty for a source-only insertion
- *
- * @returns Whether the id is a rendering of the name, the source's own alias,
- * or stands beside an English rendering
- *
- * @example
- * ```ts
- * directoryIdNameStands({ entryId: 'Huasheng', source, page, archives: [archive,], },);
- * ```
+ Whether a page may keep the directory id as its visible name although the
+ source names the person otherwise.
+ 
+ @param entryId - directory id
+ 
+ @param source - original's front matter
+ 
+ @param page - would-ship page's front matter
+ 
+ @param archives - archive's front matter, the original English, as a list
+ that is empty for a source-only insertion
+ 
+ @returns Whether the id is a rendering of the name, the source's own alias,
+ or stands beside an English rendering
+ 
+ @example
+ ```ts
+ directoryIdNameStands({ entryId: 'Huasheng', source, page, archives: [archive,], },);
+ ```
  */
 export function directoryIdNameStands(
   {
@@ -327,13 +327,13 @@ export function directoryIdNameStands(
   },
 ): boolean {
   /**
-   * Directory id as letters.
+   Directory id as letters.
    */
   const idLetters = latinLettersOf({ text: entryId, },);
 
   /**
-   * Whether the source itself carries the id among its aliases, so the handle
-   * is the person's own.
+   Whether the source itself carries the id among its aliases, so the handle
+   is the person's own.
    */
   const sourceAliasIsId = aliasesOf({ metadata: source, },)
     .some(function isId(alias,): boolean {
@@ -358,7 +358,7 @@ export function directoryIdNameStands(
     },),
   ].some(function isOtherRendering(alias,): boolean {
     /**
-     * Alias as letters, empty for an alias in another script.
+     Alias as letters, empty for an alias in another script.
      */
     const letters = latinLettersOf({ text: alias, },);
     return (letters !== '') && (letters !== idLetters);

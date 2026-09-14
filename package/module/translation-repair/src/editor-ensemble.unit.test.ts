@@ -1,9 +1,9 @@
 /**
- * Tests for the editor ensemble: candidate assembly, producer provenance,
- * roster invariants, judge prompt fencing, and the two decline dispositions.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the editor ensemble: candidate assembly, producer provenance,
+ roster invariants, judge prompt fencing, and the two decline dispositions.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -32,12 +32,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Translation the envelopes are cut from.
+ Translation the envelopes are cut from.
  */
 const TARGET_TEXT = 'The cat naps. The cat hates butterflies. The bowl stays full.';
 
 /**
- * Region covering the planted mistranslation.
+ Region covering the planted mistranslation.
  */
 const ENVELOPE: EditableEnvelope = {
   envelopeId: 'envelope/butterflies',
@@ -50,19 +50,19 @@ const ENVELOPE: EditableEnvelope = {
 };
 
 /**
- * Builds one editor candidate proposing a replacement for the fixture
- * envelope, so tests differ only in who proposed what.
- *
- * @param modelId - proposing model
- *
- * @param newText - replacement it proposed
- *
- * @returns Candidate carrying the gated patch
- *
- * @example
- * ```ts
- * const candidate = candidateFor({ modelId: 'hf:zai-org/GLM-5.3-Flash', newText, },);
- * ```
+ Builds one editor candidate proposing a replacement for the fixture
+ envelope, so tests differ only in who proposed what.
+ 
+ @param modelId - proposing model
+ 
+ @param newText - replacement it proposed
+ 
+ @returns Candidate carrying the gated patch
+ 
+ @example
+ ```ts
+ const candidate = candidateFor({ modelId: 'hf:zai-org/GLM-5.3-Flash', newText, },);
+ ```
  */
 function candidateFor(
   {
@@ -91,7 +91,7 @@ function candidateFor(
 }
 
 /**
- * Apply-gate outcome that repairs nothing, standing for the untouched chunk.
+ Apply-gate outcome that repairs nothing, standing for the untouched chunk.
  */
 const EMPTY_PATCH: PatchOutcome = {
   patchedText: TARGET_TEXT,
@@ -316,7 +316,7 @@ await describe({
           .length,).toBe(0,);
 
         /**
-         * Editor the picker chose, read for its identity as well as its text.
+         Editor the picker chose, read for its identity as well as its text.
          */
         const chosen = pickFallbackCandidate({
           candidates: [

@@ -12,24 +12,24 @@ import type {
 // Hashes bind review to literal ranges, not fuzzy spelling searches or generated candidates.
 
 /**
- * Reads a nonempty reviewed range and refuses any identity or coordinate drift.
- *
- * @param text - complete pinned file or explicitly identified folded reference
- *
- * @param span - exact reviewed coordinates and hash
- *
- * @param referenceId - input named by refusal
- *
- * @param operation - source of this range
- *
- * @returns Exact reviewed substring
- *
- * @throws {@link FidelityReferenceError} for invalid coordinates or hash mismatch
- *
- * @example
- * ```ts
- * const sourceText = reviewedText({ text: sourceFile, span: spec.source, referenceId: spec.id, operation: 'source' });
- * ```
+ Reads a nonempty reviewed range and refuses any identity or coordinate drift.
+ 
+ @param text - complete pinned file or explicitly identified folded reference
+ 
+ @param span - exact reviewed coordinates and hash
+ 
+ @param referenceId - input named by refusal
+ 
+ @param operation - source of this range
+ 
+ @returns Exact reviewed substring
+ 
+ @throws {@link FidelityReferenceError} for invalid coordinates or hash mismatch
+ 
+ @example
+ ```ts
+ const sourceText = reviewedText({ text: sourceFile, span: spec.source, referenceId: spec.id, operation: 'source' });
+ ```
  */
 export function reviewedText({
   text,
@@ -52,7 +52,7 @@ export function reviewedText({
     },);
   }
   /**
-   * One literal substring, never normalized to make an incorrect hash pass.
+   One literal substring, never normalized to make an incorrect hash pass.
    */
   const selected = text.slice(
     span.startOffset,
@@ -67,23 +67,23 @@ export function reviewedText({
 }
 
 /**
- * Applies only reviewed, disjoint corrections anchored to the original folded slice.
- * Every edit is checked against that same original, not against preceding replacements.
- *
- * @param reference - folded original archive slice
- *
- * @param edits - reviewed local changes
- *
- * @param referenceId - input named by refusal
- *
- * @returns Corrected reference without changing the corpus
- *
- * @throws {@link FidelityReferenceError} for overlap, stale text or missing provenance
- *
- * @example
- * ```ts
- * const corrected = applyReviewedEdits({ reference, edits: spec.edits, referenceId: spec.id });
- * ```
+ Applies only reviewed, disjoint corrections anchored to the original folded slice.
+ Every edit is checked against that same original, not against preceding replacements.
+ 
+ @param reference - folded original archive slice
+ 
+ @param edits - reviewed local changes
+ 
+ @param referenceId - input named by refusal
+ 
+ @returns Corrected reference without changing the corpus
+ 
+ @throws {@link FidelityReferenceError} for overlap, stale text or missing provenance
+ 
+ @example
+ ```ts
+ const corrected = applyReviewedEdits({ reference, edits: spec.edits, referenceId: spec.id });
+ ```
  */
 export function applyReviewedEdits({
   reference,
@@ -97,7 +97,7 @@ export function applyReviewedEdits({
   if (edits.length === 0)
     return reference;
   /**
-   * Original-coordinate order allows one reconstruction without offset rebasing.
+   Original-coordinate order allows one reconstruction without offset rebasing.
    */
   const ordered = edits.toSorted(function byStart(
     left,
@@ -106,11 +106,11 @@ export function applyReviewedEdits({
     return left.startOffset - right.startOffset;
   },);
   /**
-   * Each untouched segment is copied once.
+   Each untouched segment is copied once.
    */
   const pieces: string[] = [];
   /**
-   * Next original character not yet copied.
+   Next original character not yet copied.
    */
   const cursor = { at: 0, };
   for (const edit of ordered) {

@@ -34,92 +34,92 @@ import {
 // thing being checked rather than something to assume.
 
 /**
- * What one side of a repeat said.
- *
- * @example
- * ```ts
- * const side: AuditRepeatSide = { runSet, claimed: 5, corroborated: 1, agreed: 1, near: 0, };
- * ```
+ What one side of a repeat said.
+ 
+ @example
+ ```ts
+ const side: AuditRepeatSide = { runSet, claimed: 5, corroborated: 1, agreed: 1, near: 0, };
+ ```
  */
 export type AuditRepeatSide = {
   /**
-   * Archive subdirectory this side came from, which for an across-run pair is
-   * the same on both sides.
+   Archive subdirectory this side came from, which for an across-run pair is
+   the same on both sides.
    */
   readonly runSet: string;
 
   /**
-   * Claims that anchored, summed over every voice.
+   Claims that anchored, summed over every voice.
    */
   readonly claimed: number;
 
   /**
-   * Defects two auditors located identically.
+   Defects two auditors located identically.
    */
   readonly corroborated: number;
 
   /**
-   * Groups that agreed without quoting identical spans.
+   Groups that agreed without quoting identical spans.
    */
   readonly agreed: number;
 
   /**
-   * Pairs that nearly agreed.
+   Pairs that nearly agreed.
    */
   readonly near: number;
 };
 
 /**
- * One text audited twice, with what each audit said.
- *
- * @example
- * ```ts
- * const pair: AuditRepeatPair = { entryId, sliceIndex: 0, left, right, };
- * ```
+ One text audited twice, with what each audit said.
+ 
+ @example
+ ```ts
+ const pair: AuditRepeatPair = { entryId, sliceIndex: 0, left, right, };
+ ```
  */
 export type AuditRepeatPair = {
   /**
-   * Corpus entry.
+   Corpus entry.
    */
   readonly entryId: string;
 
   /**
-   * Global slice index.
+   Global slice index.
    */
   readonly sliceIndex: number;
 
   /**
-   * Which half of the population this pair sits in, so a band can be read for
-   * archive text and fresh text apart rather than blurred across both.
+   Which half of the population this pair sits in, so a band can be read for
+   archive text and fresh text apart rather than blurred across both.
    */
   readonly auditsArchiveText: boolean;
 
   /**
-   * First audit of this text.
+   First audit of this text.
    */
   readonly left: AuditRepeatSide;
 
   /**
-   * Second audit of the same text.
+   Second audit of the same text.
    */
   readonly right: AuditRepeatSide;
 };
 
 /**
- * Names the subject one row describes, run set included.
- *
- * ONE BUILDER, used by both the map and the lookup. Spelling the key twice is
- * how two builders come to disagree, and a disagreement here reports that two
- * runs share no subjects at all, which reads exactly like an honest null.
- *
- * @param row - one audited slice
- *
- * @returns Key that is equal for one subject across two runs
- *
- * @example
- * ```ts
- * const key = subjectKey({ row, },);
- * ```
+ Names the subject one row describes, run set included.
+ 
+ ONE BUILDER, used by both the map and the lookup. Spelling the key twice is
+ how two builders come to disagree, and a disagreement here reports that two
+ runs share no subjects at all, which reads exactly like an honest null.
+ 
+ @param row - one audited slice
+ 
+ @returns Key that is equal for one subject across two runs
+ 
+ @example
+ ```ts
+ const key = subjectKey({ row, },);
+ ```
  */
 function subjectKey(
   { row, }: { readonly row: SettledAuditRow; },
@@ -132,44 +132,44 @@ function subjectKey(
 }
 
 /**
- * Whether a row says what its audit was shown.
- *
- * @param row - one audited slice
- *
- * @returns Whether the run recorded a text identity for it
- *
- * @example
- * ```ts
- * const vouched = recorded({ row, },);
- * ```
+ Whether a row says what its audit was shown.
+ 
+ @param row - one audited slice
+ 
+ @returns Whether the run recorded a text identity for it
+ 
+ @example
+ ```ts
+ const vouched = recorded({ row, },);
+ ```
  */
 function recorded(
   { row, }: { readonly row: SettledAuditRow; },
 ): boolean {
   /**
-   * What the run wrote down about this subject's texts.
+   What the run wrote down about this subject's texts.
    */
   const identity = textIdentityOf({ row, },);
   return identity.kind === 'digested';
 }
 
 /**
- * Reads one row down to what a repeat comparison needs.
- *
- * @param row - one audited slice
- *
- * @returns That side of a pair
- *
- * @example
- * ```ts
- * const side = repeatSideOf({ row, },);
- * ```
+ Reads one row down to what a repeat comparison needs.
+ 
+ @param row - one audited slice
+ 
+ @returns That side of a pair
+ 
+ @example
+ ```ts
+ const side = repeatSideOf({ row, },);
+ ```
  */
 function repeatSideOf(
   { row, }: { readonly row: SettledAuditRow; },
 ): AuditRepeatSide {
   /**
-   * Tiers this audit reached.
+   Tiers this audit reached.
    */
   const {
     corroborated,
@@ -178,7 +178,7 @@ function repeatSideOf(
   } = row.report;
 
   /**
-   * Every claim this subject's roster made that anchored.
+   Every claim this subject's roster made that anchored.
    */
   const claims = anchoredClaims({ row, },);
 
@@ -192,32 +192,32 @@ function repeatSideOf(
 }
 
 /**
- * Finds texts one run audited more than once.
- *
- * Two artifacts of one entry sit in different run sets, so a repeat here is a
- * pair of rows sharing an entry and a slice index across run sets whose
- * recorded text identity also matches.
- *
- * @param rows - every audited slice of one run
- *
- * @returns One pair per repeated text, in first-seen order
- *
- * @example
- * ```ts
- * const repeats = auditRepeatsWithin({ rows, },);
- * ```
+ Finds texts one run audited more than once.
+ 
+ Two artifacts of one entry sit in different run sets, so a repeat here is a
+ pair of rows sharing an entry and a slice index across run sets whose
+ recorded text identity also matches.
+ 
+ @param rows - every audited slice of one run
+ 
+ @returns One pair per repeated text, in first-seen order
+ 
+ @example
+ ```ts
+ const repeats = auditRepeatsWithin({ rows, },);
+ ```
  */
 export function auditRepeatsWithin(
   { rows, }: { readonly rows: readonly SettledAuditRow[]; },
 ): readonly AuditRepeatPair[] {
   /**
-   * Rows sharing an entry and a slice, which is the only place a repeat can be.
+   Rows sharing an entry and a slice, which is the only place a repeat can be.
    */
   const bySlot = new Map<string, SettledAuditRow[]>();
   rows.forEach(function place(row,): void {
     /**
-     * Slot this row occupies, which deliberately omits the run set: the whole
-     * point is to bring two run sets together.
+     Slot this row occupies, which deliberately omits the run set: the whole
+     point is to bring two run sets together.
      */
     const slot = [
       row.entryId,
@@ -233,7 +233,7 @@ export function auditRepeatsWithin(
   },);
 
   /**
-   * Slots, each holding every row that landed in it.
+   Slots, each holding every row that landed in it.
    */
   const slots = [...bySlot.values(),];
 
@@ -264,34 +264,34 @@ export function auditRepeatsWithin(
 }
 
 /**
- * Pairs two runs of the same population, subject against subject.
- *
- * KEYED BY RUN SET AS WELL as entry and slice, so two artifacts of one entry
- * are never crossed with each other; that pairing is `auditRepeatsWithin`'s job
- * and means something different.
- *
- * THREE OUTCOMES, NOT TWO, and the third is the one that matters most in
- * practice. A slot both runs recorded and whose digests DISAGREE means the
- * archive changed underneath them, which invalidates that subject as a band
- * measurement and is worth saying. A slot either run left UNRECORDED means
- * nobody wrote down what was shown, which is a fact about the run and says
- * nothing whatever about the archive.
- *
- * Collapsing those two into one list would report an older run, from before the
- * identity field existed, as a population whose every subject changed text
- * between the runs. That is a confident statement about the corpus assembled
- * out of the absence of evidence about the probe.
- *
- * @param first - rows of the earlier run
- *
- * @param second - rows of the later one
- *
- * @returns Pairs, slots whose text moved, and slots nobody can vouch for
- *
- * @example
- * ```ts
- * const { paired, textMoved, unverifiable, } = auditRepeatsAcross({ first, second, },);
- * ```
+ Pairs two runs of the same population, subject against subject.
+ 
+ KEYED BY RUN SET AS WELL as entry and slice, so two artifacts of one entry
+ are never crossed with each other; that pairing is `auditRepeatsWithin`'s job
+ and means something different.
+ 
+ THREE OUTCOMES, NOT TWO, and the third is the one that matters most in
+ practice. A slot both runs recorded and whose digests DISAGREE means the
+ archive changed underneath them, which invalidates that subject as a band
+ measurement and is worth saying. A slot either run left UNRECORDED means
+ nobody wrote down what was shown, which is a fact about the run and says
+ nothing whatever about the archive.
+ 
+ Collapsing those two into one list would report an older run, from before the
+ identity field existed, as a population whose every subject changed text
+ between the runs. That is a confident statement about the corpus assembled
+ out of the absence of evidence about the probe.
+ 
+ @param first - rows of the earlier run
+ 
+ @param second - rows of the later one
+ 
+ @returns Pairs, slots whose text moved, and slots nobody can vouch for
+ 
+ @example
+ ```ts
+ const { paired, textMoved, unverifiable, } = auditRepeatsAcross({ first, second, },);
+ ```
  */
 export function auditRepeatsAcross(
   {
@@ -307,7 +307,7 @@ export function auditRepeatsAcross(
   readonly unverifiable: readonly string[];
 } {
   /**
-   * Later run, reachable by slot.
+   Later run, reachable by slot.
    */
   const laterBySlot = new Map(second.map(function bySlot(row,): [
     string,
@@ -320,14 +320,14 @@ export function auditRepeatsAcross(
   },),);
 
   /**
-   * Slots both runs hold, split by whether the text also agreed.
+   Slots both runs hold, split by whether the text also agreed.
    */
   const matched = first.flatMap(function join(row,): readonly {
     readonly left: SettledAuditRow;
     readonly right: SettledAuditRow;
   }[] {
     /**
-     * Same slot in the later run.
+     Same slot in the later run.
      */
     const right = laterBySlot.get(subjectKey({ row, },),);
     if (right === undefined)
@@ -339,7 +339,7 @@ export function auditRepeatsAcross(
   },);
 
   /**
-   * Slots where BOTH runs said what they saw, so the digests decide.
+   Slots where BOTH runs said what they saw, so the digests decide.
    */
   const witnessed = matched.filter(function bothRecorded({
     left,
@@ -394,16 +394,16 @@ export function auditRepeatsAcross(
 }
 
 /**
- * Names one matched slot for a reader.
- *
- * @param left - row from the earlier run, which carries the naming parts
- *
- * @returns Slot as a reader would write it
- *
- * @example
- * ```ts
- * const name = nameOf({ left, },);
- * ```
+ Names one matched slot for a reader.
+ 
+ @param left - row from the earlier run, which carries the naming parts
+ 
+ @returns Slot as a reader would write it
+ 
+ @example
+ ```ts
+ const name = nameOf({ left, },);
+ ```
  */
 function nameOf(
   { left, }: { readonly left: SettledAuditRow; },

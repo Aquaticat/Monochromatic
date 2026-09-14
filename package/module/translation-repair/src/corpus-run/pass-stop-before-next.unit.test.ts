@@ -1,8 +1,8 @@
 /**
- * Tests for the scheduler's stop rule: the soft wall-clock budget and the
- * per-run spend ceiling, asked before each entry.
- *
- * @module
+ Tests for the scheduler's stop rule: the soft wall-clock budget and the
+ per-run spend ceiling, asked before each entry.
+ 
+ @module
  */
 
 import {
@@ -19,7 +19,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * A soft budget no case here reaches by time.
+ A soft budget no case here reaches by time.
  */
 const ROOMY_BUDGET_MS = 1_000_000;
 

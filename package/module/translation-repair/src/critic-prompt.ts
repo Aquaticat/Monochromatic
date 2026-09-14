@@ -18,38 +18,38 @@ import { ACCURACY_CATEGORY_SCOPE, } from './accuracy-category-policy.ts';
 
 
 /**
- * What the neighbouring blocks are for, stated inside the prompt.
- *
- * SAID IN THE PROMPT RATHER THAN ASSUMED, because the failure it prevents is
- * the one the window itself creates: a critic handed more text can start
- * reporting the neighbours as untranslated or as surplus, which would turn one
- * relocation into claims against passages that are perfectly correct where they
- * are. The blocks exist to be RECOGNISED IN, never judged.
- *
- * THE QUOTE SENTENCE WAS ADDED AFTER MEASURING, and it is the half that was
- * missing. Forbidding claims ABOUT the neighbours does not forbid QUOTING them
- * as evidence for a claim about this slice, and a quote from next door cannot
- * anchor here, so the claim is discarded whole. Measured on `saurikissa`
- * settled with the window against the same entry without it, at an identical
- * roster of 11 critic stages and 65 voices heard:
- *
- * ```text
- *                        without window   with window
- * quote-not-found                     9            16
- * findings in total                 112            98
- * issues with no region              16            37
- * issues shipped                     26             7
- * issues resolved                    23             6
- * ```
- *
- * A claim that cannot anchor costs everything downstream of it, so nearly
- * doubling the unanchorable share is what took the lane from nine shipped
- * slices to three.
+ What the neighbouring blocks are for, stated inside the prompt.
+ 
+ SAID IN THE PROMPT RATHER THAN ASSUMED, because the failure it prevents is
+ the one the window itself creates: a critic handed more text can start
+ reporting the neighbours as untranslated or as surplus, which would turn one
+ relocation into claims against passages that are perfectly correct where they
+ are. The blocks exist to be RECOGNISED IN, never judged.
+ 
+ THE QUOTE SENTENCE WAS ADDED AFTER MEASURING, and it is the half that was
+ missing. Forbidding claims ABOUT the neighbours does not forbid QUOTING them
+ as evidence for a claim about this slice, and a quote from next door cannot
+ anchor here, so the claim is discarded whole. Measured on `saurikissa`
+ settled with the window against the same entry without it, at an identical
+ roster of 11 critic stages and 65 voices heard:
+ 
+ ```text
+                        without window   with window
+ quote-not-found                     9            16
+ findings in total                 112            98
+ issues with no region              16            37
+ issues shipped                     26             7
+ issues resolved                    23             6
+ ```
+ 
+ A claim that cannot anchor costs everything downstream of it, so nearly
+ doubling the unanchorable share is what took the lane from nine shipped
+ slices to three.
  */
 const NEARBY_RULE = `${REPAIR_EVIDENCE_ROLE} Every quoted anchor must still be copied exactly from the current ORIGINAL or TRANSLATION. When the source basis exists only nearby, omit sourceQuote, describe the relevant contextual fact in the summary, and anchor the actual current defect with targetQuote; never place a nearby quote in a local anchor field.`;
 
 /**
- * System instructions shared by every critic call.
+ System instructions shared by every critic call.
  */
 const CRITIC_SYSTEM_PROMPT = `You are a strict bilingual translation reviewer.
 Compare the ORIGINAL document with its TRANSLATION and report every defect you find in the translation.
@@ -105,22 +105,22 @@ Reply with ONLY a JSON object of shape {"issues": [...]}. No prose, no code fenc
 An empty issues array is a valid answer when the translation is faithful.`;
 
 /**
- * Builds the message list for one critic call.
- *
- * @param sourceText - original document, front matter included
- *
- * @param targetText - translation under review, front matter included
- *
- * @param identityContext - declared names and handles from both sides' front
- * matter; omitted when neither side declares any, so the block never appears
- * empty
- *
- * @returns Messages ready for `chatJson`
- *
- * @example
- * ```ts
- * const messages = buildCriticMessages({ sourceText, targetText, },);
- * ```
+ Builds the message list for one critic call.
+ 
+ @param sourceText - original document, front matter included
+ 
+ @param targetText - translation under review, front matter included
+ 
+ @param identityContext - declared names and handles from both sides' front
+ matter; omitted when neither side declares any, so the block never appears
+ empty
+ 
+ @returns Messages ready for `chatJson`
+ 
+ @example
+ ```ts
+ const messages = buildCriticMessages({ sourceText, targetText, },);
+ ```
  */
 export function buildCriticMessages(
   {
@@ -138,7 +138,7 @@ export function buildCriticMessages(
   },
 ): readonly ChatMessage[] {
   /**
-   * Fence no enclosed text can reproduce, chosen against every text below.
+   Fence no enclosed text can reproduce, chosen against every text below.
    */
   const fence = selectFence({
     texts: [
@@ -151,9 +151,9 @@ export function buildCriticMessages(
   },);
 
   /**
-   * Identity block plus its fence, or nothing at all when undeclared.
-   * Placed BEFORE the documents so the declarations are read as given facts
-   * rather than as a footnote to evidence already weighed.
+   Identity block plus its fence, or nothing at all when undeclared.
+   Placed BEFORE the documents so the declarations are read as given facts
+   rather than as a footnote to evidence already weighed.
    */
   const identityBlock = ((identityContext === undefined) || (identityContext.length === 0))
     ? ''
@@ -162,23 +162,23 @@ ${identityContext}
 `;
 
   /**
-   * The passages either side, or nothing when this slice stands alone.
-   *
-   * PLACED AFTER THE PAIR BEING JUDGED, unlike the identity block, and the
-   * order carries meaning. Identity is a given fact and is read first; this is
-   * evidence ABOUT the pair, and putting it first would invite a critic to
-   * treat the neighbours as part of what it was asked to judge.
-   *
-   * WHY A CRITIC NEEDS IT AT ALL, from `#107`: where the archive carried a
-   * passage across a section boundary, the translation here holds English with
-   * no original to support it, and the original next door holds Chinese with no
-   * English. Shown this slice alone, the only available readings are invention
-   * and omission, both of which are wrong and both of which lead the editor to
-   * damage text. Shown the neighbours, the passage is locatable.
-   *
-   * BOTH SIDES OR THE WINDOW IS HALF BLIND. The neighbouring original says what
-   * the passage next door is ABOUT; the neighbouring archive says where the
-   * English actually went. A relocation is only visible in the second.
+   The passages either side, or nothing when this slice stands alone.
+   
+   PLACED AFTER THE PAIR BEING JUDGED, unlike the identity block, and the
+   order carries meaning. Identity is a given fact and is read first; this is
+   evidence ABOUT the pair, and putting it first would invite a critic to
+   treat the neighbours as part of what it was asked to judge.
+   
+   WHY A CRITIC NEEDS IT AT ALL, from `#107`: where the archive carried a
+   passage across a section boundary, the translation here holds English with
+   no original to support it, and the original next door holds Chinese with no
+   English. Shown this slice alone, the only available readings are invention
+   and omission, both of which are wrong and both of which lead the editor to
+   damage text. Shown the neighbours, the passage is locatable.
+   
+   BOTH SIDES OR THE WINDOW IS HALF BLIND. The neighbouring original says what
+   the passage next door is ABOUT; the neighbouring archive says where the
+   English actually went. A relocation is only visible in the second.
    */
   const nearbyBlock = ((neighbouringSourceText === undefined)
       || (neighbouringSourceText === ''))

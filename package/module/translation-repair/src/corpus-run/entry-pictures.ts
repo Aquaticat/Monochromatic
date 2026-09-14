@@ -35,22 +35,22 @@ import {
 // as unread.
 
 /**
- * Reads every picture one entry's slices name, at the pinned commit.
- *
- * @param pin - corpus clone and commit
- *
- * @param entryId - person entry whose photos directory holds these assets
- *
- * @param slices - prepared slice pairs, whose source sides name pictures
- *
- * @param l - entry logger
- *
- * @returns Bytes per asset name, omitting any that could not be read
- *
- * @example
- * ```ts
- * const assets = await gatherEntryPictures({ pin, entryId, slices, l, },);
- * ```
+ Reads every picture one entry's slices name, at the pinned commit.
+ 
+ @param pin - corpus clone and commit
+ 
+ @param entryId - person entry whose photos directory holds these assets
+ 
+ @param slices - prepared slice pairs, whose source sides name pictures
+ 
+ @param l - entry logger
+ 
+ @returns Bytes per asset name, omitting any that could not be read
+ 
+ @example
+ ```ts
+ const assets = await gatherEntryPictures({ pin, entryId, slices, l, },);
+ ```
  */
 export async function gatherEntryPictures(
   {
@@ -66,7 +66,7 @@ export async function gatherEntryPictures(
   },
 ): Promise<ReadonlyMap<string, Uint8Array>> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const gl = tagged({
     tag: gatherEntryPictures.name,
@@ -74,7 +74,7 @@ export async function gatherEntryPictures(
   },);
 
   /**
-   * Every picture any slice names on its source side, each once.
+   Every picture any slice names on its source side, each once.
    */
   const named = new Set<string>();
   for (const slice of slices) {
@@ -86,15 +86,15 @@ export async function gatherEntryPictures(
   }
 
   /**
-   * Bytes gathered so far.
+   Bytes gathered so far.
    */
   const gathered = new Map<string, Uint8Array>();
   if (named.size === 0)
     return gathered;
 
   /**
-   * Every read, run together: these are local git invocations rather than
-   * model calls, so nothing here contends for a per-model slot.
+   Every read, run together: these are local git invocations rather than
+   model calls, so nothing here contends for a per-model slot.
    */
   await Promise.all([...named].map(async function gather(assetName,): Promise<void> {
     try {

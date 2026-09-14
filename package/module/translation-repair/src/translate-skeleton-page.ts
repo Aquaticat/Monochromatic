@@ -35,61 +35,61 @@ import {
 // carried it whole. A check that cannot run must not answer yes.
 
 /**
- * Which grammar read the page behind a verdict.
- *
- * CARRIED OUT OF THE READ rather than inferred, because a pass resting on the
- * relaxed grammar is weaker evidence than one resting on the strict grammar,
- * and nothing downstream could tell them apart otherwise. The repo's parser
- * policy is that a grammar downgrade never happens silently.
- *
- * @example
- * ```ts
- * const grammar: PageGrammar = 'relaxed';
- * ```
+ Which grammar read the page behind a verdict.
+ 
+ CARRIED OUT OF THE READ rather than inferred, because a pass resting on the
+ relaxed grammar is weaker evidence than one resting on the strict grammar,
+ and nothing downstream could tell them apart otherwise. The repo's parser
+ policy is that a grammar downgrade never happens silently.
+ 
+ @example
+ ```ts
+ const grammar: PageGrammar = 'relaxed';
+ ```
  */
 export type PageGrammar = 'strict' | 'relaxed' | 'absent';
 
 /**
- * One page reading, beside the grammar that produced it.
- *
- * @example
- * ```ts
- * const page: PageRead = readPageSkeleton({ text, },);
- * ```
+ One page reading, beside the grammar that produced it.
+ 
+ @example
+ ```ts
+ const page: PageRead = readPageSkeleton({ text, },);
+ ```
  */
 export type PageRead = {
   /**
-   * Blocks and atoms, or the refusal.
+   Blocks and atoms, or the refusal.
    */
   readonly read: SkeletonRead;
 
   /**
-   * Grammar that read them.
+   Grammar that read them.
    */
   readonly grammar: PageGrammar;
 };
 
 /**
- * Reading of a page that failed the strict grammar, under plain markdown.
- *
- * SEPARATE FROM {@link readSliceSkeleton} rather than a flag on it, because the
- * two callers want opposite things from the same refusal and a boolean would
- * hide which one a call site had chosen.
- *
- * @param text - exact page source, as the archive has it
- *
- * @returns Blocks and atoms under the looser grammar, or the refusal when even
- * plain markdown will not read it
- *
- * @example
- * ```ts
- * const relaxed = readRelaxed({ text: pageText, },);
- * ```
+ Reading of a page that failed the strict grammar, under plain markdown.
+ 
+ SEPARATE FROM {@link readSliceSkeleton} rather than a flag on it, because the
+ two callers want opposite things from the same refusal and a boolean would
+ hide which one a call site had chosen.
+ 
+ @param text - exact page source, as the archive has it
+ 
+ @returns Blocks and atoms under the looser grammar, or the refusal when even
+ plain markdown will not read it
+ 
+ @example
+ ```ts
+ const relaxed = readRelaxed({ text: pageText, },);
+ ```
  */
 function readRelaxed({ text, }: { readonly text: string; },): SkeletonRead {
   try {
     /**
-     * Page under the grammar that tolerates an unbalanced tag.
+     Page under the grammar that tolerates an unbalanced tag.
      */
     const root: DeepReadonlyData<Root> = parseMarkdownBody({ body: text, },);
     return {
@@ -125,20 +125,20 @@ function readRelaxed({ text, }: { readonly text: string; },): SkeletonRead {
 }
 
 /**
- * Reads the page a candidate would replace into its block sequence.
- *
- * Tries the strict grammar first so a well-formed page is read exactly as the
- * candidate side reads it, and downgrades to plain markdown only where the
- * strict grammar refuses.
- *
- * @param text - exact page source, empty where the slice has no page
- *
- * @returns Blocks and atoms, or the refusal when neither grammar reads it
- *
- * @example
- * ```ts
- * const page = readPageSkeleton({ text: pageText, },);
- * ```
+ Reads the page a candidate would replace into its block sequence.
+ 
+ Tries the strict grammar first so a well-formed page is read exactly as the
+ candidate side reads it, and downgrades to plain markdown only where the
+ strict grammar refuses.
+ 
+ @param text - exact page source, empty where the slice has no page
+ 
+ @returns Blocks and atoms, or the refusal when neither grammar reads it
+ 
+ @example
+ ```ts
+ const page = readPageSkeleton({ text: pageText, },);
+ ```
  */
 export function readPageSkeleton(
   { text, }: { readonly text: string; },
@@ -150,7 +150,7 @@ export function readPageSkeleton(
     };
 
   /**
-   * Strict reading, which is what a page written under this grammar gets.
+   Strict reading, which is what a page written under this grammar gets.
    */
   const strict = readSliceSkeleton({ text, },);
   if (strict.kind === 'read')

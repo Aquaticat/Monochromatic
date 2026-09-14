@@ -5,36 +5,36 @@ import { droppedContributorNameForms, } from './contributor-name-authority.ts';
 //region Contributor translation guard
 
 /**
- * Privacy-safe complete-form contributor authority finding.
+ Privacy-safe complete-form contributor authority finding.
  */
 export const CONTRIBUTOR_AUTHORITY_FINDING = 'Target-authoritative contributor identity from PAGE AS IT STANDS is missing or changed.';
 
 /**
- * Finds privacy-safe target contributor authority defect in one candidate.
- *
- * @param texts - target-authoritative archive then proposed replacement
- *
- * @returns Empty when authority survives,
- * otherwise one non-identifying correction finding
- *
- * @example
- * ```ts
- * const findings = contributorAuthorityFindings({ pageText, candidateText, });
- * ```
+ Finds privacy-safe target contributor authority defect in one candidate.
+ 
+ @param texts - target-authoritative archive then proposed replacement
+ 
+ @returns Empty when authority survives,
+ otherwise one non-identifying correction finding
+ 
+ @example
+ ```ts
+ const findings = contributorAuthorityFindings({ pageText, candidateText, });
+ ```
  */
 export function contributorAuthorityFindings(
   { texts, }: { readonly texts: readonly string[]; },
 ): readonly string[] {
   /**
-   * Target-authoritative archive slice.
+   Target-authoritative archive slice.
    */
   const pageText = nonNullishOrThrow(texts[0],);
   /**
-   * Proposed replacement slice.
+   Proposed replacement slice.
    */
   const candidateText = nonNullishOrThrow(texts[1],);
   /**
-   * Target-authoritative forms candidate lost.
+   Target-authoritative forms candidate lost.
    */
   const dropped = droppedContributorNameForms({
     archiveText: pageText,

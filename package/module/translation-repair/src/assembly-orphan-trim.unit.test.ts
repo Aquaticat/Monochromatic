@@ -1,10 +1,10 @@
 /**
- * Tests for the orphan-definition trim the assembly guard runs before it
- * withdraws.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the orphan-definition trim the assembly guard runs before it
+ withdraws.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -22,7 +22,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Finding naming the second note as an orphan.
+ Finding naming the second note as an orphan.
  */
 const ORPHAN_TWO: FootnoteGraphFinding = {
   kind: 'orphan-definition',
@@ -32,12 +32,12 @@ const ORPHAN_TWO: FootnoteGraphFinding = {
 };
 
 /**
- * Two definitions in one insertion, the second unreferenced.
+ Two definitions in one insertion, the second unreferenced.
  */
 const TWO_NOTES = '[^1]: That is its favourite spot.\n\n[^2]: A sparrow.\n';
 
 /**
- * Incumbent map with nothing under the insertion's index.
+ Incumbent map with nothing under the insertion's index.
  */
 const NO_INCUMBENT: ReadonlyMap<string, string> = new Map();
 
@@ -128,7 +128,7 @@ await describe({
         + 'prose nobody judged in that shape',
       fn: async () => {
         /**
-         * Prose paragraph ahead of the notes.
+         Prose paragraph ahead of the notes.
          */
         const prose = `The bird sat there.\n\n${TWO_NOTES}`;
         const trimmed = trimOrphanDefinitions({

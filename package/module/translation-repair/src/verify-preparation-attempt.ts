@@ -14,23 +14,23 @@ import { hashPreparationAttemptFile, } from './preparation-attempt-read-file.ts'
 //region Independent preparation namespace verification
 
 /**
- * Group and other mode bits are outside the private namespace contract.
+ Group and other mode bits are outside the private namespace contract.
  */
 const SHARED_DIRECTORY_BITS = 0o077n;
 
 /**
- * Checks observed directory identity without requiring that future phase files never be added.
- *
- * @param first - initial directory observation
- *
- * @param current - later pathname observation
- *
- * @returns Whether exact inode/device identity and private mode bits still match
- *
- * @example
- * ```ts
- * const stable = sameAttemptDirectory({ first, current });
- * ```
+ Checks observed directory identity without requiring that future phase files never be added.
+ 
+ @param first - initial directory observation
+ 
+ @param current - later pathname observation
+ 
+ @returns Whether exact inode/device identity and private mode bits still match
+ 
+ @example
+ ```ts
+ const stable = sameAttemptDirectory({ first, current });
+ ```
  */
 function sameAttemptDirectory({
   first,
@@ -47,21 +47,21 @@ function sameAttemptDirectory({
 }
 
 /**
- * Verifies namespace identity against independent expectations without loading the complete plan into memory.
- * Reads are bounded by the independently measured plan extent, not an arbitrary observed file size.
- * Checks establish observed integrity, not a lease against an adversarial concurrent writer or proof of original creation.
- * Root-plan semantics, review approval and acquisition authority remain separate.
- *
- * @param expected - independent directory, canonical identity, exact digest and measured root-plan byte extent
- *
- * @param l - caller logger retaining preparation scope
- *
- * @throws PreparationAttemptError when identity, extent, mode bits or fixed files do not match
- *
- * @example
- * ```ts
- * await verifyPreparationAttempt({ expected: attempt, l });
- * ```
+ Verifies namespace identity against independent expectations without loading the complete plan into memory.
+ Reads are bounded by the independently measured plan extent, not an arbitrary observed file size.
+ Checks establish observed integrity, not a lease against an adversarial concurrent writer or proof of original creation.
+ Root-plan semantics, review approval and acquisition authority remain separate.
+ 
+ @param expected - independent directory, canonical identity, exact digest and measured root-plan byte extent
+ 
+ @param l - caller logger retaining preparation scope
+ 
+ @throws PreparationAttemptError when identity, extent, mode bits or fixed files do not match
+ 
+ @example
+ ```ts
+ await verifyPreparationAttempt({ expected: attempt, l });
+ ```
  */
 export async function verifyPreparationAttempt({
   expected,
@@ -71,7 +71,7 @@ export async function verifyPreparationAttempt({
   readonly l: Logger
 },): Promise<void> {
   /**
-   * Snapshot primitive expectations before any asynchronous read.
+   Snapshot primitive expectations before any asynchronous read.
    */
   const {
     dir: requestedDir,
@@ -80,7 +80,7 @@ export async function verifyPreparationAttempt({
     rootPlanBytes,
   } = expected;
   /**
-   * Verification telemetry never quotes marker or root-plan contents.
+   Verification telemetry never quotes marker or root-plan contents.
    */
   const pl = tagged({
     tag: verifyPreparationAttempt.name,
@@ -99,12 +99,12 @@ export async function verifyPreparationAttempt({
       dir: requestedDir,
     },);
   /**
-   * Relative caller input cannot drift if another task changes the process cwd.
+   Relative caller input cannot drift if another task changes the process cwd.
    */
   const dir = resolve(requestedDir,);
   pl.debug('checking independent namespace identity and registered private file extents',);
   /**
-   * Marker encoding is reconstructed only from the independent expectation.
+   Marker encoding is reconstructed only from the independent expectation.
    */
   const marker = JSON.stringify({
     version: 1,
@@ -115,7 +115,7 @@ export async function verifyPreparationAttempt({
   },);
   try {
     /**
-     * Final directory component cannot redirect the check to another namespace.
+     Final directory component cannot redirect the check to another namespace.
      */
     const before = await lstat(
       dir,
@@ -130,7 +130,7 @@ export async function verifyPreparationAttempt({
         dir,
       },);
     /**
-     * Expected marker size is known before opening its content stream.
+     Expected marker size is known before opening its content stream.
      */
     const identity = await hashPreparationAttemptFile({
       dir,
@@ -149,7 +149,7 @@ export async function verifyPreparationAttempt({
         dir,
       },);
     /**
-     * Exact independently supplied extent caps total root-plan I/O as well as stream memory.
+     Exact independently supplied extent caps total root-plan I/O as well as stream memory.
      */
     const plan = await hashPreparationAttemptFile({
       dir,

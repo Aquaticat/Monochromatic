@@ -75,35 +75,35 @@ import {
 // rather than an invitation to keep going.
 
 /**
- * Logger root for the routing layer.
+ Logger root for the routing layer.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Refusal raised when no provider can take one call at all.
- *
- * @example
- * ```ts
- * throw new NoProviderForModelError({ modelId, reason: 'no provider serves this model', },);
- * ```
+ Refusal raised when no provider can take one call at all.
+ 
+ @example
+ ```ts
+ throw new NoProviderForModelError({ modelId, reason: 'no provider serves this model', },);
+ ```
  */
 export class NoProviderForModelError extends Error {
   /**
-   * Declares this message safe to forward: it names a model and which of the routing outcomes it hit.
+   Declares this message safe to forward: it names a model and which of the routing outcomes it hit.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds failure naming the model and why nowhere could take it.
-   *
-   * @param modelId - model the call was addressed to
-   *
-   * @param reason - what the router decided, verbatim
-   *
-   * @example
-   * ```ts
-   * new NoProviderForModelError({ modelId: 'minimax-m3', reason: 'no provider serves this model', },);
-   * ```
+   Builds failure naming the model and why nowhere could take it.
+   
+   @param modelId - model the call was addressed to
+   
+   @param reason - what the router decided, verbatim
+   
+   @example
+   ```ts
+   new NoProviderForModelError({ modelId: 'minimax-m3', reason: 'no provider serves this model', },);
+   ```
    */
   public constructor(
     {
@@ -120,8 +120,8 @@ export class NoProviderForModelError extends Error {
 }
 
 /**
- * Per-model slots the providers grant by default: Synthetic's measured five,
- * no ceiling on the providers that state none.
+ Per-model slots the providers grant by default: Synthetic's measured five,
+ no ceiling on the providers that state none.
  */
 const DEFAULT_SLOT_LIMITS: SlotLimits = {
   synthetic: SYNTHETIC_PER_MODEL_CONCURRENCY,
@@ -131,17 +131,17 @@ const DEFAULT_SLOT_LIMITS: SlotLimits = {
 };
 
 /**
- * Providers that can serve one call, narrowed to vision where it carries a
- * picture.
- *
- * @param request - call whose reach is read
- *
- * @returns Reach for the policy, or for a re-ask, to decide on
- *
- * @example
- * ```ts
- * const reach = reachFor({ request, },);
- * ```
+ Providers that can serve one call, narrowed to vision where it carries a
+ picture.
+ 
+ @param request - call whose reach is read
+ 
+ @returns Reach for the policy, or for a re-ask, to decide on
+ 
+ @example
+ ```ts
+ const reach = reachFor({ request, },);
+ ```
  */
 function reachFor(
   { request, }: { readonly request: ForeignBorrowed<ChatTextRequest>; },
@@ -152,25 +152,25 @@ function reachFor(
 }
 
 /**
- * Builds the client that routes each call to whichever provider can serve it.
- *
- * @param callers - each provider's text call, which is all this delegates
- *
- * @param budgets - shared budget view every call is routed by
- *
- * @param slotLimits - concurrent calls each limiting provider's client grants
- * one model, which decides when it counts as saturated; must match the
- * `perModelConcurrency` that client was built with
- *
- * @param holdPollMs - how often a call waiting out a hold checks for abort;
- * injectable so a test waits milliseconds rather than a second
- *
- * @returns Client surface a stage calls without naming a provider
- *
- * @example
- * ```ts
- * const client = createRoutingClient({ callers: { synthetic, hyper, openrouter, }, budgets, },);
- * ```
+ Builds the client that routes each call to whichever provider can serve it.
+ 
+ @param callers - each provider's text call, which is all this delegates
+ 
+ @param budgets - shared budget view every call is routed by
+ 
+ @param slotLimits - concurrent calls each limiting provider's client grants
+ one model, which decides when it counts as saturated; must match the
+ `perModelConcurrency` that client was built with
+ 
+ @param holdPollMs - how often a call waiting out a hold checks for abort;
+ injectable so a test waits milliseconds rather than a second
+ 
+ @returns Client surface a stage calls without naming a provider
+ 
+ @example
+ ```ts
+ const client = createRoutingClient({ callers: { synthetic, hyper, openrouter, }, budgets, },);
+ ```
  */
 export function createRoutingClient(
   {
@@ -186,28 +186,28 @@ export function createRoutingClient(
   },
 ): ModelCaller {
   /**
-   * In-flight slots on the providers that limit them.
+   In-flight slots on the providers that limit them.
    */
   const ledger = createSlotLedger({ limits: slotLimits, },);
 
   /**
-   * Decides which provider takes one call, given what is known right now.
-   *
-   * @param request - call being routed, read for its model and its pictures
-   *
-   * @param refused - provider that has just refused us, or nobody
-   *
-   * @returns Provider to ask
-   *
-   * @throws {@link NoProviderForModelError} when nowhere can take it
-   *
-   * @throws {@link import('./budget-routing.ts').EveryProviderDryError} when
-   * every provider is out of budget with no refusal hold left to wait out
-   *
-   * @example
-   * ```ts
-   * const provider = await chooseProvider({ request, refused: NOBODY_REFUSED, },);
-   * ```
+   Decides which provider takes one call, given what is known right now.
+   
+   @param request - call being routed, read for its model and its pictures
+   
+   @param refused - provider that has just refused us, or nobody
+   
+   @returns Provider to ask
+   
+   @throws {@link NoProviderForModelError} when nowhere can take it
+   
+   @throws {@link import('./budget-routing.ts').EveryProviderDryError} when
+   every provider is out of budget with no refusal hold left to wait out
+   
+   @example
+   ```ts
+   const provider = await chooseProvider({ request, refused: NOBODY_REFUSED, },);
+   ```
    */
   async function chooseProvider(
     {
@@ -219,13 +219,13 @@ export function createRoutingClient(
     },
   ): Promise<ProviderName> {
     /**
-     * Providers that can serve this model, narrowed where it carries a picture.
+     Providers that can serve this model, narrowed where it carries a picture.
      */
     const reach = reachFor({ request, },);
 
     /**
-     * What each provider's budget looks like right now, the refusal that
-     * routed here folded in and any hold every provider was under waited out.
+     What each provider's budget looks like right now, the refusal that
+     routed here folded in and any hold every provider was under waited out.
      */
     const dry = await readBudgetsPastHolds({
       budgets,
@@ -236,7 +236,7 @@ export function createRoutingClient(
     },);
 
     /**
-     * Where the owner's policy sends this call.
+     Where the owner's policy sends this call.
      */
     const choice = routeProviderFor({
       reach,
@@ -264,23 +264,23 @@ export function createRoutingClient(
   }
 
   /**
-   * Performs one call on the named provider, releasing its slot afterwards.
-   *
-   * PAIRED WITH THE TAKE IN `chooseProvider` AND IN THE RE-ASK: every decision
-   * takes one slot on a limiting provider and reaches exactly one call here.
-   *
-   * @param provider - provider to ask, as {@link chooseProvider} decided
-   *
-   * @param request - call to perform
-   *
-   * @mutates request - the delegated client serializes messages and response format; see its contract
-   *
-   * @returns Whatever that provider answered
-   *
-   * @example
-   * ```ts
-   * const reply = await callOn({ provider: 'hyper', request, },);
-   * ```
+   Performs one call on the named provider, releasing its slot afterwards.
+   
+   PAIRED WITH THE TAKE IN `chooseProvider` AND IN THE RE-ASK: every decision
+   takes one slot on a limiting provider and reaches exactly one call here.
+   
+   @param provider - provider to ask, as {@link chooseProvider} decided
+   
+   @param request - call to perform
+   
+   @mutates request - the delegated client serializes messages and response format; see its contract
+   
+   @returns Whatever that provider answered
+   
+   @example
+   ```ts
+   const reply = await callOn({ provider: 'hyper', request, },);
+   ```
    */
   async function callOn(
     {
@@ -292,8 +292,8 @@ export function createRoutingClient(
     },
   ): Promise<ChatTextReply> {
     /**
-     * Slot this call holds until it returns or raises; a no-op on a provider
-     * that grants no limit.
+     Slot this call holds until it returns or raises; a no-op on a provider
+     that grants no limit.
      */
     using slot = ledger.held({
       provider,
@@ -305,34 +305,34 @@ export function createRoutingClient(
     void slot;
 
     /**
-     * The provider's own client, which is all this delegates to.
+     The provider's own client, which is all this delegates to.
      */
     const caller = callers[provider];
     return await caller.chatText(request,);
   }
 
   /**
-   * Free-text chat exchange, routed and re-routed on budget refusals, at most
-   * once per provider.
-   *
-   * @param request - exchange to perform
-   *
-   * @mutates request - the delegated client serializes messages and response format; see its contract
-   *
-   * @returns Content text and usage when reported, and who answered
-   *
-   * @throws {@link NoProviderForModelError} when nowhere can take it
-   *
-   * @example
-   * ```ts
-   * const { provider, reply, } = await routedText({ modelId, messages, signal, },);
-   * ```
+   Free-text chat exchange, routed and re-routed on budget refusals, at most
+   once per provider.
+   
+   @param request - exchange to perform
+   
+   @mutates request - the delegated client serializes messages and response format; see its contract
+   
+   @returns Content text and usage when reported, and who answered
+   
+   @throws {@link NoProviderForModelError} when nowhere can take it
+   
+   @example
+   ```ts
+   const { provider, reply, } = await routedText({ modelId, messages, signal, },);
+   ```
    */
   async function routedText(
     request: ForeignBorrowed<ChatTextRequest>,
   ): Promise<RoutedReply> {
     /**
-     * Logger pre-tagged with this function's name.
+     Logger pre-tagged with this function's name.
      */
     const rl = tagged({
       tag: routedText.name,
@@ -340,25 +340,25 @@ export function createRoutingClient(
     },);
 
     /**
-     * Provider that refused the previous attempt, folded into the next
-     * decision; nobody before the first.
-     *
-     * A RECORD RATHER THAN A ROOT `let`, so the one thing that changes
-     * between attempts is named and scoped to the loop that changes it.
+     Provider that refused the previous attempt, folded into the next
+     decision; nobody before the first.
+     
+     A RECORD RATHER THAN A ROOT `let`, so the one thing that changes
+     between attempts is named and scoped to the loop that changes it.
      */
     const last: { refused: ProviderName | typeof NOBODY_REFUSED; } = { refused: NOBODY_REFUSED, };
 
     /**
-     * Which providers serve this call at all. COUNTED OVER THE REACH RATHER
-     * THAN THE ORDER since 2026-09-07, when a fourth provider that serves
-     * few of the roster's models joined: a loop bounded by the order would
-     * ask once more after the last serving provider refused and end on a
-     * no-provider error instead of the refusal itself.
+     Which providers serve this call at all. COUNTED OVER THE REACH RATHER
+     THAN THE ORDER since 2026-09-07, when a fourth provider that serves
+     few of the roster's models joined: a loop bounded by the order would
+     ask once more after the last serving provider refused and end on a
+     no-provider error instead of the refusal itself.
      */
     const reach = reachFor({ request, },);
 
     /**
-     * How many of them serve this call.
+     How many of them serve this call.
      */
     const serving = PROVIDER_ORDER
       .filter(function serves(candidate,): boolean {
@@ -371,7 +371,7 @@ export function createRoutingClient(
     // answer.
     for (const attempt of PROVIDER_ORDER.keys()) {
       /**
-       * Provider the policy picked on what is known before this attempt.
+       Provider the policy picked on what is known before this attempt.
        */
       // eslint-disable-next-line no-await-in-loop -- each choice depends on the refusal before it
       const provider = await chooseProvider({
@@ -414,27 +414,27 @@ export function createRoutingClient(
   }
 
   /**
-   * Free-text chat exchange, routed and re-routed on budget refusals.
-   *
-   * @param request - exchange to perform
-   *
-   * @mutates request - the delegated client serializes messages and response format; see its contract
-   *
-   * @returns Content text and usage when reported
-   *
-   * @throws {@link NoProviderForModelError} when nowhere can take it
-   *
-   * @example
-   * ```ts
-   * const reply = await client.chatText({ modelId, messages, signal, },);
-   * ```
+   Free-text chat exchange, routed and re-routed on budget refusals.
+   
+   @param request - exchange to perform
+   
+   @mutates request - the delegated client serializes messages and response format; see its contract
+   
+   @returns Content text and usage when reported
+   
+   @throws {@link NoProviderForModelError} when nowhere can take it
+   
+   @example
+   ```ts
+   const reply = await client.chatText({ modelId, messages, signal, },);
+   ```
    */
   async function chatText(request: ForeignBorrowed<ChatTextRequest>,): Promise<ChatTextReply> {
     return (await routedText(request,)).reply;
   }
 
   /**
-   * What the re-ask borrows from this router.
+   What the re-ask borrows from this router.
    */
   const core: RoutedCore = {
     reachFor,
@@ -445,18 +445,18 @@ export function createRoutingClient(
   };
 
   /**
-   * Schema-validated chat exchange over whichever provider served the text.
-   *
-   * @param request - exchange plus content guard
-   *
-   * @mutates request - the delegated client serializes messages and response format; see its contract
-   *
-   * @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
-   *
-   * @example
-   * ```ts
-   * const outcome = await client.chatJson({ modelId, messages, signal, validate: isVerdict, },);
-   * ```
+   Schema-validated chat exchange over whichever provider served the text.
+   
+   @param request - exchange plus content guard
+   
+   @mutates request - the delegated client serializes messages and response format; see its contract
+   
+   @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
+   
+   @example
+   ```ts
+   const outcome = await client.chatJson({ modelId, messages, signal, validate: isVerdict, },);
+   ```
    */
   async function chatJson<ValueT,>(
     request: ForeignBorrowed<ChatJsonRequest<ValueT>>,

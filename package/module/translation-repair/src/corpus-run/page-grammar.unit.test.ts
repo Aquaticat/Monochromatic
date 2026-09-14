@@ -1,16 +1,16 @@
 /**
- * Tests for the page-level floor that refuses a page the MDX grammar cannot
- * parse.
- *
- * WHY THIS FLOOR EXISTS. On 2026-09-06 the yulianNyanner page shipped a
- * component line whose JSX string literal had been curled into typographic
- * quotes at the would-ship reading, after every slice floor had passed the
- * straight-quoted slice. A page the site cannot compile is not a page, and
- * nothing between the would-ship reading and the disk read it as a document.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the page-level floor that refuses a page the MDX grammar cannot
+ parse.
+ 
+ WHY THIS FLOOR EXISTS. On 2026-09-06 the yulianNyanner page shipped a
+ component line whose JSX string literal had been curled into typographic
+ quotes at the would-ship reading, after every slice floor had passed the
+ straight-quoted slice. A page the site cannot compile is not a page, and
+ nothing between the would-ship reading and the disk read it as a document.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,24 +26,24 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Left double quotation mark.
+ Left double quotation mark.
  */
 const OPEN = '\u{201C}';
 
 /**
- * Right double quotation mark.
+ Right double quotation mark.
  */
 const CLOSE = '\u{201D}';
 
 /**
- * Page whose blockquoted component line carries straight quotes, as the
- * archives write it.
+ Page whose blockquoted component line carries straight quotes, as the
+ archives write it.
  */
 const PARSING_PAGE = `---\nname: Cat\n---\n\n## Cat\n\n> Pick up a mouse, if you have one.\n>\n`
   + `> <PhotoScroll photos={["\${path}/photos/photo3.webp"]} />\n\nIt sleeps.\n`;
 
 /**
- * Same page with the literal curled, the shape of 2026-09-06.
+ Same page with the literal curled, the shape of 2026-09-06.
  */
 const CURLED_PAGE = PARSING_PAGE.replace(
   `{["\${path}/photos/photo3.webp"]}`,
@@ -58,7 +58,7 @@ await describe({
         + 'the refusal site and quoting nothing (2026-09-06)',
       fn: async () => {
         /**
-         * What the floor threw on the curled page.
+         What the floor threw on the curled page.
          */
         const refusal = caught(function publishCurled(): void {
           assertPageParses({

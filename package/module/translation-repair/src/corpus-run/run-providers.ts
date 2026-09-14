@@ -30,85 +30,85 @@ import { RunConfigError, } from './run-config-error.ts';
 // operation". Only no key at all is a refusal.
 
 /**
- * Clients a run may route to, each present when its key is, plus the budget
- * view over all of them.
- *
- * @example
- * ```ts
- * const { budgets, } = configureProviders({},);
- * ```
+ Clients a run may route to, each present when its key is, plus the budget
+ view over all of them.
+ 
+ @example
+ ```ts
+ const { budgets, } = configureProviders({},);
+ ```
  */
 export type ConfiguredProviders = {
   /**
-   * First provider client, when its key is set.
+   First provider client, when its key is set.
    */
   readonly synthetic?: SyntheticClient;
 
   /**
-   * Second provider client, when its key is set.
+   Second provider client, when its key is set.
    */
   readonly hyper?: HyperClient;
 
   /**
-   * Fourth provider client, when its key is set.
+   Fourth provider client, when its key is set.
    */
   readonly bedrock?: BedrockClient;
 
   /**
-   * Third provider client, when its key is set.
+   Third provider client, when its key is set.
    */
   readonly openrouter?: OpenRouterClient;
 
   /**
-   * Shared budget view every provider is routed by.
+   Shared budget view every provider is routed by.
    */
   readonly budgets: ProviderBudgets;
 };
 
 /**
- * Builds every configured provider's client and the budget view over them.
- *
- * @param transport - HTTP seam handed to every client; tests inject one
- *
- * @returns Clients present per key, plus the budgets
- *
- * @throws {@link RunConfigError} when every provider key variable is unset or empty
- *
- * @example
- * ```ts
- * const providers = configureProviders({},);
- * ```
+ Builds every configured provider's client and the budget view over them.
+ 
+ @param transport - HTTP seam handed to every client; tests inject one
+ 
+ @returns Clients present per key, plus the budgets
+ 
+ @throws {@link RunConfigError} when every provider key variable is unset or empty
+ 
+ @example
+ ```ts
+ const providers = configureProviders({},);
+ ```
  */
 export function configureProviders(
   { transport, }: { readonly transport?: ModelTransport; } = {},
 ): ConfiguredProviders {
   /**
-   * Synthetic API key, resolved by name from the mise-injected env.
+   Synthetic API key, resolved by name from the mise-injected env.
    */
   const apiKey = process.env
     .TRANSLATION_REPAIR_SYNTHETIC_API_KEY
     ?? '';
   /**
-   * Second provider key,
-   * independently optional because either provider may run alone.
+   Second provider key,
+   independently optional because either provider may run alone.
    */
   const hyperKey = process.env
     .TRANSLATION_REPAIR_CHARM_HYPER_API_KEY
     ?? '';
   /**
-   * Third provider key, the paid fallback, optional for the same reason.
+   Third provider key, the paid fallback, optional for the same reason.
    */
   const openRouterKey = process.env
     .TRANSLATION_REPAIR_OPENROUTER_API_KEY
     ?? '';
   /**
-   * Fourth provider key, the prepaid per-token provider, optional likewise.
+   Fourth provider key, the prepaid per-token provider, optional likewise.
    */
   const bedrockKey = process.env
     .TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY
     ?? '';
   /**
-   * Whether no provider at all is configured, which nothing can run on.
+   Whether no provider at all is configured, which nothing can run on.
    */
   const noKeyAtAll = (apiKey === '')
     && (hyperKey === '')
@@ -122,15 +122,15 @@ export function configureProviders(
   }
 
   /**
-   * Transport handed to configured clients,
-   * absent when production's fetch is meant.
+   Transport handed to configured clients,
+   absent when production's fetch is meant.
    */
   const seam = (transport === undefined)
     ? {}
     : { transport, };
 
   /**
-   * First provider client when configured.
+   First provider client when configured.
    */
   const synthetic = (apiKey === '')
     ? undefined
@@ -140,7 +140,7 @@ export function configureProviders(
     },);
 
   /**
-   * Second provider client when configured.
+   Second provider client when configured.
    */
   const hyper = (hyperKey === '')
     ? undefined
@@ -151,7 +151,7 @@ export function configureProviders(
     },);
 
   /**
-   * Third provider client when configured.
+   Third provider client when configured.
    */
   const openrouter = (openRouterKey === '')
     ? undefined
@@ -161,8 +161,8 @@ export function configureProviders(
     },);
 
   /**
-   * Fourth provider client when configured, over the durable spend ledger
-   * the environment names.
+   Fourth provider client when configured, over the durable spend ledger
+   the environment names.
    */
   const bedrock = (bedrockKey === '')
     ? undefined
@@ -173,7 +173,7 @@ export function configureProviders(
     },);
 
   /**
-   * Shared budget view every provider is routed by.
+   Shared budget view every provider is routed by.
    */
   const budgets = createProviderBudgets({
     ...((synthetic === undefined) ? {} : { synthetic, }),

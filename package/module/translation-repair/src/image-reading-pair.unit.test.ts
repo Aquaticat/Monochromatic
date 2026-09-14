@@ -1,26 +1,26 @@
 /**
- * Tests for reading one picture with the whole vision sub-roster and letting
- * the two readers decide whether either reading may be used.
- *
- * WHAT THESE PIN is that corroboration is the gate. A reading that arrives is
- * not a reading that may be used: it has to be matched by a second reader shown
- * the same picture and nothing else, and where no second reading exists the
- * first is refused rather than passed along with a caveat.
- *
- * BOTH READINGS TRAVEL when they agree, which one of these asserts directly.
- * Agreement establishes that two readers describe the same picture, not the
- * same amount of it, so a stage handed only the longer would lose the shorter's
- * vouching and a stage handed only the shorter would lose content.
- *
- * A FAILING READER IS CONTAINED, which three of these pin from both sides. A
- * reading is the one output nothing downstream requires, so a reader that
- * throws must cost its own reading and nothing else. An ABORT is not such a
- * failure and must still travel, because a run told to stop must not settle a
- * document on the readings that beat the stop.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading one picture with the whole vision sub-roster and letting
+ the two readers decide whether either reading may be used.
+ 
+ WHAT THESE PIN is that corroboration is the gate. A reading that arrives is
+ not a reading that may be used: it has to be matched by a second reader shown
+ the same picture and nothing else, and where no second reading exists the
+ first is refused rather than passed along with a caveat.
+ 
+ BOTH READINGS TRAVEL when they agree, which one of these asserts directly.
+ Agreement establishes that two readers describe the same picture, not the
+ same amount of it, so a stage handed only the longer would lose the shorter's
+ vouching and a stage handed only the shorter would lose content.
+ 
+ A FAILING READER IS CONTAINED, which three of these pin from both sides. A
+ reading is the one output nothing downstream requires, so a reader that
+ throws must cost its own reading and nothing else. An ABORT is not such a
+ failure and must still travel, because a run told to stop must not settle a
+ document on the readings that beat the stop.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -41,12 +41,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger the stage writes its progress to.
+ Logger the stage writes its progress to.
  */
 const l = tagged({ tag: 'image-reading-pair-test', },);
 
 /**
- * Vision sub-roster, which is exactly these two models.
+ Vision sub-roster, which is exactly these two models.
  */
 const READERS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
@@ -54,33 +54,33 @@ const READERS: readonly RosterModelId[] = [
 ];
 
 /**
- * Model whose context is the larger of the two, so a picture can be sized to
- * fit it alone.
+ Model whose context is the larger of the two, so a picture can be sized to
+ fit it alone.
  */
 const LARGER_READER: RosterModelId = 'hf:moonshotai/Kimi-K3';
 
 /**
- * What one reader transcribed from a picture of a noticeboard.
+ What one reader transcribed from a picture of a noticeboard.
  */
 const READING = '走失猫咪 Mittens，虎斑，2019 年出生，联系 @mittenspaw，请电 555 0134。';
 
 /**
- * What the other reader transcribed from the same picture, worded differently
- * where a transcription can differ and identical where it cannot.
+ What the other reader transcribed from the same picture, worded differently
+ where a transcription can differ and identical where it cannot.
  */
 const AGREEING_READING = '走失猫咪 Mittens，虎斑，2019 年出生，联系 @mittenspaw，电话 555 0134。';
 
 /**
- * What a reader transcribed from some other picture entirely.
+ What a reader transcribed from some other picture entirely.
  */
 const OTHER_PICTURE = '兽医诊所营业时间：周一至周五上午九点到下午六点，周六休息。';
 
 /**
- * Deterministic reader that finds text, which is what lets the models be asked.
- *
- * THE REAL ONE SHELLS OUT to `dwebp` and `tesseract`, so every case here supplies
- * a stub instead. That is the point of the seam: a test must not depend on which
- * command-line tools a machine happens to carry.
+ Deterministic reader that finds text, which is what lets the models be asked.
+ 
+ THE REAL ONE SHELLS OUT to `dwebp` and `tesseract`, so every case here supplies
+ a stub instead. That is the point of the seam: a test must not depend on which
+ command-line tools a machine happens to carry.
  */
 async function found(): Promise<{
   readonly kind: 'read';
@@ -93,7 +93,7 @@ async function found(): Promise<{
 }
 
 /**
- * Deterministic reader that finds nothing, which is two thirds of the corpus.
+ Deterministic reader that finds nothing, which is two thirds of the corpus.
  */
 async function empty(): Promise<{
   readonly kind: 'no-text';
@@ -106,8 +106,8 @@ async function empty(): Promise<{
 }
 
 /**
- * Deterministic reader that could not run, standing in for a machine without
- * the tools installed.
+ Deterministic reader that could not run, standing in for a machine without
+ the tools installed.
  */
 async function missing(): Promise<{
   readonly kind: 'unavailable';
@@ -120,33 +120,33 @@ async function missing(): Promise<{
 }
 
 /**
- * Bytes standing in for a picture, whose content no rule here reads.
- *
- * @param length - how many bytes picture occupies
- *
- * @returns Buffer of that size
- *
- * @example
- * ```ts
- * const bytes = bytesOf({ length: 64, },);
- * ```
+ Bytes standing in for a picture, whose content no rule here reads.
+ 
+ @param length - how many bytes picture occupies
+ 
+ @returns Buffer of that size
+ 
+ @example
+ ```ts
+ const bytes = bytesOf({ length: 64, },);
+ ```
  */
 function bytesOf({ length, }: { readonly length: number; },): Uint8Array {
   return new Uint8Array(length,).fill(7,);
 }
 
 /**
- * Client answering each model with whatever that model is scripted to say.
- *
- * @param byModel - reply per model; a model absent from this map answers with
- * nothing, which the reading stage reports as an empty reply
- *
- * @returns Client and models it was asked, in the order asks arrived
- *
- * @example
- * ```ts
- * const { client, asked, } = scriptedClient({ byModel: { [LARGER_READER]: READING, }, },);
- * ```
+ Client answering each model with whatever that model is scripted to say.
+ 
+ @param byModel - reply per model; a model absent from this map answers with
+ nothing, which the reading stage reports as an empty reply
+ 
+ @returns Client and models it was asked, in the order asks arrived
+ 
+ @example
+ ```ts
+ const { client, asked, } = scriptedClient({ byModel: { [LARGER_READER]: READING, }, },);
+ ```
  */
 function scriptedClient(
   { byModel, }: { readonly byModel: Readonly<Record<string, string>>; },
@@ -155,7 +155,7 @@ function scriptedClient(
   readonly asked: RosterModelId[];
 } {
   /**
-   * Models a reading was requested from.
+   Models a reading was requested from.
    */
   const asked: RosterModelId[] = [];
 
@@ -164,7 +164,7 @@ function scriptedClient(
     client: {
       chatText: async (request,) => {
         /**
-         * Request as this package's own contract describes it.
+         Request as this package's own contract describes it.
          */
         const { modelId, } = request as ChatTextRequest;
         asked.push(modelId,);
@@ -181,22 +181,22 @@ function scriptedClient(
 }
 
 /**
- * Client that throws for named models and answers the rest from a script.
- *
- * THROWS RATHER THAN RETURNING AN ERROR SHAPE, because that is what the
- * production client does: the runaway guard, the retry ceiling and a transport
- * failure all leave `chatText` by rejecting.
- *
- * @param failing - models whose exchange throws, and the message it throws with
- *
- * @param byModel - reply per model that does not throw
- *
- * @returns Client and models it was asked, in the order asks arrived
- *
- * @example
- * ```ts
- * const { client, } = failingClient({ failing: { [LARGER_READER]: 'runaway', }, byModel: {}, },);
- * ```
+ Client that throws for named models and answers the rest from a script.
+ 
+ THROWS RATHER THAN RETURNING AN ERROR SHAPE, because that is what the
+ production client does: the runaway guard, the retry ceiling and a transport
+ failure all leave `chatText` by rejecting.
+ 
+ @param failing - models whose exchange throws, and the message it throws with
+ 
+ @param byModel - reply per model that does not throw
+ 
+ @returns Client and models it was asked, in the order asks arrived
+ 
+ @example
+ ```ts
+ const { client, } = failingClient({ failing: { [LARGER_READER]: 'runaway', }, byModel: {}, },);
+ ```
  */
 function failingClient(
   {
@@ -211,7 +211,7 @@ function failingClient(
   readonly asked: RosterModelId[];
 } {
   /**
-   * Models a reading was requested from.
+   Models a reading was requested from.
    */
   const asked: RosterModelId[] = [];
 
@@ -220,13 +220,13 @@ function failingClient(
     client: {
       chatText: async (request,) => {
         /**
-         * Request as this package's own contract describes it.
+         Request as this package's own contract describes it.
          */
         const { modelId, } = request as ChatTextRequest;
         asked.push(modelId,);
 
         /**
-         * Message this model is scripted to fail with, absent when it succeeds.
+         Message this model is scripted to fail with, absent when it succeeds.
          */
         const failure = failing[modelId];
         if (failure !== undefined)
@@ -259,7 +259,7 @@ await describe({
         },);
 
         /**
-         * What the roster made of the picture.
+         What the roster made of the picture.
          */
         const paired = await readImagePair({
           client,
@@ -308,7 +308,7 @@ await describe({
         },);
 
         /**
-         * What the roster made of two irreconcilable readings.
+         What the roster made of two irreconcilable readings.
          */
         const paired = await readImagePair({
           client,
@@ -349,7 +349,7 @@ await describe({
         },);
 
         /**
-         * What the roster made of a picture only one reader answered about.
+         What the roster made of a picture only one reader answered about.
          */
         const paired = await readImagePair({
           client,
@@ -377,7 +377,7 @@ await describe({
         const { client, } = scriptedClient({ byModel: {}, },);
 
         /**
-         * What the roster made of a picture neither reader answered about.
+         What the roster made of a picture neither reader answered about.
          */
         const paired = await readImagePair({
           client,
@@ -417,7 +417,7 @@ await describe({
         },);
 
         /**
-         * What the roster made of a picture the deterministic reader called text.
+         What the roster made of a picture the deterministic reader called text.
          */
         const paired = await readImagePair({
           client,
@@ -452,7 +452,7 @@ await describe({
         },);
 
         /**
-         * What the roster made of a picture carrying a few characters.
+         What the roster made of a picture carrying a few characters.
          */
         const paired = await readImagePair({
           client,
@@ -484,7 +484,7 @@ await describe({
         },);
 
         /**
-         * What the roster made of a picture one reader would not look at.
+         What the roster made of a picture one reader would not look at.
          */
         const paired = await readImagePair({
           client,
@@ -521,7 +521,7 @@ await describe({
         },);
 
         /**
-         * What the roster made of a picture the readers saw differently.
+         What the roster made of a picture the readers saw differently.
          */
         const paired = await readImagePair({
           client,
@@ -554,7 +554,7 @@ await describe({
         },);
 
         /**
-         * What one reader alone produced.
+         What one reader alone produced.
          */
         const paired = await readImagePair({
           client,
@@ -588,7 +588,7 @@ await describe({
         },);
 
         /**
-         * What the roster made of a picture one reader could not finish reading.
+         What the roster made of a picture one reader could not finish reading.
          */
         const paired = await readImagePair({
           client,
@@ -634,7 +634,7 @@ await describe({
         },);
 
         /**
-         * What the roster made of a picture neither reader could finish.
+         What the roster made of a picture neither reader could finish.
          */
         const paired = await readImagePair({
           client,
@@ -672,21 +672,21 @@ await describe({
         },);
 
         /**
-         * Stop that has already arrived, standing in for one that lands while
-         * the readings are in flight.
+         Stop that has already arrived, standing in for one that lands while
+         the readings are in flight.
          */
         const stopped = new AbortController();
         stopped.abort();
 
         /**
-         * Name of whatever escaped the call, or what it returned instead.
-         * Recorded rather than asserted inline so a verdict slipping past the
-         * stop reads as its own value rather than as a missing throw.
+         Name of whatever escaped the call, or what it returned instead.
+         Recorded rather than asserted inline so a verdict slipping past the
+         stop reads as its own value rather than as a missing throw.
          */
         let escaped = 'nothing thrown';
         try {
           /**
-           * What the roster made of a picture a stopped run asked about.
+           What the roster made of a picture a stopped run asked about.
            */
           const paired = await readImagePair({
             client,
@@ -715,7 +715,7 @@ await describe({
         + 'that beat the stop',
       fn: async () => {
         /**
-         * Roster that must never be reached, since the gate sits before it.
+         Roster that must never be reached, since the gate sits before it.
          */
         const { client, } = scriptedClient({
           byModel: {
@@ -725,16 +725,16 @@ await describe({
         },);
 
         /**
-         * How many times the deterministic reader was asked. Counted rather
-         * than asserted inside the stub so a call that does happen reads as a
-         * number in the failure rather than as a thrown assertion from a place
-         * the test does not name.
+         How many times the deterministic reader was asked. Counted rather
+         than asserted inside the stub so a call that does happen reads as a
+         number in the failure rather than as a thrown assertion from a place
+         the test does not name.
          */
         let asked = 0;
 
         /**
-         * Deterministic reader that records being asked, and would otherwise
-         * return the verdict two thirds of this corpus reaches.
+         Deterministic reader that records being asked, and would otherwise
+         return the verdict two thirds of this corpus reaches.
          */
         async function counting(): Promise<{
           readonly kind: 'no-text';
@@ -748,19 +748,19 @@ await describe({
         }
 
         /**
-         * Stop that arrived before the picture did.
+         Stop that arrived before the picture did.
          */
         const stopped = new AbortController();
         stopped.abort();
 
         /**
-         * Name of whatever escaped, kept so a verdict slipping past the stop
-         * reads as its own value.
+         Name of whatever escaped, kept so a verdict slipping past the stop
+         reads as its own value.
          */
         let escaped = 'nothing thrown';
         try {
           /**
-           * What the roster made of a picture a stopped run asked about.
+           What the roster made of a picture a stopped run asked about.
            */
           const paired = await readImagePair({
             client,
@@ -796,7 +796,7 @@ await describe({
         },);
 
         /**
-         * What the roster made of a picture the deterministic reader found bare.
+         What the roster made of a picture the deterministic reader found bare.
          */
         const paired = await readImagePair({
           client,
@@ -832,7 +832,7 @@ await describe({
         },);
 
         /**
-         * What the roster made of a picture nothing could pre-screen.
+         What the roster made of a picture nothing could pre-screen.
          */
         const paired = await readImagePair({
           client,
@@ -860,7 +860,7 @@ await describe({
         + 'stable unavailability, and REFUSES only the unavailability that rests on a reader failing for now',
       fn: async () => {
         /**
-         * Verdicts and whether each is worth remembering.
+         Verdicts and whether each is worth remembering.
          */
         const cases: readonly (readonly [PairedReading, boolean,])[] = [
           [

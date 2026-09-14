@@ -16,35 +16,35 @@ import { NaturalnessRepairInterruptedError, } from './naturalness-repair-interru
 //region Final consolidation polish application
 
 /**
- * Applies final body naturalness stage to whichever approved wording survived
- * consolidation, including standing text retained before consolidation gate.
- *
- * @param client - provider client final naturalness rounds borrow
- *
- * @param settlement - consolidation answer before final naturalness stage
- *
- * @param subject - original and archive evidence anchoring fidelity
- *
- * @param lineStructured - whether source line boundaries must survive
- *
- * @param sliceIndex - prepared position retained in polish records
- *
- * @param polishConfig - measured naturalness roles and document facts
- *
- * @param eligible - whether baseline has approval to cross publication boundary
- *
- * @param signal - cancellation for whole settlement
- *
- * @param perCallTimeoutMs - bound on any single exchange
- *
- * @param l - stage logger
- *
- * @returns Settlement carrying auditable final polish and final wording
- *
- * @example
- * ```ts
- * const final = await applyFinalPolish({ client, settlement, subject, lineStructured, sliceIndex, polishConfig, eligible: true, signal, perCallTimeoutMs, l, });
- * ```
+ Applies final body naturalness stage to whichever approved wording survived
+ consolidation, including standing text retained before consolidation gate.
+ 
+ @param client - provider client final naturalness rounds borrow
+ 
+ @param settlement - consolidation answer before final naturalness stage
+ 
+ @param subject - original and archive evidence anchoring fidelity
+ 
+ @param lineStructured - whether source line boundaries must survive
+ 
+ @param sliceIndex - prepared position retained in polish records
+ 
+ @param polishConfig - measured naturalness roles and document facts
+ 
+ @param eligible - whether baseline has approval to cross publication boundary
+ 
+ @param signal - cancellation for whole settlement
+ 
+ @param perCallTimeoutMs - bound on any single exchange
+ 
+ @param l - stage logger
+ 
+ @returns Settlement carrying auditable final polish and final wording
+ 
+ @example
+ ```ts
+ const final = await applyFinalPolish({ client, settlement, subject, lineStructured, sliceIndex, polishConfig, eligible: true, signal, perCallTimeoutMs, l, });
+ ```
  */
 export async function applyFinalPolish(
   {
@@ -76,7 +76,7 @@ export async function applyFinalPolish(
   // is admitted by producer validation. This check is an invariant backstop for
   // stale/corrupt data, never ordinary quality settlement.
   /**
-   * Target-authoritative contributor forms baseline lost before polish.
+   Target-authoritative contributor forms baseline lost before polish.
    */
   const droppedContributors = droppedContributorNameForms({
     archiveText: subject.incumbentText,
@@ -88,7 +88,7 @@ export async function applyFinalPolish(
     },);
   }
   /**
-   * Final naturalness decision over approved surviving baseline.
+   Final naturalness decision over approved surviving baseline.
    */
   const polish = await polishConsolidation({
     client,

@@ -1,7 +1,7 @@
 /**
- * Tests durable prompt payload validation and cross-client replay.
- *
- * @module
+ Tests durable prompt payload validation and cross-client replay.
+ 
+ @module
  */
 
 import {
@@ -28,24 +28,24 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Disposable temporary directory fixture.
+ Disposable temporary directory fixture.
  */
 type TemporaryDirectory = AsyncDisposable & {
   /**
-   * Absolute fixture path.
+   Absolute fixture path.
    */
   readonly path: string;
 };
 
 /**
- * Creates disposable private prompt-store directory.
- *
- * @returns Fixture removed after test scope
- *
- * @example
- * ```ts
- * await using dir = await temporaryDirectory();
- * ```
+ Creates disposable private prompt-store directory.
+ 
+ @returns Fixture removed after test scope
+ 
+ @example
+ ```ts
+ await using dir = await temporaryDirectory();
+ ```
  */
 async function temporaryDirectory(): Promise<TemporaryDirectory> {
   const path = await mkdtemp(join(
@@ -64,7 +64,7 @@ async function temporaryDirectory(): Promise<TemporaryDirectory> {
 }
 
 /**
- * Exact request replayed across separate client instances.
+ Exact request replayed across separate client instances.
  */
 const REQUEST: ChatTextRequest = {
   modelId: 'hf:moonshotai/Kimi-K3',

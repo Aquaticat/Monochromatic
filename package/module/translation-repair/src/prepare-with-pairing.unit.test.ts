@@ -1,19 +1,19 @@
 /**
- * Tests for the shell that buys a pairing and hands it to preparation.
- *
- * WHAT THESE PIN is the two things a settled entry now keeps about its pairing:
- * the correspondences themselves, echoed back out of the map preparation
- * consumed, and how many voices stood behind them, which was logged and never
- * recorded. A section two voices paired and one six voices paired are different
- * evidence about the same slicing.
- *
- * THE VOICE COUNT CARRIES ITS SECTION. The stage is asked one section at a time
- * and cannot say which, so counts filed from there would arrive as a run of
- * identical-shaped lines naming no section at all.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the shell that buys a pairing and hands it to preparation.
+ 
+ WHAT THESE PIN is the two things a settled entry now keeps about its pairing:
+ the correspondences themselves, echoed back out of the map preparation
+ consumed, and how many voices stood behind them, which was logged and never
+ recorded. A section two voices paired and one six voices paired are different
+ evidence about the same slicing.
+ 
+ THE VOICE COUNT CARRIES ITS SECTION. The stage is asked one section at a time
+ and cannot say which, so counts filed from there would arrive as a run of
+ identical-shaped lines naming no section at all.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -31,17 +31,17 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original side, two blocks so the section is worth a question.
+ Original side, two blocks so the section is worth a question.
  */
 const SOURCE_TEXT = '猫睡在盒子里。\n\n它整个下午都没有动。';
 
 /**
- * Translation side, two blocks against the two originals.
+ Translation side, two blocks against the two originals.
  */
 const TARGET_TEXT = 'The cat slept in the box.\n\nShe did not move all afternoon.';
 
 /**
- * Roster of two, which is the smallest that can agree.
+ Roster of two, which is the smallest that can agree.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -49,45 +49,45 @@ const ROSTER = [
 ] as const;
 
 /**
- * Logger for the shell under test.
+ Logger for the shell under test.
  */
 const l = tagged({ tag: 'prepare-with-pairing-test', },);
 
 /**
- * Per-call bound, generous because the transport answers instantly.
+ Per-call bound, generous because the transport answers instantly.
  */
 const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
- * Builds a client whose models reply in turn with the given bodies.
- *
- * @param replyByModel - reply body per call, in the order calls are made
- *
- * @returns Client over a canned transport
- *
- * @example
- * ```ts
- * const client = cannedClient({ replyByModel: ['{"pairs":[]}',], },);
- * ```
+ Builds a client whose models reply in turn with the given bodies.
+ 
+ @param replyByModel - reply body per call, in the order calls are made
+ 
+ @returns Client over a canned transport
+ 
+ @example
+ ```ts
+ const client = cannedClient({ replyByModel: ['{"pairs":[]}',], },);
+ ```
  */
 function cannedClient(
   { replyByModel, }: { readonly replyByModel: readonly string[]; },
 ) {
   /**
-   * Calls served so far, so each model gets its own reply.
+   Calls served so far, so each model gets its own reply.
    */
   const served: string[] = [];
   return createSyntheticClient({
     apiKey: 'test-key',
     transport: async function cannedTransport(exchange,) {
       /**
-       * Which reply this call receives.
+       Which reply this call receives.
        */
       const at = served.length;
       served.push(exchange.label,);
 
       /**
-       * This model's reply text.
+       This model's reply text.
        */
       const content = replyByModel[at] ?? replyByModel[0] ?? '';
       return {
@@ -108,14 +108,14 @@ function cannedClient(
 }
 
 /**
- * Builds client that fails if cache path buys any exchange.
- *
- * @returns Client refusing every transport call
- *
- * @example
- * ```ts
- * const client = refusingClient();
- * ```
+ Builds client that fails if cache path buys any exchange.
+ 
+ @returns Client refusing every transport call
+ 
+ @example
+ ```ts
+ const client = refusingClient();
+ ```
  */
 function refusingClient(): ReturnType<typeof createSyntheticClient> {
   return createSyntheticClient({
@@ -127,21 +127,21 @@ function refusingClient(): ReturnType<typeof createSyntheticClient> {
 }
 
 /**
- * Builds a pairing cache backed by a map that outlives one run.
- *
- * ROUND-TRIPS THROUGH THE SERIALIZATION rather than storing the record by
- * reference, because the defect under test is a record whose findings never
- * reached disk. A stub that kept the object would pass while the bytes carried
- * only pairs.
- *
- * @param stored - map surviving between the two runs of a case
- *
- * @returns Cache resuming from `stored` and writing back into it
- *
- * @example
- * ```ts
- * const cache = memoryPairingCache({ stored, },);
- * ```
+ Builds a pairing cache backed by a map that outlives one run.
+ 
+ ROUND-TRIPS THROUGH THE SERIALIZATION rather than storing the record by
+ reference, because the defect under test is a record whose findings never
+ reached disk. A stub that kept the object would pass while the bytes carried
+ only pairs.
+ 
+ @param stored - map surviving between the two runs of a case
+ 
+ @returns Cache resuming from `stored` and writing back into it
+ 
+ @example
+ ```ts
+ const cache = memoryPairingCache({ stored, },);
+ ```
  */
 function memoryPairingCache(
   { stored, }: { readonly stored: Map<string, PairedSectionRecord>; },
@@ -198,26 +198,26 @@ await describe({
       name: 'ATTACHES DETAILS TRANSCRIPT TO MATCHED MEDIA ON COLD AND WARM PREPARATION so picture evidence reaches quality stages and cached pairing cannot bypass normalization',
       fn: async () => {
         /**
-         * Literal site path placeholder.
+         Literal site path placeholder.
          */
         const pathToken = [
           '$',
           '{path}',
         ].join('',);
         /**
-         * Shared source and target media marker.
+         Shared source and target media marker.
          */
         const media = `<PhotoScroll photos={[ '${pathToken}/photos/letter.webp']} />`;
         /**
-         * Source fixture with image carrying letter.
+         Source fixture with image carrying letter.
          */
         const sourceText = `About the cat.\n\n${media}\n\nRemember the cat.`;
         /**
-         * Archive fixture with details transcript before same image.
+         Archive fixture with details transcript before same image.
          */
         const targetText = `About the cat.\n\n<details>\n<summary>Letter</summary>\n> Translated letter.\n</details>\n\n${media}\n\nRemember the cat.`;
         /**
-         * Cache shared across cold and warm preparation.
+         Cache shared across cold and warm preparation.
          */
         const stored = new Map<string, PairedSectionRecord>();
         const pairingCache = memoryPairingCache({ stored, },);
@@ -259,19 +259,19 @@ await describe({
       name: 'RECONTESTS CONTESTED PAIRING instead of replaying settlement failure, then caches recovered split',
       fn: async () => {
         /**
-         * Cache shared by contested and recovered attempts.
+         Cache shared by contested and recovered attempts.
          */
         const stored = new Map<string, PairedSectionRecord>();
         /**
-         * Original blocks shared by both attempts.
+         Original blocks shared by both attempts.
          */
         const sourceText = '猫睡在盒子里。\n\n它整个下午都没有动。';
         /**
-         * Translation blocks shared by both attempts.
+         Translation blocks shared by both attempts.
          */
         const targetText = 'The cat slept in the box.\n\nShe stayed still.\n\nAll afternoon.';
         /**
-         * Cache boundary proving first attempt leaves nothing terminal.
+         Cache boundary proving first attempt leaves nothing terminal.
          */
         const pairingCache = memoryPairingCache({ stored, },);
         await prepareDocumentPairWithRoster({
@@ -298,7 +298,7 @@ await describe({
         expect(stored.size,).toBe(0,);
 
         /**
-         * Recovered attempt whose roster corroborates one-to-many split.
+         Recovered attempt whose roster corroborates one-to-many split.
          */
         const recovered = await prepareDocumentPairWithRoster({
           client: cannedClient({
@@ -372,7 +372,7 @@ await describe({
         },);
 
         /**
-         * What the counts have to say, section and all.
+         What the counts have to say, section and all.
          */
         const expected = 'block-pairing section 0 paired 2 of 2 original and 2 of 2 translation blocks '
           + 'across 2 relations, from 2 usable voices of 2 heard';
@@ -422,7 +422,7 @@ await describe({
         + 'shape this defect actually had',
       fn: async () => {
         /**
-         * Records surviving between the two runs, as a resumed pass finds them.
+         Records surviving between the two runs, as a resumed pass finds them.
          */
         const stored = new Map<string, PairedSectionRecord>();
 
@@ -449,7 +449,7 @@ await describe({
         expect(stored.size,).toBe(1,);
 
         /**
-         * Calls the resumed run made, which must stay at none.
+         Calls the resumed run made, which must stay at none.
          */
         let calls = 0;
 

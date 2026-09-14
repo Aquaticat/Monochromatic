@@ -18,7 +18,7 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // it with `mise run //package/module/translation-repair:sentinel-probe -- Anilovr Aniloviraw`.
 
 /**
- * Sentinel set probed when no ids are named on argv.
+ Sentinel set probed when no ids are named on argv.
  */
 const DEFAULT_SENTINELS: readonly string[] = [
   'Anilovr',
@@ -26,24 +26,24 @@ const DEFAULT_SENTINELS: readonly string[] = [
 ];
 
 /**
- * Characters of an error message kept in a PROBE line.
+ Characters of an error message kept in a PROBE line.
  */
 const ERROR_MESSAGE_CAP = 200;
 
 /**
- * Probes each named corpus entry through the pipeline, printing a PROBE line
- * per entry. With no argv ids, probes {@link DEFAULT_SENTINELS}.
- *
- * @throws {@link Error} when the API key env var is unset
- *
- * @example
- * ```ts
- * await probeCorpusEntries();
- * ```
+ Probes each named corpus entry through the pipeline, printing a PROBE line
+ per entry. With no argv ids, probes {@link DEFAULT_SENTINELS}.
+ 
+ @throws {@link Error} when the API key env var is unset
+ 
+ @example
+ ```ts
+ await probeCorpusEntries();
+ ```
  */
 async function probeCorpusEntries(): Promise<void> {
   /**
-   * Ids from argv, dropping flags.
+   Ids from argv, dropping flags.
    */
   const named = process.argv
     .slice(2,)
@@ -52,12 +52,12 @@ async function probeCorpusEntries(): Promise<void> {
     },);
 
   /**
-   * Entries to probe: named ids, else the default sentinels.
+   Entries to probe: named ids, else the default sentinels.
    */
   const targets = named.length > 0 ? named : DEFAULT_SENTINELS;
 
   /**
-   * Shared client using measured production provider concurrency.
+   Shared client using measured production provider concurrency.
    */
   const client = createRunClient();
 
@@ -65,12 +65,12 @@ async function probeCorpusEntries(): Promise<void> {
 
   for (const id of targets) {
     /**
-     * Start time of this probe, for its duration.
+     Start time of this probe, for its duration.
      */
     const t0 = Date.now();
     try {
       /**
-       * Original zh page text for this entry.
+       Original zh page text for this entry.
        */
       /* oxlint-disable-next-line no-await-in-loop -- diagnostic entries remain sequential so each log and failure belongs to one named sentinel; provider capacity is not the reason */
       const sourceText = await readCorpusFile({
@@ -79,7 +79,7 @@ async function probeCorpusEntries(): Promise<void> {
       },);
 
       /**
-       * Translated en page text for this entry.
+       Translated en page text for this entry.
        */
       /* oxlint-disable-next-line no-await-in-loop -- pairs with its source read above */
       const targetText = await readCorpusFile({
@@ -88,12 +88,12 @@ async function probeCorpusEntries(): Promise<void> {
       },);
 
       /**
-       * Fresh abort controller per entry; the probe imposes no deadline of its own.
+       Fresh abort controller per entry; the probe imposes no deadline of its own.
        */
       const controller = new AbortController();
 
       /**
-       * Repair result for this probed entry.
+       Repair result for this probed entry.
        */
       /* oxlint-disable-next-line no-await-in-loop -- sequential by design, see above */
       const result = await repairTranslation({
@@ -106,7 +106,7 @@ async function probeCorpusEntries(): Promise<void> {
       },);
 
       /**
-       * Accepted issues among all adjudicated.
+       Accepted issues among all adjudicated.
        */
       const accepted = result.issues
         .filter(function isAccepted(record,) {
@@ -115,9 +115,9 @@ async function probeCorpusEntries(): Promise<void> {
           === 'accepted';
       },);
       /**
-       * Accepted issues counted by what became of their repair, so a probe
-       * shows whether repair provenance is actually recorded rather than only
-       * whether issues were found. Sorted so two probe lines compare directly.
+       Accepted issues counted by what became of their repair, so a probe
+       shows whether repair provenance is actually recorded rather than only
+       whether issues were found. Sorted so two probe lines compare directly.
        */
       const dispositions = Object.entries(
         accepted.reduce(
@@ -162,8 +162,8 @@ async function probeCorpusEntries(): Promise<void> {
     }
     catch (error) {
       /**
-       * Failure text for the PROBE line: a marked class in its own words,
-       * anything else by name only (`#237`); capped after that.
+       Failure text for the PROBE line: a marked class in its own words,
+       anything else by name only (`#237`); capped after that.
        */
       const message = refusalText({ error, },)
         .slice(

@@ -1,13 +1,13 @@
 /**
- * Tests for invisible-line masking.
- *
- * The fixtures use the shape that OCCURS: a line holding only a byte-order
- * mark, with ordinary sentences directly above and below and no blank line
- * anywhere near it. An earlier attempt at this fix was written against a
- * hypothesis instead, a lone mark surrounded by blank lines, and it passed
- * while leaving the corpus case untouched.
- *
- * @module
+ Tests for invisible-line masking.
+ 
+ The fixtures use the shape that OCCURS: a line holding only a byte-order
+ mark, with ordinary sentences directly above and below and no blank line
+ anywhere near it. An earlier attempt at this fix was written against a
+ hypothesis instead, a lone mark surrounded by blank lines, and it passed
+ while leaving the corpus case untouched.
+ 
+ @module
  */
 
 import {
@@ -22,7 +22,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Byte-order mark, the character the corpus actually carries.
+ Byte-order mark, the character the corpus actually carries.
  */
 const MARK = '\u{FEFF}';
 
@@ -47,12 +47,12 @@ await describe({
         + 'the line visible nor gets blanked, and the text stays exactly as long',
       fn: async () => {
         /**
-         * The byte-order-mark page, as a CRLF file carries it.
+         The byte-order-mark page, as a CRLF file carries it.
          */
         const text = `Alpha.\r\n${MARK}\r\nBeta.\r\n`;
 
         /**
-         * What the mask made of it.
+         What the mask made of it.
          */
         const { masked, regions, } = maskInvisibleLines({ text, },);
         expect(masked,).toBe('Alpha.\r\n \r\nBeta.\r\n',);
@@ -69,7 +69,7 @@ await describe({
         + 'anchor after it',
       fn: async () => {
         /**
-         * Body carrying two marked lines and one ordinary blank line.
+         Body carrying two marked lines and one ordinary blank line.
          */
         const text = `Alpha.\n${MARK}\nBeta.\n\nGamma.\n${MARK}${MARK}\nDelta.\n`;
 
@@ -171,7 +171,7 @@ await describe({
         + 'recording it is the shape that hides the third one',
       fn: async () => {
         /**
-         * Two blanked lines with an untouched blank line between them.
+         Two blanked lines with an untouched blank line between them.
          */
         const { regions, } = maskInvisibleLines({
           text: `Alpha.\n${MARK}\nBeta.\n\nGamma.\n\u{00A0}\nDelta.\n`,
@@ -189,17 +189,17 @@ await describe({
         + 'anchor downstream indexes the body by absolute offset',
       fn: async () => {
         /**
-         * Body whose blanked line sits at a known place.
+         Body whose blanked line sits at a known place.
          */
         const text = `Alpha.\n${MARK}\nBeta.\n`;
 
         /**
-         * Region for that line.
+         Region for that line.
          */
         const { regions, } = maskInvisibleLines({ text, },);
 
         /**
-         * First region, present because the mark stands alone on its line.
+         First region, present because the mark stands alone on its line.
          */
         const [region,] = regions;
 
@@ -215,7 +215,7 @@ await describe({
         + 'carry no such line reads as no evidence rather than as unexamined',
       fn: async () => {
         /**
-         * Ordinary body with a blank line and a mark inside a word.
+         Ordinary body with a blank line and a mark inside a word.
          */
         const { regions, } = maskInvisibleLines({
           text: `Alpha.\n\nBe${MARK}ta.\n`,
@@ -236,7 +236,7 @@ await describe({
         + 'from someone happening to count blocks',
       fn: async () => {
         /**
-         * Document whose paragraphs a mark had welded.
+         Document whose paragraphs a mark had welded.
          */
         const { parseFindings, } = parseDocument({
           text: `Alpha.\n${MARK}\nBeta.\n`,
@@ -255,14 +255,14 @@ await describe({
         + 'comment appearing much later in the text',
       fn: async () => {
         /**
-         * Document carrying a masked line and a comment after it.
+         Document carrying a masked line and a comment after it.
          */
         const { parseFindings, } = parseDocument({
           text: `Alpha.\n${MARK}\nBeta.\n\n<!-- note -->\n\nGamma.\n`,
         },);
 
         /**
-         * Offsets in the order they are reported.
+         Offsets in the order they are reported.
          */
         const offsets = parseFindings.map(function toOffset(finding,) {
           return finding.startOffset;

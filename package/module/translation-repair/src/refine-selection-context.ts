@@ -6,105 +6,105 @@ import type { SelectEvidence, } from './candidate-select-wire.ts';
 // contradictory questions about whether current wording may remain.
 
 /**
- * One prior correction outcome that failed to replace rejected text.
- *
- * @example
- * ```ts
- * const prior: PriorNaturalnessCorrection = { candidateText: 'The cat slept.', findings: ['gate kept rejected input'], };
- * ```
+ One prior correction outcome that failed to replace rejected text.
+ 
+ @example
+ ```ts
+ const prior: PriorNaturalnessCorrection = { candidateText: 'The cat slept.', findings: ['gate kept rejected input'], };
+ ```
  */
 export type PriorNaturalnessCorrection = {
   /**
-   * Exact proposal prior round tried to authorize.
+   Exact proposal prior round tried to authorize.
    */
   readonly candidateText: string;
 
   /**
-   * Generation,
-   * selection,
-   * structure,
-   * and fidelity findings explaining failure.
+   Generation,
+   selection,
+   structure,
+   and fidelity findings explaining failure.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Why refinement is running and whether unchanged text remains admissible.
- *
- * @example
- * ```ts
- * const mode: RefineStageMode = { kind: 'comparative', };
- * ```
+ Why refinement is running and whether unchanged text remains admissible.
+ 
+ @example
+ ```ts
+ const mode: RefineStageMode = { kind: 'comparative', };
+ ```
  */
 export type RefineStageMode =
   | {
     /**
-     * Exploratory improvement where accepted input remains fallback.
+     Exploratory improvement where accepted input remains fallback.
      */
     readonly kind: 'comparative';
   }
   | {
     /**
-     * Mandatory correction because absolute review rejected input.
+     Mandatory correction because absolute review rejected input.
      */
     readonly kind: 'required-naturalness-correction';
 
     /**
-     * Material defects candidate must resolve together.
+     Material defects candidate must resolve together.
      */
     readonly findings: readonly AbsoluteNaturalnessFinding[];
 
     /**
-     * Earlier failed strategies next correction must not repeat.
+     Earlier failed strategies next correction must not repeat.
      */
     readonly priorCorrections?: readonly PriorNaturalnessCorrection[];
   };
 
 /**
- * Inputs candidate selector receives after refinement generation.
- *
- * @example
- * ```ts
- * const context = buildRefineSelectionContext({ mode, sourceText, repairedText, });
- * ```
+ Inputs candidate selector receives after refinement generation.
+ 
+ @example
+ ```ts
+ const context = buildRefineSelectionContext({ mode, sourceText, repairedText, });
+ ```
  */
 export type RefineSelectionContext = {
   /**
-   * One-sentence candidate task.
+   One-sentence candidate task.
    */
   readonly task: string;
 
   /**
-   * Ordered candidate ranking rules.
+   Ordered candidate ranking rules.
    */
   readonly criteria: readonly string[];
 
   /**
-   * Fenced source, baseline and review data.
+   Fenced source, baseline and review data.
    */
   readonly evidence: readonly SelectEvidence[];
 
   /**
-   * Refusal consequence when accepted fallback is unavailable.
+   Refusal consequence when accepted fallback is unavailable.
    */
   readonly declineConsequence?: string;
 };
 
 /**
- * Builds selector question matching refinement mode.
- *
- * @param mode - comparative exploration or required correction
- *
- * @param sourceText - original Chinese fidelity anchor
- *
- * @param repairedText - exact current English wording
- *
- * @returns Candidate-ranking context with review findings fenced as evidence
- *
- * @example
- * ```ts
- * const context = buildRefineSelectionContext({ mode: { kind: 'comparative' }, sourceText, repairedText, });
- * ```
+ Builds selector question matching refinement mode.
+ 
+ @param mode - comparative exploration or required correction
+ 
+ @param sourceText - original Chinese fidelity anchor
+ 
+ @param repairedText - exact current English wording
+ 
+ @returns Candidate-ranking context with review findings fenced as evidence
+ 
+ @example
+ ```ts
+ const context = buildRefineSelectionContext({ mode: { kind: 'comparative' }, sourceText, repairedText, });
+ ```
  */
 export function buildRefineSelectionContext(
   {
@@ -138,7 +138,7 @@ export function buildRefineSelectionContext(
     };
   }
   /**
-   * Structured findings rendered only at selector evidence boundary.
+   Structured findings rendered only at selector evidence boundary.
    */
   const selectionFindings = mode.findings
     .map(function renderFinding(finding,): string {
@@ -146,7 +146,7 @@ export function buildRefineSelectionContext(
     },)
     .join('\n',);
   /**
-   * Failed prior strategies rendered as evidence against repetition.
+   Failed prior strategies rendered as evidence against repetition.
    */
   const priorCorrections = (mode.priorCorrections ?? [])
     .map(function renderPrior(
@@ -154,7 +154,7 @@ export function buildRefineSelectionContext(
       index,
     ): string {
       /**
-       * Prior findings rendered in original order.
+       Prior findings rendered in original order.
        */
       const findings = prior.findings
         .join('\n',);

@@ -1,15 +1,15 @@
 /**
- * Tests for the sheet and the ballot reading of the consolidation gate.
- *
- * WHAT THIS FILE EXISTS TO STOP. The gate asks the lane contest's question over
- * a different pair of names, and the pieces it shares with that contest are
- * shared rather than copied. These tests hold the shared reading to the same
- * behaviour on this vocabulary: a finding written as a phrase never costs a
- * voice, and an annotated name still names its candidate.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the sheet and the ballot reading of the consolidation gate.
+ 
+ WHAT THIS FILE EXISTS TO STOP. The gate asks the lane contest's question over
+ a different pair of names, and the pieces it shares with that contest are
+ shared rather than copied. These tests hold the shared reading to the same
+ behaviour on this vocabulary: a finding written as a phrase never costs a
+ voice, and an annotated name still names its candidate.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -24,7 +24,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One gated slice, standing in for a corpus passage.
+ One gated slice, standing in for a corpus passage.
  */
 const SUBJECT = {
   sourceText: '猫在窗台上睡觉。',
@@ -34,16 +34,16 @@ const SUBJECT = {
 };
 
 /**
- * Joins the content of every message in one exchange.
- *
- * @param subject - what the judge is shown
- *
- * @returns Every message's content, joined
- *
- * @example
- * ```ts
- * const shown = exchangeFor({ subject: SUBJECT, },);
- * ```
+ Joins the content of every message in one exchange.
+ 
+ @param subject - what the judge is shown
+ 
+ @returns Every message's content, joined
+ 
+ @example
+ ```ts
+ const shown = exchangeFor({ subject: SUBJECT, },);
+ ```
  */
 function exchangeFor(
   { subject, }: { readonly subject: typeof SUBJECT; },
@@ -56,20 +56,20 @@ function exchangeFor(
 }
 
 /**
- * Joins only what the judge is shown, leaving out the instructions.
- *
- * SEPARATE FROM THE WHOLE EXCHANGE, because the shared policy names declared
- * names as a rule whether or not this slice has any, so a test asking whether
- * the block was rendered would pass on the rule's own wording.
- *
- * @param subject - what the judge is shown
- *
- * @returns User content
- *
- * @example
- * ```ts
- * const shown = shownFor({ subject: SUBJECT, },);
- * ```
+ Joins only what the judge is shown, leaving out the instructions.
+ 
+ SEPARATE FROM THE WHOLE EXCHANGE, because the shared policy names declared
+ names as a rule whether or not this slice has any, so a test asking whether
+ the block was rendered would pass on the rule's own wording.
+ 
+ @param subject - what the judge is shown
+ 
+ @returns User content
+ 
+ @example
+ ```ts
+ const shown = shownFor({ subject: SUBJECT, },);
+ ```
  */
 function shownFor(
   { subject, }: { readonly subject: typeof SUBJECT; },
@@ -228,19 +228,19 @@ await describe({
 },);
 
 /**
- * Original long enough for the size floor to pass, so a ratio is measured
- * rather than skipped.
+ Original long enough for the size floor to pass, so a ratio is measured
+ rather than skipped.
  */
 const SIZED_SOURCE = '猫睡在窗台上，看着一只蛾子飞过。'.repeat(6,);
 
 /**
- * Archive rendering far longer than that original, which is the shape a
- * page-only region produces.
+ Archive rendering far longer than that original, which is the shape a
+ page-only region produces.
  */
 const PAGE_HEAVY = 'the archive spells this out at length. '.repeat(30,);
 
 /**
- * Rendering in proportion to the original, at roughly three times its size.
+ Rendering in proportion to the original, at roughly three times its size.
  */
 const IN_PROPORTION = 'the cat slept on the sill and watched a moth. '.repeat(6,);
 
@@ -311,7 +311,7 @@ await describe({
         + 'wording of a finding may cost a voice',
       fn: async () => {
         /**
-         * Reply whose list fields are a null and a bare word.
+         Reply whose list fields are a null and a bare word.
          */
         const reply: unknown = {
           choice: 'standing',
@@ -325,7 +325,7 @@ await describe({
           throw new Error('the guard refused the reply it just accepted',);
 
         /**
-         * Ballot read off it.
+         Ballot read off it.
          */
         const ballot = readConsolidateGateBallot({ wire: reply, },);
 

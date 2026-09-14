@@ -14,18 +14,18 @@ import { parsePolishGate, } from './artifact-two-lane-read-polish-gate.ts';
 //region Artifact consolidation polish read
 
 /**
- * Reads string list.
- *
- * @param value - unknown list
- *
- * @param path - artifact path
- *
- * @returns Strings in stored order
- *
- * @example
- * ```ts
- * const values = parseStringList({ value, path, });
- * ```
+ Reads string list.
+ 
+ @param value - unknown list
+ 
+ @param path - artifact path
+ 
+ @returns Strings in stored order
+ 
+ @example
+ ```ts
+ const values = parseStringList({ value, path, });
+ ```
  */
 function parseStringList(
   {
@@ -37,7 +37,7 @@ function parseStringList(
   },
 ): readonly string[] {
   /**
-   * Unknown rows before string validation.
+   Unknown rows before string validation.
    */
   const rows = requireArray({
     value,
@@ -55,27 +55,27 @@ function parseStringList(
 }
 
 /**
- * Reads generation-six post-consolidation polish record.
- *
- * @param value - unknown polish field
- *
- * @param path - artifact path
- *
- * @param reviewRequired - whether generation carries exact-text absolute review
- *
- * @param correctionChainRequired - whether review requires digest-bound corrections
- *
- * @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
- * block rather than the refinable paragraphs alone
- *
- * @param quorumBasisRequired - whether generation records its wider review quorum
- *
- * @returns Parsed polish record
- *
- * @example
- * ```ts
- * const polish = parseConsolidationPolish({ value, path, });
- * ```
+ Reads generation-six post-consolidation polish record.
+ 
+ @param value - unknown polish field
+ 
+ @param path - artifact path
+ 
+ @param reviewRequired - whether generation carries exact-text absolute review
+ 
+ @param correctionChainRequired - whether review requires digest-bound corrections
+ 
+ @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
+ block rather than the refinable paragraphs alone
+ 
+ @param quorumBasisRequired - whether generation records its wider review quorum
+ 
+ @returns Parsed polish record
+ 
+ @example
+ ```ts
+ const polish = parseConsolidationPolish({ value, path, });
+ ```
  */
 export function parseConsolidationPolish(
   {
@@ -95,7 +95,7 @@ export function parseConsolidationPolish(
   },
 ): ArtifactConsolidationPolish {
   /**
-   * Polish field under exact generation-six shape.
+   Polish field under exact generation-six shape.
    */
   const record = requireRecord({
     value,
@@ -147,28 +147,28 @@ export function parseConsolidationPolish(
     path,
   },);
   /**
-   * Approved wording before naturalness stage.
+   Approved wording before naturalness stage.
    */
   const baseText = requireString({
     value: record.baseText,
     path: `${path}.baseText`,
   },);
   /**
-   * Selected rewrite before final gate.
+   Selected rewrite before final gate.
    */
   const proposedText = requireString({
     value: record.proposedText,
     path: `${path}.proposedText`,
   },);
   /**
-   * Wording after final gate.
+   Wording after final gate.
    */
   const text = requireString({
     value: record.text,
     path: `${path}.text`,
   },);
   /**
-   * Recorded final replacement status.
+   Recorded final replacement status.
    */
   const changed = requireBoolean({
     value: record.changed,
@@ -181,7 +181,7 @@ export function parseConsolidationPolish(
     },);
   }
   /**
-   * Optional final gate as explicit presence reading.
+   Optional final gate as explicit presence reading.
    */
   const gateReading = (record.gate === undefined)
     ? { kind: 'absent', } as const
@@ -200,11 +200,11 @@ export function parseConsolidationPolish(
   }
   if (gateReading.kind === 'present') {
     /**
-     * Parsed final gate under present reading.
+     Parsed final gate under present reading.
      */
     const { gate, } = gateReading;
     /**
-     * Shipping role implied by panel choice under conservative gate rule.
+     Shipping role implied by panel choice under conservative gate rule.
      */
     const expectedShips = (gate.choice === 'polished')
       ? 'polished'

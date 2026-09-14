@@ -21,32 +21,32 @@
 // here removes a separator the archive already had.
 
 /**
- * Two line endings, which is what separates blocks in a Markdown document.
+ Two line endings, which is what separates blocks in a Markdown document.
  */
 const BLOCK_SEPARATOR_LINES = 2;
 
 /**
- * What a string search answers with when it finds nothing.
+ What a string search answers with when it finds nothing.
  */
 const NOT_FOUND = -1;
 
 /**
- * Reads the line ending a document uses.
- *
- * FROM THE DOCUMENT rather than from the platform. A translation written on
- * Windows carries `\r\n`, and joining its blocks with bare `\n` produces a file
- * with two conventions in it, which every later diff reports as a change to
- * lines nobody touched.
- *
- * @param targetText - document being written into
- *
- * @returns Line ending to write, defaulting to `\n` for a document that shows
- * no preference
- *
- * @example
- * ```ts
- * const eol = documentLineEnding({ targetText, },);
- * ```
+ Reads the line ending a document uses.
+ 
+ FROM THE DOCUMENT rather than from the platform. A translation written on
+ Windows carries `\r\n`, and joining its blocks with bare `\n` produces a file
+ with two conventions in it, which every later diff reports as a change to
+ lines nobody touched.
+ 
+ @param targetText - document being written into
+ 
+ @returns Line ending to write, defaulting to `\n` for a document that shows
+ no preference
+ 
+ @example
+ ```ts
+ const eol = documentLineEnding({ targetText, },);
+ ```
  */
 export function documentLineEnding(
   { targetText, }: { readonly targetText: string; },
@@ -55,19 +55,19 @@ export function documentLineEnding(
 }
 
 /**
- * Counts the line endings a text ends with, up to the block separator.
- *
- * @param text - text to look at the end of
- *
- * @param eol - line ending this document uses
- *
- * @returns How many trailing line endings there are, capped at
- * {@link BLOCK_SEPARATOR_LINES}
- *
- * @example
- * ```ts
- * const trailing = trailingLineEndings({ text: 'a\n\n', eol: '\n', },);
- * ```
+ Counts the line endings a text ends with, up to the block separator.
+ 
+ @param text - text to look at the end of
+ 
+ @param eol - line ending this document uses
+ 
+ @returns How many trailing line endings there are, capped at
+ {@link BLOCK_SEPARATOR_LINES}
+ 
+ @example
+ ```ts
+ const trailing = trailingLineEndings({ text: 'a\n\n', eol: '\n', },);
+ ```
  */
 function trailingLineEndings(
   {
@@ -79,7 +79,7 @@ function trailingLineEndings(
   },
 ): number {
   /**
-   * How many have been counted so far, walking backwards.
+   How many have been counted so far, walking backwards.
    */
   const counted = [
     0,
@@ -92,19 +92,19 @@ function trailingLineEndings(
 }
 
 /**
- * Counts the line endings a text begins with, up to the block separator.
- *
- * @param text - text to look at the start of
- *
- * @param eol - line ending this document uses
- *
- * @returns How many leading line endings there are, capped at
- * {@link BLOCK_SEPARATOR_LINES}
- *
- * @example
- * ```ts
- * const leading = leadingLineEndings({ text: '\n\nb', eol: '\n', },);
- * ```
+ Counts the line endings a text begins with, up to the block separator.
+ 
+ @param text - text to look at the start of
+ 
+ @param eol - line ending this document uses
+ 
+ @returns How many leading line endings there are, capped at
+ {@link BLOCK_SEPARATOR_LINES}
+ 
+ @example
+ ```ts
+ const leading = leadingLineEndings({ text: '\n\nb', eol: '\n', },);
+ ```
  */
 function leadingLineEndings(
   {
@@ -116,7 +116,7 @@ function leadingLineEndings(
   },
 ): number {
   /**
-   * How many have been counted so far, walking forwards.
+   How many have been counted so far, walking forwards.
    */
   const counted = [
     0,
@@ -129,47 +129,47 @@ function leadingLineEndings(
 }
 
 /**
- * Strips the blank-line material around one fragment, and its trailing spaces.
- *
- * INDENTATION SURVIVES, which is the asymmetry between the two ends and why the
- * leading side is not a plain trim. A fragment beginning with spaces on its
- * first content line is inside a list or a block quote, and cutting that would
- * move it out of the structure it belongs to. What is cut there is whitespace
- * ending in a line ending, which is blank lines rather than indentation.
- *
- * THE TRAILING SIDE TAKES SPACES TOO, including the two that would make a
- * Markdown hard break. That is safe HERE and only here: every caller reaches
- * this through {@link composeInsertion}, which joins fragments with a blank
- * line, and a hard break before a blank line breaks nothing. A join that ever
- * put two fragments on consecutive lines would make those spaces meaningful
- * again, and this would have to narrow to blank lines alone.
- *
- * @param fragment - text a lane produced for one slice
- *
- * @returns Same text without leading or trailing blank lines
- *
- * @example
- * ```ts
- * const body = fragmentBody({ fragment: '\n\n  The cat naps.\n\n', },);
- * ```
+ Strips the blank-line material around one fragment, and its trailing spaces.
+ 
+ INDENTATION SURVIVES, which is the asymmetry between the two ends and why the
+ leading side is not a plain trim. A fragment beginning with spaces on its
+ first content line is inside a list or a block quote, and cutting that would
+ move it out of the structure it belongs to. What is cut there is whitespace
+ ending in a line ending, which is blank lines rather than indentation.
+ 
+ THE TRAILING SIDE TAKES SPACES TOO, including the two that would make a
+ Markdown hard break. That is safe HERE and only here: every caller reaches
+ this through {@link composeInsertion}, which joins fragments with a blank
+ line, and a hard break before a blank line breaks nothing. A join that ever
+ put two fragments on consecutive lines would make those spaces meaningful
+ again, and this would have to narrow to blank lines alone.
+ 
+ @param fragment - text a lane produced for one slice
+ 
+ @returns Same text without leading or trailing blank lines
+ 
+ @example
+ ```ts
+ const body = fragmentBody({ fragment: '\n\n  The cat naps.\n\n', },);
+ ```
  */
 export function fragmentBody(
   { fragment, }: { readonly fragment: string; },): string {
   /**
-   * How much of the fragment is left once its leading whitespace is gone.
+   How much of the fragment is left once its leading whitespace is gone.
    */
   const bodyLength = fragment.trimStart()
     .length;
 
   /**
-   * Where that whitespace run ends, which is where the fragment stops being
-   * blank.
+   Where that whitespace run ends, which is where the fragment stops being
+   blank.
    */
   const contentStart = fragment.length - bodyLength;
 
   /**
-   * Last line ending inside that run, which is where the blank lines stop and
-   * this fragment's own indentation begins.
+   Last line ending inside that run, which is where the blank lines stop and
+   this fragment's own indentation begins.
    */
   const lastBreak = fragment.lastIndexOf(
     '\n',
@@ -177,7 +177,7 @@ export function fragmentBody(
   );
 
   /**
-   * Where the body starts: after the blank lines, before any indentation.
+   Where the body starts: after the blank lines, before any indentation.
    */
   const bodyStart = (lastBreak === NOT_FOUND) ? 0 : (lastBreak + 1);
   return fragment.slice(bodyStart,)
@@ -185,23 +185,23 @@ export function fragmentBody(
 }
 
 /**
- * Builds the text to write at one insertion boundary.
- *
- * @param fragments - what the lanes produced for the slices anchored here, in
- * document order
- *
- * @param before - document text preceding the boundary
- *
- * @param after - document text following it, as it will stand
- *
- * @param eol - line ending this document uses
- *
- * @returns Text to write at that boundary, separators included
- *
- * @example
- * ```ts
- * const written = composeInsertion({ fragments, before, after, eol, },);
- * ```
+ Builds the text to write at one insertion boundary.
+ 
+ @param fragments - what the lanes produced for the slices anchored here, in
+ document order
+ 
+ @param before - document text preceding the boundary
+ 
+ @param after - document text following it, as it will stand
+ 
+ @param eol - line ending this document uses
+ 
+ @returns Text to write at that boundary, separators included
+ 
+ @example
+ ```ts
+ const written = composeInsertion({ fragments, before, after, eol, },);
+ ```
  */
 export function composeInsertion(
   {
@@ -217,10 +217,10 @@ export function composeInsertion(
   },
 ): string {
   /**
-   * Fragments reduced to their own text, joined by one blank line.
-   *
-   * Joined here rather than by each fragment carrying its own blank lines,
-   * which would put two between every pair.
+   Fragments reduced to their own text, joined by one blank line.
+   
+   Joined here rather than by each fragment carrying its own blank lines,
+   which would put two between every pair.
    */
   const body = fragments
     .map(function toBody(fragment,): string {
@@ -234,8 +234,8 @@ export function composeInsertion(
     return '';
 
   /**
-   * Line endings the archive already provides before this boundary, which are
-   * kept and only topped up.
+   Line endings the archive already provides before this boundary, which are
+   kept and only topped up.
    */
   const kept = (before === '')
     ? BLOCK_SEPARATOR_LINES
@@ -245,9 +245,9 @@ export function composeInsertion(
     },);
 
   /**
-   * Line endings the archive provides after it. A boundary at the very end of
-   * the document has none, and the text written there terminates the file
-   * instead, which is a different question from separating two blocks.
+   Line endings the archive provides after it. A boundary at the very end of
+   the document has none, and the text written there terminates the file
+   instead, which is a different question from separating two blocks.
    */
   const following = (after === '')
     ? 0
@@ -257,13 +257,13 @@ export function composeInsertion(
     },);
 
   /**
-   * What to write before the body, so the block ahead of it is separated.
+   What to write before the body, so the block ahead of it is separated.
    */
   const opening = eol.repeat(BLOCK_SEPARATOR_LINES - kept,);
 
   /**
-   * What to write after it, which for the end of a document is the single line
-   * ending a text file ends with.
+   What to write after it, which for the end of a document is the single line
+   ending a text file ends with.
    */
   const closing = (after === '')
     ? eol

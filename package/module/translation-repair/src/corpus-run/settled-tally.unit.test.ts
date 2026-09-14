@@ -1,19 +1,19 @@
 /**
- * Tests for the line a settled entry prints once both lanes have run.
- *
- * WHAT THESE PIN is that the line reports SETTLEMENT rather than a lane. The
- * version 1 line named one lane's status as the run's status, because there was
- * one lane; keeping that shape and appending translate counts beside it would
- * tell every later log reader that the repair lane is the outcome and the other
- * is commentary, which is the question this generation exists to leave open.
- *
- * They also pin that every number comes off the artifact rather than being
- * recounted beside it, since a log line that disagrees with the file it
- * describes is worse than no log line.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the line a settled entry prints once both lanes have run.
+ 
+ WHAT THESE PIN is that the line reports SETTLEMENT rather than a lane. The
+ version 1 line named one lane's status as the run's status, because there was
+ one lane; keeping that shape and appending translate counts beside it would
+ tell every later log reader that the repair lane is the outcome and the other
+ is commentary, which is the question this generation exists to leave open.
+ 
+ They also pin that every number comes off the artifact rather than being
+ recounted beside it, since a log line that disagrees with the file it
+ describes is worse than no log line.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -29,33 +29,33 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive wording of the slice both lanes worked on.
+ Archive wording of the slice both lanes worked on.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
 /**
- * Wording the repair lane shipped.
+ Wording the repair lane shipped.
  */
 const MENDED_NAP = 'The cat is asleep on the windowsill.';
 
 /**
- * Wording the translate lane shipped for the gap.
+ Wording the translate lane shipped for the gap.
  */
 const FRESH_BOWL = 'The cat has a bowl of its own.';
 
 /**
- * Artifact these cases render.
- *
- * Built as a literal rather than through the builder, because what is under
- * test is the RENDERING: a fixture assembled by the thing whose output it
- * describes could hide a field the renderer reads from the wrong place.
- *
- * @returns Artifact of a two-slice entry where the lanes differ
- *
- * @example
- * ```ts
- * const artifact = catArtifact();
- * ```
+ Artifact these cases render.
+ 
+ Built as a literal rather than through the builder, because what is under
+ test is the RENDERING: a fixture assembled by the thing whose output it
+ describes could hide a field the renderer reads from the wrong place.
+ 
+ @returns Artifact of a two-slice entry where the lanes differ
+ 
+ @example
+ ```ts
+ const artifact = catArtifact();
+ ```
  */
 function catArtifact(): SettledArtifact {
   return {
@@ -206,14 +206,14 @@ function catArtifact(): SettledArtifact {
 }
 
 /**
- * Splits the line into its `key=value` pairs.
- *
- * @returns Every field of the rendered line, keyed
- *
- * @example
- * ```ts
- * const fields = renderedFields();
- * ```
+ Splits the line into its `key=value` pairs.
+ 
+ @returns Every field of the rendered line, keyed
+ 
+ @example
+ ```ts
+ const fields = renderedFields();
+ ```
  */
 function renderedFields(): Record<string, string> {
   return Object.fromEntries(
@@ -224,7 +224,7 @@ function renderedFields(): Record<string, string> {
       },)
       .map(function toPair(token,): readonly [string, string,] {
         /**
-         * Key and value either side of the first separator.
+         Key and value either side of the first separator.
          */
         const cut = token.indexOf('=',);
         return [
@@ -248,7 +248,7 @@ await describe({
         + 'which is the question nobody has answered yet',
       fn: async () => {
         /**
-         * Rendered fields of a two-lane entry.
+         Rendered fields of a two-lane entry.
          */
         const fields = renderedFields();
         expect(fields.status,).toBe('SETTLED',);
@@ -266,7 +266,7 @@ await describe({
         + 'would be read as the entry having had three',
       fn: async () => {
         /**
-         * Rendered fields of the same entry.
+         Rendered fields of the same entry.
          */
         const fields = renderedFields();
         expect(fields.repairIssues,).toBe('3',);
@@ -295,7 +295,7 @@ await describe({
         + 'actually covers',
       fn: async () => {
         /**
-         * Rendered fields of an entry the lanes split on.
+         Rendered fields of an entry the lanes split on.
          */
         const fields = renderedFields();
 
@@ -313,8 +313,8 @@ await describe({
         + 'over one alignment and a per-lane count would report one defect in the archive twice',
       fn: async () => {
         /**
-         * Rendered fields, whose repair lane repeats the finding in its own
-         * list.
+         Rendered fields, whose repair lane repeats the finding in its own
+         list.
          */
         const fields = renderedFields();
         expect(fields.alignmentFindings,).toBe('1',);
@@ -330,13 +330,13 @@ await describe({
         + 'beside it, so a line cannot describe an entry the file does not',
       fn: async () => {
         /**
-         * Whole rendered line.
+         Whole rendered line.
          */
         const line = settledTallyLine({ artifact: catArtifact(), },);
         expect(line.startsWith('TALLY CatEntry1 ',),).toBe(true,);
 
         /**
-         * Its fields.
+         Its fields.
          */
         const fields = renderedFields();
         expect(fields.slices,).toBe('2',);
@@ -352,7 +352,7 @@ await describe({
         + 'is #175 stated in the log rather than left to inference',
       fn: async () => {
         /**
-         * Its fields.
+         Its fields.
          */
         const fields = renderedFields();
 

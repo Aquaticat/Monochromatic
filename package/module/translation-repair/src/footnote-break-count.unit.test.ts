@@ -1,10 +1,10 @@
 /**
- * Tests for the footnote integrity signal the chunk gate compares.
- * Every finding kind counts alike, a clean document counts zero, and the count
- * rises with damage, which is the only property the gate reads.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the footnote integrity signal the chunk gate compares.
+ Every finding kind counts alike, a clean document counts zero, and the count
+ rises with damage, which is the only property the gate reads.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -18,7 +18,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Count for one invented document, parsed the way the pipeline parses.
+ Count for one invented document, parsed the way the pipeline parses.
  */
 function countFor({ text, }: { readonly text: string; },): number {
   return footnoteBreakCount({ document: parseDocument({ text, },), },);
@@ -89,12 +89,12 @@ await describe({
       name: 'RISES when damage is added, which is what makes the comparison a gate',
       fn: async () => {
         /**
-         * Translation arriving with one dangling reference already.
+         Translation arriving with one dangling reference already.
          */
         const arrived = '小猫喜欢鱼干[^1]。\n\n[^1]: 鲣鱼味。\n\n老猫也在打盹[^2]。\n';
 
         /**
-         * Same text after a patch dropped the definition it had.
+         Same text after a patch dropped the definition it had.
          */
         const damaged = '小猫喜欢鱼干[^1]。\n\n老猫也在打盹[^2]。\n';
         expect(countFor({ text: arrived, },),).toBe(1,);
@@ -106,12 +106,12 @@ await describe({
       name: 'stays EQUAL when a patch leaves an inherited break alone, so repair is not blocked',
       fn: async () => {
         /**
-         * Dangling reference the translation arrived with.
+         Dangling reference the translation arrived with.
          */
         const arrived = '小猫喜欢鱼干[^1]。\n\n老猫在打盹。\n';
 
         /**
-         * Same break, with unrelated prose repaired around it.
+         Same break, with unrelated prose repaired around it.
          */
         const repaired = '小猫喜欢鱼干[^1]。\n\n老猫在窗台上打盹。\n';
         expect(countFor({ text: repaired, },),).toBe(countFor({ text: arrived, },),);

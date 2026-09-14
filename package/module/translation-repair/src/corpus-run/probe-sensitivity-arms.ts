@@ -45,87 +45,87 @@ import {
 // `rendered` is the prompt.
 
 /**
- * What the prober was told about the prior issue, printed as `list=`.
- *
- * @example
- * ```ts
- * const list: PriorIssueList = 'withheld';
- * ```
+ What the prober was told about the prior issue, printed as `list=`.
+ 
+ @example
+ ```ts
+ const list: PriorIssueList = 'withheld';
+ ```
  */
 export type PriorIssueList = 'none' | 'withheld' | 'rendered';
 
 /**
- * Which accepted issue the arm carries, printed as `issue=`.
- *
- * @example
- * ```ts
- * const issue: IssueLabel = 'false-addition';
- * ```
+ Which accepted issue the arm carries, printed as `issue=`.
+ 
+ @example
+ ```ts
+ const issue: IssueLabel = 'false-addition';
+ ```
  */
 export type IssueLabel = 'none' | 'prior' | 'unrelated' | 'false-addition' | 'true-addition';
 
 /**
- * One probe call of the sensitivity instrument.
- *
- * @example
- * ```ts
- * const first = SENSITIVITY_ARMS[0];
- * ```
+ One probe call of the sensitivity instrument.
+ 
+ @example
+ ```ts
+ const first = SENSITIVITY_ARMS[0];
+ ```
  */
 export type SensitivityArm = {
   /**
-   * Region under test.
+   Region under test.
    */
   readonly region: RepairRegion;
 
   /**
-   * What a working probe should conclude, for the printed line only.
+   What a working probe should conclude, for the printed line only.
    */
   readonly expectation: string;
 
   /**
-   * Which list the prober was given.
+   Which list the prober was given.
    */
   readonly list: PriorIssueList;
 
   /**
-   * Which accepted issue the list carries.
+   Which accepted issue the list carries.
    */
   readonly issue: IssueLabel;
 
   /**
-   * Accepted issues sent as pre-existing; empty under `list: 'none'`.
+   Accepted issues sent as pre-existing; empty under `list: 'none'`.
    */
   readonly issues: readonly AdjudicatedIssue[];
 
   /**
-   * Disclosure sent to the probe, held to `list` by the unit test.
+   Disclosure sent to the probe, held to `list` by the unit test.
    */
   readonly disclosure: PriorIssueDisclosure;
 
   /**
-   * Framing under test.
+   Framing under test.
    */
   readonly editKind: ProbedEditKind;
 
   /**
-   * Translation the region was cut from.
+   Translation the region was cut from.
    */
   readonly baselineText: string;
 };
 
 /**
- * List production sends, read off the same constant the pass uses.
- *
- * @example
- * ```ts
- * console.log(`production sends list=${PRODUCTION_LIST}`,);
- * ```
+ List production sends, read off the same constant the pass uses.
+ 
+ @example
+ ```ts
+ console.log(`production sends list=${PRODUCTION_LIST}`,);
+ ```
  */
 export const PRODUCTION_LIST: PriorIssueList = PRODUCTION_PRIOR_ISSUE_DISCLOSURE;
 
 /**
- * A region and what a working probe should say about it.
+ A region and what a working probe should say about it.
  */
 type ProbedRegion = {
   readonly region: RepairRegion;
@@ -133,7 +133,7 @@ type ProbedRegion = {
 };
 
 /**
- * The three lists, in the order each region is run.
+ The three lists, in the order each region is run.
  */
 const LISTS: readonly PriorIssueList[] = [
   'none',
@@ -142,17 +142,17 @@ const LISTS: readonly PriorIssueList[] = [
 ];
 
 /**
- * Disclosure a list value sends; `none` has nothing to disclose and sends
- * production's, so the prompt is production's prompt with an empty list.
- *
- * @param list - list the arm is labelled with
- *
- * @returns Disclosure the probe receives
- *
- * @example
- * ```ts
- * const disclosure = disclosureFor('rendered',);
- * ```
+ Disclosure a list value sends; `none` has nothing to disclose and sends
+ production's, so the prompt is production's prompt with an empty list.
+ 
+ @param list - list the arm is labelled with
+ 
+ @returns Disclosure the probe receives
+ 
+ @example
+ ```ts
+ const disclosure = disclosureFor('rendered',);
+ ```
  */
 function disclosureFor(list: PriorIssueList,): PriorIssueDisclosure {
   if (list === 'rendered')
@@ -163,18 +163,18 @@ function disclosureFor(list: PriorIssueList,): PriorIssueDisclosure {
 }
 
 /**
- * Accuracy regions under all three lists.
- *
- * @returns Nine arms, three per region
- *
- * @example
- * ```ts
- * const arms = accuracyArms();
- * ```
+ Accuracy regions under all three lists.
+ 
+ @returns Nine arms, three per region
+ 
+ @example
+ ```ts
+ const arms = accuracyArms();
+ ```
  */
 function accuracyArms(): readonly SensitivityArm[] {
   /**
-   * Regions and what a working probe should say about each.
+   Regions and what a working probe should say about each.
    */
   const regions: readonly ProbedRegion[] = [
     {
@@ -212,22 +212,22 @@ function accuracyArms(): readonly SensitivityArm[] {
 }
 
 /**
- * The naturalness framing, one arm per region under production's list. It is
- * a different prompt asking the same question, and a working accuracy probe
- * proves nothing about it; its control is the clean region, since the lane
- * exists to rephrase and a prober that reads rephrasing as damage would flag
- * every refinement the pipeline makes.
- *
- * @returns Three arms
- *
- * @example
- * ```ts
- * const arms = refinementArms();
- * ```
+ The naturalness framing, one arm per region under production's list. It is
+ a different prompt asking the same question, and a working accuracy probe
+ proves nothing about it; its control is the clean region, since the lane
+ exists to rephrase and a prober that reads rephrasing as damage would flag
+ every refinement the pipeline makes.
+ 
+ @returns Three arms
+ 
+ @example
+ ```ts
+ const arms = refinementArms();
+ ```
  */
 function refinementArms(): readonly SensitivityArm[] {
   /**
-   * Regions and what a working probe should say about each.
+   Regions and what a working probe should say about each.
    */
   const regions: readonly ProbedRegion[] = [
     {
@@ -263,23 +263,23 @@ function refinementArms(): readonly SensitivityArm[] {
 }
 
 /**
- * The labelling regions, which vary what the list SAYS rather than whether
- * there is one, under both lists that carry it. Rendered, the prober reads the
- * label; withheld, only the screen does. The first two regions delete the SAME
- * source-supported clause and differ only in what the list says about it; the
- * third deletes content the original genuinely lacks, so silence there is
- * correct.
- *
- * @returns Six arms, two per region
- *
- * @example
- * ```ts
- * const arms = labellingArms();
- * ```
+ The labelling regions, which vary what the list SAYS rather than whether
+ there is one, under both lists that carry it. Rendered, the prober reads the
+ label; withheld, only the screen does. The first two regions delete the SAME
+ source-supported clause and differ only in what the list says about it; the
+ third deletes content the original genuinely lacks, so silence there is
+ correct.
+ 
+ @returns Six arms, two per region
+ 
+ @example
+ ```ts
+ const arms = labellingArms();
+ ```
  */
 function labellingArms(): readonly SensitivityArm[] {
   /**
-   * Regions with the issue each carries and what a working probe should say.
+   Regions with the issue each carries and what a working probe should say.
    */
   const regions: readonly {
     readonly region: RepairRegion;
@@ -307,7 +307,7 @@ function labellingArms(): readonly SensitivityArm[] {
     },
   ];
   /**
-   * Lists that carry an issue at all.
+   Lists that carry an issue at all.
    */
   const carrying: readonly PriorIssueList[] = [
     'withheld',
@@ -330,12 +330,12 @@ function labellingArms(): readonly SensitivityArm[] {
 }
 
 /**
- * Every arm the instrument runs, in run order.
- *
- * @example
- * ```ts
- * for (const arm of SENSITIVITY_ARMS) await probeOne({ arm, },);
- * ```
+ Every arm the instrument runs, in run order.
+ 
+ @example
+ ```ts
+ for (const arm of SENSITIVITY_ARMS) await probeOne({ arm, },);
+ ```
  */
 export const SENSITIVITY_ARMS: readonly SensitivityArm[] = [
   ...accuracyArms(),

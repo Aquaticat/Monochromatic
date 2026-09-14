@@ -1,14 +1,14 @@
 /**
- * Tests for what would ship at a contested slice without the consolidation.
- *
- * WHAT THIS PINS is the decline case, which is the one with consequences. A
- * rule that picked a lane on a decline would hand the consolidation's slate a
- * candidate no panel chose, and the whole stage would then be deciding between
- * a fresh rendering and an arbitrary one.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for what would ship at a contested slice without the consolidation.
+ 
+ WHAT THIS PINS is the decline case, which is the one with consequences. A
+ rule that picked a lane on a decline would hand the consolidation's slate a
+ candidate no panel chose, and the whole stage would then be deciding between
+ a fresh rendering and an arbitrary one.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -23,17 +23,17 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * What archive carries.
+ What archive carries.
  */
 const ARCHIVE = 'The cat sleeps by the window.';
 
 /**
- * What the repair lane would ship.
+ What the repair lane would ship.
  */
 const REPAIR = 'The cat fell asleep by the window.';
 
 /**
- * What the translate lane would ship.
+ What the translate lane would ship.
  */
 const TRANSLATE = 'The cat had fallen asleep beside the window.';
 

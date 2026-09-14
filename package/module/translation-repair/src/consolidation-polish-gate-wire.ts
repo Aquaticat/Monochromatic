@@ -12,12 +12,12 @@ import type { RefineStageMode, } from './refine-selection-context.ts';
 //region Consolidation polish gate wire
 
 /**
- * Choice one naturalness judge may make.
+ Choice one naturalness judge may make.
  */
 export type PolishChoice = 'polished' | 'base' | typeof CONTEST_REFUSAL;
 
 /**
- * Names accepted in polish ballot.
+ Names accepted in polish ballot.
  */
 const POLISH_NAMES: readonly PolishChoice[] = [
   'polished',
@@ -26,7 +26,7 @@ const POLISH_NAMES: readonly PolishChoice[] = [
 ];
 
 /**
- * Fidelity-first policy when approved base remains available.
+ Fidelity-first policy when approved base remains available.
  */
 const COMPARATIVE_POLISH_POLICY = `You are deciding whether a polished English memorial passage may replace its already-approved base.
 
@@ -35,7 +35,7 @@ THE ORIGINAL CHINESE IS THE FIDELITY STANDARD. First check both candidates for u
 Only if both candidates are equally faithful, judge natural English. Reject literal Chinese collocations, calqued verb-object combinations, stiff emotional descriptions, and grammar that a careful native editor would rewrite. Prefer polished only when it is clearly more idiomatic without changing meaning, detail, tone, names, links, Markdown structure, or line structure. Otherwise choose base. Answer neither when no clear naturalness improvement exists.`;
 
 /**
- * Fidelity-first policy when absolute review already rejected base.
+ Fidelity-first policy when absolute review already rejected base.
  */
 const REQUIRED_CORRECTION_POLISH_POLICY = `You are deciding whether a proposed correction may replace an English memorial passage that already failed absolute naturalness review.
 
@@ -44,47 +44,47 @@ THE ORIGINAL CHINESE IS THE FIDELITY STANDARD. First check both candidates for u
 The base already failed absolute naturalness review. It is evidence for preserving exact meaning, not an approved fallback, and must not win merely because improvement is unclear. Choose polished only when it remains equally faithful, resolves every REQUIRED FINDING, and reads as publication-quality natural English. Choose base only when polished adds, drops, softens, sharpens, or reattributes meaning; the caller will then refuse publication rather than ship base. Answer neither when polished preserves fidelity but fails a REQUIRED FINDING or remains unnatural.`;
 
 /**
- * Subject shown to naturalness gate.
- *
- * @example
- * ```ts
- * const subject: ConsolidationPolishGateSubject = { sourceText: '猫睡了。', archiveText: 'The cat slept.', baseText: 'The cat slept.', polishedText: 'The cat was asleep.', mode: { kind: 'comparative' } };
- * ```
+ Subject shown to naturalness gate.
+ 
+ @example
+ ```ts
+ const subject: ConsolidationPolishGateSubject = { sourceText: '猫睡了。', archiveText: 'The cat slept.', baseText: 'The cat slept.', polishedText: 'The cat was asleep.', mode: { kind: 'comparative' } };
+ ```
  */
 export type ConsolidationPolishGateSubject = {
   /**
-   * Original Chinese passage.
+   Original Chinese passage.
    */
   readonly sourceText: string;
 
   /**
-   * Archive wording as supporting evidence.
+   Archive wording as supporting evidence.
    */
   readonly archiveText: string;
 
   /**
-   * Standing wording, approved only in comparative mode.
+   Standing wording, approved only in comparative mode.
    */
   readonly baseText: string;
 
   /**
-   * Naturalness rewrite seeking to replace base.
+   Naturalness rewrite seeking to replace base.
    */
   readonly polishedText: string;
 
   /**
-   * Whether base remains available or is rejected correction evidence.
+   Whether base remains available or is rejected correction evidence.
    */
   readonly mode: RefineStageMode;
 
   /**
-   * Declared names and handles, when documents provide them.
+   Declared names and handles, when documents provide them.
    */
   readonly identityContext?: string;
 };
 
 /**
- * Raw reply shape before candidate names are narrowed.
+ Raw reply shape before candidate names are narrowed.
  */
 export type ConsolidationPolishGateWire = {
   readonly choice: string;
@@ -94,7 +94,7 @@ export type ConsolidationPolishGateWire = {
 };
 
 /**
- * Read naturalness ballot.
+ Read naturalness ballot.
  */
 export type ConsolidationPolishBallot = {
   readonly choice: PolishChoice;
@@ -106,16 +106,16 @@ export type ConsolidationPolishBallot = {
 };
 
 /**
- * Narrows candidate name.
- *
- * @param value - reply candidate name
- *
- * @returns Whether value names polish candidate or refusal
- *
- * @example
- * ```ts
- * if (isPolishChoice(value)) use(value);
- * ```
+ Narrows candidate name.
+ 
+ @param value - reply candidate name
+ 
+ @returns Whether value names polish candidate or refusal
+ 
+ @example
+ ```ts
+ if (isPolishChoice(value)) use(value);
+ ```
  */
 function isPolishChoice(value: unknown,): value is PolishChoice {
   return namesOneOf({
@@ -125,16 +125,16 @@ function isPolishChoice(value: unknown,): value is PolishChoice {
 }
 
 /**
- * Checks shape of polish gate reply.
- *
- * @param value - parsed provider value
- *
- * @returns Whether reply can be read as ballot
- *
- * @example
- * ```ts
- * const usable = isConsolidationPolishGateWire(value);
- * ```
+ Checks shape of polish gate reply.
+ 
+ @param value - parsed provider value
+ 
+ @returns Whether reply can be read as ballot
+ 
+ @example
+ ```ts
+ const usable = isConsolidationPolishGateWire(value);
+ ```
  */
 export function isConsolidationPolishGateWire(
   value: unknown,
@@ -153,26 +153,26 @@ export function isConsolidationPolishGateWire(
 }
 
 /**
- * Reads validated provider reply as naturalness ballot.
- *
- * @param wire - reply passing shape guard
- *
- * @returns Narrow ballot preserving raw findings
- *
- * @example
- * ```ts
- * const ballot = readConsolidationPolishBallot({ wire, });
- * ```
+ Reads validated provider reply as naturalness ballot.
+ 
+ @param wire - reply passing shape guard
+ 
+ @returns Narrow ballot preserving raw findings
+ 
+ @example
+ ```ts
+ const ballot = readConsolidationPolishBallot({ wire, });
+ ```
  */
 export function readConsolidationPolishBallot(
   { wire, }: { readonly wire: ConsolidationPolishGateWire; },
 ): ConsolidationPolishBallot {
   /**
-   * Unsupported findings, empty when model wrote another shape.
+   Unsupported findings, empty when model wrote another shape.
    */
   const unsupported = isStringList(wire.unsupported,) ? wire.unsupported : [];
   /**
-   * Dropped findings, empty when model wrote another shape.
+   Dropped findings, empty when model wrote another shape.
    */
   const dropped = isStringList(wire.dropped,) ? wire.dropped : [];
   return {
@@ -192,22 +192,22 @@ export function readConsolidationPolishBallot(
 }
 
 /**
- * Builds fidelity-first final naturalness question.
- *
- * @param subject - original, archive, base and proposed polish
- *
- * @returns Messages for one polish judge
- *
- * @example
- * ```ts
- * const messages = buildConsolidationPolishGateMessages({ subject, });
- * ```
+ Builds fidelity-first final naturalness question.
+ 
+ @param subject - original, archive, base and proposed polish
+ 
+ @returns Messages for one polish judge
+ 
+ @example
+ ```ts
+ const messages = buildConsolidationPolishGateMessages({ subject, });
+ ```
  */
 export function buildConsolidationPolishGateMessages(
   { subject, }: { readonly subject: ConsolidationPolishGateSubject; },
 ): readonly ChatMessage[] {
   /**
-   * Declared identity block or no lines.
+   Declared identity block or no lines.
    */
   const identity = (subject.identityContext === undefined)
     ? []
@@ -217,15 +217,15 @@ export function buildConsolidationPolishGateMessages(
       '',
     ];
   /**
-   * Gate mode naming whether base remains available.
+   Gate mode naming whether base remains available.
    */
   const { mode, } = subject;
   /**
-   * Whether this is exploratory comparison against approved base.
+   Whether this is exploratory comparison against approved base.
    */
   const comparative = mode.kind === 'comparative';
   /**
-   * Required findings rendered only at prompt boundary.
+   Required findings rendered only at prompt boundary.
    */
   const requiredFindings = comparative
     ? []
@@ -235,7 +235,7 @@ export function buildConsolidationPolishGateMessages(
         return `Paragraph ${String(finding.paragraph,)}: ${finding.problem}`;
       },);
   /**
-   * Prior failed strategies correction gate must not repeat.
+   Prior failed strategies correction gate must not repeat.
    */
   const priorCorrections = comparative
     ? []
@@ -245,14 +245,14 @@ export function buildConsolidationPolishGateMessages(
         index,
       ): string {
         /**
-         * Prior findings rendered in original order.
+         Prior findings rendered in original order.
          */
         const findings = prior.findings
           .join('\n',);
         return `Attempt ${String(index + 1,)} candidate:\n${prior.candidateText}\nFindings:\n${findings}`;
       },);
   /**
-   * Fence absent from every enclosed passage and finding.
+   Fence absent from every enclosed passage and finding.
    */
   const fence = selectFence({
     texts: [
@@ -266,7 +266,7 @@ export function buildConsolidationPolishGateMessages(
     ],
   },);
   /**
-   * Required findings block, absent while approved base remains available.
+   Required findings block, absent while approved base remains available.
    */
   const correctionEvidence = (requiredFindings.length === 0)
     ? []
@@ -276,8 +276,8 @@ export function buildConsolidationPolishGateMessages(
       '',
     ];
   /**
-   * Prior failed strategy block,
-   * absent on first correction.
+   Prior failed strategy block,
+   absent on first correction.
    */
   const priorEvidence = (priorCorrections.length === 0)
     ? []
@@ -287,7 +287,7 @@ export function buildConsolidationPolishGateMessages(
       '',
     ];
   /**
-   * Base label matching whether it remains publishable.
+   Base label matching whether it remains publishable.
    */
   const baseLabel = comparative
     ? 'CANDIDATE "base" (already approved):'

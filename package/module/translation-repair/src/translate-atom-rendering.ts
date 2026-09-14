@@ -25,58 +25,58 @@ import {
 // once and the page carries once is one link on the page.
 
 /**
- * Atoms of one kind the original and the page render differently.
+ Atoms of one kind the original and the page render differently.
  */
 export type AtomRenderingPool = {
   /**
-   * Atom kind every member shares.
+   Atom kind every member shares.
    */
   readonly kind: ProtectedAtom['kind'];
 
   /**
-   * Keys only the original carries, repeated per copy.
+   Keys only the original carries, repeated per copy.
    */
   readonly fromSource: readonly string[];
 
   /**
-   * Keys only the page carries, repeated per copy.
+   Keys only the page carries, repeated per copy.
    */
   readonly fromPage: readonly string[];
 
   /**
-   * Copies a candidate must draw from the pool, the larger side's count.
+   Copies a candidate must draw from the pool, the larger side's count.
    */
   readonly owed: number;
 };
 
 /**
- * One atom by kind and exact key.
+ One atom by kind and exact key.
  */
 type KeyedAtom = {
   /**
-   * Atom kind.
+   Atom kind.
    */
   readonly kind: ProtectedAtom['kind'];
 
   /**
-   * Exact key from {@link describeAtom}.
+   Exact key from {@link describeAtom}.
    */
   readonly key: string;
 };
 
 /**
- * Keys one side carries and the other does not, keeping copies.
- *
- * @param atoms - atoms of the side being read
- *
- * @param other - atoms of the side compared against
- *
- * @returns Keys absent from the other side, one per copy
- *
- * @example
- * ```ts
- * const onlyHere = keysAbsentFrom({ atoms: source, other: page, },);
- * ```
+ Keys one side carries and the other does not, keeping copies.
+ 
+ @param atoms - atoms of the side being read
+ 
+ @param other - atoms of the side compared against
+ 
+ @returns Keys absent from the other side, one per copy
+ 
+ @example
+ ```ts
+ const onlyHere = keysAbsentFrom({ atoms: source, other: page, },);
+ ```
  */
 function keysAbsentFrom(
   {
@@ -88,7 +88,7 @@ function keysAbsentFrom(
   },
 ): readonly KeyedAtom[] {
   /**
-   * Keys the other side carries at all.
+   Keys the other side carries at all.
    */
   const otherKeys = new Set(other.map(function toKey(atom,): string {
     return describeAtom(atom,);
@@ -106,20 +106,20 @@ function keysAbsentFrom(
 }
 
 /**
- * Pools of atoms the original and the page render differently, one per
- * kind that diverges in both directions.
- *
- * @param page - atoms the text being replaced carries
- *
- * @param source - atoms the original carries
- *
- * @returns One pool per kind with members on both sides, in kind order of
- * first appearance in the original
- *
- * @example
- * ```ts
- * const pools = renderingPoolsOf({ page: page.atoms, source: expected.atoms, },);
- * ```
+ Pools of atoms the original and the page render differently, one per
+ kind that diverges in both directions.
+ 
+ @param page - atoms the text being replaced carries
+ 
+ @param source - atoms the original carries
+ 
+ @returns One pool per kind with members on both sides, in kind order of
+ first appearance in the original
+ 
+ @example
+ ```ts
+ const pools = renderingPoolsOf({ page: page.atoms, source: expected.atoms, },);
+ ```
  */
 export function renderingPoolsOf(
   {
@@ -131,21 +131,21 @@ export function renderingPoolsOf(
   },
 ): readonly AtomRenderingPool[] {
   /**
-   * Original's members the page lacks.
+   Original's members the page lacks.
    */
   const sourceOnly = keysAbsentFrom({
     atoms: source,
     other: page,
   },);
   /**
-   * Page's members the original lacks.
+   Page's members the original lacks.
    */
   const pageOnly = keysAbsentFrom({
     atoms: page,
     other: source,
   },);
   /**
-   * Kinds that diverge in both directions, in original order.
+   Kinds that diverge in both directions, in original order.
    */
   const kinds = [...new Set(sourceOnly.map(function toKind(keyed,): ProtectedAtom['kind'] {
     return keyed.kind;
@@ -156,7 +156,7 @@ export function renderingPoolsOf(
   },);
   return kinds.map(function toPool(kind,): AtomRenderingPool {
     /**
-     * Original's keys of this kind.
+     Original's keys of this kind.
      */
     const fromSource = sourceOnly
       .filter(function isKind(keyed,): boolean {
@@ -166,7 +166,7 @@ export function renderingPoolsOf(
         return keyed.key;
       },);
     /**
-     * Page's keys of this kind.
+     Page's keys of this kind.
      */
     const fromPage = pageOnly
       .filter(function isKind(keyed,): boolean {
@@ -188,29 +188,29 @@ export function renderingPoolsOf(
 }
 
 /**
- * Findings for atoms the candidate owes and did not carry, invented, or
- * drew from a rendering pool in the wrong number.
- *
- * Compared as a MULTISET rather than in order, because a translation
- * reorders clauses legitimately and a link moving within a sentence is not
- * damage. What is damage is a reference that stopped existing, one that
- * appeared from nowhere, or both renderings of one reference side by side.
- *
- * @param page - atoms the text being replaced carries
- *
- * @param source - atoms the original carries
- *
- * @param candidate - atoms the candidate carries
- *
- * @param referenceName - what a finding calls the merged reference
- *
- * @returns One finding per missing or invented atom, and one per pool drawn
- * from in the wrong number
- *
- * @example
- * ```ts
- * const findings = atomFindings({ page, source, candidate, referenceName: 'ORIGINAL', },);
- * ```
+ Findings for atoms the candidate owes and did not carry, invented, or
+ drew from a rendering pool in the wrong number.
+ 
+ Compared as a MULTISET rather than in order, because a translation
+ reorders clauses legitimately and a link moving within a sentence is not
+ damage. What is damage is a reference that stopped existing, one that
+ appeared from nowhere, or both renderings of one reference side by side.
+ 
+ @param page - atoms the text being replaced carries
+ 
+ @param source - atoms the original carries
+ 
+ @param candidate - atoms the candidate carries
+ 
+ @param referenceName - what a finding calls the merged reference
+ 
+ @returns One finding per missing or invented atom, and one per pool drawn
+ from in the wrong number
+ 
+ @example
+ ```ts
+ const findings = atomFindings({ page, source, candidate, referenceName: 'ORIGINAL', },);
+ ```
  */
 export function atomFindings(
   {
@@ -226,14 +226,14 @@ export function atomFindings(
   },
 ): readonly string[] {
   /**
-   * Pools of renderings the two references disagree on.
+   Pools of renderings the two references disagree on.
    */
   const pools = renderingPoolsOf({
     page,
     source,
   },);
   /**
-   * Pool each pooled key belongs to.
+   Pool each pooled key belongs to.
    */
   const poolOfKey = new Map<string, AtomRenderingPool>(
     pools.flatMap(function toEntries(pool,): readonly (readonly [
@@ -255,12 +255,12 @@ export function atomFindings(
     },),
   );
   /**
-   * How many times the candidate carries each atom.
+   How many times the candidate carries each atom.
    */
   const remaining = new Map<string, number>();
   for (const atom of candidate) {
     /**
-     * Key identifying this atom exactly.
+     Key identifying this atom exactly.
      */
     const key = describeAtom(atom,);
     remaining.set(
@@ -269,11 +269,11 @@ export function atomFindings(
     );
   }
   /**
-   * Copies the candidate drew from each pool.
+   Copies the candidate drew from each pool.
    */
   const drawn = new Map<AtomRenderingPool, number>();
   /**
-   * Atoms the references have that the candidate did not carry through.
+   Atoms the references have that the candidate did not carry through.
    */
   const missing: string[] = [];
   for (const atom of mergeAtoms({
@@ -281,15 +281,15 @@ export function atomFindings(
     source,
   },)) {
     /**
-     * Key identifying this atom exactly.
+     Key identifying this atom exactly.
      */
     const key = describeAtom(atom,);
     /**
-     * Copies still unaccounted for on the candidate side.
+     Copies still unaccounted for on the candidate side.
      */
     const left = remaining.get(key,) ?? 0;
     /**
-     * Pool this key belongs to, when the references disagree on it.
+     Pool this key belongs to, when the references disagree on it.
      */
     const pool = poolOfKey.get(key,);
     if (left === 0) {
@@ -308,7 +308,7 @@ export function atomFindings(
       );
   }
   /**
-   * Pools drawn from in the wrong number.
+   Pools drawn from in the wrong number.
    */
   const misdrawn = pools
     .filter(function isMisdrawn(pool,): boolean {
@@ -316,12 +316,12 @@ export function atomFindings(
     },)
     .map(function toFinding(pool,): string {
       /**
-       * Original's renderings, listed.
+       Original's renderings, listed.
        */
       const fromSource = pool.fromSource
         .join(', ',);
       /**
-       * Page's renderings, listed.
+       Page's renderings, listed.
        */
       const fromPage = pool.fromPage
         .join(', ',);

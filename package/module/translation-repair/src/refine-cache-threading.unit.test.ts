@@ -1,31 +1,31 @@
 /**
- * Tests that the refinement step HANDS ITS CACHE DOWN to the phase that fills
- * it.
- *
- * WHY THE CACHE IS LOAD-BEARING. The naturalness lane buys a rewriter round, a
- * ballot and a defect check per refinable slice. `#171` records what happens
- * without a cache: a resumed run republishes nothing and rebuys all of it, and
- * `#174` made every cached stage republish its findings rather than go quiet.
- * The cache is how a run that was interrupted costs what it already paid.
- *
- * WHAT WAS MEASURED. On 2026-08-25, inverting this step's conditional spread so
- * the cache is forwarded only when it is ABSENT failed no test in this package.
- * The lane would then settle correctly, log correctly, and persist nothing, so
- * the defect shows up only on the next run and only as a bill.
- *
- * READ OFF THE CACHE, not off the settlement. A step that forwarded nothing
- * still returns the right text; what it stops doing is writing.
- *
- * THE SECOND CASE IS THE ABSENT ONE, since a step that manufactured a cache of
- * its own would satisfy the first on its own. A lane given none must still
- * settle rather than refuse.
- *
- * NO NETWORK. Each stage is scripted by the schema it asks for, and the cache
- * records the keys it was asked to persist rather than writing any file.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests that the refinement step HANDS ITS CACHE DOWN to the phase that fills
+ it.
+ 
+ WHY THE CACHE IS LOAD-BEARING. The naturalness lane buys a rewriter round, a
+ ballot and a defect check per refinable slice. `#171` records what happens
+ without a cache: a resumed run republishes nothing and rebuys all of it, and
+ `#174` made every cached stage republish its findings rather than go quiet.
+ The cache is how a run that was interrupted costs what it already paid.
+ 
+ WHAT WAS MEASURED. On 2026-08-25, inverting this step's conditional spread so
+ the cache is forwarded only when it is ABSENT failed no test in this package.
+ The lane would then settle correctly, log correctly, and persist nothing, so
+ the defect shows up only on the next run and only as a bill.
+ 
+ READ OFF THE CACHE, not off the settlement. A step that forwarded nothing
+ still returns the right text; what it stops doing is writing.
+ 
+ THE SECOND CASE IS THE ABSENT ONE, since a step that manufactured a cache of
+ its own would satisfy the first on its own. A lane given none must still
+ settle rather than refuse.
+ 
+ NO NETWORK. Each stage is scripted by the schema it asks for, and the cache
+ records the keys it was asked to persist rather than writing any file.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -47,32 +47,32 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the step under test.
+ Logger for the step under test.
  */
 const l = tagged({ tag: 'refine-cache-threading-test', },);
 
 //region Fixtures
 
 /**
- * Long single-line paragraph, which is the shape the lane finds refinable.
+ Long single-line paragraph, which is the shape the lane finds refinable.
  */
 const ARCHIVE_PARAGRAPH =
   'The cat is doing the sunbathing on the windowsill in every afternoon, and when the light is moving across the floor she is following it without any hurry at all.';
 
 /**
- * Invented original of the same slice.
+ Invented original of the same slice.
  */
 const SOURCE_PARAGRAPH = '猫猫每天下午都在窗台上晒太阳。';
 
 /**
- * Smoother rendering the scripted rewriter returns.
+ Smoother rendering the scripted rewriter returns.
  */
 const SMOOTH_TEXT =
   'The cat sunbathes on the windowsill every afternoon, and when the light moves across the floor she follows it without hurry.';
 
 /**
- * Roster with the lane on, refiners disjoint from checkers as the phase
- * requires.
+ Roster with the lane on, refiners disjoint from checkers as the phase
+ requires.
  */
 const MODELS: RepairModels = {
   criticModelIds: ['hf:zai-org/GLM-5.3-Flash',],
@@ -93,7 +93,7 @@ const MODELS: RepairModels = {
 };
 
 /**
- * The one slice every case here refines.
+ The one slice every case here refines.
  */
 const SLICES: readonly ChunkPair[] = [
   {
@@ -115,7 +115,7 @@ const SLICES: readonly ChunkPair[] = [
 ];
 
 /**
- * Settled accuracy outcome the step refines.
+ Settled accuracy outcome the step refines.
  */
 const OUTCOMES: readonly ChunkRepairOutcome[] = [
   {
@@ -149,28 +149,28 @@ const OUTCOMES: readonly ChunkRepairOutcome[] = [
 ];
 
 /**
- * Runs the step and reports what its cache was asked to keep.
- *
- * @param withCache - whether to hand the step a cache at all
- *
- * @returns Keys the step persisted, empty when it was given no cache
- *
- * @example
- * ```ts
- * const kept = await keysKept({ withCache: true, },);
- * ```
+ Runs the step and reports what its cache was asked to keep.
+ 
+ @param withCache - whether to hand the step a cache at all
+ 
+ @returns Keys the step persisted, empty when it was given no cache
+ 
+ @example
+ ```ts
+ const kept = await keysKept({ withCache: true, },);
+ ```
  */
 async function keysKept(
   { withCache, }: { readonly withCache: boolean; },
 ): Promise<readonly string[]> {
   /**
-   * Every key the step asked to have written, in order.
+   Every key the step asked to have written, in order.
    */
   const persisted: string[] = [];
 
   /**
-   * Cache that records rather than writes, and starts holding nothing so every
-   * slice is settled fresh.
+   Cache that records rather than writes, and starts holding nothing so every
+   slice is settled fresh.
    */
   const recording: SliceCache<RefinedSliceSettlement> = {
     resumed: new Map(),
@@ -180,7 +180,7 @@ async function keysKept(
   };
 
   /**
-   * Client scripting each stage by the schema it asks for.
+   Client scripting each stage by the schema it asks for.
    */
   const client: SyntheticClient = {
     chatText: async () => {
@@ -190,7 +190,7 @@ async function keysKept(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Stage name from the structured-output constraint.
+       Stage name from the structured-output constraint.
        */
       const stage = request.responseFormat
         ?.json_schema
@@ -198,7 +198,7 @@ async function keysKept(
         ?? '';
 
       /**
-       * Scripted reply for the stage.
+       Scripted reply for the stage.
        */
       const scripted: unknown = stage === 'refine_report'
         ? {
@@ -243,8 +243,8 @@ async function keysKept(
   };
 
   /**
-   * What the step settled on, read only to prove the rewriters were reached:
-   * a run that refined nothing would persist nothing for an innocent reason.
+   What the step settled on, read only to prove the rewriters were reached:
+   a run that refined nothing would persist nothing for an innocent reason.
    */
   const phase = await refineSettledSlices({
     client,
@@ -275,7 +275,7 @@ await describe({
         + 'only on the next run',
       fn: async () => {
         /**
-         * Keys the step asked its cache to keep.
+         Keys the step asked its cache to keep.
          */
         const kept = await keysKept({ withCache: true, },);
 
@@ -288,7 +288,7 @@ await describe({
         + 'would satisfy the case above without ever having been handed anything',
       fn: async () => {
         /**
-         * Keys kept when the step was handed no cache.
+         Keys kept when the step was handed no cache.
          */
         const kept = await keysKept({ withCache: false, },);
 

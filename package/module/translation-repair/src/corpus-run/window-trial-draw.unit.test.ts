@@ -1,17 +1,17 @@
 /**
- * Tests for which slices the window trial buys.
- *
- * WHAT THESE PIN are the two ways this draw can quietly ruin the measurement it
- * feeds. Buying a slice twice, which relocation candidates invite because they
- * are adjacencies, spends quota twice and counts one model's answer twice.
- * Drawing controls badly, or not at all, leaves a general context-induced
- * conservatism indistinguishable from the window working on relocations, and
- * `#84` measured the roster declining on any archive imperfection, so that is a
- * live possibility.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for which slices the window trial buys.
+ 
+ WHAT THESE PIN are the two ways this draw can quietly ruin the measurement it
+ feeds. Buying a slice twice, which relocation candidates invite because they
+ are adjacencies, spends quota twice and counts one model's answer twice.
+ Drawing controls badly, or not at all, leaves a general context-induced
+ conservatism indistinguishable from the window working on relocations, and
+ `#84` measured the roster declining on any archive imperfection, so that is a
+ live possibility.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -28,24 +28,24 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Builds a screen reading with the flags a case wants.
- *
- * @param sliceCount - slices the document has
- *
- * @param relocation - adjacent pairs, as high and low index
- *
- * @param untranslated - slices with a negligible translation
- *
- * @param targetOnly - slices whose original is negligible
- *
- * @param otherImbalances - everything else the screen flagged
- *
- * @returns Reading shaped like one `classifyDisplacement` returns
- *
- * @example
- * ```ts
- * const reading = readingFor({ sliceCount: 6, relocation: [[1, 2]], },);
- * ```
+ Builds a screen reading with the flags a case wants.
+ 
+ @param sliceCount - slices the document has
+ 
+ @param relocation - adjacent pairs, as high and low index
+ 
+ @param untranslated - slices with a negligible translation
+ 
+ @param targetOnly - slices whose original is negligible
+ 
+ @param otherImbalances - everything else the screen flagged
+ 
+ @returns Reading shaped like one `classifyDisplacement` returns
+ 
+ @example
+ ```ts
+ const reading = readingFor({ sliceCount: 6, relocation: [[1, 2]], },);
+ ```
  */
 function readingFor(
   {
@@ -97,7 +97,7 @@ await describe({
         + 'and count one model\'s answer twice in the tally',
       fn: async () => {
         /**
-         * Slice 2 is the low end of one candidate and the high end of the next.
+         Slice 2 is the low end of one candidate and the high end of the next.
          */
         const flagged = flaggedSlices({
           entryId: 'Mittens',
@@ -132,7 +132,7 @@ await describe({
         },);
 
         /**
-         * Slice 1, which the screen flagged both ways.
+         Slice 1, which the screen flagged both ways.
          */
         const both = flagged.find(function isOne(slice,) {
           return slice.sliceIndex === 1;

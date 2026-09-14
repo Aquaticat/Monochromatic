@@ -1,11 +1,11 @@
 /**
- * Tests for the Bedrock ledger, the meter this provider does not have: the
- * durable file every priced call appends to, the credit line it is read
- * against, and the environment that names both.
- *
- * Every case writes under a disposable directory and removes it after.
- *
- * @module
+ Tests for the Bedrock ledger, the meter this provider does not have: the
+ durable file every priced call appends to, the credit line it is read
+ against, and the environment that names both.
+ 
+ Every case writes under a disposable directory and removes it after.
+ 
+ @module
  */
 
 import {
@@ -38,16 +38,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One priced call, cat-themed.
- *
- * @param usd - what it cost
- *
- * @returns Entry to note
- *
- * @example
- * ```ts
- * await ledger.note(callCosting({ usd: 0.5, },),);
- * ```
+ One priced call, cat-themed.
+ 
+ @param usd - what it cost
+ 
+ @returns Entry to note
+ 
+ @example
+ ```ts
+ await ledger.note(callCosting({ usd: 0.5, },),);
+ ```
  */
 function callCosting({ usd, }: { readonly usd: number; },) {
   return {
@@ -60,18 +60,18 @@ function callCosting({ usd, }: { readonly usd: number; },) {
 }
 
 /**
- * Disposable directory a case owns, removed when its scope ends.
- *
- * @returns Directory path and the disposer that removes it
- *
- * @example
- * ```ts
- * await using scratch = await scratchDir();
- * ```
+ Disposable directory a case owns, removed when its scope ends.
+ 
+ @returns Directory path and the disposer that removes it
+ 
+ @example
+ ```ts
+ await using scratch = await scratchDir();
+ ```
  */
 async function scratchDir(): Promise<{ readonly dir: string; } & AsyncDisposable> {
   /**
-   * Fresh directory under the system temp root.
+   Fresh directory under the system temp root.
    */
   const dir = await mkdtemp(join(
     tmpdir(),
@@ -92,18 +92,18 @@ async function scratchDir(): Promise<{ readonly dir: string; } & AsyncDisposable
 }
 
 /**
- * Runs one case inside a disposable directory, removing it after.
- *
- * @param fn - case body, given the directory
- *
- * @example
- * ```ts
- * await inScratch(async function body(dir,) { ... },);
- * ```
+ Runs one case inside a disposable directory, removing it after.
+ 
+ @param fn - case body, given the directory
+ 
+ @example
+ ```ts
+ await inScratch(async function body(dir,) { ... },);
+ ```
  */
 async function inScratch(fn: (dir: string,) => Promise<void>,): Promise<void> {
   /**
-   * Directory this case owns, removed when this function returns.
+   Directory this case owns, removed when this function returns.
    */
   await using scratch = await scratchDir();
   await fn(scratch.dir,);
@@ -117,7 +117,7 @@ await describe({
       fn: async () => {
         await inScratch(async function body(dir,) {
           /**
-           * Ledger over a file nobody has written.
+           Ledger over a file nobody has written.
            */
           const ledger = createBedrockLedger({
             path: join(
@@ -142,7 +142,7 @@ await describe({
       fn: async () => {
         await inScratch(async function body(dir,) {
           /**
-           * Ledger over a file in a directory that does not exist yet.
+           Ledger over a file in a directory that does not exist yet.
            */
           const ledger = createBedrockLedger({
             path: join(
@@ -162,7 +162,7 @@ await describe({
           },);
 
           /**
-           * The file as written: one JSON object per line.
+           The file as written: one JSON object per line.
            */
           const lines = (await readFile(
             ledger.path,
@@ -182,7 +182,7 @@ await describe({
       fn: async () => {
         await inScratch(async function body(dir,) {
           /**
-           * Ledger with a credit two calls exceed.
+           Ledger with a credit two calls exceed.
            */
           const ledger = createBedrockLedger({
             path: join(
@@ -196,7 +196,7 @@ await describe({
           await ledger.note(callCosting({ usd: 0.25, },),);
 
           /**
-           * Reading past the line.
+           Reading past the line.
            */
           const credits = await ledger.read();
           expect(bedrockIsDry({ credits, },),).toBe(true,);
@@ -215,7 +215,7 @@ await describe({
       fn: async () => {
         await inScratch(async function body(dir,) {
           /**
-           * Ledger file with a torn second line.
+           Ledger file with a torn second line.
            */
           const path = join(
             dir,
@@ -228,7 +228,7 @@ await describe({
           );
 
           /**
-           * Ledger over the torn file.
+           Ledger over the torn file.
            */
           const ledger = createBedrockLedger({
             path,
@@ -236,7 +236,7 @@ await describe({
           },);
 
           /**
-           * What the read threw.
+           What the read threw.
            */
           const thrown = await ledger
             .read()
@@ -259,7 +259,7 @@ await describe({
       fn: async () => {
         await inScratch(async function body(dir,) {
           /**
-           * Ledger file whose one line is a bare number.
+           Ledger file whose one line is a bare number.
            */
           const path = join(
             dir,
@@ -272,7 +272,7 @@ await describe({
           );
 
           /**
-           * What the read threw.
+           What the read threw.
            */
           const thrown = await createBedrockLedger({
             path,
@@ -299,7 +299,7 @@ await describe({
       fn: async () => {
         await inScratch(async function body(dir,) {
           /**
-           * Ledger file whose one line carries a negative cost.
+           Ledger file whose one line carries a negative cost.
            */
           const path = join(
             dir,
@@ -312,7 +312,7 @@ await describe({
           );
 
           /**
-           * What the read threw.
+           What the read threw.
            */
           const thrown = await createBedrockLedger({
             path,

@@ -1,9 +1,9 @@
 /**
- * Tests for reading a filled repair sheet back into verdicts, including the
- * fence tracking that stops quoted corpus text from fabricating a grade.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for reading a filled repair sheet back into verdicts, including the
+ fence tracking that stops quoted corpus text from fabricating a grade.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -18,7 +18,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Grade line as the sheet prints it, before a grader touches it.
+ Grade line as the sheet prints it, before a grader touches it.
  */
 const BLANK_GRADE = '- repair grade: [ ]  (Y = fully fixes this defect and '
   + 'breaks nothing nearby · N = it does not)';
@@ -169,7 +169,7 @@ await describe({
         + 'draws of one size match on count and would mislabel every verdict',
       fn: async () => {
         /**
-         * Sheet header as the formatter prints it.
+         Sheet header as the formatter prints it.
          */
         const text = [
           '# Repair sheet',

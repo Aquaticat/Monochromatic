@@ -17,20 +17,20 @@ import type { BlockPair, } from './pair-blocks-wire.ts';
 // a run past its budget and cut the document somewhere it should not.
 
 /**
- * Converts a pairing into monotone alignment steps covering both sides.
- *
- * @param pairs - correspondences the roster agreed on, in document order
- *
- * @param sourceCount - original blocks
- *
- * @param targetCount - translation blocks
- *
- * @returns Steps in document order, each block appearing exactly once
- *
- * @example
- * ```ts
- * const steps = blockPairingToSteps({ pairs, sourceCount: 12, targetCount: 16, },);
- * ```
+ Converts a pairing into monotone alignment steps covering both sides.
+ 
+ @param pairs - correspondences the roster agreed on, in document order
+ 
+ @param sourceCount - original blocks
+ 
+ @param targetCount - translation blocks
+ 
+ @returns Steps in document order, each block appearing exactly once
+ 
+ @example
+ ```ts
+ const steps = blockPairingToSteps({ pairs, sourceCount: 12, targetCount: 16, },);
+ ```
  */
 export function blockPairingToSteps(
   {
@@ -44,12 +44,12 @@ export function blockPairingToSteps(
   },
 ): readonly AlignmentStep[] {
   /**
-   * Translation blocks each original is paired with, in document order.
+   Translation blocks each original is paired with, in document order.
    */
   const targetsBySource = new Map<number, number[]>();
   for (const pair of pairs) {
     /**
-     * Targets recorded for this original so far.
+     Targets recorded for this original so far.
      */
     const already = targetsBySource.get(pair.source,) ?? [];
     already.push(pair.target,);
@@ -60,31 +60,31 @@ export function blockPairingToSteps(
   }
 
   /**
-   * Translation blocks some original claims.
+   Translation blocks some original claims.
    */
   const claimedTargets = new Set(pairs.map(function toTarget(pair,): number {
     return pair.target;
   },),);
 
   /**
-   * Steps in document order.
+   Steps in document order.
    */
   const steps: AlignmentStep[] = [];
 
   /**
-   * Translation blocks already emitted, so unpaired ones land in order.
+   Translation blocks already emitted, so unpaired ones land in order.
    */
   let emittedTargets = 0;
 
   /**
-   * Emits every unclaimed translation block strictly before a boundary.
-   *
-   * @param before - first translation index NOT to emit
-   *
-   * @example
-   * ```ts
-   * emitUnclaimedTargetsBefore(3,);
-   * ```
+   Emits every unclaimed translation block strictly before a boundary.
+   
+   @param before - first translation index NOT to emit
+   
+   @example
+   ```ts
+   emitUnclaimedTargetsBefore(3,);
+   ```
    */
   function emitUnclaimedTargetsBefore(before: number,): void {
     while (emittedTargets < before) {
@@ -98,17 +98,17 @@ export function blockPairingToSteps(
   }
 
   /**
-   * Translation blocks already carried by an earlier original.
-   *
-   * A translation that MERGES several originals into one block names that block
-   * against each of them. The first original pairs with it; the rest ride along
-   * as continuations, so their text reaches the same slice without the
-   * translation block being counted again.
+   Translation blocks already carried by an earlier original.
+   
+   A translation that MERGES several originals into one block names that block
+   against each of them. The first original pairs with it; the rest ride along
+   as continuations, so their text reaches the same slice without the
+   translation block being counted again.
    */
   const carriedTargets = new Set<number>();
   for (let source = 0; source < sourceCount; source += 1) {
     /**
-     * Translation blocks this original renders as, in order.
+     Translation blocks this original renders as, in order.
      */
     const targets = [ ...(targetsBySource.get(source,) ?? []), ]
       .toSorted(function ascending(
@@ -126,14 +126,14 @@ export function blockPairingToSteps(
     }
 
     /**
-     * Whether an earlier original already claimed one of this original's
-     * renderings, which makes this original part of a merge however many
-     * further renderings it also has.
-     *
-     * Testing ANY rather than EVERY is what keeps a merge that then splits from
-     * losing its original: such an original's first rendering is carried, so a
-     * first-rendering-wins test never places it and the block leaves the
-     * document. That reached production once, deleting a closing message.
+     Whether an earlier original already claimed one of this original's
+     renderings, which makes this original part of a merge however many
+     further renderings it also has.
+     
+     Testing ANY rather than EVERY is what keeps a merge that then splits from
+     losing its original: such an original's first rendering is carried, so a
+     first-rendering-wins test never places it and the block leaves the
+     document. That reached production once, deleting a closing message.
      */
     const anyCarried = targets.some(function isCarried(target,): boolean {
       return carriedTargets.has(target,);

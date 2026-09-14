@@ -33,36 +33,36 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // COSTS NOTHING. It reads a log file and prints.
 
 /**
- * Upper bound of the smallest band, where a slice is barely more than a heading.
+ Upper bound of the smallest band, where a slice is barely more than a heading.
  */
 const TINY_SLICE_CHARS = 50;
 
 /**
- * Upper bound of the band a short paragraph falls in.
+ Upper bound of the band a short paragraph falls in.
  */
 const SMALL_SLICE_CHARS = 200;
 
 /**
- * Upper bound of the band an ordinary paragraph falls in.
+ Upper bound of the band an ordinary paragraph falls in.
  */
 const MEDIUM_SLICE_CHARS = 500;
 
 /**
- * Upper bound of the band a long passage falls in.
+ Upper bound of the band a long passage falls in.
  */
 const LARGE_SLICE_CHARS = 1_000;
 
 /**
- * Upper bound of the last named band; anything above is open-ended.
+ Upper bound of the last named band; anything above is open-ended.
  */
 const HUGE_SLICE_CHARS = 2_000;
 
 /**
- * Buckets slices are grouped into, by size of their original.
- *
- * BOUNDARIES ARE ROUND NUMBERS CHOSEN BEFORE READING ANY DATA, so a reader can
- * see they were not fitted to make a curve look like anything. They exist to
- * spread the corpus's slices across several groups, nothing more.
+ Buckets slices are grouped into, by size of their original.
+ 
+ BOUNDARIES ARE ROUND NUMBERS CHOSEN BEFORE READING ANY DATA, so a reader can
+ see they were not fitted to make a curve look like anything. They exist to
+ spread the corpus's slices across several groups, nothing more.
  */
 const SIZE_BUCKETS = [
   TINY_SLICE_CHARS,
@@ -73,43 +73,43 @@ const SIZE_BUCKETS = [
 ] as const;
 
 /**
- * Milliseconds in a minute, for reporting.
+ Milliseconds in a minute, for reporting.
  */
 const MS_PER_MINUTE = 60_000;
 
 /**
- * Column widths, so the bands line up under each other and a falling column is
- * visible as a shape rather than as numbers a reader has to compare by eye.
+ Column widths, so the bands line up under each other and a falling column is
+ visible as a shape rather than as numbers a reader has to compare by eye.
  */
 const LABEL_WIDTH = 6;
 
 /**
- * Width the slice count is padded to.
+ Width the slice count is padded to.
  */
 const COUNT_WIDTH = 4;
 
 /**
- * Width the per-slice minutes are padded to.
+ Width the per-slice minutes are padded to.
  */
 const MINUTES_WIDTH = 6;
 
 /**
- * Width the per-character milliseconds are padded to.
+ Width the per-character milliseconds are padded to.
  */
 const PER_CHAR_WIDTH = 7;
 
 /**
- * Width a lane's total minutes are padded to.
+ Width a lane's total minutes are padded to.
  */
 const TOTAL_WIDTH = 8;
 
 /**
- * Width a lane name is padded to.
+ Width a lane name is padded to.
  */
 const LANE_WIDTH = 13;
 
 /**
- * Lanes a pass reports, in the order it runs them.
+ Lanes a pass reports, in the order it runs them.
  */
 const LANES = [
   'repair',
@@ -118,63 +118,63 @@ const LANES = [
 ] as const;
 
 /**
- * What one size bucket amounts to.
- *
- * @example
- * ```ts
- * const bucket: CostBucket = { upTo: 200, slices: 12, chars: 1400, ms: 90000, };
- * ```
+ What one size bucket amounts to.
+ 
+ @example
+ ```ts
+ const bucket: CostBucket = { upTo: 200, slices: 12, chars: 1400, ms: 90000, };
+ ```
  */
 type CostBucket = {
   /**
-   * Largest source size in this bucket, or `Infinity` for the last.
+   Largest source size in this bucket, or `Infinity` for the last.
    */
   readonly upTo: number;
 
   /**
-   * Slices that landed here.
+   Slices that landed here.
    */
   readonly slices: number;
 
   /**
-   * Characters they carried in total.
+   Characters they carried in total.
    */
   readonly chars: number;
 
   /**
-   * Wall time they took in total.
+   Wall time they took in total.
    */
   readonly ms: number;
 };
 
 /**
- * Groups rows by the size of the original they translated.
- *
- * ONLY `computed` ROWS COUNT. A cached slice reports the microseconds it took to
- * read a file and a skipped one reports nothing worth pricing; averaging those
- * in would report a pipeline far cheaper than the one that runs.
- *
- * @param rows - every parsed cost line
- *
- * @returns One bucket per size band, smallest first
- *
- * @example
- * ```ts
- * const buckets = bucketBySize({ rows, },);
- * ```
+ Groups rows by the size of the original they translated.
+ 
+ ONLY `computed` ROWS COUNT. A cached slice reports the microseconds it took to
+ read a file and a skipped one reports nothing worth pricing; averaging those
+ in would report a pipeline far cheaper than the one that runs.
+ 
+ @param rows - every parsed cost line
+ 
+ @returns One bucket per size band, smallest first
+ 
+ @example
+ ```ts
+ const buckets = bucketBySize({ rows, },);
+ ```
  */
 function bucketBySize(
   { rows, }: { readonly rows: readonly SliceCostRow[]; },
 ): readonly CostBucket[] {
   /**
-   * Rows that priced real work.
+   Rows that priced real work.
    */
   const computed = rows.filter(function didWork(row,): boolean {
     return row.exit === 'computed';
   },);
 
   /**
-   * Upper bounds, with an open-ended last band.
+   Upper bounds, with an open-ended last band.
    */
   const bounds = [
     ...SIZE_BUCKETS,
@@ -186,12 +186,12 @@ function bucketBySize(
     at,
   ): CostBucket {
     /**
-     * Smallest size this band accepts.
+     Smallest size this band accepts.
      */
     const from = (at === 0) ? 0 : (bounds[at - 1] ?? 0);
 
     /**
-     * Rows in this band.
+     Rows in this band.
      */
     const mine = computed.filter(function inBand(row,): boolean {
       return (row.sourceChars >= from) && (row.sourceChars < upTo);
@@ -223,47 +223,47 @@ function bucketBySize(
 }
 
 /**
- * Prints one bucket, with the two figures that separate the explanations.
- *
- * @param bucket - one size band
- *
- * @example
- * ```ts
- * printBucket({ bucket, },);
- * ```
+ Prints one bucket, with the two figures that separate the explanations.
+ 
+ @param bucket - one size band
+ 
+ @example
+ ```ts
+ printBucket({ bucket, },);
+ ```
  */
 function printBucket({ bucket, }: { readonly bucket: CostBucket; },): void {
   if (bucket.slices === 0)
     return;
 
   /**
-   * Wall time a slice in this band costs.
+   Wall time a slice in this band costs.
    */
   const perSlice = bucket.ms / bucket.slices;
 
   /**
-   * Wall time a CHARACTER in this band costs, which is the figure that tells a
-   * fixed overhead from a size-driven cost.
+   Wall time a CHARACTER in this band costs, which is the figure that tells a
+   fixed overhead from a size-driven cost.
    */
   const perChar = (bucket.chars === 0) ? 0 : (bucket.ms / bucket.chars);
 
   /**
-   * Band label, open-ended for the last one.
+   Band label, open-ended for the last one.
    */
   const label = (bucket.upTo === Number.POSITIVE_INFINITY) ? 'any' : String(bucket.upTo,);
 
   /**
-   * Minutes a slice costs here, rendered.
+   Minutes a slice costs here, rendered.
    */
   const minutes = (perSlice / MS_PER_MINUTE).toFixed(2,);
 
   /**
-   * Milliseconds a character costs here, rendered.
+   Milliseconds a character costs here, rendered.
    */
   const perCharText = perChar.toFixed(1,);
 
   /**
-   * Slice count, rendered.
+   Slice count, rendered.
    */
   const count = String(bucket.slices,);
 
@@ -275,32 +275,32 @@ function printBucket({ bucket, }: { readonly bucket: CostBucket; },): void {
 }
 
 /**
- * Reports the widest gap between two slices, and what sizes they were.
- *
- * WHY THE BANDS ALONE CAN MISLEAD, and the reason this exists. The bands answer
- * "does cost scale with size" by averaging within a size range, which is only
- * meaningful when slices of one size cost roughly alike. On the first entry
- * priced under the two-lane pipeline they did not: a 208-character slice cost
- * 14 seconds and a 141-character slice cost 11.3 minutes, a factor of 48 in the
- * WRONG DIRECTION for size. The cheap one raised no critic claims, so it never
- * reached the editor, the panel, the judge or the checker.
- *
- * So the cost driver is HOW MUCH A SLICE TURNS OUT TO NEED, which no size band
- * can show, and a run with few slices can put one such outlier in a band and
- * produce a shape that looks like an answer. This line makes that visible in
- * the same breath as the bands rather than in a document nobody reads next to
- * them.
- *
- * @param rows - every parsed cost line
- *
- * @example
- * ```ts
- * printSpread({ rows, },);
- * ```
+ Reports the widest gap between two slices, and what sizes they were.
+ 
+ WHY THE BANDS ALONE CAN MISLEAD, and the reason this exists. The bands answer
+ "does cost scale with size" by averaging within a size range, which is only
+ meaningful when slices of one size cost roughly alike. On the first entry
+ priced under the two-lane pipeline they did not: a 208-character slice cost
+ 14 seconds and a 141-character slice cost 11.3 minutes, a factor of 48 in the
+ WRONG DIRECTION for size. The cheap one raised no critic claims, so it never
+ reached the editor, the panel, the judge or the checker.
+ 
+ So the cost driver is HOW MUCH A SLICE TURNS OUT TO NEED, which no size band
+ can show, and a run with few slices can put one such outlier in a band and
+ produce a shape that looks like an answer. This line makes that visible in
+ the same breath as the bands rather than in a document nobody reads next to
+ them.
+ 
+ @param rows - every parsed cost line
+ 
+ @example
+ ```ts
+ printSpread({ rows, },);
+ ```
  */
 function printSpread({ rows, }: { readonly rows: readonly SliceCostRow[]; },): void {
   /**
-   * Rows that priced real work.
+   Rows that priced real work.
    */
   const computed = rows.filter(function didWork(row,): boolean {
     return row.exit === 'computed';
@@ -309,7 +309,7 @@ function printSpread({ rows, }: { readonly rows: readonly SliceCostRow[]; },): v
     return;
 
   /**
-   * Slice that cost least.
+   Slice that cost least.
    */
   const cheapest = computed.reduce(function cheaper(
     best,
@@ -319,7 +319,7 @@ function printSpread({ rows, }: { readonly rows: readonly SliceCostRow[]; },): v
   },);
 
   /**
-   * Slice that cost most.
+   Slice that cost most.
    */
   const dearest = computed.reduce(function dearer(
     worst,
@@ -331,37 +331,37 @@ function printSpread({ rows, }: { readonly rows: readonly SliceCostRow[]; },): v
     return;
 
   /**
-   * How many times more the dearest slice cost, rendered.
+   How many times more the dearest slice cost, rendered.
    */
   const ratio = (dearest.elapsedMs / cheapest.elapsedMs).toFixed(1,);
 
   /**
-   * Minutes the cheapest slice took.
+   Minutes the cheapest slice took.
    */
   const cheapMinutes = cheapest.elapsedMs / MS_PER_MINUTE;
 
   /**
-   * Minutes the dearest slice took.
+   Minutes the dearest slice took.
    */
   const dearMinutes = dearest.elapsedMs / MS_PER_MINUTE;
 
   /**
-   * Cheapest slice's minutes, rendered.
+   Cheapest slice's minutes, rendered.
    */
   const cheapText = cheapMinutes.toFixed(2,);
 
   /**
-   * Dearest slice's minutes, rendered.
+   Dearest slice's minutes, rendered.
    */
   const dearText = dearMinutes.toFixed(2,);
 
   /**
-   * Cheapest slice's size, rendered.
+   Cheapest slice's size, rendered.
    */
   const cheapChars = String(cheapest.sourceChars,);
 
   /**
-   * Dearest slice's size, rendered.
+   Dearest slice's size, rendered.
    */
   const dearChars = String(dearest.sourceChars,);
 
@@ -383,23 +383,23 @@ function printSpread({ rows, }: { readonly rows: readonly SliceCostRow[]; },): v
 }
 
 /**
- * Reads a pass log and reports what its slices cost.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Reads a pass log and reports what its slices cost.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Log to read, named on the command line.
+   Log to read, named on the command line.
    */
   const path = process.argv[2] ?? '';
   if (path === '')
     throw new StatedRefusalError({ says: 'name a log file: slice-cost-report <path>', },);
 
   /**
-   * Everything its cost lines said.
+   Everything its cost lines said.
    */
   const {
     rows,
@@ -420,7 +420,7 @@ async function main(): Promise<void> {
 
   console.log('WHAT A SLICE COSTS, BY THE SIZE OF ITS ORIGINAL',);
   /**
-   * Every band, smallest first.
+   Every band, smallest first.
    */
   const buckets = bucketBySize({ rows, },);
   buckets.forEach(function show(bucket,): void {
@@ -439,7 +439,7 @@ async function main(): Promise<void> {
   console.log('\nBY LANE',);
   LANES.forEach(function perLane(lane,): void {
     /**
-     * This lane's computed slices.
+     This lane's computed slices.
      */
     const mine = rows.filter(function isMine(row,): boolean {
       return (row.lane === lane) && (row.exit === 'computed');
@@ -448,7 +448,7 @@ async function main(): Promise<void> {
       return;
 
     /**
-     * What it spent.
+     What it spent.
      */
     const ms = mine.reduce(
       function addMs(
@@ -460,12 +460,12 @@ async function main(): Promise<void> {
       0,
     );
     /**
-     * Minutes this lane spent, rendered.
+     Minutes this lane spent, rendered.
      */
     const spent = (ms / MS_PER_MINUTE).toFixed(1,);
 
     /**
-     * Slice count for this lane, rendered.
+     Slice count for this lane, rendered.
      */
     const count = String(mine.length,);
 

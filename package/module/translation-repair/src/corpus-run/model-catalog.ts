@@ -28,23 +28,23 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // Read-only. Prints ids and nothing else: the key is never rendered.
 
 /**
- * Where the provider lists what it serves.
+ Where the provider lists what it serves.
  */
 const MODELS_URL = `${SYNTHETIC_CHAT_BASE_URL}/models`;
 
 /**
- * Fetches the provider's current model list.
- *
- * @param apiKey - Synthetic key, sent as a bearer token and never printed
- *
- * @returns Parsed response body
- *
- * @throws {@link Error} when the provider answers with a non-ok status
- *
- * @example
- * ```ts
- * const body = await fetchModels({ apiKey, },);
- * ```
+ Fetches the provider's current model list.
+ 
+ @param apiKey - Synthetic key, sent as a bearer token and never printed
+ 
+ @returns Parsed response body
+ 
+ @throws {@link Error} when the provider answers with a non-ok status
+ 
+ @example
+ ```ts
+ const body = await fetchModels({ apiKey, },);
+ ```
  */
 async function fetchModels(
   {
@@ -54,7 +54,7 @@ async function fetchModels(
   },
 ): Promise<unknown> {
   /**
-   * Provider reply.
+   Provider reply.
    */
   const reply = await fetch(
     MODELS_URL,
@@ -73,19 +73,19 @@ async function fetchModels(
 }
 
 /**
- * Reports how the provider's current offering differs from the catalog.
- *
- * @throws {@link Error} when the key is absent, so the failure names the fix
- * rather than surfacing as an authentication error
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Reports how the provider's current offering differs from the catalog.
+ 
+ @throws {@link Error} when the key is absent, so the failure names the fix
+ rather than surfacing as an authentication error
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Synthetic API key, resolved by name from the mise-injected env.
+   Synthetic API key, resolved by name from the mise-injected env.
    */
   const apiKey = process.env
     .TRANSLATION_REPAIR_SYNTHETIC_API_KEY
@@ -96,12 +96,12 @@ async function main(): Promise<void> {
     },);
 
   /**
-   * Every model the provider currently serves, aliases included.
+   Every model the provider currently serves, aliases included.
    */
   const served = decodeModelList({ body: await fetchModels({ apiKey, },), },);
 
   /**
-   * Drift in both directions, plus the aliases held out of the catalog.
+   Drift in both directions, plus the aliases held out of the catalog.
    */
   const comparison = compareCatalog({
     served,

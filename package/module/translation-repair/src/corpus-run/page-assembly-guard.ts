@@ -14,21 +14,21 @@ import type { WouldShipSource, } from './would-ship-text.ts';
 // the page a reader composes from the artifact is the page the guard settled.
 
 /**
- * Runs the assembly guard over the page the artifact would ship.
- *
- * @param artifact - artifact as composed before the guard, carrying no page
- * assembly yet
- *
- * @param slices - preparation defining replacement spans
- *
- * @param targetText - archive text the replacement spans address
- *
- * @returns What the guard trimmed, withdrew and found
- *
- * @example
- * ```ts
- * const pageAssembly = guardPageAssembly({ artifact, slices, targetText, },);
- * ```
+ Runs the assembly guard over the page the artifact would ship.
+ 
+ @param artifact - artifact as composed before the guard, carrying no page
+ assembly yet
+ 
+ @param slices - preparation defining replacement spans
+ 
+ @param targetText - archive text the replacement spans address
+ 
+ @returns What the guard trimmed, withdrew and found
+ 
+ @example
+ ```ts
+ const pageAssembly = guardPageAssembly({ artifact, slices, targetText, },);
+ ```
  */
 export function guardPageAssembly(
   {
@@ -42,7 +42,7 @@ export function guardPageAssembly(
   },
 ): ArtifactPageAssembly {
   /**
-   * Archive text of every slice, by index.
+   Archive text of every slice, by index.
    */
   const incumbentBySlice = new Map(slices.map(function toEntry(slice,) {
     return [
@@ -53,16 +53,16 @@ export function guardPageAssembly(
     ] as const;
   },),);
   /**
-   * Replacements the page would write, less any that repeat the archive's own
-   * wording: a content slice whose archive wording is blank and which ships
-   * nothing reaches the assembler as an empty write, which is no change.
+   Replacements the page would write, less any that repeat the archive's own
+   wording: a content slice whose archive wording is blank and which ships
+   nothing reaches the assembler as an empty write, which is no change.
    */
   const replacements = shippableReplacements({ artifact, },)
     .filter(function changes(replacement,): boolean {
       return replacement.replacementText !== incumbentBySlice.get(replacement.sliceIndex,);
     },);
   /**
-   * The guard's reading of the composed page.
+   The guard's reading of the composed page.
    */
   const guarded = guardFootnoteAssembly({
     targetText,

@@ -51,12 +51,12 @@ import {
 // page, so the page is what it has to match.
 
 /**
- * Instructions every consolidating producer shares.
- *
- * OPENS BY SAYING NEITHER CANDIDATE IS KNOWN TO BE GOOD. A producer shown two
- * renderings and asked to improve on them treats their agreement as settled,
- * which is exactly the inherited-invention case: where both lanes carry the
- * same archive invention, their agreement is the defect.
+ Instructions every consolidating producer shares.
+ 
+ OPENS BY SAYING NEITHER CANDIDATE IS KNOWN TO BE GOOD. A producer shown two
+ renderings and asked to improve on them treats their agreement as settled,
+ which is exactly the inherited-invention case: where both lanes carry the
+ same archive invention, their agreement is the defect.
  */
 const CONSOLIDATE_RULES =
   `You are a bilingual Chinese-to-English translator finishing one passage of a memorial archive for publication.
@@ -81,17 +81,17 @@ THE JUDGE FINDINGS ARE CLAIMS, NOT FACTS. Other models wrote them about these tw
 ${HOUSE_POLICY_BLOCK}`;
 
 /**
- * Reply-format instruction, kept LAST in the assembled sheet.
- *
- * Split out for the same reason the translate sheet splits it: a conditional
- * rule has to sit above it, and wire instructions that end up above content
- * rules are the ones models drop first.
+ Reply-format instruction, kept LAST in the assembled sheet.
+ 
+ Split out for the same reason the translate sheet splits it: a conditional
+ rule has to sit above it, and wire instructions that end up above content
+ rules are the ones models drop first.
  */
 const CONSOLIDATE_REPLY_RULE =
   'Reply with ONLY a JSON object of shape {"translation": "..."}. No prose, no code fences, no commentary.';
 
 /**
- * Anonymized producer relation retained across failed slate and ballots.
+ Anonymized producer relation retained across failed slate and ballots.
  */
 export type ConsolidationFailureProducer =
   | {
@@ -108,7 +108,7 @@ export type ConsolidationFailureProducer =
   };
 
 /**
- * Prior candidate without provider identity.
+ Prior candidate without provider identity.
  */
 export type ConsolidationFailureSlateEntry = {
   readonly index: number;
@@ -119,7 +119,7 @@ export type ConsolidationFailureSlateEntry = {
 };
 
 /**
- * Prior selection ballot without provider identity.
+ Prior selection ballot without provider identity.
  */
 export type ConsolidationFailureSelectionBallot = {
   readonly judgeAlias: string;
@@ -130,141 +130,141 @@ export type ConsolidationFailureSelectionBallot = {
 };
 
 /**
- * Latest consolidation strategy that retained unendorsed standing wording.
- *
- * @example
- * ```ts
- * const failure: ConsolidationFailureEvidence = {
- *   terminal: 'gate-kept-standing', findings: [], selectionBallots: [], selectionSlate: [], gateBallots: [],
- * };
- * ```
+ Latest consolidation strategy that retained unendorsed standing wording.
+ 
+ @example
+ ```ts
+ const failure: ConsolidationFailureEvidence = {
+   terminal: 'gate-kept-standing', findings: [], selectionBallots: [], selectionSlate: [], gateBallots: [],
+ };
+ ```
  */
 export type ConsolidationFailureEvidence = {
   /**
-   * Terminal reached by failed strategy.
+   Terminal reached by failed strategy.
    */
   readonly terminal: ConsolidationTerminal;
   /**
-   * Selection decision when slate reached judges.
+   Selection decision when slate reached judges.
    */
   readonly selectionDecision?: TranslateDecision;
   /**
-   * Candidate slate prior judges saw.
+   Candidate slate prior judges saw.
    */
   readonly selectionSlate: readonly ConsolidationFailureSlateEntry[];
   /**
-   * Selection ballots retaining their reasons.
+   Selection ballots retaining their reasons.
    */
   readonly selectionBallots: readonly ConsolidationFailureSelectionBallot[];
   /**
-   * Fidelity-gate ballots retaining their reasons.
+   Fidelity-gate ballots retaining their reasons.
    */
   readonly gateBallots: readonly GateBallot[];
   /**
-   * Stage findings explaining voice loss, refusal, or decline.
+   Stage findings explaining voice loss, refusal, or decline.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * What a consolidating producer is shown for one slice.
+ What a consolidating producer is shown for one slice.
  */
 export type ConsolidateSubject = {
   /**
-   * Original passage, which is the standard.
+   Original passage, which is the standard.
    */
   readonly sourceText: string;
 
   /**
-   * Syntax role requiring dedicated production and validation rules.
+   Syntax role requiring dedicated production and validation rules.
    */
   readonly syntax?: SliceSyntax;
 
   /**
-   * Archive rendering, as evidence rather than as the standard.
+   Archive rendering, as evidence rather than as the standard.
    */
   readonly incumbentText: string;
 
   /**
-   * What the repair lane would ship.
+   What the repair lane would ship.
    */
   readonly repairText: string;
 
   /**
-   * What the translate lane would ship.
+   What the translate lane would ship.
    */
   readonly translateText: string;
 
   /**
-   * Lane contest ballots for this slice, shown as claims to check.
-   *
-   * MAY BE EMPTY, and the sheet then carries no findings block at all. A slice
-   * whose contest never reached quorum still has two candidates worth
-   * consolidating, and an empty findings heading would read as judges having
-   * looked and found nothing.
+   Lane contest ballots for this slice, shown as claims to check.
+   
+   MAY BE EMPTY, and the sheet then carries no findings block at all. A slice
+   whose contest never reached quorum still has two candidates worth
+   consolidating, and an empty findings heading would read as judges having
+   looked and found nothing.
    */
   readonly ballots: readonly LaneContestBallot[];
 
   /**
-   * Latest failed consolidation strategy, present only on stage-local recovery.
+   Latest failed consolidation strategy, present only on stage-local recovery.
    */
   readonly priorFailure?: ConsolidationFailureEvidence;
 
   /**
-   * Names and handles both documents' front matter declares, when either does.
+   Names and handles both documents' front matter declares, when either does.
    */
   readonly identityContext?: string;
 
   /**
-   * What the pictures this slice and its neighbours show were read to say, when
-   * any could be.
-   *
-   * OPTIONAL, AND HONESTLY SO, unlike `lineStructured` below it. A slice sitting
-   * near no picture, or near none any reader could make out, is a slice with
-   * nothing to say here, so absence is a real state rather than a caller's
-   * omission.
-   *
-   * WHICH IS EXACTLY WHY IT WENT UNWRITTEN FOR SO LONG. From this field's birth
-   * until 2026-08-22 every consolidating producer read the absence, because no
-   * caller wrote it and an optional field cannot say whether the caller had
-   * nothing or forgot. `slicePictureContexts` is the writer, and the window it
-   * hands over is the one the translate lane already saw.
+   What the pictures this slice and its neighbours show were read to say, when
+   any could be.
+   
+   OPTIONAL, AND HONESTLY SO, unlike `lineStructured` below it. A slice sitting
+   near no picture, or near none any reader could make out, is a slice with
+   nothing to say here, so absence is a real state rather than a caller's
+   omission.
+   
+   WHICH IS EXACTLY WHY IT WENT UNWRITTEN FOR SO LONG. From this field's birth
+   until 2026-08-22 every consolidating producer read the absence, because no
+   caller wrote it and an optional field cannot say whether the caller had
+   nothing or forgot. `slicePictureContexts` is the writer, and the window it
+   hands over is the one the translate lane already saw.
    */
   readonly pictureContext?: string;
 
   /**
-   * Whether the enclosing CHUNK's original is line-structured, decided by the
-   * caller because a slice is too small a unit to decide it on.
-   *
-   * REQUIRED, UNLIKE THE TWO CONTEXTS ABOVE IT, and the difference is the
-   * whole reason this reads as it does. A slice genuinely may declare no
-   * names and hold no pictures, so a reader defaulting those is reading a
-   * real absence. Every slice is either line-structured or not, so an
-   * optional spelling here could only ever mean a caller forgot.
-   *
-   * ONE DID. The field and its reader were born together on 2026-08-21 and
-   * no writer ever arrived, so for a day every consolidating producer was
-   * told its passage was prose, verse included. An optional field cannot owe
-   * a writer; a required one can, and the type checker collects.
+   Whether the enclosing CHUNK's original is line-structured, decided by the
+   caller because a slice is too small a unit to decide it on.
+   
+   REQUIRED, UNLIKE THE TWO CONTEXTS ABOVE IT, and the difference is the
+   whole reason this reads as it does. A slice genuinely may declare no
+   names and hold no pictures, so a reader defaulting those is reading a
+   real absence. Every slice is either line-structured or not, so an
+   optional spelling here could only ever mean a caller forgot.
+   
+   ONE DID. The field and its reader were born together on 2026-08-21 and
+   no writer ever arrived, so for a day every consolidating producer was
+   told its passage was prose, verse included. An optional field cannot owe
+   a writer; a required one can, and the type checker collects.
    */
   readonly lineStructured: boolean;
 };
 
 /**
- * Renders one labelled block, or nothing when its text is empty.
- *
- * @param fence - fence enclosing every block in this sheet
- *
- * @param label - heading naming what this block is
- *
- * @param text - block contents
- *
- * @returns Lines for this block, empty when there is nothing to show
- *
- * @example
- * ```ts
- * const lines = renderBlock({ fence: '=====', label: 'DECLARED NAMES', text, },);
- * ```
+ Renders one labelled block, or nothing when its text is empty.
+ 
+ @param fence - fence enclosing every block in this sheet
+ 
+ @param label - heading naming what this block is
+ 
+ @param text - block contents
+ 
+ @returns Lines for this block, empty when there is nothing to show
+ 
+ @example
+ ```ts
+ const lines = renderBlock({ fence: '=====', label: 'DECLARED NAMES', text, },);
+ ```
  */
 function renderBlock(
   {
@@ -287,26 +287,26 @@ function renderBlock(
 }
 
 /**
- * Label for one candidate block, saying so where the candidate IS the archive.
- *
- * WHY IT HAS TO SAY SO. A lane declining to change the incumbent is a
- * legitimate outcome meaning the archive was already right, and it happened at
- * 5 of the 13 bed slices. Unlabelled, the sheet shows one text twice under two
- * headings, and a producer weighing the agreement of the archive with a
- * candidate is counting one source twice.
- *
- * @param name - candidate's name in this contest
- *
- * @param text - what that lane returned
- *
- * @param archiveText - rendering already on the page
- *
- * @returns Label, carrying the identity where there is one
- *
- * @example
- * ```ts
- * const label = candidateLabel({ name: 'repair', text, archiveText, },);
- * ```
+ Label for one candidate block, saying so where the candidate IS the archive.
+ 
+ WHY IT HAS TO SAY SO. A lane declining to change the incumbent is a
+ legitimate outcome meaning the archive was already right, and it happened at
+ 5 of the 13 bed slices. Unlabelled, the sheet shows one text twice under two
+ headings, and a producer weighing the agreement of the archive with a
+ candidate is counting one source twice.
+ 
+ @param name - candidate's name in this contest
+ 
+ @param text - what that lane returned
+ 
+ @param archiveText - rendering already on the page
+ 
+ @returns Label, carrying the identity where there is one
+ 
+ @example
+ ```ts
+ const label = candidateLabel({ name: 'repair', text, archiveText, },);
+ ```
  */
 function candidateLabel(
   {
@@ -325,45 +325,45 @@ function candidateLabel(
 }
 
 /**
- * Builds the sheet asking one producer to consolidate one slice.
- *
- * @param subject - passage, archive rendering, both candidates and the ballots
- *
- * @returns Messages for one exchange
- *
- * @example
- * ```ts
- * const messages = buildConsolidateMessages({ subject, },);
- * ```
+ Builds the sheet asking one producer to consolidate one slice.
+ 
+ @param subject - passage, archive rendering, both candidates and the ballots
+ 
+ @returns Messages for one exchange
+ 
+ @example
+ ```ts
+ const messages = buildConsolidateMessages({ subject, },);
+ ```
  */
 export function buildConsolidateMessages(
   { subject, }: { readonly subject: ConsolidateSubject; },
 ): readonly ChatMessage[] {
   /**
-   * Declared names as one block, empty when neither side declares any.
+   Declared names as one block, empty when neither side declares any.
    */
   const declared = subject.identityContext ?? '';
 
   /**
-   * What the pictures said, empty when none were read.
+   What the pictures said, empty when none were read.
    */
   const pictures = subject.pictureContext ?? '';
 
   /**
-   * Judge findings as the producer will see them, empty when none were heard.
+   Judge findings as the producer will see them, empty when none were heard.
    */
   const brief = renderConsolidationBrief({ ballots: subject.ballots, },);
 
   /**
-   * Latest failed strategy rendered structurally, empty on initial production.
+   Latest failed strategy rendered structurally, empty on initial production.
    */
   const priorFailure = subject.priorFailure === undefined
     ? ''
     : JSON.stringify(subject.priorFailure,);
 
   /**
-   * Fence no enclosed text can reproduce, chosen against every string this
-   * sheet carries, since all of them are arbitrary prose.
+   Fence no enclosed text can reproduce, chosen against every string this
+   sheet carries, since all of them are arbitrary prose.
    */
   const fence = selectFence({
     texts: [
@@ -379,12 +379,12 @@ export function buildConsolidateMessages(
   },);
 
   /**
-   * Producer sheet, with the line-structure fact inserted above the reply
-   * instruction when the enclosing chunk's original is verse.
-   *
-   * BORROWED FROM THE TRANSLATE WIRE rather than restated, because this
-   * producer is a translator and a second wording of the same rule would drift
-   * from the one `Toka_ls` was measured against.
+   Producer sheet, with the line-structure fact inserted above the reply
+   instruction when the enclosing chunk's original is verse.
+   
+   BORROWED FROM THE TRANSLATE WIRE rather than restated, because this
+   producer is a translator and a second wording of the same rule would drift
+   from the one `Toka_ls` was measured against.
    */
   const system = [
     CONSOLIDATE_RULES,

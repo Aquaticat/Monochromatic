@@ -7,65 +7,65 @@
 // whitespace, and the rest of the document keeps full MDX semantics.
 
 /**
- * Opening delimiter of an HTML comment.
+ Opening delimiter of an HTML comment.
  */
 const COMMENT_OPEN = '<!--';
 
 /**
- * Closing delimiter of an HTML comment.
+ Closing delimiter of an HTML comment.
  */
 const COMMENT_CLOSE = '-->';
 
 /**
- * One masked comment region in offsets of the unmasked input.
- *
- * @example
- * ```ts
- * const region: MaskedCommentRegion = {
- *   startOffset: 10,
- *   endOffset: 24,
- *   terminated: true,
- * };
- * ```
+ One masked comment region in offsets of the unmasked input.
+ 
+ @example
+ ```ts
+ const region: MaskedCommentRegion = {
+   startOffset: 10,
+   endOffset: 24,
+   terminated: true,
+ };
+ ```
  */
 export type MaskedCommentRegion = {
   /**
-   * Offset of the region's opening `<!--`.
+   Offset of the region's opening `<!--`.
    */
   readonly startOffset: number;
 
   /**
-   * Exclusive end offset: past the closing `-->`,
-   * or the input's end when the comment never closes.
+   Exclusive end offset: past the closing `-->`,
+   or the input's end when the comment never closes.
    */
   readonly endOffset: number;
 
   /**
-   * Whether the comment closed;
-   * an unterminated comment swallows the rest of the input.
+   Whether the comment closed;
+   an unterminated comment swallows the rest of the input.
    */
   readonly terminated: boolean;
 };
 
 /**
- * Replaces one region's characters with spaces, preserving newlines so line
- * structure survives for line-sensitive block parsing.
- * Iterates UTF-16 units (not code points):
- * one space per unit keeps the masked string's length identical even when
- * the comment carries astral characters.
- *
- * @param region - comment slice to blank out
- *
- * @returns Same-length whitespace with original newlines kept
- *
- * @example
- * ```ts
- * blankRegion({ region: '<!-- x -->', },);
- * ```
+ Replaces one region's characters with spaces, preserving newlines so line
+ structure survives for line-sensitive block parsing.
+ Iterates UTF-16 units (not code points):
+ one space per unit keeps the masked string's length identical even when
+ the comment carries astral characters.
+ 
+ @param region - comment slice to blank out
+ 
+ @returns Same-length whitespace with original newlines kept
+ 
+ @example
+ ```ts
+ blankRegion({ region: '<!-- x -->', },);
+ ```
  */
 function blankRegion({ region, }: { readonly region: string; },): string {
   /**
-   * One whitespace unit per UTF-16 unit of the region.
+   One whitespace unit per UTF-16 unit of the region.
    */
   const units: string[] = [];
   for (
@@ -83,18 +83,18 @@ function blankRegion({ region, }: { readonly region: string; },): string {
 }
 
 /**
- * Masks every HTML comment with same-length whitespace.
- * Single linear pass; the output is byte-length-identical to the input,
- * so positions parsed from the masked text index the original text exactly.
- *
- * @param text - body text possibly carrying HTML comments
- *
- * @returns Masked text plus each region in original offsets
- *
- * @example
- * ```ts
- * const { masked, regions, } = maskHtmlComments({ text: body, },);
- * ```
+ Masks every HTML comment with same-length whitespace.
+ Single linear pass; the output is byte-length-identical to the input,
+ so positions parsed from the masked text index the original text exactly.
+ 
+ @param text - body text possibly carrying HTML comments
+ 
+ @returns Masked text plus each region in original offsets
+ 
+ @example
+ ```ts
+ const { masked, regions, } = maskHtmlComments({ text: body, },);
+ ```
  */
 export function maskHtmlComments(
   { text, }: { readonly text: string; },
@@ -103,23 +103,23 @@ export function maskHtmlComments(
   readonly regions: readonly MaskedCommentRegion[];
 } {
   /**
-   * Alternating kept and blanked slices in source order.
+   Alternating kept and blanked slices in source order.
    */
   const parts: string[] = [];
 
   /**
-   * Masked regions in source order.
+   Masked regions in source order.
    */
   const regions: MaskedCommentRegion[] = [];
 
   /**
-   * Scan position; everything before it is already in parts.
+   Scan position; everything before it is already in parts.
    */
   let cursor = 0;
 
   while (cursor < text.length) {
     /**
-     * Next comment opening at or past the cursor.
+     Next comment opening at or past the cursor.
      */
     const openAt = text.indexOf(
       COMMENT_OPEN,
@@ -131,7 +131,7 @@ export function maskHtmlComments(
     }
 
     /**
-     * Matching close past the opening delimiter, when the comment closes.
+     Matching close past the opening delimiter, when the comment closes.
      */
     const closeAt = text.indexOf(
       COMMENT_CLOSE,
@@ -139,12 +139,12 @@ export function maskHtmlComments(
     );
 
     /**
-     * Whether this comment closed before the input ended.
+     Whether this comment closed before the input ended.
      */
     const terminated = closeAt !== (-1);
 
     /**
-     * Exclusive end of the comment region.
+     Exclusive end of the comment region.
      */
     const endOffset = terminated
       ? closeAt + COMMENT_CLOSE.length
@@ -171,8 +171,8 @@ export function maskHtmlComments(
   }
 
   /**
-   * Masked result;
-   * the comment-free fast path keeps the original string untouched.
+   Masked result;
+   the comment-free fast path keeps the original string untouched.
    */
   const result = regions.length === 0
     ? {

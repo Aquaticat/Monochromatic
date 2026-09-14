@@ -1,15 +1,15 @@
 /**
- * Tests for rebuilding a translation from per-slice replacements.
- *
- * The function is small and its failure is not: it assembles the text that
- * actually ships. A splice applied in the wrong order silently corrupts every
- * slice after the first, and because each slice is individually well-formed the
- * result still looks like plausible prose. So the cases here are mostly about
- * ORDER and about offsets that would drift.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for rebuilding a translation from per-slice replacements.
+ 
+ The function is small and its failure is not: it assembles the text that
+ actually ships. A splice applied in the wrong order silently corrupts every
+ slice after the first, and because each slice is individually well-formed the
+ result still looks like plausible prose. So the cases here are mostly about
+ ORDER and about offsets that would drift.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -30,28 +30,28 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Translation the slices are cut from.
- *
- * Three paragraphs of deliberately different lengths, so an off-by-one in
- * offset handling cannot coincidentally produce the right answer.
+ Translation the slices are cut from.
+ 
+ Three paragraphs of deliberately different lengths, so an off-by-one in
+ offset handling cannot coincidentally produce the right answer.
  */
 const TARGET_TEXT = 'The cat sleeps.\n\nShe chases butterflies in the garden all afternoon.\n\nShe purrs.';
 
 /**
- * Builds one target-side chunk covering a span of {@link TARGET_TEXT}.
- *
- * @param sliceIndex - position of this chunk
- *
- * @param startOffset - absolute start in target text
- *
- * @param endOffset - absolute exclusive end in target text
- *
- * @returns Chunk pair whose target side carries the span
- *
- * @example
- * ```ts
- * const pair = chunkAt({ sliceIndex: 0, startOffset: 0, endOffset: 15, },);
- * ```
+ Builds one target-side chunk covering a span of {@link TARGET_TEXT}.
+ 
+ @param sliceIndex - position of this chunk
+ 
+ @param startOffset - absolute start in target text
+ 
+ @param endOffset - absolute exclusive end in target text
+ 
+ @returns Chunk pair whose target side carries the span
+ 
+ @example
+ ```ts
+ const pair = chunkAt({ sliceIndex: 0, startOffset: 0, endOffset: 15, },);
+ ```
  */
 function chunkAt(
   {
@@ -80,8 +80,8 @@ function chunkAt(
   };
 } {
   /**
-   * Span this chunk covers, read from the target text so offsets and text
-   * cannot disagree.
+   Span this chunk covers, read from the target text so offsets and text
+   cannot disagree.
    */
   const text = TARGET_TEXT.slice(
     startOffset,
@@ -89,7 +89,7 @@ function chunkAt(
   );
 
   /**
-   * Shared shape for both sides; only the target side is read by splicing.
+   Shared shape for both sides; only the target side is read by splicing.
    */
   const side = {
     sliceIndex,
@@ -107,23 +107,23 @@ function chunkAt(
 
 
 /**
- * Builds one pair whose target side is an INSERTION ANCHOR at an offset.
- *
- * Zero-length spans used to be written as ordinary chunks covering nothing,
- * which is exactly the ambiguity `chunk-placement.ts` removes: a span covering
- * no text and a place where text is missing look identical from their offsets
- * alone, and only one of them may be written into.
- *
- * @param sliceIndex - position of this slice
- *
- * @param offset - boundary in {@link TARGET_TEXT} new text is written at
- *
- * @returns Pair whose target names that boundary
- *
- * @example
- * ```ts
- * const pair = anchorAt({ sliceIndex: 2, offset: FINAL_START, },);
- * ```
+ Builds one pair whose target side is an INSERTION ANCHOR at an offset.
+ 
+ Zero-length spans used to be written as ordinary chunks covering nothing,
+ which is exactly the ambiguity `chunk-placement.ts` removes: a span covering
+ no text and a place where text is missing look identical from their offsets
+ alone, and only one of them may be written into.
+ 
+ @param sliceIndex - position of this slice
+ 
+ @param offset - boundary in {@link TARGET_TEXT} new text is written at
+ 
+ @returns Pair whose target names that boundary
+ 
+ @example
+ ```ts
+ const pair = anchorAt({ sliceIndex: 2, offset: FINAL_START, },);
+ ```
  */
 function anchorAt(
   {
@@ -151,16 +151,16 @@ function anchorAt(
 }
 
 /**
- * Paragraph separator the fixture text uses.
+ Paragraph separator the fixture text uses.
  */
 const PARAGRAPH_BREAK = '\n\n';
 
 /**
- * Slices covering the three paragraphs, in document order.
- *
- * Offsets are DERIVED from the text rather than written down. Hand-counted
- * offsets are how a splice test ends up asserting the bug it was written to
- * catch, and this fixture only has to agree with itself.
+ Slices covering the three paragraphs, in document order.
+ 
+ Offsets are DERIVED from the text rather than written down. Hand-counted
+ offsets are how a splice test ends up asserting the bug it was written to
+ catch, and this fixture only has to agree with itself.
  */
 const SLICES = TARGET_TEXT.split(PARAGRAPH_BREAK,)
   .map(function toSlice(
@@ -168,7 +168,7 @@ const SLICES = TARGET_TEXT.split(PARAGRAPH_BREAK,)
     sliceIndex,
   ) {
     /**
-     * Absolute start of this paragraph, unique because the three differ.
+     Absolute start of this paragraph, unique because the three differ.
      */
     const startOffset = TARGET_TEXT.indexOf(paragraph,);
     return chunkAt({
@@ -179,24 +179,24 @@ const SLICES = TARGET_TEXT.split(PARAGRAPH_BREAK,)
   },);
 
 /**
- * Where the final paragraph begins, which is where a slice with no existing
- * translation would be written in.
+ Where the final paragraph begins, which is where a slice with no existing
+ translation would be written in.
  */
 const FINAL_START = TARGET_TEXT.indexOf('She purrs.',);
 
 /**
- * Builds one replacement.
- *
- * @param sliceIndex - slice to write into
- *
- * @param replacementText - text to write there
- *
- * @returns Replacement as a lane emits it
- *
- * @example
- * ```ts
- * const replacement = write({ sliceIndex: 0, replacementText: 'The cat naps.', },);
- * ```
+ Builds one replacement.
+ 
+ @param sliceIndex - slice to write into
+ 
+ @param replacementText - text to write there
+ 
+ @returns Replacement as a lane emits it
+ 
+ @example
+ ```ts
+ const replacement = write({ sliceIndex: 0, replacementText: 'The cat naps.', },);
+ ```
  */
 function write(
   {
@@ -214,20 +214,20 @@ function write(
 }
 
 /**
- * Builds one repair outcome, for the mapping that feeds splicing.
- *
- * @param sliceIndex - slice this outcome is for
- *
- * @param repairedText - winning text for that slice
- *
- * @param changed - whether the repair beat unchanged
- *
- * @returns Outcome carrying only the fields the mapping reads
- *
- * @example
- * ```ts
- * const outcome = outcomeFor({ sliceIndex: 0, repairedText: 'The cat naps.', changed: true, },);
- * ```
+ Builds one repair outcome, for the mapping that feeds splicing.
+ 
+ @param sliceIndex - slice this outcome is for
+ 
+ @param repairedText - winning text for that slice
+ 
+ @param changed - whether the repair beat unchanged
+ 
+ @returns Outcome carrying only the fields the mapping reads
+ 
+ @example
+ ```ts
+ const outcome = outcomeFor({ sliceIndex: 0, repairedText: 'The cat naps.', changed: true, },);
+ ```
  */
 function outcomeFor(
   {
@@ -350,7 +350,7 @@ await describe({
         + 'them back in completion order rather than document order',
       fn: async () => {
         /**
-         * Replacement for the first slice, spliced twice in opposite orders.
+         Replacement for the first slice, spliced twice in opposite orders.
          */
         const first = write({
           sliceIndex: 0,
@@ -358,7 +358,7 @@ await describe({
         },);
 
         /**
-         * Replacement for the final slice.
+         Replacement for the final slice.
          */
         const last = write({
           sliceIndex: 2,
@@ -487,7 +487,7 @@ await describe({
         + 'the slicer disagree, and shipping the remaining splices would hide it',
       fn: async () => {
         /**
-         * What spliceMissingSlice raised, read for its class as well as its wording.
+         What spliceMissingSlice raised, read for its class as well as its wording.
          */
         const refusalOfSpliceMissingSlice = caught(function spliceMissingSlice() {
           spliceSlices({
@@ -515,7 +515,7 @@ await describe({
         + 'unreachable while its replacement landed on the other',
       fn: async () => {
         /**
-         * What spliceCollidingSlices raised, read for its class as well as its wording.
+         What spliceCollidingSlices raised, read for its class as well as its wording.
          */
         const refusalOfSpliceCollidingSlices = caught(function spliceCollidingSlices() {
           spliceSlices({
@@ -548,7 +548,7 @@ await describe({
         + 'that produces this, and it must not resolve itself quietly',
       fn: async () => {
         /**
-         * What spliceDuplicate raised, read for its class as well as its wording.
+         What spliceDuplicate raised, read for its class as well as its wording.
          */
         const refusalOfSpliceDuplicate = caught(function spliceDuplicate() {
           spliceSlices({
@@ -644,7 +644,7 @@ await describe({
         + 'so they land ascending, and that is document order only while an index is a position',
       fn: async () => {
         /**
-         * What spliceShuffledIndices raised, read for its class as well as its wording.
+         What spliceShuffledIndices raised, read for its class as well as its wording.
          */
         const refusalOfSpliceShuffledIndices = caught(function spliceShuffledIndices() {
           spliceSlices({
@@ -684,7 +684,7 @@ await describe({
         + 'reports it delivered',
       fn: async () => {
         /**
-         * What spliceBlankInsertion raised, read for its class as well as its wording.
+         What spliceBlankInsertion raised, read for its class as well as its wording.
          */
         const refusalOfSpliceBlankInsertion = caught(function spliceBlankInsertion() {
           spliceSlices({

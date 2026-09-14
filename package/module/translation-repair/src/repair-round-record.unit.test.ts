@@ -1,15 +1,15 @@
 /**
- * Tests for the record the repair lane keeps of each judged round.
- *
- * WHY THE DECLINE CASE IS THE POINT. A round that chose nothing carries the
- * same ballots a round that chose something does, and it is the shape this lane
- * produces whenever a panel cannot agree. A recorder that kept only winners
- * would drop exactly the rounds where the judges were divided, which is where
- * the reasoning is worth reading.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the record the repair lane keeps of each judged round.
+ 
+ WHY THE DECLINE CASE IS THE POINT. A round that chose nothing carries the
+ same ballots a round that chose something does, and it is the shape this lane
+ produces whenever a panel cannot agree. A recorder that kept only winners
+ would drop exactly the rounds where the judges were divided, which is where
+ the reasoning is worth reading.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,17 +26,17 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Replacement that keeps the alias the front matter declared.
+ Replacement that keeps the alias the front matter declared.
  */
 const KEEPS_ALIAS = 'Mittens the Cat naps on the sill.';
 
 /**
- * Same sentence with that alias taken out.
+ Same sentence with that alias taken out.
  */
 const DROPS_ALIAS = 'The cat naps on the sill.';
 
 /**
- * Candidate at position one, which keeps the alias.
+ Candidate at position one, which keeps the alias.
  */
 const KEEPER = {
   producer: {
@@ -48,7 +48,7 @@ const KEEPER = {
 };
 
 /**
- * Candidate at position two, which takes it out.
+ Candidate at position two, which takes it out.
  */
 const DROPPER = {
   producer: {
@@ -60,7 +60,7 @@ const DROPPER = {
 };
 
 /**
- * Candidates in the order judges were shown them.
+ Candidates in the order judges were shown them.
  */
 const CANDIDATES = [
   KEEPER,
@@ -68,7 +68,7 @@ const CANDIDATES = [
 ];
 
 /**
- * One ballot naming the shorter wording, with the reason judges actually give.
+ One ballot naming the shorter wording, with the reason judges actually give.
  */
 const BALLOT_FOR_SHORTER = {
   modelId: 'hf:Qwen/Qwen3.8-27B' as const,
@@ -79,7 +79,7 @@ const BALLOT_FOR_SHORTER = {
 };
 
 /**
- * What a round counted when one judge answered.
+ What a round counted when one judge answered.
  */
 const ONE_BALLOT_TALLY = {
   judgesAvailable: 1,
@@ -159,8 +159,8 @@ await describe({
         + 'declared-name guard produced exactly this shape on its third round',
       fn: async () => {
         /**
-         * Round where the one judge named the shorter wording and the panel
-         * still could not reach the minimum weight.
+         Round where the one judge named the shorter wording and the panel
+         still could not reach the minimum weight.
          */
         const round = describeJudgedRound({
           stage: 'refine',

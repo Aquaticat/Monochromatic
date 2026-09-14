@@ -16,109 +16,109 @@ import type { DocumentNode, } from './document-node.ts';
 // graded the output.
 
 /**
- * Cost of leaving a block unpartnered, mirrored from the scoring module's
- * calibration: below the swing between a kind match and a kind mismatch, so
- * one dropped block is cheaper to skip than to force onto its neighbour.
+ Cost of leaving a block unpartnered, mirrored from the scoring module's
+ calibration: below the swing between a kind match and a kind mismatch, so
+ one dropped block is cheaper to skip than to force onto its neighbour.
  */
 const GAP_PENALTY = -1.5;
 
 /**
- * One step of the alignment: a partnered pair, or a block skipped on one side.
- *
- * @example
- * ```ts
- * const step: AlignmentStep = { kind: 'paired', sourceIndex: 7, targetIndex: 6, };
- * ```
+ One step of the alignment: a partnered pair, or a block skipped on one side.
+ 
+ @example
+ ```ts
+ const step: AlignmentStep = { kind: 'paired', sourceIndex: 7, targetIndex: 6, };
+ ```
  */
 export type AlignmentStep =
   | {
     /**
-     * Both sides contributed a block.
+     Both sides contributed a block.
      */
     readonly kind: 'paired';
 
     /**
-     * Original-side block index.
+     Original-side block index.
      */
     readonly sourceIndex: number;
 
     /**
-     * Translation-side block index.
+     Translation-side block index.
      */
     readonly targetIndex: number;
   }
   | {
     /**
-     * The original carries a block the translation does not.
+     The original carries a block the translation does not.
      */
     readonly kind: 'source-only';
 
     /**
-     * Original-side block index.
+     Original-side block index.
      */
     readonly sourceIndex: number;
 
     /**
-     * Whether this block CONTINUES the pairing of the step before it.
-     *
-     * Set when a translation MERGES several originals into one block, so the
-     * second and later originals ride along with the rendering that covers
-     * them. The mirror of the same field on `target-only`.
+     Whether this block CONTINUES the pairing of the step before it.
+     
+     Set when a translation MERGES several originals into one block, so the
+     second and later originals ride along with the rendering that covers
+     them. The mirror of the same field on `target-only`.
      */
     readonly continuesPairing?: true;
   }
   | {
     /**
-     * The translation carries a block the original does not.
+     The translation carries a block the original does not.
      */
     readonly kind: 'target-only';
 
     /**
-     * Translation-side block index.
+     Translation-side block index.
      */
     readonly targetIndex: number;
 
     /**
-     * Whether this block CONTINUES the pairing of the step before it, rather
-     * than standing alone.
-     *
-     * Set only by `blockPairingToSteps`, where one original rendered by several
-     * translation blocks becomes a `paired` step followed by continuations. The
-     * grouper must not cut between them: separating a rendering from the
-     * original it renders puts a passage in front of the critics with no source
-     * beside it, which is the mispairing this whole path exists to end.
-     *
-     * The deterministic walk never sets it, because a block it skips genuinely
-     * stands alone.
+     Whether this block CONTINUES the pairing of the step before it, rather
+     than standing alone.
+     
+     Set only by `blockPairingToSteps`, where one original rendered by several
+     translation blocks becomes a `paired` step followed by continuations. The
+     grouper must not cut between them: separating a rendering from the
+     original it renders puts a passage in front of the critics with no source
+     beside it, which is the mispairing this whole path exists to end.
+     
+     The deterministic walk never sets it, because a block it skips genuinely
+     stands alone.
      */
     readonly continuesPairing?: true;
   };
 
 /**
- * Cell of the score table plus the move that produced it.
+ Cell of the score table plus the move that produced it.
  */
 type Cell = {
   /**
-   * Best cumulative score reaching this cell.
+   Best cumulative score reaching this cell.
    */
   readonly score: number;
 
   /**
-   * Move taken to reach it, `start` only at the origin.
+   Move taken to reach it, `start` only at the origin.
    */
   readonly move: 'start' | 'pair' | 'skip-source' | 'skip-target';
 };
 
 /**
- * Builds the score table for the two block lists. Row zero and column zero are
- * pure gap runs, so a document whose counterpart is empty aligns as all skips
- * rather than failing.
- *
- * @param sourceNodes - original blocks in document order
- *
- * @param targetNodes - translation blocks in document order
- *
- * @returns Filled table with one extra row and column for the empty prefixes
+ Builds the score table for the two block lists. Row zero and column zero are
+ pure gap runs, so a document whose counterpart is empty aligns as all skips
+ rather than failing.
+ 
+ @param sourceNodes - original blocks in document order
+ 
+ @param targetNodes - translation blocks in document order
+ 
+ @returns Filled table with one extra row and column for the empty prefixes
  */
 function buildTable(
   {
@@ -130,12 +130,12 @@ function buildTable(
   },
 ): readonly (readonly Cell[])[] {
   /**
-   * How far THIS translation expands, estimated once over both whole lists.
-   *
-   * Per document rather than per pair, and per pair is impossible anyway: the
-   * pairing is what the table is deciding. A fixed constant made every correct
-   * pair look implausible on entries whose translator writes long, which is what
-   * `doc/audit/the-critics-are-shown-the-wrong-paragraph.md` measured.
+   How far THIS translation expands, estimated once over both whole lists.
+   
+   Per document rather than per pair, and per pair is impossible anyway: the
+   pairing is what the table is deciding. A fixed constant made every correct
+   pair look implausible on entries whose translator writes long, which is what
+   `doc/audit/the-critics-are-shown-the-wrong-paragraph.md` measured.
    */
   const expansion = estimateExpansion({
     sourceNodes,
@@ -143,13 +143,13 @@ function buildTable(
   },);
 
   /**
-   * Mutable table under construction; rows are built in order and never
-   * revisited once complete.
+   Mutable table under construction; rows are built in order and never
+   revisited once complete.
    */
   const table: Cell[][] = [];
   for (let row = 0; row <= sourceNodes.length; row += 1) {
     /**
-     * Row being filled.
+     Row being filled.
      */
     const cells: Cell[] = [];
     for (let column = 0; column <= targetNodes.length; column += 1) {
@@ -176,12 +176,12 @@ function buildTable(
       }
 
       /**
-       * Original block this cell considers, present by the loop bounds.
+       Original block this cell considers, present by the loop bounds.
        */
       const sourceNode = sourceNodes[row - 1];
 
       /**
-       * Translation block this cell considers, present by the loop bounds.
+       Translation block this cell considers, present by the loop bounds.
        */
       const targetNode = targetNodes[column - 1];
       /* v8 ignore next 2 -- @preserve loop bounds guarantee both blocks */
@@ -189,7 +189,7 @@ function buildTable(
         throw new Error('unreachable: alignment walked outside its inputs',);
 
       /**
-       * Score for partnering the two blocks.
+       Score for partnering the two blocks.
        */
       const pairScore = (table[row - 1]?.[column - 1]
         ?.score
@@ -201,22 +201,22 @@ function buildTable(
         },);
 
       /**
-       * Score for leaving the original's block unpartnered.
+       Score for leaving the original's block unpartnered.
        */
       const skipSourceScore = (table[row - 1]?.[column]
         ?.score
         ?? 0) + GAP_PENALTY;
 
       /**
-       * Score for leaving the translation's block unpartnered.
+       Score for leaving the translation's block unpartnered.
        */
       const skipTargetScore = (cells[column - 1]
         ?.score
         ?? 0) + GAP_PENALTY;
 
       /**
-       * Best of the three moves; pairing wins ties so the alignment stays as
-       * connected as the scores allow.
+       Best of the three moves; pairing wins ties so the alignment stays as
+       connected as the scores allow.
        */
       const best = Math.max(
         pairScore,
@@ -238,20 +238,20 @@ function buildTable(
 }
 
 /**
- * Aligns two block lists monotonically, skipping rather than forcing a partner
- * where no partner fits. Order is preserved on both sides.
- *
- * @param sourceNodes - original blocks in document order
- *
- * @param targetNodes - translation blocks in document order
- *
- * @returns Steps in document order, covering every block on both sides exactly
- * once
- *
- * @example
- * ```ts
- * const steps = alignBlocks({ sourceNodes, targetNodes, },);
- * ```
+ Aligns two block lists monotonically, skipping rather than forcing a partner
+ where no partner fits. Order is preserved on both sides.
+ 
+ @param sourceNodes - original blocks in document order
+ 
+ @param targetNodes - translation blocks in document order
+ 
+ @returns Steps in document order, covering every block on both sides exactly
+ once
+ 
+ @example
+ ```ts
+ const steps = alignBlocks({ sourceNodes, targetNodes, },);
+ ```
  */
 export function alignBlocks(
   {
@@ -263,7 +263,7 @@ export function alignBlocks(
   },
 ): readonly AlignmentStep[] {
   /**
-   * Filled score table.
+   Filled score table.
    */
   const table = buildTable({
     sourceNodes,
@@ -271,14 +271,14 @@ export function alignBlocks(
   },);
 
   /**
-   * Steps recovered from the table, built backwards then reversed.
+   Steps recovered from the table, built backwards then reversed.
    */
   const reversed: AlignmentStep[] = [];
 
   /**
-   * Position in the table, walked backwards from the far corner. A mutable
-   * record rather than two loose bindings, so the traceback's state is one
-   * named thing.
+   Position in the table, walked backwards from the far corner. A mutable
+   record rather than two loose bindings, so the traceback's state is one
+   named thing.
    */
   const cursor = {
     row: sourceNodes.length,
@@ -286,7 +286,7 @@ export function alignBlocks(
   };
   while ((cursor.row > 0) || (cursor.column > 0)) {
     /**
-     * Move recorded for the current cell.
+     Move recorded for the current cell.
      */
     const move = table[cursor.row]?.[cursor.column]
       ?.move;

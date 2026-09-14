@@ -8,7 +8,7 @@ import type { SliceValidation, } from './translate-validate.ts';
 // against archive metadata while model ensemble decides semantic translation.
 
 /**
- * Decision addendum shared by final candidate comparisons.
+ Decision addendum shared by final candidate comparisons.
  */
 export const FRONT_MATTER_DECISION_RULE: string = 'The candidates are complete YAML front matter. A candidate is '
   + 'flawed if it breaks YAML fences, field names, nesting, container lengths, or scalar kinds. ORIGINAL metadata '
@@ -20,33 +20,33 @@ export const FRONT_MATTER_DECISION_RULE: string = 'The candidates are complete Y
   + 'contributor differently.';
 
 /**
- * Separator an alias list is written with in this corpus.
- *
- * MEASURED 2026-09-04 over the pinned archives: 70 alias values carry a
- * comma, one a slash, none a Chinese comma or an enumeration mark.
+ Separator an alias list is written with in this corpus.
+ 
+ MEASURED 2026-09-04 over the pinned archives: 70 alias values carry a
+ comma, one a slash, none a Chinese comma or an enumeration mark.
  */
 const ALIAS_SEPARATOR = ',';
 
 /**
- * Whether an alias carries the name among its renderings.
- *
- * THE OWNER'S DECISION OF 2026-09-04: where the ORIGINAL declares name and
- * alias the same, the translated alias may carry the name beside other
- * renderings ("鲵鲵, Nini" for the name "Nini"), because seven of the fourteen
- * such archives at the pinned corpus already do, and equality would have forced
- * every one of them to drop the original-script alias it publishes. Equality
- * refused the luxuanwen3 page of that day after a full run.
- *
- * @param alias - alias value as the candidate writes it
- *
- * @param name - visible name the alias must carry
- *
- * @returns Whether some comma-separated rendering equals the name exactly
- *
- * @example
- * ```ts
- * const carried = aliasCarriesName({ alias: '鲵鲵, Nini', name: 'Nini', },);
- * ```
+ Whether an alias carries the name among its renderings.
+ 
+ THE OWNER'S DECISION OF 2026-09-04: where the ORIGINAL declares name and
+ alias the same, the translated alias may carry the name beside other
+ renderings ("鲵鲵, Nini" for the name "Nini"), because seven of the fourteen
+ such archives at the pinned corpus already do, and equality would have forced
+ every one of them to drop the original-script alias it publishes. Equality
+ refused the luxuanwen3 page of that day after a full run.
+ 
+ @param alias - alias value as the candidate writes it
+ 
+ @param name - visible name the alias must carry
+ 
+ @returns Whether some comma-separated rendering equals the name exactly
+ 
+ @example
+ ```ts
+ const carried = aliasCarriesName({ alias: '鲵鲵, Nini', name: 'Nini', },);
+ ```
  */
 function aliasCarriesName(
   {
@@ -65,64 +65,64 @@ function aliasCarriesName(
 }
 
 /**
- * Visible identity read from standard fields, or another metadata schema.
- *
- * @example
- * ```ts
- * const identity: VisibleIdentityReading = { kind: 'present', name: 'Mittens', alias: 'Mittens', };
- * ```
+ Visible identity read from standard fields, or another metadata schema.
+ 
+ @example
+ ```ts
+ const identity: VisibleIdentityReading = { kind: 'present', name: 'Mittens', alias: 'Mittens', };
+ ```
  */
 type VisibleIdentityReading =
   | {
     /**
-     * Standard visible identity fields are present.
+     Standard visible identity fields are present.
      */
     readonly kind: 'present';
 
     /**
-     * Primary visible name.
+     Primary visible name.
      */
     readonly name: string;
 
     /**
-     * Alias nested under metadata info.
+     Alias nested under metadata info.
      */
     readonly alias: string;
   }
   | {
     /**
-     * Metadata uses another schema and carries no enforceable relation here.
+     Metadata uses another schema and carries no enforceable relation here.
      */
     readonly kind: 'other-schema';
   };
 
 /**
- * Reads standard visible identity fields from parsed metadata.
- *
- * @param value - parsed YAML document
- *
- * @returns Identity pair, or nothing when document uses another schema
- *
- * @example
- * ```ts
- * const identity = visibleIdentityOf({ value: { name: 'Mittens', info: { alias: 'Mittens', }, }, });
- * ```
+ Reads standard visible identity fields from parsed metadata.
+ 
+ @param value - parsed YAML document
+ 
+ @returns Identity pair, or nothing when document uses another schema
+ 
+ @example
+ ```ts
+ const identity = visibleIdentityOf({ value: { name: 'Mittens', info: { alias: 'Mittens', }, }, });
+ ```
  */
 function visibleIdentityOf({ value, }: { readonly value: unknown; },): VisibleIdentityReading {
   if (!isJsonRecord(value,))
     return { kind: 'other-schema', };
   /**
-   * Nested metadata containing declared alias.
+   Nested metadata containing declared alias.
    */
   const { info, } = value;
   if (!isJsonRecord(info,))
     return { kind: 'other-schema', };
   /**
-   * Primary value whose relationship carries source identity.
+   Primary value whose relationship carries source identity.
    */
   const { name, } = value;
   /**
-   * Alias value whose relationship carries source identity.
+   Alias value whose relationship carries source identity.
    */
   const { alias, } = info;
   if ((typeof name) !== 'string')
@@ -137,23 +137,23 @@ function visibleIdentityOf({ value, }: { readonly value: unknown; },): VisibleId
 }
 
 /**
- * Structural signature for parsed YAML value.
- *
- * @param value - parsed YAML value
- *
- * @returns Stable signature of keys, containers and scalar kinds
- *
- * @example
- * ```ts
- * const shape = yamlShape({ value: { name: 'Mittens', }, });
- * ```
+ Structural signature for parsed YAML value.
+ 
+ @param value - parsed YAML value
+ 
+ @returns Stable signature of keys, containers and scalar kinds
+ 
+ @example
+ ```ts
+ const shape = yamlShape({ value: { name: 'Mittens', }, });
+ ```
  */
 function yamlShape({ value, }: { readonly value: unknown; }): string {
   if (value === null)
     return 'null';
   if (Array.isArray(value,)) {
     /**
-     * Child signatures in container order.
+     Child signatures in container order.
      */
     const children = value.map(function child(item,): string {
       return yamlShape({ value: item, });
@@ -172,20 +172,20 @@ function yamlShape({ value, }: { readonly value: unknown; }): string {
 }
 
 /**
- * Validates syntax and archive-compatible key shape of front matter candidate.
- *
- * @param sourceText - source front matter whose identity relationships govern
- *
- * @param pageText - archive front matter candidate replaces
- *
- * @param candidateText - proposed localized front matter
- *
- * @returns Translation validation result
- *
- * @example
- * ```ts
- * const validation = validateFrontMatterTranslation({ sourceText, pageText, candidateText, });
- * ```
+ Validates syntax and archive-compatible key shape of front matter candidate.
+ 
+ @param sourceText - source front matter whose identity relationships govern
+ 
+ @param pageText - archive front matter candidate replaces
+ 
+ @param candidateText - proposed localized front matter
+ 
+ @returns Translation validation result
+ 
+ @example
+ ```ts
+ const validation = validateFrontMatterTranslation({ sourceText, pageText, candidateText, });
+ ```
  */
 export function validateFrontMatterTranslation(
   {
@@ -200,15 +200,15 @@ export function validateFrontMatterTranslation(
 ): SliceValidation {
   try {
     /**
-     * Parsed source metadata defining identity relationships.
+     Parsed source metadata defining identity relationships.
      */
     const source = splitFrontMatter({ text: sourceText, },);
     /**
-     * Parsed archive metadata defining structural shape.
+     Parsed archive metadata defining structural shape.
      */
     const page = splitFrontMatter({ text: pageText, },);
     /**
-     * Parsed candidate metadata under review.
+     Parsed candidate metadata under review.
      */
     const candidate = splitFrontMatter({ text: candidateText, },);
     if (candidate.frontMatter === undefined) {
@@ -218,11 +218,11 @@ export function validateFrontMatterTranslation(
       };
     }
     /**
-     * Candidate body outside metadata fences.
+     Candidate body outside metadata fences.
      */
     const { body, } = candidate;
     /**
-     * Candidate body after insignificant whitespace is removed.
+     Candidate body after insignificant whitespace is removed.
      */
     const candidateBody = body.trim();
     if (candidateBody.length > 0) {
@@ -244,21 +244,21 @@ export function validateFrontMatterTranslation(
       };
     }
     /**
-     * Parsed source metadata.
+     Parsed source metadata.
      */
     const { data: sourceData, } = source.frontMatter;
     /**
-     * Parsed candidate metadata.
+     Parsed candidate metadata.
      */
     const { data: candidateData, } = candidate.frontMatter;
     /**
-     * Parsed archive metadata when target already carries it.
+     Parsed archive metadata when target already carries it.
      */
     const { frontMatter: pageFrontMatter, } = page;
     /**
-     * Structural authority:
-     * archive metadata when present,
-     * otherwise source shape for new insertion.
+     Structural authority:
+     archive metadata when present,
+     otherwise source shape for new insertion.
      */
     const pageData = pageFrontMatter?.data ?? sourceData;
     if (yamlShape({ value: candidateData, }) !== yamlShape({ value: pageData, })) {
@@ -268,7 +268,7 @@ export function validateFrontMatterTranslation(
       };
     }
     /**
-     * Comment attribution findings grounded at same YAML path.
+     Comment attribution findings grounded at same YAML path.
      */
     const commentFindings = frontMatterCommentAuthorityFindings({
       sourceText,
@@ -282,11 +282,11 @@ export function validateFrontMatterTranslation(
       };
     }
     /**
-     * Source identity pair, when standard fields expose one.
+     Source identity pair, when standard fields expose one.
      */
     const sourceIdentity = visibleIdentityOf({ value: sourceData, },);
     /**
-     * Candidate identity pair under same standard fields.
+     Candidate identity pair under same standard fields.
      */
     const candidateIdentity = visibleIdentityOf({ value: candidateData, },);
     if ((sourceIdentity.kind === 'present')

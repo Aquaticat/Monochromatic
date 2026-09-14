@@ -1,22 +1,22 @@
 /**
- * Tests for the slice-by-slice comparison of the two lanes.
- *
- * The comparison exists to answer one question, whether repair and translate
- * produce the same English where both touch a slice, and it has one hard
- * requirement: it must read what each DOCUMENT carries rather than what each
- * lane chose. A slice whose replacement the assembly guard withdrew chose one
- * thing and shipped another, and a comparison that read the choice would report
- * a rewrite no reader ever saw.
- *
- * It takes each lane's DELIVERY LEDGER rather than its wordings and an index
- * set. The ledger has already refused a decided slice that is neither shipped,
- * withdrawn, nor blocked, so what a document carries arrives as a stated fact;
- * reading an index set here meant an omitted shipped index was indistinguisable
- * from a lane that kept the archive.
- *
- * Fixtures are invented. No corpus content appears here.
- *
- * @module
+ Tests for the slice-by-slice comparison of the two lanes.
+ 
+ The comparison exists to answer one question, whether repair and translate
+ produce the same English where both touch a slice, and it has one hard
+ requirement: it must read what each DOCUMENT carries rather than what each
+ lane chose. A slice whose replacement the assembly guard withdrew chose one
+ thing and shipped another, and a comparison that read the choice would report
+ a rewrite no reader ever saw.
+ 
+ It takes each lane's DELIVERY LEDGER rather than its wordings and an index
+ set. The ledger has already refused a decided slice that is neither shipped,
+ withdrawn, nor blocked, so what a document carries arrives as a stated fact;
+ reading an index set here meant an omitted shipped index was indistinguisable
+ from a lane that kept the archive.
+ 
+ Fixtures are invented. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -35,42 +35,42 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Archive wording of the one slice most cases here use.
+ Archive wording of the one slice most cases here use.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
 /**
- * Original of that slice.
+ Original of that slice.
  */
 const SOURCE_NAP = '猫猫在窗台上睡觉。';
 
 /**
- * Slicing every case here claims to describe.
- *
- * Built as a literal rather than from a preparation, because these cases are
- * about the join and not about what names it; the validator is what makes it a
- * real identity rather than a bare string.
+ Slicing every case here claims to describe.
+ 
+ Built as a literal rather than from a preparation, because these cases are
+ about the join and not about what names it; the validator is what makes it a
+ real identity rather than a bare string.
  */
 const NAMED_SLICING = `sha256-preparation-v1:${'a'.repeat(64,)}`;
 assertPreparationIdentity(NAMED_SLICING,);
 
 /**
- * Same value with the narrowing written down, since an assertion at module
- * scope does not reach inside a function declaration.
+ Same value with the narrowing written down, since an assertion at module
+ scope does not reach inside a function declaration.
  */
 const SLICING: PreparationIdentity = NAMED_SLICING;
 
 /**
- * Stamps a set of rows with the slicing every case here shares.
- *
- * @param records - rows of one lane's ledger
- *
- * @returns Those rows, under this file's slicing
- *
- * @example
- * ```ts
- * const ledger = ledgerOf({ records, },);
- * ```
+ Stamps a set of rows with the slicing every case here shares.
+ 
+ @param records - rows of one lane's ledger
+ 
+ @returns Those rows, under this file's slicing
+ 
+ @example
+ ```ts
+ const ledger = ledgerOf({ records, },);
+ ```
  */
 function ledgerOf(
   { records, }: { readonly records: readonly SliceDeliveryRecord[]; },
@@ -82,19 +82,19 @@ function ledgerOf(
 }
 
 /**
- * Builds one lane's ledger over a single decided slice.
- *
- * @param acceptedText - wording that lane decided on
- *
- * @param shipped - whether the returned document carries it
- *
- * @returns Ledger shaped as `buildSliceDelivery` returns one, under the
- * slicing every case here shares
- *
- * @example
- * ```ts
- * const lane = laneOf({ acceptedText: 'The cat naps.', shipped: true, },);
- * ```
+ Builds one lane's ledger over a single decided slice.
+ 
+ @param acceptedText - wording that lane decided on
+ 
+ @param shipped - whether the returned document carries it
+ 
+ @returns Ledger shaped as `buildSliceDelivery` returns one, under the
+ slicing every case here shares
+ 
+ @example
+ ```ts
+ const lane = laneOf({ acceptedText: 'The cat naps.', shipped: true, },);
+ ```
  */
 function laneOf(
   {
@@ -106,8 +106,8 @@ function laneOf(
   },
 ): IdentifiedDeliveryLedger {
   /**
-   * Whether the lane moved off the archive at all, which decides whether the
-   * unshipped case is a withdrawal or an ordinary keep.
+   Whether the lane moved off the archive at all, which decides whether the
+   unshipped case is a withdrawal or an ordinary keep.
    */
   const moved = acceptedText !== ARCHIVE_NAP;
   return ledgerOf({ records: [{
@@ -132,18 +132,18 @@ function laneOf(
 }
 
 /**
- * Builds one lane's ledger over a single slice it did not decide.
- *
- * @param outcome - what that lane did instead
- *
- * @param incumbentKind - whether the archive holds wording at this slice
- *
- * @returns Ledger carrying whatever the archive has there
- *
- * @example
- * ```ts
- * const lane = undecidedLaneOf({ outcome: { kind: 'not-evaluated', }, incumbentKind: 'present', },);
- * ```
+ Builds one lane's ledger over a single slice it did not decide.
+ 
+ @param outcome - what that lane did instead
+ 
+ @param incumbentKind - whether the archive holds wording at this slice
+ 
+ @returns Ledger carrying whatever the archive has there
+ 
+ @example
+ ```ts
+ const lane = undecidedLaneOf({ outcome: { kind: 'not-evaluated', }, incumbentKind: 'present', },);
+ ```
  */
 function undecidedLaneOf(
   {
@@ -155,7 +155,7 @@ function undecidedLaneOf(
   },
 ): IdentifiedDeliveryLedger {
   /**
-   * Archive wording here, which an anchor does not have.
+   Archive wording here, which an anchor does not have.
    */
   const incumbentText = (incumbentKind === 'absent') ? '' : ARCHIVE_NAP;
   return ledgerOf({ records: [{
@@ -180,7 +180,7 @@ await describe({
         + 'both moved to the same wording, and both moved apart, which is the only one a human has to read',
       fn: async () => {
         /**
-         * Both lanes left the archive wording standing.
+         Both lanes left the archive wording standing.
          */
         const kept = compareDocumentLanes({
           repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
@@ -189,7 +189,7 @@ await describe({
         expect(kept.slices[0]?.verdict,).toBe('archive-stands',);
 
         /**
-         * Only repair changed the slice.
+         Only repair changed the slice.
          */
         const repairOnly = compareDocumentLanes({
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
@@ -198,7 +198,7 @@ await describe({
         expect(repairOnly.slices[0]?.verdict,).toBe('repair-only',);
 
         /**
-         * Only translate changed it.
+         Only translate changed it.
          */
         const translateOnly = compareDocumentLanes({
           repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
@@ -207,7 +207,7 @@ await describe({
         expect(translateOnly.slices[0]?.verdict,).toBe('translate-only',);
 
         /**
-         * Both changed it the same way, character for character.
+         Both changed it the same way, character for character.
          */
         const agreed = compareDocumentLanes({
           repair: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
@@ -216,7 +216,7 @@ await describe({
         expect(agreed.slices[0]?.verdict,).toBe('both-agree',);
 
         /**
-         * Both changed it, differently.
+         Both changed it, differently.
          */
         const apart = compareDocumentLanes({
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
@@ -235,7 +235,7 @@ await describe({
         + 'looking well formed',
       fn: async () => {
         /**
-         * Comparison over one unchanged slice.
+         Comparison over one unchanged slice.
          */
         const comparison = compareDocumentLanes({
           repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
@@ -251,7 +251,7 @@ await describe({
         + 'because reporting the rewrite would credit a lane with English no reader ever saw',
       fn: async () => {
         /**
-         * Repair chose a rewrite the guard took back; translate shipped one.
+         Repair chose a rewrite the guard took back; translate shipped one.
          */
         const comparison = compareDocumentLanes({
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: false, },),
@@ -280,7 +280,7 @@ await describe({
         + 'different preparations and every row after the first gap compares two different passages',
       fn: async () => {
         /**
-         * Failure the comparison raised.
+         Failure the comparison raised.
          */
         let caught: unknown;
         try {
@@ -301,7 +301,7 @@ await describe({
         + 'arriving with matching counts and is otherwise undetectable downstream',
       fn: async () => {
         /**
-         * Failure the comparison raised.
+         Failure the comparison raised.
          */
         let caught: unknown;
         try {
@@ -335,7 +335,7 @@ await describe({
         + 'from the repair lane',
       fn: async () => {
         /**
-         * Failure the comparison raised.
+         Failure the comparison raised.
          */
         let caught: unknown;
         try {
@@ -369,7 +369,7 @@ await describe({
         + 'itself would otherwise be compared as though it did not',
       fn: async () => {
         /**
-         * Failure raised by a lane falling back on wording the archive lacks.
+         Failure raised by a lane falling back on wording the archive lacks.
          */
         let caught: unknown;
         try {
@@ -398,7 +398,7 @@ await describe({
         + 'either way, and only one of them means anybody examined it',
       fn: async () => {
         /**
-         * Repair stopped before this slice; translate looked and kept it.
+         Repair stopped before this slice; translate looked and kept it.
          */
         const comparison = compareDocumentLanes({
           repair: undecidedLaneOf({
@@ -426,7 +426,7 @@ await describe({
         + 'translation was being kept where none has ever existed',
       fn: async () => {
         /**
-         * Both lanes reached the anchor and neither filled it.
+         Both lanes reached the anchor and neither filled it.
          */
         const comparison = compareDocumentLanes({
           repair: undecidedLaneOf({
@@ -455,7 +455,7 @@ await describe({
         + 'choosing different wordings',
       fn: async () => {
         /**
-         * Anchor the translate lane filled and the repair lane cannot touch.
+         Anchor the translate lane filled and the repair lane cannot touch.
          */
         const comparison = compareDocumentLanes({
           repair: undecidedLaneOf({
@@ -494,7 +494,7 @@ await describe({
         + 'difference between the documents, and one verdict cannot state both',
       fn: async () => {
         /**
-         * Both lanes chose the same replacement; the guard withdrew translate`s.
+         Both lanes chose the same replacement; the guard withdrew translate`s.
          */
         const agreed = compareDocumentLanes({
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
@@ -509,7 +509,7 @@ await describe({
         },);
 
         /**
-         * Both lanes chose differently, and both shipped.
+         Both lanes chose differently, and both shipped.
          */
         const apart = compareDocumentLanes({
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
@@ -528,7 +528,7 @@ await describe({
         + 'twice while dropping slice 2 without a symptom',
       fn: async () => {
         /**
-         * Failure the comparison raised.
+         Failure the comparison raised.
          */
         let caught: unknown;
         try {
@@ -561,13 +561,13 @@ await describe({
         + 'number different passages',
       fn: async () => {
         /**
-         * A slicing that is not this file`s.
+         A slicing that is not this file`s.
          */
         const otherSlicing = `sha256-preparation-v1:${'b'.repeat(64,)}`;
         assertPreparationIdentity(otherSlicing,);
 
         /**
-         * Failure the comparison raised.
+         Failure the comparison raised.
          */
         let caught: unknown;
         try {
@@ -592,7 +592,7 @@ await describe({
         + 'same archive wording against different source passages and every other field would still match',
       fn: async () => {
         /**
-         * Failure the comparison raised.
+         Failure the comparison raised.
          */
         let caught: unknown;
         try {
@@ -628,7 +628,7 @@ await describe({
         + 'it never decided is well formed in every field on its own',
       fn: async () => {
         /**
-         * Failure raised by a row shipping a decision it does not have.
+         Failure raised by a row shipping a decision it does not have.
          */
         let caught: unknown;
         try {

@@ -28,77 +28,77 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // unlicensed corpus wording, and this reads run logs.
 
 /**
- * Milliseconds in a second.
+ Milliseconds in a second.
  */
 const MS_PER_SECOND = 1_000;
 
 /**
- * Milliseconds in a minute.
+ Milliseconds in a minute.
  */
 const MS_PER_MINUTE = 60_000;
 
 /**
- * Milliseconds in an hour.
+ Milliseconds in an hour.
  */
 const MS_PER_HOUR = 3_600_000;
 
 /**
- * Multiplier turning a fraction into a percentage.
+ Multiplier turning a fraction into a percentage.
  */
 const PERCENT = 100;
 
 /**
- * Decimal places every span column carries.
+ Decimal places every span column carries.
  */
 const SPAN_PLACES = 2;
 
 /**
- * Decimal places the mean-in-flight column carries.
+ Decimal places the mean-in-flight column carries.
  */
 const MEAN_PLACES = 2;
 
 /**
- * Decimal places the grace-share column carries.
+ Decimal places the grace-share column carries.
  */
 const SHARE_PLACES = 1;
 
 /**
- * Round totals folded across a whole log.
+ Round totals folded across a whole log.
  */
 type RoundTotals = {
   /**
-   * Wall-clock every round took together.
+   Wall-clock every round took together.
    */
   readonly totalMs: number;
 
   /**
-   * Wall-clock every round spent waiting after quorum.
+   Wall-clock every round spent waiting after quorum.
    */
   readonly graceMs: number;
 
   /**
-   * Voices asked for and never heard, across every round.
+   Voices asked for and never heard, across every round.
    */
   readonly lost: number;
 };
 
 /**
- * Renders a span in the largest unit it fills.
- *
- * THREE UNITS RATHER THAN HOURS ALONE. The same report reads a six-hour corpus
- * pass and a thirty-second probe, and printing both in hours prints the probe
- * as `0.01h`, which is indistinguishable from a run that did nothing. Choosing
- * the unit per figure keeps a short span legible without making a long one
- * unreadable.
- *
- * @param ms - span to render
- *
- * @returns Text for a report column
- *
- * @example
- * ```ts
- * console.log(asSpan({ ms: 22_140_000, },),);
- * ```
+ Renders a span in the largest unit it fills.
+ 
+ THREE UNITS RATHER THAN HOURS ALONE. The same report reads a six-hour corpus
+ pass and a thirty-second probe, and printing both in hours prints the probe
+ as `0.01h`, which is indistinguishable from a run that did nothing. Choosing
+ the unit per figure keeps a short span legible without making a long one
+ unreadable.
+ 
+ @param ms - span to render
+ 
+ @returns Text for a report column
+ 
+ @example
+ ```ts
+ console.log(asSpan({ ms: 22_140_000, },),);
+ ```
  */
 function asSpan({ ms, }: { readonly ms: number; },): string {
   if (ms >= MS_PER_HOUR)
@@ -109,18 +109,18 @@ function asSpan({ ms, }: { readonly ms: number; },): string {
 }
 
 /**
- * Reports what the rounds spent, split into work and waiting.
- *
- * @param reading - every timing line the log held
- *
- * @example
- * ```ts
- * printRounds({ reading, },);
- * ```
+ Reports what the rounds spent, split into work and waiting.
+ 
+ @param reading - every timing line the log held
+ 
+ @example
+ ```ts
+ printRounds({ reading, },);
+ ```
  */
 function printRounds({ reading, }: { readonly reading: RunTiming; },): void {
   /**
-   * How many rounds the log reported.
+   How many rounds the log reported.
    */
   const roundCount = reading
     .rounds
@@ -136,7 +136,7 @@ function printRounds({ reading, }: { readonly reading: RunTiming; },): void {
   }
 
   /**
-   * Totals across every round, folded in one pass.
+   Totals across every round, folded in one pass.
    */
   const totals = reading
     .rounds
@@ -163,7 +163,7 @@ function printRounds({ reading, }: { readonly reading: RunTiming; },): void {
       + `${asSpan({ ms: totals.totalMs, },)} in total`,
   );
   /**
-   * Share of round time spent waiting rather than working.
+   Share of round time spent waiting rather than working.
    */
   const graceShare = ((totals.graceMs / totals.totalMs) * PERCENT)
     .toFixed(SHARE_PLACES,);
@@ -176,18 +176,18 @@ function printRounds({ reading, }: { readonly reading: RunTiming; },): void {
 }
 
 /**
- * Reports how many calls the run had in flight.
- *
- * @param flight - what the sweep counted
- *
- * @example
- * ```ts
- * printInFlight({ flight, },);
- * ```
+ Reports how many calls the run had in flight.
+ 
+ @param flight - what the sweep counted
+ 
+ @example
+ ```ts
+ printInFlight({ flight, },);
+ ```
  */
 function printInFlight({ flight, }: { readonly flight: InFlight; },): void {
   /**
-   * Mean in flight at the precision a fan-out is read in.
+   Mean in flight at the precision a fan-out is read in.
    */
   const meanShown = flight
     .meanInFlight
@@ -204,20 +204,20 @@ function printInFlight({ flight, }: { readonly flight: InFlight; },): void {
 }
 
 /**
- * Reads every named log and reports where its wall-clock went.
- *
- * Returns nothing: the report on stdout IS the output.
- *
- * @throws Error when no log is named
- *
- * @example
- * ```ts
- * await reportRunTiming();
- * ```
+ Reads every named log and reports where its wall-clock went.
+ 
+ Returns nothing: the report on stdout IS the output.
+ 
+ @throws Error when no log is named
+ 
+ @example
+ ```ts
+ await reportRunTiming();
+ ```
  */
 async function reportRunTiming(): Promise<void> {
   /**
-   * Logs to read, named on the command line.
+   Logs to read, named on the command line.
    */
   const paths = process
     .argv
@@ -231,7 +231,7 @@ async function reportRunTiming(): Promise<void> {
   }
 
   /**
-   * Every line of every named log, in one list.
+   Every line of every named log, in one list.
    */
   const lines = (await Promise.all(paths.map(async function one(path,): Promise<readonly string[]> {
     return (await readFile(
@@ -241,7 +241,7 @@ async function reportRunTiming(): Promise<void> {
   },),)).flat();
 
   /**
-   * Every timing line those logs held.
+   Every timing line those logs held.
    */
   const reading = readRunTiming({ lines, },);
 
@@ -259,7 +259,7 @@ async function reportRunTiming(): Promise<void> {
   }
 
   /**
-   * How many calls the logs left an interval for.
+   How many calls the logs left an interval for.
    */
   const timedCalls = reading
     .calls

@@ -1,13 +1,13 @@
 /**
- * Tests the sliding-window request pacer.
- *
- * THE CASE IS XIEPT2 ON HYPER ALONE, 2026-09-03: 1,000 requests in a rolling
- * hour is the account's limit, the pass spent them in minutes, every refusal
- * retried four more times, the run lost. Here the pacer lets a window's worth
- * start at once, makes the next wait for the oldest start to leave the window,
- * keeps takes in arrival order, and lets an abort end a wait.
- *
- * @module
+ Tests the sliding-window request pacer.
+ 
+ THE CASE IS XIEPT2 ON HYPER ALONE, 2026-09-03: 1,000 requests in a rolling
+ hour is the account's limit, the pass spent them in minutes, every refusal
+ retried four more times, the run lost. Here the pacer lets a window's worth
+ start at once, makes the next wait for the oldest start to leave the window,
+ keeps takes in arrival order, and lets an abort end a wait.
+ 
+ @module
  */
 
 import {
@@ -24,27 +24,27 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Abort signal that never fires.
+ Abort signal that never fires.
  */
 const SIGNAL = new AbortController().signal;
 
 /**
- * Window length the scripted pacers use.
+ Window length the scripted pacers use.
  */
 const WINDOW_MS = 60_000;
 
 /**
- * Builds a pacer on a scripted clock whose sleeps advance the clock instead of
- * waiting.
- *
- * @param perWindow - starts allowed per window
- *
- * @returns Pacer plus the clock and the sleeps it asked for
- *
- * @example
- * ```ts
- * const { pace, clock, sleeps, } = scriptedPace({ perWindow: 3, },);
- * ```
+ Builds a pacer on a scripted clock whose sleeps advance the clock instead of
+ waiting.
+ 
+ @param perWindow - starts allowed per window
+ 
+ @returns Pacer plus the clock and the sleeps it asked for
+ 
+ @example
+ ```ts
+ const { pace, clock, sleeps, } = scriptedPace({ perWindow: 3, },);
+ ```
  */
 function scriptedPace(
   { perWindow, }: { readonly perWindow: number; },
@@ -54,11 +54,11 @@ function scriptedPace(
   readonly sleeps: number[];
 } {
   /**
-   * Scripted clock.
+   Scripted clock.
    */
   const clock = { now: 1_000_000, };
   /**
-   * Sleeps asked for, in order.
+   Sleeps asked for, in order.
    */
   const sleeps: number[] = [];
   return {
@@ -102,7 +102,7 @@ await describe({
       fn: async () => {
         const { pace, sleeps, } = scriptedPace({ perWindow: 2, },);
         /**
-         * Order in which takes resolved.
+         Order in which takes resolved.
          */
         const order: number[] = [];
         await Promise.all([1, 2, 3, 4,].map(async function taker(index,): Promise<void> {
@@ -122,7 +122,7 @@ await describe({
         + 'that gave up while queued, and paces nothing when the rate is not positive',
       fn: async () => {
         /**
-         * Aborts the caller from inside its own sleep.
+         Aborts the caller from inside its own sleep.
          */
         const aborter = new AbortController();
         const pace = createRequestPace({
@@ -135,7 +135,7 @@ await describe({
         },);
         await pace.take({ signal: aborter.signal, },);
         /**
-         * What the second take threw.
+         What the second take threw.
          */
         let thrown: unknown;
         try {
@@ -150,11 +150,11 @@ await describe({
         // queued caller gives up, so the abort lands after take() accepted it.
         const gaveUp = new AbortController();
         /**
-         * Scripted clock for the queued pacer.
+         Scripted clock for the queued pacer.
          */
         const clock = { now: 1_000_000, };
         /**
-         * Sleeps the queued pacer asked for.
+         Sleeps the queued pacer asked for.
          */
         const sleeps: number[] = [];
         const queued = createRequestPace({
@@ -169,8 +169,8 @@ await describe({
         },);
         await queued.take({ signal: SIGNAL, },);
         /**
-         * Outcomes of a live take, which sleeps, and one queued behind it
-         * that is abandoned during that sleep.
+         Outcomes of a live take, which sleeps, and one queued behind it
+         that is abandoned during that sleep.
          */
         const outcomes = await Promise.allSettled([
           queued.take({ signal: SIGNAL, },),

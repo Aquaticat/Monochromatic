@@ -12,22 +12,22 @@ import type { TranslateSliceRecord, } from './translate-document-contract.ts';
 // driver was over its line budget with both.
 
 /**
- * Names what the alignment guard measured, for callers building a report.
- *
- * DERIVED RATHER THAN STORED. The sentence names a slice by its index, and a
- * settled record is keyed by what the models were asked, which since translate
- * version 2 excludes the index. The same record can therefore be resumed at a
- * different position, so the only trustworthy index is the one the record
- * carries after the driver stamps it, which is the one this reads.
- *
- * @param records - settled slice records
- *
- * @returns Refusal findings in the order the slices appear
- *
- * @example
- * ```ts
- * const refusals = alignmentRefusals({ records: result.slices, },);
- * ```
+ Names what the alignment guard measured, for callers building a report.
+ 
+ DERIVED RATHER THAN STORED. The sentence names a slice by its index, and a
+ settled record is keyed by what the models were asked, which since translate
+ version 2 excludes the index. The same record can therefore be resumed at a
+ different position, so the only trustworthy index is the one the record
+ carries after the driver stamps it, which is the one this reads.
+ 
+ @param records - settled slice records
+ 
+ @returns Refusal findings in the order the slices appear
+ 
+ @example
+ ```ts
+ const refusals = alignmentRefusals({ records: result.slices, },);
+ ```
  */
 export function alignmentRefusals(
   { records, }: { readonly records: readonly TranslateSliceRecord[]; },

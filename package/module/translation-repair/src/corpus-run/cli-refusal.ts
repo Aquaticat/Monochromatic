@@ -60,59 +60,59 @@ import {
 // its closing comment records why. This catches only what escapes that.
 
 /**
- * Exit code a CLI leaves behind when a run file would not read.
- *
- * FOUR, uniform across every command here, because 1 through 3 already carry
- * each CLI's OWN verdicts and those differ per command: 1 means an absent
- * ledger to one reader and a disagreeing published tree to another. A gate
- * reading THIS code learns the same thing whichever reader it ran, which is
- * that the run was never examined.
+ Exit code a CLI leaves behind when a run file would not read.
+ 
+ FOUR, uniform across every command here, because 1 through 3 already carry
+ each CLI's OWN verdicts and those differ per command: 1 means an absent
+ ledger to one reader and a disagreeing published tree to another. A gate
+ reading THIS code learns the same thing whichever reader it ran, which is
+ that the run was never examined.
  */
 const COULD_NOT_READ = 4;
 
 /**
- * Exit code a CLI leaves behind when it failed for a reason nobody planned for.
- *
- * SEPARATE FROM FOUR, because they ask different things of whoever reads them.
- * Four says a named file would not read and the run is intact. This says the
- * command itself broke, which is a bug report rather than a re-run.
+ Exit code a CLI leaves behind when it failed for a reason nobody planned for.
+ 
+ SEPARATE FROM FOUR, because they ask different things of whoever reads them.
+ Four says a named file would not read and the run is intact. This says the
+ command itself broke, which is a bug report rather than a re-run.
  */
 const UNEXPECTED_FAULT = 5;
 
 /**
- * Exit code a CLI leaves behind when it declined in its own words.
- *
- * ABOVE THE FAULT CODE RATHER THAN BELOW IT, because a stated refusal is the
- * mildest of the three: nothing broke and nothing was half-read. A usage line,
- * an unset key, a control that did not hold. Codes one through three stay free
- * for each command's own verdicts, which this must never be read as.
+ Exit code a CLI leaves behind when it declined in its own words.
+ 
+ ABOVE THE FAULT CODE RATHER THAN BELOW IT, because a stated refusal is the
+ mildest of the three: nothing broke and nothing was half-read. A usage line,
+ an unset key, a control that did not hold. Codes one through three stay free
+ for each command's own verdicts, which this must never be read as.
  */
 const REFUSED_AS_STATED = 6;
 
 /**
- * Renders a caught value's stack frames, without its message or its cause.
- *
- * THE FRAMES ARE THE SAFE HALF. Each names a file and a position inside our own
- * built output, so they locate a fault precisely and carry no text that was
- * read. The message line is dropped because an error built by interpolation can
- * embed whatever it was given, and the cause chain is dropped because a parser's
- * cause is exactly the thing that quotes.
- *
- * @param error - caught value, of unknown type by construction
- *
- * @returns Frame lines, or a note saying why there are none
- *
- * @example
- * ```ts
- * console.error(framesOf({ error, },),);
- * ```
+ Renders a caught value's stack frames, without its message or its cause.
+ 
+ THE FRAMES ARE THE SAFE HALF. Each names a file and a position inside our own
+ built output, so they locate a fault precisely and carry no text that was
+ read. The message line is dropped because an error built by interpolation can
+ embed whatever it was given, and the cause chain is dropped because a parser's
+ cause is exactly the thing that quotes.
+ 
+ @param error - caught value, of unknown type by construction
+ 
+ @returns Frame lines, or a note saying why there are none
+ 
+ @example
+ ```ts
+ console.error(framesOf({ error, },),);
+ ```
  */
 function framesOf({ error, }: { readonly error: unknown; },): string {
   if (!Error.isError(error,))
     return '  (no frames: the thrown value is not an Error)';
 
   /**
-   * Stack as the runtime recorded it, message line included.
+   Stack as the runtime recorded it, message line included.
    */
   const { stack, } = error;
 
@@ -130,19 +130,19 @@ function framesOf({ error, }: { readonly error: unknown; },): string {
 }
 
 /**
- * Prints the seat report to stderr when its scope ends, after whatever the
- * command said, so the closing lines of every command name any seat that
- * produced nothing usable (`#235`). Nothing at all when no seat was asked, so
- * a command that never built a client prints nothing extra.
- *
- * @param seats - tally to render
- *
- * @returns Disposable printing the report on dispose
- *
- * @example
- * ```ts
- * using _report = printingSeatReport({ seats: RUN_SEATS, },);
- * ```
+ Prints the seat report to stderr when its scope ends, after whatever the
+ command said, so the closing lines of every command name any seat that
+ produced nothing usable (`#235`). Nothing at all when no seat was asked, so
+ a command that never built a client prints nothing extra.
+ 
+ @param seats - tally to render
+ 
+ @returns Disposable printing the report on dispose
+ 
+ @example
+ ```ts
+ using _report = printingSeatReport({ seats: RUN_SEATS, },);
+ ```
  */
 function printingSeatReport({ seats, }: { readonly seats: SeatTally; },): Disposable {
   return {
@@ -154,20 +154,20 @@ function printingSeatReport({ seats, }: { readonly seats: SeatTally; },): Dispos
 }
 
 /**
- * Runs a CLI body, reporting a refusal this package wrote rather than crashing.
- *
- * @param what - command name as an operator would type it, which starts the line
- *
- * @param run - CLI body to run
- *
- * @param seats - tally to print when the command ends; defaults to the
- * run-wide one `createRunClient` counts into, and tests pass their own
- *
- * @example
- * ```ts
- * if (import.meta.main)
- *   await reportingRefusals({ what: 'score-verify', run: main, },);
- * ```
+ Runs a CLI body, reporting a refusal this package wrote rather than crashing.
+ 
+ @param what - command name as an operator would type it, which starts the line
+ 
+ @param run - CLI body to run
+ 
+ @param seats - tally to print when the command ends; defaults to the
+ run-wide one `createRunClient` counts into, and tests pass their own
+ 
+ @example
+ ```ts
+ if (import.meta.main)
+   await reportingRefusals({ what: 'score-verify', run: main, },);
+ ```
  */
 export async function reportingRefusals(
   {
@@ -181,9 +181,9 @@ export async function reportingRefusals(
   },
 ): Promise<void> {
   /**
-   * Prints the seat report when this scope ends, whatever happened inside it:
-   * under the refusal line on a refusal, alone on a clean run, so a seat that
-   * produced nothing usable is in the closing lines of every command (`#235`).
+   Prints the seat report when this scope ends, whatever happened inside it:
+   under the refusal line on a refusal, alone on a clean run, so a seat that
+   produced nothing usable is in the closing lines of every command (`#235`).
    */
   using _report = printingSeatReport({ seats, },);
 

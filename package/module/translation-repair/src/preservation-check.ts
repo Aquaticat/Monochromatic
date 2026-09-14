@@ -28,72 +28,72 @@ import {
 // that needs a meaning comparison, which is not deterministic.
 
 /**
- * Share of unlicensed content tokens that may vanish before an edit reads as a
- * deletion rather than a rewrite.
- *
- * 0.8 sits in a measured gap rather than at a round number: across the graded
- * repairs the highest loss among sound edits is 0.57, the highest among edits
- * that merely reworded is 0.67, and the deletion this gate exists to stop loses
- * 0.92.
+ Share of unlicensed content tokens that may vanish before an edit reads as a
+ deletion rather than a rewrite.
+ 
+ 0.8 sits in a measured gap rather than at a round number: across the graded
+ repairs the highest loss among sound edits is 0.57, the highest among edits
+ that merely reworded is 0.67, and the deletion this gate exists to stop loses
+ 0.92.
  */
 const LOSS_FRACTION_LIMIT = 0.8;
 
 /**
- * Unlicensed content tokens required before the bulk rule applies at all.
- *
- * Under this, a single substituted word reads as total loss and the fraction
- * says nothing. Distinctive-token loss still applies at any size.
+ Unlicensed content tokens required before the bulk rule applies at all.
+ 
+ Under this, a single substituted word reads as total loss and the fraction
+ says nothing. Distinctive-token loss still applies at any size.
  */
 const MIN_RESIDUAL_TOKENS = 5;
 
 /**
- * What the preservation gate concluded about one edit.
- *
- * @example
- * ```ts
- * const verdict: PreservationVerdict = { preserved: true, lostDistinctive: [], lossFraction: 0, residualTokens: 4, };
- * ```
+ What the preservation gate concluded about one edit.
+ 
+ @example
+ ```ts
+ const verdict: PreservationVerdict = { preserved: true, lostDistinctive: [], lossFraction: 0, residualTokens: 4, };
+ ```
  */
 export type PreservationVerdict = {
   /**
-   * Whether the edit may proceed.
+   Whether the edit may proceed.
    */
   readonly preserved: boolean;
 
   /**
-   * Names and numbers present before the edit and absent after it, which are
-   * the losses no rewrite explains.
+   Names and numbers present before the edit and absent after it, which are
+   the losses no rewrite explains.
    */
   readonly lostDistinctive: readonly string[];
 
   /**
-   * Share of unlicensed content tokens that did not survive.
+   Share of unlicensed content tokens that did not survive.
    */
   readonly lossFraction: number;
 
   /**
-   * Unlicensed content tokens the edit was measured against, so a caller can
-   * tell a real pass from a vacuous one.
+   Unlicensed content tokens the edit was measured against, so a caller can
+   tell a real pass from a vacuous one.
    */
   readonly residualTokens: number;
 };
 
 /**
- * Reports whether every character of a token is a digit.
- *
- * EVERY character, not merely the first. A token like "10th" begins with a
- * digit while being a word, and an edit rewriting "July 10th" as "July 10"
- * loses it without losing anything: measured, that exact case rejected a repair
- * a human graded sound.
- *
- * @param token - content token
- *
- * @returns True when the token is a bare number
- *
- * @example
- * ```ts
- * const isNumber = isAllDigits({ token: '611', },);
- * ```
+ Reports whether every character of a token is a digit.
+ 
+ EVERY character, not merely the first. A token like "10th" begins with a
+ digit while being a word, and an edit rewriting "July 10th" as "July 10"
+ loses it without losing anything: measured, that exact case rejected a repair
+ a human graded sound.
+ 
+ @param token - content token
+ 
+ @returns True when the token is a bare number
+ 
+ @example
+ ```ts
+ const isNumber = isAllDigits({ token: '611', },);
+ ```
  */
 function isAllDigits(
   {
@@ -110,19 +110,19 @@ function isAllDigits(
 }
 
 /**
- * Removes the quoted defects from the replaced text, leaving what the edit had
- * no licence to change.
- *
- * @param before - text the edit replaced
- *
- * @param licensedQuotes - fragments accepted issues quoted as defective
- *
- * @returns Text with every licensed fragment blanked out
- *
- * @example
- * ```ts
- * const residual = unlicensedText({ before, licensedQuotes, },);
- * ```
+ Removes the quoted defects from the replaced text, leaving what the edit had
+ no licence to change.
+ 
+ @param before - text the edit replaced
+ 
+ @param licensedQuotes - fragments accepted issues quoted as defective
+ 
+ @returns Text with every licensed fragment blanked out
+ 
+ @example
+ ```ts
+ const residual = unlicensedText({ before, licensedQuotes, },);
+ ```
  */
 function unlicensedText(
   {
@@ -155,20 +155,20 @@ function unlicensedText(
 }
 
 /**
- * Decides whether an edit preserved everything it was not asked to change.
- *
- * @param before - exact text the edit replaced
- *
- * @param after - exact text the edit wrote, empty for a deletion
- *
- * @param licensedQuotes - fragments accepted issues quoted as the defect
- *
- * @returns Verdict, with the evidence behind it
- *
- * @example
- * ```ts
- * const verdict = checkPreservation({ before, after, licensedQuotes: [quote,], },);
- * ```
+ Decides whether an edit preserved everything it was not asked to change.
+ 
+ @param before - exact text the edit replaced
+ 
+ @param after - exact text the edit wrote, empty for a deletion
+ 
+ @param licensedQuotes - fragments accepted issues quoted as the defect
+ 
+ @returns Verdict, with the evidence behind it
+ 
+ @example
+ ```ts
+ const verdict = checkPreservation({ before, after, licensedQuotes: [quote,], },);
+ ```
  */
 export function checkPreservation(
   {
@@ -182,7 +182,7 @@ export function checkPreservation(
   },
 ): PreservationVerdict {
   /**
-   * Content tokens the edit had no licence to remove.
+   Content tokens the edit had no licence to remove.
    */
   const residual = contentTokens({
     text: unlicensedText({
@@ -192,25 +192,25 @@ export function checkPreservation(
   },);
 
   /**
-   * Everything the edit wrote, as a lookup.
+   Everything the edit wrote, as a lookup.
    */
   const survivors = new Set(contentTokens({ text: after, },),);
 
   /**
-   * Unlicensed tokens with no survivor.
+   Unlicensed tokens with no survivor.
    */
   const missing = residual.filter(function isMissing(token,): boolean {
     return !survivors.has(token,);
   },);
 
   /**
-   * Names appearing mid-sentence in the ORIGINAL text, where its sentence
-   * structure is still intact.
+   Names appearing mid-sentence in the ORIGINAL text, where its sentence
+   structure is still intact.
    */
   const names = properNouns({ text: before, },);
 
   /**
-   * Missing tokens that are names or numbers, whose loss no rewrite explains.
+   Missing tokens that are names or numbers, whose loss no rewrite explains.
    */
   const lostDistinctive = [...new Set(missing.filter(function isDistinctive(token,): boolean {
     // EVERY character must be a digit, not merely the first. A token like
@@ -221,7 +221,7 @@ export function checkPreservation(
   },),),].toSorted();
 
   /**
-   * Share of unlicensed tokens that vanished.
+   Share of unlicensed tokens that vanished.
    */
   const lossFraction = (residual.length === 0)
     ? 0

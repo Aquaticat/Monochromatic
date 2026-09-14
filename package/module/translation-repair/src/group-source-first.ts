@@ -53,23 +53,23 @@ export type {
 // holds the wiring until there is some.
 
 /**
- * Thrown when alignment steps name a block their sequence does not hold.
- *
- * @example
- * ```ts
- * throw new AlignedIndexError({ message: 'source index 4 of 3 blocks', },);
- * ```
+ Thrown when alignment steps name a block their sequence does not hold.
+ 
+ @example
+ ```ts
+ throw new AlignedIndexError({ message: 'source index 4 of 3 blocks', },);
+ ```
  */
 export class AlignedIndexError extends Error {
   /**
-   * Builds failure naming the position and the sequence it missed.
-   *
-   * @param message - what was named and what was there
-   *
-   * @example
-   * ```ts
-   * throw new AlignedIndexError({ message: 'target index -1', },);
-   * ```
+   Builds failure naming the position and the sequence it missed.
+   
+   @param message - what was named and what was there
+   
+   @example
+   ```ts
+   throw new AlignedIndexError({ message: 'target index -1', },);
+   ```
    */
   public constructor({ message, }: { readonly message: string; },) {
     super(message,);
@@ -78,28 +78,28 @@ export class AlignedIndexError extends Error {
 }
 
 /**
- * Reads the block one position names.
- *
- * REFUSES RATHER THAN FALLING BACK. A step naming a block that is not there is
- * a malformed alignment, and every silent answer to it is worse than a
- * diagnostic: dropping the index shortens a run that then covers a span it does
- * not carry, and treating it as the end of the sequence anchors a passage at a
- * place nothing chose.
- *
- * @param index - position in the sequence
- *
- * @param nodes - whole block sequence
- *
- * @param side - which side, for the message
- *
- * @returns Block at that position
- *
- * @throws {@link AlignedIndexError} when the sequence has no such position
- *
- * @example
- * ```ts
- * const node = nodeAt({ index: step.targetIndex, nodes: targetNodes, side: 'target', },);
- * ```
+ Reads the block one position names.
+ 
+ REFUSES RATHER THAN FALLING BACK. A step naming a block that is not there is
+ a malformed alignment, and every silent answer to it is worse than a
+ diagnostic: dropping the index shortens a run that then covers a span it does
+ not carry, and treating it as the end of the sequence anchors a passage at a
+ place nothing chose.
+ 
+ @param index - position in the sequence
+ 
+ @param nodes - whole block sequence
+ 
+ @param side - which side, for the message
+ 
+ @returns Block at that position
+ 
+ @throws {@link AlignedIndexError} when the sequence has no such position
+ 
+ @example
+ ```ts
+ const node = nodeAt({ index: step.targetIndex, nodes: targetNodes, side: 'target', },);
+ ```
  */
 function nodeAt(
   {
@@ -113,8 +113,8 @@ function nodeAt(
   },
 ): DocumentNode {
   /**
-   * Block at that position, absent when the alignment named one the sequence
-   * does not hold.
+   Block at that position, absent when the alignment named one the sequence
+   does not hold.
    */
   const node = nodes[index];
   if (node === undefined) {
@@ -126,38 +126,38 @@ function nodeAt(
 }
 
 /**
- * Character span of one block.
- *
- * @param node - block to measure
- *
- * @returns Span length in characters
- *
- * @example
- * ```ts
- * const chars = nodeChars(node,);
- * ```
+ Character span of one block.
+ 
+ @param node - block to measure
+ 
+ @returns Span length in characters
+ 
+ @example
+ ```ts
+ const chars = nodeChars(node,);
+ ```
  */
 function nodeChars(node: DocumentNode,): number {
   return node.endOffset - node.startOffset;
 }
 
 /**
- * Reads the blocks a list of indices names.
- *
- * @param indices - positions in document order
- *
- * @param nodes - whole block sequence they index into
- *
- * @param side - which side, for the message
- *
- * @returns Blocks at those positions, in the order given
- *
- * @throws {@link AlignedIndexError} when any position is not in the sequence
- *
- * @example
- * ```ts
- * const run = nodesAt({ indices: group.sourceIndices, nodes: sourceNodes, side: 'source', },);
- * ```
+ Reads the blocks a list of indices names.
+ 
+ @param indices - positions in document order
+ 
+ @param nodes - whole block sequence they index into
+ 
+ @param side - which side, for the message
+ 
+ @returns Blocks at those positions, in the order given
+ 
+ @throws {@link AlignedIndexError} when any position is not in the sequence
+ 
+ @example
+ ```ts
+ const run = nodesAt({ indices: group.sourceIndices, nodes: sourceNodes, side: 'source', },);
+ ```
  */
 function nodesAt(
   {
@@ -180,39 +180,39 @@ function nodesAt(
 }
 
 /**
- * Group under construction, before its target interval is materialized.
+ Group under construction, before its target interval is materialized.
  */
 type OpenGroup = {
   /**
-   * Original-side block indices gathered so far.
+   Original-side block indices gathered so far.
    */
   readonly sourceIndices: number[];
 
   /**
-   * Lowest target index this group supports, meaningless until it supports one.
+   Lowest target index this group supports, meaningless until it supports one.
    */
   lowIndex: number;
 
   /**
-   * Highest target index it supports, meaningless until it supports one.
+   Highest target index it supports, meaningless until it supports one.
    */
   highIndex: number;
 
   /**
-   * Whether any target block has joined it yet.
+   Whether any target block has joined it yet.
    */
   supported: boolean;
 };
 
 /**
- * Opens an empty group.
- *
- * @returns Group carrying nothing yet
- *
- * @example
- * ```ts
- * const group = emptyGroup();
- * ```
+ Opens an empty group.
+ 
+ @returns Group carrying nothing yet
+ 
+ @example
+ ```ts
+ const group = emptyGroup();
+ ```
  */
 function emptyGroup(): OpenGroup {
   return {
@@ -224,31 +224,31 @@ function emptyGroup(): OpenGroup {
 }
 
 /**
- * Groups a monotone alignment into units, source-first.
- *
- * SEPARATE FROM THE ALIGNING, because they fail differently and are read
- * differently. Which block pairs with which is a judgement the aligner makes
- * from similarity; what a unit covers, where an anchor sits and whether an
- * interval is contiguous are consequences of the steps alone. A test of the
- * grouping that had to guess the aligner's judgement would be a test of the
- * aligner.
- *
- * @param steps - monotone alignment steps, in document order
- *
- * @param sourceNodes - original blocks of this section, in order
- *
- * @param targetNodes - translation blocks of this section, in order
- *
- * @param sourceBudget - original characters one slice aims for
- *
- * @param targetBudget - translation characters one slice aims for
- *
- * @returns Units in document order, each either paired or anchored
- *
- * @example
- * ```ts
- * const units = groupAlignedSteps({ steps, sourceNodes, targetNodes, sourceBudget, targetBudget, },);
- * ```
+ Groups a monotone alignment into units, source-first.
+ 
+ SEPARATE FROM THE ALIGNING, because they fail differently and are read
+ differently. Which block pairs with which is a judgement the aligner makes
+ from similarity; what a unit covers, where an anchor sits and whether an
+ interval is contiguous are consequences of the steps alone. A test of the
+ grouping that had to guess the aligner's judgement would be a test of the
+ aligner.
+ 
+ @param steps - monotone alignment steps, in document order
+ 
+ @param sourceNodes - original blocks of this section, in order
+ 
+ @param targetNodes - translation blocks of this section, in order
+ 
+ @param sourceBudget - original characters one slice aims for
+ 
+ @param targetBudget - translation characters one slice aims for
+ 
+ @returns Units in document order, each either paired or anchored
+ 
+ @example
+ ```ts
+ const units = groupAlignedSteps({ steps, sourceNodes, targetNodes, sourceBudget, targetBudget, },);
+ ```
  */
 export function groupAlignedSteps(
   {
@@ -266,13 +266,13 @@ export function groupAlignedSteps(
   },
 ): readonly SourceFirstUnit[] {
   /**
-   * Units closed so far, in document order.
+   Units closed so far, in document order.
    */
   const units: SourceFirstUnit[] = [];
 
   /**
-   * Everything the walk carries between steps: the open group, what it has
-   * spent, and the untranslated blocks waiting for a boundary.
+   Everything the walk carries between steps: the open group, what it has
+   spent, and the untranslated blocks waiting for a boundary.
    */
   const state = {
     group: emptyGroup(),
@@ -282,19 +282,19 @@ export function groupAlignedSteps(
   };
 
   /**
-   * Closes the open group into the unit list.
-   *
-   * A group with blocks on neither side closes to nothing, which is what the
-   * first step of a walk finds.
-   *
-   * @example
-   * ```ts
-   * flushGroup();
-   * ```
+   Closes the open group into the unit list.
+   
+   A group with blocks on neither side closes to nothing, which is what the
+   first step of a walk finds.
+   
+   @example
+   ```ts
+   flushGroup();
+   ```
    */
   function flushGroup(): void {
     /**
-     * Original blocks this group gathered.
+     Original blocks this group gathered.
      */
     const sourceRun = nodesAt({
       indices: state.group
@@ -304,19 +304,19 @@ export function groupAlignedSteps(
     },);
 
     /**
-     * Translation blocks it covers, as a contiguous interval rather than as the
-     * paired ones alone: a block the alignment left unpartnered inside the
-     * interval belongs to this slice, since the slice's offsets contain it.
+     Translation blocks it covers, as a contiguous interval rather than as the
+     paired ones alone: a block the alignment left unpartnered inside the
+     interval belongs to this slice, since the slice's offsets contain it.
      */
     const closing = state.group;
 
     /**
-     * Where its interval ends, exclusive.
+     Where its interval ends, exclusive.
      */
     const closingEnd = closing.highIndex + 1;
 
     /**
-     * Blocks it covers, or none when no target block joined it.
+     Blocks it covers, or none when no target block joined it.
      */
     const targetRun = closing.supported
       ? targetNodes.slice(
@@ -337,24 +337,24 @@ export function groupAlignedSteps(
   }
 
   /**
-   * Closes the waiting untranslated blocks at a boundary.
-   *
-   * SPLIT BY BUDGET, ALL AT ONE BOUNDARY. Several consecutive untranslated
-   * paragraphs are one passage with one place to go, and a passage larger than
-   * a slice is still translated a slice at a time. Assembly composes fragments
-   * sharing a boundary in slice order, so the split costs nothing in the
-   * document.
-   *
-   * @param boundary - place on the target side their translation belongs at
-   *
-   * @example
-   * ```ts
-   * flushPending({ boundary: { kind: 'after-section', }, },);
-   * ```
+   Closes the waiting untranslated blocks at a boundary.
+   
+   SPLIT BY BUDGET, ALL AT ONE BOUNDARY. Several consecutive untranslated
+   paragraphs are one passage with one place to go, and a passage larger than
+   a slice is still translated a slice at a time. Assembly composes fragments
+   sharing a boundary in slice order, so the split costs nothing in the
+   document.
+   
+   @param boundary - place on the target side their translation belongs at
+   
+   @example
+   ```ts
+   flushPending({ boundary: { kind: 'after-section', }, },);
+   ```
    */
   function flushPending({ boundary, }: { readonly boundary: TargetBoundary; },): void {
     /**
-     * Blocks the waiting indices name.
+     Blocks the waiting indices name.
      */
     const waiting = nodesAt({
       indices: state.pendingSource,
@@ -387,7 +387,7 @@ export function groupAlignedSteps(
     }
 
     /**
-     * Target block this step contributes, present for both remaining kinds.
+     Target block this step contributes, present for both remaining kinds.
      */
     const { targetIndex, } = step;
     // The waiting blocks belong before the first target block that follows
@@ -404,7 +404,7 @@ export function groupAlignedSteps(
     },);
 
     /**
-     * Characters this step adds on either side.
+     Characters this step adds on either side.
      */
     const added = {
       source: (step.kind === 'paired')
@@ -422,9 +422,9 @@ export function groupAlignedSteps(
     };
 
     /**
-     * Whether the open group is still empty, which is the one case that must
-     * accept whatever comes: a block larger than the budget still has to live
-     * somewhere, and closing an empty group would loop.
+     Whether the open group is still empty, which is the one case that must
+     accept whatever comes: a block larger than the budget still has to live
+     somewhere, and closing an empty group would loop.
      */
     const groupIsEmpty = (state.group
       .sourceIndices
@@ -434,7 +434,7 @@ export function groupAlignedSteps(
         .supported);
 
     /**
-     * Whether adding this step would spend past either budget.
+     Whether adding this step would spend past either budget.
      */
     const overBudget = ((state.sourceChars + added.source) > sourceBudget)
       || ((state.targetChars + added.target) > targetBudget);
@@ -480,22 +480,22 @@ export function groupAlignedSteps(
 }
 
 /**
- * Groups one section pair source-first, keeping every source block.
- *
- * @param sourceNodes - original blocks of this section, in order
- *
- * @param targetNodes - translation blocks of this section, in order
- *
- * @param sourceBudget - original characters one slice aims for
- *
- * @param targetBudget - translation characters one slice aims for
- *
- * @returns Units in document order, each either paired or anchored
- *
- * @example
- * ```ts
- * const units = groupSourceFirst({ sourceNodes, targetNodes, sourceBudget, targetBudget, },);
- * ```
+ Groups one section pair source-first, keeping every source block.
+ 
+ @param sourceNodes - original blocks of this section, in order
+ 
+ @param targetNodes - translation blocks of this section, in order
+ 
+ @param sourceBudget - original characters one slice aims for
+ 
+ @param targetBudget - translation characters one slice aims for
+ 
+ @returns Units in document order, each either paired or anchored
+ 
+ @example
+ ```ts
+ const units = groupSourceFirst({ sourceNodes, targetNodes, sourceBudget, targetBudget, },);
+ ```
  */
 export function groupSourceFirst(
   {

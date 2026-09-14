@@ -23,17 +23,17 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 // synchronous run.
 
 /**
- * What a buy left behind for its twins: the record it persisted, or nothing.
- *
- * TAGGED RATHER THAN NULLISH, which this repository requires of every absence
- * it models. It also says the thing plainly: a buy that stored nothing is a
- * fact about the buy, not a missing value.
+ What a buy left behind for its twins: the record it persisted, or nothing.
+ 
+ TAGGED RATHER THAN NULLISH, which this repository requires of every absence
+ it models. It also says the thing plainly: a buy that stored nothing is a
+ fact about the buy, not a missing value.
  */
 export type TwinStored<Settled,> = {
   readonly kind: 'stored';
 
   /**
-   * Record a warm run would resume for this key.
+   Record a warm run would resume for this key.
    */
   readonly record: Settled;
 } | {
@@ -41,65 +41,65 @@ export type TwinStored<Settled,> = {
 };
 
 /**
- * Per-key promise of what a buy left for its twins.
+ Per-key promise of what a buy left for its twins.
  */
 export type TwinMemo<Settled,> = Map<string, Promise<TwinStored<Settled>>>;
 
 /**
- * What came of asking under the memo: a twin's stored record, or one's own
- * purchase.
+ What came of asking under the memo: a twin's stored record, or one's own
+ purchase.
  */
 export type TwinOrBought<Settled, Bought,> = {
   readonly kind: 'reused';
 
   /**
-   * Record a twin persisted for this key.
+   Record a twin persisted for this key.
    */
   readonly twin: Settled;
 } | {
   readonly kind: 'bought';
 
   /**
-   * What this slice's own buy returned, stored or not.
+   What this slice's own buy returned, stored or not.
    */
   readonly bought: Bought;
 };
 
 /**
- * Reuses what a twin persisted for this key, or buys and registers the buy so
- * twins arriving meanwhile wait for it.
- *
- * @param key - question this slice asks, shared by its twins
- *
- * @param memo - promises of persisted records, one per key being bought
- *
- * @param buy - starts this slice's own purchase; called at most once, and only
- * when no twin persisted a record for the key
- *
- * @param persistedOf - reads the persisted record off a purchase, answering
- * `nothing` when the purchase was deliberately not stored
- *
- * @param l - logger for a purchase that failed while twins waited on it
- *
- * @returns Twin's record, or the purchase
- *
- * @throws Whatever `buy` throws; a waiting twin sees nothing stored and buys
- * its own, or throws under the same abort
- *
- * @example
- * ```ts
- * const asked = await reuseTwinOrBuy({
- *   key,
- *   memo: twins,
- *   buy: async function buyThisSlice() {
- *     return await attemptAndPersist();
- *   },
- *   persistedOf: function stored(bought,) {
- *     return bought.persisted ? { kind: 'stored', record: bought.record, } : { kind: 'nothing', };
- *   },
- *   l,
- * },);
- * ```
+ Reuses what a twin persisted for this key, or buys and registers the buy so
+ twins arriving meanwhile wait for it.
+ 
+ @param key - question this slice asks, shared by its twins
+ 
+ @param memo - promises of persisted records, one per key being bought
+ 
+ @param buy - starts this slice's own purchase; called at most once, and only
+ when no twin persisted a record for the key
+ 
+ @param persistedOf - reads the persisted record off a purchase, answering
+ `nothing` when the purchase was deliberately not stored
+ 
+ @param l - logger for a purchase that failed while twins waited on it
+ 
+ @returns Twin's record, or the purchase
+ 
+ @throws Whatever `buy` throws; a waiting twin sees nothing stored and buys
+ its own, or throws under the same abort
+ 
+ @example
+ ```ts
+ const asked = await reuseTwinOrBuy({
+   key,
+   memo: twins,
+   buy: async function buyThisSlice() {
+     return await attemptAndPersist();
+   },
+   persistedOf: function stored(bought,) {
+     return bought.persisted ? { kind: 'stored', record: bought.record, } : { kind: 'nothing', };
+   },
+   l,
+ },);
+ ```
  */
 export async function reuseTwinOrBuy<Settled, Bought,>(
   {
@@ -123,7 +123,7 @@ export async function reuseTwinOrBuy<Settled, Bought,>(
   ) {
     /* oxlint-disable no-await-in-loop -- each wait is for a different twin's buy; the loop ends when the key has no buyer or when one persisted */
     /**
-     * What the twin buying this key left behind.
+     What the twin buying this key left behind.
      */
     const twin = await pending;
     /* oxlint-enable no-await-in-loop */
@@ -140,7 +140,7 @@ export async function reuseTwinOrBuy<Settled, Bought,>(
   // other slice can look.
 
   /**
-   * This slice's own purchase.
+   This slice's own purchase.
    */
   const bought = buy();
   memo.set(
@@ -148,7 +148,7 @@ export async function reuseTwinOrBuy<Settled, Bought,>(
     (async function untilStored(): Promise<TwinStored<Settled>> {
       try {
         /**
-         * What the purchase left for its twins.
+         What the purchase left for its twins.
          */
         const stored = persistedOf(await bought,);
         if (stored.kind === 'nothing')

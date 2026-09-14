@@ -33,59 +33,60 @@ import type { TranslateReportWire, } from './translate-wire.ts';
 // could delete the archive.
 
 /**
- * One translator's final text after validation, with what happened to it.
- *
- * @example
- * ```ts
- * const outcome: RepairOutcome = { voice, findings: [], };
- * ```
+ One translator's final text after validation, with what happened to it.
+ 
+ @example
+ ```ts
+ const outcome: RepairOutcome = { voice, findings: [], };
+ ```
  */
 export type RepairOutcome = {
   /**
-   * Voice to build candidate from,
-   * absent when non-defensible contributor violation was not repaired.
+   Voice to build candidate from,
+   absent when non-defensible contributor violation was not repaired.
    */
   readonly voice?: HeardVoice<TranslateReportWire>;
 
   /**
-   * What validation and the follow-up turn recorded, in scorecard-stable
-   * wording.
+   What validation and the follow-up turn recorded, in scorecard-stable
+   wording.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Validates one candidate and, when it fails, asks its author about it.
- *
- * @param client - injected model client
- *
- * @param voice - this translator's reply
- *
- * @param sourceText - original slice the candidate renders
- *
- * @param incumbentText - translation as it stands, which a matching candidate
- * collapses into
- *
- * @param pageText - text this candidate would replace, whose block shape it has
- * to carry. The same as `incumbentText` for a translator, and the ARCHIVE
- * rather than the winning lane for a consolidator
- *
- * @param priorMessages - exact messages that produced the candidate
- *
- * @param signal - caller abort honored by the follow-up exchange
- *
- * @param perCallTimeoutMs - deadline for it
- *
- * @param lineStructured - whether the line-structure rule governs this slice,
- * which makes merging its lines a fault the author is sent back to fix
- * * @param l - stage logger
- *
- * @returns Final voice for this model plus what was recorded
- *
- * @example
- * ```ts
- * const outcome = await repairOneCandidate({ client, voice, sourceText, ... },);
- * ```
+ Validates one candidate and, when it fails, asks its author about it.
+ 
+ @param client - injected model client
+ 
+ @param voice - this translator's reply
+ 
+ @param sourceText - original slice the candidate renders
+ 
+ @param incumbentText - translation as it stands, which a matching candidate
+ collapses into
+ 
+ @param pageText - text this candidate would replace, whose block shape it has
+ to carry. The same as `incumbentText` for a translator, and the ARCHIVE
+ rather than the winning lane for a consolidator
+ 
+ @param priorMessages - exact messages that produced the candidate
+ 
+ @param signal - caller abort honored by the follow-up exchange
+ 
+ @param perCallTimeoutMs - deadline for it
+ 
+ @param lineStructured - whether the line-structure rule governs this slice,
+ which makes merging its lines a fault the author is sent back to fix
+ 
+ @param l - stage logger
+ 
+ @returns Final voice for this model plus what was recorded
+ 
+ @example
+ ```ts
+ const outcome = await repairOneCandidate({ client, voice, sourceText, ... },);
+ ```
  */
 async function repairOneCandidate(
   {
@@ -129,7 +130,7 @@ async function repairOneCandidate(
     };
 
   /**
-   * Structural verdict over what this model returned.
+   Structural verdict over what this model returned.
    */
   const validation = validateTranslatedSlice({
     sourceText,
@@ -161,30 +162,30 @@ async function repairOneCandidate(
     };
 
   /**
-   * What validation found, recorded whatever the author answers.
+   What validation found, recorded whatever the author answers.
    */
   const found = validation.findings
     .map(function toFinding(finding,): string {
       return `translate-invalid (${voice.modelId}): ${finding}`;
     },);
   /**
-   * Whether original candidate violates non-defensible target authority floor.
+   Whether original candidate violates non-defensible target authority floor.
    */
   const contributorViolation = validation.findings
     .includes(CONTRIBUTOR_AUTHORITY_FINDING,);
   /**
-   * Characters of finding text this answer has to address.
-   *
-   * COUNTED BECAUSE THE REPAIR WIRE EXPLAINS ITSELF. Its `explanation` field
-   * answers these findings, and the producing wire has no such field, so the
-   * slice alone does not bound what a correct answer here can run to.
+   Characters of finding text this answer has to address.
+   
+   COUNTED BECAUSE THE REPAIR WIRE EXPLAINS ITSELF. Its `explanation` field
+   answers these findings, and the producing wire has no such field, so the
+   slice alone does not bound what a correct answer here can run to.
    */
   const findingsChars = validation.findings
     .join('',)
     .length;
 
   /**
-   * The author's answer to its own findings.
+   The author's answer to its own findings.
    */
   const answer = await attemptStageCall({
     client,
@@ -219,7 +220,7 @@ async function repairOneCandidate(
   }
 
   /**
-   * What the author decided, and why.
+   What the author decided, and why.
    */
   const {
     resolution,
@@ -237,7 +238,7 @@ async function repairOneCandidate(
   }
 
   /**
-   * Whether the revision actually resolved what was found.
+   Whether the revision actually resolved what was found.
    */
   const rechecked = validateTranslatedSlice({
     sourceText,
@@ -273,43 +274,44 @@ async function repairOneCandidate(
 }
 
 /**
- * Validates every fresh candidate and gives each failing one back to its
- * author.
- *
- * Candidates are handled CONCURRENTLY, one follow-up call per failing model at
- * most, so a slice where every translator diverged costs one extra round rather
- * than one extra round each.
- *
- * @param client - injected model client
- *
- * @param voices - heard translator replies
- *
- * @param sourceText - original every candidate renders
- *
- * @param incumbentText - translation as it stands, so a candidate reproducing
- * it is left alone
- *
- * @param pageText - text these candidates would replace, whose blocks they have
- * to carry, defaulting to the incumbent because that is what a translator
- * replaces. A consolidator replaces the ARCHIVE while its incumbent is the lane
- * that won, and the two are different texts
- *
- * @param priorMessages - exact messages every translator was given
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param lineStructured - whether the line-structure rule governs this slice,
- * which makes merging its lines a fault the author is sent back to fix
- * * @param l - stage logger
- *
- * @returns Final voices in the order given, plus every finding
- *
- * @example
- * ```ts
- * const { voices, findings, } = await repairInvalidCandidates({ ... },);
- * ```
+ Validates every fresh candidate and gives each failing one back to its
+ author.
+ 
+ Candidates are handled CONCURRENTLY, one follow-up call per failing model at
+ most, so a slice where every translator diverged costs one extra round rather
+ than one extra round each.
+ 
+ @param client - injected model client
+ 
+ @param voices - heard translator replies
+ 
+ @param sourceText - original every candidate renders
+ 
+ @param incumbentText - translation as it stands, so a candidate reproducing
+ it is left alone
+ 
+ @param pageText - text these candidates would replace, whose blocks they have
+ to carry, defaulting to the incumbent because that is what a translator
+ replaces. A consolidator replaces the ARCHIVE while its incumbent is the lane
+ that won, and the two are different texts
+ 
+ @param priorMessages - exact messages every translator was given
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param lineStructured - whether the line-structure rule governs this slice,
+ which makes merging its lines a fault the author is sent back to fix
+ 
+ @param l - stage logger
+ 
+ @returns Final voices in the order given, plus every finding
+ 
+ @example
+ ```ts
+ const { voices, findings, } = await repairInvalidCandidates({ ... },);
+ ```
  */
 export async function repairInvalidCandidates(
   {
@@ -342,7 +344,7 @@ export async function repairInvalidCandidates(
   readonly findings: readonly string[];
 }> {
   /**
-   * One outcome per heard voice.
+   One outcome per heard voice.
    */
   const outcomes = await Promise.all(
     voices.map(async function repairEach(voice,): Promise<RepairOutcome> {

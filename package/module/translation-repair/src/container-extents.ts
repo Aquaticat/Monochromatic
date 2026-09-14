@@ -33,74 +33,74 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 // region overlaps any block node, so widening cannot reach a neighbour's text.
 
 /**
- * Half-open range a block owns within its document.
- *
- * @example
- * ```ts
- * const extent: BlockExtent = { startOffset: 370, endOffset: 408, };
- * ```
+ Half-open range a block owns within its document.
+ 
+ @example
+ ```ts
+ const extent: BlockExtent = { startOffset: 370, endOffset: 408, };
+ ```
  */
 export type BlockExtent = {
   /**
-   * Absolute start offset of owned range.
+   Absolute start offset of owned range.
    */
   readonly startOffset: number;
 
   /**
-   * Absolute end offset (exclusive) of owned range.
+   Absolute end offset (exclusive) of owned range.
    */
   readonly endOffset: number;
 };
 
 /**
- * Which block indices a container's tags attach to.
- *
- * @example
- * ```ts
- * const bound: ContainerBound = { first: 1, last: 2, openerStartOffset: 370, closerEndOffset: 4045, };
- * ```
+ Which block indices a container's tags attach to.
+ 
+ @example
+ ```ts
+ const bound: ContainerBound = { first: 1, last: 2, openerStartOffset: 370, closerEndOffset: 4045, };
+ ```
  */
 type ContainerBound = {
   /**
-   * Index of first block lying inside container, which takes opening tag.
+   Index of first block lying inside container, which takes opening tag.
    */
   readonly first: number;
 
   /**
-   * Index of last block lying inside container, which takes closing tag.
+   Index of last block lying inside container, which takes closing tag.
    */
   readonly last: number;
 
   /**
-   * Offset opening tag begins at.
+   Offset opening tag begins at.
    */
   readonly openerStartOffset: number;
 
   /**
-   * Offset closing tag ends at.
+   Offset closing tag ends at.
    */
   readonly closerEndOffset: number;
 };
 
 /**
- * Locates blocks a container's tags attach to, by containment rather than by
- * order, so nesting needs no separate handling: an inner container's bound is
- * computed against the same unwidened extents as its outer one.
- *
- * Returns nothing for a container holding no blocks at all. Its tags then keep
- * belonging to no block, which is safe on its own terms: no slice can reach
- * them either, so assembly copies the region through unedited.
- *
- * @param extents - unwidened block extents in document order
- *
- * @param container - container whose tags need an owner
- *
- * @returns Bound naming owning block indices, or nothing when container is empty
- *
- * @example
- * ```ts
- * const bound = interiorBound({ extents, container, },);
- * ```
+ Locates blocks a container's tags attach to, by containment rather than by
+ order, so nesting needs no separate handling: an inner container's bound is
+ computed against the same unwidened extents as its outer one.
+ 
+ Returns nothing for a container holding no blocks at all. Its tags then keep
+ belonging to no block, which is safe on its own terms: no slice can reach
+ them either, so assembly copies the region through unedited.
+ 
+ @param extents - unwidened block extents in document order
+ 
+ @param container - container whose tags need an owner
+ 
+ @returns Bound naming owning block indices, or nothing when container is empty
+ 
+ @example
+ ```ts
+ const bound = interiorBound({ extents, container, },);
+ ```
  */
 function interiorBound(
   {
@@ -112,7 +112,7 @@ function interiorBound(
   },
 ): readonly ContainerBound[] {
   /**
-   * Indices of every block lying wholly between this container's two tags.
+   Indices of every block lying wholly between this container's two tags.
    */
   const inside = extents
     .flatMap(function toInsideIndex(
@@ -126,12 +126,12 @@ function interiorBound(
     },);
 
   /**
-   * First such block, absent when container holds no blocks.
+   First such block, absent when container holds no blocks.
    */
   const [first,] = inside;
 
   /**
-   * Last such block, absent for the same reason.
+   Last such block, absent for the same reason.
    */
   const last = inside.at(-1,);
   if ((first === undefined) || (last === undefined))
@@ -147,24 +147,24 @@ function interiorBound(
 }
 
 /**
- * Widens block extents so each container's tags fall inside a block.
- *
- * Nesting composes without a special case, because a block takes the SMALLEST
- * opening offset among containers that open at it and the LARGEST closing
- * offset among those that close at it. Where an outer container's opener
- * region abuts an inner one's, the two regions tile and the minimum swallows
- * both.
- *
- * @param extents - unwidened block extents in document order
- *
- * @param containers - container spans in the same offset frame as extents
- *
- * @returns Extents in the same order, each widened over tags it owns
- *
- * @example
- * ```ts
- * const owned = widenExtentsToContainers({ extents, containers, },);
- * ```
+ Widens block extents so each container's tags fall inside a block.
+ 
+ Nesting composes without a special case, because a block takes the SMALLEST
+ opening offset among containers that open at it and the LARGEST closing
+ offset among those that close at it. Where an outer container's opener
+ region abuts an inner one's, the two regions tile and the minimum swallows
+ both.
+ 
+ @param extents - unwidened block extents in document order
+ 
+ @param containers - container spans in the same offset frame as extents
+ 
+ @returns Extents in the same order, each widened over tags it owns
+ 
+ @example
+ ```ts
+ const owned = widenExtentsToContainers({ extents, containers, },);
+ ```
  */
 export function widenExtentsToContainers(
   {
@@ -176,7 +176,7 @@ export function widenExtentsToContainers(
   },
 ): readonly BlockExtent[] {
   /**
-   * Every container that found an owning block, paired with those indices.
+   Every container that found an owning block, paired with those indices.
    */
   const bounds = containers.flatMap(function toBound(container,): readonly ContainerBound[] {
     return interiorBound({
@@ -189,7 +189,7 @@ export function widenExtentsToContainers(
     index,
   ): BlockExtent {
     /**
-     * Opening offsets of every container this block opens.
+     Opening offsets of every container this block opens.
      */
     const opens = bounds
       .filter(function opensHere(bound,): boolean {
@@ -200,7 +200,7 @@ export function widenExtentsToContainers(
       },);
 
     /**
-     * Closing offsets of every container this block closes.
+     Closing offsets of every container this block closes.
      */
     const closes = bounds
       .filter(function closesHere(bound,): boolean {
@@ -223,26 +223,26 @@ export function widenExtentsToContainers(
 }
 
 /**
- * Rewrites document nodes so each owns the container tags it carries.
- *
- * Text and hash are recomputed rather than carried over, because a node's text
- * is defined as the exact slice its offsets name and that invariant has to
- * survive the widening rather than be excused from it.
- *
- * @param nodes - document nodes carrying absolute offsets
- *
- * @param text - full document source both offsets and slices index
- *
- * @param containers - container spans in absolute offsets
- *
- * @returns Nodes in the same order, each spanning tags it owns
- *
- * @throws {@link Error} when widening returns a different node count than it received
- *
- * @example
- * ```ts
- * const owning = widenNodesToContainers({ nodes, text, containers, },);
- * ```
+ Rewrites document nodes so each owns the container tags it carries.
+ 
+ Text and hash are recomputed rather than carried over, because a node's text
+ is defined as the exact slice its offsets name and that invariant has to
+ survive the widening rather than be excused from it.
+ 
+ @param nodes - document nodes carrying absolute offsets
+ 
+ @param text - full document source both offsets and slices index
+ 
+ @param containers - container spans in absolute offsets
+ 
+ @returns Nodes in the same order, each spanning tags it owns
+ 
+ @throws {@link Error} when widening returns a different node count than it received
+ 
+ @example
+ ```ts
+ const owning = widenNodesToContainers({ nodes, text, containers, },);
+ ```
  */
 export function widenNodesToContainers(
   {
@@ -256,7 +256,7 @@ export function widenNodesToContainers(
   },
 ): readonly DocumentNode[] {
   /**
-   * Widened extents positionally matching the nodes they came from.
+   Widened extents positionally matching the nodes they came from.
    */
   const widened = widenExtentsToContainers({
     extents: nodes.map(function toExtent(node,): BlockExtent {
@@ -272,7 +272,7 @@ export function widenNodesToContainers(
     index,
   ): DocumentNode {
     /**
-     * This node's widened extent, positional by construction.
+     This node's widened extent, positional by construction.
      */
     const extent = nonNullishOrThrow(widened[index],);
     if ((extent.startOffset === node.startOffset)
@@ -280,7 +280,7 @@ export function widenNodesToContainers(
       return node;
 
     /**
-     * Exact slice the widened extent names, keeping text and offsets in step.
+     Exact slice the widened extent names, keeping text and offsets in step.
      */
     const owned = text.slice(
       extent.startOffset,

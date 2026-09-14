@@ -1,16 +1,16 @@
 /**
- * Tests for the document-scale repetition check: what it names, and the three
- * things it must NOT name.
- *
- * WHY IT EXISTS, from `#66`: the introduced-defect probe compares one edited
- * region against itself, so `lintong`'s duplicated farewell was invisible to it
- * at any setting. The duplication lives in no single region, only in the
- * assembled document. This check reads the whole document against the archive
- * the artifact now stores, which needs no model, no roster and no quota.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the document-scale repetition check: what it names, and the three
+ things it must NOT name.
+ 
+ WHY IT EXISTS, from `#66`: the introduced-defect probe compares one edited
+ region against itself, so `lintong`'s duplicated farewell was invisible to it
+ at any setting. The duplication lives in no single region, only in the
+ assembled document. This check reads the whole document against the archive
+ the artifact now stores, which needs no model, no roster and no quota.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -24,32 +24,32 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * A passage long enough to be reported, standing in for the farewell the repair
- * lane said twice.
+ A passage long enough to be reported, standing in for the farewell the repair
+ lane said twice.
  */
 const PASSAGE = 'do come back and visit the tabby by the gate again soon';
 
 /**
- * A passage LONGER than the twelve-word window, so it spans several of them.
- *
- * Every word is at least five letters, so each window clears the content-word
- * threshold on its own and the merge rather than the filter is what the test
- * measures.
+ A passage LONGER than the twelve-word window, so it spans several of them.
+ 
+ Every word is at least five letters, so each window clears the content-word
+ threshold on its own and the merge rather than the filter is what the test
+ measures.
  */
 const LONG_PASSAGE =
   'afternoon sunlight arrived across weathered floorboards beneath sleeping tabby kittens breathing gently while distant harbour clocks counted quiet hours';
 
 /**
- * Twelve words exactly, so it is one window and cannot merge with itself.
+ Twelve words exactly, so it is one window and cannot merge with itself.
  */
 const FIRST_PASSAGE =
   'weathered floorboards beneath sleeping tabby kittens breathing gently through morning harbour sunlight';
 
 /**
- * {@inheritDoc FIRST_PASSAGE}
- *
- * Shares no twelve-word window with {@link FIRST_PASSAGE}, so any merge between
- * the two would have come from adjacency rather than from occurrence.
+ {@inheritDoc FIRST_PASSAGE}
+ 
+ Shares no twelve-word window with {@link FIRST_PASSAGE}, so any merge between
+ the two would have come from adjacency rather than from occurrence.
  */
 const SECOND_PASSAGE =
   'lanterns glimmered against darkened rooftops wherever autumn evenings settled quietly across sleeping courtyards';
@@ -123,7 +123,7 @@ await describe({
       name: 'is UNAFFECTED by rewrapping, since shipped text is wrapped semantically',
       fn: async () => {
         /**
-         * The same words, broken across lines the way the wrapper would.
+         The same words, broken across lines the way the wrapper would.
          */
         const wrapped = PASSAGE.split(' ',)
           .join('\n',);

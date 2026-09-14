@@ -34,7 +34,7 @@ import type { SelectionRound, } from './self-preference.ts';
 // file exists to make impossible.
 
 /**
- * Stages whose rounds an editor produced.
+ Stages whose rounds an editor produced.
  */
 export const EDITOR_ROUND_STAGES: readonly RepairRoundStage[] = [
   'envelope',
@@ -42,34 +42,34 @@ export const EDITOR_ROUND_STAGES: readonly RepairRoundStage[] = [
 ];
 
 /**
- * Stages whose rounds a refiner produced.
+ Stages whose rounds a refiner produced.
  */
 export const REFINER_ROUND_STAGES: readonly RepairRoundStage[] = ['refine',];
 
 /**
- * Raised when a recorded slate's positions are not the positions judges were
- * shown.
- *
- * A BALLOT IS A NUMBER, so this is the one assumption the projection cannot
- * check later. `SelectionRound.producers` is read positionally, a ballot's
- * `best` being a one-based index into it, so a slate whose `index` values are
- * not exactly one to its length would silently credit the wrong model.
+ Raised when a recorded slate's positions are not the positions judges were
+ shown.
+ 
+ A BALLOT IS A NUMBER, so this is the one assumption the projection cannot
+ check later. `SelectionRound.producers` is read positionally, a ballot's
+ `best` being a one-based index into it, so a slate whose `index` values are
+ not exactly one to its length would silently credit the wrong model.
  */
 export class SlatePositionsError extends Error {
   /**
-   * Declares this message safe to forward: it names positions and counts, never a candidate's wording.
+   Declares this message safe to forward: it names positions and counts, never a candidate's wording.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds failure naming the positions the slate carried.
-   *
-   * @param detail - what the slate claimed, and why that cannot be read
-   *
-   * @example
-   * ```ts
-   * throw new SlatePositionsError({ detail: 'positions 1,3 over 2 candidates', },);
-   * ```
+   Builds failure naming the positions the slate carried.
+   
+   @param detail - what the slate claimed, and why that cannot be read
+   
+   @example
+   ```ts
+   throw new SlatePositionsError({ detail: 'positions 1,3 over 2 candidates', },);
+   ```
    */
   public constructor(
     { detail, }: { readonly detail: string; },
@@ -80,25 +80,25 @@ export class SlatePositionsError extends Error {
 }
 
 /**
- * Projects one recorded round into the shape a standing counts.
- *
- * @param round - recorded round, selected or declined
- *
- * @returns Producers in slate order, plus every ballot cast over them
- *
- * @throws {@link SlatePositionsError} when the slate's positions are not one
- * to its length
- *
- * @example
- * ```ts
- * const projected = selectionRoundOf({ round, },);
- * ```
+ Projects one recorded round into the shape a standing counts.
+ 
+ @param round - recorded round, selected or declined
+ 
+ @returns Producers in slate order, plus every ballot cast over them
+ 
+ @throws {@link SlatePositionsError} when the slate's positions are not one
+ to its length
+ 
+ @example
+ ```ts
+ const projected = selectionRoundOf({ round, },);
+ ```
  */
 export function selectionRoundOf(
   { round, }: { readonly round: RepairJudgedRound; },
 ): SelectionRound {
   /**
-   * Slate in the order judges were shown it.
+   Slate in the order judges were shown it.
    */
   const ordered = round
     .slate
@@ -110,14 +110,14 @@ export function selectionRoundOf(
     },);
 
   /**
-   * Positions the slate claims, which must be one to its length.
+   Positions the slate claims, which must be one to its length.
    */
   const positions = ordered.map(function toPosition(entry,): number {
     return entry.index;
   },);
 
   /**
-   * Positions a slate of this size must carry.
+   Positions a slate of this size must carry.
    */
   const expected = ordered.map(function toExpected(
     _entry,
@@ -143,21 +143,21 @@ export function selectionRoundOf(
 }
 
 /**
- * Projects every round one role produced.
- *
- * @param rounds - rounds recorded by a chunk repair
- *
- * @param stages - stages belonging to the role being ranked
- *
- * @returns Rounds in the shape a standing counts
- *
- * @throws {@link SlatePositionsError} when any slate's positions are not one
- * to its length
- *
- * @example
- * ```ts
- * const rounds = selectionRoundsFor({ rounds: outcome.rounds, stages: EDITOR_ROUND_STAGES, },);
- * ```
+ Projects every round one role produced.
+ 
+ @param rounds - rounds recorded by a chunk repair
+ 
+ @param stages - stages belonging to the role being ranked
+ 
+ @returns Rounds in the shape a standing counts
+ 
+ @throws {@link SlatePositionsError} when any slate's positions are not one
+ to its length
+ 
+ @example
+ ```ts
+ const rounds = selectionRoundsFor({ rounds: outcome.rounds, stages: EDITOR_ROUND_STAGES, },);
+ ```
  */
 export function selectionRoundsFor(
   {

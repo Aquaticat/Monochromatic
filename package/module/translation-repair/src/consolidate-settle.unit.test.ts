@@ -1,22 +1,22 @@
 /**
- * Tests for the consolidation's deciding half, composed end to end.
- *
- * WHAT THIS FILE EXISTS TO STOP is the defect the stage was built to close, at
- * one level up. `floorConsolidateSlate`, `gateConsolidatedSlice` and
- * `wrapConsolidation` were each built, tested, and called by nothing. A unit
- * test of a part cannot say the part is reached, so these drive the composition
- * and assert which rounds were bought.
- *
- * THE TRANSPORT ROUTES ON SHEET CONTENT, NOT ON CALL ORDER. A counter over
- * calls looks like it works and breaks silently: a schema-mismatch retry or a
- * quorum that proceeds early shifts every later index, and the wrong route then
- * answers with a well-formed reply nobody notices is misaddressed. Each case
- * asserts how many calls each route served, which is the router's own positive
- * control.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the consolidation's deciding half, composed end to end.
+ 
+ WHAT THIS FILE EXISTS TO STOP is the defect the stage was built to close, at
+ one level up. `floorConsolidateSlate`, `gateConsolidatedSlice` and
+ `wrapConsolidation` were each built, tested, and called by nothing. A unit
+ test of a part cannot say the part is reached, so these drive the composition
+ and assert which rounds were bought.
+ 
+ THE TRANSPORT ROUTES ON SHEET CONTENT, NOT ON CALL ORDER. A counter over
+ calls looks like it works and breaks silently: a schema-mismatch retry or a
+ quorum that proceeds early shifts every later index, and the wrong route then
+ answers with a well-formed reply nobody notices is misaddressed. Each case
+ asserts how many calls each route served, which is the router's own positive
+ control.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -42,12 +42,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger the stage writes through, whose output is not under test.
+ Logger the stage writes through, whose output is not under test.
  */
 const l = tagged({ tag: 'consolidate-settle-test', },);
 
 /**
- * Roster of three, the smallest that can produce a two-to-one split.
+ Roster of three, the smallest that can produce a two-to-one split.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -56,35 +56,35 @@ const ROSTER = [
 ] as const;
 
 /**
- * One seated voice, narrowed to the roster so a fixture cannot invent a model
- * the provider catalogue does not carry.
+ One seated voice, narrowed to the roster so a fixture cannot invent a model
+ the provider catalogue does not carry.
  */
 type FixtureModelId = (typeof ROSTER)[number];
 
 /**
- * Per-call bound, generous because the transport answers instantly.
+ Per-call bound, generous because the transport answers instantly.
  */
 const CALL_TIMEOUT_MS = 5_000;
 
 /**
- * Phrase separating the gate's sheet from the selector's, taken from the sheet
- * itself rather than invented, so a rewording breaks the router loudly instead
- * of silently routing every call to one side.
- *
- * CARRIES NO QUOTE CHARACTERS ON PURPOSE. The router reads the serialised
- * exchange, where every quote inside a sheet arrives escaped, so a marker
- * spelled with quotes matches nothing and every gate call is answered with a
- * selector ballot the gate then reads as a schema mismatch. That is what the
- * per-route counts exist to catch, and they caught exactly this.
- *
- * `lane-contest-wire.ts` carries the same sentence, which does not matter here:
- * this stage never asks the lane contest anything, so within one settlement the
- * phrase appears in the gate sheet alone.
+ Phrase separating the gate's sheet from the selector's, taken from the sheet
+ itself rather than invented, so a rewording breaks the router loudly instead
+ of silently routing every call to one side.
+ 
+ CARRIES NO QUOTE CHARACTERS ON PURPOSE. The router reads the serialised
+ exchange, where every quote inside a sheet arrives escaped, so a marker
+ spelled with quotes matches nothing and every gate call is answered with a
+ selector ballot the gate then reads as a schema mismatch. That is what the
+ per-route counts exist to catch, and they caught exactly this.
+ 
+ `lane-contest-wire.ts` carries the same sentence, which does not matter here:
+ this stage never asks the lane contest anything, so within one settlement the
+ phrase appears in the gate sheet alone.
  */
 const GATE_MARKER = 'Return JSON: choice one of';
 
 /**
- * The slice every case decides about.
+ The slice every case decides about.
  */
 const SUBJECT = {
   sourceText: '猫在窗边睡着了。她四点醒来。',
@@ -92,47 +92,47 @@ const SUBJECT = {
 };
 
 /**
- * Wording in place when the stage begins, written as the wrap rule would have
- * it so a consolidation is not demoted by accident.
+ Wording in place when the stage begins, written as the wrap rule would have
+ it so a consolidation is not demoted by accident.
  */
 const STANDING = 'The cat fell asleep by the window.\nShe woke at four.';
 
 /**
- * A consolidation that differs from what stands in its content, emitted as one
- * line because producers do that.
+ A consolidation that differs from what stands in its content, emitted as one
+ line because producers do that.
  */
 const FRESH = 'The cat fell asleep beside the window. She woke at four in the afternoon.';
 
 /**
- * Idiomatic final rewrite used to prove standing-text polish reachability.
+ Idiomatic final rewrite used to prove standing-text polish reachability.
  */
 const POLISHABLE_STANDING = 'She faced life proactively and spent a good time with everyone, while doing her best to stay hopeful and connected to the people around her.';
 
 /**
- * Faithful idiomatic rewrite of polishable standing text, as the refiner emits it.
+ Faithful idiomatic rewrite of polishable standing text, as the refiner emits it.
  */
 const POLISHED_STANDING = 'She maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
 
 /**
- * That rewrite as it ships: wrapped at its semantic boundary before the polish
- * gate judged it (keyword233, 2026-09-03).
+ That rewrite as it ships: wrapped at its semantic boundary before the polish
+ gate judged it (keyword233, 2026-09-03).
  */
 const WRAPPED_POLISHED_STANDING = 'She maintained a positive outlook on life and spent some good times with everyone,\n'
   + 'doing her best to stay hopeful and connected to those around her.';
 
 /**
- * Builds one voice as the producing half hands them over.
- *
- * @param modelId - voice that wrote it
- *
- * @param translation - wording it proposed
- *
- * @returns Voice shaped as the gather round returns one
- *
- * @example
- * ```ts
- * const voice = voiceOf({ modelId: ROSTER[0], translation: FRESH, },);
- * ```
+ Builds one voice as the producing half hands them over.
+ 
+ @param modelId - voice that wrote it
+ 
+ @param translation - wording it proposed
+ 
+ @returns Voice shaped as the gather round returns one
+ 
+ @example
+ ```ts
+ const voice = voiceOf({ modelId: ROSTER[0], translation: FRESH, },);
+ ```
  */
 function voiceOf(
   {
@@ -150,18 +150,18 @@ function voiceOf(
 }
 
 /**
- * Builds one structural verdict.
- *
- * @param modelId - voice the verdict belongs to
- *
- * @param valid - whether the guard passed it
- *
- * @returns Verdict shaped as the produce half reports one
- *
- * @example
- * ```ts
- * const checked = validityOf({ modelId: ROSTER[0], valid: true, },);
- * ```
+ Builds one structural verdict.
+ 
+ @param modelId - voice the verdict belongs to
+ 
+ @param valid - whether the guard passed it
+ 
+ @returns Verdict shaped as the produce half reports one
+ 
+ @example
+ ```ts
+ const checked = validityOf({ modelId: ROSTER[0], valid: true, },);
+ ```
  */
 function validityOf(
   { modelId, valid, }: { readonly modelId: string; readonly valid: boolean; },
@@ -181,24 +181,24 @@ function validityOf(
 }
 
 /**
- * Works out which numbered candidate carries one rendering, by replaying the
- * rotation the judges will see.
- *
- * NOT HARDCODED, because the slate is rotated by a hash of the source so the
- * incumbent does not sit in one position across a document. A fixture that
- * guessed the number would pass or fail on the fixture's wording rather than on
- * the stage's behaviour.
- *
- * @param texts - proposals reaching the slate, in roster order
- *
- * @param wanted - rendering whose position is sought
- *
- * @returns One-based ballot index naming it
- *
- * @example
- * ```ts
- * const best = positionOfText({ texts: [FRESH,], wanted: FRESH, },);
- * ```
+ Works out which numbered candidate carries one rendering, by replaying the
+ rotation the judges will see.
+ 
+ NOT HARDCODED, because the slate is rotated by a hash of the source so the
+ incumbent does not sit in one position across a document. A fixture that
+ guessed the number would pass or fail on the fixture's wording rather than on
+ the stage's behaviour.
+ 
+ @param texts - proposals reaching the slate, in roster order
+ 
+ @param wanted - rendering whose position is sought
+ 
+ @returns One-based ballot index naming it
+ 
+ @example
+ ```ts
+ const best = positionOfText({ texts: [FRESH,], wanted: FRESH, },);
+ ```
  */
 function positionOfText(
   {
@@ -210,7 +210,7 @@ function positionOfText(
     readonly wanted: string;
 
     /**
-     * What the slate offers to keep; empty when the standing is withheld.
+     What the slate offers to keep; empty when the standing is withheld.
      */
     readonly incumbentText?: string;
   },
@@ -239,20 +239,20 @@ function positionOfText(
 }
 
 /**
- * Builds a client that answers each round from its own script.
- *
- * @param judgeReply - body every slate judge returns
- *
- * @param gateReply - body every gate voice returns
- *
- * @param served - counter the caller reads afterwards
- *
- * @returns Client over a routing transport
- *
- * @example
- * ```ts
- * const client = routedClient({ judgeReply, gateReply, served, },);
- * ```
+ Builds a client that answers each round from its own script.
+ 
+ @param judgeReply - body every slate judge returns
+ 
+ @param gateReply - body every gate voice returns
+ 
+ @param served - counter the caller reads afterwards
+ 
+ @returns Client over a routing transport
+ 
+ @example
+ ```ts
+ const client = routedClient({ judgeReply, gateReply, served, },);
+ ```
  */
 function routedClient(
   {
@@ -266,8 +266,8 @@ function routedClient(
     readonly served: { judge: number; gate: number; };
 
     /**
-     * Where to record each slate judge's request, for the cases that read what
-     * the judges were shown rather than what they answered.
+     Where to record each slate judge's request, for the cases that read what
+     the judges were shown rather than what they answered.
      */
     readonly judgeSheets?: string[];
   },
@@ -276,12 +276,12 @@ function routedClient(
     apiKey: 'test-key',
     transport: async function routingTransport(exchange,) {
       /**
-       * Everything the call is sending, which is where the sheet lives.
+       Everything the call is sending, which is where the sheet lives.
        */
       const sent = JSON.stringify(exchange,);
 
       /**
-       * Whether this call carries the gate's sheet rather than the selector's.
+       Whether this call carries the gate's sheet rather than the selector's.
        */
       const isGate = sent.includes(GATE_MARKER,);
       if (isGate)
@@ -309,16 +309,16 @@ function routedClient(
 }
 
 /**
- * Builds direct client proving final polish remains reachable after slate decline.
- *
- * @param servedSchemas - schema names called in execution order
- *
- * @returns Client declining consolidation slate but approving final polish
- *
- * @example
- * ```ts
- * const client = standingPolishClient({ servedSchemas: [], });
- * ```
+ Builds direct client proving final polish remains reachable after slate decline.
+ 
+ @param servedSchemas - schema names called in execution order
+ 
+ @returns Client declining consolidation slate but approving final polish
+ 
+ @example
+ ```ts
+ const client = standingPolishClient({ servedSchemas: [], });
+ ```
  */
 function standingPolishClient(
   { servedSchemas, }: { readonly servedSchemas: string[]; },
@@ -331,19 +331,19 @@ function standingPolishClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Structured schema naming current stage.
+       Structured schema naming current stage.
        */
       const schema = request.responseFormat
         ?.json_schema
         .name ?? '';
       servedSchemas.push(schema,);
       /**
-       * Whether candidate ballot belongs to final naturalness selector.
+       Whether candidate ballot belongs to final naturalness selector.
        */
       const choosingPolish = JSON.stringify(request.messages,)
         .includes(POLISHED_STANDING,);
       /**
-       * Reply preserving declined consolidation while approving polish.
+       Reply preserving declined consolidation while approving polish.
        */
       const value: unknown = (schema === 'refine_report')
         ? {
@@ -388,16 +388,16 @@ function standingPolishClient(
 }
 
 /**
- * Builds a slate judge's reply.
- *
- * @param best - ballot index, zero to decline
- *
- * @returns Reply body a judge would return
- *
- * @example
- * ```ts
- * const reply = judgeBallot({ best: 0, },);
- * ```
+ Builds a slate judge's reply.
+ 
+ @param best - ballot index, zero to decline
+ 
+ @returns Reply body a judge would return
+ 
+ @example
+ ```ts
+ const reply = judgeBallot({ best: 0, },);
+ ```
  */
 function judgeBallot({ best, }: { readonly best: number; },): string {
   return JSON.stringify({
@@ -407,16 +407,16 @@ function judgeBallot({ best, }: { readonly best: number; },): string {
 }
 
 /**
- * Builds a gate voice's reply.
- *
- * @param choice - rendering this voice names
- *
- * @returns Reply body a gate voice would return
- *
- * @example
- * ```ts
- * const reply = gateBallot({ choice: 'standing', },);
- * ```
+ Builds a gate voice's reply.
+ 
+ @param choice - rendering this voice names
+ 
+ @returns Reply body a gate voice would return
+ 
+ @example
+ ```ts
+ const reply = gateBallot({ choice: 'standing', },);
+ ```
  */
 function gateBallot({ choice, }: { readonly choice: string; },): string {
   return JSON.stringify({
@@ -428,26 +428,26 @@ function gateBallot({ choice, }: { readonly choice: string; },): string {
 }
 
 /**
- * Runs one settlement over a scripted roster.
- *
- * @param voices - proposals reaching the stage
- *
- * @param validity - what the guard made of each
- *
- * @param standingText - wording in place, overridable to test its absence
- *
- * @param judgeReply - body every slate judge returns
- *
- * @param gateReply - body every gate voice returns
- *
- * @param producedFindings - what gathering and repairing recorded
- *
- * @returns Settlement beside the calls each round served
- *
- * @example
- * ```ts
- * const { settled, served, } = await settleWith({ voices, validity, },);
- * ```
+ Runs one settlement over a scripted roster.
+ 
+ @param voices - proposals reaching the stage
+ 
+ @param validity - what the guard made of each
+ 
+ @param standingText - wording in place, overridable to test its absence
+ 
+ @param judgeReply - body every slate judge returns
+ 
+ @param gateReply - body every gate voice returns
+ 
+ @param producedFindings - what gathering and repairing recorded
+ 
+ @returns Settlement beside the calls each round served
+ 
+ @example
+ ```ts
+ const { settled, served, } = await settleWith({ voices, validity, },);
+ ```
  */
 async function settleWith(
   {
@@ -471,20 +471,20 @@ async function settleWith(
     readonly producedFindings?: readonly string[];
 
     /**
-     * Whether the enclosing chunk is governed by the verse rule, which decides
-     * what the judges of this round are asked.
+     Whether the enclosing chunk is governed by the verse rule, which decides
+     what the judges of this round are asked.
      */
     readonly lineStructured?: boolean;
 
     /**
-     * Whether the standing text passed the deterministic gate; false withholds
-     * it from the slate.
+     Whether the standing text passed the deterministic gate; false withholds
+     it from the slate.
      */
     readonly standingEligible?: boolean;
   },
 ) {
   /**
-   * Calls each route served, which every case asserts on.
+   Calls each route served, which every case asserts on.
    */
   const served = {
     judge: 0,
@@ -492,7 +492,7 @@ async function settleWith(
   };
 
   /**
-   * Every slate judge's request, for the cases reading what was shown.
+   Every slate judge's request, for the cases reading what was shown.
    */
   const judgeSheets: string[] = [];
 
@@ -690,7 +690,7 @@ await describe({
       name: 'POLISHES AN ENDORSED STANDING TEXT after consolidation judges decline their slate',
       fn: async () => {
         /**
-         * Structured stages reached by settlement.
+         Structured stages reached by settlement.
          */
         const servedSchemas: string[] = [];
         const settled = await settleConsolidation({
@@ -731,7 +731,7 @@ await describe({
       name: 'REFUSES TO POLISH AN UNENDORSED STANDING TEXT after consolidation judges decline',
       fn: async () => {
         /**
-         * Structured stages reached before provenance refusal.
+         Structured stages reached before provenance refusal.
          */
         const servedSchemas: string[] = [];
         const settled = await settleConsolidation({
@@ -776,7 +776,7 @@ await describe({
         + 'boundary, so a run could not tell a clean slate from one that took two attempts',
       fn: async () => {
         /**
-         * A finding only the gather round could have produced.
+         A finding only the gather round could have produced.
          */
         const gathered = 'hf:cat/Cat-A answered with nothing to ship, so its voice was lost';
 
@@ -864,7 +864,7 @@ await describe({
         + 'rest of the run has been paid for',
       fn: async () => {
         /**
-         * What the settlement threw.
+         What the settlement threw.
          */
         let thrown: unknown;
         try {
@@ -895,7 +895,7 @@ await describe({
         + 'as a passage the archive never carried',
       fn: async () => {
         /**
-         * What the settlement threw.
+         What the settlement threw.
          */
         let thrown: unknown;
         try {
@@ -919,11 +919,11 @@ await describe({
         + 'before any judge is bought',
       fn: async () => {
         /**
-         * What the settlement threw.
+         What the settlement threw.
          */
         let thrown: unknown;
         /**
-         * Calls served before the throw.
+         Calls served before the throw.
          */
         let judged = 0;
         try {
@@ -951,7 +951,7 @@ await describe({
         + 'text is unwrapped archive wording, which consolidate-proposal-wrap.unit.test.ts covers',
       fn: async () => {
         /**
-         * The standing text as a producer that ignored the wrap rule emits it.
+         The standing text as a producer that ignored the wrap rule emits it.
          */
         const unwrapped = STANDING.replaceAll('\n', ' ',);
 

@@ -1,14 +1,14 @@
 /**
- * Tests for the guard that decides whether a slice's pairing is trustworthy
- * enough to replace archive text.
- *
- * The failure this exists for is silent and destructive: when the aligner pairs
- * a heading against a whole section, the judges are asked which of two unrelated
- * texts better renders the heading, they answer correctly, and a passage is
- * replaced by a sentence. Every case below is a shape measured in the corpus,
- * rewritten with invented cat-themed content. No corpus text appears here.
- *
- * @module
+ Tests for the guard that decides whether a slice's pairing is trustworthy
+ enough to replace archive text.
+ 
+ The failure this exists for is silent and destructive: when the aligner pairs
+ a heading against a whole section, the judges are asked which of two unrelated
+ texts better renders the heading, they answer correctly, and a passage is
+ replaced by a sentence. Every case below is a shape measured in the corpus,
+ rewritten with invented cat-themed content. No corpus text appears here.
+ 
+ @module
  */
 
 import {
@@ -25,7 +25,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Section-length English standing where a whole passage would.
+ Section-length English standing where a whole passage would.
  */
 const PASSAGE = 'The cat sleeps on the windowsill through the long afternoon, '
   + 'waking only when the kettle sounds. She has done this every day since the '
@@ -104,7 +104,7 @@ await describe({
         + 'English, which is exactly where that asymmetry lands',
       fn: async () => {
         /**
-         * Four astral characters, eight UTF-16 units.
+         Four astral characters, eight UTF-16 units.
          */
         const astral = '𩸽𩸽𩸽𩸽';
         expect(astral.length,).toBe(8,);
@@ -134,12 +134,12 @@ await describe({
         + 'the rule rather than an approximation of it',
       fn: async () => {
         /**
-         * Incumbent exactly at the floor.
+         Incumbent exactly at the floor.
          */
         const atFloor = 'x'.repeat(MIN_PROTECTED_INCUMBENT,);
 
         /**
-         * Source exactly large enough that the ratio is met but not exceeded.
+         Source exactly large enough that the ratio is met but not exceeded.
          */
         const atRatio = 'x'.repeat(
           MIN_PROTECTED_INCUMBENT / MAX_INCUMBENT_TO_SOURCE_RATIO,

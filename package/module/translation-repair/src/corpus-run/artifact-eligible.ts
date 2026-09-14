@@ -32,74 +32,74 @@ import {
 // runs.
 
 /**
- * What a draw may read, and what it must say about what it excluded.
- *
- * @example
- * ```ts
- * const eligible = await selectEligible({ census, requiredCommit, },);
- * ```
+ What a draw may read, and what it must say about what it excluded.
+ 
+ @example
+ ```ts
+ const eligible = await selectEligible({ census, requiredCommit, },);
+ ```
  */
 export type EligibleEntries = Readonly<{
   /**
-   * Entries the draw may pool, sorted.
+   Entries the draw may pool, sorted.
    */
   entryIds: readonly string[];
 
   /**
-   * Entries excluded because their pipeline predates the required commit.
+   Entries excluded because their pipeline predates the required commit.
    */
   excludedIds: readonly string[];
 
   /**
-   * Entries whose artifact would not parse, carried through so the reader that
-   * reports malformed artifacts still sees them.
+   Entries whose artifact would not parse, carried through so the reader that
+   reports malformed artifacts still sees them.
    */
   malformedIds: readonly string[];
 
   /**
-   * Repo commit recorded by each pooled entry, keyed by entry id.
-   *
-   * Structured rather than left implicit in {@link EligibleEntries.report},
-   * because a reader cannot build a truthful record of what it sampled out of
-   * prose, and because it lets a reader check the bytes it loaded against the
-   * entry the pool admitted. Carries only placed entries: a malformed artifact
-   * has no tip and is absent here.
+   Repo commit recorded by each pooled entry, keyed by entry id.
+   
+   Structured rather than left implicit in {@link EligibleEntries.report},
+   because a reader cannot build a truthful record of what it sampled out of
+   prose, and because it lets a reader check the bytes it loaded against the
+   entry the pool admitted. Carries only placed entries: a malformed artifact
+   has no tip and is absent here.
    */
   tipByEntry: ReadonlyMap<string, string>;
 
   /**
-   * Built pipeline recorded by each pooled entry, keyed by entry id.
-   *
-   * The half of the same check that actually answers "same pipeline". A reader
-   * comparing only tips accepts an artifact rewritten by a different build
-   * under the same commit, which is the substitution this whole module exists
-   * to stop.
+   Built pipeline recorded by each pooled entry, keyed by entry id.
+   
+   The half of the same check that actually answers "same pipeline". A reader
+   comparing only tips accepts an artifact rewritten by a different build
+   under the same commit, which is the substitution this whole module exists
+   to stop.
    */
   digestByEntry: ReadonlyMap<string, string>;
 
   /**
-   * How these entries were chosen, so a later reader knows what the pool
-   * licenses it to claim.
+   How these entries were chosen, so a later reader knows what the pool
+   licenses it to claim.
    */
   selection: GenerationSelection;
 
   /**
-   * One line per generation, for printing above any rate this draw produces.
+   One line per generation, for printing above any rate this draw produces.
    */
   report: readonly string[];
 }>;
 
 /**
- * Built pipeline each placed entry recorded, for the whole census.
- *
- * @param census - what the directory holds
- *
- * @returns Lookup from entry id to recorded digest
- *
- * @example
- * ```ts
- * const digestByEntry = mapDigests({ census, },);
- * ```
+ Built pipeline each placed entry recorded, for the whole census.
+ 
+ @param census - what the directory holds
+ 
+ @returns Lookup from entry id to recorded digest
+ 
+ @example
+ ```ts
+ const digestByEntry = mapDigests({ census, },);
+ ```
  */
 function mapDigests(
   { census, }: { readonly census: GenerationCensus; },
@@ -125,25 +125,25 @@ function mapDigests(
 }
 
 /**
- * Narrows a per-entry lookup to the entries a pool actually admitted.
- *
- * The census answers for every PLACED entry, including ones a required commit
- * later excluded. Handing that whole map to a reader contradicts what
- * {@link EligibleEntries.tipByEntry} promises, and it does so in the unsafe
- * direction: a reader that loaded an excluded artifact would find a value here
- * and check against it, rather than meeting the refusal an unadmitted entry is
- * supposed to meet.
- *
- * @param entryIds - entries the pool admitted
- *
- * @param byEntry - census-wide lookup
- *
- * @returns Lookup carrying only admitted entries
- *
- * @example
- * ```ts
- * const tipByEntry = keepAdmitted({ entryIds, byEntry: census.tipByEntry, },);
- * ```
+ Narrows a per-entry lookup to the entries a pool actually admitted.
+ 
+ The census answers for every PLACED entry, including ones a required commit
+ later excluded. Handing that whole map to a reader contradicts what
+ {@link EligibleEntries.tipByEntry} promises, and it does so in the unsafe
+ direction: a reader that loaded an excluded artifact would find a value here
+ and check against it, rather than meeting the refusal an unadmitted entry is
+ supposed to meet.
+ 
+ @param entryIds - entries the pool admitted
+ 
+ @param byEntry - census-wide lookup
+ 
+ @returns Lookup carrying only admitted entries
+ 
+ @example
+ ```ts
+ const tipByEntry = keepAdmitted({ entryIds, byEntry: census.tipByEntry, },);
+ ```
  */
 function keepAdmitted(
   {
@@ -172,37 +172,37 @@ function keepAdmitted(
 }
 
 /**
- * Renders the lines naming artifacts no generation could hold.
- *
- * Always rendered when there are any, because an excluded artifact that goes
- * unmentioned is exactly a silently smaller denominator.
- *
- * @param census - what the pool actually holds
- *
- * @returns One line per kind of exclusion that occurred, none otherwise
- *
- * @example
- * ```ts
- * const lines = unplaceableLines({ census, },);
- * ```
+ Renders the lines naming artifacts no generation could hold.
+ 
+ Always rendered when there are any, because an excluded artifact that goes
+ unmentioned is exactly a silently smaller denominator.
+ 
+ @param census - what the pool actually holds
+ 
+ @returns One line per kind of exclusion that occurred, none otherwise
+ 
+ @example
+ ```ts
+ const lines = unplaceableLines({ census, },);
+ ```
  */
 function unplaceableLines(
   { census, }: { readonly census: GenerationCensus; },
 ): readonly string[] {
   /**
-   * Artifacts that parsed but recorded nothing usable.
+   Artifacts that parsed but recorded nothing usable.
    */
   const untagged = census.untaggedIds
     .length;
 
   /**
-   * Artifacts that would not parse, kept for the malformed-artifact reader.
+   Artifacts that would not parse, kept for the malformed-artifact reader.
    */
   const malformed = census.malformedIds
     .length;
 
   /**
-   * Artifacts from before a build was recorded, sound but unidentifiable.
+   Artifacts from before a build was recorded, sound but unidentifiable.
    */
   const legacyCount = census.legacyIds
     .length;
@@ -236,22 +236,22 @@ function unplaceableLines(
 }
 
 /**
- * Whether each recorded commit contains the required one.
- *
- * Asked per distinct COMMIT rather than per generation, because a generation
- * can hold several commits, and per commit rather than per entry, because many
- * entries share one.
- *
- * @param census - what the directory holds
- *
- * @param requiredCommit - commit an entry's pipeline must contain
- *
- * @returns Verdict for every commit the census placed
- *
- * @example
- * ```ts
- * const verdicts = await verdictsByTip({ census, requiredCommit, },);
- * ```
+ Whether each recorded commit contains the required one.
+ 
+ Asked per distinct COMMIT rather than per generation, because a generation
+ can hold several commits, and per commit rather than per entry, because many
+ entries share one.
+ 
+ @param census - what the directory holds
+ 
+ @param requiredCommit - commit an entry's pipeline must contain
+ 
+ @returns Verdict for every commit the census placed
+ 
+ @example
+ ```ts
+ const verdicts = await verdictsByTip({ census, requiredCommit, },);
+ ```
  */
 async function verdictsByTip(
   {
@@ -263,7 +263,7 @@ async function verdictsByTip(
   },
 ): Promise<ReadonlyMap<string, boolean>> {
   /**
-   * Commits the census placed, each asked about once.
+   Commits the census placed, each asked about once.
    */
   const tips = [
     ...new Set(census.tipByEntry
@@ -271,7 +271,7 @@ async function verdictsByTip(
   ].toSorted();
 
   /**
-   * Verdict per commit, filled in order.
+   Verdict per commit, filled in order.
    */
   const verdicts = new Map<string, boolean>();
 
@@ -297,29 +297,29 @@ async function verdictsByTip(
 }
 
 /**
- * Selects the entries one draw may pool.
- *
- * @param census - every settled entry, partitioned by built pipeline
- *
- * @param requiredCommit - commit an entry's pipeline must contain, absent when
- * the caller has not chosen one
- *
- * @param pooledDeliberately - whether the caller has explicitly asked to read
- * every generation at once, which is legitimate for a census but never for a
- * rate
- *
- * @returns Eligible entries, what was excluded, and the lines to print above
- * any number drawn from them
- *
- * @throws MixedGenerationError when the pool spans generations and neither a
- * required commit nor deliberate pooling was named
- *
- * @throws EmptyPoolError when filtering leaves nothing to compute a rate over
- *
- * @example
- * ```ts
- * const eligible = await selectEligible({ census, requiredCommit: 'fc7912929', },);
- * ```
+ Selects the entries one draw may pool.
+ 
+ @param census - every settled entry, partitioned by built pipeline
+ 
+ @param requiredCommit - commit an entry's pipeline must contain, absent when
+ the caller has not chosen one
+ 
+ @param pooledDeliberately - whether the caller has explicitly asked to read
+ every generation at once, which is legitimate for a census but never for a
+ rate
+ 
+ @returns Eligible entries, what was excluded, and the lines to print above
+ any number drawn from them
+ 
+ @throws MixedGenerationError when the pool spans generations and neither a
+ required commit nor deliberate pooling was named
+ 
+ @throws EmptyPoolError when filtering leaves nothing to compute a rate over
+ 
+ @example
+ ```ts
+ const eligible = await selectEligible({ census, requiredCommit: 'fc7912929', },);
+ ```
  */
 export async function selectEligible(
   {
@@ -333,7 +333,7 @@ export async function selectEligible(
   },
 ): Promise<EligibleEntries> {
   /**
-   * Every entry, whatever its generation.
+   Every entry, whatever its generation.
    */
   const everyId = census.groups
     .flatMap(function toIds(group,): readonly string[] {
@@ -342,13 +342,13 @@ export async function selectEligible(
     .toSorted();
 
   /**
-   * How many distinct pipeline versions the pool holds.
+   How many distinct pipeline versions the pool holds.
    */
   const generationCount = census.groups
     .length;
 
   /**
-   * Built pipeline recorded per entry, the same for every branch below.
+   Built pipeline recorded per entry, the same for every branch below.
    */
   const digestByEntry = mapDigests({ census, },);
 
@@ -360,7 +360,7 @@ export async function selectEligible(
       throw new EmptyPoolError({ census, },);
 
     /**
-     * The one generation present, when exactly one is.
+     The one generation present, when exactly one is.
      */
     const [only,] = census.groups;
 
@@ -394,7 +394,7 @@ export async function selectEligible(
   }
 
   /**
-   * Whether each recorded commit contains the required one.
+   Whether each recorded commit contains the required one.
    */
   const verdicts = await verdictsByTip({
     census,
@@ -402,7 +402,7 @@ export async function selectEligible(
   },);
 
   /**
-   * Entries whose recorded commit contains the required one.
+   Entries whose recorded commit contains the required one.
    */
   const entryIds = everyId
     .filter(function isEligible(entryId,): boolean {
@@ -424,8 +424,8 @@ export async function selectEligible(
     },);
 
   /**
-   * Width at which every id this report prints stays distinguishable,
-   * including the required commit, since they appear in one message.
+   Width at which every id this report prints stays distinguishable,
+   including the required commit, since they appear in one message.
    */
   const short = abbreviate({
     ids: [
@@ -435,7 +435,7 @@ export async function selectEligible(
   },);
 
   /**
-   * How many eligible entries each generation contributed, in group order.
+   How many eligible entries each generation contributed, in group order.
    */
   const contributions = census.groups
     .map(function toContribution(group,): number {
@@ -447,8 +447,8 @@ export async function selectEligible(
     },);
 
   /**
-   * Generations that actually contributed entries, which is what the pool
-   * spans; a generation excluded by the required commit contributes nothing.
+   Generations that actually contributed entries, which is what the pool
+   spans; a generation excluded by the required commit contributes nothing.
    */
   const pooledCount = contributions
     .filter(function contributed(count,): boolean {
@@ -500,12 +500,12 @@ export async function selectEligible(
           index,
         ): string {
           /**
-           * Entries of this generation that survived the required commit.
+           Entries of this generation that survived the required commit.
            */
           const eligible = contributions[index] ?? 0;
 
           /**
-           * Entries this generation holds in all.
+           Entries this generation holds in all.
            */
           const size = group.entryIds
             .length;

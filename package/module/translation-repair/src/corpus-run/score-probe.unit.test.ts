@@ -1,17 +1,17 @@
 /**
- * Tests for the map that joins a graded sheet position to a probe verdict.
- *
- * This is the join the gate's probe comparison rests on: sheet position to
- * issue id through the manifest, then issue id to reading here. A wrong answer
- * does not fail, it mislabels, and every count downstream still looks ordinary.
- *
- * The defect this pins was live. The map used to be built from each reading's
- * `regions[].issueIds`, which names every issue a region serves, and one
- * replacement can serve several accepted issues. A shared envelope therefore
- * appeared in the readings of every record it served, and the last one indexed
- * won. Ownership now comes from the record itself.
- *
- * @module
+ Tests for the map that joins a graded sheet position to a probe verdict.
+ 
+ This is the join the gate's probe comparison rests on: sheet position to
+ issue id through the manifest, then issue id to reading here. A wrong answer
+ does not fail, it mislabels, and every count downstream still looks ordinary.
+ 
+ The defect this pins was live. The map used to be built from each reading's
+ `regions[].issueIds`, which names every issue a region serves, and one
+ replacement can serve several accepted issues. A shared envelope therefore
+ appeared in the readings of every record it served, and the last one indexed
+ won. Ownership now comes from the record itself.
+ 
+ @module
  */
 
 import {
@@ -27,18 +27,18 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Builds a region tally naming the issues it serves.
- *
- * @param envelopeId - envelope the region replaced
- *
- * @param issueIds - every issue this one region serves
- *
- * @returns Tally shaped as a reading carries it
- *
- * @example
- * ```ts
- * const tally = catTally({ envelopeId: 'envelope/nap', issueIds: [], },);
- * ```
+ Builds a region tally naming the issues it serves.
+ 
+ @param envelopeId - envelope the region replaced
+ 
+ @param issueIds - every issue this one region serves
+ 
+ @returns Tally shaped as a reading carries it
+ 
+ @example
+ ```ts
+ const tally = catTally({ envelopeId: 'envelope/nap', issueIds: [], },);
+ ```
  */
 function catTally(
   {
@@ -64,16 +64,16 @@ function catTally(
 }
 
 /**
- * Builds a probe reading over the given regions.
- *
- * @param regions - screened tallies for the regions serving this issue
- *
- * @returns Reading shaped as a record carries it
- *
- * @example
- * ```ts
- * const reading = catReading({ regions: [], },);
- * ```
+ Builds a probe reading over the given regions.
+ 
+ @param regions - screened tallies for the regions serving this issue
+ 
+ @returns Reading shaped as a record carries it
+ 
+ @example
+ ```ts
+ const reading = catReading({ regions: [], },);
+ ```
  */
 function catReading(
   { regions, }: { readonly regions: readonly ReturnType<typeof catTally>[]; },
@@ -96,7 +96,7 @@ await describe({
         + 'would hand one issue the other record\'s verdict',
       fn: async () => {
         /**
-         * Envelope serving both issues, as a merged replacement does.
+         Envelope serving both issues, as a merged replacement does.
          */
         const shared = catTally({
           envelopeId: 'envelope/shared',
@@ -106,12 +106,12 @@ await describe({
           ],
         },);
         /**
-         * Reading of the record about the napping issue.
+         Reading of the record about the napping issue.
          */
         const napReading = catReading({ regions: [shared,], },);
         /**
-         * Reading of the record about the chasing issue, distinguishable by an
-         * extra region so the two are not interchangeable.
+         Reading of the record about the chasing issue, distinguishable by an
+         extra region so the two are not interchangeable.
          */
         const chaseReading = catReading({
           regions: [
@@ -124,7 +124,7 @@ await describe({
         },);
 
         /**
-         * Join built from records rather than from region lists.
+         Join built from records rather than from region lists.
          */
         const byIssueId = indexReadingsByIssue({
           owned: [
@@ -155,7 +155,7 @@ await describe({
         + 'produces confident wrong numbers',
       fn: async () => {
         /**
-         * What indexesDuplicate raised, read for its class as well as its wording.
+         What indexesDuplicate raised, read for its class as well as its wording.
          */
         const refusalOfIndexesDuplicate = caught(function indexesDuplicate() {
           indexReadingsByIssue({
@@ -192,12 +192,12 @@ await describe({
         + 'refusing it would turn a harmless duplicate into a failed run',
       fn: async () => {
         /**
-         * One reading offered under the same id twice.
+         One reading offered under the same id twice.
          */
         const reading = catReading({ regions: [], },);
 
         /**
-         * Join over the repeated pair.
+         Join over the repeated pair.
          */
         const byIssueId = indexReadingsByIssue({
           owned: [

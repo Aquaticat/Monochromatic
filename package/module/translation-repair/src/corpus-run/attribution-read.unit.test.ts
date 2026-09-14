@@ -1,20 +1,20 @@
 /**
- * Tests for the parser that reads attribution out of settled artifacts.
- *
- * These exist because the report's own tests hand `sliceCritics` in by hand, so
- * they exercise the FOLD and never the WIRING. The eligible-versus-ineligible
- * decision the whole report rests on is not made there at all: it is made in
- * `toEntry`, by OMITTING the key for an artifact that carries no attribution.
- *
- * The distinction these guard is ABSENT versus MALFORMED. Only an absent key
- * means the entry predates attribution. A key that is present but corrupt must
- * fail loudly, because letting it fall through to the same omission would move
- * a broken artifact into the pre-feature population on the strength of its own
- * breakage, and the population is what every number divides by.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the parser that reads attribution out of settled artifacts.
+ 
+ These exist because the report's own tests hand `sliceCritics` in by hand, so
+ they exercise the FOLD and never the WIRING. The eligible-versus-ineligible
+ decision the whole report rests on is not made there at all: it is made in
+ `toEntry`, by OMITTING the key for an artifact that carries no attribution.
+ 
+ The distinction these guard is ABSENT versus MALFORMED. Only an absent key
+ means the entry predates attribution. A key that is present but corrupt must
+ fail loudly, because letting it fall through to the same omission would move
+ a broken artifact into the pre-feature population on the strength of its own
+ breakage, and the population is what every number divides by.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -34,43 +34,43 @@ import {
 import { gatherAttributionEntries, } from '../../dist/final/node/index.mjs';
 
 /**
- * Pipeline commit every fixture artifact carries unless its case sets one.
- *
- * Invented, and shared, so the fixture directory is one generation and the
- * generation guard passes without these parsing cases having to think about it.
+ Pipeline commit every fixture artifact carries unless its case sets one.
+ 
+ Invented, and shared, so the fixture directory is one generation and the
+ generation guard passes without these parsing cases having to think about it.
  */
 const SHARED_TIP = 'f000000000000000000000000000000000000000';
 
 /**
- * Built pipeline every fixture artifact carries unless its case sets one.
- *
- * Shared for the same reason as {@link SHARED_TIP}, and separate from it
- * because this is the field the pool actually partitions by: a commit says
- * where code came from, this says which build ran.
+ Built pipeline every fixture artifact carries unless its case sets one.
+ 
+ Shared for the same reason as {@link SHARED_TIP}, and separate from it
+ because this is the field the pool actually partitions by: a commit says
+ where code came from, this says which build ran.
  */
 const SHARED_GENERATION = `sha256-tree-v1:${'f'.repeat(64,)}`;
 
 /**
- * Critic used throughout.
+ Critic used throughout.
  */
 const TABBY = 'hf:openai/gpt-oss-120b';
 
 /**
- * Claim the fixtures attribute.
+ Claim the fixtures attribute.
  */
 const NAP = 'issue/nap';
 
 /**
- * Writes artifacts into a fresh throwaway directory that removes itself.
- *
- * @param artifacts - file name to artifact body
- *
- * @returns Directory holding them, disposable
- *
- * @example
- * ```ts
- * await using scratch = await writeArtifacts({ artifacts: { 'a.json': {}, }, },);
- * ```
+ Writes artifacts into a fresh throwaway directory that removes itself.
+ 
+ @param artifacts - file name to artifact body
+ 
+ @returns Directory holding them, disposable
+ 
+ @example
+ ```ts
+ await using scratch = await writeArtifacts({ artifacts: { 'a.json': {}, }, },);
+ ```
  */
 async function writeArtifacts(
   {
@@ -80,7 +80,7 @@ async function writeArtifacts(
   },
 ): Promise<{ readonly dir: string; } & AsyncDisposable> {
   /**
-   * Throwaway directory, never a real runs directory.
+   Throwaway directory, never a real runs directory.
    */
   const dir = await mkdtemp(join(
     tmpdir(),
@@ -91,16 +91,16 @@ async function writeArtifacts(
     .entries(artifacts,)
     .map(async function writeOne([name, body,],) {
     /**
-     * Body as written, with a pipeline commit supplied when the case did not
-     * name one.
-     *
-     * Every settled artifact carries `tip` and `pipelineDigest`, and the
-     * readers now refuse a pool they cannot partition by the latter. These
-     * cases are about PARSING rather than about generations, so they get one
-     * shared pair and stay a single-generation pool; a case that wants to
-     * exercise the generation guard sets its own. Deliberately not defaulted
-     * inside the reader: an artifact recording no pipeline is exactly what
-     * must not be quietly accepted.
+     Body as written, with a pipeline commit supplied when the case did not
+     name one.
+     
+     Every settled artifact carries `tip` and `pipelineDigest`, and the
+     readers now refuse a pool they cannot partition by the latter. These
+     cases are about PARSING rather than about generations, so they get one
+     shared pair and stay a single-generation pool; a case that wants to
+     exercise the generation guard sets its own. Deliberately not defaulted
+     inside the reader: an artifact recording no pipeline is exactly what
+     must not be quietly accepted.
      */
     const written = (((typeof body) === 'object') && (body !== null))
       ? {
@@ -135,20 +135,20 @@ async function writeArtifacts(
 }
 
 /**
- * Builds an artifact carrying attribution and one accepted issue.
- *
- * Deliberately NOT empty. Fixtures whose `claimAttributions` and `issues` are
- * both empty are satisfied by parsers that always return nothing, so they
- * constrain neither the proposer path nor the issue path.
- *
- * @param sliceCritics - calibration to record
- *
- * @returns Artifact body
- *
- * @example
- * ```ts
- * const body = artifactWith({ sliceCritics, },);
- * ```
+ Builds an artifact carrying attribution and one accepted issue.
+ 
+ Deliberately NOT empty. Fixtures whose `claimAttributions` and `issues` are
+ both empty are satisfied by parsers that always return nothing, so they
+ constrain neither the proposer path nor the issue path.
+ 
+ @param sliceCritics - calibration to record
+ 
+ @returns Artifact body
+ 
+ @example
+ ```ts
+ const body = artifactWith({ sliceCritics, },);
+ ```
  */
 function artifactWith(
   {
@@ -185,7 +185,7 @@ await describe({
         + 'rather than passing on fixtures that carry neither',
       fn: async () => {
         /**
-         * Artifact with one attributed claim and one accepted issue naming it.
+         Artifact with one attributed claim and one accepted issue naming it.
          */
         await using scratch = await writeArtifacts({
           artifacts: {
@@ -203,12 +203,12 @@ await describe({
         },);
 
         /**
-         * Entries as the CLI would gather them.
+         Entries as the CLI would gather them.
          */
         const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
 
         /**
-         * Chunk record the artifact carried.
+         Chunk record the artifact carried.
          */
         const record = entries[0]?.sliceCritics?.[0];
 
@@ -229,14 +229,14 @@ await describe({
         + 'hand and so make every entry eligible by construction',
       fn: async () => {
         /**
-         * Artifact written before attribution existed.
+         Artifact written before attribution existed.
          */
         await using scratch = await writeArtifacts({
           artifacts: { 'Mittens.json': { id: 'Mittens', issues: [], }, },
         },);
 
         /**
-         * Entries as the CLI would gather them.
+         Entries as the CLI would gather them.
          */
         const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
 
@@ -255,7 +255,7 @@ await describe({
         + 'calibration at all for every other entry',
       fn: async () => {
         /**
-         * One sound artifact beside one truncated mid-write.
+         One sound artifact beside one truncated mid-write.
          */
         await using scratch = await writeArtifacts({
           artifacts: {
@@ -271,7 +271,7 @@ await describe({
         },);
 
         /**
-         * What the directory yielded.
+         What the directory yielded.
          */
         const { entries, malformed, } = await gatherAttributionEntries({
           artifactsDir: scratch.dir,
@@ -299,7 +299,7 @@ await describe({
       fn: async () => {
         await Promise.all([null, {}, 'corrupt', 7,].map(async function rejectsIt(corrupt,) {
           /**
-           * Artifact whose attribution key is present and unusable.
+           Artifact whose attribution key is present and unusable.
            */
           await using scratch = await writeArtifacts({
             artifacts: { 'Whiskers.json': artifactWith({ sliceCritics: corrupt, },), },
@@ -321,7 +321,7 @@ await describe({
       fn: async () => {
         await Promise.all(['one', -1, 1.5, undefined,].map(async function rejectsIt(sliceIndex,) {
           /**
-           * Artifact carrying one unusable chunk index.
+           Artifact carrying one unusable chunk index.
            */
           await using scratch = await writeArtifacts({
             artifacts: {
@@ -350,7 +350,7 @@ await describe({
         + 'on one chunk doubles its own denominator',
       fn: async () => {
         /**
-         * One chunk naming the same critic twice as having answered.
+         One chunk naming the same critic twice as having answered.
          */
         await using heard = await writeArtifacts({
           artifacts: {
@@ -369,7 +369,7 @@ await describe({
           ).toContain('distinct',);
 
         /**
-         * Two records claiming to describe the same chunk.
+         Two records claiming to describe the same chunk.
          */
         await using chunks = await writeArtifacts({
           artifacts: {
@@ -387,7 +387,7 @@ await describe({
           ).toContain('one record per chunk',);
 
         /**
-         * One claim crediting the same critic twice.
+         One claim crediting the same critic twice.
          */
         await using proposers = await writeArtifacts({
           artifacts: {
@@ -420,7 +420,7 @@ await describe({
         + 'counts one claim as two and lifts every per-claim rate on its own',
       fn: async () => {
         /**
-         * One chunk carrying the same claim id under two attributions.
+         One chunk carrying the same claim id under two attributions.
          */
         await using claims = await writeArtifacts({
           artifacts: {
@@ -450,20 +450,20 @@ await describe({
         + 'file would leave an operator to find the broken field by hand',
       fn: async () => {
         /**
-         * One artifact per shape a decoder refuses, each paired with the path
-         * AND the reason its refusal has to carry.
-         *
-         * BOTH HALVES, because a path alone is a prefix of the path the next
-         * check down would name: with the record checks removed, reading a
-         * field off a string yields `undefined`, the check below refuses that
-         * instead, and `proposers[0]` is satisfied by a refusal naming
-         * `proposers[0].modelId`. Three of these passed against three missing
-         * guards before the reason was pinned beside the path.
-         *
-         * `claimAttributions` is decoded before `heardCriticIds` is read, so
-         * the shapes aimed at the heard set carry an empty attribution list:
-         * a broken one would be refused first and the case would then pin a
-         * field it was not aiming at.
+         One artifact per shape a decoder refuses, each paired with the path
+         AND the reason its refusal has to carry.
+         
+         BOTH HALVES, because a path alone is a prefix of the path the next
+         check down would name: with the record checks removed, reading a
+         field off a string yields `undefined`, the check below refuses that
+         instead, and `proposers[0]` is satisfied by a refusal naming
+         `proposers[0].modelId`. Three of these passed against three missing
+         guards before the reason was pinned beside the path.
+         
+         `claimAttributions` is decoded before `heardCriticIds` is read, so
+         the shapes aimed at the heard set carry an empty attribution list:
+         a broken one would be refused first and the case would then pin a
+         field it was not aiming at.
          */
         const broken: readonly {
           readonly id: string;
@@ -534,14 +534,14 @@ await describe({
         ];
 
         /**
-         * All nine written into one directory, so a single gather answers them
-         * together and a shape that was quietly accepted shows up as a missing
-         * row rather than as a passing case.
-         *
-         * Each artifact records the id its file is named for, because the pool
-         * treats a file whose recorded id is not its file name as unplaceable,
-         * and one readable artifact rides along because a pool with nothing
-         * placeable in it is refused before any shape is reported.
+         All nine written into one directory, so a single gather answers them
+         together and a shape that was quietly accepted shows up as a missing
+         row rather than as a passing case.
+         
+         Each artifact records the id its file is named for, because the pool
+         treats a file whose recorded id is not its file name as unplaceable,
+         and one readable artifact rides along because a pool with nothing
+         placeable in it is refused before any shape is reported.
          */
         await using scratch = await writeArtifacts({
           artifacts: {
@@ -571,7 +571,7 @@ await describe({
         },);
 
         /**
-         * Why each file failed, keyed by the file that failed.
+         Why each file failed, keyed by the file that failed.
          */
         const reasons = new Map((await gatherAttributionEntries({ artifactsDir: scratch.dir, },))
           .malformed
@@ -585,8 +585,8 @@ await describe({
         expect(reasons.size,).toBe(broken.length,);
         for (const one of broken) {
           /**
-           * Why this file failed, absent where the decoders accepted a shape
-           * they were supposed to refuse.
+           Why this file failed, absent where the decoders accepted a shape
+           they were supposed to refuse.
            */
           const reason = reasons.get(`${one.id}.json`,);
 
@@ -604,7 +604,7 @@ await describe({
         + 'would manufacture support from a critic that stayed silent',
       fn: async () => {
         /**
-         * Proposer credited with no emissions at all.
+         Proposer credited with no emissions at all.
          */
         await using scratch = await writeArtifacts({
           artifacts: {
@@ -639,8 +639,8 @@ await describe({
         + 'asking the root is caught rather than agreeing by coincidence',
       fn: async () => {
         /**
-         * Two-lane artifact of the generation the pass writes, with a decoy
-         * planted at the root where generation 1 kept these records.
+         Two-lane artifact of the generation the pass writes, with a decoy
+         planted at the root where generation 1 kept these records.
          */
         await using scratch = await writeArtifacts({
           artifacts: {
@@ -684,7 +684,7 @@ await describe({
         },);
 
         /**
-         * Entries as the CLI would gather them.
+         Entries as the CLI would gather them.
          */
         const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
 
@@ -694,7 +694,7 @@ await describe({
         expect(entries[0]?.sliceCritics,).toBeDefined();
 
         /**
-         * Chunk record the repair lane carried.
+         Chunk record the repair lane carried.
          */
         const record = entries[0]?.sliceCritics?.[0];
 
@@ -712,8 +712,8 @@ await describe({
         + 'understanding them would report every one as an entry that predates attribution',
       fn: async () => {
         /**
-         * Two-lane artifact of the generation before the rename, spelled the
-         * way that generation spelled it.
+         Two-lane artifact of the generation before the rename, spelled the
+         way that generation spelled it.
          */
         await using scratch = await writeArtifacts({
           artifacts: {
@@ -749,14 +749,14 @@ await describe({
         },);
 
         /**
-         * Entries as the CLI would gather them.
+         Entries as the CLI would gather them.
          */
         const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
 
         expect(entries[0]?.sliceCritics,).toBeDefined();
 
         /**
-         * Chunk record the repair lane carried, under the older spelling.
+         Chunk record the repair lane carried, under the older spelling.
          */
         const record = entries[0]?.sliceCritics?.[0];
 

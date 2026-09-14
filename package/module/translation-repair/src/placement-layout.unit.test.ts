@@ -1,9 +1,9 @@
 /**
- * Tests for the check that says target spans can be written back.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the check that says target spans can be written back.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -21,25 +21,25 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Document the spans index into.
+ Document the spans index into.
  */
 const TARGET_TEXT = 'The cat sleeps.\n\nShe purrs.';
 
 /**
- * Builds one pair covering a span of {@link TARGET_TEXT}.
- *
- * @param sliceIndex - position of this slice
- *
- * @param startOffset - absolute start
- *
- * @param endOffset - absolute exclusive end
- *
- * @returns Pair whose target side carries that span
- *
- * @example
- * ```ts
- * const pair = spanAt({ sliceIndex: 0, startOffset: 0, endOffset: 15, },);
- * ```
+ Builds one pair covering a span of {@link TARGET_TEXT}.
+ 
+ @param sliceIndex - position of this slice
+ 
+ @param startOffset - absolute start
+ 
+ @param endOffset - absolute exclusive end
+ 
+ @returns Pair whose target side carries that span
+ 
+ @example
+ ```ts
+ const pair = spanAt({ sliceIndex: 0, startOffset: 0, endOffset: 15, },);
+ ```
  */
 function spanAt(
   {
@@ -53,7 +53,7 @@ function spanAt(
   },
 ): ChunkPair {
   /**
-   * Both sides, since only the target one is read here.
+   Both sides, since only the target one is read here.
    */
   const side = {
     sliceIndex,
@@ -72,18 +72,18 @@ function spanAt(
 }
 
 /**
- * Builds one pair whose target is an anchor at an offset.
- *
- * @param sliceIndex - position of this slice
- *
- * @param offset - boundary it names
- *
- * @returns Pair whose target names that boundary
- *
- * @example
- * ```ts
- * const pair = anchorAt({ sliceIndex: 1, offset: 17, },);
- * ```
+ Builds one pair whose target is an anchor at an offset.
+ 
+ @param sliceIndex - position of this slice
+ 
+ @param offset - boundary it names
+ 
+ @returns Pair whose target names that boundary
+ 
+ @example
+ ```ts
+ const pair = anchorAt({ sliceIndex: 1, offset: 17, },);
+ ```
  */
 function anchorAt(
   {
@@ -110,7 +110,7 @@ function anchorAt(
 }
 
 /**
- * Where the second paragraph starts.
+ Where the second paragraph starts.
  */
 const SECOND_START = TARGET_TEXT.indexOf('She purrs.',);
 
@@ -205,7 +205,7 @@ await describe({
         + 'are all the same defect seen from different sides',
       fn: async () => {
         /**
-         * What checkBackwards raised, read for its class as well as its wording.
+         What checkBackwards raised, read for its class as well as its wording.
          */
         const refusalOfCheckBackwards = caught(function checkBackwards() {
           assertPlacementLayout({
@@ -273,7 +273,7 @@ await describe({
         + 'indistinguishable by their offsets, and only one of them may be written INTO',
       fn: async () => {
         /**
-         * What checkHollowContent raised, read for its class as well as its wording.
+         What checkHollowContent raised, read for its class as well as its wording.
          */
         const refusalOfCheckHollowContent = caught(function checkHollowContent() {
           assertPlacementLayout({
@@ -298,7 +298,7 @@ await describe({
         + 'is a confident splice into a passage nobody read',
       fn: async () => {
         /**
-         * What checkForeignSlices raised, read for its class as well as its wording.
+         What checkForeignSlices raised, read for its class as well as its wording.
          */
         const refusalOfCheckForeignSlices = caught(function checkForeignSlices() {
           assertPlacementLayout({
@@ -330,7 +330,7 @@ await describe({
         + 'are values the constructor cannot produce and the structural type still permits',
       fn: async () => {
         /**
-         * What checkFatAnchor raised, read for its class as well as its wording.
+         What checkFatAnchor raised, read for its class as well as its wording.
          */
         const refusalOfCheckFatAnchor = caught(function checkFatAnchor() {
           assertPlacementLayout({
@@ -357,7 +357,7 @@ await describe({
         expect(refusalOfCheckFatAnchor,).toBeInstanceOf(PlacementLayoutError,);
         expect((refusalOfCheckFatAnchor as Error).message,).toContain('a place covers none of the three',);
         /**
-         * What checkFractionalOffset raised, read for its class as well as its wording.
+         What checkFractionalOffset raised, read for its class as well as its wording.
          */
         const refusalOfCheckFractionalOffset = caught(function checkFractionalOffset() {
           assertPlacementLayout({

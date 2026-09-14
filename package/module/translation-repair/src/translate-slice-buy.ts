@@ -29,14 +29,14 @@ import {
 // whether it is.
 
 /**
- * What one purchase returned, and whether it was stored.
+ What one purchase returned, and whether it was stored.
  */
 export type BoughtSlice = {
   readonly kind: 'settled';
   readonly record: TranslateSliceRecord;
 
   /**
-   * Whether the record reached the cache, which is what a twin may reuse.
+   Whether the record reached the cache, which is what a twin may reuse.
    */
   readonly persisted: boolean;
 } | {
@@ -46,44 +46,44 @@ export type BoughtSlice = {
 };
 
 /**
- * Buys one slice: translated, judged, checked, and persisted when somebody
- * was heard.
- *
- * @param client - injected model client
- *
- * @param slice - slice to buy
- *
- * @param prepared - document the slice belongs to
- *
- * @param models - translator and judge rosters
- *
- * @param key - cross-run key the record is persisted under
- *
- * @param neighbouringIncumbentText - archive English either side
- *
- * @param neighbouringSourceText - original either side
- *
- * @param pictureContext - what nearby pictures were read as
- *
- * @param pictureFindings - which nearby pictures nobody could read
- *
- * @param sliceCache - where a heard record is persisted
- *
- * @param signal - entry deadline and caller abort
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - lane logger
- *
- * @returns Purchase, stored or not
- *
- * @throws Whatever `signal.reason` carries, when the caller aborted before or
- * during the purchase; nothing settled under that abort is cached
- *
- * @example
- * ```ts
- * const bought = await buyTranslateSlice({ ... },);
- * ```
+ Buys one slice: translated, judged, checked, and persisted when somebody
+ was heard.
+ 
+ @param client - injected model client
+ 
+ @param slice - slice to buy
+ 
+ @param prepared - document the slice belongs to
+ 
+ @param models - translator and judge rosters
+ 
+ @param key - cross-run key the record is persisted under
+ 
+ @param neighbouringIncumbentText - archive English either side
+ 
+ @param neighbouringSourceText - original either side
+ 
+ @param pictureContext - what nearby pictures were read as
+ 
+ @param pictureFindings - which nearby pictures nobody could read
+ 
+ @param sliceCache - where a heard record is persisted
+ 
+ @param signal - entry deadline and caller abort
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - lane logger
+ 
+ @returns Purchase, stored or not
+ 
+ @throws Whatever `signal.reason` carries, when the caller aborted before or
+ during the purchase; nothing settled under that abort is cached
+ 
+ @example
+ ```ts
+ const bought = await buyTranslateSlice({ ... },);
+ ```
  */
 export async function buyTranslateSlice(
   {
@@ -117,7 +117,7 @@ export async function buyTranslateSlice(
   }>,
 ): Promise<BoughtSlice> {
   /**
-   * Global index of this slice, which every record names.
+   Global index of this slice, which every record names.
    */
   const { sliceIndex, } = slice.target;
 
@@ -128,7 +128,7 @@ export async function buyTranslateSlice(
   signal.throwIfAborted();
 
   /**
-   * Fresh record for this slice, translated and judged.
+   Fresh record for this slice, translated and judged.
    */
   const attempt = await attemptTranslateSlice({
     client,
@@ -176,7 +176,7 @@ export async function buyTranslateSlice(
   }
 
   /**
-   * Record this round settled.
+   Record this round settled.
    */
   const { record, } = attempt;
 

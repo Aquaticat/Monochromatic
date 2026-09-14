@@ -1,29 +1,29 @@
 /**
- * Tests for what has to hold between a lane's index sets, counts, status and
- * the ledger rows those describe.
- *
- * THESE ARE ALL REFUSAL BRANCHES, and a valid artifact reaches none of them.
- * `parseSettledTwoLaneArtifact` calls every one of these on its way through a file,
- * so the suite already ran them thousands of times, always down the arm where
- * nothing was wrong. That is coverage of the caller and not of these: the
- * question each answers is what it does with a lane whose two derivations
- * disagree, and no valid fixture can ask it.
- *
- * WHY ORDER RATHER THAN MEMBERSHIP. Both contracts say the index lists are in
- * document order, so an equal-length list in another order is a lane whose two
- * derivations disagree, and a check that read them as sets would call that
- * agreement. Two cases pin the ordering, and one pins a repeated index, which
- * a set would also have swallowed.
- *
- * WHY BLOCKED COMPATIBILITY RUNS ONE WAY. A blocked run and an unblocked one
- * produce the same ledger whenever no slice decided anything different from
- * the archive, so the status is not derivable from the rows and a check that
- * recomputed it would refuse valid artifacts. Three cases accept ledgers that
- * a recomputation would have rejected.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for what has to hold between a lane's index sets, counts, status and
+ the ledger rows those describe.
+ 
+ THESE ARE ALL REFUSAL BRANCHES, and a valid artifact reaches none of them.
+ `parseSettledTwoLaneArtifact` calls every one of these on its way through a file,
+ so the suite already ran them thousands of times, always down the arm where
+ nothing was wrong. That is coverage of the caller and not of these: the
+ question each answers is what it does with a lane whose two derivations
+ disagree, and no valid fixture can ask it.
+ 
+ WHY ORDER RATHER THAN MEMBERSHIP. Both contracts say the index lists are in
+ document order, so an equal-length list in another order is a lane whose two
+ derivations disagree, and a check that read them as sets would call that
+ agreement. Two cases pin the ordering, and one pins a repeated index, which
+ a set would also have swallowed.
+ 
+ WHY BLOCKED COMPATIBILITY RUNS ONE WAY. A blocked run and an unblocked one
+ produce the same ledger whenever no slice decided anything different from
+ the archive, so the status is not derivable from the rows and a check that
+ recomputed it would refuse valid artifacts. Three cases accept ledgers that
+ a recomputation would have rejected.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -47,43 +47,43 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Dotted path the cases hand in, standing for one lane's raw result.
+ Dotted path the cases hand in, standing for one lane's raw result.
  */
 const LANE_PATH = 'lanes.repair.result';
 
 /**
- * Original of the slice every row here is about.
+ Original of the slice every row here is about.
  */
 const SOURCE_SILL = '猫猫在窗台上睡觉。';
 
 /**
- * Archive's own English for it.
+ Archive's own English for it.
  */
 const ARCHIVE_SILL = 'The cat sleeps on the sill.';
 
 /**
- * Wording a lane decided on, where a row ships one.
+ Wording a lane decided on, where a row ships one.
  */
 const DECIDED_SILL = 'The cat naps on the windowsill.';
 
 /**
- * Builds one ledger row, which is the only thing the index sets are derived
- * from.
- *
- * The four fields beyond `sliceIndex` and `delivery` are held constant on
- * purpose: nothing in this file reads them, and a case that varied them would
- * suggest they mattered here.
- *
- * @param sliceIndex - global slice index this row is for
- *
- * @param delivery - how the document came to carry what it carries
- *
- * @returns Row a lane's ledger would hold
- *
- * @example
- * ```ts
- * const row = row({ sliceIndex: 0, delivery: { kind: 'replacement-shipped', }, },);
- * ```
+ Builds one ledger row, which is the only thing the index sets are derived
+ from.
+ 
+ The four fields beyond `sliceIndex` and `delivery` are held constant on
+ purpose: nothing in this file reads them, and a case that varied them would
+ suggest they mattered here.
+ 
+ @param sliceIndex - global slice index this row is for
+ 
+ @param delivery - how the document came to carry what it carries
+ 
+ @returns Row a lane's ledger would hold
+ 
+ @example
+ ```ts
+ const row = row({ sliceIndex: 0, delivery: { kind: 'replacement-shipped', }, },);
+ ```
  */
 function row(
   {
@@ -111,17 +111,17 @@ function row(
 }
 
 /**
- * Ledger four slices long, carrying one of each delivery the sets read.
- *
- * TWO SHIPPED SLICES RATHER THAN ONE, so a case can reorder the changed list
- * without changing what is in it.
- *
- * @returns Rows in document order
- *
- * @example
- * ```ts
- * const ledger = mixedLedger();
- * ```
+ Ledger four slices long, carrying one of each delivery the sets read.
+ 
+ TWO SHIPPED SLICES RATHER THAN ONE, so a case can reorder the changed list
+ without changing what is in it.
+ 
+ @returns Rows in document order
+ 
+ @example
+ ```ts
+ const ledger = mixedLedger();
+ ```
  */
 function mixedLedger(): readonly ArtifactDeliveryRow[] {
   return [
@@ -148,26 +148,26 @@ function mixedLedger(): readonly ArtifactDeliveryRow[] {
 }
 
 /**
- * Repair evidence agreeing with `mixedLedger` in every part these checks read.
- *
- * @param status - how the run ended, which only the compatibility check reads
- *
- * @param sliceCount - slices the preparation produced
- *
- * @param changedSliceIndices - slices the document carries a repair for
- *
- * @param withdrawnSliceIndices - slices the assembly guard took a repair back at
- *
- * @param sliceTexts - what the lane decided per slice, which neither check
- * here reads and which is carried only so the fixture does not contradict its
- * own slice count
- *
- * @returns Evidence a valid repair lane would carry
- *
- * @example
- * ```ts
- * const evidence = repairEvidence({ sliceCount: 3, },);
- * ```
+ Repair evidence agreeing with `mixedLedger` in every part these checks read.
+ 
+ @param status - how the run ended, which only the compatibility check reads
+ 
+ @param sliceCount - slices the preparation produced
+ 
+ @param changedSliceIndices - slices the document carries a repair for
+ 
+ @param withdrawnSliceIndices - slices the assembly guard took a repair back at
+ 
+ @param sliceTexts - what the lane decided per slice, which neither check
+ here reads and which is carried only so the fixture does not contradict its
+ own slice count
+ 
+ @returns Evidence a valid repair lane would carry
+ 
+ @example
+ ```ts
+ const evidence = repairEvidence({ sliceCount: 3, },);
+ ```
  */
 function repairEvidence(
   {
@@ -197,18 +197,18 @@ function repairEvidence(
 }
 
 /**
- * One evidence row, which only the translate status check reads.
- *
- * @param sliceIndex - global slice index this row is for
- *
- * @param outcome - what the lane did about it
- *
- * @returns Row a lane's raw result would carry
- *
- * @example
- * ```ts
- * const seen = evidenceRow({ sliceIndex: 0, outcome: { kind: 'unfilled', }, },);
- * ```
+ One evidence row, which only the translate status check reads.
+ 
+ @param sliceIndex - global slice index this row is for
+ 
+ @param outcome - what the lane did about it
+ 
+ @returns Row a lane's raw result would carry
+ 
+ @example
+ ```ts
+ const seen = evidenceRow({ sliceIndex: 0, outcome: { kind: 'unfilled', }, },);
+ ```
  */
 function evidenceRow(
   {
@@ -228,15 +228,15 @@ function evidenceRow(
 }
 
 /**
- * Four evidence rows, none of them a slice the lane reached and could not
- * fill, which is the only outcome the translate status reads.
- *
- * @returns Rows in document order
- *
- * @example
- * ```ts
- * const sliceTexts = decidedRows();
- * ```
+ Four evidence rows, none of them a slice the lane reached and could not
+ fill, which is the only outcome the translate status reads.
+ 
+ @returns Rows in document order
+ 
+ @example
+ ```ts
+ const sliceTexts = decidedRows();
+ ```
  */
 function decidedRows(): readonly ArtifactEvidenceRow[] {
   return [
@@ -269,29 +269,29 @@ function decidedRows(): readonly ArtifactEvidenceRow[] {
 }
 
 /**
- * Translate evidence whose counts, lists and status all agree.
- *
- * @param status - whether the document is a whole translation
- *
- * @param sliceCount - slices the preparation produced
- *
- * @param changedSliceCount - second statement of how many slices shipped
- *
- * @param withdrawnSliceCount - second statement of how many were withdrawn
- *
- * @param changedSliceIndices - slices whose accepted text shipped
- *
- * @param withdrawnSliceIndices - slices the assembly guard took back
- *
- * @param sliceTexts - what the lane decided per slice, which the status is
- * checked against
- *
- * @returns Evidence a valid translate lane would carry
- *
- * @example
- * ```ts
- * const evidence = translateEvidence({ status: 'unfilled', },);
- * ```
+ Translate evidence whose counts, lists and status all agree.
+ 
+ @param status - whether the document is a whole translation
+ 
+ @param sliceCount - slices the preparation produced
+ 
+ @param changedSliceCount - second statement of how many slices shipped
+ 
+ @param withdrawnSliceCount - second statement of how many were withdrawn
+ 
+ @param changedSliceIndices - slices whose accepted text shipped
+ 
+ @param withdrawnSliceIndices - slices the assembly guard took back
+ 
+ @param sliceTexts - what the lane decided per slice, which the status is
+ checked against
+ 
+ @returns Evidence a valid translate lane would carry
+ 
+ @example
+ ```ts
+ const evidence = translateEvidence({ status: 'unfilled', },);
+ ```
  */
 function translateEvidence(
   {

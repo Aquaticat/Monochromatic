@@ -33,18 +33,18 @@
 // directly and in one pass.
 
 /**
- * Element that names images in this corpus.
+ Element that names images in this corpus.
  */
 const ELEMENT_OPEN = '<PhotoScroll';
 
 /**
- * How an element's attributes end.
+ How an element's attributes end.
  */
 const ELEMENT_CLOSE = '/>';
 
 /**
- * Quote marks the corpus writes asset paths in: most pages the first, four
- * source pages the second.
+ Quote marks the corpus writes asset paths in: most pages the first, four
+ source pages the second.
  */
 const QUOTE_MARKS = [
   '\'',
@@ -52,31 +52,31 @@ const QUOTE_MARKS = [
 ] as const;
 
 /**
- * One of the marks a page may quote a path with.
+ One of the marks a page may quote a path with.
  */
 type QuoteMark = (typeof QUOTE_MARKS)[number];
 
 /**
- * Where the next quoted string opens, or that none opens before the limit.
- *
- * A NAMED OUTCOME rather than a nullish union, which this repository does not
- * model absence with.
- *
- * @example
- * ```ts
- * const opening: QuoteOpening = { kind: 'opened', quote: '"', at: 12, };
- * ```
+ Where the next quoted string opens, or that none opens before the limit.
+ 
+ A NAMED OUTCOME rather than a nullish union, which this repository does not
+ model absence with.
+ 
+ @example
+ ```ts
+ const opening: QuoteOpening = { kind: 'opened', quote: '"', at: 12, };
+ ```
  */
 type QuoteOpening = {
   readonly kind: 'opened';
 
   /**
-   * Mark that opened it, which alone may close it.
+   Mark that opened it, which alone may close it.
    */
   readonly quote: QuoteMark;
 
   /**
-   * Offset of that mark.
+   Offset of that mark.
    */
   readonly at: number;
 } | {
@@ -84,25 +84,25 @@ type QuoteOpening = {
 };
 
 /**
- * Finds the nearest opening quote of either mark before a limit.
- *
- * EITHER MARK, NEAREST FIRST: a caption in double quotes beside paths in
- * single quotes, or the reverse, must be read string by string in page order,
- * or the caption's closing mark would be taken for a path's opening one.
- *
- * @param text - passage to read
- *
- * @param from - offset to search from
- *
- * @param limit - offset the element's attributes end at, exclusive
- *
- * @returns Nearest opening mark and which mark it is, or that none precedes
- * the limit
- *
- * @example
- * ```ts
- * const opening = nextQuoteOpening({ text, from: 0, limit: text.length, },);
- * ```
+ Finds the nearest opening quote of either mark before a limit.
+ 
+ EITHER MARK, NEAREST FIRST: a caption in double quotes beside paths in
+ single quotes, or the reverse, must be read string by string in page order,
+ or the caption's closing mark would be taken for a path's opening one.
+ 
+ @param text - passage to read
+ 
+ @param from - offset to search from
+ 
+ @param limit - offset the element's attributes end at, exclusive
+ 
+ @returns Nearest opening mark and which mark it is, or that none precedes
+ the limit
+ 
+ @example
+ ```ts
+ const opening = nextQuoteOpening({ text, from: 0, limit: text.length, },);
+ ```
  */
 function nextQuoteOpening(
   {
@@ -121,7 +121,7 @@ function nextQuoteOpening(
       quote: QuoteMark,
     ): QuoteOpening {
       /**
-       * Where this mark next occurs, if before the limit.
+       Where this mark next occurs, if before the limit.
        */
       const at = text.indexOf(
         quote,
@@ -142,43 +142,43 @@ function nextQuoteOpening(
 }
 
 /**
- * Directory every asset sits in, under the entry's own directory.
+ Directory every asset sits in, under the entry's own directory.
  */
 const ASSET_DIRECTORY = '/photos/';
 
 /**
- * Placeholder standing for the entry's directory.
+ Placeholder standing for the entry's directory.
  */
 const ENTRY_PLACEHOLDER = `\${path}`;
 
 /**
- * One image a passage shows.
- *
- * @example
- * ```ts
- * const shown: PhotoReference = { assetName: 'intro.webp', };
- * ```
+ One image a passage shows.
+ 
+ @example
+ ```ts
+ const shown: PhotoReference = { assetName: 'intro.webp', };
+ ```
  */
 export type PhotoReference = {
   /**
-   * File name within the entry's `photos` directory.
+   File name within the entry's `photos` directory.
    */
   readonly assetName: string;
 };
 
 /**
- * Reads every quoted string inside one element's attributes.
- *
- * @param text - passage to read
- *
- * @param from - offset of the element's opening
- *
- * @returns Quoted strings, and where the element ended
- *
- * @example
- * ```ts
- * const found = quotedWithin({ text, from, },);
- * ```
+ Reads every quoted string inside one element's attributes.
+ 
+ @param text - passage to read
+ 
+ @param from - offset of the element's opening
+ 
+ @returns Quoted strings, and where the element ended
+ 
+ @example
+ ```ts
+ const found = quotedWithin({ text, from, },);
+ ```
  */
 function quotedWithin(
   {
@@ -193,8 +193,8 @@ function quotedWithin(
   readonly ended: number;
 } {
   /**
-   * Where this element's attributes stop, or the end of the passage when the
-   * element is never closed.
+   Where this element's attributes stop, or the end of the passage when the
+   element is never closed.
    */
   const closeAt = text.indexOf(
     ELEMENT_CLOSE,
@@ -202,23 +202,23 @@ function quotedWithin(
   );
 
   /**
-   * End of the region to read, exclusive.
+   End of the region to read, exclusive.
    */
   const limit = (closeAt === (-1)) ? text.length : closeAt;
 
   /**
-   * Strings found so far.
+   Strings found so far.
    */
   const quoted: string[] = [];
 
   /**
-   * Cursor, walking quote to quote.
+   Cursor, walking quote to quote.
    */
   const at = { offset: from, };
 
   while (at.offset < limit) {
     /**
-     * Opening quote of the next string, of either mark.
+     Opening quote of the next string, of either mark.
      */
     const opening = nextQuoteOpening({
       text,
@@ -229,8 +229,8 @@ function quotedWithin(
       break;
 
     /**
-     * Its closing quote: the same mark, so the other mark inside a path is
-     * part of the path.
+     Its closing quote: the same mark, so the other mark inside a path is
+     part of the path.
      */
     const closed = text.indexOf(
       opening.quote,
@@ -253,21 +253,21 @@ function quotedWithin(
 }
 
 /**
- * What one quoted attribute string turned out to name.
- *
- * A NAMED OUTCOME rather than a nullish union, which this repository does not
- * model absence with.
- *
- * @example
- * ```ts
- * const read: AssetNameRead = { kind: 'asset', assetName: 'intro.webp', };
- * ```
+ What one quoted attribute string turned out to name.
+ 
+ A NAMED OUTCOME rather than a nullish union, which this repository does not
+ model absence with.
+ 
+ @example
+ ```ts
+ const read: AssetNameRead = { kind: 'asset', assetName: 'intro.webp', };
+ ```
  */
 type AssetNameRead = {
   readonly kind: 'asset';
 
   /**
-   * File name within the entry's photos directory.
+   File name within the entry's photos directory.
    */
   readonly assetName: string;
 } | {
@@ -275,27 +275,27 @@ type AssetNameRead = {
 };
 
 /**
- * Turns one quoted asset path into the file name it names.
- *
- * TOLERATES WHITESPACE AFTER THE PLACEHOLDER, because one reference in the
- * corpus writes `${path} /photos/…`. Reading it as a different prefix would
- * report that entry as showing one image fewer than it does.
- *
- * @param quoted - quoted string from a photo element
- *
- * @returns Asset file name, or a note that the string names something else
- *
- * @example
- * ```ts
- * const name = assetNameOf({ quoted: '${path}/photos/intro.webp', },);
- * ```
+ Turns one quoted asset path into the file name it names.
+ 
+ TOLERATES WHITESPACE AFTER THE PLACEHOLDER, because one reference in the
+ corpus writes `${path} /photos/…`. Reading it as a different prefix would
+ report that entry as showing one image fewer than it does.
+ 
+ @param quoted - quoted string from a photo element
+ 
+ @returns Asset file name, or a note that the string names something else
+ 
+ @example
+ ```ts
+ const name = assetNameOf({ quoted: '${path}/photos/intro.webp', },);
+ ```
  */
 function assetNameOf({ quoted, }: { readonly quoted: string; },): AssetNameRead {
   if (!quoted.startsWith(ENTRY_PLACEHOLDER,))
     return { kind: 'not-an-asset', };
 
   /**
-   * Everything after the placeholder, whose leading whitespace is incidental.
+   Everything after the placeholder, whose leading whitespace is incidental.
    */
   const rest = quoted.slice(ENTRY_PLACEHOLDER.length,)
     .trimStart();
@@ -303,7 +303,7 @@ function assetNameOf({ quoted, }: { readonly quoted: string; },): AssetNameRead 
     return { kind: 'not-an-asset', };
 
   /**
-   * File name, which must not itself be a path.
+   File name, which must not itself be a path.
    */
   const assetName = rest.slice(ASSET_DIRECTORY.length,);
   if ((assetName === '') || assetName.includes('/',))
@@ -315,31 +315,31 @@ function assetNameOf({ quoted, }: { readonly quoted: string; },): AssetNameRead 
 }
 
 /**
- * Every image one passage shows, in the order it shows them.
- *
- * @param text - passage to read
- *
- * @returns Images it names, empty when it names none
- *
- * @example
- * ```ts
- * const shown = photoReferences({ text: slice.target.text, },);
- * ```
+ Every image one passage shows, in the order it shows them.
+ 
+ @param text - passage to read
+ 
+ @returns Images it names, empty when it names none
+ 
+ @example
+ ```ts
+ const shown = photoReferences({ text: slice.target.text, },);
+ ```
  */
 export function photoReferences({ text, }: { readonly text: string; },): readonly PhotoReference[] {
   /**
-   * References found so far.
+   References found so far.
    */
   const found: PhotoReference[] = [];
 
   /**
-   * Cursor, walking element to element.
+   Cursor, walking element to element.
    */
   const at = { offset: 0, };
 
   while (at.offset < text.length) {
     /**
-     * Next photo element.
+     Next photo element.
      */
     const opened = text.indexOf(
       ELEMENT_OPEN,
@@ -349,7 +349,7 @@ export function photoReferences({ text, }: { readonly text: string; },): readonl
       break;
 
     /**
-     * Its quoted attribute strings.
+     Its quoted attribute strings.
      */
     const within = quotedWithin({
       text,
@@ -358,7 +358,7 @@ export function photoReferences({ text, }: { readonly text: string; },): readonl
 
     for (const quoted of within.quoted) {
       /**
-       * What this string names.
+       What this string names.
        */
       const read = assetNameOf({ quoted, },);
       if (read.kind === 'asset')
@@ -374,18 +374,18 @@ export function photoReferences({ text, }: { readonly text: string; },): readonl
 }
 
 /**
- * Where an entry's asset sits within the corpus.
- *
- * @param entryId - corpus entry
- *
- * @param assetName - file name within its photos directory
- *
- * @returns Repository-relative path
- *
- * @example
- * ```ts
- * const path = photoPath({ entryId: 'Tabby', assetName: 'intro.webp', },);
- * ```
+ Where an entry's asset sits within the corpus.
+ 
+ @param entryId - corpus entry
+ 
+ @param assetName - file name within its photos directory
+ 
+ @returns Repository-relative path
+ 
+ @example
+ ```ts
+ const path = photoPath({ entryId: 'Tabby', assetName: 'intro.webp', },);
+ ```
  */
 export function photoPath(
   {

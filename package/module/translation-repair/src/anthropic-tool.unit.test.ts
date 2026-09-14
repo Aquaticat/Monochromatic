@@ -1,15 +1,15 @@
 /**
- * Tests for the answer tool, in both of the places it is described.
- *
- * THE ANTI-DRIFT CASE IS THE POINT OF THIS FILE. The owner's instruction is
- * that the full tool schema goes into the system prompt as well as into
- * `tools`, because some model and provider pairs emit the wrong call format
- * without it. Two renderings of one schema can disagree, and a disagreement
- * here teaches a model to call a tool that is not the one being offered, so the
- * cases below check the name and the schema body in BOTH renderings rather than
- * checking each rendering alone.
- *
- * @module
+ Tests for the answer tool, in both of the places it is described.
+ 
+ THE ANTI-DRIFT CASE IS THE POINT OF THIS FILE. The owner's instruction is
+ that the full tool schema goes into the system prompt as well as into
+ `tools`, because some model and provider pairs emit the wrong call format
+ without it. Two renderings of one schema can disagree, and a disagreement
+ here teaches a model to call a tool that is not the one being offered, so the
+ cases below check the name and the schema body in BOTH renderings rather than
+ checking each rendering alone.
+ 
+ @module
  */
 
 import {
@@ -26,10 +26,10 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Structured-output constraint standing in for a real stage's.
- *
- * NESTED ON PURPOSE: a renderer that printed only top-level keys would pass a
- * flat fixture, and every real schema in this pipeline nests.
+ Structured-output constraint standing in for a real stage's.
+ 
+ NESTED ON PURPOSE: a renderer that printed only top-level keys would pass a
+ flat fixture, and every real schema in this pipeline nests.
  */
 const catFormat = {
   type: 'json_schema',
@@ -59,16 +59,16 @@ const catFormat = {
 } as const;
 
 /**
- * Builds a constraint carrying a chosen name over the same schema body.
- *
- * @param name - schema name under test
- *
- * @returns Constraint the functions under test take
- *
- * @example
- * ```ts
- * const format = namedAs({ name: 'whisker_report', },);
- * ```
+ Builds a constraint carrying a chosen name over the same schema body.
+ 
+ @param name - schema name under test
+ 
+ @returns Constraint the functions under test take
+ 
+ @example
+ ```ts
+ const format = namedAs({ name: 'whisker_report', },);
+ ```
  */
 function namedAs(
   { name, }: { readonly name: string; },
@@ -154,7 +154,7 @@ await describe({
         + 'calling this one means',
       fn: async () => {
         /**
-         * Tool entry as the request body would carry it.
+         Tool entry as the request body would carry it.
          */
         const tool = answerToolDefinition({ responseFormat: catFormat, },);
 
@@ -182,7 +182,7 @@ await describe({
         + 'is only how to hand its result back',
       fn: async () => {
         /**
-         * System text as the request body would carry it.
+         System text as the request body would carry it.
          */
         const system = renderToolSystemPrompt({
           instruction: 'You count the toebeans of one cat.',
@@ -200,7 +200,7 @@ await describe({
         + 'instruction this rendering exists for',
       fn: async () => {
         /**
-         * System text as the request body would carry it.
+         System text as the request body would carry it.
          */
         const system = renderToolSystemPrompt({
           instruction: 'You count the toebeans of one cat.',
@@ -217,7 +217,7 @@ await describe({
       name: 'RENDERS the schema as JSON a model can parse, not as a description of it',
       fn: async () => {
         /**
-         * System text as the request body would carry it.
+         System text as the request body would carry it.
          */
         const system = renderToolSystemPrompt({
           instruction: '',
@@ -225,7 +225,7 @@ await describe({
         },);
 
         /**
-         * Schema as it was printed into the prompt, cut out and read back.
+         Schema as it was printed into the prompt, cut out and read back.
          */
         const printed: unknown = JSON.parse(system.slice(
           system.indexOf('{',),
@@ -263,7 +263,7 @@ await describe({
         + 'the schema still gets the envelope wrong',
       fn: async () => {
         /**
-         * System text as the request body would carry it.
+         System text as the request body would carry it.
          */
         const system = renderToolSystemPrompt({
           instruction: '',

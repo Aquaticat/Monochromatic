@@ -15,34 +15,34 @@ import { parseDocument, } from '../parse-document.ts';
 // page is a page the site cannot build.
 
 /**
- * Refusal when a would-ship page does not parse under the MDX grammar.
- *
- * @example
- * ```ts
- * throw new UnparseablePageError({ entryId: 'Cat', refusal: 'at 3:12 (mdx-jsx)', },);
- * ```
+ Refusal when a would-ship page does not parse under the MDX grammar.
+ 
+ @example
+ ```ts
+ throw new UnparseablePageError({ entryId: 'Cat', refusal: 'at 3:12 (mdx-jsx)', },);
+ ```
  */
 export class UnparseablePageError extends Error {
   /**
-   * Message contains the entry id and the strict parser's refusal site, which
-   * `MdxParseError` builds from positions and rule names alone.
+   Message contains the entry id and the strict parser's refusal site, which
+   `MdxParseError` builds from positions and rule names alone.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Entry whose page failed the invariant.
+   Entry whose page failed the invariant.
    */
   readonly entryId: string;
 
   /**
-   * Where the grammar stopped, as the strict parser reported it.
+   Where the grammar stopped, as the strict parser reported it.
    */
   readonly refusal: string;
 
   /**
-   * @param entryId - affected entry
-   *
-   * @param refusal - strict parser's refusal site, positions and rule names only
+   @param entryId - affected entry
+   
+   @param refusal - strict parser's refusal site, positions and rule names only
    */
   public constructor(
     {
@@ -63,19 +63,19 @@ export class UnparseablePageError extends Error {
 }
 
 /**
- * Refuses a would-ship page the strict MDX grammar cannot parse.
- *
- * @param entryId - entry about to publish
- *
- * @param pageText - whole would-ship page, front matter included
- *
- * @throws {@link UnparseablePageError} when the strict parse of the page fell
- * back to plain markdown
- *
- * @example
- * ```ts
- * assertPageParses({ entryId: 'Cat', pageText, },);
- * ```
+ Refuses a would-ship page the strict MDX grammar cannot parse.
+ 
+ @param entryId - entry about to publish
+ 
+ @param pageText - whole would-ship page, front matter included
+ 
+ @throws {@link UnparseablePageError} when the strict parse of the page fell
+ back to plain markdown
+ 
+ @example
+ ```ts
+ assertPageParses({ entryId: 'Cat', pageText, },);
+ ```
  */
 export function assertPageParses(
   {
@@ -87,7 +87,7 @@ export function assertPageParses(
   },
 ): void {
   /**
-   * First fall from the strict grammar, if the page took one.
+   First fall from the strict grammar, if the page took one.
    */
   const downgrade = parseDocument({ text: pageText, },)
     .parseFindings

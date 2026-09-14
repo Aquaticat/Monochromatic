@@ -1,21 +1,21 @@
 /**
- * Tests for the persisted attempt map.
- *
- * `readAttemptMap` had no test. It backs the last ordering tiebreak, so an
- * entry that keeps failing deprioritizes instead of blocking the queue ahead of
- * entries that would settle.
- *
- * Its doctrine is the OPPOSITE of the artifact guards, deliberately: those
- * throw on anything malformed because they feed a precision measurement, while
- * this tolerates a corrupt cache because losing an ordering hint is cheaper
- * than aborting a run that costs hours. The cases below pin where tolerance
- * stops, since a reader that swallowed everything would make a misconfigured
- * path look like "no attempts yet" forever and the ordering would never
- * deprioritize anything.
- *
- * Fixtures are cat-themed invention written into throwaway directories.
- *
- * @module
+ Tests for the persisted attempt map.
+ 
+ `readAttemptMap` had no test. It backs the last ordering tiebreak, so an
+ entry that keeps failing deprioritizes instead of blocking the queue ahead of
+ entries that would settle.
+ 
+ Its doctrine is the OPPOSITE of the artifact guards, deliberately: those
+ throw on anything malformed because they feed a precision measurement, while
+ this tolerates a corrupt cache because losing an ordering hint is cheaper
+ than aborting a run that costs hours. The cases below pin where tolerance
+ stops, since a reader that swallowed everything would make a misconfigured
+ path look like "no attempts yet" forever and the ordering would never
+ deprioritize anything.
+ 
+ Fixtures are cat-themed invention written into throwaway directories.
+ 
+ @module
  */
 
 import {
@@ -34,21 +34,21 @@ import { join, } from 'node:path';
 import { readAttemptMap, } from '../../dist/final/node/index.mjs';
 
 /**
- * Throwaway directory holding one case's attempts file, removed on scope exit.
- *
- * @returns Disposable directory handle
- *
- * @example
- * ```ts
- * await using scratch = await scratchDir();
- * ```
+ Throwaway directory holding one case's attempts file, removed on scope exit.
+ 
+ @returns Disposable directory handle
+ 
+ @example
+ ```ts
+ await using scratch = await scratchDir();
+ ```
  */
 async function scratchDir(): Promise<{
   readonly path: string;
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 }> {
   /**
-   * Fresh directory under the platform temp root.
+   Fresh directory under the platform temp root.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -69,20 +69,20 @@ async function scratchDir(): Promise<{
 }
 
 /**
- * Writes an attempts file and reads it back.
- *
- * @param directory - throwaway directory
- *
- * @param contents - exact file bytes, so malformed cases stay malformed
- *
- * @param name - file name, so cases sharing a directory never share a file
- *
- * @returns Parsed attempt map
- *
- * @example
- * ```ts
- * const attempts = await readWritten({ directory, contents: '{"Kitten":2}', },);
- * ```
+ Writes an attempts file and reads it back.
+ 
+ @param directory - throwaway directory
+ 
+ @param contents - exact file bytes, so malformed cases stay malformed
+ 
+ @param name - file name, so cases sharing a directory never share a file
+ 
+ @returns Parsed attempt map
+ 
+ @example
+ ```ts
+ const attempts = await readWritten({ directory, contents: '{"Kitten":2}', },);
+ ```
  */
 async function readWritten(
   {
@@ -96,7 +96,7 @@ async function readWritten(
   },
 ): Promise<Record<string, number>> {
   /**
-   * Path the attempts file occupies.
+   Path the attempts file occupies.
    */
   const attemptsPath = join(
     directory,

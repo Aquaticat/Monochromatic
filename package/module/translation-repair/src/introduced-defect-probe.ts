@@ -31,83 +31,83 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // human repair grades are what will measure it.
 
 /**
- * Everything the probe stage produced for one chunk.
- *
- * @example
- * ```ts
- * const { regions, } = await runIntroducedDefectProbe({ ... },);
- * ```
+ Everything the probe stage produced for one chunk.
+ 
+ @example
+ ```ts
+ const { regions, } = await runIntroducedDefectProbe({ ... },);
+ ```
  */
 export type IntroducedDefectReport = {
   /**
-   * Screened tally per replaced region, in region order.
+   Screened tally per replaced region, in region order.
    */
   readonly regions: readonly RegionDefectTally[];
 
   /**
-   * Probers whose reply arrived and validated.
+   Probers whose reply arrived and validated.
    */
   readonly heardProbers: number;
 
   /**
-   * Probers asked. Kept beside the heard count because a claim confirmed by
-   * two of three heard probers and one confirmed by two of six configured are
-   * different evidence, and only the pair distinguishes them.
+   Probers asked. Kept beside the heard count because a claim confirmed by
+   two of three heard probers and one confirmed by two of six configured are
+   different evidence, and only the pair distinguishes them.
    */
   readonly configuredProbers: number;
 
   /**
-   * Wire irregularities across probers in scorecard-stable wording.
+   Wire irregularities across probers in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Screened claim counts summed across every probed region.
- *
- * Named so the fold that builds it states its own type. Left to the seed
- * literal every count is writable, and the accumulator parameter then reports
- * as mutable in a fold that only ever reads it.
+ Screened claim counts summed across every probed region.
+ 
+ Named so the fold that builds it states its own type. Left to the seed
+ literal every count is writable, and the accumulator parameter then reports
+ as mutable in a fold that only ever reads it.
  */
 type ClaimTotals = Readonly<{
   /**
-   * Claims that a second prober confirmed as added damage.
+   Claims that a second prober confirmed as added damage.
    */
   corroborated: number;
 
   /**
-   * Claims that a second prober confirmed as dropped content.
+   Claims that a second prober confirmed as dropped content.
    */
   removalCorroborated: number;
 
   /**
-   * Claims the baseline text refuted.
+   Claims the baseline text refuted.
    */
   contradicted: number;
 
   /**
-   * Claims quoting text neither side carries.
+   Claims quoting text neither side carries.
    */
   unanchored: number;
 
   /**
-   * Claims restating a defect an accepted issue already named.
+   Claims restating a defect an accepted issue already named.
    */
   preExisting: number;
 
   /**
-   * Probers that read the region and raised nothing.
+   Probers that read the region and raised nothing.
    */
   noneFound: number;
 
   /**
-   * Probers that declined to answer.
+   Probers that declined to answer.
    */
   uncertain: number;
 }>;
 
 /**
- * Report of a probe that never ran, for chunks with nothing replaced.
+ Report of a probe that never ran, for chunks with nothing replaced.
  */
 export const EMPTY_INTRODUCED_DEFECT_REPORT: IntroducedDefectReport = {
   regions: [],
@@ -117,32 +117,32 @@ export const EMPTY_INTRODUCED_DEFECT_REPORT: IntroducedDefectReport = {
 };
 
 /**
- * Asks whether each replaced region introduced a defect the baseline lacked.
- *
- * @param client - injected model client
- *
- * @param proberModelIds - roster asked, writer-disjoint like the checkers
- *
- * @param sourceText - original chunk text
- *
- * @param baselineText - translation before any replacement
- *
- * @param regions - regions the accuracy stage replaced
- *
- * @param issues - accepted issues, shown so probers can discount them
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Screened tallies plus roster accounting
- *
- * @example
- * ```ts
- * const probe = await runIntroducedDefectProbe({ ... },);
- * ```
+ Asks whether each replaced region introduced a defect the baseline lacked.
+ 
+ @param client - injected model client
+ 
+ @param proberModelIds - roster asked, writer-disjoint like the checkers
+ 
+ @param sourceText - original chunk text
+ 
+ @param baselineText - translation before any replacement
+ 
+ @param regions - regions the accuracy stage replaced
+ 
+ @param issues - accepted issues, shown so probers can discount them
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - pipeline logger
+ 
+ @returns Screened tallies plus roster accounting
+ 
+ @example
+ ```ts
+ const probe = await runIntroducedDefectProbe({ ... },);
+ ```
  */
 export async function runIntroducedDefectProbe(
   {
@@ -179,7 +179,7 @@ export async function runIntroducedDefectProbe(
     return EMPTY_INTRODUCED_DEFECT_REPORT;
 
   /**
-   * Prober sheet plus the region numbering order.
+   Prober sheet plus the region numbering order.
    */
   const plan = buildIntroducedDefectMessages({
     sourceText,
@@ -193,7 +193,7 @@ export async function runIntroducedDefectProbe(
   },);
 
   /**
-   * Heard probers after retry-to-quorum.
+   Heard probers after retry-to-quorum.
    */
   const gather = await gatherStageVoices({
     client,
@@ -208,7 +208,7 @@ export async function runIntroducedDefectProbe(
   },);
 
   /**
-   * Checks per prober, keyed by model id.
+   Checks per prober, keyed by model id.
    */
   const ballots: Record<string, readonly IntroducedDefectCheckWire[]> = Object.fromEntries(
     gather.voices
@@ -225,7 +225,7 @@ export async function runIntroducedDefectProbe(
   );
 
   /**
-   * Screened tally per region.
+   Screened tally per region.
    */
   const screened = screenIntroducedDefects({
     regions,
@@ -234,13 +234,13 @@ export async function runIntroducedDefectProbe(
   },);
 
   /**
-   * Claims summed across regions, for one readable log line.
-   *
-   * The accumulator carries an explicit type rather than taking one from the
-   * seed literal. An inferred seed makes every count writable, and the rule
-   * then reports the fold's own parameter while naming the enclosing function
-   * as the origin, which is the signature line rather than anything that
-   * produced a value.
+   Claims summed across regions, for one readable log line.
+   
+   The accumulator carries an explicit type rather than taking one from the
+   seed literal. An inferred seed makes every count writable, and the rule
+   then reports the fold's own parameter while naming the enclosing function
+   as the origin, which is the signature line rather than anything that
+   produced a value.
    */
   const totals: ClaimTotals = screened.reduce(
     function addRegion(

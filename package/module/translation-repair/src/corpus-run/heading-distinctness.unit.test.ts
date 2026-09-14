@@ -1,16 +1,16 @@
 /**
- * Tests for the page-level floor that keeps distinct source headings distinct.
- *
- * WHY THIS FLOOR EXISTS. On 2026-09-06 the yulianNyanner page rendered two
- * different source headings as the same English word, because a translator
- * note about "this title" was carried into every slice without its position.
- * A slice floor cannot see two headings at once; the assembled page can. The
- * pinned corpus has no source that repeats a heading and no archive that
- * collapses two, so the floor refuses nothing the archives would ship.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the page-level floor that keeps distinct source headings distinct.
+ 
+ WHY THIS FLOOR EXISTS. On 2026-09-06 the yulianNyanner page rendered two
+ different source headings as the same English word, because a translator
+ note about "this title" was carried into every slice without its position.
+ A slice floor cannot see two headings at once; the assembled page can. The
+ pinned corpus has no source that repeats a heading and no archive that
+ collapses two, so the floor refuses nothing the archives would ship.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,7 +26,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Original with two sections whose headings differ.
+ Original with two sections whose headings differ.
  */
 const SOURCE_TEXT = '---\nname: 猫\n---\n\n## 小猫\n\n它睡了。\n\n## 大猫\n\n它醒了。\n';
 
@@ -38,7 +38,7 @@ await describe({
         + 'entry and the count and quoting nothing (2026-09-06)',
       fn: async () => {
         /**
-         * What the floor threw on the collapsed page.
+         What the floor threw on the collapsed page.
          */
         const refusal = caught(function publishCollapsed(): void {
           assertHeadingsStayDistinct({

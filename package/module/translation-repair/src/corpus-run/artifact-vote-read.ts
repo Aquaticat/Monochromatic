@@ -27,26 +27,26 @@ import { requireRosterModelId, } from './artifact-producer-read.ts';
 // well formed.
 
 /**
- * Reads what one slate position drew.
- *
- * WEIGHTS ARE READ AS FINITE, NOT AS COUNTS. A judge voting on its own work
- * counts for half, so a candidate's summed weight is routinely fractional and
- * a count guard would refuse a round that is entirely well formed.
- *
- * @param value - one entry of `perCandidate`, unread
- *
- * @param path - where in the artifact this sits, for the refusal
- *
- * @returns Counts and weight for that position
- *
- * @throws {@link ArtifactParseError} when a field is missing or mistyped
- *
- * @example
- * ```ts
- * const drawn = requireCandidateWeight({ value, path, },);
- * ```
- *
- * @internal
+ Reads what one slate position drew.
+ 
+ WEIGHTS ARE READ AS FINITE, NOT AS COUNTS. A judge voting on its own work
+ counts for half, so a candidate's summed weight is routinely fractional and
+ a count guard would refuse a round that is entirely well formed.
+ 
+ @param value - one entry of `perCandidate`, unread
+ 
+ @param path - where in the artifact this sits, for the refusal
+ 
+ @returns Counts and weight for that position
+ 
+ @throws {@link ArtifactParseError} when a field is missing or mistyped
+ 
+ @example
+ ```ts
+ const drawn = requireCandidateWeight({ value, path, },);
+ ```
+ 
+ @internal
  */
 export function requireCandidateWeight(
   {
@@ -58,7 +58,7 @@ export function requireCandidateWeight(
   },
 ): CandidateWeight {
   /**
-   * Position as a record.
+   Position as a record.
    */
   const record = requireRecord({
     value,
@@ -90,24 +90,24 @@ export function requireCandidateWeight(
 }
 
 /**
- * Reads one ballot.
- *
- * BEST AND WEIGHT ARE FINITE NUMBERS, NOT COUNTS. A judge naming no candidate
- * records a sentinel index, and a judge naming its own writing records a
- * fractional weight, so the count guard would refuse both.
- *
- * @param value - ballot as recorded
- *
- * @param path - dotted path for error messages
- *
- * @returns Ballot as the tally reads it
- *
- * @example
- * ```ts
- * const ballot = requireBallot({ value, path, },);
- * ```
- *
- * @internal
+ Reads one ballot.
+ 
+ BEST AND WEIGHT ARE FINITE NUMBERS, NOT COUNTS. A judge naming no candidate
+ records a sentinel index, and a judge naming its own writing records a
+ fractional weight, so the count guard would refuse both.
+ 
+ @param value - ballot as recorded
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Ballot as the tally reads it
+ 
+ @example
+ ```ts
+ const ballot = requireBallot({ value, path, },);
+ ```
+ 
+ @internal
  */
 export function requireBallot(
   {
@@ -119,7 +119,7 @@ export function requireBallot(
   },
 ): SelectionBallot {
   /**
-   * Ballot as a record.
+   Ballot as a record.
    */
   const record = requireRecord({
     value,

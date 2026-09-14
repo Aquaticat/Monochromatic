@@ -1,19 +1,19 @@
 /**
- * Tests for the configuration check both lanes run before they start.
- *
- * FOUND BY FAULT INJECTION: configuring zero critic models ran the repair lane
- * end to end and returned a settled, unchanged document. No throw, no finding,
- * no marker, and zero model exchanges bought. Downstream that is
- * indistinguishable from a page that genuinely needed no repair, so a corpus
- * pass under the misconfiguration would spend hours writing a directory of
- * vacuous artifacts that later analysis reads as clean runs.
- *
- * The quiet path is RIGHT for outages, and stays. What this refuses is the
- * deterministic case, before any work is done.
- *
- * Fixtures are invented. No corpus content appears here.
- *
- * @module
+ Tests for the configuration check both lanes run before they start.
+ 
+ FOUND BY FAULT INJECTION: configuring zero critic models ran the repair lane
+ end to end and returned a settled, unchanged document. No throw, no finding,
+ no marker, and zero model exchanges bought. Downstream that is
+ indistinguishable from a page that genuinely needed no repair, so a corpus
+ pass under the misconfiguration would spend hours writing a directory of
+ vacuous artifacts that later analysis reads as clean runs.
+ 
+ The quiet path is RIGHT for outages, and stays. What this refuses is the
+ deterministic case, before any work is done.
+ 
+ Fixtures are invented. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -28,16 +28,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Runs one configuration and returns whatever it raised.
- *
- * @param roles - rosters to check
- *
- * @returns Failure raised, or undefined when the configuration was accepted
- *
- * @example
- * ```ts
- * const caught = configurationFailure({ roles: { judgeModelIds: [], }, },);
- * ```
+ Runs one configuration and returns whatever it raised.
+ 
+ @param roles - rosters to check
+ 
+ @returns Failure raised, or undefined when the configuration was accepted
+ 
+ @example
+ ```ts
+ const caught = configurationFailure({ roles: { judgeModelIds: [], }, },);
+ ```
  */
 function configurationFailure(
   { roles, }: { readonly roles: Readonly<Record<string, readonly string[]>>; },
@@ -78,7 +78,7 @@ await describe({
         + 'misconfigured, and that is the most expensive place for a failure to be silent',
       fn: async () => {
         /**
-         * Failure the check raised.
+         Failure the check raised.
          */
         const caught = configurationFailure({
           roles: {
@@ -99,7 +99,7 @@ await describe({
         + 'them one at a time pays a whole preflight per role',
       fn: async () => {
         /**
-         * Failure raised by a wholly unconfigured lane.
+         Failure raised by a wholly unconfigured lane.
          */
         const caught = configurationFailure({
           roles: {

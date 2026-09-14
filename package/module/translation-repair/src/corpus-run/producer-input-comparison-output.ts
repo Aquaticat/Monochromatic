@@ -33,69 +33,69 @@ import {
 //region Retained native output is independently observed, never reconstructed from stdout claims
 
 /**
- * Completion and command metadata have a ceiling separate from artifact body hashing.
+ Completion and command metadata have a ceiling separate from artifact body hashing.
  */
 const METADATA_LIMIT = 1_048_576;
 /**
- * Native container identities use canonical lowercase SHA-256 spelling.
+ Native container identities use canonical lowercase SHA-256 spelling.
  */
 const CONTAINER_ID_WIDTH = 64;
 
 /**
- * Byte-verified files remain unqualified until their independent reference comparison and later reviews.
- *
- * @example
- * ```ts
- * const identity = files.identity;
- * ```
+ Byte-verified files remain unqualified until their independent reference comparison and later reviews.
+ 
+ @example
+ ```ts
+ const identity = files.identity;
+ ```
  */
 export type ProducerInputReconstructionFiles = {
   /**
-   * Observed dedicated-parent child, never an arbitrary stdout-selected path.
+   Observed dedicated-parent child, never an arbitrary stdout-selected path.
    */
   readonly inputRunDirectory: string;
   /**
-   * Canonical native input-run identifier, not a preparation-attempt identity.
+   Canonical native input-run identifier, not a preparation-attempt identity.
    */
   readonly inputRunId: string;
   /**
-   * Fixed retained artifact location.
+   Fixed retained artifact location.
    */
   readonly artifactPath: string;
   /**
-   * Independently observed persisted bytes, not metadata accepted without hashing.
+   Independently observed persisted bytes, not metadata accepted without hashing.
    */
   readonly identity: ProducerInputFileIdentity;
 };
 
 /**
- * Checks private output, exact launch lineage, completion copies and raw artifact bytes after bootstrap success.
- * No root-input JSON is reserialized or parsed to establish its byte identity.
- *
- * @param run - owned comparison namespace and dedicated native output parent
- *
- * @param invocation - exact executed derived launch and unchanged runtime bindings
- *
- * @param observation - independently recorded direct-child observation after actual native close
- *
- * @param stdoutPath - fixed retained bootstrap stdout location
- *
- * @param stderrPath - fixed retained bootstrap stderr location
- *
- * @param stdoutState - actual synchronized stdout descriptor snapshot from the owning subprocess
- *
- * @param stderrState - actual synchronized stderr descriptor snapshot from the owning subprocess
- *
- * @param l - invoking comparison owner's logger
- *
- * @returns Independently observed retained artifact files, still unqualified
- *
- * @throws ProducerInputComparisonError when any file, shape or lineage check fails
- *
- * @example
- * ```ts
- * const files = await readProducerInputComparisonOutput({ run, invocation, observation, stdoutPath, stderrPath, stdoutState, stderrState, l });
- * ```
+ Checks private output, exact launch lineage, completion copies and raw artifact bytes after bootstrap success.
+ No root-input JSON is reserialized or parsed to establish its byte identity.
+ 
+ @param run - owned comparison namespace and dedicated native output parent
+ 
+ @param invocation - exact executed derived launch and unchanged runtime bindings
+ 
+ @param observation - independently recorded direct-child observation after actual native close
+ 
+ @param stdoutPath - fixed retained bootstrap stdout location
+ 
+ @param stderrPath - fixed retained bootstrap stderr location
+ 
+ @param stdoutState - actual synchronized stdout descriptor snapshot from the owning subprocess
+ 
+ @param stderrState - actual synchronized stderr descriptor snapshot from the owning subprocess
+ 
+ @param l - invoking comparison owner's logger
+ 
+ @returns Independently observed retained artifact files, still unqualified
+ 
+ @throws ProducerInputComparisonError when any file, shape or lineage check fails
+ 
+ @example
+ ```ts
+ const files = await readProducerInputComparisonOutput({ run, invocation, observation, stdoutPath, stderrPath, stdoutState, stderrState, l });
+ ```
  */
 export async function readProducerInputComparisonOutput({
   run,
@@ -117,25 +117,25 @@ export async function readProducerInputComparisonOutput({
   readonly l: Logger;
 },): Promise<ProducerInputReconstructionFiles> {
   /**
-   * Independent file verification never logs corpus-derived bytes.
+   Independent file verification never logs corpus-derived bytes.
    */
   const pl = tagged({
     tag: readProducerInputComparisonOutput.name,
     l
   });
   /**
-   * Shared descriptor observer supplies the same metadata bound and ownership for each fixed role.
-   *
-   * @param path - fixed private native metadata locator
-   *
-   * @returns Strictly decoded text after extent and descriptor checks
-   *
-   * @throws ProducerInputRunError when private metadata observation fails
-   *
-   * @example
-   * ```ts
-   * const text = await metadata(stdoutPath);
-   * ```
+   Shared descriptor observer supplies the same metadata bound and ownership for each fixed role.
+   
+   @param path - fixed private native metadata locator
+   
+   @returns Strictly decoded text after extent and descriptor checks
+   
+   @throws ProducerInputRunError when private metadata observation fails
+   
+   @example
+   ```ts
+   const text = await metadata(stdoutPath);
+   ```
    */
   async function metadata(path: string): Promise<string> {
     return await readProducerInputMetadata({
@@ -152,21 +152,21 @@ export async function readProducerInputComparisonOutput({
       l: pl
     });
     /**
-     * Identity comes from the dedicated parent's observed child, not success stdout.
+     Identity comes from the dedicated parent's observed child, not success stdout.
      */
     const inputRunId = comparisonInputRunId({
       observation,
       directory: run.directory
     });
     /**
-     * The parent and generated prefix are already fixed by this operation.
+     The parent and generated prefix are already fixed by this operation.
      */
     const inputRunDirectory = join(
       run.inputParent,
       `${RUN_PREFIX}${inputRunId}`
     );
     /**
-     * Only the native output directory can contain the unqualified artifact.
+     Only the native output directory can contain the unqualified artifact.
      */
     const output = join(
       inputRunDirectory,
@@ -208,7 +208,7 @@ export async function readProducerInputComparisonOutput({
         directory: run.directory
       });
     /**
-     * Strict stdout framing does not allow selection of another retained directory.
+     Strict stdout framing does not allow selection of another retained directory.
      */
     const frame = comparisonMetadata({
       text: await metadata(stdoutPath),
@@ -225,7 +225,7 @@ export async function readProducerInputComparisonOutput({
         directory: run.directory
       });
     /**
-     * Metadata parsing is not artifact-identity reserialization.
+     Metadata parsing is not artifact-identity reserialization.
      */
     const fromStdout = parseProducerInputCompletion({
       text: JSON.stringify(frame.completion),
@@ -234,7 +234,7 @@ export async function readProducerInputComparisonOutput({
         .sha256
     });
     /**
-     * The fixed disk completion must agree independently with the observed native frame.
+     The fixed disk completion must agree independently with the observed native frame.
      */
     const completion = parseProducerInputCompletion({
       text: await metadata(join(
@@ -246,7 +246,7 @@ export async function readProducerInputComparisonOutput({
         .sha256
     });
     /**
-     * The native host's retained verification copy is checked through the same shared closed reader.
+     The native host's retained verification copy is checked through the same shared closed reader.
      */
     const verified = parseProducerInputCompletion({
       text: await metadata(join(
@@ -277,7 +277,7 @@ export async function readProducerInputComparisonOutput({
       operation: 'read-launch'
     });
     /**
-     * Creation-marker consistency does not authenticate its creator.
+     Creation-marker consistency does not authenticate its creator.
      */
     const created = comparisonMetadata({
       text: await metadata(join(
@@ -310,7 +310,7 @@ export async function readProducerInputComparisonOutput({
         directory: run.directory
       });
     /**
-     * Native success must retain its non-interrupted cleanup record; this is not a new stopped-state probe.
+     Native success must retain its non-interrupted cleanup record; this is not a new stopped-state probe.
      */
     const cleanup = comparisonMetadata({
       text: await metadata(join(
@@ -342,14 +342,14 @@ export async function readProducerInputComparisonOutput({
         directory: run.directory
       });
     /**
-     * Artifact location is fixed, not selected by the completion body.
+     Artifact location is fixed, not selected by the completion body.
      */
     const artifactPath = join(
       output,
       'unqualified-inputs.json'
     );
     /**
-     * Hashing observes actual persisted bytes and permissions on the same descriptor.
+     Hashing observes actual persisted bytes and permissions on the same descriptor.
      */
     const identity = await verifyProducerInputOutputFile({
       path: artifactPath,

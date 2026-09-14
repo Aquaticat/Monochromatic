@@ -58,51 +58,51 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // list outside is how a caller ends up with an empty roster it cannot see.
 
 /**
- * Runs one selection round: judges compare the anonymized set and name a
- * winner, and anything short of a clear plurality declines. Every judge on the
- * roster is seated, with a ballot for its own work discounted.
- *
- * Every candidate handed in is judged, including a lone one. A caller that has
- * already deduplicated its set and knows one candidate survived may short
- * circuit before calling; this function does not assume that on its behalf,
- * because a single candidate arriving here is generally the caller's only
- * proposal rather than a proven consensus.
- *
- * @param client - injected model client
- *
- * @param candidates - proposals in caller-fixed order
- *
- * @param judgeModelIds - whole roster, producers included
- *
- * @param task - one sentence naming what candidates attempt
- *
- * @param criteria - ordered decision rules, most important first
- *
- * @param evidence - source and baseline material judges compare against
- *
- * @param declineConsequence - what this caller does when every judge declines,
- * omitted where the default holds
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param sourceText - original the candidates render, when the caller has
- * it, so the sheet names a candidate lacking a community rendering
- *
- * @param l - logger of the calling stage
- *
- * @returns Winner with the ballot weight it drew, or a decline carrying its
- * reason; either way the round's tally and every ballot cast
- *
- * @throws {@link import('./repair-contract.ts').ProducerRosterError} when a judge
- * appears twice on the roster, which would let one model reach the minimum
- * weight by itself
- *
- * @example
- * ```ts
- * const outcome = await decideBestCandidate({ client, candidates, judgeModelIds, ... },);
- * ```
+ Runs one selection round: judges compare the anonymized set and name a
+ winner, and anything short of a clear plurality declines. Every judge on the
+ roster is seated, with a ballot for its own work discounted.
+ 
+ Every candidate handed in is judged, including a lone one. A caller that has
+ already deduplicated its set and knows one candidate survived may short
+ circuit before calling; this function does not assume that on its behalf,
+ because a single candidate arriving here is generally the caller's only
+ proposal rather than a proven consensus.
+ 
+ @param client - injected model client
+ 
+ @param candidates - proposals in caller-fixed order
+ 
+ @param judgeModelIds - whole roster, producers included
+ 
+ @param task - one sentence naming what candidates attempt
+ 
+ @param criteria - ordered decision rules, most important first
+ 
+ @param evidence - source and baseline material judges compare against
+ 
+ @param declineConsequence - what this caller does when every judge declines,
+ omitted where the default holds
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param sourceText - original the candidates render, when the caller has
+ it, so the sheet names a candidate lacking a community rendering
+ 
+ @param l - logger of the calling stage
+ 
+ @returns Winner with the ballot weight it drew, or a decline carrying its
+ reason; either way the round's tally and every ballot cast
+ 
+ @throws {@link import('./repair-contract.ts').ProducerRosterError} when a judge
+ appears twice on the roster, which would let one model reach the minimum
+ weight by itself
+ 
+ @example
+ ```ts
+ const outcome = await decideBestCandidate({ client, candidates, judgeModelIds, ... },);
+ ```
  */
 export async function decideBestCandidate<ValueT,>(
   {
@@ -134,7 +134,7 @@ export async function decideBestCandidate<ValueT,>(
   }>,
 ): Promise<SelectionOutcome<ValueT>> {
   /**
-   * Logger tagged with this stage.
+   Logger tagged with this stage.
    */
   const sl = tagged({
     tag: decideBestCandidate.name,
@@ -142,7 +142,7 @@ export async function decideBestCandidate<ValueT,>(
   },);
 
   /**
-   * Tally of a round that never reached the judges.
+   Tally of a round that never reached the judges.
    */
   const emptyTally: SelectionTally = {
     judgesAvailable: 0,
@@ -162,7 +162,7 @@ export async function decideBestCandidate<ValueT,>(
     };
 
   /**
-   * Judges this round seats: the whole roster, producers included.
+   Judges this round seats: the whole roster, producers included.
    */
   const judges = judgeModelIds;
   if (judges.length === 0) {
@@ -179,21 +179,21 @@ export async function decideBestCandidate<ValueT,>(
   }
 
   /**
-   * Judges keyed for repeat detection.
-   *
-   * A repeated id is one model given two exchanges and two ballots, which is
-   * enough to reach the minimum weight alone: exactly the single-model
-   * control the ensemble exists to prevent, arriving as a roster typo rather
-   * than as a policy change.
-   *
-   * Refused HERE as well as in `assertJudgeableProducerRoster`, because that
-   * guard runs at STAGE entry while `selectPerEnvelope` and `selectChunkPatch`
-   * are exported and reachable without one. Thrown rather than deduplicated,
-   * since a caller that passed a repeat believes it has more judges than it
-   * has, and silently collapsing the roster answers a question it did not ask.
-   *
-   * Before the fan-out rather than at the count, so a roster fault costs no
-   * model calls.
+   Judges keyed for repeat detection.
+   
+   A repeated id is one model given two exchanges and two ballots, which is
+   enough to reach the minimum weight alone: exactly the single-model
+   control the ensemble exists to prevent, arriving as a roster typo rather
+   than as a policy change.
+   
+   Refused HERE as well as in `assertJudgeableProducerRoster`, because that
+   guard runs at STAGE entry while `selectPerEnvelope` and `selectChunkPatch`
+   are exported and reachable without one. Thrown rather than deduplicated,
+   since a caller that passed a repeat believes it has more judges than it
+   has, and silently collapsing the roster answers a question it did not ask.
+   
+   Before the fan-out rather than at the count, so a roster fault costs no
+   model calls.
    */
   const distinctJudges = new Set(judges,);
   if (distinctJudges.size !== judges.length) {
@@ -210,8 +210,8 @@ export async function decideBestCandidate<ValueT,>(
   }
 
   /**
-   * Models with a stake in each one-based candidate index, for telling a
-   * self-vote from an ordinary one.
+   Models with a stake in each one-based candidate index, for telling a
+   self-vote from an ordinary one.
    */
   const stakesByIndex = new Map(
     candidates.map(function toStake(
@@ -229,7 +229,7 @@ export async function decideBestCandidate<ValueT,>(
   );
 
   /**
-   * Ballots from the judges that answered.
+   Ballots from the judges that answered.
    */
   const gather = await gatherStageVoices({
     client,
@@ -259,8 +259,8 @@ export async function decideBestCandidate<ValueT,>(
   },);
 
   /**
-   * Every ballot as cast and weighed, what each candidate drew, the ranking
-   * and the abstention and self-vote counts (`candidate-select-count.ts`).
+   Every ballot as cast and weighed, what each candidate drew, the ranking
+   and the abstention and self-vote counts (`candidate-select-count.ts`).
    */
   const {
     ballots,
@@ -276,16 +276,16 @@ export async function decideBestCandidate<ValueT,>(
   },);
 
   /**
-   * Ballots a judge cast for its own work, named so the rate is readable from
-   * findings as well as from the tally.
+   Ballots a judge cast for its own work, named so the rate is readable from
+   findings as well as from the tally.
    */
   const selfVotes = ballots.filter(function isSelfVote(ballot,): boolean {
     return ballot.weight === SELF_VOTE_WEIGHT;
   },);
 
   /**
-   * Minimum this round applies, sized to the seats a wet provider could
-   * serve (the owner's decision of 2026-09-09, `candidate-select-minimum.ts`).
+   Minimum this round applies, sized to the seats a wet provider could
+   serve (the owner's decision of 2026-09-09, `candidate-select-minimum.ts`).
    */
   const minimum = selectionMinimum({
     benchSize: judges.length,
@@ -293,7 +293,7 @@ export async function decideBestCandidate<ValueT,>(
       .size,
   },);
   /**
-   * Minimum weight as the log prints it.
+   Minimum weight as the log prints it.
    */
   const minimumLabel = minimum.weight
     .toFixed(2,);
@@ -306,7 +306,7 @@ export async function decideBestCandidate<ValueT,>(
   }
 
   /**
-   * Findings every exit past the fan-out carries.
+   Findings every exit past the fan-out carries.
    */
   const roundFindings: readonly string[] = [
     ...gather.findings,
@@ -322,7 +322,7 @@ export async function decideBestCandidate<ValueT,>(
   ];
 
   /**
-   * What this round counted, reported whichever way it ends.
+   What this round counted, reported whichever way it ends.
    */
   const counted: SelectionTally = {
     judgesAvailable: judges.length,
@@ -333,7 +333,7 @@ export async function decideBestCandidate<ValueT,>(
   };
 
   /**
-   * Leading entry, absent when every judge abstained.
+   Leading entry, absent when every judge abstained.
    */
   const [leader,] = ranked;
   if (leader === undefined) {
@@ -352,7 +352,7 @@ export async function decideBestCandidate<ValueT,>(
   }
 
   /**
-   * Runner-up's drawn weight, zero when only one candidate drew any.
+   Runner-up's drawn weight, zero when only one candidate drew any.
    */
   const runnerUpWeight = ranked[1]?.[1] ?? 0;
   if (leader[1] === runnerUpWeight) {
@@ -387,15 +387,15 @@ export async function decideBestCandidate<ValueT,>(
   }
 
   /**
-   * What the leader drew, absent only if the tally and the per-candidate
-   * count disagree.
+   What the leader drew, absent only if the tally and the per-candidate
+   count disagree.
    */
   const leaderDrawn = perCandidate.find(function isLeader(drawn,): boolean {
     return drawn.index === leader[0];
   },);
 
   /**
-   * Ballots naming the leader, self-votes included.
+   Ballots naming the leader, self-votes included.
    */
   const leaderBallots = leaderDrawn?.ballots ?? 0;
   if (leaderBallots < MIN_SELECTION_BALLOTS) {
@@ -419,7 +419,7 @@ export async function decideBestCandidate<ValueT,>(
   }
 
   /**
-   * Winning candidate, indexed back from the one-based ballot.
+   Winning candidate, indexed back from the one-based ballot.
    */
   const winner = candidates[leader[0] - 1];
   if (winner === undefined) {

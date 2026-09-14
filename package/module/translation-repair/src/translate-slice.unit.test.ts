@@ -1,24 +1,24 @@
 /**
- * Tests for the hop between one settled slice and the stage that settles it.
- *
- * WHAT THIS EXISTS TO CATCH, and why a test rather than a check at run time.
- * `#108` compares one slice judged twice, differing only in whether the judges
- * were shown the neighbouring original. `translate-stage.unit.test.ts` proves
- * the stage renders that window into its sheets, and
- * `translate-slice-key.unit.test.ts` proves the cache separates the two arms.
- * Neither proves that {@link settleTranslateSlice} passes the window ON. A
- * parameter that silently went nowhere would produce two identical arms, and
- * the measurement would report a confident null after fifteen hundred calls.
- * That is the failure this file makes impossible.
- *
- * IT ALSO PINS WHO SEES IT. The window is context for the judges; the
- * translators are not shown it and must not be, since a translator that read
- * the neighbouring original might render it and earn a coverage complaint for
- * content that was never its slice.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the hop between one settled slice and the stage that settles it.
+ 
+ WHAT THIS EXISTS TO CATCH, and why a test rather than a check at run time.
+ `#108` compares one slice judged twice, differing only in whether the judges
+ were shown the neighbouring original. `translate-stage.unit.test.ts` proves
+ the stage renders that window into its sheets, and
+ `translate-slice-key.unit.test.ts` proves the cache separates the two arms.
+ Neither proves that {@link settleTranslateSlice} passes the window ON. A
+ parameter that silently went nowhere would produce two identical arms, and
+ the measurement would report a confident null after fifteen hundred calls.
+ That is the failure this file makes impossible.
+ 
+ IT ALSO PINS WHO SEES IT. The window is context for the judges; the
+ translators are not shown it and must not be, since a translator that read
+ the neighbouring original might render it and earn a coverage complaint for
+ content that was never its slice.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -39,41 +39,41 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger the lane writes its progress to.
+ Logger the lane writes its progress to.
  */
 const l = tagged({ tag: 'translate-slice-test', },);
 
 /**
- * Schema name the translate stage asks translators for, which is how a request
- * is told apart from a judge's ballot without reading its prose.
+ Schema name the translate stage asks translators for, which is how a request
+ is told apart from a judge's ballot without reading its prose.
  */
 const TRANSLATE_SCHEMA = 'translation_report';
 
 /**
- * Label the sheet gives the neighbouring sections.
+ Label the sheet gives the neighbouring sections.
  */
 const SURROUNDING_LABEL = 'SURROUNDING ORIGINAL';
 
 /**
- * Neighbouring original the wide arm supplies.
- *
- * DISTINCTIVE ON PURPOSE, and present in no other fixture here, so a request
- * carrying it can only have been given it through the parameter under test.
+ Neighbouring original the wide arm supplies.
+ 
+ DISTINCTIVE ON PURPOSE, and present in no other fixture here, so a request
+ carrying it can only have been given it through the parameter under test.
  */
 const WINDOW_SENTINEL = '傍晚她回到炉火旁，炉子里的火已经快灭了。';
 
 /**
- * Original this slice renders.
+ Original this slice renders.
  */
 const SOURCE_TEXT = '猫猫在窗台上打盹，尾巴垂在暖气片旁边。';
 
 /**
- * Translation already in the archive for it.
+ Translation already in the archive for it.
  */
 const INCUMBENT_TEXT = 'The cat is doing the sleeping on the windowsill, with tail hanging by the radiator.';
 
 /**
- * Models that render the slice.
+ Models that render the slice.
  */
 const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
@@ -82,7 +82,7 @@ const TRANSLATORS: readonly RosterModelId[] = [
 ];
 
 /**
- * Whole roster the judges are drawn from, translators included.
+ Whole roster the judges are drawn from, translators included.
  */
 const JUDGES: readonly RosterModelId[] = [
   ...TRANSLATORS,
@@ -91,7 +91,7 @@ const JUDGES: readonly RosterModelId[] = [
 ];
 
 /**
- * Slice pair the lane settles.
+ Slice pair the lane settles.
  */
 const SLICE: ChunkPair = {
   source: {
@@ -111,10 +111,10 @@ const SLICE: ChunkPair = {
 };
 
 /**
- * Preparation the slice belongs to.
- *
- * Minimal on purpose: what the lane reads from it is the identity context and
- * the line-structure set, and this file is about neither.
+ Preparation the slice belongs to.
+ 
+ Minimal on purpose: what the lane reads from it is the identity context and
+ the line-structure set, and this file is about neither.
  */
 const PREPARED: PreparedDocumentPair = {
   sourceText: SOURCE_TEXT,
@@ -128,47 +128,47 @@ const PREPARED: PreparedDocumentPair = {
 };
 
 /**
- * Every request one run sent, split by the role that received it.
+ Every request one run sent, split by the role that received it.
  */
 type SentRequests = {
   /**
-   * Sheets the translators were sent.
+   Sheets the translators were sent.
    */
   readonly translator: string[];
 
   /**
-   * Sheets the judges were sent.
+   Sheets the judges were sent.
    */
   readonly judge: string[];
 
   /**
-   * Client recording them and answering both roles.
+   Client recording them and answering both roles.
    */
   readonly client: SyntheticClient;
 };
 
 /**
- * Builds a client that records what each role was sent and keeps the incumbent.
- *
- * The verdict is fixed because this file is about what the roles are SHOWN.
- * Every judge abstains, which settles on the incumbent and reaches a record
- * without any case having to script a winner.
- *
- * @returns Recorders and the client writing into them
- *
- * @example
- * ```ts
- * const recorder = recordingClient();
- * ```
+ Builds a client that records what each role was sent and keeps the incumbent.
+ 
+ The verdict is fixed because this file is about what the roles are SHOWN.
+ Every judge abstains, which settles on the incumbent and reaches a record
+ without any case having to script a winner.
+ 
+ @returns Recorders and the client writing into them
+ 
+ @example
+ ```ts
+ const recorder = recordingClient();
+ ```
  */
 function recordingClient(): SentRequests {
   /**
-   * Sheets the translators were sent.
+   Sheets the translators were sent.
    */
   const translator: string[] = [];
 
   /**
-   * Sheets the judges were sent.
+   Sheets the judges were sent.
    */
   const judge: string[] = [];
 
@@ -186,7 +186,7 @@ function recordingClient(): SentRequests {
         request: ChatJsonRequest<ValueT>,
       ): Promise<ChatJsonOutcome<ValueT>> => {
         /**
-         * Whole sheet this role received, in call order.
+         Whole sheet this role received, in call order.
          */
         const content = request.messages
           .map(function toContent(message,) {
@@ -195,7 +195,7 @@ function recordingClient(): SentRequests {
           .join('\n',);
 
         /**
-         * Schema the caller asked for, which names the role.
+         Schema the caller asked for, which names the role.
          */
         const schema = request.responseFormat
           ?.json_schema
@@ -204,7 +204,7 @@ function recordingClient(): SentRequests {
           translator.push(content,);
 
           /**
-           * Rendering this translator returns.
+           Rendering this translator returns.
            */
           const value: unknown = { translation: 'The cat dozes on the windowsill, tail beside the radiator.', };
           if (!request.validate(value,)) {
@@ -224,7 +224,7 @@ function recordingClient(): SentRequests {
         judge.push(content,);
 
         /**
-         * Ballot declining every candidate, which leaves the incumbent standing.
+         Ballot declining every candidate, which leaves the incumbent standing.
          */
         const ballot: unknown = {
           best: 0,
@@ -248,16 +248,16 @@ function recordingClient(): SentRequests {
 }
 
 /**
- * Settles the slice once and hands back what each role was sent.
- *
- * @param neighbouringSourceText - wider window, absent for the narrow arm
- *
- * @returns Sheets both roles received
- *
- * @example
- * ```ts
- * const arm = await settleWith({},);
- * ```
+ Settles the slice once and hands back what each role was sent.
+ 
+ @param neighbouringSourceText - wider window, absent for the narrow arm
+ 
+ @returns Sheets both roles received
+ 
+ @example
+ ```ts
+ const arm = await settleWith({},);
+ ```
  */
 async function settleWith(
   { neighbouringSourceText, }: { readonly neighbouringSourceText?: string; },
@@ -266,7 +266,7 @@ async function settleWith(
   readonly judge: readonly string[];
 }> {
   /**
-   * Recorder capturing this arm.
+   Recorder capturing this arm.
    */
   const recorder = recordingClient();
 

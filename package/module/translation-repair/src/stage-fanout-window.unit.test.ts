@@ -1,7 +1,7 @@
 /**
- * Tests for the fan-out window: which seats a round asks first.
- *
- * @module
+ Tests for the fan-out window: which seats a round asks first.
+ 
+ @module
  */
 
 import {
@@ -20,7 +20,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * A seven-seat bench in roster order.
+ A seven-seat bench in roster order.
  */
 const BENCH: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -40,14 +40,14 @@ await describe({
         + 'prompt at least somewhere, so a re-run asks the same seats and slices spread their first asks',
       fn: async () => {
         /**
-         * Rotation for one prompt, read twice.
+         Rotation for one prompt, read twice.
          */
         const first = benchRotation({ messages: [{ role: 'user', content: 'meow', },], size: 7, },);
         expect(first,).toBe(benchRotation({ messages: [{ role: 'user', content: 'meow', },], size: 7, },),);
         expect(first,).toBeGreaterThanOrEqual(0,);
         expect(first,).toBeLessThan(7,);
         /**
-         * Rotations over many distinct prompts.
+         Rotations over many distinct prompts.
          */
         const seen = new Set(
           Array.from({ length: 40, }, function rotationOf(_,
@@ -69,12 +69,12 @@ await describe({
       name: 'KEEPS every seat exactly once, starting at the prompt\'s rotation',
       fn: async () => {
         /**
-         * Bench as one prompt orders it.
+         Bench as one prompt orders it.
          */
         const order = rotatedBench({ modelIds: BENCH, messages: [{ role: 'user', content: 'meow', },], },);
         expect([...order,].toSorted(),).toEqual([...BENCH,].toSorted(),);
         /**
-         * Where the rotation started.
+         Where the rotation started.
          */
         const start = benchRotation({ messages: [{ role: 'user', content: 'meow', },], size: BENCH.length, },);
         expect(order[0],).toBe(BENCH[start],);

@@ -1,24 +1,24 @@
 /**
- * Tests for the guard that stops an edit deleting a quoted passage.
- *
- * WHY THIS QUESTION AND NOT THE OTHER ONE. The harm is that a lane writing from
- * the source alone deletes English the source cannot account for, and the
- * obvious response is to work out which passages those are. That is not cheaply
- * decidable: translation changes bytes by construction, so no exact match
- * separates an unpaired passage from an ordinary translated one. Deletion, on
- * the other hand, is decidable from the two texts alone, and measured over both
- * settled pools it caught four real losses and nothing else in sixty-nine
- * natural rows.
- *
- * THE CARRIAGE-RETURN CASE IS NOT DEFENSIVENESS. One of the 184 markdown files
- * in the pinned corpus uses CRLF throughout. A splitter looking for two bytes
- * `\n\n` finds no boundary there, reads the whole document as one block, and
- * counts zero quotes, which is worse than an error because a guard counting
- * zero reports nothing wrong.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the guard that stops an edit deleting a quoted passage.
+ 
+ WHY THIS QUESTION AND NOT THE OTHER ONE. The harm is that a lane writing from
+ the source alone deletes English the source cannot account for, and the
+ obvious response is to work out which passages those are. That is not cheaply
+ decidable: translation changes bytes by construction, so no exact match
+ separates an unpaired passage from an ordinary translated one. Deletion, on
+ the other hand, is decidable from the two texts alone, and measured over both
+ settled pools it caught four real losses and nothing else in sixty-nine
+ natural rows.
+ 
+ THE CARRIAGE-RETURN CASE IS NOT DEFENSIVENESS. One of the 184 markdown files
+ in the pinned corpus uses CRLF throughout. A splitter looking for two bytes
+ `\n\n` finds no boundary there, reads the whole document as one block, and
+ counts zero quotes, which is worse than an error because a guard counting
+ zero reports nothing wrong.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -66,13 +66,13 @@ await describe({
         + 'losing a whole quoted passage counts against it',
       fn: async () => {
         /**
-         * One quotation across three lines.
+         One quotation across three lines.
          */
         const wrapped = '> The cat sat.\n> Then she left.\n> Then she came back.';
         expect(quoteBlockCount({ text: wrapped, },),).toBe(1,);
 
         /**
-         * The same words on one line.
+         The same words on one line.
          */
         expect(quoteBlockCount({ text: '> The cat sat. Then she left. Then she came back.', },),).toBe(1,);
       },
@@ -149,7 +149,7 @@ await describe({
         + 'from the alignment one rather than counting them together',
       fn: async () => {
         /**
-         * Sentence a run's findings would carry.
+         Sentence a run's findings would carry.
          */
         const finding = quoteLossRefusalFinding({
           sliceIndex: 4,

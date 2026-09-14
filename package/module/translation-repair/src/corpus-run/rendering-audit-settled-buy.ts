@@ -29,24 +29,24 @@ import {
 // module declares may be exported through a barrel; it moves here instead.
 
 /**
- * Audits one slice and keeps what the roster said, whole.
- *
- * Exported through the barrel so the built bundle's tests can hand it a
- * scripted client; `main` is its only caller.
- *
- * @internal
- *
- * @param subject - slice under audit, with the identity its producing run had
- *
- * @param client - roster client, built once per run by the caller so every
- * subject counts into one seat tally
- *
- * @returns One row: provenance, plus the report uninterpreted
- *
- * @example
- * ```ts
- * const row = await auditOne({ subject, client, },);
- * ```
+ Audits one slice and keeps what the roster said, whole.
+ 
+ Exported through the barrel so the built bundle's tests can hand it a
+ scripted client; `main` is its only caller.
+ 
+ @internal
+ 
+ @param subject - slice under audit, with the identity its producing run had
+ 
+ @param client - roster client, built once per run by the caller so every
+ subject counts into one seat tally
+ 
+ @returns One row: provenance, plus the report uninterpreted
+ 
+ @example
+ ```ts
+ const row = await auditOne({ subject, client, },);
+ ```
  */
 export async function auditOne(
   {
@@ -58,12 +58,12 @@ export async function auditOne(
   },
 ): Promise<SettledAuditRow> {
   /**
-   * Logger tagged for this slice, so a long run's stream says where it is.
+   Logger tagged for this slice, so a long run's stream says where it is.
    */
   const l = tagged({ tag: `${SETTLED_AUDIT_PROBE}:${subject.entryId}:${String(subject.sliceIndex,)}`, },);
 
   /**
-   * Everything the reader put in front of the audit for this slice.
+   Everything the reader put in front of the audit for this slice.
    */
   const {
     runSet,
@@ -80,11 +80,11 @@ export async function auditOne(
   } = subject;
 
   /**
-   * What the roster said about this rendering.
-   *
-   * The identity block goes in when the pair declared one: the producing judges
-   * had it, and an auditor without it has every reason to call a declared name
-   * a fabrication.
+   What the roster said about this rendering.
+   
+   The identity block goes in when the pair declared one: the producing judges
+   had it, and an auditor without it has every reason to call a declared name
+   a fabrication.
    */
   const report = await runRenderingAudit({
     client,
@@ -120,28 +120,28 @@ export async function auditOne(
 }
 
 /**
- * Every subject a run could buy, after the entry filter, in archive order.
- *
- * SEPARATE FROM THE CAP so the fraction a capped run reports is over what was
- * SELECTABLE rather than over the whole archive. Reporting `5 of 40` where
- * `--only` left 30 selectable overstates what was skipped and understates the
- * coverage bought, and the line alone gives a reader no way to tell.
- *
- * Exported through the barrel for the built bundle's tests; `main` is its
- * only caller.
- *
- * @internal
- *
- * @param readings - every artifact the archive holds
- *
- * @param onlyIds - entries to keep, empty for all
- *
- * @returns Subjects the filter left
- *
- * @example
- * ```ts
- * const eligible = eligibleSubjects({ readings, onlyIds, },);
- * ```
+ Every subject a run could buy, after the entry filter, in archive order.
+ 
+ SEPARATE FROM THE CAP so the fraction a capped run reports is over what was
+ SELECTABLE rather than over the whole archive. Reporting `5 of 40` where
+ `--only` left 30 selectable overstates what was skipped and understates the
+ coverage bought, and the line alone gives a reader no way to tell.
+ 
+ Exported through the barrel for the built bundle's tests; `main` is its
+ only caller.
+ 
+ @internal
+ 
+ @param readings - every artifact the archive holds
+ 
+ @param onlyIds - entries to keep, empty for all
+ 
+ @returns Subjects the filter left
+ 
+ @example
+ ```ts
+ const eligible = eligibleSubjects({ readings, onlyIds, },);
+ ```
  */
 export function eligibleSubjects(
   {
@@ -164,24 +164,24 @@ export function eligibleSubjects(
 }
 
 /**
- * Takes the prefix a cap allows.
- *
- * Exported through the barrel for the built bundle's tests; `main` is its
- * only caller. A negative cap reaches here only as the args module's own
- * "every subject" sentinel, since `readCap` refuses a typed one.
- *
- * @internal
- *
- * @param eligible - subjects the filter left, in a stable order
- *
- * @param cap - how many to buy, negative for all
- *
- * @returns Subjects to audit
- *
- * @example
- * ```ts
- * const buying = capped({ eligible, cap, },);
- * ```
+ Takes the prefix a cap allows.
+ 
+ Exported through the barrel for the built bundle's tests; `main` is its
+ only caller. A negative cap reaches here only as the args module's own
+ "every subject" sentinel, since `readCap` refuses a typed one.
+ 
+ @internal
+ 
+ @param eligible - subjects the filter left, in a stable order
+ 
+ @param cap - how many to buy, negative for all
+ 
+ @returns Subjects to audit
+ 
+ @example
+ ```ts
+ const buying = capped({ eligible, cap, },);
+ ```
  */
 export function capped(
   {
@@ -201,27 +201,27 @@ export function capped(
 }
 
 /**
- * Reports what the archive holds, before anything is bought.
- *
- * Exported through the barrel for the built bundle's tests; `main` is its
- * only caller.
- *
- * @internal
- *
- * @param readings - every artifact the archive holds
- *
- * @example
- * ```ts
- * printPopulation({ readings, },);
- * ```
+ Reports what the archive holds, before anything is bought.
+ 
+ Exported through the barrel for the built bundle's tests; `main` is its
+ only caller.
+ 
+ @internal
+ 
+ @param readings - every artifact the archive holds
+ 
+ @example
+ ```ts
+ printPopulation({ readings, },);
+ ```
  */
 export function printPopulation(
   { readings, }: { readonly readings: readonly SettledArtifactReading[]; },
 ): void {
   readings.forEach(function describe(reading,): void {
     /**
-     * Where this artifact came from, what it offers, and whether its recorded
-     * slicing still describes the pair.
+     Where this artifact came from, what it offers, and whether its recorded
+     slicing still describes the pair.
      */
     const {
       runSet,
@@ -231,35 +231,35 @@ export function printPopulation(
     } = reading;
 
     /**
-     * Slices whose text is the archive's own wording.
+     Slices whose text is the archive's own wording.
      */
     const retained = subjects.filter(function isArchive(subject,): boolean {
       return subject.auditsArchiveText;
     },);
 
     /**
-     * Slices a later stage overruled, so the audit will read wording no
-     * reader of an assembled document would meet.
-     *
-     * PRINTED HERE because this whole reading is free, and knowing it before
-     * a roster is woken up is the reason this module is separate from the
-     * driver that spends quota.
+     Slices a later stage overruled, so the audit will read wording no
+     reader of an assembled document would meet.
+     
+     PRINTED HERE because this whole reading is free, and knowing it before
+     a roster is woken up is the reason this module is separate from the
+     driver that spends quota.
      */
     const displaced = subjects.filter(function wasOverruled(subject,): boolean {
       /**
-       * How this subject relates to what a document would carry.
+       How this subject relates to what a document would carry.
        */
       const { pageRelation, } = subject;
       return pageRelation.kind === 'displaced';
     },);
 
     /**
-     * Slices no stage has decided at all, which is the absence of a decision
-     * rather than one, and is pending `#175` with the owner.
+     Slices no stage has decided at all, which is the absence of a decision
+     rather than one, and is pending `#175` with the owner.
      */
     const undecided = subjects.filter(function wasNeverAsked(subject,): boolean {
       /**
-       * How this subject relates to what a document would carry.
+       How this subject relates to what a document would carry.
        */
       const { pageRelation, } = subject;
       return pageRelation.kind === 'undecided';
@@ -276,7 +276,7 @@ export function printPopulation(
       console.log(`   REFUSED: ${verification.detail}`,);
     if (verification.kind === 'unverifiable') {
       /**
-       * Recipe halves the file lacks, which the rebuild had to guess.
+       Recipe halves the file lacks, which the rebuild had to guess.
        */
       const missing = verification.unrecorded
         .join(', ',);

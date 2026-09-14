@@ -1,37 +1,37 @@
 /**
- * Guard that a picture's transcription, once corroborated, actually reaches
- * the requests `translateDocument` sends, not merely its return value.
- *
- * WHY THIS FILE EXISTS: `#107`'s judging window was fully built, wired into
- * the cache key, and sat in production for weeks unused. Nothing failed and no
- * test broke, because nothing asserted what the driver actually SENT to a
- * model; every test that passed was reading `translateDocument`'s return
- * value, which the missing wiring never touched. Pictures wire through the
- * same two places, `translateSliceKey` and `attemptTranslateSlice`, from the
- * same `pictures.context` value computed once in `translate-document.ts`, so
- * the same gap is possible here, and this file is the guard against it
- * repeating.
- *
- * WHAT IS PINNED, per exchange the recording client double captures before it
- * answers: a corroborated reading's own transcription text reaches the
- * TRANSLATOR sheet (`translate-wire.ts`'s "WHAT THE PICTURES HERE SAY" block)
- * and the JUDGE sheet (`candidate-select-wire.ts`'s evidence block, carrying
- * `translate-judge.ts`'s label of the same name); a run handed no readings at
- * all sends neither and differs measurably from a run handed one, which is the
- * positive control this guard needs, since an assertion that always passes
- * looks identical to one that works; and an `unavailable` reading leaves a
- * finding naming its asset on the slice record while reaching neither sheet,
- * since `slice-pictures.ts` treats a refused reading as evidence for a person
- * to read rather than a hedge for a model to weigh.
- *
- * Every assertion reads the RECORDED REQUEST the client double captured,
- * never `translateDocument`'s return value: the return value is exactly what
- * the `#107` gap left intact, and reading it again would prove nothing this
- * file exists to prove.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Guard that a picture's transcription, once corroborated, actually reaches
+ the requests `translateDocument` sends, not merely its return value.
+ 
+ WHY THIS FILE EXISTS: `#107`'s judging window was fully built, wired into
+ the cache key, and sat in production for weeks unused. Nothing failed and no
+ test broke, because nothing asserted what the driver actually SENT to a
+ model; every test that passed was reading `translateDocument`'s return
+ value, which the missing wiring never touched. Pictures wire through the
+ same two places, `translateSliceKey` and `attemptTranslateSlice`, from the
+ same `pictures.context` value computed once in `translate-document.ts`, so
+ the same gap is possible here, and this file is the guard against it
+ repeating.
+ 
+ WHAT IS PINNED, per exchange the recording client double captures before it
+ answers: a corroborated reading's own transcription text reaches the
+ TRANSLATOR sheet (`translate-wire.ts`'s "WHAT THE PICTURES HERE SAY" block)
+ and the JUDGE sheet (`candidate-select-wire.ts`'s evidence block, carrying
+ `translate-judge.ts`'s label of the same name); a run handed no readings at
+ all sends neither and differs measurably from a run handed one, which is the
+ positive control this guard needs, since an assertion that always passes
+ looks identical to one that works; and an `unavailable` reading leaves a
+ finding naming its asset on the slice record while reaching neither sheet,
+ since `slice-pictures.ts` treats a refused reading as evidence for a person
+ to read rather than a hedge for a model to weigh.
+ 
+ Every assertion reads the RECORDED REQUEST the client double captured,
+ never `translateDocument`'s return value: the return value is exactly what
+ the `#107` gap left intact, and reading it again would prove nothing this
+ file exists to prove.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -55,14 +55,14 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the driver under test.
+ Logger for the driver under test.
  */
 const l = tagged({ tag: 'document-pictures-reach-the-wire-test', },);
 
 /**
- * Models that render each slice, reused from the sibling document-driver
- * suite: a roster this small and this shaped is already known to seat both
- * stages without extra scripting.
+ Models that render each slice, reused from the sibling document-driver
+ suite: a roster this small and this shaped is already known to seat both
+ stages without extra scripting.
  */
 const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
@@ -71,7 +71,7 @@ const TRANSLATORS: readonly RosterModelId[] = [
 ];
 
 /**
- * Rosters the driver seats for every run in this file.
+ Rosters the driver seats for every run in this file.
  */
 const MODELS: TranslateModels = {
   translatorModelIds: TRANSLATORS,
@@ -84,50 +84,50 @@ const MODELS: TranslateModels = {
 };
 
 /**
- * Placeholder the corpus writes an entry's own directory as, inside a photo
- * element. AN ESCAPED TEMPLATE LITERAL, so the characters this file writes are
- * the ones the corpus carries, rather than leaving an interpolation slot open.
+ Placeholder the corpus writes an entry's own directory as, inside a photo
+ element. AN ESCAPED TEMPLATE LITERAL, so the characters this file writes are
+ the ones the corpus carries, rather than leaving an interpolation slot open.
  */
 const ENTRY_PLACEHOLDER = `\${path}`;
 
 /**
- * Builds one `<PhotoScroll />` element naming a single asset, the only shape
- * `photo-reference.ts` reads and the only shape the pinned corpus writes.
- *
- * @param assetName - file name the element names within an entry's photos
- * directory, which is also the key `pictureReadings` looks it up under
- *
- * @returns Element exactly as a page in the corpus writes it
- *
- * @example
- * ```ts
- * const element = photoElement({ assetName: 'tuna-tin-nap.webp', },);
- * ```
+ Builds one `<PhotoScroll />` element naming a single asset, the only shape
+ `photo-reference.ts` reads and the only shape the pinned corpus writes.
+ 
+ @param assetName - file name the element names within an entry's photos
+ directory, which is also the key `pictureReadings` looks it up under
+ 
+ @returns Element exactly as a page in the corpus writes it
+ 
+ @example
+ ```ts
+ const element = photoElement({ assetName: 'tuna-tin-nap.webp', },);
+ ```
  */
 function photoElement({ assetName, }: { readonly assetName: string; },): string {
   return `<PhotoScroll photos={[ '${ENTRY_PLACEHOLDER}/photos/${assetName}' ]} />`;
 }
 
 /**
- * Asset name the corroborated-reading fixture's own `<PhotoScroll />` element
- * names. Distinctive on purpose, so a match for it anywhere in a request can
- * only have come from the picture channel rather than from ordinary prose.
+ Asset name the corroborated-reading fixture's own `<PhotoScroll />` element
+ names. Distinctive on purpose, so a match for it anywhere in a request can
+ only have come from the picture channel rather than from ordinary prose.
  */
 const CORROBORATED_ASSET_NAME = 'tuna-tin-nap.webp';
 
 /**
- * What both readers agreed the picture shows, invented for this fixture.
- * Distinctive wording, so finding this exact sentence in a request proves the
- * picture channel carried it there rather than some other block coinciding.
+ What both readers agreed the picture shows, invented for this fixture.
+ Distinctive wording, so finding this exact sentence in a request proves the
+ picture channel carried it there rather than some other block coinciding.
  */
 const CORROBORATED_READING_TEXT = 'Whiskers is curled up asleep inside an empty tuna tin, one paw over her nose.';
 
 /**
- * Corroborated reading handed to the driver for
- * {@link CORROBORATED_ASSET_NAME}, built by hand rather than through
- * `readImagePair`: production hands this map in as data, per
- * `translate-document.ts`'s own note that gathering pictures is the corpus
- * layer's business, not this driver's.
+ Corroborated reading handed to the driver for
+ {@link CORROBORATED_ASSET_NAME}, built by hand rather than through
+ `readImagePair`: production hands this map in as data, per
+ `translate-document.ts`'s own note that gathering pictures is the corpus
+ layer's business, not this driver's.
  */
 const CORROBORATED_READING: PairedReading = {
   kind: 'corroborated',
@@ -145,8 +145,8 @@ const CORROBORATED_READING: PairedReading = {
 };
 
 /**
- * Original: one section whose source names {@link CORROBORATED_ASSET_NAME},
- * the way a `#111` corpus entry does.
+ Original: one section whose source names {@link CORROBORATED_ASSET_NAME},
+ the way a `#111` corpus entry does.
  */
 const SOURCE_TEXT = `## 第一节
 
@@ -156,8 +156,8 @@ ${photoElement({ assetName: CORROBORATED_ASSET_NAME, },)}
 `;
 
 /**
- * Archive translation, awkward on purpose so a translator's fresh rendering
- * can never be mistaken for the text already there.
+ Archive translation, awkward on purpose so a translator's fresh rendering
+ can never be mistaken for the text already there.
  */
 const TARGET_TEXT = `## Section one
 
@@ -167,9 +167,9 @@ ${photoElement({ assetName: CORROBORATED_ASSET_NAME, },)}
 `;
 
 /**
- * What every translator renders for {@link SOURCE_TEXT}, identical across the
- * roster so the slate collapses to one fresh candidate standing against the
- * archive, which is what makes the judges' fan-out happen at all.
+ What every translator renders for {@link SOURCE_TEXT}, identical across the
+ roster so the slate collapses to one fresh candidate standing against the
+ archive, which is what makes the judges' fan-out happen at all.
  */
 const FRESH_RENDERING = `## Section one
 
@@ -179,17 +179,17 @@ ${photoElement({ assetName: CORROBORATED_ASSET_NAME, },)}
 `;
 
 /**
- * Asset name the unavailable-reading fixture's element names. A different name
- * from {@link CORROBORATED_ASSET_NAME}, so the two fixtures cannot be confused
- * for one another inside a single recorded request.
+ Asset name the unavailable-reading fixture's element names. A different name
+ from {@link CORROBORATED_ASSET_NAME}, so the two fixtures cannot be confused
+ for one another inside a single recorded request.
  */
 const UNAVAILABLE_ASSET_NAME = 'blurry-tabby.webp';
 
 /**
- * Reading the driver is handed for {@link UNAVAILABLE_ASSET_NAME}: the readers
- * disagreed, so nothing here may be used. The reason is `readers-disagree`
- * because the pin is about the `unavailable` kind, not about which reason
- * produced it.
+ Reading the driver is handed for {@link UNAVAILABLE_ASSET_NAME}: the readers
+ disagreed, so nothing here may be used. The reason is `readers-disagree`
+ because the pin is about the `unavailable` kind, not about which reason
+ produced it.
  */
 const UNAVAILABLE_READING: PairedReading = {
   kind: 'unavailable',
@@ -203,7 +203,7 @@ const UNAVAILABLE_READING: PairedReading = {
 };
 
 /**
- * Original: one section whose source names {@link UNAVAILABLE_ASSET_NAME}.
+ Original: one section whose source names {@link UNAVAILABLE_ASSET_NAME}.
  */
 const UNAVAILABLE_SOURCE_TEXT = `## 第一节
 
@@ -213,8 +213,8 @@ ${photoElement({ assetName: UNAVAILABLE_ASSET_NAME, },)}
 `;
 
 /**
- * Archive translation for {@link UNAVAILABLE_SOURCE_TEXT}, awkward for the
- * same reason {@link TARGET_TEXT} is.
+ Archive translation for {@link UNAVAILABLE_SOURCE_TEXT}, awkward for the
+ same reason {@link TARGET_TEXT} is.
  */
 const UNAVAILABLE_TARGET_TEXT = `## Section one
 
@@ -224,7 +224,7 @@ ${photoElement({ assetName: UNAVAILABLE_ASSET_NAME, },)}
 `;
 
 /**
- * What every translator renders for {@link UNAVAILABLE_SOURCE_TEXT}.
+ What every translator renders for {@link UNAVAILABLE_SOURCE_TEXT}.
  */
 const UNAVAILABLE_FRESH_RENDERING = `## Section one
 
@@ -234,44 +234,44 @@ ${photoElement({ assetName: UNAVAILABLE_ASSET_NAME, },)}
 `;
 
 /**
- * One exchange a run attempted, kept so a case can inspect exactly what
- * reached the wire rather than trusting the driver's return value.
- *
- * @example
- * ```ts
- * const recorded: RecordedRequest = { schema: 'translation_report', content: 'ORIGINAL...', };
- * ```
+ One exchange a run attempted, kept so a case can inspect exactly what
+ reached the wire rather than trusting the driver's return value.
+ 
+ @example
+ ```ts
+ const recorded: RecordedRequest = { schema: 'translation_report', content: 'ORIGINAL...', };
+ ```
  */
 type RecordedRequest = {
   /**
-   * Structured-output schema name, which tells a translator exchange from a
-   * judge exchange the same way the driver's own schema names do.
+   Structured-output schema name, which tells a translator exchange from a
+   judge exchange the same way the driver's own schema names do.
    */
   readonly schema: string;
 
   /**
-   * Every message's text, joined, so a needle search reads the whole exchange
-   * rather than one message chosen in advance.
+   Every message's text, joined, so a needle search reads the whole exchange
+   rather than one message chosen in advance.
    */
   readonly content: string;
 };
 
 /**
- * Builds a client that renders one fixed translation for every translator
- * call, always ballots for the first candidate on a judge's slate, and
- * appends every exchange it receives to `requests` before answering, so a
- * case can inspect what was SENT rather than only what the driver returned.
- *
- * @param requests - log this client appends every exchange to, in call order
- *
- * @param translatorRendering - text every translator call answers with
- *
- * @returns Client honoring the script above
- *
- * @example
- * ```ts
- * const client = recordingClient({ requests: [], translatorRendering: FRESH_RENDERING, },);
- * ```
+ Builds a client that renders one fixed translation for every translator
+ call, always ballots for the first candidate on a judge's slate, and
+ appends every exchange it receives to `requests` before answering, so a
+ case can inspect what was SENT rather than only what the driver returned.
+ 
+ @param requests - log this client appends every exchange to, in call order
+ 
+ @param translatorRendering - text every translator call answers with
+ 
+ @returns Client honoring the script above
+ 
+ @example
+ ```ts
+ const client = recordingClient({ requests: [], translatorRendering: FRESH_RENDERING, },);
+ ```
  */
 function recordingClient(
   {
@@ -290,15 +290,15 @@ function recordingClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Structured-output schema this exchange asked for, which names the
-       * stage the same way the driver's own schema check does.
+       Structured-output schema this exchange asked for, which names the
+       stage the same way the driver's own schema check does.
        */
       const schema = request.responseFormat
         ?.json_schema
         .name;
 
       /**
-       * Every message's text, joined into one haystack a case can search.
+       Every message's text, joined into one haystack a case can search.
        */
       const content = request.messages
         .map(function toContent(message,) {
@@ -313,7 +313,7 @@ function recordingClient(
 
       if (schema === 'translation_report') {
         /**
-         * Wire reply carrying the scripted rendering.
+         Wire reply carrying the scripted rendering.
          */
         const value: unknown = { translation: translatorRendering, };
         if (!request.validate(value,))
@@ -326,11 +326,11 @@ function recordingClient(
       }
       if (schema === 'candidate_ballot') {
         /**
-         * Ballot naming the first candidate on the slate, whichever rendering
-         * the rotation put there. WHICH candidate wins is not this file's
-         * question, only whether the picture reading reached the sheet the
-         * judges were shown, so any valid answer that lets the run finish
-         * serves the pin equally well.
+         Ballot naming the first candidate on the slate, whichever rendering
+         the rotation put there. WHICH candidate wins is not this file's
+         question, only whether the picture reading reached the sheet the
+         judges were shown, so any valid answer that lets the run finish
+         serves the pin equally well.
          */
         const ballot: unknown = {
           best: 1,
@@ -355,24 +355,24 @@ function recordingClient(
 }
 
 /**
- * Drives `translateDocument` once over one document pair, with every exchange
- * it attempts recorded rather than only its return value kept.
- *
- * @param sourceText - original document
- *
- * @param targetText - translation as it stands
- *
- * @param translatorRendering - text every translator call answers with
- *
- * @param pictureReadings - picture readings handed to the driver; omitted for
- * a run that gathers none, which is `translateDocument`'s own default
- *
- * @returns Result the driver settled on, and every exchange it attempted
- *
- * @example
- * ```ts
- * const { requests, } = await runDocument({ sourceText, targetText, translatorRendering: FRESH_RENDERING, },);
- * ```
+ Drives `translateDocument` once over one document pair, with every exchange
+ it attempts recorded rather than only its return value kept.
+ 
+ @param sourceText - original document
+ 
+ @param targetText - translation as it stands
+ 
+ @param translatorRendering - text every translator call answers with
+ 
+ @param pictureReadings - picture readings handed to the driver; omitted for
+ a run that gathers none, which is `translateDocument`'s own default
+ 
+ @returns Result the driver settled on, and every exchange it attempted
+ 
+ @example
+ ```ts
+ const { requests, } = await runDocument({ sourceText, targetText, translatorRendering: FRESH_RENDERING, },);
+ ```
  */
 async function runDocument(
   {
@@ -391,13 +391,13 @@ async function runDocument(
   readonly requests: readonly RecordedRequest[];
 }> {
   /**
-   * Exchanges this run attempts, filled in by the client double as they
-   * happen rather than reconstructed afterward.
+   Exchanges this run attempts, filled in by the client double as they
+   happen rather than reconstructed afterward.
    */
   const requests: RecordedRequest[] = [];
 
   /**
-   * Preparation the driver slices its work from.
+   Preparation the driver slices its work from.
    */
   const prepared = prepareDocumentPair({
     sourceText,
@@ -405,7 +405,7 @@ async function runDocument(
   },);
 
   /**
-   * What the driver settled on for this document.
+   What the driver settled on for this document.
    */
   const result = await translateDocument({
     client: recordingClient({
@@ -427,17 +427,17 @@ async function runDocument(
 }
 
 /**
- * Picks the requests naming the translator schema out of everything one run
- * attempted, which is what a translator actually received.
- *
- * @param requests - every exchange one run attempted
- *
- * @returns Requests asking for a rendered translation
- *
- * @example
- * ```ts
- * const sent = translatorRequestsOf({ requests, },);
- * ```
+ Picks the requests naming the translator schema out of everything one run
+ attempted, which is what a translator actually received.
+ 
+ @param requests - every exchange one run attempted
+ 
+ @returns Requests asking for a rendered translation
+ 
+ @example
+ ```ts
+ const sent = translatorRequestsOf({ requests, },);
+ ```
  */
 function translatorRequestsOf(
   { requests, }: { readonly requests: readonly RecordedRequest[]; },
@@ -448,17 +448,17 @@ function translatorRequestsOf(
 }
 
 /**
- * Picks the requests naming the judge schema out of everything one run
- * attempted, which is what a judge actually received.
- *
- * @param requests - every exchange one run attempted
- *
- * @returns Requests asking for a ballot
- *
- * @example
- * ```ts
- * const sent = judgeRequestsOf({ requests, },);
- * ```
+ Picks the requests naming the judge schema out of everything one run
+ attempted, which is what a judge actually received.
+ 
+ @param requests - every exchange one run attempted
+ 
+ @returns Requests asking for a ballot
+ 
+ @example
+ ```ts
+ const sent = judgeRequestsOf({ requests, },);
+ ```
  */
 function judgeRequestsOf(
   { requests, }: { readonly requests: readonly RecordedRequest[]; },
@@ -479,8 +479,8 @@ await describe({
         + 'REQUEST, never against `translateDocument`\'s return value',
       fn: async () => {
         /**
-         * Run over the corroborated-reading fixture, with the reading handed
-         * in.
+         Run over the corroborated-reading fixture, with the reading handed
+         in.
          */
         const { requests, } = await runDocument({
           sourceText: SOURCE_TEXT,
@@ -492,7 +492,7 @@ await describe({
         },);
 
         /**
-         * Every request a translator actually received this run.
+         Every request a translator actually received this run.
          */
         const sent = translatorRequestsOf({ requests, },);
         expect(sent.length,).toBeGreaterThan(0,);
@@ -511,8 +511,8 @@ await describe({
         + 'separately catches a wiring gap on either side alone',
       fn: async () => {
         /**
-         * Run over the corroborated-reading fixture, with the reading handed
-         * in.
+         Run over the corroborated-reading fixture, with the reading handed
+         in.
          */
         const { requests, } = await runDocument({
           sourceText: SOURCE_TEXT,
@@ -524,7 +524,7 @@ await describe({
         },);
 
         /**
-         * Every request a judge actually received this run.
+         Every request a judge actually received this run.
          */
         const sent = judgeRequestsOf({ requests, },);
         expect(sent.length,).toBeGreaterThan(0,);
@@ -543,8 +543,8 @@ await describe({
         + 'passes would look identical to one that actually exercises the picture channel',
       fn: async () => {
         /**
-         * Run over the corroborated-reading fixture, with the reading handed
-         * in, so this case has something to differ from.
+         Run over the corroborated-reading fixture, with the reading handed
+         in, so this case has something to differ from.
          */
         const withReadings = await runDocument({
           sourceText: SOURCE_TEXT,
@@ -556,8 +556,8 @@ await describe({
         },);
 
         /**
-         * The identical document and rendering, but with no `pictureReadings`
-         * argument at all, exercising `translateDocument`'s own default.
+         The identical document and rendering, but with no `pictureReadings`
+         argument at all, exercising `translateDocument`'s own default.
          */
         const withoutReadings = await runDocument({
           sourceText: SOURCE_TEXT,
@@ -566,23 +566,23 @@ await describe({
         },);
 
         /**
-         * Translator requests from the run handed a reading, which must carry
-         * it, or the comparison below would not be a control at all.
+         Translator requests from the run handed a reading, which must carry
+         it, or the comparison below would not be a control at all.
          */
         const translatorWith = translatorRequestsOf({ requests: withReadings.requests, },);
 
         /**
-         * Judge requests from the run handed a reading, for the same reason.
+         Judge requests from the run handed a reading, for the same reason.
          */
         const judgeWith = judgeRequestsOf({ requests: withReadings.requests, },);
 
         /**
-         * Translator requests from the run handed no reading.
+         Translator requests from the run handed no reading.
          */
         const translatorWithout = translatorRequestsOf({ requests: withoutReadings.requests, },);
 
         /**
-         * Judge requests from the run handed no reading.
+         Judge requests from the run handed no reading.
          */
         const judgeWithout = judgeRequestsOf({ requests: withoutReadings.requests, },);
 
@@ -631,7 +631,7 @@ await describe({
         + 'for exactly this case',
       fn: async () => {
         /**
-         * Run over a document whose one picture nobody could corroborate.
+         Run over a document whose one picture nobody could corroborate.
          */
         const { result, requests, } = await runDocument({
           sourceText: UNAVAILABLE_SOURCE_TEXT,
@@ -643,14 +643,14 @@ await describe({
         },);
 
         /**
-         * The one slice this document produces.
+         The one slice this document produces.
          */
         const [record,] = result.slices;
         expect(record,).toBeDefined();
 
         /**
-         * Findings this record carries, defaulted to empty so a missing
-         * record fails the assertion below rather than throwing first.
+         Findings this record carries, defaulted to empty so a missing
+         record fails the assertion below rather than throwing first.
          */
         const findings = record?.findings ?? [];
         expect(

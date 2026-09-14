@@ -14,20 +14,20 @@
 // for mdast, whose consumers narrow on `node.type` across many variants.
 
 /**
- * Recursively exposes structural data through readonly properties.
- *
- * Intended for records, unions, arrays and tuples: plain parsed or borrowed
- * data. Not for stateful class instances, whose methods and private state this
- * would misdescribe.
- *
- * Homomorphic on purpose. Mapping over `keyof Value` preserves arrays and
- * tuples as readonly arrays and readonly tuples rather than flattening them
- * into objects keyed by index.
- *
- * @example
- * ```ts
- * type Reading = DeepReadonlyData<{ entries: { id: string; }[]; }>;
- * ```
+ Recursively exposes structural data through readonly properties.
+ 
+ Intended for records, unions, arrays and tuples: plain parsed or borrowed
+ data. Not for stateful class instances, whose methods and private state this
+ would misdescribe.
+ 
+ Homomorphic on purpose. Mapping over `keyof Value` preserves arrays and
+ tuples as readonly arrays and readonly tuples rather than flattening them
+ into objects keyed by index.
+ 
+ @example
+ ```ts
+ type Reading = DeepReadonlyData<{ entries: { id: string; }[]; }>;
+ ```
  */
 export type DeepReadonlyData<Value,> = Value extends object ? {
     readonly [Key in keyof Value]: DeepReadonlyData<Value[Key]>;

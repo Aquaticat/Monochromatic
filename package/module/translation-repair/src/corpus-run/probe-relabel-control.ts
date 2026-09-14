@@ -41,59 +41,59 @@ import {
 // human saw damage.
 
 /**
- * Control regions taken per entry.
- *
- * Two rather than one so a single unusual region cannot decide the arm, and not
- * more because each costs two prober calls and the comparison it feeds is a
- * rate, not a ranking.
+ Control regions taken per entry.
+ 
+ Two rather than one so a single unusual region cannot decide the arm, and not
+ more because each costs two prober calls and the comparison it feeds is a
+ rate, not a ranking.
  */
 const CONTROL_REGIONS_PER_ENTRY = 2;
 
 /**
- * One shipped region paired with the record that owns it.
- *
- * Named rather than inferred, because an inferred object literal carries
- * writable properties and the ordering and filtering callbacks that read this
- * list then take mutable parameters they never mutate.
+ One shipped region paired with the record that owns it.
+ 
+ Named rather than inferred, because an inferred object literal carries
+ writable properties and the ordering and filtering callbacks that read this
+ list then take mutable parameters they never mutate.
  */
 type OwnedRegion = Readonly<{
   /**
-   * Record the region was shipped under.
+   Record the region was shipped under.
    */
   record: ArtifactRecord;
 
   /**
-   * Shipped region itself.
+   Shipped region itself.
    */
   region: ArtifactRecord['repairRegions'][number];
 
   /**
-   * Replaced text, the length the control matches on.
+   Replaced text, the length the control matches on.
    */
   before: string;
 }>;
 
 /**
- * Orders an entry's unflagged regions by how closely they match the damaged
- * region's replaced length.
- *
- * Taking whichever regions appear first makes the arm answer the wrong
- * question. Measured on the first control run, the unflagged regions that
- * happened to come first replaced 12 to 63 characters while the damaged regions
- * replaced 60 to 268, and a short replacement has less room to drop anything,
- * so a quiet control would have been partly a statement about length. Matching
- * length leaves the human verdict as the thing that differs.
- *
- * @param regions - unflagged regions of one entry, with their replaced lengths
- *
- * @param targetLength - replaced length of that entry's damaged region
- *
- * @returns Same regions, closest length first
- *
- * @example
- * ```ts
- * const ordered = byLengthDistance({ regions, targetLength: 189, },);
- * ```
+ Orders an entry's unflagged regions by how closely they match the damaged
+ region's replaced length.
+ 
+ Taking whichever regions appear first makes the arm answer the wrong
+ question. Measured on the first control run, the unflagged regions that
+ happened to come first replaced 12 to 63 characters while the damaged regions
+ replaced 60 to 268, and a short replacement has less room to drop anything,
+ so a quiet control would have been partly a statement about length. Matching
+ length leaves the human verdict as the thing that differs.
+ 
+ @param regions - unflagged regions of one entry, with their replaced lengths
+ 
+ @param targetLength - replaced length of that entry's damaged region
+ 
+ @returns Same regions, closest length first
+ 
+ @example
+ ```ts
+ const ordered = byLengthDistance({ regions, targetLength: 189, },);
+ ```
  */
 function byLengthDistance<Region extends { readonly before: string; },>(
   {
@@ -110,13 +110,13 @@ function byLengthDistance<Region extends { readonly before: string; },>(
       right,
     ) {
       /**
-       * Replaced length of the left-hand region.
+       Replaced length of the left-hand region.
        */
       const leftLength = left.before
         .length;
 
       /**
-       * Replaced length of the right-hand region.
+       Replaced length of the right-hand region.
        */
       const rightLength = right.before
         .length;
@@ -127,23 +127,23 @@ function byLengthDistance<Region extends { readonly before: string; },>(
 }
 
 /**
- * Builds control cases from regions the reader did not flag.
- *
- * @param manifestPath - sample manifest naming the drawn entries
- *
- * @param damaged - damaged cases, whose envelopes are excluded
- *
- * @param pin - corpus commit to read the pages at, defaulting to the run pin so
- * nothing production does changes
- *
- * @returns Control cases, at most {@link CONTROL_REGIONS_PER_ENTRY} per entry
- *
- * @throws {@link ArtifactParseError} when an artifact or manifest is malformed
- *
- * @example
- * ```ts
- * const controls = await gatherControlCases({ manifestPath, damaged, },);
- * ```
+ Builds control cases from regions the reader did not flag.
+ 
+ @param manifestPath - sample manifest naming the drawn entries
+ 
+ @param damaged - damaged cases, whose envelopes are excluded
+ 
+ @param pin - corpus commit to read the pages at, defaulting to the run pin so
+ nothing production does changes
+ 
+ @returns Control cases, at most {@link CONTROL_REGIONS_PER_ENTRY} per entry
+ 
+ @throws {@link ArtifactParseError} when an artifact or manifest is malformed
+ 
+ @example
+ ```ts
+ const controls = await gatherControlCases({ manifestPath, damaged, },);
+ ```
  */
 export async function gatherControlCases(
   {
@@ -157,20 +157,20 @@ export async function gatherControlCases(
   },
 ): Promise<readonly RelabelCase[]> {
   /**
-   * Drawn items, validated against their own contents.
+   Drawn items, validated against their own contents.
    */
   const manifest = parseSampleManifest({
     value: await readRunJson({ path: manifestPath, },),
   },);
 
   /**
-   * Envelopes already probed as damaged, which the control must exclude.
+   Envelopes already probed as damaged, which the control must exclude.
    */
   const flagged = new Set(
     damaged
       .map(function toKey(entry,) {
         /**
-         * Envelope this damaged case probed.
+         Envelope this damaged case probed.
          */
         const { envelopeId, } = entry.region;
 
@@ -179,7 +179,7 @@ export async function gatherControlCases(
   );
 
   /**
-   * Entries the damaged regions came from, in draw order without repeats.
+   Entries the damaged regions came from, in draw order without repeats.
    */
   const entryIds = [
     ...new Set(
@@ -191,18 +191,18 @@ export async function gatherControlCases(
   ];
 
   /**
-   * Control cases gathered so far.
+   Control cases gathered so far.
    */
   const controls: RelabelCase[] = [];
   /* oxlint-disable no-await-in-loop -- sequential on purpose: one artifact and two git blobs per entry, and concurrency would multiply peak memory for no gain on a diagnostic */
   for (const entryId of entryIds) {
     /**
-     * Settled records of this entry.
+     Settled records of this entry.
      */
     const records = await readArtifactRecords({ entryId, },);
 
     /**
-     * Original document at the pinned commit.
+     Original document at the pinned commit.
      */
     const sourceText = await readCorpusFile({
       pin,
@@ -210,7 +210,7 @@ export async function gatherControlCases(
     },);
 
     /**
-     * Translation at the same commit.
+     Translation at the same commit.
      */
     const targetText = await readCorpusFile({
       pin,
@@ -218,7 +218,7 @@ export async function gatherControlCases(
     },);
 
     /**
-     * Slices of this entry, rebuilt as the pipeline builds them.
+     Slices of this entry, rebuilt as the pipeline builds them.
      */
     const slices = alignDocumentSections({
       source: parseDocument({ text: sourceText, },),
@@ -248,7 +248,7 @@ export async function gatherControlCases(
     assertSliceIndexing({ slices, },);
 
     /**
-     * Replaced length of this entry's damaged region, the length to match.
+     Replaced length of this entry's damaged region, the length to match.
      */
     const targetLength = Math.max(
       0,
@@ -264,8 +264,8 @@ export async function gatherControlCases(
     );
 
     /**
-     * Every unflagged region of this entry, paired with its owning record and
-     * ordered so the closest length in replaced text comes first.
+     Every unflagged region of this entry, paired with its owning record and
+     ordered so the closest length in replaced text comes first.
      */
     const candidates = byLengthDistance({
       regions: records
@@ -281,7 +281,7 @@ export async function gatherControlCases(
         },)
         .filter(function isUnflagged(candidate,) {
           /**
-           * Envelope this candidate would probe.
+           Envelope this candidate would probe.
            */
           const { envelopeId, } = candidate.region;
 
@@ -291,12 +291,12 @@ export async function gatherControlCases(
     },);
 
     /**
-     * Envelopes of this entry already taken, so one edit is probed once.
+     Envelopes of this entry already taken, so one edit is probed once.
      */
     const taken = new Set<string>();
     for (const candidate of candidates) {
       /**
-       * Region and the record that owns it.
+       Region and the record that owns it.
        */
       const {
         record,
@@ -308,7 +308,7 @@ export async function gatherControlCases(
         continue;
 
       /**
-       * Slice whose translation carries this region.
+       Slice whose translation carries this region.
        */
       const holder = slices
         .find(function holdsBefore(slice,) {
@@ -327,7 +327,7 @@ export async function gatherControlCases(
         issues: records
           .filter(function isServed(served,) {
             /**
-             * Settled id of the candidate record.
+             Settled id of the candidate record.
              */
             const servedId = served.issue
               .issueId;

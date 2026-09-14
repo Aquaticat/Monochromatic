@@ -38,14 +38,14 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // text, and only one of them is evidence about the passage.
 
 /**
- * Voices that must back the consolidation before it replaces anything.
- *
- * TWO, matching the lane contest and every other agreement rule here.
+ Voices that must back the consolidation before it replaces anything.
+ 
+ TWO, matching the lane contest and every other agreement rule here.
  */
 export const CONSOLIDATE_GATE_QUORUM = 2;
 
 /**
- * Schema a reply must satisfy before it reaches the reader.
+ Schema a reply must satisfy before it reaches the reader.
  */
 const GATE_RESPONSE_FORMAT: JsonSchemaResponseFormat = contestResponseFormat({
   schemaName: 'consolidate_gate',
@@ -56,58 +56,58 @@ const GATE_RESPONSE_FORMAT: JsonSchemaResponseFormat = contestResponseFormat({
 },);
 
 /**
- * Rendering that ships once the gate has answered.
+ Rendering that ships once the gate has answered.
  */
 export type GateShipped = 'consolidated' | 'standing';
 
 /**
- * What the roster settled for one gated slice.
- *
- * @example
- * ```ts
- * const outcome: ConsolidateGateOutcome = { choice: 'standing', ships: 'standing', ballots: [], usable: 0, findings: [], };
- * ```
+ What the roster settled for one gated slice.
+ 
+ @example
+ ```ts
+ const outcome: ConsolidateGateOutcome = { choice: 'standing', ships: 'standing', ballots: [], usable: 0, findings: [], };
+ ```
  */
 export type ConsolidateGateOutcome = {
   /**
-   * What the roster settled on, refusal included.
+   What the roster settled on, refusal included.
    */
   readonly choice: GateChoice;
 
   /**
-   * Rendering that ships, after the rule that a tie keeps the standing text.
+   Rendering that ships, after the rule that a tie keeps the standing text.
    */
   readonly ships: GateShipped;
 
   /**
-   * Every usable ballot, for the audit trail.
+   Every usable ballot, for the audit trail.
    */
   readonly ballots: readonly GateBallot[];
 
   /**
-   * Voices whose answer arrived and could be read as a ballot.
+   Voices whose answer arrived and could be read as a ballot.
    */
   readonly usable: number;
 
   /**
-   * What went wrong, in scorecard-stable wording.
+   What went wrong, in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Counts how many ballots named one rendering.
- *
- * @param ballots - usable ballots
- *
- * @param name - rendering to count votes for
- *
- * @returns Voice count for that rendering
- *
- * @example
- * ```ts
- * const backing = countFor({ ballots, name: 'consolidated', },);
- * ```
+ Counts how many ballots named one rendering.
+ 
+ @param ballots - usable ballots
+ 
+ @param name - rendering to count votes for
+ 
+ @returns Voice count for that rendering
+ 
+ @example
+ ```ts
+ const backing = countFor({ ballots, name: 'consolidated', },);
+ ```
  */
 function countFor(
   {
@@ -119,7 +119,7 @@ function countFor(
   },
 ): number {
   /**
-   * Ballots naming that rendering.
+   Ballots naming that rendering.
    */
   const named = ballots.filter(function namesIt(ballot,): boolean {
     return ballot.choice === name;
@@ -128,26 +128,26 @@ function countFor(
 }
 
 /**
- * Reads what the roster settled on, or the refusal.
- *
- * SHARED WITH ANY LATER READER of a stored gate record, on the rule the lane
- * contest already follows: a recorded verdict nobody can recompute from the
- * ballots beside it can quietly become a lie.
- *
- * @param ballots - usable ballots
- *
- * @returns Rendering enough voices backed, or the refusal
- *
- * @example
- * ```ts
- * const choice = settleGateBallots({ ballots, },);
- * ```
+ Reads what the roster settled on, or the refusal.
+ 
+ SHARED WITH ANY LATER READER of a stored gate record, on the rule the lane
+ contest already follows: a recorded verdict nobody can recompute from the
+ ballots beside it can quietly become a lie.
+ 
+ @param ballots - usable ballots
+ 
+ @returns Rendering enough voices backed, or the refusal
+ 
+ @example
+ ```ts
+ const choice = settleGateBallots({ ballots, },);
+ ```
  */
 export function settleGateBallots(
   { ballots, }: { readonly ballots: readonly GateBallot[]; },
 ): GateChoice {
   /**
-   * Voices backing the rendering this run wrote.
+   Voices backing the rendering this run wrote.
    */
   const consolidated = countFor({
     ballots,
@@ -155,7 +155,7 @@ export function settleGateBallots(
   },);
 
   /**
-   * Voices backing the rendering that would ship anyway.
+   Voices backing the rendering that would ship anyway.
    */
   const standing = countFor({
     ballots,
@@ -169,29 +169,29 @@ export function settleGateBallots(
 }
 
 /**
- * Asks the roster whether one consolidation replaces the standing text.
- *
- * @param client - synthetic chat client
- *
- * @param modelIds - roster to ask
- *
- * @param subject - passage, archive rendering and the two renderings
- *
- * @param signal - abort shared with the rest of the entry
- *
- * @param exchangeTimeoutMs - per-call ceiling
- *
- * @param l - logger to tag
- *
- * @param fanOut - seats a round asks: the window of quorum plus one by
- * default, or the whole bench a fixture scripting every seat asks for
- *
- * @returns What the roster settled, what ships, and every usable ballot
- *
- * @example
- * ```ts
- * const outcome = await gateConsolidatedSlice({ client, modelIds, subject, signal, exchangeTimeoutMs, l, },);
- * ```
+ Asks the roster whether one consolidation replaces the standing text.
+ 
+ @param client - synthetic chat client
+ 
+ @param modelIds - roster to ask
+ 
+ @param subject - passage, archive rendering and the two renderings
+ 
+ @param signal - abort shared with the rest of the entry
+ 
+ @param exchangeTimeoutMs - per-call ceiling
+ 
+ @param l - logger to tag
+ 
+ @param fanOut - seats a round asks: the window of quorum plus one by
+ default, or the whole bench a fixture scripting every seat asks for
+ 
+ @returns What the roster settled, what ships, and every usable ballot
+ 
+ @example
+ ```ts
+ const outcome = await gateConsolidatedSlice({ client, modelIds, subject, signal, exchangeTimeoutMs, l, },);
+ ```
  */
 export async function gateConsolidatedSlice(
   {
@@ -213,7 +213,7 @@ export async function gateConsolidatedSlice(
   },
 ): Promise<ConsolidateGateOutcome> {
   /**
-   * Logger naming this stage.
+   Logger naming this stage.
    */
   const gl = tagged({
     l,
@@ -221,7 +221,7 @@ export async function gateConsolidatedSlice(
   },);
 
   /**
-   * One reply per voice, heard or lost.
+   One reply per voice, heard or lost.
    */
   const outcomes = await runWindowedRounds({
     client,
@@ -239,13 +239,13 @@ export async function gateConsolidatedSlice(
   },);
 
   /**
-   * Ballots read out of the replies that arrived and validated in shape.
+   Ballots read out of the replies that arrived and validated in shape.
    */
   const ballots = outcomes.flatMap(function toBallot(
     outcome,
   ): readonly GateBallot[] {
     /**
-     * This voice, heard or lost.
+     This voice, heard or lost.
      */
     const { voice, } = outcome;
     return voice.heard
@@ -254,17 +254,17 @@ export async function gateConsolidatedSlice(
   },);
 
   /**
-   * What the roster settled on.
+   What the roster settled on.
    */
   const choice = settleGateBallots({ ballots, },);
 
   /**
-   * Rendering that ships, after the rule that only a clear win replaces.
-   *
-   * THE QUORUM IS NOT CHECKED TWICE. It used to be repeated here, and removing
-   * that repetition failed no test, because `settleGateBallots` cannot answer
-   * `consolidated` on fewer than `CONSOLIDATE_GATE_QUORUM` voices naming it.
-   * A condition no case can reach reads as a second guard and is not one.
+   Rendering that ships, after the rule that only a clear win replaces.
+   
+   THE QUORUM IS NOT CHECKED TWICE. It used to be repeated here, and removing
+   that repetition failed no test, because `settleGateBallots` cannot answer
+   `consolidated` on fewer than `CONSOLIDATE_GATE_QUORUM` voices naming it.
+   A condition no case can reach reads as a second guard and is not one.
    */
   const ships: GateShipped = (choice === 'consolidated')
     ? 'consolidated'

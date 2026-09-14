@@ -1,18 +1,18 @@
 /**
- * Tests for settling one entry from both lanes.
- *
- * WHAT THESE COVER that neither the driver's nor the builder's tests can: that
- * an entry reaches disk as ONE version 2 artifact over ONE preparation, that a
- * failed entry keeps the slices it bought and writes nothing, and that an abort
- * landing after the lanes return stops the write rather than being noticed only
- * on the next call.
- *
- * Everything runs against throwaway directories under the system temp root, so
- * no case can reach a real artifacts directory or a real slice cache.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for settling one entry from both lanes.
+ 
+ WHAT THESE COVER that neither the driver's nor the builder's tests can: that
+ an entry reaches disk as ONE version 2 artifact over ONE preparation, that a
+ failed entry keeps the slices it bought and writes nothing, and that an abort
+ landing after the lanes return stops the write rather than being noticed only
+ on the next call.
+ 
+ Everything runs against throwaway directories under the system temp root, so
+ no case can reach a real artifacts directory or a real slice cache.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -47,17 +47,17 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Built pipeline these fixtures claim to have run under.
+ Built pipeline these fixtures claim to have run under.
  */
 const DIGEST = `sha256-tree-v1:${'c'.repeat(64,)}` as PipelineDigest;
 
 /**
- * Environment variable selecting pass slice overlap.
+ Environment variable selecting pass slice overlap.
  */
 const OVERLAP_VAR = 'TRANSLATION_REPAIR_SLICE_OVERLAP';
 
 /**
- * Successful model calls in flight for one pass stage.
+ Successful model calls in flight for one pass stage.
  */
 type PassStageConcurrency = {
   now: number;
@@ -65,7 +65,7 @@ type PassStageConcurrency = {
 };
 
 /**
- * Per-slice driver activity observed at shared client boundary.
+ Per-slice driver activity observed at shared client boundary.
  */
 type PassConcurrency = {
   readonly repair: PassStageConcurrency;
@@ -76,22 +76,22 @@ type PassConcurrency = {
 };
 
 /**
- * Sets overlap dial until disposal and restores invoking value.
- *
- * @param says - value one measurement arm requests
- *
- * @returns Disposable restoring prior environment
- *
- * @example
- * ```ts
- * using dial = overlapDial({ says: '2', },);
- * ```
+ Sets overlap dial until disposal and restores invoking value.
+ 
+ @param says - value one measurement arm requests
+ 
+ @returns Disposable restoring prior environment
+ 
+ @example
+ ```ts
+ using dial = overlapDial({ says: '2', },);
+ ```
  */
 function overlapDial(
   { says, }: { readonly says: string; },
 ): Disposable {
   /**
-   * Invoking environment value restored on disposal.
+   Invoking environment value restored on disposal.
    */
   const before = process.env[OVERLAP_VAR];
   process.env[OVERLAP_VAR] = says;
@@ -106,14 +106,14 @@ function overlapDial(
 }
 
 /**
- * Builds zeroed instruments for one pass arm.
- *
- * @returns Independent activity counters per per-slice driver
- *
- * @example
- * ```ts
- * const activity = emptyPassConcurrency();
- * ```
+ Builds zeroed instruments for one pass arm.
+ 
+ @returns Independent activity counters per per-slice driver
+ 
+ @example
+ ```ts
+ const activity = emptyPassConcurrency();
+ ```
  */
 function emptyPassConcurrency(): PassConcurrency {
   return {
@@ -141,49 +141,49 @@ function emptyPassConcurrency(): PassConcurrency {
 }
 
 /**
- * Sentence every scripted translator returns for the first section.
+ Sentence every scripted translator returns for the first section.
  */
 const FRESH = 'The cat naps on the windowsill.';
 
 /**
- * Sentence every translator returns for second section.
+ Sentence every translator returns for second section.
  */
 const BIRD_FRESH = 'A bird sits on the windowsill.';
 
 /**
- * Literal consolidation paragraph long enough for naturalness stage.
+ Literal consolidation paragraph long enough for naturalness stage.
  */
 const POLISH_BASE_PARAGRAPH = 'The cat faced life proactively and spent a good time with everyone, while doing her best to stay hopeful and connected to the people around her.';
 
 /**
- * Idiomatic final paragraph approved by polish gate.
+ Idiomatic final paragraph approved by polish gate.
  */
 const POLISH_FINAL_PARAGRAPH = 'The cat maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
 
 /**
- * That paragraph as the page carries it: wrapped at its semantic boundary
- * before the polish gate judged it, so the gate approved the bytes that ship.
+ That paragraph as the page carries it: wrapped at its semantic boundary
+ before the polish gate judged it, so the gate approved the bytes that ship.
  */
 const POLISH_FINAL_WRAPPED = 'The cat maintained a positive outlook on life and spent some good times with everyone,\n'
   + 'doing her best to stay hopeful and connected to those around her.';
 
 /**
- * Stable phrase identifying literal consolidation after semantic wrapping.
+ Stable phrase identifying literal consolidation after semantic wrapping.
  */
 const POLISH_BASE_NEEDLE = 'faced life proactively';
 
 /**
- * Stable phrase identifying idiomatic polish after semantic wrapping.
+ Stable phrase identifying idiomatic polish after semantic wrapping.
  */
 const POLISH_FINAL_NEEDLE = 'maintained a positive outlook on life';
 
 /**
- * Complete consolidated slice before naturalness stage.
+ Complete consolidated slice before naturalness stage.
  */
 const POLISH_BASE = `## Section one\n\n${POLISH_BASE_PARAGRAPH}`;
 
 /**
- * Original document: two sections, each one paragraph.
+ Original document: two sections, each one paragraph.
  */
 const SOURCE_TEXT = `## 第一节
 
@@ -195,7 +195,7 @@ const SOURCE_TEXT = `## 第一节
 `;
 
 /**
- * Translation as it stands, awkward but complete.
+ Translation as it stands, awkward but complete.
  */
 const TARGET_TEXT = `## Section one
 
@@ -207,7 +207,7 @@ On the windowsill there is being a bird that is watching the garden for a long t
 `;
 
 /**
- * Entry every case settles.
+ Entry every case settles.
  */
 const ENTRY = {
   id: 'CatEntry1',
@@ -226,24 +226,24 @@ const ARCHIVE_REVISION_ENTRY = {
 };
 
 /**
- * Source page made entirely of visible metadata.
+ Source page made entirely of visible metadata.
  */
 const FRONT_MATTER_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
 
 /**
- * Archive metadata carrying entry id as visible name and no Latin rendering
- * beside it: the one shape the lanes still render (the owner's rule of
- * 2026-09-08), since nothing in it makes the directory id stand for the name.
+ Archive metadata carrying entry id as visible name and no Latin rendering
+ beside it: the one shape the lanes still render (the owner's rule of
+ 2026-09-08), since nothing in it makes the directory id stand for the name.
  */
 const FRONT_MATTER_TARGET = '---\nname: CatFrontMatter\ninfo:\n  alias: 猫猫\n---\n';
 
 /**
- * Source-faithful metadata rendering scripted for ensemble.
+ Source-faithful metadata rendering scripted for ensemble.
  */
 const FRONT_MATTER_FRESH = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
 
 /**
- * Entry exercising complete metadata publication path.
+ Entry exercising complete metadata publication path.
  */
 const FRONT_MATTER_ENTRY = {
   id: 'CatFrontMatter',
@@ -252,11 +252,11 @@ const FRONT_MATTER_ENTRY = {
 };
 
 /**
- * Entry inserting source metadata into target page that has none.
+ Entry inserting source metadata into target page that has none.
  */
 /**
- * Entry whose archive translated its metadata, which therefore stands: the
- * lanes never see slice zero and the page carries the archive's bytes.
+ Entry whose archive translated its metadata, which therefore stands: the
+ lanes never see slice zero and the page carries the archive's bytes.
  */
 const FRONT_MATTER_STANDING_ENTRY = {
   id: 'CatFrontMatterStanding',
@@ -271,7 +271,7 @@ const FRONT_MATTER_SOURCE_ONLY_ENTRY = {
 };
 
 /**
- * Entry whose archive carries invisible separator outside replacements.
+ Entry whose archive carries invisible separator outside replacements.
  */
 const INVISIBLE_ENTRY = {
   id: 'CatEntryInvisible',
@@ -280,12 +280,12 @@ const INVISIBLE_ENTRY = {
 };
 
 /**
- * Entry the cleanup case settles, under its own id.
- *
- * SEPARATE because that case reads what was PRINTED, and the runner runs cases
- * concurrently in one process: a capture keyed on nothing collects whatever
- * other cases logged while it was installed. Filtering by an id no other case
- * uses is what makes the reading this case's own.
+ Entry the cleanup case settles, under its own id.
+ 
+ SEPARATE because that case reads what was PRINTED, and the runner runs cases
+ concurrently in one process: a capture keyed on nothing collects whatever
+ other cases logged while it was installed. Filtering by an id no other case
+ uses is what makes the reading this case's own.
  */
 const CLEANUP_ENTRY = {
   id: 'CatEntry2',
@@ -294,12 +294,12 @@ const CLEANUP_ENTRY = {
 };
 
 /**
- * Visual reference whose asset is intentionally absent from pinned corpus.
+ Visual reference whose asset is intentionally absent from pinned corpus.
  */
 const MISSING_VISUAL = `<PhotoScroll photos={[ '\${path}/photos/missing.webp' ]} />`;
 
 /**
- * Entry proving unresolved referenced visual stops before lanes.
+ Entry proving unresolved referenced visual stops before lanes.
  */
 const MISSING_VISUAL_ENTRY = {
   id: 'CatEntryMissingVisual',
@@ -308,7 +308,7 @@ const MISSING_VISUAL_ENTRY = {
 };
 
 /**
- * Original carrying a linked factual paragraph absent from archive.
+ Original carrying a linked factual paragraph absent from archive.
  */
 const GAP_SOURCE_TEXT = `猫猫在睡觉。
 
@@ -316,12 +316,12 @@ const GAP_SOURCE_TEXT = `猫猫在睡觉。
 `;
 
 /**
- * Archive omitting linked factual paragraph.
+ Archive omitting linked factual paragraph.
  */
 const GAP_TARGET_TEXT = 'The cat sleeps.\n';
 
 /**
- * Entry reproducing known source gap at publication seam.
+ Entry reproducing known source gap at publication seam.
  */
 const GAP_ENTRY = {
   id: 'CatEntryGap',
@@ -337,7 +337,7 @@ const LINK_RECOVERY_ENTRY = {
 };
 
 /**
- * Gap plus reviewed visual for successful guard traversal control.
+ Gap plus reviewed visual for successful guard traversal control.
  */
 const REVIEWED_VISUAL_ENTRY = {
   id: 'CatEntryReviewedVisual',
@@ -346,12 +346,12 @@ const REVIEWED_VISUAL_ENTRY = {
 };
 
 /**
- * Rendering scripted for linked source-only paragraph once admitted.
+ Rendering scripted for linked source-only paragraph once admitted.
  */
 const GAP_FRESH = "The cat's final [record](https://example.test/cat-record) says she died at age 26.";
 
 /**
- * Entry whose source-only block is already rendered inside target page.
+ Entry whose source-only block is already rendered inside target page.
  */
 const CARRIED_ENTRY = {
   id: 'CatEntryCarriedGap',
@@ -360,21 +360,21 @@ const CARRIED_ENTRY = {
 };
 
 /**
- * Coverage behavior of pass fixture.
+ Coverage behavior of pass fixture.
  */
 type CoverageScript = 'lost' | 'absent' | 'full';
 
 /**
- * Renders one slice the way a translator that respected block structure would.
- *
- * @param content - translator prompt, which carries the slice original
- *
- * @returns Rendering for that slice
- *
- * @example
- * ```ts
- * const rendering = renderingFor({ content, },);
- * ```
+ Renders one slice the way a translator that respected block structure would.
+ 
+ @param content - translator prompt, which carries the slice original
+ 
+ @returns Rendering for that slice
+ 
+ @example
+ ```ts
+ const rendering = renderingFor({ content, },);
+ ```
  */
 function renderingFor({ content, }: { readonly content: string; },): string {
   if (content.includes('name: 猫猫',))
@@ -391,30 +391,30 @@ function renderingFor({ content, }: { readonly content: string; },): string {
 }
 
 /**
- * Finds the one-based candidate index whose rendering carries a needle.
- *
- * @param content - judge user message
- *
- * @returns One-based index, or zero when no candidate carries it
- *
- * @example
- * ```ts
- * const best = pickCandidate({ content, },);
- * ```
+ Finds the one-based candidate index whose rendering carries a needle.
+ 
+ @param content - judge user message
+ 
+ @returns One-based index, or zero when no candidate carries it
+ 
+ @example
+ ```ts
+ const best = pickCandidate({ content, },);
+ ```
  */
 function pickCandidate({ content, }: { readonly content: string; },): number {
   /**
-   * Sheet split at each candidate heading; the first piece is the evidence.
+   Sheet split at each candidate heading; the first piece is the evidence.
    */
   const [, ...blocks] = content.split('CANDIDATE ',);
   for (const block of blocks) {
     /**
-     * Heading line carrying this candidate's number.
+     Heading line carrying this candidate's number.
      */
     const [heading = '',] = block.split('\n',);
 
     /**
-     * Number the heading states.
+     Number the heading states.
      */
     const index = Math.trunc(Number(heading,),);
     if (Number.isInteger(index,)
@@ -430,33 +430,33 @@ function pickCandidate({ content, }: { readonly content: string; },): number {
 }
 
 /**
- * Scripted reply for one stage.
- *
- * The repair lane's critics find nothing, so that lane keeps the archive; the
- * translate lane renders each slice afresh and its judges pick that rendering.
- * The two lanes therefore disagree by construction, which is what makes the
- * artifact worth reading.
- *
- * @param schema - schema name the stage asked for
- *
- * @param content - everything the stage sent
- *
- * @param coverageScript - whether coverage roster answers absent or loses voice
- *
- * @param consolidation - whether translation schema belongs to third rendering
- *
- * @param polishScript - whether final naturalness rewrite is exercised
- *
- * @param contestChoice - lane scripted contest endorses
- *
- * @returns Wire value for that stage
- *
- * @throws {@link Error} when a stage this script does not serve asks
- *
- * @example
- * ```ts
- * const value = replyFor({ schema: 'critic_report', content, },);
- * ```
+ Scripted reply for one stage.
+ 
+ The repair lane's critics find nothing, so that lane keeps the archive; the
+ translate lane renders each slice afresh and its judges pick that rendering.
+ The two lanes therefore disagree by construction, which is what makes the
+ artifact worth reading.
+ 
+ @param schema - schema name the stage asked for
+ 
+ @param content - everything the stage sent
+ 
+ @param coverageScript - whether coverage roster answers absent or loses voice
+ 
+ @param consolidation - whether translation schema belongs to third rendering
+ 
+ @param polishScript - whether final naturalness rewrite is exercised
+ 
+ @param contestChoice - lane scripted contest endorses
+ 
+ @returns Wire value for that stage
+ 
+ @throws {@link Error} when a stage this script does not serve asks
+ 
+ @example
+ ```ts
+ const value = replyFor({ schema: 'critic_report', content, },);
+ ```
  */
 function replyFor(
   {
@@ -580,30 +580,30 @@ function replyFor(
 }
 
 /**
- * Client serving both lanes from one script.
- *
- * @param served - schema names appended in call order
- *
- * @param failOnSchema - schema every call of which throws, standing in for a
- * provider that is down for one stage; absent means the script never fails
- *
- * @param activity - optional admission instrument for every per-slice driver
- *
- * @param coverageScript - whether coverage roster answers or loses every voice
- *
- * @param polishScript - whether final naturalness rewrite is exercised
- *
- * @param contestChoice - lane scripted contest endorses
- *
- * @param quotaReads - counter of meter readings, for the case that proves the
- * judge seats are read before each phase and not once per entry
- *
- * @returns Client honoring the script
- *
- * @example
- * ```ts
- * const client = entryClient({ served, },);
- * ```
+ Client serving both lanes from one script.
+ 
+ @param served - schema names appended in call order
+ 
+ @param failOnSchema - schema every call of which throws, standing in for a
+ provider that is down for one stage; absent means the script never fails
+ 
+ @param activity - optional admission instrument for every per-slice driver
+ 
+ @param coverageScript - whether coverage roster answers or loses every voice
+ 
+ @param polishScript - whether final naturalness rewrite is exercised
+ 
+ @param contestChoice - lane scripted contest endorses
+ 
+ @param quotaReads - counter of meter readings, for the case that proves the
+ judge seats are read before each phase and not once per entry
+ 
+ @returns Client honoring the script
+ 
+ @example
+ ```ts
+ const client = entryClient({ served, },);
+ ```
  */
 function entryClient(
   {
@@ -642,7 +642,7 @@ function entryClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Schema the caller asked for, which names the stage.
+       Schema the caller asked for, which names the stage.
        */
       const schema = request.responseFormat
         ?.json_schema
@@ -653,7 +653,7 @@ function entryClient(
         throw new Error('scripted provider failure',);
 
       /**
-       * Everything the caller sent, which carries the slice original.
+       Everything the caller sent, which carries the slice original.
        */
       const content = request.messages
         .map(function toContent(message,) {
@@ -683,13 +683,13 @@ function entryClient(
       }
 
       /**
-       * Whether shared translation schema belongs to consolidation producer.
+       Whether shared translation schema belongs to consolidation producer.
        */
       const isConsolidation = (schema === 'translation_report')
         && content.includes('Two English renderings of this passage already exist',);
 
       /**
-       * Instrument matching this request's per-slice driver.
+       Instrument matching this request's per-slice driver.
        */
       const stageActivity = schema === 'critic_report'
         ? activity?.repair
@@ -713,7 +713,7 @@ function entryClient(
       }
 
       /**
-       * Reply for whichever stage asked, keyed by its schema.
+       Reply for whichever stage asked, keyed by its schema.
        */
       const value: unknown = replyFor({
         schema,
@@ -744,14 +744,14 @@ function entryClient(
 }
 
 /**
- * Throwaway artifacts, publish and cache directories for one case.
- *
- * @returns Every directory a settling entry writes into, plus how to remove them
- *
- * @example
- * ```ts
- * await using dirs = await throwawayDirs();
- * ```
+ Throwaway artifacts, publish and cache directories for one case.
+ 
+ @returns Every directory a settling entry writes into, plus how to remove them
+ 
+ @example
+ ```ts
+ await using dirs = await throwawayDirs();
+ ```
  */
 async function throwawayDirs(): Promise<
   {
@@ -762,7 +762,7 @@ async function throwawayDirs(): Promise<
   } & AsyncDisposable
 > {
   /**
-   * Root nothing outside this case writes into.
+   Root nothing outside this case writes into.
    */
   const root = await mkdtemp(join(
     tmpdir(),
@@ -770,10 +770,10 @@ async function throwawayDirs(): Promise<
   ),);
 
   /**
-   * Directory settled entries write into, created here because the PASS
-   * creates it before settling anything: `settleEntry` writes into a directory
-   * it is handed, and a case that skipped this would be testing the atomic
-   * write's behavior on a missing parent instead.
+   Directory settled entries write into, created here because the PASS
+   creates it before settling anything: `settleEntry` writes into a directory
+   it is handed, and a case that skipped this would be testing the atomic
+   write's behavior on a missing parent instead.
    */
   const artifactsDir = join(
     root,
@@ -784,10 +784,10 @@ async function throwawayDirs(): Promise<
     { recursive: true, },
   );
   /**
-   * Root of the mirrored corpus tree, created here for the same reason the
-   * artifacts directory is: the PASS creates it before settling anything, so a
-   * case that left it out would be measuring how the publisher behaves against
-   * a missing root rather than how it publishes.
+   Root of the mirrored corpus tree, created here for the same reason the
+   artifacts directory is: the PASS creates it before settling anything, so a
+   case that left it out would be measuring how the publisher behaves against
+   a missing root rather than how it publishes.
    */
   const publishDir = join(
     root,
@@ -822,16 +822,16 @@ async function throwawayDirs(): Promise<
 }
 
 /**
- * Reads every artifact filename a case wrote.
- *
- * @param artifactsDir - directory settled entries write into
- *
- * @returns Filenames present, or none when the directory was never created
- *
- * @example
- * ```ts
- * const written = await artifactNames({ artifactsDir, },);
- * ```
+ Reads every artifact filename a case wrote.
+ 
+ @param artifactsDir - directory settled entries write into
+ 
+ @returns Filenames present, or none when the directory was never created
+ 
+ @example
+ ```ts
+ const written = await artifactNames({ artifactsDir, },);
+ ```
  */
 async function artifactNames(
   { artifactsDir, }: { readonly artifactsDir: string; },
@@ -849,22 +849,22 @@ async function artifactNames(
 }
 
 /**
- * Diverts `console.log` into a list until disposed.
- *
- * @param lines - where diverted lines are appended
- *
- * @returns Capture holding those lines, which restores logging on disposal
- *
- * @example
- * ```ts
- * using capture = collectingInto({ lines, },);
- * ```
+ Diverts `console.log` into a list until disposed.
+ 
+ @param lines - where diverted lines are appended
+ 
+ @returns Capture holding those lines, which restores logging on disposal
+ 
+ @example
+ ```ts
+ using capture = collectingInto({ lines, },);
+ ```
  */
 function collectingInto(
   { lines, }: { readonly lines: string[]; },
 ): { readonly lines: readonly string[]; } & Disposable {
   /**
-   * Real logger, put back on disposal.
+   Real logger, put back on disposal.
    */
   const printed = console.log;
   console.log = (...parts: readonly unknown[]) => {
@@ -880,27 +880,27 @@ function collectingInto(
 }
 
 /**
- * Runs a body with every `console.log` line collected instead of printed.
- *
- * The lines ARE the contract here: an entry that settled and then failed to
- * retire its cache has to say so on a `CLEANUP` line, and the defect this
- * guards against is a second `TALLY` after the success line, which made every
- * reader counting statuses see one entry as both settled and errored.
- *
- * @param body - what to run while logging is captured
- *
- * @returns Every line the body logged, in order
- *
- * @example
- * ```ts
- * const lines = await capturedLines({ body: async () => { await settleEntry(...); }, },);
- * ```
+ Runs a body with every `console.log` line collected instead of printed.
+ 
+ The lines ARE the contract here: an entry that settled and then failed to
+ retire its cache has to say so on a `CLEANUP` line, and the defect this
+ guards against is a second `TALLY` after the success line, which made every
+ reader counting statuses see one entry as both settled and errored.
+ 
+ @param body - what to run while logging is captured
+ 
+ @returns Every line the body logged, in order
+ 
+ @example
+ ```ts
+ const lines = await capturedLines({ body: async () => { await settleEntry(...); }, },);
+ ```
  */
 async function capturedLines(
   { body, }: { readonly body: () => Promise<void>; },
 ): Promise<readonly string[]> {
   /**
-   * Lines the body logged.
+   Lines the body logged.
    */
   const lines: string[] = [];
 
@@ -924,7 +924,7 @@ await describe({
         + 'each stage instrument distinguishes one slice from two',
       fn: async () => {
         /**
-         * Activity with explicit sequential control arm.
+         Activity with explicit sequential control arm.
          */
         const serial = emptyPassConcurrency();
         {
@@ -952,7 +952,7 @@ await describe({
         }
 
         /**
-         * Activity with two slices requested by environment.
+         Activity with two slices requested by environment.
          */
         const overlapped = emptyPassConcurrency();
         {
@@ -1127,7 +1127,7 @@ await describe({
         await using dirs = await throwawayDirs();
 
         /**
-         * Schemas the run served, in order.
+         Schemas the run served, in order.
          */
         const served: string[] = [];
         await settleEntry({
@@ -1145,7 +1145,7 @@ await describe({
         expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual(['CatEntry1.json',],);
 
         /**
-         * What reached disk.
+         What reached disk.
          */
         const artifact: unknown = JSON.parse(await readFile(
           join(
@@ -1165,7 +1165,7 @@ await describe({
           'translate',
         ],);
         /**
-         * Consolidation records carrying auditable polish decision.
+         Consolidation records carrying auditable polish decision.
          */
         const { consolidation, } = artifact as {
           consolidation: { slices: readonly { polish?: unknown; }[]; };
@@ -1180,7 +1180,7 @@ await describe({
         // refuses, and every fixture in this package would still pass: they are
         // built by hand from the same names the writer uses.
         /**
-         * Repair lane's result as the file records it.
+         Repair lane's result as the file records it.
          */
         const repairResult = (artifact as {
           lanes: { repair: { result: Record<string, unknown>; }; };
@@ -1207,7 +1207,7 @@ await describe({
         // stamped 4 whose rows still say `chunkIndex` is exactly generation 3,
         // and every assertion above it here would pass.
         /**
-         * Repair lane's first ledger row as the file records it.
+         Repair lane's first ledger row as the file records it.
          */
         const [firstRow,] = (artifact as {
           lanes: { repair: { delivery: readonly Record<string, unknown>[]; }; };
@@ -1217,7 +1217,7 @@ await describe({
           .delivery;
 
         /**
-         * That row, present because this entry settled slices.
+         That row, present because this entry settled slices.
          */
         const repairRow = nonNullishOrThrow(firstRow,);
 
@@ -1233,7 +1233,7 @@ await describe({
         // lanes disagree at both slices by construction, and the scripted
         // roster backs each translate candidate.
         /**
-         * Contest as the file records it, read structurally like the rest.
+         Contest as the file records it, read structurally like the rest.
          */
         const selection = (artifact as {
           laneSelection: {
@@ -1280,7 +1280,7 @@ await describe({
       fn: async () => {
         await using dirs = await throwawayDirs();
         /**
-         * Schemas reached by full polished pass.
+         Schemas reached by full polished pass.
          */
         const served: string[] = [];
         await settleEntry({
@@ -1299,7 +1299,7 @@ await describe({
           baseSignal: new AbortController().signal,
         },);
         /**
-         * Serialized artifact through production parser.
+         Serialized artifact through production parser.
          */
         const artifact = parseSettledTwoLaneArtifact({
           value: JSON.parse(await readFile(
@@ -1310,7 +1310,7 @@ await describe({
         if (artifact.consolidation.kind !== 'settled')
           throw new Error('polished pass did not record consolidation',);
         /**
-         * Changed polish record for first slice.
+         Changed polish record for first slice.
          */
         const polish = artifact.consolidation.slices
           .find(function firstSlice(slice,): boolean {
@@ -1322,7 +1322,7 @@ await describe({
         expect(polish?.kind === 'settled' ? polish.text : '',).toContain(POLISH_FINAL_WRAPPED,);
         expect(polish?.kind === 'settled' ? polish.review?.rounds.at(-1,)?.verdict : '',).toBe('acceptable',);
         /**
-         * Page persisted from parsed decision stack.
+         Page persisted from parsed decision stack.
          */
         const page = await readFile(fixedPagePath({
           publishDir: dirs.publishDir,
@@ -1381,7 +1381,7 @@ await describe({
         await using dirs = await throwawayDirs();
         const served: string[] = [];
         /**
-         * How often the meter was read across the entry.
+         How often the meter was read across the entry.
          */
         const quotaReads = { count: 0, };
         const outcome = await settleEntry({
@@ -1420,7 +1420,7 @@ await describe({
       fn: async () => {
         await using dirs = await throwawayDirs();
         /**
-         * Model schemas reached across complete entry boundary.
+         Model schemas reached across complete entry boundary.
          */
         const served: string[] = [];
         await settleEntry({
@@ -1437,7 +1437,7 @@ await describe({
         },);
 
         /**
-         * Serialized artifact read through production parser.
+         Serialized artifact read through production parser.
          */
         const artifact = parseSettledTwoLaneArtifact({
           value: JSON.parse(await readFile(
@@ -1446,7 +1446,7 @@ await describe({
           ),),
         },);
         /**
-         * Page persisted before artifact sentinel.
+         Page persisted before artifact sentinel.
          */
         const page = await readFile(fixedPagePath({
           publishDir: dirs.publishDir,
@@ -1491,7 +1491,7 @@ await describe({
         },);
         expect(outcome,).toEqual({ kind: 'settled', },);
         /**
-         * Serialized artifact read through production parser.
+         Serialized artifact read through production parser.
          */
         const artifact = parseSettledTwoLaneArtifact({
           value: JSON.parse(await readFile(
@@ -1585,7 +1585,7 @@ await describe({
         await using dirs = await throwawayDirs();
 
         /**
-         * Schemas the run served before the write failed.
+         Schemas the run served before the write failed.
          */
         const served: string[] = [];
 
@@ -1630,7 +1630,7 @@ await describe({
         await using dirs = await throwawayDirs();
 
         /**
-         * Schemas the run served before the write failed.
+         Schemas the run served before the write failed.
          */
         const served: string[] = [];
 
@@ -1657,7 +1657,7 @@ await describe({
         expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual([],);
 
         /**
-         * This entry's page, which has to exist even though its artifact does not.
+         This entry's page, which has to exist even though its artifact does not.
          */
         const published = await readFile(
           fixedPagePath({
@@ -1678,7 +1678,7 @@ await describe({
       fn: async () => {
         await using dirs = await throwawayDirs();
         /**
-         * Schemas reached before completeness guard stops downstream stages.
+         Schemas reached before completeness guard stops downstream stages.
          */
         const served: string[] = [];
         const lines = await capturedLines({
@@ -1824,7 +1824,7 @@ await describe({
         await using dirs = await throwawayDirs();
 
         /**
-         * Schemas served by a run whose write cannot land.
+         Schemas served by a run whose write cannot land.
          */
         const served: string[] = [];
 
@@ -1858,7 +1858,7 @@ await describe({
         await using dirs = await throwawayDirs();
 
         /**
-         * Schemas served, with every critic call failing.
+         Schemas served, with every critic call failing.
          */
         const served: string[] = [];
         await settleEntry({
@@ -1879,7 +1879,7 @@ await describe({
         expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual(['CatEntry1.json',],);
 
         /**
-         * What reached disk after every critic call failed.
+         What reached disk after every critic call failed.
          */
         const artifact: unknown = JSON.parse(await readFile(
           join(
@@ -1929,8 +1929,8 @@ await describe({
         await using dirs = await throwawayDirs();
 
         /**
-         * First run, whose write cannot land, so both lanes complete and the
-         * cache they filled survives instead of being discarded on settlement.
+         First run, whose write cannot land, so both lanes complete and the
+         cache they filled survives instead of being discarded on settlement.
          */
         const bought: string[] = [];
         await settleEntry({
@@ -1951,14 +1951,14 @@ await describe({
         expect(bought.length,).toBeGreaterThan(0,);
 
         /**
-         * Ceiling that fired before this attempt started, which is what a
-         * resumed entry meets when the pass is already over its budget.
+         Ceiling that fired before this attempt started, which is what a
+         resumed entry meets when the pass is already over its budget.
          */
         const controller = new AbortController();
         controller.abort(new Error('entry deadline reached',),);
 
         /**
-         * Schemas the resumed run serves, which must be none.
+         Schemas the resumed run serves, which must be none.
          */
         const resumed: string[] = [];
         await settleEntry({
@@ -1995,7 +1995,7 @@ await describe({
         await using dirs = await throwawayDirs();
 
         /**
-         * This entry's own cache directory, which the first run fills.
+         This entry's own cache directory, which the first run fills.
          */
         const entryCacheDir = join(
           dirs.sliceCacheDir,
@@ -2036,7 +2036,7 @@ await describe({
         );
 
         /**
-         * Everything the settling run printed.
+         Everything the settling run printed.
          */
         const lines = await capturedLines({
           body: async () => {
@@ -2063,28 +2063,28 @@ await describe({
         );
 
         /**
-         * Lines about THIS entry, since other cases log into the same capture.
+         Lines about THIS entry, since other cases log into the same capture.
          */
         const mine = lines.filter(function namesThisEntry(line,): boolean {
           return line.includes(CLEANUP_ENTRY.id,);
         },);
 
         /**
-         * Status lines this entry produced.
+         Status lines this entry produced.
          */
         const tallies = mine.filter(function isTally(line,): boolean {
           return line.startsWith('TALLY ',);
         },);
 
         /**
-         * Cleanup lines it produced.
+         Cleanup lines it produced.
          */
         const cleanups = mine.filter(function isCleanup(line,): boolean {
           return line.startsWith('CLEANUP ',);
         },);
 
         /**
-         * Slice-overlap launch lines it produced.
+         Slice-overlap launch lines it produced.
          */
         const overlaps = mine.filter(function isOverlap(line,): boolean {
           return line.startsWith('OVERLAP ',);

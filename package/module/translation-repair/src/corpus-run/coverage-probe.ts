@@ -54,155 +54,155 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // the file went, so nothing a caller does today breaks.
 
 /**
- * How many candidates one invocation asks about by default.
- *
- * Small on purpose: the first run of anything that spends quota should be
- * readable in full before a larger one is bought.
- *
- * COUNTED IN ATTEMPTS RATHER THAN IN ROWS, because a cap on successes lets a
- * failing roster spend without bound and hides the failures from the count a
- * reader checks.
+ How many candidates one invocation asks about by default.
+ 
+ Small on purpose: the first run of anything that spends quota should be
+ readable in full before a larger one is bought.
+ 
+ COUNTED IN ATTEMPTS RATHER THAN IN ROWS, because a cap on successes lets a
+ failing roster spend without bound and hides the failures from the count a
+ reader checks.
  */
 const DEFAULT_CANDIDATE_CAP = 12;
 
 /**
- * Both sides of one entry, or the fact that it has only one.
+ Both sides of one entry, or the fact that it has only one.
  */
 type PairRead = {
   /**
-   * Both files were there.
+   Both files were there.
    */
   readonly kind: 'read';
 
   /**
-   * Original document text.
+   Original document text.
    */
   readonly source: string;
 
   /**
-   * Translation document text.
+   Translation document text.
    */
   readonly target: string;
 } | {
   /**
-   * One side is absent, which is an incomplete entry rather than a fault.
+   One side is absent, which is an incomplete entry rather than a fault.
    */
   readonly kind: 'missing';
 };
 
 /**
- * One candidate's question and what came back.
+ One candidate's question and what came back.
  */
 type ProbeRow = {
   /**
-   * Corpus entry the passage belongs to.
+   Corpus entry the passage belongs to.
    */
   readonly entryId: string;
 
   /**
-   * Whether a whole section or one block was refused.
+   Whether a whole section or one block was refused.
    */
   readonly scale: string;
 
   /**
-   * Where the passage sits, for reading beside the censuses.
+   Where the passage sits, for reading beside the censuses.
    */
   readonly where: string;
 
   /**
-   * Passage length, since a long one is a different question from a line.
+   Passage length, since a long one is a different question from a line.
    */
   readonly sourceChars: number;
 
   /**
-   * What the roster concluded.
+   What the roster concluded.
    */
   readonly kind: string;
 
   /**
-   * Voices that anchored full coverage in the document.
+   Voices that anchored full coverage in the document.
    */
   readonly anchoredFull: number;
 
   /**
-   * Voices that anchored partial coverage.
+   Voices that anchored partial coverage.
    */
   readonly anchoredPartial: number;
 
   /**
-   * Voices reporting nothing renders it.
+   Voices reporting nothing renders it.
    */
   readonly absent: number;
 
   /**
-   * Voices whose quote was not in the document.
+   Voices whose quote was not in the document.
    */
   readonly unanchored: number;
 
   /**
-   * Voices heard at all.
+   Voices heard at all.
    */
   readonly heard: number;
 
   /**
-   * Models asked, which the verdict threshold is taken over.
+   Models asked, which the verdict threshold is taken over.
    */
   readonly asked: number;
 
   /**
-   * Quotes claimed and not found, kept because a near miss and an invention are
-   * different failures that the counts alone cannot tell apart.
+   Quotes claimed and not found, kept because a near miss and an invention are
+   different failures that the counts alone cannot tell apart.
    */
   readonly unanchoredQuotes: readonly string[];
 
   /**
-   * Anchored quotes, so a reader can check the verdict against the archive.
+   Anchored quotes, so a reader can check the verdict against the archive.
    */
   readonly evidence: readonly string[];
 
   /**
-   * Roster degradation findings, empty when quorum was met.
+   Roster degradation findings, empty when quorum was met.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Reads the entry filter and cap from the command line.
- *
- * @returns Entry ids to probe, empty for every entry, and the candidate cap
- *
- * @example
- * ```ts
- * const { onlyIds, cap, } = readArguments();
- * ```
+ Reads the entry filter and cap from the command line.
+ 
+ @returns Entry ids to probe, empty for every entry, and the candidate cap
+ 
+ @example
+ ```ts
+ const { onlyIds, cap, } = readArguments();
+ ```
  */
 function readArguments(): {
   readonly onlyIds: readonly string[];
   readonly cap: number;
 } {
   /**
-   * Arguments after the script path.
+   Arguments after the script path.
    */
   const args = process.argv
     .slice(2,);
 
   /**
-   * Entry ids named after `--only`, comma separated.
+   Entry ids named after `--only`, comma separated.
    */
   const onlyAt = args.indexOf('--only',);
 
   /**
-   * Cap named after `--cap`.
+   Cap named after `--cap`.
    */
   const capAt = args.indexOf('--cap',);
 
   /**
-   * Cap as written, when one was named.
+   Cap as written, when one was named.
    */
   const capText = (capAt === (-1)) ? '' : (args[capAt + 1] ?? '');
 
   /**
-   * Cap as a number, falling back when it is not one.
+   Cap as a number, falling back when it is not one.
    */
   const cap = (capText === '')
     ? Number.NaN
@@ -220,51 +220,51 @@ function readArguments(): {
 }
 
 /**
- * Asks the roster about every unpaired passage it is given, up to the cap.
- *
- * READS THAT FAIL ARE SKIPPED AND LOGGED rather than thrown, since an entry
- * with only one side is an ordinary state of this corpus. That also swallows an
- * unreadable clone, which shows up as every entry skipping.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Asks the roster about every unpaired passage it is given, up to the cap.
+ 
+ READS THAT FAIL ARE SKIPPED AND LOGGED rather than thrown, since an entry
+ with only one side is an ordinary state of this corpus. That also swallows an
+ unreadable clone, which shows up as every entry skipping.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Logger tagged for this probe.
+   Logger tagged for this probe.
    */
   const log = tagged({ tag: 'coverage-probe', },);
 
   /**
-   * When this run began, read before any work so the record dates the run
-   * rather than the moment it happened to finish.
+   When this run began, read before any work so the record dates the run
+   rather than the moment it happened to finish.
    */
   const startedAt = new Date().toISOString();
 
   /**
-   * Digest over built output, which is the only identity that moves when the
-   * code moves but the commit does not.
-   *
-   * READ AT THE START, not at the end. A long run gives a developer plenty of
-   * time to rebuild, and `rendering-audit-settled` was caught doing exactly
-   * that: `dist` was rebuilt while a run was in flight, so the digest it was
-   * about to stamp described a build that had never probed anything. Node loads
-   * the code once, at startup; the identity that answers for a run is the one
-   * present THEN.
+   Digest over built output, which is the only identity that moves when the
+   code moves but the commit does not.
+   
+   READ AT THE START, not at the end. A long run gives a developer plenty of
+   time to rebuild, and `rendering-audit-settled` was caught doing exactly
+   that: `dist` was rebuilt while a run was in flight, so the digest it was
+   about to stamp described a build that had never probed anything. Node loads
+   the code once, at startup; the identity that answers for a run is the one
+   present THEN.
    */
   const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
 
   /**
-   * Chunks this entry imports, read from the executing file at run START for
-   * the same reason the digest is: a rebuild mid-run would otherwise stamp a
-   * build that never ran. `#116`.
+   Chunks this entry imports, read from the executing file at run START for
+   the same reason the digest is: a rebuild mid-run would otherwise stamp a
+   build that never ran. `#116`.
    */
   const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
 
   /**
-   * Entry filter and candidate cap.
+   Entry filter and candidate cap.
    */
   const {
     onlyIds,
@@ -272,24 +272,24 @@ async function main(): Promise<void> {
   } = readArguments();
 
   /**
-   * Client for every exchange.
+   Client for every exchange.
    */
   const client = createRunClient();
 
   /**
-   * Abort shared by every call, never fired: each exchange has its own deadline.
+   Abort shared by every call, never fired: each exchange has its own deadline.
    */
   const controller = new AbortController();
 
   /**
-   * Rows accumulated across candidates, one per ATTEMPT: a candidate whose call
-   * failed keeps a row saying so, since a measurement that drops its failures
-   * reports a success rate of one.
+   Rows accumulated across candidates, one per ATTEMPT: a candidate whose call
+   failed keeps a row saying so, since a measurement that drops its failures
+   reports a success rate of one.
    */
   const rows: ProbeRow[] = [];
 
   /**
-   * Entries to walk, filtered when the caller named some.
+   Entries to walk, filtered when the caller named some.
    */
   const entryIds = (await listCorpusPeople({ pin: RUN_CORPUS_PIN, },))
     .filter(function isWanted(entryId,): boolean {
@@ -303,7 +303,7 @@ async function main(): Promise<void> {
       break;
 
     /**
-     * Both sides at the pin, or nothing when this entry lacks one.
+     Both sides at the pin, or nothing when this entry lacks one.
      */
     const texts = await (async function readPair(): Promise<PairRead> {
       try {
@@ -328,13 +328,13 @@ async function main(): Promise<void> {
       continue;
 
     /**
-     * Translation, parsed once and used both as the searched text and as what
-     * every quote is anchored against.
+     Translation, parsed once and used both as the searched text and as what
+     every quote is anchored against.
      */
     const target = parseDocument({ text: texts.target, },);
 
     /**
-     * Passages this entry's aligners refuse.
+     Passages this entry's aligners refuse.
      */
     const candidates = listCoverageCandidates({
       source: parseDocument({ text: texts.source, },),
@@ -349,14 +349,14 @@ async function main(): Promise<void> {
         break;
 
       /**
-       * Where this passage sits, in the same terms the censuses print.
+       Where this passage sits, in the same terms the censuses print.
        */
       const where = (candidate.scale === 'section')
         ? `section ${String(candidate.sourceIndex,)}`
         : `pair ${String(candidate.pairIndex,)} block ${String(candidate.sourceIndex,)}`;
       try {
         /**
-         * What the roster concluded about it.
+         What the roster concluded about it.
          */
         const answer = await runCoverageStage({
           client,
@@ -394,7 +394,7 @@ async function main(): Promise<void> {
           findings: answer.findings,
         },);
         /**
-         * Verdict of this candidate, read once for the progress line.
+         Verdict of this candidate, read once for the progress line.
          */
         const { verdict, } = answer;
         log.info(
@@ -432,8 +432,8 @@ async function main(): Promise<void> {
 
 
   /**
-   * Where this run was kept, said out loud so the answers are findable without
-   * searching a runs directory for them.
+   Where this run was kept, said out loud so the answers are findable without
+   searching a runs directory for them.
    */
   const keptAt = await persistProbeRun({
     runsDir: await resolveRunsDir(),

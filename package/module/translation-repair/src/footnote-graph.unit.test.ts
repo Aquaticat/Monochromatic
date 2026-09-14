@@ -1,8 +1,8 @@
 /**
- * Tests for text marker scanners and error paths of the parsing core.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for text marker scanners and error paths of the parsing core.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -83,9 +83,9 @@ await describe({
       name: 'collects both conventions and reports only real integrity gaps',
       fn: async () => {
         /**
-         * Body pairing a mid-text fullwidth reference with its
-         * block-opening definition, a resolved GFM pair, and one
-         * never-referenced GFM definition.
+         Body pairing a mid-text fullwidth reference with its
+         block-opening definition, a resolved GFM pair, and one
+         never-referenced GFM definition.
          */
         const body =
           '猫的脚注〔1〕与蝴蝶。[^2]\n\n〔1〕关于猫的注释。\n\n[^2]: 关于蝴蝶的注释。\n\n[^3]: 没有人引用的注释。\n';
@@ -117,8 +117,8 @@ await describe({
       name: 'reports unresolved references and duplicate definitions',
       fn: async () => {
         /**
-         * Body with an undefined GFM reference and one fullwidth
-         * identifier defined twice, referenced never.
+         Body with an undefined GFM reference and one fullwidth
+         identifier defined twice, referenced never.
          */
         const body = '未定义的引用[^9]。\n\n〔2〕第一次定义。\n\n〔2〕第二次定义。\n';
         const graph = buildFootnoteGraph({
@@ -128,7 +128,7 @@ await describe({
         },);
 
         /**
-         * Finding kinds grouped for branch-by-branch assertion.
+         Finding kinds grouped for branch-by-branch assertion.
          */
         const kinds = graph.findings.map(function toKind(finding,) {
           return finding.kind;
@@ -151,7 +151,7 @@ await describe({
       name: 'parses JSX-hostile text as plain markdown without throwing',
       fn: async () => {
         /**
-         * Body that MDX parsing rejects but markdown accepts.
+         Body that MDX parsing rejects but markdown accepts.
          */
         const root = parseMarkdownBody({ body: '<MaoBox 未闭合的组件\n\n喵。\n', },);
         expect(root.type,).toBe('root',);
@@ -206,7 +206,7 @@ await describe({
 },);
 
 /**
- * Page whose footnote definition is nested, exactly as the corpus nests them.
+ Page whose footnote definition is nested, exactly as the corpus nests them.
  */
 const NESTED_DEFINITION = [
   '## 猫',
@@ -233,7 +233,7 @@ await describe({
         + 'unresolved while carrying all ten definitions',
       fn: async () => {
         /**
-         * Graph built over the nested page.
+         Graph built over the nested page.
          */
         const { footnoteGraph, } = parseDocument({ text: NESTED_DEFINITION, },);
 
@@ -249,7 +249,7 @@ await describe({
         + 'translation really did lose every one of its definitions',
       fn: async () => {
         /**
-         * Page referencing a definition that is nowhere at all.
+         Page referencing a definition that is nowhere at all.
          */
         const { footnoteGraph, } = parseDocument({
           text: '## 猫\n\nWhiskers naps here[^1]\n',
@@ -267,7 +267,7 @@ await describe({
         + 'every id after one named a different block than it meant',
       fn: async () => {
         /**
-         * Page with a container BEFORE the footnote, which is what shifted ids.
+         Page with a container BEFORE the footnote, which is what shifted ids.
          */
         const { footnoteGraph, nodes, } = parseDocument({
           text: [
@@ -288,7 +288,7 @@ await describe({
         },);
 
         /**
-         * Block ids the document actually exposes.
+         Block ids the document actually exposes.
          */
         const ids = new Set(nodes.map(function toId(
           _node,

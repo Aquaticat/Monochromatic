@@ -20,64 +20,64 @@ import { rosterQuorumSize, } from './roster-quorum-size.ts';
 // and the full production bench are unchanged.
 
 /**
- * Ballots naming the winner a selection needs whatever its weight.
- *
- * The ballot form of the same floor the absolute minimum stood for: one vote
- * deciding is one model deciding, which the ensemble exists to prevent. On a
- * bench at quorum a weight of {@link MIN_SELECTION_WEIGHT} already implies it,
- * since no ballot carries more than one; on a short bench the scaled weight
- * can fall to what one full ballot carries, and this is what stops it.
+ Ballots naming the winner a selection needs whatever its weight.
+ 
+ The ballot form of the same floor the absolute minimum stood for: one vote
+ deciding is one model deciding, which the ensemble exists to prevent. On a
+ bench at quorum a weight of {@link MIN_SELECTION_WEIGHT} already implies it,
+ since no ballot carries more than one; on a short bench the scaled weight
+ can fall to what one full ballot carries, and this is what stops it.
  */
 export const MIN_SELECTION_BALLOTS = 2;
 
 /**
- * What a selection round must see before its leader wins, sized to the bench
- * that could answer.
- *
- * @example
- * ```ts
- * const minimum: SelectionMinimum = { weight: 1, reachable: 3, quorum: 6, short: true, };
- * ```
+ What a selection round must see before its leader wins, sized to the bench
+ that could answer.
+ 
+ @example
+ ```ts
+ const minimum: SelectionMinimum = { weight: 1, reachable: 3, quorum: 6, short: true, };
+ ```
  */
 export type SelectionMinimum = {
   /**
-   * Summed ballot weight the leader needs.
+   Summed ballot weight the leader needs.
    */
   readonly weight: number;
 
   /**
-   * Seats a wet provider could serve: the bench less the seats the router
-   * refused.
+   Seats a wet provider could serve: the bench less the seats the router
+   refused.
    */
   readonly reachable: number;
 
   /**
-   * Voices the seated bench needs for a quorum.
+   Voices the seated bench needs for a quorum.
    */
   readonly quorum: number;
 
   /**
-   * Whether the reachable bench is short of that quorum, which is the only
-   * case in which the weight differs from {@link MIN_SELECTION_WEIGHT}.
+   Whether the reachable bench is short of that quorum, which is the only
+   case in which the weight differs from {@link MIN_SELECTION_WEIGHT}.
    */
   readonly short: boolean;
 };
 
 /**
- * Sizes the minimum weight to the seats that could answer.
- *
- * @param benchSize - judges the round seated, unreachable seats included
- *
- * @param unreachable - seats the router refused for want of a wet provider
- *
- * @returns Minimum weight, the reachable count and quorum it was sized by,
- * and whether the bench was short
- *
- * @example
- * ```ts
- * selectionMinimum({ benchSize: 11, unreachable: 8, },);
- * // => { weight: 1, reachable: 3, quorum: 6, short: true, }
- * ```
+ Sizes the minimum weight to the seats that could answer.
+ 
+ @param benchSize - judges the round seated, unreachable seats included
+ 
+ @param unreachable - seats the router refused for want of a wet provider
+ 
+ @returns Minimum weight, the reachable count and quorum it was sized by,
+ and whether the bench was short
+ 
+ @example
+ ```ts
+ selectionMinimum({ benchSize: 11, unreachable: 8, },);
+ // => { weight: 1, reachable: 3, quorum: 6, short: true, }
+ ```
  */
 export function selectionMinimum(
   {
@@ -89,12 +89,12 @@ export function selectionMinimum(
   },
 ): SelectionMinimum {
   /**
-   * Seats a wet provider could serve.
+   Seats a wet provider could serve.
    */
   const reachable = benchSize - unreachable;
 
   /**
-   * Voices the seated bench needs for a quorum.
+   Voices the seated bench needs for a quorum.
    */
   const quorum = rosterQuorumSize({ rosterSize: benchSize, },);
   if (reachable >= quorum) {
@@ -114,20 +114,20 @@ export function selectionMinimum(
 }
 
 /**
- * Finding a round seated short of quorum carries, so a page decided this way
- * is told apart in its findings rather than only in a log line.
- *
- * @param minimum - minimum the round applied
- *
- * @param benchSize - judges the round seated
- *
- * @returns Finding in scorecard-stable wording
- *
- * @example
- * ```ts
- * shortBenchFinding({ minimum, benchSize: 11, },);
- * // => 'select-short-bench (reachable 3 of 11, minimum 1.00)'
- * ```
+ Finding a round seated short of quorum carries, so a page decided this way
+ is told apart in its findings rather than only in a log line.
+ 
+ @param minimum - minimum the round applied
+ 
+ @param benchSize - judges the round seated
+ 
+ @returns Finding in scorecard-stable wording
+ 
+ @example
+ ```ts
+ shortBenchFinding({ minimum, benchSize: 11, },);
+ // => 'select-short-bench (reachable 3 of 11, minimum 1.00)'
+ ```
  */
 export function shortBenchFinding(
   {

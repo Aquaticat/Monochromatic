@@ -24,35 +24,35 @@ import type { SliceReplacement, } from '../splice-slices.ts';
 // those three composed.
 
 /**
- * Page-level guard outcome recorded in a settled artifact.
- *
- * @example
- * ```ts
- * const assembly: ArtifactPageAssembly = { trimmed: [], withdrawn: [], findings: [], };
- * ```
+ Page-level guard outcome recorded in a settled artifact.
+ 
+ @example
+ ```ts
+ const assembly: ArtifactPageAssembly = { trimmed: [], withdrawn: [], findings: [], };
+ ```
  */
 export type ArtifactPageAssembly = {
   /**
-   * Slices whose composed text the guard trimmed, with the text the page
-   * carries: the composed text with an orphan definition block cut.
+   Slices whose composed text the guard trimmed, with the text the page
+   carries: the composed text with an orphan definition block cut.
    */
   readonly trimmed: readonly SliceReplacement[];
 
   /**
-   * Slices whose composed text the guard took back, so the page carries the
-   * archive's own wording there, or nothing at an anchor.
+   Slices whose composed text the guard took back, so the page carries the
+   archive's own wording there, or nothing at an anchor.
    */
   readonly withdrawn: readonly number[];
 
   /**
-   * What the guard did, in the assembly guard's wording.
+   What the guard did, in the assembly guard's wording.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Page assembly of an artifact whose guard cut nothing and took nothing back,
- * and of every artifact written before the guard existed.
+ Page assembly of an artifact whose guard cut nothing and took nothing back,
+ and of every artifact written before the guard existed.
  */
 export const NO_PAGE_ASSEMBLY: ArtifactPageAssembly = {
   trimmed: [],
@@ -61,7 +61,7 @@ export const NO_PAGE_ASSEMBLY: ArtifactPageAssembly = {
 };
 
 /**
- * Keys the section is written with.
+ Keys the section is written with.
  */
 const PAGE_ASSEMBLY_KEYS: readonly string[] = [
   'trimmed',
@@ -70,7 +70,7 @@ const PAGE_ASSEMBLY_KEYS: readonly string[] = [
 ];
 
 /**
- * Keys a trimmed replacement is written with.
+ Keys a trimmed replacement is written with.
  */
 const TRIMMED_KEYS: readonly string[] = [
   'sliceIndex',
@@ -78,18 +78,18 @@ const TRIMMED_KEYS: readonly string[] = [
 ];
 
 /**
- * Reads one trimmed replacement.
- *
- * @param value - recorded replacement
- *
- * @param path - where it sits, for the parse error
- *
- * @returns The replacement
- *
- * @example
- * ```ts
- * const replacement = parseTrimmed({ value, path: `${path}.trimmed[0]`, },);
- * ```
+ Reads one trimmed replacement.
+ 
+ @param value - recorded replacement
+ 
+ @param path - where it sits, for the parse error
+ 
+ @returns The replacement
+ 
+ @example
+ ```ts
+ const replacement = parseTrimmed({ value, path: `${path}.trimmed[0]`, },);
+ ```
  */
 function parseTrimmed(
   {
@@ -101,7 +101,7 @@ function parseTrimmed(
   },
 ): SliceReplacement {
   /**
-   * The replacement as a record.
+   The replacement as a record.
    */
   const record = requireRecord({
     value,
@@ -125,24 +125,24 @@ function parseTrimmed(
 }
 
 /**
- * Reads the page assembly section of a settled artifact.
- *
- * @param value - recorded section, absent on artifacts written before it
- *
- * @param path - where it sits, for the parse error
- *
- * @param required - whether this generation writes the section, so its
- * absence is a broken file rather than an older one
- *
- * @returns The section, empty on an older artifact
- *
- * @throws {@link ArtifactParseError} when a required section is absent or any
- * field is the wrong shape
- *
- * @example
- * ```ts
- * const assembly = parsePageAssembly({ value: artifact.pageAssembly, path: `${id}.pageAssembly`, required, },);
- * ```
+ Reads the page assembly section of a settled artifact.
+ 
+ @param value - recorded section, absent on artifacts written before it
+ 
+ @param path - where it sits, for the parse error
+ 
+ @param required - whether this generation writes the section, so its
+ absence is a broken file rather than an older one
+ 
+ @returns The section, empty on an older artifact
+ 
+ @throws {@link ArtifactParseError} when a required section is absent or any
+ field is the wrong shape
+ 
+ @example
+ ```ts
+ const assembly = parsePageAssembly({ value: artifact.pageAssembly, path: `${id}.pageAssembly`, required, },);
+ ```
  */
 export function parsePageAssembly(
   {
@@ -165,7 +165,7 @@ export function parsePageAssembly(
     return NO_PAGE_ASSEMBLY;
   }
   /**
-   * The section as a record.
+   The section as a record.
    */
   const record = requireRecord({
     value,
@@ -220,51 +220,51 @@ export function parsePageAssembly(
 }
 
 /**
- * What the page assembly says about one slice.
- *
- * @example
- * ```ts
- * const override: PageAssemblyOverride = { kind: 'trimmed', text: '[^1]: one', };
- * ```
+ What the page assembly says about one slice.
+ 
+ @example
+ ```ts
+ const override: PageAssemblyOverride = { kind: 'trimmed', text: '[^1]: one', };
+ ```
  */
 export type PageAssemblyOverride =
   | {
     /**
-     * The page carries this text, the composed text with a block cut.
+     The page carries this text, the composed text with a block cut.
      */
     readonly kind: 'trimmed';
 
     /**
-     * Text the page carries.
+     Text the page carries.
      */
     readonly text: string;
   }
   | {
     /**
-     * The page carries the archive's own wording here, or nothing at an anchor.
+     The page carries the archive's own wording here, or nothing at an anchor.
      */
     readonly kind: 'withdrawn';
   }
   | {
     /**
-     * The guard left this slice as the stages composed it.
+     The guard left this slice as the stages composed it.
      */
     readonly kind: 'untouched';
   };
 
 /**
- * Reads what the page assembly did to one slice.
- *
- * @param pageAssembly - recorded section
- *
- * @param sliceIndex - slice asked about
- *
- * @returns The override, or that there is none
- *
- * @example
- * ```ts
- * const override = pageAssemblyOverrideAt({ pageAssembly, sliceIndex: 14, },);
- * ```
+ Reads what the page assembly did to one slice.
+ 
+ @param pageAssembly - recorded section
+ 
+ @param sliceIndex - slice asked about
+ 
+ @returns The override, or that there is none
+ 
+ @example
+ ```ts
+ const override = pageAssemblyOverrideAt({ pageAssembly, sliceIndex: 14, },);
+ ```
  */
 export function pageAssemblyOverrideAt(
   {
@@ -280,7 +280,7 @@ export function pageAssemblyOverrideAt(
     .includes(sliceIndex,))
     return { kind: 'withdrawn', };
   /**
-   * The trimmed replacement for this slice, if any.
+   The trimmed replacement for this slice, if any.
    */
   const trimmed = pageAssembly
     .trimmed

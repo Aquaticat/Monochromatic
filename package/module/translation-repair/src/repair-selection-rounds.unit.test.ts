@@ -1,13 +1,13 @@
 /**
- * Tests for projecting the repair lane's rounds into the shape a producer
- * standing counts.
- *
- * THE POSITION GUARD IS THE POINT. A ballot names a candidate by number, so
- * the projection's whole correctness rests on slate order matching the numbers
- * judges were shown. A slate that disagrees must refuse rather than quietly
- * credit the wrong model, and that refusal is exercised below.
- *
- * @module
+ Tests for projecting the repair lane's rounds into the shape a producer
+ standing counts.
+ 
+ THE POSITION GUARD IS THE POINT. A ballot names a candidate by number, so
+ the projection's whole correctness rests on slate order matching the numbers
+ judges were shown. A slate that disagrees must refuse rather than quietly
+ credit the wrong model, and that refusal is exercised below.
+ 
+ @module
  */
 
 import {
@@ -28,18 +28,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one slate entry at a stated position.
- *
- * @param index - one-based position judges were shown
- *
- * @param modelId - model that wrote it
- *
- * @returns Slate entry
- *
- * @example
- * ```ts
- * const entry = entryAt({ index: 1, modelId: 'hf:openai/gpt-oss-120b', },);
- * ```
+ Builds one slate entry at a stated position.
+ 
+ @param index - one-based position judges were shown
+ 
+ @param modelId - model that wrote it
+ 
+ @returns Slate entry
+ 
+ @example
+ ```ts
+ const entry = entryAt({ index: 1, modelId: 'hf:openai/gpt-oss-120b', },);
+ ```
  */
 function entryAt(
   {
@@ -62,8 +62,8 @@ function entryAt(
 }
 
 /**
- * A selected round whose slate is in scrambled order, to prove the projection
- * sorts rather than trusts.
+ A selected round whose slate is in scrambled order, to prove the projection
+ sorts rather than trusts.
  */
 const SCRAMBLED_ROUND: RepairJudgedRound = {
   kind: 'selected' as const,
@@ -106,7 +106,7 @@ await describe({
       name: 'orders producers by the position judges were shown, not by slate order',
       fn: async () => {
         /**
-         * Projection of a slate recorded out of order.
+         Projection of a slate recorded out of order.
          */
         const projected = selectionRoundOf({ round: SCRAMBLED_ROUND, },);
 
@@ -134,8 +134,8 @@ await describe({
       name: 'REFUSES a slate whose positions are not one to its length',
       fn: async () => {
         /**
-         * A slate that skips position two, which a ballot naming two would
-         * silently misread as the third candidate.
+         A slate that skips position two, which a ballot naming two would
+         silently misread as the third candidate.
          */
         const gapped: RepairJudgedRound = {
           ...SCRAMBLED_ROUND,
@@ -164,7 +164,7 @@ await describe({
       name: 'keeps only the stages the named role produced',
       fn: async () => {
         /**
-         * One round from each stage the lane records.
+         One round from each stage the lane records.
          */
         const rounds: readonly RepairJudgedRound[] = [
           SCRAMBLED_ROUND,
@@ -194,7 +194,7 @@ await describe({
       name: 'ACCEPTS a declined round, because its ballots are evidence too',
       fn: async () => {
         /**
-         * A round where judges saw the slate and settled on nothing.
+         A round where judges saw the slate and settled on nothing.
          */
         const declined: RepairJudgedRound = {
           kind: 'declined' as const,
@@ -229,16 +229,16 @@ await describe({
       name: 'ACCEPTS real-shaped rounds and produces a standing with counts',
       fn: async () => {
         /**
-         * A POSITIVE CONTROL FOR THE WHOLE READING CHAIN.
-         *
-         * The first live smoke run reported zero rounds, correctly: its slice
-         * carried no accepted issue, so no editor was ever asked to write. A
-         * null from a probe never shown able to produce a non-null says
-         * nothing, so this drives projection and tally together and checks a
-         * standing actually falls out with the counts behind it.
-         *
-         * Kimi wrote position one and Qwen position two. Three judges hold no
-         * stake in either, and all three named position one.
+         A POSITIVE CONTROL FOR THE WHOLE READING CHAIN.
+         
+         The first live smoke run reported zero rounds, correctly: its slice
+         carried no accepted issue, so no editor was ever asked to write. A
+         null from a probe never shown able to produce a non-null says
+         nothing, so this drives projection and tally together and checks a
+         standing actually falls out with the counts behind it.
+         
+         Kimi wrote position one and Qwen position two. Three judges hold no
+         stake in either, and all three named position one.
          */
         const rounds = [
           {
@@ -260,7 +260,7 @@ await describe({
         ] satisfies readonly RepairJudgedRound[];
 
         /**
-         * What the editors' rounds came to.
+         What the editors' rounds came to.
          */
         const standings = producerStandings({
           rounds: selectionRoundsFor({
@@ -270,7 +270,7 @@ await describe({
         },);
 
         /**
-         * Kimi's standing, which wrote the candidate all three named.
+         Kimi's standing, which wrote the candidate all three named.
          */
         const kimi = standings.find(function isKimi(standing,): boolean {
           return standing.modelId === 'hf:moonshotai/Kimi-K3';
@@ -281,7 +281,7 @@ await describe({
         expect(kimi?.candidates,).toBe(1,);
 
         /**
-         * Qwen's standing, which wrote the candidate none of them named.
+         Qwen's standing, which wrote the candidate none of them named.
          */
         const qwen = standings.find(function isQwen(standing,): boolean {
           return standing.modelId === 'hf:Qwen/Qwen3.8-27B';

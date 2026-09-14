@@ -6,17 +6,17 @@ import { headingAffinity, } from './heading-affinity.ts';
 // because the two together exceed one file's line budget.
 
 /**
- * Affinity at or above which a unique candidate may anchor.
- *
- * Vestigial in practice and kept for the case it was written for.
- * `headingAffinity` divides by the smaller token count, so a single-token
- * heading scores 1.00 against any heading containing that token, and the
- * threshold never binds. UNIQUENESS carries this design, not the threshold.
+ Affinity at or above which a unique candidate may anchor.
+ 
+ Vestigial in practice and kept for the case it was written for.
+ `headingAffinity` divides by the smaller token count, so a single-token
+ heading scores 1.00 against any heading containing that token, and the
+ threshold never binds. UNIQUENESS carries this design, not the threshold.
  */
 const TRUST = 0.5;
 
 /**
- * Lexicographic score: trusted anchors, gap count, soft affinity.
+ Lexicographic score: trusted anchors, gap count, soft affinity.
  */
 export type LexScore = readonly [
   number,
@@ -25,7 +25,7 @@ export type LexScore = readonly [
 ];
 
 /**
- * Score no path can reach, so an unreachable cell never wins a comparison.
+ Score no path can reach, so an unreachable cell never wins a comparison.
  */
 export const UNREACHABLE: LexScore = [
   Number.NEGATIVE_INFINITY,
@@ -34,7 +34,7 @@ export const UNREACHABLE: LexScore = [
 ];
 
 /**
- * Cost of leaving one heading unpaired.
+ Cost of leaving one heading unpaired.
  */
 export const GAP: LexScore = [
   0,
@@ -43,18 +43,18 @@ export const GAP: LexScore = [
 ];
 
 /**
- * Adds two lexicographic scores component by component.
- *
- * @param left - first score
- *
- * @param right - second score
- *
- * @returns Sum
- *
- * @example
- * ```ts
- * const total = addScore({ left, right, },);
- * ```
+ Adds two lexicographic scores component by component.
+ 
+ @param left - first score
+ 
+ @param right - second score
+ 
+ @returns Sum
+ 
+ @example
+ ```ts
+ const total = addScore({ left, right, },);
+ ```
  */
 export function addScore(
   {
@@ -73,22 +73,22 @@ export function addScore(
 }
 
 /**
- * Reports whether one score beats another.
- *
- * Trusted anchors dominate, then FEWER gaps, then soft affinity. The middle
- * term inverts, which is the whole reason a gap can win here and cannot win in
- * the shipped scorer.
- *
- * @param candidate - score under test
- *
- * @param incumbent - score to beat
- *
- * @returns True when the candidate is strictly better
- *
- * @example
- * ```ts
- * const wins = beats({ candidate, incumbent, },);
- * ```
+ Reports whether one score beats another.
+ 
+ Trusted anchors dominate, then FEWER gaps, then soft affinity. The middle
+ term inverts, which is the whole reason a gap can win here and cannot win in
+ the shipped scorer.
+ 
+ @param candidate - score under test
+ 
+ @param incumbent - score to beat
+ 
+ @returns True when the candidate is strictly better
+ 
+ @example
+ ```ts
+ const wins = beats({ candidate, incumbent, },);
+ ```
  */
 export function beats(
   {
@@ -107,18 +107,18 @@ export function beats(
 }
 
 /**
- * Reports whether two scores are identical.
- *
- * @param left - first score
- *
- * @param right - second score
- *
- * @returns True when every component matches
- *
- * @example
- * ```ts
- * const same = sameScore({ left, right, },);
- * ```
+ Reports whether two scores are identical.
+ 
+ @param left - first score
+ 
+ @param right - second score
+ 
+ @returns True when every component matches
+ 
+ @example
+ ```ts
+ const same = sameScore({ left, right, },);
+ ```
  */
 export function sameScore(
   {
@@ -134,34 +134,34 @@ export function sameScore(
 }
 
 /**
- * Everything the affinity grid says about two heading sequences.
+ Everything the affinity grid says about two heading sequences.
  */
 export type Grid = {
   /**
-   * Affinity of every source and target pairing.
+   Affinity of every source and target pairing.
    */
   readonly affinity: readonly (readonly number[])[];
 
   /**
-   * Pairings at or above threshold that are the strict maximum of both their
-   * row and their column, so a name repeated across headings never anchors.
+   Pairings at or above threshold that are the strict maximum of both their
+   row and their column, so a name repeated across headings never anchors.
    */
   readonly trusted: readonly (readonly boolean[])[];
 };
 
 /**
- * Scores every possible pairing and marks the trustworthy ones.
- *
- * @param sourceHeadings - original-side unit labels
- *
- * @param targetHeadings - translation-side unit labels
- *
- * @returns Affinity and trust grids
- *
- * @example
- * ```ts
- * const grid = buildGrid({ sourceHeadings, targetHeadings, },);
- * ```
+ Scores every possible pairing and marks the trustworthy ones.
+ 
+ @param sourceHeadings - original-side unit labels
+ 
+ @param targetHeadings - translation-side unit labels
+ 
+ @returns Affinity and trust grids
+ 
+ @example
+ ```ts
+ const grid = buildGrid({ sourceHeadings, targetHeadings, },);
+ ```
  */
 export function buildGrid(
   {
@@ -173,7 +173,7 @@ export function buildGrid(
   },
 ): Grid {
   /**
-   * Affinity of every pairing.
+   Affinity of every pairing.
    */
   const affinity = sourceHeadings.map(function scoreRow(source,): readonly number[] {
     return targetHeadings.map(function scoreCell(target,): number {
@@ -215,20 +215,20 @@ export function buildGrid(
 }
 
 /**
- * Scores pairing one source unit with one target unit.
- *
- * @param grid - affinity and trust
- *
- * @param sourceIndex - source unit
- *
- * @param targetIndex - target unit
- *
- * @returns Lexicographic cost of that pairing
- *
- * @example
- * ```ts
- * const cost = pairScore({ grid, sourceIndex: 0, targetIndex: 0, },);
- * ```
+ Scores pairing one source unit with one target unit.
+ 
+ @param grid - affinity and trust
+ 
+ @param sourceIndex - source unit
+ 
+ @param targetIndex - target unit
+ 
+ @returns Lexicographic cost of that pairing
+ 
+ @example
+ ```ts
+ const cost = pairScore({ grid, sourceIndex: 0, targetIndex: 0, },);
+ ```
  */
 export function pairScore(
   {
@@ -242,7 +242,7 @@ export function pairScore(
   },
 ): LexScore {
   /**
-   * Affinity of this pairing.
+   Affinity of this pairing.
    */
   const value = grid.affinity[sourceIndex]?.[targetIndex] ?? 0;
   return [

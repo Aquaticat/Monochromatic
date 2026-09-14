@@ -1,22 +1,22 @@
 /**
- * Tests for the guard that separates a rendering of nothing from nothing to
- * render.
- *
- * WHAT THIS ADDS BESIDE THE JUDGE'S OWN CASE, which was measured rather than
- * assumed: `translate-judge.unit.test.ts` hand-builds a slate whose sole
- * candidate is whitespace and proves the judge throws, and removing this guard
- * fails that case too. So the yes arm and the trim on the winner side are
- * already driven, through the one caller there is.
- *
- * THE SECOND CONJUNCT IS WHAT NOTHING ELSE ASKS. That case's original always
- * says something, because a slate is only judged where there was a passage to
- * render, so nothing varies the source side. A slice whose original is empty
- * must settle as the absence it is rather than as a passage this run emptied,
- * and a guard reading the winner alone would call it a deletion.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the guard that separates a rendering of nothing from nothing to
+ render.
+ 
+ WHAT THIS ADDS BESIDE THE JUDGE'S OWN CASE, which was measured rather than
+ assumed: `translate-judge.unit.test.ts` hand-builds a slate whose sole
+ candidate is whitespace and proves the judge throws, and removing this guard
+ fails that case too. So the yes arm and the trim on the winner side are
+ already driven, through the one caller there is.
+ 
+ THE SECOND CONJUNCT IS WHAT NOTHING ELSE ASKS. That case's original always
+ says something, because a slate is only judged where there was a passage to
+ render, so nothing varies the source side. A slice whose original is empty
+ must settle as the absence it is rather than as a passage this run emptied,
+ and a guard reading the winner alone would call it a deletion.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -28,7 +28,7 @@ import {
 import { blankAgainst, } from '../dist/final/node/index.mjs';
 
 /**
- * Original that says something, for every case that needs one.
+ Original that says something, for every case that needs one.
  */
 const SOURCE_SAYS_SOMETHING = '猫猫在窗台上睡觉。';
 

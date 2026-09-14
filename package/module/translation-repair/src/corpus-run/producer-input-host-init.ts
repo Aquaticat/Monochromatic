@@ -31,56 +31,56 @@ import {
 //region One host-owned initialization path, never caller-fabricated mount metadata
 
 /**
- * Host bindings are created together after the launch and exclusive namespace are established.
+ Host bindings are created together after the launch and exclusive namespace are established.
  */
 export type ProducerInputHost = {
   /**
-   * Independently identified owned launch, not an approval verdict.
+   Independently identified owned launch, not an approval verdict.
    */
   readonly launch: ProducerInputLaunch;
   /**
-   * Independently supplied launch identity retained for child and output comparisons.
+   Independently supplied launch identity retained for child and output comparisons.
    */
   readonly launchIdentity: ProducerInputFileIdentity;
   /**
-   * Exclusive run and fixed writable child directory.
+   Exclusive run and fixed writable child directory.
    */
   readonly run: ProducerInputRun;
   /**
-   * Metadata-only layout to revalidate immediately before container startup.
+   Metadata-only layout to revalidate immediately before container startup.
    */
   readonly layout: ProducerInputHostLayout;
   /**
-   * Exact executing Node location, not selected through PATH or launch JSON.
+   Exact executing Node location, not selected through PATH or launch JSON.
    */
   readonly nodePath: string;
   /**
-   * Independently manifest-bound Node bytes are rechecked immediately before child startup.
+   Independently manifest-bound Node bytes are rechecked immediately before child startup.
    */
   readonly nodeIdentity: ProducerInputFileIdentity;
   /**
-   * Exact separately packaged bootstrap location supplied by its own entry.
+   Exact separately packaged bootstrap location supplied by its own entry.
    */
   readonly bootstrapPath: string;
   /**
-   * Generated host configuration and fixed local Podman invocation prefix.
+   Generated host configuration and fixed local Podman invocation prefix.
    */
   readonly podman: ProducerInputPodmanContext;
 };
 
 /**
- * Rejects noncanonical input filenames before native file or executable use.
- *
- * @param path - independently authorized absolute file locator
- *
- * @param operation - owning file role's fixed diagnostic vocabulary
- *
- * @throws ProducerInputRunError when canonical identity differs
- *
- * @example
- * ```ts
- * await canonicalHostFile({ path, operation: 'verify-runtime' });
- * ```
+ Rejects noncanonical input filenames before native file or executable use.
+ 
+ @param path - independently authorized absolute file locator
+ 
+ @param operation - owning file role's fixed diagnostic vocabulary
+ 
+ @throws ProducerInputRunError when canonical identity differs
+ 
+ @example
+ ```ts
+ await canonicalHostFile({ path, operation: 'verify-runtime' });
+ ```
  */
 async function canonicalHostFile({
   path,
@@ -107,18 +107,18 @@ async function canonicalHostFile({
 }
 
 /**
- * Writes a names-only terminal record when no container has been created yet.
- *
- * @param run - exclusive initialized namespace, retained even when this write fails
- *
- * @param error - caught host failure whose body is never forwarded without its audited marker
- *
- * @throws ProducerInputRunError when terminal evidence cannot be synchronized
- *
- * @example
- * ```ts
- * await recordInitializationFailure({ run, error });
- * ```
+ Writes a names-only terminal record when no container has been created yet.
+ 
+ @param run - exclusive initialized namespace, retained even when this write fails
+ 
+ @param error - caught host failure whose body is never forwarded without its audited marker
+ 
+ @throws ProducerInputRunError when terminal evidence cannot be synchronized
+ 
+ @example
+ ```ts
+ await recordInitializationFailure({ run, error });
+ ```
  */
 async function recordInitializationFailure({
   run,
@@ -142,24 +142,24 @@ async function recordInitializationFailure({
 }
 
 /**
- * Matches independently recorded launch bytes, rejects directory topology, creates exclusive output, then binds execution files.
- * The trusted caller authenticates this already executing bootstrap and host platform before invocation.
- * No corpus or support-file bodies, Git operations or application imports occur here.
- *
- * @param launchPath - exact caller-selected launch file
- *
- * @param expected - independently supplied raw launch extent and digest
- *
- * @param bootstrapPath - this standalone entry's own canonical filename
- *
- * @returns Owned cross-bound host initialization, not input or execution approval
- *
- * @throws ProducerInputRunError when launch, topology, namespace or runtime identity differs
- *
- * @example
- * ```ts
- * const host = await initializeProducerInputHost({ launchPath, expected, bootstrapPath });
- * ```
+ Matches independently recorded launch bytes, rejects directory topology, creates exclusive output, then binds execution files.
+ The trusted caller authenticates this already executing bootstrap and host platform before invocation.
+ No corpus or support-file bodies, Git operations or application imports occur here.
+ 
+ @param launchPath - exact caller-selected launch file
+ 
+ @param expected - independently supplied raw launch extent and digest
+ 
+ @param bootstrapPath - this standalone entry's own canonical filename
+ 
+ @returns Owned cross-bound host initialization, not input or execution approval
+ 
+ @throws ProducerInputRunError when launch, topology, namespace or runtime identity differs
+ 
+ @example
+ ```ts
+ const host = await initializeProducerInputHost({ launchPath, expected, bootstrapPath });
+ ```
  */
 export async function initializeProducerInputHost({
   launchPath,
@@ -171,21 +171,21 @@ export async function initializeProducerInputHost({
   readonly bootstrapPath: string;
 },): Promise<ProducerInputHost> {
   /**
-   * Independent primitive identity is copied before asynchronous reads.
+   Independent primitive identity is copied before asynchronous reads.
    */
   const launchIdentity = {
     bytes: expected.bytes,
     sha256: expected.sha256,
   };
   /**
-   * Closed launch parsing cannot select an application entry or operation.
+   Closed launch parsing cannot select an application entry or operation.
    */
   const launch = await readProducerInputLaunch({
     path: launchPath,
     expected: launchIdentity
   });
   /**
-   * Preserve exact original serialization rather than claiming a reserialized object has the same identity.
+   Preserve exact original serialization rather than claiming a reserialized object has the same identity.
    */
   const launchBytes = await readProducerInputFile({
     path: launchPath,
@@ -193,11 +193,11 @@ export async function initializeProducerInputHost({
     operation: 'read-launch'
   });
   /**
-   * Directory metadata may reject aliases before output creation but grants no content authority.
+   Directory metadata may reject aliases before output creation but grants no content authority.
    */
   const layout = await inspectProducerInputHostLayout(launch);
   /**
-   * Cross-binding to the authenticated output parent is owned here, not left to an external caller.
+   Cross-binding to the authenticated output parent is owned here, not left to an external caller.
    */
   const run = await createProducerInputRun({
     parent: launch.outputParent,
@@ -249,7 +249,7 @@ export async function initializeProducerInputHost({
       operation: 'read-selection'
     });
     /**
-     * Exact manifest identity precedes filename and Node interpretation.
+     Exact manifest identity precedes filename and Node interpretation.
      */
     const manifest = await readProducerRuntimeManifest({
       dir: launch.runtime
@@ -264,11 +264,11 @@ export async function initializeProducerInputHost({
       manifest
     });
     /**
-     * The mount uses this executing Node after its content and version checks, not an independent PATH lookup.
+     The mount uses this executing Node after its content and version checks, not an independent PATH lookup.
      */
     const nodePath = await realpath(process.execPath);
     /**
-     * Ambient configuration and subscription mounts are not inherited silently.
+     Ambient configuration and subscription mounts are not inherited silently.
      */
     const podman = await createProducerInputPodmanContext(run);
     return {

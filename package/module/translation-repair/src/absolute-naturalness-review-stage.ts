@@ -27,37 +27,37 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 //region Absolute naturalness review stage
 
 /**
- * One roster seat as absolute review accounted for it.
- *
- * @example
- * ```ts
- * const seat: AbsoluteNaturalnessReviewSeat = { modelId: 'hf:zai-org/GLM-5.3-Flash', status: 'acceptable', findings: [], reason: 'ready' };
- * ```
+ One roster seat as absolute review accounted for it.
+ 
+ @example
+ ```ts
+ const seat: AbsoluteNaturalnessReviewSeat = { modelId: 'hf:zai-org/GLM-5.3-Flash', status: 'acceptable', findings: [], reason: 'ready' };
+ ```
  */
 export type AbsoluteNaturalnessReviewSeat = {
   /**
-   * Roster model asked.
+   Roster model asked.
    */
   readonly modelId: RosterModelId;
 
   /**
-   * Usable verdict or named lack of usable reply.
+   Usable verdict or named lack of usable reply.
    */
   readonly status: 'acceptable' | 'unacceptable' | 'unusable';
 
   /**
-   * Actionable defects from rejecting usable voice.
+   Actionable defects from rejecting usable voice.
    */
   readonly findings: readonly AbsoluteNaturalnessFinding[];
 
   /**
-   * Usable voice explanation, empty for unusable seat.
+   Usable voice explanation, empty for unusable seat.
    */
   readonly reason: string;
 };
 
 /**
- * Absolute review verdict derived from every accounted seat.
+ Absolute review verdict derived from every accounted seat.
  */
 export type AbsoluteNaturalnessReviewVerdict =
   | 'acceptable'
@@ -65,71 +65,71 @@ export type AbsoluteNaturalnessReviewVerdict =
   | 'quorum-not-met';
 
 /**
- * Auditable absolute review of exact would-ship text.
- *
- * @example
- * ```ts
- * const review: AbsoluteNaturalnessReviewOutcome = { quorumOver: 0, candidateDigest: 'sha256:abc', candidateText: '', paragraphCount: 0, paragraphDigests: [], seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
- * ```
+ Auditable absolute review of exact would-ship text.
+ 
+ @example
+ ```ts
+ const review: AbsoluteNaturalnessReviewOutcome = { quorumOver: 0, candidateDigest: 'sha256:abc', candidateText: '', paragraphCount: 0, paragraphDigests: [], seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
+ ```
  */
 export type AbsoluteNaturalnessReviewOutcome = {
   /**
-   * Effective wider bench size, retained independently of seats the window asked.
+   Effective wider bench size, retained independently of seats the window asked.
    */
   readonly quorumOver: number;
 
   /**
-   * Digest binding review to exact candidate bytes.
+   Digest binding review to exact candidate bytes.
    */
   readonly candidateDigest: string;
 
   /**
-   * Exact candidate text reviewer was shown.
+   Exact candidate text reviewer was shown.
    */
   readonly candidateText: string;
 
   /**
-   * Structurally correctable paragraphs reviewer was shown.
+   Structurally correctable paragraphs reviewer was shown.
    */
   readonly paragraphCount: number;
 
   /**
-   * Digest of each structurally correctable paragraph in reviewer order.
+   Digest of each structurally correctable paragraph in reviewer order.
    */
   readonly paragraphDigests: readonly string[];
 
   /**
-   * Every requested roster seat in request order.
+   Every requested roster seat in request order.
    */
   readonly seats: readonly AbsoluteNaturalnessReviewSeat[];
 
   /**
-   * Number of seats returning usable structured verdict.
+   Number of seats returning usable structured verdict.
    */
   readonly usable: number;
 
   /**
-   * Fail-closed aggregate verdict.
+   Fail-closed aggregate verdict.
    */
   readonly verdict: AbsoluteNaturalnessReviewVerdict;
 
   /**
-   * Rejection findings in deterministic roster order without exact duplicates.
+   Rejection findings in deterministic roster order without exact duplicates.
    */
   readonly findings: readonly AbsoluteNaturalnessFinding[];
 };
 
 /**
- * Removes exact duplicate located findings while preserving roster order.
- *
- * @param findings - model findings in roster order
- *
- * @returns First occurrence of each paragraph and problem pair
- *
- * @example
- * ```ts
- * uniqueFindings({ findings: [{ paragraph: 1, problem: 'stiff phrasing', }], });
- * ```
+ Removes exact duplicate located findings while preserving roster order.
+ 
+ @param findings - model findings in roster order
+ 
+ @returns First occurrence of each paragraph and problem pair
+ 
+ @example
+ ```ts
+ uniqueFindings({ findings: [{ paragraph: 1, problem: 'stiff phrasing', }], });
+ ```
  */
 function uniqueFindings(
   { findings, }: { readonly findings: readonly AbsoluteNaturalnessFinding[]; },
@@ -146,42 +146,42 @@ function uniqueFindings(
 }
 
 /**
- * Reviews exact would-ship body text against absolute publication naturalness.
- *
- * Exact-half quorum starts bounded grace for remaining seats.
- * Every usable rejection that arrives before settlement remains decisive,
- * while one unreliable provider cannot make whole-roster participation mandatory.
- *
- * @param client - provider client
- *
- * @param modelIds - every independent reviewer seat
- *
- * @param quorumOver - bench size the quorum is taken over, when the seats
- * asked are a window of a wider bench; defaults to the seats asked
- *
- * @param subject - source context and exact candidate
- *
- * @param perspective - distinct defect-discovery or acceptance-challenge task
- *
- * @param signal - caller cancellation
- *
- * @param exchangeTimeoutMs - deadline accounting unavailable seat
- *
- * @param graceMs - optional test seam for post-quorum abandonment window
- *
- * @param fanOut - seats a round asks: the window of quorum plus one by
- * default, or the whole bench a fixture scripting every seat asks for
- *
- * @param l - parent logger
- *
- * @returns Candidate-bound absolute verdict and every seat status
- *
- * @throws {@link NaturalnessQuorumError} when quorum basis cannot cover requested seats
- *
- * @example
- * ```ts
- * const review = await reviewAbsoluteNaturalness({ client, modelIds, subject, signal, exchangeTimeoutMs, l, });
- * ```
+ Reviews exact would-ship body text against absolute publication naturalness.
+ 
+ Exact-half quorum starts bounded grace for remaining seats.
+ Every usable rejection that arrives before settlement remains decisive,
+ while one unreliable provider cannot make whole-roster participation mandatory.
+ 
+ @param client - provider client
+ 
+ @param modelIds - every independent reviewer seat
+ 
+ @param quorumOver - bench size the quorum is taken over, when the seats
+ asked are a window of a wider bench; defaults to the seats asked
+ 
+ @param subject - source context and exact candidate
+ 
+ @param perspective - distinct defect-discovery or acceptance-challenge task
+ 
+ @param signal - caller cancellation
+ 
+ @param exchangeTimeoutMs - deadline accounting unavailable seat
+ 
+ @param graceMs - optional test seam for post-quorum abandonment window
+ 
+ @param fanOut - seats a round asks: the window of quorum plus one by
+ default, or the whole bench a fixture scripting every seat asks for
+ 
+ @param l - parent logger
+ 
+ @returns Candidate-bound absolute verdict and every seat status
+ 
+ @throws {@link NaturalnessQuorumError} when quorum basis cannot cover requested seats
+ 
+ @example
+ ```ts
+ const review = await reviewAbsoluteNaturalness({ client, modelIds, subject, signal, exchangeTimeoutMs, l, });
+ ```
  */
 export async function reviewAbsoluteNaturalness(
   {
@@ -209,7 +209,7 @@ export async function reviewAbsoluteNaturalness(
   }>,
 ): Promise<AbsoluteNaturalnessReviewOutcome> {
   /**
-   * Stage-specific logger.
+   Stage-specific logger.
    */
   const rl = tagged({
     l,
@@ -225,23 +225,23 @@ export async function reviewAbsoluteNaturalness(
     },);
   }
   /**
-   * Exact-half usable voices required to approve and start straggler grace.
+   Exact-half usable voices required to approve and start straggler grace.
    */
   const quorumNeeded = rosterQuorumSize({ rosterSize: quorumOver, },);
   /**
-   * Structurally correctable paragraphs shown to every reviewer.
+   Structurally correctable paragraphs shown to every reviewer.
    */
   const paragraphCount = subject.paragraphs
     .length;
   /**
-   * Digest of each exact paragraph shown to reviewers.
+   Digest of each exact paragraph shown to reviewers.
    */
   const paragraphDigests = subject.paragraphs
     .map(function digestParagraph(paragraph,): string {
       return hashContent({ content: paragraph, },);
     },);
   /**
-   * Every requested outcome after every seat has settled or reached deadline.
+   Every requested outcome after every seat has settled or reached deadline.
    */
   const outcomes = await runWindowedRounds({
     client,
@@ -257,7 +257,7 @@ export async function reviewAbsoluteNaturalness(
       if (!isAbsoluteNaturalnessReviewWire(value,))
         return false;
       /**
-       * Located findings after wire validation.
+       Located findings after wire validation.
        */
       const { findings, } = value;
       return findings.every(function existingParagraph(finding,): boolean {
@@ -272,13 +272,13 @@ export async function reviewAbsoluteNaturalness(
     ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
   /**
-   * Stable seat records, including calls with no usable ballot.
+   Stable seat records, including calls with no usable ballot.
    */
   const seats = outcomes.map(function toSeat(
     outcome,
   ): AbsoluteNaturalnessReviewSeat {
     /**
-     * Usable or unavailable voice under requested model id.
+     Usable or unavailable voice under requested model id.
      */
     const { voice, } = outcome;
     if (!voice.heard) {
@@ -290,7 +290,7 @@ export async function reviewAbsoluteNaturalness(
       };
     }
     /**
-     * Validated structured reviewer reply.
+     Validated structured reviewer reply.
      */
     const reply = voice.value;
     return {
@@ -301,13 +301,13 @@ export async function reviewAbsoluteNaturalness(
     };
   },);
   /**
-   * Seats carrying usable structured reply.
+   Seats carrying usable structured reply.
    */
   const usableSeats = seats.filter(function isUsable(seat,): boolean {
     return seat.status !== 'unusable';
   },);
   /**
-   * Material rejection findings in roster order.
+   Material rejection findings in roster order.
    */
   const findings = uniqueFindings({
     findings: usableSeats.flatMap(function rejected(
@@ -317,7 +317,7 @@ export async function reviewAbsoluteNaturalness(
     },),
   },);
   /**
-   * Fail-closed verdict: thin review cannot approve, and any rejection blocks.
+   Fail-closed verdict: thin review cannot approve, and any rejection blocks.
    */
   const verdict: AbsoluteNaturalnessReviewVerdict = (usableSeats.length
       < quorumNeeded)
@@ -328,45 +328,45 @@ export async function reviewAbsoluteNaturalness(
       ? 'unacceptable'
       : 'acceptable';
   /**
-   * Per-seat status and finding identities without candidate or reviewer wording.
+   Per-seat status and finding identities without candidate or reviewer wording.
    */
   const seatSummary = seats
     .map(function summarizeSeat(seat,): string {
       /**
-       * Finding count rendered without finding wording.
+       Finding count rendered without finding wording.
        */
       const findingCount = String(seat.findings
         .length,);
       /**
-       * Located paragraphs making repeated findings comparable across rounds.
+       Located paragraphs making repeated findings comparable across rounds.
        */
       const findingParagraphParts = seat.findings
         .map(function paragraphOf(finding,): string {
           return String(finding.paragraph,);
         },);
       /**
-       * Located paragraph sequence before empty fallback.
+       Located paragraph sequence before empty fallback.
        */
       const joinedFindingParagraphs = findingParagraphParts.join('+',);
       /**
-       * Located paragraph sequence or explicit absence.
+       Located paragraph sequence or explicit absence.
        */
       const findingParagraphs = joinedFindingParagraphs === ''
         ? 'none'
         : joinedFindingParagraphs;
       /**
-       * Wording digests making recurrence comparable without exposing wording.
+       Wording digests making recurrence comparable without exposing wording.
        */
       const findingDigestParts = seat.findings
         .map(function digestFinding(finding,): string {
           return hashContent({ content: finding.problem, },);
         },);
       /**
-       * Wording digest sequence before empty fallback.
+       Wording digest sequence before empty fallback.
        */
       const joinedFindingDigests = findingDigestParts.join('+',);
       /**
-       * Wording digest sequence or explicit absence.
+       Wording digest sequence or explicit absence.
        */
       const findingDigests = joinedFindingDigests === ''
         ? 'none'

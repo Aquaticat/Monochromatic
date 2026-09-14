@@ -21,15 +21,15 @@ import { PRODUCER_INPUT_PATHS, } from './producer-input-paths.ts';
 //region Child execution observations before application import
 
 /**
- * Permission inspection includes special bits as well as ordinary access bits.
+ Permission inspection includes special bits as well as ordinary access bits.
  */
 const DIRECTORY_PERMISSION_MASK = 0o7777;
 /**
- * Exact writable-directory mode declared by the host creation path.
+ Exact writable-directory mode declared by the host creation path.
  */
 const PRIVATE_DIRECTORY_MODE = 0o700;
 /**
- * Linux capability fields independently constrain effective and recoverable privilege.
+ Linux capability fields independently constrain effective and recoverable privilege.
  */
 const CAPABILITY_FIELDS: readonly string[] = [
   'CapInh',
@@ -39,23 +39,23 @@ const CAPABILITY_FIELDS: readonly string[] = [
   'CapAmb'
 ];
 /**
- * The measured Linux capability words contain no enabled capability.
+ The measured Linux capability words contain no enabled capability.
  */
 const EMPTY_CAPABILITIES = '0000000000000000';
 
 /**
- * Reads the fixed resource values rather than trusting requested container arguments.
- *
- * @throws ProducerInputRunError when an actual cgroup or temporary-storage allowance differs
- *
- * @example
- * ```ts
- * await verifyChildResources();
- * ```
+ Reads the fixed resource values rather than trusting requested container arguments.
+ 
+ @throws ProducerInputRunError when an actual cgroup or temporary-storage allowance differs
+ 
+ @example
+ ```ts
+ await verifyChildResources();
+ ```
  */
 async function verifyChildResources(): Promise<void> {
   /**
-   * Expected cgroup values come from the specialized invocation, not supplied JSON.
+   Expected cgroup values come from the specialized invocation, not supplied JSON.
    */
   const expected: Readonly<Record<string, string>> = {
     'memory.max': String(PRODUCER_INPUT_LIMITS.memoryBytes),
@@ -64,7 +64,7 @@ async function verifyChildResources(): Promise<void> {
     'pids.max': String(PRODUCER_INPUT_LIMITS.pids),
   };
   /**
-   * This fixed metadata set cannot expand with findings or input cardinality.
+   This fixed metadata set cannot expand with findings or input cardinality.
    */
   const observed = await Promise.all(Object.entries(expected)
     .map(async function resource([name, value]): Promise<boolean> {
@@ -74,7 +74,7 @@ async function verifyChildResources(): Promise<void> {
     )).trim() === value;
   }));
   /**
-   * Temporary-space size is observed through its mounted filesystem, not an environment hint.
+   Temporary-space size is observed through its mounted filesystem, not an environment hint.
    */
   const temporary = await statfs(
     '/tmp',
@@ -91,36 +91,36 @@ async function verifyChildResources(): Promise<void> {
 }
 
 /**
- * Checks process-level privilege restrictions without retaining unrelated status fields.
- *
- * @throws ProducerInputRunError when privilege or capability state differs
- *
- * @example
- * ```ts
- * await verifyChildPrivileges();
- * ```
+ Checks process-level privilege restrictions without retaining unrelated status fields.
+ 
+ @throws ProducerInputRunError when privilege or capability state differs
+ 
+ @example
+ ```ts
+ await verifyChildPrivileges();
+ ```
  */
 async function verifyChildPrivileges(): Promise<void> {
   /**
-   * Kernel process metadata contains no corpus or provider reply body.
+   Kernel process metadata contains no corpus or provider reply body.
    */
   const lines = (await readFile(
     '/proc/self/status',
     'utf8'
   )).split('\n');
   /**
-   * Only the fixed fields used by this gate are retained.
+   Only the fixed fields used by this gate are retained.
    */
   const fields = Object.fromEntries(lines.flatMap(function field(line): readonly (readonly [
     string,
     string
   ])[] {
     /**
-     * Status fields have one name/value separator; value whitespace is not semantically significant here.
+     Status fields have one name/value separator; value whitespace is not semantically significant here.
      */
     const separator = line.indexOf(':');
     /**
-     * Unrelated process metadata never enters a diagnostic.
+     Unrelated process metadata never enters a diagnostic.
      */
     const name = line.slice(
       0,
@@ -145,27 +145,27 @@ async function verifyChildPrivileges(): Promise<void> {
 }
 
 /**
- * Verifies the still-empty application namespace, not a reusable result directory.
- *
- * @param identity - host UID binding already checked against the child environment
- *
- * @throws ProducerInputRunError when output ownership, privacy or initial contents differ
- *
- * @example
- * ```ts
- * await verifyChildOutput(identity);
- * ```
+ Verifies the still-empty application namespace, not a reusable result directory.
+ 
+ @param identity - host UID binding already checked against the child environment
+ 
+ @throws ProducerInputRunError when output ownership, privacy or initial contents differ
+ 
+ @example
+ ```ts
+ await verifyChildOutput(identity);
+ ```
  */
 async function verifyChildOutput(identity: ProducerInputChildIdentity): Promise<void> {
   /**
-   * Output and home are checked independently rather than relying on the parent's privacy.
+   Output and home are checked independently rather than relying on the parent's privacy.
    */
   const states = await Promise.all([
     PRODUCER_INPUT_PATHS.output,
     PRODUCER_INPUT_PATHS.home
   ].map(async function directory(path): Promise<boolean> {
     /**
-     * Symlink leaves cannot substitute for host-created directories.
+     Symlink leaves cannot substitute for host-created directories.
      */
     const state = await lstat(path);
     return state.isDirectory() && (state.uid === identity.callerUid)
@@ -187,17 +187,17 @@ async function verifyChildOutput(identity: ProducerInputChildIdentity): Promise<
 }
 
 /**
- * Observes the complete fixed child process context before any application import.
- * Host image, bootstrap, Node and library selection remain pre-start responsibilities.
- *
- * @param identity - owned primitive host bindings from the exact child environment
- *
- * @throws ProducerInputRunError when executable context, isolation or writable namespace differs
- *
- * @example
- * ```ts
- * await verifyProducerInputChildContext(identity);
- * ```
+ Observes the complete fixed child process context before any application import.
+ Host image, bootstrap, Node and library selection remain pre-start responsibilities.
+ 
+ @param identity - owned primitive host bindings from the exact child environment
+ 
+ @throws ProducerInputRunError when executable context, isolation or writable namespace differs
+ 
+ @example
+ ```ts
+ await verifyProducerInputChildContext(identity);
+ ```
  */
 export async function verifyProducerInputChildContext(identity: ProducerInputChildIdentity): Promise<void> {
   if ((process.platform !== 'linux') || (process.arch !== 'x64')
@@ -223,7 +223,7 @@ export async function verifyProducerInputChildContext(identity: ProducerInputChi
       locator: 'child execution context',
     });
   /**
-   * Network-none is checked through actual interface state, not inferred from the launch request.
+   Network-none is checked through actual interface state, not inferred from the launch request.
    */
   const interfaces = networkInterfaces();
   if (!isDeepStrictEqual(
@@ -241,7 +241,7 @@ export async function verifyProducerInputChildContext(identity: ProducerInputChi
         locator: 'child network namespace',
       });
     /**
-     * Presence is established before this deeply readonly host view crosses a callback boundary.
+     Presence is established before this deeply readonly host view crosses a callback boundary.
      */
     const observed: readonly Readonly<NetworkInterfaceInfo>[] = addresses;
     if (observed.some(function routed(address): boolean {

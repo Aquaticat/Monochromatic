@@ -1,14 +1,14 @@
 /**
- * Tests for the bench draw and the width sweep it runs.
- *
- * Both decide what a width comparison MEASURES, and both fail silently: a draw
- * that varied between runs would compare widths over different samples and
- * still print a clean table, and a sweep that stopped at the old roster length
- * would quietly stop measuring the widest case the day a model is added.
- *
- * Fixtures are invented. No corpus content appears here.
- *
- * @module
+ Tests for the bench draw and the width sweep it runs.
+ 
+ Both decide what a width comparison MEASURES, and both fail silently: a draw
+ that varied between runs would compare widths over different samples and
+ still print a clean table, and a sweep that stopped at the old roster length
+ would quietly stop measuring the widest case the day a model is added.
+ 
+ Fixtures are invented. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -28,20 +28,20 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Builds one drawable slice of a given size.
- *
- * @param entryId - entry it belongs to
- *
- * @param index - position within that entry
- *
- * @param size - source characters
- *
- * @returns Slice the draw can order
- *
- * @example
- * ```ts
- * const slice = sized({ entryId: 'Mittens', index: 0, size: 40, },);
- * ```
+ Builds one drawable slice of a given size.
+ 
+ @param entryId - entry it belongs to
+ 
+ @param index - position within that entry
+ 
+ @param size - source characters
+ 
+ @returns Slice the draw can order
+ 
+ @example
+ ```ts
+ const slice = sized({ entryId: 'Mittens', index: 0, size: 40, },);
+ ```
  */
 function sized(
   {
@@ -62,8 +62,8 @@ function sized(
 }
 
 /**
- * Twenty slices spanning one to twenty characters, in scrambled order so an
- * accidental dependence on input order shows up.
+ Twenty slices spanning one to twenty characters, in scrambled order so an
+ accidental dependence on input order shows up.
  */
 const SPREAD: readonly DrawableSlice[] = Array.from(
   { length: 20, },
@@ -109,7 +109,7 @@ await describe({
         + 'give this, since the input order is the corpus listing',
       fn: async () => {
         /**
-         * Three same-size slices, presented worst-first.
+         Three same-size slices, presented worst-first.
          */
         const tied: readonly DrawableSlice[] = [
           sized({
@@ -202,7 +202,7 @@ await describe({
         + 'would report every width as agreeing perfectly',
       fn: async () => {
         /**
-         * What drawFromNothing raised, read for its class as well as its wording.
+         What drawFromNothing raised, read for its class as well as its wording.
          */
         const refusalOfDrawFromNothing = caught(function drawFromNothing(): void {
           pickSpreadSample({
@@ -267,7 +267,7 @@ await describe({
         + 'width and reporting a comparison',
       fn: async () => {
         /**
-         * What benchOneModel raised, read for its class as well as its wording.
+         What benchOneModel raised, read for its class as well as its wording.
          */
         const refusalOfBenchOneModel = caught(function benchOneModel(): void {
           benchWidths({ roster: ['a',], },);

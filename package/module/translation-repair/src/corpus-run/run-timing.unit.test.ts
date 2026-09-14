@@ -1,16 +1,16 @@
 /**
- * Tests for reading a run's own timing lines back, which is what `#215` built
- * so a run could say where its wall-clock went.
- *
- * THE OVERLAP CASE IS THE POINT. Achieved concurrency is an overlap count over
- * call intervals, and before `#215` a completion line said only when a call
- * ended, so no interval existed and the question had no answer. The figures
- * asserted here are hand-computed from the fixture rather than recorded from a
- * run, so a change in the sweep fails the case instead of moving the target.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading a run's own timing lines back, which is what `#215` built
+ so a run could say where its wall-clock went.
+ 
+ THE OVERLAP CASE IS THE POINT. Achieved concurrency is an overlap count over
+ call intervals, and before `#215` a completion line said only when a call
+ ended, so no interval existed and the question had no answer. The figures
+ asserted here are hand-computed from the fixture rather than recorded from a
+ run, so a change in the sweep fails the case instead of moving the target.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -30,49 +30,49 @@ import {
 //region Fixtures
 
 /**
- * A round line exactly as `runGatherRound` writes it.
+ A round line exactly as `runGatherRound` writes it.
  */
 const ROUND_LINE = '[info] [2026-08-25T10:00:30.000Z] [translation-repair] [editor] '
   + 'editor round: 6/7 heard, 91402ms total, 61401ms to quorum, 30001ms in grace';
 
 /**
- * A completion line as `reportStreamProgress` writes it since `#215`.
+ A completion line as `reportStreamProgress` writes it since `#215`.
  */
 const TIMED_CALL_LINE = '[info] [2026-08-25T10:00:10.000Z] [translation-repair] '
   + '[reportStreamProgress] stream hf:whiskers: completed, elapsed 10000ms, firstByte 40ms, '
   + 'maxGap 4ms, 512 raw chars, 0 unreadable frames, 40 content chars, 7 reasoning chars';
 
 /**
- * A completion line as every log written before `#215` carries it, with no
- * duration anywhere on it.
+ A completion line as every log written before `#215` carries it, with no
+ duration anywhere on it.
  */
 const UNTIMED_CALL_LINE = '[info] [2026-08-25T10:00:11.000Z] [translation-repair] '
   + '[reportStreamProgress] stream hf:mittens: completed, firstByte 40ms, maxGap 4ms, '
   + '512 raw chars, 0 unreadable frames, 40 content chars, 7 reasoning chars';
 
 /**
- * Base instant the interval fixtures are measured from.
+ Base instant the interval fixtures are measured from.
  */
 const BASE_MS = Date.parse('2026-08-25T10:00:00.000Z',);
 
 /**
- * Milliseconds in a second, so the interval fixtures read as seconds.
+ Milliseconds in a second, so the interval fixtures read as seconds.
  */
 const SECOND = 1_000;
 
 /**
- * Builds one call interval.
- *
- * @param endsAtSeconds - seconds past the base instant the call ended
- *
- * @param ranSeconds - how long the call ran
- *
- * @returns Call the sweep can read
- *
- * @example
- * ```ts
- * const call = callRunning({ endsAtSeconds: 10, ranSeconds: 10, },);
- * ```
+ Builds one call interval.
+ 
+ @param endsAtSeconds - seconds past the base instant the call ended
+ 
+ @param ranSeconds - how long the call ran
+ 
+ @returns Call the sweep can read
+ 
+ @example
+ ```ts
+ const call = callRunning({ endsAtSeconds: 10, ranSeconds: 10, },);
+ ```
  */
 function callRunning(
   {
@@ -103,7 +103,7 @@ await describe({
           name: 'reads the stage, the ratio and all three durations off a round line',
           fn: async () => {
             /**
-             * What the line said.
+             What the line said.
              */
             const reading = readRoundTiming({ line: ROUND_LINE, },);
             if (reading.kind !== 'round')
@@ -180,7 +180,7 @@ await describe({
           name: 'reads the label, outcome, end instant and duration off a completion line',
           fn: async () => {
             /**
-             * What the line said.
+             What the line said.
              */
             const reading = readCallTiming({ line: TIMED_CALL_LINE, },);
             if (reading.kind !== 'timed')
@@ -219,7 +219,7 @@ await describe({
             + 'reports its own blind spot instead of reporting the readable half as the whole',
           fn: async () => {
             /**
-             * Every timing line a mixed log holds.
+             Every timing line a mixed log holds.
              */
             const reading = readRunTiming({
               lines: [
@@ -247,7 +247,7 @@ await describe({
             + 'summed duration divided by a span could tell apart from steady single-file work',
           fn: async () => {
             /**
-             * Hand-computed fixture: peak 2 during [2,8], idle during [10,15].
+             Hand-computed fixture: peak 2 during [2,8], idle during [10,15].
              */
             const flight = measureInFlight({
               calls: [
@@ -270,7 +270,7 @@ await describe({
             + 'difference between a run that fans out and one that works strictly single-file',
           fn: async () => {
             /**
-             * Back-to-back calls: one ends exactly where the next begins.
+             Back-to-back calls: one ends exactly where the next begins.
              */
             const flight = measureInFlight({
               calls: [

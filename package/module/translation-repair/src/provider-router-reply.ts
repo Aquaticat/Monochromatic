@@ -7,53 +7,53 @@ import type { ProviderName, } from './provider-name.ts';
 // line budget.
 
 /**
- * One answer plus the provider that produced it.
- *
- * THE PROVIDER TRAVELS WITH THE REPLY because the schema re-ask needs to know
- * where NOT to ask again, and nothing in the reply itself records it.
- *
- * @example
- * ```ts
- * const answered: RoutedReply = { provider: 'hyper', reply, };
- * ```
+ One answer plus the provider that produced it.
+ 
+ THE PROVIDER TRAVELS WITH THE REPLY because the schema re-ask needs to know
+ where NOT to ask again, and nothing in the reply itself records it.
+ 
+ @example
+ ```ts
+ const answered: RoutedReply = { provider: 'hyper', reply, };
+ ```
  */
 export type RoutedReply = {
   /**
-   * Provider that served this call.
+   Provider that served this call.
    */
   readonly provider: ProviderName;
 
   /**
-   * What it answered.
+   What it answered.
    */
   readonly reply: ChatTextReply;
 };
 
 /**
- * What a re-ask came back with.
- *
- * A NAMED REFUSAL RATHER THAN AN ABSENT REPLY, because the two are different
- * facts: the provider was asked and said no on budget, which the caller keeps
- * the first answer over, as opposed to never having been asked.
- *
- * @example
- * ```ts
- * const asked: ReAskReply = { kind: 'budget-refused', };
- * ```
+ What a re-ask came back with.
+ 
+ A NAMED REFUSAL RATHER THAN AN ABSENT REPLY, because the two are different
+ facts: the provider was asked and said no on budget, which the caller keeps
+ the first answer over, as opposed to never having been asked.
+ 
+ @example
+ ```ts
+ const asked: ReAskReply = { kind: 'budget-refused', };
+ ```
  */
 export type ReAskReply = {
   /**
-   * Provider answered.
+   Provider answered.
    */
   readonly kind: 'replied';
 
   /**
-   * What it said.
+   What it said.
    */
   readonly reply: ChatTextReply;
 } | {
   /**
-   * Provider refused on budget, and its hold has started.
+   Provider refused on budget, and its hold has started.
    */
   readonly kind: 'budget-refused';
 };

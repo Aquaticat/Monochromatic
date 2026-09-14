@@ -55,27 +55,27 @@ import { detectRefusalShape, } from './refusal.ts';
 //   what was read (`json-false-start.ts`, the seventeenth class).
 
 /**
- * Logger root for the provider-neutral reply reader.
+ Logger root for the provider-neutral reply reader.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Usage fragment carried onto every outcome, present only when reported.
- *
- * @param reply - reply whose usage is forwarded
- *
- * @returns Spreadable fragment carrying usage, or nothing
- *
- * @example
- * ```ts
- * const spread = usageSpreadOf({ reply, },);
- * ```
+ Usage fragment carried onto every outcome, present only when reported.
+ 
+ @param reply - reply whose usage is forwarded
+ 
+ @returns Spreadable fragment carrying usage, or nothing
+ 
+ @example
+ ```ts
+ const spread = usageSpreadOf({ reply, },);
+ ```
  */
 function usageSpreadOf(
   { reply, }: { readonly reply: ChatTextReply; },
 ): Pick<ChatTextReply, 'usage'> {
   /**
-   * Usage as the provider reported it, absent when it did not.
+   Usage as the provider reported it, absent when it did not.
    */
   const { usage, } = reply;
 
@@ -83,27 +83,27 @@ function usageSpreadOf(
 }
 
 /**
- * Names why the model stopped, when the provider said, for a mismatch detail.
- *
- * A REPLY THAT STOPPED EARLY IS NOT A MALFORMED ONE, and the mismatch reason
- * must preserve that distinction: token-limit markers are refused before
- * parsing, while other stop reasons are retained here for content that does
- * not parse.
- *
- * @param reply - reply whose stop reason is named
- *
- * @returns Clause to append to a detail, empty when the provider said nothing
- *
- * @example
- * ```ts
- * const stopped = stoppedNote({ reply, },);
- * ```
+ Names why the model stopped, when the provider said, for a mismatch detail.
+ 
+ A REPLY THAT STOPPED EARLY IS NOT A MALFORMED ONE, and the mismatch reason
+ must preserve that distinction: token-limit markers are refused before
+ parsing, while other stop reasons are retained here for content that does
+ not parse.
+ 
+ @param reply - reply whose stop reason is named
+ 
+ @returns Clause to append to a detail, empty when the provider said nothing
+ 
+ @example
+ ```ts
+ const stopped = stoppedNote({ reply, },);
+ ```
  */
 function stoppedNote(
   { reply, }: { readonly reply: ChatTextReply; },
 ): string {
   /**
-   * Reason as the provider delivered it, absent when it omitted one.
+   Reason as the provider delivered it, absent when it omitted one.
    */
   const { finishReason, } = reply;
 
@@ -113,21 +113,21 @@ function stoppedNote(
 }
 
 /**
- * Whether the provider says generation ended at its token ceiling.
- *
- * Anthropic Messages reports `max_tokens`;
- * OpenAI-compatible Chat Completions reports `length`.
- * Either marker invalidates even parseable content because syntax does not
- * prove every intended member was generated.
- *
- * @param reply - needed because provider protocol chooses the stop-reason spelling
- *
- * @returns Whether callers must refuse this answer regardless of parse result
- *
- * @example
- * ```ts
- * isTruncatingFinishReason({ reply: { text: '{}', finishReason: 'max_tokens', }, },);
- * ```
+ Whether the provider says generation ended at its token ceiling.
+ 
+ Anthropic Messages reports `max_tokens`;
+ OpenAI-compatible Chat Completions reports `length`.
+ Either marker invalidates even parseable content because syntax does not
+ prove every intended member was generated.
+ 
+ @param reply - needed because provider protocol chooses the stop-reason spelling
+ 
+ @returns Whether callers must refuse this answer regardless of parse result
+ 
+ @example
+ ```ts
+ isTruncatingFinishReason({ reply: { text: '{}', finishReason: 'max_tokens', }, },);
+ ```
  */
 function isTruncatingFinishReason(
   { reply, }: { readonly reply: ChatTextReply; },
@@ -137,24 +137,24 @@ function isTruncatingFinishReason(
 }
 
 /**
- * Reads one raw reply into the outcome a caller acts on.
- *
- * REFUSALS AND MISMATCHES ARE DATA, never exceptions: calling unreliable models
- * is what this pipeline does, so an answer it cannot use is an ordinary result
- * and only provider protocol failures throw. Nothing here throws at all.
- *
- * @param modelId - model that produced this reply, for the log lines only
- *
- * @param reply - raw text reply, whichever provider served it
- *
- * @param validate - caller's guard admitting parsed content
- *
- * @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
- *
- * @example
- * ```ts
- * const outcome = readJsonOutcome({ modelId, reply, validate: isVerdict, },);
- * ```
+ Reads one raw reply into the outcome a caller acts on.
+ 
+ REFUSALS AND MISMATCHES ARE DATA, never exceptions: calling unreliable models
+ is what this pipeline does, so an answer it cannot use is an ordinary result
+ and only provider protocol failures throw. Nothing here throws at all.
+ 
+ @param modelId - model that produced this reply, for the log lines only
+ 
+ @param reply - raw text reply, whichever provider served it
+ 
+ @param validate - caller's guard admitting parsed content
+ 
+ @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
+ 
+ @example
+ ```ts
+ const outcome = readJsonOutcome({ modelId, reply, validate: isVerdict, },);
+ ```
  */
 export function readJsonOutcome<ValueT,>(
   {
@@ -168,7 +168,7 @@ export function readJsonOutcome<ValueT,>(
   },
 ): ChatJsonOutcome<ValueT> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: readJsonOutcome.name,
@@ -176,7 +176,7 @@ export function readJsonOutcome<ValueT,>(
   },);
 
   /**
-   * Usage spread carried onto every outcome for budget observability.
+   Usage spread carried onto every outcome for budget observability.
    */
   const usageSpread = usageSpreadOf({ reply, },);
 
@@ -193,7 +193,7 @@ export function readJsonOutcome<ValueT,>(
 
   if (isTruncatingFinishReason({ reply, },)) {
     /**
-     * Provider marker retained as evidence without inspecting answer content.
+     Provider marker retained as evidence without inspecting answer content.
      */
     const stopped = stoppedNote({ reply, },);
     rl.debug(`${modelId}: schema-mismatch (truncated completion)${stopped}`,);
@@ -207,9 +207,9 @@ export function readJsonOutcome<ValueT,>(
   }
 
   /**
-   * Answer channel with any embedded thinking block split off;
-   * refusal scanning and parsing judge the answer,
-   * never the deliberation.
+   Answer channel with any embedded thinking block split off;
+   refusal scanning and parsing judge the answer,
+   never the deliberation.
    */
   const {
     answer,
@@ -229,8 +229,8 @@ export function readJsonOutcome<ValueT,>(
   }
 
   /**
-   * Fence-stripped answer, with any truncated channel marker removed and
-   * reported rather than silently dropped.
+   Fence-stripped answer, with any truncated channel marker removed and
+   reported rather than silently dropped.
    */
   const {
     content,
@@ -241,8 +241,8 @@ export function readJsonOutcome<ValueT,>(
     rl.info(`${modelId}: stripped channel marker ${JSON.stringify(marker,)} ahead of JSON`,);
 
   /**
-   * Parse attempt over the unwrapped answer, fence-stripped a SECOND time
-   * because the first pass was looking at the marker.
+   Parse attempt over the unwrapped answer, fence-stripped a SECOND time
+   because the first pass was looking at the marker.
    */
   const attempt = parseAnswerJson({
     text: (marker === '') ? content : stripCodeFence({ text: content, },),
@@ -250,7 +250,7 @@ export function readJsonOutcome<ValueT,>(
 
   if (!attempt.parsed) {
     /**
-     * Refusal classification of the unparseable answer.
+     Refusal classification of the unparseable answer.
      */
     const scan = detectRefusalShape({ text: answer, },);
 
@@ -265,7 +265,7 @@ export function readJsonOutcome<ValueT,>(
     }
 
     /**
-     * Why the model stopped, when the provider said, named in the detail.
+     Why the model stopped, when the provider said, named in the detail.
      */
     const stopped = stoppedNote({ reply, },);
     rl.debug(`${modelId}: schema-mismatch (unparseable)${stopped}`,);
@@ -287,7 +287,7 @@ export function readJsonOutcome<ValueT,>(
   }
 
   /**
-   * Parsed content awaiting the caller's guard.
+   Parsed content awaiting the caller's guard.
    */
   const candidate = attempt.value;
 

@@ -1,8 +1,8 @@
 /**
- * Tests for the shared success-status reading both clients ask before they
- * treat a body as an answer.
- *
- * @module
+ Tests for the shared success-status reading both clients ask before they
+ treat a body as an answer.
+ 
+ @module
  */
 
 import {

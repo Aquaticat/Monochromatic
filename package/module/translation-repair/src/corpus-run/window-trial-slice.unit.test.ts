@@ -1,16 +1,16 @@
 /**
- * Tests for one slice's three arms.
- *
- * WHAT THESE PIN is the property the whole trial rests on: the slate is bought
- * ONCE and all three arms judge that same slate. Until `#109` split the stage,
- * asking a slice twice resampled the candidates, so two answers differed in the
- * slate as well as the evidence and no reading could say which moved the
- * verdict. A regression here would not fail loudly; it would produce a
- * confident number from a confounded comparison, which is worse.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for one slice's three arms.
+ 
+ WHAT THESE PIN is the property the whole trial rests on: the slate is bought
+ ONCE and all three arms judge that same slate. Until `#109` split the stage,
+ asking a slice twice resampled the candidates, so two answers differed in the
+ slate as well as the evidence and no reading could say which moved the
+ verdict. A regression here would not fail loudly; it would produce a
+ confident number from a confounded comparison, which is worse.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { mkdtemp, } from 'node:fs/promises';
@@ -39,17 +39,17 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Logger the arms write to.
+ Logger the arms write to.
  */
 const l = tagged({ tag: 'window-trial-slice-test', },);
 
 /**
- * Schema name the producing half asks translators for.
+ Schema name the producing half asks translators for.
  */
 const TRANSLATE_SCHEMA = 'translation_report';
 
 /**
- * Rosters every case uses.
+ Rosters every case uses.
  */
 const MODELS = {
   translatorModelIds: ['hf:cat/Cat-A',
@@ -64,20 +64,20 @@ const MODELS = {
 };
 
 /**
- * Builds one slice pair carrying given texts.
- *
- * @param sliceIndex - position in the document
- *
- * @param source - original wording
- *
- * @param target - archive wording
- *
- * @returns Pair shaped like one preparation produces
- *
- * @example
- * ```ts
- * const pair = pairOf({ sliceIndex: 0, source: '猫。', target: 'Cat.', },);
- * ```
+ Builds one slice pair carrying given texts.
+ 
+ @param sliceIndex - position in the document
+ 
+ @param source - original wording
+ 
+ @param target - archive wording
+ 
+ @returns Pair shaped like one preparation produces
+ 
+ @example
+ ```ts
+ const pair = pairOf({ sliceIndex: 0, source: '猫。', target: 'Cat.', },);
+ ```
  */
 function pairOf(
   {
@@ -109,7 +109,7 @@ function pairOf(
 }
 
 /**
- * Three-slice document, so the middle slice has a neighbour either way.
+ Three-slice document, so the middle slice has a neighbour either way.
  */
 const SLICES: readonly ChunkPair[] = [
   pairOf({
@@ -130,14 +130,14 @@ const SLICES: readonly ChunkPair[] = [
 ];
 
 /**
- * Client whose translators drift on every call, so a rebought slate would show.
- *
- * @returns Client plus the judge sheets and translator call count
- *
- * @example
- * ```ts
- * const rig = driftingClient();
- * ```
+ Client whose translators drift on every call, so a rebought slate would show.
+ 
+ @returns Client plus the judge sheets and translator call count
+ 
+ @example
+ ```ts
+ const rig = driftingClient();
+ ```
  */
 function driftingClient(): {
   readonly client: SyntheticClient;
@@ -145,13 +145,13 @@ function driftingClient(): {
   readonly served: { count: number; };
 } {
   /**
-   * Translator calls served, which drives the drift and is itself the evidence
-   * that the slate was bought once.
+   Translator calls served, which drives the drift and is itself the evidence
+   that the slate was bought once.
    */
   const served = { count: 0, };
 
   /**
-   * Sheets the judges received.
+   Sheets the judges received.
    */
   const judgeSheets: string[] = [];
 
@@ -174,7 +174,7 @@ function driftingClient(): {
           served.count += 1;
 
           /**
-           * Rendering that differs on every call.
+           Rendering that differs on every call.
            */
           const value: unknown = {
             translation: `A fresh rendering number ${String(served.count,)}.`,
@@ -200,8 +200,8 @@ function driftingClient(): {
           .join('\n',),);
 
         /**
-         * Ballot declining everything, so the archive stands and no case here
-         * depends on which candidate wins.
+         Ballot declining everything, so the archive stands and no case here
+         depends on which candidate wins.
          */
         const ballot: unknown = {
           best: 0,
@@ -225,14 +225,14 @@ function driftingClient(): {
 }
 
 /**
- * Fresh throwaway ledger path.
- *
- * @returns Path inside a new temporary directory
- *
- * @example
- * ```ts
- * const path = await freshLedger();
- * ```
+ Fresh throwaway ledger path.
+ 
+ @returns Path inside a new temporary directory
+ 
+ @example
+ ```ts
+ const path = await freshLedger();
+ ```
  */
 async function freshLedger(): Promise<string> {
   return join(
@@ -245,20 +245,20 @@ async function freshLedger(): Promise<string> {
 }
 
 /**
- * Arms already bought, keyed the way the ledger keys them.
- *
- * THROUGH `trialKey` RATHER THAN A LITERAL, because a test that spells the key
- * itself agrees with nothing: the runner and the ledger once disagreed on the
- * separator and every hand-written fixture passed anyway.
- *
- * @param arms - arms to mark bought for the slice every case uses
- *
- * @returns Key set shaped like `completedArms` returns
- *
- * @example
- * ```ts
- * const done = doneFor({ arms: [TRIAL_ARMS.wide,], },);
- * ```
+ Arms already bought, keyed the way the ledger keys them.
+ 
+ THROUGH `trialKey` RATHER THAN A LITERAL, because a test that spells the key
+ itself agrees with nothing: the runner and the ledger once disagreed on the
+ separator and every hand-written fixture passed anyway.
+ 
+ @param arms - arms to mark bought for the slice every case uses
+ 
+ @returns Key set shaped like `completedArms` returns
+ 
+ @example
+ ```ts
+ const done = doneFor({ arms: [TRIAL_ARMS.wide,], },);
+ ```
  */
 function doneFor(
   { arms, }: { readonly arms: readonly string[]; },
@@ -327,7 +327,7 @@ await describe({
         },);
 
         /**
-         * Sheets carrying the wider window.
+         Sheets carrying the wider window.
          */
         const wide = rig.judgeSheets
           .filter(function carries(sheet,) {
@@ -440,7 +440,7 @@ await describe({
         const ledgerPath = await freshLedger();
 
         /**
-         * First run, which buys all three arms and writes them.
+         First run, which buys all three arms and writes them.
          */
         const first = driftingClient();
         await runSliceArms({
@@ -459,7 +459,7 @@ await describe({
         },);
 
         /**
-         * Second run, resuming off exactly what the first wrote.
+         Second run, resuming off exactly what the first wrote.
          */
         const second = driftingClient();
         const rows = await runSliceArms({
@@ -520,7 +520,7 @@ await describe({
         const rig = driftingClient();
 
         /**
-         * Attempt on a lone slice, which has no window to widen to.
+         Attempt on a lone slice, which has no window to widen to.
          */
         const attempt = runSliceArms({
           client: rig.client,

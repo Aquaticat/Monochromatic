@@ -14,30 +14,30 @@ import { fileURLToPath, } from 'node:url';
 import spawn, { SubprocessError, } from 'nano-spawn';
 
 /**
- * Tests consume the separately built bootstrap, never sibling implementation source.
+ Tests consume the separately built bootstrap, never sibling implementation source.
  */
 const CANDIDATE = fileURLToPath(new URL(
   '../../node_modules/.producer-bootstrap-candidate/producer-prepare.mjs',
   import.meta.url,
 ));
 /**
- * A guard test cannot wait indefinitely for unintended native work.
+ A guard test cannot wait indefinitely for unintended native work.
  */
 const CLI_TEST_TIMEOUT = 30_000;
 
 /**
- * Unexpected execution failures cannot become untyped promise rejections.
+ Unexpected execution failures cannot become untyped promise rejections.
  */
 class InputCliCompletionError extends Error {
   /**
-   * The class owns its fixed diagnostic and interpolates no rejected value.
+   The class owns its fixed diagnostic and interpolates no rejected value.
    */
   readonly messageNamesOnly: true = true;
   /**
-   * @example
-   * ```ts
-   * throw new InputCliCompletionError();
-   * ```
+   @example
+   ```ts
+   throw new InputCliCompletionError();
+   ```
    */
   constructor() {
     super('Native CLI completion did not provide an Error object.');
@@ -46,61 +46,61 @@ class InputCliCompletionError extends Error {
 }
 
 /**
- * Disposable compiled CLI fixture shared only by tests.
+ Disposable compiled CLI fixture shared only by tests.
  */
 export type InputCliFixture = AsyncDisposable & {
   /**
-   * Private fixture home and working directory.
+   Private fixture home and working directory.
    */
   readonly directory: string;
   /**
-   * Copied compiled entry retains its required standalone filename.
+   Copied compiled entry retains its required standalone filename.
    */
   readonly executable: string;
 };
 
 /**
- * Only ordinary native exits become assertion data; spawn errors and signals still throw.
+ Only ordinary native exits become assertion data; spawn errors and signals still throw.
  */
 type InputCliResult = {
   /**
-   * Zero or an actual nonzero process exit, never a timeout sentinel.
+   Zero or an actual nonzero process exit, never a timeout sentinel.
    */
   readonly status: number;
   /**
-   * Captured stdout with nano-spawn's final newline normalization.
+   Captured stdout with nano-spawn's final newline normalization.
    */
   readonly stdout: string;
   /**
-   * Captured stderr with nano-spawn's final newline normalization.
+   Captured stderr with nano-spawn's final newline normalization.
    */
   readonly stderr: string;
 };
 
 /**
- * Copies the built bootstrap into one disposable test home.
- *
- * @returns Isolated compiled CLI fixture
- *
- * @example
- * ```ts
- * await using fixture = await inputCliFixture();
- * ```
+ Copies the built bootstrap into one disposable test home.
+ 
+ @returns Isolated compiled CLI fixture
+ 
+ @example
+ ```ts
+ await using fixture = await inputCliFixture();
+ ```
  */
 export async function inputCliFixture(): Promise<InputCliFixture> {
   /**
-   * Missing build output fails rather than skipping the test.
+   Missing build output fails rather than skipping the test.
    */
   const bytes = await readFile(CANDIDATE);
   /**
-   * Each test owns writable state without ambient application configuration.
+   Each test owns writable state without ambient application configuration.
    */
   const directory = await mkdtemp(join(
     tmpdir(),
     'preparation-cli-test-',
   ));
   /**
-   * The only executed package file is the compiled standalone artifact.
+   The only executed package file is the compiled standalone artifact.
    */
   const executable = join(
     directory,
@@ -130,20 +130,20 @@ export async function inputCliFixture(): Promise<InputCliFixture> {
 }
 
 /**
- * Invokes the compiled CLI with isolated environment and native argv.
- *
- * @param fixture - isolated compiled entry and home
- *
- * @param arguments_ - exact test tokens, never shell text
- *
- * @returns Ordinary exit and newline-normalized output for assertions
- *
- * @throws Error on spawn failure, timeout, signal or an unexpected execution failure
- *
- * @example
- * ```ts
- * const result = await inputCli({ fixture, arguments_: ['--help'] });
- * ```
+ Invokes the compiled CLI with isolated environment and native argv.
+ 
+ @param fixture - isolated compiled entry and home
+ 
+ @param arguments_ - exact test tokens, never shell text
+ 
+ @returns Ordinary exit and newline-normalized output for assertions
+ 
+ @throws Error on spawn failure, timeout, signal or an unexpected execution failure
+ 
+ @example
+ ```ts
+ const result = await inputCli({ fixture, arguments_: ['--help'] });
+ ```
  */
 export async function inputCli({
   fixture,
@@ -153,8 +153,8 @@ export async function inputCli({
   readonly arguments_: readonly string[];
 }): Promise<InputCliResult> {
   /**
-   * Nano-spawn merges environments; Node omits explicitly undefined entries.
-   * Enumerate parent names without copying their values before adding the exact fixture environment.
+   Nano-spawn merges environments; Node omits explicitly undefined entries.
+   Enumerate parent names without copying their values before adding the exact fixture environment.
    */
   const cleared = Object.fromEntries(Object.keys(process.env)
     .map(function unset(name) {
@@ -165,7 +165,7 @@ export async function inputCli({
     }));
   try {
     /**
-     * The existing asynchronous process utility owns native completion and captured streams.
+     The existing asynchronous process utility owns native completion and captured streams.
      */
     const result = await spawn(
       process.execPath,
@@ -197,7 +197,7 @@ export async function inputCli({
     if (!(error instanceof SubprocessError))
       throw error;
     /**
-     * Only an ordinary exit may become assertion data; cancellation and native failures remain errors.
+     Only an ordinary exit may become assertion data; cancellation and native failures remain errors.
      */
     const {
       exitCode,
@@ -218,18 +218,18 @@ export async function inputCli({
 }
 
 /**
- * Writes fixture launch bytes and supplies their independently known identity.
- *
- * @param fixture - isolated fixture home
- *
- * @param bytes - owned test input, never corpus passages
- *
- * @returns Explicit launch argv
- *
- * @example
- * ```ts
- * const arguments_ = await inputLaunchArguments({ fixture, bytes: new TextEncoder().encode('{}') });
- * ```
+ Writes fixture launch bytes and supplies their independently known identity.
+ 
+ @param fixture - isolated fixture home
+ 
+ @param bytes - owned test input, never corpus passages
+ 
+ @returns Explicit launch argv
+ 
+ @example
+ ```ts
+ const arguments_ = await inputLaunchArguments({ fixture, bytes: new TextEncoder().encode('{}') });
+ ```
  */
 export async function inputLaunchArguments({
   fixture,
@@ -239,7 +239,7 @@ export async function inputLaunchArguments({
   readonly bytes: Uint8Array;
 }): Promise<readonly string[]> {
   /**
-   * This file has no corpus or user configuration authority.
+   This file has no corpus or user configuration authority.
    */
   const path = join(
     fixture.directory,

@@ -1,44 +1,44 @@
 /**
- * Guard that the verse rule reaches the requests `translateDocument` sends,
- * on both halves of a governed round, and reaches neither half of an
- * ungoverned one.
- *
- * WHY THIS FILE EXISTS: until 2026-08-22 the rule reached the translators and
- * no judge at all. `judgeTranslateSlate` had no line-structure parameter, so
- * there was nothing to forward and nothing to notice missing. The damage was
- * not silence but contradiction: criterion four tells every judge that a shape
- * the ORIGINAL does not have is not a fault, and on a verse slice that is the
- * right rule pointed the wrong way, since there the ORIGINAL is what carries
- * the line structure and the archive page is what merged it. A translator
- * obeying the rule unmerges, and its judge had been handed a reason to prefer
- * the merged rival. Measured under `#162`: 211 slices across 34 entries of the
- * 92 pairs are governed.
- *
- * WHY IT IS NOT ENOUGH TO TEST THE HALVES. `translate-judge.unit.test.ts` and
- * `translate-stage.unit.test.ts` each carry a governed and an ungoverned round,
- * and both call their function with the flag written out by hand. Neither can
- * see whether a real document ever DERIVES that flag and passes it down. The
- * chain here is `translateDocument` to `attemptTranslateSlice` to
- * `settleTranslateSlice`, which reads `prepared.lineStructuredSliceIndices`, to
- * `runTranslateStage`, which hands both halves their copy. Any link dropping it
- * leaves every case in those files passing.
- *
- * WHAT IS PINNED, read off the recorded request rather than off the driver's
- * return value: a governed document's JUDGE sheets carry
- * `TRANSLATE_LINE_STRUCTURE_CRITERION`, its TRANSLATOR sheets carry
- * `TRANSLATE_LINE_STRUCTURE_RULE`, and an ungoverned document's sheets carry
- * neither. The translator half is the control that makes the judge half
- * legible: it is the wiring `#150` landed and this fixture's governance is
- * only a claim until something production decides agrees with it.
- *
- * READING THE RETURN VALUE WOULD PROVE NOTHING. `#107` built a judging window,
- * keyed it, and never passed it to the call it was keyed for; nothing failed
- * for weeks because every test read what the driver returned, which the missing
- * wiring never touched.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Guard that the verse rule reaches the requests `translateDocument` sends,
+ on both halves of a governed round, and reaches neither half of an
+ ungoverned one.
+ 
+ WHY THIS FILE EXISTS: until 2026-08-22 the rule reached the translators and
+ no judge at all. `judgeTranslateSlate` had no line-structure parameter, so
+ there was nothing to forward and nothing to notice missing. The damage was
+ not silence but contradiction: criterion four tells every judge that a shape
+ the ORIGINAL does not have is not a fault, and on a verse slice that is the
+ right rule pointed the wrong way, since there the ORIGINAL is what carries
+ the line structure and the archive page is what merged it. A translator
+ obeying the rule unmerges, and its judge had been handed a reason to prefer
+ the merged rival. Measured under `#162`: 211 slices across 34 entries of the
+ 92 pairs are governed.
+ 
+ WHY IT IS NOT ENOUGH TO TEST THE HALVES. `translate-judge.unit.test.ts` and
+ `translate-stage.unit.test.ts` each carry a governed and an ungoverned round,
+ and both call their function with the flag written out by hand. Neither can
+ see whether a real document ever DERIVES that flag and passes it down. The
+ chain here is `translateDocument` to `attemptTranslateSlice` to
+ `settleTranslateSlice`, which reads `prepared.lineStructuredSliceIndices`, to
+ `runTranslateStage`, which hands both halves their copy. Any link dropping it
+ leaves every case in those files passing.
+ 
+ WHAT IS PINNED, read off the recorded request rather than off the driver's
+ return value: a governed document's JUDGE sheets carry
+ `TRANSLATE_LINE_STRUCTURE_CRITERION`, its TRANSLATOR sheets carry
+ `TRANSLATE_LINE_STRUCTURE_RULE`, and an ungoverned document's sheets carry
+ neither. The translator half is the control that makes the judge half
+ legible: it is the wiring `#150` landed and this fixture's governance is
+ only a claim until something production decides agrees with it.
+ 
+ READING THE RETURN VALUE WOULD PROVE NOTHING. `#107` built a judging window,
+ keyed it, and never passed it to the call it was keyed for; nothing failed
+ for weeks because every test read what the driver returned, which the missing
+ wiring never touched.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -63,14 +63,14 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the driver under test.
+ Logger for the driver under test.
  */
 const l = tagged({ tag: 'document-verse-rule-reaches-the-wire-test', },);
 
 //region Rosters
 
 /**
- * Models that render each slice.
+ Models that render each slice.
  */
 const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
@@ -79,7 +79,7 @@ const TRANSLATORS: readonly RosterModelId[] = [
 ];
 
 /**
- * Rosters the driver seats for every run here.
+ Rosters the driver seats for every run here.
  */
 const MODELS: TranslateModels = {
   translatorModelIds: TRANSLATORS,
@@ -95,13 +95,13 @@ const MODELS: TranslateModels = {
 //region The governed pair
 
 /**
- * Original built to trip `isLineStructured`, which needs at least five
- * blank-line-separated content blocks with a median length of thirty
- * characters or fewer.
- *
- * NOT A GUESS AT THE PREDICATE. One case here asks the shipped predicate about
- * this exact text, so a fixture that stopped being governed would be reported
- * as a broken fixture rather than passing as a clean null.
+ Original built to trip `isLineStructured`, which needs at least five
+ blank-line-separated content blocks with a median length of thirty
+ characters or fewer.
+ 
+ NOT A GUESS AT THE PREDICATE. One case here asks the shipped predicate about
+ this exact text, so a fixture that stopped being governed would be reported
+ as a broken fixture rather than passing as a clean null.
  */
 const VERSE_SOURCE_TEXT = `## 第一节
 
@@ -119,8 +119,8 @@ const VERSE_SOURCE_TEXT = `## 第一节
 `;
 
 /**
- * Archive translation for it, with its lines already merged the way the page
- * this rule exists for merges them.
+ Archive translation for it, with its lines already merged the way the page
+ this rule exists for merges them.
  */
 const VERSE_TARGET_TEXT = `## Section one
 
@@ -130,8 +130,8 @@ Snow falls on the roof and one ear twitches. The wind stops and it sleeps on.
 `;
 
 /**
- * What every translator answers for the governed document, unmerged the way
- * the rule asks.
+ What every translator answers for the governed document, unmerged the way
+ the rule asks.
  */
 const VERSE_RENDERING = `## Section one
 
@@ -153,8 +153,8 @@ It sleeps on.
 //region The ungoverned pair
 
 /**
- * Original of ordinary prose: one block, nowhere near five, so nothing about
- * it can trip the predicate.
+ Original of ordinary prose: one block, nowhere near five, so nothing about
+ it can trip the predicate.
  */
 const PROSE_SOURCE_TEXT = `## 第一节
 
@@ -162,8 +162,8 @@ const PROSE_SOURCE_TEXT = `## 第一节
 `;
 
 /**
- * Archive translation for it, awkward on purpose so a fresh rendering can
- * never be mistaken for the text already there.
+ Archive translation for it, awkward on purpose so a fresh rendering can
+ never be mistaken for the text already there.
  */
 const PROSE_TARGET_TEXT = `## Section one
 
@@ -172,7 +172,7 @@ deeply and ignoring whoever calls it.
 `;
 
 /**
- * What every translator answers for the ungoverned document.
+ What every translator answers for the ungoverned document.
  */
 const PROSE_RENDERING = `## Section one
 
@@ -184,42 +184,42 @@ The cat dozes in the cardboard box, tail draped beside the radiator, too deeply 
 //region Recording the wire
 
 /**
- * One exchange a run attempted, kept so a case can read what reached the wire.
- *
- * @example
- * ```ts
- * const recorded: RecordedRequest = { schema: 'translation_report', content: 'ORIGINAL...', };
- * ```
+ One exchange a run attempted, kept so a case can read what reached the wire.
+ 
+ @example
+ ```ts
+ const recorded: RecordedRequest = { schema: 'translation_report', content: 'ORIGINAL...', };
+ ```
  */
 type RecordedRequest = {
   /**
-   * Structured-output schema name, which tells a translator exchange from a
-   * judge exchange exactly as the driver's own schema names do.
+   Structured-output schema name, which tells a translator exchange from a
+   judge exchange exactly as the driver's own schema names do.
    */
   readonly schema: string;
 
   /**
-   * Every message's text, joined, so a search reads the whole exchange rather
-   * than one message chosen in advance.
+   Every message's text, joined, so a search reads the whole exchange rather
+   than one message chosen in advance.
    */
   readonly content: string;
 };
 
 /**
- * Builds a client that answers every translator call with one fixed rendering,
- * ballots for the first candidate on every slate, and appends each exchange to
- * `requests` before answering.
- *
- * @param requests - log this client appends every exchange to, in call order
- *
- * @param translatorRendering - text every translator call answers with
- *
- * @returns Client honoring that script
- *
- * @example
- * ```ts
- * const client = recordingClient({ requests: [], translatorRendering: VERSE_RENDERING, },);
- * ```
+ Builds a client that answers every translator call with one fixed rendering,
+ ballots for the first candidate on every slate, and appends each exchange to
+ `requests` before answering.
+ 
+ @param requests - log this client appends every exchange to, in call order
+ 
+ @param translatorRendering - text every translator call answers with
+ 
+ @returns Client honoring that script
+ 
+ @example
+ ```ts
+ const client = recordingClient({ requests: [], translatorRendering: VERSE_RENDERING, },);
+ ```
  */
 function recordingClient(
   {
@@ -238,7 +238,7 @@ function recordingClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Schema this exchange asked for, which names the stage.
+       Schema this exchange asked for, which names the stage.
        */
       const schema = request.responseFormat
         ?.json_schema
@@ -255,7 +255,7 @@ function recordingClient(
 
       if (schema === 'translation_report') {
         /**
-         * Wire reply carrying the scripted rendering.
+         Wire reply carrying the scripted rendering.
          */
         const value: unknown = { translation: translatorRendering, };
         if (!request.validate(value,))
@@ -268,9 +268,9 @@ function recordingClient(
       }
       if (schema === 'candidate_ballot') {
         /**
-         * Ballot naming the first candidate on the slate. WHICH candidate wins
-         * is not this file's question, only what the judges were shown, so any
-         * answer that lets the run finish serves equally well.
+         Ballot naming the first candidate on the slate. WHICH candidate wins
+         is not this file's question, only what the judges were shown, so any
+         answer that lets the run finish serves equally well.
          */
         const ballot: unknown = {
           best: 1,
@@ -295,20 +295,20 @@ function recordingClient(
 }
 
 /**
- * Drives one document and reports the sheets each half was sent.
- *
- * @param sourceText - original document
- *
- * @param targetText - translation as it stands
- *
- * @param translatorRendering - text every translator call answers with
- *
- * @returns Sheets the translators received and the sheets the judges received
- *
- * @example
- * ```ts
- * const { judgeSheets, } = await sheetsFrom({ sourceText, targetText, translatorRendering, },);
- * ```
+ Drives one document and reports the sheets each half was sent.
+ 
+ @param sourceText - original document
+ 
+ @param targetText - translation as it stands
+ 
+ @param translatorRendering - text every translator call answers with
+ 
+ @returns Sheets the translators received and the sheets the judges received
+ 
+ @example
+ ```ts
+ const { judgeSheets, } = await sheetsFrom({ sourceText, targetText, translatorRendering, },);
+ ```
  */
 async function sheetsFrom(
   {
@@ -325,7 +325,7 @@ async function sheetsFrom(
   readonly judgeSheets: readonly string[];
 }> {
   /**
-   * Exchanges this run attempts, filled in as they happen.
+   Exchanges this run attempts, filled in as they happen.
    */
   const requests: RecordedRequest[] = [];
 

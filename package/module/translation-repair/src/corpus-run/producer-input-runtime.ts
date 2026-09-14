@@ -19,20 +19,20 @@ import { isProducerRuntimeManifest, } from './producer-input-runtime-shape.ts';
 //region Actual frozen runtime observation before application import
 
 /**
- * Reads and validates only the exact sealed manifest named by the launch authority.
- *
- * @param dir - fixed runtime mount or host frozen-runtime directory
- *
- * @param expected - independently recorded manifest identity and extent
- *
- * @returns Owned recognized build metadata, never execution approval
- *
- * @throws ProducerInputRunError when bytes, decoding or build schema differ
- *
- * @example
- * ```ts
- * const manifest = await readProducerRuntimeManifest({ dir, expected });
- * ```
+ Reads and validates only the exact sealed manifest named by the launch authority.
+ 
+ @param dir - fixed runtime mount or host frozen-runtime directory
+ 
+ @param expected - independently recorded manifest identity and extent
+ 
+ @returns Owned recognized build metadata, never execution approval
+ 
+ @throws ProducerInputRunError when bytes, decoding or build schema differ
+ 
+ @example
+ ```ts
+ const manifest = await readProducerRuntimeManifest({ dir, expected });
+ ```
  */
 export async function readProducerRuntimeManifest({
   dir,
@@ -42,7 +42,7 @@ export async function readProducerRuntimeManifest({
   readonly expected: ProducerInputFileIdentity;
 },): Promise<ProducerRuntimeManifest> {
   /**
-   * Application inventories remain bounded metadata, not an unlimited host allocation request.
+   Application inventories remain bounded metadata, not an unlimited host allocation request.
    */
   const identity = {
     bytes: expected.bytes,
@@ -54,14 +54,14 @@ export async function readProducerRuntimeManifest({
       locator: 'runtime manifest extent',
     });
   /**
-   * The filename is fixed by the build contract rather than selected from JSON.
+   The filename is fixed by the build contract rather than selected from JSON.
    */
   const path = join(
     dir,
     'sealed-runtime.json'
   );
   /**
-   * No JSON field is interpreted before exact raw bytes are verified.
+   No JSON field is interpreted before exact raw bytes are verified.
    */
   const bytes = await readProducerInputFile({
     path,
@@ -70,7 +70,7 @@ export async function readProducerRuntimeManifest({
   });
   try {
     /**
-     * The manifest is data, and decoder/parser errors must not carry its contents outward.
+     The manifest is data, and decoder/parser errors must not carry its contents outward.
      */
     const value: unknown = JSON.parse(new TextDecoder(
       'utf-8',
@@ -97,20 +97,20 @@ export async function readProducerRuntimeManifest({
 }
 
 /**
- * Rehashes every runtime file and refuses ambient executable or declaration files in the execution directory.
- *
- * @param dir - frozen application directory, never a normal development dist with extra declarations
- *
- * @param manifest - fresh recognized metadata from the independently identified manifest
- *
- * @returns Verified runtime filenames in their manifest order
- *
- * @throws ProducerInputRunError when inventory, native membership or any file identity differs
- *
- * @example
- * ```ts
- * const files = await verifyProducerRuntimeInventory({ dir, manifest });
- * ```
+ Rehashes every runtime file and refuses ambient executable or declaration files in the execution directory.
+ 
+ @param dir - frozen application directory, never a normal development dist with extra declarations
+ 
+ @param manifest - fresh recognized metadata from the independently identified manifest
+ 
+ @returns Verified runtime filenames in their manifest order
+ 
+ @throws ProducerInputRunError when inventory, native membership or any file identity differs
+ 
+ @example
+ ```ts
+ const files = await verifyProducerRuntimeInventory({ dir, manifest });
+ ```
  */
 export async function verifyProducerRuntimeInventory({
   dir,
@@ -121,11 +121,11 @@ export async function verifyProducerRuntimeInventory({
 },): Promise<readonly string[]> {
   try {
     /**
-     * The inventory cannot change through a caller-owned reference while hashing yields.
+     The inventory cannot change through a caller-owned reference while hashing yields.
      */
     const fixed = structuredClone(manifest);
     /**
-     * Duplicate names cannot hide a missing executable.
+     Duplicate names cannot hide a missing executable.
      */
     const names = fixed.files
       .map(function name(file): string { return file.path; });
@@ -135,7 +135,7 @@ export async function verifyProducerRuntimeInventory({
         locator: dir,
       });
     /**
-     * Native metadata and generic inventory must describe the same exact asset.
+     Native metadata and generic inventory must describe the same exact asset.
      */
     const nativeFile = fixed.files
       .find(function native(file): boolean { return file.path
@@ -152,7 +152,7 @@ export async function verifyProducerRuntimeInventory({
         locator: dir,
       });
     /**
-     * A read-only runtime directory is not a license to load unlisted or symlinked files.
+     A read-only runtime directory is not a license to load unlisted or symlinked files.
      */
     const entries = await readdir(
       dir,
@@ -174,7 +174,7 @@ export async function verifyProducerRuntimeInventory({
         locator: dir,
       });
     /**
-     * Serial hashing bounds descriptor use and retains exact inventory order.
+     Serial hashing bounds descriptor use and retains exact inventory order.
      */
     const verifiedFiles = await mapOverlapped({
       items: fixed.files,
@@ -192,7 +192,7 @@ export async function verifyProducerRuntimeInventory({
       },
     });
     /**
-     * Final directory observation catches additions or replacements visible before import.
+     Final directory observation catches additions or replacements visible before import.
      */
     const finalEntries = await readdir(
       dir,
@@ -226,23 +226,23 @@ export async function verifyProducerRuntimeInventory({
 }
 
 /**
- * Cross-checks the executing Node and GNU target before application import.
- * Node and its dynamic libraries have already executed; the trusted host launch owns their pre-start binding.
- *
- * @param manifest - fresh recognized metadata from the independently identified application build
- *
- * @returns Verified Node executable identity
- *
- * @throws ProducerInputRunError when target, embedded versions or executed bytes differ
- *
- * @example
- * ```ts
- * await verifyProducerNodeRuntime(manifest);
- * ```
+ Cross-checks the executing Node and GNU target before application import.
+ Node and its dynamic libraries have already executed; the trusted host launch owns their pre-start binding.
+ 
+ @param manifest - fresh recognized metadata from the independently identified application build
+ 
+ @returns Verified Node executable identity
+ 
+ @throws ProducerInputRunError when target, embedded versions or executed bytes differ
+ 
+ @example
+ ```ts
+ await verifyProducerNodeRuntime(manifest);
+ ```
  */
 export async function verifyProducerNodeRuntime(manifest: ProducerRuntimeManifest): Promise<ProducerInputFileIdentity> {
   /**
-   * Node's report is inspected without serializing its environment or process data.
+   Node's report is inspected without serializing its environment or process data.
    */
   const report: unknown = process.report
     .getReport();

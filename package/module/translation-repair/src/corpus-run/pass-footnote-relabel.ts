@@ -36,56 +36,56 @@ import { normalizeFootnoteIdentifier, } from '../footnote-identifier.ts';
 // to its shape and its line budget.
 
 /**
- * Archive text after the relabel and the reorder, with whether anything
- * changed and what the artifact's findings should say about it.
- *
- * @example
- * ```ts
- * const relabel: RelabelledArchive = { archiveText, changed: false, findings: [], };
- * ```
+ Archive text after the relabel and the reorder, with whether anything
+ changed and what the artifact's findings should say about it.
+ 
+ @example
+ ```ts
+ const relabel: RelabelledArchive = { archiveText, changed: false, findings: [], };
+ ```
  */
 export type RelabelledArchive = {
   /**
-   * Archive text under the original's labels and definition order, or as it
-   * came when nothing changed.
+   Archive text under the original's labels and definition order, or as it
+   came when nothing changed.
    */
   readonly archiveText: string;
 
   /**
-   * Whether the text differs from what came in, so the caller knows to
-   * prepare again.
+   Whether the text differs from what came in, so the caller knows to
+   prepare again.
    */
   readonly changed: boolean;
 
   /**
-   * Preparation findings naming what moved or why nothing did.
+   Preparation findings naming what moved or why nothing did.
    */
   readonly findings: readonly string[];
 
   /**
-   * A refused operation is distinct from a verified no-op.
+   A refused operation is distinct from a verified no-op.
    */
   readonly withheld?: 'correspondence' | 'protected-original' | 'rewrite-validation';
 };
 
 /**
- * Reads the label map off the paired definitions, or off the paired slices
- * where the roster paired no definition.
- *
- * @param definitionPairs - definitions the roster paired, by label
- *
- * @param slices - first preparation's slices
- *
- * @param sourceText - complete source backing the slices
- *
- * @param archiveText - complete archive backing the slices
- *
- * @returns The reading and what it was read off
- *
- * @example
- * ```ts
- * const { reading, basis, } = readRelabel({ definitionPairs, slices, sourceText, archiveText, },);
- * ```
+ Reads the label map off the paired definitions, or off the paired slices
+ where the roster paired no definition.
+ 
+ @param definitionPairs - definitions the roster paired, by label
+ 
+ @param slices - first preparation's slices
+ 
+ @param sourceText - complete source backing the slices
+ 
+ @param archiveText - complete archive backing the slices
+ 
+ @returns The reading and what it was read off
+ 
+ @example
+ ```ts
+ const { reading, basis, } = readRelabel({ definitionPairs, slices, sourceText, archiveText, },);
+ ```
  */
 function readRelabel(
   {
@@ -119,28 +119,28 @@ function readRelabel(
 }
 
 /**
- * Rewrites the archive's footnote labels to the original's and moves its
- * definitions into the original's order, logging what moved or why the
- * archive stands.
- *
- * @param entryId - entry being prepared, for the log
- *
- * @param slices - first preparation's slices
- *
- * @param definitionPairs - definitions the roster paired, by label
- *
- * @param sourceText - original page, whose definition order the archive takes
- *
- * @param archiveText - archive text the first preparation was over
- *
- * @param l - entry logger
- *
- * @returns Archive text to prepare again over when changed
- *
- * @example
- * ```ts
- * const relabel = relabelArchiveFootnotes({ entryId, slices, definitionPairs, sourceText, archiveText, l, },);
- * ```
+ Rewrites the archive's footnote labels to the original's and moves its
+ definitions into the original's order, logging what moved or why the
+ archive stands.
+ 
+ @param entryId - entry being prepared, for the log
+ 
+ @param slices - first preparation's slices
+ 
+ @param definitionPairs - definitions the roster paired, by label
+ 
+ @param sourceText - original page, whose definition order the archive takes
+ 
+ @param archiveText - archive text the first preparation was over
+ 
+ @param l - entry logger
+ 
+ @returns Archive text to prepare again over when changed
+ 
+ @example
+ ```ts
+ const relabel = relabelArchiveFootnotes({ entryId, slices, definitionPairs, sourceText, archiveText, l, },);
+ ```
  */
 function attemptArchiveFootnoteRelabel(
   {
@@ -160,7 +160,7 @@ function attemptArchiveFootnoteRelabel(
   },
 ): RelabelledArchive {
   /**
-   * What the evidence says about the labels, and which evidence.
+   What the evidence says about the labels, and which evidence.
    */
   const {
     reading,
@@ -183,7 +183,7 @@ function attemptArchiveFootnoteRelabel(
     };
   }
   /**
-   * Findings for the slices the reading left out, each logged as it is.
+   Findings for the slices the reading left out, each logged as it is.
    */
   const findings = reading.skipped
     .map(function toFinding(detail,): string {
@@ -191,8 +191,8 @@ function attemptArchiveFootnoteRelabel(
       return `footnotes: left out of the relabel reading: ${detail}`;
     },);
   /**
-   * The map closed over the archive's labels, completed by elimination where
-   * that is forced; an empty map where the labels already agree.
+   The map closed over the archive's labels, completed by elimination where
+   that is forced; an empty map where the labels already agree.
    */
   const closure = closeFootnoteRelabel({
     map: reading.correspondences,
@@ -212,7 +212,7 @@ function attemptArchiveFootnoteRelabel(
     };
   }
   /**
-   * The closed map, empty where the labels already agree.
+   The closed map, empty where the labels already agree.
    */
   const {
     map: closed,
@@ -221,7 +221,7 @@ function attemptArchiveFootnoteRelabel(
     retained,
   } = closure;
   /**
-   * Exact sealed text and its declaration in the original coordinate space.
+   Exact sealed text and its declaration in the original coordinate space.
    */
   const protectedRanges = footnoteProtectedRanges({ text: archiveText, },);
   if (footnoteRenameTouchesOriginal({
@@ -241,7 +241,7 @@ function attemptArchiveFootnoteRelabel(
     };
   }
   /**
-   * The archive under the original's labels.
+   The archive under the original's labels.
    */
   const relabelled = (closed.length > 0)
     ? applyFootnoteRelabel({
@@ -250,11 +250,11 @@ function attemptArchiveFootnoteRelabel(
     },)
     : archiveText;
   /**
-   * Original definition order, read from active syntax rather than raw literals.
+   Original definition order, read from active syntax rather than raw literals.
    */
   const order = definitionLabelOrder({ text: sourceText, },);
   /**
-   * Protection is reparsed after allowed renames, so changed label widths cannot stale its offsets.
+   Protection is reparsed after allowed renames, so changed label widths cannot stale its offsets.
    */
   const reordered = reorderFootnoteDefinitions({
     text: relabelled,
@@ -274,7 +274,7 @@ function attemptArchiveFootnoteRelabel(
     };
   }
   /**
-   * Supplied correspondence rewrites, distinct from identity evidence and operational displacement.
+   Supplied correspondence rewrites, distinct from identity evidence and operational displacement.
    */
   const correspondenceRewrites = correspondences.filter(function changes(relation,): boolean {
     return normalizeFootnoteIdentifier({ identifier: relation.from, },)
@@ -282,7 +282,7 @@ function attemptArchiveFootnoteRelabel(
   },);
   if (correspondenceRewrites.length > 0) {
     /**
-     * Only supplied source correspondences receive the original evidence attribution.
+     Only supplied source correspondences receive the original evidence attribution.
      */
     const spelled = correspondenceRewrites.map(function spell(relabel,): string {
       return `[^${relabel.from}]->[^${relabel.to}]`;
@@ -293,7 +293,7 @@ function attemptArchiveFootnoteRelabel(
   }
   if (eliminated.length > 0) {
     /**
-     * Existing one-pair elimination is not attributed to an unrecorded model vote.
+     Existing one-pair elimination is not attributed to an unrecorded model vote.
      */
     const spelled = eliminated.map(function spell(relabel,): string {
       return `[^${relabel.from}]->[^${relabel.to}]`;
@@ -304,7 +304,7 @@ function attemptArchiveFootnoteRelabel(
   }
   if (retained.length > 0) {
     /**
-     * Fresh labels preserve unmatched archive notes without claiming source correspondence.
+     Fresh labels preserve unmatched archive notes without claiming source correspondence.
      */
     const spelled = retained.map(function spell(move,): string {
       return `[^${move.from}]->[^${move.retainedAs}]`;
@@ -315,7 +315,7 @@ function attemptArchiveFootnoteRelabel(
   }
   if (reordered.changed) {
     /**
-     * The order, spelled.
+     The order, spelled.
      */
     const spelledOrder = order
       .map(function spell(label,): string {
@@ -339,21 +339,21 @@ function attemptArchiveFootnoteRelabel(
 }
 
 /**
- * Applies the complete archive-footnote operation or retains the original bytes with a structured refusal.
- * Unexpected failures propagate; only named rewrite-validation failures become withheld operations.
- *
- * @param input - canonical pages, initial pairing evidence and entry logger
- *
- * @returns Complete candidate or unchanged archive, with actual applied provenance only
- *
- * @example
- * ```ts
- * const result = relabelArchiveFootnotes({ entryId, slices, definitionPairs, sourceText, archiveText, l });
- * ```
+ Applies the complete archive-footnote operation or retains the original bytes with a structured refusal.
+ Unexpected failures propagate; only named rewrite-validation failures become withheld operations.
+ 
+ @param input - canonical pages, initial pairing evidence and entry logger
+ 
+ @returns Complete candidate or unchanged archive, with actual applied provenance only
+ 
+ @example
+ ```ts
+ const result = relabelArchiveFootnotes({ entryId, slices, definitionPairs, sourceText, archiveText, l });
+ ```
  */
 export function relabelArchiveFootnotes(input: Parameters<typeof attemptArchiveFootnoteRelabel>[0],): RelabelledArchive {
   /**
-   * Operation-owned logger, retaining the caller's tags.
+   Operation-owned logger, retaining the caller's tags.
    */
   const l = tagged({
     l: input.l,

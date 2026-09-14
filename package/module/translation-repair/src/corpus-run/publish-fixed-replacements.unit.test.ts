@@ -1,20 +1,20 @@
 /**
- * Tests for the two pure halves of publishing: where a page goes, and what each
- * slice contributes to it.
- *
- * APART FROM `publish-fixed.unit.test.ts` DELIBERATELY, and the reason is a
- * property of the runner rather than of the subject. A file is abandoned once
- * any describe in it fails, so cheap cases sharing a file with expensive ones
- * hide them exactly when something has broken: while these two were in that
- * file, a break in the replacement builder left every case that writes a page
- * unrun and unreported, which reads as a narrow failure rather than a wide one.
- *
- * NOTHING HERE TOUCHES A DISK. Both subjects are total functions of an
- * artifact, so a case that needed a directory would be measuring the writer.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the two pure halves of publishing: where a page goes, and what each
+ slice contributes to it.
+ 
+ APART FROM `publish-fixed.unit.test.ts` DELIBERATELY, and the reason is a
+ property of the runner rather than of the subject. A file is abandoned once
+ any describe in it fails, so cheap cases sharing a file with expensive ones
+ hide them exactly when something has broken: while these two were in that
+ file, a break in the replacement builder left every case that writes a page
+ unrun and unreported, which reads as a narrow failure rather than a wide one.
+ 
+ NOTHING HERE TOUCHES A DISK. Both subjects are total functions of an
+ artifact, so a case that needed a directory would be measuring the writer.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -30,31 +30,31 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive's own wording at the slice every case reads.
+ Archive's own wording at the slice every case reads.
  */
 const ARCHIVE_MIDDLE = '\nShe slept on the counter by the till.\n';
 
 /**
- * Wording a decider settled on for it.
+ Wording a decider settled on for it.
  */
 const DECIDED_MIDDLE = '\nShe slept on the counter beside the till, in the sun.\n';
 
 /**
- * Builds an artifact whose one slice reads as the wording given.
- *
- * GOES THROUGH THE CONTEST rather than the consolidation, because the contest
- * is the shortest path to a chosen wording and this file is about what a
- * settled wording becomes, not about which decider settled it. Which stage is
- * read is `would-ship-text.unit.test.ts`.
- *
- * @param translateText - wording the translate lane offered and the contest picked
- *
- * @returns Artifact the builder reads
- *
- * @example
- * ```ts
- * const artifact = artifactShipping({ translateText: DECIDED_MIDDLE, },);
- * ```
+ Builds an artifact whose one slice reads as the wording given.
+ 
+ GOES THROUGH THE CONTEST rather than the consolidation, because the contest
+ is the shortest path to a chosen wording and this file is about what a
+ settled wording becomes, not about which decider settled it. Which stage is
+ read is `would-ship-text.unit.test.ts`.
+ 
+ @param translateText - wording the translate lane offered and the contest picked
+ 
+ @returns Artifact the builder reads
+ 
+ @example
+ ```ts
+ const artifact = artifactShipping({ translateText: DECIDED_MIDDLE, },);
+ ```
  */
 function artifactShipping(
   { translateText, }: { readonly translateText: string; },
@@ -103,26 +103,26 @@ function artifactShipping(
 }
 
 /**
- * Builds an artifact whose one slice is an ANCHOR nobody filled.
- *
- * REACHES THE SILENCE THROUGH A DECLINED CONTEST OVER AN ARCHIVE THAT HOLDS
- * NOTHING. This is the state `XIEPT2` reached live: its translate lane recorded
- * slice 12 unfilled after the judges backed no candidate, the contest then had
- * two blank lanes to choose between, and the archive had no wording to fall
- * back on either.
- *
- * PAIRED WITH {@link artifactWhoseLanesRemovedTheWording}, which is silent at a
- * span the archive DOES render. The two silences assemble differently and the
- * pair is what proves the builder reads `incumbentKind` rather than the reason
- * name: these two carry different reasons and the same reason would not
- * separate them.
- *
- * @returns Artifact whose one slice is an unfilled anchor
- *
- * @example
- * ```ts
- * const artifact = artifactWithAnUnfilledAnchor();
- * ```
+ Builds an artifact whose one slice is an ANCHOR nobody filled.
+ 
+ REACHES THE SILENCE THROUGH A DECLINED CONTEST OVER AN ARCHIVE THAT HOLDS
+ NOTHING. This is the state `XIEPT2` reached live: its translate lane recorded
+ slice 12 unfilled after the judges backed no candidate, the contest then had
+ two blank lanes to choose between, and the archive had no wording to fall
+ back on either.
+ 
+ PAIRED WITH {@link artifactWhoseLanesRemovedTheWording}, which is silent at a
+ span the archive DOES render. The two silences assemble differently and the
+ pair is what proves the builder reads `incumbentKind` rather than the reason
+ name: these two carry different reasons and the same reason would not
+ separate them.
+ 
+ @returns Artifact whose one slice is an unfilled anchor
+ 
+ @example
+ ```ts
+ const artifact = artifactWithAnUnfilledAnchor();
+ ```
  */
 function artifactWithAnUnfilledAnchor(): WouldShipSource {
   return {
@@ -160,19 +160,19 @@ function artifactWithAnUnfilledAnchor(): WouldShipSource {
 }
 
 /**
- * Builds an artifact whose one slice is a CONTENT span both lanes emptied.
- *
- * REACHES THE SILENCE THROUGH LANES THAT AGREED, which is the only reading that
- * can be silent over an archive that speaks: the two contest paths both name a
- * silent archive in their own reason strings, so a slice the contest never saw
- * is the way here. The contest names no slice at all for that reason.
- *
- * @returns Artifact whose one slice removes wording the archive holds
- *
- * @example
- * ```ts
- * const artifact = artifactWhoseLanesRemovedTheWording();
- * ```
+ Builds an artifact whose one slice is a CONTENT span both lanes emptied.
+ 
+ REACHES THE SILENCE THROUGH LANES THAT AGREED, which is the only reading that
+ can be silent over an archive that speaks: the two contest paths both name a
+ silent archive in their own reason strings, so a slice the contest never saw
+ is the way here. The contest names no slice at all for that reason.
+ 
+ @returns Artifact whose one slice removes wording the archive holds
+ 
+ @example
+ ```ts
+ const artifact = artifactWhoseLanesRemovedTheWording();
+ ```
  */
 function artifactWhoseLanesRemovedTheWording(): WouldShipSource {
   return {

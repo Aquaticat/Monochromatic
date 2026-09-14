@@ -29,27 +29,27 @@ import type {
 // under a name this reader made up.
 
 /**
- * What a reader does about keys the version does not name here.
- *
- * @example
- * ```ts
- * const unknownKeys: UnknownKeyPolicy = 'tolerate';
- * ```
+ What a reader does about keys the version does not name here.
+ 
+ @example
+ ```ts
+ const unknownKeys: UnknownKeyPolicy = 'tolerate';
+ ```
  */
 export type UnknownKeyPolicy =
   /**
-   * Refuse them, which is right everywhere version 2 owns the shape.
+   Refuse them, which is right everywhere version 2 owns the shape.
    */
   | 'refuse'
   /**
-   * Take the fields this version names and leave the rest, which is right
-   * inside a raw lane result: those are typed by the live pipeline, they grow
-   * by addition, and a later field there is not a later version here.
+   Take the fields this version names and leave the rest, which is right
+   inside a raw lane result: those are typed by the live pipeline, they grow
+   by addition, and a later field there is not a later version here.
    */
   | 'tolerate';
 
 /**
- * Keys each outcome member may carry, including its own discriminator.
+ Keys each outcome member may carry, including its own discriminator.
  */
 const OUTCOME_KEYS: Readonly<Record<ArtifactSliceOutcome['kind'], readonly string[]>> = {
   decided: [
@@ -63,36 +63,36 @@ const OUTCOME_KEYS: Readonly<Record<ArtifactSliceOutcome['kind'], readonly strin
 };
 
 /**
- * Fields this version gives a MEANING to on some outcome member.
- *
- * Checked even where unknown keys are tolerated, because the two cases are not
- * alike: a field version 2 never heard of is a later pipeline adding evidence,
- * while `acceptedText` on a member that decided nothing is this version's own
- * vocabulary used to say something it cannot mean.
+ Fields this version gives a MEANING to on some outcome member.
+ 
+ Checked even where unknown keys are tolerated, because the two cases are not
+ alike: a field version 2 never heard of is a later pipeline adding evidence,
+ while `acceptedText` on a member that decided nothing is this version's own
+ vocabulary used to say something it cannot mean.
  */
 const RESERVED_OUTCOME_KEYS: readonly string[] = ['acceptedText',];
 
 /**
- * Reads what a lane did about one slice.
- *
- * @param value - outcome JSON
- *
- * @param unknownKeys - what to do about keys this version does not name, which
- * differs between the ledger, whose shape version 2 owns, and a raw lane
- * result, which the live pipeline owns
- *
- * @param path - dotted path for error message
- *
- * @returns Outcome as version 2 describes it
- *
- * @throws {@link ArtifactParseError} when the discriminator names no member of
- * this version, when a member carries a field belonging to another, or when a
- * decision carries no wording
- *
- * @example
- * ```ts
- * const outcome = parseSliceOutcome({ value, unknownKeys: 'refuse', path, },);
- * ```
+ Reads what a lane did about one slice.
+ 
+ @param value - outcome JSON
+ 
+ @param unknownKeys - what to do about keys this version does not name, which
+ differs between the ledger, whose shape version 2 owns, and a raw lane
+ result, which the live pipeline owns
+ 
+ @param path - dotted path for error message
+ 
+ @returns Outcome as version 2 describes it
+ 
+ @throws {@link ArtifactParseError} when the discriminator names no member of
+ this version, when a member carries a field belonging to another, or when a
+ decision carries no wording
+ 
+ @example
+ ```ts
+ const outcome = parseSliceOutcome({ value, unknownKeys: 'refuse', path, },);
+ ```
  */
 export function parseSliceOutcome(
   {
@@ -106,7 +106,7 @@ export function parseSliceOutcome(
   },
 ): ArtifactSliceOutcome {
   /**
-   * Outcome as a record.
+   Outcome as a record.
    */
   const record = requireRecord({
     value,
@@ -114,7 +114,7 @@ export function parseSliceOutcome(
   },);
 
   /**
-   * Member it names.
+   Member it names.
    */
   const kind = requireOneOf({
     value: record.kind,
@@ -129,7 +129,7 @@ export function parseSliceOutcome(
   },);
 
   /**
-   * Keys this member may carry.
+   Keys this member may carry.
    */
   const allowed = OUTCOME_KEYS[kind];
   if (unknownKeys === 'refuse') {
@@ -140,7 +140,7 @@ export function parseSliceOutcome(
     },);
   } else {
     /**
-     * Reserved field this member has no meaning for, or nothing.
+     Reserved field this member has no meaning for, or nothing.
      */
     const misplaced = RESERVED_OUTCOME_KEYS.find(function isMisplaced(key,): boolean {
       return (key in record) && (!allowed.includes(key,));
@@ -165,22 +165,22 @@ export function parseSliceOutcome(
 }
 
 /**
- * Reads how one lane's document came to carry what it carries.
- *
- * @param value - delivery JSON
- *
- * @param path - dotted path for error message
- *
- * @returns Delivery as version 2 describes it
- *
- * @throws {@link ArtifactParseError} when the discriminator names no member of
- * this version, when a member carries a key belonging to another, or when a
- * withdrawal names no mechanism
- *
- * @example
- * ```ts
- * const delivery = parseSliceDelivery({ value, path, },);
- * ```
+ Reads how one lane's document came to carry what it carries.
+ 
+ @param value - delivery JSON
+ 
+ @param path - dotted path for error message
+ 
+ @returns Delivery as version 2 describes it
+ 
+ @throws {@link ArtifactParseError} when the discriminator names no member of
+ this version, when a member carries a key belonging to another, or when a
+ withdrawal names no mechanism
+ 
+ @example
+ ```ts
+ const delivery = parseSliceDelivery({ value, path, },);
+ ```
  */
 export function parseSliceDelivery(
   {
@@ -192,7 +192,7 @@ export function parseSliceDelivery(
   },
 ): ArtifactSliceDelivery {
   /**
-   * Delivery as a record.
+   Delivery as a record.
    */
   const record = requireRecord({
     value,
@@ -200,7 +200,7 @@ export function parseSliceDelivery(
   },);
 
   /**
-   * Member it names.
+   Member it names.
    */
   const kind = requireOneOf({
     value: record.kind,
@@ -242,22 +242,22 @@ export function parseSliceDelivery(
 }
 
 /**
- * Reads whether the two lanes' own decisions were comparable.
- *
- * @param value - decision comparison JSON
- *
- * @param path - dotted path for error message
- *
- * @returns Decision comparison as version 2 describes it
- *
- * @throws {@link ArtifactParseError} when the discriminator names no member of
- * this version, when a member carries a key belonging to another, or when an
- * undecided lane is named something other than a lane
- *
- * @example
- * ```ts
- * const decisions = parseDecisionComparison({ value, path, },);
- * ```
+ Reads whether the two lanes' own decisions were comparable.
+ 
+ @param value - decision comparison JSON
+ 
+ @param path - dotted path for error message
+ 
+ @returns Decision comparison as version 2 describes it
+ 
+ @throws {@link ArtifactParseError} when the discriminator names no member of
+ this version, when a member carries a key belonging to another, or when an
+ undecided lane is named something other than a lane
+ 
+ @example
+ ```ts
+ const decisions = parseDecisionComparison({ value, path, },);
+ ```
  */
 export function parseDecisionComparison(
   {
@@ -269,7 +269,7 @@ export function parseDecisionComparison(
   },
 ): ArtifactDecisionComparison {
   /**
-   * Comparison as a record.
+   Comparison as a record.
    */
   const record = requireRecord({
     value,
@@ -277,7 +277,7 @@ export function parseDecisionComparison(
   },);
 
   /**
-   * Member it names.
+   Member it names.
    */
   const kind = requireOneOf({
     value: record.kind,

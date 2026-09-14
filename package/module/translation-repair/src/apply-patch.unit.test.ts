@@ -1,8 +1,8 @@
 /**
- * Tests for envelope derivation and the deterministic patch gate.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for envelope derivation and the deterministic patch gate.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -21,12 +21,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Invented translation every fixture cuts envelopes from.
+ Invented translation every fixture cuts envelopes from.
  */
 const TARGET_TEXT = 'The cat naps in the sun. It chases red butterflies. The bowl stays full.';
 
 /**
- * Target-side span at chosen offsets over the fixture text.
+ Target-side span at chosen offsets over the fixture text.
  */
 function span(
   {
@@ -48,7 +48,7 @@ function span(
 }
 
 /**
- * Adjudicated single-claim issue with chosen status and spans.
+ Adjudicated single-claim issue with chosen status and spans.
  */
 function issue(
   {
@@ -375,7 +375,7 @@ await describe({
         + 'is the failure this codebase keeps repeating',
       fn: async () => {
         /**
-         * Envelope whose text carries a contributor name.
+         Envelope whose text carries a contributor name.
          */
         const envelope = {
           envelopeId: 'envelope/credit',
@@ -387,7 +387,7 @@ await describe({
         };
 
         /**
-         * Edit that fixes nothing quoted and drops the name.
+         Edit that fixes nothing quoted and drops the name.
          */
         const outcome = applyPatchOperations({
           targetText: 'Contributor for this entry: Whiskers - Archive',
@@ -412,7 +412,7 @@ await describe({
 },);
 
 /**
- * Curly-quoted document, the convention the restoration reads.
+ Curly-quoted document, the convention the restoration reads.
  */
 const CURLY_TEXT = 'The cat’s bowl stays full. It chases red butterflies.';
 

@@ -24,72 +24,72 @@ import type { RelabelCase, } from './probe-relabel-case.ts';
 // and must never be committed, pasted into a third-party model, or shared.
 
 /**
- * One region to be judged, with what the probe said about it.
- *
- * @example
- * ```ts
- * const item: VerifyItem = { relabelCase, claims, kind: 'control', };
- * ```
+ One region to be judged, with what the probe said about it.
+ 
+ @example
+ ```ts
+ const item: VerifyItem = { relabelCase, claims, kind: 'control', };
+ ```
  */
 export type VerifyItem = {
   /**
-   * Region and the texts surrounding it.
+   Region and the texts surrounding it.
    */
   readonly relabelCase: RelabelCase;
 
   /**
-   * Admissible claims the unlabelled probe raised.
+   Admissible claims the unlabelled probe raised.
    */
   readonly claims: readonly ScreenedDefectClaim[];
 
   /**
-   * Which partition this item belongs to, recorded in the manifest and never
-   * on the sheet.
-   *
-   * Deliberately a free label rather than a fixed pair, because the two sheets
-   * that share this formatter partition on different things and reusing one
-   * vocabulary for both would put the same word on two meanings. The
-   * verification sheet splits by what a READER already believed, and the damage
-   * sample splits by what the PROBE said. A scorer reads the label as written
-   * and never infers a meaning from it.
+   Which partition this item belongs to, recorded in the manifest and never
+   on the sheet.
+   
+   Deliberately a free label rather than a fixed pair, because the two sheets
+   that share this formatter partition on different things and reusing one
+   vocabulary for both would put the same word on two meanings. The
+   verification sheet splits by what a READER already believed, and the damage
+   sample splits by what the PROBE said. A scorer reads the label as written
+   and never infers a meaning from it.
    */
   readonly kind: string;
 };
 
 /**
- * One verify item paired with the digest its blind order sorts on.
- *
- * Named rather than inferred, because an inferred object literal carries
- * writable properties, and the comparator and unwrapping map that read it then
- * take mutable parameters they never mutate.
+ One verify item paired with the digest its blind order sorts on.
+ 
+ Named rather than inferred, because an inferred object literal carries
+ writable properties, and the comparator and unwrapping map that read it then
+ take mutable parameters they never mutate.
  */
 type DigestedItem = Readonly<{
   /**
-   * Item being ordered.
+   Item being ordered.
    */
   item: VerifyItem;
 
   /**
-   * Stable hash of the edit's identity, the sort key.
+   Stable hash of the edit's identity, the sort key.
    */
   digest: string;
 }>;
 
 /**
- * Orders items by a digest of their identity.
- *
- * Deterministic so a re-run produces the same sheet, and independent of kind so
- * the damaged and control items interleave. Ordering by anything the grader
- * could infer, insertion order included, would leak the answer.
- *
- * @param items - items to order
- *
- * @returns Same items, digest order
- *
- * @example
- * ```ts
- * const ordered = orderBlind({ items, },);
- * ```
+ Orders items by a digest of their identity.
+ 
+ Deterministic so a re-run produces the same sheet, and independent of kind so
+ the damaged and control items interleave. Ordering by anything the grader
+ could infer, insertion order included, would leak the answer.
+ 
+ @param items - items to order
+ 
+ @returns Same items, digest order
+ 
+ @example
+ ```ts
+ const ordered = orderBlind({ items, },);
+ ```
  */
 export function orderBlind(
   { items, }: { readonly items: readonly VerifyItem[]; },
@@ -97,12 +97,12 @@ export function orderBlind(
   return items
     .map(function withDigest(item,): DigestedItem {
       /**
-       * Region and texts this item judges.
+       Region and texts this item judges.
        */
       const { relabelCase, } = item;
 
       /**
-       * Entry and region naming the edit.
+       Entry and region naming the edit.
        */
       const {
         entryId,
@@ -110,7 +110,7 @@ export function orderBlind(
       } = relabelCase;
 
       /**
-       * Identity of the edit this item judges.
+       Identity of the edit this item judges.
        */
       const identity = `${entryId} ${region.envelopeId}`;
 
@@ -133,25 +133,25 @@ export function orderBlind(
 }
 
 /**
- * Renders one claim as the reviewer's stated finding.
- *
- * @param claim - screened claim
- *
- * @returns Markdown lines for this claim
- *
- * @example
- * ```ts
- * const block = renderClaim({ claim, },);
- * ```
+ Renders one claim as the reviewer's stated finding.
+ 
+ @param claim - screened claim
+ 
+ @returns Markdown lines for this claim
+ 
+ @example
+ ```ts
+ const block = renderClaim({ claim, },);
+ ```
  */
 function renderClaim({ claim, }: { readonly claim: ScreenedDefectClaim; },): string {
   /**
-   * Wording the claim anchors on, from whichever side it quoted.
+   Wording the claim anchors on, from whichever side it quoted.
    */
   const quoted = claim.omittedText === '' ? claim.evidence : claim.omittedText;
 
   /**
-   * Which direction the claim runs, in plain words.
+   Which direction the claim runs, in plain words.
    */
   const direction = claim.omittedText === ''
     ? 'wording the edit ADDED or altered'
@@ -170,20 +170,20 @@ function renderClaim({ claim, }: { readonly claim: ScreenedDefectClaim; },): str
 }
 
 /**
- * Whether an item carries a machine claim to show the reader.
- *
- * @param item - item being rendered
- *
- * @returns Whether any claim accompanies it
- *
- * @example
- * ```ts
- * const shown = hasClaims({ item, },);
- * ```
+ Whether an item carries a machine claim to show the reader.
+ 
+ @param item - item being rendered
+ 
+ @returns Whether any claim accompanies it
+ 
+ @example
+ ```ts
+ const shown = hasClaims({ item, },);
+ ```
  */
 function hasClaims({ item, }: { readonly item: VerifyItem; },): boolean {
   /**
-   * Claims accompanying this item.
+   Claims accompanying this item.
    */
   const { claims, } = item;
 
@@ -191,18 +191,18 @@ function hasClaims({ item, }: { readonly item: VerifyItem; },): boolean {
 }
 
 /**
- * Renders one sheet item.
- *
- * @param item - item to render
- *
- * @param position - one-based position on the sheet
- *
- * @returns Markdown section
- *
- * @example
- * ```ts
- * const section = renderItem({ item, position: 1, },);
- * ```
+ Renders one sheet item.
+ 
+ @param item - item to render
+ 
+ @param position - one-based position on the sheet
+ 
+ @returns Markdown section
+ 
+ @example
+ ```ts
+ const section = renderItem({ item, position: 1, },);
+ ```
  */
 function renderItem(
   {
@@ -214,12 +214,12 @@ function renderItem(
   },
 ): string {
   /**
-   * Region and texts this item judges.
+   Region and texts this item judges.
    */
   const { relabelCase, } = item;
 
   /**
-   * Slice texts and the replaced region.
+   Slice texts and the replaced region.
    */
   const {
     sourceText,
@@ -228,7 +228,7 @@ function renderItem(
   } = relabelCase;
 
   /**
-   * Replaced text and its replacement.
+   Replaced text and its replacement.
    */
   const {
     before,
@@ -278,35 +278,35 @@ function renderItem(
 }
 
 /**
- * What the sheet tells the grader about the reviewer.
- *
- * `reviewer-claims`: every item was flagged and the claims are printed, which
- * is the verify sheet. `blind`: the items mix flagged and silent ones with the
- * claims stripped, which is the damage sheet; telling that grader every item
- * was flagged primed a Y on exactly the partition scored as probe misses
- * (`#248`).
- *
- * @example
- * ```ts
- * const framing: SheetFraming = 'blind';
- * ```
+ What the sheet tells the grader about the reviewer.
+ 
+ `reviewer-claims`: every item was flagged and the claims are printed, which
+ is the verify sheet. `blind`: the items mix flagged and silent ones with the
+ claims stripped, which is the damage sheet; telling that grader every item
+ was flagged primed a Y on exactly the partition scored as probe misses
+ (`#248`).
+ 
+ @example
+ ```ts
+ const framing: SheetFraming = 'blind';
+ ```
  */
 export type SheetFraming = 'reviewer-claims' | 'blind';
 
 /**
- * Formats the whole blind verification sheet.
- *
- * @param items - items to judge, any order; ordering is applied here
- *
- * @param framing - what to tell the grader about the reviewer; the verify
- * sheet keeps the default, the damage sheet is blind
- *
- * @returns Sheet markdown
- *
- * @example
- * ```ts
- * const sheet = formatVerifySheet({ items, },);
- * ```
+ Formats the whole blind verification sheet.
+ 
+ @param items - items to judge, any order; ordering is applied here
+ 
+ @param framing - what to tell the grader about the reviewer; the verify
+ sheet keeps the default, the damage sheet is blind
+ 
+ @returns Sheet markdown
+ 
+ @example
+ ```ts
+ const sheet = formatVerifySheet({ items, },);
+ ```
  */
 export function formatVerifySheet(
   {
@@ -318,7 +318,7 @@ export function formatVerifySheet(
   },
 ): string {
   /**
-   * Items in blind order.
+   Items in blind order.
    */
   const ordered = orderBlind({ items, },);
 
@@ -363,20 +363,20 @@ export function formatVerifySheet(
 }
 
 /**
- * Builds the manifest that scores the sheet.
- *
- * Written beside the sheet rather than into it, because the sheet is blind and
- * a grader who can see which items came from the damaged set is answering a
- * different question than the one being asked.
- *
- * @param items - items to judge, any order; ordering matches the sheet
- *
- * @returns Manifest JSON
- *
- * @example
- * ```ts
- * const manifest = formatVerifyManifest({ items, },);
- * ```
+ Builds the manifest that scores the sheet.
+ 
+ Written beside the sheet rather than into it, because the sheet is blind and
+ a grader who can see which items came from the damaged set is answering a
+ different question than the one being asked.
+ 
+ @param items - items to judge, any order; ordering matches the sheet
+ 
+ @returns Manifest JSON
+ 
+ @example
+ ```ts
+ const manifest = formatVerifyManifest({ items, },);
+ ```
  */
 export function formatVerifyManifest(
   { items, }: { readonly items: readonly VerifyItem[]; },
@@ -389,12 +389,12 @@ export function formatVerifyManifest(
           index,
         ) {
           /**
-           * Region and texts this entry names.
+           Region and texts this entry names.
            */
           const { relabelCase, } = item;
 
           /**
-           * Entry and region naming the edit.
+           Entry and region naming the edit.
            */
           const {
             entryId,

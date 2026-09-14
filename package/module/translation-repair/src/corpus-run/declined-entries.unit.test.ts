@@ -1,7 +1,7 @@
 /**
- * Tests for the decline records a pass leaves behind and the next pass reads.
- *
- * @module
+ Tests for the decline records a pass leaves behind and the next pass reads.
+ 
+ @module
  */
 
 import {
@@ -25,18 +25,18 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * A throwaway root, removed when the case ends.
- *
- * @returns Root path with its disposer
- *
- * @example
- * ```ts
- * await using root = await throwawayRoot();
- * ```
+ A throwaway root, removed when the case ends.
+ 
+ @returns Root path with its disposer
+ 
+ @example
+ ```ts
+ await using root = await throwawayRoot();
+ ```
  */
 async function throwawayRoot(): Promise<{ readonly path: string; } & AsyncDisposable> {
   /**
-   * Root nothing outside this case writes into.
+   Root nothing outside this case writes into.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -65,7 +65,7 @@ await describe({
       fn: async () => {
         await using root = await throwawayRoot();
         /**
-         * Directory of records, not yet created.
+         Directory of records, not yet created.
          */
         const declinedDir = join(
           root.path,
@@ -101,7 +101,7 @@ await describe({
           'zeta',
         ],);
         /**
-         * The record as written.
+         The record as written.
          */
         const written: unknown = JSON.parse(await readFile(
           join(

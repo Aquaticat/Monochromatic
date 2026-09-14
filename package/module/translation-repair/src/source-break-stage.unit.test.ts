@@ -1,8 +1,8 @@
 /**
- * Verifies absent-incumbent provenance reaches the real translator call without
- * changing canonical source used by validation and judging.
- *
- * @module
+ Verifies absent-incumbent provenance reaches the real translator call without
+ changing canonical source used by validation and judging.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';

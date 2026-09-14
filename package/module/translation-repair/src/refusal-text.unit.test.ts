@@ -1,20 +1,20 @@
 /**
- * Tests for rendering a caught value without repeating what it refused.
- *
- * THE ABSENCE CASES ARE THE POINT, and one of them carries its own positive
- * control. V8 quotes the first ten characters of the text a `JSON.parse`
- * refusal was given, so the control asserts that the RAW message carries the
- * fixture word before the guarded case asserts that the rendered text does not.
- * Without the control, an assertion of absence would pass against a probe that
- * could never have shown a difference.
- *
- * MEASURED WHILE WRITING THESE: V8 quotes only where the text stops being JSON
- * near its start. A file truncated at its tail yields a positional message that
- * quotes nothing, so a fixture failing late would silently test nothing.
- *
- * Fixture wording is cat-themed invention, so no corpus content appears here.
- *
- * @module
+ Tests for rendering a caught value without repeating what it refused.
+ 
+ THE ABSENCE CASES ARE THE POINT, and one of them carries its own positive
+ control. V8 quotes the first ten characters of the text a `JSON.parse`
+ refusal was given, so the control asserts that the RAW message carries the
+ fixture word before the guarded case asserts that the rendered text does not.
+ Without the control, an assertion of absence would pass against a probe that
+ could never have shown a difference.
+ 
+ MEASURED WHILE WRITING THESE: V8 quotes only where the text stops being JSON
+ near its start. A file truncated at its tail yields a positional message that
+ quotes nothing, so a fixture failing late would silently test nothing.
+ 
+ Fixture wording is cat-themed invention, so no corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -32,33 +32,33 @@ import {
 //region Refusal text tests
 
 /**
- * Word appearing nowhere else in this file, so an assertion of absence cannot
- * pass by accident.
- *
- * TEN CHARACTERS EXACTLY, because that is the width of V8's quote window. A
- * shorter word would be quoted whole and a longer one truncated, and a
- * truncated word would be absent from the message for a reason that has nothing
- * to do with the guard under test.
+ Word appearing nowhere else in this file, so an assertion of absence cannot
+ pass by accident.
+ 
+ TEN CHARACTERS EXACTLY, because that is the width of V8's quote window. A
+ shorter word would be quoted whole and a longer one truncated, and a
+ truncated word would be absent from the message for a reason that has nothing
+ to do with the guard under test.
  */
 const FIXTURE_WORD = 'Pouncewick';
 
 /**
- * Text that stops being JSON at its first character, so V8 quotes it.
+ Text that stops being JSON at its first character, so V8 quotes it.
  */
 const UNPARSEABLE = `${FIXTURE_WORD} was never JSON`;
 
 /**
- * Raises the parse refusal these cases are about.
- *
- * @returns V8's own refusal, caught rather than raised so a case can read it
- *
- * @throws {@link Error} where the fixture parsed, which would mean it no longer
- * exercises anything
- *
- * @example
- * ```ts
- * expect(parseRefusal().message.includes(FIXTURE_WORD,),).toBe(true,);
- * ```
+ Raises the parse refusal these cases are about.
+ 
+ @returns V8's own refusal, caught rather than raised so a case can read it
+ 
+ @throws {@link Error} where the fixture parsed, which would mean it no longer
+ exercises anything
+ 
+ @example
+ ```ts
+ expect(parseRefusal().message.includes(FIXTURE_WORD,),).toBe(true,);
+ ```
  */
 function parseRefusal(): SyntaxError {
   try {
@@ -81,7 +81,7 @@ await describe({
       name: 'CONTROL: V8 quotes the fixture word, so absence is provable',
       fn: async () => {
         /**
-         * V8's own message, which every absence case is measured against.
+         V8's own message, which every absence case is measured against.
          */
         const raw = parseRefusal().message;
 
@@ -92,7 +92,7 @@ await describe({
       name: 'REFUSES to repeat a parse message, which quotes the text',
       fn: async () => {
         /**
-         * Same refusal, rendered through the guard.
+         Same refusal, rendered through the guard.
          */
         const rendered = refusalText({ error: parseRefusal(), },);
 
@@ -103,7 +103,7 @@ await describe({
       name: 'NAMES an unmarked class rather than saying what it said',
       fn: async () => {
         /**
-         * Ordinary refusal carrying the fixture word in its message.
+         Ordinary refusal carrying the fixture word in its message.
          */
         const plain = new SyntaxError(UNPARSEABLE,);
 
@@ -114,7 +114,7 @@ await describe({
       name: 'FORWARDS a message from a class declaring it names rather than quotes',
       fn: async () => {
         /**
-         * Refusal whose message is the file, the class and an offset.
+         Refusal whose message is the file, the class and an offset.
          */
         const named = new RunJsonUnreadableError({
           file: 'whiskerfield.json',
@@ -143,7 +143,7 @@ await describe({
       name: 'ACCEPTS an error carrying the declaration',
       fn: async () => {
         /**
-         * Refusal from the guarded reader, which declares the property.
+         Refusal from the guarded reader, which declares the property.
          */
         const declared = new RunJsonUnreadableError({
           file: 'whiskerfield.json',
@@ -158,7 +158,7 @@ await describe({
       name: 'REFUSES a plain object shaped like one, which JSON can produce',
       fn: async () => {
         /**
-         * Everything a forged marker would carry, and not an Error.
+         Everything a forged marker would carry, and not an Error.
          */
         const forged = {
           name: 'RunJsonUnreadableError',
@@ -173,7 +173,7 @@ await describe({
       name: 'REFUSES an ordinary Error, which declares nothing',
       fn: async () => {
         /**
-         * Error carrying the fixture word and no declaration.
+         Error carrying the fixture word and no declaration.
          */
         const undeclared = new Error(UNPARSEABLE,);
 

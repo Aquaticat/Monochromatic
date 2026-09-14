@@ -4,9 +4,9 @@
 // its line budget when generation thirteen added the page assembly.
 
 /**
- * Top-level keys a settled artifact may carry, every generation's together;
- * which of them a given generation requires is each section's reader's
- * question.
+ Top-level keys a settled artifact may carry, every generation's together;
+ which of them a given generation requires is each section's reader's
+ question.
  */
 export const SETTLED_ARTIFACT_KEYS: readonly string[] = [
   'artifactSchemaVersion',

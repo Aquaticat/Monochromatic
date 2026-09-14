@@ -28,30 +28,30 @@ import {
 // the source names the person differently.
 
 /**
- * Refusal when published front matter fails a structural check.
- *
- * @example
- * ```ts
- * throw new FrontMatterCompletenessError({ entryId: 'Cat', reason: 'missing-slice', });
- * ```
+ Refusal when published front matter fails a structural check.
+ 
+ @example
+ ```ts
+ throw new FrontMatterCompletenessError({ entryId: 'Cat', reason: 'missing-slice', });
+ ```
  */
 export class FrontMatterCompletenessError extends Error {
   /**
-   * Message names entry and structural reason only.
+   Message names entry and structural reason only.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds refusal.
-   *
-   * @param entryId - entry refused
-   *
-   * @param reason - structural check that failed: `missing-slice` when the
-   * preparation carries no metadata slice where it must, `invalid-page` when
-   * the page's metadata does not parse or breaks the identity or attribution
-   * rules, `directory-id-name` when the page's visible name is the directory id
-   * while the source's is not, `archive-front-matter` when the archive's
-   * front matter stands and the page or the preparation did not leave it alone
+   Builds refusal.
+   
+   @param entryId - entry refused
+   
+   @param reason - structural check that failed: `missing-slice` when the
+   preparation carries no metadata slice where it must, `invalid-page` when
+   the page's metadata does not parse or breaks the identity or attribution
+   rules, `directory-id-name` when the page's visible name is the directory id
+   while the source's is not, `archive-front-matter` when the archive's
+   front matter stands and the page or the preparation did not leave it alone
    */
   public constructor(
     {
@@ -68,27 +68,27 @@ export class FrontMatterCompletenessError extends Error {
 }
 
 /**
- * Refuses page whose metadata fails a structural check.
- *
- * @param entryId - entry being published
- *
- * @param sourceText - complete original page
- *
- * @param archiveText - complete archive page before lane changes
- *
- * @param pageText - assembled page candidate
- *
- * @param slices - preparation carrying explicit syntax role
- *
- * @throws FrontMatterCompletenessError when metadata role or syntax differs,
- * when the page's metadata does not parse or breaks the identity or
- * attribution rules, or when its visible name is still the directory id while
- * the source names the person differently
- *
- * @example
- * ```ts
- * assertFrontMatterComplete({ entryId, sourceText, archiveText, pageText, slices, });
- * ```
+ Refuses page whose metadata fails a structural check.
+ 
+ @param entryId - entry being published
+ 
+ @param sourceText - complete original page
+ 
+ @param archiveText - complete archive page before lane changes
+ 
+ @param pageText - assembled page candidate
+ 
+ @param slices - preparation carrying explicit syntax role
+ 
+ @throws FrontMatterCompletenessError when metadata role or syntax differs,
+ when the page's metadata does not parse or breaks the identity or
+ attribution rules, or when its visible name is still the directory id while
+ the source names the person differently
+ 
+ @example
+ ```ts
+ assertFrontMatterComplete({ entryId, sourceText, archiveText, pageText, slices, });
+ ```
  */
 export function assertFrontMatterComplete(
   {
@@ -106,31 +106,31 @@ export function assertFrontMatterComplete(
   },
 ): void {
   /**
-   * Parsed source page.
+   Parsed source page.
    */
   const source = splitFrontMatter({ text: sourceText, });
   /**
-   * Parsed archive page.
+   Parsed archive page.
    */
   const archive = splitFrontMatter({ text: archiveText, });
   /**
-   * Presence of source metadata.
+   Presence of source metadata.
    */
   const sourcePresent = source.frontMatter !== undefined;
   /**
-   * Presence of archive metadata.
+   Presence of archive metadata.
    */
   const archivePresent = archive.frontMatter !== undefined;
   /**
-   * Parsed assembled page.
+   Parsed assembled page.
    */
   const page = splitFrontMatter({ text: pageText, });
   /**
-   * Archive metadata when target declares it.
+   Archive metadata when target declares it.
    */
   const { frontMatter: archiveMetadata, } = archive;
   /**
-   * Assembled metadata when final page declares it.
+   Assembled metadata when final page declares it.
    */
   const { frontMatter: pageMetadata, } = page;
   if (!sourcePresent) {
@@ -155,8 +155,8 @@ export function assertFrontMatterComplete(
   }
 
   /**
-   * Metadata slices, which must be exactly slice zero where the lanes render
-   * the front matter and none at all where the archive's stands.
+   Metadata slices, which must be exactly slice zero where the lanes render
+   the front matter and none at all where the archive's stands.
    */
   const metadataSlices = slices.filter(function isFrontMatter(slice,): boolean {
     return slice.syntax === 'front-matter';
@@ -183,7 +183,7 @@ export function assertFrontMatterComplete(
     return;
   }
   /**
-   * Sole metadata slice when count is valid.
+   Sole metadata slice when count is valid.
    */
   const [metadataSlice,] = metadataSlices;
   if ((metadataSlices.length !== 1) || (metadataSlice === undefined)) {
@@ -202,24 +202,24 @@ export function assertFrontMatterComplete(
   }
 
   /**
-   * Exact source metadata bytes preparation must have reviewed.
+   Exact source metadata bytes preparation must have reviewed.
    */
   const { raw: sourceFrontMatter, } = source.frontMatter;
   /**
-   * Exact archive metadata bytes preparation reviewed,
-   * empty for source-only insertion.
+   Exact archive metadata bytes preparation reviewed,
+   empty for source-only insertion.
    */
   const archiveFrontMatter = archiveMetadata?.raw ?? '';
   /**
-   * Source span metadata slice claims.
+   Source span metadata slice claims.
    */
   const { source: sourceSlice, } = metadataSlice;
   /**
-   * Target span metadata slice claims.
+   Target span metadata slice claims.
    */
   const { target: targetSlice, } = metadataSlice;
   /**
-   * Whether explicit role points anywhere but exact metadata spans.
+   Whether explicit role points anywhere but exact metadata spans.
    */
   const misplaced = (slices.at(0,) !== metadataSlice)
     || (sourceSlice.sliceIndex !== 0)
@@ -240,11 +240,11 @@ export function assertFrontMatterComplete(
   }
 
   /**
-   * Exact page metadata bytes.
+   Exact page metadata bytes.
    */
   const { raw: pageFrontMatter, } = pageMetadata;
   /**
-   * Structural validation before persistence.
+   Structural validation before persistence.
    */
   const validation = validateFrontMatterTranslation({
     sourceText: sourceFrontMatter,
@@ -274,14 +274,14 @@ export function assertFrontMatterComplete(
   // carries it among its aliases, or when the page or the archive carries a
   // Latin-script alias other than the id (`directory-id-name.ts`).
   /**
-   * Whether the assembled page shows the directory id as the person's name.
+   Whether the assembled page shows the directory id as the person's name.
    */
   const pageNamesDirectory = namesDirectoryId({
     metadata: pageMetadata,
     entryId,
   },);
   /**
-   * Whether the source does too, which makes the handle the person's name.
+   Whether the source does too, which makes the handle the person's name.
    */
   const sourceNamesDirectory = namesDirectoryId({
     metadata: source.frontMatter,

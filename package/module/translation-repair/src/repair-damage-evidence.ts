@@ -26,78 +26,78 @@ import type { RegionDefectTally, } from './introduced-defect-screen.ts';
 // Record: `doc/planning/translation-repair-roster-calibration-2026-09-01.md`.
 
 /**
- * Screened regions of one probe report, the only part the evidence reads.
- *
- * @example
- * ```ts
- * const report: ProbedRegions = { regions: [], };
- * ```
+ Screened regions of one probe report, the only part the evidence reads.
+ 
+ @example
+ ```ts
+ const report: ProbedRegions = { regions: [], };
+ ```
  */
 export type ProbedRegions = {
   readonly regions: readonly RegionDefectTally[];
 };
 
 /**
- * What one probed chunk contributes: its slice and the screened regions of
- * each edit's probe.
- *
- * Structural rather than the lane's whole outcome type, so a test can feed
- * this from a fixture and the pass from the lane result alike.
- *
- * @example
- * ```ts
- * const chunk: ProbedChunk = { sliceIndex: 3, introducedDefects: { regions: [], }, };
- * ```
+ What one probed chunk contributes: its slice and the screened regions of
+ each edit's probe.
+ 
+ Structural rather than the lane's whole outcome type, so a test can feed
+ this from a fixture and the pass from the lane result alike.
+ 
+ @example
+ ```ts
+ const chunk: ProbedChunk = { sliceIndex: 3, introducedDefects: { regions: [], }, };
+ ```
  */
 export type ProbedChunk = {
   /**
-   * Slice this chunk's text ships at.
+   Slice this chunk's text ships at.
    */
   readonly sliceIndex: number;
 
   /**
-   * Accuracy repair's probe report, absent where the chunk changed nothing and
-   * nothing was probed.
+   Accuracy repair's probe report, absent where the chunk changed nothing and
+   nothing was probed.
    */
   readonly introducedDefects?: ProbedRegions;
 
   /**
-   * Naturalness rewrite's probe report, absent where no rewrite shipped.
+   Naturalness rewrite's probe report, absent where no rewrite shipped.
    */
   readonly refinementDefects?: ProbedRegions;
 };
 
 /**
- * Edit a claim audits, named the way the judges' block names it.
- *
- * @example
- * ```ts
- * const stage: ProbedStage = 'accuracy repair';
- * ```
+ Edit a claim audits, named the way the judges' block names it.
+ 
+ @example
+ ```ts
+ const stage: ProbedStage = 'accuracy repair';
+ ```
  */
 export type ProbedStage = 'accuracy repair' | 'naturalness rewrite';
 
 /**
- * Renders one corroborated claim as a line a judge can check against the
- * ORIGINAL.
- *
- * @param modelId - prober that made the claim
- *
- * @param stage - edit the prober audited, since the two start from different
- * texts and a judge checking the quote needs to know which
- *
- * @param category - defect class in the prober's words, may be empty
- *
- * @param evidence - wording quoted from the repair text
- *
- * @param reason - why the prober says the text before the edit lacked it
- *
- * @returns One line
- *
- * @example
- * ```ts
- * const line = claimLine({ modelId: 'minimax-m3', stage: 'accuracy repair', category: 'tense', evidence: 'is', reason: 'the page holds past tense', },);
- * ```
+ Renders one corroborated claim as a line a judge can check against the
+ ORIGINAL.
+ 
+ @param modelId - prober that made the claim
+ 
+ @param stage - edit the prober audited, since the two start from different
+ texts and a judge checking the quote needs to know which
+ 
+ @param category - defect class in the prober's words, may be empty
+ 
+ @param evidence - wording quoted from the repair text
+ 
+ @param reason - why the prober says the text before the edit lacked it
+ 
+ @returns One line
+ 
+ @example
+ ```ts
+ const line = claimLine({ modelId: 'minimax-m3', stage: 'accuracy repair', category: 'tense', evidence: 'is', reason: 'the page holds past tense', },);
+ ```
  */
 function claimLine(
   {
@@ -115,27 +115,27 @@ function claimLine(
   },
 ): string {
   /**
-   * Category as written, or a placeholder when the prober gave none.
+   Category as written, or a placeholder when the prober gave none.
    */
   const kind = (category === '') ? 'unspecified' : category;
   return `- ${modelId} [${kind}] on the ${stage} quotes "${evidence}": ${reason}`;
 }
 
 /**
- * Lines one probe report's corroborated claims make, none where nothing was
- * probed or nothing was corroborated.
- *
- * @param regions - one edit's screened regions, none where that edit was not
- * probed
- *
- * @param stage - edit the report audited
- *
- * @returns Lines in region and claim order
- *
- * @example
- * ```ts
- * const lines = corroboratedLinesOf({ regions: chunk.introducedDefects?.regions ?? [], stage: 'accuracy repair', },);
- * ```
+ Lines one probe report's corroborated claims make, none where nothing was
+ probed or nothing was corroborated.
+ 
+ @param regions - one edit's screened regions, none where that edit was not
+ probed
+ 
+ @param stage - edit the report audited
+ 
+ @returns Lines in region and claim order
+ 
+ @example
+ ```ts
+ const lines = corroboratedLinesOf({ regions: chunk.introducedDefects?.regions ?? [], stage: 'accuracy repair', },);
+ ```
  */
 function corroboratedLinesOf(
   {
@@ -165,25 +165,25 @@ function corroboratedLinesOf(
 }
 
 /**
- * Collects, per slice, the corroborated added-damage claims against the repair
- * lane's text.
- *
- * ONLY CORROBORATED CLAIMS: a claim whose quote the differential confirmed as
- * added by the edit. Contradicted, unanchored, pre-existing and dropped-content
- * claims stay in the record and out of the judges' sight, since the first two
- * failed a deterministic check and the last two are not about added damage.
- *
- * FROM BOTH EDITS: the accuracy repair's claims first, then the naturalness
- * rewrite's, each line naming its edit.
- *
- * @param lane - repair lane result, read for its probed chunks
- *
- * @returns Lines keyed by slice, absent for slices with no corroborated claim
- *
- * @example
- * ```ts
- * const bySlice = damageClaimLinesBySlice({ lane: lanes.repair, },);
- * ```
+ Collects, per slice, the corroborated added-damage claims against the repair
+ lane's text.
+ 
+ ONLY CORROBORATED CLAIMS: a claim whose quote the differential confirmed as
+ added by the edit. Contradicted, unanchored, pre-existing and dropped-content
+ claims stay in the record and out of the judges' sight, since the first two
+ failed a deterministic check and the last two are not about added damage.
+ 
+ FROM BOTH EDITS: the accuracy repair's claims first, then the naturalness
+ rewrite's, each line naming its edit.
+ 
+ @param lane - repair lane result, read for its probed chunks
+ 
+ @returns Lines keyed by slice, absent for slices with no corroborated claim
+ 
+ @example
+ ```ts
+ const bySlice = damageClaimLinesBySlice({ lane: lanes.repair, },);
+ ```
  */
 export function damageClaimLinesBySlice(
   { lane, }: { readonly lane: { readonly chunks: readonly ProbedChunk[]; }; },
@@ -195,7 +195,7 @@ export function damageClaimLinesBySlice(
         chunk: ProbedChunk,
       ): Map<number, readonly string[]> {
         /**
-         * Lines this chunk's corroborated claims make, both edits' probes.
+         Lines this chunk's corroborated claims make, both edits' probes.
          */
         const lines = [
           ...corroboratedLinesOf({

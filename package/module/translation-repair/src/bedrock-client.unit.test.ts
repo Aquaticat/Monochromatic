@@ -1,13 +1,13 @@
 /**
- * Tests for the Bedrock client over a recorded transport.
- *
- * THE STREAM SHAPES ARE THE ONES THE PROBES CAPTURED on 2026-09-07 from
- * bedrock-mantle in us-east-1: the Gemma route answers content chunks, a
- * usage chunk and `[DONE]`; the gpt-oss route answers reasoning deltas,
- * content chunks and a usage chunk with no sentinel. Fixtures are cat-themed
- * invention; no corpus content appears here.
- *
- * @module
+ Tests for the Bedrock client over a recorded transport.
+ 
+ THE STREAM SHAPES ARE THE ONES THE PROBES CAPTURED on 2026-09-07 from
+ bedrock-mantle in us-east-1: the Gemma route answers content chunks, a
+ usage chunk and `[DONE]`; the gpt-oss route answers reasoning deltas,
+ content chunks and a usage chunk with no sentinel. Fixtures are cat-themed
+ invention; no corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -27,18 +27,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One chat completion chunk as the endpoint sends it.
- *
- * @param delta - delta fields for the single choice
- *
- * @param rest - top-level fields beyond the choice, usage included
- *
- * @returns Event line, newline-terminated
- *
- * @example
- * ```ts
- * const raw = chunkOf({ delta: { content: '{"spot":', }, },);
- * ```
+ One chat completion chunk as the endpoint sends it.
+ 
+ @param delta - delta fields for the single choice
+ 
+ @param rest - top-level fields beyond the choice, usage included
+ 
+ @returns Event line, newline-terminated
+ 
+ @example
+ ```ts
+ const raw = chunkOf({ delta: { content: '{"spot":', }, },);
+ ```
  */
 function chunkOf(
   {
@@ -63,7 +63,7 @@ function chunkOf(
 }
 
 /**
- * Usage chunk with no choices, which both routes end on.
+ Usage chunk with no choices, which both routes end on.
  */
 const USAGE_CHUNK = `data: ${JSON.stringify({
   id: 'chatcmpl-595717d5-4cdb-44eb-bc27-2f6c1f0f1a1b',
@@ -78,7 +78,7 @@ const USAGE_CHUNK = `data: ${JSON.stringify({
 },)}\n\n`;
 
 /**
- * Whole stream the Gemma route answered with.
+ Whole stream the Gemma route answered with.
  */
 const GEMMA_STREAM = [
   chunkOf({ delta: { role: 'assistant', content: '', }, },),
@@ -89,7 +89,7 @@ const GEMMA_STREAM = [
 ].join('',);
 
 /**
- * Whole stream the gpt-oss route answered with: reasoning first, no sentinel.
+ Whole stream the gpt-oss route answered with: reasoning first, no sentinel.
  */
 const GPT_OSS_STREAM = [
   chunkOf({ delta: { role: 'assistant', reasoning: 'The user asks where', }, },),
@@ -99,31 +99,31 @@ const GPT_OSS_STREAM = [
 ].join('',);
 
 /**
- * Abort signal every call here carries.
+ Abort signal every call here carries.
  */
 const SIGNAL = new AbortController().signal;
 
 /**
- * In-memory ledger recording what the client notes and answering a fixed
- * reading.
- *
- * @param remainingUsd - what the reading says is left
- *
- * @returns Ledger plus the entries noted into it
- *
- * @example
- * ```ts
- * const { ledger, noted, } = memoryLedger({ remainingUsd: 150, },);
- * ```
+ In-memory ledger recording what the client notes and answering a fixed
+ reading.
+ 
+ @param remainingUsd - what the reading says is left
+ 
+ @returns Ledger plus the entries noted into it
+ 
+ @example
+ ```ts
+ const { ledger, noted, } = memoryLedger({ remainingUsd: 150, },);
+ ```
  */
 function memoryLedger({ remainingUsd = 150, }: { readonly remainingUsd?: number; },) {
   /**
-   * Entries the client noted, in order.
+   Entries the client noted, in order.
    */
   const noted: BedrockLedgerEntry[] = [];
 
   /**
-   * Ledger surface over the list.
+   Ledger surface over the list.
    */
   const ledger: BedrockLedger = {
     path: '/nowhere/bedrock-spend.jsonl',
@@ -146,16 +146,16 @@ function memoryLedger({ remainingUsd = 150, }: { readonly remainingUsd?: number;
 }
 
 /**
- * Builds a client over a transport that records what it was sent.
- *
- * @param reply - what the chat endpoint answers
- *
- * @returns Client plus the exchanges the transport saw and the ledger's notes
- *
- * @example
- * ```ts
- * const { client, exchanges, } = recordedClient({},);
- * ```
+ Builds a client over a transport that records what it was sent.
+ 
+ @param reply - what the chat endpoint answers
+ 
+ @returns Client plus the exchanges the transport saw and the ledger's notes
+ 
+ @example
+ ```ts
+ const { client, exchanges, } = recordedClient({},);
+ ```
  */
 function recordedClient(
   { reply = { status: 200, bodyText: GEMMA_STREAM, }, }: {
@@ -163,12 +163,12 @@ function recordedClient(
   },
 ) {
   /**
-   * Every exchange the transport was handed.
+   Every exchange the transport was handed.
    */
   const exchanges: TransportExchange[] = [];
 
   /**
-   * Ledger the client writes to.
+   Ledger the client writes to.
    */
   const { ledger, noted, } = memoryLedger({},);
   return {
@@ -201,7 +201,7 @@ await describe({
         const { client, exchanges, noted, } = recordedClient({},);
 
         /**
-         * One schema'd call as a stage would make it, on the shared seat.
+         One schema'd call as a stage would make it, on the shared seat.
          */
         const reply = await client.chatText({
           modelId: 'gemma-4-26b-a4b-it',
@@ -230,7 +230,7 @@ await describe({
         },);
 
         /**
-         * What went on the wire.
+         What went on the wire.
          */
         const [exchange,] = exchanges;
         if (exchange === undefined)
@@ -239,7 +239,7 @@ await describe({
         expect(exchange.headers.Authorization,).toBe('Bearer test-key',);
 
         /**
-         * Body as the endpoint would parse it.
+         Body as the endpoint would parse it.
          */
         const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
         expect(body,).toMatchObject({
@@ -267,7 +267,7 @@ await describe({
         expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP['gemma-4-26b-a4b-it'], },);
 
         /**
-         * What the ledger was told.
+         What the ledger was told.
          */
         const [entry,] = noted;
         if (entry === undefined)
@@ -291,7 +291,7 @@ await describe({
         },);
 
         /**
-         * One plain call on the seat every provider serves.
+         One plain call on the seat every provider serves.
          */
         const reply = await client.chatText({
           modelId: 'hf:openai/gpt-oss-120b',
@@ -317,7 +317,7 @@ await describe({
         },);
 
         /**
-         * What the cut stream produced.
+         What the cut stream produced.
          */
         let thrown: unknown;
         try {
@@ -355,7 +355,7 @@ await describe({
         const { client, exchanges, } = recordedClient({},);
 
         /**
-         * What a call for a seat this provider does not serve produces.
+         What a call for a seat this provider does not serve produces.
          */
         let thrown: unknown;
         try {
@@ -384,7 +384,7 @@ await describe({
         },);
 
         /**
-         * What the refused call produced.
+         What the refused call produced.
          */
         let thrown: unknown;
         try {
@@ -408,7 +408,7 @@ await describe({
         const { client, } = recordedClient({},);
 
         /**
-         * Outcome of a guarded call.
+         Outcome of a guarded call.
          */
         const outcome = await client.chatJson({
           modelId: 'google.gemma-4-e2b',

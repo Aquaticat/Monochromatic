@@ -1,14 +1,14 @@
 /**
- * Tests for the constructed comparison that asks whether the translate judges
- * can tell a complete rendering from one missing a sentence.
- *
- * What these pin is that the trial SCORES what came back rather than where it
- * sat: the same judge behaviour must read as correct in one direction and wrong
- * in the other, and a decline must never be counted as a hit.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the constructed comparison that asks whether the translate judges
+ can tell a complete rendering from one missing a sentence.
+ 
+ What these pin is that the trial SCORES what came back rather than where it
+ sat: the same judge behaviour must read as correct in one direction and wrong
+ in the other, and a decline must never be counted as a hit.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -29,32 +29,32 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger the trial writes its progress to.
+ Logger the trial writes its progress to.
  */
 const l = tagged({ tag: 'judge-fidelity-test', },);
 
 /**
- * Complete English for the fixture slice.
+ Complete English for the fixture slice.
  */
 const CLEAN_TEXT = 'The cat sleeps on the windowsill each morning. She watches the birds outside.\n';
 
 /**
- * Same English with the second sentence deleted.
+ Same English with the second sentence deleted.
  */
 const DAMAGED_TEXT = 'The cat sleeps on the windowsill each morning.\n';
 
 /**
- * Sentence the deletion removed, so it appears in the complete text alone.
+ Sentence the deletion removed, so it appears in the complete text alone.
  */
 const CLEAN_ONLY_SENTENCE = 'She watches the birds outside.';
 
 /**
- * Chinese the candidates claim to render.
+ Chinese the candidates claim to render.
  */
 const SOURCE_TEXT = '小猫每天早上在窗台上睡觉。她看着外面的鸟。\n';
 
 /**
- * Roster the ballots go to.
+ Roster the ballots go to.
  */
 const ROSTER = [
   'hf:cat/Cat-A',
@@ -65,29 +65,29 @@ const ROSTER = [
 },);
 
 /**
- * Which text a scripted judge votes for.
+ Which text a scripted judge votes for.
  */
 type ScriptedPick = 'clean' | 'damaged';
 
 /**
- * What a scripted judge does with its ballot: back one of the texts, or name no
- * candidate at all.
+ What a scripted judge does with its ballot: back one of the texts, or name no
+ candidate at all.
  */
 type ScriptedVote = ScriptedPick | 'decline';
 
 /**
- * Builds a client whose judges vote by TEXT rather than by position, each one
- * following its own entry in the script, so a test states a judge behaviour and
- * a mixed roster is expressible.
- *
- * @param script - vote per roster model id
- *
- * @returns Client the trial can be driven with
- *
- * @example
- * ```ts
- * const client = judgesVoting({ script: { 'hf:cat/Cat-A': 'decline', },  },);
- * ```
+ Builds a client whose judges vote by TEXT rather than by position, each one
+ following its own entry in the script, so a test states a judge behaviour and
+ a mixed roster is expressible.
+ 
+ @param script - vote per roster model id
+ 
+ @returns Client the trial can be driven with
+ 
+ @example
+ ```ts
+ const client = judgesVoting({ script: { 'hf:cat/Cat-A': 'decline', },  },);
+ ```
  */
 function judgesVoting(
   { script, }: { readonly script: Readonly<Record<string, ScriptedVote>>; },
@@ -103,7 +103,7 @@ function judgesVoting(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Whole sheet the judge was sent, which carries both candidates.
+       Whole sheet the judge was sent, which carries both candidates.
        */
       const sheet = request.messages
         .map(function toContent(message,) {
@@ -112,38 +112,38 @@ function judgesVoting(
         .join('\n',);
 
       /**
-       * Where the second candidate begins, which the sheet labels.
-       *
-       * READ RATHER THAN ASSUMED, because the trial rotates the ballot and a
-       * scripted judge that voted by position would agree with itself no matter
-       * what the trial did with the texts.
+       Where the second candidate begins, which the sheet labels.
+       
+       READ RATHER THAN ASSUMED, because the trial rotates the ballot and a
+       scripted judge that voted by position would agree with itself no matter
+       what the trial did with the texts.
        */
       const secondAt = sheet.indexOf('CANDIDATE 2',);
 
       /**
-       * Whether the complete text is the first candidate, decided by a sentence
-       * only it carries. The deletion is otherwise a PREFIX of the complete
-       * text, so searching for either whole text finds the same position.
+       Whether the complete text is the first candidate, decided by a sentence
+       only it carries. The deletion is otherwise a PREFIX of the complete
+       text, so searching for either whole text finds the same position.
        */
       const cleanIsFirst = sheet.indexOf(CLEAN_ONLY_SENTENCE,) < secondAt;
 
       /**
-       * What this particular judge was told to do.
+       What this particular judge was told to do.
        */
       const vote = script[request.modelId];
       if (vote === undefined)
         throw new Error(`no scripted vote for ${request.modelId}`,);
 
       /**
-       * Ballot position this judge is scripted to back, one-based, or
-       * `CANDIDATE_NONE` where it names nothing.
+       Ballot position this judge is scripted to back, one-based, or
+       `CANDIDATE_NONE` where it names nothing.
        */
       const wantedPosition = (vote === 'decline')
         ? CANDIDATE_NONE
         : (((vote === 'clean') === cleanIsFirst) ? 1 : 2);
 
       /**
-       * Wire value carrying that vote.
+       Wire value carrying that vote.
        */
       const value: unknown = {
         best: wantedPosition,
@@ -166,16 +166,16 @@ function judgesVoting(
 }
 
 /**
- * Script in which every judge does the same thing.
- *
- * @param vote - what the whole roster does
- *
- * @returns Script covering every roster model
- *
- * @example
- * ```ts
- * const script = wholeRoster({ vote: 'decline', },);
- * ```
+ Script in which every judge does the same thing.
+ 
+ @param vote - what the whole roster does
+ 
+ @returns Script covering every roster model
+ 
+ @example
+ ```ts
+ const script = wholeRoster({ vote: 'decline', },);
+ ```
  */
 function wholeRoster({ vote, }: { readonly vote: ScriptedVote; },): Record<string, ScriptedVote> {
   return Object.fromEntries(ROSTER.map(function toEntry(modelId,) {
@@ -187,20 +187,20 @@ function wholeRoster({ vote, }: { readonly vote: ScriptedVote; },): Record<strin
 }
 
 /**
- * Runs one trial against a scripted roster.
- *
- * @param script - vote per roster model id
- *
- * @param direction - which side holds the clean text
- *
- * @param cleanFirst - whether the clean text is listed first
- *
- * @returns Trial outcome
- *
- * @example
- * ```ts
- * const outcome = await runScripted({ script, direction: 'preserve', cleanFirst: true, },);
- * ```
+ Runs one trial against a scripted roster.
+ 
+ @param script - vote per roster model id
+ 
+ @param direction - which side holds the clean text
+ 
+ @param cleanFirst - whether the clean text is listed first
+ 
+ @returns Trial outcome
+ 
+ @example
+ ```ts
+ const outcome = await runScripted({ script, direction: 'preserve', cleanFirst: true, },);
+ ```
  */
 async function runScripted(
   {
@@ -233,20 +233,20 @@ async function runScripted(
 }
 
 /**
- * Runs one trial where every judge backs the same text.
- *
- * @param pick - text every judge backs
- *
- * @param direction - which side holds the clean text
- *
- * @param cleanFirst - whether the clean text is listed first
- *
- * @returns Trial outcome
- *
- * @example
- * ```ts
- * const outcome = await trial({ pick: 'clean', direction: 'preserve', cleanFirst: true, },);
- * ```
+ Runs one trial where every judge backs the same text.
+ 
+ @param pick - text every judge backs
+ 
+ @param direction - which side holds the clean text
+ 
+ @param cleanFirst - whether the clean text is listed first
+ 
+ @returns Trial outcome
+ 
+ @example
+ ```ts
+ const outcome = await trial({ pick: 'clean', direction: 'preserve', cleanFirst: true, },);
+ ```
  */
 async function trial(
   {
@@ -341,8 +341,8 @@ await describe({
         + 'what naming no candidate would otherwise collapse into',
       fn: async () => {
         /**
-         * One judge names nothing while the other two back the complete text,
-         * which still carries the trial at full weight.
+         One judge names nothing while the other two back the complete text,
+         which still carries the trial at full weight.
          */
         const outcome = await runScripted({
           script: {
@@ -394,8 +394,8 @@ await describe({
         + 'that voted named the complete text, since one voice does not carry a stage',
       fn: async () => {
         /**
-         * One judge backs the complete text and the rest abstain, which draws
-         * `FULL_VOTE_WEIGHT` against a minimum of `MIN_SELECTION_WEIGHT`.
+         One judge backs the complete text and the rest abstain, which draws
+         `FULL_VOTE_WEIGHT` against a minimum of `MIN_SELECTION_WEIGHT`.
          */
         const outcome = await runScripted({
           script: {

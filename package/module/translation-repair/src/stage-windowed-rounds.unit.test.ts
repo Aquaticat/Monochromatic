@@ -1,9 +1,9 @@
 /**
- * Tests for the windowed rounds the six self-reading stages ask through.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the windowed rounds the six self-reading stages ask through.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -24,7 +24,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Six-seat bench in roster order.
+ Six-seat bench in roster order.
  */
 const BENCH: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -36,19 +36,19 @@ const BENCH: readonly RosterModelId[] = [
 ];
 
 /**
- * Quorum over the whole bench.
+ Quorum over the whole bench.
  */
 const QUORUM = Math.ceil(BENCH.length / 2,);
 
 /**
- * Trivial reply payload the scripted client emits.
+ Trivial reply payload the scripted client emits.
  */
 type MeowReply = {
   readonly meow: string;
 };
 
 /**
- * Guards the trivial payload.
+ Guards the trivial payload.
  */
 function isMeowReply(value: unknown,): value is MeowReply {
   return ((typeof value) === 'object') && (value !== null)
@@ -56,7 +56,7 @@ function isMeowReply(value: unknown,): value is MeowReply {
 }
 
 /**
- * Response format naming the test stage.
+ Response format naming the test stage.
  */
 const MEOW_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',
@@ -67,26 +67,26 @@ const MEOW_FORMAT: JsonSchemaResponseFormat = {
 };
 
 /**
- * Test logger.
+ Test logger.
  */
 const l = tagged({ tag: 'stage-windowed-rounds-test', },);
 
 /**
- * Client answering every seat, except those scripted to fail the first time
- * they are asked or every time.
- *
- * @param failsOnce - seats whose first ask throws and whose second answers
- *
- * @param failsAlways - seats whose every ask throws
- *
- * @param unreadable - seats that answer a shape the guard refuses
- *
- * @returns Client plus the seats asked, in call order
- *
- * @example
- * ```ts
- * const { client, asked, } = scriptedClient({ failsOnce: [], failsAlways: [], unreadable: [], },);
- * ```
+ Client answering every seat, except those scripted to fail the first time
+ they are asked or every time.
+ 
+ @param failsOnce - seats whose first ask throws and whose second answers
+ 
+ @param failsAlways - seats whose every ask throws
+ 
+ @param unreadable - seats that answer a shape the guard refuses
+ 
+ @returns Client plus the seats asked, in call order
+ 
+ @example
+ ```ts
+ const { client, asked, } = scriptedClient({ failsOnce: [], failsAlways: [], unreadable: [], },);
+ ```
  */
 function scriptedClient(
   {
@@ -100,11 +100,11 @@ function scriptedClient(
   },
 ): { readonly client: SyntheticClient; readonly asked: RosterModelId[]; } {
   /**
-   * Seats asked, in call order.
+   Seats asked, in call order.
    */
   const asked: RosterModelId[] = [];
   /**
-   * Seats that have already thrown once.
+   Seats that have already thrown once.
    */
   const thrown = new Set<RosterModelId>();
   return {
@@ -131,7 +131,7 @@ function scriptedClient(
           };
         }
         /**
-         * Scripted payload for the answering call.
+         Scripted payload for the answering call.
          */
         const scripted: unknown = { meow: request.modelId, };
         if (!request.validate(scripted,))
@@ -150,18 +150,18 @@ function scriptedClient(
 }
 
 /**
- * Runs the windowed rounds over the bench with one scripted client.
- *
- * @param script - which seats fail or answer unreadably
- *
- * @param fanOut - window or whole bench, absent for the production default
- *
- * @returns Outcomes plus the seats asked in call order
- *
- * @example
- * ```ts
- * const { outcomes, asked, } = await runBench({ script: { failsOnce: [], failsAlways: [], unreadable: [], }, },);
- * ```
+ Runs the windowed rounds over the bench with one scripted client.
+ 
+ @param script - which seats fail or answer unreadably
+ 
+ @param fanOut - window or whole bench, absent for the production default
+ 
+ @returns Outcomes plus the seats asked in call order
+ 
+ @example
+ ```ts
+ const { outcomes, asked, } = await runBench({ script: { failsOnce: [], failsAlways: [], unreadable: [], }, },);
+ ```
  */
 async function runBench(
   {
@@ -219,14 +219,14 @@ await describe({
         + 'reports every seat once, heard where a later ask heard it',
       fn: async () => {
         /**
-         * Every seat lost on its first ask, so no fresh seat can fill quorum
-         * and the retry rounds must come back to the lost ones.
+         Every seat lost on its first ask, so no fresh seat can fill quorum
+         and the retry rounds must come back to the lost ones.
          */
         const { outcomes, asked, } = await runBench({
           script: { failsOnce: BENCH, failsAlways: [], unreadable: [], },
         },);
         /**
-         * Seats reported, each once.
+         Seats reported, each once.
          */
         const reported = outcomes.map(function idOf(outcome,): RosterModelId {
           return outcome.modelId;
@@ -234,7 +234,7 @@ await describe({
         expect(new Set(reported,).size,).toBe(reported.length,);
         expect(asked.length,).toBeGreaterThan(BENCH.length,);
         /**
-         * Voices heard, which reach quorum only through second asks.
+         Voices heard, which reach quorum only through second asks.
          */
         const heard = outcomes.filter(function isHeard(outcome,): boolean {
           return outcome.voice.heard;

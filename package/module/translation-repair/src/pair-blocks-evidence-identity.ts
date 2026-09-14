@@ -8,59 +8,59 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // An ordered subsequence proves that every recorded outcome belongs to one distinct configured seat.
 
 /**
- * Closed identity failures whose diagnostics cannot carry model prose.
- *
- * @example
- * ```ts
- * const failure: PairingEvidenceFailure = { kind: 'empty-electorate' };
- * ```
+ Closed identity failures whose diagnostics cannot carry model prose.
+ 
+ @example
+ ```ts
+ const failure: PairingEvidenceFailure = { kind: 'empty-electorate' };
+ ```
  */
 export type PairingEvidenceFailure =
   | {
     /**
-     * Configured roster cannot identify independent seats.
+     Configured roster cannot identify independent seats.
      */
     readonly kind: 'empty-electorate' | 'duplicate-electorate';
   }
   | {
     /**
-     * Recorded identity is missing, repeated or out of configured order.
+     Recorded identity is missing, repeated or out of configured order.
      */
     readonly kind: 'outcome-order';
     /**
-     * Position in the recorded outcome sequence, not the configured roster.
+     Position in the recorded outcome sequence, not the configured roster.
      */
     readonly index: number;
   };
 
 /**
- * Configuration or recorded-seat identity cannot represent independent pairing evidence.
- * Unlike a model's unusable block indexes, this failure aborts interpretation or dispatch.
- *
- * @example
- * ```ts
- * throw new PairingEvidenceError({ kind: 'empty-electorate' });
- * ```
+ Configuration or recorded-seat identity cannot represent independent pairing evidence.
+ Unlike a model's unusable block indexes, this failure aborts interpretation or dispatch.
+ 
+ @example
+ ```ts
+ throw new PairingEvidenceError({ kind: 'empty-electorate' });
+ ```
  */
 export class PairingEvidenceError extends Error {
   /**
-   * Stable operation name for safe diagnostics.
+   Stable operation name for safe diagnostics.
    */
   public override readonly name = 'PairingEvidenceError';
   /**
-   * Only a closed failure kind and numeric input index enter the message.
+   Only a closed failure kind and numeric input index enter the message.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Names the input that cannot establish independent seats.
-   *
-   * @param failure - closed failure details containing no response wording
-   *
-   * @example
-   * ```ts
-   * const error = new PairingEvidenceError({ kind: 'duplicate-electorate' });
-   * ```
+   Names the input that cannot establish independent seats.
+   
+   @param failure - closed failure details containing no response wording
+   
+   @example
+   ```ts
+   const error = new PairingEvidenceError({ kind: 'duplicate-electorate' });
+   ```
    */
   public constructor(failure: PairingEvidenceFailure,) {
     super(failure.kind === 'outcome-order'
@@ -72,22 +72,22 @@ export class PairingEvidenceError extends Error {
 }
 
 /**
- * Refuses invalid electorates and recorded identities before they become calls or endorsements.
- * Empty recorded outcomes and sparse ordered subsets are valid; skipped seats are not invented.
- * A single configured identity is allowed but cannot satisfy the separate two-voice relation rule.
- *
- * @param modelIds - configured electorate in its original order
- *
- * @param askedModelIds - final recorded seat identities, omitted before live dispatch
- *
- * @param l - caller logger preserving operation identity
- *
- * @throws PairingEvidenceError when the electorate is empty or duplicated, or outcomes are not an ordered subset
- *
- * @example
- * ```ts
- * assertPairingSeats({ modelIds, askedModelIds: outcomes.map(outcome => outcome.modelId), l });
- * ```
+ Refuses invalid electorates and recorded identities before they become calls or endorsements.
+ Empty recorded outcomes and sparse ordered subsets are valid; skipped seats are not invented.
+ A single configured identity is allowed but cannot satisfy the separate two-voice relation rule.
+ 
+ @param modelIds - configured electorate in its original order
+ 
+ @param askedModelIds - final recorded seat identities, omitted before live dispatch
+ 
+ @param l - caller logger preserving operation identity
+ 
+ @throws PairingEvidenceError when the electorate is empty or duplicated, or outcomes are not an ordered subset
+ 
+ @example
+ ```ts
+ assertPairingSeats({ modelIds, askedModelIds: outcomes.map(outcome => outcome.modelId), l });
+ ```
  */
 export function assertPairingSeats(
   {
@@ -101,7 +101,7 @@ export function assertPairingSeats(
   },
 ): void {
   /**
-   * Logger for identity validation rather than wire interpretation.
+   Logger for identity validation rather than wire interpretation.
    */
   const pl = tagged({
     tag: assertPairingSeats.name,
@@ -111,7 +111,7 @@ export function assertPairingSeats(
   if (modelIds.length === 0)
     throw new PairingEvidenceError({ kind: 'empty-electorate', },);
   /**
-   * Configured positions also expose duplicated electorate identities through cardinality.
+   Configured positions also expose duplicated electorate identities through cardinality.
    */
   const positions = new Map(modelIds.map(function indexed(
     modelId,
@@ -135,7 +135,7 @@ export function assertPairingSeats(
       index,
     ): number {
       /**
-       * Missing members cannot advance from the initial or any later configured position.
+       Missing members cannot advance from the initial or any later configured position.
        */
       const position = positions.get(modelId,) ?? (-1);
       if (position <= previous)

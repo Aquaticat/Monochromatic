@@ -1,16 +1,16 @@
 /**
- * Tests for the checks both lanes run around assembly.
- *
- * These began as a defence against the slice CACHE, which was trusted on its
- * index alone. Both lanes now refuse a contradictory cached record where they
- * accept it, so what remains here is a backstop: for a defect in a stage nobody
- * has changed yet, for a future caller of the exported guard, and for the one
- * relation no single slice can see, which is whether the returned document is
- * the one its own surviving replacements assemble to.
- *
- * Fixtures are invented. No corpus content appears here.
- *
- * @module
+ Tests for the checks both lanes run around assembly.
+ 
+ These began as a defence against the slice CACHE, which was trusted on its
+ index alone. Both lanes now refuse a contradictory cached record where they
+ accept it, so what remains here is a backstop: for a defect in a stage nobody
+ has changed yet, for a future caller of the exported guard, and for the one
+ relation no single slice can see, which is whether the returned document is
+ the one its own surviving replacements assemble to.
+ 
+ Fixtures are invented. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -27,12 +27,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Archive wording of the one slice these cases use.
+ Archive wording of the one slice these cases use.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
 /**
- * One prepared slice pair carrying that wording.
+ One prepared slice pair carrying that wording.
  */
 const CAT_SLICES = [{
   source: {
@@ -52,16 +52,16 @@ const CAT_SLICES = [{
 },];
 
 /**
- * Archive document of the net-zero case: three paragraphs, sliced so that one
- * paragraph can move ACROSS the join between two slices. That is what makes a
- * net-zero reachable rather than hypothetical, since the separator between the
- * slices belongs to neither of them.
+ Archive document of the net-zero case: three paragraphs, sliced so that one
+ paragraph can move ACROSS the join between two slices. That is what makes a
+ net-zero reachable rather than hypothetical, since the separator between the
+ slices belongs to neither of them.
  */
 const ARCHIVE_PARAGRAPHS = 'The cat naps.\n\nThe sill is warm.\n\nThe bird waits.\n';
 
 /**
- * Two prepared slices over that document: the first carries two paragraphs and
- * the second carries the last one.
+ Two prepared slices over that document: the first carries two paragraphs and
+ the second carries the last one.
  */
 const PARAGRAPH_SLICES = [
   {
@@ -105,7 +105,7 @@ await describe({
       name: 'passes a replacement that actually differs from the archive wording',
       fn: async () => {
         /**
-         * Failure the check raised, if any.
+         Failure the check raised, if any.
          */
         let caught: unknown;
         try {
@@ -126,7 +126,7 @@ await describe({
         + 'produces and which would otherwise be counted as a slice this lane changed while changing no byte',
       fn: async () => {
         /**
-         * Failure the check raised.
+         Failure the check raised.
          */
         let caught: unknown;
         try {
@@ -146,7 +146,7 @@ await describe({
       name: 'REFUSES a replacement naming a slice this preparation never produced',
       fn: async () => {
         /**
-         * Failure the check raised.
+         Failure the check raised.
          */
         let caught: unknown;
         try {
@@ -165,7 +165,7 @@ await describe({
 },);
 
 /**
- * Wording a lane might replace the one slice with.
+ Wording a lane might replace the one slice with.
  */
 const REWRITTEN_NAP = 'A cat dozes in the window.';
 
@@ -202,7 +202,7 @@ await describe({
         + 'convention rather than by construction',
       fn: async () => {
         /**
-         * Failure the check raised.
+         Failure the check raised.
          */
         let caught: unknown;
         try {
@@ -229,7 +229,7 @@ await describe({
         + 'the other side and would hide a rewrite from every per-slice reader',
       fn: async () => {
         /**
-         * Failure the check raised.
+         Failure the check raised.
          */
         let caught: unknown;
         try {
@@ -254,7 +254,7 @@ await describe({
         + 'shipped',
       fn: async () => {
         /**
-         * Failure the check raised.
+         Failure the check raised.
          */
         let caught: unknown;
         try {
@@ -284,7 +284,7 @@ await describe({
         + 'has to say that rather than describe the document',
       fn: async () => {
         /**
-         * Failure the check raised.
+         Failure the check raised.
          */
         let caught: unknown;
         try {
@@ -315,20 +315,20 @@ await describe({
 },);
 
 /**
- * Runs one change-set case and returns whatever it raised.
- *
- * @param sliceCount - prepared slices bounding both sets
- *
- * @param shipped - slices said to carry a change
- *
- * @param withdrawn - slices said to have had one taken back
- *
- * @returns Failure raised, or undefined when the case was accepted
- *
- * @example
- * ```ts
- * const caught = changeSetFailure({ sliceCount: 2, shipped: [0,], withdrawn: [0,], },);
- * ```
+ Runs one change-set case and returns whatever it raised.
+ 
+ @param sliceCount - prepared slices bounding both sets
+ 
+ @param shipped - slices said to carry a change
+ 
+ @param withdrawn - slices said to have had one taken back
+ 
+ @returns Failure raised, or undefined when the case was accepted
+ 
+ @example
+ ```ts
+ const caught = changeSetFailure({ sliceCount: 2, shipped: [0,], withdrawn: [0,], },);
+ ```
  */
 function changeSetFailure(
   {
@@ -364,7 +364,7 @@ await describe({
         + 'different rules',
       fn: async () => {
         /**
-         * Sets given in the order a guard would produce them.
+         Sets given in the order a guard would produce them.
          */
         const ordered = orderedChangeSets({
           sliceCount: 6,
@@ -423,7 +423,7 @@ await describe({
         + 'the range check reads the sets once they are ascending',
       fn: async () => {
         /**
-         * Failure a set breaking both the repeat rule and the range rule raised.
+         Failure a set breaking both the repeat rule and the range rule raised.
          */
         const bothBroken = changeSetFailure({
           sliceCount: 2,
@@ -433,7 +433,7 @@ await describe({
         expect(String(bothBroken,),).toContain('shipped slices repeat',);
 
         /**
-         * Failure two out-of-range indices raised, listed high to low.
+         Failure two out-of-range indices raised, listed high to low.
          */
         const outOfOrder = changeSetFailure({
           sliceCount: 2,
@@ -449,7 +449,7 @@ await describe({
         + 'by construction and neither checked',
       fn: async () => {
         /**
-         * Failure the overlap raised.
+         Failure the overlap raised.
          */
         const caught = changeSetFailure({
           sliceCount: 4,

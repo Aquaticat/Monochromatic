@@ -31,16 +31,16 @@ import { readdirArtifacts, } from './artifact-placement.ts';
 // critics that raised nothing.
 
 /**
- * Reads the claim ids one adjudicated issue represents.
- *
- * @param issue - adjudicated issue block
- *
- * @returns Deterministic claim ids, empty when none parse
- *
- * @example
- * ```ts
- * const claimIds = readClaimIds({ issue, },);
- * ```
+ Reads the claim ids one adjudicated issue represents.
+ 
+ @param issue - adjudicated issue block
+ 
+ @returns Deterministic claim ids, empty when none parse
+ 
+ @example
+ ```ts
+ const claimIds = readClaimIds({ issue, },);
+ ```
  */
 function readClaimIds(
   {
@@ -50,7 +50,7 @@ function readClaimIds(
   },
 ): readonly string[] {
   /**
-   * Member claims of the issue.
+   Member claims of the issue.
    */
   const { claims, } = issue;
   if (!isJsonArray(claims,))
@@ -61,7 +61,7 @@ function readClaimIds(
       return [];
 
     /**
-     * Deterministic identity of this claim.
+     Deterministic identity of this claim.
      */
     const { claimId, } = member;
     return ((typeof claimId) === 'string') ? [claimId,] : [];
@@ -69,32 +69,32 @@ function readClaimIds(
 }
 
 /**
- * Record carrying this artifact's own attribution and issue records.
- *
- * TWO PATHS, AND EXACTLY ONE PER ARTIFACT. Version 1 wrote the critic record
- * and `issues` at the artifact root, and the two-lane generations write them
- * inside the repair lane at `lanes.repair.result`. Reading only the root did not throw and did
- * not read as absent to anyone looking: it read as an artifact settled BEFORE
- * attribution existed, because an omitted key is exactly what marks the
- * pre-feature population.
- *
- * Measured over the settled artifacts: 0 of 47 carry `chunkCritics` at the
- * root and 47 of 47 carry it in the repair lane, so the whole population was
- * filed as pre-feature and the 2479 attributions it holds reached no consumer.
- * The issue read failed the same way, 0 records against 1546.
- *
- * The version 1 path stays rather than being replaced, because artifacts
- * outlive the pipelines that wrote them and a settled file must keep answering
- * for itself.
- *
- * @param parsed - parsed artifact
- *
- * @returns Lane result when this artifact has one, else the artifact itself
- *
- * @example
- * ```ts
- * const records = recordsHolderOf({ parsed, },);
- * ```
+ Record carrying this artifact's own attribution and issue records.
+ 
+ TWO PATHS, AND EXACTLY ONE PER ARTIFACT. Version 1 wrote the critic record
+ and `issues` at the artifact root, and the two-lane generations write them
+ inside the repair lane at `lanes.repair.result`. Reading only the root did not throw and did
+ not read as absent to anyone looking: it read as an artifact settled BEFORE
+ attribution existed, because an omitted key is exactly what marks the
+ pre-feature population.
+ 
+ Measured over the settled artifacts: 0 of 47 carry `chunkCritics` at the
+ root and 47 of 47 carry it in the repair lane, so the whole population was
+ filed as pre-feature and the 2479 attributions it holds reached no consumer.
+ The issue read failed the same way, 0 records against 1546.
+ 
+ The version 1 path stays rather than being replaced, because artifacts
+ outlive the pipelines that wrote them and a settled file must keep answering
+ for itself.
+ 
+ @param parsed - parsed artifact
+ 
+ @returns Lane result when this artifact has one, else the artifact itself
+ 
+ @example
+ ```ts
+ const records = recordsHolderOf({ parsed, },);
+ ```
  */
 function recordsHolderOf(
   {
@@ -104,37 +104,37 @@ function recordsHolderOf(
   },
 ): Readonly<Record<string, unknown>> {
   /**
-   * Lane container, absent on anything version 1 wrote.
+   Lane container, absent on anything version 1 wrote.
    */
   const { lanes, } = parsed;
   if (!isJsonRecord(lanes,))
     return parsed;
 
   /**
-   * Repair lane, the only one that files issues or hears critics.
+   Repair lane, the only one that files issues or hears critics.
    */
   const { repair, } = lanes;
   if (!isJsonRecord(repair,))
     return parsed;
 
   /**
-   * Lane's own result, spelled `result` on disk.
+   Lane's own result, spelled `result` on disk.
    */
   const { result, } = repair;
   return isJsonRecord(result,) ? result : parsed;
 }
 
 /**
- * Reads one artifact's accepted-issue views.
- *
- * @param raw - parsed artifact
- *
- * @returns Issue views, empty when the artifact carries none
- *
- * @example
- * ```ts
- * const issues = readIssueViews({ raw, },);
- * ```
+ Reads one artifact's accepted-issue views.
+ 
+ @param raw - parsed artifact
+ 
+ @returns Issue views, empty when the artifact carries none
+ 
+ @example
+ ```ts
+ const issues = readIssueViews({ raw, },);
+ ```
  */
 function readIssueViews(
   {
@@ -144,7 +144,7 @@ function readIssueViews(
   },
 ): readonly AcceptedIssueView[] {
   /**
-   * Issue records of this artifact.
+   Issue records of this artifact.
    */
   const { issues, } = raw;
   if (!isJsonArray(issues,))
@@ -155,14 +155,14 @@ function readIssueViews(
       return [];
 
     /**
-     * Adjudicated issue inside the record.
+     Adjudicated issue inside the record.
      */
     const { issue, } = record;
     if (!isJsonRecord(issue,))
       return [];
 
     /**
-     * Adjudication status of the issue.
+     Adjudication status of the issue.
      */
     const { status, } = issue;
 
@@ -174,18 +174,18 @@ function readIssueViews(
 }
 
 /**
- * Reads one artifact into the shape the report needs.
- *
- * @param name - artifact file name, used as a fallback identifier
- *
- * @param parsed - parsed artifact
- *
- * @returns Entry view
- *
- * @example
- * ```ts
- * const entry = toEntry({ name, parsed, },);
- * ```
+ Reads one artifact into the shape the report needs.
+ 
+ @param name - artifact file name, used as a fallback identifier
+ 
+ @param parsed - parsed artifact
+ 
+ @returns Entry view
+ 
+ @example
+ ```ts
+ const entry = toEntry({ name, parsed, },);
+ ```
  */
 function toEntry(
   {
@@ -203,24 +203,24 @@ function toEntry(
     },);
 
   /**
-   * Entry identifier the artifact declares.
+   Entry identifier the artifact declares.
    */
   const { id, } = parsed;
 
   /**
-   * Identity used in any failure message below, so a throw names the file.
+   Identity used in any failure message below, so a throw names the file.
    */
   const entryId = ((typeof id) === 'string') ? id : name;
 
   /**
-   * Where this artifact keeps its records, which is not the artifact itself on
-   * anything version 2 wrote.
+   Where this artifact keeps its records, which is not the artifact itself on
+   anything version 2 wrote.
    */
   const records = recordsHolderOf({ parsed, },);
 
   /**
-   * Generation this artifact records, or a named absence for one settled
-   * before the field existed.
+   Generation this artifact records, or a named absence for one settled
+   before the field existed.
    */
   const reading = readArtifactSchemaVersion({
     artifact: parsed,
@@ -228,9 +228,9 @@ function toEntry(
   },);
 
   /**
-   * Spelling this artifact's own generation gave the critic record. An
-   * artifact with no version field predates version 1 and so predates every
-   * rename, which is the same spelling version 1 used.
+   Spelling this artifact's own generation gave the critic record. An
+   artifact with no version field predates version 1 and so predates every
+   rename, which is the same spelling version 1 used.
    */
   const keys = (reading.kind === 'unversioned')
     ? CHUNK_SPELLED_KEYS
@@ -262,69 +262,69 @@ function toEntry(
 }
 
 /**
- * One artifact that could not be read at all.
- *
- * @example
- * ```ts
- * const failure: MalformedArtifact = { name: 'Kitten.json', reason: 'Unexpected end of JSON input', };
- * ```
+ One artifact that could not be read at all.
+ 
+ @example
+ ```ts
+ const failure: MalformedArtifact = { name: 'Kitten.json', reason: 'Unexpected end of JSON input', };
+ ```
  */
 export type MalformedArtifact = {
   /**
-   * File that failed, so a reader can go look at it.
+   File that failed, so a reader can go look at it.
    */
   readonly name: string;
 
   /**
-   * Why it failed, named rather than summarized.
+   Why it failed, named rather than summarized.
    */
   readonly reason: string;
 };
 
 /**
- * Everything a run directory yielded, including what it could not.
- *
- * @example
- * ```ts
- * const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, },);
- * ```
+ Everything a run directory yielded, including what it could not.
+ 
+ @example
+ ```ts
+ const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, },);
+ ```
  */
 export type AttributionGather = {
   /**
-   * Entries that parsed.
+   Entries that parsed.
    */
   readonly entries: readonly AttributionEntry[];
 
   /**
-   * Artifacts that did not, held apart from the eligible and ineligible
-   * populations rather than folded into either.
+   Artifacts that did not, held apart from the eligible and ineligible
+   populations rather than folded into either.
    */
   readonly malformed: readonly MalformedArtifact[];
 };
 
 /**
- * Reads every settled artifact into the shape the report needs.
- *
- * ISOLATED PER ARTIFACT, which is the difference between a loud failure and a
- * useless one. The decoding below throws by design, and a bare
- * `Promise.all` over the directory would let ONE bad file reject the whole
- * gather: a single truncated artifact would mean no calibration at all for
- * every other entry in the run. That is the same disproportion the writer
- * avoids by not throwing on a telemetry invariant.
- *
- * Half-written artifacts are a real case rather than a hypothetical one. A pass
- * killed at its hard cap can leave one, which is why `openSliceCache` already
- * treats a half-written slice as absent, and `JSON.parse` on it raises a
- * `SyntaxError` that has nothing to do with attribution.
- *
- * @param artifactsDir - directory the pass writes entries into
- *
- * @returns Entries that parsed, and the artifacts that did not
- *
- * @example
- * ```ts
- * const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, },);
- * ```
+ Reads every settled artifact into the shape the report needs.
+ 
+ ISOLATED PER ARTIFACT, which is the difference between a loud failure and a
+ useless one. The decoding below throws by design, and a bare
+ `Promise.all` over the directory would let ONE bad file reject the whole
+ gather: a single truncated artifact would mean no calibration at all for
+ every other entry in the run. That is the same disproportion the writer
+ avoids by not throwing on a telemetry invariant.
+ 
+ Half-written artifacts are a real case rather than a hypothetical one. A pass
+ killed at its hard cap can leave one, which is why `openSliceCache` already
+ treats a half-written slice as absent, and `JSON.parse` on it raises a
+ `SyntaxError` that has nothing to do with attribution.
+ 
+ @param artifactsDir - directory the pass writes entries into
+ 
+ @returns Entries that parsed, and the artifacts that did not
+ 
+ @example
+ ```ts
+ const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, },);
+ ```
  */
 export async function gatherAttributionEntries(
   {
@@ -334,11 +334,11 @@ export async function gatherAttributionEntries(
   },
 ): Promise<AttributionGather> {
   /**
-   * One directory listing, shared with the census.
-   *
-   * Taken once and threaded through, because the accumulation writes into this
-   * directory continuously: a second listing inside the census would classify a
-   * different set of files from the one this reader goes on to read.
+   One directory listing, shared with the census.
+   
+   Taken once and threaded through, because the accumulation writes into this
+   directory continuously: a second listing inside the census would classify a
+   different set of files from the one this reader goes on to read.
    */
   const listed = (await readdirArtifacts({ artifactsDir, },))
     .filter(function isArtifact(name,) {
@@ -346,7 +346,7 @@ export async function gatherAttributionEntries(
     },);
 
   /**
-   * Artifact file names.
+   Artifact file names.
    */
   const names = keepEligible({
     names: listed,
@@ -357,7 +357,7 @@ export async function gatherAttributionEntries(
   },);
 
   /**
-   * One outcome per artifact: the entry it yielded, or why it yielded none.
+   One outcome per artifact: the entry it yielded, or why it yielded none.
    */
   const outcomes = await Promise.all(names.map(async function readOne(name,): Promise<
     { readonly entry: AttributionEntry; } | { readonly failure: MalformedArtifact; }

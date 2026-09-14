@@ -1,11 +1,11 @@
 /**
- * Tests the notes an entry carries, rendered as identity-context lines.
- *
- * THE CASES ARE THE CORPUS'S: XIEPT2's one source footnote and its archive of
- * seventeen editor comments (a translation hint and a glossary), yulianNyanner's
- * comment glossary, and a multi-line definition that must fold onto one line.
- *
- * @module
+ Tests the notes an entry carries, rendered as identity-context lines.
+ 
+ THE CASES ARE THE CORPUS'S: XIEPT2's one source footnote and its archive of
+ seventeen editor comments (a translation hint and a glossary), yulianNyanner's
+ comment glossary, and a multi-line definition that must fold onto one line.
+ 
+ @module
  */
 
 import {
@@ -24,12 +24,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original carrying one footnote and one comment.
+ Original carrying one footnote and one comment.
  */
 const SOURCE_TEXT = '---\nname: 葡萄\n---\n\n她做代购[^1]。\n\n<!-- 起床战争：Bed Wars -->\n\n[^1]: 意为个人「代购」境外漫画书籍\n';
 
 /**
- * Archive carrying a multi-line comment and a two-line footnote.
+ Archive carrying a multi-line comment and a two-line footnote.
  */
 const TARGET_TEXT = '---\nname: Putao\n---\n\n<!-- 翻译提示：\n\n这篇文章有时候是作者视角。 -->\n\nShe ran a buying service[^1].\n\n[^1]: A personal buying service\n    for comics from abroad.\n';
 
@@ -67,11 +67,11 @@ await describe({
         + 'archive, each folded onto one line',
       fn: async () => {
         /**
-         * Both sides parsed as preparation parses them.
+         Both sides parsed as preparation parses them.
          */
         const sourceDocument = parseDocument({ text: SOURCE_TEXT, },);
         /**
-         * Archive side.
+         Archive side.
          */
         const targetDocument = parseDocument({ text: TARGET_TEXT, },);
         expect(entryNoteLines({
@@ -92,7 +92,7 @@ await describe({
         + 'its position and seven of eight judges bound it to the wrong heading (2026-09-06)',
       fn: async () => {
         /**
-         * Two sections, a note under the second, and one note before any heading.
+         Two sections, a note under the second, and one note before any heading.
          */
         const document = parseDocument({
           text: '<!-- 全文为客观叙述 -->\n\n## 小猫\n\n它睡了。\n\n### 大猫\n\n<!-- 这里标题对应的英文词是 Tomcat -->\n\n它醒了。\n',
@@ -112,7 +112,7 @@ await describe({
         + 'empty comment',
       fn: async () => {
         /**
-         * Plain pair.
+         Plain pair.
          */
         const plain = parseDocument({ text: '毛毛很可爱。\n', },);
         expect(entryNoteLines({

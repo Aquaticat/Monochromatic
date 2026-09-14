@@ -1,11 +1,11 @@
 /**
- * Tests for fenced code line flags.
- *
- * Every case asserts the WHOLE flag array rather than one position, because the
- * defect this guards against is a state machine losing track of where a fence
- * ends, and that shows up as a run of wrong flags rather than a wrong one.
- *
- * @module
+ Tests for fenced code line flags.
+ 
+ Every case asserts the WHOLE flag array rather than one position, because the
+ defect this guards against is a state machine losing track of where a fence
+ ends, and that shows up as a run of wrong flags rather than a wrong one.
+ 
+ @module
  */
 
 import {
@@ -20,16 +20,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Splits a body the way the masker does, so fixtures read as text.
- *
- * @param text - body with newline terminators
- *
- * @returns Flag per line
- *
- * @example
- * ```ts
- * const flags = flagsOf('```\nx\n```\n',);
- * ```
+ Splits a body the way the masker does, so fixtures read as text.
+ 
+ @param text - body with newline terminators
+ 
+ @returns Flag per line
+ 
+ @example
+ ```ts
+ const flags = flagsOf('```\nx\n```\n',);
+ ```
  */
 function flagsOf(text: string,): readonly boolean[] {
   return fencedLineFlags({ lines: text.split('\n',), },);
@@ -241,7 +241,7 @@ await describe({
         + 'avoid',
       fn: async () => {
         /**
-         * Zero-width space standing as the whole of a line inside a fence.
+         Zero-width space standing as the whole of a line inside a fence.
          */
         const text = '```\nalpha\n\u{200B}\nbeta\n```\n';
 

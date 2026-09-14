@@ -1,14 +1,14 @@
 /**
- * Tests for the block-coverage check on carved slices.
- *
- * THE FAILURE IT EXISTS FOR is silent: a block that reached no slice leaves the
- * document, and no range disagrees with itself, so `assertSpanContiguity` sees
- * nothing wrong. Every case here is therefore built by carving blocks AWAY from
- * a pair rather than by malforming one, which is what production did.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the block-coverage check on carved slices.
+ 
+ THE FAILURE IT EXISTS FOR is silent: a block that reached no slice leaves the
+ document, and no range disagrees with itself, so `assertSpanContiguity` sees
+ nothing wrong. Every case here is therefore built by carving blocks AWAY from
+ a pair rather than by malforming one, which is what production did.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -22,7 +22,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One block of a document, as the parser emits them.
+ One block of a document, as the parser emits them.
  */
 type Block = {
   readonly id: string;
@@ -35,18 +35,18 @@ type Block = {
 };
 
 /**
- * Builds a document node standing in for one block.
- *
- * @param id - block id, unique within its side
- *
- * @param at - start offset, with the node one character long
- *
- * @returns Node shaped as the parser emits them
- *
- * @example
- * ```ts
- * const node = blockNode({ id: 'block/0', at: 0, },);
- * ```
+ Builds a document node standing in for one block.
+ 
+ @param id - block id, unique within its side
+ 
+ @param at - start offset, with the node one character long
+ 
+ @returns Node shaped as the parser emits them
+ 
+ @example
+ ```ts
+ const node = blockNode({ id: 'block/0', at: 0, },);
+ ```
  */
 function blockNode(
   {
@@ -69,7 +69,7 @@ function blockNode(
 }
 
 /**
- * One side of a chunk, as slicing produces it.
+ One side of a chunk, as slicing produces it.
  */
 type Side = {
   readonly sliceIndex: number;
@@ -80,16 +80,16 @@ type Side = {
 };
 
 /**
- * Builds one side of a chunk from a run of blocks.
- *
- * @param nodes - blocks this side carries
- *
- * @returns Chunk side shaped as slicing produces it
- *
- * @example
- * ```ts
- * const side = chunkSide({ nodes: [FIRST_ORIGINAL,], },);
- * ```
+ Builds one side of a chunk from a run of blocks.
+ 
+ @param nodes - blocks this side carries
+ 
+ @returns Chunk side shaped as slicing produces it
+ 
+ @example
+ ```ts
+ const side = chunkSide({ nodes: [FIRST_ORIGINAL,], },);
+ ```
  */
 function chunkSide({ nodes, }: { readonly nodes: readonly Block[]; },): Side {
   return {
@@ -102,7 +102,7 @@ function chunkSide({ nodes, }: { readonly nodes: readonly Block[]; },): Side {
 }
 
 /**
- * First original of the pair.
+ First original of the pair.
  */
 const FIRST_ORIGINAL = blockNode({
   id: 'block/0',
@@ -110,7 +110,7 @@ const FIRST_ORIGINAL = blockNode({
 },);
 
 /**
- * Second original of the pair.
+ Second original of the pair.
  */
 const SECOND_ORIGINAL = blockNode({
   id: 'block/1',
@@ -118,7 +118,7 @@ const SECOND_ORIGINAL = blockNode({
 },);
 
 /**
- * Third original, the one production lost.
+ Third original, the one production lost.
  */
 const THIRD_ORIGINAL = blockNode({
   id: 'block/2',
@@ -126,7 +126,7 @@ const THIRD_ORIGINAL = blockNode({
 },);
 
 /**
- * First rendering, which the first two originals share.
+ First rendering, which the first two originals share.
  */
 const FIRST_RENDERING = blockNode({
   id: 'block/0',
@@ -134,7 +134,7 @@ const FIRST_RENDERING = blockNode({
 },);
 
 /**
- * Second rendering.
+ Second rendering.
  */
 const SECOND_RENDERING = blockNode({
   id: 'block/1',
@@ -142,7 +142,7 @@ const SECOND_RENDERING = blockNode({
 },);
 
 /**
- * The pair every carving here was carved from.
+ The pair every carving here was carved from.
  */
 const PAIR = {
   source: chunkSide({

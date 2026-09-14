@@ -1,7 +1,7 @@
 /**
- * Tests syntax-bearing lane winner publication eligibility.
- *
- * @module
+ Tests syntax-bearing lane winner publication eligibility.
+ 
+ @module
  */
 
 import {
@@ -23,31 +23,31 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Source identity repeated as visible name and alias.
+ Source identity repeated as visible name and alias.
  */
 const SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
 
 /**
- * Archive retaining entry id beside translated alias.
+ Archive retaining entry id beside translated alias.
  */
 const ARCHIVE = '---\nname: CatEntry\ninfo:\n  alias: Maomao\n---\n';
 
 /**
- * Syntax-valid translated identity.
+ Syntax-valid translated identity.
  */
 const TRANSLATED = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
 
 /**
- * Builds contest outcome with chosen lane.
- *
- * @param choice - lane panel selected
- *
- * @returns Quorum-complete synthetic outcome
- *
- * @example
- * ```ts
- * const outcome = outcomeFor({ choice: 'repair', });
- * ```
+ Builds contest outcome with chosen lane.
+ 
+ @param choice - lane panel selected
+ 
+ @returns Quorum-complete synthetic outcome
+ 
+ @example
+ ```ts
+ const outcome = outcomeFor({ choice: 'repair', });
+ ```
  */
 function outcomeFor(
   { choice, ballots = [], }: {
@@ -56,7 +56,7 @@ function outcomeFor(
   },
 ): LaneContestOutcome {
   /**
-   * Raw ballots fixture outcome retains.
+   Raw ballots fixture outcome retains.
    */
   const usable = ballots.length === 0 ? 2 : ballots.length;
   return {
@@ -68,16 +68,16 @@ function outcomeFor(
 }
 
 /**
- * Builds raw contest ballot choosing one lane.
- *
- * @param choice - unmodified model choice
- *
- * @returns Complete ballot fixture
- *
- * @example
- * ```ts
- * const ballot = ballotFor({ choice: 'translate', });
- * ```
+ Builds raw contest ballot choosing one lane.
+ 
+ @param choice - unmodified model choice
+ 
+ @returns Complete ballot fixture
+ 
+ @example
+ ```ts
+ const ballot = ballotFor({ choice: 'translate', });
+ ```
  */
 function ballotFor(
   { choice, }: { readonly choice: LaneContestBallot['choice']; },
@@ -219,7 +219,7 @@ await describe({
       name: 'CARRIES THE FINDINGS behind a refusal, and agrees with the boolean',
       fn: async () => {
         /**
-         * Verdict on a front matter winner that retains the directory id.
+         Verdict on a front matter winner that retains the directory id.
          */
         const verdict = laneContestChoiceVerdict({
           outcome: outcomeFor({ choice: 'repair', },),
@@ -258,13 +258,13 @@ await describe({
         + 'archive had dropped, and the reason lived only in the slice cache)',
       fn: async () => {
         /**
-         * Translate offer restoring a field the archive does not carry.
+         Translate offer restoring a field the archive does not carry.
          */
         const restored = '---\nname: Maomao\ninfo:\n  alias: Maomao\n  location: Catford\n---\n';
 
         /**
-         * What the log gets for an archive breaking the identity rule beside
-         * a repair keeping it and a translate reshaping it.
+         What the log gets for an archive breaking the identity rule beside
+         a repair keeping it and a translate reshaping it.
          */
         const lines = describeInadmissibleLanes({
           sourceText: SOURCE,

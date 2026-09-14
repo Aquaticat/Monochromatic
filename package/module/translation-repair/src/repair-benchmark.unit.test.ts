@@ -1,8 +1,8 @@
 /**
- * Tests for restoration grading and the milestone-two repair benchmark.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for restoration grading and the milestone-two repair benchmark.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -32,13 +32,13 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Clean fixture translation the seed deletes from.
+ Clean fixture translation the seed deletes from.
  */
 const CLEAN_TEXT =
   'The cat naps in the sun. The cat also chases crimson butterflies across the meadow. The bowl stays full.';
 
 /**
- * Deletion seed removing the butterfly sentence.
+ Deletion seed removing the butterfly sentence.
  */
 const BUTTERFLY_SEED: SeededErrorSpec = {
   id: 'seed/omission-0',
@@ -49,18 +49,18 @@ const BUTTERFLY_SEED: SeededErrorSpec = {
 };
 
 /**
- * Characters one fixture span covers, wide enough to overlap the planted
- * region without running past the block.
+ Characters one fixture span covers, wide enough to overlap the planted
+ region without running past the block.
  */
 const SPAN_WIDTH = 10;
 
 /**
- * Fixture text with the butterfly sentence already deleted.
+ Fixture text with the butterfly sentence already deleted.
  */
 const SEEDED_TEXT = 'The cat naps in the sun. The bowl stays full.';
 
 /**
- * Role roster; identities only matter as distinct voices.
+ Role roster; identities only matter as distinct voices.
  */
 const MODELS: RepairModels = {
   criticModelIds: ['hf:zai-org/GLM-5.3-Flash',],
@@ -71,7 +71,7 @@ const MODELS: RepairModels = {
 };
 
 /**
- * Client stand-in; the injected repair seam keeps it uncalled.
+ Client stand-in; the injected repair seam keeps it uncalled.
  */
 const UNUSED_CLIENT = {
   chatText: async () => {
@@ -285,7 +285,7 @@ await describe({
         + 'counting it as a miss scores the pipeline on a question nobody asked',
       fn: async () => {
         /**
-         * One entry: two seeds detected, one missed and not derivable.
+         One entry: two seeds detected, one missed and not derivable.
          */
         const records: readonly RepairAttemptRecord[] = [
           {
@@ -335,7 +335,7 @@ await describe({
         + 'seed id rather than counted separately',
       fn: async () => {
         /**
-         * One entry whose second seed is excluded for both reasons at once.
+         One entry whose second seed is excluded for both reasons at once.
          */
         const records: readonly RepairAttemptRecord[] = [
           {
@@ -379,7 +379,7 @@ await describe({
         + 'probe that found the seed underivable must never read alike',
       fn: async () => {
         /**
-         * One entry whose miss carries an unjudged derivability verdict.
+         One entry whose miss carries an unjudged derivability verdict.
          */
         const records: readonly RepairAttemptRecord[] = [
           {
@@ -504,8 +504,8 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
         + 'aligned pairs, so a seed past the first slice is still seen',
       fn: async () => {
         /**
-         * Filler paragraph long enough that the document subdivides; the
-         * slice budget is 400 target characters.
+         Filler paragraph long enough that the document subdivides; the
+         slice budget is 400 target characters.
          */
         const filler = Array.from(
           { length: 6, },
@@ -640,8 +640,8 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
         const sourceText = '## 简介\n\n猫猫在太阳下打盹。猫猫也追蝴蝶。碗是满的。\n';
 
         /**
-         * Planted region's start, bound out here because `const` narrowing
-         * does not reach into a function declaration (AGENTS.md TY8).
+         Planted region's start, bound out here because `const` narrowing
+         does not reach into a function declaration (AGENTS.md TY8).
          */
         const regionStart = application.startOffset;
 
@@ -652,17 +652,17 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
         );
 
         /**
-         * Builds the issue anchored at the deletion point, its status left to
-         * the caller so one fixture covers both declines.
-         *
-         * @param status - adjudication status the panel landed on
-         *
-         * @returns Issue record covering the seeded region
-         *
-         * @example
-         * ```ts
-         * const record = issueWithStatus('source-defect',);
-         * ```
+         Builds the issue anchored at the deletion point, its status left to
+         the caller so one fixture covers both declines.
+         
+         @param status - adjudication status the panel landed on
+         
+         @returns Issue record covering the seeded region
+         
+         @example
+         ```ts
+         const record = issueWithStatus('source-defect',);
+         ```
          */
         function issueWithStatus(status: 'source-defect' | 'rejected',) {
           return {
@@ -726,7 +726,7 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
 },);
 
 /**
- * Judge stub ruling every reference restored through the seam.
+ Judge stub ruling every reference restored through the seam.
  */
 const restoringJudge: typeof runRestorationJudge = async ({ references, },) => 
   Object.fromEntries(references.map(function toVerdict(reference,) {

@@ -1,11 +1,11 @@
 /**
- * Tests archive-only provenance, correction, and recorded naturalness under
- * the single-round contract: reviewer indecision retains the block with
- * findings and never buys a second round.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests archive-only provenance, correction, and recorded naturalness under
+ the single-round contract: reviewer indecision retains the block with
+ findings and never buys a second round.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -43,15 +43,15 @@ type ReplyFor = (input: {
 }) => unknown;
 
 /**
- * Creates schema-aware direct client and captures exact prompts.
- *
- * @param replyFor - reply selector
- *
- * @param prompts - prompt capture sink
- *
- * @param payloads - optional model-plus-prompt identity sink
- *
- * @returns Scripted client
+ Creates schema-aware direct client and captures exact prompts.
+ 
+ @param replyFor - reply selector
+ 
+ @param prompts - prompt capture sink
+ 
+ @param payloads - optional model-plus-prompt identity sink
+ 
+ @returns Scripted client
  */
 function scriptedClient(
   {

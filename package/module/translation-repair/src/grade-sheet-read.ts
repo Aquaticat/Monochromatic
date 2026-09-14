@@ -31,122 +31,122 @@ import { StatedRefusalError, } from './stated-refusal.ts';
 // the strength of one letter.
 
 /**
- * What a human decided about one sampled issue.
- *
- * @example
- * ```ts
- * const verdict: GradeVerdict = 'real-defect';
- * ```
+ What a human decided about one sampled issue.
+ 
+ @example
+ ```ts
+ const verdict: GradeVerdict = 'real-defect';
+ ```
  */
 export type GradeVerdict =
   /**
-   * Graded `Y`: a real translation defect.
+   Graded `Y`: a real translation defect.
    */
   | 'real-defect'
   /**
-   * Graded `N`: a false positive.
+   Graded `N`: a false positive.
    */
   | 'false-positive'
   /**
-   * Left blank, or answered with something that is not a verdict. Kept as its
-   * own state rather than folded into either: an item the grader declined to
-   * score belongs in no precision denominator.
+   Left blank, or answered with something that is not a verdict. Kept as its
+   own state rather than folded into either: an item the grader declined to
+   score belongs in no precision denominator.
    */
   | 'unscored'
   /**
-   * Answered `Duplicate`: this item is the same underlying defect as an earlier
-   * item in the same sample.
-   *
-   * Separate from `unscored` because the two are declined for opposite reasons.
-   * An unscored item is one nobody could decide; a duplicate is one already
-   * decided, at another position. Round three drew seven of them, 14 percent of
-   * the sample, and counting them as false positives dragged strict precision
-   * from 0.740 to 0.680 while every other reading rose. That movement described
-   * the sampling instrument, not the detector.
-   *
-   * The pipeline emitting one defect as several accepted issues is a real
-   * defect of its own, tracked separately; it is simply not the thing precision
-   * measures.
+   Answered `Duplicate`: this item is the same underlying defect as an earlier
+   item in the same sample.
+   
+   Separate from `unscored` because the two are declined for opposite reasons.
+   An unscored item is one nobody could decide; a duplicate is one already
+   decided, at another position. Round three drew seven of them, 14 percent of
+   the sample, and counting them as false positives dragged strict precision
+   from 0.740 to 0.680 while every other reading rose. That movement described
+   the sampling instrument, not the detector.
+   
+   The pipeline emitting one defect as several accepted issues is a real
+   defect of its own, tracked separately; it is simply not the thing precision
+   measures.
    */
   | 'duplicate';
 
 /**
- * One item read back off a graded sheet.
- *
- * @example
- * ```ts
- * const item: GradedItem = { index: 1, verdict: 'real-defect', note: '', };
- * ```
+ One item read back off a graded sheet.
+ 
+ @example
+ ```ts
+ const item: GradedItem = { index: 1, verdict: 'real-defect', note: '', };
+ ```
  */
 export type GradedItem = {
   /**
-   * 1-based position on the sheet, which is what a pre-grade is keyed by.
+   1-based position on the sheet, which is what a pre-grade is keyed by.
    */
   readonly index: number;
 
   /**
-   * Verdict the grader recorded.
+   Verdict the grader recorded.
    */
   readonly verdict: GradeVerdict;
 
   /**
-   * Free text the grader added, empty when they added none. Round one and round
-   * two both carry rationale that nothing else reproduces, so it is preserved
-   * rather than discarded once the verdict is extracted.
+   Free text the grader added, empty when they added none. Round one and round
+   two both carry rationale that nothing else reproduces, so it is preserved
+   rather than discarded once the verdict is extracted.
    */
   readonly note: string;
 };
 
 /**
- * Marker beginning a sheet item.
+ Marker beginning a sheet item.
  */
 const ITEM_PREFIX = '### ';
 
 /**
- * Marker introducing the grade on a detection-sheet item.
+ Marker introducing the grade on a detection-sheet item.
  */
 const GRADE_MARKER = 'grade:';
 
 /**
- * Legend that follows every grade, and therefore bounds the grader's answer.
+ Legend that follows every grade, and therefore bounds the grader's answer.
  */
 const LEGEND_MARKER = '(Y = ';
 
 /**
- * Reads the grader's answer out of one item heading, with the legend and any
- * enclosing brackets removed.
- *
- * @param line - item heading line
- *
- * @returns Answer text, empty when the box was left unfilled
- *
- * @example
- * ```ts
- * const answer = extractAnswer({ line: '### 1. grade: [Y]  (Y = ...)', },);
- * ```
+ Reads the grader's answer out of one item heading, with the legend and any
+ enclosing brackets removed.
+ 
+ @param line - item heading line
+ 
+ @returns Answer text, empty when the box was left unfilled
+ 
+ @example
+ ```ts
+ const answer = extractAnswer({ line: '### 1. grade: [Y]  (Y = ...)', },);
+ ```
  */
 function extractAnswer({ line, }: { readonly line: string; },): string {
   /**
-   * Where the grade begins.
+   Where the grade begins.
    */
   const start = line.indexOf(GRADE_MARKER,);
   if (start === (-1))
     return '';
 
   /**
-   * Everything after the marker, with the trailing legend cut off. The legend
-   * is last on the line, so the LAST occurrence bounds the answer even when a
-   * rationale quotes the legend's own wording.
+   Everything after the marker, with the trailing legend cut off. The legend
+   is last on the line, so the LAST occurrence bounds the answer even when a
+   rationale quotes the legend's own wording.
    */
   const afterMarker = line.slice(start + GRADE_MARKER.length,);
 
   /**
-   * Where the legend starts within that, or the end when it is absent.
+   Where the legend starts within that, or the end when it is absent.
    */
   const legendAt = afterMarker.lastIndexOf(LEGEND_MARKER,);
 
   /**
-   * Grader's answer, still possibly bracketed.
+   Grader's answer, still possibly bracketed.
    */
   const answer = (legendAt === (-1)
     ? afterMarker
@@ -166,24 +166,24 @@ function extractAnswer({ line, }: { readonly line: string; },): string {
 }
 
 /**
- * Answer marking an item as the same defect as an earlier one, lowercased.
- *
- * A word rather than a letter, because it is not a verdict about the item: the
- * grader is saying the question was already answered elsewhere on the sheet.
+ Answer marking an item as the same defect as an earlier one, lowercased.
+ 
+ A word rather than a letter, because it is not a verdict about the item: the
+ grader is saying the question was already answered elsewhere on the sheet.
  */
 const DUPLICATE_ANSWER = 'duplicate';
 
 /**
- * Classifies one grader answer into a verdict and its remaining prose.
- *
- * @param answer - grader's answer, unbracketed
- *
- * @returns Verdict and the note that followed it
- *
- * @example
- * ```ts
- * const read = readAnswer({ answer: 'N, anchored to the wrong text', },);
- * ```
+ Classifies one grader answer into a verdict and its remaining prose.
+ 
+ @param answer - grader's answer, unbracketed
+ 
+ @returns Verdict and the note that followed it
+ 
+ @example
+ ```ts
+ const read = readAnswer({ answer: 'N, anchored to the wrong text', },);
+ ```
  */
 function readAnswer({ answer, }: { readonly answer: string; },): {
   readonly verdict: GradeVerdict;
@@ -231,16 +231,16 @@ function readAnswer({ answer, }: { readonly answer: string; },): {
 }
 
 /**
- * Reads every graded item off a filled detection sheet.
- *
- * @param text - sheet as the grader left it
- *
- * @returns Items in sheet order
- *
- * @example
- * ```ts
- * const items = parseGradedSheet({ text: await readFile(path, 'utf8',), },);
- * ```
+ Reads every graded item off a filled detection sheet.
+ 
+ @param text - sheet as the grader left it
+ 
+ @returns Items in sheet order
+ 
+ @example
+ ```ts
+ const items = parseGradedSheet({ text: await readFile(path, 'utf8',), },);
+ ```
  */
 export function parseGradedSheet(
   { text, }: { readonly text: string; },
@@ -255,18 +255,18 @@ export function parseGradedSheet(
       position,
     ): GradedItem {
       /**
-       * Number the heading prints, which the pre-grades are keyed by.
-       *
-       * READ AND CHECKED rather than trusted from the position: a heading a
-       * grader deleted, duplicated or added by hand renumbers every later item
-       * silently against pre-grades keyed by the printed number.
+       Number the heading prints, which the pre-grades are keyed by.
+       
+       READ AND CHECKED rather than trusted from the position: a heading a
+       grader deleted, duplicated or added by hand renumbers every later item
+       silently against pre-grades keyed by the printed number.
        */
       const [numberText = '',] = line
         .slice(ITEM_PREFIX.length,)
         .split('.',);
       /**
-       * That number, as a number; NaN when the heading carries none, which the
-       * comparison below refuses like any other disagreement.
+       That number, as a number; NaN when the heading carries none, which the
+       comparison below refuses like any other disagreement.
        */
       const printed = Number(numberText.trim(),);
       if (printed !== (position + 1))
@@ -277,7 +277,7 @@ export function parseGradedSheet(
         },);
 
       /**
-       * Verdict and note read off this heading.
+       Verdict and note read off this heading.
        */
       const read = readAnswer({ answer: extractAnswer({ line, },), },);
       return {

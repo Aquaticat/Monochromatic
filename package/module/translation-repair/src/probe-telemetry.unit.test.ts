@@ -1,9 +1,9 @@
 /**
- * Tests for aggregating shadow-mode probe readings across a run, where the two
- * joins that are easy to get silently wrong live.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for aggregating shadow-mode probe readings across a run, where the two
+ joins that are easy to get silently wrong live.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -25,26 +25,26 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds upheld claims, one per DISTINCT prober.
- *
- * This mirrors what the run actually produces: measured across the 210 distinct
- * regions settled so far, no prober ever filed more than one upheld claim on
- * one region. Fixtures that pair a count with an empty claim list describe a
- * state the screen cannot emit, and they hid the units defect for as long as
- * they existed.
- *
- * @param count - claims to build
- *
- * @param admissibility - what the screen made of each quote
- *
- * @param prefix - distinguishes one call's probers from another's
- *
- * @returns Claims carrying distinct model ids
- *
- * @example
- * ```ts
- * const claims = catClaims({ count: 2, admissibility: 'corroborated', prefix: 'add', },);
- * ```
+ Builds upheld claims, one per DISTINCT prober.
+ 
+ This mirrors what the run actually produces: measured across the 210 distinct
+ regions settled so far, no prober ever filed more than one upheld claim on
+ one region. Fixtures that pair a count with an empty claim list describe a
+ state the screen cannot emit, and they hid the units defect for as long as
+ they existed.
+ 
+ @param count - claims to build
+ 
+ @param admissibility - what the screen made of each quote
+ 
+ @param prefix - distinguishes one call's probers from another's
+ 
+ @returns Claims carrying distinct model ids
+ 
+ @example
+ ```ts
+ const claims = catClaims({ count: 2, admissibility: 'corroborated', prefix: 'add', },);
+ ```
  */
 function catClaims(
   {
@@ -77,25 +77,25 @@ function catClaims(
 }
 
 /**
- * Builds one region tally with the counts under test and zeros elsewhere.
- *
- * @param envelopeId - envelope the region replaced
- *
- * @param corroborated - upheld claims of added damage
- *
- * @param removalCorroborated - upheld claims of dropped content
- *
- * @param contradicted - claims the screen refuted
- *
- * @param claims - overrides the generated claim list, for cases about who
- * filed what rather than how many were filed
- *
- * @returns Tally the summary reads
- *
- * @example
- * ```ts
- * const tally = catTally({ envelopeId: 'envelope/nap', corroborated: 2, },);
- * ```
+ Builds one region tally with the counts under test and zeros elsewhere.
+ 
+ @param envelopeId - envelope the region replaced
+ 
+ @param corroborated - upheld claims of added damage
+ 
+ @param removalCorroborated - upheld claims of dropped content
+ 
+ @param contradicted - claims the screen refuted
+ 
+ @param claims - overrides the generated claim list, for cases about who
+ filed what rather than how many were filed
+ 
+ @returns Tally the summary reads
+ 
+ @example
+ ```ts
+ const tally = catTally({ envelopeId: 'envelope/nap', corroborated: 2, },);
+ ```
  */
 function catTally(
   {
@@ -194,7 +194,7 @@ await describe({
         + 'gate would have discarded that repair on one opinion',
       fn: async () => {
         /**
-         * Two upheld claims, both from the same prober.
+         Two upheld claims, both from the same prober.
          */
         const tally = catTally({
           envelopeId: 'envelope/nap',
@@ -312,7 +312,7 @@ await describe({
         + 'that looks settled',
       fn: async () => {
         /**
-         * What summarizesDisagreement raised, read for its class as well as its wording.
+         What summarizesDisagreement raised, read for its class as well as its wording.
          */
         const refusalOfSummarizesDisagreement = caught(function summarizesDisagreement() {
           summarizeProbeTelemetry({
@@ -358,7 +358,7 @@ await describe({
         + 'not that copies with matching arithmetic are accepted',
       fn: async () => {
         /**
-         * What summarizesDifferentProbers raised, read for its class as well as its wording.
+         What summarizesDifferentProbers raised, read for its class as well as its wording.
          */
         const refusalOfSummarizesDifferentProbers = caught(function summarizesDifferentProbers() {
           summarizeProbeTelemetry({

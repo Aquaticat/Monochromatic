@@ -1,19 +1,19 @@
 /**
- * Tests for the computed line-structure predicate.
- *
- * Its thresholds were chosen from a corpus measurement rather than by taste,
- * and they are measured on the SOURCE side. That is load-bearing: `Toka_ls`'s
- * Chinese verse has a median node length of 22 and the English rendering of the
- * same chunk has 99, so the same predicate reading the translation would never
- * fire. The original's shape is what a repair must preserve.
- *
- * The case that fixes the thresholds is real: `Toka_ls`'s verse has a median block
- * length of 22 while its prose chunks sit at 49 and 87. A threshold of 20 would
- * have missed the verse, which is why the boundary is tested here directly.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the computed line-structure predicate.
+ 
+ Its thresholds were chosen from a corpus measurement rather than by taste,
+ and they are measured on the SOURCE side. That is load-bearing: `Toka_ls`'s
+ Chinese verse has a median node length of 22 and the English rendering of the
+ same chunk has 99, so the same predicate reading the translation would never
+ fire. The original's shape is what a repair must preserve.
+ 
+ The case that fixes the thresholds is real: `Toka_ls`'s verse has a median block
+ length of 22 while its prose chunks sit at 49 and 87. A threshold of 20 would
+ have missed the verse, which is why the boundary is tested here directly.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -29,16 +29,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds a slice from blocks.
- *
- * @param blocks - blank-line-separated blocks
- *
- * @returns Slice text
- *
- * @example
- * ```ts
- * const text = slice({ blocks: ['a', 'b',], },);
- * ```
+ Builds a slice from blocks.
+ 
+ @param blocks - blank-line-separated blocks
+ 
+ @returns Slice text
+ 
+ @example
+ ```ts
+ const text = slice({ blocks: ['a', 'b',], },);
+ ```
  */
 function slice(
   {
@@ -79,7 +79,7 @@ await describe({
         + 'guard ever reached that page',
       fn: async () => {
         /**
-         * Verse as an LF page carries it.
+         Verse as an LF page carries it.
          */
         const verse = slice({
           blocks: [
@@ -132,7 +132,7 @@ await describe({
         + 'the real case, so the boundary is pinned rather than left implicit',
       fn: async () => {
         /**
-         * Five blocks of exactly 22 characters.
+         Five blocks of exactly 22 characters.
          */
         const atTwentyTwo = slice({
           blocks: Array.from(
@@ -144,7 +144,7 @@ await describe({
         },);
 
         /**
-         * Five blocks of exactly 31 characters, one past the limit.
+         Five blocks of exactly 31 characters, one past the limit.
          */
         const atThirtyOne = slice({
           blocks: Array.from(
@@ -245,7 +245,7 @@ await describe({
         + 'sevenths of the verse it exists for',
       fn: async () => {
         /**
-         * A verse chunk whole, as the aligner produces it.
+         A verse chunk whole, as the aligner produces it.
          */
         const verseChunk = slice({
           blocks: [
@@ -259,8 +259,8 @@ await describe({
         },);
 
         /**
-         * Two of its slices; the second is a two-block fragment the predicate
-         * refuses to judge, which is the case that regressed.
+         Two of its slices; the second is a two-block fragment the predicate
+         refuses to judge, which is the case that regressed.
          */
         const governed = governedSliceIndices({
           chunks: [{
@@ -289,7 +289,7 @@ await describe({
         + 'silently recomputed per slice',
       fn: async () => {
         /**
-         * Two blocks: under the five-block floor, so judged alone this is false.
+         Two blocks: under the five-block floor, so judged alone this is false.
          */
         const fragment = slice({
           blocks: [
@@ -368,7 +368,7 @@ await describe({
         + 'union cannot lose to either reading',
       fn: async () => {
         /**
-         * A chunk dominated by long prose blocks, so the chunk does not trip.
+         A chunk dominated by long prose blocks, so the chunk does not trip.
          */
         const proseHeavy = slice({
           blocks: [
@@ -386,7 +386,7 @@ await describe({
         },);
 
         /**
-         * The stanza alone, which DOES trip on its own.
+         The stanza alone, which DOES trip on its own.
          */
         const stanza = slice({
           blocks: [
@@ -420,7 +420,7 @@ await describe({
         + 'prose sections beside it',
       fn: async () => {
         /**
-         * One verse chunk and one prose chunk, as a mixed entry produces.
+         One verse chunk and one prose chunk, as a mixed entry produces.
          */
         const governed = governedSliceIndices({
           chunks: [

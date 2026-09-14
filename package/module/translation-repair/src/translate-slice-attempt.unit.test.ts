@@ -1,12 +1,12 @@
 /**
- * Tests for one slice's attempt at translation, as the document driver asks it.
- *
- * The attempt settles a record or propagates operational interruption.
- * An absent passage never becomes a settled empty or unfilled quality result.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for one slice's attempt at translation, as the document driver asks it.
+ 
+ The attempt settles a record or propagates operational interruption.
+ An absent passage never becomes a settled empty or unfilled quality result.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -29,12 +29,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the attempts under test.
+ Logger for the attempts under test.
  */
 const l = tagged({ tag: 'translate-slice-attempt-test', },);
 
 /**
- * Original, two sections the archive translates.
+ Original, two sections the archive translates.
  */
 const SOURCE_TEXT = `## 第一节
 
@@ -46,7 +46,7 @@ const SOURCE_TEXT = `## 第一节
 `;
 
 /**
- * Archive translating both sections.
+ Archive translating both sections.
  */
 const TARGET_TEXT = `## Section one
 
@@ -58,12 +58,12 @@ On the windowsill there is being a bird.
 `;
 
 /**
- * Passage the archive never translated, carried by the insertion slice.
+ Passage the archive never translated, carried by the insertion slice.
  */
 const MISSING_SOURCE = '## 第三节\n\n猫猫也喜欢晒太阳。';
 
 /**
- * Roster the attempt seats.
+ Roster the attempt seats.
  */
 const MODELS: TranslateModels = {
   translatorModelIds: [
@@ -82,15 +82,15 @@ const MODELS: TranslateModels = {
 };
 
 /**
- * Client nobody is scripted on: every structured reply fails the wire guard,
- * so no translator is heard and no judge has anything to rank.
- *
- * @returns Client answering nothing usable
- *
- * @example
- * ```ts
- * const client = silentClient();
- * ```
+ Client nobody is scripted on: every structured reply fails the wire guard,
+ so no translator is heard and no judge has anything to rank.
+ 
+ @returns Client answering nothing usable
+ 
+ @example
+ ```ts
+ const client = silentClient();
+ ```
  */
 function silentClient(): SyntheticClient {
   return {
@@ -109,24 +109,24 @@ function silentClient(): SyntheticClient {
 }
 
 /**
- * Prepared pair with one insertion appended, the way the document driver
- * appends a passage the archive never translated.
- *
- * BUILT BY HAND rather than prepared from a mismatched pair, because the
- * deterministic aligner refuses a heading-count mismatch outright and yields no
- * slices at all; the pairing that would place the missing section is LLM
- * assisted and not what this suite is about.
- *
- * @returns Pair carrying two content slices and one insertion
- *
- * @example
- * ```ts
- * const prepared = await pairWithInsertion();
- * ```
+ Prepared pair with one insertion appended, the way the document driver
+ appends a passage the archive never translated.
+ 
+ BUILT BY HAND rather than prepared from a mismatched pair, because the
+ deterministic aligner refuses a heading-count mismatch outright and yields no
+ slices at all; the pairing that would place the missing section is LLM
+ assisted and not what this suite is about.
+ 
+ @returns Pair carrying two content slices and one insertion
+ 
+ @example
+ ```ts
+ const prepared = await pairWithInsertion();
+ ```
  */
 async function pairWithInsertion(): Promise<PreparedDocumentPair> {
   /**
-   * Pair as the pipeline prepares it.
+   Pair as the pipeline prepares it.
    */
   const sliced = await prepareDocumentPair({
     sourceText: SOURCE_TEXT,
@@ -154,18 +154,18 @@ async function pairWithInsertion(): Promise<PreparedDocumentPair> {
 }
 
 /**
- * Attempts one slice of the fixture pair with the silent client.
- *
- * @param prepared - pair the slice was cut from
- *
- * @param slice - slice to attempt
- *
- * @returns What the attempt yielded
- *
- * @example
- * ```ts
- * const attempt = await attemptSilently({ prepared, slice, },);
- * ```
+ Attempts one slice of the fixture pair with the silent client.
+ 
+ @param prepared - pair the slice was cut from
+ 
+ @param slice - slice to attempt
+ 
+ @returns What the attempt yielded
+ 
+ @example
+ ```ts
+ const attempt = await attemptSilently({ prepared, slice, },);
+ ```
  */
 async function attemptSilently(
   {
@@ -198,12 +198,12 @@ await describe({
       name: 'PAUSES an insertion when no translator is available rather than settling empty text',
       fn: async () => {
         /**
-         * Pair carrying the untranslated passage as an insertion.
+         Pair carrying the untranslated passage as an insertion.
          */
         const prepared = await pairWithInsertion();
 
         /**
-         * The insertion slice.
+         The insertion slice.
          */
         const insertion = prepared.slices.find(function isInsertion(slice,): boolean {
           return isInsertionChunk(slice.target,);
@@ -223,12 +223,12 @@ await describe({
         + 'fall back on',
       fn: async () => {
         /**
-         * Pair carrying two translated sections as content.
+         Pair carrying two translated sections as content.
          */
         const prepared = await pairWithInsertion();
 
         /**
-         * A content slice.
+         A content slice.
          */
         const content = prepared.slices.find(function isContent(slice,): boolean {
           return !isInsertionChunk(slice.target,);

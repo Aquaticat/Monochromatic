@@ -1,8 +1,8 @@
 /**
- * Tests for the per-producer standing: what counts as a disinterested ballot,
- * who a candidate credits, and what an empty denominator means.
- *
- * @module
+ Tests for the per-producer standing: what counts as a disinterested ballot,
+ who a candidate credits, and what an empty denominator means.
+ 
+ @module
  */
 
 import {
@@ -20,26 +20,26 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Full weight a ballot carries when the judge holds no stake.
+ Full weight a ballot carries when the judge holds no stake.
  */
 const FULL = 1;
 
 /**
- * Builds one ballot with the fields the standing reads.
- *
- * @param modelId - judge casting it
- *
- * @param best - one-based candidate it named
- *
- * @param selfVote - whether it named text it produced; the standing does not
- * read this, and a case proving that passes it deliberately wrong
- *
- * @returns Ballot for a selection round
- *
- * @example
- * ```ts
- * const ballot = ballotOf({ modelId: 'minimax-m3', best: 1, },);
- * ```
+ Builds one ballot with the fields the standing reads.
+ 
+ @param modelId - judge casting it
+ 
+ @param best - one-based candidate it named
+ 
+ @param selfVote - whether it named text it produced; the standing does not
+ read this, and a case proving that passes it deliberately wrong
+ 
+ @returns Ballot for a selection round
+ 
+ @example
+ ```ts
+ const ballot = ballotOf({ modelId: 'minimax-m3', best: 1, },);
+ ```
  */
 function ballotOf(
   {
@@ -62,18 +62,18 @@ function ballotOf(
 }
 
 /**
- * Reads one model's standing out of a list, refusing an absent one.
- *
- * @param standings - what the tally produced
- *
- * @param modelId - model wanted
- *
- * @returns That model's counts
- *
- * @example
- * ```ts
- * const standing = standingOf({ standings, modelId: 'minimax-m3', },);
- * ```
+ Reads one model's standing out of a list, refusing an absent one.
+ 
+ @param standings - what the tally produced
+ 
+ @param modelId - model wanted
+ 
+ @returns That model's counts
+ 
+ @example
+ ```ts
+ const standing = standingOf({ standings, modelId: 'minimax-m3', },);
+ ```
  */
 function standingOf(
   {
@@ -85,7 +85,7 @@ function standingOf(
   },
 ): ProducerStanding {
   /**
-   * Entry for that model, absent when it wrote nothing.
+   Entry for that model, absent when it wrote nothing.
    */
   const found = standings.find(function named(standing,): boolean {
     return standing.modelId === modelId;

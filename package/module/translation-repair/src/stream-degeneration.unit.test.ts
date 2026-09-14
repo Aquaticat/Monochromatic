@@ -1,21 +1,21 @@
 /**
- * Tests for the degeneration detector.
- *
- * The cases that matter are the two ways this can be wrong in production, and
- * they pull in opposite directions. Missing a cycling model leaves the failure
- * this exists to stop; calling healthy output degenerate aborts good work and
- * costs a voice, which is the exact harm the straggler-grace decision spent a
- * whole document avoiding.
- *
- * So the false-positive cases carry as much weight here as the detection ones,
- * and three of them are real rather than imagined. Stages ask for structured
- * replies, so repeated field names are ordinary output. Some models simply
- * write a great deal, so length must never condemn on its own. And this corpus
- * contains verse, so a refrain is content rather than a symptom.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the degeneration detector.
+ 
+ The cases that matter are the two ways this can be wrong in production, and
+ they pull in opposite directions. Missing a cycling model leaves the failure
+ this exists to stop; calling healthy output degenerate aborts good work and
+ costs a voice, which is the exact harm the straggler-grace decision spent a
+ whole document avoiding.
+ 
+ So the false-positive cases carry as much weight here as the detection ones,
+ and three of them are real rather than imagined. Stages ask for structured
+ replies, so repeated field names are ordinary output. Some models simply
+ write a great deal, so length must never condemn on its own. And this corpus
+ contains verse, so a refrain is content rather than a symptom.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -27,22 +27,22 @@ import {
 import { watchForDegeneration, } from '../dist/final/node/index.mjs';
 
 /**
- * Feeds text to a fresh detector and reads what it says.
- *
- * @param chunks - text pieces, in arrival order
- *
- * @returns Verdict after the last piece
- *
- * @example
- * ```ts
- * const verdict = verdictAfter({ chunks: ['a cat ', 'and a mat',], },);
- * ```
+ Feeds text to a fresh detector and reads what it says.
+ 
+ @param chunks - text pieces, in arrival order
+ 
+ @returns Verdict after the last piece
+ 
+ @example
+ ```ts
+ const verdict = verdictAfter({ chunks: ['a cat ', 'and a mat',], },);
+ ```
  */
 function verdictAfter({ chunks, }: { readonly chunks: readonly string[]; },): ReturnType<
   ReturnType<typeof watchForDegeneration>['verdict']
 > {
   /**
-   * Detector under test.
+   Detector under test.
    */
   const detector = watchForDegeneration();
   chunks.forEach(function feed(text,): void {
@@ -52,16 +52,16 @@ function verdictAfter({ chunks, }: { readonly chunks: readonly string[]; },): Re
 }
 
 /**
- * Builds varied prose, every sentence differing from every other.
- *
- * @param lines - how many sentences to write
- *
- * @returns Text with no repetition in it
- *
- * @example
- * ```ts
- * const prose = variedProse({ lines: 2_000, },);
- * ```
+ Builds varied prose, every sentence differing from every other.
+ 
+ @param lines - how many sentences to write
+ 
+ @returns Text with no repetition in it
+ 
+ @example
+ ```ts
+ const prose = variedProse({ lines: 2_000, },);
+ ```
  */
 function variedProse({ lines, }: { readonly lines: number; },): string {
   return Array.from(
@@ -77,18 +77,18 @@ function variedProse({ lines, }: { readonly lines: number; },): string {
 }
 
 /**
- * Splits text into small pieces, the way a network delivers it.
- *
- * @param text - whole reply
- *
- * @param size - characters per piece
- *
- * @returns Pieces in order
- *
- * @example
- * ```ts
- * const pieces = inPieces({ text, size: 17, },);
- * ```
+ Splits text into small pieces, the way a network delivers it.
+ 
+ @param text - whole reply
+ 
+ @param size - characters per piece
+ 
+ @returns Pieces in order
+ 
+ @example
+ ```ts
+ const pieces = inPieces({ text, size: 17, },);
+ ```
  */
 function inPieces(
   {
@@ -139,7 +139,7 @@ await describe({
         + 'that no token cap bounds, since none is sent',
       fn: async () => {
         /**
-         * A reply that says one thing forever.
+         A reply that says one thing forever.
          */
         const verdict = verdictAfter({
           chunks: ['The cat sat on the mat. '.repeat(8_000,),],
@@ -184,8 +184,8 @@ await describe({
         + 'for structured replies, so a reply full of identical field names is ordinary output',
       fn: async () => {
         /**
-         * A structured reply shaped like the ones stages request, every value
-         * different and every key the same.
+         A structured reply shaped like the ones stages request, every value
+         different and every key the same.
          */
         const structured = `{"findings":[${
           Array.from(
@@ -209,7 +209,7 @@ await describe({
         + 'threshold than prose does and is the case that sets how much margin there really is',
       fn: async () => {
         /**
-         * The same note over and over, differing only in its number.
+         The same note over and over, differing only in its number.
          */
         const boilerplate = Array.from(
           { length: 1_400, },
@@ -233,7 +233,7 @@ await describe({
         + 'what protects it is that no slice translation is ever long enough to be judged',
       fn: async () => {
         /**
-         * A poem whose refrain returns every stanza.
+         A poem whose refrain returns every stanza.
          */
         const verse = Array.from(
           { length: 800, },
@@ -242,7 +242,7 @@ await describe({
             at,
           ): string {
             /**
-             * Where the cat waits this time, so the stanzas are not identical.
+             Where the cat waits this time, so the stanzas are not identical.
              */
             const place = [
               'window',
@@ -266,7 +266,7 @@ await describe({
         + 'identical output',
       fn: async () => {
         /**
-         * One cycling reply.
+         One cycling reply.
          */
         const cycling = 'A calico chased its tail in the hallway. '.repeat(6_000,);
         expect(verdictAfter({ chunks: [cycling,], },).kind,).toBe('degenerate',);
@@ -280,7 +280,7 @@ await describe({
         ).toBe('degenerate',);
 
         /**
-         * One healthy reply.
+         One healthy reply.
          */
         const prose = variedProse({ lines: 2_000, },);
         expect(verdictAfter({ chunks: [prose,], },).kind,).toBe('healthy',);
@@ -300,14 +300,14 @@ await describe({
         + 'toward the sample',
       fn: async () => {
         /**
-         * Detector fed nothing but empty strings.
+         Detector fed nothing but empty strings.
          */
         const detector = watchForDegeneration();
         detector.notifyText({ text: '', },);
         detector.notifyText({ text: '', },);
 
         /**
-         * What it says with no text at all.
+         What it says with no text at all.
          */
         const verdict = detector.verdict();
         expect(verdict.kind,).toBe('undecided',);
@@ -323,12 +323,12 @@ await describe({
         + 'it is meant to stop',
       fn: async () => {
         /**
-         * Detector fed far more text than the trailing sample can hold.
+         Detector fed far more text than the trailing sample can hold.
          */
         const detector = watchForDegeneration();
 
         /**
-         * One healthy block, repeated with a changing tail so no two are equal.
+         One healthy block, repeated with a changing tail so no two are equal.
          */
         const block = variedProse({ lines: 2_000, },);
         Array.from(
@@ -343,7 +343,7 @@ await describe({
         );
 
         /**
-         * Sample size after all of it, which must be the cap and not the total.
+         Sample size after all of it, which must be the cap and not the total.
          */
         const verdict = detector.verdict();
         expect(verdict.kind,).toBe('healthy',);
@@ -360,8 +360,8 @@ await describe({
         + 'trips it',
       fn: async () => {
         /**
-         * Detector fed too little text for `verdict` to say anything but
-         * `undecided`.
+         Detector fed too little text for `verdict` to say anything but
+         `undecided`.
          */
         const short = watchForDegeneration();
         expect(short.charsSeen(),).toBe(0,);
@@ -370,7 +370,7 @@ await describe({
         expect(short.verdict().kind,).toBe('undecided',);
 
         /**
-         * Detector fed enough varied text to read healthy.
+         Detector fed enough varied text to read healthy.
          */
         const long = watchForDegeneration();
         const prose = variedProse({ lines: 2_000, },);

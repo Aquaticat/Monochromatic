@@ -63,29 +63,29 @@ import type { RosterModelId, } from './roster-id.ts';
 // everywhere else. gpt-oss-120b's card says 16K.
 
 /**
- * Host every route hangs off: the mantle endpoint in the one region measured
- * to list all four models. us-west-2 listed the Gemma sizes and gpt-oss too;
- * the region is a constant rather than a knob until a second one is needed.
+ Host every route hangs off: the mantle endpoint in the one region measured
+ to list all four models. us-west-2 listed the Gemma sizes and gpt-oss too;
+ the region is a constant rather than a knob until a second one is needed.
  */
 export const BEDROCK_MANTLE_BASE_URL = 'https://bedrock-mantle.us-east-1.api.aws';
 
 /**
- * Header carrying the key, a bearer token as on the other three providers.
+ Header carrying the key, a bearer token as on the other three providers.
  */
 export const BEDROCK_AUTH_HEADER = 'Authorization';
 
 /**
- * Which of the host's two OpenAI-compatible routes a model answers on.
- *
- * @example
- * ```ts
- * const route: BedrockRoute = 'openai-v1';
- * ```
+ Which of the host's two OpenAI-compatible routes a model answers on.
+ 
+ @example
+ ```ts
+ const route: BedrockRoute = 'openai-v1';
+ ```
  */
 export type BedrockRoute = 'openai-v1' | 'v1';
 
 /**
- * Path prefix of each route, before `/chat/completions`.
+ Path prefix of each route, before `/chat/completions`.
  */
 export const BEDROCK_ROUTE_PREFIX: Readonly<Record<BedrockRoute, string>> = {
   'openai-v1': '/openai/v1',
@@ -93,24 +93,24 @@ export const BEDROCK_ROUTE_PREFIX: Readonly<Record<BedrockRoute, string>> = {
 };
 
 /**
- * How a model's stream announces that it is whole.
- *
- * @example
- * ```ts
- * const end: BedrockStreamEnd = 'usage-chunk';
- * ```
+ How a model's stream announces that it is whole.
+ 
+ @example
+ ```ts
+ const end: BedrockStreamEnd = 'usage-chunk';
+ ```
  */
 export type BedrockStreamEnd = 'done-sentinel' | 'usage-chunk';
 
 /**
- * Models this provider serves for this pipeline, under its own spellings.
- * A CLOSED UNION so a typo cannot reach the wire, and so widening the roster
- * here is a deliberate edit rather than a string that happens to resolve.
- *
- * @example
- * ```ts
- * const modelId: BedrockServedId = 'google.gemma-4-31b';
- * ```
+ Models this provider serves for this pipeline, under its own spellings.
+ A CLOSED UNION so a typo cannot reach the wire, and so widening the roster
+ here is a deliberate edit rather than a string that happens to resolve.
+ 
+ @example
+ ```ts
+ const modelId: BedrockServedId = 'google.gemma-4-31b';
+ ```
  */
 export type BedrockServedId =
   | 'google.gemma-4-e2b'
@@ -119,71 +119,71 @@ export type BedrockServedId =
   | 'openai.gpt-oss-120b';
 
 /**
- * Verified per-model facts the router, the request builder and the ledger read.
- *
- * @example
- * ```ts
- * const info: BedrockModelInfo = BEDROCK_MODELS['google.gemma-4-e2b'];
- * ```
+ Verified per-model facts the router, the request builder and the ledger read.
+ 
+ @example
+ ```ts
+ const info: BedrockModelInfo = BEDROCK_MODELS['google.gemma-4-e2b'];
+ ```
  */
 export type BedrockModelInfo = {
   /**
-   * Identifier sent in the request body's `model` field.
+   Identifier sent in the request body's `model` field.
    */
   readonly id: BedrockServedId;
 
   /**
-   * The roster seat this spelling reaches: another provider's spelling where
-   * one serves the same model, and this provider's own spelling where none
-   * does, since a Bedrock-only model has no other name to be known by.
+   The roster seat this spelling reaches: another provider's spelling where
+   one serves the same model, and this provider's own spelling where none
+   does, since a Bedrock-only model has no other name to be known by.
    */
   readonly sharedWith: RosterModelId;
 
   /**
-   * Whether a picture may be sent here: the card's image input, held false
-   * until a transcription is measured, as the OpenRouter catalog holds it.
+   Whether a picture may be sent here: the card's image input, held false
+   until a transcription is measured, as the OpenRouter catalog holds it.
    */
   readonly readsImages: boolean;
 
   /**
-   * Context window in tokens, as the model card states it.
+   Context window in tokens, as the model card states it.
    */
   readonly contextLength: number;
 
   /**
-   * Ceiling the model card states for completion tokens, or the context
-   * window where the card states none.
+   Ceiling the model card states for completion tokens, or the context
+   window where the card states none.
    */
   readonly maxOutputLength: number;
 
   /**
-   * Route this model answers on, measured per model.
+   Route this model answers on, measured per model.
    */
   readonly route: BedrockRoute;
 
   /**
-   * How this model's stream announces that it is whole, measured per model.
+   How this model's stream announces that it is whole, measured per model.
    */
   readonly streamEnd: BedrockStreamEnd;
 
   /**
-   * USD per million prompt tokens, off the public pricing page.
+   USD per million prompt tokens, off the public pricing page.
    */
   readonly promptUsdPerMillion: number;
 
   /**
-   * USD per million completion tokens, off the public pricing page.
+   USD per million completion tokens, off the public pricing page.
    */
   readonly completionUsdPerMillion: number;
 };
 
 /**
- * Every model this provider serves for this pipeline.
- *
- * @example
- * ```ts
- * const info = BEDROCK_MODELS['openai.gpt-oss-120b'];
- * ```
+ Every model this provider serves for this pipeline.
+ 
+ @example
+ ```ts
+ const info = BEDROCK_MODELS['openai.gpt-oss-120b'];
+ ```
  */
 export const BEDROCK_MODELS: Readonly<Record<BedrockServedId, BedrockModelInfo>> = {
   'google.gemma-4-e2b': {
@@ -238,19 +238,19 @@ export const BEDROCK_MODELS: Readonly<Record<BedrockServedId, BedrockModelInfo>>
 };
 
 /**
- * Chat completions URL one model answers on.
- *
- * @param baseUrl - host, overridable for tests
- *
- * @param servedId - model whose route decides the path
- *
- * @returns Absolute URL to POST the body to
- *
- * @example
- * ```ts
- * bedrockChatUrlFor({ baseUrl: BEDROCK_MANTLE_BASE_URL, servedId: 'google.gemma-4-e2b', },);
- * // => 'https://bedrock-mantle.us-east-1.api.aws/openai/v1/chat/completions'
- * ```
+ Chat completions URL one model answers on.
+ 
+ @param baseUrl - host, overridable for tests
+ 
+ @param servedId - model whose route decides the path
+ 
+ @returns Absolute URL to POST the body to
+ 
+ @example
+ ```ts
+ bedrockChatUrlFor({ baseUrl: BEDROCK_MANTLE_BASE_URL, servedId: 'google.gemma-4-e2b', },);
+ // => 'https://bedrock-mantle.us-east-1.api.aws/openai/v1/chat/completions'
+ ```
  */
 export function bedrockChatUrlFor(
   {
@@ -262,7 +262,7 @@ export function bedrockChatUrlFor(
   },
 ): string {
   /**
-   * Route this model answers on.
+   Route this model answers on.
    */
   const { route, } = BEDROCK_MODELS[servedId];
 
@@ -270,16 +270,16 @@ export function bedrockChatUrlFor(
 }
 
 /**
- * Whether a label is one of this provider's spellings.
- *
- * @param label - model label as a log line or a caller wrote it
- *
- * @returns Whether this catalog has a row for it
- *
- * @example
- * ```ts
- * if (bedrockServesLabel(label,)) price(label,);
- * ```
+ Whether a label is one of this provider's spellings.
+ 
+ @param label - model label as a log line or a caller wrote it
+ 
+ @returns Whether this catalog has a row for it
+ 
+ @example
+ ```ts
+ if (bedrockServesLabel(label,)) price(label,);
+ ```
  */
 export function bedrockServesLabel(label: string,): label is BedrockServedId {
   return Object

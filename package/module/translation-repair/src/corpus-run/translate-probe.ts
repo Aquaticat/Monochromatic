@@ -39,58 +39,58 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // writes nothing and changes no pipeline behaviour.
 
 /**
- * Entry carrying the worst measured coverage gap.
+ Entry carrying the worst measured coverage gap.
  */
 const PROBE_ENTRY = 'XingZ60';
 
 /**
- * Ratio below which a section counts as barely translated for this probe.
- *
- * Only picks which section to demonstrate on. Nothing downstream reads it, and
- * choosing a threshold for production is exactly the question `#69` asked and
- * the user rejected, so it is deliberately local to this file.
+ Ratio below which a section counts as barely translated for this probe.
+ 
+ Only picks which section to demonstrate on. Nothing downstream reads it, and
+ choosing a threshold for production is exactly the question `#69` asked and
+ the user rejected, so it is deliberately local to this file.
  */
 const SPARSE_RATIO = 0.25;
 
 /**
- * Decimal places a coverage ratio prints with.
+ Decimal places a coverage ratio prints with.
  */
 const RATIO_DIGITS = 3;
 
 /**
- * Slices translated in one probe run.
- *
- * The first attempt asked for a whole 4641-character section in one call and
- * lost two voices of three: one timed out at six minutes, one returned
- * schema-invalid output. Editors in this pipeline work on regions of median 75
- * characters and at most 562, so that call was eight times larger than anything
- * the stage has ever been asked for. A translate stage would run at SLICE
- * granularity like every other stage, and this now does.
+ Slices translated in one probe run.
+ 
+ The first attempt asked for a whole 4641-character section in one call and
+ lost two voices of three: one timed out at six minutes, one returned
+ schema-invalid output. Editors in this pipeline work on regions of median 75
+ characters and at most 562, so that call was eight times larger than anything
+ the stage has ever been asked for. A translate stage would run at SLICE
+ granularity like every other stage, and this now does.
  */
 const PROBE_SLICES = 3;
 
 /**
- * Share of a pair's source blocks the translation covers.
- *
- * @param pair - aligned section pair
- *
- * @returns Target blocks divided by source blocks
- *
- * @example
- * ```ts
- * const ratio = coverageOf({ pair, },);
- * ```
+ Share of a pair's source blocks the translation covers.
+ 
+ @param pair - aligned section pair
+ 
+ @returns Target blocks divided by source blocks
+ 
+ @example
+ ```ts
+ const ratio = coverageOf({ pair, },);
+ ```
  */
 function coverageOf({ pair, }: { readonly pair: ChunkPair; },): number {
   /**
-   * Blocks on each side.
+   Blocks on each side.
    */
   const sourceBlocks = pair.source
     .nodes
     .length;
 
   /**
-   * Target blocks, which may be far fewer.
+   Target blocks, which may be far fewer.
    */
   const targetBlocks = pair.target
     .nodes
@@ -103,21 +103,21 @@ function coverageOf({ pair, }: { readonly pair: ChunkPair; },): number {
 }
 
 /**
- * Runs one translator ensemble over the sparsest aligned section.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Runs one translator ensemble over the sparsest aligned section.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Logger tagged for this probe.
+   Logger tagged for this probe.
    */
   const l = tagged({ tag: 'translate-probe', },);
 
   /**
-   * Original document at the pinned commit.
+   Original document at the pinned commit.
    */
   const sourceText = await readCorpusFile({
     pin: RUN_CORPUS_PIN,
@@ -125,7 +125,7 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * Translation at the same commit.
+   Translation at the same commit.
    */
   const targetText = await readCorpusFile({
     pin: RUN_CORPUS_PIN,
@@ -133,7 +133,7 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * Aligned section pairs.
+   Aligned section pairs.
    */
   const alignment = alignDocumentSections({
     source: parseDocument({ text: sourceText, },),
@@ -141,12 +141,12 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * Sparsest section by block ratio, which is the one worth demonstrating on.
+   Sparsest section by block ratio, which is the one worth demonstrating on.
    */
   const sparsest = alignment.pairs
     .filter(function hasSource(pair,) {
       /**
-       * Source blocks this pair carries.
+       Source blocks this pair carries.
        */
       const { nodes, } = pair.source;
 
@@ -165,12 +165,12 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Coverage of the section being demonstrated on.
+   Coverage of the section being demonstrated on.
    */
   const ratio = coverageOf({ pair: sparsest, },);
 
   /**
-   * Sizes of the section, pulled out so the log line carries no chains.
+   Sizes of the section, pulled out so the log line carries no chains.
    */
   const {
     nodes: sourceNodes,
@@ -178,7 +178,7 @@ async function main(): Promise<void> {
   } = sparsest.source;
 
   /**
-   * Same for the translation side.
+   Same for the translation side.
    */
   const {
     nodes: targetNodes,
@@ -186,22 +186,22 @@ async function main(): Promise<void> {
   } = sparsest.target;
 
   /**
-   * Block and character counts for the line below.
+   Block and character counts for the line below.
    */
   const sourceBlocks = sourceNodes.length;
 
   /**
-   * Characters of original in this section.
+   Characters of original in this section.
    */
   const sourceChars = sourceSection.length;
 
   /**
-   * Blocks the translation carries.
+   Blocks the translation carries.
    */
   const targetBlocks = targetNodes.length;
 
   /**
-   * Characters of translation in this section.
+   Characters of translation in this section.
    */
   const targetChars = targetSection.length;
   console.log(
@@ -215,12 +215,12 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Roster the stage asks.
+   Roster the stage asks.
    */
   const { editorModelIds, } = RUN_MODELS;
 
   /**
-   * Paragraph-bound slices of this section, exactly as the pipeline cuts them.
+   Paragraph-bound slices of this section, exactly as the pipeline cuts them.
    */
   const slices = subdivideChunkPair({
     pair: sparsest,
@@ -239,12 +239,12 @@ async function main(): Promise<void> {
     PROBE_SLICES,
   )) {
     /**
-     * Texts of this slice.
+     Texts of this slice.
      */
     const { text: sliceSource, } = slice.source;
 
     /**
-     * Translation side, empty where the section was never translated.
+     Translation side, empty where the section was never translated.
      */
     const { text: sliceTarget, } = slice.target;
     console.log(
@@ -255,7 +255,7 @@ async function main(): Promise<void> {
     console.log(`SOURCE: ${sliceSource}`,);
 
     /**
-     * Sheet the translators read for this slice.
+     Sheet the translators read for this slice.
      */
     const plan = buildTranslateMessages({
       sourceText: sliceSource,
@@ -265,7 +265,7 @@ async function main(): Promise<void> {
 
     try {
       /**
-       * Translator voices over this slice.
+       Translator voices over this slice.
        */
       const gather = await gatherStageVoices({
         client: createRunClient(),
@@ -280,7 +280,7 @@ async function main(): Promise<void> {
       },);
 
       /**
-       * Voices heard for this slice.
+       Voices heard for this slice.
        */
       const {
         voices,
@@ -291,7 +291,7 @@ async function main(): Promise<void> {
       );
       for (const voice of voices) {
         /**
-         * Rendered English from this voice.
+         Rendered English from this voice.
          */
         const { translation, } = voice.value;
         console.log(`  ${voice.modelId}: ${translation}`,);

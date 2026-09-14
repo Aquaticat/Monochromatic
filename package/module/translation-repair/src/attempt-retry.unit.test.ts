@@ -1,8 +1,8 @@
 /**
- * Tests for the benchmark's attempt-retry policy predicates.
- * Fixtures are cat-themed invention only.
- *
- * @module
+ Tests for the benchmark's attempt-retry policy predicates.
+ Fixtures are cat-themed invention only.
+ 
+ @module
  */
 
 import {
@@ -18,7 +18,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Baseline schema-mismatch record corruptions derive from.
+ Baseline schema-mismatch record corruptions derive from.
  */
 const MISMATCH_RECORD: CriticAttemptRecord = {
   modelId: 'hf:zai-org/GLM-5.3-Flash',

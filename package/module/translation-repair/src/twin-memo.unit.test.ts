@@ -1,17 +1,17 @@
 /**
- * Tests for the in-run memo of slices asking the same question.
- *
- * WHAT THESE PIN: a slice with no twin buying its key buys and registers; a
- * twin arriving during that buy waits and reuses what was stored; a twin
- * arriving during a buy that stored nothing asks for itself; a third twin
- * waits for the second rather than buying beside it; a failed buy withdraws
- * its entry, warns, and leaves the waiting twin to ask for itself; and a
- * different key never waits.
- *
- * Every purchase finishes when the test opens its gate, so which twin is
- * still buying when another arrives is the test's to choose.
- *
- * @module
+ Tests for the in-run memo of slices asking the same question.
+ 
+ WHAT THESE PIN: a slice with no twin buying its key buys and registers; a
+ twin arriving during that buy waits and reuses what was stored; a twin
+ arriving during a buy that stored nothing asks for itself; a third twin
+ waits for the second rather than buying beside it; a failed buy withdraws
+ its entry, warns, and leaves the waiting twin to ask for itself; and a
+ different key never waits.
+ 
+ Every purchase finishes when the test opens its gate, so which twin is
+ still buying when another arrives is the test's to choose.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -37,7 +37,7 @@ import {
 // order the purchases were started.
 
 /**
- * What the fixture's buyer returns.
+ What the fixture's buyer returns.
  */
 type Purchase = {
   readonly record: string;
@@ -45,48 +45,48 @@ type Purchase = {
 };
 
 /**
- * One buyer and what it records.
+ One buyer and what it records.
  */
 type Buyer = {
   /**
-   * One gate per purchase started, in start order.
+   One gate per purchase started, in start order.
    */
   readonly gates: readonly PromiseWithResolvers<Purchase>[];
 
   /**
-   * Starts a purchase that finishes at its gate.
+   Starts a purchase that finishes at its gate.
    */
   readonly buy: () => Promise<Purchase>;
 
   /**
-   * Every line the memo warned.
+   Every line the memo warned.
    */
   readonly warned: readonly string[];
 
   /**
-   * Logger whose warnings land in `warned`.
+   Logger whose warnings land in `warned`.
    */
   readonly l: Logger;
 };
 
 /**
- * Builds a gated buyer.
- *
- * @returns Buyer with empty records
- *
- * @example
- * ```ts
- * const shop = buyer();
- * ```
+ Builds a gated buyer.
+ 
+ @returns Buyer with empty records
+ 
+ @example
+ ```ts
+ const shop = buyer();
+ ```
  */
 function buyer(): Buyer {
   /**
-   * Gates in start order.
+   Gates in start order.
    */
   const gates: PromiseWithResolvers<Purchase>[] = [];
 
   /**
-   * Warnings in the order they were logged.
+   Warnings in the order they were logged.
    */
   const warned: string[] = [];
   return {
@@ -94,7 +94,7 @@ function buyer(): Buyer {
     warned,
     buy: async function gated(): Promise<Purchase> {
       /**
-       * Gate this purchase finishes at.
+       Gate this purchase finishes at.
        */
       const gate = Promise.withResolvers<Purchase>();
       gates.push(gate,);
@@ -110,16 +110,16 @@ function buyer(): Buyer {
 }
 
 /**
- * Reads what a purchase left for its twins.
- *
- * @param bought - purchase
- *
- * @returns Record when stored
- *
- * @example
- * ```ts
- * persistedOf({ record: 'r', persisted: true, },);
- * ```
+ Reads what a purchase left for its twins.
+ 
+ @param bought - purchase
+ 
+ @returns Record when stored
+ 
+ @example
+ ```ts
+ persistedOf({ record: 'r', persisted: true, },);
+ ```
  */
 function persistedOf(bought: Purchase,): TwinStored<string> {
   return bought.persisted
@@ -131,20 +131,20 @@ function persistedOf(bought: Purchase,): TwinStored<string> {
 }
 
 /**
- * Asks under the memo with the fixture's buyer.
- *
- * @param memo - shared memo
- *
- * @param shop - buyer
- *
- * @param key - question asked
- *
- * @returns What came of asking
- *
- * @example
- * ```ts
- * const first = asking({ memo, shop, },);
- * ```
+ Asks under the memo with the fixture's buyer.
+ 
+ @param memo - shared memo
+ 
+ @param shop - buyer
+ 
+ @param key - question asked
+ 
+ @returns What came of asking
+ 
+ @example
+ ```ts
+ const first = asking({ memo, shop, },);
+ ```
  */
 async function asking(
   {
@@ -167,28 +167,28 @@ async function asking(
 }
 
 /**
- * Lets every settled continuation run.
- *
- * @example
- * ```ts
- * await settle();
- * ```
+ Lets every settled continuation run.
+ 
+ @example
+ ```ts
+ await settle();
+ ```
  */
 async function settle(): Promise<void> {
   await wait(0,);
 }
 
 /**
- * Resolves with what a run threw, or `undefined` when it finished.
- *
- * @param run - promise under test
- *
- * @returns What it threw
- *
- * @example
- * ```ts
- * const failure = collected({ run, },);
- * ```
+ Resolves with what a run threw, or `undefined` when it finished.
+ 
+ @param run - promise under test
+ 
+ @returns What it threw
+ 
+ @example
+ ```ts
+ const failure = collected({ run, },);
+ ```
  */
 async function collected({ run, }: { readonly run: Promise<unknown>; },): Promise<unknown> {
   try {
@@ -391,7 +391,7 @@ await describe({
         await settle();
 
         /**
-         * What the first purchase throws.
+         What the first purchase throws.
          */
         const fault = new Error('the provider dropped the first purchase',);
         nonNullishOrThrow(shop.gates[0],).reject(fault,);

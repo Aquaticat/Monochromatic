@@ -68,38 +68,38 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // been measured to vary between identical asks, so only it is re-asked.
 
 /**
- * Clause the screen reports for a reading that declined to transcribe.
- *
- * NAMED HERE RATHER THAN IMPORTED because it is the one clause this file acts
- * on, and a rename that silently stopped the re-asking would otherwise leave no
- * trace. A mismatch shows up as readings that stop being retried.
+ Clause the screen reports for a reading that declined to transcribe.
+ 
+ NAMED HERE RATHER THAN IMPORTED because it is the one clause this file acts
+ on, and a rename that silently stopped the re-asking would otherwise leave no
+ trace. A mismatch shows up as readings that stop being retried.
  */
 const REFUSAL_CLAUSE = 'reads-as-refusal';
 
 /**
- * How many times one model may be asked about one picture.
- *
- * FOUR, kept on the corpus-wide measurement of `#124` recorded in the module
- * note: over one pass the limit bought 20 extra calls against 119 first asks
- * and recovered the one roll case, on the third ask. The bound is not fitted
- * to that single observation, which is why it is not three; and the projection
- * an earlier version quoted here ("four readings in five") is the refuted one
- * the module note names, never to be reinstated as a justification.
+ How many times one model may be asked about one picture.
+ 
+ FOUR, kept on the corpus-wide measurement of `#124` recorded in the module
+ note: over one pass the limit bought 20 extra calls against 119 first asks
+ and recovered the one roll case, on the third ask. The bound is not fitted
+ to that single observation, which is why it is not three; and the projection
+ an earlier version quoted here ("four readings in five") is the refuted one
+ the module note names, never to be reinstated as a justification.
  */
 export const REFUSAL_ASK_LIMIT = 4;
 
 /**
- * Whether a reading is a refusal that asking again might get past.
- *
- * @param reading - outcome of one ask
- *
- * @returns True when the model declined to transcribe rather than failing for a
- * reason another ask cannot change
- *
- * @example
- * ```ts
- * if (isRefusal({ reading, },)) { ask again }
- * ```
+ Whether a reading is a refusal that asking again might get past.
+ 
+ @param reading - outcome of one ask
+ 
+ @returns True when the model declined to transcribe rather than failing for a
+ reason another ask cannot change
+ 
+ @example
+ ```ts
+ if (isRefusal({ reading, },)) { ask again }
+ ```
  */
 function isRefusal({ reading, }: { readonly reading: ImageReading; },): boolean {
   if (reading.kind !== 'unavailable')
@@ -108,33 +108,33 @@ function isRefusal({ reading, }: { readonly reading: ImageReading; },): boolean 
 }
 
 /**
- * Asks one model to read one picture, past a refusal, up to a bounded limit.
- *
- * @param client - provider client
- *
- * @param modelId - reader asked, the same one every time, since the refusal is
- * this model's roll rather than a fact about the picture
- *
- * @param bytes - picture as it sits in the corpus
- *
- * @param assetName - file name, for the log line and the content part
- *
- * @param signal - abort honoured between asks as well as inside them, so a
- * stopped run does not keep re-asking
- *
- * @param perCallTimeoutMs - ceiling on one exchange, applied per ask rather than
- * across all of them
- *
- * @param l - logger
- *
- * @returns Reading, or the last refusal when every ask was declined
- *
- * @throws {@link DOMException} when `signal` aborts between asks
- *
- * @example
- * ```ts
- * const reading = await readPastRefusal({ client, modelId, bytes, assetName, signal, perCallTimeoutMs, l, },);
- * ```
+ Asks one model to read one picture, past a refusal, up to a bounded limit.
+ 
+ @param client - provider client
+ 
+ @param modelId - reader asked, the same one every time, since the refusal is
+ this model's roll rather than a fact about the picture
+ 
+ @param bytes - picture as it sits in the corpus
+ 
+ @param assetName - file name, for the log line and the content part
+ 
+ @param signal - abort honoured between asks as well as inside them, so a
+ stopped run does not keep re-asking
+ 
+ @param perCallTimeoutMs - ceiling on one exchange, applied per ask rather than
+ across all of them
+ 
+ @param l - logger
+ 
+ @returns Reading, or the last refusal when every ask was declined
+ 
+ @throws {@link DOMException} when `signal` aborts between asks
+ 
+ @example
+ ```ts
+ const reading = await readPastRefusal({ client, modelId, bytes, assetName, signal, perCallTimeoutMs, l, },);
+ ```
  */
 export async function readPastRefusal(
   {
@@ -156,7 +156,7 @@ export async function readPastRefusal(
   },
 ): Promise<ImageReading> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: readPastRefusal.name,
@@ -164,7 +164,7 @@ export async function readPastRefusal(
   },);
 
   /**
-   * Outcome of the latest ask, replaced by each re-ask.
+   Outcome of the latest ask, replaced by each re-ask.
    */
   let reading = await readImageAsset({
     client,
@@ -194,7 +194,7 @@ export async function readPastRefusal(
     // response was refusal-shaped. Concurrent asks would ignore dependency
     // and spend every perspective even after one succeeds.
     /**
-     * Distinct visual responsibility for this retry.
+     Distinct visual responsibility for this retry.
      */
     const perspective = nonNullishOrThrow(
       IMAGE_READING_PERSPECTIVES[ask - 1],

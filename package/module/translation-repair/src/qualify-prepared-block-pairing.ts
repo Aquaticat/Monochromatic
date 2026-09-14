@@ -15,7 +15,7 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 // Production keeps its existing fallback and cache rules; a calibration recipe additionally needs this replay check.
 
 /**
- * Exact own-key inventory of existing production zero-question results.
+ Exact own-key inventory of existing production zero-question results.
  */
 const FAST_PATH_KEYS: ReadonlySet<PropertyKey> = new Set([
   'kind',
@@ -24,34 +24,34 @@ const FAST_PATH_KEYS: ReadonlySet<PropertyKey> = new Set([
 ],);
 
 /**
- * Verifies one current production preparation result without buying or replacing any question.
- * Empty and singleton dispatch remain explicit zero-question states, not invented semantic votes.
- * Queried parents need the configured usable quorum and the existing independently endorsed relations.
- * Current full-document reconstruction and acquisition provenance belong to the owning recipe.
- *
- * @param pair - complete current parser-owned parent, never unchecked serialized nodes
- *
- * @param prepared - result returned by the shared production preparation
- *
- * @param pairIndex - original alignment index bound into preparation findings
- *
- * @param modelIds - frozen configured electorate, not the heard subset
- *
- * @param targetContainers - complete current target parser's ownership spans
- *
- * @param l - caller logger retaining entry and parent identity
- *
- * @returns Owned replay evidence without changing production placement policy
- *
- * @throws PreparationQualificationError when the parent needs unqualified fallback or inconsistent evidence
- *
- * @throws Error when existing identity, wire or structural ownership validation fails
- *
- * @example
- * ```ts
- * const prepared = await prepareBlockPairing(input);
- * const qualified = qualifyPreparedBlockPairing({ ...input, prepared });
- * ```
+ Verifies one current production preparation result without buying or replacing any question.
+ Empty and singleton dispatch remain explicit zero-question states, not invented semantic votes.
+ Queried parents need the configured usable quorum and the existing independently endorsed relations.
+ Current full-document reconstruction and acquisition provenance belong to the owning recipe.
+ 
+ @param pair - complete current parser-owned parent, never unchecked serialized nodes
+ 
+ @param prepared - result returned by the shared production preparation
+ 
+ @param pairIndex - original alignment index bound into preparation findings
+ 
+ @param modelIds - frozen configured electorate, not the heard subset
+ 
+ @param targetContainers - complete current target parser's ownership spans
+ 
+ @param l - caller logger retaining entry and parent identity
+ 
+ @returns Owned replay evidence without changing production placement policy
+ 
+ @throws PreparationQualificationError when the parent needs unqualified fallback or inconsistent evidence
+ 
+ @throws Error when existing identity, wire or structural ownership validation fails
+ 
+ @example
+ ```ts
+ const prepared = await prepareBlockPairing(input);
+ const qualified = qualifyPreparedBlockPairing({ ...input, prepared });
+ ```
  */
 export function qualifyPreparedBlockPairing({
   pair,
@@ -69,7 +69,7 @@ export function qualifyPreparedBlockPairing({
   readonly l: Logger;
 },): QualifiedBlockPairing {
   /**
-   * Logger keeps qualification separate from acquisition and production fallback.
+   Logger keeps qualification separate from acquisition and production fallback.
    */
   const pl = tagged({
     tag: qualifyPreparedBlockPairing.name,
@@ -82,7 +82,7 @@ export function qualifyPreparedBlockPairing({
   if ((!Number.isSafeInteger(pairIndex,)) || (pairIndex < 0))
     throw new PreparationQualificationError({ kind: 'parent-index', },);
   /**
-   * Existing production empty-side dispatch takes precedence over singleton dispatch.
+   Existing production empty-side dispatch takes precedence over singleton dispatch.
    */
   const empty = (pair.source
     .nodes
@@ -92,7 +92,7 @@ export function qualifyPreparedBlockPairing({
       .length
       === 0);
   /**
-   * Both sides must be nonempty singletons to avoid a question on this path.
+   Both sides must be nonempty singletons to avoid a question on this path.
    */
   const singleton = (pair.source
     .nodes
@@ -103,7 +103,7 @@ export function qualifyPreparedBlockPairing({
       === 1);
   if ((prepared.kind === 'empty') || (prepared.kind === 'implicit')) {
     /**
-     * Exactly the production fast-path fields, including nonenumerable and symbol keys in the check.
+     Exactly the production fast-path fields, including nonenumerable and symbol keys in the check.
      */
     const keys = Reflect.ownKeys(prepared,);
     if ((prepared.kind !== (empty ? 'empty' : 'implicit'))

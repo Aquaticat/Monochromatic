@@ -13,24 +13,24 @@ import { foldInvisibleVariants, } from './invisible-variants.ts';
 // Corroborated use and exact history are separately necessary facts.
 
 /**
- * Joins only whole reference occurrences to unambiguous one-line replacements.
- *
- * @param scopes - exact immutable occurrence and pinned-line mappings
- *
- * @param histories - verified single-parent ordinary history
- *
- * @param pin - commit whose archive is being qualified
- *
- * @param relPath - literal same path throughout the proof
- *
- * @returns Qualified revisions and reasons other scopes were withheld
- *
- * @throws {@link ArchiveNamingEvidenceError} for inconsistent history content
- *
- * @example
- * ```ts
- * const result = qualifyArchiveNamingScopes({ scopes, histories, pin, relPath });
- * ```
+ Joins only whole reference occurrences to unambiguous one-line replacements.
+ 
+ @param scopes - exact immutable occurrence and pinned-line mappings
+ 
+ @param histories - verified single-parent ordinary history
+ 
+ @param pin - commit whose archive is being qualified
+ 
+ @param relPath - literal same path throughout the proof
+ 
+ @returns Qualified revisions and reasons other scopes were withheld
+ 
+ @throws {@link ArchiveNamingEvidenceError} for inconsistent history content
+ 
+ @example
+ ```ts
+ const result = qualifyArchiveNamingScopes({ scopes, histories, pin, relPath });
+ ```
  */
 export function qualifyArchiveNamingScopes({
   scopes,
@@ -44,22 +44,22 @@ export function qualifyArchiveNamingScopes({
   readonly relPath: string;
 },): ArchiveNamingRevisionResult {
   /**
-   * Expected lack of qualification remains visible as data.
+   Expected lack of qualification remains visible as data.
    */
   const findings: string[] = [];
   /**
-   * Each scope contributes either one complete record or no naming evidence.
+   Each scope contributes either one complete record or no naming evidence.
    */
   const revisions = scopes.flatMap(function qualify(scope,): readonly QualifiedArchiveNamingRevision[] {
     /**
-     * Ordinary history is absent for explicitly withheld root/merge origins.
+     Ordinary history is absent for explicitly withheld root/merge origins.
      */
     const history = histories.get(scope.origin
       .commit,);
     if (history === undefined)
       return [];
     /**
-     * Hunks covering the origin line, not merely mentioning the same spelling.
+     Hunks covering the origin line, not merely mentioning the same spelling.
      */
     const matching = history.hunks
       .filter(function covers(hunk,): boolean {
@@ -72,7 +72,7 @@ export function qualifyArchiveNamingScopes({
           + hunk.newCount));
     },);
     /**
-     * Strictly unique textual replacement.
+     Strictly unique textual replacement.
      */
     const hunk = matching.length === 1 ? matching[0] : undefined;
     if ((hunk === undefined) || (hunk.removed
@@ -96,11 +96,11 @@ export function qualifyArchiveNamingScopes({
       return [];
     }
     /**
-     * Raw predecessor line, already subject to the shared CRLF fold.
+     Raw predecessor line, already subject to the shared CRLF fold.
      */
     const [previousRaw,] = hunk.removed;
     /**
-     * Raw origin line must exactly match line-porcelain evidence.
+     Raw origin line must exactly match line-porcelain evidence.
      */
     const [currentRaw,] = hunk.added;
     if ((previousRaw === undefined) || (currentRaw === undefined)
@@ -112,12 +112,12 @@ export function qualifyArchiveNamingScopes({
         relPath,
       },);
     /**
-     * Previous line under the same normalization as initial-archive occurrences.
+     Previous line under the same normalization as initial-archive occurrences.
      */
     const previous = foldInvisibleVariants({ text: previousRaw, },)
       .text;
     /**
-     * Current line under that same normalization.
+     Current line under that same normalization.
      */
     const current = foldInvisibleVariants({ text: currentRaw, },)
       .text;
@@ -127,14 +127,14 @@ export function qualifyArchiveNamingScopes({
         relPath,
       },);
     /**
-     * Textual change; its semantic use still comes only from independent observation.
+     Textual change; its semantic use still comes only from independent observation.
      */
     const change = archiveChangedSpan({
       previous,
       current,
     },);
     /**
-     * Immutable initial occurrence to which the change must be exactly equal.
+     Immutable initial occurrence to which the change must be exactly equal.
      */
     const { anchor, } = scope.reference
       .use;

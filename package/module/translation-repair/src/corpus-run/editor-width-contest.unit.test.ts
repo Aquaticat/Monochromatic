@@ -24,26 +24,26 @@ import {
 // Fixtures are invented cat prose, never corpus text.
 
 /**
- * Translation as it stood, which a declining arm re-offers unchanged.
+ Translation as it stood, which a declining arm re-offers unchanged.
  */
 const UNTOUCHED = 'The tabby waited by the door.';
 
 /**
- * A real rewrite, distinguishable from the incumbent.
+ A real rewrite, distinguishable from the incumbent.
  */
 const REWRITTEN = 'The tabby sat waiting at the door.';
 
 /**
- * Builds an arm offering some text.
- *
- * @param patchedText - what this arm shipped
- *
- * @returns Arm shaped as the contest reads it
- *
- * @example
- * ```ts
- * const arm = armOffering(UNTOUCHED,);
- * ```
+ Builds an arm offering some text.
+ 
+ @param patchedText - what this arm shipped
+ 
+ @returns Arm shaped as the contest reads it
+ 
+ @example
+ ```ts
+ const arm = armOffering(UNTOUCHED,);
+ ```
  */
 function armOffering(patchedText: string,) {
   return {

@@ -14,15 +14,15 @@ import type { ClaimPanelReading, } from './panel-reading.ts';
 // reference run's sole-proposer seed hit is the standing counterexample.
 
 /**
- * Every vote a panelist may cast on one claim, closed vocabulary.
- * `source-defect` asserts the original text itself is wrong at the claimed
- * spot, which must block "corrections" toward corruption;
- * `abstain` withdraws from the electorate for that claim.
- *
- * @example
- * ```ts
- * PANEL_VOTE_STATES.includes('supported',);
- * ```
+ Every vote a panelist may cast on one claim, closed vocabulary.
+ `source-defect` asserts the original text itself is wrong at the claimed
+ spot, which must block "corrections" toward corruption;
+ `abstain` withdraws from the electorate for that claim.
+ 
+ @example
+ ```ts
+ PANEL_VOTE_STATES.includes('supported',);
+ ```
  */
 export const PANEL_VOTE_STATES = [
   'supported',
@@ -33,26 +33,26 @@ export const PANEL_VOTE_STATES = [
 ] as const;
 
 /**
- * One panelist's judgment of one claim.
- *
- * @example
- * ```ts
- * const vote: PanelVoteState = 'supported';
- * ```
+ One panelist's judgment of one claim.
+ 
+ @example
+ ```ts
+ const vote: PanelVoteState = 'supported';
+ ```
  */
 export type PanelVoteState = typeof PANEL_VOTE_STATES[number];
 
 /**
- * Guards untrusted vote strings from model JSON.
- *
- * @param value - candidate from unvalidated model output
- *
- * @returns Whether value names one listed vote state
- *
- * @example
- * ```ts
- * isPanelVoteState('supported',);
- * ```
+ Guards untrusted vote strings from model JSON.
+ 
+ @param value - candidate from unvalidated model output
+ 
+ @returns Whether value names one listed vote state
+ 
+ @example
+ ```ts
+ isPanelVoteState('supported',);
+ ```
  */
 export function isPanelVoteState(value: unknown,): value is PanelVoteState {
   if ((typeof value) !== 'string')
@@ -62,68 +62,68 @@ export function isPanelVoteState(value: unknown,): value is PanelVoteState {
 }
 
 /**
- * One resolved verdict inside a ballot:
- * the vote, plus the optional severity re-grade the panel may apply.
- *
- * @example
- * ```ts
- * const verdict: BallotVerdict = { vote: 'supported', severity: 'major', };
- * ```
+ One resolved verdict inside a ballot:
+ the vote, plus the optional severity re-grade the panel may apply.
+ 
+ @example
+ ```ts
+ const verdict: BallotVerdict = { vote: 'supported', severity: 'major', };
+ ```
  */
 export type BallotVerdict = {
   /**
-   * Vote cast on this claim.
+   Vote cast on this claim.
    */
   readonly vote: PanelVoteState;
 
   /**
-   * Re-graded severity, when the panelist disagrees with the claimed one.
+   Re-graded severity, when the panelist disagrees with the claimed one.
    */
   readonly severity?: IssueSeverity;
 };
 
 /**
- * One panelist's complete resolved ballot over one chunk's clusters.
- * Missing claims count as abstentions at tally time, so a panelist who
- * answers half the sheet weakens only its own influence.
- *
- * @example
- * ```ts
- * const ballot: PanelBallot = {
- *   verdicts: { 'issue/abc': { vote: 'supported', }, },
- *   mergeOpinions: { 'cluster/def': true, },
- *   findings: [],
- * };
- * ```
+ One panelist's complete resolved ballot over one chunk's clusters.
+ Missing claims count as abstentions at tally time, so a panelist who
+ answers half the sheet weakens only its own influence.
+ 
+ @example
+ ```ts
+ const ballot: PanelBallot = {
+   verdicts: { 'issue/abc': { vote: 'supported', }, },
+   mergeOpinions: { 'cluster/def': true, },
+   findings: [],
+ };
+ ```
  */
 export type PanelBallot = {
   /**
-   * Verdicts keyed by claim id.
+   Verdicts keyed by claim id.
    */
   readonly verdicts: Readonly<Record<string, BallotVerdict>>;
 
   /**
-   * Same-defect opinions keyed by cluster id,
-   * only meaningful for multi-member clusters.
+   Same-defect opinions keyed by cluster id,
+   only meaningful for multi-member clusters.
    */
   readonly mergeOpinions: Readonly<Record<string, boolean>>;
 
   /**
-   * Wire irregularities in scorecard-stable wording
-   * (duplicate verdicts, out-of-range indices, unknown vote strings).
+   Wire irregularities in scorecard-stable wording
+   (duplicate verdicts, out-of-range indices, unknown vote strings).
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Fate of one adjudicated issue.
- * `source-defect` outranks acceptance because correcting toward a corrupted
- * original is worse than leaving the translation alone.
- *
- * @example
- * ```ts
- * const status: AdjudicationStatus = 'accepted';
- * ```
+ Fate of one adjudicated issue.
+ `source-defect` outranks acceptance because correcting toward a corrupted
+ original is worse than leaving the translation alone.
+ 
+ @example
+ ```ts
+ const status: AdjudicationStatus = 'accepted';
+ ```
  */
 export type AdjudicationStatus =
   | 'accepted'
@@ -132,157 +132,157 @@ export type AdjudicationStatus =
   | 'source-defect';
 
 /**
- * Weighted vote counts over one claim, kept on the issue for calibration
- * and steering; weights default to one per panelist until canary
- * calibration supplies better ones.
- *
- * @example
- * ```ts
- * const tally: VoteTally = {
- *   supported: 3, unsupported: 1, ambiguous: 0, sourceDefect: 0, abstain: 1,
- * };
- * ```
+ Weighted vote counts over one claim, kept on the issue for calibration
+ and steering; weights default to one per panelist until canary
+ calibration supplies better ones.
+ 
+ @example
+ ```ts
+ const tally: VoteTally = {
+   supported: 3, unsupported: 1, ambiguous: 0, sourceDefect: 0, abstain: 1,
+ };
+ ```
  */
 export type VoteTally = {
   /**
-   * Weight behind supported votes.
+   Weight behind supported votes.
    */
   readonly supported: number;
 
   /**
-   * Weight behind unsupported votes.
+   Weight behind unsupported votes.
    */
   readonly unsupported: number;
 
   /**
-   * Weight behind ambiguous votes.
+   Weight behind ambiguous votes.
    */
   readonly ambiguous: number;
 
   /**
-   * Weight behind source-defect votes.
+   Weight behind source-defect votes.
    */
   readonly sourceDefect: number;
 
   /**
-   * Weight behind abstentions, explicit or from missing verdicts.
+   Weight behind abstentions, explicit or from missing verdicts.
    */
   readonly abstain: number;
 };
 
 /**
- * One issue after the panel spoke.
- * Panel-merged diagnoses are partitioned by their effective member status,
- * so accepted issues contain only accepted claims. A source-defect decision
- * still blocks the entire merged cluster, whose members may have mixed statuses.
- * Per-claim tallies stay attached for calibration.
- *
- * @example
- * ```ts
- * const issue: AdjudicatedIssue = {
- *   issueId: 'adjudicated/abc',
- *   status: 'accepted',
- *   severity: 'major',
- *   claims: [member,],
- *   tallies: { 'issue/abc': tally, },
- * };
- * ```
+ One issue after the panel spoke.
+ Panel-merged diagnoses are partitioned by their effective member status,
+ so accepted issues contain only accepted claims. A source-defect decision
+ still blocks the entire merged cluster, whose members may have mixed statuses.
+ Per-claim tallies stay attached for calibration.
+ 
+ @example
+ ```ts
+ const issue: AdjudicatedIssue = {
+   issueId: 'adjudicated/abc',
+   status: 'accepted',
+   severity: 'major',
+   claims: [member,],
+   tallies: { 'issue/abc': tally, },
+ };
+ ```
  */
 export type AdjudicatedIssue = {
   /**
-   * Initial deterministic `adjudicated/<hash>` identity over sorted member claim ids.
-   * Emission deduplication retains its first representative's identity and severity.
+   Initial deterministic `adjudicated/<hash>` identity over sorted member claim ids.
+   Emission deduplication retains its first representative's identity and severity.
    */
   readonly issueId: string;
 
   /**
-   * Fate decided by the tally rules.
+   Fate decided by the tally rules.
    */
   readonly status: AdjudicationStatus;
 
   /**
-   * Final severity: upper median over member claim severities plus
-   * supported ballots' re-grades.
+   Final severity: upper median over member claim severities plus
+   supported ballots' re-grades.
    */
   readonly severity: IssueSeverity;
 
   /**
-   * Member claims, atomic as proposed. Fresh accepted issues contain only
-   * accepted members; rejected and unresolved diagnoses remain separate records.
+   Member claims, atomic as proposed. Fresh accepted issues contain only
+   accepted members; rejected and unresolved diagnoses remain separate records.
    */
   readonly claims: readonly AggregatedClaim[];
 
   /**
-   * Per-claim weighted tallies keyed by claim id.
+   Per-claim weighted tallies keyed by claim id.
    */
   readonly tallies: Readonly<Record<string, VoteTally>>;
 
   /**
-   * Per-claim BALLOTS behind those tallies, keyed by claim id.
-   *
-   * BESIDE {@link AdjudicatedIssue.tallies} RATHER THAN INSIDE IT, because the
-   * tally is the decision and the ballots are the evidence for it. Keeping them
-   * in one record is what made the evidence easy to drop: five weighted numbers
-   * look complete on their own, and cannot say whether an acceptance was
-   * unanimous or one weighted vote wide, cannot name a dissenter, and cannot be
-   * re-tallied under a different weight table.
-   *
-   * OPTIONAL, AND ITS ABSENCE HAS ONE MEANING: this issue was not built by
-   * `tallyVotes`. A deduplicated issue may have readings for only its known
-   * members when it combines current records with older records.
-   * That covers records written before this field existed, and
-   * the readers and tools that rebuild an issue from a settled artifact rather
-   * than adjudicating one. Requiring it would make those write an empty record,
-   * which would say "no panel voted" where the truth is "I am not the panel".
+   Per-claim BALLOTS behind those tallies, keyed by claim id.
+   
+   BESIDE {@link AdjudicatedIssue.tallies} RATHER THAN INSIDE IT, because the
+   tally is the decision and the ballots are the evidence for it. Keeping them
+   in one record is what made the evidence easy to drop: five weighted numbers
+   look complete on their own, and cannot say whether an acceptance was
+   unanimous or one weighted vote wide, cannot name a dissenter, and cannot be
+   re-tallied under a different weight table.
+   
+   OPTIONAL, AND ITS ABSENCE HAS ONE MEANING: this issue was not built by
+   `tallyVotes`. A deduplicated issue may have readings for only its known
+   members when it combines current records with older records.
+   That covers records written before this field existed, and
+   the readers and tools that rebuild an issue from a settled artifact rather
+   than adjudicating one. Requiring it would make those write an empty record,
+   which would say "no panel voted" where the truth is "I am not the panel".
    */
   readonly readings?: Readonly<Record<string, ClaimPanelReading>>;
 };
 
 /**
- * Tally rules; every knob is calibratable by the scorecard later.
- *
- * @example
- * ```ts
- * const config: AdjudicationConfig = DEFAULT_ADJUDICATION_CONFIG;
- * ```
+ Tally rules; every knob is calibratable by the scorecard later.
+ 
+ @example
+ ```ts
+ const config: AdjudicationConfig = DEFAULT_ADJUDICATION_CONFIG;
+ ```
  */
 export type AdjudicationConfig = {
   /**
-   * Minimum non-abstain weight before any decision;
-   * below it the claim lands needs-human.
+   Minimum non-abstain weight before any decision;
+   below it the claim lands needs-human.
    */
   readonly minBallotWeight: number;
 
   /**
-   * Fraction of non-abstain weight supported votes must strictly exceed
-   * for acceptance; the same fraction gates rejection symmetrically.
+   Fraction of non-abstain weight supported votes must strictly exceed
+   for acceptance; the same fraction gates rejection symmetrically.
    */
   readonly decisionThreshold: number;
 
   /**
-   * Fraction of non-abstain weight at which source-defect votes block the
-   * issue; deliberately lower than the decision threshold because a
-   * protective minority suffices against correcting toward corruption.
+   Fraction of non-abstain weight at which source-defect votes block the
+   issue; deliberately lower than the decision threshold because a
+   protective minority suffices against correcting toward corruption.
    */
   readonly sourceDefectThreshold: number;
 
   /**
-   * Vote weight per panelist id; absent panelists weigh one.
+   Vote weight per panelist id; absent panelists weigh one.
    */
   readonly weights?: Readonly<Record<string, number>>;
 };
 
 /**
- * Denominator of the protective minority fraction: one third of the
- * electorate flagging a source defect suffices to block, because
- * correcting toward corruption is the costlier mistake.
+ Denominator of the protective minority fraction: one third of the
+ electorate flagging a source defect suffices to block, because
+ correcting toward corruption is the costlier mistake.
  */
 const SOURCE_DEFECT_BLOCK_DENOMINATOR = 3;
 
 /**
- * Defaults until canary calibration supplies weights:
- * strict majority decides, three ballots minimum, one-third blocks on
- * suspected source defects.
+ Defaults until canary calibration supplies weights:
+ strict majority decides, three ballots minimum, one-third blocks on
+ suspected source defects.
  */
 export const DEFAULT_ADJUDICATION_CONFIG: AdjudicationConfig = {
   minBallotWeight: 3,

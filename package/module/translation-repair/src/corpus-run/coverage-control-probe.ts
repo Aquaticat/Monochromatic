@@ -37,33 +37,33 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // at a throwaway directory.
 
 /**
- * Cases gathered before the control is called.
- *
- * MORE THAN THE CONTROL WILL USE, because a case is only damageable if the
- * roster returns `carried` with evidence, which is not known until it is asked.
- * Offering spares keeps a run from ending with nothing measured.
+ Cases gathered before the control is called.
+ 
+ MORE THAN THE CONTROL WILL USE, because a case is only damageable if the
+ roster returns `carried` with evidence, which is not known until it is asked.
+ Offering spares keeps a run from ending with nothing measured.
  */
 const CASES_OFFERED = 8;
 
 /**
- * Entry ids named on the command line, empty when none were.
- *
- * @returns Ids to restrict the walk to
- *
- * @example
- * ```ts
- * const onlyIds = readOnlyIds();
- * ```
+ Entry ids named on the command line, empty when none were.
+ 
+ @returns Ids to restrict the walk to
+ 
+ @example
+ ```ts
+ const onlyIds = readOnlyIds();
+ ```
  */
 function readOnlyIds(): readonly string[] {
   /**
-   * Arguments after the runner path.
+   Arguments after the runner path.
    */
   const args = process.argv
     .slice(2,);
 
   /**
-   * Where the flag sits, or absent.
+   Where the flag sits, or absent.
    */
   const onlyAt = args.indexOf('--only',);
 
@@ -78,27 +78,27 @@ function readOnlyIds(): readonly string[] {
 }
 
 /**
- * Collects passages to try, walking entries until enough are gathered.
- *
- * @param onlyIds - entries to restrict the walk to, empty for all
- *
- * @returns Cases the control may try
- *
- * @example
- * ```ts
- * const cases = await gatherCases({ onlyIds, },);
- * ```
+ Collects passages to try, walking entries until enough are gathered.
+ 
+ @param onlyIds - entries to restrict the walk to, empty for all
+ 
+ @returns Cases the control may try
+ 
+ @example
+ ```ts
+ const cases = await gatherCases({ onlyIds, },);
+ ```
  */
 async function gatherCases(
   { onlyIds, }: { readonly onlyIds: readonly string[]; },
 ): Promise<readonly CoverageControlCase[]> {
   /**
-   * Cases found so far.
+   Cases found so far.
    */
   const cases: CoverageControlCase[] = [];
 
   /**
-   * Entries to walk.
+   Entries to walk.
    */
   const entryIds = (await listCorpusPeople({ pin: RUN_CORPUS_PIN, },))
     .filter(function isWanted(entryId,): boolean {
@@ -110,7 +110,7 @@ async function gatherCases(
       break;
 
     /**
-     * Original side at the pin.
+     Original side at the pin.
      */
     // oxlint-disable-next-line eslint/no-await-in-loop -- sequential by design: the walk stops as soon as enough cases are found, and reading every entry up front would read the whole corpus to use a few pages of it
     const sourceText = await readCorpusFile({
@@ -119,7 +119,7 @@ async function gatherCases(
     },);
 
     /**
-     * Translation at the pin.
+     Translation at the pin.
      */
     // oxlint-disable-next-line eslint/no-await-in-loop -- paired with the read above; the two sides of one entry are read together or not at all
     const targetText = await readCorpusFile({
@@ -128,12 +128,12 @@ async function gatherCases(
     },);
 
     /**
-     * Translation parsed once, since every case for this entry shares it.
+     Translation parsed once, since every case for this entry shares it.
      */
     const translation = parseDocument({ text: targetText, },);
 
     /**
-     * Passages this entry's aligners refuse to pair.
+     Passages this entry's aligners refuse to pair.
      */
     const candidates = listCoverageCandidates({
       source: parseDocument({ text: sourceText, },),
@@ -160,39 +160,39 @@ async function gatherCases(
 }
 
 /**
- * Runs the control and reports what it found.
- *
- * @throws Error when no entry offered a single passage to ask about, since a
- * run that measured nothing must not be reported as one that measured a null
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Runs the control and reports what it found.
+ 
+ @throws Error when no entry offered a single passage to ask about, since a
+ run that measured nothing must not be reported as one that measured a null
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Logger for the run.
+   Logger for the run.
    */
   const l = tagged({ tag: 'coverage-control', },);
 
   /**
-   * Client every call goes through.
+   Client every call goes through.
    */
   const client = createRunClient();
 
   /**
-   * Cancellation shared by every call, never fired.
+   Cancellation shared by every call, never fired.
    */
   const { signal, } = new AbortController();
 
   /**
-   * Entries the caller named.
+   Entries the caller named.
    */
   const onlyIds = readOnlyIds();
 
   /**
-   * Passages to try.
+   Passages to try.
    */
   const cases = await gatherCases({ onlyIds, },);
 
@@ -209,7 +209,7 @@ async function main(): Promise<void> {
   );
 
   /**
-   * What deleting each rendering did.
+   What deleting each rendering did.
    */
   const control = await coverageControlHolds({
     client,
@@ -221,7 +221,7 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * Whether an absence vote proved reachable, with the cases it was read over.
+   Whether an absence vote proved reachable, with the cases it was read over.
    */
   const {
     held,
@@ -232,11 +232,11 @@ async function main(): Promise<void> {
   } = control;
 
   /**
-   * Cases the roster declined to call covered before anything was damaged.
-   *
-   * REPORTED SEPARATELY FROM ANCHORING FAILURES because these are the wire
-   * voting absence on text nobody touched, which is a stronger reading than any
-   * damaged case can give.
+   Cases the roster declined to call covered before anything was damaged.
+   
+   REPORTED SEPARATELY FROM ANCHORING FAILURES because these are the wire
+   voting absence on text nobody touched, which is a stronger reading than any
+   damaged case can give.
    */
   const notCarried = refusals
     .filter(function declinedUndamaged(refusal,): boolean {

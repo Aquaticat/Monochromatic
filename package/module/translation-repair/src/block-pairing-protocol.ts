@@ -9,8 +9,8 @@ import {
 // Preparation acquisition and receipt planning share actual messages and schema, not parallel reconstructions.
 
 /**
- * Existing structured response contract, unchanged by moving its construction.
- * Each handoff receives its own copy so recording code cannot mutate future questions.
+ Existing structured response contract, unchanged by moving its construction.
+ Each handoff receives its own copy so recording code cannot mutate future questions.
  */
 const PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',
@@ -40,39 +40,39 @@ const PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 };
 
 /**
- * Model-neutral payload supplied by the actual block-pairing stage.
- * Provider bodies, completion caps, rosters and attempt provenance remain separate receipt bindings.
- *
- * @example
- * ```ts
- * const protocol = blockPairingProtocol({ sourceBlocks, targetBlocks, });
- * ```
+ Model-neutral payload supplied by the actual block-pairing stage.
+ Provider bodies, completion caps, rosters and attempt provenance remain separate receipt bindings.
+ 
+ @example
+ ```ts
+ const protocol = blockPairingProtocol({ sourceBlocks, targetBlocks, });
+ ```
  */
 export type BlockPairingProtocol = {
   /**
-   * Exact ordered messages, including the existing content-sensitive listing fence.
+   Exact ordered messages, including the existing content-sensitive listing fence.
    */
   readonly messages: readonly ChatMessage[];
   /**
-   * Existing schema name and shape, without adding strictness or changing response semantics.
+   Existing schema name and shape, without adding strictness or changing response semantics.
    */
   readonly responseFormat: JsonSchemaResponseFormat;
 };
 
 /**
- * Constructs the model-neutral protocol shared by production acquisition and receipt planning.
- * Definition-order exemptions affect local interpretation, not this emitted message contract.
- *
- * @param sourceBlocks - current original blocks in their emitted numbering
- *
- * @param targetBlocks - current archive blocks in their emitted numbering
- *
- * @returns Actual messages and owned schema, without creating providers or purchasing evidence
- *
- * @example
- * ```ts
- * const { messages, responseFormat, } = blockPairingProtocol({ sourceBlocks, targetBlocks, });
- * ```
+ Constructs the model-neutral protocol shared by production acquisition and receipt planning.
+ Definition-order exemptions affect local interpretation, not this emitted message contract.
+ 
+ @param sourceBlocks - current original blocks in their emitted numbering
+ 
+ @param targetBlocks - current archive blocks in their emitted numbering
+ 
+ @returns Actual messages and owned schema, without creating providers or purchasing evidence
+ 
+ @example
+ ```ts
+ const { messages, responseFormat, } = blockPairingProtocol({ sourceBlocks, targetBlocks, });
+ ```
  */
 export function blockPairingProtocol({
   sourceBlocks,

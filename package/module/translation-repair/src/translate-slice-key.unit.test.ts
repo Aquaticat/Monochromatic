@@ -1,16 +1,16 @@
 /**
- * Tests for the cross-run key that decides when two runs are looking at the same
- * slice.
- *
- * WHAT THESE PIN is the pair of promises the key has to keep at once. It must
- * SEPARATE two questions that can have different answers, or one arm of a
- * comparison reads the other's cached result and the two report as identical.
- * And it must not separate anything else, or a settled corpus is discarded for
- * nothing.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the cross-run key that decides when two runs are looking at the same
+ slice.
+ 
+ WHAT THESE PIN is the pair of promises the key has to keep at once. It must
+ SEPARATE two questions that can have different answers, or one arm of a
+ comparison reads the other's cached result and the two report as identical.
+ And it must not separate anything else, or a settled corpus is discarded for
+ nothing.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -24,7 +24,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Roster both sides of every comparison share.
+ Roster both sides of every comparison share.
  */
 const MODELS = {
   translatorModelIds: ['hf:cat/Cat-A',
@@ -35,55 +35,55 @@ const MODELS = {
 };
 
 /**
- * Run shape every case keys against.
+ Run shape every case keys against.
  */
 const RUN_SHAPE = translateRunShape({ models: MODELS, },);
 
 /**
- * Slice original every case keys.
+ Slice original every case keys.
  */
 const SOURCE_TEXT = '小猫在窗台上睡觉。\n';
 
 /**
- * Translation already sitting in the archive for it.
+ Translation already sitting in the archive for it.
  */
 const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
 
 /**
- * Key a windowless slice hashes to, pinned rather than recomputed.
- *
- * WHY A LITERAL RATHER THAN A COMPARISON. Every other case here asks whether two
- * keys agree, and a change that moved BOTH sides would pass all of them while
- * discarding every settled slice in the pinned corpus, since a resumed record is
- * found by this exact string. Only a value written down outside the code catches
- * that. It moves when {@link TRANSLATE_SLICE_CACHE_VERSION} moves, which is the
- * intended signal: a bump means the corpus is deliberately being rebought.
- *
- * MOVED on 2026-08-22 when version went to 6 for judge line-structure policy,
- * then on 2026-08-28 when version went to 7 for target-authoritative contributor
- * spelling in metadata comments and version 8 for body contributor public
- * identities. Version 9 adds deterministic complete-form contributor floor.
- * Version 10 replaces identical decline retry with distinct challenge task.
- * Version 11 continues absent passages from latest rejection evidence.
- * Version 12 excludes archive fallback that fails deterministic source floor.
- * These questions changed without input fields.
- *
- * The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
- * leaves this alone.
+ Key a windowless slice hashes to, pinned rather than recomputed.
+ 
+ WHY A LITERAL RATHER THAN A COMPARISON. Every other case here asks whether two
+ keys agree, and a change that moved BOTH sides would pass all of them while
+ discarding every settled slice in the pinned corpus, since a resumed record is
+ found by this exact string. Only a value written down outside the code catches
+ that. It moves when {@link TRANSLATE_SLICE_CACHE_VERSION} moves, which is the
+ intended signal: a bump means the corpus is deliberately being rebought.
+ 
+ MOVED on 2026-08-22 when version went to 6 for judge line-structure policy,
+ then on 2026-08-28 when version went to 7 for target-authoritative contributor
+ spelling in metadata comments and version 8 for body contributor public
+ identities. Version 9 adds deterministic complete-form contributor floor.
+ Version 10 replaces identical decline retry with distinct challenge task.
+ Version 11 continues absent passages from latest rejection evidence.
+ Version 12 excludes archive fallback that fails deterministic source floor.
+ These questions changed without input fields.
+ 
+ The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
+ leaves this alone.
  */
 const LEGACY_WINDOWLESS_KEY = 'e3f85c77f819ac32acae01adab73e0a3ad63633b1c7ad39ef487011fe6d12efb';
 
 /**
- * One slice's key, with whatever this case wants to vary.
- *
- * @param neighbouringSourceText - wider window, absent for an ordinary run
- *
- * @returns Key for that slice under that window
- *
- * @example
- * ```ts
- * const key = keyFor({},);
- * ```
+ One slice's key, with whatever this case wants to vary.
+ 
+ @param neighbouringSourceText - wider window, absent for an ordinary run
+ 
+ @returns Key for that slice under that window
+ 
+ @example
+ ```ts
+ const key = keyFor({},);
+ ```
  */
 function keyFor(
   { neighbouringSourceText, }: { readonly neighbouringSourceText?: string; },
@@ -156,15 +156,15 @@ await describe({
         + 'the property, so without this one nothing tests what the function does with it',
       fn: async () => {
         /**
-         * Argument a JavaScript caller can build and TypeScript refuses.
-         *
-         * `exactOptionalPropertyTypes` rejects this property as `undefined`,
-         * which is a real guard and is why the cast is here rather than the
-         * type being loosened to admit it. What the guard does not reach is an
-         * untyped caller, a spread of a partly filled record, or a wrapper
-         * compiled before this property existed, and each of those hands the
-         * function exactly this object. What it does with it is the runtime
-         * behaviour under test.
+         Argument a JavaScript caller can build and TypeScript refuses.
+         
+         `exactOptionalPropertyTypes` rejects this property as `undefined`,
+         which is a real guard and is why the cast is here rather than the
+         type being loosened to admit it. What the guard does not reach is an
+         untyped caller, a spread of a partly filled record, or a wrapper
+         compiled before this property existed, and each of those hands the
+         function exactly this object. What it does with it is the runtime
+         behaviour under test.
          */
         const explicitlyAbsent = {
           runShape: RUN_SHAPE,

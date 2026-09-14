@@ -1,14 +1,14 @@
 /**
- * Tests for naming why a voice was lost.
- *
- * The whole value is SEPARATION. Before this, every abandonment logged the same
- * phrase, and three situations wanting opposite remedies were indistinguishable
- * in a run log: a call that never got a byte, a call cut off part way through,
- * and a call we ended ourselves for repeating itself.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for naming why a voice was lost.
+ 
+ The whole value is SEPARATION. Before this, every abandonment logged the same
+ phrase, and three situations wanting opposite remedies were indistinguishable
+ in a run log: a call that never got a byte, a call cut off part way through,
+ and a call we ended ourselves for repeating itself.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -24,18 +24,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds a cut carrying a given amount of delivered text.
- *
- * @param partialText - what the stream delivered
- *
- * @param firstByteMs - when the first byte arrived, negative when none did
- *
- * @returns Error as the drain raises it
- *
- * @example
- * ```ts
- * const error = cutWith({ partialText: 'It is a cat', firstByteMs: 40, },);
- * ```
+ Builds a cut carrying a given amount of delivered text.
+ 
+ @param partialText - what the stream delivered
+ 
+ @param firstByteMs - when the first byte arrived, negative when none did
+ 
+ @returns Error as the drain raises it
+ 
+ @example
+ ```ts
+ const error = cutWith({ partialText: 'It is a cat', firstByteMs: 40, },);
+ ```
  */
 function cutWith(
   {
@@ -77,7 +77,7 @@ await describe({
         ).toBe('no-first-byte, nothing was ever delivered',);
 
         /**
-         * A call that had begun answering.
+         A call that had begun answering.
          */
         const midReply = describeAbandon({
           error: cutWith({
@@ -96,7 +96,7 @@ await describe({
         + 'remedy is neither of the other two',
       fn: async () => {
         /**
-         * What the drain raises when it ends a cycling call.
+         What the drain raises when it ends a cycling call.
          */
         const said = describeAbandon({
           error: new StreamDegenerateError({

@@ -40,93 +40,93 @@ export { applyFootnoteRelabel, } from './apply-footnote-relabel.ts';
 // warning: a wrong relabel would be the defect this exists to stop.
 
 /**
- * One label the archive carries and the original's label for the same note.
- *
- * @example
- * ```ts
- * const relabel: FootnoteRelabel = { from: '1', to: '2', };
- * ```
+ One label the archive carries and the original's label for the same note.
+ 
+ @example
+ ```ts
+ const relabel: FootnoteRelabel = { from: '1', to: '2', };
+ ```
  */
 export type FootnoteRelabel = {
   /**
-   * Label as the archive spells it.
+   Label as the archive spells it.
    */
   readonly from: string;
 
   /**
-   * Label the original gives the same note.
+   Label the original gives the same note.
    */
   readonly to: string;
 };
 
 /**
- * What the paired slices say about the archive's labels.
- *
- * @example
- * ```ts
- * const reading: FootnoteRelabelReading = { kind: 'unchanged', correspondences: [], skipped: [], };
- * ```
+ What the paired slices say about the archive's labels.
+ 
+ @example
+ ```ts
+ const reading: FootnoteRelabelReading = { kind: 'unchanged', correspondences: [], skipped: [], };
+ ```
  */
 export type FootnoteRelabelReading = {
   /**
-   * The archive's labels differ from the original's and every one maps.
+   The archive's labels differ from the original's and every one maps.
    */
   readonly kind: 'relabel';
 
   /**
-   * Complete supplied relations, including identities that establish original-label coverage.
+   Complete supplied relations, including identities that establish original-label coverage.
    */
   readonly correspondences: readonly FootnoteRelabel[];
 
   /**
-   * Labels to rewrite, only the ones that change.
+   Labels to rewrite, only the ones that change.
    */
   readonly map: readonly FootnoteRelabel[];
 
   /**
-   * Slices left out of the reading, each with why.
+   Slices left out of the reading, each with why.
    */
   readonly skipped: readonly string[];
 } | {
   /**
-   * The labels already agree, or no slice carries a marker on both sides.
+   The labels already agree, or no slice carries a marker on both sides.
    */
   readonly kind: 'unchanged';
 
   /**
-   * Positive relations, distinct from the absence of any correspondence evidence.
+   Positive relations, distinct from the absence of any correspondence evidence.
    */
   readonly correspondences: readonly FootnoteRelabel[];
 
   /**
-   * Slices left out of the reading, each with why.
+   Slices left out of the reading, each with why.
    */
   readonly skipped: readonly string[];
 } | {
   /**
-   * The slices disagree, so the archive stands as it is.
+   The slices disagree, so the archive stands as it is.
    */
   readonly kind: 'ambiguous';
 
   /**
-   * Which slice, and what each side carried.
+   Which slice, and what each side carried.
    */
   readonly detail: string;
 };
 
 /**
- * Distinct labels one text references, in order of first appearance,
- * definition openers left out.
- *
- * @param text - complete document or independently parseable fragment
- *
- * @returns Labels, each once
- *
- * @example
- * ```ts
- * referenceLabels({ text: 'A[^2] and B[^1].', },);
- * // => ['2', '1']
- * ```
+ Distinct labels one text references, in order of first appearance,
+ definition openers left out.
+ 
+ @param text - complete document or independently parseable fragment
+ 
+ @returns Labels, each once
+ 
+ @example
+ ```ts
+ referenceLabels({ text: 'A[^2] and B[^1].', },);
+ // => ['2', '1']
+ ```
  */
 export function referenceLabels(
   { text, }: { readonly text: string; },
@@ -138,45 +138,45 @@ export function referenceLabels(
 }
 
 /**
- * One claim that an archive label is an original label, and where it was
- * read.
+ One claim that an archive label is an original label, and where it was
+ read.
  */
 type LabelCorrespondence = {
   /**
-   * Label as the archive spells it.
+   Label as the archive spells it.
    */
   readonly from: string;
 
   /**
-   * Label the original gives the same note.
+   Label the original gives the same note.
    */
   readonly to: string;
 
   /**
-   * Where the claim was read, for the detail.
+   Where the claim was read, for the detail.
    */
   readonly where: string;
 
   /**
-   * What kind of place that is, for the detail's grammar.
+   What kind of place that is, for the detail's grammar.
    */
   readonly unit: 'slice' | 'pair';
 };
 
 /**
- * Folds correspondences into one map, refusing as ambiguous the first that
- * contradicts an earlier one on either side.
- *
- * @param correspondences - claims in reading order
- *
- * @param skipped - places that said nothing, carried into the reading
- *
- * @returns The reading
- *
- * @example
- * ```ts
- * mapLabels({ correspondences: [ { from: '1', to: '2', where: 'slice 3', unit: 'slice', }, ], skipped: [], },);
- * ```
+ Folds correspondences into one map, refusing as ambiguous the first that
+ contradicts an earlier one on either side.
+ 
+ @param correspondences - claims in reading order
+ 
+ @param skipped - places that said nothing, carried into the reading
+ 
+ @returns The reading
+ 
+ @example
+ ```ts
+ mapLabels({ correspondences: [ { from: '1', to: '2', where: 'slice 3', unit: 'slice', }, ], skipped: [], },);
+ ```
  */
 function mapLabels(
   {
@@ -188,34 +188,34 @@ function mapLabels(
   },
 ): FootnoteRelabelReading {
   /**
-   * Archive label to the original's, as the claims agree so far.
+   Archive label to the original's, as the claims agree so far.
    */
   const forward = new Map<string, string>();
 
   /**
-   * Original label to the archive's, so two archive labels cannot claim one.
+   Original label to the archive's, so two archive labels cannot claim one.
    */
   const backward = new Map<string, string>();
   /**
-   * First supplied spelling of each distinct logical relation, including identities.
+   First supplied spelling of each distinct logical relation, including identities.
    */
   const distinct: FootnoteRelabel[] = [];
   for (const claim of correspondences) {
     /**
-     * Parser-equivalent archive identifier.
+     Parser-equivalent archive identifier.
      */
     const from = normalizeFootnoteIdentifier({ identifier: claim.from, },);
     /**
-     * Parser-equivalent original identifier.
+     Parser-equivalent original identifier.
      */
     const to = normalizeFootnoteIdentifier({ identifier: claim.to, },);
     /**
-     * Where an earlier claim mapped this archive label, when one did.
+     Where an earlier claim mapped this archive label, when one did.
      */
     const forwardSeen = forward.get(from,);
     /**
-     * Which archive label an earlier claim mapped onto this original label,
-     * when one did.
+     Which archive label an earlier claim mapped onto this original label,
+     when one did.
      */
     const backwardSeen = backward.get(to,);
     if (((forwardSeen !== undefined) && (forwardSeen !== to))
@@ -245,7 +245,7 @@ function mapLabels(
     );
   }
   /**
-   * Only changes of logical identity need rewriting; positive identity evidence remains separate.
+   Only changes of logical identity need rewriting; positive identity evidence remains separate.
    */
   const map = distinct.filter(function changes(relation,): boolean {
     return normalizeFootnoteIdentifier({ identifier: relation.from, },)
@@ -266,23 +266,23 @@ function mapLabels(
 }
 
 /**
- * Reads, off the paired slices, how the archive's labels map to the
- * original's.
- *
- * @param slices - preparation's slices, both sides' canonical texts included
- *
- * @param sourceText - complete original backing the prepared ranges
- *
- * @param targetText - complete archive backing the prepared ranges
- *
- * @returns The map, that nothing changes, or why the archive must stand
- *
- * @throws {@link import('./footnote-rewrite-error.ts').FootnoteRewriteError} when document syntax or slice scope cannot establish current evidence
- *
- * @example
- * ```ts
- * const reading = footnoteRelabelOf(prepared);
- * ```
+ Reads, off the paired slices, how the archive's labels map to the
+ original's.
+ 
+ @param slices - preparation's slices, both sides' canonical texts included
+ 
+ @param sourceText - complete original backing the prepared ranges
+ 
+ @param targetText - complete archive backing the prepared ranges
+ 
+ @returns The map, that nothing changes, or why the archive must stand
+ 
+ @throws {@link import('./footnote-rewrite-error.ts').FootnoteRewriteError} when document syntax or slice scope cannot establish current evidence
+ 
+ @example
+ ```ts
+ const reading = footnoteRelabelOf(prepared);
+ ```
  */
 export function footnoteRelabelOf(
   {
@@ -296,31 +296,31 @@ export function footnoteRelabelOf(
   },
 ): FootnoteRelabelReading {
   /**
-   * Complete-document source syntax, never an unmatched prepared container half.
+   Complete-document source syntax, never an unmatched prepared container half.
    */
   const sourceReferences = activeFootnoteMarkers({ text: sourceText, },)
     .filter(function reference(marker,): boolean {
     return marker.kind === 'reference';
   },);
   /**
-   * Archive syntax uses the same actual document boundary.
+   Archive syntax uses the same actual document boundary.
    */
   const targetReferences = activeFootnoteMarkers({ text: targetText, },)
     .filter(function reference(marker,): boolean {
     return marker.kind === 'reference';
   },);
   /**
-   * Correspondences the slices give, positionally.
+   Correspondences the slices give, positionally.
    */
   const correspondences: LabelCorrespondence[] = [];
 
   /**
-   * Slices that said nothing about the labels, each with why.
+   Slices that said nothing about the labels, each with why.
    */
   const skipped: string[] = [];
   for (const slice of slices) {
     /**
-     * Current original references projected into an exact prepared range.
+     Current original references projected into an exact prepared range.
      */
     const original = sliceFootnoteLabels({
       chunk: slice.source,
@@ -328,7 +328,7 @@ export function footnoteRelabelOf(
       markers: sourceReferences,
     },);
     /**
-     * Current archive references, with stale or truncated ranges refused before counting.
+     Current archive references, with stale or truncated ranges refused before counting.
      */
     const archive = sliceFootnoteLabels({
       chunk: slice.target,
@@ -338,7 +338,7 @@ export function footnoteRelabelOf(
     if (isInsertionChunk(slice.target,))
       continue;
     /**
-     * Which slice, for the detail.
+     Which slice, for the detail.
      */
     const sliceIndex = String(
       slice.target
@@ -356,7 +356,7 @@ export function footnoteRelabelOf(
     }
     for (const [at, from,] of archive.entries()) {
       /**
-       * The original's label at the same position.
+       The original's label at the same position.
        */
       const to = original[at];
       if (to === undefined)
@@ -376,19 +376,19 @@ export function footnoteRelabelOf(
 }
 
 /**
- * Reads the map off the definitions the roster paired by content, the exact
- * evidence: the archive's definition of a note carries the archive's label
- * for it, and the original's carries the original's.
- *
- * @param pairs - definition pairs, by label
- *
- * @returns The map, that nothing changes, or why the archive must stand
- *
- * @example
- * ```ts
- * footnoteRelabelOfDefinitions({ pairs: [ { sourceLabel: '2', targetLabel: '1', }, { sourceLabel: '1', targetLabel: '2', }, ], },);
- * // Positive relations remain in `correspondences`, including identities omitted from `map`.
- * ```
+ Reads the map off the definitions the roster paired by content, the exact
+ evidence: the archive's definition of a note carries the archive's label
+ for it, and the original's carries the original's.
+ 
+ @param pairs - definition pairs, by label
+ 
+ @returns The map, that nothing changes, or why the archive must stand
+ 
+ @example
+ ```ts
+ footnoteRelabelOfDefinitions({ pairs: [ { sourceLabel: '2', targetLabel: '1', }, { sourceLabel: '1', targetLabel: '2', }, ], },);
+ // Positive relations remain in `correspondences`, including identities omitted from `map`.
+ ```
  */
 export function footnoteRelabelOfDefinitions(
   { pairs, }: { readonly pairs: readonly DefinitionLabelPair[]; },

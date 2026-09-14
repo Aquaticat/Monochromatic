@@ -1,8 +1,8 @@
 /**
- * Tests for who wrote the text a checker stage is about to judge, read off the
- * producer the editor stage recorded.
- *
- * @module
+ Tests for who wrote the text a checker stage is about to judge, read off the
+ producer the editor stage recorded.
+ 
+ @module
  */
 
 import {
@@ -25,27 +25,27 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Issue the first envelope serves.
+ Issue the first envelope serves.
  */
 const WHISKER = 'adjudicated/whisker';
 
 /**
- * Issue the second envelope serves.
+ Issue the second envelope serves.
  */
 const PAW = 'adjudicated/paw';
 
 /**
- * Model that wrote the text that ships unless a case says otherwise.
+ Model that wrote the text that ships unless a case says otherwise.
  */
 const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
- * Second model, for rivals and for candidates that lose.
+ Second model, for rivals and for candidates that lose.
  */
 const HELPER: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * Builds an editable envelope carrying the issues it serves.
+ Builds an editable envelope carrying the issues it serves.
  */
 function envelopeOf(
   {
@@ -67,7 +67,7 @@ function envelopeOf(
 }
 
 /**
- * Builds an applied patch operation against one envelope.
+ Builds an applied patch operation against one envelope.
  */
 function operationOf(envelopeId: string,): PatchOperation {
   return {
@@ -78,8 +78,8 @@ function operationOf(envelopeId: string,): PatchOperation {
 }
 
 /**
- * Builds one slate entry, whose `index` is the ONE-BASED number judges saw and
- * need not match its position in the array.
+ Builds one slate entry, whose `index` is the ONE-BASED number judges saw and
+ need not match its position in the array.
  */
 function slateEntryOf(
   {
@@ -102,7 +102,7 @@ function slateEntryOf(
 }
 
 /**
- * Builds an envelope round that picked the candidate carrying `selectedIndex`.
+ Builds an envelope round that picked the candidate carrying `selectedIndex`.
  */
 function selectedRound(
   {
@@ -134,19 +134,19 @@ function selectedRound(
 }
 
 /**
- * Builds the record of an envelope whose sole proposal was adopted without a
- * vote.
- *
- * @param envelopeId - envelope adopted
- *
- * @param slate - its one entry
- *
- * @returns Adopted round
- *
- * @example
- * ```ts
- * const round = adoptedRound({ envelopeId: 'kept', slate: [entry,], },);
- * ```
+ Builds the record of an envelope whose sole proposal was adopted without a
+ vote.
+ 
+ @param envelopeId - envelope adopted
+ 
+ @param slate - its one entry
+ 
+ @returns Adopted round
+ 
+ @example
+ ```ts
+ const round = adoptedRound({ envelopeId: 'kept', slate: [entry,], },);
+ ```
  */
 function adoptedRound(
   {
@@ -176,8 +176,8 @@ function adoptedRound(
 }
 
 /**
- * Builds the whole-chunk round as it looks when judges could not rank anything,
- * which is the round that records ballots and names no winner.
+ Builds the whole-chunk round as it looks when judges could not rank anything,
+ which is the round that records ballots and names no winner.
  */
 function declinedChunkRound(slate: readonly RepairSlateEntry[],): RepairJudgedRound {
   return {
@@ -199,7 +199,7 @@ function declinedChunkRound(slate: readonly RepairSlateEntry[],): RepairJudgedRo
 }
 
 /**
- * Builds the editor stage result the authorship read takes.
+ Builds the editor stage result the authorship read takes.
  */
 function editorOf(
   {
@@ -226,7 +226,7 @@ function editorOf(
 }
 
 /**
- * The one envelope every case below repairs, and the issue it serves.
+ The one envelope every case below repairs, and the issue it serves.
  */
 const KEPT = [
   envelopeOf({

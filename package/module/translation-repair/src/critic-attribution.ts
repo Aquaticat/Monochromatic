@@ -8,85 +8,85 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // already carry, so nothing here has to travel inside `IssueClaim`.
 
 /**
- * One critic's contribution to one claim.
- *
- * @example
- * ```ts
- * const proposer: ClaimProposer = { modelId: 'hf:openai/gpt-oss-120b', emissionCount: 2, };
- * ```
+ One critic's contribution to one claim.
+ 
+ @example
+ ```ts
+ const proposer: ClaimProposer = { modelId: 'hf:openai/gpt-oss-120b', emissionCount: 2, };
+ ```
  */
 export type ClaimProposer = {
   /**
-   * Critic that emitted this claim.
+   Critic that emitted this claim.
    */
   readonly modelId: RosterModelId;
 
   /**
-   * How many times this critic emitted it within its own report;
-   * separated from proposer count because one critic repeating itself is
-   * self-repetition while two critics agreeing is independent support, and a
-   * flat model list conflates exactly those two.
+   How many times this critic emitted it within its own report;
+   separated from proposer count because one critic repeating itself is
+   self-repetition while two critics agreeing is independent support, and a
+   flat model list conflates exactly those two.
    */
   readonly emissionCount: number;
 };
 
 /**
- * Every critic behind one deduplicated claim.
- *
- * @example
- * ```ts
- * const attribution: ClaimAttribution = { claimId, proposers, };
- * ```
+ Every critic behind one deduplicated claim.
+ 
+ @example
+ ```ts
+ const attribution: ClaimAttribution = { claimId, proposers, };
+ ```
  */
 export type ClaimAttribution = {
   /**
-   * Deterministic `issue/<hash>` identity from `computeIssueClaimId`.
+   Deterministic `issue/<hash>` identity from `computeIssueClaimId`.
    */
   readonly claimId: string;
 
   /**
-   * Critics that emitted it, ordered by model id so identical inputs serialize
-   * identically into a cached outcome.
+   Critics that emitted it, ordered by model id so identical inputs serialize
+   identically into a cached outcome.
    */
   readonly proposers: readonly ClaimProposer[];
 };
 
 /**
- * One critic emitting one resolved claim, before deduplication.
- *
- * @example
- * ```ts
- * const emission: ClaimEmission = { claimId, modelId, };
- * ```
+ One critic emitting one resolved claim, before deduplication.
+ 
+ @example
+ ```ts
+ const emission: ClaimEmission = { claimId, modelId, };
+ ```
  */
 export type ClaimEmission = {
   /**
-   * Deterministic identity of the claim emitted.
+   Deterministic identity of the claim emitted.
    */
   readonly claimId: string;
 
   /**
-   * Critic that emitted it.
+   Critic that emitted it.
    */
   readonly modelId: RosterModelId;
 };
 
 /**
- * Folds raw emissions into per-claim, per-critic counts.
- *
- * Must run BEFORE `aggregateClaims` deduplicates: structurally identical claims
- * collapse to one id there, so afterwards there is no longer anything to
- * attribute a second emitter to.
- *
- * @param emissions - every emission in critic then report order
- *
- * @returns Attribution per claim, both claims and proposers sorted by id so
- * identical evidence serializes identically
- *
- * @example
- * ```ts
- * const attributions = collectClaimAttributions({ emissions, },);
- * ```
+ Folds raw emissions into per-claim, per-critic counts.
+ 
+ Must run BEFORE `aggregateClaims` deduplicates: structurally identical claims
+ collapse to one id there, so afterwards there is no longer anything to
+ attribute a second emitter to.
+ 
+ @param emissions - every emission in critic then report order
+ 
+ @returns Attribution per claim, both claims and proposers sorted by id so
+ identical evidence serializes identically
+ 
+ @example
+ ```ts
+ const attributions = collectClaimAttributions({ emissions, },);
+ ```
  */
 export function collectClaimAttributions(
   {
@@ -96,9 +96,9 @@ export function collectClaimAttributions(
   },
 ): readonly ClaimAttribution[] {
   /**
-   * Per-claim tally of how often each critic emitted it. Mutable while folding
-   * and never returned, because a `Map` would not survive `JSON.stringify`
-   * into a cached outcome.
+   Per-claim tally of how often each critic emitted it. Mutable while folding
+   and never returned, because a `Map` would not survive `JSON.stringify`
+   into a cached outcome.
    */
   const tally = new Map<string, Map<RosterModelId, number>>();
 
@@ -109,7 +109,7 @@ export function collectClaimAttributions(
     } of emissions
   ) {
     /**
-     * Critics seen for this claim so far.
+     Critics seen for this claim so far.
      */
     const byModel = tally.get(claimId,) ?? new Map<RosterModelId, number>();
     byModel.set(
@@ -173,22 +173,22 @@ export function collectClaimAttributions(
 }
 
 /**
- * Drops attribution for claims that did not survive a later screen.
- *
- * Screening removes claims after attribution is built, and an entry left
- * pointing at a discarded claim would inflate a critic's recorded hits with
- * claims the pipeline threw away.
- *
- * @param attributions - attribution built at emission time
- *
- * @param claimIds - identities still standing
- *
- * @returns Attribution restricted to surviving claims, order preserved
- *
- * @example
- * ```ts
- * const kept = retainAttributions({ attributions, claimIds, },);
- * ```
+ Drops attribution for claims that did not survive a later screen.
+ 
+ Screening removes claims after attribution is built, and an entry left
+ pointing at a discarded claim would inflate a critic's recorded hits with
+ claims the pipeline threw away.
+ 
+ @param attributions - attribution built at emission time
+ 
+ @param claimIds - identities still standing
+ 
+ @returns Attribution restricted to surviving claims, order preserved
+ 
+ @example
+ ```ts
+ const kept = retainAttributions({ attributions, claimIds, },);
+ ```
  */
 export function retainAttributions(
   {
@@ -205,54 +205,54 @@ export function retainAttributions(
 }
 
 /**
- * One chunk's calibration record, as the run artifact carries it.
- *
- * @example
- * ```ts
- * const record: SliceCriticRecord = { sliceIndex: 0, heardCriticIds, claimAttributions, };
- * ```
+ One chunk's calibration record, as the run artifact carries it.
+ 
+ @example
+ ```ts
+ const record: SliceCriticRecord = { sliceIndex: 0, heardCriticIds, claimAttributions, };
+ ```
  */
 export type SliceCriticRecord = {
   /**
-   * Chunk position within the document.
+   Chunk position within the document.
    */
   readonly sliceIndex: number;
 
   /**
-   * Critics that answered on this chunk, sorted by model id.
+   Critics that answered on this chunk, sorted by model id.
    */
   readonly heardCriticIds: readonly RosterModelId[];
 
   /**
-   * Which critics raised each surviving claim of this chunk.
+   Which critics raised each surviving claim of this chunk.
    */
   readonly claimAttributions: readonly ClaimAttribution[];
 };
 
 /**
- * Collects each chunk's calibration record for the run artifact.
- *
- * PER CHUNK rather than folded into the issue list, because a chunk whose
- * critics raised nothing produces no issue record at all, and dropping it would
- * discard exactly the denominator that makes a rate computable. Keeping the
- * chunks separate also stops two chunks that happened to produce an identical
- * claim from merging their proposers into one inflated entry.
- *
- * @param outcomes - settled chunk outcomes in any order
- *
- * Does NOT reject a repeated chunk index, deliberately, though the READER
- * throws on one. The proportion matters: an artifact's primary value is the
- * repaired text, and attribution is telemetry beside it. Failing here would
- * abort an entry and discard hours of repair over a calibration invariant,
- * while failing at read time costs only the report. The reader is the right
- * place for that guard.
- *
- * @returns One record per chunk, ordered by chunk index
- *
- * @example
- * ```ts
- * const sliceCritics = buildSliceCriticRecords({ outcomes, },);
- * ```
+ Collects each chunk's calibration record for the run artifact.
+ 
+ PER CHUNK rather than folded into the issue list, because a chunk whose
+ critics raised nothing produces no issue record at all, and dropping it would
+ discard exactly the denominator that makes a rate computable. Keeping the
+ chunks separate also stops two chunks that happened to produce an identical
+ claim from merging their proposers into one inflated entry.
+ 
+ @param outcomes - settled chunk outcomes in any order
+ 
+ Does NOT reject a repeated chunk index, deliberately, though the READER
+ throws on one. The proportion matters: an artifact's primary value is the
+ repaired text, and attribution is telemetry beside it. Failing here would
+ abort an entry and discard hours of repair over a calibration invariant,
+ while failing at read time costs only the report. The reader is the right
+ place for that guard.
+ 
+ @returns One record per chunk, ordered by chunk index
+ 
+ @example
+ ```ts
+ const sliceCritics = buildSliceCriticRecords({ outcomes, },);
+ ```
  */
 export function buildSliceCriticRecords(
   {

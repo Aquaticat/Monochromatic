@@ -16,30 +16,30 @@ import { readRegisteredPreparationParent, } from './read-registered-preparation-
 //region Owned receipt evidence without body/media handoff
 
 /**
- * Checks a registered current occurrence and replays terminal raw outcomes without body normalization.
- * Full question text remains bound because it was sent to models, but media and fallback work have no veto here.
- * This internal core grants neither scope qualification nor acquisition/transition authority.
- *
- * @param expected - independent complete document, parent, attempt and request expectations
- *
- * @param receipt - unknown terminal data selected by its preregistered reference
- *
- * @param sourceText - complete current source under corpus-reader semantics
- *
- * @param targetText - complete current target after the owner's permitted transition
- *
- * @param l - caller logger retaining dependency scope
- *
- * @returns Owned current nodes and raw-evidence replay, without a prepared body handoff
- *
- * @throws PreparationReceiptError when documents, parent or receipt do not match
- *
- * @throws PairingEvidenceError when configured or asked seats cannot represent independent identities
- *
- * @example
- * ```ts
- * const current = readPreparationEvidenceOccurrence({ expected, receipt, sourceText, targetText, l });
- * ```
+ Checks a registered current occurrence and replays terminal raw outcomes without body normalization.
+ Full question text remains bound because it was sent to models, but media and fallback work have no veto here.
+ This internal core grants neither scope qualification nor acquisition/transition authority.
+ 
+ @param expected - independent complete document, parent, attempt and request expectations
+ 
+ @param receipt - unknown terminal data selected by its preregistered reference
+ 
+ @param sourceText - complete current source under corpus-reader semantics
+ 
+ @param targetText - complete current target after the owner's permitted transition
+ 
+ @param l - caller logger retaining dependency scope
+ 
+ @returns Owned current nodes and raw-evidence replay, without a prepared body handoff
+ 
+ @throws PreparationReceiptError when documents, parent or receipt do not match
+ 
+ @throws PairingEvidenceError when configured or asked seats cannot represent independent identities
+ 
+ @example
+ ```ts
+ const current = readPreparationEvidenceOccurrence({ expected, receipt, sourceText, targetText, l });
+ ```
  */
 export function readPreparationEvidenceOccurrence({
   expected,
@@ -55,18 +55,18 @@ export function readPreparationEvidenceOccurrence({
   readonly l: Logger;
 },): PreparationEvidenceOccurrence {
   /**
-   * Caller-controlled receipt access cannot alter the expectations already being checked.
+   Caller-controlled receipt access cannot alter the expectations already being checked.
    */
   const fixed = structuredClone(expected,);
   /**
-   * Evidence reconstruction is distinct from full-parent handoff and qualification.
+   Evidence reconstruction is distinct from full-parent handoff and qualification.
    */
   const pl = tagged({
     tag: readPreparationEvidenceOccurrence.name,
     l,
   },);
   /**
-   * The same document/parent preflight is used before phase materialization and receipt interpretation.
+   The same document/parent preflight is used before phase materialization and receipt interpretation.
    */
   const {
     source,
@@ -96,11 +96,11 @@ export function readPreparationEvidenceOccurrence({
         === 1)))
     throw new PreparationReceiptError({ kind: 'parent', },);
   /**
-   * Current definition exemptions affect local interpretation, not substantive payload equivalence.
+   Current definition exemptions affect local interpretation, not substantive payload equivalence.
    */
   const question = blockPairingQuestion({ pair, },);
   /**
-   * Only raw terminal seat data crosses the receipt boundary; stored aggregates cannot supply authority.
+   Only raw terminal seat data crosses the receipt boundary; stored aggregates cannot supply authority.
    */
   const outcomes = readPreparationReceipt({
     value: receipt,
@@ -113,7 +113,7 @@ export function readPreparationEvidenceOccurrence({
     },
   },);
   /**
-   * Native wire validation and independent agreement run before any scope-specific projection.
+   Native wire validation and independent agreement run before any scope-specific projection.
    */
   const outcome = readBlockPairingOutcomes({
     outcomes,

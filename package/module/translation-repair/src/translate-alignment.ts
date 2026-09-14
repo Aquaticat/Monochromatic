@@ -19,86 +19,86 @@ import { codePointCount, } from './code-points.ts';
 // recording even when the decision is refused.
 
 /**
- * Smallest incumbent worth protecting, in code points.
- *
- * Below this a mispairing costs a phrase rather than a passage, and the ratio
- * alone would refuse ordinary short slices whose translation happens to run
- * long.
- *
- * Measured over all 1260 two-sided slices of the pinned corpus: moving this
- * floor between 64 and 256 changes how many slices the guard refuses by ONE, so
- * the ratio does the work and this only keeps the guard away from short text.
+ Smallest incumbent worth protecting, in code points.
+ 
+ Below this a mispairing costs a phrase rather than a passage, and the ratio
+ alone would refuse ordinary short slices whose translation happens to run
+ long.
+ 
+ Measured over all 1260 two-sided slices of the pinned corpus: moving this
+ floor between 64 and 256 changes how many slices the guard refuses by ONE, so
+ the ratio does the work and this only keeps the guard away from short text.
  */
 export const MIN_PROTECTED_INCUMBENT = 128;
 
 /**
- * Largest incumbent-to-source ratio a replacement may carry.
- *
- * Chinese becoming English expands, so a ratio around three is what a correctly
- * paired slice looks like. Measured over the same 1260 slices: p50 2.95, p90
- * 4.10, p95 5.36, p99 23.78, max 521.9.
- *
- * SIXTEEN, from that distribution rather than from taste. It sits in the flat
- * part of the tail, where the count barely moves: 36 slices refused at eight,
- * 20 at twelve, 16 here, 14 at twenty, 12 at twenty-four. Every one of the 16
- * it refuses was inspected, and all are genuine mispairings or target-only
- * content: headings paired against whole sections, and English blocks that
- * transcribe an image the Chinese carries as a photo. Not one is a slice the
- * lane should be allowed to replace.
+ Largest incumbent-to-source ratio a replacement may carry.
+ 
+ Chinese becoming English expands, so a ratio around three is what a correctly
+ paired slice looks like. Measured over the same 1260 slices: p50 2.95, p90
+ 4.10, p95 5.36, p99 23.78, max 521.9.
+ 
+ SIXTEEN, from that distribution rather than from taste. It sits in the flat
+ part of the tail, where the count barely moves: 36 slices refused at eight,
+ 20 at twelve, 16 here, 14 at twenty, 12 at twenty-four. Every one of the 16
+ it refuses was inspected, and all are genuine mispairings or target-only
+ content: headings paired against whole sections, and English blocks that
+ transcribe an image the Chinese carries as a photo. Not one is a slice the
+ lane should be allowed to replace.
  */
 export const MAX_INCUMBENT_TO_SOURCE_RATIO = 16;
 
 /**
- * What the guard measured and decided for one slice.
- *
- * @example
- * ```ts
- * const assessment: SliceAlignmentAssessment = assessSliceAlignment({ sourceText, incumbentText, },);
- * ```
+ What the guard measured and decided for one slice.
+ 
+ @example
+ ```ts
+ const assessment: SliceAlignmentAssessment = assessSliceAlignment({ sourceText, incumbentText, },);
+ ```
  */
 export type SliceAlignmentAssessment = {
   /**
-   * Whether the pairing supports replacing the incumbent.
+   Whether the pairing supports replacing the incumbent.
    */
   readonly kind:
     | 'within-limit'
     | 'incumbent-dominates-source';
 
   /**
-   * Source code points the predicate read, whitespace-trimmed.
+   Source code points the predicate read, whitespace-trimmed.
    */
   readonly sourceCodePoints: number;
 
   /**
-   * Incumbent code points, the same way.
+   Incumbent code points, the same way.
    */
   readonly incumbentCodePoints: number;
 
   /**
-   * Floor this assessment applied, carried so a record stays readable after the
-   * constant moves.
+   Floor this assessment applied, carried so a record stays readable after the
+   constant moves.
    */
   readonly minProtectedIncumbent: number;
 
   /**
-   * Ratio limit it applied, for the same reason.
+   Ratio limit it applied, for the same reason.
    */
   readonly maxRatio: number;
 };
 
 /**
- * Measures whether a slice's two sides can be the same passage.
- *
- * @param sourceText - original slice
- *
- * @param incumbentText - translation paired with it
- *
- * @returns Verdict with the numbers behind it
- *
- * @example
- * ```ts
- * const assessment = assessSliceAlignment({ sourceText, incumbentText, },);
- * ```
+ Measures whether a slice's two sides can be the same passage.
+ 
+ @param sourceText - original slice
+ 
+ @param incumbentText - translation paired with it
+ 
+ @returns Verdict with the numbers behind it
+ 
+ @example
+ ```ts
+ const assessment = assessSliceAlignment({ sourceText, incumbentText, },);
+ ```
  */
 export function assessSliceAlignment(
   {
@@ -110,17 +110,17 @@ export function assessSliceAlignment(
   },
 ): SliceAlignmentAssessment {
   /**
-   * Source size the predicate reads.
+   Source size the predicate reads.
    */
   const sourceCodePoints = codePointCount({ text: sourceText, },);
 
   /**
-   * Incumbent size.
+   Incumbent size.
    */
   const incumbentCodePoints = codePointCount({ text: incumbentText, },);
 
   /**
-   * Shared measurements, whichever way the verdict goes.
+   Shared measurements, whichever way the verdict goes.
    */
   const measured = {
     sourceCodePoints,
@@ -159,18 +159,18 @@ export function assessSliceAlignment(
 }
 
 /**
- * Names a refusal in scorecard-stable wording.
- *
- * @param sliceIndex - slice refused
- *
- * @param assessment - measurements behind it
- *
- * @returns One finding line
- *
- * @example
- * ```ts
- * const finding = alignmentRefusalFinding({ sliceIndex, assessment, },);
- * ```
+ Names a refusal in scorecard-stable wording.
+ 
+ @param sliceIndex - slice refused
+ 
+ @param assessment - measurements behind it
+ 
+ @returns One finding line
+ 
+ @example
+ ```ts
+ const finding = alignmentRefusalFinding({ sliceIndex, assessment, },);
+ ```
  */
 export function alignmentRefusalFinding(
   {

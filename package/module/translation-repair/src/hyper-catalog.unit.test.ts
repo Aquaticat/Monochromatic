@@ -1,15 +1,15 @@
 /**
- * Tests for the Charm Hyper catalog.
- *
- * THIS FILE PINS MEASUREMENTS, not preferences. Every value it checks came from
- * live calls, and each one is a value that a plausible reading of provider
- * docs could get wrong: model answer ceiling can sit below bound `#156`,
- * and provider-specific image input support must be read rather than inferred.
- *
- * A CHANGED VALUE HERE IS A PROVIDER CHANGE, so these cases are meant to fail
- * loudly rather than be updated to match.
- *
- * @module
+ Tests for the Charm Hyper catalog.
+ 
+ THIS FILE PINS MEASUREMENTS, not preferences. Every value it checks came from
+ live calls, and each one is a value that a plausible reading of provider
+ docs could get wrong: model answer ceiling can sit below bound `#156`,
+ and provider-specific image input support must be read rather than inferred.
+ 
+ A CHANGED VALUE HERE IS A PROVIDER CHANGE, so these cases are meant to fail
+ loudly rather than be updated to match.
+ 
+ @module
  */
 
 import {
@@ -124,7 +124,7 @@ await describe({
       name: 'reports image-capable serving paths including approved V4.1 Flash without deciding reader seating',
       fn: async () => {
         /**
-         * Models this provider says can be sent an image.
+         Models this provider says can be sent an image.
          */
         const readers = Object
           .values(HYPER_MODELS,)

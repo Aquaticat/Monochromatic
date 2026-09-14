@@ -38,38 +38,38 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // knows the entry id and the photos directory; this knows neither.
 
 /**
- * Reads every picture one document's slices name, through the resumable store.
- *
- * @param client - injected model client
- *
- * @param slices - prepared slice pairs of one entry
- *
- * @param assets - picture bytes per asset name, gathered by the caller
- *
- * @param readerModelIds - vision sub-roster
- *
- * @param cache - cross-run store, so a resumed run re-reads no picture
- *
- * @param priorReadings - completed evidence from this same pinned entry before re-preparation
- *
- * @param signal - entry abort honoured by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - driver logger
- *
- * @returns What reading produced per asset name, including refusals
- *
- * @throws {@link DOMException} on the caller's abort, and whatever the reading
- * cache raises, which is a disk failure rather than an unreadable picture. A
- * READER THAT FAILS IS NOT AMONG THESE: `readImagePair` contains it as an
- * unavailable reading, because nothing downstream requires a reading and an
- * entry must not be lost to one
- *
- * @example
- * ```ts
- * const readings = await readDocumentPictures({ client, slices, assets, readerModelIds, cache, signal, perCallTimeoutMs, l, },);
- * ```
+ Reads every picture one document's slices name, through the resumable store.
+ 
+ @param client - injected model client
+ 
+ @param slices - prepared slice pairs of one entry
+ 
+ @param assets - picture bytes per asset name, gathered by the caller
+ 
+ @param readerModelIds - vision sub-roster
+ 
+ @param cache - cross-run store, so a resumed run re-reads no picture
+ 
+ @param priorReadings - completed evidence from this same pinned entry before re-preparation
+ 
+ @param signal - entry abort honoured by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - driver logger
+ 
+ @returns What reading produced per asset name, including refusals
+ 
+ @throws {@link DOMException} on the caller's abort, and whatever the reading
+ cache raises, which is a disk failure rather than an unreadable picture. A
+ READER THAT FAILS IS NOT AMONG THESE: `readImagePair` contains it as an
+ unavailable reading, because nothing downstream requires a reading and an
+ entry must not be lost to one
+ 
+ @example
+ ```ts
+ const readings = await readDocumentPictures({ client, slices, assets, readerModelIds, cache, signal, perCallTimeoutMs, l, },);
+ ```
  */
 export async function readDocumentPictures(
   {
@@ -97,7 +97,7 @@ export async function readDocumentPictures(
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: readDocumentPictures.name,
@@ -105,8 +105,8 @@ export async function readDocumentPictures(
   },);
 
   /**
-   * Every picture any slice names on its source side, each once, in document
-   * order.
+   Every picture any slice names on its source side, each once, in document
+   order.
    */
   const named = new Set<string>();
   for (const slice of slices) {
@@ -118,7 +118,7 @@ export async function readDocumentPictures(
   }
 
   /**
-   * What each picture produced.
+   What each picture produced.
    */
   const readings = new Map<string, PairedReading>();
   if (named.size === 0)
@@ -128,7 +128,7 @@ export async function readDocumentPictures(
 
   for (const assetName of named) {
     /**
-     * Evidence already completed in this entry, independent of changed slice boundaries.
+     Evidence already completed in this entry, independent of changed slice boundaries.
      */
     const prior = priorReadings.get(assetName,);
     if ((prior !== undefined) && (prior.kind !== 'unavailable')) {
@@ -140,7 +140,7 @@ export async function readDocumentPictures(
       continue;
     }
     /**
-     * Picture itself, absent when the caller gathered no bytes for it.
+     Picture itself, absent when the caller gathered no bytes for it.
      */
     const bytes = assets.get(assetName,);
     if (bytes === undefined) {
@@ -153,9 +153,9 @@ export async function readDocumentPictures(
     }
 
     /**
-     * Where this reading is stored, derived from what it was asked rather than
-     * from what came back: readings are not deterministic, and a key over their
-     * text would miss on every run.
+     Where this reading is stored, derived from what it was asked rather than
+     from what came back: readings are not deterministic, and a key over their
+     text would miss on every run.
      */
     const key = imageReadingKey({
       bytes,
@@ -163,7 +163,7 @@ export async function readDocumentPictures(
     },);
 
     /**
-     * Reading settled on an earlier run, absent on a first pass.
+     Reading settled on an earlier run, absent on a first pass.
      */
     const resumed = cache.resumed
       .get(key,);
@@ -178,7 +178,7 @@ export async function readDocumentPictures(
 
     /* oxlint-disable no-await-in-loop -- current cache protocol settles each picture before advancing so restart has one ordered frontier; replacement DAG must preserve restart while exposing independent assets */
     /**
-     * What the roster made of it now.
+     What the roster made of it now.
      */
     const paired = await readImagePair({
       readOcr,

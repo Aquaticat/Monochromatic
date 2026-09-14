@@ -1,17 +1,17 @@
 //region Refusals do not erase fresh input or comparison evidence
 
 /**
- * Fixed operation failures distinguish an unusable invocation from a persisted identity mismatch.
- *
- * @example
- * ```ts
- * const kind: ProducerInputComparisonFailure = 'mismatch';
- * ```
+ Fixed operation failures distinguish an unusable invocation from a persisted identity mismatch.
+ 
+ @example
+ ```ts
+ const kind: ProducerInputComparisonFailure = 'mismatch';
+ ```
  */
 export type ProducerInputComparisonFailure = 'contract' | 'bootstrap' | 'output' | 'mismatch' | 'storage' | 'interruption';
 
 /**
- * Diagnostics describe input and retention boundaries without forwarding native causes or corpus text.
+ Diagnostics describe input and retention boundaries without forwarding native causes or corpus text.
  */
 const COMPARISON_MESSAGES: Readonly<Record<ProducerInputComparisonFailure, string>> = {
   contract: 'The preparation-input comparison contract cannot be verified. Check the independently recorded launch, bootstrap and reference identities and the authorized host profile; a self-digest does not grant approval.',
@@ -23,38 +23,38 @@ const COMPARISON_MESSAGES: Readonly<Record<ProducerInputComparisonFailure, strin
 };
 
 /**
- * Names-only comparison failure is not an acquisition result or a recoverable resume instruction.
- *
- * @example
- * ```ts
- * throw new ProducerInputComparisonError({ kind: 'mismatch', directory });
- * ```
+ Names-only comparison failure is not an acquisition result or a recoverable resume instruction.
+ 
+ @example
+ ```ts
+ throw new ProducerInputComparisonError({ kind: 'mismatch', directory });
+ ```
  */
 export class ProducerInputComparisonError extends Error {
   /**
-   * Only authored operation text and the owned directory locator may be rendered.
+   Only authored operation text and the owned directory locator may be rendered.
    */
   public readonly messageNamesOnly: true = true;
   /**
-   * Fixed failed boundary, not caller-supplied error prose.
+   Fixed failed boundary, not caller-supplied error prose.
    */
   public readonly kind: ProducerInputComparisonFailure;
   /**
-   * Created or attempted evidence namespace, never proof of current ownership.
+   Created or attempted evidence namespace, never proof of current ownership.
    */
   public readonly directory?: string;
 
   /**
-   * Keeps actionable evidence location without retaining native error messages or causes.
-   *
-   * @param kind - fixed failed operation or comparison boundary
-   *
-   * @param directory - authorized created or attempted namespace locator, absent before path selection
-   *
-   * @example
-   * ```ts
-   * new ProducerInputComparisonError({ kind: 'bootstrap', directory });
-   * ```
+   Keeps actionable evidence location without retaining native error messages or causes.
+   
+   @param kind - fixed failed operation or comparison boundary
+   
+   @param directory - authorized created or attempted namespace locator, absent before path selection
+   
+   @example
+   ```ts
+   new ProducerInputComparisonError({ kind: 'bootstrap', directory });
+   ```
    */
   public constructor({
     kind,

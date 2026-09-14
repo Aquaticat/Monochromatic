@@ -1,20 +1,20 @@
 /**
- * Tests for the section-pairing round: what the roster has to agree on before a
- * correspondence is kept, and what happens when it agrees on nothing.
- *
- * WHY AGREEMENT IS PER PAIR, as at block scale: two models can agree on seven
- * correspondences and differ on the eighth, and discarding both replies over
- * the eighth throws away the seven.
- *
- * WHY THE FILTER CANNOT BREAK THE STEP BUILDER. Every pairing the reader passed
- * is strictly increasing on both sides, and a subsequence of a strictly
- * increasing sequence is strictly increasing, so no vote count can produce a
- * pairing `sectionPairingToSteps` would refuse. One case here reads that off a
- * disagreement rather than trusting the argument.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the section-pairing round: what the roster has to agree on before a
+ correspondence is kept, and what happens when it agrees on nothing.
+ 
+ WHY AGREEMENT IS PER PAIR, as at block scale: two models can agree on seven
+ correspondences and differ on the eighth, and discarding both replies over
+ the eighth throws away the seven.
+ 
+ WHY THE FILTER CANNOT BREAK THE STEP BUILDER. Every pairing the reader passed
+ is strictly increasing on both sides, and a subsequence of a strictly
+ increasing sequence is strictly increasing, so no vote count can produce a
+ pairing `sectionPairingToSteps` would refuse. One case here reads that off a
+ disagreement rather than trusting the argument.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -29,7 +29,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Three original sections standing in for a Chinese page.
+ Three original sections standing in for a Chinese page.
  */
 const SOURCE = [
   {
@@ -47,8 +47,8 @@ const SOURCE = [
 ];
 
 /**
- * Three translation sections sharing no token with any of them, which is the
- * corpus condition the round exists for.
+ Three translation sections sharing no token with any of them, which is the
+ corpus condition the round exists for.
  */
 const TARGET = [
   {
@@ -66,7 +66,7 @@ const TARGET = [
 ];
 
 /**
- * Roster of two, which is the smallest that can agree or disagree.
+ Roster of two, which is the smallest that can agree or disagree.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -74,45 +74,45 @@ const ROSTER = [
 ] as const;
 
 /**
- * Logger for the stage under test.
+ Logger for the stage under test.
  */
 const l = tagged({ tag: 'pair-sections-stage-test', },);
 
 /**
- * Per-call bound, generous because the transport answers instantly.
+ Per-call bound, generous because the transport answers instantly.
  */
 const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
- * Builds a client whose models reply with the given pairings, in roster order.
- *
- * @param replyByModel - reply body per model id
- *
- * @returns Client over a canned transport
- *
- * @example
- * ```ts
- * const client = cannedClient({ replyByModel: ['{"pairs":[]}'], },);
- * ```
+ Builds a client whose models reply with the given pairings, in roster order.
+ 
+ @param replyByModel - reply body per model id
+ 
+ @returns Client over a canned transport
+ 
+ @example
+ ```ts
+ const client = cannedClient({ replyByModel: ['{"pairs":[]}'], },);
+ ```
  */
 function cannedClient(
   { replyByModel, }: { readonly replyByModel: readonly string[]; },
 ) {
   /**
-   * Calls served so far, so each model gets its own reply.
+   Calls served so far, so each model gets its own reply.
    */
   const served: string[] = [];
   return createSyntheticClient({
     apiKey: 'test-key',
     transport: async function cannedTransport(exchange,) {
       /**
-       * Which reply this call receives.
+       Which reply this call receives.
        */
       const at = served.length;
       served.push(exchange.label,);
 
       /**
-       * This model's reply text.
+       This model's reply text.
        */
       const content = replyByModel[at] ?? replyByModel[0] ?? '';
 
@@ -136,16 +136,16 @@ function cannedClient(
 }
 
 /**
- * Runs one round over the three-by-three fixture.
- *
- * @param replyByModel - reply body per model id
- *
- * @returns What the roster settled on
- *
- * @example
- * ```ts
- * const outcome = await roundOf(['{"pairs":[]}',],);
- * ```
+ Runs one round over the three-by-three fixture.
+ 
+ @param replyByModel - reply body per model id
+ 
+ @returns What the roster settled on
+ 
+ @example
+ ```ts
+ const outcome = await roundOf(['{"pairs":[]}',],);
+ ```
  */
 async function roundOf(replyByModel: readonly string[],) {
   return await pairSectionsWithRoster({

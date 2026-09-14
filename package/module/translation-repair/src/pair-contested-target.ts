@@ -14,8 +14,8 @@
 // keeps neither, and the finding says which.
 
 /**
- * A correspondence between one source position and one target position, as
- * both pairing wires shape it.
+ A correspondence between one source position and one target position, as
+ both pairing wires shape it.
  */
 export type PositionPair = {
   readonly source: number;
@@ -23,12 +23,12 @@ export type PositionPair = {
 };
 
 /**
- * One pair with the number of voices that named it.
- *
- * @example
- * ```ts
- * const voted: VotedPair<PositionPair> = { pair: { source: 1, target: 0, }, votes: 3, };
- * ```
+ One pair with the number of voices that named it.
+ 
+ @example
+ ```ts
+ const voted: VotedPair<PositionPair> = { pair: { source: 1, target: 0, }, votes: 3, };
+ ```
  */
 export type VotedPair<PairT extends PositionPair,> = {
   readonly pair: PairT;
@@ -36,39 +36,39 @@ export type VotedPair<PairT extends PositionPair,> = {
 };
 
 /**
- * Which claim on a contested target survives.
- *
- * @example
- * ```ts
- * const outcome: ContestedTargetOutcome = { keep: 'later', finding: 'contested target (...)', };
- * ```
+ Which claim on a contested target survives.
+ 
+ @example
+ ```ts
+ const outcome: ContestedTargetOutcome = { keep: 'later', finding: 'contested target (...)', };
+ ```
  */
 export type ContestedTargetOutcome = {
   /**
-   * `earlier` keeps the pair already kept, `later` replaces it with the new
-   * claim, `neither` drops both.
+   `earlier` keeps the pair already kept, `later` replaces it with the new
+   claim, `neither` drops both.
    */
   readonly keep: 'earlier' | 'later' | 'neither';
 
   /**
-   * One line naming the target, both sources and the votes.
+   One line naming the target, both sources and the votes.
    */
   readonly finding: string;
 };
 
 /**
- * Decides by votes between two sources' uncorroborated claims on one target.
- *
- * @param earlier - claim already kept, from the lower source
- *
- * @param later - claim from the higher source on the same target
- *
- * @returns Which claim to keep, with the finding that says why
- *
- * @example
- * ```ts
- * const outcome = settleContestedTarget({ earlier, later, },);
- * ```
+ Decides by votes between two sources' uncorroborated claims on one target.
+ 
+ @param earlier - claim already kept, from the lower source
+ 
+ @param later - claim from the higher source on the same target
+ 
+ @returns Which claim to keep, with the finding that says why
+ 
+ @example
+ ```ts
+ const outcome = settleContestedTarget({ earlier, later, },);
+ ```
  */
 export function settleContestedTarget<PairT extends PositionPair,>(
   {
@@ -80,27 +80,27 @@ export function settleContestedTarget<PairT extends PositionPair,>(
   },
 ): ContestedTargetOutcome {
   /**
-   * Pair already kept.
+   Pair already kept.
    */
   const { pair: kept, } = earlier;
 
   /**
-   * Pair newly claiming the same target.
+   Pair newly claiming the same target.
    */
   const { pair: claim, } = later;
 
   /**
-   * Target both claims name.
+   Target both claims name.
    */
   const target = String(claim.target,);
 
   /**
-   * Source of the claim already kept.
+   Source of the claim already kept.
    */
   const earlierSource = String(kept.source,);
 
   /**
-   * Source of the new claim.
+   Source of the new claim.
    */
   const laterSource = String(claim.source,);
 

@@ -1,8 +1,8 @@
 /**
- * Tests for choosing a code fence no enclosed text can close.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for choosing a code fence no enclosed text can close.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {

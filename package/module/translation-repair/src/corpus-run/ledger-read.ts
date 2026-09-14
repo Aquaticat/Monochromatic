@@ -28,150 +28,150 @@ import type {
 // rounds.
 
 /**
- * Index a ballot carries when its judge named no candidate at all.
+ Index a ballot carries when its judge named no candidate at all.
  */
 const CANDIDATE_NONE = 0;
 
 /**
- * One ballot beside the slate it was cast over.
- *
- * Named rather than inferred so the pair is readonly all the way down: the
- * counts taken over it only ever read.
- *
- * @example
- * ```ts
- * const entry: BallotInContest = { ballot, candidates, };
- * ```
+ One ballot beside the slate it was cast over.
+ 
+ Named rather than inferred so the pair is readonly all the way down: the
+ counts taken over it only ever read.
+ 
+ @example
+ ```ts
+ const entry: BallotInContest = { ballot, candidates, };
+ ```
  */
 type BallotInContest = {
   /**
-   * Ballot as recorded.
+   Ballot as recorded.
    */
   readonly ballot: ReadRound['ballots'][number];
 
   /**
-   * Slate it was cast over, so a position can be resolved to its authors.
+   Slate it was cast over, so a position can be resolved to its authors.
    */
   readonly candidates: readonly ReadCandidate[];
 };
 
 /**
- * What one model did across a set of contests.
- *
- * @example
- * ```ts
- * const work: ModelWork = { model: 'minimax-m3', candidates: 12, wins: 3, votes: 9, ballots: 84, selfVotes: 2, };
- * ```
+ What one model did across a set of contests.
+ 
+ @example
+ ```ts
+ const work: ModelWork = { model: 'minimax-m3', candidates: 12, wins: 3, votes: 9, ballots: 84, selfVotes: 2, };
+ ```
  */
 export type ModelWork = {
   /**
-   * Model as the ledger recorded it.
+   Model as the ledger recorded it.
    */
   readonly model: string;
 
   /**
-   * Candidates it had a hand in, joint ones included.
+   Candidates it had a hand in, joint ones included.
    */
   readonly candidates: number;
 
   /**
-   * Contests where a candidate it wrote was chosen.
+   Contests where a candidate it wrote was chosen.
    */
   readonly wins: number;
 
   /**
-   * Ballots from judges with no stake that named its candidate.
+   Ballots from judges with no stake that named its candidate.
    */
   readonly votes: number;
 
   /**
-   * Ballots from judges with no stake cast over its candidates.
+   Ballots from judges with no stake cast over its candidates.
    */
   readonly ballots: number;
 
   /**
-   * Occasions it named a candidate it helped write.
+   Occasions it named a candidate it helped write.
    */
   readonly selfVotes: number;
 };
 
 /**
- * What a set of contests came to.
- *
- * @example
- * ```ts
- * const summary = summariseLedger({ rounds, },);
- * ```
+ What a set of contests came to.
+ 
+ @example
+ ```ts
+ const summary = summariseLedger({ rounds, },);
+ ```
  */
 export type LedgerSummary = {
   /**
-   * One entry per model, by share of the ballots cast over its work.
+   One entry per model, by share of the ballots cast over its work.
    */
   readonly models: readonly ModelWork[];
 
   /**
-   * Contests read.
+   Contests read.
    */
   readonly rounds: number;
 
   /**
-   * Ballots whose judge named nothing, which is an abstention.
+   Ballots whose judge named nothing, which is an abstention.
    */
   readonly abstentions: number;
 
   /**
-   * Ballots naming a position the slate did not have.
-   *
-   * KEPT SEPARATE FROM ABSTENTIONS, because a judge naming a candidate that is
-   * not there is a defect in the judge and an abstention is not.
+   Ballots naming a position the slate did not have.
+   
+   KEPT SEPARATE FROM ABSTENTIONS, because a judge naming a candidate that is
+   not there is a defect in the judge and an abstention is not.
    */
   readonly namedMissing: number;
 };
 
 /**
- * One candidate a model wrote, with what judges said about it.
- *
- * @example
- * ```ts
- * const shown: CandidateReading = { task: 'render this passage', rendered: '...', won: false, remarks: [], };
- * ```
+ One candidate a model wrote, with what judges said about it.
+ 
+ @example
+ ```ts
+ const shown: CandidateReading = { task: 'render this passage', rendered: '...', won: false, remarks: [], };
+ ```
  */
 export type CandidateReading = {
   /**
-   * What the judges were deciding.
+   What the judges were deciding.
    */
   readonly task: string;
 
   /**
-   * Exactly what this model put in front of them.
+   Exactly what this model put in front of them.
    */
   readonly rendered: string;
 
   /**
-   * Whether it was chosen.
+   Whether it was chosen.
    */
   readonly won: boolean;
 
   /**
-   * Every disinterested judge's stated reason for naming this candidate.
+   Every disinterested judge's stated reason for naming this candidate.
    */
   readonly remarks: readonly string[];
 };
 
 /**
- * Names the models behind the candidate a ballot picked.
- *
- * @param candidates - slate as the judges saw it
- *
- * @param best - one-based position the ballot named
- *
- * @returns Models behind it, empty where the ballot named nothing or named a
- * position the slate did not have
- *
- * @example
- * ```ts
- * const named = producersNamed({ candidates, best: 2, },);
- * ```
+ Names the models behind the candidate a ballot picked.
+ 
+ @param candidates - slate as the judges saw it
+ 
+ @param best - one-based position the ballot named
+ 
+ @returns Models behind it, empty where the ballot named nothing or named a
+ position the slate did not have
+ 
+ @example
+ ```ts
+ const named = producersNamed({ candidates, best: 2, },);
+ ```
  */
 function producersNamed(
   {
@@ -186,7 +186,7 @@ function producersNamed(
     return [];
 
   /**
-   * Candidate at that position, absent where the ballot overran the slate.
+   Candidate at that position, absent where the ballot overran the slate.
    */
   const at = candidates[best - 1];
 
@@ -194,16 +194,16 @@ function producersNamed(
 }
 
 /**
- * Folds one contest into a running per-model tally.
- *
- * @param tally - running counts, mutated in place
- *
- * @param round - contest to fold in
- *
- * @example
- * ```ts
- * foldRound({ tally, round, },);
- * ```
+ Folds one contest into a running per-model tally.
+ 
+ @param tally - running counts, mutated in place
+ 
+ @param round - contest to fold in
+ 
+ @example
+ ```ts
+ foldRound({ tally, round, },);
+ ```
  */
 function foldRound(
   {
@@ -216,8 +216,8 @@ function foldRound(
 ): void {
   for (const candidate of round.candidates) {
     /**
-     * Judges with no hand in this candidate, who are the only ones whose
-     * opinion of it is evidence.
+     Judges with no hand in this candidate, who are the only ones whose
+     opinion of it is evidence.
      */
     const disinterested = round
       .ballots
@@ -228,14 +228,14 @@ function foldRound(
       },);
 
     /**
-     * Those that named it.
+     Those that named it.
      */
     const naming = disinterested.filter(function named(ballot,): boolean {
       return ballot.best === candidate.index;
     },);
 
     /**
-     * Ballots from its own authors that named it.
+     Ballots from its own authors that named it.
      */
     const own = round
       .ballots
@@ -248,7 +248,7 @@ function foldRound(
 
     for (const model of candidate.producers) {
       /**
-       * This model's counts before this candidate.
+       This model's counts before this candidate.
        */
       const running = tally.get(model,) ?? {
         model,
@@ -275,22 +275,22 @@ function foldRound(
 }
 
 /**
- * Totals what every model did across a set of contests.
- *
- * @param rounds - contests as the ledger recorded them
- *
- * @returns Per-model counts, plus the two ballot faults kept apart
- *
- * @example
- * ```ts
- * const summary = summariseLedger({ rounds, },);
- * ```
+ Totals what every model did across a set of contests.
+ 
+ @param rounds - contests as the ledger recorded them
+ 
+ @returns Per-model counts, plus the two ballot faults kept apart
+ 
+ @example
+ ```ts
+ const summary = summariseLedger({ rounds, },);
+ ```
  */
 export function summariseLedger(
   { rounds, }: { readonly rounds: readonly ReadRound[]; },
 ): LedgerSummary {
   /**
-   * Running counts, keyed by model.
+   Running counts, keyed by model.
    */
   const tally = new Map<string, ModelWork>();
 
@@ -302,7 +302,7 @@ export function summariseLedger(
   }
 
   /**
-   * Every ballot across every contest, so the two faults can be counted once.
+   Every ballot across every contest, so the two faults can be counted once.
    */
   const everyBallot = rounds.flatMap(function ballotsOf(round,): readonly BallotInContest[] {
     return round
@@ -316,11 +316,11 @@ export function summariseLedger(
   },);
 
   /**
-   * Ballots whose judge named nothing at all.
+   Ballots whose judge named nothing at all.
    */
   const abstained = everyBallot.filter(function named(entry,): boolean {
     /**
-     * Position this judge named.
+     Position this judge named.
      */
     const { best, } = entry.ballot;
 
@@ -328,11 +328,11 @@ export function summariseLedger(
   },);
 
   /**
-   * Ballots naming a position the slate they were cast over did not hold.
+   Ballots naming a position the slate they were cast over did not hold.
    */
   const overran = everyBallot.filter(function missing(entry,): boolean {
     /**
-     * Position this judge named.
+     Position this judge named.
      */
     const { best, } = entry.ballot;
 
@@ -340,7 +340,7 @@ export function summariseLedger(
       return false;
 
     /**
-     * Models behind that position, empty when the slate has nothing there.
+     Models behind that position, empty when the slate has nothing there.
      */
     const behind = producersNamed({
       candidates: entry.candidates,
@@ -351,7 +351,7 @@ export function summariseLedger(
   },);
 
   /**
-   * Seats in the order they are reported, by how much each wrote.
+   Seats in the order they are reported, by how much each wrote.
    */
   const models = [...tally.values(),].toSorted(function mostWorkFirst(
     left,
@@ -369,22 +369,22 @@ export function summariseLedger(
 }
 
 /**
- * Pulls out everything one model wrote, with what judges said about each piece.
- *
- * THE QUESTION THIS ANSWERS is whether a seat's low standing comes from writing
- * something wrong or from writing something unremarkable. Only the text and the
- * reasons can tell those apart.
- *
- * @param rounds - contests as the ledger recorded them
- *
- * @param model - seat to read
- *
- * @returns Its candidates, in the order they were judged
- *
- * @example
- * ```ts
- * const written = workOfModel({ rounds, model: 'minimax-m3', },);
- * ```
+ Pulls out everything one model wrote, with what judges said about each piece.
+ 
+ THE QUESTION THIS ANSWERS is whether a seat's low standing comes from writing
+ something wrong or from writing something unremarkable. Only the text and the
+ reasons can tell those apart.
+ 
+ @param rounds - contests as the ledger recorded them
+ 
+ @param model - seat to read
+ 
+ @returns Its candidates, in the order they were judged
+ 
+ @example
+ ```ts
+ const written = workOfModel({ rounds, model: 'minimax-m3', },);
+ ```
  */
 export function workOfModel(
   {
@@ -412,12 +412,12 @@ export function workOfModel(
             .ballots
             .filter(function about(ballot,): boolean {
               /**
-               * Whether this judge named this candidate.
+               Whether this judge named this candidate.
                */
               const chose = ballot.best === candidate.index;
 
               /**
-               * Whether this judge had a hand in writing it.
+               Whether this judge had a hand in writing it.
                */
               const wrote = candidate
                 .producers

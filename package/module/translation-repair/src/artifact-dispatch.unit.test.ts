@@ -1,14 +1,14 @@
 /**
- * Tests for choosing which generation's reader an artifact belongs to.
- *
- * WHAT THESE PIN is that the answer names the generation. A reader that
- * returned one merged shape would have to pick a lane for a version 2 artifact,
- * which is the question nobody has decided, and a caller that cannot tell which
- * generation it is holding cannot ask a question either one can answer.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for choosing which generation's reader an artifact belongs to.
+ 
+ WHAT THESE PIN is that the answer names the generation. A reader that
+ returned one merged shape would have to pick a lane for a version 2 artifact,
+ which is the question nobody has decided, and a caller that cannot tell which
+ generation it is holding cannot ask a question either one can answer.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,19 +26,19 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Archive wording every fixture here shares.
+ Archive wording every fixture here shares.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
 /**
- * A version 1 artifact, which records one lane at the top level.
- *
- * @returns Artifact as JSON
- *
- * @example
- * ```ts
- * const artifact = versionOneArtifact();
- * ```
+ A version 1 artifact, which records one lane at the top level.
+ 
+ @returns Artifact as JSON
+ 
+ @example
+ ```ts
+ const artifact = versionOneArtifact();
+ ```
  */
 function versionOneArtifact(): Record<string, unknown> {
   return {
@@ -65,7 +65,7 @@ await describe({
         + 'singular anything',
       fn: async () => {
         /**
-         * A version 1 artifact, read.
+         A version 1 artifact, read.
          */
         const versioned = readSettledArtifact({ value: versionOneArtifact(), },);
         expect(versioned.kind,).toBe('version-1',);
@@ -98,7 +98,7 @@ await describe({
         + 'generation from shape would read the next generation as whichever old one it resembles',
       fn: async () => {
         /**
-         * What versionTwoShapeWithoutVersion raised, read for its class as well as its wording.
+         What versionTwoShapeWithoutVersion raised, read for its class as well as its wording.
          */
         const refusalOfVersionTwoShapeWithoutVersion = caught(function versionTwoShapeWithoutVersion() {
           readSettledArtifact({
@@ -154,7 +154,7 @@ await describe({
         // the body is wrong proves it ran.
         expect(TWO_LANE_GENERATIONS.map(function answeredBy(version,): string {
           /**
-           * What the dispatch did with a version 1 body under this stamp.
+           What the dispatch did with a version 1 body under this stamp.
            */
           const refusal = caught(function readsUnderStamp() {
             readSettledArtifact({
@@ -179,12 +179,12 @@ await describe({
         + 'thing about the file: that it does not know its shape',
       fn: async () => {
         /**
-         * One past every generation this build knows, derived rather than typed
-         * so adding a generation does not quietly make this case vacuous.
+         One past every generation this build knows, derived rather than typed
+         so adding a generation does not quietly make this case vacuous.
          */
         const unknownVersion = Math.max(...KNOWN_ARTIFACT_SCHEMA_VERSIONS,) + 1;
         /**
-         * What laterGeneration raised, read for its class as well as its wording.
+         What laterGeneration raised, read for its class as well as its wording.
          */
         const refusalOfLaterGeneration = caught(function laterGeneration() {
           readSettledArtifact({
@@ -234,7 +234,7 @@ await describe({
         + 'string reports its shape rather than a missing field',
       fn: async () => {
         /**
-         * What notARecord raised, read for its class as well as its wording.
+         What notARecord raised, read for its class as well as its wording.
          */
         const refusalOfNotARecord = caught(function notARecord() {
           readSettledArtifact({ value: `"${ARCHIVE_NAP}"`, },);

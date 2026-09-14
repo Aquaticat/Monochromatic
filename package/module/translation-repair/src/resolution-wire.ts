@@ -18,14 +18,14 @@ import { selectFence, } from './prompt-fence.ts';
 
 
 /**
- * Every verdict a checker may cast on one issue, closed vocabulary.
- * `worse` flags a repair that damaged the region beyond the original
- * defect; the no-regression measurement counts it against the candidate.
- *
- * @example
- * ```ts
- * RESOLUTION_VERDICTS.includes('fixed',);
- * ```
+ Every verdict a checker may cast on one issue, closed vocabulary.
+ `worse` flags a repair that damaged the region beyond the original
+ defect; the no-regression measurement counts it against the candidate.
+ 
+ @example
+ ```ts
+ RESOLUTION_VERDICTS.includes('fixed',);
+ ```
  */
 export const RESOLUTION_VERDICTS = [
   'fixed',
@@ -34,26 +34,26 @@ export const RESOLUTION_VERDICTS = [
 ] as const;
 
 /**
- * One checker verdict on one issue.
- *
- * @example
- * ```ts
- * const verdict: ResolutionVerdict = 'fixed';
- * ```
+ One checker verdict on one issue.
+ 
+ @example
+ ```ts
+ const verdict: ResolutionVerdict = 'fixed';
+ ```
  */
 export type ResolutionVerdict = typeof RESOLUTION_VERDICTS[number];
 
 /**
- * Guards untrusted verdict strings from model JSON.
- *
- * @param value - candidate from unvalidated model output
- *
- * @returns Whether value names one listed verdict
- *
- * @example
- * ```ts
- * isResolutionVerdict('fixed',);
- * ```
+ Guards untrusted verdict strings from model JSON.
+ 
+ @param value - candidate from unvalidated model output
+ 
+ @returns Whether value names one listed verdict
+ 
+ @example
+ ```ts
+ isResolutionVerdict('fixed',);
+ ```
  */
 export function isResolutionVerdict(value: unknown,): value is ResolutionVerdict {
   if ((typeof value) !== 'string')
@@ -63,7 +63,7 @@ export function isResolutionVerdict(value: unknown,): value is ResolutionVerdict
 }
 
 /**
- * System instructions shared by every checker call.
+ System instructions shared by every checker call.
  */
 const RESOLUTION_SYSTEM_PROMPT = `You are a strict bilingual translation reviewer.
 Editors revised the TRANSLATION of the ORIGINAL document to fix the numbered issues below.
@@ -80,46 +80,46 @@ Reply with ONLY a JSON object of shape {"checks": [{"issue": 1, "verdict": "fixe
 Every issue number must appear exactly once in checks.`;
 
 /**
- * Messages plus the issue order checks resolve through:
- * issue number N on the wire means `issueIds[N - 1]`.
- *
- * @example
- * ```ts
- * const plan: ResolutionPromptPlan = buildResolutionMessages({
- *   sourceText,
- *   patchedText,
- *   issues,
- * },);
- * ```
+ Messages plus the issue order checks resolve through:
+ issue number N on the wire means `issueIds[N - 1]`.
+ 
+ @example
+ ```ts
+ const plan: ResolutionPromptPlan = buildResolutionMessages({
+   sourceText,
+   patchedText,
+   issues,
+ },);
+ ```
  */
 export type ResolutionPromptPlan = {
   /**
-   * Messages ready for `chatJson`.
+   Messages ready for `chatJson`.
    */
   readonly messages: readonly ChatMessage[];
 
   /**
-   * Issue ids in prompt numbering order.
+   Issue ids in prompt numbering order.
    */
   readonly issueIds: readonly string[];
 };
 
 /**
- * Builds the checker sheet: original, revised translation, and every
- * accepted issue the editors were asked to fix.
- *
- * @param sourceText - original chunk text
- *
- * @param patchedText - revised translation after patch application
- *
- * @param issues - accepted issues the editors addressed
- *
- * @returns Messages plus issue numbering order
- *
- * @example
- * ```ts
- * const plan = buildResolutionMessages({ sourceText, patchedText, issues, },);
- * ```
+ Builds the checker sheet: original, revised translation, and every
+ accepted issue the editors were asked to fix.
+ 
+ @param sourceText - original chunk text
+ 
+ @param patchedText - revised translation after patch application
+ 
+ @param issues - accepted issues the editors addressed
+ 
+ @returns Messages plus issue numbering order
+ 
+ @example
+ ```ts
+ const plan = buildResolutionMessages({ sourceText, patchedText, issues, },);
+ ```
  */
 export function buildResolutionMessages(
   {
@@ -133,14 +133,14 @@ export function buildResolutionMessages(
   },
 ): ResolutionPromptPlan {
   /**
-   * Rendered issue blocks in issue order.
+   Rendered issue blocks in issue order.
    */
   const blocks = issues.map(function toBlock(
     issue,
     index,
   ) {
     /**
-     * Claim lines of this issue.
+     Claim lines of this issue.
      */
     const claimLines = issue.claims
       .map(function toLine(member,) {
@@ -154,7 +154,7 @@ ${claimLines.join('\n',)}`;
   },);
 
   /**
-   * Fence no enclosed text can reproduce.
+   Fence no enclosed text can reproduce.
    */
   const fence = selectFence({
     texts: [
@@ -188,58 +188,58 @@ ${fence} END ${fence}`,
 }
 
 /**
- * One check as a checker reports it.
- *
- * @example
- * ```ts
- * const wire: ResolutionCheckWire = { issue: 1, verdict: 'fixed', };
- * ```
+ One check as a checker reports it.
+ 
+ @example
+ ```ts
+ const wire: ResolutionCheckWire = { issue: 1, verdict: 'fixed', };
+ ```
  */
 export type ResolutionCheckWire = {
   /**
-   * One-based issue number from the prompt sheet.
+   One-based issue number from the prompt sheet.
    */
   readonly issue: number;
 
   /**
-   * Verdict string; validated against the closed vocabulary at resolution.
+   Verdict string; validated against the closed vocabulary at resolution.
    */
   readonly verdict: string;
 };
 
 /**
- * Whole checker reply on the wire.
- *
- * @example
- * ```ts
- * const report: ResolutionReportWire = { checks: [], };
- * ```
+ Whole checker reply on the wire.
+ 
+ @example
+ ```ts
+ const report: ResolutionReportWire = { checks: [], };
+ ```
  */
 export type ResolutionReportWire = {
   /**
-   * Every check cast.
+   Every check cast.
    */
   readonly checks: readonly ResolutionCheckWire[];
 };
 
 /**
- * Guards one wire check.
- *
- * @param value - candidate from parsed model JSON
- *
- * @returns Whether value carries the required check fields
- *
- * @example
- * ```ts
- * isResolutionCheckWire({ issue: 1, verdict: 'fixed', },);
- * ```
+ Guards one wire check.
+ 
+ @param value - candidate from parsed model JSON
+ 
+ @returns Whether value carries the required check fields
+ 
+ @example
+ ```ts
+ isResolutionCheckWire({ issue: 1, verdict: 'fixed', },);
+ ```
  */
 function isResolutionCheckWire(value: unknown,): value is ResolutionCheckWire {
   if (!isJsonRecord(value,))
     return false;
 
   /**
-   * Issue reference as reported; integerness checked on the primitive copy.
+   Issue reference as reported; integerness checked on the primitive copy.
    */
   const { issue, } = value;
   if ((typeof issue) !== 'number')
@@ -250,16 +250,16 @@ function isResolutionCheckWire(value: unknown,): value is ResolutionCheckWire {
 }
 
 /**
- * Guards a whole checker reply.
- *
- * @param value - parsed model JSON
- *
- * @returns Whether value is a wire report
- *
- * @example
- * ```ts
- * const outcome = await client.chatJson({ ..., validate: isResolutionReportWire, },);
- * ```
+ Guards a whole checker reply.
+ 
+ @param value - parsed model JSON
+ 
+ @returns Whether value is a wire report
+ 
+ @example
+ ```ts
+ const outcome = await client.chatJson({ ..., validate: isResolutionReportWire, },);
+ ```
  */
 export function isResolutionReportWire(value: unknown,): value is ResolutionReportWire {
   if (!isJsonRecord(value,))
@@ -273,9 +273,9 @@ export function isResolutionReportWire(value: unknown,): value is ResolutionRepo
 }
 
 /**
- * Structured-output constraint for checker calls;
- * client-side validation through {@link isResolutionReportWire} stays
- * regardless, because per-model schema strictness is unverified.
+ Structured-output constraint for checker calls;
+ client-side validation through {@link isResolutionReportWire} stays
+ regardless, because per-model schema strictness is unverified.
  */
 export const RESOLUTION_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',

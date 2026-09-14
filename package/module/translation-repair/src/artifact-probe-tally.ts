@@ -24,7 +24,7 @@ import type {
 // either was declared, which is legal and unreadable top-down.
 
 /**
- * Every admissibility the screen can record.
+ Every admissibility the screen can record.
  */
 const ADMISSIBILITY_VALUES: readonly ClaimAdmissibility[] = [
   'corroborated',
@@ -35,26 +35,26 @@ const ADMISSIBILITY_VALUES: readonly ClaimAdmissibility[] = [
 ];
 
 /**
- * Reads a claim's admissibility, refusing a value the screen cannot have
- * written.
- *
- * Narrowing rather than asserting, because the majority rule counts only the
- * two upheld values. An unrecognized string would be silently non-upholding, so
- * a writer emitting a new verdict name would quietly zero the corroboration
- * every region reports rather than announce that the schemas diverged.
- *
- * @param value - candidate admissibility from artifact JSON
- *
- * @param path - dotted path for error messages
- *
- * @returns Admissibility as the screen recorded it
- *
- * @throws {@link ArtifactParseError} when the value is not one the screen emits
- *
- * @example
- * ```ts
- * const admissibility = requireAdmissibility({ value, path, },);
- * ```
+ Reads a claim's admissibility, refusing a value the screen cannot have
+ written.
+ 
+ Narrowing rather than asserting, because the majority rule counts only the
+ two upheld values. An unrecognized string would be silently non-upholding, so
+ a writer emitting a new verdict name would quietly zero the corroboration
+ every region reports rather than announce that the schemas diverged.
+ 
+ @param value - candidate admissibility from artifact JSON
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Admissibility as the screen recorded it
+ 
+ @throws {@link ArtifactParseError} when the value is not one the screen emits
+ 
+ @example
+ ```ts
+ const admissibility = requireAdmissibility({ value, path, },);
+ ```
  */
 function requireAdmissibility(
   {
@@ -66,14 +66,14 @@ function requireAdmissibility(
   },
 ): ClaimAdmissibility {
   /**
-   * Candidate as a string, which it must be before it can be one of the set.
+   Candidate as a string, which it must be before it can be one of the set.
    */
   const text = requireString({
     value,
     path,
   },);
   /**
-   * Matching admissibility, absent when the writer emitted something else.
+   Matching admissibility, absent when the writer emitted something else.
    */
   const found = ADMISSIBILITY_VALUES.find(function matches(candidate,) {
     return candidate === text;
@@ -87,26 +87,26 @@ function requireAdmissibility(
 }
 
 /**
- * Parses a region's claim list down to who said what.
- *
- * Attribution only, and the return type says so. `evidence`, `omittedText` and
- * `reason` carry UNLICENSED corpus text, this reader feeds a summary meant to
- * be pasteable, and nothing downstream reads them. Returning a full claim with
- * those fields blanked would be indistinguishable from a prober that quoted
- * nothing.
- *
- * @param value - candidate claim array from artifact JSON
- *
- * @param path - dotted path of the owning tally, for error messages
- *
- * @returns Claims reduced to prober and admissibility
- *
- * @throws {@link ArtifactParseError} when a claim is malformed
- *
- * @example
- * ```ts
- * const claims = parseClaimAttributions({ value: tally.claims, path, },);
- * ```
+ Parses a region's claim list down to who said what.
+ 
+ Attribution only, and the return type says so. `evidence`, `omittedText` and
+ `reason` carry UNLICENSED corpus text, this reader feeds a summary meant to
+ be pasteable, and nothing downstream reads them. Returning a full claim with
+ those fields blanked would be indistinguishable from a prober that quoted
+ nothing.
+ 
+ @param value - candidate claim array from artifact JSON
+ 
+ @param path - dotted path of the owning tally, for error messages
+ 
+ @returns Claims reduced to prober and admissibility
+ 
+ @throws {@link ArtifactParseError} when a claim is malformed
+ 
+ @example
+ ```ts
+ const claims = parseClaimAttributions({ value: tally.claims, path, },);
+ ```
  */
 function parseClaimAttributions(
   {
@@ -126,7 +126,7 @@ function parseClaimAttributions(
       index,
     ): ProbeClaimAttribution {
       /**
-       * Claim as a record.
+       Claim as a record.
        */
       const claim = requireRecord({
         value: entry,
@@ -146,7 +146,7 @@ function parseClaimAttributions(
 }
 
 /**
- * Admissibility each declared count is the tally of.
+ Admissibility each declared count is the tally of.
  */
 const ADMISSIBILITY_FIELDS: Readonly<Record<string, ClaimAdmissibility>> = {
   corroborated: 'corroborated',
@@ -157,21 +157,21 @@ const ADMISSIBILITY_FIELDS: Readonly<Record<string, ClaimAdmissibility>> = {
 };
 
 /**
- * Parses one region tally.
- *
- * @param value - candidate tally from artifact JSON
- *
- * @param path - dotted path for error messages
- *
- * @returns Tally as the summary reads it
- *
- * @throws {@link ArtifactParseError} when any count or id is malformed, or when
- * the declared counts disagree with the claim list they were derived from
- *
- * @example
- * ```ts
- * const tally = parseRegionTally({ value, path: 'Kitten.issues[0]...regions[0]', },);
- * ```
+ Parses one region tally.
+ 
+ @param value - candidate tally from artifact JSON
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Tally as the summary reads it
+ 
+ @throws {@link ArtifactParseError} when any count or id is malformed, or when
+ the declared counts disagree with the claim list they were derived from
+ 
+ @example
+ ```ts
+ const tally = parseRegionTally({ value, path: 'Kitten.issues[0]...regions[0]', },);
+ ```
  */
 export function parseRegionTally(
   {
@@ -183,7 +183,7 @@ export function parseRegionTally(
   },
 ): TelemetryRegionTally {
   /**
-   * Tally as a record.
+   Tally as a record.
    */
   const tally = requireRecord({
     value,
@@ -191,16 +191,16 @@ export function parseRegionTally(
   },);
 
   /**
-   * Reads one named count off the tally.
-   *
-   * @param field - count to read
-   *
-   * @returns Count value
-   *
-   * @example
-   * ```ts
-   * countAt('corroborated',);
-   * ```
+   Reads one named count off the tally.
+   
+   @param field - count to read
+   
+   @returns Count value
+   
+   @example
+   ```ts
+   countAt('corroborated',);
+   ```
    */
   function countAt(field: string,): number {
     return requireCount({
@@ -213,7 +213,7 @@ export function parseRegionTally(
   // computed without modelId and admissibility. Reading the counts alone
   // silently judged every region as uncorroborated.
   /**
-   * Screened claims of this region, attribution only.
+   Screened claims of this region, attribution only.
    */
   const claims = parseClaimAttributions({
     value: tally.claims,
@@ -221,7 +221,7 @@ export function parseRegionTally(
   },);
 
   /**
-   * Counts as the artifact declares them.
+   Counts as the artifact declares them.
    */
   const declared = {
     corroborated: countAt('corroborated',),
@@ -246,7 +246,7 @@ export function parseRegionTally(
   // Both look like ordinary output.
   for (const [field, count,] of Object.entries(declared,)) {
     /**
-     * Claims actually carrying this admissibility.
+     Claims actually carrying this admissibility.
      */
     const observed = claims
       .filter(function matches(claim,) {

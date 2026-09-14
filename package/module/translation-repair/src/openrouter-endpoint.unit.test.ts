@@ -1,7 +1,7 @@
 /**
- * Tests for the upstream endpoint read off an OpenRouter stream.
- *
- * @module
+ Tests for the upstream endpoint read off an OpenRouter stream.
+ 
+ @module
  */
 
 import {

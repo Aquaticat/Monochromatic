@@ -3,57 +3,57 @@
 // Lexical hits still need AST context before they can authorize edits.
 
 /**
- * Maximum raw label length accepted by the installed footnote tokenizer.
+ Maximum raw label length accepted by the installed footnote tokenizer.
  */
 const MAX_GFM_LABEL_LENGTH = 999;
 
 /**
- * This position does not contain a GFM marker, distinct from an invalid caller state.
- *
- * @example
- * ```ts
- * if (typeof gfmMarkerAt({ text, offset }) === 'symbol') inspectOrdinaryText();
- * ```
+ This position does not contain a GFM marker, distinct from an invalid caller state.
+ 
+ @example
+ ```ts
+ if (typeof gfmMarkerAt({ text, offset }) === 'symbol') inspectOrdinaryText();
+ ```
  */
 export const NO_GFM_MARKER: unique symbol = Symbol('no GFM marker at this position',);
 
 /**
- * Exact marker lexeme, with offsets relative to the supplied text.
- *
- * @example
- * ```ts
- * const marker: GfmMarkerSpan = { rawLabel: 'Note', startOffset: 0, endOffset: 7 };
- * ```
+ Exact marker lexeme, with offsets relative to the supplied text.
+ 
+ @example
+ ```ts
+ const marker: GfmMarkerSpan = { rawLabel: 'Note', startOffset: 0, endOffset: 7 };
+ ```
  */
 export type GfmMarkerSpan = {
   /**
-   * Encoded Markdown spelling, not a decoded mdast label.
+   Encoded Markdown spelling, not a decoded mdast label.
    */
   readonly rawLabel: string;
   /**
-   * Opening bracket offset.
+   Opening bracket offset.
    */
   readonly startOffset: number;
   /**
-   * Offset immediately after the unescaped closing bracket.
+   Offset immediately after the unescaped closing bracket.
    */
   readonly endOffset: number;
 };
 
 /**
- * Checks backslash parity immediately before a possible marker.
- * Runs inspected for distinct openings cannot overlap.
- *
- * @param text - original syntax-bearing text
- *
- * @param offset - opening bracket position
- *
- * @returns Whether Markdown escapes this opening
- *
- * @example
- * ```ts
- * const escaped = escapedMarkerOpening({ text, offset });
- * ```
+ Checks backslash parity immediately before a possible marker.
+ Runs inspected for distinct openings cannot overlap.
+ 
+ @param text - original syntax-bearing text
+ 
+ @param offset - opening bracket position
+ 
+ @returns Whether Markdown escapes this opening
+ 
+ @example
+ ```ts
+ const escaped = escapedMarkerOpening({ text, offset });
+ ```
  */
 function escapedMarkerOpening({
   text,
@@ -71,19 +71,19 @@ function escapedMarkerOpening({
 }
 
 /**
- * Reads one bounded marker, respecting bracket escapes and the tokenizer's whitespace rule.
- * A definition and a reference share this lexeme; AST context distinguishes their roles.
- *
- * @param text - syntax-bearing text, with non-content regions already masked when appropriate
- *
- * @param offset - possible opening bracket
- *
- * @returns Exact lexeme when present, otherwise no marker
- *
- * @example
- * ```ts
- * const marker = gfmMarkerAt({ text: '[^a\\]b]', offset: 0 });
- * ```
+ Reads one bounded marker, respecting bracket escapes and the tokenizer's whitespace rule.
+ A definition and a reference share this lexeme; AST context distinguishes their roles.
+ 
+ @param text - syntax-bearing text, with non-content regions already masked when appropriate
+ 
+ @param offset - possible opening bracket
+ 
+ @returns Exact lexeme when present, otherwise no marker
+ 
+ @example
+ ```ts
+ const marker = gfmMarkerAt({ text: '[^a\\]b]', offset: 0 });
+ ```
  */
 export function gfmMarkerAt({
   text,
@@ -101,11 +101,11 @@ export function gfmMarkerAt({
   },))
     return NO_GFM_MARKER;
   /**
-   * First identifier character after the fixed opener.
+   First identifier character after the fixed opener.
    */
   const start = offset + 2;
   /**
-   * Inclusive closing-bracket bound after the longest valid identifier.
+   Inclusive closing-bracket bound after the longest valid identifier.
    */
   const limit = Math.min(
     text.length - 1,
@@ -113,7 +113,7 @@ export function gfmMarkerAt({
   );
   for (let cursor = start; cursor <= limit; cursor += 1) {
     /**
-     * Current raw code unit; bounds prevent an absent value.
+     Current raw code unit; bounds prevent an absent value.
      */
     const character = text[cursor];
     if ((character === '[') || (character === ' ')
@@ -138,21 +138,21 @@ export function gfmMarkerAt({
 }
 
 /**
- * Scans positioned lexemes without treating escaped openings as unresolved references.
- * Each attempted label has a fixed tokenizer bound, so malformed overlapping openings remain linear.
- *
- * @param text - one syntax-bearing text-node slice
- *
- * @returns Lexemes in source order
- *
- * @example
- * ```ts
- * const markers = gfmMarkerSpans({ text: 'Missing[^9].' });
- * ```
+ Scans positioned lexemes without treating escaped openings as unresolved references.
+ Each attempted label has a fixed tokenizer bound, so malformed overlapping openings remain linear.
+ 
+ @param text - one syntax-bearing text-node slice
+ 
+ @returns Lexemes in source order
+ 
+ @example
+ ```ts
+ const markers = gfmMarkerSpans({ text: 'Missing[^9].' });
+ ```
  */
 export function gfmMarkerSpans({ text, }: { readonly text: string; },): readonly GfmMarkerSpan[] {
   /**
-   * Owned result list.
+   Owned result list.
    */
   const markers: GfmMarkerSpan[] = [];
   for (let cursor = text.indexOf('[^',); cursor !== (-1); cursor = text.indexOf(
@@ -160,7 +160,7 @@ export function gfmMarkerSpans({ text, }: { readonly text: string; },): readonly
     cursor + 1,
   )) {
     /**
-     * Bounded read at this possible opening.
+     Bounded read at this possible opening.
      */
     const marker = gfmMarkerAt({
       text,

@@ -1,31 +1,31 @@
 /**
- * Tests that the editor width control REFUSES a draw it cannot damage.
- *
- * WHAT THE CONTROL IS FOR. It cuts one sentence out of a translation and asks
- * the panel which reads better. A panel that cannot tell the cut version from
- * the whole one is not measuring anything, so the probe stops before it spends.
- * That question can only be asked of a passage holding MORE THAN ONE sentence:
- * cut the only sentence a slice has and nothing is left to judge, which is a
- * different question from whether the panel notices a deletion.
- *
- * WHAT WAS MEASURED. On 2026-08-25, inverting the filter that selects damageable
- * slices, so the ones holding a single sentence are the ones kept, failed no
- * test in this package. The probe would then have run its control over passages
- * it could not damage, and reported whatever the panel said about an empty arm
- * as though it were evidence the panel works.
- *
- * THE FIXTURE IS ASSERTED FIRST. `withoutASentence` decides what damageable
- * means, so each fixture is put to it directly before the control sees it. A
- * fixture that quietly stopped being a single sentence would otherwise turn
- * this into a test that passes for the wrong reason.
- *
- * NO NETWORK. The refusal happens before any judge is seated, and the client
- * here refuses every exchange by name so a control that got past the filter
- * would say so rather than quietly buying rounds.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests that the editor width control REFUSES a draw it cannot damage.
+ 
+ WHAT THE CONTROL IS FOR. It cuts one sentence out of a translation and asks
+ the panel which reads better. A panel that cannot tell the cut version from
+ the whole one is not measuring anything, so the probe stops before it spends.
+ That question can only be asked of a passage holding MORE THAN ONE sentence:
+ cut the only sentence a slice has and nothing is left to judge, which is a
+ different question from whether the panel notices a deletion.
+ 
+ WHAT WAS MEASURED. On 2026-08-25, inverting the filter that selects damageable
+ slices, so the ones holding a single sentence are the ones kept, failed no
+ test in this package. The probe would then have run its control over passages
+ it could not damage, and reported whatever the panel said about an empty arm
+ as though it were evidence the panel works.
+ 
+ THE FIXTURE IS ASSERTED FIRST. `withoutASentence` decides what damageable
+ means, so each fixture is put to it directly before the control sees it. A
+ fixture that quietly stopped being a single sentence would otherwise turn
+ this into a test that passes for the wrong reason.
+ 
+ NO NETWORK. The refusal happens before any judge is seated, and the client
+ here refuses every exchange by name so a control that got past the filter
+ would say so rather than quietly buying rounds.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -43,17 +43,17 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Logger for the control under test.
+ Logger for the control under test.
  */
 const l = tagged({ tag: 'editor-width-control-usable-test', },);
 
 //region Fixtures
 
 /**
- * Slice whose translation is one sentence, so cutting it leaves nothing.
- *
- * The terminator sits at the very end, which is what makes it undamageable:
- * there is no text after it to keep.
+ Slice whose translation is one sentence, so cutting it leaves nothing.
+ 
+ The terminator sits at the very end, which is what makes it undamageable:
+ there is no text after it to keep.
  */
 const ONE_SENTENCE: BenchSlice = {
   entryId: 'mittens-window',
@@ -64,7 +64,7 @@ const ONE_SENTENCE: BenchSlice = {
 };
 
 /**
- * Second undamageable slice, so the refusal is not resting on a draw of one.
+ Second undamageable slice, so the refusal is not resting on a draw of one.
  */
 const ALSO_ONE_SENTENCE: BenchSlice = {
   entryId: 'whiskers-birds',
@@ -75,7 +75,7 @@ const ALSO_ONE_SENTENCE: BenchSlice = {
 };
 
 /**
- * Slice whose translation holds two sentences, which a cut can be taken from.
+ Slice whose translation holds two sentences, which a cut can be taken from.
  */
 const TWO_SENTENCES: BenchSlice = {
   entryId: 'tabby-radiator',
@@ -86,8 +86,8 @@ const TWO_SENTENCES: BenchSlice = {
 };
 
 /**
- * Client refusing every exchange, since a control that reached one has already
- * failed the question this file asks.
+ Client refusing every exchange, since a control that reached one has already
+ failed the question this file asks.
  */
 const CLIENT: SyntheticClient = {
   chatText: async () => {
@@ -102,18 +102,18 @@ const CLIENT: SyntheticClient = {
 };
 
 /**
- * Runs a call that must refuse and hands back what it threw.
- *
- * @param act - call expected to reject
- *
- * @returns Whatever it rejected with, unchanged
- *
- * @throws Error when the call resolved instead of rejecting
- *
- * @example
- * ```ts
- * const refusal = await refusalOf(async function overOneSentence() { ... },);
- * ```
+ Runs a call that must refuse and hands back what it threw.
+ 
+ @param act - call expected to reject
+ 
+ @returns Whatever it rejected with, unchanged
+ 
+ @throws Error when the call resolved instead of rejecting
+ 
+ @example
+ ```ts
+ const refusal = await refusalOf(async function overOneSentence() { ... },);
+ ```
  */
 async function refusalOf(act: () => Promise<unknown>,): Promise<unknown> {
   try {
@@ -147,7 +147,7 @@ await describe({
         + 'it cannot damage would report the panel as working without having asked it anything',
       fn: async () => {
         /**
-         * What the control said about a draw with nothing to cut.
+         What the control said about a draw with nothing to cut.
          */
         const refusal = await refusalOf(async function overUndamageableSlices() {
           await widthControlHolds({

@@ -1,16 +1,16 @@
 /**
- * Tests for the per-slice selection ledger.
- *
- * WHAT THESE PIN is the distinction the ledger exists for: "the judges kept the
- * archive" and "the archive was reinstated after the judges replaced it" are
- * different facts, and every count the lane reported before this collapsed them.
- * `#83` asked for the first; the assembly guard is what makes the second
- * possible. A reader holding one number cannot tell them apart, and the
- * replacement rate every quality claim rests on is computed from exactly this.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the per-slice selection ledger.
+ 
+ WHAT THESE PIN is the distinction the ledger exists for: "the judges kept the
+ archive" and "the archive was reinstated after the judges replaced it" are
+ different facts, and every count the lane reported before this collapsed them.
+ `#83` asked for the first; the assembly guard is what makes the second
+ possible. A reader holding one number cannot tell them apart, and the
+ replacement rate every quality claim rests on is computed from exactly this.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,30 +26,30 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Model standing in for a translator.
+ Model standing in for a translator.
  */
 const CAT_A = 'hf:cat/Cat-A' as unknown as RosterModelId;
 
 /**
- * Builds one settled record with the parts this ledger reads.
- *
- * Everything the ledger ignores is filled with whatever satisfies the type:
- * what is under test is which fields travel, not what the stage decided.
- *
- * @param sliceIndex - slice position
- *
- * @param origin - whether the winner was the archive's text or fresh
- *
- * @param decision - how the round ended
- *
- * @param voteWeight - weight the winner drew
- *
- * @returns Record shaped like one the driver settles
- *
- * @example
- * ```ts
- * const record = recordFor({ sliceIndex: 0, origin: 'fresh', decision: 'judged', voteWeight: 2, },);
- * ```
+ Builds one settled record with the parts this ledger reads.
+ 
+ Everything the ledger ignores is filled with whatever satisfies the type:
+ what is under test is which fields travel, not what the stage decided.
+ 
+ @param sliceIndex - slice position
+ 
+ @param origin - whether the winner was the archive's text or fresh
+ 
+ @param decision - how the round ended
+ 
+ @param voteWeight - weight the winner drew
+ 
+ @returns Record shaped like one the driver settles
+ 
+ @example
+ ```ts
+ const record = recordFor({ sliceIndex: 0, origin: 'fresh', decision: 'judged', voteWeight: 2, },);
+ ```
  */
 function recordFor(
   {
@@ -100,32 +100,32 @@ function recordFor(
 }
 
 /**
- * Second model, so a round can have a stakeholder and a disinterested judge.
+ Second model, so a round can have a stakeholder and a disinterested judge.
  */
 const CAT_B = 'hf:cat/Cat-B' as unknown as RosterModelId;
 
 /**
- * Builds a record carrying a REAL round: two candidates by two producers, and
- * two ballots, one of which is a self-vote.
- *
- * Cat-A wrote candidate 1 and named candidate 2; Cat-B wrote candidate 2 and
- * named it. So over these two candidates there is one self-vote out of two
- * stakeholder ballots, which is what the measurement case reads.
- *
- * @param sliceIndex - slice position
- *
- * @returns Record whose round is worth measuring
- *
- * @example
- * ```ts
- * const record = recordWithRound({ sliceIndex: 0, },);
- * ```
+ Builds a record carrying a REAL round: two candidates by two producers, and
+ two ballots, one of which is a self-vote.
+ 
+ Cat-A wrote candidate 1 and named candidate 2; Cat-B wrote candidate 2 and
+ named it. So over these two candidates there is one self-vote out of two
+ stakeholder ballots, which is what the measurement case reads.
+ 
+ @param sliceIndex - slice position
+ 
+ @returns Record whose round is worth measuring
+ 
+ @example
+ ```ts
+ const record = recordWithRound({ sliceIndex: 0, },);
+ ```
  */
 function recordWithRound(
   { sliceIndex, }: { readonly sliceIndex: number; },
 ): TranslateSliceRecord {
   /**
-   * Base record, whose round is then replaced with a populated one.
+   Base record, whose round is then replaced with a populated one.
    */
   const base = recordFor({
     sliceIndex,
@@ -183,8 +183,8 @@ await describe({
         + 'only `origin` says whether that was chosen or restored',
       fn: async () => {
         /**
-         * Slice 0: judges kept the archive. Slice 1: judges chose fresh text and
-         * the assembly guard withdrew it.
+         Slice 0: judges kept the archive. Slice 1: judges chose fresh text and
+         the assembly guard withdrew it.
          */
         const selections = buildSliceSelections({
           records: [
@@ -294,7 +294,7 @@ await describe({
         },);
 
         /**
-         * Round as the artifact would carry it.
+         Round as the artifact would carry it.
          */
         const round = selections[0]?.round;
         expect(round?.producers
@@ -316,7 +316,7 @@ await describe({
         },);
 
         /**
-         * The measurement run straight off the ledger.
+         The measurement run straight off the ledger.
          */
         const measured = selfPreference({ rounds: selections.map(function toRound(selection,) {
           return selection.round;

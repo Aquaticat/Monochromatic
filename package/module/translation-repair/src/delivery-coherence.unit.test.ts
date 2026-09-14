@@ -1,16 +1,16 @@
 /**
- * Tests for the rule tying a delivery to the rest of its row.
- *
- * WHAT THESE PIN is the four-case matrix a row has to satisfy whoever built it.
- * `buildSliceDelivery` decides these cases and can only produce coherent ones,
- * and it is not the only way a row reaches a consumer: the type is exported,
- * the comparison takes ledgers from a caller, and an artifact reader takes them
- * from disk. At each of those, the builder's guarantee is somebody else's
- * assumption, and a row that contradicts itself is well formed in every field.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the rule tying a delivery to the rest of its row.
+ 
+ WHAT THESE PIN is the four-case matrix a row has to satisfy whoever built it.
+ `buildSliceDelivery` decides these cases and can only produce coherent ones,
+ and it is not the only way a row reaches a consumer: the type is exported,
+ the comparison takes ledgers from a caller, and an artifact reader takes them
+ from disk. At each of those, the builder's guarantee is somebody else's
+ assumption, and a row that contradicts itself is well formed in every field.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,32 +26,32 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Archive wording of the slice these cases use.
+ Archive wording of the slice these cases use.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
 /**
- * Wording a lane might decide instead.
+ Wording a lane might decide instead.
  */
 const REWRITE = 'The cat is asleep on the windowsill.';
 
 /**
- * Builds one row from the parts each case varies.
- *
- * @param outcome - what the lane did
- *
- * @param shippedText - what the document carries
- *
- * @param delivery - how it came to carry it
- *
- * @param incumbentKind - whether the archive holds wording here
- *
- * @returns Row shaped as a delivery ledger holds one
- *
- * @example
- * ```ts
- * const record = rowOf({ outcome, shippedText, delivery, },);
- * ```
+ Builds one row from the parts each case varies.
+ 
+ @param outcome - what the lane did
+ 
+ @param shippedText - what the document carries
+ 
+ @param delivery - how it came to carry it
+ 
+ @param incumbentKind - whether the archive holds wording here
+ 
+ @returns Row shaped as a delivery ledger holds one
+ 
+ @example
+ ```ts
+ const record = rowOf({ outcome, shippedText, delivery, },);
+ ```
  */
 function rowOf(
   {
@@ -113,7 +113,7 @@ await describe({
         + 'gap where the archive never had wording',
       fn: async () => {
         /**
-         * One coherent row per delivery.
+         One coherent row per delivery.
          */
         const coherent = [
           rowOf({
@@ -174,7 +174,7 @@ await describe({
         + 'changed',
       fn: async () => {
         /**
-         * What replacedNothing raised, read for its class as well as its wording.
+         What replacedNothing raised, read for its class as well as its wording.
          */
         const refusalOfReplacedNothing = caught(function replacedNothing() {
           assertDeliveryCoherent({
@@ -199,7 +199,7 @@ await describe({
         + 'state where no field says what the reader is actually looking at',
       fn: async () => {
         /**
-         * What carriedSomethingElse raised, read for its class as well as its wording.
+         What carriedSomethingElse raised, read for its class as well as its wording.
          */
         const refusalOfCarriedSomethingElse = caught(function carriedSomethingElse() {
           assertDeliveryCoherent({
@@ -224,7 +224,7 @@ await describe({
         + 'the claim that the document does NOT have it',
       fn: async () => {
         /**
-         * What withdrewAndShipped raised, read for its class as well as its wording.
+         What withdrewAndShipped raised, read for its class as well as its wording.
          */
         const refusalOfWithdrewAndShipped = caught(function withdrewAndShipped() {
           assertDeliveryCoherent({
@@ -253,7 +253,7 @@ await describe({
         + 'counting keeps would count it',
       fn: async () => {
         /**
-         * What hidAChange raised, read for its class as well as its wording.
+         What hidAChange raised, read for its class as well as its wording.
          */
         const refusalOfHidAChange = caught(function hidAChange() {
           assertDeliveryCoherent({
@@ -278,7 +278,7 @@ await describe({
         + 'which are the two ways a row can disagree with the archive about which of them it describes',
       fn: async () => {
         /**
-         * What retainedNothing raised, read for its class as well as its wording.
+         What retainedNothing raised, read for its class as well as its wording.
          */
         const refusalOfRetainedNothing = caught(function retainedNothing() {
           assertDeliveryCoherent({
@@ -294,7 +294,7 @@ await describe({
         expect(refusalOfRetainedNothing,).toBeInstanceOf(DeliveryCoherenceError,);
         expect((refusalOfRetainedNothing as Error).message,).toContain('where the archive holds none',);
         /**
-         * What gappedSomething raised, read for its class as well as its wording.
+         What gappedSomething raised, read for its class as well as its wording.
          */
         const refusalOfGappedSomething = caught(function gappedSomething() {
           assertDeliveryCoherent({
@@ -316,7 +316,7 @@ await describe({
         + 'a gap row with text in it is the state a reader counting untranslated passages would trust',
       fn: async () => {
         /**
-         * What gapWithText raised, read for its class as well as its wording.
+         What gapWithText raised, read for its class as well as its wording.
          */
         const refusalOfGapWithText = caught(function gapWithText() {
           assertDeliveryCoherent({

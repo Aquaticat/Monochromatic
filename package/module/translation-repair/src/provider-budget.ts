@@ -56,168 +56,168 @@ import {
 // and walk straight back into the same wall.
 
 /**
- * How long a budget reading is trusted before it is taken again.
- *
- * NOT A MEASUREMENT of any provider's meter latency. It is short enough that
- * an exhausted budget is noticed within a stage rather than a whole pass, and
- * long enough that a fan-out of slices does not spend a meter read per call.
+ How long a budget reading is trusted before it is taken again.
+ 
+ NOT A MEASUREMENT of any provider's meter latency. It is short enough that
+ an exhausted budget is noticed within a stage rather than a whole pass, and
+ long enough that a fan-out of slices does not spend a meter read per call.
  */
 const BUDGET_FRESH_MS = 60_000;
 
 /**
- * How long a provider stays dry after refusing us, whatever its meter says.
- *
- * ONE-DIRECTIONAL: it can only hold a provider OUT, never bring one back in. A
- * meter reporting exhaustion keeps it out past the cooldown on its own.
+ How long a provider stays dry after refusing us, whatever its meter says.
+ 
+ ONE-DIRECTIONAL: it can only hold a provider OUT, never bring one back in. A
+ meter reporting exhaustion keeps it out past the cooldown on its own.
  */
 const REFUSAL_COOLDOWN_MS = 300_000;
 
 /**
- * How long a provider stays out after refusing us while its meter reads wet.
- *
- * A 429 FROM A WET PROVIDER IS A CONCURRENCY LIMIT, NOT EXHAUSTION. The pin
- * pass of 2026-09-02 (`#474`) held Synthetic out for the whole cooldown on a
- * burst of 429s while its meter read 2729 of 2750, and two such holds ended the
- * pass for every remaining entry. The bursts measured there lasted 31 s
- * (01:39:20 to 01:39:51), 3 s (01:40:32 to 01:40:35) and 2 s (01:54:06 to
- * 01:54:08).
- *
- * TIED TO THE FRESHNESS WINDOW rather than picked: the reading that excused
- * the refusal is trusted for this long, so the hold expires with it, and the
- * window is longer than every burst measured.
- *
- * UNLESS THE REFUSAL NAMES ITS RETURN: a wait the refusal itself states holds
- * the provider out past this backoff, whatever the meter reads (`markRefused`).
+ How long a provider stays out after refusing us while its meter reads wet.
+ 
+ A 429 FROM A WET PROVIDER IS A CONCURRENCY LIMIT, NOT EXHAUSTION. The pin
+ pass of 2026-09-02 (`#474`) held Synthetic out for the whole cooldown on a
+ burst of 429s while its meter read 2729 of 2750, and two such holds ended the
+ pass for every remaining entry. The bursts measured there lasted 31 s
+ (01:39:20 to 01:39:51), 3 s (01:40:32 to 01:40:35) and 2 s (01:54:06 to
+ 01:54:08).
+ 
+ TIED TO THE FRESHNESS WINDOW rather than picked: the reading that excused
+ the refusal is trusted for this long, so the hold expires with it, and the
+ window is longer than every burst measured.
+ 
+ UNLESS THE REFUSAL NAMES ITS RETURN: a wait the refusal itself states holds
+ the provider out past this backoff, whatever the meter reads (`markRefused`).
  */
 const RATE_LIMIT_BACKOFF_MS = BUDGET_FRESH_MS;
 
 /**
- * Logger root for the budget layer.
+ Logger root for the budget layer.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Which providers currently have NO budget to spend, keyed by name.
- *
- * @example
- * ```ts
- * const view: BudgetView = { synthetic: false, hyper: true, openrouter: false, };
- * ```
+ Which providers currently have NO budget to spend, keyed by name.
+ 
+ @example
+ ```ts
+ const view: BudgetView = { synthetic: false, hyper: true, openrouter: false, };
+ ```
  */
 export type BudgetView = ProviderRecord<boolean>;
 
 /**
- * One reading of every meter: the routed bits and the states they came from.
- *
- * BOTH KEPT, because a refusal needs the state (a wet meter makes the refusal
- * a rate limit; an unreadable one keeps it sticky) while routing needs only
- * the bit.
- *
- * @internal
+ One reading of every meter: the routed bits and the states they came from.
+ 
+ BOTH KEPT, because a refusal needs the state (a wet meter makes the refusal
+ a rate limit; an unreadable one keeps it sticky) while routing needs only
+ the bit.
+ 
+ @internal
  */
 type MeterReading = {
   /**
-   * Routed dryness of each provider.
+   Routed dryness of each provider.
    */
   readonly view: BudgetView;
 
   /**
-   * What each meter said, or that it said nothing.
+   What each meter said, or that it said nothing.
    */
   readonly states: ProviderRecord<MeterState>;
 
   /**
-   * Every number each meter reported, as the `METERS` line prints them,
-   * empty for a meter that reported none.
-   * WHAT A PAYMENT REFUSAL IS JUDGED AGAINST: a provider that answered 402
-   * reads dry until this text changes, since the balance that refused is the
-   * balance still there until someone adds to it.
+   Every number each meter reported, as the `METERS` line prints them,
+   empty for a meter that reported none.
+   WHAT A PAYMENT REFUSAL IS JUDGED AGAINST: a provider that answered 402
+   reads dry until this text changes, since the balance that refused is the
+   balance still there until someone adds to it.
    */
   readonly levels: ProviderRecord<string>;
 };
 
 /**
- * Cached budget state, correctable by what a refused call reported.
- *
- * @example
- * ```ts
- * const budgets: ProviderBudgets = createProviderBudgets({ synthetic, hyper, openrouter, },);
- * ```
+ Cached budget state, correctable by what a refused call reported.
+ 
+ @example
+ ```ts
+ const budgets: ProviderBudgets = createProviderBudgets({ synthetic, hyper, openrouter, },);
+ ```
  */
 export type ProviderBudgets = {
   /**
-   * Current view, re-reading the meters when the cached one has aged out.
+   Current view, re-reading the meters when the cached one has aged out.
    */
   readonly read: (args: { readonly signal: AbortSignal; },) => Promise<BudgetView>;
 
   /**
-   * Records that a provider refused us, re-reading its meter at once and
-   * holding it out for the cooldown when the meter agrees or cannot be read,
-   * for the rate-limit backoff when the meter still reads wet.
+   Records that a provider refused us, re-reading its meter at once and
+   holding it out for the cooldown when the meter agrees or cannot be read,
+   for the rate-limit backoff when the meter still reads wet.
    */
   readonly markRefused: (args: {
     readonly provider: ProviderName;
     readonly signal: AbortSignal;
 
     /**
-     * Wait the refusal named for the provider's return, zero or absent when
-     * it named none; the hold lasts at least this long whatever the meter
-     * reads.
+     Wait the refusal named for the provider's return, zero or absent when
+     it named none; the hold lasts at least this long whatever the meter
+     reads.
      */
     readonly statedWaitMs?: number;
 
     /**
-     * Whether the refusal said the balance cannot pay for the call (HTTP
-     * 402); the provider then reads dry until its meter moves, however wet
-     * the meter reads, and no timed hold is placed for it.
+     Whether the refusal said the balance cannot pay for the call (HTTP
+     402); the provider then reads dry until its meter moves, however wet
+     the meter reads, and no timed hold is placed for it.
      */
     readonly paymentRequired?: boolean;
   },) => Promise<void>;
 
   /**
-   * How much longer each provider is held out by a refusal, zero when it is
-   * not, so a caller facing only held providers can wait out the shortest
-   * hold rather than declare the run over.
+   How much longer each provider is held out by a refusal, zero when it is
+   not, so a caller facing only held providers can wait out the shortest
+   hold rather than declare the run over.
    */
   readonly holds: () => ProviderRecord<number>;
 };
 
 /**
- * The reading before any meter has answered: nothing is dry.
- *
- * @returns Spendable
- *
- * @example
- * ```ts
- * const view = providerRecord({ of: spendableBeforeReading, },);
- * ```
+ The reading before any meter has answered: nothing is dry.
+ 
+ @returns Spendable
+ 
+ @example
+ ```ts
+ const view = providerRecord({ of: spendableBeforeReading, },);
+ ```
  */
 function spendableBeforeReading(): boolean {
   return false;
 }
 
 /**
- * The level before any meter has answered: no number at all.
- *
- * @returns Empty
- *
- * @example
- * ```ts
- * const levels = providerRecord({ of: noLevelBeforeReading, },);
- * ```
+ The level before any meter has answered: no number at all.
+ 
+ @returns Empty
+ 
+ @example
+ ```ts
+ const levels = providerRecord({ of: noLevelBeforeReading, },);
+ ```
  */
 function noLevelBeforeReading(): string {
   return '';
 }
 
 /**
- * Whether a provider last refused us for payment, and the meter level it
- * read then.
- *
- * @example
- * ```ts
- * const mark: PaymentMark = { marked: true, level: 'openrouterUsd=0.01', };
- * ```
+ Whether a provider last refused us for payment, and the meter level it
+ read then.
+ 
+ @example
+ ```ts
+ const mark: PaymentMark = { marked: true, level: 'openrouterUsd=0.01', };
+ ```
  */
 type PaymentMark = {
   marked: boolean;
@@ -225,14 +225,14 @@ type PaymentMark = {
 };
 
 /**
- * The mark before any provider has refused us for payment: none.
- *
- * @returns Unmarked
- *
- * @example
- * ```ts
- * const marks = providerRecord({ of: unmarkedPayment, },);
- * ```
+ The mark before any provider has refused us for payment: none.
+ 
+ @returns Unmarked
+ 
+ @example
+ ```ts
+ const marks = providerRecord({ of: unmarkedPayment, },);
+ ```
  */
 function unmarkedPayment(): PaymentMark {
   return {
@@ -242,43 +242,43 @@ function unmarkedPayment(): PaymentMark {
 }
 
 /**
- * The state before any meter has answered: nothing was read.
- *
- * @returns Unreadable
- *
- * @example
- * ```ts
- * const states = providerRecord({ of: unreadBeforeReading, },);
- * ```
+ The state before any meter has answered: nothing was read.
+ 
+ @returns Unreadable
+ 
+ @example
+ ```ts
+ const states = providerRecord({ of: unreadBeforeReading, },);
+ ```
  */
 function unreadBeforeReading(): MeterState {
   return 'unreadable';
 }
 
 /**
- * Builds the cached budget view every provider is routed by.
- *
- * @param synthetic - first provider's quota meter, which is all this reads
- *
- * @param hyper - second provider's balance meter, which is all this reads
- *
- * @param openrouter - third provider's credits meter, which is all this reads
- *
- * @param freshForMs - how long one reading is trusted
- *
- * @param cooldownMs - how long a refusal holds a provider out
- *
- * @param rateLimitBackoffMs - how long a refusal on a wet meter holds a
- * provider out while another provider can take the traffic
- *
- * @param now - clock, injectable so tests do not wait
- *
- * @returns Budget view plus the correction a refused call feeds back
- *
- * @example
- * ```ts
- * const budgets = createProviderBudgets({ synthetic, hyper, bedrock, openrouter, },);
- * ```
+ Builds the cached budget view every provider is routed by.
+ 
+ @param synthetic - first provider's quota meter, which is all this reads
+ 
+ @param hyper - second provider's balance meter, which is all this reads
+ 
+ @param openrouter - third provider's credits meter, which is all this reads
+ 
+ @param freshForMs - how long one reading is trusted
+ 
+ @param cooldownMs - how long a refusal holds a provider out
+ 
+ @param rateLimitBackoffMs - how long a refusal on a wet meter holds a
+ provider out while another provider can take the traffic
+ 
+ @param now - clock, injectable so tests do not wait
+ 
+ @returns Budget view plus the correction a refused call feeds back
+ 
+ @example
+ ```ts
+ const budgets = createProviderBudgets({ synthetic, hyper, bedrock, openrouter, },);
+ ```
  */
 export function createProviderBudgets(
   {
@@ -302,13 +302,13 @@ export function createProviderBudgets(
   },
 ): ProviderBudgets {
   /**
-   * Last meter reading and when it was taken, with a zero stamp for never.
-   *
-   * THE PRE-READ VIEW IS NOT A PLACEHOLDER LIE. Before any meter has answered,
-   * nothing is known about any budget, and this file's policy for an unknown
-   * budget is already that it counts as spendable. The zero stamp forces a
-   * read on the first call regardless, exactly as `heldUntil` uses zero for a
-   * provider that has never refused us.
+   Last meter reading and when it was taken, with a zero stamp for never.
+   
+   THE PRE-READ VIEW IS NOT A PLACEHOLDER LIE. Before any meter has answered,
+   nothing is known about any budget, and this file's policy for an unknown
+   budget is already that it counts as spendable. The zero stamp forces a
+   read on the first call regardless, exactly as `heldUntil` uses zero for a
+   provider that has never refused us.
    */
   const cache: {
     startedAt: number;
@@ -325,28 +325,28 @@ export function createProviderBudgets(
   };
 
   /**
-   * Reads every meter once, for everyone waiting on this reading.
-   *
-   * THE FIRST CALLER'S SIGNAL GOVERNS, which is a real consequence worth
-   * naming rather than hiding. If that caller aborts, every read rejects,
-   * each provider reports as spendable, and the reading resolves WET for
-   * every sharer. That is this file's answer for an unreadable meter anyway,
-   * and the router still recovers a real refusal through failover.
-   *
-   * @param signal - abort signal of whichever call started this reading
-   *
-   * @returns Every provider's dryness, unreadable meters counting as spendable
-   *
-   * @example
-   * ```ts
-   * cache.reading = takeReading({ signal, },);
-   * ```
+   Reads every meter once, for everyone waiting on this reading.
+   
+   THE FIRST CALLER'S SIGNAL GOVERNS, which is a real consequence worth
+   naming rather than hiding. If that caller aborts, every read rejects,
+   each provider reports as spendable, and the reading resolves WET for
+   every sharer. That is this file's answer for an unreadable meter anyway,
+   and the router still recovers a real refusal through failover.
+   
+   @param signal - abort signal of whichever call started this reading
+   
+   @returns Every provider's dryness, unreadable meters counting as spendable
+   
+   @example
+   ```ts
+   cache.reading = takeReading({ signal, },);
+   ```
    */
   async function takeReading(
     { signal, }: { readonly signal: AbortSignal; },
   ): Promise<MeterReading> {
     /**
-     * Logger pre-tagged with this function's name.
+     Logger pre-tagged with this function's name.
      */
     const rl = tagged({
       tag: takeReading.name,
@@ -354,7 +354,7 @@ export function createProviderBudgets(
     },);
 
     /**
-     * Every meter's record, keyed by provider, read together.
+     Every meter's record, keyed by provider, read together.
      */
     const meters = await readEveryMeter({
       ...((synthetic === undefined) ? {} : { synthetic, }),
@@ -383,21 +383,21 @@ export function createProviderBudgets(
     // `meter-sample-read.ts` finds each provider's state by name and older
     // lines without the third state still read.
     /**
-     * Each provider's state, as `name=state`.
+     Each provider's state, as `name=state`.
      */
     const stateFields = PROVIDER_ORDER.map(function stateOf(provider,): string {
       /**
-       * This provider's meter record.
+       This provider's meter record.
        */
       const meter = meters[provider];
       return `${provider}=${meter.state}`;
     },);
     /**
-     * Every number every meter reported, in provider order.
+     Every number every meter reported, in provider order.
      */
     const levelFields = PROVIDER_ORDER.flatMap(function fieldsOf(provider,): readonly string[] {
       /**
-       * This provider's meter record.
+       This provider's meter record.
        */
       const meter = meters[provider];
       return meter.fields;
@@ -410,7 +410,7 @@ export function createProviderBudgets(
       view: providerRecord({
         of: function dryOf(provider,): boolean {
           /**
-           * This provider's meter record.
+           This provider's meter record.
            */
           const meter = meters[provider];
           return routesAsDry({ state: meter.state, },);
@@ -419,7 +419,7 @@ export function createProviderBudgets(
       states: providerRecord({
         of: function stateOf(provider,): MeterState {
           /**
-           * This provider's meter record.
+           This provider's meter record.
            */
           const meter = meters[provider];
           return meter.state;
@@ -428,7 +428,7 @@ export function createProviderBudgets(
       levels: providerRecord({
         of: function levelOf(provider,): string {
           /**
-           * This provider's meter record.
+           This provider's meter record.
            */
           const meter = meters[provider];
           return meter.fields
@@ -439,27 +439,27 @@ export function createProviderBudgets(
   }
 
   /**
-   * Which providers last refused us for payment and have not moved since,
-   * beside the meter level each read at that refusal; a provider reads dry
-   * while it is marked and its meter still reads that level.
+   Which providers last refused us for payment and have not moved since,
+   beside the meter level each read at that refusal; a provider reads dry
+   while it is marked and its meter still reads that level.
    */
   const paidOutAt: Record<ProviderName, PaymentMark> = providerRecord({ of: unmarkedPayment, },);
 
   /**
-   * Whether a payment refusal still holds a provider dry: its meter has not
-   * moved since. A meter that has moved clears the mark, whichever way it
-   * moved, since the refusal was about the balance it read then.
-   *
-   * @param provider - provider to check
-   *
-   * @param levels - what every meter reads now
-   *
-   * @returns Whether the provider reads dry for payment
-   *
-   * @example
-   * ```ts
-   * const dry = paidOut({ provider: 'openrouter', levels, },);
-   * ```
+   Whether a payment refusal still holds a provider dry: its meter has not
+   moved since. A meter that has moved clears the mark, whichever way it
+   moved, since the refusal was about the balance it read then.
+   
+   @param provider - provider to check
+   
+   @param levels - what every meter reads now
+   
+   @returns Whether the provider reads dry for payment
+   
+   @example
+   ```ts
+   const dry = paidOut({ provider: 'openrouter', levels, },);
+   ```
    */
   function paidOut(
     {
@@ -471,7 +471,7 @@ export function createProviderBudgets(
     },
   ): boolean {
     /**
-     * The mark and the level at the refusal.
+     The mark and the level at the refusal.
      */
     const refused = paidOutAt[provider];
     if (!refused.marked)
@@ -483,7 +483,7 @@ export function createProviderBudgets(
   }
 
   /**
-   * Until when each provider is held out by a refusal, zero for never.
+   Until when each provider is held out by a refusal, zero for never.
    */
   const heldUntil: Record<ProviderName, number> = {
     synthetic: 0,
@@ -493,22 +493,22 @@ export function createProviderBudgets(
   };
 
   /**
-   * How much longer a provider's refusal holds it out, zero when it does not.
-   *
-   * @param provider - provider to check
-   *
-   * @returns Milliseconds of hold left
-   *
-   * @example
-   * ```ts
-   * const left = holdLeft({ provider: 'hyper', },);
-   * ```
+   How much longer a provider's refusal holds it out, zero when it does not.
+   
+   @param provider - provider to check
+   
+   @returns Milliseconds of hold left
+   
+   @example
+   ```ts
+   const left = holdLeft({ provider: 'hyper', },);
+   ```
    */
   function holdLeft(
     { provider, }: { readonly provider: ProviderName; },
   ): number {
     /**
-     * When its hold ends.
+     When its hold ends.
      */
     const until = heldUntil[provider];
 
@@ -521,17 +521,17 @@ export function createProviderBudgets(
   }
 
   /**
-   * Starts a reading now, whatever the cache's age, for everyone who reads
-   * after it.
-   *
-   * @param signal - abort signal of the call forcing the read
-   *
-   * @returns The fresh reading
-   *
-   * @example
-   * ```ts
-   * const reading = await readNow({ signal, },);
-   * ```
+   Starts a reading now, whatever the cache's age, for everyone who reads
+   after it.
+   
+   @param signal - abort signal of the call forcing the read
+   
+   @returns The fresh reading
+   
+   @example
+   ```ts
+   const reading = await readNow({ signal, },);
+   ```
    */
   async function readNow(
     { signal, }: { readonly signal: AbortSignal; },
@@ -541,7 +541,7 @@ export function createProviderBudgets(
     if (cache.inFlight)
       return await cache.reading;
     /**
-     * The in-flight mark, cleared when this read's scope ends however it ends.
+     The in-flight mark, cleared when this read's scope ends however it ends.
      */
     using flight = markInFlight();
     cache.startedAt = now();
@@ -550,15 +550,15 @@ export function createProviderBudgets(
   }
 
   /**
-   * Marks a reading as in flight until the scope that took it ends, however
-   * that scope ends.
-   *
-   * @returns Disposable that clears the mark
-   *
-   * @example
-   * ```ts
-   * using flight = markInFlight();
-   * ```
+   Marks a reading as in flight until the scope that took it ends, however
+   that scope ends.
+   
+   @returns Disposable that clears the mark
+   
+   @example
+   ```ts
+   using flight = markInFlight();
+   ```
    */
   function markInFlight(): Disposable {
     cache.inFlight = true;
@@ -579,8 +579,8 @@ export function createProviderBudgets(
         await readNow({ signal, },);
 
       /**
-       * Meter reading this call is decided on, shared with every other call
-       * that arrived inside the same window.
+       Meter reading this call is decided on, shared with every other call
+       that arrived inside the same window.
        */
       const {
         view,
@@ -607,7 +607,7 @@ export function createProviderBudgets(
       paymentRequired = false,
     },): Promise<void> {
       /**
-       * Logger pre-tagged with this function's name.
+       Logger pre-tagged with this function's name.
        */
       const rl = tagged({
         tag: markRefused.name,
@@ -620,14 +620,14 @@ export function createProviderBudgets(
       // what ended the pin pass of 2026-09-02 (`#474`). A meter that agrees, or
       // one that cannot be read, keeps the refusal stickier than the reading.
       /**
-       * What every meter said just now.
+       What every meter said just now.
        */
       const {
         states,
         levels,
       } = await readNow({ signal, },);
       /**
-       * What that provider's meter said just now.
+       What that provider's meter said just now.
        */
       const state = states[provider];
       if (paymentRequired) {
@@ -643,12 +643,12 @@ export function createProviderBudgets(
         return;
       }
       /**
-       * The other providers, in spending order.
+       The other providers, in spending order.
        */
       const others = otherProviders({ provider, },);
       /**
-       * Whether some other provider reads wet, which decides whether a hold
-       * moves traffic anywhere.
+       Whether some other provider reads wet, which decides whether a hold
+       moves traffic anywhere.
        */
       const anotherIsWet = others.some(function isWet(other,): boolean {
         return states[other] === 'wet';
@@ -665,7 +665,7 @@ export function createProviderBudgets(
       // With no hold, each call keeps its own jittered retry ladder in the
       // transport layer, which is the pacing a concurrency limit wants.
       /**
-       * How long this refusal would hold the provider out on its meter alone.
+       How long this refusal would hold the provider out on its meter alone.
        */
       const meterHoldMs = (state === 'wet')
         ? (anotherIsWet ? rateLimitBackoffMs : 0)
@@ -678,8 +678,8 @@ export function createProviderBudgets(
       // time: 831 holds and 2,693 refused attempts before the named instant,
       // and four consolidation chunks of 75 min each settling on nobody.
       /**
-       * How long this refusal holds the provider out: the meter's hold or the
-       * wait the refusal named, whichever is longer.
+       How long this refusal holds the provider out: the meter's hold or the
+       wait the refusal named, whichever is longer.
        */
       const holdMs = Math.max(
         meterHoldMs,
@@ -687,13 +687,13 @@ export function createProviderBudgets(
       );
       heldUntil[provider] = now() + holdMs;
       /**
-       * The other meters' states, for the line.
+       The other meters' states, for the line.
        */
       const otherStates = others.map(function stateOf(other,): string {
         return `${other} ${states[other]}`;
       },);
       /**
-       * Clause naming the refusal's own wait, empty when it named none.
+       Clause naming the refusal's own wait, empty when it named none.
        */
       const naming = (statedWaitMs > 0)
         ? `, naming its return in ${String(statedWaitMs,)}ms`

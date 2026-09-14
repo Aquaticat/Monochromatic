@@ -1,19 +1,19 @@
 /**
- * Tests for the line an operator watches a repair run by.
- *
- * WHAT THESE PIN is that the summary cannot drift from the settlement it
- * summarises. Every number in the line is a count of something the verdict
- * decided, and they arrive as four separate arguments in one sentence, so a
- * transposition renders perfectly and reads as an ordinary run. The subject's
- * own note says what that costs: a run reads as healthy while shipping
- * something else.
- *
- * The line is emitted at `info` and never returned, so nothing downstream can
- * catch a wrong one; this file is where it is read.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the line an operator watches a repair run by.
+ 
+ WHAT THESE PIN is that the summary cannot drift from the settlement it
+ summarises. Every number in the line is a count of something the verdict
+ decided, and they arrive as four separate arguments in one sentence, so a
+ transposition renders perfectly and reads as an ordinary run. The subject's
+ own note says what that costs: a run reads as healthy while shipping
+ something else.
+ 
+ The line is emitted at `info` and never returned, so nothing downstream can
+ catch a wrong one; this file is where it is read.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -25,16 +25,16 @@ import {
 import { describeChunkSettlement, } from '../dist/final/node/index.mjs';
 
 /**
- * Slice these lines report.
- *
- * Not zero, so a line that lost the index reads differently from one that kept
- * it.
+ Slice these lines report.
+ 
+ Not zero, so a line that lost the index reads differently from one that kept
+ it.
  */
 const SLICE_INDEX = 7;
 
 /**
- * Four counts, each distinct, so any pair swapped in the template changes the
- * line. Equal counts would render the same either way round.
+ Four counts, each distinct, so any pair swapped in the template changes the
+ line. Equal counts would render the same either way round.
  */
 const COUNTS = {
   resolvedCount: 1,

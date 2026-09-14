@@ -29,41 +29,41 @@ import type { GroupedRun, } from './group-aligned.ts';
 // rendered needs them written.
 
 /**
- * Stands for "no boundary on this side", which no offset can be.
+ Stands for "no boundary on this side", which no offset can be.
  */
 const NO_BOUNDARY = -1;
 
 /**
- * Reads, for each run, where the nearest translation blocks AFTER it start.
- *
- * @param runs - settled runs in document order
- *
- * @returns Offset per run, {@link NO_BOUNDARY} where nothing follows
- *
- * @example
- * ```ts
- * const starts = nextTargetStarts({ runs, },);
- * ```
+ Reads, for each run, where the nearest translation blocks AFTER it start.
+ 
+ @param runs - settled runs in document order
+ 
+ @returns Offset per run, {@link NO_BOUNDARY} where nothing follows
+ 
+ @example
+ ```ts
+ const starts = nextTargetStarts({ runs, },);
+ ```
  */
 function nextTargetStarts(
   { runs, }: { readonly runs: readonly GroupedRun[]; },
 ): readonly number[] {
   /**
-   * Nearest start seen while walking backwards, one named record rather than a
-   * loose counter.
+   Nearest start seen while walking backwards, one named record rather than a
+   loose counter.
    */
   const scan = { next: NO_BOUNDARY, };
   return runs
     .toReversed()
     .map(function toNextStart(run,): number {
       /**
-       * Answer for this run, read before its own blocks can overwrite it.
+       Answer for this run, read before its own blocks can overwrite it.
        */
       const answer = scan.next;
 
       /**
-       * First translation block this run carries, absent for an insertion; a
-       * sealed run's blocks are boundaries like any other's.
+       First translation block this run carries, absent for an insertion; a
+       sealed run's blocks are boundaries like any other's.
        */
       const first = (run.kind === 'insertion')
         ? undefined
@@ -76,33 +76,33 @@ function nextTargetStarts(
 }
 
 /**
- * Reads, for each run, where the nearest translation blocks BEFORE it end.
- *
- * @param runs - settled runs in document order
- *
- * @returns Offset per run, {@link NO_BOUNDARY} where nothing precedes
- *
- * @example
- * ```ts
- * const ends = previousTargetEnds({ runs, },);
- * ```
+ Reads, for each run, where the nearest translation blocks BEFORE it end.
+ 
+ @param runs - settled runs in document order
+ 
+ @returns Offset per run, {@link NO_BOUNDARY} where nothing precedes
+ 
+ @example
+ ```ts
+ const ends = previousTargetEnds({ runs, },);
+ ```
  */
 function previousTargetEnds(
   { runs, }: { readonly runs: readonly GroupedRun[]; },
 ): readonly number[] {
   /**
-   * Nearest end seen while walking forwards.
+   Nearest end seen while walking forwards.
    */
   const scan = { previous: NO_BOUNDARY, };
   return runs.map(function toPreviousEnd(run,): number {
     /**
-     * Answer for this run, read before its own blocks can overwrite it.
+     Answer for this run, read before its own blocks can overwrite it.
      */
     const answer = scan.previous;
 
     /**
-     * Last translation block this run carries, absent for an insertion; a
-     * sealed run's blocks are boundaries like any other's.
+     Last translation block this run carries, absent for an insertion; a
+     sealed run's blocks are boundaries like any other's.
      */
     const last = (run.kind === 'insertion')
       ? undefined
@@ -115,27 +115,27 @@ function previousTargetEnds(
 }
 
 /**
- * Rewrites every insertion's anchor as a boundary between the runs beside it.
- *
- * @param runs - settled runs in document order
- *
- * @returns Same runs, each insertion anchored where it can actually be written
- *
- * @example
- * ```ts
- * const placeable = reanchorInsertions({ runs, },);
- * ```
+ Rewrites every insertion's anchor as a boundary between the runs beside it.
+ 
+ @param runs - settled runs in document order
+ 
+ @returns Same runs, each insertion anchored where it can actually be written
+ 
+ @example
+ ```ts
+ const placeable = reanchorInsertions({ runs, },);
+ ```
  */
 export function reanchorInsertions(
   { runs, }: { readonly runs: readonly GroupedRun[]; },
 ): readonly GroupedRun[] {
   /**
-   * Where the next translation blocks start, per run.
+   Where the next translation blocks start, per run.
    */
   const nextStart = nextTargetStarts({ runs, },);
 
   /**
-   * Where the previous translation blocks end, per run.
+   Where the previous translation blocks end, per run.
    */
   const previousEnd = previousTargetEnds({ runs, },);
   return runs.map(function toAnchored(
@@ -146,7 +146,7 @@ export function reanchorInsertions(
       return run;
 
     /**
-     * Boundary this insertion writes at, preferring the passage that follows.
+     Boundary this insertion writes at, preferring the passage that follows.
      */
     const settled = (nextStart[at] ?? NO_BOUNDARY) === NO_BOUNDARY
       ? (previousEnd[at] ?? NO_BOUNDARY)

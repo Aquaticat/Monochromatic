@@ -1,21 +1,21 @@
 /**
- * Tests that the repair DRIVER computes `#107`'s neighbouring window and hands
- * it to the stages, which no prompt-builder test can establish.
- *
- * WHY THIS IS SEPARATE FROM THE SHEET TEST. `nearby-window-reaches-the-models`
- * asserts that `buildCriticMessages` renders a window it is HANDED. Whether
- * `repairPreparedDocument` computes one and passes it over is a different
- * question, and it is the one `#107` records going wrong before: the translate
- * lane's window sat unused for weeks because the call site never passed what the
- * builder already accepted, and nothing failed.
- *
- * NO NETWORK. The client is a stub that records every sheet and answers "no
- * issues", so each slice raises zero claims and skips every stage after the
- * critic.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests that the repair DRIVER computes `#107`'s neighbouring window and hands
+ it to the stages, which no prompt-builder test can establish.
+ 
+ WHY THIS IS SEPARATE FROM THE SHEET TEST. `nearby-window-reaches-the-models`
+ asserts that `buildCriticMessages` renders a window it is HANDED. Whether
+ `repairPreparedDocument` computes one and passes it over is a different
+ question, and it is the one `#107` records going wrong before: the translate
+ lane's window sat unused for weeks because the call site never passed what the
+ builder already accepted, and nothing failed.
+ 
+ NO NETWORK. The client is a stub that records every sheet and answers "no
+ issues", so each slice raises zero claims and skips every stage after the
+ critic.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -32,8 +32,8 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Markers no other section uses, so a sheet can be attributed to the slice it
- * was asked about rather than to one that merely mentions it.
+ Markers no other section uses, so a sheet can be attributed to the slice it
+ was asked about rather than to one that merely mentions it.
  */
 const MARK = {
   first: 'ZQFIRSTCAT',
@@ -42,7 +42,7 @@ const MARK = {
 } as const;
 
 /**
- * Invented zh original of three sections.
+ Invented zh original of three sections.
  */
 const SOURCE_TEXT = [
   '## 第一节',
@@ -60,7 +60,7 @@ const SOURCE_TEXT = [
 ].join('\n',);
 
 /**
- * Invented archive English of the same three.
+ Invented archive English of the same three.
  */
 const TARGET_TEXT = [
   '## Section one',
@@ -78,9 +78,9 @@ const TARGET_TEXT = [
 ].join('\n',);
 
 /**
- * Real catalog ids standing in for each role, since the roster types are closed
- * unions that no invented id satisfies. Which models these are does not matter:
- * the stub answers for every one of them.
+ Real catalog ids standing in for each role, since the roster types are closed
+ unions that no invented id satisfies. Which models these are does not matter:
+ the stub answers for every one of them.
  */
 const CRITICS = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -88,7 +88,7 @@ const CRITICS = [
 ] as const;
 
 /**
- * {@inheritDoc CRITICS}
+ {@inheritDoc CRITICS}
  */
 const EDITORS = [
   'hf:Qwen/Qwen3.8-27B',
@@ -96,16 +96,16 @@ const EDITORS = [
 ] as const;
 
 /**
- * {@inheritDoc CRITICS}
+ {@inheritDoc CRITICS}
  */
 const JUDGES = ['minimax-m3',] as const;
 
 /**
- * {@inheritDoc CRITICS}
- *
- * THREE OF THEM BECAUSE FEWER CANNOT DECIDE: `assertCheckerQuorumReachable`
- * floors the role at three, since a pair that disagrees resolves nothing.
- * Every one of them stays clear of {@link EDITORS}.
+ {@inheritDoc CRITICS}
+ 
+ THREE OF THEM BECAUSE FEWER CANNOT DECIDE: `assertCheckerQuorumReachable`
+ floors the role at three, since a pair that disagrees resolves nothing.
+ Every one of them stays clear of {@link EDITORS}.
  */
 const CHECKERS = [
   'deepseek-v4-pro-0813',
@@ -114,44 +114,44 @@ const CHECKERS = [
 ] as const;
 
 /**
- * One sheet, split into what is under review and what is context.
+ One sheet, split into what is under review and what is context.
  */
 type SplitSheet = {
   /**
-   * Everything before the first nearby fence: the pair being judged.
+   Everything before the first nearby fence: the pair being judged.
    */
   readonly reviewed: string;
 
   /**
-   * The nearby fence onwards: the window.
+   The nearby fence onwards: the window.
    */
   readonly window: string;
 
   /**
-   * Whether a nearby fence was present at all.
+   Whether a nearby fence was present at all.
    */
   readonly fenced: boolean;
 };
 
 /**
- * Runs the real driver against a recording stub and returns every sheet it
- * asked, split at the fence.
- *
- * SPLITTING IS THE ATTRIBUTION, and skipping it produces a false failure. A
- * sheet for the FIRST slice mentions the middle marker, because the middle slice
- * is its neighbour, so filtering sheets by "mentions this marker" credits a
- * slice with its neighbours' sheets.
- *
- * @returns Every sheet the stages asked, in order
- *
- * @example
- * ```ts
- * const sheets = await askedSheets();
- * ```
+ Runs the real driver against a recording stub and returns every sheet it
+ asked, split at the fence.
+ 
+ SPLITTING IS THE ATTRIBUTION, and skipping it produces a false failure. A
+ sheet for the FIRST slice mentions the middle marker, because the middle slice
+ is its neighbour, so filtering sheets by "mentions this marker" credits a
+ slice with its neighbours' sheets.
+ 
+ @returns Every sheet the stages asked, in order
+ 
+ @example
+ ```ts
+ const sheets = await askedSheets();
+ ```
  */
 async function askedSheets(): Promise<readonly SplitSheet[]> {
   /**
-   * Prepared pair both lanes would run over.
+   Prepared pair both lanes would run over.
    */
   const prepared = await prepareDocumentPair({
     sourceText: SOURCE_TEXT,
@@ -159,13 +159,13 @@ async function askedSheets(): Promise<readonly SplitSheet[]> {
   },);
 
   /**
-   * Every sheet the stub was handed, joined per exchange.
+   Every sheet the stub was handed, joined per exchange.
    */
   const asked: string[] = [];
 
   /**
-   * Recording stub. Real catalog ids, because the roster type is a closed union
-   * and an invented id would not compile.
+   Recording stub. Real catalog ids, because the roster type is a closed union
+   and an invented id would not compile.
    */
   const client: SyntheticClient = {
     chatText: async () => {
@@ -186,8 +186,8 @@ async function askedSheets(): Promise<readonly SplitSheet[]> {
         .join('\n',),);
 
       /**
-       * An empty report, which every stage here accepts and which raises no
-       * claims, so the slice skips every stage after the critic.
+       An empty report, which every stage here accepts and which raises no
+       claims, so the slice skips every stage after the critic.
        */
       const empty = { issues: [], };
       if (!request.validate(empty,))
@@ -218,7 +218,7 @@ async function askedSheets(): Promise<readonly SplitSheet[]> {
 
   return asked.map(function split(sheet,): SplitSheet {
     /**
-     * Where the window begins, absent on a slice standing alone.
+     Where the window begins, absent on a slice standing alone.
      */
     const at = sheet.indexOf('NEARBY',);
     if (at === (-1)) {
@@ -237,18 +237,18 @@ async function askedSheets(): Promise<readonly SplitSheet[]> {
 }
 
 /**
- * Sheets whose REVIEWED half is the slice carrying one marker.
- *
- * @param sheets - split sheets from {@link askedSheets}
- *
- * @param marker - marker identifying the slice
- *
- * @returns Sheets asked about that slice
- *
- * @example
- * ```ts
- * const own = about({ sheets, marker: MARK.middle, },);
- * ```
+ Sheets whose REVIEWED half is the slice carrying one marker.
+ 
+ @param sheets - split sheets from {@link askedSheets}
+ 
+ @param marker - marker identifying the slice
+ 
+ @returns Sheets asked about that slice
+ 
+ @example
+ ```ts
+ const own = about({ sheets, marker: MARK.middle, },);
+ ```
  */
 function about(
   {
@@ -266,7 +266,7 @@ function about(
 }
 
 /**
- * Sheets gathered once, since the driver run is the expensive part.
+ Sheets gathered once, since the driver run is the expensive part.
  */
 const SHEETS = await askedSheets();
 

@@ -21,12 +21,12 @@
 // which is where every transcript already stands.
 
 /**
- * Media type per file extension, for the extensions the corpus uses.
- *
- * TWO ENTRIES BECAUSE THE CORPUS HAS TWO. Of 380 references, 376 are `.webp`
- * and 4 are `.jpg`. An extension not listed is refused rather than guessed at,
- * since sending a picture under the wrong media type asks a model to decode
- * something it was not given.
+ Media type per file extension, for the extensions the corpus uses.
+ 
+ TWO ENTRIES BECAUSE THE CORPUS HAS TWO. Of 380 references, 376 are `.webp`
+ and 4 are `.jpg`. An extension not listed is refused rather than guessed at,
+ since sending a picture under the wrong media type asks a model to decode
+ something it was not given.
  */
 const MEDIA_TYPES: Readonly<Record<string, string>> = {
   webp: 'image/webp',
@@ -56,51 +56,51 @@ const MEDIA_TYPES: Readonly<Record<string, string>> = {
 // `readImagePair` contains it.
 
 /**
- * What encoding one asset produced.
- *
- * @example
- * ```ts
- * const encoded: EncodedAsset = { kind: 'usable', dataUri: 'data:image/webp;base64,…', };
- * ```
+ What encoding one asset produced.
+ 
+ @example
+ ```ts
+ const encoded: EncodedAsset = { kind: 'usable', dataUri: 'data:image/webp;base64,…', };
+ ```
  */
 export type EncodedAsset = {
   readonly kind: 'usable';
 
   /**
-   * Data URI a content part carries.
+   Data URI a content part carries.
    */
   readonly dataUri: string;
 } | {
   readonly kind: 'refused';
 
   /**
-   * Why it cannot be sent, so a finding names the reason rather than the
-   * absence.
-   *
-   * TRANSPORT RATHER THAN MODEL in the size reason, renamed 2026-08-22. The
-   * ceiling that produces it was derived from what a model would read until
-   * `#123`, and is now measured against what the gateway will carry, which are
-   * different authorities with different numbers. A reader who saw the old
-   * spelling would look for a model that refused, and no model ever did.
+   Why it cannot be sent, so a finding names the reason rather than the
+   absence.
+   
+   TRANSPORT RATHER THAN MODEL in the size reason, renamed 2026-08-22. The
+   ceiling that produces it was derived from what a model would read until
+   `#123`, and is now measured against what the gateway will carry, which are
+   different authorities with different numbers. A reader who saw the old
+   spelling would look for a model that refused, and no model ever did.
    */
   readonly reason: 'unknown-media-type' | 'too-large-for-transport';
 };
 
 /**
- * Extension of a file name, lowercased, empty when it has none.
- *
- * @param assetName - file name
- *
- * @returns Its extension without the dot
- *
- * @example
- * ```ts
- * const extension = extensionOf({ assetName: 'intro.webp', },);
- * ```
+ Extension of a file name, lowercased, empty when it has none.
+ 
+ @param assetName - file name
+ 
+ @returns Its extension without the dot
+ 
+ @example
+ ```ts
+ const extension = extensionOf({ assetName: 'intro.webp', },);
+ ```
  */
 export function extensionOf({ assetName, }: { readonly assetName: string; },): string {
   /**
-   * Where the extension begins, absent when the name carries no dot.
+   Where the extension begins, absent when the name carries no dot.
    */
   const dot = assetName.lastIndexOf('.',);
   if (dot === (-1))
@@ -110,22 +110,22 @@ export function extensionOf({ assetName, }: { readonly assetName: string; },): s
 }
 
 /**
- * Encodes one picture for sending, or says why it cannot be sent.
- *
- * @param bytes - picture as read from disk
- *
- * @param assetName - its file name, which carries the media type
- *
- * @param maxBytes - most bytes this picture may occupy, which the CALLER
- * decides. Guessing what a provider accepts is not this function's job, and the
- * note above records what happened when it was
- *
- * @returns Data URI, or the reason it was refused
- *
- * @example
- * ```ts
- * const encoded = encodeImageAsset({ bytes, assetName, maxBytes, },);
- * ```
+ Encodes one picture for sending, or says why it cannot be sent.
+ 
+ @param bytes - picture as read from disk
+ 
+ @param assetName - its file name, which carries the media type
+ 
+ @param maxBytes - most bytes this picture may occupy, which the CALLER
+ decides. Guessing what a provider accepts is not this function's job, and the
+ note above records what happened when it was
+ 
+ @returns Data URI, or the reason it was refused
+ 
+ @example
+ ```ts
+ const encoded = encodeImageAsset({ bytes, assetName, maxBytes, },);
+ ```
  */
 export function encodeImageAsset(
   {
@@ -139,7 +139,7 @@ export function encodeImageAsset(
   },
 ): EncodedAsset {
   /**
-   * Media type this file name declares.
+   Media type this file name declares.
    */
   const mediaType = MEDIA_TYPES[extensionOf({ assetName, },)];
   if (mediaType === undefined) {

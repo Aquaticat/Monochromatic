@@ -22,20 +22,20 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Bands a raw byte count, stating the unit explicitly.
- *
- * These cases probe the band BOUNDARIES, which are byte counts by
- * definition and cannot be produced from text, so the assertion is the
- * honest way to reach `classifyBand` rather than a cast around its guard.
- *
- * @param count - UTF-8 byte length under test
- *
- * @returns Band that count falls in
- *
- * @example
- * ```ts
- * expect(bandAt(1_842,),).toBe('small',);
- * ```
+ Bands a raw byte count, stating the unit explicitly.
+ 
+ These cases probe the band BOUNDARIES, which are byte counts by
+ definition and cannot be produced from text, so the assertion is the
+ honest way to reach `classifyBand` rather than a cast around its guard.
+ 
+ @param count - UTF-8 byte length under test
+ 
+ @returns Band that count falls in
+ 
+ @example
+ ```ts
+ expect(bandAt(1_842,),).toBe('small',);
+ ```
  */
 function bandAt(count: number,): SizeBand {
   assertSourceBytes(count,);
@@ -44,8 +44,8 @@ function bandAt(count: number,): SizeBand {
 
 
 /**
- * Builds a grading candidate for the given entry and band; only the fields a
- * test reads carry meaning, the rest default to cat-themed filler.
+ Builds a grading candidate for the given entry and band; only the fields a
+ test reads carry meaning, the rest default to cat-themed filler.
  */
 function catCandidate(
   {
@@ -72,8 +72,8 @@ function catCandidate(
 }
 
 /**
- * Builds a pool of `perEntry` candidates for each of `entries`, all in one
- * band, with deterministic ids so draws are checkable.
+ Builds a pool of `perEntry` candidates for each of `entries`, all in one
+ band, with deterministic ids so draws are checkable.
  */
 function catPool(
   {
@@ -102,8 +102,8 @@ function catPool(
 }
 
 /**
- * Builds an adjudicated issue from a list of `[side, quote]` span pairs and a
- * primary category, for exercising candidate extraction.
+ Builds an adjudicated issue from a list of `[side, quote]` span pairs and a
+ primary category, for exercising candidate extraction.
  */
 function catIssue(
   {
@@ -256,8 +256,8 @@ await describe({
             // A bare "(none)" on the sheet conflated these, which made one
             // graded item ungradable for the wrong reason.
             /**
-             * Claim anchoring a real position in the original that holds no
-             * text, which is how an insertion is correctly anchored.
+             Claim anchoring a real position in the original that holds no
+             text, which is how an insertion is correctly anchored.
              */
             const insertion = extractGradingCandidate({
               issue: catIssue({
@@ -271,7 +271,7 @@ await describe({
             },);
 
             /**
-             * Claim pointing at nothing in the original at all.
+             Claim pointing at nothing in the original at all.
              */
             const unanchored = extractGradingCandidate({
               issue: catIssue({
@@ -361,13 +361,13 @@ await describe({
             const first = drawStratifiedSample({ candidates: pool, size: 30, seed: 'meow', },);
             const second = drawStratifiedSample({ candidates: pool, size: 30, seed: 'meow', },);
             /**
-             * Sampled issue ids from the first draw.
+             Sampled issue ids from the first draw.
              */
             const firstIds = first.map(function toId(candidate,) {
               return candidate.issueId;
             },);
             /**
-             * Sampled issue ids from the second draw.
+             Sampled issue ids from the second draw.
              */
             const secondIds = second.map(function toId(candidate,) {
               return candidate.issueId;
@@ -385,7 +385,7 @@ await describe({
             ];
             const sample = drawStratifiedSample({ candidates: pool, size: 50, seed: 'meow', },);
             /**
-             * Sampled count per band.
+             Sampled count per band.
              */
             const counts: BandQuota = {
               small: sample.filter(function s(c,) { return c.band === 'small'; },).length,
@@ -409,7 +409,7 @@ await describe({
             ];
             const sample = drawStratifiedSample({ candidates: pool, size: 2, seed: 'meow', },);
             /**
-             * Distinct entry ids in the two-slot draw.
+             Distinct entry ids in the two-slot draw.
              */
             const entryIds = new Set(
               sample.map(function toEntry(c,) { return c.entryId; },),
@@ -469,17 +469,17 @@ await describe({
 },);
 
 /**
- * Builds a gradable issue from span descriptions, so a case reads as the shape
- * it is testing rather than as nested boilerplate.
- *
- * @param spans - spans across the issue's claims, one claim per span
- *
- * @returns Issue whose source anchoring is under classification
- *
- * @example
- * ```ts
- * const issue = catAnchoredIssue({ spans: [{ side: 'source', quotedText: '猫猫', },], },);
- * ```
+ Builds a gradable issue from span descriptions, so a case reads as the shape
+ it is testing rather than as nested boilerplate.
+ 
+ @param spans - spans across the issue's claims, one claim per span
+ 
+ @returns Issue whose source anchoring is under classification
+ 
+ @example
+ ```ts
+ const issue = catAnchoredIssue({ spans: [{ side: 'source', quotedText: '猫猫', },], },);
+ ```
  */
 function catAnchoredIssue(
   { spans, }: { readonly spans: readonly { readonly side: 'source' | 'target'; readonly quotedText: string; }[]; },

@@ -1,7 +1,7 @@
 /**
- * Tests acceptance confirmation uses distinct same-candidate responsibility.
- *
- * @module
+ Tests acceptance confirmation uses distinct same-candidate responsibility.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';

@@ -9,35 +9,35 @@ import { isJsonRecord, } from '../json-guard.ts';
 // budget.
 
 /**
- * Attempt counts keyed by entry id, for fewest-attempts-first ordering.
- *
- * @example
- * ```ts
- * const attempts: AttemptMap = { Kitten: 2, };
- * ```
+ Attempt counts keyed by entry id, for fewest-attempts-first ordering.
+ 
+ @example
+ ```ts
+ const attempts: AttemptMap = { Kitten: 2, };
+ ```
  */
 export type AttemptMap = Record<string, number>;
 
 /**
- * Reads the persisted attempt map, tolerating a missing or malformed file so a
- * corrupt cache never aborts a run.
- *
- * @param attemptsPath - location of the attempts JSON
- *
- * @returns Entry-id to attempt-count map, empty when absent or unreadable
- *
- * @throws {@link Error} when the file exists and is readable but fails for any
- * reason other than absence or malformed JSON
- *
- * @example
- * ```ts
- * const attempts = await readAttemptMap('/runs/attempts.json',);
- * ```
+ Reads the persisted attempt map, tolerating a missing or malformed file so a
+ corrupt cache never aborts a run.
+ 
+ @param attemptsPath - location of the attempts JSON
+ 
+ @returns Entry-id to attempt-count map, empty when absent or unreadable
+ 
+ @throws {@link Error} when the file exists and is readable but fails for any
+ reason other than absence or malformed JSON
+ 
+ @example
+ ```ts
+ const attempts = await readAttemptMap('/runs/attempts.json',);
+ ```
  */
 export async function readAttemptMap(attemptsPath: string,): Promise<AttemptMap> {
   try {
     /**
-     * Parsed JSON of unknown shape until guarded.
+     Parsed JSON of unknown shape until guarded.
      */
     const parsed: unknown = JSON.parse(await readFile(
       attemptsPath,

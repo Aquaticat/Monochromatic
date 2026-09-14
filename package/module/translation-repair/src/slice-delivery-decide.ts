@@ -8,83 +8,83 @@ import { SliceDeliveryError, } from './slice-delivery-fault.ts';
 // limit.
 
 /**
- * What the returned document carries at one slice.
- *
- * ONE AXIS, and deliberately not the only one a record needs. This says what
- * the DOCUMENT ends up with; {@link LaneSliceOutcome} says what the LANE did,
- * and they are independent facts one word cannot hold. A repair lane blocked
- * before an anchor never evaluated that slice AND leaves a gap there; the
- * single vocabulary this replaced had to report one of those and lose the
- * other.
- *
- * @example
- * ```ts
- * const delivery: SliceDelivery = { kind: 'replacement-shipped', };
- * ```
+ What the returned document carries at one slice.
+ 
+ ONE AXIS, and deliberately not the only one a record needs. This says what
+ the DOCUMENT ends up with; {@link LaneSliceOutcome} says what the LANE did,
+ and they are independent facts one word cannot hold. A repair lane blocked
+ before an anchor never evaluated that slice AND leaves a gap there; the
+ single vocabulary this replaced had to report one of those and lose the
+ other.
+ 
+ @example
+ ```ts
+ const delivery: SliceDelivery = { kind: 'replacement-shipped', };
+ ```
  */
 export type SliceDelivery = {
   /**
-   * Document carries what the lane decided, which differs from the archive.
+   Document carries what the lane decided, which differs from the archive.
    */
   readonly kind: 'replacement-shipped';
 } | {
   /**
-   * Lane decided a replacement and the document does not carry it.
+   Lane decided a replacement and the document does not carry it.
    */
   readonly kind: 'replacement-withdrawn';
 
   /**
-   * Which mechanism took it back.
-   *
-   * `assembly-integrity` is the guard, per slice, after splicing.
-   * `blocked-non-translation` is the whole-document refusal, which returns the
-   * archive untouched whatever any slice decided.
+   Which mechanism took it back.
+   
+   `assembly-integrity` is the guard, per slice, after splicing.
+   `blocked-non-translation` is the whole-document refusal, which returns the
+   archive untouched whatever any slice decided.
    */
   readonly reason: 'assembly-integrity' | 'blocked-non-translation';
 } | {
   /**
-   * Document carries the archive's own wording for this slice.
-   *
-   * Says nothing about WHY, which is the outcome's job: the lane may have
-   * examined the slice and kept it, may never have reached it, or may have
-   * heard no voice at all. All three leave the same text in the document and
-   * mean three different things about the run.
+   Document carries the archive's own wording for this slice.
+   
+   Says nothing about WHY, which is the outcome's job: the lane may have
+   examined the slice and kept it, may never have reached it, or may have
+   heard no voice at all. All three leave the same text in the document and
+   mean three different things about the run.
    */
   readonly kind: 'incumbent-retained';
 } | {
   /**
-   * Passage is MISSING from the document, and nothing could have kept it there:
-   * the archive holds no wording for this slice and this lane wrote none.
+   Passage is MISSING from the document, and nothing could have kept it there:
+   the archive holds no wording for this slice and this lane wrote none.
    */
   readonly kind: 'gap-remains';
 };
 
 /**
- * Decides what one slice's document text is, from what the lane reported.
- *
- * READS THE LANE'S OWN OUTCOME. It used to infer this from whether the slice
- * was an anchor, which is a fact about the PREPARATION and cannot say whether
- * a lane ran: a repair lane blocked at an anchor was reported as reached and
- * unfillable when nobody had looked at it.
- *
- * @param sliceIndex - slice being described
- *
- * @param wording - what the lane reported for it
- *
- * @param shipped - whether the document carries this slice's change
- *
- * @param withdrawn - whether the assembly guard took that change back
- *
- * @param blocked - whether the whole run refused before assembly
- *
- * @returns What the document carries here, and by which route
- *
- * @throws {@link SliceDeliveryError} when the reports contradict each other
- *
- * @example
- * ```ts
- * const delivery = decideDelivery({ sliceIndex, wording, shipped, withdrawn, blocked, },);
- * ```
+ Decides what one slice's document text is, from what the lane reported.
+ 
+ READS THE LANE'S OWN OUTCOME. It used to infer this from whether the slice
+ was an anchor, which is a fact about the PREPARATION and cannot say whether
+ a lane ran: a repair lane blocked at an anchor was reported as reached and
+ unfillable when nobody had looked at it.
+ 
+ @param sliceIndex - slice being described
+ 
+ @param wording - what the lane reported for it
+ 
+ @param shipped - whether the document carries this slice's change
+ 
+ @param withdrawn - whether the assembly guard took that change back
+ 
+ @param blocked - whether the whole run refused before assembly
+ 
+ @returns What the document carries here, and by which route
+ 
+ @throws {@link SliceDeliveryError} when the reports contradict each other
+ 
+ @example
+ ```ts
+ const delivery = decideDelivery({ sliceIndex, wording, shipped, withdrawn, blocked, },);
+ ```
  */
 export function decideDelivery(
   {
@@ -122,7 +122,7 @@ export function decideDelivery(
   }
 
   /**
-   * Whether the lane's decision moved off the archive at all.
+   Whether the lane's decision moved off the archive at all.
    */
   const decided = wording.outcome
     .acceptedText
@@ -202,24 +202,24 @@ export function decideDelivery(
 }
 
 /**
- * Reads the accepted wording of a slice whose delivery says it has one.
- *
- * A separate step rather than an assertion at the use site, because the
- * delivery already proves it: `replacement-shipped` is only ever returned for a
- * wording that decided something. This turns that proof into a value without
- * the non-null assertion the repo forbids.
- *
- * @param wording - lane record whose decision is being read
- *
- * @returns That wording
- *
- * @throws {@link SliceDeliveryError} when the outcome is not a decision, which
- * the delivery decision makes unreachable
- *
- * @example
- * ```ts
- * const text = nonNullishAccepted({ wording, },);
- * ```
+ Reads the accepted wording of a slice whose delivery says it has one.
+ 
+ A separate step rather than an assertion at the use site, because the
+ delivery already proves it: `replacement-shipped` is only ever returned for a
+ wording that decided something. This turns that proof into a value without
+ the non-null assertion the repo forbids.
+ 
+ @param wording - lane record whose decision is being read
+ 
+ @returns That wording
+ 
+ @throws {@link SliceDeliveryError} when the outcome is not a decision, which
+ the delivery decision makes unreachable
+ 
+ @example
+ ```ts
+ const text = nonNullishAccepted({ wording, },);
+ ```
  */
 export function nonNullishAccepted(
   { wording, }: { readonly wording: LaneSliceText; },

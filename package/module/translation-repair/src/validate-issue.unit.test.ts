@@ -1,10 +1,10 @@
 /**
- * Adversarial tests for deterministic anchor validation:
- * every way an unreliable critic misquotes, drifts, or fabricates anchors must be
- * rejected as data.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Adversarial tests for deterministic anchor validation:
+ every way an unreliable critic misquotes, drifts, or fabricates anchors must be
+ rejected as data.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -22,20 +22,20 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Invented zh source with heading, footnoted paragraph, and definition.
+ Invented zh source with heading, footnoted paragraph, and definition.
  */
 const SOURCE_TEXT =
   '---\nname: 小猫-whiskers\n---\n\n## 简介\n\n猫猫喜欢晒太阳，也喜欢追蝴蝶。[^1]\n\n[^1]:[关于猫猫习性的说明。](https://example.org/cat)\n';
 
 /**
- * Invented en translation missing the butterfly clause,
- * the shape omission claims anchor against.
+ Invented en translation missing the butterfly clause,
+ the shape omission claims anchor against.
  */
 const TARGET_TEXT =
   '---\nname: 小猫-whiskers\n---\n\n## Introduction\n\nThe cat likes to nap in the sun.\n';
 
 /**
- * Parsed pair every test validates anchors against.
+ Parsed pair every test validates anchors against.
  */
 const DOCUMENTS = {
   source: parseDocument({ text: SOURCE_TEXT, },),
@@ -43,21 +43,21 @@ const DOCUMENTS = {
 } as const;
 
 /**
- * Builds correctly anchored span for one needle by measuring the parsed pair,
- * so tests never hand-count offsets.
- *
- * @param side - document of the pair the needle lives in
- *
- * @param needle - exact text to anchor
- *
- * @returns Span whose offsets, node, hash, and quote all hold
- *
- * @throws {@link Error} when needle is absent or spans no single node
- *
- * @example
- * ```ts
- * const span = anchorFor({ side: 'source', needle: '也喜欢追蝴蝶', },);
- * ```
+ Builds correctly anchored span for one needle by measuring the parsed pair,
+ so tests never hand-count offsets.
+ 
+ @param side - document of the pair the needle lives in
+ 
+ @param needle - exact text to anchor
+ 
+ @returns Span whose offsets, node, hash, and quote all hold
+ 
+ @throws {@link Error} when needle is absent or spans no single node
+ 
+ @example
+ ```ts
+ const span = anchorFor({ side: 'source', needle: '也喜欢追蝴蝶', },);
+ ```
  */
 function anchorFor(
   {
@@ -69,12 +69,12 @@ function anchorFor(
   },
 ): SpanAnchor {
   /**
-   * Document the needle is measured against.
+   Document the needle is measured against.
    */
   const document = DOCUMENTS[side];
 
   /**
-   * Absolute start of needle within document source.
+   Absolute start of needle within document source.
    */
   const startOffset = document.text.indexOf(needle,);
   if (startOffset === (-1)) {
@@ -84,12 +84,12 @@ function anchorFor(
   }
 
   /**
-   * Absolute end (exclusive) of needle.
+   Absolute end (exclusive) of needle.
    */
   const endOffset = startOffset + needle.length;
 
   /**
-   * Node containing the whole needle, proven present for fixture needles.
+   Node containing the whole needle, proven present for fixture needles.
    */
   const node = nonNullishOrThrow(document.nodes.find(function containing(candidate,) {
     return (startOffset >= candidate.startOffset) && (endOffset <= candidate.endOffset);
@@ -106,19 +106,19 @@ function anchorFor(
 }
 
 /**
- * Builds zero-width insertion anchor immediately after one needle,
- * the shape omission claims use to name where missing content belongs.
- *
- * @param side - document of the pair the needle lives in
- *
- * @param needle - exact text the insertion point follows
- *
- * @returns Zero-width span with empty quote at needle end
- *
- * @example
- * ```ts
- * const anchor = insertionAnchorAfter({ side: 'target', needle: 'in the sun.', },);
- * ```
+ Builds zero-width insertion anchor immediately after one needle,
+ the shape omission claims use to name where missing content belongs.
+ 
+ @param side - document of the pair the needle lives in
+ 
+ @param needle - exact text the insertion point follows
+ 
+ @returns Zero-width span with empty quote at needle end
+ 
+ @example
+ ```ts
+ const anchor = insertionAnchorAfter({ side: 'target', needle: 'in the sun.', },);
+ ```
  */
 function insertionAnchorAfter(
   {
@@ -130,7 +130,7 @@ function insertionAnchorAfter(
   },
 ): SpanAnchor {
   /**
-   * Anchored needle whose end names the insertion point.
+   Anchored needle whose end names the insertion point.
    */
   const base = anchorFor({
     side,
@@ -146,16 +146,16 @@ function insertionAnchorAfter(
 }
 
 /**
- * Wraps spans in an omission claim so tests vary anchors only.
- *
- * @param spans - anchors under test
- *
- * @returns Claim carrying given spans
- *
- * @example
- * ```ts
- * const claim = omissionClaim({ spans: [span,], },);
- * ```
+ Wraps spans in an omission claim so tests vary anchors only.
+ 
+ @param spans - anchors under test
+ 
+ @returns Claim carrying given spans
+ 
+ @example
+ ```ts
+ const claim = omissionClaim({ spans: [span,], },);
+ ```
  */
 function omissionClaim(
   { spans, }: { readonly spans: readonly SpanAnchor[]; },
@@ -169,8 +169,8 @@ function omissionClaim(
 }
 
 /**
- * Fractional offset for malformed-offset rejection tests;
- * named because it sits outside the exempt literal range.
+ Fractional offset for malformed-offset rejection tests;
+ named because it sits outside the exempt literal range.
  */
 const FRACTIONAL_OFFSET = 1.5;
 

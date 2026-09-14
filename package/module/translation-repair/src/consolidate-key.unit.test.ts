@@ -1,20 +1,20 @@
 /**
- * Tests for what makes two runs' consolidations the same consolidation.
- *
- * WHAT THESE PIN is the half of a cache that fails silently. A key that is too
- * WIDE discards settled work on an unrelated change, which is expensive and
- * obvious. A key that is too NARROW returns a settlement reached under a
- * different question, and nothing looks wrong: the texts match, so the key
- * matches, and a run reports a decision it never bought.
- *
- * The contest ballots are the case this stage adds over the others. They are
- * prompt content here, shown to the producers as claims about each lane, so two
- * consolidations over identical candidates and different ballots are different
- * questions.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for what makes two runs' consolidations the same consolidation.
+ 
+ WHAT THESE PIN is the half of a cache that fails silently. A key that is too
+ WIDE discards settled work on an unrelated change, which is expensive and
+ obvious. A key that is too NARROW returns a settlement reached under a
+ different question, and nothing looks wrong: the texts match, so the key
+ matches, and a run reports a decision it never bought.
+ 
+ The contest ballots are the case this stage adds over the others. They are
+ prompt content here, shown to the producers as claims about each lane, so two
+ consolidations over identical candidates and different ballots are different
+ questions.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -30,7 +30,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Roster this run seats.
+ Roster this run seats.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -38,7 +38,7 @@ const ROSTER = [
 ] as const;
 
 /**
- * One contest ballot as the judges record them.
+ One contest ballot as the judges record them.
  */
 const BALLOT: LaneContestBallot = {
   modelId: 'hf:zai-org/GLM-5.3-Flash',
@@ -51,7 +51,7 @@ const BALLOT: LaneContestBallot = {
 } as LaneContestBallot;
 
 /**
- * The slice every case keys, which each varies one field of.
+ The slice every case keys, which each varies one field of.
  */
 const SLICE = {
   runShape: consolidateRunShape({ modelIds: ROSTER, },),
@@ -109,7 +109,7 @@ await describe({
         + 'about them is a different question',
       fn: async () => {
         /**
-         * The same contest settled the other way.
+         The same contest settled the other way.
          */
         const otherWay: LaneContestBallot = {
           ...BALLOT,
@@ -141,7 +141,7 @@ await describe({
         + 'reached it and a resumed slice must not return ballots a different panel cast',
       fn: async () => {
         /**
-         * The same run with one more seat.
+         The same run with one more seat.
          */
         const wider = consolidateRunShape({
           modelIds: [...ROSTER, 'hf:moonshotai/Kimi-K3',] as const,
@@ -158,7 +158,7 @@ await describe({
         + 'front-matter-derived prompt content that varies per pair and measurably changes the answer',
       fn: async () => {
         /**
-         * The same roster over a pair that declares a name.
+         The same roster over a pair that declares a name.
          */
         const named = consolidateRunShape({
           modelIds: ROSTER,

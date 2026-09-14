@@ -1,8 +1,8 @@
 /**
- * The model-facing source makes authored breaks visible without changing the
- * canonical source or literals that merely look like Markdown break syntax.
- *
- * @module
+ The model-facing source makes authored breaks visible without changing the
+ canonical source or literals that merely look like Markdown break syntax.
+ 
+ @module
  */
 
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -12,10 +12,10 @@ import { buildTranslateMessages, messageText, } from '../dist/final/node/index.m
 const SOURCE = '> 猫醒了。  \n> 鸟唱了。';
 
 /**
- * Reads the actual model-facing source message for a writer request.
- *
- * @param sourceText - exact source passed to the builder
- * @returns User message, excluding the instruction that itself mentions br
+ Reads the actual model-facing source message for a writer request.
+ 
+ @param sourceText - exact source passed to the builder
+ @returns User message, excluding the instruction that itself mentions br
  */
 function displayedSource(sourceText: string,): string {
   /** Explicit absence comes from the calling stage, not an empty-string guess. */

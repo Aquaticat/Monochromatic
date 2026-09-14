@@ -38,31 +38,31 @@ import {
 } from './reading-refusal.ts';
 
 /**
- * Shortest reading worth having, in characters after trimming.
- *
- * An image nobody could read comes back as an apology or as nothing, and both
- * are shorter than any transcript.
+ Shortest reading worth having, in characters after trimming.
+ 
+ An image nobody could read comes back as an apology or as nothing, and both
+ are shorter than any transcript.
  */
 export const MIN_READING_CHARS = 16;
 
 /**
- * How much of a reading is examined for a refusal.
- *
- * A model that cannot read a picture says so immediately; one that says so
- * halfway through has read something.
+ How much of a reading is examined for a refusal.
+ 
+ A model that cannot read a picture says so immediately; one that says so
+ halfway through has read something.
  */
 const REFUSAL_WINDOW_CHARS = 200;
 
 /**
- * Wordings a model uses when it cannot read a picture, lowercased.
- *
- * A HEURISTIC, STATED AS ONE, and NO LONGER THE ONLY ONE. It catches a refusal
- * that opens with an apology however long the reply runs. It misses a refusal
- * worded unusually, which is not hypothetical: `There is no text visible in this
- * image.` and `No legible text is visible.` both slipped past this list by a
- * single word on 2026-08-19 and then corroborated each other. `readsAsRefusal`
- * in `reading-refusal.ts` covers that shape; this list covers the long ones it
- * does not reach.
+ Wordings a model uses when it cannot read a picture, lowercased.
+ 
+ A HEURISTIC, STATED AS ONE, and NO LONGER THE ONLY ONE. It catches a refusal
+ that opens with an apology however long the reply runs. It misses a refusal
+ worded unusually, which is not hypothetical: `There is no text visible in this
+ image.` and `No legible text is visible.` both slipped past this list by a
+ single word on 2026-08-19 and then corroborated each other. `readsAsRefusal`
+ in `reading-refusal.ts` covers that shape; this list covers the long ones it
+ does not reach.
  */
 const REFUSAL_PHRASES: readonly string[] = [
   'i cannot',
@@ -79,16 +79,16 @@ const REFUSAL_PHRASES: readonly string[] = [
 ];
 
 /**
- * Whether a character is an ASCII letter.
- *
- * @param character - character to weigh
- *
- * @returns Whether it is a Latin letter
- *
- * @example
- * ```ts
- * const letter = isLatin({ character: 'a', },);
- * ```
+ Whether a character is an ASCII letter.
+ 
+ @param character - character to weigh
+ 
+ @returns Whether it is a Latin letter
+ 
+ @example
+ ```ts
+ const letter = isLatin({ character: 'a', },);
+ ```
  */
 function isLatin({ character, }: { readonly character: string; },): boolean {
   return ((character >= 'a') && (character <= 'z'))
@@ -96,81 +96,81 @@ function isLatin({ character, }: { readonly character: string; },): boolean {
 }
 
 /**
- * Whether a character is a digit.
- *
- * @param character - character to weigh
- *
- * @returns Whether it is a digit
- *
- * @example
- * ```ts
- * const digit = isDigit({ character: '4', },);
- * ```
+ Whether a character is a digit.
+ 
+ @param character - character to weigh
+ 
+ @returns Whether it is a digit
+ 
+ @example
+ ```ts
+ const digit = isDigit({ character: '4', },);
+ ```
  */
 function isDigit({ character, }: { readonly character: string; },): boolean {
   return (character >= '0') && (character <= '9');
 }
 
 /**
- * Why a reading was refused, or that it was not.
- *
- * @example
- * ```ts
- * const verdict: ReadingVerdict = { kind: 'usable', };
- * ```
+ Why a reading was refused, or that it was not.
+ 
+ @example
+ ```ts
+ const verdict: ReadingVerdict = { kind: 'usable', };
+ ```
  */
 export type ReadingVerdict = {
   readonly kind: 'usable';
 } | {
   /**
-   * The model answered with fewer characters than a transcript and refused
-   * nothing: a hull number, a date, a signature. Not usable on its own, and
-   * two of them confirm that the picture carries too little to read.
+   The model answered with fewer characters than a transcript and refused
+   nothing: a hull number, a date, a signature. Not usable on its own, and
+   two of them confirm that the picture carries too little to read.
    */
   readonly kind: 'short';
 } | {
   readonly kind: 'refused';
 
   /**
-   * Which clause of the stated rule refused it, for a finding a reader can act
-   * on rather than a bare rejection. `reports-no-text` is a refusal that says
-   * the picture carries no text; `reads-as-refusal` is one that declines to
-   * read it.
+   Which clause of the stated rule refused it, for a finding a reader can act
+   on rather than a bare rejection. `reports-no-text` is a refusal that says
+   the picture carries no text; `reads-as-refusal` is one that declines to
+   read it.
    */
   readonly clause: 'too-short' | 'reads-as-refusal' | 'reports-no-text';
 };
 
 /**
- * Whether what a model returned for a picture is a reading at all.
- *
- * PER-READING AND NOTHING MORE. Every clause looks only at the text in hand, so
- * this can screen a reading before any second one exists, which is what lets
- * the pair stage discard a refusal without paying for its partner.
- *
- * REFUSAL BEFORE LENGTH. A refusal is screened first however short it is, so
- * "No text." is an absence report and not a short reading, and a short reply
- * that negates nothing ("DE581") is a short reading rather than an apology.
- *
- * @param reading - what model returned for image
- *
- * @returns Whether reading may be used, whether it is a short reading two
- * readers can confirm a textless picture with, or which clause refused it
- *
- * @example
- * ```ts
- * const verdict = readingMakesSense({ reading, },);
- * ```
+ Whether what a model returned for a picture is a reading at all.
+ 
+ PER-READING AND NOTHING MORE. Every clause looks only at the text in hand, so
+ this can screen a reading before any second one exists, which is what lets
+ the pair stage discard a refusal without paying for its partner.
+ 
+ REFUSAL BEFORE LENGTH. A refusal is screened first however short it is, so
+ "No text." is an absence report and not a short reading, and a short reply
+ that negates nothing ("DE581") is a short reading rather than an apology.
+ 
+ @param reading - what model returned for image
+ 
+ @returns Whether reading may be used, whether it is a short reading two
+ readers can confirm a textless picture with, or which clause refused it
+ 
+ @example
+ ```ts
+ const verdict = readingMakesSense({ reading, },);
+ ```
  */
 export function readingMakesSense(
   { reading, }: { readonly reading: string; },
 ): ReadingVerdict {
   /**
-   * Reading without its surrounding whitespace.
+   Reading without its surrounding whitespace.
    */
   const trimmed = reading.trim();
 
   /**
-   * Opening of the reading, lowercased, where a refusal announces itself.
+   Opening of the reading, lowercased, where a refusal announces itself.
    */
   const opening = trimmed.slice(
     0,
@@ -179,7 +179,7 @@ export function readingMakesSense(
     .toLowerCase();
 
   /**
-   * Whether the phrase list or the shape test calls this a refusal.
+   Whether the phrase list or the shape test calls this a refusal.
    */
   const refused = REFUSAL_PHRASES.some(function announced(phrase,): boolean {
     return opening.includes(phrase,);

@@ -11,44 +11,44 @@
 // text by other means.
 
 /**
- * Windows line ending.
+ Windows line ending.
  */
 const CRLF = '\r\n';
 
 /**
- * Line ending every splitter in this package looks for.
+ Line ending every splitter in this package looks for.
  */
 const LF = '\n';
 
 /**
- * Folds every CRLF to LF, counting how many there were.
- *
- * A lone carriage return is left alone: it is not a line ending this corpus
- * writes, and folding it would be a guess about text nobody has measured.
- *
- * @param text - text as read
- *
- * @returns Folded text and the number of endings folded, zero for text that
- * was already LF
- *
- * @example
- * ```ts
- * const { text: folded, folded: count, } = foldCarriageReturns({ text: page, },);
- * ```
+ Folds every CRLF to LF, counting how many there were.
+ 
+ A lone carriage return is left alone: it is not a line ending this corpus
+ writes, and folding it would be a guess about text nobody has measured.
+ 
+ @param text - text as read
+ 
+ @returns Folded text and the number of endings folded, zero for text that
+ was already LF
+ 
+ @example
+ ```ts
+ const { text: folded, folded: count, } = foldCarriageReturns({ text: page, },);
+ ```
  */
 export function foldCarriageReturns({ text, }: { readonly text: string; },): {
   /**
-   * Text with every CRLF folded to LF.
+   Text with every CRLF folded to LF.
    */
   readonly text: string;
 
   /**
-   * How many endings were folded.
+   How many endings were folded.
    */
   readonly folded: number;
 } {
   /**
-   * Text with the endings folded, one linear pass by the string API.
+   Text with the endings folded, one linear pass by the string API.
    */
   const folded = text.replaceAll(
     CRLF,

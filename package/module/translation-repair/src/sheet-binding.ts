@@ -16,23 +16,23 @@ import type { SampleManifest, } from './sample-manifest.ts';
 // there.
 
 /**
- * Raised when a graded sheet and the manifest it is scored against cannot describe one draw.
- *
- * @example
- * ```ts
- * throw new SheetBindingError({ message: 'sheet and manifest carry different draw digests', },);
- * ```
+ Raised when a graded sheet and the manifest it is scored against cannot describe one draw.
+ 
+ @example
+ ```ts
+ throw new SheetBindingError({ message: 'sheet and manifest carry different draw digests', },);
+ ```
  */
 export class SheetBindingError extends Error {
   /**
-   * Builds refusal carrying what could not hold.
-   *
-   * @param message - which half of the binding disagrees, in sheet and manifest terms
-   *
-   * @example
-   * ```ts
-   * throw new SheetBindingError({ message: 'sheet and manifest carry different draw digests', },);
-   * ```
+   Builds refusal carrying what could not hold.
+   
+   @param message - which half of the binding disagrees, in sheet and manifest terms
+   
+   @example
+   ```ts
+   throw new SheetBindingError({ message: 'sheet and manifest carry different draw digests', },);
+   ```
    */
   public constructor({ message, }: { readonly message: string; },) {
     super(message,);
@@ -41,43 +41,43 @@ export class SheetBindingError extends Error {
 }
 
 /**
- * How firmly a sheet was tied to the manifest it is being scored against.
- *
- * @example
- * ```ts
- * const strength: SheetBindingStrength = 'digest';
- * ```
+ How firmly a sheet was tied to the manifest it is being scored against.
+ 
+ @example
+ ```ts
+ const strength: SheetBindingStrength = 'digest';
+ ```
  */
 export type SheetBindingStrength =
   | 'digest'
   | 'header-only';
 
 /**
- * Refuses a sheet and manifest that do not describe one draw.
- *
- * Seed and corpus pin are checked first and always, because a disagreement
- * there is unambiguous. They are not sufficient on their own: the draw is
- * deterministic in its seed but not in its POOL, and the pool grows with every
- * entry that settles, so one seed at one corpus commit names different item
- * sets at different times. Equal item counts do not help either, since two
- * unrelated draws of the same size match on count and mislabel every verdict.
- *
- * @param identity - what the sheet's header declares
- *
- * @param manifest - manifest the grades would be joined against
- *
- * @param sheetLabel - which sheet this is, for the failure message
- *
- * @returns Which check actually held, so a caller can report a weak binding
- * rather than implying a strong one
- *
- * @throws {@link Error} when the two describe different draws, since joining
- * them by position would mislabel every verdict rather than fail
- *
- * @example
- * ```ts
- * const strength = assertSheetMatchesManifest({ identity, manifest, sheetLabel: 'repair sheet', },);
- * ```
+ Refuses a sheet and manifest that do not describe one draw.
+ 
+ Seed and corpus pin are checked first and always, because a disagreement
+ there is unambiguous. They are not sufficient on their own: the draw is
+ deterministic in its seed but not in its POOL, and the pool grows with every
+ entry that settles, so one seed at one corpus commit names different item
+ sets at different times. Equal item counts do not help either, since two
+ unrelated draws of the same size match on count and mislabel every verdict.
+ 
+ @param identity - what the sheet's header declares
+ 
+ @param manifest - manifest the grades would be joined against
+ 
+ @param sheetLabel - which sheet this is, for the failure message
+ 
+ @returns Which check actually held, so a caller can report a weak binding
+ rather than implying a strong one
+ 
+ @throws {@link Error} when the two describe different draws, since joining
+ them by position would mislabel every verdict rather than fail
+ 
+ @example
+ ```ts
+ const strength = assertSheetMatchesManifest({ identity, manifest, sheetLabel: 'repair sheet', },);
+ ```
  */
 export function assertSheetMatchesManifest(
   {
@@ -109,12 +109,12 @@ export function assertSheetMatchesManifest(
     },);
 
   /**
-   * Whether the sheet declares a digest.
+   Whether the sheet declares a digest.
    */
   const sheetBound = identity.drawDigest !== '';
 
   /**
-   * Whether the manifest declares one.
+   Whether the manifest declares one.
    */
   const manifestBound = manifest.drawDigest !== undefined;
 
@@ -157,26 +157,26 @@ export function assertSheetMatchesManifest(
 }
 
 /**
- * Reads the draw a sheet belongs to, refusing a sheet that names none.
- *
- * Every sheet the formatters have ever written declares its seed, so a sheet
- * without one is not an older sheet: it is a file nothing can place. Falling
- * back to the current default seed would resolve that file's pre-grades and
- * manifest under whatever round is being worked on now, which is exactly the
- * mispairing the binding exists to stop, arriving through the back door.
- *
- * @param identity - what the sheet's header declares
- *
- * @param sheetLabel - which sheet this is, for the failure message
- *
- * @returns Seed the sheet declares
- *
- * @throws {@link Error} when the sheet declares no seed
- *
- * @example
- * ```ts
- * const seed = requireSheetSeed({ identity, sheetLabel: 'detection sheet', },);
- * ```
+ Reads the draw a sheet belongs to, refusing a sheet that names none.
+ 
+ Every sheet the formatters have ever written declares its seed, so a sheet
+ without one is not an older sheet: it is a file nothing can place. Falling
+ back to the current default seed would resolve that file's pre-grades and
+ manifest under whatever round is being worked on now, which is exactly the
+ mispairing the binding exists to stop, arriving through the back door.
+ 
+ @param identity - what the sheet's header declares
+ 
+ @param sheetLabel - which sheet this is, for the failure message
+ 
+ @returns Seed the sheet declares
+ 
+ @throws {@link Error} when the sheet declares no seed
+ 
+ @example
+ ```ts
+ const seed = requireSheetSeed({ identity, sheetLabel: 'detection sheet', },);
+ ```
  */
 export function requireSheetSeed(
   {
@@ -198,10 +198,10 @@ export function requireSheetSeed(
 }
 
 /**
- * Sentence explaining what a weak binding did and did not establish.
- *
- * Printed rather than silent, so a run scored under the older check never reads
- * as one the digest confirmed.
+ Sentence explaining what a weak binding did and did not establish.
+ 
+ Printed rather than silent, so a run scored under the older check never reads
+ as one the digest confirmed.
  */
 export const HEADER_ONLY_BINDING_NOTE: string =
   'NOTE sheet and manifest agree on seed and corpus pin, but one of them '

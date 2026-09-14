@@ -32,44 +32,44 @@ import type { FrozenPreparationSelection, } from './preparation-selection-model.
 //region Current population reconstruction without a replacement sampler
 
 /**
- * Native reconstruction used internally before frozen artifact relationships can be accepted.
- *
- * @example
- * ```ts
- * const current = await readPreparationRootPopulation({ pin, selection, l });
- * ```
+ Native reconstruction used internally before frozen artifact relationships can be accepted.
+ 
+ @example
+ ```ts
+ const current = await readPreparationRootPopulation({ pin, selection, l });
+ ```
  */
 export type PreparationRootPopulation = {
   /**
-   * Native complete listing, including policy-excluded entries.
+   Native complete listing, including policy-excluded entries.
    */
   readonly listedEntryIds: readonly string[];
   /**
-   * Successful raw object reads keep byte identities even for incomplete pairs.
+   Successful raw object reads keep byte identities even for incomplete pairs.
    */
   readonly rawDocuments: readonly PreparationRootRawDocument[];
   /**
-   * Native policy exclusions preserve their original order.
+   Native policy exclusions preserve their original order.
    */
   readonly excluded: readonly PreparationRootExclusion[];
   /**
-   * Eligible count includes unselected entries with no aligned parent.
+   Eligible count includes unselected entries with no aligned parent.
    */
   readonly eligibleEntries: number;
   /**
-   * Whole population metadata never includes unrelated full-parent prose.
+   Whole population metadata never includes unrelated full-parent prose.
    */
   readonly population: readonly PreparationRootPopulationParent[];
   /**
-   * Selected current entry texts only.
+   Selected current entry texts only.
    */
   readonly entries: readonly PreparationRootEntry[];
   /**
-   * Exactly the original frozen parent order.
+   Exactly the original frozen parent order.
    */
   readonly parents: readonly PreparationRootParent[];
   /**
-   * Every native alignment observation is compared with the frozen population record.
+   Every native alignment observation is compared with the frozen population record.
    */
   readonly observations: readonly {
     readonly entryId: string;
@@ -77,32 +77,32 @@ export type PreparationRootPopulation = {
     readonly finding: AlignmentFinding
   }[];
   /**
-   * Selected parents precede definition-only dependencies in deterministic order.
+   Selected parents precede definition-only dependencies in deterministic order.
    */
   readonly registry: readonly PreparationRootRegistration[];
   /**
-   * Unaligned definition inventories are retained without extending model scope.
+   Unaligned definition inventories are retained without extending model scope.
    */
   readonly unalignedDefinitions: readonly PreparationRootUnalignedDefinitions[];
 };
 
 /**
- * Reconstructs the full native eligibility population, then looks up rather than redraws frozen parent identities.
- *
- * @param pin - independent pin already snapshotted and resolved by the owning entry point
- *
- * @param selection - owned byte-checked selection, not caller-supplied occurrence tables
- *
- * @param l - caller logger retaining root reconstruction scope
- *
- * @returns Current population and selected-entry closure for semantic validation
- *
- * @throws PreparationRootError when listing grammar or frozen parent membership differs
- *
- * @example
- * ```ts
- * const population = await readPreparationRootPopulation({ pin, selection, l });
- * ```
+ Reconstructs the full native eligibility population, then looks up rather than redraws frozen parent identities.
+ 
+ @param pin - independent pin already snapshotted and resolved by the owning entry point
+ 
+ @param selection - owned byte-checked selection, not caller-supplied occurrence tables
+ 
+ @param l - caller logger retaining root reconstruction scope
+ 
+ @returns Current population and selected-entry closure for semantic validation
+ 
+ @throws PreparationRootError when listing grammar or frozen parent membership differs
+ 
+ @example
+ ```ts
+ const population = await readPreparationRootPopulation({ pin, selection, l });
+ ```
  */
 export async function readPreparationRootPopulation({
   pin,
@@ -114,14 +114,14 @@ export async function readPreparationRootPopulation({
   readonly l: Logger;
 },): Promise<PreparationRootPopulation> {
   /**
-   * Population reconstruction cannot inherit call permission from observations or failures.
+   Population reconstruction cannot inherit call permission from observations or failures.
    */
   const pl = tagged({
     tag: readPreparationRootPopulation.name,
     l,
   },);
   /**
-   * Listing happens through the same independently resolved native pin as object reads.
+   Listing happens through the same independently resolved native pin as object reads.
    */
   const listedEntryIds = await listCorpusPeople({ pin, },);
   if ((new Set(listedEntryIds,).size !== listedEntryIds.length)
@@ -131,41 +131,41 @@ export async function readPreparationRootPopulation({
       input: 'people/',
     },);
   /**
-   * No sampler is invoked; these exact identities define the selected part of the current population.
+   No sampler is invoked; these exact identities define the selected part of the current population.
    */
   const selectedParentIds = new Set(selection.parents
     .map(function identity(parent,): string { return parent.parentId; },),);
   /**
-   * Only selected complete entries can contribute definition-only dependencies.
+   Only selected complete entries can contribute definition-only dependencies.
    */
   const selectedEntryIds = new Set(selection.parents
     .map(function identity(parent,): string { return parent.entryId; },),);
   /**
-   * Owned result collections accumulate one entry at a time without corpus-wide read fan-out.
+   Owned result collections accumulate one entry at a time without corpus-wide read fan-out.
    */
   const rawDocuments: PreparationRootRawDocument[] = [];
   /**
-   * Exclusions remain population evidence rather than disappearance from the denominator.
+   Exclusions remain population evidence rather than disappearance from the denominator.
    */
   const excluded: PreparationRootExclusion[] = [];
   /**
-   * Eligible identities retain content-free entries without inventing parents.
+   Eligible identities retain content-free entries without inventing parents.
    */
   const eligibleEntryIds: string[] = [];
   /**
-   * Only native metadata is retained for unselected parent scopes.
+   Only native metadata is retained for unselected parent scopes.
    */
   const population: PreparationRootPopulationParent[] = [];
   /**
-   * Selected complete entries retain their current normalized source context.
+   Selected complete entries retain their current normalized source context.
    */
   const entries: PreparationRootEntry[] = [];
   /**
-   * Frozen parent membership is verified before the final ordered projection.
+   Frozen parent membership is verified before the final ordered projection.
    */
   const selectedParents = new Map<string, PreparationRootParent>();
   /**
-   * Section observations do not become automatic section questions.
+   Section observations do not become automatic section questions.
    */
   const observations: {
     readonly entryId: string;
@@ -173,22 +173,22 @@ export async function readPreparationRootPopulation({
     readonly finding: AlignmentFinding
   }[] = [];
   /**
-   * Native closure records are ordered only after every selected entry has been reconstructed.
+   Native closure records are ordered only after every selected entry has been reconstructed.
    */
   const registrations: PreparationRootRegistration[] = [];
   /**
-   * Definition namespaces outside aligned parents are explicit but non-serving.
+   Definition namespaces outside aligned parents are explicit but non-serving.
    */
   const unalignedDefinitions: PreparationRootUnalignedDefinitions[] = [];
   /**
-   * Explicit single-entry resource envelope retains serial native reads without an unbounded promise fan-out.
+   Explicit single-entry resource envelope retains serial native reads without an unbounded promise fan-out.
    */
   const processedEntryIds = await mapOverlapped({
     items: listedEntryIds,
     overlap: 1,
     oneItem: async function collect({ item: entryId, },): Promise<string> {
     /**
-     * This entry's parsed documents do not escape into unrelated population records.
+     This entry's parsed documents do not escape into unrelated population records.
      */
     const current = await readPreparationRootEntry({
       pin,
@@ -240,7 +240,7 @@ export async function readPreparationRootPopulation({
       selectedParentIds,
     },),);
     /**
-     * Only nonempty unaligned inventories need a namespace record.
+     Only nonempty unaligned inventories need a namespace record.
      */
     const namespace = preparationRootUnalignedDefinitions({
       entryId,
@@ -258,12 +258,12 @@ export async function readPreparationRootPopulation({
   },
   },);
   /**
-   * Missing selected parents are refusals, never a reason to substitute another population member.
+   Missing selected parents are refusals, never a reason to substitute another population member.
    */
   const parents = selection.parents
     .map(function selected(frozen,): PreparationRootParent {
     /**
-     * Current parent identity is looked up under the original frozen spelling.
+     Current parent identity is looked up under the original frozen spelling.
      */
     const parent = selectedParents.get(frozen.parentId,);
     if (parent === undefined)
@@ -274,11 +274,11 @@ export async function readPreparationRootPopulation({
     return parent;
   },);
   /**
-   * Current registration identities must not merge distinct native parent occurrences.
+   Current registration identities must not merge distinct native parent occurrences.
    */
   const byParent = new Map<string, PreparationRootRegistration>();
   /**
-   * Definition-only records retain native order while the same pass indexes selected identities.
+   Definition-only records retain native order while the same pass indexes selected identities.
    */
   const dependencies: PreparationRootRegistration[] = [];
   for (const registration of registrations) {
@@ -295,12 +295,12 @@ export async function readPreparationRootPopulation({
       input: 'initial parent registry',
     },);
   /**
-   * Writer-parent order is frozen; definition-only additions retain native entry/parent order.
+   Writer-parent order is frozen; definition-only additions retain native entry/parent order.
    */
   const registry = [
     ...parents.map(function selected(parent,): PreparationRootRegistration {
       /**
-       * Each selected parent must retain even a zero-question structural record.
+       Each selected parent must retain even a zero-question structural record.
        */
       const registration = byParent.get(parent.id,);
       if (registration === undefined)

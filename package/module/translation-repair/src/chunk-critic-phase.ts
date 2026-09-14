@@ -28,93 +28,93 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // votes the evidence already contradicted.
 
 /**
- * Everything the critic phase decided for one chunk.
- *
- * @example
- * ```ts
- * const phase = await runChunkCriticPhase({ ... },);
- * if (phase.votesStand) return unchanged;
- * ```
+ Everything the critic phase decided for one chunk.
+ 
+ @example
+ ```ts
+ const phase = await runChunkCriticPhase({ ... },);
+ if (phase.votesStand) return unchanged;
+ ```
  */
 export type ChunkCriticPhase = {
   /**
-   * Validated claims surviving the screen; empty when contradicted votes took
-   * their claims down with them.
+   Validated claims surviving the screen; empty when contradicted votes took
+   their claims down with them.
    */
   readonly claims: readonly IssueClaim[];
 
   /**
-   * Critics reporting critical non-translation at wire level, before screening.
+   Critics reporting critical non-translation at wire level, before screening.
    */
   readonly nonTranslationVotes: number;
 
   /**
-   * Whether deterministic evidence contradicted those votes.
+   Whether deterministic evidence contradicted those votes.
    */
   readonly contradicted: boolean;
 
   /**
-   * Whether votes met the block threshold uncontradicted, so this slice must
-   * ship unchanged.
+   Whether votes met the block threshold uncontradicted, so this slice must
+   ship unchanged.
    */
   readonly votesStand: boolean;
 
   /**
-   * Critics heard, for the caller's degradation accounting.
+   Critics heard, for the caller's degradation accounting.
    */
   readonly heardCritics: number;
 
   /**
-   * WHICH critics answered, sorted by model id. Attribution counts a critic's
-   * hits; this is what it was asked, so a rate can be computed rather than
-   * only a tally. Unfiltered by screening, since being heard is independent of
-   * whether the claims survived.
+   WHICH critics answered, sorted by model id. Attribution counts a critic's
+   hits; this is what it was asked, so a rate can be computed rather than
+   only a tally. Unfiltered by screening, since being heard is independent of
+   whether the claims survived.
    */
   readonly heardCriticIds: readonly RosterModelId[];
 
   /**
-   * Which critics raised each SURVIVING claim, keyed by deterministic claim id.
-   * Already filtered to the screened claims, unlike the pre-screening list
-   * `runCriticStage` returns, so a critic is never credited with a claim the
-   * screen threw away. Calibration only; adjudication never sees it.
+   Which critics raised each SURVIVING claim, keyed by deterministic claim id.
+   Already filtered to the screened claims, unlike the pre-screening list
+   `runCriticStage` returns, so a critic is never credited with a claim the
+   screen threw away. Calibration only; adjudication never sees it.
    */
   readonly claimAttributions: readonly ClaimAttribution[];
 
   /**
-   * Critic findings plus the contradiction record when votes fell.
+   Critic findings plus the contradiction record when votes fell.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Runs the critics over one chunk pair and screens their non-translation votes.
- *
- * @param client - injected model client
- *
- * @param criticModelIds - critic fan-out electorate
- *
- * @param sourceText - original chunk text
- *
- * @param targetText - translation chunk text
- *
- * @param documents - parsed chunk pair claims anchor against
- *
- * @param identityContext - declared names from both sides' front matter
- *
- * @param sliceIndex - chunk position, for the dismissal warning
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Screened claims plus the vote accounting
- *
- * @example
- * ```ts
- * const phase = await runChunkCriticPhase({ ... },);
- * ```
+ Runs the critics over one chunk pair and screens their non-translation votes.
+ 
+ @param client - injected model client
+ 
+ @param criticModelIds - critic fan-out electorate
+ 
+ @param sourceText - original chunk text
+ 
+ @param targetText - translation chunk text
+ 
+ @param documents - parsed chunk pair claims anchor against
+ 
+ @param identityContext - declared names from both sides' front matter
+ 
+ @param sliceIndex - chunk position, for the dismissal warning
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - pipeline logger
+ 
+ @returns Screened claims plus the vote accounting
+ 
+ @example
+ ```ts
+ const phase = await runChunkCriticPhase({ ... },);
+ ```
  */
 export async function runChunkCriticPhase(
   {
@@ -151,7 +151,7 @@ export async function runChunkCriticPhase(
   }>,
 ): Promise<ChunkCriticPhase> {
   /**
-   * Critic fan-out result.
+   Critic fan-out result.
    */
   const critic = await runCriticStage({
     client,
@@ -170,8 +170,8 @@ export async function runChunkCriticPhase(
   },);
 
   /**
-   * Vote screening against deterministic evidence; contradicted votes fall
-   * together with their claims.
+   Vote screening against deterministic evidence; contradicted votes fall
+   together with their claims.
    */
   const screening = screenNonTranslationVotes({
     votes: critic.nonTranslationVotes,
@@ -187,9 +187,9 @@ export async function runChunkCriticPhase(
   }
 
   /**
-   * Identities of the claims screening left standing. Attribution is collected
-   * before the screen runs, so anything dropped here must lose its attribution
-   * too, or a critic keeps credit for a claim the pipeline discarded.
+   Identities of the claims screening left standing. Attribution is collected
+   before the screen runs, so anything dropped here must lose its attribution
+   too, or a critic keeps credit for a claim the pipeline discarded.
    */
   const survivingClaimIds = new Set(
     screening.claims

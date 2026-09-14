@@ -33,36 +33,36 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // Capture both streams: the reading is at info and an unreadable meter warns.
 
 /**
- * Logger root for this probe.
+ Logger root for this probe.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * How long one sample may take before it is abandoned.
- *
- * SET TO THE FRESHNESS WINDOW rather than picked. A reading is trusted for
- * sixty seconds, so one that takes longer than that to arrive has aged out
- * before it could be used, and a sampler that waits past it is measuring the
- * endpoint's latency rather than the provider's budget.
+ How long one sample may take before it is abandoned.
+ 
+ SET TO THE FRESHNESS WINDOW rather than picked. A reading is trusted for
+ sixty seconds, so one that takes longer than that to arrive has aged out
+ before it could be used, and a sampler that waits past it is measuring the
+ endpoint's latency rather than the provider's budget.
  */
 const SAMPLE_TIMEOUT_MS = 60_000;
 
 /**
- * Reads both meters once and leaves the reading in the log.
- *
- * Returns nothing: the `METERS` line IS the output.
- *
- * @throws {@link Error} when either provider's key is absent, since a sample
- * of one provider cannot answer a question about the other
- *
- * @example
- * ```ts
- * await sampleBudgets();
- * ```
+ Reads both meters once and leaves the reading in the log.
+ 
+ Returns nothing: the `METERS` line IS the output.
+ 
+ @throws {@link Error} when either provider's key is absent, since a sample
+ of one provider cannot answer a question about the other
+ 
+ @example
+ ```ts
+ await sampleBudgets();
+ ```
  */
 async function sampleBudgets(): Promise<void> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: sampleBudgets.name,
@@ -70,35 +70,35 @@ async function sampleBudgets(): Promise<void> {
   },);
 
   /**
-   * First provider's key, injected by mise from the sops-encrypted env.
+   First provider's key, injected by mise from the sops-encrypted env.
    */
   const syntheticKey = process.env
     .TRANSLATION_REPAIR_SYNTHETIC_API_KEY
     ?? '';
 
   /**
-   * Second provider's key, from the same place.
+   Second provider's key, from the same place.
    */
   const hyperKey = process.env
     .TRANSLATION_REPAIR_CHARM_HYPER_API_KEY
     ?? '';
 
   /**
-   * Third provider's key, from the same place.
+   Third provider's key, from the same place.
    */
   const openRouterKey = process.env
     .TRANSLATION_REPAIR_OPENROUTER_API_KEY
     ?? '';
 
   /**
-   * Fourth provider's key, from the same place.
+   Fourth provider's key, from the same place.
    */
   const bedrockKey = process.env
     .TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY
     ?? '';
 
   /**
-   * Whether any provider's key is missing, which makes the sample partial.
+   Whether any provider's key is missing, which makes the sample partial.
    */
   const someKeyMissing = (syntheticKey === '')
     || (hyperKey === '')
@@ -118,10 +118,10 @@ async function sampleBudgets(): Promise<void> {
   }
 
   /**
-   * Budget view over every meter, which logs what it reads.
-   *
-   * ITS CACHE CANNOT INTERFERE. A fresh view has never read anything, so the
-   * first call always reaches the wire, and this process makes exactly one.
+   Budget view over every meter, which logs what it reads.
+   
+   ITS CACHE CANNOT INTERFERE. A fresh view has never read anything, so the
+   first call always reaches the wire, and this process makes exactly one.
    */
   const budgets = createProviderBudgets({
     synthetic: createSyntheticClient({ apiKey: syntheticKey, },),
@@ -134,12 +134,12 @@ async function sampleBudgets(): Promise<void> {
   },);
 
   /**
-   * The routed view, whose real product is the line the read leaves behind.
+   The routed view, whose real product is the line the read leaves behind.
    */
   const view = await budgets.read({ signal: AbortSignal.timeout(SAMPLE_TIMEOUT_MS,), },);
 
   /**
-   * What routing would do with each provider, for the summary.
+   What routing would do with each provider, for the summary.
    */
   const verdicts = PROVIDER_ORDER.map(function verdictOf(provider,): string {
     return `${view[provider] ? 'avoid' : 'use'} ${provider}`;

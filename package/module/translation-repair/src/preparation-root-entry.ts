@@ -26,75 +26,75 @@ import type { PreparationRootExclusion, } from './preparation-root-reference-mod
 //region Native policy eligibility before frozen-parent lookup
 
 /**
- * Eligibility outcomes are domain states; unexpected read failures throw instead of becoming exclusions.
- *
- * @example
- * ```ts
- * const current = await readPreparationRootEntry({ pin, entryId, l });
- * ```
+ Eligibility outcomes are domain states; unexpected read failures throw instead of becoming exclusions.
+ 
+ @example
+ ```ts
+ const current = await readPreparationRootEntry({ pin, entryId, l });
+ ```
  */
 export type PreparationRootEntryRead = {
   /**
-   * Existing missing-object or whole-page-original policy declined this entry.
+   Existing missing-object or whole-page-original policy declined this entry.
    */
   readonly kind: 'excluded';
   /**
-   * Exact current exclusion compared with frozen population evidence.
+   Exact current exclusion compared with frozen population evidence.
    */
   readonly exclusion: PreparationRootExclusion;
   /**
-   * Successfully read sides still retain raw-byte provenance.
+   Successfully read sides still retain raw-byte provenance.
    */
   readonly rawDocuments: readonly PreparationRootRawDocument[];
 } | {
   /**
-   * Native policy permits population accounting, not writer or acquisition admission.
+   Native policy permits population accounting, not writer or acquisition admission.
    */
   readonly kind: 'eligible';
   /**
-   * Serializable current entry provenance.
+   Serializable current entry provenance.
    */
   readonly entry: PreparationRootEntry;
   /**
-   * Exact historical parent representation, before any frozen selection lookup.
+   Exact historical parent representation, before any frozen selection lookup.
    */
   readonly parents: readonly PreparationRootParent[];
   /**
-   * Transient current parse used only by the owning collector.
+   Transient current parse used only by the owning collector.
    */
   readonly source: RepairDocument;
   /**
-   * Transient normalized parse, never an earlier archive coordinate system.
+   Transient normalized parse, never an earlier archive coordinate system.
    */
   readonly target: RepairDocument;
   /**
-   * Native deterministic alignment, without model-backed section correspondence.
+   Native deterministic alignment, without model-backed section correspondence.
    */
   readonly pairs: readonly ChunkPair[];
   /**
-   * Raw and effective identities remain separate from parent-local hashes.
+   Raw and effective identities remain separate from parent-local hashes.
    */
   readonly rawDocuments: readonly PreparationRootRawDocument[];
 };
 
 /**
- * Reconstructs exactly the production original-English policy and native parent population for one entry.
- * No size/shape filter, archive-prose repair, provider or replacement sampler is introduced.
- *
- * @param pin - independent already-resolved corpus pin
- *
- * @param entryId - checked current corpus entry component
- *
- * @param l - caller logger retaining root scope
- *
- * @returns Current eligible parent inventory or explicit policy exclusion
- *
- * @throws PreparationRootError when pinned bytes cannot be read for reasons other than absence
- *
- * @example
- * ```ts
- * const current = await readPreparationRootEntry({ pin, entryId, l });
- * ```
+ Reconstructs exactly the production original-English policy and native parent population for one entry.
+ No size/shape filter, archive-prose repair, provider or replacement sampler is introduced.
+ 
+ @param pin - independent already-resolved corpus pin
+ 
+ @param entryId - checked current corpus entry component
+ 
+ @param l - caller logger retaining root scope
+ 
+ @returns Current eligible parent inventory or explicit policy exclusion
+ 
+ @throws PreparationRootError when pinned bytes cannot be read for reasons other than absence
+ 
+ @example
+ ```ts
+ const current = await readPreparationRootEntry({ pin, entryId, l });
+ ```
  */
 export async function readPreparationRootEntry({
   pin,
@@ -106,14 +106,14 @@ export async function readPreparationRootEntry({
   readonly l: Logger;
 },): Promise<PreparationRootEntryRead> {
   /**
-   * Each entry remains attributable without logging its source text.
+   Each entry remains attributable without logging its source text.
    */
   const pl = tagged({
     tag: readPreparationRootEntry.name,
     l,
   },);
   /**
-   * Raw object reads distinguish corpus absence from infrastructure failure.
+   Raw object reads distinguish corpus absence from infrastructure failure.
    */
   const read = await readPreparationRootCorpusPair({
     pin,
@@ -130,7 +130,7 @@ export async function readPreparationRootEntry({
       rawDocuments: read.rawDocuments,
     };
   /**
-   * Source and archive identities are retained before any eligibility branch returns.
+   Source and archive identities are retained before any eligibility branch returns.
    */
   const rawDocuments = [
     read.source
@@ -139,7 +139,7 @@ export async function readPreparationRootEntry({
       .identity,
   ];
   /**
-   * The raw archive declaration has precedence over normalized placement.
+   The raw archive declaration has precedence over normalized placement.
    */
   const inherited = archiveOriginalReadingOf({ document: parseDocument({ text: read.archive
     .text, },), },);
@@ -159,7 +159,7 @@ export async function readPreparationRootEntry({
     };
   }
   /**
-   * Shared pass normalization owns invisible variants, stubs and retained pinned-line origins.
+   Shared pass normalization owns invisible variants, stubs and retained pinned-line origins.
    */
   const archive = passArchiveWithOrigins({
     text: read.archive
@@ -167,11 +167,11 @@ export async function readPreparationRootEntry({
     l: pl,
   },);
   /**
-   * Current normalized archive coordinates are rebuilt before any parent identity is read.
+   Current normalized archive coordinates are rebuilt before any parent identity is read.
    */
   const target = parseDocument({ text: archive.text, },);
   /**
-   * Normalized original-English declarations retain their independent eligibility role.
+   Normalized original-English declarations retain their independent eligibility role.
    */
   const normalized = archiveOriginalReadingOf({ document: target, },);
   if (normalized.kind === 'whole-page') {
@@ -191,23 +191,23 @@ export async function readPreparationRootEntry({
     };
   }
   /**
-   * Original coordinates always come from the complete current source.
+   Original coordinates always come from the complete current source.
    */
   const source = parseDocument({ text: read.source
     .text, },);
   /**
-   * Parent construction uses only the native deterministic section path.
+   Parent construction uses only the native deterministic section path.
    */
   const alignment = alignDocumentSections({
     source,
     target,
   },);
   /**
-   * Protected spans annotate the population rather than filtering ordinary correction tasks.
+   Protected spans annotate the population rather than filtering ordinary correction tasks.
    */
   const spans = normalized.kind === 'spans' ? normalized.spans : [];
   /**
-   * The exact legacy parent shape makes population and selected-pool comparisons independent of caller tables.
+   The exact legacy parent shape makes population and selected-pool comparisons independent of caller tables.
    */
   const parents = alignment.pairs
     .map(function parent(

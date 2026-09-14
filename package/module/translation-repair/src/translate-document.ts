@@ -52,52 +52,52 @@ import type { TwinMemo, } from './twin-memo.ts';
 // records the cache would expose to a warm run.
 
 /**
- * Translates every slice of a prepared document pair and reassembles it.
- *
- * @param client - injected model client
- *
- * @param prepared - slices, governance and declared names, shared with any
- * other lane running over same document
- *
- * @param models - translator and judge rosters
- *
- * @param pictureReadings - what document pictures were read as
- *
- * @param signal - entry deadline and caller abort, honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param sliceCache - resumable per-slice cache, absent when caller wants no
- * resumption
- *
- * @param insertionAdmission - caller's authoritative production evidence for
- * source-only slices; absent uses deterministic page shortfall
- *
- * @param overlap - most slices in flight; one reproduces former sequential loop
- *
- * @param l - pipeline logger
- *
- * @returns Reassembled translation, its `status`, one settled record per
- * filled slice, and every passage this run left missing
- *
- * @throws {@link Error} when roster cannot seat a stage, overlap is invalid,
- * or caller aborts while this lane is buying
- *
- * @throws Whatever `signal.reason` carries once caller aborts with slices still
- * unbought; nothing settled under that abort is cached
- *
- * @example
- * ```ts
- * const result = await translateDocument({
- *   client,
- *   prepared,
- *   models,
- *   signal,
- *   perCallTimeoutMs,
- *   overlap: 4,
- *   l,
- * },);
- * ```
+ Translates every slice of a prepared document pair and reassembles it.
+ 
+ @param client - injected model client
+ 
+ @param prepared - slices, governance and declared names, shared with any
+ other lane running over same document
+ 
+ @param models - translator and judge rosters
+ 
+ @param pictureReadings - what document pictures were read as
+ 
+ @param signal - entry deadline and caller abort, honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param sliceCache - resumable per-slice cache, absent when caller wants no
+ resumption
+ 
+ @param insertionAdmission - caller's authoritative production evidence for
+ source-only slices; absent uses deterministic page shortfall
+ 
+ @param overlap - most slices in flight; one reproduces former sequential loop
+ 
+ @param l - pipeline logger
+ 
+ @returns Reassembled translation, its `status`, one settled record per
+ filled slice, and every passage this run left missing
+ 
+ @throws {@link Error} when roster cannot seat a stage, overlap is invalid,
+ or caller aborts while this lane is buying
+ 
+ @throws Whatever `signal.reason` carries once caller aborts with slices still
+ unbought; nothing settled under that abort is cached
+ 
+ @example
+ ```ts
+ const result = await translateDocument({
+   client,
+   prepared,
+   models,
+   signal,
+   perCallTimeoutMs,
+   overlap: 4,
+   l,
+ },);
+ ```
  */
 export async function translateDocument(
   {
@@ -124,8 +124,8 @@ export async function translateDocument(
     readonly overlap?: number;
 
     /**
-     * Awaited before each slice starts, so a caller can hold the slice back
-     * while a named provider hold keeps the bench from quorum.
+     Awaited before each slice starts, so a caller can hold the slice back
+     while a named provider hold keeps the bench from quorum.
      */
     readonly beforeSlice?: () => Promise<void>;
     readonly l: Logger;
@@ -143,7 +143,7 @@ export async function translateDocument(
   },);
 
   /**
-   * Logger tagged with this driver.
+   Logger tagged with this driver.
    */
   const tl = tagged({
     tag: translateDocument.name,
@@ -151,7 +151,7 @@ export async function translateDocument(
   },);
 
   /**
-   * What this run asks, folded into every key.
+   What this run asks, folded into every key.
    */
   const runShape = translateRunShape({
     models,
@@ -161,10 +161,10 @@ export async function translateDocument(
   },);
 
   /**
-   * Slices with no translation beside them that page has room to be missing.
-   *
-   * Computed once because shortfall belongs to whole page rather than one
-   * section, and spending it per section admits more than page is missing.
+   Slices with no translation beside them that page has room to be missing.
+   
+   Computed once because shortfall belongs to whole page rather than one
+   section, and spending it per section admits more than page is missing.
    */
   const admission = insertionAdmission ?? {
     positions: admitInsertions({
@@ -176,7 +176,7 @@ export async function translateDocument(
     findings: [],
   };
   /**
-   * Prepared positions whose source is fully rendered elsewhere.
+   Prepared positions whose source is fully rendered elsewhere.
    */
   const carriedPositions = new Set((admission.carried ?? [])
     .map(function carriedPosition(carried,): number {
@@ -184,12 +184,12 @@ export async function translateDocument(
     },),);
 
   /**
-   * Purchases in this run by shared key, exposing only persisted records.
+   Purchases in this run by shared key, exposing only persisted records.
    */
   const twins: TwinMemo<TranslateSliceRecord> = new Map();
 
   /**
-   * Every slice's outcome and findings, returned in slice order.
+   Every slice's outcome and findings, returned in slice order.
    */
   const settlements = await mapOverlapped({
     items: prepared.slices,
@@ -201,13 +201,13 @@ export async function translateDocument(
       if (beforeSlice !== undefined)
         await beforeSlice();
       /**
-       * Whether production evidence permits filling this source-only slice.
+       Whether production evidence permits filling this source-only slice.
        */
       const insertionAdmitted = admission
         .positions
         .has(slicePosition,);
       /**
-       * Whether source-only passage needs no local rendering.
+       Whether source-only passage needs no local rendering.
        */
       const insertionCarried = carriedPositions.has(slicePosition,);
       return await settleTranslateSlice({
@@ -230,7 +230,7 @@ export async function translateDocument(
   },);
 
   /**
-   * Settled records in document order.
+   Settled records in document order.
    */
   const settled = settlements.flatMap(function toSettled(
     { outcome, },
@@ -241,7 +241,7 @@ export async function translateDocument(
   },);
 
   /**
-   * Passages this run reached but left missing, in document order.
+   Passages this run reached but left missing, in document order.
    */
   const unfilled = settlements.flatMap(function toUnfilled(
     { outcome, },
@@ -252,7 +252,7 @@ export async function translateDocument(
   },);
 
   /**
-   * Slice indexes whose source is already rendered elsewhere.
+   Slice indexes whose source is already rendered elsewhere.
    */
   const carriedChunkIndices = settlements.flatMap(function toCarried(
     { outcome, },
@@ -263,7 +263,7 @@ export async function translateDocument(
   },);
 
   /**
-   * Slices recovered from disk, excluding twins reused within this run.
+   Slices recovered from disk, excluding twins reused within this run.
    */
   const resumedSliceCount = settlements
     .filter(function resumedFromDisk({ outcome, },): boolean {
@@ -272,7 +272,7 @@ export async function translateDocument(
     .length;
 
   /**
-   * Cache refusals and unfilled evidence, grouped in document order.
+   Cache refusals and unfilled evidence, grouped in document order.
    */
   const findings = [
     ...admission.findings,

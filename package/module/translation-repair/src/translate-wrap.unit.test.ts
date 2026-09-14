@@ -1,19 +1,19 @@
 /**
- * Tests for wrapping what the translate lane produced.
- *
- * WHAT THESE PIN is the same pair of properties `repair-wrap.unit.test.ts`
- * pins, on the other lane: only wording this lane PRODUCED is wrapped, and the
- * changed flag is re-derived from the wrapped text rather than carried forward.
- *
- * The retention case matters more here than on the repair side, because this
- * lane stands on the archive by two separate routes: the judges preferring the
- * incumbent, and no translator answering at all. Both carry the archive's own
- * wording in `outputText`, and wrapping either would report a change nobody
- * decided on and contradict `sliceRecordAgrees`.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for wrapping what the translate lane produced.
+ 
+ WHAT THESE PIN is the same pair of properties `repair-wrap.unit.test.ts`
+ pins, on the other lane: only wording this lane PRODUCED is wrapped, and the
+ changed flag is re-derived from the wrapped text rather than carried forward.
+ 
+ The retention case matters more here than on the repair side, because this
+ lane stands on the archive by two separate routes: the judges preferring the
+ incumbent, and no translator answering at all. Both carry the archive's own
+ wording in `outputText`, and wrapping either would report a change nobody
+ decided on and contradict `sliceRecordAgrees`.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -29,23 +29,23 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger these hand to the lane, whose output is not what is under test.
+ Logger these hand to the lane, whose output is not what is under test.
  */
 const l = tagged({ tag: 'translate-wrap-test', },);
 
 /**
- * Builds one prepared pair carrying the archive's wording at an index.
- *
- * @param sliceIndex - slice index
- *
- * @param incumbentText - archive wording there
- *
- * @returns Pair shaped as preparation produces one
- *
- * @example
- * ```ts
- * const pair = pairOf({ sliceIndex: 0, incumbentText: 'The cat naps.', },);
- * ```
+ Builds one prepared pair carrying the archive's wording at an index.
+ 
+ @param sliceIndex - slice index
+ 
+ @param incumbentText - archive wording there
+ 
+ @returns Pair shaped as preparation produces one
+ 
+ @example
+ ```ts
+ const pair = pairOf({ sliceIndex: 0, incumbentText: 'The cat naps.', },);
+ ```
  */
 function pairOf(
   {
@@ -75,24 +75,24 @@ function pairOf(
 }
 
 /**
- * Builds one settled translate record.
- *
- * MINIMAL BY DESIGN: the wrap reads three fields and carries the rest through
- * untouched, so a fixture carrying the whole contract would test the spread
- * rather than the decision.
- *
- * @param sliceIndex - slice index
- *
- * @param outputText - wording this lane settled on
- *
- * @param changed - whether it claims to differ from the archive
- *
- * @returns Record shaped as the lane settles one
- *
- * @example
- * ```ts
- * const record = recordOf({ sliceIndex: 0, outputText: 'It naps.', changed: true, },);
- * ```
+ Builds one settled translate record.
+ 
+ MINIMAL BY DESIGN: the wrap reads three fields and carries the rest through
+ untouched, so a fixture carrying the whole contract would test the spread
+ rather than the decision.
+ 
+ @param sliceIndex - slice index
+ 
+ @param outputText - wording this lane settled on
+ 
+ @param changed - whether it claims to differ from the archive
+ 
+ @returns Record shaped as the lane settles one
+ 
+ @example
+ ```ts
+ const record = recordOf({ sliceIndex: 0, outputText: 'It naps.', changed: true, },);
+ ```
  */
 function recordOf(
   {
@@ -116,8 +116,8 @@ function recordOf(
 }
 
 /**
- * One passage a governed producer returned, carrying sentence boundaries the
- * wrap would break at if it were allowed to run.
+ One passage a governed producer returned, carrying sentence boundaries the
+ wrap would break at if it were allowed to run.
  */
 const GOVERNED_PRODUCED = 'The cat wakes. Sun is warm. She counts birds.';
 await describe({
@@ -152,7 +152,7 @@ await describe({
         + 'wrapping either would report a change nobody decided on',
       fn: async () => {
         /**
-         * Archive wording that the rule WOULD break, were it asked to.
+         Archive wording that the rule WOULD break, were it asked to.
          */
         const incumbentText = 'The cat sleeps on the sill. It wakes at dusk.';
 
@@ -180,7 +180,7 @@ await describe({
         + 'archive, since a record still claiming a change there contradicts sliceRecordAgrees',
       fn: async () => {
         /**
-         * Archive wording, already written as the rule would write it.
+         Archive wording, already written as the rule would write it.
          */
         const incumbentText = 'It naps.\nIt wakes.';
 

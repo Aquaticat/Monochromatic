@@ -26,39 +26,39 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // corpus wording, and this reads run logs.
 
 /**
- * Multiplier turning a fraction into a percentage.
+ Multiplier turning a fraction into a percentage.
  */
 const PERCENT = 100;
 
 /**
- * Renders a credit figure at the precision the provider quotes balances in.
- *
- * @param credits - what something came to
- *
- * @returns Text for a report column
- *
- * @example
- * ```ts
- * console.log(asCredits({ credits: 9.5, },),);
- * ```
+ Renders a credit figure at the precision the provider quotes balances in.
+ 
+ @param credits - what something came to
+ 
+ @returns Text for a report column
+ 
+ @example
+ ```ts
+ console.log(asCredits({ credits: 9.5, },),);
+ ```
  */
 function asCredits({ credits, }: { readonly credits: number; },): string {
   return credits.toFixed(2,);
 }
 
 /**
- * Renders one priced seat, and what share of the bill it was.
- *
- * @param seat - seat with its credits
- *
- * @param totalCredits - what every priced seat came to together
- *
- * @returns Line for the report
- *
- * @example
- * ```ts
- * console.log(pricedLine({ seat, totalCredits, },),);
- * ```
+ Renders one priced seat, and what share of the bill it was.
+ 
+ @param seat - seat with its credits
+ 
+ @param totalCredits - what every priced seat came to together
+ 
+ @returns Line for the report
+ 
+ @example
+ ```ts
+ console.log(pricedLine({ seat, totalCredits, },),);
+ ```
  */
 function pricedLine(
   {
@@ -70,7 +70,7 @@ function pricedLine(
   },
 ): string {
   /**
-   * Share of the bill this seat was, blank where nothing was billed at all.
+   Share of the bill this seat was, blank where nothing was billed at all.
    */
   const share = (totalCredits === 0)
     ? 'n/a'
@@ -83,41 +83,41 @@ function pricedLine(
 }
 
 /**
- * Decimal places USD figures are rendered at: a corpus call costs tenths of
- * a cent, and two places would print most of a run's seats as 0.00.
+ Decimal places USD figures are rendered at: a corpus call costs tenths of
+ a cent, and two places would print most of a run's seats as 0.00.
  */
 const USD_PLACES = 4;
 
 /**
- * Renders a USD figure at the precision a corpus call costs in.
- *
- * @param usd - what something came to
- *
- * @returns Text for a report column
- *
- * @example
- * ```ts
- * console.log(asUsd({ usd: 0.0842, },),);
- * ```
+ Renders a USD figure at the precision a corpus call costs in.
+ 
+ @param usd - what something came to
+ 
+ @returns Text for a report column
+ 
+ @example
+ ```ts
+ console.log(asUsd({ usd: 0.0842, },),);
+ ```
  */
 function asUsd({ usd, }: { readonly usd: number; },): string {
   return usd.toFixed(USD_PLACES,);
 }
 
 /**
- * Renders one OpenRouter seat with the USD its lines reported, and what share
- * of the run's USD it was.
- *
- * @param seat - seat with the USD summed off its `cost=` fields
- *
- * @param totalUsd - what every OpenRouter seat came to together
- *
- * @returns Line for the report
- *
- * @example
- * ```ts
- * console.log(usdLine({ seat, totalUsd, },),);
- * ```
+ Renders one OpenRouter seat with the USD its lines reported, and what share
+ of the run's USD it was.
+ 
+ @param seat - seat with the USD summed off its `cost=` fields
+ 
+ @param totalUsd - what every OpenRouter seat came to together
+ 
+ @returns Line for the report
+ 
+ @example
+ ```ts
+ console.log(usdLine({ seat, totalUsd, },),);
+ ```
  */
 function usdLine(
   {
@@ -129,20 +129,20 @@ function usdLine(
   },
 ): string {
   /**
-   * Share of the USD bill this seat was, blank where nothing was billed.
+   Share of the USD bill this seat was, blank where nothing was billed.
    */
   const share = (totalUsd === 0)
     ? 'n/a'
     : `${((seat.costUsd / totalUsd) * PERCENT).toFixed(1,)}%`;
 
   /**
-   * Calls whose line carried no cost, named so the seat's figure reads as a
-   * floor when any did.
+   Calls whose line carried no cost, named so the seat's figure reads as a
+   floor when any did.
    */
   const uncosted = seat.calls - seat.costedCalls;
 
   /**
-   * Floor note, absent when every call was costed.
+   Floor note, absent when every call was costed.
    */
   const floor = (uncosted === 0)
     ? ''
@@ -154,16 +154,16 @@ function usdLine(
 }
 
 /**
- * Renders a seat carrying tokens but no credit figure.
- *
- * @param seat - subscription or unpriced seat
- *
- * @returns Line for the report
- *
- * @example
- * ```ts
- * console.log(tokensOnlyLine({ seat, },),);
- * ```
+ Renders a seat carrying tokens but no credit figure.
+ 
+ @param seat - subscription or unpriced seat
+ 
+ @returns Line for the report
+ 
+ @example
+ ```ts
+ console.log(tokensOnlyLine({ seat, },),);
+ ```
  */
 function tokensOnlyLine({ seat, }: { readonly seat: SeatSpend; },): string {
   return `  ${seat.model}: ${String(seat.calls,)} calls, `
@@ -171,32 +171,32 @@ function tokensOnlyLine({ seat, }: { readonly seat: SeatSpend; },): string {
 }
 
 /**
- * Prints everything a priced tally holds.
- *
- * @param cost - what `priceTally` returned
- *
- * @example
- * ```ts
- * printCost({ cost, },);
- * ```
+ Prints everything a priced tally holds.
+ 
+ @param cost - what `priceTally` returned
+ 
+ @example
+ ```ts
+ printCost({ cost, },);
+ ```
  */
 function printCost({ cost, }: { readonly cost: SpendCost; },): void {
   /**
-   * Metered seats the table could price.
+   Metered seats the table could price.
    */
   const pricedCount = cost
     .priced
     .length;
 
   /**
-   * Metered seats the table had no row for.
+   Metered seats the table had no row for.
    */
   const unpricedCount = cost
     .unpriced
     .length;
 
   /**
-   * Seats on the flat subscription, which bill no credits.
+   Seats on the flat subscription, which bill no credits.
    */
   const subscriptionCount = cost
     .subscription
@@ -225,7 +225,7 @@ function printCost({ cost, }: { readonly cost: SpendCost; },): void {
   }
 
   /**
-   * Seats billed in USD on OpenRouter.
+   Seats billed in USD on OpenRouter.
    */
   const openRouterCount = cost
     .openRouter
@@ -261,20 +261,20 @@ function printCost({ cost, }: { readonly cost: SpendCost; },): void {
 }
 
 /**
- * Reads named logs and reports what the run they describe cost.
- *
- * Returns nothing: the report on stdout IS the output.
- *
- * @throws {@link Error} when no log path was named
- *
- * @example
- * ```ts
- * await reportSpendCost();
- * ```
+ Reads named logs and reports what the run they describe cost.
+ 
+ Returns nothing: the report on stdout IS the output.
+ 
+ @throws {@link Error} when no log path was named
+ 
+ @example
+ ```ts
+ await reportSpendCost();
+ ```
  */
 async function reportSpendCost(): Promise<void> {
   /**
-   * Logs to read, named on the command line.
+   Logs to read, named on the command line.
    */
   const paths = process
     .argv
@@ -288,7 +288,7 @@ async function reportSpendCost(): Promise<void> {
   }
 
   /**
-   * Every line of every named log, in one list.
+   Every line of every named log, in one list.
    */
   const lines = (await Promise.all(paths.map(async function one(path,): Promise<readonly string[]> {
     return (await readFile(
@@ -298,12 +298,12 @@ async function reportSpendCost(): Promise<void> {
   },),)).flat();
 
   /**
-   * Per-seat totals over every record those lines held.
+   Per-seat totals over every record those lines held.
    */
   const tally = tallySpend({ lines, },);
 
   /**
-   * Distinct provider and model pairs those records named.
+   Distinct provider and model pairs those records named.
    */
   const seatCount = tally
     .seats

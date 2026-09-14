@@ -1,8 +1,8 @@
 /**
- * Tests for reading a settled artifact's schema generation and index sets.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for reading a settled artifact's schema generation and index sets.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -24,16 +24,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Reads change sets out of one artifact record, returning whatever it threw.
- *
- * @param artifact - artifact record under test
- *
- * @returns Failure it raised, or `undefined` when it accepted the record
- *
- * @example
- * ```ts
- * const refusal = changeSetFailure({ artifact: { shippedChunkIndices: [], }, },);
- * ```
+ Reads change sets out of one artifact record, returning whatever it threw.
+ 
+ @param artifact - artifact record under test
+ 
+ @returns Failure it raised, or `undefined` when it accepted the record
+ 
+ @example
+ ```ts
+ const refusal = changeSetFailure({ artifact: { shippedChunkIndices: [], }, },);
+ ```
  */
 function changeSetFailure(
   { artifact, }: { readonly artifact: Readonly<Record<string, unknown>>; },
@@ -51,7 +51,7 @@ function changeSetFailure(
 }
 
 /**
- * Artifact as the pass writes one today, with both sets and their count.
+ Artifact as the pass writes one today, with both sets and their count.
  */
 const VERSIONED_ARTIFACT = {
   artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
@@ -94,7 +94,7 @@ await describe({
         + 'number is worse than one that reports none',
       fn: async () => {
         /**
-         * What readFutureVersion raised, read for its class as well as its wording.
+         What readFutureVersion raised, read for its class as well as its wording.
          */
         const refusalOfReadFutureVersion = caught(function readFutureVersion() {
           readArtifactSchemaVersion({
@@ -130,7 +130,7 @@ await describe({
         + 'absent top-level sets as unrecorded would report a run that changed nothing',
       fn: async () => {
         /**
-         * What changeSetReadOfVersionTwo raised, read for its class as well as its wording.
+         What changeSetReadOfVersionTwo raised, read for its class as well as its wording.
          */
         const refusalOfChangeSetRead = caught(function changeSetReadOfVersionTwo() {
           readArtifactChangeSets({
@@ -152,7 +152,7 @@ await describe({
         + 'the field itself',
       fn: async () => {
         /**
-         * What readZeroVersion raised, read for its class as well as its wording.
+         What readZeroVersion raised, read for its class as well as its wording.
          */
         const refusalOfReadZeroVersion = caught(function readZeroVersion() {
           readArtifactSchemaVersion({
@@ -170,7 +170,7 @@ await describe({
         + 'fraction and a negative each mean the writer and this reader disagree about the field',
       fn: async () => {
         /**
-         * What readStringVersion raised, read for its class as well as its wording.
+         What readStringVersion raised, read for its class as well as its wording.
          */
         const refusalOfReadStringVersion = caught(function readStringVersion() {
           readArtifactSchemaVersion({
@@ -182,7 +182,7 @@ await describe({
         expect(refusalOfReadStringVersion,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfReadStringVersion as Error).message,).toContain('a number',);
         /**
-         * What readFractionalVersion raised, read for its class as well as its wording.
+         What readFractionalVersion raised, read for its class as well as its wording.
          */
         const refusalOfReadFractionalVersion = caught(function readFractionalVersion() {
           readArtifactSchemaVersion({
@@ -194,7 +194,7 @@ await describe({
         expect(refusalOfReadFractionalVersion,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfReadFractionalVersion as Error).message,).toContain('a non-negative integer',);
         /**
-         * What readNegativeVersion raised, read for its class as well as its wording.
+         What readNegativeVersion raised, read for its class as well as its wording.
          */
         const refusalOfReadNegativeVersion = caught(function readNegativeVersion() {
           readArtifactSchemaVersion({
@@ -304,7 +304,7 @@ await describe({
           withdrawn: [],
         },);
         /**
-         * What repeatedShipped raised, read for its class as well as its wording.
+         What repeatedShipped raised, read for its class as well as its wording.
          */
         const refusalOfRepeatedShipped = caught(function repeatedShipped() {
           readArtifactChangeSets({
@@ -322,7 +322,7 @@ await describe({
         expect(refusalOfRepeatedShipped,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfRepeatedShipped as Error).message,).toContain('shipped slices repeat',);
         /**
-         * What repeatedWithdrawn raised, read for its class as well as its wording.
+         What repeatedWithdrawn raised, read for its class as well as its wording.
          */
         const refusalOfRepeatedWithdrawn = caught(function repeatedWithdrawn() {
           readArtifactChangeSets({
@@ -347,7 +347,7 @@ await describe({
         + 'report a shipped set with no withdrawals as though a run had said so',
       fn: async () => {
         /**
-         * What shippedAlone raised, read for its class as well as its wording.
+         What shippedAlone raised, read for its class as well as its wording.
          */
         const refusalOfShippedAlone = caught(function shippedAlone() {
           readArtifactChangeSets({
@@ -359,7 +359,7 @@ await describe({
         expect(refusalOfShippedAlone,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfShippedAlone as Error).message,).toContain('both index sets or neither',);
         /**
-         * What withdrawnAlone raised, read for its class as well as its wording.
+         What withdrawnAlone raised, read for its class as well as its wording.
          */
         const refusalOfWithdrawnAlone = caught(function withdrawnAlone() {
           readArtifactChangeSets({
@@ -378,7 +378,7 @@ await describe({
         + 'reading that as an older generation would throw away a denominator the run recorded',
       fn: async () => {
         /**
-         * What countWithoutVersion raised, read for its class as well as its wording.
+         What countWithoutVersion raised, read for its class as well as its wording.
          */
         const refusalOfCountWithoutVersion = caught(function countWithoutVersion() {
           readArtifactChangeSets({
@@ -400,7 +400,7 @@ await describe({
         + 'field: a writer that emitted null said something, and what it said is not a set of indices',
       fn: async () => {
         /**
-         * What nullShipped raised, read for its class as well as its wording.
+         What nullShipped raised, read for its class as well as its wording.
          */
         const refusalOfNullShipped = caught(function nullShipped() {
           readArtifactChangeSets({
@@ -421,7 +421,7 @@ await describe({
         + 'promises them: a missing field is a defect there rather than an older generation',
       fn: async () => {
         /**
-         * What versionedWithoutSets raised, read for its class as well as its wording.
+         What versionedWithoutSets raised, read for its class as well as its wording.
          */
         const refusalOfVersionedWithoutSets = caught(function versionedWithoutSets() {
           readArtifactChangeSets({
@@ -436,7 +436,7 @@ await describe({
         expect(refusalOfVersionedWithoutSets,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfVersionedWithoutSets as Error).message,).toContain('index sets',);
         /**
-         * What versionedWithoutCount raised, read for its class as well as its wording.
+         What versionedWithoutCount raised, read for its class as well as its wording.
          */
         const refusalOfVersionedWithoutCount = caught(function versionedWithoutCount() {
           readArtifactChangeSets({
@@ -472,7 +472,7 @@ await describe({
         expect(String(refusalOfBothOutOfRange,),).toContain('Mittens index sets',);
         expect(String(refusalOfBothOutOfRange,),).toContain('of 2 prepared',);
         /**
-         * What withdrawnOutOfRange raised, read for its class as well as its wording.
+         What withdrawnOutOfRange raised, read for its class as well as its wording.
          */
         const refusalOfWithdrawnOutOfRange = caught(function withdrawnOutOfRange() {
           readArtifactChangeSets({
@@ -495,7 +495,7 @@ await describe({
         + 'impossible by construction: found in a file afterwards it describes the same contradiction',
       fn: async () => {
         /**
-         * What overlapping raised, read for its class as well as its wording.
+         What overlapping raised, read for its class as well as its wording.
          */
         const refusalOfOverlapping = caught(function overlapping() {
           readArtifactChangeSets({
@@ -521,7 +521,7 @@ await describe({
         + 'too large for JSON to carry exactly however whole it looks',
       fn: async () => {
         /**
-         * What fractionalIndex raised, read for its class as well as its wording.
+         What fractionalIndex raised, read for its class as well as its wording.
          */
         const refusalOfFractionalIndex = caught(function fractionalIndex() {
           readArtifactChangeSets({
@@ -539,7 +539,7 @@ await describe({
         expect(refusalOfFractionalIndex,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfFractionalIndex as Error).message,).toContain('shippedChunkIndices[1]',);
         /**
-         * What unsafeIndex raised, read for its class as well as its wording.
+         What unsafeIndex raised, read for its class as well as its wording.
          */
         const refusalOfUnsafeIndex = caught(function unsafeIndex() {
           readArtifactChangeSets({
@@ -601,7 +601,7 @@ await describe({
         + 'directory meets artifacts a newer pass wrote there rather than hand-built records',
       fn: async () => {
         /**
-         * What parseFutureArtifact raised, read for its class as well as its wording.
+         What parseFutureArtifact raised, read for its class as well as its wording.
          */
         const refusalOfParseFutureArtifact = caught(function parseFutureArtifact() {
           parseSettledArtifact({
@@ -625,7 +625,7 @@ await describe({
         + 'top-level status and issues a version 2 artifact does not have would come back as absences',
       fn: async () => {
         /**
-         * What singleLaneParseOfVersionTwo raised, read for its class as well as its wording.
+         What singleLaneParseOfVersionTwo raised, read for its class as well as its wording.
          */
         const refusalOfSingleLaneParse = caught(function singleLaneParseOfVersionTwo() {
           parseSettledArtifact({

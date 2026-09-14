@@ -1,10 +1,10 @@
 /**
- * Tests for deterministic quote location:
- * byte-exact hits, punctuation-normalized rescue, ambiguity refusal,
- * block-crossing splits, and every failure reason.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for deterministic quote location:
+ byte-exact hits, punctuation-normalized rescue, ambiguity refusal,
+ block-crossing splits, and every failure reason.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -18,30 +18,30 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Invented document carrying a unique phrase, a repeated phrase,
- * curly punctuation for the normalized fallback, mirrored curly single
- * quotes that collide after normalization, and front matter no block
- * node covers.
+ Invented document carrying a unique phrase, a repeated phrase,
+ curly punctuation for the normalized fallback, mirrored curly single
+ quotes that collide after normalization, and front matter no block
+ node covers.
  */
 const DOCUMENT_TEXT =
   '---\nname: 小猫-quote\n---\n\n## 猫的日常\n\n小猫喜欢追蝴蝶，也喜欢晒太阳。\n\n老猫说：“打盹最舒服。”重复的句子。重复的句子。\n\n有人写‘猫’，也有人写’猫‘。\n';
 
 /**
- * Parsed document every location test searches.
+ Parsed document every location test searches.
  */
 const DOCUMENT = parseDocument({ text: DOCUMENT_TEXT, },);
 
 /**
- * Invented document whose one paragraph soft-wraps, so a quote spanning the
- * wrap holds a line break where a critic returns a space.
+ Invented document whose one paragraph soft-wraps, so a quote spanning the
+ wrap holds a line break where a critic returns a space.
  */
 const WRAPPED = parseDocument({
   text: '## 猫的午睡\n\n小猫在窗台上打盹，\n阳光晒得暖洋洋。\n',
 },);
 
 /**
- * Invented document repeating one soft-wrapped sentence, so collapsing the
- * wrap finds the same quote twice.
+ Invented document repeating one soft-wrapped sentence, so collapsing the
+ wrap finds the same quote twice.
  */
 const WRAPPED_TWICE = parseDocument({
   text: '## 猫的午睡\n\n小猫趴着睡，\n阳光很暖和。\n\n小猫趴着睡，\n阳光很暖和。\n',
@@ -278,13 +278,13 @@ await describe({
         + 'into logs and artifacts where corpus text does not belong',
       fn: async () => {
         /**
-         * Absent quote longer than the preview bound, built from one repeated
-         * character so the truncation point is countable rather than guessed.
+         Absent quote longer than the preview bound, built from one repeated
+         character so the truncation point is countable rather than guessed.
          */
         const quote = '狗'.repeat(200,);
 
         /**
-         * Failure this miss produced.
+         Failure this miss produced.
          */
         const located = locateQuote({
           document: WRAPPED,
@@ -302,7 +302,7 @@ await describe({
         + 'finding stays a single line whatever the critic quoted',
       fn: async () => {
         /**
-         * Absent quote carrying its own line break.
+         Absent quote carrying its own line break.
          */
         const located = locateQuote({
           document: WRAPPED,
@@ -324,8 +324,8 @@ await describe({
       name: 'splits a block-crossing quote into one anchor per touched block',
       fn: async () => {
         /**
-         * Quote spanning the heading, the inter-block gap, and the
-         * following paragraph's opening characters.
+         Quote spanning the heading, the inter-block gap, and the
+         following paragraph's opening characters.
          */
         const quote = '## 猫的日常\n\n小猫';
         const located = locateQuote({

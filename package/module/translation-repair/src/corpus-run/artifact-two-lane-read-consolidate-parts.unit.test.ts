@@ -1,31 +1,31 @@
 /**
- * Tests for the leaf shapes one consolidated slice is built from.
- *
- * WHY THE SHIPPED FIELD IS STRICT AND THE OTHERS ARE NOT. Every other field
- * here is evidence ABOUT a decision; `shipped` is the decision's OUTPUT, and a
- * consumer writes its text into the document. So the terminal and the shipped
- * kind are checked against each other rather than read independently. A record
- * disagreeing with itself about that would either ship a passage nobody settled
- * on or silently drop one that was, and both are wrong at the page rather than
- * in a report.
- *
- * FOUR CASES MAKE THAT A TABLE rather than a rule: consolidated-with-text and
- * unchanged-without are the two agreements, and the two crossings are the two
- * refusals. A check reading either field alone would accept all four.
- *
- * WHY THE BALLOT'S EVIDENCE FIELDS ARE CHOICES AND NOT PROSE. `#164` found the
- * gate shipping a rendering its own ballots named faultier, because nothing
- * counted them. A name outside the three would be counted as nothing and would
- * weaken that evidence silently, so the lists are parsed as names rather than
- * as strings.
- *
- * `artifact-two-lane-read-consolidate.ts` is the only caller, and it asks these
- * about whole valid artifacts. Every refusal here is a branch no valid fixture
- * reaches.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the leaf shapes one consolidated slice is built from.
+ 
+ WHY THE SHIPPED FIELD IS STRICT AND THE OTHERS ARE NOT. Every other field
+ here is evidence ABOUT a decision; `shipped` is the decision's OUTPUT, and a
+ consumer writes its text into the document. So the terminal and the shipped
+ kind are checked against each other rather than read independently. A record
+ disagreeing with itself about that would either ship a passage nobody settled
+ on or silently drop one that was, and both are wrong at the page rather than
+ in a report.
+ 
+ FOUR CASES MAKE THAT A TABLE rather than a rule: consolidated-with-text and
+ unchanged-without are the two agreements, and the two crossings are the two
+ refusals. A check reading either field alone would accept all four.
+ 
+ WHY THE BALLOT'S EVIDENCE FIELDS ARE CHOICES AND NOT PROSE. `#164` found the
+ gate shipping a rendering its own ballots named faultier, because nothing
+ counted them. A name outside the three would be counted as nothing and would
+ weaken that evidence silently, so the lists are parsed as names rather than
+ as strings.
+ 
+ `artifact-two-lane-read-consolidate.ts` is the only caller, and it asks these
+ about whole valid artifacts. Every refusal here is a branch no valid fixture
+ reaches.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -44,41 +44,41 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Dotted path the cases hand in, standing for one slice's field.
+ Dotted path the cases hand in, standing for one slice's field.
  */
 const SLICE_PATH = 'consolidation.slices[0].shipped';
 
 /**
- * Wording a consolidated slice ships.
+ Wording a consolidated slice ships.
  */
 const SHIPPED_SILL = 'The cat naps on the windowsill.';
 
 /**
- * Terminal saying this slice replaces what stood, which is the ONLY one that
- * carries text.
+ Terminal saying this slice replaces what stood, which is the ONLY one that
+ carries text.
  */
 const CONSOLIDATED: ArtifactConsolidationTerminal = 'consolidated';
 
 /**
- * Terminal saying the slate was judged and the standing text kept, which is one
- * of the eight that carry none.
+ Terminal saying the slate was judged and the standing text kept, which is one
+ of the eight that carry none.
  */
 const KEPT_STANDING: ArtifactConsolidationTerminal = 'slate-endorsed-standing';
 
 /**
- * Model that wrote a verdict, from the roster rather than invented.
+ Model that wrote a verdict, from the roster rather than invented.
  */
 const VERDICT_MODEL = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
- * Ballot every gate case departs from one field at a time.
- *
- * @returns Ballot as the gate records one
- *
- * @example
- * ```ts
- * const ballot = validBallot();
- * ```
+ Ballot every gate case departs from one field at a time.
+ 
+ @returns Ballot as the gate records one
+ 
+ @example
+ ```ts
+ const ballot = validBallot();
+ ```
  */
 function validBallot(): Record<string, unknown> {
   return {
@@ -489,8 +489,8 @@ await describe({
         + 'a reader weighs a choice by',
       fn: async () => {
         /**
-         * Ballot built without a reason, which the parser reads as absent
-         * rather than as blank.
+         Ballot built without a reason, which the parser reads as absent
+         rather than as blank.
          */
         const {
           reason,

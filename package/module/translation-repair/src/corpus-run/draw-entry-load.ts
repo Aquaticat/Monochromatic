@@ -26,64 +26,64 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 // those decisions rest on, and the two are separately reviewable.
 
 /**
- * One settled entry: its parsed accepted issues and its size band.
+ One settled entry: its parsed accepted issues and its size band.
  */
 export type BandedEntry = {
   /**
-   * Entry id.
+   Entry id.
    */
   readonly id: string;
 
   /**
-   * Size band from the entry's zh source bytes.
+   Size band from the entry's zh source bytes.
    */
   readonly band: SizeBand;
 
   /**
-   * Accepted issues flattened into grading candidates.
+   Accepted issues flattened into grading candidates.
    */
   readonly candidates: readonly GradingCandidate[];
 };
 
 /**
- * One entry's share of a band, carried as a record rather than a formatted
- * string so the sort compares numbers instead of reparsing its own output.
+ One entry's share of a band, carried as a record rather than a formatted
+ string so the sort compares numbers instead of reparsing its own output.
  */
 export type EntryContribution = {
   /**
-   * Entry id.
+   Entry id.
    */
   readonly id: string;
 
   /**
-   * Candidates this entry contributes to the band.
+   Candidates this entry contributes to the band.
    */
   readonly count: number;
 };
 
 /**
- * Loads one artifact, reconciles its accepted count against the pipeline's own
- * tally, bands the entry, and flattens its accepted issues into candidates.
- *
- * @param artifactsDir - directory holding the artifact JSON files
- *
- * @param name - artifact file name
- *
- * @param eligible - resolved pool, whose recorded commit for this entry is
- * checked against the bytes actually read
- *
- * @returns The banded entry
- *
- * @throws {@link Error} when the parsed accepted count disagrees with the
- * artifact's recorded `acceptedCount`
- *
- * @throws ArtifactProvenanceError when the loaded bytes are not the entry the
- * pool admitted
- *
- * @example
- * ```ts
- * const entry = await loadEntry({ artifactsDir, name, eligible, },);
- * ```
+ Loads one artifact, reconciles its accepted count against the pipeline's own
+ tally, bands the entry, and flattens its accepted issues into candidates.
+ 
+ @param artifactsDir - directory holding the artifact JSON files
+ 
+ @param name - artifact file name
+ 
+ @param eligible - resolved pool, whose recorded commit for this entry is
+ checked against the bytes actually read
+ 
+ @returns The banded entry
+ 
+ @throws {@link Error} when the parsed accepted count disagrees with the
+ artifact's recorded `acceptedCount`
+ 
+ @throws ArtifactProvenanceError when the loaded bytes are not the entry the
+ pool admitted
+ 
+ @example
+ ```ts
+ const entry = await loadEntry({ artifactsDir, name, eligible, },);
+ ```
  */
 export async function loadEntry(
   {
@@ -97,7 +97,7 @@ export async function loadEntry(
   },
 ): Promise<BandedEntry> {
   /**
-   * Raw artifact JSON, untyped until parsed.
+   Raw artifact JSON, untyped until parsed.
    */
   const raw: unknown = await readRunJson({
     path: join(
@@ -107,12 +107,12 @@ export async function loadEntry(
   },);
 
   /**
-   * Parsed accepted issues for this entry.
+   Parsed accepted issues for this entry.
    */
   const parsed = parseSettledArtifact({ value: raw, },);
 
   /**
-   * Entry id the pool keyed this file by, which is its file name.
+   Entry id the pool keyed this file by, which is its file name.
    */
   const keyedId = name.slice(
     0,
@@ -120,13 +120,13 @@ export async function loadEntry(
   );
 
   /**
-   * Commit the pool recorded for this file, absent when it placed no tip.
+   Commit the pool recorded for this file, absent when it placed no tip.
    */
   const expectedTip = eligible.tipByEntry
     .get(keyedId,);
 
   /**
-   * Built pipeline the pool recorded for this file, absent when it placed none.
+   Built pipeline the pool recorded for this file, absent when it placed none.
    */
   const expectedDigest = eligible.digestByEntry
     .get(keyedId,);
@@ -166,7 +166,7 @@ export async function loadEntry(
     },);
 
   /**
-   * The accepted count the pipeline recorded when it wrote the artifact.
+   The accepted count the pipeline recorded when it wrote the artifact.
    */
   const declaredAccepted = raw.acceptedCount;
   if ((typeof declaredAccepted) !== 'number')
@@ -191,7 +191,7 @@ export async function loadEntry(
     },);
 
   /**
-   * The entry's zh source at the pinned corpus commit.
+   The entry's zh source at the pinned corpus commit.
    */
   const source = await readCorpusFile({
     pin: RUN_CORPUS_PIN,
@@ -199,7 +199,7 @@ export async function loadEntry(
   },);
 
   /**
-   * Size band from the source's UTF-8 byte length.
+   Size band from the source's UTF-8 byte length.
    */
   const band = classifyBand({ sourceBytes: sourceBytesOf({ text: source, },), },);
 
@@ -209,8 +209,8 @@ export async function loadEntry(
     candidates: parsed.acceptedIssues
       .map(function toCandidate(accepted,) {
         /**
-         * What the artifact recorded about this issue's repair, which is a
-         * named absence on an artifact written before repair recording.
+         What the artifact recorded about this issue's repair, which is a
+         named absence on an artifact written before repair recording.
          */
         const reading = accepted.repair;
 

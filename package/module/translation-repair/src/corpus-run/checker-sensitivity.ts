@@ -33,12 +33,12 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // nothing is written.
 
 /**
- * Original the checkers judge against.
+ Original the checkers judge against.
  */
 const SOURCE_TEXT = '猫猫在窗台上睡觉，太阳移动时她会醒来。';
 
 /**
- * Accepted issue every case asks about: the progressive gloss.
+ Accepted issue every case asks about: the progressive gloss.
  */
 const TENSE_ISSUE: AdjudicatedIssue = {
   issueId: 'adjudicated/tense',
@@ -59,23 +59,23 @@ const TENSE_ISSUE: AdjudicatedIssue = {
 };
 
 /**
- * Translation carrying the defect, used as the baseline for every case.
+ Translation carrying the defect, used as the baseline for every case.
  */
 const DEFECTIVE_TEXT = 'The cat is doing the sleeping on the windowsill, and she wakes when the sun moves.';
 
 /**
- * Asks the checkers about one candidate and reports the tally.
- *
- * @param label - case name for the verdict line
- *
- * @param patchedText - candidate the checkers judge
- *
- * @param expectation - what a discriminating checker should answer
- *
- * @example
- * ```ts
- * await checkOne({ label: 'unfixed', patchedText: DEFECTIVE_TEXT, expectation: 'not-fixed', },);
- * ```
+ Asks the checkers about one candidate and reports the tally.
+ 
+ @param label - case name for the verdict line
+ 
+ @param patchedText - candidate the checkers judge
+ 
+ @param expectation - what a discriminating checker should answer
+ 
+ @example
+ ```ts
+ await checkOne({ label: 'unfixed', patchedText: DEFECTIVE_TEXT, expectation: 'not-fixed', },);
+ ```
  */
 async function checkOne(
   {
@@ -89,7 +89,7 @@ async function checkOne(
   },
 ): Promise<void> {
   /**
-   * Checker result for this single issue.
+   Checker result for this single issue.
    */
   const checker = await runCheckerStage({
     client: createRunClient(),
@@ -104,7 +104,7 @@ async function checkOne(
   },);
 
   /**
-   * Tally for the single issue.
+   Tally for the single issue.
    */
   const tally = checker.tallies[TENSE_ISSUE.issueId];
 
@@ -120,7 +120,7 @@ async function checkOne(
 }
 
 /**
- * Second accepted issue of the mixed sheet: a genuine mistranslation.
+ Second accepted issue of the mixed sheet: a genuine mistranslation.
  */
 const MEANING_ISSUE: AdjudicatedIssue = {
   issueId: 'adjudicated/meaning',
@@ -141,12 +141,12 @@ const MEANING_ISSUE: AdjudicatedIssue = {
 };
 
 /**
- * Third accepted issue of the mixed sheet: a fabricated defect that is not in
- * the text at all.
- *
- * Nothing in either version mentions a dog. A checker reading the revision can
- * only answer `not-fixed` or refuse; one that answers `fixed` is agreeing with
- * the sheet rather than reading.
+ Third accepted issue of the mixed sheet: a fabricated defect that is not in
+ the text at all.
+ 
+ Nothing in either version mentions a dog. A checker reading the revision can
+ only answer `not-fixed` or refuse; one that answers `fixed` is agreeing with
+ the sheet rather than reading.
  */
 const ABSENT_ISSUE: AdjudicatedIssue = {
   issueId: 'adjudicated/absent',
@@ -167,29 +167,29 @@ const ABSENT_ISSUE: AdjudicatedIssue = {
 };
 
 /**
- * Asks the checkers about a SHEET of issues at once, as production does.
- *
- * The single-issue cases establish that the stage can discriminate at all. This
- * one asks whether it still discriminates when the sheet is mixed, which is the
- * only shape the 98.1 percent rate was ever measured on: production passes
- * every accepted issue of a chunk in one call, so a checker that keeps up on
- * one issue and agrees with everything on seven would produce that rate while
- * proving nothing.
- *
- * @example
- * ```ts
- * await checkMixedSheet();
- * ```
+ Asks the checkers about a SHEET of issues at once, as production does.
+ 
+ The single-issue cases establish that the stage can discriminate at all. This
+ one asks whether it still discriminates when the sheet is mixed, which is the
+ only shape the 98.1 percent rate was ever measured on: production passes
+ every accepted issue of a chunk in one call, so a checker that keeps up on
+ one issue and agrees with everything on seven would produce that rate while
+ proving nothing.
+ 
+ @example
+ ```ts
+ await checkMixedSheet();
+ ```
  */
 async function checkMixedSheet(): Promise<void> {
   /**
-   * Candidate fixing the tense only: the meaning defect survives untouched and
-   * the fabricated one was never there.
+   Candidate fixing the tense only: the meaning defect survives untouched and
+   the fabricated one was never there.
    */
   const patchedText = 'The cat sleeps on the windowsill, and she sleeps on through the sun moving.';
 
   /**
-   * Checker result over the mixed sheet.
+   Checker result over the mixed sheet.
    */
   const checker = await runCheckerStage({
     client: createRunClient(),
@@ -225,7 +225,7 @@ async function checkMixedSheet(): Promise<void> {
     ],
   ] as const) {
     /**
-     * Tally for this issue of the sheet.
+     Tally for this issue of the sheet.
      */
     const tally = checker.tallies[issueId];
     console.log(
@@ -239,29 +239,29 @@ async function checkMixedSheet(): Promise<void> {
 }
 
 /**
- * Asks the checkers about a sheet of three issues that were ALL fixed.
- *
- * Isolates the variable the mixed sheet left confounded. That sheet changed two
- * things at once against the single-issue case: it grew to three issues AND its
- * candidate carried a loud unfixed defect, so under-crediting there could have
- * come from either. Here the sheet is the same size and every issue really is
- * repaired. Continued under-crediting indicts SHEET SIZE; correct crediting
- * points at contamination from the unfixed defect instead.
- *
- * @example
- * ```ts
- * await checkAllFixedSheet();
- * ```
+ Asks the checkers about a sheet of three issues that were ALL fixed.
+ 
+ Isolates the variable the mixed sheet left confounded. That sheet changed two
+ things at once against the single-issue case: it grew to three issues AND its
+ candidate carried a loud unfixed defect, so under-crediting there could have
+ come from either. Here the sheet is the same size and every issue really is
+ repaired. Continued under-crediting indicts SHEET SIZE; correct crediting
+ points at contamination from the unfixed defect instead.
+ 
+ @example
+ ```ts
+ await checkAllFixedSheet();
+ ```
  */
 async function checkAllFixedSheet(): Promise<void> {
   /**
-   * Candidate repairing all three stated defects.
+   Candidate repairing all three stated defects.
    */
   const patchedText = 'The cat sleeps on the windowsill, she wakes when the sun moves, '
     + 'and a dog barks in the garden.';
 
   /**
-   * Checker result over the all-fixed sheet.
+   Checker result over the all-fixed sheet.
    */
   const checker = await runCheckerStage({
     client: createRunClient(),
@@ -285,7 +285,7 @@ async function checkAllFixedSheet(): Promise<void> {
     ABSENT_ISSUE,
   ]) {
     /**
-     * Tally for this issue of the sheet.
+     Tally for this issue of the sheet.
      */
     const tally = checker.tallies[issue.issueId];
     console.log(
@@ -299,13 +299,13 @@ async function checkAllFixedSheet(): Promise<void> {
 }
 
 /**
- * Runs the three cases that separate a discriminating checker from a
- * rubber-stamping one.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Runs the three cases that separate a discriminating checker from a
+ rubber-stamping one.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   // Sequential so this never competes with a running corpus pass for the

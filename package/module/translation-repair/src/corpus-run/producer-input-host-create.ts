@@ -11,27 +11,27 @@ import type { ProducerInputHost, } from './producer-input-host-init.ts';
 import { writeProducerInputControl, } from './producer-input-run.ts';
 
 /**
- * Native container IDs are canonical lowercase hexadecimal strings.
+ Native container IDs are canonical lowercase hexadecimal strings.
  */
 const CONTAINER_ID_WIDTH = 64;
 
 /**
- * Reads only the ID returned by the successful create operation, not a name-based ownership guess.
- *
- * @param text - bounded native creation stdout
- *
- * @returns Canonical container identity
- *
- * @throws ProducerInputRunError when native output cannot identify one created container
- *
- * @example
- * ```ts
- * const id = createdContainerId(text);
- * ```
+ Reads only the ID returned by the successful create operation, not a name-based ownership guess.
+ 
+ @param text - bounded native creation stdout
+ 
+ @returns Canonical container identity
+ 
+ @throws ProducerInputRunError when native output cannot identify one created container
+ 
+ @example
+ ```ts
+ const id = createdContainerId(text);
+ ```
  */
 function createdContainerId(text: string): string {
   /**
-   * Podman's printed line terminator is not part of the container identity.
+   Podman's printed line terminator is not part of the container identity.
    */
   const id = text.endsWith('\n') ? text.slice(
     0,
@@ -53,21 +53,21 @@ function createdContainerId(text: string): string {
 }
 
 /**
- * Verifies the exact local image and creates a stopped container before any child Node execution.
- * A failed or ambiguous creation leaves evidence for reconciliation, never name-based removal of another container.
- *
- * @param host - initialized cross-bound host owner
- *
- * @param signal - host interruption
- *
- * @returns Identity confirmed by creation stdout and its exclusive cidfile
- *
- * @throws ProducerInputRunError when image or creation evidence differs
- *
- * @example
- * ```ts
- * const id = await createProducerInputContainer({ host, signal });
- * ```
+ Verifies the exact local image and creates a stopped container before any child Node execution.
+ A failed or ambiguous creation leaves evidence for reconciliation, never name-based removal of another container.
+ 
+ @param host - initialized cross-bound host owner
+ 
+ @param signal - host interruption
+ 
+ @returns Identity confirmed by creation stdout and its exclusive cidfile
+ 
+ @throws ProducerInputRunError when image or creation evidence differs
+ 
+ @example
+ ```ts
+ const id = await createProducerInputContainer({ host, signal });
+ ```
  */
 export async function createProducerInputContainer({
   host,
@@ -91,7 +91,7 @@ export async function createProducerInputContainer({
       signal
     });
     /**
-     * This projection contains no image environment values or unrelated metadata.
+     This projection contains no image environment values or unrelated metadata.
      */
     const image = await readProducerInputCommand({
       host,
@@ -110,7 +110,7 @@ export async function createProducerInputContainer({
       signal
     });
     /**
-     * Successful native creation output identifies only this run's container.
+     Successful native creation output identifies only this run's container.
      */
     const id = createdContainerId(await readProducerInputCommand({
       host,

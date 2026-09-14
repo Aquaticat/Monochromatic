@@ -1,13 +1,13 @@
 /**
- * Tests for the assembly-time footnote guard.
- *
- * What this covers that no per-slice check can: a footnote is a relation
- * BETWEEN slices, so a candidate that drops, renames or invents a marker
- * validates perfectly inside its own slice and breaks the document.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the assembly-time footnote guard.
+ 
+ What this covers that no per-slice check can: a footnote is a relation
+ BETWEEN slices, so a candidate that drops, renames or invents a marker
+ validates perfectly inside its own slice and breaks the document.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -28,9 +28,9 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original document: three sections, so the reference, the unrelated prose and
- * the definition each land in their OWN slice. A footnote that fits inside one
- * slice is not the case this guard exists for.
+ Original document: three sections, so the reference, the unrelated prose and
+ the definition each land in their OWN slice. A footnote that fits inside one
+ slice is not the case this guard exists for.
  */
 const SOURCE_TEXT = `## 猫
 
@@ -46,8 +46,8 @@ const SOURCE_TEXT = `## 猫
 `;
 
 /**
- * Translation as it stands, with the footnote pair intact and split the same
- * way.
+ Translation as it stands, with the footnote pair intact and split the same
+ way.
  */
 const TARGET_TEXT = `## The cat
 
@@ -63,16 +63,16 @@ On the windowsill there is being a bird.
 `;
 
 /**
- * Prepares the fixture pair and returns its slices.
- *
- * @param targetText - translation to prepare against the fixture original
- *
- * @returns Slices in document order
- *
- * @example
- * ```ts
- * const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
- * ```
+ Prepares the fixture pair and returns its slices.
+ 
+ @param targetText - translation to prepare against the fixture original
+ 
+ @returns Slices in document order
+ 
+ @example
+ ```ts
+ const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
+ ```
  */
 function fixtureSlices({ targetText, }: { readonly targetText: string; },) {
   return prepareDocumentPair({
@@ -82,18 +82,18 @@ function fixtureSlices({ targetText, }: { readonly targetText: string; },) {
 }
 
 /**
- * Chunk index of the slice whose incumbent text contains a needle.
- *
- * @param slices - prepared slices
- *
- * @param needle - text that slice carries
- *
- * @returns Chunk index of the first slice carrying it
- *
- * @example
- * ```ts
- * const index = sliceCarrying({ slices, needle: '[^1]:', },);
- * ```
+ Chunk index of the slice whose incumbent text contains a needle.
+ 
+ @param slices - prepared slices
+ 
+ @param needle - text that slice carries
+ 
+ @returns Chunk index of the first slice carrying it
+ 
+ @example
+ ```ts
+ const index = sliceCarrying({ slices, needle: '[^1]:', },);
+ ```
  */
 function sliceCarrying(
   {
@@ -110,7 +110,7 @@ function sliceCarrying(
   },
 ): number {
   /**
-   * First slice whose incumbent carries the needle.
+   First slice whose incumbent carries the needle.
    */
   const found = slices.find(function carries(slice,): boolean {
     return slice.target
@@ -124,17 +124,17 @@ function sliceCarrying(
 }
 
 /**
- * Chunk indices in ascending order, so a comparison says which slices were
- * withdrawn rather than which round withdrew them.
- *
- * @param indices - chunk indices in withdrawal order
- *
- * @returns Same indices, ascending
- *
- * @example
- * ```ts
- * expect(byIndex({ indices: guarded.revertedChunkIndices, },),).toEqual([0, 1,],);
- * ```
+ Chunk indices in ascending order, so a comparison says which slices were
+ withdrawn rather than which round withdrew them.
+ 
+ @param indices - chunk indices in withdrawal order
+ 
+ @returns Same indices, ascending
+ 
+ @example
+ ```ts
+ expect(byIndex({ indices: guarded.revertedChunkIndices, },),).toEqual([0, 1,],);
+ ```
  */
 function byIndex(
   { indices, }: { readonly indices: readonly number[]; },
@@ -199,7 +199,7 @@ await describe({
         }\n`;
 
         /**
-         * Original the same shape, since preparation pairs them by structure.
+         Original the same shape, since preparation pairs them by structure.
          */
         const sourceText = `${
           Array.from(
@@ -215,7 +215,7 @@ await describe({
         }\n`;
 
         /**
-         * Slices of a document long enough to subdivide.
+         Slices of a document long enough to subdivide.
          */
         const { slices, } = prepareDocumentPair({
           sourceText,
@@ -239,7 +239,7 @@ await describe({
         ),).toBe('\n\n',);
 
         /**
-         * Paragraphs of the later slice, whose first one moves back.
+         Paragraphs of the later slice, whose first one moves back.
          */
         const [moved, ...kept] = second.target
           .text
@@ -247,8 +247,8 @@ await describe({
         expect(kept.length,).toBeGreaterThan(0,);
 
         /**
-         * Both slices rewritten, each differing from its own incumbent, with
-         * one paragraph reassigned from the later to the earlier.
+         Both slices rewritten, each differing from its own incumbent, with
+         one paragraph reassigned from the later to the earlier.
          */
         const replacements = [
           {
@@ -267,7 +267,7 @@ await describe({
         ];
         for (const replacement of replacements) {
           /**
-           * Slice this replacement rewrites.
+           Slice this replacement rewrites.
            */
           const slice = slices.find(function names(candidate,): boolean {
             return candidate.target
@@ -305,7 +305,7 @@ await describe({
         + 'and must not acquire a finding saying something was withdrawn',
       fn: async () => {
         /**
-         * Slices of the fixture pair.
+         Slices of the fixture pair.
          */
         const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
         const guarded = guardFootnoteAssembly({
@@ -324,12 +324,12 @@ await describe({
         + 'is the ordinary case and the one a guard must not tax',
       fn: async () => {
         /**
-         * Slices of the fixture pair.
+         Slices of the fixture pair.
          */
         const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
 
         /**
-         * Replacement that renders the same footnote reference.
+         Replacement that renders the same footnote reference.
          */
         const guarded = guardFootnoteAssembly({
           targetText: TARGET_TEXT,
@@ -357,12 +357,12 @@ await describe({
         + 'well, and the marker it lost belongs to a line in another slice',
       fn: async () => {
         /**
-         * Slices of the fixture pair.
+         Slices of the fixture pair.
          */
         const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
 
         /**
-         * Index of the slice carrying the reference.
+         Index of the slice carrying the reference.
          */
         const referring = sliceCarrying({
           slices,
@@ -370,7 +370,7 @@ await describe({
         },);
 
         /**
-         * Assembly where the reference was translated away.
+         Assembly where the reference was translated away.
          */
         const guarded = guardFootnoteAssembly({
           targetText: TARGET_TEXT,
@@ -398,12 +398,12 @@ await describe({
         + 'a reference with no note that way)',
       fn: async () => {
         /**
-         * Archive whose body refers to a note it never defines.
+         Archive whose body refers to a note it never defines.
          */
         const referring = 'The cat naps on the windowsill[^1].\n';
 
         /**
-         * One content slice plus the anchor where the notes belong.
+         One content slice plus the anchor where the notes belong.
          */
         const slices: readonly ChunkPair[] = [
           {
@@ -469,12 +469,12 @@ await describe({
         + 'hakureico pass of 2026-09-09 withdrew both notes and the reference over it)',
       fn: async () => {
         /**
-         * Archive whose body refers to a note it never defines.
+         Archive whose body refers to a note it never defines.
          */
         const referring = 'The cat naps on the windowsill[^1].\n';
 
         /**
-         * One content slice plus the anchor where the notes belong.
+         One content slice plus the anchor where the notes belong.
          */
         const slices: readonly ChunkPair[] = [
           {
@@ -533,12 +533,12 @@ await describe({
         + 'would ship a text nobody judged',
       fn: async () => {
         /**
-         * Slices of the fixture pair.
+         Slices of the fixture pair.
          */
         const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
 
         /**
-         * Index of the slice carrying the reference.
+         Index of the slice carrying the reference.
          */
         const referring = sliceCarrying({
           slices,
@@ -567,12 +567,12 @@ await describe({
         + 'whose only reference went with it',
       fn: async () => {
         /**
-         * Slices of the fixture pair.
+         Slices of the fixture pair.
          */
         const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
 
         /**
-         * Slice that referred to the footnote, and now renumbers it.
+         Slice that referred to the footnote, and now renumbers it.
          */
         const referring = sliceCarrying({
           slices,
@@ -580,7 +580,7 @@ await describe({
         },);
 
         /**
-         * Slice with no footnote of its own, which gains the definition.
+         Slice with no footnote of its own, which gains the definition.
          */
         const bird = sliceCarrying({
           slices,
@@ -588,8 +588,8 @@ await describe({
         },);
 
         /**
-         * Assembly where one slice renumbered its reference and another
-         * supplied the matching definition.
+         Assembly where one slice renumbered its reference and another
+         supplied the matching definition.
          */
         const guarded = guardFootnoteAssembly({
           targetText: TARGET_TEXT,
@@ -621,12 +621,12 @@ await describe({
         + 'landing together leave the graph whole',
       fn: async () => {
         /**
-         * Slices of the fixture pair.
+         Slices of the fixture pair.
          */
         const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
 
         /**
-         * Slice gaining a reference, and the one gaining its definition.
+         Slice gaining a reference, and the one gaining its definition.
          */
         const bird = sliceCarrying({
           slices,
@@ -634,7 +634,7 @@ await describe({
         },);
 
         /**
-         * Assembly introducing a complete new pair.
+         Assembly introducing a complete new pair.
          */
         const guarded = guardFootnoteAssembly({
           targetText: TARGET_TEXT,
@@ -660,13 +660,13 @@ await describe({
         + 'knowingly broke is worse than shipping the archive',
       fn: async () => {
         /**
-         * Slices of the fixture pair.
+         Slices of the fixture pair.
          */
         const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
 
         /**
-         * Assembly whose prose opens a comment it never closes, hiding the
-         * definition that follows it in another slice.
+         Assembly whose prose opens a comment it never closes, hiding the
+         definition that follows it in another slice.
          */
         const guarded = guardFootnoteAssembly({
           targetText: TARGET_TEXT,
@@ -698,10 +698,10 @@ await describe({
         + 'innocent repair in another slice as well',
       fn: async () => {
         /**
-         * Translation whose footnote is labelled by a word, spelled one way at
-         * the reference and another at the definition. The parser reads them as
-         * one footnote, which is exactly what makes the two spellings a hazard
-         * rather than a broken document.
+         Translation whose footnote is labelled by a word, spelled one way at
+         the reference and another at the definition. The parser reads them as
+         one footnote, which is exactly what makes the two spellings a hazard
+         rather than a broken document.
          */
         const wordLabelled = TARGET_TEXT.replace(
           '[^1].',
@@ -713,14 +713,14 @@ await describe({
           );
 
         /**
-         * Slices of the fixture pair, prepared against the word-labelled
-         * translation.
+         Slices of the fixture pair, prepared against the word-labelled
+         translation.
          */
         const slices = fixtureSlices({ targetText: wordLabelled, },);
 
         /**
-         * Assembly where one replacement drops the reference and another,
-         * touching no footnote at all, tidies an unrelated slice.
+         Assembly where one replacement drops the reference and another,
+         touching no footnote at all, tidies an unrelated slice.
          */
         const guarded = guardFootnoteAssembly({
           targetText: wordLabelled,
@@ -779,7 +779,7 @@ await describe({
         + 'no replacement is reverted for it',
       fn: async () => {
         /**
-         * Translation whose footnote definition is already orphaned.
+         Translation whose footnote definition is already orphaned.
          */
         const orphaned = `## The cat
 
@@ -795,12 +795,12 @@ On the windowsill there is being a bird.
 `;
 
         /**
-         * Slices of that pair.
+         Slices of that pair.
          */
         const slices = fixtureSlices({ targetText: orphaned, },);
 
         /**
-         * Assembly that changes prose and leaves the orphan alone.
+         Assembly that changes prose and leaves the orphan alone.
          */
         const guarded = guardFootnoteAssembly({
           targetText: orphaned,
@@ -829,12 +829,12 @@ On the windowsill there is being a bird.
         + 'before calling, so what this covers is every caller that does not',
       fn: async () => {
         /**
-         * Slices of the fixture pair.
+         Slices of the fixture pair.
          */
         const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
 
         /**
-         * Slice whose incumbent the replacement will repeat.
+         Slice whose incumbent the replacement will repeat.
          */
         const repeated = slices.find(function isBirdSlice(slice,): boolean {
           return slice.target
@@ -845,7 +845,7 @@ On the windowsill there is being a bird.
           throw new Error('fixture lost its bird slice',);
 
         /**
-         * Failure the guard raised.
+         Failure the guard raised.
          */
         let caught: unknown;
         try {
@@ -879,15 +879,15 @@ On the windowsill there is being a bird.
         + 'unknown until the next round',
       fn: async () => {
         /**
-         * Slices of the fixture pair.
+         Slices of the fixture pair.
          */
         const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
 
         /**
-         * Assembly whose one replacement drops the footnote reference AND opens
-         * an MDX expression it never closes: the footnote names an identifier
-         * this slice stopped mentioning, so attribution succeeds and the
-         * blanket-withdrawal branch never runs.
+         Assembly whose one replacement drops the footnote reference AND opens
+         an MDX expression it never closes: the footnote names an identifier
+         this slice stopped mentioning, so attribution succeeds and the
+         blanket-withdrawal branch never runs.
          */
         const guarded = guardFootnoteAssembly({
           targetText: TARGET_TEXT,
@@ -929,18 +929,18 @@ await describe({
         + 'rather than set-differencing was for',
       fn: async () => {
         /**
-         * Archive already defining one identifier twice, which is one defect.
+         Archive already defining one identifier twice, which is one defect.
          */
         const incumbentText = 'Mittens naps.[^1]\n\n[^1]: Since spring.\n\n[^1]: Since the spring.';
 
         /**
-         * Assembly defining it a third time, which is two defects of that key.
+         Assembly defining it a third time, which is two defects of that key.
          */
         const assembledText =
           'Mittens naps.[^1]\n\n[^1]: Since spring.\n\n[^1]: Since the spring.\n\n[^1]: Every spring.';
 
         /**
-         * Defects the assembly added beyond what the archive carried.
+         Defects the assembly added beyond what the archive carried.
          */
         const introduced = introducedFootnoteFindings({
           incumbentText,
@@ -957,7 +957,7 @@ await describe({
         + 'which is the control that makes the case above a count rather than an alarm on any defect',
       fn: async () => {
         /**
-         * Same duplicated identifier on both sides, carried through unchanged.
+         Same duplicated identifier on both sides, carried through unchanged.
          */
         const carried = 'Mittens naps.[^1]\n\n[^1]: Since spring.\n\n[^1]: Since the spring.';
 

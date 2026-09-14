@@ -1,8 +1,8 @@
 /**
- * Protects explicit source line breaks where no archive rendering exists.
- * Cat fixtures reproduce Mio10's source-only poem without corpus wording.
- *
- * @module
+ Protects explicit source line breaks where no archive rendering exists.
+ Cat fixtures reproduce Mio10's source-only poem without corpus wording.
+ 
+ @module
  */
 
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';

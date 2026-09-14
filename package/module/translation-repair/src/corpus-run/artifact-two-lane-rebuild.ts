@@ -28,85 +28,85 @@ import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.t
 // mismatch beside a named gap is not evidence that the slicing moved.
 
 /**
- * One half of the pairing recipe a settled artifact may fail to record.
- *
- * @example
- * ```ts
- * const gap: RecipeHalf = 'sectionPairing';
- * ```
+ One half of the pairing recipe a settled artifact may fail to record.
+ 
+ @example
+ ```ts
+ const gap: RecipeHalf = 'sectionPairing';
+ ```
  */
 export type RecipeHalf = 'sectionPairing' | 'blockPairing';
 
 /**
- * The pairing recipe an artifact records, as the inputs `prepareDocumentPair`
- * consumes, beside the halves the file does not record.
- *
- * @example
- * ```ts
- * const { sectionPairing, blockPairings, unrecorded, } = recipeOf({ artifact, },);
- * ```
+ The pairing recipe an artifact records, as the inputs `prepareDocumentPair`
+ consumes, beside the halves the file does not record.
+ 
+ @example
+ ```ts
+ const { sectionPairing, blockPairings, unrecorded, } = recipeOf({ artifact, },);
+ ```
  */
 export type PairingRecipe = {
   /**
-   * Section pairing to supply, present only when the file records one as
-   * supplied.
+   Section pairing to supply, present only when the file records one as
+   supplied.
    */
   readonly sectionPairing?: readonly SectionPair[];
 
   /**
-   * Block pairings keyed by aligned section index, present only when the file
-   * records them.
+   Block pairings keyed by aligned section index, present only when the file
+   records them.
    */
   readonly blockPairings?: ReadonlyMap<number, readonly BlockPair[]>;
 
   /**
-   * Recipe halves the artifact does not record, each to be rebuilt as the
-   * deterministic default; empty when the recipe is complete.
+   Recipe halves the artifact does not record, each to be rebuilt as the
+   deterministic default; empty when the recipe is complete.
    */
   readonly unrecorded: readonly RecipeHalf[];
 };
 
 /**
- * A preparation carved from an artifact's recorded recipe, beside what the
- * recipe was missing.
- *
- * @example
- * ```ts
- * const { prepared, unrecorded, } = rebuildPreparation({ artifact, sourceText, targetText, },);
- * ```
+ A preparation carved from an artifact's recorded recipe, beside what the
+ recipe was missing.
+ 
+ @example
+ ```ts
+ const { prepared, unrecorded, } = rebuildPreparation({ artifact, sourceText, targetText, },);
+ ```
  */
 export type RebuiltPreparation = {
   /**
-   * Slicing carved over the two texts with every recorded recipe half applied.
+   Slicing carved over the two texts with every recorded recipe half applied.
    */
   readonly prepared: PreparedDocumentPair;
 
   /**
-   * Recipe halves the artifact does not record, each rebuilt as the
-   * deterministic default; empty when the recipe is complete and the rebuild
-   * is the run's own carve.
+   Recipe halves the artifact does not record, each rebuilt as the
+   deterministic default; empty when the recipe is complete and the rebuild
+   is the run's own carve.
    */
   readonly unrecorded: readonly RecipeHalf[];
 };
 
 /**
- * Turns a recorded section decider back into the list preparation consumed.
- *
- * @param artifact - parsed artifact
- *
- * @returns Pairs to supply, in a one-element list, or nothing when the
- * deterministic aligner decided or the file does not say
- *
- * @example
- * ```ts
- * const [sectionPairing,] = sectionPairingOf({ artifact, },);
- * ```
+ Turns a recorded section decider back into the list preparation consumed.
+ 
+ @param artifact - parsed artifact
+ 
+ @returns Pairs to supply, in a one-element list, or nothing when the
+ deterministic aligner decided or the file does not say
+ 
+ @example
+ ```ts
+ const [sectionPairing,] = sectionPairingOf({ artifact, },);
+ ```
  */
 function sectionPairingOf(
   { artifact, }: { readonly artifact: ParsedTwoLaneArtifact; },
 ): readonly (readonly SectionPair[])[] {
   /**
-   * What the artifact says about its sections.
+   What the artifact says about its sections.
    */
   const { sectionPairing, } = artifact.preparation;
   if (sectionPairing.kind !== 'supplied')
@@ -123,23 +123,23 @@ function sectionPairingOf(
 }
 
 /**
- * Turns a recorded block pairing back into the map preparation consumed.
- *
- * @param artifact - parsed artifact
- *
- * @returns Map keyed by aligned section index, in a one-element list, or
- * nothing when the file records no block pairing
- *
- * @example
- * ```ts
- * const [blockPairings,] = blockPairingsOf({ artifact, },);
- * ```
+ Turns a recorded block pairing back into the map preparation consumed.
+ 
+ @param artifact - parsed artifact
+ 
+ @returns Map keyed by aligned section index, in a one-element list, or
+ nothing when the file records no block pairing
+ 
+ @example
+ ```ts
+ const [blockPairings,] = blockPairingsOf({ artifact, },);
+ ```
  */
 function blockPairingsOf(
   { artifact, }: { readonly artifact: ParsedTwoLaneArtifact; },
 ): readonly ReadonlyMap<number, readonly BlockPair[]>[] {
   /**
-   * What the artifact says about its blocks.
+   What the artifact says about its blocks.
    */
   const { blockPairing, } = artifact.preparation;
   if (blockPairing.kind !== 'stored')
@@ -165,41 +165,41 @@ function blockPairingsOf(
 }
 
 /**
- * Reads the pairing recipe an artifact records, as preparation inputs.
- *
- * SEPARATE FROM THE REBUILD because the slice census walks alignment and
- * subdivision itself, for its section-level accounting, and needs the recipe
- * pieces rather than a finished preparation.
- *
- * @param artifact - parsed artifact naming the recipe
- *
- * @returns Recipe halves the file records, and the names of those it lacks
- *
- * @example
- * ```ts
- * const recipe = recipeOf({ artifact, },);
- * ```
+ Reads the pairing recipe an artifact records, as preparation inputs.
+ 
+ SEPARATE FROM THE REBUILD because the slice census walks alignment and
+ subdivision itself, for its section-level accounting, and needs the recipe
+ pieces rather than a finished preparation.
+ 
+ @param artifact - parsed artifact naming the recipe
+ 
+ @returns Recipe halves the file records, and the names of those it lacks
+ 
+ @example
+ ```ts
+ const recipe = recipeOf({ artifact, },);
+ ```
  */
 export function recipeOf(
   { artifact, }: { readonly artifact: ParsedTwoLaneArtifact; },
 ): PairingRecipe {
   /**
-   * Section pairing to supply, when one was recorded as supplied.
+   Section pairing to supply, when one was recorded as supplied.
    */
   const [sectionPairing,] = sectionPairingOf({ artifact, },);
 
   /**
-   * Block pairings to supply, when the file records them.
+   Block pairings to supply, when the file records them.
    */
   const [blockPairings,] = blockPairingsOf({ artifact, },);
 
   /**
-   * Halves the file does not say anything about.
+   Halves the file does not say anything about.
    */
   const unrecorded: RecipeHalf[] = [];
 
   /**
-   * What the artifact says about both halves, read once for the gap list.
+   What the artifact says about both halves, read once for the gap list.
    */
   const {
     sectionPairing: recordedSections,
@@ -217,20 +217,20 @@ export function recipeOf(
 }
 
 /**
- * Carves a document pair with the recipe a settled artifact records.
- *
- * @param artifact - parsed artifact naming the recipe
- *
- * @param sourceText - whole original, as read at the artifact's own commit
- *
- * @param targetText - whole translation, likewise
- *
- * @returns Preparation and the recipe halves that had to be defaulted
- *
- * @example
- * ```ts
- * const rebuilt = rebuildPreparation({ artifact, sourceText, targetText, },);
- * ```
+ Carves a document pair with the recipe a settled artifact records.
+ 
+ @param artifact - parsed artifact naming the recipe
+ 
+ @param sourceText - whole original, as read at the artifact's own commit
+ 
+ @param targetText - whole translation, likewise
+ 
+ @returns Preparation and the recipe halves that had to be defaulted
+ 
+ @example
+ ```ts
+ const rebuilt = rebuildPreparation({ artifact, sourceText, targetText, },);
+ ```
  */
 export function rebuildPreparation(
   {
@@ -244,7 +244,7 @@ export function rebuildPreparation(
   },
 ): RebuiltPreparation {
   /**
-   * Recipe the file records, and what it lacks.
+   Recipe the file records, and what it lacks.
    */
   const {
     sectionPairing,
@@ -252,9 +252,9 @@ export function rebuildPreparation(
     unrecorded,
   } = recipeOf({ artifact, },);
   /**
-   * Whose front matter the recorded slicing carried, read off the file and
-   * never recomputed: a later change to the rule must not re-slice an older
-   * file.
+   Whose front matter the recorded slicing carried, read off the file and
+   never recomputed: a later change to the rule must not re-slice an older
+   file.
    */
   const { frontMatterAuthority, } = artifact.preparation;
   return {

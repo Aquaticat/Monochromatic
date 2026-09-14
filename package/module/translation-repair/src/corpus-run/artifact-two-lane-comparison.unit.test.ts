@@ -1,19 +1,19 @@
 /**
- * Tests for version 2's own comparison rules.
- *
- * WHAT THESE PIN is what version 2 MEANS, which is a different question from
- * what the pipeline currently computes. The rules are duplicated from the live
- * comparator on purpose: the vocabulary froze the words a row may use and this
- * freezes how a row is decided, so a later change to the pipeline's verdicts
- * cannot reinterpret artifacts already on disk under an unchanged version.
- *
- * They also pin the pair the rules exist to keep apart, which equal text cannot:
- * a blank slice the archive does translate and a passage it never translated
- * both carry the empty string.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for version 2's own comparison rules.
+ 
+ WHAT THESE PIN is what version 2 MEANS, which is a different question from
+ what the pipeline currently computes. The rules are duplicated from the live
+ comparator on purpose: the vocabulary froze the words a row may use and this
+ freezes how a row is decided, so a later change to the pipeline's verdicts
+ cannot reinterpret artifacts already on disk under an unchanged version.
+ 
+ They also pin the pair the rules exist to keep apart, which equal text cannot:
+ a blank slice the archive does translate and a passage it never translated
+ both carry the empty string.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -37,36 +37,36 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive wording of the slice both lanes work on.
+ Archive wording of the slice both lanes work on.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
 /**
- * Original of that slice.
+ Original of that slice.
  */
 const SOURCE_NAP = '猫猫在窗台上睡觉。';
 
 /**
- * Builds one delivery row, defaulting everything a case does not care about.
- *
- * @param sliceIndex - slice this row is for
- *
- * @param incumbentKind - whether the archive holds wording here
- *
- * @param incumbentText - archive's own wording
- *
- * @param shippedText - what this lane's document carries
- *
- * @param outcome - what this lane did
- *
- * @param delivery - how the document came to carry what it carries
- *
- * @returns Row shaped as version 2 records one
- *
- * @example
- * ```ts
- * const row = row({ sliceIndex: 0, shippedText: ARCHIVE_NAP, },);
- * ```
+ Builds one delivery row, defaulting everything a case does not care about.
+ 
+ @param sliceIndex - slice this row is for
+ 
+ @param incumbentKind - whether the archive holds wording here
+ 
+ @param incumbentText - archive's own wording
+ 
+ @param shippedText - what this lane's document carries
+ 
+ @param outcome - what this lane did
+ 
+ @param delivery - how the document came to carry what it carries
+ 
+ @returns Row shaped as version 2 records one
+ 
+ @example
+ ```ts
+ const row = row({ sliceIndex: 0, shippedText: ARCHIVE_NAP, },);
+ ```
  */
 function deliveryRow(
   {
@@ -97,16 +97,16 @@ function deliveryRow(
 }
 
 /**
- * One row where the lane kept the archive's wording after examining it.
- *
- * @param sliceIndex - slice this row is for
- *
- * @returns Row carrying a decision that matches the archive
- *
- * @example
- * ```ts
- * const kept = keptArchive({ sliceIndex: 0, },);
- * ```
+ One row where the lane kept the archive's wording after examining it.
+ 
+ @param sliceIndex - slice this row is for
+ 
+ @returns Row carrying a decision that matches the archive
+ 
+ @example
+ ```ts
+ const kept = keptArchive({ sliceIndex: 0, },);
+ ```
  */
 function keptArchive({ sliceIndex, }: { readonly sliceIndex: number; },): ArtifactDeliveryRow {
   return deliveryRow({
@@ -123,18 +123,18 @@ function keptArchive({ sliceIndex, }: { readonly sliceIndex: number; },): Artifa
 }
 
 /**
- * One row where the lane shipped a replacement.
- *
- * @param sliceIndex - slice this row is for
- *
- * @param text - wording it shipped
- *
- * @returns Row carrying a shipped replacement
- *
- * @example
- * ```ts
- * const shipped = shippedText({ sliceIndex: 0, text: 'The cat naps.', },);
- * ```
+ One row where the lane shipped a replacement.
+ 
+ @param sliceIndex - slice this row is for
+ 
+ @param text - wording it shipped
+ 
+ @returns Row carrying a shipped replacement
+ 
+ @example
+ ```ts
+ const shipped = shippedText({ sliceIndex: 0, text: 'The cat naps.', },);
+ ```
  */
 function shipped(
   {
@@ -167,18 +167,18 @@ await describe({
         + 'joins on: neither moved, one moved, both moved to the same words, both moved to different ones',
       fn: async () => {
         /**
-         * Wording the repair lane shipped.
+         Wording the repair lane shipped.
          */
         const mended = 'The cat is asleep on the windowsill.';
 
         /**
-         * Wording the translate lane shipped where it differed.
+         Wording the translate lane shipped where it differed.
          */
         const fresh = 'The cat naps on the windowsill.';
 
         /**
-         * Four slices, one per verdict the rules can reach with an archive
-         * present.
+         Four slices, one per verdict the rules can reach with an archive
+         present.
          */
         const rows = compareLanes({
           repair: [
@@ -211,8 +211,8 @@ await describe({
         + 'second as the archive standing tells a reader a translation is being kept where none exists',
       fn: async () => {
         /**
-         * One anchor neither lane filled, and one blank slice the archive does
-         * hold.
+         One anchor neither lane filled, and one blank slice the archive does
+         hold.
          */
         const rows = compareLanes({
           repair: [
@@ -272,7 +272,7 @@ await describe({
         + 'never decided reads as not comparable rather than as the two having chosen differently',
       fn: async () => {
         /**
-         * One slice the repair lane heard nobody about.
+         One slice the repair lane heard nobody about.
          */
         const rows = compareLanes({
           repair: [
@@ -304,7 +304,7 @@ await describe({
         + 'things reading by position exists to catch',
       fn: async () => {
         /**
-         * What lengthsDiffer raised, read for its class as well as its wording.
+         What lengthsDiffer raised, read for its class as well as its wording.
          */
         const refusalOfLengthsDiffer = caught(function lengthsDiffer() {
           compareLanes({
@@ -320,7 +320,7 @@ await describe({
         expect((refusalOfLengthsDiffer as Error).message,).toContain('cover 2 and 1 slices',);
 
         /**
-         * What positionsDisagree raised, read for its class as well as its wording.
+         What positionsDisagree raised, read for its class as well as its wording.
          */
         const refusalOfPositionsDisagree = caught(function positionsDisagree() {
           compareLanes({
@@ -346,7 +346,7 @@ await describe({
         + 'reading different sentences',
       fn: async () => {
         /**
-         * What sourcesDisagree raised, read for its class as well as its wording.
+         What sourcesDisagree raised, read for its class as well as its wording.
          */
         const refusalOfSourcesDisagree = caught(function sourcesDisagree() {
           compareLanes({
@@ -370,7 +370,7 @@ await describe({
         + 'carry the same text, since that disagreement is exactly the pair equal text hides',
       fn: async () => {
         /**
-         * What kindsDisagree raised, read for its class as well as its wording.
+         What kindsDisagree raised, read for its class as well as its wording.
          */
         const refusalOfKindsDisagree = caught(function kindsDisagree() {
           compareLanes({
@@ -416,7 +416,7 @@ await describe({
         + 'the other while the pipeline`s rules and version 2`s rules still say the same thing',
       fn: async () => {
         /**
-         * One comparison, derived once.
+         One comparison, derived once.
          */
         const rows = compareLanes({
           repair: [keptArchive({ sliceIndex: 0, },),],
@@ -435,7 +435,7 @@ await describe({
         + 'changed the rules then decides whether version 2 changed with them',
       fn: async () => {
         /**
-         * What version 2's rules say about one kept slice.
+         What version 2's rules say about one kept slice.
          */
         const frozen = compareLanes({
           repair: [keptArchive({ sliceIndex: 0, },),],
@@ -443,8 +443,8 @@ await describe({
         },);
 
         /**
-         * The same rows with one lane relation changed, standing in for a pipeline
-         * whose rules have moved.
+         The same rows with one lane relation changed, standing in for a pipeline
+         whose rules have moved.
          */
         const live = frozen.map(function retitle(row,) {
           return {
@@ -453,7 +453,7 @@ await describe({
           };
         },);
         /**
-         * What derivationsDiffer raised, read for its class as well as its wording.
+         What derivationsDiffer raised, read for its class as well as its wording.
          */
         const refusalOfDerivationsDiffer = caught(function derivationsDiffer() {
           assertDerivationsAgree({
@@ -477,7 +477,7 @@ await describe({
         + 'calling that a changed rule would stop a pass over a difference no reader can see',
       fn: async () => {
         /**
-         * One comparison, derived once.
+         One comparison, derived once.
          */
         const frozen = compareLanes({
           repair: [keptArchive({ sliceIndex: 0, },),],
@@ -485,8 +485,8 @@ await describe({
         },);
 
         /**
-         * The same rows with every key written in the opposite order, standing
-         * in for rows read back off disk.
+         The same rows with every key written in the opposite order, standing
+         in for rows read back off disk.
          */
         const live = frozen.map(function reorderKeys(row,): ArtifactComparisonRow {
           return Object.fromEntries(
@@ -512,14 +512,14 @@ await describe({
         + 'before the row-by-row reading starts and reports the counts rather than a field',
       fn: async () => {
         /**
-         * One row, against nothing.
+         One row, against nothing.
          */
         const frozen = compareLanes({
           repair: [keptArchive({ sliceIndex: 0, },),],
           translate: [keptArchive({ sliceIndex: 0, },),],
         },);
         /**
-         * What lengthsDiffer raised, read for its class as well as its wording.
+         What lengthsDiffer raised, read for its class as well as its wording.
          */
         const refusalOfLengthsDiffer = caught(function lengthsDiffer() {
           assertDerivationsAgree({
@@ -636,7 +636,7 @@ await describe({
         + 'whichever one it is: a check reading only some fields would pass artifacts it should stop',
       fn: async () => {
         /**
-         * One row every case below changes exactly one field of.
+         One row every case below changes exactly one field of.
          */
         const [row,] = compareLanes({
           repair: [shipped({ sliceIndex: 0, text: 'The cat naps.', },),],
@@ -650,8 +650,8 @@ await describe({
         },),).toBe(true,);
 
         /**
-         * One altered row per field, each differing from `row` in that field
-         * alone.
+         One altered row per field, each differing from `row` in that field
+         alone.
          */
         const variants: readonly ArtifactComparisonRow[] = [
           {
@@ -722,7 +722,7 @@ await describe({
       name: 'NAMES no field for a row compared with itself',
       fn: async () => {
         /**
-         * Rows derived once from two agreeing ledgers.
+         Rows derived once from two agreeing ledgers.
          */
         const rows = compareLanes({
           repair: [keptArchive({ sliceIndex: 0, },),],
@@ -730,7 +730,7 @@ await describe({
         },);
         expect(rows.length,).toBe(1,);
         /**
-         * The one row.
+         The one row.
          */
         const row = rows[0] as ArtifactComparisonRow;
         expect(comparisonRowDifferences({
@@ -743,14 +743,14 @@ await describe({
       name: 'NAMES the one field a retitled row differs on, and nothing else',
       fn: async () => {
         /**
-         * Rows derived once from two agreeing ledgers.
+         Rows derived once from two agreeing ledgers.
          */
         const rows = compareLanes({
           repair: [keptArchive({ sliceIndex: 0, },),],
           translate: [keptArchive({ sliceIndex: 0, },),],
         },);
         /**
-         * The one row.
+         The one row.
          */
         const row = rows[0] as ArtifactComparisonRow;
         expect(comparisonRowDifferences({
@@ -766,18 +766,18 @@ await describe({
       name: 'NAMES differing fields in row order, text before relation, and never a value (`#237`)',
       fn: async () => {
         /**
-         * Rows derived once from two agreeing ledgers.
+         Rows derived once from two agreeing ledgers.
          */
         const rows = compareLanes({
           repair: [keptArchive({ sliceIndex: 0, },),],
           translate: [keptArchive({ sliceIndex: 0, },),],
         },);
         /**
-         * The one row.
+         The one row.
          */
         const row = rows[0] as ArtifactComparisonRow;
         /**
-         * Names of the fields that differ.
+         Names of the fields that differ.
          */
         const differing = comparisonRowDifferences({
           left: row,

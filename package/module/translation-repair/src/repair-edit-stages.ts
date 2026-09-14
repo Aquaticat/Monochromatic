@@ -33,67 +33,67 @@ import {
 // measurements. The editors themselves live in `repair-editor-stage.ts`.
 
 /**
- * Everything the checker stage produced for one chunk.
- *
- * @example
- * ```ts
- * const { tallies, } = await runCheckerStage({ ... },);
- * ```
+ Everything the checker stage produced for one chunk.
+ 
+ @example
+ ```ts
+ const { tallies, } = await runCheckerStage({ ... },);
+ ```
  */
 export type CheckerStageResult = {
   /**
-   * Per-issue resolution tallies keyed by issue id.
+   Per-issue resolution tallies keyed by issue id.
    */
   readonly tallies: Readonly<Record<string, IssueResolutionTally>>;
 
   /**
-   * Per-issue ballots and seated roster beside those tallies, keyed the same.
-   *
-   * Carried so what lands in the artifact is the round rather than its sum. The
-   * tally inside each reading is the very object {@link CheckerStageResult.tallies}
-   * holds, so the two cannot disagree.
+   Per-issue ballots and seated roster beside those tallies, keyed the same.
+   
+   Carried so what lands in the artifact is the round rather than its sum. The
+   tally inside each reading is the very object {@link CheckerStageResult.tallies}
+   holds, so the two cannot disagree.
    */
   readonly readings: Readonly<Record<string, IssueCheckerReading>>;
 
   /**
-   * Checkers whose reply arrived and validated.
+   Checkers whose reply arrived and validated.
    */
   readonly heardCheckers: number;
 
   /**
-   * Wire irregularities across checkers in scorecard-stable wording.
+   Wire irregularities across checkers in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Runs the resolution checkers over one chunk's patched candidate.
- *
- * @param client - injected model client
- *
- * @param checkerModelIds - checker voices
- *
- * @param sourceText - original chunk text
- *
- * @param patchedText - candidate text after the apply gate
- *
- * @param issues - accepted issues the editors addressed
- *
- * @param authorship - who wrote `patchedText`, so a checker judging its own
- * work is heard at a discount rather than at full weight
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Per-issue tallies plus findings
- *
- * @example
- * ```ts
- * const checker = await runCheckerStage({ ... },);
- * ```
+ Runs the resolution checkers over one chunk's patched candidate.
+ 
+ @param client - injected model client
+ 
+ @param checkerModelIds - checker voices
+ 
+ @param sourceText - original chunk text
+ 
+ @param patchedText - candidate text after the apply gate
+ 
+ @param issues - accepted issues the editors addressed
+ 
+ @param authorship - who wrote `patchedText`, so a checker judging its own
+ work is heard at a discount rather than at full weight
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - pipeline logger
+ 
+ @returns Per-issue tallies plus findings
+ 
+ @example
+ ```ts
+ const checker = await runCheckerStage({ ... },);
+ ```
  */
 export async function runCheckerStage(
   {
@@ -119,7 +119,7 @@ export async function runCheckerStage(
   }>,
 ): Promise<CheckerStageResult> {
   /**
-   * Checker sheet for the patched candidate.
+   Checker sheet for the patched candidate.
    */
   const plan = buildResolutionMessages({
     sourceText,
@@ -128,7 +128,7 @@ export async function runCheckerStage(
   },);
 
   /**
-   * Heard checkers after retry-to-quorum.
+   Heard checkers after retry-to-quorum.
    */
   const gather = await gatherStageVoices({
     client,
@@ -143,7 +143,7 @@ export async function runCheckerStage(
   },);
 
   /**
-   * Resolved ballots keyed by checker id.
+   Resolved ballots keyed by checker id.
    */
   const ballots: Record<string, ResolutionBallot> = Object.fromEntries(
     gather.voices
@@ -162,7 +162,7 @@ export async function runCheckerStage(
   );
 
   /**
-   * Quorum degradation plus ballot irregularities across heard checkers.
+   Quorum degradation plus ballot irregularities across heard checkers.
    */
   const findings = [
     ...gather.findings,
@@ -174,7 +174,7 @@ export async function runCheckerStage(
   ];
 
   /**
-   * Majority tallies per issue.
+   Majority tallies per issue.
    */
   const tallies = tallyResolutionChecks({
     issueIds: plan.issueIds,
@@ -183,9 +183,9 @@ export async function runCheckerStage(
   },);
 
   /**
-   * Everything this round decided about each issue, kept rather than summed
-   * away, so a settled run can answer who dissented and be re-read at another
-   * roster width without buying the stage again.
+   Everything this round decided about each issue, kept rather than summed
+   away, so a settled run can answer who dissented and be re-read at another
+   roster width without buying the stage again.
    */
   const readings: Record<string, IssueCheckerReading> = Object.fromEntries(
     plan.issueIds
@@ -199,8 +199,8 @@ export async function runCheckerStage(
             ballots: gather.voices
               .flatMap(function toBallot(voice,): readonly IssueCheckerBallot[] {
                 /**
-                 * This checker's answer, absent where its ballot skipped this
-                 * issue.
+                 This checker's answer, absent where its ballot skipped this
+                 issue.
                  */
                 const verdict = nonNullishOrThrow(ballots[voice.modelId],)
                   .verdicts[issueId];

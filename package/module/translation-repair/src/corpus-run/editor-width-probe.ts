@@ -37,31 +37,31 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // SPENDS QUOTA. Point `TRANSLATION_REPAIR_RUNS_DIR` at a throwaway directory.
 
 /**
- * Slices drawn when the caller names no count.
- *
- * The sample is HALVED into two disjoint draws, so this is the size of the
- * whole sample rather than of the draw that runs.
+ Slices drawn when the caller names no count.
+ 
+ The sample is HALVED into two disjoint draws, so this is the size of the
+ whole sample rather than of the draw that runs.
  */
 const DEFAULT_SLICES = 18;
 
 /**
- * Half of the sample spent when the caller names no draw.
+ Half of the sample spent when the caller names no draw.
  */
 const DEFAULT_DRAW: WidthDraw = 'a';
 
 /**
- * Command-line position the draw name is read from.
- *
- * Second argument after the slice count, which itself sits at the position
- * every entry point in this family reads its first argument from.
+ Command-line position the draw name is read from.
+ 
+ Second argument after the slice count, which itself sits at the position
+ every entry point in this family reads its first argument from.
  */
 const DRAW_ARGV_INDEX = 3;
 
 /**
- * Position within the sample each draw takes.
- *
- * Alternate positions rather than a front and back half, so both draws stay as
- * evenly spread across the corpus as the whole sample was.
+ Position within the sample each draw takes.
+ 
+ Alternate positions rather than a front and back half, so both draws stay as
+ evenly spread across the corpus as the whole sample was.
  */
 const DRAW_POSITIONS: Readonly<Record<WidthDraw, number>> = {
   a: 0,
@@ -69,54 +69,54 @@ const DRAW_POSITIONS: Readonly<Record<WidthDraw, number>> = {
 };
 
 /**
- * Runs the whole probe and writes its report.
- *
- * @throws Error when the panel fails the positive control, since every number
- * the draw would produce is unreadable once that happens
- *
- * @throws Error when the named draw is neither half, rather than quietly
- * spending draw A and reporting it under whatever was asked for
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Runs the whole probe and writes its report.
+ 
+ @throws Error when the panel fails the positive control, since every number
+ the draw would produce is unreadable once that happens
+ 
+ @throws Error when the named draw is neither half, rather than quietly
+ spending draw A and reporting it under whatever was asked for
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Logger for the probe.
+   Logger for the probe.
    */
   const l = tagged({ tag: 'editor-width', },);
 
   /**
-   * Client every call goes through.
+   Client every call goes through.
    */
   const client = createRunClient();
 
   /**
-   * Cancellation shared by every call, never fired: the probe runs to the end
-   * or dies with the process.
+   Cancellation shared by every call, never fired: the probe runs to the end
+   or dies with the process.
    */
   const { signal, } = new AbortController();
 
   /**
-   * Seats in the narrow arm, read off the configuration rather than written
-   * here.
+   Seats in the narrow arm, read off the configuration rather than written
+   here.
    */
   const narrowEditorIds = RUN_MODELS.editorModelIds;
 
   /**
-   * Every model, which is the widest the roster can go.
+   Every model, which is the widest the roster can go.
    */
   const wideEditorIds = RUN_ROSTER;
 
   /**
-   * Panel, held fixed so a difference between the arms is about the seats.
+   Panel, held fixed so a difference between the arms is about the seats.
    */
   const judgeModelIds = RUN_ROSTER;
 
   /**
-   * Slices asked for on the command line, or the default.
+   Slices asked for on the command line, or the default.
    */
   const wanted = readAskedCount({
     argv: process.argv,
@@ -131,7 +131,7 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Half of the sample this run spends, named on the command line.
+   Half of the sample this run spends, named on the command line.
    */
   const asked = process.argv[DRAW_ARGV_INDEX] ?? DEFAULT_DRAW;
 
@@ -142,26 +142,26 @@ async function main(): Promise<void> {
     },);
 
   /**
-   * That name, narrowed to the two draws that exist.
+   That name, narrowed to the two draws that exist.
    */
   const draw: WidthDraw = asked;
 
   /**
-   * Whole sample, spread across the corpus.
+   Whole sample, spread across the corpus.
    */
   const sample = await sampleBenchSlices({ count: wanted, },);
 
   /**
-   * Positions this draw takes out of the sample.
-   *
-   * SPLIT RATHER THAN REDRAWN, so the other half exists already if this one
-   * lands near its own null band. Taking alternate positions out of one spread
-   * sample keeps both halves as evenly spread as the whole.
+   Positions this draw takes out of the sample.
+   
+   SPLIT RATHER THAN REDRAWN, so the other half exists already if this one
+   lands near its own null band. Taking alternate positions out of one spread
+   sample keeps both halves as evenly spread as the whole.
    */
   const wantedPosition = DRAW_POSITIONS[draw];
 
   /**
-   * Slices this run spends, leaving the other half untouched.
+   Slices this run spends, leaving the other half untouched.
    */
   const drawn = sample.filter(function inThisDraw(
     _slice,
@@ -177,7 +177,7 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Whether the panel can tell a deleted sentence from an intact passage.
+   Whether the panel can tell a deleted sentence from an intact passage.
    */
   const controlHeld = await widthControlHolds({
     client,
@@ -197,31 +197,31 @@ async function main(): Promise<void> {
   console.log(`WIDTH control held; running draw ${draw.toUpperCase()}`,);
 
   /**
-   * Rows accumulated as they finish.
+   Rows accumulated as they finish.
    */
   const rows: WidthRow[] = [];
 
   /**
-   * Slices that carried no work, counted by the wall they hit.
+   Slices that carried no work, counted by the wall they hit.
    */
   const skipped: Record<string, number> = {};
 
   /**
-   * Pipeline commit these rows were produced by, read BEFORE the draw so the
-   * report can be republished from inside the loop.
+   Pipeline commit these rows were produced by, read BEFORE the draw so the
+   report can be republished from inside the loop.
    */
   const headSha = await readHeadSha();
 
   /**
-   * Rewrites the report over everything settled so far.
-   *
-   * CALLED AFTER EVERY SLICE, not once at the end. A draw of twenty slices runs
-   * for hours, and a run killed at slice eighteen with the write still ahead of
-   * it would throw away every hour it had already spent. Rewriting a few
-   * kilobytes of markdown twenty times costs nothing worth measuring against
-   * that.
-   *
-   * @returns Path written
+   Rewrites the report over everything settled so far.
+   
+   CALLED AFTER EVERY SLICE, not once at the end. A draw of twenty slices runs
+   for hours, and a run killed at slice eighteen with the write still ahead of
+   it would throw away every hour it had already spent. Rewriting a few
+   kilobytes of markdown twenty times costs nothing worth measuring against
+   that.
+   
+   @returns Path written
    */
   async function publish(): Promise<string> {
     return await writeWidthReport({
@@ -238,7 +238,7 @@ async function main(): Promise<void> {
 
   for (const slice of drawn) {
     /**
-     * Work the critics and panel found in this slice.
+     Work the critics and panel found in this slice.
      */
     // oxlint-disable-next-line eslint/no-await-in-loop -- sequential by design: every arm of every slice must meet the same provider conditions, which fanning the draw out would destroy, and the run is bounded by quota rather than by wall time
     const outcome = await gatherWidthInput({
@@ -259,7 +259,7 @@ async function main(): Promise<void> {
     }
 
     /**
-     * That slice run at both widths, with the null band beside it.
+     That slice run at both widths, with the null band beside it.
      */
     // oxlint-disable-next-line eslint/no-await-in-loop -- sequential for the same reason the gather above is
     const row = await runWidthSlice({
@@ -283,7 +283,7 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Where the report landed.
+   Where the report landed.
    */
   const path = await publish();
 

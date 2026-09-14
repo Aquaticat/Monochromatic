@@ -2,12 +2,12 @@
 // Refusals identify the reviewed input boundary, never reproduce corpus passages.
 
 /**
- * Closed verification boundaries of the calibration reference contract.
- *
- * @example
- * ```ts
- * const operation: FidelityReferenceOperation = 'archive';
- * ```
+ Closed verification boundaries of the calibration reference contract.
+ 
+ @example
+ ```ts
+ const operation: FidelityReferenceOperation = 'archive';
+ ```
  */
 export type FidelityReferenceOperation =
   | 'pin'
@@ -20,30 +20,30 @@ export type FidelityReferenceOperation =
   | 'request';
 
 /**
- * Refuses a calibration input that no longer matches its reviewed evidence.
- *
- * @example
- * ```ts
- * throw new FidelityReferenceError({ referenceId: spec.id, operation: 'reference' });
- * ```
+ Refuses a calibration input that no longer matches its reviewed evidence.
+ 
+ @example
+ ```ts
+ throw new FidelityReferenceError({ referenceId: spec.id, operation: 'reference' });
+ ```
  */
 export class FidelityReferenceError extends Error {
   /**
-   * Only an input identifier and a closed operation name enter the message.
+   Only an input identifier and a closed operation name enter the message.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds an actionable refusal without repeating the disputed text.
-   *
-   * @param referenceId - reviewed reference identifier supplied by the caller
-   *
-   * @param operation - closed boundary requiring verification
-   *
-   * @example
-   * ```ts
-   * new FidelityReferenceError({ referenceId: 'portrait-reference', operation: 'source' });
-   * ```
+   Builds an actionable refusal without repeating the disputed text.
+   
+   @param referenceId - reviewed reference identifier supplied by the caller
+   
+   @param operation - closed boundary requiring verification
+   
+   @example
+   ```ts
+   new FidelityReferenceError({ referenceId: 'portrait-reference', operation: 'source' });
+   ```
    */
   public constructor({
     referenceId,

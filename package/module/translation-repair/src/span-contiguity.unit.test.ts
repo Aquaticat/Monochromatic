@@ -1,14 +1,14 @@
 /**
- * Tests for the check that a span carries every block it covers.
- *
- * The failure this exists for is silent by construction: a span's text is
- * sliced from its own offsets, so a block missing from its node run is still
- * inside the range, still agrees with the text byte for byte, and is replaced
- * at assembly by a decision that never saw it.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the check that a span carries every block it covers.
+ 
+ The failure this exists for is silent by construction: a span's text is
+ sliced from its own offsets, so a block missing from its node run is still
+ inside the range, still agrees with the text byte for byte, and is replaced
+ at assembly by a decision that never saw it.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -25,7 +25,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Translation whose three paragraphs are three blocks.
+ Translation whose three paragraphs are three blocks.
  */
 const TARGET_TEXT = `The cat sleeps on the windowsill.
 
@@ -35,25 +35,25 @@ Later she eats.
 `;
 
 /**
- * Blocks of that translation, in document order.
+ Blocks of that translation, in document order.
  */
 const TARGET_NODES = parseDocument({ text: TARGET_TEXT, },).nodes;
 
 /**
- * Builds one pair whose target side spans the given blocks.
- *
- * @param nodes - blocks the span claims to carry
- *
- * @param startOffset - absolute start of the range
- *
- * @param endOffset - absolute exclusive end
- *
- * @returns Pair carrying that span
- *
- * @example
- * ```ts
- * const pair = spanOf({ nodes, startOffset: 0, endOffset: 20, },);
- * ```
+ Builds one pair whose target side spans the given blocks.
+ 
+ @param nodes - blocks the span claims to carry
+ 
+ @param startOffset - absolute start of the range
+ 
+ @param endOffset - absolute exclusive end
+ 
+ @returns Pair carrying that span
+ 
+ @example
+ ```ts
+ const pair = spanOf({ nodes, startOffset: 0, endOffset: 20, },);
+ ```
  */
 function spanOf(
   {

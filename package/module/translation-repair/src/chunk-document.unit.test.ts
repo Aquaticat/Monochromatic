@@ -1,10 +1,10 @@
 /**
- * Tests for section chunking and PARTIAL automatic alignment:
- * heading-bounded partition, preamble handling, exact offsets, equal-shape
- * index pairing, and refusal of sections the headings cannot pair.
- * Fixtures are cat-themed invention only.
- *
- * @module
+ Tests for section chunking and PARTIAL automatic alignment:
+ heading-bounded partition, preamble handling, exact offsets, equal-shape
+ index pairing, and refusal of sections the headings cannot pair.
+ Fixtures are cat-themed invention only.
+ 
+ @module
  */
 
 import {
@@ -21,10 +21,10 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Source whose headings carry romanised names, which is the `XingZ60` shape:
- * the only shape where the aligner has evidence to anchor on, and therefore the
- * only one where a missing section can be proven missing rather than merely
- * unpairable.
+ Source whose headings carry romanised names, which is the `XingZ60` shape:
+ the only shape where the aligner has evidence to anchor on, and therefore the
+ only one where a missing section can be proven missing rather than merely
+ unpairable.
  */
 const ANCHORED_SOURCE = `---
 name: whiskers
@@ -46,8 +46,8 @@ name: whiskers
 `;
 
 /**
- * Translation of that source missing its middle section, and short enough that
- * the page has room to be missing it.
+ Translation of that source missing its middle section, and short enough that
+ the page has room to be missing it.
  */
 const SHORT_TARGET = `---
 name: whiskers
@@ -65,8 +65,8 @@ The cat and the black cat next door are friends.
 `;
 
 /**
- * The same missing section, in a translation that runs LONGER than its source
- * predicts. Nothing about the alignment differs; only the length does.
+ The same missing section, in a translation that runs LONGER than its source
+ predicts. Nothing about the alignment differs; only the length does.
  */
 const LONG_TARGET = `---
 name: whiskers
@@ -84,7 +84,7 @@ The cat and the black cat from the house next door are the firmest of friends, a
 `;
 
 /**
- * Two-section fixture with front matter and a preamble paragraph.
+ Two-section fixture with front matter and a preamble paragraph.
  */
 const SOURCE_FIXTURE = `---
 name: whiskers
@@ -104,7 +104,7 @@ name: whiskers
 `;
 
 /**
- * Mirrored translation fixture with identical block structure.
+ Mirrored translation fixture with identical block structure.
  */
 const TARGET_FIXTURE = `---
 name: whiskers
@@ -124,8 +124,8 @@ The cat also chases butterflies.
 `;
 
 /**
- * Translation fixture whose extra section breaks the mirror:
- * same preamble shape, but three sections against the source's two.
+ Translation fixture whose extra section breaks the mirror:
+ same preamble shape, but three sections against the source's two.
  */
 const EXTRA_SECTION_FIXTURE = `---
 name: whiskers
@@ -222,7 +222,7 @@ await describe({
         + 'original and made every issue filed on that entry noise',
       fn: async () => {
         /**
-         * Sides whose section counts differ and whose headings share nothing.
+         Sides whose section counts differ and whose headings share nothing.
          */
         const alignment = alignDocumentSections({
           source: parseDocument({ text: SOURCE_FIXTURE, },),
@@ -244,7 +244,7 @@ await describe({
         + 'to settle vanishes from every measurement silently',
       fn: async () => {
         /**
-         * One-section source against a three-section target, sharing nothing.
+         One-section source against a three-section target, sharing nothing.
          */
         const alignment = alignDocumentSections({
           source: parseDocument({ text: '## 简介\n\n猫猫喜欢晒太阳。\n', },),
@@ -265,7 +265,7 @@ await describe({
         + 'kinds, so it described an asymmetric preamble and called it structure',
       fn: async () => {
         /**
-         * Preamble-led source against a headings-only target, equal counts.
+         Preamble-led source against a headings-only target, equal counts.
          */
         const alignment = alignDocumentSections({
           source: parseDocument({ text: SOURCE_FIXTURE, },),
@@ -285,7 +285,7 @@ await describe({
         + 'rather than merged somewhere',
       fn: async () => {
         /**
-         * A translation missing its middle section.
+         A translation missing its middle section.
          */
         const alignment = alignDocumentSections({
           source: parseDocument({ text: ANCHORED_SOURCE, },),
@@ -293,7 +293,7 @@ await describe({
         },);
 
         /**
-         * Pairs whose translation side names a place rather than covering text.
+         Pairs whose translation side names a place rather than covering text.
          */
         const anchors = alignment.pairs
           .filter(function isAnchor(pair,) {
@@ -318,8 +318,8 @@ await describe({
         + 'one more section the aligner gave up on',
       fn: async () => {
         /**
-         * That same document, whose middle section is anchored rather than
-         * refused.
+         That same document, whose middle section is anchored rather than
+         refused.
          */
         const alignment = alignDocumentSections({
           source: parseDocument({ text: ANCHORED_SOURCE, },),
@@ -327,7 +327,7 @@ await describe({
         },);
 
         /**
-         * What the findings say about the source side.
+         What the findings say about the source side.
          */
         const sourceSide = alignment.findings
           .map(function toDetail(finding,) {
@@ -349,7 +349,7 @@ await describe({
         + 'of the hole it filled',
       fn: async () => {
         /**
-         * That same document.
+         That same document.
          */
         const alignment = alignDocumentSections({
           source: parseDocument({ text: ANCHORED_SOURCE, },),
@@ -375,7 +375,7 @@ await describe({
         + 'dropped it, and writing it in would duplicate content',
       fn: async () => {
         /**
-         * The same source and the same gap, in a longer translation.
+         The same source and the same gap, in a longer translation.
          */
         const alignment = alignDocumentSections({
           source: parseDocument({ text: ANCHORED_SOURCE, },),
@@ -402,8 +402,8 @@ await describe({
         + 'risk, and a page that looks complete is a merge the aligner misread',
       fn: async () => {
         /**
-         * The anchored source against a translation whose one surviving section
-         * shares no evidence with any of it, so every pairing stays possible.
+         The anchored source against a translation whose one surviving section
+         shares no evidence with any of it, so every pairing stays possible.
          */
         const alignment = alignDocumentSections({
           source: parseDocument({ text: ANCHORED_SOURCE, },),
@@ -493,8 +493,8 @@ await describe({
         + 'which numbering the number lived in',
       fn: async () => {
         /**
-         * Sides whose section counts differ and whose headings share nothing,
-         * so every section is refused rather than paired.
+         Sides whose section counts differ and whose headings share nothing,
+         so every section is refused rather than paired.
          */
         const alignment = alignDocumentSections({
           source: parseDocument({ text: SOURCE_FIXTURE, },),

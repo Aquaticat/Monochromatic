@@ -1,17 +1,17 @@
 /**
- * Tests for comparing the provider's offering against the compiled catalog.
- *
- * The case that matters is the alias. The provider serves ids that are not
- * distinct models, and admitting one would let a single model take two seats on
- * a voting panel, so one opinion would be counted as two independent
- * confirmations. The other case that matters is a catalog id the provider has
- * dropped: that already happened twice on 2026-08-05 and cost a lost voice per
- * call, silently, because 404 is not a transient status.
- *
- * Model ids here are the real ones, since the rule under test is about their
- * relationships. No corpus text is involved.
- *
- * @module
+ Tests for comparing the provider's offering against the compiled catalog.
+ 
+ The case that matters is the alias. The provider serves ids that are not
+ distinct models, and admitting one would let a single model take two seats on
+ a voting panel, so one opinion would be counted as two independent
+ confirmations. The other case that matters is a catalog id the provider has
+ dropped: that already happened twice on 2026-08-05 and cost a lost voice per
+ call, silently, because 404 is not a transient status.
+ 
+ Model ids here are the real ones, since the rule under test is about their
+ relationships. No corpus text is involved.
+ 
+ @module
  */
 
 import {
@@ -42,7 +42,7 @@ await describe({
 },);
 
 /**
- * Catalog the comparisons run against.
+ Catalog the comparisons run against.
  */
 const CATALOG: readonly string[] = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -71,7 +71,7 @@ await describe({
         + 'opinion would read as two independent confirmations',
       fn: async () => {
         /**
-         * Provider list carrying an alias onto a seated model.
+         Provider list carrying an alias onto a seated model.
          */
         const comparison = compareCatalog({
           served: [
@@ -134,7 +134,7 @@ await describe({
         + 'cannot inflate how many independent voices are available',
       fn: async () => {
         /**
-         * One new model served under two ids.
+         One new model served under two ids.
          */
         const comparison = compareCatalog({
           served: [
@@ -161,7 +161,7 @@ await describe({
         + 'failed to compare anything',
       fn: async () => {
         /**
-         * Provider list matching the catalog exactly.
+         Provider list matching the catalog exactly.
          */
         const comparison = compareCatalog({
           served: [

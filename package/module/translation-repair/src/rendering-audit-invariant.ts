@@ -16,22 +16,22 @@
 // frames, which is the right report for a fault in the command.
 
 /**
- * An invariant of the rendering audit that did not hold.
- *
- * Unreachable by construction; reaching it means the code above the site
- * changed and the site's assumption did not.
- *
- * @example
- * ```ts
- * throw new RenderingAuditInvariantError({
- *   invariant: 'a defect group with no members cannot occur, since groups are built from claims',
- * },);
- * ```
+ An invariant of the rendering audit that did not hold.
+ 
+ Unreachable by construction; reaching it means the code above the site
+ changed and the site's assumption did not.
+ 
+ @example
+ ```ts
+ throw new RenderingAuditInvariantError({
+   invariant: 'a defect group with no members cannot occur, since groups are built from claims',
+ },);
+ ```
  */
 export class RenderingAuditInvariantError extends Error {
   /**
-   * @param invariant - what was supposed to hold, in the site's own words,
-   * naming indexes and vocabulary words and never text
+   @param invariant - what was supposed to hold, in the site's own words,
+   naming indexes and vocabulary words and never text
    */
   constructor(
     { invariant, }: { readonly invariant: string; },

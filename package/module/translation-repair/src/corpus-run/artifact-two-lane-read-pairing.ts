@@ -24,53 +24,53 @@ import type { ArtifactSectionPairing, } from './artifact-two-lane-contract.ts';
 // CAN emit would reject valid artifacts, which is worse than checking nothing.
 
 /**
- * What an artifact says about the pairing its slicing was built on.
- *
- * A UNION RATHER THAN AN OPTIONAL LIST, for the same reason the schema reading
- * in `artifact-schema-version.ts` is one: the empty list is a real answer here.
- * The roster can be asked about every section and commit to nothing, and a
- * consumer writing `pairing ?? []` would turn "nobody was asked" into "asked
- * and agreed nothing", which is a claim about the run.
- *
- * @example
- * ```ts
- * const pairing: ParsedBlockPairing = { kind: 'unrecorded', };
- * ```
+ What an artifact says about the pairing its slicing was built on.
+ 
+ A UNION RATHER THAN AN OPTIONAL LIST, for the same reason the schema reading
+ in `artifact-schema-version.ts` is one: the empty list is a real answer here.
+ The roster can be asked about every section and commit to nothing, and a
+ consumer writing `pairing ?? []` would turn "nobody was asked" into "asked
+ and agreed nothing", which is a claim about the run.
+ 
+ @example
+ ```ts
+ const pairing: ParsedBlockPairing = { kind: 'unrecorded', };
+ ```
  */
 export type ParsedBlockPairing = {
   /**
-   * Artifact records a pairing, which may name no sections at all.
+   Artifact records a pairing, which may name no sections at all.
    */
   readonly kind: 'stored';
 
   /**
-   * Sections a pairing was consumed for, in section order.
+   Sections a pairing was consumed for, in section order.
    */
   readonly sections: readonly ArtifactSectionPairing[];
 } | {
   /**
-   * Artifact names no pairing, which for every artifact settled to date means
-   * it was written before the field existed.
+   Artifact names no pairing, which for every artifact settled to date means
+   it was written before the field existed.
    */
   readonly kind: 'unrecorded';
 };
 
 /**
- * Reads one section's agreed correspondences.
- *
- * @param value - pairs as the section carries them
- *
- * @param path - dotted path for error messages
- *
- * @returns Pairs this section names, in the order recorded
- *
- * @throws {@link ArtifactParseError} when a pair is the wrong shape or carries
- * a key this version does not name
- *
- * @example
- * ```ts
- * const pairs = parseSectionPairs({ value: record.pairs, path, },);
- * ```
+ Reads one section's agreed correspondences.
+ 
+ @param value - pairs as the section carries them
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Pairs this section names, in the order recorded
+ 
+ @throws {@link ArtifactParseError} when a pair is the wrong shape or carries
+ a key this version does not name
+ 
+ @example
+ ```ts
+ const pairs = parseSectionPairs({ value: record.pairs, path, },);
+ ```
  */
 function parseSectionPairs(
   {
@@ -90,12 +90,12 @@ function parseSectionPairs(
       at,
     ): ArtifactSectionPairing['pairs'][number] {
       /**
-       * Where this pair is reported from.
+       Where this pair is reported from.
        */
       const entryPath = `${path}[${String(at,)}]`;
 
       /**
-       * Pair as a record.
+       Pair as a record.
        */
       const record = requireRecord({
         value: entry,
@@ -123,19 +123,19 @@ function parseSectionPairs(
 }
 
 /**
- * Refuses a section whose pairs could not have come from a roster reply.
- *
- * @param pairs - pairs as recorded
- *
- * @param path - dotted path for error messages
- *
- * @throws {@link ArtifactParseError} naming the first position that breaks the
- * order the producer guarantees
- *
- * @example
- * ```ts
- * assertPairsAdvance({ pairs, path, },);
- * ```
+ Refuses a section whose pairs could not have come from a roster reply.
+ 
+ @param pairs - pairs as recorded
+ 
+ @param path - dotted path for error messages
+ 
+ @throws {@link ArtifactParseError} naming the first position that breaks the
+ order the producer guarantees
+ 
+ @example
+ ```ts
+ assertPairsAdvance({ pairs, path, },);
+ ```
  */
 function assertPairsAdvance(
   {
@@ -148,7 +148,7 @@ function assertPairsAdvance(
 ): void {
   for (const [at, pair,] of pairs.entries()) {
     /**
-     * Pair before this one, absent at the first position.
+     Pair before this one, absent at the first position.
      */
     const previous = pairs[at - 1];
     if (previous === undefined)
@@ -174,22 +174,22 @@ function assertPairsAdvance(
 }
 
 /**
- * Refuses a list that repeats a section or records them out of order.
- *
- * ORDER IS CHECKED RATHER THAN IMPOSED, because the writer sorts and a list
- * arriving unsorted is therefore not one this pipeline wrote. Sorting it here
- * would accept that file and hide which run produced it.
- *
- * @param sections - sections as recorded
- *
- * @param path - dotted path for error messages
- *
- * @throws {@link ArtifactParseError} naming the first section out of place
- *
- * @example
- * ```ts
- * assertSectionsAscend({ sections, path, },);
- * ```
+ Refuses a list that repeats a section or records them out of order.
+ 
+ ORDER IS CHECKED RATHER THAN IMPOSED, because the writer sorts and a list
+ arriving unsorted is therefore not one this pipeline wrote. Sorting it here
+ would accept that file and hide which run produced it.
+ 
+ @param sections - sections as recorded
+ 
+ @param path - dotted path for error messages
+ 
+ @throws {@link ArtifactParseError} naming the first section out of place
+ 
+ @example
+ ```ts
+ assertSectionsAscend({ sections, path, },);
+ ```
  */
 function assertSectionsAscend(
   {
@@ -202,7 +202,7 @@ function assertSectionsAscend(
 ): void {
   for (const [at, section,] of sections.entries()) {
     /**
-     * Section before this one, absent at the first position.
+     Section before this one, absent at the first position.
      */
     const previous = sections[at - 1];
     if (previous === undefined)
@@ -221,25 +221,25 @@ function assertSectionsAscend(
 }
 
 /**
- * Reads the pairing a preparation records, or its absence.
- *
- * @param value - `blockPairing` as the artifact carries it, possibly absent
- *
- * @param alignmentPairCount - aligned sections this preparation reports, which
- * bounds every section index recorded here
- *
- * @param path - dotted path for error messages
- *
- * @returns Pairing it records, or a named absence
- *
- * @throws {@link ArtifactParseError} when the list is the wrong shape, names a
- * section this preparation does not have, repeats a section, records sections
- * out of order, or carries a pairing no roster reply could have produced
- *
- * @example
- * ```ts
- * const pairing = parseBlockPairing({ value: record.blockPairing, alignmentPairCount, path, },);
- * ```
+ Reads the pairing a preparation records, or its absence.
+ 
+ @param value - `blockPairing` as the artifact carries it, possibly absent
+ 
+ @param alignmentPairCount - aligned sections this preparation reports, which
+ bounds every section index recorded here
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Pairing it records, or a named absence
+ 
+ @throws {@link ArtifactParseError} when the list is the wrong shape, names a
+ section this preparation does not have, repeats a section, records sections
+ out of order, or carries a pairing no roster reply could have produced
+ 
+ @example
+ ```ts
+ const pairing = parseBlockPairing({ value: record.blockPairing, alignmentPairCount, path, },);
+ ```
  */
 export function parseBlockPairing(
   {
@@ -256,7 +256,7 @@ export function parseBlockPairing(
     return { kind: 'unrecorded', };
 
   /**
-   * Sections as recorded, each checked against the shape this version names.
+   Sections as recorded, each checked against the shape this version names.
    */
   const sections = requireArray({
     value,
@@ -267,12 +267,12 @@ export function parseBlockPairing(
       at,
     ): ArtifactSectionPairing {
       /**
-       * Where this section is reported from.
+       Where this section is reported from.
        */
       const entryPath = `${path}[${String(at,)}]`;
 
       /**
-       * Section as a record.
+       Section as a record.
        */
       const record = requireRecord({
         value: entry,
@@ -288,7 +288,7 @@ export function parseBlockPairing(
       },);
 
       /**
-       * Aligned section this answers about.
+       Aligned section this answers about.
        */
       const sectionIndex = requireCount({
         value: record.sectionIndex,
@@ -305,7 +305,7 @@ export function parseBlockPairing(
         },);
 
       /**
-       * Correspondences agreed for it.
+       Correspondences agreed for it.
        */
       const pairs = parseSectionPairs({
         value: record.pairs,

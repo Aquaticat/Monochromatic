@@ -32,31 +32,31 @@ import { errorName, } from './error-name.ts';
 // symbol, which costs a message rather than disclosing one.
 
 /**
- * Stand-in for a refusal that states no position of its own.
- *
- * Shared so a reader meets one spelling across parsers: a YAML refusal and
- * an MDX one report position differently, and inventing a phrase per parser
- * makes a log line say two things where it means one.
+ Stand-in for a refusal that states no position of its own.
+ 
+ Shared so a reader meets one spelling across parsers: a YAML refusal and
+ an MDX one report position differently, and inventing a phrase per parser
+ makes a log line say two things where it means one.
  */
 export const NAMED_POSITION_UNSTATED = 'an unstated position';
 
 /**
- * Error declaring its own message free of quoted content.
+ Error declaring its own message free of quoted content.
  */
 export type NamingError = Error & { readonly messageNamesOnly: true; };
 
 /**
- * Decides whether a caught value's message may be repeated.
- *
- * @param value - caught value, of unknown type by construction
- *
- * @returns Whether it declares its message free of quoted content
- *
- * @example
- * ```ts
- * if (namesWithoutQuoting(error,))
- *   console.error(error.message,);
- * ```
+ Decides whether a caught value's message may be repeated.
+ 
+ @param value - caught value, of unknown type by construction
+ 
+ @returns Whether it declares its message free of quoted content
+ 
+ @example
+ ```ts
+ if (namesWithoutQuoting(error,))
+   console.error(error.message,);
+ ```
  */
 export function namesWithoutQuoting(value: unknown,): value is NamingError {
   return Error.isError(value,)
@@ -65,16 +65,16 @@ export function namesWithoutQuoting(value: unknown,): value is NamingError {
 }
 
 /**
- * Renders a caught value for a log line or a stored record, quoting nothing.
- *
- * @param error - caught value, of unknown type by construction
- *
- * @returns Its message where it declares one safe, its class name otherwise
- *
- * @example
- * ```ts
- * console.error(`${what}: ${refusalText({ error, },)}`,);
- * ```
+ Renders a caught value for a log line or a stored record, quoting nothing.
+ 
+ @param error - caught value, of unknown type by construction
+ 
+ @returns Its message where it declares one safe, its class name otherwise
+ 
+ @example
+ ```ts
+ console.error(`${what}: ${refusalText({ error, },)}`,);
+ ```
  */
 export function refusalText(
   { error, }: { readonly error: unknown; },

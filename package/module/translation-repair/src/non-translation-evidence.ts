@@ -11,37 +11,37 @@ import type { IssueClaim, } from './issue-model.ts';
 // noisy at both layers on divergence-heavy translated pairs.
 
 /**
- * Wire-level critical non-translation votes required before repair may be
- * blocked: three independent voices, not a bare pair.
- * The first real-corpus false block (AkiraComplex, commit `72f5537c1`) discarded
- * a faithful translation on TWO votes from only two of seven critics heard on an
- * English-epigraph slice (English in both source and target, so the two heard
- * critics misread it as source-equals-target non-translation). Three votes
- * demands genuine ensemble agreement and, since three votes cannot come from
- * fewer than three heard critics, folds a participation floor into the count so
- * a low-participation slice can never block. Three is also the observed
- * true-positive floor (the unrelated cat / "meow" pair drew three wire votes),
- * and erring high is the safe direction: a missed block attempts repair on a
- * garbage pair with its issues still surfaced, while a false block discards a
- * faithful translation whole.
+ Wire-level critical non-translation votes required before repair may be
+ blocked: three independent voices, not a bare pair.
+ The first real-corpus false block (AkiraComplex, commit `72f5537c1`) discarded
+ a faithful translation on TWO votes from only two of seven critics heard on an
+ English-epigraph slice (English in both source and target, so the two heard
+ critics misread it as source-equals-target non-translation). Three votes
+ demands genuine ensemble agreement and, since three votes cannot come from
+ fewer than three heard critics, folds a participation floor into the count so
+ a low-participation slice can never block. Three is also the observed
+ true-positive floor (the unrelated cat / "meow" pair drew three wire votes),
+ and erring high is the safe direction: a missed block attempts repair on a
+ garbage pair with its issues still surfaced, while a false block discards a
+ faithful translation whole.
  */
 export const NON_TRANSLATION_BLOCK_VOTES = 3;
 
 /**
- * Validated content-critique claims anchored into target text at which
- * non-translation votes stand contradicted.
- * Derivation: the observed false block carried 44 such claims, while
- * correct blocks come from skeleton or untranslated targets offering
- * little translated content to critique; eight keeps an ensemble-scale
- * margin (more than one claim per heard critic on a seven-critic roster)
- * above that noise floor.
+ Validated content-critique claims anchored into target text at which
+ non-translation votes stand contradicted.
+ Derivation: the observed false block carried 44 such claims, while
+ correct blocks come from skeleton or untranslated targets offering
+ little translated content to critique; eight keeps an ensemble-scale
+ margin (more than one claim per heard critic on a seven-critic roster)
+ above that noise floor.
  */
 export const NON_TRANSLATION_CONTRADICTION_MIN = 8;
 
 /**
- * Category leaves evidencing MISSING translation rather than defective
- * translation; claims under these leaves anchor happily onto skeleton or
- * untranslated targets, so they never count toward contradiction.
+ Category leaves evidencing MISSING translation rather than defective
+ translation; claims under these leaves anchor happily onto skeleton or
+ untranslated targets, so they never count toward contradiction.
  */
 const MISSING_TRANSLATION_LEAVES: ReadonlySet<string> = new Set([
   'omission',
@@ -50,50 +50,50 @@ const MISSING_TRANSLATION_LEAVES: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Verdict of deterministic evidence over pending non-translation votes.
- *
- * @example
- * ```ts
- * const evidence: NonTranslationEvidence = {
- *   contradicted: true,
- *   contradictionClaimCount: 44,
- * };
- * ```
+ Verdict of deterministic evidence over pending non-translation votes.
+ 
+ @example
+ ```ts
+ const evidence: NonTranslationEvidence = {
+   contradicted: true,
+   contradictionClaimCount: 44,
+ };
+ ```
  */
 export type NonTranslationEvidence = {
   /**
-   * Whether votes reached the block threshold yet contradiction reached
-   * its floor, so repair proceeds and votes are dismissed as noise.
+   Whether votes reached the block threshold yet contradiction reached
+   its floor, so repair proceeds and votes are dismissed as noise.
    */
   readonly contradicted: boolean;
 
   /**
-   * Validated content-critique claims anchored into target text.
+   Validated content-critique claims anchored into target text.
    */
   readonly contradictionClaimCount: number;
 };
 
 /**
- * Rules whether validated claims deterministically contradict wire-level
- * non-translation votes.
- * Counts claims outside the missing-translation leaves that anchor at
- * least one span into the target; enough such claims prove the pair is a
- * critiquable translation, not a wholly unrelated pairing.
- *
- * @param votes - wire-level critical non-translation votes heard
- *
- * @param claims - validated claims across every heard critic
- *
- * @returns Contradiction verdict plus supporting claim count
- *
- * @example
- * ```ts
- * const evidence = assessNonTranslationEvidence({
- *   votes: critic.nonTranslationVotes,
- *   claims: critic.claims,
- * },);
- * if (evidence.contradicted) proceedInsteadOfBlocking();
- * ```
+ Rules whether validated claims deterministically contradict wire-level
+ non-translation votes.
+ Counts claims outside the missing-translation leaves that anchor at
+ least one span into the target; enough such claims prove the pair is a
+ critiquable translation, not a wholly unrelated pairing.
+ 
+ @param votes - wire-level critical non-translation votes heard
+ 
+ @param claims - validated claims across every heard critic
+ 
+ @returns Contradiction verdict plus supporting claim count
+ 
+ @example
+ ```ts
+ const evidence = assessNonTranslationEvidence({
+   votes: critic.nonTranslationVotes,
+   claims: critic.claims,
+ },);
+ if (evidence.contradicted) proceedInsteadOfBlocking();
+ ```
  */
 export function assessNonTranslationEvidence(
   {
@@ -105,12 +105,12 @@ export function assessNonTranslationEvidence(
   },
 ): NonTranslationEvidence {
   /**
-   * Claims critiquing translated target content.
+   Claims critiquing translated target content.
    */
   const contradictionClaimCount = claims
     .filter(function critiquesTargetContent(claim,) {
       /**
-       * Leaf segment of the category slug.
+       Leaf segment of the category slug.
        */
       const leaf = claim.category
         .slice(claim.category
@@ -133,54 +133,54 @@ export function assessNonTranslationEvidence(
 }
 
 /**
- * Screening result carrying the claims and findings the pipeline
- * continues with after vote assessment.
- *
- * @example
- * ```ts
- * const screening: NonTranslationScreening = {
- *   contradicted: true,
- *   claims: [],
- *   findings: ['non-translation votes contradicted (4 votes, 44 content-critique claims); votes dismissed',],
- * };
- * ```
+ Screening result carrying the claims and findings the pipeline
+ continues with after vote assessment.
+ 
+ @example
+ ```ts
+ const screening: NonTranslationScreening = {
+   contradicted: true,
+   claims: [],
+   findings: ['non-translation votes contradicted (4 votes, 44 content-critique claims); votes dismissed',],
+ };
+ ```
  */
 export type NonTranslationScreening = {
   /**
-   * Whether votes stand contradicted; callers must never block when true.
+   Whether votes stand contradicted; callers must never block when true.
    */
   readonly contradicted: boolean;
 
   /**
-   * Claims to continue with; contradicted votes take their
-   * non-translation claims along so envelopes never carry them.
+   Claims to continue with; contradicted votes take their
+   non-translation claims along so envelopes never carry them.
    */
   readonly claims: readonly IssueClaim[];
 
   /**
-   * Contradiction record for the chunk's findings; empty when votes
-   * stand.
+   Contradiction record for the chunk's findings; empty when votes
+   stand.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Screens wire-level non-translation votes against deterministic
- * evidence, dismissing contradicted votes together with their claims.
- *
- * @param votes - wire-level critical non-translation votes heard
- *
- * @param claims - validated claims across every heard critic
- *
- * @returns Continuing claims, contradiction findings, and verdict
- *
- * @example
- * ```ts
- * const screening = screenNonTranslationVotes({
- *   votes: critic.nonTranslationVotes,
- *   claims: critic.claims,
- * },);
- * ```
+ Screens wire-level non-translation votes against deterministic
+ evidence, dismissing contradicted votes together with their claims.
+ 
+ @param votes - wire-level critical non-translation votes heard
+ 
+ @param claims - validated claims across every heard critic
+ 
+ @returns Continuing claims, contradiction findings, and verdict
+ 
+ @example
+ ```ts
+ const screening = screenNonTranslationVotes({
+   votes: critic.nonTranslationVotes,
+   claims: critic.claims,
+ },);
+ ```
  */
 export function screenNonTranslationVotes(
   {
@@ -192,7 +192,7 @@ export function screenNonTranslationVotes(
   },
 ): NonTranslationScreening {
   /**
-   * Deterministic verdict over pending votes.
+   Deterministic verdict over pending votes.
    */
   const evidence = assessNonTranslationEvidence({
     votes,
@@ -221,26 +221,26 @@ export function screenNonTranslationVotes(
 }
 
 /**
- * Rules whether a slice's non-translation votes stand, so its characters
- * count toward the document dominance block.
- * Votes stand only at the {@link NON_TRANSLATION_BLOCK_VOTES} floor and only
- * while deterministic evidence has not contradicted them; the floor itself
- * carries the participation guard, since that many wire votes cannot come from
- * fewer critics heard.
- *
- * @param votes - wire-level critical non-translation votes heard on the slice
- *
- * @param contradicted - whether deterministic evidence dismissed the votes
- *
- * @returns Whether the slice ships unchanged as standing non-translation
- *
- * @example
- * ```ts
- * const stands = nonTranslationVotesStand({
- *   votes: critic.nonTranslationVotes,
- *   contradicted: screening.contradicted,
- * },);
- * ```
+ Rules whether a slice's non-translation votes stand, so its characters
+ count toward the document dominance block.
+ Votes stand only at the {@link NON_TRANSLATION_BLOCK_VOTES} floor and only
+ while deterministic evidence has not contradicted them; the floor itself
+ carries the participation guard, since that many wire votes cannot come from
+ fewer critics heard.
+ 
+ @param votes - wire-level critical non-translation votes heard on the slice
+ 
+ @param contradicted - whether deterministic evidence dismissed the votes
+ 
+ @returns Whether the slice ships unchanged as standing non-translation
+ 
+ @example
+ ```ts
+ const stands = nonTranslationVotesStand({
+   votes: critic.nonTranslationVotes,
+   contradicted: screening.contradicted,
+ },);
+ ```
  */
 export function nonTranslationVotesStand(
   {
@@ -255,21 +255,21 @@ export function nonTranslationVotesStand(
 }
 
 /**
- * Whether a settled slice anchors confirmed good-translation content: it is
- * not a standing non-translation and carries at least one accepted issue that
- * critiques translated target text (a claim outside the missing-translation
- * leaves anchoring a target span). Such an anchor proves the paired document
- * is a translation being critiqued, not a wholly unrelated pairing. Callers
- * guard slices not yet settled; an unsettled slice anchors nothing.
- *
- * @param outcome - the slice's settled repair outcome
- *
- * @returns True when the slice proves translated content
- *
- * @example
- * ```ts
- * const anchors = sliceAnchorsTranslation({ outcome, },);
- * ```
+ Whether a settled slice anchors confirmed good-translation content: it is
+ not a standing non-translation and carries at least one accepted issue that
+ critiques translated target text (a claim outside the missing-translation
+ leaves anchoring a target span). Such an anchor proves the paired document
+ is a translation being critiqued, not a wholly unrelated pairing. Callers
+ guard slices not yet settled; an unsettled slice anchors nothing.
+ 
+ @param outcome - the slice's settled repair outcome
+ 
+ @returns True when the slice proves translated content
+ 
+ @example
+ ```ts
+ const anchors = sliceAnchorsTranslation({ outcome, },);
+ ```
  */
 export function sliceAnchorsTranslation(
   { outcome, }: { readonly outcome: ChunkRepairOutcome; },
@@ -283,7 +283,7 @@ export function sliceAnchorsTranslation(
       return issue.claims
         .some(function anchorsTargetContent(member,) {
           /**
-           * Leaf segment of the member claim's category slug.
+           Leaf segment of the member claim's category slug.
            */
           const leaf = member.claim
             .category
@@ -303,69 +303,69 @@ export function sliceAnchorsTranslation(
 }
 
 /**
- * Document-level dominance verdict over standing per-slice votes.
- *
- * @example
- * ```ts
- * const dominance: NonTranslationDominance = {
- *   blocked: true,
- *   standingChars: 900,
- *   totalChars: 1_100,
- * };
- * ```
+ Document-level dominance verdict over standing per-slice votes.
+ 
+ @example
+ ```ts
+ const dominance: NonTranslationDominance = {
+   blocked: true,
+   standingChars: 900,
+   totalChars: 1_100,
+ };
+ ```
  */
 export type NonTranslationDominance = {
   /**
-   * Whether standing votes dominate the translation's characters, so the
-   * whole document blocks and returns unchanged.
+   Whether standing votes dominate the translation's characters, so the
+   whole document blocks and returns unchanged.
    */
   readonly blocked: boolean;
 
   /**
-   * Target characters inside slices whose votes stand.
+   Target characters inside slices whose votes stand.
    */
   readonly standingChars: number;
 
   /**
-   * Target characters across every slice considered so far.
-   *
-   * THE SLICED FRACTION, not the translation. A section the aligner refused to
-   * pair produces no slice, and slicing leaves one-sided sections out
-   * altogether, so both this and `standingChars` are sums over what was
-   * EXAMINED. Measured over the pinned corpus, slices cover 92.5% of an average
-   * English document, and two entries fall under half. Which denominator the
-   * block should read is `#104`, and it is a decision rather than a defect.
+   Target characters across every slice considered so far.
+   
+   THE SLICED FRACTION, not the translation. A section the aligner refused to
+   pair produces no slice, and slicing leaves one-sided sections out
+   altogether, so both this and `standingChars` are sums over what was
+   EXAMINED. Measured over the pinned corpus, slices cover 92.5% of an average
+   English document, and two entries fall under half. Which denominator the
+   block should read is `#104`, and it is a decision rather than a defect.
    */
   readonly totalChars: number;
 };
 
 /**
- * Rules whether standing non-translation votes dominate a document.
- * A wholly unrelated pair carries standing votes on most of its
- * characters; a minority region (an untranslated passage, a divergent
- * paragraph) degrades only its own slices and must never block the
- * repairable remainder (settled architecture: degradation is never
- * document-wide).
- * A confirmed good-translation anchor anywhere vetoes the block outright,
- * even when standing chars dominate: such an anchor proves the document IS a
- * translation, so a standing-char majority then means asymmetric extra
- * content (image/screenshot translations with no source-markdown counterpart)
- * rather than an unrelated pairing. Every real-corpus block this session was
- * this false shape (Aniloviraw, AkiraComplex, Arita, Mio all held clean
- * anchors); the only true positive (a wholly unrelated invented pair) held
- * none, so the anchor veto separates them without a tuned threshold and keeps
- * the calibrated err-toward-not-blocking direction.
- *
- * @param slices - per-slice target sizes with their standing and anchor
- * verdicts
- *
- * @returns Dominance verdict with the character tallies behind it
- *
- * @example
- * ```ts
- * const dominance = assessNonTranslationDominance({ slices: tallies, },);
- * if (dominance.blocked) returnUnchanged();
- * ```
+ Rules whether standing non-translation votes dominate a document.
+ A wholly unrelated pair carries standing votes on most of its
+ characters; a minority region (an untranslated passage, a divergent
+ paragraph) degrades only its own slices and must never block the
+ repairable remainder (settled architecture: degradation is never
+ document-wide).
+ A confirmed good-translation anchor anywhere vetoes the block outright,
+ even when standing chars dominate: such an anchor proves the document IS a
+ translation, so a standing-char majority then means asymmetric extra
+ content (image/screenshot translations with no source-markdown counterpart)
+ rather than an unrelated pairing. Every real-corpus block this session was
+ this false shape (Aniloviraw, AkiraComplex, Arita, Mio all held clean
+ anchors); the only true positive (a wholly unrelated invented pair) held
+ none, so the anchor veto separates them without a tuned threshold and keeps
+ the calibrated err-toward-not-blocking direction.
+ 
+ @param slices - per-slice target sizes with their standing and anchor
+ verdicts
+ 
+ @returns Dominance verdict with the character tallies behind it
+ 
+ @example
+ ```ts
+ const dominance = assessNonTranslationDominance({ slices: tallies, },);
+ if (dominance.blocked) returnUnchanged();
+ ```
  */
 export function assessNonTranslationDominance(
   {
@@ -379,7 +379,7 @@ export function assessNonTranslationDominance(
   },
 ): NonTranslationDominance {
   /**
-   * Target characters inside standing-vote slices.
+   Target characters inside standing-vote slices.
    */
   const standingChars = slices
     .filter(function stands(slice,) {
@@ -396,7 +396,7 @@ export function assessNonTranslationDominance(
     );
 
   /**
-   * Target characters across every slice.
+   Target characters across every slice.
    */
   const totalChars = slices.reduce(
     function addChars(
@@ -409,8 +409,8 @@ export function assessNonTranslationDominance(
   );
 
   /**
-   * Whether any settled slice anchors confirmed translated content, which
-   * vetoes the block however the standing chars fall.
+   Whether any settled slice anchors confirmed translated content, which
+   vetoes the block however the standing chars fall.
    */
   const anchored = slices
     .some(function anchors(slice,) {

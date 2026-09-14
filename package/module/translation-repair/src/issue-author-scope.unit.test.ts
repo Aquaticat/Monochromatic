@@ -1,8 +1,8 @@
 /**
- * Tests for how far one author's credit reaches: the per-envelope split a
- * shipped composite earns, and the refiners layered on top of it.
- *
- * @module
+ Tests for how far one author's credit reaches: the per-envelope split a
+ shipped composite earns, and the refiners layered on top of it.
+ 
+ @module
  */
 
 import {
@@ -23,26 +23,26 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Issue the cases below credit.
+ Issue the cases below credit.
  */
 const WHISKER = 'adjudicated/whisker';
 
 /**
- * Model that wins the envelope rounds below unless a case says otherwise.
+ Model that wins the envelope rounds below unless a case says otherwise.
  */
 const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
- * Second model, for composites and for candidates that lose.
+ Second model, for composites and for candidates that lose.
  */
 const HELPER: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * What ships in every `collectIssueAuthors` case here.
- *
- * A COMPOSITE, deliberately: it is the one shipped patch whose parts have
- * different authors, so it is the only producer for which the envelope rounds
- * are consulted at all.
+ What ships in every `collectIssueAuthors` case here.
+ 
+ A COMPOSITE, deliberately: it is the one shipped patch whose parts have
+ different authors, so it is the only producer for which the envelope rounds
+ are consulted at all.
  */
 const COMPOSITE: CandidateProducer = {
   kind: 'composite',
@@ -53,7 +53,7 @@ const COMPOSITE: CandidateProducer = {
 };
 
 /**
- * Builds an editable envelope carrying the issues it serves.
+ Builds an editable envelope carrying the issues it serves.
  */
 function envelopeOf(
   {
@@ -75,7 +75,7 @@ function envelopeOf(
 }
 
 /**
- * Builds an applied patch operation against one envelope.
+ Builds an applied patch operation against one envelope.
  */
 function operationOf(envelopeId: string,): PatchOperation {
   return {
@@ -86,7 +86,7 @@ function operationOf(envelopeId: string,): PatchOperation {
 }
 
 /**
- * Builds one slate entry, whose `index` is the ONE-BASED number judges saw.
+ Builds one slate entry, whose `index` is the ONE-BASED number judges saw.
  */
 function slateEntryOf(
   {
@@ -109,7 +109,7 @@ function slateEntryOf(
 }
 
 /**
- * Builds an envelope round that picked the candidate carrying `selectedIndex`.
+ Builds an envelope round that picked the candidate carrying `selectedIndex`.
  */
 function selectedRound(
   {
@@ -141,7 +141,7 @@ function selectedRound(
 }
 
 /**
- * Builds the editor stage result, with the composite as the shipped producer.
+ Builds the editor stage result, with the composite as the shipped producer.
  */
 function compositeShipped(
   {

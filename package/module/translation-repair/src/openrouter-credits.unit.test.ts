@@ -1,11 +1,11 @@
 /**
- * Tests for the OpenRouter credits reader.
- *
- * THE LIVE SHAPE is the case that matters: `/api/v1/credits` answered the
- * ordinary key with `{"data":{"total_credits":1913,"total_usage":1855.383100082}}`
- * on 2026-09-03, against a page saying a management key is required.
- *
- * @module
+ Tests for the OpenRouter credits reader.
+ 
+ THE LIVE SHAPE is the case that matters: `/api/v1/credits` answered the
+ ordinary key with `{"data":{"total_credits":1913,"total_usage":1855.383100082}}`
+ on 2026-09-03, against a page saying a management key is required.
+ 
+ @module
  */
 
 import {

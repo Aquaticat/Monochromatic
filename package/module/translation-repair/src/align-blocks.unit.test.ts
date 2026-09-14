@@ -22,7 +22,7 @@ import {
 // alignment leaves the lead-in unpartnered and pairs the quotations.
 
 /**
- * Original side: a lead-in paragraph introduces the quotation.
+ Original side: a lead-in paragraph introduces the quotation.
  */
 const SOURCE_PAGE = `## Memories
 
@@ -36,8 +36,8 @@ In 2023 Mittens moved to Catbury.
 `;
 
 /**
- * Translation side: same block count, but the lead-in is folded away and a
- * closing paragraph appears instead.
+ Translation side: same block count, but the lead-in is folded away and a
+ closing paragraph appears instead.
  */
 const TARGET_PAGE = `## Memories
 
@@ -99,7 +99,7 @@ await describe({
             // MORE evidence scored worse. Both blocks below share exactly one
             // token, so the length fit must decide.
             /**
-             * Original blocks: a rich paragraph, then a one-token stub.
+             Original blocks: a rich paragraph, then a one-token stub.
              */
             const { nodes: sourceNodes, } = parseDocument({
               text: `## H
@@ -111,7 +111,7 @@ Mittens.
             },);
 
             /**
-             * Blocks of the page the candidates compete against.
+             Blocks of the page the candidates compete against.
              */
             const { nodes: partnerNodes, } = parseDocument({
               text: `## H
@@ -121,7 +121,7 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
             },);
 
             /**
-             * The block both candidates compete to partner.
+             The block both candidates compete to partner.
              */
             const partner = nonNullishOrThrow(partnerNodes.at(1,),);
 
@@ -143,8 +143,8 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
           name: 'scores a same-kind pairing above a different-kind one',
           fn: async () => {
             /**
-             * Same sentence as a paragraph and as a quotation, so kind is the
-             * only thing that differs.
+             Same sentence as a paragraph and as a quotation, so kind is the
+             only thing that differs.
              */
             const { nodes, } = parseDocument({
               text: `Mittens waited by the window.
@@ -154,12 +154,12 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
             },);
 
             /**
-             * Paragraph form.
+             Paragraph form.
              */
             const paragraph = nonNullishOrThrow(nodes.at(0,),);
 
             /**
-             * Quotation form.
+             Quotation form.
              */
             const quote = nonNullishOrThrow(nodes.at(1,),);
 
@@ -186,20 +186,20 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
           name: 'leaves a dropped lead-in unpartnered instead of drifting, the graded failure',
           fn: async () => {
             /**
-             * Both sides carry the same count, which is exactly what made the
-             * old lockstep pairing believe correspondence was guaranteed.
+             Both sides carry the same count, which is exactly what made the
+             old lockstep pairing believe correspondence was guaranteed.
              */
             const { nodes: sourceNodes, } = parseDocument({ text: SOURCE_PAGE, },);
 
             /**
-             * Translation blocks in document order.
+             Translation blocks in document order.
              */
             const { nodes: targetNodes, } = parseDocument({ text: TARGET_PAGE, },);
 
             expect(sourceNodes.length,).toBe(targetNodes.length,);
 
             /**
-             * Monotone alignment over the two block lists.
+             Monotone alignment over the two block lists.
              */
             const steps = alignBlocks({
               sourceNodes,
@@ -207,7 +207,7 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
             },);
 
             /**
-             * Index of the source-side lead-in paragraph.
+             Index of the source-side lead-in paragraph.
              */
             const leadInIndex = sourceNodes.findIndex(function isLeadIn(node,) {
               return node.text
@@ -223,14 +223,14 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
 
             // The quotations are the pair index-based walking got wrong.
             /**
-             * Source-side quotation index.
+             Source-side quotation index.
              */
             const sourceQuote = sourceNodes.findIndex(function isQuote(node,) {
               return node.kind === 'blockquote';
             },);
 
             /**
-             * Translation-side quotation index.
+             Translation-side quotation index.
              */
             const targetQuote = targetNodes.findIndex(function isQuote(node,) {
               return node.kind === 'blockquote';
@@ -252,7 +252,7 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
             const { nodes, } = parseDocument({ text: SOURCE_PAGE, },);
 
             /**
-             * Aligning a document against itself must pair everything.
+             Aligning a document against itself must pair everything.
              */
             const steps = alignBlocks({
               sourceNodes: nodes,
@@ -275,7 +275,7 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
             const { nodes: targetNodes, } = parseDocument({ text: TARGET_PAGE, },);
 
             /**
-             * Alignment whose coverage is under test.
+             Alignment whose coverage is under test.
              */
             const steps = alignBlocks({
               sourceNodes,
@@ -283,7 +283,7 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
             },);
 
             /**
-             * Source indices the alignment touched.
+             Source indices the alignment touched.
              */
             const sourceSeen = steps.flatMap(function toSource(step,) {
               return step.kind === 'target-only'
@@ -292,7 +292,7 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
             },);
 
             /**
-             * Target indices the alignment touched.
+             Target indices the alignment touched.
              */
             const targetSeen = steps.flatMap(function toTarget(step,) {
               return step.kind === 'source-only'
@@ -320,7 +320,7 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
             const { nodes: targetNodes, } = parseDocument({ text: TARGET_PAGE, },);
 
             /**
-             * Alignment whose ordering is under test.
+             Alignment whose ordering is under test.
              */
             const steps = alignBlocks({
               sourceNodes,
@@ -328,12 +328,12 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
             },);
 
             /**
-             * Highest source index emitted so far.
+             Highest source index emitted so far.
              */
             let lastSource = -1;
 
             /**
-             * Highest target index emitted so far.
+             Highest target index emitted so far.
              */
             let lastTarget = -1;
             for (const step of steps) {

@@ -24,26 +24,26 @@ import type {
 // and the path.
 
 /**
- * Reads a value that must be a non-negative safe integer.
- *
- * `typeof value === 'number'` is not enough: it admits negatives, fractions,
- * and `Infinity`, which `JSON.parse` produces from `1e400`. Each of those would
- * travel into a count and out again as a rate.
- *
- * @param value - parsed value
- *
- * @param path - dotted path for the failure message
- *
- * @param minimum - smallest acceptable value
- *
- * @returns Validated integer
- *
- * @throws ArtifactParseError When not an integer at or above minimum
- *
- * @example
- * ```ts
- * const sliceIndex = readCount({ value, path: 'Kitten sliceCritics[0].sliceIndex', minimum: 0, },);
- * ```
+ Reads a value that must be a non-negative safe integer.
+ 
+ `typeof value === 'number'` is not enough: it admits negatives, fractions,
+ and `Infinity`, which `JSON.parse` produces from `1e400`. Each of those would
+ travel into a count and out again as a rate.
+ 
+ @param value - parsed value
+ 
+ @param path - dotted path for the failure message
+ 
+ @param minimum - smallest acceptable value
+ 
+ @returns Validated integer
+ 
+ @throws ArtifactParseError When not an integer at or above minimum
+ 
+ @example
+ ```ts
+ const sliceIndex = readCount({ value, path: 'Kitten sliceCritics[0].sliceIndex', minimum: 0, },);
+ ```
  */
 export function readCount(
   {
@@ -67,24 +67,24 @@ export function readCount(
 }
 
 /**
- * Reads a value that must be an array of distinct strings.
- *
- * Distinctness is checked rather than assumed. `heardCriticIds` is a SET
- * written as an array, and a repeated member would count one critic twice on
- * one chunk, inflating the denominator every rate divides by.
- *
- * @param value - parsed value
- *
- * @param path - dotted path for the failure message
- *
- * @returns Validated strings
- *
- * @throws ArtifactParseError When not an array of distinct strings
- *
- * @example
- * ```ts
- * const heard = readDistinctStrings({ value, path: 'Kitten sliceCritics[0].heardCriticIds', },);
- * ```
+ Reads a value that must be an array of distinct strings.
+ 
+ Distinctness is checked rather than assumed. `heardCriticIds` is a SET
+ written as an array, and a repeated member would count one critic twice on
+ one chunk, inflating the denominator every rate divides by.
+ 
+ @param value - parsed value
+ 
+ @param path - dotted path for the failure message
+ 
+ @returns Validated strings
+ 
+ @throws ArtifactParseError When not an array of distinct strings
+ 
+ @example
+ ```ts
+ const heard = readDistinctStrings({ value, path: 'Kitten sliceCritics[0].heardCriticIds', },);
+ ```
  */
 export function readDistinctStrings(
   {
@@ -102,7 +102,7 @@ export function readDistinctStrings(
     },);
 
   /**
-   * Members, each of which must be a string.
+   Members, each of which must be a string.
    */
   const members = value.map(function toMember(
     member,
@@ -126,20 +126,20 @@ export function readDistinctStrings(
 }
 
 /**
- * Decodes the proposers of one attribution.
- *
- * @param value - parsed proposers value
- *
- * @param path - dotted path for the failure message
- *
- * @returns Validated proposers
- *
- * @throws ArtifactParseError When malformed or naming one critic twice
- *
- * @example
- * ```ts
- * const proposers = decodeProposers({ value, path: 'Kitten sliceCritics[0].claimAttributions[0].proposers', },);
- * ```
+ Decodes the proposers of one attribution.
+ 
+ @param value - parsed proposers value
+ 
+ @param path - dotted path for the failure message
+ 
+ @returns Validated proposers
+ 
+ @throws ArtifactParseError When malformed or naming one critic twice
+ 
+ @example
+ ```ts
+ const proposers = decodeProposers({ value, path: 'Kitten sliceCritics[0].claimAttributions[0].proposers', },);
+ ```
  */
 export function decodeProposers(
   {
@@ -157,14 +157,14 @@ export function decodeProposers(
     },);
 
   /**
-   * One entry per critic that proposed the claim.
+   One entry per critic that proposed the claim.
    */
   const proposers = value.map(function toProposer(
     entry,
     index,
   ): ProposerView {
     /**
-     * Path of this proposer, for any failure below it.
+     Path of this proposer, for any failure below it.
      */
     const here = `${path}[${String(index,)}]`;
     if (!isJsonRecord(entry,))
@@ -174,7 +174,7 @@ export function decodeProposers(
       },);
 
     /**
-     * Critic that proposed the claim.
+     Critic that proposed the claim.
      */
     const { modelId, } = entry;
     if ((typeof modelId) !== 'string')
@@ -208,20 +208,20 @@ export function decodeProposers(
 }
 
 /**
- * Decodes one chunk's calibration record.
- *
- * @param value - parsed record
- *
- * @param path - dotted path for the failure message
- *
- * @returns Validated chunk view
- *
- * @throws ArtifactParseError When malformed or repeating a claim id
- *
- * @example
- * ```ts
- * const view = decodeChunkRecord({ value, path: 'Kitten sliceCritics[0]', },);
- * ```
+ Decodes one chunk's calibration record.
+ 
+ @param value - parsed record
+ 
+ @param path - dotted path for the failure message
+ 
+ @returns Validated chunk view
+ 
+ @throws ArtifactParseError When malformed or repeating a claim id
+ 
+ @example
+ ```ts
+ const view = decodeChunkRecord({ value, path: 'Kitten sliceCritics[0]', },);
+ ```
  */
 export function decodeChunkRecord(
   {
@@ -239,7 +239,7 @@ export function decodeChunkRecord(
     },);
 
   /**
-   * Recorded attributions of this chunk.
+   Recorded attributions of this chunk.
    */
   const rawAttributions = value.claimAttributions;
   if (!isJsonArray(rawAttributions,))
@@ -249,14 +249,14 @@ export function decodeChunkRecord(
     },);
 
   /**
-   * One entry per claim that survived screening on this chunk.
+   One entry per claim that survived screening on this chunk.
    */
   const claimAttributions = rawAttributions.map(function toAttribution(
     entry,
     index,
   ): SliceCriticView['claimAttributions'][number] {
     /**
-     * Path of this attribution.
+     Path of this attribution.
      */
     const here = `${path}.claimAttributions[${String(index,)}]`;
     if (!isJsonRecord(entry,))
@@ -266,7 +266,7 @@ export function decodeChunkRecord(
       },);
 
     /**
-     * Deterministic identity of the attributed claim.
+     Deterministic identity of the attributed claim.
      */
     const { claimId, } = entry;
     if ((typeof claimId) !== 'string')
@@ -308,24 +308,24 @@ export function decodeChunkRecord(
 }
 
 /**
- * Decodes an artifact's whole critic-record array.
- *
- * @param value - parsed array
- *
- * @param entryId - artifact identity, so a failure names the file
- *
- * @param criticsKey - key this artifact's own generation spelled the array
- * under, so a refusal names something a reader can find in the file rather than
- * the name this package happens to use for it
- *
- * @returns Validated chunk views
- *
- * @throws ArtifactParseError When malformed or repeating a chunk index
- *
- * @example
- * ```ts
- * const sliceCritics = decodeSliceCritics({ value, entryId: 'Kitten', criticsKey: keys.sliceCritics, },);
- * ```
+ Decodes an artifact's whole critic-record array.
+ 
+ @param value - parsed array
+ 
+ @param entryId - artifact identity, so a failure names the file
+ 
+ @param criticsKey - key this artifact's own generation spelled the array
+ under, so a refusal names something a reader can find in the file rather than
+ the name this package happens to use for it
+ 
+ @returns Validated chunk views
+ 
+ @throws ArtifactParseError When malformed or repeating a chunk index
+ 
+ @example
+ ```ts
+ const sliceCritics = decodeSliceCritics({ value, entryId: 'Kitten', criticsKey: keys.sliceCritics, },);
+ ```
  */
 export function decodeSliceCritics(
   {
@@ -346,7 +346,7 @@ export function decodeSliceCritics(
   }
 
   /**
-   * One record per chunk of the document.
+   One record per chunk of the document.
    */
   const records = value.map(function toRecord(
     record,

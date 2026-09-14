@@ -1,9 +1,9 @@
 /**
- * Tests that production pass boundaries invoke readiness guards before spend or persistence.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests that production pass boundaries invoke readiness guards before spend or persistence.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -34,7 +34,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Pairing roster accepted by canned client.
+ Pairing roster accepted by canned client.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -42,24 +42,24 @@ const ROSTER = [
 ] as const;
 
 /**
- * Pipeline generation for disposable cache.
+ Pipeline generation for disposable cache.
  */
 const GENERATION = `sha256-tree-v1:${'a'.repeat(64,)}` as PipelineDigest;
 
 /**
- * Logger for production-boundary calls.
+ Logger for production-boundary calls.
  */
 const l = tagged({ tag: 'pass-readiness-boundaries-test', },);
 
 /**
- * Builds client whose pairing seats agree only first target block corresponds.
- *
- * @returns Client serving pairing JSON
- *
- * @example
- * ```ts
- * const client = pairingClient();
- * ```
+ Builds client whose pairing seats agree only first target block corresponds.
+ 
+ @returns Client serving pairing JSON
+ 
+ @example
+ ```ts
+ const client = pairingClient();
+ ```
  */
 function pairingClient(
   { sheets, pictureSupport, }: {
@@ -118,14 +118,14 @@ function pairingClient(
 }
 
 /**
- * Builds artifact shape sufficient to prove persistence guard runs first.
- *
- * @returns Artifact whose contest declined archive and consolidation replaced nothing
- *
- * @example
- * ```ts
- * const artifact = declinedArtifact();
- * ```
+ Builds artifact shape sufficient to prove persistence guard runs first.
+ 
+ @returns Artifact whose contest declined archive and consolidation replaced nothing
+ 
+ @example
+ ```ts
+ const artifact = declinedArtifact();
+ ```
  */
 function declinedArtifact(): SettledArtifact {
   return {
@@ -156,14 +156,14 @@ function declinedArtifact(): SettledArtifact {
 }
 
 /**
- * Builds artifact whose final body polish lacks absolute review.
- *
- * @returns Artifact final-selection guard accepts and naturalness guard refuses
- *
- * @example
- * ```ts
- * const artifact = unreviewedNaturalnessArtifact();
- * ```
+ Builds artifact whose final body polish lacks absolute review.
+ 
+ @returns Artifact final-selection guard accepts and naturalness guard refuses
+ 
+ @example
+ ```ts
+ const artifact = unreviewedNaturalnessArtifact();
+ ```
  */
 function unreviewedNaturalnessArtifact(): SettledArtifact {
   return {

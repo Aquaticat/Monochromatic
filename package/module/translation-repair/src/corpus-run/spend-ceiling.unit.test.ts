@@ -1,10 +1,10 @@
 /**
- * Tests for the per-run spend ceiling: the resolver, the predicate the
- * scheduler asks before each entry, and the line it prints when it stops.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the per-run spend ceiling: the resolver, the predicate the
+ scheduler asks before each entry, and the line it prints when it stops.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -24,7 +24,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Built-in the resolver falls back to in these cases.
+ Built-in the resolver falls back to in these cases.
  */
 const FALLBACK = 7;
 
@@ -64,7 +64,7 @@ await describe({
       fn: async () => {
         for (const raw of ['plenty', '-1', '5 dollars', 'Infinity',]) {
           /**
-           * What the resolver raised for this value.
+           What the resolver raised for this value.
            */
           const refusal = caught(function readUnreadable(): number {
             return resolveSpendCeilingUsd({
@@ -116,7 +116,7 @@ await describe({
       name: 'NAMES both figures, the metered provider, and the dial that raises the allowance',
       fn: async () => {
         /**
-         * The line the scheduler prints when it stops.
+         The line the scheduler prints when it stops.
          */
         const note = spendCeilingNote({
           spentUsd: 20.4,

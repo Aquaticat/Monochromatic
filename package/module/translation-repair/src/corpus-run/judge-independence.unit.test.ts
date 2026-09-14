@@ -1,15 +1,15 @@
 /**
- * Tests for seating judges that did not propose the claim they judge.
- *
- * The cases that matter are the two that would produce a confident wrong
- * number: a claim every seated model proposed, which must be reported rather
- * than dropped, and a rate over a population too small to carry one.
- *
- * Model ids are the real roster, since the rule under test is about the
- * relationship between authorship and the seats available. No corpus text is
- * involved.
- *
- * @module
+ Tests for seating judges that did not propose the claim they judge.
+ 
+ The cases that matter are the two that would produce a confident wrong
+ number: a claim every seated model proposed, which must be reported rather
+ than dropped, and a rate over a population too small to carry one.
+ 
+ Model ids are the real roster, since the rule under test is about the
+ relationship between authorship and the seats available. No corpus text is
+ involved.
+ 
+ @module
  */
 
 import {
@@ -25,7 +25,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Roster the seatings run against, which is the shipped one.
+ Roster the seatings run against, which is the shipped one.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -45,7 +45,7 @@ await describe({
         + 'leave five of six models free to re-examine them',
       fn: async () => {
         /**
-         * Claim raised by one critic.
+         Claim raised by one critic.
          */
         const seating = seatJudges({
           proposers: ['hf:moonshotai/Kimi-K3',],
@@ -65,7 +65,7 @@ await describe({
         + 'disinterested about it',
       fn: async () => {
         /**
-         * Claim three critics raised.
+         Claim three critics raised.
          */
         const seating = seatJudges({
           proposers: [
@@ -89,7 +89,7 @@ await describe({
         + 'and fixed once in the attribution reader',
       fn: async () => {
         /**
-         * Claim every seated model proposed.
+         Claim every seated model proposed.
          */
         const seating = seatJudges({
           proposers: [...ROSTER,],

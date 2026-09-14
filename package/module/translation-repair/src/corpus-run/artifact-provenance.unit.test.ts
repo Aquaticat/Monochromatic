@@ -1,14 +1,14 @@
 /**
- * Tests for proving loaded bytes are the artifact the pool admitted.
- *
- * The gap these close is structural rather than hypothetical: the pool is built
- * from one directory read and each artifact is loaded by a later one, while the
- * accumulation keeps writing. Every other outcome of that gap looks like
- * ordinary output, so the check refusing is the only way it is ever visible.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for proving loaded bytes are the artifact the pool admitted.
+ 
+ The gap these close is structural rather than hypothetical: the pool is built
+ from one directory read and each artifact is loaded by a later one, while the
+ accumulation keeps writing. Every other outcome of that gap looks like
+ ordinary output, so the check refusing is the only way it is ever visible.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -25,12 +25,12 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * One repo commit, as an object-id-shaped invention.
+ One repo commit, as an object-id-shaped invention.
  */
 const TIP = 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379';
 
 /**
- * One built pipeline, as a digest-shaped invention.
+ One built pipeline, as a digest-shaped invention.
  */
 const DIGEST = `sha256-tree-v1:${'c'.repeat(64,)}`;
 
@@ -151,7 +151,7 @@ await describe({
         + 'downstream uses the id inside',
       fn: async () => {
         /**
-         * What checks raised, read for its class as well as its wording.
+         What checks raised, read for its class as well as its wording.
          */
         const refusalOfChecks = caught(function checks() {
           assertArtifactProvenance({
@@ -174,7 +174,7 @@ await describe({
         + 'which is what a file rewritten between the two reads looks like',
       fn: async () => {
         /**
-         * What checks raised, read for its class as well as its wording.
+         What checks raised, read for its class as well as its wording.
          */
         const refusalOfChecks = caught(function checks() {
           assertArtifactProvenance({
@@ -199,7 +199,7 @@ await describe({
         + 'comparison exactly',
       fn: async () => {
         /**
-         * What checks raised, read for its class as well as its wording.
+         What checks raised, read for its class as well as its wording.
          */
         const refusalOfChecks = caught(function checks() {
           assertArtifactProvenance({
@@ -241,7 +241,7 @@ await describe({
         + 'check at all',
       fn: async () => {
         /**
-         * What checks raised, read for its class as well as its wording.
+         What checks raised, read for its class as well as its wording.
          */
         const refusalOfChecks = caught(function checks() {
           assertArtifactProvenance({
@@ -263,7 +263,7 @@ await describe({
         + 'than none at all',
       fn: async () => {
         /**
-         * What checks raised, read for its class as well as its wording.
+         What checks raised, read for its class as well as its wording.
          */
         const refusalOfChecks = caught(function checks() {
           assertArtifactProvenance({

@@ -12,45 +12,45 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 // how the two units earned their separation rather than merely fitting.
 
 /**
- * Everything one settled entry records.
- *
- * Deliberately not narrowed to a named type per field: readers parse this from
- * JSON and validate what they need, and a second declaration here would be a
- * copy to keep in step rather than a contract anyone checks.
- *
- * @param entryId - corpus entry the run covered
- *
- * @param tip - repo commit the pass started under, as PROVENANCE. It says
- * where the code came from and never what ran: a dirty worktree leaves it
- * unchanged while the pipeline differs, and a documentation commit moves it
- * while the pipeline does not
- *
- * @param pipelineDigest - built output the pass ran, as IDENTITY. This is the
- * field two artifacts must share before their results may be pooled, since it
- * moves exactly when executed bytes do
- *
- * @param corpusSha - corpus commit the texts were read at
- *
- * @param callConfig - model call configuration this run used
- *
- * @param durationMs - wall time the entry took
- *
- * @param sourceText - original zh page text, measured but not stored
- *
- * @param targetText - translated en page text, measured but not stored
- *
- * @param result - what the pipeline returned, and the ONLY source for the
- * status and the two issue counts. Those arrived as three parameters BESIDE it
- * until 2026-08-16, so a caller could state a status the result contradicted
- * and counts nothing had counted, and the fields a reader trusts most were the
- * ones least tied to what actually ran
- *
- * @returns Artifact ready to serialize
- *
- * @example
- * ```ts
- * const artifact = buildSettledArtifact({ entryId, tip, ... },);
- * ```
+ Everything one settled entry records.
+ 
+ Deliberately not narrowed to a named type per field: readers parse this from
+ JSON and validate what they need, and a second declaration here would be a
+ copy to keep in step rather than a contract anyone checks.
+ 
+ @param entryId - corpus entry the run covered
+ 
+ @param tip - repo commit the pass started under, as PROVENANCE. It says
+ where the code came from and never what ran: a dirty worktree leaves it
+ unchanged while the pipeline differs, and a documentation commit moves it
+ while the pipeline does not
+ 
+ @param pipelineDigest - built output the pass ran, as IDENTITY. This is the
+ field two artifacts must share before their results may be pooled, since it
+ moves exactly when executed bytes do
+ 
+ @param corpusSha - corpus commit the texts were read at
+ 
+ @param callConfig - model call configuration this run used
+ 
+ @param durationMs - wall time the entry took
+ 
+ @param sourceText - original zh page text, measured but not stored
+ 
+ @param targetText - translated en page text, measured but not stored
+ 
+ @param result - what the pipeline returned, and the ONLY source for the
+ status and the two issue counts. Those arrived as three parameters BESIDE it
+ until 2026-08-16, so a caller could state a status the result contradicted
+ and counts nothing had counted, and the fields a reader trusts most were the
+ ones least tied to what actually ran
+ 
+ @returns Artifact ready to serialize
+ 
+ @example
+ ```ts
+ const artifact = buildSettledArtifact({ entryId, tip, ... },);
+ ```
  */
 export function buildSettledArtifact(
   {
@@ -88,7 +88,7 @@ export function buildSettledArtifact(
   },
 ): Readonly<Record<string, unknown>> {
   /**
-   * Issues the adjudication accepted, counted HERE rather than by the caller.
+   Issues the adjudication accepted, counted HERE rather than by the caller.
    */
   const accepted = result.issues
     .filter(function isAccepted(record,): boolean {

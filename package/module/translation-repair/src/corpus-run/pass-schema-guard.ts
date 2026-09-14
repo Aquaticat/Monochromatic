@@ -50,31 +50,31 @@ import {
 // and therefore the operator's call rather than this guard's.
 
 /**
- * How many entries a refusal names per generation before it reports a count for
- * the rest.
+ How many entries a refusal names per generation before it reports a count for
+ the rest.
  */
 const NAMED_EXAMPLES = 5;
 
 /**
- * Suffix every artifact file carries.
+ Suffix every artifact file carries.
  */
 const ARTIFACT_SUFFIX = '.json';
 
 /**
- * Phrase naming one classification, for a refusal.
- *
- * BUILT FROM THE CLASSIFICATION rather than used as its key, so a message can
- * distinguish a sound artifact of another generation from a file that is not an
- * artifact, and can offer each the remedy that fits.
- *
- * @param classification - what the census made of one file
- *
- * @returns Phrase a refusal groups by
- *
- * @example
- * ```ts
- * const label = generationLabel({ classification, },);
- * ```
+ Phrase naming one classification, for a refusal.
+ 
+ BUILT FROM THE CLASSIFICATION rather than used as its key, so a message can
+ distinguish a sound artifact of another generation from a file that is not an
+ artifact, and can offer each the remedy that fits.
+ 
+ @param classification - what the census made of one file
+ 
+ @returns Phrase a refusal groups by
+ 
+ @example
+ ```ts
+ const label = generationLabel({ classification, },);
+ ```
  */
 function generationLabel(
   { classification, }: { readonly classification: SchemaClassification; },
@@ -92,18 +92,18 @@ function generationLabel(
 }
 
 /**
- * Names one generation and the entries settled under it.
- *
- * @param label - phrase naming the generation
- *
- * @param entryIds - entries settled under it
- *
- * @returns One line for the refusal
- *
- * @example
- * ```ts
- * const line = generationLine({ label: 'schema version 1', entryIds, },);
- * ```
+ Names one generation and the entries settled under it.
+ 
+ @param label - phrase naming the generation
+ 
+ @param entryIds - entries settled under it
+ 
+ @returns One line for the refusal
+ 
+ @example
+ ```ts
+ const line = generationLine({ label: 'schema version 1', entryIds, },);
+ ```
  */
 function generationLine(
   {
@@ -115,8 +115,8 @@ function generationLine(
   },
 ): string {
   /**
-   * Entries named outright, capped so a corpus-sized directory still produces a
-   * readable refusal.
+   Entries named outright, capped so a corpus-sized directory still produces a
+   readable refusal.
    */
   const named = entryIds.slice(
     0,
@@ -124,7 +124,7 @@ function generationLine(
   );
 
   /**
-   * Entries beyond the ones named.
+   Entries beyond the ones named.
    */
   const rest = entryIds.length - named.length;
 
@@ -134,19 +134,19 @@ function generationLine(
 }
 
 /**
- * Logger for the guard's own lines; the guard takes no caller-supplied logger.
+ Logger for the guard's own lines; the guard takes no caller-supplied logger.
  */
 const gl = tagged({ tag: 'pass-schema-guard', },);
 
 /**
- * Ways forward every refusal here ends with, in the order an operator should
- * consider them.
- *
- * ARCHIVING IS ONE OF THEM, which the first version of this message denied. It
- * said deleting was not the remedy, full stop, and that is false: moving an
- * incompatible artifact out of the directory is exactly what lets the scheduler
- * re-run that entry, and moving it rather than deleting keeps the sound result
- * it already is.
+ Ways forward every refusal here ends with, in the order an operator should
+ consider them.
+ 
+ ARCHIVING IS ONE OF THEM, which the first version of this message denied. It
+ said deleting was not the remedy, full stop, and that is false: moving an
+ incompatible artifact out of the directory is exactly what lets the scheduler
+ re-run that entry, and moving it rather than deleting keeps the sound result
+ it already is.
  */
 const WAYS_FORWARD = [
   'Ways forward:',
@@ -166,26 +166,26 @@ const WAYS_FORWARD = [
 ];
 
 /**
- * Raised when a resume would settle a second artifact generation into one pool.
+ Raised when a resume would settle a second artifact generation into one pool.
  */
 export class SchemaGenerationError extends Error {
   /**
-   * Declares this message safe to forward: it names a schema version.
+   Declares this message safe to forward: it names a schema version.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Names every foreign generation, what this pass writes, and every way
-   * forward.
-   *
-   * @param foreign - entries per generation this pass does not write
-   *
-   * @param writes - generation this pass writes
-   *
-   * @example
-   * ```ts
-   * throw new SchemaGenerationError({ foreign, writes: 2, },);
-   * ```
+   Names every foreign generation, what this pass writes, and every way
+   forward.
+   
+   @param foreign - entries per generation this pass does not write
+   
+   @param writes - generation this pass writes
+   
+   @example
+   ```ts
+   throw new SchemaGenerationError({ foreign, writes: 2, },);
+   ```
    */
   constructor(
     {
@@ -230,30 +230,30 @@ export class SchemaGenerationError extends Error {
 }
 
 /**
- * Raised when an artifact declares the generation this pass writes and is not
- * one.
+ Raised when an artifact declares the generation this pass writes and is not
+ one.
  */
 export class MislabelledArtifactError extends Error {
   /**
-   * Declares this message safe to print whole at a boundary: it names the entry
-   * and the generation and states the ways forward. The reader's own objection,
-   * which may quote the file it refused, goes to the run log at the throw site
-   * instead of riding here, which is what let the ways forward reach nobody
-   * while the class was unmarked.
+   Declares this message safe to print whole at a boundary: it names the entry
+   and the generation and states the ways forward. The reader's own objection,
+   which may quote the file it refused, goes to the run log at the throw site
+   instead of riding here, which is what let the ways forward reach nobody
+   while the class was unmarked.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Names the entry and the generation whose reader refused it.
-   *
-   * @param entryId - entry whose artifact carries the wrong label
-   *
-   * @param writes - generation it claims
-   *
-   * @example
-   * ```ts
-   * throw new MislabelledArtifactError({ entryId: 'Mittens', writes: 2, },);
-   * ```
+   Names the entry and the generation whose reader refused it.
+   
+   @param entryId - entry whose artifact carries the wrong label
+   
+   @param writes - generation it claims
+   
+   @example
+   ```ts
+   throw new MislabelledArtifactError({ entryId: 'Mittens', writes: 2, },);
+   ```
    */
   constructor(
     {
@@ -287,18 +287,18 @@ export class MislabelledArtifactError extends Error {
 }
 
 /**
- * Groups foreign census rows by the phrase a refusal names them with.
- *
- * @param rows - every settled entry's classification
- *
- * @param writes - generation this pass writes
- *
- * @returns Entries per foreign generation, in census order
- *
- * @example
- * ```ts
- * const foreign = foreignGroups({ rows, writes: 2, },);
- * ```
+ Groups foreign census rows by the phrase a refusal names them with.
+ 
+ @param rows - every settled entry's classification
+ 
+ @param writes - generation this pass writes
+ 
+ @returns Entries per foreign generation, in census order
+ 
+ @example
+ ```ts
+ const foreign = foreignGroups({ rows, writes: 2, },);
+ ```
  */
 function foreignGroups(
   {
@@ -322,7 +322,7 @@ function foreignGroups(
         },
       ): Map<string, readonly string[]> {
         /**
-         * Phrase this row is named under.
+         Phrase this row is named under.
          */
         const label = generationLabel({ classification, },);
 
@@ -339,21 +339,21 @@ function foreignGroups(
 }
 
 /**
- * Refuses an artifact that declares this generation and does not satisfy it.
- *
- * @param artifactsDir - directory holding the artifact
- *
- * @param entryId - entry to check
- *
- * @param writes - generation it declares
- *
- * @throws {@link MislabelledArtifactError} when this generation's reader
- * refuses the body
- *
- * @example
- * ```ts
- * await assertBodyMatchesLabel({ artifactsDir, entryId: 'Mittens', writes: 2, },);
- * ```
+ Refuses an artifact that declares this generation and does not satisfy it.
+ 
+ @param artifactsDir - directory holding the artifact
+ 
+ @param entryId - entry to check
+ 
+ @param writes - generation it declares
+ 
+ @throws {@link MislabelledArtifactError} when this generation's reader
+ refuses the body
+ 
+ @example
+ ```ts
+ await assertBodyMatchesLabel({ artifactsDir, entryId: 'Mittens', writes: 2, },);
+ ```
  */
 async function assertBodyMatchesLabel(
   {
@@ -367,9 +367,9 @@ async function assertBodyMatchesLabel(
   },
 ): Promise<void> {
   /**
-   * Artifact text as it sits on disk, read again rather than carried out of the
-   * census: the census answers a question about every file and holding every
-   * body in memory to answer it would cost the whole directory at once.
+   Artifact text as it sits on disk, read again rather than carried out of the
+   census: the census answers a question about every file and holding every
+   body in memory to answer it would cost the whole directory at once.
    */
   const text = await readFile(
     join(
@@ -394,31 +394,31 @@ async function assertBodyMatchesLabel(
 }
 
 /**
- * Refuses a resume that would mix artifact generations in one directory.
- *
- * Silent on a fresh directory and on a resume into one this pass wrote, which
- * are the two ordinary cases. It reads the artifacts rather than a marker, so a
- * directory assembled by hand is judged on what it holds.
- *
- * @param artifactsDir - directory holding one JSON per settled entry
- *
- * @param writes - generation this pass writes, defaulting to the one it writes
- * today; a parameter so a caller can exercise this without rebuilding. THE
- * DEFAULT MUST MOVE WITH THE WRITER: it sat at seven through generations
- * eight, nine and ten, unnoticed because every launch of those days went into
- * an empty directory, and on 2026-09-02 it refused XIEPT2 a directory holding
- * keyword233's generation-ten artifact, the generation this same build writes.
- *
- * @throws {@link SchemaGenerationError} when any settled artifact belongs to
- * another generation, naming every one of them
- *
- * @throws {@link MislabelledArtifactError} when an artifact declares this
- * generation and this generation's reader refuses it
- *
- * @example
- * ```ts
- * await assertResumableSchemaGeneration({ artifactsDir, },);
- * ```
+ Refuses a resume that would mix artifact generations in one directory.
+ 
+ Silent on a fresh directory and on a resume into one this pass wrote, which
+ are the two ordinary cases. It reads the artifacts rather than a marker, so a
+ directory assembled by hand is judged on what it holds.
+ 
+ @param artifactsDir - directory holding one JSON per settled entry
+ 
+ @param writes - generation this pass writes, defaulting to the one it writes
+ today; a parameter so a caller can exercise this without rebuilding. THE
+ DEFAULT MUST MOVE WITH THE WRITER: it sat at seven through generations
+ eight, nine and ten, unnoticed because every launch of those days went into
+ an empty directory, and on 2026-09-02 it refused XIEPT2 a directory holding
+ keyword233's generation-ten artifact, the generation this same build writes.
+ 
+ @throws {@link SchemaGenerationError} when any settled artifact belongs to
+ another generation, naming every one of them
+ 
+ @throws {@link MislabelledArtifactError} when an artifact declares this
+ generation and this generation's reader refuses it
+ 
+ @example
+ ```ts
+ await assertResumableSchemaGeneration({ artifactsDir, },);
+ ```
  */
 export async function assertResumableSchemaGeneration(
   {
@@ -430,12 +430,12 @@ export async function assertResumableSchemaGeneration(
   },
 ): Promise<void> {
   /**
-   * Every settled entry, classified.
+   Every settled entry, classified.
    */
   const rows = await censusBySchema({ artifactsDir, },);
 
   /**
-   * Entries belonging to any other generation.
+   Entries belonging to any other generation.
    */
   const foreign = foreignGroups({
     rows,

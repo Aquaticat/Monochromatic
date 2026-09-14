@@ -68,41 +68,41 @@ import { envelopeContext, } from './editor-envelope-context.ts';
 // calls choosing between operations that cannot ship.
 
 /**
- * Chooses one replacement text per envelope by judging the distinct proposals
- * models made for it, then assembles the winners into one operation set.
- *
- * An envelope only one model proposed for needs no vote: there is nothing to
- * compare it against, and it still faces the chunk-level judges afterwards.
- *
- * @param client - injected model client
- *
- * @param candidates - editor proposals, in roster order
- *
- * @param envelopes - envelopes of this chunk
- *
- * @param judgeModelIds - whole roster; producers are removed downstream
- *
- * @param sourceText - original chunk text, evidence for judges
- *
- * @param targetText - translation chunk text, for the surrounding context each
- * replacement has to fit
- *
- * @param neighbouringSourceText - local factual evidence for the replacement
- *
- * @param documentSourceText - same-entry original evidence beyond the local window
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Composite operation set built from per-envelope winners
- *
- * @example
- * ```ts
- * const composite = await selectPerEnvelope({ client, candidates, envelopes, ... },);
- * ```
+ Chooses one replacement text per envelope by judging the distinct proposals
+ models made for it, then assembles the winners into one operation set.
+ 
+ An envelope only one model proposed for needs no vote: there is nothing to
+ compare it against, and it still faces the chunk-level judges afterwards.
+ 
+ @param client - injected model client
+ 
+ @param candidates - editor proposals, in roster order
+ 
+ @param envelopes - envelopes of this chunk
+ 
+ @param judgeModelIds - whole roster; producers are removed downstream
+ 
+ @param sourceText - original chunk text, evidence for judges
+ 
+ @param targetText - translation chunk text, for the surrounding context each
+ replacement has to fit
+ 
+ @param neighbouringSourceText - local factual evidence for the replacement
+ 
+ @param documentSourceText - same-entry original evidence beyond the local window
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - pipeline logger
+ 
+ @returns Composite operation set built from per-envelope winners
+ 
+ @example
+ ```ts
+ const composite = await selectPerEnvelope({ client, candidates, envelopes, ... },);
+ ```
  */
 export async function selectPerEnvelope(
   {
@@ -132,7 +132,7 @@ export async function selectPerEnvelope(
   }>,
 ): Promise<EnvelopeSelection> {
   /**
-   * Logger tagged with this selection pass.
+   Logger tagged with this selection pass.
    */
   const el = tagged({
     tag: selectPerEnvelope.name,
@@ -140,32 +140,32 @@ export async function selectPerEnvelope(
   },);
 
   /**
-   * Winning operation per envelope, filled in envelope order.
+   Winning operation per envelope, filled in envelope order.
    */
   const winners: PatchOperation[] = [];
 
   /**
-   * Contributing models in first-win order, deduplicated by `seen`.
+   Contributing models in first-win order, deduplicated by `seen`.
    */
   const contributors: RosterModelId[] = [];
 
   /**
-   * Models already credited as contributors.
+   Models already credited as contributors.
    */
   const seen = new Set<RosterModelId>();
 
   /**
-   * Degradation findings gathered from every envelope's judge fan-out.
+   Degradation findings gathered from every envelope's judge fan-out.
    */
   const selectionFindings: string[] = [];
 
   /**
-   * Ballots of every envelope round that reached the judges.
+   Ballots of every envelope round that reached the judges.
    */
   const rounds: RepairJudgedRound[] = [];
 
   /**
-   * How each envelope was decided.
+   How each envelope was decided.
    */
   const counters = {
     sole: 0,
@@ -174,8 +174,8 @@ export async function selectPerEnvelope(
   };
   for (const envelope of envelopes) {
     /**
-     * Every distinct APPLIED proposal for this envelope, each credited to
-     * every model that wrote it.
+     Every distinct APPLIED proposal for this envelope, each credited to
+     every model that wrote it.
      */
     const proposals = collectEnvelopeProposals({
       candidates,
@@ -186,8 +186,8 @@ export async function selectPerEnvelope(
       continue;
 
     /**
-     * Sole distinct proposal, adopted without a vote because there is nothing
-     * to compare it against; chunk-level judging still sees it.
+     Sole distinct proposal, adopted without a vote because there is nothing
+     to compare it against; chunk-level judging still sees it.
      */
     const [sole,] = proposals;
     if ((proposals.length === 1) && (sole !== undefined)) {
@@ -210,7 +210,7 @@ export async function selectPerEnvelope(
     }
 
     /**
-     * Judges verdict over the distinct proposals for this envelope.
+     Judges verdict over the distinct proposals for this envelope.
      */
     /* oxlint-disable-next-line no-await-in-loop -- current envelope winners mutate ordered attribution state; replacement DAG must separate concurrent selection from ordered reduction */
     const outcome = await selectBestCandidate({
@@ -280,39 +280,39 @@ export async function selectPerEnvelope(
 }
 
 /**
- * Judges whole-chunk candidates and returns the patch that ships.
- *
- * @param client - injected model client
- *
- * @param candidates - whole-chunk proposals including the composite
- *
- * @param judgeModelIds - whole roster; producers are removed downstream
- *
- * @param sourceText - original chunk text, evidence for judges
- *
- * @param neighbouringSourceText - local factual evidence for repaired details
- *
- * @param documentSourceText - same-entry original evidence beyond the local window
- *
- * @param indecisionFallback - patch adopted when judges answered but failed to
- * converge; callers must pass a patch that actually repairs something
- *
- * @param rejectionFallback - patch adopted when judges affirmatively found no
- * candidate acceptable; normally the untouched translation
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Winning patch, or the fallback when judges decline, plus the
- * judge fan-out findings for the caller to carry into the artifact
- *
- * @example
- * ```ts
- * const patch = await selectChunkPatch({ client, candidates, fallback, ... },);
- * ```
+ Judges whole-chunk candidates and returns the patch that ships.
+ 
+ @param client - injected model client
+ 
+ @param candidates - whole-chunk proposals including the composite
+ 
+ @param judgeModelIds - whole roster; producers are removed downstream
+ 
+ @param sourceText - original chunk text, evidence for judges
+ 
+ @param neighbouringSourceText - local factual evidence for repaired details
+ 
+ @param documentSourceText - same-entry original evidence beyond the local window
+ 
+ @param indecisionFallback - patch adopted when judges answered but failed to
+ converge; callers must pass a patch that actually repairs something
+ 
+ @param rejectionFallback - patch adopted when judges affirmatively found no
+ candidate acceptable; normally the untouched translation
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - pipeline logger
+ 
+ @returns Winning patch, or the fallback when judges decline, plus the
+ judge fan-out findings for the caller to carry into the artifact
+ 
+ @example
+ ```ts
+ const patch = await selectChunkPatch({ client, candidates, fallback, ... },);
+ ```
  */
 export async function selectChunkPatch(
   {
@@ -342,7 +342,7 @@ export async function selectChunkPatch(
   }>,
 ): Promise<ChunkPatchSelection> {
   /**
-   * Logger tagged with this selection pass.
+   Logger tagged with this selection pass.
    */
   const cl = tagged({
     tag: selectChunkPatch.name,
@@ -350,12 +350,12 @@ export async function selectChunkPatch(
   },);
 
   /**
-   * Sole candidate, which needs no vote.
-   *
-   * Callers deduplicate by rendered text before calling, so one candidate here
-   * means every editor and the composite agreed on the same text. That is
-   * unanimity rather than an unexamined survivor, and the text still faces the
-   * resolution checkers and the unchanged-versus-repaired selection after this.
+   Sole candidate, which needs no vote.
+   
+   Callers deduplicate by rendered text before calling, so one candidate here
+   means every editor and the composite agreed on the same text. That is
+   unanimity rather than an unexamined survivor, and the text still faces the
+   resolution checkers and the unchanged-versus-repaired selection after this.
    */
   const [sole,] = candidates;
   if ((candidates.length === 1) && (sole !== undefined)) {
@@ -370,7 +370,7 @@ export async function selectChunkPatch(
   }
 
   /**
-   * Judges verdict over the whole-chunk candidates.
+   Judges verdict over the whole-chunk candidates.
    */
   const outcome = await selectBestCandidate({
     client,
@@ -398,8 +398,8 @@ export async function selectChunkPatch(
     l,
   },);
   /**
-   * This round's ballots, recorded before any branch, so a refusal keeps the
-   * reasoning that produced it exactly as a win does.
+   This round's ballots, recorded before any branch, so a refusal keeps the
+   reasoning that produced it exactly as a win does.
    */
   const rounds = [
     describeJudgedRound({
@@ -453,21 +453,21 @@ export async function selectChunkPatch(
 }
 
 /**
- * Applies one candidate's operations, so a composite can be scored the same way
- * a model's own proposal is.
- *
- * @param targetText - translation chunk text
- *
- * @param envelopes - envelopes of this chunk
- *
- * @param operations - operations to apply
- *
- * @returns Apply-gate outcome
- *
- * @example
- * ```ts
- * const patch = applyCandidate({ targetText, envelopes, operations, },);
- * ```
+ Applies one candidate's operations, so a composite can be scored the same way
+ a model's own proposal is.
+ 
+ @param targetText - translation chunk text
+ 
+ @param envelopes - envelopes of this chunk
+ 
+ @param operations - operations to apply
+ 
+ @returns Apply-gate outcome
+ 
+ @example
+ ```ts
+ const patch = applyCandidate({ targetText, envelopes, operations, },);
+ ```
  */
 export function applyCandidate(
   {

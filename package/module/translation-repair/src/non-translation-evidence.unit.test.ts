@@ -1,13 +1,13 @@
 /**
- * Tests for the deterministic non-translation contradiction check and
- * the vote screening built on it:
- * votes below threshold never contradict, content-critique claims
- * anchored target-side count toward the floor, missing-translation
- * categories plus source-only anchors never count, and dismissed votes
- * take their non-translation claims along with a finding.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the deterministic non-translation contradiction check and
+ the vote screening built on it:
+ votes below threshold never contradict, content-critique claims
+ anchored target-side count toward the floor, missing-translation
+ categories plus source-only anchors never count, and dismissed votes
+ take their non-translation claims along with a finding.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -29,7 +29,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one claim with chosen category and span side.
+ Builds one claim with chosen category and span side.
  */
 function catClaim(
   {
@@ -60,7 +60,7 @@ function catClaim(
 }
 
 /**
- * Content-critique claims at exactly the contradiction floor.
+ Content-critique claims at exactly the contradiction floor.
  */
 const FLOOR_CLAIMS: readonly IssueClaim[] = [
   ...Array.from({ length: NON_TRANSLATION_CONTRADICTION_MIN, },)
@@ -75,7 +75,7 @@ const FLOOR_CLAIMS: readonly IssueClaim[] = [
   },);
 
 /**
- * Non-translation claim dismissed together with contradicted votes.
+ Non-translation claim dismissed together with contradicted votes.
  */
 const NON_TRANSLATION_CLAIM: IssueClaim = catClaim({
   category: 'accuracy/non-translation',
@@ -84,8 +84,8 @@ const NON_TRANSLATION_CLAIM: IssueClaim = catClaim({
 },);
 
 /**
- * Wraps one claim as an adjudicated issue with the chosen decision, for
- * exercising the anchor probe over a slice's settled issues.
+ Wraps one claim as an adjudicated issue with the chosen decision, for
+ exercising the anchor probe over a slice's settled issues.
  */
 function catIssue(
   {
@@ -111,8 +111,8 @@ function catIssue(
 }
 
 /**
- * Builds one settled slice outcome carrying the given issues and standing
- * verdict; only the fields the anchor probe reads carry meaning.
+ Builds one settled slice outcome carrying the given issues and standing
+ verdict; only the fields the anchor probe reads carry meaning.
  */
 function catOutcome(
   {
@@ -199,7 +199,7 @@ await describe({
           name: 'excludes missing-translation categories even when target-anchored',
           fn: async () => {
             /**
-             * Claims whose categories evidence missing translation.
+             Claims whose categories evidence missing translation.
              */
             const missingTranslationClaims: readonly IssueClaim[] = [
               catClaim({
@@ -230,7 +230,7 @@ await describe({
           name: 'excludes source-only claims from contradiction',
           fn: async () => {
             /**
-             * Content-critique claims anchored only in source text.
+             Content-critique claims anchored only in source text.
              */
             const sourceOnlyClaims: readonly IssueClaim[] = [
               ...Array.from({ length: NON_TRANSLATION_CONTRADICTION_MIN, },)
@@ -454,7 +454,7 @@ await describe({
           name: 'passes claims through untouched while votes stand',
           fn: async () => {
             /**
-             * Claims under the floor, so votes stand.
+             Claims under the floor, so votes stand.
              */
             const standingClaims: readonly IssueClaim[] = [
               NON_TRANSLATION_CLAIM,

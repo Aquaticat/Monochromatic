@@ -8,7 +8,7 @@ import { unchangedChunkOutcome, } from './repair-unchanged-outcome.ts';
 // prose-oriented critics, editors, and naturalness rewriters.
 
 /**
- * Empty critic evidence for syntax role repair does not run.
+ Empty critic evidence for syntax role repair does not run.
  */
 const FRONT_MATTER_CRITIC: ChunkCriticPhase = {
   claims: [],
@@ -22,18 +22,18 @@ const FRONT_MATTER_CRITIC: ChunkCriticPhase = {
 };
 
 /**
- * Creates explicit unchanged repair settlement for front matter.
- *
- * @param sliceIndex - global front matter slice index
- *
- * @param targetText - archive metadata retained by repair lane
- *
- * @returns Stable no-op outcome with syntax finding
- *
- * @example
- * ```ts
- * const outcome = frontMatterRepairOutcome({ sliceIndex: 0, targetText, });
- * ```
+ Creates explicit unchanged repair settlement for front matter.
+ 
+ @param sliceIndex - global front matter slice index
+ 
+ @param targetText - archive metadata retained by repair lane
+ 
+ @returns Stable no-op outcome with syntax finding
+ 
+ @example
+ ```ts
+ const outcome = frontMatterRepairOutcome({ sliceIndex: 0, targetText, });
+ ```
  */
 export function frontMatterRepairOutcome(
   {

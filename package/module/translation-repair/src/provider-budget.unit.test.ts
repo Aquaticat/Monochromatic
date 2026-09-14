@@ -1,8 +1,8 @@
 /**
- * Tests for the cached budget view: what it reads, what it caches, what a
- * refused call corrects, and what it does when a meter cannot be read at all.
- *
- * @module
+ Tests for the cached budget view: what it reads, what it caches, what a
+ refused call corrects, and what it does when a meter cannot be read at all.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -14,7 +14,7 @@ import {
 import { createProviderBudgets, } from '../dist/final/node/index.mjs';
 
 /**
- * Quota snapshot of a provider with budget left.
+ Quota snapshot of a provider with budget left.
  */
 const WET_QUOTA = {
   fiveHour: {
@@ -30,8 +30,8 @@ const WET_QUOTA = {
 };
 
 /**
- * Quota snapshot of a provider whose weekly credit ran out, which is the
- * state `#199` was opened on.
+ Quota snapshot of a provider whose weekly credit ran out, which is the
+ state `#199` was opened on.
  */
 const DRY_QUOTA = {
   ...WET_QUOTA,
@@ -42,7 +42,7 @@ const DRY_QUOTA = {
 };
 
 /**
- * OpenRouter credits with money left, the live reading of 2026-09-03.
+ OpenRouter credits with money left, the live reading of 2026-09-03.
  */
 const WET_CREDITS = {
   purchasedUsd: 1_913,
@@ -51,22 +51,22 @@ const WET_CREDITS = {
 };
 
 /**
- * Builds stub meters that answer as told.
- *
- * @param quota - what the first provider's quota endpoint returns
- *
- * @param balance - what the second provider's balance endpoint returns
- *
- * @param remainingUsd - what the third provider's credits endpoint leaves
- *
- * @param quotaThrows - whether the first provider's meter is unreachable
- *
- * @returns Every meter plus the count of reads each took
- *
- * @example
- * ```ts
- * const { synthetic, hyper, openrouter, reads, } = stubProviders({ quota: WET_QUOTA, balance: 243, },);
- * ```
+ Builds stub meters that answer as told.
+ 
+ @param quota - what the first provider's quota endpoint returns
+ 
+ @param balance - what the second provider's balance endpoint returns
+ 
+ @param remainingUsd - what the third provider's credits endpoint leaves
+ 
+ @param quotaThrows - whether the first provider's meter is unreachable
+ 
+ @returns Every meter plus the count of reads each took
+ 
+ @example
+ ```ts
+ const { synthetic, hyper, openrouter, reads, } = stubProviders({ quota: WET_QUOTA, balance: 243, },);
+ ```
  */
 function stubProviders(
   {
@@ -82,7 +82,7 @@ function stubProviders(
   },
 ) {
   /**
-   * How many times each meter was read.
+   How many times each meter was read.
    */
   const reads = {
     quota: 0,
@@ -119,12 +119,12 @@ function stubProviders(
 }
 
 /**
- * Abort signal every read in these tests carries.
+ Abort signal every read in these tests carries.
  */
 const SIGNAL = new AbortController().signal;
 
 /**
- * Nobody dry.
+ Nobody dry.
  */
 const ALL_WET = {
   synthetic: false,

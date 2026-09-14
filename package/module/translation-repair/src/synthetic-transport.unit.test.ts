@@ -1,11 +1,11 @@
 /**
- * Tests for the fetch-backed default transport:
- * request assembly (fresh header copy, body only on POST, dependent
- * signal), raw status passthrough, and abort propagation.
- * The global fetch is stubbed per test; children run sequentially so
- * stubs never overlap.
- *
- * @module
+ Tests for the fetch-backed default transport:
+ request assembly (fresh header copy, body only on POST, dependent
+ signal), raw status passthrough, and abort propagation.
+ The global fetch is stubbed per test; children run sequentially so
+ stubs never overlap.
+ 
+ @module
  */
 
 import {
@@ -16,7 +16,7 @@ import {
 import { fetchTransport, } from '../dist/final/node/index.mjs';
 
 /**
- * Request init the stubbed fetch captured, probed field by field.
+ Request init the stubbed fetch captured, probed field by field.
  */
 type CapturedInit = {
   readonly method?: string;
@@ -33,7 +33,7 @@ await describe({
       name: 'assembles a POST with copied headers and returns the raw reply',
       fn: async ctx => {
         /**
-         * Headers object whose identity must not reach the platform request.
+         Headers object whose identity must not reach the platform request.
          */
         const callerHeaders = { Authorization: 'Bearer cat-key', };
         const fetchStub = ctx.sinon
@@ -135,7 +135,7 @@ await describe({
           )
           .callsFake(async function abortAwareFetch(_url, init,) {
             /**
-             * Signal the platform request would honor.
+             Signal the platform request would honor.
              */
             const { signal, } = (init ?? {}) as CapturedInit;
             if (signal?.aborted === true)

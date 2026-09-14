@@ -47,53 +47,53 @@ export {
 // returns those settlements in slice order however providers answered.
 
 /**
- * Logger root for repair pipeline.
+ Logger root for repair pipeline.
  */
 const l = tagged({ tag: 'translation-repair-pipeline', },);
 
 /**
- * Default per-call deadline for pipeline exchanges.
+ Default per-call deadline for pipeline exchanges.
  */
 const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
 
 /**
- * Repairs one already prepared document pair.
- *
- * @param client - injected model client
- *
- * @param prepared - slices, governance, declared names and alignment findings
- *
- * @param models - repair role roster
- *
- * @param adjudicationConfig - tally thresholds and weights
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param sliceCache - optional cross-run cache for accuracy outcomes
- *
- * @param refineCache - optional cross-run cache for naturalness settlements
- *
- * @param overlap - most repair or refinement slices in flight; one reproduces former loops
- *
- * @param parentLogger - logger this lane tags under
- *
- * @returns Repaired candidate plus adjudicated issues and completion status
- *
- * @throws Whatever `signal.reason` carries once caller aborts with slices still
- * unbought; nothing settled under that abort is cached
- *
- * @example
- * ```ts
- * const result = await repairPreparedDocument({
- *   client,
- *   prepared,
- *   models,
- *   signal,
- *   overlap: 4,
- * },);
- * ```
+ Repairs one already prepared document pair.
+ 
+ @param client - injected model client
+ 
+ @param prepared - slices, governance, declared names and alignment findings
+ 
+ @param models - repair role roster
+ 
+ @param adjudicationConfig - tally thresholds and weights
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param sliceCache - optional cross-run cache for accuracy outcomes
+ 
+ @param refineCache - optional cross-run cache for naturalness settlements
+ 
+ @param overlap - most repair or refinement slices in flight; one reproduces former loops
+ 
+ @param parentLogger - logger this lane tags under
+ 
+ @returns Repaired candidate plus adjudicated issues and completion status
+ 
+ @throws Whatever `signal.reason` carries once caller aborts with slices still
+ unbought; nothing settled under that abort is cached
+ 
+ @example
+ ```ts
+ const result = await repairPreparedDocument({
+   client,
+   prepared,
+   models,
+   signal,
+   overlap: 4,
+ },);
+ ```
  */
 export async function repairPreparedDocument(
   {
@@ -120,8 +120,8 @@ export async function repairPreparedDocument(
     readonly overlap?: number;
 
     /**
-     * Awaited before each slice starts, so a caller can hold the slice back
-     * while a named provider hold keeps the bench from quorum.
+     Awaited before each slice starts, so a caller can hold the slice back
+     while a named provider hold keeps the bench from quorum.
      */
     readonly beforeSlice?: () => Promise<void>;
     readonly parentLogger?: Logger;
@@ -141,7 +141,7 @@ export async function repairPreparedDocument(
   },);
 
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: repairPreparedDocument.name,
@@ -149,22 +149,22 @@ export async function repairPreparedDocument(
   },);
 
   /**
-   * Translation under repair.
+   Translation under repair.
    */
   const { targetText, } = prepared;
 
   /**
-   * Alignment findings in scorecard-stable wording.
+   Alignment findings in scorecard-stable wording.
    */
   const { alignmentFindings, } = prepared;
 
   /**
-   * Paragraph-bound slice pairs in document order.
+   Paragraph-bound slice pairs in document order.
    */
   const { slices, } = prepared;
 
   /**
-   * Slices governed by line-structure rule.
+   Slices governed by line-structure rule.
    */
   const lineStructuredSlices = prepared.lineStructuredSliceIndices;
   rl.info(
@@ -174,14 +174,14 @@ export async function repairPreparedDocument(
   );
 
   /**
-   * Identity context spread into run shape and naturalness call.
+   Identity context spread into run shape and naturalness call.
    */
   const identityFragment = (prepared.identityContext === undefined)
     ? {}
     : { identityContext: prepared.identityContext, };
 
   /**
-   * Model-facing governance folded into every repair key.
+   Model-facing governance folded into every repair key.
    */
   const runShape = repairRunShape({
     models,
@@ -190,12 +190,12 @@ export async function repairPreparedDocument(
   },);
 
   /**
-   * Cache-eligible purchases in this run, shared by every slice.
+   Cache-eligible purchases in this run, shared by every slice.
    */
   const twins: TwinMemo<ChunkRepairOutcome> = new Map();
 
   /**
-   * Every accuracy settlement, returned in slice order.
+   Every accuracy settlement, returned in slice order.
    */
   const settlements = await mapOverlapped({
     items: slices,
@@ -224,7 +224,7 @@ export async function repairPreparedDocument(
   },);
 
   /**
-   * Accuracy outcomes in document order.
+   Accuracy outcomes in document order.
    */
   const outcomes = settlements.map(function toOutcome(
     settlement,
@@ -233,7 +233,7 @@ export async function repairPreparedDocument(
   },);
 
   /**
-   * Cached outcomes refused for contradicting their text, in document order.
+   Cached outcomes refused for contradicting their text, in document order.
    */
   const refusedCacheFindings = settlements.flatMap(function toFindings(
     settlement,
@@ -242,7 +242,7 @@ export async function repairPreparedDocument(
   },);
 
   /**
-   * Non-translation dominance over whole run, reported and never deciding.
+   Non-translation dominance over whole run, reported and never deciding.
    */
   const dominance = assessNonTranslationDominance({
     slices: slices.map(function toTally(
@@ -250,7 +250,7 @@ export async function repairPreparedDocument(
       slicePosition,
     ) {
       /**
-       * This slice's settled outcome.
+       This slice's settled outcome.
        */
       const sliceOutcome = outcomes[slicePosition];
       return {
@@ -270,14 +270,14 @@ export async function repairPreparedDocument(
   }
 
   /**
-   * Dominance finding, present only when reading crossed.
+   Dominance finding, present only when reading crossed.
    */
   const dominanceFindings = dominance.blocked
     ? [nonTranslationDominanceFinding(dominance,),]
     : [];
 
   /**
-   * Naturalness lane over every accuracy-settled slice.
+   Naturalness lane over every accuracy-settled slice.
    */
   const phase = await refineSettledSlices({
     client,
@@ -295,7 +295,7 @@ export async function repairPreparedDocument(
   },);
 
   /**
-   * Final outcomes after optional naturalness rewrites.
+   Final outcomes after optional naturalness rewrites.
    */
   const finalOutcomes = phase.outcomes;
 

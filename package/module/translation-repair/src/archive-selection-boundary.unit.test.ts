@@ -1,7 +1,7 @@
 /**
- * Locks down the decision boundaries exposed by Mio12's cached archive review.
- *
- * @module
+ Locks down the decision boundaries exposed by Mio12's cached archive review.
+ 
+ @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -21,10 +21,10 @@ import {
 } from './archive-selection.test-fixture.ts';
 
 /**
- * Runs the real stage with a caller-local source/target pair and no provider access.
- *
- * @param fixture - scripted reviews and independent selection
- * @returns Actual stage outcome
+ Runs the real stage with a caller-local source/target pair and no provider access.
+ 
+ @param fixture - scripted reviews and independent selection
+ @returns Actual stage outcome
  */
 async function runFixture(fixture: ReturnType<typeof archiveSelectionFixture>,): ReturnType<typeof runArchiveBlockReviewStage> {
   return await runArchiveBlockReviewStage({

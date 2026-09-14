@@ -65,18 +65,18 @@ import {
 // deciding it after seeing the tally is a goalpost move.
 
 /**
- * Prints one audited slice as it lands, so a long run can be watched.
- *
- * @param row - what the roster said about one slice
- *
- * @example
- * ```ts
- * printRow({ row, },);
- * ```
+ Prints one audited slice as it lands, so a long run can be watched.
+ 
+ @param row - what the roster said about one slice
+ 
+ @example
+ ```ts
+ printRow({ row, },);
+ ```
  */
 function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
   /**
-   * Where this slice came from and what the two tiers made of it.
+   Where this slice came from and what the two tiers made of it.
    */
   const {
     runSet,
@@ -87,17 +87,17 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
   } = row;
 
   /**
-   * Whether a later stage overruled the wording just audited.
-   *
-   * PRINTED BESIDE the archive-versus-fresh token rather than replacing it.
-   * `FRESH` says the lane produced this wording, which stays true however
-   * the contest and the consolidation later ruled; without the relation
-   * beside it a watcher reads every `FRESH` line as the product.
+   Whether a later stage overruled the wording just audited.
+   
+   PRINTED BESIDE the archive-versus-fresh token rather than replacing it.
+   `FRESH` says the lane produced this wording, which stays true however
+   the contest and the consolidation later ruled; without the relation
+   beside it a watcher reads every `FRESH` line as the product.
    */
   const relation = pageRelationFor({ row, },);
 
   /**
-   * Both agreement tiers, the near misses, the degradation and every voice.
+   Both agreement tiers, the near misses, the degradation and every voice.
    */
   const {
     corroborated,
@@ -108,11 +108,11 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
   } = report;
 
   /**
-   * Claims that anchored, across the whole roster.
-   *
-   * PRINTED BESIDE THE TIERS because the difference between them is the
-   * measurement: voices that claimed plenty and agreed on none says something
-   * about the matcher, and a silent roster says something else entirely.
+   Claims that anchored, across the whole roster.
+   
+   PRINTED BESIDE THE TIERS because the difference between them is the
+   measurement: voices that claimed plenty and agreed on none says something
+   about the matcher, and a silent roster says something else entirely.
    */
   const claimed = rows.reduce(
     function total(
@@ -120,7 +120,7 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
       voice,
     ): number {
       /**
-       * What this voice claimed that anchored.
+       What this voice claimed that anchored.
        */
       const { findings: anchored, } = voice;
       return sum + anchored.length;
@@ -142,51 +142,51 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
 }
 
 /**
- * Reads the archive, audits what was asked for, and keeps the answers.
- *
- * @throws {@link StatedRefusalError} when the archive holds nothing to audit,
- * which means the run was pointed somewhere wrong rather than that everything
- * is clean
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Reads the archive, audits what was asked for, and keeps the answers.
+ 
+ @throws {@link StatedRefusalError} when the archive holds nothing to audit,
+ which means the run was pointed somewhere wrong rather than that everything
+ is clean
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * When this invocation began, read before any call so the record dates the
-   * run rather than the moment it happened to finish.
+   When this invocation began, read before any call so the record dates the
+   run rather than the moment it happened to finish.
    */
   const startedAt = new Date().toISOString();
 
   /**
-   * Digest over built output, which is the only identity that moves when the
-   * code moves but the commit does not.
-   *
-   * READ AT THE START, not at the end, and that ordering is the whole point.
-   * A long run gives a developer plenty of time to rebuild, and this probe was
-   * caught doing exactly that: `dist` was rebuilt while a 40-subject run was in
-   * flight, so the digest the run was about to stamp described a build that had
-   * never audited anything. Node loads the code once, at startup; the identity
-   * that answers for a run is the one present THEN.
+   Digest over built output, which is the only identity that moves when the
+   code moves but the commit does not.
+   
+   READ AT THE START, not at the end, and that ordering is the whole point.
+   A long run gives a developer plenty of time to rebuild, and this probe was
+   caught doing exactly that: `dist` was rebuilt while a 40-subject run was in
+   flight, so the digest the run was about to stamp described a build that had
+   never audited anything. Node loads the code once, at startup; the identity
+   that answers for a run is the one present THEN.
    */
   const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
 
   /**
-   * Chunks this entry imports, read from the executing file at run START for
-   * the same reason the digest is: a rebuild mid-run would otherwise stamp a
-   * build that never ran. `#116`.
+   Chunks this entry imports, read from the executing file at run START for
+   the same reason the digest is: a rebuild mid-run would otherwise stamp a
+   build that never ran. `#116`.
    */
   const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
 
   /**
-   * What the command line asked for.
+   What the command line asked for.
    */
   const asked = readAuditArguments({ argv: process.argv, },);
 
   /**
-   * Every artifact the archive holds, parsed, re-prepared and verified. Free.
+   Every artifact the archive holds, parsed, re-prepared and verified. Free.
    */
   const readings = await readArchiveSubjects({
     archiveDir: asked.archiveDir,
@@ -202,7 +202,7 @@ async function main(): Promise<void> {
   printPopulation({ readings, },);
 
   /**
-   * Subjects the entry filter left, which is what a capped buy is a fraction of.
+   Subjects the entry filter left, which is what a capped buy is a fraction of.
    */
   const eligible = eligibleSubjects({
     readings,
@@ -210,7 +210,7 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * Subjects this run will buy.
+   Subjects this run will buy.
    */
   const buying = capped({
     eligible,
@@ -221,25 +221,25 @@ async function main(): Promise<void> {
   );
 
   /**
-   * What the roster said about each, in order.
-   *
-   * SEQUENTIAL rather than concurrent: these share one roster, and interleaved
-   * progress lines would make the stream unreadable, which is the only thing a
-   * long run offers a watcher.
+   What the roster said about each, in order.
+   
+   SEQUENTIAL rather than concurrent: these share one roster, and interleaved
+   progress lines would make the stream unreadable, which is the only thing a
+   long run offers a watcher.
    */
   const rows: SettledAuditRow[] = [];
   if (buying.length > 0) {
     /**
-     * One client for the whole run, built here rather than per subject: a
-     * client carries the provider seats, and `#235`'s seat report reads one
-     * run-wide tally, so one client is what a run is. Built only once
-     * something is bought, so `--cap 0`, the wiring check that reads the
-     * archive and asks nobody, still needs no key.
+     One client for the whole run, built here rather than per subject: a
+     client carries the provider seats, and `#235`'s seat report reads one
+     run-wide tally, so one client is what a run is. Built only once
+     something is bought, so `--cap 0`, the wiring check that reads the
+     archive and asks nobody, still needs no key.
      */
     const client = createRunClient();
     for (const subject of buying) {
       /**
-       * What the roster said about this one.
+       What the roster said about this one.
        */
       // oxlint-disable-next-line no-await-in-loop -- sequential by design: every subject shares one roster, and concurrent asks would interleave the progress stream a long run exists to be watched through
       const row = await auditOne({
@@ -252,7 +252,7 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Where this run was kept, said out loud so the answers are findable.
+   Where this run was kept, said out loud so the answers are findable.
    */
   const keptAt = await persistProbeRun({
     runsDir: await resolveRunsDir(),
@@ -270,8 +270,8 @@ async function main(): Promise<void> {
         onlyIds: asked.onlyIds,
         artifacts: readings.map(function named(reading,): Record<string, unknown> {
           /**
-           * What this artifact was and what it offered, so a persisted run says
-           * which files it read without needing the archive to still exist.
+           What this artifact was and what it offered, so a persisted run says
+           which files it read without needing the archive to still exist.
            */
           const {
             runSet,

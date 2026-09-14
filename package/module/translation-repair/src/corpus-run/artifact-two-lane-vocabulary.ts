@@ -45,165 +45,165 @@
 // reader has to understand completely to read a row at all.
 
 /**
- * What a lane did about one slice, as version 2 records it.
- *
- * @example
- * ```ts
- * const outcome: ArtifactSliceOutcome = { kind: 'decided', acceptedText: 'The cat naps.', };
- * ```
+ What a lane did about one slice, as version 2 records it.
+ 
+ @example
+ ```ts
+ const outcome: ArtifactSliceOutcome = { kind: 'decided', acceptedText: 'The cat naps.', };
+ ```
  */
 export type ArtifactSliceOutcome = {
   /**
-   * Lane produced a wording, whether or not the document carries it.
+   Lane produced a wording, whether or not the document carries it.
    */
   readonly kind: 'decided';
 
   /**
-   * Wording it decided on.
+   Wording it decided on.
    */
   readonly acceptedText: string;
 } | {
   /**
-   * Lane never reached this slice.
+   Lane never reached this slice.
    */
   readonly kind: 'not-evaluated';
 } | {
   /**
-   * Lane reached it, produced nothing, and the archive had nothing either.
+   Lane reached it, produced nothing, and the archive had nothing either.
    */
   readonly kind: 'unfilled';
 } | {
   /**
-   * Lane reached it, produced nothing, and the archive's wording therefore
-   * stands by default rather than by anyone's choice.
+   Lane reached it, produced nothing, and the archive's wording therefore
+   stands by default rather than by anyone's choice.
    */
   readonly kind: 'incumbent-fallback';
 } | {
   /**
-   * Lane reached it and the work it does has no input there at all.
+   Lane reached it and the work it does has no input there at all.
    */
   readonly kind: 'not-applicable';
 };
 
 /**
- * What one lane's document carries at one slice, as version 2 records it.
- *
- * @example
- * ```ts
- * const delivery: ArtifactSliceDelivery = { kind: 'replacement-shipped', };
- * ```
+ What one lane's document carries at one slice, as version 2 records it.
+ 
+ @example
+ ```ts
+ const delivery: ArtifactSliceDelivery = { kind: 'replacement-shipped', };
+ ```
  */
 export type ArtifactSliceDelivery = {
   /**
-   * Document carries the lane's decision, which differs from the archive.
+   Document carries the lane's decision, which differs from the archive.
    */
   readonly kind: 'replacement-shipped';
 } | {
   /**
-   * Lane decided a replacement and the document does not carry it.
+   Lane decided a replacement and the document does not carry it.
    */
   readonly kind: 'replacement-withdrawn';
 
   /**
-   * Which mechanism took it back: the per-slice assembly guard, or the
-   * whole-document refusal that never assembled at all.
+   Which mechanism took it back: the per-slice assembly guard, or the
+   whole-document refusal that never assembled at all.
    */
   readonly reason: 'assembly-integrity' | 'blocked-non-translation';
 } | {
   /**
-   * Document carries the archive's own wording.
+   Document carries the archive's own wording.
    */
   readonly kind: 'incumbent-retained';
 } | {
   /**
-   * Passage is missing, and the archive never had it either.
+   Passage is missing, and the archive never had it either.
    */
   readonly kind: 'gap-remains';
 };
 
 /**
- * One row of one lane's delivery ledger, as version 2 records it.
- *
- * @example
- * ```ts
- * const row: ArtifactDeliveryRow = { sliceIndex: 0, sourceText: '猫', ... };
- * ```
+ One row of one lane's delivery ledger, as version 2 records it.
+ 
+ @example
+ ```ts
+ const row: ArtifactDeliveryRow = { sliceIndex: 0, sourceText: '猫', ... };
+ ```
  */
 export type ArtifactDeliveryRow = {
   /**
-   * Global slice index, which every join uses.
+   Global slice index, which every join uses.
    */
   readonly sliceIndex: number;
 
   /**
-   * Original this slice was translated from.
+   Original this slice was translated from.
    */
   readonly sourceText: string;
 
   /**
-   * Whether the archive holds any wording at this slice at all.
+   Whether the archive holds any wording at this slice at all.
    */
   readonly incumbentKind: 'present' | 'absent';
 
   /**
-   * Archive's own English for it.
+   Archive's own English for it.
    */
   readonly incumbentText: string;
 
   /**
-   * What the lane did.
+   What the lane did.
    */
   readonly outcome: ArtifactSliceOutcome;
 
   /**
-   * Wording the lane's document carries here.
+   Wording the lane's document carries here.
    */
   readonly shippedText: string;
 
   /**
-   * How it came to carry that.
+   How it came to carry that.
    */
   readonly delivery: ArtifactSliceDelivery;
 };
 
 /**
- * How the two lanes' own decisions relate at one slice, as version 2 records
- * it.
- *
- * @example
- * ```ts
- * const decisions: ArtifactDecisionComparison = { kind: 'comparable', verdict: 'same', };
- * ```
+ How the two lanes' own decisions relate at one slice, as version 2 records
+ it.
+ 
+ @example
+ ```ts
+ const decisions: ArtifactDecisionComparison = { kind: 'comparable', verdict: 'same', };
+ ```
  */
 export type ArtifactDecisionComparison = {
   /**
-   * Both lanes decided a wording.
+   Both lanes decided a wording.
    */
   readonly kind: 'comparable';
 
   /**
-   * Whether those wordings match, character for character.
+   Whether those wordings match, character for character.
    */
   readonly verdict: 'same' | 'different';
 } | {
   /**
-   * At least one lane decided nothing here.
+   At least one lane decided nothing here.
    */
   readonly kind: 'not-comparable';
 
   /**
-   * Which lanes those were, in lane order.
+   Which lanes those were, in lane order.
    */
   readonly undecidedLanes: readonly ('repair' | 'translate')[];
 };
 
 /**
- * How the two documents relate at one slice, as version 2 records it.
- *
- * @example
- * ```ts
- * const laneRelation: ArtifactLaneRelation = 'both-differ';
- * ```
+ How the two documents relate at one slice, as version 2 records it.
+ 
+ @example
+ ```ts
+ const laneRelation: ArtifactLaneRelation = 'both-differ';
+ ```
  */
 export type ArtifactLaneRelation =
   | 'archive-stands'
@@ -214,75 +214,75 @@ export type ArtifactLaneRelation =
   | 'gap-remains';
 
 /**
- * One slice as both lanes left it, as version 2 records it.
- *
- * @example
- * ```ts
- * const row: ArtifactComparisonRow = { sliceIndex: 0, laneRelation: 'both-differ', ... };
- * ```
+ One slice as both lanes left it, as version 2 records it.
+ 
+ @example
+ ```ts
+ const row: ArtifactComparisonRow = { sliceIndex: 0, laneRelation: 'both-differ', ... };
+ ```
  */
 export type ArtifactComparisonRow = {
   /**
-   * Slice both lanes name it by.
+   Slice both lanes name it by.
    */
   readonly sliceIndex: number;
 
   /**
-   * Whether the archive holds any wording here.
+   Whether the archive holds any wording here.
    */
   readonly incumbentKind: 'present' | 'absent';
 
   /**
-   * Archive's own English for it.
+   Archive's own English for it.
    */
   readonly incumbentText: string;
 
   /**
-   * Wording the repair document carries.
+   Wording the repair document carries.
    */
   readonly repairText: string;
 
   /**
-   * Wording the translate document carries.
+   Wording the translate document carries.
    */
   readonly translateText: string;
 
   /**
-   * Which lanes changed this slice, and whether their changes agree.
-   *
-   * NOT SPELLED `verdict`, which it was until 2026-08-22. That put one key
-   * name over two meanings at sibling paths of one artifact:
-   * `laneSelection.slices[].verdict` says who WON, which is the question
-   * about shipping, while this says which lanes CHANGED anything, naming no
-   * winner. Reading the wrong one does not throw and does not surface as
-   * `undefined` anywhere a reader looks; a probe that took the string form
-   * for the object form reported 142 of 142 slices as audit subjects, a
-   * false total that read as an answer.
+   Which lanes changed this slice, and whether their changes agree.
+   
+   NOT SPELLED `verdict`, which it was until 2026-08-22. That put one key
+   name over two meanings at sibling paths of one artifact:
+   `laneSelection.slices[].verdict` says who WON, which is the question
+   about shipping, while this says which lanes CHANGED anything, naming no
+   winner. Reading the wrong one does not throw and does not surface as
+   `undefined` anywhere a reader looks; a probe that took the string form
+   for the object form reported 142 of 142 slices as audit subjects, a
+   false total that read as an answer.
    */
   readonly laneRelation: ArtifactLaneRelation;
 
   /**
-   * What the repair lane did.
+   What the repair lane did.
    */
   readonly repairOutcome: ArtifactSliceOutcome;
 
   /**
-   * What the translate lane did.
+   What the translate lane did.
    */
   readonly translateOutcome: ArtifactSliceOutcome;
 
   /**
-   * Whether their decisions were comparable, and how they came out.
+   Whether their decisions were comparable, and how they came out.
    */
   readonly decisionComparison: ArtifactDecisionComparison;
 
   /**
-   * How the repair document came to carry what it carries.
+   How the repair document came to carry what it carries.
    */
   readonly repairDelivery: ArtifactSliceDelivery;
 
   /**
-   * How the translate document did.
+   How the translate document did.
    */
   readonly translateDelivery: ArtifactSliceDelivery;
 };

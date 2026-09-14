@@ -1,16 +1,16 @@
 /**
- * Tests for how the window trial's rows are read.
- *
- * WHAT THESE PIN is the measurement discipline that two design corrections
- * produced, both made before any quota was spent. The trial is three-armed
- * because two arms cannot separate the window from a resampled slate. The band
- * comes from two narrow arms because a single repeat understates the noise it
- * is meant to bound. A reader that lost either would report a confident number
- * from an instrument that cannot support one.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for how the window trial's rows are read.
+ 
+ WHAT THESE PIN is the measurement discipline that two design corrections
+ produced, both made before any quota was spent. The trial is three-armed
+ because two arms cannot separate the window from a resampled slate. The band
+ comes from two narrow arms because a single repeat understates the noise it
+ is meant to bound. A reader that lost either would report a confident number
+ from an instrument that cannot support one.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -25,30 +25,30 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Judges every arm in these fixtures seats.
+ Judges every arm in these fixtures seats.
  */
 const JUDGES_SEATED = 6;
 
 /**
- * Builds one completed arm.
- *
- * @param sliceIndex - slice position
- *
- * @param arm - which arm
- *
- * @param shipped - whether this arm replaced the archive
- *
- * @param sliceClass - class the screen flagged, or a control label
- *
- * @param judgesHeard - judges whose ballot arrived, short of the seated panel
- * when the fan-out lost voices
- *
- * @returns Row shaped like one the runner appends
- *
- * @example
- * ```ts
- * const row = rowFor({ sliceIndex: 0, arm: TRIAL_ARMS.wide, shipped: false, },);
- * ```
+ Builds one completed arm.
+ 
+ @param sliceIndex - slice position
+ 
+ @param arm - which arm
+ 
+ @param shipped - whether this arm replaced the archive
+ 
+ @param sliceClass - class the screen flagged, or a control label
+ 
+ @param judgesHeard - judges whose ballot arrived, short of the seated panel
+ when the fan-out lost voices
+ 
+ @returns Row shaped like one the runner appends
+ 
+ @example
+ ```ts
+ const row = rowFor({ sliceIndex: 0, arm: TRIAL_ARMS.wide, shipped: false, },);
+ ```
  */
 function rowFor(
   {
@@ -81,24 +81,24 @@ function rowFor(
 }
 
 /**
- * Builds all three arms of one slice.
- *
- * @param sliceIndex - slice position
- *
- * @param narrowFirst - whether the first narrow arm replaced
- *
- * @param narrowSecond - whether the second narrow arm replaced
- *
- * @param wide - whether the wide arm replaced
- *
- * @param sliceClass - class or control label
- *
- * @returns Three rows, one per arm
- *
- * @example
- * ```ts
- * const rows = tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },);
- * ```
+ Builds all three arms of one slice.
+ 
+ @param sliceIndex - slice position
+ 
+ @param narrowFirst - whether the first narrow arm replaced
+ 
+ @param narrowSecond - whether the second narrow arm replaced
+ 
+ @param wide - whether the wide arm replaced
+ 
+ @param sliceClass - class or control label
+ 
+ @returns Three rows, one per arm
+ 
+ @example
+ ```ts
+ const rows = tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },);
+ ```
  */
 function tripleFor(
   {
@@ -146,8 +146,8 @@ await describe({
         + 'construction, and a wide arm that moves no more than it has moved nothing',
       fn: async () => {
         /**
-         * Four slices where the wide arm flips two, and the second narrow arm
-         * flips one purely by chance.
+         Four slices where the wide arm flips two, and the second narrow arm
+         flips one purely by chance.
          */
         const rows = [
           ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
@@ -219,8 +219,8 @@ await describe({
         + 'that slice count for half, which is what it is worth',
       fn: async () => {
         /**
-         * One slice both narrow arms replaced and the wide arm kept, and one
-         * where the narrow arms disagreed and the wide arm kept.
+         One slice both narrow arms replaced and the wide arm kept, and one
+         where the narrow arms disagreed and the wide arm kept.
          */
         const rows = [
           ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
@@ -356,7 +356,7 @@ await describe({
         expect(reports.length,).toBe(2,);
 
         /**
-         * The control's own report.
+         The control's own report.
          */
         const control = reports.find(function isControl(report,) {
           return report.sliceClass === 'control-unflagged';
@@ -372,7 +372,7 @@ await describe({
         + 'would silently merge two different slices into one triple',
       fn: async () => {
         /**
-         * Same chunk index, different entries.
+         Same chunk index, different entries.
          */
         const rows = [
           ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),

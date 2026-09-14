@@ -1,13 +1,13 @@
 /**
- * Tests for the record of what the judges were actually shown.
- *
- * Ballots name a one-based position and the slate is rotated per slice, so
- * without this record a stored ballot saying "candidate 2" cannot be joined to
- * any text or producer afterwards. These cases pin the join.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the record of what the judges were actually shown.
+ 
+ Ballots name a one-based position and the slate is rotated per slice, so
+ without this record a stored ballot saying "candidate 2" cannot be joined to
+ any text or producer afterwards. These cases pin the join.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -27,22 +27,22 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Translation already in the archive.
+ Translation already in the archive.
  */
 const INCUMBENT = 'The cat naps on the windowsill.';
 
 /**
- * One model's rendering.
+ One model's rendering.
  */
 const FRESH_ONE = 'The cat is dozing on the windowsill.';
 
 /**
- * Another model's rendering.
+ Another model's rendering.
  */
 const FRESH_TWO = 'On the windowsill, the cat dozes.';
 
 /**
- * Slate as the lane assembles it, incumbent first.
+ Slate as the lane assembles it, incumbent first.
  */
 const CANDIDATES: readonly Candidate<TranslateCandidateValue>[] = [
   {
@@ -178,7 +178,7 @@ await describe({
         + 'slice and so invisibly',
       fn: async () => {
         /**
-         * Positions the incumbent lands in across many distinct slices.
+         Positions the incumbent lands in across many distinct slices.
          */
         const positions = new Set(
           Array.from(

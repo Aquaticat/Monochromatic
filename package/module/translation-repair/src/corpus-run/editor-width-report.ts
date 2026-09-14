@@ -21,35 +21,35 @@ import { resolveRunsDir, } from './run-config.ts';
 // decimal places into a sample that cannot carry one. The reader can divide.
 
 /**
- * Builds the name this draw's report is written under.
- *
- * NAMED PER DRAW so running the held-back half cannot overwrite the reading it
- * exists to be checked against.
- *
- * @param draw - half of the sample this report describes
- *
- * @returns File name for that draw
- *
- * @example
- * ```ts
- * const name = reportName('b',);
- * ```
+ Builds the name this draw's report is written under.
+ 
+ NAMED PER DRAW so running the held-back half cannot overwrite the reading it
+ exists to be checked against.
+ 
+ @param draw - half of the sample this report describes
+ 
+ @returns File name for that draw
+ 
+ @example
+ ```ts
+ const name = reportName('b',);
+ ```
  */
 function reportName(draw: WidthDraw,): string {
   return `editor-width-${draw}.md`;
 }
 
 /**
- * Renders one row as a line of counts.
- *
- * @param row - one slice's comparison
- *
- * @returns Line naming the slice and what it contributed
- *
- * @example
- * ```ts
- * const line = renderRow(row,);
- * ```
+ Renders one row as a line of counts.
+ 
+ @param row - one slice's comparison
+ 
+ @returns Line naming the slice and what it contributed
+ 
+ @example
+ ```ts
+ const line = renderRow(row,);
+ ```
  */
 function renderRow(row: WidthRow,): string {
   return [
@@ -64,37 +64,37 @@ function renderRow(row: WidthRow,): string {
 }
 
 /**
- * Writes the draw's report.
- *
- * Probe scaffolding rather than lane contract, exported so the rendering can be
- * exercised on fixtures instead of being seen for the first time at the end of a
- * draw that already spent its quota.
- *
- * @internal
- *
- * @param rows - every slice that reached a comparison
- *
- * @param skipped - slices that carried no work, by refusal
- *
- * @param headSha - pipeline commit these rows were produced by
- *
- * @param narrowEditorIds - seats in the narrow arm
- *
- * @param wideEditorIds - seats in the wide arm
- *
- * @param judgeModelIds - panel held fixed across both arms
- *
- * @param controlHeld - whether the positive control preferred intact text
- *
- * @param draw - half of the sample these rows came from, which names the file
- * so the held-back reading cannot overwrite the first one
- *
- * @returns Path written, so the caller can name it
- *
- * @example
- * ```ts
- * const path = await writeWidthReport({ rows, skipped, headSha, narrowEditorIds, wideEditorIds, judgeModelIds, controlHeld, draw, },);
- * ```
+ Writes the draw's report.
+ 
+ Probe scaffolding rather than lane contract, exported so the rendering can be
+ exercised on fixtures instead of being seen for the first time at the end of a
+ draw that already spent its quota.
+ 
+ @internal
+ 
+ @param rows - every slice that reached a comparison
+ 
+ @param skipped - slices that carried no work, by refusal
+ 
+ @param headSha - pipeline commit these rows were produced by
+ 
+ @param narrowEditorIds - seats in the narrow arm
+ 
+ @param wideEditorIds - seats in the wide arm
+ 
+ @param judgeModelIds - panel held fixed across both arms
+ 
+ @param controlHeld - whether the positive control preferred intact text
+ 
+ @param draw - half of the sample these rows came from, which names the file
+ so the held-back reading cannot overwrite the first one
+ 
+ @returns Path written, so the caller can name it
+ 
+ @example
+ ```ts
+ const path = await writeWidthReport({ rows, skipped, headSha, narrowEditorIds, wideEditorIds, judgeModelIds, controlHeld, draw, },);
+ ```
  */
 export async function writeWidthReport(
   {
@@ -118,17 +118,17 @@ export async function writeWidthReport(
   },
 ): Promise<string> {
   /**
-   * Counts the decision reads.
+   Counts the decision reads.
    */
   const summary = summarizeWidths({ rows, },);
 
   /**
-   * Directory this run may write to.
+   Directory this run may write to.
    */
   const runsDir = await resolveRunsDir();
 
   /**
-   * Where the report lands.
+   Where the report lands.
    */
   const path = join(
     runsDir,

@@ -7,18 +7,18 @@ import {
 } from './producer-input-inspect-fields.ts';
 
 /**
- * Verifies every requested bind and rejects all unregistered mounts in the native creation metadata.
- *
- * @param host - initialized host binding owner
- *
- * @param value - native Mounts field
- *
- * @throws ProducerInputRunError when a mount differs or an extra mount appears
- *
- * @example
- * ```ts
- * verifyCreatedBindings({ host, value: inspection.Mounts });
- * ```
+ Verifies every requested bind and rejects all unregistered mounts in the native creation metadata.
+ 
+ @param host - initialized host binding owner
+ 
+ @param value - native Mounts field
+ 
+ @throws ProducerInputRunError when a mount differs or an extra mount appears
+ 
+ @example
+ ```ts
+ verifyCreatedBindings({ host, value: inspection.Mounts });
+ ```
  */
 export function verifyCreatedBindings({
   host,
@@ -33,11 +33,11 @@ export function verifyCreatedBindings({
       locator: 'created bind mounts',
     });
   /**
-   * The fixed destination set is derived by the same owning boundary as argv construction.
+   The fixed destination set is derived by the same owning boundary as argv construction.
    */
   const expected = producerInputBindings(host);
   /**
-   * JSON array elements gain no implicit record authority.
+   JSON array elements gain no implicit record authority.
    */
   const rows: readonly unknown[] = value;
   if (rows.length !== expected.length)
@@ -47,13 +47,13 @@ export function verifyCreatedBindings({
     });
   for (const binding of expected) {
     /**
-     * Exactly one row must own each fixed child destination.
+     Exactly one row must own each fixed child destination.
      */
     const matches = rows.filter(function destination(row): boolean {
       return record(row) && (row.Destination === binding.target);
     });
     /**
-     * A duplicate destination is not resolved by native inspection order.
+     A duplicate destination is not resolved by native inspection order.
      */
     const [mount] = matches;
     if ((matches.length !== 1) || (!record(mount)))

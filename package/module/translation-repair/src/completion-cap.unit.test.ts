@@ -1,7 +1,7 @@
 /**
- * Tests for the completion cap every client sends as `max_tokens`.
- *
- * @module
+ Tests for the completion cap every client sends as `max_tokens`.
+ 
+ @module
  */
 
 import {
@@ -32,7 +32,7 @@ await describe({
         + 'holds where a cancel does not',
       fn: async () => {
         /**
-         * Measured cap for one seat.
+         Measured cap for one seat.
          */
         const cap = COMPLETION_CAP['deepseek-v4-pro-0813'];
         expect(completionCapFor({ modelId: 'deepseek-v4-pro-0813', requested: cap - 1, },),).toBe(cap - 1,);

@@ -1,17 +1,17 @@
 /**
- * Tests fail-closed front matter publication boundary.
- *
- * STRUCTURAL CHECKS ONLY, by the owner's decision of 2026-09-02: the metadata
- * slice sits where the preparation put it, the page parses, the identity and
- * attribution rules hold, and the visible name is not the directory id where
- * the source names the person differently. Those apply where the lanes render
- * the front matter. Where the archive translated it, the owner's rule of
- * 2026-09-08 applies instead: the archive's front matter stands, the
- * preparation made no metadata slice, and the page carries the archive's
- * bytes, which this guard recomputes from the two documents rather than
- * trusting the preparation.
- *
- * @module
+ Tests fail-closed front matter publication boundary.
+ 
+ STRUCTURAL CHECKS ONLY, by the owner's decision of 2026-09-02: the metadata
+ slice sits where the preparation put it, the page parses, the identity and
+ attribution rules hold, and the visible name is not the directory id where
+ the source names the person differently. Those apply where the lanes render
+ the front matter. Where the archive translated it, the owner's rule of
+ 2026-09-08 applies instead: the archive's front matter stands, the
+ preparation made no metadata slice, and the page carries the archive's
+ bytes, which this guard recomputes from the two documents rather than
+ trusting the preparation.
+ 
+ @module
  */
 
 import {
@@ -30,50 +30,50 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Complete source page fixture.
+ Complete source page fixture.
  */
 const SOURCE_TEXT = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n\nBody.\n';
 
 /**
- * Complete target page fixture whose visible name is still the directory id
- * beside an English rendering, which makes the id stand (2026-09-07) and so
- * the archive's front matter with it (2026-09-08).
+ Complete target page fixture whose visible name is still the directory id
+ beside an English rendering, which makes the id stand (2026-09-07) and so
+ the archive's front matter with it (2026-09-08).
  */
 const TARGET_TEXT = '---\nname: EntryId\ninfo:\n  alias: Maomao\n---\n\nBody.\n';
 
 /**
- * Complete target page fixture whose visible name is the directory id with
- * nothing Latin beside it: the #269 shape, the one the lanes still render.
+ Complete target page fixture whose visible name is the directory id with
+ nothing Latin beside it: the #269 shape, the one the lanes still render.
  */
 const FOLDER_TEXT = '---\nname: EntryId\ninfo:\n  alias: 猫咪\n---\n\nBody.\n';
 
 /**
- * Complete target page fixture whose metadata is already translated.
+ Complete target page fixture whose metadata is already translated.
  */
 const TRANSLATED_TEXT = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n\nBody.\n';
 
 /**
- * Parsed source metadata fixture.
+ Parsed source metadata fixture.
  */
 const sourceFrontMatter = splitFrontMatter({ text: SOURCE_TEXT, }).frontMatter;
 /**
- * Parsed target metadata fixture.
+ Parsed target metadata fixture.
  */
 const targetFrontMatter = splitFrontMatter({ text: TARGET_TEXT, }).frontMatter;
 /**
- * Parsed translated target metadata fixture.
+ Parsed translated target metadata fixture.
  */
 const translatedFrontMatter = splitFrontMatter({ text: TRANSLATED_TEXT, }).frontMatter;
 /**
- * Parsed folder-only target metadata fixture.
+ Parsed folder-only target metadata fixture.
  */
 const folderFrontMatter = splitFrontMatter({ text: FOLDER_TEXT, }).frontMatter;
 if ((sourceFrontMatter === undefined) || (targetFrontMatter === undefined) || (translatedFrontMatter === undefined)
   || (folderFrontMatter === undefined))
   throw new Error('front matter fixture did not parse',);
 /**
- * Explicit metadata slice shared by the rendered cases: the source beside the
- * folder-only archive.
+ Explicit metadata slice shared by the rendered cases: the source beside the
+ folder-only archive.
  */
 const sliceResult = frontMatterSlice({
   source: sourceFrontMatter,
@@ -82,7 +82,7 @@ const sliceResult = frontMatterSlice({
 if (sliceResult.kind !== 'paired')
   throw new Error('front matter fixture did not pair',);
 /**
- * Explicit metadata slice over the translated archive.
+ Explicit metadata slice over the translated archive.
  */
 const translatedSliceResult = frontMatterSlice({
   source: sourceFrontMatter,
@@ -92,21 +92,21 @@ if (translatedSliceResult.kind !== 'paired')
   throw new Error('translated front matter fixture did not pair',);
 
 /**
- * Source page whose name and alias differ, so the identity rule in
- * `validateFrontMatterTranslation` stays quiet and a directory id as the
- * visible name reaches its own check rather than being refused as an invalid
- * page first.
+ Source page whose name and alias differ, so the identity rule in
+ `validateFrontMatterTranslation` stays quiet and a directory id as the
+ visible name reaches its own check rather than being refused as an invalid
+ page first.
  */
 const DISTINCT_ALIAS_SOURCE_TEXT = '---\nname: 猫猫\ninfo:\n  alias: 猫咪\n---\n\nBody.\n';
 
 /**
- * Parsed distinct-alias source metadata fixture.
+ Parsed distinct-alias source metadata fixture.
  */
 const distinctAliasFrontMatter = splitFrontMatter({ text: DISTINCT_ALIAS_SOURCE_TEXT, }).frontMatter;
 if (distinctAliasFrontMatter === undefined)
   throw new Error('distinct-alias front matter fixture did not parse',);
 /**
- * Ordinary body slice preceding metadata in invalid-order fixture.
+ Ordinary body slice preceding metadata in invalid-order fixture.
  */
 const BODY_SLICE: ChunkPair = {
   source: {
@@ -128,16 +128,16 @@ const BODY_SLICE: ChunkPair = {
 };
 
 /**
- * What the guard threw, or `undefined` when it accepted.
- *
- * @param run - guarded call
- *
- * @returns Thrown value
- *
- * @example
- * ```ts
- * const refusal = thrownBy({ run: () => assertFrontMatterComplete({ ... },), },);
- * ```
+ What the guard threw, or `undefined` when it accepted.
+ 
+ @param run - guarded call
+ 
+ @returns Thrown value
+ 
+ @example
+ ```ts
+ const refusal = thrownBy({ run: () => assertFrontMatterComplete({ ... },), },);
+ ```
  */
 function thrownBy({ run, }: { readonly run: () => void; },): unknown {
   try {
@@ -186,7 +186,7 @@ await describe({
         + 'preparation that rendered what the rule leaves alone is refused rather than trusted',
       fn: async () => {
         /**
-         * What the guard threw for a slice the preparation should not have made.
+         What the guard threw for a slice the preparation should not have made.
          */
         const refusal = thrownBy({
           run: () => assertFrontMatterComplete({
@@ -207,15 +207,15 @@ await describe({
         + 'name: Kagurazaka Chika over the archive\'s Hanasaka, and ACCEPTS the archive\'s bytes',
       fn: async () => {
         /**
-         * The ninth pass's source metadata.
+         The ninth pass's source metadata.
          */
         const hakureicoSource = '---\nname: 神楽坂千歌\ninfo:\n    alias: 千歌, Hanasaka, Hakureico\n---\n\n正文。\n';
         /**
-         * The archive's editorial metadata.
+         The archive's editorial metadata.
          */
         const hakureicoArchive = '---\nname: Hanasaka\ninfo:\n    alias: Kagurazaka Hanasaka, Hakureico\n---\n\nBody.\n';
         /**
-         * What the guard threw for the translate lane's rendering.
+         What the guard threw for the translate lane's rendering.
          */
         const refusal = thrownBy({
           run: () => assertFrontMatterComplete({
@@ -286,20 +286,20 @@ await describe({
         + 'another field, since the person would ship under the folder either way',
       fn: async () => {
         /**
-         * Archive and page whose alias is in the source script only, so no
-         * rendering stands beside the folder name.
+         Archive and page whose alias is in the source script only, so no
+         rendering stands beside the folder name.
          */
         const folderOnlyText = '---\nname: EntryId\ninfo:\n  alias: 猫咪\n---\n\nBody.\n';
 
         /**
-         * Parsed folder-only metadata.
+         Parsed folder-only metadata.
          */
         const folderOnly = splitFrontMatter({ text: folderOnlyText, },).frontMatter;
         if (folderOnly === undefined)
           throw new Error('folder-only fixture did not parse',);
 
         /**
-         * Explicit metadata slice over the folder-only pages.
+         Explicit metadata slice over the folder-only pages.
          */
         const folderOnlySlice = frontMatterSlice({
           source: distinctAliasFrontMatter,
@@ -309,7 +309,7 @@ await describe({
           throw new Error('folder-only fixture did not pair',);
 
         /**
-         * What the guard threw for the archive kept byte for byte.
+         What the guard threw for the archive kept byte for byte.
          */
         const keptRefusal = thrownBy({
           run: () => assertFrontMatterComplete({
@@ -324,8 +324,8 @@ await describe({
         expect((keptRefusal as Error).message,).toContain('directory-id-name',);
 
         /**
-         * What the guard threw for a page that changed the alias to another
-         * source-script rendering and left the directory id as the name.
+         What the guard threw for a page that changed the alias to another
+         source-script rendering and left the directory id as the name.
          */
         const changedRefusal = thrownBy({
           run: () => assertFrontMatterComplete({
@@ -362,22 +362,22 @@ await describe({
         + 'source name and nothing else in the front matter is Latin (Huasheng, 2026-09-07)',
       fn: async () => {
         /**
-         * Source naming the person 林童 with a distinct alias.
+         Source naming the person 林童 with a distinct alias.
          */
         const pinyinSourceText = '---\nname: 林童\ninfo:\n  alias: 小林\n---\n\n正文。\n';
 
         /**
-         * Page naming the person by the pinyin, which is the id.
+         Page naming the person by the pinyin, which is the id.
          */
         const pinyinPageText = '---\nname: lintong\ninfo:\n  alias: 小林\n---\n\nBody.\n';
 
         /**
-         * Parsed source metadata.
+         Parsed source metadata.
          */
         const source = splitFrontMatter({ text: pinyinSourceText, },).frontMatter;
 
         /**
-         * Parsed page metadata.
+         Parsed page metadata.
          */
         const target = splitFrontMatter({ text: pinyinPageText, },).frontMatter;
         if ((source === undefined) || (target === undefined))
@@ -408,19 +408,19 @@ await describe({
         + '(keyword233, Mio, mone among them) are named after their directory in both languages',
       fn: async () => {
         /**
-         * Source page whose name is the directory id, as a handle-named entry's is.
+         Source page whose name is the directory id, as a handle-named entry's is.
          */
         const handleSourceText = '---\nname: EntryId\ninfo:\n  alias: EntryId\n---\n\n正文。\n';
         /**
-         * Archive and page carrying the same handle.
+         Archive and page carrying the same handle.
          */
         const handlePageText = '---\nname: EntryId\ninfo:\n  alias: EntryId\n---\n\nBody.\n';
         /**
-         * Parsed handle source metadata.
+         Parsed handle source metadata.
          */
         const source = splitFrontMatter({ text: handleSourceText, },).frontMatter;
         /**
-         * Parsed handle page metadata.
+         Parsed handle page metadata.
          */
         const target = splitFrontMatter({ text: handlePageText, },).frontMatter;
         if ((source === undefined) || (target === undefined))
@@ -449,7 +449,7 @@ await describe({
         + 'invalid-page, which is the identity rule',
       fn: async () => {
         /**
-         * What the guard threw for a changed page breaking the identity rule.
+         What the guard threw for a changed page breaking the identity rule.
          */
         const refusal = thrownBy({
           run: () => assertFrontMatterComplete({
@@ -480,8 +480,8 @@ await describe({
           slices: [sliceResult.slice,],
         },);
         /**
-         * What the guard threw for an alias that names the person by something
-         * else entirely.
+         What the guard threw for an alias that names the person by something
+         else entirely.
          */
         const refusal = thrownBy({
           run: () => assertFrontMatterComplete({
@@ -501,35 +501,35 @@ await describe({
       name: 'REFUSES SOURCE-SCRIPT COMMENT ATTRIBUTION replacing established target form',
       fn: async () => {
         /**
-         * Source page carrying contributor attribution in location comment.
+         Source page carrying contributor attribution in location comment.
          */
         const sourceText = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n  location: 广东 #清远, by 魔骨\n---\n\nBody.\n';
         /**
-         * Archive page establishing target contributor spelling.
+         Archive page establishing target contributor spelling.
          */
         const archiveText = '---\nname: CatEntry\ninfo:\n  alias: 猫猫\n  location: Guangdong #Qingyuan, by MoguHandle\n---\n\nBody.\n';
         /**
-         * Candidate retaining source-script attribution.
+         Candidate retaining source-script attribution.
          */
         const pageText = '---\nname: Maomao\ninfo:\n  alias: Maomao\n  location: Guangdong #Qingyuan, by 魔骨\n---\n\nBody.\n';
         /**
-         * Parsed source metadata.
+         Parsed source metadata.
          */
         const source = splitFrontMatter({ text: sourceText, }).frontMatter;
         /**
-         * Parsed archive metadata.
+         Parsed archive metadata.
          */
         const target = splitFrontMatter({ text: archiveText, }).frontMatter;
         if ((source === undefined) || (target === undefined))
           throw new Error('comment authority fixture did not parse',);
         /**
-         * Explicit metadata slice at publication boundary.
+         Explicit metadata slice at publication boundary.
          */
         const result = frontMatterSlice({ source, target, });
         if (result.kind !== 'paired')
           throw new Error('comment authority fixture did not pair',);
         /**
-         * What the guard threw for the source-script attribution.
+         What the guard threw for the source-script attribution.
          */
         const refusal = thrownBy({
           run: () => assertFrontMatterComplete({

@@ -1,7 +1,7 @@
 /**
- * Tests for SSE stream reassembly.
- *
- * @module
+ Tests for SSE stream reassembly.
+ 
+ @module
  */
 
 import {
@@ -146,7 +146,7 @@ await describe({
         + 'though the model had named why it stopped',
       fn: async () => {
         /**
-         * Stream whose closing event carries the reason as an empty string.
+         Stream whose closing event carries the reason as an empty string.
          */
         const empty = [
           'data: {"choices":[{"delta":{"content":"x"},"finish_reason":""}]}',
@@ -155,8 +155,8 @@ await describe({
         ].join('\n\n',);
 
         /**
-         * Stream whose closing event carries it as null, which is what an
-         * OpenAI-compatible provider sends while it is still generating.
+         Stream whose closing event carries it as null, which is what an
+         OpenAI-compatible provider sends while it is still generating.
          */
         const nulled = [
           'data: {"choices":[{"delta":{"content":"x"},"finish_reason":null}]}',

@@ -2,18 +2,18 @@
 // These messages name operations, never archive prose or supplied labels.
 
 /**
- * Closed reasons for withholding a footnote rewrite.
- *
- * @example
- * ```ts
- * const kind: FootnoteRewriteFailure = 'collision';
- * ```
+ Closed reasons for withholding a footnote rewrite.
+ 
+ @example
+ ```ts
+ const kind: FootnoteRewriteFailure = 'collision';
+ ```
  */
 export type FootnoteRewriteFailure = 'syntax' | 'position' | 'label' | 'mapping' | 'collision' | 'graph'
   | 'missing-source' | 'slice-scope';
 
 /**
- * Actionable diagnostics for each invariant boundary.
+ Actionable diagnostics for each invariant boundary.
  */
 const MESSAGES: Readonly<Record<FootnoteRewriteFailure, string>> = {
   'missing-source': 'footnote rewrite: a changing map identifier is absent from the current active document; rebuild correspondence before retrying',
@@ -27,38 +27,38 @@ const MESSAGES: Readonly<Record<FootnoteRewriteFailure, string>> = {
 };
 
 /**
- * An operation cannot prove a syntax-preserving and injective rename.
- *
- * @example
- * ```ts
- * throw new FootnoteRewriteError({ kind: 'collision' });
- * ```
+ An operation cannot prove a syntax-preserving and injective rename.
+ 
+ @example
+ ```ts
+ throw new FootnoteRewriteError({ kind: 'collision' });
+ ```
  */
 export class FootnoteRewriteError extends Error {
   /**
-   * Stable diagnostic operation.
+   Stable diagnostic operation.
    */
   public override readonly name = 'FootnoteRewriteError';
   /**
-   * Diagnostic text is restricted to the closed operation messages.
+   Diagnostic text is restricted to the closed operation messages.
    */
   readonly messageNamesOnly: true = true;
   /**
-   * Structured refusal for callers that retain unchanged archive bytes.
+   Structured refusal for callers that retain unchanged archive bytes.
    */
   readonly kind: FootnoteRewriteFailure;
 
   /**
-   * Retains the failing operation without interpolating supplied text.
-   *
-   * @param kind - invariant that could not be established
-   *
-   * @param cause - original parser failure when available
-   *
-   * @example
-   * ```ts
-   * const error = new FootnoteRewriteError({ kind: 'syntax', cause });
-   * ```
+   Retains the failing operation without interpolating supplied text.
+   
+   @param kind - invariant that could not be established
+   
+   @param cause - original parser failure when available
+   
+   @example
+   ```ts
+   const error = new FootnoteRewriteError({ kind: 'syntax', cause });
+   ```
    */
   public constructor({
     kind,

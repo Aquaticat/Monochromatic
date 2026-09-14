@@ -27,40 +27,40 @@ import type { SliceValidation, } from './translate-validate.ts';
 // into. Asking it anyway buys ballots about a candidate that cannot ship.
 
 /**
- * One proposal's identity beside what the structural guard made of it.
- *
- * @example
- * ```ts
- * const checked: ProposalValidity = { modelId: 'hf:cat/Cat-A', validation: { kind: 'valid', pageGrammar: 'strict', }, };
- * ```
+ One proposal's identity beside what the structural guard made of it.
+ 
+ @example
+ ```ts
+ const checked: ProposalValidity = { modelId: 'hf:cat/Cat-A', validation: { kind: 'valid', pageGrammar: 'strict', }, };
+ ```
  */
 export type ProposalValidity = {
   /**
-   * Voice that wrote this proposal, carried so a refusal can name who was
-   * refused rather than only how many were.
+   Voice that wrote this proposal, carried so a refusal can name who was
+   refused rather than only how many were.
    */
   readonly modelId: string;
 
   /**
-   * What the structural guard returned for it, after any repair round.
+   What the structural guard returned for it, after any repair round.
    */
   readonly validation: SliceValidation;
 };
 
 /**
- * What a slate amounts to once the invalid proposals are not in it.
- *
- * @example
- * ```ts
- * const floor: SlateFloor = { kind: 'incumbent-only', refusedModelIds: ['hf:cat/Cat-A'], };
- * ```
+ What a slate amounts to once the invalid proposals are not in it.
+ 
+ @example
+ ```ts
+ const floor: SlateFloor = { kind: 'incumbent-only', refusedModelIds: ['hf:cat/Cat-A'], };
+ ```
  */
 export type SlateFloor =
   | {
     readonly kind: 'proposals';
 
     /**
-     * Voices whose proposal survived validation, in the order given.
+     Voices whose proposal survived validation, in the order given.
      */
     readonly validModelIds: readonly string[];
   }
@@ -68,32 +68,32 @@ export type SlateFloor =
     readonly kind: 'incumbent-only';
 
     /**
-     * Every voice whose proposal was refused, so the record says who wrote a
-     * candidate that could not ship rather than only that none could.
+     Every voice whose proposal was refused, so the record says who wrote a
+     candidate that could not ship rather than only that none could.
      */
     readonly refusedModelIds: readonly string[];
   };
 
 /**
- * Decides whether a consolidation slate has anything the gate can be asked about.
- *
- * AN EMPTY ROSTER READS AS INCUMBENT-ONLY rather than as an error. A stage that
- * bought no voices at all and a stage whose every voice was refused both leave
- * the standing text as the only thing that can ship, and the caller that has to
- * act on either does the same thing. What separates them is the refused list,
- * which is empty in the first case and named in the second.
- *
- * @param validity - each proposal's identity and structural verdict, after any
- * repair round has had its turn
- *
- * @param l - stage logger
- *
- * @returns Whether proposals survive, and who they belong to
- *
- * @example
- * ```ts
- * const floor = floorConsolidateSlate({ validity, l, },);
- * ```
+ Decides whether a consolidation slate has anything the gate can be asked about.
+ 
+ AN EMPTY ROSTER READS AS INCUMBENT-ONLY rather than as an error. A stage that
+ bought no voices at all and a stage whose every voice was refused both leave
+ the standing text as the only thing that can ship, and the caller that has to
+ act on either does the same thing. What separates them is the refused list,
+ which is empty in the first case and named in the second.
+ 
+ @param validity - each proposal's identity and structural verdict, after any
+ repair round has had its turn
+ 
+ @param l - stage logger
+ 
+ @returns Whether proposals survive, and who they belong to
+ 
+ @example
+ ```ts
+ const floor = floorConsolidateSlate({ validity, l, },);
+ ```
  */
 export function floorConsolidateSlate(
   {
@@ -105,7 +105,7 @@ export function floorConsolidateSlate(
   },
 ): SlateFloor {
   /**
-   * Voices whose proposal the structural guard passed.
+   Voices whose proposal the structural guard passed.
    */
   const survived = validity.filter(function isValid({ validation, },): boolean {
     return validation.kind === 'valid';
@@ -120,7 +120,7 @@ export function floorConsolidateSlate(
     };
 
   /**
-   * Everyone the guard refused, which is everyone when nothing survived.
+   Everyone the guard refused, which is everyone when nothing survived.
    */
   const refusedModelIds = validity.map(function toModelId(checked,): string {
     return checked.modelId;

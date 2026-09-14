@@ -21,85 +21,85 @@ import { namesIn, } from './directory-listing.ts';
 // the two.
 
 /**
- * Directory under a runs dir holding one record per declined entry.
+ Directory under a runs dir holding one record per declined entry.
  */
 export const DECLINED_DIR = 'declined';
 
 /**
- * File suffix of a decline record.
+ File suffix of a decline record.
  */
 const RECORD_SUFFIX = '.json';
 
 /**
- * Why the pipeline declined an entry; one reason exists today.
+ Why the pipeline declined an entry; one reason exists today.
  */
 export type DeclineReason = 'archive-original';
 
 /**
- * What a decline record carries.
- *
- * @example
- * ```ts
- * const record: DeclinedEntryRecord = {
- *   id: 'cheonwoomaeng',
- *   tip: 'abc123',
- *   pipelineDigest: 'sha256:...',
- *   corpusSha: 'a41fc60',
- *   timestamp: '2026-09-08T21:00:00.000Z',
- *   reason: 'archive-original',
- *   note: '这篇文章的原文即英文，作者的第一语言为英语，请翻译时不要动本篇。',
- * };
- * ```
+ What a decline record carries.
+ 
+ @example
+ ```ts
+ const record: DeclinedEntryRecord = {
+   id: 'cheonwoomaeng',
+   tip: 'abc123',
+   pipelineDigest: 'sha256:...',
+   corpusSha: 'a41fc60',
+   timestamp: '2026-09-08T21:00:00.000Z',
+   reason: 'archive-original',
+   note: '这篇文章的原文即英文，作者的第一语言为英语，请翻译时不要动本篇。',
+ };
+ ```
  */
 export type DeclinedEntryRecord = {
   /**
-   * Entry declined.
+   Entry declined.
    */
   readonly id: string;
 
   /**
-   * Repository head the pass ran at.
+   Repository head the pass ran at.
    */
   readonly tip: string;
 
   /**
-   * Built pipeline that declined it.
+   Built pipeline that declined it.
    */
   readonly pipelineDigest: string;
 
   /**
-   * Corpus commit the archive page was read at.
+   Corpus commit the archive page was read at.
    */
   readonly corpusSha: string;
 
   /**
-   * When the decline was recorded.
+   When the decline was recorded.
    */
   readonly timestamp: string;
 
   /**
-   * Why.
+   Why.
    */
   readonly reason: DeclineReason;
 
   /**
-   * The archive's note that decided it, folded onto one line.
+   The archive's note that decided it, folded onto one line.
    */
   readonly note: string;
 };
 
 /**
- * Writes one decline record where the next pass will find it.
- *
- * @param declinedDir - directory of decline records, created if absent by the
- * atomic writer
- *
- * @param record - what to record
- *
- * @example
- * ```ts
- * await writeDeclinedEntry({ declinedDir, record, },);
- * ```
+ Writes one decline record where the next pass will find it.
+ 
+ @param declinedDir - directory of decline records, created if absent by the
+ atomic writer
+ 
+ @param record - what to record
+ 
+ @example
+ ```ts
+ await writeDeclinedEntry({ declinedDir, record, },);
+ ```
  */
 export async function writeDeclinedEntry(
   {
@@ -131,25 +131,25 @@ export async function writeDeclinedEntry(
 }
 
 /**
- * Entry ids a runs dir carries a decline record for.
- *
- * An absent directory is no declines, not an error: a runs dir written before
- * declines existed, or one whose pass declined nothing, has none.
- *
- * @param declinedDir - directory of decline records
- *
- * @returns Ids, sorted
- *
- * @example
- * ```ts
- * const declined = await declinedEntryIds({ declinedDir, },);
- * ```
+ Entry ids a runs dir carries a decline record for.
+ 
+ An absent directory is no declines, not an error: a runs dir written before
+ declines existed, or one whose pass declined nothing, has none.
+ 
+ @param declinedDir - directory of decline records
+ 
+ @returns Ids, sorted
+ 
+ @example
+ ```ts
+ const declined = await declinedEntryIds({ declinedDir, },);
+ ```
  */
 export async function declinedEntryIds(
   { declinedDir, }: { readonly declinedDir: string; },
 ): Promise<ReadonlySet<string>> {
   /**
-   * What the directory holds, or why it could not be read.
+   What the directory holds, or why it could not be read.
    */
   const reading = await namesIn({ dir: declinedDir, },);
   if (reading.kind === 'unreadable')

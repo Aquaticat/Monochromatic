@@ -48,7 +48,7 @@ import {
 // understate how much evidence a reader could hope to find.
 
 /**
- * Stages a recorded round can name.
+ Stages a recorded round can name.
  */
 const ROUND_STAGES: readonly RepairRoundStage[] = [
   'envelope',
@@ -57,7 +57,7 @@ const ROUND_STAGES: readonly RepairRoundStage[] = [
 ];
 
 /**
- * Outcomes a recorded round can name.
+ Outcomes a recorded round can name.
  */
 const ROUND_KINDS = [
   'selected',
@@ -66,7 +66,7 @@ const ROUND_KINDS = [
 ] as const;
 
 /**
- * Reasons a round can decide nothing.
+ Reasons a round can decide nothing.
  */
 const ROUND_DISPOSITIONS = [
   'indecision',
@@ -74,18 +74,18 @@ const ROUND_DISPOSITIONS = [
 ] as const;
 
 /**
- * Reads one slate position.
- *
- * @param value - entry as recorded
- *
- * @param path - dotted path for error messages
- *
- * @returns Position with its provenance
- *
- * @example
- * ```ts
- * const entry = requireSlateEntry({ value, path, },);
- * ```
+ Reads one slate position.
+ 
+ @param value - entry as recorded
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Position with its provenance
+ 
+ @example
+ ```ts
+ const entry = requireSlateEntry({ value, path, },);
+ ```
  */
 function requireSlateEntry(
   {
@@ -97,7 +97,7 @@ function requireSlateEntry(
   },
 ): RepairSlateEntry {
   /**
-   * Entry as a record.
+   Entry as a record.
    */
   const record = requireRecord({
     value,
@@ -125,22 +125,22 @@ function requireSlateEntry(
 }
 
 /**
- * Reads one judged round.
- *
- * @param value - round as recorded
- *
- * @param path - dotted path for error messages
- *
- * @returns Round in the shape the projection reads
- *
- * @throws {@link ArtifactParseError} when a field is missing or mistyped
- *
- * @throws {@link OffRosterModelError} when it names a departed model
- *
- * @example
- * ```ts
- * const round = requireJudgedRound({ value, path, },);
- * ```
+ Reads one judged round.
+ 
+ @param value - round as recorded
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Round in the shape the projection reads
+ 
+ @throws {@link ArtifactParseError} when a field is missing or mistyped
+ 
+ @throws {@link OffRosterModelError} when it names a departed model
+ 
+ @example
+ ```ts
+ const round = requireJudgedRound({ value, path, },);
+ ```
  */
 function requireJudgedRound(
   {
@@ -152,7 +152,7 @@ function requireJudgedRound(
   },
 ): RepairJudgedRound {
   /**
-   * Round as a record.
+   Round as a record.
    */
   const record = requireRecord({
     value,
@@ -160,7 +160,7 @@ function requireJudgedRound(
   },);
 
   /**
-   * Stage that ran it, checked against the three the lane can name.
+   Stage that ran it, checked against the three the lane can name.
    */
   const stage = requireOneOf({
     value: record.stage,
@@ -169,8 +169,8 @@ function requireJudgedRound(
   },);
 
   /**
-   * Which of the three outcomes this round recorded, read before the vote
-   * fields because an adopted round has none.
+   Which of the three outcomes this round recorded, read before the vote
+   fields because an adopted round has none.
    */
   const kind = requireOneOf({
     value: record.kind,
@@ -179,7 +179,7 @@ function requireJudgedRound(
   },);
 
   /**
-   * Envelope the round decided.
+   Envelope the round decided.
    */
   const envelopeId = requireString({
     value: record.envelopeId,
@@ -187,7 +187,7 @@ function requireJudgedRound(
   },);
 
   /**
-   * Slate as written, every entry checked.
+   Slate as written, every entry checked.
    */
   const slate = requireArray({
     value: record.slate,
@@ -204,7 +204,7 @@ function requireJudgedRound(
     },);
 
   /**
-   * Tally as a record, whose four counts are read individually.
+   Tally as a record, whose four counts are read individually.
    */
   const tally = requireRecord({
     value: record.tally,
@@ -212,11 +212,11 @@ function requireJudgedRound(
   },);
 
   /**
-   * Everything both outcomes record, read once.
-   *
-   * SPLIT FROM THE BRANCH BELOW because the two outcomes agree on six fields
-   * and differ on two, and reading the six twice is how one of the copies
-   * drifts.
+   Everything both outcomes record, read once.
+   
+   SPLIT FROM THE BRANCH BELOW because the two outcomes agree on six fields
+   and differ on two, and reading the six twice is how one of the copies
+   drifts.
    */
   const common = {
     stage,
@@ -319,26 +319,26 @@ function requireJudgedRound(
 }
 
 /**
- * Raised when a repair result predates rounds being recorded at all.
- *
- * SEPARATE FROM A PARSE FAILURE, and this is the whole point of the class. Such
- * a result is complete and correct for the build that wrote it; it just cannot
- * answer a question that build was never asked. A reader counting these apart
- * from malformed ones reports a schema generation rather than a defect.
- *
- * @example
- * ```ts
- * throw new RoundsNotRecordedError({ path: 'Whiskerfold.lanes.repair.result', },);
- * ```
+ Raised when a repair result predates rounds being recorded at all.
+ 
+ SEPARATE FROM A PARSE FAILURE, and this is the whole point of the class. Such
+ a result is complete and correct for the build that wrote it; it just cannot
+ answer a question that build was never asked. A reader counting these apart
+ from malformed ones reports a schema generation rather than a defect.
+ 
+ @example
+ ```ts
+ throw new RoundsNotRecordedError({ path: 'Whiskerfold.lanes.repair.result', },);
+ ```
  */
 export class RoundsNotRecordedError extends Error {
   /**
-   * Declares this message safe to forward: it names an artifact path and nothing inside it.
+   Declares this message safe to forward: it names an artifact path and nothing inside it.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * @param path - where in the artifact the absent field would sit
+   @param path - where in the artifact the absent field would sit
    */
   public constructor(
     { path, }: { readonly path: string; },
@@ -352,26 +352,26 @@ export class RoundsNotRecordedError extends Error {
 }
 
 /**
- * Reads every round every chunk of one raw repair result recorded.
- *
- * GROUPED BY CHUNK rather than flattened, because a standing drawn almost
- * entirely from one chunk reads the same as one drawn evenly across many, and
- * only the grouping tells them apart.
- *
- * @param raw - lane result exactly as the artifact holds it
- *
- * @param path - dotted path for error messages
- *
- * @returns One list of rounds per chunk, in chunk order
- *
- * @throws {@link ArtifactParseError} when the result or a round is malformed
- *
- * @throws {@link OffRosterModelError} when any record names a departed model
- *
- * @example
- * ```ts
- * const perChunk = readRepairRounds({ raw, path: 'lanes.repair.result', },);
- * ```
+ Reads every round every chunk of one raw repair result recorded.
+ 
+ GROUPED BY CHUNK rather than flattened, because a standing drawn almost
+ entirely from one chunk reads the same as one drawn evenly across many, and
+ only the grouping tells them apart.
+ 
+ @param raw - lane result exactly as the artifact holds it
+ 
+ @param path - dotted path for error messages
+ 
+ @returns One list of rounds per chunk, in chunk order
+ 
+ @throws {@link ArtifactParseError} when the result or a round is malformed
+ 
+ @throws {@link OffRosterModelError} when any record names a departed model
+ 
+ @example
+ ```ts
+ const perChunk = readRepairRounds({ raw, path: 'lanes.repair.result', },);
+ ```
  */
 export function readRepairRounds(
   {
@@ -394,12 +394,12 @@ export function readRepairRounds(
       index,
     ): readonly RepairJudgedRound[] {
     /**
-     * Where this chunk sits, for every message below it.
+     Where this chunk sits, for every message below it.
      */
     const at = `${path}.chunks[${String(index,)}]`;
 
     /**
-     * Chunk as a record.
+     Chunk as a record.
      */
     const record = requireRecord({
       value: chunk,

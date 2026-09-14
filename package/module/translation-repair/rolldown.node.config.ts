@@ -12,12 +12,12 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
 // reproducibility all become questions about `dist/final/node` rather than
 // about an import graph.
 /**
- * Named entries shared by the normal build and the separate sealed-runtime build.
- *
- * @example
- * ```ts
- * // consumed by rolldown as this file default export
- * ```
+ Named entries shared by the normal build and the separate sealed-runtime build.
+ 
+ @example
+ ```ts
+ // consumed by rolldown as this file default export
+ ```
  */
 export const nodeEntries: Readonly<Record<string, string>> = {
     index: './src/index.ts',
@@ -64,12 +64,12 @@ export const nodeEntries: Readonly<Record<string, string>> = {
 };
 
 /**
- * Normal Node build retains the repository's existing external-dependency policy.
- *
- * @example
- * ```ts
- * // Consumed by the ordinary package build task.
- * ```
+ Normal Node build retains the repository's existing external-dependency policy.
+ 
+ @example
+ ```ts
+ // Consumed by the ordinary package build task.
+ ```
  */
 const config: ReturnType<typeof nodeConfig> = nodeConfig({ input: nodeEntries, },);
 

@@ -1,8 +1,8 @@
 /**
- * Tests for the slice-indexing invariant every cache key rests on.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the slice-indexing invariant every cache key rests on.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -19,18 +19,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one slice pair carrying the two indices under test.
- *
- * @param sourceIndex - index stamped on the original side
- *
- * @param targetIndex - index stamped on the translation side
- *
- * @returns Slice pair shaped like a prepared one
- *
- * @example
- * ```ts
- * const slice = sliceAt({ sourceIndex: 0, targetIndex: 0, },);
- * ```
+ Builds one slice pair carrying the two indices under test.
+ 
+ @param sourceIndex - index stamped on the original side
+ 
+ @param targetIndex - index stamped on the translation side
+ 
+ @returns Slice pair shaped like a prepared one
+ 
+ @example
+ ```ts
+ const slice = sliceAt({ sourceIndex: 0, targetIndex: 0, },);
+ ```
  */
 function sliceAt(
   {
@@ -132,7 +132,7 @@ await describe({
         + 'first slice\'s settled text as its own',
       fn: async () => {
         /**
-         * What checkRepeatedIndex raised, read for its class as well as its wording.
+         What checkRepeatedIndex raised, read for its class as well as its wording.
          */
         const refusalOfCheckRepeatedIndex = caught(function checkRepeatedIndex() {
           assertSliceIndexing({

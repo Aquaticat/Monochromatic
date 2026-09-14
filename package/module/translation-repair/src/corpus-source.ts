@@ -18,97 +18,97 @@ import { foldCarriageReturns, } from './line-endings.ts';
 // runs stay reproducible even while the clone itself moves.
 
 /**
- * Promise adapter for byte-exact subprocess capture;
- * blob reads cannot go through nano-spawn because its line-oriented stdout
- * strips the final newline, and repairs must preserve corpus text
- * byte-for-byte.
+ Promise adapter for byte-exact subprocess capture;
+ blob reads cannot go through nano-spawn because its line-oriented stdout
+ strips the final newline, and repairs must preserve corpus text
+ byte-for-byte.
  */
 // oxlint-disable-next-line typescript/strict-void-return -- promisify deliberately ignores Node execFile's ChildProcess return while adapting its callback
 const execFileAsync = promisify(execFile,);
 
 /**
- * Bytes per kibibyte, named for the blob ceiling arithmetic.
+ Bytes per kibibyte, named for the blob ceiling arithmetic.
  */
 const KIBI = 1_024;
 
 /**
- * Mebibytes granted to one blob read;
- * corpus pages are kilobytes, so this bounds runaway reads generously.
+ Mebibytes granted to one blob read;
+ corpus pages are kilobytes, so this bounds runaway reads generously.
  */
 const MAX_BLOB_MEBIBYTES = 64;
 
 /**
- * Ceiling for one blob read in bytes.
+ Ceiling for one blob read in bytes.
  */
 const MAX_BLOB_BYTES = MAX_BLOB_MEBIBYTES
   * KIBI
   * KIBI;
 
 /**
- * Commit of `one-among-us/data` the milestone-one benchmark pins to.
- * Verified 2026-07-16: HEAD of upstream `main` and of the user's local clone.
- * At this commit `people/` holds 92 zh pages each paired with an en page.
+ Commit of `one-among-us/data` the milestone-one benchmark pins to.
+ Verified 2026-07-16: HEAD of upstream `main` and of the user's local clone.
+ At this commit `people/` holds 92 zh pages each paired with an en page.
  */
 export const CORPUS_COMMIT_SHA = 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379';
 
 /**
- * Location of one pinned corpus checkout:
- * where the clone lives and which commit reads resolve against.
- *
- * @example
- * ```ts
- * const pin: CorpusPin = {
- *   cloneDir: `${homedir()}/one-among-us/data`,
- *   commitSha: CORPUS_COMMIT_SHA,
- * };
- * ```
+ Location of one pinned corpus checkout:
+ where the clone lives and which commit reads resolve against.
+ 
+ @example
+ ```ts
+ const pin: CorpusPin = {
+   cloneDir: `${homedir()}/one-among-us/data`,
+   commitSha: CORPUS_COMMIT_SHA,
+ };
+ ```
  */
 export type CorpusPin = {
   /**
-   * Local clone directory of `one-among-us/data`.
+   Local clone directory of `one-among-us/data`.
    */
   readonly cloneDir: string;
 
   /**
-   * Commit every read resolves against.
+   Commit every read resolves against.
    */
   readonly commitSha: string;
 
   /**
-   * Git binary to run;
-   * defaults to resolving the real binary,
-   * because the repo PATH exposes a policy shim whose staging guards are not
-   * meant for read-only corpus access.
+   Git binary to run;
+   defaults to resolving the real binary,
+   because the repo PATH exposes a policy shim whose staging guards are not
+   meant for read-only corpus access.
    */
   readonly gitPath?: string;
 };
 
 /**
- * What kind of failure a corpus read met.
- *
- * @example
- * ```ts
- * const failure: CorpusReadFailure = 'missing-object';
- * ```
+ What kind of failure a corpus read met.
+ 
+ @example
+ ```ts
+ const failure: CorpusReadFailure = 'missing-object';
+ ```
  */
 export type CorpusReadFailure =
   /**
-   * Git found the commit and the path is not in it, which is what an
-   * incomplete pair looks like: `fatal: path 'x' does not exist in 'sha'`.
+   Git found the commit and the path is not in it, which is what an
+   incomplete pair looks like: `fatal: path 'x' does not exist in 'sha'`.
    */
   | 'missing-object'
   /**
-   * Anything else: an unreadable clone, a spawn failure, an oversized blob,
-   * a listing that failed.
+   Anything else: an unreadable clone, a spawn failure, an oversized blob,
+   a listing that failed.
    */
   | 'other';
 
 /**
- * Stderr phrases with which git reports a path absent at a commit.
- *
- * MEASURED against git 2.55 rather than recalled: a missing path and an
- * unknown commit both say `does not exist in`, and a path present in the
- * working tree but not at the commit says `exists on disk, but not in`.
+ Stderr phrases with which git reports a path absent at a commit.
+ 
+ MEASURED against git 2.55 rather than recalled: a missing path and an
+ unknown commit both say `does not exist in`, and a path present in the
+ working tree but not at the commit says `exists on disk, but not in`.
  */
 const MISSING_OBJECT_PHRASES: readonly string[] = [
   'does not exist in',
@@ -116,21 +116,21 @@ const MISSING_OBJECT_PHRASES: readonly string[] = [
 ];
 
 /**
- * Reads which failure a subprocess error reports.
- *
- * BOTH SUBPROCESS SHAPES ARE READ. Blob reads go through `execFile`, whose
- * promisified rejection carries `stderr` as a buffer; listings go through
- * `nano-spawn`, whose error carries it as a string. Anything without a
- * readable stderr is `other`, since nothing then says the object was missing.
- *
- * @param cause - underlying subprocess failure
- *
- * @returns Failure kind
- *
- * @example
- * ```ts
- * const kind = classifyCorpusReadFailure({ cause: error, },);
- * ```
+ Reads which failure a subprocess error reports.
+ 
+ BOTH SUBPROCESS SHAPES ARE READ. Blob reads go through `execFile`, whose
+ promisified rejection carries `stderr` as a buffer; listings go through
+ `nano-spawn`, whose error carries it as a string. Anything without a
+ readable stderr is `other`, since nothing then says the object was missing.
+ 
+ @param cause - underlying subprocess failure
+ 
+ @returns Failure kind
+ 
+ @example
+ ```ts
+ const kind = classifyCorpusReadFailure({ cause: error, },);
+ ```
  */
 function classifyCorpusReadFailure({ cause, }: { readonly cause: unknown; },): CorpusReadFailure {
   if ((typeof cause) !== 'object')
@@ -141,12 +141,12 @@ function classifyCorpusReadFailure({ cause, }: { readonly cause: unknown; },): C
     return 'other';
 
   /**
-   * Whatever stderr the subprocess layer attached, as text.
+   Whatever stderr the subprocess layer attached, as text.
    */
   const text = stderrText({ stderr: cause.stderr, },);
 
   /**
-   * Whether git said the object is absent at the commit.
+   Whether git said the object is absent at the commit.
    */
   const missing = MISSING_OBJECT_PHRASES.some(function appears(phrase,): boolean {
     return text.includes(phrase,);
@@ -155,16 +155,16 @@ function classifyCorpusReadFailure({ cause, }: { readonly cause: unknown; },): C
 }
 
 /**
- * Reads a subprocess layer's stderr as text.
- *
- * @param stderr - whatever the layer attached
- *
- * @returns Text, or nothing when it is neither a buffer nor a string
- *
- * @example
- * ```ts
- * const text = stderrText({ stderr: error.stderr, },);
- * ```
+ Reads a subprocess layer's stderr as text.
+ 
+ @param stderr - whatever the layer attached
+ 
+ @returns Text, or nothing when it is neither a buffer nor a string
+ 
+ @example
+ ```ts
+ const text = stderrText({ stderr: error.stderr, },);
+ ```
  */
 function stderrText({ stderr, }: { readonly stderr: unknown; },): string {
   if (Buffer.isBuffer(stderr,))
@@ -175,42 +175,42 @@ function stderrText({ stderr, }: { readonly stderr: unknown; },): string {
 }
 
 /**
- * Signals a corpus read that git refused:
- * missing clone, unknown commit, or absent path at the pinned commit.
- *
- * @example
- * ```ts
- * throw new CorpusReadError({ detail: 'people/whiskers/page.md at a41fc60', cause: error, },);
- * ```
+ Signals a corpus read that git refused:
+ missing clone, unknown commit, or absent path at the pinned commit.
+ 
+ @example
+ ```ts
+ throw new CorpusReadError({ detail: 'people/whiskers/page.md at a41fc60', cause: error, },);
+ ```
  */
 export class CorpusReadError extends Error {
   /**
-   * Declares this message safe to forward: it names the corpus path and revision that were asked for, never what they hold.
+   Declares this message safe to forward: it names the corpus path and revision that were asked for, never what they hold.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Which failure git reported, read off its stderr.
-   *
-   * THE FIELD EVERY CATCHER NEEDED. Until it existed a non-zero git exit, a
-   * spawn failure, an unreadable clone and an oversized blob all reached a
-   * caller as one class, and every caller read that class as the expected
-   * missing side of an incomplete pair: a pass whose clone had gone away
-   * dropped every entry in silence and ranked its bands over nothing.
+   Which failure git reported, read off its stderr.
+   
+   THE FIELD EVERY CATCHER NEEDED. Until it existed a non-zero git exit, a
+   spawn failure, an unreadable clone and an oversized blob all reached a
+   caller as one class, and every caller read that class as the expected
+   missing side of an incomplete pair: a pass whose clone had gone away
+   dropped every entry in silence and ranked its bands over nothing.
    */
   readonly kind: CorpusReadFailure;
 
   /**
-   * Builds failure naming what was read and why git refused.
-   *
-   * @param detail - object spec or listing that failed
-   *
-   * @param cause - underlying subprocess failure carrying git stderr
-   *
-   * @example
-   * ```ts
-   * new CorpusReadError({ detail: 'people/ at deadbeef', cause: error, },);
-   * ```
+   Builds failure naming what was read and why git refused.
+   
+   @param detail - object spec or listing that failed
+   
+   @param cause - underlying subprocess failure carrying git stderr
+   
+   @example
+   ```ts
+   new CorpusReadError({ detail: 'people/ at deadbeef', cause: error, },);
+   ```
    */
   public constructor(
     {
@@ -222,7 +222,7 @@ export class CorpusReadError extends Error {
     },
   ) {
     /**
-     * What git's stderr says the failure was.
+     What git's stderr says the failure was.
      */
     const kind = classifyCorpusReadFailure({ cause, },);
     super(
@@ -236,42 +236,42 @@ export class CorpusReadError extends Error {
 }
 
 /**
- * Whether a caught value is a corpus read that failed because the object is
- * not at the pin, which is the one failure a walk over the corpus may step
- * past: an entry with one side is an ordinary state of this corpus.
- *
- * POSITIONAL, since a type predicate cannot narrow a destructured binding.
- *
- * @param error - caught value
- *
- * @returns Whether it is a missing-object corpus read failure
- *
- * @example
- * ```ts
- * if (!isMissingCorpusObject(error,)) throw error;
- * ```
+ Whether a caught value is a corpus read that failed because the object is
+ not at the pin, which is the one failure a walk over the corpus may step
+ past: an entry with one side is an ordinary state of this corpus.
+ 
+ POSITIONAL, since a type predicate cannot narrow a destructured binding.
+ 
+ @param error - caught value
+ 
+ @returns Whether it is a missing-object corpus read failure
+ 
+ @example
+ ```ts
+ if (!isMissingCorpusObject(error,)) throw error;
+ ```
  */
 export function isMissingCorpusObject(error: unknown,): error is CorpusReadError {
   return (error instanceof CorpusReadError) && (error.kind === 'missing-object');
 }
 
 /**
- * Runs one git command against the clone, returning stdout.
- *
- * @param pin - clone and commit reads resolve against
- *
- * @param args - git argument vector, passed without shell interpretation
- *
- * @param detail - what the read means, for error reporting
- *
- * @returns Captured stdout
- *
- * @throws {@link CorpusReadError} when git exits non-zero
- *
- * @example
- * ```ts
- * const out = await gitOutput({ pin, args: ['show', spec,], detail: spec, },);
- * ```
+ Runs one git command against the clone, returning stdout.
+ 
+ @param pin - clone and commit reads resolve against
+ 
+ @param args - git argument vector, passed without shell interpretation
+ 
+ @param detail - what the read means, for error reporting
+ 
+ @returns Captured stdout
+ 
+ @throws {@link CorpusReadError} when git exits non-zero
+ 
+ @example
+ ```ts
+ const out = await gitOutput({ pin, args: ['show', spec,], detail: spec, },);
+ ```
  */
 async function gitOutput(
   {
@@ -285,14 +285,14 @@ async function gitOutput(
   },
 ): Promise<string> {
   /**
-   * Real Git binary, resolved per call when the pin does not name one.
-   * Batch callers supply one resolved path because self-shim detection reads candidate files.
+   Real Git binary, resolved per call when the pin does not name one.
+   Batch callers supply one resolved path because self-shim detection reads candidate files.
    */
   const gitPath = pin.gitPath ?? await resolveGit();
 
   try {
     /**
-     * Subprocess result; only stdout is consumed.
+     Subprocess result; only stdout is consumed.
      */
     const { stdout, } = await spawn(
       gitPath,
@@ -318,26 +318,26 @@ async function gitOutput(
 }
 
 /**
- * Reads one file of the corpus at the pinned commit.
- *
- * LINE ENDINGS ARE FOLDED TO LF, which is the one place the whole package
- * needs it: every splitter downstream looks for `\n`, and the one CRLF page in
- * the pinned corpus (a source page, measured in `line-endings.ts`) defeated
- * the line-structure predicate, the invisible-line mask and the quote
- * normalizer at once. Bytes are otherwise untouched.
- *
- * @param pin - clone and commit the read resolves against
- *
- * @param relPath - repository-relative path, e.g. `people/<id>/page.md`
- *
- * @returns File content at the pinned commit, with CRLF folded to LF
- *
- * @throws {@link CorpusReadError} when the path is absent at the pinned commit
- *
- * @example
- * ```ts
- * const zh = await readCorpusFile({ pin, relPath: 'people/whiskers/page.md', },);
- * ```
+ Reads one file of the corpus at the pinned commit.
+ 
+ LINE ENDINGS ARE FOLDED TO LF, which is the one place the whole package
+ needs it: every splitter downstream looks for `\n`, and the one CRLF page in
+ the pinned corpus (a source page, measured in `line-endings.ts`) defeated
+ the line-structure predicate, the invisible-line mask and the quote
+ normalizer at once. Bytes are otherwise untouched.
+ 
+ @param pin - clone and commit the read resolves against
+ 
+ @param relPath - repository-relative path, e.g. `people/<id>/page.md`
+ 
+ @returns File content at the pinned commit, with CRLF folded to LF
+ 
+ @throws {@link CorpusReadError} when the path is absent at the pinned commit
+ 
+ @example
+ ```ts
+ const zh = await readCorpusFile({ pin, relPath: 'people/whiskers/page.md', },);
+ ```
  */
 export async function readCorpusFile(
   {
@@ -349,18 +349,18 @@ export async function readCorpusFile(
   },
 ): Promise<string> {
   /**
-   * Git object spec pinning path to commit.
+   Git object spec pinning path to commit.
    */
   const spec = `${pin.commitSha}:${relPath}`;
 
   /**
-   * Real git binary, resolved when the pin does not name one.
+   Real git binary, resolved when the pin does not name one.
    */
   const gitPath = pin.gitPath ?? await resolveGit();
 
   try {
     /**
-     * Physical blob bytes captured without any newline normalization or lazy fetch.
+     Physical blob bytes captured without any newline normalization or lazy fetch.
      */
     const { stdout, } = await execFileAsync(
       gitPath,
@@ -378,8 +378,8 @@ export async function readCorpusFile(
       },
     );
     /**
-     * Content with CRLF folded to LF; the count is not logged here since this
-     * module carries no logger, and `line-endings.ts` records the population.
+     Content with CRLF folded to LF; the count is not logged here since this
+     module carries no logger, and `line-endings.ts` records the population.
      */
     const { text, } = foldCarriageReturns({ text: stdout.toString('utf8',), },);
     return text;
@@ -393,25 +393,25 @@ export async function readCorpusFile(
 }
 
 /**
- * Reads one corpus blob as BYTES at the pinned commit.
- *
- * THE BINARY SIBLING of {@link readCorpusFile}, and the reason it exists is
- * that a picture is not text: decoding one as UTF-8 maps every byte sequence
- * that is not valid UTF-8 onto the replacement character, which silently
- * corrupts the asset and produces a data URI no model can decode.
- *
- * @param pin - corpus clone and commit
- *
- * @param relPath - repository-relative path, e.g. `people/<id>/photos/<name>`
- *
- * @returns Blob bytes exactly as committed
- *
- * @throws {@link CorpusReadError} when git cannot produce that blob
- *
- * @example
- * ```ts
- * const bytes = await readCorpusBytes({ pin, relPath: 'people/whiskers/photos/intro.webp', },);
- * ```
+ Reads one corpus blob as BYTES at the pinned commit.
+ 
+ THE BINARY SIBLING of {@link readCorpusFile}, and the reason it exists is
+ that a picture is not text: decoding one as UTF-8 maps every byte sequence
+ that is not valid UTF-8 onto the replacement character, which silently
+ corrupts the asset and produces a data URI no model can decode.
+ 
+ @param pin - corpus clone and commit
+ 
+ @param relPath - repository-relative path, e.g. `people/<id>/photos/<name>`
+ 
+ @returns Blob bytes exactly as committed
+ 
+ @throws {@link CorpusReadError} when git cannot produce that blob
+ 
+ @example
+ ```ts
+ const bytes = await readCorpusBytes({ pin, relPath: 'people/whiskers/photos/intro.webp', },);
+ ```
  */
 export async function readCorpusBytes(
   {
@@ -423,18 +423,18 @@ export async function readCorpusBytes(
   },
 ): Promise<Uint8Array> {
   /**
-   * Git object spec pinning path to commit.
+   Git object spec pinning path to commit.
    */
   const spec = `${pin.commitSha}:${relPath}`;
 
   /**
-   * Real git binary, resolved when the pin does not name one.
+   Real git binary, resolved when the pin does not name one.
    */
   const gitPath = pin.gitPath ?? await resolveGit();
 
   try {
     /**
-     * Physical blob bytes exactly as committed, without replacement refs or lazy fetch.
+     Physical blob bytes exactly as committed, without replacement refs or lazy fetch.
      */
     const { stdout, } = await execFileAsync(
       gitPath,
@@ -462,24 +462,24 @@ export async function readCorpusBytes(
 }
 
 /**
- * Lists person entry ids under `people/` at the pinned commit.
- *
- * @param pin - clone and commit the listing resolves against
- *
- * @returns Entry ids in git listing order
- *
- * @throws {@link CorpusReadError} when the clone or commit is unreadable
- *
- * @example
- * ```ts
- * const ids = await listCorpusPeople({ pin, },);
- * ```
+ Lists person entry ids under `people/` at the pinned commit.
+ 
+ @param pin - clone and commit the listing resolves against
+ 
+ @returns Entry ids in git listing order
+ 
+ @throws {@link CorpusReadError} when the clone or commit is unreadable
+ 
+ @example
+ ```ts
+ const ids = await listCorpusPeople({ pin, },);
+ ```
  */
 export async function listCorpusPeople(
   { pin, }: { readonly pin: CorpusPin; },
 ): Promise<readonly string[]> {
   /**
-   * Newline-separated `people/<id>` lines from git.
+   Newline-separated `people/<id>` lines from git.
    */
   const listing = await gitOutput({
     pin,

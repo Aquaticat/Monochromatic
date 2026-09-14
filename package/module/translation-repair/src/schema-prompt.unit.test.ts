@@ -1,25 +1,25 @@
 /**
- * Tests for stating a call's own response schema inside its system prompt.
- *
- * `#216` IMPLEMENTS A DIRECT OWNER INSTRUCTION: put the full schema into the
- * system prompt, because some model and provider pairs behave badly without a
- * detailed one and answer in the wrong shape. Before this, seventeen modules
- * built a system message and not one mentioned the shape it expected back.
- *
- * DERIVED, NEVER COPIED. Every case here renders from the same
- * `JsonSchemaResponseFormat` value the request puts on the wire, which is the
- * property that makes drift between the two impossible rather than unlikely.
- * A test that spelled the expected block out by hand would pass while the two
- * diverged, so the cases assert the RELATION between the format and the text.
- *
- * IDEMPOTENCE IS LOAD-BEARING, not tidiness. A routed call can cross more than
- * one seam and a re-route rebuilds its request, so a transform that appended
- * unconditionally would state the schema two or three times and spend tokens
- * saying the same thing.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for stating a call's own response schema inside its system prompt.
+ 
+ `#216` IMPLEMENTS A DIRECT OWNER INSTRUCTION: put the full schema into the
+ system prompt, because some model and provider pairs behave badly without a
+ detailed one and answer in the wrong shape. Before this, seventeen modules
+ built a system message and not one mentioned the shape it expected back.
+ 
+ DERIVED, NEVER COPIED. Every case here renders from the same
+ `JsonSchemaResponseFormat` value the request puts on the wire, which is the
+ property that makes drift between the two impossible rather than unlikely.
+ A test that spelled the expected block out by hand would pass while the two
+ diverged, so the cases assert the RELATION between the format and the text.
+ 
+ IDEMPOTENCE IS LOAD-BEARING, not tidiness. A routed call can cross more than
+ one seam and a re-route rebuilds its request, so a transform that appended
+ unconditionally would state the schema two or three times and spend tokens
+ saying the same thing.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -35,10 +35,10 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Response format a case sends, shaped like the ones production sends.
- *
- * CARRIES AN ARRAY OF OBJECTS deliberately: the measured failure this exists to
- * prevent returned a JSON-stringified array where one of these was declared.
+ Response format a case sends, shaped like the ones production sends.
+ 
+ CARRIES AN ARRAY OF OBJECTS deliberately: the measured failure this exists to
+ prevent returned a JSON-stringified array where one of these was declared.
  */
 const NAP_FORMAT = {
   type: 'json_schema' as const,
@@ -69,7 +69,7 @@ const NAP_FORMAT = {
 };
 
 /**
- * System message a case starts from.
+ System message a case starts from.
  */
 const SYSTEM = {
   role: 'system' as const,
@@ -77,7 +77,7 @@ const SYSTEM = {
 };
 
 /**
- * User message a case starts from, which must come back untouched.
+ User message a case starts from, which must come back untouched.
  */
 const USER = {
   role: 'user' as const,
@@ -85,22 +85,22 @@ const USER = {
 };
 
 /**
- * Text of whichever message carries the system role, joined where it has parts.
- *
- * @param messages - conversation to read
- *
- * @returns System prompt as the model would see it, empty where there is none
- *
- * @example
- * ```ts
- * expect(systemTextOf({ messages, },),).toContain(SCHEMA_BLOCK_HEADING,);
- * ```
+ Text of whichever message carries the system role, joined where it has parts.
+ 
+ @param messages - conversation to read
+ 
+ @returns System prompt as the model would see it, empty where there is none
+ 
+ @example
+ ```ts
+ expect(systemTextOf({ messages, },),).toContain(SCHEMA_BLOCK_HEADING,);
+ ```
  */
 function systemTextOf(
   { messages, }: { readonly messages: readonly { readonly role: string; readonly content: unknown; }[]; },
 ): string {
   /**
-   * First system message, absent where the conversation has none.
+   First system message, absent where the conversation has none.
    */
   const system = messages.find(function isSystem(message,): boolean {
     return message.role === 'system';
@@ -110,7 +110,7 @@ function systemTextOf(
     return '';
 
   /**
-   * Content as that message carries it.
+   Content as that message carries it.
    */
   const { content, } = system;
 
@@ -125,16 +125,16 @@ function systemTextOf(
 }
 
 /**
- * How many times the block heading appears in a conversation's system prompt.
- *
- * @param messages - conversation to read
- *
- * @returns Occurrence count
- *
- * @example
- * ```ts
- * expect(headingCount({ messages, },),).toBe(1,);
- * ```
+ How many times the block heading appears in a conversation's system prompt.
+ 
+ @param messages - conversation to read
+ 
+ @returns Occurrence count
+ 
+ @example
+ ```ts
+ expect(headingCount({ messages, },),).toBe(1,);
+ ```
  */
 function headingCount(
   { messages, }: { readonly messages: readonly { readonly role: string; readonly content: unknown; }[]; },

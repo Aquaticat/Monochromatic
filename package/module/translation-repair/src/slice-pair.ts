@@ -25,32 +25,32 @@ import { groupNodes, } from './group-nodes.ts';
 // small adjacent nodes.
 
 /**
- * Target-side character budget one slice aims for.
- * Derivation: DarlinChit-scale units (~1.4 KB whole documents) measured
- * excellent thoroughness and convergence, while Anilovr's ~800-char
- * sections still under-reported against human-visible density; a few
- * hundred characters groups short quote-line paragraphs while letting an
- * ordinary prose paragraph stand alone.
+ Target-side character budget one slice aims for.
+ Derivation: DarlinChit-scale units (~1.4 KB whole documents) measured
+ excellent thoroughness and convergence, while Anilovr's ~800-char
+ sections still under-reported against human-visible density; a few
+ hundred characters groups short quote-line paragraphs while letting an
+ ordinary prose paragraph stand alone.
  */
 export const SLICE_CHAR_BUDGET = 400;
 
 export { groupNodes, } from './group-nodes.ts';
 
 /**
- * Builds one chunk spanning a node run, slicing text from its document.
- *
- * @param run - node run backing this chunk
- *
- * @param documentText - owning document's text for byte-exact slicing
- *
- * @param sliceIndex - global slice index stamped onto both sides
- *
- * @returns Chunk spanning exactly this run's offsets
- *
- * @example
- * ```ts
- * const chunk = runToChunk({ run, documentText, sliceIndex: 3, },);
- * ```
+ Builds one chunk spanning a node run, slicing text from its document.
+ 
+ @param run - node run backing this chunk
+ 
+ @param documentText - owning document's text for byte-exact slicing
+ 
+ @param sliceIndex - global slice index stamped onto both sides
+ 
+ @returns Chunk spanning exactly this run's offsets
+ 
+ @example
+ ```ts
+ const chunk = runToChunk({ run, documentText, sliceIndex: 3, },);
+ ```
  */
 function runToChunk(
   {
@@ -64,12 +64,12 @@ function runToChunk(
   },
 ): ContentChunk {
   /**
-   * First node of the run, guaranteed by construction.
+   First node of the run, guaranteed by construction.
    */
   const [first,] = run;
 
   /**
-   * Last node of the run, guaranteed by construction.
+   Last node of the run, guaranteed by construction.
    */
   const last = run.at(-1,);
   if ((first === undefined) || (last === undefined))
@@ -88,45 +88,45 @@ function runToChunk(
 
 
 /**
- * Subdivides one aligned section pair into paragraph-bound slice pairs.
- * Whenever both sides carry blocks, a monotone alignment decides which block
- * partners which, and may leave a block unpartnered rather than force it onto
- * a neighbour. Pairing by shared index was tried and is wrong: equal node
- * counts do NOT imply one-to-one correspondence, so a translation that drops
- * one block and gains another elsewhere kept its total while every pairing
- * after the drop compared a block against its neighbour. A section whose
- * target is an insertion is sliced by the source alone, one slice per budget
- * run, all written at the insertion boundary; any other pair with a side that
- * has no blocks stays one slice, re-indexed. Paragraph-count mismatch within a
- * section is ordinary translation freedom, so subdivision emits no findings.
- *
- * @param pair - aligned section pair to subdivide
- *
- * @param sourceText - whole original document text for slice extraction
- *
- * @param targetText - whole translation document text for slice extraction
- *
- * @param baseIndex - global slice index of this pair's first slice
- *
- * @param budget - target-side characters one slice aims for;
- * defaults to {@link SLICE_CHAR_BUDGET}
- *
- * @param sealed - ids of translation blocks the archive's note seals, which
- * reach no slice and take the originals paired to them along
- *
- * @returns Slice pairs covering both sides of the section completely but for
- * the sealed blocks, beside the ids of the originals sealed with them
- *
- * @example
- * ```ts
- * const { slices, sealedSourceIds, } = subdivideSealedChunkPair({
- *   pair,
- *   sourceText,
- *   targetText,
- *   baseIndex: 0,
- *   sealed: new Set(['block/7',],),
- * },);
- * ```
+ Subdivides one aligned section pair into paragraph-bound slice pairs.
+ Whenever both sides carry blocks, a monotone alignment decides which block
+ partners which, and may leave a block unpartnered rather than force it onto
+ a neighbour. Pairing by shared index was tried and is wrong: equal node
+ counts do NOT imply one-to-one correspondence, so a translation that drops
+ one block and gains another elsewhere kept its total while every pairing
+ after the drop compared a block against its neighbour. A section whose
+ target is an insertion is sliced by the source alone, one slice per budget
+ run, all written at the insertion boundary; any other pair with a side that
+ has no blocks stays one slice, re-indexed. Paragraph-count mismatch within a
+ section is ordinary translation freedom, so subdivision emits no findings.
+ 
+ @param pair - aligned section pair to subdivide
+ 
+ @param sourceText - whole original document text for slice extraction
+ 
+ @param targetText - whole translation document text for slice extraction
+ 
+ @param baseIndex - global slice index of this pair's first slice
+ 
+ @param budget - target-side characters one slice aims for;
+ defaults to {@link SLICE_CHAR_BUDGET}
+ 
+ @param sealed - ids of translation blocks the archive's note seals, which
+ reach no slice and take the originals paired to them along
+ 
+ @returns Slice pairs covering both sides of the section completely but for
+ the sealed blocks, beside the ids of the originals sealed with them
+ 
+ @example
+ ```ts
+ const { slices, sealedSourceIds, } = subdivideSealedChunkPair({
+   pair,
+   sourceText,
+   targetText,
+   baseIndex: 0,
+   sealed: new Set(['block/7',],),
+ },);
+ ```
  */
 export function subdivideSealedChunkPair(
   {
@@ -151,20 +151,20 @@ export function subdivideSealedChunkPair(
   readonly sealedSourceIds: ReadonlySet<string>;
 } {
   /**
-   * How much shorter the original runs than its translation, measured over
-   * the WHOLE documents rather than over this section.
-   *
-   * Was measured per section, and that is the defect: the ratio is a fact
-   * about the language pair, while a section-level estimate is driven by how
-   * much of THIS section was translated. On 4000 source characters against 20
-   * target characters it returned 200, so the source budget became 80_000 and
-   * the section stopped being sliced at all. The worse the incumbent coverage,
-   * the larger the translation call, which is exactly backwards for a lane
-   * that exists to translate what nobody translated.
-   *
-   * Capped at one for the same reason it is computed at all: Chinese runs
-   * SHORTER than its English rendering, so a ratio above one is never density.
-   * It is missing translation, and the cap says so rather than acting on it.
+   How much shorter the original runs than its translation, measured over
+   the WHOLE documents rather than over this section.
+   
+   Was measured per section, and that is the defect: the ratio is a fact
+   about the language pair, while a section-level estimate is driven by how
+   much of THIS section was translated. On 4000 source characters against 20
+   target characters it returned 200, so the source budget became 80_000 and
+   the section stopped being sliced at all. The worse the incumbent coverage,
+   the larger the translation call, which is exactly backwards for a lane
+   that exists to translate what nobody translated.
+   
+   Capped at one for the same reason it is computed at all: Chinese runs
+   SHORTER than its English rendering, so a ratio above one is never density.
+   It is missing translation, and the cap says so rather than acting on it.
    */
   const densityRatio = Math.min(
     1,
@@ -175,9 +175,9 @@ export function subdivideSealedChunkPair(
   );
 
   /**
-   * Source-side budget at that density, so a denser original slices at
-   * matching granularity instead of collapsing the pairing back to section
-   * scale.
+   Source-side budget at that density, so a denser original slices at
+   matching granularity instead of collapsing the pairing back to section
+   scale.
    */
   const sourceBudget = Math.max(
     1,
@@ -194,7 +194,7 @@ export function subdivideSealedChunkPair(
       > 0)
   ) {
     /**
-     * Runs the grouping settled, and the originals the seal took with it.
+     Runs the grouping settled, and the originals the seal took with it.
      */
     const grouped = groupNodesSealed({
       sourceNodes: pair.source
@@ -230,7 +230,7 @@ export function subdivideSealedChunkPair(
         sliceOffset,
       ): ChunkPair {
         /**
-         * Original side, built the same way whichever kind of run this is.
+         Original side, built the same way whichever kind of run this is.
          */
         const source = runToChunk({
           run: run.sourceRun,
@@ -264,13 +264,13 @@ export function subdivideSealedChunkPair(
   }
 
   /**
-   * Nothing is sealed from here on: a seal names translation blocks, and the
-   * paths below are the ones where the translation side carries none.
+   Nothing is sealed from here on: a seal names translation blocks, and the
+   paths below are the ones where the translation side carries none.
    */
   const nothingSealed = new Set<string>();
 
   /**
-   * Source-side node runs within the scaled budget.
+   Source-side node runs within the scaled budget.
    */
   const sourceRuns = groupNodes({
     nodes: pair.source
@@ -350,34 +350,34 @@ export function subdivideSealedChunkPair(
 }
 
 /**
- * Subdivides one aligned section pair with nothing sealed.
- *
- * {@inheritDoc subdivideSealedChunkPair}
- *
- * @param pair - aligned section pair to subdivide
- *
- * @param sourceText - whole original document text for slice extraction
- *
- * @param targetText - whole translation document text for slice extraction
- *
- * @param baseIndex - global slice index of this pair's first slice
- *
- * @param budget - target-side characters one slice aims for;
- * defaults to {@link SLICE_CHAR_BUDGET}
- *
- * @param blockPairing - correspondences a roster agreed on, chunk-local
- *
- * @returns Slice pairs covering both sides of the section completely
- *
- * @example
- * ```ts
- * const slices = subdivideChunkPair({
- *   pair,
- *   sourceText,
- *   targetText,
- *   baseIndex: 0,
- * },);
- * ```
+ Subdivides one aligned section pair with nothing sealed.
+ 
+ {@inheritDoc subdivideSealedChunkPair}
+ 
+ @param pair - aligned section pair to subdivide
+ 
+ @param sourceText - whole original document text for slice extraction
+ 
+ @param targetText - whole translation document text for slice extraction
+ 
+ @param baseIndex - global slice index of this pair's first slice
+ 
+ @param budget - target-side characters one slice aims for;
+ defaults to {@link SLICE_CHAR_BUDGET}
+ 
+ @param blockPairing - correspondences a roster agreed on, chunk-local
+ 
+ @returns Slice pairs covering both sides of the section completely
+ 
+ @example
+ ```ts
+ const slices = subdivideChunkPair({
+   pair,
+   sourceText,
+   targetText,
+   baseIndex: 0,
+ },);
+ ```
  */
 export function subdivideChunkPair(
   {

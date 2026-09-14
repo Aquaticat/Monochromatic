@@ -1,14 +1,14 @@
 /**
- * Tests the stub-marker strip the archive passes through before preparation.
- *
- * THE CASE IS XIEPT2: an archive page that is front matter, `(To-Do)`, an HTML
- * comment of translator hints and nothing else, which the pipeline published
- * with the marker standing over a finished translation. Here the marker goes
- * with one blank line, the comment and the front matter stay byte for byte,
- * and a marker inside a comment, a code fence, front matter or a sentence is
- * left alone.
- *
- * @module
+ Tests the stub-marker strip the archive passes through before preparation.
+ 
+ THE CASE IS XIEPT2: an archive page that is front matter, `(To-Do)`, an HTML
+ comment of translator hints and nothing else, which the pipeline published
+ with the marker standing over a finished translation. Here the marker goes
+ with one blank line, the comment and the front matter stay byte for byte,
+ and a marker inside a comment, a code fence, front matter or a sentence is
+ left alone.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -26,7 +26,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * XIEPT2's archive opening as the corpus stores it.
+ XIEPT2's archive opening as the corpus stores it.
  */
 const XIEPT2_OPENING = [
   '---',
@@ -49,7 +49,7 @@ const XIEPT2_OPENING = [
 ].join('\n',);
 
 /**
- * The same opening with the marker and its blank gone.
+ The same opening with the marker and its blank gone.
  */
 const XIEPT2_STRIPPED = [
   '---',

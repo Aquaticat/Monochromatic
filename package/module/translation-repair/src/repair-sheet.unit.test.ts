@@ -1,9 +1,9 @@
 /**
- * Tests for the repair grading sheet, including the property that matters most
- * for comparing rounds: the DETECTION sheet still shows no repair text.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the repair grading sheet, including the property that matters most
+ for comparing rounds: the DETECTION sheet still shows no repair text.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -23,26 +23,26 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Replacement text no detection sheet may ever contain.
+ Replacement text no detection sheet may ever contain.
  */
 const REPLACEMENT = 'The cat is asleep on the windowsill.';
 
 /**
- * Text the replacement stands in for.
+ Text the replacement stands in for.
  */
 const REPLACED = 'The cat is doing the sleeping on the windowsill.';
 
 /**
- * Builds one sampled candidate, optionally carrying repair provenance.
- *
- * @param repair - provenance, omitted to model a pre-recording artifact
- *
- * @returns Candidate both sheets render
- *
- * @example
- * ```ts
- * const candidate = catCandidate({},);
- * ```
+ Builds one sampled candidate, optionally carrying repair provenance.
+ 
+ @param repair - provenance, omitted to model a pre-recording artifact
+ 
+ @returns Candidate both sheets render
+ 
+ @example
+ ```ts
+ const candidate = catCandidate({},);
+ ```
  */
 function catCandidate(
   { repair, }: { readonly repair?: GradableRepair; },
@@ -62,23 +62,23 @@ function catCandidate(
 }
 
 /**
- * Builds repair provenance with one region.
- *
- * @param disposition - what became of the repair
- *
- * @param issueIds - issues the region serves
- *
- * @param refined - whether the naturalness lane rewrote the slice
- *
- * @param rewriteReachedReader - whether the returned document carries that
- * rewrite, which is what decides whether a final wording was recorded at all
- *
- * @returns Provenance the repair sheet renders
- *
- * @example
- * ```ts
- * const repair = catRepair({ disposition: 'shipped', },);
- * ```
+ Builds repair provenance with one region.
+ 
+ @param disposition - what became of the repair
+ 
+ @param issueIds - issues the region serves
+ 
+ @param refined - whether the naturalness lane rewrote the slice
+ 
+ @param rewriteReachedReader - whether the returned document carries that
+ rewrite, which is what decides whether a final wording was recorded at all
+ 
+ @returns Provenance the repair sheet renders
+ 
+ @example
+ ```ts
+ const repair = catRepair({ disposition: 'shipped', },);
+ ```
  */
 function catRepair(
   {
@@ -110,29 +110,29 @@ function catRepair(
 }
 
 /**
- * Shortest run of backticks Markdown accepts as a fence.
+ Shortest run of backticks Markdown accepts as a fence.
  */
 const FENCE_MIN = 3;
 
 /**
- * Removes every fenced block from a sheet, leaving only text a Markdown reader
- * would interpret as sheet structure.
- *
- * Tracks the opening fence and drops lines until a fence at least as long
- * closes it, which is how a Markdown reader resolves the same question.
- *
- * @param sheet - rendered sheet
- *
- * @returns Sheet text outside every fenced block
- *
- * @example
- * ```ts
- * const structure = stripFences({ sheet, },);
- * ```
+ Removes every fenced block from a sheet, leaving only text a Markdown reader
+ would interpret as sheet structure.
+ 
+ Tracks the opening fence and drops lines until a fence at least as long
+ closes it, which is how a Markdown reader resolves the same question.
+ 
+ @param sheet - rendered sheet
+ 
+ @returns Sheet text outside every fenced block
+ 
+ @example
+ ```ts
+ const structure = stripFences({ sheet, },);
+ ```
  */
 function stripFences({ sheet, }: { readonly sheet: string; },): string {
   /**
-   * Kept lines and the fence currently open, if any.
+   Kept lines and the fence currently open, if any.
    */
   const state: {
     readonly kept: string[];
@@ -143,8 +143,8 @@ function stripFences({ sheet, }: { readonly sheet: string; },): string {
   };
   for (const line of sheet.split('\n',)) {
     /**
-     * Leading backtick run length of this line; a linear scan rather than a
-     * pattern, since the rule is "how many backticks start this line".
+     Leading backtick run length of this line; a linear scan rather than a
+     pattern, since the rule is "how many backticks start this line".
      */
     let run = 0;
     while ((run < line.length) && (line.charAt(run,) === '`'))

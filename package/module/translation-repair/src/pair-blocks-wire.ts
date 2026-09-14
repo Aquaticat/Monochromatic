@@ -24,21 +24,21 @@ import { selectFence, } from './prompt-fence.ts';
 // throws rather than being repaired into something plausible.
 
 /**
- * Signals a pairing a model returned that cannot be used as one.
- *
- * @example
- * ```ts
- * throw new BlockPairingError({ message: 'pair 3 moves backwards on the original side', },);
- * ```
+ Signals a pairing a model returned that cannot be used as one.
+ 
+ @example
+ ```ts
+ throw new BlockPairingError({ message: 'pair 3 moves backwards on the original side', },);
+ ```
  */
 export class BlockPairingError extends Error {
   /**
-   * Names the class for callers matching on it.
+   Names the class for callers matching on it.
    */
   public override readonly name = 'BlockPairingError';
 
   /**
-   * @param message - what about the returned pairing cannot be used
+   @param message - what about the returned pairing cannot be used
    */
   public constructor({ message, }: { readonly message: string; },) {
     super(message,);
@@ -46,77 +46,77 @@ export class BlockPairingError extends Error {
 }
 
 /**
- * One block on one side, as the sheet numbers it.
- *
- * @example
- * ```ts
- * const block: NumberedBlock = { index: 0, text: 'The tabby dozed by the stove.', };
- * ```
+ One block on one side, as the sheet numbers it.
+ 
+ @example
+ ```ts
+ const block: NumberedBlock = { index: 0, text: 'The tabby dozed by the stove.', };
+ ```
  */
 export type NumberedBlock = {
   /**
-   * Position in document order, zero-based, as the sheet shows it.
+   Position in document order, zero-based, as the sheet shows it.
    */
   readonly index: number;
 
   /**
-   * The block's own text.
+   The block's own text.
    */
   readonly text: string;
 };
 
 /**
- * One committed correspondence between the two sides.
- *
- * @example
- * ```ts
- * const pair: BlockPair = { source: 2, target: 3, };
- * ```
+ One committed correspondence between the two sides.
+ 
+ @example
+ ```ts
+ const pair: BlockPair = { source: 2, target: 3, };
+ ```
  */
 export type BlockPair = {
   /**
-   * Original-side block index.
+   Original-side block index.
    */
   readonly source: number;
 
   /**
-   * Translation-side block index.
+   Translation-side block index.
    */
   readonly target: number;
 };
 
 /**
- * What a model returns for one document pair.
- *
- * Unpaired blocks are ABSENT rather than listed against a sentinel, because a
- * sentinel invites a model to pair everything and mark the doubtful ones, which
- * is the behaviour this exists to prevent.
- *
- * @example
- * ```ts
- * const wire: BlockPairingWire = { pairs: [{ source: 0, target: 0, },], };
- * ```
+ What a model returns for one document pair.
+ 
+ Unpaired blocks are ABSENT rather than listed against a sentinel, because a
+ sentinel invites a model to pair everything and mark the doubtful ones, which
+ is the behaviour this exists to prevent.
+ 
+ @example
+ ```ts
+ const wire: BlockPairingWire = { pairs: [{ source: 0, target: 0, },], };
+ ```
  */
 export type BlockPairingWire = {
   /**
-   * Correspondences the model committed to, in document order.
+   Correspondences the model committed to, in document order.
    */
   readonly pairs: readonly BlockPair[];
 };
 
 /**
- * Renders one side's blocks as a numbered, fenced list.
- *
- * @param blocks - blocks in document order
- *
- * @param fence - fence no block text can reproduce
- *
- * @returns Sheet section listing every block against its index
- *
- * @example
- * ```ts
- * const section = renderBlocks({ blocks, fence: '```', },);
- * ```
+ Renders one side's blocks as a numbered, fenced list.
+ 
+ @param blocks - blocks in document order
+ 
+ @param fence - fence no block text can reproduce
+ 
+ @returns Sheet section listing every block against its index
+ 
+ @example
+ ```ts
+ const section = renderBlocks({ blocks, fence: '```', },);
+ ```
  */
 function renderBlocks(
   {
@@ -135,18 +135,18 @@ function renderBlocks(
 }
 
 /**
- * Builds the sheet asking one model to pair two documents' blocks.
- *
- * @param sourceBlocks - original blocks in document order
- *
- * @param targetBlocks - translation blocks in document order
- *
- * @returns Messages for one pairing call
- *
- * @example
- * ```ts
- * const messages = buildBlockPairingMessages({ sourceBlocks, targetBlocks, },);
- * ```
+ Builds the sheet asking one model to pair two documents' blocks.
+ 
+ @param sourceBlocks - original blocks in document order
+ 
+ @param targetBlocks - translation blocks in document order
+ 
+ @returns Messages for one pairing call
+ 
+ @example
+ ```ts
+ const messages = buildBlockPairingMessages({ sourceBlocks, targetBlocks, },);
+ ```
  */
 export function buildBlockPairingMessages(
   {
@@ -158,11 +158,11 @@ export function buildBlockPairingMessages(
   },
 ): readonly ChatMessage[] {
   /**
-   * Fence chosen against every block this sheet carries.
-   *
-   * Both sides are arbitrary prose and either may contain a run of backticks,
-   * so a fixed fence would let a block close its own listing and have the rest
-   * read as sheet structure.
+   Fence chosen against every block this sheet carries.
+   
+   Both sides are arbitrary prose and either may contain a run of backticks,
+   so a fixed fence would let a block close its own listing and have the rest
+   read as sheet structure.
    */
   const fence = selectFence({
     texts: [
@@ -212,19 +212,19 @@ export function buildBlockPairingMessages(
 }
 
 /**
- * Whether a parsed value has the shape of a pairing.
- *
- * SHAPE ONLY. Whether the pairing is usable is
- * {@link readBlockPairing}'s question, because that needs the block counts.
- *
- * @param value - parsed model reply
- *
- * @returns Whether it is a {@link BlockPairingWire}
- *
- * @example
- * ```ts
- * const ok = isBlockPairingWire({ pairs: [], },);
- * ```
+ Whether a parsed value has the shape of a pairing.
+ 
+ SHAPE ONLY. Whether the pairing is usable is
+ {@link readBlockPairing}'s question, because that needs the block counts.
+ 
+ @param value - parsed model reply
+ 
+ @returns Whether it is a {@link BlockPairingWire}
+ 
+ @example
+ ```ts
+ const ok = isBlockPairingWire({ pairs: [], },);
+ ```
  */
 export function isBlockPairingWire(value: unknown,): value is BlockPairingWire {
   if ((typeof value) !== 'object')
@@ -235,7 +235,7 @@ export function isBlockPairingWire(value: unknown,): value is BlockPairingWire {
     return false;
 
   /**
-   * Candidate pair list, still unknown in shape.
+   Candidate pair list, still unknown in shape.
    */
   const { pairs, } = value;
   if (!Array.isArray(pairs,))
@@ -252,7 +252,7 @@ export function isBlockPairingWire(value: unknown,): value is BlockPairingWire {
         return false;
 
       /**
-       * Candidate indices, still unknown in type.
+       Candidate indices, still unknown in type.
        */
       const {
         source,
@@ -263,28 +263,28 @@ export function isBlockPairingWire(value: unknown,): value is BlockPairingWire {
 }
 
 /**
- * Chunk-local indices of the blocks whose order carries no meaning: the
- * footnote definitions on each side.
- *
- * @example
- * ```ts
- * const freeOrder: FreeOrderBlocks = { source: new Set([ 7, 8, ],), target: new Set([ 11, 12, ],), };
- * ```
+ Chunk-local indices of the blocks whose order carries no meaning: the
+ footnote definitions on each side.
+ 
+ @example
+ ```ts
+ const freeOrder: FreeOrderBlocks = { source: new Set([ 7, 8, ],), target: new Set([ 11, 12, ],), };
+ ```
  */
 export type FreeOrderBlocks = {
   /**
-   * Original-side definition indices.
+   Original-side definition indices.
    */
   readonly source: ReadonlySet<number>;
 
   /**
-   * Translation-side definition indices.
+   Translation-side definition indices.
    */
   readonly target: ReadonlySet<number>;
 };
 
 /**
- * No block exempt from the order rule, the reader's default.
+ No block exempt from the order rule, the reader's default.
  */
 const NO_FREE_ORDER: FreeOrderBlocks = {
   source: new Set<number>(),
@@ -292,19 +292,19 @@ const NO_FREE_ORDER: FreeOrderBlocks = {
 };
 
 /**
- * Whether a pair joins two definitions, two body blocks, or one of each.
- *
- * @param pair - pair to classify
- *
- * @param freeOrder - definition indices, empty when the caller named none
- *
- * @returns The class
- *
- * @example
- * ```ts
- * pairClass({ pair: { source: 7, target: 12, }, freeOrder, },);
- * // => 'definition'
- * ```
+ Whether a pair joins two definitions, two body blocks, or one of each.
+ 
+ @param pair - pair to classify
+ 
+ @param freeOrder - definition indices, empty when the caller named none
+ 
+ @returns The class
+ 
+ @example
+ ```ts
+ pairClass({ pair: { source: 7, target: 12, }, freeOrder, },);
+ // => 'definition'
+ ```
  */
 function pairClass(
   {
@@ -316,12 +316,12 @@ function pairClass(
   },
 ): 'definition' | 'body' | 'mixed' {
   /**
-   * Whether the original side is a definition.
+   Whether the original side is a definition.
    */
   const sourceFree = freeOrder.source
     .has(pair.source,);
   /**
-   * Whether the translation side is a definition.
+   Whether the translation side is a definition.
    */
   const targetFree = freeOrder.target
     .has(pair.target,);
@@ -333,32 +333,32 @@ function pairClass(
 }
 
 /**
- * Reads a model's pairing, refusing anything that cannot be used as one.
- *
- * REFUSES RATHER THAN REPAIRS. A pairing that runs backwards, names a block
- * that does not exist, or pairs one translation block with two different
- * originals is not a near-miss to be tidied up: it is evidence the model did
- * not do the task, and using part of it would put mismatched passages in front
- * of the critics exactly as before.
- *
- * ONE ORIGINAL MAY APPEAR TWICE, because a translation splitting a paragraph is
- * the correspondence this exists to express. One TRANSLATION block may not,
- * since a single passage renders one place in the original.
- *
- * @param value - parsed model reply
- *
- * @param sourceCount - original blocks the sheet numbered
- *
- * @param targetCount - translation blocks the sheet numbered
- *
- * @returns Pairs in document order
- *
- * @throws BlockPairingError when the reply is not a usable pairing
- *
- * @example
- * ```ts
- * const pairs = readBlockPairing({ value, sourceCount: 4, targetCount: 5, },);
- * ```
+ Reads a model's pairing, refusing anything that cannot be used as one.
+ 
+ REFUSES RATHER THAN REPAIRS. A pairing that runs backwards, names a block
+ that does not exist, or pairs one translation block with two different
+ originals is not a near-miss to be tidied up: it is evidence the model did
+ not do the task, and using part of it would put mismatched passages in front
+ of the critics exactly as before.
+ 
+ ONE ORIGINAL MAY APPEAR TWICE, because a translation splitting a paragraph is
+ the correspondence this exists to express. One TRANSLATION block may not,
+ since a single passage renders one place in the original.
+ 
+ @param value - parsed model reply
+ 
+ @param sourceCount - original blocks the sheet numbered
+ 
+ @param targetCount - translation blocks the sheet numbered
+ 
+ @returns Pairs in document order
+ 
+ @throws BlockPairingError when the reply is not a usable pairing
+ 
+ @example
+ ```ts
+ const pairs = readBlockPairing({ value, sourceCount: 4, targetCount: 5, },);
+ ```
  */
 export function readBlockPairing(
   {
@@ -377,7 +377,7 @@ export function readBlockPairing(
     throw new BlockPairingError({ message: 'reply is not a pairing: expected {"pairs":[{"source":n,"target":n}]}', },);
 
   /**
-   * Pairs in the order the model gave them.
+   Pairs in the order the model gave them.
    */
   const { pairs, } = value;
   for (const pair of pairs) {
@@ -416,7 +416,7 @@ export function readBlockPairing(
   // the order rule reads over the body pairs alone.
   for (const [at, pair,] of pairs.entries()) {
     /**
-     * Pair before this one, absent at the first position.
+     Pair before this one, absent at the first position.
      */
     const previous = pairs[at - 1];
     if (pairClass({
@@ -434,7 +434,7 @@ export function readBlockPairing(
       },);
   }
   /**
-   * The body pairs with their positions, the ones the order rule reads.
+   The body pairs with their positions, the ones the order rule reads.
    */
   const bodyPairs = [ ...pairs.entries(), ]
     .filter(function isBody([
@@ -448,7 +448,7 @@ export function readBlockPairing(
     },);
   for (const [step, [at, pair,],] of bodyPairs.entries()) {
     /**
-     * Body pair before this one, absent at the first.
+     Body pair before this one, absent at the first.
      */
     const previous = bodyPairs[step - 1]?.[1];
     if (previous === undefined)

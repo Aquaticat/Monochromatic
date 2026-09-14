@@ -4,23 +4,23 @@ import { ProducerInputComparisonError, } from './producer-input-comparison-error
 //region Closed output metadata and native namespace grammar
 
 /**
- * Input runs use the existing fixed native prefix.
+ Input runs use the existing fixed native prefix.
  */
 export const RUN_PREFIX = 'producer-input-';
 /**
- * Namespace grammar is structural identity only, not creation authentication.
+ Namespace grammar is structural identity only, not creation authentication.
  */
 const UUID_PREFIX_WIDTH = 8;
 /**
- * Interior UUID groups retain the same hexadecimal width.
+ Interior UUID groups retain the same hexadecimal width.
  */
 const UUID_INTERIOR_WIDTH = 4;
 /**
- * Final UUID group width is checked independently of version and variant.
+ Final UUID group width is checked independently of version and variant.
  */
 const UUID_SUFFIX_WIDTH = 12;
 /**
- * Fixed namespace spelling is validated without accepting alternate separators.
+ Fixed namespace spelling is validated without accepting alternate separators.
  */
 const UUID_GROUP_WIDTHS = [
   UUID_PREFIX_WIDTH,
@@ -30,22 +30,22 @@ const UUID_GROUP_WIDTHS = [
   UUID_SUFFIX_WIDTH,
 ] as const;
 /**
- * Reads closed JSON metadata without forwarding native parser messages.
- *
- * @param text - bounded private native metadata
- *
- * @param keys - exact role-specific keys
- *
- * @param directory - owned comparison evidence locator
- *
- * @returns Owned parsed fields for explicit binding checks
- *
- * @throws ProducerInputComparisonError when syntax or closed shape differs
- *
- * @example
- * ```ts
- * const frame = comparisonMetadata({ text, keys, directory });
- * ```
+ Reads closed JSON metadata without forwarding native parser messages.
+ 
+ @param text - bounded private native metadata
+ 
+ @param keys - exact role-specific keys
+ 
+ @param directory - owned comparison evidence locator
+ 
+ @returns Owned parsed fields for explicit binding checks
+ 
+ @throws ProducerInputComparisonError when syntax or closed shape differs
+ 
+ @example
+ ```ts
+ const frame = comparisonMetadata({ text, keys, directory });
+ ```
  */
 export function comparisonMetadata({
   text,
@@ -58,7 +58,7 @@ export function comparisonMetadata({
 },): Readonly<Record<string, unknown>> {
   try {
     /**
-     * Native JSON parsing does not expose caller getters or prototype methods.
+     Native JSON parsing does not expose caller getters or prototype methods.
      */
     const value: unknown = JSON.parse(text);
     if (((typeof value) !== 'object') || (value === null)
@@ -68,7 +68,7 @@ export function comparisonMetadata({
         directory
       });
     /**
-     * Unknown fields cannot become execution or review authority.
+     Unknown fields cannot become execution or review authority.
      */
     const fields: Readonly<Record<string, unknown>> = Object.fromEntries(Object.entries(value));
     if ((Object.keys(fields)
@@ -94,18 +94,18 @@ export function comparisonMetadata({
 }
 
 /**
- * Checks bounded ASCII identity syntax without code-point or grapheme iteration.
- *
- * @param value - decoded identity or UUID group
- *
- * @param length - fixed width required by its role
- *
- * @returns Whether exact width and lowercase hexadecimal spelling both match
- *
- * @example
- * ```ts
- * const valid = comparisonHex({ value, length: CONTAINER_ID_WIDTH });
- * ```
+ Checks bounded ASCII identity syntax without code-point or grapheme iteration.
+ 
+ @param value - decoded identity or UUID group
+ 
+ @param length - fixed width required by its role
+ 
+ @returns Whether exact width and lowercase hexadecimal spelling both match
+ 
+ @example
+ ```ts
+ const valid = comparisonHex({ value, length: CONTAINER_ID_WIDTH });
+ ```
  */
 export function comparisonHex({
   value,
@@ -124,20 +124,20 @@ export function comparisonHex({
 }
 
 /**
- * Requires one directory with the native canonical UUIDv4 spelling before constructing a retained path.
- *
- * @param observation - bounded direct-child metadata from the dedicated native output parent
- *
- * @param directory - comparison evidence locator for a refusal
- *
- * @returns Canonical input-run identity without granting creation authenticity
- *
- * @throws ProducerInputComparisonError when observation or namespace grammar differs
- *
- * @example
- * ```ts
- * const runId = comparisonInputRunId({ observation, directory });
- * ```
+ Requires one directory with the native canonical UUIDv4 spelling before constructing a retained path.
+ 
+ @param observation - bounded direct-child metadata from the dedicated native output parent
+ 
+ @param directory - comparison evidence locator for a refusal
+ 
+ @returns Canonical input-run identity without granting creation authenticity
+ 
+ @throws ProducerInputComparisonError when observation or namespace grammar differs
+ 
+ @example
+ ```ts
+ const runId = comparisonInputRunId({ observation, directory });
+ ```
  */
 export function comparisonInputRunId({
   observation,
@@ -147,7 +147,7 @@ export function comparisonInputRunId({
   readonly directory: string;
 },): string {
   /**
-   * The single-child branch must still prove that its entry is a directory.
+   The single-child branch must still prove that its entry is a directory.
    */
   const [child] = observation.children;
   if ((observation.state !== 'single') || (!observation.completeEnumeration)
@@ -163,16 +163,16 @@ export function comparisonInputRunId({
       directory
     });
   /**
-   * Removing a fixed prefix does not normalize the identifier.
+   Removing a fixed prefix does not normalize the identifier.
    */
   const runId = child.name
     .slice(RUN_PREFIX.length);
   /**
-   * Exact group widths prevent traversal and alternate UUID spellings.
+   Exact group widths prevent traversal and alternate UUID spellings.
    */
   const groups = runId.split('-');
   /**
-   * Presence, version and variant remain explicit independently of the group-width check.
+   Presence, version and variant remain explicit independently of the group-width check.
    */
   const [version, variant] = groups.slice(2);
   if ((groups.length !== UUID_GROUP_WIDTHS.length)

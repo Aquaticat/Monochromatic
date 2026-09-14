@@ -26,23 +26,23 @@ import { SPEND_MARKER, } from '../spend-line.ts';
 // reader that skipped them would report a cleaner record than the one it read.
 
 /**
- * What `indexOf` returns for a marker that is not in the line.
+ What `indexOf` returns for a marker that is not in the line.
  */
 const NOT_FOUND = -1;
 
 /**
- * Value a count carries when the provider sent no usage block.
+ Value a count carries when the provider sent no usage block.
  */
 const UNREPORTED = 'unreported';
 
 /**
- * Field opening every record, checked to tell a record from prose.
+ Field opening every record, checked to tell a record from prose.
  */
 const FIRST_FIELD = 'provider=';
 
 /**
- * Providers a record may name, which is also the check that its first field
- * reads.
+ Providers a record may name, which is also the check that its first field
+ reads.
  */
 const PROVIDERS = [
   'synthetic',
@@ -52,96 +52,96 @@ const PROVIDERS = [
 ] as const;
 
 /**
- * One call's token counts, or the named absence standing for a provider that
- * reported none.
+ One call's token counts, or the named absence standing for a provider that
+ reported none.
  */
 export type SpendCount = number | typeof UNREPORTED;
 
 /**
- * One call's cost in USD, or the named absence for a line that carried no
- * `cost=` field: every line before 2026-09-03 and every line from a provider
- * that does not bill in USD.
+ One call's cost in USD, or the named absence for a line that carried no
+ `cost=` field: every line before 2026-09-03 and every line from a provider
+ that does not bill in USD.
  */
 export type SpendUsd = number | typeof UNREPORTED;
 
 /**
- * What one `SPEND` line said.
- *
- * @example
- * ```ts
- * const record: SpendRecord = {
- *   provider: 'hyper',
- *   model: 'qwen3.8-max',
- *   prompt: 5120,
- *   completion: 3072,
- * };
- * ```
+ What one `SPEND` line said.
+ 
+ @example
+ ```ts
+ const record: SpendRecord = {
+   provider: 'hyper',
+   model: 'qwen3.8-max',
+   prompt: 5120,
+   completion: 3072,
+ };
+ ```
  */
 export type SpendRecord = {
   /**
-   * Meter this call drew on.
+   Meter this call drew on.
    */
   readonly provider: typeof PROVIDERS[number];
 
   /**
-   * Model as the serving provider names it.
+   Model as the serving provider names it.
    */
   readonly model: string;
 
   /**
-   * Tokens the request consumed.
+   Tokens the request consumed.
    */
   readonly prompt: SpendCount;
 
   /**
-   * Tokens the answer produced, thinking included.
+   Tokens the answer produced, thinking included.
    */
   readonly completion: SpendCount;
 
   /**
-   * USD the wire reported for this call, where the provider bills in USD and
-   * the line carried the field.
+   USD the wire reported for this call, where the provider bills in USD and
+   the line carried the field.
    */
   readonly costUsd: SpendUsd;
 };
 
 /**
- * What one line turned out to be.
+ What one line turned out to be.
  */
 export type SpendLineReading = SpendRecord | 'not-a-record' | 'unreadable';
 
 /**
- * One `name=value` field, split.
+ One `name=value` field, split.
  */
 type SpendField = {
   /**
-   * Text before the separator.
+   Text before the separator.
    */
   readonly name: string;
 
   /**
-   * Text after it, empty where the field carried none.
+   Text after it, empty where the field carried none.
    */
   readonly value: string;
 };
 
 /**
- * Splits a `name=value` field, reporting a piece that carries no separator.
- *
- * @param field - one space-delimited piece of the record tail
- *
- * @returns Name and value, or that this piece is not a field
- *
- * @example
- * ```ts
- * const pair = fieldOf({ field: 'provider=hyper', },);
- * ```
+ Splits a `name=value` field, reporting a piece that carries no separator.
+ 
+ @param field - one space-delimited piece of the record tail
+ 
+ @returns Name and value, or that this piece is not a field
+ 
+ @example
+ ```ts
+ const pair = fieldOf({ field: 'provider=hyper', },);
+ ```
  */
 function fieldOf(
   { field, }: { readonly field: string; },
 ): SpendField | 'not-a-field' {
   /**
-   * Where the separator sits, or that this piece carries none.
+   Where the separator sits, or that this piece carries none.
    */
   const at = field.indexOf('=',);
 
@@ -158,17 +158,17 @@ function fieldOf(
 }
 
 /**
- * Reads a count field, keeping a provider's silence as a named value rather
- * than folding it into zero.
- *
- * @param value - what the field carried
- *
- * @returns Count, the named absence, or that the field will not read
- *
- * @example
- * ```ts
- * const prompt = countOf({ value: '5120', },);
- * ```
+ Reads a count field, keeping a provider's silence as a named value rather
+ than folding it into zero.
+ 
+ @param value - what the field carried
+ 
+ @returns Count, the named absence, or that the field will not read
+ 
+ @example
+ ```ts
+ const prompt = countOf({ value: '5120', },);
+ ```
  */
 function countOf(
   { value, }: { readonly value: string; },
@@ -182,7 +182,7 @@ function countOf(
     return 'unreadable';
 
   /**
-   * Field read as a number, which is NaN for anything that is not one.
+   Field read as a number, which is NaN for anything that is not one.
    */
   const parsed = Number(value,);
 
@@ -197,19 +197,19 @@ function countOf(
 }
 
 /**
- * Reads the cost field, keeping its absence as a named value.
- *
- * FRACTIONAL AND NOT NEGATIVE, unlike a token count: a call costs a fraction
- * of a cent, and the wire writes it with nine decimals.
- *
- * @param value - what the field carried, empty where the line had none
- *
- * @returns USD, the named absence, or that the field will not read
- *
- * @example
- * ```ts
- * const cost = usdOf({ value: '0.000126255304', },);
- * ```
+ Reads the cost field, keeping its absence as a named value.
+ 
+ FRACTIONAL AND NOT NEGATIVE, unlike a token count: a call costs a fraction
+ of a cent, and the wire writes it with nine decimals.
+ 
+ @param value - what the field carried, empty where the line had none
+ 
+ @returns USD, the named absence, or that the field will not read
+ 
+ @example
+ ```ts
+ const cost = usdOf({ value: '0.000126255304', },);
+ ```
  */
 function usdOf(
   { value, }: { readonly value: string; },
@@ -218,7 +218,7 @@ function usdOf(
     return UNREPORTED;
 
   /**
-   * Field read as a number, which is NaN for anything that is not one.
+   Field read as a number, which is NaN for anything that is not one.
    */
   const parsed = Number(value,);
 
@@ -232,22 +232,22 @@ function usdOf(
 }
 
 /**
- * Finds the marker where a logger prefix precedes it.
- *
- * @param line - one line of a run log
- *
- * @returns Where the marker word starts, or that the line carries none
- *
- * @example
- * ```ts
- * const at = spacedMarkerIn({ line: '[info] [t] SPEND provider=hyper', },);
- * ```
+ Finds the marker where a logger prefix precedes it.
+ 
+ @param line - one line of a run log
+ 
+ @returns Where the marker word starts, or that the line carries none
+ 
+ @example
+ ```ts
+ const at = spacedMarkerIn({ line: '[info] [t] SPEND provider=hyper', },);
+ ```
  */
 function spacedMarkerIn(
   { line, }: { readonly line: string; },
 ): number {
   /**
-   * Where the space in front of the marker sits.
+   Where the space in front of the marker sits.
    */
   const at = line.indexOf(` ${SPEND_MARKER}`,);
 
@@ -255,33 +255,33 @@ function spacedMarkerIn(
 }
 
 /**
- * Collects the fields of a record tail, keyed by name.
- *
- * A `Map` RATHER THAN AN OBJECT, because the keys come off a log line and an
- * object would let a line writing `__proto__=` reach the prototype. Nothing in
- * a run log is supposed to do that, which is exactly why the reader must not
- * depend on it not happening.
- *
- * @param fields - space-delimited pieces of the tail
- *
- * @returns Every piece that split, keyed by name
- *
- * @example
- * ```ts
- * const named = namedFields({ fields: ['provider=hyper',], },);
- * ```
+ Collects the fields of a record tail, keyed by name.
+ 
+ A `Map` RATHER THAN AN OBJECT, because the keys come off a log line and an
+ object would let a line writing `__proto__=` reach the prototype. Nothing in
+ a run log is supposed to do that, which is exactly why the reader must not
+ depend on it not happening.
+ 
+ @param fields - space-delimited pieces of the tail
+ 
+ @returns Every piece that split, keyed by name
+ 
+ @example
+ ```ts
+ const named = namedFields({ fields: ['provider=hyper',], },);
+ ```
  */
 function namedFields(
   { fields, }: { readonly fields: readonly string[]; },
 ): ReadonlyMap<string, string> {
   /**
-   * Fields collected so far.
+   Fields collected so far.
    */
   const named = new Map<string, string>();
 
   for (const field of fields) {
     /**
-     * Name and value of this piece.
+     Name and value of this piece.
      */
     const pair = fieldOf({ field, },);
     if (pair !== 'not-a-field') {
@@ -296,27 +296,27 @@ function namedFields(
 }
 
 /**
- * Reads one log line as a spend record.
- *
- * @param line - one line of a run log, tag prefix and all
- *
- * @returns Record, or which kind of non-record this line is
- *
- * @example
- * ```ts
- * const read = readSpendLine({ line, },);
- * ```
+ Reads one log line as a spend record.
+ 
+ @param line - one line of a run log, tag prefix and all
+ 
+ @returns Record, or which kind of non-record this line is
+ 
+ @example
+ ```ts
+ const read = readSpendLine({ line, },);
+ ```
  */
 export function readSpendLine(
   { line, }: { readonly line: string; },
 ): SpendLineReading {
   /**
-   * Where the marker sits, or that this is an ordinary line.
-   *
-   * ACCEPTED AT THE START OF A LINE OR AFTER A SPACE, so both forms read: the
-   * bare line `reportSpend` returns, and the same line once a logger has put
-   * its level, stamp and tags in front of it. Demanding the space would refuse
-   * the writer's own output.
+   Where the marker sits, or that this is an ordinary line.
+   
+   ACCEPTED AT THE START OF A LINE OR AFTER A SPACE, so both forms read: the
+   bare line `reportSpend` returns, and the same line once a logger has put
+   its level, stamp and tags in front of it. Demanding the space would refuse
+   the writer's own output.
    */
   const markerAt = line.startsWith(SPEND_MARKER,)
     ? 0
@@ -326,7 +326,7 @@ export function readSpendLine(
     return 'not-a-record';
 
   /**
-   * Fields written after the marker.
+   Fields written after the marker.
    */
   const fields = line
     .slice(markerAt + SPEND_MARKER.length,)
@@ -337,19 +337,19 @@ export function readSpendLine(
     return 'not-a-record';
 
   /**
-   * Every field that split, keyed by name.
+   Every field that split, keyed by name.
    */
   const named = namedFields({ fields, },);
 
   /**
-   * Provider named, checked against the ones a record may carry.
+   Provider named, checked against the ones a record may carry.
    */
   const provider = PROVIDERS.find(function names(candidate,): boolean {
     return candidate === named.get('provider',);
   },);
 
   /**
-   * Model named, absent on a record truncated before it.
+   Model named, absent on a record truncated before it.
    */
   const model = named.get('model',);
 
@@ -360,12 +360,12 @@ export function readSpendLine(
     return 'unreadable';
 
   /**
-   * Tokens the request consumed, or that the field will not read.
+   Tokens the request consumed, or that the field will not read.
    */
   const prompt = countOf({ value: named.get('prompt',) ?? '', },);
 
   /**
-   * Tokens the answer produced, or that the field will not read.
+   Tokens the answer produced, or that the field will not read.
    */
   const completion = countOf({ value: named.get('completion',) ?? '', },);
 
@@ -376,7 +376,7 @@ export function readSpendLine(
     return 'unreadable';
 
   /**
-   * USD the wire reported, or the named absence for a line without the field.
+   USD the wire reported, or the named absence for a line without the field.
    */
   const costUsd = usdOf({ value: named.get('cost',) ?? '', },);
 
@@ -393,116 +393,116 @@ export function readSpendLine(
 }
 
 /**
- * What one seat spent across every call a log recorded for it.
- *
- * @example
- * ```ts
- * const spend: SeatSpend = {
- *   provider: 'hyper',
- *   model: 'qwen3.8-max',
- *   calls: 13,
- *   promptTokens: 84_000,
- *   completionTokens: 51_065,
- *   unreportedCalls: 0,
- * };
- * ```
+ What one seat spent across every call a log recorded for it.
+ 
+ @example
+ ```ts
+ const spend: SeatSpend = {
+   provider: 'hyper',
+   model: 'qwen3.8-max',
+   calls: 13,
+   promptTokens: 84_000,
+   completionTokens: 51_065,
+   unreportedCalls: 0,
+ };
+ ```
  */
 export type SeatSpend = {
   /**
-   * Meter these calls drew on.
+   Meter these calls drew on.
    */
   readonly provider: SpendRecord['provider'];
 
   /**
-   * Model as the serving provider names it.
+   Model as the serving provider names it.
    */
   readonly model: string;
 
   /**
-   * Calls the log recorded for this seat, reported or not.
+   Calls the log recorded for this seat, reported or not.
    */
   readonly calls: number;
 
   /**
-   * Prompt tokens summed over the calls that reported any.
+   Prompt tokens summed over the calls that reported any.
    */
   readonly promptTokens: number;
 
   /**
-   * Completion tokens summed over the calls that reported any, thinking
-   * included.
+   Completion tokens summed over the calls that reported any, thinking
+   included.
    */
   readonly completionTokens: number;
 
   /**
-   * Calls whose provider sent no usage block.
-   *
-   * CARRIED BESIDE THE TOTALS RATHER THAN FOLDED INTO THEM, because a total
-   * over reported calls only is a floor, and a reader has to be able to see how
-   * much of the run it is a floor over.
+   Calls whose provider sent no usage block.
+   
+   CARRIED BESIDE THE TOTALS RATHER THAN FOLDED INTO THEM, because a total
+   over reported calls only is a floor, and a reader has to be able to see how
+   much of the run it is a floor over.
    */
   readonly unreportedCalls: number;
 
   /**
-   * USD summed over the calls whose line carried a cost.
+   USD summed over the calls whose line carried a cost.
    */
   readonly costUsd: number;
 
   /**
-   * Calls whose line carried a cost, so a USD total can be read as a floor
-   * over the rest.
+   Calls whose line carried a cost, so a USD total can be read as a floor
+   over the rest.
    */
   readonly costedCalls: number;
 };
 
 /**
- * Everything a set of log lines said about what was spent.
- *
- * @example
- * ```ts
- * const tally = tallySpend({ lines, },);
- * ```
+ Everything a set of log lines said about what was spent.
+ 
+ @example
+ ```ts
+ const tally = tallySpend({ lines, },);
+ ```
  */
 export type SpendTally = {
   /**
-   * One entry per provider and model pair, since the same model can be served
-   * by both and only one of the two is priced per token.
+   One entry per provider and model pair, since the same model can be served
+   by both and only one of the two is priced per token.
    */
   readonly seats: readonly SeatSpend[];
 
   /**
-   * Lines that carried the marker and a readable first field but would not
-   * parse, counted so a hole in the record cannot pass for an absence of spend.
+   Lines that carried the marker and a readable first field but would not
+   parse, counted so a hole in the record cannot pass for an absence of spend.
    */
   readonly unreadableLines: number;
 };
 
 /**
- * Totals every spend record in a log, per seat.
- *
- * @param lines - log lines in any order, records and prose mixed
- *
- * @returns Per-seat totals, sorted by completion tokens so the seat that cost
- * the most reads first, plus how many records would not parse
- *
- * @example
- * ```ts
- * const tally = tallySpend({ lines: text.split('\n',), },);
- * ```
+ Totals every spend record in a log, per seat.
+ 
+ @param lines - log lines in any order, records and prose mixed
+ 
+ @returns Per-seat totals, sorted by completion tokens so the seat that cost
+ the most reads first, plus how many records would not parse
+ 
+ @example
+ ```ts
+ const tally = tallySpend({ lines: text.split('\n',), },);
+ ```
  */
 export function tallySpend(
   { lines, }: { readonly lines: readonly string[]; },
 ): SpendTally {
   /**
-   * What every line turned out to be, read once so the counts below cannot
-   * disagree about which lines were records.
+   What every line turned out to be, read once so the counts below cannot
+   disagree about which lines were records.
    */
   const readings = lines.map(function readOne(line,): SpendLineReading {
     return readSpendLine({ line, },);
   },);
 
   /**
-   * Records that carried the marker and would not parse.
+   Records that carried the marker and would not parse.
    */
   const unreadableLines = readings
     .filter(function damaged(reading,): boolean {
@@ -511,7 +511,7 @@ export function tallySpend(
     .length;
 
   /**
-   * Every line that read as a record.
+   Every line that read as a record.
    */
   const records = readings.filter(function isRecord(reading,): reading is SpendRecord {
     if (reading === 'not-a-record')
@@ -521,19 +521,19 @@ export function tallySpend(
   },);
 
   /**
-   * Running totals keyed by provider and model together.
+   Running totals keyed by provider and model together.
    */
   const seats = new Map<string, SeatSpend>();
 
   for (const record of records) {
     /**
-     * Key pairing the provider with the model, since one model may be served
-     * by both and the two are billed differently.
+     Key pairing the provider with the model, since one model may be served
+     by both and the two are billed differently.
      */
     const key = `${record.provider} ${record.model}`;
 
     /**
-     * Totals this seat had before this call.
+     Totals this seat had before this call.
      */
     const running = seats.get(key,) ?? {
       provider: record.provider,
@@ -547,12 +547,12 @@ export function tallySpend(
     };
 
     /**
-     * Whether this call reported anything at all.
+     Whether this call reported anything at all.
      */
     const reported = (record.prompt !== UNREPORTED) || (record.completion !== UNREPORTED);
 
     /**
-     * Whether this call's line carried a cost.
+     Whether this call's line carried a cost.
      */
     const costed = record.costUsd !== UNREPORTED;
 

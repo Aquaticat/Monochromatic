@@ -1,13 +1,13 @@
 /**
- * Tests for the OpenRouter client over a recorded transport.
- *
- * THE STREAM SHAPE IS THE ONE THE PROBE CAPTURED on 2026-09-03 from
- * `deepseek/deepseek-v4-flash-0731` via Inceptron: a `: OPENROUTER PROCESSING`
- * comment line, reasoning deltas before content, a final chunk carrying
- * `usage` with `cost`, and the `[DONE]` sentinel. Fixtures are cat-themed
- * invention; no corpus content appears here.
- *
- * @module
+ Tests for the OpenRouter client over a recorded transport.
+ 
+ THE STREAM SHAPE IS THE ONE THE PROBE CAPTURED on 2026-09-03 from
+ `deepseek/deepseek-v4-flash-0731` via Inceptron: a `: OPENROUTER PROCESSING`
+ comment line, reasoning deltas before content, a final chunk carrying
+ `usage` with `cost`, and the `[DONE]` sentinel. Fixtures are cat-themed
+ invention; no corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -28,18 +28,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One chat completion chunk as the gateway sends it.
- *
- * @param delta - delta fields for the single choice
- *
- * @param rest - top-level fields beyond the choice, usage included
- *
- * @returns Event line, newline-terminated
- *
- * @example
- * ```ts
- * const raw = chunkOf({ delta: { content: '{"spot":', }, },);
- * ```
+ One chat completion chunk as the gateway sends it.
+ 
+ @param delta - delta fields for the single choice
+ 
+ @param rest - top-level fields beyond the choice, usage included
+ 
+ @returns Event line, newline-terminated
+ 
+ @example
+ ```ts
+ const raw = chunkOf({ delta: { content: '{"spot":', }, },);
+ ```
  */
 function chunkOf(
   {
@@ -69,7 +69,7 @@ function chunkOf(
 }
 
 /**
- * Whole stream the captured call answered with, answer and cost included.
+ Whole stream the captured call answered with, answer and cost included.
  */
 const RECORDED_STREAM = [
   ': OPENROUTER PROCESSING\n\n',
@@ -92,21 +92,21 @@ const RECORDED_STREAM = [
 ].join('',);
 
 /**
- * Abort signal every call here carries.
+ Abort signal every call here carries.
  */
 const SIGNAL = new AbortController().signal;
 
 /**
- * Builds a client over a transport that records what it was sent.
- *
- * @param reply - what the chat endpoint answers
- *
- * @returns Client plus the exchanges the transport saw
- *
- * @example
- * ```ts
- * const { client, exchanges, } = recordedClient({},);
- * ```
+ Builds a client over a transport that records what it was sent.
+ 
+ @param reply - what the chat endpoint answers
+ 
+ @returns Client plus the exchanges the transport saw
+ 
+ @example
+ ```ts
+ const { client, exchanges, } = recordedClient({},);
+ ```
  */
 function recordedClient(
   { reply = { status: 200, bodyText: RECORDED_STREAM, }, }: {
@@ -114,7 +114,7 @@ function recordedClient(
   },
 ) {
   /**
-   * Every exchange the transport was handed.
+   Every exchange the transport was handed.
    */
   const exchanges: TransportExchange[] = [];
   return {
@@ -144,7 +144,7 @@ await describe({
       fn: async () => {
         const { client, exchanges, } = recordedClient({},);
         /**
-         * One schema'd call as a stage would make it.
+         One schema'd call as a stage would make it.
          */
         const reply = await client.chatText({
           modelId: 'deepseek-v4-flash-0731',
@@ -173,7 +173,7 @@ await describe({
         },);
 
         /**
-         * What went on the wire.
+         What went on the wire.
          */
         const [exchange,] = exchanges;
         if (exchange === undefined)
@@ -181,7 +181,7 @@ await describe({
         expect(exchange.url,).toBe(OPENROUTER_CHAT_URL,);
         expect(exchange.headers.Authorization,).toBe('Bearer test-key',);
         /**
-         * Body as the gateway would parse it.
+         Body as the gateway would parse it.
          */
         const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
         expect(body,).toMatchObject({
@@ -238,7 +238,7 @@ await describe({
           maxTokens: 50,
         },);
         /**
-         * Both bodies as the gateway would parse them.
+         Both bodies as the gateway would parse them.
          */
         const bodies = exchanges.map(function parse(exchange,): unknown {
           return JSON.parse(exchange.bodyJson ?? '{}',);
@@ -260,13 +260,13 @@ await describe({
           signal: SIGNAL,
         },);
         /**
-         * What went on the wire.
+         What went on the wire.
          */
         const [exchange,] = exchanges;
         if (exchange === undefined)
           throw new Error('nothing was sent',);
         /**
-         * Body as the gateway would parse it.
+         Body as the gateway would parse it.
          */
         const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
         expect(body,).toMatchObject({
@@ -302,7 +302,7 @@ await describe({
       fn: async () => {
         const { client, exchanges, } = recordedClient({},);
         /**
-         * What a call for a name outside the catalog produces.
+         What a call for a name outside the catalog produces.
          */
         let thrown: unknown;
         try {
@@ -345,7 +345,7 @@ await describe({
           },
         },);
         /**
-         * What the failed stream produces once the ladder (limit 0) gives up.
+         What the failed stream produces once the ladder (limit 0) gives up.
          */
         let thrown: unknown;
         try {
@@ -375,7 +375,7 @@ await describe({
           },
         },);
         /**
-         * What a payment refusal produces.
+         What a payment refusal produces.
          */
         let thrown: unknown;
         try {

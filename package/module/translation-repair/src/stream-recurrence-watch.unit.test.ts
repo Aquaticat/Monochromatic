@@ -1,36 +1,36 @@
 /**
- * Tests for the recurrence watch, asked directly rather than through the
- * runaway watch that composes it.
- *
- * WHAT `stream-runaway-watch.unit.test.ts` ALREADY PROVES, and is not repeated
- * here: that a long-period loop past the length bar ends the stream, that the
- * same loop under the bar finishes, and that a candidate quoted twice back to
- * back finishes, including at the length most prone to a false positive. Those
- * are the detector's headline claims and they are covered.
- *
- * WHAT NOTHING COVERED, found by mutation rather than by reading: the BOUNDED
- * BUFFER. Removing the trim that keeps only the trailing `BUFFER_CHARS` left
- * the whole suite green. That trim is load-bearing twice over. It is what makes
- * the cost of watching a stream that never ends constant, which is the only
- * reason this detector can run on the streams it exists to stop. And it is what
- * decides how far apart two copies of a passage may be before the earlier one
- * stops counting, which is a correctness rule and not an optimisation: a
- * reasoning trace in this pipeline restates whole candidates verbatim, so one
- * quoted near the start and again near the end is ordinary work, and without
- * the trim the early copy stays findable forever and the second quotation reads
- * as a loop.
- *
- * SO THE CENTRAL CASE HERE IS A PAIR OF DISTANT QUOTATIONS. The same passage
- * appears twice, far enough apart that the first has scrolled out, with unique
- * text between and around. It must finish. With the trim removed it does not.
- *
- * THE EMPTY-TEXT EARLY RETURN IS NOT A BRANCH worth a case: without it the
- * counters advance by zero and the buffer gains nothing, so no input can tell
- * the two apart. It is a shortcut, and it is left uncovered on purpose.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the recurrence watch, asked directly rather than through the
+ runaway watch that composes it.
+ 
+ WHAT `stream-runaway-watch.unit.test.ts` ALREADY PROVES, and is not repeated
+ here: that a long-period loop past the length bar ends the stream, that the
+ same loop under the bar finishes, and that a candidate quoted twice back to
+ back finishes, including at the length most prone to a false positive. Those
+ are the detector's headline claims and they are covered.
+ 
+ WHAT NOTHING COVERED, found by mutation rather than by reading: the BOUNDED
+ BUFFER. Removing the trim that keeps only the trailing `BUFFER_CHARS` left
+ the whole suite green. That trim is load-bearing twice over. It is what makes
+ the cost of watching a stream that never ends constant, which is the only
+ reason this detector can run on the streams it exists to stop. And it is what
+ decides how far apart two copies of a passage may be before the earlier one
+ stops counting, which is a correctness rule and not an optimisation: a
+ reasoning trace in this pipeline restates whole candidates verbatim, so one
+ quoted near the start and again near the end is ordinary work, and without
+ the trim the early copy stays findable forever and the second quotation reads
+ as a loop.
+ 
+ SO THE CENTRAL CASE HERE IS A PAIR OF DISTANT QUOTATIONS. The same passage
+ appears twice, far enough apart that the first has scrolled out, with unique
+ text between and around. It must finish. With the trim removed it does not.
+ 
+ THE EMPTY-TEXT EARLY RETURN IS NOT A BRANCH worth a case: without it the
+ counters advance by zero and the buffer gains nothing, so no input can tell
+ the two apart. It is a shortcut, and it is left uncovered on purpose.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -42,44 +42,44 @@ import {
 import { watchForRecurrence, } from '../dist/final/node/index.mjs';
 
 /**
- * Characters each counter unit contributes, padded so units never share a
- * boundary and no window can repeat by accident.
+ Characters each counter unit contributes, padded so units never share a
+ boundary and no window can repeat by accident.
  */
 const UNIT_CHARS = 8;
 
 /**
- * Base the counter is spelled in, which is the widest one `toString` offers.
+ Base the counter is spelled in, which is the widest one `toString` offers.
  */
 const COUNTER_BASE = 36;
 
 /**
- * Characters fed per call, chosen so checks land at fixed multiples of the
- * detector's own interval rather than wherever a chunk boundary happens to be.
+ Characters fed per call, chosen so checks land at fixed multiples of the
+ detector's own interval rather than wherever a chunk boundary happens to be.
  */
 const CHUNK_CHARS = 256;
 
 /**
- * Period of the looping fixture, which is the length the ratio detector's
- * window arithmetic is blind to and the reason this detector exists.
+ Period of the looping fixture, which is the length the ratio detector's
+ window arithmetic is blind to and the reason this detector exists.
  */
 const LOOP_PERIOD = 501;
 
 /**
- * Builds text that repeats nothing, by spelling a strictly increasing counter.
- *
- * NON-REPEATING BY CONSTRUCTION rather than by chance: two equal windows would
- * need equal counter values at the same offset, and the counter never repeats.
- *
- * @param units - how many counter values to spell
- *
- * @param from - first counter value, so two stretches share no content
- *
- * @returns Text `units * UNIT_CHARS` characters long
- *
- * @example
- * ```ts
- * const filler = uniqueText({ units: 100, from: 0, },);
- * ```
+ Builds text that repeats nothing, by spelling a strictly increasing counter.
+ 
+ NON-REPEATING BY CONSTRUCTION rather than by chance: two equal windows would
+ need equal counter values at the same offset, and the counter never repeats.
+ 
+ @param units - how many counter values to spell
+ 
+ @param from - first counter value, so two stretches share no content
+ 
+ @returns Text `units * UNIT_CHARS` characters long
+ 
+ @example
+ ```ts
+ const filler = uniqueText({ units: 100, from: 0, },);
+ ```
  */
 function uniqueText(
   {
@@ -108,22 +108,22 @@ function uniqueText(
 }
 
 /**
- * Feeds text to a fresh detector in fixed-width chunks and reads its verdict.
- *
- * @param text - whole stream, fed in arrival order
- *
- * @returns What the detector believed once the stream ended
- *
- * @example
- * ```ts
- * expect(verdictOver({ text, },).kind,).toBe('continuing',);
- * ```
+ Feeds text to a fresh detector in fixed-width chunks and reads its verdict.
+ 
+ @param text - whole stream, fed in arrival order
+ 
+ @returns What the detector believed once the stream ended
+ 
+ @example
+ ```ts
+ expect(verdictOver({ text, },).kind,).toBe('continuing',);
+ ```
  */
 function verdictOver(
   { text, }: { readonly text: string; },
 ): ReturnType<ReturnType<typeof watchForRecurrence>['verdict']> {
   /**
-   * Detector reading this one stream.
+   Detector reading this one stream.
    */
   const detector = watchForRecurrence();
   for (let at = 0; at < text.length; at += CHUNK_CHARS) {
@@ -147,9 +147,9 @@ await describe({
         + 'quoted near the start and again near the end is ordinary work',
       fn: async () => {
         /**
-         * Passage quoted twice, long enough that its second copy alone would
-         * carry the detector past the consecutive-hit threshold if the first
-         * copy were still reachable.
+         Passage quoted twice, long enough that its second copy alone would
+         carry the detector past the consecutive-hit threshold if the first
+         copy were still reachable.
          */
         const quoted = uniqueText({
           units: 640,
@@ -178,8 +178,8 @@ await describe({
         + 'legible in a log rather than only the fact that it was stopped',
       fn: async () => {
         /**
-         * Stream cycling a period the windowed ratio detector's sampling
-         * arithmetic cannot see.
+         Stream cycling a period the windowed ratio detector's sampling
+         arithmetic cannot see.
          */
         const verdict = verdictOver({
           text: uniqueText({

@@ -1,21 +1,21 @@
 /**
- * Tests for wrapping a consolidation that ships.
- *
- * WHAT THESE PIN is the pair of properties `translate-wrap.unit.test.ts` and
- * `repair-wrap.unit.test.ts` pin on the two lanes, now on the stage that had
- * neither: only wording the consolidation PRODUCED is wrapped, and whether it
- * still differs from what stands is re-derived from the wrapped text rather
- * than taken from the gate's answer.
- *
- * The demotion case is the one with teeth. The gate compares an unwrapped
- * consolidation against the standing text, so it can call a difference real
- * when the only difference is where the lines break. Shipping that would
- * report a change nobody decided on, and would put a slice through the whole
- * delivery path to arrive at the wording it started with.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for wrapping a consolidation that ships.
+ 
+ WHAT THESE PIN is the pair of properties `translate-wrap.unit.test.ts` and
+ `repair-wrap.unit.test.ts` pin on the two lanes, now on the stage that had
+ neither: only wording the consolidation PRODUCED is wrapped, and whether it
+ still differs from what stands is re-derived from the wrapped text rather
+ than taken from the gate's answer.
+ 
+ The demotion case is the one with teeth. The gate compares an unwrapped
+ consolidation against the standing text, so it can call a difference real
+ when the only difference is where the lines break. Shipping that would
+ report a change nobody decided on, and would put a slice through the whole
+ delivery path to arrive at the wording it started with.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -31,21 +31,21 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger these hand to the stage, whose output is not what is under test.
+ Logger these hand to the stage, whose output is not what is under test.
  */
 const l = tagged({ tag: 'consolidate-wrap-test', },);
 
 /**
- * Builds a gate outcome that settled the way a case needs.
- *
- * @param ships - rendering the gate settled on
- *
- * @returns Outcome shaped as the gate produces one
- *
- * @example
- * ```ts
- * const outcome = gateSettling({ ships: 'consolidated', },);
- * ```
+ Builds a gate outcome that settled the way a case needs.
+ 
+ @param ships - rendering the gate settled on
+ 
+ @returns Outcome shaped as the gate produces one
+ 
+ @example
+ ```ts
+ const outcome = gateSettling({ ships: 'consolidated', },);
+ ```
  */
 function gateSettling(
   { ships, }: { readonly ships: 'consolidated' | 'standing'; },
@@ -60,16 +60,16 @@ function gateSettling(
 }
 
 /**
- * One passage as a producer that ignored the rule would emit it.
+ One passage as a producer that ignored the rule would emit it.
  */
 const ONE_LONG_LINE = 'The cat naps in the window. She wakes at four. She asks for nothing at all.';
 
 /**
- * One line-structured passage as it stands in a page nobody has wrapped.
- *
- * FLAT ON PURPOSE, and this is the ordinary case rather than a contrived one:
- * 50 of 64 archive incumbents already violate the line rule, and a retention
- * keeps the archive's bytes.
+ One line-structured passage as it stands in a page nobody has wrapped.
+ 
+ FLAT ON PURPOSE, and this is the ordinary case rather than a contrived one:
+ 50 of 64 archive incumbents already violate the line rule, and a retention
+ keeps the archive's bytes.
  */
 const VERSE_AS_IT_STANDS = [
   'The cat wakes. Sun is warm.',
@@ -86,8 +86,8 @@ const VERSE_AS_IT_STANDS = [
 ].join('\n',);
 
 /**
- * Same passage as a producer obeying the line-structure rule returns it, one
- * line per unit.
+ Same passage as a producer obeying the line-structure rule returns it, one
+ line per unit.
  */
 const VERSE_UNMERGED = [
   'The cat wakes.\nSun is warm.',
@@ -111,7 +111,7 @@ await describe({
         + 'edit no reader can usefully judge and the delivery check refuses outright',
       fn: async () => {
         /**
-         * Wording already in place, written the way a producer would not.
+         Wording already in place, written the way a producer would not.
          */
         const standingText = ONE_LONG_LINE;
 
@@ -157,7 +157,7 @@ await describe({
         + 'roster that honours the rule from one this stage is silently correcting',
       fn: async () => {
         /**
-         * The same passage, already written the way the rule would have it.
+         The same passage, already written the way the rule would have it.
          */
         const alreadyWrapped = 'The cat naps in the window.\nShe wakes at four.\nShe asks for nothing at all.';
 
@@ -182,7 +182,7 @@ await describe({
         + 'is recorded as a consolidation that shipped',
       fn: async () => {
         /**
-         * What stands, written the way the rule would have it.
+         What stands, written the way the rule would have it.
          */
         const standingText = 'The cat naps in the window.\nShe wakes at four.\nShe asks for nothing at all.';
 
@@ -207,12 +207,12 @@ await describe({
         + 'the archive matches no key this stage holds unless the standing text is wrapped to compare',
       fn: async () => {
         /**
-         * What stands, as the archive carries it: one line, never wrapped.
+         What stands, as the archive carries it: one line, never wrapped.
          */
         const standingText = ONE_LONG_LINE;
 
         /**
-         * The same wording, wrapped, which is what a producer handed back.
+         The same wording, wrapped, which is what a producer handed back.
          */
         const consolidatedText = 'The cat naps in the window.\nShe wakes at four.\nShe asks for nothing at all.';
 

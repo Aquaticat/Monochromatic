@@ -1,9 +1,9 @@
 /**
- * Tests for pinned-commit corpus reads.
- * Exercised against a throwaway git repository built in a temp directory;
- * fixture content is cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for pinned-commit corpus reads.
+ Exercised against a throwaway git repository built in a temp directory;
+ fixture content is cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -33,37 +33,37 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Real git binary for fixture setup and pinned reads;
- * the repo PATH exposes a policy shim whose staging guards reject fixture
- * staging patterns.
+ Real git binary for fixture setup and pinned reads;
+ the repo PATH exposes a policy shim whose staging guards reject fixture
+ staging patterns.
  */
 const REAL_GIT = await resolveGit();
 
 /**
- * Invented zh page content committed into the throwaway clone.
+ Invented zh page content committed into the throwaway clone.
  */
 const WHISKERS_PAGE = '---\nname: 小猫-whiskers\n---\n\n## 简介\n\n猫猫喜欢晒太阳。[^1]\n\n[^1]:[猫猫习性说明。](https://example.org/cat)\n';
 
 /**
- * Invented zh page written with CRLF endings, as the one such page in the
- * pinned corpus is.
+ Invented zh page written with CRLF endings, as the one such page in the
+ pinned corpus is.
  */
 const TABBY_CRLF_PAGE = '---\r\nname: 小猫-tabby\r\n---\r\n\r\n## 简介\r\n\r\n猫猫在窗台上睡觉。\r\n';
 
 /**
- * Runs one git command inside the throwaway clone,
- * hermetic against user and system git configuration.
- *
- * @param cloneDir - throwaway repository directory
- *
- * @param args - git argument vector
- *
- * @returns Captured stdout
- *
- * @example
- * ```ts
- * const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
- * ```
+ Runs one git command inside the throwaway clone,
+ hermetic against user and system git configuration.
+ 
+ @param cloneDir - throwaway repository directory
+ 
+ @param args - git argument vector
+ 
+ @returns Captured stdout
+ 
+ @example
+ ```ts
+ const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
+ ```
  */
 async function fixtureGit(
   {
@@ -75,7 +75,7 @@ async function fixtureGit(
   },
 ): Promise<string> {
   /**
-   * Subprocess result; only stdout is consumed.
+   Subprocess result; only stdout is consumed.
    */
   const { stdout, } = await spawn(
     REAL_GIT,
@@ -95,15 +95,15 @@ async function fixtureGit(
 }
 
 /**
- * Builds a throwaway corpus-shaped git repository with one committed entry,
- * removed on dispose.
- *
- * @returns Clone directory, pinned commit, and async disposer
- *
- * @example
- * ```ts
- * await using fixture = await makeThrowawayClone();
- * ```
+ Builds a throwaway corpus-shaped git repository with one committed entry,
+ removed on dispose.
+ 
+ @returns Clone directory, pinned commit, and async disposer
+ 
+ @example
+ ```ts
+ await using fixture = await makeThrowawayClone();
+ ```
  */
 async function makeThrowawayClone(): Promise<
   AsyncDisposable & {
@@ -112,7 +112,7 @@ async function makeThrowawayClone(): Promise<
   }
 > {
   /**
-   * Fresh temp directory holding the throwaway repository.
+   Fresh temp directory holding the throwaway repository.
    */
   const cloneDir = await mkdtemp(join(
     tmpdir(),
@@ -191,7 +191,7 @@ async function makeThrowawayClone(): Promise<
   },);
 
   /**
-   * Commit every test read pins to.
+   Commit every test read pins to.
    */
   const commitSha = (await fixtureGit({
     cloneDir,
@@ -247,7 +247,7 @@ await describe({
         await using fixture = await makeThrowawayClone();
 
         /**
-         * The CRLF page as the package reads it.
+         The CRLF page as the package reads it.
          */
         const read = await readCorpusFile({
           pin: {

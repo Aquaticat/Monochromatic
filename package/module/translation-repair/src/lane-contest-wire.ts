@@ -43,85 +43,85 @@ import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
 // than stripped, which is the one place a candidate may exceed the original.
 
 /**
- * Which candidate a judge chose, or that it could not choose.
- *
- * DECLINING IS A VERDICT, not a failure to answer. Two candidates that differ
- * only in wording have no better one, and a judge forced to pick would be
- * inventing a preference the evidence does not carry.
+ Which candidate a judge chose, or that it could not choose.
+ 
+ DECLINING IS A VERDICT, not a failure to answer. Two candidates that differ
+ only in wording have no better one, and a judge forced to pick would be
+ inventing a preference the evidence does not carry.
  */
 export type LaneChoice = 'repair' | 'translate' | 'neither';
 
 /**
- * What a judge thinks of the archive rendering shown beside the candidates.
- *
- * ORTHOGONAL TO {@link LaneChoice}, not a fourth member of it. The choice asks
- * which candidate to ship; this asks whether the text already published is fit
- * to keep. A slice can have a clear winner AND a sound archive, or no winner
- * and a sound archive, and one field cannot say both.
- *
- * TWO VALUES, matching the two questions the candidates are judged on. A judge
- * that cannot tell omits the field rather than answering a third way, and the
- * settling rule reads that absence as a voice that did not speak.
+ What a judge thinks of the archive rendering shown beside the candidates.
+ 
+ ORTHOGONAL TO {@link LaneChoice}, not a fourth member of it. The choice asks
+ which candidate to ship; this asks whether the text already published is fit
+ to keep. A slice can have a clear winner AND a sound archive, or no winner
+ and a sound archive, and one field cannot say both.
+ 
+ TWO VALUES, matching the two questions the candidates are judged on. A judge
+ that cannot tell omits the field rather than answering a third way, and the
+ settling rule reads that absence as a voice that did not speak.
  */
 export type ArchiveVerdict = 'publishable' | 'flawed';
 
 /**
- * One judge's reading of one contested slice.
- *
- * @example
- * ```ts
- * const ballot: LaneContestBallot = { choice: 'repair', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: 'x', };
- * ```
+ One judge's reading of one contested slice.
+ 
+ @example
+ ```ts
+ const ballot: LaneContestBallot = { choice: 'repair', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: 'x', };
+ ```
  */
 export type LaneContestBallot = {
   /**
-   * Candidate this judge would ship.
+   Candidate this judge would ship.
    */
   readonly choice: LaneChoice;
 
   /**
-   * Candidates saying something the original does not support.
+   Candidates saying something the original does not support.
    */
   readonly unsupported: readonly LaneChoice[];
 
   /**
-   * Unsupported findings exactly as this judge wrote them.
-   *
-   * KEPT BESIDE THE NARROWED LIST rather than instead of it. A judge that
-   * answers with the offending phrases rather than with candidate names has
-   * still said something, and keeping only the narrowed list would leave an
-   * audit trail reading as though that judge had found nothing.
+   Unsupported findings exactly as this judge wrote them.
+   
+   KEPT BESIDE THE NARROWED LIST rather than instead of it. A judge that
+   answers with the offending phrases rather than with candidate names has
+   still said something, and keeping only the narrowed list would leave an
+   audit trail reading as though that judge had found nothing.
    */
   readonly unsupportedRaw: readonly string[];
 
   /**
-   * Candidates omitting something the original says.
+   Candidates omitting something the original says.
    */
   readonly dropped: readonly LaneChoice[];
 
   /**
-   * Dropped findings exactly as this judge wrote them.
+   Dropped findings exactly as this judge wrote them.
    */
   readonly droppedRaw: readonly string[];
 
   /**
-   * Why, for the audit trail rather than for validity.
+   Why, for the audit trail rather than for validity.
    */
   readonly reason: string;
 
   /**
-   * Whether this judge would publish the archive rendering as it stands.
-   *
-   * OPTIONAL BECAUSE ITS ABSENCE IS NOT A FAULT. The schema asks for it on
-   * every ballot, but a judge that omits it has still chosen between the
-   * candidates, and refusing the whole ballot over a missing archive answer
-   * would trade a lane verdict for an archive one.
+   Whether this judge would publish the archive rendering as it stands.
+   
+   OPTIONAL BECAUSE ITS ABSENCE IS NOT A FAULT. The schema asks for it on
+   every ballot, but a judge that omits it has still chosen between the
+   candidates, and refusing the whole ballot over a missing archive answer
+   would trade a lane verdict for an archive one.
    */
   readonly archive?: ArchiveVerdict;
 };
 
 /**
- * Reply shape a judge is asked for, before it is read.
+ Reply shape a judge is asked for, before it is read.
  */
 export type LaneContestWire = {
   readonly choice: string;
@@ -132,7 +132,7 @@ export type LaneContestWire = {
 };
 
 /**
- * Candidate names a judge may use, which are the lanes plus the refusal.
+ Candidate names a judge may use, which are the lanes plus the refusal.
  */
 const CANDIDATE_NAMES: readonly LaneChoice[] = [
   'repair',
@@ -141,16 +141,16 @@ const CANDIDATE_NAMES: readonly LaneChoice[] = [
 ];
 
 /**
- * Whether a value is one of the names a judge may use.
- *
- * @param value - candidate name from a reply
- *
- * @returns Whether it names a lane or the refusal
- *
- * @example
- * ```ts
- * const named = isLaneChoice('repair',);
- * ```
+ Whether a value is one of the names a judge may use.
+ 
+ @param value - candidate name from a reply
+ 
+ @returns Whether it names a lane or the refusal
+ 
+ @example
+ ```ts
+ const named = isLaneChoice('repair',);
+ ```
  */
 function isLaneChoice(value: unknown,): value is LaneChoice {
   return namesOneOf({
@@ -160,7 +160,7 @@ function isLaneChoice(value: unknown,): value is LaneChoice {
 }
 
 /**
- * Verdicts a judge may give the archive rendering.
+ Verdicts a judge may give the archive rendering.
  */
 const ARCHIVE_VERDICTS: readonly ArchiveVerdict[] = [
   'publishable',
@@ -168,16 +168,16 @@ const ARCHIVE_VERDICTS: readonly ArchiveVerdict[] = [
 ];
 
 /**
- * Whether a value is one of the archive verdicts.
- *
- * @param value - archive answer from a reply
- *
- * @returns Whether it names a verdict
- *
- * @example
- * ```ts
- * const named = isArchiveVerdict('publishable',);
- * ```
+ Whether a value is one of the archive verdicts.
+ 
+ @param value - archive answer from a reply
+ 
+ @returns Whether it names a verdict
+ 
+ @example
+ ```ts
+ const named = isArchiveVerdict('publishable',);
+ ```
  */
 function isArchiveVerdict(value: unknown,): value is ArchiveVerdict {
   return namesOneOf({
@@ -187,20 +187,20 @@ function isArchiveVerdict(value: unknown,): value is ArchiveVerdict {
 }
 
 /**
- * Whether a reply carries the shape a ballot is read from.
- *
- * SHAPE ONLY. Whether the findings are consistent with the choice is the
- * reader's question, because an inconsistent ballot is still a ballot that was
- * cast and is worth recording as one.
- *
- * @param value - parsed reply
- *
- * @returns Whether it can be read as a ballot
- *
- * @example
- * ```ts
- * const usable = isLaneContestWire(reply,);
- * ```
+ Whether a reply carries the shape a ballot is read from.
+ 
+ SHAPE ONLY. Whether the findings are consistent with the choice is the
+ reader's question, because an inconsistent ballot is still a ballot that was
+ cast and is worth recording as one.
+ 
+ @param value - parsed reply
+ 
+ @returns Whether it can be read as a ballot
+ 
+ @example
+ ```ts
+ const usable = isLaneContestWire(reply,);
+ ```
  */
 export function isLaneContestWire(value: unknown,): value is LaneContestWire {
   if ((typeof value) !== 'object')
@@ -222,26 +222,26 @@ export function isLaneContestWire(value: unknown,): value is LaneContestWire {
 }
 
 /**
- * Reads a validated reply as a ballot.
- *
- * @param wire - reply that passed the shape guard
- *
- * @returns Ballot with its findings narrowed
- *
- * @example
- * ```ts
- * const ballot = readLaneContestBallot({ wire, },);
- * ```
+ Reads a validated reply as a ballot.
+ 
+ @param wire - reply that passed the shape guard
+ 
+ @returns Ballot with its findings narrowed
+ 
+ @example
+ ```ts
+ const ballot = readLaneContestBallot({ wire, },);
+ ```
  */
 export function readLaneContestBallot(
   { wire, }: { readonly wire: LaneContestWire; },
 ): LaneContestBallot {
   /**
-   * Archive answer this judge gave, present only when it gave a readable one.
-   *
-   * SPREAD RATHER THAN SET TO UNDEFINED, because the property is optional
-   * under `exactOptionalPropertyTypes` and an explicit `undefined` would not
-   * typecheck against it.
+   Archive answer this judge gave, present only when it gave a readable one.
+   
+   SPREAD RATHER THAN SET TO UNDEFINED, because the property is optional
+   under `exactOptionalPropertyTypes` and an explicit `undefined` would not
+   typecheck against it.
    */
   const archive = isArchiveVerdict(wire.archive,)
     ? { archive: wire.archive, }
@@ -267,92 +267,92 @@ export function readLaneContestBallot(
 }
 
 /**
- * What a judge is shown for one contested slice.
+ What a judge is shown for one contested slice.
  */
 export type LaneContestSubject = {
   /**
-   * Original passage, which is the standard.
+   Original passage, which is the standard.
    */
   readonly sourceText: string;
 
   /**
-   * Syntax role requiring dedicated decision rules.
+   Syntax role requiring dedicated decision rules.
    */
   readonly syntax?: SliceSyntax;
 
   /**
-   * Archive rendering, as evidence rather than as the standard.
+   Archive rendering, as evidence rather than as the standard.
    */
   readonly incumbentText: string;
 
   /**
-   * What the repair lane would ship.
+   What the repair lane would ship.
    */
   readonly repairText: string;
 
   /**
-   * What the translate lane would ship.
+   What the translate lane would ship.
    */
   readonly translateText: string;
 
   /**
-   * Candidates deterministic syntax guard has already made unpublishable.
-   *
-   * Judges still see bytes for comparison and cast raw ballots, but are told
-   * these names cannot be selected. Driver independently excludes violating
-   * choices, so prompt is liveness guidance rather than publication guard.
+   Candidates deterministic syntax guard has already made unpublishable.
+   
+   Judges still see bytes for comparison and cast raw ballots, but are told
+   these names cannot be selected. Driver independently excludes violating
+   choices, so prompt is liveness guidance rather than publication guard.
    */
   readonly ineligibleCandidates?: readonly ('archive' | 'repair' | 'translate')[];
 
   /**
-   * Names and handles both documents' front matter declares, when either does.
-   *
-   * WITHOUT THIS THE JUDGE CANNOT TELL AN ATTESTED NAME FROM AN INVENTION.
-   * Front matter is document-level while this stage sees one slice, so a name
-   * the source document declares appears, to a judge shown only the slice, in
-   * the archive and in the repair candidate and nowhere in the Chinese. Calling
-   * it unsupported is the correct inference from that evidence and the wrong
-   * answer about the passage. Measured on `Zha_Ke` slice 0, where the source
-   * front matter declares an alias, the archive renders it, the repair lane
-   * keeps it, the translate lane drops it, and the contest chose the lane that
-   * dropped it.
-   *
-   * Every other model-facing stage in this package is already given this:
-   * critics, refiners, translators, translate judges and the rendering audit.
-   * This stage was the only one that was not.
+   Names and handles both documents' front matter declares, when either does.
+   
+   WITHOUT THIS THE JUDGE CANNOT TELL AN ATTESTED NAME FROM AN INVENTION.
+   Front matter is document-level while this stage sees one slice, so a name
+   the source document declares appears, to a judge shown only the slice, in
+   the archive and in the repair candidate and nowhere in the Chinese. Calling
+   it unsupported is the correct inference from that evidence and the wrong
+   answer about the passage. Measured on `Zha_Ke` slice 0, where the source
+   front matter declares an alias, the archive renders it, the repair lane
+   keeps it, the translate lane drops it, and the contest chose the lane that
+   dropped it.
+   
+   Every other model-facing stage in this package is already given this:
+   critics, refiners, translators, translate judges and the rendering audit.
+   This stage was the only one that was not.
    */
   readonly identityContext?: string;
 
   /**
-   * Corroborated added-damage claims the introduced-defect probe raised
-   * against the repair candidate, one line each, absent when none.
-   *
-   * EVIDENCE, NOT A VERDICT. The probe runs in shadow mode because its
-   * precision is measured at six of ten (2026-09-03), so nothing acts on a
-   * claim; the judges that choose between the lanes are shown it and check it
-   * against the ORIGINAL, which the contest that chose a tense-damaged repair
-   * lane 7 of 7 on keyword233 could not do without it.
+   Corroborated added-damage claims the introduced-defect probe raised
+   against the repair candidate, one line each, absent when none.
+   
+   EVIDENCE, NOT A VERDICT. The probe runs in shadow mode because its
+   precision is measured at six of ten (2026-09-03), so nothing acts on a
+   claim; the judges that choose between the lanes are shown it and check it
+   against the ORIGINAL, which the contest that chose a tense-damaged repair
+   lane 7 of 7 on keyword233 could not do without it.
    */
   readonly repairDamageClaims?: readonly string[];
 };
 
 /**
- * Builds the exchange asking one judge to settle one contested slice.
- *
- * @param subject - passage, archive rendering and both candidates
- *
- * @returns Messages for one exchange
- *
- * @example
- * ```ts
- * const messages = buildLaneContestMessages({ subject, },);
- * ```
+ Builds the exchange asking one judge to settle one contested slice.
+ 
+ @param subject - passage, archive rendering and both candidates
+ 
+ @returns Messages for one exchange
+ 
+ @example
+ ```ts
+ const messages = buildLaneContestMessages({ subject, },);
+ ```
  */
 export function buildLaneContestMessages(
   { subject, }: { readonly subject: LaneContestSubject; },
 ): readonly ChatMessage[] {
   /**
-   * Fence long enough to enclose every text without one closing early.
+   Fence long enough to enclose every text without one closing early.
    */
   const fence = selectFence({
     texts: [
@@ -365,15 +365,15 @@ export function buildLaneContestMessages(
   },);
 
   /**
-   * Declared names as one block, empty when neither side declares any.
+   Declared names as one block, empty when neither side declares any.
    */
   const declared = subject.identityContext ?? '';
 
   /**
-   * Declared names and their fence, or nothing when neither side declares any.
-   *
-   * PLACED BEFORE THE PASSAGES, as in the critic prompt, so the declarations
-   * read as given facts rather than as a footnote to evidence already weighed.
+   Declared names and their fence, or nothing when neither side declares any.
+   
+   PLACED BEFORE THE PASSAGES, as in the critic prompt, so the declarations
+   read as given facts rather than as a footnote to evidence already weighed.
    */
   const identityBlock = (declared.length === 0)
     ? []
@@ -384,7 +384,7 @@ export function buildLaneContestMessages(
       '',
     ];
   /**
-   * Size evidence, or nothing when every rendering is in proportion.
+   Size evidence, or nothing when every rendering is in proportion.
    */
   const sizeNote = contestSizeNote({
     sourceText: subject.sourceText,
@@ -405,10 +405,10 @@ export function buildLaneContestMessages(
   },);
 
   /**
-   * Size note and its separating blank line, or nothing at all.
-   *
-   * PLACED AFTER THE PASSAGES so a judge reads the texts before their
-   * sizes, rather than being handed a number to confirm.
+   Size note and its separating blank line, or nothing at all.
+   
+   PLACED AFTER THE PASSAGES so a judge reads the texts before their
+   sizes, rather than being handed a number to confirm.
    */
   const sizeBlock = (sizeNote.length === 0)
     ? []
@@ -418,11 +418,11 @@ export function buildLaneContestMessages(
     ];
 
   /**
-   * Deterministic syntax admission result, or nothing for ordinary contests.
+   Deterministic syntax admission result, or nothing for ordinary contests.
    */
   const ineligible = subject.ineligibleCandidates ?? [];
   /**
-   * Guidance preventing panel from spending votes on candidates guard rejects.
+   Guidance preventing panel from spending votes on candidates guard rejects.
    */
   const admissionBlock = (ineligible.length === 0)
     ? []
@@ -435,16 +435,16 @@ export function buildLaneContestMessages(
     ];
 
   /**
-   * Probe claims against the repair candidate, or nothing when none were
-   * corroborated.
+   Probe claims against the repair candidate, or nothing when none were
+   corroborated.
    */
   const damageClaims = subject.repairDamageClaims ?? [];
   /**
-   * Those claims as a block the judge reads after both candidates and before
-   * the sizes, or nothing at all.
-   *
-   * PLACED AFTER THE PASSAGES, like the size note, so a judge reads the texts
-   * before being handed a complaint about one of them.
+   Those claims as a block the judge reads after both candidates and before
+   the sizes, or nothing at all.
+   
+   PLACED AFTER THE PASSAGES, like the size note, so a judge reads the texts
+   before being handed a complaint about one of them.
    */
   const damageBlock = (damageClaims.length === 0)
     ? []
@@ -460,8 +460,8 @@ export function buildLaneContestMessages(
     ];
 
   /**
-   * Community renderings a candidate lacks where the original carries the
-   * term (owner, 2026-09-09), evidence to weigh after the passages.
+   Community renderings a candidate lacks where the original carries the
+   term (owner, 2026-09-09), evidence to weigh after the passages.
    */
   const communityBlock = communityRenderingsBlock({
     sourceText: subject.sourceText,
@@ -482,7 +482,7 @@ export function buildLaneContestMessages(
   },);
 
   /**
-   * Policy extended for syntax-bearing visible metadata.
+   Policy extended for syntax-bearing visible metadata.
    */
   const policy = [
     (subject.syntax === 'front-matter')

@@ -39,7 +39,7 @@ import {
 // twenty-second class. The English marks are matched on the lowercased note.
 
 /**
- * Mark a note carries when the whole page is the author's own English.
+ Mark a note carries when the whole page is the author's own English.
  */
 const WHOLE_PAGE_MARKS = [
   '原文即英文',
@@ -47,8 +47,8 @@ const WHOLE_PAGE_MARKS = [
 ] as const;
 
 /**
- * Marks a note carries, in English, when the whole page is the author's own
- * English; the misspelt one is the pinned corpus's spelling on `gqt`.
+ Marks a note carries, in English, when the whole page is the author's own
+ English; the misspelt one is the pinned corpus's spelling on `gqt`.
  */
 const ENGLISH_WHOLE_PAGE_MARKS = [
   'original language: english',
@@ -56,8 +56,8 @@ const ENGLISH_WHOLE_PAGE_MARKS = [
 ] as const;
 
 /**
- * Marks a note carries, all of them, when everything below it is the
- * English original: "below" (以下), "original" (原文) and "English" (英文).
+ Marks a note carries, all of them, when everything below it is the
+ English original: "below" (以下), "original" (原文) and "English" (英文).
  */
 const SPAN_MARKS = [
   '以下',
@@ -66,122 +66,122 @@ const SPAN_MARKS = [
 ] as const;
 
 /**
- * Node kind the parser gives a heading, which ends a sealed span.
+ Node kind the parser gives a heading, which ends a sealed span.
  */
 const HEADING_KIND = 'heading';
 
 /**
- * One span of the archive that ships as it stands.
- *
- * @example
- * ```ts
- * const span: ArchiveOriginalSpan = { startOffset: 3966, endOffset: 4561, note: '这段话以下全部...', };
- * ```
+ One span of the archive that ships as it stands.
+ 
+ @example
+ ```ts
+ const span: ArchiveOriginalSpan = { startOffset: 3966, endOffset: 4561, note: '这段话以下全部...', };
+ ```
  */
 export type ArchiveOriginalSpan = {
   /**
-   * First archive-text offset the seal covers: the end of the note.
+   First archive-text offset the seal covers: the end of the note.
    */
   readonly startOffset: number;
 
   /**
-   * Exclusive end: the next heading's start, or the archive's end.
+   Exclusive end: the next heading's start, or the archive's end.
    */
   readonly endOffset: number;
 
   /**
-   * What the translators wrote, folded onto one line.
+   What the translators wrote, folded onto one line.
    */
   readonly note: string;
 };
 
 /**
- * What one archive's notes say about whose text the page carries.
- *
- * @example
- * ```ts
- * const reading: ArchiveOriginalReading = { kind: 'none', };
- * ```
+ What one archive's notes say about whose text the page carries.
+ 
+ @example
+ ```ts
+ const reading: ArchiveOriginalReading = { kind: 'none', };
+ ```
  */
 export type ArchiveOriginalReading = {
   /**
-   * A note says the whole page is the author's English: decline the entry.
+   A note says the whole page is the author's English: decline the entry.
    */
   readonly kind: 'whole-page';
 
   /**
-   * The note, folded onto one line.
+   The note, folded onto one line.
    */
   readonly note: string;
 } | {
   /**
-   * One or more notes each seal everything below them.
+   One or more notes each seal everything below them.
    */
   readonly kind: 'spans';
 
   /**
-   * Sealed spans in document order.
+   Sealed spans in document order.
    */
   readonly spans: readonly ArchiveOriginalSpan[];
 } | {
   /**
-   * No note claims the archive as the original.
+   No note claims the archive as the original.
    */
   readonly kind: 'none';
 };
 
 /**
- * How one note reads under the marks.
+ How one note reads under the marks.
  */
 type NoteReading = 'whole-page' | 'span' | 'advisory';
 
 /**
- * One editor comment, folded, beside where its seal would start.
+ One editor comment, folded, beside where its seal would start.
  */
 type PlacedNote = {
   /**
-   * What the translators wrote, on one line.
+   What the translators wrote, on one line.
    */
   readonly note: string;
 
   /**
-   * Offset just past the comment's closing delimiter.
+   Offset just past the comment's closing delimiter.
    */
   readonly endOffset: number;
 };
 
 /**
- * What a seal needs of a block: its id and where it sits.
+ What a seal needs of a block: its id and where it sits.
  */
 type PlacedBlock = {
   /**
-   * Stable node id.
+   Stable node id.
    */
   readonly id: string;
 
   /**
-   * First offset the block owns.
+   First offset the block owns.
    */
   readonly startOffset: number;
 
   /**
-   * Exclusive end offset.
+   Exclusive end offset.
    */
   readonly endOffset: number;
 };
 
 /**
- * Reads one note by the marks it carries.
- *
- * @param note - note text, folded
- *
- * @returns Whether it seals the page, a span, or nothing
- *
- * @example
- * ```ts
- * readNote({ note: '这篇文章的原文即英文，请翻译时不要动本篇。', },);
- * // => 'whole-page'
- * ```
+ Reads one note by the marks it carries.
+ 
+ @param note - note text, folded
+ 
+ @returns Whether it seals the page, a span, or nothing
+ 
+ @example
+ ```ts
+ readNote({ note: '这篇文章的原文即英文，请翻译时不要动本篇。', },);
+ // => 'whole-page'
+ ```
  */
 export function readNote(
   { note, }: { readonly note: string; },
@@ -191,7 +191,7 @@ export function readNote(
   },))
     return 'whole-page';
   /**
-   * The note lowercased, since the English marks are spelled either way.
+   The note lowercased, since the English marks are spelled either way.
    */
   const lowered = note.toLowerCase();
   if (ENGLISH_WHOLE_PAGE_MARKS.some(function carriedInEnglish(mark,): boolean {
@@ -206,16 +206,16 @@ export function readNote(
 }
 
 /**
- * Every editor comment of a document with where it ends, in document order.
- *
- * @param document - parsed archive
- *
- * @returns Folded note text beside the offset the seal would start at
- *
- * @example
- * ```ts
- * const notes = documentNotes({ document, },);
- * ```
+ Every editor comment of a document with where it ends, in document order.
+ 
+ @param document - parsed archive
+ 
+ @returns Folded note text beside the offset the seal would start at
+ 
+ @example
+ ```ts
+ const notes = documentNotes({ document, },);
+ ```
  */
 function documentNotes(
   { document, }: { readonly document: RepairDocument; },
@@ -227,7 +227,7 @@ function documentNotes(
     },)
     .map(function toNote(finding,): PlacedNote {
       /**
-       * Comment as it stands, delimiters included.
+       Comment as it stands, delimiters included.
        */
       const comment = document.text
         .slice(
@@ -242,19 +242,19 @@ function documentNotes(
 }
 
 /**
- * Where a span opened at one offset ends: the next heading, or the document.
- *
- * @param document - parsed archive
- *
- * @param startOffset - where the seal starts
- *
- * @returns Exclusive end offset
- *
- * @example
- * ```ts
- * spanEnd({ document, startOffset: 3966, },);
- * // => 4561
- * ```
+ Where a span opened at one offset ends: the next heading, or the document.
+ 
+ @param document - parsed archive
+ 
+ @param startOffset - where the seal starts
+ 
+ @returns Exclusive end offset
+ 
+ @example
+ ```ts
+ spanEnd({ document, startOffset: 3966, },);
+ // => 4561
+ ```
  */
 function spanEnd(
   {
@@ -266,7 +266,7 @@ function spanEnd(
   },
 ): number {
   /**
-   * First heading that starts at or after the seal.
+   First heading that starts at or after the seal.
    */
   const heading = document.nodes
     .find(function follows(node,): boolean {
@@ -279,28 +279,28 @@ function spanEnd(
 }
 
 /**
- * Reads what an archive's notes say about whose text the page carries.
- *
- * A whole-page note outranks every span: the entry is declined and no seal
- * matters. Spans that overlap (a second span note inside the first's reach)
- * are merged by taking the earlier start, since the seal is the same either
- * way.
- *
- * @param document - parsed archive, before any lane ran
- *
- * @returns The reading
- *
- * @example
- * ```ts
- * const reading = archiveOriginalReadingOf({ document: parseDocument({ text: archiveText, },), },);
- * if (reading.kind === 'whole-page') decline();
- * ```
+ Reads what an archive's notes say about whose text the page carries.
+ 
+ A whole-page note outranks every span: the entry is declined and no seal
+ matters. Spans that overlap (a second span note inside the first's reach)
+ are merged by taking the earlier start, since the seal is the same either
+ way.
+ 
+ @param document - parsed archive, before any lane ran
+ 
+ @returns The reading
+ 
+ @example
+ ```ts
+ const reading = archiveOriginalReadingOf({ document: parseDocument({ text: archiveText, },), },);
+ if (reading.kind === 'whole-page') decline();
+ ```
  */
 export function archiveOriginalReadingOf(
   { document, }: { readonly document: RepairDocument; },
 ): ArchiveOriginalReading {
   /**
-   * Every note beside how it reads.
+   Every note beside how it reads.
    */
   const notes = documentNotes({ document, },)
     .map(function withReading(entry,): PlacedNote & { readonly reading: NoteReading; } {
@@ -310,7 +310,7 @@ export function archiveOriginalReadingOf(
       };
     },);
   /**
-   * The first whole-page note, which decides the entry alone.
+   The first whole-page note, which decides the entry alone.
    */
   const wholePage = notes.find(function seals(entry,): boolean {
     return entry.reading === 'whole-page';
@@ -321,7 +321,7 @@ export function archiveOriginalReadingOf(
       note: wholePage.note,
     };
   /**
-   * Span notes, each sealing from its end to the next heading.
+   Span notes, each sealing from its end to the next heading.
    */
   const spans = notes
     .filter(function sealsSpan(entry,): boolean {
@@ -362,22 +362,22 @@ export function archiveOriginalReadingOf(
 }
 
 /**
- * Ids of the nodes a set of spans seals: every node lying wholly inside one.
- *
- * WHOLLY, because a block straddling a seal boundary belongs to neither side
- * cleanly; the note sits between blocks in both pinned pages, and a block cut
- * by a seal would be a page shape this rule has not met.
- *
- * @param nodes - document nodes, any subset
- *
- * @param spans - sealed spans in the same offsets
- *
- * @returns Ids of the sealed nodes
- *
- * @example
- * ```ts
- * const sealed = sealedNodeIds({ nodes: pair.target.nodes, spans, },);
- * ```
+ Ids of the nodes a set of spans seals: every node lying wholly inside one.
+ 
+ WHOLLY, because a block straddling a seal boundary belongs to neither side
+ cleanly; the note sits between blocks in both pinned pages, and a block cut
+ by a seal would be a page shape this rule has not met.
+ 
+ @param nodes - document nodes, any subset
+ 
+ @param spans - sealed spans in the same offsets
+ 
+ @returns Ids of the sealed nodes
+ 
+ @example
+ ```ts
+ const sealed = sealedNodeIds({ nodes: pair.target.nodes, spans, },);
+ ```
  */
 export function sealedNodeIds(
   {

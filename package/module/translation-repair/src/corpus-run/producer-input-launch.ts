@@ -18,29 +18,29 @@ import type {
 //region Closed launch decoding before application import
 
 /**
- * SHA-256 is represented by exactly this many lowercase hexadecimal characters.
+ SHA-256 is represented by exactly this many lowercase hexadecimal characters.
  */
 const SHA256_HEX_LENGTH = 64;
 /**
- * The current native corpus pin uses the existing forty-character Git object domain.
+ The current native corpus pin uses the existing forty-character Git object domain.
  */
 const CORPUS_HEX_LENGTH = 40;
 
 /**
- * Reads one nonempty file identity; body-free supporting extents use their separate measured allowance.
- *
- * @param value - raw identity object
- *
- * @param locator - authored field name
- *
- * @returns Owned identity values
- *
- * @throws ProducerInputRunError when identity shape or extent differs
- *
- * @example
- * ```ts
- * const identity = launchIdentity({ value, locator: 'launch.bootstrap' });
- * ```
+ Reads one nonempty file identity; body-free supporting extents use their separate measured allowance.
+ 
+ @param value - raw identity object
+ 
+ @param locator - authored field name
+ 
+ @returns Owned identity values
+ 
+ @throws ProducerInputRunError when identity shape or extent differs
+ 
+ @example
+ ```ts
+ const identity = launchIdentity({ value, locator: 'launch.bootstrap' });
+ ```
  */
 function launchIdentity({
   value,
@@ -50,7 +50,7 @@ function launchIdentity({
   readonly locator: string
 }): ProducerInputFileIdentity {
   /**
-   * Identity records accept no location or executable-selection field.
+   Identity records accept no location or executable-selection field.
    */
   const record = launchRecord({
     value,
@@ -61,7 +61,7 @@ function launchIdentity({
     locator,
   });
   /**
-   * Executables, manifests and the original selection cannot be empty in this launch contract.
+   Executables, manifests and the original selection cannot be empty in this launch contract.
    */
   const bytes = launchBytes({
     value: record.bytes,
@@ -83,20 +83,20 @@ function launchIdentity({
 }
 
 /**
- * Reads a located nonempty file without treating its path as an execution instruction.
- *
- * @param value - raw located-file object
- *
- * @param locator - authored field name
- *
- * @returns Owned file location and identity
- *
- * @throws ProducerInputRunError when location or identity differs
- *
- * @example
- * ```ts
- * const file = launchLocatedFile({ value, locator: 'launch.selection' });
- * ```
+ Reads a located nonempty file without treating its path as an execution instruction.
+ 
+ @param value - raw located-file object
+ 
+ @param locator - authored field name
+ 
+ @returns Owned file location and identity
+ 
+ @throws ProducerInputRunError when location or identity differs
+ 
+ @example
+ ```ts
+ const file = launchLocatedFile({ value, locator: 'launch.selection' });
+ ```
  */
 function launchLocatedFile({
   value,
@@ -106,7 +106,7 @@ function launchLocatedFile({
   readonly locator: string
 }): ProducerInputLocatedFile {
   /**
-   * The file's location and identity have one fixed representation.
+   The file's location and identity have one fixed representation.
    */
   const record = launchRecord({
     value,
@@ -133,21 +133,21 @@ function launchLocatedFile({
 }
 
 /**
- * Reads the exact independently identified launch before any application or supporting file is loaded.
- * No defaults, future operation modes, arbitrary mounts or caller-selected application entry are admitted.
- *
- * @param path - launch file selected by the trusted caller
- *
- * @param expected - independently recorded launch SHA-256 and byte extent
- *
- * @returns Owned closed launch data, not model or phase approval
- *
- * @throws ProducerInputRunError when bytes, decoding or launch fields differ
- *
- * @example
- * ```ts
- * const launch = await readProducerInputLaunch({ path, expected });
- * ```
+ Reads the exact independently identified launch before any application or supporting file is loaded.
+ No defaults, future operation modes, arbitrary mounts or caller-selected application entry are admitted.
+ 
+ @param path - launch file selected by the trusted caller
+ 
+ @param expected - independently recorded launch SHA-256 and byte extent
+ 
+ @returns Owned closed launch data, not model or phase approval
+ 
+ @throws ProducerInputRunError when bytes, decoding or launch fields differ
+ 
+ @example
+ ```ts
+ const launch = await readProducerInputLaunch({ path, expected });
+ ```
  */
 export async function readProducerInputLaunch({
   path,
@@ -157,7 +157,7 @@ export async function readProducerInputLaunch({
   readonly expected: ProducerInputFileIdentity;
 },): Promise<ProducerInputLaunch> {
   /**
-   * Metadata extent is owned and capped independently from caller-supplied contents.
+   Metadata extent is owned and capped independently from caller-supplied contents.
    */
   const identity = {
     bytes: expected.bytes,
@@ -169,7 +169,7 @@ export async function readProducerInputLaunch({
       locator: 'launch metadata extent',
     });
   /**
-   * File extent and raw hash are checked before JSON decoding.
+   File extent and raw hash are checked before JSON decoding.
    */
   const bytes = await readProducerInputFile({
     path,
@@ -178,7 +178,7 @@ export async function readProducerInputLaunch({
   });
   try {
     /**
-     * Fatal UTF-8 decoding never turns altered bytes into replacement-character launch data.
+     Fatal UTF-8 decoding never turns altered bytes into replacement-character launch data.
      */
     const text = new TextDecoder(
       'utf-8',
@@ -188,11 +188,11 @@ export async function readProducerInputLaunch({
       }
     ).decode(bytes);
     /**
-     * Native JSON parser details remain inside this controlled refusal boundary.
+     Native JSON parser details remain inside this controlled refusal boundary.
      */
     const value: unknown = JSON.parse(text);
     /**
-     * The only supported launch operation has a closed field vocabulary.
+     The only supported launch operation has a closed field vocabulary.
      */
     const record = launchRecord({
       value,
@@ -217,7 +217,7 @@ export async function readProducerInputLaunch({
         locator: path,
       });
     /**
-     * Runtime location does not choose the fixed application entry.
+     Runtime location does not choose the fixed application entry.
      */
     const runtime = launchRecord({
       value: record.runtime,
@@ -228,7 +228,7 @@ export async function readProducerInputLaunch({
       locator: 'launch.runtime',
     });
     /**
-     * Supporting file discovery is limited to this root and caller-authorized total.
+     Supporting file discovery is limited to this root and caller-authorized total.
      */
     const supporting = launchRecord({
       value: record.supporting,
@@ -239,7 +239,7 @@ export async function readProducerInputLaunch({
       locator: 'launch.supporting',
     });
     /**
-     * Corpus semantics remain independently checked by the native input owner.
+     Corpus semantics remain independently checked by the native input owner.
      */
     const corpus = launchRecord({
       value: record.corpus,

@@ -1,31 +1,31 @@
 /**
- * Tests for the size evidence a contest judge is shown, and for the policy that
- * teaches how to read it.
- *
- * WHY THE FAR-LONGER DIRECTION IS TESTED FOR EVIDENCE RATHER THAN FOR A FAULT.
- * `CONTEST_POLICY` tells judges that keeping page-only content is correct where
- * the Chinese is silent, so a candidate preserving a long page-only region is
- * far longer than its original AND is the right candidate. A test asserting a
- * fault there would be pinning the wrong behaviour in place.
- *
- * WHY THE SOURCE FLOOR IS TESTED IN ONE DIRECTION ONLY. A short original
- * cannot support a SHORTFALL reading, because the ratio reports rounding. It
- * supports a SURPLUS reading perfectly well: a 56-character original against a
- * 10381-character rendering is a lane looping. The test that used to live here
- * asserted silence for an 800-character rendering of a 79-character original,
- * which is 10.1 times and exactly the shape the note exists to surface, so it
- * was pinning the defect rather than the behaviour.
- *
- * WHY A BLOCK GAP IS TESTED FOR SILENCE. That reason describes the PAIRING
- * rather than the rendering, and it was the sole cause for 20 of 36 flagged
- * slices on the corpus. Showing a judge a ratio the pairing does not support
- * would be showing it noise, so the exclusion is load-bearing rather than
- * incidental.
- *
- * Fixtures are invented cat text sized to exact character counts, not corpus
- * passages.
- *
- * @module
+ Tests for the size evidence a contest judge is shown, and for the policy that
+ teaches how to read it.
+ 
+ WHY THE FAR-LONGER DIRECTION IS TESTED FOR EVIDENCE RATHER THAN FOR A FAULT.
+ `CONTEST_POLICY` tells judges that keeping page-only content is correct where
+ the Chinese is silent, so a candidate preserving a long page-only region is
+ far longer than its original AND is the right candidate. A test asserting a
+ fault there would be pinning the wrong behaviour in place.
+ 
+ WHY THE SOURCE FLOOR IS TESTED IN ONE DIRECTION ONLY. A short original
+ cannot support a SHORTFALL reading, because the ratio reports rounding. It
+ supports a SURPLUS reading perfectly well: a 56-character original against a
+ 10381-character rendering is a lane looping. The test that used to live here
+ asserted silence for an 800-character rendering of a 79-character original,
+ which is 10.1 times and exactly the shape the note exists to surface, so it
+ was pinning the defect rather than the behaviour.
+ 
+ WHY A BLOCK GAP IS TESTED FOR SILENCE. That reason describes the PAIRING
+ rather than the rendering, and it was the sole cause for 20 of 36 flagged
+ slices on the corpus. Showing a judge a ratio the pairing does not support
+ would be showing it noise, so the exclusion is load-bearing rather than
+ incidental.
+ 
+ Fixtures are invented cat text sized to exact character counts, not corpus
+ passages.
+ 
+ @module
  */
 
 import {
@@ -39,50 +39,50 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Filler long enough to cut every fixture from.
+ Filler long enough to cut every fixture from.
  */
 const FILLER = 'the tabby naps in the sun while the calico watches a moth cross the window '
   .repeat(40,);
 
 /**
- * Builds invented text of an exact character count, so a ratio is set precisely.
- *
- * @param chars - length wanted
- *
- * @returns Text of exactly that many characters, in one block
- *
- * @example
- * ```ts
- * const original = catText({ chars: 100, },);
- * ```
+ Builds invented text of an exact character count, so a ratio is set precisely.
+ 
+ @param chars - length wanted
+ 
+ @returns Text of exactly that many characters, in one block
+ 
+ @example
+ ```ts
+ const original = catText({ chars: 100, },);
+ ```
  */
 function catText({ chars, }: { readonly chars: number; },): string {
   return FILLER.slice(0, chars,);
 }
 
 /**
- * Original every fixture is measured against, comfortably over the floor.
+ Original every fixture is measured against, comfortably over the floor.
  */
 const ORIGINAL = catText({ chars: 100, },);
 
 /**
- * Rendering in proportion to {@link ORIGINAL}, at three times its size.
+ Rendering in proportion to {@link ORIGINAL}, at three times its size.
  */
 const IN_PROPORTION = catText({ chars: 300, },);
 
 /**
- * Builds the note for one rendering beside an in-proportion companion.
- *
- * @param text - rendering under test
- *
- * @param sourceText - original it is measured against
- *
- * @returns Note, or an empty string
- *
- * @example
- * ```ts
- * const note = noteFor({ text: catText({ chars: 70, },), },);
- * ```
+ Builds the note for one rendering beside an in-proportion companion.
+ 
+ @param text - rendering under test
+ 
+ @param sourceText - original it is measured against
+ 
+ @returns Note, or an empty string
+ 
+ @example
+ ```ts
+ const note = noteFor({ text: catText({ chars: 70, },), },);
+ ```
  */
 function noteFor(
   {
@@ -124,7 +124,7 @@ await describe({
         + 'Chinese content went unrendered whatever the archive did',
       fn: async function reportsFarShorter() {
         /**
-         * Seventy characters against one hundred, which is 0.7 and under 0.8.
+         Seventy characters against one hundred, which is 0.7 and under 0.8.
          */
         const note = noteFor({ text: catText({ chars: 70, },), },);
 
@@ -138,7 +138,7 @@ await describe({
         + 'because keeping page-only content is correct and produces exactly this shape',
       fn: async function reportsFarLongerWithoutBlame() {
         /**
-         * Eleven hundred characters against one hundred, which is over ten.
+         Eleven hundred characters against one hundred, which is over ten.
          */
         const note = noteFor({ text: catText({ chars: 1_100, },), },);
 
@@ -166,8 +166,8 @@ await describe({
         + 'measured to be silent on across 37 of 40 far-longer candidates',
       fn: async function speaksOnASurplusUnderTheFloor() {
         /**
-         * Two thousand eight hundred characters against fifty-six, the shape a
-         * translate lane produced on a real settled slice at 185 times.
+         Two thousand eight hundred characters against fifty-six, the shape a
+         translate lane produced on a real settled slice at 185 times.
          */
         const note = noteFor({
           text: catText({ chars: 2_800, },),
@@ -208,8 +208,8 @@ await describe({
         + 'pairing rather than the rendering and makes a ratio meaningless rather than extreme',
       fn: async function silentOnABlockGapAlone() {
         /**
-         * Three hundred characters across five blocks: in proportion at three
-         * times the original, and four blocks away from its one.
+         Three hundred characters across five blocks: in proportion at three
+         times the original, and four blocks away from its one.
          */
         const scattered = [
           catText({ chars: 59, },),

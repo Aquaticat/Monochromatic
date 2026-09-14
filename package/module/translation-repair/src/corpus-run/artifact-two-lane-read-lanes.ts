@@ -46,23 +46,23 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 // lane is what makes the failure say WHICH lane disagreed.
 
 /**
- * Reads one lane's envelope: its raw result and its ledger, unchecked.
- *
- * @param value - lane JSON
- *
- * @param path - dotted path of the lane
- *
- * @param keys - spelling the artifact's own generation gave the renamed keys
- *
- * @returns Raw record and parsed ledger rows
- *
- * @throws {@link ArtifactParseError} when the lane carries a key this version
- * does not name, or either part is the wrong shape
- *
- * @example
- * ```ts
- * const { raw, delivery, } = parseLaneEnvelope({ value, path: 'lanes.repair', keys, },);
- * ```
+ Reads one lane's envelope: its raw result and its ledger, unchecked.
+ 
+ @param value - lane JSON
+ 
+ @param path - dotted path of the lane
+ 
+ @param keys - spelling the artifact's own generation gave the renamed keys
+ 
+ @returns Raw record and parsed ledger rows
+ 
+ @throws {@link ArtifactParseError} when the lane carries a key this version
+ does not name, or either part is the wrong shape
+ 
+ @example
+ ```ts
+ const { raw, delivery, } = parseLaneEnvelope({ value, path: 'lanes.repair', keys, },);
+ ```
  */
 function parseLaneEnvelope(
   {
@@ -79,7 +79,7 @@ function parseLaneEnvelope(
   readonly delivery: readonly ArtifactDeliveryRow[];
 } {
   /**
-   * Lane as a record.
+   Lane as a record.
    */
   const lane = requireRecord({
     value,
@@ -120,21 +120,21 @@ function parseLaneEnvelope(
 }
 
 /**
- * Refuses a lane whose ledger does not cover the preparation.
- *
- * @param delivery - lane's ledger
- *
- * @param preparation - slicing both lanes ran over
- *
- * @param path - dotted path of the lane
- *
- * @throws {@link ArtifactParseError} when the row count differs from the slice
- * count the preparation records
- *
- * @example
- * ```ts
- * assertLedgerCoversPreparation({ delivery, preparation, path: 'lanes.repair', },);
- * ```
+ Refuses a lane whose ledger does not cover the preparation.
+ 
+ @param delivery - lane's ledger
+ 
+ @param preparation - slicing both lanes ran over
+ 
+ @param path - dotted path of the lane
+ 
+ @throws {@link ArtifactParseError} when the row count differs from the slice
+ count the preparation records
+ 
+ @example
+ ```ts
+ assertLedgerCoversPreparation({ delivery, preparation, path: 'lanes.repair', },);
+ ```
  */
 function assertLedgerCoversPreparation(
   {
@@ -158,28 +158,28 @@ function assertLedgerCoversPreparation(
 }
 
 /**
- * Reads both lanes and runs every per-lane check.
- *
- * @param value - lanes JSON
- *
- * @param preparation - slicing both lanes ran over, which every count is out of
- *
- * @param path - dotted path of the lanes record
- *
- * @param keys - spelling the artifact's own generation gave the renamed keys
- *
- * @returns Both lanes, each with its raw record, its evidence core and its
- * ledger
- *
- * @throws {@link ArtifactParseError} when either lane is malformed, disagrees
- * with its own raw result, names an index set its rows do not produce, claims a
- * status its deliveries could not have come from, carries a row whose axes
- * contradict, or does not cover the preparation
- *
- * @example
- * ```ts
- * const lanes = parseLanes({ value: artifact.lanes, preparation, path, keys, },);
- * ```
+ Reads both lanes and runs every per-lane check.
+ 
+ @param value - lanes JSON
+ 
+ @param preparation - slicing both lanes ran over, which every count is out of
+ 
+ @param path - dotted path of the lanes record
+ 
+ @param keys - spelling the artifact's own generation gave the renamed keys
+ 
+ @returns Both lanes, each with its raw record, its evidence core and its
+ ledger
+ 
+ @throws {@link ArtifactParseError} when either lane is malformed, disagrees
+ with its own raw result, names an index set its rows do not produce, claims a
+ status its deliveries could not have come from, carries a row whose axes
+ contradict, or does not cover the preparation
+ 
+ @example
+ ```ts
+ const lanes = parseLanes({ value: artifact.lanes, preparation, path, keys, },);
+ ```
  */
 export function parseLanes(
   {
@@ -195,7 +195,7 @@ export function parseLanes(
   },
 ): ParsedTwoLaneArtifact['lanes'] {
   /**
-   * Lanes as a record, which names exactly two.
+   Lanes as a record, which names exactly two.
    */
   const lanes = requireRecord({
     value,
@@ -211,7 +211,7 @@ export function parseLanes(
   },);
 
   /**
-   * Repair lane's raw record and ledger.
+   Repair lane's raw record and ledger.
    */
   const repairEnvelope = parseLaneEnvelope({
     value: lanes.repair,
@@ -220,7 +220,7 @@ export function parseLanes(
   },);
 
   /**
-   * Translate lane's raw record and ledger.
+   Translate lane's raw record and ledger.
    */
   const translateEnvelope = parseLaneEnvelope({
     value: lanes.translate,
@@ -229,7 +229,7 @@ export function parseLanes(
   },);
 
   /**
-   * What version 2 requires of the repair lane's raw result.
+   What version 2 requires of the repair lane's raw result.
    */
   const repairEvidence: ArtifactRepairEvidence = parseRepairEvidence({
     value: repairEnvelope.raw,
@@ -238,7 +238,7 @@ export function parseLanes(
   },);
 
   /**
-   * Same for the translate lane.
+   Same for the translate lane.
    */
   const translateEvidence: ArtifactTranslateEvidence = parseTranslateEvidence({
     value: translateEnvelope.raw,
@@ -310,7 +310,7 @@ export function parseLanes(
   },);
 
   /**
-   * Repair lane as a reader gets it.
+   Repair lane as a reader gets it.
    */
   const repair: ParsedLane<ArtifactRepairEvidence> = {
     raw: repairEnvelope.raw,
@@ -319,7 +319,7 @@ export function parseLanes(
   };
 
   /**
-   * Translate lane as a reader gets it.
+   Translate lane as a reader gets it.
    */
   const translate: ParsedLane<ArtifactTranslateEvidence> = {
     raw: translateEnvelope.raw,

@@ -10,42 +10,42 @@
 // nothing" with "this entry could not have recorded that it did".
 
 /**
- * One critic behind one claim, as far as the report needs to read it.
- *
- * @example
- * ```ts
- * const proposer: ProposerView = { modelId: 'hf:openai/gpt-oss-120b', emissionCount: 1, };
- * ```
+ One critic behind one claim, as far as the report needs to read it.
+ 
+ @example
+ ```ts
+ const proposer: ProposerView = { modelId: 'hf:openai/gpt-oss-120b', emissionCount: 1, };
+ ```
  */
 export type ProposerView = {
   /**
-   * Critic that proposed the claim.
+   Critic that proposed the claim.
    */
   readonly modelId: string;
 
   /**
-   * Times it emitted the claim within its own report.
+   Times it emitted the claim within its own report.
    */
   readonly emissionCount: number;
 };
 
 /**
- * Bumps one critic's counter.
- *
- * @param counter - counter to bump
- *
- * @param modelId - critic to credit
- *
- * @param by - amount to add
- *
- * @example
- * ```ts
- * bump({
+ Bumps one critic's counter.
+ 
+ @param counter - counter to bump
+ 
+ @param modelId - critic to credit
+ 
+ @param by - amount to add
+ 
+ @example
+ ```ts
+ bump({
           counter: heard,
           modelId,
           by: 1,
         },);
- * ```
+ ```
  */
 function bump(
   {
@@ -65,203 +65,203 @@ function bump(
 }
 
 /**
- * One chunk's calibration, as far as the report needs to read it.
- *
- * Structurally what `SliceCriticRecord` is, with model ids widened to plain
- * strings. Stated independently so the reader can PARSE an artifact into this
- * without asserting unknown strings into the model-id union, and a real
- * `SliceCriticRecord` still satisfies it.
- *
- * @example
- * ```ts
- * const view: SliceCriticView = { sliceIndex: 0, heardCriticIds: [], claimAttributions: [], };
- * ```
+ One chunk's calibration, as far as the report needs to read it.
+ 
+ Structurally what `SliceCriticRecord` is, with model ids widened to plain
+ strings. Stated independently so the reader can PARSE an artifact into this
+ without asserting unknown strings into the model-id union, and a real
+ `SliceCriticRecord` still satisfies it.
+ 
+ @example
+ ```ts
+ const view: SliceCriticView = { sliceIndex: 0, heardCriticIds: [], claimAttributions: [], };
+ ```
  */
 export type SliceCriticView = {
   /**
-   * Chunk position within the document.
+   Chunk position within the document.
    */
   readonly sliceIndex: number;
 
   /**
-   * Critics that answered on this chunk.
+   Critics that answered on this chunk.
    */
   readonly heardCriticIds: readonly string[];
 
   /**
-   * Which critics raised each surviving claim.
+   Which critics raised each surviving claim.
    */
   readonly claimAttributions: readonly {
     /**
-     * Deterministic identity of the claim.
+     Deterministic identity of the claim.
      */
     readonly claimId: string;
 
     /**
-     * Critics that proposed it.
+     Critics that proposed it.
      */
     readonly proposers: readonly ProposerView[];
   }[];
 };
 
 /**
- * One accepted issue, as far as attribution needs to read it.
- *
- * @example
- * ```ts
- * const record: AcceptedIssueView = { status: 'accepted', claimIds: ['issue/ab',], };
- * ```
+ One accepted issue, as far as attribution needs to read it.
+ 
+ @example
+ ```ts
+ const record: AcceptedIssueView = { status: 'accepted', claimIds: ['issue/ab',], };
+ ```
  */
 export type AcceptedIssueView = {
   /**
-   * Adjudication status; only `accepted` counts toward hits.
+   Adjudication status; only `accepted` counts toward hits.
    */
   readonly status: string;
 
   /**
-   * Deterministic ids of the claims this issue represents.
+   Deterministic ids of the claims this issue represents.
    */
   readonly claimIds: readonly string[];
 };
 
 /**
- * One settled entry, as far as attribution needs to read it.
- *
- * @example
- * ```ts
- * const entry: AttributionEntry = { id: 'Acheron', sliceCritics, issues, };
- * ```
+ One settled entry, as far as attribution needs to read it.
+ 
+ @example
+ ```ts
+ const entry: AttributionEntry = { id: 'Acheron', sliceCritics, issues, };
+ ```
  */
 export type AttributionEntry = {
   /**
-   * Corpus entry identifier.
+   Corpus entry identifier.
    */
   readonly id: string;
 
   /**
-   * Per-chunk calibration, absent on entries settled before attribution
-   * existed.
+   Per-chunk calibration, absent on entries settled before attribution
+   existed.
    */
   readonly sliceCritics?: readonly SliceCriticView[];
 
   /**
-   * Adjudicated issues of this entry.
+   Adjudicated issues of this entry.
    */
   readonly issues: readonly AcceptedIssueView[];
 };
 
 /**
- * What one critic did across the eligible population.
- *
- * @example
- * ```ts
- * const tally: CriticTally = { modelId, chunksHeard: 40, claimsRaised: 12, emissions: 14, acceptedHits: 9, };
- * ```
+ What one critic did across the eligible population.
+ 
+ @example
+ ```ts
+ const tally: CriticTally = { modelId, chunksHeard: 40, claimsRaised: 12, emissions: 14, acceptedHits: 9, };
+ ```
  */
 export type CriticTally = {
   /**
-   * Critic this row describes.
+   Critic this row describes.
    */
   readonly modelId: string;
 
   /**
-   * Chunks where this critic answered; the DENOMINATOR every rate divides by.
+   Chunks where this critic answered; the DENOMINATOR every rate divides by.
    */
   readonly chunksHeard: number;
 
   /**
-   * Distinct claims this critic proposed.
+   Distinct claims this critic proposed.
    */
   readonly claimsRaised: number;
 
   /**
-   * Claims proposed counting repeats within one report, so
-   * `emissions - claimsRaised` is how often this critic said a thing twice.
+   Claims proposed counting repeats within one report, so
+   `emissions - claimsRaised` is how often this critic said a thing twice.
    */
   readonly emissions: number;
 
   /**
-   * Accepted issues at least one of whose claims this critic proposed.
+   Accepted issues at least one of whose claims this critic proposed.
    */
   readonly acceptedHits: number;
 };
 
 /**
- * Everything the attribution reader can say about a run.
- *
- * @example
- * ```ts
- * const report = buildAttributionReport({ entries, },);
- * ```
+ Everything the attribution reader can say about a run.
+ 
+ @example
+ ```ts
+ const report = buildAttributionReport({ entries, },);
+ ```
  */
 export type AttributionReport = {
   /**
-   * Entries carrying attribution, which every count below is restricted to.
+   Entries carrying attribution, which every count below is restricted to.
    */
   readonly eligibleEntries: number;
 
   /**
-   * Entries settled before attribution existed; excluded, never counted as
-   * silence.
+   Entries settled before attribution existed; excluded, never counted as
+   silence.
    */
   readonly ineligibleEntries: number;
 
   /**
-   * Chunks across eligible entries.
+   Chunks across eligible entries.
    */
   readonly chunks: number;
 
   /**
-   * Per-critic rows, ordered by model id.
+   Per-critic rows, ordered by model id.
    */
   readonly critics: readonly CriticTally[];
 
   /**
-   * Accepted issues whose claims came from exactly one critic.
+   Accepted issues whose claims came from exactly one critic.
    */
   readonly soleProposerAccepted: number;
 
   /**
-   * Accepted issues whose claims drew more than one critic, which is
-   * independent support rather than one voice repeating.
+   Accepted issues whose claims drew more than one critic, which is
+   independent support rather than one voice repeating.
    */
   readonly multiProposerAccepted: number;
 
   /**
-   * Accepted issues where some critic emitted the same claim more than once,
-   * which is self-repetition and must not read as agreement.
+   Accepted issues where some critic emitted the same claim more than once,
+   which is self-repetition and must not read as agreement.
    */
   readonly selfRepeatedAccepted: number;
 
   /**
-   * Accepted issues carrying no attribution at all, which on an eligible entry
-   * means a claim id the index does not hold and is a defect worth surfacing
-   * rather than a zero worth averaging.
+   Accepted issues carrying no attribution at all, which on an eligible entry
+   means a claim id the index does not hold and is a defect worth surfacing
+   rather than a zero worth averaging.
    */
   readonly unattributedAccepted: number;
 
   /**
-   * Accepted issues where SOME member claims attributed and others did not.
-   *
-   * Excluded from every other count here. A partial join is a defect rather
-   * than a measurement: the unattributed member may have come from a critic
-   * that gets no credit, so calling the issue sole-proposer would be a guess
-   * dressed as a count.
+   Accepted issues where SOME member claims attributed and others did not.
+   
+   Excluded from every other count here. A partial join is a defect rather
+   than a measurement: the unattributed member may have come from a critic
+   that gets no credit, so calling the issue sole-proposer would be a guess
+   dressed as a count.
    */
   readonly partialJoinAccepted: number;
 };
 
 /**
- * Indexes an entry's attributions by claim id.
- *
- * @param sliceCritics - per-chunk calibration records
- *
- * @returns Claim id to proposer list
- *
- * @example
- * ```ts
- * const index = indexProposers({ sliceCritics, },);
- * ```
+ Indexes an entry's attributions by claim id.
+ 
+ @param sliceCritics - per-chunk calibration records
+ 
+ @returns Claim id to proposer list
+ 
+ @example
+ ```ts
+ const index = indexProposers({ sliceCritics, },);
+ ```
  */
 function indexProposers(
   {
@@ -271,7 +271,7 @@ function indexProposers(
   },
 ): Map<string, readonly ProposerView[]> {
   /**
-   * Proposers per claim across every chunk of one entry.
+   Proposers per claim across every chunk of one entry.
    */
   const index = new Map<string, readonly ProposerView[]>();
   for (const record of sliceCritics) {
@@ -294,53 +294,53 @@ function indexProposers(
 }
 
 /**
- * What one accepted issue rested on.
- *
- * Separated from the counting so each count is a `filter` over a fact already
- * established, rather than a counter mutated in a loop that also decides the
- * fact.
- *
- * @example
- * ```ts
- * const support: IssueSupport = { contributors: ['hf:openai/gpt-oss-120b',], repeated: false, };
- * ```
+ What one accepted issue rested on.
+ 
+ Separated from the counting so each count is a `filter` over a fact already
+ established, rather than a counter mutated in a loop that also decides the
+ fact.
+ 
+ @example
+ ```ts
+ const support: IssueSupport = { contributors: ['hf:openai/gpt-oss-120b',], repeated: false, };
+ ```
  */
 type IssueSupport = {
   /**
-   * Distinct critics behind any claim the issue represents.
+   Distinct critics behind any claim the issue represents.
    */
   readonly contributors: readonly string[];
 
   /**
-   * Claims of this issue the attribution index does not hold.
-   *
-   * Zero for a sound join. A count between zero and the issue's claim total is
-   * a PARTIAL join, where some support is known and some missing, and such an
-   * issue cannot honestly be called sole-proposer or multi-proposer: the
-   * missing member may have been raised by a critic nobody credited.
+   Claims of this issue the attribution index does not hold.
+   
+   Zero for a sound join. A count between zero and the issue's claim total is
+   a PARTIAL join, where some support is known and some missing, and such an
+   issue cannot honestly be called sole-proposer or multi-proposer: the
+   missing member may have been raised by a critic nobody credited.
    */
   readonly unresolvedClaims: number;
 
   /**
-   * Whether some critic emitted one of those claims more than once, which is
-   * self-repetition and must never read as agreement.
+   Whether some critic emitted one of those claims more than once, which is
+   self-repetition and must never read as agreement.
    */
   readonly repeated: boolean;
 };
 
 /**
- * Reads what one accepted issue rested on.
- *
- * @param issue - accepted issue
- *
- * @param proposersOf - proposers by claim id, for the issue's own entry
- *
- * @returns Support behind it
- *
- * @example
- * ```ts
- * const support = readIssueSupport({ issue, proposersOf, },);
- * ```
+ Reads what one accepted issue rested on.
+ 
+ @param issue - accepted issue
+ 
+ @param proposersOf - proposers by claim id, for the issue's own entry
+ 
+ @returns Support behind it
+ 
+ @example
+ ```ts
+ const support = readIssueSupport({ issue, proposersOf, },);
+ ```
  */
 function readIssueSupport(
   {
@@ -352,7 +352,7 @@ function readIssueSupport(
   },
 ): IssueSupport {
   /**
-   * Every proposer behind any claim this issue represents.
+   Every proposer behind any claim this issue represents.
    */
   const proposers = issue.claimIds
     .flatMap(function toProposers(claimId,): readonly ProposerView[] {
@@ -375,20 +375,20 @@ function readIssueSupport(
 }
 
 /**
- * Turns recorded attribution into per-critic rates and support counts.
- *
- * Restricted to entries carrying `sliceCritics`, because an entry settled
- * before attribution existed records no proposer for a claim its critics did
- * raise, and counting it would understate every critic at once.
- *
- * @param entries - settled entries in any order
- *
- * @returns Report over the eligible population only
- *
- * @example
- * ```ts
- * const report = buildAttributionReport({ entries, },);
- * ```
+ Turns recorded attribution into per-critic rates and support counts.
+ 
+ Restricted to entries carrying `sliceCritics`, because an entry settled
+ before attribution existed records no proposer for a claim its critics did
+ raise, and counting it would understate every critic at once.
+ 
+ @param entries - settled entries in any order
+ 
+ @returns Report over the eligible population only
+ 
+ @example
+ ```ts
+ const report = buildAttributionReport({ entries, },);
+ ```
  */
 export function buildAttributionReport(
   {
@@ -398,35 +398,35 @@ export function buildAttributionReport(
   },
 ): AttributionReport {
   /**
-   * Entries that could record attribution at all.
+   Entries that could record attribution at all.
    */
   const eligible = entries.filter(function carriesAttribution(entry,): boolean {
     return entry.sliceCritics !== undefined;
   },);
 
   /**
-   * Chunks where each critic answered.
+   Chunks where each critic answered.
    */
   const heard = new Map<string, number>();
 
   /**
-   * Distinct claims each critic proposed.
+   Distinct claims each critic proposed.
    */
   const raised = new Map<string, number>();
 
   /**
-   * Claims each critic proposed, repeats included.
+   Claims each critic proposed, repeats included.
    */
   const emitted = new Map<string, number>();
 
   /**
-   * Accepted issues each critic contributed a claim to.
+   Accepted issues each critic contributed a claim to.
    */
   const hits = new Map<string, number>();
 
   /**
-   * Chunks across the eligible population, the denominator every rate divides
-   * by.
+   Chunks across the eligible population, the denominator every rate divides
+   by.
    */
   const chunks = eligible.reduce(
     function addChunks(
@@ -464,11 +464,11 @@ export function buildAttributionReport(
   }
 
   /**
-   * Support behind every accepted issue of the eligible population.
+   Support behind every accepted issue of the eligible population.
    */
   const supports = eligible.flatMap(function toSupports(entry,): readonly IssueSupport[] {
     /**
-     * Proposers of this entry's claims, by claim id.
+     Proposers of this entry's claims, by claim id.
      */
     const proposersOf = indexProposers({ sliceCritics: entry.sliceCritics ?? [], },);
 
@@ -485,11 +485,11 @@ export function buildAttributionReport(
   },);
 
   /**
-   * Accepted issues whose join is PARTIAL: some claims attributed, some not.
-   *
-   * Held out of every count below rather than counted anywhere. An issue like
-   * this is a defect in the join, not a datum about critics, and averaging it
-   * in would let a broken join read as a confident calibration.
+   Accepted issues whose join is PARTIAL: some claims attributed, some not.
+   
+   Held out of every count below rather than counted anywhere. An issue like
+   this is a defect in the join, not a datum about critics, and averaging it
+   in would let a broken join read as a confident calibration.
    */
   const partialJoinAccepted = supports.filter(function isPartial(support,): boolean {
     return (support.unresolvedClaims > 0) && (support.contributors
@@ -499,7 +499,7 @@ export function buildAttributionReport(
     .length;
 
   /**
-   * Supports whose join is sound, which alone are calibration.
+   Supports whose join is sound, which alone are calibration.
    */
   const sound = supports.filter(function isSound(support,): boolean {
     return (support.unresolvedClaims === 0) || (support.contributors
@@ -517,7 +517,7 @@ export function buildAttributionReport(
   }
 
   /**
-   * Accepted issues carrying no attribution at all.
+   Accepted issues carrying no attribution at all.
    */
   const unattributedAccepted = sound.filter(function isUnattributed(support,): boolean {
     return support.contributors
@@ -527,7 +527,7 @@ export function buildAttributionReport(
     .length;
 
   /**
-   * Accepted issues resting on exactly one critic.
+   Accepted issues resting on exactly one critic.
    */
   const soleProposerAccepted = sound.filter(function isSole(support,): boolean {
     return support.contributors
@@ -537,7 +537,7 @@ export function buildAttributionReport(
     .length;
 
   /**
-   * Accepted issues drawing more than one critic.
+   Accepted issues drawing more than one critic.
    */
   const multiProposerAccepted = sound.filter(function isMulti(support,): boolean {
     return support.contributors
@@ -547,8 +547,8 @@ export function buildAttributionReport(
     .length;
 
   /**
-   * Accepted issues where some critic repeated itself. Restricted to attributed
-   * issues, so it stays a subset of what the sole and multi counts cover.
+   Accepted issues where some critic repeated itself. Restricted to attributed
+   issues, so it stays a subset of what the sole and multi counts cover.
    */
   const selfRepeatedAccepted = sound.filter(function isRepeated(support,): boolean {
     return support.repeated && (support.contributors
@@ -558,8 +558,8 @@ export function buildAttributionReport(
     .length;
 
   /**
-   * Every critic seen in any role, so a critic heard but silent still gets a
-   * row rather than vanishing.
+   Every critic seen in any role, so a critic heard but silent still gets a
+   row rather than vanishing.
    */
   const modelIds = [...new Set([
     ...heard.keys(),

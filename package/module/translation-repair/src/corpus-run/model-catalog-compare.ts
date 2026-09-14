@@ -19,84 +19,84 @@ import { SYNTHETIC_MODELS, } from '../synthetic-catalog.ts';
 // `hugging_face_id`, never on `id`.
 
 /**
- * Ids the pipeline compiles against on this provider, read off the catalog.
- *
- * DERIVED RATHER THAN WRITTEN OUT. The copy this replaced still listed a model
- * removed on 2026-08-24, so the instrument built to catch catalog removals
- * reported the departed model as expected and would have read a served one as
- * new; a list read off `SYNTHETIC_MODELS` moves with the catalog. Synthetic's
- * endpoint is what the fetch compares against, so the Hyper-only ids are not
- * in it on purpose.
+ Ids the pipeline compiles against on this provider, read off the catalog.
+ 
+ DERIVED RATHER THAN WRITTEN OUT. The copy this replaced still listed a model
+ removed on 2026-08-24, so the instrument built to catch catalog removals
+ reported the departed model as expected and would have read a served one as
+ new; a list read off `SYNTHETIC_MODELS` moves with the catalog. Synthetic's
+ endpoint is what the fetch compares against, so the Hyper-only ids are not
+ in it on purpose.
  */
 export const CATALOG_MODEL_IDS: readonly string[] = Object.keys(SYNTHETIC_MODELS,);
 
 /**
- * One model as the provider describes it.
- *
- * @example
- * ```ts
- * const model: ServedModel = { id: 'syn:large:text', huggingFaceId: 'zai-org/GLM-5.2', };
- * ```
+ One model as the provider describes it.
+ 
+ @example
+ ```ts
+ const model: ServedModel = { id: 'syn:large:text', huggingFaceId: 'zai-org/GLM-5.2', };
+ ```
  */
 export type ServedModel = {
   /**
-   * Id a request names.
+   Id a request names.
    */
   readonly id: string;
 
   /**
-   * Underlying model, which is what makes two ids the same voice. Empty when
-   * the provider stated none, which leaves the id its own identity.
+   Underlying model, which is what makes two ids the same voice. Empty when
+   the provider stated none, which leaves the id its own identity.
    */
   readonly huggingFaceId: string;
 };
 
 /**
- * What the comparison found.
- *
- * @example
- * ```ts
- * const comparison = compareCatalog({ served, catalog: CATALOG_MODEL_IDS, },);
- * ```
+ What the comparison found.
+ 
+ @example
+ ```ts
+ const comparison = compareCatalog({ served, catalog: CATALOG_MODEL_IDS, },);
+ ```
  */
 export type CatalogComparison = {
   /**
-   * Distinct models the provider serves that the catalog does not list.
-   *
-   * The interesting set: a model here holds no role in a run, so it is the
-   * only kind of model that could judge an issue independently.
+   Distinct models the provider serves that the catalog does not list.
+   
+   The interesting set: a model here holds no role in a run, so it is the
+   only kind of model that could judge an issue independently.
    */
   readonly unlisted: readonly ServedModel[];
 
   /**
-   * Catalog ids the provider no longer serves.
-   *
-   * Each one costs a lost voice per call, silently, because 404 is not a
-   * transient status and the retry set does not cover it.
+   Catalog ids the provider no longer serves.
+   
+   Each one costs a lost voice per call, silently, because 404 is not a
+   transient status and the retry set does not cover it.
    */
   readonly missing: readonly string[];
 
   /**
-   * Served ids that resolve onto a model already counted, which must never
-   * take a second seat on a panel.
+   Served ids that resolve onto a model already counted, which must never
+   take a second seat on a panel.
    */
   readonly aliases: readonly ServedModel[];
 };
 
 /**
- * Reads one entry of the provider's model list.
- *
- * @param entry - single list element as parsed
- *
- * @returns Model, with an empty underlying id when none was stated
- *
- * @throws {@link Error} when the entry carries no usable id, since a list this
- * report trusts must not be half-read
- *
- * @example
- * ```ts
- * const model = decodeModel({ entry, },);
- * ```
+ Reads one entry of the provider's model list.
+ 
+ @param entry - single list element as parsed
+ 
+ @returns Model, with an empty underlying id when none was stated
+ 
+ @throws {@link Error} when the entry carries no usable id, since a list this
+ report trusts must not be half-read
+ 
+ @example
+ ```ts
+ const model = decodeModel({ entry, },);
+ ```
  */
 function decodeModel(
   {
@@ -112,7 +112,7 @@ function decodeModel(
     },);
 
   /**
-   * Requestable id, and the underlying model when the provider stated one.
+   Requestable id, and the underlying model when the provider stated one.
    */
   const {
     id,
@@ -131,18 +131,18 @@ function decodeModel(
 }
 
 /**
- * Reads the provider's model-list response.
- *
- * @param body - parsed response body
- *
- * @returns Every model listed, in the order given
- *
- * @throws {@link Error} when the body carries no `data` array
- *
- * @example
- * ```ts
- * const served = decodeModelList({ body, },);
- * ```
+ Reads the provider's model-list response.
+ 
+ @param body - parsed response body
+ 
+ @returns Every model listed, in the order given
+ 
+ @throws {@link Error} when the body carries no `data` array
+ 
+ @example
+ ```ts
+ const served = decodeModelList({ body, },);
+ ```
  */
 export function decodeModelList(
   {
@@ -158,7 +158,7 @@ export function decodeModelList(
     },);
 
   /**
-   * Listed models, as the OpenAI-compatible shape names them.
+   Listed models, as the OpenAI-compatible shape names them.
    */
   const { data, } = body;
   if (!isJsonArray(data,))
@@ -173,18 +173,18 @@ export function decodeModelList(
 }
 
 /**
- * Compares what the provider serves against what the pipeline compiles against.
- *
- * @param served - every model the provider currently lists
- *
- * @param catalog - ids the pipeline may call
- *
- * @returns Drift in both directions, and the aliases held out of both
- *
- * @example
- * ```ts
- * const comparison = compareCatalog({ served, catalog: CATALOG_MODEL_IDS, },);
- * ```
+ Compares what the provider serves against what the pipeline compiles against.
+ 
+ @param served - every model the provider currently lists
+ 
+ @param catalog - ids the pipeline may call
+ 
+ @returns Drift in both directions, and the aliases held out of both
+ 
+ @example
+ ```ts
+ const comparison = compareCatalog({ served, catalog: CATALOG_MODEL_IDS, },);
+ ```
  */
 export function compareCatalog(
   {
@@ -196,34 +196,34 @@ export function compareCatalog(
   },
 ): CatalogComparison {
   /**
-   * Underlying models the catalog already occupies, so an alias onto one of
-   * them is recognizable as a second seat rather than a new voice.
+   Underlying models the catalog already occupies, so an alias onto one of
+   them is recognizable as a second seat rather than a new voice.
    */
   const claimed = new Set(catalog.map(function toUnderlying(id,): string {
     return id.startsWith('hf:',) ? id.slice('hf:'.length,) : id;
   },),);
 
   /**
-   * Catalog membership, for the missing check.
+   Catalog membership, for the missing check.
    */
   const listed = new Set(catalog,);
 
   /**
-   * Served ids, for the missing check.
+   Served ids, for the missing check.
    */
   const servedIds = new Set(served.map(function toId(model,): string {
     return model.id;
   },),);
 
   /**
-   * Underlying models already reported as unlisted, so two aliases onto one
-   * new model do not read as two new models.
+   Underlying models already reported as unlisted, so two aliases onto one
+   new model do not read as two new models.
    */
   const reported = new Set<string>();
 
   /**
-   * Models the provider serves that hold no seat, and aliases onto ones that
-   * do, split in one pass over the served list.
+   Models the provider serves that hold no seat, and aliases onto ones that
+   do, split in one pass over the served list.
    */
   const split = served.reduce(
     function classify(
@@ -267,16 +267,16 @@ export function compareCatalog(
 }
 
 /**
- * Renders the comparison for a human.
- *
- * @param comparison - what the comparison found
- *
- * @returns Report text
- *
- * @example
- * ```ts
- * console.log(formatCatalogReport({ comparison, },),);
- * ```
+ Renders the comparison for a human.
+ 
+ @param comparison - what the comparison found
+ 
+ @returns Report text
+ 
+ @example
+ ```ts
+ console.log(formatCatalogReport({ comparison, },),);
+ ```
  */
 export function formatCatalogReport(
   {
@@ -286,7 +286,7 @@ export function formatCatalogReport(
   },
 ): string {
   /**
-   * Every line of the report, joined at the end.
+   Every line of the report, joined at the end.
    */
   const lines = [
     `MISSING from the provider but still in the catalog: ${String(comparison.missing
@@ -300,12 +300,12 @@ export function formatCatalogReport(
     ...comparison.unlisted
       .map(function toLine(model,): string {
         /**
-         * Owner's verdict under the served spelling.
+         Owner's verdict under the served spelling.
          */
         const direct = blocklistVerdictFor({ id: model.id, },);
         /**
-         * Verdict under either spelling, so an alias cannot slip a blocked
-         * model back into the candidate listing.
+         Verdict under either spelling, so an alias cannot slip a blocked
+         model back into the candidate listing.
          */
         const verdict = direct.blocked
           ? direct

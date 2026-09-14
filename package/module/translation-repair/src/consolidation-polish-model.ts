@@ -6,215 +6,215 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 //region Consolidation naturalness model
 
 /**
- * Model roles and document facts needed by final body polish.
- *
- * @example
- * ```ts
- * const config: ConsolidationPolishConfig = { refinerModelIds, judgeModelIds, gateModelIds, declaredNames: [], definitions: '', };
- * ```
+ Model roles and document facts needed by final body polish.
+ 
+ @example
+ ```ts
+ const config: ConsolidationPolishConfig = { refinerModelIds, judgeModelIds, gateModelIds, declaredNames: [], definitions: '', };
+ ```
  */
 export type ConsolidationPolishConfig = {
   /**
-   * Rewriters proposing idiomatic paragraph replacements.
+   Rewriters proposing idiomatic paragraph replacements.
    */
   readonly refinerModelIds: readonly RosterModelId[];
 
   /**
-   * Judges selecting rewrite slate winner.
+   Judges selecting rewrite slate winner.
    */
   readonly judgeModelIds: readonly RosterModelId[];
 
   /**
-   * Fidelity-first roster deciding whether selected rewrite may ship.
+   Fidelity-first roster deciding whether selected rewrite may ship.
    */
   readonly gateModelIds: readonly RosterModelId[];
 
   /**
-   * Declared target name forms protected from deletion.
+   Declared target name forms protected from deletion.
    */
   readonly declaredNames: readonly string[];
 
   /**
-   * Link and footnote definitions used by rewrite guards.
+   Link and footnote definitions used by rewrite guards.
    */
   readonly definitions: string;
 };
 
 /**
- * One rejected-input to gated-correction digest transition.
- *
- * @example
- * ```ts
- * const correction: ConsolidationNaturalnessCorrectionAudit = { inputDigest, findingsDigest, gatedTextDigest, };
- * ```
+ One rejected-input to gated-correction digest transition.
+ 
+ @example
+ ```ts
+ const correction: ConsolidationNaturalnessCorrectionAudit = { inputDigest, findingsDigest, gatedTextDigest, };
+ ```
  */
 export type ConsolidationNaturalnessCorrectionAudit = {
   /**
-   * Exact rejected candidate supplied to correction.
+   Exact rejected candidate supplied to correction.
    */
   readonly inputDigest: string;
 
   /**
-   * Canonical structured findings supplied to correction.
+   Canonical structured findings supplied to correction.
    */
   readonly findingsDigest: string;
 
   /**
-   * Exact post-fidelity-gate correction supplied to next review.
+   Exact post-fidelity-gate correction supplied to next review.
    */
   readonly gatedTextDigest: string;
 };
 
 /**
- * Absolute review rounds binding publication approval to exact final wording.
- *
- * @example
- * ```ts
- * const review: ConsolidationNaturalnessAudit = { correctionCount: 0, corrections: [], rounds: [], confirmations: [] };
- * ```
+ Absolute review rounds binding publication approval to exact final wording.
+ 
+ @example
+ ```ts
+ const review: ConsolidationNaturalnessAudit = { correctionCount: 0, corrections: [], rounds: [], confirmations: [] };
+ ```
  */
 export type ConsolidationNaturalnessAudit = {
   /**
-   * Dedicated corrective generations bought after initial rejection.
+   Dedicated corrective generations bought after initial rejection.
    */
   readonly correctionCount: number;
 
   /**
-   * Digest chain binding each accepted correction transition.
+   Digest chain binding each accepted correction transition.
    */
   readonly corrections: readonly ConsolidationNaturalnessCorrectionAudit[];
 
   /**
-   * Decisive whole-passage reviews, one per generated candidate.
+   Decisive whole-passage reviews, one per generated candidate.
    */
   readonly rounds: readonly AbsoluteNaturalnessReviewOutcome[];
 
   /**
-   * Earlier acceptable readings before each decisive same-candidate review.
+   Earlier acceptable readings before each decisive same-candidate review.
    */
   readonly confirmations: readonly AbsoluteNaturalnessReviewOutcome[];
 };
 
 /**
- * Auditable final polish decision for one consolidated slice.
- *
- * @example
- * ```ts
- * const polish: ConsolidationPolish = { kind: 'not-run', reason: 'front-matter', };
- * ```
+ Auditable final polish decision for one consolidated slice.
+ 
+ @example
+ ```ts
+ const polish: ConsolidationPolish = { kind: 'not-run', reason: 'front-matter', };
+ ```
  */
 export type ConsolidationPolish =
   | {
     /**
-     * No naturalness stage was applicable or configured.
+     No naturalness stage was applicable or configured.
      */
     readonly kind: 'not-run';
 
     /**
-     * Why no body polish was bought.
+     Why no body polish was bought.
      */
     readonly reason: 'front-matter' | 'not-configured' | 'unsafe-baseline';
   }
   | {
     /**
-     * Naturalness stage examined approved base.
+     Naturalness stage examined approved base.
      */
     readonly kind: 'settled';
 
     /**
-     * Already-approved text before naturalness work.
+     Already-approved text before naturalness work.
      */
     readonly baseText: string;
 
     /**
-     * Selected rewrite proposal before final fidelity gate.
+     Selected rewrite proposal before final fidelity gate.
      */
     readonly proposedText: string;
 
     /**
-     * Final text after conservative gate.
+     Final text after conservative gate.
      */
     readonly text: string;
 
     /**
-     * Whether final text differs from approved base.
+     Whether final text differs from approved base.
      */
     readonly changed: boolean;
 
     /**
-     * Rewriters heard with usable answer.
+     Rewriters heard with usable answer.
      */
     readonly refinersHeard: readonly RosterModelId[];
 
     /**
-     * Models contributing selected proposal.
+     Models contributing selected proposal.
      */
     readonly contributors: readonly RosterModelId[];
 
     /**
-     * Naturalness selection rounds retained for audit.
+     Naturalness selection rounds retained for audit.
      */
     readonly rounds: readonly RepairJudgedRound[];
 
     /**
-     * Final fidelity and naturalness gate, absent when no rewrite survived.
+     Final fidelity and naturalness gate, absent when no rewrite survived.
      */
     readonly gate?: ConsolidationPolishGateOutcome;
 
     /**
-     * Absolute whole-passage approval bound to final text.
+     Absolute whole-passage approval bound to final text.
      */
     readonly review: ConsolidationNaturalnessAudit;
 
     /**
-     * Findings from proposal, validation, gate and absolute review.
+     Findings from proposal, validation, gate and absolute review.
      */
     readonly findings: readonly string[];
   }
   | {
     /**
-     * Legacy nonpublishable state retained for old records and defensive guards.
-     * Current runtime throws operational interruption instead of producing it.
+     Legacy nonpublishable state retained for old records and defensive guards.
+     Current runtime throws operational interruption instead of producing it.
      */
     readonly kind: 'unsettled';
 
     /**
-     * Approved fidelity baseline that remains unpublishable for naturalness.
+     Approved fidelity baseline that remains unpublishable for naturalness.
      */
     readonly baseText: string;
 
     /**
-     * Last selected correction proposal, whether or not gates accepted it.
+     Last selected correction proposal, whether or not gates accepted it.
      */
     readonly proposedText: string;
 
     /**
-     * Rewriters returning usable answer across recorded rounds.
+     Rewriters returning usable answer across recorded rounds.
      */
     readonly refinersHeard: readonly RosterModelId[];
 
     /**
-     * Models whose work last would-ship candidate carries.
+     Models whose work last would-ship candidate carries.
      */
     readonly contributors: readonly RosterModelId[];
 
     /**
-     * Candidate-selection rounds from initial and corrective generations.
+     Candidate-selection rounds from initial and corrective generations.
      */
     readonly rounds: readonly RepairJudgedRound[];
 
     /**
-     * Last comparative fidelity gate, when correction reached it.
+     Last comparative fidelity gate, when correction reached it.
      */
     readonly gate?: ConsolidationPolishGateOutcome;
 
     /**
-     * Absolute reviews proving why publication remains refused.
+     Absolute reviews proving why publication remains refused.
      */
     readonly review: ConsolidationNaturalnessAudit;
 
     /**
-     * Stable correction and review findings.
+     Stable correction and review findings.
      */
     readonly findings: readonly string[];
   };

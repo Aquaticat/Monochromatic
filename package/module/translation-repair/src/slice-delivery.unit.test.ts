@@ -1,8 +1,8 @@
 /**
- * Tests for the per-slice delivery ledger.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the per-slice delivery ledger.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -20,7 +20,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Archive wording of each fixture slice, in document order.
+ Archive wording of each fixture slice, in document order.
  */
 const INCUMBENTS = [
   'The cat sleeps.',
@@ -29,7 +29,7 @@ const INCUMBENTS = [
 ] as const;
 
 /**
- * Original wording of each fixture slice.
+ Original wording of each fixture slice.
  */
 const SOURCES = [
   '猫猫在睡觉。',
@@ -38,7 +38,7 @@ const SOURCES = [
 ] as const;
 
 /**
- * Prepared slice pairs shaped as the preparation produces them.
+ Prepared slice pairs shaped as the preparation produces them.
  */
 function preparedSlices(): readonly {
   readonly source: {
@@ -61,7 +61,7 @@ function preparedSlices(): readonly {
     sliceIndex,
   ) {
     /**
-     * Original of this slice, present for every fixture index.
+     Original of this slice, present for every fixture index.
      */
     const sourceText = SOURCES[sliceIndex] ?? '';
     return {
@@ -84,17 +84,17 @@ function preparedSlices(): readonly {
 }
 
 /**
- * Lane wordings for the fixture slices, with the decisions a case needs.
- *
- * @param decided - accepted wording keyed by slice index; a slice absent from
- * the map is one the lane never reached
- *
- * @returns Wordings in document order
- *
- * @example
- * ```ts
- * const wordings = laneWordings({ decided: new Map([[0, 'The cat naps.',],],), },);
- * ```
+ Lane wordings for the fixture slices, with the decisions a case needs.
+ 
+ @param decided - accepted wording keyed by slice index; a slice absent from
+ the map is one the lane never reached
+ 
+ @returns Wordings in document order
+ 
+ @example
+ ```ts
+ const wordings = laneWordings({ decided: new Map([[0, 'The cat naps.',],],), },);
+ ```
  */
 function laneWordings(
   { decided, }: { readonly decided: ReadonlyMap<number, string>; },
@@ -104,7 +104,7 @@ function laneWordings(
     sliceIndex,
   ): LaneSliceText {
     /**
-     * What this case says the lane decided here.
+     What this case says the lane decided here.
      */
     const accepted = decided.get(sliceIndex,);
     return {
@@ -122,14 +122,14 @@ function laneWordings(
 }
 
 /**
- * Wordings where every slice was examined and left exactly as it was.
- *
- * @returns Map from slice index to the archive's own wording
- *
- * @example
- * ```ts
- * const wordings = laneWordings({ decided: everySliceUnchanged(), },);
- * ```
+ Wordings where every slice was examined and left exactly as it was.
+ 
+ @returns Map from slice index to the archive's own wording
+ 
+ @example
+ ```ts
+ const wordings = laneWordings({ decided: everySliceUnchanged(), },);
+ ```
  */
 function everySliceUnchanged(): ReadonlyMap<number, string> {
   return new Map(INCUMBENTS.map(function toEntry(
@@ -144,14 +144,14 @@ function everySliceUnchanged(): ReadonlyMap<number, string> {
 }
 
 /**
- * Fixture slices whose middle one is a place rather than existing text.
- *
- * @returns Prepared pairs with an anchor at index one
- *
- * @example
- * ```ts
- * const slices = anchoredSlices();
- * ```
+ Fixture slices whose middle one is a place rather than existing text.
+ 
+ @returns Prepared pairs with an anchor at index one
+ 
+ @example
+ ```ts
+ const slices = anchoredSlices();
+ ```
  */
 function anchoredSlices(): readonly ChunkPair[] {
   return preparedSlices().map(function toAnchored(
@@ -171,18 +171,18 @@ function anchoredSlices(): readonly ChunkPair[] {
 }
 
 /**
- * Lane wordings for {@link anchoredSlices}, whose anchor holds no archive
- * wording to agree with.
- *
- * @param anchorNotApplicable - whether the lane had no work to do at the anchor,
- * as against having tried there and produced nothing
- *
- * @returns Wordings in document order
- *
- * @example
- * ```ts
- * const wordings = anchoredWordings({ anchorNotApplicable: false, },);
- * ```
+ Lane wordings for {@link anchoredSlices}, whose anchor holds no archive
+ wording to agree with.
+ 
+ @param anchorNotApplicable - whether the lane had no work to do at the anchor,
+ as against having tried there and produced nothing
+ 
+ @returns Wordings in document order
+ 
+ @example
+ ```ts
+ const wordings = anchoredWordings({ anchorNotApplicable: false, },);
+ ```
  */
 function anchoredWordings(
   { anchorNotApplicable, }: { readonly anchorNotApplicable: boolean; },
@@ -230,12 +230,12 @@ await describe({
         + 'carries (the twentieth hakureico pass of 2026-09-09 stopped at the reassembly invariant otherwise)',
       fn: async () => {
         /**
-         * What the judges chose, two notes behind the sentence.
+         What the judges chose, two notes behind the sentence.
          */
         const decided = 'The cat is asleep.\n\n[^1]: A cat note.\n\n[^2]: Nothing points here.';
 
         /**
-         * What the document carries after the guard's trim.
+         What the document carries after the guard's trim.
          */
         const carried = 'The cat is asleep.\n\n[^1]: A cat note.';
         const ledger = buildSliceDelivery({
@@ -411,7 +411,7 @@ await describe({
         + 'is the state where nothing says what the document carries there',
       fn: async () => {
         /**
-         * What unstatedSlice raised, read for its class as well as its wording.
+         What unstatedSlice raised, read for its class as well as its wording.
          */
         const refusalOfUnstatedSlice = caught(function unstatedSlice() {
           buildSliceDelivery({
@@ -438,7 +438,7 @@ await describe({
         + 'that the lane never reached: each says the document carries a change nobody made',
       fn: async () => {
         /**
-         * What shippedWithoutChange raised, read for its class as well as its wording.
+         What shippedWithoutChange raised, read for its class as well as its wording.
          */
         const refusalOfShippedWithoutChange = caught(function shippedWithoutChange() {
           buildSliceDelivery({
@@ -453,7 +453,7 @@ await describe({
         expect(refusalOfShippedWithoutChange,).toBeInstanceOf(SliceDeliveryError,);
         expect((refusalOfShippedWithoutChange as Error).message,).toContain('a change nobody made',);
         /**
-         * What shippedWithoutDecision raised, read for its class as well as its wording.
+         What shippedWithoutDecision raised, read for its class as well as its wording.
          */
         const refusalOfShippedWithoutDecision = caught(function shippedWithoutDecision() {
           buildSliceDelivery({
@@ -480,7 +480,7 @@ await describe({
         + 'lane`s slice against another`s while the two name different passages',
       fn: async () => {
         /**
-         * What shortWordings raised, read for its class as well as its wording.
+         What shortWordings raised, read for its class as well as its wording.
          */
         const refusalOfShortWordings = caught(function shortWordings() {
           buildSliceDelivery({
@@ -499,7 +499,7 @@ await describe({
         expect(refusalOfShortWordings,).toBeInstanceOf(SliceDeliveryError,);
         expect((refusalOfShortWordings as Error).message,).toContain('different preparations',);
         /**
-         * What outOfRangeIndex raised, read for its class as well as its wording.
+         What outOfRangeIndex raised, read for its class as well as its wording.
          */
         const refusalOfOutOfRangeIndex = caught(function outOfRangeIndex() {
           buildSliceDelivery({
@@ -547,7 +547,7 @@ await describe({
         + 'the count nor the ledger showed it',
       fn: async () => {
         /**
-         * What shippedTwice raised, read for its class as well as its wording.
+         What shippedTwice raised, read for its class as well as its wording.
          */
         const refusalOfShippedTwice = caught(function shippedTwice() {
           buildSliceDelivery({
@@ -570,7 +570,7 @@ await describe({
         expect(refusalOfShippedTwice,).toBeInstanceOf(SliceDeliveryError,);
         expect((refusalOfShippedTwice as Error).message,).toContain('counts at least one slice twice',);
         /**
-         * What withdrawnTwice raised, read for its class as well as its wording.
+         What withdrawnTwice raised, read for its class as well as its wording.
          */
         const refusalOfWithdrawnTwice = caught(function withdrawnTwice() {
           buildSliceDelivery({
@@ -601,7 +601,7 @@ await describe({
         + 'had taken back as one the document carries',
       fn: async () => {
         /**
-         * What shippedAndWithdrawn raised, read for its class as well as its wording.
+         What shippedAndWithdrawn raised, read for its class as well as its wording.
          */
         const refusalOfShippedAndWithdrawn = caught(function shippedAndWithdrawn() {
           buildSliceDelivery({
@@ -630,7 +630,7 @@ await describe({
         + 'the slice alone',
       fn: async () => {
         /**
-         * What withdrewNothing raised, read for its class as well as its wording.
+         What withdrewNothing raised, read for its class as well as its wording.
          */
         const refusalOfWithdrewNothing = caught(function withdrewNothing() {
           buildSliceDelivery({
@@ -653,7 +653,7 @@ await describe({
         + 'those are the two events a reader counting integrity damage has to tell apart',
       fn: async () => {
         /**
-         * What withdrewWhileBlocked raised, read for its class as well as its wording.
+         What withdrewWhileBlocked raised, read for its class as well as its wording.
          */
         const refusalOfWithdrewWhileBlocked = caught(function withdrewWhileBlocked() {
           buildSliceDelivery({
@@ -678,7 +678,7 @@ await describe({
         + 'seen, and the ledger would report the run delivering work it explicitly refused to deliver',
       fn: async () => {
         /**
-         * What shippedWhileBlocked raised, read for its class as well as its wording.
+         What shippedWhileBlocked raised, read for its class as well as its wording.
          */
         const refusalOfShippedWhileBlocked = caught(function shippedWhileBlocked() {
           buildSliceDelivery({

@@ -1,15 +1,15 @@
 /**
- * Tests for the sheet that asks a model to pair two documents' sections.
- *
- * THE FENCE IS THE ADVERSARIAL CASE. Both sides are arbitrary prose from an
- * archive nobody vets, and a section carrying a run of backticks would close
- * its own listing under a fixed fence: everything after it would read as sheet
- * structure, and a model would be answering about a document the sheet no
- * longer describes.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the sheet that asks a model to pair two documents' sections.
+ 
+ THE FENCE IS THE ADVERSARIAL CASE. Both sides are arbitrary prose from an
+ archive nobody vets, and a section carrying a run of backticks would close
+ its own listing under a fixed fence: everything after it would read as sheet
+ structure, and a model would be answering about a document the sheet no
+ longer describes.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -20,7 +20,7 @@ import {
 import { buildSectionPairingMessages, } from '../dist/final/node/index.mjs';
 
 /**
- * Original sections as the sheet numbers them.
+ Original sections as the sheet numbers them.
  */
 const SOURCE_SECTIONS = [
   {
@@ -34,9 +34,9 @@ const SOURCE_SECTIONS = [
 ];
 
 /**
- * Translation sections, one of which is a bare heading whose body was never
- * written. Pairing that is the whole point: saying so is what lets the missing
- * text be written in the right place.
+ Translation sections, one of which is a bare heading whose body was never
+ written. Pairing that is the whole point: saying so is what lets the missing
+ text be written in the right place.
  */
 const TARGET_SECTIONS = [
   {
@@ -50,21 +50,21 @@ const TARGET_SECTIONS = [
 ];
 
 /**
- * Reads the user half of a built sheet, which is where the sections go.
- *
- * @param sourceSections - original side
- *
- * @param targetSections - translation side
- *
- * @returns That message's content
- *
- * @throws Error when the sheet carries no user message, since a sheet with only
- * a policy would ask a model about nothing
- *
- * @example
- * ```ts
- * const sheet = sheetFor({ sourceSections, targetSections, },);
- * ```
+ Reads the user half of a built sheet, which is where the sections go.
+ 
+ @param sourceSections - original side
+ 
+ @param targetSections - translation side
+ 
+ @returns That message's content
+ 
+ @throws Error when the sheet carries no user message, since a sheet with only
+ a policy would ask a model about nothing
+ 
+ @example
+ ```ts
+ const sheet = sheetFor({ sourceSections, targetSections, },);
+ ```
  */
 function sheetFor(
   {
@@ -76,7 +76,7 @@ function sheetFor(
   },
 ): string {
   /**
-   * Message carrying the two documents.
+   Message carrying the two documents.
    */
   const message = buildSectionPairingMessages({
     sourceSections,
@@ -138,9 +138,9 @@ await describe({
         + 'cannot close its own listing and have the rest of the document read as sheet structure',
       fn: async () => {
         /**
-         * A section that would close a three-backtick fence and then open a
-         * heading of its own, which is what an archive page with a code sample
-         * in it looks like.
+         A section that would close a three-backtick fence and then open a
+         heading of its own, which is what an archive page with a code sample
+         in it looks like.
          */
         const hostile = [
           {

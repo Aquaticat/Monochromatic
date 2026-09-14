@@ -1,19 +1,19 @@
 /**
- * Tests that the overlap dial REFUSES rather than falling back.
- *
- * WHY A FALLBACK WOULD BE THE WORST OUTCOME. This dial exists so two runs can
- * differ in exactly one value and nothing else. A value it cannot read that
- * quietly became `1` would produce two sequential runs, a comparison showing no
- * difference, and a recorded conclusion that overlapping units does nothing.
- * That is not a failed measurement, it is a wrong one, and it would be believed.
- *
- * THE DEFAULT IS STILL A FALLBACK, deliberately: an UNSET variable is an
- * invoker who did not ask for overlap, which is a different thing from one who
- * asked for something unreadable.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests that the overlap dial REFUSES rather than falling back.
+ 
+ WHY A FALLBACK WOULD BE THE WORST OUTCOME. This dial exists so two runs can
+ differ in exactly one value and nothing else. A value it cannot read that
+ quietly became `1` would produce two sequential runs, a comparison showing no
+ difference, and a recorded conclusion that overlapping units does nothing.
+ That is not a failed measurement, it is a wrong one, and it would be believed.
+ 
+ THE DEFAULT IS STILL A FALLBACK, deliberately: an UNSET variable is an
+ invoker who did not ask for overlap, which is a different thing from one who
+ asked for something unreadable.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -32,25 +32,25 @@ import {
 //region Fixtures
 
 /**
- * Environment variable naming how many slices may run at once.
+ Environment variable naming how many slices may run at once.
  */
 const OVERLAP_VAR = 'TRANSLATION_REPAIR_SLICE_OVERLAP';
 
 /**
- * Sets the dial for the duration of one case, restoring whatever was there.
- *
- * @param says - value to set, or nothing to clear it
- *
- * @returns Disposable putting the invoker's own value back
- *
- * @example
- * ```ts
- * using dial = dialSaying({ says: '4', },);
- * ```
+ Sets the dial for the duration of one case, restoring whatever was there.
+ 
+ @param says - value to set, or nothing to clear it
+ 
+ @returns Disposable putting the invoker's own value back
+ 
+ @example
+ ```ts
+ using dial = dialSaying({ says: '4', },);
+ ```
  */
 function dialSaying({ says, }: { readonly says?: string; },): Disposable {
   /**
-   * Value as the invoking shell left it.
+   Value as the invoking shell left it.
    */
   const before = process.env[OVERLAP_VAR];
 
@@ -117,7 +117,7 @@ await describe({
         using dial = dialSaying({ says: 'four', },);
 
         /**
-         * What the reader threw on a value nothing could read.
+         What the reader threw on a value nothing could read.
          */
         const refusal = caught(function readsProse() {
           readOverlap({ fallback: 1, },);
@@ -150,7 +150,7 @@ await describe({
         + 'exponent, decimal-point, or padded input into another arm',
       fn: async () => {
         /**
-         * Numeric strings JavaScript would otherwise canonicalize.
+         Numeric strings JavaScript would otherwise canonicalize.
          */
         const spellings = [
           '0x2',
@@ -178,7 +178,7 @@ await describe({
         using dial = dialSaying({ says: '0', },);
 
         /**
-         * What the reader threw on a limit that admits nothing.
+         What the reader threw on a limit that admits nothing.
          */
         const refusal = caught(function readsZero() {
           readOverlap({ fallback: 1, },);

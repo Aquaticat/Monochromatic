@@ -1,10 +1,10 @@
 /**
- * Tests for the end-to-end repair driver over a scripted stub client.
- * The stub discriminates stages by response-format schema name, so one
- * scripted client walks the whole loop without a network.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the end-to-end repair driver over a scripted stub client.
+ The stub discriminates stages by response-format schema name, so one
+ scripted client walks the whole loop without a network.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -28,7 +28,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original document of the fixture pair.
+ Original document of the fixture pair.
  */
 const SOURCE_TEXT = `## 简介
 
@@ -36,7 +36,7 @@ const SOURCE_TEXT = `## 简介
 `;
 
 /**
- * Translation with one planted mistranslation.
+ Translation with one planted mistranslation.
  */
 const TARGET_TEXT = `## Introduction
 
@@ -44,13 +44,13 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
 `;
 
 /**
- * Role roster; identities only matter as distinct voices.
- *
- * THREE CHECKERS BECAUSE FEWER CANNOT DECIDE. `assertCheckerQuorumReachable`
- * floors the role at three, since resolution needs more weight behind `fixed`
- * than behind `not-fixed` and `worse` together and a pair that disagrees
- * therefore returns nothing. This fixture ran at two until the floor landed,
- * which made it model a roster production would refuse.
+ Role roster; identities only matter as distinct voices.
+ 
+ THREE CHECKERS BECAUSE FEWER CANNOT DECIDE. `assertCheckerQuorumReachable`
+ floors the role at three, since resolution needs more weight behind `fixed`
+ than behind `not-fixed` and `worse` together and a pair that disagrees
+ therefore returns nothing. This fixture ran at two until the floor landed,
+ which made it model a roster production would refuse.
  */
 const MODELS: RepairModels = {
   criticModelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
@@ -65,17 +65,17 @@ const MODELS: RepairModels = {
 };
 
 /**
- * Exactly the failure an entry deadline trips with.
- *
- * HELD AT MODULE SCOPE so the fixtures that abort and the cases that assert
- * name one object. The driver's contract is that it surfaces the abort reason
- * ITSELF; a wording assertion is satisfied by any lookalike, including a
- * wrapper built from the reason, which is the failure worth ruling out.
+ Exactly the failure an entry deadline trips with.
+ 
+ HELD AT MODULE SCOPE so the fixtures that abort and the cases that assert
+ name one object. The driver's contract is that it surfaces the abort reason
+ ITSELF; a wording assertion is satisfied by any lookalike, including a
+ wrapper built from the reason, which is the failure worth ruling out.
  */
 const ENTRY_DEADLINE_FAILURE = new Error('entry deadline reached',);
 
 /**
- * Successful critic calls in flight, and peak observed by fixture.
+ Successful critic calls in flight, and peak observed by fixture.
  */
 type CriticConcurrency = {
   now: number;
@@ -83,7 +83,7 @@ type CriticConcurrency = {
 };
 
 /**
- * Successful refiner calls in flight, and peak observed by fixture.
+ Successful refiner calls in flight, and peak observed by fixture.
  */
 type RefinerConcurrency = {
   now: number;
@@ -91,7 +91,7 @@ type RefinerConcurrency = {
 };
 
 /**
- * One-based sheet numbers 1 through count.
+ One-based sheet numbers 1 through count.
  */
 function oneBasedNumbers(
   { count, }: { readonly count: number; },
@@ -103,8 +103,8 @@ function oneBasedNumbers(
 }
 
 /**
- * Occurrences of one marker in the user prompt,
- * for scripting per-item replies without parsing the sheet.
+ Occurrences of one marker in the user prompt,
+ for scripting per-item replies without parsing the sheet.
  */
 function countMarker(
   {
@@ -116,10 +116,10 @@ function countMarker(
   },
 ): number {
   /**
-   * User prompt content of the request.
+   User prompt content of the request.
    */
   /**
-   * Last message, whose text the fixture branches on.
+   Last message, whose text the fixture branches on.
    */
   const last = request.messages.at(-1,);
   const content = (last === undefined) ? '' : messageText({ message: last, },);
@@ -128,22 +128,22 @@ function countMarker(
 }
 
 /**
- * Stub client scripted per stage; the schema name on the response format
- * names the stage.
- *
- * @param criticIssues - wire issues every critic reports, or a function
- * choosing issues per request so slices script differently
- *
- * @param checkerVerdict - verdict every checker casts on every issue
- *
- * @param proberVerdict - verdict every prober casts on every replaced region
- *
- * @param proberEvidence - wording every prober quotes as introduced damage;
- * the screen decides what it proves, so a quote lifted from the replacement
- * corroborates while one lifted from the baseline is contradicted
- *
- * @param proberOmittedText - wording every prober quotes as content the edit
- * dropped, checked in the opposite direction
+ Stub client scripted per stage; the schema name on the response format
+ names the stage.
+ 
+ @param criticIssues - wire issues every critic reports, or a function
+ choosing issues per request so slices script differently
+ 
+ @param checkerVerdict - verdict every checker casts on every issue
+ 
+ @param proberVerdict - verdict every prober casts on every replaced region
+ 
+ @param proberEvidence - wording every prober quotes as introduced damage;
+ the screen decides what it proves, so a quote lifted from the replacement
+ corroborates while one lifted from the baseline is contradicted
+ 
+ @param proberOmittedText - wording every prober quotes as content the edit
+ dropped, checked in the opposite direction
  */
 function scriptedClient(
   {
@@ -170,12 +170,12 @@ function scriptedClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Stage name from the structured-output constraint.
+       Stage name from the structured-output constraint.
        */
       const stage = request.responseFormat?.json_schema.name ?? '';
 
       /**
-       * Scripted wire reply for the stage.
+       Scripted wire reply for the stage.
        */
       const scripted: unknown = stage === 'critic_report'
         ? {
@@ -260,35 +260,35 @@ function scriptedClient(
 }
 
 /**
- * Wraps a scripted client with the two failures a long run actually meets: a
- * caller abort part way through a document, and a critic roster that answers
- * nothing while the run is still live.
- *
- * Modelled on the real transport, which propagates the torn-down stream
- * untouched under an aborted signal rather than returning an outcome.
- *
- * @param base - scripted client serving every stage
- *
- * @param controller - run steering the wrapper may abort
- *
- * @param calls - critic calls attempted, shared with the case
- *
- * @param abortAfterCriticCalls - critic calls served before the wrapper aborts;
- * absent means it never does
- *
- * @param silentCritics - whether every critic call fails while the signal stays
- * live
- *
- * @param criticConcurrency - optional successful-critic overlap instrument
- *
- * @param refinerConcurrency - optional successful-refiner overlap instrument
- *
- * @returns Client honoring the steering
- *
- * @example
- * ```ts
- * const client = steeringClient({ base, controller, calls, silentCritics: true, },);
- * ```
+ Wraps a scripted client with the two failures a long run actually meets: a
+ caller abort part way through a document, and a critic roster that answers
+ nothing while the run is still live.
+ 
+ Modelled on the real transport, which propagates the torn-down stream
+ untouched under an aborted signal rather than returning an outcome.
+ 
+ @param base - scripted client serving every stage
+ 
+ @param controller - run steering the wrapper may abort
+ 
+ @param calls - critic calls attempted, shared with the case
+ 
+ @param abortAfterCriticCalls - critic calls served before the wrapper aborts;
+ absent means it never does
+ 
+ @param silentCritics - whether every critic call fails while the signal stays
+ live
+ 
+ @param criticConcurrency - optional successful-critic overlap instrument
+ 
+ @param refinerConcurrency - optional successful-refiner overlap instrument
+ 
+ @returns Client honoring the steering
+ 
+ @example
+ ```ts
+ const client = steeringClient({ base, controller, calls, silentCritics: true, },);
+ ```
  */
 function steeringClient(
   {
@@ -365,7 +365,7 @@ function steeringClient(
 }
 
 /**
- * Original with two sections, so a case can stop a run between them.
+ Original with two sections, so a case can stop a run between them.
  */
 const SOURCE_TWO_SECTIONS = `## 甲
 
@@ -377,7 +377,7 @@ const SOURCE_TWO_SECTIONS = `## 甲
 `;
 
 /**
- * Translation of {@link SOURCE_TWO_SECTIONS}.
+ Translation of {@link SOURCE_TWO_SECTIONS}.
  */
 const TARGET_TWO_SECTIONS = `## Alpha
 
@@ -389,8 +389,8 @@ The cat has a long tail.
 `;
 
 /**
- * Original whose one section is long enough for the naturalness lane to look
- * at, since that lane ignores any paragraph under its length floor.
+ Original whose one section is long enough for the naturalness lane to look
+ at, since that lane ignores any paragraph under its length floor.
  */
 const SOURCE_LONG_SECTION = `## 午后
 
@@ -398,7 +398,7 @@ const SOURCE_LONG_SECTION = `## 午后
 `;
 
 /**
- * Translation of {@link SOURCE_LONG_SECTION}, one paragraph over that floor.
+ Translation of {@link SOURCE_LONG_SECTION}, one paragraph over that floor.
  */
 const TARGET_LONG_SECTION = `## Afternoon
 
@@ -406,7 +406,7 @@ The cat is doing the sunbathing on the windowsill in every afternoon, and when t
 `;
 
 /**
- * Wire issue for the planted mistranslation, quoting exact fixture bytes.
+ Wire issue for the planted mistranslation, quoting exact fixture bytes.
  */
 const MISTRANSLATION_ISSUE = {
   category: 'accuracy/mistranslation',
@@ -822,17 +822,17 @@ await describe({
       name: 'proceeds when content critique contradicts non-translation votes',
       fn: async () => {
         /**
-         * Substantive wire issues anchoring critique into target text;
-         * three critics each reporting three reach the contradiction
-         * floor while every critic also votes non-translation.
-         * The summaries and category labels are ACKNOWLEDGED ARBITRARY
-         * INVENTION, not coherent review commentary: the scripted stub
-         * never interprets them, and the contradiction assessment only
-         * needs structurally valid claims, meaning closed-taxonomy
-         * categories outside the missing-translation family plus quotes
-         * occurring exactly once per side of the tiny fixture pair.
-         * The quotes reuse whatever unique fragments the fixture offers,
-         * so critique text and quoted text deliberately do not cohere.
+         Substantive wire issues anchoring critique into target text;
+         three critics each reporting three reach the contradiction
+         floor while every critic also votes non-translation.
+         The summaries and category labels are ACKNOWLEDGED ARBITRARY
+         INVENTION, not coherent review commentary: the scripted stub
+         never interprets them, and the contradiction assessment only
+         needs structurally valid claims, meaning closed-taxonomy
+         categories outside the missing-translation family plus quotes
+         occurring exactly once per side of the tiny fixture pair.
+         The quotes reuse whatever unique fragments the fixture offers,
+         so critique text and quoted text deliberately do not cohere.
          */
         const contentCritiqueIssues = [
           {
@@ -900,17 +900,17 @@ await describe({
       name: 'resumes cached slices without recomputing them',
       fn: async () => {
         /**
-         * Structured-call counter shared with the wrapping client.
+         Structured-call counter shared with the wrapping client.
          */
         const calls = { count: 0, };
 
         /**
-         * Base client repairing the planted mistranslation.
+         Base client repairing the planted mistranslation.
          */
         const base = scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },);
 
         /**
-         * Client counting every structured call it serves.
+         Client counting every structured call it serves.
          */
         const counting: SyntheticClient = {
           chatText: base.chatText,
@@ -924,12 +924,12 @@ await describe({
         };
 
         /**
-         * Serialized slice outcomes the first run persists, keyed by hash.
+         Serialized slice outcomes the first run persists, keyed by hash.
          */
         const store = new Map<string, string>();
 
         /**
-         * First run computes and persists every slice.
+         First run computes and persists every slice.
          */
         const first = await repairTranslation({
           client: counting,
@@ -954,7 +954,7 @@ await describe({
         expect(store.size,).toBeGreaterThan(0,);
 
         /**
-         * Resume map parsed from the persisted slices, as the driver does.
+         Resume map parsed from the persisted slices, as the driver does.
          */
         const resumed = new Map<string, ChunkRepairOutcome>(
           [...store.entries(),].map(([key, serialized,],) =>
@@ -962,12 +962,12 @@ await describe({
         );
 
         /**
-         * Structured calls made before the resumed run began.
+         Structured calls made before the resumed run began.
          */
         const callsBeforeResume = calls.count;
 
         /**
-         * Second run resumes every slice from the cache.
+         Second run resumes every slice from the cache.
          */
         const second = await repairTranslation({
           client: counting,
@@ -997,8 +997,8 @@ await describe({
       name: 'degrades a minority standing region per slice instead of blocking',
       fn: async () => {
         /**
-         * Original with a large translated section and a small one whose
-         * rendering is gibberish.
+         Original with a large translated section and a small one whose
+         rendering is gibberish.
          */
         const sourceTwoSections = `## 甲
 
@@ -1010,7 +1010,7 @@ await describe({
 `;
 
         /**
-         * Translation whose second section is unrelated noise.
+         Translation whose second section is unrelated noise.
          */
         const targetTwoSections = `## Alpha
 
@@ -1026,7 +1026,7 @@ Meow meow meow meow.
           client: scriptedClient({
             criticIssues: function perSlice(request,) {
               /**
-               * User sheet of this critic call.
+               User sheet of this critic call.
                */
               const last = request.messages.at(-1,);
               const sheet = (last === undefined) ? '' : messageText({ message: last, },);
@@ -1121,7 +1121,7 @@ Meow meow meow meow.
         + 'reach rewriters together only at overlap 2',
       fn: async () => {
         /**
-         * Roster with naturalness lane active.
+         Roster with naturalness lane active.
          */
         const refiningModels: RepairModels = {
           ...MODELS,
@@ -1129,7 +1129,7 @@ Meow meow meow meow.
         };
 
         /**
-         * Successful refiner calls under overlap one.
+         Successful refiner calls under overlap one.
          */
         const serial: RefinerConcurrency = {
           now: 0,
@@ -1150,7 +1150,7 @@ Meow meow meow meow.
         },);
 
         /**
-         * Successful refiner calls under overlap two.
+         Successful refiner calls under overlap two.
          */
         const overlapped: RefinerConcurrency = {
           now: 0,
@@ -1205,7 +1205,7 @@ Meow meow meow meow.
         + 'look right on their own',
       fn: async () => {
         /**
-         * Preparation the caller owns, shared with any other lane.
+         Preparation the caller owns, shared with any other lane.
          */
         const prepared = prepareDocumentPair({
           sourceText: SOURCE_TWO_SECTIONS,
@@ -1213,7 +1213,7 @@ Meow meow meow meow.
         },);
 
         /**
-         * Repair driven from that preparation.
+         Repair driven from that preparation.
          */
         const fromPrepared = await repairPreparedDocument({
           client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
@@ -1223,7 +1223,7 @@ Meow meow meow meow.
         },);
 
         /**
-         * Repair driven from the two texts, which prepares internally.
+         Repair driven from the two texts, which prepares internally.
          */
         const fromTexts = await repairTranslation({
           client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
@@ -1247,7 +1247,7 @@ Meow meow meow meow.
         + 'filing complaints about a blank at full roster cost',
       fn: async () => {
         /**
-         * Preparation both lanes would share.
+         Preparation both lanes would share.
          */
         const prepared = prepareDocumentPair({
           sourceText: SOURCE_TWO_SECTIONS,
@@ -1255,14 +1255,14 @@ Meow meow meow meow.
         },);
 
         /**
-         * Index the appended anchor holds.
+         Index the appended anchor holds.
          */
         const anchorIndex = prepared.slices
           .length;
 
         /**
-         * Same preparation with one section the archive never translated,
-         * anchored at the end of the document.
+         Same preparation with one section the archive never translated,
+         anchored at the end of the document.
          */
         const withAnchor = {
           ...prepared,
@@ -1285,8 +1285,8 @@ Meow meow meow meow.
         };
 
         /**
-         * Exchanges each run made, so the anchor's cost is measured rather than
-         * assumed.
+         Exchanges each run made, so the anchor's cost is measured rather than
+         assumed.
          */
         const spent = {
           plain: 0,
@@ -1294,22 +1294,22 @@ Meow meow meow meow.
         };
 
         /**
-         * Client counting every exchange it serves into one of those tallies.
-         *
-         * @param key - which run this client serves
-         *
-         * @returns Counting client over the scripted one
-         *
-         * @example
-         * ```ts
-         * const client = countingClient({ key: 'plain', },);
-         * ```
+         Client counting every exchange it serves into one of those tallies.
+         
+         @param key - which run this client serves
+         
+         @returns Counting client over the scripted one
+         
+         @example
+         ```ts
+         const client = countingClient({ key: 'plain', },);
+         ```
          */
         function countingClient(
           { key, }: { readonly key: 'plain' | 'anchored'; },
         ): SyntheticClient {
           /**
-           * Scripted client this one delegates to.
+           Scripted client this one delegates to.
            */
           const inner = scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },);
           return {
@@ -1325,7 +1325,7 @@ Meow meow meow meow.
         }
 
         /**
-         * Repair over the preparation as it stands.
+         Repair over the preparation as it stands.
          */
         const plain = await repairPreparedDocument({
           client: countingClient({ key: 'plain', },),
@@ -1335,7 +1335,7 @@ Meow meow meow meow.
         },);
 
         /**
-         * Repair over the same preparation plus the anchor.
+         Repair over the same preparation plus the anchor.
          */
         const anchored = await repairPreparedDocument({
           client: countingClient({ key: 'anchored', },),
@@ -1366,8 +1366,8 @@ Meow meow meow meow.
         + 'a slice the editor was never shown',
       fn: async () => {
         /**
-         * Original whose first section carries a marker and whose last carries
-         * the note it points at.
+         Original whose first section carries a marker and whose last carries
+         the note it points at.
          */
         const sourceWithNote = `## 甲
 
@@ -1379,7 +1379,7 @@ Meow meow meow meow.
 `;
 
         /**
-         * Translation with the same footnote pair, split the same way.
+         Translation with the same footnote pair, split the same way.
          */
         const targetWithNote = `## Alpha
 
@@ -1391,8 +1391,8 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
 `;
 
         /**
-         * Issue whose quote CONTAINS the marker, so the envelope cut for it
-         * covers the marker and the editor's replacement drops it.
+         Issue whose quote CONTAINS the marker, so the envelope cut for it
+         covers the marker and the editor's replacement drops it.
          */
         const markerBearingIssue = {
           category: 'accuracy/mistranslation',
@@ -1403,7 +1403,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
         };
 
         /**
-         * Run whose only accepted repair would orphan the definition.
+         Run whose only accepted repair would orphan the definition.
          */
         const result = await repairTranslation({
           client: scriptedClient({ criticIssues: [markerBearingIssue,], },),
@@ -1444,17 +1444,17 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
         + 'that to the cache, where the next attempt reads it as a clean slice',
       fn: async () => {
         /**
-         * Critic calls attempted across the run.
+         Critic calls attempted across the run.
          */
         const calls = { critic: 0, };
 
         /**
-         * Run steering the client aborts inside the second slice.
+         Run steering the client aborts inside the second slice.
          */
         const controller = new AbortController();
 
         /**
-         * Slices that reached the cache before the abort.
+         Slices that reached the cache before the abort.
          */
         const store = new Map<string, string>();
         await expect(repairTranslation({
@@ -1493,12 +1493,12 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
         + 'rather than whichever torn-down exchange reports first',
       fn: async () => {
         /**
-         * Critic calls attempted across both slices.
+         Critic calls attempted across both slices.
          */
         const calls = { critic: 0, };
 
         /**
-         * Run steering the client aborts after both slices have entered accuracy work.
+         Run steering the client aborts after both slices have entered accuracy work.
          */
         const controller = new AbortController();
         await expect(repairTranslation({
@@ -1528,19 +1528,19 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
         + 'returns a document that reads as a finished run',
       fn: async () => {
         /**
-         * Critic calls attempted across the run, which this case never steers
-         * by count.
+         Critic calls attempted across the run, which this case never steers
+         by count.
          */
         const calls = { critic: 0, };
 
         /**
-         * Run steering the client aborts on the first rewrite request.
+         Run steering the client aborts on the first rewrite request.
          */
         const controller = new AbortController();
 
         /**
-         * Roster with the naturalness lane ON, since an off lane returns before
-         * spending anything and there would be no refinement to abort.
+         Roster with the naturalness lane ON, since an off lane returns before
+         spending anything and there would be no refinement to abort.
          */
         const refining: RepairModels = {
           ...MODELS,
@@ -1572,12 +1572,12 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
         + 'anything is missing nothing',
       fn: async () => {
         /**
-         * Serialized slice outcomes the first run persists, keyed by hash.
+         Serialized slice outcomes the first run persists, keyed by hash.
          */
         const store = new Map<string, string>();
 
         /**
-         * First run, which buys and persists every slice.
+         First run, which buys and persists every slice.
          */
         const first = await repairTranslation({
           client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
@@ -1600,7 +1600,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
         },);
 
         /**
-         * Resume map parsed from the persisted slices, as the driver does.
+         Resume map parsed from the persisted slices, as the driver does.
          */
         const resumed = new Map<string, ChunkRepairOutcome>(
           [...store.entries(),].map(([key, serialized,],) =>
@@ -1608,13 +1608,13 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
         );
 
         /**
-         * Caller that gave up before the second run started.
+         Caller that gave up before the second run started.
          */
         const spent = new AbortController();
         spent.abort(ENTRY_DEADLINE_FAILURE,);
 
         /**
-         * Second run, resuming everything under that spent deadline.
+         Second run, resuming everything under that spent deadline.
          */
         const second = await repairTranslation({
           client: {
@@ -1730,7 +1730,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           overlap,
         ): Promise<void> {
           /**
-           * Section written twice, so both slices ask one question.
+           Section written twice, so both slices ask one question.
            */
           const SECTION = `## 甲
 
@@ -1738,7 +1738,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
 `;
 
         /**
-         * Its archive wording, likewise written twice.
+         Its archive wording, likewise written twice.
          */
         const RENDERED = `## Alpha
 
@@ -1746,9 +1746,9 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
 `;
 
         /**
-         * Critic calls one slice of it costs, measured rather than assumed:
-         * the roster retries a lost voice, so the count per slice belongs to
-         * the gather rather than to the critic list length.
+         Critic calls one slice of it costs, measured rather than assumed:
+         the roster retries a lost voice, so the count per slice belongs to
+         the gather rather than to the critic list length.
          */
         const single = { critic: 0, };
         await repairTranslation({
@@ -1766,12 +1766,12 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
         },);
 
         /**
-         * Critic calls same section twice costs.
+         Critic calls same section twice costs.
          */
         const twin = { critic: 0, };
 
         /**
-         * Slices that reached the cache, which must stay empty.
+         Slices that reached the cache, which must stay empty.
          */
         const store = new Map<string, string>();
         const result = await repairTranslation({
@@ -1813,12 +1813,12 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
         + 'than re-examines',
       fn: async () => {
         /**
-         * Critic calls attempted across the run.
+         Critic calls attempted across the run.
          */
         const calls = { critic: 0, };
 
         /**
-         * Slices that reached the cache.
+         Slices that reached the cache.
          */
         const store = new Map<string, string>();
         const result = await repairTranslation({
@@ -1859,12 +1859,12 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
         + 'name the wrong slice in every issue record and replacement built from it',
       fn: async () => {
         /**
-         * Slices the first run persists.
+         Slices the first run persists.
          */
         const store = new Map<string, string>();
 
         /**
-         * What the first run settled on, which the resumed run must reproduce.
+         What the first run settled on, which the resumed run must reproduce.
          */
         const first = await repairTranslation({
           client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
@@ -1888,14 +1888,14 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
         expect(store.size,).toBeGreaterThan(0,);
 
         /**
-         * Same outcomes under the same keys, each carrying an index that names
-         * some other slice, which is what a record computed elsewhere looks
-         * like once the key stops carrying the index.
+         Same outcomes under the same keys, each carrying an index that names
+         some other slice, which is what a record computed elsewhere looks
+         like once the key stops carrying the index.
          */
         const misfiled = new Map(
           [...store.entries(),].map(function toMisfiled([key, serialized,],) {
             /**
-             * Outcome as the cache stored it.
+             Outcome as the cache stored it.
              */
             const outcome = JSON.parse(serialized,) as ChunkRepairOutcome;
             return [
@@ -1909,7 +1909,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
         );
 
         /**
-         * Run that resumes every slice from those records.
+         Run that resumes every slice from those records.
          */
         const resumedRun = await repairTranslation({
           client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
@@ -1995,10 +1995,10 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
         + 'reading of the artifact divides by',
       fn: async () => {
         /**
-         * Run whose critics all report the target is not a translation, and
-         * whose checkers then refuse to confirm the repair it bought. Both
-         * halves are needed: the votes are what this reads, and the refusal is
-         * what makes the settlement record them beside a `changed` of false.
+         Run whose critics all report the target is not a translation, and
+         whose checkers then refuse to confirm the repair it bought. Both
+         halves are needed: the votes are what this reads, and the refusal is
+         what makes the settlement record them beside a `changed` of false.
          */
         const result = await repairTranslation({
           client: scriptedClient({

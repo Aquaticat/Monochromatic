@@ -1,8 +1,8 @@
 /**
- * Tests for issue taxonomy guards and deterministic claim identity.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for issue taxonomy guards and deterministic claim identity.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -24,8 +24,8 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Reusable anchored span with invented content;
- * identity tests vary single fields against it.
+ Reusable anchored span with invented content;
+ identity tests vary single fields against it.
  */
 const BASE_SPAN: SpanAnchor = {
   side: 'target',
@@ -37,7 +37,7 @@ const BASE_SPAN: SpanAnchor = {
 };
 
 /**
- * Reusable atomic claim; identity tests vary single fields against it.
+ Reusable atomic claim; identity tests vary single fields against it.
  */
 const BASE_CLAIM: IssueClaim = {
   category: 'accuracy/omission',

@@ -20,31 +20,31 @@ import { foldCarriageReturns, } from './line-endings.ts';
 // its output. Re-measured through the shipped predicate on the forced aligner.
 
 /**
- * Blocks a slice needs before its shape means anything.
- *
- * Under this, a slice is too small to tell a stanza from a short paragraph.
+ Blocks a slice needs before its shape means anything.
+ 
+ Under this, a slice is too small to tell a stanza from a short paragraph.
  */
 const MIN_BLOCKS = 5;
 
 /**
- * Longest median block a line-structured slice may have.
- *
- * 30 rather than 20: `Toka_ls`'s verse has a median of 22, and its prose
- * chunks sit at 49 and 87, so the gap is wide and the threshold sits inside it.
+ Longest median block a line-structured slice may have.
+ 
+ 30 rather than 20: `Toka_ls`'s verse has a median of 22, and its prose
+ chunks sit at 49 and 87, so the gap is wide and the threshold sits inside it.
  */
 const MAX_MEDIAN_LENGTH = 30;
 
 /**
- * Reports whether a slice is line-structured.
- *
- * @param text - full text of one slice
- *
- * @returns True when each block reads as a unit rather than a paragraph
- *
- * @example
- * ```ts
- * const lineStructured = isLineStructured({ text: targetText, },);
- * ```
+ Reports whether a slice is line-structured.
+ 
+ @param text - full text of one slice
+ 
+ @returns True when each block reads as a unit rather than a paragraph
+ 
+ @example
+ ```ts
+ const lineStructured = isLineStructured({ text: targetText, },);
+ ```
  */
 export function isLineStructured(
   {
@@ -54,12 +54,12 @@ export function isLineStructured(
   },
 ): boolean {
   /**
-   * Blank-line-separated blocks carrying content.
-   *
-   * FOLDED FIRST, for a caller that read the text by some other route than
-   * the corpus read: a CRLF page carries no `\n\n` at all, reads as one
-   * block, fails the block floor and answers false, so no addendum, no
-   * inheritance and no line-count guard reach it.
+   Blank-line-separated blocks carrying content.
+   
+   FOLDED FIRST, for a caller that read the text by some other route than
+   the corpus read: a CRLF page carries no `\n\n` at all, reads as one
+   block, fails the block floor and answers false, so no addendum, no
+   inheritance and no line-count guard reach it.
    */
   const blocks = foldCarriageReturns({ text, },)
     .text
@@ -75,7 +75,7 @@ export function isLineStructured(
     return false;
 
   /**
-   * Block lengths in ascending order.
+   Block lengths in ascending order.
    */
   const lengths = blocks
     .map(function toLength(block,): number {

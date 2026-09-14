@@ -1,20 +1,20 @@
 /**
- * Tests for deriving what one slice would ship, across every decider.
- *
- * ONE CASE PER PATH THROUGH THE DECIDERS, because the whole point of this
- * reader is that no single field answers the question and every stage above a
- * lane may replace what it left. A reader that got any one branch wrong would
- * report wording no reader would ever see, which is exactly the failure the
- * `repairDisposition: 'shipped'` name produced before it.
- *
- * NO READING MAY CARRY AN EMPTY STRING AS WORDING. `standingTextFor` returns
- * `''` at a declined contest by design, so a reader that mirrored it would
- * delete every declined slice from any document assembled off these readings.
- * Both declines and the archive-silent case are pinned separately.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for deriving what one slice would ship, across every decider.
+ 
+ ONE CASE PER PATH THROUGH THE DECIDERS, because the whole point of this
+ reader is that no single field answers the question and every stage above a
+ lane may replace what it left. A reader that got any one branch wrong would
+ report wording no reader would ever see, which is exactly the failure the
+ `repairDisposition: 'shipped'` name produced before it.
+ 
+ NO READING MAY CARRY AN EMPTY STRING AS WORDING. `standingTextFor` returns
+ `''` at a declined contest by design, so a reader that mirrored it would
+ delete every declined slice from any document assembled off these readings.
+ Both declines and the archive-silent case are pinned separately.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -34,36 +34,36 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive's own English at the slice every case reads.
+ Archive's own English at the slice every case reads.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the window ledge.';
 
 /**
- * Repair lane's wording for it.
+ Repair lane's wording for it.
  */
 const REPAIR_NAP = 'The cat is asleep on the sill.';
 
 /**
- * Translate lane's wording for it.
+ Translate lane's wording for it.
  */
 const TRANSLATE_NAP = 'The cat naps on the windowsill.';
 
 /**
- * Third rendering's wording for it.
+ Third rendering's wording for it.
  */
 const CONSOLIDATED_NAP = 'The cat is napping on the windowsill.';
 
 /**
- * Builds one comparison row, defaulting to a slice where the lanes differ.
- *
- * @param over - fields this case replaces
- *
- * @returns Row as the parsed artifact carries it
- *
- * @example
- * ```ts
- * const row = rowWith({ incumbentKind: 'absent', },);
- * ```
+ Builds one comparison row, defaulting to a slice where the lanes differ.
+ 
+ @param over - fields this case replaces
+ 
+ @returns Row as the parsed artifact carries it
+ 
+ @example
+ ```ts
+ const row = rowWith({ incumbentKind: 'absent', },);
+ ```
  */
 function rowWith(over: Record<string, unknown> = {},): Record<string, unknown> {
   return {
@@ -92,16 +92,16 @@ function rowWith(over: Record<string, unknown> = {},): Record<string, unknown> {
 }
 
 /**
- * Builds one consolidation slice under a terminal that replaced nothing.
- *
- * @param terminal - how the slice left the stage
- *
- * @returns Slice as the parsed artifact carries it
- *
- * @example
- * ```ts
- * const slice = keptStanding({ terminal: 'gate-kept-standing', },);
- * ```
+ Builds one consolidation slice under a terminal that replaced nothing.
+ 
+ @param terminal - how the slice left the stage
+ 
+ @returns Slice as the parsed artifact carries it
+ 
+ @example
+ ```ts
+ const slice = keptStanding({ terminal: 'gate-kept-standing', },);
+ ```
  */
 function keptStanding(
   { terminal, }: { readonly terminal: string; },
@@ -118,16 +118,16 @@ function keptStanding(
 }
 
 /**
- * Builds one contested slice under a verdict.
- *
- * @param verdict - what the roster settled
- *
- * @returns Slice as the parsed artifact carries it
- *
- * @example
- * ```ts
- * const slice = contestedWith({ verdict: { kind: 'settled-neither', }, },);
- * ```
+ Builds one contested slice under a verdict.
+ 
+ @param verdict - what the roster settled
+ 
+ @returns Slice as the parsed artifact carries it
+ 
+ @example
+ ```ts
+ const slice = contestedWith({ verdict: { kind: 'settled-neither', }, },);
+ ```
  */
 function contestedWith(
   { verdict, }: { readonly verdict: Record<string, unknown>; },
@@ -141,20 +141,20 @@ function contestedWith(
 }
 
 /**
- * Builds the three fields a reading is derived from.
- *
- * @param row - comparison row to read, defaulting to differing lanes
- *
- * @param consolidation - what the third rendering says, defaulting to unasked
- *
- * @param laneSelection - which lane ships, defaulting to unasked
- *
- * @returns Source the reader accepts
- *
- * @example
- * ```ts
- * const source = sourceWith({ row: rowWith(), },);
- * ```
+ Builds the three fields a reading is derived from.
+ 
+ @param row - comparison row to read, defaulting to differing lanes
+ 
+ @param consolidation - what the third rendering says, defaulting to unasked
+ 
+ @param laneSelection - which lane ships, defaulting to unasked
+ 
+ @returns Source the reader accepts
+ 
+ @example
+ ```ts
+ const source = sourceWith({ row: rowWith(), },);
+ ```
  */
 function sourceWith(
   {
@@ -175,16 +175,16 @@ function sourceWith(
 }
 
 /**
- * Reads the first slice of a built source.
- *
- * @param source - three fields to read
- *
- * @returns What that slice would contribute
- *
- * @example
- * ```ts
- * const reading = firstReadingOf({ source, },);
- * ```
+ Reads the first slice of a built source.
+ 
+ @param source - three fields to read
+ 
+ @returns What that slice would contribute
+ 
+ @example
+ ```ts
+ const reading = firstReadingOf({ source, },);
+ ```
  */
 function firstReadingOf(
   { source, }: { readonly source: WouldShipSource; },
@@ -204,7 +204,7 @@ await describe({
         + '(the twenty-second hakureico pass of 2026-09-09)',
       fn: async () => {
         /**
-         * Source whose page assembly trimmed slice 0.
+         Source whose page assembly trimmed slice 0.
          */
         const trimmedSource = {
           ...sourceWith(),
@@ -222,7 +222,7 @@ await describe({
         },);
 
         /**
-         * Source whose page assembly withdrew slice 0.
+         Source whose page assembly withdrew slice 0.
          */
         const withdrawnSource = {
           ...sourceWith(),
@@ -238,7 +238,7 @@ await describe({
     name: 'TAKES FINAL BODY POLISH before consolidation, contest, or archive wording',
     fn: async () => {
       /**
-       * Final idiomatic wording approved by polish gate.
+       Final idiomatic wording approved by polish gate.
        */
       const polished = 'The cat maintained a positive outlook on life.';
       const reading = firstReadingOf({
@@ -612,7 +612,7 @@ await describe({
       + 'that artifact, so reaching it means the record contradicts itself',
     fn: async () => {
       /**
-       * What unanswered raised, read for its class as well as its wording.
+       What unanswered raised, read for its class as well as its wording.
        */
       const refusalOfUnanswered = caught(function unanswered() {
         firstReadingOf({
@@ -668,12 +668,12 @@ await describe({
       expect(slices.length,).toBe(2,);
 
       /**
-       * Reading of the contested slice, first in comparison-row order.
+       Reading of the contested slice, first in comparison-row order.
        */
       const contestedSlice = nonNullishOrThrow(slices[0],);
 
       /**
-       * Reading of the slice both lanes agreed on, second in that order.
+       Reading of the slice both lanes agreed on, second in that order.
        */
       const agreedSlice = nonNullishOrThrow(slices[1],);
 
@@ -730,12 +730,12 @@ await describe({
       const slices = wouldShipTextPerSlice({ artifact: source, },);
 
       /**
-       * Wording the translate lane won, its apostrophe curled to the page's.
+       Wording the translate lane won, its apostrophe curled to the page's.
        */
       const contestedSlice = nonNullishOrThrow(slices[0],);
 
       /**
-       * Wording both lanes agreed on, curled the same way.
+       Wording both lanes agreed on, curled the same way.
        */
       const agreedSlice = nonNullishOrThrow(slices[1],);
 

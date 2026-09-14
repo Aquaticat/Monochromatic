@@ -49,10 +49,10 @@ import { refusalText, } from './refusal-text.ts';
 // carrying them.
 
 /**
- * How the OCR reader is invoked, including the language data it needs.
- *
- * BOTH SCRIPTS, since the corpus is Chinese and its pictures carry Latin
- * handles, dates and place names inside otherwise Chinese text.
+ How the OCR reader is invoked, including the language data it needs.
+ 
+ BOTH SCRIPTS, since the corpus is Chinese and its pictures carry Latin
+ handles, dates and place names inside otherwise Chinese text.
  */
 const TESSERACT_LANGUAGES = 'chi_sim+eng';
 
@@ -80,94 +80,94 @@ const TESSERACT_LANGUAGES = 'chi_sim+eng';
 // that may agree with each other.
 
 /**
- * Runs a command-line tool and waits for it, since every reader this module
- * reaches for is a program rather than a library.
+ Runs a command-line tool and waits for it, since every reader this module
+ reaches for is a program rather than a library.
  */
 // oxlint-disable-next-line typescript/strict-void-return -- promisify deliberately ignores Node execFile's ChildProcess return while adapting its callback
 const execFileAsync = promisify(execFile,);
 
 /**
- * What reading a picture without a model produced.
- *
- * @example
- * ```ts
- * const reading: OcrReading = { kind: 'no-text', characters: 0, };
- * ```
+ What reading a picture without a model produced.
+ 
+ @example
+ ```ts
+ const reading: OcrReading = { kind: 'no-text', characters: 0, };
+ ```
  */
 export type OcrReading = {
   /**
-   * Text was found and is long enough to be a transcription.
+   Text was found and is long enough to be a transcription.
    */
   readonly kind: 'read';
 
   /**
-   * What the picture says, as the OCR read it.
+   What the picture says, as the OCR read it.
    */
   readonly text: string;
 } | {
   /**
-   * The picture carries nothing worth transcribing, which for two thirds of
-   * this corpus is the true answer rather than a failure.
+   The picture carries nothing worth transcribing, which for two thirds of
+   this corpus is the true answer rather than a failure.
    */
   readonly kind: 'no-text';
 
   /**
-   * How much the OCR did return, so a run can tell a clean nothing from a few
-   * characters of noise below the line.
+   How much the OCR did return, so a run can tell a clean nothing from a few
+   characters of noise below the line.
    */
   readonly characters: number;
 } | {
   /**
-   * The reading could not be attempted.
+   The reading could not be attempted.
    */
   readonly kind: 'unavailable';
 
   /**
-   * Which step failed, so a missing tool is never mistaken for an empty
-   * picture.
+   Which step failed, so a missing tool is never mistaken for an empty
+   picture.
    */
   readonly reason: 'undecodable' | 'ocr-tool-missing' | 'ocr-failed';
 };
 
 /**
- * Directory that removes itself, so no cleanup depends on a `finally`.
- *
- * @example
- * ```ts
- * await using scratch = await scratchDirectory();
- * ```
+ Directory that removes itself, so no cleanup depends on a `finally`.
+ 
+ @example
+ ```ts
+ await using scratch = await scratchDirectory();
+ ```
  */
 type ScratchDirectory = {
   /**
-   * Where files may be written.
+   Where files may be written.
    */
   readonly path: string;
 
   /**
-   * Removes it and everything under it.
+   Removes it and everything under it.
    */
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
- * Makes a private directory that removes itself when it leaves scope.
- *
- * THROWAWAY BY CONSTRUCTION. Every intermediate this module writes is a decoded
- * copy of somebody's photograph, so it lives under the system temporary
- * directory for the length of one reading and no longer.
- *
- * @returns Directory and its disposer
- *
- * @throws Whatever `mkdtemp` raises when a temporary directory cannot be made
- *
- * @example
- * ```ts
- * await using scratch = await scratchDirectory();
- * ```
+ Makes a private directory that removes itself when it leaves scope.
+ 
+ THROWAWAY BY CONSTRUCTION. Every intermediate this module writes is a decoded
+ copy of somebody's photograph, so it lives under the system temporary
+ directory for the length of one reading and no longer.
+ 
+ @returns Directory and its disposer
+ 
+ @throws Whatever `mkdtemp` raises when a temporary directory cannot be made
+ 
+ @example
+ ```ts
+ await using scratch = await scratchDirectory();
+ ```
  */
 async function scratchDirectory(): Promise<ScratchDirectory> {
   /**
-   * Freshly made directory nothing else knows about.
+   Freshly made directory nothing else knows about.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -189,24 +189,24 @@ async function scratchDirectory(): Promise<ScratchDirectory> {
 }
 
 /**
- * Counts what is left of a text once whitespace is dropped.
- *
- * A LINEAR SCAN rather than a pattern, per `RG1`: the rule is "characters that
- * are not whitespace", which a scan states directly in one pass and cannot
- * backtrack.
- *
- * @param text - what OCR returned
- *
- * @returns How many non-whitespace characters it holds
- *
- * @example
- * ```ts
- * const count = solidCharacters({ text: 'a b', },);
- * ```
+ Counts what is left of a text once whitespace is dropped.
+ 
+ A LINEAR SCAN rather than a pattern, per `RG1`: the rule is "characters that
+ are not whitespace", which a scan states directly in one pass and cannot
+ backtrack.
+ 
+ @param text - what OCR returned
+ 
+ @returns How many non-whitespace characters it holds
+ 
+ @example
+ ```ts
+ const count = solidCharacters({ text: 'a b', },);
+ ```
  */
 export function solidCharacters({ text, }: { readonly text: string; },): number {
   /**
-   * Characters counted so far.
+   Characters counted so far.
    */
   let count = 0;
 
@@ -217,26 +217,26 @@ export function solidCharacters({ text, }: { readonly text: string; },): number 
 }
 
 /**
- * Decodes a picture to PNG, which is what the OCR reader accepts.
- *
- * `dwebp` FIRST AND `magick` SECOND, which is the opposite of what it looks
- * like it should be. ImageMagick on this machine has no working webp reader and
- * fails outright on the format 187 of 191 corpus assets use, while `dwebp`
- * handles exactly that format. So the specific tool leads and the general one
- * covers the rest.
- *
- * @param source - picture as written to scratch
- *
- * @param png - where the decoded copy should land
- *
- * @param l - logger the two decoder failures are recorded on
- *
- * @returns Whether either decoder produced one
- *
- * @example
- * ```ts
- * const decoded = await decodeToPng({ source, png, l, },);
- * ```
+ Decodes a picture to PNG, which is what the OCR reader accepts.
+ 
+ `dwebp` FIRST AND `magick` SECOND, which is the opposite of what it looks
+ like it should be. ImageMagick on this machine has no working webp reader and
+ fails outright on the format 187 of 191 corpus assets use, while `dwebp`
+ handles exactly that format. So the specific tool leads and the general one
+ covers the rest.
+ 
+ @param source - picture as written to scratch
+ 
+ @param png - where the decoded copy should land
+ 
+ @param l - logger the two decoder failures are recorded on
+ 
+ @returns Whether either decoder produced one
+ 
+ @example
+ ```ts
+ const decoded = await decodeToPng({ source, png, l, },);
+ ```
  */
 async function decodeToPng(
   {
@@ -284,24 +284,24 @@ async function decodeToPng(
 }
 
 /**
- * Reads a picture with the deterministic OCR reader.
- *
- * @param bytes - picture as gathered from the corpus
- *
- * @param assetName - its file name, kept so the scratch copy carries the
- * extension a decoder may want
- *
- * @param l - lane logger
- *
- * @returns What it read, that it read nothing, or why it could not try
- *
- * @throws Whatever `mkdtemp` raises when scratch cannot be made, which is a
- * broken machine rather than an unreadable picture
- *
- * @example
- * ```ts
- * const reading = await readImageWithOcr({ bytes, assetName: 'letter.webp', l, },);
- * ```
+ Reads a picture with the deterministic OCR reader.
+ 
+ @param bytes - picture as gathered from the corpus
+ 
+ @param assetName - its file name, kept so the scratch copy carries the
+ extension a decoder may want
+ 
+ @param l - lane logger
+ 
+ @returns What it read, that it read nothing, or why it could not try
+ 
+ @throws Whatever `mkdtemp` raises when scratch cannot be made, which is a
+ broken machine rather than an unreadable picture
+ 
+ @example
+ ```ts
+ const reading = await readImageWithOcr({ bytes, assetName: 'letter.webp', l, },);
+ ```
  */
 export async function readImageWithOcr(
   {
@@ -315,7 +315,7 @@ export async function readImageWithOcr(
   },
 ): Promise<OcrReading> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const ol = tagged({
     tag: readImageWithOcr.name,
@@ -323,13 +323,13 @@ export async function readImageWithOcr(
   },);
 
   /**
-   * Directory every intermediate lands in, removed when this returns.
+   Directory every intermediate lands in, removed when this returns.
    */
   await using scratch = await scratchDirectory();
 
   /**
-   * Picture written where the command-line tools can reach it, under a fixed
-   * name so an asset called `../../etc/passwd` cannot direct a write anywhere.
+   Picture written where the command-line tools can reach it, under a fixed
+   name so an asset called `../../etc/passwd` cannot direct a write anywhere.
    */
   const source = join(
     scratch.path,
@@ -341,7 +341,7 @@ export async function readImageWithOcr(
   );
 
   /**
-   * Decoded copy the OCR reader accepts.
+   Decoded copy the OCR reader accepts.
    */
   const png = join(
     scratch.path,
@@ -360,7 +360,7 @@ export async function readImageWithOcr(
   }
 
   /**
-   * Stem the OCR reader appends `.txt` to.
+   Stem the OCR reader appends `.txt` to.
    */
   const stem = join(
     scratch.path,
@@ -379,8 +379,8 @@ export async function readImageWithOcr(
   }
   catch (error) {
     /**
-     * Whether the tool is absent rather than unhappy, which are different
-     * problems for whoever reads the run.
+     Whether the tool is absent rather than unhappy, which are different
+     problems for whoever reads the run.
      */
     const missing = String(error,)
       .includes('ENOENT',);
@@ -392,7 +392,7 @@ export async function readImageWithOcr(
   }
 
   /**
-   * What it transcribed, whitespace and all.
+   What it transcribed, whitespace and all.
    */
   const text = await readFile(
     `${stem}.txt`,
@@ -400,7 +400,7 @@ export async function readImageWithOcr(
   );
 
   /**
-   * How much of that is not whitespace, which is what the line is drawn on.
+   How much of that is not whitespace, which is what the line is drawn on.
    */
   const characters = solidCharacters({ text, },);
   if (characters < MIN_READING_CHARS) {

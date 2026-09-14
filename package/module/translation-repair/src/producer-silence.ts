@@ -32,24 +32,24 @@ import type { RosterModelId, } from './roster-id.ts';
 // refused rather than reported.
 
 /**
- * What a seat knows about which models answered it at all.
- *
- * `recorded` carries every model heard with a usable answer at the seat,
- * whether or not the answer proposed anything; `unrecorded` says the seat does
- * not carry that list out, so silence there is indistinguishable from an
- * answer dropped before judging.
- *
- * @example
- * ```ts
- * const answered: SeatAnswers = { kind: 'recorded', modelIds: heard, };
- * ```
+ What a seat knows about which models answered it at all.
+ 
+ `recorded` carries every model heard with a usable answer at the seat,
+ whether or not the answer proposed anything; `unrecorded` says the seat does
+ not carry that list out, so silence there is indistinguishable from an
+ answer dropped before judging.
+ 
+ @example
+ ```ts
+ const answered: SeatAnswers = { kind: 'recorded', modelIds: heard, };
+ ```
  */
 export type SeatAnswers =
   | {
     readonly kind: 'recorded';
 
     /**
-     * Models heard with a usable answer, repeats allowed.
+     Models heard with a usable answer, repeats allowed.
      */
     readonly modelIds: readonly RosterModelId[];
   }
@@ -58,69 +58,69 @@ export type SeatAnswers =
   };
 
 /**
- * Roster models a standing table does and does not describe.
- *
- * THE FOUR STATES ARE DISJOINT AND COVER THE SEATED ROSTER, so a reader can
- * add the lengths and check the total against the seats a run filled.
- * `answeredUnslated` is empty whenever answers were not recorded, and then
- * `neverWrote` means only that no candidate reached a slate.
- *
- * @example
- * ```ts
- * const { judged, wroteUnjudged, answeredUnslated, neverWrote, } = readStandingCoverage({
- *   roster,
- *   standings,
- *   produced,
- *   answered,
- * },);
- * ```
+ Roster models a standing table does and does not describe.
+ 
+ THE FOUR STATES ARE DISJOINT AND COVER THE SEATED ROSTER, so a reader can
+ add the lengths and check the total against the seats a run filled.
+ `answeredUnslated` is empty whenever answers were not recorded, and then
+ `neverWrote` means only that no candidate reached a slate.
+ 
+ @example
+ ```ts
+ const { judged, wroteUnjudged, answeredUnslated, neverWrote, } = readStandingCoverage({
+   roster,
+   standings,
+   produced,
+   answered,
+ },);
+ ```
  */
 export type StandingCoverage = {
   /**
-   * Models the standing table carries a row for.
+   Models the standing table carries a row for.
    */
   readonly judged: readonly RosterModelId[];
 
   /**
-   * Models that produced text no disinterested judge ever voted on.
+   Models that produced text no disinterested judge ever voted on.
    */
   readonly wroteUnjudged: readonly RosterModelId[];
 
   /**
-   * Models heard with a usable answer, none of which became a candidate.
+   Models heard with a usable answer, none of which became a candidate.
    */
   readonly answeredUnslated: readonly RosterModelId[];
 
   /**
-   * Models no candidate of which reached any slate and, where answers were
-   * recorded, no usable answer of which was heard.
+   Models no candidate of which reached any slate and, where answers were
+   recorded, no usable answer of which was heard.
    */
   readonly neverWrote: readonly RosterModelId[];
 
   /**
-   * Whether the seat recorded who answered, which decides what `neverWrote`
-   * can be read as.
+   Whether the seat recorded who answered, which decides what `neverWrote`
+   can be read as.
    */
   readonly answersRecorded: boolean;
 };
 
 /**
- * Raised when a standing, a slate or an answer names a model the run never
- * seated.
- *
- * @example
- * ```ts
- * throw new UnseatedStandingError({ modelIds: ['minimax-m3',], },);
- * ```
+ Raised when a standing, a slate or an answer names a model the run never
+ seated.
+ 
+ @example
+ ```ts
+ throw new UnseatedStandingError({ modelIds: ['minimax-m3',], },);
+ ```
  */
 export class UnseatedStandingError extends Error {
   /**
-   * Declares this message safe to forward: it names model ids.
+   Declares this message safe to forward: it names model ids.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * @param modelIds - models named by the evidence and absent from the roster
+   @param modelIds - models named by the evidence and absent from the roster
    */
   public constructor(
     { modelIds, }: { readonly modelIds: readonly RosterModelId[]; },
@@ -134,28 +134,28 @@ export class UnseatedStandingError extends Error {
 }
 
 /**
- * Splits a seated roster by what the standing table can say about each model.
- *
- * @param roster - seats this run filled
- *
- * @param standings - what the ballot tally produced
- *
- * @param produced - models known to have written a candidate, judged or not;
- * a caller that cannot tell passes what it can see
- *
- * @param answered - models heard with a usable answer at this seat, or a
- * statement that the seat does not record them
- *
- * @returns Seated roster split four ways
- *
- * @throws {@link UnseatedStandingError} when a standing, a produced model or an
- * answering model was never seated, since coverage of one roster cannot be
- * read off another
- *
- * @example
- * ```ts
- * const coverage = readStandingCoverage({ roster: RUN_ROSTER, standings, produced, answered, },);
- * ```
+ Splits a seated roster by what the standing table can say about each model.
+ 
+ @param roster - seats this run filled
+ 
+ @param standings - what the ballot tally produced
+ 
+ @param produced - models known to have written a candidate, judged or not;
+ a caller that cannot tell passes what it can see
+ 
+ @param answered - models heard with a usable answer at this seat, or a
+ statement that the seat does not record them
+ 
+ @returns Seated roster split four ways
+ 
+ @throws {@link UnseatedStandingError} when a standing, a produced model or an
+ answering model was never seated, since coverage of one roster cannot be
+ read off another
+ 
+ @example
+ ```ts
+ const coverage = readStandingCoverage({ roster: RUN_ROSTER, standings, produced, answered, },);
+ ```
  */
 export function readStandingCoverage(
   {
@@ -171,29 +171,29 @@ export function readStandingCoverage(
   },
 ): StandingCoverage {
   /**
-   * Seats this run filled, for membership tests.
+   Seats this run filled, for membership tests.
    */
   const seated = new Set(roster,);
 
   /**
-   * Models the standing table carries a row for.
+   Models the standing table carries a row for.
    */
   const judged = new Set(standings.map(function toModelId(standing,): RosterModelId {
     return standing.modelId;
   },),);
 
   /**
-   * Models known to have written something, whether or not it was judged.
+   Models known to have written something, whether or not it was judged.
    */
   const wrote = new Set(produced,);
 
   /**
-   * Models heard with a usable answer, empty where the seat records none.
+   Models heard with a usable answer, empty where the seat records none.
    */
   const heard = new Set((answered.kind === 'recorded') ? answered.modelIds : [],);
 
   /**
-   * Models the evidence names that no seat was filled with.
+   Models the evidence names that no seat was filled with.
    */
   const unseated = [
     ...judged,
@@ -231,22 +231,22 @@ export function readStandingCoverage(
 }
 
 /**
- * Words for the silent seats, chosen by whether the seat knows who answered.
- *
- * @param silent - silent models, rendered for the line
- *
- * @param described - seats the table describes
- *
- * @param seats - seats the coverage was read over
- *
- * @param answersRecorded - whether silence here means no usable answer
- *
- * @returns One report line
- *
- * @example
- * ```ts
- * const line = silentSeatLine({ silent, described: 1, seats: 4, answersRecorded: true, },);
- * ```
+ Words for the silent seats, chosen by whether the seat knows who answered.
+ 
+ @param silent - silent models, rendered for the line
+ 
+ @param described - seats the table describes
+ 
+ @param seats - seats the coverage was read over
+ 
+ @param answersRecorded - whether silence here means no usable answer
+ 
+ @returns One report line
+ 
+ @example
+ ```ts
+ const line = silentSeatLine({ silent, described: 1, seats: 4, answersRecorded: true, },);
+ ```
  */
 function silentSeatLine(
   {
@@ -262,12 +262,12 @@ function silentSeatLine(
   },
 ): string {
   /**
-   * Fraction of the roster the table describes, shared by both wordings.
+   Fraction of the roster the table describes, shared by both wordings.
    */
   const covers = `covers ${String(described,)} of ${String(seats,)} seats`;
 
   /**
-   * Where the counts are, shared by both wordings and pinned by a test.
+   Where the counts are, shared by both wordings and pinned by a test.
    */
   const pointer = 'the SEAT lines at the end of this command say how often each seat was asked '
     + 'and how many answers were usable, and the run log names the failure. Re-run these '
@@ -284,55 +284,55 @@ function silentSeatLine(
 }
 
 /**
- * Renders what the standing table leaves out, one line per reason.
- *
- * PRINTS NOTHING WHERE THERE IS NOTHING TO SAY, so a run with the whole roster
- * on the table carries no note claiming completeness it would then have to
- * keep true.
- *
- * @param coverage - seated roster split four ways
- *
- * @returns Report lines, empty where every seated model was judged
- *
- * @example
- * ```ts
- * for (const line of coverageGapLines({ coverage, },))
- *   console.log(`  ${line}`,);
- * ```
+ Renders what the standing table leaves out, one line per reason.
+ 
+ PRINTS NOTHING WHERE THERE IS NOTHING TO SAY, so a run with the whole roster
+ on the table carries no note claiming completeness it would then have to
+ keep true.
+ 
+ @param coverage - seated roster split four ways
+ 
+ @returns Report lines, empty where every seated model was judged
+ 
+ @example
+ ```ts
+ for (const line of coverageGapLines({ coverage, },))
+   console.log(`  ${line}`,);
+ ```
  */
 export function coverageGapLines(
   { coverage, }: { readonly coverage: StandingCoverage; },
 ): readonly string[] {
   /**
-   * Models that wrote and drew no ballot, rendered for the line.
+   Models that wrote and drew no ballot, rendered for the line.
    */
   const unvoted = coverage
     .wroteUnjudged
     .join(', ',);
 
   /**
-   * Models heard and never slated, rendered the same way.
+   Models heard and never slated, rendered the same way.
    */
   const unslated = coverage
     .answeredUnslated
     .join(', ',);
 
   /**
-   * Models that answered nothing, rendered the same way.
+   Models that answered nothing, rendered the same way.
    */
   const silent = coverage
     .neverWrote
     .join(', ',);
 
   /**
-   * Seats the table describes, which is the numerator the silent line needs.
+   Seats the table describes, which is the numerator the silent line needs.
    */
   const described = coverage
     .judged
     .length;
 
   /**
-   * Seats the coverage was read over, summed back from its four parts.
+   Seats the coverage was read over, summed back from its four parts.
    */
   const seats = described
     + coverage

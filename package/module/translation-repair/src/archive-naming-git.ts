@@ -13,47 +13,47 @@ import type { CorpusPin, } from './corpus-source.ts';
 // No shell, replacement objects, text conversion, external diff or author-data logs.
 
 /**
- * Archive history acquisition logger.
+ Archive history acquisition logger.
  */
 const l = tagged({ tag: 'archive-naming-git', },);
 /**
- * Byte-preserving capture; line-oriented subprocess helpers lose final newlines.
+ Byte-preserving capture; line-oriented subprocess helpers lose final newlines.
  */
 // oxlint-disable-next-line typescript/strict-void-return -- promisify ignores execFile's ChildProcess return while adapting its callback
 const execFileAsync = promisify(execFile,);
 /**
- * Binary units used by the bounded subprocess buffer.
+ Binary units used by the bounded subprocess buffer.
  */
 const KIBI = 1_024;
 /**
- * Maximum metadata output accepted from one history command.
+ Maximum metadata output accepted from one history command.
  */
 const MAX_METADATA_MEBIBYTES = 16;
 /**
- * Byte ceiling; exceeding it is a read failure rather than truncated evidence.
+ Byte ceiling; exceeding it is a read failure rather than truncated evidence.
  */
 const MAX_METADATA_BYTES = MAX_METADATA_MEBIBYTES * KIBI
   * KIBI;
 
 /**
- * Captures one literal Git history command without changing repository state.
- *
- * @param pin - immutable repository and commit context
- *
- * @param relPath - archive named in any failure
- *
- * @param args - known read-only argument vector
- *
- * @param signal - cancellation shared with entry preparation
- *
- * @returns Complete raw stdout; parsers normalize document lines using physical EOF evidence
- *
- * @throws {@link ArchiveNamingEvidenceError} when capture fails or exceeds its bound
- *
- * @example
- * ```ts
- * const shallow = await archiveGitOutput({ pin, relPath, args: ['rev-parse', '--is-shallow-repository'] });
- * ```
+ Captures one literal Git history command without changing repository state.
+ 
+ @param pin - immutable repository and commit context
+ 
+ @param relPath - archive named in any failure
+ 
+ @param args - known read-only argument vector
+ 
+ @param signal - cancellation shared with entry preparation
+ 
+ @returns Complete raw stdout; parsers normalize document lines using physical EOF evidence
+ 
+ @throws {@link ArchiveNamingEvidenceError} when capture fails or exceeds its bound
+ 
+ @example
+ ```ts
+ const shallow = await archiveGitOutput({ pin, relPath, args: ['rev-parse', '--is-shallow-repository'] });
+ ```
  */
 export async function archiveGitOutput({
   pin,
@@ -67,7 +67,7 @@ export async function archiveGitOutput({
   readonly signal?: AbortSignal;
 },): Promise<string> {
   /**
-   * Function-tagged logger records operations, never captured history metadata.
+   Function-tagged logger records operations, never captured history metadata.
    */
   const rl = tagged({
     tag: archiveGitOutput.name,
@@ -75,13 +75,13 @@ export async function archiveGitOutput({
   },);
   signal?.throwIfAborted();
   /**
-   * Native Git rather than a command-policy shim.
+   Native Git rather than a command-policy shim.
    */
   const gitPath = pin.gitPath ?? await resolveGit();
   rl.debug(`reading ${args[0] ?? 'unknown operation'} for ${relPath}`,);
   try {
     /**
-     * Complete bounded command output.
+     Complete bounded command output.
      */
     const result = await execFileAsync(
       gitPath,

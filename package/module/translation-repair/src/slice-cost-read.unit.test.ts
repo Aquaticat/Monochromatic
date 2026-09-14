@@ -1,18 +1,18 @@
 /**
- * Tests for reading back what a slice cost.
- *
- * THE CASE THAT DECIDES THIS PAIR is the round trip. The writer and the reader
- * are the only two things that know this line's shape, and they live in separate
- * files, so a reformatted message would leave a pass logging costs nobody can
- * read while every other test still passed.
- *
- * The refusals matter for a second reason: a log is written WHILE a pass runs,
- * so its last line can be half-written. A reader that skipped malformed lines in
- * silence would report a smaller corpus without ever saying it had.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading back what a slice cost.
+ 
+ THE CASE THAT DECIDES THIS PAIR is the round trip. The writer and the reader
+ are the only two things that know this line's shape, and they live in separate
+ files, so a reformatted message would leave a pass logging costs nobody can
+ read while every other test still passed.
+ 
+ The refusals matter for a second reason: a log is written WHILE a pass runs,
+ so its last line can be half-written. A reader that skipped malformed lines in
+ silence would report a smaller corpus without ever saying it had.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
@@ -29,21 +29,21 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Collects what a lane logged, so a written line can be read back.
- *
- * @param lines - array every message is appended to
- *
- * @returns Logger writing only to that array
- *
- * @example
- * ```ts
- * const said: string[] = [];
- * const l = capturingLogger({ lines: said, },);
- * ```
+ Collects what a lane logged, so a written line can be read back.
+ 
+ @param lines - array every message is appended to
+ 
+ @returns Logger writing only to that array
+ 
+ @example
+ ```ts
+ const said: string[] = [];
+ const l = capturingLogger({ lines: said, },);
+ ```
  */
 function capturingLogger({ lines, }: { readonly lines: string[]; },): Logger {
   /**
-   * Appends one message, whatever level asked.
+   Appends one message, whatever level asked.
    */
   function keep(message: string,): void {
     lines.push(message,);
@@ -61,12 +61,12 @@ function capturingLogger({ lines, }: { readonly lines: string[]; },): Logger {
 }
 
 /**
- * Run that has not been stopped, which is every ordinary slice's condition.
+ Run that has not been stopped, which is every ordinary slice's condition.
  */
 const LIVE_RUN = new AbortController();
 
 /**
- * Log holding one cost line per lane, among lines about other things.
+ Log holding one cost line per lane, among lines about other things.
  */
 const TWO_LANE_LOG = [
   '[info] [2026-08-17T01:17:12.580Z] [Mittens] [repairPreparedDocument] critic stage: 6/6 heard',
@@ -184,8 +184,8 @@ await describe({
         const said: string[] = [];
 
         /**
-         * Loop that leaves its body early for every slice, as a lane does for a
-         * slice it has nothing to do with.
+         Loop that leaves its body early for every slice, as a lane does for a
+         slice it has nothing to do with.
          */
         for (const sliceIndex of [
           0,
@@ -313,13 +313,13 @@ await describe({
         const said: string[] = [];
 
         /**
-         * Run stopped while this slice was in flight, as an entry deadline does.
+         Run stopped while this slice was in flight, as an entry deadline does.
          */
         const stopped = new AbortController();
 
         /**
-         * Thrown out of the slice body, so the measurement leaves scope the way
-         * a real abort takes it: by exception, naming no exit.
+         Thrown out of the slice body, so the measurement leaves scope the way
+         a real abort takes it: by exception, naming no exit.
          */
         const cut = new Error('entry deadline',);
         try {
@@ -397,7 +397,7 @@ await describe({
         const said: string[] = [];
 
         /**
-         * Run stopped after this slice had already answered from cache.
+         Run stopped after this slice had already answered from cache.
          */
         const stopped = new AbortController();
         {

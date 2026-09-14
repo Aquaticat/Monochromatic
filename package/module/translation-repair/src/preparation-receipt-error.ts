@@ -1,17 +1,17 @@
 //region Preparation receipt and occurrence refusals
 
 /**
- * Closed failures of receipt binding or current occurrence reconstruction.
- *
- * @example
- * ```ts
- * const kind: PreparationReceiptFailure = 'question';
- * ```
+ Closed failures of receipt binding or current occurrence reconstruction.
+ 
+ @example
+ ```ts
+ const kind: PreparationReceiptFailure = 'question';
+ ```
  */
 export type PreparationReceiptFailure = 'state' | 'binding' | 'question' | 'outcomes' | 'documents' | 'parent';
 
 /**
- * Fixed messages never quote receipt values, document text or model responses.
+ Fixed messages never quote receipt values, document text or model responses.
  */
 const RECEIPT_MESSAGES: Readonly<Record<PreparationReceiptFailure, string>> = {
   state: 'Preparation receipt is not a complete supported question record. Retain incomplete evidence for audit, but do not reuse it or promote a historical cache record.',
@@ -23,32 +23,32 @@ const RECEIPT_MESSAGES: Readonly<Record<PreparationReceiptFailure, string>> = {
 };
 
 /**
- * Privacy-safe refusal that prevents receipt data from choosing its own authority.
- *
- * @example
- * ```ts
- * throw new PreparationReceiptError({ kind: 'binding', });
- * ```
+ Privacy-safe refusal that prevents receipt data from choosing its own authority.
+ 
+ @example
+ ```ts
+ throw new PreparationReceiptError({ kind: 'binding', });
+ ```
  */
 export class PreparationReceiptError extends Error {
   /**
-   * Messages consist only of authored operation and recovery guidance.
+   Messages consist only of authored operation and recovery guidance.
    */
   public readonly messageNamesOnly: true = true;
   /**
-   * Failed binding family, without private document or reply content.
+   Failed binding family, without private document or reply content.
    */
   public readonly kind: PreparationReceiptFailure;
 
   /**
-   * Builds the fixed diagnostic for one failed journal invariant.
-   *
-   * @param kind - failed receipt or occurrence condition
-   *
-   * @example
-   * ```ts
-   * new PreparationReceiptError({ kind: 'documents', });
-   * ```
+   Builds the fixed diagnostic for one failed journal invariant.
+   
+   @param kind - failed receipt or occurrence condition
+   
+   @example
+   ```ts
+   new PreparationReceiptError({ kind: 'documents', });
+   ```
    */
   public constructor({ kind, }: { readonly kind: PreparationReceiptFailure; },) {
     super(RECEIPT_MESSAGES[kind],);

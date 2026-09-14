@@ -1,17 +1,17 @@
 /**
- * Tests for which call position each arm gets.
- *
- * WHAT THESE PIN is that the wide arm is not always the last call. It used to
- * be, on every slice, which put the treatment and the position on the same
- * variable: anything drifting across a slice's three back-to-back calls landed
- * entirely on the wide arm, and in the direction the trial predicts, since a
- * degraded round declines and a decline keeps the archive. The two narrow arms
- * cannot detect that, because they sit at two positions and the wide arm sits at
- * a third neither of them ever occupies.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for which call position each arm gets.
+ 
+ WHAT THESE PIN is that the wide arm is not always the last call. It used to
+ be, on every slice, which put the treatment and the position on the same
+ variable: anything drifting across a slice's three back-to-back calls landed
+ entirely on the wide arm, and in the direction the trial predicts, since a
+ degraded round declines and a decline keeps the archive. The two narrow arms
+ cannot detect that, because they sit at two positions and the wide arm sits at
+ a third neither of them ever occupies.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -26,23 +26,23 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Slices to draw orders over, enough for every position to appear.
+ Slices to draw orders over, enough for every position to appear.
  */
 const SLICE_COUNT = 60;
 
 /**
- * Orders two positions smallest first.
- *
- * @param left - one position
- *
- * @param right - other position
- *
- * @returns Negative when `left` comes first
- *
- * @example
- * ```ts
- * const ordered = positions.toSorted(ascending,);
- * ```
+ Orders two positions smallest first.
+ 
+ @param left - one position
+ 
+ @param right - other position
+ 
+ @returns Negative when `left` comes first
+ 
+ @example
+ ```ts
+ const ordered = positions.toSorted(ascending,);
+ ```
  */
 function ascending(
   left: number,
@@ -52,18 +52,18 @@ function ascending(
 }
 
 /**
- * Orders two arm names by code unit.
- *
- * @param left - one arm
- *
- * @param right - other arm
- *
- * @returns Negative when `left` comes first
- *
- * @example
- * ```ts
- * const ordered = arms.toSorted(alphabetical,);
- * ```
+ Orders two arm names by code unit.
+ 
+ @param left - one arm
+ 
+ @param right - other arm
+ 
+ @returns Negative when `left` comes first
+ 
+ @example
+ ```ts
+ const ordered = arms.toSorted(alphabetical,);
+ ```
  */
 function alphabetical(
   left: string,
@@ -81,7 +81,7 @@ await describe({
         + 'treatment and no statistic separates them afterwards',
       fn: async () => {
         /**
-         * Where the wide arm landed for each of many slices.
+         Where the wide arm landed for each of many slices.
          */
         const positions = new Set(Array.from(
           { length: SLICE_COUNT, },
@@ -109,7 +109,7 @@ await describe({
       fn: async () => {
         for (let sliceIndex = 0; sliceIndex < SLICE_COUNT; sliceIndex += 1) {
           /**
-           * This slice's order.
+           This slice's order.
            */
           const order = armOrderFor({
             protocol: 'protocol-one',
@@ -143,7 +143,7 @@ await describe({
       fn: async () => {
         for (let sliceIndex = 0; sliceIndex < SLICE_COUNT; sliceIndex += 1) {
           /**
-           * This slice's order.
+           This slice's order.
            */
           const order = armOrderFor({
             protocol: 'protocol-one',
@@ -160,7 +160,7 @@ await describe({
         + 'not repeat one assignment forever and carry its position effects with it',
       fn: async () => {
         /**
-         * Wide positions under each protocol, over the same slices.
+         Wide positions under each protocol, over the same slices.
          */
         const under = ['protocol-one',
           'protocol-two',].map(function toPositions(protocol,) {

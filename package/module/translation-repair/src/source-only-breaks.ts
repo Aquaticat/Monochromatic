@@ -10,33 +10,33 @@ import type { DeepReadonlyData, } from './readonly-data.ts';
 // breaks still belong to the source when no archive rendering exists to choose.
 
 /**
- * Read-only syntax node borrowed from the shared document parser.
+ Read-only syntax node borrowed from the shared document parser.
  */
 type ReadonlyNode = DeepReadonlyData<RootContent>;
 
 /**
- * Counts explicit rendered breaks within each top-level block.
- * Markdown hard breaks and intrinsic lowercase br elements are equivalent;
- * soft newlines, code, custom components and paragraph boundaries are not.
- *
- * @param root - already parsed skeleton tree, avoiding another grammar pass
- *
- * @returns Break counts aligned with skeleton block order
- *
- * @example
- * ```ts
- * const explicitBreaks = explicitBreakCounts({ root, });
- * ```
+ Counts explicit rendered breaks within each top-level block.
+ Markdown hard breaks and intrinsic lowercase br elements are equivalent;
+ soft newlines, code, custom components and paragraph boundaries are not.
+ 
+ @param root - already parsed skeleton tree, avoiding another grammar pass
+ 
+ @returns Break counts aligned with skeleton block order
+ 
+ @example
+ ```ts
+ const explicitBreaks = explicitBreakCounts({ root, });
+ ```
  */
 export function explicitBreakCounts({ root, }: { readonly root: DeepReadonlyData<Root>; },): readonly number[] {
   return root.children
     .map(function countBlock(block,): number {
     /**
-     * Owned work list grows as descendant nodes are visited.
+     Owned work list grows as descendant nodes are visited.
      */
     const pending: ReadonlyNode[] = [block,];
     /**
-     * Explicit breaks in this block, not in unrelated neighboring blocks.
+     Explicit breaks in this block, not in unrelated neighboring blocks.
      */
     let count = 0;
     for (const node of pending) {
@@ -53,22 +53,22 @@ export function explicitBreakCounts({ root, }: { readonly root: DeepReadonlyData
 }
 
 /**
- * Refuses an explicit-break shortfall where the original alone sets the floor.
- * Nonempty archive text stays outside this check even if its parser found no
- * blocks. Expansion remains legal; unrelated blocks cannot compensate.
- *
- * @param pageText - canonical incumbent text, empty where no archive span exists
- *
- * @param source - original break counts, one per top-level block
- *
- * @param candidate - corresponding candidate counts
- *
- * @returns Model-facing findings for missing rendered breaks
- *
- * @example
- * ```ts
- * sourceOnlyBreakFindings({ pageText: '', source: [2], candidate: [0] });
- * ```
+ Refuses an explicit-break shortfall where the original alone sets the floor.
+ Nonempty archive text stays outside this check even if its parser found no
+ blocks. Expansion remains legal; unrelated blocks cannot compensate.
+ 
+ @param pageText - canonical incumbent text, empty where no archive span exists
+ 
+ @param source - original break counts, one per top-level block
+ 
+ @param candidate - corresponding candidate counts
+ 
+ @returns Model-facing findings for missing rendered breaks
+ 
+ @example
+ ```ts
+ sourceOnlyBreakFindings({ pageText: '', source: [2], candidate: [0] });
+ ```
  */
 export function sourceOnlyBreakFindings(
   {
@@ -88,7 +88,7 @@ export function sourceOnlyBreakFindings(
     index,
   ): readonly string[] {
     /**
-     * Missing blocks carry no breaks; the block floor diagnoses their shape.
+     Missing blocks carry no breaks; the block floor diagnoses their shape.
      */
     const carried = candidate[index] ?? 0;
     if (carried >= owed)

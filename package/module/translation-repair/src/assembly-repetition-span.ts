@@ -26,88 +26,88 @@
 // repeats do not repeat in the same places.
 
 /**
- * Every window of one length, indexed by where it sits and by what it spells.
- *
- * BOTH DIRECTIONS ARE NEEDED and neither derives cheaply from the other here.
- * Growing a span walks offsets and asks what each spells, while the merge test
- * asks where a phrase occurs. Recomputing either side per step would re-slice
- * the word list on every window.
- *
- * @example
- * ```ts
- * const index: WindowIndex = indexWindows({ words, length: 12, },);
- * ```
- *
- * Shared with the repetition finder; not part of the lane contract.
- *
- * @internal
+ Every window of one length, indexed by where it sits and by what it spells.
+ 
+ BOTH DIRECTIONS ARE NEEDED and neither derives cheaply from the other here.
+ Growing a span walks offsets and asks what each spells, while the merge test
+ asks where a phrase occurs. Recomputing either side per step would re-slice
+ the word list on every window.
+ 
+ @example
+ ```ts
+ const index: WindowIndex = indexWindows({ words, length: 12, },);
+ ```
+ 
+ Shared with the repetition finder; not part of the lane contract.
+ 
+ @internal
  */
 export type WindowIndex = {
   /**
-   * Phrase each window spells, by that window's offset.
+   Phrase each window spells, by that window's offset.
    */
   readonly byOffset: readonly string[];
 
   /**
-   * Offsets each phrase occupies, ascending.
+   Offsets each phrase occupies, ascending.
    */
   readonly byPhrase: ReadonlyMap<string, readonly number[]>;
 };
 
 /**
- * One repeated passage, grown to its full length.
- *
- * @example
- * ```ts
- * const span: GrownSpan = { phrase: 'the same thing said twice over', count: 2, };
- * ```
- *
- * Shared with the repetition finder; not part of the lane contract.
- *
- * @internal
+ One repeated passage, grown to its full length.
+ 
+ @example
+ ```ts
+ const span: GrownSpan = { phrase: 'the same thing said twice over', count: 2, };
+ ```
+ 
+ Shared with the repetition finder; not part of the lane contract.
+ 
+ @internal
  */
 export type GrownSpan = {
   /**
-   * Words of the whole span, space-joined as the windows were.
+   Words of the whole span, space-joined as the windows were.
    */
   readonly phrase: string;
 
   /**
-   * Times the span occurs in the document it was grown from.
+   Times the span occurs in the document it was grown from.
    */
   readonly count: number;
 
   /**
-   * Whether an earlier span already accounts for every occurrence of this one.
-   *
-   * REPORTED RATHER THAN ACTED ON, because the two things a span is used for
-   * part company here. A derivative span must not become a FINDING, since it
-   * describes a duplication already named. It must still SUPPRESS the shorter
-   * phrases inside it, because those are equally derivative and the caller's
-   * containment rule can only suppress against a span it was given. Dropping
-   * such a span outright was measured to turn one finding into eleven: the
-   * pieces of it reappeared at every shorter length.
+   Whether an earlier span already accounts for every occurrence of this one.
+   
+   REPORTED RATHER THAN ACTED ON, because the two things a span is used for
+   part company here. A derivative span must not become a FINDING, since it
+   describes a duplication already named. It must still SUPPRESS the shorter
+   phrases inside it, because those are equally derivative and the caller's
+   containment rule can only suppress against a span it was given. Dropping
+   such a span outright was measured to turn one finding into eleven: the
+   pieces of it reappeared at every shorter length.
    */
   readonly accountedFor: boolean;
 };
 
 /**
- * Indexes every window of one length over a word list.
- *
- * @param words - document as a word list
- *
- * @param length - words per window
- *
- * @returns Both indexes over the same windows
- *
- * @example
- * ```ts
- * const index = indexWindows({ words, length: 12, },);
- * ```
- *
- * Shared with the repetition finder; not part of the lane contract.
- *
- * @internal
+ Indexes every window of one length over a word list.
+ 
+ @param words - document as a word list
+ 
+ @param length - words per window
+ 
+ @returns Both indexes over the same windows
+ 
+ @example
+ ```ts
+ const index = indexWindows({ words, length: 12, },);
+ ```
+ 
+ Shared with the repetition finder; not part of the lane contract.
+ 
+ @internal
  */
 export function indexWindows(
   {
@@ -119,18 +119,18 @@ export function indexWindows(
   },
 ): WindowIndex {
   /**
-   * Phrase of each window, in offset order.
+   Phrase of each window, in offset order.
    */
   const byOffset: string[] = [];
 
   /**
-   * Offsets of each phrase, filled in ascending order because the walk is.
+   Offsets of each phrase, filled in ascending order because the walk is.
    */
   const byPhrase = new Map<string, number[]>();
 
   for (let at = 0; (at + length) <= words.length; at += 1) {
     /**
-     * This window as one comparable string.
+     This window as one comparable string.
      */
     const phrase = words
       .slice(
@@ -141,7 +141,7 @@ export function indexWindows(
     byOffset.push(phrase,);
 
     /**
-     * Offsets already recorded for it, absent the first time it is seen.
+     Offsets already recorded for it, absent the first time it is seen.
      */
     const seen = byPhrase.get(phrase,);
     if (seen === undefined)
@@ -160,22 +160,22 @@ export function indexWindows(
 }
 
 /**
- * Whether one window's occurrences are another's advanced by exactly one word.
- *
- * This is the test that makes a merge safe. It holds only when the two windows
- * are consecutive pieces of the SAME repeated passage: every place the first
- * occurs, the second occurs one word later, and nowhere else.
- *
- * @param earlier - occurrences of the window on the left
- *
- * @param later - occurrences of the window one word to its right
- *
- * @returns Whether the two are one passage rather than two
- *
- * @example
- * ```ts
- * const together = advancesByOne({ earlier: [3, 40,], later: [4, 41,], },);
- * ```
+ Whether one window's occurrences are another's advanced by exactly one word.
+ 
+ This is the test that makes a merge safe. It holds only when the two windows
+ are consecutive pieces of the SAME repeated passage: every place the first
+ occurs, the second occurs one word later, and nowhere else.
+ 
+ @param earlier - occurrences of the window on the left
+ 
+ @param later - occurrences of the window one word to its right
+ 
+ @returns Whether the two are one passage rather than two
+ 
+ @example
+ ```ts
+ const together = advancesByOne({ earlier: [3, 40,], later: [4, 41,], },);
+ ```
  */
 function advancesByOne(
   {
@@ -196,22 +196,22 @@ function advancesByOne(
 }
 
 /**
- * Whether reported ranges already hold every occurrence of one passage.
- *
- * @param covered - ranges an earlier span accounted for, merged and disjoint
- *
- * @param occurrences - where this passage sits
- *
- * @param wordCount - words it spans
- *
- * @returns Whether it describes a duplication already named
- *
- * @internal
- *
- * @example
- * ```ts
- * const derivative = accountedForBy({ covered, occurrences: [8, 27,], wordCount: 22, },);
- * ```
+ Whether reported ranges already hold every occurrence of one passage.
+ 
+ @param covered - ranges an earlier span accounted for, merged and disjoint
+ 
+ @param occurrences - where this passage sits
+ 
+ @param wordCount - words it spans
+ 
+ @returns Whether it describes a duplication already named
+ 
+ @internal
+ 
+ @example
+ ```ts
+ const derivative = accountedForBy({ covered, occurrences: [8, 27,], wordCount: 22, },);
+ ```
  */
 function accountedForBy(
   {
@@ -233,46 +233,46 @@ function accountedForBy(
 }
 
 /**
- * Grows admitted windows into the maximal passages they belong to.
- *
- * REPORTS NOTHING ALREADY ACCOUNTED FOR, which is one rule doing two jobs and
- * is the generalisation of the containment rule a caller applies to shorter
- * phrases. A span whose every occurrence sits inside text an already-reported
- * span covers is not a second fact about the document.
- *
- * It catches the span reached again at its own second occurrence, which would
- * otherwise be emitted once per occurrence. It also catches the artifact a
- * passage said three or more times produces: in `P P P` the join between two
- * copies occurs twice, so the tail of one copy followed by the head of the next
- * is itself a repeat, and reporting it beside `P said three times` describes
- * one duplication as two. Measured: without this the triple case reported two
- * findings rather than one.
- *
- * A RUN THAT BREAKS EARLY IS NOT AN ERROR. Where a window occurs somewhere the
- * rest of its passage does not, the occurrence sets stop advancing together and
- * the span ends there. That is two facts rather than one, and reporting them as
- * two is right: the shorter phrase really does occur more often than the longer
- * one containing it.
- *
- * @param words - document as a word list
- *
- * @param length - words per window, which is the shortest span this can emit
- *
- * @param index - windows of that length over those words
- *
- * @param admitted - offsets whose window is worth reporting on its own
- *
- * @returns Maximal spans, in the order their first occurrence appears, each
- * saying whether an earlier one already accounts for it
- *
- * @example
- * ```ts
- * const spans = grownSpans({ words, length: 12, index, admitted, },);
- * ```
- *
- * Shared with the repetition finder; not part of the lane contract.
- *
- * @internal
+ Grows admitted windows into the maximal passages they belong to.
+ 
+ REPORTS NOTHING ALREADY ACCOUNTED FOR, which is one rule doing two jobs and
+ is the generalisation of the containment rule a caller applies to shorter
+ phrases. A span whose every occurrence sits inside text an already-reported
+ span covers is not a second fact about the document.
+ 
+ It catches the span reached again at its own second occurrence, which would
+ otherwise be emitted once per occurrence. It also catches the artifact a
+ passage said three or more times produces: in `P P P` the join between two
+ copies occurs twice, so the tail of one copy followed by the head of the next
+ is itself a repeat, and reporting it beside `P said three times` describes
+ one duplication as two. Measured: without this the triple case reported two
+ findings rather than one.
+ 
+ A RUN THAT BREAKS EARLY IS NOT AN ERROR. Where a window occurs somewhere the
+ rest of its passage does not, the occurrence sets stop advancing together and
+ the span ends there. That is two facts rather than one, and reporting them as
+ two is right: the shorter phrase really does occur more often than the longer
+ one containing it.
+ 
+ @param words - document as a word list
+ 
+ @param length - words per window, which is the shortest span this can emit
+ 
+ @param index - windows of that length over those words
+ 
+ @param admitted - offsets whose window is worth reporting on its own
+ 
+ @returns Maximal spans, in the order their first occurrence appears, each
+ saying whether an earlier one already accounts for it
+ 
+ @example
+ ```ts
+ const spans = grownSpans({ words, length: 12, index, admitted, },);
+ ```
+ 
+ Shared with the repetition finder; not part of the lane contract.
+ 
+ @internal
  */
 export function grownSpans(
   {
@@ -288,23 +288,23 @@ export function grownSpans(
   },
 ): readonly GrownSpan[] {
   /**
-   * Spans closed so far.
+   Spans closed so far.
    */
   const spans: GrownSpan[] = [];
 
   /**
-   * Word ranges already accounted for by an emitted span, as half-open
-   * intervals over the word list.
+   Word ranges already accounted for by an emitted span, as half-open
+   intervals over the word list.
    */
   let covered: readonly WordRegion[] = [];
 
   /**
-   * Last offset a window of this length can start at.
+   Last offset a window of this length can start at.
    */
   const last = words.length - length;
 
   /**
-   * Window the walk is looking at, advanced past each run it closes.
+   Window the walk is looking at, advanced past each run it closes.
    */
   let at = 0;
   while (at <= last) {
@@ -314,8 +314,8 @@ export function grownSpans(
     }
 
     /**
-     * Last window of this run, extended while the next one belongs to the same
-     * passage.
+     Last window of this run, extended while the next one belongs to the same
+     passage.
      */
     let end = at;
     while ((end < last)
@@ -331,7 +331,7 @@ export function grownSpans(
       end += 1;
 
     /**
-     * Whole passage this run spells.
+     Whole passage this run spells.
      */
     const phrase = words
       .slice(
@@ -341,21 +341,21 @@ export function grownSpans(
       .join(' ',);
 
     /**
-     * Every place this passage sits, which the merge test has kept equal to
-     * the places its first window sits.
+     Every place this passage sits, which the merge test has kept equal to
+     the places its first window sits.
      */
     const occurrences = index.byPhrase
       .get(index.byOffset[at] ?? '',)
       ?? [];
 
     /**
-     * Words the passage spans.
+     Words the passage spans.
      */
     const wordCount = (end + length) - at;
 
     /**
-     * Whether an already-reported span accounts for every occurrence of this
-     * one, in which case this is not a second fact about the document.
+     Whether an already-reported span accounts for every occurrence of this
+     one, in which case this is not a second fact about the document.
      */
     const accountedFor = accountedForBy({
       covered,
@@ -387,52 +387,52 @@ export function grownSpans(
 }
 
 /**
- * Half-open range of words, `start` inclusive and `end` exclusive.
- *
- * @example
- * ```ts
- * const region: WordRegion = { start: 0, end: 19, };
- * ```
+ Half-open range of words, `start` inclusive and `end` exclusive.
+ 
+ @example
+ ```ts
+ const region: WordRegion = { start: 0, end: 19, };
+ ```
  */
 type WordRegion = {
   /**
-   * First word of the range.
+   First word of the range.
    */
   readonly start: number;
 
   /**
-   * Word after the last, so an empty range has `start` equal to `end`.
+   Word after the last, so an empty range has `start` equal to `end`.
    */
   readonly end: number;
 };
 
 /**
- * Merges ranges into the smallest disjoint set covering the same words.
- *
- * WITHOUT THIS THE COVERAGE TEST IS WRONG IN THE CASE IT EXISTS FOR. A passage
- * said three times covers three ranges that meet end to start, and the junction
- * artifact spans the seam between two of them. Asked whether any ONE range
- * holds it, the answer is no; asked whether the ranges TOGETHER hold it, the
- * answer is yes, and yes is correct. Measured: without merging, the triple case
- * still reported two findings.
- *
- * Touching ranges join, since `[0, 19)` and `[19, 38)` leave no word between
- * them.
- *
- * @param regions - ranges in any order, possibly overlapping
- *
- * @returns Ranges ascending by start, none touching another
- *
- * @example
- * ```ts
- * const union = mergeRegions({ regions: [{ start: 19, end: 38, }, { start: 0, end: 19, },], },);
- * ```
+ Merges ranges into the smallest disjoint set covering the same words.
+ 
+ WITHOUT THIS THE COVERAGE TEST IS WRONG IN THE CASE IT EXISTS FOR. A passage
+ said three times covers three ranges that meet end to start, and the junction
+ artifact spans the seam between two of them. Asked whether any ONE range
+ holds it, the answer is no; asked whether the ranges TOGETHER hold it, the
+ answer is yes, and yes is correct. Measured: without merging, the triple case
+ still reported two findings.
+ 
+ Touching ranges join, since `[0, 19)` and `[19, 38)` leave no word between
+ them.
+ 
+ @param regions - ranges in any order, possibly overlapping
+ 
+ @returns Ranges ascending by start, none touching another
+ 
+ @example
+ ```ts
+ const union = mergeRegions({ regions: [{ start: 19, end: 38, }, { start: 0, end: 19, },], },);
+ ```
  */
 function mergeRegions(
   { regions, }: { readonly regions: readonly WordRegion[]; },
 ): readonly WordRegion[] {
   /**
-   * Ranges kept so far, each starting after the previous one ends.
+   Ranges kept so far, each starting after the previous one ends.
    */
   const joined: WordRegion[] = [];
   for (
@@ -444,7 +444,7 @@ function mergeRegions(
     },)
   ) {
     /**
-     * Range this one either extends or follows.
+     Range this one either extends or follows.
      */
     const previous = joined.at(-1,);
     if ((previous === undefined) || (region.start > previous.end)) {
@@ -463,27 +463,27 @@ function mergeRegions(
 }
 
 /**
- * Counts occurrences of one passage in a word list.
- *
- * WORD-WISE RATHER THAN OVER THE TEXT, so the count means the same thing as the
- * window counts it is compared against: whitespace between words differs
- * between the archive and the assembled document, and a text search would miss
- * a passage that is only rewrapped.
- *
- * @param words - document as a word list
- *
- * @param phrase - passage, space-joined as {@link indexWindows} joins
- *
- * @returns Times that passage occurs
- *
- * @example
- * ```ts
- * const times = countSpan({ words: archiveWords, phrase, },);
- * ```
- *
- * Shared with the repetition finder; not part of the lane contract.
- *
- * @internal
+ Counts occurrences of one passage in a word list.
+ 
+ WORD-WISE RATHER THAN OVER THE TEXT, so the count means the same thing as the
+ window counts it is compared against: whitespace between words differs
+ between the archive and the assembled document, and a text search would miss
+ a passage that is only rewrapped.
+ 
+ @param words - document as a word list
+ 
+ @param phrase - passage, space-joined as {@link indexWindows} joins
+ 
+ @returns Times that passage occurs
+ 
+ @example
+ ```ts
+ const times = countSpan({ words: archiveWords, phrase, },);
+ ```
+ 
+ Shared with the repetition finder; not part of the lane contract.
+ 
+ @internal
  */
 export function countSpan(
   {
@@ -495,12 +495,12 @@ export function countSpan(
   },
 ): number {
   /**
-   * Passage back as the words it was joined from.
+   Passage back as the words it was joined from.
    */
   const span = phrase.split(' ',);
 
   /**
-   * Offsets where the whole passage sits.
+   Offsets where the whole passage sits.
    */
   const at: number[] = [];
   for (let start = 0; (start + span.length) <= words.length; start += 1) {

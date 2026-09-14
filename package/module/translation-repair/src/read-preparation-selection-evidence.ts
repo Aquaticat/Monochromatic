@@ -21,18 +21,18 @@ import type {
 //region Frozen supporting-artifact byte ownership
 
 /**
- * Copies raw bytes before hashing so later caller mutation cannot change the matched content.
- *
- * @param content - genuine branded byte view, never a proxy or text decoded before hashing
- *
- * @returns Owned byte snapshot
- *
- * @throws PreparationRootError when content is not readable byte-array data
- *
- * @example
- * ```ts
- * const owned = artifactBytes(content);
- * ```
+ Copies raw bytes before hashing so later caller mutation cannot change the matched content.
+ 
+ @param content - genuine branded byte view, never a proxy or text decoded before hashing
+ 
+ @returns Owned byte snapshot
+ 
+ @throws PreparationRootError when content is not readable byte-array data
+ 
+ @example
+ ```ts
+ const owned = artifactBytes(content);
+ ```
  */
 function artifactBytes(content: unknown,): Uint8Array<ArrayBuffer> {
   if (!isUint8Array(content,))
@@ -48,27 +48,27 @@ function artifactBytes(content: unknown,): Uint8Array<ArrayBuffer> {
 }
 
 /**
- * Matches complete supplied artifact bytes to an independently re-read frozen selection.
- * No path is opened or executed, no semantic role is guessed and no root/phase approval is granted.
- * Callers must load size-bounded bytes at their authorized I/O boundary; this operation does not bound allocation.
- * Matching is point-in-time evidence. A downstream owner must rehash these bytes, not trust a previously returned hash.
- *
- * @param text - complete original frozen-selection bytes as text
- *
- * @param expectedDigest - separately recorded selection authority, never a digest derived from this input
- *
- * @param artifacts - explicit caller-loaded raw supporting bytes
- *
- * @param l - caller logger retaining frozen evidence scope
- *
- * @returns Owned exact supporting-byte inventory in original reference order
- *
- * @throws PreparationRootError when selection, inventory or supporting content differs
- *
- * @example
- * ```ts
- * const matched = readPreparationSelectionEvidence({ text, expectedDigest, artifacts, l });
- * ```
+ Matches complete supplied artifact bytes to an independently re-read frozen selection.
+ No path is opened or executed, no semantic role is guessed and no root/phase approval is granted.
+ Callers must load size-bounded bytes at their authorized I/O boundary; this operation does not bound allocation.
+ Matching is point-in-time evidence. A downstream owner must rehash these bytes, not trust a previously returned hash.
+ 
+ @param text - complete original frozen-selection bytes as text
+ 
+ @param expectedDigest - separately recorded selection authority, never a digest derived from this input
+ 
+ @param artifacts - explicit caller-loaded raw supporting bytes
+ 
+ @param l - caller logger retaining frozen evidence scope
+ 
+ @returns Owned exact supporting-byte inventory in original reference order
+ 
+ @throws PreparationRootError when selection, inventory or supporting content differs
+ 
+ @example
+ ```ts
+ const matched = readPreparationSelectionEvidence({ text, expectedDigest, artifacts, l });
+ ```
  */
 export function readPreparationSelectionEvidence({
   text,
@@ -82,14 +82,14 @@ export function readPreparationSelectionEvidence({
   readonly l: Logger;
 },): PreparationSelectionEvidence {
   /**
-   * The entry point itself checks independent selection bytes rather than trusting a caller-fabricated typed result.
+   The entry point itself checks independent selection bytes rather than trusting a caller-fabricated typed result.
    */
   const pl = tagged({
     tag: readPreparationSelectionEvidence.name,
     l,
   },);
   /**
-   * The raw artifact is checked here even when another caller already decoded it.
+   The raw artifact is checked here even when another caller already decoded it.
    */
   const selection = readFrozenPreparationSelection({
     text,
@@ -102,7 +102,7 @@ export function readPreparationSelectionEvidence({
   },))
     throw new PreparationRootError({ kind: 'reference-inventory', },);
   /**
-   * The frozen reference count bounds indexed traversal, independent of a custom array iterator.
+   The frozen reference count bounds indexed traversal, independent of a custom array iterator.
    */
   const required = selection.references
     .length;
@@ -114,19 +114,19 @@ export function readPreparationSelectionEvidence({
   },) !== required)
     throw new PreparationRootError({ kind: 'reference-inventory', },);
   /**
-   * Exact frozen locators, not input order or caller-declared hashes, select the records to read.
+   Exact frozen locators, not input order or caller-declared hashes, select the records to read.
    */
   const expectedPaths = new Set(selection.references
     .map(function path(reference,): string {
     return reference.path;
   },),);
   /**
-   * Inventory is checked before any supplied content is copied or hashed.
+   Inventory is checked before any supplied content is copied or hashed.
    */
   const inputs = new Map<string, Record<string, unknown>>();
   for (let index = 0; index < required; index += 1) {
     /**
-     * Indexed descriptor access cannot delegate inventory selection to a caller's iterator.
+     Indexed descriptor access cannot delegate inventory selection to a caller's iterator.
      */
     const input = preparationArtifactProperty({
       record: artifacts,
@@ -140,7 +140,7 @@ export function readPreparationSelectionEvidence({
     },) || (!isJsonRecord(input,)))
       throw new PreparationRootError({ kind: 'reference-inventory', },);
     /**
-     * Snapshot locator once so callback-backed descriptors cannot select different keys during this pass.
+     Snapshot locator once so callback-backed descriptors cannot select different keys during this pass.
      */
     const path = preparationArtifactProperty({
       record: input,
@@ -159,16 +159,16 @@ export function readPreparationSelectionEvidence({
   if (inputs.size !== required)
     throw new PreparationRootError({ kind: 'reference-inventory', },);
   /**
-   * Each independently expected hash is checked against owned raw bytes, without lossy decoding.
+   Each independently expected hash is checked against owned raw bytes, without lossy decoding.
    */
   const matched = selection.references
     .map(function match(reference,): MatchedPreparationArtifact {
     /**
-     * Every expected locator must be present exactly once despite any caller ordering.
+     Every expected locator must be present exactly once despite any caller ordering.
      */
     const input = nonNullishOrThrow(inputs.get(reference.path,),);
     /**
-     * Copy precedes the digest and the recorded byte extent.
+     Copy precedes the digest and the recorded byte extent.
      */
     const content = artifactBytes(preparationArtifactProperty({
       record: input,
@@ -177,7 +177,7 @@ export function readPreparationSelectionEvidence({
       l: pl,
     },),);
     /**
-     * Raw SHA-256 preserves CRLF, invalid UTF-8 and all other byte distinctions.
+     Raw SHA-256 preserves CRLF, invalid UTF-8 and all other byte distinctions.
      */
     const digest = createHash('sha256',)
       .update(content,)

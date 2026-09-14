@@ -27,71 +27,71 @@ import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 // second into a quality result.
 
 /**
- * Seat a contest settled on.
- *
- * NAMED BY SEAT RATHER THAN BY TEXT. An arm that declined to repair offers the
- * untouched translation, which is byte-identical to the fallback a panel that
- * will not separate the pair falls back to. Reading the winner by comparing
- * shipped text therefore credited indecision to whichever arm had declined, and
- * the wide arm declines more often because it splits one selection minimum
- * across twice the candidates. That turned "the panel could not choose" into
- * "the wide arm won" exactly where the draw is most sensitive.
+ Seat a contest settled on.
+ 
+ NAMED BY SEAT RATHER THAN BY TEXT. An arm that declined to repair offers the
+ untouched translation, which is byte-identical to the fallback a panel that
+ will not separate the pair falls back to. Reading the winner by comparing
+ shipped text therefore credited indecision to whichever arm had declined, and
+ the wide arm declines more often because it splits one selection minimum
+ across twice the candidates. That turned "the panel could not choose" into
+ "the wide arm won" exactly where the draw is most sensitive.
  */
 type ContestSeat = 'first' | 'second' | 'none';
 
 /**
- * What one seating order decided.
+ What one seating order decided.
  */
 type ContestRound = {
   /**
-   * Seat the panel shipped, which is neither when it would not separate them.
+   Seat the panel shipped, which is neither when it would not separate them.
    */
   readonly winner: ContestSeat;
 
   /**
-   * Ballots that named a candidate at all.
+   Ballots that named a candidate at all.
    */
   readonly usableBallots: number;
 };
 
 /**
- * What both seating orders decided together.
+ What both seating orders decided together.
  */
 export type ContestedPair = {
   /**
-   * Reading of the two orders, which agree or the position decided it.
+   Reading of the two orders, which agree or the position decided it.
    */
   readonly verdict: HeadToHeadVerdict;
 
   /**
-   * Usable ballots across both orders.
+   Usable ballots across both orders.
    */
   readonly usableBallots: number;
 };
 
 /**
- * Puts two shipped repairs on one slate and asks the panel which it prefers.
- *
- * @param client - injected model client
- *
- * @param input - slice both repairs belong to
- *
- * @param first - repair seated first
- *
- * @param second - repair seated second
- *
- * @param judgeModelIds - panel, the same one both arms faced
- *
- * @param signal - cancellation
- *
- * @param l - logger
- *
- * @returns Text the panel preferred and how many ballots named anything
- *
- * @example
- * ```ts
- * const round = await contest({ client, input, first, second, judgeModelIds, signal, l, },);
- * ```
+ Puts two shipped repairs on one slate and asks the panel which it prefers.
+ 
+ @param client - injected model client
+ 
+ @param input - slice both repairs belong to
+ 
+ @param first - repair seated first
+ 
+ @param second - repair seated second
+ 
+ @param judgeModelIds - panel, the same one both arms faced
+ 
+ @param signal - cancellation
+ 
+ @param l - logger
+ 
+ @returns Text the panel preferred and how many ballots named anything
+ 
+ @example
+ ```ts
+ const round = await contest({ client, input, first, second, judgeModelIds, signal, l, },);
+ ```
  */
 async function contest(
   {
@@ -113,8 +113,8 @@ async function contest(
   }>,
 ): Promise<ContestRound> {
   /**
-   * The two repairs as a slate, each still carrying the producers that wrote
-   * it so a judge voting for its own work is discounted as in production.
+   The two repairs as a slate, each still carrying the producers that wrote
+   it so a judge voting for its own work is discounted as in production.
    */
   const candidates: readonly Candidate<PatchOutcome>[] = [
     first,
@@ -133,7 +133,7 @@ async function contest(
     },);
 
   /**
-   * Untouched translation, which is what a rejected slate falls back to.
+   Untouched translation, which is what a rejected slate falls back to.
    */
   const unchanged: PatchOutcome = {
     patchedText: input.targetText,
@@ -142,7 +142,7 @@ async function contest(
   };
 
   /**
-   * Panel decision over the pair.
+   Panel decision over the pair.
    */
   const selection = await selectChunkPatch({
     client,
@@ -174,15 +174,15 @@ async function contest(
   },);
 
   /**
-   * Who the stage says wrote what it shipped.
-   *
-   * Both arms are seated as composites and both fallbacks are not, so this
-   * separates a decided round from a declined one without looking at text.
+   Who the stage says wrote what it shipped.
+   
+   Both arms are seated as composites and both fallbacks are not, so this
+   separates a decided round from a declined one without looking at text.
    */
   const { shippedProducer, } = selection;
 
   /**
-   * Text that shipped, read once.
+   Text that shipped, read once.
    */
   const shipped = selection
     .patch
@@ -208,29 +208,29 @@ async function contest(
 }
 
 /**
- * Names which seat a round settled on.
- *
- * @param shippedProducer - who the stage says wrote what shipped
- *
- * @param shipped - text that shipped
- *
- * @param first - candidate seated first
- *
- * @param second - candidate seated second
- *
- * Exported so the collision it exists to prevent can be pinned by a test rather
- * than argued about: a declining arm and the indecision fallback ship the same
- * bytes, so a reader that went by text alone credited indecision to whichever
- * arm had declined.
- *
- * @internal
- *
- * @returns Seat that won, or none when no candidate did
- *
- * @example
- * ```ts
- * const winner = seatThatWon({ shippedProducer, shipped, first, second, },);
- * ```
+ Names which seat a round settled on.
+ 
+ @param shippedProducer - who the stage says wrote what shipped
+ 
+ @param shipped - text that shipped
+ 
+ @param first - candidate seated first
+ 
+ @param second - candidate seated second
+ 
+ Exported so the collision it exists to prevent can be pinned by a test rather
+ than argued about: a declining arm and the indecision fallback ship the same
+ bytes, so a reader that went by text alone credited indecision to whichever
+ arm had declined.
+ 
+ @internal
+ 
+ @returns Seat that won, or none when no candidate did
+ 
+ @example
+ ```ts
+ const winner = seatThatWon({ shippedProducer, shipped, first, second, },);
+ ```
  */
 export function seatThatWon(
   {
@@ -253,12 +253,12 @@ export function seatThatWon(
     return 'none';
 
   /**
-   * What the first seat offered.
+   What the first seat offered.
    */
   const { patchedText: firstText, } = first.patch;
 
   /**
-   * What the second seat offered.
+   What the second seat offered.
    */
   const { patchedText: secondText, } = second.patch;
 
@@ -272,24 +272,24 @@ export function seatThatWon(
 }
 
 /**
- * Reads a seat as the arm that sat in it.
- *
- * @param seat - seat the round settled on
- *
- * @param firstArm - arm seated first in that round
- *
- * Exported alongside {@link seatThatWon} so the two orders can be shown to map
- * their seats to opposite arms, which is the whole mechanism that cancels
- * position bias.
- *
- * @internal
- *
- * @returns Arm that won, or none
- *
- * @example
- * ```ts
- * const winner = armInSeat({ seat, firstArm: 'narrow', },);
- * ```
+ Reads a seat as the arm that sat in it.
+ 
+ @param seat - seat the round settled on
+ 
+ @param firstArm - arm seated first in that round
+ 
+ Exported alongside {@link seatThatWon} so the two orders can be shown to map
+ their seats to opposite arms, which is the whole mechanism that cancels
+ position bias.
+ 
+ @internal
+ 
+ @returns Arm that won, or none
+ 
+ @example
+ ```ts
+ const winner = armInSeat({ seat, firstArm: 'narrow', },);
+ ```
  */
 export function armInSeat(
   {
@@ -304,7 +304,7 @@ export function armInSeat(
     return 'none';
 
   /**
-   * Arm that sat second, which is whichever one did not sit first.
+   Arm that sat second, which is whichever one did not sit first.
    */
   const secondArm: WidthArm = (firstArm === 'narrow') ? 'wide' : 'narrow';
 
@@ -312,28 +312,28 @@ export function armInSeat(
 }
 
 /**
- * Judges the pair in both seating orders and reads the two together.
- *
- * @param client - injected model client
- *
- * @param input - slice both repairs belong to
- *
- * @param narrow - narrow arm's repair
- *
- * @param wide - wide arm's repair
- *
- * @param judgeModelIds - panel
- *
- * @param signal - cancellation
- *
- * @param l - logger
- *
- * @returns Verdict and how many ballots carried it
- *
- * @example
- * ```ts
- * const contested = await bothOrders({ client, input, narrow, wide, judgeModelIds, signal, l, },);
- * ```
+ Judges the pair in both seating orders and reads the two together.
+ 
+ @param client - injected model client
+ 
+ @param input - slice both repairs belong to
+ 
+ @param narrow - narrow arm's repair
+ 
+ @param wide - wide arm's repair
+ 
+ @param judgeModelIds - panel
+ 
+ @param signal - cancellation
+ 
+ @param l - logger
+ 
+ @returns Verdict and how many ballots carried it
+ 
+ @example
+ ```ts
+ const contested = await bothOrders({ client, input, narrow, wide, judgeModelIds, signal, l, },);
+ ```
  */
 export async function bothOrders(
   {
@@ -355,7 +355,7 @@ export async function bothOrders(
   }>,
 ): Promise<ContestedPair> {
   /**
-   * Narrow seated first.
+   Narrow seated first.
    */
   const narrowFirst = await contest({
     client,
@@ -368,7 +368,7 @@ export async function bothOrders(
   },);
 
   /**
-   * Wide seated first, which is the same question with the seats swapped.
+   Wide seated first, which is the same question with the seats swapped.
    */
   const wideFirst = await contest({
     client,

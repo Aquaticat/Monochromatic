@@ -1,21 +1,21 @@
 /**
- * Tests for the resume guard that keeps one accumulation at one artifact shape.
- *
- * WHAT THIS EXISTS FOR is one narrow case, and the tests say which. The
- * pipeline guard already refuses an ordinary mixed-generation resume, because a
- * build writing one artifact shape cannot share a digest with a build writing
- * another. Its drift opt-in is what lets a mixed directory through, on a promise
- * that a rate over the pool stays usable once it names a required commit. That
- * promise holds across BUILDS and not across SHAPES: a version 1 artifact
- * cannot answer a two-lane question at any commit.
- *
- * AND ONE CASE THE FIRST VERSION MISSED, which an independent review found: the
- * guard read the version LABEL and never the body, so a version 1 artifact
- * relabelled as the generation this pass writes passed it.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the resume guard that keeps one accumulation at one artifact shape.
+ 
+ WHAT THIS EXISTS FOR is one narrow case, and the tests say which. The
+ pipeline guard already refuses an ordinary mixed-generation resume, because a
+ build writing one artifact shape cannot share a digest with a build writing
+ another. Its drift opt-in is what lets a mixed directory through, on a promise
+ that a rate over the pool stays usable once it names a required commit. That
+ promise holds across BUILDS and not across SHAPES: a version 1 artifact
+ cannot answer a two-lane question at any commit.
+ 
+ AND ONE CASE THE FIRST VERSION MISSED, which an independent review found: the
+ guard read the version LABEL and never the body, so a version 1 artifact
+ relabelled as the generation this pass writes passed it.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -39,70 +39,70 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * One built pipeline, as a digest-shaped invention.
+ One built pipeline, as a digest-shaped invention.
  */
 const DIGEST_A = `sha256-tree-v1:${'a'.repeat(64,)}`;
 
 /**
- * A second built pipeline, differing from {@link DIGEST_A} everywhere.
+ A second built pipeline, differing from {@link DIGEST_A} everywhere.
  */
 const DIGEST_B = `sha256-tree-v1:${'b'.repeat(64,)}`;
 
 /**
- * Commit every fixture artifact records, since nothing here turns on provenance.
+ Commit every fixture artifact records, since nothing here turns on provenance.
  */
 const FIXED_TIP = '1111111111111111111111111111111111111111';
 
 /**
- * Preparation identity every fixture claims, syntactically valid and describing
- * nothing, which is all a standalone reader checks.
+ Preparation identity every fixture claims, syntactically valid and describing
+ nothing, which is all a standalone reader checks.
  */
 const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
 
 /**
- * Environment variable the pipeline guard reads for an explicit drift opt-in.
+ Environment variable the pipeline guard reads for an explicit drift opt-in.
  */
 const ALLOW_DRIFT_VAR = 'TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT';
 
 /**
- * What one fixture artifact records about its generation.
+ What one fixture artifact records about its generation.
  */
 type Fixture = {
   /**
-   * Schema generation it names, absent when it carries no version field.
+   Schema generation it names, absent when it carries no version field.
    */
   readonly version?: number;
 
   /**
-   * Built pipeline it records.
+   Built pipeline it records.
    */
   readonly digest: string;
 
   /**
-   * Whether the body must satisfy the generation it names, rather than merely
-   * carrying the label.
+   Whether the body must satisfy the generation it names, rather than merely
+   carrying the label.
    */
   readonly wellFormed?: boolean;
 };
 
 /**
- * Sets the drift opt-in for the life of a scope and restores it on exit.
- *
- * Restored rather than left set, since a leaked opt-in would silently disarm the
- * pipeline guard for every later case in this process.
- *
- * @param value - value to set, exact opt-in or otherwise
- *
- * @returns Disposable restoring the previous value, including its absence
- *
- * @example
- * ```ts
- * using _override = withDriftVar({ value: 'yes', },);
- * ```
+ Sets the drift opt-in for the life of a scope and restores it on exit.
+ 
+ Restored rather than left set, since a leaked opt-in would silently disarm the
+ pipeline guard for every later case in this process.
+ 
+ @param value - value to set, exact opt-in or otherwise
+ 
+ @returns Disposable restoring the previous value, including its absence
+ 
+ @example
+ ```ts
+ using _override = withDriftVar({ value: 'yes', },);
+ ```
  */
 function withDriftVar({ value, }: { readonly value: string; },): Disposable {
   /**
-   * Value before this scope; absent means the variable was unset.
+   Value before this scope; absent means the variable was unset.
    */
   const original = process.env[ALLOW_DRIFT_VAR];
   process.env[ALLOW_DRIFT_VAR] = value;
@@ -117,23 +117,23 @@ function withDriftVar({ value, }: { readonly value: string; },): Disposable {
 }
 
 /**
- * A complete version 2 artifact describing a document with NO slices.
- *
- * EMPTY ON PURPOSE. Every per-slice relation the reader runs is vacuous here,
- * so this is the smallest body that genuinely satisfies the generation rather
- * than merely claiming it, which is what these cases need to tell a real
- * artifact from a relabelled one.
- *
- * @param entryId - entry it settles
- *
- * @param digest - built pipeline it records
- *
- * @returns Artifact as JSON
- *
- * @example
- * ```ts
- * const artifact = emptyVersionTwoArtifact({ entryId: 'Mittens', digest: DIGEST_A, },);
- * ```
+ A complete version 2 artifact describing a document with NO slices.
+ 
+ EMPTY ON PURPOSE. Every per-slice relation the reader runs is vacuous here,
+ so this is the smallest body that genuinely satisfies the generation rather
+ than merely claiming it, which is what these cases need to tell a real
+ artifact from a relabelled one.
+ 
+ @param entryId - entry it settles
+ 
+ @param digest - built pipeline it records
+ 
+ @returns Artifact as JSON
+ 
+ @example
+ ```ts
+ const artifact = emptyVersionTwoArtifact({ entryId: 'Mittens', digest: DIGEST_A, },);
+ ```
  */
 function emptyVersionTwoArtifact(
   {
@@ -196,25 +196,25 @@ function emptyVersionTwoArtifact(
 }
 
 /**
- * Writes a throwaway artifacts directory.
- *
- * Written to a fresh temporary directory every time rather than to any real runs
- * directory, which holds hours of ungraded work.
- *
- * @param entries - one fixture per entry id
- *
- * @returns Path of the artifacts directory
- *
- * @example
- * ```ts
- * const dir = await writeArtifacts({ entries: { Mittens: { version: 2, digest: DIGEST_A, }, }, },);
- * ```
+ Writes a throwaway artifacts directory.
+ 
+ Written to a fresh temporary directory every time rather than to any real runs
+ directory, which holds hours of ungraded work.
+ 
+ @param entries - one fixture per entry id
+ 
+ @returns Path of the artifacts directory
+ 
+ @example
+ ```ts
+ const dir = await writeArtifacts({ entries: { Mittens: { version: 2, digest: DIGEST_A, }, }, },);
+ ```
  */
 async function writeArtifacts(
   { entries, }: { readonly entries: Readonly<Record<string, Fixture>>; },
 ): Promise<string> {
   /**
-   * Disposable root for this case.
+   Disposable root for this case.
    */
   const dir = await mkdtemp(join(
     tmpdir(),
@@ -232,8 +232,8 @@ async function writeArtifacts(
         },
       ],): Promise<void> {
         /**
-         * Fields every fixture carries, whatever generation it claims: these are
-         * what the PIPELINE guard reads, so a case can reach the schema guard.
+         Fields every fixture carries, whatever generation it claims: these are
+         what the PIPELINE guard reads, so a case can reach the schema guard.
          */
         const common = {
           id: entryId,
@@ -242,8 +242,8 @@ async function writeArtifacts(
         };
 
         /**
-         * Body this fixture writes: a real version 2 artifact when the case
-         * needs one, and otherwise the label alone over a body that is not one.
+         Body this fixture writes: a real version 2 artifact when the case
+         needs one, and otherwise the label alone over a body that is not one.
          */
         const body = wellFormed
           ? emptyVersionTwoArtifact({
@@ -270,16 +270,16 @@ async function writeArtifacts(
 }
 
 /**
- * Runs the guard and reports what it said, or that it accepted.
- *
- * @param artifactsDir - directory to check
- *
- * @returns Refusal text, or a sentinel no assertion here matches
- *
- * @example
- * ```ts
- * const said = await refusalOf({ artifactsDir, },);
- * ```
+ Runs the guard and reports what it said, or that it accepted.
+ 
+ @param artifactsDir - directory to check
+ 
+ @returns Refusal text, or a sentinel no assertion here matches
+ 
+ @example
+ ```ts
+ const said = await refusalOf({ artifactsDir, },);
+ ```
  */
 async function refusalOf(
   { artifactsDir, }: { readonly artifactsDir: string; },
@@ -327,8 +327,8 @@ await describe({
         + 'reader asked it a two-lane question first',
       fn: async () => {
         /**
-         * A version 1 body carrying this generation's label and nothing else
-         * of that generation.
+         A version 1 body carrying this generation's label and nothing else
+         of that generation.
          */
         const artifactsDir = await writeArtifacts({
           entries: {
@@ -340,7 +340,7 @@ await describe({
         },);
 
         /**
-         * What the guard said about it.
+         What the guard said about it.
          */
         const said = await refusalOf({ artifactsDir, },);
         expect(said,).toContain('Mittens declares schema version 14',);
@@ -355,8 +355,8 @@ await describe({
         + 'promise about builds rather than about shapes',
       fn: async () => {
         /**
-         * A directory holding one artifact of each generation, both stamped with
-         * pipelines this invocation is not.
+         A directory holding one artifact of each generation, both stamped with
+         pipelines this invocation is not.
          */
         const artifactsDir = await writeArtifacts({
           entries: {
@@ -454,7 +454,7 @@ await describe({
         + 'deleted one is re-run too, and only one of the two keeps the result it already was',
       fn: async () => {
         /**
-         * Whatever the refusal said.
+         Whatever the refusal said.
          */
         const said = await refusalOf({
           artifactsDir: await writeArtifacts({
@@ -486,7 +486,7 @@ await describe({
         + 'of a generation this build cannot read, and each can be offered the remedy that fits',
       fn: async () => {
         /**
-         * A directory holding four different answers at once.
+         A directory holding four different answers at once.
          */
         const artifactsDir = await writeArtifacts({
           entries: {
@@ -519,7 +519,7 @@ await describe({
         );
 
         /**
-         * Every entry, in directory order.
+         Every entry, in directory order.
          */
         const rows = await censusBySchema({ artifactsDir, },);
         expect(

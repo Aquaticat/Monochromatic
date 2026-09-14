@@ -1,16 +1,16 @@
 /**
- * Tests for one seat's rendered standing.
- *
- * THE REPORT IS LINES, NOT PRINTS, so these cases read it without capturing
- * the console. What they pin: a seat with no rounds says so instead of
- * rendering an empty table, a seat with rounds renders its standings and then
- * its coverage gaps with the answered-but-unslated state kept apart from the
- * silent one, and `judgedAuthors` names every stakeholder of every slate in
- * slate order, composites included.
- *
- * Fixtures are model ids and ballots, so there is no passage here to invent.
- *
- * @module
+ Tests for one seat's rendered standing.
+ 
+ THE REPORT IS LINES, NOT PRINTS, so these cases read it without capturing
+ the console. What they pin: a seat with no rounds says so instead of
+ rendering an empty table, a seat with rounds renders its standings and then
+ its coverage gaps with the answered-but-unslated state kept apart from the
+ silent one, and `judgedAuthors` names every stakeholder of every slate in
+ slate order, composites included.
+ 
+ Fixtures are model ids and ballots, so there is no passage here to invent.
+ 
+ @module
  */
 
 import {
@@ -29,27 +29,27 @@ import {
 //region Fixtures
 
 /**
- * Model whose candidate a judge voted for, so it earns a row.
+ Model whose candidate a judge voted for, so it earns a row.
  */
 const WRITER: RosterModelId = 'hf:moonshotai/Kimi-K3';
 
 /**
- * Model that cast the ballot and, as a rewriter, was heard proposing nothing.
+ Model that cast the ballot and, as a rewriter, was heard proposing nothing.
  */
 const JUDGE: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * Model no answer came from.
+ Model no answer came from.
  */
 const IDLE: RosterModelId = 'minimax-m3';
 
 /**
- * Second contributor of a composite candidate.
+ Second contributor of a composite candidate.
  */
 const PARTNER: RosterModelId = 'gemma-4-26b-a4b-it';
 
 /**
- * Seats the run filled, in the order the report should preserve.
+ Seats the run filled, in the order the report should preserve.
  */
 const ROSTER: readonly RosterModelId[] = [
   WRITER,
@@ -58,7 +58,7 @@ const ROSTER: readonly RosterModelId[] = [
 ];
 
 /**
- * One judged round: a single candidate by the writer, voted for by the judge.
+ One judged round: a single candidate by the writer, voted for by the judge.
  */
 const VOTED_ROUND: SelectionRound = {
   producers: [
@@ -79,7 +79,7 @@ const VOTED_ROUND: SelectionRound = {
 };
 
 /**
- * Round whose slate carries a composite candidate beside a plain one.
+ Round whose slate carries a composite candidate beside a plain one.
  */
 const COMPOSITE_ROUND: SelectionRound = {
   producers: [
@@ -107,7 +107,7 @@ await describe({
       name: 'renders a heading and the no-rounds note when nothing was judged',
       fn: async () => {
         /**
-         * Report for a seat that judged nothing on either slice.
+         Report for a seat that judged nothing on either slice.
          */
         const lines = standingReportLines({
           seat: 'EDITOR',
@@ -131,8 +131,8 @@ await describe({
         + 'each on its own line (#263)',
       fn: async () => {
         /**
-         * Report for one voted round on the first of two slices, at a seat
-         * that heard the writer and the judge and never the idle model.
+         Report for one voted round on the first of two slices, at a seat
+         that heard the writer and the judge and never the idle model.
          */
         const lines = standingReportLines({
           seat: 'REFINER',
@@ -171,8 +171,8 @@ await describe({
         + 'crediting every author of a composite and skipping slices that bought nothing',
       fn: async () => {
         /**
-         * Per-slice lines for a voted slice, an empty slice, and a composite
-         * slice nobody voted on.
+         Per-slice lines for a voted slice, an empty slice, and a composite
+         slice nobody voted on.
          */
         const lines = sliceStandingLines({
           perSlice: [
@@ -193,8 +193,8 @@ await describe({
       name: 'indents every line after the heading, so the report reads as one block under it',
       fn: async () => {
         /**
-         * Report with a standing line and a coverage line to check the
-         * indentation of.
+         Report with a standing line and a coverage line to check the
+         indentation of.
          */
         const lines = standingReportLines({
           seat: 'EDITOR',
@@ -219,7 +219,7 @@ await describe({
       name: 'names every stakeholder of every slate in slate order, composites flattened',
       fn: async () => {
         /**
-         * Authors across two slices, the second carrying a composite.
+         Authors across two slices, the second carrying a composite.
          */
         const authors = judgedAuthors({
           perSlice: [

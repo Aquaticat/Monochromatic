@@ -19,90 +19,90 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // the time this helper sees a failure.
 
 /**
- * One stage voice as data:
- * either the model's validated reply, or the recorded loss of that voice.
- *
- * @example
- * ```ts
- * const voice: StageVoice<CriticReportWire> = { heard: false, answered: false, };
- * ```
+ One stage voice as data:
+ either the model's validated reply, or the recorded loss of that voice.
+ 
+ @example
+ ```ts
+ const voice: StageVoice<CriticReportWire> = { heard: false, answered: false, };
+ ```
  */
 export type StageVoice<ValueT,> =
   | {
     /**
-     * Reply arrived and validated.
+     Reply arrived and validated.
      */
     readonly heard: true;
 
     /**
-     * Validated reply value.
+     Validated reply value.
      */
     readonly value: ValueT;
   }
   | {
     /**
-     * Voice lost to a non-ok outcome or transport failure.
+     Voice lost to a non-ok outcome or transport failure.
      */
     readonly heard: false;
 
     /**
-     * Whether the model finished and only the shape was wrong.
-     *
-     * SEPARATES THE TWO LOSSES THAT LOOK ALIKE AND ARE NOT. `ChatJsonOutcome`
-     * has three kinds and only `ok` is usable, so a non-`ok` outcome carries
-     * `rawText` and means the model got there. A thrown failure, a grace
-     * abandonment and an unfilled roster position all mean it did not.
-     *
-     * `stage-quorum.ts` re-asks on exactly this: a model that finished is worth
-     * one fresh call, and a model still thinking is worth a second timeout on
-     * the critical path to nobody.
+     Whether the model finished and only the shape was wrong.
+     
+     SEPARATES THE TWO LOSSES THAT LOOK ALIKE AND ARE NOT. `ChatJsonOutcome`
+     has three kinds and only `ok` is usable, so a non-`ok` outcome carries
+     `rawText` and means the model got there. A thrown failure, a grace
+     abandonment and an unfilled roster position all mean it did not.
+     
+     `stage-quorum.ts` re-asks on exactly this: a model that finished is worth
+     one fresh call, and a model still thinking is worth a second timeout on
+     the critical path to nobody.
      */
     readonly answered: boolean;
 
     /**
-     * Whether no wet provider served the seat at all.
-     *
-     * THE ONE LOSS THAT SAYS SOMETHING ABOUT THE BENCH RATHER THAN THE MODEL.
-     * `judgeSeatsFor` keeps a seat on the bench when every provider serving
-     * it reads dry, and the router refuses the call in the same millisecond as
-     * `NoProviderForModelError`. The owner's decision of 2026-09-09
-     * (`translation-repair-short-bench-share.md`) sizes the selection
-     * minimum by the seats a provider could serve, so the stage has to tell
-     * this refusal from a transport that failed on a wet provider: the second
-     * is a lost voice on a bench that stands, the first a bench that is
-     * smaller than it looks.
+     Whether no wet provider served the seat at all.
+     
+     THE ONE LOSS THAT SAYS SOMETHING ABOUT THE BENCH RATHER THAN THE MODEL.
+     `judgeSeatsFor` keeps a seat on the bench when every provider serving
+     it reads dry, and the router refuses the call in the same millisecond as
+     `NoProviderForModelError`. The owner's decision of 2026-09-09
+     (`translation-repair-short-bench-share.md`) sizes the selection
+     minimum by the seats a provider could serve, so the stage has to tell
+     this refusal from a transport that failed on a wet provider: the second
+     is a lost voice on a bench that stands, the first a bench that is
+     smaller than it looks.
      */
     readonly unreachable: boolean;
   };
 
 /**
- * Longest model text a lost-voice warning carries, counted in grapheme
- * clusters so the bound cannot cut a character in half.
- *
- * A parse failure is almost always diagnosable from the OPENING characters:
- * the Kimi-K3 outage was a two-character channel marker, and 507 mismatches in
- * one pass were explained by it. Its 2026-08-13 recurrence was explained the
- * same way, from `p|>` and `ep|>` recorded here.
+ Longest model text a lost-voice warning carries, counted in grapheme
+ clusters so the bound cannot cut a character in half.
+ 
+ A parse failure is almost always diagnosable from the OPENING characters:
+ the Kimi-K3 outage was a two-character channel marker, and 507 mismatches in
+ one pass were explained by it. Its 2026-08-13 recurrence was explained the
+ same way, from `p|>` and `ep|>` recorded here.
  */
 const RAW_PREVIEW_CHARS = 120;
 
 /**
- * Names WHY a voice was lost, not merely that one was.
- *
- * `schema-mismatch` covers three different faults needing three different
- * fixes, truncated thinking, unparseable content and a rejected guard, and the
- * client already distinguishes them in `detail`. That distinction was logged at
- * DEBUG and discarded here, so a run recorded `schema-mismatch, voice lost`
- * hundreds of times while saying nothing about which fault it was.
- *
- * @param outcome - non-ok exchange outcome
- *
- * @returns Cause with its sub-kind, plus a bounded opening of the model text
- *
- * @example
- * ```ts
- * lostVoiceCause({ outcome, },);
- * ```
+ Names WHY a voice was lost, not merely that one was.
+ 
+ `schema-mismatch` covers three different faults needing three different
+ fixes, truncated thinking, unparseable content and a rejected guard, and the
+ client already distinguishes them in `detail`. That distinction was logged at
+ DEBUG and discarded here, so a run recorded `schema-mismatch, voice lost`
+ hundreds of times while saying nothing about which fault it was.
+ 
+ @param outcome - non-ok exchange outcome
+ 
+ @returns Cause with its sub-kind, plus a bounded opening of the model text
+ 
+ @example
+ ```ts
+ lostVoiceCause({ outcome, },);
+ ```
  */
 function lostVoiceCause(
   {
@@ -112,11 +112,11 @@ function lostVoiceCause(
   },
 ): string {
   /**
-   * Model text on one line.
-   *
-   * Both line terminators are replaced, not just the newline: a reply using
-   * carriage returns would otherwise break the one-line guarantee this exists
-   * to keep.
+   Model text on one line.
+   
+   Both line terminators are replaced, not just the newline: a reply using
+   carriage returns would otherwise break the one-line guarantee this exists
+   to keep.
    */
   const flattened = outcome
     .rawText
@@ -134,17 +134,17 @@ function lostVoiceCause(
     );
 
   /**
-   * Grapheme clusters of the flattened text, in order.
-   *
-   * Segmented rather than sliced because the bound falls in the middle of real
-   * model output. `slice` counts UTF-16 code units and can cut a surrogate pair
-   * in half; iterating code points fixes that and still splits an emoji or a
-   * combining mark from its base. The preview is the whole diagnostic here, so
-   * it has to survive the cut intact.
-   *
-   * Marked foreign because this is where host-owned mutable state enters: the
-   * segmenter hands back its own records, whose fields the host declares
-   * writable, and nothing here owns or mutates them.
+   Grapheme clusters of the flattened text, in order.
+   
+   Segmented rather than sliced because the bound falls in the middle of real
+   model output. `slice` counts UTF-16 code units and can cut a surrogate pair
+   in half; iterating code points fixes that and still splits an emoji or a
+   combining mark from its base. The preview is the whole diagnostic here, so
+   it has to survive the cut intact.
+   
+   Marked foreign because this is where host-owned mutable state enters: the
+   segmenter hands back its own records, whose fields the host declares
+   writable, and nothing here owns or mutates them.
    */
   const clusters: readonly DeepReadonlyData<Pick<Intl.SegmentData, 'segment'>>[] = [
     ...new Intl.Segmenter(
@@ -155,7 +155,7 @@ function lostVoiceCause(
   ];
 
   /**
-   * Bounded opening of the model text, since a warning is one line.
+   Bounded opening of the model text, since a warning is one line.
    */
   const opening = clusters
     .slice(
@@ -172,35 +172,35 @@ function lostVoiceCause(
 }
 
 /**
- * Runs one schema-validated exchange for a pipeline stage.
- *
- * @param client - injected model client
- *
- * @param modelId - model to call
- *
- * @param messages - prompt for the exchange
- *
- * @param signal - caller abort honored by the exchange
- *
- * @param exchangeTimeoutMs - deadline armed inside the per-model slot
- *
- * @param maxAnswerChars - bound on one answer, when the caller knows how
- * large its own input was
- *
- * @param responseFormat - structured-output constraint
- *
- * @param validate - client-side schema guard
- *
- * @param stage - stage label for logging
- *
- * @param l - logger of the calling stage
- *
- * @returns Voice as data; a lost voice never throws unless the caller aborted
- *
- * @example
- * ```ts
- * const voice = await attemptStageCall({ ..., stage: 'critic', l, },);
- * ```
+ Runs one schema-validated exchange for a pipeline stage.
+ 
+ @param client - injected model client
+ 
+ @param modelId - model to call
+ 
+ @param messages - prompt for the exchange
+ 
+ @param signal - caller abort honored by the exchange
+ 
+ @param exchangeTimeoutMs - deadline armed inside the per-model slot
+ 
+ @param maxAnswerChars - bound on one answer, when the caller knows how
+ large its own input was
+ 
+ @param responseFormat - structured-output constraint
+ 
+ @param validate - client-side schema guard
+ 
+ @param stage - stage label for logging
+ 
+ @param l - logger of the calling stage
+ 
+ @returns Voice as data; a lost voice never throws unless the caller aborted
+ 
+ @example
+ ```ts
+ const voice = await attemptStageCall({ ..., stage: 'critic', l, },);
+ ```
  */
 export async function attemptStageCall<ValueT,>(
   {
@@ -229,7 +229,7 @@ export async function attemptStageCall<ValueT,>(
 ): Promise<StageVoice<ValueT>> {
   try {
     /**
-     * Outcome of the exchange.
+     Outcome of the exchange.
      */
     const outcome = await client.chatJson({
       modelId,
@@ -269,8 +269,8 @@ export async function attemptStageCall<ValueT,>(
     if (signal.aborted)
       throw error;
     /**
-     * Whether the router refused the call because no wet provider serves the
-     * seat, which is a fact about the bench rather than about this exchange.
+     Whether the router refused the call because no wet provider serves the
+     seat, which is a fact about the bench rather than about this exchange.
      */
     const unreachable = error instanceof NoProviderForModelError;
     l.warn(`${stage} ${modelId}: ${String(error,)}, ${unreachable ? 'seat unreachable' : 'voice lost'}`,);

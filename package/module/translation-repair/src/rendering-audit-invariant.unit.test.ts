@@ -1,12 +1,12 @@
 /**
- * Tests for the class every rendering audit invariant is thrown as.
- *
- * SIX SITES, ONE NAME. The invariants are unreachable by construction, so the
- * only thing worth pinning is that reaching one is told apart by name from an
- * operator refusal or a provider fault, and that the site's own sentence
- * travels whole. Fixtures are invention.
- *
- * @module
+ Tests for the class every rendering audit invariant is thrown as.
+ 
+ SIX SITES, ONE NAME. The invariants are unreachable by construction, so the
+ only thing worth pinning is that reaching one is told apart by name from an
+ operator refusal or a provider fault, and that the site's own sentence
+ travels whole. Fixtures are invention.
+ 
+ @module
  */
 
 import {
@@ -25,7 +25,7 @@ await describe({
         + 'a stated refusal by name alone',
       fn: async () => {
         /**
-         * One invariant, broken.
+         One invariant, broken.
          */
         const broken = new RenderingAuditInvariantError({
           invariant: 'a defect group with no members cannot occur, since groups are built from claims',

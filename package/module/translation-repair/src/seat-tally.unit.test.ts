@@ -1,15 +1,15 @@
 /**
- * Tests for the seat tally: counting at the client seam and the closing report.
- *
- * THE COUNTS ARE THE EVIDENCE `#235` LACKED. Five of ten seats failed every
- * call of a four-slice calibration and the command exited 0, because quorum was
- * met on the nose by the other five and nothing read the whole run. The tally
- * counts every settled call against its seat, and the report says which seats
- * were asked and produced nothing usable, in the closing lines of every
- * command. The cases below pin what "usable" means on each surface, that the
- * wrapped client is otherwise untouched, and the exact lines a reader greps.
- *
- * @module
+ Tests for the seat tally: counting at the client seam and the closing report.
+ 
+ THE COUNTS ARE THE EVIDENCE `#235` LACKED. Five of ten seats failed every
+ call of a four-slice calibration and the command exited 0, because quorum was
+ met on the nose by the other five and nothing read the whole run. The tally
+ counts every settled call against its seat, and the report says which seats
+ were asked and produced nothing usable, in the closing lines of every
+ command. The cases below pin what "usable" means on each surface, that the
+ wrapped client is otherwise untouched, and the exact lines a reader greps.
+ 
+ @module
  */
 
 import {
@@ -33,7 +33,7 @@ import {
 //region Fixtures
 
 /**
- * Single user message reused across cases.
+ Single user message reused across cases.
  */
 const MESSAGES = [
   {
@@ -43,26 +43,26 @@ const MESSAGES = [
 ];
 
 /**
- * Signal reused across cases; nothing here aborts.
+ Signal reused across cases; nothing here aborts.
  */
 const SIGNAL = new AbortController().signal;
 
 /**
- * Verdict shape the JSON cases validate against.
+ Verdict shape the JSON cases validate against.
  */
 type CatVerdict = { readonly verdict: string; };
 
 /**
- * Guards parsed JSON as a verdict.
- *
- * @param value - parsed candidate
- *
- * @returns Whether it carries a string verdict
- *
- * @example
- * ```ts
- * const ok = isCatVerdict({ verdict: 'purr', },);
- * ```
+ Guards parsed JSON as a verdict.
+ 
+ @param value - parsed candidate
+ 
+ @returns Whether it carries a string verdict
+ 
+ @example
+ ```ts
+ const ok = isCatVerdict({ verdict: 'purr', },);
+ ```
  */
 function isCatVerdict(value: unknown,): value is CatVerdict {
   return ((typeof value) === 'object')
@@ -72,26 +72,26 @@ function isCatVerdict(value: unknown,): value is CatVerdict {
 }
 
 /**
- * Failure the throwing fixture raises, kept identical so a case can assert the
- * wrapper rethrew the very same value.
+ Failure the throwing fixture raises, kept identical so a case can assert the
+ wrapper rethrew the very same value.
  */
 const FAILURE = new Error('the cat unplugged the router',);
 
 /**
- * Builds an inner client that answers every text call with `text`, answers
- * every JSON call with the parse of `text` run through the request's guard,
- * and throws `FAILURE` on every call instead when `failing` is set.
- *
- * @param text - what the fixture says
- *
- * @param failing - whether every call throws instead
- *
- * @returns Client with the full surface
- *
- * @example
- * ```ts
- * const inner = innerClient({ text: '{"verdict":"purr"}', },);
- * ```
+ Builds an inner client that answers every text call with `text`, answers
+ every JSON call with the parse of `text` run through the request's guard,
+ and throws `FAILURE` on every call instead when `failing` is set.
+ 
+ @param text - what the fixture says
+ 
+ @param failing - whether every call throws instead
+ 
+ @returns Client with the full surface
+ 
+ @example
+ ```ts
+ const inner = innerClient({ text: '{"verdict":"purr"}', },);
+ ```
  */
 function innerClient(
   {
@@ -115,7 +115,7 @@ function innerClient(
         throw FAILURE;
 
       /**
-       * What the fixed text parses to.
+       What the fixed text parses to.
        */
       const parsed: unknown = JSON.parse(text,);
       if (request.validate(parsed,))

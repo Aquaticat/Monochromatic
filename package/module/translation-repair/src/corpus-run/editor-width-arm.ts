@@ -21,47 +21,47 @@ import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 // attributable to the seats rather than to the sheet, the panel, or the work.
 
 /**
- * What one arm shipped, reduced to what the comparison reads.
+ What one arm shipped, reduced to what the comparison reads.
  */
 export type ArmOutcome = {
   /**
-   * Text that shipped, blank when the arm changed nothing.
+   Text that shipped, blank when the arm changed nothing.
    */
   readonly text: string;
 
   /**
-   * Whole patch, kept so the head-to-head can put it on a slate unaltered.
+   Whole patch, kept so the head-to-head can put it on a slate unaltered.
    */
   readonly patch: PatchOutcome;
 
   /**
-   * Editors heard out of those seated.
+   Editors heard out of those seated.
    */
   readonly heard: number;
 
   /**
-   * Models that wrote the shipped text.
+   Models that wrote the shipped text.
    */
   readonly producers: readonly RosterModelId[];
 };
 
 /**
- * Reduces a stage result to the fields the comparison needs.
- *
- * READS THE PRODUCER OFF THE RESULT rather than indexing the slate.
- * `selectedIndex` is one-based over a slate the round may have reordered, which
- * is the trap `#187` documented; `shippedProducer` is the stage's own answer.
- *
- * @param stage - what one arm returned
- *
- * @param targetText - translation as it stood, so an unchanged arm reads blank
- *
- * @returns Arm reduced for comparison
- *
- * @example
- * ```ts
- * const arm = readArm({ stage, targetText, },);
- * ```
+ Reduces a stage result to the fields the comparison needs.
+ 
+ READS THE PRODUCER OFF THE RESULT rather than indexing the slate.
+ `selectedIndex` is one-based over a slate the round may have reordered, which
+ is the trap `#187` documented; `shippedProducer` is the stage's own answer.
+ 
+ @param stage - what one arm returned
+ 
+ @param targetText - translation as it stood, so an unchanged arm reads blank
+ 
+ @returns Arm reduced for comparison
+ 
+ @example
+ ```ts
+ const arm = readArm({ stage, targetText, },);
+ ```
  */
 function readArm(
   {
@@ -73,7 +73,7 @@ function readArm(
   },
 ): ArmOutcome {
   /**
-   * Producer the stage recorded for the text it shipped.
+   Producer the stage recorded for the text it shipped.
    */
   const {
     shippedProducer,
@@ -82,7 +82,7 @@ function readArm(
   } = stage;
 
   /**
-   * Text this arm produced, which is the incumbent when nothing applied.
+   Text this arm produced, which is the incumbent when nothing applied.
    */
   const { patchedText, } = patch;
 
@@ -100,26 +100,26 @@ function readArm(
 }
 
 /**
- * Runs one arm end to end.
- *
- * @param client - injected model client
- *
- * @param input - slice with its accepted issues
- *
- * @param editorModelIds - seats for this arm, the variable under test
- *
- * @param judgeModelIds - panel, held fixed across every arm
- *
- * @param signal - cancellation
- *
- * @param l - logger
- *
- * @returns Arm reduced for comparison
- *
- * @example
- * ```ts
- * const narrow = await runArm({ client, input, editorModelIds, judgeModelIds, signal, l, },);
- * ```
+ Runs one arm end to end.
+ 
+ @param client - injected model client
+ 
+ @param input - slice with its accepted issues
+ 
+ @param editorModelIds - seats for this arm, the variable under test
+ 
+ @param judgeModelIds - panel, held fixed across every arm
+ 
+ @param signal - cancellation
+ 
+ @param l - logger
+ 
+ @returns Arm reduced for comparison
+ 
+ @example
+ ```ts
+ const narrow = await runArm({ client, input, editorModelIds, judgeModelIds, signal, l, },);
+ ```
  */
 export async function runArm(
   {
@@ -139,7 +139,7 @@ export async function runArm(
   }>,
 ): Promise<ArmOutcome> {
   /**
-   * What this arm's editors and the fixed panel settled on.
+   What this arm's editors and the fixed panel settled on.
    */
   const stage = await runEditorStage({
     client,

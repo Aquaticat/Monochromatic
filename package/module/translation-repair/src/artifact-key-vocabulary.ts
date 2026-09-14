@@ -43,55 +43,55 @@ import { ARTIFACT_SCHEMA_VERSION_V1, } from './artifact-schema-version.ts';
 // under the wrong generation's spelling.
 
 /**
- * Keys whose spelling moved between generations, under the names the rest of
- * this package uses for them.
- *
- * SPELLED OUT AS THREE FIELDS rather than carried as a map from new name to old
- * name, so a reader that names a key this table does not cover fails to compile
- * instead of reading `undefined` off a lookup and asking the artifact for a key
- * called `undefined`.
- *
- * THE FIELDS ARE PLAIN STRINGS rather than the literals themselves, because
- * every use here is a lookup or a path fragment. A WRITER cannot take its keys
- * from this table for that reason: `isolatedDeclarations` requires the
- * annotation, the annotation widens the literals, and a computed key of type
- * `string` builds an object with an index signature instead of named fields.
- * `artifact-build.ts` writes its keys out and names this table in a comment.
- *
- * @example
- * ```ts
- * const keys: ArtifactKeyVocabulary = SLICE_SPELLED_KEYS;
- * ```
+ Keys whose spelling moved between generations, under the names the rest of
+ this package uses for them.
+ 
+ SPELLED OUT AS THREE FIELDS rather than carried as a map from new name to old
+ name, so a reader that names a key this table does not cover fails to compile
+ instead of reading `undefined` off a lookup and asking the artifact for a key
+ called `undefined`.
+ 
+ THE FIELDS ARE PLAIN STRINGS rather than the literals themselves, because
+ every use here is a lookup or a path fragment. A WRITER cannot take its keys
+ from this table for that reason: `isolatedDeclarations` requires the
+ annotation, the annotation widens the literals, and a computed key of type
+ `string` builds an object with an index signature instead of named fields.
+ `artifact-build.ts` writes its keys out and names this table in a comment.
+ 
+ @example
+ ```ts
+ const keys: ArtifactKeyVocabulary = SLICE_SPELLED_KEYS;
+ ```
  */
 export type ArtifactKeyVocabulary = {
   /**
-   * Key naming slices whose returned text differs from the archive.
+   Key naming slices whose returned text differs from the archive.
    */
   readonly changedSliceIndices: string;
 
   /**
-   * Key naming slices whose change the assembly guard took back.
+   Key naming slices whose change the assembly guard took back.
    */
   readonly withdrawnSliceIndices: string;
 
   /**
-   * Key naming which critics were heard at each slice.
+   Key naming which critics were heard at each slice.
    */
   readonly sliceCritics: string;
 
   /**
-   * Key naming which slice a per-slice record belongs to.
+   Key naming which slice a per-slice record belongs to.
    */
   readonly sliceIndex: string;
 };
 
 /**
- * Spelling generations 1 and 2 wrote.
- *
- * @example
- * ```ts
- * const value = record[CHUNK_SPELLED_KEYS.changedSliceIndices];
- * ```
+ Spelling generations 1 and 2 wrote.
+ 
+ @example
+ ```ts
+ const value = record[CHUNK_SPELLED_KEYS.changedSliceIndices];
+ ```
  */
 export const CHUNK_SPELLED_KEYS: ArtifactKeyVocabulary = {
   changedSliceIndices: 'shippedChunkIndices',
@@ -101,12 +101,12 @@ export const CHUNK_SPELLED_KEYS: ArtifactKeyVocabulary = {
 };
 
 /**
- * Spelling generation 3 writes, which is the one the code uses throughout.
- *
- * @example
- * ```ts
- * const value = record[SLICE_SPELLED_KEYS.changedSliceIndices];
- * ```
+ Spelling generation 3 writes, which is the one the code uses throughout.
+ 
+ @example
+ ```ts
+ const value = record[SLICE_SPELLED_KEYS.changedSliceIndices];
+ ```
  */
 export const SLICE_SPELLED_KEYS: ArtifactKeyVocabulary = {
   changedSliceIndices: 'changedSliceIndices',
@@ -116,11 +116,11 @@ export const SLICE_SPELLED_KEYS: ArtifactKeyVocabulary = {
 };
 
 /**
- * Spelling generation 3 wrote, which is neither table whole.
- *
- * WRITTEN AS THE DIFFERENCE rather than spelled out again, so it cannot drift
- * from the two tables it sits between: it is generation 4 except for the index,
- * which had not moved yet.
+ Spelling generation 3 wrote, which is neither table whole.
+ 
+ WRITTEN AS THE DIFFERENCE rather than spelled out again, so it cannot drift
+ from the two tables it sits between: it is generation 4 except for the index,
+ which had not moved yet.
  */
 const GENERATION_3_KEYS: ArtifactKeyVocabulary = {
   ...SLICE_SPELLED_KEYS,
@@ -128,7 +128,7 @@ const GENERATION_3_KEYS: ArtifactKeyVocabulary = {
 };
 
 /**
- * Which spelling each generation wrote.
+ Which spelling each generation wrote.
  */
 const KEYS_BY_GENERATION: Readonly<Record<number, ArtifactKeyVocabulary>> = {
   [ARTIFACT_SCHEMA_VERSION_V1]: CHUNK_SPELLED_KEYS,
@@ -148,23 +148,23 @@ const KEYS_BY_GENERATION: Readonly<Record<number, ArtifactKeyVocabulary>> = {
 };
 
 /**
- * Generation named by an artifact that this table does not cover.
- *
- * @example
- * ```ts
- * throw new UnknownArtifactGenerationError({ version: 9, },);
- * ```
+ Generation named by an artifact that this table does not cover.
+ 
+ @example
+ ```ts
+ throw new UnknownArtifactGenerationError({ version: 9, },);
+ ```
  */
 export class UnknownArtifactGenerationError extends Error {
   /**
-   * Declares this message safe to forward: it names a schema version.
+   Declares this message safe to forward: it names a schema version.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Names the generation and says what its absence means for the read.
-   *
-   * @param version - generation an artifact recorded
+   Names the generation and says what its absence means for the read.
+   
+   @param version - generation an artifact recorded
    */
   public constructor({ version, }: { readonly version: number; },) {
     super(
@@ -178,25 +178,25 @@ export class UnknownArtifactGenerationError extends Error {
 }
 
 /**
- * Selects the spelling a generation wrote.
- *
- * @param version - generation an artifact records
- *
- * @returns Spelling that generation used for all three keys
- *
- * @throws {@link UnknownArtifactGenerationError} when no spelling is recorded
- * for that generation
- *
- * @example
- * ```ts
- * const keys = keyVocabularyOf({ version: reading.version, },);
- * ```
+ Selects the spelling a generation wrote.
+ 
+ @param version - generation an artifact records
+ 
+ @returns Spelling that generation used for all three keys
+ 
+ @throws {@link UnknownArtifactGenerationError} when no spelling is recorded
+ for that generation
+ 
+ @example
+ ```ts
+ const keys = keyVocabularyOf({ version: reading.version, },);
+ ```
  */
 export function keyVocabularyOf(
   { version, }: { readonly version: number; },
 ): ArtifactKeyVocabulary {
   /**
-   * Spelling recorded for this generation, absent where none is.
+   Spelling recorded for this generation, absent where none is.
    */
   const keys = KEYS_BY_GENERATION[version];
   if (keys === undefined)

@@ -1,12 +1,12 @@
 /**
- * Tests for paragraph-bound slice subdivision:
- * a generous budget keeps the section whole, a small budget groups
- * paragraphs without ever splitting one, coverage is contiguous with
- * exact document bytes, mismatched paragraph counts merge
- * monotonically, and the global base index lands on every slice.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for paragraph-bound slice subdivision:
+ a generous budget keeps the section whole, a small budget groups
+ paragraphs without ever splitting one, coverage is contiguous with
+ exact document bytes, mismatched paragraph counts merge
+ monotonically, and the global base index lands on every slice.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -25,7 +25,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original with one section of three short paragraphs.
+ Original with one section of three short paragraphs.
  */
 const SOURCE_TEXT = `## 猫的一天
 
@@ -37,7 +37,7 @@ const SOURCE_TEXT = `## 猫的一天
 `;
 
 /**
- * Translation mirroring the section with three paragraphs.
+ Translation mirroring the section with three paragraphs.
  */
 const TARGET_TEXT = `## A cat's day
 
@@ -49,7 +49,7 @@ The kitten chases butterflies in the yard at night.
 `;
 
 /**
- * Translation collapsing the three source paragraphs into two.
+ Translation collapsing the three source paragraphs into two.
  */
 const TARGET_TWO_PARAGRAPHS = `## A cat's day
 
@@ -59,10 +59,10 @@ The kitten chases butterflies in the yard at night.
 `;
 
 /**
- * Builds a marked paragraph of an exact character length: an `M{index}`
- * tag that both sides' corresponding paragraphs carry, padded to size with
- * cat-themed filler. Equal-length marker tags let a slice's source and
- * target marker sets be compared for drift.
+ Builds a marked paragraph of an exact character length: an `M{index}`
+ tag that both sides' corresponding paragraphs carry, padded to size with
+ cat-themed filler. Equal-length marker tags let a slice's source and
+ target marker sets be compared for drift.
  */
 function markedParagraph(
   {
@@ -74,7 +74,7 @@ function markedParagraph(
   },
 ): string {
   /**
-   * Marker tag matching paragraphs share across the two sides.
+   Marker tag matching paragraphs share across the two sides.
    */
   const tag = `M${String(index,)} `;
   return tag
@@ -87,9 +87,9 @@ function markedParagraph(
 }
 
 /**
- * Joins marked paragraphs of the given span sizes into one document, so a
- * source and target built from equal-length size lists share paragraph
- * count and marker order while diverging in per-paragraph length.
+ Joins marked paragraphs of the given span sizes into one document, so a
+ source and target built from equal-length size lists share paragraph
+ count and marker order while diverging in per-paragraph length.
  */
 function markedDocument(
   { sizes, }: { readonly sizes: readonly number[]; },
@@ -105,7 +105,7 @@ function markedDocument(
 }
 
 /**
- * Marker indices the equal-count lockstep fixtures carry, in order.
+ Marker indices the equal-count lockstep fixtures carry, in order.
  */
 const LOCKSTEP_MARKERS = [
   0,
@@ -117,8 +117,8 @@ const LOCKSTEP_MARKERS = [
 ];
 
 /**
- * Extracts the ordered marker tags a slice side contains, by substring
- * presence so no inline regex is needed.
+ Extracts the ordered marker tags a slice side contains, by substring
+ presence so no inline regex is needed.
  */
 function sliceMarkers(
   { text, }: { readonly text: string; },
@@ -134,7 +134,7 @@ function sliceMarkers(
 }
 
 /**
- * Builds the single aligned section pair of a fixture document pair.
+ Builds the single aligned section pair of a fixture document pair.
  */
 function alignedPair(
   {
@@ -146,7 +146,7 @@ function alignedPair(
   },
 ): ChunkPair {
   /**
-   * Alignment over the parsed fixture pair.
+   Alignment over the parsed fixture pair.
    */
   const alignment = alignDocumentSections({
     source: parseDocument({ text: source, },),
@@ -154,7 +154,7 @@ function alignedPair(
   },);
 
   /**
-   * Only pair of the single-section fixtures.
+   Only pair of the single-section fixtures.
    */
   const [pair,] = alignment.pairs;
   if (pair === undefined)
@@ -230,7 +230,7 @@ await describe({
           ),);
 
           /**
-           * Preceding slice for monotone ordering.
+           Preceding slice for monotone ordering.
            */
           const previous = slices[index - 1];
           if (previous !== undefined) {
@@ -277,14 +277,14 @@ await describe({
       name: 'pairs equal node counts in lockstep without off-by-one drift (Arita regression)',
       fn: async () => {
         /**
-         * Dense original: small adjacent nodes merge on odd boundaries.
+         Dense original: small adjacent nodes merge on odd boundaries.
          */
         const source = markedDocument({ sizes: [35, 10, 10, 35, 10, 10,], },);
 
         /**
-         * Longer translation: same paragraph count, mirrored sizes so the
-         * independent-budget grouping would merge on even boundaries and
-         * drift the pairing by one (the Arita non-translation false block).
+         Longer translation: same paragraph count, mirrored sizes so the
+         independent-budget grouping would merge on even boundaries and
+         drift the pairing by one (the Arita non-translation false block).
          */
         const target = markedDocument({ sizes: [10, 10, 35, 10, 10, 35,], },);
         const pair = alignedPair({
@@ -307,7 +307,7 @@ await describe({
         },);
 
         /**
-         * Ordered markers gathered across every slice's original side.
+         Ordered markers gathered across every slice's original side.
          */
         const covered: string[] = [];
         for (const slice of slices) {
@@ -350,18 +350,18 @@ await describe({
       name: 'stamps the base index on a section only ONE side carries, which is the path that returned the pair untouched. It arrived holding its SECTION index while every other path stamps the global one, so once any earlier section subdivided two slices of one document shared an index, and slice identity is what the cache key and the splice both rest on',
       fn: async () => {
         /**
-         * Original whose section has prose against a translation whose
-         * matching section is a bare heading, so one side groups into no runs.
+         Original whose section has prose against a translation whose
+         matching section is a bare heading, so one side groups into no runs.
          */
         const onlySource = '## 猫的一天\n\n小猫早晨在窗台晒太阳。\n';
 
         /**
-         * Translation carrying the heading and nothing under it.
+         Translation carrying the heading and nothing under it.
          */
         const emptyTarget = '## A cat\'s day\n';
 
         /**
-         * Slices of a section pair one side left empty.
+         Slices of a section pair one side left empty.
          */
         const slices = subdivideChunkPair({
           pair: alignedPair({
@@ -388,10 +388,10 @@ await describe({
 // used to come back as ONE slice however long its original was.
 
 /**
- * Original section of eight short paragraphs, none of them near the budget on
- * its own, together well past it: 330 characters over eight blocks. This is the corpus shape: `XingZ60`'s two
- * unrendered sections hold 6 and 23 blocks whose largest member is 384
- * characters, against a budget of 400.
+ Original section of eight short paragraphs, none of them near the budget on
+ its own, together well past it: 330 characters over eight blocks. This is the corpus shape: `XingZ60`'s two
+ unrendered sections hold 6 and 23 blocks whose largest member is 384
+ characters, against a budget of 400.
  */
 const UNRENDERED_SOURCE_TEXT = `## 猫猫的一天
 
@@ -410,18 +410,18 @@ ${
 `;
 
 /**
- * Where in the translation this section's rendering belongs.
+ Where in the translation this section's rendering belongs.
  */
 const ANCHOR_OFFSET = 120;
 
 /**
- * Slice budget these cases measure against.
- *
- * SCALED DOWN FROM THE PRODUCTION 400 so the fixture can stay short enough to
- * read. What matters is the RATIO of section to budget: this section runs 330
- * characters over eight blocks, so at 120 it must split about three ways, which
- * is the same pressure `XingZ60`'s 1459-character unrendered section is under
- * at 400.
+ Slice budget these cases measure against.
+ 
+ SCALED DOWN FROM THE PRODUCTION 400 so the fixture can stay short enough to
+ read. What matters is the RATIO of section to budget: this section runs 330
+ characters over eight blocks, so at 120 it must split about three ways, which
+ is the same pressure `XingZ60`'s 1459-character unrendered section is under
+ at 400.
  */
 const INSERTION_BUDGET = 120;
 
@@ -436,7 +436,7 @@ await describe({
         + 'budget every other slice is held to',
       fn: async () => {
         /**
-         * Original section as the aligner hands it over.
+         Original section as the aligner hands it over.
          */
         const [sourceChunk,] = chunkByHeadings({
           document: parseDocument({ text: UNRENDERED_SOURCE_TEXT, },),
@@ -445,7 +445,7 @@ await describe({
           throw new Error('the fixture should parse to one section',);
 
         /**
-         * Slices this section subdivides into.
+         Slices this section subdivides into.
          */
         const slices = subdivideChunkPair({
           pair: {

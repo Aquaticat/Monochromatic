@@ -62,21 +62,21 @@ import { parseComparisonRow, } from './artifact-two-lane-read-rows.ts';
 // both be true, and a recorded comparison the ledgers do not derive.
 
 /**
- * Reads the branded identity a preparation gives itself.
- *
- * @param value - recorded identity
- *
- * @param path - dotted path for error message
- *
- * @returns Identity, narrowed by the same check a fresh one passes
- *
- * @throws {@link ArtifactParseError} when the value is not a string, or not
- * shaped like an identity
- *
- * @example
- * ```ts
- * const identity = requireIdentity({ value: preparation.identity, path, },);
- * ```
+ Reads the branded identity a preparation gives itself.
+ 
+ @param value - recorded identity
+ 
+ @param path - dotted path for error message
+ 
+ @returns Identity, narrowed by the same check a fresh one passes
+ 
+ @throws {@link ArtifactParseError} when the value is not a string, or not
+ shaped like an identity
+ 
+ @example
+ ```ts
+ const identity = requireIdentity({ value: preparation.identity, path, },);
+ ```
  */
 function requireIdentity(
   {
@@ -88,7 +88,7 @@ function requireIdentity(
   },
 ): PreparationIdentity {
   /**
-   * Recorded string, before it is known to be an identity.
+   Recorded string, before it is known to be an identity.
    */
   const held = requireString({
     value,
@@ -106,21 +106,21 @@ function requireIdentity(
 }
 
 /**
- * Reads the slicing both lanes ran over.
- *
- * @param value - preparation JSON
- *
- * @param path - dotted path for error messages
- *
- * @returns Preparation as a reader gets it
- *
- * @throws {@link ArtifactParseError} when it carries a key this version does
- * not name, or any field is the wrong shape
- *
- * @example
- * ```ts
- * const preparation = parsePreparation({ value: artifact.preparation, path, },);
- * ```
+ Reads the slicing both lanes ran over.
+ 
+ @param value - preparation JSON
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Preparation as a reader gets it
+ 
+ @throws {@link ArtifactParseError} when it carries a key this version does
+ not name, or any field is the wrong shape
+ 
+ @example
+ ```ts
+ const preparation = parsePreparation({ value: artifact.preparation, path, },);
+ ```
  */
 function parsePreparation(
   {
@@ -132,7 +132,7 @@ function parsePreparation(
   },
 ): ParsedPreparation {
   /**
-   * Preparation as a record.
+   Preparation as a record.
    */
   const record = requireRecord({
     value,
@@ -158,8 +158,8 @@ function parsePreparation(
   },);
 
   /**
-   * Aligned sections this preparation reports, read before the rest because the
-   * pairing's section indices are bounded by it.
+   Aligned sections this preparation reports, read before the rest because the
+   pairing's section indices are bounded by it.
    */
   const alignmentPairCount = requireCount({
     value: record.alignmentPairCount,
@@ -260,47 +260,47 @@ function parsePreparation(
 }
 
 /**
- * Reads one two-lane artifact, of any generation that wrote the shape.
- *
- * NAMED FOR THE FAMILY, not for one integer. Generations 2, 3 and 4 record the
- * same two lanes, the same comparison and the same lane selection, and differ
- * only in how the slice-index and change-set keys are spelled;
- * `artifact-key-vocabulary.ts` holds that difference and the recorded version
- * picks the spelling, so no artifact is ever tried under another's names.
- *
- * IT REFUSES EVERY OTHER GENERATION INCLUDING VERSION 1: generic dispatch has
- * already happened by the time this is called, so a version 1 artifact arriving
- * here is a caller reading the wrong file rather than an old artifact needing
- * tolerance.
- *
- * @param value - artifact JSON, freshly parsed and still untyped
- *
- * @returns Everything the artifact records, with its comparison recomputed
- *
- * @throws {@link ArtifactParseError} when the artifact belongs to no
- * generation of this shape, when any field is missing or the wrong shape, when
- * it carries a key this shape does not name, or when any two of its parts
- * contradict each other
- *
- * @example
- * ```ts
- * const artifact = parseSettledTwoLaneArtifact({ value: parseRunJson({ text, from, },), },);
- * ```
+ Reads one two-lane artifact, of any generation that wrote the shape.
+ 
+ NAMED FOR THE FAMILY, not for one integer. Generations 2, 3 and 4 record the
+ same two lanes, the same comparison and the same lane selection, and differ
+ only in how the slice-index and change-set keys are spelled;
+ `artifact-key-vocabulary.ts` holds that difference and the recorded version
+ picks the spelling, so no artifact is ever tried under another's names.
+ 
+ IT REFUSES EVERY OTHER GENERATION INCLUDING VERSION 1: generic dispatch has
+ already happened by the time this is called, so a version 1 artifact arriving
+ here is a caller reading the wrong file rather than an old artifact needing
+ tolerance.
+ 
+ @param value - artifact JSON, freshly parsed and still untyped
+ 
+ @returns Everything the artifact records, with its comparison recomputed
+ 
+ @throws {@link ArtifactParseError} when the artifact belongs to no
+ generation of this shape, when any field is missing or the wrong shape, when
+ it carries a key this shape does not name, or when any two of its parts
+ contradict each other
+ 
+ @example
+ ```ts
+ const artifact = parseSettledTwoLaneArtifact({ value: parseRunJson({ text, from, },), },);
+ ```
  */
 export function parseSettledTwoLaneArtifact(
   { value, }: { readonly value: unknown; },
 ): ParsedTwoLaneArtifact {
   /**
-   * Artifact as a record.
+   Artifact as a record.
    */
   const artifact = requireRecord({
     value,
     path: 'artifact',
   },);
   /**
-   * Generation this artifact records, read as a count first so a string or a
-   * fraction is refused as a malformed version rather than compared against
-   * two numbers and reported as the wrong generation.
+   Generation this artifact records, read as a count first so a string or a
+   fraction is refused as a malformed version rather than compared against
+   two numbers and reported as the wrong generation.
    */
   const version = requireCount({
     value: artifact.artifactSchemaVersion,
@@ -318,16 +318,16 @@ export function parseSettledTwoLaneArtifact(
   }
 
   /**
-   * Known two-lane generation after membership guard.
+   Known two-lane generation after membership guard.
    */
   const generation = version;
   /**
-   * Spelling this artifact's own generation gave the three renamed keys.
+   Spelling this artifact's own generation gave the three renamed keys.
    */
   const keys: ArtifactKeyVocabulary = keyVocabularyOf({ version, },);
 
   /**
-   * Entry id, which every nested path is reported under.
+   Entry id, which every nested path is reported under.
    */
   const id = requireString({
     value: artifact.id,
@@ -340,7 +340,7 @@ export function parseSettledTwoLaneArtifact(
   },);
 
   /**
-   * Slicing both lanes ran over.
+   Slicing both lanes ran over.
    */
   const preparation = parsePreparation({
     value: artifact.preparation,
@@ -348,7 +348,7 @@ export function parseSettledTwoLaneArtifact(
   },);
 
   /**
-   * Both lanes, each checked against its own raw result and its own ledger.
+   Both lanes, each checked against its own raw result and its own ledger.
    */
   const lanes = parseLanes({
     value: artifact.lanes,
@@ -358,10 +358,10 @@ export function parseSettledTwoLaneArtifact(
   },);
 
   /**
-   * The two lanes compared, RECOMPUTED from the ledgers and returned only once
-   * it matched the copy the file carries. Named here rather than built inline,
-   * because the contest is checked against it: a selection may only answer the
-   * slices this comparison says the two lanes left differently worded.
+   The two lanes compared, RECOMPUTED from the ledgers and returned only once
+   it matched the copy the file carries. Named here rather than built inline,
+   because the contest is checked against it: a selection may only answer the
+   slices this comparison says the two lanes left differently worded.
    */
   const comparison = assertRecordedComparisonMatches({
     recorded: requireArray({
@@ -386,10 +386,10 @@ export function parseSettledTwoLaneArtifact(
   },);
 
   /**
-   * Which lane ships, checked against both the ballots recorded beside it and
-   * the comparison, so a selection answering the wrong slices is refused
-   * rather than read. Named here because the consolidation is checked against
-   * it: the third rendering answers exactly the slices the contest settled.
+   Which lane ships, checked against both the ballots recorded beside it and
+   the comparison, so a selection answering the wrong slices is refused
+   rather than read. Named here because the consolidation is checked against
+   it: the third rendering answers exactly the slices the contest settled.
    */
   const laneSelection = parseLaneSelection({
     value: artifact.laneSelection,

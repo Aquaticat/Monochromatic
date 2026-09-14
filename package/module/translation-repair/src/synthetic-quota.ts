@@ -9,88 +9,88 @@ import { isJsonRecord, } from './json-guard.ts';
 // defects which flow as data.
 
 /**
- * Budget-relevant quota state at one instant.
- * Verified live response also carries `subscription`, `search`, and
- * `freeToolCalls` blocks; they are deliberately unmodeled until something
- * consumes them.
- *
- * @example
- * ```ts
- * const snapshot: QuotaSnapshot = {
- *   fiveHour: { remaining: 750, max: 750, limited: false, nextTickAt: '2026-07-16T22:55:29.000Z', },
- *   weekly: { percentRemaining: 99.8, nextRegenAt: '2026-07-17T00:12:58.000Z', },
- * };
- * ```
+ Budget-relevant quota state at one instant.
+ Verified live response also carries `subscription`, `search`, and
+ `freeToolCalls` blocks; they are deliberately unmodeled until something
+ consumes them.
+ 
+ @example
+ ```ts
+ const snapshot: QuotaSnapshot = {
+   fiveHour: { remaining: 750, max: 750, limited: false, nextTickAt: '2026-07-16T22:55:29.000Z', },
+   weekly: { percentRemaining: 99.8, nextRegenAt: '2026-07-17T00:12:58.000Z', },
+ };
+ ```
  */
 export type QuotaSnapshot = {
   /**
-   * Rolling five-hour request limit;
-   * regenerates 5% every 15 minutes.
+   Rolling five-hour request limit;
+   regenerates 5% every 15 minutes.
    */
   readonly fiveHour: {
     /**
-     * Price-weighted requests still available.
+     Price-weighted requests still available.
      */
     readonly remaining: number;
 
     /**
-     * Ceiling of the rolling window; scales with packs.
+     Ceiling of the rolling window; scales with packs.
      */
     readonly max: number;
 
     /**
-     * Whether the provider currently throttles this account.
+     Whether the provider currently throttles this account.
      */
     readonly limited: boolean;
 
     /**
-     * ISO timestamp of next regeneration tick.
+     ISO timestamp of next regeneration tick.
      */
     readonly nextTickAt: string;
   };
 
   /**
-   * Weekly credit limit; regenerates 2% roughly every 3.4 hours.
+   Weekly credit limit; regenerates 2% roughly every 3.4 hours.
    */
   readonly weekly: {
     /**
-     * Percent of weekly credits still available.
+     Percent of weekly credits still available.
      */
     readonly percentRemaining: number;
 
     /**
-     * ISO timestamp of next credit regeneration.
+     ISO timestamp of next credit regeneration.
      */
     readonly nextRegenAt: string;
   };
 };
 
 /**
- * Signals a `/quotas` body that refused to parse or lacked consumed fields;
- * always a provider protocol failure, never a model defect.
- *
- * @example
- * ```ts
- * throw new QuotaShapeError({ detail: 'rollingFiveHourLimit.remaining is not a number', },);
- * ```
+ Signals a `/quotas` body that refused to parse or lacked consumed fields;
+ always a provider protocol failure, never a model defect.
+ 
+ @example
+ ```ts
+ throw new QuotaShapeError({ detail: 'rollingFiveHourLimit.remaining is not a number', },);
+ ```
  */
 export class QuotaShapeError extends Error {
   /**
-   * Declares this message safe to forward: it names the field that failed its shape, never the body it came from.
+   Declares this message safe to forward: it names the field that failed its shape, never the body it came from.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds failure naming the field or parse step at fault.
-   *
-   * @param detail - which expectation the body violated
-   *
-   * @param cause - underlying parse error when JSON itself failed
-   *
-   * @example
-   * ```ts
-   * new QuotaShapeError({ detail: 'body is not valid JSON', cause: error, },);
-   * ```
+   Builds failure naming the field or parse step at fault.
+   
+   @param detail - which expectation the body violated
+   
+   @param cause - underlying parse error when JSON itself failed
+   
+   @example
+   ```ts
+   new QuotaShapeError({ detail: 'body is not valid JSON', cause: error, },);
+   ```
    */
   public constructor(
     {
@@ -113,18 +113,18 @@ export class QuotaShapeError extends Error {
 }
 
 /**
- * Parses body text as JSON, converting parse failures into shape errors.
- *
- * @param bodyText - raw response body
- *
- * @returns Parsed JSON value
- *
- * @throws {@link QuotaShapeError} when body is not valid JSON
- *
- * @example
- * ```ts
- * const parsed = parseQuotaJson({ bodyText, },);
- * ```
+ Parses body text as JSON, converting parse failures into shape errors.
+ 
+ @param bodyText - raw response body
+ 
+ @returns Parsed JSON value
+ 
+ @throws {@link QuotaShapeError} when body is not valid JSON
+ 
+ @example
+ ```ts
+ const parsed = parseQuotaJson({ bodyText, },);
+ ```
  */
 function parseQuotaJson({ bodyText, }: { readonly bodyText: string; },): unknown {
   try {
@@ -139,47 +139,47 @@ function parseQuotaJson({ bodyText, }: { readonly bodyText: string; },): unknown
 }
 
 /**
- * Parses one `/quotas` body into the typed snapshot,
- * validating every consumed field.
- *
- * @param bodyText - raw 200-response body
- *
- * @returns Typed snapshot of budget-relevant quota state
- *
- * @throws {@link QuotaShapeError} when body is not JSON or a consumed field is missing or mistyped
- *
- * @example
- * ```ts
- * const snapshot = parseQuotaSnapshot({ bodyText: reply.bodyText, },);
- * if (snapshot.fiveHour.limited) backOff(snapshot.fiveHour.nextTickAt,);
- * ```
+ Parses one `/quotas` body into the typed snapshot,
+ validating every consumed field.
+ 
+ @param bodyText - raw 200-response body
+ 
+ @returns Typed snapshot of budget-relevant quota state
+ 
+ @throws {@link QuotaShapeError} when body is not JSON or a consumed field is missing or mistyped
+ 
+ @example
+ ```ts
+ const snapshot = parseQuotaSnapshot({ bodyText: reply.bodyText, },);
+ if (snapshot.fiveHour.limited) backOff(snapshot.fiveHour.nextTickAt,);
+ ```
  */
 export function parseQuotaSnapshot(
   { bodyText, }: { readonly bodyText: string; },
 ): QuotaSnapshot {
   /**
-   * Whole parsed body, probed field by field.
+   Whole parsed body, probed field by field.
    */
   const parsed = parseQuotaJson({ bodyText, },);
   if (!isJsonRecord(parsed,))
     throw new QuotaShapeError({ detail: 'body is not a JSON object', },);
 
   /**
-   * Rolling five-hour block as delivered.
+   Rolling five-hour block as delivered.
    */
   const { rollingFiveHourLimit: fiveHour, } = parsed;
   if (!isJsonRecord(fiveHour,))
     throw new QuotaShapeError({ detail: 'rollingFiveHourLimit is not an object', },);
 
   /**
-   * Weekly credit block as delivered.
+   Weekly credit block as delivered.
    */
   const { weeklyTokenLimit: weekly, } = parsed;
   if (!isJsonRecord(weekly,))
     throw new QuotaShapeError({ detail: 'weeklyTokenLimit is not an object', },);
 
   /**
-   * Five-hour fields pulled out for type validation.
+   Five-hour fields pulled out for type validation.
    */
   const {
     remaining,
@@ -197,7 +197,7 @@ export function parseQuotaSnapshot(
     throw new QuotaShapeError({ detail: 'rollingFiveHourLimit.nextTickAt is not a string', },);
 
   /**
-   * Weekly fields pulled out for type validation.
+   Weekly fields pulled out for type validation.
    */
   const {
     percentRemaining,

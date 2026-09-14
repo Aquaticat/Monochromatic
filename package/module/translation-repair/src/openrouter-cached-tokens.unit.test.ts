@@ -1,7 +1,7 @@
 /**
- * Tests for reading cached prompt tokens off an OpenRouter stream.
- *
- * @module
+ Tests for reading cached prompt tokens off an OpenRouter stream.
+ 
+ @module
  */
 
 import {
@@ -13,16 +13,16 @@ import {
 import { openRouterCachedTokensOf, } from '../dist/final/node/index.mjs';
 
 /**
- * One stream chunk carrying the given usage block.
- *
- * @param usage - usage block as the gateway sends it
- *
- * @returns Event line, newline-terminated
- *
- * @example
- * ```ts
- * const line = withUsage({ usage: { prompt_tokens: 10, }, },);
- * ```
+ One stream chunk carrying the given usage block.
+ 
+ @param usage - usage block as the gateway sends it
+ 
+ @returns Event line, newline-terminated
+ 
+ @example
+ ```ts
+ const line = withUsage({ usage: { prompt_tokens: 10, }, },);
+ ```
  */
 function withUsage({ usage, }: { readonly usage: Readonly<Record<string, unknown>>; },): string {
   return `data: ${JSON.stringify({ choices: [{ delta: { content: '', }, },], usage, },)}\n\n`;

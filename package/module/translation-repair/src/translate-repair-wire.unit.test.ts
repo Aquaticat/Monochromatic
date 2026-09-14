@@ -1,15 +1,15 @@
 /**
- * Tests for what the repair follow-up says the structural check compared.
- *
- * WHY IT MATTERS THAT THE SHEET NAMES BOTH TEXTS. The findings a repair round
- * carries are written by `validateTranslatedSlice`, which checks a candidate
- * against the ORIGINAL and against the PAGE AS IT STANDS and says which one
- * each finding came from. A follow-up that announces the comparison was against
- * the ORIGINAL tells the model to revise toward the source's shape, which is
- * how a slice whose archive merged two blocks spends a repair round moving
- * further from what the guard wants.
- *
- * @module
+ Tests for what the repair follow-up says the structural check compared.
+ 
+ WHY IT MATTERS THAT THE SHEET NAMES BOTH TEXTS. The findings a repair round
+ carries are written by `validateTranslatedSlice`, which checks a candidate
+ against the ORIGINAL and against the PAGE AS IT STANDS and says which one
+ each finding came from. A follow-up that announces the comparison was against
+ the ORIGINAL tells the model to revise toward the source's shape, which is
+ how a slice whose archive merged two blocks spends a repair round moving
+ further from what the guard wants.
+ 
+ @module
  */
 
 import {
@@ -20,7 +20,7 @@ import {
 import { buildTranslateRepairMessages, } from '../dist/final/node/index.mjs';
 
 /**
- * Follow-up turn, which is the last message the builder appends.
+ Follow-up turn, which is the last message the builder appends.
  */
 const followUp = buildTranslateRepairMessages({
   priorMessages: [

@@ -25,29 +25,29 @@
 // the code changes, rather than because someone read it once.
 
 /**
- * A refusal whose message this package wrote, and may therefore repeat.
- *
- * SEPARATE FROM A FAULT. `reportingRefusals` reports one of these as the
- * command declining to run, with no frames and no talk of a bug, because
- * nothing here is broken: a usage line is an answer, not a crash.
- *
- * @example
- * ```ts
- * throw new StatedRefusalError({
- *   says: 'name at least one log file: spend-report <path> [<path> ...]',
- * },);
- * ```
+ A refusal whose message this package wrote, and may therefore repeat.
+ 
+ SEPARATE FROM A FAULT. `reportingRefusals` reports one of these as the
+ command declining to run, with no frames and no talk of a bug, because
+ nothing here is broken: a usage line is an answer, not a crash.
+ 
+ @example
+ ```ts
+ throw new StatedRefusalError({
+   says: 'name at least one log file: spend-report <path> [<path> ...]',
+ },);
+ ```
  */
 export class StatedRefusalError extends Error {
   /**
-   * Declares this message safe to forward: every part of it is either a
-   * sentence written here or a value the operator handed in.
+   Declares this message safe to forward: every part of it is either a
+   sentence written here or a value the operator handed in.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * @param says - whole message, composed only of authored words, operator
-   * arguments, environment variable names and numbers computed here
+   @param says - whole message, composed only of authored words, operator
+   arguments, environment variable names and numbers computed here
    */
   constructor(
     { says, }: { readonly says: string; },

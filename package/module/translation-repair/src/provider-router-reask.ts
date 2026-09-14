@@ -45,37 +45,37 @@ import type { SlotLedger, } from './provider-router-slots.ts';
 // dispatch that performs one call on one provider.
 
 /**
- * Logger root for the re-ask.
+ Logger root for the re-ask.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * What the router lends the re-ask.
- *
- * @example
- * ```ts
- * const core: RoutedCore = { reachFor, budgets, ledger, callOn, routedText, };
- * ```
+ What the router lends the re-ask.
+ 
+ @example
+ ```ts
+ const core: RoutedCore = { reachFor, budgets, ledger, callOn, routedText, };
+ ```
  */
 export type RoutedCore = {
   /**
-   * Providers that can serve one request, narrowed to vision where it carries
-   * a picture.
+   Providers that can serve one request, narrowed to vision where it carries
+   a picture.
    */
   readonly reachFor: (args: { readonly request: ForeignBorrowed<ChatTextRequest>; },) => ModelReach;
 
   /**
-   * Shared budget view every call is routed by.
+   Shared budget view every call is routed by.
    */
   readonly budgets: ProviderBudgets;
 
   /**
-   * In-flight slots on the providers that limit them.
+   In-flight slots on the providers that limit them.
    */
   readonly ledger: SlotLedger;
 
   /**
-   * Performs one call on the named provider, releasing its slot afterwards.
+   Performs one call on the named provider, releasing its slot afterwards.
    */
   readonly callOn: (args: {
     readonly provider: ProviderName;
@@ -83,27 +83,27 @@ export type RoutedCore = {
   },) => Promise<ChatTextReply>;
 
   /**
-   * Routed free-text exchange, re-routed on budget refusals.
+   Routed free-text exchange, re-routed on budget refusals.
    */
   readonly routedText: (request: ForeignBorrowed<ChatTextRequest>,) => Promise<RoutedReply>;
 };
 
 /**
- * Other providers that also serve this call and have budget, in spending
- * order.
- *
- * @param core - what the router lent
- *
- * @param request - call that was answered badly
- *
- * @param served - provider that answered it
- *
- * @returns Providers to re-ask, empty where there is nowhere else to ask
- *
- * @example
- * ```ts
- * const [elsewhere,] = await secondOpinionsFrom({ core, request, served: 'synthetic', },);
- * ```
+ Other providers that also serve this call and have budget, in spending
+ order.
+ 
+ @param core - what the router lent
+ 
+ @param request - call that was answered badly
+ 
+ @param served - provider that answered it
+ 
+ @returns Providers to re-ask, empty where there is nowhere else to ask
+ 
+ @example
+ ```ts
+ const [elsewhere,] = await secondOpinionsFrom({ core, request, served: 'synthetic', },);
+ ```
  */
 export async function secondOpinionsFrom(
   {
@@ -117,7 +117,7 @@ export async function secondOpinionsFrom(
   },
 ): Promise<readonly ProviderName[]> {
   /**
-   * What the router lent, named once.
+   What the router lent, named once.
    */
   const {
     reachFor,
@@ -125,17 +125,17 @@ export async function secondOpinionsFrom(
   } = core;
 
   /**
-   * Whether each provider serves this model at all, pictures included.
+   Whether each provider serves this model at all, pictures included.
    */
   const reach = reachFor({ request, },);
 
   /**
-   * The other providers, in spending order.
+   The other providers, in spending order.
    */
   const others = otherProviders({ provider: served, },);
 
   /**
-   * The other providers that serve it.
+   The other providers that serve it.
    */
   const serving = others.filter(function serves(provider,): boolean {
     return reach[provider];
@@ -145,7 +145,7 @@ export async function secondOpinionsFrom(
     return [];
 
   /**
-   * What each provider's budget looks like right now.
+   What each provider's budget looks like right now.
    */
   const budget = await budgets.read({ signal: request.signal, },);
 
@@ -155,27 +155,27 @@ export async function secondOpinionsFrom(
 }
 
 /**
- * Calls one provider, and reads a budget refusal as no reply rather than as
- * a fault.
- *
- * THE RE-ASK IS OPPORTUNISTIC, so a 429 or a 402 on it is the re-ask not
- * happening, not the exchange failing: the first answer is what the caller
- * gets, the way it does when there is nowhere else to ask. The refusal still
- * starts that provider's cooldown on the call it arrived on, rather than one
- * call later when the next routing decision meets it.
- *
- * @param core - what the router lent
- *
- * @param provider - stack to ask
- *
- * @param request - exchange to perform
- *
- * @returns Reply, or the named refusal when the provider was out of budget
- *
- * @example
- * ```ts
- * const asked = await replyOrBudgetRefusal({ core, provider: 'hyper', request, },);
- * ```
+ Calls one provider, and reads a budget refusal as no reply rather than as
+ a fault.
+ 
+ THE RE-ASK IS OPPORTUNISTIC, so a 429 or a 402 on it is the re-ask not
+ happening, not the exchange failing: the first answer is what the caller
+ gets, the way it does when there is nowhere else to ask. The refusal still
+ starts that provider's cooldown on the call it arrived on, rather than one
+ call later when the next routing decision meets it.
+ 
+ @param core - what the router lent
+ 
+ @param provider - stack to ask
+ 
+ @param request - exchange to perform
+ 
+ @returns Reply, or the named refusal when the provider was out of budget
+ 
+ @example
+ ```ts
+ const asked = await replyOrBudgetRefusal({ core, provider: 'hyper', request, },);
+ ```
  */
 async function replyOrBudgetRefusal(
   {
@@ -189,7 +189,7 @@ async function replyOrBudgetRefusal(
   },
 ): Promise<ReAskReply> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: replyOrBudgetRefusal.name,
@@ -197,7 +197,7 @@ async function replyOrBudgetRefusal(
   },);
 
   /**
-   * What the router lent, named once.
+   What the router lent, named once.
    */
   const {
     callOn,
@@ -228,19 +228,19 @@ async function replyOrBudgetRefusal(
 }
 
 /**
- * Schema-validated chat exchange over whichever provider served the text,
- * re-asked once elsewhere when the answer did not conform.
- *
- * @param core - what the router lent
- *
- * @param request - exchange plus content guard
- *
- * @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
- *
- * @example
- * ```ts
- * const outcome = await routedJson({ core, request, },);
- * ```
+ Schema-validated chat exchange over whichever provider served the text,
+ re-asked once elsewhere when the answer did not conform.
+ 
+ @param core - what the router lent
+ 
+ @param request - exchange plus content guard
+ 
+ @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
+ 
+ @example
+ ```ts
+ const outcome = await routedJson({ core, request, },);
+ ```
  */
 export async function routedJson<ValueT,>(
   {
@@ -252,7 +252,7 @@ export async function routedJson<ValueT,>(
   },
 ): Promise<ChatJsonOutcome<ValueT>> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: routedJson.name,
@@ -260,7 +260,7 @@ export async function routedJson<ValueT,>(
   },);
 
   /**
-   * What the router lent, named once.
+   What the router lent, named once.
    */
   const {
     routedText,
@@ -268,7 +268,7 @@ export async function routedJson<ValueT,>(
   } = core;
 
   /**
-   * Raw text reply of the routed exchange, and who answered it.
+   Raw text reply of the routed exchange, and who answered it.
    */
   const {
     provider,
@@ -276,7 +276,7 @@ export async function routedJson<ValueT,>(
   } = await routedText(request,);
 
   /**
-   * What that answer turned out to be.
+   What that answer turned out to be.
    */
   const outcome = readJsonOutcome({
     modelId: request.modelId,
@@ -288,7 +288,7 @@ export async function routedJson<ValueT,>(
     return outcome;
 
   /**
-   * Somewhere else to ask, where this model is served and has budget.
+   Somewhere else to ask, where this model is served and has budget.
    */
   const [elsewhere,] = await secondOpinionsFrom({
     core,
@@ -315,8 +315,8 @@ export async function routedJson<ValueT,>(
   },);
 
   /**
-   * Same model, same question, another serving stack; or nothing, when that
-   * stack refused on budget.
+   Same model, same question, another serving stack; or nothing, when that
+   stack refused on budget.
    */
   const asked = await replyOrBudgetRefusal({
     core,
@@ -328,7 +328,7 @@ export async function routedJson<ValueT,>(
     return outcome;
 
   /**
-   * What the other stack's answer turned out to be.
+   What the other stack's answer turned out to be.
    */
   const second = readJsonOutcome({
     modelId: request.modelId,

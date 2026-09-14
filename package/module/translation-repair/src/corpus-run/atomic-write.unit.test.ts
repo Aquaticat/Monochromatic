@@ -1,15 +1,15 @@
 /**
- * Tests for writing an artifact no concurrent reader can catch half-written.
- *
- * The window is small and the consequence is a silently wrong denominator: a
- * partial file is classified as malformed, the pool keeps malformed files on
- * purpose so the reader that reports them still sees them, and a later reader
- * parses the now-complete file and counts it without the generation checks it
- * should have faced.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for writing an artifact no concurrent reader can catch half-written.
+ 
+ The window is small and the consequence is a silently wrong denominator: a
+ partial file is classified as malformed, the pool keeps malformed files on
+ purpose so the reader that reports them still sees them, and a later reader
+ parses the now-complete file and counts it without the generation checks it
+ should have faced.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -30,14 +30,14 @@ import {
 import { writeFileAtomic, } from '../../dist/final/node/index.mjs';
 
 /**
- * Makes a throwaway directory for one case.
- *
- * @returns Path of the directory
- *
- * @example
- * ```ts
- * const dir = await scratch();
- * ```
+ Makes a throwaway directory for one case.
+ 
+ @returns Path of the directory
+ 
+ @example
+ ```ts
+ const dir = await scratch();
+ ```
  */
 async function scratch(): Promise<string> {
   return await mkdtemp(join(
@@ -57,7 +57,7 @@ await describe({
         const dir = await scratch();
 
         /**
-         * Path the artifact takes.
+         Path the artifact takes.
          */
         const path = join(
           dir,
@@ -102,7 +102,7 @@ await describe({
         const dir = await scratch();
 
         /**
-         * Path holding an older artifact for the same entry.
+         Path holding an older artifact for the same entry.
          */
         const path = join(
           dir,
@@ -134,7 +134,7 @@ await describe({
         const dir = await scratch();
 
         /**
-         * Path the artifact takes.
+         Path the artifact takes.
          */
         const path = join(
           dir,
@@ -142,7 +142,7 @@ await describe({
         );
 
         /**
-         * Artifact body carrying text outside the ASCII range.
+         Artifact body carrying text outside the ASCII range.
          */
         const text = `${JSON.stringify({
           id: 'Pepper',

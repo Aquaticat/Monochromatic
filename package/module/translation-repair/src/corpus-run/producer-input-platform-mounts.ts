@@ -1,28 +1,28 @@
 //region Fixed platform mount vocabulary, separate from namespace observation
 
 /**
- * One fixed system-mount family, never a caller-supplied mount instruction.
+ One fixed system-mount family, never a caller-supplied mount instruction.
  */
 type PlatformMountGroup = {
   /**
-   * Expected kernel filesystem implementation.
+   Expected kernel filesystem implementation.
    */
   readonly filesystem: string;
   /**
-   * Fixed per-mount read/write mode.
+   Fixed per-mount read/write mode.
    */
   readonly mode: 'ro' | 'rw';
   /**
-   * Exact allowed mountpoints, not open-ended directory prefixes.
+   Exact allowed mountpoints, not open-ended directory prefixes.
    */
   readonly points: readonly string[];
   /**
-   * Required restrictions remain independent from read/write mode.
+   Required restrictions remain independent from read/write mode.
    */
   readonly flags: readonly string[];
 };
 /**
- * System mounts observed under the pinned no-network image and OCI invocation.
+ System mounts observed under the pinned no-network image and OCI invocation.
  */
 export const PLATFORM_MOUNT_GROUPS: readonly PlatformMountGroup[] = [
   {
@@ -157,7 +157,7 @@ export const PLATFORM_MOUNT_GROUPS: readonly PlatformMountGroup[] = [
   },
 ];
 /**
- * Account projection files are declared platform inputs, not part of the immutable image.
+ Account projection files are declared platform inputs, not part of the immutable image.
  */
 export const ACCOUNT_MOUNTS: readonly string[] = [
   '/etc/passwd',

@@ -1,8 +1,8 @@
 /**
- * Tests for resolution-check wire resolution and majority tallying.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for resolution-check wire resolution and majority tallying.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -18,7 +18,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Issue ids in prompt numbering order for resolution tests.
+ Issue ids in prompt numbering order for resolution tests.
  */
 const ISSUE_IDS = [
   'adjudicated/whisker',

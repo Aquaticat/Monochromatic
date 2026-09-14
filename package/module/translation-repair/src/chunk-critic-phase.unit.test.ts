@@ -1,24 +1,24 @@
 /**
- * Tests for the critic phase: the fan-out and the deterministic screen over its
- * non-translation votes, together.
- *
- * This module was extracted from the chunk driver for the file-size budget and
- * never covered. Its two halves are each tested elsewhere; what is untested is
- * the WIRING, and the wiring is the reason the module exists. The comment at
- * its head says so: a vote count that has not been screened is not something
- * any caller may act on, and keeping the two adjacent is what stops a later
- * caller reading `nonTranslationVotes` straight off the critic result and
- * blocking a slice on votes the evidence already contradicted.
- *
- * A block is expensive in one direction only. Blocking a faithful translation
- * discards the whole slice unrepaired; failing to block a genuinely
- * untranslated pair leaves its issues surfaced. So the cases below check that
- * `votesStand` is true only when the threshold is met AND nothing contradicted
- * it.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the critic phase: the fan-out and the deterministic screen over its
+ non-translation votes, together.
+ 
+ This module was extracted from the chunk driver for the file-size budget and
+ never covered. Its two halves are each tested elsewhere; what is untested is
+ the WIRING, and the wiring is the reason the module exists. The comment at
+ its head says so: a vote count that has not been screened is not something
+ any caller may act on, and keeping the two adjacent is what stops a later
+ caller reading `nonTranslationVotes` straight off the critic result and
+ blocking a slice on votes the evidence already contradicted.
+ 
+ A block is expensive in one direction only. Blocking a faithful translation
+ discards the whole slice unrepaired; failing to block a genuinely
+ untranslated pair leaves its issues surfaced. So the cases below check that
+ `votesStand` is true only when the threshold is met AND nothing contradicted
+ it.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -39,22 +39,22 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the phases under test.
+ Logger for the phases under test.
  */
 const l = tagged({ tag: 'chunk-critic-phase-test', },);
 
 /**
- * Original chunk the critics review.
+ Original chunk the critics review.
  */
 const SOURCE_TEXT = '猫猫在窗台上睡觉。太阳移动时她会醒来。';
 
 /**
- * Translation chunk under review.
+ Translation chunk under review.
  */
 const TARGET_TEXT = 'The cat sleeps on the windowsill. She wakes when the sun moves.';
 
 /**
- * Parsed pair the claims anchor against.
+ Parsed pair the claims anchor against.
  */
 const DOCUMENTS = {
   source: parseDocument({ text: SOURCE_TEXT, },),
@@ -62,7 +62,7 @@ const DOCUMENTS = {
 };
 
 /**
- * Critic roster large enough to reach the block threshold and exceed it.
+ Critic roster large enough to reach the block threshold and exceed it.
  */
 const CRITICS = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -72,11 +72,11 @@ const CRITICS = [
 ] as const;
 
 /**
- * Wire issue asserting the pair is not a translation at all.
- *
- * Carries no quotes, so it never resolves into an anchored claim. That is
- * faithful to the real case: a degenerate pair defeats anchoring, which is
- * exactly why the vote is counted at wire level rather than after resolution.
+ Wire issue asserting the pair is not a translation at all.
+ 
+ Carries no quotes, so it never resolves into an anchored claim. That is
+ faithful to the real case: a degenerate pair defeats anchoring, which is
+ exactly why the vote is counted at wire level rather than after resolution.
  */
 const NON_TRANSLATION_ISSUE = {
   category: 'accuracy/non-translation',
@@ -85,9 +85,9 @@ const NON_TRANSLATION_ISSUE = {
 };
 
 /**
- * Non-translation issue whose quotes DO anchor, so unlike
- * `NON_TRANSLATION_ISSUE` it resolves into a claim and therefore acquires
- * attribution that screening must later take away with it.
+ Non-translation issue whose quotes DO anchor, so unlike
+ `NON_TRANSLATION_ISSUE` it resolves into a claim and therefore acquires
+ attribution that screening must later take away with it.
  */
 const ANCHORED_NON_TRANSLATION = {
   category: 'accuracy/non-translation',
@@ -98,13 +98,13 @@ const ANCHORED_NON_TRANSLATION = {
 };
 
 /**
- * Content critique that anchors into the TARGET and survives screening.
- *
- * Deliberately not an omission: `MISSING_TRANSLATION_LEAVES` excludes
- * `omission`, `untranslated` and `non-translation` from contradiction counting,
- * because those anchor happily onto an untranslated target and so prove
- * nothing. A fluency critique only makes sense against text that was in fact
- * translated, which is exactly what contradicts the votes.
+ Content critique that anchors into the TARGET and survives screening.
+ 
+ Deliberately not an omission: `MISSING_TRANSLATION_LEAVES` excludes
+ `omission`, `untranslated` and `non-translation` from contradiction counting,
+ because those anchor happily onto an untranslated target and so prove
+ nothing. A fluency critique only makes sense against text that was in fact
+ translated, which is exactly what contradicts the votes.
  */
 const CONTENT_CRITIQUE = {
   category: 'fluency/awkward-phrasing',
@@ -115,16 +115,16 @@ const CONTENT_CRITIQUE = {
 };
 
 /**
- * Client answering every critic with one scripted report.
- *
- * @param reportFor - report each model returns, by roster position
- *
- * @returns Client honoring that script
- *
- * @example
- * ```ts
- * const client = criticClient({ reportFor: () => ({ issues: [], }), },);
- * ```
+ Client answering every critic with one scripted report.
+ 
+ @param reportFor - report each model returns, by roster position
+ 
+ @returns Client honoring that script
+ 
+ @example
+ ```ts
+ const client = criticClient({ reportFor: () => ({ issues: [], }), },);
+ ```
  */
 function criticClient(
   { reportFor, }: { readonly reportFor: (modelId: string,) => unknown; },
@@ -137,7 +137,7 @@ function criticClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Scripted report for the answering model.
+       Scripted report for the answering model.
        */
       const scripted = reportFor(request.modelId,);
       if (!request.validate(scripted,))
@@ -155,18 +155,18 @@ function criticClient(
 }
 
 /**
- * Runs the phase against a scripted client.
- *
- * @param client - scripted critic client
- *
- * @param criticModelIds - roster to fan out over
- *
- * @returns Phase result
- *
- * @example
- * ```ts
- * const phase = await runPhase({ client, criticModelIds: CRITICS, },);
- * ```
+ Runs the phase against a scripted client.
+ 
+ @param client - scripted critic client
+ 
+ @param criticModelIds - roster to fan out over
+ 
+ @returns Phase result
+ 
+ @example
+ ```ts
+ const phase = await runPhase({ client, criticModelIds: CRITICS, },);
+ ```
  */
 async function runPhase(
   {
@@ -202,7 +202,7 @@ await describe({
         + 'real translation, so a clean slice proceeds to repair',
       fn: async () => {
         /**
-         * Phase where every critic reported nothing at all.
+         Phase where every critic reported nothing at all.
          */
         const phase = await runPhase({
           client: criticClient({ reportFor: () => ({ issues: [], }), },),
@@ -224,7 +224,7 @@ await describe({
         + 'the evidence there is',
       fn: async () => {
         /**
-         * Critics that vote, exactly meeting the threshold.
+         Critics that vote, exactly meeting the threshold.
          */
         const voters: ReadonlySet<string> = new Set(CRITICS.slice(
           0,
@@ -232,7 +232,7 @@ await describe({
         ),);
 
         /**
-         * Phase at exactly the block threshold.
+         Phase at exactly the block threshold.
          */
         const phase = await runPhase({
           client: criticClient({
@@ -259,7 +259,7 @@ await describe({
         + 'only leaves a garbage pair with its issues still surfaced',
       fn: async () => {
         /**
-         * Critics that vote, one short of the threshold.
+         Critics that vote, one short of the threshold.
          */
         const voters: ReadonlySet<string> = new Set(CRITICS.slice(
           0,
@@ -267,7 +267,7 @@ await describe({
         ),);
 
         /**
-         * Phase one vote below the block threshold.
+         Phase one vote below the block threshold.
          */
         const phase = await runPhase({
           client: criticClient({
@@ -295,7 +295,7 @@ await describe({
         + 'right',
       fn: async () => {
         /**
-         * Phase where every voting report resolves to zero claims.
+         Phase where every voting report resolves to zero claims.
          */
         const phase = await runPhase({
           client: criticClient({
@@ -316,7 +316,7 @@ await describe({
         + 'critic hedging about one sentence',
       fn: async () => {
         /**
-         * Phase where every critic hedged at major rather than critical.
+         Phase where every critic hedged at major rather than critical.
          */
         const phase = await runPhase({
           client: criticClient({
@@ -343,7 +343,7 @@ await describe({
         + 'than reading like a full-roster verdict',
       fn: async () => {
         /**
-         * Phase over a roster of two.
+         Phase over a roster of two.
          */
         const phase = await runPhase({
           client: criticClient({ reportFor: () => ({ issues: [], }), },),
@@ -363,7 +363,7 @@ await describe({
         + 'phase adds its screening findings',
       fn: async () => {
         /**
-         * Phase where every critic quoted text that is not in either document.
+         Phase where every critic quoted text that is not in either document.
          */
         const phase = await runPhase({
           client: criticClient({
@@ -395,9 +395,9 @@ await describe({
         + 'for whoever raised it',
       fn: async () => {
         /**
-         * Phase where every critic raises both an anchored non-translation
-         * claim and a content critique, so the votes are contradicted and the
-         * non-translation claim is filtered out while the critique stands.
+         Phase where every critic raises both an anchored non-translation
+         claim and a content critique, so the votes are contradicted and the
+         non-translation claim is filtered out while the critique stands.
          */
         const phase = await runPhase({
           client: criticClient({
@@ -415,7 +415,7 @@ await describe({
         expect(phase.contradicted,).toBe(true,);
 
         /**
-         * Identities still standing after the screen.
+         Identities still standing after the screen.
          */
         const survivingIds = new Set(phase.claims
           .map(function toClaimId(claim,) {

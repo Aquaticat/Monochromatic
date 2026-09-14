@@ -22,35 +22,35 @@ import { foldInvisibleVariants, } from './invisible-variants.ts';
 // Deterministic builders cannot turn an unverified archive into a clean reference.
 
 /**
- * Existing calibration length floor, never satisfied by padding or concatenating a short reference.
+ Existing calibration length floor, never satisfied by padding or concatenating a short reference.
  */
 export const MIN_REVIEWED_REFERENCE_CHARS = 400;
 /**
- * Reference verification logger.
+ Reference verification logger.
  */
 const l = tagged({ tag: 'fidelity-reference', },);
 
 /**
- * Runs the existing damage mechanism selected during source review.
- *
- * @param kind - reviewed defect family
- *
- * @param sourceText - pinned source passage
- *
- * @param referenceText - verified reference
- *
- * @param donorText - fixed reviewed donor
- *
- * @param referenceId - input named for an unknown requested family
- *
- * @returns Existing builder outcome, still requiring hash verification
- *
- * @throws {@link FidelityReferenceError} for an unsupported family
- *
- * @example
- * ```ts
- * const damage = reviewedDamage({ kind, sourceText, referenceText, donorText, referenceId });
- * ```
+ Runs the existing damage mechanism selected during source review.
+ 
+ @param kind - reviewed defect family
+ 
+ @param sourceText - pinned source passage
+ 
+ @param referenceText - verified reference
+ 
+ @param donorText - fixed reviewed donor
+ 
+ @param referenceId - input named for an unknown requested family
+ 
+ @returns Existing builder outcome, still requiring hash verification
+ 
+ @throws {@link FidelityReferenceError} for an unsupported family
+ 
+ @example
+ ```ts
+ const damage = reviewedDamage({ kind, sourceText, referenceText, donorText, referenceId });
+ ```
  */
 function reviewedDamage({
   kind,
@@ -84,24 +84,24 @@ function reviewedDamage({
 }
 
 /**
- * Reconstructs only a source-reviewed reference and its exact approved damage variants.
- * Review is represented by the caller-owned manifest; byte checks prevent silent drift,
- * not semantic inference from the fact that text is an unchanged archive.
- *
- * @param sourceFile - complete source read at the specified pin
- *
- * @param archiveFile - complete archive read at that same pin
- *
- * @param spec - reviewed ranges, edits and variant hashes
- *
- * @returns Owned reference data ready for a fixed calibration matrix
- *
- * @throws {@link FidelityReferenceError} for any mismatch with the reviewed inputs
- *
- * @example
- * ```ts
- * const reference = buildReviewedFidelityReference({ sourceFile, archiveFile, spec });
- * ```
+ Reconstructs only a source-reviewed reference and its exact approved damage variants.
+ Review is represented by the caller-owned manifest; byte checks prevent silent drift,
+ not semantic inference from the fact that text is an unchanged archive.
+ 
+ @param sourceFile - complete source read at the specified pin
+ 
+ @param archiveFile - complete archive read at that same pin
+ 
+ @param spec - reviewed ranges, edits and variant hashes
+ 
+ @returns Owned reference data ready for a fixed calibration matrix
+ 
+ @throws {@link FidelityReferenceError} for any mismatch with the reviewed inputs
+ 
+ @example
+ ```ts
+ const reference = buildReviewedFidelityReference({ sourceFile, archiveFile, spec });
+ ```
  */
 export function buildReviewedFidelityReference({
   sourceFile,
@@ -113,11 +113,11 @@ export function buildReviewedFidelityReference({
   readonly spec: FidelityReferenceSpec;
 },): ReviewedFidelityReference {
   /**
-   * Own the provenance so later caller mutation cannot change a verified result.
+   Own the provenance so later caller mutation cannot change a verified result.
    */
   const checked = structuredClone(spec,);
   /**
-   * Function-scoped logging includes identifiers, never reference prose.
+   Function-scoped logging includes identifiers, never reference prose.
    */
   const rl = tagged({
     tag: buildReviewedFidelityReference.name,
@@ -133,7 +133,7 @@ export function buildReviewedFidelityReference({
       operation: 'request',
     },);
   /**
-   * Exact current source, not a nearby or generated candidate passage.
+   Exact current source, not a nearby or generated candidate passage.
    */
   const sourceText = reviewedText({
     text: sourceFile,
@@ -142,7 +142,7 @@ export function buildReviewedFidelityReference({
     operation: 'source',
   },);
   /**
-   * Raw archive range before the review's explicit transforms.
+   Raw archive range before the review's explicit transforms.
    */
   const original = reviewedText({
     text: archiveFile,
@@ -151,12 +151,12 @@ export function buildReviewedFidelityReference({
     operation: 'archive',
   },);
   /**
-   * Same invisible-character normalization used by archive intake.
+   Same invisible-character normalization used by archive intake.
    */
   const folded = foldInvisibleVariants({ text: original, },)
     .text;
   /**
-   * Local correction remains calibration data, never a corpus write.
+   Local correction remains calibration data, never a corpus write.
    */
   const referenceText = applyReviewedEdits({
     reference: folded,
@@ -172,7 +172,7 @@ export function buildReviewedFidelityReference({
     },);
   }
   /**
-   * Donor content must be outside the reference's original archive range.
+   Donor content must be outside the reference's original archive range.
    */
   const donorText = reviewedText({
     text: archiveFile,
@@ -194,7 +194,7 @@ export function buildReviewedFidelityReference({
     },);
   }
   /**
-   * Each reviewed family appears once; an empty list is not a calibration.
+   Each reviewed family appears once; an empty list is not a calibration.
    */
   const kinds = new Set(checked.damages
     .map(function kindOf(damage,): FidelityDamageKind {
@@ -208,12 +208,12 @@ export function buildReviewedFidelityReference({
       operation: 'damage',
     },);
   /**
-   * Review locks both wording and the builder's stated delta, not merely its family label.
+   Review locks both wording and the builder's stated delta, not merely its family label.
    */
   const damages = checked.damages
     .map(function verify(expected,): Extract<DamageAttempt, { readonly kind: 'damaged'; }> {
     /**
-     * Mechanically generated twin, not automatically trusted as a valid comparison.
+     Mechanically generated twin, not automatically trusted as a valid comparison.
      */
     const damage = reviewedDamage({
       kind: expected.kind,

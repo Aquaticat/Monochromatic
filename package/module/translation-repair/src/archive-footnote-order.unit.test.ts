@@ -1,8 +1,8 @@
 /**
- * Tests for moving the archive's footnote definitions into the original's
- * order.
- *
- * @module
+ Tests for moving the archive's footnote definitions into the original's
+ order.
+ 
+ @module
  */
 
 import {
@@ -39,8 +39,8 @@ await describe({
       name: 'moves a contiguous run of definitions into the order asked for, keeping the gap between them',
       fn: async () => {
         /**
-         * The yuki archive after the relabel: labels the original's, order
-         * still the archive's.
+         The yuki archive after the relabel: labels the original's, order
+         still the archive's.
          */
         const reordered = reorderFootnoteDefinitions({
           text: '---\nname: Yuki\n---\n\nZhouzhou[^2] and Zhenli[^1].\n\n[^2]: A substitute parent.\n\n[^1]: Younger.\n',
@@ -75,7 +75,7 @@ await describe({
           order: [ '1', ],
         },).changed,).toBe(false,);
         /**
-         * Prose between the definitions.
+         Prose between the definitions.
          */
         const interleaved = reorderFootnoteDefinitions({
           text: 'A[^1].\n\n[^2]: two\n\nMore prose.\n\n[^1]: one\n',

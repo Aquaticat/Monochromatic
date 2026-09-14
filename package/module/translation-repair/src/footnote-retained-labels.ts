@@ -5,19 +5,19 @@ import type { RetainedArchiveFootnoteLabel, } from './footnote-label-rewrite.ts'
 // Decimal candidates are generated, never parsed from potentially large or nonnumeric existing labels.
 
 /**
- * Assigns deterministic unused labels to colliding unmatched archive notes.
- * Every result stays outside both input namespaces; no original correspondence is implied.
- *
- * @param labels - distinct colliding archive spellings in original encounter order
- *
- * @param reserved - normalized identifiers from both complete input namespaces
- *
- * @returns One distinct fresh label per displaced archive identifier
- *
- * @example
- * ```ts
- * const retained = retainedFootnoteLabels({ labels: ['1'], reserved: new Set(['1', '2', '3']) });
- * ```
+ Assigns deterministic unused labels to colliding unmatched archive notes.
+ Every result stays outside both input namespaces; no original correspondence is implied.
+ 
+ @param labels - distinct colliding archive spellings in original encounter order
+ 
+ @param reserved - normalized identifiers from both complete input namespaces
+ 
+ @returns One distinct fresh label per displaced archive identifier
+ 
+ @example
+ ```ts
+ const retained = retainedFootnoteLabels({ labels: ['1'], reserved: new Set(['1', '2', '3']) });
+ ```
  */
 export function retainedFootnoteLabels(
   {
@@ -29,16 +29,16 @@ export function retainedFootnoteLabels(
   },
 ): readonly RetainedArchiveFootnoteLabel[] {
   /**
-   * Available decimal identifiers in increasing order.
+   Available decimal identifiers in increasing order.
    */
   const free: string[] = [];
   /**
-   * At most every reserved identifier can occupy one decimal candidate.
+   At most every reserved identifier can occupy one decimal candidate.
    */
   const bound = reserved.size + labels.length;
   for (let candidate = 1; (candidate <= bound) && (free.length < labels.length); candidate += 1) {
     /**
-     * ASCII decimal labels normalize to themselves.
+     ASCII decimal labels normalize to themselves.
      */
     const label = String(candidate,);
     if (!reserved.has(label,))

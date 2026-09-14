@@ -1,15 +1,15 @@
 /**
- * Tests for the assembly's withdrawn and shipped index sets.
- *
- * A replacement can validate on its own and still break a relation between
- * slices: a footnote reference settled apart from its definition. The guard
- * withdraws it at assembly, and the two index sets the result carries must say
- * so: the slice is withdrawn, not changed, and the document that ships is the
- * archive.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the assembly's withdrawn and shipped index sets.
+ 
+ A replacement can validate on its own and still break a relation between
+ slices: a footnote reference settled apart from its definition. The guard
+ withdraws it at assembly, and the two index sets the result carries must say
+ so: the slice is withdrawn, not changed, and the document that ships is the
+ archive.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
@@ -26,7 +26,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original with a footnote referenced in one section and defined at the end.
+ Original with a footnote referenced in one section and defined at the end.
  */
 const SOURCE_TEXT = `## 甲
 
@@ -40,7 +40,7 @@ const SOURCE_TEXT = `## 甲
 `;
 
 /**
- * Archive with the same footnote.
+ Archive with the same footnote.
  */
 const TARGET_TEXT = `## Alpha
 
@@ -54,25 +54,25 @@ Whiskers chases butterflies.
 `;
 
 /**
- * Wording of the referencing slice with its marker dropped.
+ Wording of the referencing slice with its marker dropped.
  */
 const DROPS_THE_MARKER = 'The cat sleeps on the windowsill.';
 
 /**
- * Record for one slice, changed or kept.
- *
- * @param sliceIndex - slice this settles
- *
- * @param incumbentText - archive wording of the slice
- *
- * @param outputText - wording the lane settled on
- *
- * @returns Record as the lane writes it
- *
- * @example
- * ```ts
- * const record = recordFor({ sliceIndex: 0, incumbentText, outputText: incumbentText, },);
- * ```
+ Record for one slice, changed or kept.
+ 
+ @param sliceIndex - slice this settles
+ 
+ @param incumbentText - archive wording of the slice
+ 
+ @param outputText - wording the lane settled on
+ 
+ @returns Record as the lane writes it
+ 
+ @example
+ ```ts
+ const record = recordFor({ sliceIndex: 0, incumbentText, outputText: incumbentText, },);
+ ```
  */
 function recordFor(
   {
@@ -117,22 +117,22 @@ function recordFor(
 }
 
 /**
- * Logger that keeps what it is told.
- *
- * @param said - lines kept
- *
- * @returns Logger writing into `said`
- *
- * @example
- * ```ts
- * const l = capturingLogger({ said: [], },);
- * ```
+ Logger that keeps what it is told.
+ 
+ @param said - lines kept
+ 
+ @returns Logger writing into `said`
+ 
+ @example
+ ```ts
+ const l = capturingLogger({ said: [], },);
+ ```
  */
 function capturingLogger({ said, }: { readonly said: string[]; },): Logger {
   /**
-   * Keeps one line.
-   *
-   * @param message - line to keep
+   Keeps one line.
+   
+   @param message - line to keep
    */
   const keep = (message: string,): void => {
     said.push(message,);
@@ -156,7 +156,7 @@ await describe({
         + 'changed, so the document that ships is the archive and the index sets say why',
       fn: async () => {
         /**
-         * Prepared pair, sliced by the pipeline.
+         Prepared pair, sliced by the pipeline.
          */
         const prepared = await prepareDocumentPair({
           sourceText: SOURCE_TEXT,
@@ -164,7 +164,7 @@ await describe({
         },);
 
         /**
-         * Slice carrying the reference, which the replacement damages.
+         Slice carrying the reference, which the replacement damages.
          */
         const referencing = prepared.slices.find(function carriesMarker(slice,): boolean {
           return slice.target.text.includes('[^1].',);
@@ -173,7 +173,7 @@ await describe({
           throw new Error('the fixture pair carries no slice with the reference',);
 
         /**
-         * Lines the assembly wrote.
+         Lines the assembly wrote.
          */
         const said: string[] = [];
 

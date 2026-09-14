@@ -7,89 +7,89 @@ import { selectFence, } from './prompt-fence.ts';
 //region Absolute naturalness review wire
 
 /**
- * One paragraph-located material naturalness defect.
- *
- * @example
- * ```ts
- * const finding: AbsoluteNaturalnessFinding = { paragraph: 1, problem: 'Replace source-language word order.' };
- * ```
+ One paragraph-located material naturalness defect.
+ 
+ @example
+ ```ts
+ const finding: AbsoluteNaturalnessFinding = { paragraph: 1, problem: 'Replace source-language word order.' };
+ ```
  */
 export type AbsoluteNaturalnessFinding = {
   /**
-   * One-based paragraph number shown in reviewer sheet.
+   One-based paragraph number shown in reviewer sheet.
    */
   readonly paragraph: number;
 
   /**
-   * Concise actionable naturalness defect.
+   Concise actionable naturalness defect.
    */
   readonly problem: string;
 };
 
 /**
- * Provider reply judging one whole English candidate against absolute publication quality.
- *
- * @example
- * ```ts
- * const reply: AbsoluteNaturalnessReviewWire = { acceptable: true, findings: [], reason: 'publication-ready English' };
- * ```
+ Provider reply judging one whole English candidate against absolute publication quality.
+ 
+ @example
+ ```ts
+ const reply: AbsoluteNaturalnessReviewWire = { acceptable: true, findings: [], reason: 'publication-ready English' };
+ ```
  */
 export type AbsoluteNaturalnessReviewWire = {
   /**
-   * Whether whole candidate meets absolute naturalness floor.
+   Whether whole candidate meets absolute naturalness floor.
    */
   readonly acceptable: boolean;
 
   /**
-   * Actionable naturalness defects, empty only for acceptable candidate.
+   Actionable naturalness defects, empty only for acceptable candidate.
    */
   readonly findings: readonly AbsoluteNaturalnessFinding[];
 
   /**
-   * Concise explanation of verdict.
+   Concise explanation of verdict.
    */
   readonly reason: string;
 };
 
 /**
- * Candidate and context shown to absolute reviewer.
- *
- * @example
- * ```ts
- * const subject: AbsoluteNaturalnessReviewSubject = { sourceText: '猫睡了。', candidateText: 'The cat slept.', paragraphs: ['The cat slept.'] };
- * ```
+ Candidate and context shown to absolute reviewer.
+ 
+ @example
+ ```ts
+ const subject: AbsoluteNaturalnessReviewSubject = { sourceText: '猫睡了。', candidateText: 'The cat slept.', paragraphs: ['The cat slept.'] };
+ ```
  */
 export type AbsoluteNaturalnessReviewSubject = {
   /**
-   * Chinese passage clarifying deliberate source-language terms.
+   Chinese passage clarifying deliberate source-language terms.
    */
   readonly sourceText: string;
 
   /**
-   * Exact English wording that would ship.
+   Exact English wording that would ship.
    */
   readonly candidateText: string;
 
   /**
-   * Structurally refinable paragraphs in displayed one-based order.
+   Structurally refinable paragraphs in displayed one-based order.
    */
   readonly paragraphs: readonly string[];
 
   /**
-   * Declared names and public handles candidate must treat as intentional.
+   Declared names and public handles candidate must treat as intentional.
    */
   readonly identityContext?: string;
 };
 
 /**
- * Substantive responsibility assigned to one exact-candidate review.
+ Substantive responsibility assigned to one exact-candidate review.
  */
 export type AbsoluteNaturalnessReviewPerspective =
   | 'defect-discovery'
   | 'acceptance-challenge';
 
 /**
- * Structured-output contract for absolute naturalness reviewer.
+ Structured-output contract for absolute naturalness reviewer.
  */
 export const ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',
@@ -131,16 +131,16 @@ export const ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseForm
 };
 
 /**
- * Checks reviewer reply shape and verdict-to-findings consistency.
- *
- * @param value - parsed provider value
- *
- * @returns Whether value is usable absolute review
- *
- * @example
- * ```ts
- * if (isAbsoluteNaturalnessReviewWire(value)) consume(value);
- * ```
+ Checks reviewer reply shape and verdict-to-findings consistency.
+ 
+ @param value - parsed provider value
+ 
+ @returns Whether value is usable absolute review
+ 
+ @example
+ ```ts
+ if (isAbsoluteNaturalnessReviewWire(value)) consume(value);
+ ```
  */
 export function isAbsoluteNaturalnessReviewWire(
   value: unknown,
@@ -161,7 +161,7 @@ export function isAbsoluteNaturalnessReviewWire(
       if (!isJsonRecord(finding,))
         return false;
       /**
-       * Finding fields before primitive validation.
+       Finding fields before primitive validation.
        */
       const {
         paragraph,
@@ -183,7 +183,7 @@ export function isAbsoluteNaturalnessReviewWire(
   if ((typeof value.reason) !== 'string')
     return false;
   /**
-   * Findings after array and element validation.
+   Findings after array and element validation.
    */
   const { findings, } = value;
   if (value.acceptable)
@@ -192,18 +192,18 @@ export function isAbsoluteNaturalnessReviewWire(
 }
 
 /**
- * Builds independent absolute-quality question over exact would-ship wording.
- *
- * @param subject - source context, exact candidate and declared identities
- *
- * @param perspective - distinct first review or prior-acceptance challenge task
- *
- * @returns Fenced reviewer conversation
- *
- * @example
- * ```ts
- * const messages = buildAbsoluteNaturalnessReviewMessages({ subject, perspective: 'defect-discovery', });
- * ```
+ Builds independent absolute-quality question over exact would-ship wording.
+ 
+ @param subject - source context, exact candidate and declared identities
+ 
+ @param perspective - distinct first review or prior-acceptance challenge task
+ 
+ @returns Fenced reviewer conversation
+ 
+ @example
+ ```ts
+ const messages = buildAbsoluteNaturalnessReviewMessages({ subject, perspective: 'defect-discovery', });
+ ```
  */
 export function buildAbsoluteNaturalnessReviewMessages(
   {
@@ -215,13 +215,13 @@ export function buildAbsoluteNaturalnessReviewMessages(
   },
 ): readonly ChatMessage[] {
   /**
-   * Substantively different responsibility for initial and confirmation passes.
+   Substantively different responsibility for initial and confirmation passes.
    */
   const responsibility = (perspective === 'defect-discovery')
     ? `Discover material defects without relying on any prior verdict. Start with sentence-local grammar and collocation, then independently assess paragraph and whole-passage flow.`
     : `A prior editor accepted this exact candidate. Challenge that result rather than repeating its scan. Start from whole-passage register, coherence, and memorial voice, then work backward through each paragraph and sentence to find any overlooked material defect.`;
   /**
-   * Fence absent from every untrusted block.
+   Fence absent from every untrusted block.
    */
   const fence = selectFence({
     texts: [
@@ -232,7 +232,7 @@ export function buildAbsoluteNaturalnessReviewMessages(
     ],
   },);
   /**
-   * Declared identity context or no block.
+   Declared identity context or no block.
    */
   const identity = (subject.identityContext === undefined)
     ? []
@@ -242,7 +242,7 @@ export function buildAbsoluteNaturalnessReviewMessages(
       '',
     ];
   /**
-   * Numbered refinable paragraphs findings must locate.
+   Numbered refinable paragraphs findings must locate.
    */
   const paragraphs = subject.paragraphs
     .map(function numberParagraph(

@@ -35,12 +35,12 @@ import type {
 // old wording made the pre-edit translation the standard of accuracy.
 
 /**
- * Instructions every translator call shares.
- *
- * The prior translation is described as partial and possibly wrong on purpose.
- * Told to "improve" it, a model treats its wording as the baseline and edits
- * around it, which is how a passage that was never translated ends up
- * paraphrased rather than rendered. Told it may be absent, it translates.
+ Instructions every translator call shares.
+ 
+ The prior translation is described as partial and possibly wrong on purpose.
+ Told to "improve" it, a model treats its wording as the baseline and edits
+ around it, which is how a passage that was never translated ends up
+ paraphrased rather than rendered. Told it may be absent, it translates.
  */
 const TRANSLATE_RULES =
   `You are a bilingual Chinese-to-English translator working on a memorial archive.
@@ -61,47 +61,47 @@ Rules:
 ${HOUSE_POLICY_BLOCK}`;
 
 /**
- * Reply-format instruction, kept LAST in the assembled sheet.
- *
- * Split out so a conditional rule can be inserted before it. Wire instructions
- * that end up above content rules are the ones models drop first.
+ Reply-format instruction, kept LAST in the assembled sheet.
+ 
+ Split out so a conditional rule can be inserted before it. Wire instructions
+ that end up above content rules are the ones models drop first.
  */
 const TRANSLATE_REPLY_RULE =
   'Reply with ONLY a JSON object of shape {"translation": "..."}. No prose, no code fences, no commentary.';
 
 /**
- * Instruction added when the enclosing chunk's ORIGINAL is line-structured.
- *
- * Written for a translator rather than an editor, which is why it is not
- * `LINE_STRUCTURE_RULE` from `line-structure-addendum.ts`. That one asks an
- * editor to leave existing lines where they are; here there may be no existing
- * lines at all, and the shape has to be built from the original instead.
- *
- * The failure it answers is `Toka_ls`, whose verse chunk runs 21 source blocks
- * at median 22 characters against 18 target blocks at median 101: the existing
- * translation already merged the lines. A translator shown that translation and
- * told nothing would keep reproducing the merge, since the only shape in front
- * of it is the merged one.
- *
- * SHARED WITH THE CONSOLIDATE WIRE, whose producer is a translator too. A
- * second wording of the same rule would drift from the one `Toka_ls` was
- * measured against.
- *
- * SAYS OUTRIGHT THAT IT OUTRANKS THE SHAPE RULE, because the two disagree on
- * exactly the case this exists for. `TRANSLATE_RULES` tells a producer to keep
- * the existing translation's shape where it merges blocks the ORIGINAL keeps
- * apart, and on `Toka_ls` that means keeping 18 blocks where the Chinese has
- * 21. Both rules arrive in one system prompt and neither used to defer, so a
- * producer met a contradiction and resolved it however it liked.
- *
- * THE GUARD AGREES WITH THIS RULE AND CANNOT ENFORCE IT.
- * `validateTranslatedSlice` refuses a candidate that MERGES the page's blocks,
- * and allows extra blocks only where the ORIGINAL has them: measured, a
- * three-block candidate against a one-block page is valid when the source is
- * verse and invalid when it is prose. So the unmerge this rule asks for is
- * licensed rather than punished, and a producer that instead kept the page's
- * merge is equally valid. Nothing downstream would have caught the wrong
- * choice, which is why precedence is stated here.
+ Instruction added when the enclosing chunk's ORIGINAL is line-structured.
+ 
+ Written for a translator rather than an editor, which is why it is not
+ `LINE_STRUCTURE_RULE` from `line-structure-addendum.ts`. That one asks an
+ editor to leave existing lines where they are; here there may be no existing
+ lines at all, and the shape has to be built from the original instead.
+ 
+ The failure it answers is `Toka_ls`, whose verse chunk runs 21 source blocks
+ at median 22 characters against 18 target blocks at median 101: the existing
+ translation already merged the lines. A translator shown that translation and
+ told nothing would keep reproducing the merge, since the only shape in front
+ of it is the merged one.
+ 
+ SHARED WITH THE CONSOLIDATE WIRE, whose producer is a translator too. A
+ second wording of the same rule would drift from the one `Toka_ls` was
+ measured against.
+ 
+ SAYS OUTRIGHT THAT IT OUTRANKS THE SHAPE RULE, because the two disagree on
+ exactly the case this exists for. `TRANSLATE_RULES` tells a producer to keep
+ the existing translation's shape where it merges blocks the ORIGINAL keeps
+ apart, and on `Toka_ls` that means keeping 18 blocks where the Chinese has
+ 21. Both rules arrive in one system prompt and neither used to defer, so a
+ producer met a contradiction and resolved it however it liked.
+ 
+ THE GUARD AGREES WITH THIS RULE AND CANNOT ENFORCE IT.
+ `validateTranslatedSlice` refuses a candidate that MERGES the page's blocks,
+ and allows extra blocks only where the ORIGINAL has them: measured, a
+ three-block candidate against a one-block page is valid when the source is
+ verse and invalid when it is prose. So the unmerge this rule asks for is
+ licensed rather than punished, and a producer that instead kept the page's
+ merge is equally valid. Nothing downstream would have caught the wrong
+ choice, which is why precedence is stated here.
  */
 export const TRANSLATE_LINE_STRUCTURE_RULE: string = 'The ORIGINAL is line-structured: each '
   + 'original line is a unit. THIS RULE OUTRANKS THE STANDING RULE ASKING YOU TO '
@@ -112,7 +112,7 @@ export const TRANSLATE_LINE_STRUCTURE_RULE: string = 'The ORIGINAL is line-struc
   + 'drop a line. Where the EXISTING TRANSLATION has merged lines, unmerge them.';
 
 /**
- * Instruction for visible YAML page metadata.
+ Instruction for visible YAML page metadata.
  */
 export const TRANSLATE_FRONT_MATTER_RULE: string = 'The passage is complete YAML front matter, including its '
   + '--- fence lines. Return one complete YAML front matter block and nothing outside it. Preserve every field name, '
@@ -127,76 +127,76 @@ export const TRANSLATE_FRONT_MATTER_RULE: string = 'The passage is complete YAML
   + 'THIS RULE OUTRANKS the general rule that names already used by the existing translation are authoritative.';
 
 /**
- * Messages for one translation call.
- *
- * @example
- * ```ts
- * const messages = buildTranslateMessages({ sourceText, existingText, },);
- * ```
+ Messages for one translation call.
+ 
+ @example
+ ```ts
+ const messages = buildTranslateMessages({ sourceText, existingText, },);
+ ```
  */
 export type TranslatePromptPlan = {
   /**
-   * Messages ready for `chatJson`.
+   Messages ready for `chatJson`.
    */
   readonly messages: readonly ChatMessage[];
 };
 
 /**
- * Latest exact rejected slate and structured findings grounding next rendering.
- *
- * @example
- * ```ts
- * const evidence: TranslateFollowupEvidence = {
- *   reason: 'declined-rejection',
- *   candidateTexts: ['The cat sleeps.',],
- *   findings: ['translate-declined (rejection)',],
- * };
- * ```
+ Latest exact rejected slate and structured findings grounding next rendering.
+ 
+ @example
+ ```ts
+ const evidence: TranslateFollowupEvidence = {
+   reason: 'declined-rejection',
+   candidateTexts: ['The cat sleeps.',],
+   findings: ['translate-declined (rejection)',],
+ };
+ ```
  */
 export type TranslateFollowupEvidence = {
   /**
-   * Why latest slate could not fill absent passage.
+   Why latest slate could not fill absent passage.
    */
   readonly reason: TranslateAbsenceReason;
 
   /**
-   * Exact candidate texts latest panel rejected.
+   Exact candidate texts latest panel rejected.
    */
   readonly candidateTexts: readonly string[];
 
   /**
-   * Latest structured stage findings.
+   Latest structured stage findings.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Builds the translator sheet for one passage.
- *
- * @param sourceText - original passage to render
- *
- * @param existingText - translation as it stands, empty when there is none
- *
- * @param incumbentKind - explicit source-only provenance for break presentation;
- * callers that cannot establish it keep the original view
- *
- * @param identityContext - declared names and handles, omitted when absent
- *
- * @param syntax - syntax role requiring dedicated preservation rules
- *
- * @param followupEvidence - latest exact rejected slate and findings when this
- * is stage-local repair rather than initial rendering
- *
- * @param lineStructured - whether the enclosing CHUNK's original is
- * line-structured, decided by the caller because a slice is too small a unit to
- * decide it on; see `buildEditorAddendum`
- *
- * @returns Messages for the call
- *
- * @example
- * ```ts
- * const plan = buildTranslateMessages({ sourceText, existingText: '', },);
- * ```
+ Builds the translator sheet for one passage.
+ 
+ @param sourceText - original passage to render
+ 
+ @param existingText - translation as it stands, empty when there is none
+ 
+ @param incumbentKind - explicit source-only provenance for break presentation;
+ callers that cannot establish it keep the original view
+ 
+ @param identityContext - declared names and handles, omitted when absent
+ 
+ @param syntax - syntax role requiring dedicated preservation rules
+ 
+ @param followupEvidence - latest exact rejected slate and findings when this
+ is stage-local repair rather than initial rendering
+ 
+ @param lineStructured - whether the enclosing CHUNK's original is
+ line-structured, decided by the caller because a slice is too small a unit to
+ decide it on; see `buildEditorAddendum`
+ 
+ @returns Messages for the call
+ 
+ @example
+ ```ts
+ const plan = buildTranslateMessages({ sourceText, existingText: '', },);
+ ```
  */
 export function buildTranslateMessages(
   {
@@ -220,7 +220,7 @@ export function buildTranslateMessages(
   },
 ): TranslatePromptPlan {
   /**
-   * Presentation-only break spelling, with canonical source still used for facts.
+   Presentation-only break spelling, with canonical source still used for facts.
    */
   const sourceForModel = sourceBreakDisplay({
     sourceText,
@@ -229,8 +229,8 @@ export function buildTranslateMessages(
     ...((syntax === undefined) ? {} : { syntax, }),
   },);
   /**
-   * Fence no enclosed text can reproduce, chosen against every string this
-   * sheet carries, since all of them are arbitrary prose.
+   Fence no enclosed text can reproduce, chosen against every string this
+   sheet carries, since all of them are arbitrary prose.
    */
   const fence = selectFence({
     texts: [
@@ -244,8 +244,8 @@ export function buildTranslateMessages(
   },);
 
   /**
-   * Translator sheet, with the line-structure fact inserted above the reply
-   * instruction when the enclosing chunk's original is verse.
+   Translator sheet, with the line-structure fact inserted above the reply
+   instruction when the enclosing chunk's original is verse.
    */
   const system = [
     TRANSLATE_RULES,
@@ -267,7 +267,7 @@ export function buildTranslateMessages(
     .join('\n\n',);
 
   /**
-   * Exact rejected candidates rendered as independently fenced blocks.
+   Exact rejected candidates rendered as independently fenced blocks.
    */
   const rejectedCandidates = followupEvidence === undefined
     ? ''
@@ -281,7 +281,7 @@ export function buildTranslateMessages(
       },)
       .join('\n',);
   /**
-   * Latest structured findings as prompt text.
+   Latest structured findings as prompt text.
    */
   const followupFindings = followupEvidence === undefined
     ? ''
@@ -289,7 +289,7 @@ export function buildTranslateMessages(
       .findings
       .join('\n',);
   /**
-   * Latest rejection evidence shown only on stage-local repair.
+   Latest rejection evidence shown only on stage-local repair.
    */
   const followupSection = followupEvidence === undefined
     ? ''
@@ -331,42 +331,42 @@ ${fence} END ${fence}`,
 }
 
 /**
- * One translator reply on the wire.
- *
- * @example
- * ```ts
- * const wire: TranslateReportWire = { translation: 'The cat naps.', };
- * ```
+ One translator reply on the wire.
+ 
+ @example
+ ```ts
+ const wire: TranslateReportWire = { translation: 'The cat naps.', };
+ ```
  */
 export type TranslateReportWire = {
   /**
-   * Rendered English for the whole passage.
+   Rendered English for the whole passage.
    */
   readonly translation: string;
 };
 
 /**
- * Guards a translator reply.
- *
- * A REPLY THAT SAYS NOTHING IS NOT A REPLY. The structured-output schema is
- * satisfied by `{"translation": ""}`, which used to arrive as a heard voice
- * proposing to render the passage as nothing and was then dropped further down
- * while the model that sent it was recorded as answered. Refusing it here makes
- * it a lost voice instead, so the roster re-asks that model in the next round
- * and the loss is reported as one; a slice with no translation in the archive
- * has nothing else to fall back on, which is where the difference is felt.
- *
- * Every source slice says something, so no legitimate reply is blank: an empty
- * run cannot become a slice at all.
- *
- * @param value - parsed model JSON
- *
- * @returns Whether value carries a translation that says something
- *
- * @example
- * ```ts
- * const ok = isTranslateReportWire(JSON.parse(text,),);
- * ```
+ Guards a translator reply.
+ 
+ A REPLY THAT SAYS NOTHING IS NOT A REPLY. The structured-output schema is
+ satisfied by `{"translation": ""}`, which used to arrive as a heard voice
+ proposing to render the passage as nothing and was then dropped further down
+ while the model that sent it was recorded as answered. Refusing it here makes
+ it a lost voice instead, so the roster re-asks that model in the next round
+ and the loss is reported as one; a slice with no translation in the archive
+ has nothing else to fall back on, which is where the difference is felt.
+ 
+ Every source slice says something, so no legitimate reply is blank: an empty
+ run cannot become a slice at all.
+ 
+ @param value - parsed model JSON
+ 
+ @returns Whether value carries a translation that says something
+ 
+ @example
+ ```ts
+ const ok = isTranslateReportWire(JSON.parse(text,),);
+ ```
  */
 export function isTranslateReportWire(value: unknown,): value is TranslateReportWire {
   if (!isJsonRecord(value,))
@@ -380,7 +380,7 @@ export function isTranslateReportWire(value: unknown,): value is TranslateReport
 }
 
 /**
- * Structured-output constraint for translator calls.
+ Structured-output constraint for translator calls.
  */
 export const TRANSLATE_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',

@@ -1,21 +1,21 @@
 /**
- * Tests for saying whether audited wording is wording a document would carry.
- *
- * THE ORDER OF THE BRANCHES IS THE SUBJECT, not an implementation detail. On an
- * artifact no stage has decided, every would-ship reading names the archive, so
- * a classifier that compared text before asking whether a decision exists would
- * report a displacement on all 227 of the population's undecided subjects. That
- * is the exact wrong answer this module was built to avoid, and it is pinned
- * first.
- *
- * THE PERSISTED READER IS TESTED AGAINST ABSENCE. Rows come off disk through an
- * unchecked cast, so `unrecorded` is reachable in production and reading a
- * missing field as `survives` would assert the strongest claim here from no
- * evidence at all.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for saying whether audited wording is wording a document would carry.
+ 
+ THE ORDER OF THE BRANCHES IS THE SUBJECT, not an implementation detail. On an
+ artifact no stage has decided, every would-ship reading names the archive, so
+ a classifier that compared text before asking whether a decision exists would
+ report a displacement on all 227 of the population's undecided subjects. That
+ is the exact wrong answer this module was built to avoid, and it is pinned
+ first.
+ 
+ THE PERSISTED READER IS TESTED AGAINST ABSENCE. Rows come off disk through an
+ unchecked cast, so `unrecorded` is reachable in production and reading a
+ missing field as `survives` would assert the strongest claim here from no
+ evidence at all.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -34,17 +34,17 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Wording the translate lane decided on, which is what an audit is shown.
+ Wording the translate lane decided on, which is what an audit is shown.
  */
 const LANE_NAP = 'The cat naps on the windowsill.';
 
 /**
- * Wording a later stage put in its place.
+ Wording a later stage put in its place.
  */
 const LATER_NAP = 'The cat is napping on the windowsill.';
 
 /**
- * Selection an artifact carries once a contest has settled it.
+ Selection an artifact carries once a contest has settled it.
  */
 const CONTESTED = {
   kind: 'contested',
@@ -52,25 +52,25 @@ const CONTESTED = {
 } as unknown as Parameters<typeof pageRelationOf>[0]['laneSelection'];
 
 /**
- * Selection an artifact carries while nobody has decided it.
+ Selection an artifact carries while nobody has decided it.
  */
 const UNDECIDED = {
   kind: 'pending-human-decision',
 } as unknown as Parameters<typeof pageRelationOf>[0]['laneSelection'];
 
 /**
- * Builds a reading carrying wording, defaulting to a later stage's.
- *
- * @param decidedBy - stage whose decision survived
- *
- * @param text - what would stand there
- *
- * @returns Reading as the would-ship reader returns it
- *
- * @example
- * ```ts
- * const reading = wordingFrom({ decidedBy: 'contest', },);
- * ```
+ Builds a reading carrying wording, defaulting to a later stage's.
+ 
+ @param decidedBy - stage whose decision survived
+ 
+ @param text - what would stand there
+ 
+ @returns Reading as the would-ship reader returns it
+ 
+ @example
+ ```ts
+ const reading = wordingFrom({ decidedBy: 'contest', },);
+ ```
  */
 function wordingFrom(
   {
@@ -89,19 +89,19 @@ function wordingFrom(
 }
 
 /**
- * Builds a persisted row carrying a relation and a number of claims.
- *
- * @param pageRelation - relation to record, omitted for a row written before
- * the field existed
- *
- * @param claims - how many anchored claims its roster made
- *
- * @returns Row as a run file carries it
- *
- * @example
- * ```ts
- * const row = rowCarrying({ pageRelation: { kind: 'survives', }, claims: 2, },);
- * ```
+ Builds a persisted row carrying a relation and a number of claims.
+ 
+ @param pageRelation - relation to record, omitted for a row written before
+ the field existed
+ 
+ @param claims - how many anchored claims its roster made
+ 
+ @returns Row as a run file carries it
+ 
+ @example
+ ```ts
+ const row = rowCarrying({ pageRelation: { kind: 'survives', }, claims: 2, },);
+ ```
  */
 function rowCarrying(
   {
@@ -349,7 +349,7 @@ await describe({
         + 'the kind. Every reason names a stage and none of them says whether there was anything here: `lanesAgreedOn` covers a gap neither lane wrote into and text both lanes removed under one string, and a reader scanning this column has to tell a change from nothing happening',
       fn: async () => {
         /**
-         * Silence over a span the archive rendered, which the deciders emptied.
+         Silence over a span the archive rendered, which the deciders emptied.
          */
         const emptied = pageRelationLabel({
           relation: {
@@ -360,7 +360,7 @@ await describe({
         },);
 
         /**
-         * The SAME reason at an anchor, where nothing was ever rendered.
+         The SAME reason at an anchor, where nothing was ever rendered.
          */
         const gap = pageRelationLabel({
           relation: {
@@ -414,7 +414,7 @@ await describe({
         + 'the instrument reported defects in wording no reader would meet',
       fn: async () => {
         /**
-         * Two displaced subjects carrying claims, one surviving carrying none.
+         Two displaced subjects carrying claims, one surviving carrying none.
          */
         const tallies = relationTallyOf({
           rows: [
@@ -457,7 +457,7 @@ await describe({
         + 'two builds reports a denominator matching its own row count instead of quietly shrinking',
       fn: async () => {
         /**
-         * One row from before the field existed, beside one from after.
+         One row from before the field existed, beside one from after.
          */
         const tallies = relationTallyOf({
           rows: [

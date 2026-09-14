@@ -1,9 +1,9 @@
 /**
- * Tests for the credit-metered provider's client: the Messages-protocol body
- * it builds, the stream grammar it names, the spelling it sends, and the
- * balance it reads.
- *
- * @module
+ Tests for the credit-metered provider's client: the Messages-protocol body
+ it builds, the stream grammar it names, the spelling it sends, and the
+ balance it reads.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -31,25 +31,25 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Delay of the deliberately slow test transport.
+ Delay of the deliberately slow test transport.
  */
 const SLOW_TRANSPORT_MS = 30;
 
 /**
- * Calls fired at one model to show they are not serialised.
- *
- * One beyond width measured live,
- * proving measured arm did not become artificial local ceiling.
+ Calls fired at one model to show they are not serialised.
+ 
+ One beyond width measured live,
+ proving measured arm did not become artificial local ceiling.
  */
 const OVERLAPPING_CALLS = 65;
 
 /**
- * Injected finite width proving test seam remains functional.
+ Injected finite width proving test seam remains functional.
  */
 const FINITE_TEST_WIDTH = 2;
 
 /**
- * Single user message reused across exchanges.
+ Single user message reused across exchanges.
  */
 const MESSAGES = [
   {
@@ -63,7 +63,7 @@ const MESSAGES = [
 ];
 
 /**
- * Structured-output constraint the tool is built from.
+ Structured-output constraint the tool is built from.
  */
 const RESPONSE_FORMAT = {
   type: 'json_schema' as const,
@@ -78,22 +78,22 @@ const RESPONSE_FORMAT = {
 };
 
 /**
- * Builds a drained Messages-protocol body carrying one tool call.
- *
- * MIRRORS A LIVE CAPTURE, `ping` frame included: the keep-alive is a real
- * event this provider sends, and a reader that chokes on it fails only against
- * the live API where nothing can be replayed.
- *
- * @param fragments - tool-argument fragments in arrival order
- *
- * @param stopReason - reason the message ended with
- *
- * @returns Whole `text/event-stream` body as the transport drains it
- *
- * @example
- * ```ts
- * const body = messagesBody({ fragments: ['{"verdict":', '"pass"}',], },);
- * ```
+ Builds a drained Messages-protocol body carrying one tool call.
+ 
+ MIRRORS A LIVE CAPTURE, `ping` frame included: the keep-alive is a real
+ event this provider sends, and a reader that chokes on it fails only against
+ the live API where nothing can be replayed.
+ 
+ @param fragments - tool-argument fragments in arrival order
+ 
+ @param stopReason - reason the message ended with
+ 
+ @returns Whole `text/event-stream` body as the transport drains it
+ 
+ @example
+ ```ts
+ const body = messagesBody({ fragments: ['{"verdict":', '"pass"}',], },);
+ ```
  */
 function messagesBody(
   {
@@ -105,7 +105,7 @@ function messagesBody(
   },
 ): string {
   /**
-   * Serialized events in stream order, opening and closing a tool block.
+   Serialized events in stream order, opening and closing a tool block.
    */
   const events = [
     {
@@ -146,7 +146,7 @@ function messagesBody(
 }
 
 /**
- * Recorded reply carrying a whole tool call split across fragments.
+ Recorded reply carrying a whole tool call split across fragments.
  */
 const TOOL_CALL_BODY = messagesBody({
   fragments: [
@@ -156,45 +156,45 @@ const TOOL_CALL_BODY = messagesBody({
 },);
 
 /**
- * Recorded reply cut off before `message_stop`, which is how a stream the
- * provider truncated arrives: HTTP 200 carrying half a message.
+ Recorded reply cut off before `message_stop`, which is how a stream the
+ provider truncated arrives: HTTP 200 carrying half a message.
  */
 const CUT_TOOL_CALL_BODY = 'data: {"type":"content_block_delta","index":0,'
   + '"delta":{"type":"input_json_delta","partial_json":"{\\"verdict\\":"}}\n\n';
 
 /**
- * Verdict shape the chatJson tests validate against.
+ Verdict shape the chatJson tests validate against.
  */
 type CatVerdict = { readonly verdict: string; };
 
 /**
- * Guards parsed model JSON as a verdict.
- *
- * @param value - parsed candidate
- *
- * @returns Whether value carries a string verdict
- *
- * @example
- * ```ts
- * isCatVerdict({ verdict: 'pass', },);
- * ```
+ Guards parsed model JSON as a verdict.
+ 
+ @param value - parsed candidate
+ 
+ @returns Whether value carries a string verdict
+ 
+ @example
+ ```ts
+ isCatVerdict({ verdict: 'pass', },);
+ ```
  */
 function isCatVerdict(value: unknown,): value is CatVerdict {
   return isJsonRecord(value,) && ((typeof value.verdict) === 'string');
 }
 
 /**
- * Builds a transport replaying recorded replies in order while recording every
- * exchange for assertions.
- *
- * @param replies - replies replayed in call order, last one repeating
- *
- * @returns Transport plus its recorded exchanges
- *
- * @example
- * ```ts
- * const { transport, exchanges, } = recordedTransport({ replies: [reply,], },);
- * ```
+ Builds a transport replaying recorded replies in order while recording every
+ exchange for assertions.
+ 
+ @param replies - replies replayed in call order, last one repeating
+ 
+ @returns Transport plus its recorded exchanges
+ 
+ @example
+ ```ts
+ const { transport, exchanges, } = recordedTransport({ replies: [reply,], },);
+ ```
  */
 function recordedTransport(
   { replies, }: { readonly replies: readonly TransportReply[]; },
@@ -203,7 +203,7 @@ function recordedTransport(
   readonly exchanges: TransportExchange[];
 } {
   /**
-   * Every exchange the client performed, in order.
+   Every exchange the client performed, in order.
    */
   const exchanges: TransportExchange[] = [];
 
@@ -212,7 +212,7 @@ function recordedTransport(
       exchanges.push(exchange,);
 
       /**
-       * Reply for this exchange; the last recorded reply repeats.
+       Reply for this exchange; the last recorded reply repeats.
        */
       const reply = replies[Math.min(
         exchanges.length - 1,
@@ -227,34 +227,34 @@ function recordedTransport(
 }
 
 /**
- * Reads the body one recorded exchange sent, parsed.
- *
- * @param exchanges - exchanges the transport recorded
- *
- * @returns Parsed request body of the first exchange
- *
- * @example
- * ```ts
- * const body = sentBody({ exchanges, },);
- * ```
+ Reads the body one recorded exchange sent, parsed.
+ 
+ @param exchanges - exchanges the transport recorded
+ 
+ @returns Parsed request body of the first exchange
+ 
+ @example
+ ```ts
+ const body = sentBody({ exchanges, },);
+ ```
  */
 function sentBody(
   { exchanges, }: { readonly exchanges: readonly TransportExchange[]; },
 ): Record<string, unknown> {
   /**
-   * First exchange, which every test here performs exactly one of.
+   First exchange, which every test here performs exactly one of.
    */
   const [exchange,] = exchanges;
 
   /**
-   * Serialized body it carried, absent on a GET.
+   Serialized body it carried, absent on a GET.
    */
   const bodyJson = exchange?.bodyJson;
   if (bodyJson === undefined)
     throw new Error('exchange carried no body',);
 
   /**
-   * Parsed body, checked rather than asserted into shape.
+   Parsed body, checked rather than asserted into shape.
    */
   const parsed: unknown = JSON.parse(bodyJson,);
   if (!isJsonRecord(parsed,))
@@ -704,14 +704,14 @@ await describe({
         let widest = 0;
 
         /**
-         * Transport holding each call long enough for overlap to be visible.
-         *
-         * @returns One recorded tool call, after the hold
-         *
-         * @example
-         * ```ts
-         * const reply = await transport();
-         * ```
+         Transport holding each call long enough for overlap to be visible.
+         
+         @returns One recorded tool call, after the hold
+         
+         @example
+         ```ts
+         const reply = await transport();
+         ```
          */
         async function transport(): Promise<{ status: number; bodyText: string; }> {
           inFlight += 1;
@@ -764,14 +764,14 @@ await describe({
         let widest = 0;
 
         /**
-         * Transport whose gate exposes limiter width.
-         *
-         * @returns Recorded completion after gate opens
-         *
-         * @example
-         * ```ts
-         * await transport();
-         * ```
+         Transport whose gate exposes limiter width.
+         
+         @returns Recorded completion after gate opens
+         
+         @example
+         ```ts
+         await transport();
+         ```
          */
         async function transport(): Promise<TransportReply> {
           inFlight += 1;

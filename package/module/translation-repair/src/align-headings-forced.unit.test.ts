@@ -1,16 +1,16 @@
 /**
- * Tests for the aligner that can refuse.
- *
- * The case that matters is `XingZ60`, whose headings are reproduced here from
- * the defect record in `#71`. The shipped aligner paired every one of its
- * sections with the wrong one, shifted by two, because its scorer cannot
- * withhold a pairing: pairing two headings that share nothing scores zero
- * against a negative for leaving both unpaired, so the maximum always prefers
- * the unsupported pairing.
- *
- * Other fixtures are cat-themed invention.
- *
- * @module
+ Tests for the aligner that can refuse.
+ 
+ The case that matters is `XingZ60`, whose headings are reproduced here from
+ the defect record in `#71`. The shipped aligner paired every one of its
+ sections with the wrong one, shifted by two, because its scorer cannot
+ withhold a pairing: pairing two headings that share nothing scores zero
+ against a negative for leaving both unpaired, so the maximum always prefers
+ the unsupported pairing.
+ 
+ Other fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -26,22 +26,22 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Reads the target a source index was paired with, or undefined.
- *
- * @param steps - alignment steps
- *
- * @param sourceIndex - source unit to look up
- *
- * Returns an ARRAY rather than an optional number, because the repo models
- * absence without nullish unions and a bare -1 sentinel is the same mistake
- * wearing a different hat.
- *
- * @returns Single-element array with the target index, empty when unpaired
- *
- * @example
- * ```ts
- * const partner = pairedWith({ steps, sourceIndex: 0, },);
- * ```
+ Reads the target a source index was paired with, or undefined.
+ 
+ @param steps - alignment steps
+ 
+ @param sourceIndex - source unit to look up
+ 
+ Returns an ARRAY rather than an optional number, because the repo models
+ absence without nullish unions and a bare -1 sentinel is the same mistake
+ wearing a different hat.
+ 
+ @returns Single-element array with the target index, empty when unpaired
+ 
+ @example
+ ```ts
+ const partner = pairedWith({ steps, sourceIndex: 0, },);
+ ```
  */
 function pairedWith(
   {
@@ -65,22 +65,22 @@ function pairedWith(
 
 
 /**
- * Reads one source unit's insertion anchor out of a step list.
- *
- * @param steps - aligner output
- *
- * @param sourceIndex - unit to read
- *
- * @returns Its anchor
- *
- * @throws Error when that unit was paired or is missing, since a test expecting
- * an anchor there is asserting about something the aligner did not produce and
- * should say so rather than compare against a blank
- *
- * @example
- * ```ts
- * const anchor = anchorOf({ steps, sourceIndex: 1, },);
- * ```
+ Reads one source unit's insertion anchor out of a step list.
+ 
+ @param steps - aligner output
+ 
+ @param sourceIndex - unit to read
+ 
+ @returns Its anchor
+ 
+ @throws Error when that unit was paired or is missing, since a test expecting
+ an anchor there is asserting about something the aligner did not produce and
+ should say so rather than compare against a blank
+ 
+ @example
+ ```ts
+ const anchor = anchorOf({ steps, sourceIndex: 1, },);
+ ```
  */
 function anchorOf(
   {
@@ -92,7 +92,7 @@ function anchorOf(
   },
 ): InsertionAnchor {
   /**
-   * The unpaired step for that unit.
+   The unpaired step for that unit.
    */
   const found = steps.find(function atIndex(step,): boolean {
     return (step.kind === 'source-only') && (step.sourceIndex === sourceIndex);
@@ -117,7 +117,7 @@ await describe({
         + 'that entry compared the wrong original against the wrong translation',
       fn: async () => {
         /**
-         * Chinese headings, which carry the names inside a numbered prefix.
+         Chinese headings, which carry the names inside a numbered prefix.
          */
         const sourceHeadings = [
           '其一：伊良子',
@@ -130,7 +130,7 @@ await describe({
         ];
 
         /**
-         * English headings, two fewer, with the names romanised.
+         English headings, two fewer, with the names romanised.
          */
         const targetHeadings = [
           'Engagement in Trans Aid',
@@ -145,7 +145,7 @@ await describe({
         ];
 
         /**
-         * Steps the aligner produced.
+         Steps the aligner produced.
          */
         const steps = alignHeadingsForced({
           sourceHeadings,
@@ -171,8 +171,8 @@ await describe({
         + 'four, so pairing in order there is correct rather than a guess',
       fn: async () => {
         /**
-         * Headings with nothing in common, and an unequal number of them, so
-         * no single assignment is forced.
+         Headings with nothing in common, and an unequal number of them, so
+         no single assignment is forced.
          */
         const steps = alignHeadingsForced({
           sourceHeadings: ['第一章', '第二章',],
@@ -197,7 +197,7 @@ await describe({
         + 'reserved for genuine ambiguity and does not cost ordinary entries',
       fn: async () => {
         /**
-         * Identical headings on both sides.
+         Identical headings on both sides.
          */
         const steps = alignHeadingsForced({
           sourceHeadings: ['Mittens', 'Whiskers', 'Shadow',],
@@ -216,7 +216,7 @@ await describe({
         + 'nothing to pair with, versus too many things to choose between',
       fn: async () => {
         /**
-         * Target missing the middle section entirely.
+         Target missing the middle section entirely.
          */
         const steps = alignHeadingsForced({
           sourceHeadings: ['Mittens', 'Whiskers', 'Shadow',],
@@ -224,7 +224,7 @@ await describe({
         },);
 
         /**
-         * Step for the section with no counterpart.
+         Step for the section with no counterpart.
          */
         const orphan = steps.find(function isWhiskers(step,) {
           return (step.kind === 'source-only') && (step.sourceIndex === 1);
@@ -242,7 +242,7 @@ await describe({
         + 'column and a repeat is the maximum of neither',
       fn: async () => {
         /**
-         * The same name in two source headings.
+         The same name in two source headings.
          */
         const steps = alignHeadingsForced({
           sourceHeadings: ['Mittens morning', 'Mittens evening',],
@@ -263,7 +263,7 @@ await describe({
         + 'silently lost between the aligner and its caller',
       fn: async () => {
         /**
-         * Uneven sequences.
+         Uneven sequences.
          */
         const steps = alignHeadingsForced({
           sourceHeadings: ['Mittens', 'Whiskers',],
@@ -271,14 +271,14 @@ await describe({
         },);
 
         /**
-         * Source units mentioned anywhere in the output.
+         Source units mentioned anywhere in the output.
          */
         const sources = new Set(steps.flatMap(function toSource(step,) {
           return (step.kind === 'target-only') ? [] : [step.sourceIndex,];
         },),);
 
         /**
-         * Target units mentioned anywhere in the output.
+         Target units mentioned anywhere in the output.
          */
         const targets = new Set(steps.flatMap(function toTarget(step,) {
           return (step.kind === 'source-only') ? [] : [step.targetIndex,];
@@ -295,7 +295,7 @@ await describe({
         + 'goes, and every optimal alignment here skips it at the same place',
       fn: async () => {
         /**
-         * One section absent from the middle of the translation.
+         One section absent from the middle of the translation.
          */
         const steps = alignHeadingsForced({
           sourceHeadings: ['Whiskers', 'Mittens', 'Paws',],
@@ -319,7 +319,7 @@ await describe({
         + 'carries and an off-by-one there writes them inside the previous section',
       fn: async () => {
         /**
-         * Two sections absent from the end.
+         Two sections absent from the end.
          */
         const steps = alignHeadingsForced({
           sourceHeadings: ['Whiskers', 'Mittens', 'Paws',],
@@ -354,7 +354,7 @@ await describe({
         + 'nothing, rather than leaving a page nobody translated with no place to put any of it',
       fn: async () => {
         /**
-         * A page whose translation carries no sections at all.
+         A page whose translation carries no sections at all.
          */
         const steps = alignHeadingsForced({
           sourceHeadings: ['Whiskers', 'Mittens',],
@@ -383,7 +383,7 @@ await describe({
         + 'inserting it would write the page own content in twice',
       fn: async () => {
         /**
-         * Two sides sharing no evidence, where every pairing stays possible.
+         Two sides sharing no evidence, where every pairing stays possible.
          */
         const steps = alignHeadingsForced({
           sourceHeadings: ['Whiskers', 'Mittens', 'Boots',],
@@ -408,7 +408,7 @@ await describe({
         + 'guessing files real content under the wrong section',
       fn: async () => {
         /**
-         * An unmatched section framed by a repeated heading.
+         An unmatched section framed by a repeated heading.
          */
         const steps = alignHeadingsForced({
           sourceHeadings: ['Whiskers', 'Mittens', 'Whiskers',],

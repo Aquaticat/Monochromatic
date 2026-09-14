@@ -1,29 +1,29 @@
 /**
- * Tests that every sheet deciding or writing English is told what settles tense.
- *
- * WHAT THIS FILE EXISTS TO STOP, measured rather than imagined. On the sixth
- * consolidation bed run the shipped rendering of one slice moved a life told in
- * the past into the present, on a page whose neighbouring chunks were both past,
- * and the shipped sentence disagreed with ITSELF: it opened in the present and
- * finished with a clause in the past.
- *
- * WHY NO SHEET CAUGHT IT. The rule saying a tense is forced on English by
- * English, never chosen from the Chinese, closes with "hold it against a
- * candidate only when the choice it made is the WRONG one, and say which reading
- * the ORIGINAL supports". For tense the ORIGINAL supports NEITHER reading, so a
- * judge that spotted the drift could not discharge the second half and had no
- * ground to stand on. Naming the English as the authority for this one forced
- * choice gives the finding its evidence.
- *
- * WHERE THE RULE LIVES AND WHY. The half needing no page, that one sentence
- * holds one tense, sits in the block every tier inherits. The half needing the
- * English already on the page is stated again in each producing sheet's own
- * vocabulary, because those sheets label that evidence ARCHIVE RENDERING and
- * EXISTING TRANSLATION rather than "the passage being replaced".
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests that every sheet deciding or writing English is told what settles tense.
+ 
+ WHAT THIS FILE EXISTS TO STOP, measured rather than imagined. On the sixth
+ consolidation bed run the shipped rendering of one slice moved a life told in
+ the past into the present, on a page whose neighbouring chunks were both past,
+ and the shipped sentence disagreed with ITSELF: it opened in the present and
+ finished with a clause in the past.
+ 
+ WHY NO SHEET CAUGHT IT. The rule saying a tense is forced on English by
+ English, never chosen from the Chinese, closes with "hold it against a
+ candidate only when the choice it made is the WRONG one, and say which reading
+ the ORIGINAL supports". For tense the ORIGINAL supports NEITHER reading, so a
+ judge that spotted the drift could not discharge the second half and had no
+ ground to stand on. Naming the English as the authority for this one forced
+ choice gives the finding its evidence.
+ 
+ WHERE THE RULE LIVES AND WHY. The half needing no page, that one sentence
+ holds one tense, sits in the block every tier inherits. The half needing the
+ English already on the page is stated again in each producing sheet's own
+ vocabulary, because those sheets label that evidence ARCHIVE RENDERING and
+ EXISTING TRANSLATION rather than "the passage being replaced".
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -44,24 +44,24 @@ import {
 //region Fixtures
 
 /**
- * Opening every sheet in this file carries, so the rule found is the rule under
- * test rather than one a fixture smuggled in.
+ Opening every sheet in this file carries, so the rule found is the rule under
+ test rather than one a fixture smuggled in.
  */
 const TENSE_AUTHORITY =
   'WHERE THE FORCED CHOICE IS TENSE, THE ORIGINAL SUPPORTS NEITHER READING AND THE ENGLISH IS THE AUTHORITY INSTEAD';
 
 /**
- * Cat-themed source, since none of these sheets vary with what they are given.
+ Cat-themed source, since none of these sheets vary with what they are given.
  */
 const SOURCE_TEXT = '猫在窗台上睡觉。';
 
 /**
- * Existing English for the slice, told in the past.
+ Existing English for the slice, told in the past.
  */
 const EXISTING_TEXT = 'The cat slept on the windowsill.';
 
 /**
- * Subject carrying only what a consolidation call must have.
+ Subject carrying only what a consolidation call must have.
  */
 const SUBJECT: ConsolidateSubject = {
   sourceText: SOURCE_TEXT,
@@ -73,7 +73,7 @@ const SUBJECT: ConsolidateSubject = {
 };
 
 /**
- * Issue standing in for one a panel adjudicated, so the damage prober has work.
+ Issue standing in for one a panel adjudicated, so the damage prober has work.
  */
 const NAPPING_ISSUE: AdjudicatedIssue = {
   issueId: 'adjudicated/napping',
@@ -94,16 +94,16 @@ const NAPPING_ISSUE: AdjudicatedIssue = {
 };
 
 /**
- * Joins the system half of an exchange, which is where standing rules live.
- *
- * @param messages - exchange to read
- *
- * @returns Every system message, joined
- *
- * @example
- * ```ts
- * const sheet = systemOf({ messages: buildConsolidateMessages({ subject, },), },);
- * ```
+ Joins the system half of an exchange, which is where standing rules live.
+ 
+ @param messages - exchange to read
+ 
+ @returns Every system message, joined
+ 
+ @example
+ ```ts
+ const sheet = systemOf({ messages: buildConsolidateMessages({ subject, },), },);
+ ```
  */
 function systemOf(
   { messages, }: { readonly messages: readonly { readonly role: string; readonly content: string; }[]; },

@@ -44,141 +44,141 @@ import type { AnchorTarget, } from './validate-issue.ts';
 // the majority is taken over the seats that were actually asked.
 
 /**
- * Raised when a located quote carries no anchor to read a region from.
- *
- * Unreachable through `locateQuote`, which refuses rather than returning an
- * empty anchor list, so this names a broken contract instead of a case a caller
- * should handle.
- *
- * @example
- * ```ts
- * throw new AnchorRegionError('located quote carried no anchors',);
- * ```
+ Raised when a located quote carries no anchor to read a region from.
+ 
+ Unreachable through `locateQuote`, which refuses rather than returning an
+ empty anchor list, so this names a broken contract instead of a case a caller
+ should handle.
+ 
+ @example
+ ```ts
+ throw new AnchorRegionError('located quote carried no anchors',);
+ ```
  */
 export class AnchorRegionError extends Error {
   /**
-   * Distinguishes this from other errors after serialization.
+   Distinguishes this from other errors after serialization.
    */
   public override readonly name = 'AnchorRegionError';
 }
 
 /**
- * What a roster concluded about one passage.
- *
- * @example
- * ```ts
- * const verdict: CoverageVerdict = { kind: 'carried', ... };
- * ```
+ What a roster concluded about one passage.
+ 
+ @example
+ ```ts
+ const verdict: CoverageVerdict = { kind: 'carried', ... };
+ ```
  */
 export type CoverageVerdict = {
   /**
-   * `carried` when a majority of the seats ASKED anchored full coverage;
-   * `partly-carried` when a majority anchored coverage but not all of it, which
-   * still forbids inserting the passage whole;
-   * `absent` when a majority found none;
-   * `split` when neither side reached a majority of the seats asked;
-   * `inconclusive` when too few models answered to decide anything.
+   `carried` when a majority of the seats ASKED anchored full coverage;
+   `partly-carried` when a majority anchored coverage but not all of it, which
+   still forbids inserting the passage whole;
+   `absent` when a majority found none;
+   `split` when neither side reached a majority of the seats asked;
+   `inconclusive` when too few models answered to decide anything.
    */
   readonly kind: 'carried' | 'partly-carried' | 'absent' | 'split' | 'inconclusive';
 
   /**
-   * Voices that anchored FULL coverage in the document.
+   Voices that anchored FULL coverage in the document.
    */
   readonly anchoredFull: number;
 
   /**
-   * Voices that anchored partial coverage.
+   Voices that anchored partial coverage.
    */
   readonly anchoredPartial: number;
 
   /**
-   * Voices reporting nothing renders the passage.
+   Voices reporting nothing renders the passage.
    */
   readonly absent: number;
 
   /**
-   * Voices claiming coverage whose quote is not in the document.
+   Voices claiming coverage whose quote is not in the document.
    */
   readonly unanchored: number;
 
   /**
-   * Voices heard at all.
+   Voices heard at all.
    */
   readonly heard: number;
 
   /**
-   * Models asked, which is what the majority is taken over.
+   Models asked, which is what the majority is taken over.
    */
   readonly asked: number;
 
   /**
-   * DOCUMENT'S OWN TEXT for each anchored region, in roster order, so a reader
-   * can find every one of these by searching the translation.
-   *
-   * It used to hold the submitted quote, which reads the same until a fallback
-   * pass does the matching: a quote anchored across a soft wrap, or through
-   * normalized punctuation, is by definition text the document does not hold
-   * literally, so the field contradicted the promise made here.
+   DOCUMENT'S OWN TEXT for each anchored region, in roster order, so a reader
+   can find every one of these by searching the translation.
+   
+   It used to hold the submitted quote, which reads the same until a fallback
+   pass does the matching: a quote anchored across a soft wrap, or through
+   normalized punctuation, is by definition text the document does not hold
+   literally, so the field contradicted the promise made here.
    */
   readonly evidence: readonly string[];
 
   /**
-   * Quotes that were claimed and not found, kept because a near miss and an
-   * invention are different failures and the counts alone cannot tell them
-   * apart.
+   Quotes that were claimed and not found, kept because a near miss and an
+   invention are different failures and the counts alone cannot tell them
+   apart.
    */
   readonly unanchoredQuotes: readonly string[];
 };
 
 /**
- * One voice's claim, once its quote has been looked for.
+ One voice's claim, once its quote has been looked for.
  */
 type WeighedVoice = {
   /**
-   * How much coverage it claimed.
+   How much coverage it claimed.
    */
   readonly degree: CoverageDegree;
 
   /**
-   * Whether its quote was found in the document.
+   Whether its quote was found in the document.
    */
   readonly anchored: boolean;
 
   /**
-   * Quote it offered, empty when it claimed no coverage.
+   Quote it offered, empty when it claimed no coverage.
    */
   readonly quote: string;
 
   /**
-   * Document's OWN bytes for the region its quote matched, empty when nothing
-   * matched. Differs from `quote` whenever a fallback pass did the matching,
-   * which is exactly when the submitted text does not occur in the document.
+   Document's OWN bytes for the region its quote matched, empty when nothing
+   matched. Differs from `quote` whenever a fallback pass did the matching,
+   which is exactly when the submitted text does not occur in the document.
    */
   readonly matched: string;
 };
 
 /**
- * Reads back the document's own text for a located region.
- *
- * WHY NOT THE SUBMITTED QUOTE: a match may come from a fallback pass, which is
- * exactly when the submitted text does NOT occur in the document, so storing it
- * as evidence produces a string a reader cannot find. Anchors span from the
- * first to the last, covering any inter-block bytes between them, so the result
- * is a literal substring of the document rather than a reassembly.
- *
- * @param document - side the region was located in
- *
- * @param anchors - located spans in document order, never empty
- *
- * @returns Document text from first anchor start to last anchor end
- *
- * @throws {@link AnchorRegionError} when handed no anchors, which a located
- * result cannot produce
- *
- * @example
- * ```ts
- * const matched = matchedRegion({ document, anchors, },);
- * ```
+ Reads back the document's own text for a located region.
+ 
+ WHY NOT THE SUBMITTED QUOTE: a match may come from a fallback pass, which is
+ exactly when the submitted text does NOT occur in the document, so storing it
+ as evidence produces a string a reader cannot find. Anchors span from the
+ first to the last, covering any inter-block bytes between them, so the result
+ is a literal substring of the document rather than a reassembly.
+ 
+ @param document - side the region was located in
+ 
+ @param anchors - located spans in document order, never empty
+ 
+ @returns Document text from first anchor start to last anchor end
+ 
+ @throws {@link AnchorRegionError} when handed no anchors, which a located
+ result cannot produce
+ 
+ @example
+ ```ts
+ const matched = matchedRegion({ document, anchors, },);
+ ```
  */
 function matchedRegion(
   {
@@ -190,12 +190,12 @@ function matchedRegion(
   },
 ): string {
   /**
-   * Earliest span, whose start opens the region.
+   Earliest span, whose start opens the region.
    */
   const first = anchors.at(0,);
 
   /**
-   * Latest span, whose end closes it.
+   Latest span, whose end closes it.
    */
   const last = anchors.at(-1,);
   if ((first === undefined) || (last === undefined))
@@ -208,18 +208,18 @@ function matchedRegion(
 }
 
 /**
- * Looks for one voice's quote in the translation it describes.
- *
- * @param voice - heard coverage reply
- *
- * @param document - translation the quote should occur in
- *
- * @returns That claim with its anchoring resolved
- *
- * @example
- * ```ts
- * const weighed = weighVoice({ voice, document, },);
- * ```
+ Looks for one voice's quote in the translation it describes.
+ 
+ @param voice - heard coverage reply
+ 
+ @param document - translation the quote should occur in
+ 
+ @returns That claim with its anchoring resolved
+ 
+ @example
+ ```ts
+ const weighed = weighVoice({ voice, document, },);
+ ```
  */
 function weighVoice(
   {
@@ -231,7 +231,7 @@ function weighVoice(
   },
 ): WeighedVoice {
   /**
-   * How much of the passage this voice says the translation carries.
+   How much of the passage this voice says the translation carries.
    */
   const degree = voice.value
     .coverage;
@@ -245,7 +245,7 @@ function weighVoice(
   }
 
   /**
-   * Where its quote sits in the translation, if anywhere.
+   Where its quote sits in the translation, if anywhere.
    */
   const located = locateQuote({
     document,
@@ -266,130 +266,130 @@ function weighVoice(
 }
 
 /**
- * Whether a claim proved full coverage.
- *
- * @param claim - weighed reply
- *
- * @returns Whether it claimed full coverage and its quote was found
- *
- * @example
- * ```ts
- * const full = isFull(claim,);
- * ```
+ Whether a claim proved full coverage.
+ 
+ @param claim - weighed reply
+ 
+ @returns Whether it claimed full coverage and its quote was found
+ 
+ @example
+ ```ts
+ const full = isFull(claim,);
+ ```
  */
 function isFull(claim: WeighedVoice,): boolean {
   return (claim.degree === 'full') && claim.anchored;
 }
 
 /**
- * Whether a claim proved partial coverage.
- *
- * @param claim - weighed reply
- *
- * @returns Whether it claimed partial coverage and its quote was found
- *
- * @example
- * ```ts
- * const partial = isPartial(claim,);
- * ```
+ Whether a claim proved partial coverage.
+ 
+ @param claim - weighed reply
+ 
+ @returns Whether it claimed partial coverage and its quote was found
+ 
+ @example
+ ```ts
+ const partial = isPartial(claim,);
+ ```
  */
 function isPartial(claim: WeighedVoice,): boolean {
   return (claim.degree === 'partial') && claim.anchored;
 }
 
 /**
- * Whether a claim reported no coverage at all.
- *
- * @param claim - weighed reply
- *
- * @returns Whether it found nothing
- *
- * @example
- * ```ts
- * const absent = isAbsent(claim,);
- * ```
+ Whether a claim reported no coverage at all.
+ 
+ @param claim - weighed reply
+ 
+ @returns Whether it found nothing
+ 
+ @example
+ ```ts
+ const absent = isAbsent(claim,);
+ ```
  */
 function isAbsent(claim: WeighedVoice,): boolean {
   return claim.degree === 'none';
 }
 
 /**
- * Whether a claim of coverage could not be found in the document.
- *
- * @param claim - weighed reply
- *
- * @returns Whether it claimed coverage and its quote was absent
- *
- * @example
- * ```ts
- * const unanchored = isUnanchored(claim,);
- * ```
+ Whether a claim of coverage could not be found in the document.
+ 
+ @param claim - weighed reply
+ 
+ @returns Whether it claimed coverage and its quote was absent
+ 
+ @example
+ ```ts
+ const unanchored = isUnanchored(claim,);
+ ```
  */
 function isUnanchored(claim: WeighedVoice,): boolean {
   return (claim.degree !== 'none') && (!claim.anchored);
 }
 
 /**
- * Whether a claim was found in the document.
- *
- * @param claim - weighed reply
- *
- * @returns Whether its quote was located
- *
- * @example
- * ```ts
- * const anchored = isAnchored(claim,);
- * ```
+ Whether a claim was found in the document.
+ 
+ @param claim - weighed reply
+ 
+ @returns Whether its quote was located
+ 
+ @example
+ ```ts
+ const anchored = isAnchored(claim,);
+ ```
  */
 function isAnchored(claim: WeighedVoice,): boolean {
   return claim.anchored;
 }
 
 /**
- * Reads one claim's quote.
- *
- * @param claim - weighed reply
- *
- * @returns Quote it offered
- *
- * @example
- * ```ts
- * const quote = claimQuote(claim,);
- * ```
+ Reads one claim's quote.
+ 
+ @param claim - weighed reply
+ 
+ @returns Quote it offered
+ 
+ @example
+ ```ts
+ const quote = claimQuote(claim,);
+ ```
  */
 function claimQuote(claim: WeighedVoice,): string {
   return claim.quote;
 }
 
 /**
- * Reads one claim's matched document text.
- *
- * @param claim - weighed reply
- *
- * @returns Document's own text for the region it matched
- *
- * @example
- * ```ts
- * const matched = claimMatched(claim,);
- * ```
+ Reads one claim's matched document text.
+ 
+ @param claim - weighed reply
+ 
+ @returns Document's own text for the region it matched
+ 
+ @example
+ ```ts
+ const matched = claimMatched(claim,);
+ ```
  */
 function claimMatched(claim: WeighedVoice,): string {
   return claim.matched;
 }
 
 /**
- * Counts the weighed voices matching one predicate.
- *
- * @param weighed - every reply with its anchoring resolved
- *
- * @param matches - predicate deciding membership
- *
- * @returns How many match
- *
- * @example
- * ```ts
- * const absent = countVoices({ weighed, matches: isAbsent, },);
- * ```
+ Counts the weighed voices matching one predicate.
+ 
+ @param weighed - every reply with its anchoring resolved
+ 
+ @param matches - predicate deciding membership
+ 
+ @returns How many match
+ 
+ @example
+ ```ts
+ const absent = countVoices({ weighed, matches: isAbsent, },);
+ ```
  */
 function countVoices(
   {
@@ -405,22 +405,22 @@ function countVoices(
 }
 
 /**
- * Weighs a roster's coverage replies into one verdict.
- *
- * @param voices - replies heard from the roster
- *
- * @param document - translation every quote is checked against
- *
- * @param asked - models the question went to, which the majority is taken over
- *
- * @param quorumMet - whether enough of them answered to decide at all
- *
- * @returns Verdict plus the tallies and evidence behind it
- *
- * @example
- * ```ts
- * const verdict = judgeCoverage({ voices, document, asked: 6, quorumMet: true, },);
- * ```
+ Weighs a roster's coverage replies into one verdict.
+ 
+ @param voices - replies heard from the roster
+ 
+ @param document - translation every quote is checked against
+ 
+ @param asked - models the question went to, which the majority is taken over
+ 
+ @param quorumMet - whether enough of them answered to decide at all
+ 
+ @returns Verdict plus the tallies and evidence behind it
+ 
+ @example
+ ```ts
+ const verdict = judgeCoverage({ voices, document, asked: 6, quorumMet: true, },);
+ ```
  */
 export function judgeCoverage(
   {
@@ -436,7 +436,7 @@ export function judgeCoverage(
   },
 ): CoverageVerdict {
   /**
-   * Every reply with its quote resolved against the document.
+   Every reply with its quote resolved against the document.
    */
   const weighed = voices.map(function toWeighed(voice,): WeighedVoice {
     return weighVoice({
@@ -446,7 +446,7 @@ export function judgeCoverage(
   },);
 
   /**
-   * Voices that proved full coverage.
+   Voices that proved full coverage.
    */
   const anchoredFull = countVoices({
     weighed,
@@ -454,7 +454,7 @@ export function judgeCoverage(
   },);
 
   /**
-   * Voices that proved partial coverage.
+   Voices that proved partial coverage.
    */
   const anchoredPartial = countVoices({
     weighed,
@@ -462,7 +462,7 @@ export function judgeCoverage(
   },);
 
   /**
-   * Voices reporting the passage is rendered nowhere.
+   Voices reporting the passage is rendered nowhere.
    */
   const absent = countVoices({
     weighed,
@@ -470,19 +470,19 @@ export function judgeCoverage(
   },);
 
   /**
-   * Votes a side needs: more than half of every model ASKED, so a lost voice
-   * withholds a vote rather than lowering the bar.
+   Votes a side needs: more than half of every model ASKED, so a lost voice
+   withholds a vote rather than lowering the bar.
    */
   const majority = Math.floor(asked / 2,) + 1;
 
   /**
-   * Voices proving coverage of any degree, which is what forbids inserting the
-   * passage whole.
+   Voices proving coverage of any degree, which is what forbids inserting the
+   passage whole.
    */
   const anchoredAny = anchoredFull + anchoredPartial;
 
   /**
-   * Which side, if either, reached the threshold.
+   Which side, if either, reached the threshold.
    */
   const decided = (anchoredFull >= majority)
     ? 'carried'

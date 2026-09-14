@@ -35,31 +35,31 @@ import {
 // sheets read a "web lookup" line as evidence to weigh.
 
 /**
- * Logger root for the lookup.
+ Logger root for the lookup.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Record for one title, from the cache or bought and cached.
- *
- * @param title - title with its marks
- *
- * @param apiKey - key for the endpoint
- *
- * @param dir - cache directory
- *
- * @param signal - the call's abort
- *
- * @param fetchFn - transport
- *
- * @param now - clock, for the record's time
- *
- * @returns Record, cached from now on
- *
- * @example
- * ```ts
- * const record = await lookupWorkTitle({ title: '《活着》', apiKey, dir, signal, fetchFn: fetch, now: () => new Date(), },);
- * ```
+ Record for one title, from the cache or bought and cached.
+ 
+ @param title - title with its marks
+ 
+ @param apiKey - key for the endpoint
+ 
+ @param dir - cache directory
+ 
+ @param signal - the call's abort
+ 
+ @param fetchFn - transport
+ 
+ @param now - clock, for the record's time
+ 
+ @returns Record, cached from now on
+ 
+ @example
+ ```ts
+ const record = await lookupWorkTitle({ title: '《活着》', apiKey, dir, signal, fetchFn: fetch, now: () => new Date(), },);
+ ```
  */
 export async function lookupWorkTitle(
   {
@@ -79,11 +79,11 @@ export async function lookupWorkTitle(
   },
 ): Promise<LookupRecord> {
   /**
-   * Query the cache and the endpoint are keyed on.
+   Query the cache and the endpoint are keyed on.
    */
   const query = lookupQueryFor({ title, },);
   /**
-   * What the cache holds for it.
+   What the cache holds for it.
    */
   const cached = await readCachedLookup({
     dir,
@@ -92,11 +92,11 @@ export async function lookupWorkTitle(
   if (cached.kind === 'hit')
     return cached.record;
   /**
-   * When this record was bought.
+   When this record was bought.
    */
   const bought = now();
   /**
-   * Fresh record.
+   Fresh record.
    */
   const record: LookupRecord = {
     query,
@@ -116,19 +116,19 @@ export async function lookupWorkTitle(
 }
 
 /**
- * Lines a record contributes to the identity context.
- *
- * @param title - title with its marks
- *
- * @param record - record for it
- *
- * @returns One line per hit, or one line saying the web returned nothing
- *
- * @example
- * ```ts
- * lookupLinesOf({ title: '《活着》', record, },);
- * // => ['- web lookup for 《活着》: "To Live (novel) - Wikipedia" https://en.wikipedia.org/wiki/To_Live_(novel): To Live is a novel by Yu Hua...']
- * ```
+ Lines a record contributes to the identity context.
+ 
+ @param title - title with its marks
+ 
+ @param record - record for it
+ 
+ @returns One line per hit, or one line saying the web returned nothing
+ 
+ @example
+ ```ts
+ lookupLinesOf({ title: '《活着》', record, },);
+ // => ['- web lookup for 《活着》: "To Live (novel) - Wikipedia" https://en.wikipedia.org/wiki/To_Live_(novel): To Live is a novel by Yu Hua...']
+ ```
  */
 export function lookupLinesOf(
   {
@@ -140,19 +140,19 @@ export function lookupLinesOf(
   },
 ): readonly string[] {
   /**
-   * Hits to render.
+   Hits to render.
    */
   const { hits, } = record;
   if (hits.length === 0)
     return [`- web lookup for ${title}: nothing found`,];
   /**
-   * The title as the text writes it, marks removed, which a result naming
-   * this work would carry somewhere.
+   The title as the text writes it, marks removed, which a result naming
+   this work would carry somewhere.
    */
   const bare = bareTitleOf({ title, },);
   /**
-   * Hits naming this work first, so the sheet reads the relevant ones before
-   * the neighbours.
+   Hits naming this work first, so the sheet reads the relevant ones before
+   the neighbours.
    */
   const ordered = [...hits,].toSorted(function namingFirst(
     left,
@@ -168,22 +168,22 @@ export function lookupLinesOf(
   },);
   return ordered.map(function toLine(hit,): string {
     /**
-     * Highlight on one line, or nothing.
+     Highlight on one line, or nothing.
      */
     const highlight = hit.highlight
       .split('\n',)
       .join(' ',)
       .trim();
     /**
-     * Highlight part of the line, absent when there is none.
+     Highlight part of the line, absent when there is none.
      */
     const tail = (highlight === '') ? '' : `: ${highlight}`;
     /**
-     * Warning where the result never names the work asked about.
-     *
-     * THE TOKA_LS RERUN OF 2026-09-02: the five results for 《奇妙漂流》 were
-     * 奇幻漂流 neighbours (喵的奇幻漂流, the film released in English as "Flow"),
-     * none naming the work, and the judges renamed the person's own work "Flow".
+     Warning where the result never names the work asked about.
+     
+     THE TOKA_LS RERUN OF 2026-09-02: the five results for 《奇妙漂流》 were
+     奇幻漂流 neighbours (喵的奇幻漂流, the film released in English as "Flow"),
+     none naming the work, and the judges renamed the person's own work "Flow".
      */
     const warning = namesWork({
       hit,
@@ -196,17 +196,17 @@ export function lookupLinesOf(
 }
 
 /**
- * The title without its 《…》 marks.
- *
- * @param title - title with its marks
- *
- * @returns Title as a plain string
- *
- * @example
- * ```ts
- * bareTitleOf({ title: '《活着》', },);
- * // => '活着'
- * ```
+ The title without its 《…》 marks.
+ 
+ @param title - title with its marks
+ 
+ @returns Title as a plain string
+ 
+ @example
+ ```ts
+ bareTitleOf({ title: '《活着》', },);
+ // => '活着'
+ ```
  */
 export function bareTitleOf(
   { title, }: { readonly title: string; },
@@ -223,19 +223,19 @@ export function bareTitleOf(
 }
 
 /**
- * Whether a result names the work asked about, in its title or its
- * highlight.
- *
- * @param hit - one result
- *
- * @param bare - title without its marks
- *
- * @returns Whether the bare title occurs in the result
- *
- * @example
- * ```ts
- * namesWork({ hit, bare: '活着', },);
- * ```
+ Whether a result names the work asked about, in its title or its
+ highlight.
+ 
+ @param hit - one result
+ 
+ @param bare - title without its marks
+ 
+ @returns Whether the bare title occurs in the result
+ 
+ @example
+ ```ts
+ namesWork({ hit, bare: '活着', },);
+ ```
  */
 export function namesWork(
   {
@@ -247,7 +247,7 @@ export function namesWork(
   },
 ): boolean {
   /**
-   * Result fields the work's title could occur in.
+   Result fields the work's title could occur in.
    */
   const {
     title,
@@ -257,30 +257,30 @@ export function namesWork(
 }
 
 /**
- * Evidence lines for every work an original names, each title looked up once
- * and cached; a failed lookup is logged and contributes no line.
- *
- * @param sourceText - original document
- *
- * @param apiKey - key for the endpoint; empty means no lookups at all
- *
- * @param dir - cache directory
- *
- * @param signal - the entry's abort
- *
- * @param fetchFn - transport
- *
- * @param now - clock
- *
- * @param logger - entry logger
- *
- * @returns Lines in title order, empty when the original names no work or no
- * key is set
- *
- * @example
- * ```ts
- * const lines = await workTitleLookupLines({ sourceText, apiKey, dir, signal, fetchFn: fetch, now: () => new Date(), logger: l, },);
- * ```
+ Evidence lines for every work an original names, each title looked up once
+ and cached; a failed lookup is logged and contributes no line.
+ 
+ @param sourceText - original document
+ 
+ @param apiKey - key for the endpoint; empty means no lookups at all
+ 
+ @param dir - cache directory
+ 
+ @param signal - the entry's abort
+ 
+ @param fetchFn - transport
+ 
+ @param now - clock
+ 
+ @param logger - entry logger
+ 
+ @returns Lines in title order, empty when the original names no work or no
+ key is set
+ 
+ @example
+ ```ts
+ const lines = await workTitleLookupLines({ sourceText, apiKey, dir, signal, fetchFn: fetch, now: () => new Date(), logger: l, },);
+ ```
  */
 export async function workTitleLookupLines(
   {
@@ -302,14 +302,14 @@ export async function workTitleLookupLines(
   },
 ): Promise<readonly string[]> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const wl = tagged({
     tag: workTitleLookupLines.name,
     l: logger,
   },);
   /**
-   * Works the original names.
+   Works the original names.
    */
   const titles = workTitlesOf({ text: sourceText, },);
   if (titles.length === 0)
@@ -319,12 +319,12 @@ export async function workTitleLookupLines(
     return [];
   }
   /**
-   * Lines per title, bought together; a failure is logged and yields none.
+   Lines per title, bought together; a failure is logged and yields none.
    */
   const perTitle = await Promise.all(titles.map(async function linesFor(title,): Promise<readonly string[]> {
     try {
       /**
-       * Record for this title, cached or fresh.
+       Record for this title, cached or fresh.
        */
       const record = await lookupWorkTitle({
         title,
@@ -344,7 +344,7 @@ export async function workTitleLookupLines(
     }
   },),);
   /**
-   * Every line, in title order.
+   Every line, in title order.
    */
   const lines = perTitle.flat();
   wl.info(`${String(titles.length,)} work titles looked up, ${String(lines.length,)} lines`,);

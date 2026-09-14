@@ -14,22 +14,22 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // the wrong corpus and record its conclusion as the fixture's.
 
 /**
- * Environment variable naming the corpus clone directory a run reads.
+ Environment variable naming the corpus clone directory a run reads.
  */
 export const CORPUS_CLONE_DIR_VAR = 'TRANSLATION_REPAIR_CORPUS_CLONE_DIR';
 
 /**
- * Environment variable naming the corpus commit every read resolves against.
+ Environment variable naming the corpus commit every read resolves against.
  */
 export const CORPUS_COMMIT_VAR = 'TRANSLATION_REPAIR_CORPUS_COMMIT';
 
 /**
- * Where each half of a pin came from, for launch logs.
- *
- * @example
- * ```ts
- * const source: CorpusPinSource = 'fallback';
- * ```
+ Where each half of a pin came from, for launch logs.
+ 
+ @example
+ ```ts
+ const source: CorpusPinSource = 'fallback';
+ ```
  */
 export type CorpusPinSource =
   | 'fallback'
@@ -37,52 +37,52 @@ export type CorpusPinSource =
   | typeof CORPUS_COMMIT_VAR;
 
 /**
- * One resolved pin beside where each half came from.
- *
- * @example
- * ```ts
- * const setting: CorpusPinSetting = {
- *   pin: { cloneDir: '/cats/corpus', commitSha: 'a'.repeat(40,), },
- *   cloneDirSource: 'fallback',
- *   commitSource: 'fallback',
- * };
- * ```
+ One resolved pin beside where each half came from.
+ 
+ @example
+ ```ts
+ const setting: CorpusPinSetting = {
+   pin: { cloneDir: '/cats/corpus', commitSha: 'a'.repeat(40,), },
+   cloneDirSource: 'fallback',
+   commitSource: 'fallback',
+ };
+ ```
  */
 export type CorpusPinSetting = {
   /**
-   * Pin every corpus read resolves through.
+   Pin every corpus read resolves through.
    */
   readonly pin: CorpusPin;
 
   /**
-   * Fallback or environment variable that supplied the clone directory.
+   Fallback or environment variable that supplied the clone directory.
    */
   readonly cloneDirSource: CorpusPinSource;
 
   /**
-   * Fallback or environment variable that supplied the commit.
+   Fallback or environment variable that supplied the commit.
    */
   readonly commitSource: CorpusPinSource;
 };
 
 /**
- * Length of one full git object name.
+ Length of one full git object name.
  */
 const COMMIT_SHA_LENGTH = 40;
 
 /**
- * Whether written text is one full lowercase hexadecimal commit name.
- * Abbreviated names are refused because the pin must stay unambiguous
- * across clones that resolve abbreviations differently.
- *
- * @param written - text as the invoking environment wrote it
- *
- * @returns Whether every position is lowercase hexadecimal at full length
- *
- * @example
- * ```ts
- * isFullCommitSha({ written: 'a'.repeat(40,), },);
- * ```
+ Whether written text is one full lowercase hexadecimal commit name.
+ Abbreviated names are refused because the pin must stay unambiguous
+ across clones that resolve abbreviations differently.
+ 
+ @param written - text as the invoking environment wrote it
+ 
+ @returns Whether every position is lowercase hexadecimal at full length
+ 
+ @example
+ ```ts
+ isFullCommitSha({ written: 'a'.repeat(40,), },);
+ ```
  */
 function isFullCommitSha(
   { written, }: { readonly written: string; },
@@ -99,27 +99,27 @@ function isFullCommitSha(
 }
 
 /**
- * Reads the corpus pin, overriding either half from the environment.
- *
- * Refuses rather than falls back on invalid input, because a run against
- * the wrong corpus records fixture conclusions as pinned-corpus ones.
- *
- * @param fallback - pin used for any half the environment leaves unset
- *
- * @returns Valid pin beside a per-half source
- *
- * @throws StatedRefusalError when the clone dir is not absolute or the commit is not one full lowercase sha
- *
- * @example
- * ```ts
- * const setting = readCorpusPinSetting({ fallback: RUN_CORPUS_PIN, },);
- * ```
+ Reads the corpus pin, overriding either half from the environment.
+ 
+ Refuses rather than falls back on invalid input, because a run against
+ the wrong corpus records fixture conclusions as pinned-corpus ones.
+ 
+ @param fallback - pin used for any half the environment leaves unset
+ 
+ @returns Valid pin beside a per-half source
+ 
+ @throws StatedRefusalError when the clone dir is not absolute or the commit is not one full lowercase sha
+ 
+ @example
+ ```ts
+ const setting = readCorpusPinSetting({ fallback: RUN_CORPUS_PIN, },);
+ ```
  */
 export function readCorpusPinSetting(
   { fallback, }: { readonly fallback: CorpusPin; },
 ): CorpusPinSetting {
   /**
-   * Clone directory as the invoking environment wrote it, empty when unset.
+   Clone directory as the invoking environment wrote it, empty when unset.
    */
   const writtenDir = process.env[CORPUS_CLONE_DIR_VAR] ?? '';
   if ((writtenDir !== '') && (!isAbsolute(writtenDir,))) {
@@ -129,7 +129,7 @@ export function readCorpusPinSetting(
   }
 
   /**
-   * Commit as the invoking environment wrote it, empty when unset.
+   Commit as the invoking environment wrote it, empty when unset.
    */
   const writtenCommit = process.env[CORPUS_COMMIT_VAR] ?? '';
   if ((writtenCommit !== '') && (!isFullCommitSha({ written: writtenCommit, },))) {

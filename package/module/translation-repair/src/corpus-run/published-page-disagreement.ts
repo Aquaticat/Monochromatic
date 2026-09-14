@@ -13,64 +13,64 @@ import type { MissingWording, } from './published-page-check.ts';
 // callers hand over the disagreement itself and the sentence is written here.
 
 /**
- * How a page disagreed with its artifact.
- *
- * @example
- * ```ts
- * const disagreement: PageDisagreement = { kind: 'weight-off', actual: 10, expected: 12, exact: true, };
- * ```
+ How a page disagreed with its artifact.
+ 
+ @example
+ ```ts
+ const disagreement: PageDisagreement = { kind: 'weight-off', actual: 10, expected: 12, exact: true, };
+ ```
  */
 export type PageDisagreement = {
   /**
-   * Page does not carry every wording the artifact says would ship, in slice
-   * order.
+   Page does not carry every wording the artifact says would ship, in slice
+   order.
    */
   readonly kind: 'wordings-missing';
 
   /**
-   * Wordings the page did not carry, in slice order.
+   Wordings the page did not carry, in slice order.
    */
   readonly missing: readonly MissingWording[];
 } | {
   /**
-   * Page weighs something other than the archive plus every slice change.
+   Page weighs something other than the archive plus every slice change.
    */
   readonly kind: 'weight-off';
 
   /**
-   * Characters the page has.
+   Characters the page has.
    */
   readonly actual: number;
 
   /**
-   * Characters the artifact accounts for.
+   Characters the artifact accounts for.
    */
   readonly expected: number;
 
   /**
-   * Whether the expectation is an equality, or a floor a filled anchor made it.
+   Whether the expectation is an equality, or a floor a filled anchor made it.
    */
   readonly exact: boolean;
 };
 
 /**
- * Sentence for one disagreement, carrying counts and indices only.
- *
- * @param disagreement - what the check found
- *
- * @returns Sentence naming it without quoting any text
- *
- * @example
- * ```ts
- * const said = disagreementSentence({ disagreement, },);
- * ```
+ Sentence for one disagreement, carrying counts and indices only.
+ 
+ @param disagreement - what the check found
+ 
+ @returns Sentence naming it without quoting any text
+ 
+ @example
+ ```ts
+ const said = disagreementSentence({ disagreement, },);
+ ```
  */
 function disagreementSentence(
   { disagreement, }: { readonly disagreement: PageDisagreement; },
 ): string {
   if (disagreement.kind === 'wordings-missing') {
     /**
-     * Wordings the page did not carry.
+     Wordings the page did not carry.
      */
     const { missing, } = disagreement;
 
@@ -85,8 +85,8 @@ function disagreementSentence(
   }
 
   /**
-   * Note that a filled anchor makes the expectation a floor, said only where it
-   * applies so an ordinary refusal does not carry an irrelevant caveat.
+   Note that a filled anchor makes the expectation a floor, said only where it
+   applies so an ordinary refusal does not carry an irrelevant caveat.
    */
   const caveat = disagreement.exact
     ? ''
@@ -98,34 +98,34 @@ function disagreementSentence(
 }
 
 /**
- * Raised when a page does not carry what its artifact says would ship.
- *
- * @example
- * ```ts
- * throw new PublishedPageDisagreesError({
- *   entryId: 'lintong',
- *   disagreement: { kind: 'wordings-missing', missing, },
- * },);
- * ```
+ Raised when a page does not carry what its artifact says would ship.
+ 
+ @example
+ ```ts
+ throw new PublishedPageDisagreesError({
+   entryId: 'lintong',
+   disagreement: { kind: 'wordings-missing', missing, },
+ },);
+ ```
  */
 export class PublishedPageDisagreesError extends Error {
   /**
-   * Declares this message safe to print whole at a boundary: it is written
-   * here from the entry id, slice indices and character counts, and quotes
-   * nothing.
+   Declares this message safe to print whole at a boundary: it is written
+   here from the entry id, slice indices and character counts, and quotes
+   nothing.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * What the check found, for a caller that reads the disagreement rather than
-   * the sentence.
+   What the check found, for a caller that reads the disagreement rather than
+   the sentence.
    */
   readonly disagreement: PageDisagreement;
 
   /**
-   * @param entryId - person entry, named in the refusal
-   *
-   * @param disagreement - what the check found
+   @param entryId - person entry, named in the refusal
+   
+   @param disagreement - what the check found
    */
   constructor(
     {

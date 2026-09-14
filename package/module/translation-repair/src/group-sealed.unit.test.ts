@@ -1,9 +1,9 @@
 /**
- * Tests for grouping with sealed blocks: the blocks the archive's note seals
- * reach no run, take their paired originals with them, and stand as
- * boundaries for the originals either side of them.
- *
- * @module
+ Tests for grouping with sealed blocks: the blocks the archive's note seals
+ reach no run, take their paired originals with them, and stand as
+ boundaries for the originals either side of them.
+ 
+ @module
  */
 
 import {
@@ -24,50 +24,50 @@ import {
 //region Fixtures
 
 /**
- * Budget wide enough that nothing closes on size.
+ Budget wide enough that nothing closes on size.
  */
 const WIDE_BUDGET = 100_000;
 
 /**
- * Four originals: an intro, a letter, a closing line and a footnote definition
- * the archive never rendered.
+ Four originals: an intro, a letter, a closing line and a footnote definition
+ the archive never rendered.
  */
 const SOURCE_TEXT = '她留下了一封信。\n\n> 我其实未曾离去\n\n是时候说晚安了。\n\n[^1]: 即 Google App Engine\n';
 
 /**
- * Three renderings: the intro, the letter and the closing line.
+ Three renderings: the intro, the letter and the closing line.
  */
 const TARGET_TEXT = 'She left a letter.\n\n> I am never gone,\n\nTime to say goodnight.\n';
 
 /**
- * Blocks of a text.
- *
- * @param text - document
- *
- * @returns Its top-level blocks
- *
- * @example
- * ```ts
- * const nodes = blocksOf({ text: SOURCE_TEXT, },);
- * ```
+ Blocks of a text.
+ 
+ @param text - document
+ 
+ @returns Its top-level blocks
+ 
+ @example
+ ```ts
+ const nodes = blocksOf({ text: SOURCE_TEXT, },);
+ ```
  */
 function blocksOf({ text, }: { readonly text: string; },): readonly DocumentNode[] {
   return parseDocument({ text, },).nodes;
 }
 
 /**
- * Node at a position, or a thrown absence.
- *
- * @param nodes - blocks
- *
- * @param at - position
- *
- * @returns The block
- *
- * @example
- * ```ts
- * const letter = nodeAt({ nodes: targetNodes, at: 1, },);
- * ```
+ Node at a position, or a thrown absence.
+ 
+ @param nodes - blocks
+ 
+ @param at - position
+ 
+ @returns The block
+ 
+ @example
+ ```ts
+ const letter = nodeAt({ nodes: targetNodes, at: 1, },);
+ ```
  */
 function nodeAt(
   {
@@ -79,7 +79,7 @@ function nodeAt(
   },
 ): DocumentNode {
   /**
-   * The block.
+   The block.
    */
   const node = nodes[at];
   if (node === undefined)
@@ -88,16 +88,16 @@ function nodeAt(
 }
 
 /**
- * Ids a list of runs carries on the translation side, in order.
- *
- * @param runs - settled runs
- *
- * @returns Target ids
- *
- * @example
- * ```ts
- * const ids = targetIdsOf({ runs, },);
- * ```
+ Ids a list of runs carries on the translation side, in order.
+ 
+ @param runs - settled runs
+ 
+ @returns Target ids
+ 
+ @example
+ ```ts
+ const ids = targetIdsOf({ runs, },);
+ ```
  */
 function targetIdsOf({ runs, }: { readonly runs: readonly AlignedRun[]; },): readonly string[] {
   return runs.flatMap(function toIds(run,): readonly string[] {
@@ -111,16 +111,16 @@ function targetIdsOf({ runs, }: { readonly runs: readonly AlignedRun[]; },): rea
 }
 
 /**
- * Ids a list of runs carries on the original side, in order.
- *
- * @param runs - settled runs
- *
- * @returns Source ids
- *
- * @example
- * ```ts
- * const ids = sourceIdsOf({ runs, },);
- * ```
+ Ids a list of runs carries on the original side, in order.
+ 
+ @param runs - settled runs
+ 
+ @returns Source ids
+ 
+ @example
+ ```ts
+ const ids = sourceIdsOf({ runs, },);
+ ```
  */
 function sourceIdsOf({ runs, }: { readonly runs: readonly AlignedRun[]; },): readonly string[] {
   return runs.flatMap(function toIds(run,): readonly string[] {
@@ -142,8 +142,8 @@ await describe({
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
         const targetNodes = blocksOf({ text: TARGET_TEXT, },);
         /**
-         * The roster's pairing: intro, letter and closing paired; the
-         * footnote definition unpaired.
+         The roster's pairing: intro, letter and closing paired; the
+         footnote definition unpaired.
          */
         const steps = blockPairingToSteps({
           pairs: [
@@ -190,7 +190,7 @@ await describe({
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
         const targetNodes = blocksOf({ text: TARGET_TEXT, },);
         /**
-         * The letter and the closing line, sealed.
+         The letter and the closing line, sealed.
          */
         const letter = nodeAt({
           nodes: targetNodes,
@@ -248,7 +248,7 @@ await describe({
           },).id,
         ],);
         /**
-         * The insertion run.
+         The insertion run.
          */
         const insertion = runs.find(function isInsertion(run,): boolean {
           return run.kind === 'insertion';
@@ -304,7 +304,7 @@ await describe({
           sealed: new Set([ letter.id, ],),
         },);
         /**
-         * Paired runs, which must not have merged across the seal.
+         Paired runs, which must not have merged across the seal.
          */
         const paired = runs.filter(function isPaired(run,): boolean {
           return run.kind === 'paired';
@@ -340,7 +340,7 @@ await describe({
           sealed: new Set([ letter.id, ],),
         },);
         /**
-         * Every translation id the runs carry.
+         Every translation id the runs carry.
          */
         const ids = targetIdsOf({ runs, },);
         expect(ids,).not

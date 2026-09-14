@@ -11,20 +11,20 @@ import {
 //region Complete entry reading provenance before parent obligations
 
 /**
- * Binds every complete entry frame and its current or carried reading to the current pinned corpus.
- *
- * @param artifacts - private reader over freshly byte-matched support
- *
- * @param current - independently reconstructed selected entry contexts
- *
- * @returns Owned journal entries keyed by the verified native entry identities
- *
- * @throws PreparationRootError when reading order, hashes, frames or carry-forward provenance differs
- *
- * @example
- * ```ts
- * const readings = preparationRootEntryReadings({ artifacts, current });
- * ```
+ Binds every complete entry frame and its current or carried reading to the current pinned corpus.
+ 
+ @param artifacts - private reader over freshly byte-matched support
+ 
+ @param current - independently reconstructed selected entry contexts
+ 
+ @returns Owned journal entries keyed by the verified native entry identities
+ 
+ @throws PreparationRootError when reading order, hashes, frames or carry-forward provenance differs
+ 
+ @example
+ ```ts
+ const readings = preparationRootEntryReadings({ artifacts, current });
+ ```
  */
 export function preparationRootEntryReadings({
   artifacts,
@@ -34,7 +34,7 @@ export function preparationRootEntryReadings({
   readonly current: PreparationRootPopulation;
 },): ReadonlyMap<string, Readonly<Record<string, unknown>>> {
   /**
-   * The journal's whole prior-artifact identity is independent of selected row assertions.
+   The journal's whole prior-artifact identity is independent of selected row assertions.
    */
   const {
     journal,
@@ -47,7 +47,7 @@ export function preparationRootEntryReadings({
     kind: 'reading-provenance',
   },);
   /**
-   * Native entry order must not be replaced with a subset or a lookup that hides duplicates.
+   Native entry order must not be replaced with a subset or a lookup that hides duplicates.
    */
   const readings = preparationRootArray(journal.entries,)
     .map(function record(value,): Readonly<Record<string, unknown>> { return preparationRootRecord(value,); },);
@@ -58,18 +58,18 @@ export function preparationRootEntryReadings({
     kind: 'reading-provenance',
   },);
   /**
-   * Prior rows stay byte-bound; only exact carried relationships are interpreted.
+   Prior rows stay byte-bound; only exact carried relationships are interpreted.
    */
   const priorEntries = preparationRootArray(priorJournal.entries,)
     .map(function record(value,): Readonly<Record<string, unknown>> { return preparationRootRecord(value,); },);
   /**
-   * Result ownership remains local to the root operation.
+   Result ownership remains local to the root operation.
    */
   const byEntry = new Map<string, Readonly<Record<string, unknown>>>();
   for (const [index, entry,] of current.entries
     .entries()) {
     /**
-     * Positional equality has already established which journal row owns this entry.
+     Positional equality has already established which journal row owns this entry.
      */
     const reading = readings[index];
     if (reading === undefined)
@@ -90,7 +90,7 @@ export function preparationRootEntryReadings({
       input: entry.entryId,
     },);
     /**
-     * Frozen pool order, not section sorting, determines the frame's selected-parent list.
+     Frozen pool order, not section sorting, determines the frame's selected-parent list.
      */
     const selectedIndexes = current.parents
       .filter(function belongs(parent,): boolean { return parent.entryId === entry.entryId; },)
@@ -116,7 +116,7 @@ export function preparationRootEntryReadings({
         input: entry.entryId,
       },);
       /**
-       * The current note is independently linked by both locator and exact byte identity.
+       The current note is independently linked by both locator and exact byte identity.
        */
       const note = artifacts.note({
         path: preparationRootString(reading.currentNoteFile,),
@@ -150,11 +150,11 @@ export function preparationRootEntryReadings({
         input: entry.entryId,
       },);
       /**
-       * A carried row is not established merely by repeating its own hashes.
+       A carried row is not established merely by repeating its own hashes.
        */
       const prior = preparationRootRecord(reading.priorReading,);
       /**
-       * Exact prior membership must be unique before it can carry reading provenance.
+       Exact prior membership must be unique before it can carry reading provenance.
        */
       const priorMatches = priorEntries.filter(function sameEntry(row,): boolean {
         return row.entryId === entry.entryId;

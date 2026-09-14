@@ -1,16 +1,16 @@
 /**
- * Tests for how one drawn slice's refusal is handled.
- *
- * WHAT THESE PIN is that a slice which cannot be tried does not end the run. A
- * refusal leaves no ledger row, so a walk that aborted on one would redraw the
- * same slice on every resumption, reach it, and die at it again, never getting
- * to the slices behind it. The distinction matters more than it looks: a
- * refusal and a completed slice that owed nothing are both empty, and only one
- * of them is a fault.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for how one drawn slice's refusal is handled.
+ 
+ WHAT THESE PIN is that a slice which cannot be tried does not end the run. A
+ refusal leaves no ledger row, so a walk that aborted on one would redraw the
+ same slice on every resumption, reach it, and die at it again, never getting
+ to the slices behind it. The distinction matters more than it looks: a
+ refusal and a completed slice that owed nothing are both empty, and only one
+ of them is a fault.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { mkdtemp, } from 'node:fs/promises';
@@ -34,12 +34,12 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Logger the pick writes to.
+ Logger the pick writes to.
  */
 const l = tagged({ tag: 'window-trial-pick-test', },);
 
 /**
- * Rosters every case uses.
+ Rosters every case uses.
  */
 const MODELS = {
   translatorModelIds: ['hf:cat/Cat-A',].map(function toId(id,) {
@@ -52,20 +52,20 @@ const MODELS = {
 };
 
 /**
- * Builds one slice pair carrying given texts.
- *
- * @param sliceIndex - position in the document
- *
- * @param source - original wording
- *
- * @param target - archive wording
- *
- * @returns Pair shaped like one preparation produces
- *
- * @example
- * ```ts
- * const pair = pairOf({ sliceIndex: 0, source: '猫。', target: 'Cat.', },);
- * ```
+ Builds one slice pair carrying given texts.
+ 
+ @param sliceIndex - position in the document
+ 
+ @param source - original wording
+ 
+ @param target - archive wording
+ 
+ @returns Pair shaped like one preparation produces
+ 
+ @example
+ ```ts
+ const pair = pairOf({ sliceIndex: 0, source: '猫。', target: 'Cat.', },);
+ ```
  */
 function pairOf(
   {
@@ -97,7 +97,7 @@ function pairOf(
 }
 
 /**
- * Lone slice, which has no neighbour to widen to and so must refuse.
+ Lone slice, which has no neighbour to widen to and so must refuse.
  */
 const LONE: readonly ChunkPair[] = [
   pairOf({
@@ -108,16 +108,16 @@ const LONE: readonly ChunkPair[] = [
 ];
 
 /**
- * Client that raises on every exchange.
- *
- * @param error - failure every exchange raises
- *
- * @returns Client the pick calls through
- *
- * @example
- * ```ts
- * const client = throwingClient({ error: new Error('provider refused', ), },);
- * ```
+ Client that raises on every exchange.
+ 
+ @param error - failure every exchange raises
+ 
+ @returns Client the pick calls through
+ 
+ @example
+ ```ts
+ const client = throwingClient({ error: new Error('provider refused', ), },);
+ ```
  */
 function throwingClient(
   { error, }: { readonly error: Error; },
@@ -138,14 +138,14 @@ function throwingClient(
 }
 
 /**
- * Fresh throwaway ledger path.
- *
- * @returns Path inside a new temporary directory
- *
- * @example
- * ```ts
- * const path = await freshLedger();
- * ```
+ Fresh throwaway ledger path.
+ 
+ @returns Path inside a new temporary directory
+ 
+ @example
+ ```ts
+ const path = await freshLedger();
+ ```
  */
 async function freshLedger(): Promise<string> {
   return join(

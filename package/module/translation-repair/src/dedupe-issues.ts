@@ -23,16 +23,16 @@ import {
 // sentence must both survive.
 
 /**
- * Builds the identity two accepted issues must share to be one defect.
- *
- * @param issue - adjudicated issue
- *
- * @returns Stable key over category and the exact spans claimed
- *
- * @example
- * ```ts
- * const key = duplicateKey({ issue, },);
- * ```
+ Builds the identity two accepted issues must share to be one defect.
+ 
+ @param issue - adjudicated issue
+ 
+ @returns Stable key over category and the exact spans claimed
+ 
+ @example
+ ```ts
+ const key = duplicateKey({ issue, },);
+ ```
  */
 function duplicateKey(
   {
@@ -42,7 +42,7 @@ function duplicateKey(
   },
 ): string {
   /**
-   * Categories claimed, deduplicated so member order cannot change the key.
+   Categories claimed, deduplicated so member order cannot change the key.
    */
   const categories = [...new Set(issue.claims
     .map(function toCategory(member,): string {
@@ -51,8 +51,8 @@ function duplicateKey(
   },),),].toSorted();
 
   /**
-   * Every span claimed, rendered field by field rather than by JSON, since
-   * property order in a serialized object is not a guarantee worth keying on.
+   Every span claimed, rendered field by field rather than by JSON, since
+   property order in a serialized object is not a guarantee worth keying on.
    */
   const spans = [...new Set(issue.claims
     .flatMap(function toSpans(member,): readonly string[] {
@@ -67,43 +67,43 @@ function duplicateKey(
 }
 
 /**
- * Everything deduplication changed.
- *
- * @example
- * ```ts
- * const { issues, findings, } = dedupeAcceptedIssues({ issues: panel.issues, },);
- * ```
+ Everything deduplication changed.
+ 
+ @example
+ ```ts
+ const { issues, findings, } = dedupeAcceptedIssues({ issues: panel.issues, },);
+ ```
  */
 export type DedupeOutcome = {
   /**
-   * Issues with same-place accepted duplicates merged, in input order.
+   Issues with same-place accepted duplicates merged, in input order.
    */
   readonly issues: readonly AdjudicatedIssue[];
 
   /**
-   * One finding per merge, so a run records what it collapsed rather than
-   * quietly reporting a smaller number than it accepted.
+   One finding per merge, so a run records what it collapsed rather than
+   quietly reporting a smaller number than it accepted.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Merges accepted issues that name the same defect in the same place.
- *
- * Leaves every non-accepted issue untouched and in place: a rejected duplicate
- * costs no repair budget, and collapsing rejections would change what the
- * precision denominator counts.
- *
- * @param issues - adjudicated issues for one chunk, in panel order
- *
- * @returns Merged issues and a finding per merge
- *
- * @throws {@link IssueEvidenceConflictError} when repeated claim evidence conflicts
- *
- * @example
- * ```ts
- * const { issues, findings, } = dedupeAcceptedIssues({ issues, },);
- * ```
+ Merges accepted issues that name the same defect in the same place.
+ 
+ Leaves every non-accepted issue untouched and in place: a rejected duplicate
+ costs no repair budget, and collapsing rejections would change what the
+ precision denominator counts.
+ 
+ @param issues - adjudicated issues for one chunk, in panel order
+ 
+ @returns Merged issues and a finding per merge
+ 
+ @throws {@link IssueEvidenceConflictError} when repeated claim evidence conflicts
+ 
+ @example
+ ```ts
+ const { issues, findings, } = dedupeAcceptedIssues({ issues, },);
+ ```
  */
 export function dedupeAcceptedIssues(
   {
@@ -113,17 +113,17 @@ export function dedupeAcceptedIssues(
   },
 ): DedupeOutcome {
   /**
-   * Position in the output of the accepted issue holding each key.
+   Position in the output of the accepted issue holding each key.
    */
   const firstAt = new Map<string, number>();
 
   /**
-   * Issues being built, with survivors accumulating merged claims.
+   Issues being built, with survivors accumulating merged claims.
    */
   const kept: AdjudicatedIssue[] = [];
 
   /**
-   * One line per merge.
+   One line per merge.
    */
   const findings: string[] = [];
 
@@ -134,12 +134,12 @@ export function dedupeAcceptedIssues(
     }
 
     /**
-     * Identity this issue shares with any duplicate of it.
+     Identity this issue shares with any duplicate of it.
      */
     const key = duplicateKey({ issue, },);
 
     /**
-     * Where the first issue with this identity landed, if any.
+     Where the first issue with this identity landed, if any.
      */
     const at = firstAt.get(key,);
     if (at === undefined) {
@@ -152,14 +152,14 @@ export function dedupeAcceptedIssues(
     }
 
     /**
-     * Survivor this duplicate folds into.
+     Survivor this duplicate folds into.
      */
     const survivor = kept[at];
     if (survivor === undefined)
       throw new Error(`unreachable: duplicate key ${key} indexed a position holding no issue`,);
 
     /**
-     * Claim ids the survivor already holds.
+     Claim ids the survivor already holds.
      */
     const held = new Set(survivor.claims
       .map(function toId(member,): string {

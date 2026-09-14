@@ -34,58 +34,58 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 // robust against a server that reorders or omits the `event:` line.
 
 /**
- * Prefix marking a line that carries an event payload.
+ Prefix marking a line that carries an event payload.
  */
 const DATA_PREFIX = 'data:';
 
 /**
- * Logger root for this scanner.
+ Logger root for this scanner.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * One optional space servers put between the colon and the payload.
+ One optional space servers put between the colon and the payload.
  */
 const OPTIONAL_SPACE = ' ';
 
 /**
- * Sentinel OpenRouter's Messages endpoint appends after `message_stop`,
- * captured 2026-09-03; it is not a frame and must not count as an unreadable
- * one, for the same reason an empty keep-alive payload does not.
+ Sentinel OpenRouter's Messages endpoint appends after `message_stop`,
+ captured 2026-09-03; it is not a frame and must not count as an unreadable
+ one, for the same reason an empty keep-alive payload does not.
  */
 const DONE_SENTINEL = '[DONE]';
 
 /**
- * Block type carrying the model's reasoning rather than its answer.
+ Block type carrying the model's reasoning rather than its answer.
  */
 const THINKING_BLOCK = 'thinking';
 
 /**
- * Reading given to a delta type this scanner does not carry.
+ Reading given to a delta type this scanner does not carry.
  */
 const UNREAD = 'unread';
 
 /**
- * Channel a delta routes to, or that this scanner does not read its type.
- *
- * A THIRD STATE RATHER THAN A NULLISH UNION, so an unread delta is a named
- * reading instead of an absence a caller has to remember to check.
- *
- * @example
- * ```ts
- * const routing: DeltaRouting = 'reasoning';
- * ```
+ Channel a delta routes to, or that this scanner does not read its type.
+ 
+ A THIRD STATE RATHER THAN A NULLISH UNION, so an unread delta is a named
+ reading instead of an absence a caller has to remember to check.
+ 
+ @example
+ ```ts
+ const routing: DeltaRouting = 'reasoning';
+ ```
  */
 type DeltaRouting = StreamChannel | typeof UNREAD;
 
 /**
- * Delta types this scanner reads, mapped to the channel each belongs to.
- *
- * `input_json_delta` IS THE ANSWER CHANNEL, which is the one mapping here that
- * is not obvious. Under forced tool use the model's whole reply is the tool
- * call's arguments, so those fragments are the content a consumer is waiting
- * for. Routing them to `reasoning` would leave every schema'd call looking
- * like a model that thought at length and answered nothing.
+ Delta types this scanner reads, mapped to the channel each belongs to.
+ 
+ `input_json_delta` IS THE ANSWER CHANNEL, which is the one mapping here that
+ is not obvious. Under forced tool use the model's whole reply is the tool
+ call's arguments, so those fragments are the content a consumer is waiting
+ for. Routing them to `reasoning` would leave every schema'd call looking
+ like a model that thought at length and answered nothing.
  */
 const DELTA_CHANNELS: Readonly<Record<string, StreamChannel>> = {
   text_delta: 'content',
@@ -94,40 +94,40 @@ const DELTA_CHANNELS: Readonly<Record<string, StreamChannel>> = {
 };
 
 /**
- * Delta types carrying the answer itself, which no enclosing block may demote
- * to reasoning.
- *
- * THE ASYMMETRY IS THE POINT, and `text_delta` is deliberately NOT here. A
- * provider has been seen sending plain text deltas inside a thinking block, so
- * a `text_delta` must still yield to whatever the block declared. A tool-call
- * argument fragment cannot be deliberation: it is the structured answer by
- * construction, filling a schema this pipeline sent.
- *
- * CAPTURED FROM THE WIRE on 2026-08-25, `#211`. `qwen3.8-max` on Charm Hyper
- * opens index 1 as `tool_use`, then opens THE SAME INDEX again as `thinking`,
- * and thereafter interleaves `thinking_delta` and `input_json_delta` under it.
- * The block map keeps the later declaration, so the block-type override filed
- * the whole reply as reasoning: 70 of 71 streams reported zero content while
- * every one of them cast a ballot with a full prose reason.
- *
- * NOT COSMETIC. `stream-runaway-watch.ts` bounds the content channel and
- * deliberately leaves reasoning alone, so an answer filed as reasoning escapes
- * the volume cap and runs to the straggler deadline. That seat was cut 12 times
- * in 71, the highest on the roster by two and a half times, and each cut is a
- * lost voice on a panel already paid for.
- *
- * WHY THIS RATHER THAN FIXING THE BLOCK MAP: keeping the FIRST declaration
- * would also route this capture correctly, but only because `tool_use` happened
- * to arrive first. This holds whichever order the two declarations come in.
+ Delta types carrying the answer itself, which no enclosing block may demote
+ to reasoning.
+ 
+ THE ASYMMETRY IS THE POINT, and `text_delta` is deliberately NOT here. A
+ provider has been seen sending plain text deltas inside a thinking block, so
+ a `text_delta` must still yield to whatever the block declared. A tool-call
+ argument fragment cannot be deliberation: it is the structured answer by
+ construction, filling a schema this pipeline sent.
+ 
+ CAPTURED FROM THE WIRE on 2026-08-25, `#211`. `qwen3.8-max` on Charm Hyper
+ opens index 1 as `tool_use`, then opens THE SAME INDEX again as `thinking`,
+ and thereafter interleaves `thinking_delta` and `input_json_delta` under it.
+ The block map keeps the later declaration, so the block-type override filed
+ the whole reply as reasoning: 70 of 71 streams reported zero content while
+ every one of them cast a ballot with a full prose reason.
+ 
+ NOT COSMETIC. `stream-runaway-watch.ts` bounds the content channel and
+ deliberately leaves reasoning alone, so an answer filed as reasoning escapes
+ the volume cap and runs to the straggler deadline. That seat was cut 12 times
+ in 71, the highest on the roster by two and a half times, and each cut is a
+ lost voice on a panel already paid for.
+ 
+ WHY THIS RATHER THAN FIXING THE BLOCK MAP: keeping the FIRST declaration
+ would also route this capture correctly, but only because `tool_use` happened
+ to arrive first. This holds whichever order the two declarations come in.
  */
 const ANSWER_DELTAS: ReadonlySet<string> = new Set(['input_json_delta',],);
 
 /**
- * Field each delta type carries its text in.
- *
- * SEPARATE FROM {@link DELTA_CHANNELS} because the two are genuinely
- * independent: `text_delta` and `input_json_delta` share a channel and use
- * different field names, so one record cannot express both.
+ Field each delta type carries its text in.
+ 
+ SEPARATE FROM {@link DELTA_CHANNELS} because the two are genuinely
+ independent: `text_delta` and `input_json_delta` share a channel and use
+ different field names, so one record cannot express both.
  */
 const DELTA_TEXT_FIELDS: Readonly<Record<string, string>> = {
   text_delta: 'text',
@@ -136,18 +136,18 @@ const DELTA_TEXT_FIELDS: Readonly<Record<string, string>> = {
 };
 
 /**
- * Reads one string field off a parsed object, ignoring anything else.
- *
- * @param fields - parsed object to read
- *
- * @param name - field wanted
- *
- * @returns Field value, or empty when absent or not a string
- *
- * @example
- * ```ts
- * const text = stringField({ fields: delta, name: 'text', },);
- * ```
+ Reads one string field off a parsed object, ignoring anything else.
+ 
+ @param fields - parsed object to read
+ 
+ @param name - field wanted
+ 
+ @returns Field value, or empty when absent or not a string
+ 
+ @example
+ ```ts
+ const text = stringField({ fields: delta, name: 'text', },);
+ ```
  */
 function stringField(
   {
@@ -159,7 +159,7 @@ function stringField(
   },
 ): string {
   /**
-   * Raw value under that name, of unknown type.
+   Raw value under that name, of unknown type.
    */
   const value = fields[name];
 
@@ -169,45 +169,45 @@ function stringField(
 }
 
 /**
- * Where a frame said its block sits, or that it named no position.
- *
- * A DISCRIMINATED RESULT rather than `number | undefined`, because this repo
- * models absence without nullish unions and index zero is a real position that
- * a falsy check would read as absence.
- *
- * @example
- * ```ts
- * const at: FrameIndex = { present: true, index: 0, };
- * ```
+ Where a frame said its block sits, or that it named no position.
+ 
+ A DISCRIMINATED RESULT rather than `number | undefined`, because this repo
+ models absence without nullish unions and index zero is a real position that
+ a falsy check would read as absence.
+ 
+ @example
+ ```ts
+ const at: FrameIndex = { present: true, index: 0, };
+ ```
  */
 type FrameIndex =
   | {
     readonly present: true;
 
     /**
-     * Position the frame named.
+     Position the frame named.
      */
     readonly index: number;
   }
   | { readonly present: false; };
 
 /**
- * Reads the position a frame named for its block.
- *
- * @param fields - parsed frame to read
- *
- * @returns Position, or that the frame named none
- *
- * @example
- * ```ts
- * const at = frameIndex({ fields: frame, },);
- * ```
+ Reads the position a frame named for its block.
+ 
+ @param fields - parsed frame to read
+ 
+ @returns Position, or that the frame named none
+ 
+ @example
+ ```ts
+ const at = frameIndex({ fields: frame, },);
+ ```
  */
 function frameIndex(
   { fields, }: { readonly fields: Readonly<Record<string, unknown>>; },
 ): FrameIndex {
   /**
-   * Raw value under `index`, of unknown type.
+   Raw value under `index`, of unknown type.
    */
   const { index: value, } = fields;
 
@@ -220,27 +220,27 @@ function frameIndex(
 }
 
 /**
- * Channel a delta belongs to, preferring what the block declared.
- *
- * A `text_delta` INSIDE A THINKING BLOCK is reasoning despite its type, which
- * is why the block map is consulted first. Providers have been observed to send
- * plain text deltas inside a thinking block, and reading only the delta type
- * would file that as the answer.
- *
- * {@link ANSWER_DELTAS} IS THE EXCEPTION, and its own note carries the wire
- * capture that made it necessary: a block declaration cannot demote a tool-call
- * argument fragment, because that fragment is the answer by construction.
- *
- * @param deltaType - `type` of the delta object
- *
- * @param blockType - type the enclosing block declared, empty when unknown
- *
- * @returns Channel to file this text under, or that this type is not read
- *
- * @example
- * ```ts
- * const channel = channelFor({ deltaType: 'text_delta', blockType: 'thinking', },);
- * ```
+ Channel a delta belongs to, preferring what the block declared.
+ 
+ A `text_delta` INSIDE A THINKING BLOCK is reasoning despite its type, which
+ is why the block map is consulted first. Providers have been observed to send
+ plain text deltas inside a thinking block, and reading only the delta type
+ would file that as the answer.
+ 
+ {@link ANSWER_DELTAS} IS THE EXCEPTION, and its own note carries the wire
+ capture that made it necessary: a block declaration cannot demote a tool-call
+ argument fragment, because that fragment is the answer by construction.
+ 
+ @param deltaType - `type` of the delta object
+ 
+ @param blockType - type the enclosing block declared, empty when unknown
+ 
+ @returns Channel to file this text under, or that this type is not read
+ 
+ @example
+ ```ts
+ const channel = channelFor({ deltaType: 'text_delta', blockType: 'thinking', },);
+ ```
  */
 function channelFor(
   {
@@ -257,21 +257,21 @@ function channelFor(
 }
 
 /**
- * Parses one event payload, reporting rather than raising on malformed JSON.
- *
- * A DISCRIMINATED RESULT rather than a nullable frame, matching `readPayload`
- * in `stream-delta-scan.ts`. Returning the caught error as the value would pass
- * {@link isJsonRecord}, which narrows only that a value is a non-null object,
- * so an unreadable line would be read as an empty frame instead of counted.
- *
- * @param payload - one `data:` line's payload, already unwrapped
- *
- * @returns Parsed frame, or that it could not be read
- *
- * @example
- * ```ts
- * const parsed = readPayload({ payload: '{"type":"ping"}', },);
- * ```
+ Parses one event payload, reporting rather than raising on malformed JSON.
+ 
+ A DISCRIMINATED RESULT rather than a nullable frame, matching `readPayload`
+ in `stream-delta-scan.ts`. Returning the caught error as the value would pass
+ {@link isJsonRecord}, which narrows only that a value is a non-null object,
+ so an unreadable line would be read as an empty frame instead of counted.
+ 
+ @param payload - one `data:` line's payload, already unwrapped
+ 
+ @returns Parsed frame, or that it could not be read
+ 
+ @example
+ ```ts
+ const parsed = readPayload({ payload: '{"type":"ping"}', },);
+ ```
  */
 function readPayload(
   { payload, }: { readonly payload: string; },
@@ -284,7 +284,7 @@ function readPayload(
 {
   try {
     /**
-     * Whatever that payload parsed to, before any shape is assumed.
+     Whatever that payload parsed to, before any shape is assumed.
      */
     const frame: unknown = JSON.parse(payload,);
 
@@ -301,28 +301,28 @@ function readPayload(
 }
 
 /**
- * A running scanner over one Anthropic Messages stream body.
- *
- * Produces the same {@link DeltaScanner} the OpenAI-shaped path produces, so
- * every stream guard consumes both wire formats without knowing which it has.
- *
- * @returns Scanner fed by `feed`
- *
- * @example
- * ```ts
- * const scanner = scanAnthropicDeltas();
- * for (const chunk of chunks)
- *   for (const delta of scanner.feed({ chunk, },))
- *     detectors[delta.channel].notifyText({ text: delta.text, },);
- * ```
+ A running scanner over one Anthropic Messages stream body.
+ 
+ Produces the same {@link DeltaScanner} the OpenAI-shaped path produces, so
+ every stream guard consumes both wire formats without knowing which it has.
+ 
+ @returns Scanner fed by `feed`
+ 
+ @example
+ ```ts
+ const scanner = scanAnthropicDeltas();
+ for (const chunk of chunks)
+   for (const delta of scanner.feed({ chunk, },))
+     detectors[delta.channel].notifyText({ text: delta.text, },);
+ ```
  */
 export function scanAnthropicDeltas(): DeltaScanner {
   /**
-   * Partial line held from an earlier chunk, the unreadable tally, and the
-   * type each open block declared.
-   *
-   * A RECORD RATHER THAN LOOSE BINDINGS so the factory root holds no mutable
-   * variable, matching `scanStreamDeltas`.
+   Partial line held from an earlier chunk, the unreadable tally, and the
+   type each open block declared.
+   
+   A RECORD RATHER THAN LOOSE BINDINGS so the factory root holds no mutable
+   variable, matching `scanStreamDeltas`.
    */
   const state = {
     carry: '',
@@ -331,27 +331,27 @@ export function scanAnthropicDeltas(): DeltaScanner {
   };
 
   /**
-   * Records what an opening block declared, so its deltas can be attributed.
-   *
-   * @param frame - parsed `content_block_start` frame
-   *
-   * @example
-   * ```ts
-   * openBlock({ frame, },);
-   * ```
+   Records what an opening block declared, so its deltas can be attributed.
+   
+   @param frame - parsed `content_block_start` frame
+   
+   @example
+   ```ts
+   openBlock({ frame, },);
+   ```
    */
   function openBlock(
     { frame, }: { readonly frame: Readonly<Record<string, unknown>>; },
   ): void {
     /**
-     * Position this block occupies in the message.
+     Position this block occupies in the message.
      */
     const at = frameIndex({ fields: frame, },);
     if (!at.present)
       return;
 
     /**
-     * Block descriptor the frame carried.
+     Block descriptor the frame carried.
      */
     const { content_block: block, } = frame;
     if (!isJsonRecord(block,))
@@ -369,29 +369,29 @@ export function scanAnthropicDeltas(): DeltaScanner {
   }
 
   /**
-   * Reads one delta frame into whatever generated text it carried.
-   *
-   * @param frame - parsed `content_block_delta` frame
-   *
-   * @returns Deltas it carried, empty for a delta type this does not read
-   *
-   * @example
-   * ```ts
-   * const deltas = readDelta({ frame, },);
-   * ```
+   Reads one delta frame into whatever generated text it carried.
+   
+   @param frame - parsed `content_block_delta` frame
+   
+   @returns Deltas it carried, empty for a delta type this does not read
+   
+   @example
+   ```ts
+   const deltas = readDelta({ frame, },);
+   ```
    */
   function readDelta(
     { frame, }: { readonly frame: Readonly<Record<string, unknown>>; },
   ): readonly ChannelDelta[] {
     /**
-     * Delta descriptor the frame carried.
+     Delta descriptor the frame carried.
      */
     const { delta, } = frame;
     if (!isJsonRecord(delta,))
       return [];
 
     /**
-     * Kind of delta this is, which names both channel and text field.
+     Kind of delta this is, which names both channel and text field.
      */
     const deltaType = stringField({
       fields: delta,
@@ -399,12 +399,12 @@ export function scanAnthropicDeltas(): DeltaScanner {
     },);
 
     /**
-     * Position this delta belongs to, used to recover its block's type.
+     Position this delta belongs to, used to recover its block's type.
      */
     const at = frameIndex({ fields: frame, },);
 
     /**
-     * Type the enclosing block declared, empty where nothing declared one.
+     Type the enclosing block declared, empty where nothing declared one.
      */
     const declared = at.present
       ? state
@@ -413,12 +413,12 @@ export function scanAnthropicDeltas(): DeltaScanner {
       : '';
 
     /**
-     * That type, with an unopened block reading as no declaration at all.
+     That type, with an unopened block reading as no declaration at all.
      */
     const blockType = declared ?? '';
 
     /**
-     * Channel to file this text under, or that this type is not read here.
+     Channel to file this text under, or that this type is not read here.
      */
     const channel = channelFor({
       deltaType,
@@ -428,7 +428,7 @@ export function scanAnthropicDeltas(): DeltaScanner {
       return [];
 
     /**
-     * Text this delta carried, empty when the field was absent.
+     Text this delta carried, empty when the field was absent.
      */
     const text = stringField({
       fields: delta,
@@ -444,22 +444,22 @@ export function scanAnthropicDeltas(): DeltaScanner {
   }
 
   /**
-   * Reads one complete line, returning whatever text it carried.
-   *
-   * @param line - one line, without its newline
-   *
-   * @returns Deltas it carried, empty for every non-delta frame
-   *
-   * @example
-   * ```ts
-   * const deltas = readLine({ line: 'data: {"type":"ping"}', },);
-   * ```
+   Reads one complete line, returning whatever text it carried.
+   
+   @param line - one line, without its newline
+   
+   @returns Deltas it carried, empty for every non-delta frame
+   
+   @example
+   ```ts
+   const deltas = readLine({ line: 'data: {"type":"ping"}', },);
+   ```
    */
   function readLine(
     { line, }: { readonly line: string; },
   ): readonly ChannelDelta[] {
     /**
-     * Line without the carriage return a server may pair with its newline.
+     Line without the carriage return a server may pair with its newline.
      */
     const clean = line.endsWith('\r',)
       ? line.slice(
@@ -472,12 +472,12 @@ export function scanAnthropicDeltas(): DeltaScanner {
       return [];
 
     /**
-     * Everything after the colon, which may begin with one optional space.
+     Everything after the colon, which may begin with one optional space.
      */
     const afterColon = clean.slice(DATA_PREFIX.length,);
 
     /**
-     * Payload proper, with that one space removed if it was sent.
+     Payload proper, with that one space removed if it was sent.
      */
     const payload = afterColon.startsWith(OPTIONAL_SPACE,)
       ? afterColon.slice(OPTIONAL_SPACE.length,)
@@ -489,7 +489,7 @@ export function scanAnthropicDeltas(): DeltaScanner {
       return [];
 
     /**
-     * Parsed frame, or a note that this line could not be read.
+     Parsed frame, or a note that this line could not be read.
      */
     const parsed = readPayload({ payload, },);
 
@@ -499,7 +499,7 @@ export function scanAnthropicDeltas(): DeltaScanner {
     }
 
     /**
-     * Which Anthropic frame this is.
+     Which Anthropic frame this is.
      */
     const frameType = stringField({
       fields: parsed.frame,
@@ -518,12 +518,12 @@ export function scanAnthropicDeltas(): DeltaScanner {
   return {
     feed({ chunk, },): readonly ChannelDelta[] {
       /**
-       * Everything unparsed so far, including this chunk.
+       Everything unparsed so far, including this chunk.
        */
       const pending = state.carry + chunk;
 
       /**
-       * Lines the pending text splits into; the last is kept for next time.
+       Lines the pending text splits into; the last is kept for next time.
        */
       const lines = pending.split('\n',);
       state.carry = lines.pop() ?? '';

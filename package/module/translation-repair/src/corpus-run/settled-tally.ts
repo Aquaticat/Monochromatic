@@ -22,22 +22,22 @@ import { wouldShipTextFor, } from './would-ship-text.ts';
 // only way to be sure is to have one source.
 
 /**
- * Counts slices whose delivery carries a change.
- *
- * @param rows - one lane's delivery ledger, as version 2 records it
- *
- * @returns How many slices that lane's document carries a replacement for
- *
- * @example
- * ```ts
- * const changed = changedSlices({ rows: artifact.lanes.repair.delivery, },);
- * ```
+ Counts slices whose delivery carries a change.
+ 
+ @param rows - one lane's delivery ledger, as version 2 records it
+ 
+ @returns How many slices that lane's document carries a replacement for
+ 
+ @example
+ ```ts
+ const changed = changedSlices({ rows: artifact.lanes.repair.delivery, },);
+ ```
  */
 function changedSlices(
   { rows, }: { readonly rows: readonly ArtifactDeliveryRow[]; },
 ): number {
   /**
-   * Rows whose document carries a replacement.
+   Rows whose document carries a replacement.
    */
   const changed = rows.filter(function carriesAChange(row,): boolean {
     return row.delivery
@@ -48,23 +48,23 @@ function changedSlices(
 }
 
 /**
- * Renders the TALLY line for one settled entry.
- *
- * @param artifact - what was written for this entry, which supplies every
- * number here rather than being recounted beside it
- *
- * @returns Single line, no trailing newline
- *
- * @example
- * ```ts
- * console.log(settledTallyLine({ artifact, },),);
- * ```
+ Renders the TALLY line for one settled entry.
+ 
+ @param artifact - what was written for this entry, which supplies every
+ number here rather than being recounted beside it
+ 
+ @returns Single line, no trailing newline
+ 
+ @example
+ ```ts
+ console.log(settledTallyLine({ artifact, },),);
+ ```
  */
 export function settledTallyLine(
   { artifact, }: { readonly artifact: SettledArtifact; },
 ): string {
   /**
-   * Both lanes as the artifact nests them.
+   Both lanes as the artifact nests them.
    */
   const {
     repair,
@@ -72,8 +72,8 @@ export function settledTallyLine(
   } = artifact.lanes;
 
   /**
-   * Issues the adjudication accepted, which is a repair-lane measurement and
-   * is named as one: the translate lane files no issues at all.
+   Issues the adjudication accepted, which is a repair-lane measurement and
+   is named as one: the translate lane files no issues at all.
    */
   const accepted = repair.result
     .issues
@@ -84,16 +84,16 @@ export function settledTallyLine(
     },);
 
   /**
-   * Accepted issues the checkers confirmed fixed.
+   Accepted issues the checkers confirmed fixed.
    */
   const resolved = accepted.filter(function isResolved(record,): boolean {
     return record.resolved;
   },);
 
   /**
-   * Slices where the two documents ended up carrying different words, which is
-   * the number worth watching: it is how much of this entry the open question
-   * actually covers.
+   Slices where the two documents ended up carrying different words, which is
+   the number worth watching: it is how much of this entry the open question
+   actually covers.
    */
   const differing = artifact.comparison
     .filter(function documentsDiffer(row,): boolean {
@@ -101,26 +101,26 @@ export function settledTallyLine(
     },);
 
   /**
-   * Slices where a document assembled today would carry wording the archive
-   * did not.
-   *
-   * ADDED BESIDE the two lane counts rather than replacing either, per this
-   * task's decision 1. `repairChanged` and `translateChanged` say what each
-   * lane PROPOSED, which stays true however the deciders later ruled; this
-   * says how much of the entry a reader would actually meet as new. Without
-   * it a reader gauging how much an entry changed misses the consolidation
-   * entirely, and on an entry nobody has decided reads two sets of proposals
-   * as the outcome.
-   *
-   * ZERO IS THE HONEST ANSWER on an undecided entry, and it is meant to be
-   * read beside `selection=pending-human-decision` on the same line: two
-   * lanes proposed changes and, as things stand, a document would carry none
-   * of them. That is `#175`, stated in the log rather than left to inference.
+   Slices where a document assembled today would carry wording the archive
+   did not.
+   
+   ADDED BESIDE the two lane counts rather than replacing either, per this
+   task's decision 1. `repairChanged` and `translateChanged` say what each
+   lane PROPOSED, which stays true however the deciders later ruled; this
+   says how much of the entry a reader would actually meet as new. Without
+   it a reader gauging how much an entry changed misses the consolidation
+   entirely, and on an entry nobody has decided reads two sets of proposals
+   as the outcome.
+   
+   ZERO IS THE HONEST ANSWER on an undecided entry, and it is meant to be
+   read beside `selection=pending-human-decision` on the same line: two
+   lanes proposed changes and, as things stand, a document would carry none
+   of them. That is `#175`, stated in the log rather than left to inference.
    */
   const pageChanged = artifact.comparison
     .filter(function pageCarriesAChange(row,): boolean {
       /**
-       * What would stand at this slice.
+       What would stand at this slice.
        */
       const reading = wouldShipTextFor({
         artifact,
@@ -133,13 +133,13 @@ export function settledTallyLine(
     },);
 
   /**
-   * Slices where nothing at all would stand, which is neither a change nor a
-   * retention and would be invisible inside either count.
+   Slices where nothing at all would stand, which is neither a change nor a
+   retention and would be invisible inside either count.
    */
   const pageSilent = artifact.comparison
     .filter(function pageCarriesNothing(row,): boolean {
       /**
-       * What would stand at this slice.
+       What would stand at this slice.
        */
       const reading = wouldShipTextFor({
         artifact,

@@ -1,23 +1,23 @@
 /**
- * Tests for the deterministic half of the insertion gate.
- *
- * `doc/decision/translation-repair-absence-verdict.md` requires two independent
- * readings before anything is written into a page: the coverage roster must
- * call a passage absent, AND the page must be measurably too short to hold it.
- * These cover the second, which consults no model and so can be pinned exactly.
- *
- * WHAT WOULD GO WRONG WITHOUT THEM. A gate that reported every page as short
- * would wave through every insertion the roster proposed, and a gate that
- * reported none as short would silently disable the lane; both look identical
- * from outside, since both produce a run that raises nothing. The cases here
- * exercise both directions on the same fixture so neither degenerate answer can
- * pass.
- *
- * Fixtures are cat-themed invention. The corpus is unlicensed and this file is
- * committed, so no passage from it appears here; what is borrowed is the SHAPE,
- * a Chinese source beside an English rendering some multiple of its size.
- *
- * @module
+ Tests for the deterministic half of the insertion gate.
+ 
+ `doc/decision/translation-repair-absence-verdict.md` requires two independent
+ readings before anything is written into a page: the coverage roster must
+ call a passage absent, AND the page must be measurably too short to hold it.
+ These cover the second, which consults no model and so can be pinned exactly.
+ 
+ WHAT WOULD GO WRONG WITHOUT THEM. A gate that reported every page as short
+ would wave through every insertion the roster proposed, and a gate that
+ reported none as short would silently disable the lane; both look identical
+ from outside, since both produce a run that raises nothing. The cases here
+ exercise both directions on the same fixture so neither degenerate answer can
+ pass.
+ 
+ Fixtures are cat-themed invention. The corpus is unlicensed and this file is
+ committed, so no passage from it appears here; what is borrowed is the SHAPE,
+ a Chinese source beside an English rendering some multiple of its size.
+ 
+ @module
  */
 
 import {
@@ -34,19 +34,19 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Chinese source standing in for a page, long enough that expansion arithmetic
- * lands on numbers worth asserting about.
+ Chinese source standing in for a page, long enough that expansion arithmetic
+ lands on numbers worth asserting about.
  */
 const SOURCE = '橘猫在窗台上睡了整个下午，阳光把它的毛烤得暖烘烘的。';
 
 /**
- * What an ordinarily complete rendering of that source would occupy.
+ What an ordinarily complete rendering of that source would occupy.
  */
 const WHOLE = SOURCE.length * CORPUS_EXPANSION;
 
 /**
- * Two passages of equal size, each small enough that a page missing everything
- * has room for both.
+ Two passages of equal size, each small enough that a page missing everything
+ has room for both.
  */
 const PASSAGES = [
   {
@@ -184,12 +184,12 @@ await describe({
         + 'never takes two',
       fn: async () => {
         /**
-         * What admitting one of these passages is expected to add.
+         What admitting one of these passages is expected to add.
          */
         const one = expectedTranslationPoints({ sourceText: PASSAGES[0].sourceText, },);
 
         /**
-         * Half again of that, so the budget holds one passage and a sliver.
+         Half again of that, so the budget holds one passage and a sliver.
          */
         const ROOM_FOR_ONE = 1.5;
 

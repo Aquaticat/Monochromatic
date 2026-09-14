@@ -7,24 +7,24 @@ import type { EditableEnvelope, } from './patch-model.ts';
 // replaced span has to survive.
 
 /**
- * Collects the defect text each envelope's accepted issues quoted.
- *
- * TARGET-SIDE SPANS ONLY. A source-side quote is Chinese prose that never
- * appears in the English being edited, so licensing it would license nothing
- * and only slow the lookup.
- *
- * @param envelopes - envelopes about to be edited
- *
- * @param issues - adjudicated issues for the chunk
- *
- * @returns Quotes keyed by envelope id
- *
- * @example
- * ```ts
- * const licensedQuotes = buildLicensedQuotes({ envelopes, issues, },);
- * ```
- *
- * @internal
+ Collects the defect text each envelope's accepted issues quoted.
+ 
+ TARGET-SIDE SPANS ONLY. A source-side quote is Chinese prose that never
+ appears in the English being edited, so licensing it would license nothing
+ and only slow the lookup.
+ 
+ @param envelopes - envelopes about to be edited
+ 
+ @param issues - adjudicated issues for the chunk
+ 
+ @returns Quotes keyed by envelope id
+ 
+ @example
+ ```ts
+ const licensedQuotes = buildLicensedQuotes({ envelopes, issues, },);
+ ```
+ 
+ @internal
  */
 export function buildLicensedQuotes(
   {
@@ -36,7 +36,7 @@ export function buildLicensedQuotes(
   },
 ): ReadonlyMap<string, readonly string[]> {
   /**
-   * Quoted defect text of each issue, by issue id.
+   Quoted defect text of each issue, by issue id.
    */
   const quotesByIssue = new Map(issues.map(function toEntry(issue,) {
     return [

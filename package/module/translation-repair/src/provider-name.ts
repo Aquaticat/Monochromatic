@@ -25,22 +25,22 @@
 // money answered nothing.
 
 /**
- * One of the providers this pipeline can buy a call from.
- *
- * @example
- * ```ts
- * const provider: ProviderName = 'openrouter';
- * ```
+ One of the providers this pipeline can buy a call from.
+ 
+ @example
+ ```ts
+ const provider: ProviderName = 'openrouter';
+ ```
  */
 export type ProviderName = 'synthetic' | 'hyper' | 'bedrock' | 'openrouter';
 
 /**
- * Every provider, in the order the owner prefers to spend on them.
- *
- * @example
- * ```ts
- * const [preferred,] = PROVIDER_ORDER;
- * ```
+ Every provider, in the order the owner prefers to spend on them.
+ 
+ @example
+ ```ts
+ const [preferred,] = PROVIDER_ORDER;
+ ```
  */
 export const PROVIDER_ORDER: readonly ProviderName[] = [
   'synthetic',
@@ -50,30 +50,30 @@ export const PROVIDER_ORDER: readonly ProviderName[] = [
 ];
 
 /**
- * One value per provider, keyed by name.
- *
- * A RECORD RATHER THAN THREE FIELDS, so adding a provider is one union member
- * and one order entry, and every site that reads all providers fails to
- * compile until it reads the new one too.
- *
- * @example
- * ```ts
- * const dry: ProviderRecord<boolean> = { synthetic: false, hyper: true, bedrock: false, openrouter: false, };
- * ```
+ One value per provider, keyed by name.
+ 
+ A RECORD RATHER THAN THREE FIELDS, so adding a provider is one union member
+ and one order entry, and every site that reads all providers fails to
+ compile until it reads the new one too.
+ 
+ @example
+ ```ts
+ const dry: ProviderRecord<boolean> = { synthetic: false, hyper: true, bedrock: false, openrouter: false, };
+ ```
  */
 export type ProviderRecord<ValueT,> = Readonly<Record<ProviderName, ValueT>>;
 
 /**
- * Builds one record by asking a function about each provider in order.
- *
- * @param of - value for one provider
- *
- * @returns Record with every provider filled
- *
- * @example
- * ```ts
- * const holds = providerRecord({ of: function none(): number { return 0; }, },);
- * ```
+ Builds one record by asking a function about each provider in order.
+ 
+ @param of - value for one provider
+ 
+ @returns Record with every provider filled
+ 
+ @example
+ ```ts
+ const holds = providerRecord({ of: function none(): number { return 0; }, },);
+ ```
  */
 export function providerRecord<ValueT,>(
   { of, }: { readonly of: (provider: ProviderName,) => ValueT; },
@@ -87,19 +87,19 @@ export function providerRecord<ValueT,>(
 }
 
 /**
- * Every provider but one, in spending order.
- *
- * @param provider - provider to leave out
- *
- * @returns The others, in the order the owner prefers to spend on them
- *
- * @example
- * ```ts
- * otherProviders({ provider: 'hyper', },);
- * // => ['synthetic', 'bedrock', 'openrouter',]
- * otherProviders({ provider: 'synthetic', },);
- * // => ['bedrock', 'hyper', 'openrouter',]
- * ```
+ Every provider but one, in spending order.
+ 
+ @param provider - provider to leave out
+ 
+ @returns The others, in the order the owner prefers to spend on them
+ 
+ @example
+ ```ts
+ otherProviders({ provider: 'hyper', },);
+ // => ['synthetic', 'bedrock', 'openrouter',]
+ otherProviders({ provider: 'synthetic', },);
+ // => ['bedrock', 'hyper', 'openrouter',]
+ ```
  */
 export function otherProviders(
   { provider, }: { readonly provider: ProviderName; },
@@ -110,16 +110,16 @@ export function otherProviders(
 }
 
 /**
- * Whether a string names a provider.
- *
- * @param value - untrusted spelling, from a CLI flag or a log line
- *
- * @returns Whether it is one of the provider names
- *
- * @example
- * ```ts
- * if (isProviderName(value,)) route(value,);
- * ```
+ Whether a string names a provider.
+ 
+ @param value - untrusted spelling, from a CLI flag or a log line
+ 
+ @returns Whether it is one of the provider names
+ 
+ @example
+ ```ts
+ if (isProviderName(value,)) route(value,);
+ ```
  */
 export function isProviderName(value: string,): value is ProviderName {
   return PROVIDER_ORDER.some(function names(candidate,): boolean {

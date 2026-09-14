@@ -56,32 +56,32 @@ export {
 } from './slice-cache-dir-read.ts';
 
 /**
- * Logger root for the namespaced slice cache.
+ Logger root for the namespaced slice cache.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * File suffix every persisted slice carries.
+ File suffix every persisted slice carries.
  */
 const JSON_SUFFIX = '.json';
 
 /**
- * Prefixes that belong to a named lane.
- *
- * DERIVED FROM `EVERY_SLICE_NAMESPACE` RATHER THAN RESTATED. This was a
- * hand-written list for as long as it existed, and forgetting to add a prefix
- * to it is silent: the repair lane is defined as everything NOT here, so it
- * adopts the unregistered files and its `discardNamespace` deletes them on the
- * next generation change while logging that it discarded its own slices.
- *
- * THAT OMISSION HAPPENED SIX TIMES, twice of them still live when this was
- * derived: `contest.` and `pairing.` were both missing, so a repair generation
- * change threw away an entry's contest ballots and its whole block pairing.
- * Both are bought from the roster, so both cost real calls to rebuy.
- *
- * The empty prefix is dropped because it is the repair lane's own: keeping it
- * would make `startsWith` true for every name and leave that lane owning
- * nothing at all.
+ Prefixes that belong to a named lane.
+ 
+ DERIVED FROM `EVERY_SLICE_NAMESPACE` RATHER THAN RESTATED. This was a
+ hand-written list for as long as it existed, and forgetting to add a prefix
+ to it is silent: the repair lane is defined as everything NOT here, so it
+ adopts the unregistered files and its `discardNamespace` deletes them on the
+ next generation change while logging that it discarded its own slices.
+ 
+ THAT OMISSION HAPPENED SIX TIMES, twice of them still live when this was
+ derived: `contest.` and `pairing.` were both missing, so a repair generation
+ change threw away an entry's contest ballots and its whole block pairing.
+ Both are bought from the roster, so both cost real calls to rebuy.
+ 
+ The empty prefix is dropped because it is the repair lane's own: keeping it
+ would make `startsWith` true for every name and leave that lane owning
+ nothing at all.
  */
 const CLAIMED_PREFIXES: readonly string[] = EVERY_SLICE_NAMESPACE
   .map(function toPrefix({ prefix, },): string {
@@ -93,18 +93,18 @@ const CLAIMED_PREFIXES: readonly string[] = EVERY_SLICE_NAMESPACE
 
 
 /**
- * Whether a file in a shared cache directory belongs to one lane.
- *
- * @param name - file name as `readdir` returned it
- *
- * @param namespace - lane asking
- *
- * @returns True when that lane owns the file
- *
- * @example
- * ```ts
- * if (belongsToNamespace({ name, namespace, },)) resumed.set(key, parsed,);
- * ```
+ Whether a file in a shared cache directory belongs to one lane.
+ 
+ @param name - file name as `readdir` returned it
+ 
+ @param namespace - lane asking
+ 
+ @returns True when that lane owns the file
+ 
+ @example
+ ```ts
+ if (belongsToNamespace({ name, namespace, },)) resumed.set(key, parsed,);
+ ```
  */
 export function belongsToNamespace(
   {
@@ -125,18 +125,18 @@ export function belongsToNamespace(
 }
 
 /**
- * Slice key a file name carries.
- *
- * @param name - file name owned by this lane
- *
- * @param namespace - lane owning it
- *
- * @returns Key the driver derived
- *
- * @example
- * ```ts
- * const key = keyOfSliceFile({ name, namespace, },);
- * ```
+ Slice key a file name carries.
+ 
+ @param name - file name owned by this lane
+ 
+ @param namespace - lane owning it
+ 
+ @returns Key the driver derived
+ 
+ @example
+ ```ts
+ const key = keyOfSliceFile({ name, namespace, },);
+ ```
  */
 export function keyOfSliceFile(
   {
@@ -155,18 +155,18 @@ export function keyOfSliceFile(
 }
 
 /**
- * File name one lane writes a key under.
- *
- * @param key - slice key
- *
- * @param namespace - lane writing it
- *
- * @returns File name inside the entry directory
- *
- * @example
- * ```ts
- * const name = sliceFileName({ key, namespace, },);
- * ```
+ File name one lane writes a key under.
+ 
+ @param key - slice key
+ 
+ @param namespace - lane writing it
+ 
+ @returns File name inside the entry directory
+ 
+ @example
+ ```ts
+ const name = sliceFileName({ key, namespace, },);
+ ```
  */
 export function sliceFileName(
   {
@@ -181,28 +181,28 @@ export function sliceFileName(
 }
 
 /**
- * Wraps one settled slice with the key it was stored under.
- *
- * WHY THE KEY IS INSIDE THE FILE as well as in its name. The name is what a
- * loader derives the key from, so a payload sitting under the wrong name is
- * resumed as though it belonged there, and the driver splices it into a slice
- * it was never computed for. That used to be caught downstream, by both lanes
- * refusing a record whose slice index disagreed with the one they asked for;
- * taking the index out of the cache key made that check wrong, since a record
- * now legitimately answers for any slice carrying the same texts. This is the
- * check that replaces it, and it tests the thing that actually matters: not
- * where the record sat, but what question it answered.
- *
- * @param key - key this slice is being stored under
- *
- * @param serialized - record as its lane serialized it
- *
- * @returns Envelope text to write
- *
- * @example
- * ```ts
- * const text = envelopedSlice({ key, serialized, },);
- * ```
+ Wraps one settled slice with the key it was stored under.
+ 
+ WHY THE KEY IS INSIDE THE FILE as well as in its name. The name is what a
+ loader derives the key from, so a payload sitting under the wrong name is
+ resumed as though it belonged there, and the driver splices it into a slice
+ it was never computed for. That used to be caught downstream, by both lanes
+ refusing a record whose slice index disagreed with the one they asked for;
+ taking the index out of the cache key made that check wrong, since a record
+ now legitimately answers for any slice carrying the same texts. This is the
+ check that replaces it, and it tests the thing that actually matters: not
+ where the record sat, but what question it answered.
+ 
+ @param key - key this slice is being stored under
+ 
+ @param serialized - record as its lane serialized it
+ 
+ @returns Envelope text to write
+ 
+ @example
+ ```ts
+ const text = envelopedSlice({ key, serialized, },);
+ ```
  */
 function envelopedSlice(
   {
@@ -220,19 +220,19 @@ function envelopedSlice(
 }
 
 /**
- * Reads one cache file's envelope, when it is one this loader wrote.
- *
- * @param parsed - parsed file contents
- *
- * @param key - key the file's NAME says it answers
- *
- * @returns Record inside, or nothing when the file is not an envelope or
- * answers a different key
- *
- * @example
- * ```ts
- * const record = recordOfEnvelope({ parsed, key, },);
- * ```
+ Reads one cache file's envelope, when it is one this loader wrote.
+ 
+ @param parsed - parsed file contents
+ 
+ @param key - key the file's NAME says it answers
+ 
+ @returns Record inside, or nothing when the file is not an envelope or
+ answers a different key
+ 
+ @example
+ ```ts
+ const record = recordOfEnvelope({ parsed, key, },);
+ ```
  */
 function recordOfEnvelope(
   {
@@ -253,22 +253,22 @@ function recordOfEnvelope(
 }
 
 /**
- * Loads one lane's settled slices, tolerating a missing directory and
- * half-written files.
- *
- * @param dir - per-entry cache directory
- *
- * @param namespace - lane loading
- *
- * @param isValue - guard deciding whether a parsed file is this lane's value;
- * anything it rejects is treated as absent and recomputed
- *
- * @returns Settled values keyed by slice key
- *
- * @example
- * ```ts
- * const resumed = await loadNamespacedSlices({ dir, namespace, isValue, },);
- * ```
+ Loads one lane's settled slices, tolerating a missing directory and
+ half-written files.
+ 
+ @param dir - per-entry cache directory
+ 
+ @param namespace - lane loading
+ 
+ @param isValue - guard deciding whether a parsed file is this lane's value;
+ anything it rejects is treated as absent and recomputed
+ 
+ @returns Settled values keyed by slice key
+ 
+ @example
+ ```ts
+ const resumed = await loadNamespacedSlices({ dir, namespace, isValue, },);
+ ```
  */
 export async function loadNamespacedSlices<ValueT,>(
   {
@@ -282,7 +282,7 @@ export async function loadNamespacedSlices<ValueT,>(
   },
 ): Promise<Map<string, ValueT>> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: loadNamespacedSlices.name,
@@ -290,12 +290,12 @@ export async function loadNamespacedSlices<ValueT,>(
   },);
 
   /**
-   * Settled values keyed by slice key.
+   Settled values keyed by slice key.
    */
   const resumed = new Map<string, ValueT>();
 
   /**
-   * File names present under the directory.
+   File names present under the directory.
    */
   const names = await readDirectoryNames({ dir, },);
   for (const name of names) {
@@ -306,7 +306,7 @@ export async function loadNamespacedSlices<ValueT,>(
       continue;
     try {
       /**
-       * Parsed JSON of this cache file, checked before it is trusted.
+       Parsed JSON of this cache file, checked before it is trusted.
        */
       /* oxlint-disable-next-line no-await-in-loop -- small per-entry cache read sequentially at setup */
       const parsed: unknown = JSON.parse(await readFile(
@@ -318,7 +318,7 @@ export async function loadNamespacedSlices<ValueT,>(
       ),);
 
       /**
-       * Key this file's NAME says it answers.
+       Key this file's NAME says it answers.
        */
       const key = keyOfSliceFile({
         name,
@@ -326,10 +326,10 @@ export async function loadNamespacedSlices<ValueT,>(
       },);
 
       /**
-       * Record inside, absent when the file is not an envelope this loader
-       * wrote or when it answers some other key. Both are treated as absent
-       * rather than as failures: a slice nobody can vouch for simply costs what
-       * an uncached one costs.
+       Record inside, absent when the file is not an envelope this loader
+       wrote or when it answers some other key. Both are treated as absent
+       rather than as failures: a slice nobody can vouch for simply costs what
+       an uncached one costs.
        */
       const record = recordOfEnvelope({
         parsed,
@@ -357,28 +357,28 @@ export async function loadNamespacedSlices<ValueT,>(
 
 
 /**
- * Opens one lane's slice cache inside a shared entry directory.
- *
- * A cache filled by a different pipeline is DISCARDED rather than resumed, and
- * only this lane's files are discarded. Resuming across pipelines is the one
- * generation defect no reader can catch: the settled artifact records a single
- * digest, so an entry built half from cached slices and half from current code
- * looks like ordinary work to every filter downstream.
- *
- * @param dir - per-entry cache directory, shared with other lanes
- *
- * @param generation - digest of the built pipeline this pass runs
- *
- * @param namespace - lane opening
- *
- * @param isValue - guard for this lane's stored value
- *
- * @returns Cache resuming this lane's settled slices and persisting new ones
- *
- * @example
- * ```ts
- * const cache = await openNamespacedCache({ dir, generation, namespace, isValue, },);
- * ```
+ Opens one lane's slice cache inside a shared entry directory.
+ 
+ A cache filled by a different pipeline is DISCARDED rather than resumed, and
+ only this lane's files are discarded. Resuming across pipelines is the one
+ generation defect no reader can catch: the settled artifact records a single
+ digest, so an entry built half from cached slices and half from current code
+ looks like ordinary work to every filter downstream.
+ 
+ @param dir - per-entry cache directory, shared with other lanes
+ 
+ @param generation - digest of the built pipeline this pass runs
+ 
+ @param namespace - lane opening
+ 
+ @param isValue - guard for this lane's stored value
+ 
+ @returns Cache resuming this lane's settled slices and persisting new ones
+ 
+ @example
+ ```ts
+ const cache = await openNamespacedCache({ dir, generation, namespace, isValue, },);
+ ```
  */
 export async function openNamespacedCache<ValueT,>(
   {
@@ -399,7 +399,7 @@ export async function openNamespacedCache<ValueT,>(
   );
 
   /**
-   * Pipeline that filled this lane's slices, empty when it never wrote here.
+   Pipeline that filled this lane's slices, empty when it never wrote here.
    */
   const cached = await readNamespaceGeneration({
     dir,
@@ -407,8 +407,8 @@ export async function openNamespacedCache<ValueT,>(
   },);
 
   /**
-   * This lane's settled slices, kept only when the pipeline that produced them
-   * is the one running now.
+   This lane's settled slices, kept only when the pipeline that produced them
+   is the one running now.
    */
   const resumed = (cached === generation)
     ? await loadNamespacedSlices({
@@ -462,21 +462,21 @@ export async function openNamespacedCache<ValueT,>(
 }
 
 /**
- * Removes one lane's slices from a shared directory, leaving every other lane's
- * work in place.
- *
- * @param dir - per-entry cache directory
- *
- * @param namespace - lane whose slices go
- *
- * @param cached - digest those slices were filled by, for the log line
- *
- * @example
- * ```ts
- * await discardNamespace({ dir, namespace, cached, },);
- * ```
- *
- * @internal
+ Removes one lane's slices from a shared directory, leaving every other lane's
+ work in place.
+ 
+ @param dir - per-entry cache directory
+ 
+ @param namespace - lane whose slices go
+ 
+ @param cached - digest those slices were filled by, for the log line
+ 
+ @example
+ ```ts
+ await discardNamespace({ dir, namespace, cached, },);
+ ```
+ 
+ @internal
  */
 export async function discardNamespace(
   {
@@ -490,7 +490,7 @@ export async function discardNamespace(
   },
 ): Promise<void> {
   /**
-   * This lane's files, named before any of them is removed.
+   This lane's files, named before any of them is removed.
    */
   const owned = (await readDirectoryNames({ dir, },))
     .filter(function isOwned(name,): boolean {
@@ -501,7 +501,7 @@ export async function discardNamespace(
     },);
   if (owned.length > 0) {
     /**
-     * Logger pre-tagged with this function's name.
+     Logger pre-tagged with this function's name.
      */
     const dl = tagged({
       tag: discardNamespace.name,

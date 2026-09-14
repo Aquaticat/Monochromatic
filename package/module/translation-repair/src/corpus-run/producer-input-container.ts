@@ -12,58 +12,58 @@ import { PRODUCER_INPUT_PATHS, } from './producer-input-paths.ts';
 //region Fixed no-network input container contract
 
 /**
- * Only the owning host path inserts this private child-mode sentinel.
+ Only the owning host path inserts this private child-mode sentinel.
  */
 export const PRODUCER_INPUT_CHILD_SENTINEL = '--sealed-preparation-child';
 /**
- * Host and child agree on one bounded reconstruction envelope.
+ Host and child agree on one bounded reconstruction envelope.
  */
 export const PRODUCER_INPUT_LIMITS = {
   /**
-   * Hard resident-memory allowance.
+   Hard resident-memory allowance.
    */
   memoryBytes: 2_147_483_648,
   /**
-   * Combined memory-plus-swap request retains the measured 2 GiB swap allowance.
+   Combined memory-plus-swap request retains the measured 2 GiB swap allowance.
    */
   memoryAndSwapBytes: 4_294_967_296,
   /**
-   * CPU quota is checked independently from its period.
+   CPU quota is checked independently from its period.
    */
   cpuQuota: 200_000,
   /**
-   * Explicit period avoids interpreting an unspecified native default.
+   Explicit period avoids interpreting an unspecified native default.
    */
   cpuPeriod: 100_000,
   /**
-   * Process count remains independent of input cardinality.
+   Process count remains independent of input cardinality.
    */
   pids: 512,
   /**
-   * A stopped host cannot leave an unbounded reconstruction container.
+   A stopped host cannot leave an unbounded reconstruction container.
    */
   seconds: 300,
   /**
-   * Temporary storage cannot become an unbounded writable input channel.
+   Temporary storage cannot become an unbounded writable input channel.
    */
   temporaryBytes: 67_108_864,
 } as const;
 
 /**
- * Encodes Podman's CSV grammar at the final bind-mount syntax boundary.
- *
- * @param source - independently authorized canonical host path
- *
- * @param target - fixed child role path
- *
- * @param writable - only private output permits writes
- *
- * @returns Native mount argument, never shell text
- *
- * @example
- * ```ts
- * const argument = producerInputMount({ source, target: '/runtime', writable: false });
- * ```
+ Encodes Podman's CSV grammar at the final bind-mount syntax boundary.
+ 
+ @param source - independently authorized canonical host path
+ 
+ @param target - fixed child role path
+ 
+ @param writable - only private output permits writes
+ 
+ @returns Native mount argument, never shell text
+ 
+ @example
+ ```ts
+ const argument = producerInputMount({ source, target: '/runtime', writable: false });
+ ```
  */
 function producerInputMount({
   source,
@@ -85,21 +85,21 @@ function producerInputMount({
 }
 
 /**
- * Creates only the fixed input-reconstruction container, which the host inspects before starting Node.
- * All paths and identities derive from one initialized host owner rather than independent caller arguments.
- *
- * @param host - cross-bound launch, run, executables and private output
- *
- * @returns Native Podman creation arguments with no arbitrary entry or live operation
- *
- * @example
- * ```ts
- * const arguments_ = producerInputContainerArgs(host);
- * ```
+ Creates only the fixed input-reconstruction container, which the host inspects before starting Node.
+ All paths and identities derive from one initialized host owner rather than independent caller arguments.
+ 
+ @param host - cross-bound launch, run, executables and private output
+ 
+ @returns Native Podman creation arguments with no arbitrary entry or live operation
+ 
+ @example
+ ```ts
+ const arguments_ = producerInputContainerArgs(host);
+ ```
  */
 export function producerInputContainerArgs(host: ProducerInputHost): readonly string[] {
   /**
-   * Exact environment is shared with the child validator, not inherited from the host or image.
+   Exact environment is shared with the child validator, not inherited from the host or image.
    */
   const environment = producerInputChildEnvironment({
     runId: host.run

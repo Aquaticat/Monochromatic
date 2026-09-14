@@ -22,9 +22,9 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // this output is safe to paste anywhere the artifacts themselves are not.
 
 /**
- * Column widths of the author table, wide enough that no row runs into its
- * neighbour. Object-literal values, so the numbers stay readable here rather
- * than becoming named constants nobody can picture.
+ Column widths of the author table, wide enough that no row runs into its
+ neighbour. Object-literal values, so the numbers stay readable here rather
+ than becoming named constants nobody can picture.
  */
 const COLUMN = {
   model: 52,
@@ -34,52 +34,52 @@ const COLUMN = {
 } as const;
 
 /**
- * One author's share of each arm.
+ One author's share of each arm.
  */
 type AuthorRow = {
   /**
-   * Model that proposed the claims.
+   Model that proposed the claims.
    */
   readonly modelId: string;
 
   /**
-   * Claims of theirs the panel accepted.
+   Claims of theirs the panel accepted.
    */
   readonly accepted: number;
 
   /**
-   * Claims of theirs the panel did not accept.
+   Claims of theirs the panel did not accept.
    */
   readonly control: number;
 
   /**
-   * Claims they authored alone, across both arms.
+   Claims they authored alone, across both arms.
    */
   readonly sole: number;
 };
 
 /**
- * Tallies each author's claims per arm.
- *
- * Counts a claim once for EVERY author, not once per claim. The question the
- * crosscheck asks is per author, so a claim two critics proposed belongs to
- * both their populations; summing the column therefore exceeds the claim count
- * whenever critics agreed, which on this run they almost never do.
- *
- * @param items - judgeable claims from the census
- *
- * @returns One row per author, most accepted claims first
- *
- * @example
- * ```ts
- * const rows = tallyAuthors({ items, },);
- * ```
+ Tallies each author's claims per arm.
+ 
+ Counts a claim once for EVERY author, not once per claim. The question the
+ crosscheck asks is per author, so a claim two critics proposed belongs to
+ both their populations; summing the column therefore exceeds the claim count
+ whenever critics agreed, which on this run they almost never do.
+ 
+ @param items - judgeable claims from the census
+ 
+ @returns One row per author, most accepted claims first
+ 
+ @example
+ ```ts
+ const rows = tallyAuthors({ items, },);
+ ```
  */
 function tallyAuthors(
   { items, }: { readonly items: readonly CrosscheckItem[]; },
 ): readonly AuthorRow[] {
   /**
-   * Running counts keyed by model id.
+   Running counts keyed by model id.
    */
   const rows = new Map<string, {
     accepted: number;
@@ -94,13 +94,13 @@ function tallyAuthors(
     } of items
   ) {
     /**
-     * Whether one author raised this claim alone, computed once per claim
-     * rather than once per author of it.
+     Whether one author raised this claim alone, computed once per claim
+     rather than once per author of it.
      */
     const soleAuthored = proposers.length === 1;
     for (const modelId of proposers) {
       /**
-       * This author's row, created on first sight.
+       This author's row, created on first sight.
        */
       const row = rows.get(modelId,) ?? {
         accepted: 0,
@@ -141,14 +141,14 @@ function tallyAuthors(
 }
 
 /**
- * Renders the author table header.
- *
- * @returns Header line
- *
- * @example
- * ```ts
- * console.log(headerLine(),);
- * ```
+ Renders the author table header.
+ 
+ @returns Header line
+ 
+ @example
+ ```ts
+ console.log(headerLine(),);
+ ```
  */
 function headerLine(): string {
   return [
@@ -165,23 +165,23 @@ function headerLine(): string {
 }
 
 /**
- * Renders one author's row, saying plainly whether each arm can carry a rate.
- *
- * @param row - one author's counts
- *
- * @returns Row line
- *
- * @example
- * ```ts
- * console.log(authorLine({ row, },),);
- * ```
+ Renders one author's row, saying plainly whether each arm can carry a rate.
+ 
+ @param row - one author's counts
+ 
+ @returns Row line
+ 
+ @example
+ ```ts
+ console.log(authorLine({ row, },),);
+ ```
  */
 function authorLine({ row, }: { readonly row: AuthorRow; },): string {
   /**
-   * Which arms hold enough claims for a rate to be reported over them.
-   *
-   * Both arms must clear it independently. A crosscheck reports the GAP
-   * between them, and a gap is only as trustworthy as its thinner side.
+   Which arms hold enough claims for a rate to be reported over them.
+   
+   Both arms must clear it independently. A crosscheck reports the GAP
+   between them, and a gap is only as trustworthy as its thinner side.
    */
   const clears = [
     (row.accepted >= MIN_JUDGED_CLAIMS) ? 'accepted' : '',
@@ -204,16 +204,16 @@ function authorLine({ row, }: { readonly row: AuthorRow; },): string {
 }
 
 /**
- * Reads a run's artifacts and prints the crosscheck population.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Reads a run's artifacts and prints the crosscheck population.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Directory this run wrote artifacts into.
+   Directory this run wrote artifacts into.
    */
   const artifactsDir = join(
     await resolveRunsDir(),
@@ -229,7 +229,7 @@ async function main(): Promise<void> {
   console.log(`SOURCE ${artifactsDir}`,);
 
   /**
-   * Entries that parsed, and the artifacts that did not.
+   Entries that parsed, and the artifacts that did not.
    */
   const {
     entries,
@@ -246,7 +246,7 @@ async function main(): Promise<void> {
   }
 
   /**
-   * The enumerated population, both arms.
+   The enumerated population, both arms.
    */
   const census = buildCrosscheckCensus({
     entries,
@@ -254,8 +254,8 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * Judgeable and unjudgeable claims, bound to names so counting them reads as
-   * one member step rather than as a chain through the census.
+   Judgeable and unjudgeable claims, bound to names so counting them reads as
+   one member step rather than as a chain through the census.
    */
   const {
     items,
@@ -263,7 +263,7 @@ async function main(): Promise<void> {
   } = census;
 
   /**
-   * Claims per arm, counted separately because `undecided` belongs in no rate.
+   Claims per arm, counted separately because `undecided` belongs in no rate.
    */
   const accepted = items
     .filter(function isAccepted({ arm, },): boolean {
@@ -271,7 +271,7 @@ async function main(): Promise<void> {
     },);
 
   /**
-   * Claims the panel decided against, the only legitimate control.
+   Claims the panel decided against, the only legitimate control.
    */
   const control = items
     .filter(function isControl({ arm, },): boolean {
@@ -279,7 +279,7 @@ async function main(): Promise<void> {
     },);
 
   /**
-   * Claims the panel declined to decide, held out of every rate.
+   Claims the panel declined to decide, held out of every rate.
    */
   const undecided = items
     .filter(function isUndecided({ arm, },): boolean {
@@ -327,7 +327,7 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Control-arm claims broken down by why the panel refused them.
+   Control-arm claims broken down by why the panel refused them.
    */
   const byStatus: Record<string, number> = {};
   for (

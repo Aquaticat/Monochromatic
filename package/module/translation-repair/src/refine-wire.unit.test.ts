@@ -1,19 +1,19 @@
 /**
- * Tests for the refinement wire guard and its binding step.
- *
- * Both read untrusted model output. `isRefineReportWire` is the only thing
- * standing between a malformed reply and code that assumes `rewrites` is an
- * array of well-shaped rewrites, and `resolveRefineRewrites` decides what a
- * miscounted paragraph number does. Neither had a test.
- *
- * The binding step's stated contract is that it drops rather than throws: a
- * rewriter miscounting its own list says nothing about the paragraphs it got
- * right. So the cases below check that a bad item is recorded AND dropped,
- * while its well-formed neighbours survive.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the refinement wire guard and its binding step.
+ 
+ Both read untrusted model output. `isRefineReportWire` is the only thing
+ standing between a malformed reply and code that assumes `rewrites` is an
+ array of well-shaped rewrites, and `resolveRefineRewrites` decides what a
+ miscounted paragraph number does. Neither had a test.
+ 
+ The binding step's stated contract is that it drops rather than throws: a
+ rewriter miscounting its own list says nothing about the paragraphs it got
+ right. So the cases below check that a bad item is recorded AND dropped,
+ while its well-formed neighbours survive.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -29,20 +29,20 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds an eligible paragraph envelope.
- *
- * @param envelopeId - handle the operation carries
- *
- * @param startOffset - absolute start of the paragraph
- *
- * @param baseText - paragraph text the rewrite replaces
- *
- * @returns Envelope in prompt numbering order
- *
- * @example
- * ```ts
- * const envelope = paragraph({ envelopeId: 'envelope/0', startOffset: 0, baseText: 'The cat naps.', },);
- * ```
+ Builds an eligible paragraph envelope.
+ 
+ @param envelopeId - handle the operation carries
+ 
+ @param startOffset - absolute start of the paragraph
+ 
+ @param baseText - paragraph text the rewrite replaces
+ 
+ @returns Envelope in prompt numbering order
+ 
+ @example
+ ```ts
+ const envelope = paragraph({ envelopeId: 'envelope/0', startOffset: 0, baseText: 'The cat naps.', },);
+ ```
  */
 function paragraph(
   {
@@ -66,7 +66,7 @@ function paragraph(
 }
 
 /**
- * Two eligible paragraphs, which makes paragraph 3 out of range.
+ Two eligible paragraphs, which makes paragraph 3 out of range.
  */
 const ENVELOPES: readonly EditableEnvelope[] = [
   paragraph({
@@ -260,7 +260,7 @@ await describe({
         + 'detect a stale base',
       fn: async () => {
         /**
-         * Resolution over both paragraphs, named out of order on purpose.
+         Resolution over both paragraphs, named out of order on purpose.
          */
         const { operations, findings, } = resolveRefineRewrites({
           wire: {
@@ -298,7 +298,7 @@ await describe({
         + 'right',
       fn: async () => {
         /**
-         * Resolution where the first rewrite names a paragraph that is not there.
+         Resolution where the first rewrite names a paragraph that is not there.
          */
         const { operations, findings, } = resolveRefineRewrites({
           wire: {
@@ -328,7 +328,7 @@ await describe({
         + 'produce overlapping operations',
       fn: async () => {
         /**
-         * Resolution where paragraph 1 is named twice.
+         Resolution where paragraph 1 is named twice.
          */
         const { operations, findings, } = resolveRefineRewrites({
           wire: {
@@ -357,7 +357,7 @@ await describe({
         + 'one scorecard reading shows the whole shape of a bad reply',
       fn: async () => {
         /**
-         * Resolution mixing two unknown paragraphs and a duplicate.
+         Resolution mixing two unknown paragraphs and a duplicate.
          */
         const { operations, findings, } = resolveRefineRewrites({
           wire: {
@@ -398,7 +398,7 @@ await describe({
         + 'reported as an irregularity',
       fn: async () => {
         /**
-         * Resolution over an empty proposal list.
+         Resolution over an empty proposal list.
          */
         const { operations, findings, } = resolveRefineRewrites({
           wire: { rewrites: [], },
@@ -416,7 +416,7 @@ await describe({
         + 'index zero of an empty list',
       fn: async () => {
         /**
-         * Resolution against no eligible paragraphs at all.
+         Resolution against no eligible paragraphs at all.
          */
         const { operations, findings, } = resolveRefineRewrites({
           wire: {

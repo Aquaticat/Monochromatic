@@ -1,15 +1,15 @@
 /**
- * Tests for running both lanes over one preparation.
- *
- * What this covers that neither lane's own tests can: that the two outputs come
- * back side by side with nothing merged or preferred, that the preparation's
- * alignment findings are reported once rather than per lane, that the lanes run
- * in the stated order, and that a failure in the first lane stops the second
- * from spending anything.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for running both lanes over one preparation.
+ 
+ What this covers that neither lane's own tests can: that the two outputs come
+ back side by side with nothing merged or preferred, that the preparation's
+ alignment findings are reported once rather than per lane, that the lanes run
+ in the stated order, and that a failure in the first lane stops the second
+ from spending anything.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -35,17 +35,17 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the driver under test.
+ Logger for the driver under test.
  */
 const l = tagged({ tag: 'document-lanes-test', },);
 
 /**
- * Deadline per exchange, short because nothing here reaches a provider.
+ Deadline per exchange, short because nothing here reaches a provider.
  */
 const CALL_TIMEOUT_MS = 50;
 
 /**
- * Original document: two sections, each one paragraph.
+ Original document: two sections, each one paragraph.
  */
 const SOURCE_TEXT = `## 第一节
 
@@ -57,7 +57,7 @@ const SOURCE_TEXT = `## 第一节
 `;
 
 /**
- * Translation as it stands, awkward but complete.
+ Translation as it stands, awkward but complete.
  */
 const TARGET_TEXT = `## Section one
 
@@ -69,12 +69,12 @@ On the windowsill there is being a bird.
 `;
 
 /**
- * Sentence every translator returns for the first section.
+ Sentence every translator returns for the first section.
  */
 const FRESH = 'The cat naps on the windowsill.';
 
 /**
- * Models that produce and judge.
+ Models that produce and judge.
  */
 const ROSTER: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
@@ -86,7 +86,7 @@ const ROSTER: readonly RosterModelId[] = [
 ];
 
 /**
- * Translate lane roster.
+ Translate lane roster.
  */
 const TRANSLATE_MODELS: TranslateModels = {
   translatorModelIds: ROSTER.slice(
@@ -97,8 +97,8 @@ const TRANSLATE_MODELS: TranslateModels = {
 };
 
 /**
- * Repair lane roster. The critics here raise nothing, so the stages after them
- * never seat anyone.
+ Repair lane roster. The critics here raise nothing, so the stages after them
+ never seat anyone.
  */
 const REPAIR_MODELS: RepairModels = {
   criticModelIds: ROSTER.slice(
@@ -125,13 +125,13 @@ const REPAIR_MODELS: RepairModels = {
 };
 
 /**
- * Every schema the script served, in order, so a case can say which lane ran
- * first without reading a clock.
+ Every schema the script served, in order, so a case can say which lane ran
+ first without reading a clock.
  */
 type SchemaLog = string[];
 
 /**
- * Successful model calls in flight for one stage.
+ Successful model calls in flight for one stage.
  */
 type StageConcurrency = {
   now: number;
@@ -139,7 +139,7 @@ type StageConcurrency = {
 };
 
 /**
- * Repair and translate activity observed at client boundary.
+ Repair and translate activity observed at client boundary.
  */
 type LaneConcurrency = {
   readonly critic: StageConcurrency;
@@ -147,24 +147,24 @@ type LaneConcurrency = {
 };
 
 /**
- * Client serving both lanes from one script.
- *
- * @param served - schema names appended in call order
- *
- * @param controller - abort the script may fire, standing in for the entry
- * deadline
- *
- * @param abortAfterCriticCalls - critic calls served before the script aborts;
- * absent means it never does
- *
- * @param activity - optional overlap instrument for both lane entry stages
- *
- * @returns Client honoring the script
- *
- * @example
- * ```ts
- * const client = lanesClient({ served, controller, },);
- * ```
+ Client serving both lanes from one script.
+ 
+ @param served - schema names appended in call order
+ 
+ @param controller - abort the script may fire, standing in for the entry
+ deadline
+ 
+ @param abortAfterCriticCalls - critic calls served before the script aborts;
+ absent means it never does
+ 
+ @param activity - optional overlap instrument for both lane entry stages
+ 
+ @returns Client honoring the script
+ 
+ @example
+ ```ts
+ const client = lanesClient({ served, controller, },);
+ ```
  */
 function lanesClient(
   {
@@ -187,7 +187,7 @@ function lanesClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Schema the caller asked for, which names the stage.
+       Schema the caller asked for, which names the stage.
        */
       const schema = request.responseFormat
         ?.json_schema
@@ -195,7 +195,7 @@ function lanesClient(
         ?? 'unnamed';
 
       /**
-       * Everything the caller sent, which carries the slice original.
+       Everything the caller sent, which carries the slice original.
        */
       const content = request.messages
         .map(function toContent(message,) {
@@ -205,7 +205,7 @@ function lanesClient(
       served.push(schema,);
 
       /**
-       * Instrument for this lane's entry stage, when requested.
+       Instrument for this lane's entry stage, when requested.
        */
       const stageActivity = schema === 'critic_report'
         ? activity?.critic
@@ -221,8 +221,8 @@ function lanesClient(
       }
 
       /**
-       * Critic calls served so far, which is what the script counts down to
-       * its abort: it stands in for an entry deadline landing mid-lane.
+       Critic calls served so far, which is what the script counts down to
+       its abort: it stands in for an entry deadline landing mid-lane.
        */
       const criticCalls = served.filter(function isCritic(name,) {
         return name === 'critic_report';
@@ -237,7 +237,7 @@ function lanesClient(
         throw new Error('exchange torn down by abort',);
 
       /**
-       * Reply for whichever stage asked, keyed by its schema.
+       Reply for whichever stage asked, keyed by its schema.
        */
       const value: unknown = replyFor({
         schema,
@@ -258,26 +258,26 @@ function lanesClient(
 }
 
 /**
- * Scripted reply for one stage.
- *
- * The repair lane's critics find nothing, so that lane settles every slice
- * unchanged and the naturalness lane leaves each paragraph alone. The translate
- * lane renders each slice afresh and its judges pick that rendering. So the two
- * lanes disagree about the document by construction, which is what makes "both
- * outputs, neither chosen" a testable claim.
- *
- * @param schema - schema name the stage asked for
- *
- * @param content - everything the stage sent
- *
- * @returns Wire value for that stage
- *
- * @throws {@link Error} when a stage this script does not serve asks
- *
- * @example
- * ```ts
- * const value = replyFor({ schema: 'critic_report', content, },);
- * ```
+ Scripted reply for one stage.
+ 
+ The repair lane's critics find nothing, so that lane settles every slice
+ unchanged and the naturalness lane leaves each paragraph alone. The translate
+ lane renders each slice afresh and its judges pick that rendering. So the two
+ lanes disagree about the document by construction, which is what makes "both
+ outputs, neither chosen" a testable claim.
+ 
+ @param schema - schema name the stage asked for
+ 
+ @param content - everything the stage sent
+ 
+ @returns Wire value for that stage
+ 
+ @throws {@link Error} when a stage this script does not serve asks
+ 
+ @example
+ ```ts
+ const value = replyFor({ schema: 'critic_report', content, },);
+ ```
  */
 function replyFor(
   {
@@ -307,16 +307,16 @@ function replyFor(
 }
 
 /**
- * Renders one slice the way a translator that respected block structure would.
- *
- * @param content - translator prompt, which carries the slice original
- *
- * @returns Rendering for that slice
- *
- * @example
- * ```ts
- * const rendering = renderingFor({ content, },);
- * ```
+ Renders one slice the way a translator that respected block structure would.
+ 
+ @param content - translator prompt, which carries the slice original
+ 
+ @returns Rendering for that slice
+ 
+ @example
+ ```ts
+ const rendering = renderingFor({ content, },);
+ ```
  */
 function renderingFor({ content, }: { readonly content: string; },): string {
   if (content.includes('第一节',))
@@ -327,18 +327,18 @@ function renderingFor({ content, }: { readonly content: string; },): string {
 }
 
 /**
- * Finds the one-based candidate index whose rendering carries a needle.
- *
- * @param content - judge user message
- *
- * @param needle - text the wanted candidate contains
- *
- * @returns One-based index, or zero when no candidate carries it
- *
- * @example
- * ```ts
- * const best = pickCandidate({ content, needle: FRESH, },);
- * ```
+ Finds the one-based candidate index whose rendering carries a needle.
+ 
+ @param content - judge user message
+ 
+ @param needle - text the wanted candidate contains
+ 
+ @returns One-based index, or zero when no candidate carries it
+ 
+ @example
+ ```ts
+ const best = pickCandidate({ content, needle: FRESH, },);
+ ```
  */
 function pickCandidate(
   {
@@ -350,17 +350,17 @@ function pickCandidate(
   },
 ): number {
   /**
-   * Sheet split at each candidate heading; the first piece is the evidence.
+   Sheet split at each candidate heading; the first piece is the evidence.
    */
   const [, ...blocks] = content.split('CANDIDATE ',);
   for (const block of blocks) {
     /**
-     * Heading line carrying this candidate's number.
+     Heading line carrying this candidate's number.
      */
     const [heading = '',] = block.split('\n',);
 
     /**
-     * Number the heading states.
+     Number the heading states.
      */
     const index = Math.trunc(Number(heading,),);
     if (Number.isInteger(index,) && block.includes(needle,))
@@ -370,23 +370,23 @@ function pickCandidate(
 }
 
 /**
- * Runs both lanes over the fixture pair.
- *
- * @param served - schema log, passed in so a case expecting a REJECTION can
- * still read what was bought
- *
- * @param abortAfterCriticCalls - critic calls served before the script aborts
- *
- * @param overlap - most slices each lane keeps in flight
- *
- * @param activity - optional overlap instrument for both lane entry stages
- *
- * @returns Both lane results
- *
- * @example
- * ```ts
- * const lanes = await runLanes({ served: [], },);
- * ```
+ Runs both lanes over the fixture pair.
+ 
+ @param served - schema log, passed in so a case expecting a REJECTION can
+ still read what was bought
+ 
+ @param abortAfterCriticCalls - critic calls served before the script aborts
+ 
+ @param overlap - most slices each lane keeps in flight
+ 
+ @param activity - optional overlap instrument for both lane entry stages
+ 
+ @returns Both lane results
+ 
+ @example
+ ```ts
+ const lanes = await runLanes({ served: [], },);
+ ```
  */
 async function runLanes(
   {
@@ -408,7 +408,7 @@ async function runLanes(
   },
 ) {
   /**
-   * Run steering, which the script may abort part way through.
+   Run steering, which the script may abort part way through.
    */
   const controller = new AbortController();
   return await runDocumentLanes({
@@ -452,7 +452,7 @@ await describe({
         + 'downstream',
       fn: async () => {
         /**
-         * Schemas the run served, in order.
+         Schemas the run served, in order.
          */
         const served: SchemaLog = [];
 
@@ -470,11 +470,11 @@ await describe({
         + 'lanes reading was minutes old by the time the writers were asked',
       fn: async () => {
         /**
-         * Schemas the run served, in order.
+         Schemas the run served, in order.
          */
         const served: SchemaLog = [];
         /**
-         * How many calls the repair lane had made when the translate lane re-seated, and how often.
+         How many calls the repair lane had made when the translate lane re-seated, and how often.
          */
         const reseated = {
           times: 0,
@@ -500,11 +500,11 @@ await describe({
         + 'second face, a hold two minutes into a phase',
       fn: async () => {
         /**
-         * Schemas the run served, in order.
+         Schemas the run served, in order.
          */
         const served: SchemaLog = [];
         /**
-         * Lanes asked, in the order asked.
+         Lanes asked, in the order asked.
          */
         const asked: string[] = [];
         const lanes = await runLanes({
@@ -514,7 +514,7 @@ await describe({
           },
         },);
         /**
-         * Slices both lanes ran over.
+         Slices both lanes ran over.
          */
         const sliceCount = prepareDocumentPair({
           sourceText: SOURCE_TEXT,
@@ -557,7 +557,7 @@ await describe({
         + 'positive controls prove each stage instrument distinguishes one slice from two',
       fn: async () => {
         /**
-         * Activity under default sequential admission.
+         Activity under default sequential admission.
          */
         const serial: LaneConcurrency = {
           critic: {
@@ -576,7 +576,7 @@ await describe({
         },);
 
         /**
-         * Activity under two slices admitted per lane.
+         Activity under two slices admitted per lane.
          */
         const overlapped: LaneConcurrency = {
           critic: {
@@ -606,7 +606,7 @@ await describe({
         + 'writing them over the archive reproduces exactly that lane`s text',
       fn: async () => {
         /**
-         * Schemas the run served, in order.
+         Schemas the run served, in order.
          */
         const served: SchemaLog = [];
 
@@ -631,8 +631,8 @@ await describe({
           .preparationIdentity,).toMatch('sha256-preparation-v2:',);
 
         /**
-         * Slices the translate lane's document carries a change for, read off
-         * its ledger rather than off its index set.
+         Slices the translate lane's document carries a change for, read off
+         its ledger rather than off its index set.
          */
         const translateShipped = lanes.translateDelivery
           .records
@@ -647,8 +647,8 @@ await describe({
           .changedSliceIndices,);
 
         /**
-         * Whether any repair row claims the document carries a change, which
-         * this fixture's repair lane found nothing to make.
+         Whether any repair row claims the document carries a change, which
+         this fixture's repair lane found nothing to make.
          */
         const repairShipped = lanes.repairDelivery
           .records
@@ -666,19 +666,19 @@ await describe({
         + 'while every translate slice is cached as it finishes',
       fn: async () => {
         /**
-         * Schemas the run served, in order.
+         Schemas the run served, in order.
          */
         const served: SchemaLog = [];
 
         await runLanes({ served, },);
 
         /**
-         * First critic call, which only the repair lane makes.
+         First critic call, which only the repair lane makes.
          */
         const firstRepair = served.indexOf('critic_report',);
 
         /**
-         * First translator call, which only the translate lane makes.
+         First translator call, which only the translate lane makes.
          */
         const firstTranslate = served.indexOf('translation_report',);
         expect(firstRepair,).toBeGreaterThanOrEqual(0,);
@@ -693,13 +693,13 @@ await describe({
         + 'lane would count one defect in the archive twice',
       fn: async () => {
         /**
-         * Schemas the run served, in order.
+         Schemas the run served, in order.
          */
         const served: SchemaLog = [];
 
         /**
-         * Preparation the assertion compares against, made the same way the
-         * driver makes it.
+         Preparation the assertion compares against, made the same way the
+         driver makes it.
          */
         const prepared = prepareDocumentPair({
           sourceText: SOURCE_TEXT,
@@ -720,17 +720,17 @@ await describe({
         + 'lane from spending a whole document',
       fn: async () => {
         /**
-         * Schemas the run served, read after the rejection.
+         Schemas the run served, read after the rejection.
          */
         const served: SchemaLog = [];
 
         /**
-         * Failure the run raised.
-         *
-         * The repair lane's own cache store fails on the first settled slice,
-         * which is a failure inside the first lane with nothing aborted
-         * anywhere: the signal stays live throughout, so only the driver's own
-         * stopping can keep the translate lane from spending a whole document.
+         Failure the run raised.
+         
+         The repair lane's own cache store fails on the first settled slice,
+         which is a failure inside the first lane with nothing aborted
+         anywhere: the signal stays live throughout, so only the driver's own
+         stopping can keep the translate lane from spending a whole document.
          */
         let caught: unknown;
         try {
@@ -760,12 +760,12 @@ await describe({
         + 'driver that caught and continued would produce',
       fn: async () => {
         /**
-         * Schemas the run served, in order, read after the rejection.
+         Schemas the run served, in order, read after the rejection.
          */
         const served: SchemaLog = [];
 
         /**
-         * Failure the run raised.
+         Failure the run raised.
          */
         let caught: unknown;
         try {
@@ -791,7 +791,7 @@ await describe({
         + 'which is the cost this check exists to spare them',
       fn: async () => {
         /**
-         * Failure the driver raised before either lane started.
+         Failure the driver raised before either lane started.
          */
         let caught: unknown;
         try {
@@ -844,7 +844,7 @@ await describe({
         + 'documents that later analysis reads as pages needing no repair',
       fn: async () => {
         /**
-         * Failure the driver raised before either lane started.
+         Failure the driver raised before either lane started.
          */
         let caught: unknown;
         try {

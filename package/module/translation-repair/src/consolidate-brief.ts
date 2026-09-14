@@ -21,16 +21,16 @@ import type { LaneContestBallot, } from './lane-contest-wire.ts';
 // author. `self-preference.ts` exists because that weighing is measurable.
 
 /**
- * Blank findings a judge may return, dropped before rendering.
- *
- * @param findings - findings as a judge wrote them
- *
- * @returns Same findings, trimmed, without the ones saying nothing
- *
- * @example
- * ```ts
- * const kept = usableFindings({ findings: [ ' repair ', '', ], },);
- * ```
+ Blank findings a judge may return, dropped before rendering.
+ 
+ @param findings - findings as a judge wrote them
+ 
+ @returns Same findings, trimmed, without the ones saying nothing
+ 
+ @example
+ ```ts
+ const kept = usableFindings({ findings: [ ' repair ', '', ], },);
+ ```
  */
 function usableFindings(
   { findings, }: { readonly findings: readonly string[]; },
@@ -45,18 +45,18 @@ function usableFindings(
 }
 
 /**
- * Renders one list of findings under its heading, or nothing.
- *
- * @param heading - what this list of findings is about
- *
- * @param findings - findings as that judge wrote them
- *
- * @returns Lines for this list, empty when the judge listed nothing
- *
- * @example
- * ```ts
- * const lines = renderFindingList({ heading: 'Unsupported', findings, },);
- * ```
+ Renders one list of findings under its heading, or nothing.
+ 
+ @param heading - what this list of findings is about
+ 
+ @param findings - findings as that judge wrote them
+ 
+ @returns Lines for this list, empty when the judge listed nothing
+ 
+ @example
+ ```ts
+ const lines = renderFindingList({ heading: 'Unsupported', findings, },);
+ ```
  */
 function renderFindingList(
   {
@@ -68,7 +68,7 @@ function renderFindingList(
   },
 ): readonly string[] {
   /**
-   * Findings that say something.
+   Findings that say something.
    */
   const kept = usableFindings({ findings, },);
   if (kept.length === 0)
@@ -82,18 +82,18 @@ function renderFindingList(
 }
 
 /**
- * Renders one judge's reading of the two candidates.
- *
- * @param ballot - that judge's ballot
- *
- * @param position - which judge this is, counted from one
- *
- * @returns Lines for this judge
- *
- * @example
- * ```ts
- * const lines = renderBallot({ ballot, position: 1, },);
- * ```
+ Renders one judge's reading of the two candidates.
+ 
+ @param ballot - that judge's ballot
+ 
+ @param position - which judge this is, counted from one
+ 
+ @returns Lines for this judge
+ 
+ @example
+ ```ts
+ const lines = renderBallot({ ballot, position: 1, },);
+ ```
  */
 function renderBallot(
   {
@@ -105,7 +105,7 @@ function renderBallot(
   },
 ): readonly string[] {
   /**
-   * That judge's own words about why, when it gave any.
+   That judge's own words about why, when it gave any.
    */
   const reason = ballot.reason
     .trim();
@@ -126,16 +126,16 @@ function renderBallot(
 }
 
 /**
- * Renders every judge's reading as the brief a producer is shown.
- *
- * @param ballots - usable ballots from the lane contest for this slice
- *
- * @returns Brief, empty when no judge was heard
- *
- * @example
- * ```ts
- * const brief = renderConsolidationBrief({ ballots, },);
- * ```
+ Renders every judge's reading as the brief a producer is shown.
+ 
+ @param ballots - usable ballots from the lane contest for this slice
+ 
+ @returns Brief, empty when no judge was heard
+ 
+ @example
+ ```ts
+ const brief = renderConsolidationBrief({ ballots, },);
+ ```
  */
 export function renderConsolidationBrief(
   { ballots, }: { readonly ballots: readonly LaneContestBallot[]; },

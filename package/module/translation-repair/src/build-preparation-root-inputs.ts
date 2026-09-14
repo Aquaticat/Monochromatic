@@ -34,22 +34,22 @@ import { readPreparationSelectionEvidence, } from './read-preparation-selection-
 //region Owning semantic preparation input construction
 
 /**
- * Converts native listing failures to the root's names-only diagnostic without classifying them as exclusions.
- *
- * @param pin - owned batch-resolved corpus configuration
- *
- * @param selection - independently checked frozen identity
- *
- * @param l - caller logger retaining root provenance
- *
- * @returns Current native population, with no sampler or provider invocation
- *
- * @throws PreparationRootError when native corpus listing fails
- *
- * @example
- * ```ts
- * const current = await currentRootPopulation({ pin, selection, l });
- * ```
+ Converts native listing failures to the root's names-only diagnostic without classifying them as exclusions.
+ 
+ @param pin - owned batch-resolved corpus configuration
+ 
+ @param selection - independently checked frozen identity
+ 
+ @param l - caller logger retaining root provenance
+ 
+ @returns Current native population, with no sampler or provider invocation
+ 
+ @throws PreparationRootError when native corpus listing fails
+ 
+ @example
+ ```ts
+ const current = await currentRootPopulation({ pin, selection, l });
+ ```
  */
 async function currentRootPopulation({
   pin,
@@ -61,7 +61,7 @@ async function currentRootPopulation({
   readonly l: Logger;
 },): Promise<PreparationRootPopulation> {
   /**
-   * Only the expected native read error is reclassified at this boundary.
+   Only the expected native read error is reclassified at this boundary.
    */
   const pl = tagged({
     tag: currentRootPopulation.name,
@@ -86,26 +86,26 @@ async function currentRootPopulation({
 }
 
 /**
- * Owns complete frozen-artifact relationships and current pinned corpus reconstruction before acquisition planning.
- * Supporting bytes must already be size-bounded by their authorized I/O owner; no reference locator is opened here.
- * The result is unqualified input evidence, not a reviewed phase, writer plan or permission to create providers.
- * Historical support without a consumed relationship remains byte-bound opaque data and is never executed.
- *
- * Selection text and complete caller-loaded supporting bytes are bound to an independently recorded task40 digest.
- * The independent pin supplies corpus location; selection paths are never executed.
- * Process context and pin ownership are fixed before reading other argument properties or calling the logger.
- * Reconstruction parity against an earlier artifact belongs after the I/O owner persists this result.
- *
- * @param input - original selection, independent digest and pin, bounded supporting bytes and caller logger
- *
- * @returns Current raw/effective identities, complete reading provenance and finite initial parent scope
- *
- * @throws PreparationRootError when frozen evidence, current policy population or source obligations differ
- *
- * @example
- * ```ts
- * const inputs = await buildPreparationRootInputs({ text, expectedDigest, artifacts, pin, l });
- * ```
+ Owns complete frozen-artifact relationships and current pinned corpus reconstruction before acquisition planning.
+ Supporting bytes must already be size-bounded by their authorized I/O owner; no reference locator is opened here.
+ The result is unqualified input evidence, not a reviewed phase, writer plan or permission to create providers.
+ Historical support without a consumed relationship remains byte-bound opaque data and is never executed.
+ 
+ Selection text and complete caller-loaded supporting bytes are bound to an independently recorded task40 digest.
+ The independent pin supplies corpus location; selection paths are never executed.
+ Process context and pin ownership are fixed before reading other argument properties or calling the logger.
+ Reconstruction parity against an earlier artifact belongs after the I/O owner persists this result.
+ 
+ @param input - original selection, independent digest and pin, bounded supporting bytes and caller logger
+ 
+ @returns Current raw/effective identities, complete reading provenance and finite initial parent scope
+ 
+ @throws PreparationRootError when frozen evidence, current policy population or source obligations differ
+ 
+ @example
+ ```ts
+ const inputs = await buildPreparationRootInputs({ text, expectedDigest, artifacts, pin, l });
+ ```
  */
 export async function buildPreparationRootInputs(input: {
   readonly text: string;
@@ -115,19 +115,22 @@ export async function buildPreparationRootInputs(input: {
   readonly l: Logger;
 },): Promise<PreparationRootInputs> {
   /**
-   * Pin location cannot drift when subsequent callbacks or awaits change process context.
+   Pin location cannot drift when subsequent callbacks or awaits change process context.
    */
   const origin = process.cwd();
   /**
-   * Native executable lookup context cannot be changed by later logger or descriptor callbacks.
+   Native executable lookup context cannot be changed by later logger or descriptor callbacks.
    */
   const lookup = {
     cwd: origin,
     environment: {
-      ProgramFiles: process.env.ProgramFiles,
-      ProgramW6432: process.env.ProgramW6432,
+      ProgramFiles: process.env
+        .ProgramFiles,
+      ProgramW6432: process.env
+        .ProgramW6432,
       'ProgramFiles(x86)': process.env['ProgramFiles(x86)'],
-      LOCALAPPDATA: process.env.LOCALAPPDATA,
+      LOCALAPPDATA: process.env
+        .LOCALAPPDATA,
     },
     pathEnv: (process.env
       .PATH
@@ -143,14 +146,14 @@ export async function buildPreparationRootInputs(input: {
       ?? '.COM;.EXE;.BAT;.CMD',
   };
   /**
-   * Independent pin fields are copied only after lookup context is fixed.
+   Independent pin fields are copied only after lookup context is fixed.
    */
   const fixed = preparationRootPin({
     input,
     origin,
   },);
   /**
-   * Evidence or logger accessors cannot retroactively alter the independently owned corpus configuration.
+   Evidence or logger accessors cannot retroactively alter the independently owned corpus configuration.
    */
   const {
     text,
@@ -159,14 +162,14 @@ export async function buildPreparationRootInputs(input: {
     l,
   } = input;
   /**
-   * The public owner never accepts a pre-decoded selection or previously mutable byte-match certificate.
+   The public owner never accepts a pre-decoded selection or previously mutable byte-match certificate.
    */
   const pl = tagged({
     tag: buildPreparationRootInputs.name,
     l,
   },);
   /**
-   * Fresh raw matching establishes private byte ownership before any asynchronous corpus work.
+   Fresh raw matching establishes private byte ownership before any asynchronous corpus work.
    */
   const evidence = readPreparationSelectionEvidence({
     text,
@@ -175,25 +178,25 @@ export async function buildPreparationRootInputs(input: {
     l: pl,
   },);
   /**
-   * Parsing already verified selection text supplies fields deliberately absent from its partial projection.
+   Parsing already verified selection text supplies fields deliberately absent from its partial projection.
    */
   const record = preparationRootRecord(JSON.parse(text,),);
   /**
-   * Role interpretation is internal and cannot infer call authority from unconsumed support.
+   Role interpretation is internal and cannot infer call authority from unconsumed support.
    */
   const reader = preparationRootArtifacts({
     evidence,
     l: pl,
   },);
   /**
-   * Batch ownership resolves native Git once rather than rereading its executable for every corpus file.
+   Batch ownership resolves native Git once rather than rereading its executable for every corpus file.
    */
   const resolvedPin: CorpusPin = {
     ...fixed,
     gitPath: fixed.gitPath ?? await resolveGit(lookup,),
   };
   /**
-   * Full current population reconstruction cannot redraw or replace a failed frozen parent.
+   Full current population reconstruction cannot redraw or replace a failed frozen parent.
    */
   const current = await currentRootPopulation({
     pin: resolvedPin,
@@ -207,14 +210,14 @@ export async function buildPreparationRootInputs(input: {
     current,
   },);
   /**
-   * Complete entry context is established before interpreting any parent-level carry-forward claim.
+   Complete entry context is established before interpreting any parent-level carry-forward claim.
    */
   const entryReadings = preparationRootEntryReadings({
     artifacts: reader,
     current,
   },);
   /**
-   * Rebuilt notes must retain the same unresolved source obligations as the frozen artifact.
+   Rebuilt notes must retain the same unresolved source obligations as the frozen artifact.
    */
   const obligations = preparationRootParentReadings({
     parents: current.parents,
@@ -228,7 +231,7 @@ export async function buildPreparationRootInputs(input: {
     kind: 'reading-provenance',
   },);
   /**
-   * Current native evidence is constructed without reading any supplied parsed artifact or node table.
+   Current native evidence is constructed without reading any supplied parsed artifact or node table.
    */
   const inputs: PreparationRootInputs = {
     scope: 'unqualified-preparation-root-inputs',

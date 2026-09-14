@@ -27,40 +27,40 @@ import {
 // same-defect weight among opining panelists, defaulting to distinct.
 
 /**
- * Everything the panel decided over one chunk's clusters.
- *
- * @example
- * ```ts
- * const result: AdjudicationResult = tallyVotes({ clusters, ballots, },);
- * ```
+ Everything the panel decided over one chunk's clusters.
+ 
+ @example
+ ```ts
+ const result: AdjudicationResult = tallyVotes({ clusters, ballots, },);
+ ```
  */
 export type AdjudicationResult = {
   /**
-   * Issues in cluster document order;
-   * unmerged clusters yield one issue per member claim.
+   Issues in cluster document order;
+   unmerged clusters yield one issue per member claim.
    */
   readonly issues: readonly AdjudicatedIssue[];
 
   /**
-   * Original cluster and resulting issue identities when a same-defect merge
-   * is partitioned by member verdict, retaining its audit relationship.
+   Original cluster and resulting issue identities when a same-defect merge
+   is partitioned by member verdict, retaining its audit relationship.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Status one tally decides under the config thresholds.
- *
- * @param tally - weighted counts for one claim
- *
- * @param config - thresholds in force
- *
- * @returns Fate of the claim
- *
- * @example
- * ```ts
- * const status = decideStatus({ tally, config, },);
- * ```
+ Status one tally decides under the config thresholds.
+ 
+ @param tally - weighted counts for one claim
+ 
+ @param config - thresholds in force
+ 
+ @returns Fate of the claim
+ 
+ @example
+ ```ts
+ const status = decideStatus({ tally, config, },);
+ ```
  */
 function decideStatus(
   {
@@ -72,7 +72,7 @@ function decideStatus(
   },
 ): AdjudicationStatus {
   /**
-   * Non-abstain weight forming the electorate for this claim.
+   Non-abstain weight forming the electorate for this claim.
    */
   const electorate = tally.supported + tally.unsupported
     + tally.ambiguous
@@ -89,19 +89,19 @@ function decideStatus(
 }
 
 /**
- * Final severity of one claim:
- * upper median over the claimed severity plus supported ballots' re-grades.
- *
- * @param member - claim under grading
- *
- * @param ballots - resolved ballots keyed by panelist id
- *
- * @returns Final severity for the issue record
- *
- * @example
- * ```ts
- * const severity = finalSeverity({ member, ballots, },);
- * ```
+ Final severity of one claim:
+ upper median over the claimed severity plus supported ballots' re-grades.
+ 
+ @param member - claim under grading
+ 
+ @param ballots - resolved ballots keyed by panelist id
+ 
+ @returns Final severity for the issue record
+ 
+ @example
+ ```ts
+ const severity = finalSeverity({ member, ballots, },);
+ ```
  */
 function finalSeverity(
   {
@@ -113,13 +113,13 @@ function finalSeverity(
   },
 ): IssueSeverity {
   /**
-   * Re-grades from panelists who supported this claim and offered one.
+   Re-grades from panelists who supported this claim and offered one.
    */
   const regrades = Object
     .values(ballots,)
     .flatMap(function toRegrade(ballot,): readonly IssueSeverity[] {
       /**
-       * This panelist's verdict on the claim, when cast.
+       This panelist's verdict on the claim, when cast.
        */
       const verdict = ballot.verdicts[member.claimId];
       if ((verdict === undefined) || (verdict.vote !== 'supported')
@@ -136,23 +136,23 @@ function finalSeverity(
 }
 
 /**
- * Whether one multi-member cluster merges:
- * same-defect weight must strictly exceed distinct weight among opining
- * panelists; silence and ties keep claims distinct because a wrong merge
- * hides a defect while a wrong split only duplicates work.
- *
- * @param cluster - cluster under disposition
- *
- * @param ballots - resolved ballots keyed by panelist id
- *
- * @param config - weight table
- *
- * @returns Whether members become one issue
- *
- * @example
- * ```ts
- * const merged = disposeMerge({ cluster, ballots, config, },);
- * ```
+ Whether one multi-member cluster merges:
+ same-defect weight must strictly exceed distinct weight among opining
+ panelists; silence and ties keep claims distinct because a wrong merge
+ hides a defect while a wrong split only duplicates work.
+ 
+ @param cluster - cluster under disposition
+ 
+ @param ballots - resolved ballots keyed by panelist id
+ 
+ @param config - weight table
+ 
+ @returns Whether members become one issue
+ 
+ @example
+ ```ts
+ const merged = disposeMerge({ cluster, ballots, config, },);
+ ```
  */
 function disposeMerge(
   {
@@ -171,7 +171,7 @@ function disposeMerge(
     return false;
 
   /**
-   * Weighted same-defect and distinct opinion masses.
+   Weighted same-defect and distinct opinion masses.
    */
   const {
     same,
@@ -187,14 +187,14 @@ function disposeMerge(
         [panelistId, ballot,],
       ) {
         /**
-         * This panelist's opinion on the cluster, when given.
+         This panelist's opinion on the cluster, when given.
          */
         const opinion = ballot.mergeOpinions[cluster.clusterId];
         if (opinion === undefined)
           return masses;
 
         /**
-         * Weight of this panelist's opinion.
+         Weight of this panelist's opinion.
          */
         const weight = config.weights?.[panelistId] ?? 1;
         return opinion
@@ -217,28 +217,28 @@ function disposeMerge(
 }
 
 /**
- * Aggregates panel ballots over one chunk's clusters into adjudicated
- * issues. Pure: same clusters, ballots, and config always produce the same
- * issues, so checkpoints can replay adjudication without model calls.
- *
- * @param clusters - aggregation output, in document order
- *
- * @param ballots - resolved ballots keyed by panelist id; the shell owns
- *   panelist identity, claims never carry it
- *
- * @param configuredPanelists - panelists the run seated, heard or not, which
- *   the ballots cannot say: a lost voice leaves no entry while an abstention
- *   leaves one, and those are different evidence
- *
- * @param config - thresholds and weights; defaults to
- *   {@link DEFAULT_ADJUDICATION_CONFIG}
- *
- * @returns Adjudicated issues in cluster document order
- *
- * @example
- * ```ts
- * const { issues, } = tallyVotes({ clusters, ballots, configuredPanelists: 6, },);
- * ```
+ Aggregates panel ballots over one chunk's clusters into adjudicated
+ issues. Pure: same clusters, ballots, and config always produce the same
+ issues, so checkpoints can replay adjudication without model calls.
+ 
+ @param clusters - aggregation output, in document order
+ 
+ @param ballots - resolved ballots keyed by panelist id; the shell owns
+   panelist identity, claims never carry it
+ 
+ @param configuredPanelists - panelists the run seated, heard or not, which
+   the ballots cannot say: a lost voice leaves no entry while an abstention
+   leaves one, and those are different evidence
+ 
+ @param config - thresholds and weights; defaults to
+   {@link DEFAULT_ADJUDICATION_CONFIG}
+ 
+ @returns Adjudicated issues in cluster document order
+ 
+ @example
+ ```ts
+ const { issues, } = tallyVotes({ clusters, ballots, configuredPanelists: 6, },);
+ ```
  */
 export function tallyVotes(
   {
@@ -254,16 +254,16 @@ export function tallyVotes(
   },
 ): AdjudicationResult {
   /**
-   * Decisions and partition lineage accumulated in cluster document order.
+   Decisions and partition lineage accumulated in cluster document order.
    */
   const outcomes = clusters.map(function adjudicateCluster(cluster,): AdjudicationResult {
     /**
-     * Per-member tallies, statuses, and severities in member order.
+     Per-member tallies, statuses, and severities in member order.
      */
     const graded = cluster.members
       .map(function gradeMember(member,): GradedMember {
       /**
-       * Every ballot on this member claim, and the tally they sum to.
+       Every ballot on this member claim, and the tally they sum to.
        */
       const reading = panelReadingForClaim({
         claimId: member.claimId,
@@ -288,7 +288,7 @@ export function tallyVotes(
     },);
 
     /**
-     * Whether the panel relates these diagnoses as one defect.
+     Whether the panel relates these diagnoses as one defect.
      */
     const merged = disposeMerge({
       cluster,
@@ -296,13 +296,13 @@ export function tallyVotes(
       config,
     },);
     /**
-     * Related diagnoses still keep their separately decided authority.
+     Related diagnoses still keep their separately decided authority.
      */
     const groups = merged
       ? partitionGradedMembers({ graded, },)
       : graded.map(function solo(entry,): readonly GradedMember[] { return [entry,]; },);
     /**
-     * Each record carries only its own members and evidence.
+     Each record carries only its own members and evidence.
      */
     const issues = groups.map(function assemble(group,): AdjudicatedIssue {
       return assembleGradedIssue({ graded: group, },);

@@ -22,18 +22,18 @@ import { replayPreparedBlockEvidence, } from './replay-prepared-block-evidence.t
 //region Internal projection from owned receipt-bound occurrence data
 
 /**
- * Names an owned parser-readable definition without inventing a label.
- *
- * @param node - definition from fresh complete-document parsing
- *
- * @param blockIndex - index already checked by native agreement
- *
- * @returns Current endpoint restricted to deterministic footnote operations
- *
- * @example
- * ```ts
- * const endpoint = definitionEndpoint({ node, blockIndex: 1 });
- * ```
+ Names an owned parser-readable definition without inventing a label.
+ 
+ @param node - definition from fresh complete-document parsing
+ 
+ @param blockIndex - index already checked by native agreement
+ 
+ @returns Current endpoint restricted to deterministic footnote operations
+ 
+ @example
+ ```ts
+ const endpoint = definitionEndpoint({ node, blockIndex: 1 });
+ ```
  */
 function definitionEndpoint({
   node,
@@ -43,7 +43,7 @@ function definitionEndpoint({
   readonly blockIndex: number
 },): PreparationDefinitionEndpoint {
   /**
-   * The native definition reader returns its opening label; parser invariant failures must throw.
+   The native definition reader returns its opening label; parser invariant failures must throw.
    */
   const label = nonNullishOrThrow(definitionLabelsOf({ node, },)[0],);
   return {
@@ -54,23 +54,23 @@ function definitionEndpoint({
 }
 
 /**
- * Applies definition-only policy to an owned fresh occurrence, never caller-provided node tables or aggregates.
- * This helper is not part of the package barrel and supplies no body placement authority.
- *
- * @param occurrence - owned output of the receipt/current-document reconstruction boundary
- *
- * @param domain - independently registered current definition inventory
- *
- * @param l - caller logger retaining dependency scope
- *
- * @returns Owned definition projection with its complete occurrence binding
- *
- * @throws PreparationQualificationError when the domain or usable quorum cannot qualify
- *
- * @example
- * ```ts
- * const definitions = projectPreparationDefinitionRelations({ occurrence, domain, l });
- * ```
+ Applies definition-only policy to an owned fresh occurrence, never caller-provided node tables or aggregates.
+ This helper is not part of the package barrel and supplies no body placement authority.
+ 
+ @param occurrence - owned output of the receipt/current-document reconstruction boundary
+ 
+ @param domain - independently registered current definition inventory
+ 
+ @param l - caller logger retaining dependency scope
+ 
+ @returns Owned definition projection with its complete occurrence binding
+ 
+ @throws PreparationQualificationError when the domain or usable quorum cannot qualify
+ 
+ @example
+ ```ts
+ const definitions = projectPreparationDefinitionRelations({ occurrence, domain, l });
+ ```
  */
 export function projectPreparationDefinitionRelations({
   occurrence,
@@ -82,14 +82,14 @@ export function projectPreparationDefinitionRelations({
   readonly l: Logger;
 },): PreparationDefinitionEvidence {
   /**
-   * Scoped telemetry cannot promote definition evidence into body authority.
+   Scoped telemetry cannot promote definition evidence into body authority.
    */
   const pl = tagged({
     tag: projectPreparationDefinitionRelations.name,
     l,
   },);
   /**
-   * All data comes from an owned completed reconstruction, not a caller-mutated naked parent.
+   All data comes from an owned completed reconstruction, not a caller-mutated naked parent.
    */
   const {
     pair,
@@ -97,17 +97,17 @@ export function projectPreparationDefinitionRelations({
     expected,
   } = occurrence;
   /**
-   * Native parser zones classify definition endpoints.
+   Native parser zones classify definition endpoints.
    */
   const sourceIndexes = definitionIndexes({ nodes: pair.source
     .nodes, },);
   /**
-   * Target classification is independent of unrelated body coverage.
+   Target classification is independent of unrelated body coverage.
    */
   const targetIndexes = definitionIndexes({ nodes: pair.target
     .nodes, },);
   /**
-   * Complete local inventory must agree with the preregistered occurrence's definition domain.
+   Complete local inventory must agree with the preregistered occurrence's definition domain.
    */
   const currentDomain: PreparationDefinitionDomain = {
     sourceIds: pair.source
@@ -137,7 +137,7 @@ export function projectPreparationDefinitionRelations({
   if ((sourceIndexes.size === 0) && (targetIndexes.size === 0))
     throw new PreparationQualificationError({ kind: 'definition-domain-empty', },);
   /**
-   * Replay remains transient; only the restricted projection crosses this boundary.
+   Replay remains transient; only the restricted projection crosses this boundary.
    */
   const {
     question,
@@ -151,7 +151,7 @@ export function projectPreparationDefinitionRelations({
     l: pl,
   },);
   /**
-   * Only raw native agreement is projected, never deterministic media widening or a stored aggregate.
+   Only raw native agreement is projected, never deterministic media widening or a stored aggregate.
    */
   const definitionRelations = outcome.pairs
     .filter(function bothDefinitions(relation,): boolean {
@@ -159,12 +159,12 @@ export function projectPreparationDefinitionRelations({
   },)
     .map(function currentEndpoints(relation,): PreparationDefinitionRelation {
     /**
-     * Native replay has checked these indexes against this same owned parent.
+     Native replay has checked these indexes against this same owned parent.
      */
     const source = nonNullishOrThrow(pair.source
       .nodes[relation.source],);
     /**
-     * Target access shares the same checked index boundary.
+     Target access shares the same checked index boundary.
      */
     const target = nonNullishOrThrow(pair.target
       .nodes[relation.target],);

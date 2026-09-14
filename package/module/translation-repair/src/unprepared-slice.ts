@@ -8,22 +8,22 @@
 // the step's refusal after it is the same fault said the same way.
 
 /**
- * Raised when an outcome names a slice this preparation never produced.
- *
- * @example
- * ```ts
- * throw new UnpreparedSliceError({ sliceIndex: 7, },);
- * ```
+ Raised when an outcome names a slice this preparation never produced.
+ 
+ @example
+ ```ts
+ throw new UnpreparedSliceError({ sliceIndex: 7, },);
+ ```
  */
 export class UnpreparedSliceError extends Error {
   /**
-   * Declares this message safe to print whole at a boundary: it carries one
-   * slice index and nothing from any text.
+   Declares this message safe to print whole at a boundary: it carries one
+   slice index and nothing from any text.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * @param sliceIndex - slice the outcome names
+   @param sliceIndex - slice the outcome names
    */
   constructor({ sliceIndex, }: { readonly sliceIndex: number; },) {
     super(

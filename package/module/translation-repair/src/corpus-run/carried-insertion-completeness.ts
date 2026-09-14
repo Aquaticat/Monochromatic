@@ -23,40 +23,40 @@ import type { WouldShipSource, } from './would-ship-text.ts';
 // break is nothing and a lost word is still lost.
 
 /**
- * Text as the anchoring reads it: soft breaks folded, punctuation normalized.
- *
- * @param text - page or region
- *
- * @returns The folded reading
- *
- * @example
- * ```ts
- * asAnchored({ text: 'Zhenli,\nSansan', },);
- * // => 'Zhenli, Sansan'
- * ```
+ Text as the anchoring reads it: soft breaks folded, punctuation normalized.
+ 
+ @param text - page or region
+ 
+ @returns The folded reading
+ 
+ @example
+ ```ts
+ asAnchored({ text: 'Zhenli,\nSansan', },);
+ // => 'Zhenli, Sansan'
+ ```
  */
 function asAnchored({ text, }: { readonly text: string; },): string {
   return collapseSoftLineBreaks({ text: normalizePunctuation({ text, },), },);
 }
 
 /**
- * Verifies final would-ship page retains exact regions proving carried passages.
- *
- * @param artifact - final stage decisions used for publication
- *
- * @param slices - preparation defining replacement spans
- *
- * @param targetText - archive text replacement spans address
- *
- * @param carried - source-only passages proven rendered elsewhere before lanes
- *
- * @throws {@link TranslationRepairInterruptedError} when final stages remove
- * any region supporting carried-complete decision
- *
- * @example
- * ```ts
- * assertCarriedInsertionsRemain({ artifact, slices, targetText, carried: [], });
- * ```
+ Verifies final would-ship page retains exact regions proving carried passages.
+ 
+ @param artifact - final stage decisions used for publication
+ 
+ @param slices - preparation defining replacement spans
+ 
+ @param targetText - archive text replacement spans address
+ 
+ @param carried - source-only passages proven rendered elsewhere before lanes
+ 
+ @throws {@link TranslationRepairInterruptedError} when final stages remove
+ any region supporting carried-complete decision
+ 
+ @example
+ ```ts
+ assertCarriedInsertionsRemain({ artifact, slices, targetText, carried: [], });
+ ```
  */
 export function assertCarriedInsertionsRemain(
   {
@@ -74,7 +74,7 @@ export function assertCarriedInsertionsRemain(
   if (carried.length === 0)
     return;
   /**
-   * Exact page final stage decisions would publish.
+   Exact page final stage decisions would publish.
    */
   const finalText = spliceSlices({
     targetText,
@@ -82,12 +82,12 @@ export function assertCarriedInsertionsRemain(
     replacements: shippableReplacements({ artifact, },),
   },);
   /**
-   * The page as the anchoring reads it.
+   The page as the anchoring reads it.
    */
   const foldedPage = asAnchored({ text: finalText, },);
   /**
-   * Carried passages whose evidence the page no longer carries, each with the
-   * regions it lost; a passage admitted with no region at all is lost too.
+   Carried passages whose evidence the page no longer carries, each with the
+   regions it lost; a passage admitted with no region at all is lost too.
    */
   const lost = carried
     .map(function toLoss(candidate,): {
@@ -95,19 +95,19 @@ export function assertCarriedInsertionsRemain(
       readonly missing: readonly string[];
     } {
       /**
-       * Count of regions admission recorded.
+       Count of regions admission recorded.
        */
       const recorded = candidate
         .evidence
         .length;
       /**
-       * Regions the folded page does not carry.
+       Regions the folded page does not carry.
        */
       const missing = candidate
         .evidence
         .filter(function regionMissing(region,): boolean {
           /**
-           * The region as the anchoring read it.
+           The region as the anchoring read it.
            */
           const folded = asAnchored({ text: region, },);
           return !foldedPage.includes(folded,);
@@ -119,7 +119,7 @@ export function assertCarriedInsertionsRemain(
     },)
     .filter(function lostAnything(loss,): boolean {
       /**
-       * Count of regions this passage lost.
+       Count of regions this passage lost.
        */
       const lostCount = loss
         .missing

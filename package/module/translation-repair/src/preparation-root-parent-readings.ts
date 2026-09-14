@@ -12,24 +12,24 @@ import {
 //region Parent reading provenance preserves unresolved source channels
 
 /**
- * Checks current note ownership or exact prior-journal carry-forward for one frozen parent.
- *
- * @param parent - current native parent under its frozen identity
- *
- * @param reading - already ordered parent journal record
- *
- * @param entryReading - already checked complete-entry journal record
- *
- * @param artifacts - owning semantic artifact reader
- *
- * @returns Checked source-obligation detail, not correspondence or call authority
- *
- * @throws PreparationRootError when note or carry-forward ownership differs
- *
- * @example
- * ```ts
- * const detail = parentReadingDetail({ parent, reading, entryReading, artifacts });
- * ```
+ Checks current note ownership or exact prior-journal carry-forward for one frozen parent.
+ 
+ @param parent - current native parent under its frozen identity
+ 
+ @param reading - already ordered parent journal record
+ 
+ @param entryReading - already checked complete-entry journal record
+ 
+ @param artifacts - owning semantic artifact reader
+ 
+ @returns Checked source-obligation detail, not correspondence or call authority
+ 
+ @throws PreparationRootError when note or carry-forward ownership differs
+ 
+ @example
+ ```ts
+ const detail = parentReadingDetail({ parent, reading, entryReading, artifacts });
+ ```
  */
 function parentReadingDetail({
   parent,
@@ -50,11 +50,11 @@ function parentReadingDetail({
       input: parent.id,
     },);
     /**
-     * A current reading must match its exact parent record in the bound note.
+     A current reading must match its exact parent record in the bound note.
      */
     const detail = preparationRootRecord(reading.reading,);
     /**
-     * The note remains data and is addressed only through a verified journal path/hash edge.
+     The note remains data and is addressed only through a verified journal path/hash edge.
      */
     const note = artifacts.note({
       path: preparationRootString(reading.noteFile,),
@@ -74,7 +74,7 @@ function parentReadingDetail({
       input: parent.id,
     },);
     /**
-     * Duplicate parent details cannot be hidden by a first-match lookup.
+     Duplicate parent details cannot be hidden by a first-match lookup.
      */
     const matches = preparationRootArray(note.parentReadings,)
       .map(function record(value,): Readonly<Record<string, unknown>> { return preparationRootRecord(value,); },)
@@ -117,11 +117,11 @@ function parentReadingDetail({
     input: parent.id,
   },);
   /**
-   * Prior entry membership is rechecked even when the complete entry also has a newer current note.
+   Prior entry membership is rechecked even when the complete entry also has a newer current note.
    */
   const prior = preparationRootRecord(entryReading.priorReading,);
   /**
-   * Exact carried evidence must be present once in the bound prior journal.
+   Exact carried evidence must be present once in the bound prior journal.
    */
   const matches = preparationRootArray(artifacts.priorJournal
     .entries,)
@@ -160,22 +160,22 @@ function parentReadingDetail({
 }
 
 /**
- * Reconstructs one ordered source-obligation record per parent without upgrading reading notes into model evidence.
- *
- * @param parents - exact current frozen-parent order
- *
- * @param entryReadings - complete entry provenance already checked against current pinned text
- *
- * @param artifacts - fresh owned supporting-document interpretation
- *
- * @returns Explicit source/context obligations, including unresolved scope flags
- *
- * @throws PreparationRootError when parent reading identity, completion or obligation fields differ
- *
- * @example
- * ```ts
- * const obligations = preparationRootParentReadings({ parents, entryReadings, artifacts });
- * ```
+ Reconstructs one ordered source-obligation record per parent without upgrading reading notes into model evidence.
+ 
+ @param parents - exact current frozen-parent order
+ 
+ @param entryReadings - complete entry provenance already checked against current pinned text
+ 
+ @param artifacts - fresh owned supporting-document interpretation
+ 
+ @returns Explicit source/context obligations, including unresolved scope flags
+ 
+ @throws PreparationRootError when parent reading identity, completion or obligation fields differ
+ 
+ @example
+ ```ts
+ const obligations = preparationRootParentReadings({ parents, entryReadings, artifacts });
+ ```
  */
 export function preparationRootParentReadings({
   parents,
@@ -187,7 +187,7 @@ export function preparationRootParentReadings({
   readonly artifacts: PreparationRootArtifacts;
 },): readonly FrozenPreparationObligation[] {
   /**
-   * Full ordered identity equality rejects missing, duplicated and reordered reading rows.
+   Full ordered identity equality rejects missing, duplicated and reordered reading rows.
    */
   const readings = preparationRootArray(artifacts.journal
     .parents,)
@@ -202,11 +202,11 @@ export function preparationRootParentReadings({
     index,
   ): FrozenPreparationObligation {
     /**
-     * Parent provenance cannot be detached from a checked complete-entry reading.
+     Parent provenance cannot be detached from a checked complete-entry reading.
      */
     const entryReading = entryReadings.get(parent.entryId,);
     /**
-     * Ordering is already checked, but absence still fails at this owning boundary.
+     Ordering is already checked, but absence still fails at this owning boundary.
      */
     const reading = readings[index];
     if ((reading === undefined) || (entryReading === undefined))
@@ -255,7 +255,7 @@ export function preparationRootParentReadings({
       input: parent.id,
     },);
     /**
-     * The checked detail still explicitly withholds automatic correspondence verification.
+     The checked detail still explicitly withholds automatic correspondence verification.
      */
     const detail = parentReadingDetail({
       parent,
@@ -276,7 +276,7 @@ export function preparationRootParentReadings({
         input: parent.id,
       },);
     /**
-     * Original context strings remain unchanged, not executable instructions or a glossary.
+     Original context strings remain unchanged, not executable instructions or a glossary.
      */
     const requiredContext = preparationRootArray(detail.requiredContext,)
       .map(function context(value,): string { return preparationRootString(value,); },);

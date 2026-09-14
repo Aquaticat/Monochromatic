@@ -1,29 +1,29 @@
 /**
- * Tests for the blind sheet that decides whether the probe finds damage or
- * invents it.
- *
- * THE SHEET AND ITS MANIFEST ARE WRITTEN BY TWO FUNCTIONS THAT EACH SORT, and
- * everything the measurement produces rests on those two sorts agreeing. The
- * sheet numbers its items and the manifest numbers its rows, and a scorer reads
- * a grade off position N of one and attributes it to position N of the other.
- * If the orders ever diverged, every grade would land on the wrong item and the
- * result would still look like a clean measurement. The agreement case below is
- * the one that matters most in this file.
- *
- * THE BLINDNESS IS THE OTHER HALF. `kind` says which partition an item came
- * from, and a grader who can see it is answering a different question. It rides
- * in the manifest and must never reach the sheet, so one case searches the whole
- * rendered sheet for both partition names.
- *
- * ORDER IS BY DIGEST OF IDENTITY, WHICH IS NOT A DETAIL. Insertion order would
- * leak the partition whenever the caller built one partition before the other,
- * which is how both callers build them.
- *
- * FIXTURES ARE INVENTED AND CAT-THEMED. The real sheet quotes unlicensed corpus
- * text and is written outside the repository; nothing resembling it belongs in a
- * committed test.
- *
- * @module
+ Tests for the blind sheet that decides whether the probe finds damage or
+ invents it.
+ 
+ THE SHEET AND ITS MANIFEST ARE WRITTEN BY TWO FUNCTIONS THAT EACH SORT, and
+ everything the measurement produces rests on those two sorts agreeing. The
+ sheet numbers its items and the manifest numbers its rows, and a scorer reads
+ a grade off position N of one and attributes it to position N of the other.
+ If the orders ever diverged, every grade would land on the wrong item and the
+ result would still look like a clean measurement. The agreement case below is
+ the one that matters most in this file.
+ 
+ THE BLINDNESS IS THE OTHER HALF. `kind` says which partition an item came
+ from, and a grader who can see it is answering a different question. It rides
+ in the manifest and must never reach the sheet, so one case searches the whole
+ rendered sheet for both partition names.
+ 
+ ORDER IS BY DIGEST OF IDENTITY, WHICH IS NOT A DETAIL. Insertion order would
+ leak the partition whenever the caller built one partition before the other,
+ which is how both callers build them.
+ 
+ FIXTURES ARE INVENTED AND CAT-THEMED. The real sheet quotes unlicensed corpus
+ text and is written outside the repository; nothing resembling it belongs in a
+ committed test.
+ 
+ @module
  */
 
 import {
@@ -42,54 +42,54 @@ import {
 //region Probe verify sheet tests
 
 /**
- * Partition an item came from when a reader had already flagged it.
- *
- * NOT SPELLED THE WAY PRODUCTION SPELLS IT. `probe-verify.ts` passes `damaged`
- * and `control`, and the sheet's own instructions ask a grader to judge
- * "whether the EDIT damaged the translation". Searching a rendered sheet for
- * the production label therefore matches ordinary English and reports a leak
- * that is not there, which is exactly what the first draft of this file did.
- * These labels are tokens nothing else can produce, so a match is the field.
+ Partition an item came from when a reader had already flagged it.
+ 
+ NOT SPELLED THE WAY PRODUCTION SPELLS IT. `probe-verify.ts` passes `damaged`
+ and `control`, and the sheet's own instructions ask a grader to judge
+ "whether the EDIT damaged the translation". Searching a rendered sheet for
+ the production label therefore matches ordinary English and reports a leak
+ that is not there, which is exactly what the first draft of this file did.
+ These labels are tokens nothing else can produce, so a match is the field.
  */
 const FIRST_PARTITION = 'partitionalpha';
 
 /**
- * Partition an item came from when nobody had flagged it.
+ Partition an item came from when nobody had flagged it.
  */
 const SECOND_PARTITION = 'partitionbeta';
 
 /**
- * Prober whose claims these fixtures carry.
+ Prober whose claims these fixtures carry.
  */
 const CLAIMANT = 'cat-house/tabbyscribe-2';
 
 /**
- * Wording an edit added, which a claim of added damage quotes.
+ Wording an edit added, which a claim of added damage quotes.
  */
 const ADDED_WORDING = 'the cat sat regally upon the mat';
 
 /**
- * Wording an edit dropped, which a claim of lost content quotes.
+ Wording an edit dropped, which a claim of lost content quotes.
  */
 const DROPPED_WORDING = 'and the kitten watched from the stairs';
 
 /**
- * Builds one item for the sheet.
- *
- * @param entryId - entry the region belongs to
- *
- * @param envelopeId - region inside that entry
- *
- * @param kind - partition this item came from
- *
- * @param claims - what the probe said, empty when it said nothing
- *
- * @returns Item shaped as the formatters take one
- *
- * @example
- * ```ts
- * const item = verifyItem({ entryId: 'whiskers', envelopeId: 'e1', kind: FIRST_PARTITION, claims: [], },);
- * ```
+ Builds one item for the sheet.
+ 
+ @param entryId - entry the region belongs to
+ 
+ @param envelopeId - region inside that entry
+ 
+ @param kind - partition this item came from
+ 
+ @param claims - what the probe said, empty when it said nothing
+ 
+ @returns Item shaped as the formatters take one
+ 
+ @example
+ ```ts
+ const item = verifyItem({ entryId: 'whiskers', envelopeId: 'e1', kind: FIRST_PARTITION, claims: [], },);
+ ```
  */
 function verifyItem(
   {
@@ -143,17 +143,17 @@ function verifyItem(
 }
 
 /**
- * Builds a spread of items across both partitions.
- *
- * Enough of them that a sort has something to do, and interleaved partitions so
- * an order that followed insertion would be visibly grouped.
- *
- * @returns Items in insertion order
- *
- * @example
- * ```ts
- * const items = household();
- * ```
+ Builds a spread of items across both partitions.
+ 
+ Enough of them that a sort has something to do, and interleaved partitions so
+ an order that followed insertion would be visibly grouped.
+ 
+ @returns Items in insertion order
+ 
+ @example
+ ```ts
+ const items = household();
+ ```
  */
 function household(): readonly VerifyItem[] {
   return [
@@ -177,16 +177,16 @@ function household(): readonly VerifyItem[] {
 }
 
 /**
- * Reads the entry ids off items, in the order they stand.
- *
- * @param items - items to read
- *
- * @returns Entry ids in order
- *
- * @example
- * ```ts
- * const order = idsOf({ items, },);
- * ```
+ Reads the entry ids off items, in the order they stand.
+ 
+ @param items - items to read
+ 
+ @returns Entry ids in order
+ 
+ @example
+ ```ts
+ const order = idsOf({ items, },);
+ ```
  */
 function idsOf(
   { items, }: { readonly items: readonly VerifyItem[]; },
@@ -197,16 +197,16 @@ function idsOf(
 }
 
 /**
- * Reads the manifest back as the scorer does.
- *
- * @param items - items the manifest was built from
- *
- * @returns Rows the manifest carries
- *
- * @example
- * ```ts
- * const rows = manifestRows({ items, },);
- * ```
+ Reads the manifest back as the scorer does.
+ 
+ @param items - items the manifest was built from
+ 
+ @returns Rows the manifest carries
+ 
+ @example
+ ```ts
+ const rows = manifestRows({ items, },);
+ ```
  */
 function manifestRows(
   { items, }: { readonly items: readonly VerifyItem[]; },
@@ -235,7 +235,7 @@ await describe({
       name: 'ORDERS the same items the same way every time',
       fn: async () => {
         /**
-         * Items as the caller built them.
+         Items as the caller built them.
          */
         const items = household();
 
@@ -247,7 +247,7 @@ await describe({
       name: 'IGNORES the order the caller built them in, which would leak the partition',
       fn: async () => {
         /**
-         * Items as the caller built them.
+         Items as the caller built them.
          */
         const items = household();
 
@@ -259,12 +259,12 @@ await describe({
       name: 'IGNORES the partition itself, so relabelling an item cannot move it',
       fn: async () => {
         /**
-         * Items as the caller built them.
+         Items as the caller built them.
          */
         const items = household();
 
         /**
-         * Same items with every partition label flipped.
+         Same items with every partition label flipped.
          */
         const flipped = items.map(function relabel(item,): VerifyItem {
           return {
@@ -284,12 +284,12 @@ await describe({
         // something does NOT move the order, and a sort that ignored its input
         // entirely would pass every one of them.
         /**
-         * Items as the caller built them.
+         Items as the caller built them.
          */
         const items = household();
 
         /**
-         * Same items under different entry ids.
+         Same items under different entry ids.
          */
         const renamed = items.map(function rename(item,): VerifyItem {
           return {
@@ -316,7 +316,7 @@ await describe({
       name: 'KEEPS every item it was given',
       fn: async () => {
         /**
-         * Items as the caller built them.
+         Items as the caller built them.
          */
         const items = household();
 
@@ -339,28 +339,28 @@ await describe({
         // a scorer reads a grade off sheet position N as a verdict on manifest
         // row N. Divergence would misattribute every grade and still look clean.
         /**
-         * Items as the caller built them.
+         Items as the caller built them.
          */
         const items = household();
 
         /**
-         * Sheet as a grader receives it.
+         Sheet as a grader receives it.
          */
         const sheet = formatVerifySheet({ items, },);
 
         for (const row of manifestRows({ items, },)) {
           /**
-           * Heading the sheet gives that position.
+           Heading the sheet gives that position.
            */
           const heading = `### ${String(row.position,)}. grade: [ ]`;
 
           /**
-           * Where that heading stands in the sheet.
+           Where that heading stands in the sheet.
            */
           const at = sheet.indexOf(heading,);
 
           /**
-           * Text between that heading and whatever follows it.
+           Text between that heading and whatever follows it.
            */
           const section = sheet.slice(
             at,
@@ -380,7 +380,7 @@ await describe({
         + 'it flagged each, since the damage sheet mixes both with the claims stripped (`#248`)',
       fn: async () => {
         /**
-         * The damage sheet's page.
+         The damage sheet's page.
          */
         const sheet = formatVerifySheet({
           items: household(),
@@ -401,7 +401,7 @@ await describe({
       name: 'REFUSES to name which partition an item came from, anywhere on the page',
       fn: async () => {
         /**
-         * Sheet as a grader receives it.
+         Sheet as a grader receives it.
          */
         const sheet = formatVerifySheet({ items: household(), },);
 
@@ -414,7 +414,7 @@ await describe({
       name: 'SHOWS every text a grader needs, on both sides of the edit',
       fn: async () => {
         /**
-         * Sheet built from one item, so the assertions name one region.
+         Sheet built from one item, so the assertions name one region.
          */
         const sheet = formatVerifySheet({
           items: [
@@ -438,7 +438,7 @@ await describe({
       name: 'WITHHOLDS the reviewer\'s claim from an item that carries none',
       fn: async () => {
         /**
-         * Sheet built from one unclaimed item.
+         Sheet built from one unclaimed item.
          */
         const sheet = formatVerifySheet({
           items: [
@@ -458,7 +458,7 @@ await describe({
       name: 'NAMES an added-wording claim as added, quoting the after side',
       fn: async () => {
         /**
-         * Sheet built from one item the probe flagged for adding wording.
+         Sheet built from one item the probe flagged for adding wording.
          */
         const sheet = formatVerifySheet({
           items: [
@@ -487,7 +487,7 @@ await describe({
         // formatter that picked the wrong field would show a grader wording
         // that is present in the text it says was removed.
         /**
-         * Sheet built from one item the probe flagged for dropping wording.
+         Sheet built from one item the probe flagged for dropping wording.
          */
         const sheet = formatVerifySheet({
           items: [
@@ -520,7 +520,7 @@ await describe({
       name: 'RECORDS the partition the sheet withholds',
       fn: async () => {
         /**
-         * Rows the manifest carries.
+         Rows the manifest carries.
          */
         const rows = manifestRows({ items: household(), },);
 
@@ -553,7 +553,7 @@ await describe({
       name: 'NAMES who claimed what, so a graded sheet can be read per prober',
       fn: async () => {
         /**
-         * Rows built from one claimed item and one unclaimed one.
+         Rows built from one claimed item and one unclaimed one.
          */
         const rows = manifestRows({
           items: [
@@ -578,7 +578,7 @@ await describe({
         },);
 
         /**
-         * Claimants recorded against the claimed region.
+         Claimants recorded against the claimed region.
          */
         const claimed = rows
           .filter(function isClaimed(row,): boolean {

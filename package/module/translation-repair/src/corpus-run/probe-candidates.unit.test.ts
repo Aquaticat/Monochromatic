@@ -1,16 +1,16 @@
 /**
- * Tests for the seatable ids a probe measures beside the seated roster.
- *
- * THE CIRCLE THIS BREAKS: a model takes a role on the numbers the probes
- * report, the probes ran the run roster, and the run roster holds only models
- * with numbers. `--candidates` lets a probe ask a seatable model for its number
- * without seating it first.
- *
- * THE REFUSALS ARE THE POINT, as in `asked-count.unit.test.ts`: a probe started
- * for a model it then quietly ran without would print a clean standing over
- * the wrong roster.
- *
- * @module
+ Tests for the seatable ids a probe measures beside the seated roster.
+ 
+ THE CIRCLE THIS BREAKS: a model takes a role on the numbers the probes
+ report, the probes ran the run roster, and the run roster holds only models
+ with numbers. `--candidates` lets a probe ask a seatable model for its number
+ without seating it first.
+ 
+ THE REFUSALS ARE THE POINT, as in `asked-count.unit.test.ts`: a probe started
+ for a model it then quietly ran without would print a clean standing over
+ the wrong roster.
+ 
+ @module
  */
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
@@ -33,7 +33,7 @@ import {
 //region Probe candidate tests
 
 /**
- * What `process.argv` carries before anything a person typed.
+ What `process.argv` carries before anything a person typed.
  */
 const BEFORE_FLAGS: readonly string[] = [
   '/usr/bin/node',
@@ -41,23 +41,23 @@ const BEFORE_FLAGS: readonly string[] = [
 ];
 
 /**
- * Both unmeasured sizes, as typed after the flag.
+ Both unmeasured sizes, as typed after the flag.
  */
 const BOTH_UNMEASURED = BEDROCK_ONLY_ROSTER_IDS.join(',',);
 
 /**
- * A seated model, to prove a candidate the roster already carries is not
- * seated twice.
+ A seated model, to prove a candidate the roster already carries is not
+ seated twice.
  */
 const SEATED = nonNullishOrThrow(RUN_ROSTER[0],);
 
 /**
- * Command line with what a person typed after the script path.
- *
- * @example
- * ```ts
- * const argv = commandLine({ typed: ['--candidates', 'google.gemma-4-e2b',], },);
- * ```
+ Command line with what a person typed after the script path.
+ 
+ @example
+ ```ts
+ const argv = commandLine({ typed: ['--candidates', 'google.gemma-4-e2b',], },);
+ ```
  */
 function commandLine(
   { typed, }: { readonly typed: readonly string[]; },

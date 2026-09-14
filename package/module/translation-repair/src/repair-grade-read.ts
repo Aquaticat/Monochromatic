@@ -21,77 +21,77 @@ import {
 // dropping one: an invented grade cannot be noticed downstream.
 
 /**
- * Marker beginning a sheet item.
+ Marker beginning a sheet item.
  */
 const ITEM_PREFIX = '### ';
 
 /**
- * Header line declaring the seed a sheet was drawn under.
+ Header line declaring the seed a sheet was drawn under.
  */
 const SEED_PREFIX = 'Draw seed: ';
 
 /**
- * Header line declaring the corpus commit a sheet was produced against.
+ Header line declaring the corpus commit a sheet was produced against.
  */
 const CORPUS_PREFIX = 'Corpus pin: ';
 
 /**
- * Header line carrying the fingerprint of the draw a sheet came from.
+ Header line carrying the fingerprint of the draw a sheet came from.
  */
 const DIGEST_PREFIX = 'Draw digest: ';
 
 /**
- * What a sheet says about the draw it belongs to.
- *
- * @example
- * ```ts
- * const identity: SheetIdentity = { seed: 'round-three', corpusSha: 'a41fc60', };
- * ```
+ What a sheet says about the draw it belongs to.
+ 
+ @example
+ ```ts
+ const identity: SheetIdentity = { seed: 'round-three', corpusSha: 'a41fc60', };
+ ```
  */
 export type SheetIdentity = {
   /**
-   * Seed the sheet declares, empty when the header carried none.
+   Seed the sheet declares, empty when the header carried none.
    */
   readonly seed: string;
 
   /**
-   * Corpus commit the sheet declares, empty when the header carried none.
+   Corpus commit the sheet declares, empty when the header carried none.
    */
   readonly corpusSha: string;
 
   /**
-   * Draw fingerprint the sheet declares, empty when the header carried none.
-   *
-   * Empty is the ordinary reading for every sheet drawn before the binding
-   * existed, including round three's, which is why an absent digest is scored
-   * under the weaker check rather than refused.
+   Draw fingerprint the sheet declares, empty when the header carried none.
+   
+   Empty is the ordinary reading for every sheet drawn before the binding
+   existed, including round three's, which is why an absent digest is scored
+   under the weaker check rather than refused.
    */
   readonly drawDigest: string;
 };
 
 /**
- * Reads the draw a sheet says it belongs to.
- *
- * Only the header is read, and only up to the first item, so a line quoted
- * inside an item cannot introduce a second identity. Both sheets and the
- * manifest are written in one breath by one draw, so these agreeing is what
- * makes joining them by POSITION sound. Equal item counts alone do not: two
- * unrelated draws of the same size match on count and mislabel every verdict.
- *
- * @param text - sheet contents as the grader left them
- *
- * @returns Declared seed and corpus commit, each empty when absent
- *
- * @example
- * ```ts
- * const identity = readSheetIdentity({ text, },);
- * ```
+ Reads the draw a sheet says it belongs to.
+ 
+ Only the header is read, and only up to the first item, so a line quoted
+ inside an item cannot introduce a second identity. Both sheets and the
+ manifest are written in one breath by one draw, so these agreeing is what
+ makes joining them by POSITION sound. Equal item counts alone do not: two
+ unrelated draws of the same size match on count and mislabel every verdict.
+ 
+ @param text - sheet contents as the grader left them
+ 
+ @returns Declared seed and corpus commit, each empty when absent
+ 
+ @example
+ ```ts
+ const identity = readSheetIdentity({ text, },);
+ ```
  */
 export function readSheetIdentity(
   { text, }: { readonly text: string; },
 ): SheetIdentity {
   /**
-   * Values found so far in the header.
+   Values found so far in the header.
    */
   const found = {
     seed: '',
@@ -115,32 +115,32 @@ export function readSheetIdentity(
 }
 
 /**
- * Marker introducing the grade on a repair-sheet item.
+ Marker introducing the grade on a repair-sheet item.
  */
 const GRADE_MARKER = '- repair grade:';
 
 /**
- * Legend that follows every grade, and therefore bounds the grader's answer.
+ Legend that follows every grade, and therefore bounds the grader's answer.
  */
 const LEGEND_MARKER = '(Y = ';
 
 /**
- * Fence character opening and closing a quoted block.
+ Fence character opening and closing a quoted block.
  */
 const FENCE_CHARACTER = '`';
 
 /**
- * Shortest run that can delimit a fenced block.
+ Shortest run that can delimit a fenced block.
  */
 const FENCE_MIN = 3;
 
 /**
- * What a grader said about one repair.
- *
- * @example
- * ```ts
- * const verdict: RepairVerdict = 'fixes';
- * ```
+ What a grader said about one repair.
+ 
+ @example
+ ```ts
+ const verdict: RepairVerdict = 'fixes';
+ ```
  */
 export type RepairVerdict =
   | 'fixes'
@@ -148,41 +148,41 @@ export type RepairVerdict =
   | 'unscored';
 
 /**
- * One item as the repair sheet carries it after grading.
- *
- * @example
- * ```ts
- * const item: GradedRepairItem = { index: 1, verdict: 'fixes', note: '', };
- * ```
+ One item as the repair sheet carries it after grading.
+ 
+ @example
+ ```ts
+ const item: GradedRepairItem = { index: 1, verdict: 'fixes', note: '', };
+ ```
  */
 export type GradedRepairItem = {
   /**
-   * Sheet position, matching the detection sheet exactly.
+   Sheet position, matching the detection sheet exactly.
    */
   readonly index: number;
 
   /**
-   * Verdict the grader left, or `unscored` where they left none.
+   Verdict the grader left, or `unscored` where they left none.
    */
   readonly verdict: RepairVerdict;
 
   /**
-   * Rationale following the verdict, empty when none was written.
+   Rationale following the verdict, empty when none was written.
    */
   readonly note: string;
 };
 
 /**
- * Leading run of fence characters on one line.
- *
- * @param line - sheet line
- *
- * @returns Run length at the start of the line, zero when it starts otherwise
- *
- * @example
- * ```ts
- * const run = leadingFenceRun({ line: '````text', },);
- * ```
+ Leading run of fence characters on one line.
+ 
+ @param line - sheet line
+ 
+ @returns Run length at the start of the line, zero when it starts otherwise
+ 
+ @example
+ ```ts
+ const run = leadingFenceRun({ line: '````text', },);
+ ```
  */
 function leadingFenceRun({ line, }: { readonly line: string; },): number {
   for (let index = 0; index < line.length; index += 1)
@@ -192,31 +192,31 @@ function leadingFenceRun({ line, }: { readonly line: string; },): number {
 }
 
 /**
- * Reads the grader's answer out of one grade line, with the legend and any
- * enclosing brackets removed.
- *
- * @param line - line carrying the grade marker
- *
- * @returns Answer as the grader left it
- *
- * @example
- * ```ts
- * const answer = extractAnswer({ line: '- repair grade: [Y]  (Y = ...)', },);
- * ```
+ Reads the grader's answer out of one grade line, with the legend and any
+ enclosing brackets removed.
+ 
+ @param line - line carrying the grade marker
+ 
+ @returns Answer as the grader left it
+ 
+ @example
+ ```ts
+ const answer = extractAnswer({ line: '- repair grade: [Y]  (Y = ...)', },);
+ ```
  */
 function extractAnswer({ line, }: { readonly line: string; },): string {
   /**
-   * Text following the grade marker.
+   Text following the grade marker.
    */
   const afterMarker = line.slice(line.indexOf(GRADE_MARKER,) + GRADE_MARKER.length,);
 
   /**
-   * Where the printed legend begins, when it survived grading.
+   Where the printed legend begins, when it survived grading.
    */
   const legendAt = afterMarker.indexOf(LEGEND_MARKER,);
 
   /**
-   * Answer with the legend removed.
+   Answer with the legend removed.
    */
   const withoutLegend = (legendAt === (-1)
     ? afterMarker
@@ -227,7 +227,7 @@ function extractAnswer({ line, }: { readonly line: string; },): string {
     .trim();
   if (withoutLegend.startsWith('[',)) {
     /**
-     * Where the grader's bracket closes, when they kept it.
+     Where the grader's bracket closes, when they kept it.
      */
     const closeAt = withoutLegend.indexOf(']',);
     return (closeAt === (-1)
@@ -242,16 +242,16 @@ function extractAnswer({ line, }: { readonly line: string; },): string {
 }
 
 /**
- * Classifies one grader answer into a verdict and its remaining prose.
- *
- * @param answer - grader's answer, unbracketed
- *
- * @returns Verdict and the note that followed it
- *
- * @example
- * ```ts
- * const read = readAnswer({ answer: 'N, it drops the second clause', },);
- * ```
+ Classifies one grader answer into a verdict and its remaining prose.
+ 
+ @param answer - grader's answer, unbracketed
+ 
+ @returns Verdict and the note that followed it
+ 
+ @example
+ ```ts
+ const read = readAnswer({ answer: 'N, it drops the second clause', },);
+ ```
  */
 function readAnswer({ answer, }: { readonly answer: string; },): {
   readonly verdict: RepairVerdict;
@@ -288,27 +288,27 @@ function readAnswer({ answer, }: { readonly answer: string; },): {
 }
 
 /**
- * Reads every graded repair off a filled repair sheet.
- *
- * Items carrying no grade box at all, which the sheet emits for repairs that
- * never reached the reader, appear as `unscored`. They belong to coverage
- * rather than to repair quality, and the caller keeps them out of the
- * denominator by reading the verdict rather than by their absence.
- *
- * @param text - sheet as the grader left it
- *
- * @returns Items in sheet order, one per heading
- *
- * @example
- * ```ts
- * const items = parseGradedRepairSheet({ text: await readFile(path, 'utf8',), },);
- * ```
+ Reads every graded repair off a filled repair sheet.
+ 
+ Items carrying no grade box at all, which the sheet emits for repairs that
+ never reached the reader, appear as `unscored`. They belong to coverage
+ rather than to repair quality, and the caller keeps them out of the
+ denominator by reading the verdict rather than by their absence.
+ 
+ @param text - sheet as the grader left it
+ 
+ @returns Items in sheet order, one per heading
+ 
+ @example
+ ```ts
+ const items = parseGradedRepairSheet({ text: await readFile(path, 'utf8',), },);
+ ```
  */
 export function parseGradedRepairSheet(
   { text, }: { readonly text: string; },
 ): readonly GradedRepairItem[] {
   /**
-   * Items closed so far, plus the open fence and item being read.
+   Items closed so far, plus the open fence and item being read.
    */
   const state = {
     items: [] as GradedRepairItem[],
@@ -317,7 +317,7 @@ export function parseGradedRepairSheet(
   };
   for (const line of text.split('\n',)) {
     /**
-     * Fence run opening this line, when it has one.
+     Fence run opening this line, when it has one.
      */
     const run = leadingFenceRun({ line, },);
     if (state.openFence > 0) {
@@ -349,7 +349,7 @@ export function parseGradedRepairSheet(
       continue;
 
     /**
-     * Verdict and note read off this grade line.
+     Verdict and note read off this grade line.
      */
     const read = readAnswer({ answer: extractAnswer({ line, },), },);
     state.items[state.items

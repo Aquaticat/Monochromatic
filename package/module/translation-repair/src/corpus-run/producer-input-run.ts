@@ -15,72 +15,72 @@ import type { ProducerInputFileIdentity, } from './producer-input-file.ts';
 //region Exclusive unqualified input-run ownership
 
 /**
- * Private directory permission floor for run control, writable output and child home.
+ Private directory permission floor for run control, writable output and child home.
  */
 const PRIVATE_DIRECTORY_MODE = 0o700;
 /**
- * Control files are created only by this caller and are never overwritten.
+ Control files are created only by this caller and are never overwritten.
  */
 const PRIVATE_FILE_MODE = 0o600;
 /**
- * Group or other permission bits make an output parent unsuitable for private corpus artifacts.
+ Group or other permission bits make an output parent unsuitable for private corpus artifacts.
  */
 const NON_PRIVATE_MODE = 0o077;
 
 /**
- * An input-run location is not a reviewed preparation attempt or acquisition lease.
- *
- * @example
- * ```ts
- * const run: ProducerInputRun = { dir, outputDir, launchPath, containerIdPath, runId, uid, gid };
- * ```
+ An input-run location is not a reviewed preparation attempt or acquisition lease.
+ 
+ @example
+ ```ts
+ const run: ProducerInputRun = { dir, outputDir, launchPath, containerIdPath, runId, uid, gid };
+ ```
  */
 export type ProducerInputRun = {
   /**
-   * Exclusive host run directory, retained on every later failure.
+   Exclusive host run directory, retained on every later failure.
    */
   readonly dir: string;
   /**
-   * Only this child directory is mounted writable for the application.
+   Only this child directory is mounted writable for the application.
    */
   readonly outputDir: string;
   /**
-   * Exact launch snapshot is mounted read-only outside the writable output alias.
+   Exact launch snapshot is mounted read-only outside the writable output alias.
    */
   readonly launchPath: string;
   /**
-   * Podman writes its container ID into a new control-file path.
+   Podman writes its container ID into a new control-file path.
    */
   readonly containerIdPath: string;
   /**
-   * Random identity for this input run, never reused automatically.
+   Random identity for this input run, never reused automatically.
    */
   readonly runId: string;
   /**
-   * Host identity that must own both control and child-created files.
+   Host identity that must own both control and child-created files.
    */
   readonly uid: number;
   /**
-   * Host group identity retained for namespace and output checks.
+   Host group identity retained for namespace and output checks.
    */
   readonly gid: number;
 };
 
 /**
- * Writes one fixed host control record with exclusive creation and content synchronization.
- *
- * @param dir - already created private run directory
- *
- * @param file - fixed host control-file role
- *
- * @param bytes - owned exact serialization, never logged
- *
- * @throws ProducerInputRunError when creation, writing or synchronization fails
- *
- * @example
- * ```ts
- * await writeProducerInputControl({ dir, file: 'container-terminal.json', bytes });
- * ```
+ Writes one fixed host control record with exclusive creation and content synchronization.
+ 
+ @param dir - already created private run directory
+ 
+ @param file - fixed host control-file role
+ 
+ @param bytes - owned exact serialization, never logged
+ 
+ @throws ProducerInputRunError when creation, writing or synchronization fails
+ 
+ @example
+ ```ts
+ await writeProducerInputControl({ dir, file: 'container-terminal.json', bytes });
+ ```
  */
 export async function writeProducerInputControl({
   dir,
@@ -104,11 +104,11 @@ export async function writeProducerInputControl({
       locator: dir,
     });
   /**
-   * Caller mutation cannot alter an in-flight control record.
+   Caller mutation cannot alter an in-flight control record.
    */
   const owned = new Uint8Array(bytes);
   /**
-   * Fixed role names cannot escape the private run directory.
+   Fixed role names cannot escape the private run directory.
    */
   const path = join(
     dir,
@@ -116,7 +116,7 @@ export async function writeProducerInputControl({
   );
   try {
     /**
-     * Existing complete or partial state is never reused.
+     Existing complete or partial state is never reused.
      */
     await using handle = await open(
       path,
@@ -137,24 +137,24 @@ export async function writeProducerInputControl({
 }
 
 /**
- * Creates a private unqualified input run before reading referenced corpus or supporting bodies.
- * The host must first establish that the output parent is disjoint from its read-only input resources.
- * No cleanup or automatic resume occurs after exclusive creation succeeds.
- *
- * @param parent - existing canonical private caller-owned output parent
- *
- * @param launchBytes - exact independently verified launch bytes
- *
- * @param expected - separately recorded launch extent and SHA-256
- *
- * @returns Complete host-owned run locations after synchronized control records exist
- *
- * @throws ProducerInputRunError when ownership, bytes or exclusive creation differs
- *
- * @example
- * ```ts
- * const run = await createProducerInputRun({ parent, launchBytes, expected });
- * ```
+ Creates a private unqualified input run before reading referenced corpus or supporting bodies.
+ The host must first establish that the output parent is disjoint from its read-only input resources.
+ No cleanup or automatic resume occurs after exclusive creation succeeds.
+ 
+ @param parent - existing canonical private caller-owned output parent
+ 
+ @param launchBytes - exact independently verified launch bytes
+ 
+ @param expected - separately recorded launch extent and SHA-256
+ 
+ @returns Complete host-owned run locations after synchronized control records exist
+ 
+ @throws ProducerInputRunError when ownership, bytes or exclusive creation differs
+ 
+ @example
+ ```ts
+ const run = await createProducerInputRun({ parent, launchBytes, expected });
+ ```
  */
 export async function createProducerInputRun({
   parent,
@@ -166,14 +166,14 @@ export async function createProducerInputRun({
   readonly expected: ProducerInputFileIdentity;
 },): Promise<ProducerInputRun> {
   /**
-   * Capture primitive identity and raw bytes before filesystem work can yield.
+   Capture primitive identity and raw bytes before filesystem work can yield.
    */
   const {
     bytes,
     sha256,
   } = expected;
   /**
-   * The launch snapshot remains independent of caller buffers.
+   The launch snapshot remains independent of caller buffers.
    */
   const owned = new Uint8Array(launchBytes);
   if ((owned.length !== bytes) || (createHash('sha256')
@@ -187,19 +187,19 @@ export async function createProducerInputRun({
       locator: parent,
     });
   /**
-   * Host account identity is fixed before creating any run state.
+   Host account identity is fixed before creating any run state.
    */
   const uid = process.getuid();
   /**
-   * Group identity is retained rather than inferred from container defaults.
+   Group identity is retained rather than inferred from container defaults.
    */
   const gid = process.getgid();
   /**
-   * A fresh intended location remains available to diagnose partial creation failures.
+   A fresh intended location remains available to diagnose partial creation failures.
    */
   const runId = randomUUID();
   /**
-   * This directory never carries a reviewed root-plan or acquisition marker.
+   This directory never carries a reviewed root-plan or acquisition marker.
    */
   const dir = join(
     parent,
@@ -207,11 +207,11 @@ export async function createProducerInputRun({
   );
   try {
     /**
-     * Symbolic output parents cannot redirect creation outside the validated host layout.
+     Symbolic output parents cannot redirect creation outside the validated host layout.
      */
     const canonical = await realpath(parent);
     /**
-     * Parent privacy is checked without following a leaf symlink.
+     Parent privacy is checked without following a leaf symlink.
      */
     const state = await lstat(parent);
     if ((canonical !== parent) || (!state.isDirectory())
@@ -244,7 +244,7 @@ export async function createProducerInputRun({
       }))
     });
     /**
-     * Writable application state is separated from read-only control records.
+     Writable application state is separated from read-only control records.
      */
     const outputDir = join(
       dir,

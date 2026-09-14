@@ -1,16 +1,16 @@
 /**
- * Tests for reading the pairing a settled preparation was built on.
- *
- * WHAT THESE PIN is the difference between an artifact that records no pairing
- * and one that records an empty one, and the four shapes the reader refuses
- * because this pipeline cannot write them. Each refusal mirrors an invariant
- * `readBlockPairing` already holds over a roster reply, so a refusal that fired
- * on a shape the producer CAN emit would reject valid artifacts, which is the
- * failure these are pointed at rather than laxness.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading the pairing a settled preparation was built on.
+ 
+ WHAT THESE PIN is the difference between an artifact that records no pairing
+ and one that records an empty one, and the four shapes the reader refuses
+ because this pipeline cannot write them. Each refusal mirrors an invariant
+ `readBlockPairing` already holds over a roster reply, so a refusal that fired
+ on a shape the producer CAN emit would reject valid artifacts, which is the
+ failure these are pointed at rather than laxness.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,7 +26,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Sections a fixture may name, wide enough that no case is bounded by accident.
+ Sections a fixture may name, wide enough that no case is bounded by accident.
  */
 const ALIGNED_SECTIONS = 4;
 
@@ -105,7 +105,7 @@ await describe({
         + 'bounded by the slice count: a pairing filed under a section nobody aligned describes another document',
       fn: async () => {
         /**
-         * What pastTheEnd raised, read for its class as well as its wording.
+         What pastTheEnd raised, read for its class as well as its wording.
          */
         const refusalOfPastTheEnd = caught(function pastTheEnd() {
           parseBlockPairing({
@@ -130,7 +130,7 @@ await describe({
         + 'cannot emit one, so a repeat means two runs merged into a file neither wrote',
       fn: async () => {
         /**
-         * What twice raised, read for its class as well as its wording.
+         What twice raised, read for its class as well as its wording.
          */
         const refusalOfTwice = caught(function twice() {
           parseBlockPairing({
@@ -159,7 +159,7 @@ await describe({
         + 'quietly reordering would accept the file while hiding which run produced it',
       fn: async () => {
         /**
-         * What backwards raised, read for its class as well as its wording.
+         What backwards raised, read for its class as well as its wording.
          */
         const refusalOfBackwards = caught(function backwards() {
           parseBlockPairing({
@@ -188,7 +188,7 @@ await describe({
         + 'refuses: both documents say things in the same order',
       fn: async () => {
         /**
-         * What backOnTheOriginal raised, read for its class as well as its wording.
+         What backOnTheOriginal raised, read for its class as well as its wording.
          */
         const refusalOfBackOnTheOriginal = caught(function backOnTheOriginal() {
           parseBlockPairing({
@@ -215,7 +215,7 @@ await describe({
         expect(refusalOfBackOnTheOriginal,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfBackOnTheOriginal as Error).message,).toContain('on both sides',);
         /**
-         * What backOnTheTranslation raised, read for its class as well as its wording.
+         What backOnTheTranslation raised, read for its class as well as its wording.
          */
         const refusalOfBackOnTheTranslation = caught(function backOnTheTranslation() {
           parseBlockPairing({
@@ -249,7 +249,7 @@ await describe({
         + 'a new one, and which the roster reply reader refuses for the same reason',
       fn: async () => {
         /**
-         * What repeated raised, read for its class as well as its wording.
+         What repeated raised, read for its class as well as its wording.
          */
         const refusalOfRepeated = caught(function repeated() {
           parseBlockPairing({
@@ -283,7 +283,7 @@ await describe({
         + 'a later generation cannot be read as one this reader understands',
       fn: async () => {
         /**
-         * What extraOnSection raised, read for its class as well as its wording.
+         What extraOnSection raised, read for its class as well as its wording.
          */
         const refusalOfExtraOnSection = caught(function extraOnSection() {
           parseBlockPairing({
@@ -302,7 +302,7 @@ await describe({
         expect(refusalOfExtraOnSection,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfExtraOnSection as Error).message,).toContain('[0].whiskers',);
         /**
-         * What extraOnPair raised, read for its class as well as its wording.
+         What extraOnPair raised, read for its class as well as its wording.
          */
         const refusalOfExtraOnPair = caught(function extraOnPair() {
           parseBlockPairing({
@@ -333,7 +333,7 @@ await describe({
         + 'a fraction means the writer and this reader disagree about what the field holds',
       fn: async () => {
         /**
-         * What fractional raised, read for its class as well as its wording.
+         What fractional raised, read for its class as well as its wording.
          */
         const refusalOfFractional = caught(function fractional() {
           parseBlockPairing({
@@ -356,7 +356,7 @@ await describe({
         expect(refusalOfFractional,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfFractional as Error).message,).toContain('[0].pairs[0].source',);
         /**
-         * What negative raised, read for its class as well as its wording.
+         What negative raised, read for its class as well as its wording.
          */
         const refusalOfNegative = caught(function negative() {
           parseBlockPairing({
@@ -381,7 +381,7 @@ await describe({
         + 'section reaches no reader as an empty one',
       fn: async () => {
         /**
-         * What notAList raised, read for its class as well as its wording.
+         What notAList raised, read for its class as well as its wording.
          */
         const refusalOfNotAList = caught(function notAList() {
           parseBlockPairing({
@@ -394,7 +394,7 @@ await describe({
         expect(refusalOfNotAList,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfNotAList as Error).message,).toContain('Whiskers.preparation.blockPairing',);
         /**
-         * What notARecord raised, read for its class as well as its wording.
+         What notARecord raised, read for its class as well as its wording.
          */
         const refusalOfNotARecord = caught(function notARecord() {
           parseBlockPairing({

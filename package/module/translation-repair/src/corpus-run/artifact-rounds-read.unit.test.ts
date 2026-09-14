@@ -1,17 +1,17 @@
 /**
- * Tests for reading judged repair rounds back out of a settled artifact.
- *
- * THE REFUSAL IS THE FEATURE, and half these cases pin it. Version 2 hands the
- * lane result back unread, so everything this reader takes it has to check, and
- * a model the roster no longer seats has to be NAMED rather than read as
- * current. A standing that silently mixed two rosters would be worse than one
- * that reported nothing.
- *
- * Content is cat-themed invention. Model ids are not: they come from the
- * catalog, because the whole point of half these cases is which ids the roster
- * holds.
- *
- * @module
+ Tests for reading judged repair rounds back out of a settled artifact.
+ 
+ THE REFUSAL IS THE FEATURE, and half these cases pin it. Version 2 hands the
+ lane result back unread, so everything this reader takes it has to check, and
+ a model the roster no longer seats has to be NAMED rather than read as
+ current. A standing that silently mixed two rosters would be worse than one
+ that reported nothing.
+ 
+ Content is cat-themed invention. Model ids are not: they come from the
+ catalog, because the whole point of half these cases is which ids the roster
+ holds.
+ 
+ @module
  */
 
 import {
@@ -28,44 +28,44 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Model the roster seats today, used wherever a case is not about the roster.
+ Model the roster seats today, used wherever a case is not about the roster.
  */
 const SEATED = 'hf:moonshotai/Kimi-K3';
 
 /**
- * A second seated model, so a slate can carry two producers.
+ A second seated model, so a slate can carry two producers.
  */
 const ALSO_SEATED = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * Model the roster held until 2026-08-24 and does not now.
+ Model the roster held until 2026-08-24 and does not now.
  */
 const DEPARTED = 'hf:zai-org/GLM-4.7-Flash';
 
 /**
- * Where every case reads from, so a message can be checked against a path.
+ Where every case reads from, so a message can be checked against a path.
  */
 const PATH = 'Whiskerfold.lanes.repair.result';
 
 /**
- * Builds one ballot, defaulting everything a case does not care about.
- *
- * @param modelId - judge that cast it
- *
- * @param best - candidate it named
- *
- * @param weight - what the ballot counted for
- *
- * @param selfVote - whether the judge named its own writing
- *
- * @param reason - what the judge said, which every case but one leaves alone
- *
- * @returns Ballot as an artifact records one
- *
- * @example
- * ```ts
- * const ballot = ballotOf({ modelId: SEATED, best: 1, },);
- * ```
+ Builds one ballot, defaulting everything a case does not care about.
+ 
+ @param modelId - judge that cast it
+ 
+ @param best - candidate it named
+ 
+ @param weight - what the ballot counted for
+ 
+ @param selfVote - whether the judge named its own writing
+ 
+ @param reason - what the judge said, which every case but one leaves alone
+ 
+ @returns Ballot as an artifact records one
+ 
+ @example
+ ```ts
+ const ballot = ballotOf({ modelId: SEATED, best: 1, },);
+ ```
  */
 function ballotOf(
   {
@@ -92,18 +92,18 @@ function ballotOf(
 }
 
 /**
- * Builds one slate position around a producer.
- *
- * @param index - one-based position judges saw
- *
- * @param producer - who wrote it
- *
- * @returns Slate entry as an artifact records one
- *
- * @example
- * ```ts
- * const entry = slateOf({ index: 1, producer: { kind: 'model', modelId: SEATED, }, },);
- * ```
+ Builds one slate position around a producer.
+ 
+ @param index - one-based position judges saw
+ 
+ @param producer - who wrote it
+ 
+ @returns Slate entry as an artifact records one
+ 
+ @example
+ ```ts
+ const entry = slateOf({ index: 1, producer: { kind: 'model', modelId: SEATED, }, },);
+ ```
  */
 function slateOf(
   {
@@ -123,16 +123,16 @@ function slateOf(
 }
 
 /**
- * Builds what one slate position drew.
- *
- * @param index - one-based position
- *
- * @returns Weight entry as an artifact records one
- *
- * @example
- * ```ts
- * const drawn = drawnOf({ index: 1, },);
- * ```
+ Builds what one slate position drew.
+ 
+ @param index - one-based position
+ 
+ @returns Weight entry as an artifact records one
+ 
+ @example
+ ```ts
+ const drawn = drawnOf({ index: 1, },);
+ ```
  */
 function drawnOf(
   {
@@ -153,24 +153,24 @@ function drawnOf(
 }
 
 /**
- * Builds one round around a slate and its ballots.
- *
- * CARRIES EVERY FIELD THE LANE WRITES, including the ones a standing never
- * reads. The reader validates the whole round, so a fixture carrying only what
- * a standing needs would pin a reader looser than the one that ships.
- *
- * @param slate - candidates judges were shown
- *
- * @param ballots - ballots cast over them
- *
- * @param stage - stage that ran it
- *
- * @returns Round as an artifact records one
- *
- * @example
- * ```ts
- * const round = roundOf({ slate, ballots, },);
- * ```
+ Builds one round around a slate and its ballots.
+ 
+ CARRIES EVERY FIELD THE LANE WRITES, including the ones a standing never
+ reads. The reader validates the whole round, so a fixture carrying only what
+ a standing needs would pin a reader looser than the one that ships.
+ 
+ @param slate - candidates judges were shown
+ 
+ @param ballots - ballots cast over them
+ 
+ @param stage - stage that ran it
+ 
+ @returns Round as an artifact records one
+ 
+ @example
+ ```ts
+ const round = roundOf({ slate, ballots, },);
+ ```
  */
 function roundOf(
   {
@@ -209,17 +209,17 @@ function roundOf(
 }
 
 /**
- * Builds an adopted round as the lane writes it: a slate of one, the index of
- * that one, a reason, and nothing a vote would have produced.
- *
- * @param slate - the one entry
- *
- * @returns Round as its JSON would parse
- *
- * @example
- * ```ts
- * const round = adoptedRoundOf({ slate: [slateOf({ index: 1, },),], },);
- * ```
+ Builds an adopted round as the lane writes it: a slate of one, the index of
+ that one, a reason, and nothing a vote would have produced.
+ 
+ @param slate - the one entry
+ 
+ @returns Round as its JSON would parse
+ 
+ @example
+ ```ts
+ const round = adoptedRoundOf({ slate: [slateOf({ index: 1, },),], },);
+ ```
  */
 function adoptedRoundOf(
   { slate, }: { readonly slate: readonly Record<string, unknown>[]; },
@@ -243,19 +243,19 @@ function adoptedRoundOf(
 }
 
 /**
- * Builds a round that decided nothing, which records two fields the other
- * outcome does not.
- *
- * @param slate - candidates judges were shown
- *
- * @param ballots - ballots cast over them
- *
- * @returns Declining round as an artifact records one
- *
- * @example
- * ```ts
- * const round = declinedRoundOf({ slate, ballots, },);
- * ```
+ Builds a round that decided nothing, which records two fields the other
+ outcome does not.
+ 
+ @param slate - candidates judges were shown
+ 
+ @param ballots - ballots cast over them
+ 
+ @returns Declining round as an artifact records one
+ 
+ @example
+ ```ts
+ const round = declinedRoundOf({ slate, ballots, },);
+ ```
  */
 function declinedRoundOf(
   {
@@ -267,8 +267,8 @@ function declinedRoundOf(
   },
 ): Record<string, unknown> {
   /**
-   * Selecting round, whose six shared fields this reuses so the two fixtures
-   * cannot drift apart on them.
+   Selecting round, whose six shared fields this reuses so the two fixtures
+   cannot drift apart on them.
    */
   const selecting = roundOf({
     slate,
@@ -292,16 +292,16 @@ function declinedRoundOf(
 }
 
 /**
- * Wraps rounds into the raw lane result shape the reader takes.
- *
- * @param chunks - rounds per chunk, in chunk order
- *
- * @returns Raw result as an artifact holds one
- *
- * @example
- * ```ts
- * const raw = rawOf({ chunks: [[round,],], },);
- * ```
+ Wraps rounds into the raw lane result shape the reader takes.
+ 
+ @param chunks - rounds per chunk, in chunk order
+ 
+ @returns Raw result as an artifact holds one
+ 
+ @example
+ ```ts
+ const raw = rawOf({ chunks: [[round,],], },);
+ ```
  */
 function rawOf(
   { chunks, }: { readonly chunks: readonly (readonly Record<string, unknown>[])[]; },
@@ -317,7 +317,7 @@ function rawOf(
 }
 
 /**
- * A round every case can start from, produced by two seated models.
+ A round every case can start from, produced by two seated models.
  */
 const PLAIN_ROUND = roundOf({
   slate: [
@@ -357,7 +357,7 @@ await describe({
       name: 'reads a round the lane actually records',
       fn: async () => {
         /**
-         * Rounds one chunk produced.
+         Rounds one chunk produced.
          */
         const perChunk = readRepairRounds({
           raw: rawOf({ chunks: [[PLAIN_ROUND,],], },),
@@ -377,8 +377,8 @@ await describe({
         + 'seated and would say nothing at all about why a candidate won',
       fn: async () => {
         /**
-         * Two ballots whose stated reasons differ from each other and from
-         * every other field on them, so no other value can stand in.
+         Two ballots whose stated reasons differ from each other and from
+         every other field on them, so no other value can stand in.
          */
         const spoken = readRepairRounds({
           raw: rawOf({
@@ -419,7 +419,7 @@ await describe({
         },);
 
         /**
-         * Ballots of the only round the only chunk recorded.
+         Ballots of the only round the only chunk recorded.
          */
         const ballots = spoken[0]?.[0]?.ballots ?? [];
 
@@ -437,8 +437,8 @@ await describe({
       name: 'reads a DECLINING round, keeping what a selecting one has no room for',
       fn: async () => {
         /**
-         * A round where judges settled on nothing, which records a reason and a
-         * disposition in place of a winner and its weight.
+         A round where judges settled on nothing, which records a reason and a
+         disposition in place of a winner and its weight.
          */
         const perChunk = readRepairRounds({
           raw: rawOf({
@@ -466,7 +466,7 @@ await describe({
         },);
 
         /**
-         * The round itself, read out so both of its own fields can be asserted.
+         The round itself, read out so both of its own fields can be asserted.
          */
         const round = perChunk[0]?.[0];
 
@@ -482,7 +482,7 @@ await describe({
         + 'would have produced (`#239`)',
       fn: async () => {
         /**
-         * Rounds read back, one chunk holding one adopted round.
+         Rounds read back, one chunk holding one adopted round.
          */
         const perChunk = readRepairRounds({
           raw: rawOf({
@@ -503,7 +503,7 @@ await describe({
           path: PATH,
         },);
         /**
-         * The one round.
+         The one round.
          */
         const round = perChunk[0]?.[0];
         expect(round?.kind,).toBe('adopted',);
@@ -515,12 +515,12 @@ await describe({
       name: 'REFUSES a round recording nothing about what each position drew',
       fn: async () => {
         /**
-         * What the reader threw when `perCandidate` was absent, which is the
-         * shape every round on disk carries and a partial reader would ignore.
+         What the reader threw when `perCandidate` was absent, which is the
+         shape every round on disk carries and a partial reader would ignore.
          */
         const refusal = caught(function readsAPartialRound() {
           /**
-           * A well formed round with that one field taken back out.
+           A well formed round with that one field taken back out.
            */
           const {
             perCandidate,
@@ -561,8 +561,8 @@ await describe({
       name: 'REFUSES a declining round naming a disposition the lane cannot produce',
       fn: async () => {
         /**
-         * What the reader threw on a disposition outside the two the selection
-         * can reach, which is how a hand-edited or foreign record reads.
+         What the reader threw on a disposition outside the two the selection
+         can reach, which is how a hand-edited or foreign record reads.
          */
         const refusal = caught(function readsAnUnknownDisposition() {
           readRepairRounds({
@@ -604,8 +604,8 @@ await describe({
       name: 'ACCEPTS a half weight and a declining ballot, which no count guard would',
       fn: async () => {
         /**
-         * A round whose second ballot is a self-vote and whose first names no
-         * candidate at all, both of which a count guard refuses.
+         A round whose second ballot is a self-vote and whose first names no
+         candidate at all, both of which a count guard refuses.
          */
         const declining = readRepairRounds({
           raw: rawOf({
@@ -655,7 +655,7 @@ await describe({
         // passed the whole file while refusing any real round where a judge
         // voted on its own writing.
         /**
-         * A round whose one candidate drew a full vote and a self vote.
+         A round whose one candidate drew a full vote and a self vote.
          */
         const drawn = readRepairRounds({
           raw: rawOf({
@@ -698,7 +698,7 @@ await describe({
       name: 'keeps a chunk that judged nothing as its own empty list',
       fn: async () => {
         /**
-         * Two chunks, only the second of which asked anyone to write.
+         Two chunks, only the second of which asked anyone to write.
          */
         const perChunk = readRepairRounds({
           raw: rawOf({
@@ -720,7 +720,7 @@ await describe({
       name: 'reads a composite producer and an incumbent, not only a lone model',
       fn: async () => {
         /**
-         * A slate carrying all three provenance shapes at once.
+         A slate carrying all three provenance shapes at once.
          */
         const perChunk = readRepairRounds({
           raw: rawOf({
@@ -865,10 +865,10 @@ await describe({
       name: 'names a result with no chunks an EARLIER SHAPE, not a malformed one',
       fn: async () => {
         /**
-         * What a repair result settled before the lane recorded rounds throws.
-         * It is a complete, correct record that cannot answer this question,
-         * and reporting it as a parse failure would call a healthy archive
-         * broken: 22 of 41 artifacts on disk are exactly this.
+         What a repair result settled before the lane recorded rounds throws.
+         It is a complete, correct record that cannot answer this question,
+         and reporting it as a parse failure would call a healthy archive
+         broken: 22 of 41 artifacts on disk are exactly this.
          */
         const refusal = caught(function readsAnEarlierShape() {
           readRepairRounds({
@@ -887,8 +887,8 @@ await describe({
       name: 'REFUSES chunks that are present and not an array, which IS malformed',
       fn: async () => {
         /**
-         * A result naming the field with something that cannot hold rounds,
-         * which is the case the earlier-shape answer must not swallow.
+         A result naming the field with something that cannot hold rounds,
+         which is the case the earlier-shape answer must not swallow.
          */
         const refusal = caught(function readsAMalformedResult() {
           readRepairRounds({
@@ -977,15 +977,15 @@ await describe({
         + 'weight is zero at every candidate rather than a refusal anyone would see',
       fn: async () => {
         /**
-         * Weight exactly as a file carries it. `1e400` is syntactically valid
-         * JSON and parses to `Infinity`, which is the only way a non-finite
-         * number reaches a reader that sees nothing but `JSON.parse` output.
+         Weight exactly as a file carries it. `1e400` is syntactically valid
+         JSON and parses to `Infinity`, which is the only way a non-finite
+         number reaches a reader that sees nothing but `JSON.parse` output.
          */
         const overflowed = JSON.parse('{ "weight": 1e400 }',) as { readonly weight: number; };
 
         /**
-         * What the reader threw, held so both its class and its reason can be
-         * asserted separately.
+         What the reader threw, held so both its class and its reason can be
+         asserted separately.
          */
         const refusalOfInfiniteWeight = caught(function readsAnOverflowedWeight() {
           readRepairRounds({
@@ -1026,8 +1026,8 @@ await describe({
       name: 'names the exact path a departed model was read at',
       fn: async () => {
         /**
-         * What the reader threw, held so both the class and the path it names
-         * can be asserted separately.
+         What the reader threw, held so both the class and the path it names
+         can be asserted separately.
          */
         const refusal = caught(function readsAnEarlierRoster() {
           readRepairRounds({
@@ -1072,11 +1072,11 @@ await describe({
         + 'and not which of its fields to look at',
       fn: async () => {
         /**
-         * What the reader threw when handed a result whose `chunks` is a string.
-         *
-         * PRESENT BUT WRONG-SHAPED, which is a different answer from absent: a
-         * result carrying no `chunks` at all predates the field and is reported
-         * as {@link RoundsNotRecordedError} rather than as a parse failure.
+         What the reader threw when handed a result whose `chunks` is a string.
+         
+         PRESENT BUT WRONG-SHAPED, which is a different answer from absent: a
+         result carrying no `chunks` at all predates the field and is reported
+         as {@link RoundsNotRecordedError} rather than as a parse failure.
          */
         const refusal = caught(function readsChunksThatAreNotAList() {
           readRepairRounds({

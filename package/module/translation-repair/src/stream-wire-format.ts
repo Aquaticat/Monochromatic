@@ -19,17 +19,17 @@ import {
 // grammars somebody wrote a reader for.
 
 /**
- * Event grammars a drained stream can speak.
- *
- * @example
- * ```ts
- * const wireFormat: StreamWireFormat = 'anthropic';
- * ```
+ Event grammars a drained stream can speak.
+ 
+ @example
+ ```ts
+ const wireFormat: StreamWireFormat = 'anthropic';
+ ```
  */
 export type StreamWireFormat = 'openai' | 'anthropic';
 
 /**
- * Reader for each grammar.
+ Reader for each grammar.
  */
 const WIRE_SCANNERS: Readonly<Record<StreamWireFormat, () => DeltaScanner>> = {
   openai: scanStreamDeltas,
@@ -37,24 +37,24 @@ const WIRE_SCANNERS: Readonly<Record<StreamWireFormat, () => DeltaScanner>> = {
 };
 
 /**
- * Grammar assumed where a caller names none.
- *
- * THE OLDER ONE, so every existing call site keeps draining exactly the stream
- * it drained before this choice existed.
+ Grammar assumed where a caller names none.
+ 
+ THE OLDER ONE, so every existing call site keeps draining exactly the stream
+ it drained before this choice existed.
  */
 export const DEFAULT_WIRE_FORMAT: StreamWireFormat = 'openai';
 
 /**
- * Opens a reader for one grammar.
- *
- * @param wireFormat - grammar the stream speaks
- *
- * @returns Fresh scanner, which carries per-stream state and is never shared
- *
- * @example
- * ```ts
- * const scanner = scannerFor({ wireFormat: 'anthropic', },);
- * ```
+ Opens a reader for one grammar.
+ 
+ @param wireFormat - grammar the stream speaks
+ 
+ @returns Fresh scanner, which carries per-stream state and is never shared
+ 
+ @example
+ ```ts
+ const scanner = scannerFor({ wireFormat: 'anthropic', },);
+ ```
  */
 export function scannerFor(
   { wireFormat, }: { readonly wireFormat: StreamWireFormat; },

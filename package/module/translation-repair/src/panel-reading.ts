@@ -22,76 +22,76 @@ import type {
 // worth repairing kept less.
 
 /**
- * One panelist's vote on one claim, beside the weight it carried.
- *
- * @example
- * ```ts
- * const ballot: PanelClaimBallot = {
- *   panelistId: 'hf:zai-org/GLM-5.3-Flash',
- *   vote: 'supported',
- *   weight: 1,
- * };
- * ```
+ One panelist's vote on one claim, beside the weight it carried.
+ 
+ @example
+ ```ts
+ const ballot: PanelClaimBallot = {
+   panelistId: 'hf:zai-org/GLM-5.3-Flash',
+   vote: 'supported',
+   weight: 1,
+ };
+ ```
  */
 export type PanelClaimBallot = {
   /**
-   * Panelist that voted, as the shell named it when resolving the ballot.
-   *
-   * A plain string rather than a catalog id because the panel roster is the
-   * shell's to name: `tallyVotes` receives ballots keyed by whatever the caller
-   * used, and claims never carry panelist identity themselves.
+   Panelist that voted, as the shell named it when resolving the ballot.
+   
+   A plain string rather than a catalog id because the panel roster is the
+   shell's to name: `tallyVotes` receives ballots keyed by whatever the caller
+   used, and claims never carry panelist identity themselves.
    */
   readonly panelistId: string;
 
   /**
-   * What it said about this claim, with a missing verdict recorded as the
-   * abstention the tally already treats it as.
+   What it said about this claim, with a missing verdict recorded as the
+   abstention the tally already treats it as.
    */
   readonly vote: PanelVoteState;
 
   /**
-   * Weight this vote carried, read off the config in force for that run.
-   *
-   * STORED PER BALLOT rather than left to a reader to look up, because the
-   * table lives in `AdjudicationConfig` and no settled artifact records it. A
-   * reader holding the votes alone could not reproduce the tally on a run whose
-   * config was not the default.
+   Weight this vote carried, read off the config in force for that run.
+   
+   STORED PER BALLOT rather than left to a reader to look up, because the
+   table lives in `AdjudicationConfig` and no settled artifact records it. A
+   reader holding the votes alone could not reproduce the tally on a run whose
+   config was not the default.
    */
   readonly weight: number;
 };
 
 /**
- * Everything the panel decided about one claim.
- *
- * @example
- * ```ts
- * const reading: ClaimPanelReading = { ballots, configuredPanelists: 6, tally, };
- * ```
+ Everything the panel decided about one claim.
+ 
+ @example
+ ```ts
+ const reading: ClaimPanelReading = { ballots, configuredPanelists: 6, tally, };
+ ```
  */
 export type ClaimPanelReading = {
   /**
-   * Every ballot cast on this claim, one per panelist heard.
+   Every ballot cast on this claim, one per panelist heard.
    */
   readonly ballots: readonly PanelClaimBallot[];
 
   /**
-   * Panelists the run seated, which is not recoverable from the ballots.
-   *
-   * A lost voice leaves no ballot at all while an abstention leaves one, so
-   * three ballots of six seated and three of three are very different evidence
-   * and are indistinguishable without this. Same reasoning as
-   * `IssueCheckerReading.configuredCheckers` and
-   * `IssueProbeReading.configuredProbers`.
+   Panelists the run seated, which is not recoverable from the ballots.
+   
+   A lost voice leaves no ballot at all while an abstention leaves one, so
+   three ballots of six seated and three of three are very different evidence
+   and are indistinguishable without this. Same reasoning as
+   `IssueCheckerReading.configuredCheckers` and
+   `IssueProbeReading.configuredProbers`.
    */
   readonly configuredPanelists: number;
 
   /**
-   * Weighted mass behind each vote state, as this run summed it.
-   *
-   * STORED RATHER THAN LEFT DERIVABLE so a reader can check its own arithmetic
-   * against the run's. The ballots and their weights are enough to recompute
-   * it, and a recomputation that disagrees means the weighting changed under a
-   * settled artifact, which is a thing worth being able to notice.
+   Weighted mass behind each vote state, as this run summed it.
+   
+   STORED RATHER THAN LEFT DERIVABLE so a reader can check its own arithmetic
+   against the run's. The ballots and their weights are enough to recompute
+   it, and a recomputation that disagrees means the weighting changed under a
+   settled artifact, which is a thing worth being able to notice.
    */
   readonly tally: VoteTally;
 };

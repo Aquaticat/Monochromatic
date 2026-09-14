@@ -17,54 +17,54 @@ import type { ClaimPanelReading, } from './panel-reading.ts';
 // it cannot promote a rejected or unresolved diagnosis into repair authority.
 
 /**
- * One member after voting under the caller's actual thresholds and weights.
- *
- * @example
- * ```ts
- * const grades: readonly GradedMember[] = [];
- * ```
+ One member after voting under the caller's actual thresholds and weights.
+ 
+ @example
+ ```ts
+ const grades: readonly GradedMember[] = [];
+ ```
  */
 export type GradedMember = {
   /**
-   * Original atomic claim retained for attribution.
+   Original atomic claim retained for attribution.
    */
   readonly member: AggregatedClaim;
   /**
-   * Weighted decisions belonging only to this claim.
+   Weighted decisions belonging only to this claim.
    */
   readonly tally: VoteTally;
   /**
-   * Ballots and configured electorate behind the tally.
+   Ballots and configured electorate behind the tally.
    */
   readonly reading: ClaimPanelReading;
   /**
-   * Effective decision, never re-derived under default thresholds.
+   Effective decision, never re-derived under default thresholds.
    */
   readonly status: AdjudicationStatus;
   /**
-   * Effective severity after supported re-grades.
+   Effective severity after supported re-grades.
    */
   readonly severity: IssueSeverity;
 };
 
 /**
- * Upper median under the taxonomy's least-to-most severity order.
- * Even splits retain the more severe grade, matching existing adjudication.
- *
- * @param severities - nonempty severity opinions
- *
- * @returns Upper-median grade
- *
- * @example
- * ```ts
- * severityUpperMedian({ severities: ['minor', 'major'] });
- * ```
+ Upper median under the taxonomy's least-to-most severity order.
+ Even splits retain the more severe grade, matching existing adjudication.
+ 
+ @param severities - nonempty severity opinions
+ 
+ @returns Upper-median grade
+ 
+ @example
+ ```ts
+ severityUpperMedian({ severities: ['minor', 'major'] });
+ ```
  */
 export function severityUpperMedian(
   { severities, }: { readonly severities: readonly IssueSeverity[]; },
 ): IssueSeverity {
   /**
-   * Opinions ordered for median selection.
+   Opinions ordered for median selection.
    */
   const sorted = [...severities,].toSorted(function bySeverityRank(
     left,
@@ -76,18 +76,18 @@ export function severityUpperMedian(
 }
 
 /**
- * Partitions a panel-approved merge by already-decided member status.
- * First occurrence determines partition order. A source-defect status keeps
- * the entire merged cluster blocked, preserving protective-minority policy.
- *
- * @param graded - members in stable cluster order
- *
- * @returns Uniform-status groups, or one protected heterogeneous group
- *
- * @example
- * ```ts
- * const groups = partitionGradedMembers({ graded });
- * ```
+ Partitions a panel-approved merge by already-decided member status.
+ First occurrence determines partition order. A source-defect status keeps
+ the entire merged cluster blocked, preserving protective-minority policy.
+ 
+ @param graded - members in stable cluster order
+ 
+ @returns Uniform-status groups, or one protected heterogeneous group
+ 
+ @example
+ ```ts
+ const groups = partitionGradedMembers({ graded });
+ ```
  */
 export function partitionGradedMembers(
   { graded, }: { readonly graded: readonly GradedMember[]; },
@@ -97,7 +97,7 @@ export function partitionGradedMembers(
   },))
     return [graded,];
   /**
-   * Status order follows first occurrence rather than a new priority rule.
+   Status order follows first occurrence rather than a new priority rule.
    */
   const statuses = [...new Set(graded.map(function statusOf(entry,): AdjudicationStatus {
     return entry.status;
@@ -110,30 +110,30 @@ export function partitionGradedMembers(
 }
 
 /**
- * Assembles one nonempty partition produced by {@link partitionGradedMembers},
- * or one unmerged member. Only source-defect-protected groups mix statuses.
- * Per-member evidence keysets exactly follow the retained claims.
- *
- * @param graded - uniform-status or source-defect-protected group
- *
- * @returns Issue whose repair authority cannot exceed its member decisions
- *
- * @example
- * ```ts
- * const issue = assembleGradedIssue({ graded: group });
- * ```
+ Assembles one nonempty partition produced by {@link partitionGradedMembers},
+ or one unmerged member. Only source-defect-protected groups mix statuses.
+ Per-member evidence keysets exactly follow the retained claims.
+ 
+ @param graded - uniform-status or source-defect-protected group
+ 
+ @returns Issue whose repair authority cannot exceed its member decisions
+ 
+ @example
+ ```ts
+ const issue = assembleGradedIssue({ graded: group });
+ ```
  */
 export function assembleGradedIssue(
   { graded, }: { readonly graded: readonly GradedMember[]; },
 ): AdjudicatedIssue {
   /**
-   * Accepted members still carry severity in a source-defect-blocked group.
+   Accepted members still carry severity in a source-defect-blocked group.
    */
   const severityCarriers = graded.filter(function accepted(entry,): boolean {
     return entry.status === 'accepted';
   },);
   /**
-   * Membership determines identity exactly as before partitioning existed.
+   Membership determines identity exactly as before partitioning existed.
    */
   const ids = graded.map(function claimId(entry,): string {
     return entry.member

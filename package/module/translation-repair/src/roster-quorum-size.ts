@@ -1,16 +1,16 @@
 //region Roster quorum size
 
 /**
- * Computes exact-half quorum, rounded up for odd rosters and never below one.
- *
- * @param rosterSize - requested independent seat count
- *
- * @returns Seats needed to settle without requiring unreliable whole roster
- *
- * @example
- * ```ts
- * const quorum = rosterQuorumSize({ rosterSize: 8, });
- * ```
+ Computes exact-half quorum, rounded up for odd rosters and never below one.
+ 
+ @param rosterSize - requested independent seat count
+ 
+ @returns Seats needed to settle without requiring unreliable whole roster
+ 
+ @example
+ ```ts
+ const quorum = rosterQuorumSize({ rosterSize: 8, });
+ ```
  */
 export function rosterQuorumSize(
   { rosterSize, }: { readonly rosterSize: number; },

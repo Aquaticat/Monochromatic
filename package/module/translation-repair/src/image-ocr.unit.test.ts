@@ -1,44 +1,44 @@
 /**
- * Tests for reading a picture without a model: counting what OCR yields, and
- * refusing bytes no decoder can even turn into a picture.
- *
- * WHAT THIS PINS. `solidCharacters` is the count `readImageWithOcr` compares
- * against `MIN_OCR_CHARS` to decide `read` from `no-text`, so every shape of
- * whitespace the raw reading might carry has to be discounted the same way,
- * whether that is plain padding or the tabs and newlines a `.txt` file can
- * carry. The undecodable case pins the other end of the function: bytes that
- * are not a picture at all must come back as a named `unavailable` finding
- * rather than an unhandled rejection, and this needs neither `dwebp` nor
- * `magick` to succeed, only to fail, which arbitrary bytes buy on any machine
- * whether or not it carries either tool.
- *
- * THE `read` AND `no-text` PATHS ARE NOT EXERCISED HERE. Both depend on
- * `tesseract` actually transcribing a picture, which needs its `chi_sim`
- * language data installed, and a unit test must not depend on that. They are
- * verified at the user boundary instead, through the built artifact, on
- * 2026-08-19:
- *
- * ```
- * wangzihao980/Word1.webp       71288 bytes   read      405 chars
- * zheermao101/photo3.webp       33038 bytes   read      557 chars
- * dogesir_/intro.webp           95094 bytes   read      930 chars
- * Zha_Ke/letter.webp           628180 bytes   read     1718 chars
- * DarlinChit/photo1.webp       151352 bytes   read      139 chars
- * wangzihao980/picture4.webp    13728 bytes   no-text     0 chars
- * Uekawakuyuurei/img231.webp   169776 bytes   no-text     0 chars
- * ```
- *
- * `extensionOf` IS NOT COVERED HERE. It lives in `image-asset.ts` and
- * `readImageWithOcr` uses it to name the scratch file it writes before
- * decoding, but `translate-barrel.ts` never re-exports it, so it never reaches
- * `dist/final/node/index.mjs`: confirmed by grepping the built bundle and its
- * `.d.mts` export statement for the bare name. No import from this test can
- * reach a symbol the barrel does not carry, and adding it there is a second
- * file this pass does not touch.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading a picture without a model: counting what OCR yields, and
+ refusing bytes no decoder can even turn into a picture.
+ 
+ WHAT THIS PINS. `solidCharacters` is the count `readImageWithOcr` compares
+ against `MIN_OCR_CHARS` to decide `read` from `no-text`, so every shape of
+ whitespace the raw reading might carry has to be discounted the same way,
+ whether that is plain padding or the tabs and newlines a `.txt` file can
+ carry. The undecodable case pins the other end of the function: bytes that
+ are not a picture at all must come back as a named `unavailable` finding
+ rather than an unhandled rejection, and this needs neither `dwebp` nor
+ `magick` to succeed, only to fail, which arbitrary bytes buy on any machine
+ whether or not it carries either tool.
+ 
+ THE `read` AND `no-text` PATHS ARE NOT EXERCISED HERE. Both depend on
+ `tesseract` actually transcribing a picture, which needs its `chi_sim`
+ language data installed, and a unit test must not depend on that. They are
+ verified at the user boundary instead, through the built artifact, on
+ 2026-08-19:
+ 
+ ```
+ wangzihao980/Word1.webp       71288 bytes   read      405 chars
+ zheermao101/photo3.webp       33038 bytes   read      557 chars
+ dogesir_/intro.webp           95094 bytes   read      930 chars
+ Zha_Ke/letter.webp           628180 bytes   read     1718 chars
+ DarlinChit/photo1.webp       151352 bytes   read      139 chars
+ wangzihao980/picture4.webp    13728 bytes   no-text     0 chars
+ Uekawakuyuurei/img231.webp   169776 bytes   no-text     0 chars
+ ```
+ 
+ `extensionOf` IS NOT COVERED HERE. It lives in `image-asset.ts` and
+ `readImageWithOcr` uses it to name the scratch file it writes before
+ decoding, but `translate-barrel.ts` never re-exports it, so it never reaches
+ `dist/final/node/index.mjs`: confirmed by grepping the built bundle and its
+ `.d.mts` export statement for the bare name. No import from this test can
+ reach a symbol the barrel does not carry, and adding it there is a second
+ file this pass does not touch.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -55,14 +55,14 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger the reader writes its progress to.
+ Logger the reader writes its progress to.
  */
 const l = tagged({ tag: 'image-ocr-test', },);
 
 /**
- * A short run of arbitrary bytes that is not a picture in any format,
- * standing in for a corrupt file or an unrelated one landing where a picture
- * was expected. Ten bytes, no format's magic number among them.
+ A short run of arbitrary bytes that is not a picture in any format,
+ standing in for a corrupt file or an unrelated one landing where a picture
+ was expected. Ten bytes, no format's magic number among them.
  */
 const UNDECODABLE_BYTES = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9,],);
 
@@ -133,7 +133,7 @@ await describe({
         + 'this stable on a machine carrying neither tool, either, or both',
       fn: async () => {
         /**
-         * What the reader made of bytes no decoder can parse.
+         What the reader made of bytes no decoder can parse.
          */
         const reading: OcrReading = await readImageWithOcr({
           bytes: UNDECODABLE_BYTES,

@@ -32,18 +32,18 @@ import { quoteBlockCount, } from './markdown-blocks.ts';
 // take, and says nothing about prose.
 
 /**
- * Whether a replacement would leave fewer quoted passages than the archive has.
- *
- * @param incumbentText - archive wording being replaced
- *
- * @param shippedText - wording the lane wants to put there
- *
- * @returns Whether a quoted passage would be lost
- *
- * @example
- * ```ts
- * const lost = dropsQuotedPassage({ incumbentText, shippedText, },);
- * ```
+ Whether a replacement would leave fewer quoted passages than the archive has.
+ 
+ @param incumbentText - archive wording being replaced
+ 
+ @param shippedText - wording the lane wants to put there
+ 
+ @returns Whether a quoted passage would be lost
+ 
+ @example
+ ```ts
+ const lost = dropsQuotedPassage({ incumbentText, shippedText, },);
+ ```
  */
 export function dropsQuotedPassage(
   {
@@ -58,24 +58,24 @@ export function dropsQuotedPassage(
 }
 
 /**
- * Names a quote-loss refusal in scorecard-stable wording.
- *
- * PARALLEL TO THE ALIGNMENT REFUSAL, so a run's findings read the same way
- * whichever guard kept the archive, and so a corpus-wide count can separate
- * them.
- *
- * @param sliceIndex - slice refused
- *
- * @param incumbentText - archive wording that was kept
- *
- * @param shippedText - wording that was refused
- *
- * @returns One finding line
- *
- * @example
- * ```ts
- * const finding = quoteLossRefusalFinding({ sliceIndex, incumbentText, shippedText, },);
- * ```
+ Names a quote-loss refusal in scorecard-stable wording.
+ 
+ PARALLEL TO THE ALIGNMENT REFUSAL, so a run's findings read the same way
+ whichever guard kept the archive, and so a corpus-wide count can separate
+ them.
+ 
+ @param sliceIndex - slice refused
+ 
+ @param incumbentText - archive wording that was kept
+ 
+ @param shippedText - wording that was refused
+ 
+ @returns One finding line
+ 
+ @example
+ ```ts
+ const finding = quoteLossRefusalFinding({ sliceIndex, incumbentText, shippedText, },);
+ ```
  */
 export function quoteLossRefusalFinding(
   {

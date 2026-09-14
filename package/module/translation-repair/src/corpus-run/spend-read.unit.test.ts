@@ -1,24 +1,24 @@
 /**
- * Tests for reading `SPEND` lines back out of a run log.
- *
- * THE CASE THAT BINDS THE PAIR is the round trip: a line `reportSpend` returned
- * is handed straight to `readSpendLine`. Writing that case is what found the
- * defect it now guards, since the marker originally carried a leading space and
- * the writer's own output read as prose.
- *
- * PROSE MENTIONING THE MARKER IS NOT A RECORD, and gets its own case. A run log
- * carries commit messages, task notes and test output, any of which may write
- * the word. `meter-sample-read.ts` learned this from its own summary line,
- * which claimed a hole in a log that had none.
- *
- * A RECORD THAT WILL NOT PARSE IS COUNTED, NOT DROPPED, which is the other half
- * of the same discipline: a reader that skipped malformed records would report
- * a cleaner log than the one it read, and interleaved writes from concurrent
- * stages produce them.
- *
- * Model identifiers come from the catalog. No corpus content appears here.
- *
- * @module
+ Tests for reading `SPEND` lines back out of a run log.
+ 
+ THE CASE THAT BINDS THE PAIR is the round trip: a line `reportSpend` returned
+ is handed straight to `readSpendLine`. Writing that case is what found the
+ defect it now guards, since the marker originally carried a leading space and
+ the writer's own output read as prose.
+ 
+ PROSE MENTIONING THE MARKER IS NOT A RECORD, and gets its own case. A run log
+ carries commit messages, task notes and test output, any of which may write
+ the word. `meter-sample-read.ts` learned this from its own summary line,
+ which claimed a hole in a log that had none.
+ 
+ A RECORD THAT WILL NOT PARSE IS COUNTED, NOT DROPPED, which is the other half
+ of the same discipline: a reader that skipped malformed records would report
+ a cleaner log than the one it read, and interleaved writes from concurrent
+ stages produce them.
+ 
+ Model identifiers come from the catalog. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -34,23 +34,23 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Log line as a logger writes one, tags and stamp in front of the record.
- *
- * @param tail - record text, marker word onward
- *
- * @returns Line shaped the way a run log holds it
- *
- * @example
- * ```ts
- * const line = logged({ tail: 'SPEND provider=hyper model=m prompt=1 completion=2', },);
- * ```
+ Log line as a logger writes one, tags and stamp in front of the record.
+ 
+ @param tail - record text, marker word onward
+ 
+ @returns Line shaped the way a run log holds it
+ 
+ @example
+ ```ts
+ const line = logged({ tail: 'SPEND provider=hyper model=m prompt=1 completion=2', },);
+ ```
  */
 function logged({ tail, }: { readonly tail: string; },): string {
   return `[info] [2026-08-25T01:28:57.289Z] [translation-repair] [reportSpend] ${tail}`;
 }
 
 /**
- * Record naming the metered provider, used wherever a case needs a valid one.
+ Record naming the metered provider, used wherever a case needs a valid one.
  */
 const HYPER_TAIL = 'SPEND provider=hyper model=qwen3.8-max prompt=5120 completion=3072';
 

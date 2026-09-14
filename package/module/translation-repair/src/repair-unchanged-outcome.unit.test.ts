@@ -1,28 +1,28 @@
 /**
- * Tests for the telemetry a chunk keeps when nothing about it changed.
- *
- * WHY THIS FILE EXISTS. Three exits in `repair-chunk.ts` ship a slice exactly
- * as it stood, and all three spread this one shape so a field added to the
- * contract cannot land on two of them and be forgotten on the third. The
- * critics were paid for on every one of those exits, and their votes, screen
- * and attributions are read later by calibration.
- *
- * WHY IT CALLS THE BUILDER DIRECTLY rather than driving `repairTranslation`.
- * Measured on 2026-08-25: mutating these carried fields left the lane`s own
- * cases green, because a run whose checkers refuse to confirm settles in
- * `repair-chunk.ts` instead and builds its own outcome. Reaching THIS builder
- * through the lane with a non-empty attribution list needs a scripted state
- * that work never found, and the fields it carries are worth pinning anyway:
- * a calibration reading zeroes cannot tell an unheard slice from a lost one.
- *
- * THE PHASE FIXTURE IS CAST, following `translate-lane-wordings.unit.test.ts`.
- * A faithful `ChunkCriticPhase` carries validated claims, and building one
- * would bury what this case is about under a claim model the function never
- * reads.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the telemetry a chunk keeps when nothing about it changed.
+ 
+ WHY THIS FILE EXISTS. Three exits in `repair-chunk.ts` ship a slice exactly
+ as it stood, and all three spread this one shape so a field added to the
+ contract cannot land on two of them and be forgotten on the third. The
+ critics were paid for on every one of those exits, and their votes, screen
+ and attributions are read later by calibration.
+ 
+ WHY IT CALLS THE BUILDER DIRECTLY rather than driving `repairTranslation`.
+ Measured on 2026-08-25: mutating these carried fields left the lane`s own
+ cases green, because a run whose checkers refuse to confirm settles in
+ `repair-chunk.ts` instead and builds its own outcome. Reaching THIS builder
+ through the lane with a non-empty attribution list needs a scripted state
+ that work never found, and the fields it carries are worth pinning anyway:
+ a calibration reading zeroes cannot tell an unheard slice from a lost one.
+ 
+ THE PHASE FIXTURE IS CAST, following `translate-lane-wordings.unit.test.ts`.
+ A faithful `ChunkCriticPhase` carries validated claims, and building one
+ would bury what this case is about under a claim model the function never
+ reads.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -40,18 +40,18 @@ import {
 //region Fixtures
 
 /**
- * Wording that ships, unchanged, on every exit this shape covers.
+ Wording that ships, unchanged, on every exit this shape covers.
  */
 const STANDING_TEXT = 'Mittens slept on the sill until noon.';
 
 /**
- * Claim one critic raised twice and another once.
+ Claim one critic raised twice and another once.
  */
 const CLAIM_ID = 'issue/whiskers-counted-the-birds';
 
 /**
- * Critic phase whose votes stood, so the slice ships as it stands while its
- * telemetry survives the exit.
+ Critic phase whose votes stood, so the slice ships as it stands while its
+ telemetry survives the exit.
  */
 const CRITIC_PHASE = {
   claims: [{ claimId: CLAIM_ID, },],
@@ -91,7 +91,7 @@ await describe({
         + 'critics all spoke and whose text simply stood',
       fn: async () => {
         /**
-         * Outcome the three unchanged exits spread.
+         Outcome the three unchanged exits spread.
          */
         const outcome = unchangedChunkOutcome({
           sliceIndex: 4,
@@ -129,7 +129,7 @@ await describe({
         + 'own work on text it never touched',
       fn: async () => {
         /**
-         * Same outcome, read for what it denies rather than what it carries.
+         Same outcome, read for what it denies rather than what it carries.
          */
         const outcome = unchangedChunkOutcome({
           sliceIndex: 4,

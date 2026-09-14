@@ -1,17 +1,17 @@
 /**
- * Tests for the adjacent-slice repetition check: what it names, and the four
- * things it must NOT name.
- *
- * WHY IT EXISTS SEPARATELY from the document-scale check: that one requires two
- * words of at least five letters before reporting anything, and `#107`'s own
- * example carries none, so the check written for that defect cannot see it.
- * Adjacency is specific enough to need no content gate, which
- * `doc/audit/an-archive-rebuilt-from-the-ledger-is-not-the-archive.md`
- * measures at one hit in twenty-two lane readings.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the adjacent-slice repetition check: what it names, and the four
+ things it must NOT name.
+ 
+ WHY IT EXISTS SEPARATELY from the document-scale check: that one requires two
+ words of at least five letters before reporting anything, and `#107`'s own
+ example carries none, so the check written for that defect cannot see it.
+ Adjacency is specific enough to need no content gate, which
+ `doc/audit/an-archive-rebuilt-from-the-ledger-is-not-the-archive.md`
+ measures at one hit in twenty-two lane readings.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -25,14 +25,14 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Wording long enough to report, with NO word of five letters, mirroring the
- * shape of the duplication `#107` recorded.
+ Wording long enough to report, with NO word of five letters, mirroring the
+ shape of the duplication `#107` recorded.
  */
 const SHORT_WORDED = 'and so we let it be';
 
 /**
- * Ordinary wording that carries content words, for the cases where the content
- * gate is beside the point.
+ Ordinary wording that carries content words, for the cases where the content
+ gate is beside the point.
  */
 const PASSAGE = 'the tabby waited by the garden gate';
 

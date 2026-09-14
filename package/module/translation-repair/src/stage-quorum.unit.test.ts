@@ -1,17 +1,17 @@
 /**
- * Tests for stage voice gathering: retries stop at quorum, a straggler is
- * abandoned a bounded grace after quorum rather than waited out, and roster
- * shortfalls surface as findings.
- *
- * The grace cases are the user's standing rule of 2026-08-14 made testable:
- * the failure of any one model for the day must not delay the pipeline. Both
- * directions are covered, because only the pair distinguishes a grace from a
- * cut: a voice arriving inside the window is still heard, and one that never
- * arrives costs the window rather than its whole deadline.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for stage voice gathering: retries stop at quorum, a straggler is
+ abandoned a bounded grace after quorum rather than waited out, and roster
+ shortfalls surface as findings.
+ 
+ The grace cases are the user's standing rule of 2026-08-14 made testable:
+ the failure of any one model for the day must not delay the pipeline. Both
+ directions are covered, because only the pair distinguishes a grace from a
+ cut: a voice arriving inside the window is still heard, and one that never
+ arrives costs the window rather than its whole deadline.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -32,42 +32,42 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Grace the stalling case gives a re-ask before abandoning it.
+ Grace the stalling case gives a re-ask before abandoning it.
  */
 const RECOVERY_GRACE_MS = 60;
 
 /**
- * Exchange deadline the stalling case sets, far above its grace.
- *
- * The gap is the measurement: a recovery round that waited for its voices
- * would take this, and one bounded by the grace takes a fraction of it.
+ Exchange deadline the stalling case sets, far above its grace.
+ 
+ The gap is the measurement: a recovery round that waited for its voices
+ would take this, and one bounded by the grace takes a fraction of it.
  */
 const STALLING_DEADLINE_MS = 4_000;
 
 /**
- * How long the stalling model holds its second call, past every deadline here.
+ How long the stalling model holds its second call, past every deadline here.
  */
 const STALL_MS = 30_000;
 
 /**
- * Ceiling the stalling case allows, which only the grace bound can meet.
+ Ceiling the stalling case allows, which only the grace bound can meet.
  */
 const BOUNDED_ENOUGH_MS = 1_000;
 
 /**
- * Logger for the gathers under test.
+ Logger for the gathers under test.
  */
 const l = tagged({ tag: 'stage-quorum-test', },);
 
 /**
- * Trivial reply payload the scripted clients emit.
+ Trivial reply payload the scripted clients emit.
  */
 type MeowReply = {
   readonly meow: string;
 };
 
 /**
- * Guards the trivial payload.
+ Guards the trivial payload.
  */
 function isMeowReply(value: unknown,): value is MeowReply {
   return ((typeof value) === 'object') && (value !== null)
@@ -75,24 +75,24 @@ function isMeowReply(value: unknown,): value is MeowReply {
 }
 
 /**
- * Client whose named model throws rather than answering, and records calls.
- *
- * SEPARATE FROM {@link flakyClient} BECAUSE THE TWO LOSSES ARE DIFFERENT. That
- * one returns `schema-mismatch`, which is a model that finished and wrote
- * something nothing could read. This one never delivers, which is what a
- * transport failure looks like from here, and it is the loss the recovery round
- * must leave alone.
- *
- * @param silentModel - model that throws on every call
- *
- * @param calls - shared call log the test asserts on
- *
- * @returns Client honouring that script
- *
- * @example
- * ```ts
- * const client = silentClient({ silentModel: 'hf:moonshotai/Kimi-K3', calls, },);
- * ```
+ Client whose named model throws rather than answering, and records calls.
+ 
+ SEPARATE FROM {@link flakyClient} BECAUSE THE TWO LOSSES ARE DIFFERENT. That
+ one returns `schema-mismatch`, which is a model that finished and wrote
+ something nothing could read. This one never delivers, which is what a
+ transport failure looks like from here, and it is the loss the recovery round
+ must leave alone.
+ 
+ @param silentModel - model that throws on every call
+ 
+ @param calls - shared call log the test asserts on
+ 
+ @returns Client honouring that script
+ 
+ @example
+ ```ts
+ const client = silentClient({ silentModel: 'hf:moonshotai/Kimi-K3', calls, },);
+ ```
  */
 function silentClient(
   {
@@ -116,7 +116,7 @@ function silentClient(
         throw new Error('scripted transport failure',);
 
       /**
-       * Scripted payload for the answering call.
+       Scripted payload for the answering call.
        */
       const scripted: unknown = { meow: request.modelId, };
 
@@ -136,22 +136,22 @@ function silentClient(
 }
 
 /**
- * Client whose named seat is refused by the router for want of a wet provider
- * and whose other named seat fails in transport, so a gather can tell the two
- * losses apart.
- *
- * @param drySeats - seats no provider serves
- *
- * @param failingSeat - seat whose transport fails on a wet provider
- *
- * @param calls - call count per model, written when given
- *
- * @returns Client honouring that script
- *
- * @example
- * ```ts
- * const client = dryBenchClient({ drySeats: ['glm-5.3',], failingSeat: 'hf:moonshotai/Kimi-K3', },);
- * ```
+ Client whose named seat is refused by the router for want of a wet provider
+ and whose other named seat fails in transport, so a gather can tell the two
+ losses apart.
+ 
+ @param drySeats - seats no provider serves
+ 
+ @param failingSeat - seat whose transport fails on a wet provider
+ 
+ @param calls - call count per model, written when given
+ 
+ @returns Client honouring that script
+ 
+ @example
+ ```ts
+ const client = dryBenchClient({ drySeats: ['glm-5.3',], failingSeat: 'hf:moonshotai/Kimi-K3', },);
+ ```
  */
 function dryBenchClient(
   {
@@ -183,7 +183,7 @@ function dryBenchClient(
         throw new Error('scripted transport failure',);
 
       /**
-       * Scripted payload for the answering call.
+       Scripted payload for the answering call.
        */
       const scripted: unknown = { meow: request.modelId, };
 
@@ -203,7 +203,7 @@ function dryBenchClient(
 }
 
 /**
- * The eleven-seat roster of 2026-09-09, in roster order.
+ The eleven-seat roster of 2026-09-09, in roster order.
  */
 const ELEVEN_SEATS: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -220,7 +220,7 @@ const ELEVEN_SEATS: readonly RosterModelId[] = [
 ];
 
 /**
- * The seven of those seats a Bedrock-alone day cannot serve.
+ The seven of those seats a Bedrock-alone day cannot serve.
  */
 const DRY_SEVEN: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -233,22 +233,22 @@ const DRY_SEVEN: readonly RosterModelId[] = [
 ];
 
 /**
- * Client whose named model writes one unusable answer and then hangs forever.
- *
- * THE SHAPE THE RECOVERY ROUND'S BOUND IS FOR. A model that finished once is
- * re-asked, and nothing says the second call comes back: this scripts the worst
- * case so the round's wall clock can be read rather than reasoned about.
- *
- * @param stallingModel - model that answers unusably once, then never returns
- *
- * @param calls - shared call log the test asserts on
- *
- * @returns Client honouring that script
- *
- * @example
- * ```ts
- * const client = stallingClient({ stallingModel: 'hf:moonshotai/Kimi-K3', calls, },);
- * ```
+ Client whose named model writes one unusable answer and then hangs forever.
+ 
+ THE SHAPE THE RECOVERY ROUND'S BOUND IS FOR. A model that finished once is
+ re-asked, and nothing says the second call comes back: this scripts the worst
+ case so the round's wall clock can be read rather than reasoned about.
+ 
+ @param stallingModel - model that answers unusably once, then never returns
+ 
+ @param calls - shared call log the test asserts on
+ 
+ @returns Client honouring that script
+ 
+ @example
+ ```ts
+ const client = stallingClient({ stallingModel: 'hf:moonshotai/Kimi-K3', calls, },);
+ ```
  */
 function stallingClient(
   {
@@ -283,7 +283,7 @@ function stallingClient(
       }
 
       /**
-       * Scripted payload for the answering call.
+       Scripted payload for the answering call.
        */
       const scripted: unknown = { meow: request.modelId, };
 
@@ -303,7 +303,7 @@ function stallingClient(
 }
 
 /**
- * Response format naming the test stage.
+ Response format naming the test stage.
  */
 const MEOW_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',
@@ -314,12 +314,12 @@ const MEOW_FORMAT: JsonSchemaResponseFormat = {
 };
 
 /**
- * Client scripted per model: fails until the model's remaining failure
- * budget is spent, then answers; records every call.
- *
- * @param failuresByModel - failures each model serves before answering
- *
- * @param calls - shared call log the test asserts on
+ Client scripted per model: fails until the model's remaining failure
+ budget is spent, then answers; records every call.
+ 
+ @param failuresByModel - failures each model serves before answering
+ 
+ @param calls - shared call log the test asserts on
  */
 function flakyClient(
   {
@@ -340,7 +340,7 @@ function flakyClient(
       calls[request.modelId] = (calls[request.modelId] ?? 0) + 1;
 
       /**
-       * Failures this model still owes.
+       Failures this model still owes.
        */
       const owed = failuresByModel[request.modelId] ?? 0;
       if ((calls[request.modelId] ?? 0) <= owed) {
@@ -352,7 +352,7 @@ function flakyClient(
       }
 
       /**
-       * Scripted payload for the answering call.
+       Scripted payload for the answering call.
        */
       const scripted: unknown = { meow: request.modelId, };
       if (!request.validate(scripted,))
@@ -370,27 +370,27 @@ function flakyClient(
 }
 
 /**
- * Resolves when a signal aborts, and never otherwise.
- *
- * Deliberately has NO timer of its own. A stub that also gave up after some
- * duration would pass the abandonment case whether or not the cut ever reached
- * the call, which is the one thing that case exists to prove.
- *
- * @param signal - call signal the round owns
- *
- * @returns Nothing, once the call is cut
- *
- * @example
- * ```ts
- * await untilAborted({ signal, },);
- * ```
+ Resolves when a signal aborts, and never otherwise.
+ 
+ Deliberately has NO timer of its own. A stub that also gave up after some
+ duration would pass the abandonment case whether or not the cut ever reached
+ the call, which is the one thing that case exists to prove.
+ 
+ @param signal - call signal the round owns
+ 
+ @returns Nothing, once the call is cut
+ 
+ @example
+ ```ts
+ await untilAborted({ signal, },);
+ ```
  */
 async function untilAborted({ signal, }: { readonly signal: AbortSignal; },): Promise<void> {
   if (signal.aborted)
     return;
 
   /**
-   * Capability resolved by the abort listener.
+   Capability resolved by the abort listener.
    */
   const {
     promise,
@@ -407,22 +407,22 @@ async function untilAborted({ signal, }: { readonly signal: AbortSignal; },): Pr
 }
 
 /**
- * Client where every model answers at once except one, which either answers
- * late or not at all.
- *
- * @param hangingModelId - model that does not answer with the others
- *
- * @param cut - flag the hung call sets when its abort arrives
- *
- * @param lateMs - delay after which it answers anyway; omitted means it never
- * answers on its own and waits to be abandoned
- *
- * @returns Client honoring that script
- *
- * @example
- * ```ts
- * const client = hangingClient({ hangingModelId, cut, },);
- * ```
+ Client where every model answers at once except one, which either answers
+ late or not at all.
+ 
+ @param hangingModelId - model that does not answer with the others
+ 
+ @param cut - flag the hung call sets when its abort arrives
+ 
+ @param lateMs - delay after which it answers anyway; omitted means it never
+ answers on its own and waits to be abandoned
+ 
+ @returns Client honoring that script
+ 
+ @example
+ ```ts
+ const client = hangingClient({ hangingModelId, cut, },);
+ ```
  */
 function hangingClient(
   {
@@ -443,14 +443,14 @@ function hangingClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Scripted payload every answering model returns.
+       Scripted payload every answering model returns.
        */
       const scripted: unknown = { meow: request.modelId, };
       if (!request.validate(scripted,))
         throw new Error('scripted payload failed the guard',);
 
       /**
-       * Answer shared by every model that speaks.
+       Answer shared by every model that speaks.
        */
       const answer: ChatJsonOutcome<ValueT> = {
         kind: 'ok',
@@ -645,13 +645,13 @@ await describe({
             request: ChatJsonRequest<ValueT>,
           ): Promise<ChatJsonOutcome<ValueT>> => {
             /**
-             * Scripted payload for an answering call.
+             Scripted payload for an answering call.
              */
             const scripted: unknown = { meow: request.modelId, };
             if (request.modelId === 'hf:moonshotai/Kimi-K3') {
               /**
-               * This call's prompt as plain text, a vision part reading as
-               * nothing since none is sent here.
+               This call's prompt as plain text, a vision part reading as
+               nothing since none is sent here.
                */
               const texts = request.messages
                 .map(function textOf(message,): string {
@@ -659,7 +659,7 @@ await describe({
                 },);
               seen.push(texts,);
               /**
-               * Whether this prompt carries the recovery complaint.
+               Whether this prompt carries the recovery complaint.
                */
               const nudged = texts.at(-1,)
                 ?.includes('could not be read',) ?? false;
@@ -886,7 +886,7 @@ await describe({
         // The healthy seat answers on its first ask wherever the rotation put it.
         expect(calls['hf:zai-org/GLM-5.3-Flash'],).toBe(1,);
         /**
-         * Every call the gather made, whichever seats the rotation asked first.
+         Every call the gather made, whichever seats the rotation asked first.
          */
         const total = Object.values(calls,).reduce(function add(
           sum,

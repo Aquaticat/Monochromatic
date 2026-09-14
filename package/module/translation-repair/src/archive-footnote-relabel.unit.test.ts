@@ -1,12 +1,12 @@
 /**
- * Tests for the archive's footnote labels following the original's.
- *
- * THE NINETEENTH CLASS, found by the yuki418330012 page of 2026-09-08: the
- * original writes 洲洲[^2] and 真理[^1], the archive had Zhouzhou[^1] and
- * Zhenli[^2] with definitions to match, and the page shipped the original's
- * markers above the archive's definitions, each pointing at the other's note.
- *
- * @module
+ Tests for the archive's footnote labels following the original's.
+ 
+ THE NINETEENTH CLASS, found by the yuki418330012 page of 2026-09-08: the
+ original writes 洲洲[^2] and 真理[^1], the archive had Zhouzhou[^1] and
+ Zhenli[^2] with definitions to match, and the page shipped the original's
+ markers above the archive's definitions, each pointing at the other's note.
+ 
+ @module
  */
 
 import {
@@ -26,12 +26,12 @@ import {
 //region Fixtures
 
 /**
- * Original: the godmother is the second note, the younger sister the first.
+ Original: the godmother is the second note, the younger sister the first.
  */
 const SOURCE_TEXT = '## 生平\n\n洲洲[^2]收留了她，真理[^1]帮助她。\n\n[^1]: 比她小，像姐姐一样。\n\n[^2]: 干妈？像母女一样。\n';
 
 /**
- * Archive: renumbered by first appearance, definitions to match.
+ Archive: renumbered by first appearance, definitions to match.
  */
 const TARGET_TEXT = '## Life\n\nZhouzhou[^1] took her in, and Zhenli[^2] helped her.\n\n'
   + '[^1]: A substitute parent? Like mother and daughter.\n\n[^2]: Younger than her, like a sister.\n';
@@ -64,14 +64,14 @@ await describe({
         + 'and rewrites references and definitions together',
       fn: async () => {
         /**
-         * Preparation over the fixture pair.
+         Preparation over the fixture pair.
          */
         const prepared = prepareDocumentPair({
           sourceText: SOURCE_TEXT,
           targetText: TARGET_TEXT,
         },);
         /**
-         * The reading.
+         The reading.
          */
         const reading = footnoteRelabelOf(prepared,);
         if (reading.kind !== 'relabel')
@@ -88,7 +88,7 @@ await describe({
         ],);
         expect(reading.skipped,).toStrictEqual([],);
         /**
-         * The archive under the original's labels.
+         The archive under the original's labels.
          */
         const relabelled = applyFootnoteRelabel({
           text: TARGET_TEXT,
@@ -143,8 +143,8 @@ await describe({
         + 'and reads the map off the rest (the archive of hakureico carries no [^2] at all)',
       fn: async () => {
         /**
-         * The reading over a slice with one marker against two and a slice
-         * with a swap.
+         The reading over a slice with one marker against two and a slice
+         with a swap.
          */
         const reading = footnoteRelabelOf(prepareDocumentPair({
           sourceText: '## 甲\n\n她[^1]和他[^2]。\n\n## 乙\n\n洲洲[^4]，真理[^3]。\n\n'
@@ -175,7 +175,7 @@ await describe({
         + 'original labels',
       fn: async () => {
         /**
-         * The reading where [^1] is [^2] in one slice and [^3] in the next.
+         The reading where [^1] is [^2] in one slice and [^3] in the next.
          */
         const reading = footnoteRelabelOf(prepareDocumentPair({
           sourceText: '## 甲\n\n她[^2]。\n\n## 乙\n\n他[^3]。\n\n[^2]: 二。\n\n[^3]: 三。\n',
@@ -233,7 +233,7 @@ await describe({
       name: 'leaves the archive as it is where two pairs map one archive label to different original labels',
       fn: async () => {
         /**
-         * The reading where archive [^1] pairs with original [^2] and then [^3].
+         The reading where archive [^1] pairs with original [^2] and then [^3].
          */
         const reading = footnoteRelabelOfDefinitions({
           pairs: [

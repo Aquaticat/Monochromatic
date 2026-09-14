@@ -1,8 +1,8 @@
 /**
- * Tests for front matter splitting.
- * Fixtures mirror corpus structure only; every value is cat-themed invention.
- *
- * @module
+ Tests for front matter splitting.
+ Fixtures mirror corpus structure only; every value is cat-themed invention.
+ 
+ @module
  */
 
 import { parse as parseYaml, } from 'yaml';
@@ -19,7 +19,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Well-formed corpus-shaped source with invented metadata and body.
+ Well-formed corpus-shaped source with invented metadata and body.
  */
 const CORPUS_SHAPED = '---\nname: 小猫-whiskers\ninfo:\n    alias: Whiskers, Mittens\n---\n\n## 简介\n\n猫猫晒太阳。\n';
 
@@ -115,12 +115,12 @@ await describe({
         + 'the identity context was empty for that entry',
       fn: async () => {
         /**
-         * Same document in both line endings.
+         Same document in both line endings.
          */
         const lf = splitFrontMatter({ text: '---\nname: Ara\n---\n\nBody.\n', },);
 
         /**
-         * Windows-flavoured counterpart.
+         Windows-flavoured counterpart.
          */
         const crlf = splitFrontMatter({
           text: '---\r\nname: Ara\r\n---\r\n\r\nBody.\r\n',
@@ -136,7 +136,7 @@ await describe({
         + 'body offset every later anchor is measured from stays exact',
       fn: async () => {
         /**
-         * CRLF document whose body is one paragraph.
+         CRLF document whose body is one paragraph.
          */
         const split = splitFrontMatter({
           text: '---\r\nname: Ara\r\n---\r\n\r\nBody.\r\n',
@@ -159,12 +159,12 @@ await describe({
         + 'kept it hidden',
       fn: async () => {
         /**
-         * Both spellings of a document that is nothing but empty front matter.
+         Both spellings of a document that is nothing but empty front matter.
          */
         const lf = splitFrontMatter({ text: '---\n---', },);
 
         /**
-         * Windows-flavoured counterpart, which used to report no front matter.
+         Windows-flavoured counterpart, which used to report no front matter.
          */
         const crlf = splitFrontMatter({ text: '---\r\n---', },);
 
@@ -197,35 +197,35 @@ await describe({
 //region Front matter refusal disclosure
 
 /**
- * Word appearing nowhere else in this file, so an assertion of absence cannot
- * pass by accident.
+ Word appearing nowhere else in this file, so an assertion of absence cannot
+ pass by accident.
  */
 const REFUSAL_FIXTURE_WORD = 'Tuftmallow';
 
 /**
- * Front matter whose YAML refuses, with the fixture word on the offending line.
- *
- * MEASURED: this refuses as `BLOCK_AS_IMPLICIT_KEY` at line 1 column 7, and the
- * parser's own message reproduces the line. The control below asserts that,
- * because an absence assertion against a probe that cannot show a difference
- * proves nothing.
+ Front matter whose YAML refuses, with the fixture word on the offending line.
+ 
+ MEASURED: this refuses as `BLOCK_AS_IMPLICIT_KEY` at line 1 column 7, and the
+ parser's own message reproduces the line. The control below asserts that,
+ because an absence assertion against a probe that cannot show a difference
+ proves nothing.
  */
 const REFUSING_SOURCE = `---\nname: ${REFUSAL_FIXTURE_WORD}\n  bad: [x\n---\n喵。\n`;
 
 /**
- * Reads what the YAML parser says with nothing between it and a reader.
- *
- * @param yamlSource - YAML that must refuse
- *
- * @returns Parser's own message, code frame included
- *
- * @throws {@link Error} where the control fixture parsed, which would leave the
- * absence assertions unproven
- *
- * @example
- * ```ts
- * const raw = rawYamlRefusal({ yamlSource: 'a: [x\n', },);
- * ```
+ Reads what the YAML parser says with nothing between it and a reader.
+ 
+ @param yamlSource - YAML that must refuse
+ 
+ @returns Parser's own message, code frame included
+ 
+ @throws {@link Error} where the control fixture parsed, which would leave the
+ absence assertions unproven
+ 
+ @example
+ ```ts
+ const raw = rawYamlRefusal({ yamlSource: 'a: [x\n', },);
+ ```
  */
 function rawYamlRefusal({ yamlSource, }: { readonly yamlSource: string; },): string {
   try {
@@ -242,19 +242,19 @@ function rawYamlRefusal({ yamlSource, }: { readonly yamlSource: string; },): str
 }
 
 /**
- * Splits source that must refuse, handing the refusal back to be read.
- *
- * @param text - source whose front matter will not parse
- *
- * @returns Refusal the split raised
- *
- * @throws {@link Error} where the fixture parsed, which would mean it no longer
- * exercises anything
- *
- * @example
- * ```ts
- * const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
- * ```
+ Splits source that must refuse, handing the refusal back to be read.
+ 
+ @param text - source whose front matter will not parse
+ 
+ @returns Refusal the split raised
+ 
+ @throws {@link Error} where the fixture parsed, which would mean it no longer
+ exercises anything
+ 
+ @example
+ ```ts
+ const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
+ ```
  */
 function refusalFrom({ text, }: { readonly text: string; },): Error {
   try {
@@ -277,7 +277,7 @@ await describe({
       name: 'CONTROL: the YAML parser itself does quote the line, so absence is provable',
       fn: async () => {
         /**
-         * What the parser says when nothing stands between it and a reader.
+         What the parser says when nothing stands between it and a reader.
          */
         const raw = rawYamlRefusal({
           yamlSource: `name: ${REFUSAL_FIXTURE_WORD}\n  bad: [x\n`,
@@ -290,7 +290,7 @@ await describe({
       name: 'REFUSES to repeat the front matter it could not parse',
       fn: async () => {
         /**
-         * Refusal as a reader would see it.
+         Refusal as a reader would see it.
          */
         const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
 
@@ -301,7 +301,7 @@ await describe({
       name: 'STATES the position and the code the parser assigned',
       fn: async () => {
         /**
-         * Refusal as a reader would see it.
+         Refusal as a reader would see it.
          */
         const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
 
@@ -313,7 +313,7 @@ await describe({
       name: 'CARRIES NO cause, which a reporter would render whether asked to or not',
       fn: async () => {
         /**
-         * Refusal as a reader would see it.
+         Refusal as a reader would see it.
          */
         const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
 
@@ -324,7 +324,7 @@ await describe({
       name: 'DECLARES its message safe to forward',
       fn: async () => {
         /**
-         * Refusal as a reader would see it.
+         Refusal as a reader would see it.
          */
         const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
 

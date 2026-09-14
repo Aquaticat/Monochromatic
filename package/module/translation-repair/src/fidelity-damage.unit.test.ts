@@ -1,14 +1,14 @@
 /**
- * Tests for the two constructed defects `#84` puts on the ballot.
- *
- * What these pin is the property each fixture EXISTS for: the deletion leaves
- * the complete text longer, the insertion leaves it shorter, and both leave
- * every other word alone. A fixture that quietly failed either would produce a
- * number that reads exactly like a good one.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the two constructed defects `#84` puts on the ballot.
+ 
+ What these pin is the property each fixture EXISTS for: the deletion leaves
+ the complete text longer, the insertion leaves it shorter, and both leave
+ every other word alone. A fixture that quietly failed either would produce a
+ number that reads exactly like a good one.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -24,7 +24,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Slice English long enough for a sentence to be worth moving.
+ Slice English long enough for a sentence to be worth moving.
  */
 const CLEAN_TEXT = [
   'The tortoiseshell cat arrived at the shelter on a rainy Tuesday in November.',
@@ -33,7 +33,7 @@ const CLEAN_TEXT = [
 ].join(' ',);
 
 /**
- * English of another slice of the same imagined document.
+ English of another slice of the same imagined document.
  */
 const DONOR_TEXT = [
   'Her favourite place in the whole building turned out to be the top of the filing cabinet.',
@@ -41,25 +41,25 @@ const DONOR_TEXT = [
 ].join(' ',);
 
 /**
- * Sentence the donor offers, which is its longest unique one.
+ Sentence the donor offers, which is its longest unique one.
  */
 const BORROWED = 'Her favourite place in the whole building turned out to be the top of the filing cabinet.';
 
 /**
- * Builds a slice pair carrying the given English.
- *
- * AN EMPTY STRING IS AN INSERTION ANCHOR, which is how the real type spells a
- * boundary where translation is not: both members of `DocumentChunk` declare
- * `text`, so "no English here" arrives as empty rather than as absent.
- *
- * @param text - English the slice carries, empty for an insertion anchor
- *
- * @returns Slice pair shaped as preparation produces
- *
- * @example
- * ```ts
- * const slice = sliceCarrying({ text: DONOR_TEXT, },);
- * ```
+ Builds a slice pair carrying the given English.
+ 
+ AN EMPTY STRING IS AN INSERTION ANCHOR, which is how the real type spells a
+ boundary where translation is not: both members of `DocumentChunk` declare
+ `text`, so "no English here" arrives as empty rather than as absent.
+ 
+ @param text - English the slice carries, empty for an insertion anchor
+ 
+ @returns Slice pair shaped as preparation produces
+ 
+ @example
+ ```ts
+ const slice = sliceCarrying({ text: DONOR_TEXT, },);
+ ```
  */
 function sliceCarrying({ text, }: { readonly text: string; },) {
   return {
@@ -119,10 +119,10 @@ await describe({
         + 'consecutive line breaks a bare cut leaves behind',
       fn: async () => {
         /**
-         * Three paragraphs whose MIDDLE one carries the longest sentence, which
-         * is the one `deriveOmissionSeeds` picks. An earlier fixture put the
-         * longest sentence first, so the cut happened at the start of the text
-         * and this guard passed without ever exercising a middle join.
+         Three paragraphs whose MIDDLE one carries the longest sentence, which
+         is the one `deriveOmissionSeeds` picks. An earlier fixture put the
+         longest sentence first, so the cut happened at the start of the text
+         and this guard passed without ever exercising a middle join.
          */
         const document = [
           'The shelter opens at eight and closes late.',
@@ -144,8 +144,8 @@ await describe({
         + 'the way every other document does',
       fn: async () => {
         /**
-         * Two paragraphs whose LAST one carries the longest sentence, so the cut
-         * lands against the end of the text.
+         Two paragraphs whose LAST one carries the longest sentence, so the cut
+         lands against the end of the text.
          */
         const document = 'The shelter opens at eight and closes late.\n\n'
           + 'She had been found under a parked van near the harbour that winter, thin and unwilling to be '

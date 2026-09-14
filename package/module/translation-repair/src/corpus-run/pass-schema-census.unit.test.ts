@@ -1,15 +1,15 @@
 /**
- * Tests for the generation census over a settled directory.
- *
- * Each classification the census can answer gets one file, so the guard that
- * builds sentences from these answers is shown the whole alphabet: a declared
- * generation, an unversioned one, a version the build cannot read, and the two
- * shapes that are not artifacts at all. The directory also carries the two
- * entries the listing must skip.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the generation census over a settled directory.
+ 
+ Each classification the census can answer gets one file, so the guard that
+ builds sentences from these answers is shown the whole alphabet: a declared
+ generation, an unversioned one, a version the build cannot read, and the two
+ shapes that are not artifacts at all. The directory also carries the two
+ entries the listing must skip.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -32,19 +32,19 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Directory holding one file per classification, plus a directory and a
- * suffix-less file the listing skips.
- *
- * @returns Directory path
- *
- * @example
- * ```ts
- * const artifactsDir = await censusDirectory();
- * ```
+ Directory holding one file per classification, plus a directory and a
+ suffix-less file the listing skips.
+ 
+ @returns Directory path
+ 
+ @example
+ ```ts
+ const artifactsDir = await censusDirectory();
+ ```
  */
 async function censusDirectory(): Promise<string> {
   /**
-   * Disposable root, never the package's own runs directory.
+   Disposable root, never the package's own runs directory.
    */
   const artifactsDir = await mkdtemp(join(tmpdir(), 'pass-schema-census-',),);
   await writeFile(join(artifactsDir, 'declared.json',), JSON.stringify({ artifactSchemaVersion: 4, },), 'utf8',);
@@ -62,20 +62,20 @@ async function censusDirectory(): Promise<string> {
 }
 
 /**
- * Row for one entry, or a throw naming the entry the census dropped.
- *
- * @param rows - census as returned
- *
- * @param entryId - entry wanted
- *
- * @returns Its row
- *
- * @throws {@link Error} when the census carries no row for it
- *
- * @example
- * ```ts
- * const row = rowFor({ rows, entryId: 'declared', },);
- * ```
+ Row for one entry, or a throw naming the entry the census dropped.
+ 
+ @param rows - census as returned
+ 
+ @param entryId - entry wanted
+ 
+ @returns Its row
+ 
+ @throws {@link Error} when the census carries no row for it
+ 
+ @example
+ ```ts
+ const row = rowFor({ rows, entryId: 'declared', },);
+ ```
  */
 function rowFor(
   {
@@ -87,7 +87,7 @@ function rowFor(
   },
 ): SchemaCensusRow {
   /**
-   * Row under that id, absent when the census skipped it.
+   Row under that id, absent when the census skipped it.
    */
   const row = rows.find(function isWanted(candidate,): boolean {
     return candidate.entryId === entryId;

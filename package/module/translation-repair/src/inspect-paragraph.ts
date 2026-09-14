@@ -16,22 +16,22 @@ import {
 } from './protected-atom.ts';
 
 /**
- * Recursively readonly mdast root, as this module BORROWS the parse result.
- *
- * @example
- * ```ts
- * const root: ReadonlyMdastRoot = attempt.root;
- * ```
+ Recursively readonly mdast root, as this module BORROWS the parse result.
+ 
+ @example
+ ```ts
+ const root: ReadonlyMdastRoot = attempt.root;
+ ```
  */
 type ReadonlyMdastRoot = DeepReadonlyData<Root>;
 
 /**
- * Recursively readonly mdast content node.
- *
- * @example
- * ```ts
- * const node: ReadonlyMdastContent = root.children[0];
- * ```
+ Recursively readonly mdast content node.
+ 
+ @example
+ ```ts
+ const node: ReadonlyMdastContent = root.children[0];
+ ```
  */
 type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
 
@@ -47,12 +47,12 @@ type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
 // premise is that it changes only wording.
 
 /**
- * Why a paragraph could not be inspected.
- *
- * @example
- * ```ts
- * const reason: InspectionRejection = 'not-one-paragraph';
- * ```
+ Why a paragraph could not be inspected.
+ 
+ @example
+ ```ts
+ const reason: InspectionRejection = 'not-one-paragraph';
+ ```
  */
 export type InspectionRejection =
   | 'unparseable'
@@ -60,19 +60,19 @@ export type InspectionRejection =
   | 'carries-markup';
 
 /**
- * Result of reading one paragraph.
- *
- * @example
- * ```ts
- * const inspection: ParagraphInspection = { kind: 'inspected', atoms, };
- * ```
+ Result of reading one paragraph.
+ 
+ @example
+ ```ts
+ const inspection: ParagraphInspection = { kind: 'inspected', atoms, };
+ ```
  */
 export type ParagraphInspection =
   | {
     readonly kind: 'inspected';
 
     /**
-     * Protected atoms in the order they appear.
+     Protected atoms in the order they appear.
      */
     readonly atoms: readonly ProtectedAtom[];
   }
@@ -80,14 +80,14 @@ export type ParagraphInspection =
     readonly kind: 'rejected';
 
     /**
-     * Why inspection refused it.
+     Why inspection refused it.
      */
     readonly reason: InspectionRejection;
   };
 
 /**
- * mdast node kinds that carry structure a rewrite must not introduce; their
- * presence means the candidate stopped being plain prose.
+ mdast node kinds that carry structure a rewrite must not introduce; their
+ presence means the candidate stopped being plain prose.
  */
 const MARKUP_KINDS: ReadonlySet<string> = new Set([
   'html',
@@ -99,16 +99,16 @@ const MARKUP_KINDS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Reads one inline node into the atoms it contributes, if any.
- *
- * @param node - inline mdast node
- *
- * @returns Atoms this node contributes, in order
- *
- * @example
- * ```ts
- * const atoms = atomsOfNode({ node, },);
- * ```
+ Reads one inline node into the atoms it contributes, if any.
+ 
+ @param node - inline mdast node
+ 
+ @returns Atoms this node contributes, in order
+ 
+ @example
+ ```ts
+ const atoms = atomsOfNode({ node, },);
+ ```
  */
 function atomsOfNode(
   { node, }: { readonly node: ReadonlyMdastContent; },
@@ -144,41 +144,41 @@ function atomsOfNode(
 }
 
 /**
- * Outcome of the strict parse, kept as a discriminated union so a refusal
- * travels as a real value rather than as an absent root.
- *
- * @example
- * ```ts
- * const attempt: ParseAttempt = { kind: 'refused', };
- * ```
+ Outcome of the strict parse, kept as a discriminated union so a refusal
+ travels as a real value rather than as an absent root.
+ 
+ @example
+ ```ts
+ const attempt: ParseAttempt = { kind: 'refused', };
+ ```
  */
 type ParseAttempt =
   | {
     readonly kind: 'parsed';
 
     /**
-     * Tree of the paragraph.
+     Tree of the paragraph.
      */
     readonly root: ReadonlyMdastRoot;
   }
   | { readonly kind: 'refused'; };
 
 /**
- * Parses one paragraph under the strict grammar only.
- *
- * The plain-markdown fallback is deliberately NOT used here. Document parsing
- * downgrades so a whole corpus page still yields anchors; a single rewritten
- * paragraph that needs the fallback is a candidate to refuse, not a document
- * to rescue.
- *
- * @param text - exact paragraph source
- *
- * @returns Tree, or a refusal when the strict grammar rejected it
- *
- * @example
- * ```ts
- * const attempt = parseStrictly({ text: paragraph, },);
- * ```
+ Parses one paragraph under the strict grammar only.
+ 
+ The plain-markdown fallback is deliberately NOT used here. Document parsing
+ downgrades so a whole corpus page still yields anchors; a single rewritten
+ paragraph that needs the fallback is a candidate to refuse, not a document
+ to rescue.
+ 
+ @param text - exact paragraph source
+ 
+ @returns Tree, or a refusal when the strict grammar rejected it
+ 
+ @example
+ ```ts
+ const attempt = parseStrictly({ text: paragraph, },);
+ ```
  */
 function parseStrictly({ text, }: { readonly text: string; },): ParseAttempt {
   try {
@@ -197,34 +197,34 @@ function parseStrictly({ text, }: { readonly text: string; },): ParseAttempt {
 }
 
 /**
- * Reads one paragraph's protected atoms in document order.
- *
- * The paragraph is parsed TWICE, for two different questions.
- *
- * Alone, to answer whether it is exactly one paragraph: that is a fact about
- * the candidate's own structure and must not be influenced by anything
- * appended to it.
- *
- * Then with the document's link and footnote definitions appended, to answer
- * what it references. GFM only produces a `footnoteReference` or a
- * `linkReference` when a matching definition is in scope, so an isolated
- * paragraph reports `[^1]` as literal text. That is not a cosmetic difference:
- * the digit inside would be protected as a number while the marker syntax
- * around it would not, and a rewrite turning `[^1]` into `1` would pass a gate
- * that should have stopped it.
- *
- * @param text - exact paragraph source, base or candidate
- *
- * @param definitions - link and footnote definitions from the whole `T1`
- * document, so references resolve; omitted means the paragraph references
- * nothing defined elsewhere
- *
- * @returns Ordered atoms, or the reason the paragraph was refused
- *
- * @example
- * ```ts
- * const inspection = inspectParagraph({ text: paragraph, definitions, },);
- * ```
+ Reads one paragraph's protected atoms in document order.
+ 
+ The paragraph is parsed TWICE, for two different questions.
+ 
+ Alone, to answer whether it is exactly one paragraph: that is a fact about
+ the candidate's own structure and must not be influenced by anything
+ appended to it.
+ 
+ Then with the document's link and footnote definitions appended, to answer
+ what it references. GFM only produces a `footnoteReference` or a
+ `linkReference` when a matching definition is in scope, so an isolated
+ paragraph reports `[^1]` as literal text. That is not a cosmetic difference:
+ the digit inside would be protected as a number while the marker syntax
+ around it would not, and a rewrite turning `[^1]` into `1` would pass a gate
+ that should have stopped it.
+ 
+ @param text - exact paragraph source, base or candidate
+ 
+ @param definitions - link and footnote definitions from the whole `T1`
+ document, so references resolve; omitted means the paragraph references
+ nothing defined elsewhere
+ 
+ @returns Ordered atoms, or the reason the paragraph was refused
+ 
+ @example
+ ```ts
+ const inspection = inspectParagraph({ text: paragraph, definitions, },);
+ ```
  */
 export function inspectParagraph(
   {
@@ -236,7 +236,7 @@ export function inspectParagraph(
   },
 ): ParagraphInspection {
   /**
-   * Structure of the paragraph on its own terms.
+   Structure of the paragraph on its own terms.
    */
   const alone = parseStrictly({ text, },);
   if (alone.kind === 'refused')
@@ -261,7 +261,7 @@ export function inspectParagraph(
   }
 
   /**
-   * The same paragraph with definitions in scope, so its references resolve.
+   The same paragraph with definitions in scope, so its references resolve.
    */
   const parsed = definitions === ''
     ? alone
@@ -273,7 +273,7 @@ export function inspectParagraph(
     };
 
   /**
-   * Leading block, which the structure check already proved is the paragraph.
+   Leading block, which the structure check already proved is the paragraph.
    */
   const [block,] = parsed.root
     .children;
@@ -284,19 +284,19 @@ export function inspectParagraph(
     };
 
   /**
-   * Inline nodes still to visit, held as a stack so the walk stays iterative
-   * over a tree of unknown depth; children push reversed to keep document
-   * order on pop.
+   Inline nodes still to visit, held as a stack so the walk stays iterative
+   over a tree of unknown depth; children push reversed to keep document
+   order on pop.
    */
   const pending: ReadonlyMdastContent[] = [...block.children,].toReversed();
 
   /**
-   * Atoms in document order.
+   Atoms in document order.
    */
   const atoms: ProtectedAtom[] = [];
   while (pending.length > 0) {
     /**
-     * Next node in document order, present because the stack is non-empty.
+     Next node in document order, present because the stack is non-empty.
      */
     const node = pending.pop();
     if (node === undefined)
@@ -320,12 +320,12 @@ export function inspectParagraph(
 }
 
 /**
- * Verdict of the structural gate over one rewrite.
- *
- * @example
- * ```ts
- * const verdict: AtomGateVerdict = { kind: 'preserved', };
- * ```
+ Verdict of the structural gate over one rewrite.
+ 
+ @example
+ ```ts
+ const verdict: AtomGateVerdict = { kind: 'preserved', };
+ ```
  */
 export type AtomGateVerdict =
   | { readonly kind: 'preserved'; }
@@ -333,49 +333,49 @@ export type AtomGateVerdict =
     readonly kind: 'refused';
 
     /**
-     * Scorecard-stable account of the first divergence.
+     Scorecard-stable account of the first divergence.
      */
     readonly detail: string;
   };
 
 /**
- * Renders one atom for a gate refusal.
- *
- * @param atom - atom to describe
- *
- * @returns Kind and value in one token
- *
- * @example
- * ```ts
- * const label = describeAtom({ kind: 'number', value: '17', },);
- * ```
+ Renders one atom for a gate refusal.
+ 
+ @param atom - atom to describe
+ 
+ @returns Kind and value in one token
+ 
+ @example
+ ```ts
+ const label = describeAtom({ kind: 'number', value: '17', },);
+ ```
  */
 function describeAtom(atom: ProtectedAtom,): string {
   return `${atom.kind}:${atom.value}`;
 }
 
 /**
- * Checks that a rewrite carries every protected atom through unchanged and in
- * the same order.
- *
- * Order is the point. Comparing multisets would pass a candidate that turned
- * "3 cats and 5 dogs" into "5 cats and 3 dogs", or that swapped two links'
- * destinations, or two names' positions: every atom still present, every claim
- * different.
- *
- * @param base - `T1` paragraph the rewrite replaces
- *
- * @param candidate - proposed replacement
- *
- * @param definitions - link and footnote definitions from the whole `T1`
- * document, so both sides resolve their references identically
- *
- * @returns Whether the rewrite may proceed, and what diverged when not
- *
- * @example
- * ```ts
- * const verdict = gateParagraphRewrite({ base, candidate, },);
- * ```
+ Checks that a rewrite carries every protected atom through unchanged and in
+ the same order.
+ 
+ Order is the point. Comparing multisets would pass a candidate that turned
+ "3 cats and 5 dogs" into "5 cats and 3 dogs", or that swapped two links'
+ destinations, or two names' positions: every atom still present, every claim
+ different.
+ 
+ @param base - `T1` paragraph the rewrite replaces
+ 
+ @param candidate - proposed replacement
+ 
+ @param definitions - link and footnote definitions from the whole `T1`
+ document, so both sides resolve their references identically
+ 
+ @returns Whether the rewrite may proceed, and what diverged when not
+ 
+ @example
+ ```ts
+ const verdict = gateParagraphRewrite({ base, candidate, },);
+ ```
  */
 export function gateParagraphRewrite(
   {
@@ -389,7 +389,7 @@ export function gateParagraphRewrite(
   },
 ): AtomGateVerdict {
   /**
-   * Atoms of the text being replaced.
+   Atoms of the text being replaced.
    */
   const baseInspection = inspectParagraph({
     text: base,
@@ -402,7 +402,7 @@ export function gateParagraphRewrite(
     };
 
   /**
-   * Atoms of the proposed replacement.
+   Atoms of the proposed replacement.
    */
   const candidateInspection = inspectParagraph({
     text: candidate,
@@ -415,12 +415,12 @@ export function gateParagraphRewrite(
     };
 
   /**
-   * Atoms the base carries.
+   Atoms the base carries.
    */
   const expected = baseInspection.atoms;
 
   /**
-   * Atoms the candidate carries.
+   Atoms the candidate carries.
    */
   const actual = candidateInspection.atoms;
   if (expected.length !== actual.length)
@@ -432,14 +432,14 @@ export function gateParagraphRewrite(
     };
 
   /**
-   * First position where the two sequences disagree, absent when they match.
+   First position where the two sequences disagree, absent when they match.
    */
   const divergence = expected.findIndex(function differs(
     atom,
     index,
   ) {
     /**
-     * Candidate's atom at the same position.
+     Candidate's atom at the same position.
      */
     const other = actual[index];
     return (other === undefined)

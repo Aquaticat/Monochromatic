@@ -1,15 +1,15 @@
 /**
- * Tests for the three readings `#115` owes over persisted audit rows.
- *
- * These rules were written while the full run was still buying its subjects,
- * and the cases here pin them so a later reader can see they were not tuned to
- * a tally. The sharpest are the ones the relocation rule must REFUSE: pairing
- * across two runs of one entry, and pairing slices that are not neighbours.
- * Both would manufacture a relocation nobody's document contains.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the three readings `#115` owes over persisted audit rows.
+ 
+ These rules were written while the full run was still buying its subjects,
+ and the cases here pin them so a later reader can see they were not tuned to
+ a tally. The sharpest are the ones the relocation rule must REFUSE: pairing
+ across two runs of one entry, and pairing slices that are not neighbours.
+ Both would manufacture a relocation nobody's document contains.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -27,20 +27,20 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Builds one voice's screened answer.
- *
- * @param modelId - auditor
- *
- * @param categories - category of each claim that anchored
- *
- * @param dropped - how many of its claims fell at the screen
- *
- * @returns Voice row shaped as the audit returns it
- *
- * @example
- * ```ts
- * const voice = voiceSaying({ modelId: 'hf:cat/Tabby-1', categories: ['omission',], dropped: 0, },);
- * ```
+ Builds one voice's screened answer.
+ 
+ @param modelId - auditor
+ 
+ @param categories - category of each claim that anchored
+ 
+ @param dropped - how many of its claims fell at the screen
+ 
+ @returns Voice row shaped as the audit returns it
+ 
+ @example
+ ```ts
+ const voice = voiceSaying({ modelId: 'hf:cat/Tabby-1', categories: ['omission',], dropped: 0, },);
+ ```
  */
 function voiceSaying(
   {
@@ -74,24 +74,24 @@ function voiceSaying(
 }
 
 /**
- * Builds one audited slice.
- *
- * @param runSet - archive subdirectory
- *
- * @param entryId - corpus entry
- *
- * @param sliceIndex - slice index
- *
- * @param auditsArchiveText - whether this audited the archive's own English
- *
- * @param voices - what each auditor said
- *
- * @returns Row shaped as the probe persists it
- *
- * @example
- * ```ts
- * const row = rowFor({ runSet: 'first', entryId: 'mittens', sliceIndex: 0, auditsArchiveText: false, voices: [], },);
- * ```
+ Builds one audited slice.
+ 
+ @param runSet - archive subdirectory
+ 
+ @param entryId - corpus entry
+ 
+ @param sliceIndex - slice index
+ 
+ @param auditsArchiveText - whether this audited the archive's own English
+ 
+ @param voices - what each auditor said
+ 
+ @returns Row shaped as the probe persists it
+ 
+ @example
+ ```ts
+ const row = rowFor({ runSet: 'first', entryId: 'mittens', sliceIndex: 0, auditsArchiveText: false, voices: [], },);
+ ```
  */
 function rowFor(
   {
@@ -128,7 +128,7 @@ function rowFor(
 }
 
 /**
- * A quiet voice, which claims nothing.
+ A quiet voice, which claims nothing.
  */
 const QUIET = voiceSaying({
   modelId: 'hf:cat/Quiet-1',
@@ -145,7 +145,7 @@ await describe({
         + 'both would blur its first real measurement',
       fn: async () => {
         /**
-         * Two archive slices and one fresh one, all claimed against.
+         Two archive slices and one fresh one, all claimed against.
          */
         const rows = [
           rowFor({
@@ -180,7 +180,7 @@ await describe({
         ];
 
         /**
-         * The archive half.
+         The archive half.
          */
         const archive = splitFor({
           rows,
@@ -190,7 +190,7 @@ await describe({
         expect(archive.claimed,).toBe(1,);
 
         /**
-         * The fresh half.
+         The fresh half.
          */
         const fresh = splitFor({
           rows,
@@ -206,7 +206,7 @@ await describe({
         + 'different finding from five slices drawing one and a total cannot tell them apart',
       fn: async () => {
         /**
-         * One noisy slice and two quiet ones.
+         One noisy slice and two quiet ones.
          */
         const rows = [
           rowFor({
@@ -237,7 +237,7 @@ await describe({
         ];
 
         /**
-         * Every slice, all of them fresh.
+         Every slice, all of them fresh.
          */
         const fresh = splitFor({
           rows,
@@ -259,7 +259,7 @@ await describe({
         + 'reading `#68` used to find three voices disagreeing by more than an order of magnitude',
       fn: async () => {
         /**
-         * Two slices, one auditor speaking on both and one on neither.
+         Two slices, one auditor speaking on both and one on neither.
          */
         const rows = [
           rowFor({
@@ -293,13 +293,13 @@ await describe({
         ];
 
         /**
-         * Both auditors' rates.
+         Both auditors' rates.
          */
         const rates = rateByVoice({ rows, },);
         expect(rates.length,).toBe(2,);
 
         /**
-         * The one that kept claiming.
+         The one that kept claiming.
          */
         const loud = rates.find(function isLoud(rate,): boolean {
           return rate.modelId === 'hf:cat/Loud-1';
@@ -310,7 +310,7 @@ await describe({
         expect(loud?.dropped,).toBe(1,);
 
         /**
-         * The one that never did, which is asked twice and speaks never.
+         The one that never did, which is asked twice and speaks never.
          */
         const quiet = rates.find(function isQuiet(rate,): boolean {
           return rate.modelId === 'hf:cat/Quiet-1';
@@ -327,7 +327,7 @@ await describe({
         + 'and would read as the very silence `#68` is trying to measure',
       fn: async () => {
         /**
-         * One slice, answered by one voice only.
+         One slice, answered by one voice only.
          */
         const rows = [rowFor({
           runSet: 'first',
@@ -342,7 +342,7 @@ await describe({
         },),];
 
         /**
-         * Rates, which must name exactly the voice that spoke.
+         Rates, which must name exactly the voice that spoke.
          */
         const rates = rateByVoice({ rows, },);
         expect(rates.length,).toBe(1,);
@@ -359,8 +359,8 @@ await describe({
         + 'used to be answered, and per-model loss was unreadable from the report',
       fn: async () => {
         /**
-         * Two subjects; one voice answers both, one answers the first only,
-         * and one the roster names never answers.
+         Two subjects; one voice answers both, one answers the first only,
+         and one the roster names never answers.
          */
         const rows = [
           rowFor({
@@ -395,7 +395,7 @@ await describe({
         ];
 
         /**
-         * Rates over the recorded roster, in its order.
+         Rates over the recorded roster, in its order.
          */
         const rates = rateByVoice({
           rows,
@@ -432,7 +432,7 @@ await describe({
         + 'run rather than a reason to lose the rows',
       fn: async () => {
         /**
-         * One subject answered by a voice outside the recorded roster.
+         One subject answered by a voice outside the recorded roster.
          */
         const rows = [rowFor({
           runSet: 'first',
@@ -447,7 +447,7 @@ await describe({
         },),];
 
         /**
-         * Rates over a roster that names one member only.
+         Rates over a roster that names one member only.
          */
         const rates = rateByVoice({
           rows,
@@ -476,7 +476,7 @@ await describe({
         + 'move',
       fn: async () => {
         /**
-         * A dropped passage and, next door, an unaccounted one.
+         A dropped passage and, next door, an unaccounted one.
          */
         const rows = [
           rowFor({
@@ -504,7 +504,7 @@ await describe({
         ];
 
         /**
-         * What the rule names.
+         What the rule names.
          */
         const candidates = auditRelocationPairs({ rows, },);
         expect(candidates.length,).toBe(1,);
@@ -524,8 +524,8 @@ await describe({
         + 'heading reading six would be quoted as six relocations',
       fn: async () => {
         /**
-         * Three voices calling one passage missing, two calling it invented
-         * next door.
+         Three voices calling one passage missing, two calling it invented
+         next door.
          */
         const rows = [
           rowFor({
@@ -564,7 +564,7 @@ await describe({
         ];
 
         /**
-         * Every claim pairing the rule names.
+         Every claim pairing the rule names.
          */
         const candidates = auditRelocationPairs({ rows, },);
         expect(candidates.length,).toBe(6,);
@@ -578,7 +578,7 @@ await describe({
         + 'document contains',
       fn: async () => {
         /**
-         * The same two slice indices, settled in two different runs.
+         The same two slice indices, settled in two different runs.
          */
         const rows = [
           rowFor({
@@ -615,7 +615,7 @@ await describe({
         + 'ever a defect',
       fn: async () => {
         /**
-         * An omission and an addition three slices apart.
+         An omission and an addition three slices apart.
          */
         const rows = [
           rowFor({
@@ -651,7 +651,7 @@ await describe({
         + 'is not quietly explained away as a move',
       fn: async () => {
         /**
-         * One omission, with a quiet neighbour.
+         One omission, with a quiet neighbour.
          */
         const rows = [
           rowFor({

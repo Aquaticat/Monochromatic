@@ -1,27 +1,27 @@
 /**
- * Tests for the consolidation over one document.
- *
- * WHAT THESE PIN is the driver's own reasoning, which is the part no stage test
- * reaches: which slices it asks about at all, what it resumes rather than
- * rebuys, what it is willing to write to the cache, and what it refuses to
- * proceed past.
- *
- * ALMOST EVERY CASE HERE BUYS NOTHING. The client those hand over throws on any
- * call, which is the assertion: a driver that reached the roster on a resumed
- * slice, or on a slice the contest never settled, fails loudly instead of
- * quietly costing a run its budget. The rounds themselves are covered by
- * `consolidate-settle.unit.test.ts`.
- *
- * THE TWO SHEET CASES ARE THE EXCEPTION, and deliberately so. They let the calls
- * through to a client that records what it was sent and answers each with content
- * no sheet can parse, because what they ask is what the driver SENT rather than
- * what a roster would say back. Every voice is lost, which the validity floor
- * already handles, so the driver settles on the standing text having bought
- * nothing usable.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the consolidation over one document.
+ 
+ WHAT THESE PIN is the driver's own reasoning, which is the part no stage test
+ reaches: which slices it asks about at all, what it resumes rather than
+ rebuys, what it is willing to write to the cache, and what it refuses to
+ proceed past.
+ 
+ ALMOST EVERY CASE HERE BUYS NOTHING. The client those hand over throws on any
+ call, which is the assertion: a driver that reached the roster on a resumed
+ slice, or on a slice the contest never settled, fails loudly instead of
+ quietly costing a run its budget. The rounds themselves are covered by
+ `consolidate-settle.unit.test.ts`.
+ 
+ THE TWO SHEET CASES ARE THE EXCEPTION, and deliberately so. They let the calls
+ through to a client that records what it was sent and answers each with content
+ no sheet can parse, because what they ask is what the driver SENT rather than
+ what a roster would say back. Every voice is lost, which the validity floor
+ already handles, so the driver settles on the standing text having bought
+ nothing usable.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -61,26 +61,26 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger the driver writes through, whose output is not under test.
+ Logger the driver writes through, whose output is not under test.
  */
 const l = tagged({ tag: 'consolidate-driver-test', },);
 
 /**
- * Builds logger retaining operational messages for assertions.
- *
- * @param messages - destination in emission order
- *
- * @returns Logger appending every level to destination
- *
- * @example
- * ```ts
- * const messages: string[] = [];
- * const l = capturingLogger({ messages, },);
- * ```
+ Builds logger retaining operational messages for assertions.
+ 
+ @param messages - destination in emission order
+ 
+ @returns Logger appending every level to destination
+ 
+ @example
+ ```ts
+ const messages: string[] = [];
+ const l = capturingLogger({ messages, },);
+ ```
  */
 function capturingLogger({ messages, }: { readonly messages: string[]; },): Logger {
   /**
-   * Retains one emitted message.
+   Retains one emitted message.
    */
   function keep(message: string,): void {
     messages.push(message,);
@@ -98,7 +98,7 @@ function capturingLogger({ messages, }: { readonly messages: string[]; },): Logg
 }
 
 /**
- * Roster this run seats.
+ Roster this run seats.
  */
 const ROSTER = ['hf:zai-org/GLM-5.3-Flash',] as const;
 
@@ -111,12 +111,12 @@ const RECOVERY_ROSTER = [
 ] as const;
 
 /**
- * Per-call bound, never reached because nothing here buys a call.
+ Per-call bound, never reached because nothing here buys a call.
  */
 const CALL_TIMEOUT_MS = 5_000;
 
 /**
- * Successful consolidation calls in flight and peak observed by fixture.
+ Successful consolidation calls in flight and peak observed by fixture.
  */
 type ConsolidationConcurrency = {
   now: number;
@@ -125,8 +125,8 @@ type ConsolidationConcurrency = {
 };
 
 /**
- * A client that refuses to be used, so any call at all is a failure rather
- * than a slow test.
+ A client that refuses to be used, so any call at all is a failure rather
+ than a slow test.
  */
 const REFUSING_CLIENT = createSyntheticClient({
   apiKey: 'test-key',
@@ -136,28 +136,28 @@ const REFUSING_CLIENT = createSyntheticClient({
 },);
 
 /**
- * Builds a client that records every request body and answers none of them.
- *
- * ANSWERS WITH UNREADABLE CONTENT rather than throwing, which matters more than
- * it looks. A thrown transport error is retried five times and then propagates
- * out of the driver, so a case built that way spends seconds failing on the
- * refusal instead of reading the sheet. A well-formed reply carrying content no
- * sheet can parse loses the voice instead, which is an outcome the validity floor
- * is already built for.
- *
- * @returns Client to drive with, beside the bodies it recorded
- *
- * @example
- * ```ts
- * const { client, bodies, } = recordingClient();
- * ```
+ Builds a client that records every request body and answers none of them.
+ 
+ ANSWERS WITH UNREADABLE CONTENT rather than throwing, which matters more than
+ it looks. A thrown transport error is retried five times and then propagates
+ out of the driver, so a case built that way spends seconds failing on the
+ refusal instead of reading the sheet. A well-formed reply carrying content no
+ sheet can parse loses the voice instead, which is an outcome the validity floor
+ is already built for.
+ 
+ @returns Client to drive with, beside the bodies it recorded
+ 
+ @example
+ ```ts
+ const { client, bodies, } = recordingClient();
+ ```
  */
 function recordingClient(): {
   readonly client: SyntheticClient;
   readonly bodies: readonly string[];
 } {
   /**
-   * Every request body the driver sent, in order.
+   Every request body the driver sent, in order.
    */
   const bodies: string[] = [];
 
@@ -186,36 +186,36 @@ function recordingClient(): {
 }
 
 /**
- * Marker the gate's own sheet carries and no other round does.
- *
- * READ OFF `consolidate-gate-wire.ts`. The gate and the slate judges share the
- * ballot schema, so the schema name alone cannot tell them apart and a case
- * reading `the judges' sheet` would otherwise be reading the gate's half the time.
+ Marker the gate's own sheet carries and no other round does.
+ 
+ READ OFF `consolidate-gate-wire.ts`. The gate and the slate judges share the
+ ballot schema, so the schema name alone cannot tell them apart and a case
+ reading `the judges' sheet` would otherwise be reading the gate's half the time.
  */
 const GATE_MARKER = 'unsupported and dropped each a list';
 
 /**
- * Builds a client that records every request and answers each role usefully.
- *
- * WHY NOT {@link recordingClient}. That one answers content no sheet can parse,
- * so every voice is lost and the driver settles on the standing text having
- * bought nothing. That is exactly right for reading what a PRODUCER was sent,
- * since the producer round happens before anything can be lost, and useless for
- * reading a judge's sheet, because no judging round ever runs.
- *
- * @returns Client to drive with, beside the judge requests it recorded
- *
- * @example
- * ```ts
- * const { client, judgeSheets, } = answeringClient();
- * ```
+ Builds a client that records every request and answers each role usefully.
+ 
+ WHY NOT {@link recordingClient}. That one answers content no sheet can parse,
+ so every voice is lost and the driver settles on the standing text having
+ bought nothing. That is exactly right for reading what a PRODUCER was sent,
+ since the producer round happens before anything can be lost, and useless for
+ reading a judge's sheet, because no judging round ever runs.
+ 
+ @returns Client to drive with, beside the judge requests it recorded
+ 
+ @example
+ ```ts
+ const { client, judgeSheets, } = answeringClient();
+ ```
  */
 function answeringClient(): {
   readonly client: SyntheticClient;
   readonly judgeSheets: readonly string[];
 } {
   /**
-   * Requests the SLATE judges received, gate rounds excluded.
+   Requests the SLATE judges received, gate rounds excluded.
    */
   const judgeSheets: string[] = [];
 
@@ -224,23 +224,23 @@ function answeringClient(): {
       apiKey: 'test-key',
       transport: async function answerByRole(exchange,) {
         /**
-         * Everything this call is sending, which is where the sheet lives.
+         Everything this call is sending, which is where the sheet lives.
          */
         const sent = exchange.bodyJson ?? '';
 
         /**
-         * Which of the three rounds this call is, decided once so the answer and
-         * the recording cannot disagree about it.
-         *
-         * THE GATE IS CHECKED BEFORE THE BALLOT, because both ask for the same
-         * schema and only the gate's own wording separates them.
+         Which of the three rounds this call is, decided once so the answer and
+         the recording cannot disagree about it.
+         
+         THE GATE IS CHECKED BEFORE THE BALLOT, because both ask for the same
+         schema and only the gate's own wording separates them.
          */
         const role = sent.includes('translation_report',)
           ? 'produce'
           : (sent.includes(GATE_MARKER,) ? 'gate' : 'judge');
 
         /**
-         * Reply each round is given.
+         Reply each round is given.
          */
         const answers: Record<string, string> = {
           produce: JSON.stringify({ translation: 'A cat asleep in the sun.', },),
@@ -257,7 +257,7 @@ function answeringClient(): {
         };
 
         /**
-         * Reply body for whichever role asked.
+         Reply body for whichever role asked.
          */
         const answer = answers[role] ?? '';
 
@@ -284,18 +284,18 @@ function answeringClient(): {
 }
 
 /**
- * Finds numbered candidate carrying scripted wording in serialized request.
- *
- * @param sent - serialized request body
- *
- * @param needle - candidate wording marker
- *
- * @returns One-based candidate index, or zero when absent
- *
- * @example
- * ```ts
- * const best = candidateCarrying({ sent, needle: 'rests naturally', });
- * ```
+ Finds numbered candidate carrying scripted wording in serialized request.
+ 
+ @param sent - serialized request body
+ 
+ @param needle - candidate wording marker
+ 
+ @returns One-based candidate index, or zero when absent
+ 
+ @example
+ ```ts
+ const best = candidateCarrying({ sent, needle: 'rests naturally', });
+ ```
  */
 function candidateCarrying(
   {
@@ -322,11 +322,11 @@ function candidateCarrying(
 }
 
 /**
- * Reads only messages from serialized provider request.
- *
- * @param body - serialized provider request
- *
- * @returns Serialized messages without provider model field
+ Reads only messages from serialized provider request.
+ 
+ @param body - serialized provider request
+ 
+ @returns Serialized messages without provider model field
  */
 function requestMessages({ body, }: { readonly body: string; }): string {
   /** Parsed request envelope. */
@@ -335,14 +335,14 @@ function requestMessages({ body, }: { readonly body: string; }): string {
 }
 
 /**
- * Builds client whose first gate keeps unsafe standing and second endorses recovery.
- *
- * @returns Client plus producer sheets and full payloads proving failed evidence reached follow-up
- *
- * @example
- * ```ts
- * const { client, producerSheets, } = recoveringClient();
- * ```
+ Builds client whose first gate keeps unsafe standing and second endorses recovery.
+ 
+ @returns Client plus producer sheets and full payloads proving failed evidence reached follow-up
+ 
+ @example
+ ```ts
+ const { client, producerSheets, } = recoveringClient();
+ ```
  */
 function recoveringClient(
   {
@@ -421,18 +421,18 @@ function recoveringClient(
 }
 
 /**
- * Builds both ledgers for a document of two slices.
- *
- * @returns Projection shaped as the lanes leave one
- *
- * @example
- * ```ts
- * const projected = twoSliceDocument();
- * ```
+ Builds both ledgers for a document of two slices.
+ 
+ @returns Projection shaped as the lanes leave one
+ 
+ @example
+ ```ts
+ const projected = twoSliceDocument();
+ ```
  */
 function twoSliceDocument(): ProjectedLanes {
   /**
-   * One comparison row per slice, both lanes wording them differently.
+   One comparison row per slice, both lanes wording them differently.
    */
   const comparison = [0, 1,].map(function toRow(sliceIndex,) {
     return {
@@ -459,18 +459,18 @@ function twoSliceDocument(): ProjectedLanes {
 }
 
 /**
- * Builds two rows asking an identical consolidation question.
- *
- * @returns Projection whose position-free consolidation keys match
- *
- * @example
- * ```ts
- * const projected = twinSliceDocument();
- * ```
+ Builds two rows asking an identical consolidation question.
+ 
+ @returns Projection whose position-free consolidation keys match
+ 
+ @example
+ ```ts
+ const projected = twinSliceDocument();
+ ```
  */
 function twinSliceDocument(): ProjectedLanes {
   /**
-   * Same question stamped at both document positions.
+   Same question stamped at both document positions.
    */
   const comparison = [0, 1,].map(function toRow(sliceIndex,) {
     return {
@@ -496,18 +496,18 @@ function twinSliceDocument(): ProjectedLanes {
 }
 
 /**
- * Builds one contest record, as the contest wrote it for the artifact.
- *
- * @param sliceIndex - slice this answers
- *
- * @param lane - lane the contest backed
- *
- * @returns Record shaped as the contest stage produces one
- *
- * @example
- * ```ts
- * const record = contestSettling({ sliceIndex: 0, lane: 'repair', },);
- * ```
+ Builds one contest record, as the contest wrote it for the artifact.
+ 
+ @param sliceIndex - slice this answers
+ 
+ @param lane - lane the contest backed
+ 
+ @returns Record shaped as the contest stage produces one
+ 
+ @example
+ ```ts
+ const record = contestSettling({ sliceIndex: 0, lane: 'repair', },);
+ ```
  */
 function contestSettling(
   {
@@ -530,16 +530,16 @@ function contestSettling(
 }
 
 /**
- * Builds a settlement as the stage returns one, for the cache to hand back.
- *
- * @param terminal - how the slice left the stage
- *
- * @returns Settlement shaped as `settleConsolidation` returns one
- *
- * @example
- * ```ts
- * const settled = settlementReaching({ terminal: 'incumbent-only', },);
- * ```
+ Builds a settlement as the stage returns one, for the cache to hand back.
+ 
+ @param terminal - how the slice left the stage
+ 
+ @returns Settlement shaped as `settleConsolidation` returns one
+ 
+ @example
+ ```ts
+ const settled = settlementReaching({ terminal: 'incumbent-only', },);
+ ```
  */
 function settlementReaching(
   { terminal, }: { readonly terminal: ConsolidationTerminal; },
@@ -559,32 +559,32 @@ function settlementReaching(
 }
 
 /**
- * Runs the driver over a document, collecting what it tried to persist.
- *
- * @param contests - what the contest settled, keyed by slice
- *
- * @param resumed - settlements an earlier run already bought
- *
- * @param projected - both ledgers, overridable to test a ledger gap
- *
- * @param frontMatterSlices - syntax-bearing metadata positions
- *
- * @param overlap - most contested slices in flight
- *
- * @param activity - optional successful-call overlap instrument
- *
- * @param messages - optional destination for operational logging
- *
- * @param writes - optional external persistence capture
- *
- * @param signal - optional caller cancellation
- *
- * @returns Records the driver produced beside the keys it wrote
- *
- * @example
- * ```ts
- * const { slices, written, } = await driveWith({ contests: [], },);
- * ```
+ Runs the driver over a document, collecting what it tried to persist.
+ 
+ @param contests - what the contest settled, keyed by slice
+ 
+ @param resumed - settlements an earlier run already bought
+ 
+ @param projected - both ledgers, overridable to test a ledger gap
+ 
+ @param frontMatterSlices - syntax-bearing metadata positions
+ 
+ @param overlap - most contested slices in flight
+ 
+ @param activity - optional successful-call overlap instrument
+ 
+ @param messages - optional destination for operational logging
+ 
+ @param writes - optional external persistence capture
+ 
+ @param signal - optional caller cancellation
+ 
+ @returns Records the driver produced beside the keys it wrote
+ 
+ @example
+ ```ts
+ const { slices, written, } = await driveWith({ contests: [], },);
+ ```
  */
 async function driveWith(
   {
@@ -622,12 +622,12 @@ async function driveWith(
   },
 ) {
   /**
-   * Keys the driver decided were worth resuming later.
+   Keys the driver decided were worth resuming later.
    */
   const written: string[] = writes ?? [];
 
   /**
-   * Cache standing in for the entry store, recording every write.
+   Cache standing in for the entry store, recording every write.
    */
   const cache: SliceCache<ConsolidationSettlement> = {
     resumed,
@@ -637,7 +637,7 @@ async function driveWith(
   };
 
   /**
-   * Client-level activity instrument outside provider slot limiting.
+   Client-level activity instrument outside provider slot limiting.
    */
   const measuredClient: SyntheticClient = (activity === undefined)
     ? client
@@ -645,7 +645,7 @@ async function driveWith(
       chatText: client.chatText,
       chatJson: async (request) => {
         /**
-         * Start position making second slice answer before first under overlap.
+         Start position making second slice answer before first under overlap.
          */
         const startPosition = activity.started;
         activity.started += 1;
@@ -703,7 +703,7 @@ await describe({
       name: 'RESUMES AUDITABLE CHANGED POLISH without rebuying any stage',
       fn: async () => {
         /**
-         * Exact first-slice question driver derives.
+         Exact first-slice question driver derives.
          */
         const key = consolidateSliceKey({
           runShape: consolidateRunShape({ modelIds: ROSTER, },),
@@ -719,7 +719,7 @@ await describe({
           neighbouringIncumbentText: '',
         },);
         /**
-         * Cached settlement whose final polish replaced approved base.
+         Cached settlement whose final polish replaced approved base.
          */
         const settled: ConsolidationSettlement = {
           ...settlementReaching({ terminal: 'gate-kept-standing', },),
@@ -743,9 +743,9 @@ await describe({
         };
         const messages: string[] = [];
         /**
-         * How often the driver asked before a slice, which it does even for a
-         * slice the cache then answers: the wait belongs to the bench, not
-         * to the purchase.
+         How often the driver asked before a slice, which it does even for a
+         slice the cache then answers: the wait belongs to the bench, not
+         to the purchase.
          */
         const before = { calls: 0, };
         const resumed = await driveWith({
@@ -781,11 +781,11 @@ await describe({
         + 'would pass just as well against a driver that had stopped calling the roster at all',
       fn: async () => {
         /**
-         * Operational messages naming unfinished slice exit.
+         Operational messages naming unfinished slice exit.
          */
         const messages: string[] = [];
         /**
-         * What the driver did when handed an empty cache.
+         What the driver did when handed an empty cache.
          */
         let raised: unknown;
         try {
@@ -913,8 +913,8 @@ await describe({
           },
         } as unknown as ProjectedLanes;
         /**
-         * What the drive threw for a standing the gate refused and the slate
-         * could not replace.
+         What the drive threw for a standing the gate refused and the slate
+         could not replace.
          */
         let thrown: unknown;
         try {
@@ -1071,7 +1071,7 @@ await describe({
         + 'exist is a defect upstream and settling one of them anyway would hide it',
       fn: async () => {
         /**
-         * A document whose comparison names a slice the ledger does not.
+         A document whose comparison names a slice the ledger does not.
          */
         const gapped = {
           ...twoSliceDocument(),
@@ -1082,7 +1082,7 @@ await describe({
         };
 
         /**
-         * What the driver did instead of returning.
+         What the driver did instead of returning.
          */
         let raised: unknown;
         try {
@@ -1105,8 +1105,8 @@ await describe({
         + 'answer rather than re-deriving the order',
       fn: async () => {
         /**
-         * Both slices settled by an earlier run, keyed by whatever the driver
-         * asks for: the cache here answers every key.
+         Both slices settled by an earlier run, keyed by whatever the driver
+         asks for: the cache here answers every key.
          */
         const everyKey = {
           get: function answerAnyKey() {
@@ -1136,14 +1136,14 @@ await describe({
         + 'consolidation returned, preserving the final pre-write defense',
       fn: async () => {
         /**
-         * Exact caller reason helper must surface.
+         Exact caller reason helper must surface.
          */
         const stopped = new Error('caller abandoned completed consolidation',);
         const controller = new AbortController();
         controller.abort(stopped,);
 
         /**
-         * Writes attempted after abort.
+         Writes attempted after abort.
          */
         const written: string[] = [];
         await expect(persistConsolidationSettlement({
@@ -1169,7 +1169,7 @@ await describe({
         + 'and returns records in comparison order when the second producer answers first',
       fn: async () => {
         /**
-         * Serial positive-control activity.
+         Serial positive-control activity.
          */
         const serial: ConsolidationConcurrency = {
           now: 0,
@@ -1188,7 +1188,7 @@ await describe({
         },);
 
         /**
-         * Two-slice activity.
+         Two-slice activity.
          */
         const overlapped: ConsolidationConcurrency = {
           now: 0,
@@ -1221,7 +1221,7 @@ await describe({
         + 'only the fresh consolidation while returning both in comparison order',
       fn: async () => {
         /**
-         * Fresh pass used only to derive production keys for both rows.
+         Fresh pass used only to derive production keys for both rows.
          */
         const learningClient = recordingClient();
         const learned = await driveWith({
@@ -1233,7 +1233,7 @@ await describe({
         },);
 
         /**
-         * Second pass resuming first row and buying second.
+         Second pass resuming first row and buying second.
          */
         const freshClient = recordingClient();
         const mixed = await driveWith({
@@ -1269,8 +1269,8 @@ await describe({
           overlap,
         ): Promise<void> {
           /**
-           * Calls one copy of this question costs, measured rather than assumed
-           * because malformed structured replies are retried by transport.
+           Calls one copy of this question costs, measured rather than assumed
+           because malformed structured replies are retried by transport.
            */
           const singleFixture = recordingClient();
           const single = await driveWith({
@@ -1281,7 +1281,7 @@ await describe({
           },);
 
           /**
-           * Same question stamped at both positions.
+           Same question stamped at both positions.
            */
           const twinFixture = recordingClient();
           const messages: string[] = [];
@@ -1325,7 +1325,7 @@ await describe({
           overlap,
         ): Promise<void> {
           /**
-           * One unsettled consolidation as asks positive control.
+           One unsettled consolidation as asks positive control.
            */
           const singleActivity: ConsolidationConcurrency = {
             now: 0,
@@ -1342,7 +1342,7 @@ await describe({
           },);
 
           /**
-           * Same unsettled question at both positions.
+           Same unsettled question at both positions.
            */
           const twinActivity: ConsolidationConcurrency = {
             now: 0,
@@ -1533,21 +1533,21 @@ await describe({
 },);
 
 /**
- * Builds a judged round that settled the way a resume case needs.
- *
- * WHOLE AND HONEST rather than cast, because the predicate reads a field OFF
- * this object and a fixture narrowed to that field would stop the compiler
- * noticing if the field moved or was renamed. Everything else is the emptiest
- * value its type admits.
- *
- * @param decision - what the judges settled on
- *
- * @returns Round shaped as the judge returns one
- *
- * @example
- * ```ts
- * const decided = judgedAs({ decision: 'judged', },);
- * ```
+ Builds a judged round that settled the way a resume case needs.
+ 
+ WHOLE AND HONEST rather than cast, because the predicate reads a field OFF
+ this object and a fixture narrowed to that field would stop the compiler
+ noticing if the field moved or was renamed. Everything else is the emptiest
+ value its type admits.
+ 
+ @param decision - what the judges settled on
+ 
+ @returns Round shaped as the judge returns one
+ 
+ @example
+ ```ts
+ const decided = judgedAs({ decision: 'judged', },);
+ ```
  */
 function judgedAs(
   { decision, }: { readonly decision: TranslateDecision; },
@@ -1579,25 +1579,25 @@ function judgedAs(
 }
 
 /**
- * Builds a settlement that left the stage the way a resume case needs.
- *
- * ONLY THE FIELDS THE PREDICATE READS are real here. It looks at the terminal,
- * at how many ballots the gate could read, and at what the judges decided;
- * everything else on a settlement is carried for the record rather than for
- * this decision.
- *
- * @param terminal - how the slice left the stage
- *
- * @param usable - ballots the gate could read, absent where it never ran
- *
- * @param decision - what the judges decided, absent where none were asked
- *
- * @returns Settlement shaped as the stage returns one
- *
- * @example
- * ```ts
- * const settlement = settlementFor({ terminal: 'consolidated', usable: 4, },);
- * ```
+ Builds a settlement that left the stage the way a resume case needs.
+ 
+ ONLY THE FIELDS THE PREDICATE READS are real here. It looks at the terminal,
+ at how many ballots the gate could read, and at what the judges decided;
+ everything else on a settlement is carried for the record rather than for
+ this decision.
+ 
+ @param terminal - how the slice left the stage
+ 
+ @param usable - ballots the gate could read, absent where it never ran
+ 
+ @param decision - what the judges decided, absent where none were asked
+ 
+ @returns Settlement shaped as the stage returns one
+ 
+ @example
+ ```ts
+ const settlement = settlementFor({ terminal: 'consolidated', usable: 4, },);
+ ```
  */
 function settlementFor(
   {

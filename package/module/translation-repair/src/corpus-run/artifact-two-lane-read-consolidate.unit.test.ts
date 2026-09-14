@@ -1,30 +1,30 @@
 /**
- * Tests for reading what the third rendering settled over one document.
- *
- * THE SHIPPED FIELD IS WHAT THESE ARE ABOUT. Every other field an artifact
- * carries is evidence about a decision; `shipped` is the decision's OUTPUT, and
- * a consumer writes its text into the document. So the two directions of
- * disagreement between it and the terminal each get a case: a record claiming
- * text on a terminal that changed nothing would ship a passage nobody settled
- * on, and one claiming no change on the consolidated terminal would silently
- * drop a passage the roster did settle on.
- *
- * THE ABSENCE HAS TWO MEANINGS and both are pinned. Every artifact settled
- * before this field existed carries no key at all, and a reader that read that
- * as "the pass declined to ask" would count the whole earlier archive as
- * declines. Measured before these were written: six settled artifacts from four
- * earlier runs all read, all six report `unrecorded`, none refused.
- *
- * THE CONTEST BOUNDS A SETTLED STAGE. The driver writes one record at every
- * slice the contest settled, walking the comparison rows, so a settled stage is
- * held to exactly the contest's slices in its order, the way the contest is held
- * to the comparison. Measured before those cases were written: all 28 artifacts
- * on this machine carrying the field name exactly their contest's slices in its
- * order, one of them naming none.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading what the third rendering settled over one document.
+ 
+ THE SHIPPED FIELD IS WHAT THESE ARE ABOUT. Every other field an artifact
+ carries is evidence about a decision; `shipped` is the decision's OUTPUT, and
+ a consumer writes its text into the document. So the two directions of
+ disagreement between it and the terminal each get a case: a record claiming
+ text on a terminal that changed nothing would ship a passage nobody settled
+ on, and one claiming no change on the consolidated terminal would silently
+ drop a passage the roster did settle on.
+ 
+ THE ABSENCE HAS TWO MEANINGS and both are pinned. Every artifact settled
+ before this field existed carries no key at all, and a reader that read that
+ as "the pass declined to ask" would count the whole earlier archive as
+ declines. Measured before these were written: six settled artifacts from four
+ earlier runs all read, all six report `unrecorded`, none refused.
+ 
+ THE CONTEST BOUNDS A SETTLED STAGE. The driver writes one record at every
+ slice the contest settled, walking the comparison rows, so a settled stage is
+ held to exactly the contest's slices in its order, the way the contest is held
+ to the comparison. Measured before those cases were written: all 28 artifacts
+ on this machine carrying the field name exactly their contest's slices in its
+ order, one of them naming none.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -41,12 +41,12 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Path every case reports its refusals under.
+ Path every case reports its refusals under.
  */
 const AT = 'whiskers.consolidation';
 
 /**
- * One slice as the driver records a consolidation that shipped.
+ One slice as the driver records a consolidation that shipped.
  */
 const SHIPPED_SLICE = {
   sliceIndex: 0,
@@ -81,8 +81,8 @@ const SHIPPED_SLICE = {
 };
 
 /**
- * One slice as the driver records an incumbent that stood in for an
- * ineligible lane standing and was kept by the gate (owner, 2026-09-09).
+ One slice as the driver records an incumbent that stood in for an
+ ineligible lane standing and was kept by the gate (owner, 2026-09-09).
  */
 const INCUMBENT_SLICE = {
   sliceIndex: 2,
@@ -98,7 +98,7 @@ const INCUMBENT_SLICE = {
 };
 
 /**
- * One slice as the driver records a slate the floor refused.
+ One slice as the driver records a slate the floor refused.
  */
 const FLOORED_SLICE = {
   sliceIndex: 1,
@@ -111,17 +111,17 @@ const FLOORED_SLICE = {
 };
 
 /**
- * Contest that settled exactly these slices, in this order, each on the
- * verdict that ships nothing so the fixture carries no lane text.
- *
- * @param sliceIndexes - slices the contest answered
- *
- * @returns Selection as the pass records it
- *
- * @example
- * ```ts
- * const selection = contestOf({ sliceIndexes: [0, 1,], },);
- * ```
+ Contest that settled exactly these slices, in this order, each on the
+ verdict that ships nothing so the fixture carries no lane text.
+ 
+ @param sliceIndexes - slices the contest answered
+ 
+ @returns Selection as the pass records it
+ 
+ @example
+ ```ts
+ const selection = contestOf({ sliceIndexes: [0, 1,], },);
+ ```
  */
 function contestOf(
   { sliceIndexes, }: { readonly sliceIndexes: readonly number[]; },
@@ -140,7 +140,7 @@ function contestOf(
 }
 
 /**
- * Contest that settled the two slices the fixtures answer, in that order.
+ Contest that settled the two slices the fixtures answer, in that order.
  */
 const CONTEST_OF_TWO = contestOf({
   sliceIndexes: [
@@ -150,19 +150,19 @@ const CONTEST_OF_TWO = contestOf({
 },);
 
 /**
- * Reads a consolidation field, reporting the refusal rather than raising it.
- *
- * @param value - field as an artifact would carry it
- *
- * @param laneSelection - contest recorded beside it, the two-slice one unless
- * a case says otherwise
- *
- * @returns What was parsed, or the refusal text
- *
- * @example
- * ```ts
- * const read = readingOf({ value, },);
- * ```
+ Reads a consolidation field, reporting the refusal rather than raising it.
+ 
+ @param value - field as an artifact would carry it
+ 
+ @param laneSelection - contest recorded beside it, the two-slice one unless
+ a case says otherwise
+ 
+ @returns What was parsed, or the refusal text
+ 
+ @example
+ ```ts
+ const read = readingOf({ value, },);
+ ```
  */
 function readingOf(
   {

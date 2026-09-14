@@ -10,32 +10,32 @@ import type { RosterModelId, } from '../synthetic-catalog.ts';
 //region Archive block repair
 
 /**
- * Outcome of reviewing all currently unclaimed archive blocks.
+ Outcome of reviewing all currently unclaimed archive blocks.
  */
 export type ArchiveBlocksRepairOutcome = {
   /**
-   * Archive text after selected revisions.
+   Archive text after selected revisions.
    */
   readonly targetText: string;
   /**
-   * Operation-only findings safe for pass audit.
+   Operation-only findings safe for pass audit.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Stable identity over location and exact block wording.
- *
- * @param block - structured unclaimed block
- *
- * @param targetText - archive whose offsets block indexes
- *
- * @returns Identity unaffected by edits after block
- *
- * @example
- * ```ts
- * const identity = archiveBlockIdentity({ block, targetText, });
- * ```
+ Stable identity over location and exact block wording.
+ 
+ @param block - structured unclaimed block
+ 
+ @param targetText - archive whose offsets block indexes
+ 
+ @returns Identity unaffected by edits after block
+ 
+ @example
+ ```ts
+ const identity = archiveBlockIdentity({ block, targetText, });
+ ```
  */
 export function archiveBlockIdentity(
   {
@@ -59,30 +59,30 @@ export function archiveBlockIdentity(
 }
 
 /**
- * Reviews unclaimed blocks in reverse offset order and applies selected revisions.
- *
- * @param client - provider client
- *
- * @param modelIds - review roster
- *
- * @param targetText - current archive document
- *
- * @param sourceContexts - expected source section per exact block identity
- *
- * @param blocks - unclaimed blocks in current preparation
- *
- * @param signal - caller cancellation
- *
- * @param exchangeTimeoutMs - per-call bound
- *
- * @param l - pass logger
- *
- * @returns Revised text, retained identities, and audit findings
- *
- * @example
- * ```ts
- * const repaired = await repairArchiveBlocks(input);
- * ```
+ Reviews unclaimed blocks in reverse offset order and applies selected revisions.
+ 
+ @param client - provider client
+ 
+ @param modelIds - review roster
+ 
+ @param targetText - current archive document
+ 
+ @param sourceContexts - expected source section per exact block identity
+ 
+ @param blocks - unclaimed blocks in current preparation
+ 
+ @param signal - caller cancellation
+ 
+ @param exchangeTimeoutMs - per-call bound
+ 
+ @param l - pass logger
+ 
+ @returns Revised text, retained identities, and audit findings
+ 
+ @example
+ ```ts
+ const repaired = await repairArchiveBlocks(input);
+ ```
  */
 export async function repairArchiveBlocks(
   {
@@ -106,16 +106,16 @@ export async function repairArchiveBlocks(
   }>,
 ): Promise<ArchiveBlocksRepairOutcome> {
   /**
-   * Operation-only audit findings.
+   Operation-only audit findings.
    */
   const findings: string[] = [];
   /**
-   * Archive with selected corrections applied.
+   Archive with selected corrections applied.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Reverse-offset sequential splicing carries each accepted correction forward.
   let revisedText = targetText;
   /**
-   * Blocks ordered so replacement cannot invalidate later offsets.
+   Blocks ordered so replacement cannot invalidate later offsets.
    */
   const ordered = blocks.toSorted(function latestFirst(
     left,
@@ -125,21 +125,21 @@ export async function repairArchiveBlocks(
   },);
   for (const block of ordered) {
     /**
-     * Stable license identity for current block.
+     Stable license identity for current block.
      */
     const identity = archiveBlockIdentity({
       block,
       targetText,
     },);
     /**
-     * Exact archive wording under review.
+     Exact archive wording under review.
      */
     const blockText = targetText.slice(
       block.startOffset,
       block.endOffset,
     );
     /**
-     * Stage-local retained or revised outcome.
+     Stage-local retained or revised outcome.
      */
     // oxlint-disable-next-line no-await-in-loop -- Reverse-offset block corrections must settle in document order.
     const outcome = await runArchiveBlockReviewStage({

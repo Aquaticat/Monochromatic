@@ -12,63 +12,63 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
 //region Lane contest publication eligibility
 
 /**
- * Deterministic publication eligibility of syntax-bearing contest candidates.
- *
- * Source text is retained so artifact reader can recompute these claims rather
- * than trusting stored booleans.
- *
- * @example
- * ```ts
- * const eligibility: LaneContestEligibility = { syntax: 'front-matter', sourceText, archive: 'ineligible', repair: 'ineligible', translate: 'eligible', };
- * ```
+ Deterministic publication eligibility of syntax-bearing contest candidates.
+ 
+ Source text is retained so artifact reader can recompute these claims rather
+ than trusting stored booleans.
+ 
+ @example
+ ```ts
+ const eligibility: LaneContestEligibility = { syntax: 'front-matter', sourceText, archive: 'ineligible', repair: 'ineligible', translate: 'eligible', };
+ ```
  */
 export type LaneContestEligibility = {
   /**
-   * Syntax policy producing these readings.
+   Syntax policy producing these readings.
    */
   readonly syntax: 'front-matter';
 
   /**
-   * Original syntax-bearing slice governing identity relationships.
+   Original syntax-bearing slice governing identity relationships.
    */
   readonly sourceText: string;
 
   /**
-   * Whether archive can cross final publication boundary.
+   Whether archive can cross final publication boundary.
    */
   readonly archive: 'eligible' | 'ineligible';
 
   /**
-   * Whether repair candidate can cross final publication boundary.
+   Whether repair candidate can cross final publication boundary.
    */
   readonly repair: 'eligible' | 'ineligible';
 
   /**
-   * Whether translate candidate can cross final publication boundary.
+   Whether translate candidate can cross final publication boundary.
    */
   readonly translate: 'eligible' | 'ineligible';
 };
 
 /**
- * Stable finding marking raw choices excluded by deterministic admission.
+ Stable finding marking raw choices excluded by deterministic admission.
  */
 export const LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING = 'lane-contest-eligibility-floor (inadmissible choices excluded)';
 
 /**
- * Reads one candidate against syntax-bearing publication invariants.
- *
- * @param sourceText - original syntax-bearing slice
- *
- * @param incumbentText - archive metadata defining compatible shape
- *
- * @param candidateText - candidate under deterministic admission
- *
- * @returns Eligibility status
- *
- * @example
- * ```ts
- * const status = candidateEligibility({ sourceText, incumbentText, candidateText, });
- * ```
+ Reads one candidate against syntax-bearing publication invariants.
+ 
+ @param sourceText - original syntax-bearing slice
+ 
+ @param incumbentText - archive metadata defining compatible shape
+ 
+ @param candidateText - candidate under deterministic admission
+ 
+ @returns Eligibility status
+ 
+ @example
+ ```ts
+ const status = candidateEligibility({ sourceText, incumbentText, candidateText, });
+ ```
  */
 function candidateEligibility(
   {
@@ -82,7 +82,7 @@ function candidateEligibility(
   },
 ): LaneContestEligibility['archive'] {
   /**
-   * Structural result under final syntax policy.
+   Structural result under final syntax policy.
    */
   const validation = validateTranslatedSlice({
     sourceText,
@@ -94,22 +94,22 @@ function candidateEligibility(
 }
 
 /**
- * Computes deterministic eligibility for every front matter candidate.
- *
- * @param sourceText - original metadata
- *
- * @param incumbentText - archive metadata
- *
- * @param repairText - repair lane candidate
- *
- * @param translateText - translate lane candidate
- *
- * @returns Source-backed candidate eligibility record
- *
- * @example
- * ```ts
- * const eligibility = frontMatterContestEligibility({ sourceText, incumbentText, repairText, translateText, });
- * ```
+ Computes deterministic eligibility for every front matter candidate.
+ 
+ @param sourceText - original metadata
+ 
+ @param incumbentText - archive metadata
+ 
+ @param repairText - repair lane candidate
+ 
+ @param translateText - translate lane candidate
+ 
+ @returns Source-backed candidate eligibility record
+ 
+ @example
+ ```ts
+ const eligibility = frontMatterContestEligibility({ sourceText, incumbentText, repairText, translateText, });
+ ```
  */
 export function frontMatterContestEligibility(
   {
@@ -146,21 +146,21 @@ export function frontMatterContestEligibility(
 }
 
 /**
- * Reads contest winner after deterministically inadmissible votes are excluded.
- *
- * Raw ballots remain unchanged for audit. A vote for invalid lane contributes
- * to neither lane; it is never redirected into vote for valid alternative.
- *
- * @param ballots - raw usable ballots
- *
- * @param eligibility - source-backed candidate admission
- *
- * @returns Eligible lane with normal quorum and strict lead, or neither
- *
- * @example
- * ```ts
- * const choice = settleEligibleLaneContestBallots({ ballots, eligibility, });
- * ```
+ Reads contest winner after deterministically inadmissible votes are excluded.
+ 
+ Raw ballots remain unchanged for audit. A vote for invalid lane contributes
+ to neither lane; it is never redirected into vote for valid alternative.
+ 
+ @param ballots - raw usable ballots
+ 
+ @param eligibility - source-backed candidate admission
+ 
+ @returns Eligible lane with normal quorum and strict lead, or neither
+ 
+ @example
+ ```ts
+ const choice = settleEligibleLaneContestBallots({ ballots, eligibility, });
+ ```
  */
 export function settleEligibleLaneContestBallots(
   {
@@ -174,7 +174,7 @@ export function settleEligibleLaneContestBallots(
   if (eligibility === undefined)
     return settleLaneContestBallots({ ballots, },);
   /**
-   * Raw ballots whose chosen lane may cross publication boundary.
+   Raw ballots whose chosen lane may cross publication boundary.
    */
   const effectiveBallots = ballots.filter(function choseEligible(ballot,): boolean {
     if (ballot.choice === 'neither')
@@ -185,18 +185,18 @@ export function settleEligibleLaneContestBallots(
 }
 
 /**
- * Applies deterministic eligibility floor to raw contest outcome.
- *
- * @param outcome - raw roster outcome
- *
- * @param eligibility - source-backed candidate admission
- *
- * @returns Same raw ballots with effective eligible choice
- *
- * @example
- * ```ts
- * const admitted = applyLaneContestEligibility({ outcome, eligibility, });
- * ```
+ Applies deterministic eligibility floor to raw contest outcome.
+ 
+ @param outcome - raw roster outcome
+ 
+ @param eligibility - source-backed candidate admission
+ 
+ @returns Same raw ballots with effective eligible choice
+ 
+ @example
+ ```ts
+ const admitted = applyLaneContestEligibility({ outcome, eligibility, });
+ ```
  */
 export function applyLaneContestEligibility(
   {
@@ -208,21 +208,21 @@ export function applyLaneContestEligibility(
   },
 ): LaneContestOutcome {
   /**
-   * Effective choice after candidate admission.
+   Effective choice after candidate admission.
    */
   const choice = settleEligibleLaneContestBallots({
     ballots: outcome.ballots,
     ...((eligibility === undefined) ? {} : { eligibility, }),
   },);
   /**
-   * Whether raw roster spent any ballot on deterministically invalid lane.
+   Whether raw roster spent any ballot on deterministically invalid lane.
    */
   /**
-   * Raw ballots retained without candidate redirection.
+   Raw ballots retained without candidate redirection.
    */
   const { ballots, } = outcome;
   /**
-   * Whether any raw choice named candidate publication guard rejects.
+   Whether any raw choice named candidate publication guard rejects.
    */
   const excluded = (eligibility === undefined)
     ? false
@@ -244,48 +244,48 @@ export function applyLaneContestEligibility(
 }
 
 /**
- * Whether a contest choice may ship, and the deterministic findings when not.
+ Whether a contest choice may ship, and the deterministic findings when not.
  */
 export type LaneContestChoiceVerdict = {
   /**
-   * Whether the selected lane passes the publication rules.
+   Whether the selected lane passes the publication rules.
    */
   readonly mayShip: boolean;
 
   /**
-   * Findings behind a refusal, empty on a pass.
+   Findings behind a refusal, empty on a pass.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Verdict on whether the selected lane may cross the publication boundary,
- * with the deterministic findings behind a refusal.
- *
- * THE FINDINGS ARE FOR THE RUN LOG: a refusal the log names is a defect
- * class the next reading finds in one grep, where "fails publication
- * invariants" alone sent the 2026-09-04 luxuanwen3 reading into the slice
- * records to learn that a link destination the archive had rewritten was
- * the cause.
- *
- * @param outcome - contest outcome after eligibility filtering
- *
- * @param sourceText - original slice
- *
- * @param incumbentText - page text being replaced
- *
- * @param repairText - repair lane candidate
- *
- * @param translateText - translate lane candidate
- *
- * @param syntax - explicit syntax role, absent for ordinary prose
- *
- * @returns Whether the choice may ship, and why not when it may not
- *
- * @example
- * ```ts
- * const verdict = laneContestChoiceVerdict({ outcome, sourceText, incumbentText, repairText, translateText, },);
- * ```
+ Verdict on whether the selected lane may cross the publication boundary,
+ with the deterministic findings behind a refusal.
+ 
+ THE FINDINGS ARE FOR THE RUN LOG: a refusal the log names is a defect
+ class the next reading finds in one grep, where "fails publication
+ invariants" alone sent the 2026-09-04 luxuanwen3 reading into the slice
+ records to learn that a link destination the archive had rewritten was
+ the cause.
+ 
+ @param outcome - contest outcome after eligibility filtering
+ 
+ @param sourceText - original slice
+ 
+ @param incumbentText - page text being replaced
+ 
+ @param repairText - repair lane candidate
+ 
+ @param translateText - translate lane candidate
+ 
+ @param syntax - explicit syntax role, absent for ordinary prose
+ 
+ @returns Whether the choice may ship, and why not when it may not
+ 
+ @example
+ ```ts
+ const verdict = laneContestChoiceVerdict({ outcome, sourceText, incumbentText, repairText, translateText, },);
+ ```
  */
 export function laneContestChoiceVerdict(
   {
@@ -311,11 +311,11 @@ export function laneContestChoiceVerdict(
         findings: [],
       };
     /**
-     * Findings distinguishing genuine decline from no safe eligible winner.
+     Findings distinguishing genuine decline from no safe eligible winner.
      */
     const { findings, } = outcome;
     /**
-     * Whether the decline stands for an eligible slate that was empty.
+     Whether the decline stands for an eligible slate that was empty.
      */
     const floored = findings.includes(LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,);
     return {
@@ -324,13 +324,13 @@ export function laneContestChoiceVerdict(
     };
   }
   /**
-   * Exact selected lane candidate.
+   Exact selected lane candidate.
    */
   const candidateText = (outcome.choice === 'repair')
     ? repairText
     : translateText;
   /**
-   * Final deterministic eligibility for syntax and ordinary contributor authority.
+   Final deterministic eligibility for syntax and ordinary contributor authority.
    */
   const validation = validateTranslatedSlice({
     sourceText,
@@ -355,32 +355,32 @@ export function laneContestChoiceVerdict(
 }
 
 /**
- * Reports whether contest winner can cross final publication boundary.
- *
- * ORDINARY PROSE KEEPS ROSTER VERDICT only after contributor-authority floor.
- * Front matter is syntax-bearing and has deterministic identity invariants,
- * so a lane that violates them cannot become warm-run terminal evidence merely because enough ballots selected it.
- * A declined contest remains retryable through consolidation and therefore has
- * no selected lane to reject here.
- *
- * @param outcome - contest result whose selected lane is checked
- *
- * @param sourceText - original metadata
- *
- * @param incumbentText - archive metadata defining compatible YAML shape
- *
- * @param repairText - repair lane candidate
- *
- * @param translateText - translate lane candidate
- *
- * @param syntax - explicit syntax role, absent for ordinary prose
- *
- * @returns Whether selected lane is structurally publishable
- *
- * @example
- * ```ts
- * const mayShip = laneContestChoiceMayShip({ outcome, sourceText, incumbentText, repairText, translateText, syntax: 'front-matter', });
- * ```
+ Reports whether contest winner can cross final publication boundary.
+ 
+ ORDINARY PROSE KEEPS ROSTER VERDICT only after contributor-authority floor.
+ Front matter is syntax-bearing and has deterministic identity invariants,
+ so a lane that violates them cannot become warm-run terminal evidence merely because enough ballots selected it.
+ A declined contest remains retryable through consolidation and therefore has
+ no selected lane to reject here.
+ 
+ @param outcome - contest result whose selected lane is checked
+ 
+ @param sourceText - original metadata
+ 
+ @param incumbentText - archive metadata defining compatible YAML shape
+ 
+ @param repairText - repair lane candidate
+ 
+ @param translateText - translate lane candidate
+ 
+ @param syntax - explicit syntax role, absent for ordinary prose
+ 
+ @returns Whether selected lane is structurally publishable
+ 
+ @example
+ ```ts
+ const mayShip = laneContestChoiceMayShip({ outcome, sourceText, incumbentText, repairText, translateText, syntax: 'front-matter', });
+ ```
  */
 export function laneContestChoiceMayShip(
   {
@@ -400,7 +400,7 @@ export function laneContestChoiceMayShip(
   },
 ): boolean {
   /**
-   * Verdict whose findings this boolean form drops.
+   Verdict whose findings this boolean form drops.
    */
   const verdict = laneContestChoiceVerdict({
     outcome,
@@ -414,7 +414,7 @@ export function laneContestChoiceMayShip(
 }
 
 /**
- * One lane the front-matter floor can exclude, with the text it offered.
+ One lane the front-matter floor can exclude, with the text it offered.
  */
 type FloorLane = {
   readonly lane: 'archive' | 'repair' | 'translate';
@@ -422,33 +422,33 @@ type FloorLane = {
 };
 
 /**
- * Names each lane the front-matter floor excludes and the finding that
- * excludes it, for the log line that reports the floor.
- *
- * WRITTEN FOR THE READING. The Uekawakuyuurei run of 2026-09-04 (16:09 UTC)
- * logged only `lane-contest-eligibility-floor (inadmissible choices excluded)`
- * for its metadata slice, and learning that the translate lane had restored a
- * `location` field the archive dropped, which the shape rule refuses, took
- * opening the slice cache. The eligibility record itself carries labels only,
- * and the artifact reader holds it to exact keys, so the findings are derived
- * again here from the same deterministic rule rather than carried on it.
- *
- * @param sourceText - metadata slice as the original writes it
- *
- * @param incumbentText - metadata slice as the page carries it, which is also
- * the archive lane's offer
- *
- * @param repairText - repair lane's offer
- *
- * @param translateText - translate lane's offer
- *
- * @returns One line per excluded lane, naming the lane and its findings; empty
- * when every lane is admissible
- *
- * @example
- * ```ts
- * const why = describeInadmissibleLanes({ sourceText, incumbentText, repairText, translateText, },);
- * ```
+ Names each lane the front-matter floor excludes and the finding that
+ excludes it, for the log line that reports the floor.
+ 
+ WRITTEN FOR THE READING. The Uekawakuyuurei run of 2026-09-04 (16:09 UTC)
+ logged only `lane-contest-eligibility-floor (inadmissible choices excluded)`
+ for its metadata slice, and learning that the translate lane had restored a
+ `location` field the archive dropped, which the shape rule refuses, took
+ opening the slice cache. The eligibility record itself carries labels only,
+ and the artifact reader holds it to exact keys, so the findings are derived
+ again here from the same deterministic rule rather than carried on it.
+ 
+ @param sourceText - metadata slice as the original writes it
+ 
+ @param incumbentText - metadata slice as the page carries it, which is also
+ the archive lane's offer
+ 
+ @param repairText - repair lane's offer
+ 
+ @param translateText - translate lane's offer
+ 
+ @returns One line per excluded lane, naming the lane and its findings; empty
+ when every lane is admissible
+ 
+ @example
+ ```ts
+ const why = describeInadmissibleLanes({ sourceText, incumbentText, repairText, translateText, },);
+ ```
  */
 export function describeInadmissibleLanes(
   {
@@ -464,7 +464,7 @@ export function describeInadmissibleLanes(
   },
 ): readonly string[] {
   /**
-   * Every lane with what it offered, in the order the contest names them.
+   Every lane with what it offered, in the order the contest names them.
    */
   const lanes: readonly FloorLane[] = [
     {
@@ -487,7 +487,7 @@ export function describeInadmissibleLanes(
     },
   ): readonly string[] {
     /**
-     * Deterministic verdict on this lane's offer.
+     Deterministic verdict on this lane's offer.
      */
     const validation = validateTranslatedSlice({
       sourceText,
@@ -499,12 +499,12 @@ export function describeInadmissibleLanes(
       return [];
     if (validation.kind === 'invalid') {
       /**
-       * Findings the rule raised.
+       Findings the rule raised.
        */
       const { findings, } = validation;
 
       /**
-       * Findings as one clause.
+       Findings as one clause.
        */
       const why = findings.join(' ',);
       return [`${lane} inadmissible: ${why}`,];

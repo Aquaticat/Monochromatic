@@ -17,22 +17,22 @@ import type { WouldShipSource, } from './would-ship-text.ts';
 // so a defect the archive already carried is never blamed on the page.
 
 /**
- * Refuses a would-ship page that introduces a footnote defect the archive
- * did not carry.
- *
- * @param artifact - final stage decisions used for publication
- *
- * @param slices - preparation defining replacement spans
- *
- * @param targetText - archive text the replacement spans address
- *
- * @throws {@link TranslationRepairInterruptedError} as `page-footnote-integrity`
- * naming each introduced defect
- *
- * @example
- * ```ts
- * assertPageFootnotesIntact({ artifact, slices, targetText, },);
- * ```
+ Refuses a would-ship page that introduces a footnote defect the archive
+ did not carry.
+ 
+ @param artifact - final stage decisions used for publication
+ 
+ @param slices - preparation defining replacement spans
+ 
+ @param targetText - archive text the replacement spans address
+ 
+ @throws {@link TranslationRepairInterruptedError} as `page-footnote-integrity`
+ naming each introduced defect
+ 
+ @example
+ ```ts
+ assertPageFootnotesIntact({ artifact, slices, targetText, },);
+ ```
  */
 export function assertPageFootnotesIntact(
   {
@@ -46,7 +46,7 @@ export function assertPageFootnotesIntact(
   },
 ): void {
   /**
-   * The page as it would ship.
+   The page as it would ship.
    */
   const finalText = spliceSlices({
     targetText,
@@ -54,7 +54,7 @@ export function assertPageFootnotesIntact(
     replacements: shippableReplacements({ artifact, },),
   },);
   /**
-   * Footnote defects the page carries and the archive did not.
+   Footnote defects the page carries and the archive did not.
    */
   const introduced = introducedFootnoteFindings({
     incumbentText: targetText,

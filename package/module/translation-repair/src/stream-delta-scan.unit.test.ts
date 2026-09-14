@@ -1,19 +1,19 @@
 /**
- * Tests for the stream delta scanner.
- *
- * The case that matters is the REASONING CHANNEL. A model can degenerate
- * entirely inside its thinking, repeating one sentence forever while emitting
- * no answer at all, and a scanner that read only `content` would hand the
- * detector an empty string. That reads as a short reply rather than a runaway
- * one, so the worst case would be the one case nothing caught.
- *
- * The rest is wire robustness. This runs inside the drain loop for every chunk
- * of every call, so anything the provider sends that it cannot read must leave
- * a working stream working.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the stream delta scanner.
+ 
+ The case that matters is the REASONING CHANNEL. A model can degenerate
+ entirely inside its thinking, repeating one sentence forever while emitting
+ no answer at all, and a scanner that read only `content` would hand the
+ detector an empty string. That reads as a short reply rather than a runaway
+ one, so the worst case would be the one case nothing caught.
+ 
+ The rest is wire robustness. This runs inside the drain loop for every chunk
+ of every call, so anything the provider sends that it cannot read must leave
+ a working stream working.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -28,18 +28,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one server-sent event frame carrying text on one channel.
- *
- * @param channel - which channel the text arrives on
- *
- * @param text - text the frame carries
- *
- * @returns Frame, newline-terminated as the wire sends it
- *
- * @example
- * ```ts
- * const raw = frameOf({ channel: 'reasoning', text: 'I will output. ', },);
- * ```
+ Builds one server-sent event frame carrying text on one channel.
+ 
+ @param channel - which channel the text arrives on
+ 
+ @param text - text the frame carries
+ 
+ @returns Frame, newline-terminated as the wire sends it
+ 
+ @example
+ ```ts
+ const raw = frameOf({ channel: 'reasoning', text: 'I will output. ', },);
+ ```
  */
 function frameOf(
   {
@@ -51,7 +51,7 @@ function frameOf(
   },
 ): string {
   /**
-   * Delta object, whose field name is what distinguishes the channels.
+   Delta object, whose field name is what distinguishes the channels.
    */
   const delta = (channel === 'content') ? { content: text, } : { reasoning_content: text, };
 
@@ -69,34 +69,34 @@ function frameOf(
 }
 
 /**
- * Feeds a whole raw stream through a scanner, splitting it at awkward
- * boundaries so no frame arrives whole.
- *
- * @param raw - whole stream body
- *
- * @returns Every delta it yielded, and how many frames it could not read
- *
- * @example
- * ```ts
- * const { deltas, unreadable, } = scanAll({ raw, },);
- * ```
+ Feeds a whole raw stream through a scanner, splitting it at awkward
+ boundaries so no frame arrives whole.
+ 
+ @param raw - whole stream body
+ 
+ @returns Every delta it yielded, and how many frames it could not read
+ 
+ @example
+ ```ts
+ const { deltas, unreadable, } = scanAll({ raw, },);
+ ```
  */
 function scanAll({ raw, }: { readonly raw: string; },): {
   readonly deltas: readonly { readonly channel: string; readonly text: string; }[];
   readonly unreadable: number;
 } {
   /**
-   * Scanner under test.
+   Scanner under test.
    */
   const scanner = scanStreamDeltas();
 
   /**
-   * Chunk width, a prime so boundaries land inside frames rather than between.
+   Chunk width, a prime so boundaries land inside frames rather than between.
    */
   const width = 7;
 
   /**
-   * Every delta the scan produced.
+   Every delta the scan produced.
    */
   const deltas = Array.from(
     { length: Math.ceil(raw.length / width,), },
@@ -120,21 +120,21 @@ function scanAll({ raw, }: { readonly raw: string; },): {
 }
 
 /**
- * Builds one frame whose delta carries exactly the fields given, so a test can
- * spell the thinking channel the way a particular model spells it.
- *
- * SEPARATE FROM `frameOf` because that one encodes a choice this helper exists
- * to vary. Folding the spelling into it would make every existing case depend
- * on a parameter none of them cares about.
- *
- * @param delta - delta fields exactly as the wire carries them
- *
- * @returns Frame, newline-terminated as the wire sends it
- *
- * @example
- * ```ts
- * const raw = frameSpelled({ delta: { reasoning: 'The cat considers. ', }, },);
- * ```
+ Builds one frame whose delta carries exactly the fields given, so a test can
+ spell the thinking channel the way a particular model spells it.
+ 
+ SEPARATE FROM `frameOf` because that one encodes a choice this helper exists
+ to vary. Folding the spelling into it would make every existing case depend
+ on a parameter none of them cares about.
+ 
+ @param delta - delta fields exactly as the wire carries them
+ 
+ @returns Frame, newline-terminated as the wire sends it
+ 
+ @example
+ ```ts
+ const raw = frameSpelled({ delta: { reasoning: 'The cat considers. ', }, },);
+ ```
  */
 function frameSpelled({ delta, }: { readonly delta: Readonly<Record<string, string>>; },): string {
   return `data: ${
@@ -180,7 +180,7 @@ await describe({
         + 'already arrived; a wire whose frames name none reads as empty',
       fn: async () => {
         /**
-         * Scanner fed a gateway stream, frame by frame.
+         Scanner fed a gateway stream, frame by frame.
          */
         const scanner = scanStreamDeltas();
         expect(scanner.servedBy(),).toBe('',);
@@ -202,7 +202,7 @@ await describe({
         expect(scanner.servedBy(),).toBe('ModelRun',);
 
         /**
-         * Scanner fed a single-upstream provider's stream, which names none.
+         Scanner fed a single-upstream provider's stream, which names none.
          */
         const unnamed = scanStreamDeltas();
         unnamed.feed({
@@ -220,7 +220,7 @@ await describe({
         + 'network puts it and routinely falls inside a frame',
       fn: async () => {
         /**
-         * Twenty frames, delivered in pieces far smaller than one frame.
+         Twenty frames, delivered in pieces far smaller than one frame.
          */
         const raw = Array.from(
           { length: 20, },
@@ -269,7 +269,7 @@ await describe({
         + 'unreadable',
       fn: async () => {
         /**
-         * One frame, written tight.
+         One frame, written tight.
          */
         const tight = `data:${
           JSON.stringify({
@@ -291,8 +291,8 @@ await describe({
         expect(unreadable,).toBe(0,);
 
         /**
-         * And the done marker in the same tight form, which must not read as a
-         * frame nobody could parse.
+         And the done marker in the same tight form, which must not read as a
+         frame nobody could parse.
          */
         expect(scanAll({ raw: 'data:[DONE]\n\n', },).unreadable,).toBe(0,);
       },
@@ -323,7 +323,7 @@ await describe({
         + 'and read the worst case as the shortest reply',
       fn: async () => {
         /**
-         * A model that thinks the same thing forever and never answers.
+         A model that thinks the same thing forever and never answers.
          */
         const frames = Array.from(
           { length: 9_000, },
@@ -336,13 +336,13 @@ await describe({
         ).join('',);
 
         /**
-         * The same stream with its closing marker, which must not be read as a
-         * frame nobody could parse.
+         The same stream with its closing marker, which must not be read as a
+         frame nobody could parse.
          */
         const raw = `${frames}data: [DONE]\n\n`;
 
         /**
-         * Scanner and one detector per channel, wired as the drain will wire them.
+         Scanner and one detector per channel, wired as the drain will wire them.
          */
         const scanner = scanStreamDeltas();
         const thinking = watchForDegeneration();
@@ -423,8 +423,8 @@ await describe({
         + 'nor repetitive and ran to the wall clock',
       fn: async () => {
         /**
-         * A model that thinks the same thing forever, spelling its channel the
-         * way the two affected models spell it.
+         A model that thinks the same thing forever, spelling its channel the
+         way the two affected models spell it.
          */
         const frames = Array.from(
           { length: 9_000, },
@@ -434,7 +434,7 @@ await describe({
         ).join('',);
 
         /**
-         * Scanner and one detector per channel, wired as the drain wires them.
+         Scanner and one detector per channel, wired as the drain wires them.
          */
         const scanner = scanStreamDeltas();
         const thinking = watchForDegeneration();

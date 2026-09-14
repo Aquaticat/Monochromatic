@@ -1,26 +1,26 @@
 /**
- * Tests for which quoted defect text an envelope is licensed to lose.
- *
- * WHY THIS FILE EXISTS. The preservation gate lets an edit delete exactly what
- * its issues quoted as the defect; everything else in the replaced span has to
- * survive. Three decisions inside that collection were measured on 2026-08-25
- * to decide nothing any case asserts, and each fails in its own direction.
- *
- * A SOURCE-SIDE QUOTE licensed nothing, because it is Chinese prose that never
- * appears in the English being edited, but it does widen the licence list an
- * editor is handed. AN EMPTY QUOTE licenses the empty string, which every span
- * contains, so the gate would wave through any deletion at all. AND A REPEATED
- * QUOTE, filed by two issues about the same wording, would be carried twice and
- * counted twice by anything reading the list as evidence.
- *
- * FIXTURES ARE CAST rather than fully built, following
- * `translate-lane-wordings.unit.test.ts`: this function reads four fields off
- * two large model types, and a faithful fixture would bury the case in
- * ballots, tallies and offsets that decide nothing here.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for which quoted defect text an envelope is licensed to lose.
+ 
+ WHY THIS FILE EXISTS. The preservation gate lets an edit delete exactly what
+ its issues quoted as the defect; everything else in the replaced span has to
+ survive. Three decisions inside that collection were measured on 2026-08-25
+ to decide nothing any case asserts, and each fails in its own direction.
+ 
+ A SOURCE-SIDE QUOTE licensed nothing, because it is Chinese prose that never
+ appears in the English being edited, but it does widen the licence list an
+ editor is handed. AN EMPTY QUOTE licenses the empty string, which every span
+ contains, so the gate would wave through any deletion at all. AND A REPEATED
+ QUOTE, filed by two issues about the same wording, would be carried twice and
+ counted twice by anything reading the list as evidence.
+ 
+ FIXTURES ARE CAST rather than fully built, following
+ `translate-lane-wordings.unit.test.ts`: this function reads four fields off
+ two large model types, and a faithful fixture would bury the case in
+ ballots, tallies and offsets that decide nothing here.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -38,18 +38,18 @@ import {
 //region Fixtures
 
 /**
- * Builds one adjudicated issue quoting the given spans.
- *
- * @param issueId - identity envelopes name it by
- *
- * @param spans - side and wording of each quote it filed
- *
- * @returns Issue carrying exactly those quotes
- *
- * @example
- * ```ts
- * const issue = issueOf({ issueId: 'adjudicated/nap', spans: [], },);
- * ```
+ Builds one adjudicated issue quoting the given spans.
+ 
+ @param issueId - identity envelopes name it by
+ 
+ @param spans - side and wording of each quote it filed
+ 
+ @returns Issue carrying exactly those quotes
+ 
+ @example
+ ```ts
+ const issue = issueOf({ issueId: 'adjudicated/nap', spans: [], },);
+ ```
  */
 function issueOf(
   {
@@ -70,16 +70,16 @@ function issueOf(
 }
 
 /**
- * Builds one envelope naming the issues it answers.
- *
- * @param issueIds - issues whose quotes it may lose
- *
- * @returns Envelope shaped as the editor stage passes one
- *
- * @example
- * ```ts
- * const envelope = envelopeOf({ issueIds: ['adjudicated/nap',], },);
- * ```
+ Builds one envelope naming the issues it answers.
+ 
+ @param issueIds - issues whose quotes it may lose
+ 
+ @returns Envelope shaped as the editor stage passes one
+ 
+ @example
+ ```ts
+ const envelope = envelopeOf({ issueIds: ['adjudicated/nap',], },);
+ ```
  */
 function envelopeOf(
   { issueIds, }: { readonly issueIds: readonly string[]; },
@@ -91,18 +91,18 @@ function envelopeOf(
 }
 
 /**
- * Reads the one envelope`s licence list out of the returned map.
- *
- * @param issues - issues the chunk carries
- *
- * @param issueIds - issues the envelope answers
- *
- * @returns Quotes licensed for that envelope
- *
- * @example
- * ```ts
- * const quotes = licensedFor({ issues, issueIds: ['adjudicated/nap',], },);
- * ```
+ Reads the one envelope`s licence list out of the returned map.
+ 
+ @param issues - issues the chunk carries
+ 
+ @param issueIds - issues the envelope answers
+ 
+ @returns Quotes licensed for that envelope
+ 
+ @example
+ ```ts
+ const quotes = licensedFor({ issues, issueIds: ['adjudicated/nap',], },);
+ ```
  */
 function licensedFor(
   {

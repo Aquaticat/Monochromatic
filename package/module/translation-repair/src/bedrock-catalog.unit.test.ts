@@ -1,11 +1,11 @@
 /**
- * Tests for the Bedrock catalog: the four approved models, the route and the
- * terminator each was measured to answer with, the seats they stand in for
- * and the prices the ledger meters by.
- *
- * Fixtures are the catalog's own rows; no corpus content appears here.
- *
- * @module
+ Tests for the Bedrock catalog: the four approved models, the route and the
+ terminator each was measured to answer with, the seats they stand in for
+ and the prices the ledger meters by.
+ 
+ Fixtures are the catalog's own rows; no corpus content appears here.
+ 
+ @module
  */
 
 import {

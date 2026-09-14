@@ -27,11 +27,11 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // nothing.
 
 /**
- * Question every model is asked.
- *
- * Deliberately trivial. The point is not to test capability: any model that can
- * hold a role in this pipeline can answer it, so a failure here is about the
- * response FORMAT rather than about the task.
+ Question every model is asked.
+ 
+ Deliberately trivial. The point is not to test capability: any model that can
+ hold a role in this pipeline can answer it, so a failure here is about the
+ response FORMAT rather than about the task.
  */
 const HEALTH_PROMPT =
   'Reply with JSON matching the schema: how many cats are named in this '
@@ -39,26 +39,26 @@ const HEALTH_PROMPT =
     + 'windowsill."';
 
 /**
- * How much of a raw reply the log line carries.
- *
- * Enough to show a prefix, a fence, or an apology sitting in front of the JSON,
- * which is what this probe was built to catch, and short enough that six models
- * fit in one readable screen.
+ How much of a raw reply the log line carries.
+ 
+ Enough to show a prefix, a fence, or an apology sitting in front of the JSON,
+ which is what this probe was built to catch, and short enough that six models
+ fit in one readable screen.
  */
 const RAW_REPLY_PREVIEW_CHARS = 300;
 
 /**
- * Exit code left behind when some model could not be reached at all.
- *
- * A ROSTER THAT CANNOT BE FULLY PROBED IS A FINDING, and the caller of a
- * diagnostic reads its exit code. Preserved from the behaviour this replaced,
- * where an unreachable model crashed the probe and produced a non-zero exit as
- * a side effect of dying.
+ Exit code left behind when some model could not be reached at all.
+ 
+ A ROSTER THAT CANNOT BE FULLY PROBED IS A FINDING, and the caller of a
+ diagnostic reads its exit code. Preserved from the behaviour this replaced,
+ where an unreachable model crashed the probe and produced a non-zero exit as
+ a side effect of dying.
  */
 const ROSTER_INCOMPLETE = 1;
 
 /**
- * Schema the reply must satisfy.
+ Schema the reply must satisfy.
  */
 const HEALTH_RESPONSE_FORMAT = {
   type: 'json_schema',
@@ -81,16 +81,16 @@ const HEALTH_RESPONSE_FORMAT = {
 } as const;
 
 /**
- * Accepts a reply carrying both fields, whatever their values.
- *
- * @param value - parsed reply
- *
- * @returns Whether the reply has the shape asked for
- *
- * @example
- * ```ts
- * const ok = isHealthReply(JSON.parse(text,),);
- * ```
+ Accepts a reply carrying both fields, whatever their values.
+ 
+ @param value - parsed reply
+ 
+ @returns Whether the reply has the shape asked for
+ 
+ @example
+ ```ts
+ const ok = isHealthReply(JSON.parse(text,),);
+ ```
  */
 function isHealthReply(value: unknown,): value is {
   readonly count: number;
@@ -103,38 +103,38 @@ function isHealthReply(value: unknown,): value is {
 }
 
 /**
- * Asks every roster model the health question and prints what returned.
- *
- * @example
- * ```ts
- * await reportModelHealth();
- * ```
+ Asks every roster model the health question and prints what returned.
+ 
+ @example
+ ```ts
+ await reportModelHealth();
+ ```
  */
 async function reportModelHealth(): Promise<void> {
   /**
-   * Logger tagged for this probe.
+   Logger tagged for this probe.
    */
   const l = tagged({ tag: reportModelHealth.name, },);
 
   /**
-   * Client built from the injected key.
+   Client built from the injected key.
    */
   const client = createRunClient();
 
   /**
-   * Models whose probe threw before any outcome could be read.
-   *
-   * SEPARATE FROM AN UNHEALTHY REPLY, which is the distinction this whole probe
-   * exists to draw. A model that answered badly is evidence about the model; a
-   * model that could not be asked is evidence about the provider, and reporting
-   * the second as the first would send a reader looking in the wrong place.
+   Models whose probe threw before any outcome could be read.
+   
+   SEPARATE FROM AN UNHEALTHY REPLY, which is the distinction this whole probe
+   exists to draw. A model that answered badly is evidence about the model; a
+   model that could not be asked is evidence about the provider, and reporting
+   the second as the first would send a reader looking in the wrong place.
    */
   const unreachable: string[] = [];
 
   for (const modelId of RUN_ROSTER) {
     try {
       /**
-       * What this model returned, or the fault that stopped it.
+       What this model returned, or the fault that stopped it.
        */
       /* oxlint-disable-next-line no-await-in-loop -- one model at a time on purpose: this is a diagnostic, and concurrent calls would let a provider rate limit read as a model fault */
       const outcome = await client.chatJson({
@@ -174,8 +174,8 @@ async function reportModelHealth(): Promise<void> {
       // model after it went unreported, which is precisely the moment someone
       // is running this.
       /**
-       * What was thrown, rendered and bounded so a long provider body cannot
-       * fill the report.
+       What was thrown, rendered and bounded so a long provider body cannot
+       fill the report.
        */
       const detail = String(error,)
         .slice(

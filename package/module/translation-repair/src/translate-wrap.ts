@@ -18,37 +18,37 @@ import type { TranslateSliceRecord, } from './translate-document-contract.ts';
 // on and would contradict `sliceRecordAgrees`.
 
 /**
- * Wraps every changed translate record, re-deriving whether it still changes.
- *
- * RE-DERIVED RATHER THAN CARRIED FORWARD, for the reason `wrapRepairOutcomes`
- * gives: a passage differing from the archive only in its wrapping becomes the
- * archive once wrapped, and a record still claiming a change there fails the
- * assembly assertion.
- *
- * NEVER APPLIED TO A LINE-STRUCTURED SLICE. The pipeline hands a governed
- * producer `TRANSLATE_LINE_STRUCTURE_RULE`, one output line per original line,
- * and then broke that work afterwards: over the 211 line-structured slices of
- * the pinned corpus the wrap changed 189 and broke 470 of 1091 lines, after
- * every decider had approved them. Flattening is caught by the structural
- * guard and sent back to its author instead of papered over here, because
- * `wrapReplacementText` splits and never joins, so it cannot put back a break
- * a producer merged away.
- *
- * @param slices - prepared slice pairs, for the archive wording per index
- *
- * @param settled - settled per-slice records in document order
- *
- * @param lineStructuredSlices - global indices the line-structure rule
- * governs, whose lines are the producer's to set
- *
- * @param l - lane logger
- *
- * @returns Same records with produced wording wrapped
- *
- * @example
- * ```ts
- * const wrapped = wrapTranslateRecords({ slices, settled, lineStructuredSlices, l, },);
- * ```
+ Wraps every changed translate record, re-deriving whether it still changes.
+ 
+ RE-DERIVED RATHER THAN CARRIED FORWARD, for the reason `wrapRepairOutcomes`
+ gives: a passage differing from the archive only in its wrapping becomes the
+ archive once wrapped, and a record still claiming a change there fails the
+ assembly assertion.
+ 
+ NEVER APPLIED TO A LINE-STRUCTURED SLICE. The pipeline hands a governed
+ producer `TRANSLATE_LINE_STRUCTURE_RULE`, one output line per original line,
+ and then broke that work afterwards: over the 211 line-structured slices of
+ the pinned corpus the wrap changed 189 and broke 470 of 1091 lines, after
+ every decider had approved them. Flattening is caught by the structural
+ guard and sent back to its author instead of papered over here, because
+ `wrapReplacementText` splits and never joins, so it cannot put back a break
+ a producer merged away.
+ 
+ @param slices - prepared slice pairs, for the archive wording per index
+ 
+ @param settled - settled per-slice records in document order
+ 
+ @param lineStructuredSlices - global indices the line-structure rule
+ governs, whose lines are the producer's to set
+ 
+ @param l - lane logger
+ 
+ @returns Same records with produced wording wrapped
+ 
+ @example
+ ```ts
+ const wrapped = wrapTranslateRecords({ slices, settled, lineStructuredSlices, l, },);
+ ```
  */
 export function wrapTranslateRecords(
   {
@@ -64,8 +64,8 @@ export function wrapTranslateRecords(
   },
 ): readonly TranslateSliceRecord[] {
   /**
-   * Archive wording per slice index, which decides whether a wrap left anything
-   * to change.
+   Archive wording per slice index, which decides whether a wrap left anything
+   to change.
    */
   const incumbentByIndex = new Map(slices.map(function toEntry(slice,): readonly [
     number,
@@ -80,7 +80,7 @@ export function wrapTranslateRecords(
   },),);
 
   /**
-   * How many records the wrap altered, and how many it demoted.
+   How many records the wrap altered, and how many it demoted.
    */
   const counted = {
     rewrapped: 0,
@@ -89,7 +89,7 @@ export function wrapTranslateRecords(
   };
 
   /**
-   * Records with produced wording wrapped.
+   Records with produced wording wrapped.
    */
   const wrapped = settled.map(function perRecord(record,): TranslateSliceRecord {
     if (!record.changed)
@@ -104,7 +104,7 @@ export function wrapTranslateRecords(
     }
 
     /**
-     * Wording as the rule would have it written.
+     Wording as the rule would have it written.
      */
     const outputText = wrapReplacementText({ text: record.outputText, },);
     if (outputText === record.outputText)
@@ -112,7 +112,7 @@ export function wrapTranslateRecords(
     counted.rewrapped += 1;
 
     /**
-     * Whether anything but the wrapping still separates it from the archive.
+     Whether anything but the wrapping still separates it from the archive.
      */
     const changed = outputText !== incumbentByIndex.get(record.sliceIndex,);
     if (!changed)

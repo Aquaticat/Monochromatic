@@ -1,16 +1,16 @@
 /**
- * Tests for how a judge's reply becomes a ballot.
- *
- * WHAT THIS FILE EXISTS TO STOP. The findings guard once demanded that every
- * member of `unsupported` and `dropped` name a candidate, so a judge answering
- * with the offending phrases lost its entire ballot, including a choice that
- * was perfectly usable. Calibration lost two of its first sixty voices that
- * way. The choice is the thing the contest counts, so the wording of a finding
- * may never cost a voice.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for how a judge's reply becomes a ballot.
+ 
+ WHAT THIS FILE EXISTS TO STOP. The findings guard once demanded that every
+ member of `unsupported` and `dropped` name a candidate, so a judge answering
+ with the offending phrases lost its entire ballot, including a choice that
+ was perfectly usable. Calibration lost two of its first sixty voices that
+ way. The choice is the thing the contest counts, so the wording of a finding
+ may never cost a voice.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -294,19 +294,19 @@ await describe({
 },);
 
 /**
- * Original long enough for the size floor to pass, so a ratio is measured
- * rather than skipped.
+ Original long enough for the size floor to pass, so a ratio is measured
+ rather than skipped.
  */
 const SIZED_SOURCE = '猫睡在窗台上，看着一只蛾子飞过。'.repeat(6,);
 
 /**
- * Archive rendering far longer than that original, which is the shape a
- * page-only region produces.
+ Archive rendering far longer than that original, which is the shape a
+ page-only region produces.
  */
 const PAGE_HEAVY = 'the archive spells this out at length. '.repeat(30,);
 
 /**
- * Rendering in proportion to the original, at roughly three times its size.
+ Rendering in proportion to the original, at roughly three times its size.
  */
 const IN_PROPORTION = 'the cat slept on the sill and watched a moth. '.repeat(6,);
 
@@ -378,7 +378,7 @@ await describe({
         + 'contest chose a tense-damaged repair lane 7 of 7 without ever seeing the claim)',
       fn: async () => {
         /**
-         * Subject every case shares.
+         Subject every case shares.
          */
         const subject = {
           sourceText: '猫猫在书店的阁楼里睡觉。',
@@ -387,7 +387,7 @@ await describe({
           translateText: 'The cat dozed in the attic of the bookshop.',
         };
         /**
-         * User message with one claim shown.
+         User message with one claim shown.
          */
         const withClaims = buildLaneContestMessages({
           subject: {
@@ -409,7 +409,7 @@ await describe({
         expect(withClaims.indexOf('CORROBORATED ADDED-DAMAGE',),).toBeLessThan(withClaims.indexOf('Return JSON',),);
 
         /**
-         * User message with no claim.
+         User message with no claim.
          */
         const without = buildLaneContestMessages({ subject, },).at(1,)?.content ?? '';
         expect(without.includes('CORROBORATED ADDED-DAMAGE',),).toBe(false,);

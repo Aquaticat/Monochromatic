@@ -1,10 +1,10 @@
 /**
- * Tests for punctuation normalization:
- * every mapped variant collapses to its canonical character while
- * length is preserved unit for unit, so offsets found in normalized
- * text index the original exactly.
- *
- * @module
+ Tests for punctuation normalization:
+ every mapped variant collapses to its canonical character while
+ length is preserved unit for unit, so offsets found in normalized
+ text index the original exactly.
+ 
+ @module
  */
 
 import {
@@ -18,7 +18,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Variant-to-canonical pairs the normalizer must collapse.
+ Variant-to-canonical pairs the normalizer must collapse.
  */
 const VARIANT_CASES = [
   ['‘', "'",],
@@ -54,7 +54,7 @@ await describe({
       name: 'preserves length over mixed text so offsets transfer',
       fn: async () => {
         /**
-         * Mixed sample with every variant class plus surrounding prose.
+         Mixed sample with every variant class plus surrounding prose.
          */
         const mixed = '老猫说：“打盹最舒服。”小猫写『喵』，又写「喵」，还写‘喵’和’喵‘。';
         expect(normalizePunctuation({ text: mixed, },),).toHaveLength(mixed.length,);
@@ -94,7 +94,7 @@ await describe({
       name: 'preserves length so offsets transfer',
       fn: async () => {
         /**
-         * Sample mixing wraps, a blank line, and punctuation left alone.
+         Sample mixing wraps, a blank line, and punctuation left alone.
          */
         const mixed = '小猫打盹，\n阳光很暖和。\n\n老猫说：“喵。”\n';
         expect(collapseLineBreaks({ text: mixed, },),).toHaveLength(mixed.length,);

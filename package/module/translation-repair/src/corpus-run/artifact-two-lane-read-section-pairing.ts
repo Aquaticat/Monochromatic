@@ -29,52 +29,52 @@ import type { ArtifactSectionCorrespondence, } from './artifact-two-lane-contrac
 // was not written by this pipeline.
 
 /**
- * What an artifact says about how its aligned sections were decided.
- *
- * @example
- * ```ts
- * const pairing: ParsedSectionPairing = { kind: 'deterministic', };
- * ```
+ What an artifact says about how its aligned sections were decided.
+ 
+ @example
+ ```ts
+ const pairing: ParsedSectionPairing = { kind: 'deterministic', };
+ ```
  */
 export type ParsedSectionPairing = {
   /**
-   * The deterministic aligner chose the sections; no pairing was supplied.
+   The deterministic aligner chose the sections; no pairing was supplied.
    */
   readonly kind: 'deterministic';
 } | {
   /**
-   * A supplied pairing chose them, and these are its pairs.
+   A supplied pairing chose them, and these are its pairs.
    */
   readonly kind: 'supplied';
 
   /**
-   * Correspondences it committed to, in document order.
+   Correspondences it committed to, in document order.
    */
   readonly pairs: readonly ArtifactSectionCorrespondence[];
 } | {
   /**
-   * Artifact names no decider, which means it was written before the field
-   * existed: a rebuild from it can only assume the deterministic aligner.
+   Artifact names no decider, which means it was written before the field
+   existed: a rebuild from it can only assume the deterministic aligner.
    */
   readonly kind: 'unrecorded';
 };
 
 /**
- * Reads the pairs a supplied section pairing committed to.
- *
- * @param value - pairs as the artifact carries them
- *
- * @param path - dotted path for error messages
- *
- * @returns Pairs in the order recorded
- *
- * @throws {@link ArtifactParseError} when a pair is the wrong shape or carries
- * a key this version does not name
- *
- * @example
- * ```ts
- * const pairs = parseSectionCorrespondences({ value: record.pairs, path, },);
- * ```
+ Reads the pairs a supplied section pairing committed to.
+ 
+ @param value - pairs as the artifact carries them
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Pairs in the order recorded
+ 
+ @throws {@link ArtifactParseError} when a pair is the wrong shape or carries
+ a key this version does not name
+ 
+ @example
+ ```ts
+ const pairs = parseSectionCorrespondences({ value: record.pairs, path, },);
+ ```
  */
 function parseSectionCorrespondences(
   {
@@ -94,12 +94,12 @@ function parseSectionCorrespondences(
       at,
     ): ArtifactSectionCorrespondence {
       /**
-       * Where this pair is reported from.
+       Where this pair is reported from.
        */
       const entryPath = `${path}[${String(at,)}]`;
 
       /**
-       * Pair as a record.
+       Pair as a record.
        */
       const record = requireRecord({
         value: entry,
@@ -127,24 +127,24 @@ function parseSectionCorrespondences(
 }
 
 /**
- * Refuses a pairing no section round could have agreed.
- *
- * STRICT ON BOTH SIDES, unlike the block pairing's check: a block pairing
- * carries splits and merges, but a section pairing is one target per source
- * and `agreePairs` drops any target that does not advance, so standing still
- * on either side is a shape the producer never emits.
- *
- * @param pairs - pairs as recorded
- *
- * @param path - dotted path for error messages
- *
- * @throws {@link ArtifactParseError} naming the first position that breaks
- * the order the producer guarantees
- *
- * @example
- * ```ts
- * assertPairsClimb({ pairs, path, },);
- * ```
+ Refuses a pairing no section round could have agreed.
+ 
+ STRICT ON BOTH SIDES, unlike the block pairing's check: a block pairing
+ carries splits and merges, but a section pairing is one target per source
+ and `agreePairs` drops any target that does not advance, so standing still
+ on either side is a shape the producer never emits.
+ 
+ @param pairs - pairs as recorded
+ 
+ @param path - dotted path for error messages
+ 
+ @throws {@link ArtifactParseError} naming the first position that breaks
+ the order the producer guarantees
+ 
+ @example
+ ```ts
+ assertPairsClimb({ pairs, path, },);
+ ```
  */
 function assertPairsClimb(
   {
@@ -157,7 +157,7 @@ function assertPairsClimb(
 ): void {
   for (const [at, pair,] of pairs.entries()) {
     /**
-     * Pair before this one, absent at the first position.
+     Pair before this one, absent at the first position.
      */
     const previous = pairs[at - 1];
     if (previous === undefined)
@@ -173,28 +173,28 @@ function assertPairsClimb(
 }
 
 /**
- * Reads which decider chose a preparation's aligned sections, or its absence.
- *
- * @param value - `sectionPairing` as the artifact carries it, possibly absent
- *
- * @param alignmentPairCount - aligned sections this preparation reports, which
- * a supplied pairing cannot exceed: every pair it names becomes one aligned
- * section, and insertions only add to the count
- *
- * @param path - dotted path for error messages
- *
- * @returns Decider it records, with the pairs where one was supplied, or a
- * named absence
- *
- * @throws {@link ArtifactParseError} when the record is the wrong shape, names
- * a decider this version does not know, carries pairs beside the deterministic
- * decider or none beside the supplied one, names more pairs than sections were
- * aligned, or records a pairing no section round could have agreed
- *
- * @example
- * ```ts
- * const pairing = parseSectionPairing({ value: record.sectionPairing, alignmentPairCount, path, },);
- * ```
+ Reads which decider chose a preparation's aligned sections, or its absence.
+ 
+ @param value - `sectionPairing` as the artifact carries it, possibly absent
+ 
+ @param alignmentPairCount - aligned sections this preparation reports, which
+ a supplied pairing cannot exceed: every pair it names becomes one aligned
+ section, and insertions only add to the count
+ 
+ @param path - dotted path for error messages
+ 
+ @returns Decider it records, with the pairs where one was supplied, or a
+ named absence
+ 
+ @throws {@link ArtifactParseError} when the record is the wrong shape, names
+ a decider this version does not know, carries pairs beside the deterministic
+ decider or none beside the supplied one, names more pairs than sections were
+ aligned, or records a pairing no section round could have agreed
+ 
+ @example
+ ```ts
+ const pairing = parseSectionPairing({ value: record.sectionPairing, alignmentPairCount, path, },);
+ ```
  */
 export function parseSectionPairing(
   {
@@ -211,7 +211,7 @@ export function parseSectionPairing(
     return { kind: 'unrecorded', };
 
   /**
-   * Decider record as written.
+   Decider record as written.
    */
   const record = requireRecord({
     value,
@@ -219,7 +219,7 @@ export function parseSectionPairing(
   },);
 
   /**
-   * Which decider it names.
+   Which decider it names.
    */
   const kind = requireString({
     value: record.kind,
@@ -248,7 +248,7 @@ export function parseSectionPairing(
   },);
 
   /**
-   * Pairs the supplied pairing committed to.
+   Pairs the supplied pairing committed to.
    */
   const pairs = parseSectionCorrespondences({
     value: record.pairs,

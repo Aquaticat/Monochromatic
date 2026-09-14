@@ -1,8 +1,8 @@
 /**
- * Tests for critic wire guarding and quote-to-anchor resolution.
- * Fixtures are cat-themed invention only.
- *
- * @module
+ Tests for critic wire guarding and quote-to-anchor resolution.
+ Fixtures are cat-themed invention only.
+ 
+ @module
  */
 
 import {
@@ -18,7 +18,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Parsed pair resolutions anchor against.
+ Parsed pair resolutions anchor against.
  */
 const DOCUMENTS = {
   source: parseDocument({
@@ -30,7 +30,7 @@ const DOCUMENTS = {
 } as const;
 
 /**
- * Fully valid wire issue used as the base for corruptions.
+ Fully valid wire issue used as the base for corruptions.
  */
 const VALID_WIRE: CriticIssueWire = {
   category: 'accuracy/omission',
@@ -94,16 +94,16 @@ await describe({
       name: 'fails closed vocabularies, missing quotes, and empty quotes',
       fn: async () => {
         /**
-         * Reads the failure reason of one corrupted wire.
-         *
-         * @param wire - corrupted wire under test
-         *
-         * @returns Failure reason, empty when resolution unexpectedly succeeded
-         *
-         * @example
-         * ```ts
-         * reasonOf({ ...VALID_WIRE, category: 'accuracy/vibes', },);
-         * ```
+         Reads the failure reason of one corrupted wire.
+         
+         @param wire - corrupted wire under test
+         
+         @returns Failure reason, empty when resolution unexpectedly succeeded
+         
+         @example
+         ```ts
+         reasonOf({ ...VALID_WIRE, category: 'accuracy/vibes', },);
+         ```
          */
         function reasonOf(wire: CriticIssueWire,): string {
           /** Resolution of the corrupted wire. */
@@ -138,16 +138,16 @@ await describe({
       name: 'fails absent, ambiguous, and outside-block quotes',
       fn: async () => {
         /**
-         * Reads the failure reason of one corrupted wire.
-         *
-         * @param wire - corrupted wire under test
-         *
-         * @returns Failure reason, empty when resolution unexpectedly succeeded
-         *
-         * @example
-         * ```ts
-         * reasonOf({ ...VALID_WIRE, category: 'accuracy/vibes', },);
-         * ```
+         Reads the failure reason of one corrupted wire.
+         
+         @param wire - corrupted wire under test
+         
+         @returns Failure reason, empty when resolution unexpectedly succeeded
+         
+         @example
+         ```ts
+         reasonOf({ ...VALID_WIRE, category: 'accuracy/vibes', },);
+         ```
          */
         function reasonOf(wire: CriticIssueWire,): string {
           /** Resolution of the corrupted wire. */

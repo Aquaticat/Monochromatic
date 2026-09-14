@@ -10,15 +10,15 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 // files themselves are absent.
 
 /**
- * Every severity a claim may carry, ordered least to most severe.
- * `neutral` flags findings needing human attention without asserting a defect,
- * which is exactly what interpretive ambiguity and suspected source errors are
- * before adjudication.
- *
- * @example
- * ```ts
- * ISSUE_SEVERITIES.indexOf('major',);
- * ```
+ Every severity a claim may carry, ordered least to most severe.
+ `neutral` flags findings needing human attention without asserting a defect,
+ which is exactly what interpretive ambiguity and suspected source errors are
+ before adjudication.
+ 
+ @example
+ ```ts
+ ISSUE_SEVERITIES.indexOf('major',);
+ ```
  */
 export const ISSUE_SEVERITIES = [
   'neutral',
@@ -28,26 +28,26 @@ export const ISSUE_SEVERITIES = [
 ] as const;
 
 /**
- * Severity of one issue claim, MQM-style.
- *
- * @example
- * ```ts
- * const severity: IssueSeverity = 'major';
- * ```
+ Severity of one issue claim, MQM-style.
+ 
+ @example
+ ```ts
+ const severity: IssueSeverity = 'major';
+ ```
  */
 export type IssueSeverity = typeof ISSUE_SEVERITIES[number];
 
 /**
- * Closed category vocabulary critics must claim within;
- * schema validation rejects anything outside it, because free-text categories from
- * unreliable models drift and cannot feed the scorecard.
- * Leaf names under `extension/` match the settled architecture verbatim so
- * cross-session references stay greppable.
- *
- * @example
- * ```ts
- * ISSUE_CATEGORIES.includes('accuracy/omission',);
- * ```
+ Closed category vocabulary critics must claim within;
+ schema validation rejects anything outside it, because free-text categories from
+ unreliable models drift and cannot feed the scorecard.
+ Leaf names under `extension/` match the settled architecture verbatim so
+ cross-session references stay greppable.
+ 
+ @example
+ ```ts
+ ISSUE_CATEGORIES.includes('accuracy/omission',);
+ ```
  */
 export const ISSUE_CATEGORIES = [
   'accuracy/mistranslation',
@@ -91,39 +91,39 @@ export const ISSUE_CATEGORIES = [
 ] as const;
 
 /**
- * One category slug of form `family/leaf`.
- *
- * @example
- * ```ts
- * const category: IssueCategory = 'extension/suspected-source-error';
- * ```
+ One category slug of form `family/leaf`.
+ 
+ @example
+ ```ts
+ const category: IssueCategory = 'extension/suspected-source-error';
+ ```
  */
 export type IssueCategory = typeof ISSUE_CATEGORIES[number];
 
 /**
- * Family segment derived from category slugs,
- * so families can never drift from the category list they group.
- *
- * @example
- * ```ts
- * const family: IssueCategoryFamily = 'locale-convention';
- * ```
+ Family segment derived from category slugs,
+ so families can never drift from the category list they group.
+ 
+ @example
+ ```ts
+ const family: IssueCategoryFamily = 'locale-convention';
+ ```
  */
 export type IssueCategoryFamily = IssueCategory extends `${infer Family}/${string}`
   ? Family
   : never;
 
 /**
- * Guards untrusted category strings from model JSON before they enter typed claims.
- *
- * @param value - candidate from unvalidated model output
- *
- * @returns Whether value names one listed category
- *
- * @example
- * ```ts
- * isIssueCategory('accuracy/omission',);
- * ```
+ Guards untrusted category strings from model JSON before they enter typed claims.
+ 
+ @param value - candidate from unvalidated model output
+ 
+ @returns Whether value names one listed category
+ 
+ @example
+ ```ts
+ isIssueCategory('accuracy/omission',);
+ ```
  */
 export function isIssueCategory(value: unknown,): value is IssueCategory {
   if ((typeof value) !== 'string')
@@ -133,20 +133,20 @@ export function isIssueCategory(value: unknown,): value is IssueCategory {
 }
 
 /**
- * Category remap outcome as data:
- * the unique owning category, or the refusal to guess.
- *
- * @example
- * ```ts
- * const remap: CategoryRemap = { remapped: false, };
- * ```
+ Category remap outcome as data:
+ the unique owning category, or the refusal to guess.
+ 
+ @example
+ ```ts
+ const remap: CategoryRemap = { remapped: false, };
+ ```
  */
 export type CategoryRemap =
   | {
     readonly remapped: true;
 
     /**
-     * Listed category uniquely owning the reported leaf.
+     Listed category uniquely owning the reported leaf.
      */
     readonly category: IssueCategory;
   }
@@ -155,45 +155,45 @@ export type CategoryRemap =
   };
 
 /**
- * Remaps a category whose leaf landed under the wrong family.
- * Models slip families on known leaves
- * (live: `fluency/awkward-phrasing` for `style/awkward-phrasing`);
- * a leaf owned by exactly one listed category maps onto that category,
- * while unknown and ambiguous leaves stay unmapped for rejection.
- *
- * @param category - slug that failed the closed-vocabulary guard
- *
- * @returns Remap outcome as data; never a guess between owners
- *
- * @example
- * ```ts
- * remapCategoryLeaf({ category: 'fluency/awkward-phrasing', },);
- * ```
+ Remaps a category whose leaf landed under the wrong family.
+ Models slip families on known leaves
+ (live: `fluency/awkward-phrasing` for `style/awkward-phrasing`);
+ a leaf owned by exactly one listed category maps onto that category,
+ while unknown and ambiguous leaves stay unmapped for rejection.
+ 
+ @param category - slug that failed the closed-vocabulary guard
+ 
+ @returns Remap outcome as data; never a guess between owners
+ 
+ @example
+ ```ts
+ remapCategoryLeaf({ category: 'fluency/awkward-phrasing', },);
+ ```
  */
 export function remapCategoryLeaf(
   { category, }: { readonly category: string; },
 ): CategoryRemap {
   /**
-   * Separator between family and leaf; absent means no leaf to match.
+   Separator between family and leaf; absent means no leaf to match.
    */
   const separator = category.indexOf('/',);
   if (separator === (-1))
     return { remapped: false, };
 
   /**
-   * Leaf segment after the reported family.
+   Leaf segment after the reported family.
    */
   const leaf = category.slice(separator + 1,);
 
   /**
-   * Listed categories owning this exact leaf.
+   Listed categories owning this exact leaf.
    */
   const owners = ISSUE_CATEGORIES.filter(function ownsLeaf(candidate,) {
     return candidate.endsWith(`/${leaf}`,);
   },);
 
   /**
-   * Sole owner when the leaf is unambiguous.
+   Sole owner when the leaf is unambiguous.
    */
   const [owner,] = owners;
   if ((owners.length !== 1) || (owner === undefined))
@@ -205,16 +205,16 @@ export function remapCategoryLeaf(
 }
 
 /**
- * Guards untrusted severity strings from model JSON before they enter typed claims.
- *
- * @param value - candidate from unvalidated model output
- *
- * @returns Whether value names one listed severity
- *
- * @example
- * ```ts
- * isIssueSeverity('critical',);
- * ```
+ Guards untrusted severity strings from model JSON before they enter typed claims.
+ 
+ @param value - candidate from unvalidated model output
+ 
+ @returns Whether value names one listed severity
+ 
+ @example
+ ```ts
+ isIssueSeverity('critical',);
+ ```
  */
 export function isIssueSeverity(value: unknown,): value is IssueSeverity {
   if ((typeof value) !== 'string')
@@ -224,16 +224,16 @@ export function isIssueSeverity(value: unknown,): value is IssueSeverity {
 }
 
 /**
- * Every family in category-list first-occurrence order;
- * the annotation pins each entry to the family union derived from category slugs,
- * and a unit test pins completeness in the other direction,
- * so list and slugs can never drift apart.
- * Scorecard buckets and routing tables enumerate families from here.
- *
- * @example
- * ```ts
- * for (const family of ISSUE_CATEGORY_FAMILIES) bucketByFamily(family,);
- * ```
+ Every family in category-list first-occurrence order;
+ the annotation pins each entry to the family union derived from category slugs,
+ and a unit test pins completeness in the other direction,
+ so list and slugs can never drift apart.
+ Scorecard buckets and routing tables enumerate families from here.
+ 
+ @example
+ ```ts
+ for (const family of ISSUE_CATEGORY_FAMILIES) bucketByFamily(family,);
+ ```
  */
 export const ISSUE_CATEGORY_FAMILIES: readonly IssueCategoryFamily[] = [
   'accuracy',
@@ -246,24 +246,24 @@ export const ISSUE_CATEGORY_FAMILIES: readonly IssueCategoryFamily[] = [
 ];
 
 /**
- * Extracts family segment from one category slug,
- * because routing, panel weights, and scorecard buckets operate per family.
- *
- * @param category - slug whose family segment routing needs
- *
- * @returns Family whose slash-terminated prefix opens the slug
- *
- * @example
- * ```ts
- * categoryFamily({ category: 'policy/sensitive-content', },);
- * ```
+ Extracts family segment from one category slug,
+ because routing, panel weights, and scorecard buckets operate per family.
+ 
+ @param category - slug whose family segment routing needs
+ 
+ @returns Family whose slash-terminated prefix opens the slug
+ 
+ @example
+ ```ts
+ categoryFamily({ category: 'policy/sensitive-content', },);
+ ```
  */
 export function categoryFamily(
   { category, }: { readonly category: IssueCategory; },
 ): IssueCategoryFamily {
   /**
-   * Family opening the slug, present for every member of the closed category union;
-   * the trailing slash keeps one family from matching another's prefix.
+   Family opening the slug, present for every member of the closed category union;
+   the trailing slash keeps one family from matching another's prefix.
    */
   const family = ISSUE_CATEGORY_FAMILIES
     .find(function opensSlug(candidate,) {

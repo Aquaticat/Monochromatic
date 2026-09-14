@@ -1,25 +1,25 @@
 /**
- * Wire-level test that the schema reaches the model on the Synthetic path.
- *
- * SEPARATE FILE BY NECESSITY, not preference: `synthetic-client.unit.test.ts`
- * is near its line budget, and `MXL` forbids raising one. The seam under test
- * is also narrower than that file's subject, which is the whole client.
- *
- * WHY ONLY THIS PROVIDER. `#216` was opened believing no system prompt carried
- * its schema. Reading the deciding source refuted that for Charm Hyper:
- * `buildAnthropicBody` routes every schema-bearing call through
- * `renderToolSystemPrompt`, which prints the whole schema into the `system`
- * field with its own format rules. The Synthetic path had nothing of the kind,
- * sending only the API-level `response_format`, so it is the one that changed.
- *
- * READS THE BYTES, not the transform. `schema-prompt.unit.test.ts` covers the
- * pure function. This asserts the property that actually matters: what the
- * provider receives. A transform that worked and a client that ignored it
- * would pass every test in the other file.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Wire-level test that the schema reaches the model on the Synthetic path.
+ 
+ SEPARATE FILE BY NECESSITY, not preference: `synthetic-client.unit.test.ts`
+ is near its line budget, and `MXL` forbids raising one. The seam under test
+ is also narrower than that file's subject, which is the whole client.
+ 
+ WHY ONLY THIS PROVIDER. `#216` was opened believing no system prompt carried
+ its schema. Reading the deciding source refuted that for Charm Hyper:
+ `buildAnthropicBody` routes every schema-bearing call through
+ `renderToolSystemPrompt`, which prints the whole schema into the `system`
+ field with its own format rules. The Synthetic path had nothing of the kind,
+ sending only the API-level `response_format`, so it is the one that changed.
+ 
+ READS THE BYTES, not the transform. `schema-prompt.unit.test.ts` covers the
+ pure function. This asserts the property that actually matters: what the
+ provider receives. A transform that worked and a client that ignored it
+ would pass every test in the other file.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -36,7 +36,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Streamed completion the fake transport replays, shaped as the reader wants.
+ Streamed completion the fake transport replays, shaped as the reader wants.
  */
 const COMPLETION_BODY = [
   `data: ${JSON.stringify({ choices: [{ delta: { content: '{"verdict":"pass"}', }, },], },)}`,
@@ -45,7 +45,7 @@ const COMPLETION_BODY = [
 ].join('\n\n',);
 
 /**
- * Response format the call sends, and therefore what the prompt must state.
+ Response format the call sends, and therefore what the prompt must state.
  */
 const NAP_FORMAT = {
   type: 'json_schema' as const,
@@ -61,7 +61,7 @@ const NAP_FORMAT = {
 };
 
 /**
- * Conversation the caller builds, with a system prompt of its own.
+ Conversation the caller builds, with a system prompt of its own.
  */
 const MESSAGES = [
   {
@@ -75,21 +75,21 @@ const MESSAGES = [
 ];
 
 /**
- * Records every exchange and replays one completion for each.
- *
- * @returns Transport to inject, and the list it fills
- *
- * @example
- * ```ts
- * const { transport, exchanges, } = recordingTransport();
- * ```
+ Records every exchange and replays one completion for each.
+ 
+ @returns Transport to inject, and the list it fills
+ 
+ @example
+ ```ts
+ const { transport, exchanges, } = recordingTransport();
+ ```
  */
 function recordingTransport(): {
   readonly transport: ModelTransport;
   readonly exchanges: TransportExchange[];
 } {
   /**
-   * Every exchange the client performed, in order.
+   Every exchange the client performed, in order.
    */
   const exchanges: TransportExchange[] = [];
 
@@ -106,43 +106,43 @@ function recordingTransport(): {
 }
 
 /**
- * System prompt of the body the client actually sent.
- *
- * @param exchanges - exchanges the transport recorded
- *
- * @returns Text of the first system message on the wire
- *
- * @throws {@link Error} when no body or no system message was sent
- *
- * @example
- * ```ts
- * expect(sentSystemPrompt({ exchanges, },),).toContain(SCHEMA_BLOCK_HEADING,);
- * ```
+ System prompt of the body the client actually sent.
+ 
+ @param exchanges - exchanges the transport recorded
+ 
+ @returns Text of the first system message on the wire
+ 
+ @throws {@link Error} when no body or no system message was sent
+ 
+ @example
+ ```ts
+ expect(sentSystemPrompt({ exchanges, },),).toContain(SCHEMA_BLOCK_HEADING,);
+ ```
  */
 function sentSystemPrompt(
   { exchanges, }: { readonly exchanges: readonly TransportExchange[]; },
 ): string {
   /**
-   * Serialized body of the first exchange.
+   Serialized body of the first exchange.
    */
   const bodyJson = exchanges.at(0,)?.bodyJson;
   if (bodyJson === undefined)
     throw new Error('exchange carried no body',);
 
   /**
-   * Body as the provider would parse it.
+   Body as the provider would parse it.
    */
   const body: unknown = JSON.parse(bodyJson,);
 
   /**
-   * Messages field, read defensively because this is a wire assertion.
+   Messages field, read defensively because this is a wire assertion.
    */
   const { messages, } = body as { readonly messages?: unknown; };
   if (!Array.isArray(messages,))
     throw new Error('body carried no messages array',);
 
   /**
-   * First message whose role is system.
+   First message whose role is system.
    */
   const system = (messages as readonly { readonly role?: unknown; readonly content?: unknown; }[])
     .find(function isSystem(message,): boolean {
@@ -173,7 +173,7 @@ await describe({
         },);
 
         /**
-         * System prompt as the provider would read it.
+         System prompt as the provider would read it.
          */
         const prompt = sentSystemPrompt({ exchanges, },);
 

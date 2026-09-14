@@ -41,56 +41,56 @@ import {
 // hold once when a bench the phase leans on cannot reach quorum.
 
 /**
- * Client surface the readings need: the router's dryness view and holds.
- *
- * @example
- * ```ts
- * const client: SeatReadingClient = createRunClient();
- * ```
+ Client surface the readings need: the router's dryness view and holds.
+ 
+ @example
+ ```ts
+ const client: SeatReadingClient = createRunClient();
+ ```
  */
 export type SeatReadingClient = Pick<RunClient, 'providerDryness' | 'providerHolds'>;
 
 /**
- * The view when the budgets could not be read: nothing is dry.
- *
- * @returns Wet
- *
- * @example
- * ```ts
- * const dry = providerRecord({ of: wetWhenUnread, },);
- * ```
+ The view when the budgets could not be read: nothing is dry.
+ 
+ @returns Wet
+ 
+ @example
+ ```ts
+ const dry = providerRecord({ of: wetWhenUnread, },);
+ ```
  */
 function wetWhenUnread(): boolean {
   return false;
 }
 
 /**
- * Reads the dryness view, waiting out the shortest running hold once when a
- * bench the phase leans on cannot reach quorum among the seats a wet provider
- * serves, and reading again after the wait; when a judge bench is short and
- * no provider has named its return, the reading says so and seats what it
- * read; when a writing bench is below its floor with nothing to wait for, or
- * still below it after the wait, the entry stops.
- *
- * @throws {@link WritingBenchUnreachableError} when a writing bench the phase
- * leans on cannot write a slate and no hold promises it back
- *
- * @param client - run client whose dryness view and holds are the router's own
- *
- * @param phase - phase about to start or continue, which names the benches
- *
- * @param signal - entry abort the wait honours
- *
- * @param l - entry logger, which records the shortfall and the wait
- *
- * @param pollMs - how often the wait checks for abort
- *
- * @returns Dryness the phase seats on, and how long was waited for it
- *
- * @example
- * ```ts
- * const { dry, waitMs, } = await readDrynessPastShortBench({ client, phase, signal, l, pollMs: HOLD_POLL_MS, },);
- * ```
+ Reads the dryness view, waiting out the shortest running hold once when a
+ bench the phase leans on cannot reach quorum among the seats a wet provider
+ serves, and reading again after the wait; when a judge bench is short and
+ no provider has named its return, the reading says so and seats what it
+ read; when a writing bench is below its floor with nothing to wait for, or
+ still below it after the wait, the entry stops.
+ 
+ @throws {@link WritingBenchUnreachableError} when a writing bench the phase
+ leans on cannot write a slate and no hold promises it back
+ 
+ @param client - run client whose dryness view and holds are the router's own
+ 
+ @param phase - phase about to start or continue, which names the benches
+ 
+ @param signal - entry abort the wait honours
+ 
+ @param l - entry logger, which records the shortfall and the wait
+ 
+ @param pollMs - how often the wait checks for abort
+ 
+ @returns Dryness the phase seats on, and how long was waited for it
+ 
+ @example
+ ```ts
+ const { dry, waitMs, } = await readDrynessPastShortBench({ client, phase, signal, l, pollMs: HOLD_POLL_MS, },);
+ ```
  */
 async function readDrynessPastShortBench(
   {
@@ -111,9 +111,9 @@ async function readDrynessPastShortBench(
   readonly waitMs: number;
 }> {
   /**
-   * Reads which providers are dry, or none when the view could not be read.
-   *
-   * @returns Dryness per provider, holds folded in
+   Reads which providers are dry, or none when the view could not be read.
+   
+   @returns Dryness per provider, holds folded in
    */
   async function readDryness(): Promise<BudgetView> {
     try {
@@ -124,27 +124,27 @@ async function readDrynessPastShortBench(
     }
   }
   /**
-   * Dryness as first read.
+   Dryness as first read.
    */
   const first = await readDryness();
   /**
-   * How long each provider's refusal still holds it out.
+   How long each provider's refusal still holds it out.
    */
   const holds = client.providerHolds();
   /**
-   * The first hold to end, zero when no provider is held.
+   The first hold to end, zero when no provider is held.
    */
   const shortest = shortestHold({ holds, },);
   /**
-   * Benches this phase leans on, in the order the line prints them.
+   Benches this phase leans on, in the order the line prints them.
    */
   const names = phaseBenches({ phase, },);
   /**
-   * Benches as first read.
+   Benches as first read.
    */
   const benches = benchesOf({ seats: judgeSeatsFor({ dry: first, },), },);
   /**
-   * Benches this phase leans on that cannot reach quorum as first read.
+   Benches this phase leans on that cannot reach quorum as first read.
    */
   const short = shortBenches({
     benches,
@@ -152,7 +152,7 @@ async function readDrynessPastShortBench(
     dry: first,
   },);
   /**
-   * Writing benches this phase leans on that cannot write a slate as first read.
+   Writing benches this phase leans on that cannot write a slate as first read.
    */
   const unreachable = unreachableWritingBenches({
     benches,
@@ -192,11 +192,11 @@ async function readDrynessPastShortBench(
     };
   }
   /**
-   * How long this reading waits: the shortest running hold.
+   How long this reading waits: the shortest running hold.
    */
   const waitMs = shortest;
   /**
-   * Each provider's hold, for the line.
+   Each provider's hold, for the line.
    */
   const held = PROVIDER_ORDER.map(function holdOf(provider,): string {
     return `${provider} ${String(holds[provider],)}ms`;
@@ -211,11 +211,11 @@ async function readDrynessPastShortBench(
     pollMs,
   },);
   /**
-   * Dryness after the wait.
+   Dryness after the wait.
    */
   const again = await readDryness();
   /**
-   * Writing benches still below the floor after the one wait this reading takes.
+   Writing benches still below the floor after the one wait this reading takes.
    */
   const stillUnreachable = unreachableWritingBenches({
     benches: benchesOf({ seats: judgeSeatsFor({ dry: again, },), },),
@@ -239,26 +239,26 @@ async function readDrynessPastShortBench(
 }
 
 /**
- * Reads every provider's dryness and derives the benches for one phase of
- * one entry, waiting out a named hold first when the phase could not settle
- * without it.
- *
- * @param client - run client whose dryness view and holds are the router's own
- *
- * @param phase - phase about to start, which the reading seats
- *
- * @param signal - entry abort
- *
- * @param l - entry logger, which records the reading and the bench
- *
- * @param pollMs - how often a wait checks for abort
- *
- * @returns Benches for this phase
- *
- * @example
- * ```ts
- * const seats = await readJudgeSeats({ client, phase: 'lanes', signal, l, },);
- * ```
+ Reads every provider's dryness and derives the benches for one phase of
+ one entry, waiting out a named hold first when the phase could not settle
+ without it.
+ 
+ @param client - run client whose dryness view and holds are the router's own
+ 
+ @param phase - phase about to start, which the reading seats
+ 
+ @param signal - entry abort
+ 
+ @param l - entry logger, which records the reading and the bench
+ 
+ @param pollMs - how often a wait checks for abort
+ 
+ @returns Benches for this phase
+ 
+ @example
+ ```ts
+ const seats = await readJudgeSeats({ client, phase: 'lanes', signal, l, },);
+ ```
  */
 export async function readJudgeSeats(
   {
@@ -276,7 +276,7 @@ export async function readJudgeSeats(
   },
 ): Promise<JudgeSeats> {
   /**
-   * Dryness this phase seats on, any named hold waited out.
+   Dryness this phase seats on, any named hold waited out.
    */
   const {
     dry,
@@ -289,11 +289,11 @@ export async function readJudgeSeats(
     pollMs,
   },);
   /**
-   * Benches for this reading.
+   Benches for this reading.
    */
   const seats = judgeSeatsFor({ dry, },);
   /**
-   * Each bench, named once for the line.
+   Each bench, named once for the line.
    */
   const {
     wideSeats,
@@ -308,7 +308,7 @@ export async function readJudgeSeats(
     withheld,
   } = seats;
   /**
-   * Each provider's state, for the line.
+   Each provider's state, for the line.
    */
   const states = PROVIDER_ORDER.map(function stateOf(provider,): string {
     return `${provider}=${dry[provider] ? 'dry' : 'wet'}`;
@@ -326,29 +326,29 @@ export async function readJudgeSeats(
 }
 
 /**
- * Waits, before one chunk starts, until the benches its phase leans on can
- * reach quorum again, when a named hold is keeping them from it.
- *
- * COSTS NOTHING WHILE NOTHING IS HELD: one synchronous read of the holds and
- * no dryness read, so a pass under wet providers asks its meters exactly as
- * often as before.
- *
- * @param client - run client whose dryness view and holds are the router's own
- *
- * @param phase - phase the chunk belongs to, which names the benches
- *
- * @param signal - entry abort the wait honours
- *
- * @param l - entry logger, which records the shortfall and the wait
- *
- * @param pollMs - how often a wait checks for abort
- *
- * @returns How long was waited, zero when the chunk could start at once
- *
- * @example
- * ```ts
- * await awaitBenchQuorum({ client, phase: 'consolidation', signal, l, },);
- * ```
+ Waits, before one chunk starts, until the benches its phase leans on can
+ reach quorum again, when a named hold is keeping them from it.
+ 
+ COSTS NOTHING WHILE NOTHING IS HELD: one synchronous read of the holds and
+ no dryness read, so a pass under wet providers asks its meters exactly as
+ often as before.
+ 
+ @param client - run client whose dryness view and holds are the router's own
+ 
+ @param phase - phase the chunk belongs to, which names the benches
+ 
+ @param signal - entry abort the wait honours
+ 
+ @param l - entry logger, which records the shortfall and the wait
+ 
+ @param pollMs - how often a wait checks for abort
+ 
+ @returns How long was waited, zero when the chunk could start at once
+ 
+ @example
+ ```ts
+ await awaitBenchQuorum({ client, phase: 'consolidation', signal, l, },);
+ ```
  */
 export async function awaitBenchQuorum(
   {
@@ -368,7 +368,7 @@ export async function awaitBenchQuorum(
   if (shortestHold({ holds: client.providerHolds(), },) === 0)
     return 0;
   /**
-   * The reading, any named hold waited out.
+   The reading, any named hold waited out.
    */
   const { waitMs, } = await readDrynessPastShortBench({
     client,

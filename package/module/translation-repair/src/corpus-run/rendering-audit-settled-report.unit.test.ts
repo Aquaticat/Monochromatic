@@ -1,22 +1,22 @@
 /**
- * Tests for the report over a persisted rendering audit, and for both CLIs at
- * their boundary.
- *
- * NO CASE REACHED THESE BEFORE. `readRunRows` decides what a report is a
- * report of, `newestRun` decides which run is meant when none is named, and
- * `printAcross` is the only across-run reading; each is exported through the
- * barrel for exactly this. The two commands are then run as built, against
- * throwaway runs and an empty archive, so the refusal policy rendering-7 set
- * (a stated refusal exits 6 with its line and no frames) is proved at the
- * boundary an operator meets rather than at the throw.
- *
- * DISPOSABLE FIXTURES ONLY: every run is written under its own `mkdtemp`
- * directory, in the shape the probe store writes, and nothing here reads a
- * real run.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the report over a persisted rendering audit, and for both CLIs at
+ their boundary.
+ 
+ NO CASE REACHED THESE BEFORE. `readRunRows` decides what a report is a
+ report of, `newestRun` decides which run is meant when none is named, and
+ `printAcross` is the only across-run reading; each is exported through the
+ barrel for exactly this. The two commands are then run as built, against
+ throwaway runs and an empty archive, so the refusal policy rendering-7 set
+ (a stated refusal exits 6 with its line and no frames) is proved at the
+ boundary an operator meets rather than at the throw.
+ 
+ DISPOSABLE FIXTURES ONLY: every run is written under its own `mkdtemp`
+ directory, in the shape the probe store writes, and nothing here reads a
+ real run.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { spawn, } from 'node:child_process';
@@ -45,22 +45,22 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Directory the probe store collects this probe's runs in.
+ Directory the probe store collects this probe's runs in.
  */
 const PROBE_NAME = 'rendering-audit-settled';
 
 /**
- * Exit code `reportingRefusals` sets for a stated refusal.
+ Exit code `reportingRefusals` sets for a stated refusal.
  */
 const REFUSED_AS_STATED = 6;
 
 /**
- * Exit reported when the child ended on a signal and so has no code.
+ Exit reported when the child ended on a signal and so has no code.
  */
 const SIGNALLED = -1;
 
 /**
- * Built report command under test.
+ Built report command under test.
  */
 const REPORT_COMMAND = join(
   import.meta.dirname,
@@ -68,7 +68,7 @@ const REPORT_COMMAND = join(
 );
 
 /**
- * Built audit command under test.
+ Built audit command under test.
  */
 const AUDIT_COMMAND = join(
   import.meta.dirname,
@@ -76,7 +76,7 @@ const AUDIT_COMMAND = join(
 );
 
 /**
- * Roster every fixture run records.
+ Roster every fixture run records.
  */
 const ROSTER = [
   'hf:cat/Tabby-1',
@@ -84,17 +84,17 @@ const ROSTER = [
 ];
 
 /**
- * Archive every fixture run says it read, a label only.
+ Archive every fixture run says it read, a label only.
  */
 const ARCHIVE = '/nowhere/naptime-archive';
 
 /**
- * Characters in a SHA-1 object id.
+ Characters in a SHA-1 object id.
  */
 const OBJECT_ID_LENGTH = 40;
 
 /**
- * One pair of texts, used wherever two rows are meant to match.
+ One pair of texts, used wherever two rows are meant to match.
  */
 const SAME_TEXTS = {
   sourceText: '毛毛跳上窗台。',
@@ -102,7 +102,7 @@ const SAME_TEXTS = {
 } as const;
 
 /**
- * A different rendering of the same original.
+ A different rendering of the same original.
  */
 const OTHER_TEXTS = {
   sourceText: '毛毛跳上窗台。',
@@ -110,18 +110,18 @@ const OTHER_TEXTS = {
 } as const;
 
 /**
- * Builds one audited slice as the probe persists it.
- *
- * @param sliceIndex - slice index
- *
- * @param texts - what the audit was shown, omitted to leave it unrecorded
- *
- * @returns Row shaped as the probe persists it
- *
- * @example
- * ```ts
- * const row = rowFor({ sliceIndex: 0, texts: SAME_TEXTS, },);
- * ```
+ Builds one audited slice as the probe persists it.
+ 
+ @param sliceIndex - slice index
+ 
+ @param texts - what the audit was shown, omitted to leave it unrecorded
+ 
+ @returns Row shaped as the probe persists it
+ 
+ @example
+ ```ts
+ const row = rowFor({ sliceIndex: 0, texts: SAME_TEXTS, },);
+ ```
  */
 function rowFor(
   {
@@ -162,21 +162,21 @@ function rowFor(
 }
 
 /**
- * Writes one run file in the shape the probe store writes, under a runs
- * directory of the caller's choosing.
- *
- * @param runsDir - throwaway runs directory
- *
- * @param stamp - filename-safe instant the run started at
- *
- * @param body - top-level fields, which a case may leave incomplete on purpose
- *
- * @returns Path written
- *
- * @example
- * ```ts
- * const path = await writeRun({ runsDir, stamp: '2026-08-25T01-00-00.000Z', body: { rows: [], }, },);
- * ```
+ Writes one run file in the shape the probe store writes, under a runs
+ directory of the caller's choosing.
+ 
+ @param runsDir - throwaway runs directory
+ 
+ @param stamp - filename-safe instant the run started at
+ 
+ @param body - top-level fields, which a case may leave incomplete on purpose
+ 
+ @returns Path written
+ 
+ @example
+ ```ts
+ const path = await writeRun({ runsDir, stamp: '2026-08-25T01-00-00.000Z', body: { rows: [], }, },);
+ ```
  */
 async function writeRun(
   {
@@ -190,7 +190,7 @@ async function writeRun(
   },
 ): Promise<string> {
   /**
-   * Where runs of this probe collect.
+   Where runs of this probe collect.
    */
   const probeDir = join(
     runsDir,
@@ -202,7 +202,7 @@ async function writeRun(
   );
 
   /**
-   * Run file, named the way the store names one.
+   Run file, named the way the store names one.
    */
   const path = join(
     probeDir,
@@ -221,19 +221,19 @@ async function writeRun(
 }
 
 /**
- * A complete run over the given rows.
- *
- * @param rows - rows it bought
- *
- * @param roster - roster it recorded, absent to write a run from before the
- * field was kept
- *
- * @returns Top-level fields
- *
- * @example
- * ```ts
- * const body = runOver({ rows: [rowFor({ sliceIndex: 0, },),], roster: ROSTER, },);
- * ```
+ A complete run over the given rows.
+ 
+ @param rows - rows it bought
+ 
+ @param roster - roster it recorded, absent to write a run from before the
+ field was kept
+ 
+ @returns Top-level fields
+ 
+ @example
+ ```ts
+ const body = runOver({ rows: [rowFor({ sliceIndex: 0, },),], roster: ROSTER, },);
+ ```
  */
 function runOver(
   {
@@ -255,14 +255,14 @@ function runOver(
 }
 
 /**
- * Makes a throwaway runs directory.
- *
- * @returns Its path
- *
- * @example
- * ```ts
- * const runsDir = await throwawayRunsDir();
- * ```
+ Makes a throwaway runs directory.
+ 
+ @returns Its path
+ 
+ @example
+ ```ts
+ const runsDir = await throwawayRunsDir();
+ ```
  */
 async function throwawayRunsDir(): Promise<string> {
   return await mkdtemp(join(
@@ -272,33 +272,33 @@ async function throwawayRunsDir(): Promise<string> {
 }
 
 /**
- * Captures what is printed, forwarding every line onward; the describe using
- * it runs one case at a time.
- *
- * @param lines - where captured lines go
- *
- * @returns Captured lines, disposable
- *
- * @example
- * ```ts
- * using printed = collectingLines({ lines: [], },);
- * ```
+ Captures what is printed, forwarding every line onward; the describe using
+ it runs one case at a time.
+ 
+ @param lines - where captured lines go
+ 
+ @returns Captured lines, disposable
+ 
+ @example
+ ```ts
+ using printed = collectingLines({ lines: [], },);
+ ```
  */
 function collectingLines(
   { lines, }: { readonly lines: string[]; },
 ): { readonly lines: readonly string[]; } & Disposable {
   /**
-   * Reporter found on entry, which every line is forwarded to.
+   Reporter found on entry, which every line is forwarded to.
    */
   const previous = console.log;
 
   /**
-   * Whether this capture is still recording.
+   Whether this capture is still recording.
    */
   const recording = { open: true, };
 
   /**
-   * This capture's own wrapper.
+   This capture's own wrapper.
    */
   const mine = (...parts: readonly unknown[]): void => {
     if (recording.open) {
@@ -319,39 +319,39 @@ function collectingLines(
 }
 
 /**
- * What a built command wrote and how it exited.
+ What a built command wrote and how it exited.
  */
 type CommandRun = {
   /**
-   * Exit code, or -1 when the process was signalled.
+   Exit code, or -1 when the process was signalled.
    */
   readonly code: number;
 
   /**
-   * Everything written to stdout.
+   Everything written to stdout.
    */
   readonly stdout: string;
 
   /**
-   * Everything written to stderr.
+   Everything written to stderr.
    */
   readonly stderr: string;
 };
 
 /**
- * Runs a built command with every provider key withheld, so the child can
- * neither refuse for the wrong reason nor spend.
- *
- * @param command - built entry file
- *
- * @param args - arguments after it
- *
- * @returns Exit code and both streams
- *
- * @example
- * ```ts
- * const run = await runBuilt({ command: REPORT_COMMAND, args: ['--run', path,], },);
- * ```
+ Runs a built command with every provider key withheld, so the child can
+ neither refuse for the wrong reason nor spend.
+ 
+ @param command - built entry file
+ 
+ @param args - arguments after it
+ 
+ @returns Exit code and both streams
+ 
+ @example
+ ```ts
+ const run = await runBuilt({ command: REPORT_COMMAND, args: ['--run', path,], },);
+ ```
  */
 async function runBuilt(
   {
@@ -363,7 +363,7 @@ async function runBuilt(
   },
 ): Promise<CommandRun> {
   /**
-   * Runner environment with every provider key removed.
+   Runner environment with every provider key removed.
    */
   const env = Object.fromEntries(
     Object
@@ -374,7 +374,7 @@ async function runBuilt(
   );
 
   /**
-   * Child running the command.
+   Child running the command.
    */
   const child = spawn(
     process.execPath,
@@ -400,13 +400,13 @@ async function runBuilt(
   );
 
   /**
-   * Both streams as they arrive.
+   Both streams as they arrive.
    */
   const out: string[] = [];
   const err: string[] = [];
 
   /**
-   * Child's streams, both piped.
+   Child's streams, both piped.
    */
   const {
     stdout,
@@ -438,7 +438,7 @@ await describe({
       name: 'READS the rows, the archive the run named and the roster it asked',
       fn: async () => {
         /**
-         * One complete run.
+         One complete run.
          */
         const path = await writeRun({
           runsDir: await throwawayRunsDir(),
@@ -450,7 +450,7 @@ await describe({
         },);
 
         /**
-         * What the report reads off it.
+         What the report reads off it.
          */
         const read = await readRunRows({ path, },);
 
@@ -465,7 +465,7 @@ await describe({
         + 'readings still answer and the voice rates say only what the rows say',
       fn: async () => {
         /**
-         * One run carrying no roster field.
+         One run carrying no roster field.
          */
         const path = await writeRun({
           runsDir: await throwawayRunsDir(),
@@ -482,7 +482,7 @@ await describe({
         + 'this probe rather than a quiet one, and the remedy is the operator\'s',
       fn: async () => {
         /**
-         * A file with the run's identity and nothing bought.
+         A file with the run's identity and nothing bought.
          */
         const path = await writeRun({
           runsDir: await throwawayRunsDir(),
@@ -507,7 +507,7 @@ await describe({
         + 'has to be opened',
       fn: async () => {
         /**
-         * Two runs, a day apart.
+         Two runs, a day apart.
          */
         const runsDir = await throwawayRunsDir();
         await writeRun({
@@ -516,7 +516,7 @@ await describe({
           body: runOver({ rows: [], },),
         },);
         /**
-         * The later one, which the report should read.
+         The later one, which the report should read.
          */
         const later = await writeRun({
           runsDir,
@@ -533,7 +533,7 @@ await describe({
         + 'would look exactly like reporting a clean run',
       fn: async () => {
         /**
-         * A probe directory with no run in it.
+         A probe directory with no run in it.
          */
         const runsDir = await throwawayRunsDir();
         await mkdir(
@@ -560,7 +560,7 @@ await describe({
         using printed = collectingLines({ lines: [], },);
 
         /**
-         * Earlier run over the same text.
+         Earlier run over the same text.
          */
         const against = await writeRun({
           runsDir: await throwawayRunsDir(),
@@ -582,7 +582,7 @@ await describe({
         },);
 
         /**
-         * Everything printed, as one body to search.
+         Everything printed, as one body to search.
          */
         const said = printed.lines.join('\n',);
 
@@ -599,7 +599,7 @@ await describe({
         using printed = collectingLines({ lines: [], },);
 
         /**
-         * Earlier run over a different rendering of the slot.
+         Earlier run over a different rendering of the slot.
          */
         const against = await writeRun({
           runsDir: await throwawayRunsDir(),
@@ -632,7 +632,7 @@ await describe({
         using printed = collectingLines({ lines: [], },);
 
         /**
-         * Earlier run written before identities were recorded.
+         Earlier run written before identities were recorded.
          */
         const against = await writeRun({
           runsDir: await throwawayRunsDir(),
@@ -663,7 +663,7 @@ await describe({
       name: 'REPORTS A NAMED RUN and exits 0, printing both halves and the archive that run read',
       fn: async () => {
         /**
-         * One complete run to report.
+         One complete run to report.
          */
         const path = await writeRun({
           runsDir: await throwawayRunsDir(),
@@ -678,7 +678,7 @@ await describe({
         },);
 
         /**
-         * What the command wrote.
+         What the command wrote.
          */
         const run = await runBuilt({
           command: REPORT_COMMAND,
@@ -700,7 +700,7 @@ await describe({
         + 'policy rendering-7 set for the four operator refusals',
       fn: async () => {
         /**
-         * A file with no rows.
+         A file with no rows.
          */
         const path = await writeRun({
           runsDir: await throwawayRunsDir(),
@@ -712,7 +712,7 @@ await describe({
         },);
 
         /**
-         * What the command wrote.
+         What the command wrote.
          */
         const run = await runBuilt({
           command: REPORT_COMMAND,
@@ -738,7 +738,7 @@ await describe({
         + 'the run was pointed somewhere wrong rather than at a clean archive',
       fn: async () => {
         /**
-         * What the command wrote against an archive holding nothing.
+         What the command wrote against an archive holding nothing.
          */
         const run = await runBuilt({
           command: AUDIT_COMMAND,

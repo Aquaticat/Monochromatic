@@ -1,11 +1,11 @@
 /**
- * Tests for folding Windows line endings.
- *
- * WHAT THESE PIN is that the fold counts what it changed, leaves LF text and
- * a lone carriage return alone, and shrinks the text by exactly the count.
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for folding Windows line endings.
+ 
+ WHAT THESE PIN is that the fold counts what it changed, leaves LF text and
+ a lone carriage return alone, and shrinks the text by exactly the count.
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -23,12 +23,12 @@ await describe({
       name: 'folds every CRLF to LF and counts them, shrinking the text by exactly that many units',
       fn: async () => {
         /**
-         * A CRLF page.
+         A CRLF page.
          */
         const text = '猫猫喜欢晒太阳。\r\n\r\n它在窗台上睡觉。\r\n';
 
         /**
-         * What the fold made of it.
+         What the fold made of it.
          */
         const { text: folded, folded: count, } = foldCarriageReturns({ text, },);
         expect(folded,).toBe('猫猫喜欢晒太阳。\n\n它在窗台上睡觉。\n',);
@@ -40,7 +40,7 @@ await describe({
       name: 'leaves LF text unchanged and counts nothing, which is every other page in the pinned corpus',
       fn: async () => {
         /**
-         * An LF page.
+         An LF page.
          */
         const text = '猫猫喜欢晒太阳。\n\n它在窗台上睡觉。\n';
         expect(foldCarriageReturns({ text, },),).toEqual({
@@ -54,7 +54,7 @@ await describe({
         + 'folding it would be a guess about text nobody has measured',
       fn: async () => {
         /**
-         * A stray return inside a line.
+         A stray return inside a line.
          */
         const text = '猫猫\r喜欢晒太阳。\n';
         expect(foldCarriageReturns({ text, },),).toEqual({

@@ -5,16 +5,16 @@ import {
 import { ProducerInputRunError, } from './producer-input-error.ts';
 
 /**
- * Narrows native JSON objects without asserting a record type over arbitrary objects or arrays.
- *
- * @param value - decoded launch field
- *
- * @returns Whether named JSON fields can be inspected
- *
- * @example
- * ```ts
- * if (isLaunchRecord(value)) inspect(value.version);
- * ```
+ Narrows native JSON objects without asserting a record type over arbitrary objects or arrays.
+ 
+ @param value - decoded launch field
+ 
+ @returns Whether named JSON fields can be inspected
+ 
+ @example
+ ```ts
+ if (isLaunchRecord(value)) inspect(value.version);
+ ```
  */
 function isLaunchRecord(value: unknown): value is Readonly<Record<string, unknown>> {
   return ((typeof value) === 'object') && (value !== null)
@@ -22,22 +22,22 @@ function isLaunchRecord(value: unknown): value is Readonly<Record<string, unknow
 }
 
 /**
- * Reads one JSON object only when its exact fixed key set is present.
- *
- * @param value - decoded launch field
- *
- * @param keys - fixed keys owned by this launch schema
- *
- * @param locator - authored field name for a privacy-safe refusal
- *
- * @returns Original JSON record after closed-shape validation
- *
- * @throws ProducerInputRunError when required keys or object shape differ
- *
- * @example
- * ```ts
- * const runtime = launchRecord({ value, keys: ['dir', 'manifest'], locator: 'launch.runtime' });
- * ```
+ Reads one JSON object only when its exact fixed key set is present.
+ 
+ @param value - decoded launch field
+ 
+ @param keys - fixed keys owned by this launch schema
+ 
+ @param locator - authored field name for a privacy-safe refusal
+ 
+ @returns Original JSON record after closed-shape validation
+ 
+ @throws ProducerInputRunError when required keys or object shape differ
+ 
+ @example
+ ```ts
+ const runtime = launchRecord({ value, keys: ['dir', 'manifest'], locator: 'launch.runtime' });
+ ```
  */
 export function launchRecord({
   value,
@@ -54,7 +54,7 @@ export function launchRecord({
       locator,
     });
   /**
-   * Native JSON object keys cannot silently add a command, mode, mount or environment override.
+   Native JSON object keys cannot silently add a command, mode, mount or environment override.
    */
   const actual = Object.keys(value);
   if ((actual.length !== keys.length) || (!actual.every(function expected(key): boolean {
@@ -68,22 +68,22 @@ export function launchRecord({
 }
 
 /**
- * Validates fixed-width lowercase hexadecimal identity without a regular-expression parser.
- *
- * @param value - untrusted JSON identity field
- *
- * @param length - exact width of the owning digest domain
- *
- * @param locator - authored field name
- *
- * @returns Original canonical identity spelling
- *
- * @throws ProducerInputRunError when identity grammar differs
- *
- * @example
- * ```ts
- * const sha256 = launchHex({ value, length: 64, locator: 'launch.bootstrap.sha256' });
- * ```
+ Validates fixed-width lowercase hexadecimal identity without a regular-expression parser.
+ 
+ @param value - untrusted JSON identity field
+ 
+ @param length - exact width of the owning digest domain
+ 
+ @param locator - authored field name
+ 
+ @returns Original canonical identity spelling
+ 
+ @throws ProducerInputRunError when identity grammar differs
+ 
+ @example
+ ```ts
+ const sha256 = launchHex({ value, length: 64, locator: 'launch.bootstrap.sha256' });
+ ```
  */
 export function launchHex({
   value,
@@ -110,20 +110,20 @@ export function launchHex({
 }
 
 /**
- * Reads a safe exact byte allowance rather than silently rounding JSON numbers.
- *
- * @param value - untrusted extent
- *
- * @param locator - authored field name
- *
- * @returns Nonnegative safe integer extent
- *
- * @throws ProducerInputRunError when extent cannot bound an exact file read
- *
- * @example
- * ```ts
- * const bytes = launchBytes({ value, locator: 'launch.selection.bytes' });
- * ```
+ Reads a safe exact byte allowance rather than silently rounding JSON numbers.
+ 
+ @param value - untrusted extent
+ 
+ @param locator - authored field name
+ 
+ @returns Nonnegative safe integer extent
+ 
+ @throws ProducerInputRunError when extent cannot bound an exact file read
+ 
+ @example
+ ```ts
+ const bytes = launchBytes({ value, locator: 'launch.selection.bytes' });
+ ```
  */
 export function launchBytes({
   value,
@@ -142,21 +142,21 @@ export function launchBytes({
 }
 
 /**
- * Refuses relative or lexically changing locators before mount construction.
- * Filesystem canonicalization and ownership remain host checks, not claims made by this parser.
- *
- * @param value - untrusted path field
- *
- * @param locator - authored field name
- *
- * @returns Absolute lexically canonical path
- *
- * @throws ProducerInputRunError when path syntax differs
- *
- * @example
- * ```ts
- * const dir = launchPath({ value, locator: 'launch.runtime.dir' });
- * ```
+ Refuses relative or lexically changing locators before mount construction.
+ Filesystem canonicalization and ownership remain host checks, not claims made by this parser.
+ 
+ @param value - untrusted path field
+ 
+ @param locator - authored field name
+ 
+ @returns Absolute lexically canonical path
+ 
+ @throws ProducerInputRunError when path syntax differs
+ 
+ @example
+ ```ts
+ const dir = launchPath({ value, locator: 'launch.runtime.dir' });
+ ```
  */
 export function launchPath({
   value,

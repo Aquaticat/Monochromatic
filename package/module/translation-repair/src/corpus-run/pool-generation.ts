@@ -18,24 +18,24 @@ import type { EligibleEntries, } from './artifact-eligible.ts';
 // it was drawn from.
 
 /**
- * Names the one built pipeline a pool's kept entries were settled under.
- *
- * ONE DIGEST FOR THE POOL. `selectEligible` and the pool guards refuse a
- * directory holding two generations before a draw can reach it, so every kept
- * entry carries the same digest by construction. Disagreement here would mean
- * that guard had failed, which is worth reporting as an absence rather than
- * silently taking the first.
- *
- * @param eligible - what the pool resolved to
- *
- * @param names - artifact file names the draw actually kept
- *
- * @returns Recorded generation, or why one could not be named
- *
- * @example
- * ```ts
- * const generation = poolGeneration({ eligible, names, },);
- * ```
+ Names the one built pipeline a pool's kept entries were settled under.
+ 
+ ONE DIGEST FOR THE POOL. `selectEligible` and the pool guards refuse a
+ directory holding two generations before a draw can reach it, so every kept
+ entry carries the same digest by construction. Disagreement here would mean
+ that guard had failed, which is worth reporting as an absence rather than
+ silently taking the first.
+ 
+ @param eligible - what the pool resolved to
+ 
+ @param names - artifact file names the draw actually kept
+ 
+ @returns Recorded generation, or why one could not be named
+ 
+ @example
+ ```ts
+ const generation = poolGeneration({ eligible, names, },);
+ ```
  */
 export function poolGeneration(
   {
@@ -47,14 +47,14 @@ export function poolGeneration(
   },
 ): SampleGeneration {
   /**
-   * Digests the kept entries record, deduplicated.
+   Digests the kept entries record, deduplicated.
    */
   const digests = [
     ...new Set(
       names
         .map(function digestOf(name,): string {
           /**
-           * Digest this entry recorded, empty when it recorded none.
+           Digest this entry recorded, empty when it recorded none.
            */
           const recorded = eligible.digestByEntry
             .get(name,);

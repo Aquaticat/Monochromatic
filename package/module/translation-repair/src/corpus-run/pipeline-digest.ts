@@ -62,41 +62,41 @@ import {
 // recorded elsewhere.
 
 /**
- * Hash behind both the per-file and the combined digest.
+ Hash behind both the per-file and the combined digest.
  */
 const DIGEST_ALGORITHM = 'sha256';
 
 /**
- * Characters of a sha256 hex digest.
+ Characters of a sha256 hex digest.
  */
 const DIGEST_LENGTH = 64;
 
 /**
- * Name of the scheme a recorded digest was produced by.
- *
- * Carried in the value itself rather than assumed, so a later scheme is a
- * DIFFERENT string rather than a same-looking one. Without it, changing what is
- * hashed or how it is framed would silently make two incomparable values
- * comparable, which is the failure this whole module exists to prevent, and an
- * artifact recorded under the old scheme would be read as a foreign generation
- * rather than as one this build cannot name.
+ Name of the scheme a recorded digest was produced by.
+ 
+ Carried in the value itself rather than assumed, so a later scheme is a
+ DIFFERENT string rather than a same-looking one. Without it, changing what is
+ hashed or how it is framed would silently make two incomparable values
+ comparable, which is the failure this whole module exists to prevent, and an
+ artifact recorded under the old scheme would be read as a foreign generation
+ rather than as one this build cannot name.
  */
 const DIGEST_FORMAT = 'sha256-tree-v1';
 
 /**
- * Character between the scheme name and the hex, chosen because neither side
- * can contain it.
+ Character between the scheme name and the hex, chosen because neither side
+ can contain it.
  */
 const FORMAT_SEPARATOR = ':';
 
 /**
- * Suffixes of emitted files that cannot execute, so cannot change behaviour.
- *
- * TypeScript declarations are excluded deliberately rather than for tidiness.
- * The built `.mjs` carries no comments at all, while a `.d.mts` carries every
- * TSDoc block verbatim, so including declarations would make a comment-only edit
- * a new pipeline generation and force a fresh accumulation directory for a
- * change that cannot alter a single result.
+ Suffixes of emitted files that cannot execute, so cannot change behaviour.
+ 
+ TypeScript declarations are excluded deliberately rather than for tidiness.
+ The built `.mjs` carries no comments at all, while a `.d.mts` carries every
+ TSDoc block verbatim, so including declarations would make a comment-only edit
+ a new pipeline generation and force a fresh accumulation directory for a
+ change that cannot alter a single result.
  */
 const DECLARATION_SUFFIXES = [
   '.d.mts',
@@ -105,74 +105,74 @@ const DECLARATION_SUFFIXES = [
 ] as const;
 
 /**
- * Byte between a path and its hash, chosen because a path cannot contain it.
- *
- * Without a separator no path can carry, the concatenation is ambiguous: a file
- * `ab` hashing to `cd…` and a file `a` hashing to `bcd…` would feed the combined
- * hash identical input, so two different builds could claim one identity.
+ Byte between a path and its hash, chosen because a path cannot contain it.
+ 
+ Without a separator no path can carry, the concatenation is ambiguous: a file
+ `ab` hashing to `cd…` and a file `a` hashing to `bcd…` would feed the combined
+ hash identical input, so two different builds could claim one identity.
  */
 const PATH_TERMINATOR = '\u0000';
 
 /**
- * Digest naming the built pipeline that produced a result.
- *
- * Branded so it cannot be assigned where a git object id belongs. The two are
- * indistinguishable by shape, since a sha256 object id is also 64 lowercase hex
- * characters, and they answer different questions: this one is NOT a commit and
- * has no ancestry, no log entry, and nothing to check out.
- *
- * @example
- * ```ts
- * const { digest, }: { digest: PipelineDigest; } = await digestPipeline({ dir, },);
- * ```
+ Digest naming the built pipeline that produced a result.
+ 
+ Branded so it cannot be assigned where a git object id belongs. The two are
+ indistinguishable by shape, since a sha256 object id is also 64 lowercase hex
+ characters, and they answer different questions: this one is NOT a commit and
+ has no ancestry, no log entry, and nothing to check out.
+ 
+ @example
+ ```ts
+ const { digest, }: { digest: PipelineDigest; } = await digestPipeline({ dir, },);
+ ```
  */
 export type PipelineDigest = string & { readonly __brand: 'PipelineDigest'; };
 
 /**
- * What a pass records about the code that produced its artifacts.
- *
- * Carries the file count beside the digest so a log line can say what the digest
- * was taken over. A digest alone is unfalsifiable in a log: `files=51` next to it
- * turns a truncated or empty output directory into something a reader notices.
- *
- * @example
- * ```ts
- * const stamp = await digestPipeline({ dir, },);
- * console.log(`digest=${stamp.digest} files=${String(stamp.fileCount,)}`,);
- * ```
+ What a pass records about the code that produced its artifacts.
+ 
+ Carries the file count beside the digest so a log line can say what the digest
+ was taken over. A digest alone is unfalsifiable in a log: `files=51` next to it
+ turns a truncated or empty output directory into something a reader notices.
+ 
+ @example
+ ```ts
+ const stamp = await digestPipeline({ dir, },);
+ console.log(`digest=${stamp.digest} files=${String(stamp.fileCount,)}`,);
+ ```
  */
 export type PipelineStamp = Readonly<{
   /**
-   * Identity of the executed build.
+   Identity of the executed build.
    */
   digest: PipelineDigest;
 
   /**
-   * Emitted files it was taken over.
+   Emitted files it was taken over.
    */
   fileCount: number;
 }>;
 
 /**
- * Raised when the built pipeline cannot be identified.
+ Raised when the built pipeline cannot be identified.
  */
 export class PipelineDigestError extends Error {
   /**
-   * Declares this message safe to forward: it names the directory and what is missing from it.
+   Declares this message safe to forward: it names the directory and what is missing from it.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Names the directory, what was wrong with it, and why that stops a pass.
-   *
-   * @param dir - directory the digest was to be taken over
-   *
-   * @param reason - what made it unusable, as a clause
-   *
-   * @example
-   * ```ts
-   * throw new PipelineDigestError({ dir, reason: 'it holds no file that runs', },);
-   * ```
+   Names the directory, what was wrong with it, and why that stops a pass.
+   
+   @param dir - directory the digest was to be taken over
+   
+   @param reason - what made it unusable, as a clause
+   
+   @example
+   ```ts
+   throw new PipelineDigestError({ dir, reason: 'it holds no file that runs', },);
+   ```
    */
   constructor(
     {
@@ -200,22 +200,22 @@ export class PipelineDigestError extends Error {
 }
 
 /**
- * Narrows a string already known to be a digest of the built pipeline.
- *
- * An assertion function rather than a cast, because `no-unsafe-type-assertion`
- * refuses a narrowing `as` and this repository names assertion functions as the
- * mechanism for runtime narrowing.
- *
- * @param value - digest to narrow
- *
- * @returns Nothing; it narrows `value` in the caller on success
- *
- * @throws {@link TypeError} when it is not 64 lowercase hex characters
- *
- * @example
- * ```ts
- * assertPipelineDigest(recorded,);
- * ```
+ Narrows a string already known to be a digest of the built pipeline.
+ 
+ An assertion function rather than a cast, because `no-unsafe-type-assertion`
+ refuses a narrowing `as` and this repository names assertion functions as the
+ mechanism for runtime narrowing.
+ 
+ @param value - digest to narrow
+ 
+ @returns Nothing; it narrows `value` in the caller on success
+ 
+ @throws {@link TypeError} when it is not 64 lowercase hex characters
+ 
+ @example
+ ```ts
+ assertPipelineDigest(recorded,);
+ ```
  */
 export function assertPipelineDigest(
   value: string,
@@ -229,20 +229,20 @@ export function assertPipelineDigest(
 }
 
 /**
- * Whether a string could be a digest this module produced.
- *
- * Scanned rather than matched with a pattern: the rule is one predicate per
- * character over a fixed-length string, a linear pass that cannot backtrack, and
- * this codebase forbids a regex where an index scan says the same thing.
- *
- * @param value - string to test
- *
- * @returns Whether it is 64 lowercase hex characters
- *
- * @example
- * ```ts
- * const usable = isDigestShaped({ value: recorded, },);
- * ```
+ Whether a string could be a digest this module produced.
+ 
+ Scanned rather than matched with a pattern: the rule is one predicate per
+ character over a fixed-length string, a linear pass that cannot backtrack, and
+ this codebase forbids a regex where an index scan says the same thing.
+ 
+ @param value - string to test
+ 
+ @returns Whether it is 64 lowercase hex characters
+ 
+ @example
+ ```ts
+ const usable = isDigestShaped({ value: recorded, },);
+ ```
  */
 export function isDigestShaped(
   { value, }: { readonly value: string; },
@@ -251,7 +251,7 @@ export function isDigestShaped(
     return false;
 
   /**
-   * Hex half, once the scheme name is off.
+   Hex half, once the scheme name is off.
    */
   const hex = value.slice(
     `${DIGEST_FORMAT}${FORMAT_SEPARATOR}`.length,
@@ -262,14 +262,14 @@ export function isDigestShaped(
 
   for (const character of hex) {
     /**
-     * Whether it is one of `0` to `9`.
+     Whether it is one of `0` to `9`.
      */
     const isDigit = (character >= '0') && (character <= '9');
 
     /**
-     * Whether it is one of `a` to `f`. Uppercase is refused because this module
-     * only ever emits lowercase, so another spelling came from elsewhere and
-     * would count as a second generation.
+     Whether it is one of `a` to `f`. Uppercase is refused because this module
+     only ever emits lowercase, so another spelling came from elsewhere and
+     would count as a second generation.
      */
     const isLowerHex = (character >= 'a') && (character <= 'f');
 
@@ -281,16 +281,16 @@ export function isDigestShaped(
 }
 
 /**
- * Whether an emitted file is a TypeScript declaration.
- *
- * @param name - file name as the directory reported it
- *
- * @returns Whether it carries a declaration suffix
- *
- * @example
- * ```ts
- * const skipped = isDeclarationFile({ name: 'index.d.mts', },);
- * ```
+ Whether an emitted file is a TypeScript declaration.
+ 
+ @param name - file name as the directory reported it
+ 
+ @returns Whether it carries a declaration suffix
+ 
+ @example
+ ```ts
+ const skipped = isDeclarationFile({ name: 'index.d.mts', },);
+ ```
  */
 function isDeclarationFile({ name, }: { readonly name: string; },): boolean {
   return DECLARATION_SUFFIXES.some(function carries(suffix,): boolean {
@@ -299,30 +299,30 @@ function isDeclarationFile({ name, }: { readonly name: string; },): boolean {
 }
 
 /**
- * Identifies the built pipeline in a directory by what it holds.
- *
- * Order-independent by construction: each file contributes one line pairing its
- * path with the hash of its bytes, and the lines are sorted before the combined
- * hash sees them, so a directory read in a different order yields one digest.
- *
- * @param dir - directory of built output, ordinarily `import.meta.dirname` of a
- * runner, which resolves to `dist/final/node`
- *
- * @returns Digest of the executable files it holds, with how many there were
- *
- * @throws {@link PipelineDigestError} when the directory holds a symbolic link,
- * or holds no file that could execute
- *
- * @example
- * ```ts
- * const { digest, fileCount, } = await digestPipeline({ dir: import.meta.dirname, },);
- * ```
+ Identifies the built pipeline in a directory by what it holds.
+ 
+ Order-independent by construction: each file contributes one line pairing its
+ path with the hash of its bytes, and the lines are sorted before the combined
+ hash sees them, so a directory read in a different order yields one digest.
+ 
+ @param dir - directory of built output, ordinarily `import.meta.dirname` of a
+ runner, which resolves to `dist/final/node`
+ 
+ @returns Digest of the executable files it holds, with how many there were
+ 
+ @throws {@link PipelineDigestError} when the directory holds a symbolic link,
+ or holds no file that could execute
+ 
+ @example
+ ```ts
+ const { digest, fileCount, } = await digestPipeline({ dir: import.meta.dirname, },);
+ ```
  */
 export async function digestPipeline(
   { dir, }: { readonly dir: string; },
 ): Promise<PipelineStamp> {
   /**
-   * Everything the build left behind, at any depth.
+   Everything the build left behind, at any depth.
    */
   const entries = await readdir(
     dir,
@@ -337,9 +337,9 @@ export async function digestPipeline(
   // both other answers are wrong: following it digests bytes from outside the
   // pipeline, and skipping it silently drops code that will run.
   /**
-   * Entries that are neither a regular file nor a directory: links, sockets,
-   * fifos, devices. The build emits none of them, and each fails the same way,
-   * by being something Node may load whose bytes this cannot identify.
+   Entries that are neither a regular file nor a directory: links, sockets,
+   fifos, devices. The build emits none of them, and each fails the same way,
+   by being something Node may load whose bytes this cannot identify.
    */
   const foreign = entries.filter(function isForeign(entry,): boolean {
     return (!entry.isFile()) && (!entry.isDirectory());
@@ -347,7 +347,7 @@ export async function digestPipeline(
 
   if (foreign.length > 0) {
     /**
-     * One of them, named so the message points somewhere.
+     One of them, named so the message points somewhere.
      */
     const [first,] = foreign;
 
@@ -364,7 +364,7 @@ export async function digestPipeline(
   }
 
   /**
-   * Emitted files that can actually execute.
+   Emitted files that can actually execute.
    */
   const files = entries.filter(function runs(entry,): boolean {
     return entry.isFile() && (!isDeclarationFile({ name: entry.name, },));
@@ -377,12 +377,12 @@ export async function digestPipeline(
     },);
 
   /**
-   * One line per file, pairing its path with the hash of its bytes.
+   One line per file, pairing its path with the hash of its bytes.
    */
   const lines = await Promise.all(
     files.map(async function toLine(entry,): Promise<string> {
       /**
-       * Absolute path of this emitted file.
+       Absolute path of this emitted file.
        */
       const path = join(
         entry.parentPath,
@@ -390,7 +390,7 @@ export async function digestPipeline(
       );
 
       /**
-       * Hash of exactly the bytes that will be executed.
+       Hash of exactly the bytes that will be executed.
        */
       const hash = createHash(DIGEST_ALGORITHM,)
         .update(await readFile(path,),)
@@ -406,19 +406,19 @@ export async function digestPipeline(
   );
 
   /**
-   * Lines in one order whatever order the directory reported its entries in.
+   Lines in one order whatever order the directory reported its entries in.
    */
   const ordered = lines.toSorted();
 
   /**
-   * Combined hash over the sorted per-file lines.
+   Combined hash over the sorted per-file lines.
    */
   const hex = createHash(DIGEST_ALGORITHM,)
     .update(ordered.join('',),)
     .digest('hex',);
 
   /**
-   * Recorded value, naming the scheme that produced it.
+   Recorded value, naming the scheme that produced it.
    */
   const digest = `${DIGEST_FORMAT}${FORMAT_SEPARATOR}${hex}`;
 

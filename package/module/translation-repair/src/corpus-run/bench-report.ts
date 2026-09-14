@@ -23,23 +23,23 @@ import type { BenchRow, } from './roster-bench.ts';
 // for, and the split is what keeps that readable.
 
 /**
- * Raised when a roster cannot be benched because nothing in it varies.
- *
- * @example
- * ```ts
- * throw new BenchReportError({ message: 'a roster of 1 cannot be benched: nothing to vary', },);
- * ```
+ Raised when a roster cannot be benched because nothing in it varies.
+ 
+ @example
+ ```ts
+ throw new BenchReportError({ message: 'a roster of 1 cannot be benched: nothing to vary', },);
+ ```
  */
 export class BenchReportError extends Error {
   /**
-   * Builds refusal carrying what could not hold.
-   *
-   * @param message - what leaves nothing for one bench run to compare
-   *
-   * @example
-   * ```ts
-   * throw new BenchReportError({ message: 'a roster of 1 cannot be benched: nothing to vary', },);
-   * ```
+   Builds refusal carrying what could not hold.
+   
+   @param message - what leaves nothing for one bench run to compare
+   
+   @example
+   ```ts
+   throw new BenchReportError({ message: 'a roster of 1 cannot be benched: nothing to vary', },);
+   ```
    */
   public constructor({ message, }: { readonly message: string; },) {
     super(message,);
@@ -48,22 +48,22 @@ export class BenchReportError extends Error {
 }
 
 /**
- * Narrowest producer roster worth benching: below two there is nothing to
- * choose between except the incumbent.
+ Narrowest producer roster worth benching: below two there is nothing to
+ choose between except the incumbent.
  */
 const NARROWEST_WIDTH = 2;
 
 /**
- * Adds a list of numbers.
- *
- * @param values - numbers to add
- *
- * @returns Their sum, zero when there are none
- *
- * @example
- * ```ts
- * const total = sumOf({ values: [1, 2,], },);
- * ```
+ Adds a list of numbers.
+ 
+ @param values - numbers to add
+ 
+ @returns Their sum, zero when there are none
+ 
+ @example
+ ```ts
+ const total = sumOf({ values: [1, 2,], },);
+ ```
  */
 function sumOf({ values, }: { readonly values: readonly number[]; },): number {
   return values.reduce(
@@ -78,16 +78,16 @@ function sumOf({ values, }: { readonly values: readonly number[]; },): number {
 }
 
 /**
- * Distinct numbers in a list, ascending.
- *
- * @param values - numbers to reduce to a sorted set
- *
- * @returns Each distinct value once
- *
- * @example
- * ```ts
- * const widths = distinctAscending({ values: rowWidths, },);
- * ```
+ Distinct numbers in a list, ascending.
+ 
+ @param values - numbers to reduce to a sorted set
+ 
+ @returns Each distinct value once
+ 
+ @example
+ ```ts
+ const widths = distinctAscending({ values: rowWidths, },);
+ ```
  */
 function distinctAscending(
   { values, }: { readonly values: readonly number[]; },
@@ -101,23 +101,23 @@ function distinctAscending(
 }
 
 /**
- * Widths this roster supports, and which one is measured twice.
- *
- * Derived from the roster length rather than written down, because the provider
- * changes its offering often and a bench that hardcoded six would silently stop
- * measuring the widest case the day a model is added.
- *
- * @param roster - models available to seat
- *
- * @returns Every width from the narrowest to the whole roster, plus the width
- * whose repeat measures the run-to-run band
- *
- * @throws Error when the roster is too small to vary at all
- *
- * @example
- * ```ts
- * const { widths, repeated, } = benchWidths({ roster: RUN_ROSTER, },);
- * ```
+ Widths this roster supports, and which one is measured twice.
+ 
+ Derived from the roster length rather than written down, because the provider
+ changes its offering often and a bench that hardcoded six would silently stop
+ measuring the widest case the day a model is added.
+ 
+ @param roster - models available to seat
+ 
+ @returns Every width from the narrowest to the whole roster, plus the width
+ whose repeat measures the run-to-run band
+ 
+ @throws Error when the roster is too small to vary at all
+ 
+ @example
+ ```ts
+ const { widths, repeated, } = benchWidths({ roster: RUN_ROSTER, },);
+ ```
  */
 export function benchWidths(
   { roster, }: { readonly roster: readonly string[]; },
@@ -126,7 +126,7 @@ export function benchWidths(
   readonly repeated: number;
 } {
   /**
-   * Every width from the narrowest up to the whole roster.
+   Every width from the narrowest up to the whole roster.
    */
   const widths = Array.from(
     { length: Math.max(
@@ -155,25 +155,25 @@ export function benchWidths(
 }
 
 /**
- * Writes every row so far, replacing the report each time.
- *
- * Rewritten after every row rather than once at the end: a bench that spends
- * hours of quota and is then killed must leave everything it already bought.
- *
- * @param rows - rows accumulated so far
- *
- * @param headSha - pipeline commit these rows were produced by
- *
- * @param widths - widths this run sweeps
- *
- * @param repeated - width run twice
- *
- * @param roster - full judge roster, which every width shares
- *
- * @example
- * ```ts
- * await writeBenchReport({ rows, headSha, widths, repeated, roster, },);
- * ```
+ Writes every row so far, replacing the report each time.
+ 
+ Rewritten after every row rather than once at the end: a bench that spends
+ hours of quota and is then killed must leave everything it already bought.
+ 
+ @param rows - rows accumulated so far
+ 
+ @param headSha - pipeline commit these rows were produced by
+ 
+ @param widths - widths this run sweeps
+ 
+ @param repeated - width run twice
+ 
+ @param roster - full judge roster, which every width shares
+ 
+ @example
+ ```ts
+ await writeBenchReport({ rows, headSha, widths, repeated, roster, },);
+ ```
  */
 export async function writeBenchReport(
   {
@@ -191,12 +191,12 @@ export async function writeBenchReport(
   },
 ): Promise<void> {
   /**
-   * Directory this run may write to.
+   Directory this run may write to.
    */
   const runsDir = await resolveRunsDir();
 
   /**
-   * Where bench reports live, beside the run's other artifacts.
+   Where bench reports live, beside the run's other artifacts.
    */
   const benchDir = join(
     runsDir,
@@ -226,27 +226,27 @@ export async function writeBenchReport(
 }
 
 /**
- * Token cost of every exchange a set of rows made, both halves kept apart.
- *
- * Summed here rather than inside the summary line, because a width comparison
- * is read one half at a time: seating another producer resends the same prompt
- * and adds one more answer, and only the split says which of those the wider
- * roster actually spent.
- *
- * @param rows - rows to total
- *
- * @returns Sending half, answering half, and reported total across every call
- *
- * @example
- * ```ts
- * const cost = tokensOfRows({ rows, },);
- * ```
+ Token cost of every exchange a set of rows made, both halves kept apart.
+ 
+ Summed here rather than inside the summary line, because a width comparison
+ is read one half at a time: seating another producer resends the same prompt
+ and adds one more answer, and only the split says which of those the wider
+ roster actually spent.
+ 
+ @param rows - rows to total
+ 
+ @returns Sending half, answering half, and reported total across every call
+ 
+ @example
+ ```ts
+ const cost = tokensOfRows({ rows, },);
+ ```
  */
 function tokensOfRows(
   { rows, }: { readonly rows: readonly BenchRow[]; },
 ): CallTokens {
   /**
-   * Every exchange these rows made, flattened so each half is one pass.
+   Every exchange these rows made, flattened so each half is one pass.
    */
   const calls = rows.flatMap(function toCalls(row,): readonly BenchCall[] {
     return row.calls;
@@ -266,16 +266,16 @@ function tokensOfRows(
 }
 
 /**
- * One line describing what a set of rows decided and cost.
- *
- * @param rows - rows to describe, all of one width and pass
- *
- * @returns Printable summary, or a note that nothing ran
- *
- * @example
- * ```ts
- * console.log(describeRows({ rows, },),);
- * ```
+ One line describing what a set of rows decided and cost.
+ 
+ @param rows - rows to describe, all of one width and pass
+ 
+ @returns Printable summary, or a note that nothing ran
+ 
+ @example
+ ```ts
+ console.log(describeRows({ rows, },),);
+ ```
  */
 function describeRows(
   { rows, }: { readonly rows: readonly BenchRow[]; },
@@ -284,14 +284,14 @@ function describeRows(
     return 'no rows';
 
   /**
-   * Rows whose slice already had a translation.
+   Rows whose slice already had a translation.
    */
   const withIncumbent = rows.filter(function hasIncumbent(row,): boolean {
     return row.incumbentChars > 0;
   },);
 
   /**
-   * Rows the judges declined either way.
+   Rows the judges declined either way.
    */
   const declined = rows.filter(function wasDeclined(row,): boolean {
     return row.decision
@@ -299,14 +299,14 @@ function describeRows(
   },);
 
   /**
-   * Rows that shipped the text already there.
+   Rows that shipped the text already there.
    */
   const kept = rows.filter(function wasKept(row,): boolean {
     return row.keptIncumbent;
   },);
 
   /**
-   * Exchanges every row in this set made.
+   Exchanges every row in this set made.
    */
   const calls = sumOf({ values: rows.map(function toCalls(row,): number {
     return row.calls
@@ -314,33 +314,33 @@ function describeRows(
   },), },);
 
   /**
-   * Tokens those exchanges moved, sending and answering halves apart.
+   Tokens those exchanges moved, sending and answering halves apart.
    */
   const cost = tokensOfRows({ rows, },);
 
   /**
-   * Wall time this set took.
+   Wall time this set took.
    */
   const ms = sumOf({ values: rows.map(function toMs(row,): number {
     return row.ms;
   },), },);
 
   /**
-   * Self-votes cast across the set.
+   Self-votes cast across the set.
    */
   const selfVotes = sumOf({ values: rows.map(function toSelfVotes(row,): number {
     return row.selfVotes;
   },), },);
 
   /**
-   * What those self-votes are worth once paired against the judges who held no
-   * stake in the same candidates.
-   *
-   * THE COUNT ABOVE IS NOT THE ANSWER, which is why both are printed. A roster
-   * whose producers write the best candidates would cast many self-votes and
-   * show no excess at all; one that favours its own work shows the same count
-   * and a positive excess. Only the second is what the half-weight discount
-   * exists to correct.
+   What those self-votes are worth once paired against the judges who held no
+   stake in the same candidates.
+   
+   THE COUNT ABOVE IS NOT THE ANSWER, which is why both are printed. A roster
+   whose producers write the best candidates would cast many self-votes and
+   show no excess at all; one that favours its own work shows the same count
+   and a positive excess. Only the second is what the half-weight discount
+   exists to correct.
    */
   const preference = selfPreference({ rounds: rows.map(function toRound(row,): SelectionRound {
     return row.round;
@@ -359,43 +359,43 @@ function describeRows(
 }
 
 /**
- * Prints the comparison the bench exists for.
- *
- * @param rows - every row the run produced
- *
- * @example
- * ```ts
- * summarizeBench({ rows, },);
- * ```
- *
- * @internal
+ Prints the comparison the bench exists for.
+ 
+ @param rows - every row the run produced
+ 
+ @example
+ ```ts
+ summarizeBench({ rows, },);
+ ```
+ 
+ @internal
  */
 export function summarizeBench(
   { rows, }: { readonly rows: readonly BenchRow[]; },
 ): void {
   /**
-   * Widths these rows cover.
+   Widths these rows cover.
    */
   const widths = distinctAscending({ values: rows.map(function toWidth(row,): number {
     return row.width;
   },), },);
   for (const width of widths) {
     /**
-     * Rows recorded at this width.
+     Rows recorded at this width.
      */
     const atWidth = rows.filter(function matchesWidth(row,): boolean {
       return row.width === width;
     },);
 
     /**
-     * Passes recorded at this width.
+     Passes recorded at this width.
      */
     const passes = distinctAscending({ values: atWidth.map(function toPass(row,): number {
       return row.pass;
     },), },);
     for (const pass of passes) {
       /**
-       * Rows of this width and pass.
+       Rows of this width and pass.
        */
       const atPass = atWidth.filter(function matchesPass(row,): boolean {
         return row.pass === pass;

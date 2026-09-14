@@ -1,27 +1,27 @@
 /**
- * Tests for the two index scans the preservation gate compares text with.
- *
- * BOTH ARE REACHED ONLY THROUGH `preservation-check.ts`, which asks them one
- * question each about whole passages and then reports a verdict about an edit.
- * That makes every rule here visible to the suite only as a gate outcome, and a
- * gate has two outcomes while these have sixteen branches between them. What
- * follows asks each rule directly.
- *
- * THE THREE RULES THAT COST SOMETHING WHEN THEY WERE WRONG, each named in the
- * module's own comments and each pinned here. A colon is not a sentence end,
- * and reading it as one made a deleted contributor name invisible. A
- * sentence-initial capital is not a name, and reading it as one rejected edits
- * for losing "Moreover". A two-letter capital is not a name, because initials
- * and abbreviations vanish in any ordinary rewrite.
- *
- * WHY IDEOGRAPHS GET THEIR OWN CASES. `contentTokens` drops one-character
- * tokens, since a lone ASCII letter carries nothing, and a one-character
- * Chinese token is a whole word. The two rules meet in the same loop and the
- * second one has to win.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the two index scans the preservation gate compares text with.
+ 
+ BOTH ARE REACHED ONLY THROUGH `preservation-check.ts`, which asks them one
+ question each about whole passages and then reports a verdict about an edit.
+ That makes every rule here visible to the suite only as a gate outcome, and a
+ gate has two outcomes while these have sixteen branches between them. What
+ follows asks each rule directly.
+ 
+ THE THREE RULES THAT COST SOMETHING WHEN THEY WERE WRONG, each named in the
+ module's own comments and each pinned here. A colon is not a sentence end,
+ and reading it as one made a deleted contributor name invisible. A
+ sentence-initial capital is not a name, and reading it as one rejected edits
+ for losing "Moreover". A two-letter capital is not a name, because initials
+ and abbreviations vanish in any ordinary rewrite.
+ 
+ WHY IDEOGRAPHS GET THEIR OWN CASES. `contentTokens` drops one-character
+ tokens, since a lone ASCII letter carries nothing, and a one-character
+ Chinese token is a whole word. The two rules meet in the same loop and the
+ second one has to win.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -36,16 +36,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Renders a name set as a sorted array, so a case reads as what it claims.
- *
- * @param text - text to scan
- *
- * @returns Names found, in a stable order
- *
- * @example
- * ```ts
- * expect(namesIn({ text: 'The cat met Bilibi.', },),).toEqual(['bilibi',],);
- * ```
+ Renders a name set as a sorted array, so a case reads as what it claims.
+ 
+ @param text - text to scan
+ 
+ @returns Names found, in a stable order
+ 
+ @example
+ ```ts
+ expect(namesIn({ text: 'The cat met Bilibi.', },),).toEqual(['bilibi',],);
+ ```
  */
 function namesIn(
   { text, }: { readonly text: string; },

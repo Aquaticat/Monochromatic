@@ -16,80 +16,80 @@ import type { AuditRepeatPair, } from './rendering-audit-settled-repeat.ts';
 // in what single voices raise rather than in what the roster agrees on.
 
 /**
- * How far apart two audits of one text landed, over every pair found.
- *
- * @example
- * ```ts
- * const band: AuditRepeatBand = { pairs: 6, agreedExactly: 2, widest: 4, ... };
- * ```
+ How far apart two audits of one text landed, over every pair found.
+ 
+ @example
+ ```ts
+ const band: AuditRepeatBand = { pairs: 6, agreedExactly: 2, widest: 4, ... };
+ ```
  */
 export type AuditRepeatBand = {
   /**
-   * Texts audited twice.
+   Texts audited twice.
    */
   readonly pairs: number;
 
   /**
-   * Pairs where both audits claimed the same number of defects.
-   *
-   * NOT THE SAME DEFECTS. This counts agreement of the headline number, which
-   * is weaker than agreement about the text: two audits can claim three each
-   * and share none of them.
+   Pairs where both audits claimed the same number of defects.
+   
+   NOT THE SAME DEFECTS. This counts agreement of the headline number, which
+   is weaker than agreement about the text: two audits can claim three each
+   and share none of them.
    */
   readonly agreedExactly: number;
 
   /**
-   * Largest gap between two audits of one text.
+   Largest gap between two audits of one text.
    */
   readonly widest: number;
 
   /**
-   * Every gap, summed, so a mean is derivable without keeping the pairs.
+   Every gap, summed, so a mean is derivable without keeping the pairs.
    */
   readonly totalGap: number;
 
   /**
-   * Pairs where the two audits disagreed about whether there was ANYTHING here,
-   * one claiming nothing and the other claiming something.
-   *
-   * The sharpest form of the spread, and the one that matters most to any
-   * future gate: a threshold reading "claimed at least one" would have flipped
-   * on these subjects for no reason in the text.
+   Pairs where the two audits disagreed about whether there was ANYTHING here,
+   one claiming nothing and the other claiming something.
+   
+   The sharpest form of the spread, and the one that matters most to any
+   future gate: a threshold reading "claimed at least one" would have flipped
+   on these subjects for no reason in the text.
    */
   readonly silentOnOneSide: number;
 
   /**
-   * Claims the first audits made in total.
+   Claims the first audits made in total.
    */
   readonly leftClaimed: number;
 
   /**
-   * Claims the second audits made in total.
+   Claims the second audits made in total.
    */
   readonly rightClaimed: number;
 
   /**
-   * Corroborated defects the first audits reached.
+   Corroborated defects the first audits reached.
    */
   readonly leftCorroborated: number;
 
   /**
-   * Corroborated defects the second audits reached.
+   Corroborated defects the second audits reached.
    */
   readonly rightCorroborated: number;
 };
 
 /**
- * Adds a list of numbers.
- *
- * @param values - numbers to add
- *
- * @returns Total
- *
- * @example
- * ```ts
- * const total = sumOf({ values: [1, 2,], },);
- * ```
+ Adds a list of numbers.
+ 
+ @param values - numbers to add
+ 
+ @returns Total
+ 
+ @example
+ ```ts
+ const total = sumOf({ values: [1, 2,], },);
+ ```
  */
 function sumOf(
   { values, }: { readonly values: readonly number[]; },
@@ -106,26 +106,26 @@ function sumOf(
 }
 
 /**
- * Reads the spread over a set of repeat pairs.
- *
- * @param pairs - texts audited twice
- *
- * @returns Spread, with zeroes throughout when nothing was paired
- *
- * @example
- * ```ts
- * const band = repeatBandOf({ pairs, },);
- * ```
+ Reads the spread over a set of repeat pairs.
+ 
+ @param pairs - texts audited twice
+ 
+ @returns Spread, with zeroes throughout when nothing was paired
+ 
+ @example
+ ```ts
+ const band = repeatBandOf({ pairs, },);
+ ```
  */
 export function repeatBandOf(
   { pairs, }: { readonly pairs: readonly AuditRepeatPair[]; },
 ): AuditRepeatBand {
   /**
-   * Gap between the two sides of each pair.
-   *
-   * ABSOLUTE, because neither side is the reference. Both are single readings
-   * of one text, and calling either of them correct is the assumption this
-   * measurement exists to avoid.
+   Gap between the two sides of each pair.
+   
+   ABSOLUTE, because neither side is the reference. Both are single readings
+   of one text, and calling either of them correct is the assumption this
+   measurement exists to avoid.
    */
   const gaps = pairs.map(function gapOf({
     left,
@@ -135,14 +135,14 @@ export function repeatBandOf(
   },);
 
   /**
-   * Pairs where both audits landed on the same count.
+   Pairs where both audits landed on the same count.
    */
   const exact = gaps.filter(function isZero(gap,): boolean {
     return gap === 0;
   },);
 
   /**
-   * Pairs where one audit found something and the other found nothing.
+   Pairs where one audit found something and the other found nothing.
    */
   const lopsided = pairs.filter(function onlyOneSpoke({
     left,

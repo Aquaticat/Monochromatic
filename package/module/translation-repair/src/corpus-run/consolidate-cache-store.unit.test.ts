@@ -1,22 +1,22 @@
 /**
- * Tests for the store that resumes a settlement an earlier run bought.
- *
- * WHY THE SHAPE IS CHECKED AT ALL, and why more strictly than the contest
- * store's: a settlement carries `text` that SHIPS. The record built from one
- * hands that text to the assembly whenever the terminal says a consolidation
- * won, so this store is the single path on which bytes read off disk become
- * corpus text in an artifact. A file that was truncated, hand-edited, or
- * written by a different schema would carry them there with nothing else in the
- * way. Refusing it costs one re-asked slice.
- *
- * THE ABSENT GATE IS THE CASE MOST LIKELY TO BE BROKEN BY A STRICTER GUARD, so
- * it is pinned here: a slice the validity floor stopped never reached the gate,
- * and a store that required the key would refuse every floored slice and
- * re-buy it every run.
- *
- * Fixtures are cat-themed invention written into throwaway directories.
- *
- * @module
+ Tests for the store that resumes a settlement an earlier run bought.
+ 
+ WHY THE SHAPE IS CHECKED AT ALL, and why more strictly than the contest
+ store's: a settlement carries `text` that SHIPS. The record built from one
+ hands that text to the assembly whenever the terminal says a consolidation
+ won, so this store is the single path on which bytes read off disk become
+ corpus text in an artifact. A file that was truncated, hand-edited, or
+ written by a different schema would carry them there with nothing else in the
+ way. Refusing it costs one re-asked slice.
+ 
+ THE ABSENT GATE IS THE CASE MOST LIKELY TO BE BROKEN BY A STRICTER GUARD, so
+ it is pinned here: a slice the validity floor stopped never reached the gate,
+ and a store that required the key would refuse every floored slice and
+ re-buy it every run.
+ 
+ Fixtures are cat-themed invention written into throwaway directories.
+ 
+ @module
  */
 
 import {
@@ -34,17 +34,17 @@ import { join, } from 'node:path';
 import { hashContent, openConsolidateCache, } from '../../dist/final/node/index.mjs';
 
 /**
- * Built pipeline the fixtures are filled under.
+ Built pipeline the fixtures are filled under.
  */
 const TEST_GENERATION = `sha256-tree-v1:${'a'.repeat(64,)}`;
 
 /**
- * Key every case writes and reads under.
+ Key every case writes and reads under.
  */
 const CAT_KEY = 'c'.repeat(64,);
 
 /**
- * One gate ballot, carrying every field the loader checks.
+ One gate ballot, carrying every field the loader checks.
  */
 const CAT_BALLOT = {
   choice: 'consolidated',
@@ -56,7 +56,7 @@ const CAT_BALLOT = {
 };
 
 /**
- * A settlement that shipped a consolidation, as the stage writes one.
+ A settlement that shipped a consolidation, as the stage writes one.
  */
 const CAT_SETTLEMENT = {
   terminal: 'consolidated',
@@ -88,21 +88,21 @@ const CAT_SETTLEMENT = {
 };
 
 /**
- * Throwaway directory removed on scope exit.
- *
- * @returns Disposable directory handle
- *
- * @example
- * ```ts
- * await using scratch = await scratchDir();
- * ```
+ Throwaway directory removed on scope exit.
+ 
+ @returns Disposable directory handle
+ 
+ @example
+ ```ts
+ await using scratch = await scratchDir();
+ ```
  */
 async function scratchDir(): Promise<{
   readonly path: string;
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 }> {
   /**
-   * Fresh directory under the platform temp root.
+   Fresh directory under the platform temp root.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -123,16 +123,16 @@ async function scratchDir(): Promise<{
 }
 
 /**
- * Writes one settlement and reads the directory back through a fresh store.
- *
- * @param settlement - value to persist, valid or not
- *
- * @returns Whether a second store resumed it
- *
- * @example
- * ```ts
- * const resumed = await roundTrip({ settlement, },);
- * ```
+ Writes one settlement and reads the directory back through a fresh store.
+ 
+ @param settlement - value to persist, valid or not
+ 
+ @returns Whether a second store resumed it
+ 
+ @example
+ ```ts
+ const resumed = await roundTrip({ settlement, },);
+ ```
  */
 async function roundTripValue(
   { settlement, }: { readonly settlement: unknown; },
@@ -140,7 +140,7 @@ async function roundTripValue(
   await using scratch = await scratchDir();
 
   /**
-   * Store this run persists through.
+   Store this run persists through.
    */
   const writing = await openConsolidateCache({
     dir: scratch.path,
@@ -152,7 +152,7 @@ async function roundTripValue(
   },);
 
   /**
-   * Store a later run would resume through.
+   Store a later run would resume through.
    */
   const reading = await openConsolidateCache({
     dir: scratch.path,
@@ -163,16 +163,16 @@ async function roundTripValue(
 }
 
 /**
- * Writes one settlement and reports whether fresh store resumes it.
- *
- * @param settlement - value to persist, valid or not
- *
- * @returns Whether second store resumed key
- *
- * @example
- * ```ts
- * const resumed = await roundTrip({ settlement, });
- * ```
+ Writes one settlement and reports whether fresh store resumes it.
+ 
+ @param settlement - value to persist, valid or not
+ 
+ @returns Whether second store resumed key
+ 
+ @example
+ ```ts
+ const resumed = await roundTrip({ settlement, });
+ ```
  */
 async function roundTrip(
   { settlement, }: { readonly settlement: unknown; },
@@ -340,7 +340,7 @@ await describe({
         + 'will refuse after a whole document has been paid for',
       fn: async () => {
         /**
-         * Ballot without the raw findings the reader requires.
+         Ballot without the raw findings the reader requires.
          */
         const { droppedRaw: _dropped, ...partial } = CAT_BALLOT;
         expect(await roundTrip({

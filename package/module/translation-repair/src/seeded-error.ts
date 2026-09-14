@@ -7,136 +7,136 @@ import type { IssueCategory, } from './issue-taxonomy.ts';
 // (the corpus is UNLICENSED; no quoted content may live in this repository).
 
 /**
- * Edit family of one planted error.
- *
- * @example
- * ```ts
- * const kind: SeededErrorKind = 'deletion';
- * ```
+ Edit family of one planted error.
+ 
+ @example
+ ```ts
+ const kind: SeededErrorKind = 'deletion';
+ ```
  */
 export type SeededErrorKind = 'deletion' | 'replacement' | 'insertion';
 
 /**
- * One planted error: a deterministic edit over the target text.
- *
- * @example
- * ```ts
- * const spec: SeededErrorSpec = {
- *   id: 'seed/omission-0',
- *   category: 'accuracy/omission',
- *   kind: 'deletion',
- *   needle: 'The cat also chases butterflies.',
- *   replacement: '',
- * };
- * ```
+ One planted error: a deterministic edit over the target text.
+ 
+ @example
+ ```ts
+ const spec: SeededErrorSpec = {
+   id: 'seed/omission-0',
+   category: 'accuracy/omission',
+   kind: 'deletion',
+   needle: 'The cat also chases butterflies.',
+   replacement: '',
+ };
+ ```
  */
 export type SeededErrorSpec = {
   /**
-   * Stable handle hits are reported under.
+   Stable handle hits are reported under.
    */
   readonly id: string;
 
   /**
-   * Category a perfect critic would assign; matching is span-based,
-   * category agreement is tracked separately.
+   Category a perfect critic would assign; matching is span-based,
+   category agreement is tracked separately.
    */
   readonly category: IssueCategory;
 
   /**
-   * Edit family: remove needle, replace needle, or insert after needle.
+   Edit family: remove needle, replace needle, or insert after needle.
    */
   readonly kind: SeededErrorKind;
 
   /**
-   * Exact substring the edit targets;
-   * must occur exactly once at application time.
+   Exact substring the edit targets;
+   must occur exactly once at application time.
    */
   readonly needle: string;
 
   /**
-   * Replacement text for `replacement`,
-   * inserted text for `insertion`,
-   * ignored (empty) for `deletion`.
+   Replacement text for `replacement`,
+   inserted text for `insertion`,
+   ignored (empty) for `deletion`.
    */
   readonly replacement: string;
 };
 
 /**
- * One applied seed with its region in seeded-text coordinates.
- * Deletion regions are zero-width at the deletion point.
- *
- * @example
- * ```ts
- * const application: SeededErrorApplication = {
- *   spec,
- *   startOffset: 120,
- *   endOffset: 120,
- * };
- * ```
+ One applied seed with its region in seeded-text coordinates.
+ Deletion regions are zero-width at the deletion point.
+ 
+ @example
+ ```ts
+ const application: SeededErrorApplication = {
+   spec,
+   startOffset: 120,
+   endOffset: 120,
+ };
+ ```
  */
 export type SeededErrorApplication = {
   /**
-   * Spec that produced this application.
+   Spec that produced this application.
    */
   readonly spec: SeededErrorSpec;
 
   /**
-   * Region start in the final seeded text.
+   Region start in the final seeded text.
    */
   readonly startOffset: number;
 
   /**
-   * Region end (exclusive) in the final seeded text.
+   Region end (exclusive) in the final seeded text.
    */
   readonly endOffset: number;
 };
 
 /**
- * Seeded text plus every applied region.
- *
- * @example
- * ```ts
- * const { seededText, applications, } = applySeededErrors({ text, specs, },);
- * ```
+ Seeded text plus every applied region.
+ 
+ @example
+ ```ts
+ const { seededText, applications, } = applySeededErrors({ text, specs, },);
+ ```
  */
 export type SeededDocumentResult = {
   /**
-   * Target text after every edit.
+   Target text after every edit.
    */
   readonly seededText: string;
 
   /**
-   * Applications in spec order with final-coordinate regions.
+   Applications in spec order with final-coordinate regions.
    */
   readonly applications: readonly SeededErrorApplication[];
 };
 
 /**
- * Signals a seed whose needle is absent or ambiguous at application time;
- * always harness misconfiguration, never model fault.
- *
- * @example
- * ```ts
- * throw new SeedApplicationError({ seedId: 'seed/omission-0', reason: 'needle absent', },);
- * ```
+ Signals a seed whose needle is absent or ambiguous at application time;
+ always harness misconfiguration, never model fault.
+ 
+ @example
+ ```ts
+ throw new SeedApplicationError({ seedId: 'seed/omission-0', reason: 'needle absent', },);
+ ```
  */
 export class SeedApplicationError extends Error {
   /**
-   * Declares this message safe to forward: it names the seed and which application failure it hit, never the needle.
+   Declares this message safe to forward: it names the seed and which application failure it hit, never the needle.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds failure naming the offending seed.
-   *
-   * @param seedId - seed that failed to apply
-   *
-   * @param reason - what the needle check found
-   *
-   * @example
-   * ```ts
-   * new SeedApplicationError({ seedId: 'seed/x', reason: 'needle occurs 2 times', },);
-   * ```
+   Builds failure naming the offending seed.
+   
+   @param seedId - seed that failed to apply
+   
+   @param reason - what the needle check found
+   
+   @example
+   ```ts
+   new SeedApplicationError({ seedId: 'seed/x', reason: 'needle occurs 2 times', },);
+   ```
    */
   public constructor(
     {
@@ -153,23 +153,23 @@ export class SeedApplicationError extends Error {
 }
 
 /**
- * Applies seeds in order, tracking every region in final coordinates.
- * Each needle must occur exactly once in the text as it stands when the seed
- * applies; later regions shift earlier ones' coordinates, so regions are
- * re-based after every edit.
- *
- * @param text - clean target text to plant errors into
- *
- * @param specs - seeds in application order
- *
- * @returns Seeded text and application regions
- *
- * @throws {@link SeedApplicationError} when any needle is absent or ambiguous
- *
- * @example
- * ```ts
- * const { seededText, applications, } = applySeededErrors({ text, specs, },);
- * ```
+ Applies seeds in order, tracking every region in final coordinates.
+ Each needle must occur exactly once in the text as it stands when the seed
+ applies; later regions shift earlier ones' coordinates, so regions are
+ re-based after every edit.
+ 
+ @param text - clean target text to plant errors into
+ 
+ @param specs - seeds in application order
+ 
+ @returns Seeded text and application regions
+ 
+ @throws {@link SeedApplicationError} when any needle is absent or ambiguous
+ 
+ @example
+ ```ts
+ const { seededText, applications, } = applySeededErrors({ text, specs, },);
+ ```
  */
 export function applySeededErrors(
   {
@@ -181,7 +181,7 @@ export function applySeededErrors(
   },
 ): SeededDocumentResult {
   /**
-   * Unseeded starting state the reduction folds edits onto.
+   Unseeded starting state the reduction folds edits onto.
    */
   const initial: SeededDocumentResult = {
     seededText: text,
@@ -194,14 +194,14 @@ export function applySeededErrors(
       spec,
     ): SeededDocumentResult {
       /**
-       * Needle length reused across the offset arithmetic.
+       Needle length reused across the offset arithmetic.
        */
       const needleLength = spec
         .needle
         .length;
 
       /**
-       * Needle position in the current text.
+       Needle position in the current text.
        */
       const at = state
         .seededText
@@ -226,9 +226,9 @@ export function applySeededErrors(
       }
 
       /**
-       * Replacement written over the needle:
-       * empty for deletion, new text for replacement,
-       * needle plus addition for insertion.
+       Replacement written over the needle:
+       empty for deletion, new text for replacement,
+       needle plus addition for insertion.
        */
       const written = spec.kind === 'deletion'
         ? ''
@@ -237,10 +237,10 @@ export function applySeededErrors(
           : `${spec.needle}${spec.replacement}`);
 
       /**
-       * Region of this edit in the text produced by this step:
-       * zero-width at the cut for deletions,
-       * written extent for replacements,
-       * inserted extent for insertions.
+       Region of this edit in the text produced by this step:
+       zero-width at the cut for deletions,
+       written extent for replacements,
+       inserted extent for insertions.
        */
       const region = spec.kind === 'insertion'
         ? {
@@ -253,12 +253,12 @@ export function applySeededErrors(
         };
 
       /**
-       * Coordinate delta this edit imposes on later positions.
+       Coordinate delta this edit imposes on later positions.
        */
       const shift = written.length - needleLength;
 
       /**
-       * Text before the edit point.
+       Text before the edit point.
        */
       const before = state
         .seededText
@@ -268,7 +268,7 @@ export function applySeededErrors(
         );
 
       /**
-       * Text after the replaced needle.
+       Text after the replaced needle.
        */
       const after = state
         .seededText
@@ -301,28 +301,28 @@ export function applySeededErrors(
 }
 
 /**
- * Tolerance in characters when matching claim spans to seed regions;
- * zero-width deletion regions need a neighborhood, and honest critics anchor
- * on surrounding context.
+ Tolerance in characters when matching claim spans to seed regions;
+ zero-width deletion regions need a neighborhood, and honest critics anchor
+ on surrounding context.
  */
 export const SEED_MATCH_TOLERANCE = 30;
 
 /**
- * Whether one claimed target region hits one seeded region,
- * within tolerance.
- *
- * @param spanStart - claimed region start in seeded coordinates
- *
- * @param spanEnd - claimed region end (exclusive)
- *
- * @param application - seeded region under test
- *
- * @returns Whether the regions overlap within tolerance
- *
- * @example
- * ```ts
- * seedHitByRegion({ spanStart: 100, spanEnd: 140, application, },);
- * ```
+ Whether one claimed target region hits one seeded region,
+ within tolerance.
+ 
+ @param spanStart - claimed region start in seeded coordinates
+ 
+ @param spanEnd - claimed region end (exclusive)
+ 
+ @param application - seeded region under test
+ 
+ @returns Whether the regions overlap within tolerance
+ 
+ @example
+ ```ts
+ seedHitByRegion({ spanStart: 100, spanEnd: 140, application, },);
+ ```
  */
 export function seedHitByRegion(
   {
@@ -336,12 +336,12 @@ export function seedHitByRegion(
   },
 ): boolean {
   /**
-   * Seed region expanded by tolerance on both sides.
+   Seed region expanded by tolerance on both sides.
    */
   const regionStart = application.startOffset - SEED_MATCH_TOLERANCE;
 
   /**
-   * Expanded region end.
+   Expanded region end.
    */
   const regionEnd = application.endOffset + SEED_MATCH_TOLERANCE;
 

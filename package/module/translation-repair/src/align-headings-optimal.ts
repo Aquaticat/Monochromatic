@@ -28,48 +28,48 @@ import {
 // belong", which is the half an insertion cannot proceed without.
 
 /**
- * What every optimal alignment does with each unit.
+ What every optimal alignment does with each unit.
  */
 export type OptimalPaths = {
   /**
-   * Target units each source unit pairs with on SOME optimal path.
+   Target units each source unit pairs with on SOME optimal path.
    */
   readonly partnersOfSource: readonly ReadonlySet<number>[];
 
   /**
-   * Source units each target unit pairs with on SOME optimal path.
+   Source units each target unit pairs with on SOME optimal path.
    */
   readonly partnersOfTarget: readonly ReadonlySet<number>[];
 
   /**
-   * Target columns at which each source unit goes unpaired on SOME optimal
-   * path, which is where an insertion for it could land.
+   Target columns at which each source unit goes unpaired on SOME optimal
+   path, which is where an insertion for it could land.
    */
   readonly sourceGapColumns: readonly ReadonlySet<number>[];
 
   /**
-   * Target units that go unpaired on SOME optimal path.
+   Target units that go unpaired on SOME optimal path.
    */
   readonly targetCanGap: readonly boolean[];
 };
 
 /**
- * Fills a lexicographic DP table over the two sequences.
- *
- * @param grid - affinity and trust
- *
- * @param rows - source length
- *
- * @param columns - target length
- *
- * @param forward - true to fill from the origin, false from the far corner
- *
- * @returns Table of best scores
- *
- * @example
- * ```ts
- * const table = fillTable({ grid, rows, columns, forward: true, },);
- * ```
+ Fills a lexicographic DP table over the two sequences.
+ 
+ @param grid - affinity and trust
+ 
+ @param rows - source length
+ 
+ @param columns - target length
+ 
+ @param forward - true to fill from the origin, false from the far corner
+ 
+ @returns Table of best scores
+ 
+ @example
+ ```ts
+ const table = fillTable({ grid, rows, columns, forward: true, },);
+ ```
  */
 function fillTable(
   {
@@ -85,7 +85,7 @@ function fillTable(
   },
 ): readonly (readonly LexScore[])[] {
   /**
-   * Best score reachable at each cell.
+   Best score reachable at each cell.
    */
   const table: LexScore[][] = Array.from(
     { length: rows + 1, },
@@ -100,12 +100,12 @@ function fillTable(
   );
 
   /**
-   * Cell the walk starts from.
+   Cell the walk starts from.
    */
   const originRow = forward ? 0 : rows;
 
   /**
-   * Column the walk starts from.
+   Column the walk starts from.
    */
   const originColumn = forward ? 0 : columns;
   (table[originRow] ?? [])[originColumn] = [
@@ -117,24 +117,24 @@ function fillTable(
   for (let step = 0; step <= rows; step += 1) {
     for (let column = 0; column <= columns; column += 1) {
       /**
-       * Row under consideration, walked in the direction of travel.
+       Row under consideration, walked in the direction of travel.
        */
       const row = forward ? step : (rows - step);
 
       /**
-       * Column under consideration, walked in the direction of travel.
+       Column under consideration, walked in the direction of travel.
        */
       const at = forward ? column : (columns - column);
       if ((row === originRow) && (at === originColumn))
         continue;
 
       /**
-       * Best score found for this cell so far.
+       Best score found for this cell so far.
        */
       let best = UNREACHABLE;
 
       /**
-       * Neighbouring cells and what reaching this one from them costs.
+       Neighbouring cells and what reaching this one from them costs.
        */
       const moves: readonly (readonly [
         number,
@@ -193,7 +193,7 @@ function fillTable(
           continue;
 
         /**
-         * Score at the neighbour this move comes from.
+         Score at the neighbour this move comes from.
          */
         const from = table[neighbourRow]?.[neighbourColumn];
         if ((from === undefined) || sameScore({
@@ -203,7 +203,7 @@ function fillTable(
           continue;
 
         /**
-         * Score of reaching this cell that way.
+         Score of reaching this cell that way.
          */
         const candidate = addScore({
           left: from,
@@ -224,25 +224,25 @@ function fillTable(
 }
 
 /**
- * Reads every optimal alignment out of the table.
- *
- * Exported so a probe can ask how WIDE an ambiguity is rather than only that
- * there was one. The refusal a caller sees names a kind; the partner and gap
- * sets behind it say whether the aligner hesitated between two adjacent
- * boundaries or across a whole page, and those want different remedies.
- *
- * @internal
- *
- * @param sourceHeadings - original-side unit labels in document order
- *
- * @param targetHeadings - translation-side unit labels in document order
- *
- * @returns What some optimal path does with each unit on either side
- *
- * @example
- * ```ts
- * const paths = scanOptimalPaths({ sourceHeadings, targetHeadings, },);
- * ```
+ Reads every optimal alignment out of the table.
+ 
+ Exported so a probe can ask how WIDE an ambiguity is rather than only that
+ there was one. The refusal a caller sees names a kind; the partner and gap
+ sets behind it say whether the aligner hesitated between two adjacent
+ boundaries or across a whole page, and those want different remedies.
+ 
+ @internal
+ 
+ @param sourceHeadings - original-side unit labels in document order
+ 
+ @param targetHeadings - translation-side unit labels in document order
+ 
+ @returns What some optimal path does with each unit on either side
+ 
+ @example
+ ```ts
+ const paths = scanOptimalPaths({ sourceHeadings, targetHeadings, },);
+ ```
  */
 export function scanOptimalPaths(
   {
@@ -254,17 +254,17 @@ export function scanOptimalPaths(
   },
 ): OptimalPaths {
   /**
-   * Source length.
+   Source length.
    */
   const rows = sourceHeadings.length;
 
   /**
-   * Target length.
+   Target length.
    */
   const columns = targetHeadings.length;
 
   /**
-   * Affinity and trust over every pairing.
+   Affinity and trust over every pairing.
    */
   const grid = buildGrid({
     sourceHeadings,
@@ -272,7 +272,7 @@ export function scanOptimalPaths(
   },);
 
   /**
-   * Best score reaching each cell from the origin.
+   Best score reaching each cell from the origin.
    */
   const forward = fillTable({
     grid,
@@ -282,7 +282,7 @@ export function scanOptimalPaths(
   },);
 
   /**
-   * Best score reaching the far corner from each cell.
+   Best score reaching the far corner from each cell.
    */
   const backward = fillTable({
     grid,
@@ -292,41 +292,41 @@ export function scanOptimalPaths(
   },);
 
   /**
-   * Score of an optimal alignment.
+   Score of an optimal alignment.
    */
   const optimal = forward[rows]?.[columns] ?? UNREACHABLE;
 
   /**
-   * Target units each source unit pairs with on SOME optimal path.
+   Target units each source unit pairs with on SOME optimal path.
    */
   const partnersOfSource = sourceHeadings.map(function empty(): Set<number> {
     return new Set<number>();
   },);
 
   /**
-   * Source units each target unit pairs with on SOME optimal path.
+   Source units each target unit pairs with on SOME optimal path.
    */
   const partnersOfTarget = targetHeadings.map(function empty(): Set<number> {
     return new Set<number>();
   },);
 
   /**
-   * Target columns at which each source unit goes unpaired on SOME optimal
-   * path.
-   *
-   * A SET OF COLUMNS rather than a flag, because a source section with no
-   * partner still has to be PUT somewhere, and the column is where. Recording
-   * only that a gap was possible loses the one fact an insertion needs.
-   *
-   * Column `c` means the source unit is skipped while the target cursor sits
-   * before target unit `c`, so an insertion for it lands there.
+   Target columns at which each source unit goes unpaired on SOME optimal
+   path.
+   
+   A SET OF COLUMNS rather than a flag, because a source section with no
+   partner still has to be PUT somewhere, and the column is where. Recording
+   only that a gap was possible loses the one fact an insertion needs.
+   
+   Column `c` means the source unit is skipped while the target cursor sits
+   before target unit `c`, so an insertion for it lands there.
    */
   const sourceGapColumns = sourceHeadings.map(function empty(): Set<number> {
     return new Set<number>();
   },);
 
   /**
-   * Target units that go unpaired on SOME optimal path.
+   Target units that go unpaired on SOME optimal path.
    */
   const targetCanGap = targetHeadings.map(function no(): boolean {
     return false;
@@ -335,7 +335,7 @@ export function scanOptimalPaths(
   for (let row = 0; row <= rows; row += 1) {
     for (let column = 0; column <= columns; column += 1) {
       /**
-       * Best score reaching this cell.
+       Best score reaching this cell.
        */
       const here = forward[row]?.[column];
       if ((here === undefined) || sameScore({
@@ -346,12 +346,12 @@ export function scanOptimalPaths(
 
       if ((row < rows) && (column < columns)) {
         /**
-         * Affinity of pairing these two units.
+         Affinity of pairing these two units.
          */
         const value = grid.affinity[row]?.[column] ?? 0;
 
         /**
-         * Whole-path score if this pairing is taken here.
+         Whole-path score if this pairing is taken here.
          */
         const through = addScore({
           left: addScore({
@@ -377,7 +377,7 @@ export function scanOptimalPaths(
 
       if (row < rows) {
         /**
-         * Whole-path score if the source unit gaps here.
+         Whole-path score if the source unit gaps here.
          */
         const through = addScore({
           left: addScore({
@@ -396,7 +396,7 @@ export function scanOptimalPaths(
 
       if (column < columns) {
         /**
-         * Whole-path score if the target unit gaps here.
+         Whole-path score if the target unit gaps here.
          */
         const through = addScore({
           left: addScore({

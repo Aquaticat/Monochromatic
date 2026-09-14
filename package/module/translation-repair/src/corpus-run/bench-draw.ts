@@ -11,23 +11,23 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 // function that needs a pinned corpus checkout to execute.
 
 /**
- * Raised when no bench sample can be drawn from what was offered.
- *
- * @example
- * ```ts
- * throw new BenchDrawError({ message: 'a bench sample cannot be drawn from no slices', },);
- * ```
+ Raised when no bench sample can be drawn from what was offered.
+ 
+ @example
+ ```ts
+ throw new BenchDrawError({ message: 'a bench sample cannot be drawn from no slices', },);
+ ```
  */
 export class BenchDrawError extends Error {
   /**
-   * Builds refusal carrying what could not hold.
-   *
-   * @param message - what was offered in place of slices to draw from
-   *
-   * @example
-   * ```ts
-   * throw new BenchDrawError({ message: 'a bench sample cannot be drawn from no slices', },);
-   * ```
+   Builds refusal carrying what could not hold.
+   
+   @param message - what was offered in place of slices to draw from
+   
+   @example
+   ```ts
+   throw new BenchDrawError({ message: 'a bench sample cannot be drawn from no slices', },);
+   ```
    */
   public constructor({ message, }: { readonly message: string; },) {
     super(message,);
@@ -36,52 +36,52 @@ export class BenchDrawError extends Error {
 }
 
 /**
- * Midpoint of a stratum, so the draw takes representative slices rather than
- * the corpus extremes.
+ Midpoint of a stratum, so the draw takes representative slices rather than
+ the corpus extremes.
  */
 const HALF = 1 / 2;
 
 /**
- * What the draw needs of a slice: something to order by and something to break
- * ties with.
- *
- * @example
- * ```ts
- * const slice: DrawableSlice = { entryId: 'Mittens', index: 3, sourceText, };
- * ```
+ What the draw needs of a slice: something to order by and something to break
+ ties with.
+ 
+ @example
+ ```ts
+ const slice: DrawableSlice = { entryId: 'Mittens', index: 3, sourceText, };
+ ```
  */
 export type DrawableSlice = {
   /**
-   * Entry this slice was cut from, the first tiebreak.
+   Entry this slice was cut from, the first tiebreak.
    */
   readonly entryId: string;
 
   /**
-   * Position within that entry, the second.
+   Position within that entry, the second.
    */
   readonly index: number;
 
   /**
-   * Original passage, whose length orders the draw.
+   Original passage, whose length orders the draw.
    */
   readonly sourceText: string;
 };
 
 /**
- * Orders slices by source size, smallest first.
- *
- * Ties fall back to entry then position, so two slices of equal size never swap
- * places between runs. `toSorted` is stable, but the input order is the corpus
- * listing order, which is not a property worth depending on.
- *
- * @param slices - slices to order
- *
- * @returns Same slices, ordered
- *
- * @example
- * ```ts
- * const ordered = orderBySourceSize({ slices, },);
- * ```
+ Orders slices by source size, smallest first.
+ 
+ Ties fall back to entry then position, so two slices of equal size never swap
+ places between runs. `toSorted` is stable, but the input order is the corpus
+ listing order, which is not a property worth depending on.
+ 
+ @param slices - slices to order
+ 
+ @returns Same slices, ordered
+ 
+ @example
+ ```ts
+ const ordered = orderBySourceSize({ slices, },);
+ ```
  */
 export function orderBySourceSize<SliceT extends DrawableSlice,>(
   { slices, }: { readonly slices: readonly SliceT[]; },
@@ -91,26 +91,26 @@ export function orderBySourceSize<SliceT extends DrawableSlice,>(
     right,
   ): number {
     /**
-     * Source size of one side, which is what orders the draw.
+     Source size of one side, which is what orders the draw.
      */
     const leftLength = left.sourceText
       .length;
 
     /**
-     * Same for the other side of this comparison.
+     Same for the other side of this comparison.
      */
     const rightLength = right.sourceText
       .length;
 
     /**
-     * Size gap deciding almost every comparison.
+     Size gap deciding almost every comparison.
      */
     const bySize = leftLength - rightLength;
     if (bySize !== 0)
       return bySize;
 
     /**
-     * Entry name, so identical sizes never reorder between runs.
+     Entry name, so identical sizes never reorder between runs.
      */
     const byEntry = left.entryId
       .localeCompare(right.entryId,);
@@ -122,25 +122,25 @@ export function orderBySourceSize<SliceT extends DrawableSlice,>(
 }
 
 /**
- * Draws a sample spread evenly across the size range.
- *
- * Takes the MIDPOINT of each stratum rather than its first member. Taking the
- * first starts the draw at the corpus minimum, and the smallest slice in this
- * corpus is a 3-character source against a 226-character translation, which
- * measures the aligner rather than the judges.
- *
- * @param slices - every candidate slice, in any order
- *
- * @param count - slices wanted; fewer come back only when fewer exist
- *
- * @returns Sample ordered by source size, smallest first
- *
- * @throws Error when there is nothing to draw from
- *
- * @example
- * ```ts
- * const sample = pickSpreadSample({ slices, count: 10, },);
- * ```
+ Draws a sample spread evenly across the size range.
+ 
+ Takes the MIDPOINT of each stratum rather than its first member. Taking the
+ first starts the draw at the corpus minimum, and the smallest slice in this
+ corpus is a 3-character source against a 226-character translation, which
+ measures the aligner rather than the judges.
+ 
+ @param slices - every candidate slice, in any order
+ 
+ @param count - slices wanted; fewer come back only when fewer exist
+ 
+ @returns Sample ordered by source size, smallest first
+ 
+ @throws Error when there is nothing to draw from
+ 
+ @example
+ ```ts
+ const sample = pickSpreadSample({ slices, count: 10, },);
+ ```
  */
 export function pickSpreadSample<SliceT extends DrawableSlice,>(
   {
@@ -155,12 +155,12 @@ export function pickSpreadSample<SliceT extends DrawableSlice,>(
     throw new BenchDrawError({ message: 'a bench sample cannot be drawn from no slices', },);
 
   /**
-   * Slices ordered by source size.
+   Slices ordered by source size.
    */
   const ordered = orderBySourceSize({ slices, },);
 
   /**
-   * Picks this draw can actually make.
+   Picks this draw can actually make.
    */
   const wanted = Math.min(
     count,
@@ -168,7 +168,7 @@ export function pickSpreadSample<SliceT extends DrawableSlice,>(
   );
 
   /**
-   * Stratum width that spreads the picks across the whole ordering.
+   Stratum width that spreads the picks across the whole ordering.
    */
   const stride = ordered.length / wanted;
 

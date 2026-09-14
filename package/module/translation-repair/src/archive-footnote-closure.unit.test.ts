@@ -1,11 +1,11 @@
 /**
- * Tests for closing a footnote relabel over the archive's labels.
- *
- * THE FOURTH YUKI LAUNCH of 2026-09-08 read one definition pair off the
- * roster, mapped `[^2]` to `[^1]` alone, and the archive came out with two
- * `[^1]` notes.
- *
- * @module
+ Tests for closing a footnote relabel over the archive's labels.
+ 
+ THE FOURTH YUKI LAUNCH of 2026-09-08 read one definition pair off the
+ roster, mapped `[^2]` to `[^1]` alone, and the archive came out with two
+ `[^1]` notes.
+ 
+ @module
  */
 
 import {
@@ -80,7 +80,7 @@ await describe({
       name: 'keeps closed rewrites unchanged, an empty map empty, and invents no identity correspondence',
       fn: async () => {
         /**
-         * The whole swap, read off both definitions.
+         The whole swap, read off both definitions.
          */
         const swap = [
           {
@@ -151,7 +151,7 @@ await describe({
         + 'and elimination forces nothing',
       fn: async () => {
         /**
-         * One pair read, two labels left on each side.
+         One pair read, two labels left on each side.
          */
         const closure = closeFootnoteRelabel({
           map: [ {

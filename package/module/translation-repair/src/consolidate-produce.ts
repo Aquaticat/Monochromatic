@@ -43,63 +43,63 @@ import {
 // alone rather than re-asked.
 
 /**
- * A slate as it leaves the producing half.
- *
- * @example
- * ```ts
- * const produced: ProducedConsolidations = { voices: [], validity: [], findings: [], };
- * ```
+ A slate as it leaves the producing half.
+ 
+ @example
+ ```ts
+ const produced: ProducedConsolidations = { voices: [], validity: [], findings: [], };
+ ```
  */
 export type ProducedConsolidations = {
   /**
-   * Proposals that survived gathering and any repair round, in the order the
-   * roster answered.
+   Proposals that survived gathering and any repair round, in the order the
+   roster answered.
    */
   readonly voices: readonly HeardVoice<TranslateReportWire>[];
 
   /**
-   * Each surviving proposal's structural verdict AFTER the repair round, which
-   * is what the validity floor reads.
+   Each surviving proposal's structural verdict AFTER the repair round, which
+   is what the validity floor reads.
    */
   readonly validity: readonly ProposalValidity[];
 
   /**
-   * Verdicts as they stood BEFORE the repair round, kept because a slate that
-   * needed repairing and one that did not are different facts about the roster
-   * and the deciding half cannot tell them apart afterwards.
+   Verdicts as they stood BEFORE the repair round, kept because a slate that
+   needed repairing and one that did not are different facts about the roster
+   and the deciding half cannot tell them apart afterwards.
    */
   readonly validityBefore: readonly ProposalValidity[];
 
   /**
-   * What gathering and repairing recorded, in scorecard-stable wording.
+   What gathering and repairing recorded, in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Buys one slate of consolidations, sending invalid ones back to their authors.
- *
- * @param client - provider client this borrows
- *
- * @param roster - voices seated to produce
- *
- * @param subject - slice with both lane renderings and what the contest said
- *
- * @param standingText - wording in place, which a repair round shows an author
- * as the incumbent it must not simply reproduce
- *
- * @param signal - cancellation for the whole producing half
- *
- * @param perCallTimeoutMs - bound on any single exchange
- *
- * @param l - stage logger
- *
- * @returns Slate, each proposal's verdict before and after repair, and findings
- *
- * @example
- * ```ts
- * const produced = await produceConsolidations({ client, roster, subject, standingText, signal, perCallTimeoutMs, l, },);
- * ```
+ Buys one slate of consolidations, sending invalid ones back to their authors.
+ 
+ @param client - provider client this borrows
+ 
+ @param roster - voices seated to produce
+ 
+ @param subject - slice with both lane renderings and what the contest said
+ 
+ @param standingText - wording in place, which a repair round shows an author
+ as the incumbent it must not simply reproduce
+ 
+ @param signal - cancellation for the whole producing half
+ 
+ @param perCallTimeoutMs - bound on any single exchange
+ 
+ @param l - stage logger
+ 
+ @returns Slate, each proposal's verdict before and after repair, and findings
+ 
+ @example
+ ```ts
+ const produced = await produceConsolidations({ client, roster, subject, standingText, signal, perCallTimeoutMs, l, },);
+ ```
  */
 export async function produceConsolidations(
   {
@@ -121,7 +121,7 @@ export async function produceConsolidations(
   }>,
 ): Promise<ProducedConsolidations> {
   /**
-   * Logger tagged with this half.
+   Logger tagged with this half.
    */
   const pl = tagged({
     tag: produceConsolidations.name,
@@ -129,14 +129,14 @@ export async function produceConsolidations(
   },);
 
   /**
-   * Sheet every producer is given, kept because the repair round shows an
-   * author what it was originally asked.
+   Sheet every producer is given, kept because the repair round shows an
+   author what it was originally asked.
    */
   const messages = buildConsolidateMessages({ subject, },);
 
   /**
-   * Every proposal the roster answered with, retried to quorum so a lost voice
-   * here means what it means in production.
+   Every proposal the roster answered with, retried to quorum so a lost voice
+   here means what it means in production.
    */
   const gather = await gatherStageVoices({
     client,
@@ -155,16 +155,16 @@ export async function produceConsolidations(
   },);
 
   /**
-   * Checks one proposal against the page it would be written into.
-   *
-   * @param voice - proposal to check
-   *
-   * @returns Identity beside the guard's verdict
-   *
-   * @example
-   * ```ts
-   * const checked = checkVoice(voice,);
-   * ```
+   Checks one proposal against the page it would be written into.
+   
+   @param voice - proposal to check
+   
+   @returns Identity beside the guard's verdict
+   
+   @example
+   ```ts
+   const checked = checkVoice(voice,);
+   ```
    */
   function checkVoice(voice: HeardVoice<TranslateReportWire>,): ProposalValidity {
     return {
@@ -181,7 +181,7 @@ export async function produceConsolidations(
   }
 
   /**
-   * Verdicts as the roster first answered.
+   Verdicts as the roster first answered.
    */
   const validityBefore = gather.voices
     .map(checkVoice,);
@@ -190,7 +190,7 @@ export async function produceConsolidations(
   // invalid translated slice already gets. A proposal refused for shape may be
   // the most faithful rendering on the slate.
   /**
-   * The slate after every refused author has had one more turn at it.
+   The slate after every refused author has had one more turn at it.
    */
   const repaired = await repairInvalidCandidates({
     client,

@@ -18,108 +18,108 @@ import {
 // (reference run: gpt-oss-120b was the sole finder of a planted seed).
 
 /**
- * Neighborhood in characters around zero-width insertion anchors when testing
- * claim-to-claim overlap; models drop omission anchors at slightly different
- * points around the same gap, and honest critics anchor on surrounding
- * context. Two insertion anchors therefore cluster within twice this
- * distance of each other, since both expand.
+ Neighborhood in characters around zero-width insertion anchors when testing
+ claim-to-claim overlap; models drop omission anchors at slightly different
+ points around the same gap, and honest critics anchor on surrounding
+ context. Two insertion anchors therefore cluster within twice this
+ distance of each other, since both expand.
  */
 export const CLUSTER_ANCHOR_TOLERANCE = 30;
 
 /**
- * One claim carried with its deterministic identity,
- * so downstream stages and steering operations get stable handles
- * without recomputing hashes.
- *
- * @example
- * ```ts
- * const member: AggregatedClaim = { claimId, claim, };
- * ```
+ One claim carried with its deterministic identity,
+ so downstream stages and steering operations get stable handles
+ without recomputing hashes.
+ 
+ @example
+ ```ts
+ const member: AggregatedClaim = { claimId, claim, };
+ ```
  */
 export type AggregatedClaim = {
   /**
-   * Deterministic `issue/<hash>` identity from {@link computeIssueClaimId}.
+   Deterministic `issue/<hash>` identity from {@link computeIssueClaimId}.
    */
   readonly claimId: string;
 
   /**
-   * Atomic claim exactly as validated; aggregation never rewrites claims.
+   Atomic claim exactly as validated; aggregation never rewrites claims.
    */
   readonly claim: IssueClaim;
 };
 
 /**
- * One proposed merge group.
- * A single-member cluster proposes nothing; a multi-member cluster proposes
- * that its members describe one defect, for an adjudicator to dispose.
- *
- * @example
- * ```ts
- * const merge: ClaimCluster = { clusterId, position: 42, members, };
- * ```
+ One proposed merge group.
+ A single-member cluster proposes nothing; a multi-member cluster proposes
+ that its members describe one defect, for an adjudicator to dispose.
+ 
+ @example
+ ```ts
+ const merge: ClaimCluster = { clusterId, position: 42, members, };
+ ```
  */
 export type ClaimCluster = {
   /**
-   * Deterministic `cluster/<hash>` identity over sorted member claim ids.
+   Deterministic `cluster/<hash>` identity over sorted member claim ids.
    */
   readonly clusterId: string;
 
   /**
-   * Earliest span start across members, for document-order processing
-   * downstream (envelope derivation, adjudication prompts).
+   Earliest span start across members, for document-order processing
+   downstream (envelope derivation, adjudication prompts).
    */
   readonly position: number;
 
   /**
-   * Members sorted by claim id; atomic claims, never merged content.
+   Members sorted by claim id; atomic claims, never merged content.
    */
   readonly members: readonly AggregatedClaim[];
 };
 
 /**
- * Complete partition of the deduplicated input claims:
- * every claim belongs to exactly one cluster.
- *
- * @example
- * ```ts
- * const { clusters, }: ClaimAggregation = aggregateClaims({ claims, },);
- * ```
+ Complete partition of the deduplicated input claims:
+ every claim belongs to exactly one cluster.
+ 
+ @example
+ ```ts
+ const { clusters, }: ClaimAggregation = aggregateClaims({ claims, },);
+ ```
  */
 export type ClaimAggregation = {
   /**
-   * Clusters in document order (position, then cluster id).
+   Clusters in document order (position, then cluster id).
    */
   readonly clusters: readonly ClaimCluster[];
 };
 
 /**
- * Half-open offset interval used for overlap tests.
+ Half-open offset interval used for overlap tests.
  */
 type OffsetInterval = {
   /**
-   * Inclusive start.
+   Inclusive start.
    */
   readonly start: number;
 
   /**
-   * Exclusive end.
+   Exclusive end.
    */
   readonly end: number;
 };
 
 /**
- * Interval a span occupies for overlap testing.
- * Zero-width insertion anchors expand by {@link CLUSTER_ANCHOR_TOLERANCE} on
- * both sides because they name a gap, not text; quoted spans stay exact.
- *
- * @param span - anchored evidence whose neighborhood overlap testing needs
- *
- * @returns Half-open interval, possibly extending below zero for expanded anchors
- *
- * @example
- * ```ts
- * const interval = expandedInterval({ span, },);
- * ```
+ Interval a span occupies for overlap testing.
+ Zero-width insertion anchors expand by {@link CLUSTER_ANCHOR_TOLERANCE} on
+ both sides because they name a gap, not text; quoted spans stay exact.
+ 
+ @param span - anchored evidence whose neighborhood overlap testing needs
+ 
+ @returns Half-open interval, possibly extending below zero for expanded anchors
+ 
+ @example
+ ```ts
+ const interval = expandedInterval({ span, },);
+ ```
  */
 function expandedInterval(
   { span, }: { readonly span: SpanAnchor; },
@@ -138,21 +138,21 @@ function expandedInterval(
 }
 
 /**
- * Whether two spans point at intersecting evidence.
- * Offsets are absolute within full document source, so intersection needs no
- * node identity check; node labels stay out of it so anchors at node
- * boundaries still meet.
- *
- * @param left - one span under comparison
- *
- * @param right - other span under comparison
- *
- * @returns Whether both spans share a side and their intervals intersect
- *
- * @example
- * ```ts
- * spansOverlap({ left, right, },);
- * ```
+ Whether two spans point at intersecting evidence.
+ Offsets are absolute within full document source, so intersection needs no
+ node identity check; node labels stay out of it so anchors at node
+ boundaries still meet.
+ 
+ @param left - one span under comparison
+ 
+ @param right - other span under comparison
+ 
+ @returns Whether both spans share a side and their intervals intersect
+ 
+ @example
+ ```ts
+ spansOverlap({ left, right, },);
+ ```
  */
 function spansOverlap(
   {
@@ -167,12 +167,12 @@ function spansOverlap(
     return false;
 
   /**
-   * Left interval with anchor expansion applied.
+   Left interval with anchor expansion applied.
    */
   const leftInterval = expandedInterval({ span: left, },);
 
   /**
-   * Right interval with anchor expansion applied.
+   Right interval with anchor expansion applied.
    */
   const rightInterval = expandedInterval({ span: right, },);
 
@@ -181,25 +181,25 @@ function spansOverlap(
 }
 
 /**
- * Whether two claims plausibly describe one defect:
- * evidence overlap on at least one same-side span pair.
- * Neither category family nor severity participates: critics label one
- * defect under different families (measured on real corpus artifacts:
- * 62 overlapping cross-family issue pairs the old family gate kept from
- * panel judgment) and grade it differently, and the panel's sameDefect
- * disposal is the union algorithm's judging half, so proposals maximize
- * recall and the panel decides.
- *
- * @param left - one claim under comparison
- *
- * @param right - other claim under comparison
- *
- * @returns Whether a merge between the two is worth proposing
- *
- * @example
- * ```ts
- * claimsShareDefect({ left, right, },);
- * ```
+ Whether two claims plausibly describe one defect:
+ evidence overlap on at least one same-side span pair.
+ Neither category family nor severity participates: critics label one
+ defect under different families (measured on real corpus artifacts:
+ 62 overlapping cross-family issue pairs the old family gate kept from
+ panel judgment) and grade it differently, and the panel's sameDefect
+ disposal is the union algorithm's judging half, so proposals maximize
+ recall and the panel decides.
+ 
+ @param left - one claim under comparison
+ 
+ @param right - other claim under comparison
+ 
+ @returns Whether a merge between the two is worth proposing
+ 
+ @example
+ ```ts
+ claimsShareDefect({ left, right, },);
+ ```
  */
 function claimsShareDefect(
   {
@@ -223,17 +223,17 @@ function claimsShareDefect(
 }
 
 /**
- * Earliest span start across one claim's spans,
- * for document-order cluster sorting.
- *
- * @param claim - claim whose leading position sorting needs
- *
- * @returns Minimum start offset across spans
- *
- * @example
- * ```ts
- * claimPosition({ claim, },);
- * ```
+ Earliest span start across one claim's spans,
+ for document-order cluster sorting.
+ 
+ @param claim - claim whose leading position sorting needs
+ 
+ @returns Minimum start offset across spans
+ 
+ @example
+ ```ts
+ claimPosition({ claim, },);
+ ```
  */
 function claimPosition(
   { claim, }: { readonly claim: IssueClaim; },
@@ -255,34 +255,34 @@ function claimPosition(
 }
 
 /**
- * Partitions validated claims into merge-proposal clusters.
- * Exact duplicates collapse first by deterministic identity; then claims
- * sharing a defect (see {@link claimsShareDefect}) join one cluster
- * transitively, walked iteratively with a work stack.
- * Deterministic regardless of input order: members sort by claim id,
- * cluster identity hashes the sorted member ids, and clusters sort by
- * document position.
- *
- * @param claims - claims that already passed `validateIssueClaim`
- *
- * @returns Complete partition; multi-member clusters are the merge proposals
- *
- * @example
- * ```ts
- * const { clusters, } = aggregateClaims({ claims: validatedClaims, },);
- * ```
+ Partitions validated claims into merge-proposal clusters.
+ Exact duplicates collapse first by deterministic identity; then claims
+ sharing a defect (see {@link claimsShareDefect}) join one cluster
+ transitively, walked iteratively with a work stack.
+ Deterministic regardless of input order: members sort by claim id,
+ cluster identity hashes the sorted member ids, and clusters sort by
+ document position.
+ 
+ @param claims - claims that already passed `validateIssueClaim`
+ 
+ @returns Complete partition; multi-member clusters are the merge proposals
+ 
+ @example
+ ```ts
+ const { clusters, } = aggregateClaims({ claims: validatedClaims, },);
+ ```
  */
 export function aggregateClaims(
   { claims, }: { readonly claims: readonly IssueClaim[]; },
 ): ClaimAggregation {
   /**
-   * Claims keyed by deterministic identity; first occurrence wins because
-   * identical ids mean structurally identical claims.
+   Claims keyed by deterministic identity; first occurrence wins because
+   identical ids mean structurally identical claims.
    */
   const byId = new Map<string, IssueClaim>();
   for (const claim of claims) {
     /**
-     * Stable identity of this claim.
+     Stable identity of this claim.
      */
     const claimId = computeIssueClaimId({ claim, },);
     if (!byId.has(claimId,))
@@ -293,8 +293,8 @@ export function aggregateClaims(
   }
 
   /**
-   * Deduplicated members in claim-id order, so adjacency and cluster
-   * identity never depend on input order.
+   Deduplicated members in claim-id order, so adjacency and cluster
+   identity never depend on input order.
    */
   const members: readonly AggregatedClaim[] = [...byId.entries(),]
     .map(function toMember([claimId, claim,],): AggregatedClaim {
@@ -312,7 +312,7 @@ export function aggregateClaims(
     },);
 
   /**
-   * Component seed per member index; absence means not yet walked.
+   Component seed per member index; absence means not yet walked.
    */
   const componentOf = new Map<number, number>();
 
@@ -321,7 +321,7 @@ export function aggregateClaims(
       continue;
 
     /**
-     * Work stack of member indices belonging to the component being walked.
+     Work stack of member indices belonging to the component being walked.
      */
     const stack: number[] = [seed,];
     componentOf.set(
@@ -330,12 +330,12 @@ export function aggregateClaims(
     );
     while (stack.length > 0) {
       /**
-       * Member index currently expanding, present while the stack is non-empty.
+       Member index currently expanding, present while the stack is non-empty.
        */
       const current = nonNullishOrThrow(stack.pop(),);
 
       /**
-       * Claim currently expanding, present by index construction.
+       Claim currently expanding, present by index construction.
        */
       const currentMember = nonNullishOrThrow(members[current],);
       for (const [candidate, member,] of members.entries()) {
@@ -356,12 +356,12 @@ export function aggregateClaims(
   }
 
   /**
-   * Members grouped by component seed.
+   Members grouped by component seed.
    */
   const byComponent = new Map<number, AggregatedClaim[]>();
   for (const [index, member,] of members.entries()) {
     /**
-     * Component seed of this member, assigned by the walk over every index.
+     Component seed of this member, assigned by the walk over every index.
      */
     const label = nonNullishOrThrow(componentOf.get(index,),);
     byComponent.set(
@@ -374,12 +374,12 @@ export function aggregateClaims(
   }
 
   /**
-   * Clusters with deterministic identity and document position.
+   Clusters with deterministic identity and document position.
    */
   const clusters = [...byComponent.values(),]
     .map(function toCluster(group: readonly AggregatedClaim[],): ClaimCluster {
       /**
-       * Member claim ids in already-sorted member order.
+       Member claim ids in already-sorted member order.
        */
       const memberIds = group.map(function toId(member,) {
         return member.claimId;

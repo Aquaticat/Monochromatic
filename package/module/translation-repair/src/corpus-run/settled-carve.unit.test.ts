@@ -1,15 +1,15 @@
 /**
- * Tests for carving an entry the way the pass carved it when it settled.
- *
- * WHAT THESE PIN is that an instrument reading settled entries gets the slicing
- * the artifact records, proved by the identity hash against the artifact's
- * own recorded identity, and that the three answers for an entry (settled,
- * legacy, unsettled) stay distinct. Every rebuild case carries a positive
- * control showing the recipe moved the slicing.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for carving an entry the way the pass carved it when it settled.
+ 
+ WHAT THESE PIN is that an instrument reading settled entries gets the slicing
+ the artifact records, proved by the identity hash against the artifact's
+ own recorded identity, and that the three answers for an entry (settled,
+ legacy, unsettled) stay distinct. Every rebuild case carries a positive
+ control showing the recipe moved the slicing.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -48,49 +48,49 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Real git binary for fixture setup and pinned reads.
+ Real git binary for fixture setup and pinned reads.
  */
 const REAL_GIT = await resolveGit();
 
 /**
- * Entry the throwaway clone carries.
+ Entry the throwaway clone carries.
  */
 const ENTRY_ID = 'whiskers';
 
 /**
- * Two sections of equal shape, so a supplied crossing is visibly different
- * from the index order the deterministic aligner takes.
+ Two sections of equal shape, so a supplied crossing is visibly different
+ from the index order the deterministic aligner takes.
  */
 const SOURCE_PAGE = '## 第一节\n\n猫猫在窗台上睡觉。\n\n## 第二节\n\n猫猫有自己的碗。\n';
 
 /**
- * Translation of the same shape.
+ Translation of the same shape.
  */
 const TARGET_PAGE = '## Section one\n\nThe cat sleeps on the sill.\n\n## Section two\n\nThe cat has a bowl.\n';
 
 /**
- * Digest every fixture artifact claims.
+ Digest every fixture artifact claims.
  */
 const DIGEST = 'sha256-tree-v1:'.concat('c'.repeat(64,),) as unknown as PipelineDigest;
 
 /**
- * Wording a lane writes where the archive holds none.
+ Wording a lane writes where the archive holds none.
  */
 const FRESH_LINE = 'The cat has been given a line.';
 
 /**
- * Runs git against the fixture clone with no user configuration.
- *
- * @param cloneDir - fixture clone
- *
- * @param args - git arguments
- *
- * @returns Standard output
- *
- * @example
- * ```ts
- * const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
- * ```
+ Runs git against the fixture clone with no user configuration.
+ 
+ @param cloneDir - fixture clone
+ 
+ @param args - git arguments
+ 
+ @returns Standard output
+ 
+ @example
+ ```ts
+ const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
+ ```
  */
 async function fixtureGit(
   {
@@ -102,7 +102,7 @@ async function fixtureGit(
   },
 ): Promise<string> {
   /**
-   * Git's output.
+   Git's output.
    */
   const { stdout, } = await spawn(
     REAL_GIT,
@@ -122,14 +122,14 @@ async function fixtureGit(
 }
 
 /**
- * Makes a throwaway corpus clone carrying the fixture entry at one commit.
- *
- * @returns Clone directory and commit, removed on dispose
- *
- * @example
- * ```ts
- * await using corpus = await throwawayCorpus();
- * ```
+ Makes a throwaway corpus clone carrying the fixture entry at one commit.
+ 
+ @returns Clone directory and commit, removed on dispose
+ 
+ @example
+ ```ts
+ await using corpus = await throwawayCorpus();
+ ```
  */
 async function throwawayCorpus(): Promise<
   AsyncDisposable & {
@@ -138,7 +138,7 @@ async function throwawayCorpus(): Promise<
   }
 > {
   /**
-   * Where the clone lives.
+   Where the clone lives.
    */
   const cloneDir = await mkdtemp(join(
     tmpdir(),
@@ -159,7 +159,7 @@ async function throwawayCorpus(): Promise<
   );
 
   /**
-   * Entry directory.
+   Entry directory.
    */
   const dir = join(
     cloneDir,
@@ -212,7 +212,7 @@ async function throwawayCorpus(): Promise<
   },);
 
   /**
-   * Commit the entry sits at.
+   Commit the entry sits at.
    */
   const commitSha = (await fixtureGit({
     cloneDir,
@@ -238,18 +238,18 @@ async function throwawayCorpus(): Promise<
 }
 
 /**
- * Makes a throwaway runs directory.
- *
- * @returns Runs directory, removed on dispose
- *
- * @example
- * ```ts
- * await using runs = await throwawayRuns();
- * ```
+ Makes a throwaway runs directory.
+ 
+ @returns Runs directory, removed on dispose
+ 
+ @example
+ ```ts
+ await using runs = await throwawayRuns();
+ ```
  */
 async function throwawayRuns(): Promise<AsyncDisposable & { readonly runsDir: string; }> {
   /**
-   * Where the runs directory lives.
+   Where the runs directory lives.
    */
   const runsDir = await mkdtemp(join(
     tmpdir(),
@@ -270,16 +270,16 @@ async function throwawayRuns(): Promise<AsyncDisposable & { readonly runsDir: st
 }
 
 /**
- * Rows that keep every present slice and fill every insertion.
- *
- * @param prepared - preparation the rows describe
- *
- * @returns One row per slice
- *
- * @example
- * ```ts
- * const rows = rowsFor({ prepared, },);
- * ```
+ Rows that keep every present slice and fill every insertion.
+ 
+ @param prepared - preparation the rows describe
+ 
+ @returns One row per slice
+ 
+ @example
+ ```ts
+ const rows = rowsFor({ prepared, },);
+ ```
  */
 function rowsFor(
   { prepared, }: { readonly prepared: PreparedDocumentPair; },
@@ -287,13 +287,13 @@ function rowsFor(
   return prepared.slices
     .map(function toRow(slice,): SliceDeliveryRecord {
       /**
-       * Archive wording of this slice, empty at an insertion.
+       Archive wording of this slice, empty at an insertion.
        */
       const incumbentText = slice.target
         .text;
 
       /**
-       * Whether the archive holds wording here at all.
+       Whether the archive holds wording here at all.
        */
       const absent = slice.target
         .kind === 'insertion';
@@ -330,22 +330,22 @@ function rowsFor(
 }
 
 /**
- * Raw lane result consistent with the rows.
- *
- * @param rows - rows the result reports
- *
- * @returns Evidence core the builder projects
- *
- * @example
- * ```ts
- * const result = rawResultFor({ rows, },);
- * ```
+ Raw lane result consistent with the rows.
+ 
+ @param rows - rows the result reports
+ 
+ @returns Evidence core the builder projects
+ 
+ @example
+ ```ts
+ const result = rawResultFor({ rows, },);
+ ```
  */
 function rawResultFor(
   { rows, }: { readonly rows: readonly SliceDeliveryRecord[]; },
 ): Record<string, unknown> {
   /**
-   * Slices the rows say shipped a replacement.
+   Slices the rows say shipped a replacement.
    */
   const shipped = rows
     .filter(function wasShipped(row,): boolean {
@@ -373,21 +373,21 @@ function rawResultFor(
 }
 
 /**
- * Writes a settled artifact for the fixture entry into a runs directory.
- *
- * @param runsDir - runs directory to write under
- *
- * @param prepared - preparation the artifact records
- *
- * @param corpusSha - commit the artifact claims
- *
- * @param strip - preparation keys to delete, which is how a file written
- * before those fields existed looks
- *
- * @example
- * ```ts
- * await writeArtifact({ runsDir, prepared, corpusSha, strip: [], },);
- * ```
+ Writes a settled artifact for the fixture entry into a runs directory.
+ 
+ @param runsDir - runs directory to write under
+ 
+ @param prepared - preparation the artifact records
+ 
+ @param corpusSha - commit the artifact claims
+ 
+ @param strip - preparation keys to delete, which is how a file written
+ before those fields existed looks
+ 
+ @example
+ ```ts
+ await writeArtifact({ runsDir, prepared, corpusSha, strip: [], },);
+ ```
  */
 async function writeArtifact(
   {
@@ -403,17 +403,17 @@ async function writeArtifact(
   },
 ): Promise<void> {
   /**
-   * Rows the lanes report.
+   Rows the lanes report.
    */
   const rows = rowsFor({ prepared, },);
 
   /**
-   * Identity both ledgers claim.
+   Identity both ledgers claim.
    */
   const identity = preparationIdentity({ prepared, },);
 
   /**
-   * Lanes consistent with the preparation.
+   Lanes consistent with the preparation.
    */
   const lanes = {
     alignmentFindings: [...prepared.alignmentFindings,],
@@ -438,7 +438,7 @@ async function writeArtifact(
   } as unknown as DocumentLanesResult;
 
   /**
-   * Artifact as the builder writes it, in its serialized form.
+   Artifact as the builder writes it, in its serialized form.
    */
   const serialized = JSON.stringify(buildSettledTwoLaneArtifact({
     pageAssembly: NO_PAGE_ASSEMBLY,
@@ -455,12 +455,12 @@ async function writeArtifact(
   },),);
 
   /**
-   * Those bytes read back.
+   Those bytes read back.
    */
   const written = JSON.parse(serialized,) as Record<string, unknown>;
 
   /**
-   * Preparation record with the named keys removed.
+   Preparation record with the named keys removed.
    */
   const preparation = Object.fromEntries(
     Object.entries(written.preparation as Record<string, unknown>,)
@@ -478,16 +478,16 @@ async function writeArtifact(
 }
 
 /**
- * Writes any value as the fixture entry's artifact.
- *
- * @param runsDir - runs directory to write under
- *
- * @param value - artifact content
- *
- * @example
- * ```ts
- * await writeArtifactFile({ runsDir, value: legacyArtifact, },);
- * ```
+ Writes any value as the fixture entry's artifact.
+ 
+ @param runsDir - runs directory to write under
+ 
+ @param value - artifact content
+ 
+ @example
+ ```ts
+ await writeArtifactFile({ runsDir, value: legacyArtifact, },);
+ ```
  */
 async function writeArtifactFile(
   {
@@ -499,7 +499,7 @@ async function writeArtifactFile(
   },
 ): Promise<void> {
   /**
-   * Artifacts subdirectory.
+   Artifacts subdirectory.
    */
   const dir = join(
     runsDir,
@@ -524,14 +524,14 @@ async function writeArtifactFile(
 }
 
 /**
- * How a roster run carved the fixture: sections crossed, block rounds asked.
- *
- * @returns Paired preparation
- *
- * @example
- * ```ts
- * const paired = pairedPreparation();
- * ```
+ How a roster run carved the fixture: sections crossed, block rounds asked.
+ 
+ @returns Paired preparation
+ 
+ @example
+ ```ts
+ const paired = pairedPreparation();
+ ```
  */
 function pairedPreparation(): PreparedDocumentPair {
   return prepareDocumentPair({
@@ -563,7 +563,7 @@ await describe({
         await using runs = await throwawayRuns();
 
         /**
-         * Artifacts subdirectory with two artifacts and a stray note.
+         Artifacts subdirectory with two artifacts and a stray note.
          */
         const dir = join(
           runs.runsDir,
@@ -646,7 +646,7 @@ await describe({
         },);
 
         /**
-         * Recipe as read back.
+         Recipe as read back.
          */
         const settled = await readSettledRecipe({
           entryId: ENTRY_ID,
@@ -685,7 +685,7 @@ await describe({
         },);
 
         /**
-         * Recipe as read back.
+         Recipe as read back.
          */
         const settled = await readSettledRecipe({
           entryId: ENTRY_ID,
@@ -715,7 +715,7 @@ await describe({
         await using runs = await throwawayRuns();
 
         /**
-         * How the run carved it.
+         How the run carved it.
          */
         const paired = pairedPreparation();
 
@@ -735,7 +735,7 @@ await describe({
         },);
 
         /**
-         * Carve through the settled recipe.
+         Carve through the settled recipe.
          */
         const carve = await carveSettled({
           entryId: ENTRY_ID,

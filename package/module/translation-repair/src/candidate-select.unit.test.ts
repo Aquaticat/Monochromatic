@@ -1,10 +1,10 @@
 /**
- * Tests for candidate selection: producer exclusion, the vote thresholds that
- * stop one judge deciding, and the two decline dispositions that tell an
- * unranked field apart from a rejected one.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for candidate selection: producer exclusion, the vote thresholds that
+ stop one judge deciding, and the two decline dispositions that tell an
+ unranked field apart from a rejected one.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -36,22 +36,22 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the stages under test.
+ Logger for the stages under test.
  */
 const l = tagged({ tag: 'candidate-select-test', },);
 
 /**
- * Original the judges compare against.
+ Original the judges compare against.
  */
 const SOURCE_TEXT = '猫猫喜欢追蝴蝶。';
 
 /**
- * Translation the envelopes are cut from.
+ Translation the envelopes are cut from.
  */
 const TARGET_TEXT = 'The cat naps. The cat hates butterflies. The bowl stays full.';
 
 /**
- * Region covering the planted mistranslation.
+ Region covering the planted mistranslation.
  */
 const ENVELOPE: EditableEnvelope = {
   envelopeId: 'envelope/butterflies',
@@ -64,24 +64,24 @@ const ENVELOPE: EditableEnvelope = {
 };
 
 /**
- * Ballots a scripted judge casts, keyed by model id.
+ Ballots a scripted judge casts, keyed by model id.
  */
 type BallotScript = Readonly<Record<string, number>>;
 
 /**
- * Client answering every selection ballot from a script, and counting calls so
- * a test can prove a round never reached the judges.
- *
- * @param ballots - one-based candidate index per judge, zero to decline
- *
- * @param counter - mutable call tally the caller inspects afterwards
- *
- * @returns Client usable by the selection stage
- *
- * @example
- * ```ts
- * const client = scriptedJudges({ ballots, counter, },);
- * ```
+ Client answering every selection ballot from a script, and counting calls so
+ a test can prove a round never reached the judges.
+ 
+ @param ballots - one-based candidate index per judge, zero to decline
+ 
+ @param counter - mutable call tally the caller inspects afterwards
+ 
+ @returns Client usable by the selection stage
+ 
+ @example
+ ```ts
+ const client = scriptedJudges({ ballots, counter, },);
+ ```
  */
 function scriptedJudges(
   {
@@ -102,7 +102,7 @@ function scriptedJudges(
       counter.calls += 1;
 
       /**
-       * Scripted ballot for the judge that was asked.
+       Scripted ballot for the judge that was asked.
        */
       const scripted: unknown = {
         best: ballots[request.modelId] ?? 0,
@@ -123,7 +123,7 @@ function scriptedJudges(
 }
 
 /**
- * Two competing string candidates from two named models.
+ Two competing string candidates from two named models.
  */
 const STRING_CANDIDATES: readonly Candidate<string>[] = [
   {
@@ -145,20 +145,20 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
 ];
 
 /**
- * Client whose listed seats are refused by the router for want of a wet
- * provider, the way `judgeSeatsFor` leaves a dry provider's seats on the
- * bench, and whose other seats vote from the script.
- *
- * @param ballots - one-based candidate index per judge, zero to decline
- *
- * @param unreachable - seats no provider serves
- *
- * @returns Client usable by the selection stage
- *
- * @example
- * ```ts
- * const client = dryBenchJudges({ ballots, unreachable: ['minimax-m3',], },);
- * ```
+ Client whose listed seats are refused by the router for want of a wet
+ provider, the way `judgeSeatsFor` leaves a dry provider's seats on the
+ bench, and whose other seats vote from the script.
+ 
+ @param ballots - one-based candidate index per judge, zero to decline
+ 
+ @param unreachable - seats no provider serves
+ 
+ @returns Client usable by the selection stage
+ 
+ @example
+ ```ts
+ const client = dryBenchJudges({ ballots, unreachable: ['minimax-m3',], },);
+ ```
  */
 function dryBenchJudges(
   {
@@ -170,7 +170,7 @@ function dryBenchJudges(
   },
 ): SyntheticClient {
   /**
-   * Scripted client answering the reachable seats.
+   Scripted client answering the reachable seats.
    */
   const scripted = scriptedJudges({
     ballots,
@@ -193,7 +193,7 @@ function dryBenchJudges(
 }
 
 /**
- * Whole roster selection draws judges from.
+ Whole roster selection draws judges from.
  */
 const JUDGES: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -204,18 +204,18 @@ const JUDGES: readonly RosterModelId[] = [
 ];
 
 /**
- * Runs one selection round over the fixture candidates.
- *
- * @param ballots - one-based candidate index per judge
- *
- * @param judgeModelIds - roster to seat; defaults to the fixture roster
- *
- * @returns Outcome plus how many judge calls it took
- *
- * @example
- * ```ts
- * const { outcome, } = await runSelection({ ballots, },);
- * ```
+ Runs one selection round over the fixture candidates.
+ 
+ @param ballots - one-based candidate index per judge
+ 
+ @param judgeModelIds - roster to seat; defaults to the fixture roster
+ 
+ @returns Outcome plus how many judge calls it took
+ 
+ @example
+ ```ts
+ const { outcome, } = await runSelection({ ballots, },);
+ ```
  */
 async function runSelection(
   {
@@ -229,12 +229,12 @@ async function runSelection(
   },
 ) {
   /**
-   * Judge calls the round made.
+   Judge calls the round made.
    */
   const counter = { calls: 0, };
 
   /**
-   * Verdict over the fixture candidates.
+   Verdict over the fixture candidates.
    */
   const outcome = await selectBestCandidate({
     client: scriptedJudges({
@@ -266,33 +266,33 @@ async function runSelection(
 }
 
 /**
- * Runs one round over a COLLAPSED candidate and its only rival.
- *
- * The collapsed candidate stands for several models that returned identical
- * text, which `buildTranslateCandidates` merges into one entry carrying every
- * contributor. Every contributor then votes for it, and every other judge
- * abstains, which isolates the question these cases ask: what self votes alone
- * can carry.
- *
- * @param contributors - models the collapsed candidate is credited to
- *
- * @returns Outcome of that round
- *
- * @example
- * ```ts
- * const { outcome, } = await runCollapsedSelection({ contributors, },);
- * ```
+ Runs one round over a COLLAPSED candidate and its only rival.
+ 
+ The collapsed candidate stands for several models that returned identical
+ text, which `buildTranslateCandidates` merges into one entry carrying every
+ contributor. Every contributor then votes for it, and every other judge
+ abstains, which isolates the question these cases ask: what self votes alone
+ can carry.
+ 
+ @param contributors - models the collapsed candidate is credited to
+ 
+ @returns Outcome of that round
+ 
+ @example
+ ```ts
+ const { outcome, } = await runCollapsedSelection({ contributors, },);
+ ```
  */
 async function runCollapsedSelection(
   { contributors, }: { readonly contributors: readonly RosterModelId[]; },
 ) {
   /**
-   * Judge calls the round made.
+   Judge calls the round made.
    */
   const counter = { calls: 0, };
 
   /**
-   * Slate: one merged proposal, one rival nobody votes for.
+   Slate: one merged proposal, one rival nobody votes for.
    */
   const candidates: readonly Candidate<string>[] = [
     {
@@ -314,7 +314,7 @@ async function runCollapsedSelection(
   ];
 
   /**
-   * Contributors back their own merged text; everyone else declines.
+   Contributors back their own merged text; everyone else declines.
    */
   const ballots: BallotScript = Object.fromEntries(
     JUDGES.map(function toBallot(modelId,): readonly [string, number,] {
@@ -351,8 +351,8 @@ async function runCollapsedSelection(
 }
 
 /**
- * Seated wide bench of eight, of which a dry day leaves three reachable:
- * the shape of Bedrock alone on 2026-09-09.
+ Seated wide bench of eight, of which a dry day leaves three reachable:
+ the shape of Bedrock alone on 2026-09-09.
  */
 const WIDE_BENCH: readonly RosterModelId[] = [
   ...JUDGES,
@@ -362,7 +362,7 @@ const WIDE_BENCH: readonly RosterModelId[] = [
 ];
 
 /**
- * Seats of that bench no provider serves on the dry day.
+ Seats of that bench no provider serves on the dry day.
  */
 const DRY_SEATS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
@@ -373,18 +373,18 @@ const DRY_SEATS: readonly RosterModelId[] = [
 ];
 
 /**
- * Runs one selection round over the wide bench with the dry seats refused.
- *
- * @param ballots - one-based candidate index per reachable judge
- *
- * @param unreachable - seats no provider serves; defaults to the dry day
- *
- * @returns Outcome of that round
- *
- * @example
- * ```ts
- * const outcome = await runShortBench({ ballots, },);
- * ```
+ Runs one selection round over the wide bench with the dry seats refused.
+ 
+ @param ballots - one-based candidate index per reachable judge
+ 
+ @param unreachable - seats no provider serves; defaults to the dry day
+ 
+ @returns Outcome of that round
+ 
+ @example
+ ```ts
+ const outcome = await runShortBench({ ballots, },);
+ ```
  */
 async function runShortBench(
   {
@@ -696,12 +696,12 @@ await describe({
         + 'reachable without one',
       fn: async () => {
         /**
-         * Calls a refused round is allowed to make.
+         Calls a refused round is allowed to make.
          */
         const counter = { calls: 0, };
 
         /**
-         * Round over a roster naming one model twice.
+         Round over a roster naming one model twice.
          */
         const refused = selectBestCandidate({
           client: scriptedJudges({
@@ -750,19 +750,19 @@ await describe({
 },);
 
 /**
- * Builds one editor candidate proposing a replacement for the fixture
- * envelope.
- *
- * @param modelId - proposing model
- *
- * @param newText - replacement it proposed
- *
- * @returns Candidate carrying the gated patch
- *
- * @example
- * ```ts
- * const candidate = candidateFor({ modelId, newText, },);
- * ```
+ Builds one editor candidate proposing a replacement for the fixture
+ envelope.
+ 
+ @param modelId - proposing model
+ 
+ @param newText - replacement it proposed
+ 
+ @returns Candidate carrying the gated patch
+ 
+ @example
+ ```ts
+ const candidate = candidateFor({ modelId, newText, },);
+ ```
  */
 function candidateFor(
   {
@@ -1015,8 +1015,8 @@ await describe({
         },).patch;
 
         /**
-         * The one distinct candidate, which is also what would ship if judges
-         * declined, so both roles are filled by the same object here.
+         The one distinct candidate, which is also what would ship if judges
+         declined, so both roles are filled by the same object here.
          */
         const sole: Candidate<PatchOutcome> = {
           producer: {

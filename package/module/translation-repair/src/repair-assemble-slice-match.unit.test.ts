@@ -1,31 +1,31 @@
 /**
- * Tests that assembly GIVES EACH SLICE ITS OWN REPAIR when it lists what the
- * document carries.
- *
- * WHAT THAT LIST IS FOR. `#107`'s own example is two NEIGHBOURING slices
- * shipping the same wording, which the document-scale repetition check cannot
- * see because the duplicated sentence carries no long word. The adjacent check
- * exists for exactly that, and it reads a per-slice list assembly builds by
- * matching each surviving replacement to the slice it was written for.
- *
- * WHAT WAS MEASURED. On 2026-08-25, inverting that match, so each slice takes
- * the first replacement written for a DIFFERENT slice, failed no test in this
- * package. The assembled document is unaffected, every count still agrees, and
- * only the adjacency check is handed a shuffled list; it then reports
- * repetitions between slices that share nothing and misses the ones that do.
- *
- * THREE SLICES, WHICH IS THE FEWEST THAT CAN SHOW IT. Swapping two adjacent
- * slices' wordings leaves the pair unchanged, so a two-slice fixture cannot
- * tell a correct match from an inverted one. With three, an inverted match
- * lands the same wording on two neighbours and manufactures a repetition.
- *
- * THE SECOND CASE IS THE KILL and the first is its liveness control: without
- * one showing the check speaks, "no finding" would be satisfied by a check
- * that never says anything.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests that assembly GIVES EACH SLICE ITS OWN REPAIR when it lists what the
+ document carries.
+ 
+ WHAT THAT LIST IS FOR. `#107`'s own example is two NEIGHBOURING slices
+ shipping the same wording, which the document-scale repetition check cannot
+ see because the duplicated sentence carries no long word. The adjacent check
+ exists for exactly that, and it reads a per-slice list assembly builds by
+ matching each surviving replacement to the slice it was written for.
+ 
+ WHAT WAS MEASURED. On 2026-08-25, inverting that match, so each slice takes
+ the first replacement written for a DIFFERENT slice, failed no test in this
+ package. The assembled document is unaffected, every count still agrees, and
+ only the adjacency check is handed a shuffled list; it then reports
+ repetitions between slices that share nothing and misses the ones that do.
+ 
+ THREE SLICES, WHICH IS THE FEWEST THAT CAN SHOW IT. Swapping two adjacent
+ slices' wordings leaves the pair unchanged, so a two-slice fixture cannot
+ tell a correct match from an inverted one. With three, an inverted match
+ lands the same wording on two neighbours and manufactures a repetition.
+ 
+ THE SECOND CASE IS THE KILL and the first is its liveness control: without
+ one showing the check speaks, "no finding" would be satisfied by a check
+ that never says anything.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -41,50 +41,50 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for assembly under test.
+ Logger for assembly under test.
  */
 const l = tagged({ tag: 'repair-assemble-slice-match-test', },);
 
 //region Fixtures
 
 /**
- * Archive wording of the first slice.
+ Archive wording of the first slice.
  */
 const FIRST_ARCHIVE = 'The kitten sleeps on the sill.';
 
 /**
- * Archive wording of the second slice.
+ Archive wording of the second slice.
  */
 const SECOND_ARCHIVE = 'Whiskers watches the birds.';
 
 /**
- * Archive wording of the third slice.
+ Archive wording of the third slice.
  */
 const THIRD_ARCHIVE = 'The tabby dozes by the heater.';
 
 /**
- * Repair the first slice settled on.
+ Repair the first slice settled on.
  */
 const FIRST_REPAIR = 'The kitten sleeps on the windowsill through the afternoon.';
 
 /**
- * Repair the second slice settled on, distinct from both its neighbours.
+ Repair the second slice settled on, distinct from both its neighbours.
  */
 const SECOND_REPAIR = 'Whiskers watches the birds through the window glass.';
 
 /**
- * Repair the third slice settled on.
+ Repair the third slice settled on.
  */
 const THIRD_REPAIR = 'The tabby dozes beside the heater until the evening.';
 
 /**
- * Document the slice offsets address.
+ Document the slice offsets address.
  */
 const TARGET_TEXT = `${FIRST_ARCHIVE}\n\n${SECOND_ARCHIVE}\n\n${THIRD_ARCHIVE}`;
 
 /**
- * All three slice indices, marked line-structured so the wrap leaves the
- * fixture wording byte-identical and the checks read exactly what this wrote.
+ All three slice indices, marked line-structured so the wrap leaves the
+ fixture wording byte-identical and the checks read exactly what this wrote.
  */
 const LINE_STRUCTURED: ReadonlySet<number> = new Set([
   0,
@@ -93,18 +93,18 @@ const LINE_STRUCTURED: ReadonlySet<number> = new Set([
 ],);
 
 /**
- * Builds one prepared slice over a span of the document.
- *
- * @param sliceIndex - stamped index of this slice
- *
- * @param text - archive wording at it
- *
- * @returns Pair shaped as preparation returns one
- *
- * @example
- * ```ts
- * const slice = sliceOf({ sliceIndex: 0, text: FIRST_ARCHIVE, },);
- * ```
+ Builds one prepared slice over a span of the document.
+ 
+ @param sliceIndex - stamped index of this slice
+ 
+ @param text - archive wording at it
+ 
+ @returns Pair shaped as preparation returns one
+ 
+ @example
+ ```ts
+ const slice = sliceOf({ sliceIndex: 0, text: FIRST_ARCHIVE, },);
+ ```
  */
 function sliceOf(
   {
@@ -116,7 +116,7 @@ function sliceOf(
   },
 ): ChunkPair {
   /**
-   * Where this slice starts, found by search since each wording is unique here.
+   Where this slice starts, found by search since each wording is unique here.
    */
   const startOffset = TARGET_TEXT.indexOf(text,);
 
@@ -139,7 +139,7 @@ function sliceOf(
 }
 
 /**
- * Slices every case assembles.
+ Slices every case assembles.
  */
 const SLICES: readonly ChunkPair[] = [
   sliceOf({
@@ -157,18 +157,18 @@ const SLICES: readonly ChunkPair[] = [
 ];
 
 /**
- * Builds one settled outcome that ships a repair.
- *
- * @param sliceIndex - slice this outcome belongs to
- *
- * @param repairedText - wording the lane settled on
- *
- * @returns Outcome assembly reads
- *
- * @example
- * ```ts
- * const outcome = outcomeOf({ sliceIndex: 0, repairedText: FIRST_REPAIR, },);
- * ```
+ Builds one settled outcome that ships a repair.
+ 
+ @param sliceIndex - slice this outcome belongs to
+ 
+ @param repairedText - wording the lane settled on
+ 
+ @returns Outcome assembly reads
+ 
+ @example
+ ```ts
+ const outcome = outcomeOf({ sliceIndex: 0, repairedText: FIRST_REPAIR, },);
+ ```
  */
 function outcomeOf(
   {
@@ -212,17 +212,17 @@ function outcomeOf(
 }
 
 /**
- * Assembles three repairs and hands back what assembly found.
- *
- * @param second - wording the middle slice settled on, which is what each case
- * varies
- *
- * @returns Findings assembly recorded, plus the slices it says changed
- *
- * @example
- * ```ts
- * const found = assembleWith({ second: SECOND_REPAIR, },);
- * ```
+ Assembles three repairs and hands back what assembly found.
+ 
+ @param second - wording the middle slice settled on, which is what each case
+ varies
+ 
+ @returns Findings assembly recorded, plus the slices it says changed
+ 
+ @example
+ ```ts
+ const found = assembleWith({ second: SECOND_REPAIR, },);
+ ```
  */
 function assembleWith(
   { second, }: { readonly second: string; },
@@ -231,7 +231,7 @@ function assembleWith(
   readonly changedSliceIndices: readonly number[];
 } {
   /**
-   * What assembly made of the three repairs.
+   What assembly made of the three repairs.
    */
   const result = assembleRepair({
     targetText: TARGET_TEXT,
@@ -262,16 +262,16 @@ function assembleWith(
 }
 
 /**
- * Findings naming an adjacent repetition, which is the only kind read here.
- *
- * @param findings - everything assembly recorded
- *
- * @returns Those naming an adjacent repetition
- *
- * @example
- * ```ts
- * const repeated = adjacentOnly({ findings, },);
- * ```
+ Findings naming an adjacent repetition, which is the only kind read here.
+ 
+ @param findings - everything assembly recorded
+ 
+ @returns Those naming an adjacent repetition
+ 
+ @example
+ ```ts
+ const repeated = adjacentOnly({ findings, },);
+ ```
  */
 function adjacentOnly(
   { findings, }: { readonly findings: readonly string[]; },
@@ -291,7 +291,7 @@ await describe({
         + 'showing this check speaks at all before the case below reads its silence',
       fn: async () => {
         /**
-         * Assembly where the middle slice shipped its neighbour's wording.
+         Assembly where the middle slice shipped its neighbour's wording.
          */
         const found = assembleWith({ second: FIRST_REPAIR, },);
 
@@ -307,7 +307,7 @@ await describe({
         + 'repetition the document does not have',
       fn: async () => {
         /**
-         * Assembly where every slice shipped its own distinct repair.
+         Assembly where every slice shipped its own distinct repair.
          */
         const found = assembleWith({ second: SECOND_REPAIR, },);
 

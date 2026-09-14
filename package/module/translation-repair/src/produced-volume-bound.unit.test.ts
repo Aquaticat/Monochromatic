@@ -1,16 +1,16 @@
 /**
- * Tests for the produced-volume bound, and for the seam that carries it.
- *
- * THE SECOND HALF IS THE POINT. A bound nothing passes to the watch ends no
- * call, which is exactly the state this task found the code in: `watchRunaway`
- * already accepted a per-call bound and nothing anywhere handed it one. So the
- * arithmetic is tested, and then the drain is shown to end a call at a bound
- * far below the module default, with an otherwise identical drain naming no
- * bound left running as the control.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the produced-volume bound, and for the seam that carries it.
+ 
+ THE SECOND HALF IS THE POINT. A bound nothing passes to the watch ends no
+ call, which is exactly the state this task found the code in: `watchRunaway`
+ already accepted a per-call bound and nothing anywhere handed it one. So the
+ arithmetic is tested, and then the drain is shown to end a call at a bound
+ far below the module default, with an otherwise identical drain naming no
+ bound left running as the control.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -29,37 +29,37 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Roomy silence window, so nothing here trips the other guard.
+ Roomy silence window, so nothing here trips the other guard.
  */
 const ROOMY_MS = 600_000;
 
 /**
- * Answer characters the fixture carries, comfortably under the module default
- * of 32000 so only a per-call bound can end it.
+ Answer characters the fixture carries, comfortably under the module default
+ of 32000 so only a per-call bound can end it.
  */
 const FIXTURE_ANSWER_CHARS = 8_192;
 
 /**
- * Per-call bound the fixture is cut at.
+ Per-call bound the fixture is cut at.
  */
 const TIGHT_BOUND = 2_048;
 
 /**
- * Piece width the fixture body is delivered in, near what a socket delivers.
+ Piece width the fixture body is delivered in, near what a socket delivers.
  */
 const PIECE_CHARS = 512;
 
 /**
- * Builds one server-sent event frame carrying answer text.
- *
- * @param text - text this frame carries
- *
- * @returns Frame as the wire sends it
- *
- * @example
- * ```ts
- * const raw = frameOf({ text: 'The cat naps. ', },);
- * ```
+ Builds one server-sent event frame carrying answer text.
+ 
+ @param text - text this frame carries
+ 
+ @returns Frame as the wire sends it
+ 
+ @example
+ ```ts
+ const raw = frameOf({ text: 'The cat naps. ', },);
+ ```
  */
 function frameOf({ text, }: { readonly text: string; },): string {
   return `data: ${
@@ -74,18 +74,18 @@ function frameOf({ text, }: { readonly text: string; },): string {
 }
 
 /**
- * Fixture body: an answer of known size, one sentence per frame.
- *
- * @returns Whole event stream
- *
- * @example
- * ```ts
- * const raw = bodyOf();
- * ```
+ Fixture body: an answer of known size, one sentence per frame.
+ 
+ @returns Whole event stream
+ 
+ @example
+ ```ts
+ const raw = bodyOf();
+ ```
  */
 function bodyOf(): string {
   /**
-   * One sentence, repeated to reach the fixture size.
+   One sentence, repeated to reach the fixture size.
    */
   const sentence = 'The cat naps by the empty bowl and waits for someone to fill it again. ';
 
@@ -102,25 +102,25 @@ function bodyOf(): string {
 }
 
 /**
- * Wraps a body in a response delivered in socket-sized pieces.
- *
- * @param raw - whole body
- *
- * @returns Response whose body arrives in pieces
- *
- * @example
- * ```ts
- * const response = streamOf({ raw: bodyOf(), },);
- * ```
+ Wraps a body in a response delivered in socket-sized pieces.
+ 
+ @param raw - whole body
+ 
+ @returns Response whose body arrives in pieces
+ 
+ @example
+ ```ts
+ const response = streamOf({ raw: bodyOf(), },);
+ ```
  */
 function streamOf({ raw, }: { readonly raw: string; },): Response {
   /**
-   * Encoder, since a body carries bytes rather than text.
+   Encoder, since a body carries bytes rather than text.
    */
   const encoder = new TextEncoder();
 
   /**
-   * Cursor over the body, a record so the pull closure holds no loose binding.
+   Cursor over the body, a record so the pull closure holds no loose binding.
    */
   const cursor = { at: 0, };
 
@@ -131,7 +131,7 @@ function streamOf({ raw, }: { readonly raw: string; },): Response {
         return;
       }
       /**
-       * Next piece of the body, named so no line starts three nested calls.
+       Next piece of the body, named so no line starts three nested calls.
        */
       const piece = raw.slice(cursor.at, cursor.at + PIECE_CHARS,);
 
@@ -142,24 +142,24 @@ function streamOf({ raw, }: { readonly raw: string; },): Response {
 }
 
 /**
- * Runs one call that must refuse and hands back what it threw.
- *
- * ASYNC, so `caught` from module-test does not apply: that one is synchronous
- * by design, and a rejected promise needs its own capture. Reading the refusal
- * rather than matching on a message lets the class and the bound it names both
- * be asserted, and an assertion naming only a message passes just as happily
- * when the wrong error type is thrown.
- *
- * @param act - call that must reject
- *
- * @returns Failure it raised
- *
- * @throws `Error` when the call resolved instead of refusing
- *
- * @example
- * ```ts
- * const refusal = await refusalFrom(async function readsPastTheBound() { ... },);
- * ```
+ Runs one call that must refuse and hands back what it threw.
+ 
+ ASYNC, so `caught` from module-test does not apply: that one is synchronous
+ by design, and a rejected promise needs its own capture. Reading the refusal
+ rather than matching on a message lets the class and the bound it names both
+ be asserted, and an assertion naming only a message passes just as happily
+ when the wrong error type is thrown.
+ 
+ @param act - call that must reject
+ 
+ @returns Failure it raised
+ 
+ @throws `Error` when the call resolved instead of refusing
+ 
+ @example
+ ```ts
+ const refusal = await refusalFrom(async function readsPastTheBound() { ... },);
+ ```
  */
 async function refusalFrom(act: () => Promise<void>,): Promise<unknown> {
   try {
@@ -194,7 +194,7 @@ await describe({
       name: 'CROSSES OVER WHERE THE TWO RULES MEET, so neither leaves a gap the other does not cover',
       fn: async function crossesOverCleanly() {
         /**
-         * Source whose proportional bound is exactly the floor.
+         Source whose proportional bound is exactly the floor.
          */
         const atCrossover = PRODUCED_VOLUME_FLOOR / MAX_PRODUCED_TO_SOURCE_RATIO;
 
@@ -211,7 +211,7 @@ await describe({
         using guard = armIdleGuard({ label: 'bowl', },);
 
         /**
-         * What the drain raised, read for its class as well as the bound it names.
+         What the drain raised, read for its class as well as the bound it names.
          */
         const raised = await refusalFrom(async function readsPastTheBound(): Promise<void> {
           await drainBody({
@@ -236,7 +236,7 @@ await describe({
         using guard = armIdleGuard({ label: 'bowl', },);
 
         /**
-         * Whole body, which only arrives if nothing ended the call.
+         Whole body, which only arrives if nothing ended the call.
          */
         const body = await drainBody({
           response: streamOf({ raw: bodyOf(), },),

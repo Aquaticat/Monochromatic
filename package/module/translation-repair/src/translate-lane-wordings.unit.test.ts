@@ -1,16 +1,16 @@
 /**
- * Tests for the translate lane's per-slice wordings.
- *
- * WHAT THESE PIN is the fix this file was written for: a stage that heard NO
- * TRANSLATOR keeps the archive's wording as its output text, and passing that
- * through as a decision states that the lane examined the passage and chose the
- * archive. It did not. Nobody answered. Every lane comparison run before this
- * counted those slices as agreement with the archive, which is the window
- * trial's lost-judge defect wearing the producing stage's clothes.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the translate lane's per-slice wordings.
+ 
+ WHAT THESE PIN is the fix this file was written for: a stage that heard NO
+ TRANSLATOR keeps the archive's wording as its output text, and passing that
+ through as a decision states that the lane examined the passage and chose the
+ archive. It did not. Nobody answered. Every lane comparison run before this
+ counted those slices as agreement with the archive, which is the window
+ trial's lost-judge defect wearing the producing stage's clothes.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,18 +26,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one prepared slice pair.
- *
- * @param index - global slice index both sides carry
- *
- * @param target - archive translation of this slice
- *
- * @returns Pair shaped as preparation produces
- *
- * @example
- * ```ts
- * const pair = pairOf({ index: 0, target: 'The cat naps.', },);
- * ```
+ Builds one prepared slice pair.
+ 
+ @param index - global slice index both sides carry
+ 
+ @param target - archive translation of this slice
+ 
+ @returns Pair shaped as preparation produces
+ 
+ @example
+ ```ts
+ const pair = pairOf({ index: 0, target: 'The cat naps.', },);
+ ```
  */
 function pairOf(
   {
@@ -82,22 +82,22 @@ function pairOf(
 }
 
 /**
- * Builds one settled record with the parts this builder reads.
- *
- * @param sliceIndex - slice this record settles
- *
- * @param outputText - what the driver accepted for assembly, which for an
- * unheard slice is the archive's own wording rather than anything produced
- *
- * @param heardTranslators - how many voices the producing stage actually heard,
- * which is the whole question here
- *
- * @returns Record shaped as the driver settles one
- *
- * @example
- * ```ts
- * const record = recordFor({ sliceIndex: 0, outputText: 'The cat naps.', heardTranslators: 2, },);
- * ```
+ Builds one settled record with the parts this builder reads.
+ 
+ @param sliceIndex - slice this record settles
+ 
+ @param outputText - what the driver accepted for assembly, which for an
+ unheard slice is the archive's own wording rather than anything produced
+ 
+ @param heardTranslators - how many voices the producing stage actually heard,
+ which is the whole question here
+ 
+ @returns Record shaped as the driver settles one
+ 
+ @example
+ ```ts
+ const record = recordFor({ sliceIndex: 0, outputText: 'The cat naps.', heardTranslators: 2, },);
+ ```
  */
 function recordFor(
   {
@@ -134,7 +134,7 @@ function recordFor(
 }
 
 /**
- * Two prepared slices, both of which the archive already translates.
+ Two prepared slices, both of which the archive already translates.
  */
 const CAT_SLICES = [
   pairOf({
@@ -158,8 +158,8 @@ await describe({
         + 'when nothing separates the two',
       fn: async () => {
         /**
-         * Wordings where the first slice was translated and the second was met
-         * with silence.
+         Wordings where the first slice was translated and the second was met
+         with silence.
          */
         const wordings = translateLaneWordings({
           slices: CAT_SLICES,
@@ -196,7 +196,7 @@ await describe({
         + 'stood',
       fn: async () => {
         /**
-         * Wordings where nobody was heard for either slice.
+         Wordings where nobody was heard for either slice.
          */
         const wordings = translateLaneWordings({
           slices: CAT_SLICES,
@@ -234,7 +234,7 @@ await describe({
         + 'fall back on: the archive translates the unheard slice and has never translated the unfilled one',
       fn: async () => {
         /**
-         * One translated slice and one place the archive leaves empty.
+         One translated slice and one place the archive leaves empty.
          */
         const anchored = [
           CAT_SLICES[0] ?? pairOf({
@@ -257,8 +257,8 @@ await describe({
         ];
 
         /**
-         * Wordings where the heard slice went unheard and the anchor went
-         * unfilled.
+         Wordings where the heard slice went unheard and the anchor went
+         unfilled.
          */
         const wordings = translateLaneWordings({
           slices: anchored,
@@ -289,7 +289,7 @@ await describe({
         + 'slice by contract and a gap it never named is a lost slice rather than an early stop',
       fn: async () => {
         /**
-         * Failure the builder raised.
+         Failure the builder raised.
          */
         let caught: unknown;
         try {

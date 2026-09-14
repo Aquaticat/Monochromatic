@@ -19,35 +19,35 @@ import {
 
 
 /**
- * What the neighbouring blocks are for, stated inside the panel sheet.
- *
- * THE PANEL NEEDS THIS MORE THAN THE CRITIC DOES, because it decides claims
- * rather than raises them. A critic that can see next door may raise a claim
- * saying a passage belongs to a neighbouring section; a panel that CANNOT see
- * next door has no way to check that and must reject it as unfounded. Widening
- * the critic without widening the panel would therefore produce exactly the
- * claims the panel is guaranteed to throw away.
- *
- * DEMANDING A QUOTE WAS TRIED AND MEASURED WORSE, 2026-08-20, and reverted in
- * `2c93f49bb`. The stronger wording required a panelist voting unsupported on
- * relocation grounds to quote the nearby wording holding the content, on the
- * reasoning that the rule otherwise invites the hypothesis without demanding
- * evidence. That reasoning is sound and the result contradicted it:
- *
- * ```text
- * supported votes            lintong 72% -> 65%   saurikissa 52% -> 51%
- * distinctive words kept     saurikissa repair lane 89.4% -> 83.8%
- * ```
- *
- * It lowered the panel support it was added to raise, and lowered retention of
- * the archive's specifics, which is the damage the window exists to prevent.
- * `doc/audit/the-damage-no-instrument-was-catching.md` carries the measurement.
- * Do not re-add it without evidence that beats the plain wording.
+ What the neighbouring blocks are for, stated inside the panel sheet.
+ 
+ THE PANEL NEEDS THIS MORE THAN THE CRITIC DOES, because it decides claims
+ rather than raises them. A critic that can see next door may raise a claim
+ saying a passage belongs to a neighbouring section; a panel that CANNOT see
+ next door has no way to check that and must reject it as unfounded. Widening
+ the critic without widening the panel would therefore produce exactly the
+ claims the panel is guaranteed to throw away.
+ 
+ DEMANDING A QUOTE WAS TRIED AND MEASURED WORSE, 2026-08-20, and reverted in
+ `2c93f49bb`. The stronger wording required a panelist voting unsupported on
+ relocation grounds to quote the nearby wording holding the content, on the
+ reasoning that the rule otherwise invites the hypothesis without demanding
+ evidence. That reasoning is sound and the result contradicted it:
+ 
+ ```text
+ supported votes            lintong 72% -> 65%   saurikissa 52% -> 51%
+ distinctive words kept     saurikissa repair lane 89.4% -> 83.8%
+ ```
+ 
+ It lowered the panel support it was added to raise, and lowered retention of
+ the archive's specifics, which is the damage the window exists to prevent.
+ `doc/audit/the-damage-no-instrument-was-catching.md` carries the measurement.
+ Do not re-add it without evidence that beats the plain wording.
  */
 const NEARBY_RULE = REPAIR_EVIDENCE_ROLE;
 
 /**
- * System instructions shared by every panelist call.
+ System instructions shared by every panelist call.
  */
 const ADJUDICATION_SYSTEM_PROMPT = `You are an impartial bilingual adjudicator.
 Reviewers reported the numbered claims below against the TRANSLATION of the ORIGINAL document.
@@ -86,22 +86,22 @@ The severity field is optional. No prose, no code fences.
 Every claim number must appear exactly once in verdicts.`;
 
 /**
- * One line of human-readable evidence for one span.
- *
- * @param span - anchored evidence to present
- *
- * @returns Line naming side and quoted text, or the insertion-point wording
- *
- * @example
- * ```ts
- * evidenceLine({ span, },);
- * ```
+ One line of human-readable evidence for one span.
+ 
+ @param span - anchored evidence to present
+ 
+ @returns Line naming side and quoted text, or the insertion-point wording
+ 
+ @example
+ ```ts
+ evidenceLine({ span, },);
+ ```
  */
 function evidenceLine(
   { span, }: { readonly span: SpanAnchor; },
 ): string {
   /**
-   * Side label in prompt vocabulary.
+   Side label in prompt vocabulary.
    */
   const sideLabel = span.side === 'source' ? 'ORIGINAL' : 'TRANSLATION';
   if (span.startOffset === span.endOffset)
@@ -111,58 +111,58 @@ function evidenceLine(
 }
 
 /**
- * Messages plus the index maps ballots resolve through:
- * claim number N on the wire means `claimIds[N - 1]`,
- * group number M means `clusterIds[M - 1]`.
- *
- * @example
- * ```ts
- * const plan: AdjudicationPromptPlan = buildAdjudicationMessages({
- *   sourceText,
- *   targetText,
- *   clusters,
- * },);
- * ```
+ Messages plus the index maps ballots resolve through:
+ claim number N on the wire means `claimIds[N - 1]`,
+ group number M means `clusterIds[M - 1]`.
+ 
+ @example
+ ```ts
+ const plan: AdjudicationPromptPlan = buildAdjudicationMessages({
+   sourceText,
+   targetText,
+   clusters,
+ },);
+ ```
  */
 export type AdjudicationPromptPlan = {
   /**
-   * Messages ready for `chatJson`.
+   Messages ready for `chatJson`.
    */
   readonly messages: readonly ChatMessage[];
 
   /**
-   * Claim ids in prompt numbering order.
+   Claim ids in prompt numbering order.
    */
   readonly claimIds: readonly string[];
 
   /**
-   * Cluster ids in prompt numbering order.
+   Cluster ids in prompt numbering order.
    */
   readonly clusterIds: readonly string[];
 };
 
 /**
- * Builds the panel sheet for one chunk:
- * documents fenced, clusters as numbered groups, claims numbered globally.
- *
- * @param sourceText - original chunk text
- *
- * @param targetText - translation chunk text
- *
- * @param clusters - aggregation output for this chunk, in document order
- *
- * @param neighbouringSourceText - nearby source evidence without extra coverage obligations
- *
- * @param neighbouringIncumbentText - existing placement context, not factual authority
- *
- * @param documentSourceText - optional same-entry original evidence for checking current claims
- *
- * @returns Messages plus index maps for ballot resolution
- *
- * @example
- * ```ts
- * const plan = buildAdjudicationMessages({ sourceText, targetText, clusters, },);
- * ```
+ Builds the panel sheet for one chunk:
+ documents fenced, clusters as numbered groups, claims numbered globally.
+ 
+ @param sourceText - original chunk text
+ 
+ @param targetText - translation chunk text
+ 
+ @param clusters - aggregation output for this chunk, in document order
+ 
+ @param neighbouringSourceText - nearby source evidence without extra coverage obligations
+ 
+ @param neighbouringIncumbentText - existing placement context, not factual authority
+ 
+ @param documentSourceText - optional same-entry original evidence for checking current claims
+ 
+ @returns Messages plus index maps for ballot resolution
+ 
+ @example
+ ```ts
+ const plan = buildAdjudicationMessages({ sourceText, targetText, clusters, },);
+ ```
  */
 export function buildAdjudicationMessages(
   {
@@ -182,26 +182,26 @@ export function buildAdjudicationMessages(
   },
 ): AdjudicationPromptPlan {
   /**
-   * Claim ids in numbering order, filled while rendering.
+   Claim ids in numbering order, filled while rendering.
    */
   const claimIds: string[] = [];
 
   /**
-   * Rendered group blocks in document order.
+   Rendered group blocks in document order.
    */
   const groupBlocks = clusters.map(function toGroupBlock(
     cluster,
     clusterIndex,
   ) {
     /**
-     * Rendered member claims of this group.
+     Rendered member claims of this group.
      */
     const memberBlocks = cluster.members
       .map(function toClaimBlock(member,) {
       claimIds.push(member.claimId,);
 
       /**
-       * Evidence lines for every span of this claim.
+       Evidence lines for every span of this claim.
        */
       const evidence = member
         .claim
@@ -222,7 +222,7 @@ ${evidence}`;
     },);
 
     /**
-     * Group header; single-claim groups need no same-defect question.
+     Group header; single-claim groups need no same-defect question.
      */
     const header = cluster.members
       .length
@@ -237,8 +237,8 @@ ${evidence}`;
   },);
 
   /**
-   * Fence no enclosed text can reproduce, chosen against every text below,
-   * the rendered claims included.
+   Fence no enclosed text can reproduce, chosen against every text below,
+   the rendered claims included.
    */
   const fence = selectFence({
     texts: [
@@ -252,11 +252,11 @@ ${evidence}`;
   },);
 
   /**
-   * The passages either side, or nothing when this slice stands alone.
-   *
-   * PLACED BEFORE THE CLAIMS AND AFTER THE PAIR, so a panelist reads the
-   * evidence in the order the question needs it: what is under review, then
-   * what sits beside it, then what is alleged about the first.
+   The passages either side, or nothing when this slice stands alone.
+   
+   PLACED BEFORE THE CLAIMS AND AFTER THE PAIR, so a panelist reads the
+   evidence in the order the question needs it: what is under review, then
+   what sits beside it, then what is alleged about the first.
    */
   const nearbyBlock = ((neighbouringSourceText === undefined)
       || (neighbouringSourceText === ''))
@@ -271,7 +271,7 @@ ${fence} ${NEARBY_RULE} ${fence}
 `;
 
   /**
-   * Complete same-entry evidence checks absence claims without expanding coverage.
+   Complete same-entry evidence checks absence claims without expanding coverage.
    */
   const documentBlock = (documentSourceText === undefined) || (documentSourceText === '')
     ? ''

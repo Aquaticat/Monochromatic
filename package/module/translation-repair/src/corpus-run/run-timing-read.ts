@@ -19,107 +19,107 @@ import {
 // overlap and the question had no answer at all.
 
 /**
- * Everything a log said about how a run spent its time.
- *
- * @example
- * ```ts
- * const reading: RunTiming = readRunTiming({ lines, },);
- * ```
+ Everything a log said about how a run spent its time.
+ 
+ @example
+ ```ts
+ const reading: RunTiming = readRunTiming({ lines, },);
+ ```
  */
 export type RunTiming = {
   /**
-   * Every round the log reported, in the order it reported them.
+   Every round the log reported, in the order it reported them.
    */
   readonly rounds: readonly RoundTiming[];
 
   /**
-   * Every call whose line carried a duration.
+   Every call whose line carried a duration.
    */
   readonly calls: readonly CallTiming[];
 
   /**
-   * Completion lines that carried no `elapsed` field, which is every one in a
-   * log written before `#215`. A concurrency computed while this is above zero
-   * describes only the calls that happened to be readable.
+   Completion lines that carried no `elapsed` field, which is every one in a
+   log written before `#215`. A concurrency computed while this is above zero
+   describes only the calls that happened to be readable.
    */
   readonly callsWithoutDuration: number;
 };
 
 /**
- * One endpoint of a call's interval, as the sweep sees it.
- *
- * NAMED RATHER THAN A PAIR. A tuple of two numbers at a boundary where both are
- * numbers invites reading them in the wrong order, and the sort depends on
- * which is which.
- *
- * @example
- * ```ts
- * const opens: SweepEvent = { at: 1_760_000_000_000, delta: 1, };
- * ```
+ One endpoint of a call's interval, as the sweep sees it.
+ 
+ NAMED RATHER THAN A PAIR. A tuple of two numbers at a boundary where both are
+ numbers invites reading them in the wrong order, and the sort depends on
+ which is which.
+ 
+ @example
+ ```ts
+ const opens: SweepEvent = { at: 1_760_000_000_000, delta: 1, };
+ ```
  */
 type SweepEvent = {
   /**
-   * Instant this endpoint falls at.
-   *
-   * NOT NAMED `at`, which would sit one character from the `Array.at` calls
-   * that produce these very events and read as the same thing.
+   Instant this endpoint falls at.
+   
+   NOT NAMED `at`, which would sit one character from the `Array.at` calls
+   that produce these very events and read as the same thing.
    */
   readonly instant: number;
 
   /**
-   * Change in calls in flight: `1` where one starts, `-1` where one ends.
+   Change in calls in flight: `1` where one starts, `-1` where one ends.
    */
   readonly delta: number;
 };
 
 /**
- * How many calls a run had in flight, and over what span.
- *
- * @example
- * ```ts
- * const flight: InFlight = measureInFlight({ calls, },);
- * ```
+ How many calls a run had in flight, and over what span.
+ 
+ @example
+ ```ts
+ const flight: InFlight = measureInFlight({ calls, },);
+ ```
  */
 export type InFlight = {
   /**
-   * Wall-clock from the first call's start to the last call's end.
+   Wall-clock from the first call's start to the last call's end.
    */
   readonly spanMs: number;
 
   /**
-   * Summed call durations, which exceeds the span exactly when calls overlap.
+   Summed call durations, which exceeds the span exactly when calls overlap.
    */
   readonly busyMs: number;
 
   /**
-   * Time-weighted mean number of calls in flight across the span.
+   Time-weighted mean number of calls in flight across the span.
    */
   readonly meanInFlight: number;
 
   /**
-   * Largest number of calls in flight at any one instant.
+   Largest number of calls in flight at any one instant.
    */
   readonly peakInFlight: number;
 };
 
 /**
- * Reads every timing line out of a log.
- *
- * @param lines - log lines, in the order they were written
- *
- * @returns Rounds, calls, and how many calls could not be timed
- *
- * @example
- * ```ts
- * const reading = readRunTiming({ lines: text.split('\n',), },);
- * ```
+ Reads every timing line out of a log.
+ 
+ @param lines - log lines, in the order they were written
+ 
+ @returns Rounds, calls, and how many calls could not be timed
+ 
+ @example
+ ```ts
+ const reading = readRunTiming({ lines: text.split('\n',), },);
+ ```
  */
 export function readRunTiming(
   { lines, }: { readonly lines: readonly string[]; },
 ): RunTiming {
   /**
-   * Accumulators filled by one pass, since a line is at most one of the two
-   * shapes and reading the log twice would double the work for nothing.
+   Accumulators filled by one pass, since a line is at most one of the two
+   shapes and reading the log twice would double the work for nothing.
    */
   const found = {
     rounds: [] as RoundTiming[],
@@ -129,7 +129,7 @@ export function readRunTiming(
 
   for (const line of lines) {
     /**
-     * What this line turned out to say about a round.
+     What this line turned out to say about a round.
      */
     const round = readRoundTiming({ line, },);
     if (round.kind === 'round') {
@@ -144,7 +144,7 @@ export function readRunTiming(
     // line that is not a completion at all, so nothing here re-inspects the
     // text to tell them apart.
     /**
-     * What this line turned out to say about a call.
+     What this line turned out to say about a call.
      */
     const call = readCallTiming({ line, },);
     if (call.kind === 'timed') {
@@ -165,23 +165,23 @@ export function readRunTiming(
 }
 
 /**
- * Counts how many calls were in flight across a run.
- *
- * SWEEPS ENDPOINTS rather than sampling a grid: a grid coarse enough to be
- * cheap misses every burst shorter than its step, and the peak is exactly the
- * thing a burst carries.
- *
- * @param calls - every call whose line carried a duration
- *
- * @returns Span, busy time, and the mean and peak in flight
- *
- * @throws Error when no call can be timed, since every figure would be a
- * division by an empty span
- *
- * @example
- * ```ts
- * const flight = measureInFlight({ calls, },);
- * ```
+ Counts how many calls were in flight across a run.
+ 
+ SWEEPS ENDPOINTS rather than sampling a grid: a grid coarse enough to be
+ cheap misses every burst shorter than its step, and the peak is exactly the
+ thing a burst carries.
+ 
+ @param calls - every call whose line carried a duration
+ 
+ @returns Span, busy time, and the mean and peak in flight
+ 
+ @throws Error when no call can be timed, since every figure would be a
+ division by an empty span
+ 
+ @example
+ ```ts
+ const flight = measureInFlight({ calls, },);
+ ```
  */
 export function measureInFlight(
   { calls, }: { readonly calls: readonly CallTiming[]; },
@@ -190,11 +190,11 @@ export function measureInFlight(
     throw new Error('no call in this log carried a duration, so nothing can be counted in flight',);
 
   /**
-   * One entry per endpoint: `1` where a call starts, `-1` where it ends.
-   *
-   * Sorted with ENDS ahead of STARTS at the same instant, which is what keeps
-   * two calls that merely abut from counting as one overlap: the earlier call
-   * is subtracted before the later one is added.
+   One entry per endpoint: `1` where a call starts, `-1` where it ends.
+   
+   Sorted with ENDS ahead of STARTS at the same instant, which is what keeps
+   two calls that merely abut from counting as one overlap: the earlier call
+   is subtracted before the later one is added.
    */
   const events = calls
     .flatMap(function endpoints(call,): readonly SweepEvent[] {
@@ -217,19 +217,19 @@ export function measureInFlight(
     },);
 
   /**
-   * First endpoint, which exists because the call list was checked non-empty
-   * above and every call contributes two.
+   First endpoint, which exists because the call list was checked non-empty
+   above and every call contributes two.
    */
   const opening = nonNullishOrThrow(events[0],);
 
   /**
-   * Last endpoint, likewise: two per call, and the call list is not empty.
+   Last endpoint, likewise: two per call, and the call list is not empty.
    */
   const closing = nonNullishOrThrow(events.at(-1,),);
 
   /**
-   * Sweep state: how many are live now, the highest seen, and the running
-   * time-weighted total.
+   Sweep state: how many are live now, the highest seen, and the running
+   time-weighted total.
    */
   const sweep = {
     live: 0,
@@ -247,12 +247,12 @@ export function measureInFlight(
   }
 
   /**
-   * First start and last end, which bound the whole run.
+   First start and last end, which bound the whole run.
    */
   const spanMs = closing.instant - opening.instant;
 
   /**
-   * Summed durations, which is what the span is compared against.
+   Summed durations, which is what the span is compared against.
    */
   const busyMs = calls.reduce(
     function addCall(

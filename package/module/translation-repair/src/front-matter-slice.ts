@@ -11,12 +11,12 @@ import type { FrontMatterBlock, } from './front-matter.ts';
 // bearing slice without pretending YAML keys are Markdown blocks.
 
 /**
- * Result of aligning optional front matter.
- *
- * @example
- * ```ts
- * const result: FrontMatterSliceResult = { kind: 'none', };
- * ```
+ Result of aligning optional front matter.
+ 
+ @example
+ ```ts
+ const result: FrontMatterSliceResult = { kind: 'none', };
+ ```
  */
 export type FrontMatterSliceResult = {
   readonly kind: 'none';
@@ -26,20 +26,20 @@ export type FrontMatterSliceResult = {
 };
 
 /**
- * Creates front-matter slice when both documents declare one.
- *
- * @param source - original front matter
- *
- * @param target - translation front matter
- *
- * @returns Tagged syntax-bearing pair,
- * insertion pair for source-only metadata,
- * or no localized slice
- *
- * @example
- * ```ts
- * const pair = frontMatterSlice({ source, target, });
- * ```
+ Creates front-matter slice when both documents declare one.
+ 
+ @param source - original front matter
+ 
+ @param target - translation front matter
+ 
+ @returns Tagged syntax-bearing pair,
+ insertion pair for source-only metadata,
+ or no localized slice
+ 
+ @example
+ ```ts
+ const pair = frontMatterSlice({ source, target, });
+ ```
  */
 export function frontMatterSlice(
   {
@@ -54,11 +54,11 @@ export function frontMatterSlice(
     return { kind: 'none', };
 
   /**
-   * Exact source metadata bytes.
+   Exact source metadata bytes.
    */
   const { raw: sourceRaw, } = source;
   /**
-   * Exact target metadata bytes when archive already carries metadata.
+   Exact target metadata bytes when archive already carries metadata.
    */
   const targetRaw = target?.raw;
   return {
@@ -91,16 +91,16 @@ export function frontMatterSlice(
 }
 
 /**
- * Names syntax-bearing metadata slices in prepared order.
- *
- * @param slices - prepared document slices
- *
- * @returns Set of front matter slice indexes
- *
- * @example
- * ```ts
- * const indexes = frontMatterSliceIndexes({ slices, });
- * ```
+ Names syntax-bearing metadata slices in prepared order.
+ 
+ @param slices - prepared document slices
+ 
+ @returns Set of front matter slice indexes
+ 
+ @example
+ ```ts
+ const indexes = frontMatterSliceIndexes({ slices, });
+ ```
  */
 export function frontMatterSliceIndexes(
   { slices, }: { readonly slices: readonly ChunkPair[]; },

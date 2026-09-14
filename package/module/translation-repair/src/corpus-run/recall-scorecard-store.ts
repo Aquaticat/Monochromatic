@@ -15,83 +15,83 @@ import { stampFor, } from './probe-store.ts';
 // under the only name anything looked for.
 
 /**
- * Subdirectory of the runs directory the scorecards are kept under.
+ Subdirectory of the runs directory the scorecards are kept under.
  */
 export const RECALL_SCORECARD_DIR = 'recall-scorecard';
 
 /**
- * Leading characters of the tip that name the file.
+ Leading characters of the tip that name the file.
  */
 const TIP_IN_NAME = 8;
 
 /**
- * One benchmark run's scorecard as it is kept.
- *
- * @example
- * ```ts
- * const record: RecallScorecardRecord = { startedAt, finishedAt, tip, corpusSha, callConfig, entriesPerBand, seedsPerEntry, scorecard, records, };
- * ```
+ One benchmark run's scorecard as it is kept.
+ 
+ @example
+ ```ts
+ const record: RecallScorecardRecord = { startedAt, finishedAt, tip, corpusSha, callConfig, entriesPerBand, seedsPerEntry, scorecard, records, };
+ ```
  */
 export type RecallScorecardRecord = {
   /**
-   * When the benchmark began, which names the file.
+   When the benchmark began, which names the file.
    */
   readonly startedAt: string;
 
   /**
-   * When the scorecard was written.
+   When the scorecard was written.
    */
   readonly finishedAt: string;
 
   /**
-   * Repository tip the benchmark ran from.
+   Repository tip the benchmark ran from.
    */
   readonly tip: string;
 
   /**
-   * Corpus commit the entries were read at.
+   Corpus commit the entries were read at.
    */
   readonly corpusSha: string;
 
   /**
-   * Call configuration in force.
+   Call configuration in force.
    */
   readonly callConfig: Readonly<Record<string, unknown>>;
 
   /**
-   * Entries drawn per size band.
+   Entries drawn per size band.
    */
   readonly entriesPerBand: number;
 
   /**
-   * Omissions planted per entry.
+   Omissions planted per entry.
    */
   readonly seedsPerEntry: number;
 
   /**
-   * Aggregate scorecard.
+   Aggregate scorecard.
    */
   readonly scorecard: Readonly<Record<string, unknown>>;
 
   /**
-   * Graded attempts behind it.
+   Graded attempts behind it.
    */
   readonly records: readonly unknown[];
 };
 
 /**
- * Writes a scorecard under a name no other run can claim.
- *
- * @param runsDir - runs directory the scorecard subdirectory lives under
- *
- * @param record - scorecard and the identity it was measured under
- *
- * @returns Path written
- *
- * @example
- * ```ts
- * const keptAt = await persistRecallScorecard({ runsDir, record, },);
- * ```
+ Writes a scorecard under a name no other run can claim.
+ 
+ @param runsDir - runs directory the scorecard subdirectory lives under
+ 
+ @param record - scorecard and the identity it was measured under
+ 
+ @returns Path written
+ 
+ @example
+ ```ts
+ const keptAt = await persistRecallScorecard({ runsDir, record, },);
+ ```
  */
 export async function persistRecallScorecard(
   {
@@ -103,7 +103,7 @@ export async function persistRecallScorecard(
   },
 ): Promise<string> {
   /**
-   * Directory the scorecards accumulate in.
+   Directory the scorecards accumulate in.
    */
   const dir = join(
     runsDir,
@@ -115,8 +115,8 @@ export async function persistRecallScorecard(
   );
 
   /**
-   * Stamp and tip, so two runs from different builds or different hours
-   * never share a name.
+   Stamp and tip, so two runs from different builds or different hours
+   never share a name.
    */
   const path = join(
     dir,

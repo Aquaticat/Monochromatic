@@ -1,9 +1,9 @@
 /**
- * Tests for the critic benchmark runner over a fake client:
- * every outcome kind becomes attempt data and the scorecard aggregates them.
- * Fixtures are cat-themed invention only.
- *
- * @module
+ Tests for the critic benchmark runner over a fake client:
+ every outcome kind becomes attempt data and the scorecard aggregates them.
+ Fixtures are cat-themed invention only.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -29,29 +29,29 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Delay of the deliberately slow budget-test clients;
- * one call sinks the remaining budget under the dispatch floor.
- * Deliberately long: the first dispatch must fit inside the budget
- * headroom (half of this) even when a loaded full-suite run slows entry
- * preparation, or the test flakes all-skipped.
+ Delay of the deliberately slow budget-test clients;
+ one call sinks the remaining budget under the dispatch floor.
+ Deliberately long: the first dispatch must fit inside the budget
+ headroom (half of this) even when a loaded full-suite run slows entry
+ preparation, or the test flakes all-skipped.
  */
 const BUDGET_CALL_DELAY_MS = 2_000;
 
 /**
- * Invented zh source with a butterfly sentence the seed will delete from the
- * translation.
+ Invented zh source with a butterfly sentence the seed will delete from the
+ translation.
  */
 const SOURCE_TEXT =
   '---\nname: 小猫-whiskers\n---\n\n## 简介\n\n猫猫喜欢晒太阳。猫猫也喜欢追蝴蝶，追到花园的另一头也不肯停下来。\n';
 
 /**
- * Clean invented translation the seed is planted into.
+ Clean invented translation the seed is planted into.
  */
 const TARGET_TEXT =
   '---\nname: 小猫-whiskers\n---\n\n## Introduction\n\nThe cat loves napping in the sun. The cat also chases butterflies all the way across the garden without stopping.\n';
 
 /**
- * Deletion seed removing the butterfly sentence from the translation.
+ Deletion seed removing the butterfly sentence from the translation.
  */
 const BUTTERFLY_SEED: SeededErrorSpec = {
   id: 'seed/omission-0',
@@ -62,8 +62,8 @@ const BUTTERFLY_SEED: SeededErrorSpec = {
 };
 
 /**
- * Wire report from the model that finds the seed,
- * plus one sloppy paraphrased issue that must fail resolution.
+ Wire report from the model that finds the seed,
+ plus one sloppy paraphrased issue that must fail resolution.
  */
 const HIT_REPORT = JSON.stringify({
   issues: [
@@ -84,7 +84,7 @@ const HIT_REPORT = JSON.stringify({
 },);
 
 /**
- * Canned behavior of each fake model.
+ Canned behavior of each fake model.
  */
 const CANNED: Readonly<Record<string, {
   readonly kind: 'ok' | 'refusal' | 'mismatch' | 'http';
@@ -100,7 +100,7 @@ const CANNED: Readonly<Record<string, {
 };
 
 /**
- * Fake client replaying canned outcomes per model.
+ Fake client replaying canned outcomes per model.
  */
 const fakeClient: SyntheticClient = {
   chatText: async function unusedChatText() {
@@ -110,7 +110,7 @@ const fakeClient: SyntheticClient = {
     request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
   ): Promise<ChatJsonOutcome<ValueT>> {
     /**
-     * Canned behavior for the requested model.
+     Canned behavior for the requested model.
      */
     const canned = nonNullishOrThrow(CANNED[request.modelId],);
     if (canned.kind === 'http') {
@@ -135,7 +135,7 @@ const fakeClient: SyntheticClient = {
     }
 
     /**
-     * Canned report parsed and admitted through the caller's own guard.
+     Canned report parsed and admitted through the caller's own guard.
      */
     const value: unknown = JSON.parse(nonNullishOrThrow(canned.json,),);
     if (!request.validate(value,))
@@ -230,7 +230,7 @@ await describe({
       name: 'records non-abort transport failures and rethrows after abort',
       fn: async () => {
         /**
-         * Fake client whose only behavior is throwing a transport failure.
+         Fake client whose only behavior is throwing a transport failure.
          */
         const failingClient: SyntheticClient = {
           ...fakeClient,
@@ -284,8 +284,8 @@ await describe({
         /** Outcome log, one entry per exchange the fake client served. */
         const served: string[] = [];
         /**
-         * Fake client that truncates on the first exchange and answers
-         * cleanly on the second, like a ceiling blowout that recovers.
+         Fake client that truncates on the first exchange and answers
+         cleanly on the second, like a ceiling blowout that recovers.
          */
         const flippingClient: SyntheticClient = {
           ...fakeClient,
@@ -337,9 +337,9 @@ await describe({
         /** Outcome log, one entry per exchange the fake client served. */
         const served: string[] = [];
         /**
-         * Fake client that sheds the first exchange as a gateway failure
-         * and answers cleanly on the second, like a burst-gate 502 that
-         * outlived the transport-level retries.
+         Fake client that sheds the first exchange as a gateway failure
+         and answers cleanly on the second, like a burst-gate 502 that
+         outlived the transport-level retries.
          */
         const sheddingClient: SyntheticClient = {
           ...fakeClient,
@@ -384,8 +384,8 @@ await describe({
         /** Outcome log, one entry per exchange the fake client served. */
         const served: string[] = [];
         /**
-         * Fake client that truncates every exchange, like a pair spiraling
-         * a model's thinking on every pass.
+         Fake client that truncates every exchange, like a pair spiraling
+         a model's thinking on every pass.
          */
         const spiralingClient: SyntheticClient = {
           ...fakeClient,
@@ -423,7 +423,7 @@ await describe({
       name: 'skips what the run budget cannot fit and reports coverage',
       fn: async () => {
         /**
-         * Fake client whose calls take one measurable delay each.
+         Fake client whose calls take one measurable delay each.
          */
         const slowClient: SyntheticClient = {
           ...fakeClient,
@@ -435,9 +435,9 @@ await describe({
           },
         };
         /**
-         * Three entries against a budget that fits exactly one call:
-         * after the first call the remaining budget sinks under the
-         * dispatch floor and the rest must record as skipped.
+         Three entries against a budget that fits exactly one call:
+         after the first call the remaining budget sinks under the
+         dispatch floor and the rest must record as skipped.
          */
         const result = await runCriticBenchmark({
           client: slowClient,
@@ -476,8 +476,8 @@ await describe({
       name: 'keeps a dispatched failure when the budget kills its retry',
       fn: async () => {
         /**
-         * Fake client that burns delay and returns a truncated mismatch,
-         * so the single retry is earned but the budget cannot fit it.
+         Fake client that burns delay and returns a truncated mismatch,
+         so the single retry is earned but the budget cannot fit it.
          */
         const truncatingSlowClient: SyntheticClient = {
           ...fakeClient,
@@ -518,19 +518,19 @@ await describe({
       name: 'forfeits a hung call to its per-call deadline as attempt data',
       fn: async () => {
         /**
-         * Transport that never answers, rejecting only when its exchange
-         * signal aborts, like a stuck streamed exchange.
-         * Exercises the real client so the deadline the client arms
-         * inside its per-model slot is the thing under test.
-         *
-         * @param exchange - request left hanging
-         *
-         * @returns Never resolves; rejects with the abort reason
-         *
-         * @example
-         * ```ts
-         * await hangingTransport(exchange,);
-         * ```
+         Transport that never answers, rejecting only when its exchange
+         signal aborts, like a stuck streamed exchange.
+         Exercises the real client so the deadline the client arms
+         inside its per-model slot is the thing under test.
+         
+         @param exchange - request left hanging
+         
+         @returns Never resolves; rejects with the abort reason
+         
+         @example
+         ```ts
+         await hangingTransport(exchange,);
+         ```
          */
         async function hangingTransport(
           exchange: ForeignBorrowed<TransportExchange>,

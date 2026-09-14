@@ -1,8 +1,8 @@
 /**
- * Tests for the router's slot ledger: only a provider with a per-model limit
- * is ever saturated, and a take is paired with a release on scope exit.
- *
- * @module
+ Tests for the router's slot ledger: only a provider with a per-model limit
+ is ever saturated, and a take is paired with a release on scope exit.
+ 
+ @module
  */
 
 import {
@@ -14,12 +14,12 @@ import {
 import { createSlotLedger, } from '../dist/final/node/index.mjs';
 
 /**
- * Model the cases count slots for.
+ Model the cases count slots for.
  */
 const KIMI = 'hf:moonshotai/Kimi-K3';
 
 /**
- * One Synthetic slot per model, no ceiling elsewhere.
+ One Synthetic slot per model, no ceiling elsewhere.
  */
 const ONE_SYNTHETIC_SLOT = {
   synthetic: 1,
@@ -35,7 +35,7 @@ await describe({
       name: 'SATURATES a limiting provider at its limit and never a provider without one',
       fn: async () => {
         /**
-         * Ledger granting Synthetic one slot per model and the others none.
+         Ledger granting Synthetic one slot per model and the others none.
          */
         const ledger = createSlotLedger({ limits: ONE_SYNTHETIC_SLOT, },);
         expect(ledger.saturated({ modelId: KIMI, },),).toEqual({
@@ -72,7 +72,7 @@ await describe({
         + 'does not spill onto another',
       fn: async () => {
         /**
-         * Ledger granting Synthetic one slot per model.
+         Ledger granting Synthetic one slot per model.
          */
         const ledger = createSlotLedger({ limits: ONE_SYNTHETIC_SLOT, },);
         ledger.take({

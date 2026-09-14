@@ -1,22 +1,22 @@
 /**
- * Tests for the translate lane: several models render one slice from its
- * original, the translation already in the archive stands among them, and
- * judges choose.
- *
- * What these lock down is mostly what the stage does when something is MISSING,
- * because that is the whole reason the lane exists. A slice with no translation
- * must still produce one; a translator that answers with nothing must not put an
- * empty candidate on the ballot; a lost voice must be named rather than reduce
- * quietly to a smaller slate.
- *
- * Judges are scripted BY THE TEXT they see rather than by candidate number, on
- * purpose: the stage rotates the slate per slice so the incumbent does not sit
- * in one position, and a test that pinned index 1 would be asserting the
- * rotation rather than the decision.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the translate lane: several models render one slice from its
+ original, the translation already in the archive stands among them, and
+ judges choose.
+ 
+ What these lock down is mostly what the stage does when something is MISSING,
+ because that is the whole reason the lane exists. A slice with no translation
+ must still produce one; a translator that answers with nothing must not put an
+ empty candidate on the ballot; a lost voice must be named rather than reduce
+ quietly to a smaller slate.
+ 
+ Judges are scripted BY THE TEXT they see rather than by candidate number, on
+ purpose: the stage rotates the slate per slice so the incumbent does not sit
+ in one position, and a test that pinned index 1 would be asserting the
+ rotation rather than the decision.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -41,22 +41,22 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the stage under test.
+ Logger for the stage under test.
  */
 const l = tagged({ tag: 'translate-stage-test', },);
 
 /**
- * Original slice every case renders.
+ Original slice every case renders.
  */
 const SOURCE_TEXT = '猫猫在窗台上打盹，尾巴垂在暖气片旁边。';
 
 /**
- * Translation already in the archive, awkward but present.
+ Translation already in the archive, awkward but present.
  */
 const INCUMBENT_TEXT = 'The cat is doing the sleeping on the windowsill, with tail hanging by the radiator.';
 
 /**
- * Models that render the slice.
+ Models that render the slice.
  */
 const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
@@ -65,7 +65,7 @@ const TRANSLATORS: readonly RosterModelId[] = [
 ];
 
 /**
- * Whole roster the judges are drawn from, translators included.
+ Whole roster the judges are drawn from, translators included.
  */
 const JUDGES: readonly RosterModelId[] = [
   ...TRANSLATORS,
@@ -75,21 +75,21 @@ const JUDGES: readonly RosterModelId[] = [
 ];
 
 /**
- * Judges one healthy select round asks: quorum plus one, not the bench
- * (`stage-fanout-window.ts`), so a round on six judges is four calls.
+ Judges one healthy select round asks: quorum plus one, not the bench
+ (`stage-fanout-window.ts`), so a round on six judges is four calls.
  */
 const JUDGE_WINDOW = firstRoundWindow({ benchSize: JUDGES.length, },);
 
 /**
- * What each model returns when asked to translate.
- *
- * A model absent from the map answers with prose wrapped around its JSON, which
- * fails the wire guard and costs the stage that voice.
+ What each model returns when asked to translate.
+ 
+ A model absent from the map answers with prose wrapped around its JSON, which
+ fails the wire guard and costs the stage that voice.
  */
 type TranslateScript = Readonly<Record<string, string>>;
 
 /**
- * Calls the stage made, by stage name.
+ Calls the stage made, by stage name.
  */
 type CallLog = {
   translate: number;
@@ -97,23 +97,23 @@ type CallLog = {
 };
 
 /**
- * Finds the one-based candidate index whose rendered text carries a needle.
- *
- * The judge sheet numbers candidates and fences their text, so this reads the
- * sheet the way a judge does rather than assuming an order the stage
- * deliberately varies.
- *
- * @param content - judge user message
- *
- * @param needle - text the wanted candidate contains
- *
- * @returns One-based index, or zero when no candidate carries it, which is the
- * ballot value for declining every candidate
- *
- * @example
- * ```ts
- * const best = pickCandidate({ content, needle: 'dozing', },);
- * ```
+ Finds the one-based candidate index whose rendered text carries a needle.
+ 
+ The judge sheet numbers candidates and fences their text, so this reads the
+ sheet the way a judge does rather than assuming an order the stage
+ deliberately varies.
+ 
+ @param content - judge user message
+ 
+ @param needle - text the wanted candidate contains
+ 
+ @returns One-based index, or zero when no candidate carries it, which is the
+ ballot value for declining every candidate
+ 
+ @example
+ ```ts
+ const best = pickCandidate({ content, needle: 'dozing', },);
+ ```
  */
 function pickCandidate(
   {
@@ -125,17 +125,17 @@ function pickCandidate(
   },
 ): number {
   /**
-   * Sheet split at each candidate heading; the first piece is the evidence.
+   Sheet split at each candidate heading; the first piece is the evidence.
    */
   const [, ...blocks] = content.split('CANDIDATE ',);
   for (const block of blocks) {
     /**
-     * Heading line carrying this candidate's number.
+     Heading line carrying this candidate's number.
      */
     const [heading = '',] = block.split('\n',);
 
     /**
-     * Number the heading states.
+     Number the heading states.
      */
     const index = Math.trunc(Number(heading,),);
     if (Number.isInteger(index,) && block.includes(needle,))
@@ -145,30 +145,30 @@ function pickCandidate(
 }
 
 /**
- * Client serving both stages of the lane from a script.
- *
- * @param translations - what each translator returns
- *
- * @param followupTranslations - alternate renderings after exact rejection evidence
- *
- * @param needle - text the judges vote for, absent when they should abstain
- *
- * @param needleAfterRetry - text the judges vote for once the panel has been
- * asked a second time, so a case can script a panel that declines and then
- * agrees; without it the panel answers the same way every round
- *
- * @param calls - shared call log the cases assert on
- *
- * @param judgeSheets - every judge sheet this run produced, so a case can read
- * what judges were actually told rather than what the prompt builder is
- * believed to say
- *
- * @returns Client honoring the script
- *
- * @example
- * ```ts
- * const client = laneClient({ translations, needle: 'dozes', calls, },);
- * ```
+ Client serving both stages of the lane from a script.
+ 
+ @param translations - what each translator returns
+ 
+ @param followupTranslations - alternate renderings after exact rejection evidence
+ 
+ @param needle - text the judges vote for, absent when they should abstain
+ 
+ @param needleAfterRetry - text the judges vote for once the panel has been
+ asked a second time, so a case can script a panel that declines and then
+ agrees; without it the panel answers the same way every round
+ 
+ @param calls - shared call log the cases assert on
+ 
+ @param judgeSheets - every judge sheet this run produced, so a case can read
+ what judges were actually told rather than what the prompt builder is
+ believed to say
+ 
+ @returns Client honoring the script
+ 
+ @example
+ ```ts
+ const client = laneClient({ translations, needle: 'dozes', calls, },);
+ ```
  */
 function laneClient(
   {
@@ -197,14 +197,14 @@ function laneClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Schema the caller asked for, which names the stage.
+       Schema the caller asked for, which names the stage.
        */
       const schema = request.responseFormat
         ?.json_schema
         .name;
       if (schema === 'translation_report') {
         /**
-         * Zero-based production round before this call is counted.
+         Zero-based production round before this call is counted.
          */
         const productionRound = Math.floor(calls.translate / TRANSLATORS.length,);
         calls.translate += 1;
@@ -214,17 +214,17 @@ function laneClient(
         },),);
 
         /**
-         * Rendering this translator was scripted to return, absent when it was
-         * scripted to answer unusably.
+         Rendering this translator was scripted to return, absent when it was
+         scripted to answer unusably.
          */
         /**
-         * Whether this request is grounded in latest rejected slate.
+         Whether this request is grounded in latest rejected slate.
          */
         const isFollowup = request.messages.some(function carriesRejection(message,): boolean {
           return messageText({ message, },).includes('LATEST REJECTION',);
         },);
         /**
-         * Script selected by initial or repair responsibility.
+         Script selected by initial or repair responsibility.
          */
         const selectedTranslations = (isFollowup && (followupTranslations !== undefined))
           ? (followupTranslations[productionRound - 1] ?? translations)
@@ -239,7 +239,7 @@ function laneClient(
         }
 
         /**
-         * Wire reply carrying it.
+         Wire reply carrying it.
          */
         const value: unknown = { translation: scripted, };
         // EXACTLY WHAT THE REAL CLIENT DOES with a reply that fails the
@@ -262,7 +262,7 @@ function laneClient(
       calls.select += 1;
 
       /**
-       * Judge sheet as this judge received it.
+       Judge sheet as this judge received it.
        */
       const content = request.messages
         .map(function toContent(message,) {
@@ -273,16 +273,16 @@ function laneClient(
       judgeSheets.push(content,);
 
       /**
-       * Text this round votes for, which changes once the panel has been asked
-       * again. `calls.select` counts individual judges, so a whole first round
-       * is one per judge the window asked.
+       Text this round votes for, which changes once the panel has been asked
+       again. `calls.select` counts individual judges, so a whole first round
+       is one per judge the window asked.
        */
       const roundNeedle = ((needleAfterRetry !== undefined) && (calls.select > JUDGE_WINDOW))
         ? needleAfterRetry
         : needle;
 
       /**
-       * Ballot naming the candidate carrying the needle.
+       Ballot naming the candidate carrying the needle.
        */
       const ballot: unknown = {
         best: (roundNeedle === '') ? 0 : pickCandidate({
@@ -306,24 +306,24 @@ function laneClient(
 }
 
 /**
- * Runs the lane over the fixture slice.
- *
- * @param translations - what each translator returns
- *
- * @param followupTranslations - alternate outputs for stage-local repair
- *
- * @param needle - text the judges vote for, empty to make them decline
- *
- * @param incumbentText - translation as it stands
- *
- * @param sourceText - original passage, defaulting to shared fixture
- *
- * @returns Stage result plus the call log
- *
- * @example
- * ```ts
- * const { result, } = await runLane({ translations, needle: 'dozes', },);
- * ```
+ Runs the lane over the fixture slice.
+ 
+ @param translations - what each translator returns
+ 
+ @param followupTranslations - alternate outputs for stage-local repair
+ 
+ @param needle - text the judges vote for, empty to make them decline
+ 
+ @param incumbentText - translation as it stands
+ 
+ @param sourceText - original passage, defaulting to shared fixture
+ 
+ @returns Stage result plus the call log
+ 
+ @example
+ ```ts
+ const { result, } = await runLane({ translations, needle: 'dozes', },);
+ ```
  */
 async function runLane(
   {
@@ -347,14 +347,14 @@ async function runLane(
     readonly neighbouringSourceText?: string;
 
     /**
-     * Whether the enclosing chunk is governed by the verse rule, which decides
-     * what BOTH halves of this round are told.
+     Whether the enclosing chunk is governed by the verse rule, which decides
+     what BOTH halves of this round are told.
      */
     readonly lineStructured?: boolean;
   },
 ) {
   /**
-   * Calls each stage made.
+   Calls each stage made.
    */
   const calls: CallLog = {
     translate: 0,
@@ -362,14 +362,14 @@ async function runLane(
   };
 
   /**
-   * What the lane decided for this slice.
+   What the lane decided for this slice.
    */
   /**
-   * Judge sheets this round produced, so a case can read what judges were told.
+   Judge sheets this round produced, so a case can read what judges were told.
    */
   const judgeSheets: string[] = [];
   /**
-   * Exact model-plus-message identities for producer calls.
+   Exact model-plus-message identities for producer calls.
    */
   const producerPrompts: string[] = [];
 

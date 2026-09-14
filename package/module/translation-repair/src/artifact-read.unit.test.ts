@@ -10,8 +10,8 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one issue record wrapper with the chosen fate and claim fields; extra
- * artifact fields the parser ignores are included to mirror real artifacts.
+ Builds one issue record wrapper with the chosen fate and claim fields; extra
+ artifact fields the parser ignores are included to mirror real artifacts.
  */
 function catRecord(
   {
@@ -52,7 +52,7 @@ function catRecord(
 }
 
 /**
- * A well-formed accepted purring-omission record.
+ A well-formed accepted purring-omission record.
  */
 function catAcceptedRecord(): unknown {
   return catRecord({
@@ -68,7 +68,7 @@ function catAcceptedRecord(): unknown {
 }
 
 /**
- * Wraps issue records in an artifact envelope with filler metadata.
+ Wraps issue records in an artifact envelope with filler metadata.
  */
 function catArtifact(
   { issues, }: { readonly issues: readonly unknown[]; },
@@ -111,8 +111,8 @@ await describe({
         + 'optional property, which handed the caller back the question the reading had just answered',
       fn: async () => {
         /**
-         * An artifact from before repair recording existed, whose records carry
-         * no repair fields at all.
+         An artifact from before repair recording existed, whose records carry
+         no repair fields at all.
          */
         const older = parseSettledArtifact({
           value: catArtifact({ issues: [catAcceptedRecord(),], },),
@@ -121,7 +121,7 @@ await describe({
           .kind,).toBe('unrecorded',);
 
         /**
-         * The same issue in a run that recorded what it shipped.
+         The same issue in a run that recorded what it shipped.
          */
         const recorded = parseSettledArtifact({
           value: catArtifact({
@@ -145,7 +145,7 @@ await describe({
         },);
 
         /**
-         * What that run recorded about the one accepted issue.
+         What that run recorded about the one accepted issue.
          */
         const reading = recorded.acceptedIssues[0]?.repair;
         if (reading?.kind !== 'recorded')

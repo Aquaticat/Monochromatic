@@ -19,7 +19,7 @@ import type { ArtifactComparisonRow, } from './artifact-two-lane-vocabulary.ts';
 // so the main contest reader stays focused on ballot/verdict agreement.
 
 /**
- * Candidate statuses carried by source-backed eligibility.
+ Candidate statuses carried by source-backed eligibility.
  */
 const ELIGIBILITY_CANDIDATES = [
   'archive',
@@ -28,44 +28,44 @@ const ELIGIBILITY_CANDIDATES = [
 ] as const;
 
 /**
- * Reports whether comparison row carries explicit front matter slice.
- *
- * @param row - recomputed lane comparison row
- *
- * @returns Whether schema 7 must carry source-backed eligibility
- *
- * @example
- * ```ts
- * const required = contestEligibilityRequired({ row, });
- * ```
+ Reports whether comparison row carries explicit front matter slice.
+ 
+ @param row - recomputed lane comparison row
+ 
+ @returns Whether schema 7 must carry source-backed eligibility
+ 
+ @example
+ ```ts
+ const required = contestEligibilityRequired({ row, });
+ ```
  */
 export function contestEligibilityRequired(
   { row, }: { readonly row: ArtifactComparisonRow; },
 ): boolean {
   /**
-   * Archive wording parsed under same front matter recognizer as preparation.
+   Archive wording parsed under same front matter recognizer as preparation.
    */
   const parsed = splitFrontMatter({ text: row.incumbentText, });
   return parsed.frontMatter !== undefined;
 }
 
 /**
- * Reads and re-derives source-backed candidate eligibility.
- *
- * @param value - recorded eligibility
- *
- * @param row - lane candidates eligibility governs
- *
- * @param path - dotted eligibility path
- *
- * @returns Proven deterministic eligibility
- *
- * @throws ArtifactParseError when shape or any stored status disagrees
- *
- * @example
- * ```ts
- * const eligibility = parseContestEligibility({ value, row, path, });
- * ```
+ Reads and re-derives source-backed candidate eligibility.
+ 
+ @param value - recorded eligibility
+ 
+ @param row - lane candidates eligibility governs
+ 
+ @param path - dotted eligibility path
+ 
+ @returns Proven deterministic eligibility
+ 
+ @throws ArtifactParseError when shape or any stored status disagrees
+ 
+ @example
+ ```ts
+ const eligibility = parseContestEligibility({ value, row, path, });
+ ```
  */
 export function parseContestEligibility(
   {
@@ -79,7 +79,7 @@ export function parseContestEligibility(
   },
 ): LaneContestEligibility {
   /**
-   * Recorded eligibility before fields are read.
+   Recorded eligibility before fields are read.
    */
   const record = requireRecord({
     value,
@@ -102,14 +102,14 @@ export function parseContestEligibility(
     path: `${path}.syntax`,
   },);
   /**
-   * Original metadata stored so deterministic statuses can be recomputed.
+   Original metadata stored so deterministic statuses can be recomputed.
    */
   const sourceText = requireString({
     value: record.sourceText,
     path: `${path}.sourceText`,
   },);
   /**
-   * Eligibility recomputed from source, archive, and both lanes.
+   Eligibility recomputed from source, archive, and both lanes.
    */
   const derived = frontMatterContestEligibility({
     sourceText,
@@ -119,7 +119,7 @@ export function parseContestEligibility(
   },);
   for (const candidate of ELIGIBILITY_CANDIDATES) {
     /**
-     * Status artifact claims for this candidate.
+     Status artifact claims for this candidate.
      */
     const claimed = requireOneOf({
       value: record[candidate],

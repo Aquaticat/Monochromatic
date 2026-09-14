@@ -1,15 +1,15 @@
 /**
- * Tests for never pooling results across builds.
- *
- * THE WHOLE POINT IS THE SPLIT. `artifact-pool.ts` refuses to pool results
- * whose built output differs, and a standing summed across two builds describes
- * neither of them. These cases pin that a collection spanning digests is never
- * formed in the first place.
- *
- * Content is cat-themed invention; a digest here is any opaque string, so the
- * fixtures spell them as such.
- *
- * @module
+ Tests for never pooling results across builds.
+ 
+ THE WHOLE POINT IS THE SPLIT. `artifact-pool.ts` refuses to pool results
+ whose built output differs, and a standing summed across two builds describes
+ neither of them. These cases pin that a collection spanning digests is never
+ formed in the first place.
+ 
+ Content is cat-themed invention; a digest here is any opaque string, so the
+ fixtures spell them as such.
+ 
+ @module
  */
 
 import {
@@ -20,12 +20,12 @@ import {
 import { groupByDigest, } from '../../dist/final/node/index.mjs';
 
 /**
- * One build's identifier.
+ One build's identifier.
  */
 const TABBY = 'sha256-tree-v1:tabby';
 
 /**
- * A second build's identifier.
+ A second build's identifier.
  */
 const CALICO = 'sha256-tree-v1:calico';
 
@@ -36,8 +36,8 @@ await describe({
       name: 'REFUSES to pool two builds, splitting them instead',
       fn: async () => {
         /**
-         * Two readings from one build and one from another, interleaved so a
-         * grouping that only compared neighbours would get it wrong.
+         Two readings from one build and one from another, interleaved so a
+         grouping that only compared neighbours would get it wrong.
          */
         const groups = groupByDigest({
           readings: [
@@ -68,7 +68,7 @@ await describe({
       name: 'orders the largest group first, so the strongest evidence is read first',
       fn: async () => {
         /**
-         * A build with one reading arriving before a build with two.
+         A build with one reading arriving before a build with two.
          */
         const groups = groupByDigest({
           readings: [
@@ -95,7 +95,7 @@ await describe({
       name: 'keeps reading order inside a group, so a stable read gives a stable report',
       fn: async () => {
         /**
-         * Three readings of one build, read in a known order.
+         Three readings of one build, read in a known order.
          */
         const groups = groupByDigest({
           readings: [

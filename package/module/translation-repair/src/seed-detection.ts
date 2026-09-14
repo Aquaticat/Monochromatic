@@ -37,12 +37,12 @@ import {
 // WHICH of the two happened and lets the scorecard report both numbers.
 
 /**
- * How a planted seed fared at the detection stage.
- *
- * @example
- * ```ts
- * const verdict: SeedDetectionVerdict = 'declined-protective';
- * ```
+ How a planted seed fared at the detection stage.
+ 
+ @example
+ ```ts
+ const verdict: SeedDetectionVerdict = 'declined-protective';
+ ```
  */
 export type SeedDetectionVerdict =
   | 'accepted'
@@ -51,30 +51,30 @@ export type SeedDetectionVerdict =
   | 'undetected';
 
 /**
- * Adjudication status the panel lands on when it judges the ORIGINAL at fault
- * and the translation right to differ from it, which is where a policy-driven
- * protective omission arrives.
+ Adjudication status the panel lands on when it judges the ORIGINAL at fault
+ and the translation right to differ from it, which is where a policy-driven
+ protective omission arrives.
  */
 const PROTECTIVE_STATUS = 'source-defect';
 
 /**
- * How each planted seed fared, distinguishing a seed nobody reported from one
- * the panel saw and declined on protective grounds.
- *
- * @param sourceText - original document exactly as repaired
- *
- * @param seededText - translation after planting, exactly as repaired
- *
- * @param applications - planted regions in seeded-text coordinates
- *
- * @param issues - whole-document issue report from the repair run
- *
- * @returns Detection verdict keyed by seed id
- *
- * @example
- * ```ts
- * const detection = gradeSeedDetection({ sourceText, seededText, applications, issues, },);
- * ```
+ How each planted seed fared, distinguishing a seed nobody reported from one
+ the panel saw and declined on protective grounds.
+ 
+ @param sourceText - original document exactly as repaired
+ 
+ @param seededText - translation after planting, exactly as repaired
+ 
+ @param applications - planted regions in seeded-text coordinates
+ 
+ @param issues - whole-document issue report from the repair run
+ 
+ @returns Detection verdict keyed by seed id
+ 
+ @example
+ ```ts
+ const detection = gradeSeedDetection({ sourceText, seededText, applications, issues, },);
+ ```
  */
 export function gradeSeedDetection(
   {
@@ -90,7 +90,7 @@ export function gradeSeedDetection(
   },
 ): Readonly<Record<string, SeedDetectionVerdict>> {
   /**
-   * The same alignment the pipeline computed.
+   The same alignment the pipeline computed.
    */
   const alignment = alignDocumentSections({
     source: parseDocument({ text: sourceText, },),
@@ -98,16 +98,16 @@ export function gradeSeedDetection(
   },);
 
   /**
-   * The same SLICES the pipeline repaired, rebuilt the same way the driver
-   * builds them.
-   *
-   * Issue records carry a slice index, not a pair index, because the driver
-   * subdivides every aligned pair before repairing it. Indexing the pair list
-   * with a slice index was silently wrong for any document that subdivided at
-   * all: past the pair count it read nothing and reported every issue there as
-   * absent, and within the pair count it mixed a pair's start offset with a
-   * slice-local span offset. Detection collapsed toward counting only seeds
-   * that happened to land in the first slice of a pair.
+   The same SLICES the pipeline repaired, rebuilt the same way the driver
+   builds them.
+   
+   Issue records carry a slice index, not a pair index, because the driver
+   subdivides every aligned pair before repairing it. Indexing the pair list
+   with a slice index was silently wrong for any document that subdivided at
+   all: past the pair count it read nothing and reported every issue there as
+   absent, and within the pair count it mixed a pair's start offset with a
+   slice-local span offset. Detection collapsed toward counting only seeds
+   that happened to land in the first slice of a pair.
    */
   const slices: ChunkPair[] = [];
   for (const pair of alignment.pairs) {
@@ -120,13 +120,13 @@ export function gradeSeedDetection(
   }
 
   /**
-   * Every target-side span in whole-document coordinates, carrying the status
-   * the panel gave it; statuses other than accepted are kept precisely so a
-   * declined seed stays distinguishable from an unreported one.
+   Every target-side span in whole-document coordinates, carrying the status
+   the panel gave it; statuses other than accepted are kept precisely so a
+   declined seed stays distinguishable from an unreported one.
    */
   const regions = issues.flatMap(function toRegions(record,) {
     /**
-     * Target slice this issue's spans are local to.
+     Target slice this issue's spans are local to.
      */
     const chunk = slices[record.sliceIndex]
       ?.target;
@@ -158,7 +158,7 @@ export function gradeSeedDetection(
 
   return Object.fromEntries(applications.map(function toVerdict(application,) {
     /**
-     * Statuses of every reported span covering this seed's planted region.
+     Statuses of every reported span covering this seed's planted region.
      */
     const covering = regions
       .filter(function hits(region,) {
@@ -177,7 +177,7 @@ export function gradeSeedDetection(
     // A protective decline outranks an ordinary one because it is the verdict
     // that says the pipeline behaved correctly by not repairing.
     /**
-     * Verdict for this seed, by status precedence.
+     Verdict for this seed, by status precedence.
      */
     const verdict: SeedDetectionVerdict = covering.includes('accepted',)
       ? 'accepted'

@@ -44,23 +44,23 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // cheap lower-bound signal, never the headline rate.
 
 /**
- * Logger root for the repair benchmark shell.
+ Logger root for the repair benchmark shell.
  */
 const l = tagged({ tag: 'translation-repair-repair-benchmark', },);
 
 /**
- * Budget floor under which no new entry dispatches;
- * a sliver of remaining budget cannot fit a whole repair run.
+ Budget floor under which no new entry dispatches;
+ a sliver of remaining budget cannot fit a whole repair run.
  */
 export const MIN_REPAIR_DISPATCH_BUDGET_MS = 120_000;
 
 /**
- * Default restoration-judge roster: three established vendor families kept
- * distinct so no single family decides. GLM-5.3-Flash does not inherit its
- * predecessor's benchmark role without replacement-specific quality evidence.
- * GPT-OSS replaces departed Nemotron because it already holds production
- * checker and whole-roster judge roles; benchmark-specific calibration remains
- * required before treating that replacement as independently established.
+ Default restoration-judge roster: three established vendor families kept
+ distinct so no single family decides. GLM-5.3-Flash does not inherit its
+ predecessor's benchmark role without replacement-specific quality evidence.
+ GPT-OSS replaces departed Nemotron because it already holds production
+ checker and whole-roster judge roles; benchmark-specific calibration remains
+ required before treating that replacement as independently established.
  */
 export const DEFAULT_JUDGE_MODEL_IDS: readonly RosterModelId[] = [
   'hf:openai/gpt-oss-120b',
@@ -69,148 +69,148 @@ export const DEFAULT_JUDGE_MODEL_IDS: readonly RosterModelId[] = [
 ];
 
 /**
- * Judge exchange deadline when the benchmark sets no per-call timeout;
- * grading is a shorter task than repair, so four minutes is generous.
+ Judge exchange deadline when the benchmark sets no per-call timeout;
+ grading is a shorter task than repair, so four minutes is generous.
  */
 const DEFAULT_JUDGE_TIMEOUT_MS = 240_000;
 
 /**
- * One graded repair attempt over one entry.
- *
- * @example
- * ```ts
- * const record: RepairAttemptRecord = {
- *   entryId: 'whiskers',
- *   outcomeKind: 'ok',
- *   status: 'repaired',
- *   seedGrades: { 'seed/omission-0': grade, },
- *   issueCount: 3,
- *   resolvedIssueCount: 2,
- * };
- * ```
+ One graded repair attempt over one entry.
+ 
+ @example
+ ```ts
+ const record: RepairAttemptRecord = {
+   entryId: 'whiskers',
+   outcomeKind: 'ok',
+   status: 'repaired',
+   seedGrades: { 'seed/omission-0': grade, },
+   issueCount: 3,
+   resolvedIssueCount: 2,
+ };
+ ```
  */
 export type RepairAttemptRecord = {
   /**
-   * Entry under repair.
+   Entry under repair.
    */
   readonly entryId: string;
 
   /**
-   * Whether the run dispatched, was cut by the budget, or threw.
+   Whether the run dispatched, was cut by the budget, or threw.
    */
   readonly outcomeKind: 'ok' | 'skipped' | 'error';
 
   /**
-   * Pipeline completion status; absent when the run never produced one.
+   Pipeline completion status; absent when the run never produced one.
    */
   readonly status?: RepairStatus;
 
   /**
-   * Primary zh-anchored verdict per planted seed id from the bilingual
-   * judge ensemble.
+   Primary zh-anchored verdict per planted seed id from the bilingual
+   judge ensemble.
    */
   readonly seedJudgments: Readonly<Record<string, SeedJudgment>>;
 
   /**
-   * Whether each planted seed was recoverable from the Chinese at all.
-   *
-   * Judged against the SOURCE and the deletion, never against the repaired
-   * text, so it is independent of what the pipeline did. A seed the source
-   * does not license cannot fairly count against detection.
+   Whether each planted seed was recoverable from the Chinese at all.
+   
+   Judged against the SOURCE and the deletion, never against the repaired
+   text, so it is independent of what the pipeline did. A seed the source
+   does not license cannot fairly count against detection.
    */
   readonly seedDerivability: Readonly<Record<string, SeedDerivability>>;
 
   /**
-   * Lexical overlap grade per planted seed id;
-   * a lower-bound signal kept for comparison, never the headline rate.
+   Lexical overlap grade per planted seed id;
+   a lower-bound signal kept for comparison, never the headline rate.
    */
   readonly seedGrades: Readonly<Record<string, SeedRestoration>>;
 
   /**
-   * How each planted seed fared at detection, separating detection failures
-   * from repair failures and from panel declines made on protective grounds.
+   How each planted seed fared at detection, separating detection failures
+   from repair failures and from panel declines made on protective grounds.
    */
   readonly seedDetection: Readonly<Record<string, SeedDetectionVerdict>>;
 
   /**
-   * Adjudicated issues the run reported.
+   Adjudicated issues the run reported.
    */
   readonly issueCount: number;
 
   /**
-   * Issues the checkers confirmed fixed in the shipped text.
+   Issues the checkers confirmed fixed in the shipped text.
    */
   readonly resolvedIssueCount: number;
 
   /**
-   * Failure or skip detail in scorecard-stable wording.
+   Failure or skip detail in scorecard-stable wording.
    */
   readonly detail: string;
 
   /**
-   * Shipped candidate text; present only on dispatched attempts so
-   * saved run artifacts support post-run analysis of how partially
-   * restored seeds differ from their planted needles.
+   Shipped candidate text; present only on dispatched attempts so
+   saved run artifacts support post-run analysis of how partially
+   restored seeds differ from their planted needles.
    */
   readonly repairedText?: string;
 };
 
 
 /**
- * Whole repair benchmark result.
- *
- * @example
- * ```ts
- * const { records, scorecard, } = await runRepairBenchmark({ ... },);
- * ```
+ Whole repair benchmark result.
+ 
+ @example
+ ```ts
+ const { records, scorecard, } = await runRepairBenchmark({ ... },);
+ ```
  */
 export type RepairBenchmarkResult = {
   /**
-   * Graded attempts in entry order.
+   Graded attempts in entry order.
    */
   readonly records: readonly RepairAttemptRecord[];
 
   /**
-   * Aggregate scorecard.
+   Aggregate scorecard.
    */
   readonly scorecard: RepairScorecard;
 };
 
 /**
- * Runs the milestone-two benchmark: every entry gets its seeds planted,
- * the whole repair loop runs on the seeded pair, and restoration grades
- * against the known deletions. Entries run sequentially inside the run
- * budget; what the budget cannot fit records as skipped, and the
- * scorecard reports the resulting coverage.
- *
- * @param client - injected model client
- *
- * @param entries - corpus entries with derived seeds
- *
- * @param models - role roster for every repair run
- *
- * @param adjudicationConfig - tally thresholds and weights
- *
- * @param signal - abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param runBudgetMs - wall budget for the whole benchmark
- *
- * @param repair - repair driver seam; tests inject a scripted one
- *
- * @param judge - restoration-judge seam; tests inject a scripted one
- *
- * @param judgeModelIds - bilingual judge roster;
- * defaults to {@link DEFAULT_JUDGE_MODEL_IDS}
- *
- * @returns Graded attempts plus the aggregate scorecard
- *
- * @example
- * ```ts
- * const { scorecard, } = await runRepairBenchmark({ client, entries, models, signal, },);
- * console.log(scorecard.seededRepairRate,);
- * ```
+ Runs the milestone-two benchmark: every entry gets its seeds planted,
+ the whole repair loop runs on the seeded pair, and restoration grades
+ against the known deletions. Entries run sequentially inside the run
+ budget; what the budget cannot fit records as skipped, and the
+ scorecard reports the resulting coverage.
+ 
+ @param client - injected model client
+ 
+ @param entries - corpus entries with derived seeds
+ 
+ @param models - role roster for every repair run
+ 
+ @param adjudicationConfig - tally thresholds and weights
+ 
+ @param signal - abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param runBudgetMs - wall budget for the whole benchmark
+ 
+ @param repair - repair driver seam; tests inject a scripted one
+ 
+ @param judge - restoration-judge seam; tests inject a scripted one
+ 
+ @param judgeModelIds - bilingual judge roster;
+ defaults to {@link DEFAULT_JUDGE_MODEL_IDS}
+ 
+ @returns Graded attempts plus the aggregate scorecard
+ 
+ @example
+ ```ts
+ const { scorecard, } = await runRepairBenchmark({ client, entries, models, signal, },);
+ console.log(scorecard.seededRepairRate,);
+ ```
  */
 export async function runRepairBenchmark(
   {
@@ -240,7 +240,7 @@ export async function runRepairBenchmark(
   }>,
 ): Promise<RepairBenchmarkResult> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: runRepairBenchmark.name,
@@ -248,17 +248,17 @@ export async function runRepairBenchmark(
   },);
 
   /**
-   * Clock start the run budget counts from.
+   Clock start the run budget counts from.
    */
   const runStartedAt = Date.now();
 
   /**
-   * Graded attempts in entry order.
+   Graded attempts in entry order.
    */
   const records: RepairAttemptRecord[] = [];
   for (const entry of entries) {
     /**
-     * Run budget left at dispatch time; unbounded without a budget.
+     Run budget left at dispatch time; unbounded without a budget.
      */
     const remaining = runBudgetMs === undefined
       ? Number.POSITIVE_INFINITY
@@ -280,8 +280,8 @@ export async function runRepairBenchmark(
     }
 
     /**
-     * Seeded pair for this entry, with planted regions for detection
-     * grading.
+     Seeded pair for this entry, with planted regions for detection
+     grading.
      */
     const {
       seededText,
@@ -293,7 +293,7 @@ export async function runRepairBenchmark(
     try {
       /* oxlint-disable no-await-in-loop -- sequential by design: each benchmark row mutates one seeded fixture and is recorded before next; provider capacity is not reason */
       /**
-       * Whole-pipeline result over the seeded pair.
+       Whole-pipeline result over the seeded pair.
        */
       const result: RepairTranslationResult = await repair({
         client,
@@ -305,7 +305,7 @@ export async function runRepairBenchmark(
         ...(perCallTimeoutMs === undefined ? {} : { perCallTimeoutMs, }),
       },);
       /**
-       * Seeds this entry planted, as the judge and probe both address them.
+       Seeds this entry planted, as the judge and probe both address them.
        */
       const references = entry.seeds
         .map(function toReference(seed,) {
@@ -316,7 +316,7 @@ export async function runRepairBenchmark(
       },);
 
       /**
-       * Zh-anchored judge verdicts over this entry's restored seeds.
+       Zh-anchored judge verdicts over this entry's restored seeds.
        */
       const seedJudgments = await judge({
         client,
@@ -330,13 +330,13 @@ export async function runRepairBenchmark(
       },);
 
       /**
-       * Whether each deleted sentence was recoverable from the Chinese at all.
-       *
-       * Asked of the SOURCE and the deletion, never of the repaired text, so
-       * it is independent of whether the pipeline restored anything. A seed the
-       * source does not license cannot fairly count against detection: there is
-       * nothing to notice missing. The scorecard reports it as its own
-       * category rather than folding it into the headline rate.
+       Whether each deleted sentence was recoverable from the Chinese at all.
+       
+       Asked of the SOURCE and the deletion, never of the repaired text, so
+       it is independent of whether the pipeline restored anything. A seed the
+       source does not license cannot fairly count against detection: there is
+       nothing to notice missing. The scorecard reports it as its own
+       category rather than folding it into the headline rate.
        */
       const seedDerivability = await derivability({
         client,

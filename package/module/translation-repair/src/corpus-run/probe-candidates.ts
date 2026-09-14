@@ -33,43 +33,43 @@ import { RUN_ROSTER, } from './run-config.ts';
 // terms.
 
 /**
- * Flag the candidate ids are written after.
+ Flag the candidate ids are written after.
  */
 const CANDIDATES_FLAG = '--candidates';
 
 /**
- * Flag that leaves the seated roster out and runs the candidates by themselves.
+ Flag that leaves the seated roster out and runs the candidates by themselves.
  */
 const ALONE_FLAG = '--candidates-alone';
 
 /**
- * Reads seatable ids named after `--candidates`.
- *
- * @param argv - process arguments, passed rather than read so this is testable
- * without a subprocess
- *
- * @returns Candidate ids in the order written, none when the flag is absent
- *
- * @throws StatedRefusalError when the flag carries no id, or names one the
- * roster does not know
- *
- * @example
- * ```ts
- * const candidates = readCandidateIds({ argv: process.argv, },);
- * ```
+ Reads seatable ids named after `--candidates`.
+ 
+ @param argv - process arguments, passed rather than read so this is testable
+ without a subprocess
+ 
+ @returns Candidate ids in the order written, none when the flag is absent
+ 
+ @throws StatedRefusalError when the flag carries no id, or names one the
+ roster does not know
+ 
+ @example
+ ```ts
+ const candidates = readCandidateIds({ argv: process.argv, },);
+ ```
  */
 export function readCandidateIds(
   { argv, }: { readonly argv: readonly string[]; },
 ): readonly RosterModelId[] {
   /**
-   * Where the flag was written, absent when it was not.
+   Where the flag was written, absent when it was not.
    */
   const flagAt = argv.indexOf(CANDIDATES_FLAG,);
   if (flagAt === (-1))
     return [];
 
   /**
-   * Ids as written after the flag, split on commas, blanks dropped.
+   Ids as written after the flag, split on commas, blanks dropped.
    */
   const written = (argv[flagAt + 1] ?? '')
     .split(',',)
@@ -84,7 +84,7 @@ export function readCandidateIds(
 
   return written.map(function seatable(id,): RosterModelId {
     /**
-     * Roster spelling this id matches, absent when the roster knows no such id.
+     Roster spelling this id matches, absent when the roster knows no such id.
      */
     const known = ROSTER_MODEL_IDS.find(function is(rosterId,): boolean {
       return rosterId === id;
@@ -99,17 +99,17 @@ export function readCandidateIds(
 }
 
 /**
- * Reads whether `--candidates-alone` was written.
- *
- * @param argv - process arguments, passed rather than read so this is testable
- * without a subprocess
- *
- * @returns Whether the candidates run without the seated roster
- *
- * @example
- * ```ts
- * const alone = readCandidatesAlone({ argv: process.argv, },);
- * ```
+ Reads whether `--candidates-alone` was written.
+ 
+ @param argv - process arguments, passed rather than read so this is testable
+ without a subprocess
+ 
+ @returns Whether the candidates run without the seated roster
+ 
+ @example
+ ```ts
+ const alone = readCandidatesAlone({ argv: process.argv, },);
+ ```
  */
 export function readCandidatesAlone(
   { argv, }: { readonly argv: readonly string[]; },
@@ -118,28 +118,28 @@ export function readCandidatesAlone(
 }
 
 /**
- * Roster a probe runs: the seated roster, then every candidate it does not
- * already seat, in the order the candidates were named; or the candidates by
- * themselves when asked to run alone.
- *
- * @param candidates - ids read by {@link readCandidateIds}
- *
- * @param alone - whether the seated roster stays out,
- * read by {@link readCandidatesAlone}
- *
- * @returns Seated roster followed by the candidates new to it, or the
- * candidates each once
- *
- * @throws StatedRefusalError when asked to run the candidates alone and none
- * was named, since a probe over nobody measures nothing
- *
- * @example
- * ```ts
- * const roster = probeRosterWith({
- *   candidates: readCandidateIds({ argv: process.argv, },),
- *   alone: readCandidatesAlone({ argv: process.argv, },),
- * },);
- * ```
+ Roster a probe runs: the seated roster, then every candidate it does not
+ already seat, in the order the candidates were named; or the candidates by
+ themselves when asked to run alone.
+ 
+ @param candidates - ids read by {@link readCandidateIds}
+ 
+ @param alone - whether the seated roster stays out,
+ read by {@link readCandidatesAlone}
+ 
+ @returns Seated roster followed by the candidates new to it, or the
+ candidates each once
+ 
+ @throws StatedRefusalError when asked to run the candidates alone and none
+ was named, since a probe over nobody measures nothing
+ 
+ @example
+ ```ts
+ const roster = probeRosterWith({
+   candidates: readCandidateIds({ argv: process.argv, },),
+   alone: readCandidatesAlone({ argv: process.argv, },),
+ },);
+ ```
  */
 export function probeRosterWith(
   {
@@ -151,7 +151,7 @@ export function probeRosterWith(
   },
 ): readonly RosterModelId[] {
   /**
-   * Candidates each once, in the order named.
+   Candidates each once, in the order named.
    */
   const once = candidates.filter(function isFirst(
     candidate,
@@ -169,7 +169,7 @@ export function probeRosterWith(
   }
 
   /**
-   * Candidates the seated roster does not already carry.
+   Candidates the seated roster does not already carry.
    */
   const joining = once.filter(function isNew(candidate,): boolean {
     return !RUN_ROSTER.includes(candidate,);

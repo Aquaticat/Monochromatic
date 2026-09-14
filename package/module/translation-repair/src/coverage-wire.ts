@@ -42,12 +42,12 @@ import { selectFence, } from './prompt-fence.ts';
 // say what the passage says, is not coverage.
 
 /**
- * Instructions every coverage call shares.
- *
- * SEARCHING, NOT TRANSLATING, is the whole discipline here, and models offered a
- * Chinese passage and an English document reach for translation by default. The
- * rules say so three ways: what the task is, what a wrong answer looks like, and
- * what the reply must contain.
+ Instructions every coverage call shares.
+ 
+ SEARCHING, NOT TRANSLATING, is the whole discipline here, and models offered a
+ Chinese passage and an English document reach for translation by default. The
+ rules say so three ways: what the task is, what a wrong answer looks like, and
+ what the reply must contain.
  */
 const COVERAGE_RULES =
   `You are checking a translation for coverage. This is retrieval and comparison. Do NOT write an English translation of anything.
@@ -76,98 +76,98 @@ Rules:
 ${HOUSE_POLICY_BLOCK}`;
 
 /**
- * Reply-format instruction, kept LAST in the assembled sheet.
+ Reply-format instruction, kept LAST in the assembled sheet.
  */
 const COVERAGE_REPLY_RULE =
   `Reply with JSON only: {"coverage": "full" | "partial" | "none", "quote": "<one span copied exactly from the English translation, or empty for none>", "reason": "<one sentence naming what the span states>"}`;
 
 /**
- * Messages for one coverage call.
- *
- * @example
- * ```ts
- * const plan: CoveragePromptPlan = { messages, };
- * ```
+ Messages for one coverage call.
+ 
+ @example
+ ```ts
+ const plan: CoveragePromptPlan = { messages, };
+ ```
  */
 export type CoveragePromptPlan = {
   /**
-   * System sheet and the passage under question.
+   System sheet and the passage under question.
    */
   readonly messages: readonly ChatMessage[];
 };
 
 /**
- * Latest structured verdict that did not resolve insertion placement.
- *
- * @example
- * ```ts
- * const evidence: CoverageFollowupEvidence = {
- *   verdictKind: 'split',
- *   anchoredFull: 1,
- *   anchoredPartial: 1,
- *   absent: 1,
- *   heard: 3,
- *   asked: 3,
- *   evidence: ['The cat sleeps.',],
- *   missingDestinationCount: 0,
- *   shortfallAdmitted: false,
- * };
- * ```
+ Latest structured verdict that did not resolve insertion placement.
+ 
+ @example
+ ```ts
+ const evidence: CoverageFollowupEvidence = {
+   verdictKind: 'split',
+   anchoredFull: 1,
+   anchoredPartial: 1,
+   absent: 1,
+   heard: 3,
+   asked: 3,
+   evidence: ['The cat sleeps.',],
+   missingDestinationCount: 0,
+   shortfallAdmitted: false,
+ };
+ ```
  */
 export type CoverageFollowupEvidence = {
   /**
-   * Latest semantic outcome.
+   Latest semantic outcome.
    */
   readonly verdictKind: 'carried' | 'partly-carried' | 'absent' | 'split' | 'inconclusive';
   /**
-   * Full anchored voices.
+   Full anchored voices.
    */
   readonly anchoredFull: number;
   /**
-   * Partial anchored voices.
+   Partial anchored voices.
    */
   readonly anchoredPartial: number;
   /**
-   * Absence voices.
+   Absence voices.
    */
   readonly absent: number;
   /**
-   * Voices heard.
+   Voices heard.
    */
   readonly heard: number;
   /**
-   * Models asked.
+   Models asked.
    */
   readonly asked: number;
   /**
-   * Exact target regions latest roster anchored.
+   Exact target regions latest roster anchored.
    */
   readonly evidence: readonly string[];
   /**
-   * Source destinations absent from target.
+   Source destinations absent from target.
    */
   readonly missingDestinationCount: number;
   /**
-   * Whether whole-page shortfall admits passage.
+   Whether whole-page shortfall admits passage.
    */
   readonly shortfallAdmitted: boolean;
 };
 
 /**
- * Builds the sheet asking whether a translation carries one passage.
- *
- * @param sourcePassage - original-side text whose coverage is in question
- *
- * @param translationText - translation searched, whole rather than neighbouring
- *
- * @param followupEvidence - latest unresolved verdict and deterministic evidence
- *
- * @returns Messages for the call
- *
- * @example
- * ```ts
- * const plan = buildCoverageMessages({ sourcePassage, translationText, },);
- * ```
+ Builds the sheet asking whether a translation carries one passage.
+ 
+ @param sourcePassage - original-side text whose coverage is in question
+ 
+ @param translationText - translation searched, whole rather than neighbouring
+ 
+ @param followupEvidence - latest unresolved verdict and deterministic evidence
+ 
+ @returns Messages for the call
+ 
+ @example
+ ```ts
+ const plan = buildCoverageMessages({ sourcePassage, translationText, },);
+ ```
  */
 export function buildCoverageMessages(
   {
@@ -181,7 +181,7 @@ export function buildCoverageMessages(
   },
 ): CoveragePromptPlan {
   /**
-   * Fence neither enclosed text can reproduce, since both are arbitrary prose.
+   Fence neither enclosed text can reproduce, since both are arbitrary prose.
    */
   const fence = selectFence({
     texts: [
@@ -215,37 +215,37 @@ ${fence} END ${fence}`,
 }
 
 /**
- * How much of a passage a translation carries.
+ How much of a passage a translation carries.
  */
 export type CoverageDegree = 'full' | 'partial' | 'none';
 
 /**
- * One coverage reply on the wire.
- *
- * @example
- * ```ts
- * const wire: CoverageReportWire = { coverage: 'none', quote: '', reason: 'nothing renders it', };
- * ```
+ One coverage reply on the wire.
+ 
+ @example
+ ```ts
+ const wire: CoverageReportWire = { coverage: 'none', quote: '', reason: 'nothing renders it', };
+ ```
  */
 export type CoverageReportWire = {
   /**
-   * How much of the passage the translation carries.
+   How much of the passage the translation carries.
    */
   readonly coverage: CoverageDegree;
 
   /**
-   * English carrying it, verbatim, and empty exactly when coverage is none.
+   English carrying it, verbatim, and empty exactly when coverage is none.
    */
   readonly quote: string;
 
   /**
-   * One sentence of justification, kept for reading rather than for deciding.
+   One sentence of justification, kept for reading rather than for deciding.
    */
   readonly reason: string;
 };
 
 /**
- * Coverage degrees a reply may claim.
+ Coverage degrees a reply may claim.
  */
 const COVERAGE_DEGREES: readonly string[] = [
   'full',
@@ -254,25 +254,25 @@ const COVERAGE_DEGREES: readonly string[] = [
 ];
 
 /**
- * Guards a coverage reply.
- *
- * A CLAIM OF COVERAGE WITHOUT A QUOTE IS REFUSED HERE rather than discounted
- * later, because the roster treats a refusal as a lost voice and asks that model
- * again. The quote is the only part of this reply anything downstream can check,
- * so a reply without one carries no evidence at all, and a model that answers
- * that way has not done the task.
- *
- * A claim of NO coverage with a quote is refused for the mirror reason: the two
- * fields contradict each other, and neither can be trusted over the other.
- *
- * @param value - parsed model JSON
- *
- * @returns Whether value is a coverage reply whose fields agree
- *
- * @example
- * ```ts
- * const ok = isCoverageReportWire(JSON.parse(text,),);
- * ```
+ Guards a coverage reply.
+ 
+ A CLAIM OF COVERAGE WITHOUT A QUOTE IS REFUSED HERE rather than discounted
+ later, because the roster treats a refusal as a lost voice and asks that model
+ again. The quote is the only part of this reply anything downstream can check,
+ so a reply without one carries no evidence at all, and a model that answers
+ that way has not done the task.
+ 
+ A claim of NO coverage with a quote is refused for the mirror reason: the two
+ fields contradict each other, and neither can be trusted over the other.
+ 
+ @param value - parsed model JSON
+ 
+ @returns Whether value is a coverage reply whose fields agree
+ 
+ @example
+ ```ts
+ const ok = isCoverageReportWire(JSON.parse(text,),);
+ ```
  */
 export function isCoverageReportWire(value: unknown,): value is CoverageReportWire {
   if (!isJsonRecord(value,))
@@ -287,12 +287,12 @@ export function isCoverageReportWire(value: unknown,): value is CoverageReportWi
     return false;
 
   /**
-   * Whether this reply says the translation carries any of the passage.
+   Whether this reply says the translation carries any of the passage.
    */
   const claimsCoverage = value.coverage !== 'none';
 
   /**
-   * Whether it offers English to point at.
+   Whether it offers English to point at.
    */
   const offersQuote = value.quote
     .trim()
@@ -302,7 +302,7 @@ export function isCoverageReportWire(value: unknown,): value is CoverageReportWi
 }
 
 /**
- * Structured-output constraint for coverage calls.
+ Structured-output constraint for coverage calls.
  */
 export const COVERAGE_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',

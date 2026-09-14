@@ -1,11 +1,11 @@
 /**
- * Tests for where a recall benchmark's scorecard is kept.
- *
- * WHAT THESE PIN is the loss the store exists to stop: a rerun used to
- * overwrite the previous scorecard under one fixed name, so two runs bought to
- * be compared left one file. Fixtures are cat-themed invention.
- *
- * @module
+ Tests for where a recall benchmark's scorecard is kept.
+ 
+ WHAT THESE PIN is the loss the store exists to stop: a rerun used to
+ overwrite the previous scorecard under one fixed name, so two runs bought to
+ be compared left one file. Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -29,14 +29,14 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Fresh runs directory per case.
- *
- * @returns Empty temporary directory
- *
- * @example
- * ```ts
- * const runsDir = await scratch();
- * ```
+ Fresh runs directory per case.
+ 
+ @returns Empty temporary directory
+ 
+ @example
+ ```ts
+ const runsDir = await scratch();
+ ```
  */
 async function scratch(): Promise<string> {
   return await mkdtemp(join(
@@ -46,7 +46,7 @@ async function scratch(): Promise<string> {
 }
 
 /**
- * A scorecard as the benchmark would hand it over.
+ A scorecard as the benchmark would hand it over.
  */
 const BASE_RECORD: RecallScorecardRecord = {
   startedAt: '2026-08-26T09:00:00.000Z',
@@ -65,16 +65,16 @@ const BASE_RECORD: RecallScorecardRecord = {
 };
 
 /**
- * Files the store left under the scorecard directory.
- *
- * @param runsDir - runs directory
- *
- * @returns Names in directory order
- *
- * @example
- * ```ts
- * const kept = await keptFiles({ runsDir, },);
- * ```
+ Files the store left under the scorecard directory.
+ 
+ @param runsDir - runs directory
+ 
+ @returns Names in directory order
+ 
+ @example
+ ```ts
+ const kept = await keptFiles({ runsDir, },);
+ ```
  */
 async function keptFiles({ runsDir, }: { readonly runsDir: string; },): Promise<readonly string[]> {
   return await readdir(join(
@@ -93,12 +93,12 @@ await describe({
         + 'everywhere',
       fn: async () => {
         /**
-         * Fresh runs directory.
+         Fresh runs directory.
          */
         const runsDir = await scratch();
 
         /**
-         * Where the store put it.
+         Where the store put it.
          */
         const path = await persistRecallScorecard({
           runsDir,
@@ -112,7 +112,7 @@ await describe({
         expect(path.includes(':',),).toBe(false,);
 
         /**
-         * What the file says.
+         What the file says.
          */
         const read = JSON.parse(await readFile(
           path,
@@ -128,12 +128,12 @@ await describe({
         + 'a twelve-hour run used to replace the previous one under a fixed name with no trace',
       fn: async () => {
         /**
-         * Fresh runs directory.
+         Fresh runs directory.
          */
         const runsDir = await scratch();
 
         /**
-         * First run's path.
+         First run's path.
          */
         const first = await persistRecallScorecard({
           runsDir,
@@ -144,7 +144,7 @@ await describe({
         },);
 
         /**
-         * Second run's path, started later from another build.
+         Second run's path, started later from another build.
          */
         const second = await persistRecallScorecard({
           runsDir,
@@ -159,7 +159,7 @@ await describe({
           .toBe(second,);
 
         /**
-         * Files left behind: exactly the two runs, no temporary leftovers.
+         Files left behind: exactly the two runs, no temporary leftovers.
          */
         const kept = await keptFiles({ runsDir, },);
         expect(kept.toSorted(),).toEqual([
@@ -185,7 +185,7 @@ await describe({
         + 'answers is whether a change moved the rate, and collapsing before and after into one file answers nothing',
       fn: async () => {
         /**
-         * Fresh runs directory.
+         Fresh runs directory.
          */
         const runsDir = await scratch();
         await persistRecallScorecard({

@@ -33,12 +33,12 @@ import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
 // that a reader who knows this archive should not see it churn.
 
 /**
- * Which rendering a judge would publish, or that it cannot choose.
+ Which rendering a judge would publish, or that it cannot choose.
  */
 export type GateChoice = 'consolidated' | 'standing' | typeof CONTEST_REFUSAL;
 
 /**
- * Names a judge may use, which are the two renderings plus the refusal.
+ Names a judge may use, which are the two renderings plus the refusal.
  */
 const GATE_NAMES: readonly GateChoice[] = [
   'consolidated',
@@ -47,16 +47,16 @@ const GATE_NAMES: readonly GateChoice[] = [
 ];
 
 /**
- * Whether a value is one of the names a judge may use.
- *
- * @param value - candidate name from a reply
- *
- * @returns Whether it names a rendering or the refusal
- *
- * @example
- * ```ts
- * const named = isGateChoice('standing',);
- * ```
+ Whether a value is one of the names a judge may use.
+ 
+ @param value - candidate name from a reply
+ 
+ @returns Whether it names a rendering or the refusal
+ 
+ @example
+ ```ts
+ const named = isGateChoice('standing',);
+ ```
  */
 export function isGateChoice(value: unknown,): value is GateChoice {
   return namesOneOf({
@@ -66,79 +66,79 @@ export function isGateChoice(value: unknown,): value is GateChoice {
 }
 
 /**
- * One judge's reading of the consolidation against the standing text.
- *
- * @example
- * ```ts
- * const ballot: GateBallot = { choice: 'standing', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: 'x', };
- * ```
+ One judge's reading of the consolidation against the standing text.
+ 
+ @example
+ ```ts
+ const ballot: GateBallot = { choice: 'standing', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: 'x', };
+ ```
  */
 export type GateBallot = {
   /**
-   * Rendering this judge would publish.
+   Rendering this judge would publish.
    */
   readonly choice: GateChoice;
 
   /**
-   * Renderings saying something the original does not support.
+   Renderings saying something the original does not support.
    */
   readonly unsupported: readonly GateChoice[];
 
   /**
-   * Unsupported findings exactly as this judge wrote them.
+   Unsupported findings exactly as this judge wrote them.
    */
   readonly unsupportedRaw: readonly string[];
 
   /**
-   * Renderings omitting something the original says.
+   Renderings omitting something the original says.
    */
   readonly dropped: readonly GateChoice[];
 
   /**
-   * Dropped findings exactly as this judge wrote them.
+   Dropped findings exactly as this judge wrote them.
    */
   readonly droppedRaw: readonly string[];
 
   /**
-   * Why, for the audit trail rather than for validity.
+   Why, for the audit trail rather than for validity.
    */
   readonly reason: string;
 };
 
 /**
- * Reply shape a judge is asked for, before it is read.
+ Reply shape a judge is asked for, before it is read.
  */
 export type GateWire = {
   readonly choice: string;
 
   /**
-   * Findings against the consolidation, a list of strings when the model
-   * followed the schema and whatever it wrote otherwise; the reader narrows.
+   Findings against the consolidation, a list of strings when the model
+   followed the schema and whatever it wrote otherwise; the reader narrows.
    */
   readonly unsupported: unknown;
 
   /**
-   * Findings of dropped content, read the same way.
+   Findings of dropped content, read the same way.
    */
   readonly dropped: unknown;
   readonly reason: string;
 };
 
 /**
- * Whether a reply carries the shape a ballot is read from.
- *
- * SHAPE ONLY, on the lane contest's rule: whether the findings are consistent
- * with the choice is the reader's question, because an inconsistent ballot is
- * still a ballot that was cast.
- *
- * @param value - parsed reply
- *
- * @returns Whether it can be read as a ballot
- *
- * @example
- * ```ts
- * const usable = isConsolidateGateWire(reply,);
- * ```
+ Whether a reply carries the shape a ballot is read from.
+ 
+ SHAPE ONLY, on the lane contest's rule: whether the findings are consistent
+ with the choice is the reader's question, because an inconsistent ballot is
+ still a ballot that was cast.
+ 
+ @param value - parsed reply
+ 
+ @returns Whether it can be read as a ballot
+ 
+ @example
+ ```ts
+ const usable = isConsolidateGateWire(reply,);
+ ```
  */
 export function isConsolidateGateWire(value: unknown,): value is GateWire {
   if ((typeof value) !== 'object')
@@ -162,27 +162,27 @@ export function isConsolidateGateWire(value: unknown,): value is GateWire {
 }
 
 /**
- * Reads a validated reply as a ballot.
- *
- * @param wire - reply that passed the shape guard
- *
- * @returns Ballot with its findings narrowed
- *
- * @example
- * ```ts
- * const ballot = readConsolidateGateBallot({ wire, },);
- * ```
+ Reads a validated reply as a ballot.
+ 
+ @param wire - reply that passed the shape guard
+ 
+ @returns Ballot with its findings narrowed
+ 
+ @example
+ ```ts
+ const ballot = readConsolidateGateBallot({ wire, },);
+ ```
  */
 export function readConsolidateGateBallot(
   { wire, }: { readonly wire: GateWire; },
 ): GateBallot {
   /**
-   * Findings against the consolidation, empty where the model wrote no list.
+   Findings against the consolidation, empty where the model wrote no list.
    */
   const unsupported = isStringList(wire.unsupported,) ? wire.unsupported : [];
 
   /**
-   * Findings of dropped content, read the same way.
+   Findings of dropped content, read the same way.
    */
   const dropped = isStringList(wire.dropped,) ? wire.dropped : [];
 
@@ -205,61 +205,61 @@ export function readConsolidateGateBallot(
 }
 
 /**
- * What a judge is shown for one gated slice.
+ What a judge is shown for one gated slice.
  */
 export type ConsolidateGateSubject = {
   /**
-   * Original passage, which is the standard.
+   Original passage, which is the standard.
    */
   readonly sourceText: string;
 
   /**
-   * Syntax role requiring dedicated gate policy.
+   Syntax role requiring dedicated gate policy.
    */
   readonly syntax?: SliceSyntax;
 
   /**
-   * Archive rendering, as evidence rather than as the standard.
+   Archive rendering, as evidence rather than as the standard.
    */
   readonly incumbentText: string;
 
   /**
-   * Rendering this run wrote for this slice.
+   Rendering this run wrote for this slice.
    */
   readonly consolidatedText: string;
 
   /**
-   * Rendering that ships if the consolidation is refused.
+   Rendering that ships if the consolidation is refused.
    */
   readonly standingText: string;
 
   /**
-   * Names and handles both documents' front matter declares, when either does.
-   *
-   * WITHOUT THIS THE JUDGE CANNOT TELL AN ATTESTED NAME FROM AN INVENTION,
-   * which is the defect measured on `Zha_Ke` slice 0 and fixed for every other
-   * model-facing stage.
+   Names and handles both documents' front matter declares, when either does.
+   
+   WITHOUT THIS THE JUDGE CANNOT TELL AN ATTESTED NAME FROM AN INVENTION,
+   which is the defect measured on `Zha_Ke` slice 0 and fixed for every other
+   model-facing stage.
    */
   readonly identityContext?: string;
 };
 
 /**
- * Builds the exchange asking one judge to gate one consolidation.
- *
- * @param subject - passage, archive rendering and the two renderings
- *
- * @returns Messages for one exchange
- *
- * @example
- * ```ts
- * const messages = buildConsolidateGateMessages({ subject, },);
- * ```
+ Builds the exchange asking one judge to gate one consolidation.
+ 
+ @param subject - passage, archive rendering and the two renderings
+ 
+ @returns Messages for one exchange
+ 
+ @example
+ ```ts
+ const messages = buildConsolidateGateMessages({ subject, },);
+ ```
  */
 export function buildConsolidateGateMessages(
   { subject, }: { readonly subject: ConsolidateGateSubject; },
 ): readonly ChatMessage[] {
   /**
-   * Fence long enough to enclose every text without one closing early.
+   Fence long enough to enclose every text without one closing early.
    */
   const fence = selectFence({
     texts: [
@@ -272,12 +272,12 @@ export function buildConsolidateGateMessages(
   },);
 
   /**
-   * Declared names as one block, empty when neither side declares any.
+   Declared names as one block, empty when neither side declares any.
    */
   const declared = subject.identityContext ?? '';
 
   /**
-   * Declared names and their fence, or nothing when neither side declares any.
+   Declared names and their fence, or nothing when neither side declares any.
    */
   const identityBlock = (declared.length === 0)
     ? []
@@ -288,7 +288,7 @@ export function buildConsolidateGateMessages(
       '',
     ];
   /**
-   * Size evidence, or nothing when every rendering is in proportion.
+   Size evidence, or nothing when every rendering is in proportion.
    */
   const sizeNote = contestSizeNote({
     sourceText: subject.sourceText,
@@ -309,10 +309,10 @@ export function buildConsolidateGateMessages(
   },);
 
   /**
-   * Size note and its separating blank line, or nothing at all.
-   *
-   * PLACED AFTER THE PASSAGES so a judge reads the texts before their
-   * sizes, rather than being handed a number to confirm.
+   Size note and its separating blank line, or nothing at all.
+   
+   PLACED AFTER THE PASSAGES so a judge reads the texts before their
+   sizes, rather than being handed a number to confirm.
    */
   const sizeBlock = (sizeNote.length === 0)
     ? []
@@ -322,8 +322,8 @@ export function buildConsolidateGateMessages(
     ];
 
   /**
-   * Community renderings a candidate lacks where the original carries the
-   * term (owner, 2026-09-09), evidence to weigh after the passages.
+   Community renderings a candidate lacks where the original carries the
+   term (owner, 2026-09-09), evidence to weigh after the passages.
    */
   const communityBlock = communityRenderingsBlock({
     sourceText: subject.sourceText,
@@ -344,7 +344,7 @@ export function buildConsolidateGateMessages(
   },);
 
   /**
-   * Policy extended for syntax-bearing visible metadata.
+   Policy extended for syntax-bearing visible metadata.
    */
   const policy = [
     (subject.syntax === 'front-matter')

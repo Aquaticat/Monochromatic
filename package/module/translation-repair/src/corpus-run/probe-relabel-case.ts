@@ -38,17 +38,17 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 // the pinned commit and stays in memory.
 
 /**
- * Sample positions whose repair a human read as damaged, with what was seen.
- *
- * From the round-three repair sheet, which was deliberately left ungraded
- * because the repairs were too broken to score. Written as records rather than
- * bare numbers so each position carries the observation that put it here; a
- * list of integers would say nothing about why these and not others.
- *
- * @example
- * ```ts
- * const first = DAMAGED_CASES[0]?.position;
- * ```
+ Sample positions whose repair a human read as damaged, with what was seen.
+ 
+ From the round-three repair sheet, which was deliberately left ungraded
+ because the repairs were too broken to score. Written as records rather than
+ bare numbers so each position carries the observation that put it here; a
+ list of integers would say nothing about why these and not others.
+ 
+ @example
+ ```ts
+ const first = DAMAGED_CASES[0]?.position;
+ ```
  */
 export const DAMAGED_CASES = [
   {
@@ -86,7 +86,7 @@ export const DAMAGED_CASES = [
 ] as const;
 
 /**
- * Positions {@link DAMAGED_CASES} names, for membership tests.
+ Positions {@link DAMAGED_CASES} names, for membership tests.
  */
 const DAMAGED_POSITIONS: ReadonlySet<number> = new Set(
   DAMAGED_CASES.map(function toPosition(entry,) {
@@ -95,75 +95,75 @@ const DAMAGED_POSITIONS: ReadonlySet<number> = new Set(
 );
 
 /**
- * Everything one prober call needs, rebuilt for a single damaged region.
- *
- * @example
- * ```ts
- * const [first,] = await gatherRelabelCases({ manifestPath, },);
- * ```
+ Everything one prober call needs, rebuilt for a single damaged region.
+ 
+ @example
+ ```ts
+ const [first,] = await gatherRelabelCases({ manifestPath, },);
+ ```
  */
 export type RelabelCase = {
   /**
-   * Corpus entry the region belongs to.
+   Corpus entry the region belongs to.
    */
   readonly entryId: string;
 
   /**
-   * Sample positions that drew this region; more than one means the sheet
-   * showed the same edit under several accepted issues.
+   Sample positions that drew this region; more than one means the sheet
+   showed the same edit under several accepted issues.
    */
   readonly positions: readonly number[];
 
   /**
-   * Region as the pipeline recorded it.
+   Region as the pipeline recorded it.
    */
   readonly region: RepairRegion;
 
   /**
-   * Accepted issues the region served, exactly as production renders them.
+   Accepted issues the region served, exactly as production renders them.
    */
   readonly issues: readonly AdjudicatedIssue[];
 
   /**
-   * Source text of the slice this region sits in.
+   Source text of the slice this region sits in.
    */
   readonly sourceText: string;
 
   /**
-   * Translation of that slice before any replacement.
+   Translation of that slice before any replacement.
    */
   readonly baselineText: string;
 
   /**
-   * What the probe said about this region during the run, for comparison.
+   What the probe said about this region during the run, for comparison.
    */
   readonly recorded: string;
 };
 
 /**
- * Finds the slice whose translation contains a region's replaced text.
- *
- * Located by CONTENT rather than by the recorded chunk index, because an index
- * carries a convention and a convention is the kind of thing that silently
- * shifts between a run and a later reading. Text either contains the region or
- * it does not.
- *
- * @param sourceText - whole original document
- *
- * @param targetText - whole translation
- *
- * @param before - replaced text to locate
- *
- * @returns Slice texts surrounding the region
- *
- * @throws {@link ArtifactParseError} when no slice carries the replaced text,
- * which means slicing no longer reproduces the run and every later comparison
- * would use a different prompt than production sent
- *
- * @example
- * ```ts
- * const slice = locateSlice({ sourceText, targetText, before, },);
- * ```
+ Finds the slice whose translation contains a region's replaced text.
+ 
+ Located by CONTENT rather than by the recorded chunk index, because an index
+ carries a convention and a convention is the kind of thing that silently
+ shifts between a run and a later reading. Text either contains the region or
+ it does not.
+ 
+ @param sourceText - whole original document
+ 
+ @param targetText - whole translation
+ 
+ @param before - replaced text to locate
+ 
+ @returns Slice texts surrounding the region
+ 
+ @throws {@link ArtifactParseError} when no slice carries the replaced text,
+ which means slicing no longer reproduces the run and every later comparison
+ would use a different prompt than production sent
+ 
+ @example
+ ```ts
+ const slice = locateSlice({ sourceText, targetText, before, },);
+ ```
  */
 export function locateSlice(
   {
@@ -180,7 +180,7 @@ export function locateSlice(
   readonly baselineText: string;
 } {
   /**
-   * Aligned chunk pairs, rebuilt exactly as the pipeline builds them.
+   Aligned chunk pairs, rebuilt exactly as the pipeline builds them.
    */
   const alignment = alignDocumentSections({
     source: parseDocument({ text: sourceText, },),
@@ -188,14 +188,14 @@ export function locateSlice(
   },);
 
   /**
-   * Paragraph-bound slices across every aligned section.
-   *
-   * STAMPED FROM THE FINISHED ORDER rather than from arithmetic handed to
-   * subdivision, which is what `reindexSlicePair` exists for. This used to pass
-   * the PAIR index as the base, so every section restamped from its own number:
-   * pair 1's first slice claimed 1, which pair 0's second slice already held.
-   * Nothing here reads a stamp, since the slice is found by its text, which is
-   * why that went unseen rather than wrong.
+   Paragraph-bound slices across every aligned section.
+   
+   STAMPED FROM THE FINISHED ORDER rather than from arithmetic handed to
+   subdivision, which is what `reindexSlicePair` exists for. This used to pass
+   the PAIR index as the base, so every section restamped from its own number:
+   pair 1's first slice claimed 1, which pair 0's second slice already held.
+   Nothing here reads a stamp, since the slice is found by its text, which is
+   why that went unseen rather than wrong.
    */
   const slices = alignment.pairs
     .flatMap(function carve(pair,): readonly ChunkPair[] {
@@ -226,7 +226,7 @@ export function locateSlice(
   assertSliceIndexing({ slices, },);
 
   /**
-   * First slice whose translation carries the replaced text.
+   First slice whose translation carries the replaced text.
    */
   const holder = slices
     .find(function holdsBefore(slice,) {
@@ -263,22 +263,22 @@ export function locateSlice(
 }
 
 /**
- * Rebuilds every damaged-region case named by {@link DAMAGED_CASES}.
- *
- * @param manifestPath - sample manifest the positions index into
- *
- * @param pin - corpus commit to read the pages at, defaulting to the run pin so
- * nothing production does changes
- *
- * @returns One case per distinct region, in sample order
- *
- * @throws {@link ArtifactParseError} when a manifest, artifact, or slice lookup
- * does not reproduce the run
- *
- * @example
- * ```ts
- * const cases = await gatherRelabelCases({ manifestPath, },);
- * ```
+ Rebuilds every damaged-region case named by {@link DAMAGED_CASES}.
+ 
+ @param manifestPath - sample manifest the positions index into
+ 
+ @param pin - corpus commit to read the pages at, defaulting to the run pin so
+ nothing production does changes
+ 
+ @returns One case per distinct region, in sample order
+ 
+ @throws {@link ArtifactParseError} when a manifest, artifact, or slice lookup
+ does not reproduce the run
+ 
+ @example
+ ```ts
+ const cases = await gatherRelabelCases({ manifestPath, },);
+ ```
  */
 export async function gatherRelabelCases(
   {
@@ -290,14 +290,14 @@ export async function gatherRelabelCases(
   },
 ): Promise<readonly RelabelCase[]> {
   /**
-   * Drawn items, validated and digest-checked against their own contents.
+   Drawn items, validated and digest-checked against their own contents.
    */
   const manifest = parseSampleManifest({
     value: await readRunJson({ path: manifestPath, },),
   },);
 
   /**
-   * Drawn items this rebuild probes.
+   Drawn items this rebuild probes.
    */
   const wanted = manifest.items
     .filter(function isDamaged(item,) {
@@ -305,23 +305,23 @@ export async function gatherRelabelCases(
     },);
 
   /**
-   * Cases keyed by entry and envelope, so one edit drawn twice is probed once.
+   Cases keyed by entry and envelope, so one edit drawn twice is probed once.
    */
   const byRegion = new Map<string, RelabelCase>();
   /* oxlint-disable no-await-in-loop -- sequential on purpose: each iteration reads one artifact and two git blobs, and running them together would multiply peak memory by the entry count for no wall-clock gain on a diagnostic */
   for (const item of wanted) {
     /**
-     * Settled records of the entry this item was drawn from.
+     Settled records of the entry this item was drawn from.
      */
     const records = await readArtifactRecords({ entryId: item.entryId, },);
 
     /**
-     * Record carrying the drawn issue.
+     Record carrying the drawn issue.
      */
     const drawn = records
       .find(function isDrawn(candidate,) {
         /**
-         * Settled id of the candidate record.
+         Settled id of the candidate record.
          */
         const candidateId = candidate.issue
           .issueId;
@@ -332,7 +332,7 @@ export async function gatherRelabelCases(
       continue;
 
     /**
-     * Original document at the pinned commit.
+     Original document at the pinned commit.
      */
     const sourceText = await readCorpusFile({
       pin,
@@ -340,7 +340,7 @@ export async function gatherRelabelCases(
     },);
 
     /**
-     * Translation at the same commit.
+     Translation at the same commit.
      */
     const targetText = await readCorpusFile({
       pin,
@@ -349,12 +349,12 @@ export async function gatherRelabelCases(
 
     for (const region of drawn.repairRegions) {
       /**
-       * Identity of this edit within the corpus.
+       Identity of this edit within the corpus.
        */
       const key = `${item.entryId} ${region.envelopeId}`;
 
       /**
-       * Case an earlier position already built for this edit.
+       Case an earlier position already built for this edit.
        */
       const seen = byRegion.get(key,);
       if (seen !== undefined) {

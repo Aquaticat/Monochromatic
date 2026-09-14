@@ -22,27 +22,27 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // decided here; what the leader needs is decided there.
 
 /**
- * Everything one round's ballots add up to.
- *
- * @example
- * ```ts
- * const { ranked, abstained, } = countBallots({ voices, stakesByIndex, candidateCount: 2, l, },);
- * ```
+ Everything one round's ballots add up to.
+ 
+ @example
+ ```ts
+ const { ranked, abstained, } = countBallots({ voices, stakesByIndex, candidateCount: 2, l, },);
+ ```
  */
 export type CountedBallots = {
   /**
-   * Every ballot as cast and weighed, in the order judges answered.
+   Every ballot as cast and weighed, in the order judges answered.
    */
   readonly ballots: readonly SelectionBallot[];
 
   /**
-   * What every candidate drew, whether or not it led.
+   What every candidate drew, whether or not it led.
    */
   readonly perCandidate: readonly CandidateWeight[];
 
   /**
-   * One-based candidate index beside its drawn weight, most first; empty
-   * when every judge abstained.
+   One-based candidate index beside its drawn weight, most first; empty
+   when every judge abstained.
    */
   readonly ranked: readonly (readonly [
     number,
@@ -50,41 +50,41 @@ export type CountedBallots = {
   ])[];
 
   /**
-   * Ballots that named no usable candidate, kept so a selection that failed
-   * for want of agreement is distinguishable from one nobody voted in.
+   Ballots that named no usable candidate, kept so a selection that failed
+   for want of agreement is distinguishable from one nobody voted in.
    */
   readonly abstained: number;
 
   /**
-   * Ballots a judge cast for its own work.
+   Ballots a judge cast for its own work.
    */
   readonly self: number;
 };
 
 /**
- * Weighs every heard ballot and tallies what each candidate drew.
- *
- * Self-votes are counted rather than prevented: the reason for seating
- * producers is that their judgement carries value, and the reason for
- * weighing and recording is that self-preference is a known failure of
- * exactly this arrangement. A rate nobody can read is an assumption.
- *
- * @param voices - ballots the gather heard, already validated
- *
- * @param stakesByIndex - models with a stake in each one-based candidate
- * index, for telling a self-vote from an ordinary one
- *
- * @param candidateCount - how many candidates the judges were shown, so an
- * index past the end is an abstention rather than a vote
- *
- * @param l - logger of the calling round
- *
- * @returns Ballots, per-candidate weights, the ranking and the counts
- *
- * @example
- * ```ts
- * const counted = countBallots({ voices: gather.voices, stakesByIndex, candidateCount: 2, l, },);
- * ```
+ Weighs every heard ballot and tallies what each candidate drew.
+ 
+ Self-votes are counted rather than prevented: the reason for seating
+ producers is that their judgement carries value, and the reason for
+ weighing and recording is that self-preference is a known failure of
+ exactly this arrangement. A rate nobody can read is an assumption.
+ 
+ @param voices - ballots the gather heard, already validated
+ 
+ @param stakesByIndex - models with a stake in each one-based candidate
+ index, for telling a self-vote from an ordinary one
+ 
+ @param candidateCount - how many candidates the judges were shown, so an
+ index past the end is an abstention rather than a vote
+ 
+ @param l - logger of the calling round
+ 
+ @returns Ballots, per-candidate weights, the ranking and the counts
+ 
+ @example
+ ```ts
+ const counted = countBallots({ voices: gather.voices, stakesByIndex, candidateCount: 2, l, },);
+ ```
  */
 export function countBallots(
   {
@@ -100,12 +100,12 @@ export function countBallots(
   },
 ): CountedBallots {
   /**
-   * Every ballot as cast, weighed, and carried out of this function rather
-   * than left in a log line.
+   Every ballot as cast, weighed, and carried out of this function rather
+   than left in a log line.
    */
   const ballots: readonly SelectionBallot[] = voices.map(function toBallot(voice,): SelectionBallot {
     /**
-     * This judge's chosen index, read as a number whichever way it was sent.
+     This judge's chosen index, read as a number whichever way it was sent.
      */
     const {
       best,
@@ -113,13 +113,13 @@ export function countBallots(
     } = readCandidateBallotWire({ sent: voice.value, },);
 
     /**
-     * Whether this judge named text it has a stake in.
+     Whether this judge named text it has a stake in.
      */
     const ownWork = stakesByIndex.get(best,)
       ?.has(voice.modelId,)
       === true;
     /**
-     * Whether this ballot names a candidate at all.
+     Whether this ballot names a candidate at all.
      */
     const usable = (best !== CANDIDATE_NONE) && (best <= candidateCount);
     return {
@@ -134,8 +134,8 @@ export function countBallots(
   },);
 
   /**
-   * What each candidate drew, kept per index so a decline says by how much the
-   * leader fell short and against what.
+   What each candidate drew, kept per index so a decline says by how much the
+   leader fell short and against what.
    */
   const perCandidate = countCandidateWeights({
     ballots,
@@ -143,15 +143,15 @@ export function countBallots(
   },);
 
   /**
-   * Ballot weight per one-based candidate index; out-of-range ballots and
-   * explicit declines are counted as abstentions rather than discarded
-   * silently.
+   Ballot weight per one-based candidate index; out-of-range ballots and
+   explicit declines are counted as abstentions rather than discarded
+   silently.
    */
   const tally = new Map<number, number>();
 
   /**
-   * Ballots that named no usable candidate, and ballots a judge cast for its
-   * own work.
+   Ballots that named no usable candidate, and ballots a judge cast for its
+   own work.
    */
   const counters = {
     abstained: 0,
@@ -176,7 +176,7 @@ export function countBallots(
   }
 
   /**
-   * Candidate indexes ordered by drawn weight, most first.
+   Candidate indexes ordered by drawn weight, most first.
    */
   const ranked = [...tally.entries(),].toSorted(function byWeight(
     a,

@@ -16,7 +16,7 @@ import {
 // integer and no fixture here carries text a document could contain.
 
 /**
- * A roster summary with nothing recorded, for cases that do not turn on it.
+ A roster summary with nothing recorded, for cases that do not turn on it.
  */
 const SILENT_ROSTER = {
   offered: 0,
@@ -25,22 +25,22 @@ const SILENT_ROSTER = {
 };
 
 /**
- * Builds a gathered run whose counts are exactly the ones a case cares about.
- *
- * Every other member is empty, because the note under test reads only the
- * repair-lane record count and the report's remaining lines are covered by the
- * figures they print.
- *
- * @param repairShippedRecords - repair-lane records the run holds
- *
- * @param editorOffered - slices the editor was asked to repair
- *
- * @returns Gathered probe carrying those counts and nothing else
- *
- * @example
- * ```ts
- * const gathered = gatheredWith({ repairShippedRecords: 0, editorOffered: 4, },);
- * ```
+ Builds a gathered run whose counts are exactly the ones a case cares about.
+ 
+ Every other member is empty, because the note under test reads only the
+ repair-lane record count and the report's remaining lines are covered by the
+ figures they print.
+ 
+ @param repairShippedRecords - repair-lane records the run holds
+ 
+ @param editorOffered - slices the editor was asked to repair
+ 
+ @returns Gathered probe carrying those counts and nothing else
+ 
+ @example
+ ```ts
+ const gathered = gatheredWith({ repairShippedRecords: 0, editorOffered: 4, },);
+ ```
  */
 function gatheredWith(
   {
@@ -69,22 +69,22 @@ function gatheredWith(
 }
 
 /**
- * Diverts `console.log` into a list until disposed.
- *
- * @param lines - where diverted lines are appended
- *
- * @returns Capture holding those lines, which restores logging on disposal
- *
- * @example
- * ```ts
- * using capture = collectingInto({ lines, },);
- * ```
+ Diverts `console.log` into a list until disposed.
+ 
+ @param lines - where diverted lines are appended
+ 
+ @returns Capture holding those lines, which restores logging on disposal
+ 
+ @example
+ ```ts
+ using capture = collectingInto({ lines, },);
+ ```
  */
 function collectingInto(
   { lines, }: { readonly lines: string[]; },
 ): { readonly lines: readonly string[]; } & Disposable {
   /**
-   * Real logger, put back on disposal.
+   Real logger, put back on disposal.
    */
   const printed = console.log;
   console.log = (...parts: readonly unknown[]) => {
@@ -100,22 +100,22 @@ function collectingInto(
 }
 
 /**
- * Reports one gathered run with every printed line collected instead of shown.
- *
- * @param gathered - run to report on
- *
- * @returns Every line the report printed, in order
- *
- * @example
- * ```ts
- * const lines = reportedLines({ gathered, },);
- * ```
+ Reports one gathered run with every printed line collected instead of shown.
+ 
+ @param gathered - run to report on
+ 
+ @returns Every line the report printed, in order
+ 
+ @example
+ ```ts
+ const lines = reportedLines({ gathered, },);
+ ```
  */
 function reportedLines(
   { gathered, }: { readonly gathered: GatheredProbe; },
 ): readonly string[] {
   /**
-   * Lines the report printed.
+   Lines the report printed.
    */
   const lines: string[] = [];
 
@@ -128,7 +128,7 @@ function reportedLines(
 }
 
 /**
- * Text identifying the note under test, short enough to survive rewording.
+ Text identifying the note under test, short enough to survive rewording.
  */
 const ZERO_NOTE = 'NOTE repairShippedRecords=0';
 
@@ -142,7 +142,7 @@ await describe({
         + 'majorityIntroduced=0 then says the probe found nothing wrong when it found nothing at all',
       fn: async () => {
         /**
-         * Report over a run holding no repair-lane records.
+         Report over a run holding no repair-lane records.
          */
         const lines = reportedLines({
           gathered: gatheredWith({
@@ -163,7 +163,7 @@ await describe({
         + 'than riding along on every report and teaching readers to skip it',
       fn: async () => {
         /**
-         * Report over a run holding one repair-lane record.
+         Report over a run holding one repair-lane record.
          */
         const lines = reportedLines({
           gathered: gatheredWith({
@@ -185,7 +185,7 @@ await describe({
         + 'would say a number means less than it looks and stop there',
       fn: async () => {
         /**
-         * Report over a run holding no repair-lane records.
+         Report over a run holding no repair-lane records.
          */
         const lines = reportedLines({
           gathered: gatheredWith({
@@ -195,7 +195,7 @@ await describe({
         },);
 
         /**
-         * The note itself, which must name where the ambiguity is settled.
+         The note itself, which must name where the ambiguity is settled.
          */
         const note = lines.find(function carriesNote(line,): boolean {
           return line.startsWith(ZERO_NOTE,);

@@ -1,20 +1,20 @@
 /**
- * Tests for the band ordering a corpus pass starts entries in.
- *
- * This module had no test at all, and it decides which entries a pass reaches
- * first. A defect here does not crash anything: it quietly fills one band
- * faster than the others, so the stratified sample drawn later is biased toward
- * whichever band the ordering favored, and the precision number the milestone
- * gate reads is measured on the wrong population.
- *
- * The rank offset is the subtle part and gets the most attention below. Without
- * it every run restarts each band at zero, the within-rank tiebreak hands every
- * run to the same band, and the starvation this ordering exists to prevent
- * comes back.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the band ordering a corpus pass starts entries in.
+ 
+ This module had no test at all, and it decides which entries a pass reaches
+ first. A defect here does not crash anything: it quietly fills one band
+ faster than the others, so the stratified sample drawn later is biased toward
+ whichever band the ordering favored, and the precision number the milestone
+ gate reads is measured on the wrong population.
+ 
+ The rank offset is the subtle part and gets the most attention below. Without
+ it every run restarts each band at zero, the within-rank tiebreak hands every
+ run to the same band, and the starvation this ordering exists to prevent
+ comes back.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -39,20 +39,20 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Bands a raw byte count, stating the unit explicitly.
- *
- * This case sweeps byte counts around the band cuts, which are byte
- * counts by definition and cannot be produced from text, so the
- * assertion is the honest way to reach `classifyBand`.
- *
- * @param count - UTF-8 byte length under test
- *
- * @returns Band that count falls in
- *
- * @example
- * ```ts
- * expect(bandAt(1_842,),).toBe('small',);
- * ```
+ Bands a raw byte count, stating the unit explicitly.
+ 
+ This case sweeps byte counts around the band cuts, which are byte
+ counts by definition and cannot be produced from text, so the
+ assertion is the honest way to reach `classifyBand`.
+ 
+ @param count - UTF-8 byte length under test
+ 
+ @returns Band that count falls in
+ 
+ @example
+ ```ts
+ expect(bandAt(1_842,),).toBe('small',);
+ ```
  */
 function bandAt(count: number,): SizeBand {
   assertSourceBytes(count,);
@@ -61,18 +61,18 @@ function bandAt(count: number,): SizeBand {
 
 
 /**
- * Builds an entry reduced to what ordering reads.
- *
- * @param id - corpus entry id
- *
- * @param sourceBytes - page source size in UTF-8 bytes
- *
- * @returns Sized entry
- *
- * @example
- * ```ts
- * const entry = sized({ id: 'Mittens', sourceBytes: 900, },);
- * ```
+ Builds an entry reduced to what ordering reads.
+ 
+ @param id - corpus entry id
+ 
+ @param sourceBytes - page source size in UTF-8 bytes
+ 
+ @returns Sized entry
+ 
+ @example
+ ```ts
+ const entry = sized({ id: 'Mittens', sourceBytes: 900, },);
+ ```
  */
 function sized(
   {
@@ -156,7 +156,7 @@ await describe({
         + 'on the cut, which is medium',
       fn: async () => {
         /**
-         * Ids of the small-band entries, as a set for order-free comparison.
+         Ids of the small-band entries, as a set for order-free comparison.
          */
         const ids = smallBandIds({
           entries: [
@@ -215,7 +215,7 @@ await describe({
         + 'band a pass has not reached yet',
       fn: async () => {
         /**
-         * Settled counts across a slate holding only large entries.
+         Settled counts across a slate holding only large entries.
          */
         const counts = countSettledPerBand({
           entries: [
@@ -240,7 +240,7 @@ await describe({
       name: 'counts each band independently across a mixed slate',
       fn: async () => {
         /**
-         * Settled counts across one entry of each band plus an extra small.
+         Settled counts across one entry of each band plus an extra small.
          */
         const counts = countSettledPerBand({
           entries: [
@@ -280,7 +280,7 @@ await describe({
         + 'instead of one draining before the next starts',
       fn: async () => {
         /**
-         * Ranks over one slate holding two entries in each of two bands.
+         Ranks over one slate holding two entries in each of two bands.
          */
         const ranks = rankWithinBands({
           entries: [
@@ -319,7 +319,7 @@ await describe({
         + 'ordering exists to prevent',
       fn: async () => {
         /**
-         * Ranks when the small band is three ahead and the large band is not.
+         Ranks when the small band is three ahead and the large band is not.
          */
         const ranks = rankWithinBands({
           entries: [
@@ -356,7 +356,7 @@ await describe({
         + 'mentioned',
       fn: async () => {
         /**
-         * Ranks with a settled map naming only the medium band.
+         Ranks with a settled map naming only the medium band.
          */
         const ranks = rankWithinBands({
           entries: [
@@ -383,7 +383,7 @@ await describe({
         + 'rather than by its band position',
       fn: async () => {
         /**
-         * Slate spanning all three bands.
+         Slate spanning all three bands.
          */
         const entries = [
           sized({
@@ -401,7 +401,7 @@ await describe({
         ];
 
         /**
-         * Ranks over that slate.
+         Ranks over that slate.
          */
         const ranks = rankWithinBands({
           entries,

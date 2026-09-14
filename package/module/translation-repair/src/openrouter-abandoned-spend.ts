@@ -27,17 +27,17 @@ import { StreamDegenerateError, } from './stream-runaway-watch.ts';
 // this is the record.
 
 /**
- * Median of recorded model medians for an unmeasured version, not a pooled-stream percentile.
- * The measured rows retain 132, 137, 137, 297 and 386; their middle value is 137.
- * This remains an explicitly abandoned-call estimate, never reported usage.
+ Median of recorded model medians for an unmeasured version, not a pooled-stream percentile.
+ The measured rows retain 132, 137, 137, 297 and 386; their middle value is 137.
+ This remains an explicitly abandoned-call estimate, never reported usage.
  */
 const UNMEASURED_RAW_CHARS_PER_TOKEN = 137;
 
 /**
- * Raw stream characters per completion token, the 50th percentile over every
- * completed OpenRouter stream of 2026-09-09 whose progress line sat beside
- * its spend line (pass logs under `~/temp/agent`). Framing differs by
- * endpoint, which is why one model reads three times another.
+ Raw stream characters per completion token, the 50th percentile over every
+ completed OpenRouter stream of 2026-09-09 whose progress line sat beside
+ its spend line (pass logs under `~/temp/agent`). Framing differs by
+ endpoint, which is why one model reads three times another.
  */
 const RAW_CHARS_PER_COMPLETION_TOKEN: Readonly<Record<OpenRouterServedId, number>> = {
   // 340 streams.
@@ -61,36 +61,36 @@ const RAW_CHARS_PER_COMPLETION_TOKEN: Readonly<Record<OpenRouterServedId, number
 };
 
 /**
- * Request body bytes per prompt token, an order-of-magnitude figure for a
- * body that is mostly UTF-8 Chinese at three bytes a character and English
- * sheet text at one; the prompt half of an abandoned call is the smaller half
- * and this is labelled an estimate.
+ Request body bytes per prompt token, an order-of-magnitude figure for a
+ body that is mostly UTF-8 Chinese at three bytes a character and English
+ sheet text at one; the prompt half of an abandoned call is the smaller half
+ and this is labelled an estimate.
  */
 const PROMPT_BYTES_PER_TOKEN = 4;
 
 /**
- * Tokens in one million, the unit the listing prices in.
+ Tokens in one million, the unit the listing prices in.
  */
 const TOKENS_PER_MILLION = 1_000_000;
 
 /**
- * Reads what an abandoned stream had delivered off the error that ended it.
- *
- * @param error - whatever the exchange threw
- *
- * @returns Raw characters delivered, or that the error says nothing about it
- *
- * @example
- * ```ts
- * const delivered = deliveredCharsOf({ error, },);
- * ```
+ Reads what an abandoned stream had delivered off the error that ended it.
+ 
+ @param error - whatever the exchange threw
+ 
+ @returns Raw characters delivered, or that the error says nothing about it
+ 
+ @example
+ ```ts
+ const delivered = deliveredCharsOf({ error, },);
+ ```
  */
 export function deliveredCharsOf(
   { error, }: { readonly error: unknown; },
 ): number | 'nothing-known' {
   if (error instanceof StreamCutShortError) {
     /**
-     * Text the cut stream had delivered.
+     Text the cut stream had delivered.
      */
     const { partialText, } = error;
     return partialText.length;
@@ -103,45 +103,45 @@ export function deliveredCharsOf(
 }
 
 /**
- * What an abandoned call is reckoned to have cost.
- *
- * @example
- * ```ts
- * const estimate: AbandonedSpendEstimate = { promptTokens: 1000, completionTokens: 10, usd: 0.0006, };
- * ```
+ What an abandoned call is reckoned to have cost.
+ 
+ @example
+ ```ts
+ const estimate: AbandonedSpendEstimate = { promptTokens: 1000, completionTokens: 10, usd: 0.0006, };
+ ```
  */
 export type AbandonedSpendEstimate = {
   /**
-   * Prompt tokens reckoned from the request body's bytes.
+   Prompt tokens reckoned from the request body's bytes.
    */
   readonly promptTokens: number;
 
   /**
-   * Completion tokens reckoned from the raw characters delivered.
+   Completion tokens reckoned from the raw characters delivered.
    */
   readonly completionTokens: number;
 
   /**
-   * Both halves at the listing's prices.
+   Both halves at the listing's prices.
    */
   readonly usd: number;
 };
 
 /**
- * Reckons an abandoned call's cost from what it delivered and what it sent.
- *
- * @param servedId - model as this provider spells it
- *
- * @param deliveredChars - raw stream characters read before the end
- *
- * @param requestBodyBytes - size of the request body that was sent
- *
- * @returns Token halves and their price
- *
- * @example
- * ```ts
- * const estimate = estimateAbandonedSpend({ servedId, deliveredChars: 3860, requestBodyBytes: 4000, },);
- * ```
+ Reckons an abandoned call's cost from what it delivered and what it sent.
+ 
+ @param servedId - model as this provider spells it
+ 
+ @param deliveredChars - raw stream characters read before the end
+ 
+ @param requestBodyBytes - size of the request body that was sent
+ 
+ @returns Token halves and their price
+ 
+ @example
+ ```ts
+ const estimate = estimateAbandonedSpend({ servedId, deliveredChars: 3860, requestBodyBytes: 4000, },);
+ ```
  */
 export function estimateAbandonedSpend(
   {
@@ -155,22 +155,22 @@ export function estimateAbandonedSpend(
   },
 ): AbandonedSpendEstimate {
   /**
-   * Listing row carrying this model's prices.
+   Listing row carrying this model's prices.
    */
   const info = OPENROUTER_MODELS[servedId];
 
   /**
-   * Completion tokens the delivered characters stand for.
+   Completion tokens the delivered characters stand for.
    */
   const completionTokens = Math.round(deliveredChars / RAW_CHARS_PER_COMPLETION_TOKEN[servedId],);
 
   /**
-   * Prompt tokens the body's bytes stand for.
+   Prompt tokens the body's bytes stand for.
    */
   const promptTokens = Math.round(requestBodyBytes / PROMPT_BYTES_PER_TOKEN,);
 
   /**
-   * Both halves priced.
+   Both halves priced.
    */
   const usd = ((promptTokens * info.promptUsdPerMillion) + (completionTokens * info.completionUsdPerMillion))
     / TOKENS_PER_MILLION;
@@ -182,38 +182,38 @@ export function estimateAbandonedSpend(
 }
 
 /**
- * Line an abandoned call wrote, or that nothing was written.
- *
- * @example
- * ```ts
- * const report: AbandonedSpendReport = { line: 'SPEND provider=openrouter ...', };
- * ```
+ Line an abandoned call wrote, or that nothing was written.
+ 
+ @example
+ ```ts
+ const report: AbandonedSpendReport = { line: 'SPEND provider=openrouter ...', };
+ ```
  */
 export type AbandonedSpendReport =
   | {
     /**
-     * Line as logged, in the SPEND grammar with the estimated mark.
+     Line as logged, in the SPEND grammar with the estimated mark.
      */
     readonly line: string;
   }
   | 'not-reported';
 
 /**
- * Writes the estimated spend line for an abandoned call, where the error says
- * what the stream delivered.
- *
- * @param servedId - model as this provider spells it
- *
- * @param error - whatever the exchange threw
- *
- * @param requestBodyBytes - size of the request body that was sent
- *
- * @returns Line logged in a record, or that the error carried nothing to reckon from
- *
- * @example
- * ```ts
- * const line = reportAbandonedSpend({ servedId, error, requestBodyBytes: 4000, },);
- * ```
+ Writes the estimated spend line for an abandoned call, where the error says
+ what the stream delivered.
+ 
+ @param servedId - model as this provider spells it
+ 
+ @param error - whatever the exchange threw
+ 
+ @param requestBodyBytes - size of the request body that was sent
+ 
+ @returns Line logged in a record, or that the error carried nothing to reckon from
+ 
+ @example
+ ```ts
+ const line = reportAbandonedSpend({ servedId, error, requestBodyBytes: 4000, },);
+ ```
  */
 export function reportAbandonedSpend(
   {
@@ -227,14 +227,14 @@ export function reportAbandonedSpend(
   },
 ): AbandonedSpendReport {
   /**
-   * Raw characters the stream delivered, when the error says.
+   Raw characters the stream delivered, when the error says.
    */
   const delivered = deliveredCharsOf({ error, },);
   if (delivered === 'nothing-known')
     return 'not-reported';
 
   /**
-   * What the call is reckoned to have cost.
+   What the call is reckoned to have cost.
    */
   const estimate = estimateAbandonedSpend({
     servedId,
@@ -259,23 +259,23 @@ export function reportAbandonedSpend(
 }
 
 /**
- * Performs one exchange, writing the estimated spend line when it fails with
- * a stream that had delivered something, and rethrowing either way.
- *
- * @param servedId - model as this provider spells it
- *
- * @param requestBodyBytes - size of the request body that was sent
- *
- * @param exchange - the transport exchange to perform
- *
- * @returns Whatever the exchange returned
- *
- * @throws Whatever the exchange threw, after the line is written
- *
- * @example
- * ```ts
- * const reply = await exchangeReportingAbandon({ servedId, requestBodyBytes, exchange, },);
- * ```
+ Performs one exchange, writing the estimated spend line when it fails with
+ a stream that had delivered something, and rethrowing either way.
+ 
+ @param servedId - model as this provider spells it
+ 
+ @param requestBodyBytes - size of the request body that was sent
+ 
+ @param exchange - the transport exchange to perform
+ 
+ @returns Whatever the exchange returned
+ 
+ @throws Whatever the exchange threw, after the line is written
+ 
+ @example
+ ```ts
+ const reply = await exchangeReportingAbandon({ servedId, requestBodyBytes, exchange, },);
+ ```
  */
 export async function exchangeReportingAbandon(
   {

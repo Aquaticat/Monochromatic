@@ -37,7 +37,7 @@ import {
 //region Translate judge
 
 /**
- * Substantive responsibility assigned to one slate judging pass.
+ Substantive responsibility assigned to one slate judging pass.
  */
 export type TranslateJudgeResponsibility =
   | 'initial-selection'
@@ -57,62 +57,62 @@ export type TranslateJudgeResponsibility =
 // producing side too, so it belongs to whoever holds both.
 
 /**
- * Puts an existing slate to the judges and returns what ships.
- *
- * @param client - injected model client
- *
- * @param produced - slate to judge, from {@link produceTranslateSlate}
- *
- * @param judgeModelIds - whole roster selection seats, translators included;
- * a ballot for the judge's own rendering counts for less
- *
- * @param sourceText - original slice text
- *
- * @param incumbentText - translation as it stands, blank where this slice has
- * none
- *
- * @param incumbentKind - whether there is a translation to fall back on,
- * decided by the caller from the target chunk rather than from the text being
- * blank: a content span holding only whitespace is the archive's own wording,
- * and an anchor is a place where a rendering belongs and none exists
- *
- * @param identityContext - declared names from both sides' front matter,
- * omitted when neither declares anything
- *
- * @param neighbouringSourceText - original of the sections either side, shown as
- * CONTEXT the candidates are not expected to render. Absent by default, so a
- * caller that does not ask for it gets the sheet production has always sent.
- * `#107` is why it exists: where the archive carried a passage across a section
- * boundary, a judge shown one slice pair sees invention on one side and omission
- * on the other, and `#84`'s alteration arm went from 12 of 16 to 15 of 16 when
- * the same trial was given exactly this
- *
- * @param neighbouringIncumbentText - archive English of the sections either
- * side, shown so a passage missing here can be recognised next door rather than
- * read as one the archive never had
- *
- * @param responsibility - initial selection or prior-decline challenge
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Shipped text with how it was decided
- *
- * @throws {@link TranslateAbsenceError} when a slice with no incumbent produced
- * nothing to write, which every fallback here would otherwise report as a
- * settled slice carrying the archive's own wording, of which there is none
- *
- * @throws {@link BlankSelectionError} when selection chose text that says
- * nothing for a source that says something, in EITHER mode, since that is a
- * deletion rather than an outcome
- *
- * @example
- * ```ts
- * const decided = await judgeTranslateSlate({ client, produced, judgeModelIds, ... },);
- * ```
+ Puts an existing slate to the judges and returns what ships.
+ 
+ @param client - injected model client
+ 
+ @param produced - slate to judge, from {@link produceTranslateSlate}
+ 
+ @param judgeModelIds - whole roster selection seats, translators included;
+ a ballot for the judge's own rendering counts for less
+ 
+ @param sourceText - original slice text
+ 
+ @param incumbentText - translation as it stands, blank where this slice has
+ none
+ 
+ @param incumbentKind - whether there is a translation to fall back on,
+ decided by the caller from the target chunk rather than from the text being
+ blank: a content span holding only whitespace is the archive's own wording,
+ and an anchor is a place where a rendering belongs and none exists
+ 
+ @param identityContext - declared names from both sides' front matter,
+ omitted when neither declares anything
+ 
+ @param neighbouringSourceText - original of the sections either side, shown as
+ CONTEXT the candidates are not expected to render. Absent by default, so a
+ caller that does not ask for it gets the sheet production has always sent.
+ `#107` is why it exists: where the archive carried a passage across a section
+ boundary, a judge shown one slice pair sees invention on one side and omission
+ on the other, and `#84`'s alteration arm went from 12 of 16 to 15 of 16 when
+ the same trial was given exactly this
+ 
+ @param neighbouringIncumbentText - archive English of the sections either
+ side, shown so a passage missing here can be recognised next door rather than
+ read as one the archive never had
+ 
+ @param responsibility - initial selection or prior-decline challenge
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - pipeline logger
+ 
+ @returns Shipped text with how it was decided
+ 
+ @throws {@link TranslateAbsenceError} when a slice with no incumbent produced
+ nothing to write, which every fallback here would otherwise report as a
+ settled slice carrying the archive's own wording, of which there is none
+ 
+ @throws {@link BlankSelectionError} when selection chose text that says
+ nothing for a source that says something, in EITHER mode, since that is a
+ deletion rather than an outcome
+ 
+ @example
+ ```ts
+ const decided = await judgeTranslateSlate({ client, produced, judgeModelIds, ... },);
+ ```
  */
 export async function judgeTranslateSlate(
   {
@@ -146,14 +146,14 @@ export async function judgeTranslateSlate(
     readonly syntax?: SliceSyntax;
 
     /**
-     * Whether the enclosing chunk is governed by the verse rule.
-     *
-     * REQUIRED RATHER THAN OPTIONAL, which is the whole lesson of `#176`. The
-     * consolidation producers carried this same fact as an optional field for a
-     * day, no caller ever set it, and every verse passage was quietly told it
-     * was prose. An optional flag here would fail exactly that way again, and
-     * silently: the sheet would render, the judges would answer, and nothing
-     * anywhere would report that the rule went missing.
+     Whether the enclosing chunk is governed by the verse rule.
+     
+     REQUIRED RATHER THAN OPTIONAL, which is the whole lesson of `#176`. The
+     consolidation producers carried this same fact as an optional field for a
+     day, no caller ever set it, and every verse passage was quietly told it
+     was prose. An optional flag here would fail exactly that way again, and
+     silently: the sheet would render, the judges would answer, and nothing
+     anywhere would report that the rule went missing.
      */
     readonly lineStructured: boolean;
     readonly responsibility?: TranslateJudgeResponsibility;
@@ -163,7 +163,7 @@ export async function judgeTranslateSlate(
   }>,
 ): Promise<TranslateStageResult> {
   /**
-   * Logger tagged with this half.
+   Logger tagged with this half.
    */
   const tl = tagged({
     tag: judgeTranslateSlate.name,
@@ -171,8 +171,8 @@ export async function judgeTranslateSlate(
   },);
 
   /**
-   * Candidates in the order the judges will see them, rotated by the slice so
-   * the incumbent does not sit in one position across a document.
+   Candidates in the order the judges will see them, rotated by the slice so
+   the incumbent does not sit in one position across a document.
    */
   const rotated = rotateCandidates({
     candidates: produced.candidates,
@@ -180,37 +180,37 @@ export async function judgeTranslateSlate(
   },);
 
   /**
-   * That slate as a record, so a ballot naming a position can be read later.
-   *
-   * Derived from the SAME array the judges are shown rather than by rotating a
-   * second time. Two rotations agree today because the rotation is a pure
-   * function of the slice; they would stop agreeing the moment either call site
-   * changed, and the failure would be silent, since a ballot index is a valid
-   * index either way.
+   That slate as a record, so a ballot naming a position can be read later.
+   
+   Derived from the SAME array the judges are shown rather than by rotating a
+   second time. Two rotations agree today because the rotation is a pure
+   function of the slice; they would stop agreeing the moment either call site
+   changed, and the failure would be silent, since a ballot index is a valid
+   index either way.
    */
   const slate = describeSlate({ candidates: rotated, },);
 
   /**
-   * The incumbent as it stands on the ballot, carrying every model that
-   * reproduced it exactly.
-   *
-   * Read off the slate rather than written fresh. Writing `matched: []` here
-   * erased the collapse on precisely the declined rounds where knowing that
-   * three models independently produced the archive's wording is the whole
-   * evidence that keeping it was right.
+   The incumbent as it stands on the ballot, carrying every model that
+   reproduced it exactly.
+   
+   Read off the slate rather than written fresh. Writing `matched: []` here
+   erased the collapse on precisely the declined rounds where knowing that
+   three models independently produced the archive's wording is the whole
+   evidence that keeping it was right.
    */
   const incumbentOnSlate = slate.find(function isIncumbent(entry,): boolean {
     return entry.origin === 'incumbent';
   },);
 
   /**
-   * Shipping the slice exactly as it stands, which every failure path returns.
-   *
-   * Not an error while the archive HAS a translation here: leaving one as it
-   * stands is the state the run started in, while shipping text no judge could
-   * vet is a new claim about the archive. Where the archive has none, every
-   * path that would return this object refuses instead, since keeping nothing
-   * is not keeping anything.
+   Shipping the slice exactly as it stands, which every failure path returns.
+   
+   Not an error while the archive HAS a translation here: leaving one as it
+   stands is the state the run started in, while shipping text no judge could
+   vet is a new claim about the archive. Where the archive has none, every
+   path that would return this object refuses instead, since keeping nothing
+   is not keeping anything.
    */
   const keepIncumbent: Omit<TranslateStageResult, 'decision' | 'findings'> = {
     text: incumbentText,
@@ -246,22 +246,22 @@ export async function judgeTranslateSlate(
     .length
     === 0) {
     /**
-     * Whether the slate is empty because nobody was heard, rather than because
-     * everybody was heard and proposed nothing usable.
-     *
-     * TWO DIFFERENT FACTS WEARING ONE WORD until `#198`. Translators that
-     * answered and proposed nothing a guard would accept are evidence about
-     * THE PASSAGE, and the gap they leave is one a re-run would probably meet
-     * again. A slate where every voice was lost is evidence about THE HOUR,
-     * and its gap is an artefact a later attempt would very likely fill.
-     * Recorded as one reason, a bad hour left holes in published pages that
-     * nothing could tell from real ones.
+     Whether the slate is empty because nobody was heard, rather than because
+     everybody was heard and proposed nothing usable.
+     
+     TWO DIFFERENT FACTS WEARING ONE WORD until `#198`. Translators that
+     answered and proposed nothing a guard would accept are evidence about
+     THE PASSAGE, and the gap they leave is one a re-run would probably meet
+     again. A slate where every voice was lost is evidence about THE HOUR,
+     and its gap is an artefact a later attempt would very likely fill.
+     Recorded as one reason, a bad hour left holes in published pages that
+     nothing could tell from real ones.
      */
     const nobodyHeard = produced.heardTranslators === 0;
 
     /**
-     * Reason and decision naming which of the two happened, kept together so
-     * the throwing path and the returning path cannot disagree about it.
+     Reason and decision naming which of the two happened, kept together so
+     the throwing path and the returning path cannot disagree about it.
      */
     const named = nobodyHeard
       ? {
@@ -276,8 +276,8 @@ export async function judgeTranslateSlate(
       } as const;
 
     /**
-     * Findings this exit reports either way, so the refusal carries the same
-     * evidence the returned result would have.
+     Findings this exit reports either way, so the refusal carries the same
+     evidence the returned result would have.
      */
     const noCandidateFindings = [
       ...produced.findings,
@@ -302,12 +302,12 @@ export async function judgeTranslateSlate(
   }
 
   /**
-   * Sole proposal, when the slate collapsed to one.
+   Sole proposal, when the slate collapsed to one.
    */
   const [only,] = produced.candidates;
 
   /**
-   * Whether the only survivor is the text that was already there.
+   Whether the only survivor is the text that was already there.
    */
   const soleIncumbent = (only !== undefined)
     && (produced.candidates
@@ -338,13 +338,13 @@ export async function judgeTranslateSlate(
   }
 
   /**
-   * Substantively distinct task after prior panel declined exact slate.
+   Substantively distinct task after prior panel declined exact slate.
    */
   const task = (responsibility === 'initial-selection')
     ? TRANSLATE_SELECTION_TASK
     : `${TRANSLATE_SELECTION_TASK} A prior panel declined this exact slate. Challenge that result: first identify which candidates are individually ineligible, then compare only eligible candidates and select one when any faithfully renders the passage.`;
   /**
-   * Judges' verdict over the whole-slice candidates.
+   Judges' verdict over the whole-slice candidates.
    */
   const outcome = await selectBestCandidate<TranslateCandidateValue>({
     client,
@@ -493,7 +493,7 @@ export async function judgeTranslateSlate(
   // translations of a passage nobody filed a complaint about, so replacing the
   // archive's own wording needs judges who agreed, not judges who could not.
   /**
-   * Findings the decline reports, whichever way this exit goes.
+   Findings the decline reports, whichever way this exit goes.
    */
   const declineFindings = [
     ...produced.findings,
@@ -502,7 +502,7 @@ export async function judgeTranslateSlate(
   ];
 
   /**
-   * Which decline this was, in the vocabulary both exits use.
+   Which decline this was, in the vocabulary both exits use.
    */
   const declined = (outcome.disposition === 'indecision')
     ? 'declined-indecision'

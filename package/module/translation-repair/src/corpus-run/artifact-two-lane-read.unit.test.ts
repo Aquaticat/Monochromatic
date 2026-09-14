@@ -1,19 +1,19 @@
 /**
- * Tests for reading one whole version 2 artifact.
- *
- * EVERY CASE BREAKS ONE VALID ARTIFACT IN EXACTLY ONE WAY, and the artifact's
- * comparison is derived by version 2's own frozen rules rather than typed out,
- * so a case that changes a ledger gets the comparison that follows from it
- * without anyone hand-maintaining a second copy of the rules.
- *
- * WHAT THEY PIN, beyond shape: the checks that catch a file whose parts
- * contradict each other. Every field here parses on its own in each of these
- * cases; what fails is a relation between two of them, which is the whole
- * reason a reader recomputes rather than believing what it is told.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading one whole version 2 artifact.
+ 
+ EVERY CASE BREAKS ONE VALID ARTIFACT IN EXACTLY ONE WAY, and the artifact's
+ comparison is derived by version 2's own frozen rules rather than typed out,
+ so a case that changes a ledger gets the comparison that follows from it
+ without anyone hand-maintaining a second copy of the rules.
+ 
+ WHAT THEY PIN, beyond shape: the checks that catch a file whose parts
+ contradict each other. Every field here parses on its own in each of these
+ cases; what fails is a relation between two of them, which is the whole
+ reason a reader recomputes rather than believing what it is told.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -31,7 +31,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Ballot backing the translate lane, carried by the contest cases.
+ Ballot backing the translate lane, carried by the contest cases.
  */
 const CONTEST_BALLOT = {
   choice: 'translate',
@@ -43,41 +43,41 @@ const CONTEST_BALLOT = {
 };
 
 /**
- * Original of the slice both lanes work on.
+ Original of the slice both lanes work on.
  */
 const SOURCE_NAP = '猫猫在窗台上睡觉。';
 
 /**
- * Original of the passage the archive never translated.
+ Original of the passage the archive never translated.
  */
 const SOURCE_BIRD = '窗台上有一只鸟。';
 
 /**
- * Archive's own English for the first slice.
+ Archive's own English for the first slice.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
 /**
- * Wording the translate lane decided for it.
+ Wording the translate lane decided for it.
  */
 const FRESH_NAP = 'The cat naps on the windowsill.';
 
 /**
- * Identity a preparation gives itself, which a standalone reader checks for
- * SYNTAX only: the inputs it hashes are not in the file.
+ Identity a preparation gives itself, which a standalone reader checks for
+ SYNTAX only: the inputs it hashes are not in the file.
  */
 const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
 
 /**
- * Repair lane's ledger: it kept the archive's wording, and had nothing to do at
- * a passage the archive never translated.
- *
- * @returns Two rows, in document order
- *
- * @example
- * ```ts
- * const rows = repairLedger();
- * ```
+ Repair lane's ledger: it kept the archive's wording, and had nothing to do at
+ a passage the archive never translated.
+ 
+ @returns Two rows, in document order
+ 
+ @example
+ ```ts
+ const rows = repairLedger();
+ ```
  */
 function repairLedger(): readonly ArtifactDeliveryRow[] {
   return [
@@ -106,15 +106,15 @@ function repairLedger(): readonly ArtifactDeliveryRow[] {
 }
 
 /**
- * Translate lane's ledger: it replaced the first slice and could not fill the
- * second.
- *
- * @returns Two rows, in document order
- *
- * @example
- * ```ts
- * const rows = translateLedger();
- * ```
+ Translate lane's ledger: it replaced the first slice and could not fill the
+ second.
+ 
+ @returns Two rows, in document order
+ 
+ @example
+ ```ts
+ const rows = translateLedger();
+ ```
  */
 function translateLedger(): readonly ArtifactDeliveryRow[] {
   return [
@@ -143,15 +143,15 @@ function translateLedger(): readonly ArtifactDeliveryRow[] {
 }
 
 /**
- * Repair lane's raw result, carrying fields version 2 never described so every
- * case runs against a record shaped like a real one.
- *
- * @returns Raw result JSON
- *
- * @example
- * ```ts
- * const raw = repairResult();
- * ```
+ Repair lane's raw result, carrying fields version 2 never described so every
+ case runs against a record shaped like a real one.
+ 
+ @returns Raw result JSON
+ 
+ @example
+ ```ts
+ const raw = repairResult();
+ ```
  */
 function repairResult(): Record<string, unknown> {
   return {
@@ -190,14 +190,14 @@ function repairResult(): Record<string, unknown> {
 }
 
 /**
- * Translate lane's raw result, on the same footing.
- *
- * @returns Raw result JSON
- *
- * @example
- * ```ts
- * const raw = translateResult();
- * ```
+ Translate lane's raw result, on the same footing.
+ 
+ @returns Raw result JSON
+ 
+ @example
+ ```ts
+ const raw = translateResult();
+ ```
  */
 function translateResult(): Record<string, unknown> {
   return {
@@ -235,31 +235,31 @@ function translateResult(): Record<string, unknown> {
 }
 
 /**
- * One whole version 2 artifact, with whatever this case changes.
- *
- * OVERRIDES RATHER THAN MUTATION, so no case reaches into a nested structure
- * and no case can leave one half-edited: a ledger handed in here is the ledger
- * both the lane and the comparison are built from.
- *
- * @param repairDelivery - repair lane's ledger
- *
- * @param translateDelivery - translate lane's ledger
- *
- * @param repairRaw - repair lane's raw result
- *
- * @param translateRaw - translate lane's raw result
- *
- * @param comparison - comparison to record, which DEFAULTS to what version 2's
- * own rules derive from the two ledgers, exactly as the writer does
- *
- * @param rest - any top-level field this case replaces
- *
- * @returns Artifact as JSON
- *
- * @example
- * ```ts
- * const artifact = artifactWith({ repairDelivery: rows, },);
- * ```
+ One whole version 2 artifact, with whatever this case changes.
+ 
+ OVERRIDES RATHER THAN MUTATION, so no case reaches into a nested structure
+ and no case can leave one half-edited: a ledger handed in here is the ledger
+ both the lane and the comparison are built from.
+ 
+ @param repairDelivery - repair lane's ledger
+ 
+ @param translateDelivery - translate lane's ledger
+ 
+ @param repairRaw - repair lane's raw result
+ 
+ @param translateRaw - translate lane's raw result
+ 
+ @param comparison - comparison to record, which DEFAULTS to what version 2's
+ own rules derive from the two ledgers, exactly as the writer does
+ 
+ @param rest - any top-level field this case replaces
+ 
+ @returns Artifact as JSON
+ 
+ @example
+ ```ts
+ const artifact = artifactWith({ repairDelivery: rows, },);
+ ```
  */
 function artifactWith(
   {
@@ -322,20 +322,20 @@ function artifactWith(
 }
 
 /**
- * A ledger with one row replaced.
- *
- * @param rows - ledger to change
- *
- * @param at - position of the row to replace
- *
- * @param replace - what that row says instead, built from the row it replaces
- *
- * @returns New ledger, leaving the one passed in alone
- *
- * @example
- * ```ts
- * const rows = rowReplaced({ rows: repairLedger(), at: 1, replace: shipIt, },);
- * ```
+ A ledger with one row replaced.
+ 
+ @param rows - ledger to change
+ 
+ @param at - position of the row to replace
+ 
+ @param replace - what that row says instead, built from the row it replaces
+ 
+ @returns New ledger, leaving the one passed in alone
+ 
+ @example
+ ```ts
+ const rows = rowReplaced({ rows: repairLedger(), at: 1, replace: shipIt, },);
+ ```
  */
 function rowReplaced<const TRow,>(
   {
@@ -357,19 +357,19 @@ function rowReplaced<const TRow,>(
 }
 
 /**
- * Wording the repair lane decided in the cases where it decided one.
+ Wording the repair lane decided in the cases where it decided one.
  */
 const MENDED_NAP = 'The cat is asleep on the sill.';
 
 /**
- * Evidence rows saying the repair lane decided that wording at the first slice.
- *
- * @returns Raw slice rows for the repair result
- *
- * @example
- * ```ts
- * const rows = repairDecidedRows();
- * ```
+ Evidence rows saying the repair lane decided that wording at the first slice.
+ 
+ @returns Raw slice rows for the repair result
+ 
+ @example
+ ```ts
+ const rows = repairDecidedRows();
+ ```
  */
 function repairDecidedRows(): readonly Record<string, unknown>[] {
   return [
@@ -392,16 +392,16 @@ function repairDecidedRows(): readonly Record<string, unknown>[] {
 }
 
 /**
- * A ledger whose rows all claim the first slice.
- *
- * @param rows - ledger to collapse
- *
- * @returns Same rows, every one naming slice 0
- *
- * @example
- * ```ts
- * const rows = allNamingSliceZero({ rows: repairLedger(), },);
- * ```
+ A ledger whose rows all claim the first slice.
+ 
+ @param rows - ledger to collapse
+ 
+ @returns Same rows, every one naming slice 0
+ 
+ @example
+ ```ts
+ const rows = allNamingSliceZero({ rows: repairLedger(), },);
+ ```
  */
 function allNamingSliceZero(
   { rows, }: { readonly rows: readonly ArtifactDeliveryRow[]; },
@@ -415,17 +415,17 @@ function allNamingSliceZero(
 }
 
 /**
- * Raw slice rows collapsed the same way, so a lane still agrees with itself and
- * only the repeat is left to catch.
- *
- * @param rows - raw slice rows to collapse
- *
- * @returns Same rows, every one naming slice 0
- *
- * @example
- * ```ts
- * const rows = evidenceNamingSliceZero({ rows: raw.sliceTexts, },);
- * ```
+ Raw slice rows collapsed the same way, so a lane still agrees with itself and
+ only the repeat is left to catch.
+ 
+ @param rows - raw slice rows to collapse
+ 
+ @returns Same rows, every one naming slice 0
+ 
+ @example
+ ```ts
+ const rows = evidenceNamingSliceZero({ rows: raw.sliceTexts, },);
+ ```
  */
 function evidenceNamingSliceZero(
   { rows, }: { readonly rows: readonly Record<string, unknown>[]; },
@@ -439,23 +439,23 @@ function evidenceNamingSliceZero(
 }
 
 /**
- * Re-spells a generation 4 body as generation 3, which is what the pass wrote
- * before the index rename reached the wire.
- *
- * ONE KEY, EVERYWHERE. A real generation 3 artifact spells the index
- * `chunkIndex` in all twenty-odd places it appears: both ledgers, both raw
- * results and every array inside them, the comparison, the lane selection and
- * the consolidation. The change-set arrays already carried their current names
- * in that generation, so nothing else moves.
- *
- * @param value - generation 4 body to re-spell
- *
- * @returns Same artifact as generation 3 wrote it
- *
- * @example
- * ```ts
- * const older = asGenerationThree(artifactWith(),);
- * ```
+ Re-spells a generation 4 body as generation 3, which is what the pass wrote
+ before the index rename reached the wire.
+ 
+ ONE KEY, EVERYWHERE. A real generation 3 artifact spells the index
+ `chunkIndex` in all twenty-odd places it appears: both ledgers, both raw
+ results and every array inside them, the comparison, the lane selection and
+ the consolidation. The change-set arrays already carried their current names
+ in that generation, so nothing else moves.
+ 
+ @param value - generation 4 body to re-spell
+ 
+ @returns Same artifact as generation 3 wrote it
+ 
+ @example
+ ```ts
+ const older = asGenerationThree(artifactWith(),);
+ ```
  */
 function asGenerationThree(value: unknown,): unknown {
   if (Array.isArray(value,))
@@ -491,29 +491,29 @@ function asGenerationThree(value: unknown,): unknown {
 }
 
 /**
- * Drops each lane's raw result from a reading, leaving what was INTERPRETED.
- *
- * THE RAW RESULT IS THE FILE'S OWN RECORD, handed back unread so a caller
- * wanting a field this version does not describe can still find it. It
- * therefore still spells the index the way its own generation wrote it, and
- * comparing it across generations would compare the two FILES rather than the
- * two readings. Everything else here is parsed through the key vocabulary and
- * must come out identical.
- *
- * @param artifact - reading to strip
- *
- * @returns Same reading with both raw records gone
- *
- * @example
- * ```ts
- * expect(interpretedOf({ artifact: older, },),).toStrictEqual(interpretedOf({ artifact: current, },),);
- * ```
+ Drops each lane's raw result from a reading, leaving what was INTERPRETED.
+ 
+ THE RAW RESULT IS THE FILE'S OWN RECORD, handed back unread so a caller
+ wanting a field this version does not describe can still find it. It
+ therefore still spells the index the way its own generation wrote it, and
+ comparing it across generations would compare the two FILES rather than the
+ two readings. Everything else here is parsed through the key vocabulary and
+ must come out identical.
+ 
+ @param artifact - reading to strip
+ 
+ @returns Same reading with both raw records gone
+ 
+ @example
+ ```ts
+ expect(interpretedOf({ artifact: older, },),).toStrictEqual(interpretedOf({ artifact: current, },),);
+ ```
  */
 function interpretedOf(
   { artifact, }: { readonly artifact: ReturnType<typeof parseSettledTwoLaneArtifact>; },
 ): Record<string, unknown> {
   /**
-   * Reading with its lanes held aside, since only those carry a raw record.
+   Reading with its lanes held aside, since only those carry a raw record.
    */
   const {
     artifactSchemaVersion: _artifactSchemaVersion,
@@ -554,13 +554,13 @@ await describe({
       name: 'ROUND-TRIPS the archive text an artifact does carry',
       fn: async () => {
         /**
-         * Invented archive English, cat-themed, standing in for an entry's whole
-         * translation.
+         Invented archive English, cat-themed, standing in for an entry's whole
+         translation.
          */
         const held = '## A cat\'s day\n\nThe kitten dozes on the windowsill.\n';
         /**
-         * The fixture's own preparation, extended through the helper's field
-         * escape hatch rather than by spreading its `unknown` value.
+         The fixture's own preparation, extended through the helper's field
+         escape hatch rather than by spreading its `unknown` value.
          */
         const preparation = artifactWith()
           .preparation as Record<string, unknown>;
@@ -588,12 +588,12 @@ await describe({
       name: 'REFUSES an archiveText that is not a string, rather than coercing it',
       fn: async () => {
         /**
-         * {@inheritDoc preparation}
+         {@inheritDoc preparation}
          */
         const preparation = artifactWith()
           .preparation as Record<string, unknown>;
         /**
-         * What readWrong raised, read for its class as well as its wording.
+         What readWrong raised, read for its class as well as its wording.
          */
         const refusalOfReadWrong = caught(function readWrong() {
           parseSettledTwoLaneArtifact({
@@ -617,7 +617,7 @@ await describe({
         + 'from a later generation of this parser',
       fn: async () => {
         /**
-         * One valid artifact, read back.
+         One valid artifact, read back.
          */
         const parsed = parseSettledTwoLaneArtifact({ value: artifactWith(), },);
         expect(parsed.id,).toBe('CatEntry1',);
@@ -655,8 +655,8 @@ await describe({
         + 'empty candidates',
       fn: async () => {
         /**
-         * Artifact whose contest answers the one slice the two lanes worded
-         * differently, which is slice 0: slice 1 is a gap neither lane filled.
+         Artifact whose contest answers the one slice the two lanes worded
+         differently, which is slice 0: slice 1 is a gap neither lane filled.
          */
         const parsed = parseSettledTwoLaneArtifact({
           value: artifactWith({
@@ -695,7 +695,7 @@ await describe({
         + 'therefore nothing for a roster to choose between',
       fn: async () => {
         /**
-         * What contestsAGap raised, read for its class as well as its wording.
+         What contestsAGap raised, read for its class as well as its wording.
          */
         const refusalOfContestsAGap = caught(function contestsAGap() {
           parseSettledTwoLaneArtifact({
@@ -726,7 +726,7 @@ await describe({
         + 'says nothing at all about what a result holds',
       fn: async () => {
         /**
-         * What extraOnEnvelope raised, read for its class as well as its wording.
+         What extraOnEnvelope raised, read for its class as well as its wording.
          */
         const refusalOfExtraOnEnvelope = caught(function extraOnEnvelope() {
           parseSettledTwoLaneArtifact({
@@ -769,7 +769,7 @@ await describe({
         + 'artifact with one lane`s work silently dropped',
       fn: async () => {
         /**
-         * What thirdLane raised, read for its class as well as its wording.
+         What thirdLane raised, read for its class as well as its wording.
          */
         const refusalOfThirdLane = caught(function thirdLane() {
           parseSettledTwoLaneArtifact({
@@ -804,7 +804,7 @@ await describe({
         + 'the second',
       fn: async () => {
         /**
-         * What nullInConfig raised, read for its class as well as its wording.
+         What nullInConfig raised, read for its class as well as its wording.
          */
         const refusalOfNullInConfig = caught(function nullInConfig() {
           parseSettledTwoLaneArtifact({ value: artifactWith({ callConfig: { budget: { slice: null, }, }, },), },);
@@ -832,11 +832,11 @@ await describe({
         + 'joining by slice index instead would report that everything matched',
       fn: async () => {
         /**
-         * The repair result with its two correct rows swapped.
+         The repair result with its two correct rows swapped.
          */
         const raw = repairResult();
         /**
-         * What rowsOutOfOrder raised, read for its class as well as its wording.
+         What rowsOutOfOrder raised, read for its class as well as its wording.
          */
         const refusalOfRowsOutOfOrder = caught(function rowsOutOfOrder() {
           parseSettledTwoLaneArtifact({
@@ -859,7 +859,7 @@ await describe({
         + 'as a matching pair and which no later join could recover from',
       fn: async () => {
         /**
-         * Translate ledger renumbered so it covers slices 1 and 2.
+         Translate ledger renumbered so it covers slices 1 and 2.
          */
         const shifted = translateLedger().map(function renumber(row,): ArtifactDeliveryRow {
           return {
@@ -869,12 +869,12 @@ await describe({
         },);
 
         /**
-         * Its raw result renumbered the same way, so the lane agrees with
-         * itself and only the two LANES disagree.
+         Its raw result renumbered the same way, so the lane agrees with
+         itself and only the two LANES disagree.
          */
         const raw = translateResult();
         /**
-         * What coverageDiffers raised, read for its class as well as its wording.
+         What coverageDiffers raised, read for its class as well as its wording.
          */
         const refusalOfCoverageDiffers = caught(function coverageDiffers() {
           parseSettledTwoLaneArtifact({
@@ -907,12 +907,12 @@ await describe({
         + 'and the row count still equals the prepared slice count',
       fn: async () => {
         /**
-         * Repair ledger whose two rows both claim slice 0.
+         Repair ledger whose two rows both claim slice 0.
          */
         const collapsedRepair = allNamingSliceZero({ rows: repairLedger(), },);
 
         /**
-         * Translate ledger collapsed the same way.
+         Translate ledger collapsed the same way.
          */
         const collapsedTranslate = allNamingSliceZero({ rows: translateLedger(), },);
 
@@ -927,17 +927,17 @@ await describe({
         ).toBe(2,);
 
         /**
-         * Repair raw result whose slice rows are collapsed to match.
+         Repair raw result whose slice rows are collapsed to match.
          */
         const repairRaw = repairResult();
 
         /**
-         * Translate raw result on the same footing, its shipped set still
-         * naming the slice its first row shipped.
+         Translate raw result on the same footing, its shipped set still
+         naming the slice its first row shipped.
          */
         const translateRaw = translateResult();
         /**
-         * What slicesRepeat raised, read for its class as well as its wording.
+         What slicesRepeat raised, read for its class as well as its wording.
          */
         const refusalOfSlicesRepeat = caught(function slicesRepeat() {
           parseSettledTwoLaneArtifact({
@@ -974,13 +974,13 @@ await describe({
         // Both ledgers reversed, so each lane still agrees with itself and with
         // the other, and only the anchor to document order is broken.
         /**
-         * Repair ledger in the wrong order.
+         Repair ledger in the wrong order.
          */
         const flippedRepair = repairLedger()
           .toReversed();
 
         /**
-         * Translate ledger flipped the same way.
+         Translate ledger flipped the same way.
          */
         const flippedTranslate = translateLedger()
           .toReversed();
@@ -995,16 +995,16 @@ await describe({
         ).toBe(2,);
 
         /**
-         * Repair raw result with its slice rows flipped to match.
+         Repair raw result with its slice rows flipped to match.
          */
         const repairRaw = repairResult();
 
         /**
-         * Translate raw result on the same footing.
+         Translate raw result on the same footing.
          */
         const translateRaw = translateResult();
         /**
-         * What slicesPermuted raised, read for its class as well as its wording.
+         What slicesPermuted raised, read for its class as well as its wording.
          */
         const refusalOfSlicesPermuted = caught(function slicesPermuted() {
           parseSettledTwoLaneArtifact({
@@ -1053,7 +1053,7 @@ await describe({
         + 'shipped replacement, since a blocked run never assembles anything',
       fn: async () => {
         /**
-         * An unblocked run naming the refusal that only a blocked one produces.
+         An unblocked run naming the refusal that only a blocked one produces.
          */
         const refusedWhileRunning = rowReplaced({
           rows: repairLedger(),
@@ -1073,7 +1073,7 @@ await describe({
           },
         },);
         /**
-         * What unblockedRefusal raised, read for its class as well as its wording.
+         What unblockedRefusal raised, read for its class as well as its wording.
          */
         const refusalOfUnblockedRefusal = caught(function unblockedRefusal() {
           parseSettledTwoLaneArtifact({
@@ -1091,7 +1091,7 @@ await describe({
         expect((refusalOfUnblockedRefusal as Error).message,).toContain('lanes.repair.result.status',);
 
         /**
-         * A blocked run naming a slice its document carries.
+         A blocked run naming a slice its document carries.
          */
         const shippedWhileBlocked = rowReplaced({
           rows: repairLedger(),
@@ -1109,7 +1109,7 @@ await describe({
           },
         },);
         /**
-         * What blockedShipping raised, read for its class as well as its wording.
+         What blockedShipping raised, read for its class as well as its wording.
          */
         const refusalOfBlockedShipping = caught(function blockedShipping() {
           parseSettledTwoLaneArtifact({
@@ -1136,7 +1136,7 @@ await describe({
         + 'withdrawals would make every blocked document look like one the guard tore apart',
       fn: async () => {
         /**
-         * What shippedDisagrees raised, read for its class as well as its wording.
+         What shippedDisagrees raised, read for its class as well as its wording.
          */
         const refusalOfShippedDisagrees = caught(function shippedDisagrees() {
           parseSettledTwoLaneArtifact({
@@ -1153,8 +1153,8 @@ await describe({
         expect((refusalOfShippedDisagrees as Error).message,).toContain('lanes.repair.result.changedSliceIndices',);
 
         /**
-         * A blocked run whose blocked withdrawal stays OUT of the withdrawn
-         * list, which is what the writer produces.
+         A blocked run whose blocked withdrawal stays OUT of the withdrawn
+         list, which is what the writer produces.
          */
         const withdrawnByRefusal = rowReplaced({
           rows: repairLedger(),
@@ -1195,7 +1195,7 @@ await describe({
         + 'do at is a row this reader would otherwise hand on as fact',
       fn: async () => {
         /**
-         * What axesDisagree raised, read for its class as well as its wording.
+         What axesDisagree raised, read for its class as well as its wording.
          */
         const refusalOfAxesDisagree = caught(function axesDisagree() {
           parseSettledTwoLaneArtifact({
@@ -1224,8 +1224,8 @@ await describe({
         + 'about two ledgers stored beside it and nothing has to trust it',
       fn: async () => {
         /**
-         * The derived comparison with one lane relation changed to something
-         * the rows do not produce.
+         The derived comparison with one lane relation changed to something
+         the rows do not produce.
          */
         const retitled = compareLanes({
           repair: repairLedger(),
@@ -1243,7 +1243,7 @@ await describe({
               : row;
           },);
         /**
-         * What comparisonDisagrees raised, read for its class as well as its wording.
+         What comparisonDisagrees raised, read for its class as well as its wording.
          */
         const refusalOfComparisonDisagrees = caught(function comparisonDisagrees() {
           parseSettledTwoLaneArtifact({ value: artifactWith({ comparison: retitled, },), },);
@@ -1266,8 +1266,8 @@ await describe({
         + 'cover would be dropped without a word',
       fn: async () => {
         /**
-         * What version 2's rules derive from the two ledgers, which is two rows
-         * because the preparation carries two slices.
+         What version 2's rules derive from the two ledgers, which is two rows
+         because the preparation carries two slices.
          */
         const derived = compareLanes({
           repair: repairLedger(),
@@ -1275,8 +1275,8 @@ await describe({
         },);
 
         /**
-         * The same comparison with its last row recorded twice, so the file
-         * claims three slices where the ledgers cover two.
+         The same comparison with its last row recorded twice, so the file
+         claims three slices where the ledgers cover two.
          */
         const overlong = [
           ...derived,
@@ -1284,7 +1284,7 @@ await describe({
         ];
 
         /**
-         * What comparisonOverruns raised, read for its class as well as its wording.
+         What comparisonOverruns raised, read for its class as well as its wording.
          */
         const refusalOfComparisonOverruns = caught(function comparisonOverruns() {
           parseSettledTwoLaneArtifact({ value: artifactWith({ comparison: overlong, },), },);
@@ -1303,7 +1303,7 @@ await describe({
         + 'would fail artifacts over a difference no reader can see',
       fn: async () => {
         /**
-         * The same comparison with every key written in the opposite order.
+         The same comparison with every key written in the opposite order.
          */
         const reordered = compareLanes({
           repair: repairLedger(),
@@ -1324,7 +1324,7 @@ await describe({
         + 'derivations as agreeing when the bytes on disk do not',
       fn: async () => {
         /**
-         * Archive wording written composed in the ledger.
+         Archive wording written composed in the ledger.
          */
         const composed = 'The cat naps in the café.';
 
@@ -1334,7 +1334,7 @@ await describe({
         // side alone would make the lanes disagree first, and this case would
         // pass on a refusal it is not about.
         /**
-         * What compositionDiffers raised, read for its class as well as its wording.
+         What compositionDiffers raised, read for its class as well as its wording.
          */
         const refusalOfCompositionDiffers = caught(function compositionDiffers() {
           parseSettledTwoLaneArtifact({
@@ -1406,7 +1406,7 @@ await describe({
       name: 'ACCEPTS GENERATION SIX with explicit consolidation state',
       fn: async () => {
         /**
-         * Generation-six fixture after full parsing.
+         Generation-six fixture after full parsing.
          */
         const parsed = parseSettledTwoLaneArtifact({
           value: artifactWith({
@@ -1453,7 +1453,7 @@ await describe({
         + 'standalone reader cannot tell one from another and must not pretend otherwise',
       fn: async () => {
         /**
-         * A well formed identity of a preparation nobody here ran.
+         A well formed identity of a preparation nobody here ran.
          */
         const foreign = `sha256-preparation-v1:${'bd'.repeat(32,)}`;
         expect(parseSettledTwoLaneArtifact({
@@ -1471,7 +1471,7 @@ await describe({
         },).preparation
           .identity,).toBe(foreign,);
         /**
-         * What badIdentity raised, read for its class as well as its wording.
+         What badIdentity raised, read for its class as well as its wording.
          */
         const refusalOfBadIdentity = caught(function badIdentity() {
           parseSettledTwoLaneArtifact({
@@ -1499,7 +1499,7 @@ await describe({
         + 'is the lane`s own arithmetic checked against its own rows',
       fn: async () => {
         /**
-         * What countDisagrees raised, read for its class as well as its wording.
+         What countDisagrees raised, read for its class as well as its wording.
          */
         const refusalOfCountDisagrees = caught(function countDisagrees() {
           parseSettledTwoLaneArtifact({
@@ -1515,7 +1515,7 @@ await describe({
         expect(refusalOfCountDisagrees,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfCountDisagrees as Error).message,).toContain('lanes.translate.result.changedSliceCount',);
         /**
-         * What statusDisagrees raised, read for its class as well as its wording.
+         What statusDisagrees raised, read for its class as well as its wording.
          */
         const refusalOfStatusDisagrees = caught(function statusDisagrees() {
           parseSettledTwoLaneArtifact({
@@ -1540,7 +1540,7 @@ await describe({
         + 'and every relation below reads a status it was never asked to doubt',
       fn: async () => {
         /**
-         * What repairBorrowsTranslate raised, read for its class as well as its wording.
+         What repairBorrowsTranslate raised, read for its class as well as its wording.
          */
         const refusalOfRepairBorrowsTranslate = caught(function repairBorrowsTranslate() {
           parseSettledTwoLaneArtifact({
@@ -1558,7 +1558,7 @@ await describe({
           .toContain('one of repaired, unchanged, blocked-non-translation',);
 
         /**
-         * What translateBorrowsRepair raised, read the same way.
+         What translateBorrowsRepair raised, read the same way.
          */
         const refusalOfTranslateBorrowsRepair = caught(function translateBorrowsRepair() {
           parseSettledTwoLaneArtifact({
@@ -1583,7 +1583,7 @@ await describe({
         + 'live probe against the real judging sheet',
       fn: async () => {
         /**
-         * One judged round of the shape the editor stage now records.
+         One judged round of the shape the editor stage now records.
          */
         const round = {
           kind: 'selected',
@@ -1630,11 +1630,11 @@ await describe({
         };
 
         /**
-         * Artifact as the bytes a settled file holds.
-         *
-         * SERIALIZED AND PARSED RATHER THAN CLONED, which is not the same test:
-         * a clone would preserve values JSON cannot carry, and what this case
-         * asks is whether the round survives the trip to disk and back.
+         Artifact as the bytes a settled file holds.
+         
+         SERIALIZED AND PARSED RATHER THAN CLONED, which is not the same test:
+         a clone would preserve values JSON cannot carry, and what this case
+         asks is whether the round survives the trip to disk and back.
          */
         const serialized = JSON.stringify(artifactWith({
           repairRaw: {
@@ -1650,12 +1650,12 @@ await describe({
         },),);
 
         /**
-         * Same artifact as a reader receives it.
+         Same artifact as a reader receives it.
          */
         const written = JSON.parse(serialized,) as unknown;
 
         /**
-         * Repair lane as a reader gets it back.
+         Repair lane as a reader gets it back.
          */
         const { raw, } = parseSettledTwoLaneArtifact({ value: written, },)
           .lanes
@@ -1675,7 +1675,7 @@ await describe({
         + 'contest with its ballots and a bare lane name would be a verdict with nothing behind it',
       fn: async () => {
         /**
-         * What unknownSelection raised, read for its class as well as its wording.
+         What unknownSelection raised, read for its class as well as its wording.
          */
         const refusalOfUnknownSelection = caught(function unknownSelection() {
           parseSettledTwoLaneArtifact({ value: artifactWith({ laneSelection: { kind: 'translate', }, },), },);
@@ -1692,12 +1692,12 @@ await describe({
         + 'that follows say nothing at all',
       fn: async () => {
         /**
-         * Generation 4 body as JSON text.
+         Generation 4 body as JSON text.
          */
         const current = JSON.stringify(artifactWith(),);
 
         /**
-         * Same body re-spelled, as JSON text.
+         Same body re-spelled, as JSON text.
          */
         const older = JSON.stringify(
           asGenerationThree(artifactWith(),),
@@ -1717,12 +1717,12 @@ await describe({
         + 'holds one spelling reports the older file`s ledger as naming no slices at all',
       fn: async () => {
         /**
-         * Older body's reading.
+         Older body's reading.
          */
         const older = parseSettledTwoLaneArtifact({ value: asGenerationThree(artifactWith(),), },);
 
         /**
-         * Current body's reading.
+         Current body's reading.
          */
         const current = parseSettledTwoLaneArtifact({ value: artifactWith(), },);
 
@@ -1744,7 +1744,7 @@ await describe({
         + 'the label is the only thing that picks the spelling',
       fn: async () => {
         /**
-         * What the reader did with an older body under the current label.
+         What the reader did with an older body under the current label.
          */
         const refusalOfRelabelled = caught(function readsRelabelled() {
           parseSettledTwoLaneArtifact({

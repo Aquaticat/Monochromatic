@@ -20,67 +20,67 @@ import type { BlockPair, } from './pair-blocks-wire.ts';
 // preparation pairs them in order like any other block.
 
 /**
- * Zone a parsed footnote definition block carries.
+ Zone a parsed footnote definition block carries.
  */
 const DEFINITION_ZONE = 'footnote-definition';
 
 /**
- * One definition the roster paired with one definition, by label.
- *
- * @example
- * ```ts
- * const pair: DefinitionLabelPair = { sourceLabel: '2', targetLabel: '1', };
- * ```
+ One definition the roster paired with one definition, by label.
+ 
+ @example
+ ```ts
+ const pair: DefinitionLabelPair = { sourceLabel: '2', targetLabel: '1', };
+ ```
  */
 export type DefinitionLabelPair = {
   /**
-   * Label of the original's definition.
+   Label of the original's definition.
    */
   readonly sourceLabel: string;
 
   /**
-   * Label of the archive's definition paired with it.
+   Label of the archive's definition paired with it.
    */
   readonly targetLabel: string;
 };
 
 /**
- * What one chunk's pairing splits into.
- *
- * @example
- * ```ts
- * const split: SplitDefinitionPairs = splitDefinitionPairs({ pairs, sourceNodes, targetNodes, },);
- * ```
+ What one chunk's pairing splits into.
+ 
+ @example
+ ```ts
+ const split: SplitDefinitionPairs = splitDefinitionPairs({ pairs, sourceNodes, targetNodes, },);
+ ```
  */
 export type SplitDefinitionPairs = {
   /**
-   * Pairs the slicer may walk: every body pair, and the definition pairs too
-   * unless they cross.
+   Pairs the slicer may walk: every body pair, and the definition pairs too
+   unless they cross.
    */
   readonly forSlicing: readonly BlockPair[];
 
   /**
-   * Every definition pair, by label, for the relabel.
+   Every definition pair, by label, for the relabel.
    */
   readonly definitionPairs: readonly DefinitionLabelPair[];
 
   /**
-   * Whether the definition pairs cross, and so were kept out of the slicing.
+   Whether the definition pairs cross, and so were kept out of the slicing.
    */
   readonly crossing: boolean;
 };
 
 /**
- * Indices, among one chunk's nodes, of the footnote definition blocks.
- *
- * @param nodes - one side of a chunk
- *
- * @returns Chunk-local indices of the definitions
- *
- * @example
- * ```ts
- * const free = { source: definitionIndexes({ nodes: sourceNodes, },), target: definitionIndexes({ nodes: targetNodes, },), };
- * ```
+ Indices, among one chunk's nodes, of the footnote definition blocks.
+ 
+ @param nodes - one side of a chunk
+ 
+ @returns Chunk-local indices of the definitions
+ 
+ @example
+ ```ts
+ const free = { source: definitionIndexes({ nodes: sourceNodes, },), target: definitionIndexes({ nodes: targetNodes, },), };
+ ```
  */
 export function definitionIndexes(
   { nodes, }: { readonly nodes: readonly DocumentNode[]; },
@@ -100,18 +100,18 @@ export function definitionIndexes(
 }
 
 /**
- * Label a definition block opens with, as a list of one, empty for any other
- * block.
- *
- * @param node - block to read
- *
- * @returns One opening label or an empty collection; this reader never returns multiple labels
- *
- * @example
- * ```ts
- * definitionLabelsOf({ node, },);
- * // => ['2']
- * ```
+ Label a definition block opens with, as a list of one, empty for any other
+ block.
+ 
+ @param node - block to read
+ 
+ @returns One opening label or an empty collection; this reader never returns multiple labels
+ 
+ @example
+ ```ts
+ definitionLabelsOf({ node, },);
+ // => ['2']
+ ```
  */
 export function definitionLabelsOf(
   { node, }: { readonly node: DocumentNode; },
@@ -119,8 +119,8 @@ export function definitionLabelsOf(
   if (node.zone !== DEFINITION_ZONE)
     return [];
   /**
-   * The first marker literal in the block, the opener when it sits at offset
-   * zero.
+   The first marker literal in the block, the opener when it sits at offset
+   zero.
    */
   const [first,] = scanGfmReferenceLiterals({ slice: node.text, },);
   if ((first === undefined) || (first.localOffset !== 0))
@@ -129,22 +129,22 @@ export function definitionLabelsOf(
 }
 
 /**
- * Whether pairs, sorted by original then translation, ever step backwards on
- * the translation side.
- *
- * @param pairs - pairs to read
- *
- * @returns Whether any two cross
- *
- * @example
- * ```ts
- * crosses({ pairs: [ { source: 7, target: 12, }, { source: 8, target: 11, }, ], },);
- * // => true
- * ```
+ Whether pairs, sorted by original then translation, ever step backwards on
+ the translation side.
+ 
+ @param pairs - pairs to read
+ 
+ @returns Whether any two cross
+ 
+ @example
+ ```ts
+ crosses({ pairs: [ { source: 7, target: 12, }, { source: 8, target: 11, }, ], },);
+ // => true
+ ```
  */
 function crosses({ pairs, }: { readonly pairs: readonly BlockPair[]; },): boolean {
   /**
-   * Pairs in document order on the original side.
+   Pairs in document order on the original side.
    */
   const sorted = pairs.toSorted(function bySourceThenTarget(
     left,
@@ -157,7 +157,7 @@ function crosses({ pairs, }: { readonly pairs: readonly BlockPair[]; },): boolea
     at,
   ): boolean {
     /**
-     * The pair before this one in that order.
+     The pair before this one in that order.
      */
     const previous = sorted[at - 1];
     return (previous !== undefined) && (pair.target < previous.target);
@@ -165,18 +165,18 @@ function crosses({ pairs, }: { readonly pairs: readonly BlockPair[]; },): boolea
 }
 
 /**
- * Whether a block at one index is a definition.
- *
- * @param nodes - one side of a chunk
- *
- * @param index - block to ask about
- *
- * @returns Whether it is a definition
- *
- * @example
- * ```ts
- * isDefinitionAt({ nodes: sourceNodes, index: 7, },);
- * ```
+ Whether a block at one index is a definition.
+ 
+ @param nodes - one side of a chunk
+ 
+ @param index - block to ask about
+ 
+ @returns Whether it is a definition
+ 
+ @example
+ ```ts
+ isDefinitionAt({ nodes: sourceNodes, index: 7, },);
+ ```
  */
 function isDefinitionAt(
   {
@@ -188,29 +188,29 @@ function isDefinitionAt(
   },
 ): boolean {
   /**
-   * The block, absent past the end.
+   The block, absent past the end.
    */
   const node = nodes[index];
   return (node !== undefined) && (node.zone === DEFINITION_ZONE);
 }
 
 /**
- * Splits one chunk's agreed pairing into what the slicer walks and what the
- * relabel reads.
- *
- * @param pairs - pairs the roster agreed, chunk-local
- *
- * @param sourceNodes - original side of the chunk
- *
- * @param targetNodes - archive side of the chunk
- *
- * @returns The split
- *
- * @example
- * ```ts
- * const split = splitDefinitionPairs({ pairs, sourceNodes, targetNodes, },);
- * blockPairings.set(pairIndex, split.forSlicing,);
- * ```
+ Splits one chunk's agreed pairing into what the slicer walks and what the
+ relabel reads.
+ 
+ @param pairs - pairs the roster agreed, chunk-local
+ 
+ @param sourceNodes - original side of the chunk
+ 
+ @param targetNodes - archive side of the chunk
+ 
+ @returns The split
+ 
+ @example
+ ```ts
+ const split = splitDefinitionPairs({ pairs, sourceNodes, targetNodes, },);
+ blockPairings.set(pairIndex, split.forSlicing,);
+ ```
  */
 export function splitDefinitionPairs(
   {
@@ -224,7 +224,7 @@ export function splitDefinitionPairs(
   },
 ): SplitDefinitionPairs {
   /**
-   * Pairs whose both sides are definitions.
+   Pairs whose both sides are definitions.
    */
   const definitionBlockPairs = pairs.filter(function isDefinitionPair(pair,): boolean {
     return isDefinitionAt({
@@ -237,26 +237,26 @@ export function splitDefinitionPairs(
       },);
   },);
   /**
-   * The same pairs by label, where both blocks open with one.
+   The same pairs by label, where both blocks open with one.
    */
   const definitionPairs = definitionBlockPairs
     .flatMap(function toLabels(pair,): readonly DefinitionLabelPair[] {
       /**
-       * The original definition's block.
+       The original definition's block.
        */
       const sourceNode = sourceNodes[pair.source];
       /**
-       * The archive definition's block.
+       The archive definition's block.
        */
       const targetNode = targetNodes[pair.target];
       if ((sourceNode === undefined) || (targetNode === undefined))
         return [];
       /**
-       * The original definition's label.
+       The original definition's label.
        */
       const [sourceLabel,] = definitionLabelsOf({ node: sourceNode, },);
       /**
-       * The archive definition's label.
+       The archive definition's label.
        */
       const [targetLabel,] = definitionLabelsOf({ node: targetNode, },);
       if ((sourceLabel === undefined) || (targetLabel === undefined))
@@ -267,8 +267,8 @@ export function splitDefinitionPairs(
       }, ];
     },);
   /**
-   * Whether the definitions cross, in which case the slicer walks the body
-   * pairs alone.
+   Whether the definitions cross, in which case the slicer walks the body
+   pairs alone.
    */
   const crossing = crosses({ pairs: definitionBlockPairs, },);
   return {
@@ -283,16 +283,16 @@ export function splitDefinitionPairs(
 }
 
 /**
- * Finding and log line for a chunk whose definition pairs cross.
- *
- * @param pairIndex - aligned chunk
- *
- * @returns The line, in the block-pairing findings' wording
- *
- * @example
- * ```ts
- * findings.push(crossingFinding({ pairIndex, },),);
- * ```
+ Finding and log line for a chunk whose definition pairs cross.
+ 
+ @param pairIndex - aligned chunk
+ 
+ @returns The line, in the block-pairing findings' wording
+ 
+ @example
+ ```ts
+ findings.push(crossingFinding({ pairIndex, },),);
+ ```
  */
 export function crossingFinding({ pairIndex, }: { readonly pairIndex: number; },): string {
   return `block-pairing section ${String(pairIndex,)}: the footnote definitions cross, kept out of the slicing `

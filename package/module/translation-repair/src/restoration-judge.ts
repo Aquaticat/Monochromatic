@@ -22,43 +22,43 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // a doubtful restoration.
 
 /**
- * One seed's ensemble verdict.
- *
- * @example
- * ```ts
- * const graded: SeedJudgment = { verdict: 'restored', judged: true, votes: 3, };
- * ```
+ One seed's ensemble verdict.
+ 
+ @example
+ ```ts
+ const graded: SeedJudgment = { verdict: 'restored', judged: true, votes: 3, };
+ ```
  */
 export type SeedJudgment = {
   /**
-   * Conservative lower-median verdict across judges;
-   * `absent` when no judge ruled and the seed stays unjudged.
+   Conservative lower-median verdict across judges;
+   `absent` when no judge ruled and the seed stays unjudged.
    */
   readonly verdict: RestorationVerdict;
 
   /**
-   * Whether a quorum of judges ruled on this seed,
-   * so the scorecard can exclude unjudged seeds honestly.
+   Whether a quorum of judges ruled on this seed,
+   so the scorecard can exclude unjudged seeds honestly.
    */
   readonly judged: boolean;
 
   /**
-   * Judges that cast a verdict on this seed.
+   Judges that cast a verdict on this seed.
    */
   readonly votes: number;
 };
 
 /**
- * Ordinal rank of a verdict, least to most credited.
- *
- * @param verdict - verdict to rank
- *
- * @returns Rank from zero (absent) to two (restored)
- *
- * @example
- * ```ts
- * verdictRank({ verdict: 'restored', },);
- * ```
+ Ordinal rank of a verdict, least to most credited.
+ 
+ @param verdict - verdict to rank
+ 
+ @returns Rank from zero (absent) to two (restored)
+ 
+ @example
+ ```ts
+ verdictRank({ verdict: 'restored', },);
+ ```
  */
 function verdictRank(
   { verdict, }: { readonly verdict: RestorationVerdict; },
@@ -71,25 +71,25 @@ function verdictRank(
 }
 
 /**
- * Conservative lower-median verdict over cast verdicts.
- * Sorting by rank and taking the lower of the two middle elements means an
- * even split rounds toward the less-credited verdict, because a wrongly
- * credited restoration is the costlier error for a quality metric.
- *
- * @param cast - verdicts cast on one seed, at least one
- *
- * @returns Lower-median verdict
- *
- * @example
- * ```ts
- * lowerMedianVerdict({ cast: ['restored', 'partial', 'absent',], },);
- * ```
+ Conservative lower-median verdict over cast verdicts.
+ Sorting by rank and taking the lower of the two middle elements means an
+ even split rounds toward the less-credited verdict, because a wrongly
+ credited restoration is the costlier error for a quality metric.
+ 
+ @param cast - verdicts cast on one seed, at least one
+ 
+ @returns Lower-median verdict
+ 
+ @example
+ ```ts
+ lowerMedianVerdict({ cast: ['restored', 'partial', 'absent',], },);
+ ```
  */
 function lowerMedianVerdict(
   { cast, }: { readonly cast: readonly RestorationVerdict[]; },
 ): RestorationVerdict {
   /**
-   * Cast verdicts sorted least to most credited.
+   Cast verdicts sorted least to most credited.
    */
   const sorted = [...cast,].toSorted(function byRank(
     left,
@@ -99,40 +99,40 @@ function lowerMedianVerdict(
   },);
 
   /**
-   * Lower-median index: for even counts the lower of the two middles.
+   Lower-median index: for even counts the lower of the two middles.
    */
   const index = Math.floor((sorted.length - 1) / 2,);
   return nonNullishOrThrow(sorted[index],);
 }
 
 /**
- * Grades one entry's restored seeds against the Chinese source.
- * Judges fan out over the whole entry sheet with retry-to-quorum; a seed
- * counts as judged only when quorum was met and at least one judge ruled on
- * it, and its verdict is the conservative lower median.
- *
- * @param client - injected model client
- *
- * @param judgeModelIds - bilingual judge roster
- *
- * @param sourceText - original Chinese document
- *
- * @param repairedText - repaired translation under grading
- *
- * @param references - deleted sentences with their seed ids
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - benchmark logger
- *
- * @returns Verdict per seed id
- *
- * @example
- * ```ts
- * const judgments = await runRestorationJudge({ ... },);
- * ```
+ Grades one entry's restored seeds against the Chinese source.
+ Judges fan out over the whole entry sheet with retry-to-quorum; a seed
+ counts as judged only when quorum was met and at least one judge ruled on
+ it, and its verdict is the conservative lower median.
+ 
+ @param client - injected model client
+ 
+ @param judgeModelIds - bilingual judge roster
+ 
+ @param sourceText - original Chinese document
+ 
+ @param repairedText - repaired translation under grading
+ 
+ @param references - deleted sentences with their seed ids
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - benchmark logger
+ 
+ @returns Verdict per seed id
+ 
+ @example
+ ```ts
+ const judgments = await runRestorationJudge({ ... },);
+ ```
  */
 export async function runRestorationJudge(
   {
@@ -159,7 +159,7 @@ export async function runRestorationJudge(
     return {};
 
   /**
-   * Judge sheet plus the seed numbering order.
+   Judge sheet plus the seed numbering order.
    */
   const plan = buildRestorationJudgeMessages({
     sourceText,
@@ -168,7 +168,7 @@ export async function runRestorationJudge(
   },);
 
   /**
-   * Heard judge voices after retry-to-quorum.
+   Heard judge voices after retry-to-quorum.
    */
   const gather = await gatherStageVoices({
     client,
@@ -183,7 +183,7 @@ export async function runRestorationJudge(
   },);
 
   /**
-   * Seed-keyed verdicts per heard judge.
+   Seed-keyed verdicts per heard judge.
    */
   const ballots = gather.voices
     .map(function toBallot(voice,) {
@@ -207,11 +207,11 @@ export async function runRestorationJudge(
       SeedJudgment,
     ] {
     /**
-     * Verdicts cast on this seed across heard judges.
+     Verdicts cast on this seed across heard judges.
      */
     const cast = ballots.flatMap(function toVerdict(ballot,): readonly RestorationVerdict[] {
       /**
-       * This judge's verdict on the seed, when cast.
+       This judge's verdict on the seed, when cast.
        */
       const verdict = ballot[seedId];
       return verdict === undefined ? [] : [verdict,];

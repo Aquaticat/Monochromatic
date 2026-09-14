@@ -4,19 +4,19 @@ import type { FidelityReferenceSpec, } from './fidelity-reference-model.ts';
 // No complete corpus passage is committed. Exact ranges and hashes pin the reviewed comparison.
 
 /**
- * Immutable review pin, deliberately independent of future runtime corpus defaults.
+ Immutable review pin, deliberately independent of future runtime corpus defaults.
  */
 const REVIEWED_CORPUS_SHA = 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379';
 
 /**
- * References and every permitted damage reviewed before model calibration.
- * The local Y1Ran correction is assistant-authored calibration text, never a corpus edit.
- * Evidence: doc/planning/translation-repair-reviewed-calibration-fixtures-2026-09-11.md.
- *
- * @example
- * ```ts
- * const references = await readReviewedFidelityReferences({ pin, specs: REVIEWED_FIDELITY_REFERENCES });
- * ```
+ References and every permitted damage reviewed before model calibration.
+ The local Y1Ran correction is assistant-authored calibration text, never a corpus edit.
+ Evidence: doc/planning/translation-repair-reviewed-calibration-fixtures-2026-09-11.md.
+ 
+ @example
+ ```ts
+ const references = await readReviewedFidelityReferences({ pin, specs: REVIEWED_FIDELITY_REFERENCES });
+ ```
  */
 export const REVIEWED_FIDELITY_REFERENCES: readonly FidelityReferenceSpec[] = [
   {

@@ -21,18 +21,18 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // This checks declared data against independent expectations. Journal origin and transport provenance belong to its owner.
 
 /**
- * Checks the whole own-key inventory, including keys JSON serialization would silently discard.
- *
- * @param value - record whose schema has already been identified
- *
- * @param keys - exact fields supported by this data version
- *
- * @returns Whether the record contains precisely the supported own fields
- *
- * @example
- * ```ts
- * const exact = receiptKeys({ value, keys: ['modelId', 'voice'], });
- * ```
+ Checks the whole own-key inventory, including keys JSON serialization would silently discard.
+ 
+ @param value - record whose schema has already been identified
+ 
+ @param keys - exact fields supported by this data version
+ 
+ @returns Whether the record contains precisely the supported own fields
+ 
+ @example
+ ```ts
+ const exact = receiptKeys({ value, keys: ['modelId', 'voice'], });
+ ```
  */
 function receiptKeys({
   value,
@@ -42,7 +42,7 @@ function receiptKeys({
   readonly keys: readonly string[]
 },): boolean {
   /**
-   * Whole own inventory, not just enumerable string keys.
+   Whole own inventory, not just enumerable string keys.
    */
   const actual = Reflect.ownKeys(value,);
   return (Object.getPrototypeOf(value,) === Object.prototype)
@@ -51,20 +51,20 @@ function receiptKeys({
 }
 
 /**
- * Reads one final voice without interpreting range validity or silently dropping unknown voice fields.
- *
- * @param value - unknown persisted seat record
- *
- * @param modelIds - independently configured electorate
- *
- * @returns Owned seat record retaining heard-invalid semantic wire for the existing pairing reader
- *
- * @throws PreparationReceiptError when a seat does not have the supported runtime shape
- *
- * @example
- * ```ts
- * const seat = receiptOutcome({ value, modelIds, });
- * ```
+ Reads one final voice without interpreting range validity or silently dropping unknown voice fields.
+ 
+ @param value - unknown persisted seat record
+ 
+ @param modelIds - independently configured electorate
+ 
+ @returns Owned seat record retaining heard-invalid semantic wire for the existing pairing reader
+ 
+ @throws PreparationReceiptError when a seat does not have the supported runtime shape
+ 
+ @example
+ ```ts
+ const seat = receiptOutcome({ value, modelIds, });
+ ```
  */
 function receiptOutcome({
   value,
@@ -82,7 +82,7 @@ function receiptOutcome({
   },)))
     throw new PreparationReceiptError({ kind: 'outcomes', },);
   /**
-   * Only an identity already registered by the caller can be reconstructed.
+   Only an identity already registered by the caller can be reconstructed.
    */
   const modelId = modelIds.find(function registered(candidate,): boolean {
     return candidate === value.modelId;
@@ -90,7 +90,7 @@ function receiptOutcome({
   if (modelId === undefined)
     throw new PreparationReceiptError({ kind: 'outcomes', },);
   /**
-   * Voice discriminant and fields remain unknown until both branches have been checked.
+   Voice discriminant and fields remain unknown until both branches have been checked.
    */
   const {voice} = value;
   if (!isJsonRecord(voice,))
@@ -135,27 +135,27 @@ function receiptOutcome({
 }
 
 /**
- * Reads raw final outcomes only after namespace, configuration and current question match independent expectations.
- * Neither this operation nor its returned outcomes certify transmission, usable quorum or final writer scope.
- *
- * @param value - parsed journal receipt, never a historical pairing cache record
- *
- * @param binding - authorized receipt reference and actual configuration supplied by the owning plan
- *
- * @param question - exact question reconstructed from current parser-owned parent blocks
- *
- * @param l - caller logger retaining the registered occurrence scope
- *
- * @returns Owned final outcomes in the actual recorded asked order
- *
- * @throws PreparationReceiptError when record state, binding, question or seat shapes disagree
- *
- * @throws PairingEvidenceError when configured or asked identities do not form an independent ordered electorate
- *
- * @example
- * ```ts
- * const outcomes = readPreparationReceipt({ value, binding, question, l, });
- * ```
+ Reads raw final outcomes only after namespace, configuration and current question match independent expectations.
+ Neither this operation nor its returned outcomes certify transmission, usable quorum or final writer scope.
+ 
+ @param value - parsed journal receipt, never a historical pairing cache record
+ 
+ @param binding - authorized receipt reference and actual configuration supplied by the owning plan
+ 
+ @param question - exact question reconstructed from current parser-owned parent blocks
+ 
+ @param l - caller logger retaining the registered occurrence scope
+ 
+ @returns Owned final outcomes in the actual recorded asked order
+ 
+ @throws PreparationReceiptError when record state, binding, question or seat shapes disagree
+ 
+ @throws PairingEvidenceError when configured or asked identities do not form an independent ordered electorate
+ 
+ @example
+ ```ts
+ const outcomes = readPreparationReceipt({ value, binding, question, l, });
+ ```
  */
 export function readPreparationReceipt({
   value,
@@ -169,7 +169,7 @@ export function readPreparationReceipt({
   readonly l: Logger;
 },): readonly RoundOutcome<BlockPairingWire>[] {
   /**
-   * Retained occurrence scope around metadata and electorate verification.
+   Retained occurrence scope around metadata and electorate verification.
    */
   const pl = tagged({
     tag: readPreparationReceipt.name,
@@ -181,7 +181,7 @@ export function readPreparationReceipt({
     l: pl,
   },);
   /**
-   * Empty namespace labels cannot authenticate one another by equality.
+   Empty namespace labels cannot authenticate one another by equality.
    */
   const labels = [
     binding.acquisitionPlanDigest,
@@ -229,7 +229,7 @@ export function readPreparationReceipt({
       .length))
     throw new PreparationReceiptError({ kind: 'outcomes', },);
   /**
-   * Reconstructed voices cannot carry aggregate fields or invent missing seats.
+   Reconstructed voices cannot carry aggregate fields or invent missing seats.
    */
   const outcomes = value.outcomes
     .map(function read(seat: unknown,): RoundOutcome<BlockPairingWire> {

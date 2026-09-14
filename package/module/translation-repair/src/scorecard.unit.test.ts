@@ -1,19 +1,19 @@
 /**
- * Tests for the benchmark aggregation.
- *
- * `computeScorecard` produces `ensembleRecall`, which the handover calls the
- * milestone go/no-go number. It had no test. Everything here is pure
- * arithmetic over records, which is exactly the kind of code that looks
- * obviously right and quietly divides by the wrong denominator.
- *
- * The cases concentrate on the two denominators that are easy to get wrong:
- * skipped records, which must back the skipped count and nothing else, and the
- * entry-scoped seed keys, which decide whether one seed found by three models
- * counts once or three times.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the benchmark aggregation.
+ 
+ `computeScorecard` produces `ensembleRecall`, which the handover calls the
+ milestone go/no-go number. It had no test. Everything here is pure
+ arithmetic over records, which is exactly the kind of code that looks
+ obviously right and quietly divides by the wrong denominator.
+ 
+ The cases concentrate on the two denominators that are easy to get wrong:
+ skipped records, which must back the skipped count and nothing else, and the
+ entry-scoped seed keys, which decide whether one seed found by three models
+ counts once or three times.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -28,46 +28,46 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One model of the roster, used wherever a row's identity does not matter.
+ One model of the roster, used wherever a row's identity does not matter.
  */
 const MODEL_A = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
- * Second model, for ensemble cases where two models see the same entry.
+ Second model, for ensemble cases where two models see the same entry.
  */
 const MODEL_B = 'hf:moonshotai/Kimi-K3';
 
 /**
- * Builds a graded attempt, defaulting everything a case does not care about.
- *
- * @param modelId - model that made the attempt
- *
- * @param entryId - corpus entry reviewed
- *
- * @param outcomeKind - how the exchange ended
- *
- * @param resolvedClaimCount - claims that survived validation
- *
- * @param unresolvedReasons - resolution failure reasons
- *
- * @param seededHitIds - seeds this attempt detected
- *
- * @param plantedSeedIds - seeds planted for this entry
- *
- * @returns Attempt record
- *
- * @example
- * ```ts
- * const record = attempt({
- *   modelId: MODEL_A,
- *   entryId: 'whiskers',
- *   outcomeKind: 'ok',
- *   resolvedClaimCount: 2,
- *   unresolvedReasons: [],
- *   seededHitIds: ['seed/0',],
- *   plantedSeedIds: ['seed/0', 'seed/1',],
- * },);
- * ```
+ Builds a graded attempt, defaulting everything a case does not care about.
+ 
+ @param modelId - model that made the attempt
+ 
+ @param entryId - corpus entry reviewed
+ 
+ @param outcomeKind - how the exchange ended
+ 
+ @param resolvedClaimCount - claims that survived validation
+ 
+ @param unresolvedReasons - resolution failure reasons
+ 
+ @param seededHitIds - seeds this attempt detected
+ 
+ @param plantedSeedIds - seeds planted for this entry
+ 
+ @returns Attempt record
+ 
+ @example
+ ```ts
+ const record = attempt({
+   modelId: MODEL_A,
+   entryId: 'whiskers',
+   outcomeKind: 'ok',
+   resolvedClaimCount: 2,
+   unresolvedReasons: [],
+   seededHitIds: ['seed/0',],
+   plantedSeedIds: ['seed/0', 'seed/1',],
+ },);
+ ```
  */
 function attempt(
   {
@@ -109,7 +109,7 @@ await describe({
         + 'NaN, which would render as a number and pass a threshold check',
       fn: async () => {
         /**
-         * Scorecard over no attempts at all.
+         Scorecard over no attempts at all.
          */
         const scorecard = computeScorecard({ attempts: [], },);
 
@@ -127,7 +127,7 @@ await describe({
         + 'models failed',
       fn: async () => {
         /**
-         * One clean attempt plus one the budget never dispatched.
+         One clean attempt plus one the budget never dispatched.
          */
         const scorecard = computeScorecard({
           attempts: [
@@ -153,7 +153,7 @@ await describe({
         },);
 
         /**
-         * The single row for the only model.
+         The single row for the only model.
          */
         const [row,] = scorecard.rows;
 
@@ -173,7 +173,7 @@ await describe({
         + 'the budget running out look like the ensemble missing seeds',
       fn: async () => {
         /**
-         * One dispatched entry and one skipped entry, each with its own seed.
+         One dispatched entry and one skipped entry, each with its own seed.
          */
         const scorecard = computeScorecard({
           attempts: [
@@ -208,7 +208,7 @@ await describe({
         + 'rates instead of dividing by zero attempts',
       fn: async () => {
         /**
-         * Scorecard where the only model never got dispatched at all.
+         Scorecard where the only model never got dispatched at all.
          */
         const scorecard = computeScorecard({
           attempts: [
@@ -225,7 +225,7 @@ await describe({
         },);
 
         /**
-         * The fully-skipped model's row.
+         The fully-skipped model's row.
          */
         const [row,] = scorecard.rows;
 
@@ -245,7 +245,7 @@ await describe({
         + 'seed and effective recall is what the milestone reads',
       fn: async () => {
         /**
-         * One refusal and one schema mismatch, each on a seeded entry.
+         One refusal and one schema mismatch, each on a seeded entry.
          */
         const scorecard = computeScorecard({
           attempts: [
@@ -271,7 +271,7 @@ await describe({
         },);
 
         /**
-         * The row for the failing model.
+         The row for the failing model.
          */
         const [row,] = scorecard.rows;
 
@@ -289,7 +289,7 @@ await describe({
         + 'found, not how many findings happened',
       fn: async () => {
         /**
-         * Both models finding the same single planted seed.
+         Both models finding the same single planted seed.
          */
         const scorecard = computeScorecard({
           attempts: [
@@ -326,7 +326,7 @@ await describe({
         + 'its whole universe to one seed per index',
       fn: async () => {
         /**
-         * Two entries each planting `seed/0`, only one of which was found.
+         Two entries each planting `seed/0`, only one of which was found.
          */
         const scorecard = computeScorecard({
           attempts: [
@@ -361,7 +361,7 @@ await describe({
         + 'the roster was dispatched rather than in map-insertion accident',
       fn: async () => {
         /**
-         * Model B seen first, then A, then B again.
+         Model B seen first, then A, then B again.
          */
         const scorecard = computeScorecard({
           attempts: [
@@ -411,7 +411,7 @@ await describe({
         + 'quoting rather than as a busy run',
       fn: async () => {
         /**
-         * Two attempts with differing claim and failure counts.
+         Two attempts with differing claim and failure counts.
          */
         const scorecard = computeScorecard({
           attempts: [
@@ -440,7 +440,7 @@ await describe({
         },);
 
         /**
-         * The averaged row.
+         The averaged row.
          */
         const [row,] = scorecard.rows;
 
@@ -494,7 +494,7 @@ await describe({
           ],
         ] as const) {
           /**
-           * Scorecard for one well-formed record of this shape.
+           Scorecard for one well-formed record of this shape.
            */
           const scorecard = computeScorecard({
             attempts: [
@@ -523,7 +523,7 @@ await describe({
         + 'same half, means the roster together found everything',
       fn: async () => {
         /**
-         * Two models over one entry, each finding the seed the other missed.
+         Two models over one entry, each finding the seed the other missed.
          */
         const scorecard = computeScorecard({
           attempts: [

@@ -1,16 +1,16 @@
 /**
- * Tests for the one check a slice record can be held to on its own.
- *
- * Both lanes store a decided text beside a boolean saying whether it differs
- * from the archive's, and nothing but this compares them. From a CACHE a
- * contradiction is not a model failure: it is a file, and files get truncated,
- * hand-edited, and written under a slicing that has since moved. From a STAGE
- * it is a derivation reading something other than the text, and the two want
- * opposite answers: discard the file, refuse the stage.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the one check a slice record can be held to on its own.
+ 
+ Both lanes store a decided text beside a boolean saying whether it differs
+ from the archive's, and nothing but this compares them. From a CACHE a
+ contradiction is not a model failure: it is a file, and files get truncated,
+ hand-edited, and written under a slicing that has since moved. From a STAGE
+ it is a derivation reading something other than the text, and the two want
+ opposite answers: discard the file, refuse the stage.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -27,12 +27,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Archive wording every case compares against.
+ Archive wording every case compares against.
  */
 const ARCHIVE = 'The cat is doing the sleeping on the windowsill.';
 
 /**
- * Wording a lane might decide instead.
+ Wording a lane might decide instead.
  */
 const DECIDED = 'The cat naps on the windowsill.';
 
@@ -107,7 +107,7 @@ await describe({
         + 'reader counting recomputed slices needs to tell them apart',
       fn: async () => {
         /**
-         * Finding for a record that claimed a change it did not make.
+         Finding for a record that claimed a change it did not make.
          */
         const overClaimed = resumedSliceDiscardFinding({
           lane: 'translate',
@@ -119,7 +119,7 @@ await describe({
         expect(overClaimed,).toContain('archive wording',);
 
         /**
-         * Finding for the other direction, on the other lane.
+         Finding for the other direction, on the other lane.
          */
         const underClaimed = resumedSliceDiscardFinding({
           lane: 'repair',
@@ -157,7 +157,7 @@ await describe({
         + 'write the contradiction into the cache for every later run to discard',
       fn: async () => {
         /**
-         * Failure raised for a record claiming a change it did not make.
+         Failure raised for a record claiming a change it did not make.
          */
         let overClaimed: unknown;
         try {
@@ -177,7 +177,7 @@ await describe({
         expect(String(overClaimed,),).toContain('archive wording',);
 
         /**
-         * Failure raised for the quieter direction, on the other lane.
+         Failure raised for the quieter direction, on the other lane.
          */
         let underClaimed: unknown;
         try {

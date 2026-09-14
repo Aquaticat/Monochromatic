@@ -12,14 +12,14 @@ import {
 const STAMP_STEP = 10;
 
 /**
- * Builds independently parsed source slices and distinguishable archive counterparts.
- *
- * @param texts - physical slice contents in document order
- * @returns Paired fixtures whose stamps cannot be mistaken for positions
- * @example
- * ```ts
- * const slices = pairs(['Current.', '## Friends', 'A friend returned.']);
- * ```
+ Builds independently parsed source slices and distinguishable archive counterparts.
+ 
+ @param texts - physical slice contents in document order
+ @returns Paired fixtures whose stamps cannot be mistaken for positions
+ @example
+ ```ts
+ const slices = pairs(['Current.', '## Friends', 'A friend returned.']);
+ ```
  */
 function pairs(texts: readonly string[]): readonly ChunkPair[] {
   return texts.map(function pair(text, index): ChunkPair {

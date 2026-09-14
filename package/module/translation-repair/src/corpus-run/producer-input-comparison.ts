@@ -27,21 +27,21 @@ import type { ProducerInputLaunch, } from './producer-input-model.ts';
 //region One owning input-reconstruction comparison before any root or phase plan
 
 /**
- * Matches the independent base launch and rejects unsupported topology before comparison namespace creation.
- * Only the matched launch and directory metadata are read; no referenced input bodies or application imports occur.
- *
- * @param request - primitive-owned independent base-launch authority
- *
- * @param l - invoking comparison owner's logger
- *
- * @returns Native owned base fields and metadata-only topology observation
- *
- * @throws ProducerInputComparisonError when launch matching or topology preflight fails
- *
- * @example
- * ```ts
- * const preflight = await preflightInputComparison({ request, l });
- * ```
+ Matches the independent base launch and rejects unsupported topology before comparison namespace creation.
+ Only the matched launch and directory metadata are read; no referenced input bodies or application imports occur.
+ 
+ @param request - primitive-owned independent base-launch authority
+ 
+ @param l - invoking comparison owner's logger
+ 
+ @returns Native owned base fields and metadata-only topology observation
+ 
+ @throws ProducerInputComparisonError when launch matching or topology preflight fails
+ 
+ @example
+ ```ts
+ const preflight = await preflightInputComparison({ request, l });
+ ```
  */
 async function preflightInputComparison({
   request,
@@ -54,7 +54,7 @@ async function preflightInputComparison({
   readonly layout: ProducerInputHostLayout
 }> {
   /**
-   * A preflight refusal cannot be logged as completed input reconstruction.
+   A preflight refusal cannot be logged as completed input reconstruction.
    */
   const pl = tagged({
     tag: preflightInputComparison.name,
@@ -62,14 +62,14 @@ async function preflightInputComparison({
   });
   try {
     /**
-     * The base is decoded by the existing independently bound closed-schema reader.
+     The base is decoded by the existing independently bound closed-schema reader.
      */
     const base = await readProducerInputLaunch({
       path: request.baseLaunchPath,
       expected: request.baseLaunchIdentity
     });
     /**
-     * Existing metadata-only topology policy remains unchanged.
+     Existing metadata-only topology policy remains unchanged.
      */
     const layout = await inspectProducerInputHostLayout(base);
     pl.debug('matched base input launch and metadata-only host topology');
@@ -85,29 +85,29 @@ async function preflightInputComparison({
 }
 
 /**
- * Reconstructs input through the authenticated fixed CLI, retains it, then compares actual persisted bytes.
- * The invocation authorizes only a private descendant output-parent derivation under the matched base launch.
- * Base and derived identities remain distinct; neither checksum grants root, phase or writer review authority.
- * All failures retain created namespaces and output; no retry, root plan, acquisition attempt or client is created.
- *
- * @param input - independently bound base launch, authenticated bootstrap, reference identity, cancellation and logger
- *
- * @returns Matched retained unqualified files, not parsed nodes or an approval certificate
- *
- * @throws ProducerInputComparisonError when preflight, execution, observation, persistence or comparison fails
- *
- * @example
- * ```ts
- * const files = await runProducerInputComparison({ baseLaunchPath, baseLaunchIdentity, bootstrapPath, reference, signal, l });
- * ```
+ Reconstructs input through the authenticated fixed CLI, retains it, then compares actual persisted bytes.
+ The invocation authorizes only a private descendant output-parent derivation under the matched base launch.
+ Base and derived identities remain distinct; neither checksum grants root, phase or writer review authority.
+ All failures retain created namespaces and output; no retry, root plan, acquisition attempt or client is created.
+ 
+ @param input - independently bound base launch, authenticated bootstrap, reference identity, cancellation and logger
+ 
+ @returns Matched retained unqualified files, not parsed nodes or an approval certificate
+ 
+ @throws ProducerInputComparisonError when preflight, execution, observation, persistence or comparison fails
+ 
+ @example
+ ```ts
+ const files = await runProducerInputComparison({ baseLaunchPath, baseLaunchIdentity, bootstrapPath, reference, signal, l });
+ ```
  */
 export async function runProducerInputComparison(input: ProducerInputComparisonRequest): Promise<ProducerInputComparisonResult> {
   /**
-   * Data authority is owned before logger callbacks or asynchronous work.
+   Data authority is owned before logger callbacks or asynchronous work.
    */
   const request = ownProducerInputComparisonRequest(input);
   /**
-   * Every helper receives the full invoking operation's tag chain.
+   Every helper receives the full invoking operation's tag chain.
    */
   const pl = tagged({
     tag: runProducerInputComparison.name,
@@ -117,7 +117,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
     .aborted)
     throw new ProducerInputComparisonError({ kind: 'interruption' });
   /**
-   * No comparison namespace exists while launch or topology is still unverified.
+   No comparison namespace exists while launch or topology is still unverified.
    */
   const preflight = await preflightInputComparison({
     request,
@@ -127,7 +127,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
     .aborted)
     throw new ProducerInputComparisonError({ kind: 'interruption' });
   /**
-   * This is a comparison namespace, not a preparation acquisition attempt.
+   This is a comparison namespace, not a preparation acquisition attempt.
    */
   const run = await createProducerInputComparisonRun({
     parent: preflight.base
@@ -145,7 +145,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
         directory: run.directory
       });
     /**
-     * Only the owned producer-runs descendant differs from the original matched launch.
+     Only the owned producer-runs descendant differs from the original matched launch.
      */
     const invocation = await deriveProducerInputComparisonLaunch({
       request,
@@ -154,7 +154,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
     });
     await revalidateProducerInputHostLayout(preflight.layout);
     /**
-     * Native close is observed even on failure; no automatic retry can create a second input run.
+     Native close is observed even on failure; no automatic retry can create a second input run.
      */
     const [execution] = await Promise.allSettled([invokeProducerInputBootstrap({
       run,
@@ -162,7 +162,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
       l: pl
     })]);
     /**
-     * Failure-time association uses the exclusive descendant, never an arbitrary stdout directory.
+     Failure-time association uses the exclusive descendant, never an arbitrary stdout directory.
      */
     const [observed] = await Promise.allSettled([observeProducerInputComparisonChildren({
       run,
@@ -209,7 +209,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
         directory: run.directory
       });
     /**
-     * Successful process status and metadata cannot replace independent file hashing.
+     Successful process status and metadata cannot replace independent file hashing.
      */
     const files = await readProducerInputComparisonOutput({
       run,
@@ -219,7 +219,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
       l: pl
     });
     /**
-     * Comparison uses raw observed file identity, never reserialized input DTOs.
+     Comparison uses raw observed file identity, never reserialized input DTOs.
      */
     const matches = (files.identity
       .bytes
@@ -278,7 +278,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
   }
   catch (error) {
     /**
-     * Only fixed failure kinds, never caught native bodies, enter persisted failure metadata.
+     Only fixed failure kinds, never caught native bodies, enter persisted failure metadata.
      */
     const failure = Error.isError(error) && (error instanceof ProducerInputComparisonError) ? error
       : new ProducerInputComparisonError({
@@ -287,7 +287,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
       });
     pl.warn(`input comparison refused at ${failure.kind}; created evidence remains retained`);
     /**
-     * A failed failure-record write is independently refused rather than claiming an unrecorded mismatch.
+     A failed failure-record write is independently refused rather than claiming an unrecorded mismatch.
      */
     const [record] = await Promise.allSettled([writeProducerInputComparisonRecord({
       run,

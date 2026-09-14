@@ -19,23 +19,23 @@ import {
 // fixture, because the corpus is unlicensed.
 
 /**
- * Tiny window so a stall test finishes in milliseconds rather than minutes.
+ Tiny window so a stall test finishes in milliseconds rather than minutes.
  */
 const TINY_MS = 20;
 
 /**
- * Window long enough that it never trips during a test that is not about
- * tripping.
+ Window long enough that it never trips during a test that is not about
+ tripping.
  */
 const ROOMY_MS = 10_000;
 
 /**
- * Waits for a stall to trip, by polling the guard's own signal rather than
- * sleeping a fixed span, so the test does not race a slow machine.
- *
- * @param signal - guard signal expected to abort
- *
- * @returns Nothing; resolves once aborted
+ Waits for a stall to trip, by polling the guard's own signal rather than
+ sleeping a fixed span, so the test does not race a slow machine.
+ 
+ @param signal - guard signal expected to abort
+ 
+ @returns Nothing; resolves once aborted
  */
 async function untilAborted(signal: AbortSignal,): Promise<void> {
   const spin = { done: signal.aborted, };
@@ -49,12 +49,12 @@ async function untilAborted(signal: AbortSignal,): Promise<void> {
 }
 
 /**
- * Builds a Response whose body emits the given chunks, so the drain sees a
- * real ReadableStream rather than a whole-body string.
- *
- * @param chunks - byte chunks to emit in order
- *
- * @returns Response carrying those chunks as its body
+ Builds a Response whose body emits the given chunks, so the drain sees a
+ real ReadableStream rather than a whole-body string.
+ 
+ @param chunks - byte chunks to emit in order
+ 
+ @returns Response carrying those chunks as its body
  */
 function streamingResponse(chunks: readonly Uint8Array[],): Response {
   return new Response(
@@ -234,7 +234,7 @@ await describe({
             guard.notify(9,);
 
             /**
-             * What the guard measured across the whole armed window.
+             What the guard measured across the whole armed window.
              */
             const progress = guard.progress();
 
@@ -346,7 +346,7 @@ await describe({
             },);
 
             /**
-             * Body that never emits, so only the guard can end the read.
+             Body that never emits, so only the guard can end the read.
              */
             const stalled = new Response(
               new ReadableStream({
@@ -395,12 +395,12 @@ await describe({
             },);
 
             /**
-             * Caller's own controller, aborted mid-read to imitate steering.
+             Caller's own controller, aborted mid-read to imitate steering.
              */
             const caller = new AbortController();
 
             /**
-             * Failure the caller's abort raises, distinct from a stall.
+             Failure the caller's abort raises, distinct from a stall.
              */
             const steering = new Error('caller stopped the run',);
 

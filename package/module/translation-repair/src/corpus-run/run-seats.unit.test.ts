@@ -1,15 +1,15 @@
 /**
- * Tests the provider-aware judge seats.
- *
- * THE CASES: Qwen3.8-27B, cut in 30 of 34 translate-lane select rounds when
- * Hyper served it (XIEPT2, 2026-09-03) and answering 25 of 28 when Synthetic
- * did (Toka_ls, 2026-09-02), withheld while Hyper would serve it; Kimi-K3,
- * withheld from the select seats while Hyper would serve it and from every
- * seat while only OpenRouter would (the owner's cost decision of 2026-09-03),
- * with a substitute checker keeping the roster's floor; the full bench when
- * the view cannot be read; and the static drops holding either way.
- *
- * @module
+ Tests the provider-aware judge seats.
+ 
+ THE CASES: Qwen3.8-27B, cut in 30 of 34 translate-lane select rounds when
+ Hyper served it (XIEPT2, 2026-09-03) and answering 25 of 28 when Synthetic
+ did (Toka_ls, 2026-09-02), withheld while Hyper would serve it; Kimi-K3,
+ withheld from the select seats while Hyper would serve it and from every
+ seat while only OpenRouter would (the owner's cost decision of 2026-09-03),
+ with a substitute checker keeping the roster's floor; the full bench when
+ the view cannot be read; and the static drops holding either way.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -42,18 +42,18 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * The Hyper-slow judge.
+ The Hyper-slow judge.
  */
 const QWEN = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * The judge Hyper serves too slowly in the select role alone, and the one the
- * owner declined to pay OpenRouter's rate on.
+ The judge Hyper serves too slowly in the select role alone, and the one the
+ owner declined to pay OpenRouter's rate on.
  */
 const KIMI = 'hf:moonshotai/Kimi-K3';
 
 /**
- * Nobody dry.
+ Nobody dry.
  */
 const ALL_WET: BudgetView = {
   synthetic: false,
@@ -63,7 +63,7 @@ const ALL_WET: BudgetView = {
 };
 
 /**
- * Synthetic dry, Hyper serving the shared seats.
+ Synthetic dry, Hyper serving the shared seats.
  */
 const SYNTHETIC_DRY: BudgetView = {
   synthetic: true,
@@ -73,7 +73,7 @@ const SYNTHETIC_DRY: BudgetView = {
 };
 
 /**
- * Only OpenRouter left.
+ Only OpenRouter left.
  */
 const OPENROUTER_ONLY: BudgetView = {
   synthetic: true,

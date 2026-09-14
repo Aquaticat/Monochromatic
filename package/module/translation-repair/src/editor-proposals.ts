@@ -19,18 +19,18 @@ import type { EditorCandidate, } from './editor-selection-result.ts';
 // exactly the envelopes where the ensemble agreed.
 
 /**
- * Every distinct replacement proposed for one envelope.
- *
- * @param candidates - editor outcomes, in roster order
- *
- * @param envelope - envelope being decided
- *
- * @returns Distinct proposals, each credited to every model that wrote it
- *
- * @example
- * ```ts
- * const proposals = collectEnvelopeProposals({ candidates, envelope, },);
- * ```
+ Every distinct replacement proposed for one envelope.
+ 
+ @param candidates - editor outcomes, in roster order
+ 
+ @param envelope - envelope being decided
+ 
+ @returns Distinct proposals, each credited to every model that wrote it
+ 
+ @example
+ ```ts
+ const proposals = collectEnvelopeProposals({ candidates, envelope, },);
+ ```
  */
 export function collectEnvelopeProposals(
   {
@@ -42,12 +42,12 @@ export function collectEnvelopeProposals(
   },
 ): readonly Candidate<PatchOperation>[] {
   /**
-   * Proposals kept so far, first writer of each text holding its position.
+   Proposals kept so far, first writer of each text holding its position.
    */
   const proposals: Candidate<PatchOperation>[] = [];
   for (const candidate of candidates) {
     /**
-     * This model's applied operation for this envelope, when it has one.
+     This model's applied operation for this envelope, when it has one.
      */
     const operation = candidate.patch
       .applied
@@ -58,7 +58,7 @@ export function collectEnvelopeProposals(
       continue;
 
     /**
-     * This model's stake in whatever it just proposed.
+     This model's stake in whatever it just proposed.
      */
     const producer: CandidateProducer = {
       kind: 'model',
@@ -66,7 +66,7 @@ export function collectEnvelopeProposals(
     };
 
     /**
-     * Earlier proposal carrying the same replacement, when one exists.
+     Earlier proposal carrying the same replacement, when one exists.
      */
     const twin = proposals.find(function sameText(existing,): boolean {
       return existing.value

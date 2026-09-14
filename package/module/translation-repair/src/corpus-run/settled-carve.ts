@@ -37,103 +37,103 @@ import { ARTIFACTS_DIR, } from './published-tree-listing.ts';
 // pair of documents, not whatever the pin now names.
 
 /**
- * What the settled artifacts directory says about one entry's recipe.
- *
- * @example
- * ```ts
- * const recipe: SettledRecipe = { kind: 'unsettled', };
- * ```
+ What the settled artifacts directory says about one entry's recipe.
+ 
+ @example
+ ```ts
+ const recipe: SettledRecipe = { kind: 'unsettled', };
+ ```
  */
 export type SettledRecipe = {
   /**
-   * A two-lane artifact records this entry, and here is its recipe.
+   A two-lane artifact records this entry, and here is its recipe.
    */
   readonly kind: 'settled';
 
   /**
-   * Corpus commit the artifact was settled against.
+   Corpus commit the artifact was settled against.
    */
   readonly corpusSha: string;
 
   /**
-   * Pairing recipe the artifact records, with the halves it lacks named.
+   Pairing recipe the artifact records, with the halves it lacks named.
    */
   readonly recipe: PairingRecipe;
 } | {
   /**
-   * An artifact exists but predates the two-lane shape, so it records no
-   * preparation and no recipe.
+   An artifact exists but predates the two-lane shape, so it records no
+   preparation and no recipe.
    */
   readonly kind: 'legacy';
 } | {
   /**
-   * No artifact records this entry.
+   No artifact records this entry.
    */
   readonly kind: 'unsettled';
 };
 
 /**
- * One entry carved through its settled recipe, or why it could not be.
- *
- * @example
- * ```ts
- * const carve: SettledCarve = await carveSettled({ entryId, runsDir, cloneDir, },);
- * ```
+ One entry carved through its settled recipe, or why it could not be.
+ 
+ @example
+ ```ts
+ const carve: SettledCarve = await carveSettled({ entryId, runsDir, cloneDir, },);
+ ```
  */
 export type SettledCarve = {
   /**
-   * Carved through the artifact's recipe over the pair at its own commit.
+   Carved through the artifact's recipe over the pair at its own commit.
    */
   readonly kind: 'settled';
 
   /**
-   * Corpus commit the pair was read at.
+   Corpus commit the pair was read at.
    */
   readonly corpusSha: string;
 
   /**
-   * Whole original at that commit.
+   Whole original at that commit.
    */
   readonly sourceText: string;
 
   /**
-   * Whole translation at that commit.
+   Whole translation at that commit.
    */
   readonly targetText: string;
 
   /**
-   * Slicing the lanes saw, or the closest the recorded recipe reaches.
+   Slicing the lanes saw, or the closest the recorded recipe reaches.
    */
   readonly prepared: PreparedDocumentPair;
 
   /**
-   * Recipe that produced it, with any defaulted halves named.
+   Recipe that produced it, with any defaulted halves named.
    */
   readonly recipe: PairingRecipe;
 } | {
   /**
-   * An artifact exists but records no recipe.
+   An artifact exists but records no recipe.
    */
   readonly kind: 'legacy';
 } | {
   /**
-   * No artifact records this entry.
+   No artifact records this entry.
    */
   readonly kind: 'unsettled';
 };
 
 /**
- * Whether an error says the path does not exist.
- *
- * @param error - caught value
- *
- * @returns Whether it is the missing-path error, which is an ordinary answer
- * here rather than a fault
- *
- * @example
- * ```ts
- * if (isMissingPath({ error, },)) return [];
- * ```
+ Whether an error says the path does not exist.
+ 
+ @param error - caught value
+ 
+ @returns Whether it is the missing-path error, which is an ordinary answer
+ here rather than a fault
+ 
+ @example
+ ```ts
+ if (isMissingPath({ error, },)) return [];
+ ```
  */
 function isMissingPath({ error, }: { readonly error: unknown; },): boolean {
   if (!Error.isError(error,))
@@ -144,22 +144,22 @@ function isMissingPath({ error, }: { readonly error: unknown; },): boolean {
 }
 
 /**
- * Lists the entries a runs directory holds settled artifacts for.
- *
- * @param runsDir - runs directory whose `artifacts/` subdirectory is read
- *
- * @returns Entry ids in sorted order, empty when the directory has none
- *
- * @example
- * ```ts
- * const entryIds = await listSettledEntryIds({ runsDir, },);
- * ```
+ Lists the entries a runs directory holds settled artifacts for.
+ 
+ @param runsDir - runs directory whose `artifacts/` subdirectory is read
+ 
+ @returns Entry ids in sorted order, empty when the directory has none
+ 
+ @example
+ ```ts
+ const entryIds = await listSettledEntryIds({ runsDir, },);
+ ```
  */
 export async function listSettledEntryIds(
   { runsDir, }: { readonly runsDir: string; },
 ): Promise<readonly string[]> {
   /**
-   * Where a pass writes its artifacts.
+   Where a pass writes its artifacts.
    */
   const artifactsDir = join(
     runsDir,
@@ -189,19 +189,19 @@ export async function listSettledEntryIds(
 }
 
 /**
- * Reads the recipe one entry's settled artifact records, without touching
- * the corpus.
- *
- * @param entryId - corpus entry
- *
- * @param runsDir - runs directory holding `artifacts/<entryId>.json`
- *
- * @returns Recipe and commit, or the reason there is none
- *
- * @example
- * ```ts
- * const settled = await readSettledRecipe({ entryId, runsDir, },);
- * ```
+ Reads the recipe one entry's settled artifact records, without touching
+ the corpus.
+ 
+ @param entryId - corpus entry
+ 
+ @param runsDir - runs directory holding `artifacts/<entryId>.json`
+ 
+ @returns Recipe and commit, or the reason there is none
+ 
+ @example
+ ```ts
+ const settled = await readSettledRecipe({ entryId, runsDir, },);
+ ```
  */
 export async function readSettledRecipe(
   {
@@ -213,7 +213,7 @@ export async function readSettledRecipe(
   },
 ): Promise<SettledRecipe> {
   /**
-   * Where this entry's artifact would sit.
+   Where this entry's artifact would sit.
    */
   const path = join(
     runsDir,
@@ -230,14 +230,14 @@ export async function readSettledRecipe(
   }
 
   /**
-   * Artifact as written, dispatched by generation.
+   Artifact as written, dispatched by generation.
    */
   const reading = readSettledArtifact({ value: await readRunJson({ path, },), },);
   if (reading.kind !== 'version-2')
     return { kind: 'legacy', };
 
   /**
-   * Two-lane artifact, which is the generation that records a preparation.
+   Two-lane artifact, which is the generation that records a preparation.
    */
   const { artifact, } = reading;
   return {
@@ -248,21 +248,21 @@ export async function readSettledRecipe(
 }
 
 /**
- * Carves one entry through its settled recipe over the pair at the
- * artifact's own commit.
- *
- * @param entryId - corpus entry
- *
- * @param runsDir - runs directory holding the artifact
- *
- * @param cloneDir - corpus clone the artifact's commit is read from
- *
- * @returns Slicing the lanes saw, or the reason there is none
- *
- * @example
- * ```ts
- * const carve = await carveSettled({ entryId, runsDir, cloneDir, },);
- * ```
+ Carves one entry through its settled recipe over the pair at the
+ artifact's own commit.
+ 
+ @param entryId - corpus entry
+ 
+ @param runsDir - runs directory holding the artifact
+ 
+ @param cloneDir - corpus clone the artifact's commit is read from
+ 
+ @returns Slicing the lanes saw, or the reason there is none
+ 
+ @example
+ ```ts
+ const carve = await carveSettled({ entryId, runsDir, cloneDir, },);
+ ```
  */
 export async function carveSettled(
   {
@@ -276,7 +276,7 @@ export async function carveSettled(
   },
 ): Promise<SettledCarve> {
   /**
-   * Recipe the artifact records, if any.
+   Recipe the artifact records, if any.
    */
   const settled = await readSettledRecipe({
     entryId,
@@ -286,7 +286,7 @@ export async function carveSettled(
     return settled;
 
   /**
-   * Pin taken from the artifact, so the pair read is the pair it describes.
+   Pin taken from the artifact, so the pair read is the pair it describes.
    */
   const pin: CorpusPin = {
     cloneDir,
@@ -294,7 +294,7 @@ export async function carveSettled(
   };
 
   /**
-   * Both sides at that commit.
+   Both sides at that commit.
    */
   const [sourceText, targetText,] = await Promise.all([
     readCorpusFile({
@@ -308,7 +308,7 @@ export async function carveSettled(
   ],);
 
   /**
-   * Recipe halves to supply.
+   Recipe halves to supply.
    */
   const {
     sectionPairing,
@@ -330,22 +330,22 @@ export async function carveSettled(
 }
 
 /**
- * Names a recipe's completeness for a log line.
- *
- * @param recipe - recipe as read
- *
- * @returns `complete recipe`, or the halves the deterministic default stood in for
- *
- * @example
- * ```ts
- * log.info(`${entryId}: carved from its settled artifact (${recipeLabel({ recipe, },)})`,);
- * ```
+ Names a recipe's completeness for a log line.
+ 
+ @param recipe - recipe as read
+ 
+ @returns `complete recipe`, or the halves the deterministic default stood in for
+ 
+ @example
+ ```ts
+ log.info(`${entryId}: carved from its settled artifact (${recipeLabel({ recipe, },)})`,);
+ ```
  */
 export function recipeLabel(
   { recipe, }: { readonly recipe: PairingRecipe; },
 ): string {
   /**
-   * Halves the file did not record.
+   Halves the file did not record.
    */
   const { unrecorded, } = recipe;
   if (unrecorded.length === 0)

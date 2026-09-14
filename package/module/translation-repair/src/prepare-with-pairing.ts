@@ -41,70 +41,70 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // uncorroborated inputs without changing production's fallback policy.
 
 /**
- * A preparation and what the pairing cost to obtain.
- *
- * @example
- * ```ts
- * const { prepared, findings, } = await prepareDocumentPairWithRoster({ ... },);
- * ```
+ A preparation and what the pairing cost to obtain.
+ 
+ @example
+ ```ts
+ const { prepared, findings, } = await prepareDocumentPairWithRoster({ ... },);
+ ```
  */
 export type PairedPreparation = {
   /**
-   * Slicing both lanes run over.
+   Slicing both lanes run over.
    */
   readonly prepared: PreparedDocumentPair;
 
   /**
-   * What the pairing rounds reported, in scorecard-stable wording.
+   What the pairing rounds reported, in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 
   /**
-   * Every footnote definition the roster paired with one of the other side's,
-   * by label, across the chunks, for the archive relabel.
+   Every footnote definition the roster paired with one of the other side's,
+   by label, across the chunks, for the archive relabel.
    */
   readonly footnoteDefinitionPairs: readonly DefinitionLabelPair[];
 };
 
 /**
- * Prepares a document pair, asking the roster which paragraph renders which.
- *
- * @param client - injected model client
- *
- * @param modelIds - roster to ask
- *
- * @param sourceText - whole original document
- *
- * @param targetText - whole translation document
- *
- * @param signal - caller's steering
- *
- * @param exchangeTimeoutMs - per-call bound
- *
- * @param l - driver logger
- *
- * @param sliceCharBudget - slice sizing, passed through untouched
- *
- * @param pairingCache - store the per-section BLOCK rounds republish from
- *
- * @param sectionCache - store the whole-document SECTION round republishes
- * from, kept apart from `pairingCache` because the two answer different
- * questions and a key space holding both would let one kind of record be read
- * as the other
- *
- * @param contextLines - evidence lines bought outside preparation, passed
- * through to the identity context untouched
- *
- * @param frontMatterAuthority - existing caller policy for metadata ownership
- *
- * @param sealArchiveOriginal - existing protection for archive wording declared English-original
- *
- * @returns Preparation built on the roster's pairing, and its findings
- *
- * @example
- * ```ts
- * const { prepared, } = await prepareDocumentPairWithRoster({ client, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, },);
- * ```
+ Prepares a document pair, asking the roster which paragraph renders which.
+ 
+ @param client - injected model client
+ 
+ @param modelIds - roster to ask
+ 
+ @param sourceText - whole original document
+ 
+ @param targetText - whole translation document
+ 
+ @param signal - caller's steering
+ 
+ @param exchangeTimeoutMs - per-call bound
+ 
+ @param l - driver logger
+ 
+ @param sliceCharBudget - slice sizing, passed through untouched
+ 
+ @param pairingCache - store the per-section BLOCK rounds republish from
+ 
+ @param sectionCache - store the whole-document SECTION round republishes
+ from, kept apart from `pairingCache` because the two answer different
+ questions and a key space holding both would let one kind of record be read
+ as the other
+ 
+ @param contextLines - evidence lines bought outside preparation, passed
+ through to the identity context untouched
+ 
+ @param frontMatterAuthority - existing caller policy for metadata ownership
+ 
+ @param sealArchiveOriginal - existing protection for archive wording declared English-original
+ 
+ @returns Preparation built on the roster's pairing, and its findings
+ 
+ @example
+ ```ts
+ const { prepared, } = await prepareDocumentPairWithRoster({ client, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, },);
+ ```
  */
 export async function prepareDocumentPairWithRoster(
   {
@@ -138,24 +138,24 @@ export async function prepareDocumentPairWithRoster(
   }>,
 ): Promise<PairedPreparation> {
   /**
-   * Logger tagged with this shell.
+   Logger tagged with this shell.
    */
   const pl = tagged({
     tag: prepareDocumentPairWithRoster.name,
     l,
   },);
   /**
-   * Source parsed for section alignment and the block questions.
-   * Pure preparation parses it again so its output depends only on its explicit inputs.
+   Source parsed for section alignment and the block questions.
+   Pure preparation parses it again so its output depends only on its explicit inputs.
    */
   const source = parseDocument({ text: sourceText, },);
   /**
-   * Whole translation document, parsed beside the source.
+   Whole translation document, parsed beside the source.
    */
   const target = parseDocument({ text: targetText, },);
   /**
-   * Section correspondence is bought only where the deterministic aligner refused.
-   * Block questions require this alignment to exist before they can be posed.
+   Section correspondence is bought only where the deterministic aligner refused.
+   Block questions require this alignment to exist before they can be posed.
    */
   const sectionRound = await buySectionPairing({
     client,
@@ -168,15 +168,15 @@ export async function prepareDocumentPairWithRoster(
     ...((sectionCache === undefined) ? {} : { sectionCache, }),
   },);
   /**
-   * Correspondences to align on, absent when nobody was asked or nobody agreed.
+   Correspondences to align on, absent when nobody was asked or nobody agreed.
    */
   const { pairing, } = sectionRound;
   /**
-   * Missing correspondence preserves the deterministic aligner rather than supplying an empty pairing.
+   Missing correspondence preserves the deterministic aligner rather than supplying an empty pairing.
    */
   const sectionPairing = (pairing.length === 0) ? undefined : pairing;
   /**
-   * Aligned sections whose original indexes the block-round findings retain.
+   Aligned sections whose original indexes the block-round findings retain.
    */
   const alignment = alignDocumentSections({
     source,
@@ -184,22 +184,22 @@ export async function prepareDocumentPairWithRoster(
     ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
   },);
   /**
-   * Explicit block pairings keyed by original alignment index.
+   Explicit block pairings keyed by original alignment index.
    */
   const blockPairings = new Map<number, readonly BlockPair[]>();
   /**
-   * Section findings precede the block findings exactly as on the original path.
+   Section findings precede the block findings exactly as on the original path.
    */
   const findings: string[] = [...sectionRound.findings,];
   /**
-   * Definition labels separated from each parent's ordinary slicer ordering.
+   Definition labels separated from each parent's ordinary slicer ordering.
    */
   const footnoteDefinitionPairs: DefinitionLabelPair[] = [];
   for (const [pairIndex, pair,] of alignment.pairs
     .entries()) {
     /* oxlint-disable no-await-in-loop -- parent rounds remain sequential rather than multiplying the provider fanout */
     /**
-     * The same parent operation a bounded calibration pool consumes independently.
+     The same parent operation a bounded calibration pool consumes independently.
      */
     const round = await prepareBlockPairing({
       client,
@@ -222,7 +222,7 @@ export async function prepareDocumentPairWithRoster(
       );
   }
   /**
-   * Preparation built on whatever the roster agreed, preserving every existing caller option.
+   Preparation built on whatever the roster agreed, preserving every existing caller option.
    */
   const prepared = prepareDocumentPair({
     sourceText,

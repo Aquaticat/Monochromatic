@@ -1,7 +1,7 @@
 /**
- * Tests explicit front matter slicing and structural translation validation.
- *
- * @module
+ Tests explicit front matter slicing and structural translation validation.
+ 
+ @module
  */
 
 import {
@@ -17,7 +17,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Source metadata fixture.
+ Source metadata fixture.
  */
 const SOURCE = {
   raw: '---\nname: 猫猫\ninfo:\n  alias: 猫\n---\n',
@@ -28,7 +28,7 @@ const SOURCE = {
 };
 
 /**
- * Target metadata fixture.
+ Target metadata fixture.
  */
 const TARGET = {
   raw: '---\nname: Maomao\ninfo:\n  alias: Cat\n---\n',
@@ -39,22 +39,22 @@ const TARGET = {
 };
 
 /**
- * Source metadata where visible name and alias identify same person form.
+ Source metadata where visible name and alias identify same person form.
  */
 const SAME_IDENTITY_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
 
 /**
- * Archive metadata whose visible name is entry id rather than declared alias.
+ Archive metadata whose visible name is entry id rather than declared alias.
  */
 const DIRECTORY_ID_TARGET = '---\nname: CatEntry\ninfo:\n  alias: Maomao\n---\n';
 
 /**
- * Source metadata carrying contributor attribution in location comment.
+ Source metadata carrying contributor attribution in location comment.
  */
 const COMMENT_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n  location: 广东 #清远, by 魔骨\n---\n';
 
 /**
- * Archive metadata establishing Latin contributor attribution at same path.
+ Archive metadata establishing Latin contributor attribution at same path.
  */
 const COMMENT_TARGET = '---\nname: Maomao\ninfo:\n  alias: Maomao\n  location: Guangdong #Qingyuan, by MoguHandle\n---\n';
 

@@ -51,179 +51,179 @@ import {
 // qualifier inside one. Both are recorded in `#84`.
 
 /**
- * Which side of the ballot holds the clean text.
- *
- * `preserve` puts it on the incumbent, so keeping the incumbent is correct;
- * `replace` puts it on the fresh proposal, so replacing is correct.
+ Which side of the ballot holds the clean text.
+ 
+ `preserve` puts it on the incumbent, so keeping the incumbent is correct;
+ `replace` puts it on the fresh proposal, so replacing is correct.
  */
 export type FidelityDirection = 'preserve' | 'replace';
 
 /**
- * One constructed comparison with a known right answer.
- *
- * @example
- * ```ts
- * const trial: FidelityTrial = { trialId, direction: 'preserve', damageKind: 'deletion', sourceText, contextText: '', cleanText, damagedText, cleanFirst: true, };
- * ```
+ One constructed comparison with a known right answer.
+ 
+ @example
+ ```ts
+ const trial: FidelityTrial = { trialId, direction: 'preserve', damageKind: 'deletion', sourceText, contextText: '', cleanText, damagedText, cleanFirst: true, };
+ ```
  */
 export type FidelityTrial = {
   /**
-   * Stable handle this trial is reported under.
+   Stable handle this trial is reported under.
    */
   readonly trialId: string;
 
   /**
-   * Which side the clean text sits on.
+   Which side the clean text sits on.
    */
   readonly direction: FidelityDirection;
 
   /**
-   * Which constructed defect the damaged text carries, so a result says which
-   * question it answers. A deletion cannot separate reading from a preference
-   * for length; an insertion can.
+   Which constructed defect the damaged text carries, so a result says which
+   question it answers. A deletion cannot separate reading from a preference
+   for length; an insertion can.
    */
   readonly damageKind: FidelityDamageKind;
 
   /**
-   * Chinese original both candidates claim to render.
+   Chinese original both candidates claim to render.
    */
   readonly sourceText: string;
 
   /**
-   * Original of the SURROUNDING sections, empty by default.
-   *
-   * WHY THIS EXISTS. `#107` measured that 6.4 percent of corpus slices sit in a
-   * pair where the translator carried a passage across a section boundary. A
-   * judge shown one slice pair sees the archive inventing content there and
-   * dropping it next door, and refuses both candidates; `Dethelly/0` is where
-   * that was found, and it accounts for every miss the alteration arm recorded.
-   * Passing the neighbours turns "did the roster judge badly" into "was the
-   * window too narrow", because the ground truth does not move.
+   Original of the SURROUNDING sections, empty by default.
+   
+   WHY THIS EXISTS. `#107` measured that 6.4 percent of corpus slices sit in a
+   pair where the translator carried a passage across a section boundary. A
+   judge shown one slice pair sees the archive inventing content there and
+   dropping it next door, and refuses both candidates; `Dethelly/0` is where
+   that was found, and it accounts for every miss the alteration arm recorded.
+   Passing the neighbours turns "did the roster judge badly" into "was the
+   window too narrow", because the ground truth does not move.
    */
   readonly contextText: string;
 
   /**
-   * Source-reviewed reference text, including any explicitly reviewed local correction.
-   * Being unchanged archive English does not establish source faithfulness;
-   * the native calibration harness verifies reviewed reference provenance first.
+   Source-reviewed reference text, including any explicitly reviewed local correction.
+   Being unchanged archive English does not establish source faithfulness;
+   the native calibration harness verifies reviewed reference provenance first.
    */
   readonly cleanText: string;
 
   /**
-   * Same English carrying the constructed defect: one whole sentence gone, or
-   * one borrowed sentence spliced in.
+   Same English carrying the constructed defect: one whole sentence gone, or
+   one borrowed sentence spliced in.
    */
   readonly damagedText: string;
 
   /**
-   * Whether the clean text is listed first, so position can be read separately
-   * from direction.
+   Whether the clean text is listed first, so position can be read separately
+   from direction.
    */
   readonly cleanFirst: boolean;
 };
 
 /**
- * How one judge voted, in terms of the answer rather than the ballot position.
- *
- * @example
- * ```ts
- * const ballot: FidelityBallotRead = { modelId, picked: 'clean', reason: 'covers the last sentence', weight: 1, };
- * ```
+ How one judge voted, in terms of the answer rather than the ballot position.
+ 
+ @example
+ ```ts
+ const ballot: FidelityBallotRead = { modelId, picked: 'clean', reason: 'covers the last sentence', weight: 1, };
+ ```
  */
 export type FidelityBallotRead = {
   /**
-   * Judge that cast it.
+   Judge that cast it.
    */
   readonly modelId: RosterModelId;
 
   /**
-   * Which text it chose, or that it named no candidate.
-   *
-   * A JUDGE THAT DECLINES HAS NOT PICKED THE DAMAGED TEXT, which reading a
-   * ballot as "clean or otherwise" would record. `CANDIDATE_NONE` is zero and
-   * the ballot index is one-based, so the two are only distinguishable by
-   * asking.
+   Which text it chose, or that it named no candidate.
+   
+   A JUDGE THAT DECLINES HAS NOT PICKED THE DAMAGED TEXT, which reading a
+   ballot as "clean or otherwise" would record. `CANDIDATE_NONE` is zero and
+   the ballot index is one-based, so the two are only distinguishable by
+   asking.
    */
   readonly picked: 'clean' | 'damaged' | 'declined';
 
   /**
-   * Its stated reason, kept because a judge that names coverage and still picks
-   * the damaged text is a different failure from one that never mentions it.
+   Its stated reason, kept because a judge that names coverage and still picks
+   the damaged text is a different failure from one that never mentions it.
    */
   readonly reason: string;
 
   /**
-   * Weight its ballot carried.
+   Weight its ballot carried.
    */
   readonly weight: number;
 };
 
 /**
- * What one trial produced.
- *
- * @example
- * ```ts
- * const outcome: FidelityOutcome = { trialId, direction: 'preserve', verdict: 'clean', correct: true, ... };
- * ```
+ What one trial produced.
+ 
+ @example
+ ```ts
+ const outcome: FidelityOutcome = { trialId, direction: 'preserve', verdict: 'clean', correct: true, ... };
+ ```
  */
 export type FidelityOutcome = {
   /**
-   * Trial this answers.
+   Trial this answers.
    */
   readonly trialId: string;
 
   /**
-   * Direction it was run in.
+   Direction it was run in.
    */
   readonly direction: FidelityDirection;
 
   /**
-   * Defect the damaged candidate carried.
+   Defect the damaged candidate carried.
    */
   readonly damageKind: FidelityDamageKind;
 
   /**
-   * Whether the clean text was listed first.
+   Whether the clean text was listed first.
    */
   readonly cleanFirst: boolean;
 
   /**
-   * Which text the roster settled on, or that it refused to choose.
+   Which text the roster settled on, or that it refused to choose.
    */
   readonly verdict: 'clean' | 'damaged' | 'declined';
 
   /**
-   * Whether that is the right answer, which only `clean` ever is. A DECLINE IS
-   * NOT COUNTED CORRECT even in the `preserve` direction, where it happens to
-   * leave the clean text in place: the judges did not identify the defect, they
-   * abstained, and scoring an abstention as a hit is how a silent panel comes to
-   * look like a reliable one.
+   Whether that is the right answer, which only `clean` ever is. A DECLINE IS
+   NOT COUNTED CORRECT even in the `preserve` direction, where it happens to
+   leave the clean text in place: the judges did not identify the defect, they
+   abstained, and scoring an abstention as a hit is how a silent panel comes to
+   look like a reliable one.
    */
   readonly correct: boolean;
 
   /**
-   * Every judge's vote, in roster order.
+   Every judge's vote, in roster order.
    */
   readonly ballots: readonly FidelityBallotRead[];
 
   /**
-   * Why the roster declined, empty when it chose.
+   Why the roster declined, empty when it chose.
    */
   readonly declineReason: string;
 };
 
 /**
- * Text one candidate carries.
+ Text one candidate carries.
  */
 type FidelityValue = {
   /**
-   * Candidate English.
+   Candidate English.
    */
   readonly text: string;
 };
 
 /**
- * Producer label for the archive side of the ballot.
+ Producer label for the archive side of the ballot.
  */
 const INCUMBENT_PRODUCER: CandidateProducer = {
   kind: 'incumbent',
@@ -231,13 +231,13 @@ const INCUMBENT_PRODUCER: CandidateProducer = {
 };
 
 /**
- * Producer label for the proposed side.
- *
- * A COMPOSITE WITH NO CONTRIBUTORS, so no judge holds a stake in it and no
- * ballot is discounted as a self-vote. Naming a roster model instead would halve
- * one judge's weight on one side of the comparison and quietly tilt the very
- * number this trial exists to read; a constructed fixture genuinely has no
- * author among the judges, and this says so.
+ Producer label for the proposed side.
+ 
+ A COMPOSITE WITH NO CONTRIBUTORS, so no judge holds a stake in it and no
+ ballot is discounted as a self-vote. Naming a roster model instead would halve
+ one judge's weight on one side of the comparison and quietly tilt the very
+ number this trial exists to read; a constructed fixture genuinely has no
+ author among the judges, and this says so.
  */
 const FIXTURE_PRODUCER: CandidateProducer = {
   kind: 'composite',
@@ -245,32 +245,32 @@ const FIXTURE_PRODUCER: CandidateProducer = {
 };
 
 /**
- * Builds the ballot for one trial, clean text in the position the trial names.
- *
- * @param trial - constructed comparison
- *
- * @returns Candidates in ballot order
- *
- * @example
- * ```ts
- * const candidates = buildSlate({ trial, },);
- * ```
+ Builds the ballot for one trial, clean text in the position the trial names.
+ 
+ @param trial - constructed comparison
+ 
+ @returns Candidates in ballot order
+ 
+ @example
+ ```ts
+ const candidates = buildSlate({ trial, },);
+ ```
  */
 function buildSlate(
   { trial, }: { readonly trial: FidelityTrial; },
 ): readonly Candidate<FidelityValue>[] {
   /**
-   * Archive side of the comparison, clean when preserving is correct.
+   Archive side of the comparison, clean when preserving is correct.
    */
   const incumbentText = (trial.direction === 'preserve') ? trial.cleanText : trial.damagedText;
 
   /**
-   * Proposed side, holding whichever text the incumbent does not.
+   Proposed side, holding whichever text the incumbent does not.
    */
   const freshText = (trial.direction === 'preserve') ? trial.damagedText : trial.cleanText;
 
   /**
-   * Archive candidate.
+   Archive candidate.
    */
   const incumbent: Candidate<FidelityValue> = {
     producer: INCUMBENT_PRODUCER,
@@ -279,7 +279,7 @@ function buildSlate(
   };
 
   /**
-   * Proposed candidate.
+   Proposed candidate.
    */
   const fresh: Candidate<FidelityValue> = {
     producer: FIXTURE_PRODUCER,
@@ -288,7 +288,7 @@ function buildSlate(
   };
 
   /**
-   * Whether the clean text belongs at position zero.
+   Whether the clean text belongs at position zero.
    */
   const cleanIsIncumbent = trial.direction === 'preserve';
   if (trial.cleanFirst === cleanIsIncumbent) {
@@ -304,26 +304,26 @@ function buildSlate(
 }
 
 /**
- * Runs one constructed comparison past the production judges.
- *
- * @param client - injected model client
- *
- * @param trial - comparison with a known right answer
- *
- * @param judgeModelIds - roster asked
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - logger of the calling harness
- *
- * @returns Which text won, whether that is right, and every ballot
- *
- * @example
- * ```ts
- * const outcome = await runFidelityTrial({ client, trial, judgeModelIds, signal, perCallTimeoutMs, l, },);
- * ```
+ Runs one constructed comparison past the production judges.
+ 
+ @param client - injected model client
+ 
+ @param trial - comparison with a known right answer
+ 
+ @param judgeModelIds - roster asked
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - logger of the calling harness
+ 
+ @returns Which text won, whether that is right, and every ballot
+ 
+ @example
+ ```ts
+ const outcome = await runFidelityTrial({ client, trial, judgeModelIds, signal, perCallTimeoutMs, l, },);
+ ```
  */
 export async function runFidelityTrial(
   {
@@ -343,7 +343,7 @@ export async function runFidelityTrial(
   }>,
 ): Promise<FidelityOutcome> {
   /**
-   * Logger tagged with this harness.
+   Logger tagged with this harness.
    */
   const fl = tagged({
     tag: runFidelityTrial.name,
@@ -351,20 +351,20 @@ export async function runFidelityTrial(
   },);
 
   /**
-   * Ballot in the order the judges see it.
+   Ballot in the order the judges see it.
    */
   const candidates = buildSlate({ trial, },);
 
   /**
-   * Where the clean text sits on the ballot, ONE-BASED, which is how both a
-   * ballot's `best` and the outcome's `selectedIndex` name a position. Derived
-   * once and compared against twice, since the two readings drifting apart is
-   * the whole failure this trial would otherwise report as a judge that cannot
-   * read.
+   Where the clean text sits on the ballot, ONE-BASED, which is how both a
+   ballot's `best` and the outcome's `selectedIndex` name a position. Derived
+   once and compared against twice, since the two readings drifting apart is
+   the whole failure this trial would otherwise report as a judge that cannot
+   read.
    */
   const cleanPosition = 1 + candidates.findIndex(function holdsCleanText(candidate,) {
     /**
-     * English this candidate carries.
+     English this candidate carries.
      */
     const carried = candidate.value
       .text;
@@ -379,8 +379,8 @@ export async function runFidelityTrial(
     throw new Error(`${trial.trialId}: the clean text is not on the slate it was built from`,);
 
   /**
-   * Judges' verdict over the constructed pair, asked exactly what production
-   * asks.
+   Judges' verdict over the constructed pair, asked exactly what production
+   asks.
    */
   const outcome = await selectBestCandidate<FidelityValue>({
     client,
@@ -413,7 +413,7 @@ export async function runFidelityTrial(
   },);
 
   /**
-   * Every ballot read as an answer rather than a position.
+   Every ballot read as an answer rather than a position.
    */
   const ballots = outcome.ballots
     .map(function toRead(ballot,): FidelityBallotRead {
@@ -451,7 +451,7 @@ export async function runFidelityTrial(
   }
 
   /**
-   * Which text the roster settled on.
+   Which text the roster settled on.
    */
   const verdict = (outcome.selectedIndex === cleanPosition) ? 'clean' : 'damaged';
   fl.info(`${trial.trialId} (${trial.direction}): ${verdict}`,);

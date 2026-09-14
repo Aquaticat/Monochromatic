@@ -1,12 +1,12 @@
 /**
- * Tests for how a self-preference result is stated.
- *
- * WHAT THESE PIN is that the three outcomes read differently. The measurement
- * distinguishes "no favouritism" from "nobody was asked" from "nobody was left
- * to answer"; a wording that printed a number for all three would collapse them
- * again at the only point a human reads.
- *
- * @module
+ Tests for how a self-preference result is stated.
+ 
+ WHAT THESE PIN is that the three outcomes read differently. The measurement
+ distinguishes "no favouritism" from "nobody was asked" from "nobody was left
+ to answer"; a wording that printed a number for all three would collapse them
+ again at the only point a human reads.
+ 
+ @module
  */
 
 import {
@@ -24,7 +24,7 @@ await describe({
         + 'and what it was concluded from without having to subtract',
       fn: async () => {
         /**
-         * Producers backed themselves twice as often as anyone else did.
+         Producers backed themselves twice as often as anyone else did.
          */
         const line = describeSelfPreference({ preference: {
           kind: 'measured',
@@ -47,7 +47,7 @@ await describe({
         + 'opposite of no evidence',
       fn: async () => {
         /**
-         * Nobody with a stake ever cast a ballot.
+         Nobody with a stake ever cast a ballot.
          */
         const line = describeSelfPreference({ preference: {
           kind: 'no-stakeholder-ballots',
@@ -98,7 +98,7 @@ await describe({
         + 'a report tell them apart without reading the numbers',
       fn: async () => {
         /**
-         * One line per outcome, from the same counts where possible.
+         One line per outcome, from the same counts where possible.
          */
         const lines = [
           describeSelfPreference({ preference: {

@@ -1,17 +1,17 @@
 /**
- * Tests for whose front matter the page carries.
- *
- * THE OWNER'S RULE OF 2026-09-08, after the ninth hakureico pass renamed the
- * person in slice zero while the body kept the archive's name, and a census
- * found nine of the last ten read pages rewriting `desc` or `alias`: the
- * archive's front matter is published as it stands, and the lanes render it
- * only where the archive never translated it. Measured over the pinned corpus
- * on the day of the decision: 23 of 92 archives name their directory, 8 of
- * them because the source does too, and the other 15 all stand by the
- * exemptions of 2026-09-07, so every pinned archive stands and the rendering
- * path is kept for the #269 shape alone.
- *
- * @module
+ Tests for whose front matter the page carries.
+ 
+ THE OWNER'S RULE OF 2026-09-08, after the ninth hakureico pass renamed the
+ person in slice zero while the body kept the archive's name, and a census
+ found nine of the last ten read pages rewriting `desc` or `alias`: the
+ archive's front matter is published as it stands, and the lanes render it
+ only where the archive never translated it. Measured over the pinned corpus
+ on the day of the decision: 23 of 92 archives name their directory, 8 of
+ them because the source does too, and the other 15 all stand by the
+ exemptions of 2026-09-07, so every pinned archive stands and the rendering
+ path is kept for the #269 shape alone.
+ 
+ @module
  */
 
 import {
@@ -28,28 +28,28 @@ import {
 //region Fixtures
 
 /**
- * The ninth hakureico pass's source metadata.
+ The ninth hakureico pass's source metadata.
  */
 const HAKUREICO_SOURCE = '---\nname: 神楽坂千歌\ninfo:\n    alias: 千歌, Hanasaka, Hakureico\n---\n\n正文。\n';
 
 /**
- * The archive's translated metadata, whose display name is editorial.
+ The archive's translated metadata, whose display name is editorial.
  */
 const HAKUREICO_ARCHIVE = '---\nname: Hanasaka\ninfo:\n    alias: Kagurazaka Hanasaka, Hakureico\n---\n\nBody.\n';
 
 /**
- * A source naming the person by a name of her own.
+ A source naming the person by a name of her own.
  */
 const NAMED_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫咪\n---\n\n正文。\n';
 
 /**
- * An archive still showing the directory id with nothing Latin beside it:
- * the #269 shape, never translated.
+ An archive still showing the directory id with nothing Latin beside it:
+ the #269 shape, never translated.
  */
 const FOLDER_ARCHIVE = '---\nname: EntryId\ninfo:\n  alias: 猫咪\n---\n\nBody.\n';
 
 /**
- * An archive showing the directory id beside an English rendering.
+ An archive showing the directory id beside an English rendering.
  */
 const FOLDER_WITH_ALIAS_ARCHIVE = '---\nname: EntryId\ninfo:\n  alias: Maomao\n---\n\nBody.\n';
 

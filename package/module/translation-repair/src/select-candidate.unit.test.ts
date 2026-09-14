@@ -1,8 +1,8 @@
 /**
- * Tests for lexicographic candidate selection.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for lexicographic candidate selection.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -22,7 +22,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * The always-competing unchanged candidate.
+ The always-competing unchanged candidate.
  */
 const UNCHANGED: RepairCandidate = {
   candidateId: UNCHANGED_CANDIDATE_ID,
@@ -31,7 +31,7 @@ const UNCHANGED: RepairCandidate = {
 };
 
 /**
- * Repaired candidate with chosen measurements.
+ Repaired candidate with chosen measurements.
  */
 function repaired(
   {
@@ -188,7 +188,7 @@ await describe({
           measurements: UNCHANGED_MEASUREMENTS,
         },);
         /**
-         * What selectWithoutUnchanged raised, read for its class as well as its wording.
+         What selectWithoutUnchanged raised, read for its class as well as its wording.
          */
         const refusalOfSelectWithoutUnchanged = caught(function selectWithoutUnchanged() {
           selectRepairCandidate({
@@ -214,7 +214,7 @@ await describe({
           measurements: UNCHANGED_MEASUREMENTS,
         };
         /**
-         * What selectWithDishonestUnchanged raised, read for its class as well as its wording.
+         What selectWithDishonestUnchanged raised, read for its class as well as its wording.
          */
         const refusalOfSelectWithDishonestUnchanged = caught(function selectWithDishonestUnchanged() {
           selectRepairCandidate({
@@ -254,7 +254,7 @@ await describe({
           },
         };
         /**
-         * What honestFirst raised, read for its class as well as its wording.
+         What honestFirst raised, read for its class as well as its wording.
          */
         const refusalOfHonestFirst = caught(function honestFirst() {
           selectRepairCandidate({
@@ -266,7 +266,7 @@ await describe({
         expect(refusalOfHonestFirst,).toBeInstanceOf(CandidateSlateError,);
         expect((refusalOfHonestFirst as Error).message,).toContain('under the unchanged identifier',);
         /**
-         * What impostorFirst raised, read for its class as well as its wording.
+         What impostorFirst raised, read for its class as well as its wording.
          */
         const refusalOfImpostorFirst = caught(function impostorFirst() {
           selectRepairCandidate({

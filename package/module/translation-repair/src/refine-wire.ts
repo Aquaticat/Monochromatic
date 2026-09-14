@@ -20,58 +20,58 @@ import type { EditableEnvelope, } from './patch-model.ts';
 // that paragraph.
 
 /**
- * One proposed paragraph rewrite on the wire.
- *
- * @example
- * ```ts
- * const rewrite: RefineRewriteWire = { paragraph: 2, newText: 'She wrote it at seventeen.', };
- * ```
+ One proposed paragraph rewrite on the wire.
+ 
+ @example
+ ```ts
+ const rewrite: RefineRewriteWire = { paragraph: 2, newText: 'She wrote it at seventeen.', };
+ ```
  */
 export type RefineRewriteWire = {
   /**
-   * One-based paragraph number from the prompt sheet.
+   One-based paragraph number from the prompt sheet.
    */
   readonly paragraph: number;
 
   /**
-   * Full replacement for exactly that paragraph.
+   Full replacement for exactly that paragraph.
    */
   readonly newText: string;
 };
 
 /**
- * Whole rewriter reply on the wire.
- *
- * @example
- * ```ts
- * const report: RefineReportWire = { rewrites: [], };
- * ```
+ Whole rewriter reply on the wire.
+ 
+ @example
+ ```ts
+ const report: RefineReportWire = { rewrites: [], };
+ ```
  */
 export type RefineReportWire = {
   /**
-   * Every rewrite proposed; empty means nothing was worth changing.
+   Every rewrite proposed; empty means nothing was worth changing.
    */
   readonly rewrites: readonly RefineRewriteWire[];
 };
 
 /**
- * Guards one wire rewrite.
- *
- * @param value - candidate from parsed model JSON
- *
- * @returns Whether value carries the required rewrite fields
- *
- * @example
- * ```ts
- * isRefineRewriteWire({ paragraph: 1, newText: 'text', },);
- * ```
+ Guards one wire rewrite.
+ 
+ @param value - candidate from parsed model JSON
+ 
+ @returns Whether value carries the required rewrite fields
+ 
+ @example
+ ```ts
+ isRefineRewriteWire({ paragraph: 1, newText: 'text', },);
+ ```
  */
 function isRefineRewriteWire(value: unknown,): value is RefineRewriteWire {
   if (!isJsonRecord(value,))
     return false;
 
   /**
-   * Fields the guard checks.
+   Fields the guard checks.
    */
   const {
     paragraph,
@@ -84,30 +84,30 @@ function isRefineRewriteWire(value: unknown,): value is RefineRewriteWire {
 }
 
 /**
- * Guards a whole rewriter reply.
- *
- * @param value - candidate from parsed model JSON
- *
- * @returns Whether value is a well-formed report
- *
- * @example
- * ```ts
- * isRefineReportWire({ rewrites: [], },);
- * ```
+ Guards a whole rewriter reply.
+ 
+ @param value - candidate from parsed model JSON
+ 
+ @returns Whether value is a well-formed report
+ 
+ @example
+ ```ts
+ isRefineReportWire({ rewrites: [], },);
+ ```
  */
 export function isRefineReportWire(value: unknown,): value is RefineReportWire {
   if (!isJsonRecord(value,))
     return false;
 
   /**
-   * Proposed rewrites as the model sent them.
+   Proposed rewrites as the model sent them.
    */
   const { rewrites, } = value;
   return Array.isArray(rewrites,) && rewrites.every(isRefineRewriteWire,);
 }
 
 /**
- * Structured-output constraint for a rewriter reply.
+ Structured-output constraint for a rewriter reply.
  */
 export const REFINE_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',
@@ -139,42 +139,42 @@ export const REFINE_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 };
 
 /**
- * Operations bound to paragraphs, plus what the wire got wrong.
- *
- * @example
- * ```ts
- * const { operations, findings, } = resolveRefineRewrites({ wire, envelopes, },);
- * ```
+ Operations bound to paragraphs, plus what the wire got wrong.
+ 
+ @example
+ ```ts
+ const { operations, findings, } = resolveRefineRewrites({ wire, envelopes, },);
+ ```
  */
 export type RefineResolution = {
   /**
-   * Operations in wire order, each bound to a real paragraph.
+   Operations in wire order, each bound to a real paragraph.
    */
   readonly operations: readonly PatchOperation[];
 
   /**
-   * Wire irregularities in scorecard-stable wording.
+   Wire irregularities in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Binds wire rewrites to the paragraphs they name.
- *
- * A rewrite naming a paragraph outside the sheet, or naming one already
- * rewritten, is recorded and dropped rather than throwing: a rewriter
- * miscounting its own list says nothing about the paragraphs it got right.
- *
- * @param wire - reply as the rewriter reported it
- *
- * @param envelopes - eligible paragraphs in prompt numbering order
- *
- * @returns Operations plus findings as data
- *
- * @example
- * ```ts
- * const resolution = resolveRefineRewrites({ wire, envelopes, },);
- * ```
+ Binds wire rewrites to the paragraphs they name.
+ 
+ A rewrite naming a paragraph outside the sheet, or naming one already
+ rewritten, is recorded and dropped rather than throwing: a rewriter
+ miscounting its own list says nothing about the paragraphs it got right.
+ 
+ @param wire - reply as the rewriter reported it
+ 
+ @param envelopes - eligible paragraphs in prompt numbering order
+ 
+ @returns Operations plus findings as data
+ 
+ @example
+ ```ts
+ const resolution = resolveRefineRewrites({ wire, envelopes, },);
+ ```
  */
 export function resolveRefineRewrites(
   {
@@ -186,22 +186,22 @@ export function resolveRefineRewrites(
   },
 ): RefineResolution {
   /**
-   * Findings accumulated across every wire item.
+   Findings accumulated across every wire item.
    */
   const findings: string[] = [];
 
   /**
-   * Paragraph numbers already bound; first occurrence wins.
+   Paragraph numbers already bound; first occurrence wins.
    */
   const seen = new Set<number>();
 
   /**
-   * Operations in wire order.
+   Operations in wire order.
    */
   const operations: PatchOperation[] = [];
   for (const rewrite of wire.rewrites) {
     /**
-     * Paragraph this rewrite's one-based number names.
+     Paragraph this rewrite's one-based number names.
      */
     const envelope = envelopes[rewrite.paragraph - 1];
     if (envelope === undefined) {
@@ -215,7 +215,7 @@ export function resolveRefineRewrites(
     seen.add(rewrite.paragraph,);
 
     /**
-     * Rewrite with invisible variants folded, and what was folded.
+     Rewrite with invisible variants folded, and what was folded.
      */
     const folded = foldInvisibleVariants({ text: rewrite.newText, },);
     findings.push(...folded.findings,);

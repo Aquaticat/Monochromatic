@@ -1,15 +1,15 @@
 /**
- * Tests for the walk that decides which entries a pass may work on.
- *
- * WHAT THESE PIN is the difference between an entry missing a side, which is
- * an ordinary state of this corpus and is named, and any other read failure,
- * which is a fault in the run and propagates. Until this module every read
- * failure was stepped past as a missing side, so a clone that had gone away
- * read as a corpus with no entries.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the walk that decides which entries a pass may work on.
+ 
+ WHAT THESE PIN is the difference between an entry missing a side, which is
+ an ordinary state of this corpus and is named, and any other read failure,
+ which is a fault in the run and propagates. Until this module every read
+ failure was stepped past as a missing side, so a clone that had gone away
+ read as a corpus with no entries.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -38,12 +38,12 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Real git binary for fixture setup and pinned reads.
+ Real git binary for fixture setup and pinned reads.
  */
 const REAL_GIT = await resolveGit();
 
 /**
- * Pages the throwaway clone carries, by entry then side.
+ Pages the throwaway clone carries, by entry then side.
  */
 const PAGES: Readonly<Record<string, Readonly<Record<'page.md' | 'page.en.md', string>>>> = {
   whiskers: {
@@ -57,23 +57,23 @@ const PAGES: Readonly<Record<string, Readonly<Record<'page.md' | 'page.en.md', s
 };
 
 /**
- * Entry the clone carries only the original of.
+ Entry the clone carries only the original of.
  */
 const HALF_ENTRY = 'tabby';
 
 /**
- * Runs git against the fixture clone with no user configuration.
- *
- * @param cloneDir - fixture clone
- *
- * @param args - git arguments
- *
- * @returns Standard output
- *
- * @example
- * ```ts
- * const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
- * ```
+ Runs git against the fixture clone with no user configuration.
+ 
+ @param cloneDir - fixture clone
+ 
+ @param args - git arguments
+ 
+ @returns Standard output
+ 
+ @example
+ ```ts
+ const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
+ ```
  */
 async function fixtureGit(
   {
@@ -85,7 +85,7 @@ async function fixtureGit(
   },
 ): Promise<string> {
   /**
-   * Git's output.
+   Git's output.
    */
   const { stdout, } = await spawn(
     REAL_GIT,
@@ -105,15 +105,15 @@ async function fixtureGit(
 }
 
 /**
- * Makes a throwaway corpus clone with two complete entries and one that has
- * only its original, at one commit.
- *
- * @returns Clone directory and commit, removed on dispose
- *
- * @example
- * ```ts
- * await using corpus = await throwawayCorpus();
- * ```
+ Makes a throwaway corpus clone with two complete entries and one that has
+ only its original, at one commit.
+ 
+ @returns Clone directory and commit, removed on dispose
+ 
+ @example
+ ```ts
+ await using corpus = await throwawayCorpus();
+ ```
  */
 async function throwawayCorpus(): Promise<
   AsyncDisposable & {
@@ -122,7 +122,7 @@ async function throwawayCorpus(): Promise<
   }
 > {
   /**
-   * Where the clone lives.
+   Where the clone lives.
    */
   const cloneDir = await mkdtemp(join(
     tmpdir(),
@@ -143,13 +143,13 @@ async function throwawayCorpus(): Promise<
   );
 
   /**
-   * Every path written, for explicit staging.
+   Every path written, for explicit staging.
    */
   const written: string[] = [];
   for (const [entryId, pages,] of Object.entries(PAGES,)) {
     for (const [name, text,] of Object.entries(pages,)) {
       /**
-       * Path within the clone.
+       Path within the clone.
        */
       const relPath = `people/${entryId}/${name}`;
       written.push(relPath,);
@@ -216,7 +216,7 @@ async function throwawayCorpus(): Promise<
   },);
 
   /**
-   * Commit the entries sit at.
+   Commit the entries sit at.
    */
   const commitSha = (await fixtureGit({
     cloneDir,
@@ -253,7 +253,7 @@ await describe({
         await using corpus = await throwawayCorpus();
 
         /**
-         * The walk over every entry, with one already settled.
+         The walk over every entry, with one already settled.
          */
         const walked = await collectEligiblePairs({
           ids: [
@@ -291,7 +291,7 @@ await describe({
         await using corpus = await throwawayCorpus();
 
         /**
-         * The walk over an entry the clone never carried.
+         The walk over an entry the clone never carried.
          */
         const walked = await collectEligiblePairs({
           ids: ['calico',],
@@ -314,7 +314,7 @@ await describe({
         + 'stepped past it would report a smaller corpus than exists: this is the drop the register found',
       fn: async () => {
         /**
-         * What the walk over a clone that does not exist raised.
+         What the walk over a clone that does not exist raised.
          */
         let caught: unknown;
         try {

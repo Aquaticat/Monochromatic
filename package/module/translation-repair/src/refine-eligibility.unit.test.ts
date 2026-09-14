@@ -1,9 +1,9 @@
 /**
- * Tests for naturalness eligibility: which paragraphs of a repaired slice the
- * lane may rewrite, and the reason recorded for every skip.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for naturalness eligibility: which paragraphs of a repaired slice the
+ lane may rewrite, and the reason recorded for every skip.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -17,42 +17,42 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Prose long enough to clear the minimum, on one physical line.
+ Prose long enough to clear the minimum, on one physical line.
  */
 const LONG_PROSE =
   'The cat naps on the warm windowsill every afternoon, and when the light moves across the floor she follows it without hurry, settling again wherever it lands.';
 
 /**
- * Eligibility verdicts over one fixture document.
- *
- * @param text - slice text to parse and judge
- *
- * @returns Verdict per block in document order
- *
- * @example
- * ```ts
- * const verdicts = judge(LONG_PROSE,);
- * ```
+ Eligibility verdicts over one fixture document.
+ 
+ @param text - slice text to parse and judge
+ 
+ @returns Verdict per block in document order
+ 
+ @example
+ ```ts
+ const verdicts = judge(LONG_PROSE,);
+ ```
  */
 function judge(text: string,) {
   return selectRefinableParagraphs({ document: parseDocument({ text, },), },);
 }
 
 /**
- * Reason recorded for the first block, or `eligible` when it passed.
- *
- * @param text - slice text to parse and judge
- *
- * @returns Reason string for the first block
- *
- * @example
- * ```ts
- * expect(firstReason('## Heading',),).toBe('not-a-paragraph',);
- * ```
+ Reason recorded for the first block, or `eligible` when it passed.
+ 
+ @param text - slice text to parse and judge
+ 
+ @returns Reason string for the first block
+ 
+ @example
+ ```ts
+ expect(firstReason('## Heading',),).toBe('not-a-paragraph',);
+ ```
  */
 function firstReason(text: string,): string {
   /**
-   * Verdict for the first block of the fixture.
+   Verdict for the first block of the fixture.
    */
   const [verdict,] = judge(text,);
   if (verdict === undefined)
@@ -165,8 +165,8 @@ await describe({
         + 'just the block that caused it',
       fn: async () => {
         /**
-         * Prose preceded by a comment, which the tolerant parser masks and
-         * reports as a finding while leaving the prose itself intact.
+         Prose preceded by a comment, which the tolerant parser masks and
+         reports as a finding while leaving the prose itself intact.
          */
         const degraded = `<!-- a note to translators -->\n\n${LONG_PROSE}`;
 
@@ -207,7 +207,7 @@ await describe({
         + 'for having been repaired',
       fn: async () => {
         /**
-         * Two paragraphs a mark had welded, with the break restored by masking.
+         Two paragraphs a mark had welded, with the break restored by masking.
          */
         const welded = `${LONG_PROSE}\n\u{FEFF}\n${LONG_PROSE}\n`;
 

@@ -44,89 +44,89 @@ import { writerRoundGraceMs, } from './writer-grace-override.ts';
 // which is the same condition the single-editor stage exited on.
 
 /**
- * Everything the editor stage produced for one chunk.
- *
- * @example
- * ```ts
- * const { patch, heardEditors, } = await runEditorStage({ ... },);
- * ```
+ Everything the editor stage produced for one chunk.
+ 
+ @example
+ ```ts
+ const { patch, heardEditors, } = await runEditorStage({ ... },);
+ ```
  */
 export type EditorStageResult = {
   /**
-   * Apply-gate outcome of the winning candidate;
-   * unchanged text when every editor voice was lost or every operation was
-   * refused.
+   Apply-gate outcome of the winning candidate;
+   unchanged text when every editor voice was lost or every operation was
+   refused.
    */
   readonly patch: PatchOutcome;
 
   /**
-   * Editors whose reply arrived and validated.
+   Editors whose reply arrived and validated.
    */
   readonly heardEditors: number;
 
   /**
-   * Judged rounds from both selection passes, per-envelope first and the
-   * whole-chunk round last, in the order they ran.
+   Judged rounds from both selection passes, per-envelope first and the
+   whole-chunk round last, in the order they ran.
    */
   readonly rounds: readonly RepairJudgedRound[];
 
   /**
-   * Wire irregularities and selection telemetry in scorecard-stable wording.
+   Wire irregularities and selection telemetry in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 
   /**
-   * Who wrote {@link EditorStageResult.patch}, absent when the untouched
-   * translation ships.
-   *
-   * The one authority on authorship for this stage. Reading it off the rounds
-   * instead misses the editor whose patch ships when the whole-chunk judges
-   * decline, and credits envelope winners whose text lost to a rival
-   * whole-chunk proposal.
+   Who wrote {@link EditorStageResult.patch}, absent when the untouched
+   translation ships.
+   
+   The one authority on authorship for this stage. Reading it off the rounds
+   instead misses the editor whose patch ships when the whole-chunk judges
+   decline, and credits envelope winners whose text lost to a rival
+   whole-chunk proposal.
    */
   readonly shippedProducer: ShippedProducer;
 };
 
 /**
- * Runs the editor ensemble over one chunk and returns the patch that ships.
- *
- * @param client - injected model client
- *
- * @param editorModelIds - editors proposing candidates
- *
- * @param judgeModelIds - whole roster selection draws judges from
- *
- * @param editorRuleAddendum - extra rule line for prompt calibration
- *
- * @param sourceText - original chunk text
- *
- * @param targetText - translation chunk text the envelopes were cut from
- *
- * @param envelopes - non-overlapping envelopes in document order
- *
- * @param issues - adjudicated issues the envelopes serve
- *
- * @param neighbouringSourceText - source context also supplied to selecting judges
- *
- * @param neighbouringIncumbentText - placement context for editors
- *
- * @param documentSourceText - same-entry evidence forwarded to selectors, not an editor coverage expansion
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Winning patch plus findings
- *
- * @throws {@link import('./repair-contract.ts').ProducerRosterError} when every
- * judge also edits
- *
- * @example
- * ```ts
- * const editor = await runEditorStage({ ... },);
- * ```
+ Runs the editor ensemble over one chunk and returns the patch that ships.
+ 
+ @param client - injected model client
+ 
+ @param editorModelIds - editors proposing candidates
+ 
+ @param judgeModelIds - whole roster selection draws judges from
+ 
+ @param editorRuleAddendum - extra rule line for prompt calibration
+ 
+ @param sourceText - original chunk text
+ 
+ @param targetText - translation chunk text the envelopes were cut from
+ 
+ @param envelopes - non-overlapping envelopes in document order
+ 
+ @param issues - adjudicated issues the envelopes serve
+ 
+ @param neighbouringSourceText - source context also supplied to selecting judges
+ 
+ @param neighbouringIncumbentText - placement context for editors
+ 
+ @param documentSourceText - same-entry evidence forwarded to selectors, not an editor coverage expansion
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - pipeline logger
+ 
+ @returns Winning patch plus findings
+ 
+ @throws {@link import('./repair-contract.ts').ProducerRosterError} when every
+ judge also edits
+ 
+ @example
+ ```ts
+ const editor = await runEditorStage({ ... },);
+ ```
  */
 export async function runEditorStage(
   {
@@ -167,8 +167,8 @@ export async function runEditorStage(
   },);
 
   /**
-   * Editor sheet shared by every editor, so their candidates answer the same
-   * question and stay comparable.
+   Editor sheet shared by every editor, so their candidates answer the same
+   question and stay comparable.
    */
   const plan = buildEditorMessages({
     sourceText,
@@ -181,7 +181,7 @@ export async function runEditorStage(
   },);
 
   /**
-   * Editor replies after retry-to-quorum.
+   Editor replies after retry-to-quorum.
    */
   const gather = await gatherStageVoices({
     client,
@@ -205,7 +205,7 @@ export async function runEditorStage(
   },);
 
   /**
-   * Untouched outcome shared by both early exits.
+   Untouched outcome shared by both early exits.
    */
   const unchanged: PatchOutcome = {
     patchedText: targetText,
@@ -214,8 +214,8 @@ export async function runEditorStage(
   };
 
   /**
-   * Defect text each envelope's issues quoted, which the preservation gate
-   * treats as licensed to disappear.
+   Defect text each envelope's issues quoted, which the preservation gate
+   treats as licensed to disappear.
    */
   const preservation = {
     mode: 'enforce',
@@ -226,7 +226,7 @@ export async function runEditorStage(
   } as const;
 
   /**
-   * One gated patch per heard editor, in roster order.
+   One gated patch per heard editor, in roster order.
    */
   const built = buildEditorCandidates({
     voices: gather.voices,
@@ -238,8 +238,8 @@ export async function runEditorStage(
   },);
 
   /**
-   * Candidates that actually repair something; one that landed no operation is
-   * the untouched translation, which competes downstream anyway.
+   Candidates that actually repair something; one that landed no operation is
+   the untouched translation, which competes downstream anyway.
    */
   const repairing = built.candidates
     .filter(function landedWork(candidate,) {
@@ -250,7 +250,7 @@ export async function runEditorStage(
     },);
 
   /**
-   * Findings shared by every exit after the fan-out.
+   Findings shared by every exit after the fan-out.
    */
   const stageFindings = [
     ...gather.findings,
@@ -274,7 +274,7 @@ export async function runEditorStage(
   }
 
   /**
-   * Per-envelope winners assembled into one operation set.
+   Per-envelope winners assembled into one operation set.
    */
   const perEnvelope = await selectPerEnvelope({
     client,
@@ -291,7 +291,7 @@ export async function runEditorStage(
   },);
 
   /**
-   * Composite candidate, scored through the same gate as a model's own.
+   Composite candidate, scored through the same gate as a model's own.
    */
   const composite = applyCandidate({
     targetText,
@@ -301,7 +301,7 @@ export async function runEditorStage(
   },);
 
   /**
-   * Distinct whole-chunk proposals for the judges.
+   Distinct whole-chunk proposals for the judges.
    */
   const chunkSet = buildChunkCandidates({
     candidates: repairing,
@@ -310,8 +310,8 @@ export async function runEditorStage(
   },);
 
   /**
-   * Winning patch, or the strongest editor patch when judges declined,
-   * alongside the findings from judging it.
+   Winning patch, or the strongest editor patch when judges declined,
+   alongside the findings from judging it.
    */
   const chunkSelection = await selectChunkPatch({
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
@@ -328,7 +328,7 @@ export async function runEditorStage(
   },);
 
   /**
-   * Patch that ships.
+   Patch that ships.
    */
   const { patch, } = chunkSelection;
 
@@ -374,7 +374,7 @@ export async function runEditorStage(
             rejection,
           ) {
         /**
-         * Reason with its parenthetical detail stripped, so counts group.
+         Reason with its parenthetical detail stripped, so counts group.
          */
         const kind = rejection.reason
           .split(' (',)[0]

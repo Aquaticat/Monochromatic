@@ -14,47 +14,47 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // repeating same model and prompt as fake independent evidence.
 
 /**
- * Successful review rounds required after first acceptable reading.
+ Successful review rounds required after first acceptable reading.
  */
 export const ABSOLUTE_NATURALNESS_CONFIRMATIONS_REQUIRED = 1;
 
 /**
- * Decisive review beside earlier acceptable readings of same exact candidate.
- *
- * @example
- * ```ts
- * const confirmed: ConfirmedAbsoluteNaturalness = { review, confirmations: [initial,] };
- * ```
+ Decisive review beside earlier acceptable readings of same exact candidate.
+ 
+ @example
+ ```ts
+ const confirmed: ConfirmedAbsoluteNaturalness = { review, confirmations: [initial,] };
+ ```
  */
 export type ConfirmedAbsoluteNaturalness = {
   /**
-   * Final review deciding acceptance or correction.
+   Final review deciding acceptance or correction.
    */
   readonly review: AbsoluteNaturalnessReviewOutcome;
 
   /**
-   * Earlier acceptable readings bought before decisive review.
+   Earlier acceptable readings bought before decisive review.
    */
   readonly confirmations: readonly AbsoluteNaturalnessReviewOutcome[];
 };
 
 /**
- * Requires distinct challenge acceptance after exact-candidate discovery approval.
- *
- * @param request - exact request each independent review receives
- *
- * @returns Decisive review and every earlier acceptable reading
- *
- * @example
- * ```ts
- * const confirmed = await confirmAbsoluteNaturalness({ client, modelIds, subject, signal, exchangeTimeoutMs, l, });
- * ```
+ Requires distinct challenge acceptance after exact-candidate discovery approval.
+ 
+ @param request - exact request each independent review receives
+ 
+ @returns Decisive review and every earlier acceptable reading
+ 
+ @example
+ ```ts
+ const confirmed = await confirmAbsoluteNaturalness({ client, modelIds, subject, signal, exchangeTimeoutMs, l, });
+ ```
  */
 export async function confirmAbsoluteNaturalness(
   request: ForeignBorrowed<Parameters<typeof reviewAbsoluteNaturalness>[0]>,
 ): Promise<ConfirmedAbsoluteNaturalness> {
   /**
-   * First approving quorum reading.
+   First approving quorum reading.
    */
   const initial = await reviewAbsoluteNaturalness({
     ...request,
@@ -68,7 +68,7 @@ export async function confirmAbsoluteNaturalness(
   }
 
   /**
-   * Substantively distinct challenge of prior acceptance over exact same subject.
+   Substantively distinct challenge of prior acceptance over exact same subject.
    */
   const confirmation = await reviewAbsoluteNaturalness({
     ...request,

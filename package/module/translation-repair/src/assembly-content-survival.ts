@@ -20,76 +20,76 @@
 // a distinctive word it drops really is a detail removed or blurred.
 
 /**
- * Shortest word that can carry a specific.
- *
- * Below six letters the vocabulary is mostly function words and common verbs,
- * which survive any rewrite and say nothing about whether meaning did.
+ Shortest word that can carry a specific.
+ 
+ Below six letters the vocabulary is mostly function words and common verbs,
+ which survive any rewrite and say nothing about whether meaning did.
  */
 const MIN_DISTINCTIVE_LETTERS = 6;
 
 /**
- * Most times the archive may use a word for it to still count as distinctive.
- *
- * A word the archive leans on repeatedly is part of its register rather than one
- * of its specifics, and register is exactly what a repair is allowed to change.
+ Most times the archive may use a word for it to still count as distinctive.
+ 
+ A word the archive leans on repeatedly is part of its register rather than one
+ of its specifics, and register is exactly what a repair is allowed to change.
  */
 const MAX_ARCHIVE_USES = 2;
 
 /**
- * What the archive's specifics did in the shipped document.
- *
- * CARRIES NO WORDING, like every finding in this package: a findings list
- * travels into logs and artifacts where corpus text does not belong.
- *
- * @example
- * ```ts
- * const survival: ContentSurvival = { distinctive: 216, kept: 197, lost: 19, };
- * ```
+ What the archive's specifics did in the shipped document.
+ 
+ CARRIES NO WORDING, like every finding in this package: a findings list
+ travels into logs and artifacts where corpus text does not belong.
+ 
+ @example
+ ```ts
+ const survival: ContentSurvival = { distinctive: 216, kept: 197, lost: 19, };
+ ```
  */
 export type ContentSurvival = {
   /**
-   * Distinctive words the archive carries.
+   Distinctive words the archive carries.
    */
   readonly distinctive: number;
 
   /**
-   * How many of them the shipped document still carries.
+   How many of them the shipped document still carries.
    */
   readonly kept: number;
 
   /**
-   * How many it no longer carries.
+   How many it no longer carries.
    */
   readonly lost: number;
 };
 
 /**
- * Splits text into lowercase letter-only words.
- *
- * PUNCTUATION AND DIGITS ARE SEPARATORS HERE, unlike `wordsOf` in
- * `assembly-repetition.ts` which keeps punctuation on its token. That file
- * compares passages, where `soon.` and `soon,` are different sentences; this one
- * compares vocabulary, where they are the same word.
- *
- * A single linear pass rather than a pattern, per `RG1`.
- *
- * @param text - document or passage
- *
- * @returns Lowercase words in order
- *
- * @example
- * ```ts
- * const words = lettersOnlyWords({ text: 'Tabby-cat, dozing.', },);
- * ```
+ Splits text into lowercase letter-only words.
+ 
+ PUNCTUATION AND DIGITS ARE SEPARATORS HERE, unlike `wordsOf` in
+ `assembly-repetition.ts` which keeps punctuation on its token. That file
+ compares passages, where `soon.` and `soon,` are different sentences; this one
+ compares vocabulary, where they are the same word.
+ 
+ A single linear pass rather than a pattern, per `RG1`.
+ 
+ @param text - document or passage
+ 
+ @returns Lowercase words in order
+ 
+ @example
+ ```ts
+ const words = lettersOnlyWords({ text: 'Tabby-cat, dozing.', },);
+ ```
  */
 function lettersOnlyWords({ text, }: { readonly text: string; },): readonly string[] {
   /**
-   * Words closed so far.
+   Words closed so far.
    */
   const words: string[] = [];
 
   /**
-   * Letters of the word being read.
+   Letters of the word being read.
    */
   let held = '';
 
@@ -108,22 +108,22 @@ function lettersOnlyWords({ text, }: { readonly text: string; },): readonly stri
 }
 
 /**
- * Words the archive uses rarely and at length, which carry its specifics.
- *
- * @param archiveText - translation as it stood before the pipeline ran
- *
- * @returns Distinctive words, each once
- *
- * @example
- * ```ts
- * const specifics = distinctiveWords({ archiveText, },);
- * ```
+ Words the archive uses rarely and at length, which carry its specifics.
+ 
+ @param archiveText - translation as it stood before the pipeline ran
+ 
+ @returns Distinctive words, each once
+ 
+ @example
+ ```ts
+ const specifics = distinctiveWords({ archiveText, },);
+ ```
  */
 export function distinctiveWords(
   { archiveText, }: { readonly archiveText: string; },
 ): readonly string[] {
   /**
-   * Times the archive uses each word.
+   Times the archive uses each word.
    */
   const uses = new Map<string, number>();
   for (const word of lettersOnlyWords({ text: archiveText, },))
@@ -142,18 +142,18 @@ export function distinctiveWords(
 }
 
 /**
- * Measures how much of the archive's specific vocabulary the document still has.
- *
- * @param archiveText - translation as it stood before the pipeline ran
- *
- * @param shippedText - assembled document the repair lane produced
- *
- * @returns Counts, never wording
- *
- * @example
- * ```ts
- * const survival = measureContentSurvival({ archiveText, shippedText, },);
- * ```
+ Measures how much of the archive's specific vocabulary the document still has.
+ 
+ @param archiveText - translation as it stood before the pipeline ran
+ 
+ @param shippedText - assembled document the repair lane produced
+ 
+ @returns Counts, never wording
+ 
+ @example
+ ```ts
+ const survival = measureContentSurvival({ archiveText, shippedText, },);
+ ```
  */
 export function measureContentSurvival(
   {
@@ -165,17 +165,17 @@ export function measureContentSurvival(
   },
 ): ContentSurvival {
   /**
-   * Archive words carrying its specifics.
+   Archive words carrying its specifics.
    */
   const distinctive = distinctiveWords({ archiveText, },);
 
   /**
-   * Every word the shipped document carries, for membership tests.
+   Every word the shipped document carries, for membership tests.
    */
   const shipped = new Set(lettersOnlyWords({ text: shippedText, },),);
 
   /**
-   * How many specifics survived.
+   How many specifics survived.
    */
   const kept = distinctive
     .filter(function survives(word,): boolean {
@@ -191,24 +191,24 @@ export function measureContentSurvival(
 }
 
 /**
- * Renders content survival as an assembly finding.
- *
- * ALWAYS ONE FINDING, rather than one only when a threshold is crossed. The
- * healthy and damaged runs measured so far sit at 8% and 45% loss on one entry
- * and 23% and 29% on another, which is not enough separation to place a
- * threshold honestly. Reporting the rate every time leaves that judgement to
- * whoever reads the run, and costs one line.
- *
- * @param archiveText - translation as it stood before the pipeline ran
- *
- * @param shippedText - assembled document the repair lane produced
- *
- * @returns One finding naming the counts
- *
- * @example
- * ```ts
- * const findings = contentSurvivalFindings({ archiveText, shippedText, },);
- * ```
+ Renders content survival as an assembly finding.
+ 
+ ALWAYS ONE FINDING, rather than one only when a threshold is crossed. The
+ healthy and damaged runs measured so far sit at 8% and 45% loss on one entry
+ and 23% and 29% on another, which is not enough separation to place a
+ threshold honestly. Reporting the rate every time leaves that judgement to
+ whoever reads the run, and costs one line.
+ 
+ @param archiveText - translation as it stood before the pipeline ran
+ 
+ @param shippedText - assembled document the repair lane produced
+ 
+ @returns One finding naming the counts
+ 
+ @example
+ ```ts
+ const findings = contentSurvivalFindings({ archiveText, shippedText, },);
+ ```
  */
 export function contentSurvivalFindings(
   {
@@ -220,7 +220,7 @@ export function contentSurvivalFindings(
   },
 ): readonly string[] {
   /**
-   * What the specifics did.
+   What the specifics did.
    */
   const survival = measureContentSurvival({
     archiveText,

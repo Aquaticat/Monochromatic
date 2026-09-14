@@ -1,20 +1,20 @@
 /**
- * Tests for the Anthropic delta scanner.
- *
- * WHAT THIS FILE IS REALLY CHECKING is that a second wire format produces the
- * SAME `ChannelDelta` stream the OpenAI-shaped one does, because that identity
- * is the whole reason the stream guards were not written twice. If this scanner
- * files the answer under `reasoning`, every volume bound and degeneration
- * verdict downstream reads a call that thought forever and answered nothing.
- *
- * The case that matters most is `input_json_delta`. Under forced tool use the
- * model's entire reply arrives as the tool call's arguments, so a scanner that
- * treated those fragments as anything but the answer channel would make every
- * schema'd call on this transport look silent.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the Anthropic delta scanner.
+ 
+ WHAT THIS FILE IS REALLY CHECKING is that a second wire format produces the
+ SAME `ChannelDelta` stream the OpenAI-shaped one does, because that identity
+ is the whole reason the stream guards were not written twice. If this scanner
+ files the answer under `reasoning`, every volume bound and degeneration
+ verdict downstream reads a call that thought forever and answered nothing.
+ 
+ The case that matters most is `input_json_delta`. Under forced tool use the
+ model's entire reply arrives as the tool call's arguments, so a scanner that
+ treated those fragments as anything but the answer channel would make every
+ schema'd call on this transport look silent.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -29,22 +29,22 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one Anthropic event frame, newline-terminated as the wire sends it.
- *
- * @param body - frame payload, which carries its own `type`
- *
- * @returns Frame ready to feed a scanner
- *
- * @example
- * ```ts
- * const raw = frameOf({ body: { type: 'ping', }, },);
- * ```
+ Builds one Anthropic event frame, newline-terminated as the wire sends it.
+ 
+ @param body - frame payload, which carries its own `type`
+ 
+ @returns Frame ready to feed a scanner
+ 
+ @example
+ ```ts
+ const raw = frameOf({ body: { type: 'ping', }, },);
+ ```
  */
 function frameOf(
   { body, }: { readonly body: Readonly<Record<string, unknown>>; },
 ): string {
   /**
-   * Event name, which every Anthropic frame repeats inside its own payload.
+   Event name, which every Anthropic frame repeats inside its own payload.
    */
   const { type, } = body;
 
@@ -52,18 +52,18 @@ function frameOf(
 }
 
 /**
- * Frame opening a content block of one type at one index.
- *
- * @param index - position the block occupies
- *
- * @param type - block type the server declares
- *
- * @returns Frame ready to feed a scanner
- *
- * @example
- * ```ts
- * const raw = blockStart({ index: 0, type: 'thinking', },);
- * ```
+ Frame opening a content block of one type at one index.
+ 
+ @param index - position the block occupies
+ 
+ @param type - block type the server declares
+ 
+ @returns Frame ready to feed a scanner
+ 
+ @example
+ ```ts
+ const raw = blockStart({ index: 0, type: 'thinking', },);
+ ```
  */
 function blockStart(
   {
@@ -84,22 +84,22 @@ function blockStart(
 }
 
 /**
- * Frame carrying one delta of one kind at one index.
- *
- * @param index - position the delta belongs to
- *
- * @param deltaType - kind of delta, which names its text field
- *
- * @param field - field the text rides in
- *
- * @param text - text the frame carries
- *
- * @returns Frame ready to feed a scanner
- *
- * @example
- * ```ts
- * const raw = blockDelta({ index: 0, deltaType: 'text_delta', field: 'text', text: 'Biscuit', },);
- * ```
+ Frame carrying one delta of one kind at one index.
+ 
+ @param index - position the delta belongs to
+ 
+ @param deltaType - kind of delta, which names its text field
+ 
+ @param field - field the text rides in
+ 
+ @param text - text the frame carries
+ 
+ @returns Frame ready to feed a scanner
+ 
+ @example
+ ```ts
+ const raw = blockDelta({ index: 0, deltaType: 'text_delta', field: 'text', text: 'Biscuit', },);
+ ```
  */
 function blockDelta(
   {
@@ -127,16 +127,16 @@ function blockDelta(
 }
 
 /**
- * Feeds a whole body to a fresh scanner in one chunk.
- *
- * @param raw - whole stream body
- *
- * @returns Every delta it yielded, in order
- *
- * @example
- * ```ts
- * const deltas = scanAll({ raw, },);
- * ```
+ Feeds a whole body to a fresh scanner in one chunk.
+ 
+ @param raw - whole stream body
+ 
+ @returns Every delta it yielded, in order
+ 
+ @example
+ ```ts
+ const deltas = scanAll({ raw, },);
+ ```
  */
 function scanAll(
   { raw, }: { readonly raw: string; },
@@ -350,12 +350,12 @@ await describe({
         + 'the network puts it and routinely falls inside a frame',
       fn: async () => {
         /**
-         * Scanner fed in halves, as a slow connection delivers a body.
+         Scanner fed in halves, as a slow connection delivers a body.
          */
         const scanner = scanAnthropicDeltas();
 
         /**
-         * Whole body, to be cut at a point inside its delta frame.
+         Whole body, to be cut at a point inside its delta frame.
          */
         const raw = blockStart({
           index: 0,
@@ -368,12 +368,12 @@ await describe({
         },);
 
         /**
-         * Cut point chosen inside the JSON payload rather than on a boundary.
+         Cut point chosen inside the JSON payload rather than on a boundary.
          */
         const cut = raw.length - 12;
 
         /**
-         * Everything both halves yielded, in order.
+         Everything both halves yielded, in order.
          */
         const deltas = [
           ...scanner.feed({ chunk: raw.slice(
@@ -414,12 +414,12 @@ await describe({
         + 'of every call and one malformed frame must not cost the rest of the stream',
       fn: async () => {
         /**
-         * Scanner fed one broken frame between two sound ones.
+         Scanner fed one broken frame between two sound ones.
          */
         const scanner = scanAnthropicDeltas();
 
         /**
-         * Deltas surviving a payload no parser could read.
+         Deltas surviving a payload no parser could read.
          */
         const deltas = scanner.feed({
           chunk: `${blockStart({
@@ -444,7 +444,7 @@ await describe({
         + 'tally would hide the changed wire format it exists to make visible',
       fn: async () => {
         /**
-         * Scanner fed the bare `data:` lines servers send to hold a connection.
+         Scanner fed the bare `data:` lines servers send to hold a connection.
          */
         const scanner = scanAnthropicDeltas();
         scanner.feed({ chunk: 'data:\n\ndata: \n\n', },);
@@ -458,7 +458,7 @@ await describe({
         + 'built for the other wire format reaches its verdict on this one unchanged',
       fn: async () => {
         /**
-         * A model that thinks the same thing forever and never answers.
+         A model that thinks the same thing forever and never answers.
          */
         const frames = Array.from(
           { length: 9_000, },
@@ -473,7 +473,7 @@ await describe({
         ).join('',);
 
         /**
-         * Scanner and one detector per channel, wired as the drain will wire them.
+         Scanner and one detector per channel, wired as the drain will wire them.
          */
         const scanner = scanAnthropicDeltas();
         const thinking = watchForDegeneration();
@@ -501,7 +501,7 @@ await describe({
         + 'otherwise read as twenty frames the scanner could not follow',
       fn: async () => {
         /**
-         * Scanner under test, fed a stream that is mostly keep-alives.
+         Scanner under test, fed a stream that is mostly keep-alives.
          */
         const scanner = scanAnthropicDeltas();
 
@@ -529,12 +529,12 @@ await describe({
         + '2026-09-03): one such frame on every call would read as a wire format nobody follows',
       fn: async () => {
         /**
-         * Scanner under test, fed the closing frames as that gateway sends them.
+         Scanner under test, fed the closing frames as that gateway sends them.
          */
         const scanner = scanAnthropicDeltas();
 
         /**
-         * Deltas the closing frames carried, which must be none.
+         Deltas the closing frames carried, which must be none.
          */
         const deltas = scanner.feed({
           chunk: [

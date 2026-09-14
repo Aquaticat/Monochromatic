@@ -36,57 +36,57 @@ export {
 // reading and lives in `footnote-mentions.ts`.
 
 /**
- * What the guard settled on for one document.
- *
- * @example
- * ```ts
- * const guarded: GuardedAssembly = { assembledText, replacements, revertedChunkIndices: [], findings: [], };
- * ```
+ What the guard settled on for one document.
+ 
+ @example
+ ```ts
+ const guarded: GuardedAssembly = { assembledText, replacements, revertedChunkIndices: [], findings: [], };
+ ```
  */
 export type GuardedAssembly = {
   /**
-   * Document as it now stands, spliced from the replacements that survived.
+   Document as it now stands, spliced from the replacements that survived.
    */
   readonly assembledText: string;
 
   /**
-   * Replacements that survived, in the order they were given.
+   Replacements that survived, in the order they were given.
    */
   readonly replacements: readonly SliceReplacement[];
 
   /**
-   * Slices whose replacement was withdrawn, in the order they were withdrawn.
+   Slices whose replacement was withdrawn, in the order they were withdrawn.
    */
   readonly revertedChunkIndices: readonly number[];
 
   /**
-   * What the guard did, in scorecard-stable wording.
+   What the guard did, in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 
   /**
-   * Surviving replacements whose text the guard trimmed, with the text the
-   * document carries, so a ledger can say what shipped rather than what was
-   * decided.
+   Surviving replacements whose text the guard trimmed, with the text the
+   document carries, so a ledger can say what shipped rather than what was
+   decided.
    */
   readonly trimmed: readonly SliceReplacement[];
 };
 
 /**
- * Replacements whose slice changed how often it mentions an identifier.
- *
- * @param identifierKey - `convention identifier` at fault
- *
- * @param replacements - replacements still standing
- *
- * @param incumbentBySlice - incumbent text of every slice, by chunk index
- *
- * @returns Chunk indices to withdraw
- *
- * @example
- * ```ts
- * const culprits = suspectsFor({ identifierKey, replacements, incumbentBySlice, },);
- * ```
+ Replacements whose slice changed how often it mentions an identifier.
+ 
+ @param identifierKey - `convention identifier` at fault
+ 
+ @param replacements - replacements still standing
+ 
+ @param incumbentBySlice - incumbent text of every slice, by chunk index
+ 
+ @returns Chunk indices to withdraw
+ 
+ @example
+ ```ts
+ const culprits = suspectsFor({ identifierKey, replacements, incumbentBySlice, },);
+ ```
  */
 function suspectsFor(
   {
@@ -102,14 +102,14 @@ function suspectsFor(
   return replacements
     .filter(function changedIt(replacement,): boolean {
       /**
-       * Mentions counted in the archive's own text for this slice.
+       Mentions counted in the archive's own text for this slice.
        */
       const beforeCounts = footnoteIdentifiers({
         text: incumbentBySlice.get(String(replacement.sliceIndex,),) ?? '',
       },);
 
       /**
-       * Mentions counted in the accepted text.
+       Mentions counted in the accepted text.
        */
       const afterCounts = footnoteIdentifiers({
         text: replacement.replacementText,
@@ -129,59 +129,59 @@ function suspectsFor(
 }
 
 /**
- * Splices replacements into a document and settles what it can carry, repeating
- * until nothing is left to take back.
- *
- * THREE OUTCOMES, and the name only says the first. A replacement that breaks
- * the footnote graph is withdrawn, blamed by the identifier it moved. A
- * STRUCTURAL parse regression first tests whether one withdrawal repairs the
- * whole document; only when no such proof exists does it take every replacement. An
- * assembly that reassembles to the archive text is CANONICALIZED rather than
- * withdrawn for fault: nobody did anything wrong, and the document simply says
- * so. Any reader of `revertedChunkIndices` is reading all three.
- *
- * ITERATES TO A FIXPOINT rather than checking once. Withdrawing a replacement
- * can orphan an identifier a DIFFERENT replacement introduced alongside it:
- * one slice renumbers `[^1]` to `[^2]` while another supplies the `[^2]`
- * definition, so withdrawing the first leaves the second's definition with
- * nothing pointing at it. Each round withdraws at least one replacement or
- * trims at least one definition block, so the loop is bounded by their count
- * plus the count of definition blocks.
- *
- * AN ORPHAN DEFINITION IN A DEFINITIONS-ONLY REPLACEMENT is trimmed rather
- * than withdrawn with its siblings (`assembly-orphan-trim.ts`): the nineteenth
- * `hakureico` pass of 2026-09-09 lost the definition its body needed because
- * the one beside it had no reference on the sealed page.
- *
- * The guard runs at ASSEMBLY, after per-slice records were settled and cached,
- * so a withdrawn slice's record still says it changed while the document ships
- * the archive's text. That is deliberate: the record says what the judges
- * chose, and this says what the document could carry. Every caller derives its
- * shipped counts from {@link GuardedAssembly.replacements} rather than from the
- * records. The guard is deterministic, so a resumed run withdraws the same
- * slices without asking anyone again.
- *
- * @param targetText - translation as it stands, which is also the fallback
- *
- * @param slices - prepared slice pairs in document order
- *
- * @param replacements - accepted replacement per changed slice
- *
- * @returns Assembled document, surviving replacements, and what was withdrawn
- *
- * @throws {@link Error} when the loop cannot settle, which its own bound makes
- * unreachable and which must never be reported as a clean assembly
- *
- * @throws AssemblyContractError when a replacement names an unknown slice or
- * repeats its own incumbent, checked HERE rather than left to each caller: a
- * no-op replacement reassembles to the archive text, so the net-zero
- * canonicalization would otherwise adopt it as a legitimate outcome and return
- * an empty surviving set, which nothing downstream can tell from an honest one
- *
- * @example
- * ```ts
- * const guarded = guardFootnoteAssembly({ targetText, slices, replacements, },);
- * ```
+ Splices replacements into a document and settles what it can carry, repeating
+ until nothing is left to take back.
+ 
+ THREE OUTCOMES, and the name only says the first. A replacement that breaks
+ the footnote graph is withdrawn, blamed by the identifier it moved. A
+ STRUCTURAL parse regression first tests whether one withdrawal repairs the
+ whole document; only when no such proof exists does it take every replacement. An
+ assembly that reassembles to the archive text is CANONICALIZED rather than
+ withdrawn for fault: nobody did anything wrong, and the document simply says
+ so. Any reader of `revertedChunkIndices` is reading all three.
+ 
+ ITERATES TO A FIXPOINT rather than checking once. Withdrawing a replacement
+ can orphan an identifier a DIFFERENT replacement introduced alongside it:
+ one slice renumbers `[^1]` to `[^2]` while another supplies the `[^2]`
+ definition, so withdrawing the first leaves the second's definition with
+ nothing pointing at it. Each round withdraws at least one replacement or
+ trims at least one definition block, so the loop is bounded by their count
+ plus the count of definition blocks.
+ 
+ AN ORPHAN DEFINITION IN A DEFINITIONS-ONLY REPLACEMENT is trimmed rather
+ than withdrawn with its siblings (`assembly-orphan-trim.ts`): the nineteenth
+ `hakureico` pass of 2026-09-09 lost the definition its body needed because
+ the one beside it had no reference on the sealed page.
+ 
+ The guard runs at ASSEMBLY, after per-slice records were settled and cached,
+ so a withdrawn slice's record still says it changed while the document ships
+ the archive's text. That is deliberate: the record says what the judges
+ chose, and this says what the document could carry. Every caller derives its
+ shipped counts from {@link GuardedAssembly.replacements} rather than from the
+ records. The guard is deterministic, so a resumed run withdraws the same
+ slices without asking anyone again.
+ 
+ @param targetText - translation as it stands, which is also the fallback
+ 
+ @param slices - prepared slice pairs in document order
+ 
+ @param replacements - accepted replacement per changed slice
+ 
+ @returns Assembled document, surviving replacements, and what was withdrawn
+ 
+ @throws {@link Error} when the loop cannot settle, which its own bound makes
+ unreachable and which must never be reported as a clean assembly
+ 
+ @throws AssemblyContractError when a replacement names an unknown slice or
+ repeats its own incumbent, checked HERE rather than left to each caller: a
+ no-op replacement reassembles to the archive text, so the net-zero
+ canonicalization would otherwise adopt it as a legitimate outcome and return
+ an empty surviving set, which nothing downstream can tell from an honest one
+ 
+ @example
+ ```ts
+ const guarded = guardFootnoteAssembly({ targetText, slices, replacements, },);
+ ```
  */
 export function guardFootnoteAssembly(
   {
@@ -205,8 +205,8 @@ export function guardFootnoteAssembly(
   },);
 
   /**
-   * Archive text of every slice, keyed by chunk index as a string so the map
-   * is JSON-shaped like everything else that crosses this module.
+   Archive text of every slice, keyed by chunk index as a string so the map
+   is JSON-shaped like everything else that crosses this module.
    */
   const incumbentBySlice = new Map(slices.map(function toEntry(slice,) {
     return [
@@ -218,40 +218,40 @@ export function guardFootnoteAssembly(
   },),);
 
   /**
-   * Chunk indices withdrawn so far, in withdrawal order.
+   Chunk indices withdrawn so far, in withdrawal order.
    */
   const withdrawn: number[] = [];
 
   /**
-   * What the guard did, accumulated across rounds.
+   What the guard did, accumulated across rounds.
    */
   const findings: string[] = [];
 
   /**
-   * Assembly once no round has anything left to withdraw.
+   Assembly once no round has anything left to withdraw.
    */
   const settled = (function settle(): {
     readonly assembledText: string;
     readonly surviving: readonly SliceReplacement[];
   } {
     /**
-     * Replacements still standing at the start of a round.
+     Replacements still standing at the start of a round.
      */
     let surviving = replacements;
     /**
-     * Rounds the loop may take: one withdrawal per replacement, one trim per
-     * definition block, and the round that settles.
+     Rounds the loop may take: one withdrawal per replacement, one trim per
+     definition block, and the round that settles.
      */
     const rounds = replacements.length + definitionBlockCount({ replacements, },);
     for (let round = 0; round <= rounds; round += 1) {
       /**
-       * This round's replacements under a name nothing reassigns, so every
-       * closure below reads the round it was made in rather than the cursor.
+       This round's replacements under a name nothing reassigns, so every
+       closure below reads the round it was made in rather than the cursor.
        */
       const standing = surviving;
 
       /**
-       * Document as the surviving replacements make it.
+       Document as the surviving replacements make it.
        */
       const assembledText = spliceSlices({
         targetText,
@@ -285,7 +285,7 @@ export function guardFootnoteAssembly(
       }
 
       /**
-       * Footnote defects this assembly introduced.
+       Footnote defects this assembly introduced.
        */
       const introduced = introducedFootnoteFindings({
         incumbentText: targetText,
@@ -293,9 +293,9 @@ export function guardFootnoteAssembly(
       },);
 
       /**
-       * Parse regressions this assembly introduced, which no identifier names:
-       * a stray comment opener masks markers document-wide, and a downgrade
-       * means the strict parser refused what the archive accepted.
+       Parse regressions this assembly introduced, which no identifier names:
+       a stray comment opener masks markers document-wide, and a downgrade
+       means the strict parser refused what the archive accepted.
        */
       const regressions = introducedStructuralRegressions({
         incumbentText: targetText,
@@ -309,8 +309,8 @@ export function guardFootnoteAssembly(
       }
 
       /**
-       * Orphan definitions cut out of definitions-only replacements, so the
-       * notes the page needs stay beside the one it cannot carry.
+       Orphan definitions cut out of definitions-only replacements, so the
+       notes the page needs stay beside the one it cannot carry.
        */
       const trimmed = trimOrphanDefinitions({
         findings: introduced,
@@ -325,7 +325,7 @@ export function guardFootnoteAssembly(
       }
 
       /**
-       * Slices to withdraw this round, each blamed by its own identifier.
+       Slices to withdraw this round, each blamed by its own identifier.
        */
       const culprits = new Set(introduced.flatMap(function toCulprits(finding,) {
         return suspectsFor({
@@ -336,7 +336,7 @@ export function guardFootnoteAssembly(
       },),);
       if ((culprits.size === 0) && (regressions.length > 0)) {
         /**
-         * Whole-document counterfactual may prove a withdrawal without an identifier.
+         Whole-document counterfactual may prove a withdrawal without an identifier.
          */
         const proven = singleStructuralWithdrawal({
           targetText,
@@ -420,7 +420,7 @@ export function guardFootnoteAssembly(
   })();
 
   /**
-   * Text each replacement arrived with, by slice.
+   Text each replacement arrived with, by slice.
    */
   const givenBySlice = new Map(replacements.map(function toEntry(replacement,) {
     return [

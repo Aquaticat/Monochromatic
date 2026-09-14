@@ -1,7 +1,7 @@
 /**
- * Tests final boundary for passages proven rendered elsewhere before lanes.
- *
- * @module
+ Tests final boundary for passages proven rendered elsewhere before lanes.
+ 
+ @module
  */
 
 import {
@@ -18,12 +18,12 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive wording carrying proof region.
+ Archive wording carrying proof region.
  */
 const TARGET = 'The cat sleeps in warm sunlight.\n';
 
 /**
- * One content slice spanning whole target.
+ One content slice spanning whole target.
  */
 const SLICES: readonly ChunkPair[] = [{
   source: {
@@ -43,16 +43,16 @@ const SLICES: readonly ChunkPair[] = [{
 },];
 
 /**
- * Builds final-stage source selecting one replacement.
- *
- * @param text - wording final contest selects
- *
- * @returns Narrow artifact source read by publication assembler
- *
- * @example
- * ```ts
- * const artifact = artifactShipping({ text: TARGET, });
- * ```
+ Builds final-stage source selecting one replacement.
+ 
+ @param text - wording final contest selects
+ 
+ @returns Narrow artifact source read by publication assembler
+ 
+ @example
+ ```ts
+ const artifact = artifactShipping({ text: TARGET, });
+ ```
  */
 function artifactShipping({ text, }: { readonly text: string; },): WouldShipSource {
   return {
@@ -83,7 +83,7 @@ function artifactShipping({ text, }: { readonly text: string; },): WouldShipSour
 }
 
 /**
- * Carried-complete proof shared by cases.
+ Carried-complete proof shared by cases.
  */
 const CARRIED = [{
   position: 1,

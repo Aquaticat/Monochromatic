@@ -1,27 +1,27 @@
 /**
- * Tests for the two git questions the pool asks, on throwaway repositories.
- *
- * WHY THROWAWAY REPOSITORIES. `resolveCommit` and `tipContains` ask git, and
- * the only suite that reached them before asked about this repository's own
- * root and HEAD, which can never produce the two failures worth a test: a
- * shallow history and a commit git does not know. Both are built here from
- * nothing, in `mkdtemp` directories, as three empty commits and a `--depth 2`
- * clone of them. Nothing here reads the pinned corpus clone or this worktree,
- * and the identity every commit is written under is passed per call, so the
- * fixtures never read this machine's git configuration.
- *
- * THE SHALLOW GUARD IS THE ONE WORTH A TEST. `git merge-base --is-ancestor`
- * exits 1 both for "not an ancestor" and for "history stops before the answer",
- * so in a shallow clone a clean negative would quietly drop every entry produced
- * before the cut while every rate above the pool looked ordinary. Measured
- * before these were written, on exactly this fixture: in the depth-2 clone,
- * asking whether the second commit contains the third exits 1 and
- * `rev-parse --is-shallow-repository` prints true; in the full clone the same
- * question exits 1 and the flag prints false; an invented id exits 128 in both.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the two git questions the pool asks, on throwaway repositories.
+ 
+ WHY THROWAWAY REPOSITORIES. `resolveCommit` and `tipContains` ask git, and
+ the only suite that reached them before asked about this repository's own
+ root and HEAD, which can never produce the two failures worth a test: a
+ shallow history and a commit git does not know. Both are built here from
+ nothing, in `mkdtemp` directories, as three empty commits and a `--depth 2`
+ clone of them. Nothing here reads the pinned corpus clone or this worktree,
+ and the identity every commit is written under is passed per call, so the
+ fixtures never read this machine's git configuration.
+ 
+ THE SHALLOW GUARD IS THE ONE WORTH A TEST. `git merge-base --is-ancestor`
+ exits 1 both for "not an ancestor" and for "history stops before the answer",
+ so in a shallow clone a clean negative would quietly drop every entry produced
+ before the cut while every rate above the pool looked ordinary. Measured
+ before these were written, on exactly this fixture: in the depth-2 clone,
+ asking whether the second commit contains the third exits 1 and
+ `rev-parse --is-shallow-repository` prints true; in the full clone the same
+ question exits 1 and the flag prints false; an invented id exits 128 in both.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { mkdtemp, } from 'node:fs/promises';
@@ -41,14 +41,14 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Real git binary, the one the module under test prefers as well.
+ Real git binary, the one the module under test prefers as well.
  */
 const GIT = '/usr/bin/git';
 
 /**
- * Identity and signing settings every throwaway commit is written under,
- * passed on each call so nothing here reads or writes this machine's own git
- * configuration.
+ Identity and signing settings every throwaway commit is written under,
+ passed on each call so nothing here reads or writes this machine's own git
+ configuration.
  */
 const PER_CALL_CONFIG = [
   '-c',
@@ -60,39 +60,39 @@ const PER_CALL_CONFIG = [
 ];
 
 /**
- * Characters in the object ids the fixture repository writes.
+ Characters in the object ids the fixture repository writes.
  */
 const OBJECT_ID_LENGTH = 40;
 
 /**
- * Characters of an id git still resolves as an abbreviation.
+ Characters of an id git still resolves as an abbreviation.
  */
 const ABBREVIATION_LENGTH = 7;
 
 /**
- * Commits the fixture history holds, which the depth of the shallow clone is
- * one short of.
+ Commits the fixture history holds, which the depth of the shallow clone is
+ one short of.
  */
 const HISTORY_LENGTH = 3;
 
 /**
- * A commit no repository built here has ever seen.
+ A commit no repository built here has ever seen.
  */
 const UNKNOWN_COMMIT = '0'.repeat(OBJECT_ID_LENGTH,);
 
 /**
- * Runs one git command against a throwaway repository and returns its stdout.
- *
- * @param repository - checkout to run in
- *
- * @param args - subcommand and its arguments
- *
- * @returns Trimmed stdout
- *
- * @example
- * ```ts
- * const head = await git({ repository, args: ['rev-parse', 'HEAD',], },);
- * ```
+ Runs one git command against a throwaway repository and returns its stdout.
+ 
+ @param repository - checkout to run in
+ 
+ @param args - subcommand and its arguments
+ 
+ @returns Trimmed stdout
+ 
+ @example
+ ```ts
+ const head = await git({ repository, args: ['rev-parse', 'HEAD',], },);
+ ```
  */
 async function git(
   {
@@ -116,16 +116,16 @@ async function git(
 }
 
 /**
- * Writes one empty commit, so the history has shape and no content.
- *
- * @param repository - checkout to commit in
- *
- * @param subject - commit message
- *
- * @example
- * ```ts
- * await commitEmpty({ repository, subject: 'first', },);
- * ```
+ Writes one empty commit, so the history has shape and no content.
+ 
+ @param repository - checkout to commit in
+ 
+ @param subject - commit message
+ 
+ @example
+ ```ts
+ await commitEmpty({ repository, subject: 'first', },);
+ ```
  */
 async function commitEmpty(
   {
@@ -149,22 +149,22 @@ async function commitEmpty(
 }
 
 /**
- * Two throwaway checkouts of one three-commit history.
+ Two throwaway checkouts of one three-commit history.
  */
 type ThrowawayHistory = Readonly<{
   /**
-   * Complete clone, which can answer every ancestry question.
+   Complete clone, which can answer every ancestry question.
    */
   full: string;
 
   /**
-   * `--depth 2` clone, which knows the second and third commits and has the
-   * first grafted away.
+   `--depth 2` clone, which knows the second and third commits and has the
+   first grafted away.
    */
   shallow: string;
 
   /**
-   * The three commits, oldest first.
+   The three commits, oldest first.
    */
   commits: readonly [
     string,
@@ -174,22 +174,22 @@ type ThrowawayHistory = Readonly<{
 }>;
 
 /**
- * Builds a three-commit history and a depth-2 clone of it, in temporary
- * directories.
- *
- * @returns Both checkouts and the commits they share
- *
- * @throws When git lists other than three commits, which means the fixture
- * itself is broken and no case below can mean anything
- *
- * @example
- * ```ts
- * const history = await throwawayHistory();
- * ```
+ Builds a three-commit history and a depth-2 clone of it, in temporary
+ directories.
+ 
+ @returns Both checkouts and the commits they share
+ 
+ @throws When git lists other than three commits, which means the fixture
+ itself is broken and no case below can mean anything
+ 
+ @example
+ ```ts
+ const history = await throwawayHistory();
+ ```
  */
 async function throwawayHistory(): Promise<ThrowawayHistory> {
   /**
-   * Complete repository, written from nothing.
+   Complete repository, written from nothing.
    */
   const full = await mkdtemp(join(
     tmpdir(),
@@ -217,7 +217,7 @@ async function throwawayHistory(): Promise<ThrowawayHistory> {
   },);
 
   /**
-   * The three commits, oldest first, as git lists them.
+   The three commits, oldest first, as git lists them.
    */
   const listed = (await git({
     repository: full,
@@ -240,7 +240,7 @@ async function throwawayHistory(): Promise<ThrowawayHistory> {
   }
 
   /**
-   * Shallow clone, which sees the last two commits only.
+   Shallow clone, which sees the last two commits only.
    */
   const shallow = await mkdtemp(join(
     tmpdir(),
@@ -269,16 +269,16 @@ async function throwawayHistory(): Promise<ThrowawayHistory> {
 }
 
 /**
- * Runs a call expected to refuse, returning what it said.
- *
- * @param act - call expected to reject
- *
- * @returns Refusal text, or an empty string where the call resolved
- *
- * @example
- * ```ts
- * const said = await refusalOf({ act: () => resolveCommit({ revision: 'nope', repository, },), },);
- * ```
+ Runs a call expected to refuse, returning what it said.
+ 
+ @param act - call expected to reject
+ 
+ @returns Refusal text, or an empty string where the call resolved
+ 
+ @example
+ ```ts
+ const said = await refusalOf({ act: () => resolveCommit({ revision: 'nope', repository, },), },);
+ ```
  */
 async function refusalOf(
   { act, }: { readonly act: () => Promise<unknown>; },
@@ -293,13 +293,13 @@ async function refusalOf(
 }
 
 /**
- * One history for every case, built once because each case reads it and none
- * writes to it.
+ One history for every case, built once because each case reads it and none
+ writes to it.
  */
 const history = await throwawayHistory();
 
 /**
- * The three commits, named for the cases.
+ The three commits, named for the cases.
  */
 const [
   first,
@@ -343,7 +343,7 @@ await describe({
         + 'resolution that failed rather than quietly filtering nothing',
       fn: async () => {
         /**
-         * What the refusal says.
+         What the refusal says.
          */
         const said = await refusalOf({
           act: () =>
@@ -407,7 +407,7 @@ await describe({
         + 'produced before the cut',
       fn: async () => {
         /**
-         * What the refusal says.
+         What the refusal says.
          */
         const said = await refusalOf({
           act: () =>
@@ -429,7 +429,7 @@ await describe({
         + 'not be silently narrowed',
       fn: async () => {
         /**
-         * What the refusal says.
+         What the refusal says.
          */
         const said = await refusalOf({
           act: () =>

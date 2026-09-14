@@ -22,18 +22,18 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // one however differently it is worded.
 
 /**
- * Cross-run key for one picture's paired reading.
- *
- * @param bytes - picture as read from disk
- *
- * @param readerModelIds - vision sub-roster asked about it, in roster order
- *
- * @returns Stable hash naming this reading across runs
- *
- * @example
- * ```ts
- * const key = imageReadingKey({ bytes, readerModelIds, },);
- * ```
+ Cross-run key for one picture's paired reading.
+ 
+ @param bytes - picture as read from disk
+ 
+ @param readerModelIds - vision sub-roster asked about it, in roster order
+ 
+ @returns Stable hash naming this reading across runs
+ 
+ @example
+ ```ts
+ const key = imageReadingKey({ bytes, readerModelIds, },);
+ ```
  */
 export function imageReadingKey(
   {
@@ -45,10 +45,10 @@ export function imageReadingKey(
   },
 ): string {
   /**
-   * Picture itself, as content a hash can take.
-   *
-   * BASE64 RATHER THAN A DECODE, since the bytes are not text and any decoding
-   * would map distinct pictures onto one replacement character.
+   Picture itself, as content a hash can take.
+   
+   BASE64 RATHER THAN A DECODE, since the bytes are not text and any decoding
+   would map distinct pictures onto one replacement character.
    */
   const picture = Buffer.from(bytes,)
     .toString('base64',);

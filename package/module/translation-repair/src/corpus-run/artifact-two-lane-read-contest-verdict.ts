@@ -13,16 +13,16 @@ import type { ArtifactContestVerdict, } from './artifact-two-lane-contest.ts';
 // with parser's re-derived verdict while keeping main contest reader linear.
 
 /**
- * Names keys a recorded verdict may carry for derived shape.
- *
- * @param derived - verdict raw ballots settle on
- *
- * @returns Allowed exact key names
- *
- * @example
- * ```ts
- * const keys = allowedVerdictKeys({ derived, });
- * ```
+ Names keys a recorded verdict may carry for derived shape.
+ 
+ @param derived - verdict raw ballots settle on
+ 
+ @returns Allowed exact key names
+ 
+ @example
+ ```ts
+ const keys = allowedVerdictKeys({ derived, });
+ ```
  */
 function allowedVerdictKeys(
   { derived, }: { readonly derived: ArtifactContestVerdict; },
@@ -43,16 +43,16 @@ function allowedVerdictKeys(
 }
 
 /**
- * Names derived verdict in one token.
- *
- * @param verdict - verdict to render
- *
- * @returns Kind carrying lane or archive outcome where present
- *
- * @example
- * ```ts
- * const token = renderContestVerdict({ verdict, });
- * ```
+ Names derived verdict in one token.
+ 
+ @param verdict - verdict to render
+ 
+ @returns Kind carrying lane or archive outcome where present
+ 
+ @example
+ ```ts
+ const token = renderContestVerdict({ verdict, });
+ ```
  */
 function renderContestVerdict(
   { verdict, }: { readonly verdict: ArtifactContestVerdict; },
@@ -65,20 +65,20 @@ function renderContestVerdict(
 }
 
 /**
- * Renders recorded verdict in same one-token form.
- *
- * @param recorded - verdict record artifact carries
- *
- * @param path - dotted verdict path
- *
- * @returns Recorded verdict token
- *
- * @throws ArtifactParseError when field names unknown outcome
- *
- * @example
- * ```ts
- * const token = renderRecordedVerdict({ recorded, path, });
- * ```
+ Renders recorded verdict in same one-token form.
+ 
+ @param recorded - verdict record artifact carries
+ 
+ @param path - dotted verdict path
+ 
+ @returns Recorded verdict token
+ 
+ @throws ArtifactParseError when field names unknown outcome
+ 
+ @example
+ ```ts
+ const token = renderRecordedVerdict({ recorded, path, });
+ ```
  */
 function renderRecordedVerdict(
   {
@@ -128,20 +128,20 @@ function renderRecordedVerdict(
 }
 
 /**
- * Refuses recorded verdict differing from raw-ballot derivation.
- *
- * @param value - recorded verdict value
- *
- * @param derived - verdict raw ballots and eligibility settle
- *
- * @param path - dotted verdict path
- *
- * @throws ArtifactParseError when shape or outcome differs
- *
- * @example
- * ```ts
- * assertContestVerdictMatches({ value, derived, path, });
- * ```
+ Refuses recorded verdict differing from raw-ballot derivation.
+ 
+ @param value - recorded verdict value
+ 
+ @param derived - verdict raw ballots and eligibility settle
+ 
+ @param path - dotted verdict path
+ 
+ @throws ArtifactParseError when shape or outcome differs
+ 
+ @example
+ ```ts
+ assertContestVerdictMatches({ value, derived, path, });
+ ```
  */
 export function assertContestVerdictMatches(
   {
@@ -155,7 +155,7 @@ export function assertContestVerdictMatches(
   },
 ): void {
   /**
-   * Recorded verdict before fields are read.
+   Recorded verdict before fields are read.
    */
   const recorded = requireRecord({
     value,
@@ -167,14 +167,14 @@ export function assertContestVerdictMatches(
     path,
   },);
   /**
-   * Verdict artifact claims.
+   Verdict artifact claims.
    */
   const claimed = renderRecordedVerdict({
     recorded,
     path,
   },);
   /**
-   * Verdict evidence settles.
+   Verdict evidence settles.
    */
   const settled = renderContestVerdict({ verdict: derived, },);
   if (claimed !== settled) {

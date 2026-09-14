@@ -1,35 +1,35 @@
 /**
- * Tests that the repair slice driver FORWARDS `#107`'s neighbouring window to
- * the sheets its stages send.
- *
- * WHY A SEPARATE FILE FROM `nearby-window-reaches-the-models.unit.test.ts`.
- * That one hands each builder a window directly and asserts the builder renders
- * it, which is the right test of a builder and says nothing about whether
- * anything ever hands one over. `repairChunk` builds the fragment those four
- * call sites spread, and its own forwarding is what this pins.
- *
- * WHAT WAS MEASURED. On 2026-08-25, inverting this driver's conditional spread
- * so the neighbouring ORIGINAL is forwarded only when it is ABSENT failed no
- * test in this package. Every builder case stayed green, because each is handed
- * its window by hand. A driver that dropped it would leave the critic reasoning
- * about a slice alone while the key that names its work claims a window: the
- * exact shape `#126` had, where the slice key mislabelled its window sides.
- *
- * THE CRITIC IS ENOUGH TO PIN IT. All four stages spread ONE fragment, built
- * once, which the module says is deliberate: a critic that can see next door
- * raises a relocation claim and a panel that cannot rejects it as unfounded. A
- * run whose critics report nothing settles right after that phase, so scripting
- * one stage exercises the forwarding without buying the other three.
- *
- * BOTH DIRECTIONS ARE PINNED, since a driver pasting the blocks unconditionally
- * would satisfy the first case alone.
- *
- * NO NETWORK. The client scripts every critic with an empty report and records
- * the sheet each was sent.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests that the repair slice driver FORWARDS `#107`'s neighbouring window to
+ the sheets its stages send.
+ 
+ WHY A SEPARATE FILE FROM `nearby-window-reaches-the-models.unit.test.ts`.
+ That one hands each builder a window directly and asserts the builder renders
+ it, which is the right test of a builder and says nothing about whether
+ anything ever hands one over. `repairChunk` builds the fragment those four
+ call sites spread, and its own forwarding is what this pins.
+ 
+ WHAT WAS MEASURED. On 2026-08-25, inverting this driver's conditional spread
+ so the neighbouring ORIGINAL is forwarded only when it is ABSENT failed no
+ test in this package. Every builder case stayed green, because each is handed
+ its window by hand. A driver that dropped it would leave the critic reasoning
+ about a slice alone while the key that names its work claims a window: the
+ exact shape `#126` had, where the slice key mislabelled its window sides.
+ 
+ THE CRITIC IS ENOUGH TO PIN IT. All four stages spread ONE fragment, built
+ once, which the module says is deliberate: a critic that can see next door
+ raises a relocation claim and a panel that cannot rejects it as unfounded. A
+ run whose critics report nothing settles right after that phase, so scripting
+ one stage exercises the forwarding without buying the other three.
+ 
+ BOTH DIRECTIONS ARE PINNED, since a driver pasting the blocks unconditionally
+ would satisfy the first case alone.
+ 
+ NO NETWORK. The client scripts every critic with an empty report and records
+ the sheet each was sent.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -48,47 +48,47 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the driver under test.
+ Logger for the driver under test.
  */
 const l = tagged({ tag: 'repair-chunk-window-threading-test', },);
 
 //region Fixtures
 
 /**
- * Invented original of the slice under review.
+ Invented original of the slice under review.
  */
 const SOURCE_TEXT = '小猫在窗台上打盹。\n';
 
 /**
- * Invented English already in the archive for it.
+ Invented English already in the archive for it.
  */
 const TARGET_TEXT = 'The kitten dozes on the windowsill.\n';
 
 /**
- * Marker no prompt constant and no other fixture carries, so a match in a sheet
- * can only have come from the neighbouring ORIGINAL.
+ Marker no prompt constant and no other fixture carries, so a match in a sheet
+ can only have come from the neighbouring ORIGINAL.
  */
 const SOURCE_MARK = 'ZQNEARSRC';
 
 /**
- * Marker for the neighbouring ARCHIVE ENGLISH, kept separate so a sheet that
- * carried one side only could not read as carrying both.
+ Marker for the neighbouring ARCHIVE ENGLISH, kept separate so a sheet that
+ carried one side only could not read as carrying both.
  */
 const INCUMBENT_MARK = 'ZQNEAREN';
 
 /**
- * Invented original of the passages either side.
+ Invented original of the passages either side.
  */
 const NEARBY_SOURCE = `白胡子数着外面的鸟 ${SOURCE_MARK}。`;
 
 /**
- * Invented archive English of those same passages.
+ Invented archive English of those same passages.
  */
 const NEARBY_INCUMBENT = `Whiskers counted the birds outside ${INCUMBENT_MARK}.`;
 
 /**
- * Roster with editors disjoint from checkers, which the driver asserts before
- * it buys anything.
+ Roster with editors disjoint from checkers, which the driver asserts before
+ it buys anything.
  */
 const MODELS: RepairModels = {
   criticModelIds: ['hf:zai-org/GLM-5.3-Flash',],
@@ -109,16 +109,16 @@ const MODELS: RepairModels = {
 };
 
 /**
- * Runs one slice and returns the sheet every critic was sent.
- *
- * @param beside - neighbouring texts to thread, empty for the control
- *
- * @returns User sheets of the critic exchanges, in order
- *
- * @example
- * ```ts
- * const sheets = await criticSheets({ beside: { neighbouringSourceText: NEARBY_SOURCE, }, },);
- * ```
+ Runs one slice and returns the sheet every critic was sent.
+ 
+ @param beside - neighbouring texts to thread, empty for the control
+ 
+ @returns User sheets of the critic exchanges, in order
+ 
+ @example
+ ```ts
+ const sheets = await criticSheets({ beside: { neighbouringSourceText: NEARBY_SOURCE, }, },);
+ ```
  */
 async function criticSheets(
   {
@@ -131,12 +131,12 @@ async function criticSheets(
   },
 ): Promise<readonly string[]> {
   /**
-   * User sheet of every critic exchange, in order.
+   User sheet of every critic exchange, in order.
    */
   const asked: string[] = [];
 
   /**
-   * Client answering every critic with a report naming nothing.
+   Client answering every critic with a report naming nothing.
    */
   const client: SyntheticClient = {
     chatText: async () => {
@@ -146,7 +146,7 @@ async function criticSheets(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Stage name from the structured-output constraint.
+       Stage name from the structured-output constraint.
        */
       const stage = request.responseFormat
         ?.json_schema
@@ -156,13 +156,13 @@ async function criticSheets(
         throw new Error(`this fixture settles after the critics and was asked ${stage}`,);
 
       /**
-       * User prompt of this exchange.
+       User prompt of this exchange.
        */
       const last = request.messages.at(-1,);
       asked.push((last === undefined) ? '' : messageText({ message: last, },),);
 
       /**
-       * Report naming nothing, which settles the slice unchanged.
+       Report naming nothing, which settles the slice unchanged.
        */
       const scripted: unknown = { issues: [], };
       if (!request.validate(scripted,))
@@ -205,7 +205,7 @@ await describe({
         + 'a relocation claim is the one that can see the passage next door',
       fn: async () => {
         /**
-         * Sheets the critics were sent with a window either side.
+         Sheets the critics were sent with a window either side.
          */
         const sheets = await criticSheets({
           beside: {
@@ -226,7 +226,7 @@ await describe({
         + 'case above legible: a driver pasting them unconditionally would satisfy it',
       fn: async () => {
         /**
-         * Sheets the critics were sent with no neighbours at all.
+         Sheets the critics were sent with no neighbours at all.
          */
         const sheets = await criticSheets({ beside: {}, },);
 

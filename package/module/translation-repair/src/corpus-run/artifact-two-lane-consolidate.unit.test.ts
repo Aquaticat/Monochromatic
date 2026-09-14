@@ -1,21 +1,21 @@
 /**
- * Tests for the record one consolidated slice leaves behind.
- *
- * WHAT THESE PIN is the field that decides what reaches the reader. The stage
- * can settle six different ways and exactly one of them produces wording an
- * assembly should write; the other five leave the slice with whatever the lane
- * contest put there. A record that carried a bare text field per slice would
- * make those indistinguishable, and one of the five, `no-standing-text`,
- * carries the EMPTY STRING, so an assembly reading it naively would delete
- * every slice whose contest named neither lane.
- *
- * The named-absence half is therefore the half with teeth: these assert that a
- * settlement which changes nothing offers NO text to write, rather than
- * offering text that happens to match.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the record one consolidated slice leaves behind.
+ 
+ WHAT THESE PIN is the field that decides what reaches the reader. The stage
+ can settle six different ways and exactly one of them produces wording an
+ assembly should write; the other five leave the slice with whatever the lane
+ contest put there. A record that carried a bare text field per slice would
+ make those indistinguishable, and one of the five, `no-standing-text`,
+ carries the EMPTY STRING, so an assembly reading it naively would delete
+ every slice whose contest named neither lane.
+ 
+ The named-absence half is therefore the half with teeth: these assert that a
+ settlement which changes nothing offers NO text to write, rather than
+ offering text that happens to match.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -33,22 +33,22 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Builds a settlement that left the stage the way a case needs.
- *
- * ONLY THE FIELDS THE RECORD READS are real here. The floor and the judged
- * round are whole objects in production and neither is projected into the
- * record, so building them would assert nothing this file is about.
- *
- * @param terminal - how the slice left the stage
- *
- * @param text - wording the settlement carries, whatever the terminal
- *
- * @returns Settlement shaped as the stage returns one
- *
- * @example
- * ```ts
- * const settlement = settledAs({ terminal: 'consolidated', text: 'The cat naps.', },);
- * ```
+ Builds a settlement that left the stage the way a case needs.
+ 
+ ONLY THE FIELDS THE RECORD READS are real here. The floor and the judged
+ round are whole objects in production and neither is projected into the
+ record, so building them would assert nothing this file is about.
+ 
+ @param terminal - how the slice left the stage
+ 
+ @param text - wording the settlement carries, whatever the terminal
+ 
+ @returns Settlement shaped as the stage returns one
+ 
+ @example
+ ```ts
+ const settlement = settledAs({ terminal: 'consolidated', text: 'The cat naps.', },);
+ ```
  */
 function settledAs(
   {
@@ -74,12 +74,12 @@ function settledAs(
 }
 
 /**
- * One passage as a consolidation that won would carry it.
+ One passage as a consolidation that won would carry it.
  */
 const CONSOLIDATED_TEXT = 'The cat naps in the window.\nShe wakes at four.';
 
 /**
- * Wording already in place, which several terminals hand back unchanged.
+ Wording already in place, which several terminals hand back unchanged.
  */
 const STANDING_TEXT = 'A cat sleeps by the window, and wakes in the afternoon.';
 
@@ -127,7 +127,7 @@ await describe({
         + 'record that offered it back would report a decision to change nothing as a change',
       fn: async () => {
         /**
-         * Every way the stage can end without producing a replacement.
+         Every way the stage can end without producing a replacement.
          */
         const keptStanding: readonly ConsolidationTerminal[] = [
           'incumbent-only',

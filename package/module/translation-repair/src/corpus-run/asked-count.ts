@@ -22,35 +22,35 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // nothing, not running it is the way to say so.
 
 /**
- * Position a bare count is written at, after the runtime and the script.
+ Position a bare count is written at, after the runtime and the script.
  */
 const COUNT_ARGV_INDEX = 2;
 
 /**
- * Smallest count worth running, since a bench over none measures nothing.
+ Smallest count worth running, since a bench over none measures nothing.
  */
 const AT_LEAST = 1;
 
 /**
- * Reads how many units a run was asked for.
- *
- * @param argv - process arguments, passed rather than read so this is testable
- * without a subprocess
- *
- * @param fallback - count to run when the person named none
- *
- * @param asks - what this run calls the things it counts, for the refusal
- * sentence; a person reading `slices` should not have to guess
- *
- * @returns Count asked for, or the fallback when none was named
- *
- * @throws StatedRefusalError when a count was named that is not a whole number
- * of at least one
- *
- * @example
- * ```ts
- * const wanted = readAskedCount({ argv: process.argv, fallback: 6, asks: 'slices', },);
- * ```
+ Reads how many units a run was asked for.
+ 
+ @param argv - process arguments, passed rather than read so this is testable
+ without a subprocess
+ 
+ @param fallback - count to run when the person named none
+ 
+ @param asks - what this run calls the things it counts, for the refusal
+ sentence; a person reading `slices` should not have to guess
+ 
+ @returns Count asked for, or the fallback when none was named
+ 
+ @throws StatedRefusalError when a count was named that is not a whole number
+ of at least one
+ 
+ @example
+ ```ts
+ const wanted = readAskedCount({ argv: process.argv, fallback: 6, asks: 'slices', },);
+ ```
  */
 export function readAskedCount(
   {
@@ -64,14 +64,14 @@ export function readAskedCount(
   },
 ): number {
   /**
-   * Count as written, empty when the person named none.
+   Count as written, empty when the person named none.
    */
   const written = argv[COUNT_ARGV_INDEX] ?? '';
   if (written === '')
     return fallback;
 
   /**
-   * Count as a whole number, which a mistyped one is not.
+   Count as a whole number, which a mistyped one is not.
    */
   const asked = Math.trunc(Number(written,),);
 

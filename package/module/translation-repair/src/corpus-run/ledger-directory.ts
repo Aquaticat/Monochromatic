@@ -27,60 +27,60 @@ import {
 // also make the report's completeness depend on directory order.
 
 /**
- * Code a filesystem failure carries when the path simply is not there, which
- * is the one failure a run with no ledger is expected to produce.
+ Code a filesystem failure carries when the path simply is not there, which
+ is the one failure a run with no ledger is expected to produce.
  */
 const DIRECTORY_ABSENT = 'ENOENT';
 
 /**
- * One ledger file that could not be read, said without being quoted.
+ One ledger file that could not be read, said without being quoted.
  */
 export type RefusedFile = {
   /**
-   * File that refused, by name.
+   File that refused, by name.
    */
   readonly file: string;
 
   /**
-   * What to tell a reader, carrying no text from the file itself.
+   What to tell a reader, carrying no text from the file itself.
    */
   readonly says: string;
 };
 
 /**
- * Everything a ledger directory yielded, beside everything it would not.
+ Everything a ledger directory yielded, beside everything it would not.
  */
 export type LedgerReading = {
   /**
-   * Contests that read cleanly, in judging order.
+   Contests that read cleanly, in judging order.
    */
   readonly rounds: readonly ReadRound[];
 
   /**
-   * Files that refused, which are contests the run recorded and no figure
-   * computed from this reading can count.
+   Files that refused, which are contests the run recorded and no figure
+   computed from this reading can count.
    */
   readonly refused: readonly RefusedFile[];
 };
 
 /**
- * Says why one file refused, without quoting it.
- *
- * PASSES OUR OWN CLASSES' MESSAGES THROUGH, AND NO OTHER'S. `RunJsonUnreadableError`
- * and `LedgerShapeError` are each built to name a file and a reason rather than
- * echo a value, and each records that in its own note. Every other class carries
- * a message nobody here wrote, so only its name is reported.
- *
- * @param error - caught value, of unknown type by construction
- *
- * @param file - file being read when it was thrown
- *
- * @returns Refusal safe to print beside a run directory
- *
- * @example
- * ```ts
- * const refusal = refusalOf({ error, file: '000001.json', },);
- * ```
+ Says why one file refused, without quoting it.
+ 
+ PASSES OUR OWN CLASSES' MESSAGES THROUGH, AND NO OTHER'S. `RunJsonUnreadableError`
+ and `LedgerShapeError` are each built to name a file and a reason rather than
+ echo a value, and each records that in its own note. Every other class carries
+ a message nobody here wrote, so only its name is reported.
+ 
+ @param error - caught value, of unknown type by construction
+ 
+ @param file - file being read when it was thrown
+ 
+ @returns Refusal safe to print beside a run directory
+ 
+ @example
+ ```ts
+ const refusal = refusalOf({ error, file: '000001.json', },);
+ ```
  */
 export function refusalOf(
   {
@@ -98,18 +98,18 @@ export function refusalOf(
 }
 
 /**
- * Lists a ledger directory, reporting an absent one as empty.
- *
- * @param dir - ledger directory to list
- *
- * @returns File names, empty where the directory is not there
- *
- * @throws {@link Error} where the directory exists and could not be listed
- *
- * @example
- * ```ts
- * const names = await namesUnder({ dir, },);
- * ```
+ Lists a ledger directory, reporting an absent one as empty.
+ 
+ @param dir - ledger directory to list
+ 
+ @returns File names, empty where the directory is not there
+ 
+ @throws {@link Error} where the directory exists and could not be listed
+ 
+ @example
+ ```ts
+ const names = await namesUnder({ dir, },);
+ ```
  */
 async function namesUnder(
   { dir, }: { readonly dir: string; },
@@ -135,7 +135,7 @@ async function namesUnder(
 }
 
 /**
- * One file's outcome: a contest, or the reason it could not be one.
+ One file's outcome: a contest, or the reason it could not be one.
  */
 type FileOutcome =
   | {
@@ -148,34 +148,34 @@ type FileOutcome =
   };
 
 /**
- * Reads every contest a ledger directory holds, keeping what refused.
- *
- * @param dir - ledger directory to read
- *
- * @returns Contests in judging order beside the files that would not read
- *
- * @throws {@link Error} where the directory exists and could not be listed
- *
- * @example
- * ```ts
- * const reading = await readLedgerDirectory({ dir, },);
- * ```
+ Reads every contest a ledger directory holds, keeping what refused.
+ 
+ @param dir - ledger directory to read
+ 
+ @returns Contests in judging order beside the files that would not read
+ 
+ @throws {@link Error} where the directory exists and could not be listed
+ 
+ @example
+ ```ts
+ const reading = await readLedgerDirectory({ dir, },);
+ ```
  */
 export async function readLedgerDirectory(
   { dir, }: { readonly dir: string; },
 ): Promise<LedgerReading> {
   /**
-   * Files the recorder wrote, empty where the directory is not there.
-   *
-   * AN ABSENT DIRECTORY IS AN ANSWER, not a fault: a run that wrote no ledger
-   * is the ordinary case for everything launched before it existed, and the
-   * caller reports that rather than raising.
+   Files the recorder wrote, empty where the directory is not there.
+   
+   AN ABSENT DIRECTORY IS AN ANSWER, not a fault: a run that wrote no ledger
+   is the ordinary case for everything launched before it existed, and the
+   caller reports that rather than raising.
    */
   const names = await namesUnder({ dir, },);
 
   /**
-   * Names in the order the recorder stamped them, which is contest order:
-   * every file is named by a zero-padded ordinal.
+   Names in the order the recorder stamped them, which is contest order:
+   every file is named by a zero-padded ordinal.
    */
   const inOrder = names.toSorted(function byName(
     left,
@@ -185,7 +185,7 @@ export async function readLedgerDirectory(
   },);
 
   /**
-   * What each file turned out to be.
+   What each file turned out to be.
    */
   const outcomes = await Promise.all(inOrder.map(async function one(name,): Promise<FileOutcome> {
     try {

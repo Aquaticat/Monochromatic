@@ -1,17 +1,17 @@
 /**
- * Tests for the document-level destination check.
- *
- * WHAT THESE PIN: the bare-run scanner stops where prose and Markdown stop a
- * link and sheds sentence punctuation; the tree reader finds link, image and
- * definition destinations under the pipeline's own parse and names a downgrade; the union
- * dedupes across both readers with a trailing slash treated as no difference;
- * and the check names exactly the source destinations the page lacks while
- * ignoring destinations the page adds.
- *
- * Fixtures are invented addresses and two sentences about a bookshop cat, so
- * there is no corpus text here.
- *
- * @module
+ Tests for the document-level destination check.
+ 
+ WHAT THESE PIN: the bare-run scanner stops where prose and Markdown stop a
+ link and sheds sentence punctuation; the tree reader finds link, image and
+ definition destinations under the pipeline's own parse and names a downgrade; the union
+ dedupes across both readers with a trailing slash treated as no difference;
+ and the check names exactly the source destinations the page lacks while
+ ignoring destinations the page adds.
+ 
+ Fixtures are invented addresses and two sentences about a bookshop cat, so
+ there is no corpus text here.
+ 
+ @module
  */
 
 import {
@@ -29,22 +29,22 @@ import {
 //region Fixtures
 
 /**
- * Address the source links to.
+ Address the source links to.
  */
 const HOME = 'https://example.org/tabby';
 
 /**
- * Second address, so order and counts can be checked.
+ Second address, so order and counts can be checked.
  */
 const ALBUM = 'https://example.org/album';
 
 /**
- * Picture address, so the image reader is exercised.
+ Picture address, so the image reader is exercised.
  */
 const PICTURE = 'https://example.org/tabby.jpg';
 
 /**
- * How an archive rendered the home address another way.
+ How an archive rendered the home address another way.
  */
 const MOVED = 'https://example.net/tabby';
 
@@ -212,7 +212,7 @@ await describe({
       name: 'ACCEPTS the archive rendering of a source destination and names it, REFUSES neither',
       fn: async () => {
         /**
-         * Source and archive, the archive linking the same reference elsewhere.
+         Source and archive, the archive linking the same reference elsewhere.
          */
         const sides = {
           sourceText: `她的主页：${HOME}。`,
@@ -220,7 +220,7 @@ await describe({
         };
 
         /**
-         * Page keeping the archive's rendering.
+         Page keeping the archive's rendering.
          */
         const kept = droppedDestinations({
           ...sides,
@@ -231,7 +231,7 @@ await describe({
         expect(kept.findings,).toStrictEqual(['destinations-archive-rendering',],);
 
         /**
-         * Page carrying neither rendering.
+         Page carrying neither rendering.
          */
         const lost = droppedDestinations({
           ...sides,

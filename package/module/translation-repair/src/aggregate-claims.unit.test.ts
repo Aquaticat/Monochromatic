@@ -1,8 +1,8 @@
 /**
- * Tests for cross-model claim aggregation into merge-proposal clusters.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for cross-model claim aggregation into merge-proposal clusters.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -21,7 +21,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Invented target-side quoted span at chosen offsets.
+ Invented target-side quoted span at chosen offsets.
  */
 function targetSpan(
   {
@@ -45,7 +45,7 @@ function targetSpan(
 }
 
 /**
- * Invented target-side zero-width insertion anchor at one offset.
+ Invented target-side zero-width insertion anchor at one offset.
  */
 function insertionAnchor(
   { offset, }: { readonly offset: number; },
@@ -61,7 +61,7 @@ function insertionAnchor(
 }
 
 /**
- * Invented claim around one span list.
+ Invented claim around one span list.
  */
 function claimWith(
   {

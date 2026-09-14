@@ -21,67 +21,67 @@ import {
 // index scan and two splits express directly, in one linear pass over each line.
 
 /**
- * One slice's measured cost.
- *
- * @example
- * ```ts
- * const row: SliceCostRow = { lane: 'repair', sliceIndex: 3, sourceChars: 812, elapsedMs: 45210, };
- * ```
+ One slice's measured cost.
+ 
+ @example
+ ```ts
+ const row: SliceCostRow = { lane: 'repair', sliceIndex: 3, sourceChars: 812, elapsedMs: 45210, };
+ ```
  */
 export type SliceCostRow = {
   /**
-   * Lane that paid.
+   Lane that paid.
    */
   readonly lane: SliceCostLane;
 
   /**
-   * Slice this measures.
+   Slice this measures.
    */
   readonly sliceIndex: number;
 
   /**
-   * Size of what was translated.
+   Size of what was translated.
    */
   readonly sourceChars: number;
 
   /**
-   * Wall time the slice took.
+   Wall time the slice took.
    */
   readonly elapsedMs: number;
 
   /**
-   * How the lane left this slice, which says whether its time prices work.
+   How the lane left this slice, which says whether its time prices work.
    */
   readonly exit: SliceCostExit;
 };
 
 /**
- * Everything one log said about slice cost, refusals kept beside rows.
- *
- * @example
- * ```ts
- * const reading: SliceCostReading = readSliceCosts({ log, },);
- * ```
+ Everything one log said about slice cost, refusals kept beside rows.
+ 
+ @example
+ ```ts
+ const reading: SliceCostReading = readSliceCosts({ log, },);
+ ```
  */
 export type SliceCostReading = {
   /**
-   * Lines that parsed, in the order the log carried them.
+   Lines that parsed, in the order the log carried them.
    */
   readonly rows: readonly SliceCostRow[];
 
   /**
-   * Why a line carrying the marker produced no row.
+   Why a line carrying the marker produced no row.
    */
   readonly dropped: readonly string[];
 };
 
 /**
- * Fields a cost line must carry for a row to be built from it.
- *
- * `exit` is REQUIRED rather than optional, though it was added after the rest.
- * No production log carries the older shape: the telemetry landed after the only
- * pass that has run, so there are no legacy lines to stay compatible with, and
- * an optional field would mean inventing an exit for a line that named none.
+ Fields a cost line must carry for a row to be built from it.
+ 
+ `exit` is REQUIRED rather than optional, though it was added after the rest.
+ No production log carries the older shape: the telemetry landed after the only
+ pass that has run, so there are no legacy lines to stay compatible with, and
+ an optional field would mean inventing an exit for a line that named none.
  */
 const REQUIRED_FIELDS = [
   'lane',
@@ -92,10 +92,10 @@ const REQUIRED_FIELDS = [
 ] as const;
 
 /**
- * Values each enumerated field may carry.
- *
- * Read from the writer's own lists, so a lane or exit added there is accepted
- * here without a second edit.
+ Values each enumerated field may carry.
+ 
+ Read from the writer's own lists, so a lane or exit added there is accepted
+ here without a second edit.
  */
 const ENUMERATED_FIELDS: ReadonlyMap<string, readonly string[]> = new Map<string, readonly string[]>([
   [
@@ -109,35 +109,35 @@ const ENUMERATED_FIELDS: ReadonlyMap<string, readonly string[]> = new Map<string
 ],);
 
 /**
- * Splits one marker-bearing line into its `key=value` pairs.
- *
- * @param line - whole log line, including whatever the logger prefixed
- *
- * @returns Pairs found after the marker, later duplicates overwriting earlier
- *
- * @example
- * ```ts
- * const fields = fieldsOf({ line, },);
- * ```
+ Splits one marker-bearing line into its `key=value` pairs.
+ 
+ @param line - whole log line, including whatever the logger prefixed
+ 
+ @returns Pairs found after the marker, later duplicates overwriting earlier
+ 
+ @example
+ ```ts
+ const fields = fieldsOf({ line, },);
+ ```
  */
 function fieldsOf({ line, }: { readonly line: string; },): ReadonlyMap<string, string> {
   /**
-   * Where the cost report starts, past anything the logger put in front.
+   Where the cost report starts, past anything the logger put in front.
    */
   const start = line.indexOf(SLICE_COST_MARKER,);
 
   /**
-   * Report body, with the marker itself dropped.
+   Report body, with the marker itself dropped.
    */
   const body = line.slice(start + SLICE_COST_MARKER.length,);
 
   /**
-   * Pairs read so far.
+   Pairs read so far.
    */
   const fields = new Map<string, string>();
   for (const token of body.split(' ',)) {
     /**
-     * Where this token separates its name from its value.
+     Where this token separates its name from its value.
      */
     const split = token.indexOf('=',);
     if (split <= 0)
@@ -156,49 +156,49 @@ function fieldsOf({ line, }: { readonly line: string; },): ReadonlyMap<string, s
 }
 
 /**
- * Whether a field's text is a whole number, and what it is when so.
- *
- * DISCRIMINATED rather than a nullish union, because absence and zero are both
- * ordinary answers here: a slice can genuinely cost 0 ms, and a sentinel would
- * make that indistinguishable from a field the log never carried.
- *
- * @example
- * ```ts
- * const read: WholeRead = wholeNumber({ raw, },);
- * ```
+ Whether a field's text is a whole number, and what it is when so.
+ 
+ DISCRIMINATED rather than a nullish union, because absence and zero are both
+ ordinary answers here: a slice can genuinely cost 0 ms, and a sentinel would
+ make that indistinguishable from a field the log never carried.
+ 
+ @example
+ ```ts
+ const read: WholeRead = wholeNumber({ raw, },);
+ ```
  */
 type WholeRead = {
   /**
-   * Text names a whole number.
+   Text names a whole number.
    */
   readonly kind: 'whole';
 
   /**
-   * Number it names.
+   Number it names.
    */
   readonly value: number;
 } | {
   /**
-   * Text names something else.
+   Text names something else.
    */
   readonly kind: 'not-whole';
 };
 
 /**
- * Reads one whole number out of a field's text.
- *
- * @param raw - field value as the log carried it
- *
- * @returns Whole number, or a refusal when the text names something else
- *
- * @example
- * ```ts
- * const ms = wholeNumber({ raw, },);
- * ```
+ Reads one whole number out of a field's text.
+ 
+ @param raw - field value as the log carried it
+ 
+ @returns Whole number, or a refusal when the text names something else
+ 
+ @example
+ ```ts
+ const ms = wholeNumber({ raw, },);
+ ```
  */
 function wholeNumber({ raw, }: { readonly raw: string; },): WholeRead {
   /**
-   * Value read as a number, which is `NaN` for anything else.
+   Value read as a number, which is `NaN` for anything else.
    */
   const value = Number(raw,);
 
@@ -211,21 +211,21 @@ function wholeNumber({ raw, }: { readonly raw: string; },): WholeRead {
 }
 
 /**
- * Reads a field the caller has already proven is a whole number.
- *
- * @param fields - pairs read off one line
- *
- * @param name - field to read
- *
- * @returns Number it carries
- *
- * @throws {@link Error} when called before validation, which is a programming
- * error rather than a malformed log
- *
- * @example
- * ```ts
- * const ms = provenWhole({ fields, name: 'ms', },);
- * ```
+ Reads a field the caller has already proven is a whole number.
+ 
+ @param fields - pairs read off one line
+ 
+ @param name - field to read
+ 
+ @returns Number it carries
+ 
+ @throws {@link Error} when called before validation, which is a programming
+ error rather than a malformed log
+ 
+ @example
+ ```ts
+ const ms = provenWhole({ fields, name: 'ms', },);
+ ```
  */
 function provenWhole(
   {
@@ -237,7 +237,7 @@ function provenWhole(
   },
 ): number {
   /**
-   * What this field carries, which validation proved is a whole number.
+   What this field carries, which validation proved is a whole number.
    */
   const read = wholeNumber({ raw: nonNullishOrThrow(fields.get(name,),), },);
   if (read.kind !== 'whole')
@@ -247,24 +247,24 @@ function provenWhole(
 }
 
 /**
- * Reads a field the caller has already proven carries one of a fixed set of
- * values, narrowed to that set.
- *
- * @param fields - pairs read off one line
- *
- * @param name - field to read
- *
- * @param allowed - values validation checked it against
- *
- * @returns Value it carries, as a member of that set
- *
- * @throws {@link Error} when called before validation, which is a programming
- * error rather than a malformed log
- *
- * @example
- * ```ts
- * const lane = provenMember({ fields, name: 'lane', allowed: SLICE_COST_LANES, },);
- * ```
+ Reads a field the caller has already proven carries one of a fixed set of
+ values, narrowed to that set.
+ 
+ @param fields - pairs read off one line
+ 
+ @param name - field to read
+ 
+ @param allowed - values validation checked it against
+ 
+ @returns Value it carries, as a member of that set
+ 
+ @throws {@link Error} when called before validation, which is a programming
+ error rather than a malformed log
+ 
+ @example
+ ```ts
+ const lane = provenMember({ fields, name: 'lane', allowed: SLICE_COST_LANES, },);
+ ```
  */
 function provenMember<const MemberT extends string,>(
   {
@@ -278,12 +278,12 @@ function provenMember<const MemberT extends string,>(
   },
 ): MemberT {
   /**
-   * What this field carries, as text.
+   What this field carries, as text.
    */
   const raw = nonNullishOrThrow(fields.get(name,),);
 
   /**
-   * Member matching it, which validation proved exists.
+   Member matching it, which validation proved exists.
    */
   const found = allowed.find(function matches(member,): boolean {
     return member === raw;
@@ -295,57 +295,57 @@ function provenMember<const MemberT extends string,>(
 }
 
 /**
- * What one marker-bearing line yielded: a row, or the reason it yielded none.
- *
- * @example
- * ```ts
- * const read: LineReading = readLine({ fields, },);
- * ```
+ What one marker-bearing line yielded: a row, or the reason it yielded none.
+ 
+ @example
+ ```ts
+ const read: LineReading = readLine({ fields, },);
+ ```
  */
 type LineReading = {
   /**
-   * Line parsed.
+   Line parsed.
    */
   readonly kind: 'row';
 
   /**
-   * What it said.
+   What it said.
    */
   readonly row: SliceCostRow;
 } | {
   /**
-   * Line carried the marker and no usable measurement.
+   Line carried the marker and no usable measurement.
    */
   readonly kind: 'dropped';
 
   /**
-   * Which fields failed, and how.
+   Which fields failed, and how.
    */
   readonly reason: string;
 };
 
 /**
- * Turns one line's fields into a row, or says why they are not one.
- *
- * VALIDATES AND BUILDS TOGETHER, so no field is checked in one place and read in
- * another. Splitting them would leave the reader holding values the type system
- * cannot see were checked, and the usual repair for that is a default, which
- * invents a measurement nothing measured.
- *
- * @param fields - pairs read off one line
- *
- * @returns Row, or the named refusal
- *
- * @example
- * ```ts
- * const read = readLine({ fields, },);
- * ```
+ Turns one line's fields into a row, or says why they are not one.
+ 
+ VALIDATES AND BUILDS TOGETHER, so no field is checked in one place and read in
+ another. Splitting them would leave the reader holding values the type system
+ cannot see were checked, and the usual repair for that is a default, which
+ invents a measurement nothing measured.
+ 
+ @param fields - pairs read off one line
+ 
+ @returns Row, or the named refusal
+ 
+ @example
+ ```ts
+ const read = readLine({ fields, },);
+ ```
  */
 function readLine(
   { fields, }: { readonly fields: ReadonlyMap<string, string>; },
 ): LineReading {
   /**
-   * Names that failed, collected in declared order.
+   Names that failed, collected in declared order.
    */
   const failed: string[] = [];
   for (const name of REQUIRED_FIELDS) {
@@ -355,12 +355,12 @@ function readLine(
     }
 
     /**
-     * Value the line carried for it.
+     Value the line carried for it.
      */
     const raw = nonNullishOrThrow(fields.get(name,),);
 
     /**
-     * Values this field may carry, absent when it carries a number instead.
+     Values this field may carry, absent when it carries a number instead.
      */
     const allowed = ENUMERATED_FIELDS.get(name,);
     if (allowed !== undefined) {
@@ -371,7 +371,7 @@ function readLine(
     }
 
     /**
-     * Whether this field's text names a whole number.
+     Whether this field's text names a whole number.
      */
     const read = wholeNumber({ raw, },);
     if (read.kind !== 'whole')
@@ -415,26 +415,26 @@ function readLine(
 }
 
 /**
- * Reads every slice cost a log reported.
- *
- * @param log - whole log text, of any length, including lines about other things
- *
- * @returns Rows in log order, beside a named refusal for every marker-bearing
- * line that produced none
- *
- * @example
- * ```ts
- * const { rows, dropped, } = readSliceCosts({ log: await readFile(path, 'utf8',), },);
- * ```
+ Reads every slice cost a log reported.
+ 
+ @param log - whole log text, of any length, including lines about other things
+ 
+ @returns Rows in log order, beside a named refusal for every marker-bearing
+ line that produced none
+ 
+ @example
+ ```ts
+ const { rows, dropped, } = readSliceCosts({ log: await readFile(path, 'utf8',), },);
+ ```
  */
 export function readSliceCosts({ log, }: { readonly log: string; },): SliceCostReading {
   /**
-   * Rows built so far.
+   Rows built so far.
    */
   const rows: SliceCostRow[] = [];
 
   /**
-   * Refusals collected so far.
+   Refusals collected so far.
    */
   const dropped: string[] = [];
   for (const line of log.split('\n',)) {
@@ -442,7 +442,7 @@ export function readSliceCosts({ log, }: { readonly log: string; },): SliceCostR
       continue;
 
     /**
-     * What this line yielded.
+     What this line yielded.
      */
     const read = readLine({ fields: fieldsOf({ line, },), },);
     if (read.kind === 'dropped') {

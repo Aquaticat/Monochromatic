@@ -1,12 +1,12 @@
 /**
- * Tests for the distinct replacements offered for one envelope.
- *
- * Provenance is the point: a duplicate proposal merges its author into the
- * survivor rather than being dropped, so a judge that wrote the words is
- * discounted for them however many others wrote the same. Fixtures are
- * cat-themed invention.
- *
- * @module
+ Tests for the distinct replacements offered for one envelope.
+ 
+ Provenance is the point: a duplicate proposal merges its author into the
+ survivor rather than being dropped, so a judge that wrote the words is
+ discounted for them however many others wrote the same. Fixtures are
+ cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -25,12 +25,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Text the envelope covers.
+ Text the envelope covers.
  */
 const BASE_TEXT = 'The cat is doing the sleeping on the windowsill.';
 
 /**
- * Envelope under decision.
+ Envelope under decision.
  */
 const ENVELOPE: EditableEnvelope = {
   envelopeId: 'envelope/cat',
@@ -42,18 +42,18 @@ const ENVELOPE: EditableEnvelope = {
 };
 
 /**
- * Editor outcome proposing one replacement for the envelope, or nothing.
- *
- * @param modelId - editor
- *
- * @param newText - its replacement, absent when it left the envelope alone
- *
- * @returns Candidate as the stage records it
- *
- * @example
- * ```ts
- * const candidate = proposing({ modelId: 'hf:zai-org/GLM-5.3-Flash', newText: 'The cat sleeps.', },);
- * ```
+ Editor outcome proposing one replacement for the envelope, or nothing.
+ 
+ @param modelId - editor
+ 
+ @param newText - its replacement, absent when it left the envelope alone
+ 
+ @returns Candidate as the stage records it
+ 
+ @example
+ ```ts
+ const candidate = proposing({ modelId: 'hf:zai-org/GLM-5.3-Flash', newText: 'The cat sleeps.', },);
+ ```
  */
 function proposing(
   {
@@ -83,16 +83,16 @@ function proposing(
 }
 
 /**
- * Every model a producer credits.
- *
- * @param producer - who a candidate is credited to
- *
- * @returns Model ids, in the producer's own order
- *
- * @example
- * ```ts
- * const models = creditedTo({ producer, },);
- * ```
+ Every model a producer credits.
+ 
+ @param producer - who a candidate is credited to
+ 
+ @returns Model ids, in the producer's own order
+ 
+ @example
+ ```ts
+ const models = creditedTo({ producer, },);
+ ```
  */
 function creditedTo({ producer, }: { readonly producer: CandidateProducer; },): readonly string[] {
   if (producer.kind === 'model')

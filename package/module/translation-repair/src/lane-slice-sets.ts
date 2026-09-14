@@ -22,64 +22,64 @@ import {
 // exemption list becomes a way around the coverage rule.
 
 /**
- * @internal
- *
- * One list of slices a lane names, beside what makes the list legal.
- *
- * @example
- * ```ts
- * const set: NamedSliceSet = {
- *   label: 'unfilled',
- *   indices: [3,],
- *   incumbent: 'absent',
- * };
- * ```
+ @internal
+ 
+ One list of slices a lane names, beside what makes the list legal.
+ 
+ @example
+ ```ts
+ const set: NamedSliceSet = {
+   label: 'unfilled',
+   indices: [3,],
+   incumbent: 'absent',
+ };
+ ```
  */
 export type NamedSliceSet = {
   /**
-   * What the lane calls these slices, which every message repeats.
+   What the lane calls these slices, which every message repeats.
    */
   readonly label: NamedSliceSetLabel;
 
   /**
-   * Slices named, by global index.
+   Slices named, by global index.
    */
   readonly indices: readonly number[];
 
   /**
-   * Which side of the archive this list is legal at: `absent` for lists about
-   * passages the archive never translated, `present` for lists about wording it
-   * holds.
+   Which side of the archive this list is legal at: `absent` for lists about
+   passages the archive never translated, `present` for lists about wording it
+   holds.
    */
   readonly incumbent: 'absent' | 'present';
 
 };
 
 /**
- * Refuses a list that repeats a slice, and turns it into a set.
- *
- * @param set - list being checked, for its label and indices
- *
- * @returns Distinct indices it names
- *
- * @throws {@link LaneSliceCoverageError} when an index appears twice, since the
- * set would still be the right shape and one slice would be named once
- *
- * @example
- * ```ts
- * const unfilled = distinctIndices({ set, },);
- * ```
+ Refuses a list that repeats a slice, and turns it into a set.
+ 
+ @param set - list being checked, for its label and indices
+ 
+ @returns Distinct indices it names
+ 
+ @throws {@link LaneSliceCoverageError} when an index appears twice, since the
+ set would still be the right shape and one slice would be named once
+ 
+ @example
+ ```ts
+ const unfilled = distinctIndices({ set, },);
+ ```
  */
 function distinctIndices(
   { set, }: { readonly set: NamedSliceSet; },
 ): ReadonlySet<number> {
   /**
-   * Indices this list names, with any repeat collapsed.
+   Indices this list names, with any repeat collapsed.
    */
   const distinct = new Set(set.indices,);
 
   /**
-   * How many the list claims, before the repeats were collapsed.
+   How many the list claims, before the repeats were collapsed.
    */
   const claimed = set.indices
     .length;
@@ -97,24 +97,24 @@ function distinctIndices(
 }
 
 /**
- * Refuses a named slice the preparation never produced, one already decided, or
- * one whose archive state contradicts what the list means.
- *
- * @param set - list being checked
- *
- * @param indices - its indices, already proven distinct
- *
- * @param slices - prepared pairs, which answer both membership and archive
- * state
- *
- * @param decidedIndices - slices the lane also reported a wording for
- *
- * @throws {@link LaneSliceCoverageError} on any of the three
- *
- * @example
- * ```ts
- * assertNamesLegalSlices({ set, indices, slices, decidedIndices, },);
- * ```
+ Refuses a named slice the preparation never produced, one already decided, or
+ one whose archive state contradicts what the list means.
+ 
+ @param set - list being checked
+ 
+ @param indices - its indices, already proven distinct
+ 
+ @param slices - prepared pairs, which answer both membership and archive
+ state
+ 
+ @param decidedIndices - slices the lane also reported a wording for
+ 
+ @throws {@link LaneSliceCoverageError} on any of the three
+ 
+ @example
+ ```ts
+ assertNamesLegalSlices({ set, indices, slices, decidedIndices, },);
+ ```
  */
 function assertNamesLegalSlices(
   {
@@ -131,8 +131,8 @@ function assertNamesLegalSlices(
 ): void {
   for (const sliceIndex of indices) {
     /**
-     * Pair this index names, absent when the two were built from different
-     * preparations.
+     Pair this index names, absent when the two were built from different
+     preparations.
      */
     const named = slices.find(function isNamed(slice,): boolean {
       return slice.target
@@ -161,25 +161,25 @@ function assertNamesLegalSlices(
 }
 
 /**
- * Refuses a named slice sitting on the wrong side of the archive.
- *
- * Checked LAST of the per-list rules, so a slice named by two lists reports the
- * contradiction between them rather than whichever archive rule the first list
- * happens to break.
- *
- * @param set - list being checked
- *
- * @param indices - its indices
- *
- * @param slices - prepared pairs, which are the only thing that knows
- *
- * @throws {@link LaneSliceCoverageError} when a list about missing passages
- * names one the archive translates, or the other way around
- *
- * @example
- * ```ts
- * assertArchiveAllows({ set, indices, slices, },);
- * ```
+ Refuses a named slice sitting on the wrong side of the archive.
+ 
+ Checked LAST of the per-list rules, so a slice named by two lists reports the
+ contradiction between them rather than whichever archive rule the first list
+ happens to break.
+ 
+ @param set - list being checked
+ 
+ @param indices - its indices
+ 
+ @param slices - prepared pairs, which are the only thing that knows
+ 
+ @throws {@link LaneSliceCoverageError} when a list about missing passages
+ names one the archive translates, or the other way around
+ 
+ @example
+ ```ts
+ assertArchiveAllows({ set, indices, slices, },);
+ ```
  */
 function assertArchiveAllows(
   {
@@ -194,8 +194,8 @@ function assertArchiveAllows(
 ): void {
   for (const sliceIndex of indices) {
     /**
-     * Pair this index names, which {@link assertNamesLegalSlices} proved is
-     * there.
+     Pair this index names, which {@link assertNamesLegalSlices} proved is
+     there.
      */
     const named = slices.find(function isNamed(slice,): boolean {
       return slice.target
@@ -204,7 +204,7 @@ function assertArchiveAllows(
     },);
 
     /**
-     * Whether the archive holds nothing at this slice.
+     Whether the archive holds nothing at this slice.
      */
     const absent = (named !== undefined) && isInsertionChunk(named.target,);
     if ((named !== undefined) && (absent !== (set.incumbent === 'absent'))) {
@@ -220,26 +220,26 @@ function assertArchiveAllows(
 }
 
 /**
- * @internal
- *
- * Validates every list a lane names, and refuses any slice on two of them.
- *
- * @param sets - lists to validate, in the order their messages should be tried
- *
- * @param slices - prepared pairs
- *
- * @param decidedIndices - slices the lane reported a wording for
- *
- * @returns One index set per list, in the order given
- *
- * @throws {@link LaneSliceCoverageError} when a list repeats a slice, names one
- * the preparation never produced, names one already decided, names one another
- * list also names, or names one whose archive state the list forbids
- *
- * @example
- * ```ts
- * const [unfilled, unheard,] = validateNamedSets({ sets, slices, decidedIndices, },);
- * ```
+ @internal
+ 
+ Validates every list a lane names, and refuses any slice on two of them.
+ 
+ @param sets - lists to validate, in the order their messages should be tried
+ 
+ @param slices - prepared pairs
+ 
+ @param decidedIndices - slices the lane reported a wording for
+ 
+ @returns One index set per list, in the order given
+ 
+ @throws {@link LaneSliceCoverageError} when a list repeats a slice, names one
+ the preparation never produced, names one already decided, names one another
+ list also names, or names one whose archive state the list forbids
+ 
+ @example
+ ```ts
+ const [unfilled, unheard,] = validateNamedSets({ sets, slices, decidedIndices, },);
+ ```
  */
 export function validateNamedSets(
   {
@@ -253,14 +253,14 @@ export function validateNamedSets(
   },
 ): readonly ReadonlySet<number>[] {
   /**
-   * Each list as a set, refusing repeats within one list.
+   Each list as a set, refusing repeats within one list.
    */
   const named = sets.map(function toSet(set,): ReadonlySet<number> {
     return distinctIndices({ set, },);
   },);
   for (const [position, set,] of sets.entries()) {
     /**
-     * This list's indices, which the map above produced at the same position.
+     This list's indices, which the map above produced at the same position.
      */
     const indices = named[position] ?? new Set<number>();
     assertNamesLegalSlices({
@@ -280,18 +280,18 @@ export function validateNamedSets(
         continue;
 
       /**
-       * Slices both lists name, which is a contradiction whichever two they
-       * are.
+       Slices both lists name, which is a contradiction whichever two they
+       are.
        */
       const mine = named[position] ?? new Set<number>();
 
       /**
-       * Indices the later list names.
+       Indices the later list names.
        */
       const theirs = named[otherPosition] ?? new Set<number>();
 
       /**
-       * Slices both name, which is a contradiction whichever two lists they are.
+       Slices both name, which is a contradiction whichever two lists they are.
        */
       const both = [...mine,].filter(function inOther(sliceIndex,): boolean {
         return theirs.has(sliceIndex,);

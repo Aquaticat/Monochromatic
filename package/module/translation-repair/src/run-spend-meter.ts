@@ -28,8 +28,8 @@ import {
 // cost.
 
 /**
- * Running total per provider, in USD the wire reported for this process's
- * calls.
+ Running total per provider, in USD the wire reported for this process's
+ calls.
  */
 const spentUsd: Record<ProviderName, number> = providerRecord({
   of: function nothingYet(): number {
@@ -38,16 +38,16 @@ const spentUsd: Record<ProviderName, number> = providerRecord({
 },);
 
 /**
- * Adds one call's reported cost to its provider's running total.
- *
- * @param provider - meter the call drew on
- *
- * @param costUsd - USD the wire reported for the call
- *
- * @example
- * ```ts
- * noteRunSpend({ provider: 'openrouter', costUsd: 0.0042, },);
- * ```
+ Adds one call's reported cost to its provider's running total.
+ 
+ @param provider - meter the call drew on
+ 
+ @param costUsd - USD the wire reported for the call
+ 
+ @example
+ ```ts
+ noteRunSpend({ provider: 'openrouter', costUsd: 0.0042, },);
+ ```
  */
 export function noteRunSpend(
   {
@@ -62,31 +62,31 @@ export function noteRunSpend(
 }
 
 /**
- * Reads what this process has spent on one provider so far.
- *
- * @param provider - meter to read
- *
- * @returns USD reported on that provider's calls since the process began, or
- * since the last reset
- *
- * @example
- * ```ts
- * const soFar = runSpendUsd({ provider: 'openrouter', },);
- * ```
+ Reads what this process has spent on one provider so far.
+ 
+ @param provider - meter to read
+ 
+ @returns USD reported on that provider's calls since the process began, or
+ since the last reset
+ 
+ @example
+ ```ts
+ const soFar = runSpendUsd({ provider: 'openrouter', },);
+ ```
  */
 export function runSpendUsd({ provider, }: { readonly provider: ProviderName; },): number {
   return spentUsd[provider];
 }
 
 /**
- * Zeroes every provider's running total.
- *
- * FOR TESTS, which share one process across cases; a run never resets.
- *
- * @example
- * ```ts
- * resetRunSpend();
- * ```
+ Zeroes every provider's running total.
+ 
+ FOR TESTS, which share one process across cases; a run never resets.
+ 
+ @example
+ ```ts
+ resetRunSpend();
+ ```
  */
 export function resetRunSpend(): void {
   for (const provider of PROVIDER_ORDER)

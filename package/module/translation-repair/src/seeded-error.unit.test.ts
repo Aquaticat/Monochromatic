@@ -1,8 +1,8 @@
 /**
- * Tests for seed application, region tracking, hit matching, and derivation.
- * Fixtures are cat-themed invention only.
- *
- * @module
+ Tests for seed application, region tracking, hit matching, and derivation.
+ Fixtures are cat-themed invention only.
+ 
+ @module
  */
 
 import {
@@ -21,12 +21,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Clean target text seeds are planted into.
+ Clean target text seeds are planted into.
  */
 const CLEAN = 'The cat naps in the sun. The cat also chases butterflies across the garden. The cat purrs.';
 
 /**
- * Deletion spec over the butterfly sentence.
+ Deletion spec over the butterfly sentence.
  */
 const DELETE_BUTTERFLIES: SeededErrorSpec = {
   id: 'seed/omission-0',
@@ -251,8 +251,8 @@ await describe({
       name: 'skips sentences carrying MDX expression or JSX delimiters',
       fn: async () => {
         /**
-         * Body whose longest sentences each hold half of a paired MDX
-         * construct; deleting any of them would break the seeded parse.
+         Body whose longest sentences each hold half of a paired MDX
+         construct; deleting any of them would break the seeded parse.
          */
         const body = "The cat opened {'a very long quoted expression about sunbeams. "
           + "It kept purring until the quoted expression finally closed here'} today. "

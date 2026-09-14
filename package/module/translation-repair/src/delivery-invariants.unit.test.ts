@@ -1,9 +1,9 @@
 /**
- * Tests for the two claims a delivery ledger makes about a document.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the two claims a delivery ledger makes about a document.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -22,42 +22,42 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Archive translation both lanes would write into.
+ Archive translation both lanes would write into.
  */
 const ARCHIVE = 'The cat sleeps.\n\nShe purrs.\n';
 
 /**
- * Where the first paragraph ends, which is also the boundary an anchor names.
+ Where the first paragraph ends, which is also the boundary an anchor names.
  */
 const FIRST_END = 'The cat sleeps.'.length;
 
 /**
- * Where the second paragraph begins.
+ Where the second paragraph begins.
  */
 const SECOND_START = ARCHIVE.indexOf('She purrs.',);
 
 /**
- * Where it ends.
+ Where it ends.
  */
 const SECOND_END = SECOND_START + 'She purrs.'.length;
 
 /**
- * Builds a pair whose target side covers a span of {@link ARCHIVE}.
- *
- * @param sliceIndex - position of this slice
- *
- * @param startOffset - absolute start
- *
- * @param endOffset - absolute exclusive end
- *
- * @param sourceText - original this slice renders
- *
- * @returns Pair covering that span
- *
- * @example
- * ```ts
- * const pair = spanAt({ sliceIndex: 0, startOffset: 0, endOffset: 15, sourceText: '猫猫在睡觉。', },);
- * ```
+ Builds a pair whose target side covers a span of {@link ARCHIVE}.
+ 
+ @param sliceIndex - position of this slice
+ 
+ @param startOffset - absolute start
+ 
+ @param endOffset - absolute exclusive end
+ 
+ @param sourceText - original this slice renders
+ 
+ @returns Pair covering that span
+ 
+ @example
+ ```ts
+ const pair = spanAt({ sliceIndex: 0, startOffset: 0, endOffset: 15, sourceText: '猫猫在睡觉。', },);
+ ```
  */
 function spanAt(
   {
@@ -94,20 +94,20 @@ function spanAt(
 }
 
 /**
- * Builds a pair whose target side names a boundary and covers nothing.
- *
- * @param sliceIndex - position of this slice
- *
- * @param offset - boundary the translation belongs at
- *
- * @param sourceText - original with no translation in the archive
- *
- * @returns Pair anchored at that boundary
- *
- * @example
- * ```ts
- * const pair = anchorAt({ sliceIndex: 1, offset: 15, sourceText: '她伸了个懒腰。', },);
- * ```
+ Builds a pair whose target side names a boundary and covers nothing.
+ 
+ @param sliceIndex - position of this slice
+ 
+ @param offset - boundary the translation belongs at
+ 
+ @param sourceText - original with no translation in the archive
+ 
+ @returns Pair anchored at that boundary
+ 
+ @example
+ ```ts
+ const pair = anchorAt({ sliceIndex: 1, offset: 15, sourceText: '她伸了个懒腰。', },);
+ ```
  */
 function anchorAt(
   {
@@ -136,20 +136,20 @@ function anchorAt(
 }
 
 /**
- * Builds a ledger the way a lane driver does.
- *
- * @param slices - preparation the lane ran over
- *
- * @param wordings - what it decided per slice
- *
- * @param shipped - slices its document carries a change for
- *
- * @returns One row per prepared slice
- *
- * @example
- * ```ts
- * const ledger = ledgerFor({ slices, wordings, shipped: [0,], },);
- * ```
+ Builds a ledger the way a lane driver does.
+ 
+ @param slices - preparation the lane ran over
+ 
+ @param wordings - what it decided per slice
+ 
+ @param shipped - slices its document carries a change for
+ 
+ @returns One row per prepared slice
+ 
+ @example
+ ```ts
+ const ledger = ledgerFor({ slices, wordings, shipped: [0,], },);
+ ```
  */
 function ledgerFor(
   {
@@ -172,7 +172,7 @@ function ledgerFor(
 }
 
 /**
- * Two slices covering the archive, the first rewritten and the second left.
+ Two slices covering the archive, the first rewritten and the second left.
  */
 const REWRITTEN_SLICES: readonly ChunkPair[] = [
   spanAt({
@@ -190,7 +190,7 @@ const REWRITTEN_SLICES: readonly ChunkPair[] = [
 ];
 
 /**
- * What that lane decided for them.
+ What that lane decided for them.
  */
 const REWRITTEN_WORDINGS: readonly LaneSliceText[] = [
   {

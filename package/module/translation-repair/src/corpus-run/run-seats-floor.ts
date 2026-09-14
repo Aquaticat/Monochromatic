@@ -25,7 +25,7 @@ import {
 // pair a slate needs, the same number the readers are held to.
 
 /**
- * Benches that write text rather than judge it, which the floor applies to.
+ Benches that write text rather than judge it, which the floor applies to.
  */
 export const WRITING_BENCHES: ReadonlySet<BenchName> = new Set<BenchName>([
   'editors',
@@ -34,37 +34,37 @@ export const WRITING_BENCHES: ReadonlySet<BenchName> = new Set<BenchName>([
 ],);
 
 /**
- * Reachable seats a writing bench needs to write a slate rather than a single
- * text: a pair, so that a judge has two candidates to choose between.
+ Reachable seats a writing bench needs to write a slate rather than a single
+ text: a pair, so that a judge has two candidates to choose between.
  */
 export const WRITING_BENCH_FLOOR = 2;
 
 /**
- * Stops an entry whose phase cannot write: a writing bench it leans on has
- * fewer reachable seats than the floor and no provider has named its return.
- *
- * @example
- * ```ts
- * throw new WritingBenchUnreachableError({ phase: 'lanes', clauses: ['editors 0 of 3 reachable, floor 2',], },);
- * ```
+ Stops an entry whose phase cannot write: a writing bench it leans on has
+ fewer reachable seats than the floor and no provider has named its return.
+ 
+ @example
+ ```ts
+ throw new WritingBenchUnreachableError({ phase: 'lanes', clauses: ['editors 0 of 3 reachable, floor 2',], },);
+ ```
  */
 export class WritingBenchUnreachableError extends Error {
   /**
-   * Message carries bench names and counts only, nothing from a provider.
+   Message carries bench names and counts only, nothing from a provider.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * One clause per bench below the floor, as the seats line prints them.
+   One clause per bench below the floor, as the seats line prints them.
    */
   readonly clauses: readonly string[];
 
   /**
-   * Names the phase that could not write and each bench below the floor.
-   *
-   * @param phase - phase the reading was taken for
-   *
-   * @param clauses - one clause per bench below the floor
+   Names the phase that could not write and each bench below the floor.
+   
+   @param phase - phase the reading was taken for
+   
+   @param clauses - one clause per bench below the floor
    */
   public constructor(
     {
@@ -85,24 +85,24 @@ export class WritingBenchUnreachableError extends Error {
 }
 
 /**
- * Every bench the shortfall readings look at, keyed by the name the seats
- * line prints, from one derivation of the seats.
- *
- * @param seats - benches as derived for one reading
- *
- * @returns Bench per name, the writing benches taken from the repair and
- * translate lane rosters
- *
- * @example
- * ```ts
- * const benches = benchesOf({ seats: judgeSeatsFor({ dry, },), },);
- * ```
+ Every bench the shortfall readings look at, keyed by the name the seats
+ line prints, from one derivation of the seats.
+ 
+ @param seats - benches as derived for one reading
+ 
+ @returns Bench per name, the writing benches taken from the repair and
+ translate lane rosters
+ 
+ @example
+ ```ts
+ const benches = benchesOf({ seats: judgeSeatsFor({ dry, },), },);
+ ```
  */
 export function benchesOf(
   { seats, }: { readonly seats: JudgeSeats; },
 ): Readonly<Record<BenchName, readonly RosterModelId[]>> {
   /**
-   * Repair lane writers, whose refiners are optional in the contract.
+   Repair lane writers, whose refiners are optional in the contract.
    */
   const {
     editorModelIds,
@@ -120,23 +120,23 @@ export function benchesOf(
 }
 
 /**
- * Writing benches among the named ones that cannot reach the floor among the
- * seats a wet provider serves.
- *
- * @param benches - each bench the phase leans on, keyed by name
- *
- * @param names - benches the phase leans on, in the order the line prints them
- *
- * @param dry - dryness per provider, holds folded in
- *
- * @returns One clause per writing bench below the floor, empty when every
- * writing bench can write a slate or the phase leans on none
- *
- * @example
- * ```ts
- * unreachableWritingBenches({ benches, names: phaseBenches({ phase: 'lanes', },), dry, },);
- * // => ['editors 0 of 3 reachable, floor 2', 'refiners 0 of 3 reachable, floor 2',]
- * ```
+ Writing benches among the named ones that cannot reach the floor among the
+ seats a wet provider serves.
+ 
+ @param benches - each bench the phase leans on, keyed by name
+ 
+ @param names - benches the phase leans on, in the order the line prints them
+ 
+ @param dry - dryness per provider, holds folded in
+ 
+ @returns One clause per writing bench below the floor, empty when every
+ writing bench can write a slate or the phase leans on none
+ 
+ @example
+ ```ts
+ unreachableWritingBenches({ benches, names: phaseBenches({ phase: 'lanes', },), dry, },);
+ // => ['editors 0 of 3 reachable, floor 2', 'refiners 0 of 3 reachable, floor 2',]
+ ```
  */
 export function unreachableWritingBenches(
   {
@@ -155,11 +155,11 @@ export function unreachableWritingBenches(
     },)
     .flatMap(function clauseOf(name,): readonly string[] {
       /**
-       * Seats this bench holds.
+       Seats this bench holds.
        */
       const seats = benches[name];
       /**
-       * Seats a wet provider would serve.
+       Seats a wet provider would serve.
        */
       const reachable = reachableSeats({
         seats,

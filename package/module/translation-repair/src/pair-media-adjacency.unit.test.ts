@@ -1,9 +1,9 @@
 /**
- * Tests for attaching archive transcript blocks to source-matched media.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for attaching archive transcript blocks to source-matched media.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -19,7 +19,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Literal site path placeholder, assembled so source does not resemble accidental interpolation.
+ Literal site path placeholder, assembled so source does not resemble accidental interpolation.
  */
 const PATH_TOKEN = [
   '$',
@@ -27,26 +27,26 @@ const PATH_TOKEN = [
 ].join('',);
 
 /**
- * Shared media marker.
+ Shared media marker.
  */
 const LETTER = `<PhotoScroll photos={[ '${PATH_TOKEN}/photos/letter.webp']} />`;
 
 /**
- * Other media marker for ambiguous-gap fixture.
+ Other media marker for ambiguous-gap fixture.
  */
 const PORTRAIT = `<PhotoScroll photos={[ '${PATH_TOKEN}/photos/portrait.webp']} />`;
 
 /**
- * Parses fixture blocks separated as document paragraphs.
- *
- * @param texts - block text in document order
- *
- * @returns Parsed fixture document
- *
- * @example
- * ```ts
- * const document = parsed(['Cats nap.']);
- * ```
+ Parses fixture blocks separated as document paragraphs.
+ 
+ @param texts - block text in document order
+ 
+ @returns Parsed fixture document
+ 
+ @example
+ ```ts
+ const document = parsed(['Cats nap.']);
+ ```
  */
 function parsed(texts: readonly string[],): RepairDocument {
   return parseDocument({ text: texts.join('\n\n',), });

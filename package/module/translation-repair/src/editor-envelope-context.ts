@@ -1,31 +1,31 @@
 import type { EditableEnvelope, } from './patch-model.ts';
 
 /**
- * Characters of translation shown on each side of an envelope so judges can
- * assess register and tense against real neighbouring prose.
+ Characters of translation shown on each side of an envelope so judges can
+ assess register and tense against real neighbouring prose.
  */
 const ENVELOPE_CONTEXT_CHARS = 400;
 
 /**
- * Renders the translation around one envelope, with the region under
- * replacement marked rather than removed.
- *
- * Judges are asked whether a replacement fits its surroundings in register and
- * tense. Handed only the replacement text and the Chinese source, that
- * criterion is unanswerable: the surroundings are exactly what is missing. The
- * window is bounded because whole chunks run to thousands of characters and
- * every judge pays for them on every envelope.
- *
- * @param targetText - translation chunk text
- *
- * @param envelope - region being replaced
- *
- * @returns Bounded window with the replaced region marked
- *
- * @example
- * ```ts
- * const context = envelopeContext({ targetText, envelope, },);
- * ```
+ Renders the translation around one envelope, with the region under
+ replacement marked rather than removed.
+ 
+ Judges are asked whether a replacement fits its surroundings in register and
+ tense. Handed only the replacement text and the Chinese source, that
+ criterion is unanswerable: the surroundings are exactly what is missing. The
+ window is bounded because whole chunks run to thousands of characters and
+ every judge pays for them on every envelope.
+ 
+ @param targetText - translation chunk text
+ 
+ @param envelope - region being replaced
+ 
+ @returns Bounded window with the replaced region marked
+ 
+ @example
+ ```ts
+ const context = envelopeContext({ targetText, envelope, },);
+ ```
  */
 export function envelopeContext(
   {
@@ -37,7 +37,7 @@ export function envelopeContext(
   },
 ): string {
   /**
-   * Translation before the envelope, bounded to the context window.
+   Translation before the envelope, bounded to the context window.
    */
   const before = targetText.slice(
     Math.max(
@@ -48,7 +48,7 @@ export function envelopeContext(
   );
 
   /**
-   * Translation after the envelope, bounded to the context window.
+   Translation after the envelope, bounded to the context window.
    */
   const after = targetText.slice(
     envelope.endOffset,

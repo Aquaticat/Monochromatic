@@ -1,23 +1,23 @@
 /**
- * Tests for the lexicographic order that decides which candidate ships.
- *
- * `selectRepairCandidate` is already covered, and it exercises these branches
- * indirectly, but nothing asserted the ORDER OF THE TIERS themselves. That
- * order is a design decision rather than an implementation detail: it encodes
- * what the pipeline is willing to trade for what, and issue #53 is an open
- * question about exactly that. A test that pins each tier against every tier
- * below it turns a future reordering into a deliberate act instead of a silent
- * one.
- *
- * Each case holds every HIGHER tier equal and makes every LOWER tier favor the
- * loser, so passing can only mean the tier under test decided the comparison.
- * Every candidate states all five measurements rather than overriding a shared
- * base: the comparison IS the five numbers, and a reader should see both sides
- * without merging anything in their head.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the lexicographic order that decides which candidate ships.
+ 
+ `selectRepairCandidate` is already covered, and it exercises these branches
+ indirectly, but nothing asserted the ORDER OF THE TIERS themselves. That
+ order is a design decision rather than an implementation detail: it encodes
+ what the pipeline is willing to trade for what, and issue #53 is an open
+ question about exactly that. A test that pins each tier against every tier
+ below it turns a future reordering into a deliberate act instead of a silent
+ one.
+ 
+ Each case holds every HIGHER tier equal and makes every LOWER tier favor the
+ loser, so passing can only mean the tier under test decided the comparison.
+ Every candidate states all five measurements rather than overriding a shared
+ base: the comparison IS the five numbers, and a reader should see both sides
+ without merging anything in their head.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -33,34 +33,34 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds a candidate with every measurement stated.
- *
- * @param candidateId - handle for this candidate
- *
- * @param integrityOk - whether the candidate still parses and keeps conventions
- *
- * @param resolvedHighSeverity - critical and major issues confirmed fixed
- *
- * @param resolvedTotal - issues of any severity confirmed fixed
- *
- * @param regressedKnownIssues - known issues the checkers marked worse
- *
- * @param touchedRegionChars - total size of touched regions; smaller is more
- * conservative
- *
- * @returns Candidate carrying those measurements
- *
- * @example
- * ```ts
- * const intact = candidate({
- *   candidateId: 'candidate/intact',
- *   integrityOk: true,
- *   resolvedHighSeverity: 1,
- *   resolvedTotal: 2,
- *   regressedKnownIssues: 0,
- *   touchedRegionChars: 50,
- * },);
- * ```
+ Builds a candidate with every measurement stated.
+ 
+ @param candidateId - handle for this candidate
+ 
+ @param integrityOk - whether the candidate still parses and keeps conventions
+ 
+ @param resolvedHighSeverity - critical and major issues confirmed fixed
+ 
+ @param resolvedTotal - issues of any severity confirmed fixed
+ 
+ @param regressedKnownIssues - known issues the checkers marked worse
+ 
+ @param touchedRegionChars - total size of touched regions; smaller is more
+ conservative
+ 
+ @returns Candidate carrying those measurements
+ 
+ @example
+ ```ts
+ const intact = candidate({
+   candidateId: 'candidate/intact',
+   integrityOk: true,
+   resolvedHighSeverity: 1,
+   resolvedTotal: 2,
+   regressedKnownIssues: 0,
+   touchedRegionChars: 50,
+ },);
+ ```
  */
 function candidate(
   {
@@ -93,21 +93,21 @@ function candidate(
 }
 
 /**
- * Asserts that one candidate ranks ahead of another, and that reversing the
- * arguments reverses the sign.
- *
- * Antisymmetry is checked on every case rather than once, because a comparator
- * that is merely inconsistent produces a sort order depending on input order,
- * which is exactly the failure a stable-looking pipeline would hide.
- *
- * @param better - candidate expected to rank first
- *
- * @param worse - candidate expected to rank second
- *
- * @example
- * ```ts
- * expectRanksAhead({ better: intact, worse: broken, },);
- * ```
+ Asserts that one candidate ranks ahead of another, and that reversing the
+ arguments reverses the sign.
+ 
+ Antisymmetry is checked on every case rather than once, because a comparator
+ that is merely inconsistent produces a sort order depending on input order,
+ which is exactly the failure a stable-looking pipeline would hide.
+ 
+ @param better - candidate expected to rank first
+ 
+ @param worse - candidate expected to rank second
+ 
+ @example
+ ```ts
+ expectRanksAhead({ better: intact, worse: broken, },);
+ ```
  */
 function expectRanksAhead(
   {

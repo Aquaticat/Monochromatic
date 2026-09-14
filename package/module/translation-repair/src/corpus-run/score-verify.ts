@@ -29,44 +29,44 @@ import { resolveRunsDir, } from './run-config.ts';
 // the precision any gating decision has to live with.
 
 /**
- * One manifest row, naming what the sheet deliberately hides.
+ One manifest row, naming what the sheet deliberately hides.
  */
 type VerifyManifestItem = {
   /**
-   * One-based position, matching the sheet.
+   One-based position, matching the sheet.
    */
   readonly position: number;
 
   /**
-   * Corpus entry the region belongs to.
+   Corpus entry the region belongs to.
    */
   readonly entryId: string;
 
   /**
-   * Which set the region came from.
+   Which set the region came from.
    */
   readonly kind: string;
 };
 
 /**
- * Reads the manifest written beside the sheet.
- *
- * @param path - manifest path
- *
- * @returns Rows in sheet order
- *
- * @throws {@link ArtifactParseError} when a field is malformed
- *
- * @example
- * ```ts
- * const rows = await readVerifyManifest({ path, },);
- * ```
+ Reads the manifest written beside the sheet.
+ 
+ @param path - manifest path
+ 
+ @returns Rows in sheet order
+ 
+ @throws {@link ArtifactParseError} when a field is malformed
+ 
+ @example
+ ```ts
+ const rows = await readVerifyManifest({ path, },);
+ ```
  */
 async function readVerifyManifest(
   { path, }: { readonly path: string; },
 ): Promise<readonly VerifyManifestItem[]> {
   /**
-   * Manifest as a record.
+   Manifest as a record.
    */
   const manifest = requireRecord({
     value: await readRunJson({ path, },),
@@ -82,7 +82,7 @@ async function readVerifyManifest(
       index,
     ): VerifyManifestItem {
       /**
-       * Row as a record.
+       Row as a record.
        */
       const row = requireRecord({
         value,
@@ -90,8 +90,8 @@ async function readVerifyManifest(
       },);
 
       /**
-       * Position as written, checked against its own index so a reordered
-       * manifest cannot mislabel every verdict silently.
+       Position as written, checked against its own index so a reordered
+       manifest cannot mislabel every verdict silently.
        */
       const { position, } = row;
       if (position !== (index + 1)) {
@@ -117,46 +117,46 @@ async function readVerifyManifest(
 }
 
 /**
- * Width the set name is padded to, so the two report lines align.
+ Width the set name is padded to, so the two report lines align.
  */
 const KIND_COLUMN_WIDTH = 8;
 
 /**
- * Decimal places a precision figure carries.
+ Decimal places a precision figure carries.
  */
 const PRECISION_DIGITS = 3;
 
 /**
- * Counts of one set's graded flags.
+ Counts of one set's graded flags.
  */
 type KindTally = {
   /**
-   * Flags the reader called real damage.
+   Flags the reader called real damage.
    */
   damage: number;
 
   /**
-   * Flags the reader rejected.
+   Flags the reader rejected.
    */
   invented: number;
 
   /**
-   * Items left ungraded.
+   Items left ungraded.
    */
   unscored: number;
 };
 
 /**
- * Adds one graded item to its set's tally.
- *
- * @param tally - tally to add into
- *
- * @param item - graded sheet item
- *
- * @example
- * ```ts
- * addGrade({ tally, item, },);
- * ```
+ Adds one graded item to its set's tally.
+ 
+ @param tally - tally to add into
+ 
+ @param item - graded sheet item
+ 
+ @example
+ ```ts
+ addGrade({ tally, item, },);
+ ```
  */
 function addGrade(
   {
@@ -179,32 +179,32 @@ function addGrade(
 }
 
 /**
- * Reports what the graded sheet says about the unlabelled probe.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Reports what the graded sheet says about the unlabelled probe.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Run artifact root for this checkout.
+   Run artifact root for this checkout.
    */
   const dir = await resolveRunsDir();
 
   /**
-   * Which sheet to score, so one scorer serves every sheet this formatter
-   * writes rather than each sheet growing its own.
+   Which sheet to score, so one scorer serves every sheet this formatter
+   writes rather than each sheet growing its own.
    */
   const { VERIFY_SHEET_BASENAME: configuredBasename, } = process.env;
 
   /**
-   * Basename actually used.
+   Basename actually used.
    */
   const basename = configuredBasename ?? 'probe-verify';
 
   /**
-   * Graded sheet items, in sheet order.
+   Graded sheet items, in sheet order.
    */
   const graded = parseGradedSheet({
     text: await readFile(
@@ -214,7 +214,7 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * Manifest rows, in the same order.
+   Manifest rows, in the same order.
    */
   const manifest = await readVerifyManifest({
     path: `${dir}/${basename}-manifest.json`,
@@ -228,17 +228,17 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Tally per label, built from the labels the manifest actually carries.
-   *
-   * Built rather than declared because the two sheets partition on different
-   * things. A fixed pair of keys silently dropped every item whose label was
-   * not one of them, which would have scored a whole sheet as empty while
-   * reporting success.
+   Tally per label, built from the labels the manifest actually carries.
+   
+   Built rather than declared because the two sheets partition on different
+   things. A fixed pair of keys silently dropped every item whose label was
+   not one of them, which would have scored a whole sheet as empty while
+   reporting success.
    */
   const tallies = new Map<string, KindTally>();
   for (const [index, item,] of graded.entries()) {
     /**
-     * Manifest row for this position.
+     Manifest row for this position.
      */
     const row = manifest[index];
     if (row === undefined) {
@@ -248,7 +248,7 @@ async function main(): Promise<void> {
     }
 
     /**
-     * Tally this row belongs to, created on first sight of its label.
+     Tally this row belongs to, created on first sight of its label.
      */
     const tally = tallies.get(row.kind,) ?? {
       damage: 0,
@@ -275,7 +275,7 @@ async function main(): Promise<void> {
       },)
   ) {
     /**
-     * Flags this set contributed that carry a verdict.
+     Flags this set contributed that carry a verdict.
      */
     const scored = tally.damage + tally.invented;
     console.log(

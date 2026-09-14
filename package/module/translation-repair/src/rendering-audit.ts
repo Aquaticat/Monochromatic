@@ -50,101 +50,101 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // can be re-read.
 
 /**
- * One auditor's screened answer, kept whole.
- *
- * @example
- * ```ts
- * const row: AuditVoiceRow = { modelId, verdict: 'no-defect-found', findings: [], dropped: [], };
- * ```
+ One auditor's screened answer, kept whole.
+ 
+ @example
+ ```ts
+ const row: AuditVoiceRow = { modelId, verdict: 'no-defect-found', findings: [], dropped: [], };
+ ```
  */
 export type AuditVoiceRow = {
   /**
-   * Auditor that answered.
+   Auditor that answered.
    */
   readonly modelId: RosterModelId;
 
   /**
-   * What it concluded overall.
+   What it concluded overall.
    */
   readonly verdict: string;
 
   /**
-   * What it claimed that anchored.
+   What it claimed that anchored.
    */
   readonly findings: readonly ScreenedFinding[];
 
   /**
-   * Why each of its dropped claims fell, kept because a voice whose every claim
-   * fell is not a voice that found nothing.
+   Why each of its dropped claims fell, kept because a voice whose every claim
+   fell is not a voice that found nothing.
    */
   readonly dropped: readonly string[];
 };
 
 /**
- * Everything one audit produced about one rendering.
- *
- * @example
- * ```ts
- * const report: RenderingAuditReport = { corroborated: [], near: [], rows: [], findings: [], };
- * ```
+ Everything one audit produced about one rendering.
+ 
+ @example
+ ```ts
+ const report: RenderingAuditReport = { corroborated: [], near: [], rows: [], findings: [], };
+ ```
  */
 export type RenderingAuditReport = {
   /**
-   * Defects at least two auditors located identically, most-agreed first.
+   Defects at least two auditors located identically, most-agreed first.
    */
   readonly corroborated: readonly CorroboratedDefect[];
 
   /**
-   * Groups of voices that agreed about a defect without quoting identical
-   * spans, reported BESIDE the strict count rather than inside it: the strict
-   * count asks whether voices picked the same characters, and this asks whether
-   * they were talking about the same thing.
+   Groups of voices that agreed about a defect without quoting identical
+   spans, reported BESIDE the strict count rather than inside it: the strict
+   count asks whether voices picked the same characters, and this asks whether
+   they were talking about the same thing.
    */
   readonly agreed: readonly OverlapAgreement[];
 
   /**
-   * Pairs of claims from different voices that nearly agreed, reported rather
-   * than merged, since a merge on overlap would manufacture agreement nobody
-   * reached.
+   Pairs of claims from different voices that nearly agreed, reported rather
+   than merged, since a merge on overlap would manufacture agreement nobody
+   reached.
    */
   readonly near: readonly NearMiss[];
 
   /**
-   * Every auditor's screened answer, kept for a later decision about how to
-   * read a tally over a roster that disagrees with itself.
+   Every auditor's screened answer, kept for a later decision about how to
+   read a tally over a roster that disagrees with itself.
    */
   readonly rows: readonly AuditVoiceRow[];
 
   /**
-   * Degradation findings from the gather, empty when quorum was met.
+   Degradation findings from the gather, empty when quorum was met.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Audits one rendering against its original.
- *
- * @param client - injected model client
- *
- * @param subject - original, candidate and any licensed identity evidence
- *
- * @param modelIds - auditor roster
- *
- * @param signal - entry deadline and caller abort
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Corroborated defects, every voice's screened answer, and any
- * degradation findings
- *
- * @throws Whatever the gather raises when the caller aborts
- *
- * @example
- * ```ts
- * const report = await runRenderingAudit({ client, subject, modelIds, signal, perCallTimeoutMs, l, },);
- * ```
+ Audits one rendering against its original.
+ 
+ @param client - injected model client
+ 
+ @param subject - original, candidate and any licensed identity evidence
+ 
+ @param modelIds - auditor roster
+ 
+ @param signal - entry deadline and caller abort
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - pipeline logger
+ 
+ @returns Corroborated defects, every voice's screened answer, and any
+ degradation findings
+ 
+ @throws Whatever the gather raises when the caller aborts
+ 
+ @example
+ ```ts
+ const report = await runRenderingAudit({ client, subject, modelIds, signal, perCallTimeoutMs, l, },);
+ ```
  */
 export async function runRenderingAudit(
   {
@@ -164,7 +164,7 @@ export async function runRenderingAudit(
   }>,
 ): Promise<RenderingAuditReport> {
   /**
-   * What every auditor answered, to quorum.
+   What every auditor answered, to quorum.
    */
   const gathered = await gatherStageVoices({
     client,
@@ -179,12 +179,12 @@ export async function runRenderingAudit(
   },);
 
   /**
-   * Each answer screened against the two texts.
+   Each answer screened against the two texts.
    */
   const rows: readonly AuditVoiceRow[] = gathered.voices
     .map(function screenVoice(voice,): AuditVoiceRow {
       /**
-       * What survived of this voice's answer.
+       What survived of this voice's answer.
        */
       const screened = screenRenderingAudit({
         report: voice.value,
@@ -201,8 +201,8 @@ export async function runRenderingAudit(
     },);
 
   /**
-   * Every anchored claim, tagged with the voice that made it, which is the form
-   * both the matcher and the near-miss pass read.
+   Every anchored claim, tagged with the voice that made it, which is the form
+   both the matcher and the near-miss pass read.
    */
   const claims: readonly AuditMemberClaim[] = rows.flatMap(function toClaims(row,): readonly AuditMemberClaim[] {
     return row.findings

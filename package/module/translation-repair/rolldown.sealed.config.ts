@@ -23,23 +23,23 @@ import { nodeEntries, } from './rolldown.node.config.ts';
 //region Target-specific application runtime packaging
 
 /**
- * Build diagnostics remain separate from sealed runtime content.
+ Build diagnostics remain separate from sealed runtime content.
  */
 const l = tagged({ tag: 'sealed-runtime-build', },);
 /**
- * Native binding selected only for the measured Linux x64 GNU target.
+ Native binding selected only for the measured Linux x64 GNU target.
  */
 const NATIVE_PACKAGE = '@bruits/satteri-linux-x64-gnu';
 /**
- * Generated loader's adjacent-file spelling, not an arbitrary asset name.
+ Generated loader's adjacent-file spelling, not an arbitrary asset name.
  */
 const NATIVE_FILE = 'satteri_napi.linux-x64-gnu.node';
 /**
- * Stream chunk extent bounds temporary hashing storage.
+ Stream chunk extent bounds temporary hashing storage.
  */
 const HASH_CHUNK_BYTES = 65_536;
 /**
- * Declaration chunks do not execute and must not change runtime identity when only documentation changes.
+ Declaration chunks do not execute and must not change runtime identity when only documentation changes.
  */
 const DECLARATION_SUFFIXES = [
   '.d.mts',
@@ -47,7 +47,7 @@ const DECLARATION_SUFFIXES = [
   '.d.cts',
 ] as const;
 /**
- * Loader overrides must be rejected or independently bound before importing this artifact.
+ Loader overrides must be rejected or independently bound before importing this artifact.
  */
 const LOADER_ENVIRONMENT = [
   'NAPI_RS_NATIVE_LIBRARY_PATH',
@@ -59,12 +59,12 @@ const LOADER_ENVIRONMENT = [
 ] as const;
 
 /**
- * Read-only host callback view exposes only fields needed to identify emitted bytes.
- *
- * @example
- * ```ts
- * const view: SealedBundleView = bundle;
- * ```
+ Read-only host callback view exposes only fields needed to identify emitted bytes.
+ 
+ @example
+ ```ts
+ const view: SealedBundleView = bundle;
+ ```
  */
 type SealedBundleView = Readonly<Record<string,
   Readonly<Pick<OutputChunk, 'type' | 'fileName' | 'code'>>
@@ -72,18 +72,18 @@ type SealedBundleView = Readonly<Record<string,
 >>;
 
 /**
- * Failure to describe the actual target must not produce a claimed sealed runtime.
+ Failure to describe the actual target must not produce a claimed sealed runtime.
  */
 class SealedRuntimeBuildError extends Error {
   /**
-   * Names the failed build prerequisite without inventing runtime authority.
-   *
-   * @param message - controlled prerequisite diagnostic
-   *
-   * @example
-   * ```ts
-   * throw new SealedRuntimeBuildError('Unsupported sealed-runtime target.');
-   * ```
+   Names the failed build prerequisite without inventing runtime authority.
+   
+   @param message - controlled prerequisite diagnostic
+   
+   @example
+   ```ts
+   throw new SealedRuntimeBuildError('Unsupported sealed-runtime target.');
+   ```
    */
   constructor(message: string,) {
     super(message,);
@@ -92,20 +92,20 @@ class SealedRuntimeBuildError extends Error {
 }
 
 /**
- * Reads a package version from the actual resolved package rather than a generated loader literal.
- *
- * @param path - resolved package manifest
- *
- * @param expectedName - package identity owning the resolved file
- *
- * @returns Exact installed version
- *
- * @throws SealedRuntimeBuildError when metadata names a different or unidentified package
- *
- * @example
- * ```ts
- * const version = await packageVersion({ path, expectedName: 'satteri' });
- * ```
+ Reads a package version from the actual resolved package rather than a generated loader literal.
+ 
+ @param path - resolved package manifest
+ 
+ @param expectedName - package identity owning the resolved file
+ 
+ @returns Exact installed version
+ 
+ @throws SealedRuntimeBuildError when metadata names a different or unidentified package
+ 
+ @example
+ ```ts
+ const version = await packageVersion({ path, expectedName: 'satteri' });
+ ```
  */
 async function packageVersion({
   path,
@@ -115,7 +115,7 @@ async function packageVersion({
   readonly expectedName: string;
 },): Promise<string> {
   /**
-   * Parsed metadata is inspected before its version receives authority.
+   Parsed metadata is inspected before its version receives authority.
    */
   const value: unknown = JSON.parse(await readFile(
     path,
@@ -135,43 +135,43 @@ async function packageVersion({
 }
 
 /**
- * Hashes the executed Node binary without retaining its complete bytes in memory.
- *
- * @param path - current executable path supplied by Node
- *
- * @returns Exact observed executable extent and SHA-256
- *
- * @throws SealedRuntimeBuildError when the regular-file extent changes during hashing
- *
- * @example
- * ```ts
- * const executable = await binaryIdentity(process.execPath);
- * ```
+ Hashes the executed Node binary without retaining its complete bytes in memory.
+ 
+ @param path - current executable path supplied by Node
+ 
+ @returns Exact observed executable extent and SHA-256
+ 
+ @throws SealedRuntimeBuildError when the regular-file extent changes during hashing
+ 
+ @example
+ ```ts
+ const executable = await binaryIdentity(process.execPath);
+ ```
  */
 async function binaryIdentity(path: string,): Promise<{
   readonly bytes: number;
   readonly sha256: string
 }> {
   /**
-   * Build-owned descriptor pins the observed executable while hashing.
+   Build-owned descriptor pins the observed executable while hashing.
    */
   await using handle = await open(
     path,
     'r',
   );
   /**
-   * Independently observed extent bounds this build read, not an arbitrary global ceiling.
+   Independently observed extent bounds this build read, not an arbitrary global ceiling.
    */
   const before = await handle.stat();
   if ((!before.isFile()) || (!Number.isSafeInteger(before.size))
     || (before.size <= 0))
     throw new SealedRuntimeBuildError('Executed Node binary must be a nonempty regular file with a safe byte extent.',);
   /**
-   * Hash and count consume the same bounded byte stream.
+   Hash and count consume the same bounded byte stream.
    */
   const hash = createHash('sha256',);
   /**
-   * Mutable counter belongs exclusively to this stream observation.
+   Mutable counter belongs exclusively to this stream observation.
    */
   const observed = { bytes: 0, };
   for await (const chunk of handle.createReadStream({
@@ -186,7 +186,7 @@ async function binaryIdentity(path: string,): Promise<{
     hash.update(chunk,);
   }
   /**
-   * A different final extent invalidates this description.
+   A different final extent invalidates this description.
    */
   const after = await handle.stat();
   if ((observed.bytes !== before.size) || (after.size !== before.size)
@@ -200,7 +200,7 @@ async function binaryIdentity(path: string,): Promise<{
 }
 
 /**
- * Node's report distinguishes GNU libc from the separate musl native target.
+ Node's report distinguishes GNU libc from the separate musl native target.
  */
 const report: unknown = process.report
   .getReport();
@@ -216,20 +216,20 @@ if ((process.platform !== 'linux') || (process.arch !== 'x64')
   throw new SealedRuntimeBuildError('This sealed-runtime build requires Linux x64 with GNU libc.',);
 
 /**
- * Resolve native assets through the same installed Satteri instance as the package entry.
+ Resolve native assets through the same installed Satteri instance as the package entry.
  */
 const require = createRequire(import.meta.url,);
 /**
- * Direct package entry establishes its package-relative optional dependency lookup.
+ Direct package entry establishes its package-relative optional dependency lookup.
  */
 const satteriEntry = require.resolve('satteri',);
 /**
- * Native package entry is the file copied into the sealed output.
+ Native package entry is the file copied into the sealed output.
  */
 const nativePath = createRequire(satteriEntry,)
   .resolve(NATIVE_PACKAGE,);
 /**
- * JavaScript package version is evidence from its installed manifest.
+ JavaScript package version is evidence from its installed manifest.
  */
 const satteriVersion = await packageVersion({
   path: join(
@@ -240,7 +240,7 @@ const satteriVersion = await packageVersion({
   expectedName: 'satteri',
 },);
 /**
- * Native package must match the JavaScript package, not a stale generated version string.
+ Native package must match the JavaScript package, not a stale generated version string.
  */
 const nativeVersion = await packageVersion({
   path: join(
@@ -252,22 +252,22 @@ const nativeVersion = await packageVersion({
 if (nativeVersion !== satteriVersion)
   throw new SealedRuntimeBuildError('Satteri JavaScript and native package versions differ.',);
 /**
- * Native asset bytes are build-owned and emitted without transformation.
+ Native asset bytes are build-owned and emitted without transformation.
  */
 const nativeBytes = await readFile(nativePath,);
 /**
- * Node executable identity is separate from the application file inventory.
+ Node executable identity is separate from the application file inventory.
  */
 const executable = await binaryIdentity(process.execPath,);
 
 /**
- * Emits the native dependency and a path-independent description of the application runtime.
- * This manifest is build evidence, not root review or generation approval.
- *
- * @example
- * ```ts
- * const plugins = [config.plugins, sealedRuntimeAssets];
- * ```
+ Emits the native dependency and a path-independent description of the application runtime.
+ This manifest is build evidence, not root review or generation approval.
+ 
+ @example
+ ```ts
+ const plugins = [config.plugins, sealedRuntimeAssets];
+ ```
  */
 const sealedRuntimeAssets: Plugin = {
   name: 'translation-sealed-runtime-assets',
@@ -278,7 +278,7 @@ const sealedRuntimeAssets: Plugin = {
       bundle: SealedBundleView,
     ): void {
       /**
-       * The bundle's final code strings provide identities without source-location paths.
+       The bundle's final code strings provide identities without source-location paths.
        */
       const files = Object.values(bundle,)
         .filter(function executableChunk(item,): boolean {
@@ -306,7 +306,7 @@ const sealedRuntimeAssets: Plugin = {
         };
       },);
       /**
-       * Native bytes belong to the same application inventory as JavaScript.
+       Native bytes belong to the same application inventory as JavaScript.
        */
       const native = {
         path: NATIVE_FILE,
@@ -321,7 +321,7 @@ const sealedRuntimeAssets: Plugin = {
         source: nativeBytes,
       },);
       /**
-       * Neither absolute build paths nor timestamps enter reproducible runtime evidence.
+       Neither absolute build paths nor timestamps enter reproducible runtime evidence.
        */
       const manifest = {
         version: 1,
@@ -373,8 +373,8 @@ const sealedRuntimeAssets: Plugin = {
 };
 
 /**
- * Candidate output stays outside published dist/final and must be copied into a fresh frozen directory before use.
- * The ordinary package build and external-resolution behavior remain unchanged.
+ Candidate output stays outside published dist/final and must be copied into a fresh frozen directory before use.
+ The ordinary package build and external-resolution behavior remain unchanged.
  */
 const config: ReturnType<typeof nodeConfig> = nodeConfig({
   input: nodeEntries,
@@ -382,7 +382,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
   external: await nodeExternal({ alwaysBundle: ['**',], },),
 },);
 /**
- * Explicit configuration type permits declaration emission without inferring an exported object spread.
+ Explicit configuration type permits declaration emission without inferring an exported object spread.
  */
 const sealedConfig: ReturnType<typeof nodeConfig> = {
   ...config,

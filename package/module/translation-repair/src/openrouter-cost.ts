@@ -19,42 +19,42 @@ import { openRouterChunksOf, } from './openrouter-chunk-scan.ts';
 // shared with the endpoint reader.
 
 /**
- * Reading given when no chunk carried a cost.
+ Reading given when no chunk carried a cost.
  */
 export const COST_UNREPORTED = 'unreported';
 
 /**
- * USD one completed stream reports it was charged.
- *
- * THE LAST `usage.cost` WINS. The block arrives once, on the final chunk,
- * and a gateway that sent it more than once would report a running figure
- * whose last value is the total.
- *
- * @param bodyText - whole drained `text/event-stream` body
- *
- * @returns Cost in USD, or that no chunk reported one
- *
- * @example
- * ```ts
- * const cost = openRouterCostOf({ bodyText: reply.bodyText, },);
- * ```
+ USD one completed stream reports it was charged.
+ 
+ THE LAST `usage.cost` WINS. The block arrives once, on the final chunk,
+ and a gateway that sent it more than once would report a running figure
+ whose last value is the total.
+ 
+ @param bodyText - whole drained `text/event-stream` body
+ 
+ @returns Cost in USD, or that no chunk reported one
+ 
+ @example
+ ```ts
+ const cost = openRouterCostOf({ bodyText: reply.bodyText, },);
+ ```
  */
 export function openRouterCostOf(
   { bodyText, }: { readonly bodyText: string; },
 ): number | typeof COST_UNREPORTED {
   /**
-   * Costs each chunk reported, in arrival order.
+   Costs each chunk reported, in arrival order.
    */
   const costs = openRouterChunksOf({ bodyText, },)
     .flatMap(function costOf(chunk,): readonly number[] {
       /**
-       * Usage block, absent on every chunk but the last.
+       Usage block, absent on every chunk but the last.
        */
       const { usage, } = chunk;
       if (!isJsonRecord(usage,))
         return [];
       /**
-       * Cost as reported, of unknown type until checked.
+       Cost as reported, of unknown type until checked.
        */
       const { cost, } = usage;
       if ((typeof cost) !== 'number')

@@ -22,42 +22,42 @@ import { digestPipeline, } from './pipeline-digest.ts';
 // remembering to pass the same value to four of them.
 
 /**
- * Environment variable naming the commit an eligible pipeline must contain.
+ Environment variable naming the commit an eligible pipeline must contain.
  */
 const REQUIRED_COMMIT_VAR = 'TRANSLATION_REPAIR_REQUIRED_COMMIT';
 
 /**
- * Environment variable opting into a deliberately mixed pool.
+ Environment variable opting into a deliberately mixed pool.
  */
 const POOL_ALL_VAR = 'TRANSLATION_REPAIR_POOL_ALL';
 
 /**
- * Value that opts into a mixed pool, spelled out so a stray `0` or empty string
- * cannot silently disable the guard.
+ Value that opts into a mixed pool, spelled out so a stray `0` or empty string
+ cannot silently disable the guard.
  */
 const POOL_ALL_VALUE = 'yes';
 
 /**
- * Resolves which settled entries this reader may pool, and prints the census.
- *
- * Printing is not optional and not the caller's choice. A rate over a filtered
- * pool is only readable beside the lines saying what was filtered, and leaving
- * that to each call site is how one of them ends up silently omitting it.
- *
- * @param artifactsDir - directory holding one JSON per settled entry
- *
- * @returns Eligible entries, what was excluded, and the printed report
- *
- * @throws MixedGenerationError when the directory spans pipeline generations
- * and neither `TRANSLATION_REPAIR_REQUIRED_COMMIT` nor
- * `TRANSLATION_REPAIR_POOL_ALL=yes` was set
- *
- * @example
- * ```ts
- * const pool = await resolvePool({ artifactsDir, },);
- * ```
- *
- * @internal
+ Resolves which settled entries this reader may pool, and prints the census.
+ 
+ Printing is not optional and not the caller's choice. A rate over a filtered
+ pool is only readable beside the lines saying what was filtered, and leaving
+ that to each call site is how one of them ends up silently omitting it.
+ 
+ @param artifactsDir - directory holding one JSON per settled entry
+ 
+ @returns Eligible entries, what was excluded, and the printed report
+ 
+ @throws MixedGenerationError when the directory spans pipeline generations
+ and neither `TRANSLATION_REPAIR_REQUIRED_COMMIT` nor
+ `TRANSLATION_REPAIR_POOL_ALL=yes` was set
+ 
+ @example
+ ```ts
+ const pool = await resolvePool({ artifactsDir, },);
+ ```
+ 
+ @internal
  */
 export async function resolvePool(
   {
@@ -69,7 +69,7 @@ export async function resolvePool(
   },
 ): Promise<EligibleEntries> {
   /**
-   * Generation policy as the invoker set it.
+   Generation policy as the invoker set it.
    */
   const {
     [REQUIRED_COMMIT_VAR]: requiredCommit,
@@ -77,11 +77,11 @@ export async function resolvePool(
   } = process.env;
 
   /**
-   * Required commit as a plain string, empty when none was set.
-   *
-   * An exported-but-empty variable is an ordinary shell accident, so it is
-   * folded together with absence rather than read as a requirement nobody can
-   * satisfy.
+   Required commit as a plain string, empty when none was set.
+   
+   An exported-but-empty variable is an ordinary shell accident, so it is
+   folded together with absence rather than read as a requirement nobody can
+   satisfy.
    */
   const required = requiredCommit ?? '';
 
@@ -98,11 +98,11 @@ export async function resolvePool(
     );
 
   /**
-   * Settled entries partitioned by the built pipeline each recorded.
-   *
-   * Given the caller's own listing when it has one, so census and reader
-   * classify the same files rather than two views of a directory the
-   * accumulation is still writing into.
+   Settled entries partitioned by the built pipeline each recorded.
+   
+   Given the caller's own listing when it has one, so census and reader
+   classify the same files rather than two views of a directory the
+   accumulation is still writing into.
    */
   const census = await censusByGeneration({
     artifactsDir,
@@ -116,7 +116,7 @@ export async function resolvePool(
   // and a branch that moves changes a rate's population with nothing recording
   // that it did. Artifact tips are already held to canonical ids.
   /**
-   * Required commit as a full object id, empty when none was set.
+   Required commit as a full object id, empty when none was set.
    */
   const commit = (required === '')
     ? ''
@@ -126,7 +126,7 @@ export async function resolvePool(
     console.log(`POOL required commit ${required} resolves to ${commit}`,);
 
   /**
-   * Entries this reader may pool.
+   Entries this reader may pool.
    */
   const eligible = await selectEligible({
     census,
@@ -140,7 +140,7 @@ export async function resolvePool(
   // artifact touched. Printed beside the pool rather than stored, because it
   // describes this invocation rather than the entries.
   /**
-   * Built pipeline this reader is running.
+   Built pipeline this reader is running.
    */
   const reader = await digestPipeline({ dir: import.meta.dirname, },);
 
@@ -153,23 +153,23 @@ export async function resolvePool(
 }
 
 /**
- * Keeps only the artifact file names an eligible entry owns.
- *
- * Exported through the barrel so the built bundle's tests can hand it a pool
- * directly; the four readers are its callers.
- *
- * @internal
- *
- * @param names - artifact file names as read from disk
- *
- * @param eligible - resolved pool
- *
- * @returns Names belonging to eligible entries, order preserved
- *
- * @example
- * ```ts
- * const kept = keepEligible({ names, eligible, },);
- * ```
+ Keeps only the artifact file names an eligible entry owns.
+ 
+ Exported through the barrel so the built bundle's tests can hand it a pool
+ directly; the four readers are its callers.
+ 
+ @internal
+ 
+ @param names - artifact file names as read from disk
+ 
+ @param eligible - resolved pool
+ 
+ @returns Names belonging to eligible entries, order preserved
+ 
+ @example
+ ```ts
+ const kept = keepEligible({ names, eligible, },);
+ ```
  */
 export function keepEligible(
   {
@@ -181,12 +181,12 @@ export function keepEligible(
   },
 ): readonly string[] {
   /**
-   * Ids this reader must still see: everything eligible, plus every artifact
-   * that would not parse.
-   *
-   * Malformed files are carried through rather than filtered because the reader
-   * downstream is the one that reports them, and dropping them here would make
-   * a corrupt artifact vanish from the failure list instead of appearing on it.
+   Ids this reader must still see: everything eligible, plus every artifact
+   that would not parse.
+   
+   Malformed files are carried through rather than filtered because the reader
+   downstream is the one that reports them, and dropping them here would make
+   a corrupt artifact vanish from the failure list instead of appearing on it.
    */
   const allowed = new Set([
     ...eligible.entryIds,

@@ -4,13 +4,13 @@ import { devNull, } from 'node:os';
 // A pin names physical objects in its own clone, never inherited repository state.
 
 /**
- * Native read flags shared by corpus text, bytes, listings and naming history.
- * Lazy object retrieval would mutate the clone and contact a remote.
- *
- * @example
- * ```ts
- * const args = [...CORPUS_GIT_FLAGS, '-C', pin.cloneDir, 'show', spec];
- * ```
+ Native read flags shared by corpus text, bytes, listings and naming history.
+ Lazy object retrieval would mutate the clone and contact a remote.
+ 
+ @example
+ ```ts
+ const args = [...CORPUS_GIT_FLAGS, '-C', pin.cloneDir, 'show', spec];
+ ```
  */
 export const CORPUS_GIT_FLAGS: readonly string[] = [
   '--no-replace-objects',
@@ -19,8 +19,8 @@ export const CORPUS_GIT_FLAGS: readonly string[] = [
 ];
 
 /**
- * Repository-routing variables identified by Git's environment.c local_repo_env,
- * plus namespace and pathspec overrides that can change literal read scope.
+ Repository-routing variables identified by Git's environment.c local_repo_env,
+ plus namespace and pathspec overrides that can change literal read scope.
  */
 const REPOSITORY_ENVIRONMENT: ReadonlySet<string> = new Set([
   'GIT_ALTERNATE_OBJECT_DIRECTORIES',
@@ -46,24 +46,24 @@ const REPOSITORY_ENVIRONMENT: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Isolates every corpus subprocess from inherited repository routing and grafts.
- * Guards are assigned after inheritance, so callers cannot override them.
- * No process-global environment is mutated or logged.
- *
- * @param environment - inherited process context, injectable for verification
- *
- * @returns Owned environment with intrinsic-object and no-fetch semantics
- *
- * @example
- * ```ts
- * const env = corpusGitEnvironment();
- * ```
+ Isolates every corpus subprocess from inherited repository routing and grafts.
+ Guards are assigned after inheritance, so callers cannot override them.
+ No process-global environment is mutated or logged.
+ 
+ @param environment - inherited process context, injectable for verification
+ 
+ @returns Owned environment with intrinsic-object and no-fetch semantics
+ 
+ @example
+ ```ts
+ const env = corpusGitEnvironment();
+ ```
  */
 export function corpusGitEnvironment({ environment = process.env, }: {
   readonly environment?: Readonly<NodeJS.ProcessEnv>;
 } = {},): NodeJS.ProcessEnv {
   /**
-   * Preserve unrelated process settings without exposing their values in logs.
+   Preserve unrelated process settings without exposing their values in logs.
    */
   const inherited = Object.fromEntries(
     Object.entries(environment,)

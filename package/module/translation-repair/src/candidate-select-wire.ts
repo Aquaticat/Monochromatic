@@ -24,72 +24,72 @@ import { selectFence, } from './prompt-fence.ts';
 // is good enough, and the caller falls back to text it already trusts.
 
 /**
- * Source and baseline material judges compare candidates against.
- *
- * Carried as label plus text, rather than pre-fenced prose, so the fence is
- * chosen once against everything the prompt encloses.
- *
- * @example
- * ```ts
- * const evidence: SelectEvidence = { label: 'ORIGINAL (Chinese)', text: sourceText, };
- * ```
+ Source and baseline material judges compare candidates against.
+ 
+ Carried as label plus text, rather than pre-fenced prose, so the fence is
+ chosen once against everything the prompt encloses.
+ 
+ @example
+ ```ts
+ const evidence: SelectEvidence = { label: 'ORIGINAL (Chinese)', text: sourceText, };
+ ```
  */
 export type SelectEvidence = {
   /**
-   * Heading naming what the text is.
+   Heading naming what the text is.
    */
   readonly label: string;
 
   /**
-   * Material itself, fenced at render time.
+   Material itself, fenced at render time.
    */
   readonly text: string;
 };
 
 /**
- * Ballot value meaning no candidate is acceptable.
+ Ballot value meaning no candidate is acceptable.
  */
 export const CANDIDATE_NONE = 0;
 
 /**
- * One judge's ballot over the candidate set.
- *
- * @example
- * ```ts
- * const ballot: CandidateBallotWire = { best: 2, reason: 'keeps the source clause order', };
- * ```
+ One judge's ballot over the candidate set.
+ 
+ @example
+ ```ts
+ const ballot: CandidateBallotWire = { best: 2, reason: 'keeps the source clause order', };
+ ```
  */
 export type CandidateBallotWire = {
   /**
-   * One-based index of the chosen candidate,
-   * or {@link CANDIDATE_NONE} to decline them all.
+   One-based index of the chosen candidate,
+   or {@link CANDIDATE_NONE} to decline them all.
    */
   readonly best: number;
 
   /**
-   * Why, in one line; recorded so a selection can be audited later.
+   Why, in one line; recorded so a selection can be audited later.
    */
   readonly reason: string;
 };
 
 /**
- * Guards untrusted ballots from model JSON.
- *
- * @param value - candidate from unvalidated model output
- *
- * @returns Whether value is a well-formed ballot
- *
- * @example
- * ```ts
- * isCandidateBallotWire({ best: 1, reason: 'most natural', },);
- * ```
+ Guards untrusted ballots from model JSON.
+ 
+ @param value - candidate from unvalidated model output
+ 
+ @returns Whether value is a well-formed ballot
+ 
+ @example
+ ```ts
+ isCandidateBallotWire({ best: 1, reason: 'most natural', },);
+ ```
  */
 export function isCandidateBallotWire(value: unknown,): value is CandidateBallotWire {
   if (!isJsonRecord(value,))
     return false;
 
   /**
-   * Chosen index as the model sent it.
+   Chosen index as the model sent it.
    */
   const {
     best,
@@ -102,23 +102,23 @@ export function isCandidateBallotWire(value: unknown,): value is CandidateBallot
 }
 
 /**
- * Whether text spells a candidate index the way JSON prints the number:
- * ASCII digits only, no sign, no leading zero unless the index is exactly
- * zero.
- *
- * A LINEAR SCAN RATHER THAN `Number` OR A REGEX, because `Number` admits
- * `' 1'`, `'1e0'`, `'0x1'` and `''`, each of which a model could send while
- * meaning something else, and the point of reading a quoted index at all is
- * to take only the one shape that cannot be misread.
- *
- * @param text - ballot field as the model sent it
- *
- * @returns Whether every character is a digit under the leading-zero rule
- *
- * @example
- * ```ts
- * isCanonicalIndexText('8',);
- * ```
+ Whether text spells a candidate index the way JSON prints the number:
+ ASCII digits only, no sign, no leading zero unless the index is exactly
+ zero.
+ 
+ A LINEAR SCAN RATHER THAN `Number` OR A REGEX, because `Number` admits
+ `' 1'`, `'1e0'`, `'0x1'` and `''`, each of which a model could send while
+ meaning something else, and the point of reading a quoted index at all is
+ to take only the one shape that cannot be misread.
+ 
+ @param text - ballot field as the model sent it
+ 
+ @returns Whether every character is a digit under the leading-zero rule
+ 
+ @example
+ ```ts
+ isCanonicalIndexText('8',);
+ ```
  */
 function isCanonicalIndexText(text: string,): boolean {
   if (text.length === 0)
@@ -133,45 +133,45 @@ function isCanonicalIndexText(text: string,): boolean {
 }
 
 /**
- * A ballot as a model may send it, before its index is read as a number.
- *
- * `deepseek-v4-flash-0731` ANSWERS `{"best": "8"}` about one select round in
- * ten, a quoted index where the schema asked for an integer, and its recovery
- * round answers the same way, so under the strict guard alone those ballots
- * were lost (measured 2026-09-01: 8 schema-mismatch lines over 40 producer
- * rounds and 4 over six editor slices). A quoted canonical integer means
- * exactly one thing, so the boundary reads it and hands the strict shape on.
- *
- * @example
- * ```ts
- * const sent: CandidateBallotAsSent = { best: '2', reason: 'keeps the clause order', };
- * ```
+ A ballot as a model may send it, before its index is read as a number.
+ 
+ `deepseek-v4-flash-0731` ANSWERS `{"best": "8"}` about one select round in
+ ten, a quoted index where the schema asked for an integer, and its recovery
+ round answers the same way, so under the strict guard alone those ballots
+ were lost (measured 2026-09-01: 8 schema-mismatch lines over 40 producer
+ rounds and 4 over six editor slices). A quoted canonical integer means
+ exactly one thing, so the boundary reads it and hands the strict shape on.
+ 
+ @example
+ ```ts
+ const sent: CandidateBallotAsSent = { best: '2', reason: 'keeps the clause order', };
+ ```
  */
 export type CandidateBallotAsSent = {
   /**
-   * One-based index or {@link CANDIDATE_NONE}, as a number or as the
-   * canonical decimal text of one.
+   One-based index or {@link CANDIDATE_NONE}, as a number or as the
+   canonical decimal text of one.
    */
   readonly best: number | string;
 
   /**
-   * Why, in one line.
+   Why, in one line.
    */
   readonly reason: string;
 };
 
 /**
- * Guards untrusted ballots from model JSON, admitting a canonical quoted
- * index beside the strict shape.
- *
- * @param value - candidate from unvalidated model output
- *
- * @returns Whether value is a ballot once its index is read
- *
- * @example
- * ```ts
- * isCandidateBallotAsSent({ best: '1', reason: 'most natural', },);
- * ```
+ Guards untrusted ballots from model JSON, admitting a canonical quoted
+ index beside the strict shape.
+ 
+ @param value - candidate from unvalidated model output
+ 
+ @returns Whether value is a ballot once its index is read
+ 
+ @example
+ ```ts
+ isCandidateBallotAsSent({ best: '1', reason: 'most natural', },);
+ ```
  */
 export function isCandidateBallotAsSent(value: unknown,): value is CandidateBallotAsSent {
   if (isCandidateBallotWire(value,))
@@ -180,7 +180,7 @@ export function isCandidateBallotAsSent(value: unknown,): value is CandidateBall
     return false;
 
   /**
-   * Chosen index as the model sent it.
+   Chosen index as the model sent it.
    */
   const {
     best,
@@ -192,16 +192,16 @@ export function isCandidateBallotAsSent(value: unknown,): value is CandidateBall
 }
 
 /**
- * Reads a ballot as sent into the strict wire shape.
- *
- * @param sent - ballot admitted by {@link isCandidateBallotAsSent}
- *
- * @returns Same ballot with its index as a number
- *
- * @example
- * ```ts
- * const ballot = readCandidateBallotWire({ sent: { best: '8', reason: 'the eighth', }, },);
- * ```
+ Reads a ballot as sent into the strict wire shape.
+ 
+ @param sent - ballot admitted by {@link isCandidateBallotAsSent}
+ 
+ @returns Same ballot with its index as a number
+ 
+ @example
+ ```ts
+ const ballot = readCandidateBallotWire({ sent: { best: '8', reason: 'the eighth', }, },);
+ ```
  */
 export function readCandidateBallotWire(
   { sent, }: { readonly sent: CandidateBallotAsSent; },
@@ -213,7 +213,7 @@ export function readCandidateBallotWire(
 }
 
 /**
- * Structured-output constraint for a selection ballot.
+ Structured-output constraint for a selection ballot.
  */
 export const CANDIDATE_SELECT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',
@@ -235,58 +235,58 @@ export const CANDIDATE_SELECT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 };
 
 /**
- * What a decline costs where the caller HAS something to fall back on.
- *
- * The ordinary case, and the reason declining is safe to encourage: the editor
- * and refiner lanes keep the text they were given, and the translate lane keeps
- * the archive's own wording. A caller with nothing to keep has to say so
- * instead, since a judge told this while it is false is being asked for caution
- * by a promise nobody can honour.
- *
- * @example
- * ```ts
- * const consequence = KEEPS_TRUSTED_TEXT;
- * ```
+ What a decline costs where the caller HAS something to fall back on.
+ 
+ The ordinary case, and the reason declining is safe to encourage: the editor
+ and refiner lanes keep the text they were given, and the translate lane keeps
+ the archive's own wording. A caller with nothing to keep has to say so
+ instead, since a judge told this while it is false is being asked for caution
+ by a promise nobody can honour.
+ 
+ @example
+ ```ts
+ const consequence = KEEPS_TRUSTED_TEXT;
+ ```
  */
 export const KEEPS_TRUSTED_TEXT: string = 'the caller keeps text it already trusts when you decline';
 
 /**
- * What a decline costs where the caller has NOTHING to fall back on.
- *
- * @example
- * ```ts
- * const consequence = LEAVES_PASSAGE_UNTRANSLATED;
- * ```
+ What a decline costs where the caller has NOTHING to fall back on.
+ 
+ @example
+ ```ts
+ const consequence = LEAVES_PASSAGE_UNTRANSLATED;
+ ```
  */
 export const LEAVES_PASSAGE_UNTRANSLATED: string =
   'there is no existing translation of this passage, so declining every candidate leaves it untranslated '
   + 'rather than falling back on anything';
 
 /**
- * Builds the judge prompt: the task, the evidence, and the anonymized
- * candidates in caller order.
- *
- * @param task - what the candidates are attempting, in one sentence
- *
- * @param criteria - ordered decision rules, most important first
- *
- * @param evidence - source and baseline material judges compare against
- *
- * @param rendered - candidate texts in caller-fixed order
- *
- * @param sourceText - original the candidates render, when the caller has
- * it, so a candidate lacking a community rendering is named
- *
- * @param declineConsequence - what the CALLER does when every judge declines,
- * stated to the judges; the default describes a round that has something to
- * fall back on, and a caller with nothing must say so
- *
- * @returns Messages for one judge exchange
- *
- * @example
- * ```ts
- * const messages = buildCandidateSelectMessages({ task, criteria, evidence, rendered, },);
- * ```
+ Builds the judge prompt: the task, the evidence, and the anonymized
+ candidates in caller order.
+ 
+ @param task - what the candidates are attempting, in one sentence
+ 
+ @param criteria - ordered decision rules, most important first
+ 
+ @param evidence - source and baseline material judges compare against
+ 
+ @param rendered - candidate texts in caller-fixed order
+ 
+ @param sourceText - original the candidates render, when the caller has
+ it, so a candidate lacking a community rendering is named
+ 
+ @param declineConsequence - what the CALLER does when every judge declines,
+ stated to the judges; the default describes a round that has something to
+ fall back on, and a caller with nothing must say so
+ 
+ @returns Messages for one judge exchange
+ 
+ @example
+ ```ts
+ const messages = buildCandidateSelectMessages({ task, criteria, evidence, rendered, },);
+ ```
  */
 export function buildCandidateSelectMessages(
   {
@@ -306,8 +306,8 @@ export function buildCandidateSelectMessages(
   },
 ): readonly ChatMessage[] {
   /**
-   * Fence no enclosed text can reproduce, chosen across evidence and
-   * candidates together so one block can never close another's.
+   Fence no enclosed text can reproduce, chosen across evidence and
+   candidates together so one block can never close another's.
    */
   const fence = selectFence({
     texts: [
@@ -319,7 +319,7 @@ export function buildCandidateSelectMessages(
   },);
 
   /**
-   * Evidence blocks in caller order, each fenced like a candidate.
+   Evidence blocks in caller order, each fenced like a candidate.
    */
   const evidenceBlock = evidence
     .map(function toEvidenceBlock(entry,) {
@@ -328,8 +328,8 @@ export function buildCandidateSelectMessages(
     .join('\n\n',);
 
   /**
-   * Candidates numbered from one, each fenced so its own line breaks and
-   * punctuation cannot be read as instructions.
+   Candidates numbered from one, each fenced so its own line breaks and
+   punctuation cannot be read as instructions.
    */
   const block = rendered
     .map(function toBlock(
@@ -341,9 +341,9 @@ export function buildCandidateSelectMessages(
     .join('\n\n',);
 
   /**
-   * Community renderings a candidate lacks where the original carries the
-   * term (owner, 2026-09-09), named by the candidate's number after the
-   * candidates; nothing when the caller passed no original or none departs.
+   Community renderings a candidate lacks where the original carries the
+   term (owner, 2026-09-09), named by the candidate's number after the
+   candidates; nothing when the caller passed no original or none departs.
    */
   const communityBlock = (sourceText === undefined)
     ? []
@@ -361,7 +361,7 @@ export function buildCandidateSelectMessages(
     },);
 
   /**
-   * Decision rules as a numbered list.
+   Decision rules as a numbered list.
    */
   const rules = criteria
     .map(function toRule(

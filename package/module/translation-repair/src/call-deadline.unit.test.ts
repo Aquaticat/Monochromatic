@@ -1,10 +1,10 @@
 /**
- * Tests for the per-call deadline handle:
- * expiry aborts with a labeled timeout, caller aborts always win and
- * keep their reason, and disposal defuses both the timer and the
- * caller-abort listener.
- *
- * @module
+ Tests for the per-call deadline handle:
+ expiry aborts with a labeled timeout, caller aborts always win and
+ keep their reason, and disposal defuses both the timer and the
+ caller-abort listener.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -16,12 +16,12 @@ import {
 import { armCallDeadline, } from '../dist/final/node/index.mjs';
 
 /**
- * Deadline short enough to expire inside a test.
+ Deadline short enough to expire inside a test.
  */
 const SHORT_DEADLINE_MS = 20;
 
 /**
- * Comfortable margin past the short deadline.
+ Comfortable margin past the short deadline.
  */
 const PAST_DEADLINE_MS = SHORT_DEADLINE_MS * 3;
 
@@ -78,7 +78,7 @@ await describe({
         const caller = new AbortController();
 
         /**
-         * Signal kept alive past disposal to observe non-abort.
+         Signal kept alive past disposal to observe non-abort.
          */
         const { callSignal, } = (function armAndDispose() {
           using deadline = armCallDeadline({

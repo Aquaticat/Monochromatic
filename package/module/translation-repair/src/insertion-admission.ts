@@ -25,82 +25,82 @@ import { admitWithinShortfall, } from './coverage-corroboration.ts';
 // pairing found a merge rather than an omission.
 
 /**
- * Source-only passage already rendered elsewhere in target page.
- *
- * @example
- * ```ts
- * const carried: CarriedInsertion = {
- *   position: 2,
- *   sliceIndex: 4,
- *   sourceText: '猫。',
- *   evidence: ['The cat.',],
- * };
- * ```
+ Source-only passage already rendered elsewhere in target page.
+ 
+ @example
+ ```ts
+ const carried: CarriedInsertion = {
+   position: 2,
+   sliceIndex: 4,
+   sourceText: '猫。',
+   evidence: ['The cat.',],
+ };
+ ```
  */
 export type CarriedInsertion = {
   /**
-   * Position in prepared slice order.
+   Position in prepared slice order.
    */
   readonly position: number;
 
   /**
-   * Stable slice index used by lane reports.
+   Stable slice index used by lane reports.
    */
   readonly sliceIndex: number;
 
   /**
-   * Original passage roster found fully carried.
+   Original passage roster found fully carried.
    */
   readonly sourceText: string;
 
   /**
-   * Exact target regions supporting full-coverage votes.
+   Exact target regions supporting full-coverage votes.
    */
   readonly evidence: readonly string[];
 };
 
 /**
- * Authoritative insertion outcomes beside evidence explaining each.
- *
- * @example
- * ```ts
- * const admission: InsertionAdmission = { positions: new Set([1,]), findings: [], };
- * ```
+ Authoritative insertion outcomes beside evidence explaining each.
+ 
+ @example
+ ```ts
+ const admission: InsertionAdmission = { positions: new Set([1,]), findings: [], };
+ ```
  */
 export type InsertionAdmission = {
   /**
-   * Positions in prepared slice order that may be translated as insertions.
+   Positions in prepared slice order that may be translated as insertions.
    */
   readonly positions: ReadonlySet<number>;
 
   /**
-   * Source-only passages proven fully rendered elsewhere.
+   Source-only passages proven fully rendered elsewhere.
    */
   readonly carried?: readonly CarriedInsertion[];
 
   /**
-   * Count-only semantic and deterministic evidence for every candidate.
+   Count-only semantic and deterministic evidence for every candidate.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Chooses which insertion slices the page has room to be missing.
- *
- * @param slices - every prepared slice, in document order
- *
- * @param sourceText - whole original page
- *
- * @param targetText - whole translation as it stands
- *
- * @returns Positions in `slices` whose insertion the shortfall admits, so a
- * caller can test membership without matching on chunk indices, which name
- * different things depending on who stamped them
- *
- * @example
- * ```ts
- * const admitted = admitInsertions({ slices, sourceText, targetText, },);
- * ```
+ Chooses which insertion slices the page has room to be missing.
+ 
+ @param slices - every prepared slice, in document order
+ 
+ @param sourceText - whole original page
+ 
+ @param targetText - whole translation as it stands
+ 
+ @returns Positions in `slices` whose insertion the shortfall admits, so a
+ caller can test membership without matching on chunk indices, which name
+ different things depending on who stamped them
+ 
+ @example
+ ```ts
+ const admitted = admitInsertions({ slices, sourceText, targetText, },);
+ ```
  */
 export function admitInsertions(
   {
@@ -114,8 +114,8 @@ export function admitInsertions(
   },
 ): ReadonlySet<number> {
   /**
-   * Positions holding a slice with no translation beside it, paired with the
-   * original that would be written there.
+   Positions holding a slice with no translation beside it, paired with the
+   original that would be written there.
    */
   const proposed = slices.flatMap(function toProposal(
     slice,
@@ -131,7 +131,7 @@ export function admitInsertions(
   },);
 
   /**
-   * Those the page has room for, named by the position strings handed in.
+   Those the page has room for, named by the position strings handed in.
    */
   const admitted = admitWithinShortfall({
     sourceText,

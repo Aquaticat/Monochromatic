@@ -1,8 +1,8 @@
 /**
- * Tests for how an editor-width comparison is read.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for how an editor-width comparison is read.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -22,31 +22,31 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Repair the narrow roster shipped.
+ Repair the narrow roster shipped.
  */
 const NARROW_TEXT = 'The cat sunbathes on the windowsill every afternoon.';
 
 /**
- * A different repair, standing in for what extra editors bought.
+ A different repair, standing in for what extra editors bought.
  */
 const WIDE_TEXT = 'The cat suns herself on the windowsill each afternoon.';
 
 /**
- * Row with everything a summary reads, so a case states only its own field.
- *
- * @param comparison - how the two arms compared, defaulting to unmoved
- *
- * @param verdict - head-to-head reading, defaulting to none run
- *
- * @param narrowRepeatAgreed - whether the repeat judging agreed, defaulting
- * to agreement so a case that says nothing contributes no churn
- *
- * @returns Row carrying those over a settled baseline
- *
- * @example
- * ```ts
- * const row = rowWith({ comparison: 'differs', verdict: 'wide-wins', },);
- * ```
+ Row with everything a summary reads, so a case states only its own field.
+ 
+ @param comparison - how the two arms compared, defaulting to unmoved
+ 
+ @param verdict - head-to-head reading, defaulting to none run
+ 
+ @param narrowRepeatAgreed - whether the repeat judging agreed, defaulting
+ to agreement so a case that says nothing contributes no churn
+ 
+ @returns Row carrying those over a settled baseline
+ 
+ @example
+ ```ts
+ const row = rowWith({ comparison: 'differs', verdict: 'wide-wins', },);
+ ```
  */
 function rowWith(
   {
@@ -161,7 +161,7 @@ await describe({
         + 'added later cannot report its own omission as a measurement',
       fn: async function anUnknownArmRefuses() {
         /**
-         * What an arm outside the union raised, read for class as well as wording.
+         What an arm outside the union raised, read for class as well as wording.
          */
         const refusal = caught(function judgesAnUnknownArm() {
           readHeadToHead({

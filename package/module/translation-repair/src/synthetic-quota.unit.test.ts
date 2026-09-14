@@ -1,8 +1,8 @@
 /**
- * Tests for quota snapshot parsing.
- * Fixture mirrors the live-verified `/quotas` body shape with altered values.
- *
- * @module
+ Tests for quota snapshot parsing.
+ Fixture mirrors the live-verified `/quotas` body shape with altered values.
+ 
+ @module
  */
 
 import {
@@ -16,8 +16,8 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Recorded-shaped body with invented numbers;
- * carries the unmodeled blocks too, proving they are tolerated.
+ Recorded-shaped body with invented numbers;
+ carries the unmodeled blocks too, proving they are tolerated.
  */
 const RECORDED_SHAPE = JSON.stringify({
   subscription: {

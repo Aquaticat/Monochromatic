@@ -19,106 +19,106 @@ import type { QuotaSnapshot, } from './synthetic-quota.ts';
 // effort field.
 
 /**
- * OpenAI-style structured-output constraint;
- * every catalog model advertises `structured_outputs`,
- * but client-side validation stays because per-model strictness is unverified.
- *
- * @example
- * ```ts
- * const format: JsonSchemaResponseFormat = {
- *   type: 'json_schema',
- *   json_schema: { name: 'issue_claims', schema: { type: 'object', }, },
- * };
- * ```
+ OpenAI-style structured-output constraint;
+ every catalog model advertises `structured_outputs`,
+ but client-side validation stays because per-model strictness is unverified.
+ 
+ @example
+ ```ts
+ const format: JsonSchemaResponseFormat = {
+   type: 'json_schema',
+   json_schema: { name: 'issue_claims', schema: { type: 'object', }, },
+ };
+ ```
  */
 export type JsonSchemaResponseFormat = {
   /**
-   * Discriminator the OpenAI-compatible API expects.
+   Discriminator the OpenAI-compatible API expects.
    */
   readonly type: 'json_schema';
 
   /**
-   * Schema envelope: name, optional strictness, JSON schema body.
+   Schema envelope: name, optional strictness, JSON schema body.
    */
   readonly json_schema: {
     /**
-     * Identifier the API requires per schema.
+     Identifier the API requires per schema.
      */
     readonly name: string;
 
     /**
-     * Whether the server should enforce the schema strictly.
+     Whether the server should enforce the schema strictly.
      */
     readonly strict?: boolean;
 
     /**
-     * JSON schema constraining the completion.
+     JSON schema constraining the completion.
      */
     readonly schema: Record<string, unknown>;
   };
 };
 
 /**
- * One message carrying parts rather than a plain string.
- *
- * FOR IMAGES, and only images so far. `#111` sends a picture so a transcribed
- * passage has a source that can be CHECKED rather than only preserved, and the
- * provider takes that as an OpenAI-compatible content-part array. The part type
- * is the shared one from `@monochromatic-dev/module-llm-type`, so nothing here
- * invents a protocol.
- *
- * @example
- * ```ts
- * const message: VisionMessage = {
- *   role: 'user',
- *   content: [
- *     { type: 'text', text: 'Read this picture.', },
- *     { type: 'image_url', image_url: { url: dataUri, }, },
- *   ],
- * };
- * ```
+ One message carrying parts rather than a plain string.
+ 
+ FOR IMAGES, and only images so far. `#111` sends a picture so a transcribed
+ passage has a source that can be CHECKED rather than only preserved, and the
+ provider takes that as an OpenAI-compatible content-part array. The part type
+ is the shared one from `@monochromatic-dev/module-llm-type`, so nothing here
+ invents a protocol.
+ 
+ @example
+ ```ts
+ const message: VisionMessage = {
+   role: 'user',
+   content: [
+     { type: 'text', text: 'Read this picture.', },
+     { type: 'image_url', image_url: { url: dataUri, }, },
+   ],
+ };
+ ```
  */
 export type VisionMessage = {
   /**
-   * Author of the message, the same roles a text message uses.
+   Author of the message, the same roles a text message uses.
    */
   readonly role: ChatMessage['role'];
 
   /**
-   * Parts this message is composed of, in the order the model reads them.
+   Parts this message is composed of, in the order the model reads them.
    */
   readonly content: readonly ContentPart[];
 };
 
 /**
- * Text of a message, whichever shape it carries.
- *
- * ONE READER RATHER THAN A CAST AT EVERY SITE. Widening `content` to carry
- * picture parts left several readers expecting a string, and a cast at each of
- * them would be five places to get wrong rather than one. A picture is not
- * recoverable as text and is named by its part type instead, which is what a
- * witness or a test assertion wants: what the model was ASKED, not the bytes it
- * was shown.
- *
- * @param message - message to read
- *
- * @returns Its text, with any non-text part named
- *
- * @example
- * ```ts
- * const asked = messageText({ message, },);
- * ```
+ Text of a message, whichever shape it carries.
+ 
+ ONE READER RATHER THAN A CAST AT EVERY SITE. Widening `content` to carry
+ picture parts left several readers expecting a string, and a cast at each of
+ them would be five places to get wrong rather than one. A picture is not
+ recoverable as text and is named by its part type instead, which is what a
+ witness or a test assertion wants: what the model was ASKED, not the bytes it
+ was shown.
+ 
+ @param message - message to read
+ 
+ @returns Its text, with any non-text part named
+ 
+ @example
+ ```ts
+ const asked = messageText({ message, },);
+ ```
  */
 export function messageText({ message, }: { readonly message: ChatMessage | VisionMessage; },): string {
   /**
-   * Content as the message carries it.
+   Content as the message carries it.
    */
   const { content, } = message;
   if ((typeof content) === 'string')
     return content;
 
   /**
-   * Text of each part, with a picture named rather than rendered.
+   Text of each part, with a picture named rather than rendered.
    */
   const parts = content.map(function partText(part,): string {
     return (part.type === 'text') ? part.text : `[${part.type}]`;
@@ -127,33 +127,33 @@ export function messageText({ message, }: { readonly message: ChatMessage | Visi
 }
 
 /**
- * Whether a conversation shows anything that only a vision stack can read.
- *
- * ASKED BECAUSE REACH IS NARROWER FOR PICTURES THAN FOR TEXT, and not by the
- * same models on both providers. `roster-reach.ts` records the case: one model
- * reads pictures on one provider and not on the other, same weights, different
- * serving stack. A router that asked one question for both would either send a
- * picture where it cannot be read or refuse one that can.
- *
- * ANY NON-TEXT PART COUNTS, rather than the image part alone. A part this
- * pipeline has not met yet is still something a text-only stack cannot take,
- * and guessing the other way is the mistake that costs a call.
- *
- * @param messages - conversation as the caller built it
- *
- * @returns Whether any message carries a part that is not text
- *
- * @example
- * ```ts
- * const needsVision = carriesPicture({ messages, },);
- * ```
+ Whether a conversation shows anything that only a vision stack can read.
+ 
+ ASKED BECAUSE REACH IS NARROWER FOR PICTURES THAN FOR TEXT, and not by the
+ same models on both providers. `roster-reach.ts` records the case: one model
+ reads pictures on one provider and not on the other, same weights, different
+ serving stack. A router that asked one question for both would either send a
+ picture where it cannot be read or refuse one that can.
+ 
+ ANY NON-TEXT PART COUNTS, rather than the image part alone. A part this
+ pipeline has not met yet is still something a text-only stack cannot take,
+ and guessing the other way is the mistake that costs a call.
+ 
+ @param messages - conversation as the caller built it
+ 
+ @returns Whether any message carries a part that is not text
+ 
+ @example
+ ```ts
+ const needsVision = carriesPicture({ messages, },);
+ ```
  */
 export function carriesPicture(
   { messages, }: { readonly messages: readonly (ChatMessage | VisionMessage)[]; },
 ): boolean {
   return messages.some(function showsOne(message,): boolean {
     /**
-     * Content as this message carries it, string or parts.
+     Content as this message carries it, string or parts.
      */
     const { content, } = message;
 
@@ -166,136 +166,136 @@ export function carriesPicture(
 }
 
 /**
- * One chat exchange request.
- *
- * @example
- * ```ts
- * const request: ChatTextRequest = {
- *   modelId: 'hf:zai-org/GLM-5.3-Flash',
- *   messages: [{ role: 'user', content: '喵？', },],
- *   signal: AbortSignal.timeout(120_000,),
- * };
- * ```
+ One chat exchange request.
+ 
+ @example
+ ```ts
+ const request: ChatTextRequest = {
+   modelId: 'hf:zai-org/GLM-5.3-Flash',
+   messages: [{ role: 'user', content: '喵？', },],
+   signal: AbortSignal.timeout(120_000,),
+ };
+ ```
  */
 export type ChatTextRequest = {
   /**
-   * Catalog model receiving the exchange.
+   Catalog model receiving the exchange.
    */
   readonly modelId: RosterModelId;
 
   /**
-   * Conversation sent as-is.
-   *
-   * TEXT OR VISION, in one field rather than in two request shapes. The body is
-   * a pass-through, `messages: request.messages` inside a `JSON.stringify`, and
-   * the provider is OpenAI-compatible, so a message whose content is an array of
-   * parts serialises correctly with no other change. Widening the union leaves
-   * every existing caller valid, where a second request type and a second client
-   * method would have duplicated the limiter, the deadline, the retry ladder and
-   * the drain for one field's sake.
+   Conversation sent as-is.
+   
+   TEXT OR VISION, in one field rather than in two request shapes. The body is
+   a pass-through, `messages: request.messages` inside a `JSON.stringify`, and
+   the provider is OpenAI-compatible, so a message whose content is an array of
+   parts serialises correctly with no other change. Widening the union leaves
+   every existing caller valid, where a second request type and a second client
+   method would have duplicated the limiter, the deadline, the retry ladder and
+   the drain for one field's sake.
    */
   readonly messages: readonly (ChatMessage | VisionMessage)[];
 
   /**
-   * Abort signal honored for the whole exchange, wait included.
+   Abort signal honored for the whole exchange, wait included.
    */
   readonly signal: AbortSignal;
 
   /**
-   * Deadline bounding the exchange itself, armed only after the
-   * per-model slot is acquired, so local queue wait behind concurrent
-   * same-model calls never counts against it.
-   * Fan-outs need this: a dispatch-time deadline starves every queued
-   * call simultaneously.
+   Deadline bounding the exchange itself, armed only after the
+   per-model slot is acquired, so local queue wait behind concurrent
+   same-model calls never counts against it.
+   Fan-outs need this: a dispatch-time deadline starves every queued
+   call simultaneously.
    */
   readonly exchangeTimeoutMs?: number;
 
   /**
-   * Characters this call may produce on the answer channel before the
-   * stream watch ends it.
-   * Set by a caller that knows how large its own input was, so a bound
-   * relative to that input can end a runaway the absolute default is far
-   * too loose to see.
+   Characters this call may produce on the answer channel before the
+   stream watch ends it.
+   Set by a caller that knows how large its own input was, so a bound
+   relative to that input can end a runaway the absolute default is far
+   too loose to see.
    */
   readonly maxAnswerChars?: number;
 
   /**
-   * Completion token cap when the caller bounds output.
-   * Thinking tokens count against it and dominate output on these models
-   * (expect 90%+), so set it generously or omit it;
-   * a tight cap truncates mid-thinking and destroys the answer.
+   Completion token cap when the caller bounds output.
+   Thinking tokens count against it and dominate output on these models
+   (expect 90%+), so set it generously or omit it;
+   a tight cap truncates mid-thinking and destroys the answer.
    */
   readonly maxTokens?: number;
 
   /**
-   * Structured-output constraint when the caller expects JSON.
+   Structured-output constraint when the caller expects JSON.
    */
   readonly responseFormat?: JsonSchemaResponseFormat;
 };
 
 /**
- * Raw text outcome of one chat exchange.
- *
- * @example
- * ```ts
- * const reply: ChatTextReply = { text: '喵。', };
- * ```
+ Raw text outcome of one chat exchange.
+ 
+ @example
+ ```ts
+ const reply: ChatTextReply = { text: '喵。', };
+ ```
  */
 export type ChatTextReply = {
   /**
-   * Verbatim content of the first choice;
-   * empty when the API refused and returned no content.
+   Verbatim content of the first choice;
+   empty when the API refused and returned no content.
    */
   readonly text: string;
 
   /**
-   * First-class refusal from the message `refusal` field.
+   First-class refusal from the message `refusal` field.
    */
   readonly refusal?: string;
 
   /**
-   * Token usage when the server reported it;
-   * completion counts include thinking tokens.
+   Token usage when the server reported it;
+   completion counts include thinking tokens.
    */
   readonly usage?: CompletionUsage;
 
   /**
-   * Why the model stopped, verbatim from the provider, when it said.
-   *
-   * CARRIED SO A CALLER CAN TELL A CUT-OFF REPLY FROM A MALFORMED ONE. Those
-   * arrive identically, as content that will not parse, and they need opposite
-   * remediation: one points at the token ceiling, the other at the prompt and
-   * the guard.
+   Why the model stopped, verbatim from the provider, when it said.
+   
+   CARRIED SO A CALLER CAN TELL A CUT-OFF REPLY FROM A MALFORMED ONE. Those
+   arrive identically, as content that will not parse, and they need opposite
+   remediation: one points at the token ceiling, the other at the prompt and
+   the guard.
    */
   readonly finishReason?: string;
 };
 
 /**
- * One schema-validated chat request:
- * text request plus the guard that admits parsed content.
- *
- * @example
- * ```ts
- * const request: ChatJsonRequest<Verdict> = { ...textRequest, validate: isVerdict, };
- * ```
+ One schema-validated chat request:
+ text request plus the guard that admits parsed content.
+ 
+ @example
+ ```ts
+ const request: ChatJsonRequest<Verdict> = { ...textRequest, validate: isVerdict, };
+ ```
  */
 export type ChatJsonRequest<ValueT,> = ChatTextRequest & {
   /**
-   * Guard admitting parsed model JSON into the typed pipeline.
+   Guard admitting parsed model JSON into the typed pipeline.
    */
   readonly validate: (value: unknown,) => value is ValueT;
 };
 
 /**
- * Machine-readable cause of a schema mismatch, beside the prose detail.
- * `truncated-completion` marks the provider's own token-ceiling stop,
- * which invalidates even parseable content because a syntactically complete
- * prefix does not prove generation completed.
- *
- * @example
- * ```ts
- * const reason: SchemaMismatchReason = 'truncated-completion';
- * ```
+ Machine-readable cause of a schema mismatch, beside the prose detail.
+ `truncated-completion` marks the provider's own token-ceiling stop,
+ which invalidates even parseable content because a syntactically complete
+ prefix does not prove generation completed.
+ 
+ @example
+ ```ts
+ const reason: SchemaMismatchReason = 'truncated-completion';
+ ```
  */
 export type SchemaMismatchReason =
   | 'caller-guard-rejected'
@@ -304,110 +304,110 @@ export type SchemaMismatchReason =
   | 'truncated-completion';
 
 /**
- * Outcome of one schema-validated chat exchange.
- * Refusals and mismatches are data (reroute and scorecard), never exceptions.
- *
- * @example
- * ```ts
- * const outcome: ChatJsonOutcome<Verdict> = { kind: 'ok', value, rawText, };
- * ```
+ Outcome of one schema-validated chat exchange.
+ Refusals and mismatches are data (reroute and scorecard), never exceptions.
+ 
+ @example
+ ```ts
+ const outcome: ChatJsonOutcome<Verdict> = { kind: 'ok', value, rawText, };
+ ```
  */
 export type ChatJsonOutcome<ValueT,> =
   | {
     /**
-     * Content parsed and validated.
+     Content parsed and validated.
      */
     readonly kind: 'ok';
 
     /**
-     * Typed content admitted by the caller's guard.
+     Typed content admitted by the caller's guard.
      */
     readonly value: ValueT;
 
     /**
-     * Verbatim model text for audit trails.
+     Verbatim model text for audit trails.
      */
     readonly rawText: string;
 
     /**
-     * Token usage when reported; thinking tokens included.
+     Token usage when reported; thinking tokens included.
      */
     readonly usage?: CompletionUsage;
   }
   | {
     /**
-     * The API refused outright or the answer reads as a refusal;
-     * reroute cross-family.
+     The API refused outright or the answer reads as a refusal;
+     reroute cross-family.
      */
     readonly kind: 'refusal-shaped';
 
     /**
-     * Verbatim model text for audit trails.
+     Verbatim model text for audit trails.
      */
     readonly rawText: string;
 
     /**
-     * Refusal marker that fired;
-     * `api-refusal-field` when the message `refusal` field was set.
-     * Feeds the scorecard.
+     Refusal marker that fired;
+     `api-refusal-field` when the message `refusal` field was set.
+     Feeds the scorecard.
      */
     readonly marker: string;
 
     /**
-     * Token usage when reported; thinking tokens included.
+     Token usage when reported; thinking tokens included.
      */
     readonly usage?: CompletionUsage;
   }
   | {
     /**
-     * Content is not valid JSON, failed the caller's guard,
-     * or was truncated by the provider (completion or thinking).
+     Content is not valid JSON, failed the caller's guard,
+     or was truncated by the provider (completion or thinking).
      */
     readonly kind: 'schema-mismatch';
 
     /**
-     * Verbatim model text for audit trails.
+     Verbatim model text for audit trails.
      */
     readonly rawText: string;
 
     /**
-     * Machine-readable cause, for callers that branch on truncation.
+     Machine-readable cause, for callers that branch on truncation.
      */
     readonly reason?: SchemaMismatchReason;
 
     /**
-     * What failed: parse step, guard, or completion truncation.
+     What failed: parse step, guard, or completion truncation.
      */
     readonly detail: string;
 
     /**
-     * Token usage when reported; thinking tokens included.
+     Token usage when reported; thinking tokens included.
      */
     readonly usage?: CompletionUsage;
   };
 
 /**
- * What every provider's client can do, whichever protocol it speaks.
- *
- * THE PART THAT IS NOT ABOUT BUDGET. Both providers take a conversation and
- * return an answer; what they do NOT share is how the money is counted, which
- * is a five-hour and weekly quota on one and a credit balance on the other.
- * Splitting the surface here lets a router hold two clients as one type and
- * lets a stage take either without knowing which it has.
- *
- * @example
- * ```ts
- * async function ask({ caller, }: { readonly caller: ModelCaller; },): Promise<void> {}
- * ```
+ What every provider's client can do, whichever protocol it speaks.
+ 
+ THE PART THAT IS NOT ABOUT BUDGET. Both providers take a conversation and
+ return an answer; what they do NOT share is how the money is counted, which
+ is a five-hour and weekly quota on one and a credit balance on the other.
+ Splitting the surface here lets a router hold two clients as one type and
+ lets a stage take either without knowing which it has.
+ 
+ @example
+ ```ts
+ async function ask({ caller, }: { readonly caller: ModelCaller; },): Promise<void> {}
+ ```
  */
 export type ModelCaller = {
   /**
-   * Free-text chat exchange.
+   Free-text chat exchange.
    */
   readonly chatText: (request: ForeignBorrowed<ChatTextRequest>,) => Promise<ChatTextReply>;
 
   /**
-   * Schema-validated chat exchange returning outcomes as data.
+   Schema-validated chat exchange returning outcomes as data.
    */
   readonly chatJson: <ValueT,>(
     request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
@@ -415,16 +415,16 @@ export type ModelCaller = {
 };
 
 /**
- * Injected-transport client surface drivers consume.
- *
- * @example
- * ```ts
- * const client: SyntheticClient = createSyntheticClient({ apiKey, },);
- * ```
+ Injected-transport client surface drivers consume.
+ 
+ @example
+ ```ts
+ const client: SyntheticClient = createSyntheticClient({ apiKey, },);
+ ```
  */
 export type SyntheticClient = ModelCaller & {
   /**
-   * Current quota snapshot; free per provider docs.
+   Current quota snapshot; free per provider docs.
    */
   readonly quotas: (args: { readonly signal: AbortSignal; },) => Promise<QuotaSnapshot>;
 };

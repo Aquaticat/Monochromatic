@@ -1,16 +1,16 @@
 /**
- * Tests for the absolute size predicates that decide which slices may set a
- * document's expansion baseline, and which evidence each one reports.
- *
- * WHY THE BOUNDARIES ARE TESTED FROM BOTH SIDES. Every endpoint here is a fixed
- * number that `#163` chose from a corpus reading, and the whole soundness
- * argument for excluding what they name is that they never consult the baseline.
- * A predicate that quietly moved by one character would keep passing a test that
- * only ever checked the middle of each band.
- *
- * Fixtures are invented counts, not corpus text.
- *
- * @module
+ Tests for the absolute size predicates that decide which slices may set a
+ document's expansion baseline, and which evidence each one reports.
+ 
+ WHY THE BOUNDARIES ARE TESTED FROM BOTH SIDES. Every endpoint here is a fixed
+ number that `#163` chose from a corpus reading, and the whole soundness
+ argument for excluding what they name is that they never consult the baseline.
+ A predicate that quietly moved by one character would keep passing a test that
+ only ever checked the middle of each band.
+ 
+ Fixtures are invented counts, not corpus text.
+ 
+ @module
  */
 
 import {

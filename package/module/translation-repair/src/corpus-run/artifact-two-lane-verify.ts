@@ -32,26 +32,26 @@ import type { PreparationIdentity, } from '../preparation-identity.ts';
 // is a different claim whenever the two preparations are not the same object.
 
 /**
- * Reports a ledger that does not describe the preparation it is filed under.
- *
- * @example
- * ```ts
- * throw new ArtifactPreparationMismatchError({ message: 'repair ledger names slice 4 at position 3', },);
- * ```
+ Reports a ledger that does not describe the preparation it is filed under.
+ 
+ @example
+ ```ts
+ throw new ArtifactPreparationMismatchError({ message: 'repair ledger names slice 4 at position 3', },);
+ ```
  */
 export class ArtifactPreparationMismatchError extends Error {
   /**
-   * Names this error for a caller matching on it.
+   Names this error for a caller matching on it.
    */
   public override readonly name = 'ArtifactPreparationMismatchError';
 
   /**
-   * @param message - what disagreed, naming lane and slice
-   *
-   * @example
-   * ```ts
-   * new ArtifactPreparationMismatchError({ message: 'translate ledger has 3 rows for 4 slices', },);
-   * ```
+   @param message - what disagreed, naming lane and slice
+   
+   @example
+   ```ts
+   new ArtifactPreparationMismatchError({ message: 'translate ledger has 3 rows for 4 slices', },);
+   ```
    */
   public constructor({ message, }: { readonly message: string; },) {
     super(message,);
@@ -59,31 +59,31 @@ export class ArtifactPreparationMismatchError extends Error {
 }
 
 /**
- * Refuses a ledger that does not describe the given preparation.
- *
- * Checks the name the ledger's builder stamped on it, then the four per-slice
- * facts a row carries over from preparation: which slice it is, the original it
- * renders, whether the archive holds any wording there, and what that wording
- * is. A row disagreeing on any of them was built over different slices, however
- * well it lines up with the other lane's.
- *
- * @param prepared - slicing this artifact is about
- *
- * @param expected - name that slicing gives itself, computed by the caller so
- * it is not recomputed once per lane
- *
- * @param ledger - one lane's ledger, one row per slice in position order,
- * carrying the identity of the slicing it was built over
- *
- * @param lane - which lane, so a message names the side at fault
- *
- * @throws {@link ArtifactPreparationMismatchError} when the name, the count or
- * any per-slice fact disagrees
- *
- * @example
- * ```ts
- * assertLedgerDescribesPreparation({ prepared, expected, ledger: lanes.repairDelivery, lane: 'repair', },);
- * ```
+ Refuses a ledger that does not describe the given preparation.
+ 
+ Checks the name the ledger's builder stamped on it, then the four per-slice
+ facts a row carries over from preparation: which slice it is, the original it
+ renders, whether the archive holds any wording there, and what that wording
+ is. A row disagreeing on any of them was built over different slices, however
+ well it lines up with the other lane's.
+ 
+ @param prepared - slicing this artifact is about
+ 
+ @param expected - name that slicing gives itself, computed by the caller so
+ it is not recomputed once per lane
+ 
+ @param ledger - one lane's ledger, one row per slice in position order,
+ carrying the identity of the slicing it was built over
+ 
+ @param lane - which lane, so a message names the side at fault
+ 
+ @throws {@link ArtifactPreparationMismatchError} when the name, the count or
+ any per-slice fact disagrees
+ 
+ @example
+ ```ts
+ assertLedgerDescribesPreparation({ prepared, expected, ledger: lanes.repairDelivery, lane: 'repair', },);
+ ```
  */
 export function assertLedgerDescribesPreparation(
   {
@@ -99,7 +99,7 @@ export function assertLedgerDescribesPreparation(
   },
 ): void {
   /**
-   * Rows the ledger filed, under the name it was built over.
+   Rows the ledger filed, under the name it was built over.
    */
   const {
     preparationIdentity: named,
@@ -113,7 +113,7 @@ export function assertLedgerDescribesPreparation(
   }
 
   /**
-   * Slices the ledger has to cover, one row each.
+   Slices the ledger has to cover, one row each.
    */
   const { slices, } = prepared;
   if (records.length !== slices.length) {
@@ -128,7 +128,7 @@ export function assertLedgerDescribesPreparation(
     slice,
   ] of slices.entries()) {
     /**
-     * Row filed for this position.
+     Row filed for this position.
      */
     const record = records[position];
     if (record === undefined) {
@@ -138,7 +138,7 @@ export function assertLedgerDescribesPreparation(
     }
 
     /**
-     * What the preparation says this position holds.
+     What the preparation says this position holds.
      */
     const {
       sliceIndex,
@@ -153,7 +153,7 @@ export function assertLedgerDescribesPreparation(
     }
 
     /**
-     * Original the preparation pairs with that archive wording.
+     Original the preparation pairs with that archive wording.
      */
     const { text: sourceText, } = slice.source;
     if (record.sourceText !== sourceText) {
@@ -165,7 +165,7 @@ export function assertLedgerDescribesPreparation(
     }
 
     /**
-     * What the preparation says about the archive at this slice.
+     What the preparation says about the archive at this slice.
      */
     const incumbentKind = isInsertionChunk(slice.target,) ? 'absent' : 'present';
     if (record.incumbentKind !== incumbentKind) {
@@ -186,30 +186,30 @@ export function assertLedgerDescribesPreparation(
 }
 
 /**
- * Refuses a lane result counting slices the preparation does not have.
- *
- * The ledgers are checked row by row and the RAW RESULTS beside them are not:
- * a structurally valid driver result could pair one lane's result with the
- * other's ledger, or with a result from another entry entirely. Both lanes
- * report the slice count their preparation produced, which is the one field
- * cheap enough to check here and enough to refuse a grossly mismatched pairing.
- *
- * NOT a proof that the result and the ledger beside it came from one run. That
- * needs the result's document re-spliced from the ledger's rows, which the
- * driver is better placed to do than the artifact writer.
- *
- * @param prepared - slicing this artifact is about
- *
- * @param sliceCount - count the lane's own result reports
- *
- * @param lane - which lane, so a message names the side at fault
- *
- * @throws {@link ArtifactPreparationMismatchError} when the counts differ
- *
- * @example
- * ```ts
- * assertResultCountsPreparation({ prepared, sliceCount: lanes.repair.sliceCount, lane: 'repair', },);
- * ```
+ Refuses a lane result counting slices the preparation does not have.
+ 
+ The ledgers are checked row by row and the RAW RESULTS beside them are not:
+ a structurally valid driver result could pair one lane's result with the
+ other's ledger, or with a result from another entry entirely. Both lanes
+ report the slice count their preparation produced, which is the one field
+ cheap enough to check here and enough to refuse a grossly mismatched pairing.
+ 
+ NOT a proof that the result and the ledger beside it came from one run. That
+ needs the result's document re-spliced from the ledger's rows, which the
+ driver is better placed to do than the artifact writer.
+ 
+ @param prepared - slicing this artifact is about
+ 
+ @param sliceCount - count the lane's own result reports
+ 
+ @param lane - which lane, so a message names the side at fault
+ 
+ @throws {@link ArtifactPreparationMismatchError} when the counts differ
+ 
+ @example
+ ```ts
+ assertResultCountsPreparation({ prepared, sliceCount: lanes.repair.sliceCount, lane: 'repair', },);
+ ```
  */
 export function assertResultCountsPreparation(
   {
@@ -223,7 +223,7 @@ export function assertResultCountsPreparation(
   },
 ): void {
   /**
-   * Slices the preparation produced, which both lanes report a count of.
+   Slices the preparation produced, which both lanes report a count of.
    */
   const preparedSliceCount = prepared.slices
     .length;
@@ -237,24 +237,24 @@ export function assertResultCountsPreparation(
 }
 
 /**
- * Refuses a run whose alignment findings differ from its preparation's.
- *
- * The artifact records these ONCE, on the preparation, and the driver reports
- * them too. Two derivations of one fact reaching the same boundary is the
- * moment to check them rather than to pick one, which is what recording either
- * silently amounts to.
- *
- * @param prepared - slicing this artifact is about
- *
- * @param reported - findings the lane driver returned
- *
- * @throws {@link ArtifactPreparationMismatchError} when the two lists differ in
- * length or in any entry
- *
- * @example
- * ```ts
- * assertFindingsDescribePreparation({ prepared, reported: lanes.alignmentFindings, },);
- * ```
+ Refuses a run whose alignment findings differ from its preparation's.
+ 
+ The artifact records these ONCE, on the preparation, and the driver reports
+ them too. Two derivations of one fact reaching the same boundary is the
+ moment to check them rather than to pick one, which is what recording either
+ silently amounts to.
+ 
+ @param prepared - slicing this artifact is about
+ 
+ @param reported - findings the lane driver returned
+ 
+ @throws {@link ArtifactPreparationMismatchError} when the two lists differ in
+ length or in any entry
+ 
+ @example
+ ```ts
+ assertFindingsDescribePreparation({ prepared, reported: lanes.alignmentFindings, },);
+ ```
  */
 export function assertFindingsDescribePreparation(
   {
@@ -266,7 +266,7 @@ export function assertFindingsDescribePreparation(
   },
 ): void {
   /**
-   * Findings the preparation itself observed.
+   Findings the preparation itself observed.
    */
   const { alignmentFindings, } = prepared;
   if (reported.length !== alignmentFindings.length) {

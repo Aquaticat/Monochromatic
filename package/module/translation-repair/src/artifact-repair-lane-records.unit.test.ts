@@ -1,18 +1,18 @@
 /**
- * Tests for reading the repair lane's own records out of a settled artifact.
- *
- * WHAT THESE PIN is a PATH, not a shape. Version 1 wrote these records at the
- * artifact root and version 2 writes them inside the repair lane, and every
- * reader kept asking the root. Nothing caught it: raw JSON has no type to
- * disagree with, so the retired key answered `undefined` and the reader that
- * tolerated absence reported an empty corpus.
- *
- * So the first case puts DECOY records at the retired key. A reader that still
- * asks the root passes every other case here and fails that one.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading the repair lane's own records out of a settled artifact.
+ 
+ WHAT THESE PIN is a PATH, not a shape. Version 1 wrote these records at the
+ artifact root and version 2 writes them inside the repair lane, and every
+ reader kept asking the root. Nothing caught it: raw JSON has no type to
+ disagree with, so the retired key answered `undefined` and the reader that
+ tolerated absence reported an empty corpus.
+ 
+ So the first case puts DECOY records at the retired key. A reader that still
+ asks the root passes every other case here and fails that one.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -30,32 +30,32 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original of the slice both lanes work on.
+ Original of the slice both lanes work on.
  */
 const SOURCE_NAP = '猫猫在窗台上睡觉。';
 
 /**
- * Original of the passage the archive never translated.
+ Original of the passage the archive never translated.
  */
 const SOURCE_BIRD = '窗台上有一只鸟。';
 
 /**
- * Archive's own English for the first slice.
+ Archive's own English for the first slice.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
 /**
- * Wording the translate lane decided for it.
+ Wording the translate lane decided for it.
  */
 const FRESH_NAP = 'The cat naps on the windowsill.';
 
 /**
- * Identity a preparation gives itself, checked for SYNTAX only.
+ Identity a preparation gives itself, checked for SYNTAX only.
  */
 const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
 
 /**
- * One issue record as the repair lane writes them.
+ One issue record as the repair lane writes them.
  */
 const LANE_ISSUE = {
   sliceIndex: 0,
@@ -64,15 +64,15 @@ const LANE_ISSUE = {
 };
 
 /**
- * One finding as the repair lane writes them.
+ One finding as the repair lane writes them.
  */
 const LANE_FINDING = 'stage-quorum-unmet (critic 0/6)';
 
 /**
- * Records planted at the RETIRED root key, which nothing may read.
- *
- * Deliberately different from the lane's own, so a reader still asking the root
- * returns these and is caught rather than agreeing by coincidence.
+ Records planted at the RETIRED root key, which nothing may read.
+ 
+ Deliberately different from the lane's own, so a reader still asking the root
+ returns these and is caught rather than agreeing by coincidence.
  */
 const DECOY_ISSUE = {
   sliceIndex: 9,
@@ -81,15 +81,15 @@ const DECOY_ISSUE = {
 };
 
 /**
- * Repair lane's ledger: it kept the archive's wording, and had nothing to do at
- * a passage the archive never translated.
- *
- * @returns Two rows, in document order
- *
- * @example
- * ```ts
- * const rows = repairLedger();
- * ```
+ Repair lane's ledger: it kept the archive's wording, and had nothing to do at
+ a passage the archive never translated.
+ 
+ @returns Two rows, in document order
+ 
+ @example
+ ```ts
+ const rows = repairLedger();
+ ```
  */
 function repairLedger(): readonly ArtifactDeliveryRow[] {
   return [
@@ -118,15 +118,15 @@ function repairLedger(): readonly ArtifactDeliveryRow[] {
 }
 
 /**
- * Translate lane's ledger: it replaced the first slice and could not fill the
- * second.
- *
- * @returns Two rows, in document order
- *
- * @example
- * ```ts
- * const rows = translateLedger();
- * ```
+ Translate lane's ledger: it replaced the first slice and could not fill the
+ second.
+ 
+ @returns Two rows, in document order
+ 
+ @example
+ ```ts
+ const rows = translateLedger();
+ ```
  */
 function translateLedger(): readonly ArtifactDeliveryRow[] {
   return [
@@ -155,16 +155,16 @@ function translateLedger(): readonly ArtifactDeliveryRow[] {
 }
 
 /**
- * Repair lane's raw result, with whatever this case changes.
- *
- * @param over - fields this case replaces, `issues` and `findings` above all
- *
- * @returns Raw result JSON
- *
- * @example
- * ```ts
- * const raw = repairResult({ issues: [], },);
- * ```
+ Repair lane's raw result, with whatever this case changes.
+ 
+ @param over - fields this case replaces, `issues` and `findings` above all
+ 
+ @returns Raw result JSON
+ 
+ @example
+ ```ts
+ const raw = repairResult({ issues: [], },);
+ ```
  */
 function repairResult(
   over: Record<string, unknown> = {},
@@ -206,14 +206,14 @@ function repairResult(
 }
 
 /**
- * Translate lane's raw result, which no case here varies.
- *
- * @returns Raw result JSON
- *
- * @example
- * ```ts
- * const raw = translateResult();
- * ```
+ Translate lane's raw result, which no case here varies.
+ 
+ @returns Raw result JSON
+ 
+ @example
+ ```ts
+ const raw = translateResult();
+ ```
  */
 function translateResult(): Record<string, unknown> {
   return {
@@ -251,18 +251,18 @@ function translateResult(): Record<string, unknown> {
 }
 
 /**
- * One whole version 2 artifact, with whatever this case changes.
- *
- * @param repairRaw - repair lane's raw result
- *
- * @param rest - any top-level field this case adds, the retired keys included
- *
- * @returns Artifact as JSON
- *
- * @example
- * ```ts
- * const artifact = artifactWith({ repairRaw: repairResult({ issues: [], },), },);
- * ```
+ One whole version 2 artifact, with whatever this case changes.
+ 
+ @param repairRaw - repair lane's raw result
+ 
+ @param rest - any top-level field this case adds, the retired keys included
+ 
+ @returns Artifact as JSON
+ 
+ @example
+ ```ts
+ const artifact = artifactWith({ repairRaw: repairResult({ issues: [], },), },);
+ ```
  */
 function artifactWith(
   {
@@ -274,13 +274,13 @@ function artifactWith(
   } = {},
 ): Record<string, unknown> {
   /**
-   * Both ledgers, named so the comparison is derived from the same rows the
-   * lanes carry rather than from a second copy of them.
+   Both ledgers, named so the comparison is derived from the same rows the
+   lanes carry rather than from a second copy of them.
    */
   const repairDelivery = repairLedger();
 
   /**
-   * Translate lane's rows, on the same footing.
+   Translate lane's rows, on the same footing.
    */
   const translateDelivery = translateLedger();
   return {
@@ -337,7 +337,7 @@ await describe({
         + '`undefined` from raw JSON, and reported an empty corpus',
       fn: async () => {
         /**
-         * Records as this reader lifts them.
+         Records as this reader lifts them.
          */
         const records = repairLaneRecordsOf({
           value: artifactWith(),
@@ -357,7 +357,7 @@ await describe({
         + 'for a reader to pick the wrong one between',
       fn: async () => {
         /**
-         * What retiredKeyPresent raised, read for its class as well as its wording.
+         What retiredKeyPresent raised, read for its class as well as its wording.
          */
         const refusalOfRetiredKeyPresent = caught(function retiredKeyPresent() {
           repairLaneRecordsOf({
@@ -378,7 +378,7 @@ await describe({
         + 'ordinary quiet entry into a parse failure',
       fn: async () => {
         /**
-         * Entry that settled without a single filed issue.
+         Entry that settled without a single filed issue.
          */
         const records = repairLaneRecordsOf({
           value: artifactWith({ repairRaw: repairResult({ issues: [], },), },),
@@ -398,7 +398,7 @@ await describe({
         + 'is exactly what hid the moved path',
       fn: async () => {
         /**
-         * What noIssues raised, read for its class as well as its wording.
+         What noIssues raised, read for its class as well as its wording.
          */
         const refusalOfNoIssues = caught(function noIssues() {
           repairLaneRecordsOf({
@@ -422,7 +422,7 @@ await describe({
         + 'condition it was built to detect',
       fn: async () => {
         /**
-         * What noFindings raised, read for its class as well as its wording.
+         What noFindings raised, read for its class as well as its wording.
          */
         const refusalOfNoFindings = caught(function noFindings() {
           repairLaneRecordsOf({

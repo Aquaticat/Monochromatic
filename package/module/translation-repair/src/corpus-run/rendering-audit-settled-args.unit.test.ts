@@ -1,27 +1,27 @@
 /**
- * Tests for the rendering audit's command line surface.
- *
- * EVERY CASE HERE IS ABOUT A FLAG THE OPERATOR GOT WRONG, because the cases
- * where they got it right were never the risk. A reader of a command line has
- * exactly one dangerous failure mode: reading a typo as a default and running
- * anyway. This one had two of those.
- *
- * `--cap once` PARSED TO `NaN`. `capped` in `rendering-audit-settled.ts` returns
- * every subject when the cap is negative and `slice(0, cap)` otherwise; `NaN
- * < 0` is false and `slice(0, NaN)` is empty, so a mistyped cap audited zero
- * subjects, printed the archive population it had read, and exited clean. The
- * operator would have read that as an audit of the whole archive.
- *
- * `--cap` AT THE END OF THE LINE PARSED TO "buy everything", which is the
- * opposite of a cap, because a flag written with nothing after it and a flag
- * never written both came back as the empty string. `--only` at the end of the
- * line had the same shape and the same opposite meaning: audit every entry.
- *
- * ALL THREE NOW REFUSE IN OUR OWN WORDS, at exit code 6 through
- * `reportingRefusals`, and the message may repeat the operator's own argument
- * because `StatedRefusalError` is exactly the marker for text they typed.
- *
- * @module
+ Tests for the rendering audit's command line surface.
+ 
+ EVERY CASE HERE IS ABOUT A FLAG THE OPERATOR GOT WRONG, because the cases
+ where they got it right were never the risk. A reader of a command line has
+ exactly one dangerous failure mode: reading a typo as a default and running
+ anyway. This one had two of those.
+ 
+ `--cap once` PARSED TO `NaN`. `capped` in `rendering-audit-settled.ts` returns
+ every subject when the cap is negative and `slice(0, cap)` otherwise; `NaN
+ < 0` is false and `slice(0, NaN)` is empty, so a mistyped cap audited zero
+ subjects, printed the archive population it had read, and exited clean. The
+ operator would have read that as an audit of the whole archive.
+ 
+ `--cap` AT THE END OF THE LINE PARSED TO "buy everything", which is the
+ opposite of a cap, because a flag written with nothing after it and a flag
+ never written both came back as the empty string. `--only` at the end of the
+ line had the same shape and the same opposite meaning: audit every entry.
+ 
+ ALL THREE NOW REFUSE IN OUR OWN WORDS, at exit code 6 through
+ `reportingRefusals`, and the message may repeat the operator's own argument
+ because `StatedRefusalError` is exactly the marker for text they typed.
+ 
+ @module
  */
 
 import { homedir, } from 'node:os';
@@ -42,11 +42,11 @@ import {
 //region Settled rendering audit argument tests
 
 /**
- * What `process.argv` carries before the arguments a person typed.
- *
- * Named after what they are rather than filled with anything readable, so a
- * reader that stopped skipping them would meet values that are obviously not
- * flags.
+ What `process.argv` carries before the arguments a person typed.
+ 
+ Named after what they are rather than filled with anything readable, so a
+ reader that stopped skipping them would meet values that are obviously not
+ flags.
  */
 const BEFORE_ARGUMENTS: readonly string[] = [
   '/usr/bin/node',
@@ -54,7 +54,7 @@ const BEFORE_ARGUMENTS: readonly string[] = [
 ];
 
 /**
- * Archive a run reads when nobody names one.
+ Archive a run reads when nobody names one.
  */
 const DEFAULT_ARCHIVE = join(
   homedir(),
@@ -62,7 +62,7 @@ const DEFAULT_ARCHIVE = join(
 );
 
 /**
- * Corpus clone a run reads when nobody names one.
+ Corpus clone a run reads when nobody names one.
  */
 const DEFAULT_CLONE = join(
   homedir(),
@@ -71,51 +71,51 @@ const DEFAULT_CLONE = join(
 );
 
 /**
- * Cap meaning "buy every subject", which is what no `--cap` asks for.
+ Cap meaning "buy every subject", which is what no `--cap` asks for.
  */
 const EVERY_SUBJECT = -1;
 
 /**
- * Archive one operator named instead.
+ Archive one operator named instead.
  */
 const OTHER_ARCHIVE = '/tmp/tabby-archive';
 
 /**
- * Clone one operator named instead.
+ Clone one operator named instead.
  */
 const OTHER_CLONE = '/tmp/tabby-clone';
 
 /**
- * Entry one operator asked for.
+ Entry one operator asked for.
  */
 const ONE_CAT = 'saffron';
 
 /**
- * Second entry, so a comma has something on both sides of it.
+ Second entry, so a comma has something on both sides of it.
  */
 const ANOTHER_CAT = 'pepperbox';
 
 /**
- * Cap one operator asked for.
+ Cap one operator asked for.
  */
 const SMALL_BUY = 4;
 
 /**
- * Cap that reads the archive and asks nobody anything, which is meaningful.
+ Cap that reads the archive and asks nobody anything, which is meaningful.
  */
 const READ_ONLY_BUY = 0;
 
 /**
- * Builds a command line the way `process.argv` presents one.
- *
- * @param typed - what the operator wrote after the script path
- *
- * @returns Whole argument vector, script path and all
- *
- * @example
- * ```ts
- * const argv = commandLine({ typed: ['--cap', '4',], },);
- * ```
+ Builds a command line the way `process.argv` presents one.
+ 
+ @param typed - what the operator wrote after the script path
+ 
+ @returns Whole argument vector, script path and all
+ 
+ @example
+ ```ts
+ const argv = commandLine({ typed: ['--cap', '4',], },);
+ ```
  */
 function commandLine(
   { typed, }: { readonly typed: readonly string[]; },
@@ -358,7 +358,7 @@ await describe({
         + 'absent and silently print no across-run band',
       fn: async () => {
         /**
-         * What the reader raised.
+         What the reader raised.
          */
         let raised: unknown;
         try {

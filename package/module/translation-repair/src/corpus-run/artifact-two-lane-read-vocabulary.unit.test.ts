@@ -1,22 +1,22 @@
 /**
- * Tests for reading version 2's unions and rows back off disk.
- *
- * WHAT THESE PIN is the schema-ownership rule, which decides where reading is
- * strict and where it is tolerant. Version 2 owns the ledger and the
- * comparison, so a key it does not name there means a file this reader cannot
- * read. The raw lane results belong to the live pipeline, which has added
- * fields before and will again, so a key version 2 does not name THERE is
- * evidence a later lane recorded and not a later version of this artifact.
- *
- * The pair that is easy to get wrong sits in the middle: inside a raw result, a
- * field version 2 never heard of is tolerated, while `acceptedText` on an
- * outcome that decided nothing is refused. One is a later pipeline adding
- * evidence; the other is this version's own vocabulary used to say something it
- * cannot mean.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading version 2's unions and rows back off disk.
+ 
+ WHAT THESE PIN is the schema-ownership rule, which decides where reading is
+ strict and where it is tolerant. Version 2 owns the ledger and the
+ comparison, so a key it does not name there means a file this reader cannot
+ read. The raw lane results belong to the live pipeline, which has added
+ fields before and will again, so a key version 2 does not name THERE is
+ evidence a later lane recorded and not a later version of this artifact.
+ 
+ The pair that is easy to get wrong sits in the middle: inside a raw result, a
+ field version 2 never heard of is tolerated, while `acceptedText` on an
+ outcome that decided nothing is refused. One is a later pipeline adding
+ evidence; the other is this version's own vocabulary used to say something it
+ cannot mean.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -38,7 +38,7 @@ ArtifactParseError,
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive wording every fixture here shares.
+ Archive wording every fixture here shares.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
@@ -86,7 +86,7 @@ await describe({
         + 'record a slice under a name this reader invented',
       fn: async () => {
         /**
-         * What unknownKind raised, read for its class as well as its wording.
+         What unknownKind raised, read for its class as well as its wording.
          */
         const refusalOfUnknownKind = caught(function unknownKind() {
           parseSliceOutcome({
@@ -99,7 +99,7 @@ await describe({
         expect(refusalOfUnknownKind,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfUnknownKind as Error).message,).toContain('outcome.kind',);
         /**
-         * What unknownKindTolerated raised, read for its class as well as its wording.
+         What unknownKindTolerated raised, read for its class as well as its wording.
          */
         const refusalOfUnknownKindTolerated = caught(function unknownKindTolerated() {
           parseSliceOutcome({
@@ -132,7 +132,7 @@ await describe({
           acceptedText: ARCHIVE_NAP,
         },);
         /**
-         * What strictHere raised, read for its class as well as its wording.
+         What strictHere raised, read for its class as well as its wording.
          */
         const refusalOfStrictHere = caught(function strictHere() {
           parseSliceOutcome({
@@ -157,7 +157,7 @@ await describe({
         + 'that would hand a caller a wording no lane chose',
       fn: async () => {
         /**
-         * What misplacedText raised, read for its class as well as its wording.
+         What misplacedText raised, read for its class as well as its wording.
          */
         const refusalOfMisplacedText = caught(function misplacedText() {
           parseSliceOutcome({
@@ -173,7 +173,7 @@ await describe({
         expect(refusalOfMisplacedText,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfMisplacedText as Error).message,).toContain('outcome.acceptedText',);
         /**
-         * What misplacedTextOnFallback raised, read for its class as well as its wording.
+         What misplacedTextOnFallback raised, read for its class as well as its wording.
          */
         const refusalOfMisplacedTextOnFallback = caught(function misplacedTextOnFallback() {
           parseSliceOutcome({
@@ -195,7 +195,7 @@ await describe({
         'REFUSES a decision carrying no wording, which is the one field a member of this union owns',
       fn: async () => {
         /**
-         * What noText raised, read for its class as well as its wording.
+         What noText raised, read for its class as well as its wording.
          */
         const refusalOfNoText = caught(function noText() {
           parseSliceOutcome({
@@ -240,7 +240,7 @@ await describe({
         + 'took nothing back: both would let a reader report a withdrawal that never happened',
       fn: async () => {
         /**
-         * What unknownReason raised, read for its class as well as its wording.
+         What unknownReason raised, read for its class as well as its wording.
          */
         const refusalOfUnknownReason = caught(function unknownReason() {
           parseSliceDelivery({
@@ -255,7 +255,7 @@ await describe({
         expect(refusalOfUnknownReason,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfUnknownReason as Error).message,).toContain('delivery.reason',);
         /**
-         * What reasonWithoutWithdrawal raised, read for its class as well as its wording.
+         What reasonWithoutWithdrawal raised, read for its class as well as its wording.
          */
         const refusalOfReasonWithoutWithdrawal = caught(function reasonWithoutWithdrawal() {
           parseSliceDelivery({
@@ -314,7 +314,7 @@ await describe({
         + 'lane is a generation this reader cannot describe rather than a typo to skip past',
       fn: async () => {
         /**
-         * What unknownLane raised, read for its class as well as its wording.
+         What unknownLane raised, read for its class as well as its wording.
          */
         const refusalOfUnknownLane = caught(function unknownLane() {
           parseDecisionComparison({
@@ -396,7 +396,7 @@ await describe({
         + 'preparation produced',
       fn: async () => {
         /**
-         * One valid row, which each case below breaks in exactly one way.
+         One valid row, which each case below breaks in exactly one way.
          */
         const row = {
           sliceIndex: 0,
@@ -408,7 +408,7 @@ await describe({
           delivery: { kind: 'incumbent-retained', },
         };
         /**
-         * What extraKey raised, read for its class as well as its wording.
+         What extraKey raised, read for its class as well as its wording.
          */
         const refusalOfExtraKey = caught(function extraKey() {
           parseDeliveryRow({
@@ -464,7 +464,7 @@ await describe({
       name: 'reads a whole comparison row, all four unions and the lane relation included',
       fn: async () => {
         /**
-         * One row saying both lanes moved to different wordings.
+         One row saying both lanes moved to different wordings.
          */
         const row = {
           sliceIndex: 2,
@@ -505,7 +505,7 @@ await describe({
         + 'unreadable to buy a name',
       fn: async () => {
         /**
-         * One row as a pipeline before the rename wrote it.
+         One row as a pipeline before the rename wrote it.
          */
         const legacy = {
           sliceIndex: 2,
@@ -545,7 +545,7 @@ await describe({
         + 'from every reader downstream',
       fn: async () => {
         /**
-         * What bothSpellings raised, read for its class as well as its wording.
+         What bothSpellings raised, read for its class as well as its wording.
          */
         const refusalOfBothSpellings = caught(function bothSpellings() {
           parseComparisonRow({
@@ -584,7 +584,7 @@ await describe({
         + 'be read as though its rows meant what these do',
       fn: async () => {
         /**
-         * What unknownVerdict raised, read for its class as well as its wording.
+         What unknownVerdict raised, read for its class as well as its wording.
          */
         const refusalOfUnknownVerdict = caught(function unknownVerdict() {
           parseComparisonRow({
@@ -658,7 +658,7 @@ await describe({
         + 'one of them leaves the check with nothing to compare and would pass by having less',
       fn: async () => {
         /**
-         * What noIncumbentKind raised, read for its class as well as its wording.
+         What noIncumbentKind raised, read for its class as well as its wording.
          */
         const refusalOfNoIncumbentKind = caught(function noIncumbentKind() {
           parseEvidenceRow({

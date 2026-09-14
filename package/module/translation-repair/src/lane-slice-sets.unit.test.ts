@@ -1,30 +1,30 @@
 /**
- * Tests for the five checks every list of named slices has to pass.
- *
- * WHY THESE ARE WORTH ASKING DIRECTLY. Three lists exist and they arrived one
- * at a time, each written as its own loop against the preparation, until by the
- * third they were the same five checks with the wording changed. That is how
- * the disjointness between them came to be checked in one direction only. The
- * checks now live in one place and the lists differ by data, so a case here
- * asks a rule once and every list inherits the answer.
- *
- * THE ORDER IS PART OF THE CONTRACT, not an implementation detail, and two
- * cases pin it. A slice named by two lists disagrees with itself before it
- * disagrees with the archive, so it must report the contradiction between the
- * lists rather than whichever archive rule the earlier list happens to break.
- * A slice that is also decided reports that first of all.
- *
- * WHAT THE ARCHIVE RULE IS FOR. Every list is legal at one kind of slice only,
- * and getting that wrong is how an exemption list turns into a way around the
- * coverage rule: name a translated slice `unfilled` and the lane is excused
- * from saying anything about text the archive already holds.
- *
- * `lane-slice-text.ts` is the only caller, and it hands in whatever three lists
- * a finished lane produced. A valid lane reaches none of these refusals.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the five checks every list of named slices has to pass.
+ 
+ WHY THESE ARE WORTH ASKING DIRECTLY. Three lists exist and they arrived one
+ at a time, each written as its own loop against the preparation, until by the
+ third they were the same five checks with the wording changed. That is how
+ the disjointness between them came to be checked in one direction only. The
+ checks now live in one place and the lists differ by data, so a case here
+ asks a rule once and every list inherits the answer.
+ 
+ THE ORDER IS PART OF THE CONTRACT, not an implementation detail, and two
+ cases pin it. A slice named by two lists disagrees with itself before it
+ disagrees with the archive, so it must report the contradiction between the
+ lists rather than whichever archive rule the earlier list happens to break.
+ A slice that is also decided reports that first of all.
+ 
+ WHAT THE ARCHIVE RULE IS FOR. Every list is legal at one kind of slice only,
+ and getting that wrong is how an exemption list turns into a way around the
+ coverage rule: name a translated slice `unfilled` and the lane is excused
+ from saying anything about text the archive already holds.
+ 
+ `lane-slice-text.ts` is the only caller, and it hands in whatever three lists
+ a finished lane produced. A valid lane reaches none of these refusals.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -43,21 +43,21 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Archive wording standing at a slice the corpus translated.
+ Archive wording standing at a slice the corpus translated.
  */
 const ARCHIVE_SILL = 'The cat sleeps on the sill.';
 
 /**
- * Builds one pair whose translation side holds wording.
- *
- * @param sliceIndex - position of this pair in the preparation
- *
- * @returns Pair the archive translates
- *
- * @example
- * ```ts
- * const pair = translatedPair({ sliceIndex: 0, },);
- * ```
+ Builds one pair whose translation side holds wording.
+ 
+ @param sliceIndex - position of this pair in the preparation
+ 
+ @returns Pair the archive translates
+ 
+ @example
+ ```ts
+ const pair = translatedPair({ sliceIndex: 0, },);
+ ```
  */
 function translatedPair(
   { sliceIndex, }: { readonly sliceIndex: number; },
@@ -81,17 +81,17 @@ function translatedPair(
 }
 
 /**
- * Builds one pair whose translation side is a place a rendering belongs and
- * none exists.
- *
- * @param sliceIndex - position of this pair in the preparation
- *
- * @returns Pair the archive never translated
- *
- * @example
- * ```ts
- * const pair = untranslatedPair({ sliceIndex: 1, },);
- * ```
+ Builds one pair whose translation side is a place a rendering belongs and
+ none exists.
+ 
+ @param sliceIndex - position of this pair in the preparation
+ 
+ @returns Pair the archive never translated
+ 
+ @example
+ ```ts
+ const pair = untranslatedPair({ sliceIndex: 1, },);
+ ```
  */
 function untranslatedPair(
   { sliceIndex, }: { readonly sliceIndex: number; },
@@ -112,18 +112,18 @@ function untranslatedPair(
 }
 
 /**
- * Preparation these cases name slices out of: slices 0 and 2 translated,
- * slices 1 and 3 not.
- *
- * BOTH KINDS TWICE, so a case can move a named slice from one side of the
- * archive to the other without also changing its index.
- *
- * @returns Four pairs in document order
- *
- * @example
- * ```ts
- * const slices = preparation();
- * ```
+ Preparation these cases name slices out of: slices 0 and 2 translated,
+ slices 1 and 3 not.
+ 
+ BOTH KINDS TWICE, so a case can move a named slice from one side of the
+ archive to the other without also changing its index.
+ 
+ @returns Four pairs in document order
+ 
+ @example
+ ```ts
+ const slices = preparation();
+ ```
  */
 function preparation(): readonly ChunkPair[] {
   return [
@@ -135,17 +135,17 @@ function preparation(): readonly ChunkPair[] {
 }
 
 /**
- * List of slices a lane reached and could not fill, which is legal only where
- * the archive holds nothing.
- *
- * @param indices - slices this list names
- *
- * @returns List as the lane builder spells it
- *
- * @example
- * ```ts
- * const set = unfilledSet({ indices: [1,], },);
- * ```
+ List of slices a lane reached and could not fill, which is legal only where
+ the archive holds nothing.
+ 
+ @param indices - slices this list names
+ 
+ @returns List as the lane builder spells it
+ 
+ @example
+ ```ts
+ const set = unfilledSet({ indices: [1,], },);
+ ```
  */
 function unfilledSet(
   { indices, }: { readonly indices: readonly number[]; },
@@ -158,17 +158,17 @@ function unfilledSet(
 }
 
 /**
- * List of slices no judge answered for, which is legal only where the archive
- * holds wording to fall back on.
- *
- * @param indices - slices this list names
- *
- * @returns List as the lane builder spells it
- *
- * @example
- * ```ts
- * const set = unheardSet({ indices: [0,], },);
- * ```
+ List of slices no judge answered for, which is legal only where the archive
+ holds wording to fall back on.
+ 
+ @param indices - slices this list names
+ 
+ @returns List as the lane builder spells it
+ 
+ @example
+ ```ts
+ const set = unheardSet({ indices: [0,], },);
+ ```
  */
 function unheardSet(
   { indices, }: { readonly indices: readonly number[]; },
@@ -181,17 +181,17 @@ function unheardSet(
 }
 
 /**
- * List of slices this lane had nothing to do at, which is legal only where the
- * archive holds nothing.
- *
- * @param indices - slices this list names
- *
- * @returns List as the lane builder spells it
- *
- * @example
- * ```ts
- * const set = notApplicableSet({ indices: [3,], },);
- * ```
+ List of slices this lane had nothing to do at, which is legal only where the
+ archive holds nothing.
+ 
+ @param indices - slices this list names
+ 
+ @returns List as the lane builder spells it
+ 
+ @example
+ ```ts
+ const set = notApplicableSet({ indices: [3,], },);
+ ```
  */
 function notApplicableSet(
   { indices, }: { readonly indices: readonly number[]; },
@@ -204,16 +204,16 @@ function notApplicableSet(
 }
 
 /**
- * Renders returned sets as sorted arrays, so a case reads as what it claims.
- *
- * @param sets - one set per list, in the order the lists were given
- *
- * @returns Same sets as sorted arrays
- *
- * @example
- * ```ts
- * expect(listed({ sets, },),).toEqual([[1,], [0,],],);
- * ```
+ Renders returned sets as sorted arrays, so a case reads as what it claims.
+ 
+ @param sets - one set per list, in the order the lists were given
+ 
+ @returns Same sets as sorted arrays
+ 
+ @example
+ ```ts
+ expect(listed({ sets, },),).toEqual([[1,], [0,],],);
+ ```
  */
 function listed(
   { sets, }: { readonly sets: readonly ReadonlySet<number>[]; },

@@ -7,12 +7,12 @@ import type { ArtifactNaturalnessReviewRound, } from './artifact-two-lane-consol
 //region Artifact naturalness confirmation read
 
 /**
- * Parser for one exact candidate review round.
- *
- * @example
- * ```ts
- * const parser: RoundParser = ({ value, path, }) => parseRound({ value, path, });
- * ```
+ Parser for one exact candidate review round.
+ 
+ @example
+ ```ts
+ const parser: RoundParser = ({ value, path, }) => parseRound({ value, path, });
+ ```
  */
 type RoundParser = (input: {
   readonly value: unknown;
@@ -20,27 +20,27 @@ type RoundParser = (input: {
 }) => ArtifactNaturalnessReviewRound;
 
 /**
- * Reads and binds optional acceptance confirmations added within schema nine.
- *
- * Absence remains readable for historical schema-nine artifacts.
- * Presence opts into repeated-acceptance invariant and must confirm final text.
- *
- * @param value - unknown confirmation array
- *
- * @param present - whether artifact explicitly carries confirmation key
- *
- * @param rounds - decisive candidate reviews in correction order
- *
- * @param path - artifact review path
- *
- * @param parseRound - exact schema-nine round parser
- *
- * @returns Earlier acceptable same-candidate reviews
- *
- * @example
- * ```ts
- * const confirmations = parseNaturalnessConfirmations({ value, present: true, rounds, path, parseRound, });
- * ```
+ Reads and binds optional acceptance confirmations added within schema nine.
+ 
+ Absence remains readable for historical schema-nine artifacts.
+ Presence opts into repeated-acceptance invariant and must confirm final text.
+ 
+ @param value - unknown confirmation array
+ 
+ @param present - whether artifact explicitly carries confirmation key
+ 
+ @param rounds - decisive candidate reviews in correction order
+ 
+ @param path - artifact review path
+ 
+ @param parseRound - exact schema-nine round parser
+ 
+ @returns Earlier acceptable same-candidate reviews
+ 
+ @example
+ ```ts
+ const confirmations = parseNaturalnessConfirmations({ value, present: true, rounds, path, parseRound, });
+ ```
  */
 export function parseNaturalnessConfirmations(
   {
@@ -61,7 +61,7 @@ export function parseNaturalnessConfirmations(
     return [];
 
   /**
-   * Earlier acceptable readings over exact decisive-round candidates.
+   Earlier acceptable readings over exact decisive-round candidates.
    */
   const confirmations = requireArray({
     value,
@@ -86,7 +86,7 @@ export function parseNaturalnessConfirmations(
   }
 
   /**
-   * Candidate identities carrying one earlier acceptable reading at most.
+   Candidate identities carrying one earlier acceptable reading at most.
    */
   const confirmationDigests = confirmations.map(function digestOf(round,): string {
     return round.candidateDigest;
@@ -98,7 +98,7 @@ export function parseNaturalnessConfirmations(
     },);
   }
   /**
-   * Decisive-round position corresponding to each confirmation.
+   Decisive-round position corresponding to each confirmation.
    */
   const confirmedRoundIndexes = confirmations.map(function matchingRoundIndex(
     confirmation,
@@ -123,15 +123,15 @@ export function parseNaturalnessConfirmations(
     at,
   ): boolean {
     /**
-     * Position before current confirmation.
+     Position before current confirmation.
      */
     const previousAt = at - 1;
     /**
-     * Prior confirmation's decisive position when one exists.
+     Prior confirmation's decisive position when one exists.
      */
     const previousRead = confirmedRoundIndexes[previousAt];
     /**
-     * Prior confirmation's position or before-first sentinel.
+     Prior confirmation's position or before-first sentinel.
      */
     const previous = previousRead ?? (-1);
     return (at > 0) && (index <= previous);
@@ -146,21 +146,21 @@ export function parseNaturalnessConfirmations(
     at,
   ): boolean {
     /**
-     * Decisive same-candidate position when one exists.
+     Decisive same-candidate position when one exists.
      */
     const decisiveIndexRead = confirmedRoundIndexes[at];
     /**
-     * Decisive position or unmatched sentinel.
+     Decisive position or unmatched sentinel.
      */
     const decisiveIndex = decisiveIndexRead ?? (-1);
     /**
-     * Decisive same-candidate review established by identity check.
+     Decisive same-candidate review established by identity check.
      */
     const decisive = rounds[decisiveIndex];
     if (decisive === undefined)
       return true;
     /**
-     * Requested reviewer identities in stable roster order.
+     Requested reviewer identities in stable roster order.
      */
     const confirmationRoster = confirmation
       .seats
@@ -168,7 +168,7 @@ export function parseNaturalnessConfirmations(
         return seat.modelId;
       },);
     /**
-     * Decisive review's requested identities in same order.
+     Decisive review's requested identities in same order.
      */
     const decisiveRoster = decisive
       .seats
@@ -185,7 +185,7 @@ export function parseNaturalnessConfirmations(
   }
 
   /**
-   * Final decisive review that authorizes publication.
+   Final decisive review that authorizes publication.
    */
   const final = rounds.at(-1,);
   if (final === undefined) {

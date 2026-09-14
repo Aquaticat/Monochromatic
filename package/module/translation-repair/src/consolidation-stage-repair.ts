@@ -12,13 +12,13 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 //region Consolidation stage repair
 
 /**
- * Assigns stable role alias without exposing provider identity.
- *
- * @param aliases - identities already assigned in evidence order
- *
- * @param modelId - provider identity to anonymize
- *
- * @returns Existing or newly assigned alias
+ Assigns stable role alias without exposing provider identity.
+ 
+ @param aliases - identities already assigned in evidence order
+ 
+ @param modelId - provider identity to anonymize
+ 
+ @returns Existing or newly assigned alias
  */
 function roleAlias(
   {
@@ -30,13 +30,13 @@ function roleAlias(
   },
 ): string {
   /**
-   * Alias already linking this role across evidence.
+   Alias already linking this role across evidence.
    */
   const existing = aliases.get(modelId,);
   if (existing !== undefined)
     return existing;
   /**
-   * Next evidence-local role name.
+   Next evidence-local role name.
    */
   const assigned = `role/${String(aliases.size + 1,)}`;
   aliases.set(
@@ -47,13 +47,13 @@ function roleAlias(
 }
 
 /**
- * Rewrites candidate provenance to stable role aliases.
- *
- * @param producer - raw candidate provenance
- *
- * @param aliases - evidence-local alias registry
- *
- * @returns Equivalent provenance without model identity
+ Rewrites candidate provenance to stable role aliases.
+ 
+ @param producer - raw candidate provenance
+ 
+ @param aliases - evidence-local alias registry
+ 
+ @returns Equivalent provenance without model identity
  */
 function anonymizeProducer(
   {
@@ -98,13 +98,13 @@ function anonymizeProducer(
 }
 
 /**
- * Replaces known provider identities in free-form evidence text.
- *
- * @param text - candidate, reason, or finding text
- *
- * @param aliases - complete evidence-local alias registry
- *
- * @returns Text naming only role aliases
+ Replaces known provider identities in free-form evidence text.
+ 
+ @param text - candidate, reason, or finding text
+ 
+ @param aliases - complete evidence-local alias registry
+ 
+ @returns Text naming only role aliases
  */
 function anonymizeText(
   {
@@ -128,18 +128,18 @@ function anonymizeText(
 }
 
 /**
- * Reports whether settlement still leaves unendorsed standing wording.
- *
- * @param settlement - latest consolidation outcome
- *
- * @param standingMayShip - whether contest endorsed standing baseline
- *
- * @returns Whether another stage-local strategy is required
- *
- * @example
- * ```ts
- * const retry = consolidationNeedsRecovery({ settlement, standingMayShip: false, });
- * ```
+ Reports whether settlement still leaves unendorsed standing wording.
+ 
+ @param settlement - latest consolidation outcome
+ 
+ @param standingMayShip - whether contest endorsed standing baseline
+ 
+ @returns Whether another stage-local strategy is required
+ 
+ @example
+ ```ts
+ const retry = consolidationNeedsRecovery({ settlement, standingMayShip: false, });
+ ```
  */
 export function consolidationNeedsRecovery(
   {
@@ -154,30 +154,30 @@ export function consolidationNeedsRecovery(
 }
 
 /**
- * Extracts failed strategy evidence without inventing a new verdict.
- *
- * @param settlement - latest consolidation outcome retaining unsafe standing
- *
- * @returns Structured evidence for next producer responsibility
- *
- * @example
- * ```ts
- * const evidence = consolidationFailureEvidence({ settlement, });
- * ```
+ Extracts failed strategy evidence without inventing a new verdict.
+ 
+ @param settlement - latest consolidation outcome retaining unsafe standing
+ 
+ @returns Structured evidence for next producer responsibility
+ 
+ @example
+ ```ts
+ const evidence = consolidationFailureEvidence({ settlement, });
+ ```
  */
 export function consolidationFailureEvidence(
   { settlement, }: { readonly settlement: ConsolidationSettlement; },
 ): ConsolidationFailureEvidence {
   /**
-   * Selection round when any candidate slate reached judges.
+   Selection round when any candidate slate reached judges.
    */
   const { decided, } = settlement;
   /**
-   * Fidelity gate when fresh candidate reached it.
+   Fidelity gate when fresh candidate reached it.
    */
   const { gate, } = settlement;
   /**
-   * Evidence-local model aliases shared by slate and ballots.
+   Evidence-local model aliases shared by slate and ballots.
    */
   const aliases = new Map<RosterModelId, string>();
   for (const entry of decided?.slate ?? []) {
@@ -195,7 +195,7 @@ export function consolidationFailureEvidence(
     },);
   }
   /**
-   * Candidate slate with aliased provenance and free-form text.
+   Candidate slate with aliased provenance and free-form text.
    */
   const selectionSlate = decided?.slate
     .map(function anonymize(entry,) {
@@ -213,12 +213,12 @@ export function consolidationFailureEvidence(
   },)
     ?? [];
   /**
-   * Selection ballots with aliased judges and reasons.
+   Selection ballots with aliased judges and reasons.
    */
   const selectionBallots = decided?.ballots
     .map(function anonymize(ballot,) {
     /**
-     * Ballot reading after provider identity is removed.
+     Ballot reading after provider identity is removed.
      */
     const {
       modelId,
@@ -239,7 +239,7 @@ export function consolidationFailureEvidence(
   },)
     ?? [];
   /**
-   * Gate ballots with free-form fields stripped of known identities.
+   Gate ballots with free-form fields stripped of known identities.
    */
   const gateBallots = (gate?.ballots ?? []).map(function anonymize(ballot,) {
     return {

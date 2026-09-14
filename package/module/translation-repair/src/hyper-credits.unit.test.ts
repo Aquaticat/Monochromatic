@@ -1,13 +1,13 @@
 /**
- * Tests for the Charm Hyper balance reader.
- *
- * THE FINITE CHECK IS THE ONE THAT MATTERS. Every other case here refuses a
- * body that is plainly wrong, but a non-finite balance would compare against
- * every threshold as though the budget were unlimited, which is the single
- * outcome this reader exists to prevent: a run that keeps buying because it
- * believes it can.
- *
- * @module
+ Tests for the Charm Hyper balance reader.
+ 
+ THE FINITE CHECK IS THE ONE THAT MATTERS. Every other case here refuses a
+ body that is plainly wrong, but a non-finite balance would compare against
+ every threshold as though the budget were unlimited, which is the single
+ outcome this reader exists to prevent: a run that keeps buying because it
+ believes it can.
+ 
+ @module
  */
 
 import {

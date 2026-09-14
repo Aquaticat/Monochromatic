@@ -1,15 +1,15 @@
 /**
- * Tests for the paired self-preference measurement.
- *
- * WHAT THESE PIN is that the instrument can move in BOTH directions and that
- * the pairing is real. A measurement that only ever returns zero would agree
- * with the half-weight discount correcting nothing, and would agree just as
- * readily if the discount were correcting a great deal; the positive control
- * here is what separates those.
- *
- * Model ids are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the paired self-preference measurement.
+ 
+ WHAT THESE PIN is that the instrument can move in BOTH directions and that
+ the pairing is real. A measurement that only ever returns zero would agree
+ with the half-weight discount correcting nothing, and would agree just as
+ readily if the discount were correcting a great deal; the positive control
+ here is what separates those.
+ 
+ Model ids are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,38 +26,38 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Models that both write and judge.
+ Models that both write and judge.
  */
 const CAT_A = 'hf:cat/Cat-A' as unknown as RosterModelId;
 
 /**
- * Second producer-judge.
+ Second producer-judge.
  */
 const CAT_B = 'hf:cat/Cat-B' as unknown as RosterModelId;
 
 /**
- * Judge that writes nothing, so its ballots are always disinterested.
+ Judge that writes nothing, so its ballots are always disinterested.
  */
 const CAT_C = 'hf:cat/Cat-C' as unknown as RosterModelId;
 
 /**
- * Builds one ballot.
- *
- * @param modelId - judge casting it
- *
- * @param best - one-based candidate it names
- *
- * @param selfVote - whether that candidate is one this judge helped write.
- * Set explicitly rather than derived, matching what selection records: the
- * field is a fact about the ballot, kept so a self-preference measurement never
- * has to infer it from the weights, which are tuning knobs
- *
- * @returns Ballot at full weight, since weight is not what this file measures
- *
- * @example
- * ```ts
- * const ballot = ballotFor({ modelId: CAT_A, best: 1, selfVote: true, },);
- * ```
+ Builds one ballot.
+ 
+ @param modelId - judge casting it
+ 
+ @param best - one-based candidate it names
+ 
+ @param selfVote - whether that candidate is one this judge helped write.
+ Set explicitly rather than derived, matching what selection records: the
+ field is a fact about the ballot, kept so a self-preference measurement never
+ has to infer it from the weights, which are tuning knobs
+ 
+ @returns Ballot at full weight, since weight is not what this file measures
+ 
+ @example
+ ```ts
+ const ballot = ballotFor({ modelId: CAT_A, best: 1, selfVote: true, },);
+ ```
  */
 function ballotFor(
   {
@@ -80,7 +80,7 @@ function ballotFor(
 }
 
 /**
- * Slate of two candidates, one by each producer.
+ Slate of two candidates, one by each producer.
  */
 const TWO_PRODUCERS: readonly CandidateProducer[] = [
   {
@@ -102,7 +102,7 @@ await describe({
         + 'to correct. Without this case a zero could mean either no favouritism or a broken probe',
       fn: async () => {
         /**
-         * Both producers back themselves; the neutral judge backs neither.
+         Both producers back themselves; the neutral judge backs neither.
          */
         const rounds: readonly SelectionRound[] = [{
           producers: TWO_PRODUCERS,
@@ -142,7 +142,7 @@ await describe({
         + 'being yours: this is the case a bare self-vote COUNT would misread as favouritism',
       fn: async () => {
         /**
-         * One candidate everyone names, produced by Cat-A.
+         One candidate everyone names, produced by Cat-A.
          */
         const rounds: readonly SelectionRound[] = [{
           producers: [{
@@ -243,7 +243,7 @@ await describe({
         + 'baseline would dilute the comparison with texts the question is not about',
       fn: async () => {
         /**
-         * Cat-A's candidate, plus an unowned one nobody produced.
+         Cat-A's candidate, plus an unowned one nobody produced.
          */
         const rounds: readonly SelectionRound[] = [{
           producers: [
@@ -311,7 +311,7 @@ await describe({
         + 'stakeholder ballot does not weigh as much as a slice with six',
       fn: async () => {
         /**
-         * One round where the producer backs itself, one where it does not.
+         One round where the producer backs itself, one where it does not.
          */
         const rounds: readonly SelectionRound[] = [
           {

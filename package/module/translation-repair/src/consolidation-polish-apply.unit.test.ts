@@ -1,7 +1,7 @@
 /**
- * Tests pre-polish baseline contributor authority floor.
- *
- * @module
+ Tests pre-polish baseline contributor authority floor.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';

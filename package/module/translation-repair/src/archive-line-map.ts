@@ -5,45 +5,45 @@ import type { ArchiveRetainedLine, } from './corpus-run/archive-stub.ts';
 // Identical line text never selects an origin; retained positions carry that identity.
 
 /**
- * One normalized line's original pinned-file position.
- *
- * @example
- * ```ts
- * const mapped = lineMap.get(startOffset);
- * ```
+ One normalized line's original pinned-file position.
+ 
+ @example
+ ```ts
+ const mapped = lineMap.get(startOffset);
+ ```
  */
 export type ArchiveMappedLine = {
   /**
-   * One-based position after normalization.
+   One-based position after normalization.
    */
   readonly lineNumber: number;
   /**
-   * One-based pinned position before placeholder removal.
+   One-based pinned position before placeholder removal.
    */
   readonly pinnedLine: number;
   /**
-   * Exact normalized line used only to check the positional join.
+   Exact normalized line used only to check the positional join.
    */
   readonly text: string;
 };
 
 /**
- * Indexes the actual normalizer's retained positions by normalized character offset.
- *
- * @param lines - ordered records emitted by the shared normalization operation
- *
- * @param archiveText - exact output of that same operation
- *
- * @param relPath - archive named for inconsistent provenance
- *
- * @returns Positional map preserving duplicate lines and removed blank-line shifts
- *
- * @throws {@link ArchiveNamingEvidenceError} for malformed normalization provenance
- *
- * @example
- * ```ts
- * const lineMap = archiveLineMap({ lines, archiveText, relPath });
- * ```
+ Indexes the actual normalizer's retained positions by normalized character offset.
+ 
+ @param lines - ordered records emitted by the shared normalization operation
+ 
+ @param archiveText - exact output of that same operation
+ 
+ @param relPath - archive named for inconsistent provenance
+ 
+ @returns Positional map preserving duplicate lines and removed blank-line shifts
+ 
+ @throws {@link ArchiveNamingEvidenceError} for malformed normalization provenance
+ 
+ @example
+ ```ts
+ const lineMap = archiveLineMap({ lines, archiveText, relPath });
+ ```
  */
 export function archiveLineMap({
   lines,
@@ -55,7 +55,7 @@ export function archiveLineMap({
   readonly relPath: string;
 },): ReadonlyMap<number, ArchiveMappedLine> {
   /**
-   * Coordinate records must reconstruct the exact normalized archive.
+   Coordinate records must reconstruct the exact normalized archive.
    */
   const reconstructed = lines.map(function lineText(line,): string {
     return line.text;
@@ -67,11 +67,11 @@ export function archiveLineMap({
       relPath,
     },);
   /**
-   * Owned coordinate index.
+   Owned coordinate index.
    */
   const mapped = new Map<number, ArchiveMappedLine>();
   /**
-   * Monotone physical and normalized positions advanced once per retained line.
+   Monotone physical and normalized positions advanced once per retained line.
    */
   const cursor = {
     offset: 0,

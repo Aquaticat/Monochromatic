@@ -23,23 +23,23 @@ import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
 // is COMPATIBILITY, which is what this file states.
 
 /**
- * Slices whose ledger row says the document carries a replacement.
- *
- * @param ledger - rows to read
- *
- * @returns Indices in document order
- *
- * @example
- * ```ts
- * const shipped = shippedIndicesOf({ ledger, },);
- * ```
+ Slices whose ledger row says the document carries a replacement.
+ 
+ @param ledger - rows to read
+ 
+ @returns Indices in document order
+ 
+ @example
+ ```ts
+ const shipped = shippedIndicesOf({ ledger, },);
+ ```
  */
 function shippedIndicesOf(
   { ledger, }: { readonly ledger: readonly ArtifactDeliveryRow[]; },
 ): readonly number[] {
   return ledger.filter(function isShipped(row,): boolean {
     /**
-     * How this row's document came to carry what it carries.
+     How this row's document came to carry what it carries.
      */
     const { delivery, } = row;
     return delivery.kind === 'replacement-shipped';
@@ -50,29 +50,29 @@ function shippedIndicesOf(
 }
 
 /**
- * Slices the ASSEMBLY GUARD took a replacement back at.
- *
- * The whole-document refusal is deliberately not counted here. Both are
- * withdrawals and they are different events: assembly ran and rejected this
- * slice, against a document that was never assembled at all. A lane's withdrawn
- * set names the first, so counting the second would make every blocked run look
- * like a document the guard tore apart.
- *
- * @param ledger - rows to read
- *
- * @returns Indices in document order
- *
- * @example
- * ```ts
- * const withdrawn = guardWithdrawnIndicesOf({ ledger, },);
- * ```
+ Slices the ASSEMBLY GUARD took a replacement back at.
+ 
+ The whole-document refusal is deliberately not counted here. Both are
+ withdrawals and they are different events: assembly ran and rejected this
+ slice, against a document that was never assembled at all. A lane's withdrawn
+ set names the first, so counting the second would make every blocked run look
+ like a document the guard tore apart.
+ 
+ @param ledger - rows to read
+ 
+ @returns Indices in document order
+ 
+ @example
+ ```ts
+ const withdrawn = guardWithdrawnIndicesOf({ ledger, },);
+ ```
  */
 function guardWithdrawnIndicesOf(
   { ledger, }: { readonly ledger: readonly ArtifactDeliveryRow[]; },
 ): readonly number[] {
   return ledger.filter(function isGuardWithdrawal(row,): boolean {
     /**
-     * How this row's document came to carry what it carries.
+     How this row's document came to carry what it carries.
      */
     const { delivery, } = row;
     if (delivery.kind !== 'replacement-withdrawn')
@@ -85,21 +85,21 @@ function guardWithdrawnIndicesOf(
 }
 
 /**
- * Refuses a list that does not match the one the rows produce.
- *
- * @param recorded - list the raw result carries
- *
- * @param derived - list the ledger rows produce
- *
- * @param path - dotted path of the recorded list
- *
- * @throws {@link ArtifactParseError} naming the first position they differ at,
- * or the two lengths
- *
- * @example
- * ```ts
- * assertListMatches({ recorded, derived, path: 'lanes.repair.result.changedSliceIndices', },);
- * ```
+ Refuses a list that does not match the one the rows produce.
+ 
+ @param recorded - list the raw result carries
+ 
+ @param derived - list the ledger rows produce
+ 
+ @param path - dotted path of the recorded list
+ 
+ @throws {@link ArtifactParseError} naming the first position they differ at,
+ or the two lengths
+ 
+ @example
+ ```ts
+ assertListMatches({ recorded, derived, path: 'lanes.repair.result.changedSliceIndices', },);
+ ```
  */
 function assertListMatches(
   {
@@ -134,21 +134,21 @@ function assertListMatches(
 }
 
 /**
- * Refuses a lane whose index sets disagree with its own ledger.
- *
- * @param evidence - the lane's recorded lists
- *
- * @param ledger - rows those lists describe
- *
- * @param path - dotted path of the lane's raw result
- *
- * @throws {@link ArtifactParseError} when either list differs from the one the
- * rows produce
- *
- * @example
- * ```ts
- * assertIndexSetsMatchLedger({ evidence, ledger, path: 'lanes.repair.result', },);
- * ```
+ Refuses a lane whose index sets disagree with its own ledger.
+ 
+ @param evidence - the lane's recorded lists
+ 
+ @param ledger - rows those lists describe
+ 
+ @param path - dotted path of the lane's raw result
+ 
+ @throws {@link ArtifactParseError} when either list differs from the one the
+ rows produce
+ 
+ @example
+ ```ts
+ assertIndexSetsMatchLedger({ evidence, ledger, path: 'lanes.repair.result', },);
+ ```
  */
 export function assertIndexSetsMatchLedger(
   {
@@ -180,27 +180,27 @@ export function assertIndexSetsMatchLedger(
 }
 
 /**
- * Refuses a repair lane whose deliveries could not have come from a run of the
- * status it claims.
- *
- * ONE DIRECTION ONLY, which is what makes this a compatibility check rather
- * than a recomputation: a blocked run whose slices all agreed with the archive
- * produces no blocked withdrawal at all, and is a perfectly ordinary artifact.
- *
- * @param evidence - the lane's recorded status
- *
- * @param ledger - rows that status describes
- *
- * @param path - dotted path of the lane's raw result
- *
- * @throws {@link ArtifactParseError} when a blocked run carries a shipped
- * replacement or a guard withdrawal, or an unblocked one carries a withdrawal
- * naming the whole-document refusal
- *
- * @example
- * ```ts
- * assertBlockedCompatible({ evidence, ledger, path: 'lanes.repair.result', },);
- * ```
+ Refuses a repair lane whose deliveries could not have come from a run of the
+ status it claims.
+ 
+ ONE DIRECTION ONLY, which is what makes this a compatibility check rather
+ than a recomputation: a blocked run whose slices all agreed with the archive
+ produces no blocked withdrawal at all, and is a perfectly ordinary artifact.
+ 
+ @param evidence - the lane's recorded status
+ 
+ @param ledger - rows that status describes
+ 
+ @param path - dotted path of the lane's raw result
+ 
+ @throws {@link ArtifactParseError} when a blocked run carries a shipped
+ replacement or a guard withdrawal, or an unblocked one carries a withdrawal
+ naming the whole-document refusal
+ 
+ @example
+ ```ts
+ assertBlockedCompatible({ evidence, ledger, path: 'lanes.repair.result', },);
+ ```
  */
 export function assertBlockedCompatible(
   {
@@ -214,16 +214,16 @@ export function assertBlockedCompatible(
   },
 ): void {
   /**
-   * Whether the run refused the whole document before assembling anything.
+   Whether the run refused the whole document before assembling anything.
    */
   const blocked = evidence.status === 'blocked-non-translation';
 
   /**
-   * First row whose delivery contradicts that status, or nothing.
+   First row whose delivery contradicts that status, or nothing.
    */
   const contradiction = ledger.find(function contradicts(row,): boolean {
     /**
-     * How this row's document came to carry what it carries.
+     How this row's document came to carry what it carries.
      */
     const { delivery, } = row;
     if (delivery.kind === 'replacement-shipped') {
@@ -255,20 +255,20 @@ export function assertBlockedCompatible(
 }
 
 /**
- * Refuses a translate lane whose counts or status disagree with what it
- * recorded per slice.
- *
- * @param evidence - the lane's counts, status and lists
- *
- * @param path - dotted path of the lane's raw result
- *
- * @throws {@link ArtifactParseError} when either count differs from the list
- * beside it, or the status disagrees with whether any slice went unfilled
- *
- * @example
- * ```ts
- * assertTranslateCountsAgree({ evidence, path: 'lanes.translate.result', },);
- * ```
+ Refuses a translate lane whose counts or status disagree with what it
+ recorded per slice.
+ 
+ @param evidence - the lane's counts, status and lists
+ 
+ @param path - dotted path of the lane's raw result
+ 
+ @throws {@link ArtifactParseError} when either count differs from the list
+ beside it, or the status disagrees with whether any slice went unfilled
+ 
+ @example
+ ```ts
+ assertTranslateCountsAgree({ evidence, path: 'lanes.translate.result', },);
+ ```
  */
 export function assertTranslateCountsAgree(
   {
@@ -280,13 +280,13 @@ export function assertTranslateCountsAgree(
   },
 ): void {
   /**
-   * How many slices this lane names as shipped.
+   How many slices this lane names as shipped.
    */
   const shippedCount = evidence.changedSliceIndices
     .length;
 
   /**
-   * How many it names as withdrawn.
+   How many it names as withdrawn.
    */
   const withdrawnCount = evidence.withdrawnSliceIndices
     .length;
@@ -304,14 +304,14 @@ export function assertTranslateCountsAgree(
   }
 
   /**
-   * Whether any slice was reached and could not be filled, which is the ONLY
-   * thing this status reports: a slice left alone for any other reason keeps
-   * the archive's wording, and the document is whole either way.
+   Whether any slice was reached and could not be filled, which is the ONLY
+   thing this status reports: a slice left alone for any other reason keeps
+   the archive's wording, and the document is whole either way.
    */
   const anyUnfilled = evidence.sliceTexts
     .some(function isUnfilled(row,): boolean {
       /**
-       * What the lane did about this slice.
+       What the lane did about this slice.
        */
       const { outcome, } = row;
       return outcome.kind === 'unfilled';

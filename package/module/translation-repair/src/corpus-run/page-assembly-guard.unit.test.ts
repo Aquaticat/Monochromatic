@@ -1,7 +1,7 @@
 /**
- * Tests the page-level assembly guard over a composed page.
- *
- * @module
+ Tests the page-level assembly guard over a composed page.
+ 
+ @module
  */
 
 import {
@@ -18,12 +18,12 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive whose body refers to a note it never defines.
+ Archive whose body refers to a note it never defines.
  */
 const TARGET = 'The cat naps on the windowsill[^1].\n';
 
 /**
- * One content slice plus the anchor where the notes belong.
+ One content slice plus the anchor where the notes belong.
  */
 const SLICES: readonly ChunkPair[] = [
   {
@@ -58,16 +58,16 @@ const SLICES: readonly ChunkPair[] = [
 ];
 
 /**
- * Builds a source whose consolidation wrote the notes at the anchor.
- *
- * @param notes - what the consolidation wrote at slice 1
- *
- * @returns Narrow artifact source read by the publication assembler
- *
- * @example
- * ```ts
- * const artifact = consolidating({ notes: '[^1]: A note.', },);
- * ```
+ Builds a source whose consolidation wrote the notes at the anchor.
+ 
+ @param notes - what the consolidation wrote at slice 1
+ 
+ @returns Narrow artifact source read by the publication assembler
+ 
+ @example
+ ```ts
+ const artifact = consolidating({ notes: '[^1]: A note.', },);
+ ```
  */
 function consolidating({ notes, }: { readonly notes: string; },): WouldShipSource {
   return {

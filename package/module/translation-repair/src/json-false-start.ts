@@ -16,34 +16,34 @@ import { parseModelJson, } from './model-content.ts';
 // fragment's length is logged, where before the voice was lost.
 
 /**
- * Logger root for the false-start reader.
+ Logger root for the false-start reader.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Characters of the answer within which an abandoned opening may sit.
- * The longest observed was 13 (`{   "issues":`); a fragment longer than
- * this window is not an opening but some other defect.
+ Characters of the answer within which an abandoned opening may sit.
+ The longest observed was 13 (`{   "issues":`); a fragment longer than
+ this window is not an opening but some other defect.
  */
 export const FALSE_START_WINDOW = 256;
 
 /**
- * Reads a JSON object that follows an abandoned opening fragment.
- *
- * Each `{` inside the window, after the first character, is tried as the
- * object's start until one parses to the end of the text; the first that
- * does is the answer. Bounded by the window, so a long reply costs at most
- * as many parses as it has braces in its first characters, and each parse
- * is one linear pass.
- *
- * @param text - answer channel that failed to parse as a whole
- *
- * @returns Parsed value with the abandoned length, or nothing to read past
- *
- * @example
- * ```ts
- * const past = readJsonPastFalseStart({ text: '{"best": 1{"best": 1}', },);
- * ```
+ Reads a JSON object that follows an abandoned opening fragment.
+ 
+ Each `{` inside the window, after the first character, is tried as the
+ object's start until one parses to the end of the text; the first that
+ does is the answer. Bounded by the window, so a long reply costs at most
+ as many parses as it has braces in its first characters, and each parse
+ is one linear pass.
+ 
+ @param text - answer channel that failed to parse as a whole
+ 
+ @returns Parsed value with the abandoned length, or nothing to read past
+ 
+ @example
+ ```ts
+ const past = readJsonPastFalseStart({ text: '{"best": 1{"best": 1}', },);
+ ```
  */
 export function readJsonPastFalseStart({ text, }: { readonly text: string; },):
   | {
@@ -54,7 +54,7 @@ export function readJsonPastFalseStart({ text, }: { readonly text: string; },):
   | { readonly parsed: false; }
 {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: readJsonPastFalseStart.name,
@@ -62,7 +62,7 @@ export function readJsonPastFalseStart({ text, }: { readonly text: string; },):
   },);
 
   /**
-   * Answer with its leading whitespace dropped, to see what it opens with.
+   Answer with its leading whitespace dropped, to see what it opens with.
    */
   const opening = text.trimStart();
 
@@ -72,7 +72,7 @@ export function readJsonPastFalseStart({ text, }: { readonly text: string; },):
   }
 
   /**
-   * Index past which no object start is tried.
+   Index past which no object start is tried.
    */
   const last = Math.min(
     text.length,
@@ -85,7 +85,7 @@ export function readJsonPastFalseStart({ text, }: { readonly text: string; },):
       continue;
     try {
       /**
-       * Value the remainder parses to, when it does.
+       Value the remainder parses to, when it does.
        */
       const value: unknown = JSON.parse(text.slice(at,),);
       rl.debug(`read an object past an abandoned opening of ${String(at,)} chars`,);
@@ -104,16 +104,16 @@ export function readJsonPastFalseStart({ text, }: { readonly text: string; },):
 }
 
 /**
- * Parses an answer as a whole, and past a false start when the whole fails.
- *
- * @param text - fence-stripped answer channel
- *
- * @returns Parsed value with the abandoned length (zero for a whole parse), or failure detail
- *
- * @example
- * ```ts
- * const attempt = parseAnswerJson({ text: unwrapped, },);
- * ```
+ Parses an answer as a whole, and past a false start when the whole fails.
+ 
+ @param text - fence-stripped answer channel
+ 
+ @returns Parsed value with the abandoned length (zero for a whole parse), or failure detail
+ 
+ @example
+ ```ts
+ const attempt = parseAnswerJson({ text: unwrapped, },);
+ ```
  */
 export function parseAnswerJson({ text, }: { readonly text: string; },):
   | {
@@ -127,7 +127,7 @@ export function parseAnswerJson({ text, }: { readonly text: string; },):
   }
 {
   /**
-   * Parse of the whole answer, the ordinary case.
+   Parse of the whole answer, the ordinary case.
    */
   const whole = parseModelJson({ text, },);
 
@@ -140,7 +140,7 @@ export function parseAnswerJson({ text, }: { readonly text: string; },):
   }
 
   /**
-   * Reading past an abandoned opening, when there is one.
+   Reading past an abandoned opening, when there is one.
    */
   const past = readJsonPastFalseStart({ text, },);
 

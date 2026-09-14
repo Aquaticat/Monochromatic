@@ -1,31 +1,31 @@
 /**
- * Tests for the three assertions that decide whether a settled artifact is
- * describing the run it claims to describe.
- *
- * THESE ARE THE GUARDS BETWEEN A RUN AND EVERY NUMBER READ OFF IT. The lane
- * comparison already refuses two ledgers naming different preparations, and that
- * refusal says nothing about whether either names the RIGHT one: two ledgers
- * built over some other slicing agree with each other perfectly. These three run
- * at the only boundary holding the preparation, both ledgers and both results at
- * once, so a guard here that never fires means an artifact whose recorded
- * identity names a slicing the lanes never ran over is filed as sound, and every
- * later reading of it is confidently wrong.
- *
- * `#224` IS WHY THEY ARE WORTH TESTING BY HAND. There the defect was the OPEN
- * rather than the message: the guard's wording was right and the condition never
- * fired, so every test that read the message passed while nothing was guarded.
- * Each case below drives one refusal and changes exactly one thing from a
- * fixture that passes, so a condition that stopped firing fails its own case
- * rather than hiding behind a neighbour's.
- *
- * THE INSERTION SLICE IS LOAD-BEARING IN THE FIXTURE. `incumbentKind` is decided
- * by `isInsertionChunk`, so a preparation of ordinary slices only can never
- * exercise the `absent` side, and the case about it would pass against a guard
- * that had been deleted. The fixture therefore carries one slice of each kind.
- *
- * Fixtures are cat-themed invention: Simplified Chinese against English.
- *
- * @module
+ Tests for the three assertions that decide whether a settled artifact is
+ describing the run it claims to describe.
+ 
+ THESE ARE THE GUARDS BETWEEN A RUN AND EVERY NUMBER READ OFF IT. The lane
+ comparison already refuses two ledgers naming different preparations, and that
+ refusal says nothing about whether either names the RIGHT one: two ledgers
+ built over some other slicing agree with each other perfectly. These three run
+ at the only boundary holding the preparation, both ledgers and both results at
+ once, so a guard here that never fires means an artifact whose recorded
+ identity names a slicing the lanes never ran over is filed as sound, and every
+ later reading of it is confidently wrong.
+ 
+ `#224` IS WHY THEY ARE WORTH TESTING BY HAND. There the defect was the OPEN
+ rather than the message: the guard's wording was right and the condition never
+ fired, so every test that read the message passed while nothing was guarded.
+ Each case below drives one refusal and changes exactly one thing from a
+ fixture that passes, so a condition that stopped firing fails its own case
+ rather than hiding behind a neighbour's.
+ 
+ THE INSERTION SLICE IS LOAD-BEARING IN THE FIXTURE. `incumbentKind` is decided
+ by `isInsertionChunk`, so a preparation of ordinary slices only can never
+ exercise the `absent` side, and the case about it would pass against a guard
+ that had been deleted. The fixture therefore carries one slice of each kind.
+ 
+ Fixtures are cat-themed invention: Simplified Chinese against English.
+ 
+ @module
  */
 
 import {
@@ -50,21 +50,21 @@ import {
 //region Artifact two-lane verification tests
 
 /**
- * Brands a string as a preparation identity through the real guard.
- *
- * THROUGH THE GUARD RATHER THAN A CAST, so a fixture cannot quietly carry a
- * shape the pipeline would refuse and pass cases that production would not.
- *
- * @param text - identity as a preparation stamps one
- *
- * @returns Same string, branded
- *
- * @throws {@link Error} when the fixture itself is not a valid identity
- *
- * @example
- * ```ts
- * const identity = identityOf('sha256-preparation-v1:...',);
- * ```
+ Brands a string as a preparation identity through the real guard.
+ 
+ THROUGH THE GUARD RATHER THAN A CAST, so a fixture cannot quietly carry a
+ shape the pipeline would refuse and pass cases that production would not.
+ 
+ @param text - identity as a preparation stamps one
+ 
+ @returns Same string, branded
+ 
+ @throws {@link Error} when the fixture itself is not a valid identity
+ 
+ @example
+ ```ts
+ const identity = identityOf('sha256-preparation-v1:...',);
+ ```
  */
 function identityOf(text: string,): PreparationIdentity {
   assertPreparationIdentity(text,);
@@ -72,39 +72,39 @@ function identityOf(text: string,): PreparationIdentity {
 }
 
 /**
- * Name the preparation under test gives itself.
+ Name the preparation under test gives itself.
  */
 const EXPECTED = identityOf(`sha256-preparation-v1:${'a7'.repeat(32,)}`,);
 
 /**
- * Name of some OTHER slicing, for the case about filing a ledger under the
- * wrong one.
+ Name of some OTHER slicing, for the case about filing a ledger under the
+ wrong one.
  */
 const OTHER_IDENTITY = identityOf(`sha256-preparation-v1:${'b4'.repeat(32,)}`,);
 
 /**
- * Original of the slice the archive already rendered.
+ Original of the slice the archive already rendered.
  */
 const SOURCE_ONE = '猫坐在垫子上。';
 
 /**
- * Archive wording at that slice.
+ Archive wording at that slice.
  */
 const ARCHIVE_ONE = 'The cat sat on the mat.';
 
 /**
- * Original of the slice the archive never rendered.
+ Original of the slice the archive never rendered.
  */
 const SOURCE_TWO = '小猫在楼梯上看着。';
 
 /**
- * First finding the preparation observed, named so a case can keep it while
- * changing the one beside it.
+ First finding the preparation observed, named so a case can keep it while
+ changing the one beside it.
  */
 const FIRST_FINDING = 'alignment structure-mismatch';
 
 /**
- * Alignment findings the preparation observed.
+ Alignment findings the preparation observed.
  */
 const FINDINGS: readonly string[] = [
   FIRST_FINDING,
@@ -112,18 +112,18 @@ const FINDINGS: readonly string[] = [
 ];
 
 /**
- * Builds a content chunk, which is what an ordinary slice carries.
- *
- * @param sliceIndex - position within the document
- *
- * @param text - wording at that position
- *
- * @returns Chunk shaped as preparation produces one
- *
- * @example
- * ```ts
- * const chunk = contentChunk({ sliceIndex: 0, text: ARCHIVE_ONE, },);
- * ```
+ Builds a content chunk, which is what an ordinary slice carries.
+ 
+ @param sliceIndex - position within the document
+ 
+ @param text - wording at that position
+ 
+ @returns Chunk shaped as preparation produces one
+ 
+ @example
+ ```ts
+ const chunk = contentChunk({ sliceIndex: 0, text: ARCHIVE_ONE, },);
+ ```
  */
 function contentChunk(
   {
@@ -144,10 +144,10 @@ function contentChunk(
 }
 
 /**
- * Preparation every case measures a ledger against.
- *
- * Two slices: one the archive rendered, one it did not. The second is an
- * insertion chunk, which is the only way `incumbentKind` can read `absent`.
+ Preparation every case measures a ledger against.
+ 
+ Two slices: one the archive rendered, one it did not. The second is an
+ insertion chunk, which is the only way `incumbentKind` can read `absent`.
  */
 const PREPARED: PreparedDocumentPair = {
   sourceText: `${SOURCE_ONE}\n\n${SOURCE_TWO}`,
@@ -182,7 +182,7 @@ const PREPARED: PreparedDocumentPair = {
 };
 
 /**
- * One row of a ledger, with every field the assertion joins on.
+ One row of a ledger, with every field the assertion joins on.
  */
 type FixtureRow = {
   readonly sliceIndex: number;
@@ -192,10 +192,10 @@ type FixtureRow = {
 };
 
 /**
- * Row for the slice the archive rendered.
- *
- * NAMED rather than indexed out of the list, because the cases below rebuild the
- * list with one field changed and indexing it back out would need `!`.
+ Row for the slice the archive rendered.
+ 
+ NAMED rather than indexed out of the list, because the cases below rebuild the
+ list with one field changed and indexing it back out would need `!`.
  */
 const ROW_ONE: FixtureRow = {
   sliceIndex: 0,
@@ -205,7 +205,7 @@ const ROW_ONE: FixtureRow = {
 };
 
 /**
- * Row for the slice the archive never rendered.
+ Row for the slice the archive never rendered.
  */
 const ROW_TWO: FixtureRow = {
   sliceIndex: 1,
@@ -215,7 +215,7 @@ const ROW_TWO: FixtureRow = {
 };
 
 /**
- * Rows a ledger built over {@link PREPARED} carries.
+ Rows a ledger built over {@link PREPARED} carries.
  */
 const MATCHING_ROWS: readonly FixtureRow[] = [
   ROW_ONE,
@@ -223,18 +223,18 @@ const MATCHING_ROWS: readonly FixtureRow[] = [
 ];
 
 /**
- * Builds a ledger from rows, filling the fields the assertion does not read.
- *
- * @param rows - per-slice facts, which is all these assertions join on
- *
- * @param identity - slicing the ledger claims to have been built over
- *
- * @returns Ledger shaped as a lane driver returns one
- *
- * @example
- * ```ts
- * const ledger = ledgerOf({ rows: MATCHING_ROWS, identity: EXPECTED, },);
- * ```
+ Builds a ledger from rows, filling the fields the assertion does not read.
+ 
+ @param rows - per-slice facts, which is all these assertions join on
+ 
+ @param identity - slicing the ledger claims to have been built over
+ 
+ @returns Ledger shaped as a lane driver returns one
+ 
+ @example
+ ```ts
+ const ledger = ledgerOf({ rows: MATCHING_ROWS, identity: EXPECTED, },);
+ ```
  */
 function ledgerOf(
   {
@@ -262,19 +262,19 @@ function ledgerOf(
 }
 
 /**
- * Runs the ledger assertion over rows that differ from the matching set in
- * exactly one way.
- *
- * @param rows - rows to check, matching unless a case changed one
- *
- * @param identity - name the ledger claims, the expected one unless changed
- *
- * @throws {@link ArtifactPreparationMismatchError} when anything disagrees
- *
- * @example
- * ```ts
- * checking({ rows: MATCHING_ROWS, },);
- * ```
+ Runs the ledger assertion over rows that differ from the matching set in
+ exactly one way.
+ 
+ @param rows - rows to check, matching unless a case changed one
+ 
+ @param identity - name the ledger claims, the expected one unless changed
+ 
+ @throws {@link ArtifactPreparationMismatchError} when anything disagrees
+ 
+ @example
+ ```ts
+ checking({ rows: MATCHING_ROWS, },);
+ ```
  */
 function checking(
   {

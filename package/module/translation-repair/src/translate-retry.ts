@@ -33,11 +33,11 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 // the warning that the question exists.
 
 /**
- * Declines worth buying a second judging for.
- *
- * `no-candidate` is deliberately absent: it means nothing usable was ever
- * proposed, so a second judging would be handed the same empty slate and cost a
- * full panel to reach the same answer.
+ Declines worth buying a second judging for.
+ 
+ `no-candidate` is deliberately absent: it means nothing usable was ever
+ proposed, so a second judging would be handed the same empty slate and cost a
+ full panel to reach the same answer.
  */
 const RETRIED_DECLINES: readonly TranslateAbsenceReason[] = [
   'declined-indecision',
@@ -45,64 +45,64 @@ const RETRIED_DECLINES: readonly TranslateAbsenceReason[] = [
 ];
 
 /**
- * Reason recorded once a retry has been spent and the panel still backed
- * nothing.
+ Reason recorded once a retry has been spent and the panel still backed
+ nothing.
  */
 const SETTLED_DECLINE: TranslateAbsenceReason = 'no-candidate-backed';
 
 /**
- * Finding written when a slate is judged a second time, so a reader can tell a
- * retried decline from a first one without counting rounds.
+ Finding written when a slate is judged a second time, so a reader can tell a
+ retried decline from a first one without counting rounds.
  */
 const RETRY_FINDING = 'translate-declined-retried';
 
 /**
- * What one judging round produced.
- *
- * NAMED because a decline leaves by two doors and both have to be carried
- * together to the point where the retry decides: an inline union at the call
- * site would have to be repeated at every place that reads it.
- *
- * @example
- * ```ts
- * const round: JudgeRound = { kind: 'returned', result, };
- * ```
+ What one judging round produced.
+ 
+ NAMED because a decline leaves by two doors and both have to be carried
+ together to the point where the retry decides: an inline union at the call
+ site would have to be repeated at every place that reads it.
+ 
+ @example
+ ```ts
+ const round: JudgeRound = { kind: 'returned', result, };
+ ```
  */
 type JudgeRound = {
   /**
-   * Panel answered, whether by deciding or by declining with an incumbent to
-   * fall back on.
+   Panel answered, whether by deciding or by declining with an incumbent to
+   fall back on.
    */
   readonly kind: 'returned';
 
   /**
-   * What it decided.
+   What it decided.
    */
   readonly result: TranslateStageResult;
 } | {
   /**
-   * Panel refused, because this slice has no incumbent and a decline there
-   * would ship the empty string.
+   Panel refused, because this slice has no incumbent and a decline there
+   would ship the empty string.
    */
   readonly kind: 'raised';
 
   /**
-   * Refusal it raised.
+   Refusal it raised.
    */
   readonly error: TranslateAbsenceError;
 };
 
 /**
- * Whether a reason is one a second judging might change.
- *
- * @param reason - why the first judging gave up
- *
- * @returns Whether to buy another round
- *
- * @example
- * ```ts
- * const worthRetrying = isRetriedDecline({ reason: 'declined-indecision', },);
- * ```
+ Whether a reason is one a second judging might change.
+ 
+ @param reason - why the first judging gave up
+ 
+ @returns Whether to buy another round
+ 
+ @example
+ ```ts
+ const worthRetrying = isRetriedDecline({ reason: 'declined-indecision', },);
+ ```
  */
 function isRetriedDecline({ reason, }: { readonly reason: string; },): boolean {
   return RETRIED_DECLINES.some(function matches(retried,): boolean {
@@ -111,33 +111,33 @@ function isRetriedDecline({ reason, }: { readonly reason: string; },): boolean {
 }
 
 /**
- * Judges one produced slate, asking a declining panel exactly once more.
- *
- * @param judging - everything {@link judgeTranslateSlate} needs, forwarded
- * unchanged so this cannot drift from the half it wraps
- *
- * @returns What the panel decided, from whichever round decided it
- *
- * @throws {@link TranslateAbsenceError} when a slice with no incumbent is
- * declined twice, carrying `no-candidate-backed` rather than either round's own
- * reason
- *
- * @example
- * ```ts
- * const decided = await judgeSlateWithRetry({ judging, },);
- * ```
+ Judges one produced slate, asking a declining panel exactly once more.
+ 
+ @param judging - everything {@link judgeTranslateSlate} needs, forwarded
+ unchanged so this cannot drift from the half it wraps
+ 
+ @returns What the panel decided, from whichever round decided it
+ 
+ @throws {@link TranslateAbsenceError} when a slice with no incumbent is
+ declined twice, carrying `no-candidate-backed` rather than either round's own
+ reason
+ 
+ @example
+ ```ts
+ const decided = await judgeSlateWithRetry({ judging, },);
+ ```
  */
 export async function judgeSlateWithRetry(
   { judging, }: { readonly judging: Parameters<typeof judgeTranslateSlate>[0]; },
 ): Promise<TranslateStageResult> {
   /**
-   * Logger the caller already tagged, destructured rather than reached through
-   * on every use.
+   Logger the caller already tagged, destructured rather than reached through
+   on every use.
    */
   const { l, } = judging;
 
   /**
-   * What the panel said the first time, or the refusal it raised.
+   What the panel said the first time, or the refusal it raised.
    */
   const first = await (async function askOnce(): Promise<JudgeRound> {
     try {
@@ -160,11 +160,11 @@ export async function judgeSlateWithRetry(
   })();
 
   /**
-   * What the first round reported, whichever door it left by.
-   *
-   * Read ONCE rather than per field, so the two shapes are reconciled in one
-   * place and every later line reads the same record regardless of which door
-   * this was.
+   What the first round reported, whichever door it left by.
+   
+   Read ONCE rather than per field, so the two shapes are reconciled in one
+   place and every later line reads the same record regardless of which door
+   this was.
    */
   const firstReport = (first.kind === 'raised')
     ? {
@@ -189,12 +189,12 @@ export async function judgeSlateWithRetry(
   l.info(`translate stage: ${firstReport.reason}; challenging same panel under distinct responsibility`,);
 
   /**
-   * Findings the first round gathered, which the second must not lose.
+   Findings the first round gathered, which the second must not lose.
    */
   const firstFindings = firstReport.findings;
   try {
     /**
-     * What the same panel said about the same candidates, second time.
+     What the same panel said about the same candidates, second time.
      */
     const second = await judgeTranslateSlate({
       ...judging,

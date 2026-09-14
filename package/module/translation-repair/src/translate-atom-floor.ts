@@ -3,18 +3,18 @@ import type { ProtectedAtom, } from './protected-atom.ts';
 //region Translation atom floor
 
 /**
- * Invariant failure when a counted key has no source record.
+ Invariant failure when a counted key has no source record.
  */
 class AtomFloorError extends Error {
   /**
-   * Constructs invariant failure naming generated atom key.
-   *
-   * @param key - impossible missing tally key
-   *
-   * @example
-   * ```ts
-   * throw new AtomFloorError({ key, });
-   * ```
+   Constructs invariant failure naming generated atom key.
+   
+   @param key - impossible missing tally key
+   
+   @example
+   ```ts
+   throw new AtomFloorError({ key, });
+   ```
    */
   public constructor({ key, }: { readonly key: string; },) {
     super(`atom key belonging to neither side: ${key}`,);
@@ -23,48 +23,48 @@ class AtomFloorError extends Error {
 }
 
 /**
- * Renders one atom for finding and multiset key.
- *
- * @param atom - atom to describe
- *
- * @returns Kind and value
- *
- * @example
- * ```ts
- * const label = describeAtom({ kind: 'footnote', value: '1', },);
- * ```
+ Renders one atom for finding and multiset key.
+ 
+ @param atom - atom to describe
+ 
+ @returns Kind and value
+ 
+ @example
+ ```ts
+ const label = describeAtom({ kind: 'footnote', value: '1', },);
+ ```
  */
 export function describeAtom(atom: ProtectedAtom,): string {
   return `${atom.kind} ${atom.value}`;
 }
 
 /**
- * One atom and count in reference.
+ One atom and count in reference.
  */
 type AtomTally = {
   /**
-   * Atom being counted.
+   Atom being counted.
    */
   readonly atom: ProtectedAtom;
 
   /**
-   * Copies carried.
+   Copies carried.
    */
   readonly count: number;
 };
 
 /**
- * How many times each atom appears,
- * keyed by exact description.
- *
- * @param atoms - atoms one side carries
- *
- * @returns One entry per distinct atom and count
- *
- * @example
- * ```ts
- * const counted = countAtoms({ atoms, });
- * ```
+ How many times each atom appears,
+ keyed by exact description.
+ 
+ @param atoms - atoms one side carries
+ 
+ @returns One entry per distinct atom and count
+ 
+ @example
+ ```ts
+ const counted = countAtoms({ atoms, });
+ ```
  */
 function countAtoms(
   { atoms, }: { readonly atoms: readonly ProtectedAtom[]; },
@@ -75,15 +75,15 @@ function countAtoms(
       atom: ProtectedAtom,
     ): Map<string, AtomTally> {
       /**
-       * Exact atom key.
+       Exact atom key.
        */
       const key = describeAtom(atom,);
       /**
-       * Existing tally when seen before.
+       Existing tally when seen before.
        */
       const counted = seen.get(key,);
       /**
-       * Copies before current atom.
+       Copies before current atom.
        */
       const before = (counted === undefined) ? 0 : counted.count;
       seen.set(
@@ -100,21 +100,21 @@ function countAtoms(
 }
 
 /**
- * Atoms candidate owes,
- * taking whichever reference asks for more copies.
- *
- * @param page - atoms text being replaced carries
- *
- * @param source - atoms original carries
- *
- * @returns Union with higher count per atom
- *
- * @throws {@link AtomFloorError} on impossible tally contradiction
- *
- * @example
- * ```ts
- * const owed = mergeAtoms({ page, source, });
- * ```
+ Atoms candidate owes,
+ taking whichever reference asks for more copies.
+ 
+ @param page - atoms text being replaced carries
+ 
+ @param source - atoms original carries
+ 
+ @returns Union with higher count per atom
+ 
+ @throws {@link AtomFloorError} on impossible tally contradiction
+ 
+ @example
+ ```ts
+ const owed = mergeAtoms({ page, source, });
+ ```
  */
 export function mergeAtoms(
   {
@@ -126,15 +126,15 @@ export function mergeAtoms(
   },
 ): readonly ProtectedAtom[] {
   /**
-   * Counts requested by page.
+   Counts requested by page.
    */
   const fromPage = countAtoms({ atoms: page, },);
   /**
-   * Counts requested by source.
+   Counts requested by source.
    */
   const fromSource = countAtoms({ atoms: source, },);
   /**
-   * Distinct keys either reference carries.
+   Distinct keys either reference carries.
    */
   const keys = [
     ...new Set([
@@ -144,29 +144,29 @@ export function mergeAtoms(
   ];
   return keys.flatMap(function expand(key,): readonly ProtectedAtom[] {
     /**
-     * Page tally for key.
+     Page tally for key.
      */
     const byPage = fromPage.get(key,);
     /**
-     * Source tally for key.
+     Source tally for key.
      */
     const bySource = fromSource.get(key,);
     /**
-     * Preferred record describing atom.
+     Preferred record describing atom.
      */
     const held = bySource ?? byPage;
     if (held === undefined)
       throw new AtomFloorError({ key, },);
     /**
-     * Copies page requests.
+     Copies page requests.
      */
     const wantedByPage = (byPage === undefined) ? 0 : byPage.count;
     /**
-     * Copies source requests.
+     Copies source requests.
      */
     const wantedBySource = (bySource === undefined) ? 0 : bySource.count;
     /**
-     * Larger reference count candidate owes.
+     Larger reference count candidate owes.
      */
     const owed = Math.max(
       wantedByPage,

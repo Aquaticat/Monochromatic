@@ -24,62 +24,62 @@
 // it. That direction has no other check anywhere.
 
 /**
- * Lane a record belongs to, which its finding names.
- *
- * @example
- * ```ts
- * const lane: SliceRecordLane = 'translate';
- * ```
+ Lane a record belongs to, which its finding names.
+ 
+ @example
+ ```ts
+ const lane: SliceRecordLane = 'translate';
+ ```
  */
 export type SliceRecordLane =
   /**
-   * Repair lane, whose records are `ChunkRepairOutcome`.
+   Repair lane, whose records are `ChunkRepairOutcome`.
    */
   | 'repair'
   /**
-   * Translate lane, whose records are `TranslateSliceRecord`.
+   Translate lane, whose records are `TranslateSliceRecord`.
    */
   | 'translate';
 
 /**
- * Contradiction between a settled record's `changed` flag and its text.
- *
- * MARKED: its message names the lane, the slice index and the flag, in a
- * sentence written here from those alone.
- *
- * @example
- * ```ts
- * throw new SliceRecordContradictionError({ lane: 'repair', sliceIndex: 4, changed: true, },);
- * ```
+ Contradiction between a settled record's `changed` flag and its text.
+ 
+ MARKED: its message names the lane, the slice index and the flag, in a
+ sentence written here from those alone.
+ 
+ @example
+ ```ts
+ throw new SliceRecordContradictionError({ lane: 'repair', sliceIndex: 4, changed: true, },);
+ ```
  */
 export class SliceRecordContradictionError extends Error {
   /**
-   * Declares this message safe to forward: a lane name, a slice index and a
-   * flag, in a sentence written here.
+   Declares this message safe to forward: a lane name, a slice index and a
+   flag, in a sentence written here.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Lane whose record contradicts itself.
+   Lane whose record contradicts itself.
    */
   readonly lane: SliceRecordLane;
 
   /**
-   * Slice the record settled.
+   Slice the record settled.
    */
   readonly sliceIndex: number;
 
   /**
-   * Flag the record carried, which its text belies.
+   Flag the record carried, which its text belies.
    */
   readonly changed: boolean;
 
   /**
-   * @param lane - lane whose record contradicts itself
-   *
-   * @param sliceIndex - slice the record settled
-   *
-   * @param changed - flag the record carried, which its text belies
+   @param lane - lane whose record contradicts itself
+   
+   @param sliceIndex - slice the record settled
+   
+   @param changed - flag the record carried, which its text belies
    */
   constructor(
     {
@@ -103,20 +103,20 @@ export class SliceRecordContradictionError extends Error {
 }
 
 /**
- * Whether a record's changed flag agrees with its own text.
- *
- * @param changed - what the record claims about itself
- *
- * @param decidedText - wording the record carries
- *
- * @param incumbentText - archive wording of the slice
- *
- * @returns Whether the record describes itself truthfully
- *
- * @example
- * ```ts
- * const usable = sliceRecordAgrees({ changed, decidedText, incumbentText, },);
- * ```
+ Whether a record's changed flag agrees with its own text.
+ 
+ @param changed - what the record claims about itself
+ 
+ @param decidedText - wording the record carries
+ 
+ @param incumbentText - archive wording of the slice
+ 
+ @returns Whether the record describes itself truthfully
+ 
+ @example
+ ```ts
+ const usable = sliceRecordAgrees({ changed, decidedText, incumbentText, },);
+ ```
  */
 export function sliceRecordAgrees(
   {
@@ -133,35 +133,35 @@ export function sliceRecordAgrees(
 }
 
 /**
- * Refuses a freshly settled record that contradicts itself.
- *
- * REFUSED RATHER THAN DISCARDED, which is the opposite of what a cached record
- * gets. A cache holds an artifact of an earlier run and may simply be wrong
- * about it; a fresh record is what this run just decided, so a contradiction
- * means the stage derived its flag from something other than its text. Asking
- * again would produce the same answer, and persisting it would write the
- * contradiction into the cache for every later run to discard.
- *
- * Called BEFORE the cache write on both lanes, so nothing self-contradicting is
- * ever stored.
- *
- * @param lane - which lane settled the record
- *
- * @param sliceIndex - slice it was settled for
- *
- * @param changed - what the record claims about itself
- *
- * @param decidedText - wording the record carries
- *
- * @param incumbentText - archive wording of that slice
- *
- * @throws SliceRecordContradictionError naming the direction of the
- * contradiction, since over-claiming and under-claiming are different defects
- *
- * @example
- * ```ts
- * assertSettledRecordAgrees({ lane: 'repair', sliceIndex, changed, decidedText, incumbentText, },);
- * ```
+ Refuses a freshly settled record that contradicts itself.
+ 
+ REFUSED RATHER THAN DISCARDED, which is the opposite of what a cached record
+ gets. A cache holds an artifact of an earlier run and may simply be wrong
+ about it; a fresh record is what this run just decided, so a contradiction
+ means the stage derived its flag from something other than its text. Asking
+ again would produce the same answer, and persisting it would write the
+ contradiction into the cache for every later run to discard.
+ 
+ Called BEFORE the cache write on both lanes, so nothing self-contradicting is
+ ever stored.
+ 
+ @param lane - which lane settled the record
+ 
+ @param sliceIndex - slice it was settled for
+ 
+ @param changed - what the record claims about itself
+ 
+ @param decidedText - wording the record carries
+ 
+ @param incumbentText - archive wording of that slice
+ 
+ @throws SliceRecordContradictionError naming the direction of the
+ contradiction, since over-claiming and under-claiming are different defects
+ 
+ @example
+ ```ts
+ assertSettledRecordAgrees({ lane: 'repair', sliceIndex, changed, decidedText, incumbentText, },);
+ ```
  */
 export function assertSettledRecordAgrees(
   {
@@ -192,25 +192,25 @@ export function assertSettledRecordAgrees(
 }
 
 /**
- * Names a discarded record so a reader can tell it from a cache miss.
- *
- * A slice recomputed because its cached record was refused costs the same calls
- * as one never cached, and the two are indistinguishable in a run log without
- * this. Which way the record contradicted itself is stated, since a record that
- * over-claims and one that under-claims fail for different reasons.
- *
- * @param lane - which lane's cache the record came from
- *
- * @param sliceIndex - slice it was resumed for
- *
- * @param changed - what the record claimed, which the wording explains
- *
- * @returns Finding in scorecard-stable wording
- *
- * @example
- * ```ts
- * findings.push(resumedSliceDiscardFinding({ lane: 'translate', sliceIndex, changed, },),);
- * ```
+ Names a discarded record so a reader can tell it from a cache miss.
+ 
+ A slice recomputed because its cached record was refused costs the same calls
+ as one never cached, and the two are indistinguishable in a run log without
+ this. Which way the record contradicted itself is stated, since a record that
+ over-claims and one that under-claims fail for different reasons.
+ 
+ @param lane - which lane's cache the record came from
+ 
+ @param sliceIndex - slice it was resumed for
+ 
+ @param changed - what the record claimed, which the wording explains
+ 
+ @returns Finding in scorecard-stable wording
+ 
+ @example
+ ```ts
+ findings.push(resumedSliceDiscardFinding({ lane: 'translate', sliceIndex, changed, },),);
+ ```
  */
 export function resumedSliceDiscardFinding(
   {

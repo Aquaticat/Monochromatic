@@ -8,7 +8,7 @@ import type {
 //region Recognized sealed-build metadata, not execution approval
 
 /**
- * Exact loader declarations emitted by the existing dedicated build.
+ Exact loader declarations emitted by the existing dedicated build.
  */
 export const PRODUCER_BUILD_LOADER_NAMES = [
   'NAPI_RS_NATIVE_LIBRARY_PATH',
@@ -19,25 +19,25 @@ export const PRODUCER_BUILD_LOADER_NAMES = [
   'NODE_ICU_DATA',
 ] as const;
 /**
- * The application build explicitly leaves operating-system identity to the owning runner.
+ The application build explicitly leaves operating-system identity to the owning runner.
  */
 const SYSTEM_LIBRARY_RESPONSIBILITY = 'Runner must separately bind its operating-system image and native shared-library inputs.';
 /**
- * SHA-256's canonical lowercase hexadecimal width.
+ SHA-256's canonical lowercase hexadecimal width.
  */
 const SHA256_WIDTH = 64;
 
 /**
- * Narrows JSON records without admitting arrays.
- *
- * @param value - decoded manifest field
- *
- * @returns Whether named fields can be inspected
- *
- * @example
- * ```ts
- * if (runtimeRecord(value)) inspect(value.node);
- * ```
+ Narrows JSON records without admitting arrays.
+ 
+ @param value - decoded manifest field
+ 
+ @returns Whether named fields can be inspected
+ 
+ @example
+ ```ts
+ if (runtimeRecord(value)) inspect(value.node);
+ ```
  */
 function runtimeRecord(value: unknown): value is Readonly<Record<string, unknown>> {
   return ((typeof value) === 'object') && (value !== null)
@@ -45,18 +45,18 @@ function runtimeRecord(value: unknown): value is Readonly<Record<string, unknown
 }
 
 /**
- * Checks the fixed keys of a manifest record.
- *
- * @param value - narrowed record
- *
- * @param expected - keys owned by this build schema
- *
- * @returns Whether no required or additional field differs
- *
- * @example
- * ```ts
- * const valid = runtimeKeys({ value, expected: ['version', 'files'] });
- * ```
+ Checks the fixed keys of a manifest record.
+ 
+ @param value - narrowed record
+ 
+ @param expected - keys owned by this build schema
+ 
+ @returns Whether no required or additional field differs
+ 
+ @example
+ ```ts
+ const valid = runtimeKeys({ value, expected: ['version', 'files'] });
+ ```
  */
 function runtimeKeys({
   value,
@@ -66,7 +66,7 @@ function runtimeKeys({
   readonly expected: readonly string[]
 }): boolean {
   /**
-   * Key order does not create a different schema, though raw manifest identity remains exact.
+   Key order does not create a different schema, though raw manifest identity remains exact.
    */
   const keys = Object.keys(value);
   return (keys.length === expected.length) && keys.every(function known(key): boolean {
@@ -75,16 +75,16 @@ function runtimeKeys({
 }
 
 /**
- * Validates byte identity fields without trusting a type assertion from decoded JSON.
- *
- * @param value - decoded identity
- *
- * @returns Whether exact nonnegative extent and raw SHA-256 are present
- *
- * @example
- * ```ts
- * const valid = runtimeIdentity(value);
- * ```
+ Validates byte identity fields without trusting a type assertion from decoded JSON.
+ 
+ @param value - decoded identity
+ 
+ @returns Whether exact nonnegative extent and raw SHA-256 are present
+ 
+ @example
+ ```ts
+ const valid = runtimeIdentity(value);
+ ```
  */
 function runtimeIdentity(value: unknown): value is ProducerInputFileIdentity {
   if ((!runtimeRecord(value)) || ((typeof value.bytes) !== 'number')
@@ -106,16 +106,16 @@ function runtimeIdentity(value: unknown): value is ProducerInputFileIdentity {
 }
 
 /**
- * Admits only flat executable/native names owned by the sealed runtime inventory.
- *
- * @param value - decoded runtime file
- *
- * @returns Whether identity and a non-traversing runtime name are present
- *
- * @example
- * ```ts
- * const valid = runtimeFile(value);
- * ```
+ Admits only flat executable/native names owned by the sealed runtime inventory.
+ 
+ @param value - decoded runtime file
+ 
+ @returns Whether identity and a non-traversing runtime name are present
+ 
+ @example
+ ```ts
+ const valid = runtimeFile(value);
+ ```
  */
 function runtimeFile(value: unknown): value is ProducerRuntimeFile {
   return runtimeRecord(value) && ((typeof value.path) === 'string')
@@ -136,17 +136,17 @@ function runtimeFile(value: unknown): value is ProducerRuntimeFile {
 }
 
 /**
- * Checks the current complete build description before any contained filename receives authority.
- * Exact bytes are independently checked by the caller before this semantic shape test.
- *
- * @param value - decoded manifest, never an import instruction
- *
- * @returns Whether the current sealed-build schema is fully recognized
- *
- * @example
- * ```ts
- * if (!isProducerRuntimeManifest(value)) refuseRuntime();
- * ```
+ Checks the current complete build description before any contained filename receives authority.
+ Exact bytes are independently checked by the caller before this semantic shape test.
+ 
+ @param value - decoded manifest, never an import instruction
+ 
+ @returns Whether the current sealed-build schema is fully recognized
+ 
+ @example
+ ```ts
+ if (!isProducerRuntimeManifest(value)) refuseRuntime();
+ ```
  */
 export function isProducerRuntimeManifest(value: unknown): value is ProducerRuntimeManifest {
   if ((!runtimeRecord(value)) || (!runtimeKeys({
@@ -176,7 +176,7 @@ export function isProducerRuntimeManifest(value: unknown): value is ProducerRunt
     )))
     return false;
   /**
-   * Each nested record has a fixed schema rather than inheriting unknown launch capabilities.
+   Each nested record has a fixed schema rather than inheriting unknown launch capabilities.
    */
   const {
     node,
@@ -248,7 +248,7 @@ export function isProducerRuntimeManifest(value: unknown): value is ProducerRunt
     || (files.length === 0))
     return false;
   /**
-   * Array narrowing does not turn untrusted entries into an any-typed validation shortcut.
+   Array narrowing does not turn untrusted entries into an any-typed validation shortcut.
    */
   const entries: readonly unknown[] = files;
   return entries.every(function file(entry): boolean {

@@ -20,51 +20,51 @@ import {
 // channel), refusal deltas accumulate into the first-class refusal field.
 
 /**
- * SSE field prefix carrying event payloads.
+ SSE field prefix carrying event payloads.
  */
 const DATA_PREFIX = 'data:';
 
 /**
- * Terminal sentinel payload closing an OpenAI-compatible stream.
+ Terminal sentinel payload closing an OpenAI-compatible stream.
  */
 const DONE_SENTINEL = '[DONE]';
 
 /**
- * Channels accumulated while folding one event stream.
+ Channels accumulated while folding one event stream.
  */
 type StreamFold = {
   /**
-   * Content deltas in arrival order.
+   Content deltas in arrival order.
    */
   readonly contentParts: string[];
 
   /**
-   * Refusal deltas in arrival order.
+   Refusal deltas in arrival order.
    */
   readonly refusalParts: string[];
 
   /**
-   * Usage blocks seen; the last one wins.
+   Usage blocks seen; the last one wins.
    */
   readonly usageParts: ExtractedCompletion['usage'][];
 
   /**
-   * Finish reasons seen; the last one wins, as it closes the stream.
+   Finish reasons seen; the last one wins, as it closes the stream.
    */
   readonly finishReasons: string[];
 };
 
 /**
- * Folds one parsed stream event into the accumulator.
- *
- * @param fold - accumulated channels
- *
- * @param chunk - parsed event payload
- *
- * @example
- * ```ts
- * foldChunk({ fold, chunk, },);
- * ```
+ Folds one parsed stream event into the accumulator.
+ 
+ @param fold - accumulated channels
+ 
+ @param chunk - parsed event payload
+ 
+ @example
+ ```ts
+ foldChunk({ fold, chunk, },);
+ ```
  */
 function foldChunk(
   {
@@ -76,7 +76,7 @@ function foldChunk(
   },
 ): void {
   /**
-   * Usage carried by this event, when present and well typed.
+   Usage carried by this event, when present and well typed.
    */
   const { usage, } = readUsage({ parsed: chunk, },);
   if (usage !== undefined) {
@@ -86,25 +86,25 @@ function foldChunk(
   }
 
   /**
-   * Choices of this event; usage-only events carry an empty array.
+   Choices of this event; usage-only events carry an empty array.
    */
   const { choices, } = chunk;
   if (!isJsonArray(choices,))
     return;
 
   /**
-   * First choice of this event, when any.
+   First choice of this event, when any.
    */
   const [first,] = choices;
   if (!isJsonRecord(first,))
     return;
 
   /**
-   * Why the model stopped, on the event that closes the stream.
-   *
-   * READ BEFORE THE DELTA CHECK, because the closing event of an
-   * OpenAI-compatible stream carries an EMPTY delta beside the reason. Folding
-   * it after that check would discard exactly the event worth reading.
+   Why the model stopped, on the event that closes the stream.
+   
+   READ BEFORE THE DELTA CHECK, because the closing event of an
+   OpenAI-compatible stream carries an EMPTY delta beside the reason. Folding
+   it after that check would discard exactly the event worth reading.
    */
   const { finishReason, } = readFinishReason({ choice: first, },);
   if (finishReason !== undefined) {
@@ -114,7 +114,7 @@ function foldChunk(
   }
 
   /**
-   * Delta block of the first choice.
+   Delta block of the first choice.
    */
   const { delta, } = first;
   if (!isJsonRecord(delta,))
@@ -133,21 +133,21 @@ function foldChunk(
 }
 
 /**
- * Reads one SSE line's data payload;
- * empty for lines that carry none.
- *
- * @param rawLine - one line of the drained stream
- *
- * @returns Payload after the data prefix, or empty
- *
- * @example
- * ```ts
- * dataPayloadOf('data: [DONE]',);
- * ```
+ Reads one SSE line's data payload;
+ empty for lines that carry none.
+ 
+ @param rawLine - one line of the drained stream
+ 
+ @returns Payload after the data prefix, or empty
+ 
+ @example
+ ```ts
+ dataPayloadOf('data: [DONE]',);
+ ```
  */
 function dataPayloadOf(rawLine: string,): string {
   /**
-   * Line without surrounding whitespace and carriage returns.
+   Line without surrounding whitespace and carriage returns.
    */
   const line = rawLine.trim();
   if (!line.startsWith(DATA_PREFIX,))
@@ -158,26 +158,26 @@ function dataPayloadOf(rawLine: string,): string {
 }
 
 /**
- * Refuses a body whose event stream never reached its terminator.
- *
- * SPLIT OUT SO THE RETRY LADDER CAN ASK IT TOO, on the same grounds as the
- * Anthropic side: a stream that stopped early comes back as 200, so a check
- * that runs after the retry returned is a check no retry ever sees.
- *
- * @param bodyText - whole drained body, as the transport returned it
- *
- * @throws {@link MalformedCompletionError} when the terminator never arrived
- *
- * @example
- * ```ts
- * requireStreamTerminator({ bodyText, },);
- * ```
+ Refuses a body whose event stream never reached its terminator.
+ 
+ SPLIT OUT SO THE RETRY LADDER CAN ASK IT TOO, on the same grounds as the
+ Anthropic side: a stream that stopped early comes back as 200, so a check
+ that runs after the retry returned is a check no retry ever sees.
+ 
+ @param bodyText - whole drained body, as the transport returned it
+ 
+ @throws {@link MalformedCompletionError} when the terminator never arrived
+ 
+ @example
+ ```ts
+ requireStreamTerminator({ bodyText, },);
+ ```
  */
 export function requireStreamTerminator(
   { bodyText, }: { readonly bodyText: string; },
 ): void {
   /**
-   * Whether the terminal sentinel arrived anywhere in the stream.
+   Whether the terminal sentinel arrived anywhere in the stream.
    */
   const sawDone = bodyText
     .split('\n',)
@@ -193,26 +193,26 @@ export function requireStreamTerminator(
 }
 
 /**
- * Reassembles one drained SSE body into a completion.
- * Requires the `[DONE]` terminator: a stream that ended without it was cut
- * off, and silently returning truncated content would poison every consumer.
- *
- * @param bodyText - whole drained `text/event-stream` body
- *
- * @returns Reassembled content, refusal, and usage
- *
- * @throws {@link MalformedCompletionError} when an event is not JSON or the terminator is missing
- *
- * @example
- * ```ts
- * const extracted = extractStreamedCompletion({ bodyText: reply.bodyText, },);
- * ```
+ Reassembles one drained SSE body into a completion.
+ Requires the `[DONE]` terminator: a stream that ended without it was cut
+ off, and silently returning truncated content would poison every consumer.
+ 
+ @param bodyText - whole drained `text/event-stream` body
+ 
+ @returns Reassembled content, refusal, and usage
+ 
+ @throws {@link MalformedCompletionError} when an event is not JSON or the terminator is missing
+ 
+ @example
+ ```ts
+ const extracted = extractStreamedCompletion({ bodyText: reply.bodyText, },);
+ ```
  */
 export function extractStreamedCompletion(
   { bodyText, }: { readonly bodyText: string; },
 ): ExtractedCompletion {
   /**
-   * Accumulated channels across every event.
+   Accumulated channels across every event.
    */
   const fold: StreamFold = {
     contentParts: [],
@@ -224,13 +224,13 @@ export function extractStreamedCompletion(
   requireStreamTerminator({ bodyText, },);
 
   /**
-   * Stream lines, folded into the answer.
+   Stream lines, folded into the answer.
    */
   const lines = bodyText.split('\n',);
 
   for (const rawLine of lines) {
     /**
-     * Event payload of this line; empty and sentinel lines fold nothing.
+     Event payload of this line; empty and sentinel lines fold nothing.
      */
     const payload = dataPayloadOf(rawLine,);
     if ((payload === '') || (payload === DONE_SENTINEL))
@@ -238,7 +238,7 @@ export function extractStreamedCompletion(
 
     try {
       /**
-       * Parsed event payload.
+       Parsed event payload.
        */
       const chunk: unknown = JSON.parse(payload,);
       if (!isJsonRecord(chunk,))
@@ -259,28 +259,28 @@ export function extractStreamedCompletion(
   }
 
   /**
-   * Refusal accumulated across deltas, when the API refused.
+   Refusal accumulated across deltas, when the API refused.
    */
   const refusal = fold
     .refusalParts
     .join('',);
 
   /**
-   * Answer accumulated across content deltas.
+   Answer accumulated across content deltas.
    */
   const text = fold
     .contentParts
     .join('',);
 
   /**
-   * Last usage block of the stream, when any arrived.
+   Last usage block of the stream, when any arrived.
    */
   const lastUsage = fold
     .usageParts
     .at(-1,);
 
   /**
-   * Reason closing the stream, when the provider sent one.
+   Reason closing the stream, when the provider sent one.
    */
   const finishReason = fold
     .finishReasons

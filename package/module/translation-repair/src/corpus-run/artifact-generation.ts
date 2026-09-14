@@ -31,122 +31,122 @@ import { resolveGit, } from './git-command.ts';
 // than estimated.
 
 /**
- * Directory of this source file, for locating the worktree via git.
+ Directory of this source file, for locating the worktree via git.
  */
 const HERE = import.meta.dirname;
 
 /**
- * Exit status `git merge-base --is-ancestor` uses for a clean negative.
- *
- * Anything else is a real failure: an unknown commit exits 128, and treating
- * that as "not eligible" would quietly shrink the denominator.
+ Exit status `git merge-base --is-ancestor` uses for a clean negative.
+ 
+ Anything else is a real failure: an unknown commit exits 128, and treating
+ that as "not eligible" would quietly shrink the denominator.
  */
 const NOT_ANCESTOR_EXIT = 1;
 
 /**
- * Settled entries produced by one built pipeline.
- *
- * @example
- * ```ts
- * const group: GenerationGroup = { digest: '53b5a4752...', entryIds: ['Acheron',], };
- * ```
+ Settled entries produced by one built pipeline.
+ 
+ @example
+ ```ts
+ const group: GenerationGroup = { digest: '53b5a4752...', entryIds: ['Acheron',], };
+ ```
  */
 export type GenerationGroup = Readonly<{
   /**
-   * Digest of the built output these runs executed, exactly as recorded.
+   Digest of the built output these runs executed, exactly as recorded.
    */
   digest: string;
 
   /**
-   * Entries settled under it, in directory-sorted order.
+   Entries settled under it, in directory-sorted order.
    */
   entryIds: readonly string[];
 }>;
 
 /**
- * Every settled entry, partitioned by the pipeline that produced it.
- *
- * @example
- * ```ts
- * const census = await censusByGeneration({ artifactsDir, },);
- * ```
+ Every settled entry, partitioned by the pipeline that produced it.
+ 
+ @example
+ ```ts
+ const census = await censusByGeneration({ artifactsDir, },);
+ ```
  */
 export type GenerationCensus = Readonly<{
   /**
-   * Groups ordered by size, largest first, so a report leads with the bulk.
+   Groups ordered by size, largest first, so a report leads with the bulk.
    */
   groups: readonly GenerationGroup[];
 
   /**
-   * Placed entries across every group.
+   Placed entries across every group.
    */
   total: number;
 
   /**
-   * Repo commit each placed entry recorded, keyed by entry id.
-   *
-   * Kept per entry rather than per group because one generation can span
-   * several commits: a documentation commit moves the tip while the built
-   * output stays identical, so those runs are one pipeline recorded under two
-   * provenances. Ancestry is therefore asked per commit, never per group.
+   Repo commit each placed entry recorded, keyed by entry id.
+   
+   Kept per entry rather than per group because one generation can span
+   several commits: a documentation commit moves the tip while the built
+   output stays identical, so those runs are one pipeline recorded under two
+   provenances. Ancestry is therefore asked per commit, never per group.
    */
   tipByEntry: ReadonlyMap<string, string>;
 
   /**
-   * Entries whose artifact would not parse at all.
-   *
-   * KEPT IN THE POOL DELIBERATELY, and separate from `untaggedIds` for that
-   * reason. A pass killed at its hard cap can leave one truncated artifact, and
-   * this package already decided such a file costs its own row and not the
-   * whole run. Filtering it out here would not protect anything: it would take
-   * the file away from the reader whose job is to report it as malformed, so a
-   * corrupt artifact would vanish from the failure list instead of appearing on
-   * it. Generation filtering answers a generation question; a file that is not
-   * JSON has not reached that question yet.
+   Entries whose artifact would not parse at all.
+   
+   KEPT IN THE POOL DELIBERATELY, and separate from `untaggedIds` for that
+   reason. A pass killed at its hard cap can leave one truncated artifact, and
+   this package already decided such a file costs its own row and not the
+   whole run. Filtering it out here would not protect anything: it would take
+   the file away from the reader whose job is to report it as malformed, so a
+   corrupt artifact would vanish from the failure list instead of appearing on
+   it. Generation filtering answers a generation question; a file that is not
+   JSON has not reached that question yet.
    */
   malformedIds: readonly string[];
 
   /**
-   * Entries whose artifact parsed but recorded nothing usable.
-   *
-   * EXCLUDED from every pool, because this is a real artifact of unknown
-   * generation and pooling it is exactly the silent mixing this module exists
-   * to stop. Named in the report so the exclusion is visible rather than a
-   * quietly smaller denominator.
+   Entries whose artifact parsed but recorded nothing usable.
+   
+   EXCLUDED from every pool, because this is a real artifact of unknown
+   generation and pooling it is exactly the silent mixing this module exists
+   to stop. Named in the report so the exclusion is visible rather than a
+   quietly smaller denominator.
    */
   untaggedIds: readonly string[];
 
   /**
-   * Entries recording a pipeline this build cannot name: settled before the
-   * field existed, or recording it in a digest scheme this build does not read.
-   *
-   * Also excluded from every pool, and separate from `untaggedIds` because the
-   * remedy differs. These are sound results whose pipeline can no longer be
-   * named, so deleting them buys nothing; a directory holding them is finished
-   * and the next accumulation belongs in a fresh one.
+   Entries recording a pipeline this build cannot name: settled before the
+   field existed, or recording it in a digest scheme this build does not read.
+   
+   Also excluded from every pool, and separate from `untaggedIds` because the
+   remedy differs. These are sound results whose pipeline can no longer be
+   named, so deleting them buys nothing; a directory holding them is finished
+   and the next accumulation belongs in a fresh one.
    */
   legacyIds: readonly string[];
 }>;
 
 /**
- * Partitions every settled artifact by the pipeline that produced it.
- *
- * @param artifactsDir - directory holding one JSON per settled entry
- *
- * @param names - directory listing the CALLER already took, so census and
- * caller classify the same set; omitted only by callers that have not listed
- * the directory themselves. It must come from {@link readdirArtifacts}, which
- * is what keeps a directory or a symbolic link called `Mittens.json` out of
- * both views at once. This cannot re-filter the names without taking a second
- * view of a directory the accumulation is still writing to, which is the gap
- * the shared listing exists to close
- *
- * @returns Census grouped by built pipeline, largest group first
- *
- * @example
- * ```ts
- * const census = await censusByGeneration({ artifactsDir, names, },);
- * ```
+ Partitions every settled artifact by the pipeline that produced it.
+ 
+ @param artifactsDir - directory holding one JSON per settled entry
+ 
+ @param names - directory listing the CALLER already took, so census and
+ caller classify the same set; omitted only by callers that have not listed
+ the directory themselves. It must come from {@link readdirArtifacts}, which
+ is what keeps a directory or a symbolic link called `Mittens.json` out of
+ both views at once. This cannot re-filter the names without taking a second
+ view of a directory the accumulation is still writing to, which is the gap
+ the shared listing exists to close
+ 
+ @returns Census grouped by built pipeline, largest group first
+ 
+ @example
+ ```ts
+ const census = await censusByGeneration({ artifactsDir, names, },);
+ ```
  */
 export async function censusByGeneration(
   {
@@ -158,14 +158,14 @@ export async function censusByGeneration(
   },
 ): Promise<GenerationCensus> {
   /**
-   * Artifact file names, sorted so the census is reproducible.
-   *
-   * Accepting the caller's listing matters more than saving one read. A reader
-   * that lists the directory, censuses it separately, then loads each file is
-   * taking THREE views of a directory the accumulation is still writing into,
-   * and an artifact arriving between the first two joins the census while never
-   * entering the candidate pool. One listing threaded through closes the gap
-   * between the two views this module controls.
+   Artifact file names, sorted so the census is reproducible.
+   
+   Accepting the caller's listing matters more than saving one read. A reader
+   that lists the directory, censuses it separately, then loads each file is
+   taking THREE views of a directory the accumulation is still writing into,
+   and an artifact arriving between the first two joins the census while never
+   entering the candidate pool. One listing threaded through closes the gap
+   between the two views this module controls.
    */
   const names = (listed ?? await readdirArtifacts({ artifactsDir, },))
     .filter(function isArtifact(name,): boolean {
@@ -174,39 +174,39 @@ export async function censusByGeneration(
     .toSorted();
 
   /**
-   * Entry ids gathered under each recorded build.
+   Entry ids gathered under each recorded build.
    */
   const byDigest = new Map<string, string[]>();
 
   /**
-   * Commit each placed entry recorded, for ancestry.
+   Commit each placed entry recorded, for ancestry.
    */
   const tipByEntry = new Map<string, string>();
 
   /**
-   * Entries whose artifact would not parse.
+   Entries whose artifact would not parse.
    */
   const malformedIds: string[] = [];
 
   /**
-   * Entries whose artifact parsed but recorded nothing usable.
+   Entries whose artifact parsed but recorded nothing usable.
    */
   const untaggedIds: string[] = [];
 
   /**
-   * Entries recording a commit but no build.
+   Entries recording a commit but no build.
    */
   const legacyIds: string[] = [];
 
   /* oxlint-disable no-await-in-loop -- sequential on purpose: one artifact at a time keeps peak memory flat across a directory that reaches hundreds of megabytes */
   for (const name of names) {
     /**
-     * Entry id, which is the artifact's own file name.
-     *
-     * A file called exactly `.json` has an EMPTY stem, and an empty id in a
-     * report is a blank line nobody can act on, so such a file is carried by
-     * its name instead. It can only ever appear among the unplaceable, since
-     * `readPlacement` refuses an empty stem before reading anything.
+     Entry id, which is the artifact's own file name.
+     
+     A file called exactly `.json` has an EMPTY stem, and an empty id in a
+     report is a blank line nobody can act on, so such a file is carried by
+     its name instead. It can only ever appear among the unplaceable, since
+     `readPlacement` refuses an empty stem before reading anything.
      */
     const entryId = (name === '.json')
       ? name
@@ -216,7 +216,7 @@ export async function censusByGeneration(
       );
 
     /**
-     * How this artifact places: its build and commit, or why it has neither.
+     How this artifact places: its build and commit, or why it has neither.
      */
     const placement = await readPlacement({
       artifactsDir,
@@ -268,13 +268,13 @@ export async function censusByGeneration(
         right,
       ): number {
         /**
-         * How many entries the left generation holds.
+         How many entries the left generation holds.
          */
         const leftSize = left.entryIds
           .length;
 
         /**
-         * How many entries the right generation holds.
+         How many entries the right generation holds.
          */
         const rightSize = right.entryIds
           .length;
@@ -290,37 +290,37 @@ export async function censusByGeneration(
 }
 
 /**
- * Resolves whatever the invoker named into a full commit object id.
- *
- * A required commit arrives from the environment and was used raw, so `HEAD`
- * and `main` were accepted and meant whatever the READER's checkout said at
- * read time. Two readers then filtered the same directory differently while
- * both reported the same requirement, and a branch that moves silently changes
- * which entries a rate covers.
- *
- * Artifact tips are already held to canonical object ids. This holds the
- * requirement to the same standard, at the one place it enters.
- *
- * Exported through the barrel so the built bundle's tests can hand it a
- * throwaway repository; the pool is its only caller.
- *
- * @internal
- *
- * @param revision - whatever the invoker named: an id, an abbreviation, a
- * branch, or a revision expression
- *
- * @param repository - checkout to ask, this package's own worktree unless a
- * test hands it a throwaway one
- *
- * @returns Full object id of the commit it names
- *
- * @throws When it names nothing this repository knows, or names an object that
- * is not a commit
- *
- * @example
- * ```ts
- * const commit = await resolveCommit({ revision: 'ce130535d', },);
- * ```
+ Resolves whatever the invoker named into a full commit object id.
+ 
+ A required commit arrives from the environment and was used raw, so `HEAD`
+ and `main` were accepted and meant whatever the READER's checkout said at
+ read time. Two readers then filtered the same directory differently while
+ both reported the same requirement, and a branch that moves silently changes
+ which entries a rate covers.
+ 
+ Artifact tips are already held to canonical object ids. This holds the
+ requirement to the same standard, at the one place it enters.
+ 
+ Exported through the barrel so the built bundle's tests can hand it a
+ throwaway repository; the pool is its only caller.
+ 
+ @internal
+ 
+ @param revision - whatever the invoker named: an id, an abbreviation, a
+ branch, or a revision expression
+ 
+ @param repository - checkout to ask, this package's own worktree unless a
+ test hands it a throwaway one
+ 
+ @returns Full object id of the commit it names
+ 
+ @throws When it names nothing this repository knows, or names an object that
+ is not a commit
+ 
+ @example
+ ```ts
+ const commit = await resolveCommit({ revision: 'ce130535d', },);
+ ```
  */
 export async function resolveCommit(
   {
@@ -333,7 +333,7 @@ export async function resolveCommit(
 ): Promise<string> {
   try {
     /**
-     * Git's own answer: the full object id, one line.
+     Git's own answer: the full object id, one line.
      */
     const { stdout, } = await spawn(
       await resolveGit(),
@@ -359,25 +359,25 @@ export async function resolveCommit(
 }
 
 /**
- * Whether the repository answering ancestry has a truncated history.
- *
- * Asked of the same checkout ancestry is resolved against, since that is the
- * one whose history can be short.
- *
- * @param repository - checkout ancestry was just asked of
- *
- * @returns Whether this is a shallow clone
- *
- * @example
- * ```ts
- * if (await isShallowRepository({ repository, },)) throw new Error('cannot decide',);
- * ```
+ Whether the repository answering ancestry has a truncated history.
+ 
+ Asked of the same checkout ancestry is resolved against, since that is the
+ one whose history can be short.
+ 
+ @param repository - checkout ancestry was just asked of
+ 
+ @returns Whether this is a shallow clone
+ 
+ @example
+ ```ts
+ if (await isShallowRepository({ repository, },)) throw new Error('cannot decide',);
+ ```
  */
 async function isShallowRepository(
   { repository, }: { readonly repository: string; },
 ): Promise<boolean> {
   /**
-   * Git's own answer, `true` or `false` on one line.
+   Git's own answer, `true` or `false` on one line.
    */
   const { stdout, } = await spawn(
     await resolveGit(),
@@ -392,21 +392,21 @@ async function isShallowRepository(
 }
 
 /**
- * Whether a failed git call was a clean "not an ancestor" answer.
- *
- * Asked as a boolean rather than by returning the status, because the only
- * status this module can act on is the one negative git defines. Every other
- * exit, and every failure carrying no exit at all, has to reach the caller as a
- * fault rather than as a quiet false.
- *
- * @param error - value a failed spawn threw
- *
- * @returns Whether git exited with its documented negative
- *
- * @example
- * ```ts
- * const answered = isCleanNegative({ error, },);
- * ```
+ Whether a failed git call was a clean "not an ancestor" answer.
+ 
+ Asked as a boolean rather than by returning the status, because the only
+ status this module can act on is the one negative git defines. Every other
+ exit, and every failure carrying no exit at all, has to reach the caller as a
+ fault rather than as a quiet false.
+ 
+ @param error - value a failed spawn threw
+ 
+ @returns Whether git exited with its documented negative
+ 
+ @example
+ ```ts
+ const answered = isCleanNegative({ error, },);
+ ```
  */
 function isCleanNegative({ error, }: { readonly error: unknown; },): boolean {
   if (((typeof error) !== 'object') || (error === null))
@@ -415,7 +415,7 @@ function isCleanNegative({ error, }: { readonly error: unknown; },): boolean {
     return false;
 
   /**
-   * Status as the subprocess error carries it.
+   Status as the subprocess error carries it.
    */
   const { exitCode, } = error;
 
@@ -423,25 +423,25 @@ function isCleanNegative({ error, }: { readonly error: unknown; },): boolean {
 }
 
 /**
- * Whether one pipeline commit contains another.
- *
- * @param tip - commit an artifact recorded
- *
- * @param commit - commit the draw requires
- *
- * @param repository - checkout to ask, this package's own worktree unless a
- * test hands it a throwaway one
- *
- * @returns Whether `commit` is an ancestor of `tip`, or the same commit
- *
- * @throws When either commit is unknown to this repository, or the repository
- * is a shallow clone that cannot tell a negative from a cut history, since a
- * pool that cannot be partitioned must not be silently narrowed
- *
- * @example
- * ```ts
- * const eligible = await tipContains({ tip, commit: 'fc7912929', },);
- * ```
+ Whether one pipeline commit contains another.
+ 
+ @param tip - commit an artifact recorded
+ 
+ @param commit - commit the draw requires
+ 
+ @param repository - checkout to ask, this package's own worktree unless a
+ test hands it a throwaway one
+ 
+ @returns Whether `commit` is an ancestor of `tip`, or the same commit
+ 
+ @throws When either commit is unknown to this repository, or the repository
+ is a shallow clone that cannot tell a negative from a cut history, since a
+ pool that cannot be partitioned must not be silently narrowed
+ 
+ @example
+ ```ts
+ const eligible = await tipContains({ tip, commit: 'fc7912929', },);
+ ```
  */
 export async function tipContains(
   {

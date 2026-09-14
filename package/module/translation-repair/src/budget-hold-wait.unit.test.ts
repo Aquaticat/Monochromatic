@@ -1,13 +1,13 @@
 /**
- * Tests the budget reading that waits out a refusal hold before calling every
- * provider dry.
- *
- * THE CASE IS THE PIN PASS OF 2026-09-02 (#474): two 429 holds, both meters
- * wet, and every remaining entry failed inside one second because the holds
- * were read as empty meters. Here the reading waits out the shortest hold and
- * reads again, and ends the run only when nothing a wait could change is left.
- *
- * @module
+ Tests the budget reading that waits out a refusal hold before calling every
+ provider dry.
+ 
+ THE CASE IS THE PIN PASS OF 2026-09-02 (#474): two 429 holds, both meters
+ wet, and every remaining entry failed inside one second because the holds
+ were read as empty meters. Here the reading waits out the shortest hold and
+ reads again, and ends the run only when nothing a wait could change is left.
+ 
+ @module
  */
 
 import {
@@ -29,29 +29,29 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Abort signal that never fires.
+ Abort signal that never fires.
  */
 const SIGNAL = new AbortController().signal;
 
 /**
- * Model named in the log line.
+ Model named in the log line.
  */
 const MODEL_ID = 'hf:moonshotai/Kimi-K3';
 
 /**
- * Builds a budget view that reads a scripted sequence of views and reports
- * fixed holds.
- *
- * @param views - what successive reads return, the last repeating
- *
- * @param holds - what the holds report
- *
- * @returns Budget view plus counts of reads and hold asks
- *
- * @example
- * ```ts
- * const { budgets, reads, } = scriptedBudgets({ views: [ALL_DRY, SYNTHETIC_BACK,], holds: { synthetic: 5, hyper: 20, openrouter: 0, }, },);
- * ```
+ Builds a budget view that reads a scripted sequence of views and reports
+ fixed holds.
+ 
+ @param views - what successive reads return, the last repeating
+ 
+ @param holds - what the holds report
+ 
+ @returns Budget view plus counts of reads and hold asks
+ 
+ @example
+ ```ts
+ const { budgets, reads, } = scriptedBudgets({ views: [ALL_DRY, SYNTHETIC_BACK,], holds: { synthetic: 5, hyper: 20, openrouter: 0, }, },);
+ ```
  */
 function scriptedBudgets(
   {
@@ -67,11 +67,11 @@ function scriptedBudgets(
   readonly holdAsks: { count: number; };
 } {
   /**
-   * How many reads happened.
+   How many reads happened.
    */
   const reads = { count: 0, };
   /**
-   * How many times the holds were asked for.
+   How many times the holds were asked for.
    */
   const holdAsks = { count: 0, };
   return {
@@ -80,7 +80,7 @@ function scriptedBudgets(
     budgets: {
       read: async function read(): Promise<BudgetView> {
         /**
-         * Scripted view for this read, the last one repeating.
+         Scripted view for this read, the last one repeating.
          */
         const view = views[Math.min(
           reads.count,
@@ -103,7 +103,7 @@ function scriptedBudgets(
 }
 
 /**
- * Every provider reading dry.
+ Every provider reading dry.
  */
 const ALL_DRY: BudgetView = {
   synthetic: true,
@@ -113,7 +113,7 @@ const ALL_DRY: BudgetView = {
 };
 
 /**
- * The first provider back, the others still dry.
+ The first provider back, the others still dry.
  */
 const SYNTHETIC_BACK: BudgetView = {
   synthetic: false,
@@ -123,7 +123,7 @@ const SYNTHETIC_BACK: BudgetView = {
 };
 
 /**
- * Nobody held.
+ Nobody held.
  */
 const NO_HOLDS: ProviderRecord<number> = {
   synthetic: 0,
@@ -168,7 +168,7 @@ await describe({
         + 'aborted, before a step and after the last one alike',
       fn: async () => {
         /**
-         * Wall clock around a short wait.
+         Wall clock around a short wait.
          */
         const before = Date.now();
         await waitOutHold({
@@ -179,12 +179,12 @@ await describe({
         expect(Date.now() - before,).toBeGreaterThanOrEqual(5,);
 
         /**
-         * Abort already fired.
+         Abort already fired.
          */
         const aborted = new AbortController();
         aborted.abort(new Error('caller gave up',),);
         /**
-         * What the wait threw.
+         What the wait threw.
          */
         let thrown: unknown;
         try {
@@ -267,8 +267,8 @@ await describe({
         + 'goes back to the refuser rather than ending the run after the wait',
       fn: async () => {
         /**
-         * The refuser wet by meter, the others dry by meter, on both reads;
-         * the first read folds the refusal in and sees every provider dry.
+         The refuser wet by meter, the others dry by meter, on both reads;
+         the first read folds the refusal in and sees every provider dry.
          */
         const { budgets, reads, holdAsks, } = scriptedBudgets({
           views: [{
@@ -306,7 +306,7 @@ await describe({
         + 'read dry after the shortest hold ended, waiting at most once',
       fn: async () => {
         /**
-         * Both cases, run side by side since neither touches the other.
+         Both cases, run side by side since neither touches the other.
          */
         const outcomes = await Promise.all(([
           [NO_HOLDS, 1,],
@@ -355,7 +355,7 @@ await describe({
             .toContain('meters read synthetic dry, bedrock dry, hyper dry, openrouter dry; holds synthetic',);
         }
         /**
-         * The waited case names the wait it made.
+         The waited case names the wait it made.
          */
         const [, waited,] = outcomes;
         if (waited === undefined)

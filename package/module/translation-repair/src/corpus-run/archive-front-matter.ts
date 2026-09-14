@@ -25,21 +25,21 @@ import {
 // where it stands, so a preparation that forgot the rule cannot ship.
 
 /**
- * Whether the archive's front matter stands as published, so the lanes leave
- * it alone.
- *
- * @param entryId - directory id of the entry
- *
- * @param sourceText - whole original page
- *
- * @param archiveText - whole archive page before any lane ran
- *
- * @returns Whether the page carries the archive's front matter byte for byte
- *
- * @example
- * ```ts
- * const stands = archiveFrontMatterStands({ entryId: 'hakureico', sourceText, archiveText, },);
- * ```
+ Whether the archive's front matter stands as published, so the lanes leave
+ it alone.
+ 
+ @param entryId - directory id of the entry
+ 
+ @param sourceText - whole original page
+ 
+ @param archiveText - whole archive page before any lane ran
+ 
+ @returns Whether the page carries the archive's front matter byte for byte
+ 
+ @example
+ ```ts
+ const stands = archiveFrontMatterStands({ entryId: 'hakureico', sourceText, archiveText, },);
+ ```
  */
 export function archiveFrontMatterStands(
   {
@@ -53,7 +53,7 @@ export function archiveFrontMatterStands(
   },
 ): boolean {
   /**
-   * Archive metadata, when the archive declares any.
+   Archive metadata, when the archive declares any.
    */
   const { frontMatter: archive, } = splitFrontMatter({ text: archiveText, },);
   // NOTHING OF THE ARCHIVE'S TO KEEP: a source-only front matter is inserted
@@ -61,7 +61,7 @@ export function archiveFrontMatterStands(
   if (archive === undefined)
     return false;
   /**
-   * Source metadata, when the original declares any.
+   Source metadata, when the original declares any.
    */
   const { frontMatter: source, } = splitFrontMatter({ text: sourceText, },);
   // The publication guard already requires the page to carry the archive's
@@ -94,21 +94,21 @@ export function archiveFrontMatterStands(
 }
 
 /**
- * Authority the page's front matter has for one entry.
- *
- * @param entryId - directory id of the entry
- *
- * @param sourceText - whole original page
- *
- * @param archiveText - whole archive page before any lane ran
- *
- * @returns `archive` where the archive's front matter stands, `rendered`
- * where the lanes must render it
- *
- * @example
- * ```ts
- * const authority = frontMatterAuthorityOf({ entryId: 'hakureico', sourceText, archiveText, },);
- * ```
+ Authority the page's front matter has for one entry.
+ 
+ @param entryId - directory id of the entry
+ 
+ @param sourceText - whole original page
+ 
+ @param archiveText - whole archive page before any lane ran
+ 
+ @returns `archive` where the archive's front matter stands, `rendered`
+ where the lanes must render it
+ 
+ @example
+ ```ts
+ const authority = frontMatterAuthorityOf({ entryId: 'hakureico', sourceText, archiveText, },);
+ ```
  */
 export function frontMatterAuthorityOf(
   {

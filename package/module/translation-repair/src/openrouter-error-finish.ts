@@ -24,60 +24,60 @@ import { openRouterChunksOf, } from './openrouter-chunk-scan.ts';
 // own name, the way the documented shape already does.
 
 /**
- * Field carrying the choices on every chunk.
+ Field carrying the choices on every chunk.
  */
 const CHOICES_KEY = 'choices';
 
 /**
- * Field on a choice naming why generation stopped, normalized by the gateway.
+ Field on a choice naming why generation stopped, normalized by the gateway.
  */
 const FINISH_REASON_KEY = 'finish_reason';
 
 /**
- * Normalized stop reason the gateway writes when the upstream failed.
+ Normalized stop reason the gateway writes when the upstream failed.
  */
 const ERROR_FINISH = 'error';
 
 /**
- * Field on a choice carrying the upstream's own spelling of the stop reason.
+ Field on a choice carrying the upstream's own spelling of the stop reason.
  */
 const NATIVE_FINISH_REASON_KEY = 'native_finish_reason';
 
 /**
- * Whether a choice stopped on an error finish, and how the upstream named it.
- *
- * @example
- * ```ts
- * const reading: ErrorFinishReading = { found: true, nativeReason: 'upstream_error', };
- * ```
+ Whether a choice stopped on an error finish, and how the upstream named it.
+ 
+ @example
+ ```ts
+ const reading: ErrorFinishReading = { found: true, nativeReason: 'upstream_error', };
+ ```
  */
 export type ErrorFinishReading =
   | {
     readonly found: true;
 
     /**
-     * Upstream's own stop reason, when the gateway forwarded one.
+     Upstream's own stop reason, when the gateway forwarded one.
      */
     readonly nativeReason?: string;
   }
   | { readonly found: false; };
 
 /**
- * Reading given when no choice stopped on an error finish.
+ Reading given when no choice stopped on an error finish.
  */
 export const ERROR_FINISH_ABSENT: ErrorFinishReading = { found: false, };
 
 /**
- * Every choice of every chunk, in arrival order.
- *
- * @param bodyText - whole drained `text/event-stream` body
- *
- * @returns Choice objects the chunks carried
- *
- * @example
- * ```ts
- * const choices = choicesOf({ bodyText, },);
- * ```
+ Every choice of every chunk, in arrival order.
+ 
+ @param bodyText - whole drained `text/event-stream` body
+ 
+ @returns Choice objects the chunks carried
+ 
+ @example
+ ```ts
+ const choices = choicesOf({ bodyText, },);
+ ```
  */
 function choicesOf(
   { bodyText, }: { readonly bodyText: string; },
@@ -85,7 +85,7 @@ function choicesOf(
   return openRouterChunksOf({ bodyText, },)
     .flatMap(function chunkChoices(chunk,): readonly Readonly<Record<string, unknown>>[] {
       /**
-       * Whatever sits at the field, of unknown type until checked.
+       Whatever sits at the field, of unknown type until checked.
        */
       const choices = chunk[CHOICES_KEY];
       if (!Array.isArray(choices,))
@@ -97,26 +97,26 @@ function choicesOf(
 }
 
 /**
- * Reads whether a stream's choice stopped on an error finish.
- *
- * THE FIRST SUCH CHOICE WINS, as the error-chunk reader's first object does:
- * the gateway closes the choice once.
- *
- * @param bodyText - whole drained `text/event-stream` body
- *
- * @returns That a choice stopped on an error finish with the upstream's own
- * reason when forwarded, or that none did
- *
- * @example
- * ```ts
- * const reading = openRouterErrorFinishOf({ bodyText: reply.bodyText, },);
- * ```
+ Reads whether a stream's choice stopped on an error finish.
+ 
+ THE FIRST SUCH CHOICE WINS, as the error-chunk reader's first object does:
+ the gateway closes the choice once.
+ 
+ @param bodyText - whole drained `text/event-stream` body
+ 
+ @returns That a choice stopped on an error finish with the upstream's own
+ reason when forwarded, or that none did
+ 
+ @example
+ ```ts
+ const reading = openRouterErrorFinishOf({ bodyText: reply.bodyText, },);
+ ```
  */
 export function openRouterErrorFinishOf(
   { bodyText, }: { readonly bodyText: string; },
 ): ErrorFinishReading {
   /**
-   * Choices whose stop reason is the gateway's error finish.
+   Choices whose stop reason is the gateway's error finish.
    */
   const failed = choicesOf({ bodyText, },)
     .filter(function stoppedOnError(choice,): boolean {
@@ -124,14 +124,14 @@ export function openRouterErrorFinishOf(
     },);
 
   /**
-   * First failed choice, or none.
+   First failed choice, or none.
    */
   const [first,] = failed;
   if (first === undefined)
     return ERROR_FINISH_ABSENT;
 
   /**
-   * Upstream's own spelling of the stop, of unknown type until checked.
+   Upstream's own spelling of the stop, of unknown type until checked.
    */
   const native = first[NATIVE_FINISH_REASON_KEY];
 

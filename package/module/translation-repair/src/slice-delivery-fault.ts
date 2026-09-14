@@ -5,236 +5,236 @@
 // file-length limit.
 
 /**
- * Which index set named a slice.
- *
- * @example
- * ```ts
- * const set: DeliverySetName = 'withdrawn';
- * ```
+ Which index set named a slice.
+ 
+ @example
+ ```ts
+ const set: DeliverySetName = 'withdrawn';
+ ```
  */
 export type DeliverySetName = 'shipped' | 'withdrawn';
 
 /**
- * What a lane's slice reports say that cannot both be true.
- *
- * @example
- * ```ts
- * const fault: SliceDeliveryFault = { kind: 'ships-without-decision', sliceIndex: 4, };
- * ```
+ What a lane's slice reports say that cannot both be true.
+ 
+ @example
+ ```ts
+ const fault: SliceDeliveryFault = { kind: 'ships-without-decision', sliceIndex: 4, };
+ ```
  */
 export type SliceDeliveryFault = {
   /**
-   * A set names a slice whose outcome is not a decision.
+   A set names a slice whose outcome is not a decision.
    */
   readonly kind: 'named-without-decision';
 
   /**
-   * Slice named.
+   Slice named.
    */
   readonly sliceIndex: number;
 
   /**
-   * Set naming it.
+   Set naming it.
    */
   readonly set: DeliverySetName;
 } | {
   /**
-   * A slice named as shipped decided the archive's own wording.
+   A slice named as shipped decided the archive's own wording.
    */
   readonly kind: 'shipped-archive-wording';
 
   /**
-   * Slice named.
+   Slice named.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * A slice is named as shipped by a blocked run.
+   A slice is named as shipped by a blocked run.
    */
   readonly kind: 'shipped-on-blocked';
 
   /**
-   * Slice named.
+   Slice named.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * A slice is named as withdrawn by assembly on a blocked run.
+   A slice is named as withdrawn by assembly on a blocked run.
    */
   readonly kind: 'withdrawn-on-blocked';
 
   /**
-   * Slice named.
+   Slice named.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * A slice named as withdrawn decided the archive's own wording.
+   A slice named as withdrawn decided the archive's own wording.
    */
   readonly kind: 'withdrawn-archive-wording';
 
   /**
-   * Slice named.
+   Slice named.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * A slice decided wording of its own and neither set names it.
+   A slice decided wording of its own and neither set names it.
    */
   readonly kind: 'decided-unstated';
 
   /**
-   * Slice decided.
+   Slice decided.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * A slice ships a replacement and reports no decision.
+   A slice ships a replacement and reports no decision.
    */
   readonly kind: 'ships-without-decision';
 
   /**
-   * Slice shipping.
+   Slice shipping.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * A trimmed replacement names a slice the document does not ship.
+   A trimmed replacement names a slice the document does not ship.
    */
   readonly kind: 'trim-names-unshipped';
 
   /**
-   * Slice named.
+   Slice named.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * A set counts a slice twice.
+   A set counts a slice twice.
    */
   readonly kind: 'set-repeats';
 
   /**
-   * Set that repeats.
+   Set that repeats.
    */
   readonly set: DeliverySetName;
 
   /**
-   * Slices it names.
+   Slices it names.
    */
   readonly named: number;
 
   /**
-   * Distinct slices among them.
+   Distinct slices among them.
    */
   readonly distinct: number;
 } | {
   /**
-   * Lane reported a different number of wordings than prepared slices.
+   Lane reported a different number of wordings than prepared slices.
    */
   readonly kind: 'wording-count';
 
   /**
-   * Wordings reported.
+   Wordings reported.
    */
   readonly wordings: number;
 
   /**
-   * Slices prepared.
+   Slices prepared.
    */
   readonly slices: number;
 } | {
   /**
-   * Both sets name one slice.
+   Both sets name one slice.
    */
   readonly kind: 'both-shipped-and-withdrawn';
 
   /**
-   * Slice named twice.
+   Slice named twice.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * A set names a slice the preparation never produced.
+   A set names a slice the preparation never produced.
    */
   readonly kind: 'set-names-unproduced';
 
   /**
-   * Slice named.
+   Slice named.
    */
   readonly sliceIndex: number;
 
   /**
-   * Slices prepared.
+   Slices prepared.
    */
   readonly sliceCount: number;
 } | {
   /**
-   * No wording at a position the preparation has a slice for.
+   No wording at a position the preparation has a slice for.
    */
   readonly kind: 'wording-absent';
 
   /**
-   * Position without a wording.
+   Position without a wording.
    */
   readonly position: number;
 } | {
   /**
-   * Wording at a position names another slice than the one there.
+   Wording at a position names another slice than the one there.
    */
   readonly kind: 'wording-index-differs';
 
   /**
-   * Position in question.
+   Position in question.
    */
   readonly position: number;
 
   /**
-   * Slice the preparation holds there.
+   Slice the preparation holds there.
    */
   readonly sliceIndex: number;
 
   /**
-   * Slice the wording names.
+   Slice the wording names.
    */
   readonly wordingIndex: number;
 } | {
   /**
-   * Wording's archive text disagrees with the prepared slice's.
+   Wording's archive text disagrees with the prepared slice's.
    */
   readonly kind: 'archive-wording-differs';
 
   /**
-   * Slice affected.
+   Slice affected.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * Wording and prepared chunk disagree about whether the archive holds text.
+   Wording and prepared chunk disagree about whether the archive holds text.
    */
   readonly kind: 'incumbent-kind-differs';
 
   /**
-   * Slice affected.
+   Slice affected.
    */
   readonly sliceIndex: number;
 
   /**
-   * What the lane record says.
+   What the lane record says.
    */
   readonly recorded: 'present' | 'absent';
 };
 
 /**
- * Words a delivery fault from set names, kinds and numbers.
- *
- * @param fault - what the reports say that cannot both be true
- *
- * @returns Sentence written here
- *
- * @example
- * ```ts
- * const sentence = deliverySentence({ fault: { kind: 'wording-absent', position: 2, }, },);
- * ```
+ Words a delivery fault from set names, kinds and numbers.
+ 
+ @param fault - what the reports say that cannot both be true
+ 
+ @returns Sentence written here
+ 
+ @example
+ ```ts
+ const sentence = deliverySentence({ fault: { kind: 'wording-absent', position: 2, }, },);
+ ```
  */
 export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFault; },): string {
   if (fault.kind === 'named-without-decision')
@@ -307,30 +307,30 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
 }
 
 /**
- * Refusal of lane slice reports that cannot both be true.
- *
- * MARKED: its message is the sentence `deliverySentence` writes from set
- * names, kinds and numbers.
- *
- * @example
- * ```ts
- * throw new SliceDeliveryError({ fault: { kind: 'ships-without-decision', sliceIndex: 2, }, },);
- * ```
+ Refusal of lane slice reports that cannot both be true.
+ 
+ MARKED: its message is the sentence `deliverySentence` writes from set
+ names, kinds and numbers.
+ 
+ @example
+ ```ts
+ throw new SliceDeliveryError({ fault: { kind: 'ships-without-decision', sliceIndex: 2, }, },);
+ ```
  */
 export class SliceDeliveryError extends Error {
   /**
-   * Declares this message safe to forward: set names, kinds and numbers in a
-   * sentence written here.
+   Declares this message safe to forward: set names, kinds and numbers in a
+   sentence written here.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * What the reports say that cannot both be true.
+   What the reports say that cannot both be true.
    */
   readonly fault: SliceDeliveryFault;
 
   /**
-   * @param fault - what the reports say that cannot both be true
+   @param fault - what the reports say that cannot both be true
    */
   public constructor({ fault, }: { readonly fault: SliceDeliveryFault; },) {
     super(deliverySentence({ fault, },),);

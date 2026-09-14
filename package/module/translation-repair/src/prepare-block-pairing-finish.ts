@@ -17,27 +17,27 @@ import type {
 // Both cold and warm paths preserve the same definition-order behavior and fallback semantics.
 
 /**
- * Separates definition relations before handing an explicit pairing to the production slicer.
- * Empty acquired relations retain the scorer fallback rather than becoming an explicit empty map entry.
- *
- * @param pairs - acquired relations after existing media-adjacency normalization
- *
- * @param evidence - actual acquisition path, with no invented cache votes
- *
- * @param findings - observations already reported by acquisition and normalization
- *
- * @param pair - parent nodes whose definition labels are being separated
- *
- * @param pairIndex - original aligned-parent index used in findings
- *
- * @param l - caller logger retaining parent identity
- *
- * @returns Explicit slicer pairing or named unresolved fallback
- *
- * @example
- * ```ts
- * const result = finishPreparedBlockPairing({ pairs, evidence, findings, pair, pairIndex: 2, l });
- * ```
+ Separates definition relations before handing an explicit pairing to the production slicer.
+ Empty acquired relations retain the scorer fallback rather than becoming an explicit empty map entry.
+ 
+ @param pairs - acquired relations after existing media-adjacency normalization
+ 
+ @param evidence - actual acquisition path, with no invented cache votes
+ 
+ @param findings - observations already reported by acquisition and normalization
+ 
+ @param pair - parent nodes whose definition labels are being separated
+ 
+ @param pairIndex - original aligned-parent index used in findings
+ 
+ @param l - caller logger retaining parent identity
+ 
+ @returns Explicit slicer pairing or named unresolved fallback
+ 
+ @example
+ ```ts
+ const result = finishPreparedBlockPairing({ pairs, evidence, findings, pair, pairIndex: 2, l });
+ ```
  */
 export function finishPreparedBlockPairing(
   {
@@ -57,7 +57,7 @@ export function finishPreparedBlockPairing(
   },
 ): Extract<PreparedBlockPairing, { readonly kind: 'paired' | 'fallback'; }> {
   /**
-   * Logger distinguishing the final map handoff from acquisition.
+   Logger distinguishing the final map handoff from acquisition.
    */
   const pl = tagged({
     tag: finishPreparedBlockPairing.name,
@@ -73,7 +73,7 @@ export function finishPreparedBlockPairing(
     };
   }
   /**
-   * Definition labels and ordinary slicer relations under the existing ordering rule.
+   Definition labels and ordinary slicer relations under the existing ordering rule.
    */
   const split = splitDefinitionPairs({
     pairs,

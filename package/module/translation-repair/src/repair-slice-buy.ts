@@ -27,43 +27,43 @@ import { assertSettledRecordAgrees, } from './slice-record-agreement.ts';
 // memo keeps that cold-run behavior while the first twin is still buying.
 
 /**
- * Buys one repair slice and persists it when every stage reached quorum.
- *
- * @param client - injected model client
- *
- * @param prepared - document slice belongs to
- *
- * @param models - repair role roster
- *
- * @param adjudicationConfig - tally thresholds and weights
- *
- * @param slice - slice being repaired
- *
- * @param key - cross-run key outcome is stored under
- *
- * @param neighbouringIncumbentText - archive English of adjacent passages
- *
- * @param neighbouringSourceText - original of adjacent passages
- *
- * @param documentSourceText - same-entry source evidence identical to the value used in the cache key
- *
- * @param sliceCache - optional cross-run cache
- *
- * @param signal - entry deadline and caller abort
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - repair-lane logger
- *
- * @returns Settled repair outcome, whether or not cache gate accepted it
- *
- * @throws Whatever `signal.reason` carries when caller aborts before or during
- * purchase
- *
- * @example
- * ```ts
- * const outcome = await buyRepairSlice({ ... });
- * ```
+ Buys one repair slice and persists it when every stage reached quorum.
+ 
+ @param client - injected model client
+ 
+ @param prepared - document slice belongs to
+ 
+ @param models - repair role roster
+ 
+ @param adjudicationConfig - tally thresholds and weights
+ 
+ @param slice - slice being repaired
+ 
+ @param key - cross-run key outcome is stored under
+ 
+ @param neighbouringIncumbentText - archive English of adjacent passages
+ 
+ @param neighbouringSourceText - original of adjacent passages
+ 
+ @param documentSourceText - same-entry source evidence identical to the value used in the cache key
+ 
+ @param sliceCache - optional cross-run cache
+ 
+ @param signal - entry deadline and caller abort
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - repair-lane logger
+ 
+ @returns Settled repair outcome, whether or not cache gate accepted it
+ 
+ @throws Whatever `signal.reason` carries when caller aborts before or during
+ purchase
+ 
+ @example
+ ```ts
+ const outcome = await buyRepairSlice({ ... });
+ ```
  */
 export async function buyRepairSlice(
   {
@@ -97,7 +97,7 @@ export async function buyRepairSlice(
   }>,
 ): Promise<ChunkRepairOutcome> {
   /**
-   * Global index every outcome and replacement names.
+   Global index every outcome and replacement names.
    */
   const { sliceIndex, } = slice.target;
 
@@ -105,7 +105,7 @@ export async function buyRepairSlice(
   signal.throwIfAborted();
   if (slice.syntax === 'front-matter') {
     /**
-     * Archive metadata retained by repair lane.
+     Archive metadata retained by repair lane.
      */
     const { text: targetText, } = slice.target;
     return frontMatterRepairOutcome({
@@ -115,8 +115,8 @@ export async function buyRepairSlice(
   }
 
   /**
-   * Fresh outcome from full repair stage sequence, normalizing an abort to its
-   * own reason rather than whichever torn-down exchange surfaced first.
+   Fresh outcome from full repair stage sequence, normalizing an abort to its
+   own reason rather than whichever torn-down exchange surfaced first.
    */
   const outcome = await (async function repairUnderSignal(): Promise<ChunkRepairOutcome> {
     try {
@@ -168,7 +168,7 @@ export async function buyRepairSlice(
   },);
 
   /**
-   * Reasons this outcome cannot be resumed by a warm run or reused by a twin.
+   Reasons this outcome cannot be resumed by a warm run or reused by a twin.
    */
   const refusals = cacheRefusalsOf({ outcome, },);
   if (refusals.length > 0) {

@@ -1,22 +1,22 @@
 /**
- * Tests for the judged-contest ledger.
- *
- * WHAT THIS GUARDS is the reason the module exists: a roster question asked
- * after a run should be answerable from what the run already paid for. The
- * cases therefore check that the TEXT survives, not merely that a file appears.
- *
- * THE UNSET CASE IS NOT AN EDGE CASE. Every unit run and every probe sets no
- * run directory, so writing nothing there is the ordinary path, and a module
- * that threw or wrote into the working tree instead would break both.
- *
- * THE FAILURE CASE MATTERS MORE THAN THE SUCCESS ONE. Telemetry that can fail a
- * slice is worse than no telemetry, so a write into an impossible location must
- * leave the caller undisturbed.
- *
- * Model identifiers come from the catalog. Candidate text here is cat-themed
- * invention, never corpus wording.
- *
- * @module
+ Tests for the judged-contest ledger.
+ 
+ WHAT THIS GUARDS is the reason the module exists: a roster question asked
+ after a run should be answerable from what the run already paid for. The
+ cases therefore check that the TEXT survives, not merely that a file appears.
+ 
+ THE UNSET CASE IS NOT AN EDGE CASE. Every unit run and every probe sets no
+ run directory, so writing nothing there is the ordinary path, and a module
+ that threw or wrote into the working tree instead would break both.
+ 
+ THE FAILURE CASE MATTERS MORE THAN THE SUCCESS ONE. Telemetry that can fail a
+ slice is worse than no telemetry, so a write into an impossible location must
+ leave the caller undisturbed.
+ 
+ Model identifiers come from the catalog. Candidate text here is cat-themed
+ invention, never corpus wording.
+ 
+ @module
  */
 
 import {
@@ -42,22 +42,22 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Variable naming the run directory, matching the module under test.
+ Variable naming the run directory, matching the module under test.
  */
 const RUNS_DIR_VARIABLE = 'TRANSLATION_REPAIR_RUNS_DIR';
 
 /**
- * Directory the recorder writes under, matching the module under test.
+ Directory the recorder writes under, matching the module under test.
  */
 const LEDGER_SUBDIR = 'ledger';
 
 /**
- * Logger the recorder writes its own warnings through.
+ Logger the recorder writes its own warnings through.
  */
 const l = tagged({ tag: 'candidate-ledger-test', },);
 
 /**
- * Two candidates, one written alone and one by several models together.
+ Two candidates, one written alone and one by several models together.
  */
 const CANDIDATES: readonly Candidate<{ readonly text: string; }>[] = [
   {
@@ -82,7 +82,7 @@ const CANDIDATES: readonly Candidate<{ readonly text: string; }>[] = [
 ];
 
 /**
- * Ballots as the judges cast them, reasons included.
+ Ballots as the judges cast them, reasons included.
  */
 const BALLOTS: readonly SelectionBallot[] = [
   {
@@ -102,28 +102,28 @@ const BALLOTS: readonly SelectionBallot[] = [
 ];
 
 /**
- * Points the run directory at a throwaway for as long as the binding lives.
- *
- * A `Disposable` RATHER THAN `try...finally`, which this codebase bans: the
- * restore has to happen even when a case fails, and `using` guarantees it.
- *
- * `Reflect.deleteProperty` RATHER THAN `delete`, because the key is held in a
- * named constant and deleting a computed key is banned.
- *
- * @param dir - directory the recorder should write under
- *
- * @returns Directory, plus the handle restoring the previous value
- *
- * @example
- * ```ts
- * using pointed = runsDirPointedAt({ dir, },);
- * ```
+ Points the run directory at a throwaway for as long as the binding lives.
+ 
+ A `Disposable` RATHER THAN `try...finally`, which this codebase bans: the
+ restore has to happen even when a case fails, and `using` guarantees it.
+ 
+ `Reflect.deleteProperty` RATHER THAN `delete`, because the key is held in a
+ named constant and deleting a computed key is banned.
+ 
+ @param dir - directory the recorder should write under
+ 
+ @returns Directory, plus the handle restoring the previous value
+ 
+ @example
+ ```ts
+ using pointed = runsDirPointedAt({ dir, },);
+ ```
  */
 function runsDirPointedAt(
   { dir, }: { readonly dir: string; },
 ): Disposable & { readonly dir: string; } {
   /**
-   * Whatever the variable held before this case.
+   Whatever the variable held before this case.
    */
   const before = process.env[RUNS_DIR_VARIABLE];
   process.env[RUNS_DIR_VARIABLE] = dir;
@@ -143,18 +143,18 @@ function runsDirPointedAt(
 }
 
 /**
- * Clears the run directory for as long as the binding lives.
- *
- * @returns Whether the variable was cleared, plus the restoring handle
- *
- * @example
- * ```ts
- * using cleared = runsDirCleared();
- * ```
+ Clears the run directory for as long as the binding lives.
+ 
+ @returns Whether the variable was cleared, plus the restoring handle
+ 
+ @example
+ ```ts
+ using cleared = runsDirCleared();
+ ```
  */
 function runsDirCleared(): Disposable & { readonly cleared: boolean; } {
   /**
-   * Whatever the variable held before this case.
+   Whatever the variable held before this case.
    */
   const before = process.env[RUNS_DIR_VARIABLE];
   Reflect.deleteProperty(
@@ -172,16 +172,16 @@ function runsDirCleared(): Disposable & { readonly cleared: boolean; } {
 }
 
 /**
- * Makes a throwaway directory for one case.
- *
- * @param mark - names the case, so a leftover directory says who left it
- *
- * @returns Path nothing else writes to
- *
- * @example
- * ```ts
- * const dir = await throwawayDir({ mark: 'kept', },);
- * ```
+ Makes a throwaway directory for one case.
+ 
+ @param mark - names the case, so a leftover directory says who left it
+ 
+ @returns Path nothing else writes to
+ 
+ @example
+ ```ts
+ const dir = await throwawayDir({ mark: 'kept', },);
+ ```
  */
 async function throwawayDir(
   { mark, }: { readonly mark: string; },
@@ -193,16 +193,16 @@ async function throwawayDir(
 }
 
 /**
- * Lists the ledger directory, reporting an absent one as empty.
- *
- * @param dir - run directory written into
- *
- * @returns File names, empty where nothing was written
- *
- * @example
- * ```ts
- * const names = await namesUnder({ dir, },);
- * ```
+ Lists the ledger directory, reporting an absent one as empty.
+ 
+ @param dir - run directory written into
+ 
+ @returns File names, empty where nothing was written
+ 
+ @example
+ ```ts
+ const names = await namesUnder({ dir, },);
+ ```
  */
 async function namesUnder(
   { dir, }: { readonly dir: string; },
@@ -221,22 +221,22 @@ async function namesUnder(
 }
 
 /**
- * Reads every ledger file a run directory holds, in judging order.
- *
- * @param dir - run directory written into
- *
- * @returns Parsed rounds, empty where nothing was written
- *
- * @example
- * ```ts
- * const rounds = await ledgerIn({ dir, },);
- * ```
+ Reads every ledger file a run directory holds, in judging order.
+ 
+ @param dir - run directory written into
+ 
+ @returns Parsed rounds, empty where nothing was written
+ 
+ @example
+ ```ts
+ const rounds = await ledgerIn({ dir, },);
+ ```
  */
 async function ledgerIn(
   { dir, }: { readonly dir: string; },
 ): Promise<readonly unknown[]> {
   /**
-   * Files the recorder wrote, empty where it wrote none.
+   Files the recorder wrote, empty where it wrote none.
    */
   const names = await namesUnder({ dir, },);
 
@@ -260,18 +260,18 @@ async function ledgerIn(
 }
 
 /**
- * Records the shared fixture contest into a directory.
- *
- * @param selectedIndex - outcome to record for this round
- *
- * @param mark - names the case, for the throwaway directory
- *
- * @returns Rounds the recorder left behind
- *
- * @example
- * ```ts
- * const rounds = await recordedRounds({ selectedIndex: 2, mark: 'kept', },);
- * ```
+ Records the shared fixture contest into a directory.
+ 
+ @param selectedIndex - outcome to record for this round
+ 
+ @param mark - names the case, for the throwaway directory
+ 
+ @returns Rounds the recorder left behind
+ 
+ @example
+ ```ts
+ const rounds = await recordedRounds({ selectedIndex: 2, mark: 'kept', },);
+ ```
  */
 async function recordedRounds(
   {
@@ -283,7 +283,7 @@ async function recordedRounds(
   },
 ): Promise<readonly unknown[]> {
   /**
-   * Throwaway this case writes into.
+   Throwaway this case writes into.
    */
   const dir = await throwawayDir({ mark, },);
 
@@ -389,7 +389,7 @@ await describe({
         + 'every unit run and every probe does',
       fn: async () => {
         /**
-         * Throwaway that must stay empty.
+         Throwaway that must stay empty.
          */
         const dir = await throwawayDir({ mark: 'unset', },);
 
@@ -419,8 +419,8 @@ await describe({
         + 'that can fail a slice is worse than telemetry that is missing',
       fn: async () => {
         /**
-         * Throwaway with a FILE where the recorder expects a directory, so the
-         * write cannot succeed.
+         Throwaway with a FILE where the recorder expects a directory, so the
+         write cannot succeed.
          */
         const dir = await throwawayDir({ mark: 'blocked', },);
         await writeFile(

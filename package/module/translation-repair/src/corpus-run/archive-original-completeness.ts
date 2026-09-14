@@ -15,25 +15,25 @@ import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 // the slices before the span may have grown or shrunk.
 
 /**
- * Refusal when a sealed span does not reach the page as the archive has it.
- *
- * @example
- * ```ts
- * throw new ArchiveOriginalCompletenessError({ entryId: 'hakureico', spanIndex: 0, });
- * ```
+ Refusal when a sealed span does not reach the page as the archive has it.
+ 
+ @example
+ ```ts
+ throw new ArchiveOriginalCompletenessError({ entryId: 'hakureico', spanIndex: 0, });
+ ```
  */
 export class ArchiveOriginalCompletenessError extends Error {
   /**
-   * Message names entry and span index only.
+   Message names entry and span index only.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds refusal.
-   *
-   * @param entryId - entry refused
-   *
-   * @param spanIndex - which recorded span the page does not carry
+   Builds refusal.
+   
+   @param entryId - entry refused
+   
+   @param spanIndex - which recorded span the page does not carry
    */
   public constructor(
     {
@@ -52,23 +52,23 @@ export class ArchiveOriginalCompletenessError extends Error {
 }
 
 /**
- * Refuses a page that does not carry every sealed span byte for byte.
- *
- * @param entryId - entry being published
- *
- * @param archiveText - complete archive page the spans index into
- *
- * @param pageText - assembled page candidate
- *
- * @param spans - spans the preparation sealed, empty when none
- *
- * @throws {@link ArchiveOriginalCompletenessError} when a span's archive
- * bytes appear nowhere on the page
- *
- * @example
- * ```ts
- * assertArchiveOriginalComplete({ entryId, archiveText, pageText, spans: prepared.archiveOriginalSpans ?? [], },);
- * ```
+ Refuses a page that does not carry every sealed span byte for byte.
+ 
+ @param entryId - entry being published
+ 
+ @param archiveText - complete archive page the spans index into
+ 
+ @param pageText - assembled page candidate
+ 
+ @param spans - spans the preparation sealed, empty when none
+ 
+ @throws {@link ArchiveOriginalCompletenessError} when a span's archive
+ bytes appear nowhere on the page
+ 
+ @example
+ ```ts
+ assertArchiveOriginalComplete({ entryId, archiveText, pageText, spans: prepared.archiveOriginalSpans ?? [], },);
+ ```
  */
 export function assertArchiveOriginalComplete(
   {
@@ -85,7 +85,7 @@ export function assertArchiveOriginalComplete(
 ): void {
   for (const [spanIndex, span,] of spans.entries()) {
     /**
-     * The archive's bytes the seal covers.
+     The archive's bytes the seal covers.
      */
     const sealed = archiveText.slice(
       span.startOffset,

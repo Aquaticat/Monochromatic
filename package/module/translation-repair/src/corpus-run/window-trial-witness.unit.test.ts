@@ -1,16 +1,16 @@
 /**
- * Tests for the live-run window check.
- *
- * WHAT THESE PIN is that the check can fail. Every other test in this family
- * proves the window is forwarded against a synthetic client, so the only thing
- * left for the live check to catch is the case where the code path is right and
- * the wire is wrong. A witness that silently passed would be worse than no
- * witness, because the run would then carry a check nobody could distinguish
- * from a working one.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the live-run window check.
+ 
+ WHAT THESE PIN is that the check can fail. Every other test in this family
+ proves the window is forwarded against a synthetic client, so the only thing
+ left for the live check to catch is the case where the code path is right and
+ the wire is wrong. A witness that silently passed would be worse than no
+ witness, because the run would then carry a check nobody could distinguish
+ from a working one.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -31,21 +31,21 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Client answering everything, recording what it was asked.
- *
- * @returns Client plus the requests it served
- *
- * @example
- * ```ts
- * const rig = recordingClient();
- * ```
+ Client answering everything, recording what it was asked.
+ 
+ @returns Client plus the requests it served
+ 
+ @example
+ ```ts
+ const rig = recordingClient();
+ ```
  */
 function recordingClient(): {
   readonly client: SyntheticClient;
   readonly served: string[];
 } {
   /**
-   * Sheets that reached the underlying client.
+   Sheets that reached the underlying client.
    */
   const served: string[] = [];
 
@@ -77,16 +77,16 @@ function recordingClient(): {
 }
 
 /**
- * Builds one exchange request carrying given text.
- *
- * @param content - sheet body
- *
- * @returns Request shaped like the stages send
- *
- * @example
- * ```ts
- * const request = sheetOf({ content: '猫。', },);
- * ```
+ Builds one exchange request carrying given text.
+ 
+ @param content - sheet body
+ 
+ @returns Request shaped like the stages send
+ 
+ @example
+ ```ts
+ const request = sheetOf({ content: '猫。', },);
+ ```
  */
 function sheetOf(
   { content, }: { readonly content: string; },
@@ -116,7 +116,7 @@ await describe({
         const witness = witnessSheets({ client: rig.client, },);
 
         /**
-         * What the wrapper returned for a sheet.
+         What the wrapper returned for a sheet.
          */
         const outcome = await witness.client
           .chatJson(sheetOf({ content: 'A sheet about a cat.', },),);
@@ -204,7 +204,7 @@ await describe({
         + 'the window missed entirely or only partly',
       fn: async () => {
         /**
-         * What refuses raised, read for its class as well as its wording.
+         What refuses raised, read for its class as well as its wording.
          */
         const refusalOfRefuses = caught(function refuses() {
           assertWindowReachedJudges({

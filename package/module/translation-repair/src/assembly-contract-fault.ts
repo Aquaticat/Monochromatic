@@ -4,136 +4,136 @@
 // the three checks and would cross the file-length limit with this beside them.
 
 /**
- * Which change set is meant.
- *
- * @example
- * ```ts
- * const set: ChangeSetName = 'shipped';
- * ```
+ Which change set is meant.
+ 
+ @example
+ ```ts
+ const set: ChangeSetName = 'shipped';
+ ```
  */
 export type ChangeSetName = 'shipped' | 'withdrawn';
 
 /**
- * What an assembly's sets or document contradict.
- *
- * @example
- * ```ts
- * const fault: AssemblyContractFault = { kind: 'index-beyond-count', index: 9, sliceCount: 4, };
- * ```
+ What an assembly's sets or document contradict.
+ 
+ @example
+ ```ts
+ const fault: AssemblyContractFault = { kind: 'index-beyond-count', index: 9, sliceCount: 4, };
+ ```
  */
 export type AssemblyContractFault = {
   /**
-   * A replacement names a slice the preparation never produced.
+   A replacement names a slice the preparation never produced.
    */
   readonly kind: 'replacement-unproduced';
 
   /**
-   * Slice named.
+   Slice named.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * A replacement claims a change and carries the archive wording.
+   A replacement claims a change and carries the archive wording.
    */
   readonly kind: 'replacement-unchanged';
 
   /**
-   * Slice named.
+   Slice named.
    */
   readonly sliceIndex: number;
 } | {
   /**
-   * A change set holds something other than an integer.
+   A change set holds something other than an integer.
    */
   readonly kind: 'index-not-integer';
 
   /**
-   * Value held.
+   Value held.
    */
   readonly index: number;
 } | {
   /**
-   * A change set names a slice before the first.
+   A change set names a slice before the first.
    */
   readonly kind: 'index-negative';
 
   /**
-   * Index named.
+   Index named.
    */
   readonly index: number;
 } | {
   /**
-   * A change set names a slice twice.
+   A change set names a slice twice.
    */
   readonly kind: 'set-repeats';
 
   /**
-   * Set that repeats.
+   Set that repeats.
    */
   readonly set: ChangeSetName;
 } | {
   /**
-   * Both sets name the same slices.
+   Both sets name the same slices.
    */
   readonly kind: 'both-shipped-and-withdrawn';
 
   /**
-   * Slices named by both.
+   Slices named by both.
    */
   readonly indices: readonly number[];
 } | {
   /**
-   * A change set names a slice beyond the prepared count.
+   A change set names a slice beyond the prepared count.
    */
   readonly kind: 'index-beyond-count';
 
   /**
-   * Index named.
+   Index named.
    */
   readonly index: number;
 
   /**
-   * Slices prepared.
+   Slices prepared.
    */
   readonly sliceCount: number;
 } | {
   /**
-   * Returned document is not what its surviving replacements assemble to.
+   Returned document is not what its surviving replacements assemble to.
    */
   readonly kind: 'reassembly-differs';
 
   /**
-   * Replacements that survived.
+   Replacements that survived.
    */
   readonly survivors: number;
 } | {
   /**
-   * Returned document differs from the archive while no slice is named.
+   Returned document differs from the archive while no slice is named.
    */
   readonly kind: 'changed-without-claim';
 } | {
   /**
-   * Returned document equals the archive while slices are named as changed.
+   Returned document equals the archive while slices are named as changed.
    */
   readonly kind: 'unchanged-with-claims';
 
   /**
-   * Slices named as changed.
+   Slices named as changed.
    */
   readonly indices: readonly number[];
 };
 
 /**
- * Words an assembly contract fault from set names, kinds and numbers.
- *
- * @param fault - what the sets or document contradict
- *
- * @returns Sentence written here
- *
- * @example
- * ```ts
- * const sentence = assemblySentence({ fault: { kind: 'changed-without-claim', }, },);
- * ```
+ Words an assembly contract fault from set names, kinds and numbers.
+ 
+ @param fault - what the sets or document contradict
+ 
+ @returns Sentence written here
+ 
+ @example
+ ```ts
+ const sentence = assemblySentence({ fault: { kind: 'changed-without-claim', }, },);
+ ```
  */
 export function assemblySentence({ fault, }: { readonly fault: AssemblyContractFault; },): string {
   if (fault.kind === 'replacement-unproduced')
@@ -148,7 +148,7 @@ export function assemblySentence({ fault, }: { readonly fault: AssemblyContractF
     return `${fault.set} slices repeat`;
   if (fault.kind === 'both-shipped-and-withdrawn') {
     /**
-     * Slices named by both sets.
+     Slices named by both sets.
      */
     const { indices, } = fault;
     return `slices ${indices.join(', ',)} are named as both shipped and withdrawn`;
@@ -161,7 +161,7 @@ export function assemblySentence({ fault, }: { readonly fault: AssemblyContractF
     return 'returned document differs from the archive while no slice is named as changed';
 
   /**
-   * Slices named as changed.
+   Slices named as changed.
    */
   const { indices, } = fault;
   return `returned document equals the archive while slices ${

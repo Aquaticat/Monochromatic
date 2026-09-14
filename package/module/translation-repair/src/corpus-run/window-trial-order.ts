@@ -25,9 +25,9 @@ import { TRIAL_ARMS, } from './window-trial-report.ts';
 // rerun for verification, assigns the same order to the same slice.
 
 /**
- * Arms every slice buys, in canonical order.
- *
- * This is the SET the runner owes, not the sequence it buys them in.
+ Arms every slice buys, in canonical order.
+ 
+ This is the SET the runner owes, not the sequence it buys them in.
  */
 export const TRIAL_ARM_SET: readonly string[] = [
   TRIAL_ARMS.narrowFirst,
@@ -36,39 +36,39 @@ export const TRIAL_ARM_SET: readonly string[] = [
 ];
 
 /**
- * Hex characters of the digest read as the position.
- *
- * Eight is well inside the exact-integer range and far more entropy than three
- * buckets need.
+ Hex characters of the digest read as the position.
+ 
+ Eight is well inside the exact-integer range and far more entropy than three
+ buckets need.
  */
 const DIGEST_CHARS = 8;
 
 /**
- * Base the digest is written in.
+ Base the digest is written in.
  */
 const HEX = 16;
 
 /**
- * Order one slice buys its arms in.
- *
- * WIDE FIRST, MIDDLE OR LAST depending on the slice, so no position belongs to
- * one arm. The two narrow arms keep their relative order in whatever positions
- * are left, which costs nothing: they are interchangeable by construction, since
- * their whole purpose is to be the same treatment twice.
- *
- * @param protocol - digest this run buys under, so a protocol change reshuffles
- * rather than repeating one assignment forever
- *
- * @param entryId - entry the slice belongs to
- *
- * @param sliceIndex - slice position within that entry
- *
- * @returns All three arms, once each, in buying order
- *
- * @example
- * ```ts
- * const order = armOrderFor({ protocol, entryId: 'Mittens', sliceIndex: 7, },);
- * ```
+ Order one slice buys its arms in.
+ 
+ WIDE FIRST, MIDDLE OR LAST depending on the slice, so no position belongs to
+ one arm. The two narrow arms keep their relative order in whatever positions
+ are left, which costs nothing: they are interchangeable by construction, since
+ their whole purpose is to be the same treatment twice.
+ 
+ @param protocol - digest this run buys under, so a protocol change reshuffles
+ rather than repeating one assignment forever
+ 
+ @param entryId - entry the slice belongs to
+ 
+ @param sliceIndex - slice position within that entry
+ 
+ @returns All three arms, once each, in buying order
+ 
+ @example
+ ```ts
+ const order = armOrderFor({ protocol, entryId: 'Mittens', sliceIndex: 7, },);
+ ```
  */
 export function armOrderFor(
   {
@@ -82,7 +82,7 @@ export function armOrderFor(
   },
 ): readonly string[] {
   /**
-   * Position the wide arm takes for this slice, zero-based.
+   Position the wide arm takes for this slice, zero-based.
    */
   const widePosition = Number.parseInt(
     hashContent({
@@ -100,10 +100,10 @@ export function armOrderFor(
   ) % TRIAL_ARM_SET.length;
 
   /**
-   * Narrow arms, which keep their relative order wherever they land.
-   *
-   * Costs nothing: they are interchangeable by construction, since their whole
-   * purpose is to be the same treatment twice.
+   Narrow arms, which keep their relative order wherever they land.
+   
+   Costs nothing: they are interchangeable by construction, since their whole
+   purpose is to be the same treatment twice.
    */
   const narrow = [
     TRIAL_ARMS.narrowFirst,

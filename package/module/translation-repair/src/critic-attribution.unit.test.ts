@@ -1,21 +1,21 @@
 /**
- * Tests for critic attribution, the record of WHICH critic raised each claim.
- *
- * The distinction these cases exist to protect is between one critic repeating
- * itself and several critics agreeing. Both look like extra emissions of the
- * same claim, and a flat list of model ids renders them identically, but they
- * mean opposite things: repetition is one voice being noisy, agreement is
- * independent support. Measured over 12 settled entries, 83.1% of accepted
- * issues rest on a single deduplicated claim, so this is the common case rather
- * than an edge one.
- *
- * Attribution is calibration data only. It must never reach adjudication, which
- * is provenance-blind by design because a real defect can arrive with exactly
- * one proposer.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for critic attribution, the record of WHICH critic raised each claim.
+ 
+ The distinction these cases exist to protect is between one critic repeating
+ itself and several critics agreeing. Both look like extra emissions of the
+ same claim, and a flat list of model ids renders them identically, but they
+ mean opposite things: repetition is one voice being noisy, agreement is
+ independent support. Measured over 12 settled entries, 83.1% of accepted
+ issues rest on a single deduplicated claim, so this is the common case rather
+ than an edge one.
+ 
+ Attribution is calibration data only. It must never reach adjudication, which
+ is provenance-blind by design because a real defect can arrive with exactly
+ one proposer.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -32,41 +32,41 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Critic that finds the sunbathing omission.
+ Critic that finds the sunbathing omission.
  */
 const TABBY = 'hf:openai/gpt-oss-120b';
 
 /**
- * Second critic, for independent-support cases.
+ Second critic, for independent-support cases.
  */
 const CALICO = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
- * Third critic, ordered before both by model id so sorting is observable.
+ Third critic, ordered before both by model id so sorting is observable.
  */
 const BENGAL = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * Claim the cases attribute.
+ Claim the cases attribute.
  */
 const NAP_CLAIM = 'issue/nap';
 
 /**
- * Second claim identity.
+ Second claim identity.
  */
 const PURR_CLAIM = 'issue/purr';
 
 /**
- * Builds an emission list without repeating the object shape in every case.
- *
- * @param pairs - claim id and model id in emission order
- *
- * @returns Emissions ready to fold
- *
- * @example
- * ```ts
- * const emissions = emissionsOf([[NAP_CLAIM, TABBY,],],);
- * ```
+ Builds an emission list without repeating the object shape in every case.
+ 
+ @param pairs - claim id and model id in emission order
+ 
+ @returns Emissions ready to fold
+ 
+ @example
+ ```ts
+ const emissions = emissionsOf([[NAP_CLAIM, TABBY,],],);
+ ```
  */
 function emissionsOf(
   pairs: readonly (readonly [string, string,])[],
@@ -89,7 +89,7 @@ await describe({
         + 'one would overstate independent support for the claim',
       fn: async () => {
         /**
-         * Attribution for one critic saying the same thing twice.
+         Attribution for one critic saying the same thing twice.
          */
         const attributions = collectClaimAttributions({
           emissions: emissionsOf([
@@ -112,7 +112,7 @@ await describe({
         + 'second emitter is recorded here it is unrecoverable afterward',
       fn: async () => {
         /**
-         * Attribution for two critics agreeing exactly.
+         Attribution for two critics agreeing exactly.
          */
         const attributions = collectClaimAttributions({
           emissions: emissionsOf([
@@ -136,7 +136,7 @@ await describe({
         + 'these three differently under a different default locale',
       fn: async () => {
         /**
-         * Same critics, opposite arrival orders.
+         Same critics, opposite arrival orders.
          */
         const first = collectClaimAttributions({
           emissions: emissionsOf([
@@ -147,7 +147,7 @@ await describe({
         },);
 
         /**
-         * Reversed arrival, identical content.
+         Reversed arrival, identical content.
          */
         const second = collectClaimAttributions({
           emissions: emissionsOf([
@@ -175,7 +175,7 @@ await describe({
         + 'depending on which critic happened to answer first',
       fn: async () => {
         /**
-         * Two distinct claims from overlapping critics.
+         Two distinct claims from overlapping critics.
          */
         const attributions = collectClaimAttributions({
           emissions: emissionsOf([
@@ -203,7 +203,7 @@ await describe({
         + 'retry that changes which critic answers first is the real case',
       fn: async () => {
         /**
-         * One arrival order over three distinct claims.
+         One arrival order over three distinct claims.
          */
         const first = collectClaimAttributions({
           emissions: emissionsOf([
@@ -215,7 +215,7 @@ await describe({
         },);
 
         /**
-         * Same evidence, reversed arrival, as a retry round would produce.
+         Same evidence, reversed arrival, as a retry round would produce.
          */
         const second = collectClaimAttributions({
           emissions: emissionsOf([
@@ -250,7 +250,7 @@ await describe({
         + 'hit the pipeline threw away',
       fn: async () => {
         /**
-         * Attribution for two claims, one of which will be screened out.
+         Attribution for two claims, one of which will be screened out.
          */
         const attributions = collectClaimAttributions({
           emissions: emissionsOf([
@@ -260,7 +260,7 @@ await describe({
         },);
 
         /**
-         * Survivors after screening.
+         Survivors after screening.
          */
         const kept = retainAttributions({
           attributions,
@@ -277,7 +277,7 @@ await describe({
         + 'a chunk whose non-translation votes were contradicted looks like',
       fn: async () => {
         /**
-         * Attribution that loses every claim.
+         Attribution that loses every claim.
          */
         const attributions = collectClaimAttributions({
           emissions: emissionsOf([[NAP_CLAIM, TABBY,],],),
@@ -298,7 +298,7 @@ await describe({
         + 'run serializes like an unscreened one',
       fn: async () => {
         /**
-         * Three claims, middle one screened out.
+         Three claims, middle one screened out.
          */
         const attributions = collectClaimAttributions({
           emissions: emissionsOf([
@@ -332,7 +332,7 @@ await describe({
         + 'convention and this is what makes the artifact boundary enforce it',
       fn: async () => {
         /**
-         * Records whose nested arrays arrive in one order.
+         Records whose nested arrays arrive in one order.
          */
         const forward = buildSliceCriticRecords({
           outcomes: [
@@ -355,7 +355,7 @@ await describe({
         },);
 
         /**
-         * The same evidence, every nested array reversed.
+         The same evidence, every nested array reversed.
          */
         const reversed = buildSliceCriticRecords({
           outcomes: [

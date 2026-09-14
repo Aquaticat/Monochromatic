@@ -12,25 +12,25 @@
 // stops being incidental.
 
 /**
- * Stand-in for a thrown value that carries no class name.
- *
- * Phrased as a sentence rather than as a token, because it lands in a log line
- * where a reader is already asking what went wrong and a bare `unknown` answers
- * nothing.
+ Stand-in for a thrown value that carries no class name.
+ 
+ Phrased as a sentence rather than as a token, because it lands in a log line
+ where a reader is already asking what went wrong and a bare `unknown` answers
+ nothing.
  */
 const NAMELESS_THROW = 'a thrown value that is not an Error';
 
 /**
- * Names the class of whatever was caught.
- *
- * @param error - caught value, of unknown type by construction
- *
- * @returns Class name, or a stand-in for a value that has none
- *
- * @example
- * ```ts
- * console.error(errorName({ error, },),);
- * ```
+ Names the class of whatever was caught.
+ 
+ @param error - caught value, of unknown type by construction
+ 
+ @returns Class name, or a stand-in for a value that has none
+ 
+ @example
+ ```ts
+ console.error(errorName({ error, },),);
+ ```
  */
 export function errorName(
   { error, }: { readonly error: unknown; },
@@ -41,25 +41,25 @@ export function errorName(
 }
 
 /**
- * Names a caught failure by its filesystem code where it carries one, and by
- * its class otherwise.
- *
- * NAMES A CODE, NEVER A MESSAGE. A filesystem error's message quotes the path
- * it failed on and a run directory path can name a person, which is why
- * `errorName` exists at all. A code carries no path, and `EACCES` tells a
- * reader what to do where a bare `Error` tells them nothing.
- *
- * LIFTED OUT OF `ledger-report.ts` on 2026-08-25, when `run-json-read.ts`
- * needed the same distinction to report a run file it could not open.
- *
- * @param error - caught value, of unknown type by construction
- *
- * @returns Code or class name, whichever is there
- *
- * @example
- * ```ts
- * console.error(`could not read it (${failureName({ error, },)})`,);
- * ```
+ Names a caught failure by its filesystem code where it carries one, and by
+ its class otherwise.
+ 
+ NAMES A CODE, NEVER A MESSAGE. A filesystem error's message quotes the path
+ it failed on and a run directory path can name a person, which is why
+ `errorName` exists at all. A code carries no path, and `EACCES` tells a
+ reader what to do where a bare `Error` tells them nothing.
+ 
+ LIFTED OUT OF `ledger-report.ts` on 2026-08-25, when `run-json-read.ts`
+ needed the same distinction to report a run file it could not open.
+ 
+ @param error - caught value, of unknown type by construction
+ 
+ @returns Code or class name, whichever is there
+ 
+ @example
+ ```ts
+ console.error(`could not read it (${failureName({ error, },)})`,);
+ ```
  */
 export function failureName(
   { error, }: { readonly error: unknown; },

@@ -1,7 +1,7 @@
 /**
- * Tests visual evidence cannot bypass publication review.
- *
- * @module
+ Tests visual evidence cannot bypass publication review.
+ 
+ @module
  */
 
 import {
@@ -17,7 +17,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Prepared slice fixture naming one entry photo.
+ Prepared slice fixture naming one entry photo.
  */
 const SLICES = [{
   source: {

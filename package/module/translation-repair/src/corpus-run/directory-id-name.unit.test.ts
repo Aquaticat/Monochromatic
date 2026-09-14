@@ -1,17 +1,17 @@
 /**
- * Tests for the three ways a directory id may stand as a page's visible name
- * although the source names the person otherwise.
- *
- * WHY. On 2026-09-07 the Huasheng page was refused for naming 椛笙 by its
- * pinyin, which is the directory id. The owner's answer was the pinyin check
- * and the alias exemption, read on both front matters, since there has to be
- * an English rendering of the name in the front matter. Each clause has a case
- * that passes and the refusal has a case that stays.
- *
- * Fixtures are cat-themed invention where the rule allows; the pinyin cases
- * need real characters, and use common ones.
- *
- * @module
+ Tests for the three ways a directory id may stand as a page's visible name
+ although the source names the person otherwise.
+ 
+ WHY. On 2026-09-07 the Huasheng page was refused for naming 椛笙 by its
+ pinyin, which is the directory id. The owner's answer was the pinyin check
+ and the alias exemption, read on both front matters, since there has to be
+ an English rendering of the name in the front matter. Each clause has a case
+ that passes and the refusal has a case that stays.
+ 
+ Fixtures are cat-themed invention where the rule allows; the pinyin cases
+ need real characters, and use common ones.
+ 
+ @module
  */
 
 import {
@@ -26,21 +26,21 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Parses a front matter fixture, throwing where it does not parse so a broken
- * fixture fails its case rather than passing an undefined through.
- *
- * @param text - page text starting with front matter
- *
- * @returns Parsed block
- *
- * @example
- * ```ts
- * const block = blockOf({ text: '---\nname: 林童\n---\n', },);
- * ```
+ Parses a front matter fixture, throwing where it does not parse so a broken
+ fixture fails its case rather than passing an undefined through.
+ 
+ @param text - page text starting with front matter
+ 
+ @returns Parsed block
+ 
+ @example
+ ```ts
+ const block = blockOf({ text: '---\nname: 林童\n---\n', },);
+ ```
  */
 function blockOf({ text, }: { readonly text: string; },) {
   /**
-   * Parsed front matter, if the fixture carries one.
+   Parsed front matter, if the fixture carries one.
    */
   const block = splitFrontMatter({ text, },).frontMatter;
   if (block === undefined)
@@ -49,8 +49,8 @@ function blockOf({ text, }: { readonly text: string; },) {
 }
 
 /**
- * Page whose visible name is the id and whose alias is in the source script
- * only, so nothing but the id itself can let it stand.
+ Page whose visible name is the id and whose alias is in the source script
+ only, so nothing but the id itself can let it stand.
  */
 const ID_ONLY_PAGE = '---\nname: lintong\ninfo:\n  alias: 林童\n---\n\nBody.\n';
 

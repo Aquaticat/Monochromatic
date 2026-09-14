@@ -29,40 +29,40 @@ export type {
 // (doc/planning/translation-repair-no-loop-design.md).
 
 /**
- * Polishes final body text and lets fidelity-first roster approve replacement.
- *
- * @param client - shared provider client
- *
- * @param sourceText - original passage anchoring fidelity
- *
- * @param archiveText - archive wording shown as supporting evidence
- *
- * @param baseText - wording already approved by consolidation gate
- *
- * @param syntax - explicit syntax role; front matter is never polished
- *
- * @param lineStructured - whether source line boundaries must survive
- *
- * @param identityContext - names and handles prompts preserve
- *
- * @param sliceIndex - prepared slice position
- *
- * @param config - model roles and document-wide guard facts
- *
- * @param eligible - whether approved base may cross publication boundary
- *
- * @param signal - caller cancellation
- *
- * @param perCallTimeoutMs - per-exchange ceiling
- *
- * @param l - stage logger
- *
- * @returns Auditable polish decision and final text
- *
- * @example
- * ```ts
- * const polish = await polishConsolidation({ client, sourceText, archiveText, baseText, lineStructured: false, sliceIndex: 0, config, signal, perCallTimeoutMs, l, });
- * ```
+ Polishes final body text and lets fidelity-first roster approve replacement.
+ 
+ @param client - shared provider client
+ 
+ @param sourceText - original passage anchoring fidelity
+ 
+ @param archiveText - archive wording shown as supporting evidence
+ 
+ @param baseText - wording already approved by consolidation gate
+ 
+ @param syntax - explicit syntax role; front matter is never polished
+ 
+ @param lineStructured - whether source line boundaries must survive
+ 
+ @param identityContext - names and handles prompts preserve
+ 
+ @param sliceIndex - prepared slice position
+ 
+ @param config - model roles and document-wide guard facts
+ 
+ @param eligible - whether approved base may cross publication boundary
+ 
+ @param signal - caller cancellation
+ 
+ @param perCallTimeoutMs - per-exchange ceiling
+ 
+ @param l - stage logger
+ 
+ @returns Auditable polish decision and final text
+ 
+ @example
+ ```ts
+ const polish = await polishConsolidation({ client, sourceText, archiveText, baseText, lineStructured: false, sliceIndex: 0, config, signal, perCallTimeoutMs, l, });
+ ```
  */
 export async function polishConsolidation(
   {
@@ -114,7 +114,7 @@ export async function polishConsolidation(
     };
   }
   /**
-   * Initial exploratory generation, selection and comparative fidelity gate.
+   Initial exploratory generation, selection and comparative fidelity gate.
    */
   const initial = await runConsolidationPolishRound({
     client,
@@ -132,7 +132,7 @@ export async function polishConsolidation(
     l,
   },);
   /**
-   * Independent absolute review of exact initial would-ship text.
+   Independent absolute review of exact initial would-ship text.
    */
   const initialConfirmed = await confirmAbsoluteNaturalness({
     client,
@@ -151,13 +151,13 @@ export async function polishConsolidation(
     l,
   },);
   /**
-   * Decisive review after optional acceptance confirmation, recorded whatever
-   * it says: a rejection or an unheard review roster becomes located findings
-   * on the settlement while the gated round-one text ships.
+   Decisive review after optional acceptance confirmation, recorded whatever
+   it says: a rejection or an unheard review roster becomes located findings
+   on the settlement while the gated round-one text ships.
    */
   const { review: finalReview, } = initialConfirmed;
   /**
-   * Evidence the non-accepting verdicts add to the settlement.
+   Evidence the non-accepting verdicts add to the settlement.
    */
   const reviewEvidence = finalReview.verdict === 'acceptable'
     ? []

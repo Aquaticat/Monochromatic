@@ -1,16 +1,16 @@
 /**
- * Tests whether a recorded wider bench can contain its independently named seats.
- *
- * @param quorumOver - effective bench size used for exact-half quorum
- *
- * @param seatCount - requested or recorded distinct seats
- *
- * @returns Whether runtime and artifact can share this quorum basis
- *
- * @example
- * ```ts
- * validNaturalnessQuorum({ quorumOver: 9, seatCount: 6 });
- * ```
+ Tests whether a recorded wider bench can contain its independently named seats.
+ 
+ @param quorumOver - effective bench size used for exact-half quorum
+ 
+ @param seatCount - requested or recorded distinct seats
+ 
+ @returns Whether runtime and artifact can share this quorum basis
+ 
+ @example
+ ```ts
+ validNaturalnessQuorum({ quorumOver: 9, seatCount: 6 });
+ ```
  */
 export function validNaturalnessQuorum(
   {
@@ -25,25 +25,25 @@ export function validNaturalnessQuorum(
 }
 
 /**
- * Invalid quorum configuration, rejected before any reviewer is asked.
+ Invalid quorum configuration, rejected before any reviewer is asked.
  */
 export class NaturalnessQuorumError extends Error {
   /**
-   * Only numeric configuration is exposed by this diagnostic.
+   Only numeric configuration is exposed by this diagnostic.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Names only bench counts, never candidate wording.
-   *
-   * @param quorumOver - caller-supplied bench size
-   *
-   * @param seatCount - independently requested seats
-   *
-   * @example
-   * ```ts
-   * throw new NaturalnessQuorumError({ quorumOver: 2, seatCount: 3 });
-   * ```
+   Names only bench counts, never candidate wording.
+   
+   @param quorumOver - caller-supplied bench size
+   
+   @param seatCount - independently requested seats
+   
+   @example
+   ```ts
+   throw new NaturalnessQuorumError({ quorumOver: 2, seatCount: 3 });
+   ```
    */
   constructor(
     {

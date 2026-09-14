@@ -1,8 +1,8 @@
 /**
- * Tests for the Bedrock cost: usage times the catalog's prices, and the named
- * absence where no usage arrived.
- *
- * @module
+ Tests for the Bedrock cost: usage times the catalog's prices, and the named
+ absence where no usage arrived.
+ 
+ @module
  */
 
 import {
@@ -24,7 +24,7 @@ await describe({
       name: 'PRICES prompt and completion tokens each at their own rate per million',
       fn: async () => {
         /**
-         * Row the call is priced by.
+         Row the call is priced by.
          */
         const info = BEDROCK_MODELS['google.gemma-4-31b'];
         expect(bedrockCostOf({
@@ -48,8 +48,8 @@ await describe({
       name: 'PRICES a small call to a fraction of a cent rather than rounding it away',
       fn: async () => {
         /**
-         * What the probe of 2026-09-07 cost on Gemma 4 E2B: 90 prompt and 10
-         * completion tokens.
+         What the probe of 2026-09-07 cost on Gemma 4 E2B: 90 prompt and 10
+         completion tokens.
          */
         const cost = bedrockCostOf({
           servedId: 'google.gemma-4-e2b',

@@ -1,8 +1,8 @@
 /**
- * Verifies that rendered structure reaches production sheets before models write
- * or choose text. Live probes, not these assertions, measure model behavior.
- *
- * @module
+ Verifies that rendered structure reaches production sheets before models write
+ or choose text. Live probes, not these assertions, measure model behavior.
+ 
+ @module
  */
 
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';

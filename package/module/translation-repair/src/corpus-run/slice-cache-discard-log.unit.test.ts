@@ -1,33 +1,33 @@
 /**
- * Tests that the slice cache SAYS what it threw away, and only when it did.
- *
- * WHY THE LINE MATTERS. Slices are bought from the roster, so discarding a
- * lane's cache costs real calls to rebuy. The count is the only notice an
- * operator gets that a generation change just spent that money, and the module
- * beside it records six occasions where an unregistered prefix made the repair
- * lane delete another lane's work while reporting it as its own.
- *
- * WHAT WAS MEASURED. On 2026-08-25, inverting the guard that decides whether to
- * print at all failed no test in this package. A cache holding nothing of this
- * lane's would then announce that it discarded zero slices on every run, which
- * is the line an operator reads as "money was spent" appearing where none was.
- *
- * THE QUIET CASE IS THE ONE THAT PROVES IT. Any guard at all satisfies "a
- * discard says so"; only "a lane owning nothing here says nothing" separates a
- * count that is read from a line that is always printed.
- *
- * OWNERSHIP IS ASSERTED ALONGSIDE, since the same call removes what it names:
- * another lane's files and this lane's own marker must survive a discard, and a
- * count that was right while the removal was wrong would still be a defect.
- *
- * THE SUITE RUNS AT `concurrency: 1`, since each case diverts the one global
- * `console.log` across an await. Run concurrently they capture each other's
- * lines, and the assertions then describe whichever case happened to be inside
- * the window rather than the one under test.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests that the slice cache SAYS what it threw away, and only when it did.
+ 
+ WHY THE LINE MATTERS. Slices are bought from the roster, so discarding a
+ lane's cache costs real calls to rebuy. The count is the only notice an
+ operator gets that a generation change just spent that money, and the module
+ beside it records six occasions where an unregistered prefix made the repair
+ lane delete another lane's work while reporting it as its own.
+ 
+ WHAT WAS MEASURED. On 2026-08-25, inverting the guard that decides whether to
+ print at all failed no test in this package. A cache holding nothing of this
+ lane's would then announce that it discarded zero slices on every run, which
+ is the line an operator reads as "money was spent" appearing where none was.
+ 
+ THE QUIET CASE IS THE ONE THAT PROVES IT. Any guard at all satisfies "a
+ discard says so"; only "a lane owning nothing here says nothing" separates a
+ count that is read from a line that is always printed.
+ 
+ OWNERSHIP IS ASSERTED ALONGSIDE, since the same call removes what it names:
+ another lane's files and this lane's own marker must survive a discard, and a
+ count that was right while the removal was wrong would still be a defect.
+ 
+ THE SUITE RUNS AT `concurrency: 1`, since each case diverts the one global
+ `console.log` across an await. Run concurrently they capture each other's
+ lines, and the assertions then describe whichever case happened to be inside
+ the window rather than the one under test.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -52,7 +52,7 @@ import {
 //region Fixtures
 
 /**
- * Lane under test, owning every `.json` name carrying its prefix.
+ Lane under test, owning every `.json` name carrying its prefix.
  */
 const MITTENS: SliceNamespace = {
   prefix: 'mittens.',
@@ -60,33 +60,33 @@ const MITTENS: SliceNamespace = {
 };
 
 /**
- * File another lane owns, which a discard must leave alone.
+ File another lane owns, which a discard must leave alone.
  */
 const OTHER_LANE_FILE = 'whiskers.c.json';
 
 /**
- * Diverts `console.log` into a list until disposed.
- *
- * @param lines - where diverted lines are appended
- *
- * @returns Capture holding those lines, which restores logging on disposal
- *
- * @example
- * ```ts
- * using capture = collectingInto({ lines, },);
- * ```
+ Diverts `console.log` into a list until disposed.
+ 
+ @param lines - where diverted lines are appended
+ 
+ @returns Capture holding those lines, which restores logging on disposal
+ 
+ @example
+ ```ts
+ using capture = collectingInto({ lines, },);
+ ```
  */
 function collectingInto(
   { lines, }: { readonly lines: string[]; },
 ): { readonly lines: readonly string[]; } & Disposable {
   /**
-   * Real logger, put back on disposal.
+   Real logger, put back on disposal.
    */
   const printed = console.log;
 
   /**
-   * `console.info` as it was, since the tagged logger's `info` sink resolves
-   * to it rather than to `console.log`.
+   `console.info` as it was, since the tagged logger's `info` sink resolves
+   to it rather than to `console.log`.
    */
   const informed = console.info;
   console.log = (...parts: readonly unknown[]) => {
@@ -107,22 +107,22 @@ function collectingInto(
 }
 
 /**
- * Builds a throwaway cache directory holding the named files, each empty.
- *
- * @param names - file names to create
- *
- * @returns Directory holding them
- *
- * @example
- * ```ts
- * const dir = await cacheHolding({ names: ['mittens.a.json',], },);
- * ```
+ Builds a throwaway cache directory holding the named files, each empty.
+ 
+ @param names - file names to create
+ 
+ @returns Directory holding them
+ 
+ @example
+ ```ts
+ const dir = await cacheHolding({ names: ['mittens.a.json',], },);
+ ```
  */
 async function cacheHolding(
   { names, }: { readonly names: readonly string[]; },
 ): Promise<string> {
   /**
-   * Throwaway directory standing in for a shared slice cache.
+   Throwaway directory standing in for a shared slice cache.
    */
   const dir = await mkdtemp(join(
     tmpdir(),
@@ -144,18 +144,18 @@ async function cacheHolding(
 }
 
 /**
- * Discards one lane's slices and reports what was printed and what survived.
- *
- * @param names - files the cache holds beforehand
- *
- * @param cached - pipeline stamp the discarded slices were filled by
- *
- * @returns Printed lines and the names still on disk afterwards
- *
- * @example
- * ```ts
- * const { lines, left, } = await discarding({ names, cached: 'nap-3', },);
- * ```
+ Discards one lane's slices and reports what was printed and what survived.
+ 
+ @param names - files the cache holds beforehand
+ 
+ @param cached - pipeline stamp the discarded slices were filled by
+ 
+ @returns Printed lines and the names still on disk afterwards
+ 
+ @example
+ ```ts
+ const { lines, left, } = await discarding({ names, cached: 'nap-3', },);
+ ```
  */
 async function discarding(
   {
@@ -167,12 +167,12 @@ async function discarding(
   },
 ): Promise<{ readonly lines: readonly string[]; readonly left: readonly string[]; }> {
   /**
-   * Cache to discard from.
+   Cache to discard from.
    */
   const dir = await cacheHolding({ names, },);
 
   /**
-   * Lines the discard printed.
+   Lines the discard printed.
    */
   const lines: string[] = [];
 
@@ -185,8 +185,8 @@ async function discarding(
   },);
 
   /**
-   * Names still on disk, sorted so the assertion does not depend on readdir
-   * order.
+   Names still on disk, sorted so the assertion does not depend on readdir
+   order.
    */
   const left = (await readdir(dir,)).toSorted();
 
@@ -220,8 +220,8 @@ await describe({
         + 'and this line is the only notice that a generation change just spent that money again',
       fn: async () => {
         /**
-         * A cache holding two of this lane's slices, one of another lane's, and
-         * this lane's own marker, which is deliberately not a `.json` name.
+         A cache holding two of this lane's slices, one of another lane's, and
+         this lane's own marker, which is deliberately not a `.json` name.
          */
         const { lines, left, } = await discarding({
           names: [
@@ -234,7 +234,7 @@ await describe({
         },);
 
         /**
-         * Lines announcing a discard, which is the only kind this asks about.
+         Lines announcing a discard, which is the only kind this asks about.
          */
         // THROUGH THE LOGGER, so the line carries its level and tag prefix and
         // the notice is found inside it rather than at its start.
@@ -261,7 +261,7 @@ await describe({
         + 'reading rather than printed on every run',
       fn: async () => {
         /**
-         * A cache holding only another lane's slice.
+         A cache holding only another lane's slice.
          */
         const { lines, left, } = await discarding({
           names: [OTHER_LANE_FILE,],
@@ -280,7 +280,7 @@ await describe({
         + 'name and left to guess whether one was recorded',
       fn: async () => {
         /**
-         * A cache whose lane never wrote a marker.
+         A cache whose lane never wrote a marker.
          */
         const { lines, } = await discarding({
           names: ['mittens.a.json',],

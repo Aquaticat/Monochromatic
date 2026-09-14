@@ -51,26 +51,26 @@ import { writerRoundGraceMs, } from './writer-grace-override.ts';
 // never manufacture approval in either mode.
 
 /**
- * Everything one slice's refinement decided.
- *
- * @example
- * ```ts
- * const { refinedText, changed, } = await runRefineStage({ ... },);
- * ```
+ Everything one slice's refinement decided.
+ 
+ @example
+ ```ts
+ const { refinedText, changed, } = await runRefineStage({ ... },);
+ ```
  */
 export type RefineStageResult = {
   /**
-   * Text selected by refinement; equals input on non-selection.
+   Text selected by refinement; equals input on non-selection.
    */
   readonly refinedText: string;
 
   /**
-   * Whether a refinement actually won.
+   Whether a refinement actually won.
    */
   readonly changed: boolean;
 
   /**
-   * Whether unchanged text is fallback or rejected correction produced none.
+   Whether unchanged text is fallback or rejected correction produced none.
    */
   readonly disposition:
     | 'selected'
@@ -78,87 +78,87 @@ export type RefineStageResult = {
     | 'no-correction';
 
   /**
-   * Ballots of this slice's refinement round, empty when it never reached the
-   * judges.
-   *
-   * Recorded on EVERY exit after the round, decline included, because a
-   * refinement that lost still says what the panel thought of the repaired
-   * text, and this lane is the one that re-decides text an accuracy verdict
-   * already accepted.
+   Ballots of this slice's refinement round, empty when it never reached the
+   judges.
+   
+   Recorded on EVERY exit after the round, decline included, because a
+   refinement that lost still says what the panel thought of the repaired
+   text, and this lane is the one that re-decides text an accuracy verdict
+   already accepted.
    */
   readonly rounds: readonly RepairJudgedRound[];
 
   /**
-   * Models whose rewrites the shipped text carries, empty when unchanged.
-   *
-   * DISCOUNTED RATHER THAN BARRED, which this said the opposite of. The caller
-   * folds them into the text's `IssueAuthorship`, and `tally-resolution.ts`
-   * then weights a checker's verdict on text it helped write at
-   * `SELF_VOTE_WEIGHT` instead of dropping it. Nothing anywhere stops such a
-   * checker being asked, and a contract that claims a bar invites a reader to
-   * skip the guard that actually exists.
+   Models whose rewrites the shipped text carries, empty when unchanged.
+   
+   DISCOUNTED RATHER THAN BARRED, which this said the opposite of. The caller
+   folds them into the text's `IssueAuthorship`, and `tally-resolution.ts`
+   then weights a checker's verdict on text it helped write at
+   `SELF_VOTE_WEIGHT` instead of dropping it. Nothing anywhere stops such a
+   checker being asked, and a contract that claims a bar invites a reader to
+   skip the guard that actually exists.
    */
   readonly contributors: readonly RosterModelId[];
 
   /**
-   * Refiners heard with a usable answer, whether or not it proposed a change.
-   *
-   * CARRIED OUT SO A STANDING CAN TELL ANSWERED FROM SILENT. A rewriter that
-   * leaves a paragraph as it stands never reaches a slate, and `#263` found
-   * that reported as provider silence beside a SEAT line saying the seat had
-   * answered every ask. Empty on the exit that asks nobody.
+   Refiners heard with a usable answer, whether or not it proposed a change.
+   
+   CARRIED OUT SO A STANDING CAN TELL ANSWERED FROM SILENT. A rewriter that
+   leaves a paragraph as it stands never reaches a slate, and `#263` found
+   that reported as provider silence beside a SEAT line saying the seat had
+   answered every ask. Empty on the exit that asks nobody.
    */
   readonly heard: readonly RosterModelId[];
 
   /**
-   * Stage telemetry in scorecard-stable wording.
+   Stage telemetry in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Runs the naturalness lane over one repaired slice.
- *
- * @param client - injected model client
- *
- * @param refinerModelIds - rewriters proposing refinements
- *
- * @param judgeModelIds - whole roster selection draws judges from
- *
- * @param sourceText - original chunk text, the faithfulness anchor
- *
- * @param repairedText - `T1`, the text refinement may improve
- *
- * @param envelopes - eligible paragraphs of `repairedText`, in document order
- *
- * @param definitions - link and footnote definitions from the whole document,
- * so a paragraph's references resolve during gating
- *
- * @param identityContext - declared names and handles, when any
- *
- * @param declaredNames - same declarations as strings to compare, since a
- * rewrite for naturalness is exactly the edit that drops one
- *
- * @param mode - comparative improvement or mandatory absolute-quality correction
- *
- * @param sliceIndex - slice being refined, which a refusal names
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Shipped text plus what decided it
- *
- * @throws {@link import('./repair-contract.ts').ProducerRosterError} when the
- * roster could not select anything: repeats on either side, no refiner, or
- * judges too few to reach the minimum weight
- *
- * @example
- * ```ts
- * const refined = await runRefineStage({ ... },);
- * ```
+ Runs the naturalness lane over one repaired slice.
+ 
+ @param client - injected model client
+ 
+ @param refinerModelIds - rewriters proposing refinements
+ 
+ @param judgeModelIds - whole roster selection draws judges from
+ 
+ @param sourceText - original chunk text, the faithfulness anchor
+ 
+ @param repairedText - `T1`, the text refinement may improve
+ 
+ @param envelopes - eligible paragraphs of `repairedText`, in document order
+ 
+ @param definitions - link and footnote definitions from the whole document,
+ so a paragraph's references resolve during gating
+ 
+ @param identityContext - declared names and handles, when any
+ 
+ @param declaredNames - same declarations as strings to compare, since a
+ rewrite for naturalness is exactly the edit that drops one
+ 
+ @param mode - comparative improvement or mandatory absolute-quality correction
+ 
+ @param sliceIndex - slice being refined, which a refusal names
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - pipeline logger
+ 
+ @returns Shipped text plus what decided it
+ 
+ @throws {@link import('./repair-contract.ts').ProducerRosterError} when the
+ roster could not select anything: repeats on either side, no refiner, or
+ judges too few to reach the minimum weight
+ 
+ @example
+ ```ts
+ const refined = await runRefineStage({ ... },);
+ ```
  */
 export async function runRefineStage(
   {
@@ -194,7 +194,7 @@ export async function runRefineStage(
   }>,
 ): Promise<RefineStageResult> {
   /**
-   * Logger tagged with this stage.
+   Logger tagged with this stage.
    */
   const rl = tagged({
     tag: runRefineStage.name,
@@ -202,7 +202,7 @@ export async function runRefineStage(
   },);
 
   /**
-   * Outcome shared by every exit that ships the input untouched.
+   Outcome shared by every exit that ships the input untouched.
    */
   const unchanged: RefineStageResult = {
     refinedText: repairedText,
@@ -222,8 +222,8 @@ export async function runRefineStage(
   },);
 
   /**
-   * Rewriter sheet, one call per slice so a rewriter sees the paragraphs
-   * together rather than one at a time.
+   Rewriter sheet, one call per slice so a rewriter sees the paragraphs
+   together rather than one at a time.
    */
   const plan = buildRefineMessages({
     sourceText,
@@ -240,7 +240,7 @@ export async function runRefineStage(
   },);
 
   /**
-   * Rewriter replies after retry-to-quorum.
+   Rewriter replies after retry-to-quorum.
    */
   const gather = await gatherStageVoices({
     client,
@@ -263,13 +263,13 @@ export async function runRefineStage(
   },);
 
   /**
-   * One gated candidate per rewriter that proposed anything surviving, before
-   * identical rewrites are merged.
+   One gated candidate per rewriter that proposed anything surviving, before
+   identical rewrites are merged.
    */
   const proposed = gather.voices
     .flatMap(function toCandidate(voice,) {
       /**
-       * Operations bound to real paragraphs.
+       Operations bound to real paragraphs.
        */
       const resolution = resolveRefineRewrites({
         wire: voice.value,
@@ -277,13 +277,13 @@ export async function runRefineStage(
       },);
 
       /**
-       * Operations whose replacement carried every protected atom through
-       * unchanged and in order.
+       Operations whose replacement carried every protected atom through
+       unchanged and in order.
        */
       const gated = resolution.operations
         .flatMap(function survivesGate(operation,): readonly PatchOperation[] {
           /**
-           * Paragraph this operation replaces.
+           Paragraph this operation replaces.
            */
           const envelope = plan.envelopes
             .find(function matches(candidate,) {
@@ -293,8 +293,8 @@ export async function runRefineStage(
             return [];
 
           /**
-           * Replacement as it will ship, quote style restored, so the gate
-           * reads the shipped bytes rather than text a later pass alters.
+           Replacement as it will ship, quote style restored, so the gate
+           reads the shipped bytes rather than text a later pass alters.
            */
           const candidate = restoreTypography({
             replacement: operation.newText,
@@ -303,7 +303,7 @@ export async function runRefineStage(
           },);
 
           /**
-           * Structural verdict over the proposed replacement.
+           Structural verdict over the proposed replacement.
            */
           const verdict = gateParagraphRewrite({
             base: envelope.baseText,
@@ -325,7 +325,7 @@ export async function runRefineStage(
         return [];
 
       /**
-       * This rewriter's whole-slice proposal through the deterministic gate.
+       This rewriter's whole-slice proposal through the deterministic gate.
        */
       const patch = applyPatchOperations({
         targetText: repairedText,
@@ -354,18 +354,18 @@ export async function runRefineStage(
     },);
 
   /**
-   * Distinct rewrites, each credited to every rewriter that produced it.
-   *
-   * Merging matters for the same reason it does in the editor lane: selection
-   * discounts a judge's ballot for text that judge produced, and it reads that
-   * off the candidate's producer. Leaving three identical rewrites as three
-   * candidates also split the ballot three ways, so text every rewriter agreed
-   * on could lose to a lone dissenter.
+   Distinct rewrites, each credited to every rewriter that produced it.
+   
+   Merging matters for the same reason it does in the editor lane: selection
+   discounts a judge's ballot for text that judge produced, and it reads that
+   off the candidate's producer. Leaving three identical rewrites as three
+   candidates also split the ballot three ways, so text every rewriter agreed
+   on could lose to a lone dissenter.
    */
   const candidates = mergeIdenticalCandidates({ candidates: proposed, },);
 
   /**
-   * Refiners whose answer was usable, proposal or not.
+   Refiners whose answer was usable, proposal or not.
    */
   const heard = gather
     .voices
@@ -374,7 +374,7 @@ export async function runRefineStage(
     },);
 
   /**
-   * Telemetry every exit after the fan-out carries.
+   Telemetry every exit after the fan-out carries.
    */
   const stageFindings = [
     ...gather.findings,
@@ -392,10 +392,10 @@ export async function runRefineStage(
   }
 
   /**
-   * Judges verdict over the whole-slice proposals.
+   Judges verdict over the whole-slice proposals.
    */
   /**
-   * Selector question matching whether current text may survive.
+   Selector question matching whether current text may survive.
    */
   const selectionContext = buildRefineSelectionContext({
     mode,
@@ -403,7 +403,7 @@ export async function runRefineStage(
     repairedText,
   },);
   /**
-   * Candidate decision over structurally admissible rewrites.
+   Candidate decision over structurally admissible rewrites.
    */
   const outcome = await selectBestCandidate({
     client,
@@ -416,8 +416,8 @@ export async function runRefineStage(
     l,
   },);
   /**
-   * This round's ballots, recorded before any branch so a decline and a
-   * refusal keep the reasoning that produced them exactly as a win does.
+   This round's ballots, recorded before any branch so a decline and a
+   refusal keep the reasoning that produced them exactly as a win does.
    */
   const rounds = [
     describeJudgedRound({
@@ -429,7 +429,7 @@ export async function runRefineStage(
   ];
   if (outcome.kind === 'declined') {
     /**
-     * Consequence matching whether input remains publication-admissible.
+     Consequence matching whether input remains publication-admissible.
      */
     const declineAction = (mode.kind === 'comparative')
       ? 'keeping the repaired text'
@@ -448,23 +448,23 @@ export async function runRefineStage(
   }
 
   /**
-   * Models whose work the winning text carries.
-   *
-   * Read through `producerModelIds` rather than by branching on the kind here,
-   * so a producer variant this lane never emits, the incumbent one the translate
-   * lane needs, cannot break a stage that has no opinion about it.
+   Models whose work the winning text carries.
+   
+   Read through `producerModelIds` rather than by branching on the kind here,
+   so a producer variant this lane never emits, the incumbent one the translate
+   lane needs, cannot break a stage that has no opinion about it.
    */
   const contributors = [...producerModelIds(outcome.producer,),];
 
   /**
-   * Declared names this refinement would take out of the slice.
-   *
-   * CHECKED HERE AS WELL AS AT THE ACCURACY VERDICT, because refinement
-   * REPLACES the text that verdict accepted. A guard standing only there would
-   * pass a slice and then let this lane take the name out of it, and
-   * naturalness is the exact pressure that makes a judge prefer the shorter
-   * wording: the probe behind `declared-name-survival.ts` measured judges
-   * choosing it six times out of six.
+   Declared names this refinement would take out of the slice.
+   
+   CHECKED HERE AS WELL AS AT THE ACCURACY VERDICT, because refinement
+   REPLACES the text that verdict accepted. A guard standing only there would
+   pass a slice and then let this lane take the name out of it, and
+   naturalness is the exact pressure that makes a judge prefer the shorter
+   wording: the probe behind `declared-name-survival.ts` measured judges
+   choosing it six times out of six.
    */
   const droppedDeclaredNames = findDroppedDeclaredNames({
     forms: declaredNames,
@@ -473,7 +473,7 @@ export async function runRefineStage(
   },);
   if (droppedDeclaredNames.length > 0) {
     /**
-     * Refusal in the wording every lane reports this under.
+     Refusal in the wording every lane reports this under.
      */
     const refusal = declaredNameRefusalFinding({
       sliceIndex,

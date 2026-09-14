@@ -1,9 +1,9 @@
 /**
- * Tests for the OpenRouter catalog: every row stands in for a roster seat,
- * every roster seat has a row, and the routing preferences carry the owner's
- * zero-data-retention decision.
- *
- * @module
+ Tests for the OpenRouter catalog: every row stands in for a roster seat,
+ every roster seat has a row, and the routing preferences carry the owner's
+ zero-data-retention decision.
+ 
+ @module
  */
 
 import {
@@ -35,7 +35,7 @@ await describe({
         + 'the seat only this provider serves',
       fn: async () => {
         /**
-         * Roster seats the rows stand in for.
+         Roster seats the rows stand in for.
          */
         const seats = Object
           .values(OPENROUTER_MODELS,)
@@ -43,8 +43,8 @@ await describe({
             return info.sharedWith;
           },);
         /**
-         * Roster ids this provider can stand in for: everything but the two
-         * sizes only Bedrock serves and the two seats dropped on evidence.
+         Roster ids this provider can stand in for: everything but the two
+         sizes only Bedrock serves and the two seats dropped on evidence.
          */
         const reachable = ROSTER_MODEL_IDS.filter(function stillServed(modelId,): boolean {
           if (OPENROUTER_DROPPED_SEATS.has(modelId,))
@@ -124,14 +124,14 @@ await describe({
           'reka',
         ],);
         /**
-         * Rows with a measured endpoint on them.
+         Rows with a measured endpoint on them.
          */
         const measured: ReadonlySet<string> = new Set([
           'minimax/minimax-m3',
           'deepseek/deepseek-v4-flash-0731',
         ],);
         /**
-         * Rows other than the two with a measured endpoint.
+         Rows other than the two with a measured endpoint.
          */
         const others = Object
           .values(OPENROUTER_MODELS,)
@@ -149,10 +149,10 @@ await describe({
         + 'the listing spells it `open-inference`',
       fn: async () => {
         /**
-         * Provider slugs from `GET https://openrouter.ai/api/v1/providers`, read
-         * 2026-09-04 (`~/temp/agent/providers-20260904.json`), for every
-         * upstream a run log of that day named for a roster model. Extend it
-         * from the same listing when a new slug is ignored.
+         Provider slugs from `GET https://openrouter.ai/api/v1/providers`, read
+         2026-09-04 (`~/temp/agent/providers-20260904.json`), for every
+         upstream a run log of that day named for a roster model. Extend it
+         from the same listing when a new slug is ignored.
          */
         const listed: ReadonlySet<string> = new Set([
           'akashml',
@@ -187,7 +187,7 @@ await describe({
         + 'write back into the catalog',
       fn: async () => {
         /**
-         * Preferences for the one row with an ignored endpoint.
+         Preferences for the one row with an ignored endpoint.
          */
         const minimax = openRouterProviderPreferencesFor({ servedId: 'minimax/minimax-m3', },);
         expect(minimax,).toEqual({

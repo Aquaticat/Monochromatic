@@ -1,16 +1,16 @@
 /**
- * Tests for the archive verdict the lane contest settles beside its choice.
- *
- * WHAT IS UNDER TEST is the gap `#181` opened: a contest that backs neither
- * candidate used to say nothing at all about the text already published, even
- * though that text is what ships when both candidates lose. The verdict is an
- * ORTHOGONAL BALLOT FIELD, so these cases check that it settles by the same
- * rule as the choice, and that its absence stays indistinguishable from an
- * artifact written before the question existed.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the archive verdict the lane contest settles beside its choice.
+ 
+ WHAT IS UNDER TEST is the gap `#181` opened: a contest that backs neither
+ candidate used to say nothing at all about the text already published, even
+ though that text is what ships when both candidates lose. The verdict is an
+ ORTHOGONAL BALLOT FIELD, so these cases check that it settles by the same
+ rule as the choice, and that its absence stays indistinguishable from an
+ artifact written before the question existed.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -30,16 +30,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Ballot that backed neither candidate and gave the archive a verdict.
- *
- * @param archive - what this judge made of the archive
- *
- * @returns Ballot carrying that verdict
- *
- * @example
- * ```ts
- * const ballot = judged({ archive: 'flawed', },);
- * ```
+ Ballot that backed neither candidate and gave the archive a verdict.
+ 
+ @param archive - what this judge made of the archive
+ 
+ @returns Ballot carrying that verdict
+ 
+ @example
+ ```ts
+ const ballot = judged({ archive: 'flawed', },);
+ ```
  */
 function judged(
   { archive, }: { readonly archive: ArchiveVerdict; },
@@ -56,18 +56,18 @@ function judged(
 }
 
 /**
- * Ballot that backed neither candidate and said nothing about the archive.
- *
- * STANDS FOR TWO SITUATIONS AT ONCE, deliberately: a model that ignored the
- * schema field, and a ballot stored before the field existed. The settling
- * rule must not be able to tell them apart.
- *
- * @returns Ballot with no archive answer
- *
- * @example
- * ```ts
- * const ballot = silent();
- * ```
+ Ballot that backed neither candidate and said nothing about the archive.
+ 
+ STANDS FOR TWO SITUATIONS AT ONCE, deliberately: a model that ignored the
+ schema field, and a ballot stored before the field existed. The settling
+ rule must not be able to tell them apart.
+ 
+ @returns Ballot with no archive answer
+ 
+ @example
+ ```ts
+ const ballot = silent();
+ ```
  */
 function silent(): LaneContestBallot {
   return {
@@ -81,16 +81,16 @@ function silent(): LaneContestBallot {
 }
 
 /**
- * Ballot that backed one lane, so the contest has a winner.
- *
- * @param archive - what this judge made of the archive
- *
- * @returns Ballot naming the repair lane
- *
- * @example
- * ```ts
- * const ballot = backsRepair({ archive: 'flawed', },);
- * ```
+ Ballot that backed one lane, so the contest has a winner.
+ 
+ @param archive - what this judge made of the archive
+ 
+ @returns Ballot naming the repair lane
+ 
+ @example
+ ```ts
+ const ballot = backsRepair({ archive: 'flawed', },);
+ ```
  */
 function backsRepair(
   { archive, }: { readonly archive: ArchiveVerdict; },
@@ -107,16 +107,16 @@ function backsRepair(
 }
 
 /**
- * Wraps ballots as the outcome the record builder takes.
- *
- * @param ballots - ballots this slice heard
- *
- * @returns Outcome carrying them, settled by the stage`s own rule
- *
- * @example
- * ```ts
- * const outcome = outcomeOf({ ballots, },);
- * ```
+ Wraps ballots as the outcome the record builder takes.
+ 
+ @param ballots - ballots this slice heard
+ 
+ @returns Outcome carrying them, settled by the stage`s own rule
+ 
+ @example
+ ```ts
+ const outcome = outcomeOf({ ballots, },);
+ ```
  */
 function outcomeOf(
   { ballots, }: { readonly ballots: readonly LaneContestBallot[]; },
@@ -227,7 +227,7 @@ await describe({
         + 'is why the exact-keys guard needs no exception for them',
       fn: async function omitsTheUnjudgedKey() {
         /**
-         * Verdict for a slice whose judges all ignored the archive question.
+         Verdict for a slice whose judges all ignored the archive question.
          */
         const { verdict, } = describeContestSlice({
           sliceIndex: 0,
@@ -250,7 +250,7 @@ await describe({
         + 'field recorded there would be read as a reason the winner won',
       fn: async function leavesWonSlicesAlone() {
         /**
-         * Verdict for a slice the repair lane won outright.
+         Verdict for a slice the repair lane won outright.
          */
         const { verdict, } = describeContestSlice({
           sliceIndex: 0,

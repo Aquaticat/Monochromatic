@@ -12,26 +12,26 @@ import type { ProducerInputComparisonRun, } from './producer-input-comparison-st
 //region Private retained output layout before and after content observation
 
 /**
- * Directory privacy includes special bits, not only group/other access.
+ Directory privacy includes special bits, not only group/other access.
  */
 const DIRECTORY_MODE = 0o700n;
 /**
- * Complete permission mask for BigInt filesystem observations.
+ Complete permission mask for BigInt filesystem observations.
  */
 const MODE_MASK = 0o7777n;
 /**
- * Verifies current private directory metadata without following a symlink leaf.
- *
- * @param path - fixed role inside the dedicated retained run
- *
- * @param run - independently captured comparison ownership
- *
- * @throws ProducerInputComparisonError when canonical identity, entry kind or permissions differ
- *
- * @example
- * ```ts
- * await comparisonOutputDirectory({ path, run });
- * ```
+ Verifies current private directory metadata without following a symlink leaf.
+ 
+ @param path - fixed role inside the dedicated retained run
+ 
+ @param run - independently captured comparison ownership
+ 
+ @throws ProducerInputComparisonError when canonical identity, entry kind or permissions differ
+ 
+ @example
+ ```ts
+ await comparisonOutputDirectory({ path, run });
+ ```
  */
 async function comparisonOutputDirectory({
   path,
@@ -41,7 +41,7 @@ async function comparisonOutputDirectory({
   readonly run: ProducerInputComparisonRun;
 },): Promise<void> {
   /**
-   * Point-in-time observations are not leases or creator authentication.
+   Point-in-time observations are not leases or creator authentication.
    */
   const state = await lstat(
     path,
@@ -58,20 +58,20 @@ async function comparisonOutputDirectory({
 }
 
 /**
- * Rechecks every fixed directory inventory before and after streamed artifact observation.
- *
- * @param inputRunDirectory - independently associated native run
- *
- * @param inputRunId - canonical observed namespace identity
- *
- * @param run - comparison ownership and dedicated native parent
- *
- * @throws ProducerInputComparisonError when directory privacy or a closed inventory differs
- *
- * @example
- * ```ts
- * await comparisonOutputLayout({ inputRunDirectory, inputRunId, run });
- * ```
+ Rechecks every fixed directory inventory before and after streamed artifact observation.
+ 
+ @param inputRunDirectory - independently associated native run
+ 
+ @param inputRunId - canonical observed namespace identity
+ 
+ @param run - comparison ownership and dedicated native parent
+ 
+ @throws ProducerInputComparisonError when directory privacy or a closed inventory differs
+ 
+ @example
+ ```ts
+ await comparisonOutputLayout({ inputRunDirectory, inputRunId, run });
+ ```
  */
 export async function comparisonOutputLayout({
   inputRunDirectory,
@@ -83,14 +83,14 @@ export async function comparisonOutputLayout({
   readonly run: ProducerInputComparisonRun;
 },): Promise<void> {
   /**
-   * Output paths remain fixed independently of completion fields.
+   Output paths remain fixed independently of completion fields.
    */
   const output = join(
     inputRunDirectory,
     'output'
   );
   /**
-   * Child home is an empty private role, not application cache storage.
+   Child home is an empty private role, not application cache storage.
    */
   const home = join(
     output,

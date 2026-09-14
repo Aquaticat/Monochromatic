@@ -1,10 +1,10 @@
 /**
- * Tests for per-entry benchmark preparation:
- * seeds are planted exactly once, both sides parse, the shared prompt
- * carries the seeded text, and planted ids line up with applications.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for per-entry benchmark preparation:
+ seeds are planted exactly once, both sides parse, the shared prompt
+ carries the seeded text, and planted ids line up with applications.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -19,17 +19,17 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Invented zh source of the prepared entry.
+ Invented zh source of the prepared entry.
  */
 const SOURCE_TEXT = '## 猫的日常\n\n小猫喜欢晒太阳。小猫也喜欢追蝴蝶。\n';
 
 /**
- * Clean invented translation the seed deletes from.
+ Clean invented translation the seed deletes from.
  */
 const TARGET_TEXT = '## A cat\'s day\n\nThe kitten loves sunbathing. The kitten also chases butterflies.\n';
 
 /**
- * Deletion seed removing the butterfly sentence.
+ Deletion seed removing the butterfly sentence.
  */
 const DELETE_BUTTERFLIES: SeededErrorSpec = {
   id: 'seed/omission-0',
@@ -72,7 +72,7 @@ await describe({
         },);
 
         /**
-         * Whole prompt text across every message, searched for leakage.
+         Whole prompt text across every message, searched for leakage.
          */
         const promptText = prepared
           .messages

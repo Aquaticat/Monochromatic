@@ -30,51 +30,51 @@ import {
 // Native Git writes only invented content inside individually owned repositories.
 
 /**
- * Fixture logger used by the same archive normalizer as production.
+ Fixture logger used by the same archive normalizer as production.
  */
 const l = tagged({ tag: 'archive-naming-fixture', },);
 /**
- * Native executable, never the current repository's command-policy wrapper.
+ Native executable, never the current repository's command-policy wrapper.
  */
 const REAL_GIT = await resolveGit();
 /**
- * Preparation electorate used to distinguish naming quorum from pair agreement.
+ Preparation electorate used to distinguish naming quorum from pair agreement.
  */
 const ROSTER_SIZE = 11;
 /**
- * Exact-half quorum rounded up for this fixture's configured electorate.
+ Exact-half quorum rounded up for this fixture's configured electorate.
  */
 const SUPPORTING_READERS = 6;
 /**
- * Invented entry path shared by ordinary fixtures.
+ Invented entry path shared by ordinary fixtures.
  */
 export const ARCHIVE_PATH = 'people/starlit-cat/page.en.md';
 /**
- * Invented prior reference, without any licensed corpus text.
+ Invented prior reference, without any licensed corpus text.
  */
 export const BEFORE_ARCHIVE = 'She joined 星猫亭.\n';
 /**
- * Invented current reference whose entire markup is replaced in history.
+ Invented current reference whose entire markup is replaced in history.
  */
 export const AFTER_ARCHIVE = 'She joined *Starlit Paws*.\n';
 /**
- * Whole marked occurrence used by default controls.
+ Whole marked occurrence used by default controls.
  */
 export const NAME_QUOTE = '*Starlit Paws*';
 
 /**
- * Runs native Git hermetically inside a disposable fixture.
- *
- * @param cloneDir - owned fixture directory
- *
- * @param args - literal Git arguments
- *
- * @returns Captured metadata without Git's final output newline
- *
- * @example
- * ```ts
- * const sha = await namingFixtureGit({ cloneDir, args: ['rev-parse', 'HEAD'] });
- * ```
+ Runs native Git hermetically inside a disposable fixture.
+ 
+ @param cloneDir - owned fixture directory
+ 
+ @param args - literal Git arguments
+ 
+ @returns Captured metadata without Git's final output newline
+ 
+ @example
+ ```ts
+ const sha = await namingFixtureGit({ cloneDir, args: ['rev-parse', 'HEAD'] });
+ ```
  */
 export async function namingFixtureGit({
   cloneDir,
@@ -84,7 +84,7 @@ export async function namingFixtureGit({
   readonly args: readonly string[];
 },): Promise<string> {
   /**
-   * Metadata-only command result.
+   Metadata-only command result.
    */
   const result = await spawn(
     REAL_GIT,
@@ -111,20 +111,20 @@ export async function namingFixtureGit({
 }
 
 /**
- * Commits one invented archive version at its literal path.
- *
- * @param cloneDir - owned fixture repository
- *
- * @param relPath - archive path inside the fixture
- *
- * @param text - next invented archive snapshot
- *
- * @returns Commit containing that snapshot
- *
- * @example
- * ```ts
- * const sha = await commitNamingArchive({ cloneDir, relPath: ARCHIVE_PATH, text: AFTER_ARCHIVE });
- * ```
+ Commits one invented archive version at its literal path.
+ 
+ @param cloneDir - owned fixture repository
+ 
+ @param relPath - archive path inside the fixture
+ 
+ @param text - next invented archive snapshot
+ 
+ @returns Commit containing that snapshot
+ 
+ @example
+ ```ts
+ const sha = await commitNamingArchive({ cloneDir, relPath: ARCHIVE_PATH, text: AFTER_ARCHIVE });
+ ```
  */
 export async function commitNamingArchive({
   cloneDir,
@@ -136,7 +136,7 @@ export async function commitNamingArchive({
   readonly text: string;
 },): Promise<string> {
   /**
-   * Location of the fixture's next archive version.
+   Location of the fixture's next archive version.
    */
   const path = join(
     cloneDir,
@@ -177,20 +177,20 @@ export async function commitNamingArchive({
 }
 
 /**
- * Creates a pinned two-version archive and exposes its owned repository for controls.
- *
- * @param before - invented predecessor
- *
- * @param after - invented current snapshot
- *
- * @param relPath - literal path, including unusual-path controls
- *
- * @returns Fixture with complete cleanup and immutable current pin
- *
- * @example
- * ```ts
- * await using fixture = await makeNamingArchive({});
- * ```
+ Creates a pinned two-version archive and exposes its owned repository for controls.
+ 
+ @param before - invented predecessor
+ 
+ @param after - invented current snapshot
+ 
+ @param relPath - literal path, including unusual-path controls
+ 
+ @returns Fixture with complete cleanup and immutable current pin
+ 
+ @example
+ ```ts
+ await using fixture = await makeNamingArchive({});
+ ```
  */
 export async function makeNamingArchive({
   before = BEFORE_ARCHIVE,
@@ -207,7 +207,7 @@ export async function makeNamingArchive({
   readonly archiveText: string;
 }> {
   /**
-   * Individually disposable repository; no user/shared Git state is mutated.
+   Individually disposable repository; no user/shared Git state is mutated.
    */
   const cloneDir = await mkdtemp(join(
     tmpdir(),
@@ -218,7 +218,7 @@ export async function makeNamingArchive({
     args: ['init'],
   },);
   /**
-   * Sole predecessor of the naming revision.
+   Sole predecessor of the naming revision.
    */
   const parentCommit = await commitNamingArchive({
     cloneDir,
@@ -226,7 +226,7 @@ export async function makeNamingArchive({
     text: before,
   },);
   /**
-   * Pinned current naming revision.
+   Pinned current naming revision.
    */
   const commitSha = await commitNamingArchive({
     cloneDir,
@@ -264,22 +264,22 @@ export async function makeNamingArchive({
 // Fixture observations declare syntactic use only, never correct naming or identity.
 
 /**
- * Anchors an invented observation using production parsing and hashing.
- *
- * @param archiveText - immutable normalized fixture archive
- *
- * @param quotedText - exact occurrence to classify
- *
- * @param kind - chosen use, including non-reference controls
- *
- * @param startOffset - caller-known occurrence for repeated-line fixtures
- *
- * @returns Observation supported by the configured preparation quorum
- *
- * @example
- * ```ts
- * const use = namingUse({ archiveText: AFTER_ARCHIVE });
- * ```
+ Anchors an invented observation using production parsing and hashing.
+ 
+ @param archiveText - immutable normalized fixture archive
+ 
+ @param quotedText - exact occurrence to classify
+ 
+ @param kind - chosen use, including non-reference controls
+ 
+ @param startOffset - caller-known occurrence for repeated-line fixtures
+ 
+ @returns Observation supported by the configured preparation quorum
+ 
+ @example
+ ```ts
+ const use = namingUse({ archiveText: AFTER_ARCHIVE });
+ ```
  */
 export function namingUse({
   archiveText,
@@ -293,22 +293,22 @@ export function namingUse({
   readonly startOffset?: number;
 },): InitialArchiveUse {
   /**
-   * Full parsed initial archive carrying absolute offsets.
+   Full parsed initial archive carrying absolute offsets.
    */
   const document = parseDocument({ text: archiveText, },);
   /**
-   * Exclusive end of the complete occurrence.
+   Exclusive end of the complete occurrence.
    */
   const endOffset = startOffset + quotedText.length;
   /**
-   * Containing block makes the fixture satisfy production anchor identity.
+   Containing block makes the fixture satisfy production anchor identity.
    */
   const node = nonNullishOrThrow(document.nodes
     .find(function contains(candidate,): boolean {
     return (startOffset >= candidate.startOffset) && (endOffset <= candidate.endOffset);
   },),);
   /**
-   * Original electorate, retaining silent reader identities.
+   Original electorate, retaining silent reader identities.
    */
   const configuredModelIds = Array.from(
     { length: ROSTER_SIZE, },

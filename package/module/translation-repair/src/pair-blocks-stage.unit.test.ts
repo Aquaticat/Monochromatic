@@ -1,14 +1,14 @@
 /**
- * Tests for the pairing stage: what the roster has to agree on before a
- * correspondence is kept, and what happens when it agrees on nothing.
- *
- * WHY AGREEMENT IS PER PAIR. Two models can agree on nine correspondences and
- * differ on the tenth, and discarding both replies over the tenth throws away
- * the nine. The stage counts each `source,target` on its own.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the pairing stage: what the roster has to agree on before a
+ correspondence is kept, and what happens when it agrees on nothing.
+ 
+ WHY AGREEMENT IS PER PAIR. Two models can agree on nine correspondences and
+ differ on the tenth, and discarding both replies over the tenth throws away
+ the nine. The stage counts each `source,target` on its own.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -23,7 +23,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Two blocks standing in for an original side.
+ Two blocks standing in for an original side.
  */
 const SOURCE = [
   {
@@ -37,7 +37,7 @@ const SOURCE = [
 ];
 
 /**
- * Two blocks standing in for a translation.
+ Two blocks standing in for a translation.
  */
 const TARGET = [
   {
@@ -51,7 +51,7 @@ const TARGET = [
 ];
 
 /**
- * Roster of two, which is the smallest that can agree or disagree.
+ Roster of two, which is the smallest that can agree or disagree.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -59,44 +59,44 @@ const ROSTER = [
 ] as const;
 
 /**
- * Logger for the stage under test.
+ Logger for the stage under test.
  */
 const l = tagged({ tag: 'pair-blocks-stage-test', },);
 
 /**
- * Per-call bound, generous because the transport answers instantly.
+ Per-call bound, generous because the transport answers instantly.
  */
 const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
- * Builds a client whose every model replies with the given pairing JSON.
- *
- * @param replyByModel - reply body per model id, in roster order
- *
- * @returns Client over a canned transport
- *
- * @example
- * ```ts
- * const client = cannedClient({ replyByModel: ['{"pairs":[]}', '{"pairs":[]}'], },);
- * ```
+ Builds a client whose every model replies with the given pairing JSON.
+ 
+ @param replyByModel - reply body per model id, in roster order
+ 
+ @returns Client over a canned transport
+ 
+ @example
+ ```ts
+ const client = cannedClient({ replyByModel: ['{"pairs":[]}', '{"pairs":[]}'], },);
+ ```
  */
 function cannedClient(
   { replyByModel, }: { readonly replyByModel: readonly string[]; },
 ) {
   /**
-   * Calls served so far, so each model gets its own reply.
+   Calls served so far, so each model gets its own reply.
    */
   const served: string[] = [];
   return createSyntheticClient({
     apiKey: 'test-key',
     transport: async function cannedTransport(exchange,) {
       /**
-       * Which reply this call receives.
+       Which reply this call receives.
        */
       const at = served.length;
       served.push(exchange.label,);
       /**
-       * This model's reply text.
+       This model's reply text.
        */
       const content = replyByModel[at] ?? replyByModel[0] ?? '';
 

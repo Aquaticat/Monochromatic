@@ -1,16 +1,16 @@
 /**
- * Tests for what happens to a translated slice that fails structural
- * validation.
- *
- * By user decision of 2026-08-14 it is not dropped: it goes back to the model
- * that wrote it, in the same exchange, and that model answers with a revision,
- * an inability, or a defence of what it produced. Each of those three lands
- * differently, and the third is the one no filter could have collected, so all
- * three are pinned here.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for what happens to a translated slice that fails structural
+ validation.
+ 
+ By user decision of 2026-08-14 it is not dropped: it goes back to the model
+ that wrote it, in the same exchange, and that model answers with a revision,
+ an inability, or a defence of what it produced. Each of those three lands
+ differently, and the third is the one no filter could have collected, so all
+ three are pinned here.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -33,37 +33,37 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the repairs under test.
+ Logger for the repairs under test.
  */
 const l = tagged({ tag: 'translate-repair-test', },);
 
 /**
- * Original the candidates render: a heading and a paragraph.
+ Original the candidates render: a heading and a paragraph.
  */
 const SOURCE_TEXT = `## 猫猫的一天
 
 它在窗台上打盹。`;
 
 /**
- * Translation matching that structure.
+ Translation matching that structure.
  */
 const GOOD_TEXT = `## A Day in the Cat's Life
 
 It dozes on the windowsill.`;
 
 /**
- * Translation that merged the heading away, which validation reports.
+ Translation that merged the heading away, which validation reports.
  */
 const MERGED_TEXT = 'A day in the cat\'s life: it dozes on the windowsill.';
 
 /**
- * Model whose candidate every case repairs.
+ Model whose candidate every case repairs.
  */
 const TRANSLATOR = 'hf:moonshotai/Kimi-K3';
 
 /**
- * Messages the candidate was produced by, stood in for since the repair turn
- * only has to continue them.
+ Messages the candidate was produced by, stood in for since the repair turn
+ only has to continue them.
  */
 const PRIOR_MESSAGES: readonly ChatMessage[] = [
   {
@@ -77,7 +77,7 @@ const PRIOR_MESSAGES: readonly ChatMessage[] = [
 ];
 
 /**
- * What the follow-up call saw and answered.
+ What the follow-up call saw and answered.
  */
 type RepairLog = {
   calls: number;
@@ -85,18 +85,18 @@ type RepairLog = {
 };
 
 /**
- * Client answering the follow-up turn from a script.
- *
- * @param answer - repair reply it returns
- *
- * @param log - shared record the cases assert on
- *
- * @returns Client honoring that script
- *
- * @example
- * ```ts
- * const client = repairClient({ answer, log, },);
- * ```
+ Client answering the follow-up turn from a script.
+ 
+ @param answer - repair reply it returns
+ 
+ @param log - shared record the cases assert on
+ 
+ @returns Client honoring that script
+ 
+ @example
+ ```ts
+ const client = repairClient({ answer, log, },);
+ ```
  */
 function repairClient(
   {
@@ -136,26 +136,26 @@ function repairClient(
 }
 
 /**
- * Runs one candidate through validation and any follow-up it earns.
- *
- * @param translation - what the translator returned
- *
- * @param answer - what it answers when asked about the findings
- *
- * @param sourceText - original candidate renders
- *
- * @param incumbentText - translation already in the document, blank by default
- * so most cases exercise a slice with none
- *
- * @param pageText - text the candidate replaces, left to the incumbent by
- * default because that is what a translator replaces
- *
- * @returns Final voices, findings, and what the follow-up call saw
- *
- * @example
- * ```ts
- * const { findings, } = await runRepair({ translation, answer, },);
- * ```
+ Runs one candidate through validation and any follow-up it earns.
+ 
+ @param translation - what the translator returned
+ 
+ @param answer - what it answers when asked about the findings
+ 
+ @param sourceText - original candidate renders
+ 
+ @param incumbentText - translation already in the document, blank by default
+ so most cases exercise a slice with none
+ 
+ @param pageText - text the candidate replaces, left to the incumbent by
+ default because that is what a translator replaces
+ 
+ @returns Final voices, findings, and what the follow-up call saw
+ 
+ @example
+ ```ts
+ const { findings, } = await runRepair({ translation, answer, },);
+ ```
  */
 async function runRepair(
   {
@@ -173,7 +173,7 @@ async function runRepair(
   },
 ) {
   /**
-   * What the follow-up call received.
+   What the follow-up call received.
    */
   const log: RepairLog = {
     calls: 0,
@@ -181,7 +181,7 @@ async function runRepair(
   };
 
   /**
-   * Outcome over one heard voice.
+   Outcome over one heard voice.
    */
   const repaired = await repairInvalidCandidates({
     client: repairClient({
@@ -416,14 +416,14 @@ await describe({
         expect(log.messages,).toHaveLength(PRIOR_MESSAGES.length + 2,);
         expect(log.messages[PRIOR_MESSAGES.length]?.role,).toBe('assistant',);
         /**
-         * The merged assistant turn, whose text carries the candidate.
+         The merged assistant turn, whose text carries the candidate.
          */
         const merged = log.messages[PRIOR_MESSAGES.length];
         if (merged === undefined)
           throw new Error('a merged turn by construction',);
         expect(messageText({ message: merged, },),).toContain(MERGED_TEXT,);
         /**
-         * The final turn, whose text names the structure being asked about.
+         The final turn, whose text names the structure being asked about.
          */
         const asked = log.messages.at(-1,);
         if (asked === undefined)

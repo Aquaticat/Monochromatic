@@ -15,42 +15,42 @@ import { tallyErrorText, } from './tally-error-text.ts';
 //region Entry failure scheduling
 
 /**
- * Tally status and scheduler outcome for one caught entry error.
- *
- * @example
- * ```ts
- * const classified = entryErrorOutcome({ error, });
- * ```
+ Tally status and scheduler outcome for one caught entry error.
+ 
+ @example
+ ```ts
+ const classified = entryErrorOutcome({ error, });
+ ```
  */
 export type EntryErrorOutcome = {
   /**
-   * Operational tally state.
+   Operational tally state.
    */
   readonly status: 'ERROR' | 'INCOMPLETE';
 
   /**
-   * Whether whole-entry scheduler may resume cached progress.
+   Whether whole-entry scheduler may resume cached progress.
    */
   readonly outcome: Exclude<EntryOutcome, { readonly kind: 'settled'; }>;
 };
 
 /**
- * Keeps stage-local quality work and completeness invariants out of whole-entry retry.
- *
- * @param error - caught entry failure
- *
- * @returns Tally status and scheduler disposition
- *
- * @example
- * ```ts
- * const classified = entryErrorOutcome({ error: new Error('transport'), });
- * ```
+ Keeps stage-local quality work and completeness invariants out of whole-entry retry.
+ 
+ @param error - caught entry failure
+ 
+ @returns Tally status and scheduler disposition
+ 
+ @example
+ ```ts
+ const classified = entryErrorOutcome({ error: new Error('transport'), });
+ ```
  */
 export function entryErrorOutcome(
   { error, }: { readonly error: unknown; },
 ): EntryErrorOutcome {
   /**
-   * Whether error names stage-local incomplete or invariant work.
+   Whether error names stage-local incomplete or invariant work.
    */
   const stopped = (error instanceof ConsolidationStandingIneligibleError)
     || (error instanceof ArchiveOriginalCompletenessError)
@@ -75,23 +75,23 @@ export function entryErrorOutcome(
 }
 
 /**
- * Prints the TALLY line for an entry that raised out of its pipeline, and
- * returns the scheduler's disposition for it.
- *
- * @param entryId - entry that failed
- *
- * @param error - what it raised
- *
- * @param durationMs - wall time before it failed
- *
- * @param aborted - whether the hard-ceiling abort fired
- *
- * @returns Scheduling disposition, never a settlement
- *
- * @example
- * ```ts
- * return tallyCaughtEntry({ entryId: entry.id, error, durationMs, aborted, },);
- * ```
+ Prints the TALLY line for an entry that raised out of its pipeline, and
+ returns the scheduler's disposition for it.
+ 
+ @param entryId - entry that failed
+ 
+ @param error - what it raised
+ 
+ @param durationMs - wall time before it failed
+ 
+ @param aborted - whether the hard-ceiling abort fired
+ 
+ @returns Scheduling disposition, never a settlement
+ 
+ @example
+ ```ts
+ return tallyCaughtEntry({ entryId: entry.id, error, durationMs, aborted, },);
+ ```
  */
 export function tallyCaughtEntry(
   {
@@ -107,11 +107,11 @@ export function tallyCaughtEntry(
   },
 ): EntryErrorOutcome['outcome'] {
   /**
-   * Failure text for the TALLY line, named or quoted per its class and capped.
+   Failure text for the TALLY line, named or quoted per its class and capped.
    */
   const message = tallyErrorText({ error, },);
   /**
-   * Tally and retry classification for caught state.
+   Tally and retry classification for caught state.
    */
   const classified = entryErrorOutcome({ error, },);
   // THE FINDINGS REACH THE LOG, one line each, since the tally line carries the

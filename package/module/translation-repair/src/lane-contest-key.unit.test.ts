@@ -1,15 +1,15 @@
 /**
- * Tests for the lane contest`s cache key.
- *
- * THE KEY HAS NO OTHER WITNESS. Persist and resume both call the same function,
- * so a change to how it is derived produces no failure anywhere: every run
- * simply misses the cache and buys every contested slice again, and the only
- * symptom is quota. The golden hash below is the witness, and it exists to fail
- * when the derivation moves without the version moving with it.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the lane contest`s cache key.
+ 
+ THE KEY HAS NO OTHER WITNESS. Persist and resume both call the same function,
+ so a change to how it is derived produces no failure anywhere: every run
+ simply misses the cache and buys every contested slice again, and the only
+ symptom is quota. The golden hash below is the witness, and it exists to fail
+ when the derivation moves without the version moving with it.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -24,7 +24,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Roster every case here asks.
+ Roster every case here asks.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -32,34 +32,34 @@ const ROSTER = [
 ] as const;
 
 /**
- * Original of the slice every case describes.
+ Original of the slice every case describes.
  */
 const SOURCE_NAP = '猫猫在书店的阁楼里睡觉。';
 
 /**
- * Archive`s own English for it.
+ Archive`s own English for it.
  */
 const ARCHIVE_NAP = 'The cat sleeps in the bookshop attic.';
 
 /**
- * Wording the repair lane would ship.
+ Wording the repair lane would ship.
  */
 const REPAIR_NAP = 'The cat naps in the bookshop attic.';
 
 /**
- * Wording the translate lane would ship.
+ Wording the translate lane would ship.
  */
 const TRANSLATE_NAP = 'The cat dozes in the attic of the bookshop.';
 
 /**
- * Every input to the key, in one place, so a case changes exactly one of them.
- *
- * @returns Key inputs for the slice above
- *
- * @example
- * ```ts
- * const key = laneContestSliceKey(catInputs(),);
- * ```
+ Every input to the key, in one place, so a case changes exactly one of them.
+ 
+ @returns Key inputs for the slice above
+ 
+ @example
+ ```ts
+ const key = laneContestSliceKey(catInputs(),);
+ ```
  */
 function catInputs(): Parameters<typeof laneContestSliceKey>[0] {
   return {
@@ -82,7 +82,7 @@ await describe({
         + 'nothing else would notice',
       fn: async () => {
         /**
-         * Key these fixed inputs derive today.
+         Key these fixed inputs derive today.
          */
         const key = laneContestSliceKey(catInputs(),);
         // MOVED ON 2026-08-29 when the fixture roster replaced GLM-5.2 with

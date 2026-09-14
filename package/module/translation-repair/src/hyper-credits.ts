@@ -20,46 +20,46 @@ import { isJsonRecord, } from './json-guard.ts';
 // not. Quota reads cost nothing, so a driver may poll.
 
 /**
- * Balance at one instant, as this provider reports it.
- *
- * @example
- * ```ts
- * const credits: HyperCredits = { balance: 249, };
- * ```
+ Balance at one instant, as this provider reports it.
+ 
+ @example
+ ```ts
+ const credits: HyperCredits = { balance: 249, };
+ ```
  */
 export type HyperCredits = {
   /**
-   * Hypercredits still available to spend.
+   Hypercredits still available to spend.
    */
   readonly balance: number;
 };
 
 /**
- * Signals a `/credits` body that refused to parse or lacked its one field;
- * always a provider protocol failure, never a model defect.
- *
- * @example
- * ```ts
- * throw new CreditsShapeError({ detail: 'balance is not a number', },);
- * ```
+ Signals a `/credits` body that refused to parse or lacked its one field;
+ always a provider protocol failure, never a model defect.
+ 
+ @example
+ ```ts
+ throw new CreditsShapeError({ detail: 'balance is not a number', },);
+ ```
  */
 export class CreditsShapeError extends Error {
   /**
-   * Declares this message safe to forward: it names the field that failed its shape, never the body it came from.
+   Declares this message safe to forward: it names the field that failed its shape, never the body it came from.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds failure naming the field or parse step at fault.
-   *
-   * @param detail - which expectation the body violated
-   *
-   * @param cause - underlying parse error when JSON itself failed
-   *
-   * @example
-   * ```ts
-   * new CreditsShapeError({ detail: 'body is not valid JSON', cause: error, },);
-   * ```
+   Builds failure naming the field or parse step at fault.
+   
+   @param detail - which expectation the body violated
+   
+   @param cause - underlying parse error when JSON itself failed
+   
+   @example
+   ```ts
+   new CreditsShapeError({ detail: 'body is not valid JSON', cause: error, },);
+   ```
    */
   public constructor(
     {
@@ -82,18 +82,18 @@ export class CreditsShapeError extends Error {
 }
 
 /**
- * Parses body text as JSON, converting parse failures into shape errors.
- *
- * @param bodyText - raw response body
- *
- * @returns Parsed JSON value
- *
- * @throws {@link CreditsShapeError} when body is not valid JSON
- *
- * @example
- * ```ts
- * const parsed = parseCreditsJson({ bodyText, },);
- * ```
+ Parses body text as JSON, converting parse failures into shape errors.
+ 
+ @param bodyText - raw response body
+ 
+ @returns Parsed JSON value
+ 
+ @throws {@link CreditsShapeError} when body is not valid JSON
+ 
+ @example
+ ```ts
+ const parsed = parseCreditsJson({ bodyText, },);
+ ```
  */
 function parseCreditsJson(
   { bodyText, }: { readonly bodyText: string; },
@@ -110,30 +110,30 @@ function parseCreditsJson(
 }
 
 /**
- * Parses one `/credits` body into the typed balance.
- *
- * REFUSES A BALANCE THAT IS NOT FINITE, which a JSON body cannot carry but a
- * gateway rewriting one could produce. A non-finite balance would compare
- * against every threshold as though the budget were unlimited, which is the one
- * wrong answer this reader exists to prevent.
- *
- * @param bodyText - raw 200-response body
- *
- * @returns Typed balance
- *
- * @throws {@link CreditsShapeError} when body is not JSON, or balance is
- * missing, mistyped, or not finite
- *
- * @example
- * ```ts
- * const credits = parseHyperCredits({ bodyText: reply.bodyText, },);
- * ```
+ Parses one `/credits` body into the typed balance.
+ 
+ REFUSES A BALANCE THAT IS NOT FINITE, which a JSON body cannot carry but a
+ gateway rewriting one could produce. A non-finite balance would compare
+ against every threshold as though the budget were unlimited, which is the one
+ wrong answer this reader exists to prevent.
+ 
+ @param bodyText - raw 200-response body
+ 
+ @returns Typed balance
+ 
+ @throws {@link CreditsShapeError} when body is not JSON, or balance is
+ missing, mistyped, or not finite
+ 
+ @example
+ ```ts
+ const credits = parseHyperCredits({ bodyText: reply.bodyText, },);
+ ```
  */
 export function parseHyperCredits(
   { bodyText, }: { readonly bodyText: string; },
 ): HyperCredits {
   /**
-   * Whole parsed body, probed field by field.
+   Whole parsed body, probed field by field.
    */
   const parsed = parseCreditsJson({ bodyText, },);
 
@@ -141,7 +141,7 @@ export function parseHyperCredits(
     throw new CreditsShapeError({ detail: 'body is not a JSON object', },);
 
   /**
-   * Balance as delivered, before its type is checked.
+   Balance as delivered, before its type is checked.
    */
   const { balance, } = parsed;
 

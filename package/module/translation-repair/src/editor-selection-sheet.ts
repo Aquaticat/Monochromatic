@@ -4,13 +4,13 @@
 // glossary reached the select sheet.
 
 /**
- * What the per-envelope selection asks.
+ What the per-envelope selection asks.
  */
 export const ENVELOPE_SELECTION_TASK =
   'Each candidate replaces the SAME passage of an English translation of the Chinese ORIGINAL below.';
 
 /**
- * How the per-envelope selection decides, earlier criteria outranking later.
+ How the per-envelope selection decides, earlier criteria outranking later.
  */
 export const ENVELOPE_SELECTION_CRITERIA: readonly string[] = [
   'Faithfulness to the ORIGINAL: no content added, dropped, or altered in meaning.',
@@ -19,13 +19,13 @@ export const ENVELOPE_SELECTION_CRITERIA: readonly string[] = [
 ];
 
 /**
- * What the whole-chunk selection asks.
+ What the whole-chunk selection asks.
  */
 export const CHUNK_SELECTION_TASK =
   'Each candidate is a full English translation of the Chinese ORIGINAL below, after repairs were applied.';
 
 /**
- * How the whole-chunk selection decides, earlier criteria outranking later.
+ How the whole-chunk selection decides, earlier criteria outranking later.
  */
 export const CHUNK_SELECTION_CRITERIA: readonly string[] = [
   'Faithfulness to the ORIGINAL: no content added, dropped, or altered in meaning.',

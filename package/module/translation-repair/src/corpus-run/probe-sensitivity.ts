@@ -39,16 +39,16 @@ import {
 // the name to the value before a run spends anything.
 
 /**
- * Runs one arm and prints what the probe said about it.
- *
- * @param arm - region, list, issue, and framing to send
- *
- * @param client - client shared by every arm
- *
- * @example
- * ```ts
- * await probeOne({ arm: SENSITIVITY_ARMS[0], client, },);
- * ```
+ Runs one arm and prints what the probe said about it.
+ 
+ @param arm - region, list, issue, and framing to send
+ 
+ @param client - client shared by every arm
+ 
+ @example
+ ```ts
+ await probeOne({ arm: SENSITIVITY_ARMS[0], client, },);
+ ```
  */
 async function probeOne(
   {
@@ -60,7 +60,7 @@ async function probeOne(
   },
 ): Promise<void> {
   /**
-   * Report for this single region.
+   Report for this single region.
    */
   const report = await runIntroducedDefectProbe({
     client,
@@ -77,12 +77,12 @@ async function probeOne(
   },);
 
   /**
-   * Screened tally of the single region.
+   Screened tally of the single region.
    */
   const [tally,] = report.regions;
 
   /**
-   * Region the line names.
+   Region the line names.
    */
   const { region, } = arm;
 
@@ -106,16 +106,16 @@ async function probeOne(
 }
 
 /**
- * Runs every arm in order and prints how to read the lines.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Runs every arm in order and prints how to read the lines.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * One client for the whole instrument, counted on the run-wide seat tally.
+   One client for the whole instrument, counted on the run-wide seat tally.
    */
   const client = createRunClient();
 

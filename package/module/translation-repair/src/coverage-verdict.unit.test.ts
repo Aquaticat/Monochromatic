@@ -1,14 +1,14 @@
 /**
- * Tests for what a roster's coverage replies add up to.
- *
- * The asymmetry these pin: coverage can be proven, by pointing at the English
- * carrying the passage, and absence cannot be, since nothing exhibits text that
- * is not there. A claim nobody can anchor is therefore neither proof of coverage
- * nor a vote for absence.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for what a roster's coverage replies add up to.
+ 
+ The asymmetry these pin: coverage can be proven, by pointing at the English
+ carrying the passage, and absence cannot be, since nothing exhibits text that
+ is not there. A claim nobody can anchor is therefore neither proof of coverage
+ nor a vote for absence.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -26,7 +26,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Translation every quote is checked against.
+ Translation every quote is checked against.
  */
 const TARGET_TEXT = `The cat sleeps on the windowsill each morning and naps on its cushion at noon.
 
@@ -34,7 +34,7 @@ She watches the birds outside.
 `;
 
 /**
- * That translation as an anchor target.
+ That translation as an anchor target.
  */
 const TARGET = {
   text: TARGET_TEXT,
@@ -42,20 +42,20 @@ const TARGET = {
 };
 
 /**
- * Builds one heard voice carrying a coverage reply.
- *
- * @param modelId - roster member the reply came from
- *
- * @param coverage - degree it claims
- *
- * @param quote - English it points at
- *
- * @returns Voice shaped as the roster returns them
- *
- * @example
- * ```ts
- * const voice = voiceOf({ modelId: 'hf:cat/Cat-A' as RosterModelId, coverage: 'none', quote: '', },);
- * ```
+ Builds one heard voice carrying a coverage reply.
+ 
+ @param modelId - roster member the reply came from
+ 
+ @param coverage - degree it claims
+ 
+ @param quote - English it points at
+ 
+ @returns Voice shaped as the roster returns them
+ 
+ @example
+ ```ts
+ const voice = voiceOf({ modelId: 'hf:cat/Cat-A' as RosterModelId, coverage: 'none', quote: '', },);
+ ```
  */
 function voiceOf(
   {

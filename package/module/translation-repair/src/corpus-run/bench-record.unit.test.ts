@@ -1,15 +1,15 @@
 /**
- * Tests for the client wrapper that prices a bench run.
- *
- * Every number the roster-width comparison rests on is read off these rows, and
- * a wrapper that mispriced an exchange would print a confident table nobody
- * could tell was wrong. The split between what a call SENDS and what it gets
- * BACK is the part under test: seating one more producer resends the same
- * prompt, so the two halves answer different questions about width.
- *
- * Fixtures are invented. No corpus content appears here.
- *
- * @module
+ Tests for the client wrapper that prices a bench run.
+ 
+ Every number the roster-width comparison rests on is read off these rows, and
+ a wrapper that mispriced an exchange would print a confident table nobody
+ could tell was wrong. The split between what a call SENDS and what it gets
+ BACK is the part under test: seating one more producer resends the same
+ prompt, so the two halves answer different questions about width.
+ 
+ Fixtures are invented. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -25,17 +25,17 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Model standing in for whichever one a stage seated.
+ Model standing in for whichever one a stage seated.
  */
 const CAT_MODEL = 'hf:Qwen/Qwen3.8-27B' as const;
 
 /**
- * Signal no fixture here ever aborts.
+ Signal no fixture here ever aborts.
  */
 const OPEN_SIGNAL = new AbortController().signal;
 
 /**
- * Free-text request the wrapper forwards.
+ Free-text request the wrapper forwards.
  */
 const TEXT_REQUEST = {
   modelId: CAT_MODEL,
@@ -44,7 +44,7 @@ const TEXT_REQUEST = {
 };
 
 /**
- * Schema-validated request, which names its stage by the schema it asked for.
+ Schema-validated request, which names its stage by the schema it asked for.
  */
 const JSON_REQUEST = {
   ...TEXT_REQUEST,
@@ -61,18 +61,18 @@ const JSON_REQUEST = {
 };
 
 /**
- * Builds a client whose exchanges answer exactly what a case scripts.
- *
- * @param reply - what a free-text exchange returns
- *
- * @param outcome - what a schema exchange returns, or `throw` to raise instead
- *
- * @returns Client the wrapper can wrap, plus every quota read it served
- *
- * @example
- * ```ts
- * const inner = scriptedClient({ reply: { text: 'mew', }, },);
- * ```
+ Builds a client whose exchanges answer exactly what a case scripts.
+ 
+ @param reply - what a free-text exchange returns
+ 
+ @param outcome - what a schema exchange returns, or `throw` to raise instead
+ 
+ @returns Client the wrapper can wrap, plus every quota read it served
+ 
+ @example
+ ```ts
+ const inner = scriptedClient({ reply: { text: 'mew', }, },);
+ ```
  */
 function scriptedClient(
   { reply, outcome, }: {
@@ -87,16 +87,16 @@ function scriptedClient(
   readonly quotaCalls: readonly string[];
 } {
   /**
-   * Quota reads this client served, which must stay off the rows.
+   Quota reads this client served, which must stay off the rows.
    */
   const quotaCalls: string[] = [];
 
   /**
-   * Scripted client before it is handed over as one.
-   *
-   * Cast once here rather than shaped to the contract: the point of the fixture
-   * is what comes BACK from an exchange, and scripting a refusal or a bare text
-   * reply per case is what the rows under test are built from.
+   Scripted client before it is handed over as one.
+   
+   Cast once here rather than shaped to the contract: the point of the fixture
+   is what comes BACK from an exchange, and scripting a refusal or a bare text
+   reply per case is what the rows under test are built from.
    */
   const client = {
     chatText: async function chatText(): Promise<unknown> {
@@ -130,7 +130,7 @@ await describe({
         + 'rather than as the bench would have derived',
       fn: async () => {
         /**
-         * Wrapper over a server reporting a total larger than both halves.
+         Wrapper over a server reporting a total larger than both halves.
          */
         const recorder = recordingClient({ inner: scriptedClient({ reply: {
           text: 'The cat naps.',
@@ -140,7 +140,7 @@ await describe({
           .chatText(TEXT_REQUEST,);
 
         /**
-         * Row that exchange left.
+         Row that exchange left.
          */
         const row = recorder.calls[0] as BenchCall;
         expect(row.promptTokens,).toBe(40,);
@@ -160,7 +160,7 @@ await describe({
         + 'and records zeros rather than a guess when it reports no usage at all',
       fn: async () => {
         /**
-         * Wrapper over a server that omits the total.
+         Wrapper over a server that omits the total.
          */
         const summing = recordingClient({ inner: scriptedClient({ reply: {
           text: 'The cat stretches.',
@@ -171,7 +171,7 @@ await describe({
         expect((summing.calls[0] as BenchCall).tokens,).toBe(12,);
 
         /**
-         * Wrapper over a server that reports no usage block.
+         Wrapper over a server that reports no usage block.
          */
         const silent = recordingClient({
           inner: scriptedClient({ reply: { text: 'The cat blinks.', }, },).client,
@@ -180,7 +180,7 @@ await describe({
           .chatText(TEXT_REQUEST,);
 
         /**
-         * Row from the silent server.
+         Row from the silent server.
          */
         const row = silent.calls[0] as BenchCall;
         expect(row.promptTokens,).toBe(0,);
@@ -194,7 +194,7 @@ await describe({
         + 'so a refusal costs its tokens on the row that says it refused',
       fn: async () => {
         /**
-         * Wrapper over a server refusing the ballot.
+         Wrapper over a server refusing the ballot.
          */
         const recorder = recordingClient({ inner: scriptedClient({ outcome: {
           kind: 'refusal-shaped',
@@ -205,7 +205,7 @@ await describe({
           .chatJson(JSON_REQUEST,);
 
         /**
-         * Row that refusal left.
+         Row that refusal left.
          */
         const row = recorder.calls[0] as BenchCall;
         expect(row.schema,).toBe('nap-ballot',);
@@ -220,12 +220,12 @@ await describe({
         + 'is the commonest cost under provider load and a wrapper that swallowed it would report a cheaper run than happened',
       fn: async () => {
         /**
-         * Wrapper over a server that drops the connection.
+         Wrapper over a server that drops the connection.
          */
         const recorder = recordingClient({ inner: scriptedClient({ outcome: 'throw', },).client, },);
 
         /**
-         * Failure the wrapper rethrew.
+         Failure the wrapper rethrew.
          */
         let caught: unknown;
         try {
@@ -238,7 +238,7 @@ await describe({
         expect(caught,).toBeInstanceOf(Error,);
 
         /**
-         * Row the failure left.
+         Row the failure left.
          */
         const row = recorder.calls[0] as BenchCall;
         expect(row.outcome
@@ -255,12 +255,12 @@ await describe({
       name: 'forwards a quota read without recording it, since reading quota costs no generation',
       fn: async () => {
         /**
-         * Inner client counting quota reads.
+         Inner client counting quota reads.
          */
         const inner = scriptedClient({},);
 
         /**
-         * Wrapper over it.
+         Wrapper over it.
          */
         const recorder = recordingClient({ inner: inner.client, },);
         await recorder.client

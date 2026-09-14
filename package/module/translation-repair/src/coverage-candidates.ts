@@ -24,86 +24,86 @@ import type { RepairDocument, } from './parse-document.ts';
 // in step by hand until refusals are reported structurally.
 
 /**
- * One passage no pairing covers.
- *
- * @example
- * ```ts
- * const candidate: CoverageCandidate = { scale: 'section', sourceIndex: 12, sourceText, };
- * ```
+ One passage no pairing covers.
+ 
+ @example
+ ```ts
+ const candidate: CoverageCandidate = { scale: 'section', sourceIndex: 12, sourceText, };
+ ```
  */
 export type CoverageCandidate = {
   /**
-   * A block inside a section both sides carry.
+   A block inside a section both sides carry.
    */
   readonly scale: 'block';
 
   /**
-   * Which section pair it sits in.
+   Which section pair it sits in.
    */
   readonly pairIndex: number;
 
   /**
-   * Which block of that section's original side.
+   Which block of that section's original side.
    */
   readonly sourceIndex: number;
 
   /**
-   * Text of the passage, which is what the coverage question is about.
+   Text of the passage, which is what the coverage question is about.
    */
   readonly sourceText: string;
 } | {
   /**
-   * A whole section the matcher paired with nothing.
+   A whole section the matcher paired with nothing.
    */
   readonly scale: 'section';
 
   /**
-   * Which section of the original.
+   Which section of the original.
    */
   readonly sourceIndex: number;
 
   /**
-   * Text of the whole section, heading included.
+   Text of the whole section, heading included.
    */
   readonly sourceText: string;
 };
 
 /**
- * Heading text of a chunk, or empty for a preamble.
- *
- * @param chunk - section to label
- *
- * @returns Its heading, or empty
- *
- * @example
- * ```ts
- * const label = chunkLabel({ chunk, },);
- * ```
+ Heading text of a chunk, or empty for a preamble.
+ 
+ @param chunk - section to label
+ 
+ @returns Its heading, or empty
+ 
+ @example
+ ```ts
+ const label = chunkLabel({ chunk, },);
+ ```
  */
 function chunkLabel({ chunk, }: { readonly chunk: ContentChunk; },): string {
   /**
-   * Leading node, which is the heading when the chunk has one.
+   Leading node, which is the heading when the chunk has one.
    */
   const [first,] = chunk.nodes;
   return ((first !== undefined) && (first.kind === 'heading')) ? first.text : '';
 }
 
 /**
- * Whether two sides pair by index without consulting the matcher.
- *
- * MIRRORS `alignDocumentSections`, whose fast path this has to reproduce to
- * report the same refusals it would.
- *
- * @param sourceChunks - original-side sections
- *
- * @param targetChunks - translation-side sections
- *
- * @returns Whether the counts and leading kinds agree
- *
- * @example
- * ```ts
- * const fast = pairsByIndex({ sourceChunks, targetChunks, },);
- * ```
+ Whether two sides pair by index without consulting the matcher.
+ 
+ MIRRORS `alignDocumentSections`, whose fast path this has to reproduce to
+ report the same refusals it would.
+ 
+ @param sourceChunks - original-side sections
+ 
+ @param targetChunks - translation-side sections
+ 
+ @returns Whether the counts and leading kinds agree
+ 
+ @example
+ ```ts
+ const fast = pairsByIndex({ sourceChunks, targetChunks, },);
+ ```
  */
 function pairsByIndex(
   {
@@ -128,18 +128,18 @@ function pairsByIndex(
 }
 
 /**
- * Lists the sections the matcher paired with nothing.
- *
- * @param source - original document
- *
- * @param target - translation
- *
- * @returns One candidate per unpaired source section
- *
- * @example
- * ```ts
- * const sections = unpairedSections({ source, target, },);
- * ```
+ Lists the sections the matcher paired with nothing.
+ 
+ @param source - original document
+ 
+ @param target - translation
+ 
+ @returns One candidate per unpaired source section
+ 
+ @example
+ ```ts
+ const sections = unpairedSections({ source, target, },);
+ ```
  */
 function unpairedSections(
   {
@@ -151,12 +151,12 @@ function unpairedSections(
   },
 ): readonly CoverageCandidate[] {
   /**
-   * Sections of the original.
+   Sections of the original.
    */
   const sourceChunks = chunkByHeadings({ document: source, },);
 
   /**
-   * Sections of the translation.
+   Sections of the translation.
    */
   const targetChunks = chunkByHeadings({ document: target, },);
   if ((sourceChunks.length === 0) || (targetChunks.length === 0))
@@ -180,7 +180,7 @@ function unpairedSections(
         return [];
 
       /**
-       * Section the matcher refused, present by the aligner's own contract.
+       Section the matcher refused, present by the aligner's own contract.
        */
       const chunk = sourceChunks[step.sourceIndex];
       if (chunk === undefined)
@@ -195,18 +195,18 @@ function unpairedSections(
 }
 
 /**
- * Lists the blocks the aligner paired with nothing, inside sections that paired.
- *
- * @param source - original document
- *
- * @param target - translation
- *
- * @returns One candidate per unpaired source block
- *
- * @example
- * ```ts
- * const blocks = unpairedBlocks({ source, target, },);
- * ```
+ Lists the blocks the aligner paired with nothing, inside sections that paired.
+ 
+ @param source - original document
+ 
+ @param target - translation
+ 
+ @returns One candidate per unpaired source block
+ 
+ @example
+ ```ts
+ const blocks = unpairedBlocks({ source, target, },);
+ ```
  */
 function unpairedBlocks(
   {
@@ -227,13 +227,13 @@ function unpairedBlocks(
       pairIndex,
     ): readonly CoverageCandidate[] {
       /**
-       * Blocks of this section's original side.
+       Blocks of this section's original side.
        */
       const sourceNodes = pair.source
         .nodes;
 
       /**
-       * Blocks of its translation side.
+       Blocks of its translation side.
        */
       const targetNodes = pair.target
         .nodes;
@@ -249,7 +249,7 @@ function unpairedBlocks(
             return [];
 
           /**
-           * Block the aligner refused, present by its own contract.
+           Block the aligner refused, present by its own contract.
            */
           const node = sourceNodes[step.sourceIndex];
           if (node === undefined)
@@ -266,20 +266,20 @@ function unpairedBlocks(
 }
 
 /**
- * @internal
- *
- * Lists every passage an aligner reports as unpaired, at both scales.
- *
- * @param source - original document
- *
- * @param target - translation
- *
- * @returns Section candidates first, then block candidates
- *
- * @example
- * ```ts
- * const candidates = listCoverageCandidates({ source, target, },);
- * ```
+ @internal
+ 
+ Lists every passage an aligner reports as unpaired, at both scales.
+ 
+ @param source - original document
+ 
+ @param target - translation
+ 
+ @returns Section candidates first, then block candidates
+ 
+ @example
+ ```ts
+ const candidates = listCoverageCandidates({ source, target, },);
+ ```
  */
 export function listCoverageCandidates(
   {

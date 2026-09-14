@@ -1,18 +1,18 @@
 /**
- * Tests for identifying a built pipeline by what its output directory holds.
- *
- * The digest decides which settled entries may be pooled and whether an
- * accumulation may resume, so every property here is load-bearing: an
- * order-dependent digest would refuse every resume, and a digest blind to a
- * changed file would pool two pipelines as one.
- *
- * Each case that asserts two directories agree is paired with one that must
- * disagree. A sameness claim from a probe that cannot show a difference proves
- * nothing at all, which is this package's recurring way of being wrong.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for identifying a built pipeline by what its output directory holds.
+ 
+ The digest decides which settled entries may be pooled and whether an
+ accumulation may resume, so every property here is load-bearing: an
+ order-dependent digest would refuse every resume, and a digest blind to a
+ changed file would pool two pipelines as one.
+ 
+ Each case that asserts two directories agree is paired with one that must
+ disagree. A sameness claim from a probe that cannot show a difference proves
+ nothing at all, which is this package's recurring way of being wrong.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -39,7 +39,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Contents of a minimal built output directory.
+ Contents of a minimal built output directory.
  */
 const BUILT = {
   'index.mjs': 'export const mittens = 1;\n',
@@ -47,22 +47,22 @@ const BUILT = {
 } as const;
 
 /**
- * Writes a throwaway output directory.
- *
- * @param files - file name to contents, at any depth
- *
- * @returns Path of the directory
- *
- * @example
- * ```ts
- * const dir = await writeBuild({ files: BUILT, },);
- * ```
+ Writes a throwaway output directory.
+ 
+ @param files - file name to contents, at any depth
+ 
+ @returns Path of the directory
+ 
+ @example
+ ```ts
+ const dir = await writeBuild({ files: BUILT, },);
+ ```
  */
 async function writeBuild(
   { files, }: { readonly files: Readonly<Record<string, string>>; },
 ): Promise<string> {
   /**
-   * Disposable root for this case.
+   Disposable root for this case.
    */
   const dir = await mkdtemp(join(
     tmpdir(),
@@ -71,7 +71,7 @@ async function writeBuild(
 
   for (const [name, text,] of Object.entries(files,)) {
     /**
-     * Path this file takes inside the fixture.
+     Path this file takes inside the fixture.
      */
     const path = join(
       dir,
@@ -197,7 +197,7 @@ await describe({
         );
 
         /**
-         * What digestPipeline refused with, read for class as well as wording.
+         What digestPipeline refused with, read for class as well as wording.
          */
         const refusalOfDigestPipeline = digestPipeline({ dir, },);
 
@@ -216,7 +216,7 @@ await describe({
         },);
 
         /**
-         * What digestPipeline refused with, read for class as well as wording.
+         What digestPipeline refused with, read for class as well as wording.
          */
         const refusalOfDigestPipeline = digestPipeline({ dir, },);
 
@@ -268,7 +268,7 @@ await describe({
         + 'without passing the same test the writer passed',
       fn: async () => {
         /**
-         * What narrows raised, read for its class as well as its wording.
+         What narrows raised, read for its class as well as its wording.
          */
         const refusalOfNarrows = caught(function narrows() {
           assertPipelineDigest('not-a-digest',);

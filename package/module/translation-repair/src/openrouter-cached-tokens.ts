@@ -13,47 +13,47 @@ import { openRouterChunksOf, } from './openrouter-chunk-scan.ts';
 // the reason `openrouter-cost.ts` gives for not widening the shared reader.
 
 /**
- * Reading given when no chunk carried a cached-token count.
+ Reading given when no chunk carried a cached-token count.
  */
 export const CACHED_UNREPORTED = 'unreported';
 
 /**
- * Prompt tokens the final chunk says were served from cache.
- *
- * THE LAST COUNT WINS, as the cost does: the usage block arrives once, on the
- * final chunk.
- *
- * @param bodyText - whole drained `text/event-stream` body
- *
- * @returns Cached prompt tokens, or that no chunk reported a count
- *
- * @example
- * ```ts
- * const cached = openRouterCachedTokensOf({ bodyText: reply.bodyText, },);
- * ```
+ Prompt tokens the final chunk says were served from cache.
+ 
+ THE LAST COUNT WINS, as the cost does: the usage block arrives once, on the
+ final chunk.
+ 
+ @param bodyText - whole drained `text/event-stream` body
+ 
+ @returns Cached prompt tokens, or that no chunk reported a count
+ 
+ @example
+ ```ts
+ const cached = openRouterCachedTokensOf({ bodyText: reply.bodyText, },);
+ ```
  */
 export function openRouterCachedTokensOf(
   { bodyText, }: { readonly bodyText: string; },
 ): number | typeof CACHED_UNREPORTED {
   /**
-   * Counts each chunk reported, in arrival order.
+   Counts each chunk reported, in arrival order.
    */
   const counts = openRouterChunksOf({ bodyText, },)
     .flatMap(function cachedOf(chunk,): readonly number[] {
       /**
-       * Usage block, absent on every chunk but the last.
+       Usage block, absent on every chunk but the last.
        */
       const { usage, } = chunk;
       if (!isJsonRecord(usage,))
         return [];
       /**
-       * Prompt detail block, absent on upstreams that report no cache.
+       Prompt detail block, absent on upstreams that report no cache.
        */
       const details = usage.prompt_tokens_details;
       if (!isJsonRecord(details,))
         return [];
       /**
-       * Count as reported, of unknown type until checked.
+       Count as reported, of unknown type until checked.
        */
       const cached = details.cached_tokens;
       if ((typeof cached) !== 'number')

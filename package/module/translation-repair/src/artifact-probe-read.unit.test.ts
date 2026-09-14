@@ -1,9 +1,9 @@
 /**
- * Tests for lifting probe telemetry back out of a settled artifact, where
- * absence and malformation must not be treated alike.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for lifting probe telemetry back out of a settled artifact, where
+ absence and malformation must not be treated alike.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -20,21 +20,21 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Builds one region tally as an artifact carries it.
- *
- * @param envelopeId - envelope the region replaced
- *
- * @param corroborated - upheld claims of added damage
- *
- * @param issueIds - every issue this region serves, which is more than one
- * whenever a single replacement covered several accepted issues
- *
- * @returns Tally object for a fixture artifact
- *
- * @example
- * ```ts
- * const tally = catTally({ envelopeId: 'envelope/nap', },);
- * ```
+ Builds one region tally as an artifact carries it.
+ 
+ @param envelopeId - envelope the region replaced
+ 
+ @param corroborated - upheld claims of added damage
+ 
+ @param issueIds - every issue this region serves, which is more than one
+ whenever a single replacement covered several accepted issues
+ 
+ @returns Tally object for a fixture artifact
+ 
+ @example
+ ```ts
+ const tally = catTally({ envelopeId: 'envelope/nap', },);
+ ```
  */
 function catTally(
   {
@@ -64,21 +64,21 @@ function catTally(
 }
 
 /**
- * Builds one screened claim as an artifact carries it, quotes included.
- *
- * The quote fields are present here precisely so a case can assert the reader
- * DROPS them.
- *
- * @param modelId - prober that made the claim
- *
- * @param admissibility - what the screen made of the quote
- *
- * @returns Claim object for a fixture artifact
- *
- * @example
- * ```ts
- * const claim = catClaim({ modelId: 'cat/one', },);
- * ```
+ Builds one screened claim as an artifact carries it, quotes included.
+ 
+ The quote fields are present here precisely so a case can assert the reader
+ DROPS them.
+ 
+ @param modelId - prober that made the claim
+ 
+ @param admissibility - what the screen made of the quote
+ 
+ @returns Claim object for a fixture artifact
+ 
+ @example
+ ```ts
+ const claim = catClaim({ modelId: 'cat/one', },);
+ ```
  */
 function catClaim(
   {
@@ -101,22 +101,22 @@ function catClaim(
 }
 
 /**
- * Builds one issue record as an artifact carries it.
- *
- * @param repairDisposition - what became of this issue's repair
- *
- * @param introducedDefects - probe reading, or absent when never probed
- *
- * @param issueId - adjudicated issue this record is about; defaults to one id
- * because most cases have a single record and only ownership cases need to
- * tell two apart
- *
- * @returns Record object for a fixture artifact
- *
- * @example
- * ```ts
- * const record = catRecord({ repairDisposition: 'shipped', },);
- * ```
+ Builds one issue record as an artifact carries it.
+ 
+ @param repairDisposition - what became of this issue's repair
+ 
+ @param introducedDefects - probe reading, or absent when never probed
+ 
+ @param issueId - adjudicated issue this record is about; defaults to one id
+ because most cases have a single record and only ownership cases need to
+ tell two apart
+ 
+ @returns Record object for a fixture artifact
+ 
+ @example
+ ```ts
+ const record = catRecord({ repairDisposition: 'shipped', },);
+ ```
  */
 function catRecord(
   {
@@ -142,38 +142,38 @@ function catRecord(
 }
 
 /**
- * Original of the slice the lanes work on.
+ Original of the slice the lanes work on.
  */
 const SOURCE_NAP = '猫猫在窗台上睡觉。';
 
 /**
- * Archive's own English for it.
+ Archive's own English for it.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
 /**
- * Wording the translate lane decided for it.
+ Wording the translate lane decided for it.
  */
 const FRESH_NAP = 'The cat naps on the windowsill.';
 
 /**
- * Identity a preparation gives itself, checked for SYNTAX only.
+ Identity a preparation gives itself, checked for SYNTAX only.
  */
 const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
 
 /**
- * One lane's delivery ledger over the single slice these fixtures carry.
- *
- * @param shippedText - wording this lane delivered
- *
- * @param delivery - what it did to get there
- *
- * @returns One row, which is the whole ledger here
- *
- * @example
- * \`\`\`ts
- * const rows = catLedger({ shippedText: ARCHIVE_NAP, delivery: 'incumbent-retained', },);
- * \`\`\`
+ One lane's delivery ledger over the single slice these fixtures carry.
+ 
+ @param shippedText - wording this lane delivered
+ 
+ @param delivery - what it did to get there
+ 
+ @returns One row, which is the whole ledger here
+ 
+ @example
+ \`\`\`ts
+ const rows = catLedger({ shippedText: ARCHIVE_NAP, delivery: 'incumbent-retained', },);
+ \`\`\`
  */
 function catLedger(
   {
@@ -201,29 +201,29 @@ function catLedger(
 }
 
 /**
- * One whole version 2 artifact carrying this case's issue records.
- *
- * WHY EVERY FIXTURE HERE IS A WHOLE ARTIFACT and not the bare
- * \`{ id, issues }\` these cases used to pass: the records moved into the repair
- * lane at version 2, and \`readArtifactProbe\` now reaches them through the
- * version 2 parser rather than by naming a root key that no longer exists. That
- * parser enforces exact top-level keys, so a fixture cannot be patched into
- * shape one field at a time; it is a version 2 artifact or it is refused.
- *
- * The envelope around \`issues\` is inert for every case here. Version 2 fixes
- * the shape of a lane, not the shape of a result, so the records inside
- * participate in no cross-check and each case still varies only its own records.
- *
- * @param id - entry this artifact is about
- *
- * @param issues - repair lane's issue records, empty when the lane filed none
- *
- * @returns Artifact as JSON
- *
- * @example
- * \`\`\`ts
- * const artifact = probeArtifact({ id: 'Kitten', issues: [], },);
- * \`\`\`
+ One whole version 2 artifact carrying this case's issue records.
+ 
+ WHY EVERY FIXTURE HERE IS A WHOLE ARTIFACT and not the bare
+ \`{ id, issues }\` these cases used to pass: the records moved into the repair
+ lane at version 2, and \`readArtifactProbe\` now reaches them through the
+ version 2 parser rather than by naming a root key that no longer exists. That
+ parser enforces exact top-level keys, so a fixture cannot be patched into
+ shape one field at a time; it is a version 2 artifact or it is refused.
+ 
+ The envelope around \`issues\` is inert for every case here. Version 2 fixes
+ the shape of a lane, not the shape of a result, so the records inside
+ participate in no cross-check and each case still varies only its own records.
+ 
+ @param id - entry this artifact is about
+ 
+ @param issues - repair lane's issue records, empty when the lane filed none
+ 
+ @returns Artifact as JSON
+ 
+ @example
+ \`\`\`ts
+ const artifact = probeArtifact({ id: 'Kitten', issues: [], },);
+ \`\`\`
  */
 function probeArtifact(
   {
@@ -235,8 +235,8 @@ function probeArtifact(
   },
 ): Record<string, unknown> {
   /**
-   * Repair lane's rows, named so the comparison is derived from the same
-   * ledger the lane carries rather than from a second copy of it.
+   Repair lane's rows, named so the comparison is derived from the same
+   ledger the lane carries rather than from a second copy of it.
    */
   const repairDelivery = catLedger({
     shippedText: ARCHIVE_NAP,
@@ -244,7 +244,7 @@ function probeArtifact(
   },);
 
   /**
-   * Translate lane's rows, on the same footing.
+   Translate lane's rows, on the same footing.
    */
   const translateDelivery = catLedger({
     shippedText: FRESH_NAP,
@@ -384,7 +384,7 @@ await describe({
         + 'the counts looked entirely normal',
       fn: async () => {
         /**
-         * Envelope serving both issues, exactly as a merged replacement does.
+         Envelope serving both issues, exactly as a merged replacement does.
          */
         const shared = catTally({
           envelopeId: 'envelope/shared',
@@ -462,7 +462,7 @@ await describe({
         },);
 
         /**
-         * Sole parsed claim.
+         Sole parsed claim.
          */
         const claim = reading.readings[0]
           ?.regions[0]
@@ -492,7 +492,7 @@ await describe({
         + 'run, which is the failure shape that looks most like success',
       fn: async () => {
         /**
-         * Reads a claim under an admissibility the screen cannot record.
+         Reads a claim under an admissibility the screen cannot record.
          */
         function readsUnknownAdmissibility() {
           readArtifactProbe({
@@ -585,7 +585,7 @@ await describe({
         + 'like ordinary output',
       fn: async () => {
         /**
-         * Reads a region whose declared count and claim list disagree.
+         Reads a region whose declared count and claim list disagree.
          */
         function readsDisagreeingCount() {
           readArtifactProbe({
@@ -628,13 +628,13 @@ await describe({
         + 'could be dismissed as restating one',
       fn: async () => {
         /**
-         * Tally as this fixture builds it, with every count present.
+         Tally as this fixture builds it, with every count present.
          */
         const declared = catTally({ envelopeId: 'envelope/nap', },);
 
         /**
-         * The same tally with the key gone rather than present and zero, which
-         * is the difference between an older artifact and a current one.
+         The same tally with the key gone rather than present and zero, which
+         is the difference between an older artifact and a current one.
          */
         const beforePreExisting = Object.fromEntries(Object
           .entries(declared,)
@@ -643,7 +643,7 @@ await describe({
           },),);
 
         /**
-         * What the reader made of it.
+         What the reader made of it.
          */
         const reading = readArtifactProbe({
           value: probeArtifact({
@@ -676,7 +676,7 @@ await describe({
         + 'happened',
       fn: async () => {
         /**
-         * Reads a record under a disposition the pipeline never writes.
+         Reads a record under a disposition the pipeline never writes.
          */
         function readsUnknownDisposition() {
           readArtifactProbe({
@@ -716,7 +716,7 @@ await describe({
         + 'writer and reader disagree and every count downstream is unsound',
       fn: async () => {
         /**
-         * Reads a probe field that is present and malformed.
+         Reads a probe field that is present and malformed.
          */
         function readsMalformed() {
           readArtifactProbe({
@@ -747,7 +747,7 @@ await describe({
         + 'fraction means the field is not the tally the reader thinks it is',
       fn: async () => {
         /**
-         * Reads a prober count written as a fraction.
+         Reads a prober count written as a fraction.
          */
         function readsFraction() {
           readArtifactProbe({

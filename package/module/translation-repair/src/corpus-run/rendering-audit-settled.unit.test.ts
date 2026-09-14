@@ -1,23 +1,23 @@
 /**
- * Tests for the settled rendering audit's driver: what it buys, in what
- * order, what it prints before buying, and what one audited row carries.
- *
- * NO CASE REACHED THESE BEFORE. `capped` already carried one real cap defect
- * (the args suite's header records it), `printPopulation` is the free reading
- * a run prints before any roster is woken, and `auditOne` is where a subject's
- * provenance and the roster's answers become the row every later reading
- * interprets. Each is exported through the barrel for exactly this.
- *
- * THE CLIENT IS HANDED IN, which is the rendering-6 shape: `main` builds one
- * per run and `auditOne` counts every subject into it, so a scripted client
- * here sees every model the roster asks and answers each with silence. The
- * roster is the production one, read from the run configuration, so the
- * cases assert against what the client was asked rather than against a list
- * copied here.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the settled rendering audit's driver: what it buys, in what
+ order, what it prints before buying, and what one audited row carries.
+ 
+ NO CASE REACHED THESE BEFORE. `capped` already carried one real cap defect
+ (the args suite's header records it), `printPopulation` is the free reading
+ a run prints before any roster is woken, and `auditOne` is where a subject's
+ provenance and the roster's answers become the row every later reading
+ interprets. Each is exported through the barrel for exactly this.
+ 
+ THE CLIENT IS HANDED IN, which is the rendering-6 shape: `main` builds one
+ per run and `auditOne` counts every subject into it, so a scripted client
+ here sees every model the roster asks and answers each with silence. The
+ roster is the production one, read from the run configuration, so the
+ cases assert against what the client was asked rather than against a list
+ copied here.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -41,68 +41,68 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Original every subject carries.
+ Original every subject carries.
  */
 const SOURCE_TEXT = '三只猫住在书店的阁楼里。她们不吃罐头，每天傍晚只喝一碗温牛奶。';
 
 /**
- * Rendering every subject carries.
+ Rendering every subject carries.
  */
 const CANDIDATE_TEXT = 'Three cats live in the attic of the bookshop. They do not eat canned '
   + 'food, and every evening they drink one bowl of warm milk.';
 
 /**
- * Run set every fixture belongs to.
+ Run set every fixture belongs to.
  */
 const RUN_SET = 'naptime-20260825';
 
 /**
- * Built pipeline every fixture records.
+ Built pipeline every fixture records.
  */
 const DIGEST = 'sha256-tree-v1:cafef00d';
 
 /**
- * Characters in a SHA-1 object id.
+ Characters in a SHA-1 object id.
  */
 const OBJECT_ID_LENGTH = 40;
 
 /**
- * Corpus commit every fixture records.
+ Corpus commit every fixture records.
  */
 const CORPUS_SHA = 'b'.repeat(OBJECT_ID_LENGTH,);
 
 /**
- * Cap meaning every subject, as the args module spells it internally.
+ Cap meaning every subject, as the args module spells it internally.
  */
 const EVERY_SUBJECT = -1;
 
 /**
- * Cap that buys a prefix.
+ Cap that buys a prefix.
  */
 const SMALL_BUY = 2;
 
 /**
- * Declared identity a producing run had, in the shape the subject carries.
+ Declared identity a producing run had, in the shape the subject carries.
  */
 const IDENTITY_CONTEXT = 'Mittens is written Mao Mao on the Chinese side';
 
 /**
- * Builds one audit subject.
- *
- * @param entryId - corpus entry
- *
- * @param sliceIndex - slice index
- *
- * @param auditsArchiveText - whether it audits the archive's own English
- *
- * @param identity - what the producing run declared, none unless a case says
- *
- * @returns Subject as the input module offers one
- *
- * @example
- * ```ts
- * const subject = subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: false, },);
- * ```
+ Builds one audit subject.
+ 
+ @param entryId - corpus entry
+ 
+ @param sliceIndex - slice index
+ 
+ @param auditsArchiveText - whether it audits the archive's own English
+ 
+ @param identity - what the producing run declared, none unless a case says
+ 
+ @returns Subject as the input module offers one
+ 
+ @example
+ ```ts
+ const subject = subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: false, },);
+ ```
  */
 function subjectAt(
   {
@@ -133,20 +133,20 @@ function subjectAt(
 }
 
 /**
- * Builds one artifact reading.
- *
- * @param entryId - corpus entry
- *
- * @param subjects - slices it offers
- *
- * @param verification - provenance answer, verified unless a case says
- *
- * @returns Reading as the input module returns one
- *
- * @example
- * ```ts
- * const reading = readingOf({ entryId: 'mittens', subjects, },);
- * ```
+ Builds one artifact reading.
+ 
+ @param entryId - corpus entry
+ 
+ @param subjects - slices it offers
+ 
+ @param verification - provenance answer, verified unless a case says
+ 
+ @returns Reading as the input module returns one
+ 
+ @example
+ ```ts
+ const reading = readingOf({ entryId: 'mittens', subjects, },);
+ ```
  */
 function readingOf(
   {
@@ -170,7 +170,7 @@ function readingOf(
 }
 
 /**
- * Two subjects of one entry, one archive and one fresh.
+ Two subjects of one entry, one archive and one fresh.
  */
 const MITTENS = [
   subjectAt({
@@ -186,7 +186,7 @@ const MITTENS = [
 ];
 
 /**
- * One subject of a second entry.
+ One subject of a second entry.
  */
 const TABBY = [subjectAt({
   entryId: 'tabby',
@@ -195,34 +195,34 @@ const TABBY = [subjectAt({
 },),];
 
 /**
- * Captures what is printed, forwarding every line onward so the runner and a
- * concurrent case still see their own; the describe using it runs one case
- * at a time regardless.
- *
- * @param lines - where captured lines go
- *
- * @returns Captured lines, disposable
- *
- * @example
- * ```ts
- * using printed = collectingLines({ lines: [], },);
- * ```
+ Captures what is printed, forwarding every line onward so the runner and a
+ concurrent case still see their own; the describe using it runs one case
+ at a time regardless.
+ 
+ @param lines - where captured lines go
+ 
+ @returns Captured lines, disposable
+ 
+ @example
+ ```ts
+ using printed = collectingLines({ lines: [], },);
+ ```
  */
 function collectingLines(
   { lines, }: { readonly lines: string[]; },
 ): { readonly lines: readonly string[]; } & Disposable {
   /**
-   * Reporter found on entry, which every line is forwarded to.
+   Reporter found on entry, which every line is forwarded to.
    */
   const previous = console.log;
 
   /**
-   * Whether this capture is still recording.
+   Whether this capture is still recording.
    */
   const recording = { open: true, };
 
   /**
-   * This capture's own wrapper.
+   This capture's own wrapper.
    */
   const mine = (...parts: readonly unknown[]): void => {
     if (recording.open) {
@@ -243,19 +243,19 @@ function collectingLines(
 }
 
 /**
- * Client answering every auditor with silence and recording who was asked
- * and what it was shown.
- *
- * @param asked - model ids, one per call, appended as calls arrive
- *
- * @param shown - every request's messages as JSON, appended as calls arrive
- *
- * @returns Client the driver calls
- *
- * @example
- * ```ts
- * const client = quietClient({ asked: [], shown: [], },);
- * ```
+ Client answering every auditor with silence and recording who was asked
+ and what it was shown.
+ 
+ @param asked - model ids, one per call, appended as calls arrive
+ 
+ @param shown - every request's messages as JSON, appended as calls arrive
+ 
+ @returns Client the driver calls
+ 
+ @example
+ ```ts
+ const client = quietClient({ asked: [], shown: [], },);
+ ```
  */
 function quietClient(
   {
@@ -277,7 +277,7 @@ function quietClient(
       shown.push(JSON.stringify(request.messages,),);
 
       /**
-       * An auditor that found nothing.
+       An auditor that found nothing.
        */
       const quiet: unknown = {
         verdict: 'no-defect-found',
@@ -468,13 +468,13 @@ await describe({
         + 'per model the client was asked, with the texts digested rather than kept',
       fn: async () => {
         /**
-         * Who the driver asked, and what it showed them.
+         Who the driver asked, and what it showed them.
          */
         const asked: string[] = [];
         const shown: string[] = [];
 
         /**
-         * The row one quiet roster produces.
+         The row one quiet roster produces.
          */
         const row = await auditOne({
           subject: subjectAt({
@@ -510,7 +510,7 @@ await describe({
         + 'without the names the producing judges had calls a declared name a fabrication',
       fn: async () => {
         /**
-         * What the roster was shown with the identity declared.
+         What the roster was shown with the identity declared.
          */
         const shownDeclared: string[] = [];
         await auditOne({
@@ -530,7 +530,7 @@ await describe({
         },);
 
         /**
-         * What it was shown with none.
+         What it was shown with none.
          */
         const shownNone: string[] = [];
         await auditOne({

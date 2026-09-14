@@ -15,16 +15,16 @@ import { writeFileAtomic, } from './atomic-write.ts';
 // either exists, and each is written atomically.
 
 /**
- * Whether a file sits at a path.
- *
- * @param path - file to look for
- *
- * @returns Whether it is there
- *
- * @example
- * ```ts
- * const taken = await exists({ path, },);
- * ```
+ Whether a file sits at a path.
+ 
+ @param path - file to look for
+ 
+ @returns Whether it is there
+ 
+ @example
+ ```ts
+ const taken = await exists({ path, },);
+ ```
  */
 async function exists({ path, }: { readonly path: string; },): Promise<boolean> {
   try {
@@ -42,26 +42,26 @@ async function exists({ path, }: { readonly path: string; },): Promise<boolean> 
 }
 
 /**
- * Writes a sheet and its manifest, refusing to replace either.
- *
- * @param dir - directory both land in
- *
- * @param sheetName - sheet file name
- *
- * @param manifestName - manifest file name
- *
- * @param sheet - sheet text
- *
- * @param manifest - manifest text
- *
- * @returns Path the sheet landed at
- *
- * @throws {@link StatedRefusalError} when either file is already there
- *
- * @example
- * ```ts
- * const at = await writeSheetPair({ dir, sheetName: 'damage-sheet.md', manifestName: 'damage-manifest.json', sheet, manifest, },);
- * ```
+ Writes a sheet and its manifest, refusing to replace either.
+ 
+ @param dir - directory both land in
+ 
+ @param sheetName - sheet file name
+ 
+ @param manifestName - manifest file name
+ 
+ @param sheet - sheet text
+ 
+ @param manifest - manifest text
+ 
+ @returns Path the sheet landed at
+ 
+ @throws {@link StatedRefusalError} when either file is already there
+ 
+ @example
+ ```ts
+ const at = await writeSheetPair({ dir, sheetName: 'damage-sheet.md', manifestName: 'damage-manifest.json', sheet, manifest, },);
+ ```
  */
 export async function writeSheetPair(
   {
@@ -79,7 +79,7 @@ export async function writeSheetPair(
   },
 ): Promise<string> {
   /**
-   * Where the sheet lands.
+   Where the sheet lands.
    */
   const sheetPath = join(
     dir,
@@ -87,7 +87,7 @@ export async function writeSheetPair(
   );
 
   /**
-   * Where the manifest lands.
+   Where the manifest lands.
    */
   const manifestPath = join(
     dir,

@@ -1,8 +1,8 @@
 /**
- * Tests for the introduced-defect probe sheet and its wire guards.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the introduced-defect probe sheet and its wire guards.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -21,7 +21,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Accepted issue the fixture region was cut for.
+ Accepted issue the fixture region was cut for.
  */
 const ISSUE: AdjudicatedIssue = {
   issueId: 'adjudicated/nap',
@@ -51,7 +51,7 @@ const ISSUE: AdjudicatedIssue = {
 };
 
 /**
- * Region the editors replaced.
+ Region the editors replaced.
  */
 const REGION: RepairRegion = {
   envelopeId: 'envelope/nap',
@@ -92,7 +92,7 @@ await describe({
         + 'whole purpose of that lane',
       fn: async () => {
         /**
-         * Arguments shared by both framings.
+         Arguments shared by both framings.
          */
         const args = {
           sourceText: '猫在睡觉。',
@@ -102,13 +102,13 @@ await describe({
         };
 
         /**
-         * Prompt for the accuracy stage, the default.
+         Prompt for the accuracy stage, the default.
          */
         const accuracy = buildIntroducedDefectMessages(args,).messages[0]
           ?.content ?? '';
 
         /**
-         * Prompt for the naturalness lane.
+         Prompt for the naturalness lane.
          */
         const refinement = buildIntroducedDefectMessages({
           ...args,

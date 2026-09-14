@@ -1,20 +1,20 @@
 /**
- * Tests for the percentile reader the corpus censuses share.
- *
- * THE RANK CONVENTION IS THE WHOLE SUBJECT. `percentileOf` takes
- * `floor(p / 100 * n)` and clamps it to the last index, which is one of several
- * defensible definitions and the only one the census lines mean. A later change
- * to the more common `ceil(p / 100 * n) - 1` would move every published p50 by
- * one rank on even-length samples without moving any test, so the cases below
- * pin the rank itself rather than only the shape of the line.
- *
- * THE CLAMP IS NOT DECORATION EITHER. Without it, p99 on a ten-value sample
- * reads index 9 and p100 reads index 10, which is past the end; the function
- * would return its `?? 0` fallback and report a far tail of zero for a sample
- * whose maximum is 200. That is the failure a distribution reader must not have,
- * because zero is a plausible-looking number.
- *
- * @module
+ Tests for the percentile reader the corpus censuses share.
+ 
+ THE RANK CONVENTION IS THE WHOLE SUBJECT. `percentileOf` takes
+ `floor(p / 100 * n)` and clamps it to the last index, which is one of several
+ defensible definitions and the only one the census lines mean. A later change
+ to the more common `ceil(p / 100 * n) - 1` would move every published p50 by
+ one rank on even-length samples without moving any test, so the cases below
+ pin the rank itself rather than only the shape of the line.
+ 
+ THE CLAMP IS NOT DECORATION EITHER. Without it, p99 on a ten-value sample
+ reads index 9 and p100 reads index 10, which is past the end; the function
+ would return its `?? 0` fallback and report a far tail of zero for a sample
+ whose maximum is 200. That is the failure a distribution reader must not have,
+ because zero is a plausible-looking number.
+ 
+ @module
  */
 
 import {
@@ -32,11 +32,11 @@ import {
 //region Census spread tests
 
 /**
- * How long each cat of one household slept, in minutes, out of order.
- *
- * Deliberately unsorted, and deliberately long-tailed: the largest value is
- * more than three times the second largest, so a reader that lost the clamp or
- * the sort reports a visibly different tail rather than a near miss.
+ How long each cat of one household slept, in minutes, out of order.
+ 
+ Deliberately unsorted, and deliberately long-tailed: the largest value is
+ more than three times the second largest, so a reader that lost the clamp or
+ the sort reports a visibly different tail rather than a near miss.
  */
 const NAP_MINUTES: readonly number[] = [
   12,
@@ -52,7 +52,7 @@ const NAP_MINUTES: readonly number[] = [
 ];
 
 /**
- * The same naps in ascending order, which is what `percentileOf` is handed.
+ The same naps in ascending order, which is what `percentileOf` is handed.
  */
 const SORTED_NAPS: readonly number[] = [
   2,
@@ -68,62 +68,62 @@ const SORTED_NAPS: readonly number[] = [
 ];
 
 /**
- * What the household's spread comes to, as the census prints it.
+ What the household's spread comes to, as the census prints it.
  */
 const NAP_LINE = 'nap minutes: n 10, p50 19, p90 200, p99 200, max 200';
 
 /**
- * What a household with no cats in it comes to.
+ What a household with no cats in it comes to.
  */
 const EMPTY_LINE = 'nap minutes: n 0, p50 0, p90 0, p99 0, max 0';
 
 /**
- * Percentile naming the middle of a sample.
+ Percentile naming the middle of a sample.
  */
 const HALF = 50;
 
 /**
- * Percentile naming where a tail starts being worth reporting.
+ Percentile naming where a tail starts being worth reporting.
  */
 const NINETIETH = 90;
 
 /**
- * Percentile naming the far tail, where a per-call deadline is met.
+ Percentile naming the far tail, where a per-call deadline is met.
  */
 const NINETY_NINTH = 99;
 
 /**
- * Whole of a distribution, which is past the last rank and must clamp.
+ Whole of a distribution, which is past the last rank and must clamp.
  */
 const WHOLE = 100;
 
 /**
- * Rank the middle of this ten-value sample lands on under this convention.
+ Rank the middle of this ten-value sample lands on under this convention.
  */
 const MIDDLE_NAP = 19;
 
 /**
- * Longest nap, which is also both reported tails on a sample this small.
+ Longest nap, which is also both reported tails on a sample this small.
  */
 const LONGEST_NAP = 200;
 
 /**
- * Shortest nap, which percentile zero reads.
+ Shortest nap, which percentile zero reads.
  */
 const SHORTEST_NAP = 2;
 
 /**
- * Percentiles this package reports for every distribution.
+ Percentiles this package reports for every distribution.
  */
 const PERCENTILES_REPORTED = 3;
 
 /**
- * Sample of one, where every percentile has to land on the same value.
+ Sample of one, where every percentile has to land on the same value.
  */
 const LONE_NAP: readonly number[] = [7,];
 
 /**
- * How long that one cat slept.
+ How long that one cat slept.
  */
 const LONE_NAP_MINUTES = 7;
 
@@ -227,7 +227,7 @@ await describe({
       name: 'REPORTS exactly the percentiles the shared list names',
       fn: async () => {
         /**
-         * Percentile readings the line carries, one per `p` marker.
+         Percentile readings the line carries, one per `p` marker.
          */
         const readings = NAP_LINE
           .split(', ',)

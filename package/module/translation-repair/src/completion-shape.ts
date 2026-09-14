@@ -27,46 +27,46 @@ import {
 // two meter endpoints now do because each is bound to one provider by construction.
 
 /**
- * Character count of the body excerpt embedded in thrown errors,
- * bounding log size while keeping enough context to diagnose.
+ Character count of the body excerpt embedded in thrown errors,
+ bounding log size while keeping enough context to diagnose.
  */
 const BODY_EXCERPT_LIMIT = 600;
 
 /**
- * Signals a non-success HTTP status from the Synthetic API.
- *
- * @example
- * ```ts
- * throw new SyntheticHttpError({ status: 429, bodyText: reply.bodyText, },);
- * ```
+ Signals a non-success HTTP status from the Synthetic API.
+ 
+ @example
+ ```ts
+ throw new SyntheticHttpError({ status: 429, bodyText: reply.bodyText, },);
+ ```
  */
 export class SyntheticHttpError extends Error {
   /**
-   * HTTP status the API returned; drivers branch on 429 for backoff.
+   HTTP status the API returned; drivers branch on 429 for backoff.
    */
   public readonly status: number;
 
   /**
-   * Opening of the response body for diagnosis.
+   Opening of the response body for diagnosis.
    */
   public readonly bodyExcerpt: string;
 
   /**
-   * Builds failure carrying status and body opening.
-   *
-   * @param status - non-success HTTP status
-   *
-   * @param bodyText - raw response body, excerpted for the message
-   *
-   * @param summary - what went wrong, where a subclass knows something this
-   * class cannot infer from a status. Absent leaves the plain status line.
-   * The excerpt is appended either way, so no subclass has to know how long
-   * an excerpt runs or how to label whose words it quotes
-   *
-   * @example
-   * ```ts
-   * new SyntheticHttpError({ status: 500, bodyText: 'upstream exploded', },);
-   * ```
+   Builds failure carrying status and body opening.
+   
+   @param status - non-success HTTP status
+   
+   @param bodyText - raw response body, excerpted for the message
+   
+   @param summary - what went wrong, where a subclass knows something this
+   class cannot infer from a status. Absent leaves the plain status line.
+   The excerpt is appended either way, so no subclass has to know how long
+   an excerpt runs or how to label whose words it quotes
+   
+   @example
+   ```ts
+   new SyntheticHttpError({ status: 500, bodyText: 'upstream exploded', },);
+   ```
    */
   public constructor(
     {
@@ -105,31 +105,31 @@ export class SyntheticHttpError extends Error {
 }
 
 /**
- * Signals a success-status completion body that violates the OpenAI-compatible
- * contract; always a provider defect, never a model-content defect.
- *
- * @example
- * ```ts
- * throw new MalformedCompletionError({ detail: 'choices is not an array', },);
- * ```
+ Signals a success-status completion body that violates the OpenAI-compatible
+ contract; always a provider defect, never a model-content defect.
+ 
+ @example
+ ```ts
+ throw new MalformedCompletionError({ detail: 'choices is not an array', },);
+ ```
  */
 export class MalformedCompletionError extends Error {
   /**
-   * Declares this message safe to forward: it names which part of the protocol the body broke, never the body.
+   Declares this message safe to forward: it names which part of the protocol the body broke, never the body.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds failure naming the violated expectation.
-   *
-   * @param detail - which contract expectation the body violated
-   *
-   * @param cause - underlying parse error when JSON itself failed
-   *
-   * @example
-   * ```ts
-   * new MalformedCompletionError({ detail: 'body is not valid JSON', cause: error, },);
-   * ```
+   Builds failure naming the violated expectation.
+   
+   @param detail - which contract expectation the body violated
+   
+   @param cause - underlying parse error when JSON itself failed
+   
+   @example
+   ```ts
+   new MalformedCompletionError({ detail: 'body is not valid JSON', cause: error, },);
+   ```
    */
   public constructor(
     {
@@ -152,72 +152,72 @@ export class MalformedCompletionError extends Error {
 }
 
 /**
- * Text and optional usage extracted from one completion body.
- *
- * @example
- * ```ts
- * const extracted: ExtractedCompletion = { text: '{"issues":[]}', };
- * ```
+ Text and optional usage extracted from one completion body.
+ 
+ @example
+ ```ts
+ const extracted: ExtractedCompletion = { text: '{"issues":[]}', };
+ ```
  */
 export type ExtractedCompletion = {
   /**
-   * Verbatim `message.content` of the first choice;
-   * empty when the API refused and returned no content.
-   * Reasoning arrives in a separate field, so content is the answer channel.
-   * THAT FIELD'S NAME VARIES BY MODEL on this provider, `reasoning_content` on
-   * some and `reasoning` on others, measured 2026-08-21; `stream-delta-scan.ts`
-   * carries the per-model counts. Nothing here has to choose between them,
-   * because this path reads the answer and never the thinking.
+   Verbatim `message.content` of the first choice;
+   empty when the API refused and returned no content.
+   Reasoning arrives in a separate field, so content is the answer channel.
+   THAT FIELD'S NAME VARIES BY MODEL on this provider, `reasoning_content` on
+   some and `reasoning` on others, measured 2026-08-21; `stream-delta-scan.ts`
+   carries the per-model counts. Nothing here has to choose between them,
+   because this path reads the answer and never the thinking.
    */
   readonly text: string;
 
   /**
-   * First-class refusal from the message `refusal` field;
-   * a stronger signal than any heuristic over content.
+   First-class refusal from the message `refusal` field;
+   a stronger signal than any heuristic over content.
    */
   readonly refusal?: string;
 
   /**
-   * Token usage when the server reported it; feeds budget observability.
-   * Completion counts include thinking tokens,
-   * which dominate output on these models.
+   Token usage when the server reported it; feeds budget observability.
+   Completion counts include thinking tokens,
+   which dominate output on these models.
    */
   readonly usage?: CompletionUsage;
 
   /**
-   * Why the model stopped, verbatim from `choices[0].finish_reason`.
-   *
-   * READ BECAUSE A COMPLETION THAT STOPPED EARLY IS INDISTINGUISHABLE FROM A
-   * MALFORMED ONE WITHOUT IT. A model cut off mid-answer delivers a whole,
-   * well-formed stream with no unreadable frames, and the only symptom
-   * downstream is that its content does not parse. Reported as a schema
-   * mismatch, that sends a reader to the prompt and the schema; reported as
-   * `length`, it sends them to the token ceiling instead. Measured on a live
-   * lane-contest round where one voice stopped mid-string at 287 characters.
-   *
-   * ABSENT RATHER THAN DEFAULTED when the provider omits it, since guessing
-   * `stop` would assert the very thing this exists to establish.
+   Why the model stopped, verbatim from `choices[0].finish_reason`.
+   
+   READ BECAUSE A COMPLETION THAT STOPPED EARLY IS INDISTINGUISHABLE FROM A
+   MALFORMED ONE WITHOUT IT. A model cut off mid-answer delivers a whole,
+   well-formed stream with no unreadable frames, and the only symptom
+   downstream is that its content does not parse. Reported as a schema
+   mismatch, that sends a reader to the prompt and the schema; reported as
+   `length`, it sends them to the token ceiling instead. Measured on a live
+   lane-contest round where one voice stopped mid-string at 287 characters.
+   
+   ABSENT RATHER THAN DEFAULTED when the provider omits it, since guessing
+   `stop` would assert the very thing this exists to establish.
    */
   readonly finishReason?: string;
 };
 
 /**
- * Reads why one choice stopped, when the provider said.
- *
- * @param choice - one entry of the choices array
- *
- * @returns Spreadable fragment carrying the reason, or nothing
- *
- * @example
- * ```ts
- * const fragment = readFinishReason({ choice, },);
- * ```
+ Reads why one choice stopped, when the provider said.
+ 
+ @param choice - one entry of the choices array
+ 
+ @returns Spreadable fragment carrying the reason, or nothing
+ 
+ @example
+ ```ts
+ const fragment = readFinishReason({ choice, },);
+ ```
  */
 export function readFinishReason(
   { choice, }: { readonly choice: Readonly<Record<string, unknown>>; },
 ): { readonly finishReason?: string; } {
   /**
-   * Reason as delivered, which providers may omit or send as null.
+   Reason as delivered, which providers may omit or send as null.
    */
   const reason = choice.finish_reason;
   return (((typeof reason) === 'string') && (reason !== ''))
@@ -226,29 +226,29 @@ export function readFinishReason(
 }
 
 /**
- * Reads optional usage block when both component counts are numbers.
- *
- * @param parsed - whole parsed completion body
- *
- * @returns Usage block, or nothing when absent or mistyped
- *
- * @example
- * ```ts
- * const usage = readUsage({ parsed, },);
- * ```
+ Reads optional usage block when both component counts are numbers.
+ 
+ @param parsed - whole parsed completion body
+ 
+ @returns Usage block, or nothing when absent or mistyped
+ 
+ @example
+ ```ts
+ const usage = readUsage({ parsed, },);
+ ```
  */
 export function readUsage({ parsed, }: { readonly parsed: Readonly<Record<string, unknown>>; },): {
   readonly usage?: CompletionUsage;
 } {
   /**
-   * Usage block as delivered, when any.
+   Usage block as delivered, when any.
    */
   const { usage, } = parsed;
   if (!isJsonRecord(usage,))
     return {};
 
   /**
-   * Component token counts pulled out for numeric validation.
+   Component token counts pulled out for numeric validation.
    */
   const {
     prompt_tokens: promptTokens,
@@ -266,18 +266,18 @@ export function readUsage({ parsed, }: { readonly parsed: Readonly<Record<string
 }
 
 /**
- * Parses body text as JSON, converting parse failures into contract errors.
- *
- * @param bodyText - raw response body
- *
- * @returns Parsed JSON value
- *
- * @throws {@link MalformedCompletionError} when body is not valid JSON
- *
- * @example
- * ```ts
- * const parsed = parseCompletionJson({ bodyText, },);
- * ```
+ Parses body text as JSON, converting parse failures into contract errors.
+ 
+ @param bodyText - raw response body
+ 
+ @returns Parsed JSON value
+ 
+ @throws {@link MalformedCompletionError} when body is not valid JSON
+ 
+ @example
+ ```ts
+ const parsed = parseCompletionJson({ bodyText, },);
+ ```
  */
 function parseCompletionJson({ bodyText, }: { readonly bodyText: string; },): unknown {
   try {
@@ -292,53 +292,53 @@ function parseCompletionJson({ bodyText, }: { readonly bodyText: string; },): un
 }
 
 /**
- * Parses and validates one success-status completion body,
- * returning content text and usage.
- *
- * @param bodyText - raw 2xx response body
- *
- * @returns Content of first choice plus usage when reported
- *
- * @throws {@link MalformedCompletionError} when body is not JSON or lacks `choices[0].message.content`
- *
- * @example
- * ```ts
- * const { text, usage, } = extractCompletion({ bodyText: reply.bodyText, },);
- * ```
+ Parses and validates one success-status completion body,
+ returning content text and usage.
+ 
+ @param bodyText - raw 2xx response body
+ 
+ @returns Content of first choice plus usage when reported
+ 
+ @throws {@link MalformedCompletionError} when body is not JSON or lacks `choices[0].message.content`
+ 
+ @example
+ ```ts
+ const { text, usage, } = extractCompletion({ bodyText: reply.bodyText, },);
+ ```
  */
 export function extractCompletion(
   { bodyText, }: { readonly bodyText: string; },
 ): ExtractedCompletion {
   /**
-   * Whole parsed body, probed field by field.
+   Whole parsed body, probed field by field.
    */
   const parsed = parseCompletionJson({ bodyText, },);
   if (!isJsonRecord(parsed,))
     throw new MalformedCompletionError({ detail: 'body is not a JSON object', },);
 
   /**
-   * Choices array as delivered.
+   Choices array as delivered.
    */
   const { choices, } = parsed;
   if (!isJsonArray(choices,))
     throw new MalformedCompletionError({ detail: 'choices is not an array', },);
 
   /**
-   * First choice; single-completion requests return exactly one.
+   First choice; single-completion requests return exactly one.
    */
   const [first,] = choices;
   if (!isJsonRecord(first,))
     throw new MalformedCompletionError({ detail: 'choices[0] is missing', },);
 
   /**
-   * Message block of first choice.
+   Message block of first choice.
    */
   const { message, } = first;
   if (!isJsonRecord(message,))
     throw new MalformedCompletionError({ detail: 'choices[0].message is not an object', },);
 
   /**
-   * Answer channel plus first-class refusal field as delivered.
+   Answer channel plus first-class refusal field as delivered.
    */
   const {
     content,
@@ -346,7 +346,7 @@ export function extractCompletion(
   } = message;
 
   /**
-   * Non-empty refusal string when the API refused explicitly.
+   Non-empty refusal string when the API refused explicitly.
    */
   const refusalText = (((typeof refusal) === 'string') && (refusal !== ''))
     ? refusal

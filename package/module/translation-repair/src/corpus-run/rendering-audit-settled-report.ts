@@ -39,38 +39,38 @@ import { resolveRunsDir, } from './run-config.ts';
 // it against.
 
 /**
- * Reads a persisted run and prints what it amounts to.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Reads a persisted run and prints what it amounts to.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * What the command line named, with a valueless flag refused rather than
-   * read as absent: `--run` written last used to report the newest run and
-   * `--against` written last used to print no across-run band, in silence.
+   What the command line named, with a valueless flag refused rather than
+   read as absent: `--run` written last used to report the newest run and
+   `--against` written last used to print no across-run band, in silence.
    */
   const asked = readReportArguments({ argv: process.argv, },);
 
   /**
-   * Run named with `--run`, absent when the newest kept run is meant.
+   Run named with `--run`, absent when the newest kept run is meant.
    */
   const [named,] = asked.run;
 
   /**
-   * File this report reads, which is the newest kept when none was named.
+   File this report reads, which is the newest kept when none was named.
    */
   const path = named ?? await newestRun({ runsDir: await resolveRunsDir(), },);
 
   /**
-   * Earlier run to pair against, empty when none was named.
+   Earlier run to pair against, empty when none was named.
    */
   const against = asked.against[0] ?? '';
 
   /**
-   * Rows that run bought, and where it said it read them from.
+   Rows that run bought, and where it said it read them from.
    */
   const {
     rows,

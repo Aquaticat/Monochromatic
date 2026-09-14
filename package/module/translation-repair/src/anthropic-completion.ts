@@ -7,7 +7,7 @@ import {
 } from './completion-shape.ts';
 
 /**
- * Logger root for the Anthropic completion reader.
+ Logger root for the Anthropic completion reader.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
@@ -40,72 +40,72 @@ const l = tagged({ tag: 'translation-repair', },);
 // for a runaway, and this file reads only the answer.
 
 /**
- * Prefix marking a line that carries an event payload.
+ Prefix marking a line that carries an event payload.
  */
 const DATA_PREFIX = 'data:';
 
 /**
- * Event ending a well-formed message.
+ Event ending a well-formed message.
  */
 const TERMINATOR = 'message_stop';
 
 /**
- * Sentinel some gateways append after the terminator, carrying no event.
- *
- * SPELLED HERE RATHER THAN IMPORTED from `stream-completion.ts`: that file's
- * constant is private to the OpenAI-shaped reader, and the two readers are
- * kept independent so a change to one wire format cannot reach the other.
+ Sentinel some gateways append after the terminator, carrying no event.
+ 
+ SPELLED HERE RATHER THAN IMPORTED from `stream-completion.ts`: that file's
+ constant is private to the OpenAI-shaped reader, and the two readers are
+ kept independent so a change to one wire format cannot reach the other.
  */
 const DONE_SENTINEL = '[DONE]';
 
 /**
- * Everything one pass over the body accumulates.
+ Everything one pass over the body accumulates.
  */
 type AnthropicFold = {
   /**
-   * Text fragments, in arrival order, from `text_delta` frames: the answer
-   * when the model answered in prose, and prose set aside when it also called
-   * the tool.
+   Text fragments, in arrival order, from `text_delta` frames: the answer
+   when the model answered in prose, and prose set aside when it also called
+   the tool.
    */
   readonly textParts: string[];
 
   /**
-   * Tool-argument fragments, in arrival order, from `input_json_delta`
-   * frames: the answer whenever there are any (`#242`).
+   Tool-argument fragments, in arrival order, from `input_json_delta`
+   frames: the answer whenever there are any (`#242`).
    */
   readonly toolParts: string[];
 
   /**
-   * Why the model stopped, as `message_delta` reported it.
+   Why the model stopped, as `message_delta` reported it.
    */
   readonly stopReasons: string[];
 
   /**
-   * Prompt tokens, from `message_start`.
+   Prompt tokens, from `message_start`.
    */
   readonly promptTokens: number[];
 
   /**
-   * Completion tokens, from `message_delta`.
+   Completion tokens, from `message_delta`.
    */
   readonly completionTokens: number[];
 };
 
 /**
- * Payload of one line, empty for anything that is not an event.
- *
- * @param rawLine - one line of the drained body
- *
- * @returns Payload text, trimmed, empty when this line carries none
- *
- * @example
- * ```ts
- * const payload = dataPayloadOf('data: {"type":"ping"}',);
- * ```
+ Payload of one line, empty for anything that is not an event.
+ 
+ @param rawLine - one line of the drained body
+ 
+ @returns Payload text, trimmed, empty when this line carries none
+ 
+ @example
+ ```ts
+ const payload = dataPayloadOf('data: {"type":"ping"}',);
+ ```
  */
 function dataPayloadOf(rawLine: string,): string {
   /**
-   * Line without surrounding whitespace and carriage returns.
+   Line without surrounding whitespace and carriage returns.
    */
   const line = rawLine.trim();
 
@@ -117,18 +117,18 @@ function dataPayloadOf(rawLine: string,): string {
 }
 
 /**
- * Reads one string field off a parsed object.
- *
- * @param fields - parsed object to read
- *
- * @param name - field wanted
- *
- * @returns Value, or empty when absent or not a string
- *
- * @example
- * ```ts
- * const kind = stringField({ fields: frame, name: 'type', },);
- * ```
+ Reads one string field off a parsed object.
+ 
+ @param fields - parsed object to read
+ 
+ @param name - field wanted
+ 
+ @returns Value, or empty when absent or not a string
+ 
+ @example
+ ```ts
+ const kind = stringField({ fields: frame, name: 'type', },);
+ ```
  */
 function stringField(
   {
@@ -140,7 +140,7 @@ function stringField(
   },
 ): string {
   /**
-   * Raw value under that name, of unknown type.
+   Raw value under that name, of unknown type.
    */
   const value = fields[name];
 
@@ -150,22 +150,22 @@ function stringField(
 }
 
 /**
- * Records the token counts a usage block carried, ignoring absent ones.
- *
- * THE TWO FRAMES NEST IT DIFFERENTLY, which is why the holder is a parameter
- * rather than read off the frame here. `message_delta` puts `usage` at the top
- * level, while `message_start` puts it inside `message` alongside the model
- * name and the null stop reason. Reading only the top level would silently drop
- * every prompt-token count.
- *
- * @param holder - object that directly holds the `usage` block
- *
- * @param fold - accumulator to append to
- *
- * @example
- * ```ts
- * foldUsage({ holder: frame, fold, },);
- * ```
+ Records the token counts a usage block carried, ignoring absent ones.
+ 
+ THE TWO FRAMES NEST IT DIFFERENTLY, which is why the holder is a parameter
+ rather than read off the frame here. `message_delta` puts `usage` at the top
+ level, while `message_start` puts it inside `message` alongside the model
+ name and the null stop reason. Reading only the top level would silently drop
+ every prompt-token count.
+ 
+ @param holder - object that directly holds the `usage` block
+ 
+ @param fold - accumulator to append to
+ 
+ @example
+ ```ts
+ foldUsage({ holder: frame, fold, },);
+ ```
  */
 function foldUsage(
   {
@@ -177,19 +177,19 @@ function foldUsage(
   },
 ): void {
   /**
-   * Usage block, absent while a frame carries none.
+   Usage block, absent while a frame carries none.
    */
   const { usage, } = holder;
   if (!isJsonRecord(usage,))
     return;
 
   /**
-   * Prompt tokens this frame reported.
+   Prompt tokens this frame reported.
    */
   const { input_tokens: input, } = usage;
 
   /**
-   * Completion tokens this frame reported.
+   Completion tokens this frame reported.
    */
   const { output_tokens: output, } = usage;
 
@@ -204,16 +204,16 @@ function foldUsage(
 }
 
 /**
- * Folds one `message_start` frame's usage, which it nests inside `message`.
- *
- * @param frame - parsed message-start frame
- *
- * @param fold - accumulator to append to
- *
- * @example
- * ```ts
- * foldStart({ frame, fold, },);
- * ```
+ Folds one `message_start` frame's usage, which it nests inside `message`.
+ 
+ @param frame - parsed message-start frame
+ 
+ @param fold - accumulator to append to
+ 
+ @example
+ ```ts
+ foldStart({ frame, fold, },);
+ ```
  */
 function foldStart(
   {
@@ -225,7 +225,7 @@ function foldStart(
   },
 ): void {
   /**
-   * Message envelope this frame opens, which holds the usage block.
+   Message envelope this frame opens, which holds the usage block.
    */
   const { message, } = frame;
   if (!isJsonRecord(message,))
@@ -238,20 +238,20 @@ function foldStart(
 }
 
 /**
- * Folds one `content_block_delta` frame's answer text, if it carried any.
- *
- * READS BOTH `text_delta` AND `input_json_delta`, because a model asked for a
- * tool answers in the second and a model asked for prose answers in the first,
- * and this pipeline uses both shapes.
- *
- * @param frame - parsed delta frame
- *
- * @param fold - accumulator to append to
- *
- * @example
- * ```ts
- * foldDelta({ frame, fold, },);
- * ```
+ Folds one `content_block_delta` frame's answer text, if it carried any.
+ 
+ READS BOTH `text_delta` AND `input_json_delta`, because a model asked for a
+ tool answers in the second and a model asked for prose answers in the first,
+ and this pipeline uses both shapes.
+ 
+ @param frame - parsed delta frame
+ 
+ @param fold - accumulator to append to
+ 
+ @example
+ ```ts
+ foldDelta({ frame, fold, },);
+ ```
  */
 function foldDelta(
   {
@@ -263,14 +263,14 @@ function foldDelta(
   },
 ): void {
   /**
-   * Delta descriptor the frame carried.
+   Delta descriptor the frame carried.
    */
   const { delta, } = frame;
   if (!isJsonRecord(delta,))
     return;
 
   /**
-   * Kind of delta, which names the field its text rides in.
+   Kind of delta, which names the field its text rides in.
    */
   const kind = stringField({
     fields: delta,
@@ -294,16 +294,16 @@ function foldDelta(
 }
 
 /**
- * Folds one `message_delta` frame's stop reason and usage.
- *
- * @param frame - parsed message-delta frame
- *
- * @param fold - accumulator to append to
- *
- * @example
- * ```ts
- * foldMessageDelta({ frame, fold, },);
- * ```
+ Folds one `message_delta` frame's stop reason and usage.
+ 
+ @param frame - parsed message-delta frame
+ 
+ @param fold - accumulator to append to
+ 
+ @example
+ ```ts
+ foldMessageDelta({ frame, fold, },);
+ ```
  */
 function foldMessageDelta(
   {
@@ -320,14 +320,14 @@ function foldMessageDelta(
   },);
 
   /**
-   * Delta descriptor, which carries the stop reason on this frame kind.
+   Delta descriptor, which carries the stop reason on this frame kind.
    */
   const { delta, } = frame;
   if (!isJsonRecord(delta,))
     return;
 
   /**
-   * Why the model stopped, absent while it is still going.
+   Why the model stopped, absent while it is still going.
    */
   const reason = stringField({
     fields: delta,
@@ -341,46 +341,46 @@ function foldMessageDelta(
 }
 
 /**
- * Token counts as a READER sees them, with no way to append.
- *
- * A SEPARATE TYPE FROM {@link AnthropicFold} because the accumulator is
- * deliberately mutable and this function only reads it. Taking the accumulator
- * here would hand a reader the ability to change what it is reporting on.
- *
- * @example
- * ```ts
- * const counts: ReportedCounts = { promptTokens: [41,], completionTokens: [12,], };
- * ```
+ Token counts as a READER sees them, with no way to append.
+ 
+ A SEPARATE TYPE FROM {@link AnthropicFold} because the accumulator is
+ deliberately mutable and this function only reads it. Taking the accumulator
+ here would hand a reader the ability to change what it is reporting on.
+ 
+ @example
+ ```ts
+ const counts: ReportedCounts = { promptTokens: [41,], completionTokens: [12,], };
+ ```
  */
 type ReportedCounts = {
   /**
-   * Prompt tokens, in arrival order.
+   Prompt tokens, in arrival order.
    */
   readonly promptTokens: readonly number[];
 
   /**
-   * Completion tokens, in arrival order.
+   Completion tokens, in arrival order.
    */
   readonly completionTokens: readonly number[];
 };
 
 /**
- * Usage fragment for the result, present only when the stream reported counts.
- *
- * @param counts - token counts the body reported, read only
- *
- * @returns Spreadable fragment carrying usage, or nothing
- *
- * @example
- * ```ts
- * const fragment = usageOf({ counts: fold, },);
- * ```
+ Usage fragment for the result, present only when the stream reported counts.
+ 
+ @param counts - token counts the body reported, read only
+ 
+ @returns Spreadable fragment carrying usage, or nothing
+ 
+ @example
+ ```ts
+ const fragment = usageOf({ counts: fold, },);
+ ```
  */
 function usageOf(
   { counts, }: { readonly counts: ReportedCounts; },
 ): Pick<ExtractedCompletion, 'usage'> {
   /**
-   * Both count series, named so neither read is a three-step chain.
+   Both count series, named so neither read is a three-step chain.
    */
   const {
     promptTokens,
@@ -388,21 +388,21 @@ function usageOf(
   } = counts;
 
   /**
-   * Prompt tokens, which arrive once in `message_start`.
+   Prompt tokens, which arrive once in `message_start`.
    */
   const prompt = promptTokens
     .at(-1,)
     ?? 0;
 
   /**
-   * Completion tokens, whose last report is the running total.
+   Completion tokens, whose last report is the running total.
    */
   const completion = completionTokens
     .at(-1,)
     ?? 0;
 
   /**
-   * Whether the provider reported any count at all.
+   Whether the provider reported any count at all.
    */
   const silent = (promptTokens.length === 0)
     && (completionTokens.length === 0);
@@ -419,38 +419,38 @@ function usageOf(
 }
 
 /**
- * Refuses a body whose event stream never reached its terminator.
- *
- * SPLIT OUT SO THE RETRY LADDER CAN ASK IT TOO. A body that stops before
- * `message_stop` is a transport failure wearing a success status: the HTTP
- * exchange returned 200 and the message inside it is not whole. Reading it
- * only after the retry had already returned meant the one failure this file
- * calls a transport failure was the only one that never retried.
- *
- * ONE RULE IN ONE PLACE. `extractAnthropicCompletion` calls this rather than
- * carrying its own copy, so the retry and the parse can never disagree about
- * what a finished message looks like.
- *
- * @param bodyText - whole drained body, as the transport returned it
- *
- * @throws {@link MalformedCompletionError} when the terminator never arrived
- *
- * @example
- * ```ts
- * requireAnthropicTerminator({ bodyText, },);
- * ```
+ Refuses a body whose event stream never reached its terminator.
+ 
+ SPLIT OUT SO THE RETRY LADDER CAN ASK IT TOO. A body that stops before
+ `message_stop` is a transport failure wearing a success status: the HTTP
+ exchange returned 200 and the message inside it is not whole. Reading it
+ only after the retry had already returned meant the one failure this file
+ calls a transport failure was the only one that never retried.
+ 
+ ONE RULE IN ONE PLACE. `extractAnthropicCompletion` calls this rather than
+ carrying its own copy, so the retry and the parse can never disagree about
+ what a finished message looks like.
+ 
+ @param bodyText - whole drained body, as the transport returned it
+ 
+ @throws {@link MalformedCompletionError} when the terminator never arrived
+ 
+ @example
+ ```ts
+ requireAnthropicTerminator({ bodyText, },);
+ ```
  */
 export function requireAnthropicTerminator(
   { bodyText, }: { readonly bodyText: string; },
 ): void {
   /**
-   * Whether the message ended the way a whole one does.
+   Whether the message ended the way a whole one does.
    */
   const ended = bodyText
     .split('\n',)
     .some(function isStop(rawLine,): boolean {
       /**
-       * Payload of this line, empty for a line carrying no event.
+       Payload of this line, empty for a line carrying no event.
        */
       const payload = dataPayloadOf(rawLine,);
       return payload.includes(`"${TERMINATOR}"`,);
@@ -464,24 +464,24 @@ export function requireAnthropicTerminator(
 }
 
 /**
- * Reassembles one drained Anthropic Messages body into a completion.
- *
- * @param bodyText - whole drained `text/event-stream` body
- *
- * @returns Answer text, stop reason, and usage
- *
- * @throws {@link MalformedCompletionError} when an event is not JSON or `message_stop` never arrived
- *
- * @example
- * ```ts
- * const extracted = extractAnthropicCompletion({ bodyText: reply.bodyText, },);
- * ```
+ Reassembles one drained Anthropic Messages body into a completion.
+ 
+ @param bodyText - whole drained `text/event-stream` body
+ 
+ @returns Answer text, stop reason, and usage
+ 
+ @throws {@link MalformedCompletionError} when an event is not JSON or `message_stop` never arrived
+ 
+ @example
+ ```ts
+ const extracted = extractAnthropicCompletion({ bodyText: reply.bodyText, },);
+ ```
  */
 export function extractAnthropicCompletion(
   { bodyText, }: { readonly bodyText: string; },
 ): ExtractedCompletion {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: extractAnthropicCompletion.name,
@@ -489,7 +489,7 @@ export function extractAnthropicCompletion(
   },);
 
   /**
-   * Everything this pass over the body accumulates.
+   Everything this pass over the body accumulates.
    */
   const fold: AnthropicFold = {
     textParts: [],
@@ -502,13 +502,13 @@ export function extractAnthropicCompletion(
   requireAnthropicTerminator({ bodyText, },);
 
   /**
-   * Body lines, folded into the answer.
+   Body lines, folded into the answer.
    */
   const lines = bodyText.split('\n',);
 
   for (const rawLine of lines) {
     /**
-     * Event payload of this line; empty lines fold nothing.
+     Event payload of this line; empty lines fold nothing.
      */
     const payload = dataPayloadOf(rawLine,);
     if (payload === '')
@@ -517,7 +517,7 @@ export function extractAnthropicCompletion(
       continue;
 
     /**
-     * Parsed event payload.
+     Parsed event payload.
      */
     const frame: unknown = (function parseFrame(): unknown {
       try {
@@ -534,7 +534,7 @@ export function extractAnthropicCompletion(
       throw new MalformedCompletionError({ detail: 'anthropic stream event is not a JSON object', },);
 
     /**
-     * Which frame this is.
+     Which frame this is.
      */
     const kind = stringField({
       fields: frame,
@@ -559,7 +559,7 @@ export function extractAnthropicCompletion(
   }
 
   /**
-   * Stop reason, when the stream reported one.
+   Stop reason, when the stream reported one.
    */
   const stopReason = fold
     .stopReasons
@@ -567,14 +567,14 @@ export function extractAnthropicCompletion(
     ?? '';
 
   /**
-   * Tool arguments, whole, when the model called the tool at all.
+   Tool arguments, whole, when the model called the tool at all.
    */
   const toolAnswer = fold
     .toolParts
     .join('',);
 
   /**
-   * Prose, whole, which is the answer only when no tool was called.
+   Prose, whole, which is the answer only when no tool was called.
    */
   const prose = fold
     .textParts

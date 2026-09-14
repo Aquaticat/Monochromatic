@@ -1,14 +1,14 @@
 /**
- * Tests for the bench-quorum reading a phase takes before it starts.
- *
- * THE THIRTEENTH CLASS: on 2026-09-07 Hyper named its return in 538 s and was
- * held out for exactly that, Bedrock stayed wet, and so nothing waited. The
- * translate lane started with every Hyper-only writer refused in the same
- * millisecond, and every consolidation round read `quorum-not-met` at 0 ms.
- * A bench that cannot reach quorum among the seats a wet provider serves is
- * the phase-level twin of the all-dry case the router already waits on.
- *
- * @module
+ Tests for the bench-quorum reading a phase takes before it starts.
+ 
+ THE THIRTEENTH CLASS: on 2026-09-07 Hyper named its return in 538 s and was
+ held out for exactly that, Bedrock stayed wet, and so nothing waited. The
+ translate lane started with every Hyper-only writer refused in the same
+ millisecond, and every consolidation round read `quorum-not-met` at 0 ms.
+ A bench that cannot reach quorum among the seats a wet provider serves is
+ the phase-level twin of the all-dry case the router already waits on.
+ 
+ @module
  */
 
 import {
@@ -32,7 +32,7 @@ import {
 //region Bench quorum tests
 
 /**
- * Every provider wet.
+ Every provider wet.
  */
 const ALL_WET: BudgetView = {
   synthetic: false,
@@ -42,8 +42,8 @@ const ALL_WET: BudgetView = {
 };
 
 /**
- * The third hakureico pass at 22:00 UTC: Synthetic's week spent, Hyper held
- * out by its daily limit, OpenRouter at 0.01 USD, Bedrock alone wet.
+ The third hakureico pass at 22:00 UTC: Synthetic's week spent, Hyper held
+ out by its daily limit, OpenRouter at 0.01 USD, Bedrock alone wet.
  */
 const BEDROCK_ALONE: BudgetView = {
   synthetic: true,
@@ -53,16 +53,16 @@ const BEDROCK_ALONE: BudgetView = {
 };
 
 /**
- * Benches as the seat reader derives them from one view.
- *
- * @param dry - dryness per provider
- *
- * @returns Benches keyed by the names the phase table uses
- *
- * @example
- * ```ts
- * const benches = benchesUnder({ dry: ALL_WET, },);
- * ```
+ Benches as the seat reader derives them from one view.
+ 
+ @param dry - dryness per provider
+ 
+ @returns Benches keyed by the names the phase table uses
+ 
+ @example
+ ```ts
+ const benches = benchesUnder({ dry: ALL_WET, },);
+ ```
  */
 function benchesUnder(
   { dry, }: { readonly dry: BudgetView; },
@@ -126,21 +126,21 @@ await describe({
           dry: BEDROCK_ALONE,
         },);
         /**
-         * Wide seats Bedrock serves under that view.
+         Wide seats Bedrock serves under that view.
          */
         const wideReachable = reachableSeats({
           seats: RUN_WIDE_SEATS,
           dry: BEDROCK_ALONE,
         },).length;
         /**
-         * Writers Bedrock serves under that view.
+         Writers Bedrock serves under that view.
          */
         const writersReachable = reachableSeats({
           seats: RUN_TRANSLATORS,
           dry: BEDROCK_ALONE,
         },).length;
         /**
-         * Editors and refiners, none of which Bedrock serves.
+         Editors and refiners, none of which Bedrock serves.
          */
         const editors = RUN_MODELS.editorModelIds;
         const refiners = RUN_MODELS.refinerModelIds ?? [];
@@ -168,7 +168,7 @@ await describe({
       fn: async () => {
         const benches = benchesUnder({ dry: BEDROCK_ALONE, },);
         /**
-         * Readers Bedrock serves under that view.
+         Readers Bedrock serves under that view.
          */
         const readersReachable = reachableSeats({
           seats: benches.readers,
@@ -181,7 +181,7 @@ await describe({
           dry: BEDROCK_ALONE,
         },),).toEqual([],);
         /**
-         * The same bench with one Bedrock reader gone: a single reachable reader.
+         The same bench with one Bedrock reader gone: a single reachable reader.
          */
         const oneReader = benches.readers.filter(function keeps(modelId,): boolean {
           return modelId !== readersReachable[0];

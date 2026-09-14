@@ -8,18 +8,18 @@ import {
 //region Private semantic values from already byte-bound JSON
 
 /**
- * Reads a parsed object without granting arrays record semantics.
- *
- * @param value - owned parsed JSON value
- *
- * @returns Read-only record for explicit relationship checks
- *
- * @throws PreparationRootError when object shape is absent
- *
- * @example
- * ```ts
- * const journal = preparationRootRecord(value);
- * ```
+ Reads a parsed object without granting arrays record semantics.
+ 
+ @param value - owned parsed JSON value
+ 
+ @returns Read-only record for explicit relationship checks
+ 
+ @throws PreparationRootError when object shape is absent
+ 
+ @example
+ ```ts
+ const journal = preparationRootRecord(value);
+ ```
  */
 export function preparationRootRecord(value: unknown,): Readonly<Record<string, unknown>> {
   if (Array.isArray(value,) || (!isJsonRecord(value,)))
@@ -28,18 +28,18 @@ export function preparationRootRecord(value: unknown,): Readonly<Record<string, 
 }
 
 /**
- * Reads an explicit parsed collection rather than inventing an empty inventory.
- *
- * @param value - owned parsed JSON collection
- *
- * @returns Explicit entries for semantic validation
- *
- * @throws PreparationRootError when collection shape is absent
- *
- * @example
- * ```ts
- * const entries = preparationRootArray(journal.entries);
- * ```
+ Reads an explicit parsed collection rather than inventing an empty inventory.
+ 
+ @param value - owned parsed JSON collection
+ 
+ @returns Explicit entries for semantic validation
+ 
+ @throws PreparationRootError when collection shape is absent
+ 
+ @example
+ ```ts
+ const entries = preparationRootArray(journal.entries);
+ ```
  */
 export function preparationRootArray(value: unknown,): readonly unknown[] {
   if (!Array.isArray(value,))
@@ -48,18 +48,18 @@ export function preparationRootArray(value: unknown,): readonly unknown[] {
 }
 
 /**
- * Reads nonblank text without normalizing frozen locators or notes.
- *
- * @param value - owned parsed JSON field
- *
- * @returns Unchanged required text
- *
- * @throws PreparationRootError when text is absent or blank
- *
- * @example
- * ```ts
- * const path = preparationRootString(note.path);
- * ```
+ Reads nonblank text without normalizing frozen locators or notes.
+ 
+ @param value - owned parsed JSON field
+ 
+ @returns Unchanged required text
+ 
+ @throws PreparationRootError when text is absent or blank
+ 
+ @example
+ ```ts
+ const path = preparationRootString(note.path);
+ ```
  */
 export function preparationRootString(value: unknown,): string {
   if (((typeof value) !== 'string') || (value.trim()
@@ -70,22 +70,22 @@ export function preparationRootString(value: unknown,): string {
 }
 
 /**
- * Compares independent current reconstruction with byte-bound historical claims without exposing either body.
- *
- * @param actual - current native reconstruction or claimed relationship being checked
- *
- * @param expected - independently bound comparison value
- *
- * @param kind - fixed affected-input diagnostic
- *
- * @param input - optional safe locator or identity, never either compared body
- *
- * @throws PreparationRootError when complete structural equality differs
- *
- * @example
- * ```ts
- * assertPreparationRootEqual({ actual: current.population, expected: pool.population, kind: 'population' });
- * ```
+ Compares independent current reconstruction with byte-bound historical claims without exposing either body.
+ 
+ @param actual - current native reconstruction or claimed relationship being checked
+ 
+ @param expected - independently bound comparison value
+ 
+ @param kind - fixed affected-input diagnostic
+ 
+ @param input - optional safe locator or identity, never either compared body
+ 
+ @throws PreparationRootError when complete structural equality differs
+ 
+ @example
+ ```ts
+ assertPreparationRootEqual({ actual: current.population, expected: pool.population, kind: 'population' });
+ ```
  */
 export function assertPreparationRootEqual({
   actual,

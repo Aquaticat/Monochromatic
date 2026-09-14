@@ -32,31 +32,31 @@ import {
 // roster still throws, as infrastructure failure.
 
 /**
- * Decides which source-only slices a corpus pass may ask translators to fill.
- *
- * @param client - provider client shared with pass stages
- *
- * @param prepared - one source/target preparation carrying insertion slices
- *
- * @param modelIds - measured production coverage roster
- *
- * @param overlap - most coverage questions in flight
- *
- * @param signal - entry deadline and caller abort
- *
- * @param perCallTimeoutMs - deadline per coverage exchange
- *
- * @param l - entry logger
- *
- * @returns Admitted positions and count-only evidence for every candidate
- *
- * @throws {@link TranslationRepairInterruptedError}
- * when no coverage voice was heard for some passage
- *
- * @example
- * ```ts
- * const admission = await decidePassInsertionAdmission({ client, prepared, modelIds, overlap: 4, signal, perCallTimeoutMs, l, },);
- * ```
+ Decides which source-only slices a corpus pass may ask translators to fill.
+ 
+ @param client - provider client shared with pass stages
+ 
+ @param prepared - one source/target preparation carrying insertion slices
+ 
+ @param modelIds - measured production coverage roster
+ 
+ @param overlap - most coverage questions in flight
+ 
+ @param signal - entry deadline and caller abort
+ 
+ @param perCallTimeoutMs - deadline per coverage exchange
+ 
+ @param l - entry logger
+ 
+ @returns Admitted positions and count-only evidence for every candidate
+ 
+ @throws {@link TranslationRepairInterruptedError}
+ when no coverage voice was heard for some passage
+ 
+ @example
+ ```ts
+ const admission = await decidePassInsertionAdmission({ client, prepared, modelIds, overlap: 4, signal, perCallTimeoutMs, l, },);
+ ```
  */
 export async function decidePassInsertionAdmission(
   {
@@ -78,7 +78,7 @@ export async function decidePassInsertionAdmission(
   }>,
 ): Promise<InsertionAdmission> {
   /**
-   * Source-only slices, in document order.
+   Source-only slices, in document order.
    */
   const candidates: readonly InsertionCandidate[] = prepared
     .slices
@@ -87,13 +87,13 @@ export async function decidePassInsertionAdmission(
       position,
     ): readonly InsertionCandidate[] {
       /**
-       * Placement on target side.
+       Placement on target side.
        */
       const { target, } = slice;
       if (!isInsertionChunk(target,))
         return [];
       /**
-       * Source passage paired with that placement.
+       Source passage paired with that placement.
        */
       const { source, } = slice;
       return [{
@@ -111,7 +111,7 @@ export async function decidePassInsertionAdmission(
   }
 
   /**
-   * Metadata insertion positions admitted by explicit syntax role.
+   Metadata insertion positions admitted by explicit syntax role.
    */
   const frontMatterPositions = new Set(candidates
     .filter(function isFrontMatter(candidate,): boolean {
@@ -121,19 +121,19 @@ export async function decidePassInsertionAdmission(
       return candidate.position;
     },),);
   /**
-   * Prose candidates requiring semantic coverage proof.
+   Prose candidates requiring semantic coverage proof.
    */
   const semanticCandidates = candidates.filter(function isProse(candidate,): boolean {
     return !candidate.frontMatter;
   },);
 
   /**
-   * Target parsed once so every coverage quote anchors against one document.
+   Target parsed once so every coverage quote anchors against one document.
    */
   const target = parseDocument({ text: prepared.targetText, },);
 
   /**
-   * Logger marking admission as one stage beneath entry.
+   Logger marking admission as one stage beneath entry.
    */
   const al = tagged({
     tag: decidePassInsertionAdmission.name,
@@ -141,14 +141,14 @@ export async function decidePassInsertionAdmission(
   },);
 
   /**
-   * Semantic and destination evidence per source-only slice.
+   Semantic and destination evidence per source-only slice.
    */
   const initialRows = await mapOverlapped({
     items: semanticCandidates,
     overlap,
     oneItem: async function readCandidate({ item: candidate, },): Promise<InsertionCoverageRow> {
       /**
-       * Candidate fields used by both evidence readers.
+       Candidate fields used by both evidence readers.
        */
       const {
         sliceIndex,
@@ -156,21 +156,21 @@ export async function decidePassInsertionAdmission(
       } = candidate;
 
       /**
-       * Whether this passage carries a destination absent from whole target.
+       Whether this passage carries a destination absent from whole target.
        */
       const destinations = droppedDestinations({
         sourceText,
         pageText: prepared.targetText,
       },);
       /**
-       * Missing source destinations counted without exposing their values.
+       Missing source destinations counted without exposing their values.
        */
       const missingDestinationCount = destinations
         .dropped
         .length;
 
       /**
-       * Roster verdict independent of pairing and shortfall.
+       Roster verdict independent of pairing and shortfall.
        */
       const answer = await runCoverageStage({
         client,
@@ -182,7 +182,7 @@ export async function decidePassInsertionAdmission(
         l: al,
       },);
       /**
-       * Coverage result fields persisted as counts and findings.
+       Coverage result fields persisted as counts and findings.
        */
       const {
         verdict,
@@ -222,7 +222,7 @@ export async function decidePassInsertionAdmission(
     }
   }
   /**
-   * Single-round resolution of every candidate.
+   Single-round resolution of every candidate.
    */
   const classification = classifyInsertionCoverage({
     candidates,

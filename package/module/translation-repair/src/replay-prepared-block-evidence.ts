@@ -18,25 +18,25 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 //region Current questioned-evidence replay before scope-specific qualification
 
 /**
- * Replays exact current block evidence and its configured usable quorum without granting placement authority.
- * Full-parent coverage and definition-only domains are separate consumers of this boundary.
- *
- * @param pair - current parser-owned parent establishing local numbering and definition exemptions
- *
- * @param evidence - retained acquisition evidence, never a historical-cache qualification shortcut
- *
- * @param modelIds - independently configured electorate
- *
- * @param l - caller logger retaining preparation scope
- *
- * @returns Current replay view for immediate scope checks; the final qualifier owns its returned data
- *
- * @throws PreparationQualificationError when cache origin, question, aggregate or usable quorum disagrees
- *
- * @example
- * ```ts
- * const replay = replayPreparedBlockEvidence({ pair, evidence, modelIds, l });
- * ```
+ Replays exact current block evidence and its configured usable quorum without granting placement authority.
+ Full-parent coverage and definition-only domains are separate consumers of this boundary.
+ 
+ @param pair - current parser-owned parent establishing local numbering and definition exemptions
+ 
+ @param evidence - retained acquisition evidence, never a historical-cache qualification shortcut
+ 
+ @param modelIds - independently configured electorate
+ 
+ @param l - caller logger retaining preparation scope
+ 
+ @returns Current replay view for immediate scope checks; the final qualifier owns its returned data
+ 
+ @throws PreparationQualificationError when cache origin, question, aggregate or usable quorum disagrees
+ 
+ @example
+ ```ts
+ const replay = replayPreparedBlockEvidence({ pair, evidence, modelIds, l });
+ ```
  */
 export function replayPreparedBlockEvidence({
   pair,
@@ -54,7 +54,7 @@ export function replayPreparedBlockEvidence({
   readonly requiredUsable: number;
 } {
   /**
-   * Replay is distinct from either acquisition or downstream scope qualification.
+   Replay is distinct from either acquisition or downstream scope qualification.
    */
   const pl = tagged({
     tag: replayPreparedBlockEvidence.name,
@@ -63,13 +63,13 @@ export function replayPreparedBlockEvidence({
   if (evidence.kind === 'cached')
     throw new PreparationQualificationError({ kind: 'historical-cache', },);
   /**
-   * Local numbering and interpretation always come from the current parent.
+   Local numbering and interpretation always come from the current parent.
    */
   const question = blockPairingQuestion({ pair, },);
   if (evidence.key !== question.key)
     throw new PreparationQualificationError({ kind: 'question', },);
   /**
-   * Native replay validates independent seats and every usable wire before agreement.
+   Native replay validates independent seats and every usable wire before agreement.
    */
   const outcome = readBlockPairingOutcomes({
     outcomes: evidence.outcome
@@ -88,7 +88,7 @@ export function replayPreparedBlockEvidence({
   ))
     throw new PreparationQualificationError({ kind: 'result', },);
   /**
-   * Configured electorate, not the heard subset or a historical cache flag, sets this requirement.
+   Configured electorate, not the heard subset or a historical cache flag, sets this requirement.
    */
   const requiredUsable = rosterQuorumSize({ rosterSize: modelIds.length, },);
   pl.debug(`replaying ${String(outcome.usable,)} usable replies against ${String(requiredUsable,)} required`,);

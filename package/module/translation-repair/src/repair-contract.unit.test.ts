@@ -1,29 +1,29 @@
 /**
- * Tests for the producer-roster independence guard.
- *
- * `assertJudgeableProducerRoster` refuses a roster that could not decide a
- * round however its judges voted, and NOTHING ELSE. By the user ruling of
- * 2026-08-14 self-judging is allowed at reduced weight, so a roster where every
- * model both produces and judges is legal; what is not legal is a roster too
- * small to reach the minimum selection weight, since one judge contributes at
- * most one full-weight ballot.
- *
- * The cases that used to assert an independence requirement are inverted here
- * on purpose: they now assert that the same rosters are ACCEPTED. An earlier
- * version of this file recorded the opposite policy, and reading them side by
- * side is the clearest statement of what changed.
- *
- * `assertJudgeableEditorRoster` delegates here and is covered through the
- * editor ensemble, so the arithmetic branches already run. What was never
- * exercised is the `role` parameter and the second caller that uses it: the
- * naturalness lane passes `refiner`, and if `role` were ever dropped a refiner
- * roster failure would report itself as an editor failure and send whoever
- * reads it to the wrong configuration.
- *
- * Model ids are real catalog entries because `RosterModelId` is a closed
- * union.
- *
- * @module
+ Tests for the producer-roster independence guard.
+ 
+ `assertJudgeableProducerRoster` refuses a roster that could not decide a
+ round however its judges voted, and NOTHING ELSE. By the user ruling of
+ 2026-08-14 self-judging is allowed at reduced weight, so a roster where every
+ model both produces and judges is legal; what is not legal is a roster too
+ small to reach the minimum selection weight, since one judge contributes at
+ most one full-weight ballot.
+ 
+ The cases that used to assert an independence requirement are inverted here
+ on purpose: they now assert that the same rosters are ACCEPTED. An earlier
+ version of this file recorded the opposite policy, and reading them side by
+ side is the clearest statement of what changed.
+ 
+ `assertJudgeableEditorRoster` delegates here and is covered through the
+ editor ensemble, so the arithmetic branches already run. What was never
+ exercised is the `role` parameter and the second caller that uses it: the
+ naturalness lane passes `refiner`, and if `role` were ever dropped a refiner
+ roster failure would report itself as an editor failure and send whoever
+ reads it to the wrong configuration.
+ 
+ Model ids are real catalog entries because `RosterModelId` is a closed
+ union.
+ 
+ @module
  */
 
 import {
@@ -42,27 +42,27 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Model that produces candidates in most cases below.
+ Model that produces candidates in most cases below.
  */
 const PRODUCER_ONE = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
- * Second producer, for repeat and overlap cases.
+ Second producer, for repeat and overlap cases.
  */
 const PRODUCER_TWO = 'hf:moonshotai/Kimi-K3';
 
 /**
- * Judge with no stake in either producer's output.
+ Judge with no stake in either producer's output.
  */
 const JUDGE_ONE = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * Second disinterested judge, so a roster can meet the vote minimum.
+ Second disinterested judge, so a roster can meet the vote minimum.
  */
 const JUDGE_TWO = 'hf:openai/gpt-oss-120b';
 
 /**
- * Third disinterested judge, for rosters that must exceed the minimum.
+ Third disinterested judge, for rosters that must exceed the minimum.
  */
 const JUDGE_THREE = 'minimax-m3';
 
@@ -253,7 +253,7 @@ await describe({
         + 'the right configuration',
       fn: async () => {
         /**
-         * What refuseRefinerRoster raised, read for its class as well as its wording.
+         What refuseRefinerRoster raised, read for its class as well as its wording.
          */
         const refusalOfRefuseRefinerRoster = caught(function refuseRefinerRoster() {
           assertJudgeableProducerRoster({
@@ -290,8 +290,8 @@ await describe({
         + 'nothing to change',
       fn: async () => {
         /**
-         * Judges available to draw from, sliced against the constants so this
-         * case follows the floor if either weight ever moves.
+         Judges available to draw from, sliced against the constants so this
+         case follows the floor if either weight ever moves.
          */
         const pool = [
           JUDGE_ONE,
@@ -300,7 +300,7 @@ await describe({
         ] as const;
 
         /**
-         * Seats the weights require, derived exactly as the guard derives them.
+         Seats the weights require, derived exactly as the guard derives them.
          */
         const seats = Math.ceil(MIN_SELECTION_WEIGHT / FULL_VOTE_WEIGHT,);
 
@@ -355,7 +355,7 @@ await describe({
         + 'whoever reads it to the wrong configuration',
       fn: async () => {
         /**
-         * What refuseAndSayWhy raised, read for its class as well as its wording.
+         What refuseAndSayWhy raised, read for its class as well as its wording.
          */
         const refusalOfRefuseAndSayWhy = caught(function refuseAndSayWhy() {
           assertJudgeableProducerRoster({
@@ -384,7 +384,7 @@ await describe({
         + 'under two different names',
       fn: async () => {
         /**
-         * What refuseEditorRoster raised, read for its class as well as its wording.
+         What refuseEditorRoster raised, read for its class as well as its wording.
          */
         const refusalOfRefuseEditorRoster = caught(function refuseEditorRoster() {
           assertJudgeableEditorRoster({

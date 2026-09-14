@@ -1,11 +1,11 @@
 /**
- * Tests for the editor prompt's fencing.
- *
- * The builder had no suite; what it fences is corpus prose and its own
- * rendered regions, and the fence used to be a fixed row of equals signs a
- * setext heading underline could reproduce.
- *
- * @module
+ Tests for the editor prompt's fencing.
+ 
+ The builder had no suite; what it fences is corpus prose and its own
+ rendered regions, and the fence used to be a fixed row of equals signs a
+ setext heading underline could reproduce.
+ 
+ @module
  */
 
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
@@ -21,28 +21,28 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original carrying a row of five equals signs, the fence the builder once
- * used, on a line of its own.
+ Original carrying a row of five equals signs, the fence the builder once
+ used, on a line of its own.
  */
 const RULED_SOURCE = '第一行。\n=====\n第二行。';
 
 /**
- * User message of a plan, as text.
- *
- * @param messages - messages the builder returned
- *
- * @returns Last message's text
- *
- * @throws {@link Error} when the builder returned no message
- *
- * @example
- * ```ts
- * const content = userText({ messages, },);
- * ```
+ User message of a plan, as text.
+ 
+ @param messages - messages the builder returned
+ 
+ @returns Last message's text
+ 
+ @throws {@link Error} when the builder returned no message
+ 
+ @example
+ ```ts
+ const content = userText({ messages, },);
+ ```
  */
 function userText({ messages, }: { readonly messages: readonly ChatMessage[]; },): string {
   /**
-   * Last message, which is the user turn.
+   Last message, which is the user turn.
    */
   const asked = messages.at(-1,);
   if (asked === undefined)

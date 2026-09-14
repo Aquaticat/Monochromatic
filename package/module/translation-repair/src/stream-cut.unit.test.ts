@@ -1,15 +1,15 @@
 /**
- * Tests for the stream progress report, the one place that says how a call
- * ended.
- *
- * TESTED THROUGH ITS RETURN VALUE rather than by capturing a logger's side
- * effect: `reportStreamProgress` hands back the exact line it logs, so an
- * assertion here reads as a statement about the LINE rather than about
- * whatever the logging subsystem happened to do with it.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the stream progress report, the one place that says how a call
+ ended.
+ 
+ TESTED THROUGH ITS RETURN VALUE rather than by capturing a logger's side
+ effect: `reportStreamProgress` hands back the exact line it logs, so an
+ assertion here reads as a statement about the LINE rather than about
+ whatever the logging subsystem happened to do with it.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -21,8 +21,8 @@ import {
 import { reportStreamProgress, } from '../dist/final/node/index.mjs';
 
 /**
- * Progress a call made before it stopped, plain numbers standing in for what
- * the idle guard would have measured.
+ Progress a call made before it stopped, plain numbers standing in for what
+ the idle guard would have measured.
  */
 const SOME_PROGRESS = {
   firstByteMs: 40,
@@ -32,9 +32,9 @@ const SOME_PROGRESS = {
 };
 
 /**
- * Generated character totals a call made before it stopped, deliberately
- * unequal to `SOME_PROGRESS.chars` and to each other, so no assertion below
- * could pass by two counts coinciding.
+ Generated character totals a call made before it stopped, deliberately
+ unequal to `SOME_PROGRESS.chars` and to each other, so no assertion below
+ could pass by two counts coinciding.
  */
 const SOME_GENERATED_CHARS = {
   content: 40,
@@ -51,7 +51,7 @@ await describe({
         + 'a deliberate ending among them',
       fn: async () => {
         /**
-         * The line a genuine cut logs.
+         The line a genuine cut logs.
          */
         const cutLine = reportStreamProgress({
           label: 'hf:whiskers',
@@ -63,7 +63,7 @@ await describe({
         },);
 
         /**
-         * The line this guard's own termination logs, everything else equal.
+         The line this guard's own termination logs, everything else equal.
          */
         const degenerateLine = reportStreamProgress({
           label: 'hf:whiskers',
@@ -90,7 +90,7 @@ await describe({
         + 'provider is attributable and a single-upstream provider\'s lines keep their shape',
       fn: async () => {
         /**
-         * The line a cut served by a named upstream logs.
+         The line a cut served by a named upstream logs.
          */
         const attributed = reportStreamProgress({
           label: 'minimax/minimax-m3',
@@ -104,7 +104,7 @@ await describe({
         expect(attributed.includes(', served by "Parasail", opening ',),).toBe(true,);
 
         /**
-         * The same line with the wire naming nobody.
+         The same line with the wire naming nobody.
          */
         const unattributed = reportStreamProgress({
           label: 'minimax/minimax-m3',
@@ -133,7 +133,7 @@ await describe({
         + 'what it was saying when the connection dropped',
       fn: async () => {
         /**
-         * Line for a call this guard ended.
+         Line for a call this guard ended.
          */
         const line = reportStreamProgress({
           label: 'hf:whiskers',
@@ -153,7 +153,7 @@ await describe({
         + 'diagnostic question and every finished call would otherwise carry one',
       fn: async () => {
         /**
-         * Line for a call that simply finished.
+         Line for a call that simply finished.
          */
         const line = reportStreamProgress({
           label: 'hf:mittens',
@@ -200,7 +200,7 @@ await describe({
         + 'line anywhere that carried a call duration',
       fn: async () => {
         /**
-         * A completion line, the shape every settled call leaves behind.
+         A completion line, the shape every settled call leaves behind.
          */
         const line = reportStreamProgress({
           label: 'hf:whiskers',
@@ -223,8 +223,8 @@ await describe({
         + 'is the only source the excerpt can possibly show',
       fn: async () => {
         /**
-         * Text that could not plausibly be mistaken for a server-sent-event
-         * envelope, so its presence in the excerpt is unambiguous.
+         Text that could not plausibly be mistaken for a server-sent-event
+         envelope, so its presence in the excerpt is unambiguous.
          */
         const said = 'Whiskers considered the shelf at length before deciding against it.';
 

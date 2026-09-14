@@ -34,94 +34,94 @@ import { readRunJson, } from '../run-json-read.ts';
 // file. It says nothing about two writers, which is this.
 
 /**
- * Logger every lock line goes through; the lock takes no caller-supplied one.
+ Logger every lock line goes through; the lock takes no caller-supplied one.
  */
 const lockLog = tagged({ tag: 'runs-lock', },);
 
 /**
- * Name of the lock file inside a runs directory.
+ Name of the lock file inside a runs directory.
  */
 const LOCK_FILE = 'pass.lock';
 
 /**
- * What a lock file records about its holder.
- *
- * @example
- * ```ts
- * const holder: LockHolder = { pid: 1234, startedAt: '2026-08-15T00:00:00.000Z', };
- * ```
+ What a lock file records about its holder.
+ 
+ @example
+ ```ts
+ const holder: LockHolder = { pid: 1234, startedAt: '2026-08-15T00:00:00.000Z', };
+ ```
  */
 type LockHolder = Readonly<{
   /**
-   * Process holding it.
+   Process holding it.
    */
   pid: number;
 
   /**
-   * When it took the lock, for a message a human can act on.
+   When it took the lock, for a message a human can act on.
    */
   startedAt: string;
 
   /**
-   * Random per-acquisition token, so a release removes only the lock this
-   * acquisition wrote and never a later holder's (`#243`). Empty on locks
-   * written before the token existed, which therefore never read as ours.
+   Random per-acquisition token, so a release removes only the lock this
+   acquisition wrote and never a later holder's (`#243`). Empty on locks
+   written before the token existed, which therefore never read as ours.
    */
   token: string;
 }>;
 
 /**
- * What a lock file turned out to say.
- *
- * A named outcome rather than an absent holder, because "no readable holder"
- * is a state a refusal has to describe, and a message that cannot say whether
- * the lock named nobody or could not be read at all leaves an operator
- * guessing.
- *
- * @example
- * ```ts
- * const read: HolderRead = { kind: 'unreadable', };
- * ```
+ What a lock file turned out to say.
+ 
+ A named outcome rather than an absent holder, because "no readable holder"
+ is a state a refusal has to describe, and a message that cannot say whether
+ the lock named nobody or could not be read at all leaves an operator
+ guessing.
+ 
+ @example
+ ```ts
+ const read: HolderRead = { kind: 'unreadable', };
+ ```
  */
 type HolderRead =
   | Readonly<{
     /**
-     * Lock file named a process.
+     Lock file named a process.
      */
     kind: 'holder';
 
     /**
-     * Who it named.
+     Who it named.
      */
     holder: LockHolder;
   }>
   | Readonly<{
     /**
-     * Lock file said nothing this can act on.
+     Lock file said nothing this can act on.
      */
     kind: 'unreadable';
   }>;
 
 /**
- * Raised when another pass already owns this runs directory.
+ Raised when another pass already owns this runs directory.
  */
 export class RunsDirectoryBusyError extends Error {
   /**
-   * Declares this message safe to forward: it names a process id, its start time and the directory.
+   Declares this message safe to forward: it names a process id, its start time and the directory.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Names the holder and the two ways forward.
-   *
-   * @param runsDir - directory whose lock is held
-   *
-   * @param holder - what the lock file records, absent when unreadable
-   *
-   * @example
-   * ```ts
-   * throw new RunsDirectoryBusyError({ runsDir, holder, },);
-   * ```
+   Names the holder and the two ways forward.
+   
+   @param runsDir - directory whose lock is held
+   
+   @param holder - what the lock file records, absent when unreadable
+   
+   @example
+   ```ts
+   throw new RunsDirectoryBusyError({ runsDir, holder, },);
+   ```
    */
   constructor(
     {
@@ -157,20 +157,20 @@ export class RunsDirectoryBusyError extends Error {
 }
 
 /**
- * Whether a process id is alive.
- *
- * Signal zero performs the permission and existence checks without delivering
- * anything, so it answers exactly this question. A process owned by another
- * user answers EPERM, which is still alive.
- *
- * @param pid - process id from a lock file
- *
- * @returns Whether something is running under it
- *
- * @example
- * ```ts
- * const held = isAlive({ pid: 1234, },);
- * ```
+ Whether a process id is alive.
+ 
+ Signal zero performs the permission and existence checks without delivering
+ anything, so it answers exactly this question. A process owned by another
+ user answers EPERM, which is still alive.
+ 
+ @param pid - process id from a lock file
+ 
+ @returns Whether something is running under it
+ 
+ @example
+ ```ts
+ const held = isAlive({ pid: 1234, },);
+ ```
  */
 function isAlive({ pid, }: { readonly pid: number; },): boolean {
   try {
@@ -196,23 +196,23 @@ function isAlive({ pid, }: { readonly pid: number; },): boolean {
 }
 
 /**
- * Reads what a lock file claims, or nothing when it claims nothing readable.
- *
- * @param path - lock file path
- *
- * @returns Holder it records, absent when the file is unreadable or malformed
- *
- * @example
- * ```ts
- * const holder = await readHolder({ path, },);
- * ```
+ Reads what a lock file claims, or nothing when it claims nothing readable.
+ 
+ @param path - lock file path
+ 
+ @returns Holder it records, absent when the file is unreadable or malformed
+ 
+ @example
+ ```ts
+ const holder = await readHolder({ path, },);
+ ```
  */
 async function readHolder(
   { path, }: { readonly path: string; },
 ): Promise<HolderRead> {
   try {
     /**
-     * Lock file contents as parsed JSON.
+     Lock file contents as parsed JSON.
      */
     const parsed: unknown = await readRunJson({ path, },);
 
@@ -242,22 +242,22 @@ async function readHolder(
 }
 
 /**
- * Tries to create the lock file, failing rather than overwriting.
- *
- * `wx` makes the check and the claim ONE filesystem operation, which is the
- * whole mechanism: checking for the file and then creating it leaves a window
- * in which two passes both see it absent and both proceed.
- *
- * @param path - lock file path
- *
- * @param holder - what to record inside it
- *
- * @returns Whether this call created it
- *
- * @example
- * ```ts
- * const won = await claim({ path, holder, },);
- * ```
+ Tries to create the lock file, failing rather than overwriting.
+ 
+ `wx` makes the check and the claim ONE filesystem operation, which is the
+ whole mechanism: checking for the file and then creating it leaves a window
+ in which two passes both see it absent and both proceed.
+ 
+ @param path - lock file path
+ 
+ @param holder - what to record inside it
+ 
+ @returns Whether this call created it
+ 
+ @example
+ ```ts
+ const won = await claim({ path, holder, },);
+ ```
  */
 async function claim(
   {
@@ -270,11 +270,11 @@ async function claim(
 ): Promise<boolean> {
   try {
     /**
-     * Handle from an exclusive create, which fails when the file is there.
-     *
-     * DISPOSED RATHER THAN CLOSED BY HAND, so a write that fails still closes
-     * it; the empty file such a failure leaves is what the next pass reads as
-     * unreadable and evicts, which is the documented recovery.
+     Handle from an exclusive create, which fails when the file is there.
+     
+     DISPOSED RATHER THAN CLOSED BY HAND, so a write that fails still closes
+     it; the empty file such a failure leaves is what the next pass reads as
+     unreadable and evicts, which is the documented recovery.
      */
     await using handle = await open(
       path,
@@ -292,23 +292,23 @@ async function claim(
 }
 
 /**
- * Takes exclusive ownership of a runs directory for the life of a scope.
- *
- * Created with `wx`, so the check and the claim are one filesystem operation
- * and two passes starting together cannot both win. A lock whose process is
- * gone is taken over, since a pass killed at its hard cap leaves one behind and
- * refusing forever would make every crash need manual cleanup.
- *
- * @param runsDir - durable output root this pass owns
- *
- * @returns Disposable releasing the lock
- *
- * @throws RunsDirectoryBusyError when a live process already holds it
- *
- * @example
- * ```ts
- * await using _lock = await lockRunsDir({ runsDir, },);
- * ```
+ Takes exclusive ownership of a runs directory for the life of a scope.
+ 
+ Created with `wx`, so the check and the claim are one filesystem operation
+ and two passes starting together cannot both win. A lock whose process is
+ gone is taken over, since a pass killed at its hard cap leaves one behind and
+ refusing forever would make every crash need manual cleanup.
+ 
+ @param runsDir - durable output root this pass owns
+ 
+ @returns Disposable releasing the lock
+ 
+ @throws RunsDirectoryBusyError when a live process already holds it
+ 
+ @example
+ ```ts
+ await using _lock = await lockRunsDir({ runsDir, },);
+ ```
  */
 export async function lockRunsDir(
   { runsDir, }: { readonly runsDir: string; },
@@ -325,7 +325,7 @@ export async function lockRunsDir(
   );
 
   /**
-   * Path of the lock file this pass competes for.
+   Path of the lock file this pass competes for.
    */
   const path = join(
     runsDir,
@@ -333,7 +333,7 @@ export async function lockRunsDir(
   );
 
   /**
-   * What this pass writes into the lock file.
+   What this pass writes into the lock file.
    */
   const holder: LockHolder = {
     pid: process.pid,
@@ -346,13 +346,13 @@ export async function lockRunsDir(
     holder,
   },)) {
     /**
-     * Whoever the existing lock names.
+     Whoever the existing lock names.
      */
     const existing = await readHolder({ path, },);
 
     if (existing.kind === 'holder') {
       /**
-       * Process the existing lock names.
+       Process the existing lock names.
        */
       const { holder: heldBy, } = existing;
 
@@ -383,7 +383,7 @@ export async function lockRunsDir(
       holder,
     },)) {
       /**
-       * Whoever won the race this pass lost.
+       Whoever won the race this pass lost.
        */
       const winner = await readHolder({ path, },);
 
@@ -405,33 +405,33 @@ export async function lockRunsDir(
 }
 
 /**
- * Removes a stale lock so that exactly one of any number of concurrent
- * starters does it.
- *
- * A RENAME, NOT A REMOVE. Two starters that both found the lock stale and both
- * removed it could interleave as remove, claim, remove, claim, the second
- * remove deleting the first starter's fresh lock, and both passes then ran in
- * one directory (`#243`). A rename to a name only this call knows is atomic:
- * the first starter's rename succeeds and the second's finds nothing to
- * rename, so the second proceeds straight to a claim it will lose.
- *
- * @param path - lock file to evict
- *
- * @returns `evicted` when this call moved the lock aside, `gone` when another
- * starter had already done so
- *
- * @example
- * ```ts
- * const outcome = await evictStaleLock({ path, },);
- * ```
- *
- * @internal
+ Removes a stale lock so that exactly one of any number of concurrent
+ starters does it.
+ 
+ A RENAME, NOT A REMOVE. Two starters that both found the lock stale and both
+ removed it could interleave as remove, claim, remove, claim, the second
+ remove deleting the first starter's fresh lock, and both passes then ran in
+ one directory (`#243`). A rename to a name only this call knows is atomic:
+ the first starter's rename succeeds and the second's finds nothing to
+ rename, so the second proceeds straight to a claim it will lose.
+ 
+ @param path - lock file to evict
+ 
+ @returns `evicted` when this call moved the lock aside, `gone` when another
+ starter had already done so
+ 
+ @example
+ ```ts
+ const outcome = await evictStaleLock({ path, },);
+ ```
+ 
+ @internal
  */
 export async function evictStaleLock(
   { path, }: { readonly path: string; },
 ): Promise<'evicted' | 'gone'> {
   /**
-   * Name only this call knows, so two evictions cannot collide on it either.
+   Name only this call knows, so two evictions cannot collide on it either.
    */
   const asideName = `${path}.stale-${randomUUID()}`;
   try {
@@ -454,22 +454,22 @@ export async function evictStaleLock(
 }
 
 /**
- * Removes the lock file only when it still carries this acquisition's token,
- * so a starter that lost a takeover cannot delete the winner's lock on its
- * way out (`#243`). Says so when it keeps one.
- *
- * @param path - lock file
- *
- * @param holder - holder this acquisition wrote
- *
- * @returns `released` when the file was ours and is gone, `kept` otherwise
- *
- * @example
- * ```ts
- * const outcome = await releaseIfOwned({ path, holder, },);
- * ```
- *
- * @internal
+ Removes the lock file only when it still carries this acquisition's token,
+ so a starter that lost a takeover cannot delete the winner's lock on its
+ way out (`#243`). Says so when it keeps one.
+ 
+ @param path - lock file
+ 
+ @param holder - holder this acquisition wrote
+ 
+ @returns `released` when the file was ours and is gone, `kept` otherwise
+ 
+ @example
+ ```ts
+ const outcome = await releaseIfOwned({ path, holder, },);
+ ```
+ 
+ @internal
  */
 export async function releaseIfOwned(
   {
@@ -481,12 +481,12 @@ export async function releaseIfOwned(
   },
 ): Promise<'released' | 'kept'> {
   /**
-   * Whoever holds the file now.
+   Whoever holds the file now.
    */
   const current = await readHolder({ path, },);
   if (current.kind === 'holder') {
     /**
-     * Holder the file names now.
+     Holder the file names now.
      */
     const { holder: found, } = current;
     if (found.token === holder.token) {

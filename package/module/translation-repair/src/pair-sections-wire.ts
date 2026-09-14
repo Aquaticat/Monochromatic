@@ -29,21 +29,21 @@ import { selectFence, } from './prompt-fence.ts';
 // that would put mismatched sections in front of every later stage.
 
 /**
- * Signals a section pairing a model returned that cannot be used as one.
- *
- * @example
- * ```ts
- * throw new SectionPairingError({ message: 'pairing moves backwards on the original side at position 2', },);
- * ```
+ Signals a section pairing a model returned that cannot be used as one.
+ 
+ @example
+ ```ts
+ throw new SectionPairingError({ message: 'pairing moves backwards on the original side at position 2', },);
+ ```
  */
 export class SectionPairingError extends Error {
   /**
-   * Names the class for callers matching on it.
+   Names the class for callers matching on it.
    */
   public override readonly name = 'SectionPairingError';
 
   /**
-   * @param message - what about the returned pairing cannot be used
+   @param message - what about the returned pairing cannot be used
    */
   public constructor({ message, }: { readonly message: string; },) {
     super(message,);
@@ -51,83 +51,83 @@ export class SectionPairingError extends Error {
 }
 
 /**
- * One heading-bounded section on one side, as the sheet numbers it.
- *
- * SEPARATE FROM `NumberedBlock` despite the identical shape, because the two
- * are numbered against different documents and handing one to the other's
- * reader would validate indices against the wrong counts.
- *
- * @example
- * ```ts
- * const section: NumberedSection = { index: 0, text: '## Paws\n\nThe tabby dozed.', };
- * ```
+ One heading-bounded section on one side, as the sheet numbers it.
+ 
+ SEPARATE FROM `NumberedBlock` despite the identical shape, because the two
+ are numbered against different documents and handing one to the other's
+ reader would validate indices against the wrong counts.
+ 
+ @example
+ ```ts
+ const section: NumberedSection = { index: 0, text: '## Paws\n\nThe tabby dozed.', };
+ ```
  */
 export type NumberedSection = {
   /**
-   * Position in document order, zero-based, as the sheet shows it.
+   Position in document order, zero-based, as the sheet shows it.
    */
   readonly index: number;
 
   /**
-   * Section's own text, heading included, because the heading is most of what
-   * identifies a section and on a barely translated page it is all that is
-   * there.
+   Section's own text, heading included, because the heading is most of what
+   identifies a section and on a barely translated page it is all that is
+   there.
    */
   readonly text: string;
 };
 
 /**
- * One committed correspondence between the two sides' sections.
- *
- * @example
- * ```ts
- * const pair: SectionPair = { source: 2, target: 3, };
- * ```
+ One committed correspondence between the two sides' sections.
+ 
+ @example
+ ```ts
+ const pair: SectionPair = { source: 2, target: 3, };
+ ```
  */
 export type SectionPair = {
   /**
-   * Original-side section index.
+   Original-side section index.
    */
   readonly source: number;
 
   /**
-   * Translation-side section index.
+   Translation-side section index.
    */
   readonly target: number;
 };
 
 /**
- * What a model returns for one document's sections.
- *
- * Unpaired sections are ABSENT rather than listed against a sentinel, for the
- * reason the block wire gives: a sentinel invites a model to pair everything and
- * mark the doubtful ones, which is the behaviour this exists to prevent.
- *
- * @example
- * ```ts
- * const wire: SectionPairingWire = { pairs: [{ source: 0, target: 0, },], };
- * ```
+ What a model returns for one document's sections.
+ 
+ Unpaired sections are ABSENT rather than listed against a sentinel, for the
+ reason the block wire gives: a sentinel invites a model to pair everything and
+ mark the doubtful ones, which is the behaviour this exists to prevent.
+ 
+ @example
+ ```ts
+ const wire: SectionPairingWire = { pairs: [{ source: 0, target: 0, },], };
+ ```
  */
 export type SectionPairingWire = {
   /**
-   * Correspondences the model committed to, in document order.
+   Correspondences the model committed to, in document order.
    */
   readonly pairs: readonly SectionPair[];
 };
 
 /**
- * Renders one side's sections as a numbered, fenced list.
- *
- * @param sections - sections in document order
- *
- * @param fence - fence no section text can reproduce
- *
- * @returns Sheet section listing every section against its index
- *
- * @example
- * ```ts
- * const rendered = renderSections({ sections, fence: '```', },);
- * ```
+ Renders one side's sections as a numbered, fenced list.
+ 
+ @param sections - sections in document order
+ 
+ @param fence - fence no section text can reproduce
+ 
+ @returns Sheet section listing every section against its index
+ 
+ @example
+ ```ts
+ const rendered = renderSections({ sections, fence: '```', },);
+ ```
  */
 function renderSections(
   {
@@ -146,18 +146,18 @@ function renderSections(
 }
 
 /**
- * Builds the sheet asking one model to pair two documents' sections.
- *
- * @param sourceSections - original sections in document order
- *
- * @param targetSections - translation sections in document order
- *
- * @returns Messages for one pairing call
- *
- * @example
- * ```ts
- * const messages = buildSectionPairingMessages({ sourceSections, targetSections, },);
- * ```
+ Builds the sheet asking one model to pair two documents' sections.
+ 
+ @param sourceSections - original sections in document order
+ 
+ @param targetSections - translation sections in document order
+ 
+ @returns Messages for one pairing call
+ 
+ @example
+ ```ts
+ const messages = buildSectionPairingMessages({ sourceSections, targetSections, },);
+ ```
  */
 export function buildSectionPairingMessages(
   {
@@ -169,11 +169,11 @@ export function buildSectionPairingMessages(
   },
 ): readonly ChatMessage[] {
   /**
-   * Fence chosen against every section this sheet carries.
-   *
-   * Both sides are arbitrary prose and either may contain a run of backticks,
-   * so a fixed fence would let a section close its own listing and have the
-   * rest read as sheet structure.
+   Fence chosen against every section this sheet carries.
+   
+   Both sides are arbitrary prose and either may contain a run of backticks,
+   so a fixed fence would let a section close its own listing and have the
+   rest read as sheet structure.
    */
   const fence = selectFence({
     texts: [

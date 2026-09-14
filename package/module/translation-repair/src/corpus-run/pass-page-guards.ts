@@ -10,23 +10,23 @@ import type { WouldShipSource, } from './would-ship-text.ts';
 // still carried, and the footnote graph the page composes intact.
 
 /**
- * Asks every page-level guard of the would-ship page.
- *
- * @param artifact - final stage decisions used for publication
- *
- * @param slices - preparation defining replacement spans
- *
- * @param targetText - archive text the replacement spans address
- *
- * @param carried - source-only passages proven rendered elsewhere before lanes
- *
- * @throws {@link TranslationRepairInterruptedError} from whichever guard
- * refuses
- *
- * @example
- * ```ts
- * assertPageGuards({ artifact, slices: prepared.slices, targetText: settledArchiveText, carried, },);
- * ```
+ Asks every page-level guard of the would-ship page.
+ 
+ @param artifact - final stage decisions used for publication
+ 
+ @param slices - preparation defining replacement spans
+ 
+ @param targetText - archive text the replacement spans address
+ 
+ @param carried - source-only passages proven rendered elsewhere before lanes
+ 
+ @throws {@link TranslationRepairInterruptedError} from whichever guard
+ refuses
+ 
+ @example
+ ```ts
+ assertPageGuards({ artifact, slices: prepared.slices, targetText: settledArchiveText, carried, },);
+ ```
  */
 export function assertPageGuards(
   {

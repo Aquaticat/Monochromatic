@@ -2,24 +2,24 @@ import { ProducerInputRunError, } from './producer-input-error.ts';
 import { strings, } from './producer-input-inspect-fields.ts';
 
 /**
- * Native user-namespace mapping rows contain origin, destination and extent.
+ Native user-namespace mapping rows contain origin, destination and extent.
  */
 const MAPPING_FIELDS = 3;
 /**
- * Checks the pinned rootless mapping's caller row without treating its intermediate namespace IDs as host UIDs.
- *
- * @param value - native UID or GID mapping rows
- *
- * @param caller - independently captured caller ID
- *
- * @param name - fixed mapping field label
- *
- * @throws ProducerInputRunError when the caller is not mapped uniquely to the rootless namespace owner
- *
- * @example
- * ```ts
- * callerMapping({ value, caller: host.run.uid, name: 'UidMap' });
- * ```
+ Checks the pinned rootless mapping's caller row without treating its intermediate namespace IDs as host UIDs.
+ 
+ @param value - native UID or GID mapping rows
+ 
+ @param caller - independently captured caller ID
+ 
+ @param name - fixed mapping field label
+ 
+ @throws ProducerInputRunError when the caller is not mapped uniquely to the rootless namespace owner
+ 
+ @example
+ ```ts
+ callerMapping({ value, caller: host.run.uid, name: 'UidMap' });
+ ```
  */
 export function callerMapping({
   value,
@@ -31,14 +31,14 @@ export function callerMapping({
   readonly name: string
 },): void {
   /**
-   * Native metadata uses container:intermediate-namespace:extent rows in this measured profile.
+   Native metadata uses container:intermediate-namespace:extent rows in this measured profile.
    */
   const rows = strings({
     value,
     name
   });
   /**
-   * The rootless owner maps only this caller coordinate, not a whole user range, to namespace zero.
+   The rootless owner maps only this caller coordinate, not a whole user range, to namespace zero.
    */
   const wanted = `${caller}:0:1`;
   if (rows.filter(function owner(row): boolean {
@@ -52,23 +52,23 @@ export function callerMapping({
     });
   for (const row of rows) {
     /**
-     * Every other range must exclude both the caller coordinate and namespace owner zero.
+     Every other range must exclude both the caller coordinate and namespace owner zero.
      */
     const parts = row.split(':');
     /**
-     * Native range fields are kept separate from filesystem or caller authorization.
+     Native range fields are kept separate from filesystem or caller authorization.
      */
     const [containerText, namespaceText, extentText] = parts;
     /**
-     * Exact numeric conversion refuses rounding and alternate spellings.
+     Exact numeric conversion refuses rounding and alternate spellings.
      */
     const container = Number(containerText);
     /**
-     * This coordinate is not asserted to be a host-account UID.
+     This coordinate is not asserted to be a host-account UID.
      */
     const namespace = Number(namespaceText);
     /**
-     * Extent is validated before it is used for membership.
+     Extent is validated before it is used for membership.
      */
     const extent = Number(extentText);
     if ((parts.length !== MAPPING_FIELDS) || (!Number.isSafeInteger(container))

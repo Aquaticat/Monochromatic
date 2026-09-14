@@ -1,17 +1,17 @@
 /**
- * Tests for the wire-format choice.
- *
- * THE SILENT FAILURE IS THE WHOLE POINT. Draining a stream with a reader that
- * does not understand its grammar produces no error and no warning. The
- * scanner simply matches nothing, the answer channel stays empty, and every
- * runaway guard downstream reads a call that behaved perfectly and produced
- * nothing. That is indistinguishable from a model that declined, so a
- * misrouted stream would surface as a lost voice and be blamed on a provider.
- *
- * The cases below therefore assert the WRONG reader sees nothing, not only
- * that the right one sees something. Only the pair proves the choice matters.
- *
- * @module
+ Tests for the wire-format choice.
+ 
+ THE SILENT FAILURE IS THE WHOLE POINT. Draining a stream with a reader that
+ does not understand its grammar produces no error and no warning. The
+ scanner simply matches nothing, the answer channel stays empty, and every
+ runaway guard downstream reads a call that behaved perfectly and produced
+ nothing. That is indistinguishable from a model that declined, so a
+ misrouted stream would surface as a lost voice and be blamed on a provider.
+ 
+ The cases below therefore assert the WRONG reader sees nothing, not only
+ that the right one sees something. Only the pair proves the choice matters.
+ 
+ @module
  */
 
 import {
@@ -27,7 +27,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One Anthropic answer, as this provider streamed it on 2026-08-24.
+ One Anthropic answer, as this provider streamed it on 2026-08-24.
  */
 const ANTHROPIC_STREAM = [
   'data: {"type":"message_start","message":{"usage":{"input_tokens":0,"output_tokens":0}}}',
@@ -47,7 +47,7 @@ const ANTHROPIC_STREAM = [
 ].join('\n\n',);
 
 /**
- * One OpenAI-compatible answer, in the grammar the first provider streams.
+ One OpenAI-compatible answer, in the grammar the first provider streams.
  */
 const OPENAI_STREAM = [
   `data: ${JSON.stringify({
@@ -62,18 +62,18 @@ const OPENAI_STREAM = [
 ].join('\n\n',);
 
 /**
- * Characters one reader takes off one stream.
- *
- * @param wireFormat - grammar to read it as
- *
- * @param stream - body text to read
- *
- * @returns Answer-channel characters the guards would have counted
- *
- * @example
- * ```ts
- * const seen = charsSeen({ wireFormat: 'anthropic', stream: ANTHROPIC_STREAM, },);
- * ```
+ Characters one reader takes off one stream.
+ 
+ @param wireFormat - grammar to read it as
+ 
+ @param stream - body text to read
+ 
+ @returns Answer-channel characters the guards would have counted
+ 
+ @example
+ ```ts
+ const seen = charsSeen({ wireFormat: 'anthropic', stream: ANTHROPIC_STREAM, },);
+ ```
  */
 function charsSeen(
   {
@@ -85,14 +85,14 @@ function charsSeen(
   },
 ): number {
   /**
-   * Watch opened on the named grammar, as the drain opens one.
+   Watch opened on the named grammar, as the drain opens one.
    */
   const watch = watchRunaway({ wireFormat, },);
 
   watch.notifyChunk({ chunk: stream, },);
 
   /**
-   * What the guards counted, per channel; only the answer channel is at issue.
+   What the guards counted, per channel; only the answer channel is at issue.
    */
   const { content, } = watch.generatedChars();
 

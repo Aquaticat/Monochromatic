@@ -16,44 +16,44 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // and the accumulation stays honest.
 
 /**
- * Separator between ids in the flag value.
+ Separator between ids in the flag value.
  */
 const ID_SEPARATOR = ',';
 
 /**
- * Flag introducing the id list.
+ Flag introducing the id list.
  */
 const ONLY_FLAG = '--only';
 
 /**
- * Reads the entry allowlist from command-line arguments.
- *
- * An EMPTY SET MEANS EVERY ENTRY, which keeps the ordinary pass untouched: the
- * flag is absent, the set is empty, and no filtering happens. That is why this
- * returns a set rather than an optional list; a caller cannot forget to handle
- * absence, because absence and "no restriction" are the same value.
- *
- * @param argv - process arguments, including the runtime and script paths
- *
- * @returns Ids to run, empty when unrestricted
- *
- * @example
- * ```ts
- * const onlyIds = readOnlyIds({ argv: process.argv, },);
- * ```
+ Reads the entry allowlist from command-line arguments.
+ 
+ An EMPTY SET MEANS EVERY ENTRY, which keeps the ordinary pass untouched: the
+ flag is absent, the set is empty, and no filtering happens. That is why this
+ returns a set rather than an optional list; a caller cannot forget to handle
+ absence, because absence and "no restriction" are the same value.
+ 
+ @param argv - process arguments, including the runtime and script paths
+ 
+ @returns Ids to run, empty when unrestricted
+ 
+ @example
+ ```ts
+ const onlyIds = readOnlyIds({ argv: process.argv, },);
+ ```
  */
 export function readOnlyIds(
   { argv, }: { readonly argv: readonly string[]; },
 ): ReadonlySet<string> {
   /**
-   * Position of the flag, or -1 when it is absent.
+   Position of the flag, or -1 when it is absent.
    */
   const flagIndex = argv.indexOf(ONLY_FLAG,);
   if (flagIndex === (-1))
     return new Set();
 
   /**
-   * Value following the flag, absent when the flag ends the arguments.
+   Value following the flag, absent when the flag ends the arguments.
    */
   const value = argv[flagIndex + 1];
   if ((value === undefined) || value.startsWith('--',)) {
@@ -63,7 +63,7 @@ export function readOnlyIds(
   }
 
   /**
-   * Requested ids with surrounding whitespace and empty members removed.
+   Requested ids with surrounding whitespace and empty members removed.
    */
   const ids = value
     .split(ID_SEPARATOR,)

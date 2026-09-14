@@ -1,7 +1,7 @@
 /**
- * Tests generation-six final body polish artifact reader.
- *
- * @module
+ Tests generation-six final body polish artifact reader.
+ 
+ @module
  */
 
 import {
@@ -16,7 +16,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Settled polish record fixture.
+ Settled polish record fixture.
  */
 const SETTLED = {
   kind: 'settled',
@@ -86,7 +86,7 @@ await describe({
       name: 'REFUSES CHANGED POLISH WITHOUT FINAL GATE',
       fn: async () => {
         /**
-         * Settled fields except required changed-polish gate.
+         Settled fields except required changed-polish gate.
          */
         const {
           gate: unusedGate,

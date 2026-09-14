@@ -24,47 +24,47 @@ import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
 // about what a slice is.
 
 /**
- * Repairs one translation against its original, preparing the pair first.
- *
- * The entry point for a caller running the repair lane ALONE. A caller running
- * both lanes prepares once and calls {@link repairPreparedDocument} directly,
- * so the two lanes cannot disagree about what a slice is.
- *
- * @param client - injected model client
- *
- * @param sourceText - original document, front matter included
- *
- * @param targetText - translation under repair, front matter included
- *
- * @param models - role roster
- *
- * @param adjudicationConfig - tally thresholds and weights
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param sliceCharBudget - target-side characters one paragraph-bound
- * slice aims for; defaults to {@link SLICE_CHAR_BUDGET}
- *
- * @param sliceCache - optional cross-run cache; resumes finished slices
- * and persists newly finished ones so a large document survives aborts
- *
- * @param overlap - most slices in flight; defaults to one, while corpus pass
- * owns its environment-backed dial separately
- *
- * @returns Repaired candidate plus adjudicated issues and completion status
- *
- * @example
- * ```ts
- * const result = await repairTranslation({
- *   client,
- *   sourceText,
- *   targetText,
- *   models,
- *   signal,
- * },);
- * ```
+ Repairs one translation against its original, preparing the pair first.
+ 
+ The entry point for a caller running the repair lane ALONE. A caller running
+ both lanes prepares once and calls {@link repairPreparedDocument} directly,
+ so the two lanes cannot disagree about what a slice is.
+ 
+ @param client - injected model client
+ 
+ @param sourceText - original document, front matter included
+ 
+ @param targetText - translation under repair, front matter included
+ 
+ @param models - role roster
+ 
+ @param adjudicationConfig - tally thresholds and weights
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param sliceCharBudget - target-side characters one paragraph-bound
+ slice aims for; defaults to {@link SLICE_CHAR_BUDGET}
+ 
+ @param sliceCache - optional cross-run cache; resumes finished slices
+ and persists newly finished ones so a large document survives aborts
+ 
+ @param overlap - most slices in flight; defaults to one, while corpus pass
+ owns its environment-backed dial separately
+ 
+ @returns Repaired candidate plus adjudicated issues and completion status
+ 
+ @example
+ ```ts
+ const result = await repairTranslation({
+   client,
+   sourceText,
+   targetText,
+   models,
+   signal,
+ },);
+ ```
  */
 export async function repairTranslation(
   {

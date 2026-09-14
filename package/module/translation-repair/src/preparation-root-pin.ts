@@ -11,20 +11,20 @@ import { PreparationRootError, } from './preparation-root-error.ts';
 //region Independent corpus authority before other argument getters
 
 /**
- * Snapshots independent corpus authority and pins path resolution before asynchronous work or logger callbacks.
- *
- * @param input - public arguments viewed only through their independent corpus configuration
- *
- * @param origin - process location captured before any public argument getter
- *
- * @returns Owned corpus configuration with stable absolute paths
- *
- * @throws PreparationRootError when the pin is unsupported or cannot be snapshotted
- *
- * @example
- * ```ts
- * const fixed = preparationRootPin({ input, origin });
- * ```
+ Snapshots independent corpus authority and pins path resolution before asynchronous work or logger callbacks.
+ 
+ @param input - public arguments viewed only through their independent corpus configuration
+ 
+ @param origin - process location captured before any public argument getter
+ 
+ @returns Owned corpus configuration with stable absolute paths
+ 
+ @throws PreparationRootError when the pin is unsupported or cannot be snapshotted
+ 
+ @example
+ ```ts
+ const fixed = preparationRootPin({ input, origin });
+ ```
  */
 export function preparationRootPin({
   input,
@@ -35,7 +35,7 @@ export function preparationRootPin({
 },): CorpusPin {
   try {
     /**
-     * Corpus paths are configuration data, not instructions read from the frozen selection document.
+     Corpus paths are configuration data, not instructions read from the frozen selection document.
      */
     const fixed = structuredClone(input.pin,);
     if ((fixed.commitSha !== CORPUS_COMMIT_SHA) || ((typeof fixed.cloneDir) !== 'string')

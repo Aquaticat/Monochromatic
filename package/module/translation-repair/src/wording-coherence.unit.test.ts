@@ -1,18 +1,18 @@
 /**
- * Tests for the rule tying a lane's outcome to what the archive holds.
- *
- * WHAT THESE PIN is that the two axes of a wording are independent and not
- * unconstrained. Three of their combinations describe a slice that cannot
- * exist, every field of each is individually well formed, and no later join or
- * count could detect one: a fallback onto wording that was never there reads
- * downstream as a translation being kept.
- *
- * `buildLaneSliceTexts` refuses all three while building. This is the same rule
- * at the boundaries that take wordings from a caller rather than making them.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the rule tying a lane's outcome to what the archive holds.
+ 
+ WHAT THESE PIN is that the two axes of a wording are independent and not
+ unconstrained. Three of their combinations describe a slice that cannot
+ exist, every field of each is individually well formed, and no later join or
+ count could detect one: a fallback onto wording that was never there reads
+ downstream as a translation being kept.
+ 
+ `buildLaneSliceTexts` refuses all three while building. This is the same rule
+ at the boundaries that take wordings from a caller rather than making them.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -28,7 +28,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Archive wording of the slice the coherent cases use.
+ Archive wording of the slice the coherent cases use.
  */
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
@@ -41,7 +41,7 @@ await describe({
         + 'the archive has wording to stand on, and a missing passage where it has none',
       fn: async () => {
         /**
-         * Wordings a lane can legitimately report.
+         Wordings a lane can legitimately report.
          */
         const coherent = [
           {
@@ -117,7 +117,7 @@ await describe({
         + 'of untranslated passages would inherit a slice the archive covers',
       fn: async () => {
         /**
-         * What missingWhatExists raised, read for its class as well as its wording.
+         What missingWhatExists raised, read for its class as well as its wording.
          */
         const refusalOfMissingWhatExists = caught(function missingWhatExists() {
           assertWordingCoherent({

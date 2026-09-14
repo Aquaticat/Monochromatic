@@ -59,49 +59,49 @@ import {
 // number instead of as silence.
 
 /**
- * Prefix marking a line that carries a payload.
- *
- * NO TRAILING SPACE, deliberately, and this is a conformance requirement rather
- * than a guess about any one sender. The event-stream parsing algorithm says of
- * a field's value: "If value starts with a U+0020 SPACE character, remove it
- * from value." So `data: {...}` and `data:{...}` are THE SAME MESSAGE, and a
- * reader that accepts only the spaced form is simply wrong, whatever this
- * provider happens to emit today.
- *
- * Spelling the prefix with the space would skip the tight form as though it
- * were a comment, and skip it SILENTLY, since only `data:` lines are ever
- * counted as unreadable. This repository has already paid for that shape of
- * trap once: `runner-closure.ts` carries four import spellings because the tight
- * form produced a false null that looked like a self-contained bundle.
+ Prefix marking a line that carries a payload.
+ 
+ NO TRAILING SPACE, deliberately, and this is a conformance requirement rather
+ than a guess about any one sender. The event-stream parsing algorithm says of
+ a field's value: "If value starts with a U+0020 SPACE character, remove it
+ from value." So `data: {...}` and `data:{...}` are THE SAME MESSAGE, and a
+ reader that accepts only the spaced form is simply wrong, whatever this
+ provider happens to emit today.
+ 
+ Spelling the prefix with the space would skip the tight form as though it
+ were a comment, and skip it SILENTLY, since only `data:` lines are ever
+ counted as unreadable. This repository has already paid for that shape of
+ trap once: `runner-closure.ts` carries four import spellings because the tight
+ form produced a false null that looked like a self-contained bundle.
  */
 const DATA_PREFIX = 'data:';
 
 /**
- * Single optional space a sender may put after the colon.
+ Single optional space a sender may put after the colon.
  */
 const OPTIONAL_SPACE = ' ';
 
 /**
- * Payload the provider sends to mark the end of a stream, which is not JSON.
+ Payload the provider sends to mark the end of a stream, which is not JSON.
  */
 const DONE_PAYLOAD = '[DONE]';
 
 /**
- * Field the answer channel arrives in, which every model observed here spells
- * the same way.
+ Field the answer channel arrives in, which every model observed here spells
+ the same way.
  */
 const CONTENT_KEY = 'content';
 
 /**
- * Fields the thinking channel arrives in, in precedence order.
- *
- * ORDERED RATHER THAN MERGED, so a provider that begins sending both spellings
- * as aliases of one another contributes that text ONCE. Merging them would
- * double every thinking character on such a model and push the degeneration
- * detector toward a verdict on volume the model never produced.
- *
- * `reasoning_content` comes first because it is the spelling this repository's
- * own notes already name, so a model sending both stays counted as before.
+ Fields the thinking channel arrives in, in precedence order.
+ 
+ ORDERED RATHER THAN MERGED, so a provider that begins sending both spellings
+ as aliases of one another contributes that text ONCE. Merging them would
+ double every thinking character on such a model and push the degeneration
+ detector toward a verdict on volume the model never produced.
+ 
+ `reasoning_content` comes first because it is the spelling this repository's
+ own notes already name, so a model sending both stays counted as before.
  */
 const REASONING_KEYS = [
   'reasoning_content',
@@ -109,99 +109,99 @@ const REASONING_KEYS = [
 ] as const;
 
 /**
- * Top-level field a gateway that fronts many upstreams uses to name the one
- * that served this stream.
- *
- * OPENROUTER PUTS `"provider":"ModelRun"` ON EVERY CHUNK (captured
- * 2026-09-03); Synthetic and Charm Hyper front one upstream each and send no
- * such field, so their streams read as naming none and their progress lines
- * are unchanged. READ HERE, IN THE SCANNER THE DRAIN ALREADY RUNS ON EVERY
- * CHUNK, because the streams worth attributing are the cut ones, and a cut
- * stream never reaches the client's post-drain readers: the first live
- * OpenRouter pass cut five streams across three models and nothing could
- * say which endpoint had served any of them.
+ Top-level field a gateway that fronts many upstreams uses to name the one
+ that served this stream.
+ 
+ OPENROUTER PUTS `"provider":"ModelRun"` ON EVERY CHUNK (captured
+ 2026-09-03); Synthetic and Charm Hyper front one upstream each and send no
+ such field, so their streams read as naming none and their progress lines
+ are unchanged. READ HERE, IN THE SCANNER THE DRAIN ALREADY RUNS ON EVERY
+ CHUNK, because the streams worth attributing are the cut ones, and a cut
+ stream never reaches the client's post-drain readers: the first live
+ OpenRouter pass cut five streams across three models and nothing could
+ say which endpoint had served any of them.
  */
 const SERVED_BY_KEY = 'provider';
 
 /**
- * Which channel a piece of generated text arrived on.
- *
- * KEPT APART rather than merged into one string, so a degeneration verdict can
- * name the channel it happened in. "The model repeated itself while thinking"
- * and "the model repeated itself in its answer" are different failures to
- * diagnose, and the first is invisible in the answer.
+ Which channel a piece of generated text arrived on.
+ 
+ KEPT APART rather than merged into one string, so a degeneration verdict can
+ name the channel it happened in. "The model repeated itself while thinking"
+ and "the model repeated itself in its answer" are different failures to
+ diagnose, and the first is invisible in the answer.
  */
 export type StreamChannel = 'content' | 'reasoning';
 
 /**
- * One piece of generated text, and where it came from.
- *
- * @example
- * ```ts
- * const delta: ChannelDelta = { channel: 'reasoning', text: 'I will output.', };
- * ```
+ One piece of generated text, and where it came from.
+ 
+ @example
+ ```ts
+ const delta: ChannelDelta = { channel: 'reasoning', text: 'I will output.', };
+ ```
  */
 export type ChannelDelta = {
   /**
-   * Channel this text arrived on.
+   Channel this text arrived on.
    */
   readonly channel: StreamChannel;
 
   /**
-   * Text itself, exactly as sent.
+   Text itself, exactly as sent.
    */
   readonly text: string;
 };
 
 /**
- * A running scanner over one stream's raw body.
- *
- * @example
- * ```ts
- * const scanner = scanStreamDeltas();
- * const deltas = scanner.feed({ chunk, },);
- * ```
+ A running scanner over one stream's raw body.
+ 
+ @example
+ ```ts
+ const scanner = scanStreamDeltas();
+ const deltas = scanner.feed({ chunk, },);
+ ```
  */
 export type DeltaScanner = {
   /**
-   * Takes the next raw chunk and returns whatever generated text it completed.
+   Takes the next raw chunk and returns whatever generated text it completed.
    */
   readonly feed: (input: { readonly chunk: string; },) => readonly ChannelDelta[];
 
   /**
-   * Payload lines that could not be read, which should stay at zero.
+   Payload lines that could not be read, which should stay at zero.
    */
   readonly unreadableFrames: () => number;
 
   /**
-   * Upstream the gateway named on the first frame that named one, or empty
-   * for a wire whose frames name none.
+   Upstream the gateway named on the first frame that named one, or empty
+   for a wire whose frames name none.
    */
   readonly servedBy: () => string;
 };
 
 /**
- * One parsed frame's `delta` object, or an empty stand-in for a frame that
- * carries none.
- *
- * READONLY, because a writable index signature is not deeply readonly and this
- * value crosses a function boundary that has no business mutating it.
+ One parsed frame's `delta` object, or an empty stand-in for a frame that
+ carries none.
+ 
+ READONLY, because a writable index signature is not deeply readonly and this
+ value crosses a function boundary that has no business mutating it.
  */
 type DeltaFields = Readonly<Record<string, unknown>>;
 
 /**
- * Reads one string field off a delta object, ignoring anything else.
- *
- * @param fields - parsed `delta` object from a frame
- *
- * @param key - field to read
- *
- * @returns Its text, or empty when absent, null, or not a string
- *
- * @example
- * ```ts
- * const text = textField({ fields, key: 'reasoning_content', },);
- * ```
+ Reads one string field off a delta object, ignoring anything else.
+ 
+ @param fields - parsed `delta` object from a frame
+ 
+ @param key - field to read
+ 
+ @returns Its text, or empty when absent, null, or not a string
+ 
+ @example
+ ```ts
+ const text = textField({ fields, key: 'reasoning_content', },);
+ ```
  */
 function textField(
   {
@@ -213,35 +213,35 @@ function textField(
   },
 ): string {
   /**
-   * Whatever sits at that key, which may be absent or null.
+   Whatever sits at that key, which may be absent or null.
    */
   const value = fields[key];
   return ((typeof value) === 'string') ? value : '';
 }
 
 /**
- * Reads the thinking channel off a delta object, whichever field this model
- * spells it in.
- *
- * FIRST NON-EMPTY WINS rather than first present: a model sending
- * `reasoning_content` as an empty string alongside a populated `reasoning`
- * would otherwise read as having produced no thinking at all, which is the
- * failure this function exists to end.
- *
- * @param fields - parsed `delta` object from a frame
- *
- * @returns Thinking text, or empty when this frame carried none under any
- * spelling
- *
- * @example
- * ```ts
- * const thinking = reasoningField({ fields, },);
- * ```
+ Reads the thinking channel off a delta object, whichever field this model
+ spells it in.
+ 
+ FIRST NON-EMPTY WINS rather than first present: a model sending
+ `reasoning_content` as an empty string alongside a populated `reasoning`
+ would otherwise read as having produced no thinking at all, which is the
+ failure this function exists to end.
+ 
+ @param fields - parsed `delta` object from a frame
+ 
+ @returns Thinking text, or empty when this frame carried none under any
+ spelling
+ 
+ @example
+ ```ts
+ const thinking = reasoningField({ fields, },);
+ ```
  */
 function reasoningField({ fields, }: { readonly fields: DeltaFields; },): string {
   for (const key of REASONING_KEYS) {
     /**
-     * Thinking text under this spelling, empty when absent.
+     Thinking text under this spelling, empty when absent.
      */
     const text = textField({
       fields,
@@ -254,43 +254,43 @@ function reasoningField({ fields, }: { readonly fields: DeltaFields; },): string
 }
 
 /**
- * Reads the `delta` object out of a parsed frame.
- *
- * GUARDS RATHER THAN ASSERTIONS, using the package's own `isJsonRecord` and
- * `isJsonArray`: this walks a value the provider controls, so every step has to
- * be checked rather than declared. An assertion here would state a shape the
- * wire never promised.
- *
- * @param frame - parsed payload of one `data:` line
- *
- * @returns Its first choice's delta, or an empty object when the frame carries
- * none, which usage-only frames legitimately do
- *
- * @example
- * ```ts
- * const fields = deltaOf({ frame, },);
- * ```
+ Reads the `delta` object out of a parsed frame.
+ 
+ GUARDS RATHER THAN ASSERTIONS, using the package's own `isJsonRecord` and
+ `isJsonArray`: this walks a value the provider controls, so every step has to
+ be checked rather than declared. An assertion here would state a shape the
+ wire never promised.
+ 
+ @param frame - parsed payload of one `data:` line
+ 
+ @returns Its first choice's delta, or an empty object when the frame carries
+ none, which usage-only frames legitimately do
+ 
+ @example
+ ```ts
+ const fields = deltaOf({ frame, },);
+ ```
  */
 function deltaOf({ frame, }: { readonly frame: unknown; },): DeltaFields {
   if (!isJsonRecord(frame,))
     return {};
 
   /**
-   * Choices array, absent on the final usage frame.
+   Choices array, absent on the final usage frame.
    */
   const { choices, } = frame;
   if (!isJsonArray(choices,))
     return {};
 
   /**
-   * First choice, the only one requested.
+   First choice, the only one requested.
    */
   const [first,] = choices;
   if (!isJsonRecord(first,))
     return {};
 
   /**
-   * Its delta, absent when the choice carries only a finish reason.
+   Its delta, absent when the choice carries only a finish reason.
    */
   const { delta, } = first;
   if (!isJsonRecord(delta,))
@@ -299,66 +299,66 @@ function deltaOf({ frame, }: { readonly frame: unknown; },): DeltaFields {
 }
 
 /**
- * Reads the upstream's name off a parsed frame.
- *
- * @param frame - parsed payload of one `data:` line
- *
- * @returns Name as the gateway spelled it, or empty when the frame names none
- *
- * @example
- * ```ts
- * const name = servedByOf({ frame, },);
- * ```
+ Reads the upstream's name off a parsed frame.
+ 
+ @param frame - parsed payload of one `data:` line
+ 
+ @returns Name as the gateway spelled it, or empty when the frame names none
+ 
+ @example
+ ```ts
+ const name = servedByOf({ frame, },);
+ ```
  */
 function servedByOf({ frame, }: { readonly frame: unknown; },): string {
   if (!isJsonRecord(frame,))
     return '';
   /**
-   * Whatever sits at the field, of unknown type until checked.
+   Whatever sits at the field, of unknown type until checked.
    */
   const name = frame[SERVED_BY_KEY];
   return ((typeof name) === 'string') ? name : '';
 }
 
 /**
- * What one payload line turned out to be.
- *
- * @example
- * ```ts
- * const read: ReadPayload = { ok: true, frame: { choices: [], }, };
- * ```
+ What one payload line turned out to be.
+ 
+ @example
+ ```ts
+ const read: ReadPayload = { ok: true, frame: { choices: [], }, };
+ ```
  */
 type ReadPayload = {
   readonly ok: true;
 
   /**
-   * Parsed frame, whose shape the provider controls and nothing here assumes.
+   Parsed frame, whose shape the provider controls and nothing here assumes.
    */
   readonly frame: unknown;
 } | {
   readonly ok: false;
 
   /**
-   * Why it could not be read, kept so the caught value is used rather than
-   * discarded and so a future caller can report it.
+   Why it could not be read, kept so the caught value is used rather than
+   discarded and so a future caller can report it.
    */
   readonly reason: string;
 };
 
 /**
- * Parses one payload, reporting failure as a value.
- *
- * NEVER THROWS, because this runs on every chunk of every call and one
- * unreadable frame must leave a working stream working.
- *
- * @param payload - text after the `data:` prefix
- *
- * @returns Parsed frame, or why there is none
- *
- * @example
- * ```ts
- * const read = readPayload({ payload: '{"choices":[]}', },);
- * ```
+ Parses one payload, reporting failure as a value.
+ 
+ NEVER THROWS, because this runs on every chunk of every call and one
+ unreadable frame must leave a working stream working.
+ 
+ @param payload - text after the `data:` prefix
+ 
+ @returns Parsed frame, or why there is none
+ 
+ @example
+ ```ts
+ const read = readPayload({ payload: '{"choices":[]}', },);
+ ```
  */
 function readPayload({ payload, }: { readonly payload: string; },): ReadPayload {
   try {
@@ -376,32 +376,32 @@ function readPayload({ payload, }: { readonly payload: string; },): ReadPayload 
 }
 
 /**
- * Builds a scanner that turns raw stream chunks into generated text.
- *
- * INCREMENTAL BY LINE, because a chunk boundary falls wherever the network puts
- * it and routinely lands in the middle of a frame. Whatever follows the last
- * newline is carried forward rather than parsed, so no frame is read twice and
- * none is read in halves.
- *
- * NO REGEX, per `RG1`: the rule is "split on newlines, keep lines starting with
- * a fixed prefix", which string methods state directly.
- *
- * @returns Scanner fed by `feed`
- *
- * @example
- * ```ts
- * const scanner = scanStreamDeltas();
- * for (const chunk of chunks)
- *   for (const delta of scanner.feed({ chunk, },))
- *     detectors[delta.channel].notifyText({ text: delta.text, },);
- * ```
+ Builds a scanner that turns raw stream chunks into generated text.
+ 
+ INCREMENTAL BY LINE, because a chunk boundary falls wherever the network puts
+ it and routinely lands in the middle of a frame. Whatever follows the last
+ newline is carried forward rather than parsed, so no frame is read twice and
+ none is read in halves.
+ 
+ NO REGEX, per `RG1`: the rule is "split on newlines, keep lines starting with
+ a fixed prefix", which string methods state directly.
+ 
+ @returns Scanner fed by `feed`
+ 
+ @example
+ ```ts
+ const scanner = scanStreamDeltas();
+ for (const chunk of chunks)
+   for (const delta of scanner.feed({ chunk, },))
+     detectors[delta.channel].notifyText({ text: delta.text, },);
+ ```
  */
 export function scanStreamDeltas(): DeltaScanner {
   /**
-   * Partial line held back from an earlier chunk, plus the unreadable tally.
-   *
-   * A RECORD RATHER THAN LOOSE BINDINGS so the factory root holds no mutable
-   * variable.
+   Partial line held back from an earlier chunk, plus the unreadable tally.
+   
+   A RECORD RATHER THAN LOOSE BINDINGS so the factory root holds no mutable
+   variable.
    */
   const state = {
     carry: '',
@@ -410,20 +410,20 @@ export function scanStreamDeltas(): DeltaScanner {
   };
 
   /**
-   * Reads one complete line, returning whatever text it carried.
-   *
-   * @param line - one line, without its newline
-   *
-   * @returns Deltas it carried, empty for comments and the done marker
-   *
-   * @example
-   * ```ts
-   * const deltas = readLine({ line: 'data: {"choices":[]}', },);
-   * ```
+   Reads one complete line, returning whatever text it carried.
+   
+   @param line - one line, without its newline
+   
+   @returns Deltas it carried, empty for comments and the done marker
+   
+   @example
+   ```ts
+   const deltas = readLine({ line: 'data: {"choices":[]}', },);
+   ```
    */
   function readLine({ line, }: { readonly line: string; },): readonly ChannelDelta[] {
     /**
-     * Line without the carriage return a server may pair with its newline.
+     Line without the carriage return a server may pair with its newline.
      */
     const clean = line.endsWith('\r',) ? line.slice(
       0,
@@ -434,12 +434,12 @@ export function scanStreamDeltas(): DeltaScanner {
       return [];
 
     /**
-     * Everything after the colon, which may begin with one optional space.
+     Everything after the colon, which may begin with one optional space.
      */
     const afterColon = clean.slice(DATA_PREFIX.length,);
 
     /**
-     * Payload proper, with that one space removed if it was sent.
+     Payload proper, with that one space removed if it was sent.
      */
     const payload = afterColon.startsWith(OPTIONAL_SPACE,)
       ? afterColon.slice(OPTIONAL_SPACE.length,)
@@ -454,7 +454,7 @@ export function scanStreamDeltas(): DeltaScanner {
       return [];
 
     /**
-     * Parsed frame, or a note that it could not be read.
+     Parsed frame, or a note that it could not be read.
      */
     const parsed = readPayload({ payload, },);
 
@@ -468,12 +468,12 @@ export function scanStreamDeltas(): DeltaScanner {
       state.servedBy = servedByOf({ frame: parsed.frame, },);
 
     /**
-     * Delta object this frame carried.
+     Delta object this frame carried.
      */
     const fields = deltaOf({ frame: parsed.frame, },);
 
     /**
-     * Answer text, if any.
+     Answer text, if any.
      */
     const content = textField({
       fields,
@@ -481,7 +481,7 @@ export function scanStreamDeltas(): DeltaScanner {
     },);
 
     /**
-     * Thinking text, if any, under whichever field this model spells it in.
+     Thinking text, if any, under whichever field this model spells it in.
      */
     const reasoning = reasoningField({ fields, },);
 
@@ -500,12 +500,12 @@ export function scanStreamDeltas(): DeltaScanner {
   return {
     feed({ chunk, },): readonly ChannelDelta[] {
       /**
-       * Everything unparsed so far, this chunk included.
+       Everything unparsed so far, this chunk included.
        */
       const buffer = state.carry + chunk;
 
       /**
-       * Lines in it, the last of which may be incomplete.
+       Lines in it, the last of which may be incomplete.
        */
       const lines = buffer.split('\n',);
 
@@ -513,7 +513,7 @@ export function scanStreamDeltas(): DeltaScanner {
       state.carry = lines.at(-1,) ?? '';
 
       /**
-       * Lines that are complete, the trailing fragment excluded.
+       Lines that are complete, the trailing fragment excluded.
        */
       const complete = lines.slice(
         0,

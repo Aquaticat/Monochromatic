@@ -27,25 +27,25 @@ import {
 //region Artifact absolute naturalness round read
 
 /**
- * Reads one candidate-bound absolute review round.
- *
- * @param value - unknown round
- *
- * @param path - artifact path
- *
- * @param paragraphDigestsRequired - whether generation binds reviewed paragraph identities
- *
- * @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
- * block (generation ten) rather than the refinable paragraphs alone
- *
- * @param quorumBasisRequired - whether generation records its wider quorum basis
- *
- * @returns Cross-validated review round
- *
- * @example
- * ```ts
- * const round = parseNaturalnessReviewRound({ value, path, paragraphDigestsRequired: true, });
- * ```
+ Reads one candidate-bound absolute review round.
+ 
+ @param value - unknown round
+ 
+ @param path - artifact path
+ 
+ @param paragraphDigestsRequired - whether generation binds reviewed paragraph identities
+ 
+ @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
+ block (generation ten) rather than the refinable paragraphs alone
+ 
+ @param quorumBasisRequired - whether generation records its wider quorum basis
+ 
+ @returns Cross-validated review round
+ 
+ @example
+ ```ts
+ const round = parseNaturalnessReviewRound({ value, path, paragraphDigestsRequired: true, });
+ ```
  */
 export function parseNaturalnessReviewRound(
   {
@@ -63,7 +63,7 @@ export function parseNaturalnessReviewRound(
   },
 ): ArtifactNaturalnessReviewRound {
   /**
-   * Round under exact schema-eight shape.
+   Round under exact schema-eight shape.
    */
   const record = requireRecord({
     value,
@@ -85,7 +85,7 @@ export function parseNaturalnessReviewRound(
     path,
   },);
   /**
-   * Accounted seats in roster order.
+   Accounted seats in roster order.
    */
   const seats = requireArray({
     value: record.seats,
@@ -101,14 +101,14 @@ export function parseNaturalnessReviewRound(
       },);
     },);
   /**
-   * Structurally correctable paragraphs reviewer was shown.
+   Structurally correctable paragraphs reviewer was shown.
    */
   const paragraphCount = requireCount({
     value: record.paragraphCount,
     path: `${path}.paragraphCount`,
   },);
   /**
-   * Reviewed paragraph identities under generation-nine shape.
+   Reviewed paragraph identities under generation-nine shape.
    */
   const paragraphDigests = paragraphDigestsRequired
     ? parseParagraphDigests({
@@ -119,7 +119,7 @@ export function parseNaturalnessReviewRound(
     : [];
   if (seats.some(function outOfRange(seat,): boolean {
     /**
-     * Findings this seat attached to reviewed paragraphs.
+     Findings this seat attached to reviewed paragraphs.
      */
     const { findings: seatFindings, } = seat;
     return seatFindings.some(function missingParagraph(finding,): boolean {
@@ -132,7 +132,7 @@ export function parseNaturalnessReviewRound(
     },);
   }
   /**
-   * Model ids proving one status per seat.
+   Model ids proving one status per seat.
    */
   const modelIds = seats.map(function modelIdOf(seat,): string {
     return seat.modelId;
@@ -144,14 +144,14 @@ export function parseNaturalnessReviewRound(
     },);
   }
   /**
-   * Usable count recomputed from seats.
+   Usable count recomputed from seats.
    */
   const usable = seats.filter(function usableSeat(seat,): boolean {
     return seat.status !== 'unusable';
   },)
     .length;
   /**
-   * Stored usable count before equality check.
+   Stored usable count before equality check.
    */
   const storedUsable = requireCount({
     value: record.usable,
@@ -164,7 +164,7 @@ export function parseNaturalnessReviewRound(
     },);
   }
   /**
-   * Aggregate findings recomputed in roster order.
+   Aggregate findings recomputed in roster order.
    */
   const findings = uniqueNaturalnessFindings({
     findings: seats.flatMap(function rejected(
@@ -174,7 +174,7 @@ export function parseNaturalnessReviewRound(
     },),
   },);
   /**
-   * Stored aggregate findings.
+   Stored aggregate findings.
    */
   const storedFindings = parseNaturalnessFindings({
     value: record.findings,
@@ -190,7 +190,7 @@ export function parseNaturalnessReviewRound(
     },);
   }
   /**
-   * Explicit wider basis in current records, seat-count convention in legacy records.
+   Explicit wider basis in current records, seat-count convention in legacy records.
    */
   const quorumOver = quorumBasisRequired
     ? requireCount({
@@ -208,7 +208,7 @@ export function parseNaturalnessReviewRound(
     },);
   }
   /**
-   * Verdict recomputed using the same wider basis as the producing stage.
+   Verdict recomputed using the same wider basis as the producing stage.
    */
   const verdict = naturalnessVerdictOf({
     seats,
@@ -221,14 +221,14 @@ export function parseNaturalnessReviewRound(
     },);
   }
   /**
-   * Candidate digest under lowercase SHA-256 shape.
+   Candidate digest under lowercase SHA-256 shape.
    */
   const candidateDigest = requireNaturalnessDigest({
     value: record.candidateDigest,
     path: `${path}.candidateDigest`,
   },);
   /**
-   * Exact reviewed candidate under generation-nine shape.
+   Exact reviewed candidate under generation-nine shape.
    */
   const candidateText = paragraphDigestsRequired
     ? requireString({

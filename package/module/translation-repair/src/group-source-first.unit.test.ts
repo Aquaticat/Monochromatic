@@ -1,15 +1,15 @@
 /**
- * Tests for source-first grouping, which keeps every source block including
- * the ones the translation never rendered.
- *
- * The existing grouper folds a one-sided run into its neighbour, so an
- * untranslated paragraph rides inside a slice about a different passage and has
- * nowhere to put a rendering. What these pin is the opposite: such a run
- * becomes its own unit, carrying the boundary its translation belongs at.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for source-first grouping, which keeps every source block including
+ the ones the translation never rendered.
+ 
+ The existing grouper folds a one-sided run into its neighbour, so an
+ untranslated paragraph rides inside a slice about a different passage and has
+ nowhere to put a rendering. What these pin is the opposite: such a run
+ becomes its own unit, carrying the boundary its translation belongs at.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -27,37 +27,37 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Budget wide enough that nothing splits for size alone.
+ Budget wide enough that nothing splits for size alone.
  */
 const WIDE_BUDGET = 10_000;
 
 /**
- * Blocks of a document, in order.
- *
- * @param text - document to parse
- *
- * @returns Its block-level nodes
- *
- * @example
- * ```ts
- * const nodes = blocksOf({ text: '猫猫在睡觉。', },);
- * ```
+ Blocks of a document, in order.
+ 
+ @param text - document to parse
+ 
+ @returns Its block-level nodes
+ 
+ @example
+ ```ts
+ const nodes = blocksOf({ text: '猫猫在睡觉。', },);
+ ```
  */
 function blocksOf({ text, }: { readonly text: string; },) {
   return parseDocument({ text, },).nodes;
 }
 
 /**
- * Kinds of the units in order, which is what most cases assert on.
- *
- * @param units - grouping result
- *
- * @returns One kind per unit
- *
- * @example
- * ```ts
- * const kinds = kindsOf({ units, },);
- * ```
+ Kinds of the units in order, which is what most cases assert on.
+ 
+ @param units - grouping result
+ 
+ @returns One kind per unit
+ 
+ @example
+ ```ts
+ const kinds = kindsOf({ units, },);
+ ```
  */
 function kindsOf(
   { units, }: { readonly units: readonly SourceFirstUnit[]; },
@@ -116,10 +116,10 @@ await describe({
         },);
 
         /**
-         * Alignment saying exactly which block went untranslated.
-         *
-         * WRITTEN OUT rather than aligned here, because which block pairs with
-         * which is the aligner's judgement and this is a test of the grouping.
+         Alignment saying exactly which block went untranslated.
+         
+         WRITTEN OUT rather than aligned here, because which block pairs with
+         which is the aligner's judgement and this is a test of the grouping.
          */
         const steps: readonly AlignmentStep[] = [
           {
@@ -360,8 +360,8 @@ await describe({
         },);
 
         /**
-         * Budget narrow enough that every block closes the group before it,
-         * which is what leaves the note in a group of its own.
+         Budget narrow enough that every block closes the group before it,
+         which is what leaves the note in a group of its own.
          */
         const units = groupAlignedSteps({
           steps: [
@@ -418,10 +418,10 @@ await describe({
         },);
 
         /**
-         * Budget narrow enough that the note closes its own group before the
-         * paired step opens a new one. That is what leaves the note an orphan
-         * with no paired predecessor: `kept` is still empty when its group
-         * closes, since nothing has been pushed yet.
+         Budget narrow enough that the note closes its own group before the
+         paired step opens a new one. That is what leaves the note an orphan
+         with no paired predecessor: `kept` is still empty when its group
+         closes, since nothing has been pushed yet.
          */
         const units = groupAlignedSteps({
           steps: [

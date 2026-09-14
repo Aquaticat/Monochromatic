@@ -14,111 +14,111 @@ import type { StageRosterCoverage, } from '../stage-roster.ts';
 // this output is meant to be pasteable into a verdict.
 
 /**
- * Probe readings of one artifact, kept under the entry that carried them.
- *
- * Grouped rather than flattened because envelope ids are derived from the text
- * they cover, so two entries sharing a paragraph name one id for regions that
- * serve different issues.
- *
- * @example
- * ```ts
- * const group: EntryReadings = { entryId: 'Kitten.json', readings: [], };
- * ```
+ Probe readings of one artifact, kept under the entry that carried them.
+ 
+ Grouped rather than flattened because envelope ids are derived from the text
+ they cover, so two entries sharing a paragraph name one id for regions that
+ serve different issues.
+ 
+ @example
+ ```ts
+ const group: EntryReadings = { entryId: 'Kitten.json', readings: [], };
+ ```
  */
 export type EntryReadings = {
   /**
-   * Artifact the readings came from.
+   Artifact the readings came from.
    */
   readonly entryId: string;
 
   /**
-   * That artifact's probe readings.
+   That artifact's probe readings.
    */
   readonly readings: readonly TelemetryProbeReading[];
 };
 
 /**
- * Everything a run's artifacts yield, before any human grade is joined.
- *
- * @example
- * ```ts
- * const gathered: GatheredProbe = await gatherReadings({ artifactsDir, },);
- * ```
+ Everything a run's artifacts yield, before any human grade is joined.
+ 
+ @example
+ ```ts
+ const gathered: GatheredProbe = await gatherReadings({ artifactsDir, },);
+ ```
  */
 export type GatheredProbe = {
   /**
-   * Accuracy-probe readings, grouped by entry.
+   Accuracy-probe readings, grouped by entry.
    */
   readonly readings: readonly EntryReadings[];
 
   /**
-   * Readings keyed by the issue whose record carried them.
+   Readings keyed by the issue whose record carried them.
    */
   readonly byIssueId: ReadonlyMap<string, TelemetryProbeReading>;
 
   /**
-   * Issues whose slice the naturalness lane rewrote after probing.
+   Issues whose slice the naturalness lane rewrote after probing.
    */
   readonly refinedIssueIds: ReadonlySet<string>;
 
   /**
-   * Naturalness-lane readings, grouped by entry.
+   Naturalness-lane readings, grouped by entry.
    */
   readonly refinementReadings: readonly EntryReadings[];
 
   /**
-   * How the editor stage fared against its configured roster.
+   How the editor stage fared against its configured roster.
    */
   readonly editorRoster: StageRosterCoverage;
 
   /**
-   * How the refine stage fared against its configured roster.
+   How the refine stage fared against its configured roster.
    */
   readonly refineRoster: StageRosterCoverage;
 
   /**
-   * Artifacts carrying at least one rewritten slice.
+   Artifacts carrying at least one rewritten slice.
    */
   readonly entriesWithRewrites: number;
 
   /**
-   * Artifacts read.
+   Artifacts read.
    */
   readonly entries: number;
 
   /**
-   * Repair-lane records seen across every artifact read, probed or not.
-   *
-   * THE DENOMINATOR EVERY PROBE RATE DIVIDES BY. Named for its lane because
-   * "shipped" is the repair lane's word for its own output, not a claim that
-   * any page carries it: the contest and the consolidation both sit downstream
-   * of the disposition this counts.
+   Repair-lane records seen across every artifact read, probed or not.
+   
+   THE DENOMINATOR EVERY PROBE RATE DIVIDES BY. Named for its lane because
+   "shipped" is the repair lane's word for its own output, not a claim that
+   any page carries it: the contest and the consolidation both sit downstream
+   of the disposition this counts.
    */
   readonly repairShippedRecords: number;
 
   /**
-   * Repair-lane records carrying no probe field, a subset of the count beside
-   * it.
+   Repair-lane records carrying no probe field, a subset of the count beside
+   it.
    */
   readonly repairUnprobedRecords: number;
 };
 
 /**
- * Prints a run's probe telemetry, roster coverage, and the notes that keep
- * each number from being read as the wrong thing.
- *
- * @param gathered - readings and coverage across every settled artifact
- *
- * @example
- * ```ts
- * reportProbeTelemetry({ gathered, },);
- * ```
+ Prints a run's probe telemetry, roster coverage, and the notes that keep
+ each number from being read as the wrong thing.
+ 
+ @param gathered - readings and coverage across every settled artifact
+ 
+ @example
+ ```ts
+ reportProbeTelemetry({ gathered, },);
+ ```
  */
 export function reportProbeTelemetry(
   { gathered, }: { readonly gathered: GatheredProbe; },
 ): void {
   /**
-   * Summary over distinct shipped regions.
+   Summary over distinct shipped regions.
    */
   const summary = summarizeProbeTelemetry({ entries: gathered.readings, },);
 
@@ -158,12 +158,12 @@ export function reportProbeTelemetry(
     );
 
   /**
-   * Summary over the naturalness lane's own rewrites.
-   *
-   * Reported on its own line rather than folded into the accuracy figures,
-   * because the two audit different edits against different baselines. Its
-   * region count is rewritten SLICES, not replaced envelopes, so the two are
-   * not comparable as rates either.
+   Summary over the naturalness lane's own rewrites.
+   
+   Reported on its own line rather than folded into the accuracy figures,
+   because the two audit different edits against different baselines. Its
+   region count is rewritten SLICES, not replaced envelopes, so the two are
+   not comparable as rates either.
    */
   const refinement = summarizeProbeTelemetry({
     entries: gathered.refinementReadings,

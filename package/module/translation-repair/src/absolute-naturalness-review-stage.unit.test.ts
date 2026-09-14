@@ -1,7 +1,7 @@
 /**
- * Tests independent absolute naturalness review settlement and delayed rejection.
- *
- * @module
+ Tests independent absolute naturalness review settlement and delayed rejection.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -24,7 +24,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Invented reviewer roster.
+ Invented reviewer roster.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -33,7 +33,7 @@ const ROSTER = [
 ] as const;
 
 /**
- * Even reviewer roster making exact-half quorum visible.
+ Even reviewer roster making exact-half quorum visible.
  */
 const SIX_SEAT_ROSTER = [
   ...ROSTER,
@@ -43,12 +43,12 @@ const SIX_SEAT_ROSTER = [
 ] as const;
 
 /**
- * Seats each provider contributes to production-shaped fixture.
+ Seats each provider contributes to production-shaped fixture.
  */
 const PROVIDER_SEAT_COUNT = 4;
 
 /**
- * Production-shaped roster grouped by provider family.
+ Production-shaped roster grouped by provider family.
  */
 const PROVIDER_GROUPED_ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -62,21 +62,21 @@ const PROVIDER_GROUPED_ROSTER = [
 ] as const;
 
 /**
- * Builds logger retaining operational messages for assertions.
- *
- * @param messages - destination in emission order
- *
- * @returns Logger appending every level to destination
- *
- * @example
- * ```ts
- * const messages: string[] = [];
- * const l = capturingLogger({ messages, },);
- * ```
+ Builds logger retaining operational messages for assertions.
+ 
+ @param messages - destination in emission order
+ 
+ @returns Logger appending every level to destination
+ 
+ @example
+ ```ts
+ const messages: string[] = [];
+ const l = capturingLogger({ messages, },);
+ ```
  */
 function capturingLogger({ messages, }: { readonly messages: string[]; },): Logger {
   /**
-   * Retains one emitted message.
+   Retains one emitted message.
    */
   function keep(message: string,): void {
     messages.push(message,);
@@ -94,20 +94,20 @@ function capturingLogger({ messages, }: { readonly messages: string[]; },): Logg
 }
 
 /**
- * Builds reviewer client from per-model status and optional delayed rejection.
- *
- * @param unavailable - models returning no usable structured reply
- *
- * @param rejecting - model returning actionable rejection
- *
- * @param delayed - whether rejecting model answers after accepting peers
- *
- * @returns Scripted absolute reviewer
- *
- * @example
- * ```ts
- * const client = reviewClient({ rejecting: ROSTER[2], delayed: true, });
- * ```
+ Builds reviewer client from per-model status and optional delayed rejection.
+ 
+ @param unavailable - models returning no usable structured reply
+ 
+ @param rejecting - model returning actionable rejection
+ 
+ @param delayed - whether rejecting model answers after accepting peers
+ 
+ @returns Scripted absolute reviewer
+ 
+ @example
+ ```ts
+ const client = reviewClient({ rejecting: ROSTER[2], delayed: true, });
+ ```
  */
 function reviewClient(
   {
@@ -137,7 +137,7 @@ function reviewClient(
         };
       }
       /**
-       * Candidate verdict for this seat.
+       Candidate verdict for this seat.
        */
       const value: unknown = (request.modelId === rejecting)
         ? {
@@ -168,22 +168,22 @@ function reviewClient(
 }
 
 /**
- * Runs one invented absolute review.
- *
- * @param client - scripted reviewer
- *
- * @param messages - optional destination for operational logging
- *
- * @param modelIds - reviewer roster, defaulting to three-seat fixture
- *
- * @param graceMs - bounded time to retain post-quorum responses
- *
- * @returns Absolute review outcome
- *
- * @example
- * ```ts
- * const review = await runReview({ client, });
- * ```
+ Runs one invented absolute review.
+ 
+ @param client - scripted reviewer
+ 
+ @param messages - optional destination for operational logging
+ 
+ @param modelIds - reviewer roster, defaulting to three-seat fixture
+ 
+ @param graceMs - bounded time to retain post-quorum responses
+ 
+ @returns Absolute review outcome
+ 
+ @example
+ ```ts
+ const review = await runReview({ client, });
+ ```
  */
 async function runReview(
   {

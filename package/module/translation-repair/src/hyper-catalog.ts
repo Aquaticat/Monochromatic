@@ -25,58 +25,58 @@ import type {
 // invented keys. Nothing in this file supports that endpoint.
 
 /**
- * Marker for a Hyper-origin identity without a Synthetic counterpart.
- * It does not exclude an OpenRouter route for the same roster identity.
- *
- * A NAMED READING rather than a nullish union, matching how the rest of this
- * package models absence.
+ Marker for a Hyper-origin identity without a Synthetic counterpart.
+ It does not exclude an OpenRouter route for the same roster identity.
+ 
+ A NAMED READING rather than a nullish union, matching how the rest of this
+ package models absence.
  */
 export const NO_SYNTHETIC_COUNTERPART = 'no-synthetic-counterpart';
 
 /**
- * Endpoint one call is POSTed to, measured live on 2026-08-24.
- *
- * THE MESSAGES API RATHER THAN CHAT COMPLETIONS, for the reason the module
- * note records: the OpenAI-shaped endpoint accepts `response_format` and
- * ignores it, so structured output has nowhere else to go.
+ Endpoint one call is POSTed to, measured live on 2026-08-24.
+ 
+ THE MESSAGES API RATHER THAN CHAT COMPLETIONS, for the reason the module
+ note records: the OpenAI-shaped endpoint accepts `response_format` and
+ ignores it, so structured output has nowhere else to go.
  */
 export const HYPER_MESSAGES_URL = 'https://hyper.charm.land/v1/messages';
 
 /**
- * Endpoint reporting the remaining balance, measured live on 2026-08-24.
+ Endpoint reporting the remaining balance, measured live on 2026-08-24.
  */
 export const HYPER_CREDITS_URL = 'https://hyper.charm.land/v1/credits';
 
 /**
- * Value of the `anthropic-version` header every call carries.
- *
- * REQUIRED BY THE PROTOCOL rather than chosen: this is the dated contract the
- * request and response shapes belong to, and the frames this package parses
- * were captured under it.
+ Value of the `anthropic-version` header every call carries.
+ 
+ REQUIRED BY THE PROTOCOL rather than chosen: this is the dated contract the
+ request and response shapes belong to, and the frames this package parses
+ were captured under it.
  */
 export const HYPER_API_VERSION = '2023-06-01';
 
 /**
- * Header carrying the key, which is NOT the one the protocol usually uses.
- *
- * MEASURED, AND THE MEASUREMENT CONTRADICTS THE OBVIOUS GUESS. The Messages
- * API is normally keyed by `x-api-key`, and this gateway answers that header
- * with `401 missing authorization`. It takes a bearer token instead, so a
- * client written from the protocol docs alone would fail to authenticate every
- * call and read it as a bad key.
+ Header carrying the key, which is NOT the one the protocol usually uses.
+ 
+ MEASURED, AND THE MEASUREMENT CONTRADICTS THE OBVIOUS GUESS. The Messages
+ API is normally keyed by `x-api-key`, and this gateway answers that header
+ with `401 missing authorization`. It takes a bearer token instead, so a
+ client written from the protocol docs alone would fail to authenticate every
+ call and read it as a bad key.
  */
 export const HYPER_AUTH_HEADER = 'Authorization';
 
 /**
- * Models allowlisted on this provider by the owner.
- *
- * A CLOSED UNION so a typo cannot reach the wire, and so widening the roster is
- * a deliberate edit rather than a string that happens to resolve.
- *
- * @example
- * ```ts
- * const modelId: HyperServedId = 'deepseek-v4-flash-0731';
- * ```
+ Models allowlisted on this provider by the owner.
+ 
+ A CLOSED UNION so a typo cannot reach the wire, and so widening the roster is
+ a deliberate edit rather than a string that happens to resolve.
+ 
+ @example
+ ```ts
+ const modelId: HyperServedId = 'deepseek-v4-flash-0731';
+ ```
  */
 export type HyperServedId =
   | 'qwen3.8-27b'
@@ -91,70 +91,70 @@ export type HyperServedId =
   | 'glm-5.3';
 
 /**
- * Verified per-model facts the router and the request builder read.
- *
- * @example
- * ```ts
- * const info: HyperModelInfo = HYPER_MODELS['deepseek-v4-flash-0731'];
- * ```
+ Verified per-model facts the router and the request builder read.
+ 
+ @example
+ ```ts
+ const info: HyperModelInfo = HYPER_MODELS['deepseek-v4-flash-0731'];
+ ```
  */
 export type HyperModelInfo = {
   /**
-   * Identifier sent in the request body's `model` field.
+   Identifier sent in the request body's `model` field.
    */
   readonly id: HyperServedId;
 
   /**
-   * Same model reached through the other provider, where there is one.
-   *
-   * PROVIDER IS NOT PART OF PANELIST IDENTITY. `kimi-k3` here and
-   * `hf:moonshotai/Kimi-K3` there are one panelist for self-certification
-   * weighting and for the cache key, so a slice judged by that model counts
-   * once however it was reached. Which provider actually served a call is
-   * recorded per call, for diagnosis, and nowhere else.
+   Same model reached through the other provider, where there is one.
+   
+   PROVIDER IS NOT PART OF PANELIST IDENTITY. `kimi-k3` here and
+   `hf:moonshotai/Kimi-K3` there are one panelist for self-certification
+   weighting and for the cache key, so a slice judged by that model counts
+   once however it was reached. Which provider actually served a call is
+   recorded per call, for diagnosis, and nowhere else.
    */
   readonly sharedWith: SyntheticServedId | typeof NO_SYNTHETIC_COUNTERPART;
 
   /**
-   * Whether this model can be sent an image alongside its text.
-   *
-   * READ FROM `capabilities.vision` on this provider's own catalog endpoint.
-   * Three of the seven report true. The other provider now serves three image
-   * readers after GLM-5.3-Flash replaced GLM-5.2.
+   Whether this model can be sent an image alongside its text.
+   
+   READ FROM `capabilities.vision` on this provider's own catalog endpoint.
+   Three of the seven report true. The other provider now serves three image
+   readers after GLM-5.3-Flash replaced GLM-5.2.
    */
   readonly readsImages: boolean;
 
   /**
-   * Ceiling this model will emit, from `max_output_tokens` on the catalog.
-   *
-   * TWO OF THESE SIT BELOW the 32000 answer bound `#156` measured, so the bound
-   * has to be read per model rather than globally: `gpt-oss-120b` stops at
-   * 13107 and `kimi-k3` at 16000. A request that asks for more than a model can
-   * emit buys a truncation and reports it as a schema mismatch, which sends a
-   * reader to the prompt instead of to the ceiling.
+   Ceiling this model will emit, from `max_output_tokens` on the catalog.
+   
+   TWO OF THESE SIT BELOW the 32000 answer bound `#156` measured, so the bound
+   has to be read per model rather than globally: `gpt-oss-120b` stops at
+   13107 and `kimi-k3` at 16000. A request that asks for more than a model can
+   emit buys a truncation and reports it as a schema mismatch, which sends a
+   reader to the prompt instead of to the ceiling.
    */
   readonly maxOutputLength: number;
 };
 
 /**
- * Every model this provider serves for this pipeline.
- *
- * CONFORMANCE MEASURED OVER 20 STREAMING ATTEMPTS EACH on 2026-08-24. Current
- * models accept forced tool choice and answered with schema-conformant input.
- * `qwen3.8-max`, only model requiring automatic choice, was culled 2026-08-28
- * because its metered cost was disproportionate and exceptionally expensive.
- * `glm-5.2` left the active allowlist 2026-08-29 when its roster identity was
- * replaced by Synthetic's GLM-5.3-Flash. This provider's live catalog still
- * listed `glm-5.2` but no GLM-5.3-Flash spelling that day. It also reported
- * `glm-5.2` vision false, changed from the vision-true reading on 2026-08-24.
- *
- * An earlier reading that `kimi-k3` honoured a forced tool on 1 of 3 attempts
- * was wrong and is retracted here; it measures 20 of 20.
- *
- * @example
- * ```ts
- * const info = HYPER_MODELS['deepseek-v4-flash-0731'];
- * ```
+ Every model this provider serves for this pipeline.
+ 
+ CONFORMANCE MEASURED OVER 20 STREAMING ATTEMPTS EACH on 2026-08-24. Current
+ models accept forced tool choice and answered with schema-conformant input.
+ `qwen3.8-max`, only model requiring automatic choice, was culled 2026-08-28
+ because its metered cost was disproportionate and exceptionally expensive.
+ `glm-5.2` left the active allowlist 2026-08-29 when its roster identity was
+ replaced by Synthetic's GLM-5.3-Flash. This provider's live catalog still
+ listed `glm-5.2` but no GLM-5.3-Flash spelling that day. It also reported
+ `glm-5.2` vision false, changed from the vision-true reading on 2026-08-24.
+ 
+ An earlier reading that `kimi-k3` honoured a forced tool on 1 of 3 attempts
+ was wrong and is retracted here; it measures 20 of 20.
+ 
+ @example
+ ```ts
+ const info = HYPER_MODELS['deepseek-v4-flash-0731'];
+ ```
  */
 export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
   'qwen3.8-27b': {
@@ -242,35 +242,35 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
 };
 
 /**
- * Bound `#156` measured for answer volume, in tokens.
- *
- * KEPT HERE BESIDE THE PER-MODEL CEILINGS it has to be reconciled against,
- * rather than imported from the guard that enforces it, so a reader comparing
- * the two numbers sees both at once.
+ Bound `#156` measured for answer volume, in tokens.
+ 
+ KEPT HERE BESIDE THE PER-MODEL CEILINGS it has to be reconciled against,
+ rather than imported from the guard that enforces it, so a reader comparing
+ the two numbers sees both at once.
  */
 const MEASURED_ANSWER_BOUND = 32_000;
 
 /**
- * How many tokens to ask one model for, honouring both bounds.
- *
- * ONE-SIDED ON PURPOSE: this only ever lowers the ask. A model that can emit
- * more than `#156` measured is still held to the measured bound, because that
- * bound is about what an answer should be rather than what a model can do.
- *
- * @param modelId - model the request is for
- *
- * @returns Token ceiling to send, never above either bound
- *
- * @example
- * ```ts
- * const maxTokens = answerCeilingFor({ modelId: 'gpt-oss-120b', },);
- * ```
+ How many tokens to ask one model for, honouring both bounds.
+ 
+ ONE-SIDED ON PURPOSE: this only ever lowers the ask. A model that can emit
+ more than `#156` measured is still held to the measured bound, because that
+ bound is about what an answer should be rather than what a model can do.
+ 
+ @param modelId - model the request is for
+ 
+ @returns Token ceiling to send, never above either bound
+ 
+ @example
+ ```ts
+ const maxTokens = answerCeilingFor({ modelId: 'gpt-oss-120b', },);
+ ```
  */
 export function answerCeilingFor(
   { modelId, }: { readonly modelId: HyperServedId; },
 ): number {
   /**
-   * What this model says it can emit, before the measured bound is applied.
+   What this model says it can emit, before the measured bound is applied.
    */
   const { maxOutputLength, } = HYPER_MODELS[modelId];
 
@@ -281,14 +281,14 @@ export function answerCeilingFor(
 }
 
 /**
- * Models on this provider that stand in for one the other provider serves.
- *
- * @returns Their identifiers, in catalog order
- *
- * @example
- * ```ts
- * const shared = hyperModelsWithSyntheticCounterparts();
- * ```
+ Models on this provider that stand in for one the other provider serves.
+ 
+ @returns Their identifiers, in catalog order
+ 
+ @example
+ ```ts
+ const shared = hyperModelsWithSyntheticCounterparts();
+ ```
  */
 export function hyperModelsWithSyntheticCounterparts(): readonly HyperServedId[] {
   return Object
@@ -302,16 +302,16 @@ export function hyperModelsWithSyntheticCounterparts(): readonly HyperServedId[]
 }
 
 /**
- * Historical Hyper/Synthetic projection: models without a Synthetic counterpart.
- * Other provider reach is determined by `reachOf`, not by this bucket;
- * an OpenRouter route may still exist for the same model.
- *
- * @returns Their identifiers, in catalog order
- *
- * @example
- * ```ts
- * const withoutSynthetic = hyperModelsWithoutSyntheticCounterparts();
- * ```
+ Historical Hyper/Synthetic projection: models without a Synthetic counterpart.
+ Other provider reach is determined by `reachOf`, not by this bucket;
+ an OpenRouter route may still exist for the same model.
+ 
+ @returns Their identifiers, in catalog order
+ 
+ @example
+ ```ts
+ const withoutSynthetic = hyperModelsWithoutSyntheticCounterparts();
+ ```
  */
 export function hyperModelsWithoutSyntheticCounterparts(): readonly HyperServedId[] {
   return Object
@@ -325,47 +325,47 @@ export function hyperModelsWithoutSyntheticCounterparts(): readonly HyperServedI
 }
 
 /**
- * Proof that every roster name for a Hyper-only model is an id this provider
- * serves.
- *
- * A TYPE, NOT A TEST, because the two lists live in different files for
- * cycle reasons and a drift between them would otherwise surface as a request
- * naming a model that does not exist. Assigning the narrower to the wider fails
- * to compile the moment a name is added to one and not the other.
- *
- * @internal
+ Proof that every roster name for a Hyper-only model is an id this provider
+ serves.
+ 
+ A TYPE, NOT A TEST, because the two lists live in different files for
+ cycle reasons and a drift between them would otherwise surface as a request
+ naming a model that does not exist. Assigning the narrower to the wider fails
+ to compile the moment a name is added to one and not the other.
+ 
+ @internal
  */
 export type HyperOriginNamesAreServed = HyperOriginRosterId extends HyperServedId ? true : never;
 
 /**
- * The proof above, instantiated, so a roster label with no catalog row stops
- * the type check instead of surfacing at run time as one lost voice per call
- * (`#241`): when the conditional resolves to `never`, `true` is not assignable
- * and `lint:types` fails on this line, naming the drift.
- *
- * @example
- * ```ts
- * expect(HYPER_ORIGIN_NAMES_ARE_SERVED,).toBe(true,);
- * ```
+ The proof above, instantiated, so a roster label with no catalog row stops
+ the type check instead of surfacing at run time as one lost voice per call
+ (`#241`): when the conditional resolves to `never`, `true` is not assignable
+ and `lint:types` fails on this line, naming the drift.
+ 
+ @example
+ ```ts
+ expect(HYPER_ORIGIN_NAMES_ARE_SERVED,).toBe(true,);
+ ```
  */
 export const HYPER_ORIGIN_NAMES_ARE_SERVED: HyperOriginNamesAreServed = true;
 
 /**
- * Whether Charm Hyper's catalog carries a label under that exact spelling.
- *
- * A LABEL, NOT A ROSTER ID: the roster names shared models by their Synthetic
- * spelling and reaches Hyper for them through `hyperIdFor`, so this answers
- * only whether the given spelling is a Hyper row, which for the roster means
- * the Hyper-only labels. `syntheticServes` is the roster-typed counterpart.
- *
- * @param label - spelling being looked up
- *
- * @returns Whether `HYPER_MODELS` has a row under it
- *
- * @example
- * ```ts
- * const served = hyperServesLabel('minimax-m3',);
- * ```
+ Whether Charm Hyper's catalog carries a label under that exact spelling.
+ 
+ A LABEL, NOT A ROSTER ID: the roster names shared models by their Synthetic
+ spelling and reaches Hyper for them through `hyperIdFor`, so this answers
+ only whether the given spelling is a Hyper row, which for the roster means
+ the Hyper-only labels. `syntheticServes` is the roster-typed counterpart.
+ 
+ @param label - spelling being looked up
+ 
+ @returns Whether `HYPER_MODELS` has a row under it
+ 
+ @example
+ ```ts
+ const served = hyperServesLabel('minimax-m3',);
+ ```
  */
 export function hyperServesLabel(label: string,): label is HyperServedId {
   return Object.hasOwn(

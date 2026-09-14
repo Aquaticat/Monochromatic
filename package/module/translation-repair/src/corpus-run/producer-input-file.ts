@@ -15,81 +15,81 @@ import {
 //region Bounded file observation shared by the specialized host and child
 
 /**
- * Independently supplied extent bounds I/O before a file can allocate or stream its body.
- *
- * @example
- * ```ts
- * const expected: ProducerInputFileIdentity = { bytes: 123, sha256: recordedHash };
- * ```
+ Independently supplied extent bounds I/O before a file can allocate or stream its body.
+ 
+ @example
+ ```ts
+ const expected: ProducerInputFileIdentity = { bytes: 123, sha256: recordedHash };
+ ```
  */
 export type ProducerInputFileIdentity = {
   /**
-   * Exact raw byte extent, not decoded character length.
+   Exact raw byte extent, not decoded character length.
    */
   readonly bytes: number;
   /**
-   * Independently recorded lowercase SHA-256.
+   Independently recorded lowercase SHA-256.
    */
   readonly sha256: string;
 };
 
 /**
- * A hashing read never retains its body; a byte read owns the chunks until concatenation.
- *
- * @example
- * ```ts
- * const observation: ProducerInputFileObservation = { identity, chunks: [], uid, gid, mode };
- * ```
+ A hashing read never retains its body; a byte read owns the chunks until concatenation.
+ 
+ @example
+ ```ts
+ const observation: ProducerInputFileObservation = { identity, chunks: [], uid, gid, mode };
+ ```
  */
 type ProducerInputFileObservation = {
   /**
-   * Observed count and hash describe the same descriptor-backed stream.
+   Observed count and hash describe the same descriptor-backed stream.
    */
   readonly identity: ProducerInputFileIdentity;
   /**
-   * Empty for hash-only observations, not a claim that the file was empty.
+   Empty for hash-only observations, not a claim that the file was empty.
    */
   readonly chunks: readonly Uint8Array[];
   /**
-   * Owner observed on the descriptor whose bytes were hashed.
+   Owner observed on the descriptor whose bytes were hashed.
    */
   readonly uid: bigint;
   /**
-   * Group belongs to the same descriptor observation, not a caller assumption.
+   Group belongs to the same descriptor observation, not a caller assumption.
    */
   readonly gid: bigint;
   /**
-   * Permissions belong to that same stable descriptor observation.
+   Permissions belong to that same stable descriptor observation.
    */
   readonly mode: bigint;
 };
 
 /**
- * Stream working storage stays independent of the caller-authorized total extent.
+ Stream working storage stays independent of the caller-authorized total extent.
  */
 const FILE_CHUNK_BYTES = 65_536;
 /**
- * Host-owned output metadata must not expose group or other permissions.
+ Host-owned output metadata must not expose group or other permissions.
  */
 const FILE_PERMISSION_MASK = 0o7777n;
 /**
- * Exact private output-file permissions declared by this runner.
+ Exact private output-file permissions declared by this runner.
  */
 const PRIVATE_OUTPUT_PERMISSIONS = 0o600n;
 
 /**
- * Compares identity and mutation timestamps without millisecond rounding.
- *
- * @param before - descriptor observation before body access
- *
- * @param after - descriptor or final-path observation after body access
- *
- * @returns Whether the observed regular file remains the same
- *
- * @example
- * ```ts
- * const stable = sameProducerInputFile({ before, after });
- * ```
+ Compares identity and mutation timestamps without millisecond rounding.
+ 
+ @param before - descriptor observation before body access
+ 
+ @param after - descriptor or final-path observation after body access
+ 
+ @returns Whether the observed regular file remains the same
+ 
+ @example
+ ```ts
+ const stable = sameProducerInputFile({ before, after });
+ ```
  */
 export function sameProducerInputFile({
   before,
@@ -109,25 +109,25 @@ export function sameProducerInputFile({
 }
 
 /**
- * Reads only the independently authorized extent and rejects path replacement or observed mutation.
- * This establishes a point-in-time observation, not a hostile-host filesystem lease.
- *
- * @param path - already authorized absolute input locator
- *
- * @param expectedBytes - exact independently established extent
- *
- * @param operation - owning runner operation for privacy-safe refusal
- *
- * @param retainChunks - whether the caller needs owned body bytes rather than only identity
- *
- * @returns One checked stream observation
- *
- * @throws ProducerInputRunError when shape, extent, read or stability checks fail
- *
- * @example
- * ```ts
- * const observed = await observeProducerInputFile({ path, expectedBytes, operation: 'verify-runtime', retainChunks: false });
- * ```
+ Reads only the independently authorized extent and rejects path replacement or observed mutation.
+ This establishes a point-in-time observation, not a hostile-host filesystem lease.
+ 
+ @param path - already authorized absolute input locator
+ 
+ @param expectedBytes - exact independently established extent
+ 
+ @param operation - owning runner operation for privacy-safe refusal
+ 
+ @param retainChunks - whether the caller needs owned body bytes rather than only identity
+ 
+ @returns One checked stream observation
+ 
+ @throws ProducerInputRunError when shape, extent, read or stability checks fail
+ 
+ @example
+ ```ts
+ const observed = await observeProducerInputFile({ path, expectedBytes, operation: 'verify-runtime', retainChunks: false });
+ ```
  */
 async function observeProducerInputFile({
   path,
@@ -147,7 +147,7 @@ async function observeProducerInputFile({
     });
   try {
     /**
-     * Known nonregular inputs are rejected without opening a device or waiting for a FIFO peer.
+     Known nonregular inputs are rejected without opening a device or waiting for a FIFO peer.
      */
     const initial = await lstat(
       path,
@@ -159,7 +159,7 @@ async function observeProducerInputFile({
         locator: path,
       });
     /**
-     * No-follow rejects leaf symlinks; nonblocking open lets fstat reject a replacement FIFO before body reads.
+     No-follow rejects leaf symlinks; nonblocking open lets fstat reject a replacement FIFO before body reads.
      */
     await using handle = await open(
       path,
@@ -167,7 +167,7 @@ async function observeProducerInputFile({
         | constants.O_NONBLOCK,
     );
     /**
-     * No body read occurs before the exact regular-file extent matches.
+     No body read occurs before the exact regular-file extent matches.
      */
     const before = await handle.stat({ bigint: true, },);
     if ((!before.isFile()) || (before.size !== BigInt(expectedBytes))
@@ -180,15 +180,15 @@ async function observeProducerInputFile({
         locator: path,
       });
     /**
-     * Hashing and counting observe the same chunks.
+     Hashing and counting observe the same chunks.
      */
     const hash = createHash('sha256',);
     /**
-     * This counter belongs solely to the bounded stream operation.
+     This counter belongs solely to the bounded stream operation.
      */
     const observed = { bytes: 0, };
     /**
-     * Hash-only callers do not retain executable or native-library bodies.
+     Hash-only callers do not retain executable or native-library bodies.
      */
     const chunks: Uint8Array[] = [];
     if (expectedBytes > 0) {
@@ -215,11 +215,11 @@ async function observeProducerInputFile({
       }
     }
     /**
-     * Descriptor state is checked before observing the final pathname.
+     Descriptor state is checked before observing the final pathname.
      */
     const after = await handle.stat({ bigint: true, },);
     /**
-     * The final pathname must still identify the observed file, not a replacement or symlink.
+     The final pathname must still identify the observed file, not a replacement or symlink.
      */
     const current = await lstat(
       path,
@@ -260,22 +260,22 @@ async function observeProducerInputFile({
 }
 
 /**
- * Verifies a file without retaining its body in memory.
- *
- * @param path - authorized executable, runtime or native-library locator
- *
- * @param expected - independently bound raw identity
- *
- * @param operation - owning runner operation
- *
- * @returns Exact verified identity
- *
- * @throws ProducerInputRunError when identity or file observation differs
- *
- * @example
- * ```ts
- * await verifyProducerInputFile({ path, expected, operation: 'verify-runtime' });
- * ```
+ Verifies a file without retaining its body in memory.
+ 
+ @param path - authorized executable, runtime or native-library locator
+ 
+ @param expected - independently bound raw identity
+ 
+ @param operation - owning runner operation
+ 
+ @returns Exact verified identity
+ 
+ @throws ProducerInputRunError when identity or file observation differs
+ 
+ @example
+ ```ts
+ await verifyProducerInputFile({ path, expected, operation: 'verify-runtime' });
+ ```
  */
 export async function verifyProducerInputFile({
   path,
@@ -287,14 +287,14 @@ export async function verifyProducerInputFile({
   readonly operation: ProducerInputOperation;
 },): Promise<ProducerInputFileIdentity> {
   /**
-   * Primitive authority is fixed before descriptor I/O can yield.
+   Primitive authority is fixed before descriptor I/O can yield.
    */
   const {
     bytes,
     sha256,
   } = expected;
   /**
-   * The observation owns no caller-modifiable byte buffer.
+   The observation owns no caller-modifiable byte buffer.
    */
   const observation = await observeProducerInputFile({
     path,
@@ -313,22 +313,22 @@ export async function verifyProducerInputFile({
 }
 
 /**
- * Returns an owned exact-size body only after raw identity and descriptor stability checks.
- *
- * @param path - authorized launch, manifest, selection or supporting-file locator
- *
- * @param expected - independently bound raw identity and allocation allowance
- *
- * @param operation - owning runner operation
- *
- * @returns Owned raw bytes, with no text-decoding policy silently applied
- *
- * @throws ProducerInputRunError when identity or file observation differs
- *
- * @example
- * ```ts
- * const bytes = await readProducerInputFile({ path, expected, operation: 'read-selection' });
- * ```
+ Returns an owned exact-size body only after raw identity and descriptor stability checks.
+ 
+ @param path - authorized launch, manifest, selection or supporting-file locator
+ 
+ @param expected - independently bound raw identity and allocation allowance
+ 
+ @param operation - owning runner operation
+ 
+ @returns Owned raw bytes, with no text-decoding policy silently applied
+ 
+ @throws ProducerInputRunError when identity or file observation differs
+ 
+ @example
+ ```ts
+ const bytes = await readProducerInputFile({ path, expected, operation: 'read-selection' });
+ ```
  */
 export async function readProducerInputFile({
   path,
@@ -340,14 +340,14 @@ export async function readProducerInputFile({
   readonly operation: ProducerInputOperation;
 },): Promise<Uint8Array> {
   /**
-   * Primitive authority is fixed before descriptor I/O can yield.
+   Primitive authority is fixed before descriptor I/O can yield.
    */
   const {
     bytes,
     sha256,
   } = expected;
   /**
-   * Only size-authorized body readers retain chunks.
+   Only size-authorized body readers retain chunks.
    */
   const observation = await observeProducerInputFile({
     path,
@@ -369,26 +369,26 @@ export async function readProducerInputFile({
 }
 
 /**
- * Reads bounded private metadata produced by this host operation, without inventing independent approval.
- *
- * @param path - fixed native-stage or completion file inside the exclusive run
- *
- * @param maximumBytes - internal metadata allocation ceiling
- *
- * @param ownerUid - independently captured host owner
- *
- * @param ownerGid - independently captured host group
- *
- * @param operation - owning fixed diagnostic vocabulary
- *
- * @returns Strictly decoded text after extent, ownership and stable descriptor checks
- *
- * @throws ProducerInputRunError when metadata cannot be observed within its private bound
- *
- * @example
- * ```ts
- * const text = await readProducerInputMetadata({ path, maximumBytes, ownerUid, ownerGid, operation: 'read-output' });
- * ```
+ Reads bounded private metadata produced by this host operation, without inventing independent approval.
+ 
+ @param path - fixed native-stage or completion file inside the exclusive run
+ 
+ @param maximumBytes - internal metadata allocation ceiling
+ 
+ @param ownerUid - independently captured host owner
+ 
+ @param ownerGid - independently captured host group
+ 
+ @param operation - owning fixed diagnostic vocabulary
+ 
+ @returns Strictly decoded text after extent, ownership and stable descriptor checks
+ 
+ @throws ProducerInputRunError when metadata cannot be observed within its private bound
+ 
+ @example
+ ```ts
+ const text = await readProducerInputMetadata({ path, maximumBytes, ownerUid, ownerGid, operation: 'read-output' });
+ ```
  */
 export async function readProducerInputMetadata({
   path,
@@ -405,7 +405,7 @@ export async function readProducerInputMetadata({
 },): Promise<string> {
   try {
     /**
-     * Extent is observed before any body allocation; the descriptor reader rechecks it.
+     Extent is observed before any body allocation; the descriptor reader rechecks it.
      */
     const state = await lstat(
       path,
@@ -419,7 +419,7 @@ export async function readProducerInputMetadata({
         locator: path,
       });
     /**
-     * Metadata is bounded by the observed extent, not read until filesystem EOF.
+     Metadata is bounded by the observed extent, not read until filesystem EOF.
      */
     const observation = await observeProducerInputFile({
       path,
@@ -453,24 +453,24 @@ export async function readProducerInputMetadata({
 }
 
 /**
- * Streams the fixed private artifact while checking ownership on the same descriptor as its byte identity.
- *
- * @param path - fixed artifact file, never a completion-supplied locator
- *
- * @param expected - application-reported identity to check for internal consistency
- *
- * @param ownerUid - independently captured host owner
- *
- * @param ownerGid - independently captured host group
- *
- * @returns Observed artifact identity, not semantic or execution approval
- *
- * @throws ProducerInputRunError when private ownership or byte identity differs
- *
- * @example
- * ```ts
- * await verifyProducerInputOutputFile({ path, expected, ownerUid, ownerGid });
- * ```
+ Streams the fixed private artifact while checking ownership on the same descriptor as its byte identity.
+ 
+ @param path - fixed artifact file, never a completion-supplied locator
+ 
+ @param expected - application-reported identity to check for internal consistency
+ 
+ @param ownerUid - independently captured host owner
+ 
+ @param ownerGid - independently captured host group
+ 
+ @returns Observed artifact identity, not semantic or execution approval
+ 
+ @throws ProducerInputRunError when private ownership or byte identity differs
+ 
+ @example
+ ```ts
+ await verifyProducerInputOutputFile({ path, expected, ownerUid, ownerGid });
+ ```
  */
 export async function verifyProducerInputOutputFile({
   path,
@@ -484,14 +484,14 @@ export async function verifyProducerInputOutputFile({
   readonly ownerGid: number;
 },): Promise<ProducerInputFileIdentity> {
   /**
-   * Snapshot primitive extent and digest before descriptor I/O.
+   Snapshot primitive extent and digest before descriptor I/O.
    */
   const {
     bytes,
     sha256
   } = expected;
   /**
-   * Artifact content is hashed without retaining corpus-derived bytes on the host.
+   Artifact content is hashed without retaining corpus-derived bytes on the host.
    */
   const observation = await observeProducerInputFile({
     path,

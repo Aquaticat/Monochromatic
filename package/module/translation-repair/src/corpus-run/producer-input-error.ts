@@ -1,12 +1,12 @@
 //region Names-only preparation input runner failures
 
 /**
- * Runner operations remain separate from correspondence qualification and paid acquisition.
- *
- * @example
- * ```ts
- * const operation: ProducerInputOperation = 'read-support';
- * ```
+ Runner operations remain separate from correspondence qualification and paid acquisition.
+ 
+ @example
+ ```ts
+ const operation: ProducerInputOperation = 'read-support';
+ ```
  */
 export type ProducerInputOperation =
   | 'read-launch'
@@ -20,7 +20,7 @@ export type ProducerInputOperation =
   | 'write-output';
 
 /**
- * Fixed remediation vocabulary never retains parser excerpts, subprocess bodies or corpus text.
+ Fixed remediation vocabulary never retains parser excerpts, subprocess bodies or corpus text.
  */
 const INPUT_RUN_MESSAGES: Readonly<Record<ProducerInputOperation, string>> = {
   'read-launch': 'Preparation input launch does not match its independently recorded contract. Restore the intended launch bytes and identity, or review a newly materialized launch before retrying.',
@@ -35,34 +35,34 @@ const INPUT_RUN_MESSAGES: Readonly<Record<ProducerInputOperation, string>> = {
 };
 
 /**
- * Controlled CLI refusal reports operation and locator without retaining input-bearing exception causes.
- *
- * @example
- * ```ts
- * throw new ProducerInputRunError({ operation: 'read-support', locator: reference.path });
- * ```
+ Controlled CLI refusal reports operation and locator without retaining input-bearing exception causes.
+ 
+ @example
+ ```ts
+ throw new ProducerInputRunError({ operation: 'read-support', locator: reference.path });
+ ```
  */
 export class ProducerInputRunError extends Error {
   /**
-   * CLI forwarding may retain this authored message and encoded locator.
+   CLI forwarding may retain this authored message and encoded locator.
    */
   readonly messageNamesOnly: true = true;
   /**
-   * Failed operation determines the available recovery paths.
+   Failed operation determines the available recovery paths.
    */
   readonly operation: ProducerInputOperation;
 
   /**
-   * Builds a refusal from closed operation vocabulary and an optional file or run locator.
-   *
-   * @param operation - failed runner operation, not a qualification verdict
-   *
-   * @param locator - affected input name, never its contents
-   *
-   * @example
-   * ```ts
-   * const error = new ProducerInputRunError({ operation: 'read-selection', locator: selectionPath });
-   * ```
+   Builds a refusal from closed operation vocabulary and an optional file or run locator.
+   
+   @param operation - failed runner operation, not a qualification verdict
+   
+   @param locator - affected input name, never its contents
+   
+   @example
+   ```ts
+   const error = new ProducerInputRunError({ operation: 'read-selection', locator: selectionPath });
+   ```
    */
   constructor({
     operation,

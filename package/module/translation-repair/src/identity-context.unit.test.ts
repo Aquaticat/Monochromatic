@@ -26,7 +26,7 @@ await describe({
           name: 'reads name from the top level and alias and location from info',
           fn: async () => {
             /**
-             * Declaration in the shape the pinned corpus uses.
+             Declaration in the shape the pinned corpus uses.
              */
             const identity = extractDeclaredIdentity({
               data: {
@@ -59,8 +59,8 @@ await describe({
           name: 'skips non-string and blank declarations rather than coercing them',
           fn: async () => {
             /**
-             * A coerced value would enter the prompt as an authoritative
-             * correspondence, which is worse than declaring nothing.
+             A coerced value would enter the prompt as an authoritative
+             correspondence, which is worse than declaring nothing.
              */
             const identity = extractDeclaredIdentity({
               data: {
@@ -94,8 +94,8 @@ await describe({
           name: 'renders both sides of a transliterated name, the graded false-positive shape',
           fn: async () => {
             /**
-             * Mirrors the Acheron and BI4PBV shape: the two sides declare
-             * names matching neither phonetically nor semantically.
+             Mirrors the Acheron and BI4PBV shape: the two sides declare
+             names matching neither phonetically nor semantically.
              */
             const lines = collectIdentityLines({
               sourceData: { name: '毛毛-fairy', },
@@ -111,8 +111,8 @@ await describe({
           name: 'keeps a one-sided declaration and marks the undeclared side',
           fn: async () => {
             /**
-             * A one-sided alias still tells the critic the handle is sourced
-             * metadata rather than invention.
+             A one-sided alias still tells the critic the handle is sourced
+             metadata rather than invention.
              */
             const lines = collectIdentityLines({
               sourceData: { info: { alias: '小毛', }, },
@@ -141,7 +141,7 @@ await describe({
           name: 'omits fields no side declares',
           fn: async () => {
             /**
-             * Only a name is declared, so no alias or location line appears.
+             Only a name is declared, so no alias or location line appears.
              */
             const lines = collectIdentityLines({
               sourceData: { name: '毛毛', },
@@ -157,8 +157,8 @@ await describe({
           name: 'never surfaces free prose such as desc as authoritative',
           fn: async () => {
             /**
-             * `desc` is document content, not identity; declaring it
-             * authoritative would license real defects inside it.
+             `desc` is document content, not identity; declaring it
+             authoritative would license real defects inside it.
              */
             const lines = collectIdentityLines({
               sourceData: {
@@ -191,7 +191,7 @@ await describe({
             },);
 
             /**
-             * User message carrying the fenced blocks.
+             User message carrying the fenced blocks.
              */
             const content = user?.content ?? '';
 

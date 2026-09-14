@@ -1,29 +1,29 @@
 /**
- * Tests for reading one settled artifact into the shape a draw samples from.
- *
- * THIS READER FEEDS THE PRECISION GATE, which is what makes its refusals worth
- * more than its happy path. Every issue it hands back becomes a row a human
- * grades, and the rate computed from those rows gets quoted as the pipeline's
- * precision. An entry that joins the pool unverified does not produce a wrong
- * number visibly; it produces a slightly short denominator, silently, and the
- * rate over it still looks like a measurement.
- *
- * SO THE CASES ARE ALL REFUSALS, and one of them is about ORDER. An artifact can
- * be both substituted and short at once, and which refusal comes out decides
- * what an operator goes looking for. Provenance is checked first on purpose: a
- * file that is not the entry the pool admitted has to be reported as the wrong
- * file, not as a file with the wrong number of issues in it.
- *
- * THE HAPPY PATH IS NOT HERE, and deliberately. `loadEntry` bands an entry by
- * reading its source at the pinned corpus commit, so a passing load needs the
- * unlicensed clone on disk; a unit suite that required it would pass on one
- * machine and fail everywhere else. Every guard below runs BEFORE that read, so
- * none of them needs it.
- *
- * FIXTURES ARE INVENTED AND CAT-THEMED, and every one is written into a
- * throwaway directory that is removed when the case ends.
- *
- * @module
+ Tests for reading one settled artifact into the shape a draw samples from.
+ 
+ THIS READER FEEDS THE PRECISION GATE, which is what makes its refusals worth
+ more than its happy path. Every issue it hands back becomes a row a human
+ grades, and the rate computed from those rows gets quoted as the pipeline's
+ precision. An entry that joins the pool unverified does not produce a wrong
+ number visibly; it produces a slightly short denominator, silently, and the
+ rate over it still looks like a measurement.
+ 
+ SO THE CASES ARE ALL REFUSALS, and one of them is about ORDER. An artifact can
+ be both substituted and short at once, and which refusal comes out decides
+ what an operator goes looking for. Provenance is checked first on purpose: a
+ file that is not the entry the pool admitted has to be reported as the wrong
+ file, not as a file with the wrong number of issues in it.
+ 
+ THE HAPPY PATH IS NOT HERE, and deliberately. `loadEntry` bands an entry by
+ reading its source at the pinned corpus commit, so a passing load needs the
+ unlicensed clone on disk; a unit suite that required it would pass on one
+ machine and fail everywhere else. Every guard below runs BEFORE that read, so
+ none of them needs it.
+ 
+ FIXTURES ARE INVENTED AND CAT-THEMED, and every one is written into a
+ throwaway directory that is removed when the case ends.
+ 
+ @module
  */
 
 import {
@@ -50,41 +50,41 @@ import {
 //region Draw entry load tests
 
 /**
- * Entry these fixtures describe.
+ Entry these fixtures describe.
  */
 const ENTRY_ID = 'whiskers';
 
 /**
- * File that entry's artifact is written to.
+ File that entry's artifact is written to.
  */
 const ARTIFACT_NAME = `${ENTRY_ID}.json`;
 
 /**
- * Commit the pool recorded for this entry.
+ Commit the pool recorded for this entry.
  */
 const POOL_TIP = 'c4f9e1a7b2d6';
 
 /**
- * Built pipeline the pool recorded for this entry.
+ Built pipeline the pool recorded for this entry.
  */
 const POOL_DIGEST = '8e3a0d5c17bf';
 
 /**
- * A different commit, standing in for a file the pool never admitted.
+ A different commit, standing in for a file the pool never admitted.
  */
 const OTHER_TIP = 'fa27b9046e3d';
 
 /**
- * Builds one accepted issue record, in the shape the settled parser takes.
- *
- * @param issueId - identity of the adjudicated issue
- *
- * @returns Record shaped as an artifact carries one
- *
- * @example
- * ```ts
- * const record = acceptedRecord({ issueId: 'adjudicated/purr', },);
- * ```
+ Builds one accepted issue record, in the shape the settled parser takes.
+ 
+ @param issueId - identity of the adjudicated issue
+ 
+ @returns Record shaped as an artifact carries one
+ 
+ @example
+ ```ts
+ const record = acceptedRecord({ issueId: 'adjudicated/purr', },);
+ ```
  */
 function acceptedRecord(
   { issueId, }: { readonly issueId: string; },
@@ -124,16 +124,16 @@ function acceptedRecord(
 }
 
 /**
- * Builds the eligibility result the pool would hand this reader.
- *
- * @param tip - commit the pool recorded for this entry
- *
- * @returns Pool carrying that one entry
- *
- * @example
- * ```ts
- * const eligible = pooled({ tip: POOL_TIP, },);
- * ```
+ Builds the eligibility result the pool would hand this reader.
+ 
+ @param tip - commit the pool recorded for this entry
+ 
+ @returns Pool carrying that one entry
+ 
+ @example
+ ```ts
+ const eligible = pooled({ tip: POOL_TIP, },);
+ ```
  */
 function pooled(
   { tip, }: { readonly tip: string; },
@@ -159,21 +159,21 @@ function pooled(
 }
 
 /**
- * Opens a throwaway directory that removes itself on disposal.
- *
- * @returns Disposable directory handle
- *
- * @example
- * ```ts
- * await using scratch = await scratchDir();
- * ```
+ Opens a throwaway directory that removes itself on disposal.
+ 
+ @returns Disposable directory handle
+ 
+ @example
+ ```ts
+ await using scratch = await scratchDir();
+ ```
  */
 async function scratchDir(): Promise<{
   readonly path: string;
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 }> {
   /**
-   * Fresh directory under the platform temp root.
+   Fresh directory under the platform temp root.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -195,20 +195,20 @@ async function scratchDir(): Promise<{
 }
 
 /**
- * Writes one artifact into a throwaway directory and reads it back.
- *
- * @param artifact - whole artifact value, valid or not
- *
- * @param eligible - pool to check the bytes against
- *
- * @returns What `loadEntry` made of it
- *
- * @throws Whatever `loadEntry` refuses with, which is the point of most cases
- *
- * @example
- * ```ts
- * await loadingFrom({ artifact, eligible: pooled({ tip: POOL_TIP, },), },);
- * ```
+ Writes one artifact into a throwaway directory and reads it back.
+ 
+ @param artifact - whole artifact value, valid or not
+ 
+ @param eligible - pool to check the bytes against
+ 
+ @returns What `loadEntry` made of it
+ 
+ @throws Whatever `loadEntry` refuses with, which is the point of most cases
+ 
+ @example
+ ```ts
+ await loadingFrom({ artifact, eligible: pooled({ tip: POOL_TIP, },), },);
+ ```
  */
 async function loadingFrom(
   {

@@ -30,21 +30,21 @@ import {
 // 1260 slices.
 
 /**
- * Whether a stored field is a list of readings that each name their model.
- *
- * SHARED BY THE TWO SHAPES THAT CARRY ONE. A corroborated record must hold this
- * list and an unavailable record may, and a check written out twice is a check
- * that drifts into meaning two things.
- *
- * @param value - field parsed from cache file
- *
- * @returns True when it is a list whose every element names a model and carries
- * its text
- *
- * @example
- * ```ts
- * if (!isModelReadingList(value.readings,)) return false;
- * ```
+ Whether a stored field is a list of readings that each name their model.
+ 
+ SHARED BY THE TWO SHAPES THAT CARRY ONE. A corroborated record must hold this
+ list and an unavailable record may, and a check written out twice is a check
+ that drifts into meaning two things.
+ 
+ @param value - field parsed from cache file
+ 
+ @returns True when it is a list whose every element names a model and carries
+ its text
+ 
+ @example
+ ```ts
+ if (!isModelReadingList(value.readings,)) return false;
+ ```
  */
 function isModelReadingList(value: unknown,): boolean {
   if (!Array.isArray(value,))
@@ -60,27 +60,27 @@ function isModelReadingList(value: unknown,): boolean {
 }
 
 /**
- * Whether a parsed cache file is a usable paired reading.
- *
- * Checks the DISCRIMINANT and then the fields that shape carries, so a file
- * written under an older shape is recomputed rather than read with fields that
- * have since changed meaning.
- *
- * EVERY KIND `PairedReading` DEFINES HAS TO APPEAR HERE, and the cost of one
- * missing is silent. `no-text` was added to the type on 2026-08-19 and not to
- * this function, so each of the 119 textless pictures in this corpus was
- * rejected on resume, read again by the deterministic reader, written back, and
- * rejected again on the pass after that. A run that re-does work reports
- * nothing: it looks exactly like a run that had nothing to resume.
- *
- * @param value - parsed JSON of cache file
- *
- * @returns True when value is a paired reading, in any of the ways one can end
- *
- * @example
- * ```ts
- * if (isPairedReading(parsed,)) resumed.set(key, parsed,);
- * ```
+ Whether a parsed cache file is a usable paired reading.
+ 
+ Checks the DISCRIMINANT and then the fields that shape carries, so a file
+ written under an older shape is recomputed rather than read with fields that
+ have since changed meaning.
+ 
+ EVERY KIND `PairedReading` DEFINES HAS TO APPEAR HERE, and the cost of one
+ missing is silent. `no-text` was added to the type on 2026-08-19 and not to
+ this function, so each of the 119 textless pictures in this corpus was
+ rejected on resume, read again by the deterministic reader, written back, and
+ rejected again on the pass after that. A run that re-does work reports
+ nothing: it looks exactly like a run that had nothing to resume.
+ 
+ @param value - parsed JSON of cache file
+ 
+ @returns True when value is a paired reading, in any of the ways one can end
+ 
+ @example
+ ```ts
+ if (isPairedReading(parsed,)) resumed.set(key, parsed,);
+ ```
  */
 function isPairedReading(value: unknown,): value is PairedReading {
   if (!isJsonRecord(value,))
@@ -110,12 +110,12 @@ function isPairedReading(value: unknown,): value is PairedReading {
     return false;
 
   /**
-   * Reasons this shape can carry, which a file written under an older set
-   * would not match.
-   *
-   * NOT THE PER-READER REASONS. One reader can fail for reasons this pair never
-   * ends at, `reader-failed` among them, and a record carrying one of those was
-   * written by something that confused a reader's outcome with the pair's.
+   Reasons this shape can carry, which a file written under an older set
+   would not match.
+   
+   NOT THE PER-READER REASONS. One reader can fail for reasons this pair never
+   ends at, `reader-failed` among them, and a record carrying one of those was
+   written by something that confused a reader's outcome with the pair's.
    */
   const reasons: readonly string[] = [
     'no-reader-available',
@@ -135,18 +135,18 @@ function isPairedReading(value: unknown,): value is PairedReading {
 }
 
 /**
- * Opens an entry's picture-reading store, beside its two slice caches.
- *
- * @param dir - per-entry slice-cache directory
- *
- * @param generation - digest of built pipeline this pass runs
- *
- * @returns Store resuming readings settled earlier and persisting new ones
- *
- * @example
- * ```ts
- * const readingCache = await openPictureReadingCache({ dir: entryCacheDir, generation, },);
- * ```
+ Opens an entry's picture-reading store, beside its two slice caches.
+ 
+ @param dir - per-entry slice-cache directory
+ 
+ @param generation - digest of built pipeline this pass runs
+ 
+ @returns Store resuming readings settled earlier and persisting new ones
+ 
+ @example
+ ```ts
+ const readingCache = await openPictureReadingCache({ dir: entryCacheDir, generation, },);
+ ```
  */
 export async function openPictureReadingCache(
   {

@@ -21,16 +21,16 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 // budget.
 
 /**
- * Reads what an entry's archive notes say about whose text the page is.
- *
- * @param entry - corpus pair, text already read
- *
- * @returns The reading, off the archive as inherited
- *
- * @example
- * ```ts
- * const reading = entryArchiveOriginalOf({ entry, },);
- * ```
+ Reads what an entry's archive notes say about whose text the page is.
+ 
+ @param entry - corpus pair, text already read
+ 
+ @returns The reading, off the archive as inherited
+ 
+ @example
+ ```ts
+ const reading = entryArchiveOriginalOf({ entry, },);
+ ```
  */
 export function entryArchiveOriginalOf(
   { entry, }: { readonly entry: CorpusPair; },
@@ -41,30 +41,30 @@ export function entryArchiveOriginalOf(
 }
 
 /**
- * Records that the pipeline declined an entry, and says so on the run log and
- * the tally.
- *
- * RECORDED, NEVER SILENT: the record is what the next pass skips on, and the
- * archive page stands as the output, untouched.
- *
- * @param entry - entry declined
- *
- * @param declinedDir - directory the record is written into
- *
- * @param tip - repository head the pass runs at
- *
- * @param pipelineDigest - built pipeline that declined it
- *
- * @param note - the archive's note that decided it
- *
- * @param startedAt - when the entry started, for the tally's duration
- *
- * @returns The declined outcome
- *
- * @example
- * ```ts
- * return recordEntryDecline({ entry, declinedDir, tip, pipelineDigest, note, startedAt: t0, },);
- * ```
+ Records that the pipeline declined an entry, and says so on the run log and
+ the tally.
+ 
+ RECORDED, NEVER SILENT: the record is what the next pass skips on, and the
+ archive page stands as the output, untouched.
+ 
+ @param entry - entry declined
+ 
+ @param declinedDir - directory the record is written into
+ 
+ @param tip - repository head the pass runs at
+ 
+ @param pipelineDigest - built pipeline that declined it
+ 
+ @param note - the archive's note that decided it
+ 
+ @param startedAt - when the entry started, for the tally's duration
+ 
+ @returns The declined outcome
+ 
+ @example
+ ```ts
+ return recordEntryDecline({ entry, declinedDir, tip, pipelineDigest, note, startedAt: t0, },);
+ ```
  */
 export async function recordEntryDecline(
   {

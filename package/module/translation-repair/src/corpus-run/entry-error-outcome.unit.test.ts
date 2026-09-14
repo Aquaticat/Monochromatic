@@ -1,7 +1,7 @@
 /**
- * Tests caught entry errors map to operational tally and scheduler state.
- *
- * @module
+ Tests caught entry errors map to operational tally and scheduler state.
+ 
+ @module
  */
 
 import {

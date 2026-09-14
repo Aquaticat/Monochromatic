@@ -21,38 +21,38 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // Live stages and frozen preparation recipes share range/order validation and relation agreement.
 
 /**
- * Existing per-relation endorsement threshold, distinct from the stage's roster quorum.
- * Retallying stored outcomes must not introduce another agreement policy.
+ Existing per-relation endorsement threshold, distinct from the stage's roster quorum.
+ Retallying stored outcomes must not introduce another agreement policy.
  */
 const AGREEMENT_NEEDED = 2;
 
 /**
- * Reads final asked-seat outcomes through the production pairing reader and agreement rule.
- * A schema-valid heard reply may still be unusable because its indexes or order are invalid.
- * This operation buys no calls and does not turn missing seats into ballots.
- *
- * @param outcomes - final outcomes of exactly the seats the stage asked
- *
- * @param modelIds - configured electorate supplying the reported denominator
- *
- * @param sourceCount - source block bound used by the original question
- *
- * @param targetCount - target block bound used by the original question
- *
- * @param freeOrder - definition indexes exempt from ordinary block ordering
- *
- * @param l - caller logger retaining preparation identity
- *
- * @returns Agreed relations, final seat evidence and unchanged usability findings
- *
- * @throws {@link import('./pair-blocks-evidence-identity.ts').PairingEvidenceError} when seat identities cannot represent the configured electorate
- *
- * @throws Error when an unexpected reader failure occurs
- *
- * @example
- * ```ts
- * const retallied = readBlockPairingOutcomes({ outcomes, modelIds, sourceCount: 2, targetCount: 3, l });
- * ```
+ Reads final asked-seat outcomes through the production pairing reader and agreement rule.
+ A schema-valid heard reply may still be unusable because its indexes or order are invalid.
+ This operation buys no calls and does not turn missing seats into ballots.
+ 
+ @param outcomes - final outcomes of exactly the seats the stage asked
+ 
+ @param modelIds - configured electorate supplying the reported denominator
+ 
+ @param sourceCount - source block bound used by the original question
+ 
+ @param targetCount - target block bound used by the original question
+ 
+ @param freeOrder - definition indexes exempt from ordinary block ordering
+ 
+ @param l - caller logger retaining preparation identity
+ 
+ @returns Agreed relations, final seat evidence and unchanged usability findings
+ 
+ @throws {@link import('./pair-blocks-evidence-identity.ts').PairingEvidenceError} when seat identities cannot represent the configured electorate
+ 
+ @throws Error when an unexpected reader failure occurs
+ 
+ @example
+ ```ts
+ const retallied = readBlockPairingOutcomes({ outcomes, modelIds, sourceCount: 2, targetCount: 3, l });
+ ```
  */
 export function readBlockPairingOutcomes(
   {
@@ -72,7 +72,7 @@ export function readBlockPairingOutcomes(
   }>,
 ): BlockPairingOutcome {
   /**
-   * Logger distinguishing transport-free interpretation from the purchased stage.
+   Logger distinguishing transport-free interpretation from the purchased stage.
    */
   const pl = tagged({
     tag: readBlockPairingOutcomes.name,
@@ -87,23 +87,23 @@ export function readBlockPairingOutcomes(
     l: pl,
   },);
   /**
-   * Replies that arrived and validated in shape.
+   Replies that arrived and validated in shape.
    */
   const heardVoices = outcomes.filter(function wasHeard(outcome,): boolean {
     return outcome.voice
       .heard;
   },);
   /**
-   * Findings accumulated while reading replies.
+   Findings accumulated while reading replies.
    */
   const findings: string[] = [];
   /**
-   * Pairings that survived the reader, one per usable voice.
+   Pairings that survived the reader, one per usable voice.
    */
   const pairings: (readonly BlockPair[])[] = [];
   for (const outcome of heardVoices) {
     /**
-     * Reply narrowed independently from the filter's array element type.
+     Reply narrowed independently from the filter's array element type.
      */
     const { voice, } = outcome;
     if (!voice.heard)
@@ -135,7 +135,7 @@ export function readBlockPairingOutcomes(
     };
   }
   /**
-   * Existing many-to-many agreement and monotone-order resolution.
+   Existing many-to-many agreement and monotone-order resolution.
    */
   const agreement = agreePairs({
     pairings,
@@ -143,18 +143,18 @@ export function readBlockPairingOutcomes(
     pairingShape: 'many-to-many',
   },);
   /**
-   * Relations the agreement rule withheld.
+   Relations the agreement rule withheld.
    */
   const { findings: dropped, } = agreement;
   findings.push(...dropped.map(function prefix(finding,): string {
     return `block-pairing ${finding}`;
   },),);
   /**
-   * Relations preserved by endorsement and ordering.
+   Relations preserved by endorsement and ordering.
    */
   const agreed = agreement.pairs;
   /**
-   * Unique block reach beside many-to-many relation count.
+   Unique block reach beside many-to-many relation count.
    */
   const counts = countPairedBlocks({ pairs: agreed, },);
   pl.info(

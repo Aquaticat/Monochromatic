@@ -1,16 +1,16 @@
 /**
- * Tests for locating a claimed defect in a document.
- *
- * WHAT THESE PIN is the split that the first version of this instrument did not
- * have: a LOCATOR says which occurrence is meant, a FOCUS says what changed,
- * and the second is allowed to be short and repeated as long as it is unique
- * inside the first. The cases below are the ones that decide whether that split
- * actually buys anything, so each names the reading it would have had under a
- * single-span rule.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for locating a claimed defect in a document.
+ 
+ WHAT THESE PIN is the split that the first version of this instrument did not
+ have: a LOCATOR says which occurrence is meant, a FOCUS says what changed,
+ and the second is allowed to be short and repeated as long as it is unique
+ inside the first. The cases below are the ones that decide whether that split
+ actually buys anything, so each names the reading it would have had under a
+ single-span rule.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -22,13 +22,13 @@ import {
 import { anchorLocatedSpan, } from '../dist/final/node/index.mjs';
 
 /**
- * Original carrying a negator TWICE, which is what makes a bare focus quote
- * ambiguous and a located one exact.
+ Original carrying a negator TWICE, which is what makes a bare focus quote
+ ambiguous and a located one exact.
  */
 const SOURCE_TEXT = '三只猫住在书店的阁楼里。她们不吃罐头，也不喝凉牛奶。';
 
 /**
- * Rendering of it, carrying an English word that repeats.
+ Rendering of it, carrying an English word that repeats.
  */
 const CANDIDATE_TEXT = 'Three cats live in the bookshop attic. They eat canned food, and they drink cold milk.';
 
@@ -179,7 +179,7 @@ await describe({
         + 'so a report never quotes a text back with wording it does not carry',
       fn: async () => {
         /**
-         * Candidate wrapped mid-sentence, as a stored document is.
+         Candidate wrapped mid-sentence, as a stored document is.
          */
         const wrapped = 'Three cats live in the bookshop attic.\nThey eat canned food, and they nap.';
 
@@ -205,7 +205,7 @@ await describe({
         + 'is the failure that discarded real evidence before the punctuation fold existed',
       fn: async () => {
         /**
-         * Candidate holding a curly apostrophe, as the editing guide requires.
+         Candidate holding a curly apostrophe, as the editing guide requires.
          */
         const curly = 'The bookshop’s three cats sleep in the attic.';
 

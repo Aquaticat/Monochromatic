@@ -1,19 +1,19 @@
 /**
- * Tests for the `mdx-downgraded` integrity signal.
- *
- * `downgradeCount` had no test. It is four lines, and it decides an integrity
- * verdict: candidate selection ranks integrity above every other measurement,
- * so a patch that raises this count loses to unchanged no matter how many
- * issues it fixed. A count that silently included the wrong finding kind would
- * therefore discard correct repairs, and a count that missed real downgrades
- * would ship text whose document grammar the patch broke.
- *
- * The kind filter is the whole function, so the cases pin it against the other
- * finding kind the parser actually emits rather than against an invented one.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the `mdx-downgraded` integrity signal.
+ 
+ `downgradeCount` had no test. It is four lines, and it decides an integrity
+ verdict: candidate selection ranks integrity above every other measurement,
+ so a patch that raises this count loses to unchanged no matter how many
+ issues it fixed. A count that silently included the wrong finding kind would
+ therefore discard correct repairs, and a count that missed real downgrades
+ would ship text whose document grammar the patch broke.
+ 
+ The kind filter is the whole function, so the cases pin it against the other
+ finding kind the parser actually emits rather than against an invented one.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -79,7 +79,7 @@ await describe({
         + 'nor inflates it',
       fn: async () => {
         /**
-         * Document carrying a skipped comment and a grammar failure at once.
+         Document carrying a skipped comment and a grammar failure at once.
          */
         const document = parseDocument({
           text: 'The cat naps {unclosed\n\n<!-- a note about the cat -->\n\nShe wakes.\n',

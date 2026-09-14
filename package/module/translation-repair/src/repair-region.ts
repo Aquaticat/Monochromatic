@@ -29,69 +29,69 @@ import type { EditableEnvelope, } from './patch-model.ts';
 // disclosing who else the same edit was written for.
 
 /**
- * One replacement the accuracy stage applied, with every accepted issue the
- * replaced region was cut for.
- *
- * @example
- * ```ts
- * const region: RepairRegion = {
- *   envelopeId: 'envelope/abcd',
- *   issueIds: ['adjudicated/one',],
- *   before: 'The cat is doing the sleeping.',
- *   editorAfter: 'The cat is asleep.',
- * };
- * ```
+ One replacement the accuracy stage applied, with every accepted issue the
+ replaced region was cut for.
+ 
+ @example
+ ```ts
+ const region: RepairRegion = {
+   envelopeId: 'envelope/abcd',
+   issueIds: ['adjudicated/one',],
+   before: 'The cat is doing the sleeping.',
+   editorAfter: 'The cat is asleep.',
+ };
+ ```
  */
 export type RepairRegion = {
   /**
-   * Envelope this replacement targeted.
+   Envelope this replacement targeted.
    */
   readonly envelopeId: string;
 
   /**
-   * Every accepted issue whose target-side evidence contributed to this
-   * envelope, in issue order. More than one means the replacement is shared
-   * and cannot be read as written for any single issue.
+   Every accepted issue whose target-side evidence contributed to this
+   envelope, in issue order. More than one means the replacement is shared
+   and cannot be read as written for any single issue.
    */
   readonly issueIds: readonly string[];
 
   /**
-   * Envelope content before the replacement; empty at an insertion point.
+   Envelope content before the replacement; empty at an insertion point.
    */
   readonly before: string;
 
   /**
-   * Replacement text of the SELECTED accuracy patch.
-   *
-   * Named for the stage rather than for a model on purpose: the editor
-   * ensemble's judges pick between candidates and may ship a composite or a
-   * fallback, so this is what the stage settled on, not what any one editor
-   * wrote. It is also pre-refinement text; the naturalness lane may rewrite the
-   * surrounding paragraph afterwards, which `ChunkRepairOutcome.refined`
-   * records. It is deliberately not re-derived from refined text: envelopes are
-   * sub-paragraph spans and a whole-paragraph rewrite carries no offset mapping
-   * back onto them, so any re-derivation would be a guess presented as a record.
+   Replacement text of the SELECTED accuracy patch.
+   
+   Named for the stage rather than for a model on purpose: the editor
+   ensemble's judges pick between candidates and may ship a composite or a
+   fallback, so this is what the stage settled on, not what any one editor
+   wrote. It is also pre-refinement text; the naturalness lane may rewrite the
+   surrounding paragraph afterwards, which `ChunkRepairOutcome.refined`
+   records. It is deliberately not re-derived from refined text: envelopes are
+   sub-paragraph spans and a whole-paragraph rewrite carries no offset mapping
+   back onto them, so any re-derivation would be a guess presented as a record.
    */
   readonly editorAfter: string;
 };
 
 /**
- * Records every applied operation as a region, carrying the accepted issues its
- * envelope serves.
- *
- * @param envelopes - editable envelopes the operations were written against
- *
- * @param applied - operations that passed the deterministic apply gate
- *
- * @returns One region per applied operation, in operation order
- *
- * @example
- * ```ts
- * const regions = collectRepairRegions({
- *   envelopes,
- *   applied: editor.patch.applied,
- * },);
- * ```
+ Records every applied operation as a region, carrying the accepted issues its
+ envelope serves.
+ 
+ @param envelopes - editable envelopes the operations were written against
+ 
+ @param applied - operations that passed the deterministic apply gate
+ 
+ @returns One region per applied operation, in operation order
+ 
+ @example
+ ```ts
+ const regions = collectRepairRegions({
+   envelopes,
+   applied: editor.patch.applied,
+ },);
+ ```
  */
 export function collectRepairRegions(
   {
@@ -103,7 +103,7 @@ export function collectRepairRegions(
   },
 ): readonly RepairRegion[] {
   /**
-   * Envelopes by identity, so attribution stays linear in the operation count.
+   Envelopes by identity, so attribution stays linear in the operation count.
    */
   const byId: Record<string, EditableEnvelope> = {};
   for (const envelope of envelopes)
@@ -111,8 +111,8 @@ export function collectRepairRegions(
 
   return applied.map(function toRegion(operation,): RepairRegion {
     /**
-     * Envelope this operation targets, present because the apply gate rejects
-     * every operation naming an unknown envelope.
+     Envelope this operation targets, present because the apply gate rejects
+     every operation naming an unknown envelope.
      */
     const envelope = nonNullishOrThrow(byId[operation.envelopeId],);
 

@@ -24,14 +24,14 @@ import { basename, } from 'node:path';
 // expensive way: a rebuild mid-run otherwise stamps a build that never ran.
 
 /**
- * Import specifiers a built entry can carry, in both the spaced form a reader
- * writes and the tight form a minifier emits.
- *
- * THE TIGHT FORM IS THE ONE THAT MATTERS and the one that gets forgotten. The
- * built runners here are minified onto a single line, so their imports read
- * `from"./chunk.mjs"` with no space. A scan expecting `from './` finds nothing
- * and reports a clean closure for a file full of imports, which is a false null
- * that looks exactly like a self-contained bundle.
+ Import specifiers a built entry can carry, in both the spaced form a reader
+ writes and the tight form a minifier emits.
+ 
+ THE TIGHT FORM IS THE ONE THAT MATTERS and the one that gets forgotten. The
+ built runners here are minified onto a single line, so their imports read
+ `from"./chunk.mjs"` with no space. A scan expecting `from './` finds nothing
+ and reports a clean closure for a file full of imports, which is a false null
+ that looks exactly like a self-contained bundle.
  */
 const IMPORT_MARKERS = [
   'from"./',
@@ -41,57 +41,57 @@ const IMPORT_MARKERS = [
 ] as const;
 
 /**
- * What a run executed, or a positive statement that it could not be read.
- *
- * A TAGGED ABSENCE rather than an empty list, because an entry that imports
- * nothing and an entry nobody could read are opposite findings. The first is a
- * self-contained bundle whose closure is itself; the second says nothing at all,
- * and comparing two of them for equality would call two unknown builds the same.
- *
- * @example
- * ```ts
- * const closure: RunnerClosure = { kind: 'read', entry: 'probe.mjs', chunks: [], };
- * ```
+ What a run executed, or a positive statement that it could not be read.
+ 
+ A TAGGED ABSENCE rather than an empty list, because an entry that imports
+ nothing and an entry nobody could read are opposite findings. The first is a
+ self-contained bundle whose closure is itself; the second says nothing at all,
+ and comparing two of them for equality would call two unknown builds the same.
+ 
+ @example
+ ```ts
+ const closure: RunnerClosure = { kind: 'read', entry: 'probe.mjs', chunks: [], };
+ ```
  */
 export type RunnerClosure = {
   readonly kind: 'read';
 
   /**
-   * Entry file this describes, by basename, since the directory is an artifact
-   * of where the run happened rather than of what it ran.
+   Entry file this describes, by basename, since the directory is an artifact
+   of where the run happened rather than of what it ran.
    */
   readonly entry: string;
 
   /**
-   * Chunks the entry imports, sorted and deduplicated so two runs of one build
-   * compare equal regardless of import order.
-   *
-   * EMPTY IS A REAL ANSWER: an entry with everything inlined imports nothing,
-   * and its closure is itself.
+   Chunks the entry imports, sorted and deduplicated so two runs of one build
+   compare equal regardless of import order.
+   
+   EMPTY IS A REAL ANSWER: an entry with everything inlined imports nothing,
+   and its closure is itself.
    */
   readonly chunks: readonly string[];
 } | {
   readonly kind: 'unavailable';
 
   /**
-   * Why, in enough detail to tell a source run from a missing file.
+   Why, in enough detail to tell a source run from a missing file.
    */
   readonly reason: string;
 };
 
 /**
- * Reads one import specifier that begins just past a marker.
- *
- * @param text - whole entry file
- *
- * @param from - index of the first character of the specifier
- *
- * @returns Specifier up to its closing quote, empty when the quote never closes
- *
- * @example
- * ```ts
- * const chunk = specifierAt({ text, from: 12, },);
- * ```
+ Reads one import specifier that begins just past a marker.
+ 
+ @param text - whole entry file
+ 
+ @param from - index of the first character of the specifier
+ 
+ @returns Specifier up to its closing quote, empty when the quote never closes
+ 
+ @example
+ ```ts
+ const chunk = specifierAt({ text, from: 12, },);
+ ```
  */
 function specifierAt(
   {
@@ -103,7 +103,7 @@ function specifierAt(
   },
 ): string {
   /**
-   * Where the specifier ends, at whichever quote closes it first.
+   Where the specifier ends, at whichever quote closes it first.
    */
   const single = text.indexOf(
     '\'',
@@ -111,7 +111,7 @@ function specifierAt(
   );
 
   /**
-   * The other quote style, since a bundler may emit either.
+   The other quote style, since a bundler may emit either.
    */
   const double = text.indexOf(
     '"',
@@ -119,7 +119,7 @@ function specifierAt(
   );
 
   /**
-   * Closest closing quote, ignoring whichever was not found.
+   Closest closing quote, ignoring whichever was not found.
    */
   const end = Math.min(
     (single === (-1)) ? text.length : single,
@@ -135,20 +135,20 @@ function specifierAt(
 }
 
 /**
- * Reads an entry file, reporting failure as a value.
- *
- * ITS OWN FUNCTION so the caller has no mutable binding at its root: a `let`
- * assigned inside a `try` leaks scope to every statement after it, and the
- * failure it exists to carry is exactly the one this returns instead.
- *
- * @param entryPath - built entry to read
- *
- * @returns Its text, or why there is none
- *
- * @example
- * ```ts
- * const source = await readEntryText({ entryPath, },);
- * ```
+ Reads an entry file, reporting failure as a value.
+ 
+ ITS OWN FUNCTION so the caller has no mutable binding at its root: a `let`
+ assigned inside a `try` leaks scope to every statement after it, and the
+ failure it exists to carry is exactly the one this returns instead.
+ 
+ @param entryPath - built entry to read
+ 
+ @returns Its text, or why there is none
+ 
+ @example
+ ```ts
+ const source = await readEntryText({ entryPath, },);
+ ```
  */
 async function readEntryText(
   { entryPath, }: { readonly entryPath: string; },
@@ -177,21 +177,21 @@ async function readEntryText(
 }
 
 /**
- * Reads the chunks a built entry imports.
- *
- * A LINEAR SCAN RATHER THAN A REGEX, per `RG1`: the rule is "a specifier begins
- * after one of four fixed markers and ends at the next quote", which `indexOf`
- * states directly and a pattern would only obscure.
- *
- * @param entryPath - built entry the run is executing, ordinarily
- * `process.argv[1]`
- *
- * @returns Its closure, or why it could not be read
- *
- * @example
- * ```ts
- * const closure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
- * ```
+ Reads the chunks a built entry imports.
+ 
+ A LINEAR SCAN RATHER THAN A REGEX, per `RG1`: the rule is "a specifier begins
+ after one of four fixed markers and ends at the next quote", which `indexOf`
+ states directly and a pattern would only obscure.
+ 
+ @param entryPath - built entry the run is executing, ordinarily
+ `process.argv[1]`
+ 
+ @returns Its closure, or why it could not be read
+ 
+ @example
+ ```ts
+ const closure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
+ ```
  */
 export async function readRunnerClosure(
   { entryPath, }: { readonly entryPath: string; },
@@ -203,34 +203,34 @@ export async function readRunnerClosure(
     };
 
   /**
-   * Entry as built, or why it could not be had.
+   Entry as built, or why it could not be had.
    */
   const source = await readEntryText({ entryPath, },);
   if (source.kind === 'unavailable')
     return source;
 
   /**
-   * Its contents.
+   Its contents.
    */
   const { text, } = source;
 
   /**
-   * Every relative specifier the entry imports, in file order, duplicates and
-   * all.
+   Every relative specifier the entry imports, in file order, duplicates and
+   all.
    */
   const found = IMPORT_MARKERS.flatMap(function scanFor(marker,): readonly string[] {
     /**
-     * Specifiers this marker turns up.
+     Specifiers this marker turns up.
      */
     const hits: string[] = [];
 
     /**
-     * Cursor, advanced past each hit so the scan terminates.
+     Cursor, advanced past each hit so the scan terminates.
      */
     let at = text.indexOf(marker,);
     while (at !== (-1)) {
       /**
-       * Specifier body, which starts after the marker's own `./`.
+       Specifier body, which starts after the marker's own `./`.
        */
       const chunk = specifierAt({
         text,

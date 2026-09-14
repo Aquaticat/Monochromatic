@@ -16,34 +16,34 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 // compositions are pure, and the second is the one written.
 
 /**
- * Composes the settled artifact with the page-level guard's outcome recorded.
- *
- * @param entryId - corpus entry
- *
- * @param tip - pipeline tip
- *
- * @param pipelineDigest - digest of the pipeline that ran
- *
- * @param durationMs - wall time the entry took
- *
- * @param prepared - preparation both lanes ran over
- *
- * @param lanes - both lane results and their ledgers
- *
- * @param contestSlices - what the contest decided per slice
- *
- * @param consolidateSlices - what the third rendering settled per slice
- *
- * @param targetText - archive text the page's replacements address
- *
- * @param l - logger the guard's findings reach
- *
- * @returns The artifact to write
- *
- * @example
- * ```ts
- * const artifact = settledPageArtifact({ entryId, tip, pipelineDigest, durationMs, prepared, lanes, contestSlices, consolidateSlices, targetText, l, },);
- * ```
+ Composes the settled artifact with the page-level guard's outcome recorded.
+ 
+ @param entryId - corpus entry
+ 
+ @param tip - pipeline tip
+ 
+ @param pipelineDigest - digest of the pipeline that ran
+ 
+ @param durationMs - wall time the entry took
+ 
+ @param prepared - preparation both lanes ran over
+ 
+ @param lanes - both lane results and their ledgers
+ 
+ @param contestSlices - what the contest decided per slice
+ 
+ @param consolidateSlices - what the third rendering settled per slice
+ 
+ @param targetText - archive text the page's replacements address
+ 
+ @param l - logger the guard's findings reach
+ 
+ @returns The artifact to write
+ 
+ @example
+ ```ts
+ const artifact = settledPageArtifact({ entryId, tip, pipelineDigest, durationMs, prepared, lanes, contestSlices, consolidateSlices, targetText, l, },);
+ ```
  */
 export function settledPageArtifact(
   {
@@ -71,7 +71,7 @@ export function settledPageArtifact(
   },
 ): SettledArtifact {
   /**
-   * The artifact as the stages composed it, before the guard.
+   The artifact as the stages composed it, before the guard.
    */
   const composed = settledEntryArtifact({
     entryId,
@@ -85,7 +85,7 @@ export function settledPageArtifact(
     pageAssembly: NO_PAGE_ASSEMBLY,
   },);
   /**
-   * What the guard made of the page that artifact would ship.
+   What the guard made of the page that artifact would ship.
    */
   const pageAssembly = guardPageAssembly({
     artifact: composed,
@@ -95,12 +95,12 @@ export function settledPageArtifact(
   for (const finding of pageAssembly.findings)
     l.warn(`page assembly: ${finding}`,);
   /**
-   * Slices the guard trimmed.
+   Slices the guard trimmed.
    */
   const trimmedCount = pageAssembly.trimmed
     .length;
   /**
-   * Slices the guard took back.
+   Slices the guard took back.
    */
   const withdrawnCount = pageAssembly.withdrawn
     .length;

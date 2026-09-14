@@ -24,49 +24,49 @@
 // text before it ships.
 
 /**
- * Finding recorded when the page lacks a source destination because it
- * carries the archive's rendering of that reference instead.
+ Finding recorded when the page lacks a source destination because it
+ carries the archive's rendering of that reference instead.
  */
 export const ARCHIVE_RENDERING_FINDING: string = 'destinations-archive-rendering';
 
 /**
- * Finding recorded when the page carries more renderings from the pool than
- * it owes, that is, both the original's and the archive's for one reference.
+ Finding recorded when the page carries more renderings from the pool than
+ it owes, that is, both the original's and the archive's for one reference.
  */
 export const BOTH_RENDERINGS_FINDING: string = 'destinations-both-renderings';
 
 /**
- * What the rendering rule decided about a page.
- *
- * @example
- * ```ts
- * const verdict: DestinationRenderingVerdict = judgeDestinationRenderings({ source, page, archive, },);
- * ```
+ What the rendering rule decided about a page.
+ 
+ @example
+ ```ts
+ const verdict: DestinationRenderingVerdict = judgeDestinationRenderings({ source, page, archive, },);
+ ```
  */
 export type DestinationRenderingVerdict = {
   /**
-   * Source destinations the page owes and does not carry.
+   Source destinations the page owes and does not carry.
    */
   readonly dropped: readonly string[];
 
   /**
-   * Findings in scorecard-stable wording.
+   Findings in scorecard-stable wording.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Address with a trailing slash shed, so two spellings of one address compare
- * equal.
- *
- * @param url - address as written
- *
- * @returns Address without a trailing slash
- *
- * @example
- * ```ts
- * const same = sameAddress({ url: 'https://example.org/a/', },) === sameAddress({ url: 'https://example.org/a', },);
- * ```
+ Address with a trailing slash shed, so two spellings of one address compare
+ equal.
+ 
+ @param url - address as written
+ 
+ @returns Address without a trailing slash
+ 
+ @example
+ ```ts
+ const same = sameAddress({ url: 'https://example.org/a/', },) === sameAddress({ url: 'https://example.org/a', },);
+ ```
  */
 export function sameAddress({ url, }: { readonly url: string; },): string {
   return url.endsWith('/',)
@@ -78,16 +78,16 @@ export function sameAddress({ url, }: { readonly url: string; },): string {
 }
 
 /**
- * Addresses as a set of comparison keys.
- *
- * @param urls - addresses as written
- *
- * @returns Keys with the trailing slash shed
- *
- * @example
- * ```ts
- * const keys = addressKeys({ urls, },);
- * ```
+ Addresses as a set of comparison keys.
+ 
+ @param urls - addresses as written
+ 
+ @returns Keys with the trailing slash shed
+ 
+ @example
+ ```ts
+ const keys = addressKeys({ urls, },);
+ ```
  */
 function addressKeys({ urls, }: { readonly urls: readonly string[]; },): ReadonlySet<string> {
   return new Set(urls.map(function keyOf(url,): string {
@@ -96,20 +96,20 @@ function addressKeys({ urls, }: { readonly urls: readonly string[]; },): Readonl
 }
 
 /**
- * Addresses whose key is (or is not) in a set.
- *
- * @param urls - addresses filtered
- *
- * @param keys - keys compared against
- *
- * @param present - whether to keep the addresses found in the set or the rest
- *
- * @returns Addresses kept, in their given order
- *
- * @example
- * ```ts
- * const rewritten = addressesWhere({ urls: source, keys: archiveKeys, present: false, },);
- * ```
+ Addresses whose key is (or is not) in a set.
+ 
+ @param urls - addresses filtered
+ 
+ @param keys - keys compared against
+ 
+ @param present - whether to keep the addresses found in the set or the rest
+ 
+ @returns Addresses kept, in their given order
+ 
+ @example
+ ```ts
+ const rewritten = addressesWhere({ urls: source, keys: archiveKeys, present: false, },);
+ ```
  */
 function addressesWhere(
   {
@@ -128,22 +128,22 @@ function addressesWhere(
 }
 
 /**
- * Source destinations the page owes and lacks, under the either-rendering
- * rule.
- *
- * @param source - distinct destinations the source carries
- *
- * @param page - distinct destinations the would-ship page carries
- *
- * @param archive - distinct destinations the archive carried before the run;
- * empty when there is no archive
- *
- * @returns Dropped destinations and the findings the pool raised
- *
- * @example
- * ```ts
- * const { dropped, findings, } = judgeDestinationRenderings({ source, page, archive, },);
- * ```
+ Source destinations the page owes and lacks, under the either-rendering
+ rule.
+ 
+ @param source - distinct destinations the source carries
+ 
+ @param page - distinct destinations the would-ship page carries
+ 
+ @param archive - distinct destinations the archive carried before the run;
+ empty when there is no archive
+ 
+ @returns Dropped destinations and the findings the pool raised
+ 
+ @example
+ ```ts
+ const { dropped, findings, } = judgeDestinationRenderings({ source, page, archive, },);
+ ```
  */
 export function judgeDestinationRenderings(
   {
@@ -157,22 +157,22 @@ export function judgeDestinationRenderings(
   },
 ): DestinationRenderingVerdict {
   /**
-   * Keys of what the archive carries.
+   Keys of what the archive carries.
    */
   const archiveKeys = addressKeys({ urls: archive, },);
 
   /**
-   * Keys of what the source carries.
+   Keys of what the source carries.
    */
   const sourceKeys = addressKeys({ urls: source, },);
 
   /**
-   * Keys of what the page carries.
+   Keys of what the page carries.
    */
   const pageKeys = addressKeys({ urls: page, },);
 
   /**
-   * Source destinations the archive carries as written: owed outright.
+   Source destinations the archive carries as written: owed outright.
    */
   const shared = addressesWhere({
     urls: source,
@@ -181,7 +181,7 @@ export function judgeDestinationRenderings(
   },);
 
   /**
-   * Source destinations the archive rendered another way, or dropped.
+   Source destinations the archive rendered another way, or dropped.
    */
   const rewritten = addressesWhere({
     urls: source,
@@ -190,7 +190,7 @@ export function judgeDestinationRenderings(
   },);
 
   /**
-   * Archive destinations the source never carried: its renderings, or additions.
+   Archive destinations the source never carried: its renderings, or additions.
    */
   const replacements = addressesWhere({
     urls: archive,
@@ -199,7 +199,7 @@ export function judgeDestinationRenderings(
   },);
 
   /**
-   * How many of the pool the page owes: the larger side's count.
+   How many of the pool the page owes: the larger side's count.
    */
   const owed = Math.max(
     rewritten.length,
@@ -207,7 +207,7 @@ export function judgeDestinationRenderings(
   );
 
   /**
-   * Pool entries the page carries.
+   Pool entries the page carries.
    */
   const carriedFromPool = addressesWhere({
     urls: [
@@ -219,12 +219,12 @@ export function judgeDestinationRenderings(
   },);
 
   /**
-   * How many of the pool the page carries.
+   How many of the pool the page carries.
    */
   const drawn = carriedFromPool.length;
 
   /**
-   * Shared destinations the page lacks: dropped whatever the pool says.
+   Shared destinations the page lacks: dropped whatever the pool says.
    */
   const sharedDropped = addressesWhere({
     urls: shared,
@@ -233,7 +233,7 @@ export function judgeDestinationRenderings(
   },);
 
   /**
-   * Rewritten destinations the page lacks: dropped only when the pool is short.
+   Rewritten destinations the page lacks: dropped only when the pool is short.
    */
   const rewrittenAbsent = addressesWhere({
     urls: rewritten,
@@ -242,7 +242,7 @@ export function judgeDestinationRenderings(
   },);
 
   /**
-   * Whether the page drew enough from the pool.
+   Whether the page drew enough from the pool.
    */
   const poolMet = drawn >= owed;
 

@@ -1,18 +1,18 @@
 /**
- * Tests for the repeat pairings and the band `#115` reads off them.
- *
- * The band exists because the headline of `#115` is a comparison, and a
- * comparison resolves nothing narrower than the spread the instrument moves
- * through on unchanged input. The sharpest cases here are the REFUSALS, since
- * a pairing that should not have happened reports a band narrower than the
- * truth and makes every comparison look better resolved than it is: two rows
- * that merely share a slot, two rows whose text moved, and two rows that
- * predate the recorded identity and would otherwise pair through their shared
- * absence.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the repeat pairings and the band `#115` reads off them.
+ 
+ The band exists because the headline of `#115` is a comparison, and a
+ comparison resolves nothing narrower than the spread the instrument moves
+ through on unchanged input. The sharpest cases here are the REFUSALS, since
+ a pairing that should not have happened reports a band narrower than the
+ truth and makes every comparison look better resolved than it is: two rows
+ that merely share a slot, two rows whose text moved, and two rows that
+ predate the recorded identity and would otherwise pair through their shared
+ absence.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -32,24 +32,24 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Builds one audited slice carrying a stated number of anchored claims.
- *
- * @param runSet - archive subdirectory
- *
- * @param entryId - corpus entry
- *
- * @param sliceIndex - slice index
- *
- * @param claims - how many claims anchored, over one voice
- *
- * @param texts - what the audit was shown, omitted to leave it unrecorded
- *
- * @returns Row shaped as the probe persists it
- *
- * @example
- * ```ts
- * const row = rowFor({ runSet: 'first', entryId: 'mittens', sliceIndex: 0, claims: 1, },);
- * ```
+ Builds one audited slice carrying a stated number of anchored claims.
+ 
+ @param runSet - archive subdirectory
+ 
+ @param entryId - corpus entry
+ 
+ @param sliceIndex - slice index
+ 
+ @param claims - how many claims anchored, over one voice
+ 
+ @param texts - what the audit was shown, omitted to leave it unrecorded
+ 
+ @returns Row shaped as the probe persists it
+ 
+ @example
+ ```ts
+ const row = rowFor({ runSet: 'first', entryId: 'mittens', sliceIndex: 0, claims: 1, },);
+ ```
  */
 function rowFor(
   {
@@ -105,7 +105,7 @@ function rowFor(
 }
 
 /**
- * One pair of texts, used wherever two rows are meant to match.
+ One pair of texts, used wherever two rows are meant to match.
  */
 const SAME_TEXTS = {
   sourceText: '毛毛跳上窗台。',
@@ -113,7 +113,7 @@ const SAME_TEXTS = {
 } as const;
 
 /**
- * A different rendering of the same original.
+ A different rendering of the same original.
  */
 const OTHER_TEXTS = {
   sourceText: '毛毛跳上窗台。',
@@ -128,12 +128,12 @@ await describe({
         + 'does not is a comparison of two renderings rather than two readings of one text',
       fn: async () => {
         /**
-         * Same original, different English.
+         Same original, different English.
          */
         const mine = digestAuditedText(SAME_TEXTS,);
 
         /**
-         * The other rendering.
+         The other rendering.
          */
         const theirs = digestAuditedText(OTHER_TEXTS,);
 
@@ -150,7 +150,7 @@ await describe({
         + 'corpus itself goes only to the production provider',
       fn: async () => {
         /**
-         * What lands on the row.
+         What lands on the row.
          */
         const identity = digestAuditedText(SAME_TEXTS,);
         if (identity.kind !== 'digested')
@@ -193,7 +193,7 @@ await describe({
         + 'evidence and read every such pair as one text audited twice',
       fn: async () => {
         /**
-         * Two rows from a run that predates the field.
+         Two rows from a run that predates the field.
          */
         const left = rowFor({
           runSet: 'first',
@@ -203,7 +203,7 @@ await describe({
         },);
 
         /**
-         * Its counterpart.
+         Its counterpart.
          */
         const right = rowFor({
           runSet: 'second',
@@ -229,7 +229,7 @@ await describe({
         + 'repeat two artifacts of one entry already contain',
       fn: async () => {
         /**
-         * Same slice of one entry, settled twice, carrying the same characters.
+         Same slice of one entry, settled twice, carrying the same characters.
          */
         const pairs = auditRepeatsWithin({
           rows: [
@@ -341,7 +341,7 @@ await describe({
         + 'slice so two artifacts of one entry are never crossed with each other',
       fn: async () => {
         /**
-         * One subject, bought by two runs.
+         One subject, bought by two runs.
          */
         const {
           paired,
@@ -375,7 +375,7 @@ await describe({
         + 'between two runs invalidates that subject as a band measurement and is worth knowing',
       fn: async () => {
         /**
-         * Same slot, different rendering, which means the archive moved.
+         Same slot, different rendering, which means the archive moved.
          */
         const {
           paired,
@@ -409,7 +409,7 @@ await describe({
         + 'absence of evidence about the run',
       fn: async () => {
         /**
-         * An older run against a current one: same subject, no recorded identity on one side.
+         An older run against a current one: same subject, no recorded identity on one side.
          */
         const {
           paired,
@@ -489,7 +489,7 @@ await describe({
         + 'assumption the measurement exists to avoid',
       fn: async () => {
         /**
-         * Two repeats, one where the later run claimed more and one where it claimed less.
+         Two repeats, one where the later run claimed more and one where it claimed less.
          */
         const band = repeatBandOf({
           pairs: auditRepeatsWithin({
@@ -539,7 +539,7 @@ await describe({
         + 'subjects for no reason in the text',
       fn: async () => {
         /**
-         * One repeat where a voice went quiet, one where both spoke.
+         One repeat where a voice went quiet, one where both spoke.
          */
         const band = repeatBandOf({
           pairs: auditRepeatsWithin({

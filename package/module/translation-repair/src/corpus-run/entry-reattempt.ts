@@ -50,74 +50,74 @@ import { readDirectoryNames, } from './slice-cache-namespace.ts';
 // attempt.
 
 /**
- * Suffix every persisted slice carries, as against the `.txt` generation
- * markers sitting beside them in the same directory.
+ Suffix every persisted slice carries, as against the `.txt` generation
+ markers sitting beside them in the same directory.
  */
 const SLICE_SUFFIX = '.json';
 
 /**
- * What one attempt earned, and so whether the invocation comes back to it.
+ What one attempt earned, and so whether the invocation comes back to it.
  */
 export type ReattemptVerdict =
   | {
     /**
-     * Entry reached its artifact, so nothing is owed.
+     Entry reached its artifact, so nothing is owed.
      */
     readonly kind: 'settled';
   }
   | {
     /**
-     * Entry did not settle and bought no slice it did not already hold, so a
-     * further attempt inside this invocation would repeat this one.
+     Entry did not settle and bought no slice it did not already hold, so a
+     further attempt inside this invocation would repeat this one.
      */
     readonly kind: 'stalled';
 
     /**
-     * Slices it holds, which is what it held before this attempt too.
+     Slices it holds, which is what it held before this attempt too.
      */
     readonly cached: number;
   }
   | {
     /**
-     * Incomplete work explicitly forbids fresh whole-entry attempt.
+     Incomplete work explicitly forbids fresh whole-entry attempt.
      */
     readonly kind: 'stopped';
   }
   | {
     /**
-     * The pipeline declined the entry by the archive's own note; its decline
-     * record stands where the artifact would and no pass attempts it again.
+     The pipeline declined the entry by the archive's own note; its decline
+     record stands where the artifact would and no pass attempts it again.
      */
     readonly kind: 'declined';
   }
   | {
     /**
-     * Entry did not settle and cached slices it did not have before, so the
-     * next attempt starts further along than this one did.
+     Entry did not settle and cached slices it did not have before, so the
+     next attempt starts further along than this one did.
      */
     readonly kind: 'earned';
 
     /**
-     * Slices this attempt bought.
+     Slices this attempt bought.
      */
     readonly gained: number;
   };
 
 /**
- * Counts slices one entry has cached, across every lane sharing its directory.
- *
- * COUNTS ALL LANES DELIBERATELY. Progress is progress whichever lane made it,
- * and an entry whose repair lane is capped while its translate lane advances is
- * moving forward exactly as much as one where both do.
- *
- * @param dir - per-entry cache directory, absent before its first slice
- *
- * @returns How many slices sit there, zero when nothing has been cached
- *
- * @example
- * ```ts
- * const cached = await countCachedSlices({ dir: entryCacheDir, },);
- * ```
+ Counts slices one entry has cached, across every lane sharing its directory.
+ 
+ COUNTS ALL LANES DELIBERATELY. Progress is progress whichever lane made it,
+ and an entry whose repair lane is capped while its translate lane advances is
+ moving forward exactly as much as one where both do.
+ 
+ @param dir - per-entry cache directory, absent before its first slice
+ 
+ @returns How many slices sit there, zero when nothing has been cached
+ 
+ @example
+ ```ts
+ const cached = await countCachedSlices({ dir: entryCacheDir, },);
+ ```
  */
 export async function countCachedSlices(
   { dir, }: { readonly dir: string; },
@@ -130,25 +130,25 @@ export async function countCachedSlices(
 }
 
 /**
- * Slices one attempt bought, which is not always the difference in counts.
- *
- * A COUNT THAT FELL MEANS THE CACHE WAS RESET rather than that work was lost.
- * An entry carrying slices from an earlier build has them discarded when its
- * lane opens under this invocation's digest, so every slice present afterwards
- * was bought by this attempt and the plain difference reads as negative.
- * Subtracting alone would call that attempt stalled and drop the entry at
- * precisely the moment it had started paying for a fresh generation.
- *
- * @param cachedBefore - slices present when this attempt started
- *
- * @param cachedAfter - slices present when it stopped
- *
- * @returns Slices this attempt is responsible for
- *
- * @example
- * ```ts
- * const bought = slicesBought({ cachedBefore: 45, cachedAfter: 64, },);
- * ```
+ Slices one attempt bought, which is not always the difference in counts.
+ 
+ A COUNT THAT FELL MEANS THE CACHE WAS RESET rather than that work was lost.
+ An entry carrying slices from an earlier build has them discarded when its
+ lane opens under this invocation's digest, so every slice present afterwards
+ was bought by this attempt and the plain difference reads as negative.
+ Subtracting alone would call that attempt stalled and drop the entry at
+ precisely the moment it had started paying for a fresh generation.
+ 
+ @param cachedBefore - slices present when this attempt started
+ 
+ @param cachedAfter - slices present when it stopped
+ 
+ @returns Slices this attempt is responsible for
+ 
+ @example
+ ```ts
+ const bought = slicesBought({ cachedBefore: 45, cachedAfter: 64, },);
+ ```
  */
 function slicesBought(
   {
@@ -165,25 +165,25 @@ function slicesBought(
 }
 
 /**
- * Reads one attempt into the decision of whether to make another.
- *
- * TAKES SETTLEMENT AS AN INPUT rather than inferring it from the cache, because
- * a settled entry DISCARDS its slice cache on the way out. Inferring would read
- * that discard as the sharpest possible stall and would be wrong about the one
- * outcome the whole pass exists to reach.
- *
- * @param outcome - scheduling disposition from entry pipeline
- *
- * @param cachedBefore - slices present when this attempt started
- *
- * @param cachedAfter - slices present when it stopped
- *
- * @returns Verdict naming what happened and what it earns
- *
- * @example
- * ```ts
- * const verdict = readAttemptOutcome({ outcome: { kind: 'resumable-failure' }, cachedBefore: 45, cachedAfter: 64, },);
- * ```
+ Reads one attempt into the decision of whether to make another.
+ 
+ TAKES SETTLEMENT AS AN INPUT rather than inferring it from the cache, because
+ a settled entry DISCARDS its slice cache on the way out. Inferring would read
+ that discard as the sharpest possible stall and would be wrong about the one
+ outcome the whole pass exists to reach.
+ 
+ @param outcome - scheduling disposition from entry pipeline
+ 
+ @param cachedBefore - slices present when this attempt started
+ 
+ @param cachedAfter - slices present when it stopped
+ 
+ @returns Verdict naming what happened and what it earns
+ 
+ @example
+ ```ts
+ const verdict = readAttemptOutcome({ outcome: { kind: 'resumable-failure' }, cachedBefore: 45, cachedAfter: 64, },);
+ ```
  */
 export function readAttemptOutcome(
   {
@@ -204,7 +204,7 @@ export function readAttemptOutcome(
     return { kind: 'declined', };
 
   /**
-   * Slices this attempt is responsible for, reset-aware.
+   Slices this attempt is responsible for, reset-aware.
    */
   const gained = slicesBought({
     cachedBefore,

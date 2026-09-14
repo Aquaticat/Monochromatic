@@ -1,9 +1,9 @@
 /**
- * Tests for the introduced-defect probe stage itself: what it asks, what it
- * skips, and how it accounts for probers it could not hear.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the introduced-defect probe stage itself: what it asks, what it
+ skips, and how it accounts for probers it could not hear.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -25,12 +25,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger for the probes under test.
+ Logger for the probes under test.
  */
 const l = tagged({ tag: 'introduced-defect-probe-test', },);
 
 /**
- * Probers the fixtures configure.
+ Probers the fixtures configure.
  */
 const PROBERS: readonly RosterModelId[] = [
   'hf:Qwen/Qwen3.8-27B',
@@ -39,7 +39,7 @@ const PROBERS: readonly RosterModelId[] = [
 ];
 
 /**
- * Region the editors replaced, dropping the second clause.
+ Region the editors replaced, dropping the second clause.
  */
 const REGION: RepairRegion = {
   envelopeId: 'envelope/nap',
@@ -49,22 +49,22 @@ const REGION: RepairRegion = {
 };
 
 /**
- * Client answering with one scripted check per region, or refusing.
- *
- * @param verdict - verdict every prober casts on every region
- *
- * @param evidence - added-damage quote every prober offers
- *
- * @param silentModelIds - probers whose voice is always lost
- *
- * @param prompts - shared log of every user sheet the stage sent
- *
- * @returns Client the stage calls
- *
- * @example
- * ```ts
- * const client = catClient({ verdict: 'uncertain', },);
- * ```
+ Client answering with one scripted check per region, or refusing.
+ 
+ @param verdict - verdict every prober casts on every region
+ 
+ @param evidence - added-damage quote every prober offers
+ 
+ @param silentModelIds - probers whose voice is always lost
+ 
+ @param prompts - shared log of every user sheet the stage sent
+ 
+ @returns Client the stage calls
+ 
+ @example
+ ```ts
+ const client = catClient({ verdict: 'uncertain', },);
+ ```
  */
 function catClient(
   {
@@ -87,7 +87,7 @@ function catClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Last message, whose text the probe records.
+       Last message, whose text the probe records.
        */
       const asked = request.messages.at(-1,);
       prompts.push((asked === undefined) ? '' : messageText({ message: asked, },),);
@@ -100,7 +100,7 @@ function catClient(
       }
 
       /**
-       * One check for the single fixture region.
+       One check for the single fixture region.
        */
       const scripted: unknown = {
         checks: [

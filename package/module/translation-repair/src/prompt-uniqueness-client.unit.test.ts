@@ -1,7 +1,7 @@
 /**
- * Tests process-local model and substantive prompt uniqueness.
- *
- * @module
+ Tests process-local model and substantive prompt uniqueness.
+ 
+ @module
  */
 
 import {
@@ -19,7 +19,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Exact prompt reused across boundary cases.
+ Exact prompt reused across boundary cases.
  */
 const REQUEST: ChatTextRequest = {
   modelId: 'hf:moonshotai/Kimi-K3',

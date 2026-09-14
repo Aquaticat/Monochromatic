@@ -1,21 +1,21 @@
 /**
- * Tests for the per-entry ceiling an invocation runs under.
- *
- * The ceiling is what stops one entry running away with a whole pass, so the
- * case that matters most is the one where the override is WRONG. Falling back
- * to the default there would leave an operator believing a run is bounded the
- * way they asked for when it is bounded some other way, and nothing downstream
- * could tell them otherwise: an artifact records no ceiling.
- *
- * The empty-string case is the other one worth having, and this package already
- * carries the scar. `resolveRunsDir` had the same shape, and an
- * exported-but-empty variable is an ordinary shell accident rather than an
- * intention.
- *
- * The override text is injected rather than the environment mutated, so no case
- * here can leak into another.
- *
- * @module
+ Tests for the per-entry ceiling an invocation runs under.
+ 
+ The ceiling is what stops one entry running away with a whole pass, so the
+ case that matters most is the one where the override is WRONG. Falling back
+ to the default there would leave an operator believing a run is bounded the
+ way they asked for when it is bounded some other way, and nothing downstream
+ could tell them otherwise: an artifact records no ceiling.
+ 
+ The empty-string case is the other one worth having, and this package already
+ carries the scar. `resolveRunsDir` had the same shape, and an
+ exported-but-empty variable is an ordinary shell accident rather than an
+ intention.
+ 
+ The override text is injected rather than the environment mutated, so no case
+ here can leak into another.
+ 
+ @module
  */
 
 import {
@@ -34,7 +34,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Built-in ceiling these cases fall back to, standing in for the shipped one.
+ Built-in ceiling these cases fall back to, standing in for the shipped one.
  */
 const FALLBACK = 420;
 
@@ -179,7 +179,7 @@ await describe({
       name: 'NAMES BOTH NUMBERS, so a reader can tell which one to move without reading the source',
       fn: async () => {
         /**
-         * Note built over the ceiling and exchange deadline of the live run.
+         Note built over the ceiling and exchange deadline of the live run.
          */
         const note = capTooTightNote({
           capMs: 300_000,
@@ -196,7 +196,7 @@ await describe({
         + 'reads no progress and drops the entry',
       fn: async () => {
         /**
-         * Same note, read for its consequence clause.
+         Same note, read for its consequence clause.
          */
         const note = capTooTightNote({
           capMs: 300_000,

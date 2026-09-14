@@ -28,57 +28,57 @@ import { parseSettledTwoLaneArtifact, } from './corpus-run/artifact-two-lane-rea
 // instead of returning a confident zero.
 
 /**
- * Repair lane's two record lists, as one artifact carries them.
- *
- * @example
- * ```ts
- * const { issues, findings, } = repairLaneRecordsOf({ value, path: 'Kitten', },);
- * ```
+ Repair lane's two record lists, as one artifact carries them.
+ 
+ @example
+ ```ts
+ const { issues, findings, } = repairLaneRecordsOf({ value, path: 'Kitten', },);
+ ```
  */
 export type RepairLaneRecords = {
   /**
-   * One record per issue the lane adjudicated, each still unread.
+   One record per issue the lane adjudicated, each still unread.
    */
   readonly issues: readonly unknown[];
 
   /**
-   * What the lane's stages reported, each still unread.
+   What the lane's stages reported, each still unread.
    */
   readonly findings: readonly unknown[];
 };
 
 /**
- * Reads the repair lane's records out of one settled artifact.
- *
- * VERSION 2 OWNS THE ENVELOPE AND THE LANE OWNS ITS CONTENTS, which is why this
- * is split across a parse and two guards. `parseSettledTwoLaneArtifact` proves the
- * walk as far as the lane's `result` record and hands it back unread, because
- * version 2 deliberately says nothing about what a result holds. The two arrays
- * inside it are the repair lane's own schema, so they are checked here.
- *
- * BOTH LISTS ARE READ IN ONE PARSE. Version 2 recomputes the comparison and
- * checks it against the copy on file, so asking twice pays for that twice and
- * invites the two answers to come from different reads of the same artifact.
- *
- * ABSENCE REFUSES rather than reading as an empty corpus. On every settled
- * artifact both paths hold an array, an empty one included: an entry that files
- * no issue still writes `issues: []`. So a missing array does not mean a quiet
- * run, it means this reader and the writer disagree, and answering that with an
- * empty list is what hid the moved path in the first place.
- *
- * @param value - parsed artifact JSON, unread
- *
- * @param path - dotted path naming this artifact in error messages
- *
- * @returns Both record lists as written, each element still unread
- *
- * @throws {@link ArtifactParseError} when version 2 refuses the artifact, or
- * when the repair lane's result carries either name as something else
- *
- * @example
- * ```ts
- * const { issues, } = repairLaneRecordsOf({ value, path: 'Kitten', },);
- * ```
+ Reads the repair lane's records out of one settled artifact.
+ 
+ VERSION 2 OWNS THE ENVELOPE AND THE LANE OWNS ITS CONTENTS, which is why this
+ is split across a parse and two guards. `parseSettledTwoLaneArtifact` proves the
+ walk as far as the lane's `result` record and hands it back unread, because
+ version 2 deliberately says nothing about what a result holds. The two arrays
+ inside it are the repair lane's own schema, so they are checked here.
+ 
+ BOTH LISTS ARE READ IN ONE PARSE. Version 2 recomputes the comparison and
+ checks it against the copy on file, so asking twice pays for that twice and
+ invites the two answers to come from different reads of the same artifact.
+ 
+ ABSENCE REFUSES rather than reading as an empty corpus. On every settled
+ artifact both paths hold an array, an empty one included: an entry that files
+ no issue still writes `issues: []`. So a missing array does not mean a quiet
+ run, it means this reader and the writer disagree, and answering that with an
+ empty list is what hid the moved path in the first place.
+ 
+ @param value - parsed artifact JSON, unread
+ 
+ @param path - dotted path naming this artifact in error messages
+ 
+ @returns Both record lists as written, each element still unread
+ 
+ @throws {@link ArtifactParseError} when version 2 refuses the artifact, or
+ when the repair lane's result carries either name as something else
+ 
+ @example
+ ```ts
+ const { issues, } = repairLaneRecordsOf({ value, path: 'Kitten', },);
+ ```
  */
 export function repairLaneRecordsOf(
   {
@@ -90,16 +90,16 @@ export function repairLaneRecordsOf(
   },
 ): RepairLaneRecords {
   /**
-   * Artifact with its envelope proven, so the walk below is type-checked.
+   Artifact with its envelope proven, so the walk below is type-checked.
    */
   const artifact = parseSettledTwoLaneArtifact({ value, },);
 
   /**
-   * Repair lane's result exactly as the file holds it.
-   *
-   * SPELLED `raw` HERE AND `result` ON DISK. The error paths below use the
-   * on-disk spelling, because they are read by someone holding the file rather
-   * than this type.
+   Repair lane's result exactly as the file holds it.
+   
+   SPELLED `raw` HERE AND `result` ON DISK. The error paths below use the
+   on-disk spelling, because they are read by someone holding the file rather
+   than this type.
    */
   const result = artifact
     .lanes

@@ -1,21 +1,21 @@
 /**
- * Tests for the filter every reader applies between a directory listing and
- * the artifacts it opens.
- *
- * WHAT IT DECIDES. A reader lists the artifacts directory itself, asks the pool
- * which entries a draw may use, and then opens only the files those entries
- * own. `keepEligible` is that last step, and nothing tested it directly: four
- * readers call it, and every one of them reached the suite only through a real
- * pool over a throwaway directory, where an eligible entry and a malformed one
- * happened never to sit beside an excluded one.
- *
- * MALFORMED FILES ARE KEPT, which is the half worth pinning. The reader
- * downstream is the one that reports a corrupt artifact, so dropping it here
- * would make the file vanish from the failure list instead of appearing on it.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the filter every reader applies between a directory listing and
+ the artifacts it opens.
+ 
+ WHAT IT DECIDES. A reader lists the artifacts directory itself, asks the pool
+ which entries a draw may use, and then opens only the files those entries
+ own. `keepEligible` is that last step, and nothing tested it directly: four
+ readers call it, and every one of them reached the suite only through a real
+ pool over a throwaway directory, where an eligible entry and a malformed one
+ happened never to sit beside an excluded one.
+ 
+ MALFORMED FILES ARE KEPT, which is the half worth pinning. The reader
+ downstream is the one that reports a corrupt artifact, so dropping it here
+ would make the file vanish from the failure list instead of appearing on it.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -30,27 +30,27 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Characters in a SHA-1 object id.
+ Characters in a SHA-1 object id.
  */
 const OBJECT_ID_LENGTH = 40;
 
 /**
- * Hex characters in the digest scheme this build writes.
+ Hex characters in the digest scheme this build writes.
  */
 const DIGEST_HEX_LENGTH = 64;
 
 /**
- * Commit every pooled fixture records.
+ Commit every pooled fixture records.
  */
 const TIP = 'a'.repeat(OBJECT_ID_LENGTH,);
 
 /**
- * Built pipeline every pooled fixture records.
+ Built pipeline every pooled fixture records.
  */
 const DIGEST = `sha256-tree-v1:${'c'.repeat(DIGEST_HEX_LENGTH,)}`;
 
 /**
- * Pool admitting two entries, excluding one, and carrying one malformed file.
+ Pool admitting two entries, excluding one, and carrying one malformed file.
  */
 const POOL: EligibleEntries = {
   entryIds: [

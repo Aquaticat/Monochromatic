@@ -17,42 +17,42 @@ import { requireStreamTerminator, } from './stream-completion.ts';
 // the reader expects once that chunk has been seen.
 
 /**
- * Logger root for the stream-end checks.
+ Logger root for the stream-end checks.
  */
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Prefix of a data line in a server-sent event stream.
+ Prefix of a data line in a server-sent event stream.
  */
 const DATA_PREFIX = 'data: ';
 
 /**
- * Terminal sentinel the shared reader requires.
+ Terminal sentinel the shared reader requires.
  */
 const DONE_LINE = 'data: [DONE]\n';
 
 /**
- * Whether one stream line is a chunk carrying a usage block.
- *
- * @param rawLine - one line of the drained body
- *
- * @returns Whether it parses as an object with a `usage` object
- *
- * @example
- * ```ts
- * isUsageChunk('data: {"choices":[],"usage":{"completion_tokens":10}}',);
- * ```
+ Whether one stream line is a chunk carrying a usage block.
+ 
+ @param rawLine - one line of the drained body
+ 
+ @returns Whether it parses as an object with a `usage` object
+ 
+ @example
+ ```ts
+ isUsageChunk('data: {"choices":[],"usage":{"completion_tokens":10}}',);
+ ```
  */
 function isUsageChunk(rawLine: string,): boolean {
   /**
-   * Line without surrounding whitespace.
+   Line without surrounding whitespace.
    */
   const line = rawLine.trim();
   if (!line.startsWith(DATA_PREFIX,))
     return false;
   try {
     /**
-     * Parsed chunk, unknown until checked.
+     Parsed chunk, unknown until checked.
      */
     const chunk: unknown = JSON.parse(line.slice(DATA_PREFIX.length,),);
     return isJsonRecord(chunk,) && isJsonRecord(chunk.usage,);
@@ -65,19 +65,19 @@ function isUsageChunk(rawLine: string,): boolean {
 }
 
 /**
- * Refuses a body whose stream never announced it was whole, in the way this
- * model's route announces it.
- *
- * @param bodyText - whole drained body, as the transport returned it
- *
- * @param streamEnd - how this model's stream ends
- *
- * @throws {@link MalformedCompletionError} when the terminator never arrived
- *
- * @example
- * ```ts
- * requireBedrockStreamEnd({ bodyText, streamEnd: 'usage-chunk', },);
- * ```
+ Refuses a body whose stream never announced it was whole, in the way this
+ model's route announces it.
+ 
+ @param bodyText - whole drained body, as the transport returned it
+ 
+ @param streamEnd - how this model's stream ends
+ 
+ @throws {@link MalformedCompletionError} when the terminator never arrived
+ 
+ @example
+ ```ts
+ requireBedrockStreamEnd({ bodyText, streamEnd: 'usage-chunk', },);
+ ```
  */
 export function requireBedrockStreamEnd(
   {
@@ -94,7 +94,7 @@ export function requireBedrockStreamEnd(
   }
 
   /**
-   * Whether a usage chunk arrived anywhere in the stream.
+   Whether a usage chunk arrived anywhere in the stream.
    */
   const sawUsage = bodyText
     .split('\n',)
@@ -107,19 +107,19 @@ export function requireBedrockStreamEnd(
 }
 
 /**
- * Body the shared reader accepts: the stream as it came, with the sentinel
- * appended where this route ends on a usage chunk instead.
- *
- * @param bodyText - whole drained body, already checked whole
- *
- * @param streamEnd - how this model's stream ends
- *
- * @returns Body ending on the sentinel
- *
- * @example
- * ```ts
- * const extracted = extractStreamedCompletion({ bodyText: withDoneSentinel({ bodyText, streamEnd, },), },);
- * ```
+ Body the shared reader accepts: the stream as it came, with the sentinel
+ appended where this route ends on a usage chunk instead.
+ 
+ @param bodyText - whole drained body, already checked whole
+ 
+ @param streamEnd - how this model's stream ends
+ 
+ @returns Body ending on the sentinel
+ 
+ @example
+ ```ts
+ const extracted = extractStreamedCompletion({ bodyText: withDoneSentinel({ bodyText, streamEnd, },), },);
+ ```
  */
 export function withDoneSentinel(
   {

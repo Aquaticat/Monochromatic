@@ -1,8 +1,8 @@
 /**
- * Tests for JSON narrowing guards shared by protocol parsing and
- * model-content validation.
- *
- * @module
+ Tests for JSON narrowing guards shared by protocol parsing and
+ model-content validation.
+ 
+ @module
  */
 
 import {

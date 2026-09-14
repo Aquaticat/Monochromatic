@@ -1,21 +1,21 @@
 /**
- * Tests for which spelling of the renamed keys each artifact generation used.
- *
- * THE POSITIVE CONTROL COMES FIRST here, because every other case in this file
- * is a lookup and a lookup table that returned the same row for everything
- * would satisfy all of them. The first case pins that the two named tables
- * actually disagree, on every field, so the dispatch has something to decide.
- *
- * GENERATION 3 IS THE INTERESTING ONE, and it is why a table exists at all
- * rather than a boolean. It spells the change-set keys the new way and the
- * slice index the old way, because the array rename forced a wire change on
- * artifacts whose lane result is passed through whole while the index rename
- * did not. A reader holding one flag would read every generation 3 artifact's
- * slice index as ABSENT.
- *
- * Fixtures are version numbers and key names. There is no passage here.
- *
- * @module
+ Tests for which spelling of the renamed keys each artifact generation used.
+ 
+ THE POSITIVE CONTROL COMES FIRST here, because every other case in this file
+ is a lookup and a lookup table that returned the same row for everything
+ would satisfy all of them. The first case pins that the two named tables
+ actually disagree, on every field, so the dispatch has something to decide.
+ 
+ GENERATION 3 IS THE INTERESTING ONE, and it is why a table exists at all
+ rather than a boolean. It spells the change-set keys the new way and the
+ slice index the old way, because the array rename forced a wire change on
+ artifacts whose lane result is passed through whole while the index rename
+ did not. A reader holding one flag would read every generation 3 artifact's
+ slice index as ABSENT.
+ 
+ Fixtures are version numbers and key names. There is no passage here.
+ 
+ @module
  */
 
 import {
@@ -33,8 +33,8 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Fields every generation spells, in one place so a fifth cannot be added to
- * the type and quietly go unchecked here.
+ Fields every generation spells, in one place so a fifth cannot be added to
+ the type and quietly go unchecked here.
  */
 const FIELDS = [
   'changedSliceIndices',
@@ -44,52 +44,52 @@ const FIELDS = [
 ] as const;
 
 /**
- * Generation that kept these records at the artifact root.
+ Generation that kept these records at the artifact root.
  */
 const GENERATION_ONE = 1;
 
 /**
- * Generation that moved them into the lanes and kept the older spelling.
+ Generation that moved them into the lanes and kept the older spelling.
  */
 const GENERATION_TWO = 2;
 
 /**
- * Generation that renamed the change-set arrays and left the index alone.
+ Generation that renamed the change-set arrays and left the index alone.
  */
 const GENERATION_THREE = 3;
 
 /**
- * Generation that finished key renames.
+ Generation that finished key renames.
  */
 const GENERATION_FOUR = 4;
 
 /**
- * Generation current pass writes, retaining same key spelling.
+ Generation current pass writes, retaining same key spelling.
  */
 const GENERATION_FIVE = 5;
 
 /**
- * Generation adding auditable final body polish under same key spelling.
+ Generation adding auditable final body polish under same key spelling.
  */
 const GENERATION_SIX = 6;
 
 /**
- * Generation adding contest eligibility under same key spelling.
+ Generation adding contest eligibility under same key spelling.
  */
 const GENERATION_SEVEN = 7;
 
 /**
- * Generation adding absolute naturalness review under same key spelling.
+ Generation adding absolute naturalness review under same key spelling.
  */
 const GENERATION_EIGHT = 8;
 
 /**
- * Generation adding bounded correction digest chain under same key spelling.
+ Generation adding bounded correction digest chain under same key spelling.
  */
 const GENERATION_NINE = 9;
 
 /**
- * Generation no table covers, one past newest.
+ Generation no table covers, one past newest.
  */
 const GENERATION_UNKNOWN = 15;
 
@@ -149,7 +149,7 @@ await describe({
         + 'picking whichever of the two is closer',
       fn: async () => {
         /**
-         * Row the mixture generation dispatches to.
+         Row the mixture generation dispatches to.
          */
         const mixed = keyVocabularyOf({ version: GENERATION_THREE, },);
 
@@ -179,7 +179,7 @@ await describe({
         + 'keys as ABSENT, which is the one wrong answer here that looks like an ordinary older artifact',
       fn: async () => {
         /**
-         * What the selector did when asked for a generation past the newest.
+         What the selector did when asked for a generation past the newest.
          */
         const refusal = caught(function selectsUnknownGeneration() {
           keyVocabularyOf({ version: GENERATION_UNKNOWN, },);
@@ -196,7 +196,7 @@ await describe({
         + 'down does not have to know which generation it came from',
       fn: async () => {
         /**
-         * Both tables under the one type every reader takes.
+         Both tables under the one type every reader takes.
          */
         const both: readonly ArtifactKeyVocabulary[] = [
           CHUNK_SPELLED_KEYS,

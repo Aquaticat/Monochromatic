@@ -1,22 +1,22 @@
 /**
- * Tests for preparing a picture to be sent, and refusing the ones that will not
- * fit.
- *
- * WHAT THESE PIN is that refusing is a first-class outcome rather than an error
- * path, and that the CALLER decides the ceiling.
- *
- * THE CEILING USED TO BE DERIVED HERE and it measured the wrong thing: half a
- * model's context, converted to characters, compared against base64 length. A
- * vision model tokenizes by resolution rather than by encoded length, so that
- * number was not conservative but unrelated. Measured on 2026-08-19, the
- * provider accepted `gqt/photo1.webp` at 1274028 bytes, more than four times
- * what the derivation allowed, and read 2631 characters from it. This file no
- * longer asserts anything about contexts, because this module no longer knows
- * about them.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for preparing a picture to be sent, and refusing the ones that will not
+ fit.
+ 
+ WHAT THESE PIN is that refusing is a first-class outcome rather than an error
+ path, and that the CALLER decides the ceiling.
+ 
+ THE CEILING USED TO BE DERIVED HERE and it measured the wrong thing: half a
+ model's context, converted to characters, compared against base64 length. A
+ vision model tokenizes by resolution rather than by encoded length, so that
+ number was not conservative but unrelated. Measured on 2026-08-19, the
+ provider accepted `gqt/photo1.webp` at 1274028 bytes, more than four times
+ what the derivation allowed, and read 2631 characters from it. This file no
+ longer asserts anything about contexts, because this module no longer knows
+ about them.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -28,13 +28,13 @@ import {
 import { encodeImageAsset, } from '../dist/final/node/index.mjs';
 
 /**
- * A ceiling a caller might set, standing in for whatever bound it chooses.
+ A ceiling a caller might set, standing in for whatever bound it chooses.
  */
 const CEILING = 1_000_000;
 
 /**
- * Bytes standing in for a picture, whose content is irrelevant to every rule
- * under test here.
+ Bytes standing in for a picture, whose content is irrelevant to every rule
+ under test here.
  */
 function bytesOf({ length, }: { readonly length: number; },): Uint8Array {
   return new Uint8Array(length,).fill(7,);
@@ -48,7 +48,7 @@ await describe({
         + 'shape takes and what tells the model how to decode what it was given',
       fn: async () => {
         /**
-         * A small picture, comfortably within any context.
+         A small picture, comfortably within any context.
          */
         const encoded = encodeImageAsset({
           bytes: bytesOf({ length: 64, },),
@@ -68,7 +68,7 @@ await describe({
         + 'picture sent under the wrong one asks a model to decode something it was not given',
       fn: async () => {
         /**
-         * The other extension the corpus uses.
+         The other extension the corpus uses.
          */
         const encoded = encodeImageAsset({
           bytes: bytesOf({ length: 64, },),
@@ -86,7 +86,7 @@ await describe({
         + 'is not a smaller version of the right answer, it is a picture the model cannot decode',
       fn: async () => {
         /**
-         * What the encoder decided.
+         What the encoder decided.
          */
         const encoded = encodeImageAsset({
           bytes: bytesOf({ length: 64, },),
@@ -109,7 +109,7 @@ await describe({
         + 'measured against what the gateway will carry',
       fn: async () => {
         /**
-         * A picture past whatever bound its caller set.
+         A picture past whatever bound its caller set.
          */
         const encoded = encodeImageAsset({
           bytes: bytesOf({ length: 1_024 * 1_024, },),
@@ -130,7 +130,7 @@ await describe({
         + 'itself, only against a limit somebody chose',
       fn: async () => {
         /**
-         * A picture between the two ceilings below.
+         A picture between the two ceilings below.
          */
         const bytes = bytesOf({ length: 300 * 1_024, },);
 

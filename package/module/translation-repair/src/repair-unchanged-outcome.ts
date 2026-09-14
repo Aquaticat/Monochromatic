@@ -9,26 +9,26 @@ import { UNATTRIBUTED_TEXT, } from './resolution-authorship.ts';
 // to the contract cannot land on two of them and be forgotten on the third.
 
 /**
- * Builds the outcome for a chunk whose text nothing changed.
- *
- * THE CRITICS' WORK IS KEPT, which is the whole reason this is not a bare
- * empty record. Nothing was repaired, but the votes, the contradiction screen
- * and the attributions were all paid for and are read by later calibration.
- *
- * @param sliceIndex - position of this chunk in the document
- *
- * @param targetText - translation as it stood, which is what ships
- *
- * @param critic - critic phase result whose telemetry survives the exit
- *
- * @returns Outcome every unchanged exit spreads, less the two fields each exit supplies itself
- *
- * @example
- * ```ts
- * const unchangedOutcome = unchangedChunkOutcome({ sliceIndex, targetText, critic, },);
- * ```
- *
- * @internal
+ Builds the outcome for a chunk whose text nothing changed.
+ 
+ THE CRITICS' WORK IS KEPT, which is the whole reason this is not a bare
+ empty record. Nothing was repaired, but the votes, the contradiction screen
+ and the attributions were all paid for and are read by later calibration.
+ 
+ @param sliceIndex - position of this chunk in the document
+ 
+ @param targetText - translation as it stood, which is what ships
+ 
+ @param critic - critic phase result whose telemetry survives the exit
+ 
+ @returns Outcome every unchanged exit spreads, less the two fields each exit supplies itself
+ 
+ @example
+ ```ts
+ const unchangedOutcome = unchangedChunkOutcome({ sliceIndex, targetText, critic, },);
+ ```
+ 
+ @internal
  */
 export function unchangedChunkOutcome(
   {

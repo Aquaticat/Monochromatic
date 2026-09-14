@@ -1,22 +1,22 @@
 /**
- * Shape assertions for every `*_RESPONSE_FORMAT` structured-output constant.
- *
- * Each of these constrains what shape of reply a provider can even produce,
- * ahead of the paired `is*Wire` guard that checks the parsed JSON a second
- * time. That ordering is exactly why a schema drifting from its guard is
- * dangerous rather than merely redundant: a required field dropped here, or
- * an enum narrowed here, changes what the provider is asked to send, and the
- * guard downstream only ever sees replies shaped the way THIS constant
- * currently asks for. Nothing exercises these constants themselves anywhere
- * else, unlike the guards, which every paired `*-wire.unit.test.ts` file
- * already covers with scripted examples.
- *
- * One block per constant, each pinning its schema name, every field the wire
- * depends on being required, and the enum values where a schema constrains
- * one. No invented prose is needed: every assertion reads the shipped
- * constant directly, so there is no corpus content and no fixture to invent.
- *
- * @module
+ Shape assertions for every `*_RESPONSE_FORMAT` structured-output constant.
+ 
+ Each of these constrains what shape of reply a provider can even produce,
+ ahead of the paired `is*Wire` guard that checks the parsed JSON a second
+ time. That ordering is exactly why a schema drifting from its guard is
+ dangerous rather than merely redundant: a required field dropped here, or
+ an enum narrowed here, changes what the provider is asked to send, and the
+ guard downstream only ever sees replies shaped the way THIS constant
+ currently asks for. Nothing exercises these constants themselves anywhere
+ else, unlike the guards, which every paired `*-wire.unit.test.ts` file
+ already covers with scripted examples.
+ 
+ One block per constant, each pinning its schema name, every field the wire
+ depends on being required, and the enum values where a schema constrains
+ one. No invented prose is needed: every assertion reads the shipped
+ constant directly, so there is no corpus content and no fixture to invent.
+ 
+ @module
  */
 
 import {
@@ -52,9 +52,9 @@ await describe({
             expect(ADJUDICATION_RESPONSE_FORMAT.json_schema.name,).toBe('panel_ballot',);
 
             /**
-             * Schema body as JSON, so a required-field or enum change shows
-             * up as a substring that stopped matching rather than as a deep
-             * object diff.
+             Schema body as JSON, so a required-field or enum change shows
+             up as a substring that stopped matching rather than as a deep
+             object diff.
              */
             const schema = JSON.stringify(ADJUDICATION_RESPONSE_FORMAT.json_schema.schema,);
             expect(schema,).toContain('"required":["verdicts"]',);

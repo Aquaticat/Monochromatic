@@ -1,21 +1,21 @@
 /**
- * Tests for where an insertion is anchored once the runs have settled.
- *
- * THE ANCHOR AND THE SPAN USED TO DESCRIBE THE SAME BYTES. `anchorOffsets`
- * reads the monotone walk, which describes the layout right up until
- * `mergeOneSidedRuns` folds an unclaimed translation block into a neighbour. A
- * run's span is cut from its first node to its last, so absorbing that block
- * stretches the span over it, and an anchor naming its start then points into
- * the middle of a passage. `assertPlacementLayout` refused the whole document:
- * 431 of 910 randomised reader-legal pairings over the pinned corpus.
- *
- * THE SMALLEST CASE IS TWO PARAGRAPHS AGAINST TWO, which is what these use.
- * Pair only the first, and the second original becomes an insertion while the
- * second translation folds into the first run.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for where an insertion is anchored once the runs have settled.
+ 
+ THE ANCHOR AND THE SPAN USED TO DESCRIBE THE SAME BYTES. `anchorOffsets`
+ reads the monotone walk, which describes the layout right up until
+ `mergeOneSidedRuns` folds an unclaimed translation block into a neighbour. A
+ run's span is cut from its first node to its last, so absorbing that block
+ stretches the span over it, and an anchor naming its start then points into
+ the middle of a passage. `assertPlacementLayout` refused the whole document:
+ 431 of 910 randomised reader-legal pairings over the pinned corpus.
+ 
+ THE SMALLEST CASE IS TWO PARAGRAPHS AGAINST TWO, which is what these use.
+ Pair only the first, and the second original becomes an insertion while the
+ second translation folds into the first run.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {
@@ -31,20 +31,20 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Two originals, the second of which no pairing will place.
+ Two originals, the second of which no pairing will place.
  */
 const SOURCE_TEXT = '猫猫在窗台上睡觉。\n\n猫猫追蝴蝶。\n';
 
 /**
- * Two translations, the second of which no original will claim.
+ Two translations, the second of which no original will claim.
  */
 const TARGET_TEXT = 'The cat sleeps on the windowsill.\n\nThe cat chases butterflies.\n';
 
 /**
- * Pairing naming the first paragraph on each side and nothing else, which
- * leaves an original unplaced AND a translation unclaimed. Leaving an original
- * unplaced is what switches `declinedTargetIds` off, so the unclaimed
- * translation is folded rather than declined.
+ Pairing naming the first paragraph on each side and nothing else, which
+ leaves an original unplaced AND a translation unclaimed. Leaving an original
+ unplaced is what switches `declinedTargetIds` off, so the unclaimed
+ translation is folded rather than declined.
  */
 const FIRST_ONLY = [
   {
@@ -54,7 +54,7 @@ const FIRST_ONLY = [
 ];
 
 /**
- * Budget large enough that nothing splits.
+ Budget large enough that nothing splits.
  */
 const WIDE_BUDGET = 100_000;
 
@@ -67,12 +67,12 @@ await describe({
         + 'and overwriting a rendering that is already there',
       fn: async () => {
         /**
-         * Translation blocks, for the offsets the runs are checked against.
+         Translation blocks, for the offsets the runs are checked against.
          */
         const targetNodes = parseDocument({ text: TARGET_TEXT, },).nodes;
 
         /**
-         * Runs as they ship.
+         Runs as they ship.
          */
         const runs = groupNodesAligned({
           sourceNodes: parseDocument({ text: SOURCE_TEXT, },).nodes,
@@ -94,7 +94,7 @@ await describe({
               continue;
 
             /**
-             * That run's span on the translation side.
+             That run's span on the translation side.
              */
             const span = {
               start: other.targetRun[0]
@@ -122,7 +122,7 @@ await describe({
         + 'the anchor and the span disagreeing killed the entry outright',
       fn: async () => {
         /**
-         * Slices this pairing produces.
+         Slices this pairing produces.
          */
         const prepared = prepareDocumentPair({
           sourceText: SOURCE_TEXT,

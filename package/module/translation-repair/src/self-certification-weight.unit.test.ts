@@ -1,16 +1,16 @@
 /**
- * Tests for the self-certification discount: a checker judging text it helped
- * write is heard at {@link SELF_VOTE_WEIGHT} rather than at a whole vote.
- *
- * THE DISCRIMINATING CASE IS `RESOLVES ON ONE INDEPENDENT VOTE`. One author
- * against one independent is 1 against 1 unweighted and 1 against a half
- * weighted, so that case alone flips when the discount is removed. Every other
- * case here fences a property around it, and the case right after it is its
- * positive control: identical ballots with nobody named as an author must NOT
- * resolve, which is what proves the assertion reads the discount rather than
- * the ballots.
- *
- * @module
+ Tests for the self-certification discount: a checker judging text it helped
+ write is heard at {@link SELF_VOTE_WEIGHT} rather than at a whole vote.
+ 
+ THE DISCRIMINATING CASE IS `RESOLVES ON ONE INDEPENDENT VOTE`. One author
+ against one independent is 1 against 1 unweighted and 1 against a half
+ weighted, so that case alone flips when the discount is removed. Every other
+ case here fences a property around it, and the case right after it is its
+ positive control: identical ballots with nobody named as an author must NOT
+ resolve, which is what proves the assertion reads the discount rather than
+ the ballots.
+ 
+ @module
  */
 
 import {
@@ -30,33 +30,33 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Issue the ballots below all speak about.
+ Issue the ballots below all speak about.
  */
 const WHISKER = 'adjudicated/whisker';
 
 /**
- * Second issue, used where one issue must stay undiscounted while another is
- * discounted.
+ Second issue, used where one issue must stay undiscounted while another is
+ discounted.
  */
 const PAW = 'adjudicated/paw';
 
 /**
- * Model cast as the one that wrote the text under check.
+ Model cast as the one that wrote the text under check.
  */
 const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
- * Model that wrote none of it.
+ Model that wrote none of it.
  */
 const OUTSIDER: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * Third voice, for cases needing two independents.
+ Third voice, for cases needing two independents.
  */
 const BYSTANDER: RosterModelId = 'hf:moonshotai/Kimi-K3';
 
 /**
- * Authorship naming {@link AUTHOR} as the writer of one issue's text only.
+ Authorship naming {@link AUTHOR} as the writer of one issue's text only.
  */
 const WROTE_WHISKER: IssueAuthorship = {
   perIssue: { [WHISKER]: [AUTHOR,], },
@@ -64,7 +64,7 @@ const WROTE_WHISKER: IssueAuthorship = {
 };
 
 /**
- * Authorship naming {@link AUTHOR} as writer of the whole chunk.
+ Authorship naming {@link AUTHOR} as writer of the whole chunk.
  */
 const WROTE_THE_CHUNK: IssueAuthorship = {
   perIssue: {},
@@ -72,12 +72,12 @@ const WROTE_THE_CHUNK: IssueAuthorship = {
 };
 
 /**
- * One checker id beside the ballot built for it.
- *
- * @example
- * ```ts
- * const entry: CheckerBallot = ['hf:zai-org/GLM-5.3-Flash', { verdicts: {}, findings: [], },];
- * ```
+ One checker id beside the ballot built for it.
+ 
+ @example
+ ```ts
+ const entry: CheckerBallot = ['hf:zai-org/GLM-5.3-Flash', { verdicts: {}, findings: [], },];
+ ```
  */
 type CheckerBallot = readonly [
   string,
@@ -85,8 +85,8 @@ type CheckerBallot = readonly [
 ];
 
 /**
- * Builds ballots from one verdict per checker, so each case reads as the vote
- * it is testing rather than as nested object literals.
+ Builds ballots from one verdict per checker, so each case reads as the vote
+ it is testing rather than as nested object literals.
  */
 function ballotsOf(
   votes: Readonly<Record<string, ResolutionVerdict>>,
@@ -106,8 +106,8 @@ function ballotsOf(
 }
 
 /**
- * Tallies one issue under one authorship, so cases assert on a fate rather than
- * on a record of them.
+ Tallies one issue under one authorship, so cases assert on a fate rather than
+ on a record of them.
  */
 function fateOf(
   {

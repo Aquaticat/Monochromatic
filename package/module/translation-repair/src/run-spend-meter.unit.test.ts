@@ -1,9 +1,9 @@
 /**
- * Tests for the process-wide run spend meter and the line that feeds it.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the process-wide run spend meter and the line that feeds it.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {

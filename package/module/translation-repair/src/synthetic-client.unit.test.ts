@@ -1,9 +1,9 @@
 /**
- * Tests for the injected-transport Synthetic client:
- * request construction, contract enforcement, outcome-as-data JSON handling,
- * and per-model concurrency bounds.
- *
- * @module
+ Tests for the injected-transport Synthetic client:
+ request construction, contract enforcement, outcome-as-data JSON handling,
+ and per-model concurrency bounds.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -31,28 +31,28 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Milliseconds granted for queued microtasks and limiter slots to settle.
+ Milliseconds granted for queued microtasks and limiter slots to settle.
  */
 const SETTLE_MS = 10;
 
 /**
- * Production slots measured for every active Synthetic model.
+ Production slots measured for every active Synthetic model.
  */
 const EXPECTED_DEFAULT_WIDTH = 5;
 
 /**
- * Delay of the deliberately slow test transport.
+ Delay of the deliberately slow test transport.
  */
 const SLOW_TRANSPORT_MS = 150;
 
 /**
- * Headroom granted past one slow-transport delay:
- * enough for one exchange, far short of queue wait plus exchange.
+ Headroom granted past one slow-transport delay:
+ enough for one exchange, far short of queue wait plus exchange.
  */
 const DEADLINE_MARGIN_MS = 70;
 
 /**
- * Single user message reused across exchanges.
+ Single user message reused across exchanges.
  */
 const MESSAGES = [
   {
@@ -62,21 +62,21 @@ const MESSAGES = [
 ];
 
 /**
- * Builds a drained SSE body from content deltas plus optional refusal deltas
- * and usage, terminated like the provider terminates streams.
- *
- * @param deltas - content deltas in arrival order
- *
- * @param refusalDeltas - refusal deltas in arrival order
- *
- * @param usage - usage block delivered as the final data event
- *
- * @returns Whole `text/event-stream` body as the transport drains it
- *
- * @example
- * ```ts
- * const body = sseBody({ deltas: ['{"a":', '1}',], },);
- * ```
+ Builds a drained SSE body from content deltas plus optional refusal deltas
+ and usage, terminated like the provider terminates streams.
+ 
+ @param deltas - content deltas in arrival order
+ 
+ @param refusalDeltas - refusal deltas in arrival order
+ 
+ @param usage - usage block delivered as the final data event
+ 
+ @returns Whole `text/event-stream` body as the transport drains it
+ 
+ @example
+ ```ts
+ const body = sseBody({ deltas: ['{"a":', '1}',], },);
+ ```
  */
 function sseBody(
   {
@@ -93,7 +93,7 @@ function sseBody(
   },
 ): string {
   /**
-   * Serialized data events in stream order.
+   Serialized data events in stream order.
    */
   const events = [
     ...deltas.map(function toContentEvent(delta,) {
@@ -116,8 +116,8 @@ function sseBody(
 }
 
 /**
- * Recorded streamed completion carrying JSON content split across deltas
- * plus usage.
+ Recorded streamed completion carrying JSON content split across deltas
+ plus usage.
  */
 const COMPLETION_BODY = sseBody({
   deltas: [
@@ -131,44 +131,44 @@ const COMPLETION_BODY = sseBody({
 },);
 
 /**
- * Recorded completion cut off before the `[DONE]` sentinel, which is how a
- * stream the provider truncated arrives: HTTP 200 carrying half an answer.
+ Recorded completion cut off before the `[DONE]` sentinel, which is how a
+ stream the provider truncated arrives: HTTP 200 carrying half an answer.
  */
 const CUT_COMPLETION_BODY = 'data: {"choices":[{"delta":{"content":"{\\"verdict\\":"}}]}\n\n';
 
 /**
- * Verdict shape the chatJson tests validate against.
+ Verdict shape the chatJson tests validate against.
  */
 type CatVerdict = { readonly verdict: string; };
 
 /**
- * Guards parsed model JSON as a verdict.
- *
- * @param value - parsed candidate
- *
- * @returns Whether value carries a string verdict
- *
- * @example
- * ```ts
- * isCatVerdict({ verdict: 'pass', },);
- * ```
+ Guards parsed model JSON as a verdict.
+ 
+ @param value - parsed candidate
+ 
+ @returns Whether value carries a string verdict
+ 
+ @example
+ ```ts
+ isCatVerdict({ verdict: 'pass', },);
+ ```
  */
 function isCatVerdict(value: unknown,): value is CatVerdict {
   return isJsonRecord(value,) && ((typeof value.verdict) === 'string');
 }
 
 /**
- * Builds a transport replaying recorded replies in order while recording every
- * exchange for assertions.
- *
- * @param replies - replies replayed in call order, last one repeating
- *
- * @returns Transport plus its recorded exchanges
- *
- * @example
- * ```ts
- * const { transport, exchanges, } = recordedTransport({ replies: [reply,], },);
- * ```
+ Builds a transport replaying recorded replies in order while recording every
+ exchange for assertions.
+ 
+ @param replies - replies replayed in call order, last one repeating
+ 
+ @returns Transport plus its recorded exchanges
+ 
+ @example
+ ```ts
+ const { transport, exchanges, } = recordedTransport({ replies: [reply,], },);
+ ```
  */
 function recordedTransport(
   { replies, }: { readonly replies: readonly TransportReply[]; },
@@ -177,7 +177,7 @@ function recordedTransport(
   readonly exchanges: TransportExchange[];
 } {
   /**
-   * Every exchange the client performed, in order.
+   Every exchange the client performed, in order.
    */
   const exchanges: TransportExchange[] = [];
 
@@ -185,7 +185,7 @@ function recordedTransport(
     transport: async function replay(exchange,) {
       exchanges.push(exchange,);
       /**
-       * Reply for this exchange; the last recorded reply repeats.
+       Reply for this exchange; the last recorded reply repeats.
        */
       const reply = replies[Math.min(
         exchanges.length - 1,
@@ -449,11 +449,11 @@ await describe({
         + 'fire on the only corpus this pipeline actually translates',
       fn: async () => {
         /**
-         * Content whose characters number far fewer than its bytes.
-         *
-         * 3600000 characters at three UTF-8 bytes each is 10800000 bytes, over the
-         * 10485760 measured to pass, while the character count is barely a third
-         * of it. The two readings disagree by design.
+         Content whose characters number far fewer than its bytes.
+         
+         3600000 characters at three UTF-8 bytes each is 10800000 bytes, over the
+         10485760 measured to pass, while the character count is barely a third
+         of it. The two readings disagree by design.
          */
         const wide = '猫'.repeat(3_600_000,);
 
@@ -588,16 +588,16 @@ await describe({
       name: 'arms the exchange deadline inside the slot, not at dispatch',
       fn: async () => {
         /**
-         * Transport answering after a fixed delay.
-         *
-         * @param exchange - request under attempt
-         *
-         * @returns Success reply after the delay
-         *
-         * @example
-         * ```ts
-         * await slowReply(exchange,);
-         * ```
+         Transport answering after a fixed delay.
+         
+         @param exchange - request under attempt
+         
+         @returns Success reply after the delay
+         
+         @example
+         ```ts
+         await slowReply(exchange,);
+         ```
          */
         async function slowReply(
           exchange: ForeignBorrowed<TransportExchange>,
@@ -615,10 +615,10 @@ await describe({
           perModelConcurrency: 1,
         },);
         /**
-         * Two same-model calls race for one slot; the second waits a full
-         * transport delay in the queue, then needs another full delay for
-         * its own exchange. Its deadline covers one delay but not two, so
-         * it only survives when the deadline excludes queue wait.
+         Two same-model calls race for one slot; the second waits a full
+         transport delay in the queue, then needs another full delay for
+         its own exchange. Its deadline covers one delay but not two, so
+         it only survives when the deadline excludes queue wait.
          */
         const replies = await Promise.all([
           client.chatText({
@@ -642,16 +642,16 @@ await describe({
       name: 'forfeits a hung exchange to its deadline',
       fn: async () => {
         /**
-         * Transport that never answers, rejecting only on abort.
-         *
-         * @param exchange - request left hanging
-         *
-         * @returns Never resolves; rejects with the abort reason
-         *
-         * @example
-         * ```ts
-         * await hangForever(exchange,);
-         * ```
+         Transport that never answers, rejecting only on abort.
+         
+         @param exchange - request left hanging
+         
+         @returns Never resolves; rejects with the abort reason
+         
+         @example
+         ```ts
+         await hangForever(exchange,);
+         ```
          */
         async function hangForever(
           exchange: ForeignBorrowed<TransportExchange>,
@@ -697,16 +697,16 @@ await describe({
         const exchanges: TransportExchange[] = [];
 
         /**
-         * Transport dropping its first exchange like a mid-stream reset.
-         *
-         * @param exchange - request under attempt
-         *
-         * @returns Success reply from the second attempt on
-         *
-         * @example
-         * ```ts
-         * await dropOnce(exchange,);
-         * ```
+         Transport dropping its first exchange like a mid-stream reset.
+         
+         @param exchange - request under attempt
+         
+         @returns Success reply from the second attempt on
+         
+         @example
+         ```ts
+         await dropOnce(exchange,);
+         ```
          */
         async function dropOnce(exchange: TransportExchange,): Promise<TransportReply> {
           exchanges.push(exchange,);
@@ -741,16 +741,16 @@ await describe({
         const failure = new TypeError('fetch failed: connection reset',);
 
         /**
-         * Transport dropping every exchange.
-         *
-         * @param exchange - request under attempt
-         *
-         * @returns Never; every attempt throws
-         *
-         * @example
-         * ```ts
-         * await dropAlways(exchange,);
-         * ```
+         Transport dropping every exchange.
+         
+         @param exchange - request under attempt
+         
+         @returns Never; every attempt throws
+         
+         @example
+         ```ts
+         await dropAlways(exchange,);
+         ```
          */
         async function dropAlways(exchange: TransportExchange,): Promise<TransportReply> {
           exchanges.push(exchange,);
@@ -790,16 +790,16 @@ await describe({
         const failure = new Error('stream torn down by abort',);
 
         /**
-         * Transport whose exchange dies under an aborted signal.
-         *
-         * @param exchange - request under attempt
-         *
-         * @returns Never; the aborted stream always throws
-         *
-         * @example
-         * ```ts
-         * await tornDown(exchange,);
-         * ```
+         Transport whose exchange dies under an aborted signal.
+         
+         @param exchange - request under attempt
+         
+         @returns Never; the aborted stream always throws
+         
+         @example
+         ```ts
+         await tornDown(exchange,);
+         ```
          */
         async function tornDown(exchange: TransportExchange,): Promise<TransportReply> {
           exchanges.push(exchange,);
@@ -887,16 +887,16 @@ await describe({
         const entered: string[] = [];
 
         /**
-         * Transport that records entry then waits for the gate.
-         *
-         * @param exchange - request whose model gets recorded
-         *
-         * @returns Recorded completion once the gate opens
-         *
-         * @example
-         * ```ts
-         * const client = createSyntheticClient({ apiKey: 'test-key', transport: gatedTransport, },);
-         * ```
+         Transport that records entry then waits for the gate.
+         
+         @param exchange - request whose model gets recorded
+         
+         @returns Recorded completion once the gate opens
+         
+         @example
+         ```ts
+         const client = createSyntheticClient({ apiKey: 'test-key', transport: gatedTransport, },);
+         ```
          */
         async function gatedTransport(
           exchange: TransportExchange,
@@ -962,16 +962,16 @@ await describe({
         const entered: string[] = [];
 
         /**
-         * Transport that records entry then waits for the gate.
-         *
-         * @param exchange - request whose model gets recorded
-         *
-         * @returns Recorded completion once the gate opens
-         *
-         * @example
-         * ```ts
-         * const client = createSyntheticClient({ apiKey: 'test-key', transport: gatedTransport, },);
-         * ```
+         Transport that records entry then waits for the gate.
+         
+         @param exchange - request whose model gets recorded
+         
+         @returns Recorded completion once the gate opens
+         
+         @example
+         ```ts
+         const client = createSyntheticClient({ apiKey: 'test-key', transport: gatedTransport, },);
+         ```
          */
         async function gatedTransport(
           exchange: TransportExchange,

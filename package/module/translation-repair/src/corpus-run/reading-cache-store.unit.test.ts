@@ -1,25 +1,25 @@
 /**
- * Tests for the store that lets a resumed run reuse what a picture was read as.
- *
- * WHY THIS FILE EXISTS. The store's guard checks the DISCRIMINANT before the
- * fields, so a reading whose kind it has not been told about is rejected and the
- * picture reads as never gathered. That is silent by construction: the run
- * simply reads the picture again, writes the same record, and rejects it again
- * next pass. `no-text` was added to `PairedReading` on 2026-08-19 and not to the
- * guard, so for the length of that afternoon every textless picture in the
- * corpus, two thirds of them, was re-read on every resume.
- *
- * THE FIRST FOUR TESTS ARE THE CURE. One per shape a reading can end in, each
- * persisted through the real store and read back through a second open, so a
- * kind added to the type without being added to the guard fails here rather
- * than costing a subprocess per picture per pass forever.
- *
- * THE REST PIN THE REFUSALS, because a guard that accepts everything resumes a
- * malformed record into a translate slice key and is worse than no guard.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the store that lets a resumed run reuse what a picture was read as.
+ 
+ WHY THIS FILE EXISTS. The store's guard checks the DISCRIMINANT before the
+ fields, so a reading whose kind it has not been told about is rejected and the
+ picture reads as never gathered. That is silent by construction: the run
+ simply reads the picture again, writes the same record, and rejects it again
+ next pass. `no-text` was added to `PairedReading` on 2026-08-19 and not to the
+ guard, so for the length of that afternoon every textless picture in the
+ corpus, two thirds of them, was re-read on every resume.
+ 
+ THE FIRST FOUR TESTS ARE THE CURE. One per shape a reading can end in, each
+ persisted through the real store and read back through a second open, so a
+ kind added to the type without being added to the guard fails here rather
+ than costing a subprocess per picture per pass forever.
+ 
+ THE REST PIN THE REFUSALS, because a guard that accepts everything resumes a
+ malformed record into a translate slice key and is worse than no guard.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -40,32 +40,32 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Pipeline identity every case writes under, since a store only resumes what
- * the generation now running produced.
+ Pipeline identity every case writes under, since a store only resumes what
+ the generation now running produced.
  */
 const GENERATION = 'whiskers-pipeline-1';
 
 /**
- * Key each case persists under, shaped like the hash a real key carries.
+ Key each case persists under, shaped like the hash a real key carries.
  */
 const KEY = 'a1b2c3d4e5f60789';
 
 /**
- * Throwaway directory holding one case's store, removed on scope exit.
- *
- * @returns Disposable directory handle
- *
- * @example
- * ```ts
- * await using scratch = await scratchDirectory();
- * ```
+ Throwaway directory holding one case's store, removed on scope exit.
+ 
+ @returns Disposable directory handle
+ 
+ @example
+ ```ts
+ await using scratch = await scratchDirectory();
+ ```
  */
 async function scratchDirectory(): Promise<{
   readonly path: string;
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 }> {
   /**
-   * Fresh directory under the platform temp root.
+   Fresh directory under the platform temp root.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -86,25 +86,25 @@ async function scratchDirectory(): Promise<{
 }
 
 /**
- * Persists one record and reads back whatever a second open resumes for it.
- *
- * THROUGH THE REAL STORE RATHER THAN THE GUARD DIRECTLY, because the guard is
- * private and because what matters is not whether it returns true: it is
- * whether a settled reading survives the write, the envelope, the file name and
- * the generation marker between one pass and the next.
- *
- * @param record - value to persist, which may be a shape the guard refuses
- *
- * @param reopenGeneration - identity the second open runs under, defaulting to
- * the one that wrote, so only the generation case has to name it
- *
- * @returns Every reading the second open resumed, which is empty when it
- * resumed none
- *
- * @example
- * ```ts
- * const resumed = await roundTrip({ record: { kind: 'no-text', characters: 0, }, },);
- * ```
+ Persists one record and reads back whatever a second open resumes for it.
+ 
+ THROUGH THE REAL STORE RATHER THAN THE GUARD DIRECTLY, because the guard is
+ private and because what matters is not whether it returns true: it is
+ whether a settled reading survives the write, the envelope, the file name and
+ the generation marker between one pass and the next.
+ 
+ @param record - value to persist, which may be a shape the guard refuses
+ 
+ @param reopenGeneration - identity the second open runs under, defaulting to
+ the one that wrote, so only the generation case has to name it
+ 
+ @returns Every reading the second open resumed, which is empty when it
+ resumed none
+ 
+ @example
+ ```ts
+ const resumed = await roundTrip({ record: { kind: 'no-text', characters: 0, }, },);
+ ```
  */
 async function roundTrip(
   {
@@ -118,7 +118,7 @@ async function roundTrip(
   await using scratch = await scratchDirectory();
 
   /**
-   * Store as the pass that read the picture saw it.
+   Store as the pass that read the picture saw it.
    */
   const wrote = await openPictureReadingCache({
     dir: scratch.path,
@@ -130,7 +130,7 @@ async function roundTrip(
   },);
 
   /**
-   * Store as a later pass over the same entry sees it.
+   Store as a later pass over the same entry sees it.
    */
   const reopened = await openPictureReadingCache({
     dir: scratch.path,
@@ -147,8 +147,8 @@ await describe({
         + 'is the shape every picture-bearing translate slice keys on',
       fn: async () => {
       /**
-       * Two readers agreeing about a picture of a cat, as the pair stage
-       * records one.
+       Two readers agreeing about a picture of a cat, as the pair stage
+       records one.
        */
       const record = {
         kind: 'corroborated',
@@ -175,7 +175,7 @@ await describe({
         + 'resume while reporting nothing wrong',
       fn: async () => {
       /**
-       * A photograph of a cat, which the deterministic reader found nothing on.
+       A photograph of a cat, which the deterministic reader found nothing on.
        */
       const record = {
         kind: 'no-text',
@@ -190,7 +190,7 @@ await describe({
         + 'readings are what makes a disagreement diagnosable rather than only counted',
       fn: async () => {
       /**
-       * A disagreement, with both readings kept.
+       A disagreement, with both readings kept.
        */
       const record = {
         kind: 'unavailable',
@@ -222,8 +222,8 @@ await describe({
         + 'were kept looks like',
       fn: async () => {
       /**
-       * A picture no reader was available for, where there was no reading to
-       * keep.
+       A picture no reader was available for, where there was no reading to
+       keep.
        */
       const record = {
         kind: 'unavailable',
@@ -240,7 +240,7 @@ await describe({
         + 'tomorrow and serving the old verdict would leave the picture unread until a rebuild',
       fn: async () => {
       /**
-       * A verdict resting on one reader failing for now.
+       A verdict resting on one reader failing for now.
        */
       const record = {
         kind: 'unavailable',
@@ -257,7 +257,7 @@ await describe({
         + 'one reader failure that left a picture unread on every run; reading it once more is the remedy',
       fn: async () => {
       /**
-       * A verdict in the older shape, which cannot say whether it was transient.
+       A verdict in the older shape, which cannot say whether it was transient.
        */
       const record = {
         kind: 'unavailable',

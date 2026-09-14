@@ -42,37 +42,37 @@ import {
 // resumed one. That disagreement is corrected deliberately.
 
 /**
- * What one slice settled to beside cache records it refused.
+ What one slice settled to beside cache records it refused.
  */
 export type RepairSliceSettlement = {
   /**
-   * Outcome this slice contributes to dominance, refinement and assembly.
+   Outcome this slice contributes to dominance, refinement and assembly.
    */
   readonly outcome: ChunkRepairOutcome;
 
   /**
-   * Cached outcomes refused for contradicting their own text.
+   Cached outcomes refused for contradicting their own text.
    */
   readonly refusedCacheFindings: readonly string[];
 };
 
 /**
- * Reads what purchase leaves for twins using same predicate as cache gate.
- *
- * @param outcome - purchase to classify
- *
- * @returns Stored outcome only when warm run could resume it
- *
- * @example
- * ```ts
- * const stored = storedOutcome(outcome,);
- * ```
+ Reads what purchase leaves for twins using same predicate as cache gate.
+ 
+ @param outcome - purchase to classify
+ 
+ @returns Stored outcome only when warm run could resume it
+ 
+ @example
+ ```ts
+ const stored = storedOutcome(outcome,);
+ ```
  */
 function storedOutcome(
   outcome: ChunkRepairOutcome,
 ): TwinStored<ChunkRepairOutcome> {
   /**
-   * Reasons warm run could not resume this purchase.
+   Reasons warm run could not resume this purchase.
    */
   const refusals = cacheRefusalsOf({ outcome, },);
   return (refusals.length === 0)
@@ -84,41 +84,41 @@ function storedOutcome(
 }
 
 /**
- * Settles one repair slice from cache, twin memo or fresh purchase.
- *
- * @param client - injected model client
- *
- * @param prepared - document slice belongs to
- *
- * @param models - repair role roster
- *
- * @param adjudicationConfig - tally thresholds and weights
- *
- * @param slice - slice being settled
- *
- * @param slicePosition - position in prepared slice array
- *
- * @param runShape - model-facing governance folded into cache key
- *
- * @param sliceCache - optional cross-run cache
- *
- * @param twins - shared memo of cache-eligible purchases in this run
- *
- * @param signal - entry deadline and caller abort
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - repair-lane logger
- *
- * @returns Outcome and cache-refusal findings
- *
- * @throws Whatever `signal.reason` carries when caller aborts with this slice
- * still unbought
- *
- * @example
- * ```ts
- * const settlement = await settleRepairSlice({ ..., slicePosition: 0, });
- * ```
+ Settles one repair slice from cache, twin memo or fresh purchase.
+ 
+ @param client - injected model client
+ 
+ @param prepared - document slice belongs to
+ 
+ @param models - repair role roster
+ 
+ @param adjudicationConfig - tally thresholds and weights
+ 
+ @param slice - slice being settled
+ 
+ @param slicePosition - position in prepared slice array
+ 
+ @param runShape - model-facing governance folded into cache key
+ 
+ @param sliceCache - optional cross-run cache
+ 
+ @param twins - shared memo of cache-eligible purchases in this run
+ 
+ @param signal - entry deadline and caller abort
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - repair-lane logger
+ 
+ @returns Outcome and cache-refusal findings
+ 
+ @throws Whatever `signal.reason` carries when caller aborts with this slice
+ still unbought
+ 
+ @example
+ ```ts
+ const settlement = await settleRepairSlice({ ..., slicePosition: 0, });
+ ```
  */
 export async function settleRepairSlice(
   {
@@ -150,12 +150,12 @@ export async function settleRepairSlice(
   }>,
 ): Promise<RepairSliceSettlement> {
   /**
-   * Global index every outcome and replacement names.
+   Global index every outcome and replacement names.
    */
   const { sliceIndex, } = slice.target;
 
   /**
-   * Original of adjacent passages, addressed by position rather than stamp.
+   Original of adjacent passages, addressed by position rather than stamp.
    */
   const neighbouringSourceText = neighbouringSource({
     slices: prepared.slices,
@@ -163,7 +163,7 @@ export async function settleRepairSlice(
   },);
 
   /**
-   * Archive English of adjacent passages.
+   Archive English of adjacent passages.
    */
   const neighbouringIncumbentText = neighbouringIncumbent({
     slices: prepared.slices,
@@ -171,15 +171,15 @@ export async function settleRepairSlice(
   },);
 
   /**
-   * Same-entry source used by the panel and selectors to verify current claims.
-   * One value feeds both cache identity and the eventual purchase.
+   Same-entry source used by the panel and selectors to verify current claims.
+   One value feeds both cache identity and the eventual purchase.
    */
   const documentSourceText = prepared.sourceText
     === slice.source
     .text ? '' : prepared.sourceText;
 
   /**
-   * What this slice cost, reported however this function is left.
+   What this slice cost, reported however this function is left.
    */
   using cost = armSliceCost({
     l,
@@ -204,7 +204,7 @@ export async function settleRepairSlice(
   }
 
   /**
-   * Cross-run key for this slice.
+   Cross-run key for this slice.
    */
   const key = repairSliceKey({
     runShape,
@@ -220,13 +220,13 @@ export async function settleRepairSlice(
   },);
 
   /**
-   * Outcome an earlier run stored for this question.
+   Outcome an earlier run stored for this question.
    */
   const stored = sliceCache?.resumed
     .get(key,);
 
   /**
-   * Disk outcome restamped for this slice's position.
+   Disk outcome restamped for this slice's position.
    */
   const cached = (stored === undefined) ? undefined : {
     ...stored,
@@ -234,7 +234,7 @@ export async function settleRepairSlice(
   };
 
   /**
-   * Findings explaining why disk outcome was refused.
+   Findings explaining why disk outcome was refused.
    */
   const refusedCacheFindings: string[] = [];
   if (cached !== undefined) {
@@ -252,7 +252,7 @@ export async function settleRepairSlice(
     }
 
     /**
-     * Why this slice is recomputed rather than resumed.
+     Why this slice is recomputed rather than resumed.
      */
     const discarded = resumedSliceDiscardFinding({
       lane: 'repair',
@@ -264,7 +264,7 @@ export async function settleRepairSlice(
   }
 
   /**
-   * Twin's eligible outcome, or this slice's own purchase.
+   Twin's eligible outcome, or this slice's own purchase.
    */
   const asked = await reuseTwinOrBuy({
     key,

@@ -31,10 +31,10 @@ import {
 // it arrived.
 
 /**
- * What each category means, and which one wins when two of them fit.
- *
- * ORDER IS THE PRECEDENCE, stated first so a reader meets the deciding rule
- * before the list it decides between.
+ What each category means, and which one wins when two of them fit.
+ 
+ ORDER IS THE PRECEDENCE, stated first so a reader meets the deciding rule
+ before the list it decides between.
  */
 const CATEGORY_GUIDE: readonly string[] = [
   'CHOOSING A CATEGORY, in this order:',
@@ -66,8 +66,8 @@ const CATEGORY_GUIDE: readonly string[] = [
 ];
 
 /**
- * What is not a defect, said plainly, because each of these is a mistake an
- * auditor makes by trying hard rather than by being careless.
+ What is not a defect, said plainly, because each of these is a mistake an
+ auditor makes by trying hard rather than by being careless.
  */
 const NOT_DEFECTS: readonly string[] = [
   'NOT DEFECTS:',
@@ -82,7 +82,7 @@ const NOT_DEFECTS: readonly string[] = [
 ];
 
 /**
- * How a finding points at the text it rests on.
+ How a finding points at the text it rests on.
  */
 const EVIDENCE_GUIDE: readonly string[] = [
   'EVERY FINDING POINTS AT TEXT WITH TWO QUOTES PER SIDE, copied character for character:',
@@ -105,8 +105,8 @@ const EVIDENCE_GUIDE: readonly string[] = [
 ];
 
 /**
- * What the reason has to establish, since an unstructured reason cannot be
- * checked against anything.
+ What the reason has to establish, since an unstructured reason cannot be
+ checked against anything.
  */
 const REASON_GUIDE: readonly string[] = [
   'Each reason states three things:',
@@ -117,14 +117,14 @@ const REASON_GUIDE: readonly string[] = [
 ];
 
 /**
- * System message every audit call carries.
- *
- * @returns Instructions, taxonomy and evidence rules
- *
- * @example
- * ```ts
- * const instructions = auditInstructions();
- * ```
+ System message every audit call carries.
+ 
+ @returns Instructions, taxonomy and evidence rules
+ 
+ @example
+ ```ts
+ const instructions = auditInstructions();
+ ```
  */
 function auditInstructions(): string {
   return [
@@ -155,22 +155,22 @@ function auditInstructions(): string {
 }
 
 /**
- * Builds the messages for one audit call.
- *
- * @param subject - original, candidate and any licensed identity evidence
- *
- * @returns System and user messages
- *
- * @example
- * ```ts
- * const messages = buildRenderingAuditMessages({ subject, },);
- * ```
+ Builds the messages for one audit call.
+ 
+ @param subject - original, candidate and any licensed identity evidence
+ 
+ @returns System and user messages
+ 
+ @example
+ ```ts
+ const messages = buildRenderingAuditMessages({ subject, },);
+ ```
  */
 export function buildRenderingAuditMessages(
   { subject, }: { readonly subject: RenderingAuditSubject; },
 ): readonly ChatMessage[] {
   /**
-   * Fence long enough to hold every text without any of them closing it.
+   Fence long enough to hold every text without any of them closing it.
    */
   const fence = selectFence({
     texts: [

@@ -30,24 +30,24 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 // is evidence a later lane added.
 
 /**
- * Reads one row of one lane's delivery ledger.
- *
- * @param value - row JSON
- *
- * @param path - dotted path for error message
- *
- * @param keys - field spellings this artifact's generation uses, so an older
- * file is read by its own names rather than by today's
- *
- * @returns Ledger row as version 2 describes it
- *
- * @throws {@link ArtifactParseError} when the row carries a key this version
- * does not name, or any field is the wrong shape
- *
- * @example
- * ```ts
- * const row = parseDeliveryRow({ value, path: 'lanes.repair.delivery[0]', },);
- * ```
+ Reads one row of one lane's delivery ledger.
+ 
+ @param value - row JSON
+ 
+ @param path - dotted path for error message
+ 
+ @param keys - field spellings this artifact's generation uses, so an older
+ file is read by its own names rather than by today's
+ 
+ @returns Ledger row as version 2 describes it
+ 
+ @throws {@link ArtifactParseError} when the row carries a key this version
+ does not name, or any field is the wrong shape
+ 
+ @example
+ ```ts
+ const row = parseDeliveryRow({ value, path: 'lanes.repair.delivery[0]', },);
+ ```
  */
 export function parseDeliveryRow(
   {
@@ -61,7 +61,7 @@ export function parseDeliveryRow(
   },
 ): ArtifactDeliveryRow {
   /**
-   * Row as a record.
+   Row as a record.
    */
   const record = requireRecord({
     value,
@@ -118,24 +118,24 @@ export function parseDeliveryRow(
 }
 
 /**
- * Reads one row of the recorded comparison.
- *
- * @param value - row JSON
- *
- * @param path - dotted path for error message
- *
- * @param keys - field spellings this artifact's generation uses, so an older
- * file is read by its own names rather than by today's
- *
- * @returns Comparison row as version 2 describes it
- *
- * @throws {@link ArtifactParseError} when the row carries a key this version
- * does not name, or any field is the wrong shape
- *
- * @example
- * ```ts
- * const row = parseComparisonRow({ value, path: 'comparison[0]', },);
- * ```
+ Reads one row of the recorded comparison.
+ 
+ @param value - row JSON
+ 
+ @param path - dotted path for error message
+ 
+ @param keys - field spellings this artifact's generation uses, so an older
+ file is read by its own names rather than by today's
+ 
+ @returns Comparison row as version 2 describes it
+ 
+ @throws {@link ArtifactParseError} when the row carries a key this version
+ does not name, or any field is the wrong shape
+ 
+ @example
+ ```ts
+ const row = parseComparisonRow({ value, path: 'comparison[0]', },);
+ ```
  */
 export function parseComparisonRow(
   {
@@ -149,25 +149,25 @@ export function parseComparisonRow(
   },
 ): ArtifactComparisonRow {
   /**
-   * Row as a record.
+   Row as a record.
    */
   const record = requireRecord({
     value,
     path,
   },);
   /**
-   * Key this row spells its lane relation under.
-   *
-   * TWO SPELLINGS, AND EXACTLY ONE PER ROW. The field was `verdict` until
-   * 2026-08-22, sharing a name with `laneSelection.slices[].verdict`, which
-   * answers a different question at a sibling path. Renaming it removes the
-   * collision for everything written afterwards; reading both keeps the
-   * artifacts settled under the old name readable, since artifacts outlive
-   * the pipelines that wrote them.
-   *
-   * A ROW CARRYING BOTH IS REFUSED rather than resolved, because the exact-key
-   * guard below is handed only the spelling chosen here. Two spellings in one
-   * row means two pipelines wrote it, and picking one would hide that.
+   Key this row spells its lane relation under.
+   
+   TWO SPELLINGS, AND EXACTLY ONE PER ROW. The field was `verdict` until
+   2026-08-22, sharing a name with `laneSelection.slices[].verdict`, which
+   answers a different question at a sibling path. Renaming it removes the
+   collision for everything written afterwards; reading both keeps the
+   artifacts settled under the old name readable, since artifacts outlive
+   the pipelines that wrote them.
+   
+   A ROW CARRYING BOTH IS REFUSED rather than resolved, because the exact-key
+   guard below is handed only the spelling chosen here. Two spellings in one
+   row means two pipelines wrote it, and picking one would hide that.
    */
   const relationKey = ('laneRelation' in record) ? 'laneRelation' : 'verdict';
   requireExactKeys({
@@ -250,30 +250,30 @@ export function parseComparisonRow(
 }
 
 /**
- * Reads one slice out of a lane's RAW result, taking only what version 2 checks.
- *
- * TOLERANT BY DESIGN, and it is the only row parser here that is. A raw slice
- * row is typed by the live pipeline: it has gained fields before and will
- * again, and requiring today's shape of it would make every later addition a
- * retroactive requirement on artifacts already written. What stays required is
- * the part this reader compares against the ledger.
- *
- * @param value - raw slice row JSON
- *
- * @param path - dotted path for error message
- *
- * @param keys - field spellings this artifact's generation uses, so an older
- * file is read by its own names rather than by today's
- *
- * @returns Evidence row, with everything else in the raw row left unread
- *
- * @throws {@link ArtifactParseError} when a field version 2 checks is missing
- * or the wrong shape, or the outcome names a member this version cannot read
- *
- * @example
- * ```ts
- * const row = parseEvidenceRow({ value, path: 'lanes.repair.result.sliceTexts[0]', },);
- * ```
+ Reads one slice out of a lane's RAW result, taking only what version 2 checks.
+ 
+ TOLERANT BY DESIGN, and it is the only row parser here that is. A raw slice
+ row is typed by the live pipeline: it has gained fields before and will
+ again, and requiring today's shape of it would make every later addition a
+ retroactive requirement on artifacts already written. What stays required is
+ the part this reader compares against the ledger.
+ 
+ @param value - raw slice row JSON
+ 
+ @param path - dotted path for error message
+ 
+ @param keys - field spellings this artifact's generation uses, so an older
+ file is read by its own names rather than by today's
+ 
+ @returns Evidence row, with everything else in the raw row left unread
+ 
+ @throws {@link ArtifactParseError} when a field version 2 checks is missing
+ or the wrong shape, or the outcome names a member this version cannot read
+ 
+ @example
+ ```ts
+ const row = parseEvidenceRow({ value, path: 'lanes.repair.result.sliceTexts[0]', },);
+ ```
  */
 export function parseEvidenceRow(
   {
@@ -287,7 +287,7 @@ export function parseEvidenceRow(
   },
 ): ArtifactEvidenceRow {
   /**
-   * Row as a record, whose other fields stay where they are.
+   Row as a record, whose other fields stay where they are.
    */
   const record = requireRecord({
     value,

@@ -22,7 +22,7 @@ import { maskHtmlComments, } from '../mask-html-comments.ts';
 // matter, comments and code fences.
 
 /**
- * Tokens a placeholder paragraph consists of, lowercased and unwrapped.
+ Tokens a placeholder paragraph consists of, lowercased and unwrapped.
  */
 export const STUB_MARKER_TOKENS: ReadonlySet<string> = new Set([
   'to-do',
@@ -32,22 +32,22 @@ export const STUB_MARKER_TOKENS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * One bracket pair a marker may be wrapped in.
+ One bracket pair a marker may be wrapped in.
  */
 type MarkerWrap = {
   /**
-   * Opening bracket.
+   Opening bracket.
    */
   readonly open: string;
 
   /**
-   * Closing bracket.
+   Closing bracket.
    */
   readonly close: string;
 };
 
 /**
- * Bracket pairs a marker may be wrapped in, one layer.
+ Bracket pairs a marker may be wrapped in, one layer.
  */
 const MARKER_WRAPS: readonly MarkerWrap[] = [
   {
@@ -65,55 +65,55 @@ const MARKER_WRAPS: readonly MarkerWrap[] = [
 ];
 
 /**
- * Line that opens and closes front matter.
+ Line that opens and closes front matter.
  */
 const FRONT_MATTER_FENCE = '---';
 
 /**
- * Prefix of a fenced code block's opening and closing line.
+ Prefix of a fenced code block's opening and closing line.
  */
 const CODE_FENCE = '```';
 
 /**
- * One marker the strip removed, for the log and the record.
- *
- * @example
- * ```ts
- * const marker: StrippedStubMarker = { lineNumber: 8, text: '(To-Do)', };
- * ```
+ One marker the strip removed, for the log and the record.
+ 
+ @example
+ ```ts
+ const marker: StrippedStubMarker = { lineNumber: 8, text: '(To-Do)', };
+ ```
  */
 export type StrippedStubMarker = {
   /**
-   * One-based line of the archive as read, before any removal.
+   One-based line of the archive as read, before any removal.
    */
   readonly lineNumber: number;
 
   /**
-   * Line as the archive carried it.
+   Line as the archive carried it.
    */
   readonly text: string;
 };
 
 /**
- * Whether one paragraph is nothing but a placeholder token.
- *
- * @param paragraph - paragraph text, whitespace and one layer of brackets
- * tolerated
- *
- * @returns Whether it names no content
- *
- * @example
- * ```ts
- * isStubMarkerParagraph({ paragraph: '(To-Do)', },);
- * ```
+ Whether one paragraph is nothing but a placeholder token.
+ 
+ @param paragraph - paragraph text, whitespace and one layer of brackets
+ tolerated
+ 
+ @returns Whether it names no content
+ 
+ @example
+ ```ts
+ isStubMarkerParagraph({ paragraph: '(To-Do)', },);
+ ```
  */
 export function isStubMarkerParagraph({ paragraph, }: { readonly paragraph: string; },): boolean {
   /**
-   * Paragraph without its surrounding whitespace.
+   Paragraph without its surrounding whitespace.
    */
   const trimmed = paragraph.trim();
   /**
-   * Paragraph without one layer of brackets, when it wore one.
+   Paragraph without one layer of brackets, when it wore one.
    */
   const unwrapped = MARKER_WRAPS.reduce(
     function unwrap(
@@ -121,14 +121,14 @@ export function isStubMarkerParagraph({ paragraph, }: { readonly paragraph: stri
       wrap: MarkerWrap,
     ): string {
       /**
-       * Opening and closing bracket of this pair.
+       Opening and closing bracket of this pair.
        */
       const {
         open,
         close,
       } = wrap;
       /**
-       * Whether the text wears this pair with something inside it.
+       Whether the text wears this pair with something inside it.
        */
       const wears = text.startsWith(open,)
         && text.endsWith(close,)
@@ -136,7 +136,7 @@ export function isStubMarkerParagraph({ paragraph, }: { readonly paragraph: stri
       if (!wears)
         return text;
       /**
-       * Text between the brackets.
+       Text between the brackets.
        */
       const inside = text.slice(
         open.length,
@@ -150,73 +150,73 @@ export function isStubMarkerParagraph({ paragraph, }: { readonly paragraph: stri
 }
 
 /**
- * One retained normalized line with its unchanged pinned-file position.
- *
- * @example
- * ```ts
- * const retained: ArchiveRetainedLine = { text: 'Cat.', lineNumber: 3 };
- * ```
+ One retained normalized line with its unchanged pinned-file position.
+ 
+ @example
+ ```ts
+ const retained: ArchiveRetainedLine = { text: 'Cat.', lineNumber: 3 };
+ ```
  */
 export type ArchiveRetainedLine = {
   /**
-   * Exact line after invisible-character normalization.
+   Exact line after invisible-character normalization.
    */
   readonly text: string;
   /**
-   * One-based pinned-file line before any marker or adjacent blank removal.
+   One-based pinned-file line before any marker or adjacent blank removal.
    */
   readonly lineNumber: number;
 };
 
 /**
- * Scan state carried line to line.
+ Scan state carried line to line.
  */
 type StripState = {
   /**
-   * Lines kept so far.
+   Lines kept so far.
    */
   readonly kept: readonly ArchiveRetainedLine[];
 
   /**
-   * Markers removed so far.
+   Markers removed so far.
    */
   readonly stripped: readonly StrippedStubMarker[];
 
   /**
-   * Whether the scan is still inside the leading front matter.
+   Whether the scan is still inside the leading front matter.
    */
   readonly inFrontMatter: boolean;
 
   /**
-   * Whether the scan is inside a fenced code block.
+   Whether the scan is inside a fenced code block.
    */
   readonly inFence: boolean;
 
   /**
-   * Whether the next line, if blank, is the blank a removed marker owned.
+   Whether the next line, if blank, is the blank a removed marker owned.
    */
   readonly skipBlank: boolean;
 };
 
 /**
- * Removes every paragraph that is nothing but a placeholder token.
- *
- * ONE LINEAR PASS over the lines, with HTML comments masked first so a marker
- * inside a comment is left alone: the masked text keeps every newline, so its
- * lines index the original's exactly. A marker paragraph is one line whose
- * previous kept line is blank or absent and whose next line is blank or
- * absent, outside front matter and code fences. The marker goes with one
- * adjacent blank line: the following one, or the preceding one at the end of
- * the document, so the page keeps single blank lines between blocks.
- *
- * @param text - archive text after the invisible-variant fold
- *
- * @returns Text without the markers, and each marker removed with its line
- *
- * @example
- * ```ts
- * const { text, stripped, } = stripStubMarkers({ text: archive, },);
- * ```
+ Removes every paragraph that is nothing but a placeholder token.
+ 
+ ONE LINEAR PASS over the lines, with HTML comments masked first so a marker
+ inside a comment is left alone: the masked text keeps every newline, so its
+ lines index the original's exactly. A marker paragraph is one line whose
+ previous kept line is blank or absent and whose next line is blank or
+ absent, outside front matter and code fences. The marker goes with one
+ adjacent blank line: the following one, or the preceding one at the end of
+ the document, so the page keeps single blank lines between blocks.
+ 
+ @param text - archive text after the invisible-variant fold
+ 
+ @returns Text without the markers, and each marker removed with its line
+ 
+ @example
+ ```ts
+ const { text, stripped, } = stripStubMarkers({ text: archive, },);
+ ```
  */
 export function stripStubMarkersWithOrigins(
   { text, }: { readonly text: string; },
@@ -226,23 +226,23 @@ export function stripStubMarkersWithOrigins(
   readonly lines: readonly ArchiveRetainedLine[];
 } {
   /**
-   * Original lines.
+   Original lines.
    */
   const lines = text.split('\n',);
   /**
-   * Same lines with every comment blanked, so a comment line differs from its
-   * original and a marker inside one is never read as a paragraph.
+   Same lines with every comment blanked, so a comment line differs from its
+   original and a marker inside one is never read as a paragraph.
    */
   const maskedLines = maskHtmlComments({ text, },)
     .masked
     .split('\n',);
   /**
-   * Whether the document opens with front matter.
+   Whether the document opens with front matter.
    */
   const opensWithFrontMatter = lines[0] === FRONT_MATTER_FENCE;
 
   /**
-   * Final state after every line.
+   Final state after every line.
    */
   const final = lines.reduce(
     function scan(
@@ -251,14 +251,14 @@ export function stripStubMarkersWithOrigins(
       index: number,
     ): StripState {
       /**
-       * Text and original position stay in one record through every keep or removal branch.
+       Text and original position stay in one record through every keep or removal branch.
        */
       const retainedLine: ArchiveRetainedLine = {
         text: line,
         lineNumber: index + 1,
       };
       /**
-       * This line as masked, unchanged when no comment touches it.
+       This line as masked, unchanged when no comment touches it.
        */
       const maskedLine = maskedLines[index] ?? '';
       if (state.inFrontMatter) {
@@ -299,40 +299,40 @@ export function stripStubMarkersWithOrigins(
         };
       }
       /**
-       * Whether no comment covers any of this line.
+       Whether no comment covers any of this line.
        */
       const outsideComment = maskedLine === line;
       /**
-       * Last kept line, or nothing at the document's start.
+       Last kept line, or nothing at the document's start.
        */
       const previous = state.kept
         .at(-1,)
         ?.text
         ?? '';
       /**
-       * Whether nothing kept stands directly above.
+       Whether nothing kept stands directly above.
        */
       const previousBlank = previous.trim() === '';
       /**
-       * Line after this one, absent when the document ends here.
+       Line after this one, absent when the document ends here.
        */
       const next = lines[index + 1];
       /**
-       * Whether the document ends with this line.
+       Whether the document ends with this line.
        */
       const atEnd = next === undefined;
       /**
-       * Whether the paragraph ends with this line.
+       Whether the paragraph ends with this line.
        */
       const nextBlank = atEnd || (next.trim() === '');
       /**
-       * Whether this line stands as a paragraph of its own.
+       Whether this line stands as a paragraph of its own.
        */
       const standsAlone = outsideComment
         && previousBlank
         && nextBlank;
       /**
-       * Whether this line is a placeholder paragraph of its own.
+       Whether this line is a placeholder paragraph of its own.
        */
       const isMarker = standsAlone && isStubMarkerParagraph({ paragraph: line, },);
       if (!isMarker) {
@@ -346,7 +346,7 @@ export function stripStubMarkersWithOrigins(
         };
       }
       /**
-       * Kept lines less the blank above the marker.
+       Kept lines less the blank above the marker.
        */
       const withoutBlankAbove = state.kept
         .slice(
@@ -354,19 +354,19 @@ export function stripStubMarkersWithOrigins(
           -1,
         );
       /**
-       * How many lines are kept so far.
+       How many lines are kept so far.
        */
       const keptCount = state.kept
         .length;
       /**
-       * Whether the blank above goes, since no line follows to give up its
-       * blank instead.
+       Whether the blank above goes, since no line follows to give up its
+       blank instead.
        */
       const dropsBlankAbove = atEnd
         && previousBlank
         && (keptCount > 0);
       /**
-       * Kept lines after this marker's removal.
+       Kept lines after this marker's removal.
        */
       const kept = dropsBlankAbove ? withoutBlankAbove : state.kept;
       return {
@@ -402,16 +402,16 @@ export function stripStubMarkersWithOrigins(
 }
 
 /**
- * {@inheritDoc stripStubMarkersWithOrigins}
- *
- * @returns Normalized text and removed markers with the existing public result shape
+ {@inheritDoc stripStubMarkersWithOrigins}
+ 
+ @returns Normalized text and removed markers with the existing public result shape
  */
 export function stripStubMarkers({ text, }: { readonly text: string; },): {
   readonly text: string;
   readonly stripped: readonly StrippedStubMarker[];
 } {
   /**
-   * Existing callers retain their exact public result shape.
+   Existing callers retain their exact public result shape.
    */
   const result = stripStubMarkersWithOrigins({ text, },);
   return {

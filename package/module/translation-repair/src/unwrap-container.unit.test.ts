@@ -13,7 +13,7 @@ import { parseDocument, } from '../dist/final/node/index.mjs';
 // corpus text is never reproduced here.
 
 /**
- * Counterpart shape: blocks at top level, no disclosure wrapper.
+ Counterpart shape: blocks at top level, no disclosure wrapper.
  */
 const FLAT_PAGE = `## Gallery
 
@@ -27,7 +27,7 @@ const FLAT_PAGE = `## Gallery
 `;
 
 /**
- * Same blocks, wrapped in a disclosure the way the en side wraps them.
+ Same blocks, wrapped in a disclosure the way the en side wraps them.
  */
 const NESTED_PAGE = `## Gallery
 
@@ -55,12 +55,12 @@ await describe({
           name: 'promotes disclosure children so a nested page matches its flat counterpart',
           fn: async () => {
             /**
-             * Blocks the flat page exposes.
+             Blocks the flat page exposes.
              */
             const { nodes: flat, } = parseDocument({ text: FLAT_PAGE, },);
 
             /**
-             * Blocks the nested page exposes once containers flatten.
+             Blocks the nested page exposes once containers flatten.
              */
             const { nodes: nested, } = parseDocument({ text: NESTED_PAGE, },);
 
@@ -80,7 +80,7 @@ await describe({
           name: 'keeps a self-closing component whole, since it is content not packaging',
           fn: async () => {
             /**
-             * Page whose only block is a childless component.
+             Page whose only block is a childless component.
              */
             const { nodes, } = parseDocument({
               text: "<PhotoScroll photos={['a.webp']} />\n",
@@ -96,7 +96,7 @@ await describe({
           name: 'preserves document order when promoting',
           fn: async () => {
             /**
-             * Promoted blocks must take the container's exact place.
+             Promoted blocks must take the container's exact place.
              */
             const { nodes, } = parseDocument({ text: NESTED_PAGE, },);
 
@@ -111,8 +111,8 @@ await describe({
           name: 'keeps promoted offsets sliceable from the original text',
           fn: async () => {
             /**
-             * Every node's text must still equal its own offset slice, the
-             * invariant offset-based splicing depends on.
+             Every node's text must still equal its own offset slice, the
+             invariant offset-based splicing depends on.
              */
             const { nodes, } = parseDocument({ text: NESTED_PAGE, },);
 
@@ -132,12 +132,12 @@ await describe({
             + 'REVERSAL of what this case once asserted',
           fn: async () => {
             /**
-             * Wrapper tags used to survive only as inter-block text, and that
-             * is precisely what let a range boundary fall between an opening
-             * tag and its closing one: every range here is minted from block
-             * offsets, so a tag belonging to no block belonged to no range
-             * either. Each tag now rides inside the block beside it, so a
-             * range built from whole blocks cannot separate the two.
+             Wrapper tags used to survive only as inter-block text, and that
+             is precisely what let a range boundary fall between an opening
+             tag and its closing one: every range here is minted from block
+             offsets, so a tag belonging to no block belonged to no range
+             either. Each tag now rides inside the block beside it, so a
+             range built from whole blocks cannot separate the two.
              */
             const { nodes, containers, } = parseDocument({ text: NESTED_PAGE, },);
             if (containers.length === 0)
@@ -161,8 +161,8 @@ await describe({
           name: 'flattens a disclosure nested inside another disclosure',
           fn: async () => {
             /**
-             * The work stack re-inspects promoted children, so depth is not
-             * limited to one level.
+             The work stack re-inspects promoted children, so depth is not
+             limited to one level.
              */
             const { nodes, } = parseDocument({
               text: `<details>

@@ -17,36 +17,36 @@ import { PRODUCER_INPUT_PATHS, } from './producer-input-paths.ts';
 //region Fixed child mount profile before application or input-body reads
 
 /**
- * Only libatomic's declared image symlink changes its visible mountpoint.
+ Only libatomic's declared image symlink changes its visible mountpoint.
  */
 const ATOMIC_CANONICAL_PATH = '/usr/lib64/libatomic.so.1';
 /**
- * One privately mounted role after exact pathname and access-mode checks.
+ One privately mounted role after exact pathname and access-mode checks.
  */
 type RoleMount = {
   /**
-   * Visible kernel pathname, never a host locator from the launch JSON.
+   Visible kernel pathname, never a host locator from the launch JSON.
    */
   readonly point: string;
   /**
-   * Output is the only writable application role.
+   Output is the only writable application role.
    */
   readonly mode: 'ro' | 'rw';
 };
 
 /**
- * Checks per-mount access without confusing it with superblock flags.
- *
- * @param mount - current namespace observation
- *
- * @param mode - fixed access role
- *
- * @returns Whether exactly the intended read/write mode is present
- *
- * @example
- * ```ts
- * const valid = mountMode({ mount, mode: 'ro' });
- * ```
+ Checks per-mount access without confusing it with superblock flags.
+ 
+ @param mount - current namespace observation
+ 
+ @param mode - fixed access role
+ 
+ @returns Whether exactly the intended read/write mode is present
+ 
+ @example
+ ```ts
+ const valid = mountMode({ mount, mode: 'ro' });
+ ```
  */
 function mountMode({
   mount,
@@ -62,16 +62,16 @@ function mountMode({
 }
 
 /**
- * Recognizes only declared platform mounts rather than accepting arbitrary virtual-tree prefixes.
- *
- * @param mount - kernel mount observation
- *
- * @returns Whether filesystem, pathname and required access restrictions match
- *
- * @example
- * ```ts
- * const valid = platformMount(mount);
- * ```
+ Recognizes only declared platform mounts rather than accepting arbitrary virtual-tree prefixes.
+ 
+ @param mount - kernel mount observation
+ 
+ @returns Whether filesystem, pathname and required access restrictions match
+ 
+ @example
+ ```ts
+ const valid = platformMount(mount);
+ ```
  */
 function platformMount(mount: ProducerInputHostMount): boolean {
   if (ACCOUNT_MOUNTS.includes(mount.point)) {
@@ -104,27 +104,27 @@ function platformMount(mount: ProducerInputHostMount): boolean {
 }
 
 /**
- * Checks the actual child namespace before reading launch, selection, runtime or corpus bodies.
- * The caller separately binds the image and startup implementation before Node begins execution.
- *
- * @throws ProducerInputRunError when roles, aliases or platform mounts differ
- *
- * @example
- * ```ts
- * await verifyProducerInputChildMounts();
- * ```
+ Checks the actual child namespace before reading launch, selection, runtime or corpus bodies.
+ The caller separately binds the image and startup implementation before Node begins execution.
+ 
+ @throws ProducerInputRunError when roles, aliases or platform mounts differ
+ 
+ @example
+ ```ts
+ await verifyProducerInputChildMounts();
+ ```
  */
 export async function verifyProducerInputChildMounts(): Promise<void> {
   try {
     /**
-     * Kernel metadata is read before any mounted application input body.
+     Kernel metadata is read before any mounted application input body.
      */
     const mounts = readProducerInputHostMounts(await readFile(
       '/proc/self/mountinfo',
       'utf8'
     ));
     /**
-     * Fixed application role locations do not come from supplied launch paths.
+     Fixed application role locations do not come from supplied launch paths.
      */
     const paths = [
       PRODUCER_INPUT_PATHS.node,
@@ -138,18 +138,18 @@ export async function verifyProducerInputChildMounts(): Promise<void> {
       PRODUCER_INPUT_PATHS.output
     ];
     /**
-     * Canonicalization may follow only the independently measured image's libatomic alias.
+     Canonicalization may follow only the independently measured image's libatomic alias.
      */
     const roles = await mapOverlapped({
       items: paths,
       overlap: 1,
       oneItem: async function role({ item }): Promise<RoleMount> {
       /**
-       * The actual mountpoint is distinct from a declared logical image path.
+       The actual mountpoint is distinct from a declared logical image path.
        */
       const point = await realpath(item);
       /**
-       * Other role aliases could merge writable output with read-only inputs.
+       Other role aliases could merge writable output with read-only inputs.
        */
       const expected = item === PRODUCER_INPUT_PATHS.atomicLibrary ? ATOMIC_CANONICAL_PATH : item;
       if (point !== expected)
@@ -164,7 +164,7 @@ export async function verifyProducerInputChildMounts(): Promise<void> {
     }
     });
     /**
-     * Role stacking cannot be silently interpreted as another filesystem capability.
+     Role stacking cannot be silently interpreted as another filesystem capability.
      */
     const required: readonly RoleMount[] = [
       ...roles,
@@ -179,13 +179,13 @@ export async function verifyProducerInputChildMounts(): Promise<void> {
     ];
     if (required.some(function missing(role): boolean {
       /**
-       * Exactly one observed role mount must carry the fixed access mode.
+       Exactly one observed role mount must carry the fixed access mode.
        */
       const matches = mounts.filter(function atPoint(mount): boolean {
         return mount.point === role.point;
       });
       /**
-       * Missing and stacked roles both withhold the import gate.
+       Missing and stacked roles both withhold the import gate.
        */
       const [match] = matches;
       return (matches.length !== 1) || (match === undefined)
@@ -217,7 +217,7 @@ export async function verifyProducerInputChildMounts(): Promise<void> {
         locator: 'child platform mounts',
       });
     /**
-     * Required platform boundaries are checked even when no unexpected mount was found.
+     Required platform boundaries are checked even when no unexpected mount was found.
      */
     const platformPoints = [
       ...ACCOUNT_MOUNTS,

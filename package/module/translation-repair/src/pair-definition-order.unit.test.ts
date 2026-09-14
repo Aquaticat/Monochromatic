@@ -1,9 +1,9 @@
 /**
- * Tests for the seam between the block pairing and the footnote relabel:
- * definition blocks named as order-free, a crossing definition pair kept out
- * of the slicing and read by label.
- *
- * @module
+ Tests for the seam between the block pairing and the footnote relabel:
+ definition blocks named as order-free, a crossing definition pair kept out
+ of the slicing and read by label.
+ 
+ @module
  */
 
 import {
@@ -23,15 +23,15 @@ import {
 //region Fixtures
 
 /**
- * Original: the sister is the first note, the substitute parent the second.
+ Original: the sister is the first note, the substitute parent the second.
  */
 const SOURCE = parseDocument({
   text: '## 生平\n\n洲洲[^2]收留了她，真理[^1]帮助她。\n\n[^1]: 比她小，像姐姐一样。\n\n[^2]: 干妈？像母女一样。\n',
 },);
 
 /**
- * Archive: renumbered by first appearance, so its definitions cross the
- * original's when paired by content.
+ Archive: renumbered by first appearance, so its definitions cross the
+ original's when paired by content.
  */
 const TARGET = parseDocument({
   text: '## Life\n\nZhouzhou[^1] took her in.\n\nZhenli[^2] helped her.\n\n'
@@ -86,8 +86,8 @@ await describe({
       name: 'keeps crossing definition pairs out of the slicing and reads them by label for the relabel',
       fn: async () => {
         /**
-         * The pairing six of eight voices gave on the third yuki launch: body
-         * paired in order, definitions paired by content, crossing.
+         The pairing six of eight voices gave on the third yuki launch: body
+         paired in order, definitions paired by content, crossing.
          */
         const split = splitDefinitionPairs({
           pairs: [
@@ -147,8 +147,8 @@ await describe({
       name: 'hands every pair to the slicing, definitions included, where the definitions pair in order',
       fn: async () => {
         /**
-         * The same documents after the relabel and the reorder: definitions
-         * pair in order.
+         The same documents after the relabel and the reorder: definitions
+         pair in order.
          */
         const split = splitDefinitionPairs({
           pairs: [

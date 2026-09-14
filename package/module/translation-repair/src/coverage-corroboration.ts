@@ -26,65 +26,65 @@ import { codePointCount, } from './code-points.ts';
 // threshold was fitted to produce that: the corpus median is used directly.
 
 /**
- * English code points a source page of ordinary completeness renders into, per
- * source code point.
- *
- * THE CORPUS MEDIAN, measured over all 92 pinned pairs rather than chosen.
- * Chinese becoming English expands, and this is by how much on this corpus.
- *
- * Using the median rather than a lower percentile makes the shortfall a
- * statement about a TYPICAL page, so a page that is merely terse reads as
- * slightly short rather than as missing a passage, and the budget below keeps
- * that slight shortness from admitting anything of real size.
+ English code points a source page of ordinary completeness renders into, per
+ source code point.
+ 
+ THE CORPUS MEDIAN, measured over all 92 pinned pairs rather than chosen.
+ Chinese becoming English expands, and this is by how much on this corpus.
+ 
+ Using the median rather than a lower percentile makes the shortfall a
+ statement about a TYPICAL page, so a page that is merely terse reads as
+ slightly short rather than as missing a passage, and the budget below keeps
+ that slight shortness from admitting anything of real size.
  */
 export const CORPUS_EXPANSION = 2.65;
 
 /**
- * One passage an insertion is being considered for.
+ One passage an insertion is being considered for.
  */
 export type CandidatePassage = {
   /**
-   * How this passage is named in reports, carried through so the caller can
-   * match an admission back to its candidate.
+   How this passage is named in reports, carried through so the caller can
+   match an admission back to its candidate.
    */
   readonly where: string;
 
   /**
-   * Original-side text whose absence is in question.
+   Original-side text whose absence is in question.
    */
   readonly sourceText: string;
 };
 
 /**
- * Running state of the budget as candidates are weighed.
- *
- * Named rather than written inline at the callback, so the accumulator's two
- * halves each get a line and a sentence: what has been committed so far, and
- * which candidates committed it.
+ Running state of the budget as candidates are weighed.
+ 
+ Named rather than written inline at the callback, so the accumulator's two
+ halves each get a line and a sentence: what has been committed so far, and
+ which candidates committed it.
  */
 type BudgetScan = {
   /**
-   * Expected code points already promised to admitted candidates.
+   Expected code points already promised to admitted candidates.
    */
   readonly spent: number;
 
   /**
-   * Candidates admitted so far, in the order they were weighed.
+   Candidates admitted so far, in the order they were weighed.
    */
   readonly names: readonly string[];
 };
 
 /**
- * English size a source passage of ordinary completeness would render into.
- *
- * @param sourceText - original-side text
- *
- * @returns Code points its translation would be expected to occupy
- *
- * @example
- * ```ts
- * const points = expectedTranslationPoints({ sourceText, },);
- * ```
+ English size a source passage of ordinary completeness would render into.
+ 
+ @param sourceText - original-side text
+ 
+ @returns Code points its translation would be expected to occupy
+ 
+ @example
+ ```ts
+ const points = expectedTranslationPoints({ sourceText, },);
+ ```
  */
 export function expectedTranslationPoints(
   { sourceText, }: { readonly sourceText: string; },
@@ -93,23 +93,23 @@ export function expectedTranslationPoints(
 }
 
 /**
- * How much English a page is missing against what its source predicts.
- *
- * FLOORED AT ZERO rather than reported negative, because a page LONGER than
- * predicted is not evidence of anything: translations run long for reasons that
- * have nothing to do with coverage, and a negative shortfall would otherwise
- * subtract from a later page's budget if these were ever summed.
- *
- * @param sourceText - whole original page
- *
- * @param targetText - whole translation as it stands
- *
- * @returns Code points of English the page lacks, zero when it lacks none
- *
- * @example
- * ```ts
- * const shortfall = pageShortfall({ sourceText, targetText, },);
- * ```
+ How much English a page is missing against what its source predicts.
+ 
+ FLOORED AT ZERO rather than reported negative, because a page LONGER than
+ predicted is not evidence of anything: translations run long for reasons that
+ have nothing to do with coverage, and a negative shortfall would otherwise
+ subtract from a later page's budget if these were ever summed.
+ 
+ @param sourceText - whole original page
+ 
+ @param targetText - whole translation as it stands
+ 
+ @returns Code points of English the page lacks, zero when it lacks none
+ 
+ @example
+ ```ts
+ const shortfall = pageShortfall({ sourceText, targetText, },);
+ ```
  */
 export function pageShortfall(
   {
@@ -121,12 +121,12 @@ export function pageShortfall(
   },
 ): number {
   /**
-   * What a page of ordinary completeness would carry.
+   What a page of ordinary completeness would carry.
    */
   const expected = expectedTranslationPoints({ sourceText, },);
 
   /**
-   * What it actually carries.
+   What it actually carries.
    */
   const standing = codePointCount({ text: targetText, },);
 
@@ -137,31 +137,31 @@ export function pageShortfall(
 }
 
 /**
- * Chooses which absent-voted passages the page has room to be missing.
- *
- * A BUDGET RATHER THAN A PER-PASSAGE TEST. A page is short by a definite
- * amount, and admitting passages whose translations would together exceed it
- * would write in more English than the page is missing. On an entry with a
- * large shortfall and forty candidates that distinction is the difference
- * between restoring a page and rewriting one.
- *
- * TAKEN IN THE ORDER GIVEN, which callers supply in document order. Ordering by
- * some strength of evidence would need a strength this has no way to measure,
- * and document order is at least neutral and reproducible.
- *
- * @param sourceText - whole original page
- *
- * @param targetText - whole translation as it stands
- *
- * @param passages - candidates the roster already voted absent on, in document
- * order
- *
- * @returns Names of the passages the shortfall has room for, in the order given
- *
- * @example
- * ```ts
- * const admitted = admitWithinShortfall({ sourceText, targetText, passages, },);
- * ```
+ Chooses which absent-voted passages the page has room to be missing.
+ 
+ A BUDGET RATHER THAN A PER-PASSAGE TEST. A page is short by a definite
+ amount, and admitting passages whose translations would together exceed it
+ would write in more English than the page is missing. On an entry with a
+ large shortfall and forty candidates that distinction is the difference
+ between restoring a page and rewriting one.
+ 
+ TAKEN IN THE ORDER GIVEN, which callers supply in document order. Ordering by
+ some strength of evidence would need a strength this has no way to measure,
+ and document order is at least neutral and reproducible.
+ 
+ @param sourceText - whole original page
+ 
+ @param targetText - whole translation as it stands
+ 
+ @param passages - candidates the roster already voted absent on, in document
+ order
+ 
+ @returns Names of the passages the shortfall has room for, in the order given
+ 
+ @example
+ ```ts
+ const admitted = admitWithinShortfall({ sourceText, targetText, passages, },);
+ ```
  */
 export function admitWithinShortfall(
   {
@@ -175,7 +175,7 @@ export function admitWithinShortfall(
   },
 ): readonly string[] {
   /**
-   * English the page is missing.
+   English the page is missing.
    */
   const shortfall = pageShortfall({
     sourceText,
@@ -183,11 +183,11 @@ export function admitWithinShortfall(
   },);
 
   /**
-   * Each passage with what admitting it would be expected to add, and the
-   * running total of everything admitted before it.
-   *
-   * Built as a scan rather than a mutated counter so the decision for each
-   * passage is a function of the list rather than of when it was reached.
+   Each passage with what admitting it would be expected to add, and the
+   running total of everything admitted before it.
+   
+   Built as a scan rather than a mutated counter so the decision for each
+   passage is a function of the list rather than of when it was reached.
    */
   const admitted = passages
     .reduce(
@@ -196,7 +196,7 @@ export function admitWithinShortfall(
         passage,
       ): BudgetScan {
         /**
-         * What this passage's translation would occupy.
+         What this passage's translation would occupy.
          */
         const wants = expectedTranslationPoints({ sourceText: passage.sourceText, },);
 

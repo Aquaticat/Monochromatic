@@ -37,68 +37,68 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
 
 
 /**
- * Translates one slice from its original and returns the text that ships.
- *
- * @param client - injected model client
- *
- * @param translatorModelIds - models rendering the slice independently
- *
- * @param judgeModelIds - whole roster selection seats, translators included;
- * a ballot for the judge's own rendering counts for less
- *
- * @param sourceText - original slice text
- *
- * @param incumbentText - translation as it stands, blank where this slice has
- * none
- *
- * @param incumbentKind - whether there is a translation to fall back on,
- * decided by the caller from the target chunk rather than from the text being
- * blank: a content span holding only whitespace is the archive's own wording,
- * and an anchor is a place where a rendering belongs and none exists
- *
- * @param identityContext - declared names from both sides' front matter,
- * omitted when neither declares anything
- *
- * @param neighbouringSourceText - original of the sections either side, shown as
- * CONTEXT the candidates are not expected to render. Absent by default, so a
- * caller that does not ask for it gets the sheet production has always sent.
- * `#107` is why it exists: where the archive carried a passage across a section
- * boundary, a judge shown one slice pair sees invention on one side and omission
- * on the other, and `#84`'s alteration arm went from 12 of 16 to 15 of 16 when
- * the same trial was given exactly this
- *
- * @param neighbouringIncumbentText - archive English of the sections either
- * side, shown so a passage missing here can be recognised next door rather than
- * read as one the archive never had
- *
- * @param syntax - syntax role requiring dedicated production and judging rules
- *
- * @param lineStructured - whether the enclosing CHUNK's original is
- * line-structured, decided by the caller
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Shipped text with how it was decided
- *
- * @throws {@link import('./repair-contract.ts').ProducerRosterError} when the
- * roster could not select anything: repeats on either side, no translator, or
- * judges too few to reach the minimum weight
- *
- * @throws {@link import('./translation-repair-interrupted-error.ts').TranslationRepairInterruptedError}
- * when absent-passage correction repeats exact task or providers remain unavailable
- *
- * @throws {@link BlankSelectionError} when selection chose text that says
- * nothing for a source that says something, in EITHER mode, since that is a
- * deletion rather than an outcome
- *
- * @example
- * ```ts
- * const translated = await runTranslateStage({ ... },);
- * ```
+ Translates one slice from its original and returns the text that ships.
+ 
+ @param client - injected model client
+ 
+ @param translatorModelIds - models rendering the slice independently
+ 
+ @param judgeModelIds - whole roster selection seats, translators included;
+ a ballot for the judge's own rendering counts for less
+ 
+ @param sourceText - original slice text
+ 
+ @param incumbentText - translation as it stands, blank where this slice has
+ none
+ 
+ @param incumbentKind - whether there is a translation to fall back on,
+ decided by the caller from the target chunk rather than from the text being
+ blank: a content span holding only whitespace is the archive's own wording,
+ and an anchor is a place where a rendering belongs and none exists
+ 
+ @param identityContext - declared names from both sides' front matter,
+ omitted when neither declares anything
+ 
+ @param neighbouringSourceText - original of the sections either side, shown as
+ CONTEXT the candidates are not expected to render. Absent by default, so a
+ caller that does not ask for it gets the sheet production has always sent.
+ `#107` is why it exists: where the archive carried a passage across a section
+ boundary, a judge shown one slice pair sees invention on one side and omission
+ on the other, and `#84`'s alteration arm went from 12 of 16 to 15 of 16 when
+ the same trial was given exactly this
+ 
+ @param neighbouringIncumbentText - archive English of the sections either
+ side, shown so a passage missing here can be recognised next door rather than
+ read as one the archive never had
+ 
+ @param syntax - syntax role requiring dedicated production and judging rules
+ 
+ @param lineStructured - whether the enclosing CHUNK's original is
+ line-structured, decided by the caller
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - pipeline logger
+ 
+ @returns Shipped text with how it was decided
+ 
+ @throws {@link import('./repair-contract.ts').ProducerRosterError} when the
+ roster could not select anything: repeats on either side, no translator, or
+ judges too few to reach the minimum weight
+ 
+ @throws {@link import('./translation-repair-interrupted-error.ts').TranslationRepairInterruptedError}
+ when absent-passage correction repeats exact task or providers remain unavailable
+ 
+ @throws {@link BlankSelectionError} when selection chose text that says
+ nothing for a source that says something, in EITHER mode, since that is a
+ deletion rather than an outcome
+ 
+ @example
+ ```ts
+ const translated = await runTranslateStage({ ... },);
+ ```
  */
 export async function runTranslateStage(
   {
@@ -145,7 +145,7 @@ export async function runTranslateStage(
   },);
 
   /**
-   * Whether archive wording itself may remain candidate or fallback.
+   Whether archive wording itself may remain candidate or fallback.
    */
   const incumbentEligible = (incumbentKind === 'present')
     && (validateTranslatedSlice({
@@ -158,7 +158,7 @@ export async function runTranslateStage(
       .kind
       === 'valid');
   /**
-   * Existing fallback kind after deterministic source floor.
+   Existing fallback kind after deterministic source floor.
    */
   const effectiveIncumbentKind: IncumbentKind = incumbentEligible ? 'present' : 'absent';
 

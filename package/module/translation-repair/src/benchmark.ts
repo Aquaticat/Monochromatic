@@ -44,59 +44,59 @@ export type { BenchmarkEntry, } from './prepare-entry.ts';
 // budget cuts is recorded as skipped, never silently dropped.
 
 /**
- * Logger root for the benchmark shell.
+ Logger root for the benchmark shell.
  */
 const l = tagged({ tag: 'translation-repair-benchmark', },);
 
 /**
- * Default per-call deadline.
- * Provider inference speed varies wildly per model and calls can hang
- * midway, so every call carries its own deadline;
- * a stuck model forfeits one attempt instead of stalling the whole run.
+ Default per-call deadline.
+ Provider inference speed varies wildly per model and calls can hang
+ midway, so every call carries its own deadline;
+ a stuck model forfeits one attempt instead of stalling the whole run.
  */
 const DEFAULT_PER_CALL_TIMEOUT_MS = 600_000;
 
 /**
- * Budget floor under which no new exchange dispatches:
- * a sliver of remaining budget cannot fit a useful critic call,
- * so the attempt records as skipped instead of burning quota on a
- * guaranteed forfeit.
+ Budget floor under which no new exchange dispatches:
+ a sliver of remaining budget cannot fit a useful critic call,
+ so the attempt records as skipped instead of burning quota on a
+ guaranteed forfeit.
  */
 export const MIN_DISPATCH_BUDGET_MS = 30_000;
 
 /**
- * Whole benchmark result: raw graded attempts plus the aggregate scorecard.
- *
- * @example
- * ```ts
- * const { attempts, scorecard, } = await runCriticBenchmark({ client, entries, modelIds, signal, },);
- * ```
+ Whole benchmark result: raw graded attempts plus the aggregate scorecard.
+ 
+ @example
+ ```ts
+ const { attempts, scorecard, } = await runCriticBenchmark({ client, entries, modelIds, signal, },);
+ ```
  */
 export type CriticBenchmarkResult = {
   /**
-   * Every graded attempt, model-major then entry order.
+   Every graded attempt, model-major then entry order.
    */
   readonly attempts: readonly CriticAttemptRecord[];
 
   /**
-   * Aggregate scorecard over the attempts.
+   Aggregate scorecard over the attempts.
    */
   readonly scorecard: BenchmarkScorecard;
 };
 
 /**
- * Grades resolved claims against planted regions.
- *
- * @param claims - validated claims from one attempt
- *
- * @param applications - planted regions in seeded-text coordinates
- *
- * @returns Ids of seeds hit by any claim's target-side span
- *
- * @example
- * ```ts
- * const hits = gradeHits({ claims, applications, },);
- * ```
+ Grades resolved claims against planted regions.
+ 
+ @param claims - validated claims from one attempt
+ 
+ @param applications - planted regions in seeded-text coordinates
+ 
+ @returns Ids of seeds hit by any claim's target-side span
+ 
+ @example
+ ```ts
+ const hits = gradeHits({ claims, applications, },);
+ ```
  */
 function gradeHits(
   {
@@ -131,44 +131,44 @@ function gradeHits(
 }
 
 /**
- * Runs the critic benchmark: every model reviews every seeded entry.
- * Models run in parallel;
- * each model works its entry queue sequentially so run-budget admission
- * cuts same tail entries for every model and benchmark rows remain comparable.
- * A transient-shaped failure (truncation or HTTP-failure record) earns one
- * retry with a fresh deadline;
- * the final record keeps the discarded first detail in
- * `retriedFirstAttemptDetail`.
- * With a run budget,
- * attempts the budget cannot fit are recorded as skipped and never
- * dispatched,
- * bounding wall time at roughly the budget plus one call deadline.
- *
- * @param client - injected model client; tests pass recorded transports
- *
- * @param entries - prepared entries with seeds
- *
- * @param modelIds - critic models under evaluation
- *
- * @param signal - abort signal honored by every exchange
- *
- * @param perCallTimeoutMs - deadline the client arms per exchange inside
- * its per-model slot, so local queue wait never counts against it;
- * expiry forfeits that attempt as data while caller aborts still propagate
- *
- * @param runBudgetMs - wall budget for the whole run;
- * once it cannot fit another call, remaining attempts record as skipped,
- * and the scorecard reports the resulting coverage
- *
- * @returns Graded attempts plus the aggregate scorecard
- *
- * @throws {@link import('./seeded-error.ts').SeedApplicationError} when a seed spec is misconfigured
- *
- * @example
- * ```ts
- * const result = await runCriticBenchmark({ client, entries, modelIds, signal, },);
- * console.log(result.scorecard.ensembleRecall,);
- * ```
+ Runs the critic benchmark: every model reviews every seeded entry.
+ Models run in parallel;
+ each model works its entry queue sequentially so run-budget admission
+ cuts same tail entries for every model and benchmark rows remain comparable.
+ A transient-shaped failure (truncation or HTTP-failure record) earns one
+ retry with a fresh deadline;
+ the final record keeps the discarded first detail in
+ `retriedFirstAttemptDetail`.
+ With a run budget,
+ attempts the budget cannot fit are recorded as skipped and never
+ dispatched,
+ bounding wall time at roughly the budget plus one call deadline.
+ 
+ @param client - injected model client; tests pass recorded transports
+ 
+ @param entries - prepared entries with seeds
+ 
+ @param modelIds - critic models under evaluation
+ 
+ @param signal - abort signal honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline the client arms per exchange inside
+ its per-model slot, so local queue wait never counts against it;
+ expiry forfeits that attempt as data while caller aborts still propagate
+ 
+ @param runBudgetMs - wall budget for the whole run;
+ once it cannot fit another call, remaining attempts record as skipped,
+ and the scorecard reports the resulting coverage
+ 
+ @returns Graded attempts plus the aggregate scorecard
+ 
+ @throws {@link import('./seeded-error.ts').SeedApplicationError} when a seed spec is misconfigured
+ 
+ @example
+ ```ts
+ const result = await runCriticBenchmark({ client, entries, modelIds, signal, },);
+ console.log(result.scorecard.ensembleRecall,);
+ ```
  */
 export async function runCriticBenchmark(
   {
@@ -188,7 +188,7 @@ export async function runCriticBenchmark(
   }>,
 ): Promise<CriticBenchmarkResult> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: runCriticBenchmark.name,
@@ -196,19 +196,19 @@ export async function runCriticBenchmark(
   },);
 
   /**
-   * Clock start the run budget counts from.
+   Clock start the run budget counts from.
    */
   const runStartedAt = Date.now();
 
   /**
-   * Reads the run budget still available; unbounded without a budget.
-   *
-   * @returns Milliseconds left before the run must stop dispatching
-   *
-   * @example
-   * ```ts
-   * const remaining = remainingBudgetMs();
-   * ```
+   Reads the run budget still available; unbounded without a budget.
+   
+   @returns Milliseconds left before the run must stop dispatching
+   
+   @example
+   ```ts
+   const remaining = remainingBudgetMs();
+   ```
    */
   function remainingBudgetMs(): number {
     return runBudgetMs === undefined
@@ -217,7 +217,7 @@ export async function runCriticBenchmark(
   }
 
   /**
-   * Entries prepared once, shared by every model's queue.
+   Entries prepared once, shared by every model's queue.
    */
   const prepared = entries.map(function prepareOne(entry,) {
     return prepareBenchmarkEntry({ entry, },);
@@ -228,19 +228,19 @@ export async function runCriticBenchmark(
   );
 
   /**
-   * Runs one model against one prepared entry:
-   * a budget-gated attempt plus at most one budget-gated retry.
-   *
-   * @param modelId - model under attempt
-   *
-   * @param entry - prepared entry under review
-   *
-   * @returns Graded record of the surviving attempt
-   *
-   * @example
-   * ```ts
-   * const record = await attemptModelEntry({ modelId, entry, },);
-   * ```
+   Runs one model against one prepared entry:
+   a budget-gated attempt plus at most one budget-gated retry.
+   
+   @param modelId - model under attempt
+   
+   @param entry - prepared entry under review
+   
+   @returns Graded record of the surviving attempt
+   
+   @example
+   ```ts
+   const record = await attemptModelEntry({ modelId, entry, },);
+   ```
    */
   async function attemptModelEntry(
     {
@@ -252,7 +252,7 @@ export async function runCriticBenchmark(
     },
   ): Promise<CriticAttemptRecord> {
     /**
-     * Entry facets shared by both attempts.
+     Entry facets shared by both attempts.
      */
     const {
       documents,
@@ -261,23 +261,23 @@ export async function runCriticBenchmark(
       plantedSeedIds,
     } = entry;
           /**
-           * Runs one deadline-guarded exchange and grades it;
-           * declared first so the transient retry below reads top-down.
-           * The client arms the deadline inside the per-model slot,
-           * so queue wait never counts and a retry gets the full budget.
-           * Skips without dispatching when the run budget cannot fit
-           * another call.
-           *
-           * @returns Graded record of one exchange
-           *
-           * @example
-           * ```ts
-           * const first = await attemptOnce();
-           * ```
+           Runs one deadline-guarded exchange and grades it;
+           declared first so the transient retry below reads top-down.
+           The client arms the deadline inside the per-model slot,
+           so queue wait never counts and a retry gets the full budget.
+           Skips without dispatching when the run budget cannot fit
+           another call.
+           
+           @returns Graded record of one exchange
+           
+           @example
+           ```ts
+           const first = await attemptOnce();
+           ```
            */
           async function attemptOnce(): Promise<CriticAttemptRecord> {
           /**
-           * Run budget left at dispatch time.
+           Run budget left at dispatch time.
            */
           const remaining = remainingBudgetMs();
           if (remaining < MIN_DISPATCH_BUDGET_MS) {
@@ -298,7 +298,7 @@ export async function runCriticBenchmark(
 
           try {
           /**
-           * Outcome of this model's review.
+           Outcome of this model's review.
            */
           const outcome = await client.chatJson({
             modelId,
@@ -315,12 +315,12 @@ export async function runCriticBenchmark(
           },);
 
           /**
-           * Usage block pulled out for the token spread.
+           Usage block pulled out for the token spread.
            */
           const { usage, } = outcome;
 
           /**
-           * Completion tokens carried onto the record when reported.
+           Completion tokens carried onto the record when reported.
            */
           const tokenSpread = usage === undefined
             ? {}
@@ -354,7 +354,7 @@ export async function runCriticBenchmark(
           }
 
           /**
-           * Resolutions of every wire issue in report order.
+           Resolutions of every wire issue in report order.
            */
           const resolutions = outcome
             .value
@@ -367,7 +367,7 @@ export async function runCriticBenchmark(
             },);
 
           /**
-           * Claims that survived resolution and validation.
+           Claims that survived resolution and validation.
            */
           const claims = resolutions.flatMap(function toClaim(resolution,) {
             return resolution.resolved
@@ -425,7 +425,7 @@ export async function runCriticBenchmark(
         }
 
           /**
-           * First graded attempt.
+           First graded attempt.
            */
           const first = await attemptOnce();
           if (!isRetryableAttempt({ record: first, },))
@@ -441,7 +441,7 @@ export async function runCriticBenchmark(
           );
 
           /**
-           * Second and final attempt; its outcome stands either way.
+           Second and final attempt; its outcome stands either way.
            */
           const second = await attemptOnce();
           // The budget died between the attempts: the dispatched first
@@ -455,14 +455,14 @@ export async function runCriticBenchmark(
   }
 
   /**
-   * Graded attempt groups, one per model, resolved in parallel;
-   * each model's queue runs sequentially in entry order,
-   * so the run budget cuts the same tail entries for every model.
+   Graded attempt groups, one per model, resolved in parallel;
+   each model's queue runs sequentially in entry order,
+   so the run budget cuts the same tail entries for every model.
    */
   const modelGroups = await Promise.all(modelIds.map(
     async function attemptModelQueue(modelId,): Promise<readonly CriticAttemptRecord[]> {
       /**
-       * Records of this model's queue in entry order.
+       Records of this model's queue in entry order.
        */
       const records: CriticAttemptRecord[] = [];
       for (const entry of prepared) {
@@ -477,7 +477,7 @@ export async function runCriticBenchmark(
   ),);
 
   /**
-   * Every graded attempt in model-major then entry order.
+   Every graded attempt in model-major then entry order.
    */
   const attempts = modelGroups.flat();
 

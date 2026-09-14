@@ -33,47 +33,47 @@ import { TRIAL_ARMS, } from './window-trial-report.ts';
 // of the same slate. That second narrow arm is the only thing that supplies it.
 
 /**
- * Runs the arms one slice still owes, appending each as it completes.
- *
- * SKIPS THE WHOLE SLICE when the ledger already holds all three arms, without
- * producing a slate. Producing is the expensive half, and a resumed run that
- * bought a slate only to throw it away would pay most of the cost of the work it
- * is skipping.
- *
- * @param client - injected model client
- *
- * @param slices - every prepared slice of this entry, for the window
- *
- * @param sliceIndex - position of the slice under trial
- *
- * @param sliceClass - class the screen flagged, or the control label
- *
- * @param entryId - entry the slice belongs to
- *
- * @param protocol - digest this run buys under
- *
- * @param ledgerPath - where completed arms are appended
- *
- * @param done - arms already bought, as keys
- *
- * @param models - translator and judge rosters
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - run logger
- *
- * @returns Rows this call appended, empty when the slice was already complete
- *
- * @throws Whatever the stage throws; a slice that cannot be judged is a defect
- * rather than a datum, and recording it as a keep would report a failed arm as
- * the judges preserving the archive
- *
- * @example
- * ```ts
- * const rows = await runSliceArms({ client, slices, sliceIndex, ... },);
- * ```
+ Runs the arms one slice still owes, appending each as it completes.
+ 
+ SKIPS THE WHOLE SLICE when the ledger already holds all three arms, without
+ producing a slate. Producing is the expensive half, and a resumed run that
+ bought a slate only to throw it away would pay most of the cost of the work it
+ is skipping.
+ 
+ @param client - injected model client
+ 
+ @param slices - every prepared slice of this entry, for the window
+ 
+ @param sliceIndex - position of the slice under trial
+ 
+ @param sliceClass - class the screen flagged, or the control label
+ 
+ @param entryId - entry the slice belongs to
+ 
+ @param protocol - digest this run buys under
+ 
+ @param ledgerPath - where completed arms are appended
+ 
+ @param done - arms already bought, as keys
+ 
+ @param models - translator and judge rosters
+ 
+ @param signal - caller abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - run logger
+ 
+ @returns Rows this call appended, empty when the slice was already complete
+ 
+ @throws Whatever the stage throws; a slice that cannot be judged is a defect
+ rather than a datum, and recording it as a keep would report a failed arm as
+ the judges preserving the archive
+ 
+ @example
+ ```ts
+ const rows = await runSliceArms({ client, slices, sliceIndex, ... },);
+ ```
  */
 export async function runSliceArms(
   {
@@ -108,8 +108,8 @@ export async function runSliceArms(
   }>,
 ): Promise<readonly WindowTrialRow[]> {
   /**
-   * Order this slice buys its arms in, assigned from its own identity so the
-   * wide arm is not always the last call.
+   Order this slice buys its arms in, assigned from its own identity so the
+   wide arm is not always the last call.
    */
   const order = armOrderFor({
     protocol,
@@ -118,7 +118,7 @@ export async function runSliceArms(
   },);
 
   /**
-   * Arms this slice still owes, in buying order.
+   Arms this slice still owes, in buying order.
    */
   const owed = order.filter(function notBought(arm,): boolean {
     // THROUGH `trialKey`, never hand-joined. The two builders disagreed once,
@@ -153,7 +153,7 @@ export async function runSliceArms(
   }
 
   /**
-   * Slice under trial.
+   Slice under trial.
    */
   const slice = slices[sliceIndex];
   if (slice === undefined)
@@ -163,10 +163,10 @@ export async function runSliceArms(
     );
 
   /**
-   * Neighbouring original, which only the wide arm is shown.
-   *
-   * Computed BEFORE any call, so a slice whose window turns out empty is
-   * refused here rather than after two thirds of its quota is spent.
+   Neighbouring original, which only the wide arm is shown.
+   
+   Computed BEFORE any call, so a slice whose window turns out empty is
+   refused here rather than after two thirds of its quota is spent.
    */
   const neighbouringSourceText = neighbouringSource({
     slices,
@@ -184,24 +184,24 @@ export async function runSliceArms(
     );
 
   /**
-   * Whether this bed treats its slices as governed by the verse rule.
-   *
-   * IT DOES NOT, and the value is named rather than written twice so the
-   * producer and the judges provably agree. This trial varies ONE thing, the
-   * width of the window, and every other input has to be identical across the
-   * arms and between the halves. A slate built under the verse rule and judged
-   * without it would vary two things and the difference would be credited to
-   * the window.
-   *
-   * NOT DERIVED FROM THE SLICE, deliberately. Production decides this per
-   * enclosing CHUNK, from a set this bed does not carry, so deriving it here
-   * from the slice text alone would answer a different question than
-   * production asks and the bed would stop measuring production.
+   Whether this bed treats its slices as governed by the verse rule.
+   
+   IT DOES NOT, and the value is named rather than written twice so the
+   producer and the judges provably agree. This trial varies ONE thing, the
+   width of the window, and every other input has to be identical across the
+   arms and between the halves. A slate built under the verse rule and judged
+   without it would vary two things and the difference would be credited to
+   the window.
+   
+   NOT DERIVED FROM THE SLICE, deliberately. Production decides this per
+   enclosing CHUNK, from a set this bed does not carry, so deriving it here
+   from the slice text alone would answer a different question than
+   production asks and the bed would stop measuring production.
    */
   const TRIAL_TREATS_ITS_SLICES_AS_PROSE = false;
 
   /**
-   * Slate every arm judges, bought once.
+   Slate every arm judges, bought once.
    */
   const produced = await produceTranslateSlate({
     incumbentKind: isInsertionChunk(slice.target,) ? 'absent' : 'present',
@@ -218,12 +218,12 @@ export async function runSliceArms(
   },);
 
   /**
-   * Rows this call appended.
+   Rows this call appended.
    */
   const appended: WindowTrialRow[] = [];
   for (const [position, arm,] of order.entries()) {
     /**
-     * What the judges made of the same slate under this arm's evidence.
+     What the judges made of the same slate under this arm's evidence.
      */
     /* oxlint-disable-next-line no-await-in-loop -- arms are bought one at a time on purpose, so a kill loses one arm rather than three */
     const decided = await judgeTranslateSlate({
@@ -243,7 +243,7 @@ export async function runSliceArms(
     },);
 
     /**
-     * Row recording it.
+     Row recording it.
      */
     const row: WindowTrialRow = {
       protocol,

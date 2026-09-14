@@ -1,16 +1,16 @@
 /**
- * Tests for the gate deciding whether the rendering this run wrote replaces the
- * one that would otherwise ship.
- *
- * WHAT THIS FILE EXISTS TO STOP. A consolidation is a third candidate from the
- * same kind of instrument that produced the first two, so it can be worse. It
- * replaces nothing on a tie, on a refusal, or on a roster too thin to settle.
- * Changing what a reader sees on a memorial page needs more evidence than
- * leaving it, and the churn reason is already recorded in the translate wire.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the gate deciding whether the rendering this run wrote replaces the
+ one that would otherwise ship.
+ 
+ WHAT THIS FILE EXISTS TO STOP. A consolidation is a third candidate from the
+ same kind of instrument that produced the first two, so it can be worse. It
+ replaces nothing on a tie, on a refusal, or on a roster too thin to settle.
+ Changing what a reader sees on a memorial page needs more evidence than
+ leaving it, and the churn reason is already recorded in the translate wire.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -26,7 +26,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One gated slice, standing in for a corpus passage.
+ One gated slice, standing in for a corpus passage.
  */
 const SUBJECT = {
   sourceText: '猫睡了一下午。',
@@ -36,7 +36,7 @@ const SUBJECT = {
 };
 
 /**
- * Roster of three, the smallest that can produce a two-to-one split.
+ Roster of three, the smallest that can produce a two-to-one split.
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
@@ -45,26 +45,26 @@ const ROSTER = [
 ] as const;
 
 /**
- * Logger for the stage under test.
+ Logger for the stage under test.
  */
 const l = tagged({ tag: 'consolidate-gate-stage-test', },);
 
 /**
- * Per-call bound, generous because the transport answers instantly.
+ Per-call bound, generous because the transport answers instantly.
  */
 const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
- * Builds one ballot body.
- *
- * @param choice - rendering this judge names
- *
- * @returns Reply body a judge would return
- *
- * @example
- * ```ts
- * const body = ballot({ choice: 'consolidated', },);
- * ```
+ Builds one ballot body.
+ 
+ @param choice - rendering this judge names
+ 
+ @returns Reply body a judge would return
+ 
+ @example
+ ```ts
+ const body = ballot({ choice: 'consolidated', },);
+ ```
  */
 function ballot({ choice, }: { readonly choice: string; },): string {
   return JSON.stringify({
@@ -76,35 +76,35 @@ function ballot({ choice, }: { readonly choice: string; },): string {
 }
 
 /**
- * Builds a client whose models reply in roster order.
- *
- * @param replyByModel - reply body per model
- *
- * @returns Client over a canned transport
- *
- * @example
- * ```ts
- * const client = cannedClient({ replyByModel: [ ballot({ choice: 'standing', },), ], },);
- * ```
+ Builds a client whose models reply in roster order.
+ 
+ @param replyByModel - reply body per model
+ 
+ @returns Client over a canned transport
+ 
+ @example
+ ```ts
+ const client = cannedClient({ replyByModel: [ ballot({ choice: 'standing', },), ], },);
+ ```
  */
 function cannedClient(
   { replyByModel, }: { readonly replyByModel: readonly string[]; },
 ) {
   /**
-   * Calls served so far, so each model gets its own reply.
+   Calls served so far, so each model gets its own reply.
    */
   const served: string[] = [];
   return createSyntheticClient({
     apiKey: 'test-key',
     transport: async function cannedTransport(exchange,) {
       /**
-       * Which reply this call receives.
+       Which reply this call receives.
        */
       const at = served.length;
       served.push(exchange.label,);
 
       /**
-       * This model's reply text.
+       This model's reply text.
        */
       const content = replyByModel[at] ?? replyByModel[0] ?? '';
       return {
@@ -125,16 +125,16 @@ function cannedClient(
 }
 
 /**
- * Runs one gate over a canned roster.
- *
- * @param replyByModel - reply body per model
- *
- * @returns What the roster settled and what ships
- *
- * @example
- * ```ts
- * const outcome = await gate({ replyByModel: [], },);
- * ```
+ Runs one gate over a canned roster.
+ 
+ @param replyByModel - reply body per model
+ 
+ @returns What the roster settled and what ships
+ 
+ @example
+ ```ts
+ const outcome = await gate({ replyByModel: [], },);
+ ```
  */
 async function gate(
   { replyByModel, }: { readonly replyByModel: readonly string[]; },

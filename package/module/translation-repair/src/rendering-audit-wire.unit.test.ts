@@ -1,15 +1,15 @@
 /**
- * Tests for what shape the rendering audit accepts off the network.
- *
- * SHAPE IS THE ONLY QUESTION HERE. A reply carrying words this version does not
- * know is a voice that ANSWERED, and refusing it at the wire would file it as a
- * lost voice instead, which is how a vocabulary problem disappears into the
- * degradation rate. Whether the words are known, and whether the quotes prove
- * anything, belongs to the screen.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for what shape the rendering audit accepts off the network.
+ 
+ SHAPE IS THE ONLY QUESTION HERE. A reply carrying words this version does not
+ know is a voice that ANSWERED, and refusing it at the wire would file it as a
+ lost voice instead, which is how a vocabulary problem disappears into the
+ degradation rate. Whether the words are known, and whether the quotes prove
+ anything, belongs to the screen.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -25,7 +25,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Well-shaped reply, which the shape cases break one field at a time.
+ Well-shaped reply, which the shape cases break one field at a time.
  */
 const SOUND_REPLY = {
   verdict: 'defects-found',
@@ -122,7 +122,7 @@ await describe({
       fn: async () => {
         for (const field of FINDING_FIELDS) {
           /**
-           * Sound finding with exactly one field taken out.
+           Sound finding with exactly one field taken out.
            */
           const partial = Object.fromEntries(
             Object.entries(SOUND_REPLY.findings[0] ?? {},)

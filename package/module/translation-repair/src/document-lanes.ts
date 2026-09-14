@@ -54,96 +54,96 @@ import { translateDocument, } from './translate-document.ts';
 // It costs both lanes. A caller that wants one lane calls that lane.
 
 /**
- * What running both lanes over one preparation produced.
- *
- * Deliberately has no winner, no preferred lane and no merged text. Adding one
- * would answer Question 5 in code, and it would answer it invisibly: every
- * later count would inherit the choice without anything recording that a choice
- * had been made.
- *
- * @example
- * ```ts
- * const lanes: DocumentLanesResult = await runDocumentLanes({ ... },);
- * ```
+ What running both lanes over one preparation produced.
+ 
+ Deliberately has no winner, no preferred lane and no merged text. Adding one
+ would answer Question 5 in code, and it would answer it invisibly: every
+ later count would inherit the choice without anything recording that a choice
+ had been made.
+ 
+ @example
+ ```ts
+ const lanes: DocumentLanesResult = await runDocumentLanes({ ... },);
+ ```
  */
 export type DocumentLanesResult = {
   /**
-   * Alignment findings from the shared preparation, reported once.
-   *
-   * They belong to the preparation rather than to either lane, and both lanes
-   * ran over the same one, so counting them per lane would count one defect in
-   * the archive twice. The repair result repeats them inside its own findings,
-   * which is that lane's existing contract and is left alone here.
+   Alignment findings from the shared preparation, reported once.
+   
+   They belong to the preparation rather than to either lane, and both lanes
+   ran over the same one, so counting them per lane would count one defect in
+   the archive twice. The repair result repeats them inside its own findings,
+   which is that lane's existing contract and is left alone here.
    */
   readonly alignmentFindings: readonly string[];
 
   /**
-   * What the repair lane returned, exactly as it returned it.
+   What the repair lane returned, exactly as it returned it.
    */
   readonly repair: RepairTranslationResult;
 
   /**
-   * What the translate lane returned, exactly as it returned it.
+   What the translate lane returned, exactly as it returned it.
    */
   readonly translate: TranslateDocumentResult;
 
   /**
-   * Every prepared slice as the repair lane delivered it.
-   *
-   * DERIVED, not decided: one row per slice saying what was translated, what
-   * the archive had, what the lane chose and what its document carries. Adding
-   * it answers no question about which lane wins, since each ledger describes
-   * its own lane's document and neither mentions the other.
-   *
-   * CARRIES THE SLICING IT WAS BUILT OVER, stamped here rather than by whoever
-   * reads it later. This driver is the only place that holds the preparation
-   * and the rows at once; a name applied downstream is the applier's claim
-   * about the rows, and a consumer that stamps both ledgers itself makes every
-   * later identity check agree with itself by construction.
+   Every prepared slice as the repair lane delivered it.
+   
+   DERIVED, not decided: one row per slice saying what was translated, what
+   the archive had, what the lane chose and what its document carries. Adding
+   it answers no question about which lane wins, since each ledger describes
+   its own lane's document and neither mentions the other.
+   
+   CARRIES THE SLICING IT WAS BUILT OVER, stamped here rather than by whoever
+   reads it later. This driver is the only place that holds the preparation
+   and the rows at once; a name applied downstream is the applier's claim
+   about the rows, and a consumer that stamps both ledgers itself makes every
+   later identity check agree with itself by construction.
    */
   readonly repairDelivery: IdentifiedDeliveryLedger;
 
   /**
-   * Every prepared slice as the translate lane delivered it.
+   Every prepared slice as the translate lane delivered it.
    */
   readonly translateDelivery: IdentifiedDeliveryLedger;
 };
 
 /**
- * Builds one lane's ledger and checks it against that lane's own document.
- *
- * CHECKED HERE rather than trusted, because the ledger joins what the lane
- * DECIDED to what its index sets say the document CARRIES, and those are two
- * derivations. They agree by construction today; a driver holding the document
- * is the first place able to say so rather than assume it.
- *
- * @param slices - preparation both lanes ran over
- *
- * @param incumbentText - archive's own translation, which both lanes wrote into
- *
- * @param documentText - text this lane returned
- *
- * @param wordings - what this lane decided per slice
- *
- * @param changedSliceIndices - slices this lane's document carries a change for
- *
- * @param withdrawnSliceIndices - slices whose change assembly took back
- *
- * @param trimmedReplacements - shipped slices whose text the assembly guard
- * trimmed, with the text the document carries
- *
- * @param blocked - whether this lane refused the whole document before assembly
- *
- * @returns One row per prepared slice, in document order
- *
- * @throws {@link SliceDeliveryError} when the lane's own reports cannot
- * describe one delivery, and {@link DeliveryInvariantError} when the rows do
- * not describe the returned document
- *
- * @example
- * ```ts
- * const ledger = laneDelivery({ slices, incumbentText, documentText, wordings, ... },);
- * ```
+ Builds one lane's ledger and checks it against that lane's own document.
+ 
+ CHECKED HERE rather than trusted, because the ledger joins what the lane
+ DECIDED to what its index sets say the document CARRIES, and those are two
+ derivations. They agree by construction today; a driver holding the document
+ is the first place able to say so rather than assume it.
+ 
+ @param slices - preparation both lanes ran over
+ 
+ @param incumbentText - archive's own translation, which both lanes wrote into
+ 
+ @param documentText - text this lane returned
+ 
+ @param wordings - what this lane decided per slice
+ 
+ @param changedSliceIndices - slices this lane's document carries a change for
+ 
+ @param withdrawnSliceIndices - slices whose change assembly took back
+ 
+ @param trimmedReplacements - shipped slices whose text the assembly guard
+ trimmed, with the text the document carries
+ 
+ @param blocked - whether this lane refused the whole document before assembly
+ 
+ @returns One row per prepared slice, in document order
+ 
+ @throws {@link SliceDeliveryError} when the lane's own reports cannot
+ describe one delivery, and {@link DeliveryInvariantError} when the rows do
+ not describe the returned document
+ 
+ @example
+ ```ts
+ const ledger = laneDelivery({ slices, incumbentText, documentText, wordings, ... },);
+ ```
  */
 function laneDelivery(
   {
@@ -167,7 +167,7 @@ function laneDelivery(
   },
 ): readonly SliceDeliveryRecord[] {
   /**
-   * Rows joining this lane's three reports, one per prepared slice.
+   Rows joining this lane's three reports, one per prepared slice.
    */
   const ledger = buildSliceDelivery({
     slices,
@@ -188,78 +188,78 @@ function laneDelivery(
 }
 
 /**
- * Runs both lanes over one prepared pair and returns both outputs.
- *
- * Sequential rather than concurrent, and repair first. Concurrency would put
- * two fanned-out stages over the same provider capacity, which buys nothing:
- * the quota spent is identical and both lanes already serialize their own
- * slices for that reason. Repair runs first because its naturalness lane
- * settles AFTER the slice loop and nothing persists what it produced, while the
- * translate lane caches every slice as it finishes. Under a deadline that cuts
- * the entry, running the uncheckpointed phase first is the order that loses
- * less of what was bought.
- *
- * No abort check sits between the lanes on purpose. Both drivers let a fully
- * cached lane finish after an abort, because resuming cached slices buys
- * nothing, and a gate here would refuse that.
- *
- * @param client - injected model client, shared by both lanes
- *
- * @param prepared - one preparation both lanes read
- *
- * @param repairModels - roster for the repair lane
- *
- * @param translateModels - roster for the translate lane
- *
- * @param reseatTranslate - re-reads the translate lane's roster when the lane
- * is about to start, since the repair lane has spent minutes by then and a
- * provider may have been held out meanwhile (the thirteenth class); the
- * roster given is used when absent
- *
- * @param beforeSlice - awaited before each slice of either lane starts, told
- * which lane, so a caller can hold the slice back while a named provider hold
- * keeps that lane's bench from quorum (the thirteenth class's second face)
- *
- *
- * @param adjudicationConfig - tally thresholds and weights for the repair lane
- *
- * @param signal - entry abort both lanes honor
- *
- * @param perCallTimeoutMs - deadline per exchange, passed to both lanes rather
- * than left to each lane's default, which differ
- *
- * @param overlap - most slices either lane keeps in flight; lanes remain
- * sequential relative to each other
- *
- * @param repairSliceCache - repair lane's cache, in its own namespace
- *
- * @param refineSliceCache - naturalness lane's cache, in its own namespace; it
- * runs after the repair lane has persisted, so it cannot share that one
- *
- * @param translateSliceCache - translate lane's cache, in its own namespace
- *
- * @param translateInsertionAdmission - production evidence deciding which
- * source-only slices translation may fill
- *
- * @param l - logger both lanes tag under, so one entry reads as one run
- *
- * @returns Both lane results and the preparation's alignment findings
- *
- * @throws Whatever either lane throws, the caller's abort reason included; a
- * failure in the first lane means the second never runs
- *
- * @example
- * ```ts
- * const lanes = await runDocumentLanes({
- *   client,
- *   prepared,
- *   repairModels,
- *   translateModels,
- *   signal,
- *   perCallTimeoutMs,
- *   l,
- * },);
- * ```
+ Runs both lanes over one prepared pair and returns both outputs.
+ 
+ Sequential rather than concurrent, and repair first. Concurrency would put
+ two fanned-out stages over the same provider capacity, which buys nothing:
+ the quota spent is identical and both lanes already serialize their own
+ slices for that reason. Repair runs first because its naturalness lane
+ settles AFTER the slice loop and nothing persists what it produced, while the
+ translate lane caches every slice as it finishes. Under a deadline that cuts
+ the entry, running the uncheckpointed phase first is the order that loses
+ less of what was bought.
+ 
+ No abort check sits between the lanes on purpose. Both drivers let a fully
+ cached lane finish after an abort, because resuming cached slices buys
+ nothing, and a gate here would refuse that.
+ 
+ @param client - injected model client, shared by both lanes
+ 
+ @param prepared - one preparation both lanes read
+ 
+ @param repairModels - roster for the repair lane
+ 
+ @param translateModels - roster for the translate lane
+ 
+ @param reseatTranslate - re-reads the translate lane's roster when the lane
+ is about to start, since the repair lane has spent minutes by then and a
+ provider may have been held out meanwhile (the thirteenth class); the
+ roster given is used when absent
+ 
+ @param beforeSlice - awaited before each slice of either lane starts, told
+ which lane, so a caller can hold the slice back while a named provider hold
+ keeps that lane's bench from quorum (the thirteenth class's second face)
+ 
+ 
+ @param adjudicationConfig - tally thresholds and weights for the repair lane
+ 
+ @param signal - entry abort both lanes honor
+ 
+ @param perCallTimeoutMs - deadline per exchange, passed to both lanes rather
+ than left to each lane's default, which differ
+ 
+ @param overlap - most slices either lane keeps in flight; lanes remain
+ sequential relative to each other
+ 
+ @param repairSliceCache - repair lane's cache, in its own namespace
+ 
+ @param refineSliceCache - naturalness lane's cache, in its own namespace; it
+ runs after the repair lane has persisted, so it cannot share that one
+ 
+ @param translateSliceCache - translate lane's cache, in its own namespace
+ 
+ @param translateInsertionAdmission - production evidence deciding which
+ source-only slices translation may fill
+ 
+ @param l - logger both lanes tag under, so one entry reads as one run
+ 
+ @returns Both lane results and the preparation's alignment findings
+ 
+ @throws Whatever either lane throws, the caller's abort reason included; a
+ failure in the first lane means the second never runs
+ 
+ @example
+ ```ts
+ const lanes = await runDocumentLanes({
+   client,
+   prepared,
+   repairModels,
+   translateModels,
+   signal,
+   perCallTimeoutMs,
+   l,
+ },);
+ ```
  */
 export async function runDocumentLanes(
   {
@@ -289,13 +289,13 @@ export async function runDocumentLanes(
     readonly adjudicationConfig?: AdjudicationConfig;
 
     /**
-     * What each of this document's pictures was read as, gathered before either
-     * lane starts.
-     *
-     * THE TRANSLATE LANE ONLY, today. The repair lane edits the archive in
-     * place against critic claims, and none of its stages asks what a picture
-     * says; the translate lane writes each slice fresh from the source, which is
-     * where a passage transcribing a picture has no source without this.
+     What each of this document's pictures was read as, gathered before either
+     lane starts.
+     
+     THE TRANSLATE LANE ONLY, today. The repair lane edits the archive in
+     place against critic claims, and none of its stages asks what a picture
+     says; the translate lane writes each slice fresh from the source, which is
+     where a passage transcribing a picture has no source without this.
      */
     readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
     readonly signal: AbortSignal;
@@ -335,7 +335,7 @@ export async function runDocumentLanes(
   },);
 
   /**
-   * Logger tagged with this driver, which both lanes then tag under.
+   Logger tagged with this driver, which both lanes then tag under.
    */
   const dl = tagged({
     tag: runDocumentLanes.name,
@@ -347,8 +347,8 @@ export async function runDocumentLanes(
   );
 
   /**
-   * Repair lane's answer: the archive's English, mended where critics found
-   * defects.
+   Repair lane's answer: the archive's English, mended where critics found
+   defects.
    */
   const repair = await repairPreparedDocument({
     client,
@@ -377,14 +377,14 @@ export async function runDocumentLanes(
   },);
 
   /**
-   * Translate lane's roster as of now: re-read when the caller can, since the
-   * repair lane has just spent minutes and a provider held out meanwhile
-   * would refuse every writer it serves in the same millisecond.
+   Translate lane's roster as of now: re-read when the caller can, since the
+   repair lane has just spent minutes and a provider held out meanwhile
+   would refuse every writer it serves in the same millisecond.
    */
   const translateSeats = (reseatTranslate === undefined) ? translateModels : await reseatTranslate();
   if (reseatTranslate !== undefined) {
     /**
-     * Writers the re-seating kept, for the line.
+     Writers the re-seating kept, for the line.
      */
     const writers = translateSeats.translatorModelIds
       .join(', ',);
@@ -392,8 +392,8 @@ export async function runDocumentLanes(
   }
 
   /**
-   * Translate lane's answer: every slice rendered afresh, with the archive's
-   * own English standing as one candidate.
+   Translate lane's answer: every slice rendered afresh, with the archive's
+   own English standing as one candidate.
    */
   const translate = await translateDocument({
     client,
@@ -428,13 +428,13 @@ export async function runDocumentLanes(
   );
 
   /**
-   * Name the slicing both lanes ran over gives itself, computed once and
-   * stamped onto both ledgers.
-   *
-   * ONE COMPUTATION FOR TWO LEDGERS is exactly right here and would be wrong
-   * anywhere else: both were built from `prepared` in this function, so one
-   * name is a fact rather than an assumption. A later consumer holding two
-   * ledgers cannot say that, which is why the name travels with them.
+   Name the slicing both lanes ran over gives itself, computed once and
+   stamped onto both ledgers.
+   
+   ONE COMPUTATION FOR TWO LEDGERS is exactly right here and would be wrong
+   anywhere else: both were built from `prepared` in this function, so one
+   name is a fact rather than an assumption. A later consumer holding two
+   ledgers cannot say that, which is why the name travels with them.
    */
   const slicing = preparationIdentity({ prepared, },);
 

@@ -1,10 +1,10 @@
 /**
- * Tests for provider protocol parsing of completion bodies:
- * every contract violation throws with its own detail, refusals with
- * null content pass as valid replies, and mistyped usage is dropped
- * rather than trusted.
- *
- * @module
+ Tests for provider protocol parsing of completion bodies:
+ every contract violation throws with its own detail, refusals with
+ null content pass as valid replies, and mistyped usage is dropped
+ rather than trusted.
+ 
+ @module
  */
 
 import {
@@ -20,13 +20,13 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Character count of the body excerpt embedded in thrown HTTP errors,
- * mirrored from the implementation bound under test.
+ Character count of the body excerpt embedded in thrown HTTP errors,
+ mirrored from the implementation bound under test.
  */
 const BODY_EXCERPT_LIMIT = 600;
 
 /**
- * Runs one extraction expected to throw, returning the caught error.
+ Runs one extraction expected to throw, returning the caught error.
  */
 function caughtFrom({ bodyText, }: { readonly bodyText: string; },): unknown {
   try {
@@ -39,7 +39,7 @@ function caughtFrom({ bodyText, }: { readonly bodyText: string; },): unknown {
 }
 
 /**
- * Contract-violating bodies paired with the detail each must throw.
+ Contract-violating bodies paired with the detail each must throw.
  */
 const VIOLATION_CASES = [
   ['{"cat":', 'body is not valid JSON',],

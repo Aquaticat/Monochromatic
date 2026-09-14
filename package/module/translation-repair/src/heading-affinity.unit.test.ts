@@ -1,17 +1,17 @@
 /**
- * Tests for the heading affinity that drives section alignment.
- *
- * These moved here from `align-sections-order.unit.test.ts` when that
- * prototype was deleted. The functions under test are LIVE, reached through
- * `align-headings-grid.ts` and so through the shipped forced aligner; only the
- * prototype that shared their old test file was superseded. Leaving them in a
- * file named for deleted code is how live coverage gets thrown away with dead
- * code one day.
- *
- * Fixtures mirror the corpus shape that motivated the aligner; names are the
- * real ones, since the whole point is that handles survive translation.
- *
- * @module
+ Tests for the heading affinity that drives section alignment.
+ 
+ These moved here from `align-sections-order.unit.test.ts` when that
+ prototype was deleted. The functions under test are LIVE, reached through
+ `align-headings-grid.ts` and so through the shipped forced aligner; only the
+ prototype that shared their old test file was superseded. Leaving them in a
+ file named for deleted code is how live coverage gets thrown away with dead
+ code one day.
+ 
+ Fixtures mirror the corpus shape that motivated the aligner; names are the
+ real ones, since the whole point is that handles survive translation.
+ 
+ @module
  */
 
 import {

@@ -1,21 +1,21 @@
 /**
- * Tests for pipeline-generation partitioning of settled artifacts.
- *
- * The failure these exist for is not hypothetical. On 2026-08-13 the
- * accumulation directory held 21 settled entries across three recorded tips,
- * and every one of the three lacked both behaviour fixes that had landed that
- * evening, so the pool of entries settled under the current pipeline was zero
- * while the directory looked full. Six readers globbed that directory and none
- * of them read the `tip` the artifacts already carried.
- *
- * A generation is now the BUILT PIPELINE, recorded as `pipelineDigest`, because
- * the commit answered the question wrongly in both directions: it moves for a
- * documentation commit that changes nothing that runs, and stays put across an
- * uncommitted edit that changes everything.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for pipeline-generation partitioning of settled artifacts.
+ 
+ The failure these exist for is not hypothetical. On 2026-08-13 the
+ accumulation directory held 21 settled entries across three recorded tips,
+ and every one of the three lacked both behaviour fixes that had landed that
+ evening, so the pool of entries settled under the current pipeline was zero
+ while the directory looked full. Six readers globbed that directory and none
+ of them read the `tip` the artifacts already carried.
+ 
+ A generation is now the BUILT PIPELINE, recorded as `pipelineDigest`, because
+ the commit answered the question wrongly in both directions: it moves for a
+ documentation commit that changes nothing that runs, and stays put across an
+ uncommitted edit that changes everything.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -42,42 +42,42 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * One built pipeline, as a digest-shaped invention.
+ One built pipeline, as a digest-shaped invention.
  */
 const DIGEST_A = `sha256-tree-v1:${'a'.repeat(64,)}`;
 
 /**
- * A second built pipeline, differing from {@link DIGEST_A} everywhere.
+ A second built pipeline, differing from {@link DIGEST_A} everywhere.
  */
 const DIGEST_B = `sha256-tree-v1:${'b'.repeat(64,)}`;
 
 /**
- * One repo commit, as an object-id-shaped invention.
+ One repo commit, as an object-id-shaped invention.
  */
 const TIP_A = '1'.repeat(40,);
 
 /**
- * A second repo commit, for the case where one pipeline carries two of them.
+ A second repo commit, for the case where one pipeline carries two of them.
  */
 const TIP_B = '2'.repeat(40,);
 
 /**
- * The two commits of this repository ancestry can be asked about safely.
- *
- * Real commits, because `tipContains` asks git and an invented sha is an
- * UNRESOLVABLE commit rather than an excluded one. The root cannot contain
- * HEAD, so requiring HEAD excludes anything settled at the root.
- *
- * @returns Root commit first, HEAD second
- *
- * @example
- * ```ts
- * const [root, head,] = await gitBounds();
- * ```
+ The two commits of this repository ancestry can be asked about safely.
+ 
+ Real commits, because `tipContains` asks git and an invented sha is an
+ UNRESOLVABLE commit rather than an excluded one. The root cannot contain
+ HEAD, so requiring HEAD excludes anything settled at the root.
+ 
+ @returns Root commit first, HEAD second
+ 
+ @example
+ ```ts
+ const [root, head,] = await gitBounds();
+ ```
  */
 async function gitBounds(): Promise<readonly [string, string,]> {
   /**
-   * First commit of this history, which contains nothing but itself.
+   First commit of this history, which contains nothing but itself.
    */
   const root = (await spawn(
     '/usr/bin/git',
@@ -93,7 +93,7 @@ async function gitBounds(): Promise<readonly [string, string,]> {
     .split('\n',)[0] ?? '';
 
   /**
-   * Current commit, which contains the root.
+   Current commit, which contains the root.
    */
   const head = (await spawn(
     '/usr/bin/git',
@@ -113,21 +113,21 @@ async function gitBounds(): Promise<readonly [string, string,]> {
 }
 
 /**
- * Writes a throwaway artifacts directory.
- *
- * Written to a fresh temporary directory every time rather than to the real
- * runs directory, which holds hours of ungraded work.
- *
- * @param entries - one record per artifact; omitting `tip` writes an artifact
- * carrying no provenance at all, and omitting `digest` writes one from before
- * artifacts recorded which build produced them
- *
- * @returns Path of the artifacts directory
- *
- * @example
- * ```ts
- * const dir = await writeArtifacts({ entries: [{ entryId: 'Mittens', tip: TIP_A, digest: DIGEST_A, },], },);
- * ```
+ Writes a throwaway artifacts directory.
+ 
+ Written to a fresh temporary directory every time rather than to the real
+ runs directory, which holds hours of ungraded work.
+ 
+ @param entries - one record per artifact; omitting `tip` writes an artifact
+ carrying no provenance at all, and omitting `digest` writes one from before
+ artifacts recorded which build produced them
+ 
+ @returns Path of the artifacts directory
+ 
+ @example
+ ```ts
+ const dir = await writeArtifacts({ entries: [{ entryId: 'Mittens', tip: TIP_A, digest: DIGEST_A, },], },);
+ ```
  */
 async function writeArtifacts(
   { entries, }: {
@@ -139,7 +139,7 @@ async function writeArtifacts(
   },
 ): Promise<string> {
   /**
-   * Disposable root for this case.
+   Disposable root for this case.
    */
   const dir = await mkdtemp(join(
     tmpdir(),
@@ -149,7 +149,7 @@ async function writeArtifacts(
   await Promise.all(
     entries.map(async function writeOne(entry,) {
       /**
-       * Artifact body, carrying each identity only when one was given.
+       Artifact body, carrying each identity only when one was given.
        */
       const body = {
         id: entry.entryId,
@@ -424,7 +424,7 @@ await describe({
         },);
 
         /**
-         * What selectEligible refused with, read for class as well as wording.
+         What selectEligible refused with, read for class as well as wording.
          */
         const refusalOfSelectEligible = selectEligible({
           census: await censusByGeneration({ artifactsDir: dir, },),
@@ -473,7 +473,7 @@ await describe({
         },);
 
         /**
-         * What selectEligible refused with, read for class as well as wording.
+         What selectEligible refused with, read for class as well as wording.
          */
         const refusalOfSelectEligible = selectEligible({
           census: await censusByGeneration({ artifactsDir: dir, },),
@@ -649,7 +649,7 @@ await describe({
         },);
 
         /**
-         * What selectEligible refused with, read for class as well as wording.
+         What selectEligible refused with, read for class as well as wording.
          */
         const refusalOfSelectEligible = selectEligible({
           census: await censusByGeneration({ artifactsDir: dir, },),
@@ -668,7 +668,7 @@ await describe({
         const dir = await writeArtifacts({ entries: [], },);
 
         /**
-         * What selectEligible refused with, read for class as well as wording.
+         What selectEligible refused with, read for class as well as wording.
          */
         const refusalOfSelectEligible = selectEligible({
           census: await censusByGeneration({ artifactsDir: dir, },),

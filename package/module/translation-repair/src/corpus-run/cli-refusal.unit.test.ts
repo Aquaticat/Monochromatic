@@ -1,40 +1,40 @@
 /**
- * Tests for reporting a refusal instead of crashing out of a CLI.
- *
- * THE UNEXPECTED-FAULT CASES ARE THE ONES THAT CONSTRAIN THE DESIGN, and they
- * replaced a forwarding case that pinned the opposite contract. That case
- * checked a foreign class came straight back out, on the reasoning that
- * catching every `Error` destroys the stack of a genuine programming fault.
- *
- * `#225` showed re-throwing is not neutral: it hands the decision to whatever
- * prints next, and Node's reporter renders a cause chain, which is how a YAML
- * refusal published a page's front matter. So everything is caught now, and the
- * cases below hold both halves at once: the message must NOT be repeated, and
- * the frames MUST still be there.
- *
- * THREE EXIT CODES NOW, AND EACH IS DEFINED AGAINST THE OTHER TWO. `#226`
- * closed the message of every class that had not declared itself quote-free,
- * and `#227` decided which of our own may speak. So what a reader gets depends
- * on the class thrown: a stated refusal says its sentence and stops at 6, a
- * marked class that is not one says its sentence AND keeps its frames at 5, and
- * everything else is named without being quoted. The cases below hold one of
- * each, so a later change that collapses the three into one report fails here
- * rather than in an operator's terminal.
- *
- * BOTH SWAPS ARE DISPOSABLE. `process.exitCode` is process-wide, so a case that
- * set it and walked away would decide the whole suite's exit code, and a suite
- * reporting 680 passes while exiting 4 is worse than a failing test.
- *
- * THE SUITE RUNS AT `concurrency: 1` FOR THE SAME REASON, and it was written
- * without that first. `describe` runs children concurrently by default, so the
- * three cases raced on `console.error` and on `process.exitCode`: one case saw
- * zero captured lines because a sibling's disposal had already put the real
- * reporter back, and another read `undefined` where it had just written zero.
- * Both swaps are process-wide, and there is exactly one process here: the
- * runner spawns `node` once per test FILE, so nothing outside this file is
- * touched, and nothing inside it may overlap.
- *
- * @module
+ Tests for reporting a refusal instead of crashing out of a CLI.
+ 
+ THE UNEXPECTED-FAULT CASES ARE THE ONES THAT CONSTRAIN THE DESIGN, and they
+ replaced a forwarding case that pinned the opposite contract. That case
+ checked a foreign class came straight back out, on the reasoning that
+ catching every `Error` destroys the stack of a genuine programming fault.
+ 
+ `#225` showed re-throwing is not neutral: it hands the decision to whatever
+ prints next, and Node's reporter renders a cause chain, which is how a YAML
+ refusal published a page's front matter. So everything is caught now, and the
+ cases below hold both halves at once: the message must NOT be repeated, and
+ the frames MUST still be there.
+ 
+ THREE EXIT CODES NOW, AND EACH IS DEFINED AGAINST THE OTHER TWO. `#226`
+ closed the message of every class that had not declared itself quote-free,
+ and `#227` decided which of our own may speak. So what a reader gets depends
+ on the class thrown: a stated refusal says its sentence and stops at 6, a
+ marked class that is not one says its sentence AND keeps its frames at 5, and
+ everything else is named without being quoted. The cases below hold one of
+ each, so a later change that collapses the three into one report fails here
+ rather than in an operator's terminal.
+ 
+ BOTH SWAPS ARE DISPOSABLE. `process.exitCode` is process-wide, so a case that
+ set it and walked away would decide the whole suite's exit code, and a suite
+ reporting 680 passes while exiting 4 is worse than a failing test.
+ 
+ THE SUITE RUNS AT `concurrency: 1` FOR THE SAME REASON, and it was written
+ without that first. `describe` runs children concurrently by default, so the
+ three cases raced on `console.error` and on `process.exitCode`: one case saw
+ zero captured lines because a sibling's disposal had already put the real
+ reporter back, and another read `undefined` where it had just written zero.
+ Both swaps are process-wide, and there is exactly one process here: the
+ runner spawns `node` once per test FILE, so nothing outside this file is
+ touched, and nothing inside it may overlap.
+ 
+ @module
  */
 
 import {
@@ -56,88 +56,88 @@ import {
 //region CLI refusal tests
 
 /**
- * Exit code a CLI leaves behind when a run file would not read.
+ Exit code a CLI leaves behind when a run file would not read.
  */
 const COULD_NOT_READ = 4;
 
 /**
- * Lines a reporting run is expected to print.
+ Lines a reporting run is expected to print.
  */
 const REPORTED_LINES = 2;
 
 /**
- * Lines an unexpected fault is expected to print: name, explanation, frames.
+ Lines an unexpected fault is expected to print: name, explanation, frames.
  */
 const FAULT_LINES = 3;
 
 /**
- * Index of the frames line among those three.
+ Index of the frames line among those three.
  */
 const FRAMES_LINE = 2;
 
 /**
- * Exit code a CLI leaves behind when it broke for a reason nobody planned for.
+ Exit code a CLI leaves behind when it broke for a reason nobody planned for.
  */
 const UNEXPECTED_FAULT = 5;
 
 /**
- * Message the fault fixture carries, which must never reach a reader.
- *
- * Phrased as something a real error could say about content it was handed,
- * because that is the shape this guard exists for.
+ Message the fault fixture carries, which must never reach a reader.
+ 
+ Phrased as something a real error could say about content it was handed,
+ because that is the shape this guard exists for.
  */
 const FAULT_MESSAGE = 'a tabby walked across Pouncewick';
 
 /**
- * Byte offset the fixture refusal names.
+ Byte offset the fixture refusal names.
  */
 const FIXTURE_BYTE = 27;
 
 /**
- * Exit code a CLI leaves behind when it declined in its own words.
+ Exit code a CLI leaves behind when it declined in its own words.
  */
 const REFUSED_AS_STATED = 6;
 
 /**
- * Lines a stated refusal is expected to print: the sentence, and nothing after.
+ Lines a stated refusal is expected to print: the sentence, and nothing after.
  */
 const STATED_LINES = 1;
 
 /**
- * Message the stated fixture carries, which MUST reach a reader.
- *
- * Shaped as a usage line because that is what the marker exists for: the words
- * an operator needs most are the ones saying what to type next.
+ Message the stated fixture carries, which MUST reach a reader.
+ 
+ Shaped as a usage line because that is what the marker exists for: the words
+ an operator needs most are the ones saying what to type next.
  */
 const STATED_MESSAGE = 'name at least one basket: sunbeam-report <path> [<path> ...]';
 
 /**
- * File the ledger fixture names, which its message may repeat.
+ File the ledger fixture names, which its message may repeat.
  */
 const LEDGER_FILE = 'ledger/000007.json';
 
 /**
- * Field the ledger fixture reports missing, which its message may repeat.
+ Field the ledger fixture reports missing, which its message may repeat.
  */
 const LEDGER_FIELD = 'ballots';
 
 /**
- * Collects what would have gone to stderr, restoring the real one on disposal.
- *
- * @param lines - collector the caller reads afterwards
- *
- * @returns Collected lines, and the restore that disposal runs
- *
- * @example
- * ```ts
- * using printed = collectingErrors({ lines: [], },);
- * ```
+ Collects what would have gone to stderr, restoring the real one on disposal.
+ 
+ @param lines - collector the caller reads afterwards
+ 
+ @returns Collected lines, and the restore that disposal runs
+ 
+ @example
+ ```ts
+ using printed = collectingErrors({ lines: [], },);
+ ```
  */
 function collectingErrors(
   { lines, }: { readonly lines: string[]; },
 ): { readonly lines: readonly string[]; } & Disposable {
   /**
-   * Real reporter, put back on disposal.
+   Real reporter, put back on disposal.
    */
   const reported = console.error;
 
@@ -154,18 +154,18 @@ function collectingErrors(
 }
 
 /**
- * Puts the process exit code back to whatever it was, however a case ends.
- *
- * @returns Restore that disposal runs
- *
- * @example
- * ```ts
- * using held = holdingExitCode();
- * ```
+ Puts the process exit code back to whatever it was, however a case ends.
+ 
+ @returns Restore that disposal runs
+ 
+ @example
+ ```ts
+ using held = holdingExitCode();
+ ```
  */
 function holdingExitCode(): Disposable {
   /**
-   * Exit code standing before this case ran.
+   Exit code standing before this case ran.
    */
   const before = process.exitCode;
 
@@ -177,14 +177,14 @@ function holdingExitCode(): Disposable {
 }
 
 /**
- * Builds the refusal these cases are reported about.
- *
- * @returns Refusal naming a file, a class and an offset
- *
- * @example
- * ```ts
- * throw fixtureRefusal();
- * ```
+ Builds the refusal these cases are reported about.
+ 
+ @returns Refusal naming a file, a class and an offset
+ 
+ @example
+ ```ts
+ throw fixtureRefusal();
+ ```
  */
 function fixtureRefusal(): RunJsonUnreadableError {
   return new RunJsonUnreadableError({
@@ -195,26 +195,26 @@ function fixtureRefusal(): RunJsonUnreadableError {
 }
 
 /**
- * Variable a run configuration refusal names.
+ Variable a run configuration refusal names.
  */
 const CONFIG_VARIABLE = 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY';
 
 /**
- * Message that refusal carries: the variable name and a fix, which is all
- * that class may ever say.
+ Message that refusal carries: the variable name and a fix, which is all
+ that class may ever say.
  */
 const CONFIG_MESSAGE = `${CONFIG_VARIABLE} is not set; run under mise so sops injects it`;
 
 /**
- * Empties the run-wide seat tally for the life of a scope and again on exit,
- * so a case reads only what it caused and leaves nothing for the next one.
- *
- * @returns Disposable emptying the tally again
- *
- * @example
- * ```ts
- * using _fresh = withFreshRunSeats();
- * ```
+ Empties the run-wide seat tally for the life of a scope and again on exit,
+ so a case reads only what it caused and leaves nothing for the next one.
+ 
+ @returns Disposable emptying the tally again
+ 
+ @example
+ ```ts
+ using _fresh = withFreshRunSeats();
+ ```
  */
 function withFreshRunSeats(): Disposable {
   RUN_SEATS.reset();
@@ -279,7 +279,7 @@ await describe({
         },);
 
         /**
-         * Everything the reporter said, as one body to search.
+         Everything the reporter said, as one body to search.
          */
         const said = printed.lines.join('\n',);
 
@@ -300,7 +300,7 @@ await describe({
         },);
 
         /**
-         * Frames as the reporter rendered them.
+         Frames as the reporter rendered them.
          */
         const frames = printed.lines[FRAMES_LINE] ?? '';
 
@@ -342,7 +342,7 @@ await describe({
         },);
 
         /**
-         * Frames as the reporter rendered them.
+         Frames as the reporter rendered them.
          */
         const frames = printed.lines[FRAMES_LINE] ?? '';
 
@@ -362,7 +362,7 @@ await describe({
         using printed = collectingErrors({ lines: [], },);
 
         /**
-         * Tally of a run in which one seat answered and one threw every time.
+         Tally of a run in which one seat answered and one threw every time.
          */
         const seats = createSeatTally();
         seats.record({ modelId: 'hf:openai/gpt-oss-120b', outcome: 'usable', },);
@@ -379,7 +379,7 @@ await describe({
         },);
 
         /**
-         * The one line a reader who is not grepping must see.
+         The one line a reader who is not grepping must see.
          */
         const dark = printed.lines.find(function isDarkLine(line,): boolean {
           return line.startsWith('SEATS DARK: ',);
@@ -405,7 +405,7 @@ await describe({
         using printed = collectingErrors({ lines: [], },);
 
         /**
-         * Tally with one seat that answered, unusably, every time.
+         Tally with one seat that answered, unusably, every time.
          */
         const seats = createSeatTally();
         seats.record({ modelId: 'minimax-m3', outcome: 'unusable', },);

@@ -1,15 +1,15 @@
 /**
- * Tests for the stage that asks a roster whether a translation carries a
- * passage, driven by a scripted client so nothing is bought.
- *
- * What these pin is the WIRING rather than the arithmetic, which
- * `coverage-verdict.unit.test.ts` covers: that the stage takes its threshold
- * from the roster it asked rather than from the replies it got, and that a
- * roster too quiet to decide produces no decision.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the stage that asks a roster whether a translation carries a
+ passage, driven by a scripted client so nothing is bought.
+ 
+ What these pin is the WIRING rather than the arithmetic, which
+ `coverage-verdict.unit.test.ts` covers: that the stage takes its threshold
+ from the roster it asked rather than from the replies it got, and that a
+ roster too quiet to decide produces no decision.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -29,12 +29,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger the stage writes its progress to.
+ Logger the stage writes its progress to.
  */
 const l = tagged({ tag: 'coverage-stage-test', },);
 
 /**
- * Translation the roster is asked about.
+ Translation the roster is asked about.
  */
 const TARGET_TEXT = `The cat sleeps on the windowsill each morning and naps on its cushion at noon.
 
@@ -42,12 +42,12 @@ She watches the birds outside.
 `;
 
 /**
- * That translation, parsed once.
+ That translation, parsed once.
  */
 const TARGET = parseDocument({ text: TARGET_TEXT, },);
 
 /**
- * Roster the questions go to.
+ Roster the questions go to.
  */
 const ROSTER = [
   'hf:cat/Cat-A',
@@ -59,7 +59,7 @@ const ROSTER = [
 },);
 
 /**
- * What each model is scripted to answer, or nothing to make it go silent.
+ What each model is scripted to answer, or nothing to make it go silent.
  */
 type CoverageScript = Record<string, {
   readonly coverage: string;
@@ -67,16 +67,16 @@ type CoverageScript = Record<string, {
 }>;
 
 /**
- * Builds a client answering from a script and never reaching a network.
- *
- * @param script - reply per model, absent for a model that stays silent
- *
- * @returns Client the stage can be driven with
- *
- * @example
- * ```ts
- * const client = scriptedClient({ script, },);
- * ```
+ Builds a client answering from a script and never reaching a network.
+ 
+ @param script - reply per model, absent for a model that stays silent
+ 
+ @returns Client the stage can be driven with
+ 
+ @example
+ ```ts
+ const client = scriptedClient({ script, },);
+ ```
  */
 function scriptedClient({ script, }: { readonly script: CoverageScript; },): SyntheticClient {
   return {
@@ -90,7 +90,7 @@ function scriptedClient({ script, }: { readonly script: CoverageScript; },): Syn
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Reply this model was scripted to give, absent when it stays silent.
+       Reply this model was scripted to give, absent when it stays silent.
        */
       const scripted = script[request.modelId];
       if (scripted === undefined) {
@@ -102,7 +102,7 @@ function scriptedClient({ script, }: { readonly script: CoverageScript; },): Syn
       }
 
       /**
-       * Wire value carrying it.
+       Wire value carrying it.
        */
       const value: unknown = {
         coverage: scripted.coverage,

@@ -1,10 +1,10 @@
 /**
- * Tests that the owner blocklist bars every blocked spelling from the
- * compiled catalogs and labels family arrivals, while leaving the eligible
- * neighbours (dated DeepSeek aliases, the Qwen3.8 line short of Max, the
- * GLM-5.3 pair) untouched.
- *
- * @module
+ Tests that the owner blocklist bars every blocked spelling from the
+ compiled catalogs and labels family arrivals, while leaving the eligible
+ neighbours (dated DeepSeek aliases, the Qwen3.8 line short of Max, the
+ GLM-5.3 pair) untouched.
+ 
+ @module
  */
 
 import {
@@ -27,7 +27,7 @@ await describe({
       name: 'BARS EVERY BLOCKED SPELLING from the roster and both compiled catalogs',
       fn: async () => {
         /**
-         * Every id the pipeline could seat.
+         Every id the pipeline could seat.
          */
         const seated = [
           ...ROSTER_MODEL_IDS,

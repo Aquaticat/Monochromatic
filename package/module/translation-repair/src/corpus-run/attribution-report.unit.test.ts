@@ -1,23 +1,23 @@
 /**
- * Tests for the reader that turns recorded critic attribution into rates.
- *
- * Built alongside the writer on purpose. This pipeline's recurring failure is
- * telemetry that is recorded and never read, and a data path with no reader is
- * indistinguishable from one that was never built. These cases guard the two
- * ways a reader can quietly lie about a population.
- *
- * The first is mixing eligibility with silence. An entry settled before
- * attribution existed records no proposer for a claim its critics did raise, so
- * averaging it in understates every critic at once, and "this critic raised
- * nothing" becomes unreadable against "this entry could not have recorded it".
- *
- * The second is conflating self-repetition with agreement. One critic saying a
- * thing twice and two critics saying it once produce the same claim, and the
- * whole point of `#65` is which of those a duplicate came from.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for the reader that turns recorded critic attribution into rates.
+ 
+ Built alongside the writer on purpose. This pipeline's recurring failure is
+ telemetry that is recorded and never read, and a data path with no reader is
+ indistinguishable from one that was never built. These cases guard the two
+ ways a reader can quietly lie about a population.
+ 
+ The first is mixing eligibility with silence. An entry settled before
+ attribution existed records no proposer for a claim its critics did raise, so
+ averaging it in understates every critic at once, and "this critic raised
+ nothing" becomes unreadable against "this entry could not have recorded it".
+ 
+ The second is conflating self-repetition with agreement. One critic saying a
+ thing twice and two critics saying it once produce the same claim, and the
+ whole point of `#65` is which of those a duplicate came from.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -32,38 +32,38 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Critic that raises most of the claims.
+ Critic that raises most of the claims.
  */
 const TABBY = 'hf:openai/gpt-oss-120b';
 
 /**
- * Critic that is heard everywhere and rarely raises anything.
+ Critic that is heard everywhere and rarely raises anything.
  */
 const QUIET = 'hf:Qwen/Qwen3.8-27B';
 
 /**
- * Claim both critics can propose.
+ Claim both critics can propose.
  */
 const NAP_CLAIM = 'issue/nap';
 
 /**
- * Second claim identity.
+ Second claim identity.
  */
 const PURR_CLAIM = 'issue/purr';
 
 /**
- * Entry carrying attribution, with one chunk both critics were asked.
- *
- * @param proposers - proposers of the nap claim
- *
- * @param issueClaimIds - claims the single accepted issue represents
- *
- * @returns Eligible entry
- *
- * @example
- * ```ts
- * const entry = eligibleEntry({ proposers: [{ modelId: TABBY, emissionCount: 1, },], },);
- * ```
+ Entry carrying attribution, with one chunk both critics were asked.
+ 
+ @param proposers - proposers of the nap claim
+ 
+ @param issueClaimIds - claims the single accepted issue represents
+ 
+ @returns Eligible entry
+ 
+ @example
+ ```ts
+ const entry = eligibleEntry({ proposers: [{ modelId: TABBY, emissionCount: 1, },], },);
+ ```
  */
 function eligibleEntry(
   {
@@ -107,7 +107,7 @@ await describe({
         + 'raise, and averaging it in understates every critic at once',
       fn: async () => {
         /**
-         * One eligible entry beside one settled before attribution existed.
+         One eligible entry beside one settled before attribution existed.
          */
         const report = buildAttributionReport({
           entries: [
@@ -136,7 +136,7 @@ await describe({
         + 'without it a quiet critic and an absent one are the same zero',
       fn: async () => {
         /**
-         * Entry where only one of two heard critics raised anything.
+         Entry where only one of two heard critics raised anything.
          */
         const report = buildAttributionReport({
           entries: [eligibleEntry({
@@ -145,7 +145,7 @@ await describe({
         },);
 
         /**
-         * Row for the critic that stayed silent.
+         Row for the critic that stayed silent.
          */
         const quiet = report.critics
           .find(function isQuiet(critic,) {
@@ -165,7 +165,7 @@ await describe({
         + 'duplicate',
       fn: async () => {
         /**
-         * Entry where one critic said the same thing twice.
+         Entry where one critic said the same thing twice.
          */
         const repeated = buildAttributionReport({
           entries: [eligibleEntry({
@@ -178,7 +178,7 @@ await describe({
         expect(repeated.selfRepeatedAccepted,).toBe(1,);
 
         /**
-         * Entry where two critics agreed once each.
+         Entry where two critics agreed once each.
          */
         const agreed = buildAttributionReport({
           entries: [eligibleEntry({
@@ -202,7 +202,7 @@ await describe({
         + 'would hide the defect',
       fn: async () => {
         /**
-         * Accepted issue pointing at a claim no attribution covers.
+         Accepted issue pointing at a claim no attribution covers.
          */
         const report = buildAttributionReport({
           entries: [eligibleEntry({
@@ -222,7 +222,7 @@ await describe({
         + 'never credits the critic that raised it',
       fn: async () => {
         /**
-         * Entry whose only issue was rejected.
+         Entry whose only issue was rejected.
          */
         const report = buildAttributionReport({
           entries: [{
@@ -257,8 +257,8 @@ await describe({
         + 'two critics who each found the defect read as one',
       fn: async () => {
         /**
-         * Entry where two chunks produced an identical claim id, each from a
-         * different critic.
+         Entry where two chunks produced an identical claim id, each from a
+         different critic.
          */
         const report = buildAttributionReport({
           entries: [{
@@ -306,7 +306,7 @@ await describe({
         + 'critic contributed',
       fn: async () => {
         /**
-         * One critic, one distinct claim, emitted twice.
+         One critic, one distinct claim, emitted twice.
          */
         const report = buildAttributionReport({
           entries: [eligibleEntry({
@@ -315,7 +315,7 @@ await describe({
         },);
 
         /**
-         * Row for the repeating critic.
+         Row for the repeating critic.
          */
         const tabby = report.critics
           .find(function isTabby(critic,) {
@@ -337,7 +337,7 @@ await describe({
         + 'counting it as sole support would be a guess dressed as a count',
       fn: async () => {
         /**
-         * Accepted issue naming one known claim and one unknown one.
+         Accepted issue naming one known claim and one unknown one.
          */
         const report = buildAttributionReport({
           entries: [eligibleEntry({
@@ -367,7 +367,7 @@ await describe({
         + 'post-attribution pass settles its first entry',
       fn: async () => {
         /**
-         * Report over entries that all predate attribution.
+         Report over entries that all predate attribution.
          */
         const report = buildAttributionReport({
           entries: [{ id: 'Mittens', issues: [], } as AttributionEntry,],

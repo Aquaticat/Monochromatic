@@ -13,15 +13,15 @@ import type {
 // Positions and directions are preplanned, never generated from judge feedback.
 
 /**
- * Existing two-direction, two-position matrix.
+ Existing two-direction, two-position matrix.
  */
 const ARRANGEMENTS: readonly {
   /**
-   * Which conceptual side is the reviewed reference.
+   Which conceptual side is the reviewed reference.
    */
   readonly direction: FidelityDirection;
   /**
-   * Which ballot position carries that reference.
+   Which ballot position carries that reference.
    */
   readonly cleanFirst: boolean;
 }[] = [
@@ -44,47 +44,47 @@ const ARRANGEMENTS: readonly {
 ];
 
 /**
- * One trial beside its reviewed provenance, not a claimed production slice index.
- *
- * @example
- * ```ts
- * const result = await runFidelityTrial({ trial: row.trial, ... });
- * ```
+ One trial beside its reviewed provenance, not a claimed production slice index.
+ 
+ @example
+ ```ts
+ const result = await runFidelityTrial({ trial: row.trial, ... });
+ ```
  */
 export type ReviewedFidelityTrial = {
   /**
-   * Manifest that established reference and damage validity.
+   Manifest that established reference and damage validity.
    */
   readonly spec: FidelityReferenceSpec;
   /**
-   * Builder's reviewed changed-content count.
+   Builder's reviewed changed-content count.
    */
   readonly changedChars: number;
   /**
-   * Safe structural description of the intentional delta.
+   Safe structural description of the intentional delta.
    */
   readonly damageDetail: string;
   /**
-   * Exact comparison consumed by the existing selector.
+   Exact comparison consumed by the existing selector.
    */
   readonly trial: FidelityTrial;
 };
 
 /**
- * Expands reviewed variants into the existing position/direction matrix.
- *
- * @param references - materialized and hash-verified reviewed inputs
- *
- * @param damageKinds - requested supported families
- *
- * @returns Fixed matrix in reference, damage and arrangement order
- *
- * @throws {@link FidelityReferenceError} when selection cannot produce a reviewed comparison
- *
- * @example
- * ```ts
- * const trials = reviewedFidelityTrials({ references, damageKinds: ['deletion', 'insertion'] });
- * ```
+ Expands reviewed variants into the existing position/direction matrix.
+ 
+ @param references - materialized and hash-verified reviewed inputs
+ 
+ @param damageKinds - requested supported families
+ 
+ @returns Fixed matrix in reference, damage and arrangement order
+ 
+ @throws {@link FidelityReferenceError} when selection cannot produce a reviewed comparison
+ 
+ @example
+ ```ts
+ const trials = reviewedFidelityTrials({ references, damageKinds: ['deletion', 'insertion'] });
+ ```
  */
 export function reviewedFidelityTrials({
   references,
@@ -99,7 +99,7 @@ export function reviewedFidelityTrials({
       operation: 'request',
     },);
   /**
-   * Every row exists before a model is asked.
+   Every row exists before a model is asked.
    */
   const rows = references.flatMap(function referenceRows(reference,): readonly ReviewedFidelityTrial[] {
     return reference.damages
@@ -128,7 +128,7 @@ export function reviewedFidelityTrials({
     },);
   },);
   /**
-   * A nonempty prefix is not evidence that every requested defect family was materialized.
+   A nonempty prefix is not evidence that every requested defect family was materialized.
    */
   const unavailable = damageKinds.filter(function missing(kind,): boolean {
     return !rows.some(function represents(row,): boolean {

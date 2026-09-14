@@ -11,17 +11,17 @@ import {
 // the repo.
 
 /**
- * Joins a candidate's quotes for display, or a placeholder when the issue
- * anchors nothing on that side.
- *
- * @param quotes - distinct quotes for one side
- *
- * @returns Display line for the side
- *
- * @example
- * ```ts
- * const line = quoteLine(['猫猫',],);
- * ```
+ Joins a candidate's quotes for display, or a placeholder when the issue
+ anchors nothing on that side.
+ 
+ @param quotes - distinct quotes for one side
+ 
+ @returns Display line for the side
+ 
+ @example
+ ```ts
+ const line = quoteLine(['猫猫',],);
+ ```
  */
 function quoteLine(quotes: readonly string[],): string {
   if (quotes.length === 0)
@@ -34,18 +34,18 @@ function quoteLine(quotes: readonly string[],): string {
 }
 
 /**
- * Renders one candidate as a grading-sheet block with an unfilled grade box.
- *
- * @param candidate - the sampled candidate
- *
- * @param index - 1-based position in the sheet
- *
- * @returns Markdown lines for the candidate
- *
- * @example
- * ```ts
- * const block = renderCandidate({ candidate, index: 1, },);
- * ```
+ Renders one candidate as a grading-sheet block with an unfilled grade box.
+ 
+ @param candidate - the sampled candidate
+ 
+ @param index - 1-based position in the sheet
+ 
+ @returns Markdown lines for the candidate
+ 
+ @example
+ ```ts
+ const block = renderCandidate({ candidate, index: 1, },);
+ ```
  */
 function renderCandidate(
   {
@@ -67,20 +67,20 @@ function renderCandidate(
 }
 
 /**
- * Renders the source line, naming why there is no quote when there is none.
- * A bare `(none)` made an ungradable item look like a rendering glitch: an
- * addition correctly anchors to an empty insertion point, whereas a claim
- * anchoring nothing at all asserts an absence while pointing at nothing, which
- * a grader cannot check and should be told about.
- *
- * @param candidate - the sampled candidate
- *
- * @returns Display line for the original side
- *
- * @example
- * ```ts
- * const line = sourceLine(candidate,);
- * ```
+ Renders the source line, naming why there is no quote when there is none.
+ A bare `(none)` made an ungradable item look like a rendering glitch: an
+ addition correctly anchors to an empty insertion point, whereas a claim
+ anchoring nothing at all asserts an absence while pointing at nothing, which
+ a grader cannot check and should be told about.
+ 
+ @param candidate - the sampled candidate
+ 
+ @returns Display line for the original side
+ 
+ @example
+ ```ts
+ const line = sourceLine(candidate,);
+ ```
  */
 function sourceLine(candidate: GradingCandidate,): string {
   if (candidate.sourceQuotes
@@ -93,32 +93,32 @@ function sourceLine(candidate: GradingCandidate,): string {
 }
 
 /**
- * Renders the full grading sheet: a header stating the precision bar and how
- * to grade, the per-band sampled counts, then one block per candidate. The
- * sheet quotes UNLICENSED corpus text, so callers write it OUTSIDE the repo.
- *
- * @param sample - the drawn candidates, in draw order
- *
- * @param seed - the seed the sample was drawn under, recorded for reproduction
- *
- * @param bar - precision bar the graded sample must clear
- *
- * @param corpusSha - pinned corpus commit the artifacts were produced against
- *
- * @param drawDigest - fingerprint binding this sheet to one exact draw
- *
- * @returns The grading sheet as markdown text
- *
- * @example
- * ```ts
- * const sheet = formatGradingSheet({
- *   sample,
- *   seed: DEFAULT_SAMPLE_SEED,
- *   bar: DEFAULT_PRECISION_BAR,
- *   corpusSha: 'a41fc60',
- *   drawDigest,
- * },);
- * ```
+ Renders the full grading sheet: a header stating the precision bar and how
+ to grade, the per-band sampled counts, then one block per candidate. The
+ sheet quotes UNLICENSED corpus text, so callers write it OUTSIDE the repo.
+ 
+ @param sample - the drawn candidates, in draw order
+ 
+ @param seed - the seed the sample was drawn under, recorded for reproduction
+ 
+ @param bar - precision bar the graded sample must clear
+ 
+ @param corpusSha - pinned corpus commit the artifacts were produced against
+ 
+ @param drawDigest - fingerprint binding this sheet to one exact draw
+ 
+ @returns The grading sheet as markdown text
+ 
+ @example
+ ```ts
+ const sheet = formatGradingSheet({
+   sample,
+   seed: DEFAULT_SAMPLE_SEED,
+   bar: DEFAULT_PRECISION_BAR,
+   corpusSha: 'a41fc60',
+   drawDigest,
+ },);
+ ```
  */
 export function formatGradingSheet(
   {
@@ -136,7 +136,7 @@ export function formatGradingSheet(
   },
 ): string {
   /**
-   * Sampled count per band, for the header summary.
+   Sampled count per band, for the header summary.
    */
   const sampledPerBand = SIZE_BANDS.map(function countBand(band,) {
     return `${band} ${
@@ -152,7 +152,7 @@ export function formatGradingSheet(
     .join(' · ',);
 
   /**
-   * Header lines: task, how to grade, the bar, seed, corpus pin, and counts.
+   Header lines: task, how to grade, the bar, seed, corpus pin, and counts.
    */
   const header = [
     '# Milestone 3 precision grading sheet',

@@ -1,14 +1,14 @@
 /**
- * Tests for the contest record, at the level it is derived rather than through
- * a whole artifact.
- *
- * WHAT IS UNDER TEST is the split the stage does not make for itself: `neither`
- * means two unrelated things depending on how many voices were heard, and this
- * module is where they stop being one answer.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the contest record, at the level it is derived rather than through
+ a whole artifact.
+ 
+ WHAT IS UNDER TEST is the split the stage does not make for itself: `neither`
+ means two unrelated things depending on how many voices were heard, and this
+ module is where they stop being one answer.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -26,22 +26,22 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive`s own English for the slice every fixture here describes.
+ Archive`s own English for the slice every fixture here describes.
  */
 const ARCHIVE_NAP = 'The cat sleeps in the bookshop attic.';
 
 /**
- * Wording the repair lane left.
+ Wording the repair lane left.
  */
 const REPAIR_NAP = 'The cat naps in the bookshop attic.';
 
 /**
- * Wording the translate lane left, differing from both.
+ Wording the translate lane left, differing from both.
  */
 const TRANSLATE_NAP = 'The cat dozes in the attic of the bookshop.';
 
 /**
- * Ballot backing the repair lane, with nothing found against either candidate.
+ Ballot backing the repair lane, with nothing found against either candidate.
  */
 const FOR_REPAIR: LaneContestBallot = {
   choice: 'repair',
@@ -53,7 +53,7 @@ const FOR_REPAIR: LaneContestBallot = {
 };
 
 /**
- * Ballot backing the translate lane.
+ Ballot backing the translate lane.
  */
 const FOR_TRANSLATE: LaneContestBallot = {
   choice: 'translate',
@@ -65,7 +65,7 @@ const FOR_TRANSLATE: LaneContestBallot = {
 };
 
 /**
- * Ballot backing neither, which is a reading rather than a silence.
+ Ballot backing neither, which is a reading rather than a silence.
  */
 const FOR_NEITHER: LaneContestBallot = {
   choice: 'neither',
@@ -80,18 +80,18 @@ const FOR_NEITHER: LaneContestBallot = {
 };
 
 /**
- * Builds an outcome the way the stage returns one.
- *
- * @param ballots - usable ballots
- *
- * @param choice - candidate the stage settled on
- *
- * @returns Outcome carrying those ballots
- *
- * @example
- * ```ts
- * const outcome = catOutcome({ ballots: [FOR_REPAIR,], choice: 'neither', },);
- * ```
+ Builds an outcome the way the stage returns one.
+ 
+ @param ballots - usable ballots
+ 
+ @param choice - candidate the stage settled on
+ 
+ @returns Outcome carrying those ballots
+ 
+ @example
+ ```ts
+ const outcome = catOutcome({ ballots: [FOR_REPAIR,], choice: 'neither', },);
+ ```
  */
 function catOutcome(
   {
@@ -111,20 +111,20 @@ function catOutcome(
 }
 
 /**
- * Builds a comparison row carrying the two lane wordings a test needs.
- *
- * @param sliceIndex - slice this names
- *
- * @param repairText - wording the repair document carries
- *
- * @param translateText - wording the translate document carries
- *
- * @returns Row with the rest of its fields held constant
- *
- * @example
- * ```ts
- * const row = catRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
- * ```
+ Builds a comparison row carrying the two lane wordings a test needs.
+ 
+ @param sliceIndex - slice this names
+ 
+ @param repairText - wording the repair document carries
+ 
+ @param translateText - wording the translate document carries
+ 
+ @returns Row with the rest of its fields held constant
+ 
+ @example
+ ```ts
+ const row = catRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
+ ```
  */
 function catRow(
   {
@@ -201,7 +201,7 @@ await describe({
         + 'otherwise be counting silence',
       fn: async () => {
         /**
-         * Enough voices, none of them carrying a lane.
+         Enough voices, none of them carrying a lane.
          */
         const settled = describeContestSlice({
           sliceIndex: 0,
@@ -215,7 +215,7 @@ await describe({
         },);
 
         /**
-         * One voice, which cannot settle anything under the same rule.
+         One voice, which cannot settle anything under the same rule.
          */
         const unheard = describeContestSlice({
           sliceIndex: 1,

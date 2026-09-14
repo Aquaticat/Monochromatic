@@ -1,7 +1,7 @@
 /**
- * Tests fidelity-first naturalness gate policy and settlement.
- *
- * @module
+ Tests fidelity-first naturalness gate policy and settlement.
+ 
+ @module
  */
 
 import {
@@ -18,16 +18,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Ballot choosing requested candidate.
- *
- * @param choice - candidate selected
- *
- * @returns Usable polish ballot
- *
- * @example
- * ```ts
- * const value = ballot({ choice: 'polished', });
- * ```
+ Ballot choosing requested candidate.
+ 
+ @param choice - candidate selected
+ 
+ @returns Usable polish ballot
+ 
+ @example
+ ```ts
+ const value = ballot({ choice: 'polished', });
+ ```
  */
 function ballot(
   { choice, }: { readonly choice: ConsolidationPolishBallot['choice']; },
@@ -119,7 +119,7 @@ await describe({
           },
         },);
         /**
-         * Complete correction gate sheet across system and user messages.
+         Complete correction gate sheet across system and user messages.
          */
         const sheet = messages.map(function text(message,): string {
           return messageText({ message, },);

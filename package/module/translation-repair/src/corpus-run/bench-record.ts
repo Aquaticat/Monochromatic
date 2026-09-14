@@ -27,46 +27,46 @@ import { refusalText, } from '../refusal-text.ts';
 // from a ballot or a repair turn.
 
 /**
- * Characters of a thrown failure kept on its row, enough to tell a timeout from
- * a transport drop without carrying a stack into a summary.
+ Characters of a thrown failure kept on its row, enough to tell a timeout from
+ a transport drop without carrying a stack into a summary.
  */
 const FAILURE_DETAIL_CHARS = 40;
 
 /**
- * Both halves of one exchange's token cost, kept apart because a single total
- * cannot say which half a wider roster bought. Measured on the totals alone,
- * a ballot costs 38% more at width 6 than at width 3 while its call count does
- * not move; whether that growth is in the PROMPT, which repeats every candidate
- * to every judge, or in the ANSWER, if a verdict is written per candidate, is
- * exactly what the totals cannot distinguish and what this split is for.
- *
- * @example
- * ```ts
- * const cost: CallTokens = { promptTokens: 900, completionTokens: 120, tokens: 1020, };
- * ```
+ Both halves of one exchange's token cost, kept apart because a single total
+ cannot say which half a wider roster bought. Measured on the totals alone,
+ a ballot costs 38% more at width 6 than at width 3 while its call count does
+ not move; whether that growth is in the PROMPT, which repeats every candidate
+ to every judge, or in the ANSWER, if a verdict is written per candidate, is
+ exactly what the totals cannot distinguish and what this split is for.
+ 
+ @example
+ ```ts
+ const cost: CallTokens = { promptTokens: 900, completionTokens: 120, tokens: 1020, };
+ ```
  */
 export type CallTokens = {
   /**
-   * Tokens spent sending, zero when the server reported no usage at all.
+   Tokens spent sending, zero when the server reported no usage at all.
    */
   readonly promptTokens: number;
 
   /**
-   * Tokens spent answering, zero when the server reported no usage at all.
+   Tokens spent answering, zero when the server reported no usage at all.
    */
   readonly completionTokens: number;
 
   /**
-   * Total as the server reported it, kept rather than derived so the bench's
-   * headline cost stays what the provider stated. Whether any provider here
-   * ever reports a total DIFFERING from both halves added is unmeasured; the
-   * fallback covers the servers that report no total at all.
+   Total as the server reported it, kept rather than derived so the bench's
+   headline cost stays what the provider stated. Whether any provider here
+   ever reports a total DIFFERING from both halves added is unmeasured; the
+   fallback covers the servers that report no total at all.
    */
   readonly tokens: number;
 };
 
 /**
- * Cost of an exchange that raised before any usage came back.
+ Cost of an exchange that raised before any usage came back.
  */
 const NO_TOKENS: CallTokens = {
   promptTokens: 0,
@@ -75,68 +75,68 @@ const NO_TOKENS: CallTokens = {
 };
 
 /**
- * One exchange, as the bench records it.
- *
- * @example
- * ```ts
- * const call: BenchCall = { schema: 'translate', modelId: 'hf:x', ms: 4200, promptTokens: 800, completionTokens: 100, tokens: 900, outcome: 'ok', };
- * ```
+ One exchange, as the bench records it.
+ 
+ @example
+ ```ts
+ const call: BenchCall = { schema: 'translate', modelId: 'hf:x', ms: 4200, promptTokens: 800, completionTokens: 100, tokens: 900, outcome: 'ok', };
+ ```
  */
 export type BenchCall = CallTokens & {
   /**
-   * Response schema asked for, which names the stage.
+   Response schema asked for, which names the stage.
    */
   readonly schema: string;
 
   /**
-   * Model asked.
+   Model asked.
    */
   readonly modelId: string;
 
   /**
-   * Wall time of the exchange, retries included, since retries are part of
-   * what a width costs.
+   Wall time of the exchange, retries included, since retries are part of
+   what a width costs.
    */
   readonly ms: number;
 
   /**
-   * Outcome kind, or a truncated failure when the exchange raised.
+   Outcome kind, or a truncated failure when the exchange raised.
    */
   readonly outcome: string;
 };
 
 /**
- * Client that records every exchange it forwards.
- *
- * @example
- * ```ts
- * const { client, calls, } = recordingClient({ inner: createRunClient(), },);
- * ```
+ Client that records every exchange it forwards.
+ 
+ @example
+ ```ts
+ const { client, calls, } = recordingClient({ inner: createRunClient(), },);
+ ```
  */
 export type RecordingClient = {
   /**
-   * Client to hand to the stage.
+   Client to hand to the stage.
    */
   readonly client: SyntheticClient;
 
   /**
-   * Rows accumulated so far; read after the run.
+   Rows accumulated so far; read after the run.
    */
   readonly calls: readonly BenchCall[];
 };
 
 /**
- * Names the stage of one request by the schema it asked for.
- *
- * @param request - exchange as the stage built it; free-text calls carry no
- * schema at all
- *
- * @returns Schema name, or `text` when none was asked for
- *
- * @example
- * ```ts
- * const schema = schemaOf({ request, },);
- * ```
+ Names the stage of one request by the schema it asked for.
+ 
+ @param request - exchange as the stage built it; free-text calls carry no
+ schema at all
+ 
+ @returns Schema name, or `text` when none was asked for
+ 
+ @example
+ ```ts
+ const schema = schemaOf({ request, },);
+ ```
  */
 function schemaOf(
   { request, }: ForeignBorrowed<{
@@ -150,17 +150,17 @@ function schemaOf(
 }
 
 /**
- * Tokens one exchange moved, as the server reported them.
- *
- * @param answered - reply or outcome, whichever came back; both carry usage
- * only when the server reported it
- *
- * @returns Both halves, plus whichever total the server stated or their sum
- *
- * @example
- * ```ts
- * const cost = usageOf({ answered: outcome, },);
- * ```
+ Tokens one exchange moved, as the server reported them.
+ 
+ @param answered - reply or outcome, whichever came back; both carry usage
+ only when the server reported it
+ 
+ @returns Both halves, plus whichever total the server stated or their sum
+ 
+ @example
+ ```ts
+ const cost = usageOf({ answered: outcome, },);
+ ```
  */
 function usageOf(
   { answered, }: ForeignBorrowed<{
@@ -171,13 +171,13 @@ function usageOf(
     return NO_TOKENS;
 
   /**
-   * First half the server always reports when it reports anything.
+   First half the server always reports when it reports anything.
    */
   const promptTokens = answered.usage
     .prompt_tokens;
 
   /**
-   * Second half of the same report.
+   Second half of the same report.
    */
   const completionTokens = answered.usage
     .completion_tokens;
@@ -192,47 +192,47 @@ function usageOf(
 }
 
 /**
- * Wraps a client so every exchange is timed, sized and classified.
- *
- * @param inner - client that actually talks to the provider
- *
- * @returns Wrapper plus the growing row list
- *
- * @example
- * ```ts
- * const recorder = recordingClient({ inner: createRunClient(), },);
- * ```
+ Wraps a client so every exchange is timed, sized and classified.
+ 
+ @param inner - client that actually talks to the provider
+ 
+ @returns Wrapper plus the growing row list
+ 
+ @example
+ ```ts
+ const recorder = recordingClient({ inner: createRunClient(), },);
+ ```
  */
 export function recordingClient(
   { inner, }: ForeignBorrowed<{ readonly inner: SyntheticClient; }>,
 ): RecordingClient {
   /**
-   * Rows this wrapper has recorded.
+   Rows this wrapper has recorded.
    */
   const calls: BenchCall[] = [];
 
   /**
-   * Forwards a free-text exchange and records it.
-   *
-   * @param request - exchange as the stage built it
-   *
-   * @returns Whatever the inner client answered
-   *
-   * @example
-   * ```ts
-   * const reply = await chatText(request,);
-   * ```
+   Forwards a free-text exchange and records it.
+   
+   @param request - exchange as the stage built it
+   
+   @returns Whatever the inner client answered
+   
+   @example
+   ```ts
+   const reply = await chatText(request,);
+   ```
    */
   async function chatText(
     request: ForeignBorrowed<ChatTextRequest>,
   ): Promise<ChatTextReply> {
     /**
-     * Start of this exchange.
+     Start of this exchange.
      */
     const began = performance.now();
 
     /**
-     * What the provider answered.
+     What the provider answered.
      */
     const reply = await inner.chatText(request,);
     calls.push({
@@ -246,29 +246,29 @@ export function recordingClient(
   }
 
   /**
-   * Forwards a schema-validated exchange and records it, thrown or not.
-   *
-   * @param request - exchange as the stage built it
-   *
-   * @returns Whatever the inner client answered
-   *
-   * @throws Whatever the inner client threw, after recording the attempt
-   *
-   * @example
-   * ```ts
-   * const outcome = await chatJson(request,);
-   * ```
+   Forwards a schema-validated exchange and records it, thrown or not.
+   
+   @param request - exchange as the stage built it
+   
+   @returns Whatever the inner client answered
+   
+   @throws Whatever the inner client threw, after recording the attempt
+   
+   @example
+   ```ts
+   const outcome = await chatJson(request,);
+   ```
    */
   async function chatJson<ValueT,>(
     request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
   ): Promise<ChatJsonOutcome<ValueT>> {
     /**
-     * Start of this exchange.
+     Start of this exchange.
      */
     const began = performance.now();
     try {
       /**
-       * Outcome as data, which the stage reads either way.
+       Outcome as data, which the stage reads either way.
        */
       const outcome = await inner.chatJson(request,);
       calls.push({
@@ -285,8 +285,8 @@ export function recordingClient(
       // transport failure after several retries. Recording it before rethrowing
       // keeps the row and leaves the stage's own handling alone.
       /**
-       * What failed, as its class name or its marked message, so a row never
-       * carries a provider body.
+       What failed, as its class name or its marked message, so a row never
+       carries a provider body.
        */
       const detail = refusalText({ error, },)
         .slice(
@@ -305,16 +305,16 @@ export function recordingClient(
   }
 
   /**
-   * Forwards a quota read unrecorded, since it costs no generation.
-   *
-   * @param args - abort signal the caller owns
-   *
-   * @returns Snapshot the inner client returned
-   *
-   * @example
-   * ```ts
-   * const snapshot = await quotas({ signal, },);
-   * ```
+   Forwards a quota read unrecorded, since it costs no generation.
+   
+   @param args - abort signal the caller owns
+   
+   @returns Snapshot the inner client returned
+   
+   @example
+   ```ts
+   const snapshot = await quotas({ signal, },);
+   ```
    */
   async function quotas(
     args: { readonly signal: AbortSignal; },

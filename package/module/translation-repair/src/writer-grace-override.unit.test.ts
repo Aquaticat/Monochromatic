@@ -1,18 +1,18 @@
 /**
- * Tests for the window the writer rounds run under.
- *
- * THE CASE THAT MATTERS IS PRECEDENCE. The writers have a built-in window of
- * their own since 2026-09-06, the dial exists so a launch can move it, and the
- * round window wins only when it is the longer one. A writer dial that lost to
- * the round dial, a blank one that did not fall back to the built-in, or a
- * built-in that dragged the calibration's longer window down, would run the
- * writers under a window nobody chose while the launch note claimed otherwise.
- *
- * The refusal rule is shared with the round dial through `readWindowDial`, so
- * this suite proves the writer dial reaches it and names ITS variable, and
- * leaves the rule's own edges to `grace-override.unit.test.ts`.
- *
- * @module
+ Tests for the window the writer rounds run under.
+ 
+ THE CASE THAT MATTERS IS PRECEDENCE. The writers have a built-in window of
+ their own since 2026-09-06, the dial exists so a launch can move it, and the
+ round window wins only when it is the longer one. A writer dial that lost to
+ the round dial, a blank one that did not fall back to the built-in, or a
+ built-in that dragged the calibration's longer window down, would run the
+ writers under a window nobody chose while the launch note claimed otherwise.
+ 
+ The refusal rule is shared with the round dial through `readWindowDial`, so
+ this suite proves the writer dial reaches it and names ITS variable, and
+ leaves the rule's own edges to `grace-override.unit.test.ts`.
+ 
+ @module
  */
 
 import {
@@ -35,18 +35,18 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Window the reader rounds are held to in the launch this dial was made for.
+ Window the reader rounds are held to in the launch this dial was made for.
  */
 const ROUND = 60_000;
 
 /**
- * Window a launch would give its writers instead.
+ Window a launch would give its writers instead.
  */
 const WRITER = 240_000;
 
 /**
- * Round window longer than the built-in writer window, as the editor
- * calibration sets it.
+ Round window longer than the built-in writer window, as the editor
+ calibration sets it.
  */
 const LONG_ROUND = 300_000;
 
@@ -114,7 +114,7 @@ await describe({
         + 'dial\'s, so the operator corrects the one they set',
       fn: async () => {
         /**
-         * What the reader threw on a value nothing could read.
+         What the reader threw on a value nothing could read.
          */
         const refusal = caught(function readProse(): number {
           return resolveWriterGraceMs({
@@ -170,7 +170,7 @@ await describe({
         + 'ordinary run never hides which window its writers ran under (2026-09-06)',
       fn: async () => {
         /**
-         * Note for a launch that set nothing.
+         Note for a launch that set nothing.
          */
         const note = writerGraceOverrideNote({
           grace: {
@@ -196,7 +196,7 @@ await describe({
         + 'launched it',
       fn: async () => {
         /**
-         * Note for a launch that gave its writers the longer window.
+         Note for a launch that gave its writers the longer window.
          */
         const note = writerGraceOverrideNote({
           grace: {
@@ -218,8 +218,8 @@ await describe({
 },);
 
 /**
- * Static clearer per dial, because deleting a computed key is what
- * `no-dynamic-delete` refuses and each dial has exactly one spelling.
+ Static clearer per dial, because deleting a computed key is what
+ `no-dynamic-delete` refuses and each dial has exactly one spelling.
  */
 const CLEAR_DIAL: Record<string, () => void> = {
   [STRAGGLER_GRACE_VAR]: function clearRoundDial(): void {
@@ -231,21 +231,21 @@ const CLEAR_DIAL: Record<string, () => void> = {
 };
 
 /**
- * Clears one dial's variable.
- *
- * @param variable - which dial
- *
- * @throws {@link Error} when no clearer is known for the variable, since a
- * case that thinks it cleared a dial and did not would test the wrong window
- *
- * @example
- * ```ts
- * clearDial({ variable: WRITER_GRACE_VAR, },);
- * ```
+ Clears one dial's variable.
+ 
+ @param variable - which dial
+ 
+ @throws {@link Error} when no clearer is known for the variable, since a
+ case that thinks it cleared a dial and did not would test the wrong window
+ 
+ @example
+ ```ts
+ clearDial({ variable: WRITER_GRACE_VAR, },);
+ ```
  */
 function clearDial({ variable, }: { readonly variable: string; },): void {
   /**
-   * Clearer for this dial, absent for a variable this suite does not know.
+   Clearer for this dial, absent for a variable this suite does not know.
    */
   const clear = CLEAR_DIAL[variable];
 
@@ -255,18 +255,18 @@ function clearDial({ variable, }: { readonly variable: string; },): void {
 }
 
 /**
- * Sets or clears one window variable for one case, restoring it after.
- *
- * @param variable - which dial
- *
- * @param says - value to set, or nothing to clear the variable
- *
- * @returns Disposable that puts the variable back
- *
- * @example
- * ```ts
- * using dial = dialSaying({ variable: WRITER_GRACE_VAR, },);
- * ```
+ Sets or clears one window variable for one case, restoring it after.
+ 
+ @param variable - which dial
+ 
+ @param says - value to set, or nothing to clear the variable
+ 
+ @returns Disposable that puts the variable back
+ 
+ @example
+ ```ts
+ using dial = dialSaying({ variable: WRITER_GRACE_VAR, },);
+ ```
  */
 function dialSaying(
   {
@@ -278,7 +278,7 @@ function dialSaying(
   },
 ): Disposable {
   /**
-   * Value before the case, restored on dispose.
+   Value before the case, restored on dispose.
    */
   const before = process.env[variable];
 
@@ -458,7 +458,7 @@ await describe({
         },);
 
         /**
-         * What the gather's read threw.
+         What the gather's read threw.
          */
         const refusal = caught(function readUnit(): number {
           return writerRoundGraceMs();
@@ -485,7 +485,7 @@ await describe({
         },);
 
         /**
-         * What the read threw with both dials wrong.
+         What the read threw with both dials wrong.
          */
         const refusal = caught(function readBoth(): number {
           return writerRoundGraceMs();

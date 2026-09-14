@@ -1,19 +1,19 @@
 /**
- * Tests for the straggler window an invocation's rounds run under.
- *
- * THE CASE THAT MATTERS IS THE WRONG OVERRIDE. The dial exists so two runs can
- * differ in the window and in nothing else, and a value it cannot read that
- * quietly became the built-in window would produce two matched runs and a
- * recorded conclusion that a longer window buys nothing. That is not a failed
- * measurement, it is a wrong one, and it would be believed.
- *
- * The empty-string case is the other one worth having, for the reason the cap
- * override's suite gives: an exported-but-empty variable is a shell accident.
- *
- * The override text is injected rather than the environment mutated, so no case
- * here can leak into another.
- *
- * @module
+ Tests for the straggler window an invocation's rounds run under.
+ 
+ THE CASE THAT MATTERS IS THE WRONG OVERRIDE. The dial exists so two runs can
+ differ in the window and in nothing else, and a value it cannot read that
+ quietly became the built-in window would produce two matched runs and a
+ recorded conclusion that a longer window buys nothing. That is not a failed
+ measurement, it is a wrong one, and it would be believed.
+ 
+ The empty-string case is the other one worth having, for the reason the cap
+ override's suite gives: an exported-but-empty variable is a shell accident.
+ 
+ The override text is injected rather than the environment mutated, so no case
+ here can leak into another.
+ 
+ @module
  */
 
 import {
@@ -35,12 +35,12 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Built-in window these cases fall back to, standing in for the shipped one.
+ Built-in window these cases fall back to, standing in for the shipped one.
  */
 const FALLBACK = 180_000;
 
 /**
- * Longer window a measurement run would ask for.
+ Longer window a measurement run would ask for.
  */
 const LONGER = 300_000;
 
@@ -93,7 +93,7 @@ await describe({
         + 'would compare two matched runs and conclude the window buys nothing',
       fn: async () => {
         /**
-         * What the reader threw on a value nothing could read.
+         What the reader threw on a value nothing could read.
          */
         const refusal = caught(function readProse(): number {
           return resolveStragglerGraceMs({
@@ -223,7 +223,7 @@ await describe({
         + 'share one reader without the operator correcting the wrong one',
       fn: async () => {
         /**
-         * What the reader threw for a made-up variable.
+         What the reader threw for a made-up variable.
          */
         const refusal = caught(function readOther(): number {
           return readWindowDial({
@@ -261,7 +261,7 @@ await describe({
         + 'which run this was without reading the shell that launched it',
       fn: async () => {
         /**
-         * Note for a run under the longer window.
+         Note for a run under the longer window.
          */
         const note = graceOverrideNote({
           effectiveMs: LONGER,
@@ -277,20 +277,20 @@ await describe({
 },);
 
 /**
- * Sets or clears the window variable for one case, restoring it after.
- *
- * @param says - value to set, or nothing to clear the variable
- *
- * @returns Disposable that puts the variable back
- *
- * @example
- * ```ts
- * using dial = windowSaying({},);
- * ```
+ Sets or clears the window variable for one case, restoring it after.
+ 
+ @param says - value to set, or nothing to clear the variable
+ 
+ @returns Disposable that puts the variable back
+ 
+ @example
+ ```ts
+ using dial = windowSaying({},);
+ ```
  */
 function windowSaying({ says, }: { readonly says?: string; },): Disposable {
   /**
-   * Value before the case, restored on dispose.
+   Value before the case, restored on dispose.
    */
   const before = process.env[STRAGGLER_GRACE_VAR];
 

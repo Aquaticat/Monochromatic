@@ -25,40 +25,40 @@ import { readJudgeSeats, } from './run-seats-read.ts';
 // cap, on the seam between seating the readers and reading.
 
 /**
- * Seats the picture readers off the meters, then reads every picture with
- * the seated ones.
- *
- * ONE READING OF THE METERS FOR THE STAGE, logged as `JUDGE SEATS
- * phase=pictures`, taken here rather than borrowed from the lanes' reading
- * that follows: the lanes read theirs after this stage has spent its calls,
- * and XIEPT2 on 2026-09-03 showed a provider going dry inside one entry.
- *
- * @param client - run client, whose dryness view seats the readers and whose
- * chat surface reads the pictures
- *
- * @param slices - prepared entry slices naming assets
- *
- * @param entryId - corpus entry whose asset directory is read
- *
- * @param cache - durable paired reading cache
- *
- * @param signal - entry cancellation
- *
- * @param l - entry logger, which records the seating line and the readings
- *
- * @param visualEvidenceReader - optional integration-test evidence seam
- *
- * @param priorReadings - completed evidence retained within this pinned entry
- *
- * @returns Corroborated or reviewed no-text evidence by asset
- *
- * @throws {@link import('./visual-evidence-completeness.ts').VisualEvidenceInterruptedError}
- * when any referenced asset lacks usable evidence
- *
- * @example
- * ```ts
- * const readings = await readSeatedPictures({ client, slices, entryId, cache, signal, l, },);
- * ```
+ Seats the picture readers off the meters, then reads every picture with
+ the seated ones.
+ 
+ ONE READING OF THE METERS FOR THE STAGE, logged as `JUDGE SEATS
+ phase=pictures`, taken here rather than borrowed from the lanes' reading
+ that follows: the lanes read theirs after this stage has spent its calls,
+ and XIEPT2 on 2026-09-03 showed a provider going dry inside one entry.
+ 
+ @param client - run client, whose dryness view seats the readers and whose
+ chat surface reads the pictures
+ 
+ @param slices - prepared entry slices naming assets
+ 
+ @param entryId - corpus entry whose asset directory is read
+ 
+ @param cache - durable paired reading cache
+ 
+ @param signal - entry cancellation
+ 
+ @param l - entry logger, which records the seating line and the readings
+ 
+ @param visualEvidenceReader - optional integration-test evidence seam
+ 
+ @param priorReadings - completed evidence retained within this pinned entry
+ 
+ @returns Corroborated or reviewed no-text evidence by asset
+ 
+ @throws {@link import('./visual-evidence-completeness.ts').VisualEvidenceInterruptedError}
+ when any referenced asset lacks usable evidence
+ 
+ @example
+ ```ts
+ const readings = await readSeatedPictures({ client, slices, entryId, cache, signal, l, },);
+ ```
  */
 export async function readSeatedPictures(
   {
@@ -82,7 +82,7 @@ export async function readSeatedPictures(
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
   /**
-   * The readers this reading of the meters seats.
+   The readers this reading of the meters seats.
    */
   const seats = await readJudgeSeats({
     client,
@@ -106,40 +106,40 @@ export async function readSeatedPictures(
 }
 
 /**
- * Binds one entry's reader so preparation and lanes share completed evidence.
- *
- * Disk-cache persistence does not refresh its open snapshot. Retaining readings
- * here also preserves the evidence already used by archive review if the reader
- * roster changes before lanes start. Newly exposed references still get read.
- *
- * @param input - pinned entry, provider, cache and cancellation boundary
- *
- * @returns Reader whose evidence belongs to this entry alone
- *
- * @example
- * ```ts
- * const readPictures = createPassPictureReader({ client, entryId, cache, signal, l, });
- * ```
+ Binds one entry's reader so preparation and lanes share completed evidence.
+ 
+ Disk-cache persistence does not refresh its open snapshot. Retaining readings
+ here also preserves the evidence already used by archive review if the reader
+ roster changes before lanes start. Newly exposed references still get read.
+ 
+ @param input - pinned entry, provider, cache and cancellation boundary
+ 
+ @returns Reader whose evidence belongs to this entry alone
+ 
+ @example
+ ```ts
+ const readPictures = createPassPictureReader({ client, entryId, cache, signal, l, });
+ ```
  */
 export function createPassPictureReader(
   input: Omit<Parameters<typeof readSeatedPictures>[0], 'slices' | 'priorReadings'>,
 ): PassVisualEvidenceReader {
   /**
-   * Completed readings retained across this entry's preparation boundaries.
+   Completed readings retained across this entry's preparation boundaries.
    */
   const priorReadings = new Map<string, PairedReading>();
   /**
-   * Reads missing entry pictures and retains the completed result.
-   *
-   * @param slices - current prepared source references
-   *
-   * @returns Evidence shared by archive review and later lanes
+   Reads missing entry pictures and retains the completed result.
+   
+   @param slices - current prepared source references
+   
+   @returns Evidence shared by archive review and later lanes
    */
   async function readPictures(
     { slices, }: Parameters<PassVisualEvidenceReader>[0],
   ): Promise<ReadonlyMap<string, PairedReading>> {
     /**
-     * Complete evidence, checked before anything enters the retained map.
+     Complete evidence, checked before anything enters the retained map.
      */
     const readings = await readSeatedPictures({
       ...input,

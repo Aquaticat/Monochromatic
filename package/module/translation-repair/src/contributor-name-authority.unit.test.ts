@@ -1,9 +1,9 @@
 /**
- * Tests target-authoritative contributor identity extraction.
- *
- * Fixtures are invented and mirror archive attribution grammar only.
- *
- * @module
+ Tests target-authoritative contributor identity extraction.
+ 
+ Fixtures are invented and mirror archive attribution grammar only.
+ 
+ @module
  */
 
 import {

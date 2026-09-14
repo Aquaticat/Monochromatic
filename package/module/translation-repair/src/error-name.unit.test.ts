@@ -1,12 +1,12 @@
 /**
- * Tests for naming a caught value.
- *
- * The cases that matter are the ones a `catch` binding actually sees, which is
- * anything at all: this exists because asserting a caught value to `Error` is a
- * claim nobody checked, and the throw that breaks that assumption is the throw
- * whose report someone is reading.
- *
- * @module
+ Tests for naming a caught value.
+ 
+ The cases that matter are the ones a `catch` binding actually sees, which is
+ anything at all: this exists because asserting a caught value to `Error` is a
+ claim nobody checked, and the throw that breaks that assumption is the throw
+ whose report someone is reading.
+ 
+ @module
  */
 
 import {
@@ -33,16 +33,16 @@ await describe({
       name: 'NAMES a subclass by ITS name rather than by Error, which is the whole point of asking',
       fn: async () => {
         /**
-         * Error class standing in for the pipeline's named ones.
+         Error class standing in for the pipeline's named ones.
          */
         class TabbyMissingError extends Error {
           /**
-           * Names itself the way the pipeline's error classes do.
-           *
-           * @example
-           * ```ts
-           * throw new TabbyMissingError();
-           * ```
+           Names itself the way the pipeline's error classes do.
+           
+           @example
+           ```ts
+           throw new TabbyMissingError();
+           ```
            */
           constructor() {
             super('no tabby',);

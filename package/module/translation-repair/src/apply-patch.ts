@@ -14,145 +14,145 @@ import type { EditableEnvelope, } from './patch-model.ts';
 // weather, so they throw instead of rejecting.
 
 /**
- * One edit an editor proposes: replace one envelope's content wholesale.
- * Replacing a zero-width envelope inserts; an empty replacement deletes.
- *
- * @example
- * ```ts
- * const operation: PatchOperation = {
- *   envelopeId: 'envelope/abc',
- *   baseHash: envelope.baseHash,
- *   newText: 'The cat naps on the warm windowsill.',
- * };
- * ```
+ One edit an editor proposes: replace one envelope's content wholesale.
+ Replacing a zero-width envelope inserts; an empty replacement deletes.
+ 
+ @example
+ ```ts
+ const operation: PatchOperation = {
+   envelopeId: 'envelope/abc',
+   baseHash: envelope.baseHash,
+   newText: 'The cat naps on the warm windowsill.',
+ };
+ ```
  */
 export type PatchOperation = {
   /**
-   * Envelope the edit targets.
+   Envelope the edit targets.
    */
   readonly envelopeId: string;
 
   /**
-   * Echo of the envelope's base hash, proving the editor wrote against
-   * the text it replaces.
+   Echo of the envelope's base hash, proving the editor wrote against
+   the text it replaces.
    */
   readonly baseHash: string;
 
   /**
-   * Replacement for the whole envelope content.
+   Replacement for the whole envelope content.
    */
   readonly newText: string;
 };
 
 /**
- * One rejected operation with its scorecard-stable reason.
- *
- * @example
- * ```ts
- * const rejection: PatchRejection = { operation, reason: 'stale-base-hash', };
- * ```
+ One rejected operation with its scorecard-stable reason.
+ 
+ @example
+ ```ts
+ const rejection: PatchRejection = { operation, reason: 'stale-base-hash', };
+ ```
  */
 /**
- * Whether this application enforces the preservation gate, and with what
- * licence.
- *
- * A DISCRIMINATED CHOICE rather than an optional map, so every caller states
- * its intent. The naturalness lane rewrites whole paragraphs by design and has
- * no accepted-issue quotes to license that, so an omitted map would silently
- * make the gate reject exactly the work that lane exists to do.
- *
- * @example
- * ```ts
- * const preservation: PreservationMode = { mode: 'skip', };
- * ```
+ Whether this application enforces the preservation gate, and with what
+ licence.
+ 
+ A DISCRIMINATED CHOICE rather than an optional map, so every caller states
+ its intent. The naturalness lane rewrites whole paragraphs by design and has
+ no accepted-issue quotes to license that, so an omitted map would silently
+ make the gate reject exactly the work that lane exists to do.
+ 
+ @example
+ ```ts
+ const preservation: PreservationMode = { mode: 'skip', };
+ ```
  */
 export type PreservationMode =
   | {
     /**
-     * Reject an operation that drops content no issue quoted.
+     Reject an operation that drops content no issue quoted.
      */
     readonly mode: 'enforce';
 
     /**
-     * Defect text each envelope's issues quoted, keyed by envelope id. What an
-     * issue quoted is licensed to disappear.
+     Defect text each envelope's issues quoted, keyed by envelope id. What an
+     issue quoted is licensed to disappear.
      */
     readonly licensedQuotes: ReadonlyMap<string, readonly string[]>;
   }
   | {
     /**
-     * Apply without the gate, for a stage licensed to rewrite wholesale.
+     Apply without the gate, for a stage licensed to rewrite wholesale.
      */
     readonly mode: 'skip';
   };
 
 /**
- * One rejected operation with its scorecard-stable reason.
- *
- * @example
- * ```ts
- * const rejection: PatchRejection = { operation, reason: 'stale-base-hash', };
- * ```
+ One rejected operation with its scorecard-stable reason.
+ 
+ @example
+ ```ts
+ const rejection: PatchRejection = { operation, reason: 'stale-base-hash', };
+ ```
  */
 export type PatchRejection = {
   /**
-   * Operation as proposed.
+   Operation as proposed.
    */
   readonly operation: PatchOperation;
 
   /**
-   * Which gate refused and why, in scorecard-stable wording.
+   Which gate refused and why, in scorecard-stable wording.
    */
   readonly reason: string;
 };
 
 /**
- * Everything patch application decided.
- *
- * @example
- * ```ts
- * const outcome: PatchOutcome = applyPatchOperations({ targetText, envelopes, operations, },);
- * ```
+ Everything patch application decided.
+ 
+ @example
+ ```ts
+ const outcome: PatchOutcome = applyPatchOperations({ targetText, envelopes, operations, },);
+ ```
  */
 export type PatchOutcome = {
   /**
-   * Translation with every accepted operation applied.
+   Translation with every accepted operation applied.
    */
   readonly patchedText: string;
 
   /**
-   * Operations that passed every gate, in input order.
+   Operations that passed every gate, in input order.
    */
   readonly applied: readonly PatchOperation[];
 
   /**
-   * Operations refused, each with its reason, in input order.
+   Operations refused, each with its reason, in input order.
    */
   readonly rejected: readonly PatchRejection[];
 };
 
 /**
- * Thrown when envelopes overlap: derivation guarantees disjoint envelopes,
- * so an overlap is a construction bug the caller must fix, not editor
- * output to tolerate.
- *
- * @example
- * ```ts
- * throw new EnvelopeOverlapError({ leftId: 'envelope/a', rightId: 'envelope/b', },);
- * ```
+ Thrown when envelopes overlap: derivation guarantees disjoint envelopes,
+ so an overlap is a construction bug the caller must fix, not editor
+ output to tolerate.
+ 
+ @example
+ ```ts
+ throw new EnvelopeOverlapError({ leftId: 'envelope/a', rightId: 'envelope/b', },);
+ ```
  */
 export class EnvelopeOverlapError extends Error {
   /**
-   * Declares this message safe to forward: it names two envelope ids and neither envelope's text.
+   Declares this message safe to forward: it names two envelope ids and neither envelope's text.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   * Builds the overlap report from the two colliding envelope ids.
-   *
-   * @param leftId - envelope earlier in document order
-   *
-   * @param rightId - envelope overlapping it
+   Builds the overlap report from the two colliding envelope ids.
+   
+   @param leftId - envelope earlier in document order
+   
+   @param rightId - envelope overlapping it
    */
   constructor(
     {
@@ -169,27 +169,27 @@ export class EnvelopeOverlapError extends Error {
 }
 
 /**
- * Applies editor operations to the translation through every deterministic
- * gate. Gates per operation, in order: the envelope must exist, only one
- * operation may claim it, the echoed base hash must match, the document
- * region must still equal the envelope base, and the replacement must
- * actually change the region. Accepted operations apply in descending
- * document order so earlier offsets stay valid.
- *
- * @param targetText - full translation the envelopes were derived from
- *
- * @param envelopes - non-overlapping envelopes in any order
- *
- * @param operations - editor proposals in wire order
- *
- * @returns Patched text plus applied and rejected operations as data
- *
- * @throws {@link EnvelopeOverlapError} when two envelopes overlap
- *
- * @example
- * ```ts
- * const { patchedText, rejected, } = applyPatchOperations({ targetText, envelopes, operations, },);
- * ```
+ Applies editor operations to the translation through every deterministic
+ gate. Gates per operation, in order: the envelope must exist, only one
+ operation may claim it, the echoed base hash must match, the document
+ region must still equal the envelope base, and the replacement must
+ actually change the region. Accepted operations apply in descending
+ document order so earlier offsets stay valid.
+ 
+ @param targetText - full translation the envelopes were derived from
+ 
+ @param envelopes - non-overlapping envelopes in any order
+ 
+ @param operations - editor proposals in wire order
+ 
+ @returns Patched text plus applied and rejected operations as data
+ 
+ @throws {@link EnvelopeOverlapError} when two envelopes overlap
+ 
+ @example
+ ```ts
+ const { patchedText, rejected, } = applyPatchOperations({ targetText, envelopes, operations, },);
+ ```
  */
 export function applyPatchOperations(
   {
@@ -205,7 +205,7 @@ export function applyPatchOperations(
   },
 ): PatchOutcome {
   /**
-   * Envelopes in document order for the overlap check.
+   Envelopes in document order for the overlap check.
    */
   const ordered = [...envelopes,].toSorted(function byStart(
     left,
@@ -215,7 +215,7 @@ export function applyPatchOperations(
   },);
   for (const [index, envelope,] of ordered.entries()) {
     /**
-     * Envelope following this one in document order, when present.
+     Envelope following this one in document order, when present.
      */
     const next = ordered[index + 1];
     if ((next !== undefined) && (next.startOffset < envelope.endOffset)) {
@@ -227,7 +227,7 @@ export function applyPatchOperations(
   }
 
   /**
-   * Envelopes keyed by id for operation lookup.
+   Envelopes keyed by id for operation lookup.
    */
   const byId = new Map(envelopes.map(function toEntry(envelope,) {
     return [
@@ -237,22 +237,22 @@ export function applyPatchOperations(
   },),);
 
   /**
-   * Operations that passed every gate, in input order.
+   Operations that passed every gate, in input order.
    */
   const applied: PatchOperation[] = [];
 
   /**
-   * Refusals in input order.
+   Refusals in input order.
    */
   const rejected: PatchRejection[] = [];
 
   /**
-   * Envelope ids already claimed by an accepted operation.
+   Envelope ids already claimed by an accepted operation.
    */
   const claimed = new Set<string>();
   for (const operation of operations) {
     /**
-     * Envelope the operation targets, when known.
+     Envelope the operation targets, when known.
      */
     const envelope = byId.get(operation.envelopeId,);
     if (envelope === undefined) {
@@ -278,7 +278,7 @@ export function applyPatchOperations(
     }
 
     /**
-     * Text currently occupying the envelope region in the document.
+     Text currently occupying the envelope region in the document.
      */
     const current = targetText.slice(
       envelope.startOffset,
@@ -294,19 +294,19 @@ export function applyPatchOperations(
       continue;
     }
     /**
-     * Replacement with the document's quote style restored, which is what
-     * ships and therefore what every check below reads.
-     *
-     * RESTORED BEFORE THE CHECKS rather than after them. Editors flatten curly
-     * quotes to straight ones often enough that a repaired paragraph ends up
-     * reading differently from every paragraph around it, so the restoration
-     * is deterministic and recorded; run last, it altered text the preservation
-     * gate had already judged, and an edit that only flattened quotes shipped
-     * as an applied operation. The convention comes from the WHOLE text, not
-     * the replaced region alone: regions run to a median of 75 characters, so
-     * most carry no quote to learn from, and a region-scoped rule stays silent
-     * exactly when an editor writes a fresh contraction into a curly-quoted
-     * document.
+     Replacement with the document's quote style restored, which is what
+     ships and therefore what every check below reads.
+     
+     RESTORED BEFORE THE CHECKS rather than after them. Editors flatten curly
+     quotes to straight ones often enough that a repaired paragraph ends up
+     reading differently from every paragraph around it, so the restoration
+     is deterministic and recorded; run last, it altered text the preservation
+     gate had already judged, and an edit that only flattened quotes shipped
+     as an applied operation. The convention comes from the WHOLE text, not
+     the replaced region alone: regions run to a median of 75 characters, so
+     most carry no quote to learn from, and a region-scoped rule stays silent
+     exactly when an editor writes a fresh contraction into a curly-quoted
+     document.
      */
     const restored = restoreTypography({
       replacement: operation.newText,
@@ -323,7 +323,7 @@ export function applyPatchOperations(
     claimed.add(operation.envelopeId,);
     if (preservation.mode === 'enforce') {
       /**
-       * Whether the edit kept everything no issue asked it to change.
+       Whether the edit kept everything no issue asked it to change.
        */
       const preserved = checkPreservation({
         before: envelope.baseText,
@@ -357,27 +357,27 @@ export function applyPatchOperations(
   }
 
   /**
-   * Accepted operations in descending document order,
-   * so applying one never shifts the offsets of those still pending.
+   Accepted operations in descending document order,
+   so applying one never shifts the offsets of those still pending.
    */
   const applyOrder = [...applied,].toSorted(function byStartDescending(
     left,
     right,
   ) {
     /**
-     * Envelope of the left operation, present because acceptance proved it.
+     Envelope of the left operation, present because acceptance proved it.
      */
     const leftEnvelope = nonNullishOrThrow(byId.get(left.envelopeId,),);
 
     /**
-     * Envelope of the right operation, present because acceptance proved it.
+     Envelope of the right operation, present because acceptance proved it.
      */
     const rightEnvelope = nonNullishOrThrow(byId.get(right.envelopeId,),);
     return rightEnvelope.startOffset - leftEnvelope.startOffset;
   },);
 
   /**
-   * Translation rebuilt envelope by envelope.
+   Translation rebuilt envelope by envelope.
    */
   const patchedText = applyOrder.reduce(
     function applyOne(
@@ -385,7 +385,7 @@ export function applyPatchOperations(
       operation,
     ): string {
       /**
-       * Envelope of this accepted operation, present by acceptance.
+       Envelope of this accepted operation, present by acceptance.
        */
       const envelope = nonNullishOrThrow(byId.get(operation.envelopeId,),);
       return text.slice(

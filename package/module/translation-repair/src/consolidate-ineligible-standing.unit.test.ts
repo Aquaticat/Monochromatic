@@ -1,16 +1,16 @@
 /**
- * Tests for the one-line rendering of a deterministic verdict on a standing
- * text, written for the run log.
- *
- * WHAT THESE PIN: each of the verdict's three kinds renders on its own line,
- * so a consolidation warning names the rule that refused a standing rather
- * than saying only that it "fails publication eligibility", which is what
- * the 2026-09-04 luxuanwen3 log said about a link destination the archive
- * had rewritten.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for the one-line rendering of a deterministic verdict on a standing
+ text, written for the run log.
+ 
+ WHAT THESE PIN: each of the verdict's three kinds renders on its own line,
+ so a consolidation warning names the rule that refused a standing rather
+ than saying only that it "fails publication eligibility", which is what
+ the 2026-09-04 luxuanwen3 log said about a link destination the archive
+ had rewritten.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -73,8 +73,8 @@ await describe({
       name: 'RENDERS A LIVE VERDICT on a candidate that carries neither rendering of a link',
       fn: async () => {
         /**
-         * Verdict on a rendering that dropped the link where the original
-         * carries one destination and the page another.
+         Verdict on a rendering that dropped the link where the original
+         carries one destination and the page another.
          */
         const validation = validateTranslatedSlice({
           sourceText: '她的头像由[画师](https://twitter.com/cat)绘制。',
@@ -82,7 +82,7 @@ await describe({
           pageText: 'Her avatar was drawn by [the artist](https://x.com/cat).',
         },);
         /**
-         * Rendered line for the log.
+         Rendered line for the log.
          */
         const line = describeStandingVerdict({ validation, },);
         expect(validation.kind,).toBe('invalid',);

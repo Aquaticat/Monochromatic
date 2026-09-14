@@ -18,61 +18,61 @@ import { createHash, } from 'node:crypto';
 // its text would break the moment it was used for what it is for.
 
 /**
- * Prefix distinguishing this digest from any other hash in the codebase.
- *
- * Carried inside the hashed value rather than beside it, so a digest computed
- * for something else can never collide with one computed for a draw, and so a
- * later change to what a draw identity contains announces itself as a mismatch
- * rather than as agreement.
+ Prefix distinguishing this digest from any other hash in the codebase.
+ 
+ Carried inside the hashed value rather than beside it, so a digest computed
+ for something else can never collide with one computed for a draw, and so a
+ later change to what a draw identity contains announces itself as a mismatch
+ rather than as agreement.
  */
 export const DRAW_IDENTITY_DOMAIN = 'sample-draw/v1';
 
 /**
- * The part of a drawn item that its draw identity is taken over.
- *
- * @example
- * ```ts
- * const item: DrawIdentityItem = { position: 1, entryId: 'Kitten', issueId: 'adjudicated/nap', };
- * ```
+ The part of a drawn item that its draw identity is taken over.
+ 
+ @example
+ ```ts
+ const item: DrawIdentityItem = { position: 1, entryId: 'Kitten', issueId: 'adjudicated/nap', };
+ ```
  */
 export type DrawIdentityItem = {
   /**
-   * One-based sheet position.
+   One-based sheet position.
    */
   readonly position: number;
 
   /**
-   * Corpus entry the issue came from.
+   Corpus entry the issue came from.
    */
   readonly entryId: string;
 
   /**
-   * Adjudicated issue drawn at this position.
+   Adjudicated issue drawn at this position.
    */
   readonly issueId: string;
 };
 
 /**
- * Fingerprints one draw from the items it produced.
- *
- * Canonicalized through `JSON.stringify` rather than by joining fields with a
- * delimiter. An entry id or issue id is arbitrary text crossing into whatever
- * grammar the canonical form uses, and a delimiter-joined encoding lets one
- * item containing the delimiter impersonate two, so two different draws could
- * hash alike.
- *
- * @param seed - draw seed
- *
- * @param corpusSha - pinned corpus commit
- *
- * @param items - drawn items, in the order both sheets render them
- *
- * @returns Hex digest naming this exact draw
- *
- * @example
- * ```ts
- * const digest = computeDrawDigest({ seed, corpusSha, items, },);
- * ```
+ Fingerprints one draw from the items it produced.
+ 
+ Canonicalized through `JSON.stringify` rather than by joining fields with a
+ delimiter. An entry id or issue id is arbitrary text crossing into whatever
+ grammar the canonical form uses, and a delimiter-joined encoding lets one
+ item containing the delimiter impersonate two, so two different draws could
+ hash alike.
+ 
+ @param seed - draw seed
+ 
+ @param corpusSha - pinned corpus commit
+ 
+ @param items - drawn items, in the order both sheets render them
+ 
+ @returns Hex digest naming this exact draw
+ 
+ @example
+ ```ts
+ const digest = computeDrawDigest({ seed, corpusSha, items, },);
+ ```
  */
 export function computeDrawDigest(
   {

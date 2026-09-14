@@ -1,12 +1,12 @@
 /**
- * Tests for the one-character rule that separates a verdict letter from a word
- * beginning with the same letter.
- *
- * Both sheet readers depend on this and each exercises it only through its own
- * format, so the rule itself is tested here rather than twice at a distance.
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests for the one-character rule that separates a verdict letter from a word
+ beginning with the same letter.
+ 
+ Both sheet readers depend on this and each exercises it only through its own
+ format, so the rule itself is tested here rather than twice at a distance.
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import {

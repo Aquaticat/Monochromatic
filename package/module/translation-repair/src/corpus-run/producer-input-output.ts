@@ -13,38 +13,38 @@ import { PRODUCER_INPUT_PATHS, } from './producer-input-paths.ts';
 //region Exclusive unqualified input output
 
 /**
- * The input application cannot write caller-selected files or preparation-attempt markers.
- *
- * @example
- * ```ts
- * const file: ProducerInputOutputFile = 'complete.json';
- * ```
+ The input application cannot write caller-selected files or preparation-attempt markers.
+ 
+ @example
+ ```ts
+ const file: ProducerInputOutputFile = 'complete.json';
+ ```
  */
 type ProducerInputOutputFile = 'unqualified-inputs.json' | 'complete.json';
 
 /**
- * Private output files remain inaccessible to other accounts.
+ Private output files remain inaccessible to other accounts.
  */
 const PRIVATE_OUTPUT_MODE = 0o600;
 
 /**
- * Writes and content-syncs one fixed file without overwrite, rename, resume or silent cleanup.
- * The host already created and bound this private output directory before data I/O.
- *
- * @param file - fixed artifact or completion role
- *
- * @param text - exact serialized output, never logged
- *
- * @param l - owning application logger
- *
- * @returns Raw output identity after file-content synchronization
- *
- * @throws ProducerInputRunError when exclusive write or synchronization fails
- *
- * @example
- * ```ts
- * const identity = await writeProducerInputOutput({ file: 'unqualified-inputs.json', text, l });
- * ```
+ Writes and content-syncs one fixed file without overwrite, rename, resume or silent cleanup.
+ The host already created and bound this private output directory before data I/O.
+ 
+ @param file - fixed artifact or completion role
+ 
+ @param text - exact serialized output, never logged
+ 
+ @param l - owning application logger
+ 
+ @returns Raw output identity after file-content synchronization
+ 
+ @throws ProducerInputRunError when exclusive write or synchronization fails
+ 
+ @example
+ ```ts
+ const identity = await writeProducerInputOutput({ file: 'unqualified-inputs.json', text, l });
+ ```
  */
 export async function writeProducerInputOutput({
   file,
@@ -56,7 +56,7 @@ export async function writeProducerInputOutput({
   readonly l: Logger;
 },): Promise<ProducerInputFileIdentity> {
   /**
-   * Output telemetry carries fixed role names, not corpus-derived JSON.
+   Output telemetry carries fixed role names, not corpus-derived JSON.
    */
   const pl = tagged({
     tag: writeProducerInputOutput.name,
@@ -65,7 +65,7 @@ export async function writeProducerInputOutput({
   if ((file !== 'unqualified-inputs.json') && (file !== 'complete.json'))
     throw new ProducerInputRunError({ operation: 'write-output', });
   /**
-   * The mounted output root is fixed by the specialized runner.
+   The mounted output root is fixed by the specialized runner.
    */
   const path = join(
     PRODUCER_INPUT_PATHS.output,
@@ -74,7 +74,7 @@ export async function writeProducerInputOutput({
   pl.debug(`writing exclusive preparation input output ${JSON.stringify(file)}`);
   try {
     /**
-     * Exclusive creation preserves any completed or partial file rather than reusing it.
+     Exclusive creation preserves any completed or partial file rather than reusing it.
      */
     await using handle = await open(
       path,
@@ -95,7 +95,7 @@ export async function writeProducerInputOutput({
     });
   }
   /**
-   * This identity describes completed bytes, not review or downstream acquisition permission.
+   This identity describes completed bytes, not review or downstream acquisition permission.
    */
   const identity = {
     bytes: Buffer.byteLength(

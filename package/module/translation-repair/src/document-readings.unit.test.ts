@@ -1,25 +1,25 @@
 /**
- * Tests for gathering one document's picture readings before its slices run.
- *
- * WHAT THESE PIN is the arithmetic that makes the stage affordable and the
- * store that makes a resume honest.
- *
- * ONCE PER PICTURE, NOT ONCE PER SLICE. A picture named by one slice is shown to
- * that slice and to both its neighbours, so a naive gather would send the same
- * asset three times. Over the pinned corpus that difference is most of the work.
- *
- * AND ONCE PER RUN, NOT ONCE PER ATTEMPT. A reading is not deterministic: ask
- * one model the same question about the same picture twice and the wording
- * differs. Those words are in the translate slice key, because a judge shown
- * different words can reach a different answer. Without the store, a resumed
- * entry would re-read every picture into slightly different words, every key
- * naming a picture would change, and every settled slice on a picture-bearing
- * document would be re-bought. The store is what makes a resumed key equal to
- * the key it resumes.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for gathering one document's picture readings before its slices run.
+ 
+ WHAT THESE PIN is the arithmetic that makes the stage affordable and the
+ store that makes a resume honest.
+ 
+ ONCE PER PICTURE, NOT ONCE PER SLICE. A picture named by one slice is shown to
+ that slice and to both its neighbours, so a naive gather would send the same
+ asset three times. Over the pinned corpus that difference is most of the work.
+ 
+ AND ONCE PER RUN, NOT ONCE PER ATTEMPT. A reading is not deterministic: ask
+ one model the same question about the same picture twice and the wording
+ differs. Those words are in the translate slice key, because a judge shown
+ different words can reach a different answer. Without the store, a resumed
+ entry would re-read every picture into slightly different words, every key
+ naming a picture would change, and every settled slice on a picture-bearing
+ document would be re-bought. The store is what makes a resumed key equal to
+ the key it resumes.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -39,24 +39,24 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Logger the gather writes its progress to.
+ Logger the gather writes its progress to.
  */
 const l = tagged({ tag: 'document-readings-test', },);
 
 /**
- * Deterministic reader that always finds text, so every picture reaches the
- * models and these cases keep asking what they were written to ask.
- *
- * SUPPLIED RATHER THAN LEFT TO THE REAL ONE, which shells out to `dwebp` and
- * `tesseract`. A case that reached those would be asking what tools this
- * machine carries, and would answer differently on one that carries none.
- *
- * @returns Reading with enough characters to clear the gate
- *
- * @example
- * ```ts
- * await readDocumentPictures({ readOcr: sawText, ... },);
- * ```
+ Deterministic reader that always finds text, so every picture reaches the
+ models and these cases keep asking what they were written to ask.
+ 
+ SUPPLIED RATHER THAN LEFT TO THE REAL ONE, which shells out to `dwebp` and
+ `tesseract`. A case that reached those would be asking what tools this
+ machine carries, and would answer differently on one that carries none.
+ 
+ @returns Reading with enough characters to clear the gate
+ 
+ @example
+ ```ts
+ await readDocumentPictures({ readOcr: sawText, ... },);
+ ```
  */
 async function sawText(): Promise<{
   readonly kind: 'read';
@@ -69,7 +69,7 @@ async function sawText(): Promise<{
 }
 
 /**
- * Vision sub-roster, which is exactly these two models.
+ Vision sub-roster, which is exactly these two models.
  */
 const READERS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
@@ -77,55 +77,55 @@ const READERS: readonly RosterModelId[] = [
 ];
 
 /**
- * Placeholder the corpus writes for an entry's own directory.
- *
- * WRITTEN AS AN ESCAPED TEMPLATE LITERAL, the same way `photo-reference`'s own
- * fixtures write it: the corpus text carries a literal dollar-brace, which a
- * template literal escapes without an expression and a plain string cannot
- * carry without looking like an accident.
+ Placeholder the corpus writes for an entry's own directory.
+ 
+ WRITTEN AS AN ESCAPED TEMPLATE LITERAL, the same way `photo-reference`'s own
+ fixtures write it: the corpus text carries a literal dollar-brace, which a
+ template literal escapes without an expression and a plain string cannot
+ carry without looking like an accident.
  */
 const ENTRY_PLACEHOLDER = `\${path}`;
 
 /**
- * What one reader transcribed from the picture under test.
+ What one reader transcribed from the picture under test.
  */
 const READING = '走失猫咪 Mittens，虎斑，2019 年出生，联系 @mittenspaw。';
 
 /**
- * What the other transcribed from it, worded differently where a transcription
- * can differ and identically where it cannot.
+ What the other transcribed from it, worded differently where a transcription
+ can differ and identically where it cannot.
  */
 const AGREEING_READING = '走失猫咪 Mittens，虎斑，2019 年出生，请联系 @mittenspaw。';
 
 /**
- * Source text naming one picture, in the corpus's only image construct.
- *
- * @param assetName - file name within entry's photos directory
- *
- * @returns Passage showing that picture
- *
- * @example
- * ```ts
- * const text = showing({ assetName: 'noticeboard.webp', },);
- * ```
+ Source text naming one picture, in the corpus's only image construct.
+ 
+ @param assetName - file name within entry's photos directory
+ 
+ @returns Passage showing that picture
+ 
+ @example
+ ```ts
+ const text = showing({ assetName: 'noticeboard.webp', },);
+ ```
  */
 function showing({ assetName, }: { readonly assetName: string; },): string {
   return `小猫在窗台上睡觉。\n\n<PhotoScroll photos={[ '${ENTRY_PLACEHOLDER}/photos/${assetName}' ]} />\n`;
 }
 
 /**
- * One slice pair whose original side carries given text.
- *
- * @param text - original-side text this slice covers
- *
- * @param sliceIndex - position of this slice in its document
- *
- * @returns Pair whose original side carries that text
- *
- * @example
- * ```ts
- * const pair = sliceOf({ text: showing({ assetName: 'a.webp', },), sliceIndex: 0, },);
- * ```
+ One slice pair whose original side carries given text.
+ 
+ @param text - original-side text this slice covers
+ 
+ @param sliceIndex - position of this slice in its document
+ 
+ @returns Pair whose original side carries that text
+ 
+ @example
+ ```ts
+ const pair = sliceOf({ text: showing({ assetName: 'a.webp', },), sliceIndex: 0, },);
+ ```
  */
 function sliceOf(
   {
@@ -155,43 +155,43 @@ function sliceOf(
 }
 
 /**
- * Bytes standing in for a picture, whose content no rule here reads.
- *
- * @param seed - byte every position carries, so two calls differ by content
- *
- * @returns Small buffer of that byte
- *
- * @example
- * ```ts
- * const bytes = bytesOf({ seed: 7, },);
- * ```
+ Bytes standing in for a picture, whose content no rule here reads.
+ 
+ @param seed - byte every position carries, so two calls differ by content
+ 
+ @returns Small buffer of that byte
+ 
+ @example
+ ```ts
+ const bytes = bytesOf({ seed: 7, },);
+ ```
  */
 function bytesOf({ seed, }: { readonly seed: number; },): Uint8Array {
   return new Uint8Array(64,).fill(seed,);
 }
 
 /**
- * Client answering each reader with its scripted transcription, recording every
- * model it was asked.
- *
- * @returns Client and models a reading was requested from, in order
- *
- * @example
- * ```ts
- * const { client, asked, } = agreeingClient();
- * ```
+ Client answering each reader with its scripted transcription, recording every
+ model it was asked.
+ 
+ @returns Client and models a reading was requested from, in order
+ 
+ @example
+ ```ts
+ const { client, asked, } = agreeingClient();
+ ```
  */
 function agreeingClient(): {
   readonly client: SyntheticClient;
   readonly asked: RosterModelId[];
 } {
   /**
-   * Models a reading was requested from.
+   Models a reading was requested from.
    */
   const asked: RosterModelId[] = [];
 
   /**
-   * Transcription each reader returns.
+   Transcription each reader returns.
    */
   const scripted: Readonly<Record<string, string>> = {
     'hf:moonshotai/Kimi-K3': READING,
@@ -203,7 +203,7 @@ function agreeingClient(): {
     client: {
       chatText: async (request,) => {
         /**
-         * Model this exchange names.
+         Model this exchange names.
          */
         const { modelId, } = request;
         asked.push(modelId,);
@@ -220,16 +220,16 @@ function agreeingClient(): {
 }
 
 /**
- * Store recording what it was asked to persist.
- *
- * @param resumed - readings an earlier run settled, keyed by reading key
- *
- * @returns Cache and what it was told to write
- *
- * @example
- * ```ts
- * const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
- * ```
+ Store recording what it was asked to persist.
+ 
+ @param resumed - readings an earlier run settled, keyed by reading key
+ 
+ @returns Cache and what it was told to write
+ 
+ @example
+ ```ts
+ const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
+ ```
  */
 function recordingCache(
   { resumed, }: { readonly resumed: ReadonlyMap<string, PairedReading>; },
@@ -238,7 +238,7 @@ function recordingCache(
   readonly persisted: string[];
 } {
   /**
-   * Keys written during this gather.
+   Keys written during this gather.
    */
   const persisted: string[] = [];
 
@@ -254,22 +254,22 @@ function recordingCache(
 }
 
 /**
- * A client whose every reader throws, which is what provider trouble looks
- * like from here.
- *
- * @returns Client and the models it was asked about
- *
- * @example
- * ```ts
- * const { client, } = failingClient();
- * ```
+ A client whose every reader throws, which is what provider trouble looks
+ like from here.
+ 
+ @returns Client and the models it was asked about
+ 
+ @example
+ ```ts
+ const { client, } = failingClient();
+ ```
  */
 function failingClient(): {
   readonly client: SyntheticClient;
   readonly asked: RosterModelId[];
 } {
   /**
-   * Models asked, in order.
+   Models asked, in order.
    */
   const asked: RosterModelId[] = [];
   return {
@@ -290,19 +290,19 @@ function failingClient(): {
 }
 
 /**
- * A client whose two readers describe different pictures, which is a stable
- * verdict about the roster rather than about the evening.
- *
- * @returns Client
- *
- * @example
- * ```ts
- * const { client, } = disagreeingClient();
- * ```
+ A client whose two readers describe different pictures, which is a stable
+ verdict about the roster rather than about the evening.
+ 
+ @returns Client
+ 
+ @example
+ ```ts
+ const { client, } = disagreeingClient();
+ ```
  */
 function disagreeingClient(): { readonly client: SyntheticClient; } {
   /**
-   * Readings that share no words.
+   Readings that share no words.
    */
   const scripted: Readonly<Record<string, string>> = {
     'hf:moonshotai/Kimi-K3': READING,
@@ -330,17 +330,17 @@ await describe({
         + 'persists a disagreement, which is a stable fact about the roster, as the positive control',
       fn: async () => {
         /**
-         * Both readers throwing, which used to be cached as permanent.
+         Both readers throwing, which used to be cached as permanent.
          */
         const failing = failingClient();
 
         /**
-         * Cache under the failing client.
+         Cache under the failing client.
          */
         const transientCache = recordingCache({ resumed: new Map(), },);
 
         /**
-         * Readings under the failing client.
+         Readings under the failing client.
          */
         const unread = await readDocumentPictures({
           readOcr: sawText,
@@ -361,7 +361,7 @@ await describe({
         expect(transientCache.persisted.length,).toBe(0,);
 
         /**
-         * Cache under the disagreeing client.
+         Cache under the disagreeing client.
          */
         const stableCache = recordingCache({ resumed: new Map(), },);
         const disagreed = await readDocumentPictures({
@@ -391,7 +391,7 @@ await describe({
         const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
 
         /**
-         * Three consecutive slices all showing one picture.
+         Three consecutive slices all showing one picture.
          */
         const slices: readonly ChunkPair[] = [
           0,
@@ -405,7 +405,7 @@ await describe({
         },);
 
         /**
-         * What the gather produced.
+         What the gather produced.
          */
         const readings = await readDocumentPictures({
           readOcr: sawText,
@@ -506,7 +506,7 @@ await describe({
         const { client, asked, } = agreeingClient();
 
         /**
-         * Reading an earlier run settled for this picture.
+         Reading an earlier run settled for this picture.
          */
         const stored: PairedReading = {
           kind: 'corroborated',
@@ -518,8 +518,8 @@ await describe({
         };
 
         /**
-         * First gather, whose only purpose is to learn the key this picture is
-         * stored under, so the second gather stores it under the same one.
+         First gather, whose only purpose is to learn the key this picture is
+         stored under, so the second gather stores it under the same one.
          */
         const learning = recordingCache({ resumed: new Map(), },);
         await readDocumentPictures({
@@ -538,20 +538,20 @@ await describe({
         },);
 
         /**
-         * Key that gather wrote under.
+         Key that gather wrote under.
          */
         const [key,] = learning.persisted;
         if (key === undefined)
           throw new Error('one key by construction',);
 
         /**
-         * Calls spent before the resuming gather, so the assertion below reads
-         * the difference rather than a total.
+         Calls spent before the resuming gather, so the assertion below reads
+         the difference rather than a total.
          */
         const spentBefore = asked.length;
 
         /**
-         * Resuming gather, over a store already holding that key.
+         Resuming gather, over a store already holding that key.
          */
         const { cache, persisted, } = recordingCache({
           resumed: new Map([[key, stored,],],),
@@ -584,7 +584,7 @@ await describe({
         const { client, } = agreeingClient();
 
         /**
-         * Two gathers of one asset name over different bytes.
+         Two gathers of one asset name over different bytes.
          */
         const keys = await Promise.all([
           7,
@@ -621,7 +621,7 @@ await describe({
         const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
 
         /**
-         * Gather over a slice naming a picture the caller could not read.
+         Gather over a slice naming a picture the caller could not read.
          */
         const readings = await readDocumentPictures({
           readOcr: sawText,
@@ -652,7 +652,7 @@ await describe({
         const { cache, } = recordingCache({ resumed: new Map(), },);
 
         /**
-         * Gather over ordinary prose.
+         Gather over ordinary prose.
          */
         const readings = await readDocumentPictures({
           readOcr: sawText,

@@ -1,9 +1,9 @@
 /**
- * Tests final publication contributor identity boundary.
- *
- * Fixtures are invented and contain no corpus wording.
- *
- * @module
+ Tests final publication contributor identity boundary.
+ 
+ Fixtures are invented and contain no corpus wording.
+ 
+ @module
  */
 
 import {
@@ -18,7 +18,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive page establishing target contributor public handles.
+ Archive page establishing target contributor public handles.
  */
 const ARCHIVE = 'A cat slept.\n\nContributors for this entry: One Body, [Snow](https://example.test/snow)\n';
 

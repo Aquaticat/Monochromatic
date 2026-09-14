@@ -34,67 +34,67 @@ import { TranslationRepairInterruptedError, } from './translation-repair-interru
 // spent deadline would make an entry look unfillable when nothing was asked.
 
 /**
- * What one slice's round produced.
- *
- * @example
- * ```ts
- * const attempt: SliceAttempt = { kind: 'settled', record, };
- * ```
+ What one slice's round produced.
+ 
+ @example
+ ```ts
+ const attempt: SliceAttempt = { kind: 'settled', record, };
+ ```
  */
 export type SliceAttempt = {
   /**
-   * Round produced a record, whatever it decided.
+   Round produced a record, whatever it decided.
    */
   readonly kind: 'settled';
 
   /**
-   * That record.
+   That record.
    */
   readonly record: TranslateSliceRecord;
 } | {
   /**
-   * Slice has no translation in the archive and this round produced none, so
-   * there is nothing to record and nothing to write.
+   Slice has no translation in the archive and this round produced none, so
+   there is nothing to record and nothing to write.
    */
   readonly kind: 'unfilled';
 
   /**
-   * Why nothing could be written.
+   Why nothing could be written.
    */
   readonly reason: TranslateAbsenceReason;
 
   /**
-   * What the stage had gathered before it gave up.
+   What the stage had gathered before it gave up.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Runs one slice and reports which of the two endings it reached.
- *
- * @param client - injected model client
- *
- * @param slice - prepared slice pair
- *
- * @param prepared - document the slice came from
- *
- * @param models - translator and judge rosters
- *
- * @param signal - entry abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - driver logger
- *
- * @returns Settled record, or the fact that this passage stays missing
- *
- * @throws Whatever the slice throws that is not an absence refusal, and the
- * caller's abort reason by identity when the signal fired
- *
- * @example
- * ```ts
- * const attempt = await attemptTranslateSlice({ client, slice, prepared, models, signal, ... },);
- * ```
+ Runs one slice and reports which of the two endings it reached.
+ 
+ @param client - injected model client
+ 
+ @param slice - prepared slice pair
+ 
+ @param prepared - document the slice came from
+ 
+ @param models - translator and judge rosters
+ 
+ @param signal - entry abort honored by every exchange
+ 
+ @param perCallTimeoutMs - deadline per exchange
+ 
+ @param l - driver logger
+ 
+ @returns Settled record, or the fact that this passage stays missing
+ 
+ @throws Whatever the slice throws that is not an absence refusal, and the
+ caller's abort reason by identity when the signal fired
+ 
+ @example
+ ```ts
+ const attempt = await attemptTranslateSlice({ client, slice, prepared, models, signal, ... },);
+ ```
  */
 export async function attemptTranslateSlice(
   {
@@ -116,25 +116,25 @@ export async function attemptTranslateSlice(
     readonly models: TranslateModels;
 
     /**
-     * Archive English either side of this slice, computed once by the driver so
-     * the cache key and the call provably name the same window.
+     Archive English either side of this slice, computed once by the driver so
+     the cache key and the call provably name the same window.
      */
     readonly neighbouringIncumbentText: string;
 
     /**
-     * Original either side of this slice, computed the same way.
+     Original either side of this slice, computed the same way.
      */
     readonly neighbouringSourceText: string;
 
     /**
-     * What the pictures this slice and its neighbours show were read as,
-     * gathered once per document so every slice showing one picture is shown
-     * the same words about it.
+     What the pictures this slice and its neighbours show were read as,
+     gathered once per document so every slice showing one picture is shown
+     the same words about it.
      */
     readonly pictureContext: string;
 
     /**
-     * One line per picture no reading is available for.
+     One line per picture no reading is available for.
      */
     readonly pictureFindings: readonly string[];
     readonly signal: AbortSignal;

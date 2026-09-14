@@ -12,69 +12,69 @@ import type { DocumentNode, } from './document-node.ts';
 // rather than by being one past the last.
 
 /**
- * Where an untranslated passage's rendering belongs on the target side.
- *
- * @example
- * ```ts
- * const boundary: TargetBoundary = { kind: 'before-block', block, };
- * ```
+ Where an untranslated passage's rendering belongs on the target side.
+ 
+ @example
+ ```ts
+ const boundary: TargetBoundary = { kind: 'before-block', block, };
+ ```
  */
 export type TargetBoundary = {
   /**
-   * Rendering belongs immediately before an existing translation block.
+   Rendering belongs immediately before an existing translation block.
    */
   readonly kind: 'before-block';
 
   /**
-   * Block it precedes, whose start offset is where the text goes.
+   Block it precedes, whose start offset is where the text goes.
    */
   readonly block: DocumentNode;
 } | {
   /**
-   * Rendering belongs after every translation block this section carries,
-   * which is what a trailing untranslated passage looks like. The caller
-   * resolves the offset, since only it knows where the section ends.
+   Rendering belongs after every translation block this section carries,
+   which is what a trailing untranslated passage looks like. The caller
+   resolves the offset, since only it knows where the section ends.
    */
   readonly kind: 'after-section';
 };
 
 /**
- * One slice's worth of blocks, either paired with existing text or anchored at
- * the boundary where its translation belongs.
- *
- * @example
- * ```ts
- * const unit: SourceFirstUnit = { kind: 'anchored', sourceRun, boundary, };
- * ```
+ One slice's worth of blocks, either paired with existing text or anchored at
+ the boundary where its translation belongs.
+ 
+ @example
+ ```ts
+ const unit: SourceFirstUnit = { kind: 'anchored', sourceRun, boundary, };
+ ```
  */
 export type SourceFirstUnit = {
   /**
-   * Both sides carry blocks, and the target side is a contiguous interval.
+   Both sides carry blocks, and the target side is a contiguous interval.
    */
   readonly kind: 'paired';
 
   /**
-   * Original-side blocks, in document order.
+   Original-side blocks, in document order.
    */
   readonly sourceRun: readonly DocumentNode[];
 
   /**
-   * Translation-side blocks, contiguous in the whole target sequence.
+   Translation-side blocks, contiguous in the whole target sequence.
    */
   readonly targetRun: readonly DocumentNode[];
 } | {
   /**
-   * Original-side blocks the translation never rendered.
+   Original-side blocks the translation never rendered.
    */
   readonly kind: 'anchored';
 
   /**
-   * Original-side blocks, in document order.
+   Original-side blocks, in document order.
    */
   readonly sourceRun: readonly DocumentNode[];
 
   /**
-   * Place on the target side this unit's translation belongs at.
+   Place on the target side this unit's translation belongs at.
    */
   readonly boundary: TargetBoundary;
 };

@@ -1,13 +1,13 @@
 /**
- * Tests for reading the published tree back against the artifacts that made it.
- *
- * NOTHING HERE TOUCHES A DISK. Both subjects are total functions of an artifact
- * and a string, so a case that needed a directory would be measuring the reader
- * rather than the check.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for reading the published tree back against the artifacts that made it.
+ 
+ NOTHING HERE TOUCHES A DISK. Both subjects are total functions of an artifact
+ and a string, so a case that needed a directory would be measuring the reader
+ rather than the check.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -27,41 +27,41 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Wording the first slice settled on.
+ Wording the first slice settled on.
  */
 const FIRST_NAP = 'She naps on the counter by the till.';
 
 /**
- * Wording the second slice settled on.
+ Wording the second slice settled on.
  */
 const SECOND_NAP = 'By four she has moved to the window.';
 
 /**
- * Wording a third slice settled on, sharing a tail with {@link FIRST_NAP} so a
- * check that searched from the start of the page could match inside it.
+ Wording a third slice settled on, sharing a tail with {@link FIRST_NAP} so a
+ check that searched from the start of the page could match inside it.
  */
 const THIRD_NAP = 'by the till.';
 
 /**
- * Archive English the weighing fixtures start with, replaced by
- * {@link FIRST_NAP} so the expected length differs from the archive's.
+ Archive English the weighing fixtures start with, replaced by
+ {@link FIRST_NAP} so the expected length differs from the archive's.
  */
 const OLD_NAP = 'She sleeps somewhere.';
 
 /**
- * Second archive-side wording, so a fixture can swap two settled renderings
- * between slices without changing how long the page is.
+ Second archive-side wording, so a fixture can swap two settled renderings
+ between slices without changing how long the page is.
  */
 const OLD_PERCH = 'She sits somewhere else.';
 
 /**
- * Archive carrying two slices with unsliced text around and between them.
+ Archive carrying two slices with unsliced text around and between them.
  */
 const ARCHIVE_TWO_SLICES =
   `# Mittens\n\n${OLD_NAP}\n\n${OLD_PERCH}\n\nNobody decided anything about this line.\n`;
 
 /**
- * Both slices, each replacing its own archive wording.
+ Both slices, each replacing its own archive wording.
  */
 const TWO_SWAPS = [
   {
@@ -75,42 +75,42 @@ const TWO_SWAPS = [
 ];
 
 /**
- * One slice as a fixture states it: what the archive held there, and what the
- * lanes settled on shipping in its place.
- *
- * @example
- * ```ts
- * const row: FixtureSlice = { incumbent: OLD_NAP, ships: FIRST_NAP, };
- * ```
+ One slice as a fixture states it: what the archive held there, and what the
+ lanes settled on shipping in its place.
+ 
+ @example
+ ```ts
+ const row: FixtureSlice = { incumbent: OLD_NAP, ships: FIRST_NAP, };
+ ```
  */
 type FixtureSlice = {
   /**
-   * Archive English this slice covers, empty at an anchor.
+   Archive English this slice covers, empty at an anchor.
    */
   readonly incumbent: string;
 
   /**
-   * What both lanes settled on, empty where nothing ships.
+   What both lanes settled on, empty where nothing ships.
    */
   readonly ships: string;
 };
 
 /**
- * Builds an artifact over the slices given, in `sliceIndex` order.
- *
- * GOES THROUGH LANES THAT AGREED, which is the shortest path to a settled
- * wording: a slice both lanes wrote the same way needs no contest, so the
- * fixture carries no ballots. Which decider settles a slice is
- * `would-ship-text.unit.test.ts`.
- *
- * @param slices - archive text and shipped text per slice
- *
- * @returns Artifact the checks read
- *
- * @example
- * ```ts
- * const artifact = artifactOver([{ incumbent: OLD_NAP, ships: FIRST_NAP, },],);
- * ```
+ Builds an artifact over the slices given, in `sliceIndex` order.
+ 
+ GOES THROUGH LANES THAT AGREED, which is the shortest path to a settled
+ wording: a slice both lanes wrote the same way needs no contest, so the
+ fixture carries no ballots. Which decider settles a slice is
+ `would-ship-text.unit.test.ts`.
+ 
+ @param slices - archive text and shipped text per slice
+ 
+ @returns Artifact the checks read
+ 
+ @example
+ ```ts
+ const artifact = artifactOver([{ incumbent: OLD_NAP, ships: FIRST_NAP, },],);
+ ```
  */
 function artifactOver(slices: readonly FixtureSlice[],): WouldShipSource {
   return {
@@ -150,18 +150,18 @@ function artifactOver(slices: readonly FixtureSlice[],): WouldShipSource {
 }
 
 /**
- * Builds an artifact whose slices ship the wordings given and leave the archive
- * saying the same thing, which is all the wording scan needs.
- *
- * @param wordings - text each slice carries, in `sliceIndex` order, with an
- * empty string standing for a slice that ships nothing
- *
- * @returns Artifact the check reads
- *
- * @example
- * ```ts
- * const artifact = artifactShipping([FIRST_NAP, SECOND_NAP,],);
- * ```
+ Builds an artifact whose slices ship the wordings given and leave the archive
+ saying the same thing, which is all the wording scan needs.
+ 
+ @param wordings - text each slice carries, in `sliceIndex` order, with an
+ empty string standing for a slice that ships nothing
+ 
+ @returns Artifact the check reads
+ 
+ @example
+ ```ts
+ const artifact = artifactShipping([FIRST_NAP, SECOND_NAP,],);
+ ```
  */
 function artifactShipping(wordings: readonly string[],): WouldShipSource {
   return artifactOver(wordings.map(function same(text,): FixtureSlice {
@@ -269,13 +269,13 @@ await describe({
 },);
 
 /**
- * Archive English a weighing fixture starts from, with wording outside every
- * slice so a cut can land where no reading covers it.
+ Archive English a weighing fixture starts from, with wording outside every
+ slice so a cut can land where no reading covers it.
  */
 const ARCHIVE_PAGE = `# Mittens\n\n${OLD_NAP}\n\nShe has worked the shop since the spring, and nobody decided anything about that.\n`;
 
 /**
- * Slice the weighing fixtures replace, one wording swapped for a longer one.
+ Slice the weighing fixtures replace, one wording swapped for a longer one.
  */
 const ONE_SWAP = [{
   incumbent: OLD_NAP,
@@ -283,8 +283,8 @@ const ONE_SWAP = [{
 },];
 
 /**
- * Page a correct publish produces from {@link ARCHIVE_PAGE} under
- * {@link ONE_SWAP}.
+ Page a correct publish produces from {@link ARCHIVE_PAGE} under
+ {@link ONE_SWAP}.
  */
 const SWAPPED_PAGE = ARCHIVE_PAGE.replace(
   OLD_NAP,
@@ -327,7 +327,7 @@ await describe({
         + 'slices and a page is mostly the text between them',
       fn: async () => {
         /**
-         * Correct page with its unsliced tail removed, which no reading covers.
+         Correct page with its unsliced tail removed, which no reading covers.
          */
         const cut = SWAPPED_PAGE.replace(
           ', and nobody decided anything about that',
@@ -398,7 +398,7 @@ await describe({
         + 'a shorter one still lost text',
       fn: async () => {
         /**
-         * Archive with nothing where the anchor sits, and the anchor filled.
+         Archive with nothing where the anchor sits, and the anchor filled.
          */
         const anchored = artifactOver([
           {
@@ -412,7 +412,7 @@ await describe({
         ],);
 
         /**
-         * Shared facets of the two weighings this case compares.
+         Shared facets of the two weighings this case compares.
          */
         const over = {
           artifact: anchored,
@@ -423,7 +423,7 @@ await describe({
         } as const;
 
         /**
-         * Page carrying the insertion plus the separators nobody counted.
+         Page carrying the insertion plus the separators nobody counted.
          */
         const withSeparators = pageWeighsWhatItShould({
           ...over,
@@ -472,7 +472,7 @@ await describe({
         + 'from a log line alone',
       fn: async () => {
         /**
-         * Whatever the guard raised, caught so its class and text can be read.
+         Whatever the guard raised, caught so its class and text can be read.
          */
         const refusal = ((): unknown => {
           try {
@@ -510,7 +510,7 @@ await describe({
         + 'the scan in the guard beside the arithmetic',
       fn: async () => {
         /**
-         * Page a correct publish produces over both slices.
+         Page a correct publish produces over both slices.
          */
         const correct = ARCHIVE_TWO_SLICES
           .replace(
@@ -523,7 +523,7 @@ await describe({
           );
 
         /**
-         * Same page with the two settled renderings in each other's slices.
+         Same page with the two settled renderings in each other's slices.
          */
         const swapped = ARCHIVE_TWO_SLICES
           .replace(
@@ -586,7 +586,7 @@ await describe({
         + 'occurrence scan reporting nothing missing',
       fn: async () => {
         /**
-         * Correct page with its unsliced tail removed, which no reading covers.
+         Correct page with its unsliced tail removed, which no reading covers.
          */
         const cut = SWAPPED_PAGE.replace(
           ', and nobody decided anything about that',
@@ -619,7 +619,7 @@ await describe({
         + 'it was raised in: into logs, into a pass report, into a session transcript',
       fn: async () => {
         /**
-         * Whatever the guard raised, caught so its text can be inspected.
+         Whatever the guard raised, caught so its text can be inspected.
          */
         const refusal = ((): unknown => {
           try {
@@ -639,7 +639,7 @@ await describe({
         })();
 
         /**
-         * What the refusal said, read once for the three claims below.
+         What the refusal said, read once for the three claims below.
          */
         const said = (refusal as Error).message;
 

@@ -1,22 +1,22 @@
 /**
- * Tests for gathering one entry's pictures off the pinned corpus.
- *
- * WHAT THESE PIN is the boundary between text and disk. `gatherEntryPictures`
- * reads every slice's source text for photo references, dedupes the named
- * assets into a set, and reads each one at the pinned commit through
- * `readCorpusBytes`, skipping any that git cannot produce rather than
- * failing the whole gather. Exercised against a throwaway git repository
- * built in a temp directory, mirroring `corpus-source.unit.test.ts`'s own
- * fixture; nothing here reads the real corpus.
- *
- * CHILDREN RUN SEQUENTIALLY (`concurrency: 1`), matching
- * `synthetic-transport.unit.test.ts`'s own reasoning: two tests here spy on
- * the shared module-level logger, and an interleaved concurrent run could
- * let one test's log calls land inside another test's spy window.
- *
- * Fixtures are cat-themed invention. No corpus content appears here.
- *
- * @module
+ Tests for gathering one entry's pictures off the pinned corpus.
+ 
+ WHAT THESE PIN is the boundary between text and disk. `gatherEntryPictures`
+ reads every slice's source text for photo references, dedupes the named
+ assets into a set, and reads each one at the pinned commit through
+ `readCorpusBytes`, skipping any that git cannot produce rather than
+ failing the whole gather. Exercised against a throwaway git repository
+ built in a temp directory, mirroring `corpus-source.unit.test.ts`'s own
+ fixture; nothing here reads the real corpus.
+ 
+ CHILDREN RUN SEQUENTIALLY (`concurrency: 1`), matching
+ `synthetic-transport.unit.test.ts`'s own reasoning: two tests here spy on
+ the shared module-level logger, and an interleaved concurrent run could
+ let one test's log calls land inside another test's spy window.
+ 
+ Fixtures are cat-themed invention. No corpus content appears here.
+ 
+ @module
  */
 
 import {
@@ -47,74 +47,74 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Real git binary for fixture setup and pinned reads, mirroring
- * `corpus-source.unit.test.ts`: the repo PATH exposes a policy shim whose
- * staging guards reject fixture staging patterns.
+ Real git binary for fixture setup and pinned reads, mirroring
+ `corpus-source.unit.test.ts`: the repo PATH exposes a policy shim whose
+ staging guards reject fixture staging patterns.
  */
 const REAL_GIT = await resolveGit();
 
 /**
- * Logger every gather in this file writes its progress to.
+ Logger every gather in this file writes its progress to.
  */
 const l = tagged({ tag: 'entry-pictures-test', },);
 
 /**
- * Placeholder corpus pages write for an entry's own directory.
- *
- * AN ESCAPED TEMPLATE LITERAL, so characters landing in a slice's text are
- * what corpus text carries rather than an interpolation this file performs
- * by accident. Mirrors `photo-reference.unit.test.ts`.
+ Placeholder corpus pages write for an entry's own directory.
+ 
+ AN ESCAPED TEMPLATE LITERAL, so characters landing in a slice's text are
+ what corpus text carries rather than an interpolation this file performs
+ by accident. Mirrors `photo-reference.unit.test.ts`.
  */
 const ENTRY_PLACEHOLDER = `\${path}`;
 
 /**
- * One picture fixture committed into a throwaway corpus clone.
+ One picture fixture committed into a throwaway corpus clone.
  */
 type PictureFixture = {
   /**
-   * Person entry the picture sits under.
+   Person entry the picture sits under.
    */
   readonly entryId: string;
 
   /**
-   * File name within that entry's photos directory.
+   File name within that entry's photos directory.
    */
   readonly assetName: string;
 
   /**
-   * Bytes committed for that asset.
+   Bytes committed for that asset.
    */
   readonly bytes: Uint8Array;
 };
 
 /**
- * Bytes standing in for a picture, whose content no assertion here reads
- * beyond exact equality.
- *
- * @param seed - byte every position carries, so two calls differ by content
- *
- * @returns Small buffer of that byte
- *
- * @example
- * ```ts
- * const bytes = bytesOf({ seed: 7, },);
- * ```
+ Bytes standing in for a picture, whose content no assertion here reads
+ beyond exact equality.
+ 
+ @param seed - byte every position carries, so two calls differ by content
+ 
+ @returns Small buffer of that byte
+ 
+ @example
+ ```ts
+ const bytes = bytesOf({ seed: 7, },);
+ ```
  */
 function bytesOf({ seed, }: { readonly seed: number; },): Uint8Array {
   return new Uint8Array(32,).fill(seed,);
 }
 
 /**
- * Builds one photo element naming given assets, in the corpus's only form.
- *
- * @param assetNames - file names within the entry's photos directory
- *
- * @returns Element as a page writes it
- *
- * @example
- * ```ts
- * const element = photoElement({ assetNames: ['sunbeam.webp',], },);
- * ```
+ Builds one photo element naming given assets, in the corpus's only form.
+ 
+ @param assetNames - file names within the entry's photos directory
+ 
+ @returns Element as a page writes it
+ 
+ @example
+ ```ts
+ const element = photoElement({ assetNames: ['sunbeam.webp',], },);
+ ```
  */
 function photoElement({ assetNames, }: { readonly assetNames: readonly string[]; },): string {
   return `<PhotoScroll photos={[ ${
@@ -126,22 +126,22 @@ function photoElement({ assetNames, }: { readonly assetNames: readonly string[];
 }
 
 /**
- * Builds one slice pair carrying given original text, target side empty.
- *
- * Offsets and nodes are named directly rather than parsed, mirroring
- * `slice-pictures.unit.test.ts`: what is under test here is which pictures a
- * gather reads off a pinned corpus, not how a slice was carved.
- *
- * @param text - original-side text this slice covers
- *
- * @param sliceIndex - position of this slice in its document
- *
- * @returns Pair whose original side carries that text
- *
- * @example
- * ```ts
- * const pair = sliceOf({ text: 'Mittens naps.\n', sliceIndex: 0, },);
- * ```
+ Builds one slice pair carrying given original text, target side empty.
+ 
+ Offsets and nodes are named directly rather than parsed, mirroring
+ `slice-pictures.unit.test.ts`: what is under test here is which pictures a
+ gather reads off a pinned corpus, not how a slice was carved.
+ 
+ @param text - original-side text this slice covers
+ 
+ @param sliceIndex - position of this slice in its document
+ 
+ @returns Pair whose original side carries that text
+ 
+ @example
+ ```ts
+ const pair = sliceOf({ text: 'Mittens naps.\n', sliceIndex: 0, },);
+ ```
  */
 function sliceOf(
   {
@@ -171,19 +171,19 @@ function sliceOf(
 }
 
 /**
- * Runs one git command inside a throwaway clone, hermetic against user and
- * system git configuration.
- *
- * @param cloneDir - throwaway repository directory
- *
- * @param args - git argument vector
- *
- * @returns Captured stdout
- *
- * @example
- * ```ts
- * const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
- * ```
+ Runs one git command inside a throwaway clone, hermetic against user and
+ system git configuration.
+ 
+ @param cloneDir - throwaway repository directory
+ 
+ @param args - git argument vector
+ 
+ @returns Captured stdout
+ 
+ @example
+ ```ts
+ const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
+ ```
  */
 async function fixtureGit(
   {
@@ -195,7 +195,7 @@ async function fixtureGit(
   },
 ): Promise<string> {
   /**
-   * Subprocess result; only stdout is consumed.
+   Subprocess result; only stdout is consumed.
    */
   const { stdout, } = await spawn(
     REAL_GIT,
@@ -215,20 +215,20 @@ async function fixtureGit(
 }
 
 /**
- * Builds a throwaway corpus-shaped git repository committing given
- * pictures, removed on dispose.
- *
- * ON A THROWAWAY, per `THR`: this writes files and runs git, so it gets its
- * own directory rather than any path the repository cares about.
- *
- * @param pictures - assets to commit, one file per entry's photos directory
- *
- * @returns Pin resolving reads against the committed clone, and an async disposer
- *
- * @example
- * ```ts
- * await using fixture = await makeThrowawayCorpus({ pictures: [oneAsset,], },);
- * ```
+ Builds a throwaway corpus-shaped git repository committing given
+ pictures, removed on dispose.
+ 
+ ON A THROWAWAY, per `THR`: this writes files and runs git, so it gets its
+ own directory rather than any path the repository cares about.
+ 
+ @param pictures - assets to commit, one file per entry's photos directory
+ 
+ @returns Pin resolving reads against the committed clone, and an async disposer
+ 
+ @example
+ ```ts
+ await using fixture = await makeThrowawayCorpus({ pictures: [oneAsset,], },);
+ ```
  */
 async function makeThrowawayCorpus(
   { pictures, }: { readonly pictures: readonly PictureFixture[]; },
@@ -238,7 +238,7 @@ async function makeThrowawayCorpus(
   }
 > {
   /**
-   * Fresh directory holding the throwaway repository.
+   Fresh directory holding the throwaway repository.
    */
   const cloneDir = await mkdtemp(join(
     tmpdir(),
@@ -261,7 +261,7 @@ async function makeThrowawayCorpus(
 
   await Promise.all(pictures.map(async function writePicture(picture,): Promise<void> {
     /**
-     * Directory this asset's entry keeps its photos under.
+     Directory this asset's entry keeps its photos under.
      */
     const photosDir = join(
       cloneDir,
@@ -304,7 +304,7 @@ async function makeThrowawayCorpus(
   },);
 
   /**
-   * Commit every test read pins to.
+   Commit every test read pins to.
    */
   const commitSha = (await fixtureGit({
     cloneDir,
@@ -343,8 +343,8 @@ await describe({
         + 'when no read is ever attempted against it',
       fn: async () => {
         /**
-         * Deliberately unreadable pin: no read against it must succeed
-         * silently, so this only passes if the gather never touches it.
+         Deliberately unreadable pin: no read against it must succeed
+         silently, so this only passes if the gather never touches it.
          */
         const brokenPin: CorpusPin = {
           cloneDir: join(
@@ -368,7 +368,7 @@ await describe({
         + 'untouched exactly as an empty slice list does',
       fn: async () => {
         /**
-         * Same deliberately unreadable pin as the no-slices case.
+         Same deliberately unreadable pin as the no-slices case.
          */
         const brokenPin: CorpusPin = {
           cloneDir: join(
@@ -379,7 +379,7 @@ await describe({
         };
 
         /**
-         * Two slices of plain prose, naming no picture between them.
+         Two slices of plain prose, naming no picture between them.
          */
         const quietSlices: readonly ChunkPair[] = [
           sliceOf({
@@ -421,7 +421,7 @@ await describe({
         },);
 
         /**
-         * What the gather resolved for `mittens` alone.
+         What the gather resolved for `mittens` alone.
          */
         const gathered = await gatherEntryPictures({
           pin: fixture.pin,
@@ -466,7 +466,7 @@ await describe({
         },);
 
         /**
-         * Three slices, each naming a different picture.
+         Three slices, each naming a different picture.
          */
         const threeSlices: readonly ChunkPair[] = [
           sliceOf({
@@ -490,7 +490,7 @@ await describe({
         ];
 
         /**
-         * What the gather resolved across all three slices.
+         What the gather resolved across all three slices.
          */
         const gathered = await gatherEntryPictures({
           pin: fixture.pin,
@@ -519,17 +519,17 @@ await describe({
         },);
 
         /**
-         * Cursor counting how many times `gitPath` was read, which happens
-         * once per `readCorpusBytes` invocation: a Map ending with one entry
-         * would also result from reading the same picture twice and letting
-         * the second write overwrite the first, so only a read count proves
-         * the accumulation into `named` deduped before any read ran.
+         Cursor counting how many times `gitPath` was read, which happens
+         once per `readCorpusBytes` invocation: a Map ending with one entry
+         would also result from reading the same picture twice and letting
+         the second write overwrite the first, so only a read count proves
+         the accumulation into `named` deduped before any read ran.
          */
         const reads = { count: 0, };
 
         /**
-         * Same clone and commit the fixture committed, with `gitPath`
-         * counted on each access rather than named once as a plain string.
+         Same clone and commit the fixture committed, with `gitPath`
+         counted on each access rather than named once as a plain string.
          */
         const countedPin: CorpusPin = {
           cloneDir: fixture.pin.cloneDir,
@@ -541,7 +541,7 @@ await describe({
         };
 
         /**
-         * Two slices, both naming the same picture.
+         Two slices, both naming the same picture.
          */
         const dupingSlices: readonly ChunkPair[] = [
           sliceOf({
@@ -559,7 +559,7 @@ await describe({
         ];
 
         /**
-         * What the gather resolved across both slices.
+         What the gather resolved across both slices.
          */
         const gathered = await gatherEntryPictures({
           pin: countedPin,
@@ -587,7 +587,7 @@ await describe({
         },);
 
         /**
-         * One slice naming a committed picture and an uncommitted one.
+         One slice naming a committed picture and an uncommitted one.
          */
         const mixedSlice: ChunkPair = sliceOf({
           text: `Mittens suns herself, then vanishes behind the curtain.\n\n${
@@ -597,7 +597,7 @@ await describe({
         },);
 
         /**
-         * What the gather resolved: the present picture only.
+         What the gather resolved: the present picture only.
          */
         const gathered = await gatherEntryPictures({
           pin: fixture.pin,
@@ -618,14 +618,14 @@ await describe({
         + 'and how much rather than only a silently smaller map',
       fn: async ctx => {
         /**
-         * Spy observing every warning this gather logs.
+         Spy observing every warning this gather logs.
          */
         const warnSpy = ctx.sinon.spy(
           l,
           'warn',
         );
         /**
-         * Spy observing every info line this gather logs.
+         Spy observing every info line this gather logs.
          */
         const infoSpy = ctx.sinon.spy(
           l,
@@ -669,20 +669,20 @@ await describe({
         + 'asset, and any other failure is a different problem a caller must see',
       fn: async () => {
         /**
-         * Planted failure this test proves escapes unwrapped. Identity is
-         * checked below rather than a message, so no accidental string
-         * overlap with a real `CorpusReadError` could pass this test by
-         * coincidence.
+         Planted failure this test proves escapes unwrapped. Identity is
+         checked below rather than a message, so no accidental string
+         overlap with a real `CorpusReadError` could pass this test by
+         coincidence.
          */
         const planted = new Error('a hairball interrupts the read',);
 
         /**
-         * Pin whose `gitPath` throws before `readCorpusBytes` ever spawns
-         * git: `readCorpusBytes` reads `pin.gitPath` ahead of its own try
-         * block, so a throw here is the one seam that reaches
-         * `gatherEntryPictures` NOT wrapped in `CorpusReadError`. Were that
-         * read ever moved inside the try, this branch would go dead, and
-         * this test failing is the signal that it did.
+         Pin whose `gitPath` throws before `readCorpusBytes` ever spawns
+         git: `readCorpusBytes` reads `pin.gitPath` ahead of its own try
+         block, so a throw here is the one seam that reaches
+         `gatherEntryPictures` NOT wrapped in `CorpusReadError`. Were that
+         read ever moved inside the try, this branch would go dead, and
+         this test failing is the signal that it did.
          */
         const trappedPin: CorpusPin = {
           cloneDir: join(
@@ -696,8 +696,8 @@ await describe({
         };
 
         /**
-         * Value caught from a gather whose only named picture cannot be
-         * read for a reason that is not a missing corpus entry.
+         Value caught from a gather whose only named picture cannot be
+         read for a reason that is not a missing corpus entry.
          */
         let caught: unknown;
         try {

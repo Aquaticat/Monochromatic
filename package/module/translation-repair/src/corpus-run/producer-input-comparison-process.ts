@@ -36,33 +36,33 @@ import {
 //region One fixed bootstrap subprocess with retained streams and actual-close observation
 
 /**
- * Independent whole-bootstrap deadline, not a model-call or provider retry allowance.
+ Independent whole-bootstrap deadline, not a model-call or provider retry allowance.
  */
 const BOOTSTRAP_DEADLINE_MS = 600_000;
 /**
- * Streams are private even when the bootstrap fails before producing a completion record.
+ Streams are private even when the bootstrap fails before producing a completion record.
  */
 const STREAM_MODE = 0o600;
 
 /**
- * Invokes only the independently authenticated standalone preparation-input bootstrap.
- * The process completes before stream synchronization and termination recording;
- * no retry, application selector or provider client is introduced.
- *
- * @param run - fresh private comparison namespace after metadata preflight and creation
- *
- * @param invocation - fixed owner's derived launch and unchanged authenticated bootstrap/runtime bindings
- *
- * @param l - invoking comparison owner's logger
- *
- * @returns Fixed retained stdout and stderr locations after successful native close
- *
- * @throws ProducerInputComparisonError when cancellation, invocation, stream or record handling fails
- *
- * @example
- * ```ts
- * const streams = await invokeProducerInputBootstrap({ run, invocation, l });
- * ```
+ Invokes only the independently authenticated standalone preparation-input bootstrap.
+ The process completes before stream synchronization and termination recording;
+ no retry, application selector or provider client is introduced.
+ 
+ @param run - fresh private comparison namespace after metadata preflight and creation
+ 
+ @param invocation - fixed owner's derived launch and unchanged authenticated bootstrap/runtime bindings
+ 
+ @param l - invoking comparison owner's logger
+ 
+ @returns Fixed retained stdout and stderr locations after successful native close
+ 
+ @throws ProducerInputComparisonError when cancellation, invocation, stream or record handling fails
+ 
+ @example
+ ```ts
+ const streams = await invokeProducerInputBootstrap({ run, invocation, l });
+ ```
  */
 export async function invokeProducerInputBootstrap({
   run,
@@ -74,18 +74,18 @@ export async function invokeProducerInputBootstrap({
   readonly l: Logger;
 },): Promise<ProducerInputBootstrapStreams> {
   /**
-   * This operation cannot accept a caller-selected executable or arbitrary environment.
+   This operation cannot accept a caller-selected executable or arbitrary environment.
    */
   const nodePath = process.execPath;
   /**
-   * Only rootless local Podman session routing may accompany the fixed host environment.
+   Only rootless local Podman session routing may accompany the fixed host environment.
    */
   const sessionKeys = [
     'XDG_RUNTIME_DIR',
     'DBUS_SESSION_BUS_ADDRESS'
   ] as const;
   /**
-   * No loader options, credentials or complete parent environment are inherited.
+   No loader options, credentials or complete parent environment are inherited.
    */
   const environment: Readonly<NodeJS.ProcessEnv> = {
     HOME: homedir(),
@@ -95,7 +95,7 @@ export async function invokeProducerInputBootstrap({
       string
     ])[] {
       /**
-       * Each optional session primitive is captured once before logging or I/O.
+       Each optional session primitive is captured once before logging or I/O.
        */
       const value = process.env[key];
       return value === undefined ? [] : [[
@@ -105,7 +105,7 @@ export async function invokeProducerInputBootstrap({
     })),
   };
   /**
-   * Only operation names and retained paths belong in normal telemetry.
+   Only operation names and retained paths belong in normal telemetry.
    */
   const pl = tagged({
     tag: invokeProducerInputBootstrap.name,
@@ -118,7 +118,7 @@ export async function invokeProducerInputBootstrap({
       directory: run.directory
     });
   /**
-   * Fixed argument grammar cannot select a command, application entry or future live mode.
+   Fixed argument grammar cannot select a command, application entry or future live mode.
    */
   const args = [
     invocation.bootstrapPath,
@@ -132,14 +132,14 @@ export async function invokeProducerInputBootstrap({
       .bytes),
   ];
   /**
-   * Stream filenames are fixed independently of bootstrap output.
+   Stream filenames are fixed independently of bootstrap output.
    */
   const stdoutPath = join(
     run.directory,
     'bootstrap.stdout'
   );
   /**
-   * Native diagnostics remain private rather than becoming thrown cause text.
+   Native diagnostics remain private rather than becoming thrown cause text.
    */
   const stderrPath = join(
     run.directory,
@@ -160,11 +160,11 @@ export async function invokeProducerInputBootstrap({
     l: pl,
   });
   /**
-   * Immutable deadline state also remains available when an awaiting-owner logger throws.
+   Immutable deadline state also remains available when an awaiting-owner logger throws.
    */
   const deadline = AbortSignal.timeout(BOOTSTRAP_DEADLINE_MS);
   /**
-   * The caller and this bootstrap stage retain independent interruption evidence.
+   The caller and this bootstrap stage retain independent interruption evidence.
    */
   const signal = AbortSignal.any([
     invocation.signal,
@@ -172,7 +172,7 @@ export async function invokeProducerInputBootstrap({
   ]);
   try {
     /**
-     * The base-to-derived owner cannot change executable bindings through an output-parent derivation.
+     The base-to-derived owner cannot change executable bindings through an output-parent derivation.
      */
     const manifest = await readProducerRuntimeManifest({
       dir: invocation.runtime
@@ -202,7 +202,7 @@ export async function invokeProducerInputBootstrap({
       l: pl
     });
     /**
-     * Output descriptor stays open through actual child close and content synchronization.
+     Output descriptor stays open through actual child close and content synchronization.
      */
     await using stdout = await open(
       stdoutPath,
@@ -210,7 +210,7 @@ export async function invokeProducerInputBootstrap({
       STREAM_MODE
     );
     /**
-     * Native diagnostics remain separate from the machine-readable success frame.
+     Native diagnostics remain separate from the machine-readable success frame.
      */
     await using stderr = await open(
       stderrPath,
@@ -229,7 +229,7 @@ export async function invokeProducerInputBootstrap({
         directory: run.directory
       });
     /**
-     * No shell interpolation or inherited environment merge is used.
+     No shell interpolation or inherited environment merge is used.
      */
     const child = spawn(
       nodePath,
@@ -245,28 +245,28 @@ export async function invokeProducerInputBootstrap({
     }
     );
     /**
-     * Actual close observation is installed before cancellation forwarding.
+     Actual close observation is installed before cancellation forwarding.
      */
     const closed = producerInputCommandClose(child);
     /**
-     * Timer and listener disposal cannot detach the independent native-close observation.
+     Timer and listener disposal cannot detach the independent native-close observation.
      */
     using interruption = comparisonBootstrapInterruption({
       child,
       signal
     });
     /**
-     * Error categories do not end observation before native descriptors close.
+     Error categories do not end observation before native descriptors close.
      */
     const errors = await closed;
     await stdout.sync();
     await stderr.sync();
     /**
-     * Actual created stream descriptors remain the reference after native close.
+     Actual created stream descriptors remain the reference after native close.
      */
     const stdoutState = await stdout.stat({ bigint: true });
     /**
-     * Diagnostic path replacement is checked independently of stdout framing.
+     Diagnostic path replacement is checked independently of stdout framing.
      */
     const stderrState = await stderr.stat({ bigint: true });
     await writeProducerInputComparisonRecord({

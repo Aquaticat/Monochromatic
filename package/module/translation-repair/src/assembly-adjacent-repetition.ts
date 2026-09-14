@@ -27,133 +27,133 @@ import {
 } from './assembly-repetition.ts';
 
 /**
- * Shortest repeat worth reporting, in words.
- *
- * Matches {@link MIN_PHRASE_WORDS} in the document-scale check deliberately:
- * adjacency relaxes the CONTENT requirement, not the length one, because three
- * shared words between neighbouring passages is still ordinary English.
+ Shortest repeat worth reporting, in words.
+ 
+ Matches {@link MIN_PHRASE_WORDS} in the document-scale check deliberately:
+ adjacency relaxes the CONTENT requirement, not the length one, because three
+ shared words between neighbouring passages is still ordinary English.
  */
 const MIN_ADJACENT_WORDS = 4;
 
 /**
- * Longest repeat looked for, in words.
- *
- * A repeat longer than this is reported at this length, which is enough to name
- * it; the finding carries counts rather than wording, so nothing is gained by
- * growing the window further.
+ Longest repeat looked for, in words.
+ 
+ A repeat longer than this is reported at this length, which is enough to name
+ it; the finding carries counts rather than wording, so nothing is gained by
+ growing the window further.
  */
 const MAX_ADJACENT_WORDS = 12;
 
 /**
- * Archive occurrences at which a repeat stops being ours.
- *
- * An archive that already says a phrase twice is an author who repeats, and a
- * document preserving that is faithful rather than damaged. Measured on
- * `lintong`, where a phrase the archive states twice was reported as introduced
- * by a reader that had rebuilt the archive from sliced text and lost one of the
- * two occurrences.
+ Archive occurrences at which a repeat stops being ours.
+ 
+ An archive that already says a phrase twice is an author who repeats, and a
+ document preserving that is faithful rather than damaged. Measured on
+ `lintong`, where a phrase the archive states twice was reported as introduced
+ by a reader that had rebuilt the archive from sliced text and lost one of the
+ two occurrences.
  */
 const ARCHIVE_REPEAT_FLOOR = 2;
 
 /**
- * One slice's shipped wording, in document order.
- *
- * @example
- * ```ts
- * const slice: AdjacentSliceText = { sliceIndex: 3, text: 'the tabby waited', };
- * ```
+ One slice's shipped wording, in document order.
+ 
+ @example
+ ```ts
+ const slice: AdjacentSliceText = { sliceIndex: 3, text: 'the tabby waited', };
+ ```
  */
 export type AdjacentSliceText = {
   /**
-   * Global slice index, as `prepareDocumentPair` stamped it.
+   Global slice index, as `prepareDocumentPair` stamped it.
    */
   readonly sliceIndex: number;
 
   /**
-   * Wording this slice contributed to the assembled document, whether it is a
-   * replacement the lane wrote or the incumbent it kept.
+   Wording this slice contributed to the assembled document, whether it is a
+   replacement the lane wrote or the incumbent it kept.
    */
   readonly text: string;
 };
 
 /**
- * Wording two neighbouring slices both shipped, which the archive did not
- * repeat.
- *
- * CARRIES NO WORDING. The slice pair and the measurements locate the finding
- * well enough to act on, and a findings list travels into logs and artifacts
- * where corpus text does not belong.
- *
- * @example
- * ```ts
- * const found: AdjacentRepetition = {
- *   earlierSliceIndex: 2,
- *   laterSliceIndex: 3,
- *   words: 6,
- *   characters: 23,
- *   archiveOccurrences: 1,
- * };
- * ```
+ Wording two neighbouring slices both shipped, which the archive did not
+ repeat.
+ 
+ CARRIES NO WORDING. The slice pair and the measurements locate the finding
+ well enough to act on, and a findings list travels into logs and artifacts
+ where corpus text does not belong.
+ 
+ @example
+ ```ts
+ const found: AdjacentRepetition = {
+   earlierSliceIndex: 2,
+   laterSliceIndex: 3,
+   words: 6,
+   characters: 23,
+   archiveOccurrences: 1,
+ };
+ ```
  */
 export type AdjacentRepetition = {
   /**
-   * Earlier slice of the neighbouring pair.
+   Earlier slice of the neighbouring pair.
    */
   readonly earlierSliceIndex: number;
 
   /**
-   * Later slice of the neighbouring pair.
+   Later slice of the neighbouring pair.
    */
   readonly laterSliceIndex: number;
 
   /**
-   * Repeat length in words.
+   Repeat length in words.
    */
   readonly words: number;
 
   /**
-   * Repeat length in characters, spaces between words included.
+   Repeat length in characters, spaces between words included.
    */
   readonly characters: number;
 
   /**
-   * Times the archive stated this wording, always below
-   * {@link ARCHIVE_REPEAT_FLOOR}.
+   Times the archive stated this wording, always below
+   {@link ARCHIVE_REPEAT_FLOOR}.
    */
   readonly archiveOccurrences: number;
 };
 
 /**
- * Two slices that sit next to each other in the assembled document.
- *
- * @example
- * ```ts
- * const pair: NeighbouringPair = { earlier, later, };
- * ```
+ Two slices that sit next to each other in the assembled document.
+ 
+ @example
+ ```ts
+ const pair: NeighbouringPair = { earlier, later, };
+ ```
  */
 type NeighbouringPair = {
   /**
-   * Slice that appears first.
+   Slice that appears first.
    */
   readonly earlier: AdjacentSliceText;
 
   /**
-   * Slice that follows it directly.
+   Slice that follows it directly.
    */
   readonly later: AdjacentSliceText;
 };
 
 /**
- * Pairs each slice with the one after it, in document order.
- *
- * @param slices - shipped slice wordings in document order
- *
- * @returns Neighbouring pairs, one fewer than the slices given
- *
- * @example
- * ```ts
- * const pairs = neighbouringPairs({ slices, },);
- * ```
+ Pairs each slice with the one after it, in document order.
+ 
+ @param slices - shipped slice wordings in document order
+ 
+ @returns Neighbouring pairs, one fewer than the slices given
+ 
+ @example
+ ```ts
+ const pairs = neighbouringPairs({ slices, },);
+ ```
  */
 function neighbouringPairs(
   {
@@ -168,7 +168,7 @@ function neighbouringPairs(
       at,
     ) {
       /**
-       * Slice following this one, absent at the last position.
+       Slice following this one, absent at the last position.
        */
       const later = slices[at + 1];
       return (later === undefined)
@@ -183,47 +183,47 @@ function neighbouringPairs(
 }
 
 /**
- * One kept repeat, held with the wording that produced it.
- *
- * The wording is needed only to drop shorter matches contained in one already
- * kept, and it never leaves this file.
- *
- * @example
- * ```ts
- * const kept: KeptRepeat = { phrase: 'by the garden gate again', found, };
- * ```
+ One kept repeat, held with the wording that produced it.
+ 
+ The wording is needed only to drop shorter matches contained in one already
+ kept, and it never leaves this file.
+ 
+ @example
+ ```ts
+ const kept: KeptRepeat = { phrase: 'by the garden gate again', found, };
+ ```
  */
 type KeptRepeat = {
   /**
-   * Repeated wording, normalised to single spaces.
+   Repeated wording, normalised to single spaces.
    */
   readonly phrase: string;
 
   /**
-   * What is reported for it.
+   What is reported for it.
    */
   readonly found: AdjacentRepetition;
 };
 
 /**
- * Names wording both slices of one pair carry, longest first.
- *
- * MAXIMAL MATCHES ONLY, for the reason {@link findIntroducedRepetitions} gives:
- * a shared eight-word passage also shares as five four-word ones, and reporting
- * every one buries the finding in its own substrings.
- *
- * @param earlier - earlier slice of the pair
- *
- * @param later - later slice of the pair
- *
- * @param archiveWords - archive document as words, for the faithfulness test
- *
- * @returns Repeats this pair introduced, longest first
- *
- * @example
- * ```ts
- * const found = repeatsInPair({ earlier, later, archiveWords, },);
- * ```
+ Names wording both slices of one pair carry, longest first.
+ 
+ MAXIMAL MATCHES ONLY, for the reason {@link findIntroducedRepetitions} gives:
+ a shared eight-word passage also shares as five four-word ones, and reporting
+ every one buries the finding in its own substrings.
+ 
+ @param earlier - earlier slice of the pair
+ 
+ @param later - later slice of the pair
+ 
+ @param archiveWords - archive document as words, for the faithfulness test
+ 
+ @returns Repeats this pair introduced, longest first
+ 
+ @example
+ ```ts
+ const found = repeatsInPair({ earlier, later, archiveWords, },);
+ ```
  */
 function repeatsInPair(
   {
@@ -237,18 +237,18 @@ function repeatsInPair(
   },
 ): readonly AdjacentRepetition[] {
   /**
-   * Earlier slice as words, which the candidate windows are cut from.
+   Earlier slice as words, which the candidate windows are cut from.
    */
   const earlierWords = wordsOf({ text: earlier.text, },);
 
   /**
-   * Later slice as words, for membership tests at each length.
+   Later slice as words, for membership tests at each length.
    */
   const laterWords = wordsOf({ text: later.text, },);
 
   /**
-   * Repeats kept so far, with the wording that produced each, so a shorter
-   * match contained in one already kept can be dropped.
+   Repeats kept so far, with the wording that produced each, so a shorter
+   match contained in one already kept can be dropped.
    */
   const kept: KeptRepeat[] = [];
 
@@ -259,7 +259,7 @@ function repeatsInPair(
     length -= 1
   ) {
     /**
-     * Every phrase of this length the later slice carries.
+     Every phrase of this length the later slice carries.
      */
     const laterPhrases = countPhrases({
       words: laterWords,
@@ -267,7 +267,7 @@ function repeatsInPair(
     },);
 
     /**
-     * Every phrase of this length the archive carries, with its count.
+     Every phrase of this length the archive carries, with its count.
      */
     const archivePhrases = countPhrases({
       words: archiveWords,
@@ -282,7 +282,7 @@ function repeatsInPair(
         continue;
 
       /**
-       * Times the archive already stated this wording.
+       Times the archive already stated this wording.
        */
       const archiveOccurrences = archivePhrases.get(phrase,) ?? 0;
       if (archiveOccurrences >= ARCHIVE_REPEAT_FLOOR)
@@ -314,19 +314,19 @@ function repeatsInPair(
 }
 
 /**
- * Names wording neighbouring slices both shipped that the archive did not
- * repeat.
- *
- * @param archiveText - translation as it stood before the pipeline ran
- *
- * @param shippedSlices - shipped slice wordings in document order
- *
- * @returns Adjacent repetitions, in document order and longest first per pair
- *
- * @example
- * ```ts
- * const found = findAdjacentRepetitions({ archiveText, shippedSlices, },);
- * ```
+ Names wording neighbouring slices both shipped that the archive did not
+ repeat.
+ 
+ @param archiveText - translation as it stood before the pipeline ran
+ 
+ @param shippedSlices - shipped slice wordings in document order
+ 
+ @returns Adjacent repetitions, in document order and longest first per pair
+ 
+ @example
+ ```ts
+ const found = findAdjacentRepetitions({ archiveText, shippedSlices, },);
+ ```
  */
 export function findAdjacentRepetitions(
   {
@@ -338,7 +338,7 @@ export function findAdjacentRepetitions(
   },
 ): readonly AdjacentRepetition[] {
   /**
-   * Archive as words, cut once rather than per pair.
+   Archive as words, cut once rather than per pair.
    */
   const archiveWords = wordsOf({ text: archiveText, },);
   return neighbouringPairs({ slices: shippedSlices, },)
@@ -352,20 +352,20 @@ export function findAdjacentRepetitions(
 }
 
 /**
- * Renders adjacent repetitions as assembly findings.
- *
- * NAMES NO WORDING, for the reason {@link AdjacentRepetition} gives.
- *
- * @param archiveText - translation as it stood before the pipeline ran
- *
- * @param shippedSlices - shipped slice wordings in document order
- *
- * @returns One finding per adjacent repetition
- *
- * @example
- * ```ts
- * const findings = adjacentRepetitionFindings({ archiveText, shippedSlices, },);
- * ```
+ Renders adjacent repetitions as assembly findings.
+ 
+ NAMES NO WORDING, for the reason {@link AdjacentRepetition} gives.
+ 
+ @param archiveText - translation as it stood before the pipeline ran
+ 
+ @param shippedSlices - shipped slice wordings in document order
+ 
+ @returns One finding per adjacent repetition
+ 
+ @example
+ ```ts
+ const findings = adjacentRepetitionFindings({ archiveText, shippedSlices, },);
+ ```
  */
 export function adjacentRepetitionFindings(
   {

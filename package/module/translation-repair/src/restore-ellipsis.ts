@@ -13,37 +13,37 @@ import { proseMask, } from './typography-prose-mask.ts';
 // nothing, since it cannot tell which the editors meant.
 
 /**
- * Horizontal ellipsis, U+2026.
+ Horizontal ellipsis, U+2026.
  */
 const UNICODE_ELLIPSIS = '\u{2026}';
 
 /**
- * Three-dot ellipsis.
+ Three-dot ellipsis.
  */
 const THREE_DOTS = '...';
 
 /**
- * Which ellipsis form a text shows.
- *
- * @param text - text to read
- *
- * @returns `'dots'`, `'unicode'`, `'both'` or `'none'`
- *
- * @example
- * ```ts
- * ellipsisFormOf({ text: 'Well... no.', },);
- * ```
+ Which ellipsis form a text shows.
+ 
+ @param text - text to read
+ 
+ @returns `'dots'`, `'unicode'`, `'both'` or `'none'`
+ 
+ @example
+ ```ts
+ ellipsisFormOf({ text: 'Well... no.', },);
+ ```
  */
 function ellipsisFormOf(
   { text, }: { readonly text: string; },
 ): 'dots' | 'unicode' | 'both' | 'none' {
   /**
-   * Whether three dots appear.
+   Whether three dots appear.
    */
   const dots = text.includes(THREE_DOTS,);
 
   /**
-   * Whether U+2026 appears.
+   Whether U+2026 appears.
    */
   const unicode = text.includes(UNICODE_ELLIPSIS,);
   if (dots && unicode)
@@ -56,25 +56,25 @@ function ellipsisFormOf(
 }
 
 /**
- * Restores the ellipsis form the replaced text and the wider document use.
- *
- * Converts only when the replaced region and the document together show one
- * form and never the other. A run of U+2026, which Chinese writes doubled,
- * becomes one three-dot ellipsis; a run of exactly three dots becomes one
- * U+2026. Text inside a backtick span or a tag is never touched.
- *
- * @param replacement - text a stage wrote
- *
- * @param replaced - text it replaces
- *
- * @param convention - wider text whose form the replacement should match
- *
- * @returns Replacement in the document's ellipsis form
- *
- * @example
- * ```ts
- * restoreEllipsis({ replacement: 'Well\u{2026} no.', replaced: 'Well... yes.', convention: documentText, },);
- * ```
+ Restores the ellipsis form the replaced text and the wider document use.
+ 
+ Converts only when the replaced region and the document together show one
+ form and never the other. A run of U+2026, which Chinese writes doubled,
+ becomes one three-dot ellipsis; a run of exactly three dots becomes one
+ U+2026. Text inside a backtick span or a tag is never touched.
+ 
+ @param replacement - text a stage wrote
+ 
+ @param replaced - text it replaces
+ 
+ @param convention - wider text whose form the replacement should match
+ 
+ @returns Replacement in the document's ellipsis form
+ 
+ @example
+ ```ts
+ restoreEllipsis({ replacement: 'Well\u{2026} no.', replaced: 'Well... yes.', convention: documentText, },);
+ ```
  */
 export function restoreEllipsis(
   {
@@ -88,25 +88,25 @@ export function restoreEllipsis(
   },
 ): string {
   /**
-   * Form the replaced region and the document show together.
+   Form the replaced region and the document show together.
    */
   const form = ellipsisFormOf({ text: `${replaced}\n${convention}`, },);
   if ((form === 'both') || (form === 'none'))
     return replacement;
 
   /**
-   * Which units of the replacement are prose.
+   Which units of the replacement are prose.
    */
   const mask = proseMask({ text: replacement, },);
 
   return (function scan(): string {
     /**
-     * Pieces emitted so far.
+     Pieces emitted so far.
      */
     const rebuilt: string[] = [];
     for (let index = 0; index < replacement.length; index += 1) {
       /**
-       * Character under the cursor.
+       Character under the cursor.
        */
       const character = replacement.charAt(index,);
       if (mask[index] !== true) {
@@ -122,7 +122,7 @@ export function restoreEllipsis(
       }
       if ((form === 'unicode') && (character === '.')) {
         /**
-         * Whether a run of exactly three dots starts here.
+         Whether a run of exactly three dots starts here.
          */
         const exactlyThree = replacement.startsWith(
           THREE_DOTS,

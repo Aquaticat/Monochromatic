@@ -21,39 +21,39 @@ import { wrapReplacementText, } from './semantic-wrap.ts';
 // is a correctness constraint rather than a preference.
 
 /**
- * Wraps every changed repair outcome, re-deriving whether it still changes.
- *
- * RE-DERIVED RATHER THAN CARRIED FORWARD. A passage whose only difference from
- * the archive was its wrapping becomes identical to the archive once wrapped,
- * and an outcome still claiming a change at that point fails the assembly
- * assertion. It is a retention, so it is recorded as one. No slice in the pool
- * settled 2026-08-18 does this, which is why the case has its own test rather
- * than a measurement.
- *
- * NEVER APPLIED TO A LINE-STRUCTURED SLICE. The pipeline hands a governed
- * producer `TRANSLATE_LINE_STRUCTURE_RULE`, one output line per original line,
- * and then broke that work afterwards: over the 211 line-structured slices of
- * the pinned corpus the wrap changed 189 and broke 470 of 1091 lines, after
- * every decider had approved them. Flattening is caught by the structural
- * guard and sent back to its author instead of papered over here, because
- * `wrapReplacementText` splits and never joins, so it cannot put back a break
- * a producer merged away.
- *
- * @param slices - prepared slice pairs, for the archive wording per index
- *
- * @param outcomes - settled per-slice outcomes, refinement included
- *
- * @param lineStructuredSlices - global indices the line-structure rule
- * governs, whose lines are the producer's to set
- *
- * @param l - lane logger
- *
- * @returns Same outcomes with produced wording wrapped
- *
- * @example
- * ```ts
- * const wrapped = wrapRepairOutcomes({ slices, outcomes, lineStructuredSlices, l, },);
- * ```
+ Wraps every changed repair outcome, re-deriving whether it still changes.
+ 
+ RE-DERIVED RATHER THAN CARRIED FORWARD. A passage whose only difference from
+ the archive was its wrapping becomes identical to the archive once wrapped,
+ and an outcome still claiming a change at that point fails the assembly
+ assertion. It is a retention, so it is recorded as one. No slice in the pool
+ settled 2026-08-18 does this, which is why the case has its own test rather
+ than a measurement.
+ 
+ NEVER APPLIED TO A LINE-STRUCTURED SLICE. The pipeline hands a governed
+ producer `TRANSLATE_LINE_STRUCTURE_RULE`, one output line per original line,
+ and then broke that work afterwards: over the 211 line-structured slices of
+ the pinned corpus the wrap changed 189 and broke 470 of 1091 lines, after
+ every decider had approved them. Flattening is caught by the structural
+ guard and sent back to its author instead of papered over here, because
+ `wrapReplacementText` splits and never joins, so it cannot put back a break
+ a producer merged away.
+ 
+ @param slices - prepared slice pairs, for the archive wording per index
+ 
+ @param outcomes - settled per-slice outcomes, refinement included
+ 
+ @param lineStructuredSlices - global indices the line-structure rule
+ governs, whose lines are the producer's to set
+ 
+ @param l - lane logger
+ 
+ @returns Same outcomes with produced wording wrapped
+ 
+ @example
+ ```ts
+ const wrapped = wrapRepairOutcomes({ slices, outcomes, lineStructuredSlices, l, },);
+ ```
  */
 export function wrapRepairOutcomes(
   {
@@ -69,8 +69,8 @@ export function wrapRepairOutcomes(
   },
 ): readonly ChunkRepairOutcome[] {
   /**
-   * Archive wording per slice index, which decides whether a wrap left anything
-   * to change.
+   Archive wording per slice index, which decides whether a wrap left anything
+   to change.
    */
   const incumbentByIndex = new Map(slices.map(function toEntry(slice,): readonly [
     number,
@@ -85,7 +85,7 @@ export function wrapRepairOutcomes(
   },),);
 
   /**
-   * How many outcomes the wrap altered, and how many it demoted.
+   How many outcomes the wrap altered, and how many it demoted.
    */
   const counted = {
     rewrapped: 0,
@@ -94,7 +94,7 @@ export function wrapRepairOutcomes(
   };
 
   /**
-   * Outcomes with produced wording wrapped.
+   Outcomes with produced wording wrapped.
    */
   const wrapped = outcomes.map(function perOutcome(outcome,): ChunkRepairOutcome {
     if (!outcome.changed)
@@ -109,7 +109,7 @@ export function wrapRepairOutcomes(
     }
 
     /**
-     * Wording as the rule would have it written.
+     Wording as the rule would have it written.
      */
     const repairedText = wrapReplacementText({ text: outcome.repairedText, },);
     if (repairedText === outcome.repairedText)
@@ -117,12 +117,12 @@ export function wrapRepairOutcomes(
     counted.rewrapped += 1;
 
     /**
-     * Archive wording here, absent when the slice is not in the pair list.
+     Archive wording here, absent when the slice is not in the pair list.
      */
     const incumbentText = incumbentByIndex.get(outcome.sliceIndex,);
 
     /**
-     * Whether anything but the wrapping still separates the two.
+     Whether anything but the wrapping still separates the two.
      */
     const changed = repairedText !== incumbentText;
     if (!changed)

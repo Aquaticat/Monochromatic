@@ -24,17 +24,17 @@ import { bothOrders, } from './editor-width-contest.ts';
 // to not be fooled by one draw.
 
 /**
- * Slices the control is tried on.
- *
- * Three rather than one so a single unlucky pair cannot condemn a working
- * panel, and rather than ten because this is a gate on spending, not a
- * measurement in its own right.
+ Slices the control is tried on.
+ 
+ Three rather than one so a single unlucky pair cannot condemn a working
+ panel, and rather than ten because this is a gate on spending, not a
+ measurement in its own right.
  */
 const CONTROL_SLICES = 3;
 
 /**
- * Sentence terminators the damage cut looks for, longest first so a full-width
- * stop is not mistaken for an ASCII one.
+ Sentence terminators the damage cut looks for, longest first so a full-width
+ stop is not mistaken for an ASCII one.
  */
 const TERMINATORS = [
   '。',
@@ -50,38 +50,38 @@ const TERMINATORS = [
 ];
 
 /**
- * Removes one whole sentence, or reports that there was none to remove.
- *
- * DELETION RATHER THAN CORRUPTION is the damage of choice because `#155`
- * already names dropped page content a fault the pipeline cares about, so a
- * panel that misses it is missing something the corpus rules already say
- * matters.
- *
- * Exported so the cut can be tested directly. This function decides what the
- * positive control is actually asking the panel about, and a version of it that
- * quietly returned the passage unchanged, or blank on everything, would turn the
- * gate into a formality that passes whatever it is handed.
- *
- * @internal
- *
- * @param text - passage to damage
- *
- * @returns Passage with a sentence gone, or blank when it holds only one
- *
- * @example
- * ```ts
- * const damaged = withoutASentence(text,);
- * ```
+ Removes one whole sentence, or reports that there was none to remove.
+ 
+ DELETION RATHER THAN CORRUPTION is the damage of choice because `#155`
+ already names dropped page content a fault the pipeline cares about, so a
+ panel that misses it is missing something the corpus rules already say
+ matters.
+ 
+ Exported so the cut can be tested directly. This function decides what the
+ positive control is actually asking the panel about, and a version of it that
+ quietly returned the passage unchanged, or blank on everything, would turn the
+ gate into a formality that passes whatever it is handed.
+ 
+ @internal
+ 
+ @param text - passage to damage
+ 
+ @returns Passage with a sentence gone, or blank when it holds only one
+ 
+ @example
+ ```ts
+ const damaged = withoutASentence(text,);
+ ```
  */
 export function withoutASentence(text: string,): string {
   /**
-   * Index just past each terminator that appears, as a plain number so no
-   * accumulator object rides through the scan.
+   Index just past each terminator that appears, as a plain number so no
+   accumulator object rides through the scan.
    */
   const ends = TERMINATORS
     .map(function endOf(terminator,): number {
       /**
-       * Where this terminator first appears.
+       Where this terminator first appears.
        */
       const at = text.indexOf(terminator,);
 
@@ -107,19 +107,19 @@ export function withoutASentence(text: string,): string {
 }
 
 /**
- * Presents one text as an arm, so the contest machinery can judge it.
- *
- * @param text - passage this arm offers
- *
- * @param producers - models credited with it, empty for fixture text nobody
- * wrote, which keeps every ballot at full weight
- *
- * @returns Arm the contest can seat
- *
- * @example
- * ```ts
- * const arm = asArm({ text, producers: [], },);
- * ```
+ Presents one text as an arm, so the contest machinery can judge it.
+ 
+ @param text - passage this arm offers
+ 
+ @param producers - models credited with it, empty for fixture text nobody
+ wrote, which keeps every ballot at full weight
+ 
+ @returns Arm the contest can seat
+ 
+ @example
+ ```ts
+ const arm = asArm({ text, producers: [], },);
+ ```
  */
 function asArm(
   {
@@ -143,24 +143,24 @@ function asArm(
 }
 
 /**
- * Asks whether the panel prefers intact text over text missing a sentence.
- *
- * @param client - injected model client
- *
- * @param slices - drawn sample, of which the first usable few are damaged
- *
- * @param judgeModelIds - the panel the draw will use
- *
- * @param signal - cancellation
- *
- * @param l - logger
- *
- * @returns Whether intact text won more of the tried pairs than it lost
- *
- * @example
- * ```ts
- * const held = await widthControlHolds({ client, slices, judgeModelIds, signal, l, },);
- * ```
+ Asks whether the panel prefers intact text over text missing a sentence.
+ 
+ @param client - injected model client
+ 
+ @param slices - drawn sample, of which the first usable few are damaged
+ 
+ @param judgeModelIds - the panel the draw will use
+ 
+ @param signal - cancellation
+ 
+ @param l - logger
+ 
+ @returns Whether intact text won more of the tried pairs than it lost
+ 
+ @example
+ ```ts
+ const held = await widthControlHolds({ client, slices, judgeModelIds, signal, l, },);
+ ```
  */
 export async function widthControlHolds(
   {
@@ -178,8 +178,8 @@ export async function widthControlHolds(
   }>,
 ): Promise<boolean> {
   /**
-   * Slices with more than one sentence, which are the only ones a deletion can
-   * be cut from.
+   Slices with more than one sentence, which are the only ones a deletion can
+   be cut from.
    */
   const usable = slices
     .filter(function damageable(slice,) {
@@ -197,14 +197,14 @@ export async function widthControlHolds(
     },);
 
   /**
-   * Verdict on each pair, gathered so the count is a read over results rather
-   * than a counter mutated inside the loop.
+   Verdict on each pair, gathered so the count is a read over results rather
+   than a counter mutated inside the loop.
    */
   const verdicts: string[] = [];
 
   for (const slice of usable) {
     /**
-     * Intact passage, seated as the narrow arm.
+     Intact passage, seated as the narrow arm.
      */
     const intact = asArm({
       text: slice.incumbentText,
@@ -212,7 +212,7 @@ export async function widthControlHolds(
     },);
 
     /**
-     * Same passage with a sentence gone, seated as the wide arm.
+     Same passage with a sentence gone, seated as the wide arm.
      */
     const damaged = asArm({
       text: withoutASentence(slice.incumbentText,),
@@ -220,7 +220,7 @@ export async function widthControlHolds(
     },);
 
     /**
-     * Which the panel preferred, over both seatings.
+     Which the panel preferred, over both seatings.
      */
     // oxlint-disable-next-line eslint/no-await-in-loop -- sequential by design: this gate exists to stop a run before it spends, so the pairs must resolve one at a time and be allowed to answer the question early
     const verdict = await bothOrders({
@@ -249,7 +249,7 @@ export async function widthControlHolds(
   }
 
   /**
-   * Pairs where intact text won both seatings.
+   Pairs where intact text won both seatings.
    */
   const intactPreferred = verdicts
     .filter(function intactWon(verdict,) {

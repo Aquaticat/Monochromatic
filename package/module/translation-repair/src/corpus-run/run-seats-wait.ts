@@ -35,12 +35,12 @@ import { reachOf, } from '../roster-reach.ts';
 // the translate lane starts, which is where the third pass lost its writers.
 
 /**
- * Benches a phase may lean on, by the name the `JUDGE SEATS` line prints.
- *
- * @example
- * ```ts
- * const bench: BenchName = 'translators';
- * ```
+ Benches a phase may lean on, by the name the `JUDGE SEATS` line prints.
+ 
+ @example
+ ```ts
+ const bench: BenchName = 'translators';
+ ```
  */
 export type BenchName =
   | 'wide'
@@ -52,16 +52,16 @@ export type BenchName =
   | 'readers';
 
 /**
- * Phase a seat reading is taken for.
- *
- * `translate lane` since the thirteenth class: the lanes phase seats both
- * lanes at once, and the translate lane starts after the repair lane has
- * spent minutes, which is long enough for a provider to be held out.
- *
- * @example
- * ```ts
- * const phase: JudgeSeatPhase = 'lane contest';
- * ```
+ Phase a seat reading is taken for.
+ 
+ `translate lane` since the thirteenth class: the lanes phase seats both
+ lanes at once, and the translate lane starts after the repair lane has
+ spent minutes, which is long enough for a provider to be held out.
+ 
+ @example
+ ```ts
+ const phase: JudgeSeatPhase = 'lane contest';
+ ```
  */
 export type JudgeSeatPhase =
   | 'preparation'
@@ -72,15 +72,15 @@ export type JudgeSeatPhase =
   | 'consolidation';
 
 /**
- * Which benches each phase cannot run without.
- *
- * Preparation pairs blocks and reviews the archive with the wide bench; the
- * pictures phase reads with the readers; the lanes need critics, panel and
- * judges (wide), editors and refiners for repair and writers for translate
- * (the writing benches since the fifteenth class, `run-seats-floor.ts`); the translate lane
- * needs its writers and its slate judges; the contest judges with the wide
- * bench; consolidation writes with the roster and judges with the slate and
- * gates with the late bench, of which the slate is the narrower.
+ Which benches each phase cannot run without.
+ 
+ Preparation pairs blocks and reviews the archive with the wide bench; the
+ pictures phase reads with the readers; the lanes need critics, panel and
+ judges (wide), editors and refiners for repair and writers for translate
+ (the writing benches since the fifteenth class, `run-seats-floor.ts`); the translate lane
+ needs its writers and its slate judges; the contest judges with the wide
+ bench; consolidation writes with the roster and judges with the slate and
+ gates with the late bench, of which the slate is the narrower.
  */
 const BENCHES_BY_PHASE: Readonly<Record<JudgeSeatPhase, readonly BenchName[]>> = {
   preparation: ['wide',],
@@ -103,26 +103,26 @@ const BENCHES_BY_PHASE: Readonly<Record<JudgeSeatPhase, readonly BenchName[]>> =
 };
 
 /**
- * Voices the readers bench needs: two, since `readImagePair` corroborates a
- * picture from two readings and calls a single one `one-reader-only`. The
- * judge benches' quorum is a majority of a bench that votes; readers never
- * vote, and holding them to it would call a Bedrock-only pass with its two
- * measured readers short before every pictures phase (2026-09-08).
+ Voices the readers bench needs: two, since `readImagePair` corroborates a
+ picture from two readings and calls a single one `one-reader-only`. The
+ judge benches' quorum is a majority of a bench that votes; readers never
+ vote, and holding them to it would call a Bedrock-only pass with its two
+ measured readers short before every pictures phase (2026-09-08).
  */
 const READER_QUORUM = 2;
 
 /**
- * Names the benches one phase cannot run without.
- *
- * @param phase - phase about to start
- *
- * @returns Bench names in the order the shortfall line prints them
- *
- * @example
- * ```ts
- * phaseBenches({ phase: 'translate lane', },);
- * // => ['translators', 'select',]
- * ```
+ Names the benches one phase cannot run without.
+ 
+ @param phase - phase about to start
+ 
+ @returns Bench names in the order the shortfall line prints them
+ 
+ @example
+ ```ts
+ phaseBenches({ phase: 'translate lane', },);
+ // => ['translators', 'select',]
+ ```
  */
 export function phaseBenches(
   { phase, }: { readonly phase: JudgeSeatPhase; },
@@ -131,18 +131,18 @@ export function phaseBenches(
 }
 
 /**
- * Seats some wet provider would take a call for.
- *
- * @param seats - bench under question
- *
- * @param dry - dryness per provider, holds folded in
- *
- * @returns Seats the router could send somewhere right now
- *
- * @example
- * ```ts
- * const reachable = reachableSeats({ seats: wideSeats, dry, },);
- * ```
+ Seats some wet provider would take a call for.
+ 
+ @param seats - bench under question
+ 
+ @param dry - dryness per provider, holds folded in
+ 
+ @returns Seats the router could send somewhere right now
+ 
+ @example
+ ```ts
+ const reachable = reachableSeats({ seats: wideSeats, dry, },);
+ ```
  */
 export function reachableSeats(
   {
@@ -162,22 +162,22 @@ export function reachableSeats(
 }
 
 /**
- * Benches that cannot reach quorum among the seats a wet provider serves.
- *
- * @param benches - each bench the phase leans on, keyed by name
- *
- * @param names - benches to read, in the order the shortfall line prints them
- *
- * @param dry - dryness per provider, holds folded in
- *
- * @returns One clause per short bench naming reachable seats against the
- * quorum, empty when every bench can settle
- *
- * @example
- * ```ts
- * shortBenches({ benches, names: phaseBenches({ phase, },), dry, },);
- * // => ['translators 2 of 6 reachable, quorum 3',]
- * ```
+ Benches that cannot reach quorum among the seats a wet provider serves.
+ 
+ @param benches - each bench the phase leans on, keyed by name
+ 
+ @param names - benches to read, in the order the shortfall line prints them
+ 
+ @param dry - dryness per provider, holds folded in
+ 
+ @returns One clause per short bench naming reachable seats against the
+ quorum, empty when every bench can settle
+ 
+ @example
+ ```ts
+ shortBenches({ benches, names: phaseBenches({ phase, },), dry, },);
+ // => ['translators 2 of 6 reachable, quorum 3',]
+ ```
  */
 export function shortBenches(
   {
@@ -192,18 +192,18 @@ export function shortBenches(
 ): readonly string[] {
   return names.flatMap(function clauseOf(name,): readonly string[] {
     /**
-     * Seats this bench holds.
+     Seats this bench holds.
      */
     const seats = benches[name];
     /**
-     * Voices the bench needs to settle: a pair for the readers, a majority
-     * for a bench that votes.
+     Voices the bench needs to settle: a pair for the readers, a majority
+     for a bench that votes.
      */
     const quorum = (name === 'readers')
       ? READER_QUORUM
       : rosterQuorumSize({ rosterSize: seats.length, },);
     /**
-     * Seats a wet provider would serve.
+     Seats a wet provider would serve.
      */
     const reachable = reachableSeats({
       seats,

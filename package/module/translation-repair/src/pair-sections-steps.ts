@@ -25,39 +25,39 @@ import type { SectionPair, } from './pair-sections-wire.ts';
 // the point: it is why a model was asked.
 
 /**
- * Reason a section carries when the roster was asked about it and left it out.
- *
- * Not `forced-gap`, which means no optimal alignment pairs it, and not
- * `ambiguous`, which means several do. Those describe a scorer's table. This
- * describes a reading, and the two disagree often enough that collapsing them
- * would hide which mechanism produced an unpaired section.
+ Reason a section carries when the roster was asked about it and left it out.
+ 
+ Not `forced-gap`, which means no optimal alignment pairs it, and not
+ `ambiguous`, which means several do. Those describe a scorer's table. This
+ describes a reading, and the two disagree often enough that collapsing them
+ would hide which mechanism produced an unpaired section.
  */
 const ROSTER_UNPAIRED = 'roster-unpaired';
 
 /**
- * Target index standing for "no paired section on that side of this one".
- *
- * Before the first target rather than a nullish union, so the boundary
- * arithmetic reads the same whether or not a paired neighbour exists.
+ Target index standing for "no paired section on that side of this one".
+ 
+ Before the first target rather than a nullish union, so the boundary
+ arithmetic reads the same whether or not a paired neighbour exists.
  */
 const BEFORE_FIRST_TARGET = -1;
 
 /**
- * Where an unpaired original section could sit, given its paired neighbours.
- *
- * @param previousTarget - translation section the nearest EARLIER paired
- * original renders as, or {@link BEFORE_FIRST_TARGET} when none precedes it
- *
- * @param nextTarget - translation section the nearest LATER paired original
- * renders as, or the translation section count when none follows it
- *
- * @returns Proven boundary when the neighbours pin exactly one, the whole span
- * otherwise
- *
- * @example
- * ```ts
- * const anchor = anchorBetween({ previousTarget: 2, nextTarget: 3, },);
- * ```
+ Where an unpaired original section could sit, given its paired neighbours.
+ 
+ @param previousTarget - translation section the nearest EARLIER paired
+ original renders as, or {@link BEFORE_FIRST_TARGET} when none precedes it
+ 
+ @param nextTarget - translation section the nearest LATER paired original
+ renders as, or the translation section count when none follows it
+ 
+ @returns Proven boundary when the neighbours pin exactly one, the whole span
+ otherwise
+ 
+ @example
+ ```ts
+ const anchor = anchorBetween({ previousTarget: 2, nextTarget: 3, },);
+ ```
  */
 function anchorBetween(
   {
@@ -69,18 +69,18 @@ function anchorBetween(
   },
 ): InsertionAnchor {
   /**
-   * Every boundary the section could be written at, in document order.
-   *
-   * It sits after whatever the earlier neighbour renders as and before whatever
-   * the later one does, so each unclaimed translation section between them is
-   * one more place it could go.
+   Every boundary the section could be written at, in document order.
+   
+   It sits after whatever the earlier neighbour renders as and before whatever
+   the later one does, so each unclaimed translation section between them is
+   one more place it could go.
    */
   const boundaries: number[] = [];
   for (let at = previousTarget + 1; at <= nextTarget; at += 1)
     boundaries.push(at,);
 
   /**
-   * The single place, when the neighbours agree on one.
+   The single place, when the neighbours agree on one.
    */
   const [only,] = boundaries;
   if ((boundaries.length === 1) && (only !== undefined))
@@ -96,18 +96,18 @@ function anchorBetween(
 }
 
 /**
- * Translation section each original renders as, at every original index.
- *
- * @param pairs - correspondences the roster agreed on
- *
- * @param sourceCount - original sections
- *
- * @returns Target index per original, {@link BEFORE_FIRST_TARGET} where unpaired
- *
- * @example
- * ```ts
- * const targets = targetsBySource({ pairs, sourceCount: 8, },);
- * ```
+ Translation section each original renders as, at every original index.
+ 
+ @param pairs - correspondences the roster agreed on
+ 
+ @param sourceCount - original sections
+ 
+ @returns Target index per original, {@link BEFORE_FIRST_TARGET} where unpaired
+ 
+ @example
+ ```ts
+ const targets = targetsBySource({ pairs, sourceCount: 8, },);
+ ```
  */
 function targetsBySource(
   {
@@ -119,8 +119,8 @@ function targetsBySource(
   },
 ): readonly number[] {
   /**
-   * Pairs keyed by their original index, which the reader has already proved
-   * unique.
+   Pairs keyed by their original index, which the reader has already proved
+   unique.
    */
   const bySource = new Map(pairs.map(function keyed(pair,): readonly [
     number,
@@ -133,7 +133,7 @@ function targetsBySource(
   },),);
 
   /**
-   * One entry per original section, whether or not it was paired.
+   One entry per original section, whether or not it was paired.
    */
   const targets: number[] = [];
   for (let source = 0; source < sourceCount; source += 1)
@@ -142,42 +142,42 @@ function targetsBySource(
 }
 
 /**
- * Running state of a nearest-paired-neighbour scan.
- *
- * Named rather than written inline, so the accumulator's two halves each get a
- * sentence: the answers reached so far, and the paired target the next section
- * will read.
+ Running state of a nearest-paired-neighbour scan.
+ 
+ Named rather than written inline, so the accumulator's two halves each get a
+ sentence: the answers reached so far, and the paired target the next section
+ will read.
  */
 type NeighbourScan = {
   /**
-   * Answer per section reached so far, in scan order.
+   Answer per section reached so far, in scan order.
    */
   readonly found: readonly number[];
 
   /**
-   * Paired target most recently passed.
+   Paired target most recently passed.
    */
   readonly nearest: number;
 };
 
 /**
- * Nearest paired target passed before each section, in scan order.
- *
- * ONE SCAN in whichever direction the caller hands it, because "the paired
- * neighbour before this section" and "the paired neighbour after it" are the
- * same walk read from opposite ends.
- *
- * @param targets - target per original, in the order to scan
- *
- * @param start - answer for the first section scanned, which is where a section
- * with no paired neighbour on that side belongs
- *
- * @returns Nearest paired target per section, in the order scanned
- *
- * @example
- * ```ts
- * const nearest = scanNearest({ targets, start: BEFORE_FIRST_TARGET, },);
- * ```
+ Nearest paired target passed before each section, in scan order.
+ 
+ ONE SCAN in whichever direction the caller hands it, because "the paired
+ neighbour before this section" and "the paired neighbour after it" are the
+ same walk read from opposite ends.
+ 
+ @param targets - target per original, in the order to scan
+ 
+ @param start - answer for the first section scanned, which is where a section
+ with no paired neighbour on that side belongs
+ 
+ @returns Nearest paired target per section, in the order scanned
+ 
+ @example
+ ```ts
+ const nearest = scanNearest({ targets, start: BEFORE_FIRST_TARGET, },);
+ ```
  */
 function scanNearest(
   {
@@ -211,23 +211,23 @@ function scanNearest(
 }
 
 /**
- * Converts a roster's section pairing into the aligner's step vocabulary.
- *
- * @param pairs - correspondences the roster agreed on, strictly increasing on
- * both sides
- *
- * @param sourceHeadings - original section labels in document order, which also
- * count the sections
- *
- * @param targetHeadings - translation section labels in document order
- *
- * @returns One step per original section, then every unclaimed translation
- * section, matching what `alignHeadingsForced` emits
- *
- * @example
- * ```ts
- * const steps = sectionPairingToSteps({ pairs, sourceHeadings, targetHeadings, },);
- * ```
+ Converts a roster's section pairing into the aligner's step vocabulary.
+ 
+ @param pairs - correspondences the roster agreed on, strictly increasing on
+ both sides
+ 
+ @param sourceHeadings - original section labels in document order, which also
+ count the sections
+ 
+ @param targetHeadings - translation section labels in document order
+ 
+ @returns One step per original section, then every unclaimed translation
+ section, matching what `alignHeadingsForced` emits
+ 
+ @example
+ ```ts
+ const steps = sectionPairingToSteps({ pairs, sourceHeadings, targetHeadings, },);
+ ```
  */
 export function sectionPairingToSteps(
   {
@@ -241,7 +241,7 @@ export function sectionPairingToSteps(
   },
 ): readonly ForcedAlignStep[] {
   /**
-   * Translation section each original renders as, or its absence.
+   Translation section each original renders as, or its absence.
    */
   const targets = targetsBySource({
     pairs,
@@ -249,7 +249,7 @@ export function sectionPairingToSteps(
   },);
 
   /**
-   * Paired neighbour BEFORE every original section.
+   Paired neighbour BEFORE every original section.
    */
   const previous = scanNearest({
     targets,
@@ -257,8 +257,8 @@ export function sectionPairingToSteps(
   },);
 
   /**
-   * Paired neighbour AFTER every original section, scanned from the end and
-   * turned around so it reads in document order beside `previous`.
+   Paired neighbour AFTER every original section, scanned from the end and
+   turned around so it reads in document order beside `previous`.
    */
   const next = scanNearest({
     targets: targets.toReversed(),
@@ -267,14 +267,14 @@ export function sectionPairingToSteps(
     .toReversed();
 
   /**
-   * Translation sections some original claims.
+   Translation sections some original claims.
    */
   const claimed = new Set(pairs.map(function toTarget(pair,): number {
     return pair.target;
   },),);
 
   /**
-   * Decisions about the original's sections, in document order.
+   Decisions about the original's sections, in document order.
    */
   const sourceSteps = targets.map(function toStep(
     target,
@@ -303,8 +303,8 @@ export function sectionPairingToSteps(
   },);
 
   /**
-   * Translation sections no original claims, emitted after every original
-   * decision exactly as the deterministic aligner emits them.
+   Translation sections no original claims, emitted after every original
+   decision exactly as the deterministic aligner emits them.
    */
   const targetSteps = targetHeadings
     .map(function toIndex(

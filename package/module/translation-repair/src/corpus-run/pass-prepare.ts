@@ -34,50 +34,50 @@ import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 // last become findings (doc/planning/translation-repair-no-loop-design.md).
 
 /**
- * The clock a lookup record is stamped with.
- *
- * @returns Now
- *
- * @example
- * ```ts
- * const stamped = wallClock().toISOString();
- * ```
+ The clock a lookup record is stamped with.
+ 
+ @returns Now
+ 
+ @example
+ ```ts
+ const stamped = wallClock().toISOString();
+ ```
  */
 function wallClock(): Date {
   return new Date();
 }
 
 /**
- * Prepares one pass entry with cached roster pairing and publication safety.
- *
- * @param client - shared provider client
- *
- * @param entryId - corpus entry being settled
- *
- * @param entryCacheDir - entry cache root
- *
- * @param pipelineDigest - cache generation
- *
- * @param modelIds - pairing roster
- *
- * @param sourceText - source page
- *
- * @param targetText - archive page
- *
- * @param signal - entry deadline
- *
- * @param exchangeTimeoutMs - per-call ceiling
- *
- * @param l - entry logger
- *
- * @param readPictures - shared entry reader supplying picture support before archive review
- *
- * @returns Prepared slices and pairing findings
- *
- * @example
- * ```ts
- * const paired = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, });
- * ```
+ Prepares one pass entry with cached roster pairing and publication safety.
+ 
+ @param client - shared provider client
+ 
+ @param entryId - corpus entry being settled
+ 
+ @param entryCacheDir - entry cache root
+ 
+ @param pipelineDigest - cache generation
+ 
+ @param modelIds - pairing roster
+ 
+ @param sourceText - source page
+ 
+ @param targetText - archive page
+ 
+ @param signal - entry deadline
+ 
+ @param exchangeTimeoutMs - per-call ceiling
+ 
+ @param l - entry logger
+ 
+ @param readPictures - shared entry reader supplying picture support before archive review
+ 
+ @returns Prepared slices and pairing findings
+ 
+ @example
+ ```ts
+ const paired = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, });
+ ```
  */
 export async function preparePassEntry(
   {
@@ -108,18 +108,18 @@ export async function preparePassEntry(
 ): Promise<PairedPreparation> {
   l.debug(`${preparePassEntry.name}: preparing entry ${entryId}`,);
   /**
-   * Archive bytes both deciders judge, normalized before preparation so
-   * spans, candidates, artifact and published page all describe the same
-   * visible text (`pass-archive.ts`).
+   Archive bytes both deciders judge, normalized before preparation so
+   spans, candidates, artifact and published page all describe the same
+   visible text (`pass-archive.ts`).
    */
   const archiveText = passArchiveText({
     text: targetText,
     l,
   },);
   /**
-   * Whose front matter the page carries, decided on the archive as inherited
-   * and shared by both preparations, since the block correction round never
-   * touches metadata.
+   Whose front matter the page carries, decided on the archive as inherited
+   and shared by both preparations, since the block correction round never
+   touches metadata.
    */
   const frontMatterAuthority = frontMatterAuthorityOf({
     entryId,
@@ -134,24 +134,24 @@ export async function preparePassEntry(
     }`,
   );
   /**
-   * Cache for block-pairing rounds across revised archive preparations.
+   Cache for block-pairing rounds across revised archive preparations.
    */
   const pairingCache = await openPairingCache({
     dir: entryCacheDir,
     generation: pipelineDigest,
   },);
   /**
-   * Cache for section-pairing rounds across revised archive preparations.
+   Cache for section-pairing rounds across revised archive preparations.
    */
   const sectionCache = await openSectionPairingCache({
     dir: entryCacheDir,
     generation: pipelineDigest,
   },);
   /**
-   * Web-lookup evidence for the works the original names, bought once per
-   * title and cached durably (the owner's rule of 2026-09-02), the same lines
-   * for both preparations so a corrected archive does not change what the
-   * sheets are told about a title.
+   Web-lookup evidence for the works the original names, bought once per
+   title and cached durably (the owner's rule of 2026-09-02), the same lines
+   for both preparations so a corrected archive does not change what the
+   sheets are told about a title.
    */
   const contextLines = await workTitleLookupLines({
     sourceText,
@@ -163,19 +163,19 @@ export async function preparePassEntry(
     logger: l,
   },);
   /**
-   * Preparation over one archive text, the same roster, caches, context and
-   * authority each time: once over the archive as inherited, once more where
-   * the relabel rewrote it, and once more where the block correction round
-   * did.
-   *
-   * @param targetText - archive text to prepare over
-   *
-   * @returns Prepared slices and pairing findings
-   *
-   * @example
-   * ```ts
-   * const paired = await prepareOver({ targetText: archiveText, },);
-   * ```
+   Preparation over one archive text, the same roster, caches, context and
+   authority each time: once over the archive as inherited, once more where
+   the relabel rewrote it, and once more where the block correction round
+   did.
+   
+   @param targetText - archive text to prepare over
+   
+   @returns Prepared slices and pairing findings
+   
+   @example
+   ```ts
+   const paired = await prepareOver({ targetText: archiveText, },);
+   ```
    */
   function prepareOver(
     { targetText: over, }: { readonly targetText: string; },
@@ -196,12 +196,12 @@ export async function preparePassEntry(
     },);
   }
   /**
-   * Preparation over the archive as inherited.
+   Preparation over the archive as inherited.
    */
   const firstPaired = await prepareOver({ targetText: archiveText, },);
   /**
-   * The archive under the original's footnote labels, read off the first
-   * preparation's slices (the nineteenth class, 2026-09-08).
+   The archive under the original's footnote labels, read off the first
+   preparation's slices (the nineteenth class, 2026-09-08).
    */
   const relabel = relabelArchiveFootnotes({
     entryId,
@@ -213,22 +213,22 @@ export async function preparePassEntry(
     l,
   },);
   /**
-   * Preparation the block correction round starts from: over the relabelled
-   * archive where the relabel changed it, since the labels moved the offsets.
+   Preparation the block correction round starts from: over the relabelled
+   archive where the relabel changed it, since the labels moved the offsets.
    */
   const labelled = relabel.changed
     ? await prepareOver({ targetText: relabel.archiveText, },)
     : firstPaired;
   /**
-   * Findings so far: the preparation's and the relabel's.
+   Findings so far: the preparation's and the relabel's.
    */
   const labelledFindings = [
     ...labelled.findings,
     ...relabel.findings,
   ];
   /**
-   * Spans the archive's translators' note sealed as the English original,
-   * which no slice covers and no lane writes (the owner's rule of 2026-09-08).
+   Spans the archive's translators' note sealed as the English original,
+   which no slice covers and no lane writes (the owner's rule of 2026-09-08).
    */
   const sealedSpans = labelled.prepared
     .archiveOriginalSpans
@@ -241,7 +241,7 @@ export async function preparePassEntry(
     );
   }
   /**
-   * Unclaimed blocks not already licensed unchanged.
+   Unclaimed blocks not already licensed unchanged.
    */
   const pending = labelled.prepared
     .unclaimedTargetBlocks;
@@ -253,12 +253,12 @@ export async function preparePassEntry(
     };
   }
   /**
-   * Picture evidence precedes any verdict that could remove its archive translation.
+   Picture evidence precedes any verdict that could remove its archive translation.
    */
   const pictureReadings = await readPictures?.({ slices: labelled.prepared
     .slices, },);
   /**
-   * Selected corrections and retained licenses from the single review round.
+   Selected corrections and retained licenses from the single review round.
    */
   const repaired = await repairArchiveBlocks({
     client,
@@ -284,11 +284,11 @@ export async function preparePassEntry(
     };
   }
   /**
-   * Re-preparation over the corrected archive, whose offsets the correction moved.
+   Re-preparation over the corrected archive, whose offsets the correction moved.
    */
   const secondPaired = await prepareOver({ targetText: repaired.targetText, },);
   /**
-   * Blocks the single correction round could not claim.
+   Blocks the single correction round could not claim.
    */
   const remaining = secondPaired.prepared
     .unclaimedTargetBlocks;

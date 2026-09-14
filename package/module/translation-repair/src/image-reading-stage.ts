@@ -31,18 +31,18 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // caveat downstream is a caveat somebody has to remember.
 
 /**
- * What the reader is asked to do.
- *
- * EXPORTED SO THE CACHE KEY CAN FOLD IT IN. A stored reading was produced by
- * ASKING something, and an edit to this sentence changes what was asked. A key
- * that ignored it would serve a reading of the old question as an answer to the
- * new one.
- *
- * TRANSCRIBE RATHER THAN DESCRIBE, and in the picture's own language. A
- * description ("a screenshot of a profile card") shares no anchors with a
- * transcript and would be refused by the screen anyway, having cost a call. The
- * house policy is deliberately absent: those rules govern how this corpus is
- * WRITTEN, and reading what a picture already says is not writing.
+ What the reader is asked to do.
+ 
+ EXPORTED SO THE CACHE KEY CAN FOLD IT IN. A stored reading was produced by
+ ASKING something, and an edit to this sentence changes what was asked. A key
+ that ignored it would serve a reading of the old question as an answer to the
+ new one.
+ 
+ TRANSCRIBE RATHER THAN DESCRIBE, and in the picture's own language. A
+ description ("a screenshot of a profile card") shares no anchors with a
+ transcript and would be refused by the screen anyway, having cost a call. The
+ house policy is deliberately absent: those rules govern how this corpus is
+ WRITTEN, and reading what a picture already says is not writing.
  */
 export const READING_INSTRUCTION: string = 'Transcribe every word visible in this image, in the language it is '
   + 'written in, preserving line breaks and the order things appear. Include names, handles, dates, '
@@ -50,13 +50,13 @@ export const READING_INSTRUCTION: string = 'Transcribe every word visible in thi
   + 'add any commentary. If you cannot read the image, say so plainly and say nothing else.';
 
 /**
- * How much of a refused reply the log keeps: enough for the sentence that
- * refused, which the screen measured at 27 and 41 characters.
+ How much of a refused reply the log keeps: enough for the sentence that
+ refused, which the screen measured at 27 and 41 characters.
  */
 const REFUSED_OPENING_CHARS = 160;
 
 /**
- * Substantively distinct visual reading responsibilities in retry order.
+ Substantively distinct visual reading responsibilities in retry order.
  */
 export const IMAGE_READING_PERSPECTIVES = [
   'Complete transcription pass: read the full image in normal visual order.',
@@ -66,74 +66,74 @@ export const IMAGE_READING_PERSPECTIVES = [
 ] as const;
 
 /**
- * One visual reading responsibility.
+ One visual reading responsibility.
  */
 export type ImageReadingPerspective = typeof IMAGE_READING_PERSPECTIVES[number];
 
 /**
- * Most bytes a picture may occupy in a reading request.
- *
- * WHAT THE GATEWAY WILL CARRY, not what the model will read. The model is the
- * authority on the second and says so plainly when asked: every asset in the
- * pinned corpus is accepted at its natural size, including the largest at
- * 1344454 bytes, and `gqt/photo1.webp` at 1274028 was read for 2631
- * characters. The derivation this replaced allowed 294912 for the same model,
- * so it refused 45 of 191 pictures that nobody upstream had any trouble with.
- *
- * THE GATEWAY IS THE AUTHORITY ON THE FIRST, and unlike the model it does not
- * answer plainly. A body over its cap comes back as `400` naming a parse
- * failure at a byte offset, which describes our JSON rather than its size, so
- * a request refused for being too big reads as a request that was malformed.
- * `doc/troubleshooting/synthetic-request-body-size-cap.md` is the measurement.
- *
- * SEVEN MEBIBYTES, which is more than five times the corpus's largest asset.
- * The overhead around the picture is a constant 501 bytes and base64 costs a
- * third on top, so this ceiling maps onto a body of 9787235 bytes, leaving
- * 698525 under the only size measured to pass. The eight mebibytes here until
- * 2026-08-22 mapped onto 11185335, which is 699575 ABOVE it: the number
- * guarding the request permitted requests the gateway rejects.
- *
- * NOT THE EXACT FIT OF 7863927. Only the passing size is exact, the failing
- * one is reported as approximate, and the boundary between them has never been
- * bisected, so a ceiling with one byte of headroom would rest on an assumption.
- * Seven mebibytes also absorbs growth in the instruction text, which is part of
- * that constant.
+ Most bytes a picture may occupy in a reading request.
+ 
+ WHAT THE GATEWAY WILL CARRY, not what the model will read. The model is the
+ authority on the second and says so plainly when asked: every asset in the
+ pinned corpus is accepted at its natural size, including the largest at
+ 1344454 bytes, and `gqt/photo1.webp` at 1274028 was read for 2631
+ characters. The derivation this replaced allowed 294912 for the same model,
+ so it refused 45 of 191 pictures that nobody upstream had any trouble with.
+ 
+ THE GATEWAY IS THE AUTHORITY ON THE FIRST, and unlike the model it does not
+ answer plainly. A body over its cap comes back as `400` naming a parse
+ failure at a byte offset, which describes our JSON rather than its size, so
+ a request refused for being too big reads as a request that was malformed.
+ `doc/troubleshooting/synthetic-request-body-size-cap.md` is the measurement.
+ 
+ SEVEN MEBIBYTES, which is more than five times the corpus's largest asset.
+ The overhead around the picture is a constant 501 bytes and base64 costs a
+ third on top, so this ceiling maps onto a body of 9787235 bytes, leaving
+ 698525 under the only size measured to pass. The eight mebibytes here until
+ 2026-08-22 mapped onto 11185335, which is 699575 ABOVE it: the number
+ guarding the request permitted requests the gateway rejects.
+ 
+ NOT THE EXACT FIT OF 7863927. Only the passing size is exact, the failing
+ one is reported as approximate, and the boundary between them has never been
+ bisected, so a ceiling with one byte of headroom would rest on an assumption.
+ Seven mebibytes also absorbs growth in the instruction text, which is part of
+ that constant.
  */
 const READING_MAX_BYTES = 7_340_032;
 
 /**
- * What one reading attempt produced.
- *
- * @example
- * ```ts
- * const reading: ImageReading = { kind: 'read', text: 'Name: Mittens', };
- * ```
+ What one reading attempt produced.
+ 
+ @example
+ ```ts
+ const reading: ImageReading = { kind: 'read', text: 'Name: Mittens', };
+ ```
  */
 export type ImageReading = {
   readonly kind: 'read';
 
   /**
-   * What the model transcribed, having passed the screen.
+   What the model transcribed, having passed the screen.
    */
   readonly text: string;
 } | {
   /**
-   * The model answered with fewer characters than a transcript and refused
-   * nothing. Never usable on its own; the pair stage counts two of them as
-   * confirmation that the picture carries too little to read.
+   The model answered with fewer characters than a transcript and refused
+   nothing. Never usable on its own; the pair stage counts two of them as
+   confirmation that the picture carries too little to read.
    */
   readonly kind: 'short';
 
   /**
-   * The few characters it read, kept for the record.
+   The few characters it read, kept for the record.
    */
   readonly text: string;
 } | {
   readonly kind: 'unavailable';
 
   /**
-   * Why no reading is available, so a finding names the reason and a later
-   * reader can tell a picture nobody could send from one nobody could read.
+   Why no reading is available, so a finding names the reason and a later
+   reader can tell a picture nobody could send from one nobody could read.
    */
   readonly reason:
     | 'model-does-not-read-images'
@@ -147,13 +147,13 @@ export type ImageReading = {
 };
 
 /**
- * Reasons that describe the provider's evening rather than the picture.
- *
- * A reader that threw, answered nothing, answered too little or declined may
- * read the same picture tomorrow; a model that does not read images, a media
- * type nobody names, a file too large to send, and a reader reporting that the
- * picture carries no text will not change. The split decides what a pair
- * verdict built on the reason is allowed to remember.
+ Reasons that describe the provider's evening rather than the picture.
+ 
+ A reader that threw, answered nothing, answered too little or declined may
+ read the same picture tomorrow; a model that does not read images, a media
+ type nobody names, a file too large to send, and a reader reporting that the
+ picture carries no text will not change. The split decides what a pair
+ verdict built on the reason is allowed to remember.
  */
 const TRANSIENT_READING_REASONS: ReadonlySet<string> = new Set([
   'too-short',
@@ -163,16 +163,16 @@ const TRANSIENT_READING_REASONS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Whether a reader's reason for producing nothing may not hold tomorrow.
- *
- * @param reason - why the reader produced nothing
- *
- * @returns Whether the reason describes the call rather than the picture
- *
- * @example
- * ```ts
- * const transient = isTransientReadingReason({ reason: 'reader-failed', },);
- * ```
+ Whether a reader's reason for producing nothing may not hold tomorrow.
+ 
+ @param reason - why the reader produced nothing
+ 
+ @returns Whether the reason describes the call rather than the picture
+ 
+ @example
+ ```ts
+ const transient = isTransientReadingReason({ reason: 'reader-failed', },);
+ ```
  */
 export function isTransientReadingReason(
   { reason, }: { readonly reason: Extract<ImageReading, { readonly kind: 'unavailable'; }>['reason']; },
@@ -181,34 +181,34 @@ export function isTransientReadingReason(
 }
 
 /**
- * Reads one picture with one model, screening what comes back.
- *
- * @param client - transport to the provider
- *
- * @param modelId - model doing the reading, which must read images
- *
- * @param bytes - picture as read from disk
- *
- * @param assetName - its file name, which carries the media type
- *
- * @param perspective - distinct visual scan responsibility
- *
- * @param signal - abort honoured for the whole exchange
- *
- * @param perCallTimeoutMs - deadline bounding the exchange
- *
- * @param l - lane logger
- *
- * @returns Reading that passed the screen, or why none is available
- *
- * @throws {@link import('./synthetic-client.ts').SyntheticHttpError} on a
- * non-success status, which is a transport failure rather than an unreadable
- * picture and is not this function's to interpret
- *
- * @example
- * ```ts
- * const reading = await readImageAsset({ client, modelId, bytes, assetName, signal, perCallTimeoutMs, l, },);
- * ```
+ Reads one picture with one model, screening what comes back.
+ 
+ @param client - transport to the provider
+ 
+ @param modelId - model doing the reading, which must read images
+ 
+ @param bytes - picture as read from disk
+ 
+ @param assetName - its file name, which carries the media type
+ 
+ @param perspective - distinct visual scan responsibility
+ 
+ @param signal - abort honoured for the whole exchange
+ 
+ @param perCallTimeoutMs - deadline bounding the exchange
+ 
+ @param l - lane logger
+ 
+ @returns Reading that passed the screen, or why none is available
+ 
+ @throws {@link import('./synthetic-client.ts').SyntheticHttpError} on a
+ non-success status, which is a transport failure rather than an unreadable
+ picture and is not this function's to interpret
+ 
+ @example
+ ```ts
+ const reading = await readImageAsset({ client, modelId, bytes, assetName, signal, perCallTimeoutMs, l, },);
+ ```
  */
 export async function readImageAsset(
   {
@@ -232,7 +232,7 @@ export async function readImageAsset(
   },
 ): Promise<ImageReading> {
   /**
-   * Logger pre-tagged with this function's name.
+   Logger pre-tagged with this function's name.
    */
   const rl = tagged({
     tag: readImageAsset.name,
@@ -255,7 +255,7 @@ export async function readImageAsset(
   }
 
   /**
-   * Picture as a content part carries it, or why it cannot be sent.
+   Picture as a content part carries it, or why it cannot be sent.
    */
   const encoded = encodeImageAsset({
     bytes,
@@ -271,7 +271,7 @@ export async function readImageAsset(
   }
 
   /**
-   * Reply from the reader.
+   Reply from the reader.
    */
   const reply = await client.chatText({
     modelId,
@@ -301,17 +301,17 @@ export async function readImageAsset(
   }
 
   /**
-   * Reply text, taken off the exchange once.
+   Reply text, taken off the exchange once.
    */
   const { text, } = reply;
 
   /**
-   * Reply without its surrounding whitespace.
+   Reply without its surrounding whitespace.
    */
   const trimmed = text.trim();
 
   /**
-   * Whether the reading may be used at all.
+   Whether the reading may be used at all.
    */
   const verdict = readingMakesSense({ reading: text, },);
   if (verdict.kind === 'refused') {
@@ -321,7 +321,7 @@ export async function readImageAsset(
     // alone whether three readers had declined to read or had reported that
     // a painting carries no text.
     /**
-     * Opening of the reply.
+     Opening of the reply.
      */
     const sliced = trimmed.slice(
       0,
@@ -329,7 +329,7 @@ export async function readImageAsset(
     );
 
     /**
-     * Opening quoted for the log.
+     Opening quoted for the log.
      */
     const opening = JSON.stringify(sliced,);
     rl.warn(`${modelId} read ${assetName} but the reading was refused: ${verdict.clause}; it opened ${opening}`,);
@@ -347,7 +347,7 @@ export async function readImageAsset(
   }
 
   /**
-   * How much was transcribed, for a line a reader can compare across pictures.
+   How much was transcribed, for a line a reader can compare across pictures.
    */
   const { length, } = reply.text;
   rl.info(`${modelId} read ${assetName}: ${String(length,)} characters`,);

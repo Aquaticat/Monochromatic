@@ -33,27 +33,27 @@ import {
 // surfaces as a parse finding.
 
 /**
- * One tolerance event from parsing:
- * a blanked invisible-only line, a masked HTML comment, or a whole-document
- * grammar downgrade.
- * Findings are the trigger surface for any later repair-the-input stage
- * (deterministic or model-driven).
- *
- * @example
- * ```ts
- * const finding: ParseFinding = {
- *   kind: 'html-comment-skipped',
- *   startOffset: 42,
- *   endOffset: 60,
- *   detail: 'terminated HTML comment masked before parsing',
- * };
- * ```
+ One tolerance event from parsing:
+ a blanked invisible-only line, a masked HTML comment, or a whole-document
+ grammar downgrade.
+ Findings are the trigger surface for any later repair-the-input stage
+ (deterministic or model-driven).
+ 
+ @example
+ ```ts
+ const finding: ParseFinding = {
+   kind: 'html-comment-skipped',
+   startOffset: 42,
+   endOffset: 60,
+   detail: 'terminated HTML comment masked before parsing',
+ };
+ ```
  */
 export type ParseFinding = {
   /**
-   * Tolerance class:
-   * masked comment, comment that never closed, blanked invisible-only line, or
-   * MDX-to-markdown downgrade.
+   Tolerance class:
+   masked comment, comment that never closed, blanked invisible-only line, or
+   MDX-to-markdown downgrade.
    */
   readonly kind:
     | 'html-comment-skipped'
@@ -62,93 +62,93 @@ export type ParseFinding = {
     | 'mdx-downgraded';
 
   /**
-   * Absolute start offset of the affected region in the full document text.
+   Absolute start offset of the affected region in the full document text.
    */
   readonly startOffset: number;
 
   /**
-   * Absolute exclusive end offset of the affected region.
+   Absolute exclusive end offset of the affected region.
    */
   readonly endOffset: number;
 
   /**
-   * Human-readable cause; downgrade findings carry the strict parser's reason.
+   Human-readable cause; downgrade findings carry the strict parser's reason.
    */
   readonly detail: string;
 };
 
 /**
- * Immutable parsed form of one corpus document,
- * carrying every anchor later stages validate claims against.
- *
- * @example
- * ```ts
- * const doc = parseDocument({ text: source, },);
- * console.log(doc.nodes.length, doc.footnoteGraph.findings,);
- * ```
+ Immutable parsed form of one corpus document,
+ carrying every anchor later stages validate claims against.
+ 
+ @example
+ ```ts
+ const doc = parseDocument({ text: source, },);
+ console.log(doc.nodes.length, doc.footnoteGraph.findings,);
+ ```
  */
 export type RepairDocument = {
   /**
-   * Full original source, byte-for-byte.
+   Full original source, byte-for-byte.
    */
   readonly text: string;
 
   /**
-   * SHA-256 of text; patch operations carry this to reject stale bases.
+   SHA-256 of text; patch operations carry this to reject stale bases.
    */
   readonly documentHash: string;
 
   /**
-   * Verbatim front matter when present; never rewritten by repairs.
+   Verbatim front matter when present; never rewritten by repairs.
    */
   readonly frontMatter?: FrontMatterBlock;
 
   /**
-   * Block-level nodes in source order with absolute offsets and hashes.
+   Block-level nodes in source order with absolute offsets and hashes.
    */
   readonly nodes: readonly DocumentNode[];
 
   /**
-   * Every container dissolved to produce those nodes, in source order, with
-   * absolute offsets for both of its tags.
-   *
-   * CARRIED BECAUSE THE NODES CANNOT SHOW IT. Container tags belong to none of
-   * the promoted children, so a reader handed only nodes sees inter-block text
-   * it has no reason to protect, and a slice range covering one tag and not the
-   * other destroys the element. Empty on a page using no containers.
+   Every container dissolved to produce those nodes, in source order, with
+   absolute offsets for both of its tags.
+   
+   CARRIED BECAUSE THE NODES CANNOT SHOW IT. Container tags belong to none of
+   the promoted children, so a reader handed only nodes sees inter-block text
+   it has no reason to protect, and a slice range covering one tag and not the
+   other destroys the element. Empty on a page using no containers.
    */
   readonly containers: readonly ContainerSpan[];
 
   /**
-   * Reference-to-definition graph across both footnote conventions,
-   * with integrity findings for human checkpoints.
+   Reference-to-definition graph across both footnote conventions,
+   with integrity findings for human checkpoints.
    */
   readonly footnoteGraph: FootnoteGraph;
 
   /**
-   * Tolerance events from parsing, in source order;
-   * empty when the document parsed strictly with nothing masked.
+   Tolerance events from parsing, in source order;
+   empty when the document parsed strictly with nothing masked.
    */
   readonly parseFindings: readonly ParseFinding[];
 };
 
 /**
- * Parses body text tolerantly:
- * strict MDX first, plain markdown on grammar failure.
- * The downgrade is never silent; the finding carries the strict reason.
- *
- * @internal
- *
- * @param body - body text, comments already masked
- *
- * @param bodyOffset - absolute offset of body within the full document
- *
- * @returns mdast root plus downgrade findings when the strict grammar failed
- *
- * @example
- * ```ts
- * const { root, findings, } = parseBodyTolerant({ body: masked, bodyOffset: 0, },);
- * ```
+ Parses body text tolerantly:
+ strict MDX first, plain markdown on grammar failure.
+ The downgrade is never silent; the finding carries the strict reason.
+ 
+ @internal
+ 
+ @param body - body text, comments already masked
+ 
+ @param bodyOffset - absolute offset of body within the full document
+ 
+ @returns mdast root plus downgrade findings when the strict grammar failed
+ 
+ @example
+ ```ts
+ const { root, findings, } = parseBodyTolerant({ body: masked, bodyOffset: 0, },);
+ ```
  */
 export function parseBodyTolerant(
   {
@@ -188,37 +188,37 @@ export function parseBodyTolerant(
 }
 
 /**
- * Parses one corpus document into its immutable anchor-ready form.
- * HTML comments are masked to whitespace before parsing (the dominant
- * real-corpus failure class), and a document the MDX grammar still rejects
- * reparses as plain markdown;
- * both tolerances surface as parse findings, never as thrown errors.
- *
- * @param text - full document source, front matter included when present
- *
- * @returns Parsed document with nodes, hashes, footnote graph, and findings
- *
- * @throws {@link import('./front-matter.ts').FrontMatterParseError} when fenced YAML refuses to parse
- *
- * @example
- * ```ts
- * const doc = parseDocument({ text: '---\nname: n\n---\n\n## 简介\n\n正文[^1]\n\n[^1]: 注\n', },);
- * ```
+ Parses one corpus document into its immutable anchor-ready form.
+ HTML comments are masked to whitespace before parsing (the dominant
+ real-corpus failure class), and a document the MDX grammar still rejects
+ reparses as plain markdown;
+ both tolerances surface as parse findings, never as thrown errors.
+ 
+ @param text - full document source, front matter included when present
+ 
+ @returns Parsed document with nodes, hashes, footnote graph, and findings
+ 
+ @throws {@link import('./front-matter.ts').FrontMatterParseError} when fenced YAML refuses to parse
+ 
+ @example
+ ```ts
+ const doc = parseDocument({ text: '---\nname: n\n---\n\n## 简介\n\n正文[^1]\n\n[^1]: 注\n', },);
+ ```
  */
 export function parseDocument({ text, }: { readonly text: string; },): RepairDocument {
   /**
-   * Front matter split with body offset for absolute anchoring.
+   Front matter split with body offset for absolute anchoring.
    */
   const split = splitFrontMatter({ text, },);
 
   /**
-   * Body with every invisible-only line blanked, plus each line blanked.
-   *
-   * Runs FIRST, because such a line is not blank to CommonMark and therefore
-   * welds the paragraphs either side of it into one block. One corpus
-   * translation parses to 29 blocks that way against the original's 33, and
-   * every block after the first weld pairs with the wrong original. Length is
-   * preserved, so every offset still indexes the same character.
+   Body with every invisible-only line blanked, plus each line blanked.
+   
+   Runs FIRST, because such a line is not blank to CommonMark and therefore
+   welds the paragraphs either side of it into one block. One corpus
+   translation parses to 29 blocks that way against the original's 33, and
+   every block after the first weld pairs with the wrong original. Length is
+   preserved, so every offset still indexes the same character.
    */
   const {
     masked: unwelded,
@@ -226,8 +226,8 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
   } = maskInvisibleLines({ text: split.body, },);
 
   /**
-   * Body with HTML comments blanked, plus each masked region;
-   * masking preserves length, so masked-parse positions index the original.
+   Body with HTML comments blanked, plus each masked region;
+   masking preserves length, so masked-parse positions index the original.
    */
   const {
     masked,
@@ -235,17 +235,17 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
   } = maskHtmlComments({ text: unwelded, },);
 
   /**
-   * Findings for every blanked invisible-only line, in absolute offsets.
-   *
-   * Emitted so the tolerance is never silent. Both parser defects this pipeline
-   * has hit were found by accident rather than from an artifact, and a line
-   * that vanishes with nothing recording it is exactly the shape that hides the
-   * third one.
+   Findings for every blanked invisible-only line, in absolute offsets.
+   
+   Emitted so the tolerance is never silent. Both parser defects this pipeline
+   has hit were found by accident rather than from an artifact, and a line
+   that vanishes with nothing recording it is exactly the shape that hides the
+   third one.
    */
   const invisibleFindings = invisibleRegions.map(
     function toFinding(region,): ParseFinding {
       /**
-       * Code points the line carried, named so the detail can be read.
+       Code points the line carried, named so the detail can be read.
        */
       const { codePoints, } = region;
 
@@ -261,7 +261,7 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
   );
 
   /**
-   * Findings for every masked comment, in absolute document offsets.
+   Findings for every masked comment, in absolute document offsets.
    */
   const commentFindings = regions.map(function toFinding(region,): ParseFinding {
     return {
@@ -277,7 +277,7 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
   },);
 
   /**
-   * Tolerantly parsed body tree plus any grammar-downgrade finding.
+   Tolerantly parsed body tree plus any grammar-downgrade finding.
    */
   const parsed = parseBodyTolerant({
     body: masked,
@@ -285,17 +285,17 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
   },);
 
   /**
-   * Top-level blocks once disclosure containers are unwrapped.
-   *
-   * Computed ONCE and shared, because the node list and the footnote graph have
-   * to agree both about what counts as a top-level block and about what
-   * `block/N` names. They did not agree: the graph walked the RAW children, so
-   * a footnote definition sitting inside a container was invisible to it while
-   * being promoted for the node list, and every `nodeId` it emitted counted
-   * containers the node list had already unwrapped.
-   *
-   * One corpus translation reported all ten of its references unresolved while
-   * carrying all ten definitions, because every definition sat inside one.
+   Top-level blocks once disclosure containers are unwrapped.
+   
+   Computed ONCE and shared, because the node list and the footnote graph have
+   to agree both about what counts as a top-level block and about what
+   `block/N` names. They did not agree: the graph walked the RAW children, so
+   a footnote definition sitting inside a container was invisible to it while
+   being promoted for the node list, and every `nodeId` it emitted counted
+   containers the node list had already unwrapped.
+   
+   One corpus translation reported all ten of its references unresolved while
+   carrying all ten definitions, because every definition sat inside one.
    */
   const {
     blocks,
@@ -307,9 +307,9 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
   },);
 
   /**
-   * Container spans shifted to absolute offsets, so every consumer reads
-   * container tags in the same frame as the node offsets beside them. The walk
-   * itself sees only body-relative positions and cannot do this.
+   Container spans shifted to absolute offsets, so every consumer reads
+   container tags in the same frame as the node offsets beside them. The walk
+   itself sees only body-relative positions and cannot do this.
    */
   const absoluteContainers = containers.map(function toAbsolute(container,): ContainerSpan {
     return {

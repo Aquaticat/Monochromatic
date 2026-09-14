@@ -1,9 +1,9 @@
 /**
- * Tests for refusing final archive fallback without semantic endorsement.
- *
- * Fixtures are cat-themed invention.
- *
- * @module
+ Tests for refusing final archive fallback without semantic endorsement.
+ 
+ Fixtures are cat-themed invention.
+ 
+ @module
  */
 
 import {
@@ -19,35 +19,35 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Archive wording in fixture.
+ Archive wording in fixture.
  */
 const ARCHIVE = 'The cat naps.';
 
 /**
- * Repair wording in fixture.
+ Repair wording in fixture.
  */
 const REPAIR = 'The cat is napping.';
 
 /**
- * Translate wording in fixture.
+ Translate wording in fixture.
  */
 const TRANSLATE = 'A cat naps.';
 
 /**
- * Builds final-selection source with chosen contest verdict and optional consolidation.
- *
- * @param verdict - contest result at fixture slice
- *
- * @param consolidated - whether third rendering settled fresh wording
- *
- * @param polished - whether polish attempts to rewrite unchanged baseline
- *
- * @returns Source accepted by would-ship reader
- *
- * @example
- * ```ts
- * const source = sourceWith({ verdict: { kind: 'lane-won', lane: 'repair', }, });
- * ```
+ Builds final-selection source with chosen contest verdict and optional consolidation.
+ 
+ @param verdict - contest result at fixture slice
+ 
+ @param consolidated - whether third rendering settled fresh wording
+ 
+ @param polished - whether polish attempts to rewrite unchanged baseline
+ 
+ @returns Source accepted by would-ship reader
+ 
+ @example
+ ```ts
+ const source = sourceWith({ verdict: { kind: 'lane-won', lane: 'repair', }, });
+ ```
  */
 function sourceWith(
   {
@@ -147,7 +147,7 @@ await describe({
       name: 'RECORDS a declined archive contest as a finding rather than a refusal',
       fn: async () => {
         /**
-         * Findings for an archive standing without endorsement.
+         Findings for an archive standing without endorsement.
          */
         const findings = finalSelectionFindings({
           artifact: sourceWith({

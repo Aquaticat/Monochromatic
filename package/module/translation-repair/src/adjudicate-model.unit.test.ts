@@ -1,8 +1,8 @@
 /**
- * Tests for the panel-vote-state guard fencing untrusted model strings
- * out of typed ballots.
- *
- * @module
+ Tests for the panel-vote-state guard fencing untrusted model strings
+ out of typed ballots.
+ 
+ @module
  */
 
 import {

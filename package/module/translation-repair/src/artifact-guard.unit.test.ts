@@ -1,15 +1,15 @@
 /**
- * Tests for the shape guards every artifact reader shares.
- *
- * These matter more than their size suggests. They stand at the mouth of the
- * precision measurement: each one is the difference between a malformed
- * artifact aborting loudly and an accepted issue vanishing from the
- * denominator without a trace. So the cases below are mostly about what the
- * guards REFUSE, not what they pass.
- *
- * Fixtures are cat-themed invention mirroring artifact structure only.
- *
- * @module
+ Tests for the shape guards every artifact reader shares.
+ 
+ These matter more than their size suggests. They stand at the mouth of the
+ precision measurement: each one is the difference between a malformed
+ artifact aborting loudly and an accepted issue vanishing from the
+ denominator without a trace. So the cases below are mostly about what the
+ guards REFUSE, not what they pass.
+ 
+ Fixtures are cat-themed invention mirroring artifact structure only.
+ 
+ @module
  */
 
 import {
@@ -29,8 +29,8 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Path threaded through every case, so a failure names where it happened the
- * way a real parse would.
+ Path threaded through every case, so a failure names where it happened the
+ way a real parse would.
  */
 const PATH = 'Mittens issues[2].issue.status';
 
@@ -42,7 +42,7 @@ await describe({
         + 'deep in an artifact is unactionable without them',
       fn: async () => {
         /**
-         * Failure built directly, standing in for one a guard would throw.
+         Failure built directly, standing in for one a guard would throw.
          */
         const error = new ArtifactParseError({
           path: PATH,
@@ -147,7 +147,7 @@ await describe({
       name: 'returns an object unchanged, empty included',
       fn: async () => {
         /**
-         * Record standing in for one issue of an artifact.
+         Record standing in for one issue of an artifact.
          */
         const issue = { status: 'accepted', };
 
@@ -213,7 +213,7 @@ await describe({
         + 'real answer and not a malformed one',
       fn: async () => {
         /**
-         * Array standing in for the spans of a claim.
+         Array standing in for the spans of a claim.
          */
         const spans = [{ quotedText: '猫猫', },];
 
@@ -275,7 +275,7 @@ await describe({
         + 'disagreement occurred',
       fn: async () => {
         /**
-         * What readStringAsCount raised, read for its class as well as its wording.
+         What readStringAsCount raised, read for its class as well as its wording.
          */
         const refusalOfReadStringAsCount = caught(function readStringAsCount() {
           requireCount({
@@ -288,7 +288,7 @@ await describe({
         expect((refusalOfReadStringAsCount as Error).message,).toContain('expected a number',);
 
         /**
-         * What readFractionAsCount raised, read for its class as well as its wording.
+         What readFractionAsCount raised, read for its class as well as its wording.
          */
         const refusalOfReadFractionAsCount = caught(function readFractionAsCount() {
           requireCount({
@@ -309,7 +309,7 @@ await describe({
         + 'integral it looks to a check that only asks whether it is whole',
       fn: async () => {
         /**
-         * What readUnsafeCount raised, read for its class as well as its wording.
+         What readUnsafeCount raised, read for its class as well as its wording.
          */
         const refusalOfReadUnsafeCount = caught(function readUnsafeCount() {
           requireCount({

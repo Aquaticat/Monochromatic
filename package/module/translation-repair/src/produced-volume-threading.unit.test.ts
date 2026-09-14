@@ -1,29 +1,29 @@
 /**
- * Tests that `#184`'s produced-volume bound REACHES THE WIRE on every producing
- * call the translate lane makes, the re-ask included.
- *
- * WHY THIS IS SEPARATE FROM `produced-volume-bound.unit.test.ts`. That one hands
- * `maxAnswerChars` straight to `drainBody` and watches the drain refuse, which
- * proves the LAST hop and nothing above it. Between the producer and the drain
- * the bound crosses five boundaries as an OPTIONAL field forwarded by
- * conditional spread: quorum, round, call, client, transport. Delete any one of
- * those spreads and the code still compiles, the whole suite still passes, and
- * production silently returns to the state `#184` existed to end, where the
- * seam exists and nothing passes anything through it. Only a test that reads
- * what the CLIENT was handed can see that.
- *
- * THE SECOND THING IT PINS IS THE PRODUCING RE-ASK. An invalid candidate is
- * sent back to its author for a fresh rendering of the same slice, which is a
- * producing call by every measure that matters, and it was left unbounded when
- * `#184` landed. It is also the busiest one: measured over 32 artifacts, the
- * re-ask fired on 96 of 175 slices.
- *
- * NO NETWORK. The client is a stub scripting one invalid rendering and one
- * revision, recording every request it is handed.
- *
- * Fixtures are cat-themed invention mirroring corpus structure only.
- *
- * @module
+ Tests that `#184`'s produced-volume bound REACHES THE WIRE on every producing
+ call the translate lane makes, the re-ask included.
+ 
+ WHY THIS IS SEPARATE FROM `produced-volume-bound.unit.test.ts`. That one hands
+ `maxAnswerChars` straight to `drainBody` and watches the drain refuse, which
+ proves the LAST hop and nothing above it. Between the producer and the drain
+ the bound crosses five boundaries as an OPTIONAL field forwarded by
+ conditional spread: quorum, round, call, client, transport. Delete any one of
+ those spreads and the code still compiles, the whole suite still passes, and
+ production silently returns to the state `#184` existed to end, where the
+ seam exists and nothing passes anything through it. Only a test that reads
+ what the CLIENT was handed can see that.
+ 
+ THE SECOND THING IT PINS IS THE PRODUCING RE-ASK. An invalid candidate is
+ sent back to its author for a fresh rendering of the same slice, which is a
+ producing call by every measure that matters, and it was left unbounded when
+ `#184` landed. It is also the busiest one: measured over 32 artifacts, the
+ re-ask fired on 96 of 175 slices.
+ 
+ NO NETWORK. The client is a stub scripting one invalid rendering and one
+ revision, recording every request it is handed.
+ 
+ Fixtures are cat-themed invention mirroring corpus structure only.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -45,69 +45,69 @@ import {
 //region Produced volume threading
 
 /**
- * Logger for the producer under test.
+ Logger for the producer under test.
  */
 const l = tagged({ tag: 'produced-volume-threading-test', },);
 
 /**
- * Original the translator renders: a heading and a paragraph.
+ Original the translator renders: a heading and a paragraph.
  */
 const SOURCE_TEXT = `## 猫猫的一天
 
 它在窗台上打盹。`;
 
 /**
- * Rendering matching that structure, which the re-ask returns.
+ Rendering matching that structure, which the re-ask returns.
  */
 const GOOD_TEXT = `## A Day in the Cat's Life
 
 It dozes on the windowsill.`;
 
 /**
- * Rendering that merged the heading away, which validation reports and which
- * therefore earns the author a re-ask.
+ Rendering that merged the heading away, which validation reports and which
+ therefore earns the author a re-ask.
  */
 const MERGED_TEXT = 'A day in the cat\'s life: it dozes on the windowsill.';
 
 /**
- * Model whose candidate is produced and then re-asked.
+ Model whose candidate is produced and then re-asked.
  */
 const TRANSLATOR = 'hf:moonshotai/Kimi-K3';
 
 /**
- * Characters the runaway that opened `#184` emitted for a 56-character slice.
- *
- * Named here so the widened re-ask bound can be shown to still catch it: a
- * bound generous enough to never refuse a legitimate repair is worth nothing if
- * it is also generous enough to let that emission through.
+ Characters the runaway that opened `#184` emitted for a 56-character slice.
+ 
+ Named here so the widened re-ask bound can be shown to still catch it: a
+ bound generous enough to never refuse a legitimate repair is worth nothing if
+ it is also generous enough to let that emission through.
  */
 const EXEMPLAR_RUNAWAY_CHARS = 10_381;
 
 /**
- * One request as the client received it, which is the far side of every hop
- * this test exists to pin.
+ One request as the client received it, which is the far side of every hop
+ this test exists to pin.
  */
 type SeenRequest = {
   readonly maxAnswerChars?: number;
 };
 
 /**
- * Client that answers from a script and records what it was asked.
- *
- * ORDER IS THE DISCRIMINATOR, and one translator is configured so that order is
- * unambiguous: the first call produces, the second re-asks. Reading the stage
- * off the request is not possible, because a request carries no stage.
- *
- * @param seen - collector each request is appended to
- *
- * @param answers - scripted values, one per call in order
- *
- * @returns Client suitable for one producing pass
- *
- * @example
- * ```ts
- * const client = recordingClient({ seen, answers: [rendering, revision,], },);
- * ```
+ Client that answers from a script and records what it was asked.
+ 
+ ORDER IS THE DISCRIMINATOR, and one translator is configured so that order is
+ unambiguous: the first call produces, the second re-asks. Reading the stage
+ off the request is not possible, because a request carries no stage.
+ 
+ @param seen - collector each request is appended to
+ 
+ @param answers - scripted values, one per call in order
+ 
+ @returns Client suitable for one producing pass
+ 
+ @example
+ ```ts
+ const client = recordingClient({ seen, answers: [rendering, revision,], },);
+ ```
  */
 function recordingClient(
   {
@@ -126,7 +126,7 @@ function recordingClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       * Which call this is, read before recording it.
+       Which call this is, read before recording it.
        */
       const turn = seen.length;
 
@@ -137,7 +137,7 @@ function recordingClient(
       );
 
       /**
-       * Scripted value for this turn.
+       Scripted value for this turn.
        */
       const answer = answers[turn];
       if (!request.validate(answer,))
@@ -160,19 +160,19 @@ function recordingClient(
 }
 
 /**
- * Runs one producing pass whose only candidate is invalid, so both the
- * producing call and the re-ask happen.
- *
- * @returns Every request the client saw, in order
- *
- * @example
- * ```ts
- * const seen = await produceOnce();
- * ```
+ Runs one producing pass whose only candidate is invalid, so both the
+ producing call and the re-ask happen.
+ 
+ @returns Every request the client saw, in order
+ 
+ @example
+ ```ts
+ const seen = await produceOnce();
+ ```
  */
 async function produceOnce(): Promise<readonly SeenRequest[]> {
   /**
-   * Requests the client received.
+   Requests the client received.
    */
   const seen: SeenRequest[] = [];
 
@@ -201,9 +201,9 @@ async function produceOnce(): Promise<readonly SeenRequest[]> {
 }
 
 /**
- * What validation says about the merged rendering, derived here from the same
- * public call the producer makes rather than copied out of it, so the expected
- * re-ask bound is an independent computation.
+ What validation says about the merged rendering, derived here from the same
+ public call the producer makes rather than copied out of it, so the expected
+ re-ask bound is an independent computation.
  */
 const validation = validateTranslatedSlice({
   sourceText: SOURCE_TEXT,
@@ -213,7 +213,7 @@ const validation = validateTranslatedSlice({
 },);
 
 /**
- * Characters of finding text the re-ask must answer for.
+ Characters of finding text the re-ask must answer for.
  */
 const findingsChars = (validation.kind === 'invalid')
   ? validation.findings

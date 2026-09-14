@@ -1,16 +1,16 @@
 /**
- * Tests for the lifetime of the files one draw writes.
- *
- * A draw produces three outputs that only mean anything together, and a final
- * path is refused once it exists. A fault between writes therefore leaves a
- * partial set that the refusal then blocks the next draw on, and the obstacle
- * is a file nobody ever graded. These cases pin that a failed draw leaves
- * nothing behind and a finished one leaves everything.
- *
- * Every case runs against a throwaway directory from `mkdtemp`, never the real
- * runs directory, because the behaviour under test is file REMOVAL.
- *
- * @module
+ Tests for the lifetime of the files one draw writes.
+ 
+ A draw produces three outputs that only mean anything together, and a final
+ path is refused once it exists. A fault between writes therefore leaves a
+ partial set that the refusal then blocks the next draw on, and the obstacle
+ is a file nobody ever graded. These cases pin that a failed draw leaves
+ nothing behind and a finished one leaves everything.
+ 
+ Every case runs against a throwaway directory from `mkdtemp`, never the real
+ runs directory, because the behaviour under test is file REMOVAL.
+ 
+ @module
  */
 
 import {
@@ -30,20 +30,20 @@ import { join, } from 'node:path';
 import { trackDrawOutputs, } from '../../dist/final/node/index.mjs';
 
 /**
- * Makes a throwaway directory and removes it when the scope ends.
- *
- * @returns Directory path plus its disposer
- *
- * @example
- * ```ts
- * await using scratch = await scratchDir();
- * ```
+ Makes a throwaway directory and removes it when the scope ends.
+ 
+ @returns Directory path plus its disposer
+ 
+ @example
+ ```ts
+ await using scratch = await scratchDir();
+ ```
  */
 async function scratchDir(): Promise<AsyncDisposable & {
   readonly path: string;
 }> {
   /**
-   * Throwaway directory for one case.
+   Throwaway directory for one case.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -74,7 +74,7 @@ await describe({
       fn: async () => {
         await using scratch = await scratchDir();
         /**
-         * Sheet the draw got as far as writing.
+         Sheet the draw got as far as writing.
          */
         const sheet = join(
           scratch.path,
@@ -105,7 +105,7 @@ await describe({
         {
           await using outputs = trackDrawOutputs({ enabled: true, },);
           /**
-           * Every output of the completed set.
+           Every output of the completed set.
            */
           const paths = [
             'grading-sheet.md',
@@ -144,7 +144,7 @@ await describe({
       fn: async () => {
         await using scratch = await scratchDir();
         /**
-         * Graded sheet from an earlier round, untouched by this draw.
+         Graded sheet from an earlier round, untouched by this draw.
          */
         const earlier = join(
           scratch.path,
@@ -158,7 +158,7 @@ await describe({
         {
           await using outputs = trackDrawOutputs({ enabled: true, },);
           /**
-           * This draw's own output.
+           This draw's own output.
            */
           const mine = join(
             scratch.path,
@@ -206,7 +206,7 @@ await describe({
       fn: async () => {
         await using scratch = await scratchDir();
         /**
-         * Preliminary sheet standing in for one an earlier draw left behind.
+         Preliminary sheet standing in for one an earlier draw left behind.
          */
         const sheet = join(
           scratch.path,
@@ -237,7 +237,7 @@ await describe({
       fn: async () => {
         await using scratch = await scratchDir();
         /**
-         * Path recorded first, then written only partially.
+         Path recorded first, then written only partially.
          */
         const sheet = join(
           scratch.path,

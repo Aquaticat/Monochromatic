@@ -27,35 +27,35 @@ import { passArchiveWithOrigins, } from './corpus-run/pass-archive.ts';
 // Owns acquisition, parsing and qualification behind one pinned-input interface.
 
 /**
- * Default module logger for library consumers without an entry logger.
+ Default module logger for library consumers without an entry logger.
  */
 const defaultLogger = tagged({ tag: 'archive-naming-revision', },);
 
 /**
- * Acquires only exact historical naming choices for corroborated initial references.
- * No caller-selected origin revision, alias map or generated text can supply authority.
- * Missing history is explicit withholding; malformed anchors and failed reads throw.
- *
- * @param pin - immutable corpus commit and local clone
- *
- * @param relPath - literal repository-relative English archive path
- *
- * @param uses - observations anchored before archive review or candidate generation
- *
- * @param signal - preparation cancellation
- *
- * @param l - entry logger, or module default for library calls
- *
- * @returns Qualified occurrence revisions with their complete provenance and findings
- *
- * @throws {@link ArchiveNamingEvidenceError} for inconsistent scope or failed history acquisition
- *
- * @throws {@link CorpusReadError} when the pinned archive cannot be read
- *
- * @example
- * ```ts
- * const evidence = await readQualifiedArchiveNamingRevisions({ pin, relPath, uses });
- * ```
+ Acquires only exact historical naming choices for corroborated initial references.
+ No caller-selected origin revision, alias map or generated text can supply authority.
+ Missing history is explicit withholding; malformed anchors and failed reads throw.
+ 
+ @param pin - immutable corpus commit and local clone
+ 
+ @param relPath - literal repository-relative English archive path
+ 
+ @param uses - observations anchored before archive review or candidate generation
+ 
+ @param signal - preparation cancellation
+ 
+ @param l - entry logger, or module default for library calls
+ 
+ @returns Qualified occurrence revisions with their complete provenance and findings
+ 
+ @throws {@link ArchiveNamingEvidenceError} for inconsistent scope or failed history acquisition
+ 
+ @throws {@link CorpusReadError} when the pinned archive cannot be read
+ 
+ @example
+ ```ts
+ const evidence = await readQualifiedArchiveNamingRevisions({ pin, relPath, uses });
+ ```
  */
 export async function readQualifiedArchiveNamingRevisions({
   pin,
@@ -71,7 +71,7 @@ export async function readQualifiedArchiveNamingRevisions({
   readonly l?: Logger;
 },): Promise<ArchiveNamingRevisionResult> {
   /**
-   * Function-tagged logger records qualification decisions without history authors.
+   Function-tagged logger records qualification decisions without history authors.
    */
   const rl = tagged({
     tag: readQualifiedArchiveNamingRevisions.name,
@@ -86,11 +86,11 @@ export async function readQualifiedArchiveNamingRevisions({
     };
   }
   /**
-   * Owned snapshot prevents caller mutation across awaited repository reads.
+   Owned snapshot prevents caller mutation across awaited repository reads.
    */
   const initialUses = structuredClone(uses,);
   /**
-   * Independent use facts, before any naming-specific interpretation of history.
+   Independent use facts, before any naming-specific interpretation of history.
    */
   const corroborated = corroboratedArchiveReferences({ uses: initialUses, },);
   if (corroborated.references
@@ -114,35 +114,35 @@ export async function readQualifiedArchiveNamingRevisions({
     },);
   }
   /**
-   * Pin fields are also owned across async boundaries.
+   Pin fields are also owned across async boundaries.
    */
   const fixedPin: CorpusPin = {
     ...pin,
     gitPath: pin.gitPath ?? await resolveGit(),
   };
   /**
-   * Canonical pinned read, preserving shared CRLF semantics.
+   Canonical pinned read, preserving shared CRLF semantics.
    */
   const rawArchive = await readCorpusFile({
     pin: fixedPin,
     relPath,
   },);
   /**
-   * Exact initial normalization, not a later revised archive candidate.
+   Exact initial normalization, not a later revised archive candidate.
    */
   const normalized = passArchiveWithOrigins({
     text: rawArchive,
     l: rl,
   },);
   /**
-   * Text and retained line coordinates come from the same normalization pass.
+   Text and retained line coordinates come from the same normalization pass.
    */
   const {
     text: archiveText,
     lines,
   } = normalized;
   /**
-   * Repository-wide shallow state is deliberately unsupported for naming authority.
+   Repository-wide shallow state is deliberately unsupported for naming authority.
    */
   const shallow = (await archiveGitOutput({
     pin: fixedPin,
@@ -169,7 +169,7 @@ export async function readQualifiedArchiveNamingRevisions({
       relPath,
     },);
   /**
-   * Full pinned line origins, never working-tree blame or a semantic-diff guess.
+   Full pinned line origins, never working-tree blame or a semantic-diff guess.
    */
   const porcelain = await archiveGitOutput({
     pin: fixedPin,
@@ -188,7 +188,7 @@ export async function readQualifiedArchiveNamingRevisions({
     ...(signal === undefined ? {} : { signal, }),
   },);
   /**
-   * Every current line is checked against the pinned read before scope mapping.
+   Every current line is checked against the pinned read before scope mapping.
    */
   const origins = archiveBlameOrigins({
     porcelain,
@@ -196,7 +196,7 @@ export async function readQualifiedArchiveNamingRevisions({
     relPath,
   },);
   /**
-   * Exact initial observations joined to unique normalized pinned lines.
+   Exact initial observations joined to unique normalized pinned lines.
    */
   const scoped = archiveNamingScopes({
     archiveText,
@@ -208,7 +208,7 @@ export async function readQualifiedArchiveNamingRevisions({
     relPath,
   },);
   /**
-   * Each required origin is read once; root and merge histories remain withheld.
+   Each required origin is read once; root and merge histories remain withheld.
    */
   const history = await readArchiveNamingHistories({
     scopes: scoped.scopes,
@@ -217,7 +217,7 @@ export async function readQualifiedArchiveNamingRevisions({
     ...(signal === undefined ? {} : { signal, }),
   },);
   /**
-   * Final whole-occurrence qualification, still distinct from translation policy.
+   Final whole-occurrence qualification, still distinct from translation policy.
    */
   const qualified = qualifyArchiveNamingScopes({
     scopes: scoped.scopes,

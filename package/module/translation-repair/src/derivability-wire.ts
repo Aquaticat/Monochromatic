@@ -19,12 +19,12 @@ import { selectFence, } from './prompt-fence.ts';
 
 
 /**
- * Every verdict a derivability judge may cast, closed vocabulary.
- *
- * @example
- * ```ts
- * DERIVABILITY_VERDICTS.includes('derivable',);
- * ```
+ Every verdict a derivability judge may cast, closed vocabulary.
+ 
+ @example
+ ```ts
+ DERIVABILITY_VERDICTS.includes('derivable',);
+ ```
  */
 export const DERIVABILITY_VERDICTS = [
   'derivable',
@@ -33,26 +33,26 @@ export const DERIVABILITY_VERDICTS = [
 ] as const;
 
 /**
- * One derivability verdict.
- *
- * @example
- * ```ts
- * const verdict: DerivabilityVerdict = 'derivable';
- * ```
+ One derivability verdict.
+ 
+ @example
+ ```ts
+ const verdict: DerivabilityVerdict = 'derivable';
+ ```
  */
 export type DerivabilityVerdict = typeof DERIVABILITY_VERDICTS[number];
 
 /**
- * Guards untrusted verdict strings from model JSON.
- *
- * @param value - candidate from unvalidated model output
- *
- * @returns Whether value names one listed verdict
- *
- * @example
- * ```ts
- * isDerivabilityVerdict('derivable',);
- * ```
+ Guards untrusted verdict strings from model JSON.
+ 
+ @param value - candidate from unvalidated model output
+ 
+ @returns Whether value names one listed verdict
+ 
+ @example
+ ```ts
+ isDerivabilityVerdict('derivable',);
+ ```
  */
 export function isDerivabilityVerdict(value: unknown,): value is DerivabilityVerdict {
   if ((typeof value) !== 'string')
@@ -62,7 +62,7 @@ export function isDerivabilityVerdict(value: unknown,): value is DerivabilityVer
 }
 
 /**
- * System instructions shared by every derivability probe call.
+ System instructions shared by every derivability probe call.
  */
 const PROBE_SYSTEM_PROMPT = `You are a bilingual Chinese-to-English translation auditor.
 The ORIGINAL is a Chinese document. Each numbered CANDIDATE is one English sentence taken from a human translation of it.
@@ -77,44 +77,44 @@ Reply with ONLY a JSON object of shape {"judgments": [{"reference": 1, "verdict"
 Every candidate number must appear exactly once under "reference".`;
 
 /**
- * Messages plus the seed order judgments resolve through:
- * candidate number N on the wire means `seedIds[N - 1]`.
- *
- * @example
- * ```ts
- * const plan: DerivabilityPlan = buildDerivabilityMessages({
- *   sourceText,
- *   references,
- * },);
- * ```
+ Messages plus the seed order judgments resolve through:
+ candidate number N on the wire means `seedIds[N - 1]`.
+ 
+ @example
+ ```ts
+ const plan: DerivabilityPlan = buildDerivabilityMessages({
+   sourceText,
+   references,
+ },);
+ ```
  */
 export type DerivabilityPlan = {
   /**
-   * Messages ready for `chatJson`.
+   Messages ready for `chatJson`.
    */
   readonly messages: readonly ChatMessage[];
 
   /**
-   * Seed ids in candidate numbering order.
+   Seed ids in candidate numbering order.
    */
   readonly seedIds: readonly string[];
 };
 
 /**
- * Builds the probe sheet for one entry:
- * Chinese source plus every deleted sentence as a numbered candidate.
- * No repaired text appears; the probe grades the SOURCE, not any repair.
- *
- * @param sourceText - original Chinese document
- *
- * @param references - deleted sentences with their seed ids
- *
- * @returns Messages plus seed numbering order
- *
- * @example
- * ```ts
- * const plan = buildDerivabilityMessages({ sourceText, references, },);
- * ```
+ Builds the probe sheet for one entry:
+ Chinese source plus every deleted sentence as a numbered candidate.
+ No repaired text appears; the probe grades the SOURCE, not any repair.
+ 
+ @param sourceText - original Chinese document
+ 
+ @param references - deleted sentences with their seed ids
+ 
+ @returns Messages plus seed numbering order
+ 
+ @example
+ ```ts
+ const plan = buildDerivabilityMessages({ sourceText, references, },);
+ ```
  */
 export function buildDerivabilityMessages(
   {
@@ -126,7 +126,7 @@ export function buildDerivabilityMessages(
   },
 ): DerivabilityPlan {
   /**
-   * Rendered candidate blocks in seed order.
+   Rendered candidate blocks in seed order.
    */
   const blocks = references.map(function toBlock(
     reference,
@@ -136,7 +136,7 @@ export function buildDerivabilityMessages(
   },);
 
   /**
-   * Fence no enclosed text can reproduce.
+   Fence no enclosed text can reproduce.
    */
   const fence = selectFence({
     texts: [
@@ -167,8 +167,8 @@ ${fence} END ${fence}`,
 }
 
 /**
- * Structured-output constraint for probe calls; the payload shape matches
- * the restoration judge sheet, so its wire guard revalidates client-side.
+ Structured-output constraint for probe calls; the payload shape matches
+ the restoration judge sheet, so its wire guard revalidates client-side.
  */
 export const DERIVABILITY_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',
@@ -200,21 +200,21 @@ export const DERIVABILITY_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 };
 
 /**
- * Resolves one wire report into seed-keyed derivability verdicts through
- * the plan. Fails closed per item: out-of-range or duplicate candidate
- * numbers and unknown verdicts become findings, and candidates left
- * unanswered are recorded.
- *
- * @param wire - report as the judge reported it
- *
- * @param seedIds - seed ids in candidate numbering order
- *
- * @returns Verdicts keyed by seed id plus findings as data
- *
- * @example
- * ```ts
- * const { verdicts, } = resolveDerivabilityJudgment({ wire, seedIds, },);
- * ```
+ Resolves one wire report into seed-keyed derivability verdicts through
+ the plan. Fails closed per item: out-of-range or duplicate candidate
+ numbers and unknown verdicts become findings, and candidates left
+ unanswered are recorded.
+ 
+ @param wire - report as the judge reported it
+ 
+ @param seedIds - seed ids in candidate numbering order
+ 
+ @returns Verdicts keyed by seed id plus findings as data
+ 
+ @example
+ ```ts
+ const { verdicts, } = resolveDerivabilityJudgment({ wire, seedIds, },);
+ ```
  */
 export function resolveDerivabilityJudgment(
   {
@@ -229,17 +229,17 @@ export function resolveDerivabilityJudgment(
   readonly findings: readonly string[];
 } {
   /**
-   * Findings accumulated across every wire item.
+   Findings accumulated across every wire item.
    */
   const findings: string[] = [];
 
   /**
-   * Resolved verdicts keyed by seed id; first occurrence wins.
+   Resolved verdicts keyed by seed id; first occurrence wins.
    */
   const verdicts: Record<string, DerivabilityVerdict> = {};
   for (const judgment of wire.judgments) {
     /**
-     * Seed id referenced by this judgment's one-based candidate number.
+     Seed id referenced by this judgment's one-based candidate number.
      */
     const seedId = seedIds[judgment.reference - 1];
     if ((judgment.reference < 1) || (seedId === undefined)) {

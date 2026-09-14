@@ -9,48 +9,48 @@ import { ProducerInputRunError, } from './producer-input-error.ts';
 import type { ProducerInputFileIdentity, } from './producer-input-file.ts';
 
 /**
- * Human launch arguments expose one operation; the child branch is an internal fixed sentinel only.
+ Human launch arguments expose one operation; the child branch is an internal fixed sentinel only.
  */
 export type ProducerInputArguments = { readonly kind: 'help'; } | { readonly kind: 'child'; } | {
   /**
-   * Independently bound host reconstruction.
+   Independently bound host reconstruction.
    */
   readonly kind: 'host';
   /**
-   * Canonical absolute launch locator.
+   Canonical absolute launch locator.
    */
   readonly launchPath: string;
   /**
-   * Separately supplied extent and digest, not derived from the supplied launch file.
+   Separately supplied extent and digest, not derived from the supplied launch file.
    */
   readonly expected: ProducerInputFileIdentity;
 };
 /**
- * CLI digest grammar is fixed independently from input text.
+ CLI digest grammar is fixed independently from input text.
  */
 const SHA256_WIDTH = 64;
 
 /**
- * Parses only explicit launch identity or the private exact child sentinel.
- * Native argument errors are sanitized rather than echoing arbitrary supplied tokens.
- *
- * @param arguments_ - owned CLI tokens excluding Node and the bootstrap filename
- *
- * @returns One closed execution branch
- *
- * @throws ProducerInputRunError when syntax, identity or required paths differ
- *
- * @example
- * ```ts
- * const input = readProducerInputArguments(process.argv.slice(2));
- * ```
+ Parses only explicit launch identity or the private exact child sentinel.
+ Native argument errors are sanitized rather than echoing arbitrary supplied tokens.
+ 
+ @param arguments_ - owned CLI tokens excluding Node and the bootstrap filename
+ 
+ @returns One closed execution branch
+ 
+ @throws ProducerInputRunError when syntax, identity or required paths differ
+ 
+ @example
+ ```ts
+ const input = readProducerInputArguments(process.argv.slice(2));
+ ```
  */
 export function readProducerInputArguments(arguments_: readonly string[]): ProducerInputArguments {
   if ((arguments_.length === 1) && (arguments_[0] === PRODUCER_INPUT_CHILD_SENTINEL))
     return { kind: 'child' };
   try {
     /**
-     * Native parsing rejects unknown options and all positional arguments.
+     Native parsing rejects unknown options and all positional arguments.
      */
     const {
       values,
@@ -68,7 +68,7 @@ export function readProducerInputArguments(arguments_: readonly string[]): Produ
     }
     });
     /**
-     * Repeated flags cannot hide a second launch identity behind native last-value behavior.
+     Repeated flags cannot hide a second launch identity behind native last-value behavior.
      */
     const names = tokens.map(function option(token: Readonly<(typeof tokens)[number]>): string {
       if (token.kind !== 'option')
@@ -92,15 +92,15 @@ export function readProducerInputArguments(arguments_: readonly string[]): Produ
       return { kind: 'help' };
     }
     /**
-     * CLI identities do not become canonical through permissive numeric conversion.
+     CLI identities do not become canonical through permissive numeric conversion.
      */
     const bytes = Number(values['launch-bytes']);
     /**
-     * Digest text is checked without a regular-expression or Unicode reinterpretation.
+     Digest text is checked without a regular-expression or Unicode reinterpretation.
      */
     const sha256 = values['launch-sha256'];
     /**
-     * Canonical spelling avoids CWD and path-normalization ambiguity at the public boundary.
+     Canonical spelling avoids CWD and path-normalization ambiguity at the public boundary.
      */
     const launchPath = values.launch;
     if ((launchPath === undefined) || (!isAbsolute(launchPath))

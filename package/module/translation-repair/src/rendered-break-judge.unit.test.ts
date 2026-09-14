@@ -1,8 +1,8 @@
 /**
- * Verifies the actual rotated anonymous slate receives matching structure facts.
- * The scripted reader exercises wiring; live probes establish model behavior.
- *
- * @module
+ Verifies the actual rotated anonymous slate receives matching structure facts.
+ The scripted reader exercises wiring; live probes establish model behavior.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
