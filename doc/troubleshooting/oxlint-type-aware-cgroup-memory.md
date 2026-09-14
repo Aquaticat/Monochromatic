@@ -483,12 +483,55 @@ Container peak reaches `2147483648` bytes without an OOM/PID event,
 so this does not establish spare memory capacity.
 Hard container limits and the complete rule/source scope remain unchanged.
 
-`verify-preparation-lint-generation-controls-20260914.mts` now runs unchanged-source checks,
-a default-young-space reversal and another designated positive control.
-The reversal is observed without requiring it to fail.
-Read its results before attributing recovery to the semi-space setting or declaring restored verification.
-No new workaround,
-allocation-site diagnosis or upstream filing is established at this checkpoint.
+`verify-preparation-lint-generation-controls-20260914.mts` completes the unchanged-source checks,
+default-young-space reversal and repeated designated positive control.
+`devlint256go1-xa6ehO` and `devlint256go1-i6DA05`
+each report zero findings on 1545 files with 484 rules.
+Their peaks are `2134024192` and `2131234816` bytes.
+`devlint256go1control-GqAxby` repeats the exact designated warning/error pair,
+with peak `2142965760` bytes.
+These runs record no OOM/PID events or observed swap use.
+
+The default-young-space reversal `devlint256go1control-J0Twig` also delivers the designated findings,
+with peak `2147483648` bytes and no OOM/PID event.
+Therefore the experiment does not establish that `--max-semi-space-size=1`
+is necessary or alone caused recovery.
+The old-space and semi-space settings describe measured successful invocations,
+not a hard aggregate budget,
+spare capacity,
+optimality or a universal stability guarantee.
+No repository default or check suppression is introduced.
+
+`preparation-lint-generation-control-results-20260914.json`
+verifies complete package-source and bootstrap-configuration identity against the failed baseline;
+only `producer-input-command-close.ts` differs in positive overlays.
+This is not a claim that every dependency or root configuration was independently inventoried.
+The positive verifier checks the native lint exit and exact findings,
+not merely a launcher status or any nonzero result.
+Fresh types,
+normal/bootstrap builds and both focused native-root and names-only entries also pass.
+This does not represent a new complete-package unit-suite run or any root/phase/writer approval.
+
+Private evidence is retained in
+`/var/home/user/temp/agent/preparation-current-proof-BqAe6I`:
+8429 hash-checked regular files totaling 113562339 bytes,
+122 empty directories,
+no foreign owners and no special entries.
+The main snapshot covers 21 explicitly listed roots and 53 loose files.
+The retention container records peak `304836608` bytes with no OOM/PID events;
+its temporary named container is independently absent afterward.
+
+After retention,
+all 19 audited exact diagnostic container IDs are freshly checked as owned and exited,
+removed without force and independently absent at `2026-09-14T07:24:31.844Z`.
+No matching owned worker remains.
+The unrelated `davincibox`,
+all worktrees,
+corpus,
+frozen artifacts and proof directories are preserved.
+Cleanup and final documentation/status evidence postdate the main snapshot
+and remain separately indexed supplemental records.
+No allocation-site diagnosis or upstream filing is established.
 
 ## Root cause
 

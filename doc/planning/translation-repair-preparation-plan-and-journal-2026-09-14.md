@@ -126,9 +126,17 @@ Commit `33df5ddd2` added an optional expected output identity inside `buildPrepa
 Independent review rejected that placement before tests or qualification:
 a mismatch would throw before the I/O owner could persist the fresh differing reconstruction.
 The diagnostic's instruction to retain both results could not be satisfied through that API.
-Its identity type,
-optional argument and comparison are removed in a corrective commit;
-the unchanged corpus-pin helper extraction remains.
+Commit `cce2219af` removes its identity type,
+optional argument and comparison.
+The remaining source change is not only the corpus-pin helper extraction:
+`buildPreparationRootInputs` also names its result before the final success log,
+so reference and question-alias construction precede that callback.
+Its TSDoc names the post-persistence comparison boundary.
+The helper's logic is moved unchanged;
+commit `4aa61c52e` formats its imports.
+A diff against the parent of `33df5ddd2` and targeted source searches verify this scope.
+The removed expectation type,
+argument and diagnostics are absent.
 
 Task41 must instead invoke the existing fixed Task47 operation from original bounded evidence,
 allow the fresh run to persist and verify its artifact and completion,
@@ -143,23 +151,33 @@ The next consumer still needs strict artifact reading,
 fixed persistence,
 retention tests and complete native integration verification.
 
-## Current verification blocker
+## Current verification record
 
 The retained corpus-pin extraction passes types,
 normal/bootstrap builds and both the native-root and names-only test entries.
 Full lint first reports only import-layout warnings,
 which are corrected.
 The next full run is memcg-killed in `tsgolint` under the previously successful single-Go-thread profile.
-Task50 owns unchanged-source repetition and bounded lint verification;
-Task41 is pending that blocker.
+Task50 obtains unchanged-source full-lint successes and designated positive controls without weakening checks.
+The Node old-space `256MiB` plus semi-space `1MiB` profile completes both normal-source checks
+and both designated positive findings.
+The default-young-space reversal also succeeds,
+so the semi-space setting is not established as necessary or causal.
+Task50's private proof is `preparation-current-proof-BqAe6I` under agent scratch.
+It retains 8429 hashed regular files and the full source-identity comparisons.
+All 19 audited stopped diagnostic container IDs are removed and independently absent;
+`davincibox`,
+worktrees,
+corpus and frozen evidence remain untouched.
+These results close the bounded lint-verification work,
+not Task41's plan or journal implementation.
 See [`oxlint-type-aware-cgroup-memory.md`](../troubleshooting/oxlint-type-aware-cgroup-memory.md)
 for exact run identities and the limitation of prior per-run successes.
 No plan or journal implementation is complete.
 
 ## Next action
 
-Finish task50's unchanged-source lint verification and retain its evidence.
-Then implement the fixed Task41 persisted-input comparison owner using the existing Task47 operation,
+Implement the fixed Task41 persisted-input comparison owner using the existing Task47 operation,
 then design the native root/phase materializer against the actual request and receipt shapes.
 Preserve the frozen parent selection,
 current provider order,
