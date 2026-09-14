@@ -650,7 +650,17 @@ not the new container RAM allowance.
 and `merge-repair-lint-6g-worker-20260914.mts` retain its actual bounds and cgroup assertions.
 This result establishes a completed diagnostic run for this workload,
 not a universal 6 GiB requirement or a memory-leak diagnosis.
-A private formatter overlay and subsequent read-only verification remain pending.
+Private formatter `devformat-YKHlPN` subsequently completes with zero warnings and errors,
+peaking at `2204835840` bytes without OOM events.
+Its verified transfer is `f3858b514`:
+all 1472 changed files retain matching normalized executable ASTs,
+with prefix-only comment changes except two exact malformed `@param l` repairs.
+The declaration and documentation-parser checks are retained in `main-merge-format-review-570dgD`.
+Post-transfer types,
+builds,
+units and positive/restored read-only lint verification remain pending.
+The local style remediation has not been reviewed;
+issue #514 records its scope.
 
 ## Root cause
 

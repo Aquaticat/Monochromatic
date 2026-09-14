@@ -84,8 +84,24 @@ The user explicitly relaxes the former 2 GiB container ceiling for this 64 GB ho
 After checking current available memory,
 `devlint256go1-88qhDp` uses 6 GiB RAM and completes without an OOM kill.
 It reports 90375 inherited TSDoc-prefix warnings and seven layout warnings.
-A private formatter overlay is running;
-its changes have not been applied to the repair source.
+Private formatter `devformat-YKHlPN` completes with zero warnings and errors,
+using `2204835840` peak memory bytes with no OOM events.
+`main-merge-format-review-570dgD` checks all 1472 changed files:
+normalized executable ASTs match,
+including preserved template raw strings.
+Comment changes are prefix removals except two exact duplicated-prefix repairs
+that produce recognized `@param l - stage logger` tags in `translate-repair.ts`.
+The declaration parameters and parsed documentation are checked for both repairs.
+All other comment text and ordering remain intact.
+
+Commit `f3858b514` transfers the exact verified bytes,
+with regular-file,
+mode,
+path-set and pre/post-hash checks.
+These changes remain explicitly unreviewed in issue #514.
+Fresh post-transfer types,
+normal/bootstrap builds,
+affected units and positive/restored lint checks are running.
 BOX now requires host-sized bounds,
 and `CLAUDE.md` is regenerated through the canonical owner.
 Historical 2 GiB evidence is not relabeled as a 6 GiB run.
