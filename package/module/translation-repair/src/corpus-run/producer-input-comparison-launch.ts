@@ -241,8 +241,12 @@ export async function deriveProducerInputComparisonLaunch({
         dir: base.runtime
           .dir,
         manifest: {
-          bytes: base.runtime.manifest.bytes,
-          sha256: base.runtime.manifest.sha256
+          bytes: base.runtime
+            .manifest
+            .bytes,
+          sha256: base.runtime
+            .manifest
+            .sha256
         }
       },
       atomicLibrary: {

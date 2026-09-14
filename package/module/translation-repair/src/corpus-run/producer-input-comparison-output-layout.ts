@@ -110,7 +110,11 @@ export async function comparisonOutputLayout({
   ))
     || (!isDeepStrictEqual(
       (await readdir(output)).toSorted(),
-      ['complete.json', 'home', 'unqualified-inputs.json']
+      [
+        'complete.json',
+        'home',
+        'unqualified-inputs.json',
+      ]
     ))
     || ((await readdir(home)).length > 0))
     throw new ProducerInputComparisonError({

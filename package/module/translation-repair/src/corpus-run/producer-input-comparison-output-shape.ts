@@ -10,12 +10,24 @@ export const RUN_PREFIX = 'producer-input-';
 /**
  * Namespace grammar is structural identity only, not creation authentication.
  */
+const UUID_PREFIX_WIDTH = 8;
+/**
+ * Interior UUID groups retain the same hexadecimal width.
+ */
+const UUID_INTERIOR_WIDTH = 4;
+/**
+ * Final UUID group width is checked independently of version and variant.
+ */
+const UUID_SUFFIX_WIDTH = 12;
+/**
+ * Fixed namespace spelling is validated without accepting alternate separators.
+ */
 const UUID_GROUP_WIDTHS = [
-  8,
-  4,
-  4,
-  4,
-  12
+  UUID_PREFIX_WIDTH,
+  UUID_INTERIOR_WIDTH,
+  UUID_INTERIOR_WIDTH,
+  UUID_INTERIOR_WIDTH,
+  UUID_SUFFIX_WIDTH,
 ] as const;
 /**
  * Reads closed JSON metadata without forwarding native parser messages.
@@ -137,14 +149,15 @@ export function comparisonInputRunId({
   /**
    * The single-child branch must still prove that its entry is a directory.
    */
-  const child = observation.children[0];
+  const [child] = observation.children;
   if ((observation.state !== 'single') || (!observation.completeEnumeration)
     || (observation.children
       .length
       !== 1)
     || (child === undefined)
     || (child.kind !== 'directory')
-    || (!child.name.startsWith(RUN_PREFIX)))
+    || (!child.name
+      .startsWith(RUN_PREFIX)))
     throw new ProducerInputComparisonError({
       kind: 'output',
       directory
@@ -163,8 +176,14 @@ export function comparisonInputRunId({
    */
   const [version, variant] = groups.slice(2);
   if ((groups.length !== UUID_GROUP_WIDTHS.length)
-    || (!UUID_GROUP_WIDTHS.every(function validGroup(width, index): boolean {
-      return comparisonHex({ value: groups[index], length: width });
+    || (!UUID_GROUP_WIDTHS.every(function validGroup(
+      width,
+      index
+    ): boolean {
+      return comparisonHex({
+        value: groups[index],
+        length: width,
+      });
     }))
     || (version === undefined)
     || (!version.startsWith('4'))

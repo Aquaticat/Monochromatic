@@ -69,7 +69,14 @@ export async function verifyProducerInputComparisonFile({
       path,
       { bigint: true }
     );
-    if ((!expected.isFile()) || (!sameProducerInputFile({ before: expected, after: actual }))
+    /**
+     * Shared identity comparison includes replacement and mutation timestamps.
+     */
+    const sameDescriptor = sameProducerInputFile({
+      before: expected,
+      after: actual,
+    });
+    if ((!expected.isFile()) || (!sameDescriptor)
       || (actual.uid !== BigInt(run.uid)) || (actual.gid !== BigInt(run.gid))
       || ((actual.mode & MODE_MASK) !== FILE_MODE))
       throw new ProducerInputComparisonError({

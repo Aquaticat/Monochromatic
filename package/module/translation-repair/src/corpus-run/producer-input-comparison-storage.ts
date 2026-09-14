@@ -138,7 +138,7 @@ export async function verifyProducerInputComparisonRun({
         inode: run.inputParentInode
       },
     ];
-    for (const directory of directories) {
+    await Promise.all(directories.map(async function verifyDirectory(directory): Promise<void> {
       /**
        * Metadata checks neither follow a leaf symlink nor read a corpus-derived body.
        */
@@ -156,7 +156,7 @@ export async function verifyProducerInputComparisonRun({
           kind: 'storage',
           directory: run.directory
         });
-    }
+    }));
     pl.debug('verified comparison directory identity and privacy');
   }
   catch (error) {
@@ -236,7 +236,10 @@ export async function writeProducerInputComparisonRecord({
         'utf8'
       ),
       sha256: createHash('sha256')
-        .update(text, 'utf8')
+        .update(
+          text,
+          'utf8'
+        )
         .digest('hex'),
     };
     /**

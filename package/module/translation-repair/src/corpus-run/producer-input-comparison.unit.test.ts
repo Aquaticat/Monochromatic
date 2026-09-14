@@ -16,6 +16,7 @@ const identity = (bytes: Uint8Array) => ({ bytes: bytes.byteLength, sha256: crea
 const nodeIdentity = identity(await readFile(process.execPath));
 const artifactText = JSON.stringify({ scope: 'unqualified-preparation-root-inputs', fixture: '猫🐾' });
 const artifactIdentity = identity(Buffer.from(artifactText));
+const CORRUPT_OPENING_BYTE = 0x5b;
 
 function recordValue(value: unknown): Readonly<Record<string, unknown>> {
   if (((typeof value) !== 'object') || (value === null) || Array.isArray(value)) throw new Error('Expected fixture record');
@@ -119,7 +120,19 @@ else {
   function request(): Parameters<typeof runProducerInputComparison>[0] {
     return { baseLaunchPath, baseLaunchIdentity: identity(baseBytes), bootstrapPath, reference: { ...artifactIdentity }, signal: new AbortController().signal, l };
   }
-  return { directory, output, runtime, base, baseBytes, baseLaunchPath, bootstrapPath, request, [Symbol.asyncDispose]: async () => { await rm(directory, { recursive: true, force: true }); } };
+  return {
+    directory, output, runtime, base, baseBytes, baseLaunchPath, bootstrapPath, request,
+    [Symbol.asyncDispose]: async () => {
+      await rm(directory, { recursive: true, force: true });
+    },
+  };
+}
+
+async function accepted(request: Parameters<typeof runProducerInputComparison>[0]): Promise<Awaited<ReturnType<typeof runProducerInputComparison>>> {
+  const [result] = await Promise.allSettled([runProducerInputComparison(request)]);
+  expect(result?.status).toBe('fulfilled');
+  if (result?.status !== 'fulfilled') throw new Error('Expected completed comparison');
+  return result.value;
 }
 
 async function rejected(request: Parameters<typeof runProducerInputComparison>[0]) {
@@ -134,7 +147,7 @@ async function rejected(request: Parameters<typeof runProducerInputComparison>[0
 await describe({ name: runProducerInputComparison.name, concurrency: 1, children: [
   it({ name: 'derives only a private output parent and verifies persisted matched bytes through the built API', fn: async () => {
     await using f = await fixture();
-    const result = await runProducerInputComparison(f.request());
+    const result = await accepted(f.request());
     expect(result.scope).toBe('matched-unqualified-input-files');
     expect(
       identity(await readFile(result.artifact.path)),
@@ -232,7 +245,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     await using f = await fixture('exit-after-output');
     const failures = await Promise.all([rejected(f.request()), rejected(f.request())]);
     expect(failures[0]?.directory).not.toBe(failures[1]?.directory);
-    for (const failure of failures) {
+    await Promise.all(failures.map(async function verifyFailure(failure): Promise<void> {
       expect(failure.kind).toBe('bootstrap');
       if (failure.directory === undefined) throw new Error('Expected independently retained namespace');
       const observation = await readRecord(join(failure.directory, 'child-observation.json'));
@@ -241,13 +254,18 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       expect(
         await readdir(join(failure.directory, 'producer-runs')),
       ).toHaveLength(1);
-    }
+    }));
   } }),
   it({ name: 'owns reference primitives before logger callbacks mutate caller data', fn: async () => {
     await using f = await fixture();
     const reference = { ...artifactIdentity };
-    const result = await runProducerInputComparison({ ...f.request(), reference, l: { ...l, debug(message) { reference.sha256 = '0'.repeat(64);
-    l.debug(message); } } });
+    const result = await accepted({ ...f.request(), reference, l: {
+      ...l,
+      debug(message) {
+        reference.sha256 = '0'.repeat(64);
+        l.debug(message);
+      },
+    } });
     expect(reference.sha256).toBe('0'.repeat(64));
     expect(result.artifact.sha256).toBe(artifactIdentity.sha256);
   } }),
@@ -258,7 +276,11 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(Error.isError(revoked.proxy)).toBe(false);
     expect(() => Reflect.getPrototypeOf(revoked.proxy)).toThrow(TypeError);
     const request = f.request();
-    Object.defineProperty(request, 'reference', { get() { throw revoked.proxy; } });
+    Object.defineProperty(request, 'reference', {
+      get() {
+        throw revoked.proxy;
+      },
+    });
     const error = await rejected(request);
     expect(error.kind).toBe('contract');
     expect(await readdir(f.output)).toEqual([]);
@@ -266,14 +288,24 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
   ...[false, true].map(throwAfterClose => it({ name: `retains cancelled complete output with awaiting-owner logger failure=${throwAfterClose}`, timeout: 30_000, fn: async ctx => {
     await using f = await fixture('wait-after-output');
     const controller = new AbortController();
-    const ready = ctx.sinon.spy(function readyForCancellation() { controller.abort(new Error('private abort q7z9k2')); });
+    const ready = ctx.sinon.spy(function readyForCancellation() {
+      controller.abort(new Error('private abort q7z9k2'));
+    });
     const escaped = ctx.sinon.spy(function escapedCallback() {});
     const logged = new Set<string>();
     process.on('uncaughtException', escaped);
-    const watcher = watch(f.output, { recursive: true }, function observed(_event, filename) { if (((typeof filename) === 'string') && filename.endsWith('ready.txt')) ready(); });
-    watcher.on('error', function watchFailed(error) { controller.abort(error); });
-    using cleanup = { [Symbol.dispose]() { watcher.close();
-    process.off('uncaughtException', escaped); } };
+    const watcher = watch(f.output, { recursive: true }, function observed(_event, filename) {
+      if (((typeof filename) === 'string') && filename.endsWith('ready.txt')) ready();
+    });
+    watcher.on('error', function watchFailed(error) {
+      controller.abort(error);
+    });
+    using cleanup = {
+      [Symbol.dispose]() {
+        watcher.close();
+        process.off('uncaughtException', escaped);
+      },
+    };
     const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, warn(message) {
       if (throwAfterClose && message.includes('bootstrap interruption observed after native close') && (logged.size === 0)) {
         logged.add(message);
@@ -304,7 +336,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
   it({ name: 'retains a matching comparison when cancellation arrives after persistence', fn: async ctx => {
     await using f = await fixture();
     const controller = new AbortController();
-    const interrupted = ctx.sinon.spy(function cancelAfterComparison() { controller.abort(new Error('late private q7z9k2')); });
+    const interrupted = ctx.sinon.spy(function cancelAfterComparison() {
+      controller.abort(new Error('late private q7z9k2'));
+    });
     const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, info(message) {
       if (message.includes('matched retained unqualified input bytes')) interrupted();
       l.info(message);
@@ -332,8 +366,10 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       ctx.sinon.stub(child, 'emit').callsFake(function delayedClose(event, first, second) {
         if (arguments.length > 3) throw new Error('Unexpected native event interception arity');
         if (event === 'close') {
-          setTimeout(function closeLater() { beforeClose(existsSync(exitPath));
-          nativeEmit(event, first, second); }, 50);
+          setTimeout(function closeLater() {
+            beforeClose(existsSync(exitPath));
+            nativeEmit(event, first, second);
+          }, 50);
           return true;
         }
         return nativeEmit(event, first, second);
@@ -341,8 +377,12 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       return child;
     });
     syncBuiltinESMExports();
-    using restore = { [Symbol.dispose]() { ctx.sinon.restore();
-    syncBuiltinESMExports(); } };
+    using restore = {
+      [Symbol.dispose]() {
+        ctx.sinon.restore();
+        syncBuiltinESMExports();
+      },
+    };
     const error = await rejected(f.request());
     expect(forcedSpawn.callCount).toBe(1);
     expect(beforeClose.callCount).toBe(1);
@@ -360,20 +400,34 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     const actualTimeout = AbortSignal.timeout.bind(AbortSignal);
     const actualTimer = timers.setTimeout;
     const shortened = ctx.sinon.spy(function shortenedGrace() {});
-    const ready = ctx.sinon.spy(function triggerDeadline() { deadline.abort(new Error('fixture deadline')); });
-    ctx.sinon.stub(AbortSignal, 'timeout').callsFake(function fixtureDeadline(milliseconds) { return milliseconds === 600_000 ? deadline.signal : actualTimeout(milliseconds); });
+    const ready = ctx.sinon.spy(function triggerDeadline() {
+      deadline.abort(new Error('fixture deadline'));
+    });
+    ctx.sinon.stub(AbortSignal, 'timeout').callsFake(function fixtureDeadline(milliseconds) {
+      return milliseconds === 600_000 ? deadline.signal : actualTimeout(milliseconds);
+    });
     ctx.sinon.stub(timers, 'setTimeout').callsFake(function fixtureGrace(callback, milliseconds) {
       if (arguments.length > 2) throw new Error('Unexpected timer interception arity');
-      if (milliseconds === 180_000) { shortened();
-      return actualTimer(callback, 30); }
+      if (milliseconds === 180_000) {
+        shortened();
+        return actualTimer(callback, 30);
+      }
       return actualTimer(callback, milliseconds);
     });
     syncBuiltinESMExports();
-    const watcher = watch(f.output, { recursive: true }, function observed(_event, filename) { if (((typeof filename) === 'string') && filename.endsWith('ready.txt')) ready(); });
-    watcher.on('error', function watchFailed(error) { deadline.abort(error); });
-    using restore = { [Symbol.dispose]() { watcher.close();
-    ctx.sinon.restore();
-    syncBuiltinESMExports(); } };
+    const watcher = watch(f.output, { recursive: true }, function observed(_event, filename) {
+      if (((typeof filename) === 'string') && filename.endsWith('ready.txt')) ready();
+    });
+    watcher.on('error', function watchFailed(error) {
+      deadline.abort(error);
+    });
+    using restore = {
+      [Symbol.dispose]() {
+        watcher.close();
+        ctx.sinon.restore();
+        syncBuiltinESMExports();
+      },
+    };
     const error = await rejected(f.request());
     expect(ready.callCount).toBeGreaterThan(0);
     expect(shortened.callCount).toBe(1);
@@ -389,7 +443,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     const [child] = await readdir(join(error.directory, 'producer-runs'));
     if (child === undefined) throw new Error('Expected retained completed fixture output');
     expect(
-      identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json'))),
+      identity(
+        await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json')),
+      ),
     ).toEqual(artifactIdentity);
   } }),
   ...(['comparison-collision', 'failure-collision'] as const).map(mode => it({ name: `preserves existing metadata on ${mode}`, fn: async () => {
@@ -403,7 +459,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     const [child] = await readdir(join(error.directory, 'producer-runs'));
     if (child === undefined) throw new Error('Expected retained complete output');
     expect(
-      identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json'))),
+      identity(
+        await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json')),
+      ),
     ).toEqual(artifactIdentity);
   } })),
   ...(['pathname', 'content'] as const).map(change => it({ name: `refuses metadata ${change} replacement after the created descriptor syncs`, fn: async ctx => {
@@ -423,7 +481,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
             await writeFile(targetPath, bytes, { mode: 0o600, flag: 'wx' });
           } else {
             const changed = Buffer.from(bytes);
-            changed[0] = '['.charCodeAt(0);
+            changed[0] = CORRUPT_OPENING_BYTE;
             await writeFile(targetPath, changed);
           }
           replaced();
@@ -432,22 +490,31 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       return handle;
     });
     syncBuiltinESMExports();
-    using restore = { [Symbol.dispose]() { ctx.sinon.restore();
-    syncBuiltinESMExports(); } };
+    using restore = {
+      [Symbol.dispose]() {
+        ctx.sinon.restore();
+        syncBuiltinESMExports();
+      },
+    };
     const error = await rejected(f.request());
     expect(replaced.callCount).toBe(1);
     expect(error.kind).toBe('storage');
     if (error.directory === undefined) throw new Error('Expected retained replaced metadata');
     if (change === 'pathname') {
-      expect(await readFile(join(error.directory, 'comparison.json'))).toEqual(await readFile(join(error.directory, 'comparison.json.opened')));
-    } else expect((await readFile(join(error.directory, 'comparison.json')))[0]).toBe('['.charCodeAt(0));
+      const current = await readFile(join(error.directory, 'comparison.json'));
+      const opened = await readFile(join(error.directory, 'comparison.json.opened'));
+      expect(current).toEqual(opened);
+    } else expect((await readFile(join(error.directory, 'comparison.json')))[0]).toBe(CORRUPT_OPENING_BYTE);
   } })),
-  it({ name: 'refuses a self-consistent launch with wrong Node identity before executing the correct bootstrap', fn: async () => {
+  ...(['binary', 'version', 'component'] as const).map(change => it({ name: `refuses a self-consistent launch with wrong Node ${change} before executing the correct bootstrap`, fn: async () => {
     await using f = await fixture();
     const manifestPath = join(f.runtime, 'sealed-runtime.json');
     const manifest = await readRecord(manifestPath);
     const node = recordValue(manifest.node);
-    const wrong = { ...manifest, node: { ...node, executable: { bytes: nodeIdentity.bytes, sha256: '0'.repeat(64) } } };
+    const alteredNode = change === 'binary' ? { ...node, executable: { bytes: nodeIdentity.bytes, sha256: '0'.repeat(64) } }
+      : change === 'version' ? { ...node, version: 'v0.0.0' }
+      : { ...node, versions: { ...recordValue(node.versions), v8: 'fixture-different-component' } };
+    const wrong = { ...manifest, node: alteredNode };
     const manifestBytes = Buffer.from(JSON.stringify(wrong));
     await writeFile(manifestPath, manifestBytes);
     const base = { ...f.base, runtime: { dir: f.runtime, manifest: identity(manifestBytes) } };
@@ -459,7 +526,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect((await readdir(error.directory)).includes('bootstrap.command.json')).toBe(true);
     expect((await readdir(error.directory)).includes('invoked.json')).toBe(false);
     expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('absent');
-  } }),
+  } })),
   it({ name: 'passes only the exact minimal environment and omits an ambient canary', fn: async () => {
     await using f = await fixture();
     const prior = process.env.PREPARATION_COMPARISON_CANARY;
@@ -468,7 +535,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       if (prior === undefined) Reflect.deleteProperty(process.env, 'PREPARATION_COMPARISON_CANARY');
       else process.env.PREPARATION_COMPARISON_CANARY = prior;
     } };
-    const result = await runProducerInputComparison(f.request());
+    const result = await accepted(f.request());
     const invoked = await readRecord(join(result.directory, 'invoked.json'));
     const expectedKeys = ['HOME', 'PATH', ...['XDG_RUNTIME_DIR', 'DBUS_SESSION_BUS_ADDRESS'].filter(key => process.env[key] !== undefined)];
     expect(textList(invoked.environmentKeys).toSorted()).toEqual(expectedKeys.toSorted());

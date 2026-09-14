@@ -123,6 +123,29 @@ export async function readProducerInputComparisonOutput({
     tag: readProducerInputComparisonOutput.name,
     l
   });
+  /**
+   * Shared descriptor observer supplies the same metadata bound and ownership for each fixed role.
+   *
+   * @param path - fixed private native metadata locator
+   *
+   * @returns Strictly decoded text after extent and descriptor checks
+   *
+   * @throws ProducerInputRunError when private metadata observation fails
+   *
+   * @example
+   * ```ts
+   * const text = await metadata(stdoutPath);
+   * ```
+   */
+  async function metadata(path: string): Promise<string> {
+    return await readProducerInputMetadata({
+      path,
+      maximumBytes: METADATA_LIMIT,
+      ownerUid: run.uid,
+      ownerGid: run.gid,
+      operation: 'read-output',
+    });
+  }
   try {
     await verifyProducerInputComparisonRun({
       run,
@@ -154,18 +177,6 @@ export async function readProducerInputComparisonOutput({
       inputRunId,
       run
     });
-    /**
-     * Shared descriptor observer supplies the same metadata bound and ownership checks for each fixed role.
-     */
-    async function metadata(path: string): Promise<string> {
-      return await readProducerInputMetadata({
-        path,
-        maximumBytes: METADATA_LIMIT,
-        ownerUid: run.uid,
-        ownerGid: run.gid,
-        operation: 'read-output'
-      });
-    }
     if ((stdoutPath !== join(
       run.directory,
       'bootstrap.stdout'
@@ -322,7 +333,10 @@ export async function readProducerInputComparisonOutput({
       || (cleanup.removed !== true)
       || (cleanup.absenceChecked !== true)
       || (cleanup.interrupted !== false)
-      || (!comparisonHex({ value: cleanup.containerId, length: CONTAINER_ID_WIDTH })))
+      || (!comparisonHex({
+        value: cleanup.containerId,
+        length: CONTAINER_ID_WIDTH,
+      })))
       throw new ProducerInputComparisonError({
         kind: 'output',
         directory: run.directory
