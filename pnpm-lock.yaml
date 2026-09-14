@@ -3383,12 +3383,6 @@ importers:
 
   package/oxlint-plugin/tsdoc:
     dependencies:
-      '@monochromatic-dev/ownership-marker-foreign-borrowed':
-        specifier: workspace:*
-        version: link:../../ownership-marker/foreign-borrowed
-      '@monochromatic-dev/oxlint-plugin-shared':
-        specifier: workspace:*
-        version: link:../shared
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.81.0
@@ -3405,6 +3399,12 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/oxlint-plugin-shared':
+        specifier: workspace:*
+        version: link:../shared
       '@monochromatic-dev/oxlint-plugin-test-support':
         specifier: workspace:*
         version: link:../test-support
