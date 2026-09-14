@@ -1,5 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ProducerInputFileIdentity, } from './producer-input-file.ts';
+import type { ProducerInputLaunch, } from './producer-input-model.ts';
 
 //region One fixed reconstruction comparison, never a plan or acquisition certificate
 
@@ -10,14 +11,14 @@ import type { ProducerInputFileIdentity, } from './producer-input-file.ts';
  *
  * @example
  * ```ts
- * const request: ProducerInputComparisonRequest = { launchPath, launchIdentity, bootstrapPath, reference, signal, l };
+ * const request: ProducerInputComparisonRequest = { baseLaunchPath, baseLaunchIdentity, bootstrapPath, reference, signal, l };
  * ```
  */
 export type ProducerInputComparisonRequest = {
-  /** Exact authorized input launch, not a command or application entry selector. */
-  readonly launchPath: string;
-  /** Independently recorded raw launch identity. */
-  readonly launchIdentity: ProducerInputFileIdentity;
+  /** Authorized input/exec bindings; this invocation may derive a private descendant output parent only. */
+  readonly baseLaunchPath: string;
+  /** Independently supplied raw base-launch identity does not itself authorize orchestration. */
+  readonly baseLaunchIdentity: ProducerInputFileIdentity;
   /** Frozen standalone producer-prepare.mjs whose bytes the launch binds. */
   readonly bootstrapPath: string;
   /** Separately retained unqualified-input identity, never inferred from the new output. */
@@ -26,6 +27,30 @@ export type ProducerInputComparisonRequest = {
   readonly signal: AbortSignal;
   /** Names-only operation telemetry stays with the invoking owner. */
   readonly l: Logger;
+};
+
+/**
+ * Internal invocation data comes from the fixed owner's checked base-to-derived launch construction.
+ * This type is not authentication and is not accepted as a public caller certificate.
+ *
+ * @example
+ * ```ts
+ * const path = invocation.derivedLaunchPath;
+ * ```
+ */
+export type ProducerInputComparisonInvocation = {
+  /** Existing independently authenticated standalone bootstrap. */
+  readonly bootstrapPath: string;
+  /** Bootstrap identity from the matched base launch, never from child output. */
+  readonly bootstrapIdentity: ProducerInputFileIdentity;
+  /** Runtime identity remains unchanged during output-parent derivation. */
+  readonly runtime: ProducerInputLaunch['runtime'];
+  /** Exclusive persisted derived launch with the private producer-runs output parent. */
+  readonly derivedLaunchPath: string;
+  /** Exact owner-derived identity, not independently granted approval. */
+  readonly derivedLaunchIdentity: ProducerInputFileIdentity;
+  /** Caller cancellation remains live until the comparison owner finishes. */
+  readonly signal: AbortSignal;
 };
 
 /**
@@ -47,8 +72,10 @@ export type ProducerInputComparisonResult = {
   readonly inputRunDirectory: string;
   /** The native exclusive run identity, not a preparation acquisition-attempt ID. */
   readonly inputRunId: string;
-  /** Independently matched launch remains explicit beside the fresh run. */
-  readonly launchIdentity: ProducerInputFileIdentity;
+  /** Independently supplied base launch remains explicit beside its derived invocation. */
+  readonly baseLaunchIdentity: ProducerInputFileIdentity;
+  /** Actual completion binds this exact owner-derived launch, not the base launch SHA. */
+  readonly derivedLaunchIdentity: ProducerInputFileIdentity;
   /** Existing raw artifact bytes, not reserialized caller data. */
   readonly artifact: ProducerInputFileIdentity & {
     /** Fixed file inside the freshly verified input run. */

@@ -3,6 +3,7 @@ import {
   lstat,
   mkdir,
   open,
+  readdir,
   realpath,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -24,7 +25,7 @@ const MODE_MASK = 0o7777;
 /** Comparison metadata does not consume the separate corpus/support byte allowance. */
 const MAX_RECORD_BYTES = 1_048_576;
 /** No caller-supplied filename can turn this writer into a general output interface. */
-const RECORD_FILES = ['created.json', 'bootstrap.command.json', 'bootstrap.exit.json', 'comparison.json', 'failure.json'] as const;
+const RECORD_FILES = ['created.json', 'bootstrap.command.json', 'bootstrap.exit.json', 'derivation.json', 'child-observation.json', 'comparison.json', 'failure.json'] as const;
 
 /**
  * Owned directory observation belongs to this invocation, not a caller certificate.
@@ -37,6 +38,10 @@ const RECORD_FILES = ['created.json', 'bootstrap.command.json', 'bootstrap.exit.
 export type ProducerInputComparisonRun = {
   /** Exclusive comparison namespace, never the completed input-run directory. */
   readonly directory: string;
+  /** Dedicated initially empty parent associates retained input runs even without success stdout. */
+  readonly inputParent: string;
+  /** Observed child-parent inode is distinct from the comparison directory's identity. */
+  readonly inputParentInode: bigint;
   /** Fresh comparison identifier is not an acquisition-attempt identity. */
   readonly runId: string;
   /** Independently captured caller ownership. */
@@ -73,13 +78,20 @@ export async function verifyProducerInputComparisonRun({
   /** No filesystem error body is needed to describe a refused directory observation. */
   const pl = tagged({ tag: verifyProducerInputComparisonRun.name, l });
   try {
-    /** Metadata checks neither follow a leaf symlink nor read a corpus-derived body. */
-    const state = await lstat(run.directory, { bigint: true });
-    if (!state.isDirectory() || (state.dev !== run.device) || (state.ino !== run.inode)
-      || (state.uid !== BigInt(run.uid)) || (state.gid !== BigInt(run.gid))
-      || ((state.mode & BigInt(MODE_MASK)) !== BigInt(DIRECTORY_MODE))
-      || (await realpath(run.directory) !== run.directory))
-      throw new ProducerInputComparisonError({ kind: 'storage', directory: run.directory });
+    /** Both directory identities remain owned while the child adds its input-run namespace. */
+    const directories = [
+      { path: run.directory, inode: run.inode },
+      { path: run.inputParent, inode: run.inputParentInode },
+    ];
+    for (const directory of directories) {
+      /** Metadata checks neither follow a leaf symlink nor read a corpus-derived body. */
+      const state = await lstat(directory.path, { bigint: true });
+      if (!state.isDirectory() || (state.dev !== run.device) || (state.ino !== directory.inode)
+        || (state.uid !== BigInt(run.uid)) || (state.gid !== BigInt(run.gid))
+        || ((state.mode & BigInt(MODE_MASK)) !== BigInt(DIRECTORY_MODE))
+        || (await realpath(directory.path) !== directory.path))
+        throw new ProducerInputComparisonError({ kind: 'storage', directory: run.directory });
+    }
     pl.debug('verified comparison directory identity and privacy');
   }
   catch (error) {
@@ -146,7 +158,7 @@ export async function writeProducerInputComparisonRecord({
  *
  * @param parent - authorized canonical output parent from the matched input launch
  *
- * @param launchIdentity - independently matched launch metadata
+ * @param baseLaunchIdentity - independently matched base launch metadata
  *
  * @param reference - separately retained input artifact identity
  *
@@ -158,17 +170,17 @@ export async function writeProducerInputComparisonRecord({
  *
  * @example
  * ```ts
- * const run = await createProducerInputComparisonRun({ parent, launchIdentity, reference, l });
+ * const run = await createProducerInputComparisonRun({ parent, baseLaunchIdentity, reference, l });
  * ```
  */
 export async function createProducerInputComparisonRun({
   parent,
-  launchIdentity,
+  baseLaunchIdentity,
   reference,
   l,
 }: {
   readonly parent: string;
-  readonly launchIdentity: ProducerInputFileIdentity;
+  readonly baseLaunchIdentity: ProducerInputFileIdentity;
   readonly reference: ProducerInputFileIdentity;
   readonly l: Logger;
 },): Promise<ProducerInputComparisonRun> {
@@ -188,12 +200,19 @@ export async function createProducerInputComparisonRun({
     await mkdir(directory, { mode: DIRECTORY_MODE });
     /** Creation identity is retained for point-in-time replacement checks. */
     const state = await lstat(directory, { bigint: true });
+    /** A dedicated native output parent removes ambiguity after bootstrap failure or timeout. */
+    const inputParent = join(directory, 'producer-runs');
+    await mkdir(inputParent, { mode: DIRECTORY_MODE });
+    /** Parent identity is retained independently of the comparison directory. */
+    const inputParentState = await lstat(inputParent, { bigint: true });
+    if ((await readdir(inputParent)).length !== 0)
+      throw new ProducerInputComparisonError({ kind: 'storage', directory });
     /** Only current observations, not self-asserted marker fields, drive later writes. */
-    const run: ProducerInputComparisonRun = { directory, runId, uid, gid, device: state.dev, inode: state.ino };
+    const run: ProducerInputComparisonRun = { directory, inputParent, inputParentInode: inputParentState.ino, runId, uid, gid, device: state.dev, inode: state.ino };
     await writeProducerInputComparisonRecord({
       run,
       file: 'created.json',
-      value: { version: 1, kind: 'producer-preparation-input-comparison-created', runId, launchIdentity, reference },
+      value: { version: 1, kind: 'producer-preparation-input-comparison-created', runId, baseLaunchIdentity, reference, inputParent },
       l: pl,
     });
     pl.info(`created retained input comparison ${JSON.stringify(runId)}`);

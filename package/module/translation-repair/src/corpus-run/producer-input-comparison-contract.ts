@@ -53,7 +53,7 @@ function comparisonIdentity(value: ProducerInputFileIdentity): ProducerInputFile
  *
  * @example
  * ```ts
- * const launchPath = comparisonPath(input.launchPath);
+ * const baseLaunchPath = comparisonPath(input.baseLaunchPath);
  * ```
  */
 function comparisonPath(value: string): string {
@@ -81,13 +81,13 @@ function comparisonPath(value: string): string {
 export function ownProducerInputComparisonRequest(input: ProducerInputComparisonRequest): ProducerInputComparisonRequest {
   try {
     /** Neither file locator may depend on a later current-directory change. */
-    const launchPath = comparisonPath(input.launchPath);
+    const baseLaunchPath = comparisonPath(input.baseLaunchPath);
     /** Only the existing standalone bootstrap filename is supported. */
     const bootstrapPath = comparisonPath(input.bootstrapPath);
     if (basename(bootstrapPath) !== 'producer-prepare.mjs')
       throw new ProducerInputComparisonError({ kind: 'contract', });
     /** Caller mutation cannot change either checked launch primitive after this capture. */
-    const launchIdentity = comparisonIdentity(input.launchIdentity);
+    const baseLaunchIdentity = comparisonIdentity(input.baseLaunchIdentity);
     /** The expected artifact is captured independently of any newly reconstructed output. */
     const reference = comparisonIdentity(input.reference);
     /** Cancellation remains live rather than being copied into a stale boolean. */
@@ -99,7 +99,7 @@ export function ownProducerInputComparisonRequest(input: ProducerInputComparison
     /** Names-only contract telemetry cannot alter the already captured file identities. */
     const pl = tagged({ tag: ownProducerInputComparisonRequest.name, l, });
     pl.debug('owned fixed input-bootstrap launch and independent artifact reference');
-    return { launchPath, launchIdentity, bootstrapPath, reference, signal, l, };
+    return { baseLaunchPath, baseLaunchIdentity, bootstrapPath, reference, signal, l, };
   }
   catch (error) {
     if (error instanceof ProducerInputComparisonError)
