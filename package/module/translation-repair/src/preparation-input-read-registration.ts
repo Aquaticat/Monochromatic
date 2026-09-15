@@ -13,7 +13,6 @@ import {
 } from './preparation-input-read-value.ts';
 import { PreparationRootError, } from './preparation-root-error.ts';
 import type { PreparationDefinitionDomain, } from './preparation-definition-model.ts';
-import type { PreparationReceiptQuestion, } from './preparation-receipt-model.ts';
 import type {
   PreparationRootDefinitionOrder,
   PreparationRootRegistration,
@@ -40,7 +39,9 @@ const IDENTITY_KEYS = [
  Checks queried dispatch and the cardinality and range of its separate definition-index domains.
  Exact definition-node correspondence remains a whole-root check against population metadata.
 
- @param question - decoded native question
+ @param sourceBlockCount - decoded original side's local numbering extent
+
+ @param targetBlockCount - decoded incumbent side's separate numbering extent
 
  @param order - decoded explicit local-index arrays
 
@@ -52,30 +53,26 @@ const IDENTITY_KEYS = [
 
  @example
  ```ts
- verifyQueriedRegistration({ question, order, domain, path });
+ verifyQueriedRegistration({ sourceBlockCount, targetBlockCount, order, domain, path });
  ```
  */
 function verifyQueriedRegistration({
-  question,
+  sourceBlockCount,
+  targetBlockCount,
   order,
   domain,
   path,
 }: {
-  readonly question: PreparationReceiptQuestion;
+  readonly sourceBlockCount: number;
+  readonly targetBlockCount: number;
   readonly order: PreparationRootDefinitionOrder;
   readonly domain: PreparationDefinitionDomain;
   readonly path: string;
 }): void {
-  /**
-   Native preparation emits no question for empty sides or a structural singleton pair.
-   */
-  const {
-    sourceBlocks,
-    targetBlocks,
-  } = question;
-  if ((sourceBlocks.length === 0)
-    || (targetBlocks.length === 0)
-    || ((sourceBlocks.length === 1) && (targetBlocks.length === 1)))
+  // Native preparation emits no question for empty sides or a structural singleton pair.
+  if ((sourceBlockCount === 0)
+    || (targetBlockCount === 0)
+    || ((sourceBlockCount === 1) && (targetBlockCount === 1)))
     throw new PreparationRootError({
       kind: 'input-relations',
       input: `${path}.question`,
@@ -88,13 +85,13 @@ function verifyQueriedRegistration({
       name: 'source',
       indexes: order.source,
       identities: domain.sourceIds,
-      blocks: sourceBlocks,
+      blockCount: sourceBlockCount,
     },
     {
       name: 'target',
       indexes: order.target,
       identities: domain.targetIds,
-      blocks: targetBlocks,
+      blockCount: targetBlockCount,
     },
   ];
   for (const side of sides) {
@@ -104,10 +101,10 @@ function verifyQueriedRegistration({
     const {
       indexes,
       identities,
-      blocks,
+      blockCount,
     } = side;
     if ((indexes.length !== identities.length) || (!indexes.every(function inRange(index): boolean {
-      return index < blocks.length;
+      return index < blockCount;
     })))
       throw new PreparationRootError({
         kind: 'input-relations',
@@ -198,8 +195,16 @@ export function preparationInputRegistration({
    Corrected explicit arrays remain interpretation metadata rather than substantive prompt content.
    */
   const freeOrder = preparationInputDefinitionOrder(field('freeOrder'));
+  /**
+   Interpretation checks need primitive extents, not the native protocol's broader schema type.
+   */
+  const {
+    sourceBlocks,
+    targetBlocks,
+  } = question;
   verifyQueriedRegistration({
-    question,
+    sourceBlockCount: sourceBlocks.length,
+    targetBlockCount: targetBlocks.length,
     order: freeOrder,
     domain: identity.definitionDomain,
     path,

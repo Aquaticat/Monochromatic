@@ -377,5 +377,18 @@ and side-local definition-index counts and bounds.
 Empty and implicit records reject question or outcome fields.
 Selection membership,
 complete-entry hashes and exact node-to-local-index correspondence remain whole-root checks.
+Registration R1 passes build,
+actual consumption of all 45 records,
+bootstrap,
+types and tests.
+`registration-native-GyLXfS` retains 42 queried and three implicit records,
+with 1907 frozen objects and zero provider fetches.
+The synthetic suite covers empty dispatch.
+The readonly-parameter lint finding identifies an unnecessarily broad question parameter
+whose schema type remains writable.
+The helper now receives only primitive source/target block counts,
+not protocol data;
+no mutation annotation or schema-type weakening is introduced.
+Registration R2 verification remains pending.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.
