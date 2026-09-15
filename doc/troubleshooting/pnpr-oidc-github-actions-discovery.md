@@ -376,8 +376,22 @@ Only pnpm/pnpm#14666 (the feature pull request)
        and dylint were not run.
 
 Decision:
- fileable once the owner agrees;
+ fileable,
+ but the owner answered "Not now" on 2026-09-15,
+ so nothing is posted;
  agents never post upstream themselves.
+
+Upstream state checked the same day:
+ `main` was `8f20a3fd69748b1f6eb5c6a7c54d5917456a2013`,
+ every commit touching `pnpr/crates/auth/src/oidc.rs` or `pnpr/crates/auth/src/oidc/` after pnpm/pnpm#14666 is a style or size refactor
+ (pnpm/pnpm#14730,
+  #14760,
+  #14792,
+  #14804,
+  #14872,
+  #14875),
+ no open pull request mentions OIDC discovery,
+ and the regression test fails on that `main`.
 
 ~~~md
 Title: pnpr: GitHub Actions workload publishes fail with 500 "OIDC provider unavailable"
