@@ -31,7 +31,7 @@ const EXECUTABLE_MODE = 0o700;
 /**
  * Wrapper-killing hook source prefix shared by interruption phases.
  */
-const KILL_WRAPPER_SOURCE = `#!/usr/bin/env node
+export const KILL_WRAPPER_SOURCE = `#!/usr/bin/env node
 const { readFileSync } = require('node:fs');
 const status = readFileSync('/proc/' + process.ppid + '/status', 'utf8');
 const parentLine = status.split('\\n').find((line) => line.startsWith('PPid:'));
@@ -75,7 +75,7 @@ async function readIndex(repository: string,): Promise<string> {
 /**
  * Waits for orphaned real Git to settle after wrapper kill.
  */
-async function waitForOrphan(): Promise<void> {
+export async function waitForOrphan(): Promise<void> {
   await execute({
     command: 'sleep',
     args: ['1',],

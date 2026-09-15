@@ -8,6 +8,14 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import {
+  assertAddedPathCommitted,
+  gitText,
+  realGit,
+  resetScenario,
+} from './built-autofix-added-paths-helpers.ts';
+import { verifyAddedPathConclusions, } from './built-autofix-added-paths-conclusion.ts';
+import { verifyAddedPathRecovery, } from './built-autofix-added-paths-recovery.ts';
+import {
   assertIncludes,
   execute,
 } from './built-consumer-helpers.ts';
@@ -63,145 +71,6 @@ const ADDED_PATH_CONFIG = `export default {
   },
 };
 `;
-
-/**
- * Reads exact Git object or index text with real Git.
- *
- * @param repository - disposable repository
- *
- * @param revision - Git object expression
- *
- * @returns exact text
- */
-async function gitText({
-  repository,
-  revision,
-}: Readonly<{
-  repository: string;
-  revision: string;
-}>,): Promise<string> {
-  return (await execute({
-    command: '/usr/bin/git',
-    args: [
-      'show',
-      revision,
-    ],
-    cwd: repository,
-  },)).stdout;
-}
-
-/**
- * Runs real Git without the shim.
- *
- * @param repository - disposable repository
- *
- * @param args - Git arguments
- *
- * @returns standard output
- */
-async function realGit({
-  repository,
-  args,
-}: Readonly<{
-  repository: string;
-  args: readonly string[];
-}>,): Promise<string> {
-  return (await execute({
-    command: '/usr/bin/git',
-    args,
-    cwd: repository,
-  },)).stdout;
-}
-
-/**
- * Resets fixture files to a committed baseline where `dependent.txt` reads `stale`.
- *
- * @param repository - disposable repository
- *
- * @param round - distinct version text for this scenario
- */
-async function resetScenario({
-  repository,
-  round,
-}: Readonly<{
-  repository: string;
-  round: string;
-}>,): Promise<void> {
-  await writeFile(
-    `${repository}/dependent.txt`,
-    'stale\n',
-  );
-  await realGit({
-    repository,
-    args: [
-      'commit',
-      '--quiet',
-      '--allow-empty',
-      '-m',
-      `baseline ${round}`,
-      '--',
-      'dependent.txt',
-    ],
-  },);
-  await writeFile(
-    `${repository}/version.txt`,
-    `${round}\n`,
-  );
-}
-
-/**
- * Asserts the scenario committed the added path and left index and worktree clean.
- *
- * @param repository - disposable repository
- *
- * @param context - scenario label
- */
-async function assertAddedPathCommitted({
-  repository,
-  context,
-}: Readonly<{
-  repository: string;
-  context: string;
-}>,): Promise<void> {
-  assertFixtureEqual({
-    actual: await gitText({
-      repository,
-      revision: 'HEAD:dependent.txt',
-    },),
-    expected: 'bumped\n',
-    context: `${context} committed added path`,
-  },);
-  assertFixtureEqual({
-    actual: await gitText({
-      repository,
-      revision: ':dependent.txt',
-    },),
-    expected: 'bumped\n',
-    context: `${context} indexed added path`,
-  },);
-  assertFixtureEqual({
-    actual: await readFile(
-      `${repository}/dependent.txt`,
-      'utf8',
-    ),
-    expected: 'bumped\n',
-    context: `${context} worktree added path`,
-  },);
-  assertFixtureEqual({
-    actual: await realGit({
-      repository,
-      args: [
-        'status',
-        '--porcelain',
-        '--',
-        'dependent.txt',
-        'version.txt',
-      ],
-    },),
-    expected: '',
-    context: `${context} clean status`,
-  },);
-}
 
 /**
  * Exercises explicit-path, index, amend, conflict, and read-only selection behavior for added paths.
@@ -532,4 +401,13 @@ export async function verifyAutofixAddedPaths({ env, }: Readonly<{
   },);
 
   //endregion Read-only selection refuses automatic fixes
+
+  await verifyAddedPathConclusions({
+    repository,
+    env,
+  },);
+  await verifyAddedPathRecovery({
+    repository,
+    env,
+  },);
 }
