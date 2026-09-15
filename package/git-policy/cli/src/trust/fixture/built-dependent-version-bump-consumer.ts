@@ -242,4 +242,75 @@ export async function verifyDependentVersionBump({ env, }: Readonly<{
     expected: '',
     context: 'dependent bump clean status',
   },);
+
+  //region git cli-git fix ripples a worktree hand bump without touching the index
+
+  await writeFile(
+    `${repository}/package/module/base/package.json`,
+    manifestText({
+      name: '@s/base',
+      version: '1.2.0',
+    },),
+  );
+  /**
+   * Exact real index before the fix.
+   */
+  const indexBeforeFix = Buffer.from(await readFile(`${repository}/.git/index`,),)
+    .toString('base64',);
+  /**
+   * Direct fix selecting only the hand-bumped manifest.
+   */
+  const fixed = await execute({
+    command: 'git',
+    args: [
+      'cli-git',
+      'fix',
+      '--',
+      'package/module/base/package.json',
+    ],
+    cwd: repository,
+    env,
+  },);
+  assertFixtureEqual({
+    actual: fixed.stdout
+      .includes('"changedPaths":["package/module/app/package.json","package/module/tool/package.json"]',)
+      .toString(),
+    expected: 'true',
+    context: `direct-fix ripple summary in ${fixed.stdout}`,
+  },);
+  /**
+   * Expected worktree manifests after the direct-fix ripple.
+   */
+  const fixedWorktree: Readonly<Record<string, string>> = {
+    'package/module/app/package.json': manifestText({
+      name: '@s/app',
+      version: '2.0.2',
+      dependencies: { '@s/base': 'workspace:*', },
+    },),
+    'package/module/tool/package.json': manifestText({
+      name: '@s/tool',
+      version: '0.4.11',
+      devDependencies: { '@s/base': 'workspace:*', },
+    },),
+    'package/module/other/package.json': WORKSPACE_FILES['package/module/other/package.json'] ?? '',
+  };
+  for (const [path, text,] of Object.entries(fixedWorktree,)) {
+    assertFixtureEqual({
+      // oxlint-disable-next-line no-await-in-loop -- Sequential reads keep assertion output ordered by manifest.
+      actual: await readFile(
+        `${repository}/${path}`,
+        'utf8',
+      ),
+      expected: text,
+      context: `direct-fix worktree ${path}`,
+    },);
+  }
+  assertFixtureEqual({
+    actual: Buffer.from(await readFile(`${repository}/.git/index`,),)
+      .toString('base64',),
+    expected: indexBeforeFix,
+    context: 'direct-fix ripple real index bytes',
+  },);
+
+  //endregion git cli-git fix ripples a worktree hand bump without touching the index
 }

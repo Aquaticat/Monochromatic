@@ -237,7 +237,7 @@ await describe({
             },),).toContain('dependent-version-bump',);
             expect(dependentVersionBump.defaultSeverity,).toBe('error',);
             expect(dependentVersionBump.warnSafe,).toBe(false,);
-            expect(dependentVersionBump.triggers,).toEqual(['pre-forward', 'direct-check',],);
+            expect(dependentVersionBump.triggers,).toEqual(['pre-forward', 'direct-check', 'direct-fix',],);
           },
         },),
       ],
@@ -307,6 +307,39 @@ await describe({
             expect(
               (await findDependentBumps(contextOf(files,),)).length,
             ).toBe(1,);
+          },
+        },),
+        it({
+          name: 'proposes dependent bumps during direct fix',
+          fn: async function testDirectFix(): Promise<void> {
+            /**
+             Worktree hand bump selected by the fix, with a stale runtime dependent.
+             */
+            const files = [
+              configFile(['@s/base', '@s/runtime',],),
+              {
+                path: 'package/module/base/package.json',
+                text: manifestText({ name: '@s/base', version: '1.1.0', },),
+                headText: manifestText({ name: '@s/base', version: '1.0.0', },),
+              },
+              unchangedManifest('package/module/runtime', { name: '@s/runtime', version: '2.0.0', dependencies: { '@s/base': 'workspace:*', }, },),
+            ];
+            /**
+             Findings under the direct-fix trigger.
+             */
+            const findings = await findDependentBumps({
+              ...contextOf(files,),
+              trigger: 'direct-fix',
+              command: {
+                ...contextOf(files,).command,
+                rawArgs: ['cli-git', 'fix',],
+                transformedArgs: ['cli-git', 'fix',],
+                subcommand: 'cli-git',
+              },
+            },);
+            expect(findings.map(function toPath(finding,) {
+              return finding.path;
+            },),).toEqual(['package/module/runtime/package.json',],);
           },
         },),
         it({

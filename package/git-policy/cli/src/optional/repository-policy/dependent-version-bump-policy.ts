@@ -248,9 +248,11 @@ export const dependentVersionBump: PolicyDefinition<undefined, 'dependent-versio
   name: 'dependent-version-bump',
   defaultSeverity: 'error',
   warnSafe: false,
+  // direct-fix lets `git cli-git fix` apply the ripple `git cli-git check` reports (owner decision 2026-09-15).
   triggers: [
     'pre-forward',
     'direct-check',
+    'direct-fix',
   ],
   /**
    Proposes dependent bumps for the current candidate state.
