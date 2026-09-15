@@ -13,7 +13,27 @@ import {
   type PolicyContext,
   type PolicyDefinition,
   type PolicyFinding,
-} from '../api/index.ts';
+} from '../../api/index.ts';
+
+export {
+  patchBumpVersion,
+  planDependentBumps,
+  UnsupportedVersionError,
+} from './dependent-version-bump.ts';
+export type {
+  PlannedBump,
+  WorkspaceManifest,
+} from './dependent-version-bump.ts';
+export {
+  ManifestShapeError,
+  readManifestDependencyFacts,
+  replaceManifestVersion,
+} from './manifest-text.ts';
+export type { ManifestDependencyFacts, } from './manifest-text.ts';
+export {
+  importsPackage,
+  isNonTestSourcePath,
+} from './source-imports.ts';
 
 /**
  Candidate fields needed by root-context path decision.

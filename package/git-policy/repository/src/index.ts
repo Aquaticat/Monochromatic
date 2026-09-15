@@ -14,6 +14,26 @@ import {
   type PolicyFinding,
 } from '@monochromatic-dev/git-policy-api/ts';
 
+export {
+  patchBumpVersion,
+  planDependentBumps,
+  UnsupportedVersionError,
+} from './dependent-version-bump.ts';
+export type {
+  PlannedBump,
+  WorkspaceManifest,
+} from './dependent-version-bump.ts';
+export {
+  ManifestShapeError,
+  readManifestDependencyFacts,
+  replaceManifestVersion,
+} from './manifest-text.ts';
+export type { ManifestDependencyFacts, } from './manifest-text.ts';
+export {
+  importsPackage,
+  isNonTestSourcePath,
+} from './source-imports.ts';
+
 /**
  Candidate fields needed by root-context path decision.
  

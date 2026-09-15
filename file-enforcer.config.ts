@@ -2209,16 +2209,23 @@ ${await cat(['./AGENTS.md',],)}`,
 
   generateForbiddenStringsRules(),
 
-  overwrite({
-    dest: './package/git-policy/cli/src/optional/repository-policy.ts',
-    content: `// Generated from \`package/git-policy/repository/src/index.ts\` by file-enforcer; edit canonical source owner.\n${(await cat([
-      './package/git-policy/repository/src/index.ts',
-    ],))
-      .replace(
-        '@monochromatic-dev/git-policy-api/ts',
-        '../api/index.ts',
-      )}`,
-  },),
+  ...await Promise.all([
+    'dependent-version-bump.ts',
+    'index.ts',
+    'manifest-text.ts',
+    'source-imports.ts',
+  ].map(async function mirrorRepositoryPolicy(fileName,) {
+    return overwrite({
+      dest: `./package/git-policy/cli/src/optional/repository-policy/${fileName}`,
+      content: `// Generated from \`package/git-policy/repository/src/${fileName}\` by file-enforcer; edit canonical source owner.\n${(await cat([
+        `./package/git-policy/repository/src/${fileName}`,
+      ],))
+        .replace(
+          '@monochromatic-dev/git-policy-api/ts',
+          '../../api/index.ts',
+        )}`,
+    },);
+  },),),
 
   ...await Promise.all([
     'cache-warning.ts',
