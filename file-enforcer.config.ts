@@ -1876,11 +1876,12 @@ const PNPR_GITHUB_IDENTITY = {
  */
 const PNPR_EXCLUDED_PACKAGES: Readonly<Record<string, string>> = {
   // pnpr-publish run 34917976384: `bun: command not found` (exit 127).
+  // Owner decision 2026-09-15: apps exposing nothing importable are not meant to publish.
   '@monochromatic-dev/desktop-daemon-hall-monitor':
-    'build runs `bun build --compile`, and the publish job installs only node and pnpm',
+    'app exposing nothing importable; its build also runs `bun build --compile`, and the publish job installs only node and pnpm',
   // pnpr-publish run 34917976384: rolldown `Could not resolve 'canvg'` from jspdf 4.2.1.
   '@monochromatic-dev/webapp-productivity-doodle-widget':
-    'client build cannot resolve the optional `canvg` import inside jspdf',
+    'app exposing nothing importable; its client build also cannot resolve the optional `canvg` import inside jspdf',
 };
 
 /**
