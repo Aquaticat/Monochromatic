@@ -84,4 +84,5 @@ export type {
   PolicySeverity,
   PolicyTrigger,
   RepositoryPath,
+  TrackedFile,
 } from './api/policy-types.ts';
