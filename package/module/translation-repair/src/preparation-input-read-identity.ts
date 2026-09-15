@@ -92,4 +92,57 @@ export function preparationInputTreeDigest({
   return text;
 }
 
+/**
+ Native document-node identities use this prefix before a canonical zero-based index.
+ */
+const NODE_PREFIX = 'block/';
+
+/**
+ Validates native document-node spelling without confusing it with a local question index.
+
+ @internal
+
+ @param value - invocation-owned parsed node identity
+
+ @param path - authored node or definition-domain identity position
+
+ @returns Unchanged canonical node identifier
+
+ @throws PreparationRootError when primitive shape or identifier spelling differs
+
+ @example
+ ```ts
+ const nodeId = preparationInputNodeId({ value, path });
+ ```
+ */
+export function preparationInputNodeId({
+  value,
+  path,
+}: PreparationInputField): string {
+  /**
+   Identity bytes are preserved rather than normalized or renumbered.
+   */
+  const nodeId = preparationInputNonblankString({
+    value,
+    path,
+  });
+  /**
+   Conversion is accepted only when the original suffix has canonical decimal spelling.
+   */
+  const suffix = nodeId.slice(NODE_PREFIX.length);
+  /**
+   Document indexes must remain safe under subsequent array and coordinate operations.
+   */
+  const index = Number(suffix);
+  if ((!nodeId.startsWith(NODE_PREFIX))
+    || (!Number.isSafeInteger(index))
+    || (index < 0)
+    || (String(index) !== suffix))
+    throw new PreparationRootError({
+      kind: 'input-relations',
+      input: path,
+    });
+  return nodeId;
+}
+
 //endregion Corpus identity components remain data

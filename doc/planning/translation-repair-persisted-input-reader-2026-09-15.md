@@ -345,6 +345,18 @@ layout,
 string spelling,
 symbol description and an unknown-typed fixture traversal are corrected.
 A sequential native-clone fault test is added to detect protocol fields that would disappear from JSON.
-Question R2 verification remains pending.
+Question R2 passes the complete checkpoint,
+including the native-clone fault control and full-scope lint.
+`question-native-AVY4wd` repeats the actual-artifact question,
+key,
+digest and freezing checks.
+
+Definition-domain,
+corrected order-array,
+question-alias and nonempty unaligned-namespace decoding is the next checkpoint.
+Canonical `block/N` validation is shared with the existing node decoder rather than copied.
+Definition IDs remain distinct from local numeric indexes;
+source and target identity domains remain independent.
+Alias membership and namespace coverage still require the whole-root relation checks.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.

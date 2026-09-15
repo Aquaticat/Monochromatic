@@ -4,6 +4,7 @@ import type {
   PreparationRootProtection,
 } from './preparation-root-population-model.ts';
 import { PreparationRootError, } from './preparation-root-error.ts';
+import { preparationInputNodeId, } from './preparation-input-read-identity.ts';
 import {
   preparationInputBoolean,
   preparationInputDigest,
@@ -16,11 +17,6 @@ import {
 } from './preparation-input-read-value.ts';
 
 //region Persisted node coordinates and independent protection evidence
-
-/**
- Native document-node identities use this prefix before a canonical zero-based index.
- */
-const NODE_PREFIX = 'block/';
 
 /**
  Reads the represented node projection without inventing its omitted text.
@@ -63,7 +59,7 @@ export function preparationInputNode({
    Typed construction does not derive text from a content hash.
    */
   const node: PreparationRootNode = {
-    id: preparationInputNonblankString(field('id')),
+    id: preparationInputNodeId(field('id')),
     kind: preparationInputNonblankString(field('kind')),
     zone: preparationInputLiteral({
       ...field('zone'),
@@ -79,23 +75,7 @@ export function preparationInputNode({
       algorithm: 'sha256',
     }),
   };
-  /**
-   The identity grammar is checked separately from coordinate containment.
-   */
-  const { id } = node;
-  /**
-   Numeric conversion requires exact canonical decimal spelling.
-   */
-  const suffix = id.slice(NODE_PREFIX.length);
-  /**
-   An index must remain safe under every later array and coordinate operation.
-   */
-  const index = Number(suffix);
-  if ((!id.startsWith(NODE_PREFIX))
-    || (!Number.isSafeInteger(index))
-    || (index < 0)
-    || (String(index) !== suffix)
-    || (node.endOffset < node.startOffset))
+  if (node.endOffset < node.startOffset)
     throw new PreparationRootError({
       kind: 'input-relations',
       input: path,

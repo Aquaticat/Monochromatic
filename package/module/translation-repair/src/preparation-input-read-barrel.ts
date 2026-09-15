@@ -29,6 +29,7 @@ export {
 export { validParentEntry, } from './preparation-selection-records.ts';
 export {
   preparationInputEntryId,
+  preparationInputNodeId,
   preparationInputTreeDigest,
 } from './preparation-input-read-identity.ts';
 export { preparationInputExclusion, } from './preparation-input-read-exclusion.ts';
@@ -69,6 +70,16 @@ export {
   preparationInputNumberedBlocks,
   preparationInputQuestion,
 } from './preparation-input-read-question.ts';
+export {
+  preparationInputDefinitionDomain,
+  preparationInputDefinitionIds,
+  preparationInputDefinitionIndexes,
+  preparationInputDefinitionOrder,
+} from './preparation-input-read-domain.ts';
+export {
+  preparationInputQuestionAliases,
+  preparationInputUnalignedDefinitions,
+} from './preparation-input-read-scope.ts';
 export {
   PreparationRootError,
   type PreparationRootFailure,
