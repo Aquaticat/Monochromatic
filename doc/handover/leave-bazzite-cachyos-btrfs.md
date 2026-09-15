@@ -107,9 +107,15 @@ The session configuration lives in <https://github.com/Aquaticat/labwc-config>.
 - **Rehearsal material**:
   the Bazzite and KVM harness moves to an `archive/` directory in labwc-config.
 - **Lint and TSDoc tooling for labwc-config**:
-  consumed from npm.
-  The user is publishing the needed `@monochromatic-dev` packages;
-  as of 2026-09-14 only `@monochromatic-dev/module-logger` 0.4.0 was on npm.
+  consumed from the user's pnpr instance at <https://pnpr.c.aquati.cat/>,
+  a stopgap until the packages are hardened for npmjs.com.
+  Downloads need no authentication.
+  labwc-config scopes `@monochromatic-dev` to it in `.npmrc`
+  and exempts that scope from Deno's one-day minimum dependency age,
+  because the user republishes fixes the same day.
+  On 2026-09-15 all eight packages labwc-config imports resolved and passed its tests from an empty Deno cache.
+  `module-logger` fails under QuickJS-ng (Aquaticat/Monochromatic#526),
+  so QuickJS helpers log without it.
 - **Deployment**:
   a PKGBUILD package installs helpers,
   system drop-ins,
@@ -132,7 +138,6 @@ These were already validated or are determined by `AGENTS.md`:
 
 - UWSM plus labwc,
   sfwbar,
-  fuzzel,
   foot,
   xwayland-satellite at `DISPLAY=:12`,
   display-manager-free tty1 start,
@@ -157,12 +162,84 @@ The grilling frontier closed on 2026-09-14 with:
   an offline primary GPG key trusted by pacman,
   with a revocable signing-only subkey in GitHub Actions secrets.
 
+## Later decisions
+
+- **Launcher**:
+  a resident Rust and Slint daemon in labwc-config replaces fuzzel,
+  bundling Inter,
+  gray-white on black,
+  without icons.
+  The daemon reads the Meta tap from evdev,
+  so the user joins the `input` group,
+  and a small Rust client talks to it over a Unix socket.
+  Matches rank by prefix,
+  then word start,
+  then anywhere in the name;
+  an empty query lists every entry alphabetically.
+  Esc,
+  the same trigger,
+  a click outside,
+  or losing focus dismisses it.
+- **Pager**:
+  `labwc-pager`,
+  a Rust binary,
+  replaces `wlr-pager`.
+
+## Progress as of 2026-09-15
+
+Everything below is in labwc-config `main`;
+the commit that closes each step is named.
+
+- The Bazzite harness is archived,
+  the docs follow the standards,
+  and the helpers,
+  launcher,
+  pager,
+  and installer are ported.
+- `packaging/PKGBUILD` builds `labwc-config`,
+  `labwc-config-helpers`,
+  and `labwc-config-launcher`.
+  CI builds them in an Arch container;
+  publishing to the `repo` release waits for the signing subkey secret.
+  `packaging/assemble-repo.ts` produced a pacman-verified repository with a subkey-only keyring in the dev VM.
+- A real uwsm session in the dev VM ran every desktop entry and session unit from the packages
+  (labwc-config `doc/planning/launcher.md`, section "Verified in a real uwsm session on 2026-09-15").
+- The installer built the `CachyOS-Rehearsal` Hyper-V guest with Secure Boot enforcing through shim and MOK,
+  LUKS unlocked by TPM2 plus PIN after first-boot enrollment,
+  hourly Snapper snapshots listed in Limine,
+  and a snapshot boot whose home matched the snapshot.
+  The rehearsal found nine defects;
+  labwc-config `doc/troubleshooting/installer-rehearsal.md` records each cause and fix
+  (commits through `fb0f930`).
+  Two findings matter beyond the VM:
+  limine-snapper-sync's system call filter kills Deno boot hooks,
+  and flatpak's user environment generator drops XDG prefixes set in `environment.d`.
+- Four of those fixes were applied by hand before being packaged,
+  so a clean reinstall from the fixed installer and packages is in progress.
+- The physical installer refuses firmware that is not in setup mode
+  or that sbctl flags with a quirk such as FQ0001,
+  before erasing anything.
+
+## Changes left on the dev VM
+
+The `CachyOS` Hyper-V VM served as the package build host and installer host:
+its `/etc/pacman.conf` has a `[labwc-config]` `file://` section,
+the labwc-config packages are installed,
+tty1 logs in automatically,
+and `/usr/lib/environment.d/50-labwc-config.conf` is a hand-placed file no package owns.
+Snapper snapshot 25,
+"before labwc-config packages",
+is the rollback point.
+
 ## Next action
 
-Wait for the user to confirm this summary is the shared understanding,
-then adapt labwc-config:
-archive the Bazzite harness,
-rewrite docs to the standards,
-port helpers and the installer to TypeScript once the `@monochromatic-dev` tooling is on npm,
-add the PKGBUILDs and signed-repository CI,
-and rehearse in a fresh Hyper-V VM.
+1. Finish the clean rehearsal reinstall and confirm the hand-applied fixes come from the packages.
+2. The user creates the offline primary key and signing subkey
+   (labwc-config `doc/planning/pacman-repository.md`, section on the key ceremony),
+   then sets the `PACMAN_SIGNING_SUBKEY` secret and `PACMAN_SIGNING_KEY_ID` variable.
+3. The user clears the desktop's Secure Boot keys in the firmware menu,
+   keeping Secure Boot enabled,
+   boots the live ISO,
+   and runs the installer.
+4. Measure the launcher and panel hot paths on the desktop against the 20 ms budget.
+5. Run the ZFS trigger test on the desktop.
