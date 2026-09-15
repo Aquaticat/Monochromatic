@@ -1431,6 +1431,10 @@ and derives writer-parent and definition-only registrations from the complete se
 Unaligned definitions remain namespace data;
 unused support remains `opaque-selection-support` rather than gaining authority from its filename.
 The result says `scope: 'unqualified-preparation-root-inputs'`.
+Persisted `registry[*].freeOrder` uses explicit numeric arrays,
+while native pairing questions retain their in-memory sets.
+Older artifacts containing empty objects in those fields do not establish empty definition-order domains;
+use a freshly qualified reconstruction rather than filling missing values.
 It creates no providers,
 section override,
 reviewed phase or writer approval.

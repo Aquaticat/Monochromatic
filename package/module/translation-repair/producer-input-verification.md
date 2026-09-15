@@ -136,6 +136,14 @@ throwing callbacks,
 native cancellation after unreadable observations,
 cleanup-disposer faults and cancellation after successful child completion;
 it does not replace the broader lifecycle qualification inventory.
+The separate definition-order transport repair qualifies application runtime `frozen-runtime-uByTgd`
+under the unchanged `WWrgVV` bootstrap and platform profile.
+Its current unqualified artifact has SHA-256
+`475506126e6e990014b64ff2d4a694e099645e2b396efff690de7908449763a0`.
+The original `fOagX0` artifact remains historical evidence:
+its empty-object `freeOrder` fields are not a complete definition-index representation.
+The [serialization incident](../../../doc/troubleshooting/translation-repair-root-order-serialization.md)
+records the exact transport delta and verification limits.
 The native platform and tooling investigations are in
 [`translation-repair-native-runtime-bundling.md`](../../../doc/troubleshooting/translation-repair-native-runtime-bundling.md).
 

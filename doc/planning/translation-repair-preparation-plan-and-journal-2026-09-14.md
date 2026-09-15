@@ -18,9 +18,10 @@ task65 initial/conditional phases and task66 persistence/review/rebuild integrat
 Task53 waits for those finite root/phase materializers.
 The [reader implementation record](translation-repair-persisted-input-reader-2026-09-15.md)
 records current source constraints and rejected decoder assumptions.
-Task67 currently blocks task63:
-the root DTO serializes in-memory definition-order sets as empty JSON objects.
-Its transport repair must preserve frozen evidence and qualify new input bytes before plan materialization.
+Task67 currently blocks task63's continuation while its transport-repair completion records are finalized.
+The original root DTO serialized definition-order sets as empty JSON objects.
+The explicit array projection now passes native, full-suite and mutation checks;
+old frozen evidence remains separately retained.
 The changes have not been reviewed;
 GitHub issues #509 and #527 remain open.
 Task41 remains incomplete until those owners satisfy their own acceptance boundaries.
@@ -28,9 +29,14 @@ No paid acquisition or writer calibration is authorized by this work record.
 
 The canonical standing constraints and completed input-runner evidence are in
 [`translation-repair-writer-unit-scope-2026-09-11.md`](translation-repair-writer-unit-scope-2026-09-11.md).
-The final input artifact has SHA-256
+The original input artifact has SHA-256
 `12c4f304dad2a7039c5452ae7f3de5a84160f759e27968e05e47494c0f3eb75a`.
-It is not a reviewed plan or evidence receipt.
+The corrected 2821531-byte input artifact has SHA-256
+`475506126e6e990014b64ff2d4a694e099645e2b396efff690de7908449763a0`.
+The [definition-order incident](../troubleshooting/translation-repair-root-order-serialization.md)
+records its exact transport delta,
+new application runtime and after-state preservation checks.
+Neither artifact is a reviewed plan or evidence receipt.
 
 ## Existing interfaces to compose
 

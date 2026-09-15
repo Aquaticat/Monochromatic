@@ -121,7 +121,8 @@ The existing responsibilities stay separate:
 - Task63 validates the corrected persisted DTO.
 - Later pairing interpretation owns any array-to-set conversion it actually needs.
 
-Source search finds no production consumer of the root DTO's `freeOrder` field yet.
+The JSON writer is a production consumer of the complete root DTO.
+Source search finds no downstream production code semantically interpreting `registry[*].freeOrder` yet.
 The existing replay and evidence-occurrence consumers use `BlockPairingQuestion.freeOrder`,
 not the root DTO;
 they must retain their current set behavior.
@@ -135,9 +136,59 @@ including whole-root JSON round-trip equality.
 Lint then identifies the inline round trip as a deep-clone idiom;
 the tests now write and reread actual JSON files rather than substitute `structuredClone`,
 which would not test serialization.
-Current lint recheck,
-mutation sensitivity and fresh provider-free artifact qualification remain pending.
+R2 passes fresh builds,
+bootstrap sealing,
+types,
+targeted tests,
+full-scope lint and application sealing.
+`devfull-KdsCj2` passes with 635 expected and observed Node `26.8.2` test-entry processes,
+not 635 test cases.
+`mutation-proof-1ogGxE` detects the source/target erasure,
+side-swap,
+runtime-set and empty-object mutations after successful builds;
+baseline/restored tests pass with real source and `dist` unchanged.
 Do not silently relabel the frozen artifact or derive a new expected digest from it.
+
+## Current artifact qualification
+
+Application runtime `frozen-runtime-uByTgd` contains 167 manifest-listed files.
+Its 28930-byte manifest SHA-256 is
+`fe4076e23fb763cb91baba1d871e79fd49852d2f6aab3ee8078666fdc024d1e5`.
+The fixed `WWrgVV` bootstrap and platform profile remain unchanged.
+The new 1550-byte base launch has SHA-256
+`089666ae58251f5de92675fcab91810d512fecb9a0df86540225c99ebd326fce`.
+
+`native-proof-qTMylB` retains matching and deliberately mismatched-reference runs.
+Both freshly persisted artifacts contain 2821531 bytes with SHA-256
+`475506126e6e990014b64ff2d4a694e099645e2b396efff690de7908449763a0`.
+All queried records contain explicit order arrays;
+the same nine definition-bearing parents contain nonempty index domains.
+The mismatch retains the useful new output.
+Both child container names are independently absent,
+and captured stderr contains no bare shutdown-cancellation diagnostic.
+
+The expected artifact is an explicit verification-only derivation from the old artifact's represented
+population node order/zones,
+definition-node IDs and numbered-block content hashes.
+Only the `freeOrder` representation is replaced.
+The actual new output matches those complete expected bytes.
+This does not decode missing Set members,
+reconstruct omitted bodies or grant semantic review.
+
+`after-state-jDNGyO` rehashes the old `fOagX0` and R8 comparison runtimes,
+the new runtime,
+original and new artifacts,
+frozen selection/support,
+executable bindings and the owner lock after native and mutation runs.
+Its 569 checked file identities match.
+This after-state evidence supports preservation;
+write-target selection alone would not.
+
+The evidence roots are under package `node_modules/.monochromatic/preparation-root-order/`.
+[Repository issue #541](https://github.com/Aquaticat/Monochromatic/issues/541) remains open;
+the changes have not been reviewed.
+Final documentation,
+retention and exact diagnostic cleanup remain separate completion steps.
 
 ## Rejected remedies
 
@@ -171,8 +222,9 @@ The local representation fix adds nothing to that Node thread.
     not asserted;
     ordinary serialization behavior is not an upstream refusal incident.
 6.  Prototype:
-    the native array control preserves indexes;
-    repository integration and fresh artifact qualification remain pending.
+    the native array control and repository projection preserve indexes
+    in the listed native and mutation checks.
+    No upstream patch is needed.
 
 Upstream filing artifact:
 nothing to add to Node.
