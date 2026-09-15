@@ -4,6 +4,9 @@
   "private": true,
   "description": "Coolify deployment of the private pnpr npm registry serving @monochromatic-dev workspace packages, plus the CI script that publishes missing versions.",
   "type": "module",
+  "exports": {
+    "./ts": "./src/index.ts"
+  },
   "dependencies": {
     "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",

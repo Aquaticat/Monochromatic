@@ -151,7 +151,49 @@ function stripTsSubpaths(exportsField: unknown,): unknown {
 }
 
 /**
- Rewrites a packed manifest for pnpr: drops `private`, `./ts` subpaths, and npmjs-only publish settings.
+ File name endings of TypeScript source that Node refuses to strip under `node_modules`.
+ */
+const TYPESCRIPT_SOURCE_ENDINGS = [
+  '.ts',
+  '.mts',
+  '.cts',
+  '.tsx',
+] as const;
+
+/**
+ File name endings of declaration files, which are type metadata rather than source and stay publishable.
+ */
+const DECLARATION_ENDINGS = [
+  '.d.ts',
+  '.d.mts',
+  '.d.cts',
+] as const;
+
+/**
+ Reports whether a manifest path points at TypeScript source rather than loadable JavaScript or declarations.
+ Issue #537: packages whose only entries were such paths published tarballs no consumer could load.
+
+ @param path - Path from `main`, `module`, or `bin`.
+
+ @returns Whether Node would refuse to load the path from `node_modules`.
+
+ @example
+ ```ts
+ isTypeScriptSourcePath('src/index.ts');
+ // => true
+ ```
+ */
+export function isTypeScriptSourcePath(path: string,): boolean {
+  return TYPESCRIPT_SOURCE_ENDINGS.some(function hasSourceEnding(ending,) {
+    return path.endsWith(ending,);
+  },)
+    && (!DECLARATION_ENDINGS.some(function hasDeclarationEnding(ending,) {
+      return path.endsWith(ending,);
+    },));
+}
+
+/**
+ Rewrites a packed manifest for pnpr: drops `private`, `./ts` subpaths, `main` or `module` fields naming TypeScript source, and npmjs-only publish settings.
 
  @param manifest - Manifest read from the packed tarball.
 
@@ -174,9 +216,21 @@ export function prepareManifestForPnpr(
     private: _private,
     publishConfig,
     exports: exportsField,
+    main,
+    module,
     ...rest
   } = manifest;
   void _private;
+  /**
+   Root entry fields kept because they name something Node can load from `node_modules`.
+   */
+  const loadableRootEntries = Object.fromEntries(Object.entries({
+    main,
+    module,
+  },)
+    .filter(function isLoadable([, entry,],) {
+      return (entry !== undefined) && (((typeof entry) !== 'string') || (!isTypeScriptSourcePath(entry,)));
+    },),);
   /**
    Publish settings kept for pnpr; provenance and registry target npmjs only.
    */
@@ -197,6 +251,7 @@ export function prepareManifestForPnpr(
     : undefined;
   return {
     ...rest,
+    ...loadableRootEntries,
     ...(exportsField === undefined ? {} : { exports: stripTsSubpaths(exportsField,), }),
     ...(keptPublishConfig === undefined ? {} : { publishConfig: keptPublishConfig, }),
   };

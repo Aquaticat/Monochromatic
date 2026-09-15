@@ -5,6 +5,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  isTypeScriptSourcePath,
   orderForPublishing,
   PnprConfigShapeError,
   prepareManifestForPnpr,
@@ -96,6 +97,38 @@ await describe({
       ],
     },),
     describe({
+      name: isTypeScriptSourcePath.name,
+      children: [
+        it({
+          name: 'recognizes every TypeScript source ending',
+          fn: async () => {
+            expect([
+              'src/index.ts',
+              'src/index.mts',
+              'src/index.cts',
+              'src/view.tsx',
+            ].map(function classify(path,) {
+              return isTypeScriptSourcePath(path,);
+            },),).toEqual([true, true, true, true,],);
+          },
+        },),
+        it({
+          name: 'treats declarations, JavaScript, and JSON as publishable',
+          fn: async () => {
+            expect([
+              'dist/index.d.ts',
+              'dist/index.d.mts',
+              'dist/index.d.cts',
+              'dist/index.mjs',
+              'index.json',
+            ].map(function classify(path,) {
+              return isTypeScriptSourcePath(path,);
+            },),).toEqual([false, false, false, false, false,],);
+          },
+        },),
+      ],
+    },),
+    describe({
       name: prepareManifestForPnpr.name,
       children: [
         it({
@@ -123,6 +156,23 @@ await describe({
             },);
             expect(prepareManifestForPnpr({ exports: './index.mjs', },),).toEqual({ exports: './index.mjs', },);
             expect(prepareManifestForPnpr({ exports: ['./a.mjs',], },),).toEqual({ exports: ['./a.mjs',], },);
+          },
+        },),
+        it({
+          name: 'drops main and module fields that name TypeScript source and keeps loadable ones',
+          fn: async () => {
+            expect(prepareManifestForPnpr({
+              name: '@scope/cli',
+              main: 'src/index.ts',
+              module: 'dist/index.mjs',
+              bin: { cli: 'dist/cli.mjs', },
+            },),).toEqual({
+              name: '@scope/cli',
+              module: 'dist/index.mjs',
+              bin: { cli: 'dist/cli.mjs', },
+            },);
+            expect(prepareManifestForPnpr({ module: 'src/index.mts', },),).toEqual({},);
+            expect(prepareManifestForPnpr({ main: 'index.json', },),).toEqual({ main: 'index.json', },);
           },
         },),
         it({

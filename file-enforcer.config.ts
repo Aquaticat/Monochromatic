@@ -29,6 +29,7 @@ import {
   type GlobResults,
 } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
+import { isTypeScriptSourcePath, } from '@monochromatic-dev/config-pnpr/ts';
 import type browserslist from 'browserslist';
 
 /**
@@ -1885,7 +1886,25 @@ const PNPR_EXCLUDED_PACKAGES: Readonly<Record<string, string>> = {
 };
 
 /**
- Reports whether a manifest still declares an entry point once `./ts` export subpaths are stripped for publishing.
+ Reports whether a manifest entry field names a file Node can load from `node_modules`.
+
+ @param entry - Value of `main`, `module`, or one `bin` target.
+
+ @returns Whether the value is a non-empty path that is not TypeScript source.
+
+ @example
+ ```ts
+ isPnprLoadableEntryPath('src/index.ts');
+ // => false
+ ```
+ */
+function isPnprLoadableEntryPath(entry: unknown,): boolean {
+  return ((typeof entry) === 'string') && (entry !== '') && (!isTypeScriptSourcePath(entry,));
+}
+
+/**
+ Reports whether a manifest still declares an entry point once `./ts` export subpaths are stripped for publishing,
+ ignoring `main` and `module` shadowed by `exports` and entries that name TypeScript source.
 
  @param manifest - Parsed workspace package.json.
 
@@ -1936,16 +1955,23 @@ function pnprManifestHasEntryPoint(
       return true;
   }
 
-  if ((((typeof main) === 'string') && (main !== '')) || (((typeof module) === 'string') && (module !== '')))
+  // Node ignores `main` and `module` whenever `exports` exists, and cannot load TypeScript source from `node_modules` (#537).
+  if ((exportsField === undefined) && [
+    main,
+    module,
+  ].some(function isLoadableRootEntry(entry,) {
+    return isPnprLoadableEntryPath(entry,);
+  },))
     return true;
 
   if ((typeof bin) === 'string')
-    return bin !== '';
+    return isPnprLoadableEntryPath(bin,);
 
   return ((typeof bin) === 'object') && (bin !== null)
-    && (Object.keys(bin,)
-      .length
-      > 0);
+    && Object.values(bin,)
+      .some(function isLoadableBin(entry,) {
+        return isPnprLoadableEntryPath(entry,);
+      },);
 }
 
 /**

@@ -1,6 +1,7 @@
 // Pure publish-planning helpers, built only so unit tests exercise the bundled artifact.
 // The package declares no entry points, so it never publishes itself.
 export {
+  isTypeScriptSourcePath,
   orderForPublishing,
   PnprConfigShapeError,
   prepareManifestForPnpr,

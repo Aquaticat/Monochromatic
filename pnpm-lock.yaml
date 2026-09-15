@@ -418,6 +418,9 @@ importers:
       '@monochromatic-dev/config-oxlint':
         specifier: workspace:*
         version: link:package/config/oxlint
+      '@monochromatic-dev/config-pnpr':
+        specifier: workspace:*
+        version: link:package/config/pnpr
       '@monochromatic-dev/config-stylelint':
         specifier: workspace:*
         version: link:package/config/stylelint
