@@ -46,6 +46,8 @@ const CONTROL_BLOCK_END = 159;
 
 /**
  Checks an entry path component without changing its frozen spelling.
+
+ @internal
  
  @param entryId - one bounded component of the independently matched artifact
  

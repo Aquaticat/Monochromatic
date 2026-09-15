@@ -143,7 +143,20 @@ It preserves the recorded raw SHA-256 after caller-buffer mutation.
 The parsed value remains unknown;
 observing its scope and collection extents is not complete DTO validation.
 The DTO-specific closed-record,
-scalar and ordered-element helper layer is the next implementation checkpoint.
+scalar and ordered-element helper layer passes R2 builds,
+types,
+targeted tests and full-scope lint after its recorded fixture/layout remediation.
+The selection-projection decoder and its nonblank-text cases are the current checkpoint;
+other DTO field families and complete relation validation remain absent.
+
+A source-copy command timed out during that checkpoint.
+The retained draft was intact while the new untracked target was observed empty;
+the process snapshot contained no surviving `cp` or `rg`.
+The target was restored through an explicit complete write,
+then both files matched SHA-256
+`db60fd53b166e5d9308b51f0cdd664ed87f760c0dec8274eb010394e2095cdbf`.
+This records recovery,
+not a diagnosed cause for the command timeout.
 The proof roots and raw diagnostics are durable under package
 `node_modules/.monochromatic/preparation-input-reader/`.
 No completed decoder,

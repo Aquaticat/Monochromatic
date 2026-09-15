@@ -152,6 +152,40 @@ export function preparationInputString({
 }
 
 /**
+ Requires an explicit textual identity or note while preserving its original spelling.
+
+ @internal
+
+ @param value - owned parsed text candidate
+
+ @param path - authored schema position for the affected input
+
+ @returns Original nonblank text without trimming the returned value
+
+ @throws PreparationRootError when text is absent or contains only whitespace
+
+ @example
+ ```ts
+ const locator = preparationInputNonblankString({ value, path });
+ ```
+ */
+export function preparationInputNonblankString({
+  value,
+  path,
+}: PreparationInputField): string {
+  /**
+   Whitespace is inspected only to reject absent meaning, not to rewrite evidence.
+   */
+  const text = preparationInputString({
+    value,
+    path,
+  });
+  if (text.trim() === '')
+    refusePreparationInputShape(path);
+  return text;
+}
+
+/**
  Keeps explicit evidence flags distinct from absent values and truthy coercions.
 
  @internal

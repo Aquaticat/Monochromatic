@@ -6,6 +6,7 @@ import {
   preparationInputFields,
   preparationInputInteger,
   preparationInputItems,
+  preparationInputNonblankString,
   preparationInputProperty,
   preparationInputRecord,
   preparationInputString,
@@ -62,6 +63,11 @@ await describe({ name: 'closed preparation input values', children: [
   ...['', 'cat', ' 猫\n'].map(value => it({ name: `preserves exact text ${JSON.stringify(value)}`, fn: async () => {
     expect(preparationInputString({ value, path })).toBe(value);
   } })),
+  it({ name: 'requires nonblank labels without trimming valid spelling', fn: async () => {
+    expect(preparationInputNonblankString({ value: ' cat ', path })).toBe(' cat ');
+    refused(() => preparationInputNonblankString({ value: '', path }));
+    refused(() => preparationInputNonblankString({ value: ' \n ', path }));
+  } }),
   it({ name: 'refuses text coercion', fn: async () => {
     refused(() => preparationInputString({ value: 1, path }));
   } }),
