@@ -639,10 +639,27 @@ The R2 throwaway bridge passes native probes for persistent propagation-resistan
 synthetic/replayed events,
 late own-property overrides,
 composites and proxy refusal.
-It is not a production fix or qualification.
-No production signal change has been made yet.
-Current full-suite coverage,
-revised guard qualification and scoped evidence cleanup remain required.
+It is not qualification.
+`33391202b` adds the built-entry regressions;
+`devtest-bMMex9` records six designated ordinary assertion failures before remediation.
+`2b5f8aebd` introduces an owned native signal,
+a persistent propagation-resistant registration view,
+scoped disposal and awaiting-owner checks for unreadable state.
+Its fresh build/bootstrap/types/focused tests pass.
+Full lint then reports 41 layout/TSDoc warnings,
+eight source-rule errors and known TypeScript tuple-summary omission warnings.
+`b4e819209` replaces extracted unbound functions with captured native descriptors,
+uses protocol-object callbacks and models subscription absence with an optional property.
+The native formatter finishes in private overlay `devformat-L65qMQ`,
+reporting zero warnings/errors and changing only `producer-input-comparison-signal.ts`.
+`signal-format-audit-9mXcsB` verifies matching executable/type ASTs under recorded normalization
+and matching comment text under line-whitespace normalization,
+with boolean and tagged-template positive controls.
+The hash-checked transfer changes only that file and preserves its mode.
+This remains provisional:
+current full-suite coverage,
+analysis-integrity checks,
+revised guard/native qualification and scoped evidence cleanup remain required.
 
 ## Earlier verified checkpoint: task50
 

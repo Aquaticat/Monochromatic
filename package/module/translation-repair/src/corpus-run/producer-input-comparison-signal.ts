@@ -99,7 +99,8 @@ export function ownProducerInputComparisonSignal(source: AbortSignal): ProducerI
     /**
      Native accessor invocation is unknown until its primitive result is checked.
      */
-    const aborted: unknown = NATIVE_ABORTED.get?.call(source);
+    const aborted: unknown = NATIVE_ABORTED.get
+      ?.call(source);
     if ((typeof aborted) !== 'boolean')
       throw new ProducerInputComparisonError({ kind: 'contract' });
     return aborted;
@@ -117,9 +118,13 @@ export function ownProducerInputComparisonSignal(source: AbortSignal): ProducerI
   function forwardNativeCancellation(): void {
     try {
       if (readNativeState()) {
-        if (NATIVE_CONTROLLER_METHODS.abort.value === undefined)
+        if (NATIVE_CONTROLLER_METHODS.abort
+          .value
+          === undefined)
           throw new ProducerInputComparisonError({ kind: 'contract' });
-        NATIVE_CONTROLLER_METHODS.abort.value.call(controller);
+        NATIVE_CONTROLLER_METHODS.abort
+          .value
+          .call(controller);
       }
     }
     catch (error) {
@@ -165,9 +170,13 @@ export function ownProducerInputComparisonSignal(source: AbortSignal): ProducerI
     try {
       if (state.subscription !== undefined) state.subscription[Symbol.dispose]();
       else {
-        if (NATIVE_EVENT_METHODS.removeEventListener.value === undefined)
+        if (NATIVE_EVENT_METHODS.removeEventListener
+          .value
+          === undefined)
           throw new ProducerInputComparisonError({ kind: 'contract' });
-        NATIVE_EVENT_METHODS.removeEventListener.value.call(
+        NATIVE_EVENT_METHODS.removeEventListener
+          .value
+          .call(
           source,
           'abort',
           forwardNativeCancellation
@@ -208,10 +217,15 @@ export function ownProducerInputComparisonSignal(source: AbortSignal): ProducerI
       options?: Readonly<AddEventListenerOptions> | boolean
     ): void {
       if ((type !== 'abort') || (listener !== forwardNativeCancellation)
-        || ((typeof options) !== 'object') || (options === null)
-        || (NATIVE_EVENT_METHODS.addEventListener.value === undefined))
+        || ((typeof options) !== 'object')
+        || (options === null)
+        || (NATIVE_EVENT_METHODS.addEventListener
+          .value
+          === undefined))
         throw new ProducerInputComparisonError({ kind: 'contract' });
-      NATIVE_EVENT_METHODS.addEventListener.value.call(
+      NATIVE_EVENT_METHODS.addEventListener
+        .value
+        .call(
         source,
         type,
         listener,
@@ -244,9 +258,13 @@ export function ownProducerInputComparisonSignal(source: AbortSignal): ProducerI
       options?: Readonly<EventListenerOptions> | boolean
     ): void {
       if ((type !== 'abort') || (listener !== forwardNativeCancellation)
-        || (NATIVE_EVENT_METHODS.removeEventListener.value === undefined))
+        || (NATIVE_EVENT_METHODS.removeEventListener
+          .value
+          === undefined))
         throw new ProducerInputComparisonError({ kind: 'contract' });
-      NATIVE_EVENT_METHODS.removeEventListener.value.call(
+      NATIVE_EVENT_METHODS.removeEventListener
+        .value
+        .call(
         source,
         type,
         listener,
