@@ -22,19 +22,19 @@ function it(options: Parameters<typeof createTest>[0]): ReturnType<typeof create
 const l = tagged({ tag: 'root-input-owner-test' });
 const digest = (content: string) => hashContent({ content });
 const uniqueHeading = (index: number) => `## Unique${String.fromCodePoint(65 + Math.floor(index / 26), 65 + (index % 26))}section`;
-async function fixture({ repeatedQuestions = false, implicitFirst = false, targetNamespace = false, emptyTarget = false, selectedDefinitions = false }: { readonly repeatedQuestions?: boolean; readonly implicitFirst?: boolean; readonly targetNamespace?: boolean; readonly emptyTarget?: boolean; readonly selectedDefinitions?: boolean } = {}) {
+async function fixture({ repeatedQuestions = false, implicitFirst = false, targetNamespace = false, emptyTarget = false, selectedDefinitions = false, asymmetricDefinitions = false }: { readonly repeatedQuestions?: boolean; readonly implicitFirst?: boolean; readonly targetNamespace?: boolean; readonly emptyTarget?: boolean; readonly selectedDefinitions?: boolean; readonly asymmetricDefinitions?: boolean } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'root-input-fixture-'));
   const sourceText = `${Array.from({ length: 41 }, (_, index) => {
     const heading = targetNamespace || emptyTarget ? uniqueHeading(index) : repeatedQuestions ? '## 猫' : `## 猫 ${index}`;
     return implicitFirst && (index === 40) ? heading : `${heading}\n\n${repeatedQuestions ? '猫猫。' : `猫猫 ${index}。`}`;
-  }).join('\n\n')}\n\n## Notes\n\n[^1]: 猫注。\n`; 
+  }).join('\n\n')}\n\n## Notes\n\n[^1]: 猫注。\n${asymmetricDefinitions ? '\n[^2]: 第二猫注。\n' : ''}`; 
   const sourceRaw = sourceText.replaceAll('\n', '\r\n');
   const archiveText = `(To-Do)\n\n${Array.from({ length: 41 }, (_, index) => {
     if (emptyTarget && (index === 39)) return '';
     const heading = targetNamespace || emptyTarget ? uniqueHeading(index) : repeatedQuestions ? '## Cat' : `## Cat ${index}`;
     const body = implicitFirst && (index === 40) ? heading : `${heading}\n\n${repeatedQuestions ? 'Cat is non‑binary.' : `Cat ${index} is non‑binary.`}`;
     return targetNamespace && (index === 20) ? `${body}\n\n## Extra namespace\n\n[^outside]: Unpaired target note.` : body;
-  }).join('\n\n')}\n\n## Notes\n\n[^1]: Cat note.\n`; 
+  }).join('\n\n')}\n\n## Notes\n\n${asymmetricDefinitions ? 'An ordinary cat note.\n\n' : ''}[^1]: Cat note.\n`; 
   const targetText = passArchiveText({ text: archiveText, l });
   const source = parseDocument({ text: sourceText });
   const target = parseDocument({ text: targetText });
@@ -258,6 +258,28 @@ const claimChanges: readonly { readonly name: string; readonly kind: Preparation
 ];
 
 const children = [
+  it({ name: 'preserves asymmetric definition-order indexes through root JSON serialization', fn: async () => {
+    await using f = await fixture({ asymmetricDefinitions: true });
+    const inputs = await accepted(f.request());
+    const definition = inputs.registry.find(record => record.roles.includes('footnote-definitions'));
+    if (definition?.dispatch !== 'queried') throw new Error('Expected queried definition fixture');
+    expect(definition.definitionDomain.sourceIds).toHaveLength(2);
+    expect(definition.definitionDomain.targetIds).toHaveLength(1);
+    expect(definition.question.sourceBlocks).toHaveLength(3);
+    expect(definition.question.targetBlocks).toHaveLength(3);
+    const serializedOrder: unknown = JSON.parse(JSON.stringify(definition.freeOrder));
+    expect(serializedOrder).toEqual({ source: [1, 2], target: [2] });
+    const serializedInputs: unknown = JSON.parse(JSON.stringify(inputs));
+    expect(serializedInputs).toEqual(inputs);
+  } }),
+  it({ name: 'persists explicit empty definition-order arrays for ordinary queried parents', fn: async () => {
+    await using f = await fixture();
+    const inputs = await accepted(f.request());
+    const ordinary = inputs.registry.find(record => record.dispatch === 'queried' && record.definitionDomain.sourceIds.length === 0 && record.definitionDomain.targetIds.length === 0);
+    if (ordinary?.dispatch !== 'queried') throw new Error('Expected ordinary queried fixture');
+    const serializedOrder: unknown = JSON.parse(JSON.stringify(ordinary.freeOrder));
+    expect(serializedOrder).toEqual({ source: [], target: [] });
+  } }),
   ...claimChanges.map(({ name, kind, change }) => it({ name: `binds independent native root claim ${name}`, fn: async () => {
     await using f = await fixture();
     change(f);
