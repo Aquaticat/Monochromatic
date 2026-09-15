@@ -254,4 +254,13 @@ GitHub issue #521 tracks checking installability of the remaining published pack
    so the first publish of a new name can reach the old registry process and fail with `E403`.
    Run 34922532212 (2026-09-15) got `403 Forbidden` for three new names at 02:48:23 to 02:48:29
     and published the fourth at 02:48:43.
-   Recovery is `gh workflow run pnpr-publish.yml --raw-field only='<names>'` once the redeploy finishes.
+   Since commit `fad49abcc`,
+    `publishWithForbiddenRetry` (`package/config/pnpr/src/publish-retry.ts`) retries an `E403` publish
+    every 20 seconds for 5 minutes from run start,
+    with a fresh workload token per attempt;
+    other failures,
+    and refusals after that window,
+    still fail at once.
+   Manual recovery,
+    if a redeploy ever outlasts the window,
+    is `gh workflow run pnpr-publish.yml --raw-field only='<names>'`.

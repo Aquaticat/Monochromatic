@@ -161,9 +161,23 @@ it is complete.
 Open follow-ups for the owner:
 
 - Run `git cli-git trust` so `mono/dependent-version-bump` activates locally.
-- Optional:
-  make `pnpr-publish` retry `E403` for names new in `config.yaml`,
+- Issue #521 (installability of every published package) is still open,
+  deferred by the owner's earlier verification choice.
+
+Done after the rollout:
+
+- `fad49abcc` makes `pnpr-publish` retry `E403` every 20 seconds for 5 minutes from run start
+  (`package/config/pnpr/src/publish-retry.ts`),
   so adding a package no longer needs a manual re-dispatch.
-- Issue #521 (installability of every published package) is still open.
-- The uncommitted root `mise.toml` diff is local install-layout noise;
-  a normal `pnpm install` followed by `mise run file-enforcer` removes it.
+  Unit tests cover success,
+  one retry,
+  a non-`E403` failure,
+  the deadline cap,
+  and an expired window;
+  removing the `E403` guard failed the non-`E403` test (`expected 2 to equal 1`).
+  Run 34923170225 loaded the new code and reported `0 of 125 package versions are missing`.
+  The retry path itself has not met a live `E403` yet;
+  the next package added to `config.yaml` is its first real exercise.
+- The root `mise.toml` noise came from three empty `node_modules/.bin` directories the forced relink left behind;
+  a normal `pnpm install` did not remove them.
+  Removing the empty directories and rerunning `mise run file-enforcer` left `mise.toml` clean.
