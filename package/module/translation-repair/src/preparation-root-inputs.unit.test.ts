@@ -267,17 +267,23 @@ const children = [
     expect(definition.definitionDomain.targetIds).toHaveLength(1);
     expect(definition.question.sourceBlocks).toHaveLength(3);
     expect(definition.question.targetBlocks).toHaveLength(3);
-    const serializedOrder: unknown = JSON.parse(JSON.stringify(definition.freeOrder));
+    const orderPath = join(f.dir, 'definition-order.json');
+    await writeFile(orderPath, JSON.stringify(definition.freeOrder), { mode: 0o600, flag: 'wx' });
+    const serializedOrder: unknown = JSON.parse(await readFile(orderPath, 'utf8'));
     expect(serializedOrder).toEqual({ source: [1, 2], target: [2] });
-    const serializedInputs: unknown = JSON.parse(JSON.stringify(inputs));
+    const inputsPath = join(f.dir, 'unqualified-inputs.json');
+    await writeFile(inputsPath, JSON.stringify(inputs), { mode: 0o600, flag: 'wx' });
+    const serializedInputs: unknown = JSON.parse(await readFile(inputsPath, 'utf8'));
     expect(serializedInputs).toEqual(inputs);
   } }),
   it({ name: 'persists explicit empty definition-order arrays for ordinary queried parents', fn: async () => {
     await using f = await fixture();
     const inputs = await accepted(f.request());
-    const ordinary = inputs.registry.find(record => record.dispatch === 'queried' && record.definitionDomain.sourceIds.length === 0 && record.definitionDomain.targetIds.length === 0);
+    const ordinary = inputs.registry.find(record => (record.dispatch === 'queried') && (record.definitionDomain.sourceIds.length === 0) && (record.definitionDomain.targetIds.length === 0));
     if (ordinary?.dispatch !== 'queried') throw new Error('Expected ordinary queried fixture');
-    const serializedOrder: unknown = JSON.parse(JSON.stringify(ordinary.freeOrder));
+    const orderPath = join(f.dir, 'ordinary-order.json');
+    await writeFile(orderPath, JSON.stringify(ordinary.freeOrder), { mode: 0o600, flag: 'wx' });
+    const serializedOrder: unknown = JSON.parse(await readFile(orderPath, 'utf8'));
     expect(serializedOrder).toEqual({ source: [], target: [] });
   } }),
   ...claimChanges.map(({ name, kind, change }) => it({ name: `binds independent native root claim ${name}`, fn: async () => {
