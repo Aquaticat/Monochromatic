@@ -63,6 +63,12 @@ export {
   verifyPreparationInputParentRelations,
   verifyPreparationInputParentText,
 } from './preparation-input-read-parent-relations.ts';
+export { preparationInputProtocol, } from './preparation-input-read-protocol.ts';
+export {
+  preparationInputNumberedBlock,
+  preparationInputNumberedBlocks,
+  preparationInputQuestion,
+} from './preparation-input-read-question.ts';
 export {
   PreparationRootError,
   type PreparationRootFailure,

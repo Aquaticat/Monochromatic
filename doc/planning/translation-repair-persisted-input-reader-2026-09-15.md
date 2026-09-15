@@ -307,10 +307,31 @@ See [GitHub CLI JSON control escapes](../troubleshooting/github-cli-json-control
 Durable records remain in `legacy-key-observation/` and the separate `gh-json-observation/`
 under the reader evidence root.
 
-Next are the shared historical-key helper,
-explicit numbered-block decoding,
-and literal comparison against the existing native protocol constructor.
-Return frozen factory-owned protocol values,
-never unknown supplied subtrees or a handwritten parallel protocol.
+The shared `blockPairingQuestionKey` extraction is committed and used by production.
+Its direct and delegated tests retain all pre-extraction golden outputs.
+Key R1 passes build,
+native parity,
+bootstrap,
+types and tests;
+its fixture-local offset declaration is then scoped through a numeric fold.
+Key R2 passes the complete checkpoint,
+including full-scope lint.
+`question-key-native-4zLMwl` matches all eleven original result records and protocols.
+The legacy ambiguity is preserved rather than silently repaired.
+
+`gh-doc-check-jDLrKG` validates the diagnosis,
+hub,
+then-current planning record and formatted issue draft.
+The editorial issue update succeeds without a repeated mutation.
+Its immediate public GET still contains the old body;
+that response's cause is not diagnosed.
+A subsequent fresh public read matches the formatted body exactly and confirms #542 remains open.
+Both responses and the original submission remain retained.
+
+Explicit numbered-block and complete-question decoders are now the next checkpoint.
+The protocol reader walks supplied JSON against freshly generated native values,
+checks closed object keys and array extent/order,
+and freezes only the factory-owned result.
+It returns no unknown supplied subtree and does not interpret JSON Schema or duplicate messages.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.
