@@ -17,6 +17,8 @@ import type {
 
 /**
  Projects native node identity without carrying unrelated node text into population accounting.
+
+ @internal
  
  @param node - node reconstructed from a complete pinned document
  
@@ -40,6 +42,8 @@ export function preparationRootNode(node: DocumentNode,): PreparationRootNode {
 
 /**
  Reconstructs one parent without changing native section, insertion or protected-original semantics.
+
+ @internal
  
  @param entryId - current corpus entry
  
@@ -162,6 +166,8 @@ export function preparationRootParent({
 
 /**
  Preserves the frozen full-population projection without widening its retained prose scope.
+
+ @internal
  
  @param parent - independently reconstructed parent
  

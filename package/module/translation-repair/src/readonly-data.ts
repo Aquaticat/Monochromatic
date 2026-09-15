@@ -23,6 +23,8 @@
  Homomorphic on purpose. Mapping over `keyof Value` preserves arrays and
  tuples as readonly arrays and readonly tuples rather than flattening them
  into objects keyed by index.
+
+ @internal
  
  @example
  ```ts

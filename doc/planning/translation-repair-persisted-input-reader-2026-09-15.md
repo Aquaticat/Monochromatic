@@ -389,6 +389,45 @@ whose schema type remains writable.
 The helper now receives only primitive source/target block counts,
 not protocol data;
 no mutation annotation or schema-type weakening is introduced.
-Registration R2 verification remains pending.
+Registration R2 passes the complete checkpoint.
+`registration-native-7rJcFl` repeats the actual 45-record and deep-freezing checks.
+
+### Whole-root relationship implementation boundary
+
+The final byte-reader result will reuse `DeepReadonlyData` for its DTO view,
+while retaining runtime freezing checks;
+the annotation alone is not immutability evidence.
+All root relationships are limited to represented data,
+not independent corpus reconstruction or semantic review.
+
+A scoped review confirms these required distinctions:
+
+- Raw sides follow listed-entry order and source-before-archive order,
+  with missing-side exclusions rather than fabricated empty documents.
+- Selected entries and parents retain their different native and frozen ordering.
+- Every represented-entry population parent,
+  not merely selected parents,
+  needs text,
+  node-hash and protection consistency checks.
+- Registry roles,
+  domains,
+  dispatch and local numbering derive from selection and population,
+  never from registry claims alone.
+- Unaligned nodes are absent by identity from aligned parents,
+  not necessarily geometrically disjoint.
+- Alias groups derive from exact question bytes before hashing.
+- The selection reference projection contains `path` and `hash`,
+  not per-reference `bytes`.
+  The review suggestion to compare selection reference extents is therefore inapplicable;
+  no absent field is invented.
+
+Protection projection should have a shared pure geometry owner rather than importing the note classifier.
+Existing production parent/node projection internals are exposed through their owned barrel under `@internal`
+so native pre-extraction geometry outputs can be captured without a test-only API.
+The actual selected entries have no original-policy spans;
+only one unselected population parent has intersections,
+and the observed population has no zero-width nodes.
+Those measurements cannot substitute for synthetic positive geometry controls.
+Geometry extraction and whole-root relationships are not yet implemented.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.

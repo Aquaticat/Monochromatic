@@ -80,6 +80,7 @@ export {
   preparationInputQuestionAliases,
   preparationInputUnalignedDefinitions,
 } from './preparation-input-read-scope.ts';
+export type { DeepReadonlyData, } from './readonly-data.ts';
 export { preparationInputRegistration, } from './preparation-input-read-registration.ts';
 export {
   preparationInputRegistrationIdentity,

@@ -1,6 +1,11 @@
 //region Owning semantic preparation inputs, not phase or writer approval
 
 export { buildPreparationRootInputs, } from './build-preparation-root-inputs.ts';
+export {
+  preparationRootNode,
+  preparationRootParent,
+  preparationRootPopulationParent,
+} from './preparation-root-parent.ts';
 export type {
   PreparationRootInputs,
   PreparationRootExclusion,
