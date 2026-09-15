@@ -2,7 +2,7 @@
 
 ## Symptom
 
-The comparison's initial signal-state check can return a caller-selected `storage` failure and directory
+The pre-fix comparison's initial signal-state check could return a caller-selected `storage` failure and directory
 before preflight creates any namespace.
 A genuine `AbortController.signal` is sufficient:
 an own `aborted` getter throws a `ProducerInputComparisonError` carrying foreign operation metadata.
@@ -181,7 +181,7 @@ recorded in `owned-comparison-signal-probe-r2-cYslXA`:
 
 Failure catalog:
 
-- Current comparison forwards same-class error metadata from the borrowed live-state getter.
+- The pre-fix comparison forwards same-class error metadata from the borrowed live-state getter.
 - `AbortSignal.any` reads a throwing own getter during construction.
 - A constructed composite re-reads a subsequently replaced source getter.
 - The first once-only bridge candidate loses genuine cancellation after a synthetic event.
@@ -202,7 +202,31 @@ Scoped disposal uses the native removal path.
 Event-time unreadable state becomes a retained local failure flag,
 not a thrown event-callback value or invented cancellation.
 The awaiting comparison owner checks that flag before reporting success
-and retains fixed contract-refusal metadata when observation fails.
+and retains fixed contract-refusal metadata when observation fails without proven cancellation.
+The current predicate at
+`package/module/translation-repair/src/corpus-run/producer-input-comparison-signal.ts:162`
+preserves actual cancellation priority:
+
+```ts
+// package/module/translation-repair/src/corpus-run/producer-input-comparison-signal.ts
+if (state.unreadable && (!ownedSignal.aborted))
+```
+
+The outer failure path at
+`package/module/translation-repair/src/corpus-run/producer-input-comparison.ts:351`
+releases before its fixed warning and terminal snapshot:
+
+```ts
+// package/module/translation-repair/src/corpus-run/producer-input-comparison.ts
+cancellation[Symbol.dispose]();
+if (cancellation.hasObservationFailure())
+  pl.warn('cancellation observation failed; primary comparison failure remains retained');
+```
+
+Primary kind,
+message and owned directory remain authoritative.
+The snapshot at line 362 follows the warning;
+cleanup observation does not retrofit telemetry into synchronized records.
 Native interruption registration now completes before spawn;
 early cancellation is forwarded only after the actual-close observer is installed.
 The prototype alone did not establish these operation-level guarantees.
@@ -213,7 +237,15 @@ It includes the six original red assertions,
 the separate pre-spawn setup regression,
 current full-suite and read-only lint checks,
 signal and non-logger guard controls,
-and actual CLI runs using frozen parent runtime `UJeHke`.
+and actual CLI runs using separately identified frozen runtimes.
+`UJeHke` predates the terminal correction.
+R6 runtime `frozen-runtime-m1aVqu` verifies that correction through actual Task47 execution,
+including combined unreadability/cancellation and subscription-disposer faults.
+The subsequent `@internal` barrel exports and warning-only callback-failure control
+are requalified separately;
+R6 evidence is not relabeled as their artifact proof.
+Durable copies and original-path mappings are retained under
+`package/module/translation-repair/node_modules/.monochromatic/comparison-evidence/`.
 The tests and scoped reviews do not constitute whole-change review.
 
 Supported input and lifecycle assumptions must remain explicit.

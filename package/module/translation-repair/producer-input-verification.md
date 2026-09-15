@@ -41,7 +41,11 @@ A fixture bootstrap is not qualification through the actual input CLI.
 ## Comparison qualification boundaries
 
 Task54 closes callback observation and failure-retention integration.
-Task62 owns live-signal observation and pre-spawn interruption registration.
+Task62 owns live-signal observation,
+pre-spawn interruption registration and terminal cleanup-warning snapshots.
+The dedicated barrel also exports the existing cancellation internals,
+marked `@internal`,
+with a built-artifact consumer control.
 Task51 checks the non-logger boundaries through the dedicated built entry:
 
 - Input ownership and authentication:
@@ -120,12 +124,17 @@ It identifies frozen artifacts,
 private qualification source hashes,
 full-suite results,
 retention manifests and cleanup evidence.
+Durable uncommitted evidence lives under package `node_modules/.monochromatic/`;
+original launch-bound paths remain unchanged,
+with source-to-copy mappings for retained temporary evidence.
 The [comparison work record](../../../doc/planning/translation-repair-preparation-plan-and-journal-2026-09-14.md)
 separately identifies the current comparison runtime and its native telemetry cases.
 That verification reuses the unchanged qualified Task47 bootstrap/application profile,
 not its old parent-comparison implementation.
 It covers matched/mismatched bytes,
-throwing callbacks and cancellation after successful child completion;
+throwing callbacks,
+native cancellation after unreadable observations,
+cleanup-disposer faults and cancellation after successful child completion;
 it does not replace the broader lifecycle qualification inventory.
 The native platform and tooling investigations are in
 [`translation-repair-native-runtime-bundling.md`](../../../doc/troubleshooting/translation-repair-native-runtime-bundling.md).
