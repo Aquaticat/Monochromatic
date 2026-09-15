@@ -6,8 +6,8 @@ import {
   PreparationRootError,
 } from '../dist/final/node/preparation-input-read.mjs';
 
-const text = JSON.stringify({ cats: ['猫', '🐈'], note: 'private fixture q7z9k2' });
-const content = new TextEncoder().encode(text);
+const fixtureText = JSON.stringify({ cats: ['猫', '🐈'], note: 'private fixture q7z9k2' });
+const content = new TextEncoder().encode(fixtureText);
 
 function failure(fn: () => unknown): PreparationRootError {
   try {
@@ -32,7 +32,9 @@ await describe({ name: 'owned preparation input JSON', concurrency: 1, children:
   } }),
   it({ name: 'copies native byte views without own state or iterator access', fn: async ctx => {
     const borrowed = new Uint8Array(content);
-    const accessor = ctx.sinon.spy(function refusedAccessor(): never { throw new Error('private accessor q7z9k2'); });
+    const accessor = ctx.sinon.spy(function refusedAccessor(): never {
+      throw new Error('private accessor q7z9k2');
+    });
     Object.defineProperties(borrowed, {
       byteLength: { get: accessor },
       length: { get: accessor },
@@ -72,7 +74,7 @@ await describe({ name: 'owned preparation input JSON', concurrency: 1, children:
     expect(Object.hasOwn(error, 'cause')).toBe(false);
   } }),
   it({ name: 'refuses malformed UTF-8 without replacement characters', fn: async () => {
-    const error = failure(() => preparationInputJson(new Uint8Array([0xc3, 0x28])));
+    const error = failure(() => preparationInputJson(new Uint8Array([0xC3, 0x28])));
     expect(error.kind).toBe('input-bytes');
   } }),
   ...[
@@ -89,7 +91,7 @@ await describe({ name: 'owned preparation input JSON', concurrency: 1, children:
     expect(Object.hasOwn(error, 'cause')).toBe(false);
   } })),
   it({ name: 'compares canonical raw bytes rather than BOM-stripped text', fn: async () => {
-    const withBom = new Uint8Array([0xef, 0xbb, 0xbf, ...content]);
+    const withBom = new Uint8Array([0xEF, 0xBB, 0xBF, ...content]);
     const error = failure(() => preparationInputJson(withBom));
     expect(error.kind).toBe('input-json');
   } }),

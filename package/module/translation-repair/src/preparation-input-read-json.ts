@@ -76,7 +76,10 @@ export function preparationInputBytes(content: ForeignBorrowed<Uint8Array>): Uin
  */
 function preparationInputText(content: Uint8Array<ArrayBuffer>): string {
   try {
-    return new TextDecoder('utf-8', { fatal: true }).decode(content);
+    return new TextDecoder(
+      'utf-8',
+      { fatal: true },
+    ).decode(content);
   }
   catch (error) {
     // Input text and thrown metadata must not enter the refusal.
@@ -101,7 +104,10 @@ function preparationInputText(content: Uint8Array<ArrayBuffer>): string {
  const value = preparationInputValue({ text, content: owned });
  ```
  */
-function preparationInputValue({ text, content }: {
+function preparationInputValue({
+  text,
+  content,
+}: {
   readonly text: string;
   readonly content: Uint8Array<ArrayBuffer>;
 }): unknown {
@@ -114,7 +120,12 @@ function preparationInputValue({ text, content }: {
      Byte equality also rejects a removed UTF-8 BOM without relying on decoded-string equality.
      */
     const serialized = JSON.stringify(value);
-    if ((typeof serialized === 'string') && Buffer.from(serialized, 'utf8').equals(content))
+    if ((typeof serialized) !== 'string')
+      throw new PreparationRootError({ kind: 'input-json' });
+    if (Buffer.from(
+      serialized,
+      'utf8',
+    ).equals(content))
       return value;
   }
   catch (error) {
@@ -156,12 +167,17 @@ export function preparationInputJson(content: ForeignBorrowed<Uint8Array>): Prep
   /**
    Parsing remains untyped and accepts no alternate serialized spelling.
    */
-  const value = preparationInputValue({ text, content: owned });
+  const value = preparationInputValue({
+    text,
+    content: owned,
+  });
   return {
     value,
     identity: Object.freeze({
       bytes: owned.byteLength,
-      sha256: createHash('sha256').update(owned).digest('hex'),
+      sha256: createHash('sha256')
+        .update(owned)
+        .digest('hex'),
     }),
   };
 }
