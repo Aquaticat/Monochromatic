@@ -105,7 +105,10 @@ export function verifyPreparationInputParentRelations({
       declared,
       selected,
     } = membership;
-    if ((declared.length !== selected.length) || (!declared.every(function matches(nodeId, index): boolean {
+    if ((declared.length !== selected.length) || (!declared.every(function matches(
+      nodeId,
+      index,
+    ): boolean {
       return nodeId === selected[index];
     })))
       throw new PreparationRootError({
