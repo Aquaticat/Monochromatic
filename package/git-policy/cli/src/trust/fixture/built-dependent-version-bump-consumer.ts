@@ -167,6 +167,16 @@ export async function verifyDependentVersionBump({ env, }: Readonly<{
       version: '1.1.0',
     },),
   );
+  // Staging a hand bump must succeed: `git add` cannot apply the ripple, so the policy leaves it to the commit.
+  await execute({
+    command: 'git',
+    args: [
+      'add',
+      'package/module/base/package.json',
+    ],
+    cwd: repository,
+    env,
+  },);
   await execute({
     command: 'git',
     args: [
