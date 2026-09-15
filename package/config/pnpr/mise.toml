@@ -1,3 +1,36 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:js"]
+extends = "build:js"
+
+[tasks."build:js:node"]
+extends = "build:js:node"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."format:oxlint"]
+extends = "format:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+
+[tasks."test:unit"]
+extends = "test:unit"
+depends = ["build"]
+
+[tasks.publish]
+description = "Publish every configured package version missing from pnpr (CI; needs id-token: write or PNPR_PUBLISH_TOKEN)"
+run = "node src/publish-missing-versions.ts"
+
+[tasks."publish:dry-run"]
+description = "Build and pack every package version missing from pnpr without requesting a token or publishing"
+run = "node src/publish-missing-versions.ts --dry-run"
+
 [tasks."build:image"]
 description = "Build the pnpr registry image locally with bounded podman resources (2 GiB memory, 2 CPUs)"
 run = "podman build --memory=2g --cpu-quota=200000 --tag localhost/config-pnpr:dev --file Containerfile ."

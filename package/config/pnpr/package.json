@@ -2,6 +2,17 @@
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/config-pnpr",
   "private": true,
-  "description": "Coolify deployment of the private pnpr npm registry serving @monochromatic-dev workspace packages.",
-  "type": "module"
+  "description": "Coolify deployment of the private pnpr npm registry serving @monochromatic-dev workspace packages, plus the CI script that publishes missing versions.",
+  "type": "module",
+  "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "nano-spawn": "catalog:",
+    "yaml": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-rolldown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:"
+  }
 }
