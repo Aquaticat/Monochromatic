@@ -224,5 +224,16 @@ Remaining:
       (`git cli-git check --policy mono/dependent-version-bump --all` reported
        `Unknown built-in policy ID: mono/dependent-version-bump` on 2026-09-15),
       so the owner must re-trust `cli-git.config.ts` before hand bumps ripple locally.
-5.   Task 8:
-      run the same ripple in the `npm-release.yml` changesets `version` job.
+
+Task 8 landed:
+ root task `changeset:version` runs `mise run //package/git-policy/repository:bump:dependents`
+ between `changeset version` and the lockfile refresh.
+The runner reads the worktree through `bump-dependents-worktree.ts`
+ and plans through `dependent-bump-workflow.ts`,
+ the module the policy also uses.
+`bump-dependents-worktree.unit.test.ts` covers a runtime and a bundled dependent in a disposable repository,
+ plus the no-bump case.
+A disposable clone of `main` with `@monochromatic-dev/module-or-throw` hand-bumped planned 19 dependents
+ and changed only their version lines.
+The CI job itself has not run the ripple yet;
+ the first Version Packages pull request after a pending changeset is its first real exercise.

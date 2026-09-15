@@ -125,6 +125,19 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
     a read-only check plus a `version:bump` command (two steps when forgotten),
     and adding paths without updating the worktree (leaves reverted versions in `git status`).
 - The changesets `version` job in `npm-release.yml` runs the same ripple before committing the Version Packages pull request.
+   Root task `changeset:version` runs `changeset version`,
+    then `mise run //package/git-policy/repository:bump:dependents`,
+    then `pnpm install --lockfile-only`.
+   The runner (`package/git-policy/repository/src/bump-dependents.ts`)
+    compares worktree manifests with `HEAD`
+    and shares its planning module (`dependent-bump-workflow.ts`) with the cli-git policy,
+    so both apply the same edge and publishability rules.
+   It imports only Node built-ins and sibling source files,
+    so the job needs no build step.
+   Evidence (2026-09-15, disposable clone of `main`):
+    hand-bumping `@monochromatic-dev/module-or-throw` and running the runner planned 19 dependent bumps,
+    and `git diff --shortstat` reported `20 files changed, 20 insertions(+), 20 deletions(-)`,
+    version lines only.
 - No CI backstop catches commits that bypass cli-git.
 
 ### Publishing workflow
