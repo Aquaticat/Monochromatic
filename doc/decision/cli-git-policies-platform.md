@@ -587,6 +587,22 @@ unexpected paths,
 and unsupported binary patches.
 Conflicts remain in temporary state and exit `2`.
 
+A commit normalizer may also add a tracked path the commit did not select
+(owner decision 2026-09-15,
+ recorded in `doc/decision/private-npm-registry.md`):
+policies read current-state tracked files through `trackedFiles`,
+and a patch naming one outside the candidate set adds it.
+The path must be unchanged in the real index,
+the private commit index,
+and the worktree,
+so the commit can take the fix and cli-git can write the landed bytes to the worktree afterwards without discarding local work.
+Otherwise the commit blocks with `patch-conflict` and names the remedies.
+The worktree write happens after the index install and is completed by startup recovery;
+a copy edited during the commit is kept with a warning.
+Rejected alternatives:
+a read-only check plus a separate bump command,
+and adding paths without updating the worktree.
+
 ## Automatic and direct fixes
 
 Matching pre-forward commit normalizers automatically apply fixes.
@@ -704,6 +720,14 @@ Auto-push remains fixed behavior later in the staged lifecycle.
 `forbidden-root-context` runs before commit and on direct check.
 It rejects a root `CONTEXT.md` candidate.
 It is the first repo plugin migration and proves the minimal finding path.
+
+### Dependent version bump
+
+`dependent-version-bump` runs before commit and on direct check.
+When a workspace manifest's `version` differs from `HEAD`,
+it patch-bumps every publishable dependent reached through runtime fields or bundled development imports,
+adding their manifests to the commit through tracked targets.
+It is the first policy that adds paths.
 
 ### Forbidden strings
 
