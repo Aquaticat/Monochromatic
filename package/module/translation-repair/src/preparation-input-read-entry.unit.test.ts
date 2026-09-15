@@ -111,12 +111,12 @@ await describe({ name: 'complete persisted entry decoder', children: [
   } }),
   ...[
     { from: '\u2011', to: '-', name: 'nonbreaking hyphen' },
-    { from: '\u00a0', to: ' ', name: 'nonbreaking space' },
-    { from: '\u202f', to: ' ', name: 'narrow nonbreaking space' },
-    { from: '\u00ad', to: '', name: 'soft hyphen' },
-    { from: '\u200b', to: '', name: 'zero-width space' },
+    { from: '\u00A0', to: ' ', name: 'nonbreaking space' },
+    { from: '\u202F', to: ' ', name: 'narrow nonbreaking space' },
+    { from: '\u00AD', to: '', name: 'soft hyphen' },
+    { from: '\u200B', to: '', name: 'zero-width space' },
     { from: '\u2060', to: '', name: 'word joiner' },
-    { from: '\ufeff', to: '', name: 'byte-order mark' },
+    { from: '\uFEFF', to: '', name: 'byte-order mark' },
   ].map(({ from, to, name }) => it({ name: `checks ${name} folding without shifting LF origins`, fn: async () => {
     const archiveText = `${from}\nCat${from}Tail\n${from}`;
     const targetText = `${to}\nCat${to}Tail\n${to}`;
