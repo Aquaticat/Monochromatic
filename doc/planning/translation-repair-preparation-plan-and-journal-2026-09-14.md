@@ -764,7 +764,40 @@ Current `AGENTS.md` XPT also requires the existing production cancellation inter
 marked `@internal` rather than withheld behind source-only exports.
 That export wiring and its built-consumer regression require a fresh artifact qualification.
 The R6 results remain bound to their recorded pre-export artifact.
-Task62 and task51 remain incomplete pending these checks and exact stopped-container cleanup.
+R7 passed its fresh build,
+bootstrap,
+types and focused tests,
+then stopped on a nullish-union test observation and statement-layout findings.
+`f5208cd12` requires an explicit termination signal before recording the test value.
+R8 passes normal/bootstrap builds,
+types,
+focused tests,
+full-scope lint,
+sealing and `devfull-vml2sf` with 632 expected and observed Node `26.8.2` entries.
+Its full-suite resource record reports no source changes or OOM events.
+`devlint256go1-Hq0WTn/task.out` reports zero warnings/errors without analysis-omission messages.
+
+Current frozen runtime `r8-frozen-runtime-rSoOtk` has 164 manifest-listed files.
+Its 28415-byte manifest SHA-256 is
+`3096cccffd8a5fda6ff7c89d6b15d1bef14470ce3d4648a7076ed3c776f13034`.
+Its native suites pass,
+including the warning-only throw cases in `r8-native-terminal-O81ww3`.
+Those preserve contract/mismatch/interruption metadata and return exactly `['warn']` telemetry,
+without adding snapshots to synchronized records.
+The independent recheck observes all twenty retained child container names absent
+and rehashes their available artifacts and captured stderr.
+`r8-final-audit-AiT0nQ` verifies the recognized entry closure,
+current Markdown and a relocated consumer exercising both existing internal factories.
+These checks are provider-free.
+
+GitHub issue [#527](https://github.com/Aquaticat/Monochromatic/issues/527)
+records the cancellation defect and committed repair separately from #509.
+Its exact body was read back with state `OPEN`;
+the changes have not been reviewed.
+R7/R8 source and verification bytes are copied into durable storage before final cleanup.
+The post-export mutation controls remain running.
+Task62 and task51 remain incomplete pending current sensitivity checks,
+final lint controls and exact stopped-container cleanup.
 
 ## Earlier verified checkpoint: task50
 
