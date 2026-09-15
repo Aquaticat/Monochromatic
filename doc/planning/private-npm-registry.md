@@ -294,6 +294,9 @@ Scope widened by the owner on 2026-09-14:
    so consumers route `@monochromatic-dev:registry=https://pnpr.c.aquati.cat/~monochromatic-dev/`.
 - Packing reuses the `npm-release.yml` install override `--config.dedupe-direct-deps=false`
    (`doc/troubleshooting/pnpm-pack-dedupe-direct-deps.md`).
+   Superseded 2026-09-15:
+    pnpm 12.3.4 ignores that flag,
+    so both workflows set `pnpm_config_dedupe_direct_deps=false` job-wide.
 - The dependent-bump policy reads the staged `version` of every publishable manifest,
    and treats a `devDependency` as bundled when non-test source files import it.
 - The pnpr deployment lives in a workspace directory under `package/config/`,
