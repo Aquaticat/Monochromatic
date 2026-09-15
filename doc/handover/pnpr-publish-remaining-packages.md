@@ -188,10 +188,79 @@ Open follow-ups for the owner:
   `config-stylelint` reported `TS7016` only because it ships no declarations,
   so JavaScript-only exports are now a note,
   not a problem.
-  Next:
-  full 125-package run,
-  then one issue plus minimum fix or reviewed exclusion per real failure,
-  and a results comment on #521.
+- #521 run 1 (125 packages):
+  97 clean,
+  28 flagged.
+  Issues and fixes:
+  #537 selection ignores `main`/`module` shadowed by `exports` and TypeScript-source `main`,
+   `module`,
+   and bin targets,
+   and tarballs drop TypeScript-source `main`/`module`
+   (`517d150f7`;
+    ten packages left `config.yaml`,
+    125 to 115);
+  #528,
+   #529,
+   #530 dev-script manifests pointed at `.js`/`.d.ts`
+   (`02809a5c6`);
+  #531 `module-hyperscript` stale `module` (`3e076a2f6`);
+  #532 `module-test` ships `@types/sinon` (`c563119ed`);
+  #533 `pi-plugin-advisor` declares the `pi-ai` peer (`c27de260f`);
+  #534 `pi-shared-model-selection` requires the `pi-coding-agent` peer (`7b5fdccd2`);
+  #535 `typeface-aquaticat` gains a `build` task and pnpr-publish installs `uv` (`31566eb0e`).
+  False positives,
+  no change:
+  `config-dprint` (JSON needs an import attribute)
+  and `stub-throwing` (throws by design).
+- Correction:
+  #536 excluded `oxlint-plugin-test-support` as repository-bound (`1ee33b53a`).
+  That was wrong:
+  it walks up from its install location to any `mise.toml` with `[monorepo]`,
+  and it imports inside such a consumer.
+  Reverted in `aa17c8b6e`,
+  #536 closed as not planned,
+  corrective comment on commit `1ee33b53a`.
+- Committing the dev-script fix showed `git add` of a hand bump was refused with `dependent-version-stale`
+  (pre-forward add cannot apply patches;
+   the policy defaults to error).
+  `d07b4b54c` limits pre-forward findings to `commit`;
+  the packed fixture now stages the bump first (`65e8d8e29`),
+  and removing the guard failed it with `git add package/module/base/package.json expected 0, got 1`.
+  cli-git re-trusted afterwards so the local bundle carries the change.
+- #521 run 2 (114 packages, after publishing):
+  104 clean.
+  The rest were the two false positives,
+  `backup-path` (a command script whose import parses arguments;
+   `node dist/final/node/index.mjs --help` prints usage),
+  and seven CLI packages whose root import fails but whose surface is a bin.
+- Bin check (`pnpr-521/bin-check.ts`,
+  every bin run with `--help`,
+  39 invocations):
+  #538 `dev-script-task-util` and #539 `mcp-mvm` shipped bins without their bundle chunks
+   (no `files` list;
+    `fcfed6f98`,
+    `4417efca8`);
+  #540 TypeScript-source bins (`spawn-claude`,
+   `watch-restart`) are dropped from tarballs (`9efbd971e`)
+   and both packages republished (`d8050e6a8`,
+    which rippled the eight `claude-code-plugin-*` packages).
+  Environment or design,
+  no change:
+  hook bins that read JSON from stdin,
+  `adb`,
+  terminal emulator,
+  real `git`,
+  or `sudo` requirements,
+  tools without `--help`,
+  and `deps-cube` needing a `pnpm-workspace.yaml` root.
+  Known limitation:
+  `claude-code-plugin-source` exports only TypeScript source,
+  but stays published because the plugins list it as a runtime dependency.
+- Next:
+  confirm pnpr-publish run 34927915986,
+  rerun the bin check and harness for the republished packages,
+  post the results comment on #521,
+  and close it.
 
 Done after the rollout:
 
