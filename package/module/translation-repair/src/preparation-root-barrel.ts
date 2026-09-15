@@ -20,6 +20,7 @@ export type {
 } from './preparation-root-population-model.ts';
 export type {
   PreparationRootDefinitionOrder,
+  PreparationRootParentIdentity,
   PreparationRootParentRole,
   PreparationRootQuestionAliases,
   PreparationRootRegistration,

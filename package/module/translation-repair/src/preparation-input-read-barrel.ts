@@ -80,6 +80,11 @@ export {
   preparationInputQuestionAliases,
   preparationInputUnalignedDefinitions,
 } from './preparation-input-read-scope.ts';
+export { preparationInputRegistration, } from './preparation-input-read-registration.ts';
+export {
+  preparationInputRegistrationIdentity,
+  type PreparationInputRegistrationField,
+} from './preparation-input-read-registration-identity.ts';
 export {
   PreparationRootError,
   type PreparationRootFailure,

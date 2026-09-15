@@ -358,5 +358,24 @@ Canonical `block/N` validation is shared with the existing node decoder rather t
 Definition IDs remain distinct from local numeric indexes;
 source and target identity domains remain independent.
 Alias membership and namespace coverage still require the whole-root relation checks.
+Domain R1 passes build,
+actual-artifact consumption,
+bootstrap,
+types,
+focused tests and full-scope lint.
+`domain-native-VakiX2` reads 45 definition domains,
+42 order records and the nonempty namespace's nine nodes.
+The actual alias collection is empty;
+synthetic positive tests exercise alias-group decoding.
+
+Complete registration variants are the next checkpoint.
+Their identity reader checks native role order and definition responsibility,
+while the queried branch checks native dispatch cardinality,
+shared historical key encoding,
+complete question digest,
+and side-local definition-index counts and bounds.
+Empty and implicit records reject question or outcome fields.
+Selection membership,
+complete-entry hashes and exact node-to-local-index correspondence remain whole-root checks.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.
