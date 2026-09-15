@@ -276,7 +276,7 @@ export async function verifyDependentVersionBump({ env, }: Readonly<{
       .includes('"changedPaths":["package/module/app/package.json","package/module/tool/package.json"]',)
       .toString(),
     expected: 'true',
-    context: `direct-fix ripple summary in ${fixed.stdout}`,
+    context: `direct-fix ripple summary; stdout=${fixed.stdout} stderr=${fixed.stderr}`,
   },);
   /**
    * Expected worktree manifests after the direct-fix ripple.

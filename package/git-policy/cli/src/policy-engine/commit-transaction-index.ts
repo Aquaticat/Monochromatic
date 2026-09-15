@@ -3,9 +3,9 @@
  
  @module
  */
-import { copyFile, } from 'node:fs/promises';
 import type { GitObjectId, } from '../api/policy-types.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
+import { copyIndexFile, } from './index-file-timestamps.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
 /**
@@ -90,15 +90,15 @@ export async function initializeCommitIndex({
   pathspecFileNul: boolean;
   stageIntoIndex?: boolean;
 }>,): Promise<void> {
-  await copyFile(
-    workspace.realIndexPath,
-    workspace.originalIndexPath,
-  );
+  await copyIndexFile({
+    sourcePath: workspace.realIndexPath,
+    destinationPath: workspace.originalIndexPath,
+  },);
   if (mode === 'index') {
-    await copyFile(
-      workspace.originalIndexPath,
-      workspace.commitIndexPath,
-    );
+    await copyIndexFile({
+      sourcePath: workspace.originalIndexPath,
+      destinationPath: workspace.commitIndexPath,
+    },);
     if (!stageIntoIndex)
       return;
   }
@@ -228,16 +228,16 @@ export async function preparePostIndex({
   intendedTreeOid: GitObjectId;
 }>,): Promise<void> {
   if (mode === 'index') {
-    await copyFile(
-      workspace.commitIndexPath,
-      workspace.postIndexPath,
-    );
+    await copyIndexFile({
+      sourcePath: workspace.commitIndexPath,
+      destinationPath: workspace.postIndexPath,
+    },);
     return;
   }
-  await copyFile(
-    workspace.originalIndexPath,
-    workspace.postIndexPath,
-  );
+  await copyIndexFile({
+    sourcePath: workspace.originalIndexPath,
+    destinationPath: workspace.postIndexPath,
+  },);
   await runTransactionGit({
     gitPath,
     cwd,

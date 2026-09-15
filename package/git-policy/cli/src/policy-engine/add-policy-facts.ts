@@ -5,7 +5,6 @@
  */
 import { randomUUID, } from 'node:crypto';
 import {
-  copyFile,
   mkdir,
   rm,
 } from 'node:fs/promises';
@@ -26,6 +25,7 @@ import {
   listPrivateIndexPaths,
 } from './commit-transaction-candidates.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
+import { copyIndexFile, } from './index-file-timestamps.ts';
 
 /**
  Add policy facts do not apply to current command.
@@ -188,10 +188,10 @@ export async function createAddPolicyFacts({
     'index',
   );
   try {
-    await copyFile(
-      realIndexPath,
-      indexPath,
-    );
+    await copyIndexFile({
+      sourcePath: realIndexPath,
+      destinationPath: indexPath,
+    },);
   }
   catch (error: unknown) {
     if (!(Error.isError(error,) && ('code' in error)
