@@ -11,8 +11,13 @@ task52 for finite root/phase materializers and task53 for current-attempt acquis
 Task54's callback-retention remediation and task55's shared logger utility are verified in their listed scopes.
 Task51's persisted-input comparison and task62's live-signal behavior are qualified
 within the recorded R8 artifact boundaries.
-Task52 is the next implementation owner;
-task53 waits for its finite root/phase materializers.
+Task52 coordinates the next implementation:
+task63 strict persisted-input decoding,
+task64 finite root registrations,
+task65 initial/conditional phases and task66 persistence/review/rebuild integration.
+Task53 waits for those finite root/phase materializers.
+The [reader implementation record](translation-repair-persisted-input-reader-2026-09-15.md)
+records current source constraints and rejected decoder assumptions.
 The changes have not been reviewed;
 GitHub issues #509 and #527 remain open.
 Task41 remains incomplete until those owners satisfy their own acceptance boundaries.
