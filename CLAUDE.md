@@ -794,6 +794,12 @@ CLN:
  not `git clone`,
  unless commit history matters.
 
+APQ:
+ cli-git auto-push also fires in third-party clones.
+Before committing in one,
+ run `git remote set-url --push origin DISABLED`;
+ a `pnpm/pnpm` prototype commit attempted an upstream push.
+
 BOP:
  `~` in Bash output = display substitution for home dir by `bash-output-filter` hook (display-only).
 Skip filter via blocklist trigger:
