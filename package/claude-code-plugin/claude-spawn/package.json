@@ -6,7 +6,7 @@
   "bin": {
     "cccs": "./bundle/node/index.mjs"
   },
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
@@ -20,10 +20,8 @@
   ],
   "private": true,
   "sideEffects": true,
-  "dependencies": {
-    "@monochromatic-dev/claude-code-plugin-source": "workspace:*"
-  },
   "devDependencies": {
+    "@monochromatic-dev/claude-code-plugin-source": "workspace:*",
     "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@types/node": "catalog:"

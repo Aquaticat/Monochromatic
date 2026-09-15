@@ -652,11 +652,10 @@ importers:
         version: 2.1.0
 
   package/claude-code-plugin/bash-output-filter:
-    dependencies:
+    devDependencies:
       '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
-    devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -668,11 +667,10 @@ importers:
         version: 26.4.1
 
   package/claude-code-plugin/claude-spawn:
-    dependencies:
+    devDependencies:
       '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
-    devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -684,11 +682,10 @@ importers:
         version: 26.4.1
 
   package/claude-code-plugin/correction-reminder:
-    dependencies:
+    devDependencies:
       '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
-    devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -700,11 +697,10 @@ importers:
         version: 26.4.1
 
   package/claude-code-plugin/guardrail:
-    dependencies:
+    devDependencies:
       '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
-    devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -722,11 +718,10 @@ importers:
         version: link:../../config/typescript
 
   package/claude-code-plugin/prompt-time:
-    dependencies:
+    devDependencies:
       '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
-    devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -738,11 +733,10 @@ importers:
         version: 26.4.1
 
   package/claude-code-plugin/session-start-housekeeping:
-    dependencies:
+    devDependencies:
       '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
-    devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -819,11 +813,10 @@ importers:
         version: 7.0.2
 
   package/claude-code-plugin/stop-reminder:
-    dependencies:
+    devDependencies:
       '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
-    devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -838,11 +831,10 @@ importers:
         version: 26.4.1
 
   package/claude-code-plugin/terminal-title:
-    dependencies:
+    devDependencies:
       '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
-    devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
