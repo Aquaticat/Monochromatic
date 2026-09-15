@@ -178,5 +178,12 @@ This records recovery,
 not a diagnosed cause for the command timeout.
 The proof roots and raw diagnostics are durable under package
 `node_modules/.monochromatic/preparation-input-reader/`.
+Following task67,
+reference attribution,
+raw-document identity and exclusion-field decoders are added with common entry/discriminant validation.
+They preserve omitted-body identities as data and do not open their locators.
+Their verification precedes the remaining complete-entry,
+parent,
+registration and whole-DTO relation work.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.

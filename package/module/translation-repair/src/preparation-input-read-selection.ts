@@ -1,5 +1,5 @@
 import { PreparationRootError, } from './preparation-root-error.ts';
-import { validParentEntry, } from './preparation-selection-records.ts';
+import { preparationInputEntryId, } from './preparation-input-read-identity.ts';
 import type {
   FrozenPreparationObligation,
   FrozenPreparationParent,
@@ -59,19 +59,10 @@ export function preparationInputSelectionParent({
    */
   const parent: FrozenPreparationParent = {
     parentId: preparationInputString(field('parentId')),
-    entryId: preparationInputString(field('entryId')),
+    entryId: preparationInputEntryId(field('entryId')),
     sourceIndex: preparationInputInteger(field('sourceIndex')),
     targetIndex: preparationInputInteger(field('targetIndex')),
   };
-  /**
-   One entry component is checked independently from the complete parent locator.
-   */
-  const { entryId } = parent;
-  if ((!validParentEntry(entryId)) || entryId.includes('/'))
-    throw new PreparationRootError({
-      kind: 'input-relations',
-      input: path,
-    });
   if (parent.parentId !== `${parent.entryId}/source-section/${String(parent.sourceIndex)}/target-section/${String(parent.targetIndex)}`)
     throw new PreparationRootError({
       kind: 'input-relations',

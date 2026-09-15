@@ -6,7 +6,9 @@ import {
   preparationInputFields,
   preparationInputInteger,
   preparationInputItems,
+  preparationInputLiteral,
   preparationInputNonblankString,
+  preparationInputObject,
   preparationInputProperty,
   preparationInputRecord,
   preparationInputString,
@@ -31,6 +33,19 @@ function refused(fn: () => unknown): PreparationRootError {
 }
 
 await describe({ name: 'closed preparation input values', children: [
+  it({ name: 'keeps object fields unknown until a discriminant selects complete keys', fn: async () => {
+    const value = { kind: 'cat' };
+    expect(preparationInputObject({ value, path })).toBe(value);
+    refused(() => preparationInputObject({ value: [], path }));
+    refused(() => preparationInputObject({ value: null, path }));
+    refused(() => preparationInputObject({ value: new Date(0), path }));
+  } }),
+  it({ name: 'narrows literals only through authored supported values', fn: async () => {
+    expect(preparationInputLiteral({ value: 'body', path, choices: ['body', 'footnote-definition'] })).toBe('body');
+    refused(() => preparationInputLiteral({ value: 'unknown q7z9k2', path, choices: ['body'] }));
+    refused(() => preparationInputLiteral({ value: 1, path, choices: ['body'] }));
+    refused(() => preparationInputLiteral({ value: 'body', path, choices: [] }));
+  } }),
   it({ name: 'reads complete own-key inventory without promoting field types', fn: async () => {
     const value = { cat: 1 };
     expect(preparationInputRecord({ value, path, keys: ['cat'] })).toBe(value);

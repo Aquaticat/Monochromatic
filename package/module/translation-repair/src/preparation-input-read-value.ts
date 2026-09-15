@@ -53,6 +53,35 @@ function refusePreparationInputShape(path: string): never {
 }
 
 /**
+ Identifies an owned parsed object before a discriminant selects its complete key inventory.
+
+ @internal
+
+ @param value - invocation-owned parsed object candidate
+
+ @param path - authored schema position for the affected input
+
+ @returns Plain object whose fields remain unknown and not yet schema-checked
+
+ @throws PreparationRootError when this position is not an ordinary JSON object
+
+ @example
+ ```ts
+ const object = preparationInputObject({ value, path });
+ ```
+ */
+export function preparationInputObject({
+  value,
+  path,
+}: PreparationInputField): Readonly<Record<string, unknown>> {
+  if (Array.isArray(value) || (!isJsonRecord(value)))
+    refusePreparationInputShape(path);
+  if (Object.getPrototypeOf(value) !== Object.prototype)
+    refusePreparationInputShape(path);
+  return value;
+}
+
+/**
  Rejects every absent or extra own field before property-level interpretation.
  This helper receives only the decoder's owned JSON objects, not foreign object capabilities.
 
@@ -78,19 +107,23 @@ export function preparationInputRecord({
   path,
   keys,
 }: PreparationInputField & { readonly keys: readonly string[] }): Readonly<Record<string, unknown>> {
-  if (Array.isArray(value) || (!isJsonRecord(value)))
-    refusePreparationInputShape(path);
+  /**
+   Object qualification precedes the complete schema-key check.
+   */
+  const object = preparationInputObject({
+    value,
+    path,
+  });
   /**
    Symbol and non-enumerable fields cannot disappear from the schema check.
    */
-  const actual = Reflect.ownKeys(value);
-  if ((Object.getPrototypeOf(value) !== Object.prototype)
-    || (actual.length !== keys.length)
+  const actual = Reflect.ownKeys(object);
+  if ((actual.length !== keys.length)
     || (!actual.every(function supported(key): boolean {
       return ((typeof key) === 'string') && keys.includes(key);
     })))
     refusePreparationInputShape(path);
-  return value;
+  return object;
 }
 
 /**
@@ -149,6 +182,51 @@ export function preparationInputString({
   if ((typeof value) !== 'string')
     refusePreparationInputShape(path);
   return value;
+}
+
+/**
+ Narrows a text discriminant to an authored vocabulary without a type assertion.
+
+ @internal
+
+ @param value - owned parsed discriminant candidate
+
+ @param path - authored schema position for the affected input
+
+ @param choices - field-specific supported literal values, not input-provided alternatives
+
+ @returns Exact supported literal selected by equality
+
+ @throws PreparationRootError when type or vocabulary differs
+
+ @example
+ ```ts
+ const zone = preparationInputLiteral({ value, path, choices: ['body', 'footnote-definition'] });
+ ```
+ */
+export function preparationInputLiteral<const Choice extends string>({
+  value,
+  path,
+  choices,
+}: PreparationInputField & {
+  readonly choices: readonly Choice[];
+}): Choice {
+  /**
+   Input remains an ordinary string until one supported literal matches.
+   */
+  const text = preparationInputString({
+    value,
+    path,
+  });
+  /**
+   The returned value comes from the authored vocabulary, not a cast of input text.
+   */
+  const selected = choices.find(function matches(choice): boolean {
+    return choice === text;
+  });
+  if (selected === undefined)
+    refusePreparationInputShape(path);
+  return selected;
 }
 
 /**

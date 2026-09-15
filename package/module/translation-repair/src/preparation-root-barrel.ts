@@ -3,6 +3,7 @@
 export { buildPreparationRootInputs, } from './build-preparation-root-inputs.ts';
 export type {
   PreparationRootInputs,
+  PreparationRootExclusion,
   PreparationRootReference,
   PreparationRootReferenceBinding,
   PreparationRootReferenceRole,

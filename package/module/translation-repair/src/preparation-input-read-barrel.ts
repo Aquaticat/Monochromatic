@@ -12,7 +12,9 @@ export {
   preparationInputFields,
   preparationInputInteger,
   preparationInputItems,
+  preparationInputLiteral,
   preparationInputNonblankString,
+  preparationInputObject,
   preparationInputProperty,
   preparationInputRecord,
   preparationInputString,
@@ -25,6 +27,13 @@ export {
   preparationInputSelectionReference,
 } from './preparation-input-read-selection.ts';
 export { validParentEntry, } from './preparation-selection-records.ts';
+export { preparationInputEntryId, } from './preparation-input-read-identity.ts';
+export { preparationInputExclusion, } from './preparation-input-read-exclusion.ts';
+export {
+  preparationInputRawDocument,
+  preparationInputReference,
+  preparationInputReferenceBinding,
+} from './preparation-input-read-reference.ts';
 export {
   PreparationRootError,
   type PreparationRootFailure,
