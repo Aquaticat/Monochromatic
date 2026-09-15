@@ -32,15 +32,18 @@ const cases: readonly KeyCase[] = [
 
 function chunk(texts: readonly string[]): ContentChunk {
   const nodes: DocumentNode[] = [];
-  let offset = 0;
-  for (const [index, text] of texts.entries()) {
+  texts.reduce(function placeNode(
+    offset,
+    text,
+    index,
+  ): number {
     nodes.push({
       id: `block/${String(index)}`, kind: 'paragraph', zone: 'body', text,
       startOffset: offset, endOffset: offset + text.length,
       contentHash: createHash('sha256').update(text).digest('hex'),
     });
-    offset += text.length + 1;
-  }
+    return offset + text.length + 1;
+  }, 0);
   const text = texts.join('\n');
   return { sliceIndex: 0, nodes, startOffset: 0, endOffset: text.length, text };
 }
