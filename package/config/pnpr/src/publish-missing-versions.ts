@@ -105,6 +105,50 @@ function workspaceDependencyNames(
 }
 
 /**
+ Narrows configured names to `PNPR_PUBLISH_ONLY` (comma-separated) for local checks and targeted retries.
+
+ @param packageNames - Names trusted in the generated config.
+
+ @returns All names when the variable is unset or empty, otherwise the listed ones.
+
+ @throws Error when a listed name is not in the config, since pnpr would refuse its workload publish.
+
+ @example
+ ```ts
+ selectedNames({ packageNames: ['@monochromatic-dev/module-or-throw'] });
+ ```
+ */
+function selectedNames({ packageNames, }: { readonly packageNames: readonly string[]; },): readonly string[] {
+  /**
+   Raw filter value.
+   */
+  const only = process.env
+    .PNPR_PUBLISH_ONLY;
+  if ((only === undefined) || (only.trim() === ''))
+    return packageNames;
+  /**
+   Requested names.
+   */
+  const requested = only.split(',',)
+    .map(function trimName(name,) {
+    return name.trim();
+  },)
+    .filter(function isNonEmpty(name,) {
+    return name !== '';
+  },);
+  /**
+   Requested names missing from the trusted list.
+   */
+  const unknown = requested.filter(function notConfigured(name,) {
+    return !packageNames.includes(name,);
+  },);
+  if (unknown.length > 0)
+    throw new Error(`PNPR_PUBLISH_ONLY names packages absent from config.yaml: ${unknown.join(', ',)}`,);
+  moduleLogger.info(`PNPR_PUBLISH_ONLY limits this run to ${requested.join(', ',)}`,);
+  return requested;
+}
+
+/**
  Publishes every configured package version pnpr lacks, in dependency order.
 
  @throws Error listing packages that failed or were blocked by a failed dependency.
@@ -138,7 +182,7 @@ async function publishMissingVersions(): Promise<void> {
   /**
    Configured package versions pnpr lacks.
    */
-  const planned: readonly PlannedPublish[] = (await Promise.all(target.packageNames
+  const planned: readonly PlannedPublish[] = (await Promise.all(selectedNames({ packageNames: target.packageNames, },)
     .map(async function checkPackage(name,): Promise<readonly PlannedPublish[]> {
     /**
      Workspace entry for a configured name.
