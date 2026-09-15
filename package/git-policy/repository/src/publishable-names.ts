@@ -46,7 +46,7 @@ export function readPublishableNames(configText: string,): readonly string[] {
   const keyIndex = lines.findIndex(function isPackagesKey(line,): boolean {
     return line.trim() === PACKAGES_KEY;
   },);
-  if (keyIndex === -1)
+  if (keyIndex === (-1))
     return [];
   /**
    Lines after the key, up to the first line that is not a quoted list item.
@@ -60,9 +60,11 @@ export function readPublishableNames(configText: string,): readonly string[] {
      Line without indentation.
      */
     const trimmed = line.trim();
-    return !(trimmed.startsWith(ITEM_PREFIX,) && trimmed.endsWith("'",) && (trimmed.length > ITEM_PREFIX.length + 1));
+    return !(trimmed.startsWith(ITEM_PREFIX,) && trimmed.endsWith("'",)
+      && (trimmed.length > (ITEM_PREFIX.length
+        + 1)));
   },);
-  return (endOffset === -1 ? following : following.slice(
+  return (endOffset === (-1) ? following : following.slice(
     0,
     endOffset,
   ))

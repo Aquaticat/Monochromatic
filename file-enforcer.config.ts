@@ -2229,11 +2229,11 @@ ${await cat(['./AGENTS.md',],)}`,
       content: `// Generated from \`package/git-policy/repository/src/${fileName}\` by file-enforcer; edit canonical source owner.\n${(await cat([
         `./package/git-policy/repository/src/${fileName}`,
       ],))
-        .replace(
+        .replaceAll(
           '@monochromatic-dev/git-policy-api/ts',
           '../../api/index.ts',
         )
-        .replace(
+        .replaceAll(
           '@monochromatic-dev/git-policy-markdown-lint/ts',
           '../markdown-lint/index.ts',
         )}`,

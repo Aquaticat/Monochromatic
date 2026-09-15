@@ -139,10 +139,12 @@ async function readManifestState(file: TrackedFile,): Promise<ManifestState> {
   /**
    Version at `HEAD`.
    */
-  const headVersion = head[0]?.version;
+  const headVersion = head[0]
+    ?.version;
   return {
     file,
-    directory: file.path.slice(
+    directory: file.path
+      .slice(
       0,
       -'/package.json'.length,
     ),
@@ -190,11 +192,14 @@ async function bundledDevelopmentEdges({
   const superset = transitiveDependentNames({
     manifests: states.map(function everyEdge(state,): WorkspaceManifest {
       return {
-        name: state.current.name,
+        name: state.current
+          .name,
         directory: state.directory,
         edgeNames: [
-          ...state.current.runtimeDependencyNames,
-          ...state.current.devDependencyNames,
+          ...state.current
+            .runtimeDependencyNames,
+          ...state.current
+            .devDependencyNames,
         ],
       };
     },),
@@ -214,11 +219,15 @@ async function bundledDevelopmentEdges({
     /**
      Development dependencies that could carry a bump.
      */
-    const candidateEdges = state.current.devDependencyNames
+    const candidateEdges = state.current
+      .devDependencyNames
       .filter(function isRelevant(name,): boolean {
-      return relevant.has(name,) && (name !== state.current.name);
+      return relevant.has(name,) && (name
+        !== state.current
+        .name);
     },);
-    return superset.has(state.current.name,) && (candidateEdges.length > 0)
+    return superset.has(state.current
+      .name,) && (candidateEdges.length > 0)
       ? [{
         state,
         candidateEdges,
@@ -231,7 +240,10 @@ async function bundledDevelopmentEdges({
   const confirmed = await Promise.all(toScan.map(async function scanDependent({
     state,
     candidateEdges,
-  },): Promise<readonly [
+  }: Readonly<{
+    state: ManifestState;
+    candidateEdges: readonly string[];
+  }>,): Promise<readonly [
     string,
     readonly string[],
   ]> {
@@ -253,7 +265,8 @@ async function bundledDevelopmentEdges({
       return new TextDecoder().decode(await file.bytes(),);
     },),);
     return [
-      state.current.name,
+      state.current
+        .name,
       candidateEdges.filter(function isImported(name,): boolean {
         return texts.some(function importsEdge(sourceText,): boolean {
           return importsPackage({
@@ -317,10 +330,13 @@ export async function findDependentBumps(context: ForeignBorrowed<PolicyContext>
    */
   const bumpedNames = states
     .filter(function isBumped(state,): boolean {
-    return (state.headVersion !== undefined) && (state.current.version !== state.headVersion);
+    return (state.headVersion !== undefined) && (state.current
+      .version
+      !== state.headVersion);
   },)
     .map(function toName(state,): string {
-    return state.current.name;
+    return state.current
+      .name;
   },);
   if (bumpedNames.length === 0)
     return [];
@@ -334,7 +350,9 @@ export async function findDependentBumps(context: ForeignBorrowed<PolicyContext>
   /**
    Packages the registry publishes.
    */
-  const publishableNames = readPublishableNames(DECODER.decode(await config.bytes(),),);
+  const publishableNames = readPublishableNames(
+    DECODER.decode(await config.bytes(),),
+  );
   /**
    Confirmed bundled development edges.
    */
@@ -348,7 +366,8 @@ export async function findDependentBumps(context: ForeignBorrowed<PolicyContext>
    */
   const byName = new Map(states.map(function toEntry(state,) {
     return [
-      state.current.name,
+      state.current
+        .name,
       state,
     ] as const;
   },),);
@@ -356,12 +375,18 @@ export async function findDependentBumps(context: ForeignBorrowed<PolicyContext>
     return planDependentBumps({
       manifests: states.map(function toManifest(state,): WorkspaceManifest {
         return {
-          name: state.current.name,
+          name: state.current
+            .name,
           directory: state.directory,
-          ...(state.current.version === undefined ? {} : { version: state.current.version, }),
+          ...(state.current
+            .version
+            === undefined ? {} : { version: state.current
+              .version, }),
           edgeNames: [
-            ...state.current.runtimeDependencyNames,
-            ...(bundled.get(state.current.name,) ?? []),
+            ...state.current
+              .runtimeDependencyNames,
+            ...(bundled.get(state.current
+              .name,) ?? []),
           ],
         };
       },),
@@ -373,20 +398,30 @@ export async function findDependentBumps(context: ForeignBorrowed<PolicyContext>
        Manifest state for the dependent.
        */
       const state = byName.get(bump.name,);
-      if ((state === undefined) || ((state.file.mode !== 'regular') && (state.file.mode !== 'executable')))
+      if ((state === undefined) || ((state.file
+        .mode
+        !== 'regular') && (state.file
+          .mode
+          !== 'executable')))
         return [];
       return [{
         code: DEPENDENT_VERSION_STALE_CODE,
         message: `${bump.name} reaches a package bumped in this commit (${bumpedNames.join(', ',)}); bump it from ${bump.from} to ${bump.to} in the same commit.`,
-        path: state.file.path,
+        path: state.file
+          .path,
         patch: createFullContentPatch({
-          targetId: state.file.targetId,
-          path: state.file.path,
-          revision: state.file.revision,
-          mode: state.file.mode,
+          targetId: state.file
+            .targetId,
+          path: state.file
+            .path,
+          revision: state.file
+            .revision,
+          mode: state.file
+            .mode,
           original: ENCODER.encode(state.text,),
           replacement: ENCODER.encode(replaceManifestVersion({
-            path: state.file.path,
+            path: state.file
+              .path,
             text: state.text,
             from: bump.from,
             to: bump.to,
@@ -429,7 +464,7 @@ export const dependentVersionBump: PolicyDefinition<undefined, 'dependent-versio
 
    @returns findings with version patches.
    */
-  async check({ context, }: {
+  check({ context, }: {
     readonly context: ForeignBorrowed<PolicyContext>;
   },): Promise<readonly PolicyFinding[]> {
     return findDependentBumps(context,);

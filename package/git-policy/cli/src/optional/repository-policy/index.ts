@@ -17,6 +17,14 @@ import {
 
 import { dependentVersionBump, } from './dependent-version-bump-policy.ts';
 
+// Re-exported so consumers of the built bundle, including its tests, share the bundle's own absence sentinel.
+export { ABSENT_GIT_VALUE, } from '../../api/index.ts';
+export type {
+  CandidateFile as RepositoryCandidateFile,
+  PolicyContext as RepositoryPolicyContext,
+  TrackedFile as RepositoryTrackedFile,
+} from '../../api/index.ts';
+
 export {
   DEPENDENT_VERSION_STALE_CODE,
   DEPENDENT_VERSION_UNSUPPORTED_CODE,
@@ -132,7 +140,10 @@ export const forbiddenRootContext: PolicyDefinition<undefined, 'forbidden-root-c
  ```
  */
 export const repositoryPolicyPlugin: PluginDefinition<
-  readonly [typeof forbiddenRootContext, typeof dependentVersionBump],
+  readonly [
+    typeof forbiddenRootContext,
+    typeof dependentVersionBump
+  ],
   'repository'
 > = definePlugin({
   name: 'repository',

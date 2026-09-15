@@ -6,17 +6,15 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   ABSENT_GIT_VALUE,
-  type CandidateFile,
-  type PolicyContext,
-  type TrackedFile,
-} from '@monochromatic-dev/git-policy-api/ts';
-import {
   DEPENDENT_VERSION_STALE_CODE,
   DEPENDENT_VERSION_UNSUPPORTED_CODE,
   dependentVersionBump,
   findDependentBumps,
   readPublishableNames,
   repositoryPolicyPlugin,
+  type RepositoryCandidateFile as CandidateFile,
+  type RepositoryPolicyContext as PolicyContext,
+  type RepositoryTrackedFile as TrackedFile,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -76,7 +74,9 @@ function trackedFile(file: FixtureFile,): TrackedFile {
     revision,
     mode: 'regular',
     headRevision: file.headText === undefined ? ABSENT_GIT_VALUE : `${'b'.repeat(39,)}0`,
-    bytes: async function currentBytes() { return ENCODER.encode(file.text,); },
+    bytes: async function currentBytes() {
+      return ENCODER.encode(file.text,);
+    },
     headBytes: async function baselineBytes() {
       return file.headText === undefined ? ABSENT_GIT_VALUE : ENCODER.encode(file.headText,);
     },
@@ -140,7 +140,9 @@ function contextOf(files: readonly FixtureFile[], canApplyPatches = true,): Poli
     git: {
       candidates: async function candidates(): Promise<readonly CandidateFile[]> {
         return files
-          .filter(function isChanged(file,) { return file.text !== file.headText; },)
+          .filter(function isChanged(file,) {
+            return file.text !== file.headText;
+          },)
           .map(function toCandidate(file,): CandidateFile {
             /**
              Tracked view of the same file.
@@ -158,12 +160,20 @@ function contextOf(files: readonly FixtureFile[], canApplyPatches = true,): Poli
       },
       trackedFiles: async function trackedFiles({ pathspecs, },) {
         return tracked.filter(function matchesAny(file,) {
-          return pathspecs.some(function matches(pathspec,) { return matchesPathspec(pathspec, file.path,); },);
+          return pathspecs.some(function matches(pathspec,) {
+            return matchesPathspec(pathspec, file.path,);
+          },);
         },);
       },
-      headOid: async function headOid() { return 'head'; },
-      landedCommitOid: async function landedCommitOid() { return ABSENT_GIT_VALUE; },
-      pushUpdates: async function pushUpdates() { return []; },
+      headOid: async function headOid() {
+        return 'head';
+      },
+      landedCommitOid: async function landedCommitOid() {
+        return ABSENT_GIT_VALUE;
+      },
+      pushUpdates: async function pushUpdates() {
+        return [];
+      },
     },
     signal: new AbortController().signal,
   };
@@ -180,7 +190,9 @@ function configFile(names: readonly string[],): FixtureFile {
   /**
    Config text in the generator's list shape.
    */
-  const text = `auth:\n  oidc:\n    - workloads:\n        - registry: r\n          packages:\n${names.map(function toItem(name,) { return `            - '${name}'`; },).join('\n',)}\n\nweb:\n  enable: false\n`;
+  const text = `auth:\n  oidc:\n    - workloads:\n        - registry: r\n          packages:\n${names.map(function toItem(name,) {
+    return `            - '${name}'`;
+  },).join('\n',)}\n\nweb:\n  enable: false\n`;
   return {
     path: 'package/config/pnpr/config.yaml',
     text,
@@ -218,7 +230,9 @@ await describe({
         it({
           name: 'is registered by the repository plugin with blocking defaults',
           fn: async function testRegistration(): Promise<void> {
-            expect(repositoryPolicyPlugin.policies.map(function toName(policy,) { return policy.name; },),).toContain('dependent-version-bump',);
+            expect(repositoryPolicyPlugin.policies.map(function toName(policy,) {
+              return policy.name;
+            },),).toContain('dependent-version-bump',);
             expect(dependentVersionBump.defaultSeverity,).toBe('error',);
             expect(dependentVersionBump.warnSafe,).toBe(false,);
             expect(dependentVersionBump.triggers,).toEqual(['pre-forward', 'direct-check',],);
@@ -253,11 +267,15 @@ await describe({
              Findings for the fixture.
              */
             const findings = await findDependentBumps(contextOf(files,),);
-            expect(findings.map(function toPath(finding,) { return finding.path; },),).toEqual([
+            expect(findings.map(function toPath(finding,) {
+              return finding.path;
+            },),).toEqual([
               'package/module/bundled/package.json',
               'package/module/runtime/package.json',
             ],);
-            expect(findings.every(function isStale(finding,) { return finding.code === DEPENDENT_VERSION_STALE_CODE; },),).toBe(true,);
+            expect(findings.every(function isStale(finding,) {
+              return finding.code === DEPENDENT_VERSION_STALE_CODE;
+            },),).toBe(true,);
             /**
              Patch for the runtime dependent.
              */
@@ -281,8 +299,12 @@ await describe({
               },
               unchangedManifest('package/module/runtime', { name: '@s/runtime', version: '2.0.0', dependencies: { '@s/base': 'workspace:*', }, },),
             ];
-            expect(await findDependentBumps(contextOf(files,),),).toEqual([],);
-            expect(await findDependentBumps(contextOf([configFile([],),],),),).toEqual([],);
+            expect(
+              await findDependentBumps(contextOf(files,),),
+            ).toEqual([],);
+            expect(
+              await findDependentBumps(contextOf([configFile([],),],),),
+            ).toEqual([],);
           },
         },),
         it({
@@ -304,7 +326,9 @@ await describe({
                 headText: manifestText({ name: '@s/runtime', version: '2.0.0', dependencies: { '@s/base': 'workspace:*', }, },),
               },
             ];
-            expect(await findDependentBumps(contextOf(files,),),).toEqual([],);
+            expect(
+              await findDependentBumps(contextOf(files,),),
+            ).toEqual([],);
           },
         },),
         it({
@@ -326,7 +350,9 @@ await describe({
              Findings for the fixture.
              */
             const findings = await findDependentBumps(contextOf(files,),);
-            expect(findings.map(function toCode(finding,) { return finding.code; },),).toEqual([DEPENDENT_VERSION_UNSUPPORTED_CODE,],);
+            expect(findings.map(function toCode(finding,) {
+              return finding.code;
+            },),).toEqual([DEPENDENT_VERSION_UNSUPPORTED_CODE,],);
             expect(findings[0]?.patch,).toBeUndefined();
           },
         },),
@@ -344,7 +370,9 @@ await describe({
               },
               unchangedManifest('package/module/runtime', { name: '@s/runtime', version: '2.0.0', dependencies: { '@s/base': 'workspace:*', }, },),
             ];
-            expect(await findDependentBumps(contextOf(files,),),).toEqual([],);
+            expect(
+              await findDependentBumps(contextOf(files,),),
+            ).toEqual([],);
           },
         },),
       ],
