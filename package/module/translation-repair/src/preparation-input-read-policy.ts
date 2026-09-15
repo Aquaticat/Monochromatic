@@ -1,5 +1,6 @@
 import type { ArchiveOriginalSpan, } from './archive-original-note.ts';
 import type { ArchiveRetainedLine, } from './corpus-run/archive-stub.ts';
+import { foldedLine, } from './entry-notes.ts';
 import { PreparationRootError, } from './preparation-root-error.ts';
 import type { PreparationRootOriginalPolicy, } from './preparation-root-population-model.ts';
 import {
@@ -34,7 +35,7 @@ const ORIGINAL_KINDS = [
 
  @returns Frozen interval and unchanged declaration text
 
- @throws PreparationRootError when span fields or interval order differ
+ @throws PreparationRootError when fields, interval order or folded-note spelling differ
 
  @example
  ```ts
@@ -65,7 +66,7 @@ export function preparationInputOriginalSpan({
     endOffset: preparationInputInteger(field('endOffset')),
     note: preparationInputNonblankString(field('note')),
   };
-  if (span.endOffset < span.startOffset)
+  if ((span.endOffset < span.startOffset) || (foldedLine({ text: span.note, }) !== span.note))
     throw new PreparationRootError({
       kind: 'input-relations',
       input: path,
@@ -85,7 +86,7 @@ export function preparationInputOriginalSpan({
 
  @returns Frozen classifications with exactly the normalized span collection
 
- @throws PreparationRootError when policy fields or normalized span presence differ
+ @throws PreparationRootError when fields, normalized span presence or ordered non-overlapping spans differ
 
  @example
  ```ts
@@ -125,7 +126,30 @@ export function preparationInputOriginalPolicy({
       read: preparationInputOriginalSpan,
     }),
   };
-  if ((policy.normalized === 'spans') !== (policy.spans.length > 0))
+  /**
+   The producer orders notes and removes later intervals already covered by an earlier seal.
+   */
+  const {
+    normalized,
+    spans,
+  } = policy;
+  /**
+   Spans ending at a shared boundary remain distinct only when the later seal extends beyond it.
+   An isolated zero-width interval remains valid.
+   */
+  const ordered = spans.every(function follows(
+    span,
+    index,
+  ): boolean {
+    /**
+     The first span has no preceding interval to constrain its placement.
+     */
+    const previous = spans[index - 1];
+    if (previous === undefined)
+      return true;
+    return (span.startOffset >= previous.endOffset) && (span.endOffset > previous.endOffset);
+  });
+  if (((normalized === 'spans') !== (spans.length > 0)) || (!ordered))
     throw new PreparationRootError({
       kind: 'input-relations',
       input: path,
@@ -173,7 +197,14 @@ export function preparationInputArchiveLine({
     text: preparationInputString(field('text')),
     lineNumber: preparationInputInteger(field('lineNumber')),
   };
-  if ((line.lineNumber === 0) || line.text.includes('\n'))
+  /**
+   Each origin and its exact single-line text share the same decoded record.
+   */
+  const {
+    lineNumber,
+    text,
+  } = line;
+  if ((lineNumber === 0) || text.includes('\n'))
     throw new PreparationRootError({
       kind: 'input-relations',
       input: path,

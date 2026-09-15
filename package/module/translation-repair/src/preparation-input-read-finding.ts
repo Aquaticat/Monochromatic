@@ -1,4 +1,7 @@
-import type { AlignmentAttachment, AlignmentFinding, } from './chunk-document.ts';
+import type {
+  AlignmentAttachment,
+  AlignmentFinding,
+} from './chunk-document.ts';
 import type { ParseFinding, } from './parse-document.ts';
 import { PreparationRootError, } from './preparation-root-error.ts';
 import {

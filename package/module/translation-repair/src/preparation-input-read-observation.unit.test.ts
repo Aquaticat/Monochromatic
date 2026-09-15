@@ -70,6 +70,9 @@ await describe({ name: 'persisted policy and observation fields', children: [
     refused(() => preparationInputOriginalSpan({ value: { ...span, note: ' ' }, path }));
     refused(() => preparationInputOriginalSpan({ value: { ...span, authority: 'q7z9k2' }, path }));
   } }),
+  ...['Cat\nnote', 'Cat\rnote', 'Cat\tnote', ' Cat note', 'Cat  note', 'Cat note '].map(note => it({ name: `rejects noncanonical folded note ${JSON.stringify(note)}`, fn: async () => {
+    refused(() => preparationInputOriginalSpan({ value: { ...span, note }, path }));
+  } })),
   ...Object.keys(span).map(key => it({ name: `requires original span ${key}`, fn: async () => {
     const value = { ...span };
     Reflect.deleteProperty(value, key);
@@ -94,6 +97,31 @@ await describe({ name: 'persisted policy and observation fields', children: [
     refused(() => preparationInputOriginalPolicy({ value: { inherited: 'none', normalized: 'none', spans: [span] }, path }));
     refused(() => preparationInputOriginalPolicy({ value: { inherited: 'none', normalized: 'whole-page', spans: [span] }, path }));
     refused(() => preparationInputOriginalPolicy({ value: { inherited: 'q7z9k2', normalized: 'none', spans: [] }, path }));
+  } }),
+  it({ name: 'rejects reversed, overlapping, duplicate and already-covered zero-width spans', fn: async () => {
+    const first = { startOffset: 0, endOffset: 2, note: 'First cat' };
+    const next = { startOffset: 2, endOffset: 4, note: 'Next cat' };
+    const policy = { inherited: 'none', normalized: 'spans' };
+    refused(() => preparationInputOriginalPolicy({ value: { ...policy, spans: [next, first] }, path }));
+    refused(() => preparationInputOriginalPolicy({ value: { ...policy, spans: [first, { ...next, startOffset: 1 }] }, path }));
+    refused(() => preparationInputOriginalPolicy({ value: { ...policy, spans: [first, first] }, path }));
+    refused(() => preparationInputOriginalPolicy({ value: { ...policy, spans: [first, { ...next, endOffset: 2 }] }, path }));
+    const adjacent = { ...policy, spans: [first, next] };
+    expect(preparationInputOriginalPolicy({ value: adjacent, path })).toEqual(adjacent);
+  } }),
+  ...['inherited', 'normalized', 'spans'].map(key => it({ name: `requires original-policy ${key}`, fn: async () => {
+    const value = { inherited: 'none', normalized: 'none', spans: [] };
+    Reflect.deleteProperty(value, key);
+    refused(() => preparationInputOriginalPolicy({ value, path }));
+  } })),
+  ...['kind', 'attachedTo', 'detail'].map(key => it({ name: `requires alignment finding ${key}`, fn: async () => {
+    const value = { kind: 'structure-mismatch', attachedTo: { kind: 'whole-document' }, detail: 'Cat observation' };
+    Reflect.deleteProperty(value, key);
+    refused(() => preparationInputAlignmentFinding({ value, path }));
+  } })),
+  it({ name: 'rejects unknown policy and alignment fields', fn: async () => {
+    refused(() => preparationInputOriginalPolicy({ value: { inherited: 'none', normalized: 'none', spans: [], approval: true }, path }));
+    refused(() => preparationInputAlignmentFinding({ value: { kind: 'structure-mismatch', attachedTo: { kind: 'whole-document' }, detail: 'Cat observation', approval: true }, path }));
   } }),
   ...['text', 'lineNumber'].map(key => it({ name: `requires retained-line ${key}`, fn: async () => {
     const value = { text: 'Cat', lineNumber: 1 };

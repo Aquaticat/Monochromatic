@@ -15,8 +15,6 @@ import type { PreparationRootEntry, } from './preparation-root-population-model.
 
  @param path - authored complete-entry position
 
- @returns Nothing when represented identities and local evidence are consistent
-
  @throws PreparationRootError when entry identities, origins, eligibility role or evidence bounds differ
 
  @example
@@ -32,23 +30,38 @@ export function verifyPreparationInputEntryRelations({
   readonly path: string;
 }): void {
   /**
+   Already-decoded fields keep their source, archive and target roles explicit.
+   */
+  const {
+    sourceText,
+    archiveText,
+    targetText,
+    sourceHash,
+    archiveHash,
+    targetHash,
+    originalPolicy,
+    archiveLines,
+    sourceFindings,
+    targetFindings,
+  } = entry;
+  /**
    These identities describe separate stages and must not be substituted for one another.
    */
   const identities = [
     {
       field: 'sourceHash',
-      content: entry.sourceText,
-      digest: entry.sourceHash,
+      content: sourceText,
+      digest: sourceHash,
     },
     {
       field: 'archiveHash',
-      content: entry.archiveText,
-      digest: entry.archiveHash,
+      content: archiveText,
+      digest: archiveHash,
     },
     {
       field: 'targetHash',
-      content: entry.targetText,
-      digest: entry.targetHash,
+      content: targetText,
+      digest: targetHash,
     },
   ];
   for (const identity of identities) {
@@ -61,14 +74,18 @@ export function verifyPreparationInputEntryRelations({
   /**
    Root-entry production returns exclusions before emitting either whole-page classification.
    */
-  const { originalPolicy, } = entry;
-  if ((originalPolicy.inherited === 'whole-page') || (originalPolicy.normalized === 'whole-page'))
+  const {
+    inherited,
+    normalized,
+    spans,
+  } = originalPolicy;
+  if ((inherited === 'whole-page') || (normalized === 'whole-page'))
     throw new PreparationRootError({
       kind: 'input-relations',
       input: `${path}.originalPolicy`,
     });
-  if (!originalPolicy.spans.every(function bounded(span): boolean {
-    return span.endOffset <= entry.targetText.length;
+  if (!spans.every(function bounded(span): boolean {
+    return span.endOffset <= targetText.length;
   }))
     throw new PreparationRootError({
       kind: 'input-relations',
@@ -78,32 +95,32 @@ export function verifyPreparationInputEntryRelations({
    The shared character fold preserves LF positions and gives the actual retained-line origin domain.
    No stub-removal decision is repeated here.
    */
-  const folded = foldInvisibleVariants({ text: entry.archiveText, });
+  const { text: folded, } = foldInvisibleVariants({ text: archiveText, });
   /**
    Each represented origin must identify an existing folded archive line.
    */
-  const originalLines = folded.text.split('\n');
+  const originalLines = folded.split('\n');
   /**
    The producer retains lines in strictly increasing original-file order.
    */
-  const originsMatch = entry.archiveLines.every(function origin(
+  const originsMatch = archiveLines.every(function origin(
     line,
     index,
   ): boolean {
     /**
      No previous origin exists only for the first represented retained line.
      */
-    const previous = entry.archiveLines[index - 1];
+    const previous = archiveLines[index - 1];
     return (originalLines[line.lineNumber - 1] === line.text)
       && ((previous === undefined) || (previous.lineNumber < line.lineNumber));
   });
   /**
    Joining represented lines verifies target text without claiming why other lines were removed.
    */
-  const retainedLines = entry.archiveLines.map(function text(line): string {
+  const retainedLines = archiveLines.map(function text(line): string {
     return line.text;
   });
-  if ((!originsMatch) || (retainedLines.join('\n') !== entry.targetText))
+  if ((!originsMatch) || (retainedLines.join('\n') !== targetText))
     throw new PreparationRootError({
       kind: 'input-relations',
       input: `${path}.archiveLines`,
@@ -114,18 +131,25 @@ export function verifyPreparationInputEntryRelations({
   const observations = [
     {
       field: 'sourceFindings',
-      findings: entry.sourceFindings,
-      length: entry.sourceText.length,
+      findings: sourceFindings,
+      length: sourceText.length,
     },
     {
       field: 'targetFindings',
-      findings: entry.targetFindings,
-      length: entry.targetText.length,
+      findings: targetFindings,
+      length: targetText.length,
     },
   ];
   for (const observation of observations) {
-    if (!observation.findings.every(function bounded(finding): boolean {
-      return finding.endOffset <= observation.length;
+    /**
+     Finding coordinates and document extent belong to this same observation domain.
+     */
+    const {
+      findings,
+      length,
+    } = observation;
+    if (!findings.every(function bounded(finding): boolean {
+      return finding.endOffset <= length;
     }))
       throw new PreparationRootError({
         kind: 'input-relations',

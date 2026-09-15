@@ -56,7 +56,7 @@ await describe({ name: 'complete persisted entry decoder', children: [
     expect(Object.isFrozen(result.targetFindings[0])).toBe(true);
     expect(Object.isFrozen(result.alignmentFindings)).toBe(true);
     expect(Object.isFrozen(result.alignmentFindings[0]?.attachedTo)).toBe(true);
-    value.archiveLines.splice(0, value.archiveLines.length);
+    value.archiveLines.splice(0);
     expect(result.archiveLines.length).toBe(2);
   } }),
   it({ name: 'accepts empty documents and represented blank lines without a positive text-size floor', fn: async () => {
@@ -93,6 +93,37 @@ await describe({ name: 'complete persisted entry decoder', children: [
     expect(Object.isFrozen(result.originalPolicy.spans[0])).toBe(true);
     refused({ ...admitted, originalPolicy: { ...admitted.originalPolicy, spans: [{ ...spans[0], endOffset: value.targetText.length + 1 }] } });
   } }),
+  it({ name: 'accepts a zero-width protection span at the complete target boundary', fn: async () => {
+    const value = fixture();
+    const spans = [{ startOffset: value.targetText.length, endOffset: value.targetText.length, note: 'Cat declaration' }];
+    const candidate = { ...value, originalPolicy: { inherited: 'none', normalized: 'spans', spans } };
+    expect(preparationInputEntry({ value: candidate, path })).toEqual(candidate);
+  } }),
+  it({ name: 'does not remove retained stub-looking text or reinterpret declaration prose', fn: async () => {
+    const text = '(To-Do)';
+    const candidate = { ...fixture(), archiveText: text, targetText: text, archiveHash: hash(text), targetHash: hash(text), archiveLines: [{ text, lineNumber: 1 }], originalPolicy: { inherited: 'none', normalized: 'spans', spans: [{ startOffset: 0, endOffset: text.length, note: 'Original language: English' }] } };
+    expect(preparationInputEntry({ value: candidate, path })).toEqual(candidate);
+  } }),
+  it({ name: 'retains malformed MDX text with its explicit parser observation', fn: async () => {
+    const sourceText = '<Cat photos=[';
+    const candidate = { ...fixture(), sourceText, sourceHash: hash(sourceText), sourceFindings: [{ kind: 'mdx-downgraded', startOffset: 0, endOffset: sourceText.length, detail: 'Retained malformed MDX observation' }] };
+    expect(preparationInputEntry({ value: candidate, path })).toEqual(candidate);
+  } }),
+  ...[
+    { from: '\u2011', to: '-', name: 'nonbreaking hyphen' },
+    { from: '\u00a0', to: ' ', name: 'nonbreaking space' },
+    { from: '\u202f', to: ' ', name: 'narrow nonbreaking space' },
+    { from: '\u00ad', to: '', name: 'soft hyphen' },
+    { from: '\u200b', to: '', name: 'zero-width space' },
+    { from: '\u2060', to: '', name: 'word joiner' },
+    { from: '\ufeff', to: '', name: 'byte-order mark' },
+  ].map(({ from, to, name }) => it({ name: `checks ${name} folding without shifting LF origins`, fn: async () => {
+    const archiveText = `${from}\nCat${from}Tail\n${from}`;
+    const targetText = `${to}\nCat${to}Tail\n${to}`;
+    const archiveLines = [{ text: to, lineNumber: 1 }, { text: `Cat${to}Tail`, lineNumber: 2 }, { text: to, lineNumber: 3 }];
+    const candidate = { ...fixture(), archiveText, targetText, archiveHash: hash(archiveText), targetHash: hash(targetText), archiveLines };
+    expect(preparationInputEntry({ value: candidate, path })).toEqual(candidate);
+  } })),
   it({ name: 'checks retained text against the declared folded archive origin', fn: async () => {
     const value = fixture();
     refused({ ...value, archiveLines: [{ text: 'non-binary cat', lineNumber: 2 }, { text: 'Tail', lineNumber: 3 }] });

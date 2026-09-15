@@ -218,6 +218,30 @@ local evidence bounds and the producer's whole-page exclusion boundary.
 They do not remove stubs again,
 classify declaration prose,
 reparse MDX or infer unaligned section coverage from registered parents.
+Entry R1 passes the real artifact through all complete-entry fields:
+`entry-native-0o4Al6` reconstructs 30 entries and checks 4531 frozen objects and collections.
+Build,
+bootstrap,
+types and targeted tests pass;
+Oxlint reports 12 warnings and one `tsdoc(require-returns-check)` error.
+These are corrected before the next verification.
+
+A scoped reviewer identified missing span-order and note-format checks plus regression gaps.
+`archive-original-note.ts:259` bounds seals by the next heading,
+and its span filter removes later covered intervals;
+`entry-notes.ts:83` owns canonical folded-note spelling.
+The decoder now rejects reversed,
+overlapping or covered spans and noncanonical note whitespace without sorting or rewriting them.
+Adjacent spans and an isolated zero-width end-of-document span remain valid.
+New tests cover explicit retained stub-looking text,
+non-reclassification of note meaning,
+malformed MDX text,
+and every current invisible-character fold without shifting line origins.
+This scoped review is not whole-change acceptance.
+
 Registration and whole-DTO relation work remain pending.
+Full-root tests must preserve alignment attachments outside registered parents;
+closure checks must exclude the stub remover,
+MDX parser and original-note classifier.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.
