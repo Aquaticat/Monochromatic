@@ -2069,6 +2069,9 @@ async function generatePnprConfig(): Promise<void> {
     .filter(function isPublishable(workspacePackage: PnprWorkspacePackage,) {
       return (!workspacePackage.directory
         .startsWith(PNPR_TEST_FIXTURE_DIRECTORY_PREFIX,))
+        // npm refuses to pack or publish a manifest without a version.
+        && ((typeof workspacePackage.manifest
+          .version) === 'string')
         && pnprManifestHasEntryPoint({ manifest: workspacePackage.manifest, },)
         && (!Object.hasOwn(
           PNPR_EXCLUDED_PACKAGES,

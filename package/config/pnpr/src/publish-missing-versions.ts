@@ -30,11 +30,15 @@ import { chooseDistTag, } from './version-order.ts';
 const moduleLogger = tagged({ tag: 'pnpr-publish', },);
 
 /**
- Manifest fields whose workspace packages must build or publish first.
+ Manifest fields whose workspace packages must publish first, because installers resolve them.
+ `devDependencies` are left out:
+ installers never fetch them,
+ each build task resolves its own development inputs from the workspace,
+ and the first CI run (34913557042) showed dev edges fold nearly every package into one cycle,
+ so one failing config package blocked the whole workspace.
  */
 const DEPENDENCY_FIELDS = [
   'dependencies',
-  'devDependencies',
   'peerDependencies',
   'optionalDependencies',
 ] as const;
@@ -62,13 +66,13 @@ type PlannedPublish = {
    */
   readonly latest?: string;
   /**
-   Workspace packages this one builds or runs against.
+   Workspace packages installers resolve alongside this one.
    */
   readonly dependencyNames: readonly string[];
 };
 
 /**
- Lists workspace dependency names across every dependency field.
+ Lists workspace dependency names across the runtime dependency fields.
 
  @param entry - Workspace package.
 

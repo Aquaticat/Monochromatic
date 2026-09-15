@@ -1265,6 +1265,7 @@ _.path = [
   "package/claude-code-plugin/stop-reminder/node_modules/.bin",
   "package/claude-code-plugin/terminal-title/node_modules/.bin",
   "package/cli/unused-export/node_modules/.bin",
+  "package/config/pnpr/node_modules/.bin",
   "package/config/stylelint/node_modules/.bin",
   "package/desktop-app/electron-counter/node_modules/.bin",
   "package/desktop-app/electron-infra/node_modules/.bin",
