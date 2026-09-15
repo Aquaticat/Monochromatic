@@ -91,6 +91,20 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
    the generated config then lists 121 packages,
     all of which were published that day.
    Packages lacking a `version` field are skipped too.
+- Owner decision (2026-09-15):
+   a package is meant to publish when it exposes something others can import.
+   Apps exposing nothing importable,
+    including both excluded packages,
+    do not count.
+   Blocked importable packages each get an issue and the minimum manifest change:
+    `cli-markdown-lint` (#522),
+    `config-oxlint` (#523),
+    and `config-stylelint` (#524) gained a `version`,
+    `config-stylelint` also ships the modules `index.mjs` imports,
+    and `module-dom` (#525) exports its built bundle;
+   the config then lists 125 packages.
+   Classification of the other unlisted packages:
+    `doc/handover/pnpr-publish-remaining-packages.md`.
 
 ### Tarball shape
 
@@ -236,3 +250,8 @@ GitHub issue #521 tracks checking installability of the remaining published pack
    and the `Containerfile` digest moves.
 - Each consumer adds the scope route itself;
    nothing here wires `labwc-config`.
+- A push that adds names to `config.yaml` starts the Coolify redeploy and `pnpr-publish` together,
+   so the first publish of a new name can reach the old registry process and fail with `E403`.
+   Run 34922532212 (2026-09-15) got `403 Forbidden` for three new names at 02:48:23 to 02:48:29
+    and published the fourth at 02:48:43.
+   Recovery is `gh workflow run pnpr-publish.yml --raw-field only='<names>'` once the redeploy finishes.

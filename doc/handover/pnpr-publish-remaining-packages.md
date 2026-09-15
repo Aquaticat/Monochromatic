@@ -118,10 +118,20 @@ from a scan of every `package/*/*/package.json` against the config list:
        and licenses.
 - [x] Config regenerated (125 of 155) and pushed in `2f9ed715d`;
       exclusion reasons now record both apps as exposing nothing importable.
-- [ ] pnpr-publish run 34922532212 green;
-      each new package installs anonymously from pnpr.
-- [ ] Issue comments with applied changes and verification;
-      close each issue once its package installs from pnpr.
+- [x] Published.
+      Run 34922532212 published `module-dom@0.0.1`
+       and got `E403` for the other three at 02:48:23 to 02:48:29,
+       while the Coolify redeploy was still loading the new trust list.
+      Re-dispatched run 34922635675 reported `3 of 125 package versions are missing`
+       and published all three,
+       so pnpr serves every one of the 125 listed packages.
+- [x] A fresh npm consumer without any pnpr credential
+      (the only token in npm config is scoped to `registry.npmjs.org`)
+      installed all four from `https://pnpr.c.aquati.cat/~monochromatic-dev/`,
+      imported every root export,
+      got `MD001` from the `markdown-lint` bin,
+      and got `color-named` from Stylelint extending the published config.
+- [x] Issues #522 to #525 carry the applied changes and verification and are closed.
 
 Local-state note:
 packing locally needed
@@ -146,8 +156,14 @@ that diff is left uncommitted because it reflects local install layout, not this
 
 ## Next action
 
-Wait for pnpr-publish run 34922532212.
-If the new names fail authorization because Coolify had not reloaded the trust list,
-re-dispatch with `gh workflow run pnpr-publish.yml --raw-field only='<names>'`.
-Then install each new package anonymously from pnpr,
-comment on and close its issue.
+None for this request;
+it is complete.
+Open follow-ups for the owner:
+
+- Run `git cli-git trust` so `mono/dependent-version-bump` activates locally.
+- Optional:
+  make `pnpr-publish` retry `E403` for names new in `config.yaml`,
+  so adding a package no longer needs a manual re-dispatch.
+- Issue #521 (installability of every published package) is still open.
+- The uncommitted root `mise.toml` diff is local install-layout noise;
+  a normal `pnpm install` followed by `mise run file-enforcer` removes it.
