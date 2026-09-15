@@ -7,7 +7,9 @@ Implementation plan for the owner decision recorded 2026-09-15 in
  extend the cli-git commit transaction so a policy pass can add paths to the commit
  and write those fixes to the worktree when the worktree copy still matches `HEAD`.
 The first consumer is the dependent-bump policy.
-Not started in code.
+
+Implemented 2026-09-15 on `main`;
+ see "Implementation state" for what landed and what remains.
 
 ## Requirements carried from the decision
 
@@ -56,20 +58,24 @@ Not started in code.
 
 ### Policy API
 
-- Add `headFiles: (request: Readonly<{ pathspecs: readonly string[] }>) => Promise<readonly CommittedFile[]>`
-   to `LazyPolicyGitFacts`.
-   It lists `HEAD` tree entries matching Git pathspecs (glob magic allowed),
+- `trackedFiles: (request: Readonly<{ pathspecs: readonly string[] }>) => Promise<readonly TrackedFile[]>`
+   on `LazyPolicyGitFacts` lists index entries of the current candidate state matching Git pathspecs,
+   glob magic included,
    each with an opaque `targetId`,
    `path`,
    `revision`,
    `mode`,
-   and lazy `bytes`.
-   Unborn `HEAD` returns an empty list.
-- A `PolicyPatch` whose `targetId` names a `headFiles` entry that is not a candidate asks the engine to add that path.
-- Candidates keep precedence:
-   a policy merges candidate bytes over `headFiles` bytes to see the pass's current state.
-- Every lifecycle implements `headFiles`;
-   only `pre-forward` commit transactions and direct fix apply added-path patches.
+   `headRevision`,
+   and lazy `bytes` and `headBytes`.
+   It replaced a first sketch,
+    `headFiles` over the `HEAD` tree,
+    because `git ls-tree` rejects `:(glob)` pathspec magic
+    (`fatal: ... pathspec magic not supported by this command: 'glob'`,
+     measured 2026-09-15)
+    and because reading the current index spares policies from merging candidates over `HEAD`.
+- A `PolicyPatch` whose `targetId` names a tracked file that is not a candidate asks the engine to add that path.
+- Post-commit and manual-push lifecycles return no tracked files;
+   only `pre-forward` commit transactions apply added-path patches today.
 
 ### Commit transaction
 
@@ -95,7 +101,9 @@ Not started in code.
       (same-directory temporary file plus rename,
        mode preserved),
       re-checking that the file still holds the original bytes first,
-      then records `worktreeInstalled`.
+      before the transaction directory is removed.
+      No separate marker exists:
+       the journal staying behind is what tells startup recovery to finish.
 7.   Read-only selection modes (`--interactive`,
       `--patch`,
       `--include`) keep refusing automatic patches,
@@ -103,16 +111,17 @@ Not started in code.
 
 ### Recovery
 
-A journal interrupted after `indexInstalled` and before `worktreeInstalled`
- checks each added path:
+A journal left behind after the index install checks each added path:
  intended bytes means done,
  original bytes means write the intended bytes,
- anything else blocks with a manual-recovery diagnostic naming the path.
+ and anything else is kept with a warning naming the path,
+ as in the normal path.
 
 ### Dependent-bump policy
 
-- Lives in `package/git-policy/repository` as `mono/dependent-version-bump`,
-   registered in `cli-git.config.ts`.
+- Lives in `package/git-policy/repository` as `dependent-version-bump`,
+   registered by `repositoryPolicyPlugin`,
+   so the repository's `mono` namespace enables it at its default `error` severity without a `cli-git.config.ts` change.
 - Publishable manifests are the names listed in `package/config/pnpr/config.yaml`
    (the publish workflow's own source of truth);
    their directories come from `package/*/*/package.json`.
@@ -132,6 +141,11 @@ A journal interrupted after `indexInstalled` and before `worktreeInstalled`
 
 ### Adopted sub-decisions
 
+- The engine,
+   not the policy,
+   checks that an added path is unchanged,
+   because policies cannot see the real index or the worktree.
+- A worktree copy edited while the commit runs is kept with a warning instead of blocking every later Git command through recovery.
 - A dependent whose worktree manifest differs from `HEAD` and is not staged blocks the commit.
    This follows from the rejected option in the decision
    (adding paths without updating the worktree leaves reverted versions in `git status`).
@@ -163,20 +177,52 @@ Also:
 - interruption after index install and before worktree install recovers each of the three byte states;
 - direct fix adds and writes a clean dependent manifest.
 
-## Next actions
+## Implementation state
 
-1.   Add `headFiles` to the API types,
-      the commit-transaction facts,
-      the direct-fix facts,
-      and the other lifecycles.
-2.   Extend `applyPolicyPatches`,
-      `runCommitTransaction`,
-      the journal,
-      finalize,
-      and recovery.
-3.   Update `SPEC.md` and `doc/decision/cli-git-policies-platform.md`.
-4.   Write the ripple module and the policy with unit tests.
-5.   Add the fixtures,
-      then verify through the built shim in a disposable repository.
-6.   Re-trust the repository configuration,
-      which changes when the policy is registered.
+Landed:
+
+- `trackedFiles` in `package/git-policy/api` and its cli-git copy,
+   implemented by `commit-transaction-tracked-files.ts` for private-index facts.
+- `applyPolicyPatches` resolves tracked targets through `commit-transaction-added-paths.ts`,
+   and `runCommitTransaction` carries added paths into later passes,
+    the post-commit index,
+    the journal,
+    finalize,
+    and recovery.
+- `mono/dependent-version-bump` in `package/git-policy/repository`,
+   with pure helpers shared by Task 8
+   (`dependent-version-bump.ts`,
+    `manifest-text.ts`,
+    `source-imports.ts`,
+    `publishable-names.ts`).
+- `SPEC.md` and `doc/decision/cli-git-policies-platform.md` updated.
+- Packed fixtures,
+   run in `node:24-slim` through the packed shim:
+   `built-autofix-added-paths-consumer.ts`
+    (explicit-path,
+     `--no-only`,
+     amend,
+     unstaged and staged conflicts,
+     `--include` refusal;
+     it fails when the worktree install is removed)
+   and `built-dependent-version-bump-consumer.ts`
+    (runtime and bundled dependents bumped,
+     test-only importer untouched,
+     clean status).
+
+Remaining:
+
+1.   Direct fix does not add paths;
+      its convergence calls `applyPolicyPatches` without added-path context,
+      so tracked targets fail as stale there.
+2.   No fixture interrupts a transaction between index install and worktree install;
+      recovery's added-path step is covered only by code review.
+3.   Merge,
+      cherry-pick,
+      and revert conclusions have no added-path fixture.
+4.   The repository's trusted cli-git config bundle predates the policy
+      (`git cli-git check --policy mono/dependent-version-bump --all` reported
+       `Unknown built-in policy ID: mono/dependent-version-bump` on 2026-09-15),
+      so the owner must re-trust `cli-git.config.ts` before hand bumps ripple locally.
+5.   Task 8:
+      run the same ripple in the `npm-release.yml` changesets `version` job.
