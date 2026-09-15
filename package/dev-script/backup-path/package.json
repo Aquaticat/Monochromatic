@@ -3,13 +3,13 @@
   "name": "@monochromatic-dev/dev-script-backup-path",
   "description": "Backup a file or folder into the bak folder in a timestamped folder.",
   "type": "module",
-  "module": "dist/final/node/index.js",
+  "module": "dist/final/node/index.mjs",
   "exports": {
-    ".": "./dist/final/node/index.js",
+    ".": "./dist/final/node/index.mjs",
     "./ts": "./src/index.ts"
   },
-  "main": "dist/final/node/index.js",
-  "typings": "dist/final/node/index.d.ts",
+  "main": "dist/final/node/index.mjs",
+  "types": "dist/final/node/index.d.mts",
   "files": [
     "dist/final",
     "LICENSES"
@@ -23,7 +23,7 @@
     "@optique/core": "catalog:",
     "@optique/run": "catalog:"
   },
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
