@@ -136,6 +136,10 @@ jobs:
       contents: read
     outputs:
       pack-dir-artifact-id: ${{ steps.pack.outputs.pack-dir-artifact-id }}
+    # Job-wide so the install, any pnpm install a build task re-runs, and the pack
+    # all keep direct workspace dependencies linked per package; see the install step.
+    env:
+      pnpm_config_dedupe_direct_deps: 'false'
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -167,8 +171,10 @@ jobs:
       # and pnpm pack then fails with ERR_PNPM_CANNOT_RESOLVE_WORKSPACE_PROTOCOL
       # (pnpm/pnpm#9566, doc/troubleshooting/pnpm-pack-dedupe-direct-deps.md).
       # The override changes node_modules layout only, never the lockfile.
+      # pnpm 12.3.4 ignores --config.dedupe-direct-deps=false; only the
+      # pnpm_config_dedupe_direct_deps environment variable set on this job takes effect.
       - name: Install dependencies with every direct dependency linked per package
-        run: mise exec node pnpm -- pnpm install --frozen-lockfile --config.dedupe-direct-deps=false
+        run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
       - name: Build the packages in the publish plan
         run: mise run changeset:build
