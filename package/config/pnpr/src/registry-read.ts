@@ -17,7 +17,7 @@ import {
 /**
  Repository root, four levels above this file.
  */
-export const REPOSITORY_ROOT = resolve(
+export const REPOSITORY_ROOT: string = resolve(
   import.meta.dirname,
   '../../../..',
 );
