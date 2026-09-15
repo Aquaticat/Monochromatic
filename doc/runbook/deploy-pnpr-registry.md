@@ -42,7 +42,15 @@ TODO | DONE
    - An SSH session to the Coolify host,
       with permission to edit its Caddyfile and reload Caddy.
    - A browser signed in to Njalla with access to the `aquati.cat` domain.
-   - Admin access to the GitHub repository `Aquaticat/Monochromatic`.
+   - A Coolify GitHub App source that can read `Aquaticat/Monochromatic`.
+      A public-repository resource cannot work here:
+       Coolify renders **Watch paths** only when
+       `$this->application->is_github_based() && !$this->application->is_public_repository()`
+       (`resources/views/livewire/project/application/general.blade.php` in coollabsio/coolify).
+   - Hetzner egress that allows `deb.debian.org` on port 80,
+      which `package/config/tofu/hetzner.tf` grants through `package_repo_http_ips` since 2026-09-15.
+      Without it the image build fails at `apt-get update` with exit code 100,
+      because `node:24-slim` uses `http://deb.debian.org` apt sources.
    - A local terminal with `curl`,
       `dig`,
       and `openssl`.
@@ -98,10 +106,13 @@ TODO | DONE
     and choose **Resource**.
    Expected:
     the resource picker opens with a **Search resources** box.
-2. Type `public` into **Search resources** and choose the public Git repository option.
+2. Type `github` into **Search resources** and choose the private repository option that uses a GitHub App.
    Expected:
-    a form titled **Public Git repository** opens with a **Repository URL** field.
-3. Enter `https://github.com/Aquaticat/Monochromatic` in **Repository URL**.
+    the form shows **Choose GitHub App**.
+3. Choose the GitHub App that can read `Aquaticat/Monochromatic`,
+    then pick `Aquaticat/Monochromatic` under **Choose repository**.
+   Expected:
+    the **Build configuration** section appears with **Branch** and **Build pack**.
 4. Set **Branch** to `main`.
 5. Set **Build pack** to `Docker Compose`.
    Expected:
@@ -117,9 +128,13 @@ TODO | DONE
    Expected:
     no domain is attached,
     because Caddy on the host serves the hostname.
-10. Set **Watch paths** to exactly `package/config/pnpr/**` and save.
+10. On the **General** page,
+     set **Watch paths** to exactly `package/config/pnpr/**` and save.
     Expected:
      the field keeps `package/config/pnpr/**` after the page reloads.
+    If **Watch paths** is missing,
+     the resource was created from a public repository;
+     delete it and restart Stage B with the GitHub App.
 11. In the local terminal,
      run `openssl rand -hex 32`.
     Expected:
@@ -168,33 +183,13 @@ TODO | DONE
    A certificate error means Caddy has not yet obtained the certificate for the new name;
     rerun it after a minute.
 
-### Stage D: GitHub push webhook for Watch paths
+### Stage D: push events
 
-1. In Coolify,
-    open the pnpr application and its **Webhooks** page.
-   Expected:
-    a GitHub section shows **Webhook URL** and **Webhook secret**.
-2. In the local terminal,
-    run `openssl rand -hex 32` again.
-   Expected:
-    a new 64-character hexadecimal line,
-    different from `PNPR_SECRET`.
-3. Paste it into the GitHub **Webhook secret** field and save.
-   Expected:
-    the secret persists after the page reloads.
-4. Copy the GitHub **Webhook URL**.
-5. Open `https://github.com/Aquaticat/Monochromatic/settings/hooks/new`.
-   Expected:
-    the **Add webhook** form opens.
-6. Paste the URL into **Payload URL**.
-7. Set **Content type** to `application/json`.
-8. Paste the secret from step 2 into **Secret**.
-9. Choose **Just the push event.**,
-    keep **Active** checked,
-    and click **Add webhook**.
-   Expected:
-    the webhook list shows the Coolify URL,
-    and its **Recent Deliveries** tab shows a `ping` delivery with a green check.
+No manual repository webhook is needed:
+ the GitHub App delivers push events to Coolify,
+ and Coolify filters them by **Watch paths**.
+Do not add a repository webhook as well,
+ or matching pushes deploy twice.
 
 ## What to check
 
@@ -215,9 +210,7 @@ Run each command in the local terminal.
    prints `Not Found 404`,
    confirming the registry proxies nothing.
 5. After the next push to `main` that does not touch `package/config/pnpr/`,
-   open that delivery under the GitHub webhook's **Recent Deliveries**.
-   Its response body contains `Changed files do not match watch paths. Ignoring deployment.`,
-   and Coolify's deployment list shows no new deployment.
+   the pnpr application's **Deployment Logs** list shows no new deployment for that commit.
 6. Tell the agent session that the registry is live,
    so it can dispatch the publish workflow and run the throwaway-consumer verification.
 
@@ -228,25 +221,19 @@ TODO | DONE
 
 Only if the registry must be removed.
 
-1. In GitHub,
-    open `https://github.com/Aquaticat/Monochromatic/settings/hooks`,
-    open the Coolify webhook,
-    and click **Delete webhook**.
-   Expected:
-    the webhook disappears from the list.
-2. In Coolify,
-    open the pnpr application,
-    choose **Delete**,
+1. In Coolify,
+    open the pnpr application's **Danger Zone**,
+    delete the resource,
     and select the option that also deletes volumes.
    Expected:
     the application and the `pnpr-storage` volume disappear.
    Published packages are gone with the volume;
     recovery republishes current versions.
-3. On the Coolify host,
+2. On the Coolify host,
     remove the `pnpr.c.aquati.cat` block from the Caddyfile and run `systemctl reload caddy`.
    Expected:
     `curl --silent --write-out '%{http_code}\n' --output /dev/null https://pnpr.c.aquati.cat/-/ping` no longer prints `200`.
-4. In Njalla,
+3. In Njalla,
     delete the `pnpr.c` `A` record.
    Expected:
     `dig +short pnpr.c.aquati.cat` prints nothing once caches expire.

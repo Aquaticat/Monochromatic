@@ -119,8 +119,13 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
 - file-enforcer generates the pnpr config,
    including the package-name list and the exclusion list.
 - The deployment lives in `package/config/pnpr/`
-   and Coolify redeploys it from the public GitHub repository on push,
+   and Coolify redeploys it on push through a GitHub App source,
    limited by Watch Paths to `package/config/pnpr/**`.
+   A public-repository resource was tried first and has no Watch Paths field:
+    Coolify renders it only for `is_github_based() && !is_public_repository()`.
+- The Hetzner egress allowlist in `package/config/tofu/hetzner.tf` allows `deb.debian.org` on port 80
+   (applied 2026-09-15),
+   because the image's `apt-get` step uses `http://` Debian sources and failed with exit code 100 without it.
    Without Watch Paths every push would redeploy:
     Coolify deploys when `isWatchPathsTriggered($changed_files) || blank($application->watch_paths)`
     (`app/Http/Controllers/Webhook/Github.php` lines 136 to 137 in coollabsio/coolify),
