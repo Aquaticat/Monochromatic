@@ -193,7 +193,36 @@ export function isTypeScriptSourcePath(path: string,): boolean {
 }
 
 /**
- Rewrites a packed manifest for pnpr: drops `private`, `./ts` subpaths, `main` or `module` fields naming TypeScript source, and npmjs-only publish settings.
+ Keeps only bin entries npm can link to loadable files; TypeScript-source bins cannot run from `node_modules` (#540).
+
+ @param bin - Value of the manifest `bin` field.
+
+ @returns Object spreading `bin` into the tarball manifest, empty when no loadable entry remains.
+
+ @example
+ ```ts
+ loadableBinField({ built: 'dist/cli.mjs', source: 'src/cli.ts' });
+ // => { bin: { built: 'dist/cli.mjs' } }
+ ```
+ */
+function loadableBinField(bin: unknown,): Readonly<Record<string, unknown>> {
+  if ((typeof bin) === 'string')
+    return isTypeScriptSourcePath(bin,) ? {} : { bin, };
+  if (((typeof bin) !== 'object') || (bin === null)
+    || Array.isArray(bin,))
+    return bin === undefined ? {} : { bin, };
+  /**
+   Bin entries whose targets are not TypeScript source.
+   */
+  const kept = Object.entries(bin,)
+    .filter(function isLoadableBin([, target,],) {
+      return ((typeof target) !== 'string') || (!isTypeScriptSourcePath(target,));
+    },);
+  return kept.length === 0 ? {} : { bin: Object.fromEntries(kept,), };
+}
+
+/**
+ Rewrites a packed manifest for pnpr: drops `private`, `./ts` subpaths, `main`, `module`, and `bin` entries naming TypeScript source, and npmjs-only publish settings.
 
  @param manifest - Manifest read from the packed tarball.
 
@@ -218,6 +247,7 @@ export function prepareManifestForPnpr(
     exports: exportsField,
     main,
     module,
+    bin,
     ...rest
   } = manifest;
   void _private;
@@ -252,6 +282,7 @@ export function prepareManifestForPnpr(
   return {
     ...rest,
     ...loadableRootEntries,
+    ...loadableBinField(bin,),
     ...(exportsField === undefined ? {} : { exports: stripTsSubpaths(exportsField,), }),
     ...(keptPublishConfig === undefined ? {} : { publishConfig: keptPublishConfig, }),
   };

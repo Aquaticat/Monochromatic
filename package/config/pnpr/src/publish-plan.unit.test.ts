@@ -176,6 +176,20 @@ await describe({
           },
         },),
         it({
+          name: 'drops TypeScript-source bins, keeps loadable ones, and removes bin when none remain',
+          fn: async () => {
+            expect(prepareManifestForPnpr({
+              bin: {
+                built: 'dist/cli.mjs',
+                source: 'src/cli.ts',
+              },
+            },),).toEqual({ bin: { built: 'dist/cli.mjs', }, },);
+            expect(prepareManifestForPnpr({ bin: { source: './src/cli.ts', }, },),).toEqual({},);
+            expect(prepareManifestForPnpr({ bin: 'src/cli.ts', },),).toEqual({},);
+            expect(prepareManifestForPnpr({ bin: 'dist/cli.mjs', },),).toEqual({ bin: 'dist/cli.mjs', },);
+          },
+        },),
+        it({
           name: 'adds no exports or publishConfig keys when the manifest had none',
           fn: async () => {
             expect(prepareManifestForPnpr({ name: '@scope/a', main: './index.js', },),).toEqual({
