@@ -795,9 +795,18 @@ records the cancellation defect and committed repair separately from #509.
 Its exact body was read back with state `OPEN`;
 the changes have not been reviewed.
 R7/R8 source and verification bytes are copied into durable storage before final cleanup.
-The post-export mutation controls remain running.
-Task62 and task51 remain incomplete pending current sensitivity checks,
-final lint controls and exact stopped-container cleanup.
+The post-export matrices pass nine callback,
+sixteen signal and twenty-two non-logger mutation controls,
+with fresh successful builds,
+designated ordinary assertions,
+baseline/restored tests and unchanged real source/`dist` inventories.
+The roots are `r7-callback-guards-vELZGT`,
+`r7-signal-guards-dvhnLf` and `r7-boundary-guards-LN5chA`;
+their directory prefix predates the R8 run and does not name an older executable.
+The new cleanup-warning control detects a premature snapshot as
+`AssertionError: expected [] to deeply equal [ 'warn' ]`,
+not a compiler or process failure.
+Task62 and task51 remain incomplete pending final lint controls and exact stopped-container cleanup.
 
 ## Earlier verified checkpoint: task50
 
