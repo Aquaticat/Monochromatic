@@ -47,9 +47,9 @@ TODO | DONE
        Coolify renders **Watch paths** only when
        `$this->application->is_github_based() && !$this->application->is_public_repository()`
        (`resources/views/livewire/project/application/general.blade.php` in coollabsio/coolify).
-   - Hetzner egress to `registry.npmjs.org` on port 443,
-      which the image build uses to install `@pnpm/pnpr@next`.
-      The image needs no apt access.
+   - Hetzner egress to `ghcr.io` on port 443,
+      which the image build uses to pull the patched `ghcr.io/aquaticat/pnpr` base image.
+      The image needs no apt or npm access.
    - A local terminal with `curl`,
       `dig`,
       and `openssl`.
@@ -228,7 +228,8 @@ Only if the registry must be removed.
     delete the resource,
     and select the option that also deletes volumes.
    Expected:
-    the application and the `pnpr-storage` volume disappear.
+    the application and the `pnpr-registry-storage` volume disappear,
+    along with the empty `pnpr-storage` volume if the resource predates the patched image.
    Published packages are gone with the volume;
     recovery republishes current versions.
 2. On the Coolify host,
@@ -242,8 +243,12 @@ Only if the registry must be removed.
 
 ## Operations
 
-- To pick up a newer `@pnpm/pnpr@next`,
-   open the pnpr application in Coolify and choose **Deploy (without cache)**;
-   a normal redeploy reuses the cached install layer.
+- pnpr moves only when the `Containerfile` `FROM` digest changes;
+   `package/config/pnpr/README.md` "Deploy and operate" lists the steps,
+   and committing the new digest triggers the Watch paths redeploy.
+- The switch to the patched image on 2026-09-15 renamed the storage volume to `pnpr-registry-storage`,
+   because the new image runs as user `pnpr` instead of `node`.
+   The old `pnpr-storage` volume held no packages;
+   delete it from the application's **Storages** page once the new deployment answers `{}` on `/-/ping`.
 - `config.yaml` changes only through `mise run sync:files`;
    committing its regenerated file triggers the Watch paths redeploy.
