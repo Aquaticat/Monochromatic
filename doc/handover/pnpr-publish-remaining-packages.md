@@ -364,3 +364,9 @@ Done after the rollout:
   A unit test was rejected because it would add the helper to the published package API.
   Removing `direct-fix` from the dependent-bump triggers failed `built-dependent-version-bump-consumer.ts`
   (`direct-fix ripple summary; stdout= stderr=`).
+- Done:
+  the full packed trust suite passed with every change restored (`built-trust-consumer-ok`),
+  cli-git was re-trusted here,
+  and `git cli-git check --policy mono/dependent-version-bump --all` exits 0.
+  #544 carries the results comment and is closed.
+  No open follow-up remains from these requests.
