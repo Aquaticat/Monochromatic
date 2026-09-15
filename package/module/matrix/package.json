@@ -3,7 +3,7 @@
   "name": "@monochromatic-dev/module-matrix",
   "description": "Test matrix runner -- runs files across a cartesian product of OS, user context, and JS runtime via podman containers or directly on the host.",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "module": "dist/final/node/index.mjs",
   "exports": {

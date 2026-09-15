@@ -3004,6 +3004,9 @@ importers:
       '@monochromatic-dev/module-numeric-format':
         specifier: workspace:*
         version: link:../numeric-format
+      '@types/sinon':
+        specifier: 'catalog:'
+        version: 22.0.0
       chai:
         specifier: 'catalog:'
         version: 6.2.2
@@ -3041,9 +3044,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.4.1
-      '@types/sinon':
-        specifier: 'catalog:'
-        version: 22.0.0
       '@types/sinon-chai':
         specifier: 'catalog:'
         version: 4.0.0
