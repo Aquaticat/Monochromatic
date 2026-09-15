@@ -9,6 +9,13 @@ export {
   type PublishCandidate,
 } from './publish-plan.ts';
 export {
+  FORBIDDEN_RETRY_DELAY_MS,
+  FORBIDDEN_RETRY_WINDOW_MS,
+  isForbiddenPublishError,
+  NPM_FORBIDDEN_MARKER,
+  publishWithForbiddenRetry,
+} from './publish-retry.ts';
+export {
   chooseDistTag,
   compareVersions,
 } from './version-order.ts';

@@ -1386,6 +1386,9 @@ importers:
 
   package/config/pnpr:
     dependencies:
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger

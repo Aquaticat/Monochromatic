@@ -322,27 +322,39 @@ export async function publishTarball(
   } = process.env;
   void _requestUrl;
   void _requestToken;
-  await spawn(
-    'npm',
-    [
-      'publish',
-      tarball,
-      '--registry',
-      registry.href,
-      '--tag',
-      tag,
-      '--provenance=false',
-      '--userconfig',
-      userconfig,
-    ],
-    {
-    env: {
-      ...inheritedEnvironment,
-      NODE_AUTH_TOKEN: token,
+  try {
+    /**
+     Completed publish with npm's captured output.
+     */
+    const result = await spawn(
+      'npm',
+      [
+        'publish',
+        tarball,
+        '--registry',
+        registry.href,
+        '--tag',
+        tag,
+        '--provenance=false',
+        '--userconfig',
+        userconfig,
+      ],
+      {
+      env: {
+        ...inheritedEnvironment,
+        NODE_AUTH_TOKEN: token,
+      },
+      // Output is captured rather than inherited so the caller can recognize an `E403` refusal and retry it.
+      stdin: 'ignore',
     },
-    stdio: 'inherit',
-  },
-  );
+    );
+    moduleLogger.info(result.output,);
+  }
+  catch (error: unknown) {
+    if (Error.isError(error,) && ('output' in error))
+      moduleLogger.error(String(error.output,),);
+    throw error;
+  }
 }
 
 //endregion Build, pack, token, publish

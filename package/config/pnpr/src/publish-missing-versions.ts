@@ -1,6 +1,7 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { isJsonRecord, } from './json-shape.ts';
@@ -8,6 +9,10 @@ import {
   orderForPublishing,
   readPnprPublishTarget,
 } from './publish-plan.ts';
+import {
+  FORBIDDEN_RETRY_WINDOW_MS,
+  publishWithForbiddenRetry,
+} from './publish-retry.ts';
 import {
   buildIfDeclared,
   packForPnpr,
@@ -164,6 +169,10 @@ function selectedNames({ packageNames, }: { readonly packageNames: readonly stri
  */
 async function publishMissingVersions(): Promise<void> {
   /**
+   Last moment a forbidden publish may be retried; a push that adds names also redeploys the registry.
+   */
+  const forbiddenRetryDeadline = Date.now() + FORBIDDEN_RETRY_WINDOW_MS;
+  /**
    Registry target from the generated config.
    */
   const target = readPnprPublishTarget(await readFile(
@@ -292,18 +301,30 @@ async function publishMissingVersions(): Promise<void> {
         version: item.version,
         ...(item.latest === undefined ? {} : { currentLatest: item.latest, }),
       },);
-      /**
-       Workload credential requested right before use, since it is short-lived.
-       */
-      // oxlint-disable-next-line eslint/no-await-in-loop -- each publish requests its own short-lived token right before use.
-      const token = await requestPublishToken({ audience: target.origin, },);
       // oxlint-disable-next-line eslint/no-await-in-loop -- dependents must not publish before their dependencies exist in the registry.
-      await publishTarball({
-        tarball,
-        target,
-        origin,
-        tag,
-        token,
+      await publishWithForbiddenRetry({
+        attempt: async function publishOnce() {
+          /**
+           Workload credential requested right before use, since it is short-lived.
+           */
+          const token = await requestPublishToken({ audience: target.origin, },);
+          await publishTarball({
+            tarball,
+            target,
+            origin,
+            tag,
+            token,
+          },);
+        },
+        deadline: forbiddenRetryDeadline,
+        now: Date.now,
+        sleep: wait,
+        onRetry: function reportRetry({
+          retryNumber,
+          delayMs,
+        },) {
+          moduleLogger.warn(`${name}@${item.version}: pnpr refused the publish with E403; retry ${retryNumber} in ${delayMs} ms in case the registry is still loading a new trust list`,);
+        },
       },);
       moduleLogger.info(`published ${name}@${item.version} with tag ${tag}`,);
     }
