@@ -1,7 +1,7 @@
 import { createHash, } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, promises as fsPromises, watch, } from 'node:fs';
 import childProcess from 'node:child_process';
-import { getEventListeners, } from 'node:events';
+import events, { getEventListeners, } from 'node:events';
 import { syncBuiltinESMExports, } from 'node:module';
 import timers from 'node:timers';
 import { chmod, mkdir, mkdtemp, readFile, readdir, rename, rm, writeFile, } from 'node:fs/promises';
@@ -846,6 +846,80 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       expect(exit.code).toBe(0);
     }
   } })),
+  it({ name: 'preserves actual cancellation after an unreadable synthetic composite observation', fn: async () => {
+    await using f = await fixture();
+    const controller = new AbortController();
+    const signal = AbortSignal.any([controller.signal]);
+    const changed = new Set<string>();
+    const error = await rejected({ ...f.request(), signal, l: { ...l, debug(message) {
+      if (changed.size === 0) {
+        Object.defineProperty(controller.signal, 'aborted', { get() {
+          throw new ProducerInputComparisonError({ kind: 'storage', directory: '/precedence-q7z9k2' });
+        } });
+        changed.add('synthetic');
+        signal.dispatchEvent(new Event('abort'));
+        controller.abort(new Error('actual cancellation q7z9k2'));
+      }
+      l.debug(message);
+    } } });
+    expect(changed.size).toBe(1);
+    expect(error.kind).toBe('interruption');
+    expect(error.directory).toBeUndefined();
+    expect(error.message).not.toContain('q7z9k2');
+    expect(await readdir(f.output)).toEqual([]);
+  } }),
+  ...(['success', 'mismatch', 'cancel'] as const).map(outcome => it({ name: `observes subscription cleanup failure before reporting ${outcome} without replacing primary metadata`, fn: async ctx => {
+    await using f = await fixture();
+    const nativeAdd = events.addAbortListener;
+    const failedCleanup = ctx.sinon.spy(function recordCleanupFailure() {});
+    const warnings: string[] = [];
+    const controller = new AbortController();
+    ctx.sinon.stub(events, 'addAbortListener').callsFake(function observedSubscription(signal, listener) {
+      const subscription = nativeAdd(signal, listener);
+      return { [Symbol.dispose]() {
+        subscription[Symbol.dispose]();
+        failedCleanup();
+        throw new Error('private cleanup failure q7z9k2');
+      } };
+    });
+    syncBuiltinESMExports();
+    using restore = { [Symbol.dispose]() {
+      ctx.sinon.restore();
+      syncBuiltinESMExports();
+    } };
+    const error = await rejected({ ...f.request(), signal: controller.signal, reference: outcome === 'mismatch' ? { ...artifactIdentity, sha256: '0'.repeat(64) } : artifactIdentity, l: { ...l, warn(message) {
+      warnings.push(message);
+    }, info(message) {
+      if ((outcome === 'cancel') && message.includes('matched retained unqualified input bytes')) controller.abort();
+      l.info(message);
+    } } });
+    const expected = outcome === 'success' ? 'contract' : outcome === 'mismatch' ? 'mismatch' : 'interruption';
+    expect(failedCleanup.callCount).toBe(1);
+    expect(error.kind).toBe(expected);
+    expect(warnings.some(message => message.includes('cancellation observation failed; primary comparison failure remains retained'))).toBe(true);
+    expect(error.message).not.toContain('q7z9k2');
+    if (error.directory === undefined) throw new Error('Expected retained cleanup observation');
+    expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe(expected);
+    expect(error.message).toBe(new ProducerInputComparisonError({ kind: expected, directory: error.directory }).message);
+  } })),
+  it({ name: 'restores ordinary propagation suppression after the owned subscription is removed', fn: async ctx => {
+    await using f = await fixture();
+    const controller = new AbortController();
+    const stopped = ctx.sinon.spy(function stopEvent(event: Event) {
+      event.stopImmediatePropagation();
+    });
+    const ordinary = ctx.sinon.spy(function ordinaryListener() {});
+    controller.signal.addEventListener('abort', stopped);
+    controller.signal.addEventListener('abort', ordinary);
+    controller.signal.dispatchEvent(new Event('abort'));
+    expect(stopped.callCount).toBe(1);
+    expect(ordinary.callCount).toBe(0);
+    await accepted({ ...f.request(), signal: controller.signal });
+    expect(getEventListeners(controller.signal, 'abort')).toEqual([stopped, ordinary]);
+    controller.abort();
+    expect(stopped.callCount).toBe(2);
+    expect(ordinary.callCount).toBe(0);
+  } }),
   //endregion Native cancellation state is owned without borrowing caller accessors or reasons
   //region Persistent caller logging failures cannot replace storage or operation evidence
   ...(['normal', 'exit-after-output', 'extra-output'] as const).flatMap(mode => [false, true].map(revoked => it({ name: `retains primary ${mode} failure and its record when every warning throws revoked=${revoked}`, fn: async ctx => {
