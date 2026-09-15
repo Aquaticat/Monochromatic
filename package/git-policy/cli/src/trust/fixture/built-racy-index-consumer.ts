@@ -5,249 +5,55 @@
  * then rewrites the file with same-size bytes and the same mtime.
  * Only the index timestamp tells Git to re-hash that entry,
  * so a private index copy or install with a fresh mtime hides the edit.
+ * Commit scenarios stage a file missing its final newline:
+ * without a fix to apply,
+ * cli-git hands the commit to real Git on the real index and no private index is installed.
  *
  * @module
  */
 import {
-  copyFile,
   readFile,
-  rm,
-  utimes,
   writeFile,
 } from 'node:fs/promises';
 import { execute, } from './built-consumer-helpers.ts';
+import { assertFixtureEqual, } from './built-post-commit-helpers.ts';
 import {
-  assertFixtureEqual,
-  initializePostCommitRepository,
-} from './built-post-commit-helpers.ts';
+  assertEditVisible,
+  initializeRacyRepository,
+  pinRacyEdit,
+} from './built-racy-index-helpers.ts';
+import { verifyRacyIndexInstall, } from './built-racy-index-install.ts';
 
 /**
- * Seconds between the pinned stat second and the scenario start, well outside any same-second window.
- */
-const PINNED_SECONDS_AGO = 100;
-/**
- * Milliseconds per second for converting wall-clock time.
- */
-const MILLISECONDS_PER_SECOND = 1000;
-
-/**
- * Creates a trusted repository whose tracked files form its first commit.
+ * Requires the landed commit to carry the final-newline fix, proving the private index was installed.
  *
  * @param repository - disposable repository root
  *
- * @param files - baseline text keyed by repository path
- *
- * @param env - PATH-first packed shadow environment
+ * @param context - commit mode label
  *
  * @example
  * ```ts
- * await initializeRacyRepository({ repository: '/work/racy', files: { 'a.txt': 'a\n' }, env });
+ * await assertOtherFixed({ repository: '/work/racy', context: 'explicit-path commit' });
  * ```
  */
-async function initializeRacyRepository({
+export async function assertOtherFixed({
   repository,
-  files,
-  env,
-}: Readonly<{
-  repository: string;
-  files: Readonly<Record<string, string>>;
-  env: NodeJS.ProcessEnv;
-}>,): Promise<void> {
-  await initializePostCommitRepository(repository,);
-  // A rewrite changes ctime, so ctime must not decide staleness for the pinned mtime to matter.
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'config',
-      'core.trustctime',
-      'false',
-    ],
-    cwd: repository,
-  },);
-  await writeFile(
-    `${repository}/cli-git.config.mjs`,
-    'export default {};\n',
-  );
-  await Promise.all(Object.entries(files,)
-    .map(async function writeBaseline([path, text,],) {
-    await writeFile(
-      `${repository}/${path}`,
-      text,
-    );
-  },),);
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'add',
-      '--all',
-    ],
-    cwd: repository,
-  },);
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'commit',
-      '--quiet',
-      '--message=racy baseline',
-    ],
-    cwd: repository,
-  },);
-  await execute({
-    command: 'git',
-    args: [
-      'cli-git',
-      'trust',
-      '--yes',
-    ],
-    cwd: repository,
-    env,
-  },);
-}
-
-/**
- * Leaves a same-size edit that only the real index timestamp exposes, and proves that precondition.
- *
- * @param repository - disposable repository root
- *
- * @param path - tracked file whose edit must stay visible
- *
- * @param edited - replacement text with the baseline's byte length
- *
- * @example
- * ```ts
- * await pinRacyEdit({ repository: '/work/racy', path: 'a.txt', edited: 'b\n' });
- * ```
- */
-async function pinRacyEdit({
-  repository,
-  path,
-  edited,
-}: Readonly<{
-  repository: string;
-  path: string;
-  edited: string;
-}>,): Promise<void> {
-  /**
-   * Whole past second shared by the cached stat, the edit, and the real index.
-   */
-  const pinnedSecond = Math.floor(Date.now() / MILLISECONDS_PER_SECOND,) - PINNED_SECONDS_AGO;
-  /**
-   * Absolute file path.
-   */
-  const filePath = `${repository}/${path}`;
-  /**
-   * Absolute real index path.
-   */
-  const indexPath = `${repository}/.git/index`;
-  assertFixtureEqual({
-    actual: String(Buffer.byteLength(edited,),),
-    expected: String((await readFile(filePath,)).byteLength,),
-    context: `racy edit size for ${path}`,
-  },);
-  await utimes(
-    filePath,
-    pinnedSecond,
-    pinnedSecond,
-  );
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'update-index',
-      '--refresh',
-    ],
-    cwd: repository,
-  },);
-  await utimes(
-    indexPath,
-    pinnedSecond,
-    pinnedSecond,
-  );
-  await writeFile(
-    filePath,
-    edited,
-  );
-  await utimes(
-    filePath,
-    pinnedSecond,
-    pinnedSecond,
-  );
-  // Positive control: the real index exposes the edit, and a plain copy with a fresh mtime hides it.
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'diff-files',
-      '--quiet',
-      '--',
-      path,
-    ],
-    cwd: repository,
-    expectedExit: 1,
-  },);
-  /**
-   * Plain copy of the real index carrying a fresh modification time.
-   */
-  const controlIndexPath = `${repository}/.git/racy-control-index`;
-  await copyFile(
-    indexPath,
-    controlIndexPath,
-  );
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'diff-files',
-      '--quiet',
-      '--',
-      path,
-    ],
-    cwd: repository,
-    env: {
-      ...process.env,
-      GIT_INDEX_FILE: controlIndexPath,
-    },
-  },);
-  await rm(controlIndexPath,);
-}
-
-/**
- * Requires the real index to still expose the pinned edit.
- *
- * @param repository - disposable repository root
- *
- * @param path - tracked file with the pinned edit
- *
- * @param context - lifecycle that just replaced or read the index
- *
- * @example
- * ```ts
- * await assertEditVisible({ repository: '/work/racy', path: 'a.txt', context: 'commit' });
- * ```
- */
-async function assertEditVisible({
-  repository,
-  path,
   context,
 }: Readonly<{
   repository: string;
-  path: string;
   context: string;
 }>,): Promise<void> {
-  /**
-   * Plumbing status that never refreshes or rewrites the index.
-   */
-  const visible = await execute({
-    command: '/usr/bin/git',
-    args: [
-      'diff-files',
-      '--name-only',
-      '--',
-      path,
-    ],
-    cwd: repository,
-  },);
   assertFixtureEqual({
-    actual: visible.stdout,
-    expected: `${path}\n`,
-    context: `${context} keeps the same-size edit of ${path} visible in the real index`,
+    actual: (await execute({
+      command: '/usr/bin/git',
+      args: [
+        'show',
+        'HEAD:other.txt',
+      ],
+      cwd: repository,
+    },)).stdout,
+    expected: 'other changed\n',
+    context: `${context} committed final-newline fix`,
   },);
 }
 
@@ -312,7 +118,7 @@ export async function verifyRacyIndexConsumer({ env, }: Readonly<{
 
   //endregion direct fix sees an edit hidden behind cached stat
 
-  //region commits keep an unselected edit visible in the installed index
+  //region fixed commits keep an unselected edit visible in the installed index
 
   /**
    * Explicit-path commit repository.
@@ -334,7 +140,7 @@ export async function verifyRacyIndexConsumer({ env, }: Readonly<{
   // Edited after the pin so refreshing the index sees only the held file.
   await writeFile(
     `${explicitRepository}/other.txt`,
-    'other changed\n',
+    'other changed',
   );
   await execute({
     command: 'git',
@@ -348,6 +154,10 @@ export async function verifyRacyIndexConsumer({ env, }: Readonly<{
     cwd: explicitRepository,
     env,
   },);
+  await assertOtherFixed({
+    repository: explicitRepository,
+    context: 'explicit-path commit',
+  },);
   await assertEditVisible({
     repository: explicitRepository,
     path: 'hold.txt',
@@ -360,8 +170,24 @@ export async function verifyRacyIndexConsumer({ env, }: Readonly<{
   const indexRepository = '/work/racy-index-mode';
   await initializeRacyRepository({
     repository: indexRepository,
-    files: { 'hold.txt': 'racy hold base\n', },
+    files: {
+      'hold.txt': 'racy hold base\n',
+      'other.txt': 'other base\n',
+    },
     env,
+  },);
+  // Staged with real Git before the pin, because any later real index write would re-hash the pinned entry itself.
+  await writeFile(
+    `${indexRepository}/other.txt`,
+    'other changed',
+  );
+  await execute({
+    command: '/usr/bin/git',
+    args: [
+      'add',
+      'other.txt',
+    ],
+    cwd: indexRepository,
   },);
   await pinRacyEdit({
     repository: indexRepository,
@@ -372,12 +198,16 @@ export async function verifyRacyIndexConsumer({ env, }: Readonly<{
     command: 'git',
     args: [
       'commit',
+      '--no-only',
       '--quiet',
-      '--allow-empty',
       '--message=index commit beside racy edit',
     ],
     cwd: indexRepository,
     env,
+  },);
+  await assertOtherFixed({
+    repository: indexRepository,
+    context: 'index-mode commit',
   },);
   await assertEditVisible({
     repository: indexRepository,
@@ -385,5 +215,7 @@ export async function verifyRacyIndexConsumer({ env, }: Readonly<{
     context: 'index-mode commit',
   },);
 
-  //endregion commits keep an unselected edit visible in the installed index
+  //endregion fixed commits keep an unselected edit visible in the installed index
+
+  await verifyRacyIndexInstall({ env, },);
 }
