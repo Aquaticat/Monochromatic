@@ -290,6 +290,21 @@ test oidc::tests::workload_discovery_accepts_issuers_without_login_endpoints ...
 test result: ok. 45 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.14s
 ```
 
+Patched `pnpr` binary (`cargo build --package pnpr --bin pnpr`, same bounds),
+ run with this repository's generated `package/config/pnpr/config.yaml`
+ and probed with the registry harness against live GitHub:
+
+```text
+401 Authentication required for OIDC credentials
+```
+
+pnpr logged the request as `"status":401,"latency_ms":825`:
+ it fetched GitHub's discovery document and key set,
+ then rejected the forged signature,
+ where the unpatched release answers the same token with 500.
+A genuine Actions token was not exercised,
+ because GitHub issues one only inside a workflow run.
+
 ## What does not work
 
 - Pointing pnpr at a local discovery shim.
