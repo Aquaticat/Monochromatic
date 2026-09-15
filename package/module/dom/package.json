@@ -4,10 +4,15 @@
   "description": "Browser DOM utilities: prompt dialogs, element cloning, redirects, and CSS-from-URL-params.",
   "type": "module",
   "exports": {
+    ".": {
+      "types": "./dist/final/neutral/index.d.mts",
+      "default": "./dist/final/neutral/index.mjs"
+    },
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*"
   },
   "files": [
+    "dist/final",
     "src/",
     "LICENSES"
   ],
