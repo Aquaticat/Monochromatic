@@ -47,7 +47,12 @@ export function preparationInputSelectionParent({
   const field = preparationInputFields({
     value,
     path,
-    keys: ['parentId', 'entryId', 'sourceIndex', 'targetIndex'],
+    keys: [
+      'parentId',
+      'entryId',
+      'sourceIndex',
+      'targetIndex',
+    ],
   });
   /**
    Primitive validation precedes canonical identity comparison.
@@ -58,7 +63,11 @@ export function preparationInputSelectionParent({
     sourceIndex: preparationInputInteger(field('sourceIndex')),
     targetIndex: preparationInputInteger(field('targetIndex')),
   };
-  if ((!validParentEntry(parent.entryId)) || parent.entryId.includes('/'))
+  /**
+   One entry component is checked independently from the complete parent locator.
+   */
+  const { entryId } = parent;
+  if ((!validParentEntry(entryId)) || entryId.includes('/'))
     throw new PreparationRootError({
       kind: 'input-relations',
       input: path,
@@ -99,7 +108,10 @@ export function preparationInputSelectionReference({
   const field = preparationInputFields({
     value,
     path,
-    keys: ['path', 'hash'],
+    keys: [
+      'path',
+      'hash',
+    ],
   });
   return Object.freeze({
     path: preparationInputNonblankString(field('path')),
@@ -138,7 +150,12 @@ export function preparationInputObligation({
   const field = preparationInputFields({
     value,
     path,
-    keys: ['parentId', 'requiredContext', 'pictureEvidenceNeeded', 'scopeQualificationOpen'],
+    keys: [
+      'parentId',
+      'requiredContext',
+      'pictureEvidenceNeeded',
+      'scopeQualificationOpen',
+    ],
   });
   return Object.freeze({
     parentId: preparationInputNonblankString(field('parentId')),
@@ -181,8 +198,18 @@ export function preparationInputSelection({
     value,
     path,
     keys: [
-      'scope', 'digest', 'bytes', 'corpusCommitSha', 'populationDigest', 'poolDigest',
-      'parents', 'references', 'obligations', 'selectionRuntimeDigest', 'samplerNodeVersion', 'samplerIcuVersion',
+      'scope',
+      'digest',
+      'bytes',
+      'corpusCommitSha',
+      'populationDigest',
+      'poolDigest',
+      'parents',
+      'references',
+      'obligations',
+      'selectionRuntimeDigest',
+      'samplerNodeVersion',
+      'samplerIcuVersion',
     ],
   });
   if (preparationInputString(field('scope')) !== 'frozen-selection-identity')
@@ -232,18 +259,33 @@ export function preparationInputSelection({
     samplerIcuVersion: preparationInputNonblankString(field('samplerIcuVersion')),
   };
   /**
+   Collection relationships use one decoded selection, never caller-owned collections.
+   */
+  const {
+    parents,
+    references,
+    obligations,
+  } = selection;
+  /**
    Parent order remains the obligation domain even when no current-plan census is imposed here.
    */
-  const parentIds = selection.parents.map(function identity(parent): string { return parent.parentId; });
+  const parentIds = parents.map(function identity(parent): string {
+    return parent.parentId;
+  });
   /**
    Distinct locators may share content, but the same locator cannot occur twice in the projection.
    */
-  const referencePaths = selection.references.map(function locator(reference): string { return reference.path; });
+  const referencePaths = references.map(function locator(reference): string {
+    return reference.path;
+  });
   if ((selection.bytes === 0)
     || (new Set(parentIds).size !== parentIds.length)
     || (new Set(referencePaths).size !== referencePaths.length)
-    || (selection.obligations.length !== parentIds.length)
-    || (!selection.obligations.every(function matches(obligation, index): boolean {
+    || (obligations.length !== parentIds.length)
+    || (!obligations.every(function matches(
+      obligation,
+      index,
+    ): boolean {
       return obligation.parentId === parentIds[index];
     })))
     throw new PreparationRootError({

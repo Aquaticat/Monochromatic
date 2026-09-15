@@ -90,7 +90,7 @@ await describe({ name: 'persisted frozen selection projection', children: [
   it({ name: 'reads standalone canonical parent identity', fn: async () => {
     expect(preparationInputSelectionParent({ value: parent, path })).toEqual(parent);
   } }),
-  ...['', '..', 'Tabby/extra', 'Tabby\\extra', 'Tabby\u007F'].map(entryId => it({ name: `refuses parent entry component ${JSON.stringify(entryId)}`, fn: async () => {
+  ...['', '..', 'Tabby/extra', String.raw`Tabby\extra`, 'Tabby\u007F'].map(entryId => it({ name: `refuses parent entry component ${JSON.stringify(entryId)}`, fn: async () => {
     refused(() => preparationInputSelectionParent({ value: { ...parent, entryId }, path }));
   } })),
   it({ name: 'requires canonical parent-coordinate correspondence', fn: async () => {
