@@ -11,6 +11,7 @@ import type {
   CandidateFile,
   CandidateFileMode,
   GitObjectId,
+  TrackedFile,
 } from '../api/policy-types.ts';
 import { loadBlobBatch, } from './blob-batch.ts';
 import {
@@ -23,6 +24,8 @@ import {
   CommitTransactionGitError,
   runTransactionGit,
 } from './commit-transaction-git.ts';
+import { INDEX_MODES, } from './commit-transaction-modes.ts';
+import { loadTrackedFiles, } from './commit-transaction-tracked-files.ts';
 
 /**
  Strict Git metadata decoder.
@@ -35,15 +38,6 @@ const DECODER = new TextDecoder(
  Exact submodule identity encoder.
  */
 const ENCODER = new TextEncoder();
-/**
- Git index mode mapping.
- */
-const INDEX_MODES: Readonly<Record<string, CandidateFileMode>> = {
-  '100644': 'regular',
-  '100755': 'executable',
-  '120000': 'symlink',
-  '160000': 'submodule',
-};
 /**
  Creates transaction-domain error for failed or malformed Git output.
  
@@ -323,6 +317,14 @@ export function createPrivateIndexFacts({
         cwd,
         indexPath,
         paths,
+      },);
+    },
+    trackedFiles: function trackedFiles({ pathspecs, },): Promise<readonly TrackedFile[]> {
+      return loadTrackedFiles({
+        gitPath,
+        cwd,
+        indexPath,
+        pathspecs,
       },);
     },
     headOid: async function headOid(): Promise<GitObjectId> {
