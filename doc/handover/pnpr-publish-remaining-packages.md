@@ -306,3 +306,43 @@ Done after the rollout:
 - The root `mise.toml` noise came from three empty `node_modules/.bin` directories the forced relink left behind;
   a normal `pnpm install` did not remove them.
   Removing the empty directories and rerunning `mise run file-enforcer` left `mise.toml` clean.
+
+## cli-git follow-ups from the same session
+
+- Owner decision "Implement it now":
+  direct fix adds unchanged tracked paths
+  (`b20d65fc5`,
+   fixtures `9b9129e15`,
+   shared tracker `921062c87`,
+   docs `fb8809a5d`).
+- Owner decision "Enable it for fix":
+  `mono/dependent-version-bump` also runs on `git cli-git fix` (`5d2519e85`),
+  so `git cli-git fix -- <bumped manifest>` rewrites dependent manifests in the worktree only.
+  Docs `0eed11ba9`;
+  its message misattributed the commit-only scope to `5d2519e85`
+  (it came from `d07b4b54c`),
+  corrected in a commit comment.
+- #544:
+  the dependent-bump direct-fix fixture failed once with exit 0 and empty stdout.
+  Cause:
+  cli-git's private index copies and index installs got a fresh mtime,
+  so Git trusted cached stat for same-size edits made in the second Git cached it
+  (`doc/troubleshooting/git-racy-index-copy.md`).
+  Fix `372168ae0` carries source timestamps through `index-file-timestamps.ts`.
+  Fixtures `3ac62fdeb`,
+  `8a32cac4f`,
+  `4be59bf10`
+  (`built-racy-index-consumer.ts`,
+   `built-racy-index-install.ts`,
+   `built-racy-index-helpers.ts`).
+  `3ac62fdeb` claimed install coverage it lacked:
+  commits needing no fix are handed to real Git on the real index,
+  shown by logging `GIT_INDEX_FILE` through a wrapped `/usr/bin/git`;
+  corrected in a commit comment,
+  and `4be59bf10` makes the commits apply a final-newline fix.
+  Ablations with the current fixture,
+  each failing the packed run:
+  `add-policy-facts.ts` copy (`racy direct-fix summary`),
+  commit-index initial copies and post-index copies
+  (`explicit-path commit keeps the same-size edit of hold.txt visible`),
+  lock install (`index install keeps the same-size edit of hold.txt visible`).
