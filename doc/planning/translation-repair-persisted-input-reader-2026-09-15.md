@@ -182,7 +182,16 @@ Following task67,
 reference attribution,
 raw-document identity and exclusion-field decoders are added with common entry/discriminant validation.
 They preserve omitted-body identities as data and do not open their locators.
-Their verification precedes the remaining complete-entry,
+Their R1 builds,
+types,
+targeted tests and full-scope lint pass.
+The actual-artifact consumer then refuses `inputs.selection.selectionRuntimeDigest`:
+the new selection decoder incorrectly expected a bare SHA-256.
+`package/module/translation-repair/src/read-frozen-preparation-selection.ts:50`
+and lines 175 to 178 require `sha256-tree-v1:` followed by the digest.
+The decoder and fixtures now preserve that original tagged grammar;
+the valid retained artifact is not edited to satisfy the mistaken reader.
+Actual-artifact revalidation precedes the remaining complete-entry,
 parent,
 registration and whole-DTO relation work.
 No completed decoder,

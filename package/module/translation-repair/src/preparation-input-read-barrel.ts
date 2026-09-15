@@ -27,7 +27,10 @@ export {
   preparationInputSelectionReference,
 } from './preparation-input-read-selection.ts';
 export { validParentEntry, } from './preparation-selection-records.ts';
-export { preparationInputEntryId, } from './preparation-input-read-identity.ts';
+export {
+  preparationInputEntryId,
+  preparationInputTreeDigest,
+} from './preparation-input-read-identity.ts';
 export { preparationInputExclusion, } from './preparation-input-read-exclusion.ts';
 export {
   preparationInputRawDocument,

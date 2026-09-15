@@ -121,7 +121,8 @@ export type FrozenPreparationSelection = {
    */
   readonly obligations: readonly FrozenPreparationObligation[];
   /**
-   Original selection implementation identity, separate from acquisition runtime.
+   Original selection implementation identity in `sha256-tree-v1:<lowercase SHA-256>` form,
+   separate from acquisition runtime and bare artifact digests.
    */
   readonly selectionRuntimeDigest: string;
   /**

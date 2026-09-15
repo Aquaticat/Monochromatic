@@ -4,6 +4,7 @@ import {
   preparationInputSelection,
   preparationInputSelectionParent,
   preparationInputSelectionReference,
+  preparationInputTreeDigest,
   PreparationRootError,
 } from '../dist/final/node/preparation-input-read.mjs';
 
@@ -21,7 +22,7 @@ const template = {
   parents: [parent],
   references: [reference],
   obligations: [obligation],
-  selectionRuntimeDigest: 'e'.repeat(64),
+  selectionRuntimeDigest: `sha256-tree-v1:${'e'.repeat(64)}`,
   samplerNodeVersion: 'v26.8.2',
   samplerIcuVersion: '78.3',
 };
@@ -75,6 +76,13 @@ await describe({ name: 'persisted frozen selection projection', children: [
   ...['digest', 'corpusCommitSha', 'populationDigest', 'poolDigest', 'selectionRuntimeDigest'].map(key => it({ name: `requires exact identity grammar for ${key}`, fn: async () => {
     refused(() => preparationInputSelection({ value: { ...fixture(), [key]: 'Q7Z9K2' }, path }));
   } })),
+  it({ name: 'retains the historical tree-digest tag instead of a bare hash', fn: async () => {
+    expect(preparationInputTreeDigest({ value: template.selectionRuntimeDigest, path })).toBe(template.selectionRuntimeDigest);
+    refused(() => preparationInputTreeDigest({ value: 'e'.repeat(64), path }));
+    refused(() => preparationInputTreeDigest({ value: `sha256-tree-v2:${'e'.repeat(64)}`, path }));
+    refused(() => preparationInputTreeDigest({ value: `sha256-tree-v1:${'E'.repeat(64)}`, path }));
+    refused(() => preparationInputTreeDigest({ value: 'sha256-tree-v1:', path }));
+  } }),
   ...['samplerNodeVersion', 'samplerIcuVersion'].map(key => it({ name: `requires explicit historical ${key}`, fn: async () => {
     refused(() => preparationInputSelection({ value: { ...fixture(), [key]: ' ' }, path }));
   } })),

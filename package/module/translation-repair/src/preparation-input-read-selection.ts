@@ -1,5 +1,8 @@
 import { PreparationRootError, } from './preparation-root-error.ts';
-import { preparationInputEntryId, } from './preparation-input-read-identity.ts';
+import {
+  preparationInputEntryId,
+  preparationInputTreeDigest,
+} from './preparation-input-read-identity.ts';
 import type {
   FrozenPreparationObligation,
   FrozenPreparationParent,
@@ -242,10 +245,7 @@ export function preparationInputSelection({
       ...field('obligations'),
       read: preparationInputObligation,
     }),
-    selectionRuntimeDigest: preparationInputDigest({
-      ...field('selectionRuntimeDigest'),
-      algorithm: 'sha256',
-    }),
+    selectionRuntimeDigest: preparationInputTreeDigest(field('selectionRuntimeDigest')),
     samplerNodeVersion: preparationInputNonblankString(field('samplerNodeVersion')),
     samplerIcuVersion: preparationInputNonblankString(field('samplerIcuVersion')),
   };
