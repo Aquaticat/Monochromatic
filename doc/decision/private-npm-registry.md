@@ -84,6 +84,13 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
    packed separately from the npmjs release,
    so the same version's tarball bytes can differ between registries.
 - A reviewed exclusion list silences packages that cannot build on GitHub-hosted runners.
+   Since `pnpr-publish` run 34917976384 (2026-09-15) it holds
+    `desktop-daemon-hall-monitor` (its build runs `bun build --compile`,
+     and the job installs only node and pnpm)
+    and `webapp-productivity-doodle-widget` (rolldown cannot resolve jspdf's optional `canvg` import);
+   the generated config then lists 121 packages,
+    all of which were published that day.
+   Packages lacking a `version` field are skipped too.
 
 ### Tarball shape
 
@@ -158,14 +165,16 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
     of which 7 added or removed a package manifest.
    A new package's first publish can fail until the redeploy lands;
    a later qualifying run retries it.
-- The image writes Node's bundled Mozilla root certificates to `/etc/ssl/certs/ca-certificates.crt`
-   instead of apt-installing `ca-certificates`.
-   On the Coolify host `apt-get` exited with code 100 before and after
-   `deb.debian.org` was added to the port-80 egress allowlist in `package/config/tofu/hetzner.tf` (applied 2026-09-15);
-   Coolify's log did not show apt's own error,
-   so the cause is unconfirmed.
-   The allowlist entry stays;
-   the image no longer depends on it.
+- The Coolify build runs no package manager:
+   the patched base image already carries `ca-certificates`,
+   installed by upstream's `pnpr/docker/Dockerfile` in the fork's GitHub Actions run.
+   Before that image,
+    the `node:24-slim` build could not apt-install `ca-certificates` on the Coolify host
+    (`apt-get` exited with code 100 before and after
+     `deb.debian.org` was added to the port-80 egress allowlist in `package/config/tofu/hetzner.tf` on 2026-09-15;
+     the cause is unconfirmed)
+    and wrote Node's bundled root certificates instead.
+   The allowlist entry stays.
 - The owner performs the Njalla A record,
    Coolify resource,
    and Caddy site block from `doc/runbook/deploy-pnpr-registry.md`.
@@ -187,7 +196,21 @@ From a throwaway consumer:
 - A publish without the OIDC credential is rejected,
    and the workflow's OIDC publish succeeds.
 
-A GitHub issue tracks checking installability of the remaining published packages.
+Results on 2026-09-15 against `https://pnpr.c.aquati.cat`:
+
+- `pnpr-publish` run 34917839821 published `config-typescript@0.0.5`,
+   `module-or-throw@0.0.1`,
+   and `oxlint-plugin-tsdoc@0.0.1` with the OIDC workload credential.
+- The throwaway consumer installed all three with the lockfile resolving the scope from pnpr;
+   `nonNullishOrThrow(42)` returned `42` and threw on `null`,
+   `tsc` reported `TS2322` under the extended config,
+   and oxlint reported the `tsdoc` rule.
+- `@monochromatic-dev/module-logger@0.4.0` installed from pnpr and logged through `tagged`.
+- An unauthenticated `PUT` returned
+   `Authentication required for package "@monochromatic-dev/module-or-throw" 401`,
+   and a forged GitHub-issuer token returned `401 Authentication required for OIDC credentials`.
+
+GitHub issue #521 tracks checking installability of the remaining published packages.
 
 ## Consequences
 
