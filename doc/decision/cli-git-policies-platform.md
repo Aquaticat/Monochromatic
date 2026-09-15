@@ -733,7 +733,13 @@ It is the first repo plugin migration and proves the minimal finding path.
 
 ### Dependent version bump
 
-`dependent-version-bump` runs before commit and on direct check.
+`dependent-version-bump` runs before commit,
+on direct check,
+and on direct fix
+(owner decision 2026-09-15:
+ `git cli-git fix` applies the ripple `git cli-git check` reports).
+Before forwarding it reports only for `commit`,
+because `git add` cannot apply the ripple and would refuse a hand bump.
 When a workspace manifest's `version` differs from `HEAD`,
 it patch-bumps every publishable dependent reached through runtime fields or bundled development imports,
 adding their manifests to the commit through tracked targets.

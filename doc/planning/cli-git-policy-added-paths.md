@@ -75,7 +75,7 @@ Implemented 2026-09-15 on `main`;
     and because reading the current index spares policies from merging candidates over `HEAD`.
 - A `PolicyPatch` whose `targetId` names a tracked file that is not a candidate asks the engine to add that path.
 - Post-commit and manual-push lifecycles return no tracked files;
-   only `pre-forward` commit transactions apply added-path patches today.
+   only `pre-forward` commit transactions and direct fix apply added-path patches.
 
 ### Commit transaction
 
@@ -223,8 +223,11 @@ Remaining:
       and the same path once selected;
       removing the context failed it with `git cli-git fix -- version.txt expected 0, got 2`,
       and removing the added originals failed it with `Direct-fix candidate became unavailable: dependent.txt`.
-      `dependentVersionBump` still declares only `pre-forward` and `direct-check`,
-      so `git cli-git fix` does not ripple bumps until a policy opts into `direct-fix`.
+      `dependentVersionBump` also declares `direct-fix` (`5d2519e85`,
+       owner decision "Enable it for fix"),
+      so `git cli-git fix -- <bumped manifest>` rewrites dependent manifests in the worktree
+      and leaves the real index untouched;
+      `built-dependent-version-bump-consumer.ts` covers it.
 2.   Closed in `a37690a0d`:
       `built-autofix-added-paths-recovery.ts` kills the wrapper from `pre-commit` and `post-commit` hooks
       and simulates an installed index,
