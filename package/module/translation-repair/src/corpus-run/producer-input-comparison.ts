@@ -13,6 +13,7 @@ import type {
 } from './producer-input-comparison-model.ts';
 import { readProducerInputComparisonOutput, } from './producer-input-comparison-output.ts';
 import { invokeProducerInputBootstrap, } from './producer-input-comparison-process.ts';
+import { ownProducerInputComparisonSignal, } from './producer-input-comparison-signal.ts';
 import {
   createProducerInputComparisonRun,
   writeProducerInputComparisonRecord,
@@ -108,6 +109,10 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
    */
   const owned = ownProducerInputComparisonRequest(input);
   /**
+   Live cancellation is owned before callbacks; borrowed signal getters never cross into execution helpers.
+   */
+  using cancellation = ownProducerInputComparisonSignal(owned.signal);
+  /**
    Callback exceptions become fixed-name telemetry before any borrowed logger callback is requested.
    */
   const observedLogger = observeLoggerCallbacks(owned.l);
@@ -116,6 +121,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
    */
   const request: ProducerInputComparisonRequest = {
     ...owned,
+    signal: cancellation.signal,
     l: observedLogger.logger,
   };
   /**
@@ -134,6 +140,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
       l: request.l,
     });
     ownershipLogger.debug('owned fixed input-bootstrap launch and independent artifact reference');
+  cancellation.assertReadable({});
   if (request.signal
     .aborted)
     throw new ProducerInputComparisonError({ kind: 'interruption' });
@@ -144,6 +151,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
     request,
     l: pl
   });
+  cancellation.assertReadable({});
   if (request.signal
     .aborted)
     throw new ProducerInputComparisonError({ kind: 'interruption' });
@@ -159,6 +167,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
   });
   try {
     await revalidateProducerInputHostLayout(preflight.layout);
+    cancellation.assertReadable({ directory: run.directory });
     if (request.signal
       .aborted)
       throw new ProducerInputComparisonError({
@@ -174,6 +183,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
       l: pl
     });
     await revalidateProducerInputHostLayout(preflight.layout);
+    cancellation.assertReadable({ directory: run.directory });
     /**
      Native close is observed even on failure; no automatic retry can create a second input run.
      */
@@ -223,6 +233,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
       throw execution.reason;
     if (observed.status === 'rejected')
       throw observed.reason;
+    cancellation.assertReadable({ directory: run.directory });
     if (request.signal
       .aborted)
       throw new ProducerInputComparisonError({
@@ -239,6 +250,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
       ...execution.value,
       l: pl
     });
+    cancellation.assertReadable({ directory: run.directory });
     /**
      Comparison uses raw observed file identity, never reserialized input DTOs.
      */
@@ -266,6 +278,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
       },
       l: pl,
     });
+    cancellation.assertReadable({ directory: run.directory });
     if (request.signal
       .aborted)
       throw new ProducerInputComparisonError({
@@ -278,12 +291,15 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
         directory: run.directory
       });
     pl.info('matched retained unqualified input bytes; no root or phase review authority granted');
+    cancellation.assertReadable({ directory: run.directory });
     if (request.signal
       .aborted)
       throw new ProducerInputComparisonError({
         kind: 'interruption',
         directory: run.directory
       });
+    cancellation[Symbol.dispose]();
+    cancellation.assertReadable({ directory: run.directory });
     return {
       scope: 'matched-unqualified-input-files',
       loggerCallbackFailures: observedLogger.snapshot(),
