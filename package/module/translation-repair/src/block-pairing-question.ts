@@ -1,11 +1,10 @@
-import { createHash, } from 'node:crypto';
+import { blockPairingQuestionKey, } from './block-pairing-question-key.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import type {
   FreeOrderBlocks,
   NumberedBlock,
 } from './pair-blocks-wire.ts';
 import { definitionIndexes, } from './pair-definition-order.ts';
-import { PAIRING_CACHE_VERSION, } from './pairing-cache-version.ts';
 
 //region Current parent question identity
 // Acquisition and provider-free evidence replay must number and identify exactly the same parent blocks.
@@ -85,17 +84,10 @@ export function blockPairingQuestion(
   /**
    Existing key encoding, including its explicit side separator.
    */
-  const key = createHash('sha256',)
-    .update(
-      [
-        String(PAIRING_CACHE_VERSION,),
-        ...sourceBlocks.map(function sourceContent(block,): string { return block.text; },),
-        '\u0000',
-        ...targetBlocks.map(function targetContent(block,): string { return block.text; },),
-      ].join('\u0000',),
-      'utf8',
-    )
-    .digest('hex',);
+  const key = blockPairingQuestionKey({
+    sourceBlocks,
+    targetBlocks,
+  });
   return {
     sourceBlocks,
     targetBlocks,

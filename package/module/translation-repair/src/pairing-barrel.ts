@@ -27,6 +27,7 @@ export {
   blockPairingQuestion,
   type BlockPairingQuestion,
 } from './block-pairing-question.ts';
+export { blockPairingQuestionKey, } from './block-pairing-question-key.ts';
 export {
   type PreparedBlockEvidence,
   type PreparedBlockPairing,
