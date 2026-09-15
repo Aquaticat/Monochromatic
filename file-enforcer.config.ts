@@ -1877,6 +1877,9 @@ const PNPR_GITHUB_IDENTITY = {
  */
 const PNPR_EXCLUDED_PACKAGES: Readonly<Record<string, string>> = {
   // pnpr-publish run 34917976384: `bun: command not found` (exit 127).
+  // #521 installability run: importing it throws `RootNotFoundError: no mise monorepo root found` outside this repository (#536).
+  '@monochromatic-dev/oxlint-plugin-test-support':
+    'repository-bound test support: it locates the mise monorepo root at import time, so nothing outside this repository can import it',
   // Owner decision 2026-09-15: apps exposing nothing importable are not meant to publish.
   '@monochromatic-dev/desktop-daemon-hall-monitor':
     'app exposing nothing importable; its build also runs `bun build --compile`, and the publish job installs only node and pnpm',
