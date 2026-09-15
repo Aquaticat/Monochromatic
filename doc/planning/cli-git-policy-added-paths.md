@@ -215,11 +215,22 @@ Remaining:
 1.   Direct fix does not add paths;
       its convergence calls `applyPolicyPatches` without added-path context,
       so tracked targets fail as stale there.
-2.   No fixture interrupts a transaction between index install and worktree install;
-      recovery's added-path step is covered only by code review.
-3.   Merge,
+      Outside the owner decision's scope (it names commit modes),
+      and `dependentVersionBump` does not declare the `direct-fix` trigger,
+      so no current policy is affected.
+2.   Closed in `a37690a0d`:
+      `built-autofix-added-paths-recovery.ts` kills the wrapper from `pre-commit` and `post-commit` hooks
+      and simulates an installed index,
+      then asserts recovery leaves an uncommitted dependent alone
+      and writes the committed dependent to index and worktree.
+      Ablating either `installAddedWorktreeFiles` call in `commit-transaction-recovery.ts`
+      made the packed fixture fail
+      (`commit-created recovery worktree added path: expected bumped, got stale`
+       and `index-already-installed recovery worktree added path: expected bumped, got stale`).
+3.   Closed in `a37690a0d`:
+      `built-autofix-added-paths-conclusion.ts` covers merge,
       cherry-pick,
-      and revert conclusions have no added-path fixture.
+      and revert conclusions.
 4.   The repository's trusted cli-git config bundle predates the policy
       (`git cli-git check --policy mono/dependent-version-bump --all` reported
        `Unknown built-in policy ID: mono/dependent-version-bump` on 2026-09-15),

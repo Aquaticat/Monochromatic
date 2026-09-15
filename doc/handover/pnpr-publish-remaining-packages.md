@@ -96,14 +96,39 @@ from a scan of every `package/*/*/package.json` against the config list:
 
 ## Status
 
-- [ ] Issues opened.
-- [ ] `cli-markdown-lint` fixed, packed, imported from a throwaway consumer.
-- [ ] `config-oxlint` fixed, packed, imported.
-- [ ] `config-stylelint` fixed, packed, imported.
-- [ ] `module-dom` fixed, packed, imported.
-- [ ] Config regenerated and pushed.
-- [ ] pnpr-publish run green;
+- [x] Issues opened:
+      #522 `cli-markdown-lint`,
+      #523 `config-oxlint`,
+      #524 `config-stylelint`,
+      #525 `module-dom`.
+- [x] Manifest fixes committed in `cb4368eca`:
+      `"version": "0.0.1"` for the three unversioned packages;
+      `config-stylelint` `files` gained `property-disallowed-list.mjs` and `unit-disallowed-list.mjs`
+       and its two example names were corrected;
+      `module-dom` exports `.` from `dist/final/neutral` and ships `dist/final`.
+- [x] Packed through the publish job's own `buildIfDeclared` and `packForPnpr`
+      and installed with npm into a throwaway consumer routed to pnpr.
+      All four root exports import;
+      `markdown-lint bad.md` reports `MD001`;
+      `stylelint bad.css` with the published config reports `color-named`,
+       a rule `stylelint-config-standard` does not set.
+      A dry-run pack of the pre-fix `config-stylelint` manifest listed only `index.mjs`,
+       `README.md`,
+       `package.json`,
+       and licenses.
+- [x] Config regenerated (125 of 155) and pushed in `2f9ed715d`;
+      exclusion reasons now record both apps as exposing nothing importable.
+- [ ] pnpr-publish run 34922532212 green;
       each new package installs anonymously from pnpr.
+- [ ] Issue comments with applied changes and verification;
+      close each issue once its package installs from pnpr.
+
+Local-state note:
+packing locally needed
+`pnpm_config_dedupe_direct_deps=false pnpm install --force --filter <the four packages>`
+(otherwise `ERR_PNPM_CANNOT_RESOLVE_WORKSPACE_PROTOCOL`),
+which made file-enforcer add their `node_modules/.bin` paths to root `mise.toml`;
+that diff is left uncommitted because it reflects local install layout, not this change.
 
 ## Unrelated work finished in the same session
 
@@ -121,5 +146,8 @@ from a scan of every `package/*/*/package.json` against the config list:
 
 ## Next action
 
-Open the four issues,
-then fix and verify the packages one at a time.
+Wait for pnpr-publish run 34922532212.
+If the new names fail authorization because Coolify had not reloaded the trust list,
+re-dispatch with `gh workflow run pnpr-publish.yml --raw-field only='<names>'`.
+Then install each new package anonymously from pnpr,
+comment on and close its issue.
