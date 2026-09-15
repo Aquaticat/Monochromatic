@@ -18,9 +18,12 @@ task65 initial/conditional phases and task66 persistence/review/rebuild integrat
 Task53 waits for those finite root/phase materializers.
 The [reader implementation record](translation-repair-persisted-input-reader-2026-09-15.md)
 records current source constraints and rejected decoder assumptions.
-Task67 currently blocks task63's continuation while its transport-repair completion records are finalized.
-The original root DTO serialized definition-order sets as empty JSON objects.
-The explicit array projection now passes native, full-suite and mutation checks;
+Task67 corrects the original root DTO's definition-order sets serialized as empty JSON objects.
+The explicit array projection passes native,
+full-suite,
+mutation and after-state preservation checks,
+with scoped diagnostic cleanup recorded.
+Task63 continues from the corrected artifact;
 old frozen evidence remains separately retained.
 The changes have not been reviewed;
 GitHub issues #509 and #527 remain open.

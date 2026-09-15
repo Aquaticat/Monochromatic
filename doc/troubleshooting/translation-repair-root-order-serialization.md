@@ -11,8 +11,8 @@ Those checks do not establish that runtime collection contents survived persiste
 The measured artifact has 42 queried registrations.
 Nine have nonempty definition-node inventories,
 but their persisted order-exemption fields still contain empty objects.
-Task67 owns the repair and blocks task63's complete DTO decoder.
-Do not interpret the empty objects as empty exemption sets or grant plan authority to this artifact.
+Task67's transport repair qualifies a corrected artifact for task63's remaining DTO decoding work.
+Do not interpret the original empty objects as empty exemption sets or grant plan authority to either artifact.
 Frozen originals remain retained unchanged.
 
 ## Root cause
@@ -187,8 +187,16 @@ write-target selection alone would not.
 The evidence roots are under package `node_modules/.monochromatic/preparation-root-order/`.
 [Repository issue #541](https://github.com/Aquaticat/Monochromatic/issues/541) remains open;
 the changes have not been reviewed.
-Final documentation,
-retention and exact diagnostic cleanup remain separate completion steps.
+Durable archive `preparation-root-order-retention/proof-HFMTuC` copies and hash-matches
+7030 regular files totaling 116347762 bytes,
+with 1590 directories,
+566 recorded symlinks and no special entries.
+It retains current source/artifact snapshots and original CID bytes.
+At `2026-09-15T06:55:18.112Z`,
+all twenty-seven selected stopped diagnostic containers were removed without force or prune;
+all seventy-seven unselected containers remained present.
+Final documentation/issue readbacks and their scoped check-container cleanup are supplemental records.
+The transport qualification does not complete task63's remaining DTO field decoders.
 
 ## Rejected remedies
 

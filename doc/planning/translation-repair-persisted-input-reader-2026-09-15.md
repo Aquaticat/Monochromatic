@@ -14,9 +14,9 @@ Task52 retains integration acceptance before task53 acquisition journals.
 Task51 and task62 qualify the existing persisted-input comparison;
 they do not approve root/phase contents or paid work.
 
-## Current transport blocker
+## Transport repair prerequisite
 
-Task67 blocks the complete decoder.
+Task67 supplies the corrected transport representation for the complete decoder.
 The original retained Task47 file has empty objects in both `freeOrder` sides of all queried registrations.
 Nine queried registrations retain definition-node IDs but no serialized order-index members.
 The in-memory DTO incorrectly carries `ReadonlySet` values into plain JSON output.
@@ -29,7 +29,9 @@ not evidence that every runtime field survived serialization.
 The original frozen artifact stays unchanged.
 Task67's corrected artifact is separately qualified with explicit order arrays and SHA-256
 `475506126e6e990014b64ff2d4a694e099645e2b396efff690de7908449763a0`.
-Its final completion records precede resuming the complete DTO decoder.
+Its native,
+full-suite,
+mutation and preservation records remain distinct from the unfinished complete DTO decoder.
 
 ## Reader shape
 
