@@ -746,8 +746,25 @@ respectively,
 with successful mutant builds,
 designated ordinary assertions and restored artifact tests.
 Real source and `dist` inventories remain unchanged.
-Final audit/positive-control checks and exact stopped-container cleanup remain pending.
-Task62 and task51 remain incomplete until those results are checked.
+The current callback guard rerun also passes its original controls.
+Its first preparer refused a nonunique post-log mutation anchor before creating a container;
+the revised anchor removes only the final cancellation check.
+`final-audit-BSc1es` passes parser positive controls,
+its recognized import-closure audit,
+Markdown checks and an actual relocated consumer without repository/dependency mounts.
+The consumer also verifies native cancellation and zero caller state-getter reads.
+
+A scoped completion review identified a missing combined control:
+only the terminal cleanup-observation warning must throw,
+so a snapshot taken before that warning is detectably incomplete.
+The committed regression is expanded across success,
+mismatch and cancellation,
+with unchanged primary metadata and no telemetry in synchronized records.
+Current `AGENTS.md` XPT also requires the existing production cancellation internals in the dedicated barrel,
+marked `@internal` rather than withheld behind source-only exports.
+That export wiring and its built-consumer regression require a fresh artifact qualification.
+The R6 results remain bound to their recorded pre-export artifact.
+Task62 and task51 remain incomplete pending these checks and exact stopped-container cleanup.
 
 ## Earlier verified checkpoint: task50
 

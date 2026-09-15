@@ -30,6 +30,8 @@ const NATIVE_CONTROLLER_METHODS = Object.getOwnPropertyDescriptors(AbortControll
 /**
  Scoped native signal observation for one comparison, not a general execution interface.
 
+ @internal
+
  @example
  ```ts
  using cancellation = ownProducerInputComparisonSignal(signal);
@@ -55,6 +57,8 @@ export type ProducerInputComparisonCancellation = Disposable & {
  Detaches live cancellation from caller accessors without copying its reason or replacing caller properties.
  Registration preserves Node's propagation-resistance options but is persistent until explicit disposal:
  synthetic events must not consume observation of a later native abort.
+
+ @internal
 
  @param source - genuine same-realm signal whose native state and subscription remain borrowed here only
 

@@ -9,7 +9,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { ProducerInputComparisonError, runProducerInputComparison, } from '../../dist/final/node/producer-input-comparison.mjs';
+import { BOOTSTRAP_TERMINATION_GRACE_MS, comparisonBootstrapInterruption, ownProducerInputComparisonSignal, ProducerInputComparisonError, runProducerInputComparison, } from '../../dist/final/node/producer-input-comparison.mjs';
 
 const l = tagged({ tag: 'input-comparison-consumer-test' });
 l.info(`comparison test entry runtime ${process.version} at ${process.execPath}`);
@@ -153,6 +153,27 @@ async function rejected(request: Parameters<typeof runProducerInputComparison>[0
 }
 
 await describe({ name: runProducerInputComparison.name, concurrency: 1, children: [
+  it({ name: 'exposes production cancellation internals through the dedicated artifact', fn: async () => {
+    const controller = new AbortController();
+    const reason = new Error('private reason q7z9k2');
+    using cancellation = ownProducerInputComparisonSignal(controller.signal);
+    using interruption = comparisonBootstrapInterruption({ signal: cancellation.signal, directory: '/fixture-internal' });
+    const signals: (NodeJS.Signals | number | undefined)[] = [];
+    const child = { exitCode: null, signalCode: null, kill(signal?: NodeJS.Signals | number): boolean { signals.push(signal); return true; } };
+    expect(BOOTSTRAP_TERMINATION_GRACE_MS).toBe(180_000);
+    controller.signal.dispatchEvent(new Event('abort'));
+    expect(cancellation.signal.aborted).toBe(false);
+    cancellation.assertReadable({});
+    expect(cancellation.hasObservationFailure()).toBe(false);
+    controller.abort(reason);
+    expect(cancellation.signal.aborted).toBe(true);
+    expect(Object.is(cancellation.signal.reason, reason)).toBe(false);
+    interruption.attach(child);
+    expect(signals).toEqual(['SIGTERM']);
+    expect(() => interruption.attach(child)).toThrow(ProducerInputComparisonError);
+    cancellation[Symbol.dispose]();
+    expect(getEventListeners(controller.signal, 'abort')).toEqual([]);
+  } }),
   it({ name: 'derives only a private output parent and verifies persisted matched bytes through the built API', fn: async () => {
     await using f = await fixture();
     const result = await accepted(f.request());
@@ -868,7 +889,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(error.message).not.toContain('q7z9k2');
     expect(await readdir(f.output)).toEqual([]);
   } }),
-  ...(['success', 'mismatch', 'cancel'] as const).map(outcome => it({ name: `observes subscription cleanup failure before reporting ${outcome} without replacing primary metadata`, fn: async ctx => {
+  ...(['success', 'mismatch', 'cancel'] as const).flatMap(outcome => [false, true].map(warningThrows => it({ name: `observes subscription cleanup failure before reporting ${outcome} without replacing primary metadata${warningThrows ? ' with a throwing terminal warning' : ''}`, fn: async ctx => {
     await using f = await fixture();
     const nativeAdd = events.addAbortListener;
     const failedCleanup = ctx.sinon.spy(function recordCleanupFailure() {});
@@ -889,6 +910,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     } };
     const error = await rejected({ ...f.request(), signal: controller.signal, reference: outcome === 'mismatch' ? { ...artifactIdentity, sha256: '0'.repeat(64) } : artifactIdentity, l: { ...l, warn(message) {
       warnings.push(message);
+      if (warningThrows && message.includes('cancellation observation failed; primary comparison failure remains retained')) throw new Error('private terminal warning q7z9k2');
     }, info(message) {
       if ((outcome === 'cancel') && message.includes('matched retained unqualified input bytes')) controller.abort();
       l.info(message);
@@ -901,7 +923,11 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     if (error.directory === undefined) throw new Error('Expected retained cleanup observation');
     expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe(expected);
     expect(error.message).toBe(new ProducerInputComparisonError({ kind: expected, directory: error.directory }).message);
-  } })),
+    expect(error.loggerCallbackFailures).toEqual(warningThrows ? ['warn'] : []);
+    expect(Object.isFrozen(error.loggerCallbackFailures)).toBe(true);
+    expect(Object.hasOwn(await readRecord(join(error.directory, 'failure.json')), 'loggerCallbackFailures')).toBe(false);
+    expect(Object.hasOwn(await readRecord(join(error.directory, 'comparison.json')), 'loggerCallbackFailures')).toBe(false);
+  } }))),
   it({ name: 'restores ordinary propagation suppression after the owned subscription is removed', fn: async ctx => {
     await using f = await fixture();
     const controller = new AbortController();

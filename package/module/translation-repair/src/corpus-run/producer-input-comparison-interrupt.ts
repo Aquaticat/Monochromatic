@@ -9,6 +9,8 @@ import { ProducerInputComparisonError, } from './producer-input-comparison-error
 
 /**
  Cooperative cleanup has its own bound before forced host-process termination.
+
+ @internal
  */
 export const BOOTSTRAP_TERMINATION_GRACE_MS = 180_000;
 /**
@@ -17,6 +19,8 @@ export const BOOTSTRAP_TERMINATION_GRACE_MS = 180_000;
 type BootstrapChild = Readonly<Pick<ChildProcess, 'exitCode' | 'signalCode' | 'kill'>>;
 /**
  One fixed bootstrap child is attached to an already registered cancellation scope.
+
+ @internal
 
  @example
  ```ts
@@ -34,6 +38,8 @@ export type ComparisonBootstrapInterruption = Disposable & {
  Registers interruption before spawning so setup failures cannot abandon a newly created child.
  An abort observed before attachment is retained and forwarded once the child and close observer exist.
  No event callback invokes caller logging or reads a borrowed signal.
+
+ @internal
 
  @param signal - owned caller cancellation combined with the independent bootstrap deadline
 
