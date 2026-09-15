@@ -256,11 +256,20 @@ Open follow-ups for the owner:
   Known limitation:
   `claude-code-plugin-source` exports only TypeScript source,
   but stays published because the plugins list it as a runtime dependency.
-- Next:
-  confirm pnpr-publish run 34927915986,
-  rerun the bin check and harness for the republished packages,
-  post the results comment on #521,
-  and close it.
+- Done:
+  pnpr-publish run 34927915986 published the 12 republished versions;
+  the harness and bin check re-run from pnpr pass for them,
+  and `task-oxlint`/`task-pnpm` print usage once `oxlint` and `pnpm` are on `PATH`.
+  #521 carries the full results comment and is closed;
+  every fix issue carries its applied change and verification.
+- Remaining known limitations
+  (recorded on #521,
+   no open work):
+  `claude-code-plugin-source` exports only TypeScript source;
+  seven CLI packages keep `main: src/*.ts` in their current versions until their next bump.
+- Harness scripts lived in the session scratchpad (`pnpr-521/harness.ts`,
+  `pnpr-521/bin-check.ts`);
+  the method is written out in the #521 results comment for reproduction.
 
 Done after the rollout:
 
