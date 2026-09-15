@@ -21,6 +21,7 @@ import { verifyJsonlFailureBoundaries, } from './built-jsonl-boundary-consumer.t
 import { verifyForbiddenStringsPolicyConsumer, } from './built-forbidden-strings-policy-consumer.ts';
 import { verifyAutofixAddedPaths, } from './built-autofix-added-paths-consumer.ts';
 import { verifyDependentVersionBump, } from './built-dependent-version-bump-consumer.ts';
+import { verifyRacyIndexConsumer, } from './built-racy-index-consumer.ts';
 import { verifyAutofixTransactionConsumer, } from './built-autofix-transaction-consumer.ts';
 import { verifyPostCommitPolicyConsumer, } from './built-post-commit-policy-consumer.ts';
 import { verifyPostCommitRoutingConsumer, } from './built-post-commit-routing-consumer.ts';
@@ -346,6 +347,7 @@ await verifyPostCommitRoutingConsumer({ env, },);
 await verifyAutofixTransactionConsumer({ env, },);
 await verifyAutofixAddedPaths({ env, },);
 await verifyDependentVersionBump({ env, },);
+await verifyRacyIndexConsumer({ env, },);
 await verifyTypeScriptBootstrapConsumer({ env, },);
 await verifyTypeScriptConsumer({ env, },);
 console.log('built-trust-consumer-ok',);
