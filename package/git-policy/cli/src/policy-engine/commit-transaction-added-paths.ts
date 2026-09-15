@@ -95,24 +95,57 @@ export type AddedPathRecord = Readonly<{
 }>;
 
 /**
- Thrown when a policy targets a tracked path that cannot join the commit without discarding local changes.
+ Lifecycle adding a tracked path: a commit transaction, or `git cli-git fix` rewriting worktree files only.
+ */
+export type AddedPathLifecycle = 'commit' | 'direct-fix';
+
+/**
+ Diagnostic builders per lifecycle, so each names the remedy that lifecycle accepts.
+ */
+const ADDED_PATH_MESSAGES: Readonly<Record<AddedPathLifecycle, (details: Readonly<{
+  path: string;
+  reason: string;
+}>) => string>> = {
+  'commit': function commitMessage({
+    path,
+    reason,
+  },) {
+    return `A policy fix needs to add ${path} to this commit, but ${reason}. Stage ${path} so the fix applies to the staged copy, or restore it to match HEAD (git restore --staged --worktree -- ${path}), then commit again.`;
+  },
+  'direct-fix': function directFixMessage({
+    path,
+    reason,
+  },) {
+    return `A policy fix needs to change ${path}, which this fix did not select, but ${reason}. Include ${path} in the fix pathspecs so the fix applies to its worktree copy, or restore it to match HEAD (git restore --staged --worktree -- ${path}), then run the fix again.`;
+  },
+};
+
+/**
+ Thrown when a policy targets a tracked path that cannot join the candidate set without discarding local changes.
  */
 export class AddedPathPreconditionError extends Error {
   /**
-   Creates an error naming the path, the reason, and the remedies.
+   Creates an error naming the path, the reason, and the remedies for the lifecycle.
 
    @param path - repository path the policy targeted
 
    @param reason - which state differs from `HEAD`
+
+   @param lifecycle - operation adding the path, which decides the remedy text
    */
   constructor({
     path,
     reason,
+    lifecycle,
   }: Readonly<{
     path: string;
     reason: string;
+    lifecycle: AddedPathLifecycle;
   }>,) {
-    super(`A policy fix needs to add ${path} to this commit, but ${reason}. Stage ${path} so the fix applies to the staged copy, or restore it to match HEAD (git restore --staged --worktree -- ${path}), then commit again.`,);
+    super(ADDED_PATH_MESSAGES[lifecycle]({
+      path,
+      reason,
+    },),);
     this.name = 'AddedPathPreconditionError';
   }
 }
@@ -162,6 +195,8 @@ export function parseTrackedTargetId(targetId: string,): readonly Readonly<{
  
  @param path - repository path
  
+ @param lifecycle - operation adding the path, which decides the remedy text
+ 
  @returns file metadata
  
  @throws AddedPathPreconditionError when the worktree copy is missing
@@ -169,9 +204,11 @@ export function parseTrackedTargetId(targetId: string,): readonly Readonly<{
 async function worktreeMetadata({
   repositoryRoot,
   path,
+  lifecycle,
 }: Readonly<{
   repositoryRoot: string;
   path: string;
+  lifecycle: AddedPathLifecycle;
 }>,): Promise<Stats> {
   try {
     return await lstat(join(
@@ -186,6 +223,7 @@ async function worktreeMetadata({
       throw new AddedPathPreconditionError({
         path,
         reason: 'its worktree copy is missing',
+        lifecycle,
       },);
     throw error;
   }
@@ -208,13 +246,15 @@ async function worktreeMetadata({
 
  @param oid - blob the policy patch was computed against
 
+ @param lifecycle - operation adding the path, which decides the remedy text
+
  @returns Git mode of the unchanged ordinary file
 
  @throws AddedPathPreconditionError when any copy differs from `HEAD`
 
  @example
  ```ts
- await assertAddablePath({ gitPath: '/usr/bin/git', cwd: '/repo', repositoryRoot: '/repo', realIndexPath: '/tmp/original.index', commitIndexPath: '/tmp/commit.index', path: 'package.json', oid: 'abc' });
+ await assertAddablePath({ gitPath: '/usr/bin/git', cwd: '/repo', repositoryRoot: '/repo', realIndexPath: '/tmp/original.index', commitIndexPath: '/tmp/commit.index', path: 'package.json', oid: 'abc', lifecycle: 'commit' });
  // => '100644'
  ```
  */
@@ -226,6 +266,7 @@ export async function assertAddablePath({
   commitIndexPath,
   path,
   oid,
+  lifecycle,
 }: Readonly<{
   gitPath: string;
   cwd: string;
@@ -234,6 +275,7 @@ export async function assertAddablePath({
   commitIndexPath: string;
   path: string;
   oid: GitObjectId;
+  lifecycle: AddedPathLifecycle;
 }>,): Promise<AddedPathRecord['gitMode']> {
   /**
    `HEAD`, real index, and private index records for the path.
@@ -266,6 +308,7 @@ export async function assertAddablePath({
     throw new AddedPathPreconditionError({
       path,
       reason: 'HEAD does not hold it as the ordinary file the fix was computed against',
+      lifecycle,
     },);
   for (const [label, entry,] of [
     [
@@ -283,6 +326,7 @@ export async function assertAddablePath({
       throw new AddedPathPreconditionError({
         path,
         reason: label,
+        lifecycle,
       },);
   }
   /**
@@ -291,6 +335,7 @@ export async function assertAddablePath({
   const metadata = await worktreeMetadata({
     repositoryRoot,
     path,
+    lifecycle,
   },);
   /**
    Whether the worktree executable bit matches the recorded mode.
@@ -317,6 +362,7 @@ export async function assertAddablePath({
     throw new AddedPathPreconditionError({
       path,
       reason: 'its worktree copy has unstaged changes',
+      lifecycle,
     },);
   return head.modeText === EXECUTABLE_GIT_MODE ? EXECUTABLE_GIT_MODE : REGULAR_GIT_MODE;
 }

@@ -8,6 +8,7 @@ import type {
   PolicyTrigger,
 } from '../api/policy-types.ts';
 import {
+  type AddedPathLifecycle,
   AddedPathPreconditionError,
   type AddedPathRecord,
   assertAddablePath,
@@ -54,6 +55,10 @@ export type AddedPathContext = Readonly<{
    Snapshot of the real index whose entry for an added path must match `HEAD`.
    */
   realIndexPath: string;
+  /**
+   Operation adding the path, which decides the remedy a precondition failure names.
+   */
+  lifecycle: AddedPathLifecycle;
 }>;
 
 /**
@@ -185,6 +190,7 @@ async function resolvePatchTarget({
       commitIndexPath: workspace.commitIndexPath,
       path: patch.path,
       oid: tracked.oid,
+      lifecycle: addedPathContext.lifecycle,
     },);
     addedPaths.set(
       patch.path,

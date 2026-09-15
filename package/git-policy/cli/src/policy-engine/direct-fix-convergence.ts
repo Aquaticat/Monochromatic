@@ -7,6 +7,7 @@ import { Buffer, } from 'node:buffer';
 import { join, } from 'node:path';
 import type { CandidateFile, } from '../api/policy-types.ts';
 import { applyPolicyPatches, } from './apply-policy-patches.ts';
+import type { AddedPathRecord, } from './commit-transaction-added-paths.ts';
 import {
   containsExactCandidateSnapshot,
   writeCandidateSnapshot,
@@ -52,6 +53,14 @@ export type DirectFixConvergenceResult = Readonly<{
    Number of private candidate changes before stability.
    */
   passes: number;
+  /**
+   Unselected tracked paths policies changed, verified unchanged against `HEAD` when added.
+   */
+  addedPaths: readonly Omit<AddedPathRecord, 'intendedOid'>[];
+  /**
+   Final private candidates for selected and added paths, empty when convergence failed.
+   */
+  finalCandidates: readonly CandidateFile[];
 }>;
 
 /**
@@ -109,6 +118,24 @@ export async function convergeDirectFix({
    */
   const initialRevisions = candidateRevisions(initialCandidates,);
   /**
+   Unselected tracked paths policies added, keyed by path.
+   */
+  const addedPaths = new Map<string, Omit<AddedPathRecord, 'intendedOid'>>();
+  /**
+   Selected paths plus every path a policy added so far.
+
+   @returns candidate paths for the current pass
+   */
+  function currentCandidatePaths(): readonly string[] {
+    return [
+      ...scope.paths,
+      ...[...addedPaths.keys(),].filter(function notSelected(path,) {
+        return !scope.paths
+          .includes(path,);
+      },),
+    ];
+  }
+  /**
    Initial exact path, mode, and content snapshot.
    */
   const initialSnapshotPath = join(
@@ -149,6 +176,8 @@ export async function convergeDirectFix({
         policyResult: pass,
         changedPaths: [],
         passes: changedPasses,
+        addedPaths: [],
+        finalCandidates: [],
       };
     if (changedPasses >= MAXIMUM_CHANGED_PASSES) {
       return {
@@ -158,6 +187,8 @@ export async function convergeDirectFix({
         },),
         changedPaths: [],
         passes: changedPasses,
+        addedPaths: [],
+        finalCandidates: [],
       };
     }
     /**
@@ -168,7 +199,7 @@ export async function convergeDirectFix({
       gitPath,
       cwd: scope.repositoryRoot,
       indexPath: scope.indexPath,
-      paths: scope.paths,
+      paths: currentCandidatePaths(),
     },)
       .candidates();
     /**
@@ -185,14 +216,28 @@ export async function convergeDirectFix({
       pass,
       candidates,
       trigger: 'direct-fix',
+      addedPathContext: {
+        repositoryRoot: scope.repositoryRoot,
+        realIndexPath: scope.realIndexPath,
+        lifecycle: 'direct-fix',
+      },
     },);
     if (applied.kind === 'failed') {
       return {
         policyResult: applied.result,
         changedPaths: [],
         passes: changedPasses,
+        addedPaths: [],
+        finalCandidates: [],
       };
     }
+    applied.addedPaths
+      .forEach(function recordAddedPath(added,) {
+      addedPaths.set(
+        added.path,
+        added,
+      );
+    },);
     changedPasses += 1;
     /**
      Current private facts after ordered patches.
@@ -201,7 +246,7 @@ export async function convergeDirectFix({
       gitPath,
       cwd: scope.repositoryRoot,
       indexPath: scope.indexPath,
-      paths: scope.paths,
+      paths: currentCandidatePaths(),
     },);
     /**
      Private exact snapshot for current changed pass.
@@ -228,6 +273,8 @@ export async function convergeDirectFix({
         },),
         changedPaths: [],
         passes: changedPasses,
+        addedPaths: [],
+        finalCandidates: [],
       };
     }
     visited.push(snapshotPath,);
@@ -245,7 +292,12 @@ export async function convergeDirectFix({
   /**
    Final candidates after stable pass.
    */
-  const finalCandidates = await scope.gitFacts
+  const finalCandidates = await createPrivateIndexFacts({
+    gitPath,
+    cwd: scope.repositoryRoot,
+    indexPath: scope.indexPath,
+    paths: currentCandidatePaths(),
+  },)
     .candidates();
   /**
    Paths whose immutable blob identity changed.
@@ -268,5 +320,7 @@ export async function convergeDirectFix({
     policyResult: pass,
     changedPaths,
     passes: changedPasses,
+    addedPaths: [...addedPaths.values(),],
+    finalCandidates,
   };
 }

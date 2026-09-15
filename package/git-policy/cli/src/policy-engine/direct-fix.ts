@@ -15,6 +15,8 @@ import {
   convergeDirectFix,
   type DirectFixPolicyOptions,
 } from './direct-fix-convergence.ts';
+import { loadBlobBatch, } from './blob-batch.ts';
+import { CommitTransactionGitError, } from './commit-transaction-git.ts';
 import { initialTransactionFailure, } from './commit-transaction-results.ts';
 import { withFixSummary, } from './fix-summary.ts';
 import {
@@ -148,10 +150,41 @@ async function runPreparedDirectFix({
       changedPaths: [],
     };
   }
+  /**
+   `HEAD` bytes of added paths, which convergence verified their worktree copies held.
+   */
+  const addedOriginals = await loadBlobBatch({
+    gitPath: prepared.gitPath,
+    cwd: scope.repositoryRoot,
+    oids: convergence.addedPaths
+      .map(function originalOid(added,) {
+      return added.originalOid;
+    },),
+    createError: function addedOriginalError(message,) {
+      return new CommitTransactionGitError(message,);
+    },
+  },);
   await installDirectFix({
     scope,
     changedPaths: convergence.changedPaths,
-    originals,
+    finalCandidates: convergence.finalCandidates,
+    originals: new Map([
+      ...originals,
+      ...convergence.addedPaths
+        .flatMap(function addedOriginal(added,): readonly (readonly [
+          string,
+          Uint8Array,
+        ])[] {
+        /**
+         Verified `HEAD` bytes for this added path.
+         */
+        const bytes = addedOriginals.get(added.originalOid,);
+        return bytes === undefined ? [] : [[
+          added.path,
+          bytes,
+        ],];
+      },),
+    ],),
   },);
   if (convergence.changedPaths
     .length

@@ -291,6 +291,7 @@ export async function runCommitTransaction({
       addedPathContext: {
         repositoryRoot: layout.effectiveCwd,
         realIndexPath: workspace.originalIndexPath,
+        lifecycle: 'commit',
       },
     },);
     if (applied.kind === 'failed')
