@@ -304,6 +304,7 @@ export async function verifyAutofixAddedPaths({ env, }: Readonly<{
     command: 'git',
     args: [
       'commit',
+      '--no-only',
       '--quiet',
       '-m',
       'index bump',
@@ -354,20 +355,15 @@ export async function verifyAutofixAddedPaths({ env, }: Readonly<{
     `${repository}/version.txt`,
     'v3 amended\n',
   );
-  await realGit({
-    repository,
-    args: [
-      'add',
-      'version.txt',
-    ],
-  },);
   await execute({
     command: 'git',
     args: [
       'commit',
-      '--quiet',
       '--amend',
-      '--no-edit',
+      '--quiet',
+      '-m',
+      'amended bump',
+      'version.txt',
     ],
     cwd: repository,
     env,
@@ -421,7 +417,7 @@ export async function verifyAutofixAddedPaths({ env, }: Readonly<{
     context: 'dirty dependent diagnostic',
   },);
   assertIncludes({
-    text: dirty.stdout,
+    text: dirty.stderr,
     expected: '"code":"patch-conflict"',
     context: 'dirty dependent failure code',
   },);
@@ -522,8 +518,8 @@ export async function verifyAutofixAddedPaths({ env, }: Readonly<{
     expectedExit: 1,
   },);
   assertIncludes({
-    text: include.stdout,
-    expected: '"code":"dependent-stale"',
+    text: `${include.stdout}${include.stderr}`,
+    expected: '"code":"fixture/dependent-bump/dependent-stale"',
     context: 'include selection finding',
   },);
   assertFixtureEqual({
