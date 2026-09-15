@@ -155,7 +155,7 @@ export function ownProducerInputComparisonSignal(source: AbortSignal): ProducerI
    ```
    */
   function assertReadable({ directory }: { readonly directory?: string }): void {
-    if (state.unreadable && !ownedSignal.aborted)
+    if (state.unreadable && (!ownedSignal.aborted))
       throw new ProducerInputComparisonError({
         kind: 'contract',
         ...(directory === undefined ? {} : { directory })
