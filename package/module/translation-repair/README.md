@@ -1483,6 +1483,14 @@ a detached frozen list of callback names observed to throw,
 in canonical logger order.
 Logger exceptions do not cancel the comparison or replace its primary failure;
 explicit `AbortSignal` cancellation remains independent.
+Live cancellation is forwarded into an owned native signal without copying caller reasons
+or consulting own public signal accessors.
+The temporary subscription preserves propagation resistance and is removed on exit.
+Synthetic or replayed events do not substitute for native aborted state,
+and an unreadable composite observation cannot authorize success.
+Fallible interruption registration completes before child creation;
+the actual-close observer is installed before the child is attached to that scope.
+These guarantees do not cover corrupted native internals or a hostile runtime.
 The snapshot follows terminal logging and failure-record activity.
 It is not written retroactively into `comparison.json` or `failure.json`.
 Only an actual failure-record I/O refusal may supersede the primary failure as `storage`.

@@ -45,6 +45,10 @@ export type ProducerInputComparisonCancellation = Disposable & {
    Event-time observation failures are refused at the awaiting owner, never thrown from dispatch.
    */
   readonly assertReadable: (input: { readonly directory?: string }) => void;
+  /**
+   Owned observation status remains inspectable after release without retaining a foreign error value.
+   */
+  readonly hasObservationFailure: () => boolean;
 };
 
 /**
@@ -69,6 +73,10 @@ export function ownProducerInputComparisonSignal(source: AbortSignal): ProducerI
    Live downstream state contains no caller-supplied reason or property implementation.
    */
   const controller = new NativeAbortController();
+  /**
+   Actual owned cancellation stays authoritative even after an earlier unreadable observation.
+   */
+  const { signal: ownedSignal } = controller;
   /**
    Subscription lifecycle and unreadable-state evidence stay local to this invocation.
    */
@@ -135,11 +143,11 @@ export function ownProducerInputComparisonSignal(source: AbortSignal): ProducerI
   }
 
   /**
-   Refuses any recorded observation fault using only the owner's optional retained locator.
+   Refuses unreadable state unless actual owned cancellation already proves that the operation must stop.
 
    @param directory - already-owned comparison directory, absent before namespace creation
 
-   @throws ProducerInputComparisonError when native state or subscription cleanup was unreadable
+   @throws ProducerInputComparisonError when observation failed without proven owned cancellation
 
    @example
    ```ts
@@ -147,11 +155,25 @@ export function ownProducerInputComparisonSignal(source: AbortSignal): ProducerI
    ```
    */
   function assertReadable({ directory }: { readonly directory?: string }): void {
-    if (state.unreadable)
+    if (state.unreadable && !ownedSignal.aborted)
       throw new ProducerInputComparisonError({
         kind: 'contract',
         ...(directory === undefined ? {} : { directory })
       });
+  }
+
+  /**
+   Reports only a local failure flag after all subscription cleanup has been attempted.
+
+   @returns Whether native observation or subscription cleanup failed
+
+   @example
+   ```ts
+   const failed = cancellation.hasObservationFailure();
+   ```
+   */
+  function hasObservationFailure(): boolean {
+    return state.unreadable;
   }
 
   /**
@@ -309,8 +331,9 @@ export function ownProducerInputComparisonSignal(source: AbortSignal): ProducerI
     throw new ProducerInputComparisonError({ kind: 'contract' });
   }
   return {
-    signal: controller.signal,
+    signal: ownedSignal,
     assertReadable,
+    hasObservationFailure,
     [Symbol.dispose]: releaseSubscription
   };
 }

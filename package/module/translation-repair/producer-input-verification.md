@@ -38,10 +38,11 @@ Callback failures belong to frozen terminal result/error snapshots,
 not previously synchronized comparison or failure records.
 A fixture bootstrap is not qualification through the actual input CLI.
 
-## Remaining comparison qualification
+## Comparison qualification boundaries
 
 Task54 closes callback observation and failure-retention integration.
-Task51 still checks the non-logger boundaries through the dedicated built entry:
+Task62 owns live-signal observation and pre-spawn interruption registration.
+Task51 checks the non-logger boundaries through the dedicated built entry:
 
 - Input ownership and authentication:
   canonical paths,
@@ -61,9 +62,9 @@ Task51 still checks the non-logger boundaries through the dedicated built entry:
 
 Existing artifact tests already cover these categories,
 but category presence is not every branch's verification.
-The remaining audit adds missing group/directory and late-inventory controls,
-records built mutation sensitivity,
-and distinguishes native failure cases from fixture-bootstrap coverage.
+Committed controls include group/directory privacy and late-inventory changes.
+The current work record separately records built mutation sensitivity,
+native failure cases and fixture-bootstrap coverage.
 Defensive checks against a modified JavaScript runtime or arbitrary hostile-host behavior
 are not reclassified as ordinary native qualification.
 No extra public storage executor or test-only comparison API is introduced.

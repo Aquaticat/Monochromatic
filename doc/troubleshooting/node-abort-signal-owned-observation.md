@@ -12,7 +12,9 @@ This is a consumer error-ownership defect,
 not a Node authentication guarantee being violated.
 
 Task62 owns remediation.
-The production fix and artifact requalification are not yet complete.
+The production boundary,
+full suite and current native cases pass their recorded checks;
+final acceptance documentation and evidence cleanup are still being completed.
 Task54's logger callback containment remains separate verified behavior.
 
 ## Root cause
@@ -185,9 +187,11 @@ Failure catalog:
 - The first once-only bridge candidate loses genuine cancellation after a synthetic event.
   `owned-comparison-signal-r1-probe-20260914.out` records its ordinary assertion failure.
 
-## Verified candidate and its limits
+## Verified consumer boundary and its limits
 
-The R2 throwaway candidate owns a new controller and passes only its signal onward.
+The R2 throwaway candidate informed the production owner
+`package/module/translation-repair/src/corpus-run/producer-input-comparison-signal.ts`.
+The comparison owns a new controller and passes only its signal onward.
 A private registration view delegates state and listener operations through captured native methods.
 It uses `addAbortListener` for propagation resistance,
 preserves its options without interpreting the opaque resistance key,
@@ -197,9 +201,20 @@ Scoped disposal uses the native removal path.
 
 Event-time unreadable state becomes a retained local failure flag,
 not a thrown event-callback value or invented cancellation.
-Production integration must inspect that flag before reporting success
-and must preserve actual-close and failure-record ordering.
-The prototype does not itself establish those operation-level guarantees.
+The awaiting comparison owner checks that flag before reporting success
+and retains fixed contract-refusal metadata when observation fails.
+Native interruption registration now completes before spawn;
+early cancellation is forwarded only after the actual-close observer is installed.
+The prototype alone did not establish these operation-level guarantees.
+
+Current acceptance evidence is recorded in
+[`translation-repair-preparation-plan-and-journal-2026-09-14.md`](../planning/translation-repair-preparation-plan-and-journal-2026-09-14.md).
+It includes the six original red assertions,
+the separate pre-spawn setup regression,
+current full-suite and read-only lint checks,
+signal and non-logger guard controls,
+and actual CLI runs using frozen parent runtime `UJeHke`.
+The tests and scoped reviews do not constitute whole-change review.
 
 Supported input and lifecycle assumptions must remain explicit.
 This does not establish immunity to patched native intrinsics,

@@ -348,8 +348,11 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
   }
   }
   catch (error) {
+    cancellation[Symbol.dispose]();
+    if (cancellation.hasObservationFailure())
+      pl.warn('cancellation observation failed; primary comparison failure remains retained');
     /**
-     Terminal decoration runs after all success, warning and failure-record callbacks without changing failure precedence.
+     Terminal decoration runs after all success, warning, failure-record and cancellation-release callbacks without changing failure precedence.
      */
     const failure = Error.isError(error) && (error instanceof ProducerInputComparisonError)
       ? error : new ProducerInputComparisonError({ kind: 'output' });

@@ -693,8 +693,20 @@ already-aborted reason isolation and proxy refusal.
 Caller getter counts stay zero in the own-property cases;
 the deliberately unreadable composite source is observed once and returns an owned contract refusal.
 These proofs retain the unchanged Task47 inner bootstrap/runtime and do not grant preparation approval.
-Current signal and restored non-logger guard matrices and scoped evidence cleanup remain pending.
-Task62 and task51 remain incomplete until those results are checked.
+`comparison-signal-guards-fdVcll` verifies thirteen signal controls;
+`comparison-boundary-guards-6p4gLK` verifies twenty-two non-logger controls.
+Each listed mutant builds successfully and triggers its designated ordinary assertion;
+baseline/restored tests pass and real source/dist inventories remain unchanged.
+A post-run recheck verifies fourteen retained child namespaces' container names are absent
+and rehashes available artifacts and captured stderr.
+
+A final scoped review adds combined terminal cases before acceptance:
+proven native cancellation must outrank an earlier unreadable observation,
+cleanup observations must be reported before the terminal error snapshot without replacing its primary kind,
+and ordinary propagation suppression must still work after bridge removal.
+The new regressions are being exercised before remediation.
+Task62 and task51 remain incomplete until those results,
+updated artifact qualification and scoped evidence cleanup are checked.
 
 ## Earlier verified checkpoint: task50
 
