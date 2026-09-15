@@ -18,6 +18,9 @@ task65 initial/conditional phases and task66 persistence/review/rebuild integrat
 Task53 waits for those finite root/phase materializers.
 The [reader implementation record](translation-repair-persisted-input-reader-2026-09-15.md)
 records current source constraints and rejected decoder assumptions.
+Task67 currently blocks task63:
+the root DTO serializes in-memory definition-order sets as empty JSON objects.
+Its transport repair must preserve frozen evidence and qualify new input bytes before plan materialization.
 The changes have not been reviewed;
 GitHub issues #509 and #527 remain open.
 Task41 remains incomplete until those owners satisfy their own acceptance boundaries.

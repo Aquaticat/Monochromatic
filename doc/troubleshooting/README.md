@@ -346,6 +346,10 @@ For common issues:
   ** →
   [Wait for stable rendered content](android-uiautomator-dump-idle-state.md)
 
+- **Definition-order indexes vanish in persisted preparation inputs?
+  ** →
+  [Use explicit JSON data for root definition indexes](translation-repair-root-order-serialization.md)
+
 ## Contributing
 
 When adding new troubleshooting content:
