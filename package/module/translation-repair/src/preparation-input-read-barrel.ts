@@ -43,6 +43,18 @@ export {
   preparationInputProtection,
   preparationInputProtectionIntersection,
 } from './preparation-input-read-node.ts';
+export { preparationInputEntry, } from './preparation-input-read-entry.ts';
+export { verifyPreparationInputEntryRelations, } from './preparation-input-read-entry-relations.ts';
+export {
+  preparationInputAlignmentAttachment,
+  preparationInputAlignmentFinding,
+  preparationInputParseFinding,
+} from './preparation-input-read-finding.ts';
+export {
+  preparationInputArchiveLine,
+  preparationInputOriginalPolicy,
+  preparationInputOriginalSpan,
+} from './preparation-input-read-policy.ts';
 export {
   PreparationRootError,
   type PreparationRootFailure,

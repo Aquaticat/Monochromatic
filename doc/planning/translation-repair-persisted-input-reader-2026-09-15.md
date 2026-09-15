@@ -200,7 +200,24 @@ targeted tests and full-scope lint also pass.
 The consumer uses a read-only dependency overlay;
 it is not standalone import-closure or whole-DTO qualification.
 Node-coordinate,
-parent-side and protection decoders are the next checkpoint before complete-entry,
-registration and whole-DTO relation work.
+parent-side and protection R1 passes:
+`node-native-d9yTV7` exercises every population and selected-parent side plus unaligned-definition nodes.
+Fresh build,
+bootstrap,
+types,
+targeted tests and full-scope lint pass.
+
+Complete-entry,
+policy,
+retained-line and finding decoders are the next checkpoint.
+Their relation checks use only represented texts:
+separate content hashes,
+shared invisible-character folding for retained origins,
+line order and target reconstruction,
+local evidence bounds and the producer's whole-page exclusion boundary.
+They do not remove stubs again,
+classify declaration prose,
+reparse MDX or infer unaligned section coverage from registered parents.
+Registration and whole-DTO relation work remain pending.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.

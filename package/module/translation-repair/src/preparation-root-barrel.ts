@@ -11,6 +11,7 @@ export type {
 export type {
   PreparationRootEntry,
   PreparationRootNode,
+  PreparationRootOriginalPolicy,
   PreparationRootParent,
   PreparationRootParentSide,
   PreparationRootPopulationParent,
