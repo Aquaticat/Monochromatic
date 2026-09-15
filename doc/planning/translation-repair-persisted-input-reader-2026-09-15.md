@@ -300,7 +300,9 @@ The issue was created successfully.
 Its first CLI readback failed because GitHub CLI sanitizes response JSON,
 including literal control escape text.
 An independent raw public HTTP response matches the submitted body exactly.
-No remote edit or duplicate creation occurred.
+The readback mismatch required no remote content repair or duplicate creation.
+A separate issue-draft lint check requires digest-label line wrapping;
+preserve original submission and response evidence apart from that editorial correction.
 See [GitHub CLI JSON control escapes](../troubleshooting/github-cli-json-control-escapes.md).
 Durable records remain in `legacy-key-observation/` and the separate `gh-json-observation/`
 under the reader evidence root.

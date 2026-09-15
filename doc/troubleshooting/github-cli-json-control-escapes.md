@@ -12,7 +12,9 @@ a changed GitHub-stored body,
 or a SHA-256 collision.
 An independent unauthenticated HTTP response from the public REST endpoint
 matched the submitted body exactly.
-No issue edit or duplicate creation was needed.
+No issue content repair or duplicate creation was needed for that mismatch.
+A separate digest-label line-wrapping correction is editorial,
+not a response-sanitizer workaround.
 
 The legacy pairing-key ambiguity described by #542 is a separate incident.
 This document concerns the readback transport only.
