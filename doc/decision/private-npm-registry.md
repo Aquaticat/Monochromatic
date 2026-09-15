@@ -27,9 +27,21 @@ On 2026-09-14 the workspace held 154 packages under `package/`,
 
 ### Registry: pnpr on the Coolify host
 
-- `@pnpm/pnpr` at npm dist-tag `next`,
-   installed by the deployment itself,
-   since `ghcr.io/pnpm/pnpr` has no `next` tag.
+- pnpr from the owner's fork `Aquaticat/pnpm`,
+   branch `pnpr-oidc-workload-discovery`,
+   whose `.github/workflows/pnpr-patched-image.yml` publishes static musl binaries as a GitHub release
+   and a multi-arch image at `ghcr.io/aquaticat/pnpr` on every push.
+   `package/config/pnpr/Containerfile` builds on that image pinned by digest.
+   Owner decision (2026-09-15),
+    after `@pnpm/pnpr@0.1.0-alpha.11` answered every GitHub Actions workload publish with HTTP 500
+    (`doc/troubleshooting/pnpr-oidc-github-actions-discovery.md`)
+    and upstream `main` had no fix.
+   It supersedes installing `@pnpm/pnpr` at npm dist-tag `next`.
+   Rejected:
+    a temporary stored publish token (reverses the OIDC decision),
+    waiting for upstream (the registry stays empty),
+    and compiling the patch on the Coolify host at every rebuild.
+   Return to upstream releases once one verifies GitHub workload tokens.
 - Served at `https://pnpr.c.aquati.cat/`,
    behind the owner's self-managed Caddy.
 - One hosted npm registry named `monochromatic-dev` claims `@monochromatic-dev/*`.
@@ -133,7 +145,9 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
    including the package-name list and the exclusion list.
 - The deployment lives in `package/config/pnpr/`
    and Coolify redeploys it on push through a GitHub App source,
-   limited by Watch Paths to `config.yaml`, `Containerfile`, and `compose.yaml` under `package/config/pnpr/`,
+   limited by Watch Paths to `config.yaml`,
+    `Containerfile`,
+    and `compose.yaml` under `package/config/pnpr/`,
    so edits to the publish script beside them do not redeploy.
    A public-repository resource was tried first and has no Watch Paths field:
     Coolify renders it only for `is_github_based() && !is_public_repository()`.
@@ -180,7 +194,9 @@ A GitHub issue tracks checking installability of the remaining published package
 - A hand bump rewrites,
    in the same commit,
    the manifest of every dependent reached through runtime or bundled edges.
-- pnpr is alpha software tracked through `next`,
-   so any Coolify rebuild can pick up breaking changes.
+- pnpr is alpha software pinned by image digest,
+   so upstream changes arrive only when the fork branch is rebased,
+   its workflow publishes a new image,
+   and the `Containerfile` digest moves.
 - Each consumer adds the scope route itself;
    nothing here wires `labwc-config`.
