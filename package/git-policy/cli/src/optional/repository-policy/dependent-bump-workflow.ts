@@ -157,10 +157,12 @@ function readManifestState(file: WorkspaceManifestFile,): ManifestState {
     : readManifestDependencyFacts({
       path: file.path,
       text: file.baseText,
-    },).version;
+    },)
+      .version;
   return {
     file,
-    directory: file.path.slice(
+    directory: file.path
+      .slice(
       0,
       -'/package.json'.length,
     ),
@@ -203,11 +205,14 @@ async function bundledDevelopmentEdges({
   const superset = transitiveDependentNames({
     manifests: states.map(function everyEdge(state,): WorkspaceManifest {
       return {
-        name: state.current.name,
+        name: state.current
+          .name,
         directory: state.directory,
         edgeNames: [
-          ...state.current.runtimeDependencyNames,
-          ...state.current.devDependencyNames,
+          ...state.current
+            .runtimeDependencyNames,
+          ...state.current
+            .devDependencyNames,
         ],
       };
     },),
@@ -230,12 +235,18 @@ async function bundledDevelopmentEdges({
     /**
      Development dependencies that could carry a bump.
      */
-    const candidateEdges = state.current.devDependencyNames.filter(function isRelevant(name,): boolean {
-      return relevant.has(name,) && (name !== state.current.name);
+    const candidateEdges = state.current
+      .devDependencyNames
+      .filter(function isRelevant(name,): boolean {
+      return relevant.has(name,) && (name
+        !== state.current
+        .name);
     },);
-    if ((!superset.has(state.current.name,)) || (candidateEdges.length === 0))
+    if ((!superset.has(state.current
+      .name,)) || (candidateEdges.length === 0))
       return [
-        state.current.name,
+        state.current
+          .name,
         [],
       ];
     /**
@@ -252,7 +263,8 @@ async function bundledDevelopmentEdges({
       return file.text();
     },),);
     return [
-      state.current.name,
+      state.current
+        .name,
       candidateEdges.filter(function isImported(name,): boolean {
         return texts.some(function importsEdge(sourceText,): boolean {
           return importsPackage({
@@ -292,10 +304,13 @@ export async function planWorkspaceBumps(reader: WorkspaceFileReader,): Promise<
    */
   const bumpedNames = states
     .filter(function isBumped(state,): boolean {
-    return (state.baseVersion !== undefined) && (state.current.version !== state.baseVersion);
+    return (state.baseVersion !== undefined) && (state.current
+      .version
+      !== state.baseVersion);
   },)
     .map(function toName(state,): string {
-    return state.current.name;
+    return state.current
+      .name;
   },);
   /**
    Generated config, when present.
@@ -319,7 +334,8 @@ export async function planWorkspaceBumps(reader: WorkspaceFileReader,): Promise<
    */
   const byName = new Map(states.map(function toEntry(state,) {
     return [
-      state.current.name,
+      state.current
+        .name,
       state,
     ] as const;
   },),);
@@ -328,12 +344,18 @@ export async function planWorkspaceBumps(reader: WorkspaceFileReader,): Promise<
     bumps: planDependentBumps({
       manifests: states.map(function toManifest(state,): WorkspaceManifest {
         return {
-          name: state.current.name,
+          name: state.current
+            .name,
           directory: state.directory,
-          ...(state.current.version === undefined ? {} : { version: state.current.version, }),
+          ...(state.current
+            .version
+            === undefined ? {} : { version: state.current
+              .version, }),
           edgeNames: [
-            ...state.current.runtimeDependencyNames,
-            ...(bundled.get(state.current.name,) ?? []),
+            ...state.current
+              .runtimeDependencyNames,
+            ...(bundled.get(state.current
+              .name,) ?? []),
           ],
         };
       },),
@@ -349,11 +371,15 @@ export async function planWorkspaceBumps(reader: WorkspaceFileReader,): Promise<
         ? []
         : [{
           ...bump,
-          path: state.file.path,
-          text: state.file.text,
+          path: state.file
+            .path,
+          text: state.file
+            .text,
           replacement: replaceManifestVersion({
-            path: state.file.path,
-            text: state.file.text,
+            path: state.file
+              .path,
+            text: state.file
+              .text,
             from: bump.from,
             to: bump.to,
           },),

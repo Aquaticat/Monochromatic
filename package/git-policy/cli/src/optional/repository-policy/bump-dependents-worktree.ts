@@ -21,14 +21,26 @@ import {
 import { PNPR_CONFIG_PATH, } from './publishable-names.ts';
 
 /**
- Promise form of `execFile`.
+ Node's `promisify` specialized to `execFile`'s declared promise contract.
+
+ See `doc/troubleshooting/oxlint-promisify-void-return.md`.
  */
-const run = promisify(execFile,);
+const promisifyExecFile: (original: typeof execFile) => typeof execFile.__promisify__ = promisify;
 
 /**
- Largest Git output a listing or blob read may buffer, far above any workspace manifest listing.
+ Promise form of `execFile`.
  */
-const MAX_GIT_OUTPUT_BYTES = 64 * 1024 * 1024;
+const run = promisifyExecFile(execFile,);
+
+/**
+ Largest Git output a listing or blob read may buffer (64 MiB), far above any workspace manifest listing.
+ */
+const MAX_GIT_OUTPUT_BYTES = 67_108_864;
+
+/**
+ Exit status Git uses for fatal errors, including `cat-file` on a path the revision lacks.
+ */
+const GIT_FATAL_EXIT_CODE = 128;
 
 /**
  Thrown when a manifest changed between planning and writing its bump.
@@ -77,7 +89,8 @@ async function listTrackedPaths({
       maxBuffer: MAX_GIT_OUTPUT_BYTES,
     },
   );
-  return stdout.split('\0',).filter(function nonEmpty(path,): boolean {
+  return stdout.split('\0',)
+    .filter(function nonEmpty(path,): boolean {
     return path !== '';
   },);
 }
@@ -118,7 +131,8 @@ async function textAtRevision({
   }
   catch (error: unknown) {
     // A path the base revision lacks is a new manifest, which carries no hand bump.
-    if (Error.isError(error,) && ('code' in error) && (error.code === 1 || error.code === 128))
+    if (Error.isError(error,) && ('code' in error)
+      && ((error.code === 1) || (error.code === GIT_FATAL_EXIT_CODE)))
       return [];
     throw error;
   }
@@ -201,7 +215,8 @@ function worktreeReader({
         ),];
       }
       catch (error: unknown) {
-        if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+        if (Error.isError(error,) && ('code' in error)
+          && (error.code === 'ENOENT'))
           return [];
         throw error;
       }
@@ -250,7 +265,10 @@ export async function bumpWorktreeDependents({
       bump.path,
     );
     // oxlint-disable-next-line no-await-in-loop -- Each manifest is re-read immediately before its own write.
-    if ((await readFile(destination, 'utf8',)) !== bump.text)
+    if ((await readFile(
+      destination,
+      'utf8',
+    )) !== bump.text)
       throw new WorktreeBumpConflictError(bump.path,);
     // oxlint-disable-next-line no-await-in-loop -- Writes follow plan order so a failure names the first unwritten manifest.
     await writeFile(

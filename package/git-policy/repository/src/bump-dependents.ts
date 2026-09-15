@@ -12,9 +12,16 @@ import { promisify, } from 'node:util';
 import { bumpWorktreeDependents, } from './bump-dependents-worktree.ts';
 
 /**
+ Node's `promisify` specialized to `execFile`'s declared promise contract.
+
+ See `doc/troubleshooting/oxlint-promisify-void-return.md`.
+ */
+const promisifyExecFile: (original: typeof execFile) => typeof execFile.__promisify__ = promisify;
+
+/**
  Promise form of `execFile`.
  */
-const run = promisify(execFile,);
+const run = promisifyExecFile(execFile,);
 
 /**
  Worktree root of the current directory.
@@ -25,7 +32,8 @@ const repositoryRoot = (await run(
     'rev-parse',
     '--show-toplevel',
   ],
-)).stdout.trim();
+)).stdout
+  .trim();
 
 /**
  Revision whose versions count as unbumped.
@@ -41,7 +49,11 @@ const plan = await bumpWorktreeDependents({
 },);
 
 // Raw console output: this is the command's user-facing report.
-console.log(`bump-dependents: ${String(plan.bumpedNames.length,)} package(s) differ from ${baseRevision}: ${plan.bumpedNames.join(', ',) || 'none'}`,);
-plan.bumps.forEach(function report(bump,) {
+console.log(`bump-dependents: ${String(plan.bumpedNames
+  .length,)} package(s) differ from ${baseRevision}: ${plan.bumpedNames
+    .join(', ',)
+    || 'none'}`,);
+plan.bumps
+  .forEach(function report(bump,) {
   console.log(`bump-dependents: ${bump.name} ${bump.from} -> ${bump.to} (${bump.path})`,);
 },);

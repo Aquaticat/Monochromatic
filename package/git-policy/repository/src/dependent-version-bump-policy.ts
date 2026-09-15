@@ -114,7 +114,8 @@ function policyReader({
       /**
        Tracked manifests in the current candidate state.
        */
-      const files = await context.git.trackedFiles({ pathspecs: [MANIFEST_PATHSPEC,], },);
+      const files = await context.git
+        .trackedFiles({ pathspecs: [MANIFEST_PATHSPEC,], },);
       files.forEach(function remember(file,) {
         trackedManifests.set(
           file.path,
@@ -124,7 +125,8 @@ function policyReader({
       return Promise.all(files.map(manifestFileOf,),);
     },
     sourceFiles: async function listSources(directory,) {
-      return (await context.git.trackedFiles({ pathspecs: [`:(glob)${directory}/src/**`,], },))
+      return (await context.git
+        .trackedFiles({ pathspecs: [`:(glob)${directory}/src/**`,], },))
         .map(function toSource(file,) {
         return {
           path: file.path,
@@ -138,7 +140,8 @@ function policyReader({
       /**
        Generated config, when tracked.
        */
-      const [config,] = await context.git.trackedFiles({ pathspecs: [PNPR_CONFIG_PATH,], },);
+      const [config,] = await context.git
+        .trackedFiles({ pathspecs: [PNPR_CONFIG_PATH,], },);
       return config === undefined ? [] : [DECODER.decode(await config.bytes(),),];
     },
   };
@@ -174,7 +177,8 @@ export const DEPENDENT_VERSION_UNSUPPORTED_CODE = 'dependent-version-unsupported
  */
 export async function findDependentBumps(context: ForeignBorrowed<PolicyContext>,): Promise<readonly PolicyFinding[]> {
   // Ordinary commits touch no manifest, so they skip listing every manifest.
-  if (!(await context.git.candidates()).some(function isModifiedManifest(candidate,): boolean {
+  if (!(await context.git
+    .candidates()).some(function isModifiedManifest(candidate,): boolean {
     return (candidate.change === 'modified') && isWorkspaceManifestPath(candidate.path,);
   },))
     return [];
@@ -190,7 +194,8 @@ export async function findDependentBumps(context: ForeignBorrowed<PolicyContext>
       context,
       trackedManifests,
     },),);
-    return plan.bumps.flatMap(function toFinding(bump,): readonly PolicyFinding[] {
+    return plan.bumps
+      .flatMap(function toFinding(bump,): readonly PolicyFinding[] {
       /**
        Tracked manifest the patch targets.
        */
@@ -199,7 +204,8 @@ export async function findDependentBumps(context: ForeignBorrowed<PolicyContext>
         return [];
       return [{
         code: DEPENDENT_VERSION_STALE_CODE,
-        message: `${bump.name} reaches a package bumped in this commit (${plan.bumpedNames.join(', ',)}); bump it from ${bump.from} to ${bump.to} in the same commit.`,
+        message: `${bump.name} reaches a package bumped in this commit (${plan.bumpedNames
+          .join(', ',)}); bump it from ${bump.from} to ${bump.to} in the same commit.`,
         path: file.path,
         patch: createFullContentPatch({
           targetId: file.targetId,

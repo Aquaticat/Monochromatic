@@ -25,9 +25,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
+ Node's `promisify` specialized to `execFile`'s declared promise contract.
+
+ See `doc/troubleshooting/oxlint-promisify-void-return.md`.
+ */
+const promisifyExecFile: (original: typeof execFile) => typeof execFile.__promisify__ = promisify;
+
+/**
  Promise form of `execFile`.
  */
-const run = promisify(execFile,);
+const run = promisifyExecFile(execFile,);
 
 /**
  Real Git for fixture setup, bypassing any PATH shim that enforces commit policies on the disposable repository.
