@@ -3,7 +3,7 @@
   "description": "Shared model selection logic for pi plugins",
   "type": "module",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
@@ -34,9 +34,6 @@
   },
   "peerDependenciesMeta": {
     "@earendil-works/pi-ai": {
-      "optional": true
-    },
-    "@earendil-works/pi-coding-agent": {
       "optional": true
     }
   },
