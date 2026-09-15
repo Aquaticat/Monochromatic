@@ -214,8 +214,8 @@ the commit that closes each step is named.
   Two findings matter beyond the VM:
   limine-snapper-sync's system call filter kills Deno boot hooks,
   and flatpak's user environment generator drops XDG prefixes set in `environment.d`.
-- Four of those fixes were applied by hand before being packaged,
-  so a clean reinstall from the fixed installer and packages is in progress.
+- Four of those fixes were first applied by hand;
+  a clean reinstall from installer `fb0f930` and packages `r70` then passed every check with no hand edits.
 - The physical installer refuses firmware that is not in setup mode
   or that sbctl flags with a quirk such as FQ0001,
   before erasing anything.
@@ -233,13 +233,12 @@ is the rollback point.
 
 ## Next action
 
-1. Finish the clean rehearsal reinstall and confirm the hand-applied fixes come from the packages.
-2. The user creates the offline primary key and signing subkey
+1. The user creates the offline primary key and signing subkey
    (labwc-config `doc/planning/pacman-repository.md`, section on the key ceremony),
    then sets the `PACMAN_SIGNING_SUBKEY` secret and `PACMAN_SIGNING_KEY_ID` variable.
-3. The user clears the desktop's Secure Boot keys in the firmware menu,
+2. The user clears the desktop's Secure Boot keys in the firmware menu,
    keeping Secure Boot enabled,
    boots the live ISO,
-   and runs the installer.
-4. Measure the launcher and panel hot paths on the desktop against the 20 ms budget.
-5. Run the ZFS trigger test on the desktop.
+   and follows labwc-config `doc/runbook/install-desktop.md`.
+3. Measure the launcher and panel hot paths on the desktop against the 20 ms budget.
+4. Run the ZFS trigger test on the desktop.
