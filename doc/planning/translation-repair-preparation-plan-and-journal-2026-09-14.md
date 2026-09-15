@@ -9,10 +9,12 @@ Task41 now owns finite correspondence plans and the acquisition journal.
 Its implementation is split into task51 for persisted-input comparison verification,
 task52 for finite root/phase materializers and task53 for current-attempt acquisition journals.
 Task54's callback-retention remediation and task55's shared logger utility are verified in their listed scopes.
-Task51 still owns the comparison's remaining non-logger branch qualification.
-It is blocked on task62's newly reproduced live-signal error-ownership defect.
-Task52 waits for task51;
-task53 waits for task52.
+Task51's persisted-input comparison and task62's live-signal behavior are qualified
+within the recorded R8 artifact boundaries.
+Task52 is the next implementation owner;
+task53 waits for its finite root/phase materializers.
+The changes have not been reviewed;
+GitHub issues #509 and #527 remain open.
 Task41 remains incomplete until those owners satisfy their own acceptance boundaries.
 No paid acquisition or writer calibration is authorized by this work record.
 
@@ -806,7 +808,41 @@ their directory prefix predates the R8 run and does not name an older executable
 The new cleanup-warning control detects a premature snapshot as
 `AssertionError: expected [] to deeply equal [ 'warn' ]`,
 not a compiler or process failure.
-Task62 and task51 remain incomplete pending final lint controls and exact stopped-container cleanup.
+Final positive control `devlint256go1control-VrP52H` detects the injected missing parameter documentation
+and unawaited promise.
+Restored `devlint256go1-AmbSgh` reports zero warnings/errors on 1562 files and no analysis omissions.
+The final `r8-final-audit-HP84E3` reruns the recognized closure,
+Markdown and relocated internal/public consumer checks successfully.
+
+## Current comparison retention
+
+`retention-SVZxbA` inventories durable comparison evidence under package
+`node_modules/.monochromatic/comparison-evidence/`:
+73937 regular files totaling 1575887471 bytes,
+19085 directories,
+7461 recorded symlinks and no special entries.
+Copied temporary evidence remains separately hash-matched to unchanged original paths.
+Symlinks are recorded without dereferencing them;
+this is not a hostile-host or power-loss guarantee.
+
+The exact cleanup plan retains original CID bytes and terminal inspections.
+It selects only matched stopped diagnostics created after the task54 cleanup boundary.
+At `2026-09-15T03:44:51.878Z`,
+all 255 selected containers were removed without force or prune,
+with independent absence checks.
+All forty unselected containers were preserved;
+their identities match the task54 preserved set.
+The owner's unstaged `mise.lock` retains SHA-256
+`6a3dcb5cbacd22f38feb141320f707ca41aa504b01df9197567ea4bf65ba4b12`.
+Final documentation/issue readbacks and their scoped check-container cleanup are supplemental records,
+not changes to the original inventory.
+
+These are acceptance facts for the fixed persisted-input comparison and cancellation boundary only.
+They do not review the changes,
+qualify omitted implementation branches,
+replace the broader Task47 lifecycle inventory,
+authorize a root/phase plan or permit paid acquisition.
+Task52 must compose this existing boundary rather than create another input runner.
 
 ## Earlier verified checkpoint: task50
 

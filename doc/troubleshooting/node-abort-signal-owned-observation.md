@@ -11,10 +11,10 @@ an own `aborted` getter throws a `ProducerInputComparisonError` carrying foreign
 This is a consumer error-ownership defect,
 not a Node authentication guarantee being violated.
 
-Task62 owns remediation.
-The production boundary,
-full suite and current native cases pass their recorded checks;
-final acceptance documentation and evidence cleanup are still being completed.
+Task62's production boundary,
+full suite,
+current mutation controls and native cases pass their recorded checks.
+The current acceptance ledger records durable evidence and exact stopped-container cleanup.
 Task54's logger callback containment remains separate verified behavior.
 
 ## Root cause
@@ -241,9 +241,11 @@ and actual CLI runs using separately identified frozen runtimes.
 `UJeHke` predates the terminal correction.
 R6 runtime `frozen-runtime-m1aVqu` verifies that correction through actual Task47 execution,
 including combined unreadability/cancellation and subscription-disposer faults.
-The subsequent `@internal` barrel exports and warning-only callback-failure control
-are requalified separately;
-R6 evidence is not relabeled as their artifact proof.
+R8 runtime `r8-frozen-runtime-rSoOtk` separately qualifies the `@internal` barrel exports
+and warning-only callback-failure control.
+Its premature-snapshot mutant reaches the designated ordinary assertion,
+while native warning-failure cases preserve primary metadata and return `['warn']`.
+R6 evidence is not relabeled as that artifact proof.
 Durable copies and original-path mappings are retained under
 `package/module/translation-repair/node_modules/.monochromatic/comparison-evidence/`.
 The tests and scoped reviews do not constitute whole-change review.
