@@ -161,8 +161,37 @@ it is complete.
 Open follow-ups for the owner:
 
 - Run `git cli-git trust` so `mono/dependent-version-bump` activates locally.
-- Issue #521 (installability of every published package) is still open,
-  deferred by the owner's earlier verification choice.
+- Owner decisions (2026-09-15, after the rollout):
+  work #521 now,
+  and the agent runs `git cli-git trust`.
+- Trust:
+  `git cli-git trust --yes` succeeded
+  (it also accepted the recursive stage `cli-git.config.ts` requests,
+   covering repositories beneath the repository root);
+  `git cli-git check --policy mono/dependent-version-bump --all` now exits 0,
+  while an unknown policy ID still fails with `Unknown built-in policy ID`.
+- #521 in progress:
+  harness at the session scratchpad `pnpr-521/harness.ts`
+  runs in `node:26-slim` with 4 GiB and 4 CPUs.
+  Per package it installs from pnpr alone with `npm install --ignore-scripts`,
+  checks every export,
+  `main`,
+  `module`,
+  `types`,
+  and bin target exists,
+  imports each Node-resolvable export,
+  resolves bare imports in shipped JavaScript statically,
+  and type-checks exports that declare types with `typescript@latest` under `nodenext`,
+  keeping only diagnostics in `@monochromatic-dev` files or the check file.
+  Smoke run on five packages:
+  four clean;
+  `config-stylelint` reported `TS7016` only because it ships no declarations,
+  so JavaScript-only exports are now a note,
+  not a problem.
+  Next:
+  full 125-package run,
+  then one issue plus minimum fix or reviewed exclusion per real failure,
+  and a results comment on #521.
 
 Done after the rollout:
 
