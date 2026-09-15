@@ -12,11 +12,17 @@ in the same second Git last cached its stat,
 then looked unmodified to Git reading the private or installed index.
 
 No error is emitted.
-The observed failure was the packed `built-dependent-version-bump-consumer.ts` direct-fix scenario:
-`git cli-git fix -- package/module/base/package.json` exited 0 with empty stdout,
-because the hand bump from `1.1.0` to `1.2.0` (same byte length) was not seen,
-and no dependent manifest was rewritten.
-The next two runs passed.
+The failure that started the investigation was the packed `built-dependent-version-bump-consumer.ts` direct-fix scenario:
+`git cli-git fix -- package/module/base/package.json` exited 0 with empty stdout
+and rewrote no dependent manifest.
+A missed hand bump from `1.1.0` to `1.2.0` (same byte length) produces that output.
+The same tarball then passed three times,
+so a build without the `direct-fix` trigger is excluded.
+This cause is an inference for that run,
+not a measurement:
+it needed both manifest writes in one second and cli-git's index copy in a later second,
+and the run's timestamps were not kept.
+The defect itself is reproduced deterministically in "Verification".
 
 Surfaces that could miss the edit:
 
