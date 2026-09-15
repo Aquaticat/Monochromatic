@@ -1,4 +1,3 @@
-import type { BlockPairingQuestion, } from './block-pairing-question.ts';
 import type { PreparationDefinitionDomain, } from './preparation-definition-model.ts';
 import type { PreparationReceiptQuestion, } from './preparation-receipt-model.ts';
 import type { PreparationRootNode, } from './preparation-root-population-model.ts';
@@ -14,6 +13,26 @@ import type { PreparationRootNode, } from './preparation-root-population-model.t
  ```
  */
 export type PreparationRootParentRole = 'writer-parent' | 'footnote-definitions';
+
+/**
+ JSON-bound local definition positions remain explicit numeric data instead of runtime Set instances.
+ These positions affect pairing interpretation, not substantive messages or vote counts.
+
+ @example
+ ```ts
+ const order: PreparationRootDefinitionOrder = { source: [1, 2], target: [2] };
+ ```
+ */
+export type PreparationRootDefinitionOrder = {
+  /**
+   Source definition indexes in native parent-node order, including an explicit empty array.
+   */
+  readonly source: readonly number[];
+  /**
+   Target definition indexes retain their independent side and local numbering.
+   */
+  readonly target: readonly number[];
+};
 
 /**
  Complete current parent identity shared by structural and questioned preparation records.
@@ -88,9 +107,9 @@ export type PreparationRootRegistration = PreparationRootParentIdentity & ({
    */
   readonly questionDigest: string;
   /**
-   Current interpretation metadata does not alter substantive messages.
+   Serializable interpretation metadata does not alter substantive messages.
    */
-  readonly freeOrder: BlockPairingQuestion['freeOrder'];
+  readonly freeOrder: PreparationRootDefinitionOrder;
 } | {
   /**
    Existing empty-side and singleton paths are structural records, not acquired evidence.

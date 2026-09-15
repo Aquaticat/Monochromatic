@@ -14,6 +14,7 @@ export type {
   PreparationRootRawDocument,
 } from './preparation-root-population-model.ts';
 export type {
+  PreparationRootDefinitionOrder,
   PreparationRootParentRole,
   PreparationRootQuestionAliases,
   PreparationRootRegistration,

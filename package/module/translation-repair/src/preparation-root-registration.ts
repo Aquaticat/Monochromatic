@@ -143,13 +143,23 @@ export function preparationRootRegistrations({
       targetBlocks: numbered.targetBlocks,
       protocol: blockPairingProtocol(numbered,),
     };
+    /**
+     Runtime sets stay in native pairing; this DTO carries copied numeric positions for JSON persistence.
+     */
+    const {
+      source: sourceOrderIndexes,
+      target: targetOrderIndexes,
+    } = numbered.freeOrder;
     return [{
       ...identity,
       dispatch: 'queried',
       question,
       questionKey: numbered.key,
       questionDigest: hashContent({ content: JSON.stringify(question,), },),
-      freeOrder: numbered.freeOrder,
+      freeOrder: {
+        source: [...sourceOrderIndexes],
+        target: [...targetOrderIndexes],
+      },
     },];
   },);
 }
