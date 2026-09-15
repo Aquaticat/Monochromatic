@@ -1902,7 +1902,9 @@ const PNPR_EXCLUDED_PACKAGES: Readonly<Record<string, string>> = {
  ```
  */
 function isPnprLoadableEntryPath(entry: unknown,): boolean {
-  return ((typeof entry) === 'string') && (entry !== '') && (!isTypeScriptSourcePath(entry,));
+  return ((typeof entry) === 'string')
+    && (entry !== '')
+    && (!isTypeScriptSourcePath(entry,));
 }
 
 /**
@@ -1970,7 +1972,8 @@ function pnprManifestHasEntryPoint(
   if ((typeof bin) === 'string')
     return isPnprLoadableEntryPath(bin,);
 
-  return ((typeof bin) === 'object') && (bin !== null)
+  return ((typeof bin) === 'object')
+    && (bin !== null)
     && Object.values(bin,)
       .some(function isLoadableBin(entry,) {
         return isPnprLoadableEntryPath(entry,);
