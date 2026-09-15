@@ -35,6 +35,15 @@ function absentOid(): Promise<typeof ABSENT_GIT_VALUE> {
 }
 
 /**
+ Returns no tracked files: pushes publish existing commits, so no candidate state exists to add tracked files to.
+ 
+ @returns empty tracked file list
+ */
+function emptyTrackedFiles(): Promise<readonly never[]> {
+  return Promise.resolve([],);
+}
+
+/**
  Creates lazy manual-push facts around settled updates.
  
  @param gitPath - resolved real Git executable
@@ -69,10 +78,7 @@ function createManualPushFacts({
       },);
       return state.candidates;
     },
-    // Pushes publish existing commits; no current candidate state exists to add tracked files to.
-    trackedFiles: function trackedFiles() {
-      return Promise.resolve([],);
-    },
+    trackedFiles: emptyTrackedFiles,
     headOid: absentOid,
     landedCommitOid: absentOid,
     pushUpdates: function pushUpdates() {

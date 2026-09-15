@@ -292,6 +292,15 @@ function emptyPushUpdates(): Promise<readonly PushUpdate[]> {
 }
 
 /**
+ Returns no tracked files: the commit has already landed, so no candidate state remains that tracked files could join.
+ 
+ @returns empty tracked file list
+ */
+function emptyTrackedFiles(): Promise<readonly never[]> {
+  return Promise.resolve([],);
+}
+
+/**
  Creates memoized landed-commit facts for post-commit policies.
  
  @param gitPath - resolved real Git executable
@@ -339,8 +348,7 @@ export function createPostCommitGitFacts({
   })();
   return {
     candidates,
-    // The commit has already landed; no candidate state remains that tracked files could join.
-    trackedFiles: function trackedFiles() { return Promise.resolve([],); },
+    trackedFiles: emptyTrackedFiles,
     headOid: function headOid() { return Promise.resolve(landedOid,); },
     landedCommitOid: function landedCommitOid() { return Promise.resolve(landedOid,); },
     pushUpdates: emptyPushUpdates,

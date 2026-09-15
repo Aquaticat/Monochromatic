@@ -219,7 +219,7 @@ export async function loadTrackedFiles({
         ...indexEntries.values(),
         ...headEntries.values(),
       ].flatMap(function contentOid(entry,): readonly GitObjectId[] {
-        return INDEX_MODES[entry.modeText] === 'submodule' || INDEX_MODES[entry.modeText] === undefined
+        return (INDEX_MODES[entry.modeText] === 'submodule') || (INDEX_MODES[entry.modeText] === undefined)
           ? []
           : [entry.oid,];
       },),

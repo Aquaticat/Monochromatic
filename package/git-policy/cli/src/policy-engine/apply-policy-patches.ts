@@ -154,17 +154,19 @@ async function resolvePatchTarget({
   const target = candidates.find(function matchingTarget(candidate,) {
     return (candidate.path === patch.path)
       && ((candidate.targetId === patch.targetId)
-        || ((tracked !== undefined) && (tracked.path === patch.path) && (candidate.revision === tracked.oid)));
+        || ((tracked !== undefined) && (tracked.path === patch.path)
+          && (candidate.revision === tracked.oid)));
   },);
   if (target !== undefined) {
     return ((typeof target.revision) === 'symbol') || ((target.mode !== 'regular') && (target.mode !== 'executable'))
       ? { kind: 'stale', }
       : {
         kind: 'revision',
-        revision: String(target.revision,),
+        revision: target.revision,
       };
   }
-  if ((tracked === undefined) || (tracked.path !== patch.path) || (addedPathContext === undefined))
+  if ((tracked === undefined) || (tracked.path !== patch.path)
+    || (addedPathContext === undefined))
     return { kind: 'stale', };
   if (addedPaths.has(patch.path,))
     return {

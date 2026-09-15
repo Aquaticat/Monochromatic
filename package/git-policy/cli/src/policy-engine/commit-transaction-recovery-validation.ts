@@ -77,10 +77,14 @@ function parseAddedPaths(value: object,): readonly AddedPathRecord[] {
     throw new CommitTransactionRecoveryError('Prepared transaction added paths are malformed.',);
   return records.map(function parseRecord(record: unknown,): AddedPathRecord {
     if (((typeof record) !== 'object') || (record === null)
-      || (!('path' in record)) || ((typeof record.path) !== 'string')
-      || (!('gitMode' in record)) || ((record.gitMode !== '100644') && (record.gitMode !== '100755'))
-      || (!('originalOid' in record)) || ((typeof record.originalOid) !== 'string')
-      || (!('intendedOid' in record)) || ((typeof record.intendedOid) !== 'string'))
+      || (!('path' in record))
+      || ((typeof record.path) !== 'string')
+      || (!('gitMode' in record))
+      || ((record.gitMode !== '100644') && (record.gitMode !== '100755'))
+      || (!('originalOid' in record))
+      || ((typeof record.originalOid) !== 'string')
+      || (!('intendedOid' in record))
+      || ((typeof record.intendedOid) !== 'string'))
       throw new CommitTransactionRecoveryError('Prepared transaction added paths are malformed.',);
     return {
       path: record.path,

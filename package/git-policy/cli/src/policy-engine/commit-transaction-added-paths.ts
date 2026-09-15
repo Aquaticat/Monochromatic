@@ -62,6 +62,17 @@ const EXECUTABLE_FILE_MODE = 0o755;
 const OWNER_EXECUTE_BIT = 0o100;
 
 /**
+ Creates the transaction-domain error for failed or malformed Git blob output.
+
+ @param message - safe failure explanation
+
+ @returns private-state failure
+ */
+function addedPathGitError(message: string,): Error {
+  return new CommitTransactionGitError(message,);
+}
+
+/**
  One path a policy added to a commit, recorded before real Git runs.
  */
 export type AddedPathRecord = Readonly<{
@@ -170,7 +181,8 @@ async function worktreeMetadata({
   }
   catch (error: unknown) {
     l.debug(`added-path worktree lstat failed for ${path}: ${String(error,)}`,);
-    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT'))
       throw new AddedPathPreconditionError({
         path,
         reason: 'its worktree copy is missing',
@@ -199,6 +211,12 @@ async function worktreeMetadata({
  @returns Git mode of the unchanged ordinary file
 
  @throws AddedPathPreconditionError when any copy differs from `HEAD`
+
+ @example
+ ```ts
+ await assertAddablePath({ gitPath: '/usr/bin/git', cwd: '/repo', repositoryRoot: '/repo', realIndexPath: '/tmp/original.index', commitIndexPath: '/tmp/commit.index', path: 'package.json', oid: 'abc' });
+ // => '100644'
+ ```
  */
 export async function assertAddablePath({
   gitPath,
@@ -250,8 +268,14 @@ export async function assertAddablePath({
       reason: 'HEAD does not hold it as the ordinary file the fix was computed against',
     },);
   for (const [label, entry,] of [
-    ['it has staged changes', realEntries.get(path,),],
-    ['this commit already changes it', commitEntries.get(path,),],
+    [
+      'it has staged changes',
+      realEntries.get(path,),
+    ],
+    [
+      'this commit already changes it',
+      commitEntries.get(path,),
+    ],
   ] as const) {
     if ((entry === undefined) || (entry.stage !== '0')
       || (entry.oid !== head.oid)
@@ -279,15 +303,16 @@ export async function assertAddablePath({
     gitPath,
     cwd,
     oids: [head.oid,],
-    createError: function toGitError(message,) {
-      return new CommitTransactionGitError(message,);
-    },
+    createError: addedPathGitError,
   },)).get(head.oid,);
-  if ((!metadata.isFile()) || (!executableMatches) || (headBytes === undefined)
-    || (!Buffer.from(await readFile(join(
+  if ((!metadata.isFile()) || (!executableMatches)
+    || (headBytes === undefined)
+    || (!Buffer.from(
+      await readFile(join(
       repositoryRoot,
       path,
-    ),),)
+    ),),
+    )
       .equals(headBytes,)))
     throw new AddedPathPreconditionError({
       path,
@@ -377,6 +402,12 @@ export type AddedWorktreeInstallResult = Readonly<{
  @returns rewritten and conflicted paths
 
  @throws CommitTransactionGitError when Git cannot supply a recorded blob
+
+ @example
+ ```ts
+ await installAddedWorktreeFiles({ gitPath: '/usr/bin/git', cwd: '/repo', repositoryRoot: '/repo', records: [] });
+ // => { rewritten: [], conflicted: [] }
+ ```
  */
 export async function installAddedWorktreeFiles({
   gitPath,
@@ -406,9 +437,7 @@ export async function installAddedWorktreeFiles({
         record.intendedOid,
       ];
     },),
-    createError: function toGitError(message,) {
-      return new CommitTransactionGitError(message,);
-    },
+    createError: addedPathGitError,
   },);
   /**
    Paths rewritten so far.
