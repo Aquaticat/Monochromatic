@@ -14,6 +14,7 @@ import {
   resetScenario,
 } from './built-autofix-added-paths-helpers.ts';
 import { verifyAddedPathConclusions, } from './built-autofix-added-paths-conclusion.ts';
+import { verifyAddedPathDirectFix, } from './built-autofix-added-paths-direct-fix.ts';
 import { verifyAddedPathRecovery, } from './built-autofix-added-paths-recovery.ts';
 import {
   assertIncludes,
@@ -36,7 +37,7 @@ const ADDED_PATH_CONFIG = `export default {
         name: 'dependent-bump',
         defaultSeverity: 'error',
         warnSafe: false,
-        triggers: ['pre-forward'],
+        triggers: ['pre-forward', 'direct-fix'],
         check: async ({ context }) => {
           const candidates = await context.git.candidates();
           if (!candidates.some(({ path }) => path === 'version.txt')) return [];
@@ -407,6 +408,10 @@ export async function verifyAutofixAddedPaths({ env, }: Readonly<{
     env,
   },);
   await verifyAddedPathRecovery({
+    repository,
+    env,
+  },);
+  await verifyAddedPathDirectFix({
     repository,
     env,
   },);
