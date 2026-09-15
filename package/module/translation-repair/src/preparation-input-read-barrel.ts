@@ -38,6 +38,12 @@ export {
   preparationInputReferenceBinding,
 } from './preparation-input-read-reference.ts';
 export {
+  preparationInputNode,
+  preparationInputParentSide,
+  preparationInputProtection,
+  preparationInputProtectionIntersection,
+} from './preparation-input-read-node.ts';
+export {
   PreparationRootError,
   type PreparationRootFailure,
 } from './preparation-root-error.ts';

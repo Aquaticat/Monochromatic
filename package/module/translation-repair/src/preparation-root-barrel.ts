@@ -10,8 +10,11 @@ export type {
 } from './preparation-root-reference-model.ts';
 export type {
   PreparationRootEntry,
+  PreparationRootNode,
   PreparationRootParent,
+  PreparationRootParentSide,
   PreparationRootPopulationParent,
+  PreparationRootProtection,
   PreparationRootRawDocument,
 } from './preparation-root-population-model.ts';
 export type {

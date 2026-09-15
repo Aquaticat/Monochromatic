@@ -191,8 +191,16 @@ the new selection decoder incorrectly expected a bare SHA-256.
 and lines 175 to 178 require `sha256-tree-v1:` followed by the digest.
 The decoder and fixtures now preserve that original tagged grammar;
 the valid retained artifact is not edited to satisfy the mistaken reader.
-Actual-artifact revalidation precedes the remaining complete-entry,
-parent,
+R2 rebuilds first and then passes the actual-artifact check before the remaining checks.
+`reference-native-uqYcb1` preserves the selection,
+reference,
+raw-document and exclusion subtrees of the corrected artifact through the built decoders.
+Types,
+targeted tests and full-scope lint also pass.
+The consumer uses a read-only dependency overlay;
+it is not standalone import-closure or whole-DTO qualification.
+Node-coordinate,
+parent-side and protection decoders are the next checkpoint before complete-entry,
 registration and whole-DTO relation work.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.
