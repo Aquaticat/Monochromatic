@@ -159,7 +159,10 @@ function endsWithKeyword({
      */
     const start = end - keyword.length;
     return (start >= 0)
-      && (text.slice(start, end,) === keyword)
+      && (text.slice(
+        start,
+        end,
+      ) === keyword)
       && (!isIdentifierCharacter(start > 0 ? text.charAt(start - 1,) : '',));
   },);
 }
@@ -236,7 +239,7 @@ export function importsPackage({
    Scan cursor over occurrences of the package name.
    */
   const cursor = { index: sourceText.indexOf(packageName,), };
-  while (cursor.index !== -1) {
+  while (cursor.index !== (-1)) {
     /**
      Character before the occurrence, which must open a string literal.
      */
@@ -245,14 +248,18 @@ export function importsPackage({
      Character after the occurrence, which must close the literal or start a subpath.
      */
     const following = sourceText.charAt(cursor.index + packageName.length,);
-    if (((quote === "'") || (quote === '"') || (quote === '`'))
+    if (((quote === "'") || (quote === '"')
+      || (quote === '`'))
       && ((following === quote) || (following === '/'))
       && isSpecifierPosition({
         text: sourceText,
         quoteIndex: cursor.index - 1,
       },))
       return true;
-    cursor.index = sourceText.indexOf(packageName, cursor.index + packageName.length,);
+    cursor.index = sourceText.indexOf(
+      packageName,
+      cursor.index + packageName.length,
+    );
   }
   return false;
 }

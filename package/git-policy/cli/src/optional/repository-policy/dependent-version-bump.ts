@@ -166,7 +166,10 @@ export function patchBumpVersion({
       name,
       version,
     },);
-  return components.map(function bumpPatch(component, index,): string {
+  return components.map(function bumpPatch(
+    component,
+    index,
+  ): string {
     return index === PATCH_COMPONENT_INDEX
       ? String(Number(component,) + 1,)
       : component;
@@ -198,7 +201,11 @@ function dependentsByName(manifests: readonly WorkspaceManifest[],): ReadonlyMap
   const workspaceNames = new Set(manifests.map(function toName(manifest,): string {
     return manifest.name;
   },),);
-  return manifests.reduce(function addEdges(dependents, manifest,) {
+  return manifests.reduce(
+    function addEdges(
+      dependents,
+      manifest,
+    ) {
     manifest.edgeNames
       .filter(function isWorkspaceEdge(edgeName,): boolean {
       return workspaceNames.has(edgeName,) && (edgeName !== manifest.name);
@@ -213,7 +220,9 @@ function dependentsByName(manifests: readonly WorkspaceManifest[],): ReadonlyMap
       );
     },);
     return dependents;
-  }, new Map<string, string[]>(),);
+  },
+    new Map<string, string[]>(),
+  );
 }
 
 /**
@@ -329,7 +338,10 @@ export function planDependentBumps({
       },),
     };
   },)
-    .toSorted(function byName(left, right,): number {
+    .toSorted(function byName(
+      left,
+      right,
+    ): number {
     return left.name < right.name
       ? -1
       : left.name > right.name

@@ -77,7 +77,8 @@ export class ManifestShapeError extends Error {
  ```
  */
 function isJsonObject(value: unknown,): value is Readonly<Record<string, unknown>> {
-  return (typeof value === 'object') && (value !== null) && (!Array.isArray(value,));
+  return ((typeof value) === 'object') && (value !== null)
+    && (!Array.isArray(value,));
 }
 
 /**
@@ -140,13 +141,13 @@ export function readManifestDependencyFacts({
   const manifest: unknown = JSON.parse(text,);
   if (!isJsonObject(manifest,))
     throw new ManifestShapeError(`${path} is not a JSON object`,);
-  if (typeof manifest.name !== 'string')
+  if ((typeof manifest.name) !== 'string')
     throw new ManifestShapeError(`${path} has no string "name"`,);
-  if ((manifest.version !== undefined) && (typeof manifest.version !== 'string'))
+  if ((manifest.version !== undefined) && ((typeof manifest.version) !== 'string'))
     throw new ManifestShapeError(`${path} has a non-string "version"`,);
   return {
     name: manifest.name,
-    ...(typeof manifest.version === 'string' ? { version: manifest.version, } : {}),
+    ...((typeof manifest.version) === 'string' ? { version: manifest.version, } : {}),
     runtimeDependencyNames: RUNTIME_DEPENDENCY_FIELDS.flatMap(function namesIn(field,) {
       return dependencyNames({
         manifest,
@@ -292,7 +293,11 @@ export function replaceManifestVersion({
         text,
         start: end + 1,
       },);
-      if ((state.depth === 1) && (text.slice(index, end + 1,) === '"version"') && (text.charAt(afterLiteral,) === ':')) {
+      if ((state.depth === 1) && (text.slice(
+        index,
+        end + 1,
+      ) === '"version"')
+        && (text.charAt(afterLiteral,) === ':')) {
         /**
          Opening quote of the value.
          */
@@ -309,9 +314,18 @@ export function replaceManifestVersion({
           text,
           start: valueStart,
         },);
-        if (text.slice(valueStart, valueEnd + 1,) !== JSON.stringify(from,))
-          throw new ManifestShapeError(`${path} declares version ${text.slice(valueStart, valueEnd + 1,)}, expected ${JSON.stringify(from,)}`,);
-        return `${text.slice(0, valueStart,)}${JSON.stringify(to,)}${text.slice(valueEnd + 1,)}`;
+        if (text.slice(
+          valueStart,
+          valueEnd + 1,
+        ) !== JSON.stringify(from,))
+          throw new ManifestShapeError(`${path} declares version ${text.slice(
+            valueStart,
+            valueEnd + 1,
+          )}, expected ${JSON.stringify(from,)}`,);
+        return `${text.slice(
+          0,
+          valueStart,
+        )}${JSON.stringify(to,)}${text.slice(valueEnd + 1,)}`;
       }
       index = end;
     }
