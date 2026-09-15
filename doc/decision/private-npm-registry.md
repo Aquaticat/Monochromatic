@@ -105,6 +105,21 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
    the config then lists 125 packages.
    Classification of the other unlisted packages:
     `doc/handover/pnpr-publish-remaining-packages.md`.
+- Since #537,
+   selection ignores `main` and `module` when `exports` exists,
+   and ignores `main`,
+   `module`,
+   and bin targets that are TypeScript source;
+   ten packages whose only entries were such paths left the config (115 of 155 on 2026-09-15).
+   Their already published versions stay on pnpr.
+- #521 verified installability on 2026-09-15:
+   every published package installed alone from pnpr into a `node:26-slim` npm consumer,
+   with every declared file present,
+   Node-resolvable exports imported,
+   bare imports resolved,
+   typed exports type-checked under `nodenext`,
+   and every bin run with `--help`.
+   Findings and fixes are listed in the handover.
 
 ### Tarball shape
 
@@ -112,6 +127,13 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
 - `"private": true` is removed from the packed manifest.
 - `./ts` export subpaths are removed,
    the same rule as `doc/decision/npm-publishing.md`.
+- `main`,
+   `module`,
+   and `bin` entries naming TypeScript source are removed
+   (#537,
+    #540),
+   because Node refuses to load TypeScript from `node_modules`;
+   `bin` disappears when no loadable entry remains.
 
 ### Versions change only by manual bumps
 
