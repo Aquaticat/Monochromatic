@@ -2107,6 +2107,9 @@ importers:
       '@monochromatic-dev/git-policy-api':
         specifier: workspace:*
         version: link:../api
+      '@monochromatic-dev/git-policy-markdown-lint':
+        specifier: workspace:*
+        version: link:../markdown-lint
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-marker/foreign-borrowed

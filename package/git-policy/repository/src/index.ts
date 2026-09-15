@@ -14,9 +14,18 @@ import {
   type PolicyFinding,
 } from '@monochromatic-dev/git-policy-api/ts';
 
+import { dependentVersionBump, } from './dependent-version-bump-policy.ts';
+
+export {
+  DEPENDENT_VERSION_STALE_CODE,
+  DEPENDENT_VERSION_UNSUPPORTED_CODE,
+  dependentVersionBump,
+  findDependentBumps,
+} from './dependent-version-bump-policy.ts';
 export {
   patchBumpVersion,
   planDependentBumps,
+  transitiveDependentNames,
   UnsupportedVersionError,
 } from './dependent-version-bump.ts';
 export type {
@@ -33,6 +42,10 @@ export {
   importsPackage,
   isNonTestSourcePath,
 } from './source-imports.ts';
+export {
+  PNPR_CONFIG_PATH,
+  readPublishableNames,
+} from './publishable-names.ts';
 
 /**
  Candidate fields needed by root-context path decision.
@@ -118,9 +131,12 @@ export const forbiddenRootContext: PolicyDefinition<undefined, 'forbidden-root-c
  ```
  */
 export const repositoryPolicyPlugin: PluginDefinition<
-  readonly [typeof forbiddenRootContext],
+  readonly [typeof forbiddenRootContext, typeof dependentVersionBump],
   'repository'
 > = definePlugin({
   name: 'repository',
-  policies: [forbiddenRootContext,],
+  policies: [
+    forbiddenRootContext,
+    dependentVersionBump,
+  ],
 },);

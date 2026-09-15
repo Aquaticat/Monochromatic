@@ -2217,9 +2217,11 @@ ${await cat(['./AGENTS.md',],)}`,
   generateForbiddenStringsRules(),
 
   ...await Promise.all([
+    'dependent-version-bump-policy.ts',
     'dependent-version-bump.ts',
     'index.ts',
     'manifest-text.ts',
+    'publishable-names.ts',
     'source-imports.ts',
   ].map(async function mirrorRepositoryPolicy(fileName,) {
     return overwrite({
@@ -2230,6 +2232,10 @@ ${await cat(['./AGENTS.md',],)}`,
         .replace(
           '@monochromatic-dev/git-policy-api/ts',
           '../../api/index.ts',
+        )
+        .replace(
+          '@monochromatic-dev/git-policy-markdown-lint/ts',
+          '../markdown-lint/index.ts',
         )}`,
     },);
   },),),

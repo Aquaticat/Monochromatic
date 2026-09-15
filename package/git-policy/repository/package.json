@@ -21,7 +21,8 @@
   ],
   "dependencies": {
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
-    "@monochromatic-dev/git-policy-api": "workspace:*"
+    "@monochromatic-dev/git-policy-api": "workspace:*",
+    "@monochromatic-dev/git-policy-markdown-lint": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",

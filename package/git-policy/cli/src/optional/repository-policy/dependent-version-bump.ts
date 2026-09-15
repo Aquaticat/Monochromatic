@@ -239,7 +239,7 @@ function dependentsByName(manifests: readonly WorkspaceManifest[],): ReadonlyMap
  transitiveDependentNames({ manifests, bumpedNames: ['@scope/b'] });
  ```
  */
-function transitiveDependentNames({
+export function transitiveDependentNames({
   manifests,
   bumpedNames,
 }: Readonly<{
