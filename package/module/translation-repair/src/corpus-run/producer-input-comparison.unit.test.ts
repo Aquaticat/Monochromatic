@@ -674,7 +674,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     const result = await accepted({ ...f.request(), signal: controller.signal });
     expect(getter.callCount).toBe(0);
     expect(getEventListeners(controller.signal, 'abort')).toEqual(before);
-    expect(Object.getOwnPropertyDescriptor(controller.signal, 'removeEventListener')?.get).toBe(getter);
+    expect(Object.getOwnPropertyDescriptor(controller.signal, 'removeEventListener')).toMatchObject(descriptor);
     expect(Object.isExtensible(controller.signal)).toBe(true);
     expect(result.artifact.sha256).toBe(artifactIdentity.sha256);
   } }),
