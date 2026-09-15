@@ -221,6 +221,7 @@ Bash shell and CLI tool quirks that cause confusing behavior:
 - rg `--glob` finds files but `-l` with a content pattern does not -- content-vs-filename search confusion
 - [Clack note formatter snapshots need newer nested `styleText()` behavior](clack-note-nested-styletext-node-floor.md)
 - [GitHub CLI implicit repository lookup invokes a PATH-shadowed Git wrapper](gh-implicit-repository-git-wrapper.md)
+- [GitHub CLI JSON readbacks rewrite literal control escapes](github-cli-json-control-escapes.md)
 - [A `pgrep --full` wait loop matches its own shell and never exits](pgrep-wait-loop-matches-itself.md),
    so the step it was gating silently never runs
 - [GitHub REST Issue creation should be serial and paced](github-issue-creation-concurrency.md)

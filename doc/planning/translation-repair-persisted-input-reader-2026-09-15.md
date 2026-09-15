@@ -262,5 +262,53 @@ not clipped intervals.
 Empty target anchors therefore retain the producer's overlap predicate and never become all-sealed controls.
 `document-node.ts:232` and `container-extents.ts:285` tie node hashes to exact text slices.
 Population-only rows do not gain omitted-body reconstruction.
+Parent R1 passes the actual artifact and all build,
+bootstrap,
+type and test stages;
+its callback-layout warning is corrected before R2.
+Parent R2 passes the full checkpoint.
+`parent-native-Ni0uqi` decodes 272 population rows and 40 selected parents,
+checking 8364 frozen objects and collections.
+
+### Native question baseline and adjacent key encoding issue
+
+`question-baseline-QWeptI` records eleven pre-extraction native key cases and their complete protocols.
+The cases cover empty sides and blocks,
+side reversal,
+Unicode and astral text,
+NUL,
+quotes,
+backslashes,
+newlines and listing fences.
+Repeated protocol construction is value-equal,
+JSON-representable and object-disjoint;
+each measured protocol graph contains fifteen objects or arrays.
+No provider fetch occurs.
+
+The two embedded-NUL cases have different block boundaries but the same legacy key.
+Their complete question digests differ.
+This is ambiguous pre-hash encoding,
+not a SHA-256 collision.
+[Issue #542](https://github.com/Aquaticat/Monochromatic/issues/542)
+records the source-traced cache consumer and the missing cached-preparation replay.
+It remains open and unreviewed;
+no real corpus impact or cache-encoding repair has been demonstrated.
+The reader's planned key-helper extraction preserves existing bytes,
+while question alias accounting continues to use exact complete question bytes.
+
+The issue was created successfully.
+Its first CLI readback failed because GitHub CLI sanitizes response JSON,
+including literal control escape text.
+An independent raw public HTTP response matches the submitted body exactly.
+No remote edit or duplicate creation occurred.
+See [GitHub CLI JSON control escapes](../troubleshooting/github-cli-json-control-escapes.md).
+Durable records remain in `legacy-key-observation/` and the separate `gh-json-observation/`
+under the reader evidence root.
+
+Next are the shared historical-key helper,
+explicit numbered-block decoding,
+and literal comparison against the existing native protocol constructor.
+Return frozen factory-owned protocol values,
+never unknown supplied subtrees or a handwritten parallel protocol.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.
