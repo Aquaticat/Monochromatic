@@ -333,5 +333,18 @@ The protocol reader walks supplied JSON against freshly generated native values,
 checks closed object keys and array extent/order,
 and freezes only the factory-owned result.
 It returns no unknown supplied subtree and does not interpret JSON Schema or duplicate messages.
+Question R1 passes build,
+actual-artifact consumption,
+bootstrap,
+types and targeted tests.
+`question-native-10Otpk` decodes all 42 queried questions,
+checks their historical keys and complete question digests,
+and observes 1555 frozen objects with zero provider fetches.
+Full-scope lint reports nine warnings;
+layout,
+string spelling,
+symbol description and an unknown-typed fixture traversal are corrected.
+A sequential native-clone fault test is added to detect protocol fields that would disappear from JSON.
+Question R2 verification remains pending.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.

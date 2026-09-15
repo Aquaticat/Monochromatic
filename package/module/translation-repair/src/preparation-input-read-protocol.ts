@@ -90,8 +90,11 @@ export function preparationInputProtocol({
       expected,
       path: position,
     } = nonNullishOrThrow(pending.pop());
-    if ((expected === null) || (typeof expected !== 'object')) {
-      if (!Object.is(actual, expected))
+    if ((expected === null) || ((typeof expected) !== 'object')) {
+      if (!Object.is(
+        actual,
+        expected,
+      ))
         throw new PreparationRootError({
           kind: 'input-relations',
           input: position,

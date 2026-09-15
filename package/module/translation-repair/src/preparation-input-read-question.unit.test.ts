@@ -60,7 +60,7 @@ await describe({ name: 'persisted native numbered questions', children: [
     { source: [], target: ['Chat'] },
     { source: ['Cat'], target: [] },
     { source: [''], target: [''] },
-    { source: ['Cat\u0000Dog', '```\n猫😺'], target: ['Chat "quote" \\ tail', '````\r\nEnd'] },
+    { source: ['Cat\u0000Dog', '```\n猫😺'], target: [String.raw`Chat "quote" \ tail`, '````\r\nEnd'] },
   ].map((sides, index) => it({ name: `rebuilds native question fixture ${String(index)} without dispatch assumptions`, fn: async () => {
     const value = question(sides);
     const result = preparationInputQuestion({ value, path });
@@ -75,8 +75,9 @@ await describe({ name: 'persisted native numbered questions', children: [
       const current = pending.pop();
       if (current === undefined) throw new Error('Fixture walk requires an object');
       expect(Object.isFrozen(current)).toBe(true);
-      for (const child of Object.values(current)) {
-        if ((child !== null) && (typeof child === 'object')) pending.push(child);
+      const values: readonly unknown[] = Object.values(current);
+      for (const child of values) {
+        if ((child !== null) && ((typeof child) === 'object')) pending.push(child);
       }
     }
     expect(Object.isFrozen(value.protocol)).toBe(false);

@@ -16,11 +16,11 @@ function change({ value, key, replacement }: {
   readonly key: string;
   readonly replacement: unknown;
 }): void {
-  if ((typeof value !== 'object') || (value === null)) throw new Error('Fixture needs an object');
+  if (((typeof value) !== 'object') || (value === null)) throw new Error('Fixture needs an object');
   expect(Reflect.set(value, key, replacement)).toBe(true);
 }
 function field({ value, key }: { readonly value: unknown; readonly key: string }): unknown {
-  if ((typeof value !== 'object') || (value === null)) throw new Error('Fixture needs an object');
+  if (((typeof value) !== 'object') || (value === null)) throw new Error('Fixture needs an object');
   return Reflect.get(value, key);
 }
 function refused(value: unknown): PreparationRootError {
@@ -37,7 +37,8 @@ function refused(value: unknown): PreparationRootError {
   throw new Error('Unreachable after missing-refusal assertion');
 }
 
-await describe({ name: 'literal native protocol comparison', children: [
+// The native-serialization guard fixture intercepts structuredClone; every affected reader shares this sequence.
+await describe({ name: 'literal native protocol comparison', concurrency: 1, children: [
   it({ name: 'returns frozen native values without freezing or borrowing supplied objects', fn: async () => {
     const value = fixture();
     const result = read(value);
@@ -49,7 +50,20 @@ await describe({ name: 'literal native protocol comparison', children: [
     expect(Object.isFrozen(value.responseFormat.json_schema.schema)).toBe(false);
     change({ value: value.messages[0], key: 'content', replacement: 'Changed caller-owned text' });
     expect(result).toEqual(fixture());
-    expect(read(fixture())).toEqual(result);
+    const fresh = fixture();
+    expect(read(fresh)).toEqual(result);
+  } }),
+  it({ name: 'refuses native fields that would disappear from JSON instead of returning unchecked data', fn: async ctx => {
+    const value = fixture();
+    const original = globalThis.structuredClone;
+    ctx.sinon.stub(globalThis, 'structuredClone').callsFake(function nativeHiddenField<const Value>(input: Value): Value {
+      const copied = original(input);
+      if (((typeof copied) !== 'object') || (copied === null)) throw new Error('Fixture needs a cloned object');
+      Object.defineProperty(copied, 'hidden', { value: 'q7z9k2' });
+      return copied;
+    });
+    expect(refused(value).kind).toBe('input-relations');
+    expect(Object.isFrozen(value)).toBe(false);
   } }),
   ...['messages', 'responseFormat'].map(key => it({ name: `requires protocol field ${key}`, fn: async () => {
     const value = fixture();
@@ -83,7 +97,7 @@ await describe({ name: 'literal native protocol comparison', children: [
     refused({ ...value, messages: extra });
     const symbolic = [...value.messages];
     Reflect.deleteProperty(symbolic, '0');
-    Reflect.set(symbolic, Symbol('q7z9k2'), 'q7z9k2');
+    Reflect.set(symbolic, Symbol('extra protocol array property q7z9k2'), 'q7z9k2');
     refused({ ...value, messages: symbolic });
     const otherPrototype = [...value.messages];
     Object.setPrototypeOf(otherPrototype, null);
