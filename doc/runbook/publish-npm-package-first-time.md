@@ -90,7 +90,8 @@ TODO
 5.   Link every direct dependency into the package
      (workaround for pnpm issue 9566,
      see `doc/troubleshooting/pnpm-pack-dedupe-direct-deps.md`):
-     `pnpm install --force --config.dedupe-direct-deps=false --filter @monochromatic-dev/module-logger`.
+     `env pnpm_config_dedupe_direct_deps=false pnpm install --force --filter @monochromatic-dev/module-logger`.
+     pnpm 12.3.4 ignores the `--config.dedupe-direct-deps=false` form.
      Expected:
      `ls package/module/logger/node_modules/@monochromatic-dev` lists `config-typescript`.
 6.   Build the package:
