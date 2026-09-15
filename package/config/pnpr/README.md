@@ -26,6 +26,10 @@ minimumReleaseAgeExclude:
   - '@monochromatic-dev/*'
 ```
 
+`@monochromatic-dev/config-typescript` sets `types: ["node"]`,
+ so a project extending it also installs `@types/node`;
+ without it `tsc` stops with `TS2688: Cannot find type definition file for 'node'`.
+
 Through this route,
  versions that exist only on npmjs (older `module-logger` and `module-fs-path` releases,
  `@monochromatic-dev/mcp-nvim`) are not installable.
@@ -64,6 +68,38 @@ The list doubles as pnpr's OIDC trust list,
  because pnpr accepts only exact package names for workload publishing.
 This package has no entry points,
  so it never publishes itself.
+
+## Publishing
+
+`.github/workflows/pnpr-publish.yml` runs `mise run //package/config/pnpr:publish` on pushes to `main`
+ that change a manifest,
+ `config.yaml`,
+ the script,
+ or the workflow.
+`src/publish-missing-versions.ts` then:
+
+1.   reads the trusted names from `config.yaml`,
+2.   reads each package's published versions anonymously,
+3.   builds (`mise run //<dir>:build` when declared),
+      packs with pnpm,
+      and rewrites the packed manifest for every missing version in dependency order,
+4.   publishes each tarball with a fresh OIDC workload token,
+      moving `latest` only forward (older versions get `backfill`).
+
+A failed package fails the run and blocks its dependents.
+The job sets `pnpm_config_dedupe_direct_deps=false`,
+ because pnpm 12.3.4 ignores the `--config.` form
+ (`doc/troubleshooting/pnpm-pack-dedupe-direct-deps.md`).
+
+Run a named subset from **Actions**,
+ **pnpr-publish**,
+ **Run workflow**,
+ with a comma-separated **only** input.
+Locally,
+ `PNPR_REGISTRY_ORIGIN`,
+ `PNPR_PUBLISH_TOKEN`,
+ and `PNPR_PUBLISH_ONLY` point the same script at a test registry;
+ `mise run //package/config/pnpr:publish:dry-run` builds and packs without publishing.
 
 ## Deploy and operate
 

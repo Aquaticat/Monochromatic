@@ -73,7 +73,56 @@ Tradeoffs:
 - `--force` is required by the upstream issue's workaround so existing deduplicated links are replaced;
 - the package remains unpublished until deferred issue #358 is explicitly resumed.
 
+## pnpm 12.3.4 ignores the command-line override
+
+Found 2026-09-15 while verifying `package/config/pnpr/src/publish-missing-versions.ts`.
+On pnpm 12.3.4,
+ `--config.dedupe-direct-deps=false` no longer changes the install layout,
+ so the workaround above (and the install step in `.github/workflows/npm-release.yml` and
+ `package/git-policy/cli/mise.toml` `pack:npm`) leaves `pnpm pack` failing with the same error.
+
+### Verification
+
+A disposable worktree at `00bd2867b` deleted every `node_modules` directory before each case,
+ ran `pnpm install --frozen-lockfile` with the listed change,
+ and checked for `package/module/or-throw/node_modules/@monochromatic-dev/config-typescript`
+ (script `dedupe-env-probe.ts` in that session's scratchpad):
+
+```text
+default: install exit 0, config-typescript linked in or-throw: false
+cli --config.dedupe-direct-deps=false: install exit 0, config-typescript linked in or-throw: false
+env pnpm_config_dedupe_direct_deps=false: install exit 0, config-typescript linked in or-throw: true
+env npm_config_dedupe_direct_deps=false: install exit 0, config-typescript linked in or-throw: false
+```
+
+With the environment variable set for the whole run,
+ `pnpm pack` succeeded for `module-or-throw` and `oxlint-plugin-tsdoc`,
+ and both published to a local pnpr and installed in a disposable consumer.
+Adding `--force` to the command-line form did not link the dependency either.
+
+A layout installed with the variable does not survive a later plain `pnpm install`:
+ a publish run whose build tasks invoked pnpm without the variable restored the root-only link,
+ and pack failed again.
+
+### Verified workaround
+
+Set `pnpm_config_dedupe_direct_deps=false` in the environment of every pnpm command in the packing job,
+ as `.github/workflows/pnpr-publish.yml` does at job level.
+
+Tradeoffs:
+
+- the variable reaches every pnpm command in the job,
+   including unrelated installs,
+   which is acceptable in a disposable CI checkout but would change a developer's layout if exported locally;
+- the source-level reason pnpm 12 ignores the `--config.` form is not traced yet.
+
 ## What does not work
+
+### Pass `--config.dedupe-direct-deps=false` on pnpm 12.3.4
+
+See "pnpm 12.3.4 ignores the command-line override":
+ the flag installs the deduplicated layout unchanged,
+ with or without `--force`.
 
 ### Repeat pnpm install with repository defaults
 
