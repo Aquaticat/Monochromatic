@@ -672,9 +672,29 @@ types and focused tests pass,
 including the formerly red pre-spawn setup control.
 Its remaining eleven lint warnings are predicate/statement layout and destructuring findings,
 now corrected without suppression.
-This remains provisional:
-current full-suite coverage,
-revised guard/native qualification and scoped evidence cleanup remain required.
+The R4 build/bootstrap/types/focused tests,
+read-only lint and runtime seal all pass.
+`devfull-9czYKj` then passes the full suite with 632 expected and observed Node `26.8.2` test entries,
+no source change and no OOM event.
+The new frozen parent `.frozen-owned-signal-comparison-runtime-UJeHke`
+contains 164 manifest-listed files;
+its 28415-byte manifest has SHA-256
+`8d4738b0563780e21ab4934295b104e2ef4ce18d5ac4e1975bb7919a5ee21d13`.
+The frozen native driver `.frozen-owned-signal-native-qualification-v2VLsF`
+contains separately hashed base,
+failure and signal case files plus its fixed import entry.
+Native qualification passes in `current-owned-signal-base-native-mr8ekc`,
+`current-owned-signal-failures-R2iq1s` and `owned-signal-native-cases-GyLkgt`.
+The signal cases verify own and late getter bypass,
+actual cancellation despite propagation suppression,
+synthetic-event continuity,
+late unreadable composite-state refusal,
+already-aborted reason isolation and proxy refusal.
+Caller getter counts stay zero in the own-property cases;
+the deliberately unreadable composite source is observed once and returns an owned contract refusal.
+These proofs retain the unchanged Task47 inner bootstrap/runtime and do not grant preparation approval.
+Current signal and restored non-logger guard matrices and scoped evidence cleanup remain pending.
+Task62 and task51 remain incomplete until those results are checked.
 
 ## Earlier verified checkpoint: task50
 
