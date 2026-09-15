@@ -326,15 +326,16 @@ export async function verifyRacyIndexConsumer({ env, }: Readonly<{
     },
     env,
   },);
-  await writeFile(
-    `${explicitRepository}/other.txt`,
-    'other changed\n',
-  );
   await pinRacyEdit({
     repository: explicitRepository,
     path: 'hold.txt',
     edited: 'racy hold edit\n',
   },);
+  // Edited after the pin so refreshing the index sees only the held file.
+  await writeFile(
+    `${explicitRepository}/other.txt`,
+    'other changed\n',
+  );
   await execute({
     command: 'git',
     args: [
