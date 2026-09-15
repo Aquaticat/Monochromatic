@@ -202,6 +202,13 @@ export async function invokeProducerInputBootstrap({
       l: pl
     });
     /**
+     Fallible interruption registration completes before any native child is created.
+     */
+    using interruption = comparisonBootstrapInterruption({
+      signal,
+      directory: run.directory
+    });
+    /**
      Output descriptor stays open through actual child close and content synchronization.
      */
     await using stdout = await open(
@@ -249,12 +256,9 @@ export async function invokeProducerInputBootstrap({
      */
     const closed = producerInputCommandClose(child);
     /**
-     Timer and listener disposal cannot detach the independent native-close observation.
+     Pending interruption is forwarded only after the independent actual-close observer is active.
      */
-    using interruption = comparisonBootstrapInterruption({
-      child,
-      signal
-    });
+    interruption.attach(child);
     /**
      Error categories do not end observation before native descriptors close.
      */
