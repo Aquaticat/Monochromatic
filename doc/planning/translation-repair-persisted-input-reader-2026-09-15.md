@@ -129,8 +129,21 @@ types and the JSON/root/message-vocabulary tests pass.
 Full-scope lint then reports thirteen warnings and no errors,
 covering layout,
 shadowing and hexadecimal spelling.
-`76105d223` addresses those findings;
-R2 verification is running with fresh builds before types and tests.
+`76105d223` addresses those findings.
+R2 passes builds,
+types and tests but reports one remaining chain-layout warning.
+`0085cb002` names the canonical encoded bytes;
+R3 passes fresh builds,
+types,
+targeted tests and full-scope lint.
+
+The isolated `json-native-consumer-GH3Qio` consumes the actual 2821409-byte Task47 artifact
+through the frozen built byte/JSON stage without repository or dependency mounts.
+It preserves the recorded raw SHA-256 after caller-buffer mutation.
+The parsed value remains unknown;
+observing its scope and collection extents is not complete DTO validation.
+The DTO-specific closed-record,
+scalar and ordered-element helper layer is the next implementation checkpoint.
 The proof roots and raw diagnostics are durable under package
 `node_modules/.monochromatic/preparation-input-reader/`.
 No completed decoder,
