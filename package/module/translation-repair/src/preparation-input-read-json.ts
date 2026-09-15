@@ -122,10 +122,14 @@ function preparationInputValue({
     const serialized = JSON.stringify(value);
     if ((typeof serialized) !== 'string')
       throw new PreparationRootError({ kind: 'input-json' });
-    if (Buffer.from(
+    /**
+     Canonical writer bytes are compared instead of decoder-normalized text.
+     */
+    const encoded = Buffer.from(
       serialized,
       'utf8',
-    ).equals(content))
+    );
+    if (encoded.equals(content))
       return value;
   }
   catch (error) {
