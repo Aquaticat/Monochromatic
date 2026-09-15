@@ -17,6 +17,8 @@ Frozen originals remain retained unchanged.
 
 ## Root cause
 
+The repository excerpts in this section refer to pre-repair commit `081c05e14`.
+
 `package/module/translation-repair/src/preparation-root-registration-model.ts:93`
 uses the in-memory question type in a supposedly serializable DTO:
 
@@ -124,10 +126,17 @@ The existing replay and evidence-occurrence consumers use `BlockPairingQuestion.
 not the root DTO;
 they must retain their current set behavior.
 
-The repair requires a failing native-root JSON round-trip control,
-passing asymmetric and empty definition-index cases,
-and fresh provider-free artifact qualification.
-Those implementation checks are pending.
+The native-root controls in `devtest-vbkJNR` fail at two designated ordinary assertions
+for asymmetric and empty definition indexes.
+`b9108503a` implements the explicit array projection.
+Its first fresh builds,
+types and regression tests pass,
+including whole-root JSON round-trip equality.
+Lint then identifies the inline round trip as a deep-clone idiom;
+the tests now write and reread actual JSON files rather than substitute `structuredClone`,
+which would not test serialization.
+Current lint recheck,
+mutation sensitivity and fresh provider-free artifact qualification remain pending.
 Do not silently relabel the frozen artifact or derive a new expected digest from it.
 
 ## Rejected remedies
@@ -142,6 +151,12 @@ Do not silently relabel the frozen artifact or derive a new expected digest from
 
 The `.out-of-scope/` topic inventory contains no matching Node JSON/Set entry.
 No Node filing or patch is proposed.
+The tracker search found the historical comparable
+[Node #10965](https://github.com/nodejs/node/issues/10965),
+where JSON-backed IPC omitted `Map` members.
+That thread was read in full;
+its IPC discussion is not evidence about the current preparation CLI or current IPC options.
+The local representation fix adds nothing to that Node thread.
 
 1.  Upstream fault:
     no;
