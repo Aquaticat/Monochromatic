@@ -339,6 +339,8 @@ export function createPostCommitGitFacts({
   })();
   return {
     candidates,
+    // The commit has already landed; no candidate state remains that tracked files could join.
+    trackedFiles: function trackedFiles() { return Promise.resolve([],); },
     headOid: function headOid() { return Promise.resolve(landedOid,); },
     landedCommitOid: function landedCommitOid() { return Promise.resolve(landedOid,); },
     pushUpdates: emptyPushUpdates,

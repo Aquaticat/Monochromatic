@@ -54,6 +54,7 @@ export type LazyPolicyGitFacts = {
   readonly candidates: () => Promise<readonly CandidateFile[]>;
   /**
    Loads current-state tracked files matching Git pathspecs, which may use glob magic.
+   Empty in post-commit and manual-push lifecycles, which have no candidate state to join.
    */
   readonly trackedFiles: (request: Readonly<{
     /**

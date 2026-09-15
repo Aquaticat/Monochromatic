@@ -69,6 +69,10 @@ function createManualPushFacts({
       },);
       return state.candidates;
     },
+    // Pushes publish existing commits; no current candidate state exists to add tracked files to.
+    trackedFiles: function trackedFiles() {
+      return Promise.resolve([],);
+    },
     headOid: absentOid,
     landedCommitOid: absentOid,
     pushUpdates: function pushUpdates() {

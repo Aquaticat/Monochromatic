@@ -395,6 +395,9 @@ await describe({
                   candidates: function candidates(): Promise<readonly FixtureCandidate[]> {
                     return Promise.resolve([candidateOf({ path: 'pkg/README.md', bytes: ENCODER.encode(RELATIVE_README,), },),],);
                   },
+                  trackedFiles: function trackedFiles(): Promise<readonly never[]> {
+                    return Promise.resolve([],);
+                  },
                   headOid: function headOid(): Promise<string> {
                     return Promise.resolve('head',);
                   },
