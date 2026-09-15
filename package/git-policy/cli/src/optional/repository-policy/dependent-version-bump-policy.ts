@@ -18,31 +18,15 @@ import {
 import { createFullContentPatch, } from '../markdown-lint/index.ts';
 
 import {
-  planDependentBumps,
-  transitiveDependentNames,
-  UnsupportedVersionError,
-  type WorkspaceManifest,
-} from './dependent-version-bump.ts';
-import {
-  type ManifestDependencyFacts,
-  readManifestDependencyFacts,
-  replaceManifestVersion,
-} from './manifest-text.ts';
-import {
-  PNPR_CONFIG_PATH,
-  readPublishableNames,
-} from './publishable-names.ts';
-import {
-  importsPackage,
-  isNonTestSourcePath,
-} from './source-imports.ts';
+  MANIFEST_PATHSPEC,
+  planWorkspaceBumps,
+  type WorkspaceFileReader,
+  type WorkspaceManifestFile,
+} from './dependent-bump-workflow.ts';
+import { UnsupportedVersionError, } from './dependent-version-bump.ts';
+import { PNPR_CONFIG_PATH, } from './publishable-names.ts';
 
-//region Manifest state
-
-/**
- Git pathspec selecting every workspace package manifest.
- */
-const MANIFEST_PATHSPEC = ':(glob)package/*/*/package.json';
+//region Policy facts reader
 
 /**
  Number of path segments in `package/<category>/<name>/package.json`.
@@ -50,7 +34,7 @@ const MANIFEST_PATHSPEC = ':(glob)package/*/*/package.json';
 const MANIFEST_PATH_SEGMENTS = 4;
 
 /**
- Strict UTF-8 decoder; manifests and source that fail to decode are malformed.
+ Strict UTF-8 decoder; manifests and configs that fail to decode are malformed.
  */
 const DECODER = new TextDecoder(
   'utf-8',
@@ -58,35 +42,14 @@ const DECODER = new TextDecoder(
 );
 
 /**
+ Lenient decoder for source files, which only need import scanning.
+ */
+const SOURCE_DECODER = new TextDecoder();
+
+/**
  Replacement text encoder.
  */
 const ENCODER = new TextEncoder();
-
-/**
- Current and `HEAD` facts for one workspace manifest.
- */
-type ManifestState = Readonly<{
-  /**
-   Tracked manifest file.
-   */
-  file: TrackedFile;
-  /**
-   Repository-relative package directory.
-   */
-  directory: string;
-  /**
-   Current manifest text.
-   */
-  text: string;
-  /**
-   Current dependency facts.
-   */
-  current: ManifestDependencyFacts;
-  /**
-   Version at `HEAD`, absent for a manifest `HEAD` lacks or that declared no version there.
-   */
-  headVersion?: string;
-}>;
 
 /**
  Reports whether a repository path is a workspace package manifest.
@@ -111,177 +74,78 @@ function isWorkspaceManifestPath(path: string,): boolean {
 }
 
 /**
- Reads current and `HEAD` facts for one manifest.
+ Reads a tracked manifest's current and `HEAD` text.
 
  @param file - tracked manifest
 
- @returns manifest state
-
- @throws ManifestShapeError when either version of the manifest is malformed
+ @returns reader manifest
  */
-async function readManifestState(file: TrackedFile,): Promise<ManifestState> {
-  /**
-   Current manifest text.
-   */
-  const text = DECODER.decode(await file.bytes(),);
+async function manifestFileOf(file: TrackedFile,): Promise<WorkspaceManifestFile> {
   /**
    `HEAD` bytes, or absence for a new manifest.
    */
   const headBytes = await file.headBytes();
-  /**
-   `HEAD` facts, when `HEAD` has the manifest.
-   */
-  const head = headBytes === ABSENT_GIT_VALUE
-    ? []
-    : [readManifestDependencyFacts({
-      path: file.path,
-      text: DECODER.decode(headBytes,),
-    },),];
-  /**
-   Version at `HEAD`.
-   */
-  const headVersion = head[0]
-    ?.version;
   return {
-    file,
-    directory: file.path
-      .slice(
-      0,
-      -'/package.json'.length,
-    ),
-    text,
-    current: readManifestDependencyFacts({
-      path: file.path,
-      text,
-    },),
-    ...(headVersion === undefined ? {} : { headVersion, }),
+    path: file.path,
+    text: DECODER.decode(await file.bytes(),),
+    ...(headBytes === ABSENT_GIT_VALUE ? {} : { baseText: DECODER.decode(headBytes,), }),
   };
 }
 
-//endregion Manifest state
-
-//region Bundled development edges
-
 /**
- Decides which development dependencies each dependent bundles, checking only edges that can reach a bumped package.
+ Builds a workspace reader over policy facts, keeping tracked manifests for patch targets.
 
- @param context - policy context exposing tracked files
+ @param context - policy context
 
- @param states - every manifest state
+ @param trackedManifests - receives every tracked manifest by path
 
- @param bumpedNames - packages bumped in this commit
+ @returns reader comparing the current candidate state with `HEAD`
 
- @returns confirmed bundled development dependency names by dependent name
-
- @example
- ```ts
- await bundledDevelopmentEdges({ context, states, bumpedNames: ['@scope/b'] });
- ```
+ @mutates trackedManifests - fills it when manifests are listed.
  */
-async function bundledDevelopmentEdges({
+function policyReader({
   context,
-  states,
-  bumpedNames,
+  trackedManifests,
 }: Readonly<{
   context: ForeignBorrowed<PolicyContext>;
-  states: readonly ManifestState[];
-  bumpedNames: readonly string[];
-}>,): Promise<ReadonlyMap<string, readonly string[]>> {
-  /**
-   Every package that could depend on a bumped package if all development dependencies were bundled.
-   */
-  const superset = transitiveDependentNames({
-    manifests: states.map(function everyEdge(state,): WorkspaceManifest {
-      return {
-        name: state.current
-          .name,
-        directory: state.directory,
-        edgeNames: [
-          ...state.current
-            .runtimeDependencyNames,
-          ...state.current
-            .devDependencyNames,
-        ],
-      };
-    },),
-    bumpedNames,
-  },);
-  /**
-   Packages whose change can matter to a dependent.
-   */
-  const relevant = new Set([
-    ...superset,
-    ...bumpedNames,
-  ],);
-  /**
-   Dependents with development edges to relevant packages, each with those candidate edges.
-   */
-  const toScan = states.flatMap(function scanTargets(state,) {
-    /**
-     Development dependencies that could carry a bump.
-     */
-    const candidateEdges = state.current
-      .devDependencyNames
-      .filter(function isRelevant(name,): boolean {
-      return relevant.has(name,) && (name
-        !== state.current
-        .name);
-    },);
-    return superset.has(state.current
-      .name,) && (candidateEdges.length > 0)
-      ? [{
-        state,
-        candidateEdges,
-      },]
-      : [];
-  },);
-  /**
-   Confirmed edges per dependent.
-   */
-  const confirmed = await Promise.all(toScan.map(async function scanDependent({
-    state,
-    candidateEdges,
-  }: Readonly<{
-    state: ManifestState;
-    candidateEdges: readonly string[];
-  }>,): Promise<readonly [
-    string,
-    readonly string[],
-  ]> {
-    /**
-     Non-test source files of the dependent.
-     */
-    const sources = (await context.git
-      .trackedFiles({ pathspecs: [`:(glob)${state.directory}/src/**`,], },))
-      .filter(function isSource(file,): boolean {
-      return isNonTestSourcePath({
-        directory: state.directory,
-        path: file.path,
+  trackedManifests: Map<string, TrackedFile>;
+}>,): WorkspaceFileReader {
+  return {
+    manifests: async function listManifests() {
+      /**
+       Tracked manifests in the current candidate state.
+       */
+      const files = await context.git.trackedFiles({ pathspecs: [MANIFEST_PATHSPEC,], },);
+      files.forEach(function remember(file,) {
+        trackedManifests.set(
+          file.path,
+          file,
+        );
       },);
-    },);
-    /**
-     Decoded source texts.
-     */
-    const texts = await Promise.all(sources.map(async function decodeSource(file,): Promise<string> {
-      return new TextDecoder().decode(await file.bytes(),);
-    },),);
-    return [
-      state.current
-        .name,
-      candidateEdges.filter(function isImported(name,): boolean {
-        return texts.some(function importsEdge(sourceText,): boolean {
-          return importsPackage({
-            sourceText,
-            packageName: name,
-          },);
-        },);
-      },),
-    ];
-  },),);
-  return new Map(confirmed,);
+      return Promise.all(files.map(manifestFileOf,),);
+    },
+    sourceFiles: async function listSources(directory,) {
+      return (await context.git.trackedFiles({ pathspecs: [`:(glob)${directory}/src/**`,], },))
+        .map(function toSource(file,) {
+        return {
+          path: file.path,
+          text: async function loadText() {
+            return SOURCE_DECODER.decode(await file.bytes(),);
+          },
+        };
+      },);
+    },
+    pnprConfigText: async function readConfig() {
+      /**
+       Generated config, when tracked.
+       */
+      const [config,] = await context.git.trackedFiles({ pathspecs: [PNPR_CONFIG_PATH,], },);
+      return config === undefined ? [] : [DECODER.decode(await config.bytes(),),];
+    },
+  };
 }
 
-//endregion Bundled development edges
+//endregion Policy facts reader
 
 //region Policy
 
@@ -310,123 +174,41 @@ export const DEPENDENT_VERSION_UNSUPPORTED_CODE = 'dependent-version-unsupported
  ```
  */
 export async function findDependentBumps(context: ForeignBorrowed<PolicyContext>,): Promise<readonly PolicyFinding[]> {
-  /**
-   Candidate manifests that might carry a hand bump; checked first so ordinary commits stay cheap.
-   */
-  const changedManifests = (await context.git
-    .candidates())
-    .filter(function isModifiedManifest(candidate,): boolean {
+  // Ordinary commits touch no manifest, so they skip listing every manifest.
+  if (!(await context.git.candidates()).some(function isModifiedManifest(candidate,): boolean {
     return (candidate.change === 'modified') && isWorkspaceManifestPath(candidate.path,);
-  },);
-  if (changedManifests.length === 0)
+  },))
     return [];
   /**
-   Every workspace manifest with current and `HEAD` facts.
+   Tracked manifests by path, filled while planning.
    */
-  const states = await Promise.all((await context.git
-    .trackedFiles({ pathspecs: [MANIFEST_PATHSPEC,], },))
-    .map(readManifestState,),);
-  /**
-   Packages whose version differs from `HEAD`.
-   */
-  const bumpedNames = states
-    .filter(function isBumped(state,): boolean {
-    return (state.headVersion !== undefined) && (state.current
-      .version
-      !== state.headVersion);
-  },)
-    .map(function toName(state,): string {
-    return state.current
-      .name;
-  },);
-  if (bumpedNames.length === 0)
-    return [];
-  /**
-   Generated pnpr config holding the publish set.
-   */
-  const [config,] = await context.git
-    .trackedFiles({ pathspecs: [PNPR_CONFIG_PATH,], },);
-  if (config === undefined)
-    return [];
-  /**
-   Packages the registry publishes.
-   */
-  const publishableNames = readPublishableNames(
-    DECODER.decode(await config.bytes(),),
-  );
-  /**
-   Confirmed bundled development edges.
-   */
-  const bundled = await bundledDevelopmentEdges({
-    context,
-    states,
-    bumpedNames,
-  },);
-  /**
-   Manifest states by package name.
-   */
-  const byName = new Map(states.map(function toEntry(state,) {
-    return [
-      state.current
-        .name,
-      state,
-    ] as const;
-  },),);
+  const trackedManifests = new Map<string, TrackedFile>();
   try {
-    return planDependentBumps({
-      manifests: states.map(function toManifest(state,): WorkspaceManifest {
-        return {
-          name: state.current
-            .name,
-          directory: state.directory,
-          ...(state.current
-            .version
-            === undefined ? {} : { version: state.current
-              .version, }),
-          edgeNames: [
-            ...state.current
-              .runtimeDependencyNames,
-            ...(bundled.get(state.current
-              .name,) ?? []),
-          ],
-        };
-      },),
-      bumpedNames,
-      publishableNames,
-    },)
-      .flatMap(function toFinding(bump,): readonly PolicyFinding[] {
+    /**
+     Planned ripple for the current candidate state.
+     */
+    const plan = await planWorkspaceBumps(policyReader({
+      context,
+      trackedManifests,
+    },),);
+    return plan.bumps.flatMap(function toFinding(bump,): readonly PolicyFinding[] {
       /**
-       Manifest state for the dependent.
+       Tracked manifest the patch targets.
        */
-      const state = byName.get(bump.name,);
-      if ((state === undefined) || ((state.file
-        .mode
-        !== 'regular') && (state.file
-          .mode
-          !== 'executable')))
+      const file = trackedManifests.get(bump.path,);
+      if ((file === undefined) || ((file.mode !== 'regular') && (file.mode !== 'executable')))
         return [];
       return [{
         code: DEPENDENT_VERSION_STALE_CODE,
-        message: `${bump.name} reaches a package bumped in this commit (${bumpedNames.join(', ',)}); bump it from ${bump.from} to ${bump.to} in the same commit.`,
-        path: state.file
-          .path,
+        message: `${bump.name} reaches a package bumped in this commit (${plan.bumpedNames.join(', ',)}); bump it from ${bump.from} to ${bump.to} in the same commit.`,
+        path: file.path,
         patch: createFullContentPatch({
-          targetId: state.file
-            .targetId,
-          path: state.file
-            .path,
-          revision: state.file
-            .revision,
-          mode: state.file
-            .mode,
-          original: ENCODER.encode(state.text,),
-          replacement: ENCODER.encode(replaceManifestVersion({
-            path: state.file
-              .path,
-            text: state.text,
-            from: bump.from,
-            to: bump.to,
-          },),),
+          targetId: file.targetId,
+          path: file.path,
+          revision: file.revision,
+          mode: file.mode,
+          original: ENCODER.encode(bump.text,),
+          replacement: ENCODER.encode(bump.replacement,),
         },),
       },];
     },);

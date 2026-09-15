@@ -1197,8 +1197,10 @@ description = "Show what the pending changesets will version"
 run = "changeset status --verbose"
 
 [tasks."changeset:version"]
-description = "Apply pending changesets to package versions and changelogs, then refresh the lockfile"
-run = ["changeset version", "pnpm install --lockfile-only"]
+description = "Apply pending changesets to package versions and changelogs, patch-bump dependents they miss, then refresh the lockfile"
+# The ripple runs between the two: changesets ignores most workspace packages, and the Version Packages commit is authored in CI
+# where the cli-git dependent-version-bump policy never runs (doc/decision/private-npm-registry.md).
+run = ["changeset version", "mise run //package/git-policy/repository:bump:dependents", "pnpm install --lockfile-only"]
 
 [tasks."changeset:build"]
 description = "Build every package the changeset publish plan will publish"

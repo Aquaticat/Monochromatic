@@ -1198,8 +1198,10 @@ description = "Show what the pending changesets will version"
 run = "changeset status --verbose"
 
 [tasks."changeset:version"]
-description = "Apply pending changesets to package versions and changelogs, then refresh the lockfile"
-run = ["changeset version", "pnpm install --lockfile-only"]
+description = "Apply pending changesets to package versions and changelogs, patch-bump dependents they miss, then refresh the lockfile"
+# The ripple runs between the two: changesets ignores most workspace packages, and the Version Packages commit is authored in CI
+# where the cli-git dependent-version-bump policy never runs (doc/decision/private-npm-registry.md).
+run = ["changeset version", "mise run //package/git-policy/repository:bump:dependents", "pnpm install --lockfile-only"]
 
 [tasks."changeset:build"]
 description = "Build every package the changeset publish plan will publish"
@@ -1271,6 +1273,7 @@ _.path = [
   "package/desktop-app/electron-infra/node_modules/.bin",
   "package/desktop-app/file-manager-electron/node_modules/.bin",
   "package/dev-script/file-enforcer/node_modules/.bin",
+  "package/git-policy/cli/node_modules/.bin",
   "package/kwin/key-helper/node_modules/.bin",
   "package/mcp/mvm/node_modules/.bin",
   "package/module/css-edit.bench/node_modules/.bin",
@@ -1292,6 +1295,7 @@ _.path = [
   "package/pi-shared/model-review/node_modules/.bin",
   "package/pi-shared/model-selection/node_modules/.bin",
   "package/ssg/aquati.cat/node_modules/.bin",
+  "package/stub/throwing/node_modules/.bin",
   "package/typeface/aquaticat/node_modules/.bin",
   "package/webapp-productivity/done-postcss/node_modules/.bin",
   "package/webapp-productivity/wc/node_modules/.bin",

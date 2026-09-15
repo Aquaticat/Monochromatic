@@ -2217,6 +2217,8 @@ ${await cat(['./AGENTS.md',],)}`,
   generateForbiddenStringsRules(),
 
   ...await Promise.all([
+    'bump-dependents-worktree.ts',
+    'dependent-bump-workflow.ts',
     'dependent-version-bump-policy.ts',
     'dependent-version-bump.ts',
     'index.ts',

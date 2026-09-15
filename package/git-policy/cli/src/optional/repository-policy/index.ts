@@ -55,6 +55,21 @@ export {
   PNPR_CONFIG_PATH,
   readPublishableNames,
 } from './publishable-names.ts';
+export {
+  MANIFEST_PATHSPEC,
+  planWorkspaceBumps,
+} from './dependent-bump-workflow.ts';
+export type {
+  ManifestBump,
+  WorkspaceBumpPlan,
+  WorkspaceFileReader,
+  WorkspaceManifestFile,
+  WorkspaceSourceFile,
+} from './dependent-bump-workflow.ts';
+export {
+  bumpWorktreeDependents,
+  WorktreeBumpConflictError,
+} from './bump-dependents-worktree.ts';
 
 /**
  Candidate fields needed by root-context path decision.
