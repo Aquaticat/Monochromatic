@@ -475,7 +475,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       if ((executable === process.execPath) && (args[0] === f.bootstrapPath)) {
         state.child = child;
         spawned();
-        child.once('close', function observeClose() { closed.resolve(); });
+        child.once('close', function observeClose() {
+          closed.resolve();
+        });
       }
       return child;
     });
@@ -489,7 +491,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     });
     syncBuiltinESMExports();
     await using restore = { async [Symbol.asyncDispose]() {
-      const child = state.child;
+      const { child } = state;
       if (child !== undefined) {
         if ((child.exitCode === null) && (child.signalCode === null)) child.kill('SIGTERM');
         await closed.promise;
@@ -719,7 +721,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
   it({ name: 'preserves native cancellation despite an earlier propagation-stopping listener', fn: async ctx => {
     await using f = await fixture();
     const controller = new AbortController();
-    const stopped = ctx.sinon.spy(function stopEvent(event: Event) { event.stopImmediatePropagation(); });
+    const stopped = ctx.sinon.spy(function stopEvent(event: Event) {
+      event.stopImmediatePropagation();
+    });
     controller.signal.addEventListener('abort', stopped);
     const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, info(message) {
       if (message.includes('matched retained unqualified input bytes')) controller.abort();
@@ -734,9 +738,11 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     await using f = await fixture();
     const original = new AbortController();
     const captured: { event?: Event } = {};
-    original.signal.addEventListener('abort', function capture(event: Event) { captured.event = event; });
+    original.signal.addEventListener('abort', function capture(event: Event) {
+      captured.event = event;
+    });
     original.abort();
-    const event = captured.event;
+    const { event } = captured;
     if (event === undefined) throw new Error('Expected native event capture');
     const nativeEvent: Event = event;
     expect(nativeEvent.isTrusted).toBe(true);

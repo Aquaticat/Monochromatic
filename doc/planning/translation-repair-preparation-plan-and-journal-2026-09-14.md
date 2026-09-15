@@ -656,9 +656,24 @@ reporting zero warnings/errors and changing only `producer-input-comparison-sign
 and matching comment text under line-whitespace normalization,
 with boolean and tagged-template positive controls.
 The hash-checked transfer changes only that file and preserves its mode.
+The formatted owned-signal R2 build/bootstrap/types/focused-test sequence passes.
+Read-only `devlint256go1-AR07pH` reports zero warnings/errors across 1562 files and 485 rules,
+with no tuple-summary omission messages in that run.
+
+Further event controls cover initial registration overrides,
+propagation suppression and trusted-event replay.
+`devtest-tlwWg1` also proves a lifecycle ordering gap:
+when interruption registration throws,
+the designated ordinary assertion observes one spawned child instead of zero.
+`bef628ba3` moves registration before child creation,
+retains early interruption and attaches the child only after its independent close observer exists.
+The combined R3 normal/bootstrap builds,
+types and focused tests pass,
+including the formerly red pre-spawn setup control.
+Its remaining eleven lint warnings are predicate/statement layout and destructuring findings,
+now corrected without suppression.
 This remains provisional:
 current full-suite coverage,
-analysis-integrity checks,
 revised guard/native qualification and scoped evidence cleanup remain required.
 
 ## Earlier verified checkpoint: task50

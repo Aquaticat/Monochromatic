@@ -66,7 +66,10 @@ export function comparisonBootstrapInterruption({
   /**
    Cancellation may arrive before native child creation without becoming an unowned signal request.
    */
-  const state: { requested: boolean; child?: BootstrapChild } = { requested: false };
+  const state: {
+    requested: boolean;
+    child?: BootstrapChild;
+  } = { requested: false };
   /**
    Enforces the outer process bound without claiming that inner container cleanup finished.
 
@@ -79,7 +82,7 @@ export function comparisonBootstrapInterruption({
     /**
      The actual native child is never inferred from a pending cancellation request.
      */
-    const child = state.child;
+    const { child } = state;
     if (child === undefined) return;
     if ((child.exitCode === null) && (child.signalCode === null)) child.kill('SIGKILL');
   }
@@ -96,7 +99,7 @@ export function comparisonBootstrapInterruption({
     /**
      Attachment is separate from registration so no fallible subscription setup follows spawn.
      */
-    const child = state.child;
+    const { child } = state;
     if (child === undefined) return;
     if ((child.exitCode !== null) || (child.signalCode !== null)) return;
     child.kill('SIGTERM');
@@ -118,7 +121,10 @@ export function comparisonBootstrapInterruption({
    ```
    */
   function attach(child: BootstrapChild): void {
-    if (state.child !== undefined) throw new ProducerInputComparisonError({ kind: 'bootstrap', directory });
+    if (state.child !== undefined) throw new ProducerInputComparisonError({
+      kind: 'bootstrap',
+      directory
+    });
     state.child = child;
     if (state.requested) interrupt();
   }
@@ -133,8 +139,14 @@ export function comparisonBootstrapInterruption({
   catch (error) {
     // Setup never forwards native or caller-shaped exception metadata.
     void error;
-    signal.removeEventListener('abort', interrupt);
-    throw new ProducerInputComparisonError({ kind: 'bootstrap', directory });
+    signal.removeEventListener(
+      'abort',
+      interrupt
+    );
+    throw new ProducerInputComparisonError({
+      kind: 'bootstrap',
+      directory
+    });
   }
   return {
     attach,
