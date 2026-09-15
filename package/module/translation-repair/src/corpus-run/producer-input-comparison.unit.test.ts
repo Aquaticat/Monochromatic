@@ -507,6 +507,36 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     if (error.directory === undefined) throw new Error('Expected retained setup refusal');
     expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('absent');
   } }),
+  it({ name: 'forwards cancellation received inside spawn after installing native close observation', fn: async ctx => {
+    await using f = await fixture('wait-after-output');
+    const controller = new AbortController();
+    const nativeSpawn = childProcess.spawn;
+    const spawned = ctx.sinon.spy(function observeSpawn() {});
+    const closed = ctx.sinon.spy(function observeNativeClose() {});
+    ctx.sinon.stub(childProcess, 'spawn').callsFake(function abortBeforeAttach(executable, args, options) {
+      const child = nativeSpawn(executable, args, options);
+      if ((executable === process.execPath) && (args[0] === f.bootstrapPath)) {
+        spawned();
+        child.once('close', closed);
+        controller.abort(new Error('early attachment cancellation q7z9k2'));
+      }
+      return child;
+    });
+    syncBuiltinESMExports();
+    using restore = { [Symbol.dispose]() {
+      ctx.sinon.restore();
+      syncBuiltinESMExports();
+    } };
+    const error = await rejected({ ...f.request(), signal: controller.signal });
+    expect(spawned.callCount).toBe(1);
+    expect(closed.callCount).toBe(1);
+    expect(error.kind).toBe('interruption');
+    if (error.directory === undefined) throw new Error('Expected retained early cancellation directory');
+    const exit = await readRecord(join(error.directory, 'bootstrap.exit.json'));
+    expect(exit.callerAborted).toBe(true);
+    expect(exit.signal).toBe('SIGTERM');
+    expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe('interruption');
+  } }),
   it({ name: 'observes actual close after deadline escalation without changing production timeout parameters', timeout: 30_000, fn: async ctx => {
     await using f = await fixture('ignore-term-after-output');
     const deadline = new AbortController();
