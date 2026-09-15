@@ -1877,6 +1877,9 @@ const PNPR_GITHUB_IDENTITY = {
  */
 const PNPR_EXCLUDED_PACKAGES: Readonly<Record<string, string>> = {
   // pnpr-publish run 34917976384: `bun: command not found` (exit 127).
+  // Owner decision 2026-09-15 (#543): the hook plugins bundle it and now list it only as a devDependency.
+  '@monochromatic-dev/claude-code-plugin-source':
+    'exports only TypeScript source, which Node cannot load from node_modules, and no published package depends on it at runtime',
   // Owner decision 2026-09-15: apps exposing nothing importable are not meant to publish.
   '@monochromatic-dev/desktop-daemon-hall-monitor':
     'app exposing nothing importable; its build also runs `bun build --compile`, and the publish job installs only node and pnpm',
