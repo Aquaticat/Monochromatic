@@ -120,12 +120,10 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
    including the package-name list and the exclusion list.
 - The deployment lives in `package/config/pnpr/`
    and Coolify redeploys it on push through a GitHub App source,
-   limited by Watch Paths to `package/config/pnpr/**`.
+   limited by Watch Paths to `config.yaml`, `Containerfile`, and `compose.yaml` under `package/config/pnpr/`,
+   so edits to the publish script beside them do not redeploy.
    A public-repository resource was tried first and has no Watch Paths field:
     Coolify renders it only for `is_github_based() && !is_public_repository()`.
-- The Hetzner egress allowlist in `package/config/tofu/hetzner.tf` allows `deb.debian.org` on port 80
-   (applied 2026-09-15),
-   because the image's `apt-get` step uses `http://` Debian sources and failed with exit code 100 without it.
    Without Watch Paths every push would redeploy:
     Coolify deploys when `isWatchPathsTriggered($changed_files) || blank($application->watch_paths)`
     (`app/Http/Controllers/Webhook/Github.php` lines 136 to 137 in coollabsio/coolify),
@@ -133,6 +131,14 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
     of which 7 added or removed a package manifest.
    A new package's first publish can fail until the redeploy lands;
    a later qualifying run retries it.
+- The image writes Node's bundled Mozilla root certificates to `/etc/ssl/certs/ca-certificates.crt`
+   instead of apt-installing `ca-certificates`.
+   On the Coolify host `apt-get` exited with code 100 before and after
+   `deb.debian.org` was added to the port-80 egress allowlist in `package/config/tofu/hetzner.tf` (applied 2026-09-15);
+   Coolify's log did not show apt's own error,
+   so the cause is unconfirmed.
+   The allowlist entry stays;
+   the image no longer depends on it.
 - The owner performs the Njalla A record,
    Coolify resource,
    and Caddy site block from `doc/runbook/deploy-pnpr-registry.md`.

@@ -47,10 +47,9 @@ TODO | DONE
        Coolify renders **Watch paths** only when
        `$this->application->is_github_based() && !$this->application->is_public_repository()`
        (`resources/views/livewire/project/application/general.blade.php` in coollabsio/coolify).
-   - Hetzner egress that allows `deb.debian.org` on port 80,
-      which `package/config/tofu/hetzner.tf` grants through `package_repo_http_ips` since 2026-09-15.
-      Without it the image build fails at `apt-get update` with exit code 100,
-      because `node:24-slim` uses `http://deb.debian.org` apt sources.
+   - Hetzner egress to `registry.npmjs.org` on port 443,
+      which the image build uses to install `@pnpm/pnpr@next`.
+      The image needs no apt access.
    - A local terminal with `curl`,
       `dig`,
       and `openssl`.
@@ -129,9 +128,12 @@ TODO | DONE
     no domain is attached,
     because Caddy on the host serves the hostname.
 10. On the **General** page,
-     set **Watch paths** to exactly `package/config/pnpr/**` and save.
+     set **Watch paths** to exactly these three lines and save:
+     `package/config/pnpr/config.yaml`,
+     `package/config/pnpr/Containerfile`,
+     `package/config/pnpr/compose.yaml`.
     Expected:
-     the field keeps `package/config/pnpr/**` after the page reloads.
+     the field keeps all three lines after the page reloads.
     If **Watch paths** is missing,
      the resource was created from a public repository;
      delete it and restart Stage B with the GitHub App.

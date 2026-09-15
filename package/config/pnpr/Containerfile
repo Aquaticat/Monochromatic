@@ -5,9 +5,11 @@ FROM docker.io/library/node:24-slim@sha256:2fe369e969550cde8e867afc3fe370b260140
 
 # pnpr's TLS verifier reads the system CA bundle, which node:24-slim lacks.
 # Without it pnpr exits at startup with "OIDC provider unavailable".
-RUN apt-get update \
- && apt-get install --yes --no-install-recommends ca-certificates \
- && rm --recursive --force /var/lib/apt/lists/*
+# Node's bundled Mozilla roots are written out instead of apt-installing ca-certificates:
+# apt-get exited 100 on the Coolify host even after its Debian egress was allowed,
+# and this step needs no network at all.
+RUN node --input-type=module --eval "import { rootCertificates } from 'node:tls'; import { mkdirSync, writeFileSync } from 'node:fs'; mkdirSync('/etc/ssl/certs', { recursive: true }); writeFileSync('/etc/ssl/certs/ca-certificates.crt', rootCertificates.join('\n') + '\n');"
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 
 # Owner decision: track the @pnpm/pnpr `next` dist-tag instead of an exact version.
 # A cached layer keeps the previously resolved `next`; rebuild without cache to pick up a newer release.
