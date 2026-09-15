@@ -6,6 +6,7 @@ export {
   preparationRootParent,
   preparationRootPopulationParent,
 } from './preparation-root-parent.ts';
+export { preparationRootProtection, } from './preparation-root-protection.ts';
 export type {
   PreparationRootInputs,
   PreparationRootExclusion,

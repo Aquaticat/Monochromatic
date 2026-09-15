@@ -1,7 +1,5 @@
-import {
-  sealedNodeIds,
-  type ArchiveOriginalSpan,
-} from './archive-original-note.ts';
+import type { ArchiveOriginalSpan, } from './archive-original-note.ts';
+import { preparationRootProtection, } from './preparation-root-protection.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import {
   hashContent,
@@ -72,45 +70,12 @@ export function preparationRootParent({
   readonly spans: readonly ArchiveOriginalSpan[];
 },): PreparationRootParent {
   /**
-   Native whole-node protection is distinct from a straddling declaration.
+   Shared geometry preserves original protection before remaining parent identities are constructed.
    */
-  const sealed = sealedNodeIds({
-    nodes: pair.target
-      .nodes,
+  const originalProtection = preparationRootProtection({
+    target: pair.target,
     spans,
-  },);
-  /**
-   Parent-local intersections retain the complete declaration identity.
-   */
-  const intersections = spans.filter(function intersects(span,): boolean {
-    return (span.startOffset
-      < pair.target
-      .endOffset) && (span.endOffset
-        > pair.target
-        .startOffset);
-  },)
-    .map(function intersection(span,): {
-      readonly startOffset: number;
-      readonly endOffset: number;
-      readonly noteHash: string
-    } {
-    return {
-      startOffset: span.startOffset,
-      endOffset: span.endOffset,
-      noteHash: hashContent({ content: span.note, },),
-    };
-  },);
-  /**
-   A partly protected node must not become an unqualified writable fragment.
-   */
-  const straddlingNodeIds = pair.target
-    .nodes
-    .filter(function straddles(node,): boolean {
-    return (!sealed.has(node.id,)) && spans.some(function intersects(span,): boolean {
-      return (span.startOffset < node.endOffset) && (span.endOffset > node.startOffset);
-    },);
-  },)
-    .map(function identity(node,): string { return node.id; },);
+  });
   return {
     id: `${entryId}/source-section/${String(pair.source
       .sliceIndex,)}/target-section/${String(pair.target
@@ -149,18 +114,7 @@ export function preparationRootParent({
         .nodes
         .map(preparationRootNode,),
     },
-    originalProtection: {
-      intersections,
-      sealedTargetNodeIds: [...sealed,],
-      straddlingNodeIds,
-      allTargetNodesSealed: (pair.target
-        .nodes
-        .length
-        > 0) && (sealed.size
-          === pair.target
-          .nodes
-          .length),
-    },
+    originalProtection,
   };
 }
 
