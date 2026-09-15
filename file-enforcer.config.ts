@@ -1874,7 +1874,14 @@ const PNPR_GITHUB_IDENTITY = {
  Object.keys(PNPR_EXCLUDED_PACKAGES);
  ```
  */
-const PNPR_EXCLUDED_PACKAGES: Readonly<Record<string, string>> = {};
+const PNPR_EXCLUDED_PACKAGES: Readonly<Record<string, string>> = {
+  // pnpr-publish run 34917976384: `bun: command not found` (exit 127).
+  '@monochromatic-dev/desktop-daemon-hall-monitor':
+    'build runs `bun build --compile`, and the publish job installs only node and pnpm',
+  // pnpr-publish run 34917976384: rolldown `Could not resolve 'canvg'` from jspdf 4.2.1.
+  '@monochromatic-dev/webapp-productivity-doodle-widget':
+    'client build cannot resolve the optional `canvg` import inside jspdf',
+};
 
 /**
  Reports whether a manifest still declares an entry point once `./ts` export subpaths are stripped for publishing.
