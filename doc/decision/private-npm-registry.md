@@ -92,6 +92,19 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
     `peerDependencies`,
     or `optionalDependencies`,
    or imports it from non-test source as a bundled `devDependency`.
+   cli-git's commit transaction cannot do this today:
+    it patches only paths already staged in the commit
+    (`package/git-policy/cli/src/policy-engine/apply-policy-patches.ts` lines 99 to 112 reject other targets),
+    and its fixes never reach the worktree.
+   Owner decision (2026-09-15):
+    extend the engine so a policy pass can add paths to the commit
+    and write those fixes to the worktree when the worktree copy still matches `HEAD`,
+    with SPEC,
+    `doc/decision/cli-git-policies-platform.md`,
+    and trust fixtures updated for every commit mode.
+   Rejected:
+    a read-only check plus a `version:bump` command (two steps when forgotten),
+    and adding paths without updating the worktree (leaves reverted versions in `git status`).
 - The changesets `version` job in `npm-release.yml` runs the same ripple before committing the Version Packages pull request.
 - No CI backstop catches commits that bypass cli-git.
 
