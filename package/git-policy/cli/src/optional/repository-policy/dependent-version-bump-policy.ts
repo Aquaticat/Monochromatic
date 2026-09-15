@@ -177,6 +177,12 @@ export const DEPENDENT_VERSION_UNSUPPORTED_CODE = 'dependent-version-unsupported
  ```
  */
 export async function findDependentBumps(context: ForeignBorrowed<PolicyContext>,): Promise<readonly PolicyFinding[]> {
+  // The ripple is a pre-commit step: other forwarded commands such as `git add` cannot apply its patches,
+  // so a finding there would only refuse to stage the hand bump the next commit ripples.
+  if ((context.trigger === 'pre-forward') && (context.command
+    .subcommand
+    !== 'commit'))
+    return [];
   // Ordinary commits touch no manifest, so they skip listing every manifest.
   if (!(await context.git
     .candidates()).some(function isModifiedManifest(candidate,): boolean {

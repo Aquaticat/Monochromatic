@@ -118,9 +118,11 @@ function matchesPathspec(pathspec: string,path: string,): boolean {
 
  @param canApplyPatches - whether the lifecycle applies patches
 
+ @param subcommand - forwarded Git subcommand
+
  @returns fake policy context
  */
-function contextOf(files: readonly FixtureFile[], canApplyPatches = true,): PolicyContext {
+function contextOf(files: readonly FixtureFile[], canApplyPatches = true, subcommand = 'commit',): PolicyContext {
   /**
    Tracked file views.
    */
@@ -130,9 +132,9 @@ function contextOf(files: readonly FixtureFile[], canApplyPatches = true,): Poli
     canApplyPatches,
     trigger: 'pre-forward',
     command: {
-      rawArgs: ['commit',],
-      transformedArgs: ['commit',],
-      subcommand: 'commit',
+      rawArgs: [subcommand,],
+      transformedArgs: [subcommand,],
+      subcommand,
       effectiveCwd: '/repo',
       repositoryRoot: '/repo',
       escapedPolicyIds: new Set<string>(),
@@ -282,6 +284,29 @@ await describe({
             const runtimePatch = findings[1]?.patch;
             expect(runtimePatch?.targetId,).toContain('tracked:',);
             expect(DECODER.decode(runtimePatch?.bytes,),).toContain('+  "version": "2.0.1"',);
+          },
+        },),
+        it({
+          name: 'stays silent for forwarded commands other than commit, such as git add of a hand bump',
+          fn: async function testAddIgnored(): Promise<void> {
+            /**
+             Hand bump with a stale runtime dependent.
+             */
+            const files = [
+              configFile(['@s/base', '@s/runtime',],),
+              {
+                path: 'package/module/base/package.json',
+                text: manifestText({ name: '@s/base', version: '1.1.0', },),
+                headText: manifestText({ name: '@s/base', version: '1.0.0', },),
+              },
+              unchangedManifest('package/module/runtime', { name: '@s/runtime', version: '2.0.0', dependencies: { '@s/base': 'workspace:*', }, },),
+            ];
+            expect(
+              await findDependentBumps(contextOf(files, false, 'add',),),
+            ).toEqual([],);
+            expect(
+              (await findDependentBumps(contextOf(files,),)).length,
+            ).toBe(1,);
           },
         },),
         it({
