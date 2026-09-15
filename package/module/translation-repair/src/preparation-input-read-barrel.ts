@@ -56,6 +56,14 @@ export {
   preparationInputOriginalSpan,
 } from './preparation-input-read-policy.ts';
 export {
+  preparationInputParent,
+  preparationInputPopulationParent,
+} from './preparation-input-read-parent.ts';
+export {
+  verifyPreparationInputParentRelations,
+  verifyPreparationInputParentText,
+} from './preparation-input-read-parent-relations.ts';
+export {
   PreparationRootError,
   type PreparationRootFailure,
 } from './preparation-root-error.ts';

@@ -243,5 +243,24 @@ Registration and whole-DTO relation work remain pending.
 Full-root tests must preserve alignment attachments outside registered parents;
 closure checks must exclude the stub remover,
 MDX parser and original-note classifier.
+
+Entry R2 passes build,
+actual-artifact consumption,
+bootstrap,
+types and tests;
+only five `unicorn(escape-case)` fixture warnings remain.
+R3 corrects those spellings and passes the complete checkpoint,
+including full-scope lint.
+Its retained consumer is `entry-native-XCVCvG`.
+
+Full population-parent and selected-parent decoders are the next checkpoint.
+They preserve the source-index alias independently of combined pair position,
+check canonical parent identity and ordered target-local protection membership,
+and verify represented parent text and node hashes.
+`preparation-root-parent.ts:83` retains whole overlapping declaration intervals,
+not clipped intervals.
+Empty target anchors therefore retain the producer's overlap predicate and never become all-sealed controls.
+`document-node.ts:232` and `container-extents.ts:285` tie node hashes to exact text slices.
+Population-only rows do not gain omitted-body reconstruction.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.
