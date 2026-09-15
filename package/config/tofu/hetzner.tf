@@ -158,6 +158,9 @@ locals {
     "nginx.org",
     # archive.ubuntu.com (443 CDN path plus port 80 via package_repo_http_ips)
     "archive.ubuntu.com",
+    # deb.debian.org (443 CDN path plus port 80 via package_repo_http_ips);
+    # Debian-based images such as node:*-slim use http:// apt sources before ca-certificates exists
+    "deb.debian.org",
     # Syncthing APT repository
     "apt.syncthing.net",
     # Nextcloud
@@ -395,10 +398,19 @@ locals {
     if ip != "" && can(cidrhost(ip, 0))
   ]
 
+  # deb.debian.org resolves through Fastly and serves both /debian and /debian-security.
+  # Debian-based images ship http:// apt sources, so fresh containers need port 80 first
+  # (package/config/pnpr/Containerfile installs ca-certificates this way).
+  debian_ips = [
+    for ip in split(",", lookup(local.resolved_hosts_result, "deb.debian.org", "")) : ip
+    if ip != "" && can(cidrhost(ip, 0))
+  ]
+
   package_repo_http_ips = distinct(concat(
     local.ubuntu_ips,
     local.archive_ubuntu_ips,
     local.nginx_org_ips,
+    local.debian_ips,
   ))
 
   storagebox_dns_ips = length(var.storagebox_hostnames) == 0 ? [] : [
@@ -445,8 +457,8 @@ locals {
   hetzner_ips = ["185.12.64.0/24", "2a01:4ff:ff00::/64"]
 
   # Single-host service CIDRs resolved from DNS names (see local.resolvable_hostnames).
-  # Every resolved host is allowed on the 443 CDN path; archive.ubuntu.com is
-  # additionally allowed on port 80 via package_repo_http_ips.
+  # Every resolved host is allowed on the 443 CDN path; archive.ubuntu.com, nginx.org,
+  # and deb.debian.org are additionally allowed on port 80 via package_repo_http_ips.
   resolved_cdn_ips = [
     for ip in flatten([
       for host, csv in local.resolved_hosts_result : split(",", csv)
