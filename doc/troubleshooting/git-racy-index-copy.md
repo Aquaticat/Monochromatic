@@ -166,7 +166,7 @@ They set `core.trustctime=false`,
 pin a file's mtime and the real index's mtime to one second 100 seconds in the past,
 refresh the index,
 and rewrite the file with same-size bytes at that second.
-Each scenario first asserts the positive control:
+Scenarios that edit before the command first assert the positive control:
 `git diff-files --quiet` exits 1 against the real index
 and 0 against a plain copy.
 

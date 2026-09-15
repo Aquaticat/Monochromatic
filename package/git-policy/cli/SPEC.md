@@ -1420,6 +1420,11 @@ The implementation uses a transaction directory outside the worktree with:
 Never mutate the real index or worktree while evaluating policies.
 Hold the real index lock before deriving transaction state and through final installation or rollback.
 Do not invoke Git with a lock path as `GIT_INDEX_FILE`.
+Every private index copy and every index install carries the source index's access and modification times
+(`index-file-timestamps.ts`):
+Git re-hashes a cached entry only when its mtime is not older than the index file's mtime,
+so a fresh timestamp would hide same-size edits made in the second Git cached their stat
+(`doc/troubleshooting/git-racy-index-copy.md`, #544).
 
 ### Index commit
 
@@ -1558,6 +1563,10 @@ Concurrent wrapper processes serialize on the real index lock and transaction jo
 - policy-added path recovery after interruption before the commit,
   after the commit before index install,
   and after index install before worktree completion;
+- racily clean same-size edit kept visible through direct fix,
+  explicit-path and `--no-only` commits that apply a fix,
+  a prepared index install,
+  and a recovery index install;
 - policy-added path in direct fix:
   clean unselected path rewritten in the worktree with exact real index bytes,
   dirty unselected path refused,
