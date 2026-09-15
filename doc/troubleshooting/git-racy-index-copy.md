@@ -203,7 +203,13 @@ Tradeoffs:
 - An edit that backdates a file's mtime below the index timestamp and keeps its size stays hidden;
    real Git has the same limit.
 
-Ablation evidence is recorded in #544.
+Removing the timestamps from each site in turn failed the packed fixture,
+except the commit-to-post copy in index mode:
+that copy follows `git apply --cached`,
+which rewrites the commit index and truncates differing racy entries itself,
+so only an edit in the same second as that write could reach it,
+and no hook runs between the two steps.
+Per-site results are recorded in #544.
 
 ## What does not work
 

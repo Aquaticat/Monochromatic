@@ -1424,7 +1424,8 @@ Every private index copy and every index install carries the source index's acce
 (`index-file-timestamps.ts`):
 Git re-hashes a cached entry only when its mtime is not older than the index file's mtime,
 so a fresh timestamp would hide same-size edits made in the second Git cached their stat
-(`doc/troubleshooting/git-racy-index-copy.md`, #544).
+(`doc/troubleshooting/git-racy-index-copy.md`,
+ #544).
 
 ### Index commit
 

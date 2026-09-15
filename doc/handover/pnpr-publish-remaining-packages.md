@@ -18,7 +18,8 @@ Registry design and prior state:
   with the changes documented in that issue.
 - Minimum set of changes per package.
 - "Intended to be published" means the package exposes something others can import
-  (owner correction, 2026-09-15):
+  (owner correction,
+   2026-09-15):
   apps such as `desktop-daemon-hall-monitor` and `webapp-productivity-doodle-widget`
   expose nothing importable and do not count.
 - Keep this handover current after every step.
@@ -138,7 +139,8 @@ packing locally needed
 `pnpm_config_dedupe_direct_deps=false pnpm install --force --filter <the four packages>`
 (otherwise `ERR_PNPM_CANNOT_RESOLVE_WORKSPACE_PROTOCOL`),
 which made file-enforcer add their `node_modules/.bin` paths to root `mise.toml`;
-that diff is left uncommitted because it reflects local install layout, not this change.
+that diff is left uncommitted because it reflects local install layout,
+not this change.
 
 ## Unrelated work finished in the same session
 
@@ -161,7 +163,8 @@ it is complete.
 Open follow-ups for the owner:
 
 - Run `git cli-git trust` so `mono/dependent-version-bump` activates locally.
-- Owner decisions (2026-09-15, after the rollout):
+- Owner decisions (2026-09-15,
+  after the rollout):
   work #521 now,
   and the agent runs `git cli-git trust`.
 - Trust:
@@ -227,7 +230,8 @@ Open follow-ups for the owner:
   the packed fixture now stages the bump first (`65e8d8e29`),
   and removing the guard failed it with `git add package/module/base/package.json expected 0, got 1`.
   cli-git re-trusted afterwards so the local bundle carries the change.
-- #521 run 2 (114 packages, after publishing):
+- #521 run 2 (114 packages,
+  after publishing):
   104 clean.
   The rest were the two false positives,
   `backup-path` (a command script whose import parses arguments;
@@ -262,7 +266,8 @@ Open follow-ups for the owner:
   and `task-oxlint`/`task-pnpm` print usage once `oxlint` and `pnpm` are on `PATH`.
   #521 carries the full results comment and is closed;
   every fix issue carries its applied change and verification.
-- Owner decisions (2026-09-15, after #521):
+- Owner decisions (2026-09-15,
+  after #521):
   move `claude-code-plugin-source` to `devDependencies` of the hook plugins;
   leave the seven CLI packages' `main: src/*.ts` until their next bump.
 - #543 done:
@@ -345,4 +350,17 @@ Done after the rollout:
   `add-policy-facts.ts` copy (`racy direct-fix summary`),
   commit-index initial copies and post-index copies
   (`explicit-path commit keeps the same-size edit of hold.txt visible`),
-  lock install (`index install keeps the same-size edit of hold.txt visible`).
+  lock install (`index install keeps the same-size edit of hold.txt visible`),
+  recovery install (`recovery index install keeps the same-size edit of hold.txt visible`).
+  Single-copy ablations:
+  real to original and original to post failed the explicit-path scenario,
+  original to commit failed the index-mode scenario,
+  and commit to post still passed.
+  That copy follows `git apply --cached`,
+  which rewrites the commit index and re-hashes racy entries itself,
+  so only a same-second edit between that write and the copy could expose it,
+  and no hook runs between them;
+  it stays covered only by sharing `copyIndexFile` with the proven copies.
+  A unit test was rejected because it would add the helper to the published package API.
+  Removing `direct-fix` from the dependent-bump triggers failed `built-dependent-version-bump-consumer.ts`
+  (`direct-fix ripple summary; stdout= stderr=`).
