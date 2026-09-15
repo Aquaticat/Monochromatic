@@ -71,11 +71,12 @@ jobs:
           install: false
           cache: true
 
-      - name: Install node and pnpm
-        run: mise install node pnpm
+      # uv runs fonttools for typeface-aquaticat's WOFF2 build (#535).
+      - name: Install node, pnpm, and uv
+        run: mise install node pnpm uv
 
-      - name: Expose node and pnpm to later steps
-        run: printf '%s\n' "$(dirname "$(mise which node)")" "$(dirname "$(mise which pnpm)")" >> "$GITHUB_PATH"
+      - name: Expose node, pnpm, and uv to later steps
+        run: printf '%s\n' "$(dirname "$(mise which node)")" "$(dirname "$(mise which pnpm)")" "$(dirname "$(mise which uv)")" >> "$GITHUB_PATH"
 
       - name: Install dependencies with every direct dependency linked per package
         run: mise exec node pnpm -- pnpm install --frozen-lockfile

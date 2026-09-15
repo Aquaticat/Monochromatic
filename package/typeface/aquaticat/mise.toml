@@ -1,3 +1,7 @@
+[tasks.build]
+description = "Build the published font files; the pnpr publish job runs this task (#535)"
+run = [{ tasks = ["build:font"] }]
+
 [tasks."build:font"]
 description = "Build Aquaticat font from SVG glyphs"
 run = "node src/build-font.ts"
