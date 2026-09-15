@@ -109,3 +109,16 @@ Canonical checks,
 types,
 hashes and round trips remain syntax/consistency evidence,
 not semantic review or acquisition approval.
+
+## Implementation checkpoint
+
+The initial internal byte/JSON stage copies native byte views,
+uses strict UTF-8 decoding,
+and compares reserialized JSON against original copied bytes.
+The byte comparison rejects a stripped BOM as well as duplicate keys and non-native spellings.
+A dedicated inert build entry keeps its acquisition-free import closure independently inspectable.
+The parsed value deliberately remains `unknown`.
+Complete DTO decoding,
+relationship validation,
+final immutable projection and their qualification remain task63 work;
+this internal stage is not a completed root-input reader.

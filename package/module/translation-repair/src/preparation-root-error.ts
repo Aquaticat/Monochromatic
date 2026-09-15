@@ -8,12 +8,16 @@
  const kind: PreparationRootFailure = 'selection-digest';
  ```
  */
-export type PreparationRootFailure = 'selection-digest' | 'selection-syntax' | 'selection-shape' | 'selection-parents' | 'selection-references' | 'selection-obligations' | 'reference-inventory' | 'reference-content' | 'reference-role' | 'reading-provenance' | 'corpus-identity' | 'corpus-read' | 'population';
+export type PreparationRootFailure = 'selection-digest' | 'selection-syntax' | 'selection-shape' | 'selection-parents' | 'selection-references' | 'selection-obligations' | 'reference-inventory' | 'reference-content' | 'reference-role' | 'reading-provenance' | 'corpus-identity' | 'corpus-read' | 'population' | 'input-bytes' | 'input-json' | 'input-shape' | 'input-relations';
 
 /**
  Fixed diagnostics keep private selection and corpus text out of error rendering.
  */
 const ROOT_MESSAGES: Readonly<Record<PreparationRootFailure, string>> = {
+  'input-bytes': 'Persisted preparation input bytes cannot be copied or decoded as UTF-8. Load the complete size-bounded Task47 output at the owning I/O boundary; do not repair or replace its contents.',
+  'input-json': 'Persisted preparation input does not use the native compact JSON representation. Restore the exact retained Task47 output; decoding and byte identity do not grant review or acquisition authority.',
+  'input-shape': 'Persisted preparation input does not match the complete supported DTO structure. Verify the intended producer and retained artifact; do not fill missing fields or ignore unrecognized evidence.',
+  'input-relations': 'Persisted preparation input has inconsistent entry, parent, registration or evidence relationships. Reconcile it against the retained native reconstruction; do not invent missing bodies or widen the frozen selection.',
   'selection-digest': 'Frozen parent-selection bytes do not match the independently recorded selection digest. Load the task40 artifact and its original expected identity; do not derive approval from the supplied bytes.',
   'selection-syntax': 'Frozen parent selection is not readable JSON. Restore its exact independently bound bytes rather than repairing or replacing the frozen sample.',
   'selection-shape': 'Frozen parent selection lacks supported fields for the baseline identity and reading-completion projection. Verify the intended artifact and its provenance; complete population and nested-metadata validation remain separate root-planning work.',

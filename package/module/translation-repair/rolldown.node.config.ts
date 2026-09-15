@@ -36,6 +36,7 @@ export const nodeEntries: Readonly<Record<string, string>> = {
     "producer-calibrate": "./src/corpus-run/producer-calibrate.ts",
     "producer-prepare-app": "./src/corpus-run/producer-prepare-app.ts",
     "producer-input-comparison": "./src/corpus-run/producer-input-comparison-entry.ts",
+    "preparation-input-read": "./src/preparation-input-read-barrel.ts",
     "probe-sensitivity": "./src/corpus-run/probe-sensitivity.ts",
     "probe-verify": "./src/corpus-run/probe-verify.ts",
     "recall-benchmark": "./src/corpus-run/recall-benchmark.ts",
