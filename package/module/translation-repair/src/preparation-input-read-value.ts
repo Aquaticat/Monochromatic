@@ -25,6 +25,34 @@ export type PreparationInputField = {
 };
 
 /**
+ Git commit identity uses this hexadecimal extent, not SHA-256 artifact grammar.
+ */
+const SHA1_HEX_CHARACTERS = 40;
+/**
+ Artifact and text identities use this hexadecimal extent.
+ */
+const SHA256_HEX_CHARACTERS = 64;
+
+/**
+ Keeps every schema refusal on the same owned diagnostic path.
+
+ @param path - authored schema position, never an unrecognized input key or evidence value
+
+ @throws PreparationRootError for the mismatched schema position
+
+ @example
+ ```ts
+ refusePreparationInputShape('inputs.entries');
+ ```
+ */
+function refusePreparationInputShape(path: string): never {
+  throw new PreparationRootError({
+    kind: 'input-shape',
+    input: path,
+  });
+}
+
+/**
  Rejects every absent or extra own field before property-level interpretation.
  This helper receives only the decoder's owned JSON objects, not foreign object capabilities.
 
@@ -51,7 +79,7 @@ export function preparationInputRecord({
   keys,
 }: PreparationInputField & { readonly keys: readonly string[] }): Readonly<Record<string, unknown>> {
   if (Array.isArray(value) || (!isJsonRecord(value)))
-    throw new PreparationRootError({ kind: 'input-shape', input: path });
+    refusePreparationInputShape(path);
   /**
    Symbol and non-enumerable fields cannot disappear from the schema check.
    */
@@ -61,7 +89,7 @@ export function preparationInputRecord({
     || (!actual.every(function supported(key): boolean {
       return ((typeof key) === 'string') && keys.includes(key);
     })))
-    throw new PreparationRootError({ kind: 'input-shape', input: path });
+    refusePreparationInputShape(path);
   return value;
 }
 
@@ -88,7 +116,7 @@ export function preparationInputArray({
   path,
 }: PreparationInputField): readonly unknown[] {
   if (!Array.isArray(value))
-    throw new PreparationRootError({ kind: 'input-shape', input: path });
+    refusePreparationInputShape(path);
   /**
    Native array narrowing must not promote its elements beyond unknown.
    */
@@ -119,7 +147,7 @@ export function preparationInputString({
   path,
 }: PreparationInputField): string {
   if ((typeof value) !== 'string')
-    throw new PreparationRootError({ kind: 'input-shape', input: path });
+    refusePreparationInputShape(path);
   return value;
 }
 
@@ -146,7 +174,7 @@ export function preparationInputBoolean({
   path,
 }: PreparationInputField): boolean {
   if ((typeof value) !== 'boolean')
-    throw new PreparationRootError({ kind: 'input-shape', input: path });
+    refusePreparationInputShape(path);
   return value;
 }
 
@@ -172,9 +200,14 @@ export function preparationInputInteger({
   value,
   path,
 }: PreparationInputField): number {
-  if (((typeof value) !== 'number') || (!Number.isSafeInteger(value))
-    || (value < 0) || Object.is(value, -0))
-    throw new PreparationRootError({ kind: 'input-shape', input: path });
+  if (((typeof value) !== 'number')
+    || (!Number.isSafeInteger(value))
+    || (value < 0)
+    || Object.is(
+      value,
+      -0,
+    ))
+    refusePreparationInputShape(path);
   return value;
 }
 
@@ -187,7 +220,7 @@ export function preparationInputInteger({
 
  @param path - authored schema position for the affected input
 
- @param characters - exact SHA-1 or SHA-256 representation length selected by the owning field
+ @param algorithm - SHA-1 commit identity or SHA-256 artifact/text identity selected by the owning field
 
  @returns Original digest text after exact grammar validation
 
@@ -195,23 +228,30 @@ export function preparationInputInteger({
 
  @example
  ```ts
- const digest = preparationInputDigest({ value, path, characters: 64 });
+ const digest = preparationInputDigest({ value, path, algorithm: 'sha256' });
  ```
  */
 export function preparationInputDigest({
   value,
   path,
-  characters,
-}: PreparationInputField & { readonly characters: 40 | 64 }): string {
+  algorithm,
+}: PreparationInputField & { readonly algorithm: 'sha1' | 'sha256' }): string {
+  /**
+   Required extent follows the owning identity domain rather than caller-selected digest length.
+   */
+  const characters = algorithm === 'sha1' ? SHA1_HEX_CHARACTERS : SHA256_HEX_CHARACTERS;
   /**
    Required extent bounds the alphabet scan independently from input content.
    */
-  const text = preparationInputString({ value, path });
+  const text = preparationInputString({
+    value,
+    path,
+  });
   if (text.length !== characters)
-    throw new PreparationRootError({ kind: 'input-shape', input: path });
+    refusePreparationInputShape(path);
   for (const character of text) {
     if (!'0123456789abcdef'.includes(character))
-      throw new PreparationRootError({ kind: 'input-shape', input: path });
+      refusePreparationInputShape(path);
   }
   return text;
 }
@@ -278,8 +318,14 @@ export function preparationInputItems<const Item>({
   /**
    Elements remain unknown until the field-specific decoder receives their computed positions.
    */
-  const values = preparationInputArray({ value, path });
-  return Object.freeze(values.map(function readItem(item: unknown, index: number): Item {
+  const values = preparationInputArray({
+    value,
+    path,
+  });
+  return Object.freeze(values.map(function readItem(
+    item: unknown,
+    index: number,
+  ): Item {
     return read({
       value: item,
       path: `${path}[${String(index)}]`,
@@ -316,13 +362,17 @@ export function preparationInputFields({
   readonly keys: readonly string[];
 }): (key: string) => PreparationInputField {
   /**
-   Every own field is checked before the selector is created.
+   Schema-key mutation cannot change the selector after validation.
    */
   const allowed = [...keys];
   /**
-   Caller mutation of a schema-key array cannot change the selector after validation.
+   Every own field is checked before the selector is created.
    */
-  const record = preparationInputRecord({ value, path, keys: allowed });
+  const record = preparationInputRecord({
+    value,
+    path,
+    keys: allowed,
+  });
   /**
    The decoder supplies this key from its schema, never from arbitrary JSON member names.
 
@@ -339,8 +389,12 @@ export function preparationInputFields({
    */
   function read(key: string): PreparationInputField {
     if (!allowed.includes(key))
-      throw new PreparationRootError({ kind: 'input-shape', input: path });
-    return preparationInputProperty({ value: record, path, key });
+      refusePreparationInputShape(path);
+    return preparationInputProperty({
+      value: record,
+      path,
+      key,
+    });
   }
   return read;
 }

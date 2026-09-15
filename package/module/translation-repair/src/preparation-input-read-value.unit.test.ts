@@ -40,8 +40,8 @@ await describe({ name: 'closed preparation input values', children: [
     { name: 'array', value: [] },
     { name: 'missing', value: {} },
     { name: 'extra', value: { cat: 1, extra: 'q7z9k2' } },
-    { name: 'null prototype', value: Object.assign(Object.create(null), { cat: 1 }) },
-    { name: 'symbol field', value: { cat: 1, [Symbol('extra')]: true } },
+    { name: 'null prototype', value: { __proto__: null, cat: 1 } },
+    { name: 'symbol field', value: { cat: 1, [Symbol('unrecognized parsed record key')]: true } },
     { name: 'nonenumerable field', value: Object.defineProperty({ cat: 1 }, 'hidden', { value: 'q7z9k2' }) },
   ].map(({ name, value }) => it({ name: `refuses record ${name}`, fn: async () => {
     expect(refused(() => preparationInputRecord({ value, path, keys: ['cat'] })).input).toBe(path);
@@ -78,19 +78,20 @@ await describe({ name: 'closed preparation input values', children: [
     { name: 'negative', value: -1 },
     { name: 'negative zero', value: -0 },
     { name: 'fraction', value: 0.5 },
-    { name: 'nan', value: NaN },
-    { name: 'infinity', value: Infinity },
+    { name: 'nan', value: Number.NaN },
+    { name: 'infinity', value: Number.POSITIVE_INFINITY },
     { name: 'unsafe', value: Number.MAX_SAFE_INTEGER + 1 },
     { name: 'text', value: '1' },
   ].map(({ name, value }) => it({ name: `refuses coordinate ${name}`, fn: async () => {
     refused(() => preparationInputInteger({ value, path }));
   } })),
-  ...([40, 64] as const).map(characters => it({ name: `reads exact ${characters}-character digest grammar`, fn: async () => {
+  ...(['sha1', 'sha256'] as const).map(algorithm => it({ name: `reads exact ${algorithm} digest grammar`, fn: async () => {
+    const characters = algorithm === 'sha1' ? 40 : 64;
     const value = 'a'.repeat(characters);
-    expect(preparationInputDigest({ value, path, characters })).toBe(value);
-    refused(() => preparationInputDigest({ value: 'A'.repeat(characters), path, characters }));
-    refused(() => preparationInputDigest({ value: 'g'.repeat(characters), path, characters }));
-    refused(() => preparationInputDigest({ value: value + 'a', path, characters }));
+    expect(preparationInputDigest({ value, path, algorithm })).toBe(value);
+    refused(() => preparationInputDigest({ value: 'A'.repeat(characters), path, algorithm }));
+    refused(() => preparationInputDigest({ value: 'g'.repeat(characters), path, algorithm }));
+    refused(() => preparationInputDigest({ value: `${value}a`, path, algorithm }));
   } })),
   it({ name: 'keeps record selectors bound to their original supported keys', fn: async () => {
     const keys = ['cat'];
