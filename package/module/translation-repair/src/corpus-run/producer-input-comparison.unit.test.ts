@@ -158,8 +158,12 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     const reason = new Error('private reason q7z9k2');
     using cancellation = ownProducerInputComparisonSignal(controller.signal);
     using interruption = comparisonBootstrapInterruption({ signal: cancellation.signal, directory: '/fixture-internal' });
-    const signals: (NodeJS.Signals | number | undefined)[] = [];
-    const child = { exitCode: null, signalCode: null, kill(signal?: NodeJS.Signals | number): boolean { signals.push(signal); return true; } };
+    const signals: (NodeJS.Signals | number)[] = [];
+    const child = { exitCode: null, signalCode: null, kill(signal?: NodeJS.Signals | number): boolean {
+      if (signal === undefined) throw new Error('Expected explicit bootstrap termination signal');
+      signals.push(signal);
+      return true;
+    } };
     expect(BOOTSTRAP_TERMINATION_GRACE_MS).toBe(180_000);
     controller.signal.dispatchEvent(new Event('abort'));
     expect(cancellation.signal.aborted).toBe(false);
