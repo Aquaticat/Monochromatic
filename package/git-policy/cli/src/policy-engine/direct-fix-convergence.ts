@@ -7,7 +7,10 @@ import { Buffer, } from 'node:buffer';
 import { join, } from 'node:path';
 import type { CandidateFile, } from '../api/policy-types.ts';
 import { applyPolicyPatches, } from './apply-policy-patches.ts';
-import type { AddedPathRecord, } from './commit-transaction-added-paths.ts';
+import {
+  createAddedPathTracker,
+  type PendingAddedPath,
+} from './commit-transaction-added-path-tracker.ts';
 import {
   containsExactCandidateSnapshot,
   writeCandidateSnapshot,
@@ -56,7 +59,7 @@ export type DirectFixConvergenceResult = Readonly<{
   /**
    Unselected tracked paths policies changed, verified unchanged against `HEAD` when added.
    */
-  addedPaths: readonly Omit<AddedPathRecord, 'intendedOid'>[];
+  addedPaths: readonly PendingAddedPath[];
   /**
    Final private candidates for selected and added paths, empty when convergence failed.
    */
@@ -118,23 +121,9 @@ export async function convergeDirectFix({
    */
   const initialRevisions = candidateRevisions(initialCandidates,);
   /**
-   Unselected tracked paths policies added, keyed by path.
+   Selected paths plus unselected tracked paths policies added.
    */
-  const addedPaths = new Map<string, Omit<AddedPathRecord, 'intendedOid'>>();
-  /**
-   Selected paths plus every path a policy added so far.
-
-   @returns candidate paths for the current pass
-   */
-  function currentCandidatePaths(): readonly string[] {
-    return [
-      ...scope.paths,
-      ...[...addedPaths.keys(),].filter(function notSelected(path,) {
-        return !scope.paths
-          .includes(path,);
-      },),
-    ];
-  }
+  const addedPaths = createAddedPathTracker(scope.paths,);
   /**
    Initial exact path, mode, and content snapshot.
    */
@@ -199,7 +188,7 @@ export async function convergeDirectFix({
       gitPath,
       cwd: scope.repositoryRoot,
       indexPath: scope.indexPath,
-      paths: currentCandidatePaths(),
+      paths: addedPaths.candidatePaths(),
     },)
       .candidates();
     /**
@@ -231,13 +220,7 @@ export async function convergeDirectFix({
         finalCandidates: [],
       };
     }
-    applied.addedPaths
-      .forEach(function recordAddedPath(added,) {
-      addedPaths.set(
-        added.path,
-        added,
-      );
-    },);
+    addedPaths.record(applied.addedPaths,);
     changedPasses += 1;
     /**
      Current private facts after ordered patches.
@@ -246,7 +229,7 @@ export async function convergeDirectFix({
       gitPath,
       cwd: scope.repositoryRoot,
       indexPath: scope.indexPath,
-      paths: currentCandidatePaths(),
+      paths: addedPaths.candidatePaths(),
     },);
     /**
      Private exact snapshot for current changed pass.
@@ -296,7 +279,7 @@ export async function convergeDirectFix({
     gitPath,
     cwd: scope.repositoryRoot,
     indexPath: scope.indexPath,
-    paths: currentCandidatePaths(),
+    paths: addedPaths.candidatePaths(),
   },)
     .candidates();
   /**
@@ -320,7 +303,7 @@ export async function convergeDirectFix({
     policyResult: pass,
     changedPaths,
     passes: changedPasses,
-    addedPaths: [...addedPaths.values(),],
+    addedPaths: addedPaths.pending(),
     finalCandidates,
   };
 }

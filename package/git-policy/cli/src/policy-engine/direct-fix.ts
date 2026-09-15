@@ -26,6 +26,17 @@ import {
 import type { PolicyEngineResult, } from './types.ts';
 
 /**
+ Creates the private-state error for failed or malformed blob output while reading added-path originals.
+ 
+ @param message - safe failure explanation
+ 
+ @returns private-state failure
+ */
+function addedOriginalError(message: string,): Error {
+  return new CommitTransactionGitError(message,);
+}
+
+/**
  Settled direct-fix operation.
  */
 export type DirectFixResult = Readonly<{
@@ -160,9 +171,7 @@ async function runPreparedDirectFix({
       .map(function originalOid(added,) {
       return added.originalOid;
     },),
-    createError: function addedOriginalError(message,) {
-      return new CommitTransactionGitError(message,);
-    },
+    createError: addedOriginalError,
   },);
   await installDirectFix({
     scope,
