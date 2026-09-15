@@ -34,10 +34,11 @@ export const FORBIDDEN_RETRY_WINDOW_MS = 300_000;
  ```
  */
 export function isForbiddenPublishError(error: unknown,): boolean {
-  return Error.isError(error,) && ('output' in error)
+  return Error.isError(error,)
+    && ('output' in error)
     && ((typeof error.output) === 'string')
-    && String(error.output,)
-      .includes(NPM_FORBIDDEN_MARKER,);
+    && error.output
+    .includes(NPM_FORBIDDEN_MARKER,);
 }
 
 /**
@@ -73,7 +74,10 @@ export async function publishWithForbiddenRetry(
     readonly deadline: number;
     readonly now: () => number;
     readonly sleep: (milliseconds: number) => Promise<unknown>;
-    readonly onRetry: (retry: { readonly retryNumber: number; readonly delayMs: number; },) => void;
+    readonly onRetry: (retry: {
+      readonly retryNumber: number;
+      readonly delayMs: number
+    },) => void;
   },
 ): Promise<void> {
   /**
@@ -85,7 +89,10 @@ export async function publishWithForbiddenRetry(
   );
   for (const retryNumber of Array.from(
     { length: retryCount, },
-    function toRetryNumber(_unused, index,) {
+    function toRetryNumber(
+      _unused,
+      index,
+    ) {
       return index + 1;
     },
   )) {

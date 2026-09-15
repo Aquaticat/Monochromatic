@@ -118,14 +118,20 @@ await describe({
         it({
           name: 'recognizes captured npm output carrying E403',
           fn: async () => {
-            expect(isForbiddenPublishError(subprocessError(FORBIDDEN_OUTPUT,),),).toBe(true,);
+            expect(
+              isForbiddenPublishError(subprocessError(FORBIDDEN_OUTPUT,),),
+            ).toBe(true,);
           },
         },),
         it({
           name: 'rejects other npm failures, errors without output, and non-errors',
           fn: async () => {
-            expect(isForbiddenPublishError(subprocessError('npm error code E409',),),).toBe(false,);
-            expect(isForbiddenPublishError(new Error(NPM_FORBIDDEN_MARKER,),),).toBe(false,);
+            expect(
+              isForbiddenPublishError(subprocessError('npm error code E409',),),
+            ).toBe(false,);
+            expect(
+              isForbiddenPublishError(new Error(NPM_FORBIDDEN_MARKER,),),
+            ).toBe(false,);
             expect(isForbiddenPublishError({ output: NPM_FORBIDDEN_MARKER, },),).toBe(false,);
           },
         },),
