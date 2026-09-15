@@ -122,3 +122,16 @@ Complete DTO decoding,
 relationship validation,
 final immutable projection and their qualification remain task63 work;
 this internal stage is not a completed root-input reader.
+
+`54a8bca9b` introduces that stage and its built-artifact controls.
+R1 fresh normal/bootstrap builds,
+types and the JSON/root/message-vocabulary tests pass.
+Full-scope lint then reports thirteen warnings and no errors,
+covering layout,
+shadowing and hexadecimal spelling.
+`76105d223` addresses those findings;
+R2 verification is running with fresh builds before types and tests.
+The proof roots and raw diagnostics are durable under package
+`node_modules/.monochromatic/preparation-input-reader/`.
+No completed decoder,
+semantic qualification or plan materialization is inferred from this checkpoint.
