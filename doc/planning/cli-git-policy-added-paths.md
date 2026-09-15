@@ -231,10 +231,20 @@ Remaining:
       `built-autofix-added-paths-conclusion.ts` covers merge,
       cherry-pick,
       and revert conclusions.
-4.   The repository's trusted cli-git config bundle predates the policy
+4.   Closed 2026-09-15:
+      the repository's trusted bundle predated the policy
       (`git cli-git check --policy mono/dependent-version-bump --all` reported
-       `Unknown built-in policy ID: mono/dependent-version-bump` on 2026-09-15),
-      so the owner must re-trust `cli-git.config.ts` before hand bumps ripple locally.
+       `Unknown built-in policy ID: mono/dependent-version-bump`).
+      The owner delegated re-trust;
+      `git cli-git trust --yes` succeeded,
+      and with it the owner-configured recursive stage covering repositories beneath the repository root.
+      Afterwards the same check exited 0,
+      while `--policy mono/no-such-policy` still failed with `Unknown built-in policy ID`,
+      so the bundle registers the policy.
+      Its firing on a real hand bump in this repository is not yet observed;
+      `check` has no revision-range mode,
+      so observing it needs a modified manifest,
+      and the packed `built-dependent-version-bump-consumer.ts` fixture is the functional evidence.
 
 Task 8 landed:
  root task `changeset:version` runs `mise run //package/git-policy/repository:bump:dependents`
