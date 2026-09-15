@@ -120,6 +120,11 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
    typed exports type-checked under `nodenext`,
    and every bin run with `--help`.
    Findings and fixes are listed in the handover.
+- Owner decision (2026-09-15, #543):
+   the hook plugins bundle `claude-code-plugin-source`,
+   so they list it as a development dependency,
+   and it is excluded from pnpr because it exports only TypeScript source;
+   the config lists 114 of 155 packages.
 
 ### Tarball shape
 

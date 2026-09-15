@@ -262,10 +262,28 @@ Open follow-ups for the owner:
   and `task-oxlint`/`task-pnpm` print usage once `oxlint` and `pnpm` are on `PATH`.
   #521 carries the full results comment and is closed;
   every fix issue carries its applied change and verification.
-- Remaining known limitations
-  (recorded on #521,
-   no open work):
-  `claude-code-plugin-source` exports only TypeScript source;
+- Owner decisions (2026-09-15, after #521):
+  move `claude-code-plugin-source` to `devDependencies` of the hook plugins;
+  leave the seven CLI packages' `main: src/*.ts` until their next bump.
+- #543 done:
+  the eight plugins list `claude-code-plugin-source` as a dev dependency at 0.0.3 (`c998c1241`),
+  and `claude-code-plugin-source` is excluded from pnpr (`b95ffe72a`;
+   114 of 155 listed).
+  Extending the #537 rule to TypeScript-only exports was rejected:
+  it would also drop `ownership-marker-foreign-borrowed`,
+  `config-rolldown`,
+  and `claude-code-plugin-hook-type`,
+  which pass the type check and have runtime dependents.
+  From pnpr,
+  each plugin installs without `claude-code-plugin-source`
+  and each hook bin loads;
+  three reject an empty `{}` payload in handler logic
+  (`Unhandled terminal-title hook event.` and two missing-field `TypeError`s).
+  The first push was rejected by three docs-only commits from another session;
+  the unstaged `mise.lock` blocked a rebase,
+  so they were merged (`0b073ae6c`).
+- Remaining known limitation,
+  by owner choice:
   seven CLI packages keep `main: src/*.ts` in their current versions until their next bump.
 - Harness scripts lived in the session scratchpad (`pnpr-521/harness.ts`,
   `pnpr-521/bin-check.ts`);
