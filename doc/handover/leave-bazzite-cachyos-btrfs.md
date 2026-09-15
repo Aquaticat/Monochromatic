@@ -219,6 +219,10 @@ the commit that closes each step is named.
 - The physical installer refuses firmware that is not in setup mode
   or that sbctl flags with a quirk such as FQ0001,
   before erasing anything.
+  sbctl matches quirks by board model,
+  so after the firmware mitigation the machine description acknowledges the quirk ID.
+  sbctl 0.18 flags every MSI AMD 600-series or newer board;
+  the desktop's board model is not recorded yet.
 
 ## Changes left on the dev VM
 
