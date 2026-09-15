@@ -462,6 +462,49 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(exit.errors).toEqual(['error-object']);
     expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('absent');
   } }),
+  it({ name: 'refuses interruption observation setup before creating a native child', timeout: 30_000, fn: async ctx => {
+    await using f = await fixture();
+    const nativeSpawn = childProcess.spawn;
+    const nativeEventMethods = Object.getOwnPropertyDescriptors(EventTarget.prototype);
+    const state: { child?: ReturnType<typeof childProcess.spawn> } = {};
+    const closed = Promise.withResolvers<void>();
+    const attempts = ctx.sinon.spy(function observeSetupFailure() {});
+    const spawned = ctx.sinon.spy(function observeNativeChild() {});
+    ctx.sinon.stub(childProcess, 'spawn').callsFake(function trackBootstrap(executable, args, options) {
+      const child = nativeSpawn(executable, args, options);
+      if ((executable === process.execPath) && (args[0] === f.bootstrapPath)) {
+        state.child = child;
+        spawned();
+        child.once('close', function observeClose() { closed.resolve(); });
+      }
+      return child;
+    });
+    ctx.sinon.stub(EventTarget.prototype, 'addEventListener').callsFake(function refuseSetup(this: EventTarget, type, listener, options) {
+      if ((type === 'abort') && (this instanceof AbortSignal)) {
+        attempts();
+        throw new Error('native interruption registration fixture q7z9k2');
+      }
+      if (nativeEventMethods.addEventListener.value === undefined) throw new Error('Expected native event method');
+      nativeEventMethods.addEventListener.value.call(this, type, listener, options);
+    });
+    syncBuiltinESMExports();
+    await using restore = { async [Symbol.asyncDispose]() {
+      const child = state.child;
+      if (child !== undefined) {
+        if ((child.exitCode === null) && (child.signalCode === null)) child.kill('SIGTERM');
+        await closed.promise;
+      }
+      ctx.sinon.restore();
+      syncBuiltinESMExports();
+    } };
+    const error = await rejected(f.request());
+    expect(attempts.callCount).toBe(1);
+    expect(spawned.callCount).toBe(0);
+    expect(error.kind).toBe('bootstrap');
+    expect(error.message).not.toContain('q7z9k2');
+    if (error.directory === undefined) throw new Error('Expected retained setup refusal');
+    expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('absent');
+  } }),
   it({ name: 'observes actual close after deadline escalation without changing production timeout parameters', timeout: 30_000, fn: async ctx => {
     await using f = await fixture('ignore-term-after-output');
     const deadline = new AbortController();
@@ -620,6 +663,15 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(result.artifact.sha256).toBe(artifactIdentity.sha256);
     expect(result.loggerCallbackFailures).toEqual([]);
   } }),
+  it({ name: 'registers native cancellation without invoking a caller registration getter', fn: async ctx => {
+    await using f = await fixture();
+    const controller = new AbortController();
+    const getter = ctx.sinon.stub().throws(new Error('private registration getter q7z9k2'));
+    Object.defineProperty(controller.signal, 'addEventListener', { get: getter });
+    const result = await accepted({ ...f.request(), signal: controller.signal });
+    expect(getter.callCount).toBe(0);
+    expect(result.artifact.sha256).toBe(artifactIdentity.sha256);
+  } }),
   it({ name: 'keeps native cancellation live after late own signal accessors are replaced', fn: async ctx => {
     await using f = await fixture();
     const controller = new AbortController();
@@ -663,6 +715,43 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(error.kind).toBe('interruption');
     if (error.directory === undefined) throw new Error('Expected retained final cancellation');
     expect((await readRecord(join(error.directory, 'comparison.json'))).matches).toBe(true);
+  } }),
+  it({ name: 'preserves native cancellation despite an earlier propagation-stopping listener', fn: async ctx => {
+    await using f = await fixture();
+    const controller = new AbortController();
+    const stopped = ctx.sinon.spy(function stopEvent(event: Event) { event.stopImmediatePropagation(); });
+    controller.signal.addEventListener('abort', stopped);
+    const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, info(message) {
+      if (message.includes('matched retained unqualified input bytes')) controller.abort();
+      l.info(message);
+    } } });
+    expect(stopped.callCount).toBe(1);
+    expect(error.kind).toBe('interruption');
+    if (error.directory === undefined) throw new Error('Expected retained cancellation directory');
+    expect((await readRecord(join(error.directory, 'comparison.json'))).matches).toBe(true);
+  } }),
+  it({ name: 'does not treat a redispatched trusted event as native cancellation', fn: async () => {
+    await using f = await fixture();
+    const original = new AbortController();
+    const captured: { event?: Event } = {};
+    original.signal.addEventListener('abort', function capture(event: Event) { captured.event = event; });
+    original.abort();
+    const event = captured.event;
+    if (event === undefined) throw new Error('Expected native event capture');
+    const nativeEvent: Event = event;
+    expect(nativeEvent.isTrusted).toBe(true);
+    const controller = new AbortController();
+    const dispatched = new Set<string>();
+    const result = await accepted({ ...f.request(), signal: controller.signal, l: { ...l, debug(message) {
+      if (dispatched.size === 0) {
+        controller.signal.dispatchEvent(nativeEvent);
+        dispatched.add('replayed');
+      }
+      l.debug(message);
+    } } });
+    expect(dispatched.size).toBe(1);
+    expect(controller.signal.aborted).toBe(false);
+    expect(result.artifact.sha256).toBe(artifactIdentity.sha256);
   } }),
   it({ name: 'removes its native signal subscription without invoking a caller removal getter', fn: async ctx => {
     await using f = await fixture();
