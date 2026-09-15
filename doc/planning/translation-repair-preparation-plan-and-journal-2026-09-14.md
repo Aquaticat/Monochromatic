@@ -704,9 +704,50 @@ A final scoped review adds combined terminal cases before acceptance:
 proven native cancellation must outrank an earlier unreadable observation,
 cleanup observations must be reported before the terminal error snapshot without replacing its primary kind,
 and ordinary propagation suppression must still work after bridge removal.
-The new regressions are being exercised before remediation.
-Task62 and task51 remain incomplete until those results,
-updated artifact qualification and scoped evidence cleanup are checked.
+`devtest-Qm6PXT` records four ordinary red assertions for the combined precedence and cleanup cases.
+`1e45ca2cf` retains proven cancellation priority,
+releases before terminal error decoration,
+and emits only a fixed observation warning while preserving the primary failure.
+`9721f39d2` groups its predicate to satisfy the mixed-operator rule.
+R6 normal/bootstrap builds,
+types,
+focused tests,
+full-scope lint and runtime sealing pass.
+`devfull-s2a1q9` passes with 632 expected and observed Node `26.8.2` test entries,
+no source change and no OOM event.
+
+Current durable evidence is under
+`package/module/translation-repair/node_modules/.monochromatic/comparison-evidence/`.
+`archive-6jqfai` copies and hash-matches 38993 files totaling 784400359 bytes,
+preserving 4457 symlinks without dereferencing them.
+Its path mapping retains original bound locations without rewriting frozen contracts.
+The copied selection,
+Mio12 results and owner-lock backup no longer depend solely on temporary storage.
+The active R6 outputs are added by final retention separately.
+
+`frozen-runtime-m1aVqu` contains 164 manifest-listed files;
+its 28415-byte manifest has SHA-256
+`eb214bf4711069de09bf5df9cb95565f2ded58fbe0749851fa943438f622cfe3`.
+The current native fixture base changes only the output parent into durable storage;
+its 1525-byte launch has SHA-256
+`390210bd3f53619554baaad15e1ce833c6c94bf09848676e1078a94deb7e04b2`.
+All inner Task47 executable and input bindings remain unchanged.
+The base,
+failure,
+signal and terminal native suites pass against this runtime.
+A fresh recheck observes all seventeen retained child container names absent,
+rehashes available outputs and checks captured stderr.
+The terminal cases preserve native cancellation after unreadability
+and primary contract/mismatch/interruption metadata despite a controlled subscription-disposer fault.
+
+Current `signal-guards-Ks2hYb` and `boundary-guards-B7ixt3` pass sixteen signal controls
+and twenty-two non-logger controls,
+respectively,
+with successful mutant builds,
+designated ordinary assertions and restored artifact tests.
+Real source and `dist` inventories remain unchanged.
+Final audit/positive-control checks and exact stopped-container cleanup remain pending.
+Task62 and task51 remain incomplete until those results are checked.
 
 ## Earlier verified checkpoint: task50
 

@@ -1488,6 +1488,9 @@ or consulting own public signal accessors.
 The temporary subscription preserves propagation resistance and is removed on exit.
 Synthetic or replayed events do not substitute for native aborted state,
 and an unreadable composite observation cannot authorize success.
+Proven native cancellation retains interruption precedence over a prior unreadable observation.
+Failure-path subscription cleanup precedes the terminal error snapshot;
+its fixed observation warning does not replace the primary failure.
 Fallible interruption registration completes before child creation;
 the actual-close observer is installed before the child is attached to that scope.
 These guarantees do not cover corrupted native internals or a hostile runtime.
