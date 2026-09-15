@@ -4,6 +4,10 @@
  @module
  */
 import {
+  type AddedPathRecord,
+  installAddedWorktreeFiles,
+} from './commit-transaction-added-paths.ts';
+import {
   type OriginalHead,
   recordIndexInstalled,
   recordRefUpdated,
@@ -42,6 +46,10 @@ const DECODER = new TextDecoder(
  
  @param originalHead - journaled ref state before Git
  
+ @param repositoryRoot - worktree root receiving added-path content
+ 
+ @param addedPaths - tracked paths policies added to the commit
+ 
  @example
  ```ts
  await executePreparedCommit({ workspace, gitPath: '/usr/bin/git', spawnCwd: '/work', effectiveCwd: '/repo', commitArgs: ['commit'], intendedTreeOid });
@@ -55,6 +63,8 @@ export async function executePreparedCommit({
   commitArgs,
   intendedTreeOid,
   originalHead,
+  repositoryRoot,
+  addedPaths,
 }: Readonly<{
   workspace: CommitTransactionWorkspace;
   gitPath: string;
@@ -63,6 +73,8 @@ export async function executePreparedCommit({
   commitArgs: readonly string[];
   intendedTreeOid: string;
   originalHead: OriginalHead;
+  repositoryRoot: string;
+  addedPaths: readonly AddedPathRecord[];
 }>,): Promise<void> {
   try {
     await runTransactionGit({
@@ -121,5 +133,12 @@ export async function executePreparedCommit({
   },);
   await workspace.installIndex(workspace.postIndexPath,);
   await recordIndexInstalled({ workspace, },);
+  // Before cleanup, so an interruption here leaves the journal for startup recovery to finish the worktree copies.
+  await installAddedWorktreeFiles({
+    gitPath,
+    cwd: effectiveCwd,
+    repositoryRoot,
+    records: addedPaths,
+  },);
   workspace.finishTransaction();
 }

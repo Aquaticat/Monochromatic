@@ -7,6 +7,8 @@ import { join, } from 'node:path';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { parseCommitRegion, } from '../parser/commit.ts';
 import { applyPolicyPatches, } from './apply-policy-patches.ts';
+import type { AddedPathRecord, } from './commit-transaction-added-paths.ts';
+import { loadIndexEntries, } from './commit-transaction-candidate-batch.ts';
 import {
   containsExactCandidateSnapshot,
   writeCandidateSnapshot,
@@ -178,6 +180,23 @@ export async function runCommitTransaction({
     indexPath: workspace.commitIndexPath,
   },);
   /**
+   Tracked paths policies added to the commit, keyed by path, before their intended blobs are known.
+   */
+  const addedPaths = new Map<string, Omit<AddedPathRecord, 'intendedOid'>>();
+  /**
+   Selected paths plus every path a policy added so far.
+   
+   @returns candidate paths for the current pass
+   */
+  function currentCandidatePaths(): readonly string[] {
+    return [
+      ...candidatePaths,
+      ...[...addedPaths.keys(),].filter(function notSelected(path,) {
+        return !candidatePaths.includes(path,);
+      },),
+    ];
+  }
+  /**
    Initial private-index candidate facts.
    */
   const initialFacts = createPrivateIndexFacts({
@@ -254,7 +273,7 @@ export async function runCommitTransaction({
       gitPath,
       cwd: layout.effectiveCwd,
       indexPath: workspace.commitIndexPath,
-      paths: candidatePaths,
+      paths: currentCandidatePaths(),
     },)
       .candidates();
     /**
@@ -268,6 +287,11 @@ export async function runCommitTransaction({
       pass,
       candidates,
       trigger: 'pre-forward',
+      // Read-only selection never reaches here with patches; every other mode may add unchanged tracked paths.
+      addedPathContext: {
+        repositoryRoot: layout.effectiveCwd,
+        realIndexPath: workspace.originalIndexPath,
+      },
     },);
     if (applied.kind === 'failed')
       return {
@@ -278,6 +302,13 @@ export async function runCommitTransaction({
       .forEach(function recordChangedPath(path,) {
       changedPaths.add(path,);
     },);
+    applied.addedPaths
+      .forEach(function recordAddedPath(added,) {
+      addedPaths.set(
+        added.path,
+        added,
+      );
+    },);
     /**
      Current private-index candidate facts after ordered patches.
      */
@@ -285,7 +316,7 @@ export async function runCommitTransaction({
       gitPath,
       cwd: layout.effectiveCwd,
       indexPath: workspace.commitIndexPath,
-      paths: candidatePaths,
+      paths: currentCandidatePaths(),
     },);
     /**
      Private exact snapshot for current changed pass.
@@ -338,12 +369,40 @@ export async function runCommitTransaction({
     gitPath,
     cwd: layout.effectiveCwd,
   },);
+  /**
+   Settled private-index entries for added paths, which carry the blobs the commit lands.
+   */
+  const addedEntries = await loadIndexEntries({
+    gitPath,
+    cwd: layout.effectiveCwd,
+    indexPath: workspace.commitIndexPath,
+    paths: [...addedPaths.keys(),],
+  },);
+  /**
+   Added paths with the blobs their worktree copies receive after landing.
+   */
+  const addedPathRecords: readonly AddedPathRecord[] = [...addedPaths.values(),].map(function withIntendedOid(added,): AddedPathRecord {
+    /**
+     Settled private-index entry.
+     */
+    const entry = addedEntries.get(added.path,);
+    if ((entry === undefined) || (entry.modeText !== added.gitMode))
+      throw new TypeError(`Policy-added path ${added.path} left the private index or changed mode before commit.`,);
+    return {
+      ...added,
+      intendedOid: entry.oid,
+    };
+  },);
+  /**
+   Selected and added paths the commit carries.
+   */
+  const committedPaths = currentCandidatePaths();
   await preparePostIndex({
     workspace,
     gitPath,
     cwd: layout.effectiveCwd,
     mode,
-    selectedPaths: candidatePaths,
+    selectedPaths: committedPaths,
     intendedTreeOid,
   },);
   /**
@@ -355,7 +414,8 @@ export async function runCommitTransaction({
     cwd: layout.effectiveCwd,
     mode,
     amend: region.hasAmendFlag,
-    selectedPaths: candidatePaths,
+    selectedPaths: committedPaths,
+    addedPaths: addedPathRecords,
     intendedTreeOid,
   },);
   /**
@@ -375,6 +435,8 @@ export async function runCommitTransaction({
     commitArgs,
     intendedTreeOid,
     originalHead: journal.originalHead,
+    repositoryRoot: layout.effectiveCwd,
+    addedPaths: addedPathRecords,
   },);
   return {
     policyResult: withFixSummary({

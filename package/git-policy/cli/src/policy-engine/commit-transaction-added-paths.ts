@@ -7,7 +7,9 @@
 
  @module
  */
+import { Buffer, } from 'node:buffer';
 import { randomUUID, } from 'node:crypto';
+import type { Stats, } from 'node:fs';
 import {
   lstat,
   readFile,
@@ -143,6 +145,41 @@ export function parseTrackedTargetId(targetId: string,): readonly Readonly<{
 }
 
 /**
+ Reads worktree metadata for a path a policy wants to add, without following symlinks.
+ 
+ @param repositoryRoot - worktree root
+ 
+ @param path - repository path
+ 
+ @returns file metadata
+ 
+ @throws AddedPathPreconditionError when the worktree copy is missing
+ */
+async function worktreeMetadata({
+  repositoryRoot,
+  path,
+}: Readonly<{
+  repositoryRoot: string;
+  path: string;
+}>,): Promise<Stats> {
+  try {
+    return await lstat(join(
+      repositoryRoot,
+      path,
+    ),);
+  }
+  catch (error: unknown) {
+    l.debug(`added-path worktree lstat failed for ${path}: ${String(error,)}`,);
+    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+      throw new AddedPathPreconditionError({
+        path,
+        reason: 'its worktree copy is missing',
+      },);
+    throw error;
+  }
+}
+
+/**
  Verifies that a tracked path is unchanged in the real index, the private commit index, and the worktree.
 
  @param gitPath - resolved Git executable
@@ -227,10 +264,10 @@ export async function assertAddablePath({
   /**
    Worktree file metadata, without following symlinks.
    */
-  const metadata = await lstat(join(
+  const metadata = await worktreeMetadata({
     repositoryRoot,
     path,
-  ),);
+  },);
   /**
    Whether the worktree executable bit matches the recorded mode.
    */
@@ -256,7 +293,7 @@ export async function assertAddablePath({
       path,
       reason: 'its worktree copy has unstaged changes',
     },);
-  return head.modeText;
+  return head.modeText === EXECUTABLE_GIT_MODE ? EXECUTABLE_GIT_MODE : REGULAR_GIT_MODE;
 }
 
 /**
@@ -309,9 +346,25 @@ async function replaceWorktreeFile({
 }
 
 /**
+ Worktree completion outcome for added paths.
+ */
+export type AddedWorktreeInstallResult = Readonly<{
+  /**
+   Paths whose worktree copy now holds the landed bytes because this call wrote them.
+   */
+  rewritten: readonly string[];
+  /**
+   Paths left untouched because their worktree copy changed after the precondition check.
+   */
+  conflicted: readonly string[];
+}>;
+
+/**
  Brings each added path's worktree copy to the landed content.
 
  A copy that already holds the intended bytes is left alone, which makes recovery idempotent.
+ A copy holding neither the original nor the intended bytes was edited while the commit ran;
+ it is kept and reported, because the commit has already landed and overwriting would lose that edit.
 
  @param gitPath - resolved Git executable
 
@@ -321,27 +374,26 @@ async function replaceWorktreeFile({
 
  @param records - added paths recorded before real Git ran
 
- @param createConflictError - error factory for a copy holding neither original nor intended bytes
+ @returns rewritten and conflicted paths
 
- @returns paths whose worktree copy was rewritten
-
- @throws the created conflict error when a worktree copy changed after the precondition check
+ @throws CommitTransactionGitError when Git cannot supply a recorded blob
  */
 export async function installAddedWorktreeFiles({
   gitPath,
   cwd,
   repositoryRoot,
   records,
-  createConflictError,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   repositoryRoot: string;
   records: readonly AddedPathRecord[];
-  createConflictError: (message: string) => Error;
-}>,): Promise<readonly string[]> {
+}>,): Promise<AddedWorktreeInstallResult> {
   if (records.length === 0)
-    return [];
+    return {
+      rewritten: [],
+      conflicted: [],
+    };
   /**
    Original and intended blob bytes for every record.
    */
@@ -362,6 +414,10 @@ export async function installAddedWorktreeFiles({
    Paths rewritten so far.
    */
   const rewritten: string[] = [];
+  /**
+   Paths kept because they changed concurrently.
+   */
+  const conflicted: string[] = [];
   for (const record of records) {
     /**
      Absolute worktree path.
@@ -387,8 +443,11 @@ export async function installAddedWorktreeFiles({
       throw new CommitTransactionGitError(`Git blob batch omitted an added-path object for ${record.path}.`,);
     if (current.equals(intended,))
       continue;
-    if (!current.equals(original,))
-      throw createConflictError(`Worktree copy of ${record.path} changed while cli-git committed a policy fix to it; the commit landed with the fix, so compare the file with HEAD and keep the version you want.`,);
+    if (!current.equals(original,)) {
+      l.warn(`Worktree copy of ${record.path} changed while cli-git committed a policy fix to it; the commit landed with the fix and your edit was kept, so compare the file with HEAD (git diff HEAD -- ${record.path}) and keep the version you want.`,);
+      conflicted.push(record.path,);
+      continue;
+    }
     // oxlint-disable-next-line no-await-in-loop -- Replacement order follows record order for deterministic partial recovery.
     await replaceWorktreeFile({
       destination,
@@ -397,5 +456,8 @@ export async function installAddedWorktreeFiles({
     },);
     rewritten.push(record.path,);
   }
-  return rewritten;
+  return {
+    rewritten,
+    conflicted,
+  };
 }

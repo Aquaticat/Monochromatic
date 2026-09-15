@@ -5,6 +5,7 @@
  */
 import { resolveFsId, } from '@monochromatic-dev/module-fs-id/ts';
 import { lstat, } from 'node:fs/promises';
+import type { AddedPathRecord, } from './commit-transaction-added-paths.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
 import type {
   OriginalHead,
@@ -54,6 +55,40 @@ function parseOriginalHead(value: object,): OriginalHead {
     kind: 'oid',
     oid: value.oid,
   };
+}
+
+/**
+ Parses the added-path records of a prepared journal; journals written before added paths existed have none.
+ 
+ @param value - untrusted journal object
+ 
+ @returns validated added-path records
+ 
+ @throws CommitTransactionRecoveryError when a record is malformed
+ */
+function parseAddedPaths(value: object,): readonly AddedPathRecord[] {
+  if (!('addedPaths' in value))
+    return [];
+  /**
+   Untrusted records field.
+   */
+  const records: unknown = value.addedPaths;
+  if (!Array.isArray(records,))
+    throw new CommitTransactionRecoveryError('Prepared transaction added paths are malformed.',);
+  return records.map(function parseRecord(record: unknown,): AddedPathRecord {
+    if (((typeof record) !== 'object') || (record === null)
+      || (!('path' in record)) || ((typeof record.path) !== 'string')
+      || (!('gitMode' in record)) || ((record.gitMode !== '100644') && (record.gitMode !== '100755'))
+      || (!('originalOid' in record)) || ((typeof record.originalOid) !== 'string')
+      || (!('intendedOid' in record)) || ((typeof record.intendedOid) !== 'string'))
+      throw new CommitTransactionRecoveryError('Prepared transaction added paths are malformed.',);
+    return {
+      path: record.path,
+      gitMode: record.gitMode,
+      originalOid: record.originalOid,
+      intendedOid: record.intendedOid,
+    };
+  },);
 }
 
 /**
@@ -147,6 +182,7 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
       .filter(function stringPath(path,): path is string {
       return (typeof path) === 'string';
     },),
+    addedPaths: parseAddedPaths(value,),
     intendedTreeOid: value.intendedTreeOid,
     directoryDevice: value.directoryDevice,
     directoryInode: value.directoryInode,
