@@ -212,12 +212,19 @@ Landed:
 
 Remaining:
 
-1.   Direct fix does not add paths;
-      its convergence calls `applyPolicyPatches` without added-path context,
-      so tracked targets fail as stale there.
-      Outside the owner decision's scope (it names commit modes),
-      and `dependentVersionBump` does not declare the `direct-fix` trigger,
-      so no current policy is affected.
+1.   Closed 2026-09-15 by owner decision ("Implement it now"):
+      direct-fix convergence passes added-path context with lifecycle `direct-fix` (`b20d65fc5`),
+      tracks added paths through `createAddedPathTracker`,
+      shared with commit transactions (`921062c87`,
+       which also brought `commit-transaction.ts` back under `max-lines`),
+      and installs added paths' converged bytes into the worktree with their verified `HEAD` bytes as originals.
+      `built-autofix-added-paths-direct-fix.ts` (`9b9129e15`) covers a clean unselected path,
+      a refused dirty one,
+      and the same path once selected;
+      removing the context failed it with `git cli-git fix -- version.txt expected 0, got 2`,
+      and removing the added originals failed it with `Direct-fix candidate became unavailable: dependent.txt`.
+      `dependentVersionBump` still declares only `pre-forward` and `direct-check`,
+      so `git cli-git fix` does not ripple bumps until a policy opts into `direct-fix`.
 2.   Closed in `a37690a0d`:
       `built-autofix-added-paths-recovery.ts` kills the wrapper from `pre-commit` and `post-commit` hooks
       and simulates an installed index,

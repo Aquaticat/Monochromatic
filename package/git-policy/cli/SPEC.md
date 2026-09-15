@@ -798,9 +798,11 @@ Emit final findings to stdout.
 
 Use worktree bytes selected by explicit pathspecs or `--all`.
 Apply eligible patches to private candidate state through whole-sequence convergence,
-then atomically replace only changed selected worktree files.
+then atomically replace only changed selected and added worktree files.
 Snapshot the complete real index before and after and fail if any index blob changes.
 Emit final findings and one fix summary to stdout.
+A patch targeting an unselected tracked file adds it under the "Added paths" precondition;
+its original worktree bytes for the concurrent-change check are the verified `HEAD` blob.
 
 ## Policy order and stopping
 
@@ -1466,6 +1468,19 @@ and any other bytes are kept with a warning,
 because the commit has landed and overwriting would discard a concurrent edit.
 Unsupported interactive/include modes use read-only checks and direct-fix guidance when needed.
 
+Direct fix admits added paths under the same precondition,
+`HEAD`,
+real index,
+private index,
+and worktree all holding the target blob,
+through `createAddedPathTracker`,
+which commit transactions share.
+It has no journal or index step:
+converged bytes of added paths join the direct-fix worktree installation.
+Precondition failures are `patch-conflict` with direct-fix remedies
+(select the path,
+ or restore it to `HEAD`).
+
 ### Recovery
 
 At wrapper startup,
@@ -1536,7 +1551,17 @@ Concurrent wrapper processes serialize on the real index lock and transaction jo
   indexed,
   and worktree bytes and clean status;
 - policy-added path blocked by unstaged worktree changes and by staged changes;
-- policy-added path refused under `--include` selection.
+- policy-added path refused under `--include` selection;
+- policy-added path in merge,
+  cherry-pick,
+  and revert conclusions;
+- policy-added path recovery after interruption before the commit,
+  after the commit before index install,
+  and after index install before worktree completion;
+- policy-added path in direct fix:
+  clean unselected path rewritten in the worktree with exact real index bytes,
+  dirty unselected path refused,
+  and the same path fixed once selected.
 
 Each fixture asserts exact ref,
 index,

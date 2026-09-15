@@ -603,6 +603,16 @@ Rejected alternatives:
 a read-only check plus a separate bump command,
 and adding paths without updating the worktree.
 
+Direct fix adds tracked paths the same way
+(owner decision 2026-09-15):
+a direct-fix patch naming a tracked file outside the selected pathspecs adds it under the same unchanged precondition,
+later passes see it as a candidate,
+and its converged bytes replace only its worktree copy,
+behind the concurrent-change and real-index checks every direct-fix path already has.
+A refused path names the direct-fix remedies:
+include it in the fix pathspecs,
+or restore it to `HEAD`.
+
 ## Automatic and direct fixes
 
 Matching pre-forward commit normalizers automatically apply fixes.
