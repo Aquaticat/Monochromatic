@@ -143,6 +143,17 @@ export async function attestCitedReferences(
         referenceContext,
       },);
     },);
+  for (const entry of verified) {
+    /**
+     Item this voice gave.
+     */
+    const { item, } = entry;
+    al.info(
+      `ATTESTED item ${entry.modelId}: "${item.archiveQuote}" is stated by reference ${
+        String(item.reference,)
+      } ("${item.referenceQuote}")`,
+    );
+  }
   /**
    Items answered in all, verified or not.
    */

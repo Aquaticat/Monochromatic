@@ -85,6 +85,7 @@ export {
   type AttestedDetail,
   attestedDetailLines,
   attestedDetailsOverlapping,
+  compacted,
   mergedAttestations,
   quoteIsIn,
   type VerifiedAttestation,

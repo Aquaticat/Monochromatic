@@ -27,6 +27,7 @@ import {
   type ChatJsonRequest,
   CITED_REFERENCE_CANDIDATE_RULE,
   CITED_REFERENCE_RULE,
+  compacted,
   type IssueClaim,
   isReferenceAttestWire,
   mergedAttestations,
@@ -202,10 +203,13 @@ await describe({
       },
     },),
     it({
-      name: 'VERIFIES both quotes word for word, whitespace folded, and discards an item whose quote is not found',
+      name: 'VERIFIES both quotes word for word, whitespace ignored, and discards an item whose quote is not found',
       fn: async () => {
         expect(quoteIsIn({ quote: 'older  sister who', text: 'an older sister who is', },),).toBe(true,);
         expect(quoteIsIn({ quote: '', text: 'anything', },),).toBe(false,);
+        expect(compacted({ text: '喵喵 的姐姐也是 tabby。', },),).toBe('喵喵的姐姐也是tabby。',);
+        // Mio22: a voice spaced the reference's Chinese around its Latin tokens.
+        expect(quoteIsIn({ quote: '喵喵 的姐姐也是 tabby 。', text: '……喵喵的姐姐也是tabby。……', },),).toBe(true,);
         /**
          Three items: one true, one paraphrased, one pointing at the unfetched page.
          */

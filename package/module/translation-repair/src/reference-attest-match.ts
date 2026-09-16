@@ -14,6 +14,31 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 const NOT_FOUND = -1;
 
 /**
+ Text with every whitespace character removed, so a quote is compared word
+ for word and nothing else. Measured on Mio22 (2026-09-16): one of three
+ voices attesting the sister wrote the reference's Chinese with spaces
+ around its Latin tokens, and a check that only folded whitespace lost the
+ quorum on that space.
+
+ @param text - text to compact
+
+ @returns Text without whitespace
+
+ @example
+ ```ts
+ compacted({ text: 'Mio 的姐姐也是 MtF。', },);
+ // => 'Mio的姐姐也是MtF。'
+ ```
+ */
+export function compacted(
+  { text, }: { readonly text: string; },
+): string {
+  return foldedLine({ text, },)
+    .split(' ',)
+    .join('',);
+}
+
+/**
  One detail the bench attested: archive words a reference states, with the
  reference's words and how many voices said so.
 
@@ -67,14 +92,14 @@ export type VerifiedAttestation = {
 };
 
 /**
- Whether one quote is found, whitespace folded, inside one text.
+ Whether one quote is found, whitespace ignored, inside one text.
 
  @param quote - words to find
 
  @param text - text to find them in
 
- @returns Whether the folded quote is non-empty and a substring of the
- folded text
+ @returns Whether the compacted quote is non-empty and a substring of the
+ compacted text
 
  @example
  ```ts
@@ -92,13 +117,13 @@ export function quoteIsIn(
   },
 ): boolean {
   /**
-   Quote with its whitespace folded.
+   Quote without its whitespace.
    */
-  const folded = foldedLine({ text: quote, },);
-  if (folded === '')
+  const compact = compacted({ text: quote, },);
+  if (compact === '')
     return false;
-  return foldedLine({ text, },)
-    .includes(folded,);
+  return compacted({ text, },)
+    .includes(compact,);
 }
 
 /**
@@ -199,18 +224,18 @@ export function mergedAttestations(
   },
 ): readonly AttestedDetail[] {
   /**
-   Folded archive every quote is placed in.
+   Compacted archive every quote is placed in.
    */
-  const folded = foldedLine({ text: archiveText, },);
+  const folded = compacted({ text: archiveText, },);
   /**
    Items placed in the archive, in start order.
    */
   const placed = verified
     .map(function place(entry,): PlacedAttestation {
       /**
-       Folded archive quote.
+       Compacted archive quote.
        */
-      const quote = foldedLine({ text: entry.item
+      const quote = compacted({ text: entry.item
         .archiveQuote, },);
       /**
        Where it starts; verification found it, so never absent.
@@ -334,24 +359,24 @@ export function attestedDetailsOverlapping(
   },
 ): readonly AttestedDetail[] {
   /**
-   Folded claim quote.
+   Compacted claim quote.
    */
-  const claimQuote = foldedLine({ text: quote, },);
+  const claimQuote = compacted({ text: quote, },);
   if (claimQuote === '')
     return [];
   /**
-   Folded text the spans are placed in.
+   Compacted text the spans are placed in.
    */
-  const folded = foldedLine({ text, },);
+  const folded = compacted({ text, },);
   /**
    Where the claim quote sits, when it does.
    */
   const claimStart = folded.indexOf(claimQuote,);
   return details.filter(function overlaps(detail,): boolean {
     /**
-     Folded attested quote.
+     Compacted attested quote.
      */
-    const attestedQuote = foldedLine({ text: detail.archiveQuote, },);
+    const attestedQuote = compacted({ text: detail.archiveQuote, },);
     if (attestedQuote.includes(claimQuote,) || claimQuote.includes(attestedQuote,))
       return true;
     if (claimStart === NOT_FOUND)
