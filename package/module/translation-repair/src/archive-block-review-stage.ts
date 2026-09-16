@@ -27,6 +27,7 @@ import { decideBestCandidate, } from './candidate-select.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { archiveContributorNameForms, } from './contributor-name-authority.ts';
 import { findDroppedDeclaredNames, } from './declared-name-survival.ts';
+import { restoreTypography, } from './restore-typography.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import { reachableQuorum, } from './stage-reachable-quorum.ts';
@@ -69,12 +70,14 @@ function replacementCandidates(
   {
     voices,
     blockText,
+    targetText,
   }: {
     readonly voices: readonly {
       readonly modelId: RosterModelId;
       readonly value: ArchiveBlockReviewWire
     }[];
     readonly blockText: string;
+    readonly targetText: string;
   },
 ): readonly Candidate<string>[] {
   /**
@@ -100,12 +103,22 @@ function replacementCandidates(
       > 0)
       continue;
     /**
+     Replacement as it will ship, the archive's quote style restored (class
+     thirty-eight, 2026-09-16: a revised chat block shipped fourteen straight
+     apostrophes into a page whose archive has none), so the judges and the
+     gate read the shipped bytes rather than text a later pass alters.
+     */
+    const replacement = restoreTypography({
+      replacement: voice.value
+        .replacementText,
+      replaced: blockText,
+      convention: targetText,
+    },);
+    /**
      Earlier byte-identical correction.
      */
     const existing = candidates.find(function sameReplacement(candidate,): boolean {
-      return candidate.value
-        === voice.value
-        .replacementText;
+      return candidate.value === replacement;
     },);
     if (existing === undefined) {
       candidates.push({
@@ -113,14 +126,10 @@ function replacementCandidates(
           kind: 'model',
           modelId: voice.modelId,
         },
-        value: voice.value
-          .replacementText,
-        rendered: voice.value
-          .replacementText
-          === ''
+        value: replacement,
+        rendered: (replacement === '')
           ? '[REMOVE BLOCK]'
-          : voice.value
-            .replacementText,
+          : replacement,
       },);
       continue;
     }
@@ -327,6 +336,7 @@ export async function runArchiveBlockReviewStage(
   const revisions = replacementCandidates({
     voices: anchoredVoices,
     blockText,
+    targetText,
   },);
   if ((anchoredVoices.length < requiredParticipation) && (revisions.length === 0)) {
     return {

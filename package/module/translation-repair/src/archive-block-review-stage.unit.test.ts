@@ -260,6 +260,44 @@ await describe({
       },
     },),
     it({
+      name: 'SHIPS a revision in the archive quote style when the reviewer wrote straight quotes (class thirty-eight)',
+      fn: async () => {
+        /** Prompts, captured so the judges are shown to read the restored bytes. */
+        const prompts: string[] = [];
+        /** Reviewer's wording, straight quotes throughout. */
+        const written = 'The cat\'s "nap" by the window.';
+        /** Same wording in the archive's curly convention. */
+        const restored = 'The cat’s “nap” by the window.';
+        /** Actual review stage over a curly-quoted archive. */
+        const outcome = await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts,
+            replyFor: ({ schema, },) => schema === 'archive_block_review'
+              ? {
+                disposition: 'revise',
+                sourceQuote: '',
+                replacementText: written,
+                finding: 'Remove unsupported award claim.',
+              }
+              : { best: 1, reason: 'Only supported details remain.', },
+          },),
+          modelIds: ROSTER,
+          sourceText: '猫在窗边打盹。',
+          targetText: 'The cat’s “nap” by the window and won an award.',
+          blockText: 'The cat’s “nap” by the window and won an award.',
+          priorFindings: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(outcome.kind,).toBe('revised',);
+        expect(outcome.text,).toBe(restored,);
+        expect(prompts.some(function judgedRestored(prompt,): boolean {
+          return prompt.includes('CURRENT ARCHIVE BLOCK',) && prompt.includes(restored,);
+        },),).toBe(true,);
+      },
+    },),
+    it({
       name: 'ACCEPTS quoted source evidence beside a revision instead of losing the reviewer to schema mismatch',
       fn: async () => {
         /** Prompts prove the reply reaches independent correction selection. */
