@@ -33,8 +33,11 @@ Stated by the user on 2026-09-16.
 - Caching is on by default,
    and at this stage it cannot be turned off.
 - On filesystems that support it,
-   such as btrfs or ZFS,
    the process uses filesystem features to speed up change comparison.
+  For 0.x,
+   btrfs is the only supported filesystem for this,
+   per the user's correction on 2026-09-16 that dropped ZFS.
+- The process may create btrfs subvolumes and snapshots whenever it wishes.
 
 ### Scheduling and control
 
@@ -52,7 +55,10 @@ Stated by the user on 2026-09-16.
 Measured 2026-09-16 on the development machine:
 
 - The repository is on btrfs:
-   `findmnt` reports subvolume `/home` mounted `rw,relatime,seclabel,ssd,discard=async,space_cache=v2`.
+   `findmnt` reports subvolume `/home` mounted `rw,relatime,seclabel,ssd,discard=async,space_cache=v2`,
+   without `user_subvol_rm_allowed`.
+- The repository checkout itself is not a subvolume:
+   `btrfs subvolume show /var/home/user/Monochromatic` reports "Not a Btrfs subvolume".
 - Node `v26.8.2` exposes `os.availableParallelism()` and `navigator.hardwareConcurrency`;
    both return 16.
   Node has no API named `availableConcurrency`,
