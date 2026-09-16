@@ -59,6 +59,9 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
  @param identityContext - declared names from both sides' front matter,
  omitted when neither declares anything
 
+ @param attestedLines - archive details a cited reference states, shown to
+ the translators so their renderings carry them (class thirty-nine)
+
  @param referenceContext - what the pages the original cites say, omitted
  when it cites none
  
@@ -113,6 +116,7 @@ export async function runTranslateStage(
     incumbentKind,
     identityContext,
     referenceContext,
+    attestedLines,
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext,
@@ -130,6 +134,7 @@ export async function runTranslateStage(
     readonly incumbentKind: IncumbentKind;
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly attestedLines?: readonly string[];
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly pictureContext?: string;
@@ -177,6 +182,7 @@ export async function runTranslateStage(
     incumbentEligible,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    ...((attestedLines === undefined) ? {} : { attestedLines, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),

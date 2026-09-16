@@ -112,6 +112,27 @@ export const TRANSLATE_LINE_STRUCTURE_RULE: string = 'The ORIGINAL is line-struc
   + 'drop a line. Where the EXISTING TRANSLATION has merged lines, unmerge them.';
 
 /**
+ Instruction added when the entry attested archive details a cited reference
+ states (class thirty-nine, 2026-09-16).
+
+ Mio23 slice 2: the archive's "She has an older sister who is also trans" was
+ attested by five of six voices against the blog the ORIGINAL cites, the
+ repair lane kept it, and the translate lane, written from the ORIGINAL with
+ the archive as evidence only, rendered "and she has an older sister". The
+ lane contest chose translate three ballots to two on other merits, one
+ ballot calling the repair candidate wrong for keeping the clause, and the
+ page shipped without it. A lane that cannot carry the detail loses it for
+ the page whenever it wins, so the translators are told which details are
+ attested and to carry them.
+ */
+export const TRANSLATE_ATTESTED_RULE: string = 'ATTESTED DETAILS lists details the EXISTING TRANSLATION carries that a '
+  + 'page the ORIGINAL itself cites states, each checked word for word. Every one is accurate detail the '
+  + 'translator took from the ORIGINAL\'s own references: carry every one in your rendering, in the existing '
+  + 'translation\'s words where they fit. The ORIGINAL not stating it is not a reason to drop it, and a '
+  + 'rendering that drops one drops accurate detail from the page. They license nothing else: never add '
+  + 'what neither the ORIGINAL nor the existing translation carries.';
+
+/**
  Instruction for visible YAML page metadata.
  */
 export const TRANSLATE_FRONT_MATTER_RULE: string = 'The passage is complete YAML front matter, including its '
@@ -181,6 +202,9 @@ export type TranslateFollowupEvidence = {
  callers that cannot establish it keep the original view
  
  @param identityContext - declared names and handles, omitted when absent
+
+ @param attestedLines - archive details a cited reference states, one line
+ each as the sheets carry them, none when nothing was attested
  
  @param syntax - syntax role requiring dedicated preservation rules
  
@@ -205,6 +229,7 @@ export function buildTranslateMessages(
     incumbentKind = 'present',
     identityContext = '',
     pictureContext = '',
+    attestedLines = [],
     syntax,
     followupEvidence,
     lineStructured = false,
@@ -214,6 +239,7 @@ export function buildTranslateMessages(
     readonly incumbentKind?: IncumbentKind;
     readonly identityContext?: string;
     readonly pictureContext?: string;
+    readonly attestedLines?: readonly string[];
     readonly syntax?: SliceSyntax;
     readonly followupEvidence?: TranslateFollowupEvidence;
     readonly lineStructured?: boolean;
@@ -238,6 +264,7 @@ export function buildTranslateMessages(
       existingText,
       identityContext,
       pictureContext,
+      ...attestedLines,
       ...(followupEvidence?.candidateTexts ?? []),
       ...(followupEvidence?.findings ?? []),
     ],
@@ -254,6 +281,7 @@ export function buildTranslateMessages(
       : `This is stage-local repair after prior ${followupEvidence.reason}. Produce a materially new rendering that resolves every listed finding and does not repeat any rejected candidate. Recheck complete source coverage, fidelity, Markdown structure, contributor identity, and natural English.`,
     syntax === 'front-matter' ? TRANSLATE_FRONT_MATTER_RULE : '',
     lineStructured ? TRANSLATE_LINE_STRUCTURE_RULE : '',
+    (attestedLines.length === 0) ? '' : TRANSLATE_ATTESTED_RULE,
     renderedBreakPrompt({
       sourceText,
       archiveText: existingText,
@@ -318,6 +346,12 @@ ${pictureContext}`
         }
 ${fence} EXISTING TRANSLATION ${fence}
 ${existingText === '' ? '(none: this passage has no translation yet)' : existingText}${
+          (attestedLines.length === 0)
+            ? ''
+            : `
+${fence} ATTESTED DETAILS ${fence}
+${attestedLines.join('\n',)}`
+        }${
           identityContext === ''
             ? ''
             : `

@@ -12,6 +12,7 @@ import {
   type InsertionAdmission,
 } from './insertion-admission.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
+import { attestedDetailLines, } from './reference-attest-match.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { assembleTranslation, } from './translate-assemble.ts';
@@ -151,6 +152,11 @@ export async function translateDocument(
   },);
 
   /**
+   Attested lines the translators are shown, none when nothing was attested
+   (class thirty-nine).
+   */
+  const attestedLines = attestedDetailLines({ details: prepared.attestedDetails ?? [], },);
+  /**
    What this run asks, folded into every key.
    */
   const runShape = translateRunShape({
@@ -161,6 +167,7 @@ export async function translateDocument(
     ...((prepared.referenceContext === undefined)
       ? {}
       : { referenceContext: prepared.referenceContext, }),
+    ...((attestedLines.length === 0) ? {} : { attestedLines, }),
   },);
 
   /**

@@ -39,6 +39,10 @@ import {
 
  @param referenceContext - what the pages the original cites say, folded in
  only when the original cites any
+
+ @param attestedLines - attested details the translators are shown, folded in
+ only when there are any: the same slice written before the writer sheet
+ carried them is a different question (class thirty-nine, 2026-09-16)
  
  @returns Stable string for the key
  
@@ -52,10 +56,12 @@ export function translateRunShape(
     models,
     identityContext,
     referenceContext,
+    attestedLines = [],
   }: {
     readonly models: TranslateModels;
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly attestedLines?: readonly string[];
   },
 ): string {
   return JSON.stringify([
@@ -63,6 +69,7 @@ export function translateRunShape(
     models.judgeModelIds,
     identityContext ?? '',
     ...(((referenceContext ?? '') === '') ? [] : [referenceContext,]),
+    ...((attestedLines.length === 0) ? [] : [attestedLines,]),
     MIN_PROTECTED_INCUMBENT,
     MAX_INCUMBENT_TO_SOURCE_RATIO,
   ],);

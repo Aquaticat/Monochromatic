@@ -4,6 +4,7 @@ import type {
 } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
+import { attestedDetailLines, } from './reference-attest-match.ts';
 import { splitTargetOnlyRun, } from './target-only-run.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
 
@@ -40,6 +41,11 @@ export type TranslateSliceStageInput = {
    What the pages the original cites say, when it cites any.
    */
   readonly referenceContext?: string;
+  /**
+   Archive details a cited reference states, one sheet line each, present
+   only when the entry attested any (class thirty-nine).
+   */
+  readonly attestedLines?: readonly string[];
   /**
    Supplied source neighbors retain their context-only role.
    */
@@ -144,6 +150,11 @@ export function translateSliceInput(
     sourceText,
     incumbentText: archiveText,
   },);
+  /**
+   Attested lines the translators are shown, none when nothing was attested
+   (class thirty-nine).
+   */
+  const attestedLines = attestedDetailLines({ details: prepared.attestedDetails ?? [], },);
   return {
     archiveText,
     protectedText,
@@ -156,6 +167,7 @@ export function translateSliceInput(
           .sliceIndex,),
       ...((prepared.identityContext === undefined) ? {} : { identityContext: prepared.identityContext, }),
       ...((prepared.referenceContext === undefined) ? {} : { referenceContext: prepared.referenceContext, }),
+      ...((attestedLines.length === 0) ? {} : { attestedLines, }),
       ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
       ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
       ...((pictureContext === undefined) ? {} : { pictureContext, }),

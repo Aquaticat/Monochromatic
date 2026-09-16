@@ -89,6 +89,9 @@ export type ProducedSlate = {
  
  @param identityContext - declared names from both sides' front matter,
  omitted when neither declares anything
+
+ @param attestedLines - archive details a cited reference states, shown to
+ the translators so their renderings carry them (class thirty-nine)
  
  @param syntax - syntax role requiring dedicated preservation rules
  
@@ -120,6 +123,7 @@ export async function produceTranslateSlate(
     incumbentEligible = true,
     identityContext,
     pictureContext,
+    attestedLines,
     syntax,
     followupEvidence,
     lineStructured,
@@ -135,6 +139,7 @@ export async function produceTranslateSlate(
     readonly incumbentEligible?: boolean;
     readonly identityContext?: string;
     readonly pictureContext?: string;
+    readonly attestedLines?: readonly string[];
     readonly syntax?: SliceSyntax;
     readonly followupEvidence?: TranslateFollowupEvidence;
     readonly lineStructured: boolean;
@@ -161,6 +166,7 @@ export async function produceTranslateSlate(
     incumbentKind,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
+    ...((attestedLines === undefined) ? {} : { attestedLines, }),
     ...((syntax === undefined) ? {} : { syntax, }),
     ...((followupEvidence === undefined) ? {} : { followupEvidence, }),
     lineStructured,

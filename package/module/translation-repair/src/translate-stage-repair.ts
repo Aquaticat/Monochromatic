@@ -35,6 +35,7 @@ type TranslateRoundInput = ForeignBorrowed<{
   readonly incumbentEligible: boolean;
   readonly identityContext?: string;
   readonly referenceContext?: string;
+  readonly attestedLines?: readonly string[];
   readonly neighbouringIncumbentText?: string;
   readonly neighbouringSourceText?: string;
   readonly pictureContext?: string;
@@ -88,6 +89,7 @@ async function produceAndJudgeOnce(
     incumbentEligible: input.incumbentEligible,
     ...((input.identityContext === undefined) ? {} : { identityContext: input.identityContext, }),
     ...((input.pictureContext === undefined) ? {} : { pictureContext: input.pictureContext, }),
+    ...((input.attestedLines === undefined) ? {} : { attestedLines: input.attestedLines, }),
     ...((input.syntax === undefined) ? {} : { syntax: input.syntax, }),
     ...((followupEvidence === undefined) ? {} : { followupEvidence, }),
     lineStructured: input.lineStructured,
@@ -204,6 +206,7 @@ export async function runTranslateRepairs(
     incumbentEligible = true,
     identityContext,
     referenceContext,
+    attestedLines,
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext,
@@ -222,6 +225,7 @@ export async function runTranslateRepairs(
     readonly incumbentEligible?: boolean;
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly attestedLines?: readonly string[];
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly pictureContext?: string;
@@ -245,6 +249,7 @@ export async function runTranslateRepairs(
     incumbentEligible,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    ...((attestedLines === undefined) ? {} : { attestedLines, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
