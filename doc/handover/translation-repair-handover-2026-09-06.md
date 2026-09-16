@@ -127,6 +127,14 @@ which the takeover session does not have.
 - `Mio14` launched at 03:04 UTC on frozen `db090b955` (pid 1045264,
   runs `~/temp/agent/Mio14-20260916`,
   log `~/temp/agent/Mio14-20260916.log`).
+- `Mio14` killed at 04:05 UTC under ALWAYS KILL AND RELAUNCH once `36b79bfa0` landed;
+  it had reproduced the overrun (24 cap cuts,
+  one block with 6 of 12 seats unreadable,
+  reviewed on 5 under class thirty-one)
+  and drained Hyper from 84 to 42 credits in 61 minutes.
+  `Mio15` launched at 04:06 UTC on frozen `36b79bfa0` (pid 1089368,
+  runs `~/temp/agent/Mio15-20260916`,
+  log `~/temp/agent/Mio15-20260916.log`).
   Meters at launch:
   Synthetic 77.3 percent,
   Hyper 89,
@@ -3492,13 +3500,15 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio14` by the seven steps and the three checks (frozen `db090b955`,
-    pid 1045264,
-    runs `~/temp/agent/Mio14-20260916`,
-    log `~/temp/agent/Mio14-20260916.log`).
+1.  READ `Mio15` by the seven steps and the three checks (frozen `36b79bfa0`,
+    pid 1089368,
+    runs `~/temp/agent/Mio15-20260916`,
+    log `~/temp/agent/Mio15-20260916.log`).
     Mio13 wrote no page (class thirty-one,
-    read in the pass log under the "Mio13 read" heading dated 2026-09-16 02:55 UTC).
-    Mio14 is the first full pass since Mio12 to reach the lanes on the torn-down tree with V4.1 Flash
+    read in the pass log under the "Mio13 read" heading dated 2026-09-16 02:55 UTC);
+    Mio14 was killed before its lanes when `36b79bfa0` landed
+    (the pass log's "Mio14 killed on the one-transcript landing" heading).
+    Mio15 is the first full pass since Mio12 to reach the lanes on the torn-down tree with V4.1 Flash
     judging;
     it decides whether the 2026-09-10 daytime changes (the name-form policy,
     the archive-review wiring) hold on a real page,
@@ -3530,10 +3540,12 @@ each read off the pass log and the shipped page:
     landed in `36b79bfa0` and recorded in
     [the one-transcript decision](../decision/translation-repair-archive-review-one-transcript-2026-09-16.md).
     It is a hypothesis until measured:
-    Mio14 (six transcripts) is the baseline;
-    after Mio14 is read,
-    freeze `36b79bfa0` (or the tip) and launch Mio15,
-    then read whether the seven seats that overran on Mio13 answer the first chat translation within cap
+    Mio14's 61 minutes on six transcripts are the baseline
+    (24 cap cuts,
+    6 of 12 seats unreadable on the first chat block,
+    the Hyper completion tokens per model in the pass log);
+    Mio15 runs on `36b79bfa0`,
+    so read whether the seven seats that overran on Mio13 answer the first chat translation within cap
     (grep `archive-block-review` and `finish_reason` in its log).
     If they still overrun,
     the lever is spent and the doubled re-ask cap is the next question for the owner.

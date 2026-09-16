@@ -7094,6 +7094,56 @@ the `archive-block-review: N heard and M answered unreadably` warning if it fire
 whether the block is retained unresolved or revised through the selection,
 and whether the selection's judges overrun their caps on the same block.
 
+## Mio14 killed on the one-transcript landing, Mio15 launched, 2026-09-16, 04:06 UTC
+
+Mio14 was killed at 04:05 UTC (pid 1045264) under the ALWAYS KILL AND RELAUNCH rule:
+the one-transcript change landed in `36b79bfa0` while it ran,
+and it had already reproduced the Mio13 overrun on the six-transcript support.
+What its 61 minutes measured,
+read off `~/temp/agent/Mio14-20260916.log`:
+
+- 24 `finish_reason=` cap cuts against Mio13's 19,
+  across a longer run;
+  the class thirty-one warning fired once,
+  `archive-block-review: 5 heard and 6 answered unreadably of 12 seats`,
+  and the block went on to `archive review: comparing 3 admissible revisions in 4 candidates;
+  3 eligible assessments from 5 heard reviews`,
+  so the fix holds:
+  the bench that answered unreadably no longer interrupts the entry.
+- Hyper fell from 84 to 42 credits over 66 Hyper calls,
+  about one credit per one and a half calls;
+  the five Hyper seats returned 71,333 (v4.1-flash),
+  105,059 (glm-5.3),
+  109,738 (v4-flash),
+  78,600 (v4-pro) and 69,374 (minimax) completion tokens,
+  nearly all of it reasoning the cap cut before content.
+  That drain is why the baseline was not run to its page:
+  Hyper at 42 is what Mio15 and the queue have.
+- Bedrock 0.019 USD summed over 46 `cost=` lines;
+  Synthetic 77.32 to 76.47 percent of its week;
+  OpenRouter unchanged at 267.73.
+- No page was written;
+  the lanes had not started.
+
+Mio15 launched at 04:06 UTC on frozen `36b79bfa0`
+(pid 1089368,
+runs `~/temp/agent/Mio15-20260916`,
+log `~/temp/agent/Mio15-20260916.log`).
+Meters at launch:
+all four wet,
+Synthetic 76.5 percent,
+Hyper 42 credits,
+Bedrock 185.35 USD,
+OpenRouter 267.73 USD.
+Read against Mio12 as Mio13 and Mio14 were to be,
+plus the one-transcript question:
+whether the seven seats that overran on Mio13 answer the first chat translation within cap
+(grep `archive-block-review`,
+`answered unreadably` and `finish_reason`),
+and the per-model completion tokens on Hyper against the Mio14 numbers.
+If the overrun holds at Mio14's rate,
+the lever is spent and the doubled re-ask cap goes back to the owner.
+
 ## Clustered panels and complete repair evidence implemented, 2026-09-10
 
 The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,
