@@ -151,6 +151,105 @@ but does not change the answer:
    and the full tool-provisioning set were not evaluated against Bazel.
   Bazel would need to own them or share ownership with other tools before it could be a full Mise replacement.
 
+## Follow-up questions, 2026-09-16
+
+### Watch mode and live inspection
+
+Clones:
+ `~/temp/agent/bazel-2026-09-16` at `8e90a0d`,
+ `~/temp/agent/bazel-watcher-2026-09-16` at `ed00d96`,
+ `~/temp/agent/aspect-cli-2026-09-16`.
+
+- Bazel core has no watch-and-rebuild command.
+  `--watchfs` only swaps per-file scanning for the operating system's file-watch service when the next command
+   checks for changes
+   (`src/main/java/com/google/devtools/build/lib/skyframe/LocalDiffAwareness.java:52-62`).
+- `ibazel` from `bazelbuild/bazel-watcher`,
+   v0.33.0 released 2026-08-26,
+   reruns `build`,
+   `test`,
+   or `run` on source changes.
+  Its outward interfaces are one-directional:
+   `ibazel_notify_changes` and `ibazel_notify_changes_v1` send build results to the running target's stdin
+   (`README.md:68-86`),
+   `--profile_dev` appends one JSON event per line to a file,
+   a LiveReload server pushes reloads to browsers,
+   and the profiler HTTP server only serves `profiler.js` and accepts browser events
+   (`internal/ibazel/profiler/profiler.go:220-240`).
+  No endpoint answers a status query.
+- The Bazel server's gRPC `CommandServer` exposes only `Run`,
+   `Cancel`,
+   `UpdateTerminalSize`,
+   and `Ping`
+   (`src/main/protobuf/command_server.proto:266-280`).
+- One output base runs one command at a time;
+   a second client prints "Another command holds the ... lock" and waits
+   (`src/main/cpp/blaze_util_posix.cc:740-743`),
+   so a separate `bazel query` cannot inspect a build in progress on the same output base.
+- The supported observation channel is the Build Event Protocol.
+  `--build_event_json_file` writes and periodically flushes events during the invocation
+   (`src/main/java/com/google/devtools/build/lib/buildeventstream/transports/FileTransport.java:130-150`);
+   `--bes_backend` streams the same events to a gRPC Build Event Service
+   (`BuildEventServiceOptions.java:35-46`).
+  Under `ibazel`,
+   each rebuild is a separate invocation with its own event stream.
+- The Aspect CLI source contains no watch command;
+   its `watch` matches are watchdogs and unrelated flags.
+
+### Community size
+
+The user raised Bazel's community as an advantage over Mise.
+
+- GitHub contributors,
+   counted from the last page of `contributors?per_page=1&anon=true`:
+   Bazel 1,437,
+   Mise 705.
+- Stack Overflow tag question counts from `api.stackexchange.com`:
+   `bazel` 3,460,
+   `mise` 12.
+- GitHub stars:
+   Mise 33,992,
+   Bazel 25,857.
+- The advantage thins at this repository's integration points:
+   `aspect-build/rules_lint` issue #445,
+   "[FR]: oxlint",
+   has been open with zero comments since 2024-12-05,
+   and rules_android describes itself as an incomplete preview.
+
+### Never running a warm whole-repo oxlint again
+
+The user expects a good monorepo manager to remove the need for warm whole-repo oxlint sweeps.
+Any correct affected-only cache must key each package's lint on its own sources,
+ the TypeScript sources it imports through `/ts`,
+ the shared TypeScript and oxlint configuration,
+ and the oxlint plugin sources.
+
+- Direct workspace dependents,
+   a lower bound on invalidation fan-out:
+   `config-typescript` 146,
+   `module-test` 119,
+   `config-rolldown` 111,
+   `module-logger` 66.
+- Of 2,328 commits since 2026-06-18 that touched `.ts` or `.tsx` files,
+   320 changed non-test TypeScript under `package/oxlint-plugin/` or `package/config/oxlint/`.
+  A correct cache relints every package after each of those commits.
+- Most other edits would relint only the changed package and its dependents,
+   so affected-only lint would remove most sweeps but not all of them.
+- Bazel's sandbox enforces declared inputs,
+   which guards against stale cache hits.
+  Mise's documented `sources` check compares only the declared files,
+   so an undeclared input can produce a wrong skip.
+  Whether `pnpm pipeline` enforces inputs was not checked,
+   and no cache in either tool was exercised here.
+
+### CI
+
+The user reported that CI is being added.
+A CI workflow sharing a remote cache with local runs raises the value of a mature remote cache,
+ which Bazel has.
+The Mise content-hash cache is experimental;
+ remote cache support in `pnpm pipeline` was not checked.
+
 ## Evidence limits
 
 - No Bazel build of any package was attempted.
