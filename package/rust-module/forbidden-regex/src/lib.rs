@@ -126,6 +126,16 @@ mod engine;
 /// ```
 mod build;
 
+/// What:    Builds a ruleset's rules across worker threads, results in input order.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./parallel";
+/// ```
+mod parallel;
+
 /// What:    The RegexSet-level combined literal prefilter.
 /// Why:     The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
