@@ -21,7 +21,6 @@ import {
 
 import {
   BEDROCK_ONLY_ROSTER_IDS,
-  type BudgetView,
   HYPER_SLOW_JUDGES,
   HYPER_SLOW_SELECT_JUDGES,
   judgeSeatsFor,
@@ -35,22 +34,30 @@ import {
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   RUN_WRITERS,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   SEATED_BEDROCK_JUDGES,
   SEATED_OPENROUTER_JUDGES,
   TRANSLATOR_DROPPED,
+  type BudgetView,
   WRITER_UNMEASURED,
 } from '../../dist/final/node/index.mjs';
 
 /**
  The Hyper-slow judge.
  */
-const QWEN = 'hf:Qwen/Qwen3.8-27B';
+const QWEN = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  The judge Hyper serves too slowly in the select role alone, and the one the
  owner declined to pay OpenRouter's rate on.
  */
-const KIMI = 'hf:moonshotai/Kimi-K3';
+const KIMI = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  Nobody dry.
@@ -102,7 +109,7 @@ await describe({
         expect(dry.repairModels.panelModelIds,).toEqual(dry.wideSeats,);
         expect(dry.repairModels.judgeModelIds,).toEqual(dry.selectJudges,);
         expect(dry.translateModels.judgeModelIds,).toEqual(dry.selectJudges,);
-        expect(dry.wideSeats.includes('hf:zai-org/GLM-5.3-Flash',),).toBe(false,);
+        expect(dry.wideSeats.includes(SEAT_SYNTHETIC_VISION_EDITOR,),).toBe(false,);
         expect(dry.withheld.includes(QWEN,),).toBe(true,);
 
         const wet = judgeSeatsFor({ dry: ALL_WET, },);
@@ -116,7 +123,7 @@ await describe({
         expect(wet.roster,).toEqual(RUN_ROSTER,);
         expect(wet.translateModels.translatorModelIds,).toEqual(RUN_TRANSLATORS,);
         expect(wet.withheld,).toEqual([],);
-        expect(wet.wideSeats.includes('hf:zai-org/GLM-5.3-Flash',),).toBe(false,);
+        expect(wet.wideSeats.includes(SEAT_SYNTHETIC_VISION_EDITOR,),).toBe(false,);
       },
     },),
 
@@ -135,12 +142,12 @@ await describe({
           expect(ROSTER_MODEL_IDS.includes(candidate,),).toBe(true,);
           expect(wet.checkers.includes(candidate,),).toBe(false,);
         }
-        expect(wet.translators.includes('google.gemma-4-e2b',),).toBe(true,);
-        expect(wet.writers.includes('google.gemma-4-e2b',),).toBe(true,);
-        expect(wet.translators.includes('google.gemma-4-31b',),).toBe(false,);
-        expect(wet.writers.includes('google.gemma-4-31b',),).toBe(false,);
-        expect(wet.readers.includes('google.gemma-4-e2b',),).toBe(false,);
-        expect(wet.readers.includes('google.gemma-4-31b',),).toBe(true,);
+        expect(wet.translators.includes(SEAT_BEDROCK_ONLY_TEXT,),).toBe(true,);
+        expect(wet.writers.includes(SEAT_BEDROCK_ONLY_TEXT,),).toBe(true,);
+        expect(wet.translators.includes(SEAT_BEDROCK_ONLY_VISION_UNSEATED,),).toBe(false,);
+        expect(wet.writers.includes(SEAT_BEDROCK_ONLY_VISION_UNSEATED,),).toBe(false,);
+        expect(wet.readers.includes(SEAT_BEDROCK_ONLY_TEXT,),).toBe(false,);
+        expect(wet.readers.includes(SEAT_BEDROCK_ONLY_VISION_UNSEATED,),).toBe(true,);
         for (const seated of SEATED_BEDROCK_JUDGES) {
           expect(RUN_ROSTER.includes(seated,),).toBe(true,);
           expect(wet.roster.includes(seated,),).toBe(true,);
@@ -149,8 +156,8 @@ await describe({
           expect(wet.lateJudges.includes(seated,),).toBe(true,);
           expect(wet.slateJudges.includes(seated,),).toBe(true,);
         }
-        expect(RUN_ROSTER.includes('google.gemma-4-31b',),).toBe(false,);
-        expect(wet.wideSeats.includes('google.gemma-4-31b',),).toBe(false,);
+        expect(RUN_ROSTER.includes(SEAT_BEDROCK_ONLY_VISION_UNSEATED,),).toBe(false,);
+        expect(wet.wideSeats.includes(SEAT_BEDROCK_ONLY_VISION_UNSEATED,),).toBe(false,);
         // A model one provider alone serves holds no seat until measured in.
         for (const seated of SEATED_OPENROUTER_JUDGES) {
           expect(RUN_ROSTER.includes(seated,),).toBe(true,);
@@ -164,8 +171,8 @@ await describe({
         }
         // The calibration read at 20:02 UTC on 2026-09-09 seated the one
         // OpenRouter-only model as a writer; the build before it fails here.
-        expect(wet.translators.includes('inception/mercury-2.5',),).toBe(true,);
-        expect(wet.writers.includes('inception/mercury-2.5',),).toBe(true,);
+        expect(wet.translators.includes(SEAT_OPENROUTER_ONLY,),).toBe(true,);
+        expect(wet.writers.includes(SEAT_OPENROUTER_ONLY,),).toBe(true,);
         for (const unmeasured of WRITER_UNMEASURED) {
           expect(wet.writers.includes(unmeasured,),).toBe(false,);
           expect(wet.translators.includes(unmeasured,),).toBe(false,);
@@ -173,7 +180,7 @@ await describe({
         expect(ROSTER_MODEL_IDS.filter(function unseated(modelId,): boolean {
           return !RUN_ROSTER.includes(modelId,);
         },).toSorted(),).toEqual([
-          'google.gemma-4-31b',
+          SEAT_BEDROCK_ONLY_VISION_UNSEATED,
         ],);
         expect(wet.writers,).toEqual(RUN_WRITERS,);
         expect(RUN_WRITERS,).toEqual(RUN_ROSTER.filter(function measuredWriter(modelId,): boolean {
@@ -191,7 +198,7 @@ await describe({
         + 'out beside it left the roster on 2026-09-16',
       fn: async function keepsDroppedWritersElsewhere(): Promise<void> {
         const wet = judgeSeatsFor({ dry: ALL_WET, },);
-        expect(TRANSLATOR_DROPPED.has('hf:openai/gpt-oss-120b',),).toBe(true,);
+        expect(TRANSLATOR_DROPPED.has(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(true,);
         for (const dropped of TRANSLATOR_DROPPED) {
           expect(wet.translators.includes(dropped,),).toBe(false,);
           expect(wet.writers.includes(dropped,),).toBe(true,);

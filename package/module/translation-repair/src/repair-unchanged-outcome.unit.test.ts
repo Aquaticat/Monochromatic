@@ -32,6 +32,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChunkCriticPhase,
   UNATTRIBUTED_TEXT,
   unchangedChunkOutcome,
@@ -60,19 +63,19 @@ const CRITIC_PHASE = {
   votesStand: true,
   heardCritics: 3,
   heardCriticIds: [
-    'hf:Qwen/Qwen3.8-27B',
-    'hf:moonshotai/Kimi-K3',
-    'hf:zai-org/GLM-5.3-Flash',
+    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+    SEAT_SYNTHETIC_VISION_WITHHELD,
+    SEAT_SYNTHETIC_VISION_EDITOR,
   ],
   claimAttributions: [{
     claimId: CLAIM_ID,
     proposers: [
       {
-        modelId: 'hf:Qwen/Qwen3.8-27B',
+        modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
         emissionCount: 2,
       },
       {
-        modelId: 'hf:zai-org/GLM-5.3-Flash',
+        modelId: SEAT_SYNTHETIC_VISION_EDITOR,
         emissionCount: 1,
       },
     ],
@@ -104,19 +107,19 @@ await describe({
         expect(outcome.nonTranslationStanding,).toBe(true,);
         expect(outcome.heardCritics,).toBe(3,);
         expect(outcome.heardCriticIds,).toEqual([
-          'hf:Qwen/Qwen3.8-27B',
-          'hf:moonshotai/Kimi-K3',
-          'hf:zai-org/GLM-5.3-Flash',
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          SEAT_SYNTHETIC_VISION_WITHHELD,
+          SEAT_SYNTHETIC_VISION_EDITOR,
         ],);
         expect(outcome.claimAttributions,).toEqual([{
           claimId: CLAIM_ID,
           proposers: [
             {
-              modelId: 'hf:Qwen/Qwen3.8-27B',
+              modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
               emissionCount: 2,
             },
             {
-              modelId: 'hf:zai-org/GLM-5.3-Flash',
+              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               emissionCount: 1,
             },
           ],

@@ -4,6 +4,9 @@ import { join, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import spawn, { SubprocessError, } from 'nano-spawn';
+import {
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+} from '../dist/final/node/index.mjs';
 
 /** Native compiled CLI, never a source import. */
 const CLI = fileURLToPath(new URL('../dist/final/node/judge-fidelity-probe.mjs', import.meta.url));
@@ -23,7 +26,7 @@ async function preflight(extra: readonly string[]) {
     TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY: '',
   } };
   try {
-    const result = await spawn(process.execPath, [CLI, '--cap', '0', '--candidates', 'deepseek-v4.1-flash', '--candidates-alone', ...extra], options);
+    const result = await spawn(process.execPath, [CLI, '--cap', '0', '--candidates', SEAT_HYPER_OPENROUTER_UNMEASURED, '--candidates-alone', ...extra], options);
     return { code: 0, stdout: result.stdout, stderr: result.stderr };
   } catch (error) {
     if (!(error instanceof SubprocessError)) throw error;
@@ -74,7 +77,7 @@ await describe({
       fn: async () => {
         const result = await preflight([]);
         expect(result.code).toBe(0);
-        expect(result.stdout).toContain('deepseek-v4.1-flash');
+        expect(result.stdout).toContain(SEAT_HYPER_OPENROUTER_UNMEASURED);
         expect(result.stdout).toContain('preflight only');
         expect(result.stdout).not.toContain('SPEND ');
       },

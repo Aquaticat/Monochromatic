@@ -19,11 +19,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  runRenderingAudit,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  runRenderingAudit,
-  type SyntheticClient,
   type RosterModelId,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -35,9 +38,9 @@ const l = tagged({ tag: 'rendering-audit-test', },);
  Auditors the fixtures configure.
  */
 const AUDITORS: readonly RosterModelId[] = [
-  'hf:Qwen/Qwen3.8-27B',
-  'deepseek-v4.1-flash',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ];
 
 /**

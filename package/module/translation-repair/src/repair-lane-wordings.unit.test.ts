@@ -26,10 +26,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  type ChunkPair,
   makeInsertionChunk,
   repairLaneWordings,
   RepairUnheardError,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  type ChunkPair,
   type RepairVoiceRecord,
 } from '../dist/final/node/index.mjs';
 
@@ -118,7 +119,7 @@ function heard(
     sliceIndex,
     repairedText,
     changed: false,
-    heardCriticIds: ['hf:openai/gpt-oss-120b',],
+    heardCriticIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
     refined: false,
   };
 }

@@ -24,8 +24,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   coverageGapLines,
-  type ProducerStanding,
   readStandingCoverage,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type ProducerStanding,
   type RosterModelId,
   type SeatAnswers,
   UnseatedStandingError,
@@ -34,22 +38,22 @@ import {
 /**
  Model whose candidates drew ballots in every case that needs one.
  */
-const JUDGED: RosterModelId = 'hf:moonshotai/Kimi-K3';
+const JUDGED: RosterModelId = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  Model that writes without ever being voted on.
  */
-const UNVOTED: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
+const UNVOTED: RosterModelId = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Model whose provider is out of budget, so it writes nothing.
  */
-const ABSENT: RosterModelId = 'minimax-m3';
+const ABSENT: RosterModelId = SEAT_HYPER_VISION;
 
 /**
  Second silent model, so ordering can be checked on more than one.
  */
-const ALSO_ABSENT: RosterModelId = 'gemma-4-26b-a4b-it';
+const ALSO_ABSENT: RosterModelId = SEAT_HYPER_TEXT_BEDROCK;
 
 /**
  Model the roster dropped on 2026-08-24, which no run seats today.

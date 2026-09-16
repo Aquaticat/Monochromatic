@@ -13,8 +13,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ArtifactContestVerdict,
   finalSelectionFindings,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  type ArtifactContestVerdict,
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
 
@@ -111,8 +112,8 @@ function sourceWith(
             proposedText: 'The cat rested.',
             text: 'The cat rested.',
             changed: true,
-            refinersHeard: ['hf:zai-org/GLM-5.3-Flash',],
-            contributors: ['hf:zai-org/GLM-5.3-Flash',],
+            refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            contributors: [SEAT_SYNTHETIC_VISION_EDITOR,],
             roundCount: 1,
             findings: [],
           },

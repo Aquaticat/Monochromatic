@@ -42,6 +42,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type RosterModelId,
   type WidthDraw,
   type WidthRow,
@@ -54,8 +59,8 @@ import {
  Narrow roster the fixture reports on.
  */
 const NARROW: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ];
 
 /**
@@ -63,15 +68,15 @@ const NARROW: readonly RosterModelId[] = [
  */
 const WIDE: readonly RosterModelId[] = [
   ...NARROW,
-  'deepseek-v4.1-flash',
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
 ];
 
 /**
  Panel, held fixed, as the probe holds it.
  */
 const PANEL: readonly RosterModelId[] = [
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ];
 
 /**

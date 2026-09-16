@@ -26,24 +26,26 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  type ChatTextRequest,
   IMAGE_READING_PERSPECTIVES,
   messageText,
   readPastRefusal,
   REFUSAL_ASK_LIMIT,
-  type SyntheticClient,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type ChatTextRequest,
   type RosterModelId,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /**
  Reader used by every case that asks a model which reads images.
  */
-const READER: RosterModelId = 'hf:moonshotai/Kimi-K3';
+const READER: RosterModelId = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  Model the catalog says does not read images, so it is never sent one.
  */
-const TEXT_ONLY: RosterModelId = 'hf:openai/gpt-oss-120b';
+const TEXT_ONLY: RosterModelId = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
 
 // This id is the strongest text-only fixture: both providers serve it and both
 // report no vision, so it stays text-only however the union is computed.

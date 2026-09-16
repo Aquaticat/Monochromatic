@@ -22,13 +22,24 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  gatherStageVoices,
+  NoProviderForModelError,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  gatherStageVoices,
   type JsonSchemaResponseFormat,
-  NoProviderForModelError,
-  type SyntheticClient,
   type RosterModelId,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -91,7 +102,7 @@ function isMeowReply(value: unknown,): value is MeowReply {
  
  @example
  ```ts
- const client = silentClient({ silentModel: 'hf:moonshotai/Kimi-K3', calls, },);
+ const client = silentClient({ silentModel: SEAT_SYNTHETIC_VISION_WITHHELD, calls, },);
  ```
  */
 function silentClient(
@@ -150,7 +161,7 @@ function silentClient(
  
  @example
  ```ts
- const client = dryBenchClient({ drySeats: ['glm-5.3',], failingSeat: 'hf:moonshotai/Kimi-K3', },);
+ const client = dryBenchClient({ drySeats: [SEAT_HYPER_ONLY,], failingSeat: SEAT_SYNTHETIC_VISION_WITHHELD, },);
  ```
  */
 function dryBenchClient(
@@ -206,30 +217,30 @@ function dryBenchClient(
  The eleven-seat roster of 2026-09-09, in roster order.
  */
 const ELEVEN_SEATS: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-  'hf:openai/gpt-oss-120b',
-  'minimax-m3',
-  'gemma-4-26b-a4b-it',
-  'deepseek-v4.1-flash',
-  'google.gemma-4-31b',
-  'glm-5.3',
-  'google.gemma-4-e2b',
-  'inception/mercury-2.5',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_VISION,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_ONLY,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_OPENROUTER_ONLY,
 ];
 
 /**
  The seven of those seats a Bedrock-alone day cannot serve.
  */
 const DRY_SEVEN: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-  'minimax-m3',
-  'deepseek-v4.1-flash',
-  'google.gemma-4-31b',
-  'glm-5.3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_HYPER_VISION,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_ONLY,
 ];
 
 /**
@@ -247,7 +258,7 @@ const DRY_SEVEN: readonly RosterModelId[] = [
  
  @example
  ```ts
- const client = stallingClient({ stallingModel: 'hf:moonshotai/Kimi-K3', calls, },);
+ const client = stallingClient({ stallingModel: SEAT_SYNTHETIC_VISION_WITHHELD, calls, },);
  ```
  */
 function stallingClient(
@@ -488,7 +499,7 @@ await describe({
         /** Gather over a fully healthy roster. */
         const gather = await gatherStageVoices({
           client: flakyClient({ failuresByModel: {}, calls, },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -500,7 +511,7 @@ await describe({
         expect(gather.voices,).toHaveLength(3,);
         expect(gather.quorumMet,).toBe(true,);
         expect(gather.findings,).toHaveLength(0,);
-        expect(calls['hf:zai-org/GLM-5.3-Flash'],).toBe(1,);
+        expect(calls[SEAT_SYNTHETIC_VISION_EDITOR],).toBe(1,);
       },
     },),
 
@@ -512,10 +523,10 @@ await describe({
         /** Gather where one seat is refused by the router and one fails on a wet provider. */
         const gather = await gatherStageVoices({
           client: dryBenchClient({
-            drySeats: ['glm-5.3',],
-            failingSeat: 'hf:moonshotai/Kimi-K3',
+            drySeats: [SEAT_HYPER_ONLY,],
+            failingSeat: SEAT_SYNTHETIC_VISION_WITHHELD,
           },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'glm-5.3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_HYPER_ONLY,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -526,7 +537,7 @@ await describe({
           fanOut: 'whole-bench',
         },);
         expect(gather.voices,).toHaveLength(2,);
-        expect([...gather.unreachable,],).toEqual(['glm-5.3',],);
+        expect([...gather.unreachable,],).toEqual([SEAT_HYPER_ONLY,],);
         expect(gather.findings,).toContain('stage-voice-lost (select glm-5.3)',);
         expect(gather.findings,).toContain('stage-voice-lost (select hf:moonshotai/Kimi-K3)',);
       },
@@ -575,10 +586,10 @@ await describe({
         /** Gather where every seat is refused. */
         const gather = await gatherStageVoices({
           client: dryBenchClient({
-            drySeats: ['glm-5.3', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+            drySeats: [SEAT_HYPER_ONLY, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
             failingSeat: 'nobody',
           },),
-          modelIds: ['glm-5.3', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_HYPER_ONLY, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -603,10 +614,10 @@ await describe({
         /** Gather where two of three answer immediately and one never does. */
         const gather = await gatherStageVoices({
           client: flakyClient({
-            failuresByModel: { 'hf:moonshotai/Kimi-K3': 99, },
+            failuresByModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: 99, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -624,7 +635,7 @@ await describe({
         // fresh call can fix. Two, never three: the recovery round runs once
         // whatever it finds, so a model broken all day costs one extra call per
         // gather rather than a ladder.
-        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(2,);
+        expect(calls[SEAT_SYNTHETIC_VISION_WITHHELD],).toBe(2,);
       },
     },),
 
@@ -648,7 +659,7 @@ await describe({
              Scripted payload for an answering call.
              */
             const scripted: unknown = { meow: request.modelId, };
-            if (request.modelId === 'hf:moonshotai/Kimi-K3') {
+            if (request.modelId === SEAT_SYNTHETIC_VISION_WITHHELD) {
               /**
                This call's prompt as plain text, a vision part reading as
                nothing since none is sent here.
@@ -686,7 +697,7 @@ await describe({
 
         const gather = await gatherStageVoices({
           client,
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -722,7 +733,7 @@ await describe({
           chatJson: async <ValueT,>(
             request: ChatJsonRequest<ValueT>,
           ): Promise<ChatJsonOutcome<ValueT>> => {
-            if (request.modelId === 'hf:moonshotai/Kimi-K3') {
+            if (request.modelId === SEAT_SYNTHETIC_VISION_WITHHELD) {
               return {
                 kind: 'schema-mismatch',
                 rawText: '',
@@ -748,7 +759,7 @@ await describe({
         };
         const gather = await gatherStageVoices({
           client,
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -759,7 +770,7 @@ await describe({
         },);
         expect(gather.voices,).toHaveLength(2,);
         expect(gather.quorumMet,).toBe(true,);
-        expect([...gather.unreadable,],).toEqual(['hf:moonshotai/Kimi-K3',],);
+        expect([...gather.unreadable,],).toEqual([SEAT_SYNTHETIC_VISION_WITHHELD,],);
         expect([...gather.unreachable,],).toEqual([],);
       },
     },),
@@ -772,16 +783,16 @@ await describe({
         const gather = await gatherStageVoices({
           client: flakyClient({
             failuresByModel: {
-              'hf:moonshotai/Kimi-K3': 99,
-              'hf:openai/gpt-oss-120b': 99,
+              [SEAT_SYNTHETIC_VISION_WITHHELD]: 99,
+              [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 99,
             },
             calls,
           },),
           modelIds: [
-            'hf:zai-org/GLM-5.3-Flash',
-            'hf:Qwen/Qwen3.8-27B',
-            'hf:moonshotai/Kimi-K3',
-            'hf:openai/gpt-oss-120b',
+            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+            SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           ],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
@@ -825,10 +836,10 @@ await describe({
         /** Gather where one model of three never answers. */
         const gather = await gatherStageVoices({
           client: flakyClient({
-            failuresByModel: { 'hf:moonshotai/Kimi-K3': 99, },
+            failuresByModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: 99, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -852,7 +863,7 @@ await describe({
         /** Gather over a fully healthy roster. */
         const gather = await gatherStageVoices({
           client: flakyClient({ failuresByModel: {}, calls, },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -874,17 +885,17 @@ await describe({
         const gather = await gatherStageVoices({
           client: flakyClient({
             failuresByModel: {
-              'hf:Qwen/Qwen3.8-27B': 99,
-              'hf:moonshotai/Kimi-K3': 99,
-              'hf:openai/gpt-oss-120b': 99,
+              [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 99,
+              [SEAT_SYNTHETIC_VISION_WITHHELD]: 99,
+              [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 99,
             },
             calls,
           },),
           modelIds: [
-            'hf:zai-org/GLM-5.3-Flash',
-            'hf:Qwen/Qwen3.8-27B',
-            'hf:moonshotai/Kimi-K3',
-            'hf:openai/gpt-oss-120b',
+            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+            SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           ],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
@@ -909,12 +920,12 @@ await describe({
         const calls: Record<string, number> = {};
         /** Full six-model roster where five fail once then answer. */
         const roster: readonly RosterModelId[] = [
-          'hf:zai-org/GLM-5.3-Flash',
-          'minimax-m3',
-          'hf:Qwen/Qwen3.8-27B',
-          'hf:moonshotai/Kimi-K3',
-          'deepseek-v4.1-flash',
-          'hf:openai/gpt-oss-120b',
+          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_VISION,
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          SEAT_SYNTHETIC_VISION_WITHHELD,
+          SEAT_HYPER_OPENROUTER_UNMEASURED,
+          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
         ];
         /** Gather recovering the milestone-two weather pattern. */
         const gather = await gatherStageVoices({
@@ -939,7 +950,7 @@ await describe({
         expect(gather.voices.length,).toBeGreaterThanOrEqual(3,);
         expect(gather.voices.length,).toBeLessThanOrEqual(6,);
         // The healthy seat answers on its first ask wherever the rotation put it.
-        expect(calls['hf:zai-org/GLM-5.3-Flash'],).toBe(1,);
+        expect(calls[SEAT_SYNTHETIC_VISION_EDITOR],).toBe(1,);
         /**
          Every call the gather made, whichever seats the rotation asked first.
          */
@@ -964,12 +975,12 @@ await describe({
         const calls: Record<string, number> = {};
         /** Full six-model roster, everyone answering at once. */
         const roster: readonly RosterModelId[] = [
-          'hf:zai-org/GLM-5.3-Flash',
-          'minimax-m3',
-          'hf:Qwen/Qwen3.8-27B',
-          'hf:moonshotai/Kimi-K3',
-          'deepseek-v4.1-flash',
-          'hf:openai/gpt-oss-120b',
+          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_VISION,
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          SEAT_SYNTHETIC_VISION_WITHHELD,
+          SEAT_HYPER_OPENROUTER_UNMEASURED,
+          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
         ];
         /** Gather over the healthy roster. */
         const gather = await gatherStageVoices({
@@ -1001,12 +1012,12 @@ await describe({
         const gather = await gatherStageVoices({
           client: flakyClient({
             failuresByModel: {
-              'hf:Qwen/Qwen3.8-27B': 99,
-              'hf:moonshotai/Kimi-K3': 99,
+              [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 99,
+              [SEAT_SYNTHETIC_VISION_WITHHELD]: 99,
             },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -1021,7 +1032,7 @@ await describe({
         // Initial ask, every retry round, and the one recovery round that
         // follows them: the loop spends its rounds chasing quorum and the
         // recovery round reads the unusable answers once more regardless.
-        expect(calls['hf:Qwen/Qwen3.8-27B'],).toBe(5,);
+        expect(calls[SEAT_SYNTHETIC_VISION_NO_OPENROUTER],).toBe(5,);
       },
     },),
 
@@ -1036,10 +1047,10 @@ await describe({
         /** Gather where one voice never answers at all. */
         const gather = await gatherStageVoices({
           client: flakyClient({
-            failuresByModel: { 'hf:moonshotai/Kimi-K3': 99, },
+            failuresByModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: 99, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -1053,7 +1064,7 @@ await describe({
         // The whole point: no retry ROUNDS, so a degraded model costs one
         // deadline per gather rather than four. The second call is the single
         // recovery read of an answer that came back unusable.
-        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(2,);
+        expect(calls[SEAT_SYNTHETIC_VISION_WITHHELD],).toBe(2,);
         // Met quorum reads as healthy everywhere else, so the shortfall is
         // recorded anyway, both as a ratio and by name.
         expect(gather.findings,).toContain('stage-roster-incomplete (critic 2/3)',);
@@ -1070,10 +1081,10 @@ await describe({
         /** Two answer at once, and the third writes one unusable answer first. */
         const gather = await gatherStageVoices({
           client: flakyClient({
-            failuresByModel: { 'hf:moonshotai/Kimi-K3': 1, },
+            failuresByModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: 1, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -1087,7 +1098,7 @@ await describe({
         // finished and the old contract would have shipped two voices. The
         // third is here because the recovery round asked again.
         expect(gather.voices,).toHaveLength(3,);
-        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(2,);
+        expect(calls[SEAT_SYNTHETIC_VISION_WITHHELD],).toBe(2,);
 
         // A full roster leaves nothing to report as missing.
         expect(gather.findings,).toHaveLength(0,);
@@ -1103,10 +1114,10 @@ await describe({
         /** Two answer at once, and the third never delivers anything. */
         const gather = await gatherStageVoices({
           client: silentClient({
-            silentModel: 'hf:moonshotai/Kimi-K3',
+            silentModel: SEAT_SYNTHETIC_VISION_WITHHELD,
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -1121,7 +1132,7 @@ await describe({
 
         // ASKED ONCE. Quorum stood, so no retry round ran, and the recovery
         // round skipped this model because it never answered at all.
-        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(1,);
+        expect(calls[SEAT_SYNTHETIC_VISION_WITHHELD],).toBe(1,);
         expect(gather.findings,).toContain('stage-voice-lost (panel hf:moonshotai/Kimi-K3)',);
       },
     },),
@@ -1139,10 +1150,10 @@ await describe({
         /** Two answer at once; the third answers unusably, then hangs. */
         const gather = await gatherStageVoices({
           client: stallingClient({
-            stallingModel: 'hf:moonshotai/Kimi-K3',
+            stallingModel: SEAT_SYNTHETIC_VISION_WITHHELD,
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: STALLING_DEADLINE_MS,
@@ -1157,7 +1168,7 @@ await describe({
         const spentMs = Date.now() - startedAt;
 
         // The re-ask happened and never came back, so the roster is still two.
-        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(2,);
+        expect(calls[SEAT_SYNTHETIC_VISION_WITHHELD],).toBe(2,);
         expect(gather.voices,).toHaveLength(2,);
 
         // THE FIGURE THIS CASE EXISTS FOR. Waiting on the re-ask would cost the
@@ -1175,10 +1186,10 @@ await describe({
         /** Editor-style gather over a roster of one. */
         const gather = await gatherStageVoices({
           client: flakyClient({
-            failuresByModel: { 'hf:zai-org/GLM-5.3-Flash': 2, },
+            failuresByModel: { [SEAT_SYNTHETIC_VISION_EDITOR]: 2, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -1189,7 +1200,7 @@ await describe({
         },);
         expect(gather.voices,).toHaveLength(1,);
         expect(gather.quorumMet,).toBe(true,);
-        expect(calls['hf:zai-org/GLM-5.3-Flash'],).toBe(3,);
+        expect(calls[SEAT_SYNTHETIC_VISION_EDITOR],).toBe(3,);
       },
     },),
 
@@ -1209,10 +1220,10 @@ await describe({
         /** Gather where one model never answers on its own. */
         const gather = await gatherStageVoices({
           client: hangingClient({
-            hangingModelId: 'hf:moonshotai/Kimi-K3',
+            hangingModelId: SEAT_SYNTHETIC_VISION_WITHHELD,
             cut,
           },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           // Far longer than the grace, so a gather that waited for the call
@@ -1247,11 +1258,11 @@ await describe({
         /** Gather where the third voice is late but well inside the window. */
         const gather = await gatherStageVoices({
           client: hangingClient({
-            hangingModelId: 'hf:moonshotai/Kimi-K3',
+            hangingModelId: SEAT_SYNTHETIC_VISION_WITHHELD,
             cut,
             lateMs: 20,
           },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 60_000,

@@ -25,8 +25,12 @@ import {
 
 import {
   createSyntheticClient,
-  type PairedSectionRecord,
   prepareDocumentPairWithRoster,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type PairedSectionRecord,
   type SliceCache,
 } from '../dist/final/node/index.mjs';
 
@@ -44,8 +48,8 @@ const TARGET_TEXT = 'The cat slept in the box.\n\nShe did not move all afternoon
  Roster of two, which is the smallest that can agree.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
 
 /**
@@ -285,8 +289,8 @@ await describe({
           },),
           modelIds: [
             ...ROSTER,
-            'hf:openai/gpt-oss-120b',
-            'hf:moonshotai/Kimi-K3',
+            SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+            SEAT_SYNTHETIC_VISION_WITHHELD,
           ],
           sourceText,
           targetText,

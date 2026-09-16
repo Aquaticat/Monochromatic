@@ -12,14 +12,18 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
-  type BudgetView,
   createRoutingClient,
   EveryProviderDryError,
   isJsonRecord,
   NoProviderForModelError,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SyntheticHttpError,
+  type BudgetView,
   type ProviderName,
   type ProviderRecord,
-  SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -302,7 +306,7 @@ function isNapSpot(value: unknown,): value is { readonly spot: string; } {
 async function ask(
   {
     client,
-    modelId = 'hf:zai-org/GLM-5.3-Flash',
+    modelId = SEAT_SYNTHETIC_VISION_EDITOR,
   }: {
     readonly client: ReturnType<typeof createRoutingClient>;
     readonly modelId?: Parameters<ReturnType<typeof createRoutingClient>['chatText']>[0]['modelId'];
@@ -349,7 +353,7 @@ await describe({
 
         await ask({
           client,
-          modelId: 'deepseek-v4.1-flash',
+          modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
         },);
         expect(called,).toEqual(['hyper',],);
       },
@@ -389,7 +393,7 @@ await describe({
         expect(await ask({ client, },),).toEqual({ text: '{"spot":"laundry basket"}', },);
         await ask({
           client,
-          modelId: 'deepseek-v4.1-flash',
+          modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
         },);
         expect(called,).toEqual(['openrouter', 'openrouter',],);
       },
@@ -639,7 +643,7 @@ await describe({
 
         const outcome = await ask({
           client,
-          modelId: 'deepseek-v4.1-flash',
+          modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
         },);
         // Synthetic does not serve this model, so the budgets of the two that
         // do ARE the model's.
@@ -659,14 +663,14 @@ await describe({
         },);
 
         await client.chatText({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: PICTURE_MESSAGES,
           signal: SIGNAL,
         },);
         expect(called,).toEqual(['synthetic',],);
 
         await client.chatText({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: SIGNAL,
         },);
@@ -691,7 +695,7 @@ await describe({
         let thrown: unknown;
         try {
           await client.chatText({
-            modelId: 'hf:openai/gpt-oss-120b',
+            modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
             messages: PICTURE_MESSAGES,
             signal: SIGNAL,
           },);
@@ -799,7 +803,7 @@ await describe({
           budgets,
         },);
         const outcome = await client.chatJson({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -826,7 +830,7 @@ await describe({
           budgets,
         },);
         const outcome = await client.chatJson({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -898,13 +902,13 @@ await describe({
         // fix that re-ask released a slot nothing had taken.
         await Promise.all([
           client.chatJson({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
             messages: MESSAGES,
             signal: SIGNAL,
             validate: isNapSpot,
           },),
           client.chatJson({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
             messages: MESSAGES,
             signal: SIGNAL,
             validate: isNapSpot,
@@ -936,7 +940,7 @@ await describe({
         const outcome = await client.chatJson({
           // Synthetic never served this model and OpenRouter is dry, so the
           // answer falls to `#88`'s invalid-candidate path.
-          modelId: 'glm-5.3',
+          modelId: SEAT_HYPER_ONLY,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -962,7 +966,7 @@ await describe({
         },);
 
         const outcome = await client.chatJson({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -989,7 +993,7 @@ await describe({
           budgets,
         },);
         const outcome = await client.chatJson({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -1012,7 +1016,7 @@ await describe({
           budgets,
         },);
         const outcome = await client.chatJson({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,

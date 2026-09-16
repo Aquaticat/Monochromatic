@@ -19,11 +19,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ChatTextRequest,
   modelPromptDigest,
   promptPayloadStore,
   PromptPayloadStoreError,
   promptUniqueClient,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type ChatTextRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -67,7 +68,7 @@ async function temporaryDirectory(): Promise<TemporaryDirectory> {
  Exact request replayed across separate client instances.
  */
 const REQUEST: ChatTextRequest = {
-  modelId: 'hf:moonshotai/Kimi-K3',
+  modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
   messages: [{ role: 'user', content: 'Read one cat sentence.', },],
   signal: AbortSignal.timeout(5_000,),
 };

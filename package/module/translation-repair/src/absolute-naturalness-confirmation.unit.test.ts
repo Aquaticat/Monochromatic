@@ -12,9 +12,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  confirmAbsoluteNaturalness,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  confirmAbsoluteNaturalness,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -53,7 +54,7 @@ await describe({
         };
         const confirmed = await confirmAbsoluteNaturalness({
           client,
-          modelIds: ['hf:moonshotai/Kimi-K3',],
+          modelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
           subject: {
             sourceText: '猫在睡觉。',
             candidateText: 'The cat is sleeping.',

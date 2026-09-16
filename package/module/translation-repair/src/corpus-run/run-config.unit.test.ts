@@ -36,6 +36,8 @@ import {
   resolveRunsDir,
   RUN_SEATS,
   RunConfigError,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 
@@ -634,12 +636,12 @@ const MESSAGES = [
 /**
  Seat the first provider serves under its own catalog name.
  */
-const SHARED_SEAT = 'hf:openai/gpt-oss-120b';
+const SHARED_SEAT = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
 
 /**
  Seat only the second provider serves: a Charm Hyper endpoint label.
  */
-const SECOND_ONLY_SEAT = 'minimax-m3';
+const SECOND_ONLY_SEAT = SEAT_HYPER_VISION;
 
 /**
  Asks one seat through the client and hands back whatever came of it, the

@@ -31,7 +31,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { gatherAttributionEntries, } from '../../dist/final/node/index.mjs';
+import {
+  gatherAttributionEntries,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+} from '../../dist/final/node/index.mjs';
 
 /**
  Pipeline commit every fixture artifact carries unless its case sets one.
@@ -53,7 +56,7 @@ const SHARED_GENERATION = `sha256-tree-v1:${'f'.repeat(64,)}`;
 /**
  Critic used throughout.
  */
-const TABBY = 'hf:openai/gpt-oss-120b';
+const TABBY = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
 
 /**
  Claim the fixtures attribute.

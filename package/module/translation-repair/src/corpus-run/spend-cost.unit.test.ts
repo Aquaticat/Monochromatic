@@ -30,6 +30,7 @@ import {
   HYPER_PRICE_READ_ON,
   priceTally,
   reportSpend,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   tallySpend,
 } from '../../dist/final/node/index.mjs';
 
@@ -110,7 +111,7 @@ await describe({
           .toEqual({
             total: 32.664,
             priced: 1,
-            subscription: ['hf:moonshotai/Kimi-K3',],
+            subscription: [SEAT_SYNTHETIC_VISION_WITHHELD,],
           },);
       },
     },),

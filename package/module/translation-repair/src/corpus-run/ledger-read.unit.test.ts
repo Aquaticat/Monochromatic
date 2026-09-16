@@ -35,12 +35,16 @@ import {
 
 import {
   LedgerShapeError,
+  parseLedgerRound,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  summariseLedger,
   type LedgerSummary,
   type ModelWork,
-  parseLedgerRound,
   type ReadBallot,
   type ReadRound,
-  summariseLedger,
   workOfModel,
 } from '../../dist/final/node/index.mjs';
 
@@ -54,22 +58,22 @@ const ABSTAINED = 0;
 /**
  Seat writing on its own in every fixture.
  */
-const SOLO = 'hf:moonshotai/Kimi-K3';
+const SOLO = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  First author of the jointly written candidate.
  */
-const JOINT_ONE = 'hf:openai/gpt-oss-120b';
+const JOINT_ONE = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
 
 /**
  Second author of the jointly written candidate.
  */
-const JOINT_TWO = 'hf:Qwen/Qwen3.8-27B';
+const JOINT_TWO = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Seat writing the third candidate, and the one read in full.
  */
-const THIRD = 'hf:zai-org/GLM-5.3-Flash';
+const THIRD = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /**
  Judge with no candidate of its own in any fixture.

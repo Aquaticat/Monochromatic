@@ -9,7 +9,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { mostCarriedReading, } from '../dist/final/node/index.mjs';
+import {
+  mostCarriedReading,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: mostCarriedReading.name,
@@ -19,12 +24,12 @@ await describe({
       fn: async () => {
         const chosen = mostCarriedReading({
           readings: [
-            { modelId: 'hf:moonshotai/Kimi-K3', text: '猫在窗边安静地睡觉，阳光很好。', },
-            { modelId: 'hf:Qwen/Qwen3.8-27B', text: '猫在窗边安静地睡觉，阳光很好，风铃在响。', },
-            { modelId: 'minimax-m3', text: '今天的菜单：鱼、鸡肉和牛奶。', },
+            { modelId: SEAT_SYNTHETIC_VISION_WITHHELD, text: '猫在窗边安静地睡觉，阳光很好。', },
+            { modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, text: '猫在窗边安静地睡觉，阳光很好，风铃在响。', },
+            { modelId: SEAT_HYPER_VISION, text: '今天的菜单：鱼、鸡肉和牛奶。', },
           ],
         },);
-        expect(chosen.modelId,).toBe('hf:Qwen/Qwen3.8-27B',);
+        expect(chosen.modelId,).toBe(SEAT_SYNTHETIC_VISION_NO_OPENROUTER,);
       },
     },),
     it({
@@ -33,11 +38,11 @@ await describe({
       fn: async () => {
         const chosen = mostCarriedReading({
           readings: [
-            { modelId: 'hf:moonshotai/Kimi-K3', text: '手套猫：你好，姐姐。', },
-            { modelId: 'hf:Qwen/Qwen3.8-27B', text: '手套猫：你好，姐姐。我们一起回家。', },
+            { modelId: SEAT_SYNTHETIC_VISION_WITHHELD, text: '手套猫：你好，姐姐。', },
+            { modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, text: '手套猫：你好，姐姐。我们一起回家。', },
           ],
         },);
-        expect(chosen.modelId,).toBe('hf:Qwen/Qwen3.8-27B',);
+        expect(chosen.modelId,).toBe(SEAT_SYNTHETIC_VISION_NO_OPENROUTER,);
       },
     },),
     it({
@@ -45,18 +50,18 @@ await describe({
       fn: async () => {
         const chosen = mostCarriedReading({
           readings: [
-            { modelId: 'hf:moonshotai/Kimi-K3', text: '手套猫：你好，姐姐。', },
-            { modelId: 'hf:Qwen/Qwen3.8-27B', text: '手套猫：你好，姐姐。', },
+            { modelId: SEAT_SYNTHETIC_VISION_WITHHELD, text: '手套猫：你好，姐姐。', },
+            { modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, text: '手套猫：你好，姐姐。', },
           ],
         },);
-        expect(chosen.modelId,).toBe('hf:moonshotai/Kimi-K3',);
+        expect(chosen.modelId,).toBe(SEAT_SYNTHETIC_VISION_WITHHELD,);
       },
     },),
     it({
       name: 'RETURNS a lone transcript as it is',
       fn: async () => {
         const chosen = mostCarriedReading({
-          readings: [{ modelId: 'minimax-m3', text: '一只猫。', },],
+          readings: [{ modelId: SEAT_HYPER_VISION, text: '一只猫。', },],
         },);
         expect(chosen.text,).toBe('一只猫。',);
       },

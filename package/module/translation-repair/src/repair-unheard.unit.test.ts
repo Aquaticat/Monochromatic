@@ -18,6 +18,7 @@ import {
   assertUnheardKeptArchive,
   heardNobodyAbout,
   RepairUnheardError,
+  SEAT_SYNTHETIC_VISION_EDITOR,
   type RepairVoiceRecord,
 } from '../dist/final/node/index.mjs';
 
@@ -47,7 +48,7 @@ await describe({
         expect(heardNobodyAbout({
           outcome: {
             ...SILENT,
-            heardCriticIds: ['hf:zai-org/GLM-5.3-Flash',],
+            heardCriticIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
           },
         },),).toBe(false,);
         expect(heardNobodyAbout({
@@ -111,7 +112,7 @@ await describe({
         assertUnheardKeptArchive({
           outcome: {
             ...SILENT,
-            heardCriticIds: ['hf:zai-org/GLM-5.3-Flash',],
+            heardCriticIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
             repairedText: 'The tabby napped on the windowsill.',
             changed: true,
           },

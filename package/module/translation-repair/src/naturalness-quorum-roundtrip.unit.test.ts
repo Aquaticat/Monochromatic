@@ -6,23 +6,29 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   confirmAbsoluteNaturalness,
   parseNaturalnessReview,
   reviewAbsoluteNaturalness,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_OPENROUTER_ONLY,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /** Asked seats matching the live failure's provider-independent shape. */
 const ROSTER = [
-  'gemma-4-26b-a4b-it',
-  'deepseek-v4.1-flash',
-  'google.gemma-4-31b',
-  'glm-5.3',
-  'google.gemma-4-e2b',
-  'inception/mercury-2.5',
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_ONLY,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_OPENROUTER_ONLY,
 ] as const;
 /** Exact candidate shared by every review and its artifact. */
 const TEXT = 'The cat sleeps on the windowsill.';
@@ -47,7 +53,7 @@ function clientFor({ loseOnChallenge = false, }: { readonly loseOnChallenge?: bo
       const previous = calls.get(request.modelId,) ?? 0;
       calls.set(request.modelId, previous + 1,);
       if (((!loseOnChallenge) || (previous > 0))
-        && ((request.modelId === 'glm-5.3') || (request.modelId === 'inception/mercury-2.5'))) {
+        && ((request.modelId === SEAT_HYPER_ONLY) || (request.modelId === SEAT_OPENROUTER_ONLY))) {
         return { kind: 'schema-mismatch', rawText: '{}', detail: 'Fixture unusable seat', };
       }
       /** Every usable seat independently accepts the candidate. */

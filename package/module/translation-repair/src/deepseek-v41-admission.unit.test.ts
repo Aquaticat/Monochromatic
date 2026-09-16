@@ -8,19 +8,21 @@ import {
   hyperIdFor,
   OPENROUTER_MODELS,
   openRouterIdFor,
-  reachOf,
   ratesFor,
+  reachOf,
   ROSTER_MODEL_IDS,
+  RUN_LATE_JUDGES,
   RUN_READER_MODELS,
   RUN_ROSTER,
-  RUN_LATE_JUDGES,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   RUN_WRITERS,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
 } from '../dist/final/node/index.mjs';
 
 /** New version identity, not an alias for Flash 0731. */
-const MODEL: string = 'deepseek-v4.1-flash';
+const MODEL: string = SEAT_HYPER_OPENROUTER_UNMEASURED;
 
 await describe({
   name: '',
@@ -75,8 +77,8 @@ await describe({
         for (const ids of [RUN_TRANSLATORS, RUN_WRITERS, RUN_READER_MODELS])
           expect(ids.some(id => id === MODEL)).toBe(false);
         // An existing measured reader must not disappear merely because it lacks a judge seat.
-        expect(RUN_READER_MODELS.includes('google.gemma-4-31b')).toBe(true);
-        expect(RUN_ROSTER.includes('google.gemma-4-31b')).toBe(false);
+        expect(RUN_READER_MODELS.includes(SEAT_BEDROCK_ONLY_VISION_UNSEATED)).toBe(true);
+        expect(RUN_ROSTER.includes(SEAT_BEDROCK_ONLY_VISION_UNSEATED)).toBe(false);
       },
     }),
   ],

@@ -20,11 +20,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  tallyResolutionChecks,
   type IssueAuthorship,
   type ResolutionBallot,
   type ResolutionVerdict,
   type RosterModelId,
-  tallyResolutionChecks,
   UNATTRIBUTED_TEXT,
   wroteTextForIssue,
 } from '../dist/final/node/index.mjs';
@@ -43,17 +46,17 @@ const PAW = 'adjudicated/paw';
 /**
  Model cast as the one that wrote the text under check.
  */
-const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
+const AUTHOR: RosterModelId = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /**
  Model that wrote none of it.
  */
-const OUTSIDER: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
+const OUTSIDER: RosterModelId = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Third voice, for cases needing two independents.
  */
-const BYSTANDER: RosterModelId = 'hf:moonshotai/Kimi-K3';
+const BYSTANDER: RosterModelId = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  Authorship naming {@link AUTHOR} as the writer of one issue's text only.
@@ -76,7 +79,7 @@ const WROTE_THE_CHUNK: IssueAuthorship = {
  
  @example
  ```ts
- const entry: CheckerBallot = ['hf:zai-org/GLM-5.3-Flash', { verdicts: {}, findings: [], },];
+ const entry: CheckerBallot = [SEAT_SYNTHETIC_VISION_EDITOR, { verdicts: {}, findings: [], },];
  ```
  */
 type CheckerBallot = readonly [

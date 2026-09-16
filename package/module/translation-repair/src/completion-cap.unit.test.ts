@@ -14,6 +14,7 @@ import {
   COMPLETION_CAP,
   completionCapFor,
   ROSTER_MODEL_IDS,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -34,9 +35,9 @@ await describe({
         /**
          Measured cap for one seat.
          */
-        const cap = COMPLETION_CAP['deepseek-v4.1-flash'];
-        expect(completionCapFor({ modelId: 'deepseek-v4.1-flash', requested: cap - 1, },),).toBe(cap - 1,);
-        expect(completionCapFor({ modelId: 'deepseek-v4.1-flash', requested: cap + 1, },),).toBe(cap,);
+        const cap = COMPLETION_CAP[SEAT_HYPER_OPENROUTER_UNMEASURED];
+        expect(completionCapFor({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, requested: cap - 1, },),).toBe(cap - 1,);
+        expect(completionCapFor({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, requested: cap + 1, },),).toBe(cap,);
       },
     },),
   ],

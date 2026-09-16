@@ -26,6 +26,9 @@ import {
 import {
   consolidateRunShape,
   consolidateSliceKey,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type LaneContestBallot,
 } from '../dist/final/node/index.mjs';
 
@@ -33,15 +36,15 @@ import {
  Roster this run seats.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
 
 /**
  One contest ballot as the judges record them.
  */
 const BALLOT: LaneContestBallot = {
-  modelId: 'hf:zai-org/GLM-5.3-Flash',
+  modelId: SEAT_SYNTHETIC_VISION_EDITOR,
   choice: 'repair',
   unsupported: [],
   unsupportedRaw: [],
@@ -144,7 +147,7 @@ await describe({
          The same run with one more seat.
          */
         const wider = consolidateRunShape({
-          modelIds: [...ROSTER, 'hf:moonshotai/Kimi-K3',] as const,
+          modelIds: [...ROSTER, SEAT_SYNTHETIC_VISION_WITHHELD,] as const,
         },);
 
         expect(consolidateSliceKey(SLICE,),).not.toBe(

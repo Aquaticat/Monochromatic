@@ -29,12 +29,16 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   computeIssueClaimId,
   NON_TRANSLATION_BLOCK_VOTES,
   parseDocument,
   runChunkCriticPhase,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -65,10 +69,10 @@ const DOCUMENTS = {
  Critic roster large enough to reach the block threshold and exceed it.
  */
 const CRITICS = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:moonshotai/Kimi-K3',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ] as const;
 
 /**

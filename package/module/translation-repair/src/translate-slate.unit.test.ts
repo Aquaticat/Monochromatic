@@ -17,12 +17,15 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type Candidate,
   describeSlate,
   hashContent,
   NOT_ON_SLATE,
   positionOf,
   rotateCandidates,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type Candidate,
   type TranslateCandidateValue,
 } from '../dist/final/node/index.mjs';
 
@@ -48,7 +51,7 @@ const CANDIDATES: readonly Candidate<TranslateCandidateValue>[] = [
   {
     producer: {
       kind: 'incumbent',
-      matched: ['hf:Qwen/Qwen3.8-27B',],
+      matched: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
     },
     value: {
       text: INCUMBENT,
@@ -59,7 +62,7 @@ const CANDIDATES: readonly Candidate<TranslateCandidateValue>[] = [
   {
     producer: {
       kind: 'model',
-      modelId: 'hf:zai-org/GLM-5.3-Flash',
+      modelId: SEAT_SYNTHETIC_VISION_EDITOR,
     },
     value: {
       text: FRESH_ONE,
@@ -70,7 +73,7 @@ const CANDIDATES: readonly Candidate<TranslateCandidateValue>[] = [
   {
     producer: {
       kind: 'model',
-      modelId: 'hf:moonshotai/Kimi-K3',
+      modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
     },
     value: {
       text: FRESH_TWO,
@@ -100,11 +103,11 @@ await describe({
         expect(slate[0]?.origin,).toBe('incumbent',);
         expect(slate[0]?.producer,).toEqual({
           kind: 'incumbent',
-          matched: ['hf:Qwen/Qwen3.8-27B',],
+          matched: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
         },);
         expect(slate[2]?.producer,).toEqual({
           kind: 'model',
-          modelId: 'hf:moonshotai/Kimi-K3',
+          modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
         },);
       },
     },),

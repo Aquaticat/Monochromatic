@@ -37,8 +37,10 @@ import {
   discardSliceCache,
   listResumableEntries,
   openSliceCache,
-  stageQuorumUnmetFinding,
   openTranslateSliceCache,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  stageQuorumUnmetFinding,
   TRANSLATE_SLICE_CACHE_VERSION,
 } from '../../dist/final/node/index.mjs';
 
@@ -114,8 +116,8 @@ function catOutcome({ sliceIndex, }: { readonly sliceIndex: number; },) {
     // identically whether the field crossed the wire or was dropped and rebuilt
     // as a default. A named author is the only version of this that can fail.
     authorship: {
-      perIssue: { 'adjudicated/whisker': ['hf:openai/gpt-oss-120b',], },
-      everyIssue: ['hf:zai-org/GLM-5.3-Flash',],
+      perIssue: { 'adjudicated/whisker': [SEAT_SYNTHETIC_TEXT_EVERYWHERE,], },
+      everyIssue: [SEAT_SYNTHETIC_VISION_EDITOR,],
     },
     accuracyPatchSelected: true,
     refined: false,
@@ -125,7 +127,7 @@ function catOutcome({ sliceIndex, }: { readonly sliceIndex: number; },) {
     nonTranslationContradicted: false,
     nonTranslationStanding: false,
     heardCritics: 6,
-    heardCriticIds: ['hf:openai/gpt-oss-120b', 'hf:zai-org/GLM-5.3-Flash',],
+    heardCriticIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_SYNTHETIC_VISION_EDITOR,],
     claimAttributions: [],
     findings: [],
   };

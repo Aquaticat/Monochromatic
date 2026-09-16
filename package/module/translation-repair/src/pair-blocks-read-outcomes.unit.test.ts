@@ -1,13 +1,18 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
+  readBlockPairingOutcomes,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type BlockPair,
   type BlockPairingWire,
-  readBlockPairingOutcomes,
   type RoundOutcome,
 } from '../dist/final/node/index.mjs';
 
-const roster = ['hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:zai-org/GLM-5.3-Flash',] as const;
+const roster = [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_VISION_EDITOR,] as const;
 const l = tagged({ tag: 'pairing-recipe-reading-test', },);
 
 await describe({
@@ -78,7 +83,7 @@ await describe({
     it({
       name: 'keeps the two-voice relation threshold distinct from a larger electorate quorum',
       fn: async () => {
-        const largerRoster = [...roster, 'hf:openai/gpt-oss-120b', 'inception/mercury-2.5',] as const;
+        const largerRoster = [...roster, SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_OPENROUTER_ONLY,] as const;
         const outcomes: readonly RoundOutcome<BlockPairingWire>[] = largerRoster.map((modelId, index) => ({
           modelId,
           voice: { heard: true, value: { pairs: index < 2 ? [{ source: 0, target: 0, },] : [], }, },

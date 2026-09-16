@@ -16,11 +16,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type CandidateProducer,
   collectEnvelopeProposals,
+  hashContent,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type CandidateProducer,
   type EditableEnvelope,
   type EditorCandidate,
-  hashContent,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
@@ -52,7 +54,7 @@ const ENVELOPE: EditableEnvelope = {
  
  @example
  ```ts
- const candidate = proposing({ modelId: 'hf:zai-org/GLM-5.3-Flash', newText: 'The cat sleeps.', },);
+ const candidate = proposing({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, newText: 'The cat sleeps.', },);
  ```
  */
 function proposing(
@@ -112,11 +114,11 @@ await describe({
         const proposals = collectEnvelopeProposals({
           candidates: [
             proposing({
-              modelId: 'hf:zai-org/GLM-5.3-Flash',
+              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               newText: 'The cat sleeps on the windowsill.',
             },),
             proposing({
-              modelId: 'hf:moonshotai/Kimi-K3',
+              modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
               newText: 'The cat sleeps on the windowsill.',
             },),
           ],
@@ -126,8 +128,8 @@ await describe({
         expect(proposals.length,).toBe(1,);
         expect([...creditedTo({ producer: proposals[0]?.producer ?? { kind: 'incumbent', matched: [], }, },),]
           .toSorted(),).toEqual([
-          'hf:moonshotai/Kimi-K3',
-          'hf:zai-org/GLM-5.3-Flash',
+          SEAT_SYNTHETIC_VISION_WITHHELD,
+          SEAT_SYNTHETIC_VISION_EDITOR,
         ],);
       },
     },),
@@ -138,11 +140,11 @@ await describe({
         const proposals = collectEnvelopeProposals({
           candidates: [
             proposing({
-              modelId: 'hf:zai-org/GLM-5.3-Flash',
+              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               newText: 'The cat sleeps on the windowsill.',
             },),
             proposing({
-              modelId: 'hf:moonshotai/Kimi-K3',
+              modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
               newText: 'The cat naps on the windowsill.',
             },),
           ],
@@ -158,8 +160,8 @@ await describe({
         expect(proposals.map(function toProducer(proposal,): readonly string[] {
           return creditedTo({ producer: proposal.producer, },);
         },),).toEqual([
-          ['hf:zai-org/GLM-5.3-Flash',],
-          ['hf:moonshotai/Kimi-K3',],
+          [SEAT_SYNTHETIC_VISION_EDITOR,],
+          [SEAT_SYNTHETIC_VISION_WITHHELD,],
         ],);
       },
     },),
@@ -169,9 +171,9 @@ await describe({
       fn: async () => {
         const proposals = collectEnvelopeProposals({
           candidates: [
-            proposing({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),
+            proposing({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),
             proposing({
-              modelId: 'hf:moonshotai/Kimi-K3',
+              modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
               newText: 'The cat naps on the windowsill.',
             },),
           ],

@@ -34,11 +34,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  coverageControlHolds,
+  parseDocument,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type CoverageControlCase,
-  coverageControlHolds,
-  parseDocument,
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 
@@ -71,9 +74,9 @@ const SOURCE_PASSAGE = '白胡子数着外面的鸟。';
  Roster asked at every round.
  */
 const MODEL_IDS = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;
 
 /**

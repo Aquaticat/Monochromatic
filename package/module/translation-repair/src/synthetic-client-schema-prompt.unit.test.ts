@@ -30,8 +30,9 @@ import {
 
 import {
   createSyntheticClient,
-  type ModelTransport,
   SCHEMA_BLOCK_HEADING,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  type ModelTransport,
   type TransportExchange,
 } from '../dist/final/node/index.mjs';
 
@@ -166,7 +167,7 @@ await describe({
           apiKey: 'test-key',
           transport,
         },).chatText({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
           responseFormat: NAP_FORMAT,
@@ -196,7 +197,7 @@ await describe({
           apiKey: 'test-key',
           transport,
         },).chatText({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);

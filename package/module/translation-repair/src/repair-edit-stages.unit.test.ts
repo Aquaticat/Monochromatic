@@ -25,11 +25,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  runCheckerStage,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type AdjudicatedIssue,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type IssueAuthorship,
-  runCheckerStage,
   type SyntheticClient,
   UNATTRIBUTED_TEXT,
 } from '../dist/final/node/index.mjs';
@@ -53,9 +56,9 @@ const PATCHED_TEXT = 'The cat sleeps on the windowsill.';
  Checker roster, larger than a majority so quorum arithmetic is visible.
  */
 const CHECKERS = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:moonshotai/Kimi-K3',
-  'hf:Qwen/Qwen3.8-27B',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
 
 /**

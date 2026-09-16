@@ -14,14 +14,17 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  EMPTY_INTRODUCED_DEFECT_REPORT,
+  messageText,
+  runIntroducedDefectProbe,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  messageText,
-  EMPTY_INTRODUCED_DEFECT_REPORT,
   type RepairRegion,
-  runIntroducedDefectProbe,
-  type SyntheticClient,
   type RosterModelId,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -33,9 +36,9 @@ const l = tagged({ tag: 'introduced-defect-probe-test', },);
  Probers the fixtures configure.
  */
 const PROBERS: readonly RosterModelId[] = [
-  'hf:Qwen/Qwen3.8-27B',
-  'deepseek-v4.1-flash',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ];
 
 /**
@@ -161,7 +164,7 @@ await describe({
         + 'and only the pair tells them apart',
       fn: async () => {
         const report = await runIntroducedDefectProbe({
-          client: catClient({ silentModelIds: ['hf:openai/gpt-oss-120b',], },),
+          client: catClient({ silentModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,], },),
           proberModelIds: PROBERS,
           sourceText: '猫在睡觉。',
           baselineText: REGION.before,
@@ -216,7 +219,7 @@ await describe({
 
         await runIntroducedDefectProbe({
           client: catClient({ prompts, },),
-          proberModelIds: ['hf:Qwen/Qwen3.8-27B',],
+          proberModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
           sourceText: '猫在睡觉。',
           baselineText: REGION.before,
           regions: [REGION,],
@@ -245,7 +248,7 @@ await describe({
 
         await runIntroducedDefectProbe({
           client: catClient({ prompts, },),
-          proberModelIds: ['hf:Qwen/Qwen3.8-27B',],
+          proberModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
           sourceText: '猫在睡觉。',
           baselineText: REGION.before,
           regions: [REGION,],

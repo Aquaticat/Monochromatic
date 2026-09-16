@@ -15,14 +15,16 @@ import {
 import {
   consolidationFailureEvidence,
   consolidationNeedsRecovery,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type ConsolidationSettlement,
 } from '../dist/final/node/index.mjs';
 
 /** Provider identity that must never enter recovery producer prompt. */
-const MODEL_ID = 'hf:zai-org/GLM-5.3-Flash';
+const MODEL_ID = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /** Judge identity absent from producer provenance but still requiring alias. */
-const JUDGE_ID = 'hf:Qwen/Qwen3.8-27B';
+const JUDGE_ID = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Builds failed settlement with attributed slate and ballots.

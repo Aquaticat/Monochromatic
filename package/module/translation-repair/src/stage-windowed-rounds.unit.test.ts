@@ -14,12 +14,18 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  firstRoundWindow,
+  runWindowedRounds,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  firstRoundWindow,
   type JsonSchemaResponseFormat,
   type RosterModelId,
-  runWindowedRounds,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -27,12 +33,12 @@ import {
  Six-seat bench in roster order.
  */
 const BENCH: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-  'hf:openai/gpt-oss-120b',
-  'minimax-m3',
-  'deepseek-v4.1-flash',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_VISION,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
 ];
 
 /**
@@ -262,7 +268,7 @@ await describe({
         + 'bench once on request, as these stages always did',
       fn: async () => {
         const unreadableRun = await runBench({
-          script: { failsOnce: [], failsAlways: [], unreadable: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b', 'minimax-m3', 'deepseek-v4.1-flash',], },
+          script: { failsOnce: [], failsAlways: [], unreadable: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_HYPER_VISION, SEAT_HYPER_OPENROUTER_UNMEASURED,], },
         },);
         expect(new Set(unreadableRun.asked,).size,).toBe(unreadableRun.asked.length,);
         const wholeRun = await runBench({

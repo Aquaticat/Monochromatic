@@ -32,11 +32,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  type ArmOutcome,
   bothOrders,
+  messageText,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  type ArmOutcome,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  messageText,
   type PatchOutcome,
   type SyntheticClient,
   type WidthProbeInput,
@@ -181,7 +182,7 @@ async function ballotSheets(): Promise<readonly string[]> {
     input: INPUT,
     narrow: armShipping({ text: NARROW_TEXT, },),
     wide: armShipping({ text: WIDE_TEXT, },),
-    judgeModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+    judgeModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
     signal: AbortSignal.timeout(120_000,),
     l,
   },);

@@ -28,6 +28,8 @@ import {
 
 import {
   buildTranslateCandidates,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type HeardVoice,
   type RosterModelId,
   type TranslateReportWire,
@@ -39,8 +41,8 @@ import {
  Two seated translators, in roster order.
  */
 const TRANSLATORS = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const satisfies readonly RosterModelId[];
 
 /**

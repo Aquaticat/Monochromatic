@@ -21,14 +21,16 @@ import {
 import {
   laneContestRunShape,
   laneContestSliceKey,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../dist/final/node/index.mjs';
 
 /**
  Roster every case here asks.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
 
 /**

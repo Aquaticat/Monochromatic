@@ -4,13 +4,15 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   alignDocumentSections,
   createSyntheticClient,
-  type PairedSectionRecord,
   parseDocument,
   prepareBlockPairing,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  type PairedSectionRecord,
   type SliceCache,
 } from '../dist/final/node/index.mjs';
 
-const roster = ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B',] as const;
+const roster = [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,] as const;
 const l = tagged({ tag: 'one-parent-preparation-test', },);
 const complete = '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}';
 type Fixture = {

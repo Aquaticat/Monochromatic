@@ -12,14 +12,18 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  deriveRefinableEnvelopes,
+  parseDocument,
+  ProducerRosterError,
+  runRefineStage,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  deriveRefinableEnvelopes,
-  ProducerRosterError,
-  parseDocument,
-  runRefineStage,
-  type SyntheticClient,
   type RosterModelId,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -48,16 +52,16 @@ const SMOOTH_TEXT =
  Roster judges are drawn from.
  */
 const JUDGES: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-  'deepseek-v4.1-flash',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
 ];
 
 /**
  Refiners proposing rewrites.
  */
-const REFINERS: readonly RosterModelId[] = ['hf:zai-org/GLM-5.3-Flash',];
+const REFINERS: readonly RosterModelId[] = [SEAT_SYNTHETIC_VISION_EDITOR,];
 
 /**
  Envelopes and definitions of the repaired fixture slice.
@@ -224,7 +228,7 @@ await describe({
         },),);
         expect(result.changed,).toBe(true,);
         expect(result.refinedText,).toBe(SMOOTH_TEXT,);
-        expect([...result.contributors,],).toEqual(['hf:zai-org/GLM-5.3-Flash',],);
+        expect([...result.contributors,],).toEqual([SEAT_SYNTHETIC_VISION_EDITOR,],);
       },
     },),
 
@@ -499,12 +503,12 @@ await describe({
             sliceIndex: 0,
             client: scriptedRefiner({ ballot: 1, },),
             refinerModelIds: [
-              'hf:zai-org/GLM-5.3-Flash',
-              'hf:Qwen/Qwen3.8-27B',
+              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
             judgeModelIds: [
-              'hf:zai-org/GLM-5.3-Flash',
-              'hf:Qwen/Qwen3.8-27B',
+              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
             sourceText: SOURCE_TEXT,
             repairedText: REPAIRED_TEXT,

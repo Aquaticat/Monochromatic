@@ -17,14 +17,15 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type BudgetView,
   EveryProviderDryError,
   HOLD_POLL_MS,
   NOBODY_REFUSED,
+  readBudgetsPastHolds,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  shortestHold,
+  type BudgetView,
   type ProviderBudgets,
   type ProviderRecord,
-  readBudgetsPastHolds,
-  shortestHold,
   waitOutHold,
 } from '../dist/final/node/index.mjs';
 
@@ -36,7 +37,7 @@ const SIGNAL = new AbortController().signal;
 /**
  Model named in the log line.
  */
-const MODEL_ID = 'hf:moonshotai/Kimi-K3';
+const MODEL_ID = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  Builds a budget view that reads a scripted sequence of views and reports

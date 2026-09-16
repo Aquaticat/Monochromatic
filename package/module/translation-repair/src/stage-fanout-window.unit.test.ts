@@ -15,21 +15,28 @@ import {
   benchRotation,
   FANOUT_SPARE,
   firstRoundWindow,
-  type RosterModelId,
   rotatedBench,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
  A seven-seat bench in roster order.
  */
 const BENCH: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'minimax-m3',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-  'deepseek-v4.1-flash',
-  'google.gemma-4-31b',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ];
 
 await describe({

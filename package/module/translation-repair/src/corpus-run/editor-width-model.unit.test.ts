@@ -14,9 +14,10 @@ import {
 
 import {
   classifyWidths,
-  type HeadToHeadVerdict,
   readHeadToHead,
+  SEAT_SYNTHETIC_VISION_EDITOR,
   summarizeWidths,
+  type HeadToHeadVerdict,
   type WidthComparison,
   type WidthRow,
 } from '../../dist/final/node/index.mjs';
@@ -75,8 +76,8 @@ function rowWith(
     narrowRepeatAgreed,
     verdict,
     usableBallots: 0,
-    narrowProducers: ['hf:zai-org/GLM-5.3-Flash',],
-    wideProducers: ['hf:zai-org/GLM-5.3-Flash',],
+    narrowProducers: [SEAT_SYNTHETIC_VISION_EDITOR,],
+    wideProducers: [SEAT_SYNTHETIC_VISION_EDITOR,],
   };
 }
 

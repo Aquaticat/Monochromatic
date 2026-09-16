@@ -31,13 +31,15 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  type ChatTextRequest,
   isResumableReading,
+  readImagePair,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type ChatTextRequest,
   type OcrReader,
   type PairedReading,
-  readImagePair,
-  type SyntheticClient,
   type RosterModelId,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -49,15 +51,15 @@ const l = tagged({ tag: 'image-reading-pair-test', },);
  Vision sub-roster, which is exactly these two models.
  */
 const READERS: readonly RosterModelId[] = [
-  'hf:moonshotai/Kimi-K3',
-  'hf:Qwen/Qwen3.8-27B',
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ];
 
 /**
  Model whose context is the larger of the two, so a picture can be sized to
  fit it alone.
  */
-const LARGER_READER: RosterModelId = 'hf:moonshotai/Kimi-K3';
+const LARGER_READER: RosterModelId = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  What one reader transcribed from a picture of a noticeboard.
@@ -253,8 +255,8 @@ await describe({
       fn: async () => {
         const { client, asked, } = scriptedClient({
           byModel: {
-            'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.8-27B': AGREEING_READING,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
           },
         },);
 
@@ -302,8 +304,8 @@ await describe({
       fn: async () => {
         const { client, } = scriptedClient({
           byModel: {
-            'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.8-27B': OTHER_PICTURE,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: OTHER_PICTURE,
           },
         },);
 
@@ -345,7 +347,7 @@ await describe({
         // against a context and predicting nothing, so both now share one
         // ceiling far above anything in the corpus.
         const { client, } = scriptedClient({
-          byModel: { 'hf:moonshotai/Kimi-K3': READING, },
+          byModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: READING, },
         },);
 
         /**
@@ -411,8 +413,8 @@ await describe({
       fn: async () => {
         const { client, asked, } = scriptedClient({
           byModel: {
-            'hf:moonshotai/Kimi-K3': 'There is no visible text in this image. It is a painting of ships at sea.',
-            'hf:Qwen/Qwen3.8-27B': 'I cannot read any text in this image. There are no visible words.',
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'There is no visible text in this image. It is a painting of ships at sea.',
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'I cannot read any text in this image. There are no visible words.',
           },
         },);
 
@@ -446,8 +448,8 @@ await describe({
       fn: async () => {
         const { client, } = scriptedClient({
           byModel: {
-            'hf:moonshotai/Kimi-K3': 'DE581',
-            'hf:Qwen/Qwen3.8-27B': 'D650',
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'DE581',
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'D650',
           },
         },);
 
@@ -478,8 +480,8 @@ await describe({
       fn: async () => {
         const { client, } = scriptedClient({
           byModel: {
-            'hf:moonshotai/Kimi-K3': 'There is no visible text in this image.',
-            'hf:Qwen/Qwen3.8-27B': 'I cannot read the image.',
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'There is no visible text in this image.',
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'I cannot read the image.',
           },
         },);
 
@@ -515,8 +517,8 @@ await describe({
       fn: async () => {
         const { client, } = scriptedClient({
           byModel: {
-            'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.8-27B': 'DE581',
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'DE581',
           },
         },);
 
@@ -550,7 +552,7 @@ await describe({
         + 'however well it reads',
       fn: async () => {
         const { client, asked, } = scriptedClient({
-          byModel: { 'hf:moonshotai/Kimi-K3': READING, },
+          byModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: READING, },
         },);
 
         /**
@@ -583,8 +585,8 @@ await describe({
         + 'downstream requires',
       fn: async () => {
         const { client, asked, } = failingClient({
-          failing: { 'hf:Qwen/Qwen3.8-27B': 'ended a runaway call, reasoning channel repeated itself', },
-          byModel: { 'hf:moonshotai/Kimi-K3': READING, },
+          failing: { [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'ended a runaway call, reasoning channel repeated itself', },
+          byModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: READING, },
         },);
 
         /**
@@ -627,8 +629,8 @@ await describe({
       fn: async () => {
         const { client, } = failingClient({
           failing: {
-            'hf:moonshotai/Kimi-K3': 'HTTP 500 after every retry',
-            'hf:Qwen/Qwen3.8-27B': 'ended a runaway call',
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'HTTP 500 after every retry',
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'ended a runaway call',
           },
           byModel: {},
         },);
@@ -666,8 +668,8 @@ await describe({
       fn: async () => {
         const { client, } = scriptedClient({
           byModel: {
-            'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.8-27B': AGREEING_READING,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
           },
         },);
 
@@ -719,8 +721,8 @@ await describe({
          */
         const { client, } = scriptedClient({
           byModel: {
-            'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.8-27B': AGREEING_READING,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
           },
         },);
 
@@ -790,8 +792,8 @@ await describe({
       fn: async () => {
         const { client, asked, } = scriptedClient({
           byModel: {
-            'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.8-27B': AGREEING_READING,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
           },
         },);
 
@@ -826,8 +828,8 @@ await describe({
       fn: async () => {
         const { client, asked, } = scriptedClient({
           byModel: {
-            'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.8-27B': AGREEING_READING,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
           },
         },);
 

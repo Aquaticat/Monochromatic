@@ -18,9 +18,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type Candidate,
   mergeIdenticalCandidates,
   producerModelIds,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type Candidate,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
@@ -79,11 +83,11 @@ await describe({
         const merged = mergeIdenticalCandidates({
           candidates: [
             from({
-              modelId: 'hf:zai-org/GLM-5.3-Flash',
+              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               text: SHARED,
             },),
             from({
-              modelId: 'hf:Qwen/Qwen3.8-27B',
+              modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
               text: SHARED,
             },),
           ],
@@ -92,11 +96,11 @@ await describe({
         expect(producerModelIds(merged[0]?.producer
           ?? {
             kind: 'model',
-            modelId: 'hf:openai/gpt-oss-120b',
+            modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           },),)
           .toEqual([
-            'hf:zai-org/GLM-5.3-Flash',
-            'hf:Qwen/Qwen3.8-27B',
+            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           ],);
       },
     },),
@@ -109,15 +113,15 @@ await describe({
         const merged = mergeIdenticalCandidates({
           candidates: [
             from({
-              modelId: 'hf:zai-org/GLM-5.3-Flash',
+              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               text: OTHER,
             },),
             from({
-              modelId: 'hf:Qwen/Qwen3.8-27B',
+              modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
               text: SHARED,
             },),
             from({
-              modelId: 'hf:moonshotai/Kimi-K3',
+              modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
               text: OTHER,
             },),
           ],

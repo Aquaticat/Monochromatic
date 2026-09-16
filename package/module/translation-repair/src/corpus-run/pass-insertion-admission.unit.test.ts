@@ -17,25 +17,28 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   decidePassInsertionAdmission,
-  type InsertionAdmission,
   makeInsertionChunk,
   messageText,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  TranslationRepairInterruptedError,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type InsertionAdmission,
   type PreparedDocumentPair,
   type RosterModelId,
   type SyntheticClient,
-  TranslationRepairInterruptedError,
 } from '../../dist/final/node/index.mjs';
 
 /**
  Production-shaped test roster.
  */
 const ROSTER: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ];
 
 /**

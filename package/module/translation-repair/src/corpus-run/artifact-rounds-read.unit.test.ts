@@ -25,17 +25,19 @@ import {
   OffRosterModelError,
   readRepairRounds,
   RoundsNotRecordedError,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../../dist/final/node/index.mjs';
 
 /**
  Model the roster seats today, used wherever a case is not about the roster.
  */
-const SEATED = 'hf:moonshotai/Kimi-K3';
+const SEATED = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  A second seated model, so a slate can carry two producers.
  */
-const ALSO_SEATED = 'hf:Qwen/Qwen3.8-27B';
+const ALSO_SEATED = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Model the roster held until 2026-08-24 and does not now.

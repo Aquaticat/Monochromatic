@@ -15,15 +15,19 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   COMPLETION_TOKEN_CEILING,
   createSyntheticClient,
   MIN_DISPATCH_BUDGET_MS,
   runCriticBenchmark,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SyntheticHttpError,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type SeededErrorSpec,
   type SyntheticClient,
-  SyntheticHttpError,
   type TransportExchange,
   type TransportReply,
 } from '../dist/final/node/index.mjs';
@@ -90,13 +94,13 @@ const CANNED: Readonly<Record<string, {
   readonly kind: 'ok' | 'refusal' | 'mismatch' | 'http';
   readonly json?: string;
 }>> = {
-  'hf:zai-org/GLM-5.3-Flash': {
+  [SEAT_SYNTHETIC_VISION_EDITOR]: {
     kind: 'ok',
     json: HIT_REPORT,
   },
-  'hf:openai/gpt-oss-120b': { kind: 'refusal', },
-  'hf:Qwen/Qwen3.8-27B': { kind: 'mismatch', },
-  'hf:moonshotai/Kimi-K3': { kind: 'http', },
+  [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: { kind: 'refusal', },
+  [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: { kind: 'mismatch', },
+  [SEAT_SYNTHETIC_VISION_WITHHELD]: { kind: 'http', },
 };
 
 /**
@@ -171,10 +175,10 @@ await describe({
             seeds: [BUTTERFLY_SEED,],
           },],
           modelIds: [
-            'hf:zai-org/GLM-5.3-Flash',
-            'hf:openai/gpt-oss-120b',
-            'hf:Qwen/Qwen3.8-27B',
-            'hf:moonshotai/Kimi-K3',
+            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            SEAT_SYNTHETIC_VISION_WITHHELD,
           ],
           signal: new AbortController().signal,
         },);
@@ -183,7 +187,7 @@ await describe({
 
         /** Record of the model that found the seed. */
         const hit = nonNullishOrThrow(result.attempts.find(function byModel(attempt,) {
-          return attempt.modelId === 'hf:zai-org/GLM-5.3-Flash';
+          return attempt.modelId === SEAT_SYNTHETIC_VISION_EDITOR;
         },),);
         expect(hit.outcomeKind,).toBe('ok',);
         expect(hit.resolvedClaimCount,).toBe(1,);
@@ -202,21 +206,21 @@ await describe({
 
         /** Record of the model whose 429s exhausted both attempts. */
         const throttled = nonNullishOrThrow(result.attempts.find(function byModel(attempt,) {
-          return attempt.modelId === 'hf:moonshotai/Kimi-K3';
+          return attempt.modelId === SEAT_SYNTHETIC_VISION_WITHHELD;
         },),);
         // HTTP failures earn the single second attempt too.
         expect(throttled.retriedFirstAttemptDetail,).toBe('HTTP 429',);
 
         /** Scorecard row of the hitting model. */
         const hitRow = nonNullishOrThrow(result.scorecard.rows.find(function byModel(row,) {
-          return row.modelId === 'hf:zai-org/GLM-5.3-Flash';
+          return row.modelId === SEAT_SYNTHETIC_VISION_EDITOR;
         },),);
         expect(hitRow.seededRecall,).toBe(1,);
         expect(hitRow.schemaOkRate,).toBe(1,);
 
         /** Scorecard row of the refusing model. */
         const refusalRow = nonNullishOrThrow(result.scorecard.rows.find(function byModel(row,) {
-          return row.modelId === 'hf:openai/gpt-oss-120b';
+          return row.modelId === SEAT_SYNTHETIC_TEXT_EVERYWHERE;
         },),);
         expect(refusalRow.refusalRate,).toBe(1,);
         expect(refusalRow.seededRecall,).toBe(0,);
@@ -247,7 +251,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
           signal: new AbortController().signal,
         },);
         expect(survived.attempts[0]?.outcomeKind,).toBe('http-error',);
@@ -267,7 +271,7 @@ await describe({
               targetText: TARGET_TEXT,
               seeds: [BUTTERFLY_SEED,],
             },],
-            modelIds: ['hf:zai-org/GLM-5.3-Flash',],
+            modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
             signal: aborted.signal,
           },);
         }
@@ -318,7 +322,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
           signal: new AbortController().signal,
         },);
 
@@ -366,7 +370,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
           signal: new AbortController().signal,
         },);
 
@@ -407,7 +411,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
           signal: new AbortController().signal,
         },);
 
@@ -449,7 +453,7 @@ await describe({
               seeds: [BUTTERFLY_SEED,],
             };
           },),
-          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
           signal: new AbortController().signal,
           runBudgetMs: MIN_DISPATCH_BUDGET_MS + (BUDGET_CALL_DELAY_MS / 2),
         },);
@@ -502,7 +506,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
           signal: new AbortController().signal,
           runBudgetMs: MIN_DISPATCH_BUDGET_MS + (BUDGET_CALL_DELAY_MS / 2),
         },);
@@ -560,7 +564,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
+          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
           signal: new AbortController().signal,
           perCallTimeoutMs: 50,
         },);

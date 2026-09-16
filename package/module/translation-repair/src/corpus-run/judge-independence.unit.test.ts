@@ -21,6 +21,12 @@ import {
 import {
   MIN_JUDGED_CLAIMS,
   renderJudgedRate,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   seatJudges,
 } from '../../dist/final/node/index.mjs';
 
@@ -28,12 +34,12 @@ import {
  Roster the seatings run against, which is the shipped one.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'minimax-m3',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-  'deepseek-v4.1-flash',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ] as const;
 
 await describe({
@@ -48,13 +54,13 @@ await describe({
          Claim raised by one critic.
          */
         const seating = seatJudges({
-          proposers: ['hf:moonshotai/Kimi-K3',],
+          proposers: [SEAT_SYNTHETIC_VISION_WITHHELD,],
           roster: ROSTER,
         },);
 
         expect(seating.judges,).toHaveLength(5,);
-        expect(seating.judges,).not.toContain('hf:moonshotai/Kimi-K3',);
-        expect(seating.barred,).toStrictEqual(['hf:moonshotai/Kimi-K3',],);
+        expect(seating.judges,).not.toContain(SEAT_SYNTHETIC_VISION_WITHHELD,);
+        expect(seating.barred,).toStrictEqual([SEAT_SYNTHETIC_VISION_WITHHELD,],);
         expect(seating.judgeable,).toBe(true,);
       },
     },),
@@ -69,9 +75,9 @@ await describe({
          */
         const seating = seatJudges({
           proposers: [
-            'hf:moonshotai/Kimi-K3',
-            'hf:zai-org/GLM-5.3-Flash',
-            'hf:openai/gpt-oss-120b',
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           ],
           roster: ROSTER,
         },);
@@ -120,13 +126,13 @@ await describe({
       fn: async () => {
         expect(seatJudges({
           proposers: [
-            'hf:openai/gpt-oss-120b',
-            'hf:zai-org/GLM-5.3-Flash',
+            SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+            SEAT_SYNTHETIC_VISION_EDITOR,
           ],
           roster: ROSTER,
         },).barred,).toStrictEqual([
-          'hf:zai-org/GLM-5.3-Flash',
-          'hf:openai/gpt-oss-120b',
+          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
         ],);
       },
     },),

@@ -26,11 +26,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   computeIssueClaimId,
   parseDocument,
   runCriticStage,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -61,8 +63,8 @@ const DOCUMENTS = {
  Two critics, enough to tell independent support from self-repetition.
  */
 const CRITICS = [
-  'hf:openai/gpt-oss-120b',
-  'hf:zai-org/GLM-5.3-Flash',
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
 ] as const;
 
 /**

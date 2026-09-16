@@ -22,6 +22,10 @@ import {
 import {
   contestLaneSlice,
   createSyntheticClient,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   settleArchiveBallots,
 } from '../dist/final/node/index.mjs';
 
@@ -39,9 +43,9 @@ const SUBJECT = {
  Roster of three, the smallest that can produce a two-to-one split.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;
 
 /**
@@ -49,7 +53,7 @@ const ROSTER = [
  */
 const ELIGIBILITY_ROSTER = [
   ...ROSTER,
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ] as const;
 
 /**

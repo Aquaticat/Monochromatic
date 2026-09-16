@@ -25,6 +25,12 @@ import {
   assertCheckerQuorumReachable,
   CheckerIndependenceError,
   CheckerQuorumError,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
@@ -32,18 +38,18 @@ import {
  Writers as production seats them: three models that edit and refine.
  */
 const WRITERS: readonly RosterModelId[] = [
-  'hf:moonshotai/Kimi-K3',
-  'hf:zai-org/GLM-5.3-Flash',
-  'minimax-m3',
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_VISION,
 ];
 
 /**
  Checkers as production seats them, disjoint from every writer.
  */
 const DISJOINT_CHECKERS: readonly RosterModelId[] = [
-  'hf:Qwen/Qwen3.8-27B',
-  'deepseek-v4.1-flash',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ];
 
 /**
@@ -102,7 +108,7 @@ await describe({
             editorModelIds: WRITERS,
             checkerModelIds: [
               ...DISJOINT_CHECKERS,
-              'hf:Qwen/Qwen3.8-27B',
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
             selfCertificationPermitted: true,
           },);
@@ -116,12 +122,12 @@ await describe({
       fn: async () => {
         expect(function refinerChecks() {
           assertCheckerIndependence({
-            editorModelIds: ['hf:moonshotai/Kimi-K3',],
-            refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+            editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
+            refinerModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
             checkerModelIds: [
-              'hf:zai-org/GLM-5.3-Flash',
-              'hf:Qwen/Qwen3.8-27B',
-              'hf:openai/gpt-oss-120b',
+              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              SEAT_SYNTHETIC_TEXT_EVERYWHERE,
             ],
           },);
         },).toThrow(CheckerIndependenceError,);
@@ -160,8 +166,8 @@ await describe({
       fn: async () => {
         expect(function cannotDecide() {
           assertCheckerQuorumReachable({ checkerModelIds: [
-            'hf:Qwen/Qwen3.8-27B',
-            'hf:openai/gpt-oss-120b',
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           ], },);
         },).toThrow(CheckerQuorumError,);
       },
@@ -172,7 +178,7 @@ await describe({
         + 'guard already caught as well as the ones it never did',
       fn: async () => {
         expect(function onlyOne() {
-          assertCheckerQuorumReachable({ checkerModelIds: ['hf:Qwen/Qwen3.8-27B',], },);
+          assertCheckerQuorumReachable({ checkerModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,], },);
         },).toThrow(CheckerQuorumError,);
         expect(function nobody() {
           assertCheckerQuorumReachable({ checkerModelIds: [], },);
@@ -187,8 +193,8 @@ await describe({
       fn: async () => {
         /** Two writers checking their own work, which passes independence under the switch. */
         const twoWriters: readonly RosterModelId[] = [
-          'hf:moonshotai/Kimi-K3',
-          'hf:zai-org/GLM-5.3-Flash',
+          SEAT_SYNTHETIC_VISION_WITHHELD,
+          SEAT_SYNTHETIC_VISION_EDITOR,
         ];
         assertCheckerIndependence({
           editorModelIds: WRITERS,

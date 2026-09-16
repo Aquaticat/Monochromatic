@@ -19,9 +19,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ConsolidateSubject,
   createSyntheticClient,
   produceConsolidations,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  type ConsolidateSubject,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -33,7 +34,7 @@ const l = tagged({ tag: 'consolidate-produce-test', },);
 /**
  One producer.
  */
-const ROSTER = ['hf:zai-org/GLM-5.3-Flash',] as const;
+const ROSTER = [SEAT_SYNTHETIC_VISION_EDITOR,] as const;
 
 /**
  Two-line page, the structural standard a line-structured slice is held to.

@@ -27,19 +27,21 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type AttributionEntry,
   buildAttributionReport,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  type AttributionEntry,
 } from '../../dist/final/node/index.mjs';
 
 /**
  Critic that raises most of the claims.
  */
-const TABBY = 'hf:openai/gpt-oss-120b';
+const TABBY = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
 
 /**
  Critic that is heard everywhere and rarely raises anything.
  */
-const QUIET = 'hf:Qwen/Qwen3.8-27B';
+const QUIET = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Claim both critics can propose.

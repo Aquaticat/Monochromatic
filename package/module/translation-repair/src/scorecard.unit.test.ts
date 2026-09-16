@@ -23,19 +23,21 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type CriticAttemptRecord,
   computeScorecard,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type CriticAttemptRecord,
 } from '../dist/final/node/index.mjs';
 
 /**
  One model of the roster, used wherever a row's identity does not matter.
  */
-const MODEL_A = 'hf:zai-org/GLM-5.3-Flash';
+const MODEL_A = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /**
  Second model, for ensemble cases where two models see the same entry.
  */
-const MODEL_B = 'hf:moonshotai/Kimi-K3';
+const MODEL_B = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  Builds a graded attempt, defaulting everything a case does not care about.

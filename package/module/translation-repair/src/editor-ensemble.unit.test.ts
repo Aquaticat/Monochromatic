@@ -17,17 +17,20 @@ import {
   assertJudgeableEditorRoster,
   buildCandidateSelectMessages,
   buildChunkCandidates,
-  type CandidateProducer,
   CheckerIndependenceError,
   describeProducer,
-  type EditableEnvelope,
-  type EditorCandidate,
-  ProducerRosterError,
   hashContent,
   mergeProducers,
-  type PatchOutcome,
   pickFallbackCandidate,
   producerModelIds,
+  ProducerRosterError,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type CandidateProducer,
+  type EditableEnvelope,
+  type EditorCandidate,
+  type PatchOutcome,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
@@ -61,7 +64,7 @@ const ENVELOPE: EditableEnvelope = {
  
  @example
  ```ts
- const candidate = candidateFor({ modelId: 'hf:zai-org/GLM-5.3-Flash', newText, },);
+ const candidate = candidateFor({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, newText, },);
  ```
  */
 function candidateFor(
@@ -110,17 +113,17 @@ await describe({
         const both = mergeProducers({
           left: {
             kind: 'model',
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           },
           right: {
             kind: 'model',
-            modelId: 'hf:Qwen/Qwen3.8-27B',
+            modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           },
         },);
         expect(both.kind,).toBe('composite',);
         expect([...producerModelIds(both,),],).toEqual([
-          'hf:zai-org/GLM-5.3-Flash',
-          'hf:Qwen/Qwen3.8-27B',
+          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
         ],);
 
         // One model named twice is still one stakeholder, not a pair.
@@ -128,34 +131,34 @@ await describe({
         const same = mergeProducers({
           left: {
             kind: 'model',
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           },
           right: {
             kind: 'model',
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           },
         },);
         expect(same.kind,).toBe('model',);
-        expect([...producerModelIds(same,),],).toEqual(['hf:zai-org/GLM-5.3-Flash',],);
+        expect([...producerModelIds(same,),],).toEqual([SEAT_SYNTHETIC_VISION_EDITOR,],);
 
         /** Composite absorbing a model already among its contributors. */
         const widened = mergeProducers({
           left: {
             kind: 'composite',
             contributors: [
-              'hf:zai-org/GLM-5.3-Flash',
-              'hf:Qwen/Qwen3.8-27B',
+              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
           },
           right: {
             kind: 'model',
-            modelId: 'hf:moonshotai/Kimi-K3',
+            modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
           },
         },);
         expect([...producerModelIds(widened,),],).toEqual([
-          'hf:zai-org/GLM-5.3-Flash',
-          'hf:Qwen/Qwen3.8-27B',
-          'hf:moonshotai/Kimi-K3',
+          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          SEAT_SYNTHETIC_VISION_WITHHELD,
         ],);
       },
     },),
@@ -167,8 +170,8 @@ await describe({
         const producer: CandidateProducer = {
           kind: 'composite',
           contributors: [
-            'hf:zai-org/GLM-5.3-Flash',
-            'hf:Qwen/Qwen3.8-27B',
+            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           ],
         };
         expect(describeProducer(producer,),).toBe(
@@ -177,9 +180,9 @@ await describe({
         expect(
           describeProducer({
             kind: 'model',
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           },),
-        ).toBe('hf:zai-org/GLM-5.3-Flash',);
+        ).toBe(SEAT_SYNTHETIC_VISION_EDITOR,);
       },
     },),
   ],
@@ -195,11 +198,11 @@ await describe({
         const set = buildChunkCandidates({
           candidates: [
             candidateFor({
-              modelId: 'hf:zai-org/GLM-5.3-Flash',
+              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               newText: 'The cat chases butterflies.',
             },),
             candidateFor({
-              modelId: 'hf:Qwen/Qwen3.8-27B',
+              modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
               newText: 'The cat loves chasing butterflies.',
             },),
           ],
@@ -219,7 +222,7 @@ await describe({
         const set = buildChunkCandidates({
           candidates: [
             candidateFor({
-              modelId: 'hf:zai-org/GLM-5.3-Flash',
+              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               newText: 'The cat chases butterflies.',
             },),
           ],
@@ -263,12 +266,12 @@ await describe({
         const set = buildChunkCandidates({
           candidates: [
             candidateFor({
-              modelId: 'hf:zai-org/GLM-5.3-Flash',
+              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               newText: agreed,
             },),
           ],
           composite,
-          contributors: ['hf:Qwen/Qwen3.8-27B',],
+          contributors: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
         },);
         expect(set.candidates.length,).toBe(1,);
         expect(set.collapsed,).toBe(1,);
@@ -287,8 +290,8 @@ await describe({
         // Both the editor whose candidate survived and the composite's
         // contributor must stay barred; dropping either lets that model judge
         // text it wrote.
-        expect(stakes.has('hf:zai-org/GLM-5.3-Flash',),).toBe(true,);
-        expect(stakes.has('hf:Qwen/Qwen3.8-27B',),).toBe(true,);
+        expect(stakes.has(SEAT_SYNTHETIC_VISION_EDITOR,),).toBe(true,);
+        expect(stakes.has(SEAT_SYNTHETIC_VISION_NO_OPENROUTER,),).toBe(true,);
       },
     },),
   ],
@@ -302,13 +305,13 @@ await describe({
       fn: async () => {
         /** Editor landing nothing, because its replacement was a no-op. */
         const idle = candidateFor({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           newText: ENVELOPE.baseText,
         },);
 
         /** Editor landing a real replacement. */
         const working = candidateFor({
-          modelId: 'hf:Qwen/Qwen3.8-27B',
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           newText: 'The cat chases butterflies.',
         },);
         expect(idle.patch
@@ -330,7 +333,7 @@ await describe({
         // The identity is the point of returning a candidate rather than a
         // patch: this exact path ships text after the judges decline, and the
         // checker that wrote it must be discounted for judging its own work.
-        expect(chosen.modelId,).toBe('hf:Qwen/Qwen3.8-27B',);
+        expect(chosen.modelId,).toBe(SEAT_SYNTHETIC_VISION_NO_OPENROUTER,);
       },
     },),
 
@@ -339,13 +342,13 @@ await describe({
       fn: async () => {
         /** Two editors each landing exactly one operation. */
         const first = candidateFor({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           newText: 'The cat chases butterflies.',
         },);
 
         /** Later editor in roster order. */
         const second = candidateFor({
-          modelId: 'hf:Qwen/Qwen3.8-27B',
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           newText: 'The cat loves chasing butterflies.',
         },);
         expect(
@@ -380,11 +383,11 @@ await describe({
       name: 'passes a roster with enough disinterested judges',
       fn: async () => {
         assertJudgeableEditorRoster({
-          editorModelIds: ['hf:moonshotai/Kimi-K3',],
+          editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
           judgeModelIds: [
-            'hf:moonshotai/Kimi-K3',
-            'hf:zai-org/GLM-5.3-Flash',
-            'hf:Qwen/Qwen3.8-27B',
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           ],
         },);
       },
@@ -399,13 +402,13 @@ await describe({
         expect(function twoEditorsOneOutsider() {
           assertJudgeableEditorRoster({
             editorModelIds: [
-              'hf:moonshotai/Kimi-K3',
-              'hf:zai-org/GLM-5.3-Flash',
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+              SEAT_SYNTHETIC_VISION_EDITOR,
             ],
             judgeModelIds: [
-              'hf:moonshotai/Kimi-K3',
-              'hf:zai-org/GLM-5.3-Flash',
-              'hf:Qwen/Qwen3.8-27B',
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
           },);
         },).not.toThrow();
@@ -419,20 +422,20 @@ await describe({
       fn: async () => {
         expect(function everyJudgeEdits() {
           assertJudgeableEditorRoster({
-            editorModelIds: ['hf:moonshotai/Kimi-K3',],
-            judgeModelIds: ['hf:moonshotai/Kimi-K3',],
+            editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
+            judgeModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
           },);
         },).toThrow(ProducerRosterError,);
 
         expect(function twoEditorsJudgingThemselves() {
           assertJudgeableEditorRoster({
             editorModelIds: [
-              'hf:moonshotai/Kimi-K3',
-              'hf:zai-org/GLM-5.3-Flash',
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+              SEAT_SYNTHETIC_VISION_EDITOR,
             ],
             judgeModelIds: [
-              'hf:moonshotai/Kimi-K3',
-              'hf:zai-org/GLM-5.3-Flash',
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+              SEAT_SYNTHETIC_VISION_EDITOR,
             ],
           },);
         },).toThrow(ProducerRosterError,);
@@ -446,12 +449,12 @@ await describe({
         expect(function repeatedEditor() {
           assertJudgeableEditorRoster({
             editorModelIds: [
-              'hf:moonshotai/Kimi-K3',
-              'hf:moonshotai/Kimi-K3',
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+              SEAT_SYNTHETIC_VISION_WITHHELD,
             ],
             judgeModelIds: [
-              'hf:zai-org/GLM-5.3-Flash',
-              'hf:Qwen/Qwen3.8-27B',
+              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
           },);
         },).toThrow(ProducerRosterError,);
@@ -460,8 +463,8 @@ await describe({
           assertJudgeableEditorRoster({
             editorModelIds: [],
             judgeModelIds: [
-              'hf:zai-org/GLM-5.3-Flash',
-              'hf:Qwen/Qwen3.8-27B',
+              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
           },);
         },).toThrow(ProducerRosterError,);
@@ -477,19 +480,19 @@ await describe({
       name: 'passes disjoint rosters and refuses a checker that also edits',
       fn: async () => {
         assertCheckerIndependence({
-          editorModelIds: ['hf:moonshotai/Kimi-K3',],
+          editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
           checkerModelIds: [
-            'hf:zai-org/GLM-5.3-Flash',
-            'hf:Qwen/Qwen3.8-27B',
+            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           ],
         },);
 
         expect(function checksOwnWork() {
           assertCheckerIndependence({
-            editorModelIds: ['hf:moonshotai/Kimi-K3',],
+            editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
             checkerModelIds: [
-              'hf:zai-org/GLM-5.3-Flash',
-              'hf:moonshotai/Kimi-K3',
+              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_WITHHELD,
             ],
           },);
         },).toThrow(CheckerIndependenceError,);

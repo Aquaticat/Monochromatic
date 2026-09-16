@@ -18,12 +18,15 @@ import {
 
 import {
   benchesOf,
-  type BudgetView,
   judgeSeatsFor,
   phaseBenches,
   reachableSeats,
   RUN_MODELS,
   RUN_TRANSLATORS,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  type BudgetView,
   unreachableWritingBenches,
   WRITING_BENCH_FLOOR,
   WRITING_BENCHES,
@@ -93,8 +96,8 @@ await describe({
           dry: BEDROCK_ALONE,
         },);
         expect(translatorsReachable,).toEqual([
-          'gemma-4-26b-a4b-it',
-          'google.gemma-4-e2b',
+          SEAT_HYPER_TEXT_BEDROCK,
+          SEAT_BEDROCK_ONLY_TEXT,
         ],);
         expect(reachableSeats({
           seats: RUN_MODELS.editorModelIds,
@@ -117,7 +120,7 @@ await describe({
          The eighth pass's translators bench, the roster of that day: one Bedrock seat.
          */
         const thatDay = RUN_TRANSLATORS.filter(function seatedBefore(modelId,): boolean {
-          return modelId !== 'google.gemma-4-e2b';
+          return modelId !== SEAT_BEDROCK_ONLY_TEXT;
         },);
         expect(unreachableWritingBenches({
           benches: {
@@ -146,8 +149,8 @@ await describe({
          The translators bench with two Bedrock-served seats.
          */
         const pair = [
-          'gemma-4-26b-a4b-it',
-          'hf:openai/gpt-oss-120b',
+          SEAT_HYPER_TEXT_BEDROCK,
+          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
         ] as const;
         expect(unreachableWritingBenches({
           benches: {

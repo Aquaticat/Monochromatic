@@ -11,12 +11,16 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { createSlotLedger, } from '../dist/final/node/index.mjs';
+import {
+  createSlotLedger,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from '../dist/final/node/index.mjs';
 
 /**
  Model the cases count slots for.
  */
-const KIMI = 'hf:moonshotai/Kimi-K3';
+const KIMI = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  One Synthetic slot per model, no ceiling elsewhere.
@@ -79,7 +83,7 @@ await describe({
           provider: 'synthetic',
           modelId: KIMI,
         },);
-        expect(ledger.saturated({ modelId: 'hf:Qwen/Qwen3.8-27B', },).synthetic,).toBe(false,);
+        expect(ledger.saturated({ modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, },).synthetic,).toBe(false,);
         {
           using held = ledger.held({
             provider: 'synthetic',

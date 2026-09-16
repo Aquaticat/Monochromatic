@@ -21,13 +21,16 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  contestDocumentLanes,
+  createSyntheticClient,
+  persistLaneContestOutcome,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ArtifactComparisonRow,
   type ArtifactContestSlice,
   type ArtifactDeliveryRow,
-  contestDocumentLanes,
-  createSyntheticClient,
   type LaneContestOutcome,
-  persistLaneContestOutcome,
   type ProjectedLanes,
   type SliceCache,
   type SyntheticClient,
@@ -37,9 +40,9 @@ import {
  Roster of three, the smallest that can produce a two-to-one split.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;
 
 /**

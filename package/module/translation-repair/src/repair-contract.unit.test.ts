@@ -36,35 +36,40 @@ import {
 import {
   assertJudgeableEditorRoster,
   assertJudgeableProducerRoster,
-  ProducerRosterError,
   FULL_VOTE_WEIGHT,
   MIN_SELECTION_WEIGHT,
+  ProducerRosterError,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../dist/final/node/index.mjs';
 
 /**
  Model that produces candidates in most cases below.
  */
-const PRODUCER_ONE = 'hf:zai-org/GLM-5.3-Flash';
+const PRODUCER_ONE = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /**
  Second producer, for repeat and overlap cases.
  */
-const PRODUCER_TWO = 'hf:moonshotai/Kimi-K3';
+const PRODUCER_TWO = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  Judge with no stake in either producer's output.
  */
-const JUDGE_ONE = 'hf:Qwen/Qwen3.8-27B';
+const JUDGE_ONE = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Second disinterested judge, so a roster can meet the vote minimum.
  */
-const JUDGE_TWO = 'hf:openai/gpt-oss-120b';
+const JUDGE_TWO = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
 
 /**
  Third disinterested judge, for rosters that must exceed the minimum.
  */
-const JUDGE_THREE = 'minimax-m3';
+const JUDGE_THREE = SEAT_HYPER_VISION;
 
 await describe({
   name: assertJudgeableProducerRoster.name,

@@ -20,10 +20,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   judgedAuthors,
-  type RosterModelId,
-  type SelectionRound,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   sliceStandingLines,
   standingReportLines,
+  type RosterModelId,
+  type SelectionRound,
 } from '../../dist/final/node/index.mjs';
 
 //region Fixtures
@@ -31,22 +35,22 @@ import {
 /**
  Model whose candidate a judge voted for, so it earns a row.
  */
-const WRITER: RosterModelId = 'hf:moonshotai/Kimi-K3';
+const WRITER: RosterModelId = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  Model that cast the ballot and, as a rewriter, was heard proposing nothing.
  */
-const JUDGE: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
+const JUDGE: RosterModelId = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Model no answer came from.
  */
-const IDLE: RosterModelId = 'minimax-m3';
+const IDLE: RosterModelId = SEAT_HYPER_VISION;
 
 /**
  Second contributor of a composite candidate.
  */
-const PARTNER: RosterModelId = 'gemma-4-26b-a4b-it';
+const PARTNER: RosterModelId = SEAT_HYPER_TEXT_BEDROCK;
 
 /**
  Seats the run filled, in the order the report should preserve.

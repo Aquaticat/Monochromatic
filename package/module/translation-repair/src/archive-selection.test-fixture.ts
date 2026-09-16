@@ -5,6 +5,18 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
+  type RosterModelId,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -31,19 +43,19 @@ export const ARCHIVE_TEST_PAGE: string = `Earlier archive context.\n\n${ARCHIVE_
 /**
  Eleven seats require six schema-valid review voices.
  */
-export const ARCHIVE_TEST_ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-  'hf:openai/gpt-oss-120b',
-  'minimax-m3',
-  'gemma-4-26b-a4b-it',
-  'deepseek-v4.1-flash',
-  'google.gemma-4-31b',
-  'glm-5.3',
-  'google.gemma-4-e2b',
-  'inception/mercury-2.5',
-] as const;
+export const ARCHIVE_TEST_ROSTER: readonly RosterModelId[] = [
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_VISION,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_ONLY,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_OPENROUTER_ONLY,
+];
 
 /**
  Review shapes vary evidence, never the configured quorum.

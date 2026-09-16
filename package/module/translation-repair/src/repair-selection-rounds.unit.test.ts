@@ -19,12 +19,17 @@ import {
   EDITOR_ROUND_STAGES,
   producerStandings,
   REFINER_ROUND_STAGES,
-  type RepairJudgedRound,
-  type RepairSlateEntry,
-  type RosterModelId,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   selectionRoundOf,
   selectionRoundsFor,
   SlatePositionsError,
+  type RepairJudgedRound,
+  type RepairSlateEntry,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -38,7 +43,7 @@ import {
  
  @example
  ```ts
- const entry = entryAt({ index: 1, modelId: 'hf:openai/gpt-oss-120b', },);
+ const entry = entryAt({ index: 1, modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },);
  ```
  */
 function entryAt(
@@ -72,16 +77,16 @@ const SCRAMBLED_ROUND: RepairJudgedRound = {
   slate: [
     entryAt({
       index: 2,
-      modelId: 'hf:Qwen/Qwen3.8-27B',
+      modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
     },),
     entryAt({
       index: 1,
-      modelId: 'hf:moonshotai/Kimi-K3',
+      modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
     },),
   ],
   ballots: [
     {
-      modelId: 'hf:openai/gpt-oss-120b',
+      modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
       best: 1,
       reason: 'reads better',
       weight: 1,
@@ -113,11 +118,11 @@ await describe({
         // Position 1 was Kimi, so it must land first however the slate was stored.
         expect(projected.producers[0],).toEqual({
           kind: 'model',
-          modelId: 'hf:moonshotai/Kimi-K3',
+          modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
         },);
         expect(projected.producers[1],).toEqual({
           kind: 'model',
-          modelId: 'hf:Qwen/Qwen3.8-27B',
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
         },);
       },
     },),
@@ -142,11 +147,11 @@ await describe({
           slate: [
             entryAt({
               index: 1,
-              modelId: 'hf:moonshotai/Kimi-K3',
+              modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
             },),
             entryAt({
               index: 3,
-              modelId: 'hf:Qwen/Qwen3.8-27B',
+              modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             },),
           ],
         };
@@ -244,9 +249,9 @@ await describe({
           {
             ...SCRAMBLED_ROUND,
             ballots: [
-              'hf:openai/gpt-oss-120b',
-              'hf:zai-org/GLM-5.3-Flash',
-              'deepseek-v4.1-flash',
+              SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_UNMEASURED,
             ].map(function ballotFor(modelId,) {
               return {
                 modelId: modelId as RosterModelId,
@@ -273,7 +278,7 @@ await describe({
          Kimi's standing, which wrote the candidate all three named.
          */
         const kimi = standings.find(function isKimi(standing,): boolean {
-          return standing.modelId === 'hf:moonshotai/Kimi-K3';
+          return standing.modelId === SEAT_SYNTHETIC_VISION_WITHHELD;
         },);
 
         expect(kimi?.disinterestedVotes,).toBe(3,);
@@ -284,7 +289,7 @@ await describe({
          Qwen's standing, which wrote the candidate none of them named.
          */
         const qwen = standings.find(function isQwen(standing,): boolean {
-          return standing.modelId === 'hf:Qwen/Qwen3.8-27B';
+          return standing.modelId === SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
         },);
 
         expect(qwen?.disinterestedVotes,).toBe(0,);

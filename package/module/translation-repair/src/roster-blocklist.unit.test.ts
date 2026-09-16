@@ -17,6 +17,11 @@ import {
   HYPER_MODELS,
   ROSTER_BLOCKLIST,
   ROSTER_MODEL_IDS,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   SYNTHETIC_MODELS,
 } from '../dist/final/node/index.mjs';
 
@@ -124,14 +129,14 @@ await describe({
         // and qwen3.8-2.4t-a95b stay blocklist-eligible even though the
         // 2026-09-01 conformance probe culled them: non-conformance is a
         // catalog fact, never an owner instruction.
-        expect(blocklistVerdictFor({ id: 'deepseek-v4.1-flash', },),).toEqual({ blocked: false, },);
+        expect(blocklistVerdictFor({ id: SEAT_HYPER_OPENROUTER_UNMEASURED, },),).toEqual({ blocked: false, },);
         expect(blocklistVerdictFor({ id: 'qwen3.8-flash', },),).toEqual({ blocked: false, },);
         expect(blocklistVerdictFor({ id: 'qwen3.8-2.4t-a95b', },),).toEqual({ blocked: false, },);
-        expect(blocklistVerdictFor({ id: 'hf:Qwen/Qwen3.8-27B', },),).toEqual({ blocked: false, },);
-        expect(blocklistVerdictFor({ id: 'glm-5.3', },),).toEqual({ blocked: false, },);
+        expect(blocklistVerdictFor({ id: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, },),).toEqual({ blocked: false, },);
+        expect(blocklistVerdictFor({ id: SEAT_HYPER_ONLY, },),).toEqual({ blocked: false, },);
         expect(blocklistVerdictFor({ id: 'glm-5.3-flash', },),).toEqual({ blocked: false, },);
-        expect(blocklistVerdictFor({ id: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({ blocked: false, },);
-        expect(blocklistVerdictFor({ id: 'hf:moonshotai/Kimi-K3', },),).toEqual({ blocked: false, },);
+        expect(blocklistVerdictFor({ id: SEAT_SYNTHETIC_VISION_EDITOR, },),).toEqual({ blocked: false, },);
+        expect(blocklistVerdictFor({ id: SEAT_SYNTHETIC_VISION_WITHHELD, },),).toEqual({ blocked: false, },);
         expect(blocklistVerdictFor({ id: 'kimi-k2.8', },),).toEqual({ blocked: false, },);
       },
     },),

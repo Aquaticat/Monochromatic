@@ -18,7 +18,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type BudgetView,
   judgeSeatsFor,
   phaseBenches,
   reachableSeats,
@@ -26,7 +25,11 @@ import {
   RUN_MODELS,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   shortBenches,
+  type BudgetView,
 } from '../../dist/final/node/index.mjs';
 
 //region Bench quorum tests
@@ -95,9 +98,9 @@ await describe({
           dry: BEDROCK_ALONE,
         },);
         expect(alone.length,).toBeLessThan(RUN_WIDE_SEATS.length,);
-        expect(alone.includes('gemma-4-26b-a4b-it',),).toBe(true,);
-        expect(alone.includes('hf:openai/gpt-oss-120b',),).toBe(true,);
-        expect(alone.includes('glm-5.3',),).toBe(false,);
+        expect(alone.includes(SEAT_HYPER_TEXT_BEDROCK,),).toBe(true,);
+        expect(alone.includes(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(true,);
+        expect(alone.includes(SEAT_HYPER_ONLY,),).toBe(false,);
       },
     },),
   ],

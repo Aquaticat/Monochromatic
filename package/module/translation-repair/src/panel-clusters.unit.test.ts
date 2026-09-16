@@ -2,17 +2,23 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
+  buildAdjudicationMessages,
+  runPanelStage,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ClaimCluster,
-  buildAdjudicationMessages,
-  runPanelStage,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /** Fixture electorate remains unchanged across packets. */
-const MODELS: readonly RosterModelId[] = ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b', 'minimax-m3', 'gemma-4-26b-a4b-it',];
+const MODELS: readonly RosterModelId[] = [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_HYPER_VISION, SEAT_HYPER_TEXT_BEDROCK,];
 /** Distinct clusters include a merge proposal whose members must stay together. */
 const CLUSTERS: readonly ClaimCluster[] = [
   { clusterId: 'first', position: 0, members: [

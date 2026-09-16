@@ -50,6 +50,9 @@ import {
   RUN_SEATS,
   RunConfigError,
   RunJsonUnreadableError,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 
@@ -365,9 +368,9 @@ await describe({
          Tally of a run in which one seat answered and one threw every time.
          */
         const seats = createSeatTally();
-        seats.record({ modelId: 'hf:openai/gpt-oss-120b', outcome: 'usable', },);
-        seats.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'threw', },);
-        seats.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'threw', },);
+        seats.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+        seats.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+        seats.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
 
         process.exitCode = 0;
         await reportingRefusals({
@@ -408,7 +411,7 @@ await describe({
          Tally with one seat that answered, unusably, every time.
          */
         const seats = createSeatTally();
-        seats.record({ modelId: 'minimax-m3', outcome: 'unusable', },);
+        seats.record({ modelId: SEAT_HYPER_VISION, outcome: 'unusable', },);
 
         await reportingRefusals({
           what: 'editor-calibrate',
@@ -432,7 +435,7 @@ await describe({
         using printed = collectingErrors({ lines: [], },);
         using _fresh = withFreshRunSeats();
 
-        RUN_SEATS.record({ modelId: 'minimax-m3', outcome: 'usable', },);
+        RUN_SEATS.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
 
         process.exitCode = 0;
         await reportingRefusals({

@@ -18,14 +18,20 @@ import {
 
 import {
   attemptTranslateSlice,
-  type ChunkPair,
   isInsertionChunk,
   makeInsertionChunk,
   prepareDocumentPair,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  TranslationRepairInterruptedError,
+  type ChunkPair,
   type PreparedDocumentPair,
   type SyntheticClient,
   type TranslateModels,
-  TranslationRepairInterruptedError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -67,17 +73,17 @@ const MISSING_SOURCE = '## 第三节\n\n猫猫也喜欢晒太阳。';
  */
 const MODELS: TranslateModels = {
   translatorModelIds: [
-    'hf:moonshotai/Kimi-K3',
-    'hf:zai-org/GLM-5.3-Flash',
-    'minimax-m3',
+    SEAT_SYNTHETIC_VISION_WITHHELD,
+    SEAT_SYNTHETIC_VISION_EDITOR,
+    SEAT_HYPER_VISION,
   ],
   judgeModelIds: [
-    'hf:moonshotai/Kimi-K3',
-    'hf:zai-org/GLM-5.3-Flash',
-    'minimax-m3',
-    'hf:Qwen/Qwen3.8-27B',
-    'deepseek-v4.1-flash',
-    'hf:openai/gpt-oss-120b',
+    SEAT_SYNTHETIC_VISION_WITHHELD,
+    SEAT_SYNTHETIC_VISION_EDITOR,
+    SEAT_HYPER_VISION,
+    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+    SEAT_HYPER_OPENROUTER_UNMEASURED,
+    SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   ],
 };
 

@@ -29,6 +29,15 @@ import {
   reachOf,
   readsImages,
   ROSTER_MODEL_IDS,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   syntheticEntryFor,
   syntheticServes,
   visionReachOf,
@@ -129,7 +138,7 @@ await describe({
     it({
       name: 'REPLACES GLM-5.2 rather than double-seating predecessor and successor',
       fn: async () => {
-        expect(ROSTER_MODEL_IDS.includes('hf:zai-org/GLM-5.3-Flash',),).toBe(true,);
+        expect(ROSTER_MODEL_IDS.includes(SEAT_SYNTHETIC_VISION_EDITOR,),).toBe(true,);
         expect(ROSTER_MODEL_IDS.includes('hf:zai-org/GLM-5.2' as never,),).toBe(false,);
         expect(ROSTER_MODEL_IDS.includes('glm-5.2' as never,),).toBe(false,);
       },
@@ -167,7 +176,7 @@ await describe({
       name: 'TRANSLATES a shared model into the spelling the second provider uses, which is the '
         + 'whole reason a roster id and a wire id are different things',
       fn: async () => {
-        expect(hyperIdFor({ modelId: 'hf:moonshotai/Kimi-K3', },),).toEqual({
+        expect(hyperIdFor({ modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },),).toEqual({
           served: true,
           id: 'kimi-k3',
         },);
@@ -178,9 +187,9 @@ await describe({
       name: 'ANSWERS a Hyper-only model with its own name, since there is no other spelling to '
         + 'choose and so no translation to get wrong',
       fn: async () => {
-        expect(hyperIdFor({ modelId: 'minimax-m3', },),).toEqual({
+        expect(hyperIdFor({ modelId: SEAT_HYPER_VISION, },),).toEqual({
           served: true,
-          id: 'minimax-m3',
+          id: SEAT_HYPER_VISION,
         },);
       },
     },),
@@ -191,7 +200,7 @@ await describe({
         // Unserved on Hyper until 2026-09-01, when the provider began listing
         // glm-5.3-flash; the claim that matters is unchanged: the seat must
         // never inherit the retired glm-5.2 spelling.
-        expect(hyperIdFor({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),)
+        expect(hyperIdFor({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),)
           .toEqual({
             served: true,
             id: 'glm-5.3-flash',
@@ -207,7 +216,7 @@ await describe({
     it({
       name: 'FINDS the catalog entry for a model this provider serves',
       fn: async () => {
-        expect(syntheticEntryFor({ modelId: 'hf:Qwen/Qwen3.8-27B', },).served,).toBe(true,);
+        expect(syntheticEntryFor({ modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, },).served,).toBe(true,);
       },
     },),
 
@@ -215,7 +224,7 @@ await describe({
       name: 'REPORTS a Hyper-only model as unserved rather than indexing the record with an id '
         + 'that is not one of its keys',
       fn: async () => {
-        expect(syntheticEntryFor({ modelId: 'deepseek-v4.1-flash', },),)
+        expect(syntheticEntryFor({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),)
           .toEqual({ served: false, },);
       },
     },),
@@ -229,7 +238,7 @@ await describe({
       name: 'REPORTS every provider for a shared model, which is what makes an overflow and a '
         + 'cross-provider re-ask possible at all',
       fn: async () => {
-        expect(reachOf({ modelId: 'hf:openai/gpt-oss-120b', },),).toEqual({
+        expect(reachOf({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),).toEqual({
           synthetic: true,
           hyper: true,
           bedrock: true,
@@ -245,14 +254,14 @@ await describe({
         // No Synthetic-only seat exists since 2026-09-01: glm-5.3-flash gave
         // the last single-route Synthetic seat its Hyper twin, and OpenRouter
         // serves the whole roster since 2026-09-03.
-        expect(reachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
+        expect(reachOf({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),).toEqual({
           synthetic: true,
           hyper: true,
           bedrock: false,
           openrouter: true,
         },);
 
-        expect(reachOf({ modelId: 'gemma-4-26b-a4b-it', },),).toEqual({
+        expect(reachOf({ modelId: SEAT_HYPER_TEXT_BEDROCK, },),).toEqual({
           synthetic: false,
           hyper: true,
           bedrock: true,
@@ -286,14 +295,14 @@ await describe({
       fn: async () => {
         // The Hyper side comes from glm-5.3-flash's own 2026-09-01 catalog
         // entry, never from the retired glm-5.2 spelling this test predates.
-        expect(visionReachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
+        expect(visionReachOf({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),).toEqual({
           synthetic: true,
           hyper: true,
           bedrock: false,
           openrouter: true,
         },);
 
-        expect(reachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
+        expect(reachOf({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),).toEqual({
           synthetic: true,
           hyper: true,
           bedrock: false,
@@ -306,7 +315,7 @@ await describe({
       name: 'KEEPS every provider that reads AND that the run buys from: Kimi-K3 reads on OpenRouter '
         + 'too and is withheld there on cost (owner, 2026-09-03; the reach honours it since 2026-09-09)',
       fn: async () => {
-        expect(visionReachOf({ modelId: 'hf:moonshotai/Kimi-K3', },),).toEqual({
+        expect(visionReachOf({ modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },),).toEqual({
           synthetic: true,
           hyper: true,
           bedrock: false,
@@ -319,7 +328,7 @@ await describe({
       name: 'REPORTS NOBODY for a model every provider serves and none gives vision to, which '
         + 'is the case a wrongly computed union would turn into a wasted call',
       fn: async () => {
-        expect(visionReachOf({ modelId: 'hf:openai/gpt-oss-120b', },),).toEqual({
+        expect(visionReachOf({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),).toEqual({
           synthetic: false,
           hyper: false,
           bedrock: false,
@@ -332,13 +341,13 @@ await describe({
       name: 'SENDS gemma pictures through Bedrock alone, where its transcription was measured (2026-09-08), '
         + 'and not through OpenRouter, whose listing field alone cannot widen the reader roster',
       fn: async () => {
-        expect(visionReachOf({ modelId: 'gemma-4-26b-a4b-it', },),).toEqual({
+        expect(visionReachOf({ modelId: SEAT_HYPER_TEXT_BEDROCK, },),).toEqual({
           synthetic: false,
           hyper: false,
           bedrock: true,
           openrouter: false,
         },);
-        expect(visionReachOf({ modelId: 'google.gemma-4-e2b', },),).toEqual({
+        expect(visionReachOf({ modelId: SEAT_BEDROCK_ONLY_TEXT, },),).toEqual({
           synthetic: false,
           hyper: false,
           bedrock: false,
@@ -360,13 +369,13 @@ await describe({
             return readsImages({ modelId, },);
           },)
           .toSorted(),).toEqual([
-          'deepseek-v4.1-flash',
-          'gemma-4-26b-a4b-it',
-          'google.gemma-4-31b',
-          'hf:Qwen/Qwen3.8-27B',
-          'hf:moonshotai/Kimi-K3',
-          'hf:zai-org/GLM-5.3-Flash',
-          'minimax-m3',
+          SEAT_HYPER_OPENROUTER_UNMEASURED,
+          SEAT_HYPER_TEXT_BEDROCK,
+          SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          SEAT_SYNTHETIC_VISION_WITHHELD,
+          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_VISION,
         ],);
       },
     },),
@@ -374,7 +383,7 @@ await describe({
     it({
       name: 'ANSWERS true for a model that reads on either provider, not only on both',
       fn: async () => {
-        expect(readsImages({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toBe(true,);
+        expect(readsImages({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),).toBe(true,);
       },
     },),
   ],

@@ -36,11 +36,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ArtifactConsolidationTerminal,
   ArtifactParseError,
   parseGateBallot,
   parseShipped,
   parseVerdict,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  type ArtifactConsolidationTerminal,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -68,7 +69,7 @@ const KEPT_STANDING: ArtifactConsolidationTerminal = 'slate-endorsed-standing';
 /**
  Model that wrote a verdict, from the roster rather than invented.
  */
-const VERDICT_MODEL = 'hf:zai-org/GLM-5.3-Flash';
+const VERDICT_MODEL = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /**
  Ballot every gate case departs from one field at a time.

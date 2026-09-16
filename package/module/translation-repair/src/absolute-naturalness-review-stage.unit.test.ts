@@ -16,9 +16,17 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  reviewAbsoluteNaturalness,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  reviewAbsoluteNaturalness,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
@@ -27,9 +35,9 @@ import {
  Invented reviewer roster.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;
 
 /**
@@ -37,9 +45,9 @@ const ROSTER = [
  */
 const SIX_SEAT_ROSTER = [
   ...ROSTER,
-  'google.gemma-4-31b',
-  'deepseek-v4.1-flash',
-  'minimax-m3',
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
 ] as const;
 
 /**
@@ -51,14 +59,14 @@ const PROVIDER_SEAT_COUNT = 4;
  Production-shaped roster grouped by provider family.
  */
 const PROVIDER_GROUPED_ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-  'hf:openai/gpt-oss-120b',
-  'google.gemma-4-31b',
-  'deepseek-v4.1-flash',
-  'minimax-m3',
-  'gemma-4-26b-a4b-it',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_HYPER_TEXT_BEDROCK,
 ] as const;
 
 /**

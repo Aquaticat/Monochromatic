@@ -21,9 +21,16 @@ import {
 import {
   answerCeilingFor,
   HYPER_MODELS,
-  NO_SYNTHETIC_COUNTERPART,
-  hyperModelsWithSyntheticCounterparts,
   hyperModelsWithoutSyntheticCounterparts,
+  hyperModelsWithSyntheticCounterparts,
+  NO_SYNTHETIC_COUNTERPART,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -34,13 +41,13 @@ await describe({
         + 'wire because it was chosen rather than because a string resolved',
       fn: async () => {
         expect(Object.keys(HYPER_MODELS,).toSorted(),).toEqual([
-          'deepseek-v4.1-flash',
-          'gemma-4-26b-a4b-it',
-          'glm-5.3',
+          SEAT_HYPER_OPENROUTER_UNMEASURED,
+          SEAT_HYPER_TEXT_BEDROCK,
+          SEAT_HYPER_ONLY,
           'glm-5.3-flash',
           'gpt-oss-120b',
           'kimi-k3',
-          'minimax-m3',
+          SEAT_HYPER_VISION,
           'qwen3.8-27b',
         ],);
       },
@@ -60,8 +67,8 @@ await describe({
       name: 'HOLDS the measured bound for a model that could emit far more, since the bound is '
         + 'about what an answer should be rather than what a model is capable of',
       fn: async () => {
-        expect(answerCeilingFor({ modelId: 'glm-5.3', },),).toBe(32_000,);
-        expect(answerCeilingFor({ modelId: 'minimax-m3', },),).toBe(32_000,);
+        expect(answerCeilingFor({ modelId: SEAT_HYPER_ONLY, },),).toBe(32_000,);
+        expect(answerCeilingFor({ modelId: SEAT_HYPER_VISION, },),).toBe(32_000,);
       },
     },),
 
@@ -84,10 +91,10 @@ await describe({
       name: 'names Hyper-origin identities without a Synthetic counterpart, independently of OpenRouter reach',
       fn: async () => {
         expect(hyperModelsWithoutSyntheticCounterparts().toSorted(),).toEqual([
-          'deepseek-v4.1-flash',
-          'gemma-4-26b-a4b-it',
-          'glm-5.3',
-          'minimax-m3',
+          SEAT_HYPER_OPENROUTER_UNMEASURED,
+          SEAT_HYPER_TEXT_BEDROCK,
+          SEAT_HYPER_ONLY,
+          SEAT_HYPER_VISION,
         ],);
       },
     },),
@@ -109,10 +116,10 @@ await describe({
         + 'provider is not part of panelist identity: a slice judged by that model counts once '
         + 'however it was reached',
       fn: async () => {
-        expect(HYPER_MODELS['kimi-k3'].sharedWith,).toBe('hf:moonshotai/Kimi-K3',);
-        expect(HYPER_MODELS['gpt-oss-120b'].sharedWith,).toBe('hf:openai/gpt-oss-120b',);
-        expect(HYPER_MODELS['qwen3.8-27b'].sharedWith,).toBe('hf:Qwen/Qwen3.8-27B',);
-        expect(HYPER_MODELS['minimax-m3'].sharedWith,).toBe(NO_SYNTHETIC_COUNTERPART,);
+        expect(HYPER_MODELS['kimi-k3'].sharedWith,).toBe(SEAT_SYNTHETIC_VISION_WITHHELD,);
+        expect(HYPER_MODELS['gpt-oss-120b'].sharedWith,).toBe(SEAT_SYNTHETIC_TEXT_EVERYWHERE,);
+        expect(HYPER_MODELS['qwen3.8-27b'].sharedWith,).toBe(SEAT_SYNTHETIC_VISION_NO_OPENROUTER,);
+        expect(HYPER_MODELS[SEAT_HYPER_VISION].sharedWith,).toBe(NO_SYNTHETIC_COUNTERPART,);
       },
     },),
 
@@ -132,10 +139,10 @@ await describe({
           },);
 
         expect(readers.toSorted(),).toEqual([
-          'deepseek-v4.1-flash',
+          SEAT_HYPER_OPENROUTER_UNMEASURED,
           'glm-5.3-flash',
           'kimi-k3',
-          'minimax-m3',
+          SEAT_HYPER_VISION,
           'qwen3.8-27b',
         ],);
       },

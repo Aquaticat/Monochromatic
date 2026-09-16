@@ -17,12 +17,17 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type BedrockLedger,
-  type BedrockLedgerEntry,
   BedrockModelNotServedError,
   COMPLETION_CAP,
   createBedrockClient,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   SyntheticHttpError,
+  type BedrockLedger,
+  type BedrockLedgerEntry,
   type TransportExchange,
 } from '../dist/final/node/index.mjs';
 
@@ -204,7 +209,7 @@ await describe({
          One schema'd call as a stage would make it, on the shared seat.
          */
         const reply = await client.chatText({
-          modelId: 'gemma-4-26b-a4b-it',
+          modelId: SEAT_HYPER_TEXT_BEDROCK,
           messages: [
             { role: 'system', content: 'You are a careful cat.', },
             { role: 'user', content: 'Where does the cat sleep?', },
@@ -264,7 +269,7 @@ await describe({
         expect(JSON.stringify(body,),).not.toContain('reasoning_effort',);
         // THE MEASURED CEILING RIDES ON EVERY CALL since 2026-09-09: the
         // credit behind this provider is never topped up.
-        expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP['gemma-4-26b-a4b-it'], },);
+        expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP[SEAT_HYPER_TEXT_BEDROCK], },);
 
         /**
          What the ledger was told.
@@ -294,7 +299,7 @@ await describe({
          One plain call on the seat every provider serves.
          */
         const reply = await client.chatText({
-          modelId: 'hf:openai/gpt-oss-120b',
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           messages: [{ role: 'user', content: 'Where does the cat nap?', },],
           signal: SIGNAL,
         },);
@@ -322,7 +327,7 @@ await describe({
         let thrown: unknown;
         try {
           await client.chatText({
-            modelId: 'google.gemma-4-e2b',
+            modelId: SEAT_BEDROCK_ONLY_TEXT,
             messages: [{ role: 'user', content: 'meow', },],
             signal: SIGNAL,
           },);
@@ -360,7 +365,7 @@ await describe({
         let thrown: unknown;
         try {
           await client.chatText({
-            modelId: 'hf:moonshotai/Kimi-K3',
+            modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
             messages: [{ role: 'user', content: 'meow', },],
             signal: SIGNAL,
           },);
@@ -389,7 +394,7 @@ await describe({
         let thrown: unknown;
         try {
           await client.chatText({
-            modelId: 'google.gemma-4-31b',
+            modelId: SEAT_BEDROCK_ONLY_VISION_UNSEATED,
             messages: [{ role: 'user', content: 'meow', },],
             signal: SIGNAL,
           },);
@@ -411,7 +416,7 @@ await describe({
          Outcome of a guarded call.
          */
         const outcome = await client.chatJson({
-          modelId: 'google.gemma-4-e2b',
+          modelId: SEAT_BEDROCK_ONLY_TEXT,
           messages: [{ role: 'user', content: 'Where does the cat nap?', },],
           signal: SIGNAL,
           validate: function isNapSpot(value: unknown,): value is { readonly spot: string; } {

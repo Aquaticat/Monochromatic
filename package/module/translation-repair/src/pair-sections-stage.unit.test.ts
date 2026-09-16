@@ -26,6 +26,9 @@ import {
 import {
   createSyntheticClient,
   pairSectionsWithRoster,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -69,8 +72,8 @@ const TARGET = [
  Roster of two, which is the smallest that can agree or disagree.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
 
 /**
@@ -191,7 +194,7 @@ await describe({
               '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}',
             ],
           },),
-          modelIds: [...ROSTER, 'hf:openai/gpt-oss-120b',],
+          modelIds: [...ROSTER, SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
           sourceSections: SOURCE,
           targetSections: TARGET,
           signal: new AbortController().signal,

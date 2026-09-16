@@ -14,16 +14,20 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type ChunkRepairOutcome,
   makeInsertionChunk,
   messageText,
   notApplicableFinding,
   prepareDocumentPair,
-  type RepairModels,
   repairPreparedDocument,
   repairTranslation,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type ChunkRepairOutcome,
+  type RepairModels,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -53,14 +57,14 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
  which made it model a roster production would refuse.
  */
 const MODELS: RepairModels = {
-  criticModelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
-  panelModelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
-  editorModelIds: ['hf:zai-org/GLM-5.3-Flash',],
-  judgeModelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+  criticModelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+  panelModelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+  editorModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+  judgeModelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
   checkerModelIds: [
-    'hf:Qwen/Qwen3.8-27B',
-    'hf:moonshotai/Kimi-K3',
-    'hf:openai/gpt-oss-120b',
+    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+    SEAT_SYNTHETIC_VISION_WITHHELD,
+    SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   ],
 };
 
@@ -1125,7 +1129,7 @@ Meow meow meow meow.
          */
         const refiningModels: RepairModels = {
           ...MODELS,
-          refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+          refinerModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
         };
 
         /**
@@ -1544,7 +1548,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
          */
         const refining: RepairModels = {
           ...MODELS,
-          refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+          refinerModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
         };
         await expect(repairTranslation({
           client: steeringClient({

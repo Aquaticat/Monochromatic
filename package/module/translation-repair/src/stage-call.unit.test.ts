@@ -25,6 +25,7 @@ import {
 
 import {
   attemptStageCall,
+  SEAT_SYNTHETIC_VISION_EDITOR,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type JsonSchemaResponseFormat,
@@ -39,7 +40,7 @@ const l = tagged({ tag: 'stage-call-test', },);
 /**
  Model the exchanges address.
  */
-const MODEL_ID = 'hf:zai-org/GLM-5.3-Flash';
+const MODEL_ID = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /**
  Trivial reply payload the scripted clients emit.

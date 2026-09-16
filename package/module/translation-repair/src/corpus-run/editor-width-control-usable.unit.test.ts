@@ -35,8 +35,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  type BenchSlice,
+  SEAT_SYNTHETIC_VISION_EDITOR,
   StatedRefusalError,
+  type BenchSlice,
   type SyntheticClient,
   widthControlHolds,
   withoutASentence,
@@ -156,7 +157,7 @@ await describe({
               ONE_SENTENCE,
               ALSO_ONE_SENTENCE,
             ],
-            judgeModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+            judgeModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
             signal: AbortSignal.timeout(120_000,),
             l,
           },);

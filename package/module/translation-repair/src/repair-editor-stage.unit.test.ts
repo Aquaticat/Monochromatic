@@ -28,13 +28,17 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  hashContent,
+  ProducerRosterError,
+  runEditorStage,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type AdjudicatedIssue,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type EditableEnvelope,
-  ProducerRosterError,
-  hashContent,
-  runEditorStage,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -84,16 +88,16 @@ const ISSUES: readonly AdjudicatedIssue[] = [
  Editors that propose candidates.
  */
 const EDITORS = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;
 
 /**
  Judges with no stake in either editor's output.
  */
 const JUDGES = [
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ] as const;
 
 /**

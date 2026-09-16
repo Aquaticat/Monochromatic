@@ -26,9 +26,10 @@ import {
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
-  UnansweredContestSliceError,
+  SEAT_SYNTHETIC_VISION_EDITOR,
   type WouldShipReading,
   type WouldShipSource,
+  UnansweredContestSliceError,
   wouldShipTextFor,
   wouldShipTextPerSlice,
 } from '../../dist/final/node/index.mjs';
@@ -254,8 +255,8 @@ await describe({
                   proposedText: polished,
                   text: polished,
                   changed: true,
-                  refinersHeard: ['hf:zai-org/GLM-5.3-Flash',],
-                  contributors: ['hf:zai-org/GLM-5.3-Flash',],
+                  refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
+                  contributors: [SEAT_SYNTHETIC_VISION_EDITOR,],
                   roundCount: 1,
                   findings: [],
                 },

@@ -15,6 +15,8 @@ import {
   BEDROCK_COST_UNREPORTED,
   BEDROCK_MODELS,
   bedrockCostOf,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -26,9 +28,9 @@ await describe({
         /**
          Row the call is priced by.
          */
-        const info = BEDROCK_MODELS['google.gemma-4-31b'];
+        const info = BEDROCK_MODELS[SEAT_BEDROCK_ONLY_VISION_UNSEATED];
         expect(bedrockCostOf({
-          servedId: 'google.gemma-4-31b',
+          servedId: SEAT_BEDROCK_ONLY_VISION_UNSEATED,
           extracted: {
             text: '{"spot":"sunbeam"}',
             usage: {
@@ -52,7 +54,7 @@ await describe({
          completion tokens.
          */
         const cost = bedrockCostOf({
-          servedId: 'google.gemma-4-e2b',
+          servedId: SEAT_BEDROCK_ONLY_TEXT,
           extracted: {
             text: '{"spot":"on the sunny windowsill"}',
             usage: {

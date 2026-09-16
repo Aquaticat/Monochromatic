@@ -12,16 +12,17 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   COMPLETION_TOKEN_CEILING,
-  type CriticAttemptRecord,
   isRetryableAttempt,
   isTruncatedAttempt,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  type CriticAttemptRecord,
 } from '../dist/final/node/index.mjs';
 
 /**
  Baseline schema-mismatch record corruptions derive from.
  */
 const MISMATCH_RECORD: CriticAttemptRecord = {
-  modelId: 'hf:zai-org/GLM-5.3-Flash',
+  modelId: SEAT_SYNTHETIC_VISION_EDITOR,
   entryId: 'whiskers',
   outcomeKind: 'schema-mismatch',
   detail: 'content parsed as JSON but failed the caller schema guard',

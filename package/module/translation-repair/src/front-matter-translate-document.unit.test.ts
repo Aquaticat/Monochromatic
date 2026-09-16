@@ -12,13 +12,19 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   messageText,
   prepareDocumentPair,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  translateDocument,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type RosterModelId,
   type SyntheticClient,
-  translateDocument,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -40,12 +46,12 @@ const CORRECTED_TEXT = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
  Models producing and judging fixture slate.
  */
 const ROSTER: readonly RosterModelId[] = [
-  'hf:moonshotai/Kimi-K3',
-  'hf:zai-org/GLM-5.3-Flash',
-  'minimax-m3',
-  'hf:Qwen/Qwen3.8-27B',
-  'deepseek-v4.1-flash',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ];
 
 /**

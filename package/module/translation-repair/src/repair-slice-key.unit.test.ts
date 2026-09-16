@@ -22,9 +22,15 @@ import {
   DEFAULT_ADJUDICATION_CONFIG,
   prepareDocumentPair,
   repairRunShape,
-  type RepairModels,
   repairSliceKey,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   SLICE_CACHE_VERSION,
+  type RepairModels,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -32,14 +38,14 @@ import {
  */
 const MODELS: RepairModels = {
   criticModelIds: [
-    'hf:moonshotai/Kimi-K3',
-    'hf:zai-org/GLM-5.3-Flash',
+    SEAT_SYNTHETIC_VISION_WITHHELD,
+    SEAT_SYNTHETIC_VISION_EDITOR,
   ],
-  panelModelIds: ['hf:Qwen/Qwen3.8-27B',],
-  editorModelIds: ['hf:openai/gpt-oss-120b',],
-  judgeModelIds: ['minimax-m3',],
-  refinerModelIds: ['deepseek-v4.1-flash',],
-  checkerModelIds: ['hf:Qwen/Qwen3.8-27B',],
+  panelModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
+  editorModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
+  judgeModelIds: [SEAT_HYPER_VISION,],
+  refinerModelIds: [SEAT_HYPER_OPENROUTER_UNMEASURED,],
+  checkerModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
 };
 
 /**
@@ -144,7 +150,7 @@ await describe({
           runShape: repairRunShape({
             models: {
               ...MODELS,
-              criticModelIds: ['hf:moonshotai/Kimi-K3',],
+              criticModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
             },
           },),
         },),).not

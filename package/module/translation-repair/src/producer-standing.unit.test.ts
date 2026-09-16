@@ -12,8 +12,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   preferenceRate,
-  type ProducerStanding,
   producerStandings,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  type ProducerStanding,
   type RosterModelId,
   type SelectionBallot,
   type SelectionRound,
@@ -38,7 +42,7 @@ const FULL = 1;
  
  @example
  ```ts
- const ballot = ballotOf({ modelId: 'minimax-m3', best: 1, },);
+ const ballot = ballotOf({ modelId: SEAT_HYPER_VISION, best: 1, },);
  ```
  */
 function ballotOf(
@@ -72,7 +76,7 @@ function ballotOf(
  
  @example
  ```ts
- const standing = standingOf({ standings, modelId: 'minimax-m3', },);
+ const standing = standingOf({ standings, modelId: SEAT_HYPER_VISION, },);
  ```
  */
 function standingOf(
@@ -105,12 +109,12 @@ await describe({
         const rounds: readonly SelectionRound[] = [
           {
             producers: [
-              { kind: 'model' as const, modelId: 'minimax-m3', },
-              { kind: 'model' as const, modelId: 'google.gemma-4-31b', },
+              { kind: 'model' as const, modelId: SEAT_HYPER_VISION, },
+              { kind: 'model' as const, modelId: SEAT_BEDROCK_ONLY_VISION_UNSEATED, },
             ],
             ballots: [
-              ballotOf({ modelId: 'minimax-m3', best: 1, },),
-              ballotOf({ modelId: 'google.gemma-4-31b', best: 2, },),
+              ballotOf({ modelId: SEAT_HYPER_VISION, best: 1, },),
+              ballotOf({ modelId: SEAT_BEDROCK_ONLY_VISION_UNSEATED, best: 2, },),
             ],
           },
         ];
@@ -121,7 +125,7 @@ await describe({
         // Counting self-votes would rank the most self-confident model first
         // rather than the best-written one, and seat exactly the models least
         // able to tell.
-        for (const modelId of ['minimax-m3', 'google.gemma-4-31b',] as const) {
+        for (const modelId of [SEAT_HYPER_VISION, SEAT_BEDROCK_ONLY_VISION_UNSEATED,] as const) {
           /** That model's counts. */
           const standing = standingOf({
             standings,
@@ -143,11 +147,11 @@ await describe({
         const rounds: readonly SelectionRound[] = [
           {
             producers: [
-              { kind: 'model' as const, modelId: 'minimax-m3', },
-              { kind: 'model' as const, modelId: 'google.gemma-4-31b', },
+              { kind: 'model' as const, modelId: SEAT_HYPER_VISION, },
+              { kind: 'model' as const, modelId: SEAT_BEDROCK_ONLY_VISION_UNSEATED, },
             ],
             ballots: [
-              ballotOf({ modelId: 'gemma-4-26b-a4b-it', best: 1, },),
+              ballotOf({ modelId: SEAT_HYPER_TEXT_BEDROCK, best: 1, },),
             ],
           },
         ];
@@ -158,13 +162,13 @@ await describe({
         /** The named candidate's author. */
         const named = standingOf({
           standings,
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
         },);
 
         /** The passed-over candidate's author. */
         const passed = standingOf({
           standings,
-          modelId: 'google.gemma-4-31b',
+          modelId: SEAT_BEDROCK_ONLY_VISION_UNSEATED,
         },);
 
         expect(named.disinterestedVotes,).toBe(1,);
@@ -183,12 +187,12 @@ await describe({
             producers: [
               {
                 kind: 'composite' as const,
-                contributors: ['minimax-m3', 'google.gemma-4-31b',],
+                contributors: [SEAT_HYPER_VISION, SEAT_BEDROCK_ONLY_VISION_UNSEATED,],
               },
-              { kind: 'model' as const, modelId: 'gemma-4-26b-a4b-it', },
+              { kind: 'model' as const, modelId: SEAT_HYPER_TEXT_BEDROCK, },
             ],
             ballots: [
-              ballotOf({ modelId: 'deepseek-v4.1-flash', best: 1, },),
+              ballotOf({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, best: 1, },),
             ],
           },
         ];
@@ -196,7 +200,7 @@ await describe({
         /** What the tally made of it. */
         const standings = producerStandings({ rounds, },);
 
-        for (const modelId of ['minimax-m3', 'google.gemma-4-31b',] as const) {
+        for (const modelId of [SEAT_HYPER_VISION, SEAT_BEDROCK_ONLY_VISION_UNSEATED,] as const) {
           /** That contributor's counts. */
           const standing = standingOf({
             standings,
@@ -216,10 +220,10 @@ await describe({
           {
             producers: [
               { kind: 'incumbent' as const, matched: [], },
-              { kind: 'model' as const, modelId: 'minimax-m3', },
+              { kind: 'model' as const, modelId: SEAT_HYPER_VISION, },
             ],
             ballots: [
-              ballotOf({ modelId: 'gemma-4-26b-a4b-it', best: 1, },),
+              ballotOf({ modelId: SEAT_HYPER_TEXT_BEDROCK, best: 1, },),
             ],
           },
         ];
@@ -232,7 +236,7 @@ await describe({
         /** The only model that wrote anything here. */
         const standing = standingOf({
           standings,
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
         },);
 
         expect(standings.length,).toBe(1,);
@@ -247,11 +251,11 @@ await describe({
         const rounds: readonly SelectionRound[] = [
           {
             producers: [
-              { kind: 'incumbent' as const, matched: ['minimax-m3',], },
+              { kind: 'incumbent' as const, matched: [SEAT_HYPER_VISION,], },
             ],
             ballots: [
-              ballotOf({ modelId: 'gemma-4-26b-a4b-it', best: 1, },),
-              ballotOf({ modelId: 'minimax-m3', best: 1, },),
+              ballotOf({ modelId: SEAT_HYPER_TEXT_BEDROCK, best: 1, },),
+              ballotOf({ modelId: SEAT_HYPER_VISION, best: 1, },),
             ],
           },
         ];
@@ -262,7 +266,7 @@ await describe({
         /** The matched model's counts. */
         const standing = standingOf({
           standings,
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
         },);
 
         // Its own ballot is a self-vote and is not counted, so one of the two
@@ -277,25 +281,25 @@ await describe({
       fn: async () => {
         /** Two slates naming the same two authors. */
         const slate: SelectionRound['producers'] = [
-          { kind: 'model' as const, modelId: 'minimax-m3', },
-          { kind: 'model' as const, modelId: 'google.gemma-4-31b', },
+          { kind: 'model' as const, modelId: SEAT_HYPER_VISION, },
+          { kind: 'model' as const, modelId: SEAT_BEDROCK_ONLY_VISION_UNSEATED, },
         ];
         /** Rounds with a disinterested judge splitting its votes. */
         const rounds: readonly SelectionRound[] = [
           {
             producers: slate,
-            ballots: [ballotOf({ modelId: 'gemma-4-26b-a4b-it', best: 1, },),],
+            ballots: [ballotOf({ modelId: SEAT_HYPER_TEXT_BEDROCK, best: 1, },),],
           },
           {
             producers: slate,
-            ballots: [ballotOf({ modelId: 'gemma-4-26b-a4b-it', best: 2, },),],
+            ballots: [ballotOf({ modelId: SEAT_HYPER_TEXT_BEDROCK, best: 2, },),],
           },
         ];
 
         /** What the tally made of it. */
         const standings = producerStandings({ rounds, },);
 
-        for (const modelId of ['minimax-m3', 'google.gemma-4-31b',] as const) {
+        for (const modelId of [SEAT_HYPER_VISION, SEAT_BEDROCK_ONLY_VISION_UNSEATED,] as const) {
           /** That model's counts. */
           const standing = standingOf({
             standings,
@@ -318,11 +322,11 @@ await describe({
         const rounds: readonly SelectionRound[] = [
           {
             producers: [
-              { kind: 'model' as const, modelId: 'minimax-m3', },
-              { kind: 'model' as const, modelId: 'google.gemma-4-31b', },
+              { kind: 'model' as const, modelId: SEAT_HYPER_VISION, },
+              { kind: 'model' as const, modelId: SEAT_BEDROCK_ONLY_VISION_UNSEATED, },
             ],
             ballots: [
-              ballotOf({ modelId: 'minimax-m3', best: 2, selfVote: false, },),
+              ballotOf({ modelId: SEAT_HYPER_VISION, best: 2, selfVote: false, },),
             ],
           },
         ];
@@ -333,13 +337,13 @@ await describe({
         /** The voter's own candidate. */
         const own = standingOf({
           standings,
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
         },);
 
         /** The rival's candidate, which the voter named. */
         const rival = standingOf({
           standings,
-          modelId: 'google.gemma-4-31b',
+          modelId: SEAT_BEDROCK_ONLY_VISION_UNSEATED,
         },);
 
         // ITS OWN CANDIDATE sees no disinterested ballot: the only voice here
@@ -362,15 +366,15 @@ await describe({
         /** One slate where the only judge named nothing. */
         const rounds: readonly SelectionRound[] = [
           {
-            producers: [{ kind: 'model' as const, modelId: 'minimax-m3', },],
-            ballots: [ballotOf({ modelId: 'gemma-4-26b-a4b-it', best: 0, },),],
+            producers: [{ kind: 'model' as const, modelId: SEAT_HYPER_VISION, },],
+            ballots: [ballotOf({ modelId: SEAT_HYPER_TEXT_BEDROCK, best: 0, },),],
           },
         ];
 
         /** The producer's counts. */
         const standing = standingOf({
           standings: producerStandings({ rounds, },),
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
         },);
 
         expect(standing.disinterestedBallots,).toBe(1,);
@@ -388,7 +392,7 @@ await describe({
       fn: async () => {
         expect(preferenceRate({
           standing: {
-            modelId: 'minimax-m3',
+            modelId: SEAT_HYPER_VISION,
             candidates: 4,
             disinterestedBallots: 8,
             disinterestedVotes: 2,
@@ -405,7 +409,7 @@ await describe({
         // an empty denominator means.
         expect(preferenceRate({
           standing: {
-            modelId: 'minimax-m3',
+            modelId: SEAT_HYPER_VISION,
             candidates: 2,
             disinterestedBallots: 0,
             disinterestedVotes: 0,

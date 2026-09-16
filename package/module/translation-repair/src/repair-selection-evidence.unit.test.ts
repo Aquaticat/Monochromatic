@@ -3,19 +3,23 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   applyPatchOperations,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   chunkCandidateOf,
-  type EditableEnvelope,
-  type EditorCandidate,
   hashContent,
-  repairSliceKey,
   prepareDocumentPair,
   repairPreparedDocument,
+  repairSliceKey,
   runEditorStage,
-  type RosterModelId,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   selectChunkPatch,
   selectPerEnvelope,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type EditableEnvelope,
+  type EditorCandidate,
+  type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -24,7 +28,7 @@ const TARGET = 'She greeted her friend.';
 /** Whole sentence is the fixture's editable region. */
 const ENVELOPE: EditableEnvelope = { envelopeId: 'envelope/greeting', startOffset: 0, endOffset: TARGET.length, baseText: TARGET, baseHash: hashContent({ content: TARGET, }), issueIds: [], };
 /** Independent fixture electorate retains ordinary author weighting. */
-const JUDGES: readonly RosterModelId[] = ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b',];
+const JUDGES: readonly RosterModelId[] = [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE,];
 
 /**
  Builds an applied candidate rather than an unverified raw replacement.
@@ -65,8 +69,8 @@ function judges(): { readonly client: SyntheticClient; readonly prompts: string[
 
 /** Already-applied repairs differ in the event's actor. */
 const CANDIDATES = [
-  proposed({ modelId: 'hf:zai-org/GLM-5.3-Flash', text: 'She greeted her friend warmly.', }),
-  proposed({ modelId: 'hf:Qwen/Qwen3.8-27B', text: 'Her friend greeted her.', }),
+  proposed({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, text: 'She greeted her friend warmly.', }),
+  proposed({ modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, text: 'Her friend greeted her.', }),
 ];
 
 await describe({
@@ -97,7 +101,7 @@ await describe({
         };
         let caught: unknown;
         try {
-          await repairPreparedDocument({ client, prepared, models: { criticModelIds: JUDGES, panelModelIds: JUDGES, editorModelIds: ['hf:zai-org/GLM-5.3-Flash',], judgeModelIds: JUDGES, checkerModelIds: ['hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b',], }, signal: controller.signal, perCallTimeoutMs: 5_000, });
+          await repairPreparedDocument({ client, prepared, models: { criticModelIds: JUDGES, panelModelIds: JUDGES, editorModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,], judgeModelIds: JUDGES, checkerModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE,], }, signal: controller.signal, perCallTimeoutMs: 5_000, });
         }
         catch (error) {
           caught = error;
@@ -113,7 +117,7 @@ await describe({
         const fixture = judges();
         const client: SyntheticClient = { ...fixture.client, chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
           if (request.responseFormat?.json_schema.name !== 'editor_report') return await fixture.client.chatJson(request);
-          const value = { edits: [{ region: 1, newText: request.modelId === 'hf:zai-org/GLM-5.3-Flash' ? 'She greeted her friend warmly.' : 'Her friend greeted her.', },], };
+          const value = { edits: [{ region: 1, newText: request.modelId === SEAT_SYNTHETIC_VISION_EDITOR ? 'She greeted her friend warmly.' : 'Her friend greeted her.', },], };
           if (!request.validate(value)) throw new Error('Invalid fixture editor reply');
           return { kind: 'ok', value, rawText: JSON.stringify(value), };
         }, };

@@ -23,12 +23,16 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  NaturalnessCompletenessError,
+  persistSettledEntry,
+  preparePassEntry,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  NaturalnessCompletenessError,
   type PipelineDigest,
-  preparePassEntry,
-  persistSettledEntry,
   type SettledArtifact,
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
@@ -37,8 +41,8 @@ import {
  Pairing roster accepted by canned client.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
 
 /**
@@ -261,7 +265,7 @@ await describe({
           entryId: 'Cat',
           entryCacheDir: dir,
           pipelineDigest: GENERATION,
-          modelIds: [...ROSTER, 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b',],
+          modelIds: [...ROSTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
           sourceText,
           targetText: `${sourceText}\n\n${translation}`,
           signal: new AbortController().signal,

@@ -24,10 +24,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ArtifactDeliveryRow,
   ArtifactParseError,
   compareLanes,
   parseSettledTwoLaneArtifact,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  type ArtifactDeliveryRow,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -1596,7 +1599,7 @@ await describe({
               hash: 'hash-with-alias',
               producer: {
                 kind: 'model',
-                modelId: 'hf:openai/gpt-oss-120b',
+                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
               },
             },
             {
@@ -1605,13 +1608,13 @@ await describe({
               hash: 'hash-without-alias',
               producer: {
                 kind: 'model',
-                modelId: 'hf:zai-org/GLM-5.3-Flash',
+                modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               },
             },
           ],
           ballots: [
             {
-              modelId: 'hf:Qwen/Qwen3.8-27B',
+              modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
               best: 2,
               reason: 'the alias has no basis in the original',
               weight: 1,

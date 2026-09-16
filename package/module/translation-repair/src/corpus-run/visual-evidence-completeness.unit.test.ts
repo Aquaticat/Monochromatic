@@ -12,6 +12,8 @@ import {
 
 import {
   assertVisualEvidenceComplete,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChunkPair,
   VisualEvidenceInterruptedError,
 } from '../../dist/final/node/index.mjs';
@@ -45,8 +47,8 @@ await describe({
             {
               kind: 'corroborated',
               readings: [
-                { modelId: 'hf:moonshotai/Kimi-K3', text: 'Mittens 555-0134', },
-                { modelId: 'hf:zai-org/GLM-5.3-Flash', text: 'Mittens 555-0134', },
+                { modelId: SEAT_SYNTHETIC_VISION_WITHHELD, text: 'Mittens 555-0134', },
+                { modelId: SEAT_SYNTHETIC_VISION_EDITOR, text: 'Mittens 555-0134', },
               ],
               overlap: 1,
             },

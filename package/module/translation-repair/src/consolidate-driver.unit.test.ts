@@ -36,28 +36,32 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  type ArtifactContestSlice,
   consolidateDocument,
   consolidateRunShape,
   consolidateSliceKey,
-  type ConsolidationSettlement,
   ConsolidationStandingIneligibleError,
-  type ConsolidationTerminal,
   consolidationWorthResuming,
   createSyntheticClient,
   firstRoundWindow,
   persistConsolidationSettlement,
-  type ProjectedLanes,
-  type RosterModelId,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   SLICE_COST_MARKER,
   SLICE_START_MARKER,
+  TRANSLATE_LINE_STRUCTURE_RULE,
+  TranslationRepairInterruptedError,
+  type ArtifactContestSlice,
+  type ConsolidationSettlement,
+  type ConsolidationTerminal,
+  type ProjectedLanes,
+  type RosterModelId,
   type SliceCache,
   type SliceNeighbourContext,
   type SyntheticClient,
-  TRANSLATE_LINE_STRUCTURE_RULE,
   type TranslateDecision,
   type TranslateStageResult,
-  TranslationRepairInterruptedError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -100,14 +104,14 @@ function capturingLogger({ messages, }: { readonly messages: string[]; },): Logg
 /**
  Roster this run seats.
  */
-const ROSTER = ['hf:zai-org/GLM-5.3-Flash',] as const;
+const ROSTER = [SEAT_SYNTHETIC_VISION_EDITOR,] as const;
 
 /** Roster wide enough for independent recovery selection. */
 const RECOVERY_ROSTER = [
   ...ROSTER,
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ] as const;
 
 /**
@@ -729,8 +733,8 @@ await describe({
             proposedText: 'polished wording for slice 0',
             text: 'polished wording for slice 0',
             changed: true,
-            refinersHeard: ['hf:zai-org/GLM-5.3-Flash',],
-            contributors: ['hf:zai-org/GLM-5.3-Flash',],
+            refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            contributors: [SEAT_SYNTHETIC_VISION_EDITOR,],
             rounds: [],
             review: {
               correctionCount: 0,
@@ -1683,8 +1687,8 @@ await describe({
               proposedText: 'The cat maintained a positive outlook on life.',
               text: 'The cat maintained a positive outlook on life.',
               changed: true,
-              refinersHeard: ['hf:zai-org/GLM-5.3-Flash',],
-              contributors: ['hf:zai-org/GLM-5.3-Flash',],
+              refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
+              contributors: [SEAT_SYNTHETIC_VISION_EDITOR,],
               rounds: [],
               review: {
                 correctionCount: 0,
@@ -1710,7 +1714,7 @@ await describe({
               kind: 'unsettled',
               baseText: 'The cat actively faced the day.',
               proposedText: 'The cat actively faced the day.',
-              refinersHeard: ['hf:zai-org/GLM-5.3-Flash',],
+              refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
               contributors: [],
               rounds: [],
               review: {

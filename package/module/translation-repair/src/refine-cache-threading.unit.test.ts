@@ -35,11 +35,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  refineSettledSlices,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkPair,
   type ChunkRepairOutcome,
-  refineSettledSlices,
   type RefinedSliceSettlement,
   type RepairModels,
   type SliceCache,
@@ -75,20 +79,20 @@ const SMOOTH_TEXT =
  requires.
  */
 const MODELS: RepairModels = {
-  criticModelIds: ['hf:zai-org/GLM-5.3-Flash',],
-  panelModelIds: ['hf:zai-org/GLM-5.3-Flash',],
-  editorModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+  criticModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+  panelModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+  editorModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
   judgeModelIds: [
-    'hf:zai-org/GLM-5.3-Flash',
-    'hf:Qwen/Qwen3.8-27B',
-    'hf:moonshotai/Kimi-K3',
-    'deepseek-v4.1-flash',
+    SEAT_SYNTHETIC_VISION_EDITOR,
+    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+    SEAT_SYNTHETIC_VISION_WITHHELD,
+    SEAT_HYPER_OPENROUTER_UNMEASURED,
   ],
-  refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+  refinerModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
   checkerModelIds: [
-    'hf:Qwen/Qwen3.8-27B',
-    'hf:moonshotai/Kimi-K3',
-    'deepseek-v4.1-flash',
+    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+    SEAT_SYNTHETIC_VISION_WITHHELD,
+    SEAT_HYPER_OPENROUTER_UNMEASURED,
   ],
 };
 

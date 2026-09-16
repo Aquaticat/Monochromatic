@@ -28,10 +28,16 @@ import {
 
 import {
   anchorLocatedSpan,
-  type AuditMemberClaim,
   corroborate,
   corroborateByOverlap,
   nearMisses,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type AuditMemberClaim,
   type RenderingAuditCategory,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
@@ -143,7 +149,7 @@ function claimOf(
  First voice's claim about the two cats becoming three.
  */
 const TWO_TO_THREE_A = claimOf({
-  modelId: 'hf:Qwen/Qwen3.8-27B',
+  modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   category: 'altered-number',
   sourceLocator: COUNT_SENTENCE_SOURCE,
   sourceFocus: '两',
@@ -155,7 +161,7 @@ const TWO_TO_THREE_A = claimOf({
  Second voice's claim about the same count, quoting a narrower locator.
  */
 const TWO_TO_THREE_B = claimOf({
-  modelId: 'deepseek-v4.1-flash',
+  modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
   category: 'altered-number',
   sourceLocator: '晚上两只猫睡在窗台上',
   sourceFocus: '两',
@@ -167,7 +173,7 @@ const TWO_TO_THREE_B = claimOf({
  A DIFFERENT defect in the SAME sentence: the one cat that became two.
  */
 const ONE_TO_TWO = claimOf({
-  modelId: 'hf:openai/gpt-oss-120b',
+  modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   category: 'altered-number',
   sourceLocator: COUNT_SENTENCE_SOURCE,
   sourceFocus: '一',
@@ -237,7 +243,7 @@ await describe({
          Claim whose focus contains the other's, on both sides.
          */
         const containing = claimOf({
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           category: 'altered-number',
           sourceLocator: COUNT_SENTENCE_SOURCE,
           sourceFocus: '两只猫',
@@ -298,7 +304,7 @@ await describe({
          */
         const claims = [
           claimOf({
-            modelId: 'hf:Qwen/Qwen3.8-27B',
+            modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             category: 'altered-polarity',
             sourceLocator: '她们不吃罐头',
             sourceFocus: '不吃',
@@ -306,7 +312,7 @@ await describe({
             candidateFocus: 'eat',
           },),
           claimOf({
-            modelId: 'deepseek-v4.1-flash',
+            modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
             category: 'omission',
             sourceLocator: '她们不吃罐头',
             sourceFocus: '不吃',
@@ -331,7 +337,7 @@ await describe({
          Claim spanning the whole count sentence, which touches both counts.
          */
         const wide = claimOf({
-          modelId: 'hf:moonshotai/Kimi-K3',
+          modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
           category: 'altered-number',
           sourceLocator: COUNT_SENTENCE_SOURCE,
           sourceFocus: '两只猫睡在窗台上，一只猫',
@@ -366,7 +372,7 @@ await describe({
               one.right
                 .modelId,
             ].every(function isNarrow(modelId,): boolean {
-              return modelId !== 'hf:moonshotai/Kimi-K3';
+              return modelId !== SEAT_SYNTHETIC_VISION_WITHHELD;
             },);
           },),
         ).toEqual([],);
@@ -390,8 +396,8 @@ await describe({
               return member.modelId;
             },),
         ).toEqual([
-          'hf:Qwen/Qwen3.8-27B',
-          'deepseek-v4.1-flash',
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          SEAT_HYPER_OPENROUTER_UNMEASURED,
         ],);
       },
     },),
@@ -402,7 +408,7 @@ await describe({
          Claim about the negation, far from either count.
          */
         const polarity = claimOf({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           category: 'altered-polarity',
           sourceLocator: '她们不吃罐头',
           sourceFocus: '不吃',
@@ -435,7 +441,7 @@ await describe({
          Third voice quoting a span that contains the other two.
          */
         const wider = claimOf({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           category: 'altered-number',
           sourceLocator: COUNT_SENTENCE_SOURCE,
           sourceFocus: '两只猫睡在窗台上',
@@ -487,7 +493,7 @@ await describe({
          Claim spanning both counts.
          */
         const wide = claimOf({
-          modelId: 'hf:moonshotai/Kimi-K3',
+          modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
           category: 'altered-number',
           sourceLocator: COUNT_SENTENCE_SOURCE,
           sourceFocus: '两只猫睡在窗台上，一只猫',
@@ -517,7 +523,7 @@ await describe({
           expect(
             group.members
               .some(function isWide(member,): boolean {
-                return member.modelId === 'hf:moonshotai/Kimi-K3';
+                return member.modelId === SEAT_SYNTHETIC_VISION_WITHHELD;
               },),
           ).toBe(true,);
         }
@@ -530,7 +536,7 @@ await describe({
       fn: async () => {
         const claims = [
           claimOf({
-            modelId: 'hf:Qwen/Qwen3.8-27B',
+            modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             category: 'altered-polarity',
             sourceLocator: '她们不吃罐头',
             sourceFocus: '不吃',
@@ -538,7 +544,7 @@ await describe({
             candidateFocus: 'eat',
           },),
           claimOf({
-            modelId: 'hf:openai/gpt-oss-120b',
+            modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
             category: 'omission',
             sourceLocator: '她们不吃罐头',
             sourceFocus: '不吃罐头',

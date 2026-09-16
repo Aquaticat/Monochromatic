@@ -24,6 +24,8 @@ import {
   CATALOG_MODEL_IDS,
   compareCatalog,
   decodeModelList,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   SYNTHETIC_MODELS,
 } from '../../dist/final/node/index.mjs';
 
@@ -45,8 +47,8 @@ await describe({
  Catalog the comparisons run against.
  */
 const CATALOG: readonly string[] = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ];
 
 await describe({
@@ -59,9 +61,9 @@ await describe({
         + 'per call while nothing said why',
       fn: async () => {
         expect(compareCatalog({
-          served: [{ id: 'hf:zai-org/GLM-5.3-Flash', huggingFaceId: 'zai-org/GLM-5.3-Flash', },],
+          served: [{ id: SEAT_SYNTHETIC_VISION_EDITOR, huggingFaceId: 'zai-org/GLM-5.3-Flash', },],
           catalog: CATALOG,
-        },).missing,).toStrictEqual(['hf:moonshotai/Kimi-K3',],);
+        },).missing,).toStrictEqual([SEAT_SYNTHETIC_VISION_WITHHELD,],);
       },
     },),
 
@@ -76,11 +78,11 @@ await describe({
         const comparison = compareCatalog({
           served: [
             {
-              id: 'hf:zai-org/GLM-5.3-Flash',
+              id: SEAT_SYNTHETIC_VISION_EDITOR,
               huggingFaceId: 'zai-org/GLM-5.3-Flash',
             },
             {
-              id: 'hf:moonshotai/Kimi-K3',
+              id: SEAT_SYNTHETIC_VISION_WITHHELD,
               huggingFaceId: 'moonshotai/Kimi-K3',
             },
             {
@@ -108,11 +110,11 @@ await describe({
         expect(compareCatalog({
           served: [
             {
-              id: 'hf:zai-org/GLM-5.3-Flash',
+              id: SEAT_SYNTHETIC_VISION_EDITOR,
               huggingFaceId: 'zai-org/GLM-5.3-Flash',
             },
             {
-              id: 'hf:moonshotai/Kimi-K3',
+              id: SEAT_SYNTHETIC_VISION_WITHHELD,
               huggingFaceId: 'moonshotai/Kimi-K3',
             },
             {
@@ -166,11 +168,11 @@ await describe({
         const comparison = compareCatalog({
           served: [
             {
-              id: 'hf:zai-org/GLM-5.3-Flash',
+              id: SEAT_SYNTHETIC_VISION_EDITOR,
               huggingFaceId: 'zai-org/GLM-5.3-Flash',
             },
             {
-              id: 'hf:moonshotai/Kimi-K3',
+              id: SEAT_SYNTHETIC_VISION_WITHHELD,
               huggingFaceId: 'moonshotai/Kimi-K3',
             },
           ],

@@ -12,13 +12,16 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   isDerivabilityVerdict,
   resolveDerivabilityJudgment,
   runDerivabilityProbe,
-  type SyntheticClient,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type RosterModelId,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -106,9 +109,9 @@ function probingClient(
  Three-judge roster for the stage tests.
  */
 const JUDGES: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ];
 
 await describe({
@@ -164,9 +167,9 @@ await describe({
         const derivability = await runDerivabilityProbe({
           client: probingClient({
             verdictsByModel: {
-              'hf:zai-org/GLM-5.3-Flash': ['derivable', 'derivable',],
-              'hf:Qwen/Qwen3.8-27B': ['partially-derivable', 'derivable',],
-              'hf:moonshotai/Kimi-K3': ['not-derivable', 'derivable',],
+              [SEAT_SYNTHETIC_VISION_EDITOR]: ['derivable', 'derivable',],
+              [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['partially-derivable', 'derivable',],
+              [SEAT_SYNTHETIC_VISION_WITHHELD]: ['not-derivable', 'derivable',],
             },
           },),
           judgeModelIds: JUDGES,
@@ -190,10 +193,10 @@ await describe({
         const derivability = await runDerivabilityProbe({
           client: probingClient({
             verdictsByModel: {
-              'hf:zai-org/GLM-5.3-Flash': ['derivable', 'derivable',],
-              'hf:Qwen/Qwen3.8-27B': ['not-derivable', 'derivable',],
+              [SEAT_SYNTHETIC_VISION_EDITOR]: ['derivable', 'derivable',],
+              [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['not-derivable', 'derivable',],
             },
-            silent: new Set(['hf:moonshotai/Kimi-K3',],),
+            silent: new Set([SEAT_SYNTHETIC_VISION_WITHHELD,],),
           },),
           judgeModelIds: JUDGES,
           sourceText: '猫猫黎明追蝴蝶。碗是满的。',
@@ -215,8 +218,8 @@ await describe({
         /** Only one of three judges answers: quorum unmet. */
         const derivability = await runDerivabilityProbe({
           client: probingClient({
-            verdictsByModel: { 'hf:zai-org/GLM-5.3-Flash': ['not-derivable', 'not-derivable',], },
-            silent: new Set(['hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],),
+            verdictsByModel: { [SEAT_SYNTHETIC_VISION_EDITOR]: ['not-derivable', 'not-derivable',], },
+            silent: new Set([SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],),
           },),
           judgeModelIds: JUDGES,
           sourceText: '猫猫黎明追蝴蝶。碗是满的。',

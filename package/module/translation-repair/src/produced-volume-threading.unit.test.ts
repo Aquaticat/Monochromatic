@@ -34,10 +34,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   producedVolumeBound,
   produceTranslateSlate,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type SyntheticClient,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
@@ -72,7 +73,7 @@ const MERGED_TEXT = 'A day in the cat\'s life: it dozes on the windowsill.';
 /**
  Model whose candidate is produced and then re-asked.
  */
-const TRANSLATOR = 'hf:moonshotai/Kimi-K3';
+const TRANSLATOR = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  Characters the runaway that opened `#184` emitted for a 56-character slice.

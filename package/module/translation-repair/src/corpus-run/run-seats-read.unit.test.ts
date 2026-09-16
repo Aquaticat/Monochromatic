@@ -20,11 +20,12 @@ import {
 
 import {
   awaitBenchQuorum,
-  type BudgetView,
   readJudgeSeats,
   rosterQuorumSize,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  type BudgetView,
   WritingBenchUnreachableError,
 } from '../../dist/final/node/index.mjs';
 
@@ -33,7 +34,7 @@ import {
 /**
  The Hyper-slow judge.
  */
-const QWEN = 'hf:Qwen/Qwen3.8-27B';
+const QWEN = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Every provider wet.

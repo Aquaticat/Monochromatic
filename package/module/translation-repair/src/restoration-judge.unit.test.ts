@@ -12,13 +12,16 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   isRestorationJudgeWire,
   resolveRestorationJudgment,
   runRestorationJudge,
-  type SyntheticClient,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type RosterModelId,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -106,9 +109,9 @@ function judgingClient(
  Three-judge roster for the stage tests.
  */
 const JUDGES: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ];
 
 await describe({
@@ -167,9 +170,9 @@ await describe({
         const judgments = await runRestorationJudge({
           client: judgingClient({
             verdictsByModel: {
-              'hf:zai-org/GLM-5.3-Flash': ['restored', 'restored',],
-              'hf:Qwen/Qwen3.8-27B': ['partial', 'restored',],
-              'hf:moonshotai/Kimi-K3': ['absent', 'restored',],
+              [SEAT_SYNTHETIC_VISION_EDITOR]: ['restored', 'restored',],
+              [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['partial', 'restored',],
+              [SEAT_SYNTHETIC_VISION_WITHHELD]: ['absent', 'restored',],
             },
           },),
           judgeModelIds: JUDGES,
@@ -194,10 +197,10 @@ await describe({
         const judgments = await runRestorationJudge({
           client: judgingClient({
             verdictsByModel: {
-              'hf:zai-org/GLM-5.3-Flash': ['restored', 'restored',],
-              'hf:Qwen/Qwen3.8-27B': ['absent', 'restored',],
+              [SEAT_SYNTHETIC_VISION_EDITOR]: ['restored', 'restored',],
+              [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['absent', 'restored',],
             },
-            silent: new Set(['hf:moonshotai/Kimi-K3',],),
+            silent: new Set([SEAT_SYNTHETIC_VISION_WITHHELD,],),
           },),
           judgeModelIds: JUDGES,
           sourceText: '猫猫追蝴蝶。碗是满的。',
@@ -219,8 +222,8 @@ await describe({
         /** Only one of three judges answers: quorum unmet. */
         const judgments = await runRestorationJudge({
           client: judgingClient({
-            verdictsByModel: { 'hf:zai-org/GLM-5.3-Flash': ['restored', 'restored',], },
-            silent: new Set(['hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],),
+            verdictsByModel: { [SEAT_SYNTHETIC_VISION_EDITOR]: ['restored', 'restored',], },
+            silent: new Set([SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],),
           },),
           judgeModelIds: JUDGES,
           sourceText: '猫猫追蝴蝶。碗是满的。',

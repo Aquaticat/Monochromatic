@@ -14,18 +14,23 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  messageText,
+  OverlapRefusedError,
+  persistRefinePhaseSlice,
+  runRefinePhase,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkPair,
   type ChunkRepairOutcome,
   type IssueAuthorship,
-  messageText,
-  OverlapRefusedError,
-  persistRefinePhaseSlice,
   type RefinedSliceSettlement,
   type RepairModels,
   type RosterModelId,
-  runRefinePhase,
   type SliceCache,
   type SyntheticClient,
   UnpreparedSliceError,
@@ -60,34 +65,34 @@ const SOURCE_TEXT = '猫猫每天下午都在窗台上晒太阳。';
  distinguishable ids, which is what lets an assertion tell a union of both
  stages apart from either stage alone.
  */
-const EDITOR_WHO_DID_NOT_REFINE: RosterModelId = 'minimax-m3';
+const EDITOR_WHO_DID_NOT_REFINE: RosterModelId = SEAT_HYPER_VISION;
 
 /**
  Refiner the scripted client answers as, which is the fixture's other editor.
  */
-const REFINER_THAT_REWROTE: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
+const REFINER_THAT_REWROTE: RosterModelId = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /**
  Roster with the lane on, refiners disjoint from checkers.
  */
 const MODELS: RepairModels = {
-  criticModelIds: ['hf:zai-org/GLM-5.3-Flash',],
-  panelModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+  criticModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+  panelModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
   editorModelIds: [
     REFINER_THAT_REWROTE,
     EDITOR_WHO_DID_NOT_REFINE,
   ],
   judgeModelIds: [
-    'hf:zai-org/GLM-5.3-Flash',
-    'hf:Qwen/Qwen3.8-27B',
-    'hf:moonshotai/Kimi-K3',
-    'deepseek-v4.1-flash',
+    SEAT_SYNTHETIC_VISION_EDITOR,
+    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+    SEAT_SYNTHETIC_VISION_WITHHELD,
+    SEAT_HYPER_OPENROUTER_UNMEASURED,
   ],
   refinerModelIds: [REFINER_THAT_REWROTE,],
   checkerModelIds: [
-    'hf:Qwen/Qwen3.8-27B',
-    'hf:moonshotai/Kimi-K3',
-    'deepseek-v4.1-flash',
+    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+    SEAT_SYNTHETIC_VISION_WITHHELD,
+    SEAT_HYPER_OPENROUTER_UNMEASURED,
   ],
 };
 

@@ -54,6 +54,7 @@ import {
   gatherAttributionEntries,
   lockRunsDir,
   readPlacement,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '../../dist/final/node/index.mjs';
 
 //region Sink naming tests
@@ -205,7 +206,7 @@ const SOUND_ARTIFACT = JSON.stringify({
   chunkCritics: [
     {
       sliceIndex: 0,
-      heardCriticIds: ['hf:openai/gpt-oss-120b',],
+      heardCriticIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
       claimAttributions: [],
     },
   ],

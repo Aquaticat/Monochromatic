@@ -36,14 +36,15 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   buildSettledTwoLaneArtifact,
-  NO_PAGE_ASSEMBLY,
-  type ChunkPair,
   collectTwoLaneShippedRegions,
-  type DocumentLanesResult,
   makeInsertionChunk,
+  NO_PAGE_ASSEMBLY,
+  preparationIdentity,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  type ChunkPair,
+  type DocumentLanesResult,
   type PipelineDigest,
   type PreparationIdentity,
-  preparationIdentity,
   type PreparedDocumentPair,
   type SliceDeliveryRecord,
 } from '../../dist/final/node/index.mjs';
@@ -265,7 +266,7 @@ function kittenLanes(): DocumentLanesResult {
       sliceCritics: [
         {
           sliceIndex: 0,
-          heardCriticIds: ['hf:zai-org/GLM-5.3-Flash',],
+          heardCriticIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
           claimAttributions: [],
         },
       ],

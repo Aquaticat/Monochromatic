@@ -38,10 +38,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  settleRefinedSlice,
   type ChunkRepairOutcome,
   type RepairModels,
   type RosterModelId,
-  settleRefinedSlice,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -72,7 +75,7 @@ const CLIENT_WAS_REACHED = 'the refusing client was asked for a completion';
  Model this lane hands a paragraph to for rewriting, named once so the roster
  and the finding a case reads both spell the same id.
  */
-const REFINER: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
+const REFINER: RosterModelId = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /**
  Refiner roster, one model so a lost voice leaves no quorum and the stage's
@@ -85,18 +88,18 @@ const REFINERS: readonly RosterModelId[] = [REFINER,];
  runs it.
  */
 const MODELS: RepairModels = {
-  criticModelIds: ['hf:zai-org/GLM-5.3-Flash',],
-  panelModelIds: ['hf:zai-org/GLM-5.3-Flash',],
-  editorModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+  criticModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+  panelModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+  editorModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
   judgeModelIds: [
-    'hf:zai-org/GLM-5.3-Flash',
-    'hf:Qwen/Qwen3.8-27B',
-    'hf:moonshotai/Kimi-K3',
+    SEAT_SYNTHETIC_VISION_EDITOR,
+    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+    SEAT_SYNTHETIC_VISION_WITHHELD,
   ],
   refinerModelIds: REFINERS,
   checkerModelIds: [
-    'hf:Qwen/Qwen3.8-27B',
-    'hf:moonshotai/Kimi-K3',
+    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+    SEAT_SYNTHETIC_VISION_WITHHELD,
   ],
 };
 

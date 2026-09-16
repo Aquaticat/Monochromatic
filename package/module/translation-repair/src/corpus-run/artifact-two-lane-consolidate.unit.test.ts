@@ -25,11 +25,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ConsolidationSettlement,
-  type ConsolidationTerminal,
   describeConsolidateSlice,
   hashContent,
   parseConsolidationPolish,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  type ConsolidationSettlement,
+  type ConsolidationTerminal,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -191,13 +193,13 @@ await describe({
             paragraphDigests: [hashContent({ content: text, },),],
             seats: [
               {
-                modelId: 'hf:zai-org/GLM-5.3-Flash' as const,
+                modelId: SEAT_SYNTHETIC_VISION_EDITOR,
                 status: acceptable ? 'acceptable' as const : 'unacceptable' as const,
                 findings: rejectedFindings,
                 reason: acceptable ? 'ready' : 'material defect remains',
               },
               {
-                modelId: 'hf:Qwen/Qwen3.8-27B' as const,
+                modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
                 status: 'acceptable' as const,
                 findings: [],
                 reason: 'ready',
@@ -223,8 +225,8 @@ await describe({
             proposedText: texts[2],
             text: texts[2],
             changed: true,
-            refinersHeard: ['hf:zai-org/GLM-5.3-Flash',],
-            contributors: ['hf:zai-org/GLM-5.3-Flash',],
+            refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            contributors: [SEAT_SYNTHETIC_VISION_EDITOR,],
             rounds: [],
             gate: {
               choice: 'polished',

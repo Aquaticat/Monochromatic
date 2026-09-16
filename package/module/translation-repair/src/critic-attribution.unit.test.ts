@@ -26,25 +26,28 @@ import {
 
 import {
   buildSliceCriticRecords,
-  type ClaimEmission,
   collectClaimAttributions,
   retainAttributions,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  type ClaimEmission,
 } from '../dist/final/node/index.mjs';
 
 /**
  Critic that finds the sunbathing omission.
  */
-const TABBY = 'hf:openai/gpt-oss-120b';
+const TABBY = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
 
 /**
  Second critic, for independent-support cases.
  */
-const CALICO = 'hf:zai-org/GLM-5.3-Flash';
+const CALICO = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /**
  Third critic, ordered before both by model id so sorting is observable.
  */
-const BENGAL = 'hf:Qwen/Qwen3.8-27B';
+const BENGAL = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Claim the cases attribute.
@@ -338,16 +341,16 @@ await describe({
           outcomes: [
             {
               sliceIndex: 1,
-              heardCriticIds: ['hf:Qwen/Qwen3.8-27B', 'hf:openai/gpt-oss-120b',],
+              heardCriticIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
               claimAttributions: [
                 {
                   claimId: 'issue/aaa',
                   proposers: [
-                    { modelId: 'hf:Qwen/Qwen3.8-27B', emissionCount: 1, },
-                    { modelId: 'hf:openai/gpt-oss-120b', emissionCount: 1, },
+                    { modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, emissionCount: 1, },
+                    { modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, emissionCount: 1, },
                   ],
                 },
-                { claimId: 'issue/bbb', proposers: [{ modelId: 'hf:Qwen/Qwen3.8-27B', emissionCount: 1, },], },
+                { claimId: 'issue/bbb', proposers: [{ modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, emissionCount: 1, },], },
               ],
             },
             { sliceIndex: 0, heardCriticIds: [], claimAttributions: [], },
@@ -362,14 +365,14 @@ await describe({
             { sliceIndex: 0, heardCriticIds: [], claimAttributions: [], },
             {
               sliceIndex: 1,
-              heardCriticIds: ['hf:openai/gpt-oss-120b', 'hf:Qwen/Qwen3.8-27B',],
+              heardCriticIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
               claimAttributions: [
-                { claimId: 'issue/bbb', proposers: [{ modelId: 'hf:Qwen/Qwen3.8-27B', emissionCount: 1, },], },
+                { claimId: 'issue/bbb', proposers: [{ modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, emissionCount: 1, },], },
                 {
                   claimId: 'issue/aaa',
                   proposers: [
-                    { modelId: 'hf:openai/gpt-oss-120b', emissionCount: 1, },
-                    { modelId: 'hf:Qwen/Qwen3.8-27B', emissionCount: 1, },
+                    { modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, emissionCount: 1, },
+                    { modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, emissionCount: 1, },
                   ],
                 },
               ],

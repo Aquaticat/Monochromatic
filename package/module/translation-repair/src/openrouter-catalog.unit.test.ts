@@ -13,17 +13,22 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  BEDROCK_ONLY_ROSTER_IDS,
   OPENROUTER_DROPPED_SEATS,
-  OPENROUTER_WITHHELD,
   OPENROUTER_MODELS,
   OPENROUTER_PROVIDER_PREFERENCES,
+  OPENROUTER_WITHHELD,
   openRouterIdFor,
   openRouterProviderPreferencesFor,
   openRouterServesLabel,
   reachOf,
-  visionReachOf,
-  BEDROCK_ONLY_ROSTER_IDS,
   ROSTER_MODEL_IDS,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  visionReachOf,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -79,16 +84,16 @@ await describe({
         // noname pass of 2026-09-09: 22 calls, 1.14 USD, after Synthetic
         // dried mid-phase).
         expect(openRouterServesLabel('moonshotai/kimi-k3',),).toBe(true,);
-        expect(reachOf({ modelId: 'hf:moonshotai/Kimi-K3', },),).toMatchObject({
+        expect(reachOf({ modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },),).toMatchObject({
           synthetic: true,
           openrouter: false,
         },);
-        expect(visionReachOf({ modelId: 'hf:moonshotai/Kimi-K3', },).openrouter,).toBe(false,);
-        expect(reachOf({ modelId: 'hf:Qwen/Qwen3.8-27B', },),).toMatchObject({
+        expect(visionReachOf({ modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },).openrouter,).toBe(false,);
+        expect(reachOf({ modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, },),).toMatchObject({
           synthetic: true,
           openrouter: false,
         },);
-        expect(reachOf({ modelId: 'glm-5.3', },),).toMatchObject({
+        expect(reachOf({ modelId: SEAT_HYPER_ONLY, },),).toMatchObject({
           hyper: true,
           openrouter: false,
         },);
@@ -211,15 +216,15 @@ await describe({
     it({
       name: 'TRANSLATES each spelling the other providers use into this provider\'s slug',
       fn: async () => {
-        expect(openRouterIdFor({ modelId: 'hf:moonshotai/Kimi-K3', },),).toEqual({
+        expect(openRouterIdFor({ modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },),).toEqual({
           served: true,
           id: 'moonshotai/kimi-k3',
         },);
-        expect(openRouterIdFor({ modelId: 'minimax-m3', },),).toEqual({
+        expect(openRouterIdFor({ modelId: SEAT_HYPER_VISION, },),).toEqual({
           served: true,
           id: 'minimax/minimax-m3',
         },);
-        expect(openRouterIdFor({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
+        expect(openRouterIdFor({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),).toEqual({
           served: true,
           id: 'z-ai/glm-5.3-flash',
         },);
@@ -235,7 +240,7 @@ await describe({
       name: 'ANSWERS for a slug and not for a roster spelling, since the roster never names a model this way',
       fn: async () => {
         expect(openRouterServesLabel('moonshotai/kimi-k3',),).toBe(true,);
-        expect(openRouterServesLabel('hf:moonshotai/Kimi-K3',),).toBe(false,);
+        expect(openRouterServesLabel(SEAT_SYNTHETIC_VISION_WITHHELD,),).toBe(false,);
         expect(openRouterServesLabel('kimi-k3',),).toBe(false,);
       },
     },),

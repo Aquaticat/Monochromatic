@@ -17,12 +17,15 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  COMPLETION_CAP,
   createOpenRouterClient,
   InStreamProviderError,
   OPENROUTER_CHAT_URL,
-  COMPLETION_CAP,
   OPENROUTER_CREDITS_URL,
   OpenRouterModelNotServedError,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   SyntheticHttpError,
   type TransportExchange,
 } from '../dist/final/node/index.mjs';
@@ -147,7 +150,7 @@ await describe({
          One schema'd call as a stage would make it.
          */
         const reply = await client.chatText({
-          modelId: 'deepseek-v4.1-flash',
+          modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
           messages: [
             { role: 'system', content: 'You are a careful cat.', },
             { role: 'user', content: 'Where does the cat sleep?', },
@@ -212,7 +215,7 @@ await describe({
         // THE MEASURED CEILING RIDES ON EVERY CALL since 2026-09-09: the
         // per-token provider bills an abandoned stream to its end on endpoints
         // that do not honour a cancel, and this is the bound that holds there.
-        expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP['deepseek-v4.1-flash'], },);
+        expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP[SEAT_HYPER_OPENROUTER_UNMEASURED], },);
       },
     },),
 
@@ -222,13 +225,13 @@ await describe({
       fn: async () => {
         const { client, exchanges, } = recordedClient({},);
         await client.chatText({
-          modelId: 'deepseek-v4.1-flash',
+          modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
           messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
           signal: SIGNAL,
           maxTokens: 1_000_000,
         },);
         await client.chatText({
-          modelId: 'deepseek-v4.1-flash',
+          modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
           messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
           signal: SIGNAL,
           maxTokens: 50,
@@ -239,7 +242,7 @@ await describe({
         const bodies = exchanges.map(function parse(exchange,): unknown {
           return JSON.parse(exchange.bodyJson ?? '{}',);
         },);
-        expect(bodies[0],).toMatchObject({ max_tokens: COMPLETION_CAP['deepseek-v4.1-flash'], },);
+        expect(bodies[0],).toMatchObject({ max_tokens: COMPLETION_CAP[SEAT_HYPER_OPENROUTER_UNMEASURED], },);
         expect(bodies[1],).toMatchObject({ max_tokens: 50, },);
       },
     },),
@@ -251,7 +254,7 @@ await describe({
       fn: async () => {
         const { client, exchanges, } = recordedClient({},);
         await client.chatText({
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
           signal: SIGNAL,
         },);
@@ -346,7 +349,7 @@ await describe({
         let thrown: unknown;
         try {
           await client.chatText({
-            modelId: 'hf:moonshotai/Kimi-K3',
+            modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
             messages: [{ role: 'user', content: 'meow', },],
             signal: SIGNAL,
           },);
@@ -376,7 +379,7 @@ await describe({
         let thrown: unknown;
         try {
           await client.chatText({
-            modelId: 'hf:moonshotai/Kimi-K3',
+            modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
             messages: [{ role: 'user', content: 'meow', },],
             signal: SIGNAL,
           },);

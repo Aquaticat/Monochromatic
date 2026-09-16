@@ -21,16 +21,22 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  messageText,
+  prepareDocumentPair,
+  runDocumentLanes,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkRepairOutcome,
-  messageText,
-  prepareDocumentPair,
   type RepairModels,
-  runDocumentLanes,
+  type RosterModelId,
   type SliceCache,
   type SyntheticClient,
-  type RosterModelId,
   type TranslateModels,
 } from '../dist/final/node/index.mjs';
 
@@ -77,12 +83,12 @@ const FRESH = 'The cat naps on the windowsill.';
  Models that produce and judge.
  */
 const ROSTER: readonly RosterModelId[] = [
-  'hf:moonshotai/Kimi-K3',
-  'hf:zai-org/GLM-5.3-Flash',
-  'minimax-m3',
-  'hf:Qwen/Qwen3.8-27B',
-  'deepseek-v4.1-flash',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ];
 
 /**

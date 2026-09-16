@@ -30,12 +30,14 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
+  readDocumentPictures,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChunkPair,
   type PairedReading,
-  readDocumentPictures,
+  type RosterModelId,
   type SliceCache,
   type SyntheticClient,
-  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -72,8 +74,8 @@ async function sawText(): Promise<{
  Vision sub-roster, which is exactly these two models.
  */
 const READERS: readonly RosterModelId[] = [
-  'hf:moonshotai/Kimi-K3',
-  'hf:Qwen/Qwen3.8-27B',
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ];
 
 /**
@@ -194,8 +196,8 @@ function agreeingClient(): {
    Transcription each reader returns.
    */
   const scripted: Readonly<Record<string, string>> = {
-    'hf:moonshotai/Kimi-K3': READING,
-    'hf:Qwen/Qwen3.8-27B': AGREEING_READING,
+    [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+    [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
   };
 
   return {
@@ -305,8 +307,8 @@ function disagreeingClient(): { readonly client: SyntheticClient; } {
    Readings that share no words.
    */
   const scripted: Readonly<Record<string, string>> = {
-    'hf:moonshotai/Kimi-K3': READING,
-    'hf:Qwen/Qwen3.8-27B': 'A handwritten note about kibble prices at the market stall.',
+    [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+    [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'A handwritten note about kibble prices at the market stall.',
   };
   return {
     client: {
@@ -511,7 +513,7 @@ await describe({
         const stored: PairedReading = {
           kind: 'corroborated',
           readings: [{
-            modelId: 'hf:moonshotai/Kimi-K3',
+            modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
             text: READING,
           },],
           overlap: 1,

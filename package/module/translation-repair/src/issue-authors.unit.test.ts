@@ -14,14 +14,16 @@ import {
 import {
   appliedIssuesByEnvelope,
   collectIssueAuthors,
+  NOBODY_WROTE_IT,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type EditableEnvelope,
   type EditorStageResult,
   type PatchOperation,
   type RepairJudgedRound,
-  NOBODY_WROTE_IT,
   type RepairSlateEntry,
-  type ShippedProducer,
   type RosterModelId,
+  type ShippedProducer,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -37,12 +39,12 @@ const PAW = 'adjudicated/paw';
 /**
  Model that wrote the text that ships unless a case says otherwise.
  */
-const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
+const AUTHOR: RosterModelId = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /**
  Second model, for rivals and for candidates that lose.
  */
-const HELPER: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
+const HELPER: RosterModelId = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Builds an editable envelope carrying the issues it serves.

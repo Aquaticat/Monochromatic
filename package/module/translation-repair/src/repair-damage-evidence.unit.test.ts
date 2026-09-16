@@ -23,6 +23,7 @@ import {
 
 import {
   damageClaimLinesBySlice,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type RegionDefectTally,
   type ScreenedDefectClaim,
 } from '../dist/final/node/index.mjs';
@@ -55,7 +56,7 @@ function claimOf(
   },
 ): ScreenedDefectClaim {
   return {
-    modelId: 'hf:moonshotai/Kimi-K3',
+    modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
     category,
     severity: 'moderate',
     evidence,

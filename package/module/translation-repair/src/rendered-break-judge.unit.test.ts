@@ -8,12 +8,16 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   judgeTranslateSlate,
   messageText,
-  type ProducedSlate,
   readSliceSkeleton,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type ProducedSlate,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -54,8 +58,8 @@ await describe({
         /** Both candidates are already available, isolating judging from generation. */
         const produced: ProducedSlate = {
           candidates: [
-            { producer: { kind: 'model', modelId: 'inception/mercury-2.5', }, value: { text: FLAT, origin: 'fresh', }, rendered: FLAT, },
-            { producer: { kind: 'model', modelId: 'gemma-4-26b-a4b-it', }, value: { text: KEPT, origin: 'fresh', }, rendered: KEPT, },
+            { producer: { kind: 'model', modelId: SEAT_OPENROUTER_ONLY, }, value: { text: FLAT, origin: 'fresh', }, rendered: FLAT, },
+            { producer: { kind: 'model', modelId: SEAT_HYPER_TEXT_BEDROCK, }, value: { text: KEPT, origin: 'fresh', }, rendered: KEPT, },
           ],
           heardTranslators: 2,
           findings: [],
@@ -64,7 +68,7 @@ await describe({
         const result = await judgeTranslateSlate({
           client,
           produced,
-          judgeModelIds: ['hf:openai/gpt-oss-120b', 'hf:Qwen/Qwen3.8-27B',],
+          judgeModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
           sourceText: '> 猫醒了。  \n> 鸟唱了。',
           incumbentText: '',
           incumbentKind: 'absent',
@@ -82,8 +86,8 @@ await describe({
           if (parsed.kind === 'read') {
             for (const sheet of sheets) {
               expect(sheet,).toContain(`"Candidate ${String(entry.index,)}" explicit breaks by top-level block: ${JSON.stringify(parsed.skeleton.explicitBreaks,)}`,);
-              expect(sheet,).not.toContain('inception/mercury-2.5',);
-              expect(sheet,).not.toContain('gemma-4-26b-a4b-it',);
+              expect(sheet,).not.toContain(SEAT_OPENROUTER_ONLY,);
+              expect(sheet,).not.toContain(SEAT_HYPER_TEXT_BEDROCK,);
             }
           }
         }

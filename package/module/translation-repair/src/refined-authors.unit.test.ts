@@ -13,6 +13,9 @@ import {
 
 import {
   collectRefinedAuthors,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
@@ -24,17 +27,17 @@ const WHISKER = 'adjudicated/whisker';
 /**
  Model that repaired the text the refiners rewrote.
  */
-const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
+const AUTHOR: RosterModelId = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /**
  Second repairing model, for the case where nothing was rewritten at all.
  */
-const HELPER: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
+const HELPER: RosterModelId = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Model that only ever rewrites, never repairs.
  */
-const REFINER: RosterModelId = 'hf:openai/gpt-oss-120b';
+const REFINER: RosterModelId = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
 
 await describe({
   name: collectRefinedAuthors.name,

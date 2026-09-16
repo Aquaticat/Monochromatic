@@ -12,8 +12,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type CandidateProducer,
   collectIssueAuthors,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  type CandidateProducer,
   type EditableEnvelope,
   type EditorStageResult,
   type PatchOperation,
@@ -30,12 +32,12 @@ const WHISKER = 'adjudicated/whisker';
 /**
  Model that wins the envelope rounds below unless a case says otherwise.
  */
-const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
+const AUTHOR: RosterModelId = SEAT_SYNTHETIC_VISION_EDITOR;
 
 /**
  Second model, for composites and for candidates that lose.
  */
-const HELPER: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
+const HELPER: RosterModelId = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  What ships in every `collectIssueAuthors` case here.

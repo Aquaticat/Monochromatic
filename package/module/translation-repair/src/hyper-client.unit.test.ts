@@ -23,9 +23,12 @@ import {
   isJsonRecord,
   MalformedCompletionError,
   ModelNotServedError,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SyntheticHttpError,
   type ModelTransport,
   type RosterModelId,
-  SyntheticHttpError,
   type TransportExchange,
   type TransportReply,
 } from '../dist/final/node/index.mjs';
@@ -279,7 +282,7 @@ await describe({
         },);
         /** Reply of one exchange naming the roster spelling. */
         const reply = await client.chatText({
-          modelId: 'hf:moonshotai/Kimi-K3',
+          modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
           messages: MESSAGES,
           signal: new AbortController().signal,
           responseFormat: RESPONSE_FORMAT,
@@ -312,7 +315,7 @@ await describe({
           transport,
         },);
         await client.chatText({
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           messages: MESSAGES,
           signal: new AbortController().signal,
           responseFormat: RESPONSE_FORMAT,
@@ -339,7 +342,7 @@ await describe({
           transport,
         },);
         await client.chatText({
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);
@@ -369,7 +372,7 @@ await describe({
           transport,
         },);
         await client.chatText({
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);
@@ -400,7 +403,7 @@ await describe({
           transport,
         },);
         await client.chatText({
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           messages: MESSAGES,
           signal: new AbortController().signal,
           responseFormat: RESPONSE_FORMAT,
@@ -437,7 +440,7 @@ await describe({
           transport,
         },);
         await client.chatText({
-          modelId: 'hf:openai/gpt-oss-120b',
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           messages: MESSAGES,
           signal: new AbortController().signal,
           maxTokens: 1_000_000,
@@ -447,7 +450,7 @@ await describe({
         // its measured cap (`completion-cap.ts`) sits under both since
         // 2026-09-09; a request for more buys a truncation reported as a
         // schema mismatch.
-        expect(sentBody({ exchanges, },).max_tokens,).toBe(COMPLETION_CAP['hf:openai/gpt-oss-120b'],);
+        expect(sentBody({ exchanges, },).max_tokens,).toBe(COMPLETION_CAP[SEAT_SYNTHETIC_TEXT_EVERYWHERE],);
       },
     },),
 
@@ -504,7 +507,7 @@ await describe({
 
         try {
           await client.chatText({
-            modelId: 'minimax-m3',
+            modelId: SEAT_HYPER_VISION,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -539,7 +542,7 @@ await describe({
 
         try {
           await client.chatText({
-            modelId: 'minimax-m3',
+            modelId: SEAT_HYPER_VISION,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -577,7 +580,7 @@ await describe({
 
         /** Answer the second attempt carried. */
         const reply = await client.chatText({
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);
@@ -603,7 +606,7 @@ await describe({
         },);
         /** Outcome of one schema-validated exchange. */
         const outcome = await client.chatJson({
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           messages: MESSAGES,
           signal: new AbortController().signal,
           responseFormat: RESPONSE_FORMAT,
@@ -636,7 +639,7 @@ await describe({
         },);
         /** Outcome of one schema-validated exchange. */
         const outcome = await client.chatJson({
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           messages: MESSAGES,
           signal: new AbortController().signal,
           responseFormat: RESPONSE_FORMAT,
@@ -739,7 +742,7 @@ await describe({
           { length: OVERLAPPING_CALLS, },
           async function one(): Promise<unknown> {
             return await client.chatText({
-              modelId: 'minimax-m3',
+              modelId: SEAT_HYPER_VISION,
               messages: MESSAGES,
               signal: new AbortController().signal,
             },);
@@ -792,7 +795,7 @@ await describe({
           { length: FINITE_TEST_WIDTH + 1, },
           function callModel() {
             return client.chatText({
-              modelId: 'minimax-m3',
+              modelId: SEAT_HYPER_VISION,
               messages: MESSAGES,
               signal: new AbortController().signal,
             },);

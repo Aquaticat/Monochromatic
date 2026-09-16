@@ -1,16 +1,20 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
-  type BlockPairingWire,
   createSyntheticClient,
   pairBlocksWithRoster,
   PairingEvidenceError,
   readBlockPairingOutcomes,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type BlockPairingWire,
   type RosterModelId,
   type RoundOutcome,
 } from '../dist/final/node/index.mjs';
 
-const roster = ['hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:zai-org/GLM-5.3-Flash',] as const;
+const roster = [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_VISION_EDITOR,] as const;
 const l = tagged({ tag: 'pairing-evidence-identity-test', },);
 const wire: BlockPairingWire = { pairs: [{ source: 0, target: 0, },], };
 const heard = (modelId: RosterModelId): RoundOutcome<BlockPairingWire> => ({ modelId, voice: { heard: true, value: wire, }, });
@@ -21,7 +25,7 @@ const invalid: readonly {
   readonly outcomes: readonly RoundOutcome<BlockPairingWire>[];
 }[] = [
   { name: 'one identity cannot manufacture two endorsements', modelIds: roster, outcomes: [heard(roster[0]), heard(roster[0]),], },
-  { name: 'unconfigured outcomes are not electorate members', modelIds: roster, outcomes: [heard('hf:openai/gpt-oss-120b'),], },
+  { name: 'unconfigured outcomes are not electorate members', modelIds: roster, outcomes: [heard(SEAT_SYNTHETIC_TEXT_EVERYWHERE),], },
   { name: 'reordered outcomes are not a final roster-ordered record', modelIds: roster, outcomes: [heard(roster[1]), heard(roster[0]),], },
   { name: 'duplicate missing outcomes are still duplicate seat evidence', modelIds: roster, outcomes: [missing(roster[0]), missing(roster[0]),], },
   { name: 'an empty electorate is not a pairing configuration', modelIds: [], outcomes: [], },

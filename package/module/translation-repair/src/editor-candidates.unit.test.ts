@@ -27,8 +27,11 @@ import {
 
 import {
   buildEditorCandidates,
-  type EditableEnvelope,
   hashContent,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type EditableEnvelope,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -73,9 +76,9 @@ const ENVELOPES: readonly EditableEnvelope[] = [
  rather than by roster position would be visible.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:moonshotai/Kimi-K3',
-  'hf:Qwen/Qwen3.8-27B',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
 
 /**

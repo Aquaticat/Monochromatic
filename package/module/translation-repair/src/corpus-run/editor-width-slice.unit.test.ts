@@ -38,13 +38,18 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  hashContent,
+  runWidthSlice,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type AdjudicatedIssue,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type EditableEnvelope,
-  hashContent,
   type RosterModelId,
-  runWidthSlice,
   type SyntheticClient,
   type WidthProbeInput,
 } from '../../dist/final/node/index.mjs';
@@ -73,14 +78,14 @@ const SOURCE_TEXT = '猫猫在窗台上睡觉。';
  again and the wide arm calls them plus one more.
  */
 const SHARED_EDITORS = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;
 
 /**
  Seat only the wide arm adds, which is the variable under test.
  */
-const WIDE_ONLY_EDITOR = 'deepseek-v4.1-flash';
+const WIDE_ONLY_EDITOR = SEAT_HYPER_OPENROUTER_UNMEASURED;
 
 /**
  Narrow roster.
@@ -100,8 +105,8 @@ const WIDE_EDITORS: readonly RosterModelId[] = [
  Panel, held fixed across every arm, and disinterested: no seat here edits.
  */
 const JUDGES: readonly RosterModelId[] = [
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ];
 
 /**

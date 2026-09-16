@@ -20,13 +20,17 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
+  createSeatTally,
+  RUN_SEATS,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  seatReportLines,
+  seatTallyClient,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChatTextReply,
-  createSeatTally,
-  RUN_SEATS,
-  seatReportLines,
-  seatTallyClient,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -146,21 +150,21 @@ await describe({
       fn: async () => {
         /** Tally under test. */
         const tally = createSeatTally();
-        tally.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'threw', },);
-        tally.record({ modelId: 'hf:openai/gpt-oss-120b', outcome: 'usable', },);
-        tally.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'unusable', },);
-        tally.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'usable', },);
+        tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+        tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+        tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'unusable', },);
+        tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'usable', },);
 
         expect(tally.counts(),).toStrictEqual([
           {
-            modelId: 'gemma-4-26b-a4b-it',
+            modelId: SEAT_HYPER_TEXT_BEDROCK,
             asked: 3,
             usable: 1,
             unusable: 1,
             threw: 1,
           },
           {
-            modelId: 'hf:openai/gpt-oss-120b',
+            modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
             asked: 1,
             usable: 1,
             unusable: 0,
@@ -176,15 +180,15 @@ await describe({
       fn: async () => {
         /** Tally with one dark seat, one mixed seat, and one clean seat. */
         const tally = createSeatTally();
-        tally.record({ modelId: 'minimax-m3', outcome: 'threw', },);
-        tally.record({ modelId: 'minimax-m3', outcome: 'unusable', },);
-        tally.record({ modelId: 'hf:zai-org/GLM-5.3-Flash', outcome: 'unusable', },);
-        tally.record({ modelId: 'hf:zai-org/GLM-5.3-Flash', outcome: 'usable', },);
-        tally.record({ modelId: 'hf:openai/gpt-oss-120b', outcome: 'usable', },);
+        tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
+        tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'unusable', },);
+        tally.record({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, outcome: 'unusable', },);
+        tally.record({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, outcome: 'usable', },);
+        tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
 
         expect(tally.dark().map(function toId(count,): string {
           return count.modelId;
-        },),).toStrictEqual(['minimax-m3',],);
+        },),).toStrictEqual([SEAT_HYPER_VISION,],);
       },
     },),
 
@@ -193,7 +197,7 @@ await describe({
       fn: async () => {
         /** Tally under test. */
         const tally = createSeatTally();
-        tally.record({ modelId: 'minimax-m3', outcome: 'threw', },);
+        tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
         tally.reset();
 
         expect(tally.counts(),).toStrictEqual([],);
@@ -205,7 +209,7 @@ await describe({
       name: 'SHARES one run-wide tally, which every client the factory builds counts into',
       fn: async () => {
         RUN_SEATS.reset();
-        RUN_SEATS.record({ modelId: 'minimax-m3', outcome: 'usable', },);
+        RUN_SEATS.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
 
         expect(RUN_SEATS.counts().length,).toBe(1,);
 
@@ -233,14 +237,14 @@ await describe({
 
         /** Reply as the caller sees it. */
         const reply = await client.chatText({
-          modelId: 'hf:openai/gpt-oss-120b',
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           messages: MESSAGES,
           signal: SIGNAL,
         },);
 
         expect(reply.text,).toBe('喵。',);
         expect(tally.counts(),).toStrictEqual([{
-          modelId: 'hf:openai/gpt-oss-120b',
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           asked: 1,
           usable: 1,
           unusable: 0,
@@ -262,7 +266,7 @@ await describe({
 
         /** Outcome as the caller sees it. */
         const outcome = await client.chatJson({
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isCatVerdict,
@@ -271,7 +275,7 @@ await describe({
         expect(outcome.kind,).toBe('ok',);
         expect((outcome.kind === 'ok') ? outcome.value.verdict : '',).toBe('purr',);
         expect(tally.counts(),).toStrictEqual([{
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           asked: 1,
           usable: 1,
           unusable: 0,
@@ -294,7 +298,7 @@ await describe({
 
         /** Outcome as the caller sees it. */
         const outcome = await client.chatJson({
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isCatVerdict,
@@ -302,7 +306,7 @@ await describe({
 
         expect(outcome.kind,).toBe('refusal-shaped',);
         expect(tally.counts(),).toStrictEqual([{
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           asked: 1,
           usable: 0,
           unusable: 1,
@@ -326,7 +330,7 @@ await describe({
         let fromText: unknown;
         try {
           await client.chatText({
-            modelId: 'gemma-4-26b-a4b-it',
+            modelId: SEAT_HYPER_TEXT_BEDROCK,
             messages: MESSAGES,
             signal: SIGNAL,
           },);
@@ -339,7 +343,7 @@ await describe({
         let fromJson: unknown;
         try {
           await client.chatJson({
-            modelId: 'gemma-4-26b-a4b-it',
+            modelId: SEAT_HYPER_TEXT_BEDROCK,
             messages: MESSAGES,
             signal: SIGNAL,
             validate: isCatVerdict,
@@ -352,7 +356,7 @@ await describe({
         expect(fromText,).toBe(FAILURE,);
         expect(fromJson,).toBe(FAILURE,);
         expect(tally.counts(),).toStrictEqual([{
-          modelId: 'gemma-4-26b-a4b-it',
+          modelId: SEAT_HYPER_TEXT_BEDROCK,
           asked: 2,
           usable: 0,
           unusable: 0,
@@ -394,9 +398,9 @@ await describe({
       fn: async () => {
         /** Tally in which every seat produced something usable. */
         const tally = createSeatTally();
-        tally.record({ modelId: 'hf:openai/gpt-oss-120b', outcome: 'usable', },);
-        tally.record({ modelId: 'minimax-m3', outcome: 'unusable', },);
-        tally.record({ modelId: 'minimax-m3', outcome: 'usable', },);
+        tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+        tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'unusable', },);
+        tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
 
         expect(seatReportLines({ tally, },),).toStrictEqual([
           'SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0',
@@ -410,10 +414,10 @@ await describe({
       fn: async () => {
         /** Tally with two dark seats among three. */
         const tally = createSeatTally();
-        tally.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'threw', },);
-        tally.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'threw', },);
-        tally.record({ modelId: 'hf:openai/gpt-oss-120b', outcome: 'usable', },);
-        tally.record({ modelId: 'minimax-m3', outcome: 'unusable', },);
+        tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+        tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+        tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+        tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'unusable', },);
 
         /** Lines as a reader sees them. */
         const lines = seatReportLines({ tally, },);

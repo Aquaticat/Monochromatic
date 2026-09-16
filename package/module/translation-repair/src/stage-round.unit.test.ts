@@ -27,11 +27,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  runGatherRound,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type JsonSchemaResponseFormat,
   type RosterModelId,
-  runGatherRound,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -68,9 +71,9 @@ const CLOCK_SLACK_MS = 2;
  never invented.
  */
 const ROSTER: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ];
 
 /**
@@ -331,8 +334,8 @@ await describe({
 
         await runGatherRound({
           client: scheduledClient({
-            slowModelId: 'hf:Qwen/Qwen3.8-27B',
-            hangingModelId: 'hf:moonshotai/Kimi-K3',
+            slowModelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            hangingModelId: SEAT_SYNTHETIC_VISION_WITHHELD,
           },),
           modelIds: ROSTER,
           messages: [{ role: 'user', content: 'meow', },],
@@ -374,7 +377,7 @@ await describe({
         const said: string[] = [];
 
         await runGatherRound({
-          client: scheduledClient({ slowModelId: 'hf:Qwen/Qwen3.8-27B', },),
+          client: scheduledClient({ slowModelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, },),
           modelIds: ROSTER,
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,

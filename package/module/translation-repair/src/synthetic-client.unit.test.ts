@@ -18,14 +18,20 @@ import {
   createSyntheticClient,
   isJsonRecord,
   MalformedCompletionError,
-  type ModelTransport,
-  type RosterModelId,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   stripCodeFence,
   stripThinkBlock,
   SYNTHETIC_PER_MODEL_CONCURRENCY,
   SyntheticHttpError,
   SyntheticModelNotServedError,
   SyntheticRequestTooLargeError,
+  type ModelTransport,
+  type RosterModelId,
   type TransportExchange,
   type TransportReply,
 } from '../dist/final/node/index.mjs';
@@ -265,7 +271,7 @@ await describe({
         },);
         /** Reply of one exchange with every knob set. */
         const reply = await client.chatText({
-          modelId: 'hf:openai/gpt-oss-120b',
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           messages: MESSAGES,
           signal: new AbortController().signal,
           maxTokens: 2_048,
@@ -284,7 +290,7 @@ await describe({
 
         /** Request body decoded for knob assertions. */
         const body: unknown = JSON.parse(exchanges[0]?.bodyJson ?? '{}',);
-        expect(isJsonRecord(body,) ? body.model : '',).toBe('hf:openai/gpt-oss-120b',);
+        expect(isJsonRecord(body,) ? body.model : '',).toBe(SEAT_SYNTHETIC_TEXT_EVERYWHERE,);
         expect(isJsonRecord(body,) ? body.stream : false,).toBe(true,);
         expect(isJsonRecord(body,) ? body.max_tokens : 0,).toBe(2_048,);
         // The serving stack does not honor sampling knobs reliably;
@@ -324,14 +330,14 @@ await describe({
 
         expect(
           (await client.chatText({
-            modelId: 'hf:openai/gpt-oss-120b',
+            modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },)).usage,
         ).toBe(undefined,);
         expect(
           (await client.chatText({
-            modelId: 'hf:openai/gpt-oss-120b',
+            modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },)).usage,
@@ -357,7 +363,7 @@ await describe({
 
         try {
           await client.chatText({
-            modelId: 'hf:openai/gpt-oss-120b',
+            modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -393,7 +399,7 @@ await describe({
 
         /** Answer the second attempt carried. */
         const reply = await client.chatText({
-          modelId: 'hf:openai/gpt-oss-120b',
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);
@@ -422,7 +428,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -473,7 +479,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
             messages: [{ role: 'user' as const, content: wide, },],
             signal: new AbortController().signal,
           },);
@@ -513,7 +519,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -545,7 +551,7 @@ await describe({
         },);
         /** Reply that survived one transient failure. */
         const reply = await client.chatText({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);
@@ -567,7 +573,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -622,12 +628,12 @@ await describe({
          */
         const replies = await Promise.all([
           client.chatText({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },),
           client.chatText({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
             exchangeTimeoutMs: SLOW_TRANSPORT_MS + DEADLINE_MARGIN_MS,
@@ -676,7 +682,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
             exchangeTimeoutMs: 50,
@@ -686,7 +692,7 @@ await describe({
           caught = error;
         }
         expect(String(caught,),).toContain('Timeout',);
-        expect(String(caught,),).toContain('hf:zai-org/GLM-5.3-Flash',);
+        expect(String(caught,),).toContain(SEAT_SYNTHETIC_VISION_EDITOR,);
       },
     },),
 
@@ -723,7 +729,7 @@ await describe({
         },);
         /** Reply that survived one dropped connection. */
         const reply = await client.chatText({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);
@@ -767,7 +773,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -819,7 +825,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
             messages: MESSAGES,
             signal: aborted.signal,
           },);
@@ -846,7 +852,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -870,7 +876,7 @@ await describe({
         /** Controller whose signal identity must survive the plumbing. */
         const controller = new AbortController();
         await client.chatText({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: controller.signal,
         },);
@@ -926,7 +932,7 @@ await describe({
           { length: EXPECTED_DEFAULT_WIDTH + 1, },
           function callModel() {
             return client.chatText({
-              modelId: 'hf:openai/gpt-oss-120b',
+              modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
               messages: MESSAGES,
               signal: new AbortController().signal,
             },);
@@ -934,17 +940,17 @@ await describe({
         );
         /** Cross-model call proving slots are keyed by model identity. */
         const crossModelCall = client.chatText({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);
         await wait(SETTLE_MS,);
 
         expect(entered.filter(function gpt(id,) {
-          return id === 'hf:openai/gpt-oss-120b';
+          return id === SEAT_SYNTHETIC_TEXT_EVERYWHERE;
         },),).toHaveLength(EXPECTED_DEFAULT_WIDTH,);
         expect(entered.filter(function glm(id,) {
-          return id === 'hf:zai-org/GLM-5.3-Flash';
+          return id === SEAT_SYNTHETIC_VISION_EDITOR;
         },),).toHaveLength(1,);
 
         gate.resolve();
@@ -992,17 +998,17 @@ await describe({
         /** Three same-model calls in flight against two slots. */
         const inFlight = [
           client.chatText({
-            modelId: 'hf:openai/gpt-oss-120b',
+            modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },),
           client.chatText({
-            modelId: 'hf:openai/gpt-oss-120b',
+            modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },),
           client.chatText({
-            modelId: 'hf:openai/gpt-oss-120b',
+            modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },),
@@ -1031,7 +1037,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the schema-validated exchange. */
         const outcome = await client.chatJson({
-          modelId: 'hf:Qwen/Qwen3.8-27B',
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,
@@ -1067,7 +1073,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the deliberated exchange. */
         const outcome = await client.chatJson({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,
@@ -1095,7 +1101,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the truncated exchange. */
         const outcome = await client.chatJson({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,
@@ -1125,7 +1131,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the API-refused exchange. */
         const outcome = await client.chatJson({
-          modelId: 'hf:Qwen/Qwen3.8-27B',
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,
@@ -1159,7 +1165,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the refused exchange. */
         const outcome = await client.chatJson({
-          modelId: 'hf:moonshotai/Kimi-K3',
+          modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,
@@ -1188,7 +1194,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the guard-rejected exchange. */
         const outcome = await client.chatJson({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,
@@ -1210,7 +1216,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the prose exchange. */
         const outcome = await client.chatJson({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,
@@ -1274,7 +1280,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: 'gemma-4-26b-a4b-it',
+            modelId: SEAT_HYPER_TEXT_BEDROCK,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -1287,7 +1293,7 @@ await describe({
           caught instanceof SyntheticModelNotServedError
             ? caught.modelId
             : '',
-        ).toBe('gemma-4-26b-a4b-it',);
+        ).toBe(SEAT_HYPER_TEXT_BEDROCK,);
         expect(exchanges,).toHaveLength(0,);
       },
     },),
@@ -1305,7 +1311,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatJson({
-            modelId: 'minimax-m3',
+            modelId: SEAT_HYPER_VISION,
             messages: MESSAGES,
             signal: new AbortController().signal,
             validate: isCatVerdict,

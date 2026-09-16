@@ -28,13 +28,14 @@ import {
   BEDROCK_CREDIT_USD_VAR,
   BEDROCK_LEDGER_PATH_VAR,
   BedrockCreditOverrideError,
-  BedrockLedgerShapeError,
   bedrockCreditUsdFrom,
   bedrockIsDry,
   bedrockLedgerPathFrom,
+  BedrockLedgerShapeError,
   bedrockMeterLevel,
   createBedrockLedger,
   defaultBedrockLedgerPath,
+  SEAT_BEDROCK_ONLY_TEXT,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -52,7 +53,7 @@ import {
 function callCosting({ usd, }: { readonly usd: number; },) {
   return {
     at: '2026-09-07T20:00:00.000Z',
-    model: 'google.gemma-4-e2b',
+    model: SEAT_BEDROCK_ONLY_TEXT,
     usd,
     promptTokens: 90,
     completionTokens: 10,

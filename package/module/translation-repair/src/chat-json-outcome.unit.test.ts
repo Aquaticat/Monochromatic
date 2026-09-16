@@ -13,12 +13,13 @@ import {
 import {
   isJsonRecord,
   readJsonOutcome,
+  SEAT_HYPER_VISION,
 } from '../dist/final/node/index.mjs';
 
 /**
  Model named on every reading, for the log lines only.
  */
-const MODEL_ID = 'minimax-m3';
+const MODEL_ID = SEAT_HYPER_VISION;
 
 /**
  Verdict shape these readings validate against.

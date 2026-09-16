@@ -20,23 +20,27 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type AdjudicatedIssue,
-  type ClaimPanelReading,
-  type IssueCheckerReading,
-  buildIssueRecords,
-  type ChunkRepairOutcome,
   assertSourceBytes,
+  buildIssueRecords,
   classifyBand,
-  type SizeBand,
   collectRepairRegions,
-  type EditableEnvelope,
   extractGradingCandidate,
   formatGradingSheet,
   formatRepairSheet,
-  parseGradedRepairSheet,
   hashContent,
+  parseGradedRepairSheet,
   parseSettledArtifact,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  type AdjudicatedIssue,
+  type ChunkRepairOutcome,
+  type ClaimPanelReading,
+  type EditableEnvelope,
+  type IssueCheckerReading,
   type PatchOperation,
+  type SizeBand,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -105,17 +109,17 @@ const PANEL_TALLY = {
 const PANEL_READING = {
   ballots: [
     {
-      panelistId: 'hf:zai-org/GLM-5.3-Flash',
+      panelistId: SEAT_SYNTHETIC_VISION_EDITOR,
       vote: 'supported' as const,
       weight: 1,
     },
     {
-      panelistId: 'hf:Qwen/Qwen3.8-27B',
+      panelistId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
       vote: 'supported' as const,
       weight: 1,
     },
     {
-      panelistId: 'hf:openai/gpt-oss-120b',
+      panelistId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
       vote: 'abstain' as const,
       weight: 1,
     },
@@ -193,17 +197,17 @@ const OPERATION: PatchOperation = {
 const CHECKER_READING = {
   ballots: [
     {
-      modelId: 'hf:Qwen/Qwen3.8-27B',
+      modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
       verdict: 'fixed',
       wroteTheText: false,
     },
     {
-      modelId: 'hf:openai/gpt-oss-120b',
+      modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
       verdict: 'fixed',
       wroteTheText: false,
     },
     {
-      modelId: 'deepseek-v4.1-flash',
+      modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
       verdict: 'not-fixed',
       wroteTheText: false,
     },
@@ -230,17 +234,17 @@ const CHECKER_READING = {
 const RECHECK_READING = {
   ballots: [
     {
-      modelId: 'hf:Qwen/Qwen3.8-27B',
+      modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
       verdict: 'fixed',
       wroteTheText: false,
     },
     {
-      modelId: 'hf:openai/gpt-oss-120b',
+      modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
       verdict: 'fixed',
       wroteTheText: false,
     },
     {
-      modelId: 'deepseek-v4.1-flash',
+      modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
       verdict: 'fixed',
       wroteTheText: false,
     },

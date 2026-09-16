@@ -23,6 +23,9 @@ import {
   describeJudgedRound,
   describeRepairSlate,
   hashContent,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -41,7 +44,7 @@ const DROPS_ALIAS = 'The cat naps on the sill.';
 const KEEPER = {
   producer: {
     kind: 'model' as const,
-    modelId: 'hf:openai/gpt-oss-120b' as const,
+    modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   },
   value: { note: 'keeps', },
   rendered: KEEPS_ALIAS,
@@ -53,7 +56,7 @@ const KEEPER = {
 const DROPPER = {
   producer: {
     kind: 'model' as const,
-    modelId: 'hf:zai-org/GLM-5.3-Flash' as const,
+    modelId: SEAT_SYNTHETIC_VISION_EDITOR,
   },
   value: { note: 'drops', },
   rendered: DROPS_ALIAS,
@@ -71,7 +74,7 @@ const CANDIDATES = [
  One ballot naming the shorter wording, with the reason judges actually give.
  */
 const BALLOT_FOR_SHORTER = {
-  modelId: 'hf:Qwen/Qwen3.8-27B' as const,
+  modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   best: 2,
   reason: 'the alias has no basis in the original',
   weight: 1,

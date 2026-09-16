@@ -30,6 +30,9 @@ import {
 import {
   readSpendLine,
   reportSpend,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_EDITOR,
   tallySpend,
 } from '../../dist/final/node/index.mjs';
 
@@ -156,7 +159,7 @@ await describe({
           readSpendLine({
             line: reportSpend({
               provider: 'hyper',
-              label: 'minimax-m3',
+              label: SEAT_HYPER_VISION,
               extracted: {
                 text: 'The cat approved this rendering.',
                 usage: {
@@ -169,7 +172,7 @@ await describe({
         )
           .toEqual({
             provider: 'hyper',
-            model: 'minimax-m3',
+            model: SEAT_HYPER_VISION,
             prompt: 12,
             completion: 34,
             costUsd: 'unreported',
@@ -212,7 +215,7 @@ await describe({
         )
           .toEqual({
             provider: 'synthetic',
-            model: 'hf:zai-org/GLM-5.3-Flash',
+            model: SEAT_SYNTHETIC_VISION_EDITOR,
             prompt: 1,
             completion: 2,
             costUsd: 'unreported',
@@ -429,7 +432,7 @@ await describe({
         )
           .toEqual([
             'qwen3.8-max',
-            'gemma-4-26b-a4b-it',
+            SEAT_HYPER_TEXT_BEDROCK,
           ],);
       },
     },),

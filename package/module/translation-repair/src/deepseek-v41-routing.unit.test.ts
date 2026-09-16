@@ -1,6 +1,5 @@
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
-  type BudgetView,
   createHyperClient,
   createOpenRouterClient,
   createRoutingClient,
@@ -8,6 +7,8 @@ import {
   HYPER_MESSAGES_URL,
   NoProviderForModelError,
   OPENROUTER_CHAT_URL,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  type BudgetView,
   type TransportExchange,
 } from '../dist/final/node/index.mjs';
 
@@ -63,7 +64,7 @@ await describe({
   children: [
     ...[
       { name: 'prefers Hyper when both approved routes are wet', hyper: false, openrouter: false,
-        url: HYPER_MESSAGES_URL, model: 'deepseek-v4.1-flash' },
+        url: HYPER_MESSAGES_URL, model: SEAT_HYPER_OPENROUTER_UNMEASURED },
       { name: 'uses the OpenRouter spelling when Hyper is dry', hyper: true, openrouter: false,
         url: OPENROUTER_CHAT_URL, model: 'deepseek/deepseek-v4.1-flash' },
     ].map(row => it({
@@ -71,7 +72,7 @@ await describe({
       fn: async () => {
         const { client, exchanges } = routingFixture({ synthetic: false, bedrock: false,
           hyper: row.hyper, openrouter: row.openrouter });
-        const result = await client.chatJson({ modelId: 'deepseek-v4.1-flash',
+        const result = await client.chatJson({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
           messages: [{ role: 'user', content: 'Return animal cat and count 7.' }], responseFormat: FORMAT,
           signal: new AbortController().signal, validate: valid });
         expect(result.kind).toBe('ok');
@@ -92,7 +93,7 @@ await describe({
         const { client, exchanges } = routingFixture(row.dry);
         let caught: unknown;
         try {
-          await client.chatText({ modelId: 'deepseek-v4.1-flash', messages: [{ role: 'user', content: 'Cat.' }],
+          await client.chatText({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, messages: [{ role: 'user', content: 'Cat.' }],
             signal: new AbortController().signal });
         } catch (error) { caught = error; }
         expect(caught).toBeInstanceOf(row.error);

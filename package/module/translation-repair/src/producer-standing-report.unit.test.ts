@@ -21,9 +21,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ProducerStanding,
   rankStandings,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   standingLine,
+  type ProducerStanding,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -41,7 +45,7 @@ import {
  
  @example
  ```ts
- const standing = standingOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', candidates: 4, disinterestedBallots: 8, disinterestedVotes: 6, },);
+ const standing = standingOf({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, candidates: 4, disinterestedBallots: 8, disinterestedVotes: 6, },);
  ```
  */
 function standingOf(
@@ -69,7 +73,7 @@ function standingOf(
  Model that won most of the ballots cast over its candidates.
  */
 const LEADER = standingOf({
-  modelId: 'hf:zai-org/GLM-5.3-Flash',
+  modelId: SEAT_SYNTHETIC_VISION_EDITOR,
   candidates: 4,
   disinterestedBallots: 8,
   disinterestedVotes: 6,
@@ -79,7 +83,7 @@ const LEADER = standingOf({
  Model measured at zero, which is evidence rather than absence of it.
  */
 const MEASURED_ZERO = standingOf({
-  modelId: 'hf:Qwen/Qwen3.8-27B',
+  modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   candidates: 3,
   disinterestedBallots: 5,
   disinterestedVotes: 0,
@@ -89,7 +93,7 @@ const MEASURED_ZERO = standingOf({
  Model no disinterested judge ever voted on.
  */
 const UNJUDGED = standingOf({
-  modelId: 'hf:moonshotai/Kimi-K3',
+  modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
   candidates: 2,
   disinterestedBallots: 0,
   disinterestedVotes: 0,
@@ -177,9 +181,9 @@ await describe({
         },).map(function idOf(standing,): string {
           return standing.modelId;
         },),).toEqual([
-          'hf:zai-org/GLM-5.3-Flash',
-          'hf:Qwen/Qwen3.8-27B',
-          'hf:moonshotai/Kimi-K3',
+          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          SEAT_SYNTHETIC_VISION_WITHHELD,
         ],);
       },
     },),
@@ -193,7 +197,7 @@ await describe({
          Second model with no disinterested ballots at all.
          */
         const alsoUnjudged = standingOf({
-          modelId: 'hf:openai/gpt-oss-120b',
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           candidates: 7,
           disinterestedBallots: 0,
           disinterestedVotes: 0,
@@ -207,8 +211,8 @@ await describe({
         },).map(function idOf(standing,): string {
           return standing.modelId;
         },),).toEqual([
-          'hf:moonshotai/Kimi-K3',
-          'hf:openai/gpt-oss-120b',
+          SEAT_SYNTHETIC_VISION_WITHHELD,
+          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
         ],);
       },
     },),
@@ -230,8 +234,8 @@ await describe({
         expect(given.map(function idOf(standing,): string {
           return standing.modelId;
         },),).toEqual([
-          'hf:moonshotai/Kimi-K3',
-          'hf:zai-org/GLM-5.3-Flash',
+          SEAT_SYNTHETIC_VISION_WITHHELD,
+          SEAT_SYNTHETIC_VISION_EDITOR,
         ],);
       },
     },),

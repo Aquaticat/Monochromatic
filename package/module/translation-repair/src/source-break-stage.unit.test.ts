@@ -8,10 +8,14 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   messageText,
   runTranslateStage,
+  SEAT_HYPER_VISION,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -60,8 +64,8 @@ await describe({
         /** Both halves use canonical source and the real writer and judge builders. */
         const result = await runTranslateStage({
           client,
-          translatorModelIds: ['inception/mercury-2.5', 'hf:zai-org/GLM-5.3-Flash',],
-          judgeModelIds: ['hf:openai/gpt-oss-120b', 'minimax-m3',],
+          translatorModelIds: [SEAT_OPENROUTER_ONLY, SEAT_SYNTHETIC_VISION_EDITOR,],
+          judgeModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_HYPER_VISION,],
           sourceText: SOURCE,
           incumbentText: '',
           incumbentKind: 'absent',

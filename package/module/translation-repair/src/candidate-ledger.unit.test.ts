@@ -36,8 +36,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type Candidate,
   recordContest,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  type Candidate,
   type SelectionBallot,
 } from '../dist/final/node/index.mjs';
 
@@ -63,7 +67,7 @@ const CANDIDATES: readonly Candidate<{ readonly text: string; }>[] = [
   {
     producer: {
       kind: 'model',
-      modelId: 'google.gemma-4-31b',
+      modelId: SEAT_BEDROCK_ONLY_VISION_UNSEATED,
     },
     value: { text: 'The cat slept on the warm flagstones.', },
     rendered: 'The cat slept on the warm flagstones.',
@@ -72,8 +76,8 @@ const CANDIDATES: readonly Candidate<{ readonly text: string; }>[] = [
     producer: {
       kind: 'composite',
       contributors: [
-        'deepseek-v4.1-flash',
-        'minimax-m3',
+        SEAT_HYPER_OPENROUTER_UNMEASURED,
+        SEAT_HYPER_VISION,
       ],
     },
     value: { text: 'A cat lay sleeping on sun-warmed stone.', },
@@ -86,14 +90,14 @@ const CANDIDATES: readonly Candidate<{ readonly text: string; }>[] = [
  */
 const BALLOTS: readonly SelectionBallot[] = [
   {
-    modelId: 'gemma-4-26b-a4b-it',
+    modelId: SEAT_HYPER_TEXT_BEDROCK,
     best: 2,
     reason: 'Candidate 2 reads more naturally in English.',
     weight: 1,
     selfVote: false,
   },
   {
-    modelId: 'deepseek-v4.1-flash',
+    modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
     best: 2,
     reason: 'Candidate 2 is mine and I still think it is better.',
     weight: 0.5,
@@ -340,10 +344,10 @@ await describe({
             },);
         },),)
           .toEqual([[
-            ['google.gemma-4-31b',],
+            [SEAT_BEDROCK_ONLY_VISION_UNSEATED,],
             [
-              'deepseek-v4.1-flash',
-              'minimax-m3',
+              SEAT_HYPER_OPENROUTER_UNMEASURED,
+              SEAT_HYPER_VISION,
             ],
           ],],);
       },

@@ -27,6 +27,8 @@ import {
   readCandidatesAlone,
   ROSTER_MODEL_IDS,
   RUN_ROSTER,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 
@@ -56,7 +58,7 @@ const SEATED = nonNullishOrThrow(RUN_ROSTER[0],);
  
  @example
  ```ts
- const argv = commandLine({ typed: ['--candidates', 'google.gemma-4-e2b',], },);
+ const argv = commandLine({ typed: ['--candidates', SEAT_BEDROCK_ONLY_TEXT,], },);
  ```
  */
 function commandLine(
@@ -87,7 +89,7 @@ await describe({
           expect(ROSTER_MODEL_IDS.includes(id,),).toBe(true,);
         // The unseated size is what the flag exists for; the seated one is
         // named too, and joins nothing twice.
-        expect(RUN_ROSTER.includes('google.gemma-4-31b',),).toBe(false,);
+        expect(RUN_ROSTER.includes(SEAT_BEDROCK_ONLY_VISION_UNSEATED,),).toBe(false,);
       },
     },),
     it({

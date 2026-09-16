@@ -36,13 +36,15 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   fixedPagePath,
   messageText,
   parseSettledTwoLaneArtifact,
-  type PipelineDigest,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   settleEntry,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type PipelineDigest,
   type RunClient,
 } from '../../dist/final/node/index.mjs';
 
@@ -1062,8 +1064,8 @@ await describe({
             return new Map([['missing.webp', {
               kind: 'corroborated',
               readings: [
-                { modelId: 'hf:moonshotai/Kimi-K3', text: archivePictureSupport, },
-                { modelId: 'hf:zai-org/GLM-5.3-Flash', text: archivePictureSupport, },
+                { modelId: SEAT_SYNTHETIC_VISION_WITHHELD, text: archivePictureSupport, },
+                { modelId: SEAT_SYNTHETIC_VISION_EDITOR, text: archivePictureSupport, },
               ],
               overlap: 1,
             },],]);
@@ -1105,8 +1107,8 @@ await describe({
               {
                 kind: 'corroborated',
                 readings: [
-                  { modelId: 'hf:moonshotai/Kimi-K3', text: 'Mittens 555-0134', },
-                  { modelId: 'hf:zai-org/GLM-5.3-Flash', text: 'Mittens 555-0134', },
+                  { modelId: SEAT_SYNTHETIC_VISION_WITHHELD, text: 'Mittens 555-0134', },
+                  { modelId: SEAT_SYNTHETIC_VISION_EDITOR, text: 'Mittens 555-0134', },
                 ],
                 overlap: 1,
               },

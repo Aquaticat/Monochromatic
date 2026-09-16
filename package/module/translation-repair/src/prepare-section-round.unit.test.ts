@@ -23,6 +23,8 @@ import {
   createSyntheticClient,
   isSectionPairingWire,
   parseDocument,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -122,8 +124,8 @@ function storedRoundOf(serialized: string,): StoredRound {
  Roster of two, which is the smallest that can agree or disagree.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
 
 /**

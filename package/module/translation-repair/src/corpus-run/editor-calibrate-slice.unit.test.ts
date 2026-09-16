@@ -19,12 +19,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  shippedAuthors,
+  sliceProgressLine,
   type IssueAuthorship,
   type RosterModelId,
   type SelectionRound,
-  shippedAuthors,
   type SliceRounds,
-  sliceProgressLine,
 } from '../../dist/final/node/index.mjs';
 
 //region Fixtures
@@ -60,8 +62,8 @@ const EMPTY_ROUND: SelectionRound = {
  Editors credited with shipping text, in the order they are credited.
  */
 const SHIPPERS: readonly RosterModelId[] = [
-  'minimax-m3',
-  'gemma-4-26b-a4b-it',
+  SEAT_HYPER_VISION,
+  SEAT_HYPER_TEXT_BEDROCK,
 ];
 
 /**

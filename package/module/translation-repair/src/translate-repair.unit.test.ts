@@ -24,12 +24,14 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import {
   buildTranslateCandidates,
+  messageText,
+  repairInvalidCandidates,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  messageText,
-  type VisionMessage,
-  repairInvalidCandidates,
   type SyntheticClient,
+  type VisionMessage,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -59,7 +61,7 @@ const MERGED_TEXT = 'A day in the cat\'s life: it dozes on the windowsill.';
 /**
  Model whose candidate every case repairs.
  */
-const TRANSLATOR = 'hf:moonshotai/Kimi-K3';
+const TRANSLATOR = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  Messages the candidate was produced by, stood in for since the repair turn
@@ -295,7 +297,7 @@ await describe({
         const log: RepairLog = { calls: 0, messages: [], };
         const modelIds = [
           TRANSLATOR,
-          'hf:Qwen/Qwen3.8-27B',
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
         ] as const;
         const repaired = await repairInvalidCandidates({
           client: repairClient({

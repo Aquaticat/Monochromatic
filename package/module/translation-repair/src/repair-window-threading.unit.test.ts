@@ -24,10 +24,16 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   prepareDocumentPair,
   repairPreparedDocument,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -83,22 +89,22 @@ const TARGET_TEXT = [
  the stub answers for every one of them.
  */
 const CRITICS = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;
 
 /**
  {@inheritDoc CRITICS}
  */
 const EDITORS = [
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ] as const;
 
 /**
  {@inheritDoc CRITICS}
  */
-const JUDGES = ['minimax-m3',] as const;
+const JUDGES = [SEAT_HYPER_VISION,] as const;
 
 /**
  {@inheritDoc CRITICS}
@@ -108,9 +114,9 @@ const JUDGES = ['minimax-m3',] as const;
  Every one of them stays clear of {@link EDITORS}.
  */
 const CHECKERS = [
-  'deepseek-v4.1-flash',
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;
 
 /**

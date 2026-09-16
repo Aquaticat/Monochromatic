@@ -36,6 +36,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   assembleRepair,
+  SEAT_SYNTHETIC_VISION_EDITOR,
   type ChunkPair,
   type ChunkRepairOutcome,
 } from '../dist/final/node/index.mjs';
@@ -205,7 +206,7 @@ function outcomeOf(
     heardCritics: 1,
     // NAMED, not just counted: the lane refuses a slice it heard nobody about
     // that carries anything but the archive's wording.
-    heardCriticIds: ['hf:zai-org/GLM-5.3-Flash',],
+    heardCriticIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
     claimAttributions: [],
     findings: [],
   };

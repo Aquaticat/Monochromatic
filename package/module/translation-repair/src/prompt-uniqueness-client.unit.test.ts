@@ -11,10 +11,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ChatTextRequest,
   MalformedCompletionError,
   modelPromptDigest,
   promptUniqueClient,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type ChatTextRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -22,7 +23,7 @@ import {
  Exact prompt reused across boundary cases.
  */
 const REQUEST: ChatTextRequest = {
-  modelId: 'hf:moonshotai/Kimi-K3',
+  modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
   messages: [{ role: 'user', content: 'Judge this one cat sentence.', },],
   signal: AbortSignal.timeout(5_000,),
 };

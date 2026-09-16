@@ -27,6 +27,8 @@ import {
 
 import {
   countCandidateWeights,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type SelectionBallot,
 } from '../dist/final/node/index.mjs';
 
@@ -87,13 +89,13 @@ await describe({
         const rows = countCandidateWeights({
           ballots: [
             ballotOf({
-              modelId: 'hf:Qwen/Qwen3.8-27B',
+              modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
               best: 1,
               weight: 1,
               selfVote: false,
             },),
             ballotOf({
-              modelId: 'hf:zai-org/GLM-5.3-Flash',
+              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               best: 1,
               weight: 0,
               selfVote: true,
@@ -122,13 +124,13 @@ await describe({
         const rows = countCandidateWeights({
           ballots: [
             ballotOf({
-              modelId: 'hf:Qwen/Qwen3.8-27B',
+              modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
               best: 1,
               weight: 1,
               selfVote: false,
             },),
             ballotOf({
-              modelId: 'hf:zai-org/GLM-5.3-Flash',
+              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               best: 2,
               weight: 1 / 2,
               selfVote: true,

@@ -26,6 +26,7 @@ import {
 import {
   buildAnthropicBody,
   EmptyConversationError,
+  SEAT_HYPER_VISION,
   speakingTurns,
   systemTextOf,
 } from '../dist/final/node/index.mjs';
@@ -282,7 +283,7 @@ await describe({
         },).max_tokens,).toBe(13_107,);
 
         expect(buildAnthropicBody({
-          modelId: 'minimax-m3',
+          modelId: SEAT_HYPER_VISION,
           messages: catMessages,
         },).max_tokens,).toBe(32_000,);
       },

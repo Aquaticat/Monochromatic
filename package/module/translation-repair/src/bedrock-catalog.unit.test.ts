@@ -21,6 +21,10 @@ import {
   bedrockChatUrlFor,
   bedrockServesLabel,
   ROSTER_MODEL_IDS,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -32,8 +36,8 @@ await describe({
       fn: async () => {
         expect(Object.keys(BEDROCK_MODELS,).toSorted(),).toEqual([
           'google.gemma-4-26b-a4b',
-          'google.gemma-4-31b',
-          'google.gemma-4-e2b',
+          SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+          SEAT_BEDROCK_ONLY_TEXT,
           'openai.gpt-oss-120b',
         ],);
         for (const info of Object.values(BEDROCK_MODELS,))
@@ -45,8 +49,8 @@ await describe({
       name: 'STANDS IN FOR A ROSTER SEAT ON EVERY ROW: the shared two under the other providers\' '
         + 'spellings, the Bedrock-only two under their own, and every seat is a roster id',
       fn: async () => {
-        expect(BEDROCK_MODELS['google.gemma-4-26b-a4b'].sharedWith,).toBe('gemma-4-26b-a4b-it',);
-        expect(BEDROCK_MODELS['openai.gpt-oss-120b'].sharedWith,).toBe('hf:openai/gpt-oss-120b',);
+        expect(BEDROCK_MODELS['google.gemma-4-26b-a4b'].sharedWith,).toBe(SEAT_HYPER_TEXT_BEDROCK,);
+        expect(BEDROCK_MODELS['openai.gpt-oss-120b'].sharedWith,).toBe(SEAT_SYNTHETIC_TEXT_EVERYWHERE,);
         for (const modelId of BEDROCK_ONLY_ROSTER_IDS)
           expect(BEDROCK_MODELS[modelId].sharedWith,).toBe(modelId,);
         for (const info of Object.values(BEDROCK_MODELS,))
@@ -58,7 +62,7 @@ await describe({
       name: 'ROUTES EACH MODEL WHERE IT WAS MEASURED TO ANSWER: Gemma 4 under /openai/v1 ending on '
         + '[DONE], gpt-oss-120b under /v1 ending on its usage chunk (probes of 2026-09-07)',
       fn: async () => {
-        for (const id of ['google.gemma-4-e2b', 'google.gemma-4-31b', 'google.gemma-4-26b-a4b',] as const) {
+        for (const id of [SEAT_BEDROCK_ONLY_TEXT, SEAT_BEDROCK_ONLY_VISION_UNSEATED, 'google.gemma-4-26b-a4b',] as const) {
           expect(BEDROCK_MODELS[id].route,).toBe('openai-v1',);
           expect(BEDROCK_MODELS[id].streamEnd,).toBe('done-sentinel',);
           expect(bedrockChatUrlFor({
@@ -80,7 +84,7 @@ await describe({
       fn: async () => {
         expect(bedrockChatUrlFor({
           baseUrl: 'https://mantle.invalid',
-          servedId: 'google.gemma-4-e2b',
+          servedId: SEAT_BEDROCK_ONLY_TEXT,
         },),).toBe('https://mantle.invalid/openai/v1/chat/completions',);
       },
     },),
@@ -102,8 +106,8 @@ await describe({
         + 'readings, gpt-oss-120b reads no pictures anywhere',
       fn: async () => {
         expect(BEDROCK_MODELS['google.gemma-4-26b-a4b'].readsImages,).toBe(true,);
-        expect(BEDROCK_MODELS['google.gemma-4-31b'].readsImages,).toBe(true,);
-        expect(BEDROCK_MODELS['google.gemma-4-e2b'].readsImages,).toBe(false,);
+        expect(BEDROCK_MODELS[SEAT_BEDROCK_ONLY_VISION_UNSEATED].readsImages,).toBe(true,);
+        expect(BEDROCK_MODELS[SEAT_BEDROCK_ONLY_TEXT].readsImages,).toBe(false,);
         expect(BEDROCK_MODELS['openai.gpt-oss-120b'].readsImages,).toBe(false,);
       },
     },),
@@ -111,8 +115,8 @@ await describe({
     it({
       name: 'ANSWERS for a served spelling and not for a roster or other spelling',
       fn: async () => {
-        expect(bedrockServesLabel('google.gemma-4-31b',),).toBe(true,);
-        expect(bedrockServesLabel('gemma-4-26b-a4b-it',),).toBe(false,);
+        expect(bedrockServesLabel(SEAT_BEDROCK_ONLY_VISION_UNSEATED,),).toBe(true,);
+        expect(bedrockServesLabel(SEAT_HYPER_TEXT_BEDROCK,),).toBe(false,);
         expect(bedrockServesLabel('anthropic.claude-sonnet-5',),).toBe(false,);
         expect(bedrockServesLabel('',),).toBe(false,);
       },

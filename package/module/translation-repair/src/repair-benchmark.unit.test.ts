@@ -13,22 +13,25 @@ import {
 import {
   alignDocumentSections,
   applySeededErrors,
-  type ChunkPair,
   computeRepairScorecard,
   contentWords,
   DEFAULT_JUDGE_MODEL_IDS,
   gradeSeedDetection,
   hashContent,
   measureSeedRestoration,
+  parseDocument,
+  runRepairBenchmark,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  subdivideChunkPair,
+  syntheticEntryFor,
+  type ChunkPair,
   type RepairAttemptRecord,
   type RepairModels,
   type repairTranslation,
-  parseDocument,
-  runRepairBenchmark,
   type runRestorationJudge,
-  subdivideChunkPair,
   type SeededErrorSpec,
-  syntheticEntryFor,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -63,11 +66,11 @@ const SEEDED_TEXT = 'The cat naps in the sun. The bowl stays full.';
  Role roster; identities only matter as distinct voices.
  */
 const MODELS: RepairModels = {
-  criticModelIds: ['hf:zai-org/GLM-5.3-Flash',],
-  panelModelIds: ['hf:zai-org/GLM-5.3-Flash',],
-  editorModelIds: ['hf:zai-org/GLM-5.3-Flash',],
-  judgeModelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
-  checkerModelIds: ['hf:Qwen/Qwen3.8-27B',],
+  criticModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+  panelModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+  editorModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+  judgeModelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+  checkerModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
 };
 
 /**

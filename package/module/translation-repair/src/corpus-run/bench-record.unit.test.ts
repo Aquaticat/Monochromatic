@@ -19,15 +19,16 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type BenchCall,
   recordingClient,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  type BenchCall,
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 
 /**
  Model standing in for whichever one a stage seated.
  */
-const CAT_MODEL = 'hf:Qwen/Qwen3.8-27B' as const;
+const CAT_MODEL = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Signal no fixture here ever aborts.

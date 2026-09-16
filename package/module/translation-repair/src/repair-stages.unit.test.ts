@@ -25,12 +25,15 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  hashContent,
+  runPanelStage,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type AggregatedClaim,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ClaimCluster,
-  hashContent,
-  runPanelStage,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -53,9 +56,9 @@ const TARGET_TEXT = 'The cat sleeps on the windowsill.';
  Panel roster large enough for a majority to be visible.
  */
 const PANELISTS = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:moonshotai/Kimi-K3',
-  'hf:Qwen/Qwen3.8-27B',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
 
 /**

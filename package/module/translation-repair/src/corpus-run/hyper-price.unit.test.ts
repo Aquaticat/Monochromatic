@@ -31,6 +31,9 @@ import {
   HYPER_MODELS,
   HYPER_PRICE_READ_ON,
   ratesFor,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -139,7 +142,7 @@ await describe({
       name: 'SCALES with the token count rather than stepping per call',
       fn: async () => {
         expect(creditsFor({
-          model: 'gemma-4-26b-a4b-it',
+          model: SEAT_HYPER_TEXT_BEDROCK,
           promptTokens: HALF_MILLION,
           completionTokens: 0,
         },),)
@@ -155,7 +158,7 @@ await describe({
         + 'zero and not the unpriced answer',
       fn: async () => {
         expect(creditsFor({
-          model: 'minimax-m3',
+          model: SEAT_HYPER_VISION,
           promptTokens: 0,
           completionTokens: 0,
         },),)
@@ -204,7 +207,7 @@ await describe({
       name: 'REFUSES a synthetic spelling of a model it prices under the '
         + 'metered id, since the two bill differently and only one bills credits',
       fn: async () => {
-        expect(ratesFor({ model: 'hf:moonshotai/Kimi-K3', },),)
+        expect(ratesFor({ model: SEAT_SYNTHETIC_VISION_WITHHELD, },),)
           .toBe('unpriced',);
       },
     },),

@@ -15,24 +15,32 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   applyPatchOperations,
-  type Candidate,
-  chunkCandidateOf,
   CANDIDATE_NONE,
+  chunkCandidateOf,
+  hashContent,
+  NoProviderForModelError,
+  ProducerRosterError,
+  rosterQuorumSize,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  selectBestCandidate,
+  selectChunkPatch,
+  selectPerEnvelope,
+  type Candidate,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type EditableEnvelope,
   type EditorCandidate,
-  ProducerRosterError,
-  hashContent,
-  NoProviderForModelError,
-  type PatchOutcome,
-  rosterQuorumSize,
-  selectBestCandidate,
-  selectChunkPatch,
-  selectPerEnvelope,
-  type SyntheticClient,
   type FanOutMode,
+  type PatchOutcome,
   type RosterModelId,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -129,7 +137,7 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
   {
     producer: {
       kind: 'model',
-      modelId: 'hf:zai-org/GLM-5.3-Flash',
+      modelId: SEAT_SYNTHETIC_VISION_EDITOR,
     },
     value: 'first',
     rendered: 'The cat chases butterflies.',
@@ -137,7 +145,7 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
   {
     producer: {
       kind: 'model',
-      modelId: 'hf:Qwen/Qwen3.8-27B',
+      modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
     },
     value: 'second',
     rendered: 'The cat loves chasing butterflies.',
@@ -157,7 +165,7 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
  
  @example
  ```ts
- const client = dryBenchJudges({ ballots, unreachable: ['minimax-m3',], },);
+ const client = dryBenchJudges({ ballots, unreachable: [SEAT_HYPER_VISION,], },);
  ```
  */
 function dryBenchJudges(
@@ -196,11 +204,11 @@ function dryBenchJudges(
  Whole roster selection draws judges from.
  */
 const JUDGES: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-  'deepseek-v4.1-flash',
-  'hf:openai/gpt-oss-120b',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ];
 
 /**
@@ -306,7 +314,7 @@ async function runCollapsedSelection(
     {
       producer: {
         kind: 'model',
-        modelId: 'hf:openai/gpt-oss-120b',
+        modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
       },
       value: 'rival',
       rendered: 'The cat is napping in the sunshine.',
@@ -356,20 +364,20 @@ async function runCollapsedSelection(
  */
 const WIDE_BENCH: readonly RosterModelId[] = [
   ...JUDGES,
-  'minimax-m3',
-  'google.gemma-4-31b',
-  'glm-5.3',
+  SEAT_HYPER_VISION,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_ONLY,
 ];
 
 /**
  Seats of that bench no provider serves on the dry day.
  */
 const DRY_SEATS: readonly RosterModelId[] = [
-  'hf:moonshotai/Kimi-K3',
-  'deepseek-v4.1-flash',
-  'minimax-m3',
-  'google.gemma-4-31b',
-  'glm-5.3',
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_ONLY,
 ];
 
 /**
@@ -431,9 +439,9 @@ await describe({
         /** GLM-5.3-Flash backs its own text at half weight, Qwen backs it at full, gpt-oss declines. */
         const outcome = await runShortBench({
           ballots: {
-            'hf:zai-org/GLM-5.3-Flash': 1,
-            'hf:Qwen/Qwen3.8-27B': 1,
-            'hf:openai/gpt-oss-120b': 0,
+            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
           },
         },);
         expect(outcome.kind,).toBe('selected',);
@@ -462,12 +470,12 @@ await describe({
         /** Only Qwen and gpt-oss reachable; Qwen names candidate 1 at full weight, gpt-oss declines. */
         const outcome = await runShortBench({
           ballots: {
-            'hf:Qwen/Qwen3.8-27B': 1,
-            'hf:openai/gpt-oss-120b': 0,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
           },
           unreachable: [
             ...DRY_SEATS,
-            'hf:zai-org/GLM-5.3-Flash',
+            SEAT_SYNTHETIC_VISION_EDITOR,
           ],
         },);
         expect(outcome.kind,).toBe('declined',);
@@ -489,8 +497,8 @@ await describe({
         /** The same ballots on a bench every provider serves. */
         const outcome = await runShortBench({
           ballots: {
-            'hf:zai-org/GLM-5.3-Flash': 1,
-            'hf:Qwen/Qwen3.8-27B': 1,
+            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
           },
           unreachable: [],
         },);
@@ -524,11 +532,11 @@ await describe({
         // take candidate 2.
         const { outcome, calls, } = await runSelection({
           ballots: {
-            'hf:zai-org/GLM-5.3-Flash': 1,
-            'hf:moonshotai/Kimi-K3': 1,
-            'hf:Qwen/Qwen3.8-27B': 2,
-            'deepseek-v4.1-flash': 2,
-            'hf:openai/gpt-oss-120b': 2,
+            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 2,
+            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 2,
           },
         },);
         // Every judge on the roster was asked, producers included.
@@ -561,10 +569,10 @@ await describe({
       fn: async () => {
         const { outcome, } = await runCollapsedSelection({
           contributors: [
-            'hf:zai-org/GLM-5.3-Flash',
-            'hf:Qwen/Qwen3.8-27B',
-            'hf:moonshotai/Kimi-K3',
-            'deepseek-v4.1-flash',
+            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+            SEAT_HYPER_OPENROUTER_UNMEASURED,
           ],
         },);
         expect(outcome.kind,).toBe('selected',);
@@ -582,9 +590,9 @@ await describe({
       fn: async () => {
         const { outcome, } = await runCollapsedSelection({
           contributors: [
-            'hf:zai-org/GLM-5.3-Flash',
-            'hf:Qwen/Qwen3.8-27B',
-            'hf:moonshotai/Kimi-K3',
+            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            SEAT_SYNTHETIC_VISION_WITHHELD,
           ],
         },);
         expect(outcome.kind,).toBe('declined',);
@@ -598,11 +606,11 @@ await describe({
       fn: async () => {
         const { outcome, calls, } = await runSelection({
           ballots: {
-            'hf:moonshotai/Kimi-K3': 1,
-            'deepseek-v4.1-flash': 1,
-            'hf:openai/gpt-oss-120b': 1,
-            'hf:zai-org/GLM-5.3-Flash': 1,
-            'hf:Qwen/Qwen3.8-27B': 1,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 1,
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 1,
+            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
           },
           fanOut: 'window',
         },);
@@ -621,11 +629,11 @@ await describe({
         // control, which is the thing the ensemble exists to prevent.
         const { outcome, } = await runSelection({
           ballots: {
-            'hf:moonshotai/Kimi-K3': 1,
-            'deepseek-v4.1-flash': 0,
-            'hf:openai/gpt-oss-120b': 0,
-            'hf:zai-org/GLM-5.3-Flash': 0,
-            'hf:Qwen/Qwen3.8-27B': 0,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
+            [SEAT_SYNTHETIC_VISION_EDITOR]: 0,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 0,
           },
         },);
         expect(outcome.kind,).toBe('declined',);
@@ -642,9 +650,9 @@ await describe({
       fn: async () => {
         const { outcome, } = await runSelection({
           ballots: {
-            'hf:moonshotai/Kimi-K3': 1,
-            'deepseek-v4.1-flash': 2,
-            'hf:openai/gpt-oss-120b': 0,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
           },
         },);
         expect(outcome.kind,).toBe('declined',);
@@ -659,9 +667,9 @@ await describe({
       fn: async () => {
         const { outcome, } = await runSelection({
           ballots: {
-            'hf:moonshotai/Kimi-K3': 0,
-            'deepseek-v4.1-flash': 0,
-            'hf:openai/gpt-oss-120b': 0,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 0,
+            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
           },
         },);
         expect(outcome.kind,).toBe('declined',);
@@ -676,9 +684,9 @@ await describe({
       fn: async () => {
         const { outcome, } = await runSelection({
           ballots: {
-            'hf:moonshotai/Kimi-K3': 2,
-            'deepseek-v4.1-flash': 2,
-            'hf:openai/gpt-oss-120b': 9,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 2,
+            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 9,
           },
         },);
         expect(outcome.kind,).toBe('selected',);
@@ -705,13 +713,13 @@ await describe({
          */
         const refused = selectBestCandidate({
           client: scriptedJudges({
-            ballots: { 'hf:moonshotai/Kimi-K3': 1, },
+            ballots: { [SEAT_SYNTHETIC_VISION_WITHHELD]: 1, },
             counter,
           },),
           candidates: STRING_CANDIDATES,
           judgeModelIds: [
-            'hf:moonshotai/Kimi-K3',
-            'hf:moonshotai/Kimi-K3',
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+            SEAT_SYNTHETIC_VISION_WITHHELD,
           ],
           task: 'Pick one.',
           criteria: ['Faithful.',],
@@ -737,9 +745,9 @@ await describe({
       fn: async () => {
         const { outcome, } = await runSelection({
           ballots: {
-            'hf:zai-org/GLM-5.3-Flash': 1,
-            'hf:moonshotai/Kimi-K3': 1,
-            'hf:openai/gpt-oss-120b': 1,
+            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 1,
           },
         },);
         expect(outcome.kind,).toBe('selected',);
@@ -808,7 +816,7 @@ await describe({
           },),
           candidates: [
             candidateFor({
-              modelId: 'hf:zai-org/GLM-5.3-Flash',
+              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               newText: 'The cat chases butterflies.',
             },),
           ],
@@ -824,7 +832,7 @@ await describe({
         expect(selection.soleCount,).toBe(1,);
         expect(selection.judgedCount,).toBe(0,);
         expect(selection.operations.length,).toBe(1,);
-        expect([...selection.contributors,],).toEqual(['hf:zai-org/GLM-5.3-Flash',],);
+        expect([...selection.contributors,],).toEqual([SEAT_SYNTHETIC_VISION_EDITOR,],);
         // Recorded as a round of its own kind, so the author survives into
         // the attribution instead of vanishing with the vote that never was.
         expect(selection.rounds.length,).toBe(1,);
@@ -833,7 +841,7 @@ await describe({
         expect(selection.rounds[0]?.slate.length,).toBe(1,);
         expect(selection.rounds[0]?.slate[0]?.producer,).toEqual({
           kind: 'model',
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
         },);
       },
     },),
@@ -853,11 +861,11 @@ await describe({
           },),
           candidates: [
             candidateFor({
-              modelId: 'hf:zai-org/GLM-5.3-Flash',
+              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
               newText: 'The cat chases butterflies.',
             },),
             candidateFor({
-              modelId: 'hf:Qwen/Qwen3.8-27B',
+              modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
               newText: 'The cat loves chasing butterflies.',
             },),
           ],
@@ -887,7 +895,7 @@ await describe({
       fn: async () => {
         /** Repair kept when judges cannot converge, named for its author. */
         const indecisionFallback: Candidate<PatchOutcome> = chunkCandidateOf(candidateFor({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           newText: 'The cat chases butterflies.',
         },),);
 
@@ -905,9 +913,9 @@ await describe({
         const { patch, shippedProducer, } = await selectChunkPatch({
           client: scriptedJudges({
             ballots: {
-              'hf:moonshotai/Kimi-K3': 1,
-              'deepseek-v4.1-flash': 2,
-              'hf:openai/gpt-oss-120b': 0,
+              [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+              [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
+              [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
             },
             counter,
           },),
@@ -920,7 +928,7 @@ await describe({
               value: candidateFor({
                 modelId: candidate.producer.kind === 'model'
                   ? candidate.producer.modelId
-                  : 'hf:zai-org/GLM-5.3-Flash',
+                  : SEAT_SYNTHETIC_VISION_EDITOR,
                 newText: `Replacement ${String(index + 1,)}.`,
               },).patch,
               rendered: candidate.rendered,
@@ -942,7 +950,7 @@ await describe({
         // editor that wrote this text certify its own work at full weight.
         expect(shippedProducer,).toEqual({
           kind: 'model',
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
         },);
       },
     },),
@@ -953,7 +961,7 @@ await describe({
       fn: async () => {
         /** Repair that must NOT ship over an outright rejection. */
         const indecisionFallback: Candidate<PatchOutcome> = chunkCandidateOf(candidateFor({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           newText: 'The cat chases butterflies.',
         },),);
 
@@ -982,7 +990,7 @@ await describe({
               value: candidateFor({
                 modelId: candidate.producer.kind === 'model'
                   ? candidate.producer.modelId
-                  : 'hf:zai-org/GLM-5.3-Flash',
+                  : SEAT_SYNTHETIC_VISION_EDITOR,
                 newText: `Replacement ${String(index + 1,)}.`,
               },).patch,
               rendered: candidate.rendered,
@@ -1010,7 +1018,7 @@ await describe({
 
         /** Text every proposal agreed on. */
         const agreed = candidateFor({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
           newText: 'The cat chases butterflies.',
         },).patch;
 
@@ -1022,8 +1030,8 @@ await describe({
           producer: {
             kind: 'composite',
             contributors: [
-              'hf:zai-org/GLM-5.3-Flash',
-              'hf:Qwen/Qwen3.8-27B',
+              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
           },
           value: agreed,

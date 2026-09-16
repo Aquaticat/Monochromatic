@@ -28,16 +28,19 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   buildTranslateCandidates,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   ConsolidationStandingIneligibleError,
   createSyntheticClient,
   describeSlate,
   INELIGIBLE_STANDING_WITHHELD_FINDING,
-  type ProposalValidity,
-  TRANSLATE_LINE_STRUCTURE_CRITERION,
   rotateCandidates,
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   settleConsolidation,
+  TRANSLATE_LINE_STRUCTURE_CRITERION,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type ProposalValidity,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -50,9 +53,9 @@ const l = tagged({ tag: 'consolidate-settle-test', },);
  Roster of three, the smallest that can produce a two-to-one split.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
+  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;
 
 /**
