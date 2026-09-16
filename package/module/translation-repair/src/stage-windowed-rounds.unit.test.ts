@@ -32,7 +32,7 @@ const BENCH: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:openai/gpt-oss-120b',
   'minimax-m3',
-  'deepseek-v4-pro-0813',
+  'deepseek-v4.1-flash',
 ];
 
 /**
@@ -262,7 +262,7 @@ await describe({
         + 'bench once on request, as these stages always did',
       fn: async () => {
         const unreadableRun = await runBench({
-          script: { failsOnce: [], failsAlways: [], unreadable: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b', 'minimax-m3', 'deepseek-v4-pro-0813',], },
+          script: { failsOnce: [], failsAlways: [], unreadable: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b', 'minimax-m3', 'deepseek-v4.1-flash',], },
         },);
         expect(new Set(unreadableRun.asked,).size,).toBe(unreadableRun.asked.length,);
         const wholeRun = await runBench({

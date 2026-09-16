@@ -27,8 +27,8 @@ const BENCH: readonly RosterModelId[] = [
   'minimax-m3',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
-  'deepseek-v4-pro-0813',
-  'deepseek-v4-flash-0731',
+  'deepseek-v4.1-flash',
+  'google.gemma-4-31b',
   'hf:openai/gpt-oss-120b',
 ];
 

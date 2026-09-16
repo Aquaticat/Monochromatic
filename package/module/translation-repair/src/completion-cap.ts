@@ -58,7 +58,7 @@ const POOLED_P99 = 13_082;
  
  @example
  ```ts
- const cap = COMPLETION_CAP['deepseek-v4-pro-0813'];
+ const cap = COMPLETION_CAP['deepseek-v4.1-flash'];
  ```
  */
 export const COMPLETION_CAP: Readonly<Record<RosterModelId, number>> = {
@@ -79,10 +79,6 @@ export const COMPLETION_CAP: Readonly<Record<RosterModelId, number>> = {
   // Own p99 at most 483 over 16,251 calls on three providers, under the
   // pooled 90th.
   'gemma-4-26b-a4b-it': POOLED_P90,
-  // OpenRouter p99 over 6,576 calls; Hyper 1,918 over 8,618.
-  'deepseek-v4-pro-0813': 9_128,
-  // OpenRouter p99 over 4,915 calls; Hyper 661 over 7,700.
-  'deepseek-v4-flash-0731': 16_543,
   // New version, approved 2026-09-11. Use the existing unmeasured-model policy,
   // not V4 Flash 0731's distribution or a provider's advertised maximum.
   'deepseek-v4.1-flash': POOLED_P99,

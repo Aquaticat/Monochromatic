@@ -34,7 +34,7 @@ const l = tagged({ tag: 'introduced-defect-probe-test', },);
  */
 const PROBERS: readonly RosterModelId[] = [
   'hf:Qwen/Qwen3.8-27B',
-  'deepseek-v4-pro-0813',
+  'deepseek-v4.1-flash',
   'hf:openai/gpt-oss-120b',
 ];
 

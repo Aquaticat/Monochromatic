@@ -106,11 +106,11 @@ await describe({
           {
             producers: [
               { kind: 'model' as const, modelId: 'minimax-m3', },
-              { kind: 'model' as const, modelId: 'deepseek-v4-flash-0731', },
+              { kind: 'model' as const, modelId: 'google.gemma-4-31b', },
             ],
             ballots: [
               ballotOf({ modelId: 'minimax-m3', best: 1, },),
-              ballotOf({ modelId: 'deepseek-v4-flash-0731', best: 2, },),
+              ballotOf({ modelId: 'google.gemma-4-31b', best: 2, },),
             ],
           },
         ];
@@ -121,7 +121,7 @@ await describe({
         // Counting self-votes would rank the most self-confident model first
         // rather than the best-written one, and seat exactly the models least
         // able to tell.
-        for (const modelId of ['minimax-m3', 'deepseek-v4-flash-0731',] as const) {
+        for (const modelId of ['minimax-m3', 'google.gemma-4-31b',] as const) {
           /** That model's counts. */
           const standing = standingOf({
             standings,
@@ -144,7 +144,7 @@ await describe({
           {
             producers: [
               { kind: 'model' as const, modelId: 'minimax-m3', },
-              { kind: 'model' as const, modelId: 'deepseek-v4-flash-0731', },
+              { kind: 'model' as const, modelId: 'google.gemma-4-31b', },
             ],
             ballots: [
               ballotOf({ modelId: 'gemma-4-26b-a4b-it', best: 1, },),
@@ -164,7 +164,7 @@ await describe({
         /** The passed-over candidate's author. */
         const passed = standingOf({
           standings,
-          modelId: 'deepseek-v4-flash-0731',
+          modelId: 'google.gemma-4-31b',
         },);
 
         expect(named.disinterestedVotes,).toBe(1,);
@@ -183,12 +183,12 @@ await describe({
             producers: [
               {
                 kind: 'composite' as const,
-                contributors: ['minimax-m3', 'deepseek-v4-flash-0731',],
+                contributors: ['minimax-m3', 'google.gemma-4-31b',],
               },
               { kind: 'model' as const, modelId: 'gemma-4-26b-a4b-it', },
             ],
             ballots: [
-              ballotOf({ modelId: 'deepseek-v4-pro-0813', best: 1, },),
+              ballotOf({ modelId: 'deepseek-v4.1-flash', best: 1, },),
             ],
           },
         ];
@@ -196,7 +196,7 @@ await describe({
         /** What the tally made of it. */
         const standings = producerStandings({ rounds, },);
 
-        for (const modelId of ['minimax-m3', 'deepseek-v4-flash-0731',] as const) {
+        for (const modelId of ['minimax-m3', 'google.gemma-4-31b',] as const) {
           /** That contributor's counts. */
           const standing = standingOf({
             standings,
@@ -278,7 +278,7 @@ await describe({
         /** Two slates naming the same two authors. */
         const slate: SelectionRound['producers'] = [
           { kind: 'model' as const, modelId: 'minimax-m3', },
-          { kind: 'model' as const, modelId: 'deepseek-v4-flash-0731', },
+          { kind: 'model' as const, modelId: 'google.gemma-4-31b', },
         ];
         /** Rounds with a disinterested judge splitting its votes. */
         const rounds: readonly SelectionRound[] = [
@@ -295,7 +295,7 @@ await describe({
         /** What the tally made of it. */
         const standings = producerStandings({ rounds, },);
 
-        for (const modelId of ['minimax-m3', 'deepseek-v4-flash-0731',] as const) {
+        for (const modelId of ['minimax-m3', 'google.gemma-4-31b',] as const) {
           /** That model's counts. */
           const standing = standingOf({
             standings,
@@ -319,7 +319,7 @@ await describe({
           {
             producers: [
               { kind: 'model' as const, modelId: 'minimax-m3', },
-              { kind: 'model' as const, modelId: 'deepseek-v4-flash-0731', },
+              { kind: 'model' as const, modelId: 'google.gemma-4-31b', },
             ],
             ballots: [
               ballotOf({ modelId: 'minimax-m3', best: 2, selfVote: false, },),
@@ -339,7 +339,7 @@ await describe({
         /** The rival's candidate, which the voter named. */
         const rival = standingOf({
           standings,
-          modelId: 'deepseek-v4-flash-0731',
+          modelId: 'google.gemma-4-31b',
         },);
 
         // ITS OWN CANDIDATE sees no disinterested ballot: the only voice here

@@ -59,8 +59,10 @@ export const HYPER_ORIGIN_ROSTER_IDS = [
   // metered cost was disproportionate and exceptionally expensive.
   'minimax-m3',
   'gemma-4-26b-a4b-it',
-  'deepseek-v4-pro-0813',
-  'deepseek-v4-flash-0731',
+  // deepseek-v4-pro-0813 AND deepseek-v4-flash-0731 WERE REMOVED 2026-09-16
+  // at the owner's instruction ("DeepSeek V4.1 Flash is much better than both
+  // V4 Pro and V4 Flash, so please remove V4 Pro and V4 Flash"); both
+  // spellings on both providers sit on the blocklist.
   // glm-5.3 JOINED 2026-09-01 as a post-blocklist candidate from the live
   // catalog and passed the forced-tool probe. The refresh's other two
   // Hyper-only candidates, qwen3.8-flash and qwen3.8-2.4t-a95b, were culled

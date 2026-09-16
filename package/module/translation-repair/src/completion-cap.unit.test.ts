@@ -34,9 +34,9 @@ await describe({
         /**
          Measured cap for one seat.
          */
-        const cap = COMPLETION_CAP['deepseek-v4-pro-0813'];
-        expect(completionCapFor({ modelId: 'deepseek-v4-pro-0813', requested: cap - 1, },),).toBe(cap - 1,);
-        expect(completionCapFor({ modelId: 'deepseek-v4-pro-0813', requested: cap + 1, },),).toBe(cap,);
+        const cap = COMPLETION_CAP['deepseek-v4.1-flash'];
+        expect(completionCapFor({ modelId: 'deepseek-v4.1-flash', requested: cap - 1, },),).toBe(cap - 1,);
+        expect(completionCapFor({ modelId: 'deepseek-v4.1-flash', requested: cap + 1, },),).toBe(cap,);
       },
     },),
   ],

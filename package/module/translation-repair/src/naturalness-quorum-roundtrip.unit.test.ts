@@ -18,8 +18,8 @@ import {
 /** Asked seats matching the live failure's provider-independent shape. */
 const ROSTER = [
   'gemma-4-26b-a4b-it',
-  'deepseek-v4-pro-0813',
-  'deepseek-v4-flash-0731',
+  'deepseek-v4.1-flash',
+  'google.gemma-4-31b',
   'glm-5.3',
   'google.gemma-4-e2b',
   'inception/mercury-2.5',

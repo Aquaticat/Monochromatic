@@ -37,8 +37,8 @@ const ROSTER = [
  */
 const SIX_SEAT_ROSTER = [
   ...ROSTER,
-  'deepseek-v4-flash-0731',
-  'deepseek-v4-pro-0813',
+  'google.gemma-4-31b',
+  'deepseek-v4.1-flash',
   'minimax-m3',
 ] as const;
 
@@ -55,8 +55,8 @@ const PROVIDER_GROUPED_ROSTER = [
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
   'hf:openai/gpt-oss-120b',
-  'deepseek-v4-flash-0731',
-  'deepseek-v4-pro-0813',
+  'google.gemma-4-31b',
+  'deepseek-v4.1-flash',
   'minimax-m3',
   'gemma-4-26b-a4b-it',
 ] as const;

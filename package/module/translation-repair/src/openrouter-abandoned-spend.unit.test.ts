@@ -29,25 +29,25 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- A cut stream that delivered 3,860 raw characters, ten tokens at the anchor
- judge's measured 386 characters a token.
+ A cut stream that delivered 1,370 raw characters, ten tokens at MiniMax
+ M3's measured 137 characters a token.
  */
 const CUT = new StreamCutShortError({
-  label: 'deepseek/deepseek-v4-pro-0813',
-  partialText: 'x'.repeat(3_860,),
+  label: 'minimax/minimax-m3',
+  partialText: 'x'.repeat(1_370,),
   progress: {
     firstByteMs: 500,
     maxGapMs: 100,
     elapsedMs: 4_000,
-    chars: 3_860,
+    chars: 1_370,
   },
   cause: new Error('abandoned',),
 },);
 
 /**
- Raw characters the reckoning divides by for the anchor judge.
+ Raw characters the reckoning divides by for MiniMax M3.
  */
-const ANCHOR_RAW_CHARS_PER_TOKEN = 386;
+const MINIMAX_RAW_CHARS_PER_TOKEN = 137;
 
 /**
  Tokens in one million, the listing's unit.
@@ -61,7 +61,7 @@ await describe({
       name: 'READS the delivered characters off a cut stream and off a stream this pipeline ended for '
         + 'overrunning, and answers nothing-known for any other error',
       fn: async () => {
-        expect(deliveredCharsOf({ error: CUT, },),).toBe(3_860,);
+        expect(deliveredCharsOf({ error: CUT, },),).toBe(1_370,);
         expect(deliveredCharsOf({
           error: new StreamOverrunError({
             label: 'minimax/minimax-m3',
@@ -84,15 +84,15 @@ await describe({
         + 'body bytes, and prices both at the listing\'s rates',
       fn: async () => {
         /**
-         Listing prices for the anchor judge.
+         Listing prices for MiniMax M3.
          */
-        const info = OPENROUTER_MODELS['deepseek/deepseek-v4-pro-0813'];
+        const info = OPENROUTER_MODELS['minimax/minimax-m3'];
         /**
          Reckoning for ten tokens delivered on a four-thousand-byte body.
          */
         const estimate = estimateAbandonedSpend({
-          servedId: 'deepseek/deepseek-v4-pro-0813',
-          deliveredChars: 10 * ANCHOR_RAW_CHARS_PER_TOKEN,
+          servedId: 'minimax/minimax-m3',
+          deliveredChars: 10 * MINIMAX_RAW_CHARS_PER_TOKEN,
           requestBodyBytes: 4_000,
         },);
         expect(estimate.completionTokens,).toBe(10,);
@@ -118,13 +118,13 @@ await describe({
          Line the report logged.
          */
         const report = reportAbandonedSpend({
-          servedId: 'deepseek/deepseek-v4-pro-0813',
+          servedId: 'minimax/minimax-m3',
           error: CUT,
           requestBodyBytes: 4_000,
         },);
         if (report === 'not-reported')
           throw new Error('expected a line',);
-        expect(report.line.startsWith('SPEND provider=openrouter model=deepseek/deepseek-v4-pro-0813 prompt=1000 completion=10 cost=',),).toBe(true,);
+        expect(report.line.startsWith('SPEND provider=openrouter model=minimax/minimax-m3 prompt=1000 completion=10 cost=',),).toBe(true,);
         expect(report.line.endsWith(' estimated=abandoned',),).toBe(true,);
         expect(runSpendUsd({ provider: 'openrouter', },),).toBeGreaterThan(0,);
       },
@@ -136,7 +136,7 @@ await describe({
       fn: async () => {
         resetRunSpend();
         expect(reportAbandonedSpend({
-          servedId: 'deepseek/deepseek-v4-pro-0813',
+          servedId: 'minimax/minimax-m3',
           error: new Error('HTTP 502',),
           requestBodyBytes: 4_000,
         },),).toBe('not-reported',);
@@ -155,13 +155,13 @@ await describe({
       fn: async () => {
         resetRunSpend();
         expect(await exchangeReportingAbandon({
-          servedId: 'deepseek/deepseek-v4-pro-0813',
+          servedId: 'minimax/minimax-m3',
           requestBodyBytes: 10,
           exchange: async () => ({ status: 200, bodyText: 'data: [DONE]\n\n', }),
         },),).toEqual({ status: 200, bodyText: 'data: [DONE]\n\n', },);
         expect(runSpendUsd({ provider: 'openrouter', },),).toBe(0,);
         await expect(exchangeReportingAbandon({
-          servedId: 'deepseek/deepseek-v4-pro-0813',
+          servedId: 'minimax/minimax-m3',
           requestBodyBytes: 4_000,
           exchange: async () => {
             throw CUT;

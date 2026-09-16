@@ -34,8 +34,6 @@ await describe({
         + 'wire because it was chosen rather than because a string resolved',
       fn: async () => {
         expect(Object.keys(HYPER_MODELS,).toSorted(),).toEqual([
-          'deepseek-v4-flash-0731',
-          'deepseek-v4-pro-0813',
           'deepseek-v4.1-flash',
           'gemma-4-26b-a4b-it',
           'glm-5.3',
@@ -62,7 +60,7 @@ await describe({
       name: 'HOLDS the measured bound for a model that could emit far more, since the bound is '
         + 'about what an answer should be rather than what a model is capable of',
       fn: async () => {
-        expect(answerCeilingFor({ modelId: 'deepseek-v4-flash-0731', },),).toBe(32_000,);
+        expect(answerCeilingFor({ modelId: 'glm-5.3', },),).toBe(32_000,);
         expect(answerCeilingFor({ modelId: 'minimax-m3', },),).toBe(32_000,);
       },
     },),
@@ -86,8 +84,6 @@ await describe({
       name: 'names Hyper-origin identities without a Synthetic counterpart, independently of OpenRouter reach',
       fn: async () => {
         expect(hyperModelsWithoutSyntheticCounterparts().toSorted(),).toEqual([
-          'deepseek-v4-flash-0731',
-          'deepseek-v4-pro-0813',
           'deepseek-v4.1-flash',
           'gemma-4-26b-a4b-it',
           'glm-5.3',

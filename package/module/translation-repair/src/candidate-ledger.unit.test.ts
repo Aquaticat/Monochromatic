@@ -63,7 +63,7 @@ const CANDIDATES: readonly Candidate<{ readonly text: string; }>[] = [
   {
     producer: {
       kind: 'model',
-      modelId: 'deepseek-v4-flash-0731',
+      modelId: 'google.gemma-4-31b',
     },
     value: { text: 'The cat slept on the warm flagstones.', },
     rendered: 'The cat slept on the warm flagstones.',
@@ -72,7 +72,7 @@ const CANDIDATES: readonly Candidate<{ readonly text: string; }>[] = [
     producer: {
       kind: 'composite',
       contributors: [
-        'deepseek-v4-pro-0813',
+        'deepseek-v4.1-flash',
         'minimax-m3',
       ],
     },
@@ -93,7 +93,7 @@ const BALLOTS: readonly SelectionBallot[] = [
     selfVote: false,
   },
   {
-    modelId: 'deepseek-v4-pro-0813',
+    modelId: 'deepseek-v4.1-flash',
     best: 2,
     reason: 'Candidate 2 is mine and I still think it is better.',
     weight: 0.5,
@@ -340,9 +340,9 @@ await describe({
             },);
         },),)
           .toEqual([[
-            ['deepseek-v4-flash-0731',],
+            ['google.gemma-4-31b',],
             [
-              'deepseek-v4-pro-0813',
+              'deepseek-v4.1-flash',
               'minimax-m3',
             ],
           ],],);

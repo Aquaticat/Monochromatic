@@ -106,6 +106,25 @@ export const ROSTER_BLOCKLIST: readonly RosterBlocklistEntry[] = [
     id: 'deepseek-v4-pro',
     reason: 'the undated versions',
   },
+  // ADDED 2026-09-16 at the owner's instruction, both providers' spellings:
+  // these two had been seated since 2026-08-24 and are superseded by
+  // `deepseek-v4.1-flash`.
+  {
+    id: 'deepseek-v4-pro-0813',
+    reason: 'DeepSeek V4.1 Flash is much better than both V4 Pro and V4 Flash',
+  },
+  {
+    id: 'deepseek-v4-flash-0731',
+    reason: 'DeepSeek V4.1 Flash is much better than both V4 Pro and V4 Flash',
+  },
+  {
+    id: 'deepseek/deepseek-v4-pro-0813',
+    reason: 'DeepSeek V4.1 Flash is much better than both V4 Pro and V4 Flash',
+  },
+  {
+    id: 'deepseek/deepseek-v4-flash-0731',
+    reason: 'DeepSeek V4.1 Flash is much better than both V4 Pro and V4 Flash',
+  },
   {
     id: 'qwen3.8-max',
     reason: 'absurd cost in money',

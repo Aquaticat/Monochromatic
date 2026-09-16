@@ -88,7 +88,7 @@ await describe({
   name: 'ROSTER_MODEL_IDS',
   children: [
     it({
-      name: 'registers thirteen distinct approved models without duplicating identities across providers',
+      name: 'registers eleven distinct approved models without duplicating identities across providers',
       fn: async () => {
         // Eight until 2026-09-01, when the post-blocklist candidate refresh
         // admitted glm-5.3 and the same-day conformance probe culled the
@@ -97,8 +97,9 @@ await describe({
         // two Gemma 4 sizes no other provider serves. Twelve since 2026-09-09,
         // when the owner approved Mercury 2.5, which only OpenRouter serves.
         // V4.1 Flash adds one approved identity on 2026-09-11, not one per serving provider.
-        expect(ROSTER_MODEL_IDS.length,).toBe(13,);
-        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(13,);
+        // Eleven since 2026-09-16, when the owner removed the two dated DeepSeek V4 models.
+        expect(ROSTER_MODEL_IDS.length,).toBe(11,);
+        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(11,);
       },
     },),
 
@@ -214,7 +215,7 @@ await describe({
       name: 'REPORTS a Hyper-only model as unserved rather than indexing the record with an id '
         + 'that is not one of its keys',
       fn: async () => {
-        expect(syntheticEntryFor({ modelId: 'deepseek-v4-pro-0813', },),)
+        expect(syntheticEntryFor({ modelId: 'deepseek-v4.1-flash', },),)
           .toEqual({ served: false, },);
       },
     },),

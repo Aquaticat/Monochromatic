@@ -349,7 +349,7 @@ await describe({
 
         await ask({
           client,
-          modelId: 'deepseek-v4-flash-0731',
+          modelId: 'deepseek-v4.1-flash',
         },);
         expect(called,).toEqual(['hyper',],);
       },
@@ -389,7 +389,7 @@ await describe({
         expect(await ask({ client, },),).toEqual({ text: '{"spot":"laundry basket"}', },);
         await ask({
           client,
-          modelId: 'deepseek-v4-flash-0731',
+          modelId: 'deepseek-v4.1-flash',
         },);
         expect(called,).toEqual(['openrouter', 'openrouter',],);
       },
@@ -639,7 +639,7 @@ await describe({
 
         const outcome = await ask({
           client,
-          modelId: 'deepseek-v4-flash-0731',
+          modelId: 'deepseek-v4.1-flash',
         },);
         // Synthetic does not serve this model, so the budgets of the two that
         // do ARE the model's.

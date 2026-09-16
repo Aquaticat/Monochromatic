@@ -44,12 +44,8 @@ const RAW_CHARS_PER_COMPLETION_TOKEN: Readonly<Record<OpenRouterServedId, number
   'moonshotai/kimi-k3': 137,
   // 4,015 streams.
   'minimax/minimax-m3': 137,
-  // 3,017 streams.
-  'deepseek/deepseek-v4-flash-0731': 132,
   // New version unmeasured; use the median-of-model-medians fallback, not its predecessor's ratio.
   'deepseek/deepseek-v4.1-flash': UNMEASURED_RAW_CHARS_PER_TOKEN,
-  // 4,064 streams.
-  'deepseek/deepseek-v4-pro-0813': 386,
   // 1,253 streams.
   'z-ai/glm-5.3-flash': 297,
   // Unmeasured on this provider; the median of the measured seats.

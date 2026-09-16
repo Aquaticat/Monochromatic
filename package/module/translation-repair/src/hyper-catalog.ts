@@ -75,7 +75,7 @@ export const HYPER_AUTH_HEADER = 'Authorization';
  
  @example
  ```ts
- const modelId: HyperServedId = 'deepseek-v4-flash-0731';
+ const modelId: HyperServedId = 'deepseek-v4.1-flash';
  ```
  */
 export type HyperServedId =
@@ -84,8 +84,6 @@ export type HyperServedId =
   | 'kimi-k3'
   | 'gpt-oss-120b'
   | 'gemma-4-26b-a4b-it'
-  | 'deepseek-v4-pro-0813'
-  | 'deepseek-v4-flash-0731'
   | 'deepseek-v4.1-flash'
   | 'glm-5.3-flash'
   | 'glm-5.3';
@@ -95,7 +93,7 @@ export type HyperServedId =
  
  @example
  ```ts
- const info: HyperModelInfo = HYPER_MODELS['deepseek-v4-flash-0731'];
+ const info: HyperModelInfo = HYPER_MODELS['deepseek-v4.1-flash'];
  ```
  */
 export type HyperModelInfo = {
@@ -153,7 +151,7 @@ export type HyperModelInfo = {
  
  @example
  ```ts
- const info = HYPER_MODELS['deepseek-v4-flash-0731'];
+ const info = HYPER_MODELS['deepseek-v4.1-flash'];
  ```
  */
 export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
@@ -194,18 +192,8 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
     readsImages: false,
     maxOutputLength: 25_600,
   },
-  'deepseek-v4-pro-0813': {
-    id: 'deepseek-v4-pro-0813',
-    sharedWith: NO_SYNTHETIC_COUNTERPART,
-    readsImages: false,
-    maxOutputLength: 262_144,
-  },
-  'deepseek-v4-flash-0731': {
-    id: 'deepseek-v4-flash-0731',
-    sharedWith: NO_SYNTHETIC_COUNTERPART,
-    readsImages: false,
-    maxOutputLength: 384_000,
-  },
+  // deepseek-v4-pro-0813 AND deepseek-v4-flash-0731 LEFT 2026-09-16 at the
+  // owner's instruction; `roster-blocklist.ts` carries the words.
   // THE TWO ENTRIES BELOW JOINED 2026-09-01 from the live catalog read for
   // the owner's post-blocklist candidate refresh
   // (doc/decision/translation-repair-roster-blocklist.md). Fields are from

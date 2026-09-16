@@ -97,7 +97,7 @@ await describe({
         expect(alone.length,).toBeLessThan(RUN_WIDE_SEATS.length,);
         expect(alone.includes('gemma-4-26b-a4b-it',),).toBe(true,);
         expect(alone.includes('hf:openai/gpt-oss-120b',),).toBe(true,);
-        expect(alone.includes('deepseek-v4-pro-0813',),).toBe(false,);
+        expect(alone.includes('glm-5.3',),).toBe(false,);
       },
     },),
   ],

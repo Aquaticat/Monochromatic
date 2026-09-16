@@ -76,7 +76,7 @@ const MODELS: TranslateModels = {
     'hf:zai-org/GLM-5.3-Flash',
     'minimax-m3',
     'hf:Qwen/Qwen3.8-27B',
-    'deepseek-v4-pro-0813',
+    'deepseek-v4.1-flash',
     'hf:openai/gpt-oss-120b',
   ],
 };

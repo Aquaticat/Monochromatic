@@ -229,13 +229,17 @@ export const RUN_WRITERS: readonly RosterModelId[] = RUN_ROSTER
  reading is of what the run buys. Record: the second 2026-09-09 addendum of
  `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
  
- ALL THREE KEEP EVERY OTHER SEAT: nothing here measures judging, critique,
+ ALL THREE KEPT EVERY OTHER SEAT: nothing here measures judging, critique,
  checking or the consolidation, and the anchor judge stays the anchor judge.
+
+ THE TWO DEEPSEEK V4 MODELS LEFT THE ROSTER ON 2026-09-16 at the owner's
+ instruction ("DeepSeek V4.1 Flash is much better than both V4 Pro and V4
+ Flash, so please remove V4 Pro and V4 Flash"), so only gpt-oss-120b is
+ listed; their readings stay recorded because they are the method's worked
+ examples.
  */
 export const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
   'hf:openai/gpt-oss-120b',
-  'deepseek-v4-flash-0731',
-  'deepseek-v4-pro-0813',
 ],);
 
 /**
@@ -532,10 +536,16 @@ export const RUN_MODELS: RepairModels = {
   // an editor round now waits on them where it once waited on nobody; the
   // corpus pass bounds that with its straggler window rather than by seating
   // a faster, worse editor.
+  //
+  // THE THIRD SEAT PASSED TO `deepseek-v4.1-flash` ON 2026-09-16 when the
+  // owner removed `deepseek-v4-pro-0813` from the roster ("DeepSeek V4.1
+  // Flash is much better than both V4 Pro and V4 Flash"). The owner's words
+  // are the evidence for the seat; no editor calibration has measured the
+  // successor, and the next `editor-calibrate` re-reads it.
   editorModelIds: [
     'hf:zai-org/GLM-5.3-Flash',
     'glm-5.3',
-    'deepseek-v4-pro-0813',
+    'deepseek-v4.1-flash',
   ],
   // An editor still judges a slate holding its own text at half weight for
   // that candidate alone.
@@ -560,9 +570,13 @@ export const RUN_MODELS: RepairModels = {
   // not separated, the seat goes to the model that lost fewer voices under
   // the production window, and minimax-m3 lost none (p90 48 s) where
   // `glm-5.3` is the roster's slowest voice and lost 15 of 78 asks.
+  //
+  // THE SECOND SEAT PASSED TO `deepseek-v4.1-flash` ON 2026-09-16 on the
+  // owner's removal of `deepseek-v4-pro-0813`, for the reason the editor
+  // seat gives; unmeasured in this role until the next `editor-calibrate`.
   refinerModelIds: [
     'hf:zai-org/GLM-5.3-Flash',
-    'deepseek-v4-pro-0813',
+    'deepseek-v4.1-flash',
     'minimax-m3',
   ],
   // THREE, MEASURED RATHER THAN PREFERRED, and the wide arm is gone. The

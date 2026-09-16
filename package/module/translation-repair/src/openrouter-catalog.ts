@@ -121,9 +121,7 @@ export type OpenRouterProviderPreferences = typeof OPENROUTER_PROVIDER_PREFERENC
 export type OpenRouterServedId =
   | 'moonshotai/kimi-k3'
   | 'minimax/minimax-m3'
-  | 'deepseek/deepseek-v4-flash-0731'
   | 'deepseek/deepseek-v4.1-flash'
-  | 'deepseek/deepseek-v4-pro-0813'
   | 'z-ai/glm-5.3-flash'
   | 'google/gemma-4-26b-a4b-it'
   | 'openai/gpt-oss-120b'
@@ -195,7 +193,7 @@ export type OpenRouterModelInfo = {
  
  @example
  ```ts
- const info = OPENROUTER_MODELS['deepseek/deepseek-v4-flash-0731'];
+ const info = OPENROUTER_MODELS['deepseek/deepseek-v4.1-flash'];
  ```
  */
 export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterModelInfo>> = {
@@ -262,19 +260,11 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
   // Makora 2 of 99 and Together 0 of 10. Rule applied here and below: an
   // endpoint is ignored when a day's runs cut a quarter or more of at least
   // twenty of its streams, or fail that share of them in-stream.
-  'deepseek/deepseek-v4-flash-0731': {
-    id: 'deepseek/deepseek-v4-flash-0731',
-    sharedWith: 'deepseek-v4-flash-0731',
-    readsImages: false,
-    maxOutputLength: 943_718,
-    promptUsdPerMillion: 0.065,
-    completionUsdPerMillion: 0.18,
-    ignoredEndpoints: [
-      'open-inference',
-      'parasail',
-      'reka',
-    ],
-  },
+  //
+  // `deepseek/deepseek-v4-flash-0731` (OpenInference, Parasail and Reka
+  // ignored by that rule) AND `deepseek/deepseek-v4-pro-0813` LEFT
+  // 2026-09-16 at the owner's instruction; `roster-blocklist.ts` carries
+  // the words.
   // Owner-approved 2026-09-11; live strict JSON stream verified through
   // DeepInfra after one HTTP 429. No endpoint is excluded on that single refusal.
   // Base catalog rates price abandoned-call estimates only. Completed calls
@@ -287,15 +277,6 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     maxOutputLength: 384_000,
     promptUsdPerMillion: 0.3,
     completionUsdPerMillion: 1.2,
-    ignoredEndpoints: [],
-  },
-  'deepseek/deepseek-v4-pro-0813': {
-    id: 'deepseek/deepseek-v4-pro-0813',
-    sharedWith: 'deepseek-v4-pro-0813',
-    readsImages: false,
-    maxOutputLength: 384_000,
-    promptUsdPerMillion: 0.57948,
-    completionUsdPerMillion: 1.73844,
     ignoredEndpoints: [],
   },
   // TWO SEATS LEFT THIS CATALOG ON 2026-09-09, on the owner's standing

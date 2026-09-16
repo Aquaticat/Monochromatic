@@ -109,29 +109,23 @@ await describe({
     },),
 
     it({
-      name: 'IGNORES the measured endpoints and no others: Parasail and ModelRun for MiniMax M3, '
-        + 'OpenInference, Parasail and Reka for DeepSeek V4 Flash (2026-09-03 and 2026-09-04 measurements '
-        + 'beside each row), while every other row ignores no endpoint; Qwen3.8-27B and GLM-5.3 left the '
-        + 'catalog on 2026-09-09',
+      name: 'IGNORES the measured endpoints and no others: Parasail and ModelRun for MiniMax M3 '
+        + '(2026-09-03 and 2026-09-04 measurements beside the row), while every other row ignores no '
+        + 'endpoint; Qwen3.8-27B and GLM-5.3 left the catalog on 2026-09-09, DeepSeek V4 Flash and V4 Pro '
+        + 'on 2026-09-16',
       fn: async () => {
         expect(OPENROUTER_MODELS['minimax/minimax-m3'].ignoredEndpoints,).toEqual([
           'parasail',
           'modelrun',
-        ],);
-        expect(OPENROUTER_MODELS['deepseek/deepseek-v4-flash-0731'].ignoredEndpoints,).toEqual([
-          'open-inference',
-          'parasail',
-          'reka',
         ],);
         /**
          Rows with a measured endpoint on them.
          */
         const measured: ReadonlySet<string> = new Set([
           'minimax/minimax-m3',
-          'deepseek/deepseek-v4-flash-0731',
         ],);
         /**
-         Rows other than the two with a measured endpoint.
+         Rows other than the one with a measured endpoint.
          */
         const others = Object
           .values(OPENROUTER_MODELS,)

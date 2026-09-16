@@ -54,7 +54,7 @@ function chunkOf(
     id: 'gen-1788450765-akMiAoFBnp64lvAW8sIs',
     object: 'chat.completion.chunk',
     created: 1_788_450_765,
-    model: 'deepseek/deepseek-v4-flash-0731',
+    model: 'deepseek/deepseek-v4.1-flash',
     provider: 'Inceptron',
     choices: [{
       index: 0,
@@ -147,7 +147,7 @@ await describe({
          One schema'd call as a stage would make it.
          */
         const reply = await client.chatText({
-          modelId: 'deepseek-v4-flash-0731',
+          modelId: 'deepseek-v4.1-flash',
           messages: [
             { role: 'system', content: 'You are a careful cat.', },
             { role: 'user', content: 'Where does the cat sleep?', },
@@ -185,18 +185,14 @@ await describe({
          */
         const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
         expect(body,).toMatchObject({
-          model: 'deepseek/deepseek-v4-flash-0731',
+          model: 'deepseek/deepseek-v4.1-flash',
           stream: true,
           stream_options: { include_usage: true, },
           provider: {
             zdr: true,
             require_parameters: true,
             sort: 'price',
-            ignore: [
-              'open-inference',
-              'parasail',
-              'reka',
-            ],
+            ignore: [],
           },
           response_format: {
             type: 'json_schema',
@@ -216,7 +212,7 @@ await describe({
         // THE MEASURED CEILING RIDES ON EVERY CALL since 2026-09-09: the
         // per-token provider bills an abandoned stream to its end on endpoints
         // that do not honour a cancel, and this is the bound that holds there.
-        expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP['deepseek-v4-flash-0731'], },);
+        expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP['deepseek-v4.1-flash'], },);
       },
     },),
 
@@ -226,13 +222,13 @@ await describe({
       fn: async () => {
         const { client, exchanges, } = recordedClient({},);
         await client.chatText({
-          modelId: 'deepseek-v4-flash-0731',
+          modelId: 'deepseek-v4.1-flash',
           messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
           signal: SIGNAL,
           maxTokens: 1_000_000,
         },);
         await client.chatText({
-          modelId: 'deepseek-v4-flash-0731',
+          modelId: 'deepseek-v4.1-flash',
           messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
           signal: SIGNAL,
           maxTokens: 50,
@@ -243,7 +239,7 @@ await describe({
         const bodies = exchanges.map(function parse(exchange,): unknown {
           return JSON.parse(exchange.bodyJson ?? '{}',);
         },);
-        expect(bodies[0],).toMatchObject({ max_tokens: COMPLETION_CAP['deepseek-v4-flash-0731'], },);
+        expect(bodies[0],).toMatchObject({ max_tokens: COMPLETION_CAP['deepseek-v4.1-flash'], },);
         expect(bodies[1],).toMatchObject({ max_tokens: 50, },);
       },
     },),

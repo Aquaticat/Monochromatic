@@ -108,7 +108,7 @@ const JUDGES = ['minimax-m3',] as const;
  Every one of them stays clear of {@link EDITORS}.
  */
 const CHECKERS = [
-  'deepseek-v4-pro-0813',
+  'deepseek-v4.1-flash',
   'hf:zai-org/GLM-5.3-Flash',
   'hf:moonshotai/Kimi-K3',
 ] as const;

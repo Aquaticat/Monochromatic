@@ -203,7 +203,7 @@ const CHECKER_READING = {
       wroteTheText: false,
     },
     {
-      modelId: 'deepseek-v4-pro-0813',
+      modelId: 'deepseek-v4.1-flash',
       verdict: 'not-fixed',
       wroteTheText: false,
     },
@@ -240,7 +240,7 @@ const RECHECK_READING = {
       wroteTheText: false,
     },
     {
-      modelId: 'deepseek-v4-pro-0813',
+      modelId: 'deepseek-v4.1-flash',
       verdict: 'fixed',
       wroteTheText: false,
     },

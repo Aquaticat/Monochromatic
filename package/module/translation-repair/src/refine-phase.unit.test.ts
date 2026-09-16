@@ -81,13 +81,13 @@ const MODELS: RepairModels = {
     'hf:zai-org/GLM-5.3-Flash',
     'hf:Qwen/Qwen3.8-27B',
     'hf:moonshotai/Kimi-K3',
-    'deepseek-v4-pro-0813',
+    'deepseek-v4.1-flash',
   ],
   refinerModelIds: [REFINER_THAT_REWROTE,],
   checkerModelIds: [
     'hf:Qwen/Qwen3.8-27B',
     'hf:moonshotai/Kimi-K3',
-    'deepseek-v4-pro-0813',
+    'deepseek-v4.1-flash',
   ],
 };
 

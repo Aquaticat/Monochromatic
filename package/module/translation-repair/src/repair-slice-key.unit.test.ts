@@ -38,7 +38,7 @@ const MODELS: RepairModels = {
   panelModelIds: ['hf:Qwen/Qwen3.8-27B',],
   editorModelIds: ['hf:openai/gpt-oss-120b',],
   judgeModelIds: ['minimax-m3',],
-  refinerModelIds: ['deepseek-v4-pro-0813',],
+  refinerModelIds: ['deepseek-v4.1-flash',],
   checkerModelIds: ['hf:Qwen/Qwen3.8-27B',],
 };
 
@@ -123,9 +123,11 @@ await describe({
         // THE SAME CASE MOVED THIS LITERAL TWICE ON 2026-08-29. GLM-5.3-Flash
         // replaced GLM-5.2, then the owner removed Nemotron from every stage
         // and this fixture replaced it with an active roster id. Both ids are
-        // already key input.
+        // already key input. IT MOVED A THIRD TIME ON 2026-09-16, when the owner
+        // removed deepseek-v4-pro-0813 and this fixture's refiner became
+        // deepseek-v4.1-flash, again an id already in key input.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('89e4ebbae8ce112ad9d48ab743b0c428ec9f4bde4981092ecdbe7715496e6009',);
+          .toBe('a161c35e70061c7ee0ac402d5f47166f0becc720a7610b8a31219c0f900f829f',);
       },
     },),
     it({

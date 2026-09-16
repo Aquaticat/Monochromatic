@@ -187,11 +187,11 @@ await describe({
 
     it({
       name: 'KEEPS EVERY WRITER A PRODUCER CALIBRATION MEASURED OUT OF THE TRANSLATOR SEAT in its judge seats '
-        + 'and the consolidation seat: gpt-oss-120b and deepseek-v4-flash-0731 (2026-09-01, z -4.5) and the '
-        + 'anchor judge deepseek-v4-pro-0813 (2026-09-09, z -3.18 on the second reading below the pooled null)',
+        + 'and the consolidation seat: gpt-oss-120b (2026-09-01, z -4.5); the two DeepSeek V4 models measured '
+        + 'out beside it left the roster on 2026-09-16',
       fn: async function keepsDroppedWritersElsewhere(): Promise<void> {
         const wet = judgeSeatsFor({ dry: ALL_WET, },);
-        expect(TRANSLATOR_DROPPED.has('deepseek-v4-pro-0813',),).toBe(true,);
+        expect(TRANSLATOR_DROPPED.has('hf:openai/gpt-oss-120b',),).toBe(true,);
         for (const dropped of TRANSLATOR_DROPPED) {
           expect(wet.translators.includes(dropped,),).toBe(false,);
           expect(wet.writers.includes(dropped,),).toBe(true,);

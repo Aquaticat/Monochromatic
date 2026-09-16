@@ -212,8 +212,8 @@ const ELEVEN_SEATS: readonly RosterModelId[] = [
   'hf:openai/gpt-oss-120b',
   'minimax-m3',
   'gemma-4-26b-a4b-it',
-  'deepseek-v4-pro-0813',
-  'deepseek-v4-flash-0731',
+  'deepseek-v4.1-flash',
+  'google.gemma-4-31b',
   'glm-5.3',
   'google.gemma-4-e2b',
   'inception/mercury-2.5',
@@ -227,8 +227,8 @@ const DRY_SEVEN: readonly RosterModelId[] = [
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
   'minimax-m3',
-  'deepseek-v4-pro-0813',
-  'deepseek-v4-flash-0731',
+  'deepseek-v4.1-flash',
+  'google.gemma-4-31b',
   'glm-5.3',
 ];
 
@@ -913,7 +913,7 @@ await describe({
           'minimax-m3',
           'hf:Qwen/Qwen3.8-27B',
           'hf:moonshotai/Kimi-K3',
-          'deepseek-v4-pro-0813',
+          'deepseek-v4.1-flash',
           'hf:openai/gpt-oss-120b',
         ];
         /** Gather recovering the milestone-two weather pattern. */
@@ -968,7 +968,7 @@ await describe({
           'minimax-m3',
           'hf:Qwen/Qwen3.8-27B',
           'hf:moonshotai/Kimi-K3',
-          'deepseek-v4-pro-0813',
+          'deepseek-v4.1-flash',
           'hf:openai/gpt-oss-120b',
         ];
         /** Gather over the healthy roster. */

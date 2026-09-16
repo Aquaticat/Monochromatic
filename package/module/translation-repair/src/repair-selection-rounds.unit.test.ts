@@ -246,7 +246,7 @@ await describe({
             ballots: [
               'hf:openai/gpt-oss-120b',
               'hf:zai-org/GLM-5.3-Flash',
-              'deepseek-v4-pro-0813',
+              'deepseek-v4.1-flash',
             ].map(function ballotFor(modelId,) {
               return {
                 modelId: modelId as RosterModelId,

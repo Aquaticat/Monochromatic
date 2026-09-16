@@ -170,7 +170,7 @@ await describe({
         expect(
           reportSpend({
             provider: 'openrouter',
-            label: 'deepseek/deepseek-v4-flash-0731',
+            label: 'deepseek/deepseek-v4.1-flash',
             extracted: reported({
               promptTokens: 342,
               completionTokens: 400,
@@ -178,7 +178,7 @@ await describe({
             costUsd: 0.00015646,
           },),
         )
-          .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4-flash-0731 prompt=342 completion=400 cost=0.00015646',);
+          .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4.1-flash prompt=342 completion=400 cost=0.00015646',);
       },
     },),
 
@@ -273,7 +273,7 @@ await describe({
         expect(
           reportSpend({
             provider: 'openrouter',
-            label: 'deepseek/deepseek-v4-pro-0813',
+            label: 'deepseek/deepseek-v4.1-flash',
             extracted: reported({
               promptTokens: 1_000,
               completionTokens: 10,
@@ -282,11 +282,11 @@ await describe({
             estimated: 'abandoned',
           },),
         )
-          .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4-pro-0813 prompt=1000 completion=10 cost=0.0006 estimated=abandoned',);
+          .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4.1-flash prompt=1000 completion=10 cost=0.0006 estimated=abandoned',);
         expect(
           reportSpend({
             provider: 'openrouter',
-            label: 'deepseek/deepseek-v4-pro-0813',
+            label: 'deepseek/deepseek-v4.1-flash',
             extracted: reported({
               promptTokens: 4_000,
               completionTokens: 12,
@@ -296,7 +296,7 @@ await describe({
             cachedTokens: 3_072,
           },),
         )
-          .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4-pro-0813 prompt=4000 completion=12 cost=0.0004 endpoint=Baidu cached=3072',);
+          .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4.1-flash prompt=4000 completion=12 cost=0.0004 endpoint=Baidu cached=3072',);
       },
     },),
   ],

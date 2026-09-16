@@ -215,7 +215,7 @@ await describe({
       fn: async () => {
         expect(
           refineRunShape({
-            refinerModelIds: ['deepseek-v4-pro-0813',],
+            refinerModelIds: ['deepseek-v4.1-flash',],
             judgeModelIds: ['hf:Qwen/Qwen3.8-27B',],
             checkerModelIds: ['hf:moonshotai/Kimi-K3',],
           },),
@@ -233,7 +233,7 @@ await describe({
           refineRunShape({
             refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
             judgeModelIds: ['hf:Qwen/Qwen3.8-27B',],
-            checkerModelIds: ['deepseek-v4-pro-0813',],
+            checkerModelIds: ['deepseek-v4.1-flash',],
           },),
         ).not.toBe(RUN_SHAPE,);
       },

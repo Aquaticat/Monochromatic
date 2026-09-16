@@ -110,13 +110,13 @@ await describe({
         expect(
           readSpendLine({
             line: logged({
-              tail: 'SPEND provider=openrouter model=deepseek/deepseek-v4-flash-0731 prompt=342 completion=400 cost=0.00015646',
+              tail: 'SPEND provider=openrouter model=deepseek/deepseek-v4.1-flash prompt=342 completion=400 cost=0.00015646',
             },),
           },),
         )
           .toEqual({
             provider: 'openrouter',
-            model: 'deepseek/deepseek-v4-flash-0731',
+            model: 'deepseek/deepseek-v4.1-flash',
             prompt: 342,
             completion: 400,
             costUsd: 0.00015646,
