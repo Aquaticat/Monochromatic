@@ -39,6 +39,16 @@ Stated by the user on 2026-09-16.
    per the user's correction on 2026-09-16 that dropped ZFS.
 - The process may create btrfs subvolumes and snapshots whenever it wishes.
 
+### Doctor command
+
+- The tool provides a `doctor` command.
+- `doctor` tells the user which commands to run or which files to edit,
+   and why,
+   to enable capabilities the environment currently blocks.
+- The user's example:
+   a btrfs mount lacking `user_subvol_rm_allowed`,
+   which `doctor` reports with the exact change and its reason.
+
 ### Scheduling and control
 
 - Every task given to the process has a priority,
