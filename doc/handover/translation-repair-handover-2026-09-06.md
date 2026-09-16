@@ -192,6 +192,21 @@ which the takeover session does not have.
   log `~/temp/agent/Mio19-20260916.log`);
   Hyper dry all day,
   so `glm-5.3` is unreachable as on Mio17 and Mio18.
+  `Mio19` settled at 15:49 UTC in 100 minutes and its page reads clean
+  (the pass log's "Mio19 read" heading dated 2026-09-16 16:05 UTC):
+  class thirty-four held (section 2 paired 12 of 19 translation blocks,
+  the chat quotes,
+  their labels and the tweet quote unpaired,
+  the poem unpaired),
+  class thirty-three held (the archive's chat kept,
+  two typos corrected),
+  the seven checks against Mio12 all better or equal,
+  the three checks passed,
+  four wording notes recorded and not fixed.
+  #123 closes.
+  `hulicaijia5` launched at 15:58 UTC on frozen `1cfd9d2fe` (pid 1470018,
+  runs `~/temp/agent/hulicaijia5-20260916`,
+  log `~/temp/agent/hulicaijia5-20260916.log`).
 - Owner,
   2026-09-16,
   same hour:
@@ -2028,8 +2043,13 @@ pairs again with them,
 reviews on that pairing and pairs the corrected archive with them too;
 red guards `d7e514742`
 (the pass log's "Mio17 read" heading dated 2026-09-16 13:29 UTC).
-Running on Mio19 (frozen `a88f52d5b`,
-which adds the roster change of `a88f52d5b`).
+Held on Mio19 (frozen `a88f52d5b`):
+section 2 paired 12 of 19 translation blocks,
+the two chat quotes,
+their labels and the tweet quote unpaired,
+the poem unpaired,
+and the page carries the second chat quote and the poem
+(the pass log's "Mio19 read" heading dated 2026-09-16 16:05 UTC).
 `ffd35334a` (2026-09-16,
 10:03 UTC):
 class thirty-three,
@@ -3630,34 +3650,28 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio19` by the seven steps and the three checks (frozen `a88f52d5b`,
-    pid 1315881,
-    runs `~/temp/agent/Mio19-20260916`,
-    log `~/temp/agent/Mio19-20260916.log`;
-    Mio18 on `e964d2f3a` was killed for the roster change and its 20 minutes are read in the takeover bullets).
-    Mio17 stopped at slice 16 (the pass log's "Mio17 read" heading dated 2026-09-16 13:29 UTC):
-    the pairing set the archive's second chat translation against the poem (class thirty-four),
-    and Mio19 runs on the fix.
-    On Mio19 read the pairing first:
-    grep `pairs with` for the sighted rounds and `paired .* translation blocks` for the last section
-    (Mio17 paired 14 of 19;
-    the two chat quotes and their `Translation:` labels should now be unpaired),
-    then slice 16 (the chat quote and the poem both on the page,
-    no `gate-kept-standing`),
-    then the first chat block (Mio opening with the sticker,
-    the friend answering),
-    then slice 14 (`no block of its kind`),
-    `answered unreadably`,
-    `archive review: comparing`,
-    `left the block unresolved`,
-    the seven checks against Mio12,
-    the spend.
-    The coming-out paragraph's redundancy (the source's "曾在春の芽工作室 QQ 群担任管理员，还曾：" as prose
-    above the archive's bullet that says the same) and the chat's "posting about SRS" for 搜过 are wording,
-    read them,
-    fix them only as a class with a mechanism.
-    If the page reads clean,
-    #123 closes and the queue starts with `hulicaijia` on the frozen tip dist.
+1.  READ `hulicaijia5` by the seven steps and the three checks (frozen `1cfd9d2fe`,
+    code tip `099b69787`,
+    pid 1470018,
+    runs `~/temp/agent/hulicaijia5-20260916`,
+    log `~/temp/agent/hulicaijia5-20260916.log`,
+    launched 15:58 UTC with Hyper dry).
+    `Mio19` read clean and #123 is closed
+    (the pass log's "Mio19 read" heading dated 2026-09-16 16:05 UTC).
+    On hulicaijia read first the three shapes no read page has met:
+    the inline ruby annotation,
+    the Sakura component,
+    and the footnote (its marker and definition against the archive's);
+    then the archive block review
+    (its 2026-09-09 INCOMPLETE was class twenty-six,
+    5 of 11 heard with 3 seats unreachable;
+    `glm-5.3` is unreachable again today);
+    then the seven steps and the three checks.
+    Mio19's wording notes (the Chinese reference-link title with a gloss,
+    the trailing space on the horizontal rule,
+    the IQ quote's dropped source hard break,
+    the archive's "who is also trans" dropped on source authority) are recorded there;
+    fix any of them only as a class with a mechanism.
     ALWAYS KILL AND RELAUNCH if the source moves while it runs.
 2.  DECIDED (owner,
     2026-09-16,

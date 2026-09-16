@@ -7503,6 +7503,177 @@ no `gate-kept-standing`),
 then the first chat block's speakers,
 then the seven checks against Mio12.
 
+## Mio19 read, 2026-09-16, 16:05 UTC: settled, class thirty-four held, the page reads clean
+
+Frozen `a88f52d5b`,
+100 minutes (Mio16 took 160,
+Mio17 203),
+`TALLY Mio status=SETTLED slices=17 repairIssues=109 repairAccepted=80 repairResolved=79 pageChanged=11 alignmentFindings=6 selection=contested`,
+no interruption,
+no INCOMPLETE,
+no hold,
+no payment refusal,
+no `gate-kept-standing`.
+Page 296 lines against the archive's 235,
+0 straight apostrophes in words,
+32 curly,
+18 curly double quotes (the archive 20),
+4 unicode ellipses (the archive 4),
+2 CJK runs (the 澪 the archive keeps in the opening quote,
+and the reference link's title,
+read under wording),
+2 `Translation:` labels,
+front matter equal to the archive's byte for byte.
+Spend:
+OpenRouter 265.00 to 264.76 USD (0.34 logged,
+13 streams abandoned for 0.02),
+Bedrock 185.05 to 184.95 USD,
+Synthetic weekly 65.5 to 60.7 percent,
+Hyper dry all day.
+1,244 seats asked;
+21 cap cuts (Mio16 17,
+Mio17 54),
+every one a `finish_reason=length` with empty content on a Synthetic reasoning seat,
+read as a voice lost.
+
+### The pairing: class thirty-four held
+
+The sighted rounds carried 640 characters of picture transcript for section 1 (`photo6`,
+`photo7`) and 1346 for section 2 (the tweets and `photo3`).
+Section 1 paired 3 of 3 original and 3 of 5 translation blocks:
+the `Translation:` label and the first chat quote unpaired.
+Section 2 paired 12 of 13 original and 12 of 19 translation blocks
+(Mio17 blind:
+13 of 13 and 14 of 19).
+The unpaired translation blocks are the archive's `And therefore:` line,
+both picture labels,
+the tweet quote,
+the second chat quote,
+the archive's second horizontal rule and the farewell;
+the unpaired original is the poem,
+which the archive never translated
+(`preparation.blockPairing` in `artifacts/Mio.json`).
+The chat quote no longer claims the poem.
+
+### Slice 16
+
+The page carries the archive's second chat translation
+(its label and quote,
+the archive's bytes re-wrapped at semantic boundaries,
+rendering unchanged),
+the farewell and the poem's quote with its five breaks and credit line,
+in that order.
+`slice 16: coverage=absent, missingDestinations=1` is the poem's insertion admission,
+the line Mio16 printed too.
+
+### The first chat block: class thirty-three held
+
+One archive block review (5 of 6 heard,
+`glm-5.3` unreachable),
+no `answered unreadably`,
+no `left the block unresolved`
+(Mio16:
+7 of 12 unreadable).
+The winner (Kimi-K3's candidate 2,
+weight 2 across 6 ballots) keeps the archive's dialogue as it stands and corrects `musculine` and `Wechat`;
+the page opens `Mio: (Sticker) / Mio: Do you have a moment right now? / Me (...): Sure.`
+The naturalness reviews of the retained block read unacceptable twice (6 of 10 and 5 of 10 usable);
+by `archive-block-naturalness.ts` verdicts are evidence and never withhold,
+so the block shipped with the findings recorded.
+
+### Slice 14
+
+`translate slice 14: holding 1916 characters of target-only English out of translation, judging 124 of 2042`,
+no `no block of its kind` finding;
+class thirty-two not exercised,
+as on Mio16.
+
+### The seven checks against Mio12
+
+- The 澪 opening:
+  the archive's block byte for byte
+  (Mio16 had rewritten it).
+- The coming-out bullets:
+  three ship,
+  the third now `She served as an administrator of the QQ group *Harunome Hanbai*` (the source's 担任管理员),
+  and the prose no longer repeats it
+  (Mio16's redundancy is gone).
+- The university:
+  `a local 985 (one of China's elite Project 985 universities)`.
+- SRS:
+  bare,
+  as the source has it
+  (the Mio12 read called the expansion unnecessary).
+- The first chat's `Translation:` label:
+  present.
+- `musculine` and `Wechat`:
+  corrected in the review's revision.
+- The poem:
+  five breaks,
+  the credit carried,
+  under the farewell.
+
+### The three checks
+
+Front matter equal;
+no `json false start` line;
+every `schema-mismatch` is a `finish_reason=length` cut with empty raw text
+except one Mercury reply that stopped on malformed JSON at position 130
+(one opening brace,
+a voice lost);
+no `finish_reason=error`,
+no `InStreamProviderError`.
+
+### Read under wording, not fixed
+
+- The reference link's text keeps the source's Chinese title with an English gloss,
+  `[北雁云依的博客・怀念 Mio (Beiyan Yunyi's Blog: In Memory of Mio)]`,
+  from the repair lane's editor on chunk 12,
+  where Mio12 and Mio16 translated it;
+  the judges kept it through consolidation.
+- The body's horizontal rule ships as `--- ` with one trailing space,
+  from a translator's slate for slice 15 and carried through the consolidation polish.
+  A thematic break renders the same,
+  and content lines keep their trailing spaces by the 2026-09-02 rule (two are a hard break),
+  so nothing trims one;
+  fourteen other shipped pages under `~/temp/agent` carry trailing whitespace on a content line.
+- The IQ quote's source hard break (`嘿嘿~` followed by two spaces) is not on the page,
+  so the attribution shares the rendered line with the quote.
+  The archive's own rendering has no break either,
+  the explicit-break floor of class twenty-nine reads only where the original alone sets the floor,
+  and the either-rendering decision admits the page's shape.
+- The repair lane shipped slice 3 with the IQ quote nested one level deeper (`> > My IQ is 130`);
+  the lane contest chose the translate lane's single-level quote,
+  so the page is right.
+  Whether the block floor reads a blockquote's depth is unmeasured.
+- The archive's `She has an older sister who is also trans` lost `who is also trans` to the repair lane's editor;
+  the source says 有一个姐姐 and nothing more,
+  so this is source authority as decided,
+  noted because it drops a fact the human translator added.
+
+No defect class.
+#123 closes.
+
+## hulicaijia5 launches on the tip, 2026-09-16, 15:58 UTC
+
+Frozen `1cfd9d2fe` (code tip `099b69787`,
+the model-card refactor,
+value-identical to `a88f52d5b`),
+pass pid `1470018`,
+runs `~/temp/agent/hulicaijia5-20260916`,
+log `~/temp/agent/hulicaijia5-20260916.log`.
+Meters at launch:
+Synthetic 62.7 percent,
+Hyper 0 (dry until the 07:31 UTC reset),
+Bedrock 184.95 USD,
+OpenRouter 264.76 USD.
+Read first the three shapes no read page has met:
+the inline ruby annotation,
+the Sakura component and the footnote;
+then the archive block review
+(its 2026-09-09 INCOMPLETE was class twenty-six),
+then the seven steps and the three checks.
+
 ## Clustered panels and complete repair evidence implemented, 2026-09-10
 
 The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,
