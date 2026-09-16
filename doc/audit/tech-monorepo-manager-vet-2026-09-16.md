@@ -765,7 +765,14 @@ Confusion triggers spot-checked with plain `curl` from the development machine o
    `https://docs.tilt.dev/file_changes.html` refers to a hard-coded list of ignored editor temp files without listing it
    and asks readers who hit an unlisted file to file a bug.
 
-No screened candidate documented both inspection and control of a running watch process from another process.
+Several candidates documented pieces of inspection or control of a running process,
+including Tilt,
+pitchfork,
+devtooie,
+and Rush through `rush-serve-plugin`;
+each exited on a confusion trigger before capability evidence was completed.
+An earlier version of this sentence claimed no candidate documented both,
+which the screening appendices do not support.
 
 Leads recorded after the frozen schedule,
 not queried or screened:
