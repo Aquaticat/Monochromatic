@@ -43,6 +43,8 @@ export type BlockPairingQuestion = {
  
  @param pair - complete current parent whose parsed nodes define local indexes
  
+ @param pictureContext - transcripts the sheet is shown, part of the key when non-empty
+ 
  @returns Numbered text, definition exemptions and existing cache identity
  
  @example
@@ -51,7 +53,13 @@ export type BlockPairingQuestion = {
  ```
  */
 export function blockPairingQuestion(
-  { pair, }: { readonly pair: ChunkPair; },
+  {
+    pair,
+    pictureContext,
+  }: {
+    readonly pair: ChunkPair;
+    readonly pictureContext?: string;
+  },
 ): BlockPairingQuestion {
   /**
    Original blocks under the production question's local numbering.
@@ -87,6 +95,7 @@ export function blockPairingQuestion(
   const key = blockPairingQuestionKey({
     sourceBlocks,
     targetBlocks,
+    ...((pictureContext === undefined) ? {} : { pictureContext, }),
   });
   return {
     sourceBlocks,

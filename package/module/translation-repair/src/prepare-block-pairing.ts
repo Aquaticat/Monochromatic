@@ -4,6 +4,8 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { blockPairingQuestion, } from './block-pairing-question.ts';
+import type { PairedReading, } from './image-reading-pair.ts';
+import { pairingPictureContext, } from './pairing-pictures.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import {
@@ -64,6 +66,7 @@ export async function prepareBlockPairing(
     exchangeTimeoutMs,
     l,
     pairingCache,
+    pictureReadings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -74,6 +77,7 @@ export async function prepareBlockPairing(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly pairingCache?: SliceCache<PairedSectionRecord>;
+    readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
   }>,
 ): Promise<PreparedBlockPairing> {
   /**
@@ -110,6 +114,18 @@ export async function prepareBlockPairing(
     };
   }
   /**
+   What the sheet is shown about this section's pictures, empty when nobody
+   read any (class thirty-four).
+   */
+  const pictureContext = (pictureReadings === undefined)
+    ? ''
+    : pairingPictureContext({
+      pair,
+      pictureReadings,
+    },);
+  if (pictureContext !== '')
+    pl.info(`section ${String(pairIndex,)} pairs with ${String(pictureContext.length,)} characters of picture transcript in the sheet`,);
+  /**
    Shared current numbering, definition exemptions and unchanged cache identity.
    */
   const {
@@ -117,7 +133,10 @@ export async function prepareBlockPairing(
     targetBlocks,
     freeOrder,
     key,
-  } = blockPairingQuestion({ pair, },);
+  } = blockPairingQuestion({
+    pair,
+    pictureContext,
+  },);
   /**
    Historical round, which carries no invented new electorate evidence.
    */
@@ -161,6 +180,7 @@ export async function prepareBlockPairing(
     modelIds,
     sourceBlocks,
     targetBlocks,
+    pictureContext,
     freeOrder,
     signal,
     exchangeTimeoutMs,

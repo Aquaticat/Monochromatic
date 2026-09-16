@@ -12,6 +12,7 @@ import {
   prepareDocumentPair,
   type PreparedDocumentPair,
 } from './document-preparation.ts';
+import type { PairedReading, } from './image-reading-pair.ts';
 import type { PairedSectionRecord, } from './pair-blocks-stage.ts';
 import type { BlockPair, } from './pair-blocks-wire.ts';
 import type { DefinitionLabelPair, } from './pair-definition-order.ts';
@@ -99,6 +100,10 @@ export type PairedPreparation = {
  
  @param sealArchiveOriginal - existing protection for archive wording declared English-original
  
+ @param pictureReadings - what reading produced per picture, shown to every
+ block-pairing sheet so an archive block translating a picture is left
+ unpaired (class thirty-four); absent before the pictures are read
+ 
  @returns Preparation built on the roster's pairing, and its findings
  
  @example
@@ -121,6 +126,7 @@ export async function prepareDocumentPairWithRoster(
     contextLines,
     frontMatterAuthority,
     sealArchiveOriginal,
+    pictureReadings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -135,6 +141,7 @@ export async function prepareDocumentPairWithRoster(
     readonly contextLines?: readonly string[];
     readonly frontMatterAuthority?: FrontMatterAuthority;
     readonly sealArchiveOriginal?: boolean;
+    readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
   }>,
 ): Promise<PairedPreparation> {
   /**
@@ -211,6 +218,7 @@ export async function prepareDocumentPairWithRoster(
       exchangeTimeoutMs,
       l: pl,
       ...((pairingCache === undefined) ? {} : { pairingCache, }),
+      ...((pictureReadings === undefined) ? {} : { pictureReadings, }),
     },);
     /* oxlint-enable no-await-in-loop */
     findings.push(...round.findings,);

@@ -14,6 +14,11 @@ import { PAIRING_CACHE_VERSION, } from './pairing-cache-version.ts';
 
  @param targetBlocks - native incumbent block texts in their separate emitted order
 
+ @param pictureContext - transcripts the sheet was shown, folded in after a second
+ separator only when non-empty so every key without pictures keeps its historical bytes
+ (class thirty-four, 2026-09-16: a pairing bought without the pictures must not answer
+ the question asked with them)
+
  @returns Historical lowercase SHA-256 cache key, not an injective question identity
 
  @example
@@ -24,9 +29,11 @@ import { PAIRING_CACHE_VERSION, } from './pairing-cache-version.ts';
 export function blockPairingQuestionKey({
   sourceBlocks,
   targetBlocks,
+  pictureContext = '',
 }: {
   readonly sourceBlocks: readonly NumberedBlock[];
   readonly targetBlocks: readonly NumberedBlock[];
+  readonly pictureContext?: string;
 }): string {
   return createHash('sha256',)
     .update(
@@ -35,6 +42,13 @@ export function blockPairingQuestionKey({
         ...sourceBlocks.map(function sourceContent(block,): string { return block.text; },),
         '\u0000',
         ...targetBlocks.map(function targetContent(block,): string { return block.text; },),
+        ...((pictureContext === '')
+          ? []
+          : [
+            '\u0000',
+            'pictures',
+            pictureContext,
+          ]),
       ].join('\u0000',),
       'utf8',
     )

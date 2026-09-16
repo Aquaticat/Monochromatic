@@ -20,6 +20,8 @@ import { archiveBlockSourceContexts, } from './archive-block-source-context.ts';
 import { passArchiveText, } from './pass-archive.ts';
 import { frontMatterAuthorityOf, } from './archive-front-matter.ts';
 import { relabelArchiveFootnotes, } from './pass-footnote-relabel.ts';
+import type { PairedReading, } from '../image-reading-pair.ts';
+import { photoReferences, } from '../photo-reference.ts';
 import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 
 //region Pass preparation
@@ -170,6 +172,9 @@ export async function preparePassEntry(
    
    @param targetText - archive text to prepare over
    
+   @param pictureReadings - what reading produced per picture, once they are
+   read, so the pairing sheets see them (class thirty-four)
+   
    @returns Prepared slices and pairing findings
    
    @example
@@ -178,7 +183,13 @@ export async function preparePassEntry(
    ```
    */
   function prepareOver(
-    { targetText: over, }: { readonly targetText: string; },
+    {
+      targetText: over,
+      pictureReadings,
+    }: {
+      readonly targetText: string;
+      readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
+    },
   ): Promise<PairedPreparation> {
     return prepareDocumentPairWithRoster({
       client,
@@ -193,6 +204,7 @@ export async function preparePassEntry(
       contextLines,
       frontMatterAuthority,
       sealArchiveOriginal: true,
+      ...((pictureReadings === undefined) ? {} : { pictureReadings, }),
     },);
   }
   /**
@@ -220,13 +232,6 @@ export async function preparePassEntry(
     ? await prepareOver({ targetText: relabel.archiveText, },)
     : firstPaired;
   /**
-   Findings so far: the preparation's and the relabel's.
-   */
-  const labelledFindings = [
-    ...labelled.findings,
-    ...relabel.findings,
-  ];
-  /**
    Spans the archive's translators' note sealed as the English original,
    which no slice covers and no lane writes (the owner's rule of 2026-09-08).
    */
@@ -241,22 +246,58 @@ export async function preparePassEntry(
     );
   }
   /**
+   Picture evidence precedes the pairing that decides which archive blocks are
+   unclaimed, and so precedes any verdict that could remove a picture's
+   translation: read off the labelled slices, which name every picture. A
+   source naming no picture reads nothing and seats nobody for it.
+   Pictures the source names, in document order.
+   */
+  const pictureNames = photoReferences({ text: sourceText, },);
+  /**
+   What reading produced per picture, absent for a source naming none.
+   */
+  const pictureReadings = (pictureNames.length === 0)
+    ? undefined
+    : await readPictures?.({ slices: labelled.prepared
+      .slices, },);
+  /**
+   Readings worth showing a sheet, absent when nothing was read.
+   */
+  const sighted = ((pictureReadings === undefined) || (pictureReadings.size === 0))
+    ? {}
+    : { pictureReadings, };
+  /**
+   Preparation the block correction round starts from: over the same archive,
+   paired again with the pictures in the sheets where there are any (class
+   thirty-four, 2026-09-16), since a pairing bought blind sets an archive
+   block translating a picture against the original block standing where the
+   picture stands, and that block then never reaches the review as unclaimed.
+   */
+  const sightedPaired = ('pictureReadings' in sighted)
+    ? await prepareOver({
+      targetText: relabel.archiveText,
+      ...sighted,
+    },)
+    : labelled;
+  /**
+   Findings so far: the preparation's and the relabel's.
+   */
+  const sightedFindings = [
+    ...sightedPaired.findings,
+    ...relabel.findings,
+  ];
+  /**
    Unclaimed blocks not already licensed unchanged.
    */
-  const pending = labelled.prepared
+  const pending = sightedPaired.prepared
     .unclaimedTargetBlocks;
   if (pending.length === 0) {
     return {
-      prepared: labelled.prepared,
-      footnoteDefinitionPairs: labelled.footnoteDefinitionPairs,
-      findings: labelledFindings,
+      prepared: sightedPaired.prepared,
+      footnoteDefinitionPairs: sightedPaired.footnoteDefinitionPairs,
+      findings: sightedFindings,
     };
   }
-  /**
-   Picture evidence precedes any verdict that could remove its archive translation.
-   */
-  const pictureReadings = await readPictures?.({ slices: labelled.prepared
-    .slices, },);
   /**
    Selected corrections and retained licenses from the single review round.
    */
@@ -265,8 +306,8 @@ export async function preparePassEntry(
     modelIds,
     targetText: relabel.archiveText,
     sourceContexts: archiveBlockSourceContexts({
-      prepared: labelled.prepared,
-      ...((pictureReadings === undefined) ? {} : { pictureReadings, }),
+      prepared: sightedPaired.prepared,
+      ...sighted,
     },),
     blocks: pending,
     signal,
@@ -275,18 +316,22 @@ export async function preparePassEntry(
   },);
   if (repaired.targetText === relabel.archiveText) {
     return {
-      prepared: labelled.prepared,
-      footnoteDefinitionPairs: labelled.footnoteDefinitionPairs,
+      prepared: sightedPaired.prepared,
+      footnoteDefinitionPairs: sightedPaired.footnoteDefinitionPairs,
       findings: [
-        ...labelledFindings,
+        ...sightedFindings,
         ...repaired.findings,
       ],
     };
   }
   /**
-   Re-preparation over the corrected archive, whose offsets the correction moved.
+   Re-preparation over the corrected archive, whose offsets the correction
+   moved, with the same pictures in the sheets.
    */
-  const secondPaired = await prepareOver({ targetText: repaired.targetText, },);
+  const secondPaired = await prepareOver({
+    targetText: repaired.targetText,
+    ...sighted,
+  },);
   /**
    Blocks the single correction round could not claim.
    */

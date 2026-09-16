@@ -138,6 +138,8 @@ export type PairedSectionRecord = {
  
  @param targetBlocks - translation blocks in document order
  
+ @param pictureContext - transcripts of the section's pictures for the sheet, absent when it shows none
+ 
  @param freeOrder - chunk-local indices of the footnote definitions on each
  side, exempt from the order rule
  
@@ -165,6 +167,7 @@ export async function pairBlocksWithRoster(
     modelIds,
     sourceBlocks,
     targetBlocks,
+    pictureContext,
     freeOrder,
     signal,
     exchangeTimeoutMs,
@@ -175,6 +178,7 @@ export async function pairBlocksWithRoster(
     readonly modelIds: readonly RosterModelId[];
     readonly sourceBlocks: readonly NumberedBlock[];
     readonly targetBlocks: readonly NumberedBlock[];
+    readonly pictureContext?: string;
     readonly freeOrder?: FreeOrderBlocks;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
@@ -203,6 +207,7 @@ export async function pairBlocksWithRoster(
   } = blockPairingProtocol({
     sourceBlocks,
     targetBlocks,
+    ...((pictureContext === undefined) ? {} : { pictureContext, }),
   },);
   /**
    Every voice's reply, heard or lost.

@@ -137,9 +137,23 @@ function renderBlocks(
 /**
  Builds the sheet asking one model to pair two documents' blocks.
  
+ WHAT THE PICTURES SAY TRAVELS WITH THE QUESTION (class thirty-four,
+ 2026-09-16). An archive block that translates a picture's words (a chat, a
+ post, a note) has no counterpart among the original's blocks, and a sheet
+ that shows only the two block lists cannot tell that block from a rendering
+ of whatever original block stands where the picture stands: Mio17 paired the
+ archive's chat translation with the poem's quote, the floor then had room for
+ one blockquote, and the entry stopped. Only 2 of the 49 picture pages label
+ such a block, so the sheet is shown the pictures' transcripts and told what
+ they mean for pairing.
+ 
  @param sourceBlocks - original blocks in document order
  
  @param targetBlocks - translation blocks in document order
+ 
+ @param pictureContext - transcripts of the pictures this section shows,
+ rendered the way every other sheet carries them, absent or empty when the
+ section shows none or nobody read them
  
  @returns Messages for one pairing call
  
@@ -152,9 +166,11 @@ export function buildBlockPairingMessages(
   {
     sourceBlocks,
     targetBlocks,
+    pictureContext = '',
   }: {
     readonly sourceBlocks: readonly NumberedBlock[];
     readonly targetBlocks: readonly NumberedBlock[];
+    readonly pictureContext?: string;
   },
 ): readonly ChatMessage[] {
   /**
@@ -172,27 +188,39 @@ export function buildBlockPairingMessages(
       ...targetBlocks.map(function toText(block,): string {
         return block.text;
       },),
+      pictureContext,
     ],
   },);
+
+  /**
+   Rule the sheet adds when the section shows pictures somebody read.
+   */
+  const pictureRule = (pictureContext === '')
+    ? ''
+    : 'WHAT THE PICTURES SAY. The original shows pictures, and their words are '
+      + 'transcribed under WHAT THE PICTURES HERE SAY. A translation block that renders '
+      + 'what a picture says (a chat, a post, a note, a caption) translates THE PICTURE, '
+      + 'not any original block: LEAVE IT OUT, even where an original block stands in the '
+      + 'same place, because that original block says something else.\n\n';
 
   return [
     {
       role: 'system',
-      content: 'You pair the paragraphs of an ORIGINAL document with the paragraphs of a '
-        + 'TRANSLATION of it. Return only which original block each translation block '
-        + 'renders.\n\n'
-        + 'PAIR ONLY WHAT CORRESPONDS. A translation may split one original paragraph '
-        + 'into several, merge several into one, add a paragraph the original never had, '
-        + 'or omit one entirely. Where a block has no counterpart, LEAVE IT OUT: an '
-        + 'omitted block is a correct answer and a wrong pairing is worse than none, '
-        + 'because later stages will report differences between two passages that were '
-        + 'never about the same thing.\n\n'
-        + 'WHERE ONE ORIGINAL BLOCK IS RENDERED BY TWO TRANSLATION BLOCKS, pair the same '
-        + 'original index with each of them.\n\n'
-        + 'ORDER IS PRESERVED. Both documents say things in the same order, so your '
-        + 'pairs must never move backwards on either side.\n\n'
-        + 'Return JSON: {"pairs":[{"source":0,"target":0}]} with indices exactly as '
-        + 'numbered below.',
+      content: `You pair the paragraphs of an ORIGINAL document with the paragraphs of a `
+        + `TRANSLATION of it. Return only which original block each translation block `
+        + `renders.\n\n`
+        + `PAIR ONLY WHAT CORRESPONDS. A translation may split one original paragraph `
+        + `into several, merge several into one, add a paragraph the original never had, `
+        + `or omit one entirely. Where a block has no counterpart, LEAVE IT OUT: an `
+        + `omitted block is a correct answer and a wrong pairing is worse than none, `
+        + `because later stages will report differences between two passages that were `
+        + `never about the same thing.\n\n${pictureRule}`
+        + `WHERE ONE ORIGINAL BLOCK IS RENDERED BY TWO TRANSLATION BLOCKS, pair the same `
+        + `original index with each of them.\n\n`
+        + `ORDER IS PRESERVED. Both documents say things in the same order, so your `
+        + `pairs must never move backwards on either side.\n\n`
+        + `Return JSON: {"pairs":[{"source":0,"target":0}]} with indices exactly as `
+        + `numbered below.`,
     },
     {
       role: 'user',
@@ -206,6 +234,10 @@ export function buildBlockPairingMessages(
           blocks: targetBlocks,
           fence,
         },)
+      }${
+        (pictureContext === '')
+          ? ''
+          : `\n\nWHAT THE PICTURES HERE SAY\n\n${fence}\n${pictureContext}\n${fence}`
       }`,
     },
   ];

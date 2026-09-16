@@ -67,6 +67,8 @@ export type BlockPairingProtocol = {
  
  @param targetBlocks - current archive blocks in their emitted numbering
  
+ @param pictureContext - transcripts of the section's pictures for the sheet, absent when it shows none
+ 
  @returns Actual messages and owned schema, without creating providers or purchasing evidence
  
  @example
@@ -77,14 +79,17 @@ export type BlockPairingProtocol = {
 export function blockPairingProtocol({
   sourceBlocks,
   targetBlocks,
+  pictureContext,
 }: {
   readonly sourceBlocks: readonly NumberedBlock[];
   readonly targetBlocks: readonly NumberedBlock[];
+  readonly pictureContext?: string;
 },): BlockPairingProtocol {
   return {
     messages: buildBlockPairingMessages({
       sourceBlocks,
       targetBlocks,
+      ...((pictureContext === undefined) ? {} : { pictureContext, }),
     },),
     responseFormat: structuredClone(PAIRING_RESPONSE_FORMAT,),
   };

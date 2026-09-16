@@ -86,6 +86,7 @@ export {
   buySectionPairing,
   type SectionRoundOutcome,
 } from './prepare-section-round.ts';
+export { pairingPictureContext, } from './pairing-pictures.ts';
 export {
   type BlockPair,
   BlockPairingError,
