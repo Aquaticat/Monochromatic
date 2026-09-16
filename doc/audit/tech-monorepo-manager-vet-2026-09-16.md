@@ -531,7 +531,49 @@ each tool still needs discovery provenance and full screening.
 
 ### Query ledger
 
-Pending.
+Full per-query and per-page ledgers are appendices in
+[`tech-monorepo-manager-vet-2026-09-16/`](tech-monorepo-manager-vet-2026-09-16/).
+
+- Repository-host class,
+   `discovery-github.md`:
+   `topic:monorepo` (9,379 results),
+   `topic:build-system` (1,125),
+   and `topic:build-tool` (2,466) are blocked by the GitHub 1,000-result search cap,
+   still adding candidates on their final pages.
+  A `stars:>=50` narrowing added no new repositories.
+  `topic:task-runner` (972) was exhausted without saturating.
+  `"watch mode" daemon build` returned 1 result and was exhausted.
+  Topic queries cannot return Buck2,
+   Wireit,
+   Lage,
+   Watchman,
+   just,
+   or Mise,
+   which carry no GitHub topics.
+- Web class,
+   Linkup,
+   `discovery-web-repo.md`:
+   blocked for pagination;
+   Linkup has no offset parameter and returned at most 20 results per query.
+- Web class,
+   DuckDuckGo HTML endpoint,
+   `discovery-web-paged.md`:
+   W1,
+   W2,
+   and W4 met the two-empty-page stop rule;
+   W3 and W5 stopped early;
+   W6 to W8 were not fetched.
+  The subagent reports that the user stopped this run with "We already have enough from DDG".
+  Mojeek and Bing returned bot challenges.
+  The run added Lage.
+- Repository class:
+   results in `discovery-web-repo.md`,
+   section "Repository findings".
+- Registry class:
+   pending.
+
+The discovery pass counted plain command runners as in scope;
+section "Category fit for screening" corrects that for screening.
 
 ### Candidate ledger
 
