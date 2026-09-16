@@ -56,22 +56,49 @@ Measured 2026-09-16 on the development machine:
 - Node `v26.8.2` exposes `os.availableParallelism()` and `navigator.hardwareConcurrency`;
    both return 16.
   Node has no API named `availableConcurrency`,
-   the term the user used,
-   so the design reads `os.availableParallelism()`.
+   the term the user used.
+  The tech stack is undecided,
+   so the concurrency source depends on the chosen runtime.
+- 104 packages define `test:unit` and 23 define `test`;
+   rarer test tasks include `test:container`,
+   `test:wayland`,
+   `test:mutation`,
+   `test:integration`,
+   `test:conformance`,
+   network resolver tests,
+   and instrumented device tests.
+
+### Answers on 2026-09-16
+
+- Default test set:
+   every test suite except heavy suites.
+- Pausing:
+   holds queued tasks and freezes running tasks.
+- Platforms:
+   only Linux support is required for 0.x.
+- First-version controls besides changing priority,
+   pausing,
+   and ending:
+   resuming a paused task,
+   listing tasks and their state,
+   and queueing or rerunning a task by hand.
+  Changing concurrency at runtime is not in the first version.
 
 ## Open questions
 
-- Which tests form the default test set for an affected package?
+- Tech stack:
+   undecided.
+   The user corrected an earlier framing that assumed Node.
+- Which suites count as heavy?
+   Candidates from current task names include container,
+   Wayland,
+   mutation,
+   network,
+   and instrumented device suites;
+   the classification is not decided.
+- Does the Linux-only statement cover the whole 0.x daemon,
+   or only freezing running tasks?
 - What is the environment variable name for the concurrency override?
-- Beyond changing priority,
-   pausing,
-   and ending,
-   which controls does the first version include,
-   such as resuming,
-   rerunning,
-   or listing queued work?
-- Does pausing a task mean pausing its running process tree,
-   or only withholding it from the queue before it starts?
 
 ## Design
 
