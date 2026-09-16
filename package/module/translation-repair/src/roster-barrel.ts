@@ -42,5 +42,15 @@ export {
   servedRecord,
   type ServingCard,
 } from './model-card-derive.ts';
+export {
+  cardFieldsFrom,
+  type CardFields,
+  fieldAt,
+  type Listed,
+  listingRowFor,
+  NOT_LISTED,
+  renderProviderCard,
+} from './corpus-run/roster-card-render.ts';
+export { readAsk, } from './corpus-run/roster-card-ask.ts';
 
 //endregion Roster barrel

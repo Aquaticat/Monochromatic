@@ -170,6 +170,11 @@ description = "#247: re-probe the regions a human read as damaged under three ar
 depends = ["build"]
 run = "node dist/final/node/probe-relabel.mjs"
 
+[tasks."roster-card"]
+description = "Print the model-cards.ts fragment for one model off a provider's live listing (usage: -- <synthetic|hyper|openrouter|bedrock> <served id>), so seating a model is one card and one list entry; read-only, key never printed"
+depends = ["build"]
+run = "node dist/final/node/roster-card.mjs"
+
 [tasks."model-health"]
 description = "Ask every roster model one trivial structured question and report what came back, so schema-mismatch can be told apart from a dead model"
 depends = ["build"]
