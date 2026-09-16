@@ -129,6 +129,28 @@ and several load-bearing tools have no maintained Bazel integration.
 
 Neither path has been piloted here.
 
+## Relation to Mise removal
+
+The user stated on 2026-09-16 that Mise must be replaced because it is not documented well enough,
+with no ETA.
+That moves the comparison baseline from Mise to its eventual replacement,
+but does not change the answer:
+
+- Bazel core documentation is extensive,
+   but the parts this repository would lean on are either self-described as incomplete
+   (rules_android)
+   or would be repository-owned wrappers with no upstream documentation
+   (oxlint,
+   tsdown,
+   rolldown,
+   cargo-nextest).
+- The `doc/planning/mise-removal-coverage.md` ledger entries for secrets,
+   shell environment,
+   editors,
+   VM images,
+   and the full tool-provisioning set were not evaluated against Bazel.
+  Bazel would need to own them or share ownership with other tools before it could be a full Mise replacement.
+
 ## Evidence limits
 
 - No Bazel build of any package was attempted.

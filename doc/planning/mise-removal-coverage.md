@@ -9,6 +9,15 @@ not the target state.
 Replacement configuration should use TypeScript as its canonical authored format.
 Whether generated tool-native adapter files are acceptable remains unresolved.
 
+## Motivation
+
+On 2026-09-16 the user stated that Mise must be migrated away from because it is not documented well enough,
+with no ETA.
+Replacement candidates should therefore be judged partly on documentation quality for the features this repository
+would actually consume.
+Bazel was assessed as a broader alternative the same day;
+see `doc/research/bazel-migration-dx.md`.
+
 ## Trigger and correction
 
 The initial assessment recommended narrowing Mise before assigning every consumed responsibility to an owner.
