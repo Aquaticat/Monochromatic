@@ -182,7 +182,16 @@ which the takeover session does not have.
   on the owner's words,
   unmeasured in those roles until the next `editor-calibrate`
   (the 2026-09-16 addendum of the seating decision).
-  `Mio18` was killed and relaunched on the new tip under always-kill-and-relaunch.
+  `Mio18` was killed at 14:12 UTC under always-kill-and-relaunch.
+  Its 20 minutes still read on class thirty-four:
+  the sighted pairing of section 2 carried 1382 characters of picture transcript
+  and paired 12 of 19 translation blocks where Mio17's blind pairing paired 14 of 19,
+  the two fewer being the picture-rendering chat quotes the rule now leaves out.
+  `Mio19` launched at 14:14 UTC on frozen `a88f52d5b` (pid 1315881,
+  runs `~/temp/agent/Mio19-20260916`,
+  log `~/temp/agent/Mio19-20260916.log`);
+  Hyper dry all day,
+  so `glm-5.3` is unreachable as on Mio17 and Mio18.
 - Owner,
   2026-09-16,
   same hour:
@@ -1984,7 +1993,7 @@ pairs again with them,
 reviews on that pairing and pairs the corrected archive with them too;
 red guards `d7e514742`
 (the pass log's "Mio17 read" heading dated 2026-09-16 13:29 UTC).
-Running on Mio18.
+Running on Mio19 (frozen `a88f52d5b`, which adds the roster change of `a88f52d5b`).
 `ffd35334a` (2026-09-16,
 10:03 UTC):
 class thirty-three,
@@ -3585,14 +3594,15 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio18` by the seven steps and the three checks (frozen `e964d2f3a`,
-    pid 1260175,
-    runs `~/temp/agent/Mio18-20260916`,
-    log `~/temp/agent/Mio18-20260916.log`).
+1.  READ `Mio19` by the seven steps and the three checks (frozen `a88f52d5b`,
+    pid 1315881,
+    runs `~/temp/agent/Mio19-20260916`,
+    log `~/temp/agent/Mio19-20260916.log`;
+    Mio18 on `e964d2f3a` was killed for the roster change and its 20 minutes are read in the takeover bullets).
     Mio17 stopped at slice 16 (the pass log's "Mio17 read" heading dated 2026-09-16 13:29 UTC):
     the pairing set the archive's second chat translation against the poem (class thirty-four),
-    and Mio18 runs on the fix.
-    On Mio18 read the pairing first:
+    and Mio19 runs on the fix.
+    On Mio19 read the pairing first:
     grep `pairs with` for the sighted rounds and `paired .* translation blocks` for the last section
     (Mio17 paired 14 of 19;
     the two chat quotes and their `Translation:` labels should now be unpaired),
