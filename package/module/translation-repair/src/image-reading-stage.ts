@@ -52,13 +52,19 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  had the speakers right into one that has them swapped. A sticker went the
  same way: not a word, so not transcribed, so a message nobody was told about.
  The markers are a small fixed vocabulary so readers agree on them and the
- corroboration trigrams still overlap.
+ corroboration trigrams still overlap. MEASURED 2026-09-16 on `Mio/photo6.webp`
+ and `photo7.webp`: under a first wording ("the side its bubble sits on") all
+ six readers sided photo6 right, but on photo7 two of six sided the wide green
+ bubbles [left] because their text starts at the left edge, so the wording
+ names colour, tail and the hugged edge and says a wide bubble still has a side.
  */
 export const READING_INSTRUCTION: string = 'Transcribe every word visible in this image, in the language it is '
   + 'written in, preserving line breaks and the order things appear. Include names, handles, dates, '
   + 'numbers and addresses exactly as written. Where the image is a chat or message thread, begin '
-  + 'every message with [left] or [right] for the side of the screen its bubble sits on, and write '
-  + '[sticker] or [image] on its own line where a message is a picture rather than words. Do not '
+  + 'every message with [left] or [right] for the side of the screen its bubble is attached to, '
+  + 'judged by its colour, its tail and the edge it hugs rather than where its text starts, since a '
+  + 'wide bubble fills the width and still belongs to one side; write [sticker] or [image] on its '
+  + 'own line where a message is a picture rather than words. Do not '
   + 'translate, summarise, describe the image, or add any commentary. If you cannot read the image, '
   + 'say so plainly and say nothing else.';
 
