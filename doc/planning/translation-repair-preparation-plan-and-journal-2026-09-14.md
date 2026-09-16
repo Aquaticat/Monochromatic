@@ -1,5 +1,15 @@
 # Preparation plan and journal implementation
 
+Abandoned on 2026-09-16.
+The plan,
+journal and comparison runner this record tracks (tasks 41 to 67) were removed in `cbedea357`:
+no pass or probe entry reached them,
+and no page came out of them.
+The owner authorized the teardown;
+the decision is
+[the teardown decision](../decision/translation-repair-provider-free-layer-teardown-2026-09-16.md).
+This record stays as history of what was tried and why it was set aside.
+
 ## Current state
 
 Task47 is complete within its recorded artifact-qualification scope.

@@ -1,5 +1,13 @@
 # Strict persisted preparation input reader
 
+Abandoned on 2026-09-16.
+The reader this record specifies was removed in `cbedea357`:
+no pass or probe entry reached it.
+The owner authorized the teardown;
+the decision is
+[the teardown decision](../decision/translation-repair-provider-free-layer-teardown-2026-09-16.md).
+This record stays as history of what was tried and why it was set aside.
+
 ## Ownership and sequence
 
 Task52 is split into independently verifiable implementation owners:

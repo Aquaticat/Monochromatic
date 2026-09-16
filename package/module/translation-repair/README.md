@@ -2129,6 +2129,18 @@ Candidate validation now preserves source `name` and `info.alias` identity equal
 contest winners that fail publication invariants remain retryable,
 and consolidation standing text must pass same syntax guard before unchanged result becomes resumable.
 Final-page validation applies same source identity relation even when page differs bytewise from archive.
+Since `cbedea357` (2026-09-16) the package again holds only what a pass or a probe reaches.
+The sessions of 2026-09-10 to 2026-09-15 added a provider-free layer of 143 modules (archive naming,
+a container runner for a "producer input" comparison,
+preparation attempt,
+receipt,
+root and selection records,
+a persisted-input DTO reader,
+request capture) that no build entry reached and no pass used;
+it is removed with its tests,
+its three build entries and its bootstrap and sealed rolldown configs.
+The pass-path additions of those sessions stay and are described in the paragraphs that follow.
+
 Since `34e5c7ecd` (2026-09-02,
 owner's decision in `doc/decision/translation-repair-front-matter-guard.md`) the final guard is structural only:
 the metadata slice sits at slice zero over both sides' front-matter bytes,

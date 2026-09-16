@@ -6936,6 +6936,38 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## The thirteenth Mio launches on the torn-down tree, 2026-09-16, 01:58 UTC
+
+Frozen `cbedea357`,
+pass pid `1001520`,
+runs `~/temp/agent/Mio13-20260916`,
+log `~/temp/agent/Mio13-20260916.log`.
+The tree is the 2026-09-09 handoff tip plus the pass-path work of 2026-09-10 to 2026-09-15,
+less the provider-free layer removed the same hour (the teardown is recorded in the 2026-09-06 handover under
+"Where the work stands").
+Build,
+oxlint,
+types and the unit suite pass.
+Meters at launch:
+`synthetic=wet bedrock=wet hyper=wet openrouter=wet`,
+Synthetic 76.3 percent of its week,
+Hyper 171 credits,
+Bedrock 185.38 USD,
+OpenRouter 267.73 USD.
+Seats:
+roster 12 (V4.1 Flash judging for the first time in a full pass),
+translators 8,
+readers 6,
+writers 11,
+withheld none.
+The page is read against Mio12's:
+the poem's five breaks,
+both chat translations,
+the opening's 澪 versus Mio,
+the coming-out bullet,
+the university wording,
+the SRS expansion.
+
 ## Clustered panels and complete repair evidence implemented, 2026-09-10
 
 The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,

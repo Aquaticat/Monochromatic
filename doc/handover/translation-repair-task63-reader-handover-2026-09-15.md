@@ -1,5 +1,13 @@
 # Translation repair task63 persisted-input reader handover
 
+Abandoned on 2026-09-16.
+The persisted-input reader it hands over was removed in `cbedea357`:
+no pass or probe entry reached it.
+The owner authorized the teardown;
+the decision is
+[the teardown decision](../decision/translation-repair-provider-free-layer-teardown-2026-09-16.md).
+This record stays as history of what was tried and why it was set aside.
+
 ## Purpose
 
 This handover lets a fresh agent continue [task63](../planning/translation-repair-persisted-input-reader-2026-09-15.md),

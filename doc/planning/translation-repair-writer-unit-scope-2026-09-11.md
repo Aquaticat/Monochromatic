@@ -1,5 +1,16 @@
 # Writer calibration unit scope
 
+Abandoned on 2026-09-16.
+The task chain this record opened (task 38 blocking task 35,
+then tasks 40 to 67) is set aside.
+V4.1 Flash takes its writer seat the way every writer has:
+one producer calibration against the pooled null,
+read with `read-standing.mjs`.
+The owner authorized the teardown;
+the decision is
+[the teardown decision](../decision/translation-repair-provider-free-layer-teardown-2026-09-16.md).
+This record stays as history of what was tried and why it was set aside.
+
 Task 38 blocks paid writer calibration in task 35.
 No writer model call has run.
 The Git-resolution heap fix remains verified;

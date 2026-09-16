@@ -1,5 +1,10 @@
 # V4.1 writer calibration preflight
 
+Note of 2026-09-16:
+the task-38 block named below is lifted with the teardown recorded in
+[the teardown decision](../decision/translation-repair-provider-free-layer-teardown-2026-09-16.md);
+the intended measurement stands and is the next thing between passes.
+
 Task 37's heap fix and bounded verification are complete.
 Task 35 is now blocked by task 38's independently discovered benchmark unit-scope defect.
 The heap fix's unchanged-output proof is not writer-admission evidence.

@@ -24,6 +24,91 @@ and the reason is recorded in
 
 ## Where the work stands
 
+### 2026-09-16, 02:00 UTC: the provider-free layer is torn down and the queue resumes
+
+The owner took the work back from the 2026-09-10 to 2026-09-15 sessions on 2026-09-16 with
+"full authorization to fix/teardown whatever GPT did and use funds using your own reasonable judgement".
+What those sessions left is read from the git log and the import graph,
+not from their transcript,
+which the takeover session does not have.
+
+- Passes stopped after `Mio12` (2026-09-10,
+  03:45 UTC).
+  Nothing was launched from 2026-09-10 to 2026-09-15 except the V4.1 Flash judge calibration of 2026-09-11.
+- 282 source files were added to the package since `40aba2fdb`.
+  Measured by import closure from `corpus-pass.ts` and every build entry that existed at the handoff,
+  41 of them are on the pass path and stay:
+  the footnote relabel family,
+  source-only breaks and the source display,
+  the naturalness quorum,
+  the name-form policy,
+  the block-pairing protocol and question key,
+  archive block selection evidence,
+  the rendered-break prompt,
+  the panel stage,
+  and the picture support the archive review reads (class twenty-five).
+  143 production modules were reached by no pass or probe entry,
+  only by `index.ts` and their own tests:
+  the archive-naming family,
+  the `producer-input-*` container runner,
+  the preparation attempt,
+  receipt,
+  root and selection records,
+  the persisted-input reader ("task63") and request capture.
+  `cbedea357` removes them with their 47 tests and fixtures,
+  the three build entries,
+  the bootstrap and sealed rolldown configs and the seal tasks.
+  Build,
+  oxlint,
+  types and the unit suite pass on the result.
+  The decision record is
+  [the teardown decision](../decision/translation-repair-provider-free-layer-teardown-2026-09-16.md).
+- The task-numbered plan of those sessions (tasks 31 to 67:
+  "no paid model invocation",
+  finite plans,
+  journals,
+  DTO readers) is abandoned.
+  Its records stay in `doc/planning/` under an abandonment note;
+  no step of it is next.
+- Not removed,
+  for want of permission in the takeover session:
+  171 stopped `podman` containers named `preparation-owner-*` and `comparison-*` on the
+  `monochromatic/terminal` image,
+  and the uncommitted evidence directories under `node_modules/.monochromatic/`
+  (`comparison-evidence` at 1.8 GB,
+  `preparation-input-reader`,
+  `preparation-root-order`,
+  `preparation-root-order-retention`).
+  Both are safe to delete.
+- What those sessions did land on the pass path,
+  and what it was verified on:
+  classes twenty-five,
+  twenty-seven,
+  twenty-eight,
+  twenty-nine and thirty,
+  each read on a Mio page (Mio8 to Mio12);
+  V4.1 Flash seated as a judge (`83e632127`,
+  2026-09-11,
+  14 of 14 references chosen) and still in `WRITER_UNMEASURED`.
+  The changes after Mio12 (the name-form policy and the archive-review wiring of the 2026-09-10 daytime)
+  ran in bounded probes and never in a full pass.
+- `Mio13` launched at 01:58 UTC on frozen `cbedea357` (pid 1001520,
+  runs `~/temp/agent/Mio13-20260916`,
+  log `~/temp/agent/Mio13-20260916.log`),
+  the first full pass since Mio12 and the first with V4.1 Flash judging.
+  Meters at launch:
+  Synthetic 76.3 percent of its week,
+  Hyper 171 credits,
+  Bedrock 185.38 USD,
+  OpenRouter 267.73 USD.
+  Roster 12,
+  translators 8,
+  readers 6,
+  writers 11.
+
+Everything from "### Latest checkpoint" down to "## Repository state" is those sessions' own record,
+kept as history and not as the current state.
+
 ### Latest checkpoint: V4.1 judge admission on 2026-09-11
 
 Task 31's paid judge calibration and post-admission verification are complete.
@@ -1769,7 +1854,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `ff6d288bc` for code and guards;
+  `cbedea357` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
@@ -1785,22 +1870,35 @@ markdown lint clean on every line written today.
   `model-endpoints.mjs <model> <log...>` reads which OpenRouter endpoint served a model and at what size,
   `read-page.mjs` runs the deterministic half of the three checks over a shipped page,
   and `run-suites.mjs <suite...>` runs named unit suites without a shell loop.
-- Meters at 20:29 UTC on 2026-09-09,
-  off the `hulicaijia` tally:
-  `synthetic=dry bedrock=wet hyper=dry openrouter=wet`;
-  Synthetic reads zero of its rolling week and returned briefly twice this evening (19:24 to 20:25),
-  Hyper at zero credits and never to be recharged,
-  Bedrock 186.24 USD (never topped up),
-  OpenRouter 270.03 USD (the owner's final top-up,
-  273.99 at the 16:45 launch,
-  so 3.96 spent on everything since).
+- Meters at 01:58 UTC on 2026-09-16,
+  off the `Mio13` launch:
+  `synthetic=wet bedrock=wet hyper=wet openrouter=wet`;
+  Synthetic 76.3 percent of its rolling week,
+  Hyper 171 credits (it read 250 on 2026-09-11,
+  so it was recharged once after 2026-09-09),
+  Bedrock 185.38 USD (never topped up),
+  OpenRouter 267.73 USD (the owner's final top-up;
+  270.03 at the 2026-09-09 handoff,
+  so 2.30 spent by the sessions between).
   The tally at the end of the pass prints the meters;
   the whole account is under "Costs".
 
 ## What landed today
 
 Newest first.
-Class twenty-nine:
+`cbedea357` (2026-09-16,
+01:55 UTC):
+the provider-free preparation layer of 2026-09-10 to 2026-09-15 is removed,
+143 production modules no pass or probe entry reached,
+with 47 tests and fixtures,
+three build entries,
+two rolldown configs and two seal tasks;
+the two import-order warnings the last of those sessions left in `archive-original-note.ts` are fixed;
+build,
+oxlint,
+types and the unit suite pass.
+Before it,
+class twenty-nine:
 `d813da8d5` guards source-only explicit-break loss and fails before the fix;
 `7c0ce152f` counts parsed Markdown hard breaks and intrinsic `br` per top-level block,
 only when no archive text exists.
@@ -3347,76 +3445,40 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS TWENTY-FIVE IS VERIFIED LOCALLY.
-    Implementation and red/green evidence are in the takeover update under "Where the work stands".
-    The eighth `Mio` stopped INCOMPLETE at the missing-destination publication guard.
-    The retained evidence identifies class twenty-seven,
-    now fixed and verified at `5cb66ffaa`.
-    The ninth `Mio` stopped in archive review on the quoted-revision schema mismatch.
-    Class twenty-eight is fixed and verified at `dc51b02d9`;
-    `Mio10` settled and both screenshot translations survived in full.
-    Its closing poem exposed class twenty-nine:
-    five explicit hard breaks became soft newlines.
-    That source-only guard is fixed and verified through `e0a0ae45c`.
-    The owner rejected treating the guard and tests as the best remedy,
-    then delegated the best changes.
-    `Mio11` is stopped;
-    the upstream rendered-structure contract and visible source-only break presentation are verified through
-    `ff6d288bc`.
-    Both bounded probes have been read.
-    `Mio12` settled and its full page is read.
-    The poem's five rendered breaks survive.
-    Class thirty is fixed through `b5da9866b` with passing package and consumer checks.
-    Trace and address the recorded wording follow-up before advancing the queue.
-    See the verse-remedy review linked under "Where the work stands".
-    The handoff's defect and proposed design are retained here as history.
-    THE DEFECT:
-    `preparePassEntry` (`corpus-run/pass-prepare.ts`) runs the archive block review inside preparation,
-    and `readSeatedPictures` (`corpus-run/pass-seated-pictures.ts`) runs in the phase after it,
-    so a reviewer judging an archive block that renders a picture's text sees only
-    `archiveBlockSourceContexts`'s aligned source section and calls the block unsupported.
-    On the seventh `Mio` that removed a 1,900-character `Translation:` blockquote rendering
-    `photo6.webp` and `photo7.webp`,
-    which four readers had transcribed at 18:30,
-    five minutes after the review had decided.
-    THE FIX,
-    designed and not yet written:
-    give `preparePassEntry` an optional `readPictures` seam of the existing
-    `PassVisualEvidenceReader` shape,
-    have `pass-entry.ts` pass `readSeatedPictures` bound to the same `readingCache`
-    (so the pictures phase that follows pays nothing twice),
-    and append the corroborated transcriptions of the pictures a section names to that section's entry in
-    `archiveBlockSourceContexts`,
-    under a heading naming them as source support;
-    say so in the review sheet's system prompt (`archive-block-review-wire.ts`),
-    which currently reads "The source fence contains only the aligned section where support is allowed".
-    The guard belongs in `corpus-run/pass-readiness-boundaries.unit.test.ts`,
-    beside "REVIEWS roster-unclaimed editorial archive before lane work":
-    script the client to record the sheets it is shown,
-    supply a reader returning a corroborated reading,
-    and assert the transcription reaches the sheet and the block survives.
-    Show it failing first.
-2.  THEN RELAUNCH THE QUEUE,
+1.  READ `Mio13` by the seven steps and the three checks.
+    It is the first full pass since Mio12 and the first on the torn-down tree with V4.1 Flash judging;
+    it decides whether the 2026-09-10 daytime changes (the name-form policy,
+    the archive-review wiring) hold on a real page.
+    The wording concerns Mio12 left (the 澪 versus Mio opening,
+    the coming-out bullet,
+    the university wording,
+    the SRS expansion,
+    the first chat's missing `Translation:` label) are judged on Mio13 with the name-form policy in the sheets;
+    what is still wrong after it is a defect class with a fix,
+    not a follow-up study.
+    ALWAYS KILL AND RELAUNCH if the source moves while it runs.
+2.  THEN THE QUEUE AS BEFORE,
     one entry at a time,
-    each read by the seven steps and the three checks before the next.
-    BOTH ENTRIES IN FLIGHT MUST BE RERUN:
-    `Mio` shipped without the chat translation (class twenty-five) and `hulicaijia` stopped INCOMPLETE
-    (class twenty-six,
-    fixed).
-    Freeze the built `dist` under `node_modules/.frozen-dist-<commit>` and launch with the scratch
-    `launch-pass.mjs <runs-dir> <entry> <frozen-dir>`:
-    `Mio` (the horizontal rule,
-    the bare URL,
-    the two screenshot translations),
-    then `hulicaijia` (the ruby,
+    each read before the next is launched:
+    `hulicaijia` (the ruby,
     the Sakura line,
-    the footnote),
-    then `shi_Yumiaoya` (the emphasis,
-    the `Banner` and its bare-URL prop),
-    `yingying` (a bare URL as a footnote definition) and `XingZ60`.
-    A pass on a dry Synthetic costs about 0.6 to 0.8 USD on OpenRouter and runs about two hours;
-    `glm-5.3` is dark whenever Hyper's daily limit is spent,
-    and every gather now counts it as unreachable rather than waiting for it.
+    the footnote;
+    its 2026-09-09 INCOMPLETE was class twenty-six,
+    fixed in `40aba2fdb`),
+    then `shi_Yumiaoya`,
+    `yingying` and `XingZ60`.
+    Freeze the dist under `node_modules/.frozen-dist-<commit>` and launch with
+    `launch-pass.mjs <runs-dir> <entry> <frozen-dir>`.
+    Between passes,
+    seat V4.1 Flash as a writer by measurement,
+    not by plan:
+    one `producer-calibrate 40 --candidates deepseek-v4.1-flash` run (the Mercury run of 2026-09-09 cost 1.82 USD
+    over 176 minutes),
+    read with `read-standing.mjs`,
+    seated by the pooled-null rule;
+    its judge seat is already measured.
+    Not concurrently with a pass.
+
 3.  THE ROSTER STANDS AS THE CALIBRATION LEFT IT (`028432713`,
     `a5e0efc7f`;
     both addenda in `doc/decision/translation-repair-roster-seating-2026-09-01.md`).
