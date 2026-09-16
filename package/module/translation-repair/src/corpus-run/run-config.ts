@@ -29,8 +29,9 @@ import {
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import {
   BEDROCK_ONLY_ROSTER_IDS,
+  holdSet,
   OPENROUTER_ONLY_ROSTER_IDS,
-} from '../roster-id.ts';
+} from '../model-card-derive.ts';
 import {
   readsImages,
   ROSTER_MODEL_IDS,
@@ -68,6 +69,12 @@ export { RunConfigError, } from './run-config-error.ts';
 const HERE = import.meta.dirname;
 
 /**
+ Candidates no judge fidelity probe has seated (`judge-unmeasured` on the
+ card): they hold no seat until measured.
+ */
+const JUDGE_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'judge-unmeasured', },);
+
+/**
  Bedrock-only models seated on the judge fidelity probe of 2026-09-07 under
  the rule pre-registered in the planning log before the seated roster was
  measured: a candidate joins critic, panel and judge when, over the same
@@ -79,9 +86,10 @@ const HERE = import.meta.dirname;
  8, gpt-oss-120b 7, gemma-4-26b-a4b-it 4). Bedrock serves it alone, so it
  is the third judge that answers while Hyper is held out by its daily limit.
  */
-export const SEATED_BEDROCK_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  'google.gemma-4-e2b',
-],);
+export const SEATED_BEDROCK_JUDGES: ReadonlySet<RosterModelId> = new Set(BEDROCK_ONLY_ROSTER_IDS
+  .filter(function seated(modelId,): boolean {
+    return !JUDGE_UNMEASURED.has(modelId,);
+  },),);
 
 /**
  OpenRouter-only models seated on the judge fidelity probe under the same
@@ -96,18 +104,17 @@ export const SEATED_BEDROCK_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterM
  provider (0.04 and 0.15 USD per million) now sits wherever the anchor judge
  does.
  */
-export const SEATED_OPENROUTER_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  'inception/mercury-2.5',
-],);
+export const SEATED_OPENROUTER_JUDGES: ReadonlySet<RosterModelId> = new Set(OPENROUTER_ONLY_ROSTER_IDS
+  .filter(function seated(modelId,): boolean {
+    return !JUDGE_UNMEASURED.has(modelId,);
+  },),);
 
 /**
- New candidates that hold no judge or preparation seat until measured.
- Multiple serving routes do not establish eligibility or transfer a predecessor's calibration.
+ New candidates that hold no judge or preparation seat until measured
+ (`judge-unmeasured` on the card). Multiple serving routes do not establish
+ eligibility or transfer a predecessor's calibration.
  */
-const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  ...BEDROCK_ONLY_ROSTER_IDS,
-  ...OPENROUTER_ONLY_ROSTER_IDS,
-],);
+const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = JUDGE_UNMEASURED;
 
 /**
  Roster models no producer calibration has measured, so they hold no
@@ -142,10 +149,7 @@ const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = new Set<RosterModelI
  candidate was compared under the same judges, so the standing among them
  holds. Record: the second 2026-09-09 addendum of the seating decision.
  */
-export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  // Approved 2026-09-11; neither a serving probe nor a predecessor's rating measures its writing.
-  'deepseek-v4.1-flash',
-],);
+export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'writer-unmeasured', },);
 
 /**
  Every model this run may seat, across both providers.
@@ -187,9 +191,7 @@ export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModel
  */
 export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS
   .filter(function measured(modelId,): boolean {
-    return SEATED_BEDROCK_JUDGES.has(modelId,)
-      || SEATED_OPENROUTER_JUDGES.has(modelId,)
-      || (!UNMEASURED_UNTIL_SEATED.has(modelId,));
+    return !UNMEASURED_UNTIL_SEATED.has(modelId,);
   },);
 
 /**
@@ -238,9 +240,7 @@ export const RUN_WRITERS: readonly RosterModelId[] = RUN_ROSTER
  listed; their readings stay recorded because they are the method's worked
  examples.
  */
-export const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  'hf:openai/gpt-oss-120b',
-],);
+export const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = holdSet({ hold: 'translator-dropped', },);
 
 /**
  Models measured out of every nine-wide seat (critic, panel, judge) on the
@@ -280,10 +280,7 @@ export const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterMode
  are the Synthetic-wet ones. `hf:moonshotai/Kimi-K3` is likewise withheld
  from the select seats alone while Synthetic is dry (`HYPER_SLOW_SELECT_JUDGES`).
  */
-const WIDE_SEAT_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  'glm-5.3',
-  'hf:zai-org/GLM-5.3-Flash',
-],);
+const WIDE_SEAT_DROPPED: ReadonlySet<RosterModelId> = holdSet({ hold: 'wide-seat-dropped', },);
 
 /**
  Models unseated from the roster-wide judge rounds that run after the lanes:
@@ -297,7 +294,7 @@ const WIDE_SEAT_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
  Pairing and insertion-admission rounds are not judgments of text and lost no
  voice to the window (27 of 27 and 9 of 9 heard), so they keep the roster.
  */
-const LATE_JUDGE_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['hf:zai-org/GLM-5.3-Flash',],);
+const LATE_JUDGE_DROPPED: ReadonlySet<RosterModelId> = holdSet({ hold: 'late-judge-dropped', },);
 
 /**
  Translators for the translate lane: the roster less
@@ -679,9 +676,7 @@ export const RUN_TRANSLATE_MODELS: TranslateModels = {
  Reported image capability is not yet a verified reader seat for a new model.
  Keep this separate from judge admission: Gemma 4 31B already reads without judging.
  */
-const READER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  'deepseek-v4.1-flash',
-],);
+const READER_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'reader-unmeasured', },);
 
 /**
  Models that read this run's pictures.

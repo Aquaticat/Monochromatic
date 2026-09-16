@@ -137,7 +137,7 @@ await describe({
           candidates: [
             SEATED,
             ...BEDROCK_ONLY_ROSTER_IDS,
-            BEDROCK_ONLY_ROSTER_IDS[0],
+            nonNullishOrThrow(BEDROCK_ONLY_ROSTER_IDS[0],),
           ],
           alone: false,
         },);
@@ -158,7 +158,7 @@ await describe({
         const roster = probeRosterWith({
           candidates: [
             ...BEDROCK_ONLY_ROSTER_IDS,
-            BEDROCK_ONLY_ROSTER_IDS[0],
+            nonNullishOrThrow(BEDROCK_ONLY_ROSTER_IDS[0],),
           ],
           alone: true,
         },);

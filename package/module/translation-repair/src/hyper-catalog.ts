@@ -1,7 +1,11 @@
+import { servedRecord, } from './model-card-derive.ts';
 import type {
   HyperOriginRosterId,
+  HyperServedId,
   SyntheticServedId,
 } from './roster-id.ts';
+
+export type { HyperServedId, } from './roster-id.ts';
 
 //region Hyper catalog
 // What Charm Hyper serves, and the two ways it differs from the other provider
@@ -67,26 +71,7 @@ export const HYPER_API_VERSION = '2023-06-01';
  */
 export const HYPER_AUTH_HEADER = 'Authorization';
 
-/**
- Models allowlisted on this provider by the owner.
- 
- A CLOSED UNION so a typo cannot reach the wire, and so widening the roster is
- a deliberate edit rather than a string that happens to resolve.
- 
- @example
- ```ts
- const modelId: HyperServedId = 'deepseek-v4.1-flash';
- ```
- */
-export type HyperServedId =
-  | 'qwen3.8-27b'
-  | 'minimax-m3'
-  | 'kimi-k3'
-  | 'gpt-oss-120b'
-  | 'gemma-4-26b-a4b-it'
-  | 'deepseek-v4.1-flash'
-  | 'glm-5.3-flash'
-  | 'glm-5.3';
+
 
 /**
  Verified per-model facts the router and the request builder read.
@@ -135,99 +120,35 @@ export type HyperModelInfo = {
 };
 
 /**
- Every model this provider serves for this pipeline.
- 
- CONFORMANCE MEASURED OVER 20 STREAMING ATTEMPTS EACH on 2026-08-24. Current
- models accept forced tool choice and answered with schema-conformant input.
- `qwen3.8-max`, only model requiring automatic choice, was culled 2026-08-28
- because its metered cost was disproportionate and exceptionally expensive.
- `glm-5.2` left the active allowlist 2026-08-29 when its roster identity was
- replaced by Synthetic's GLM-5.3-Flash. This provider's live catalog still
- listed `glm-5.2` but no GLM-5.3-Flash spelling that day. It also reported
- `glm-5.2` vision false, changed from the vision-true reading on 2026-08-24.
- 
- An earlier reading that `kimi-k3` honoured a forced tool on 1 of 3 attempts
- was wrong and is retracted here; it measures 20 of 20.
- 
+ Every model this provider serves for this pipeline, read off the cards.
+
+ CONFORMANCE MEASURED OVER 20 STREAMING ATTEMPTS EACH on 2026-08-24 for the
+ models of that day and on the day each later one joined: every current
+ model accepts forced tool choice and answers with schema-conformant input.
+
  @example
  ```ts
  const info = HYPER_MODELS['deepseek-v4.1-flash'];
  ```
  */
-export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
-  'qwen3.8-27b': {
-    id: 'qwen3.8-27b',
-    // THE SAME SEAT AS `hf:Qwen/Qwen3.8-27B`, added 2026-08-26 when the owner
-    // reported it served here: that seat is one of the two the straggler window
-    // keeps cutting, and this provider has no per-model slot to saturate, so
-    // the router's overflow now has somewhere to send it. Fields from the
-    // catalog endpoint the same day (`max_output_tokens` 128000,
-    // `capabilities.vision` true); forced tool choice was checked live by probe
-    // recorded in handover before first run that could route here.
-    sharedWith: 'hf:Qwen/Qwen3.8-27B',
-    readsImages: true,
-    maxOutputLength: 128_000,
+export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = servedRecord({
+  provider: 'hyper',
+  toRow: function hyperRow(card,): HyperModelInfo {
+    /**
+     Hyper's side of the card, beside Synthetic's where there is one.
+     */
+    const {
+      hyper,
+      synthetic,
+    } = card;
+    return {
+      id: hyper.id,
+      sharedWith: synthetic?.id ?? NO_SYNTHETIC_COUNTERPART,
+      readsImages: hyper.readsImages,
+      maxOutputLength: hyper.maxOutputLength,
+    };
   },
-  'minimax-m3': {
-    id: 'minimax-m3',
-    sharedWith: NO_SYNTHETIC_COUNTERPART,
-    readsImages: true,
-    maxOutputLength: 512_000,
-  },
-  'kimi-k3': {
-    id: 'kimi-k3',
-    sharedWith: 'hf:moonshotai/Kimi-K3',
-    readsImages: true,
-    maxOutputLength: 16_000,
-  },
-  'gpt-oss-120b': {
-    id: 'gpt-oss-120b',
-    sharedWith: 'hf:openai/gpt-oss-120b',
-    readsImages: false,
-    maxOutputLength: 13_107,
-  },
-  'gemma-4-26b-a4b-it': {
-    id: 'gemma-4-26b-a4b-it',
-    sharedWith: NO_SYNTHETIC_COUNTERPART,
-    readsImages: false,
-    maxOutputLength: 25_600,
-  },
-  // deepseek-v4-pro-0813 AND deepseek-v4-flash-0731 LEFT 2026-09-16 at the
-  // owner's instruction; `roster-blocklist.ts` carries the words.
-  // THE TWO ENTRIES BELOW JOINED 2026-09-01 from the live catalog read for
-  // the owner's post-blocklist candidate refresh
-  // (doc/decision/translation-repair-roster-blocklist.md). Fields are from
-  // the catalog endpoint that day, and both passed the live forced-tool
-  // probe before any run could route to them. The refresh's other two
-  // candidates, qwen3.8-flash and qwen3.8-2.4t-a95b, were probed the same
-  // day and CULLED before seating: each answers plain text and tools under
-  // automatic choice with HTTP 200 but rejects `tool_choice: {type: 'tool'}`
-  // with HTTP 400 invalid_request_error, the same automatic-only constraint
-  // recorded for the culled qwen3.8-max, and every structured stage here
-  // forces its tool.
-  'glm-5.3-flash': {
-    id: 'glm-5.3-flash',
-    // THE SAME SEAT AS Synthetic's GLM-5.3-Flash, giving that seat a second
-    // provider the way qwen3.8-27b's entry did for its Synthetic twin.
-    sharedWith: 'hf:zai-org/GLM-5.3-Flash',
-    readsImages: true,
-    maxOutputLength: 131_072,
-  },
-  'glm-5.3': {
-    id: 'glm-5.3',
-    sharedWith: NO_SYNTHETIC_COUNTERPART,
-    readsImages: false,
-    maxOutputLength: 262_144,
-  },
-  // Live catalog and forced-tool stream verified 2026-09-11. Vision is
-  // reported by this serving stack; reader seating still requires its own check.
-  'deepseek-v4.1-flash': {
-    id: 'deepseek-v4.1-flash',
-    sharedWith: NO_SYNTHETIC_COUNTERPART,
-    readsImages: true,
-    maxOutputLength: 26_214,
-  },
-};
+},);
 
 /**
  Bound `#156` measured for answer volume, in tokens.

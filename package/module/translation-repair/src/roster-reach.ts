@@ -12,12 +12,7 @@ import {
   OPENROUTER_WITHHELD,
   type OpenRouterServedId,
 } from './openrouter-catalog.ts';
-import {
-  BEDROCK_ONLY_ROSTER_IDS,
-  HYPER_ORIGIN_ROSTER_IDS,
-  OPENROUTER_ONLY_ROSTER_IDS,
-  type RosterModelId,
-} from './roster-id.ts';
+import type { RosterModelId, } from './roster-id.ts';
 import {
   SYNTHETIC_MODELS,
   type SyntheticModelInfo,
@@ -128,27 +123,10 @@ export type BedrockSpelling =
   };
 
 /**
- Every approved roster identity, with provider routes unioned under one name.
- 
- Ordered by introduction: Synthetic identities, Hyper-origin identities,
- then Bedrock-only and OpenRouter-only arrivals. Catalog presence does not
- determine measured production role admission.
- 
- @example
- ```ts
- const everyone = ROSTER_MODEL_IDS;
- ```
+ Every approved roster identity, in card order; declared on the cards and
+ named here for the callers that read the roster beside its reach.
  */
-export const ROSTER_MODEL_IDS: readonly RosterModelId[] = [
-  ...Object
-    .values(SYNTHETIC_MODELS,)
-    .map(function toId(info,): RosterModelId {
-      return info.id;
-    },),
-  ...HYPER_ORIGIN_ROSTER_IDS,
-  ...BEDROCK_ONLY_ROSTER_IDS,
-  ...OPENROUTER_ONLY_ROSTER_IDS,
-];
+export { ROSTER_MODEL_IDS, } from './roster-id.ts';
 
 /**
  How Charm Hyper spells one roster model, where it serves it at all.

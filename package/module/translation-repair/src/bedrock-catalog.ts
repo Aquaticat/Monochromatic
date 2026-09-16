@@ -1,4 +1,18 @@
-import type { RosterModelId, } from './roster-id.ts';
+import type {
+  BedrockRoute,
+  BedrockStreamEnd,
+} from './model-card.ts';
+import { servedRecord, } from './model-card-derive.ts';
+import type {
+  BedrockServedId,
+  RosterModelId,
+} from './roster-id.ts';
+
+export type {
+  BedrockRoute,
+  BedrockStreamEnd,
+} from './model-card.ts';
+export type { BedrockServedId, } from './roster-id.ts';
 
 //region Bedrock catalog
 // What Amazon Bedrock serves for this pipeline, how it spells it, where it
@@ -74,15 +88,6 @@ export const BEDROCK_MANTLE_BASE_URL = 'https://bedrock-mantle.us-east-1.api.aws
  */
 export const BEDROCK_AUTH_HEADER = 'Authorization';
 
-/**
- Which of the host's two OpenAI-compatible routes a model answers on.
- 
- @example
- ```ts
- const route: BedrockRoute = 'openai-v1';
- ```
- */
-export type BedrockRoute = 'openai-v1' | 'v1';
 
 /**
  Path prefix of each route, before `/chat/completions`.
@@ -92,31 +97,9 @@ export const BEDROCK_ROUTE_PREFIX: Readonly<Record<BedrockRoute, string>> = {
   v1: '/v1',
 };
 
-/**
- How a model's stream announces that it is whole.
- 
- @example
- ```ts
- const end: BedrockStreamEnd = 'usage-chunk';
- ```
- */
-export type BedrockStreamEnd = 'done-sentinel' | 'usage-chunk';
 
-/**
- Models this provider serves for this pipeline, under its own spellings.
- A CLOSED UNION so a typo cannot reach the wire, and so widening the roster
- here is a deliberate edit rather than a string that happens to resolve.
- 
- @example
- ```ts
- const modelId: BedrockServedId = 'google.gemma-4-31b';
- ```
- */
-export type BedrockServedId =
-  | 'google.gemma-4-e2b'
-  | 'google.gemma-4-31b'
-  | 'google.gemma-4-26b-a4b'
-  | 'openai.gpt-oss-120b';
+
+
 
 /**
  Verified per-model facts the router, the request builder and the ledger read.
@@ -178,64 +161,33 @@ export type BedrockModelInfo = {
 };
 
 /**
- Every model this provider serves for this pipeline.
- 
+ Every model this provider serves for this pipeline, read off the cards.
+
  @example
  ```ts
  const info = BEDROCK_MODELS['openai.gpt-oss-120b'];
  ```
  */
-export const BEDROCK_MODELS: Readonly<Record<BedrockServedId, BedrockModelInfo>> = {
-  'google.gemma-4-e2b': {
-    id: 'google.gemma-4-e2b',
-    sharedWith: 'google.gemma-4-e2b',
-    readsImages: false,
-    contextLength: 131_072,
-    maxOutputLength: 131_072,
-    route: 'openai-v1',
-    streamEnd: 'done-sentinel',
-    promptUsdPerMillion: 0.04,
-    completionUsdPerMillion: 0.08,
+export const BEDROCK_MODELS: Readonly<Record<BedrockServedId, BedrockModelInfo>> = servedRecord({
+  provider: 'bedrock',
+  toRow: function bedrockRow(card,): BedrockModelInfo {
+    /**
+     Bedrock's side of the card.
+     */
+    const { bedrock, } = card;
+    return {
+      id: bedrock.id,
+      sharedWith: card.id,
+      readsImages: bedrock.readsImages,
+      contextLength: bedrock.contextLength,
+      maxOutputLength: bedrock.maxOutputLength,
+      route: bedrock.route,
+      streamEnd: bedrock.streamEnd,
+      promptUsdPerMillion: bedrock.promptUsdPerMillion,
+      completionUsdPerMillion: bedrock.completionUsdPerMillion,
+    };
   },
-  'google.gemma-4-31b': {
-    id: 'google.gemma-4-31b',
-    sharedWith: 'google.gemma-4-31b',
-    readsImages: true,
-    contextLength: 262_144,
-    maxOutputLength: 262_144,
-    route: 'openai-v1',
-    streamEnd: 'done-sentinel',
-    promptUsdPerMillion: 0.14,
-    completionUsdPerMillion: 0.4,
-  },
-  // THE SAME SEAT AS `gemma-4-26b-a4b-it` on Charm Hyper and
-  // `google/gemma-4-26b-a4b-it` on OpenRouter: provider is not part of
-  // panelist identity, so a slice this model judges here counts once.
-  'google.gemma-4-26b-a4b': {
-    id: 'google.gemma-4-26b-a4b',
-    sharedWith: 'gemma-4-26b-a4b-it',
-    readsImages: true,
-    contextLength: 262_144,
-    maxOutputLength: 262_144,
-    route: 'openai-v1',
-    streamEnd: 'done-sentinel',
-    promptUsdPerMillion: 0.13,
-    completionUsdPerMillion: 0.4,
-  },
-  // THE SAME SEAT AS `hf:openai/gpt-oss-120b` on Synthetic, `gpt-oss-120b` on
-  // Charm Hyper and `openai/gpt-oss-120b` on OpenRouter.
-  'openai.gpt-oss-120b': {
-    id: 'openai.gpt-oss-120b',
-    sharedWith: 'hf:openai/gpt-oss-120b',
-    readsImages: false,
-    contextLength: 131_072,
-    maxOutputLength: 16_384,
-    route: 'v1',
-    streamEnd: 'usage-chunk',
-    promptUsdPerMillion: 0.1545,
-    completionUsdPerMillion: 0.618,
-  },
-};
+},);
 
 /**
  Chat completions URL one model answers on.

@@ -4,6 +4,7 @@ import {
   NO_PROVIDER,
   providerServing,
 } from '../budget-routing.ts';
+import { holdSet, } from '../model-card-derive.ts';
 import { OPENROUTER_WITHHELD, } from '../openrouter-catalog.ts';
 import type { BudgetView, } from '../provider-budget.ts';
 import {
@@ -91,9 +92,7 @@ export const HYPER_SLOW_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModel
  prompt is where its reasoning runs long. Same evidence bar as the owner's
  authorisation to drop a model from a role.
  */
-export const HYPER_SLOW_SELECT_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  'hf:moonshotai/Kimi-K3',
-],);
+export const HYPER_SLOW_SELECT_JUDGES: ReadonlySet<RosterModelId> = holdSet({ hold: 'hyper-slow-select', },);
 
 /**
  Checker seated in place of a withheld one, so the roster keeps its floor.

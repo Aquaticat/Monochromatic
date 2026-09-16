@@ -1,4 +1,10 @@
-import type { RosterModelId, } from './roster-id.ts';
+import type { CompletionCapPool, } from './model-card.ts';
+import { MODEL_CARDS, } from './model-cards.ts';
+import { recordOver, } from './model-card-derive.ts';
+import {
+  ROSTER_MODEL_IDS,
+  type RosterModelId,
+} from './roster-id.ts';
 
 //region Completion cap
 // EVERY CALL ON EVERY PROVIDER CARRIES `max_tokens` SINCE 2026-09-09. The
@@ -53,47 +59,32 @@ const POOLED_P90 = 3_831;
 const POOLED_P99 = 13_082;
 
 /**
+ Pooled percentile a card names in place of a measured cap.
+ */
+const POOLED: Readonly<Record<CompletionCapPool, number>> = {
+  'pooled-p90': POOLED_P90,
+  'pooled-p99': POOLED_P99,
+};
+
+/**
  Completion token ceiling per roster model, sent as `max_tokens` by every
- client.
- 
+ client, read off the cards.
+
  @example
  ```ts
  const cap = COMPLETION_CAP['deepseek-v4.1-flash'];
  ```
  */
-export const COMPLETION_CAP: Readonly<Record<RosterModelId, number>> = {
-  // Hyper p99 over 886 calls; Synthetic 16,342 over 4,775; OpenRouter 13,070
-  // over 1,853.
-  'hf:zai-org/GLM-5.3-Flash': 18_316,
-  // Synthetic p99 over 7,312 calls; OpenRouter 11,127 over 4,538; Hyper
-  // 10,541 over 1,921.
-  'hf:Qwen/Qwen3.8-27B': 20_894,
-  // Hyper p99 over 2,777 calls; OpenRouter 8,254 over 488; Synthetic 4,350
-  // over 7,051.
-  'hf:moonshotai/Kimi-K3': 10_921,
-  // Own p99 at most 3,649 (Hyper, 2,479 calls) over 21,111 calls on four
-  // providers, under the pooled 90th.
-  'hf:openai/gpt-oss-120b': POOLED_P90,
-  // Hyper p99 over 27,361 calls; OpenRouter 718 over 6,657.
-  'minimax-m3': 10_822,
-  // Own p99 at most 483 over 16,251 calls on three providers, under the
-  // pooled 90th.
-  'gemma-4-26b-a4b-it': POOLED_P90,
-  // New version, approved 2026-09-11. Use the existing unmeasured-model policy,
-  // not V4 Flash 0731's distribution or a provider's advertised maximum.
-  'deepseek-v4.1-flash': POOLED_P99,
-  // OpenRouter p99 over 2,673 calls; Hyper 17,118 over 3,343.
-  'glm-5.3': 22_067,
-  // Own p99 483 over 5,506 Bedrock calls, under the pooled 90th.
-  'google.gemma-4-e2b': POOLED_P90,
-  // Bedrock p99 over 125 calls, the thinnest measurement in the table.
-  'google.gemma-4-31b': 8_194,
-  // Own p99 3,063 over 136 OpenRouter calls (Inception, its one endpoint)
-  // read 2026-09-09 20:05 UTC across the fidelity probes, the producer
-  // calibration and the seventh `Mio` pass, max 3,127, none abandoned, under
-  // the pooled 90th.
-  'inception/mercury-2.5': POOLED_P90,
-};
+export const COMPLETION_CAP: Readonly<Record<RosterModelId, number>> = recordOver({
+  keys: ROSTER_MODEL_IDS,
+  of: function capOf(modelId,): number {
+    /**
+     Cap the card carries: a measured number or a pooled percentile's name.
+     */
+    const { completionCap, } = MODEL_CARDS[modelId];
+    return ((typeof completionCap) === 'number') ? completionCap : POOLED[completionCap];
+  },
+},);
 
 /**
  Ceiling one call carries: the measured cap, or a caller's own when lower.

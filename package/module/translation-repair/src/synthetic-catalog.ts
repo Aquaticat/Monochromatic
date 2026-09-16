@@ -1,7 +1,11 @@
+import { servedRecord, } from './model-card-derive.ts';
+import type { SyntheticVendorFamily, } from './model-card.ts';
 import type {
   RosterModelId,
   SyntheticServedId,
 } from './roster-id.ts';
+
+export type { SyntheticVendorFamily, } from './model-card.ts';
 
 //region Synthetic model catalog
 // Facts verified live on 2026-08-29 against `GET /openai/v1/models` (prices, context
@@ -32,21 +36,7 @@ export const SYNTHETIC_CHAT_BASE_URL = 'https://api.synthetic.new/openai/v1';
  */
 export const SYNTHETIC_QUOTAS_URL = 'https://api.synthetic.new/v2/quotas';
 
-/**
- Vendor family of one model;
- critic fan-out and refusal rerouting cross family lines so one vendor's shared
- blind spots and refusal habits cannot dominate a panel.
- 
- @example
- ```ts
- const family: SyntheticVendorFamily = 'moonshot';
- ```
- */
-export type SyntheticVendorFamily =
-  | 'zai'
-  | 'qwen'
-  | 'moonshot'
-  | 'openai';
+
 
 /**
  Re-exported so the hundred-odd callers that name a roster model keep one
@@ -181,54 +171,22 @@ export type SyntheticModelInfo = {
 };
 
 /**
- Catalog of every model, keyed by id.
+ Catalog of every model, keyed by id, read off the cards.
  All entries support `json_mode` and `structured_outputs` per live feature flags,
  so schema-constrained calls need no per-model capability branching;
  client-side validation stays regardless because schema strictness is unverified.
- 
+
  @example
  ```ts
  const flash = SYNTHETIC_MODELS['hf:openai/gpt-oss-120b'];
  ```
  */
-export const SYNTHETIC_MODELS: Readonly<Record<SyntheticServedId, SyntheticModelInfo>> = {
-  'hf:zai-org/GLM-5.3-Flash': {
-    id: 'hf:zai-org/GLM-5.3-Flash',
-    readsImages: true,
-    family: 'zai',
-    contextLength: 524_288,
-    maxOutputLength: 65_536,
-    promptDollarsPerToken: 0.00000015,
-    completionDollarsPerToken: 0.0000005,
+export const SYNTHETIC_MODELS: Readonly<Record<SyntheticServedId, SyntheticModelInfo>> = servedRecord({
+  provider: 'synthetic',
+  toRow: function syntheticRow(card,): SyntheticModelInfo {
+    return card.synthetic;
   },
-  'hf:Qwen/Qwen3.8-27B': {
-    id: 'hf:Qwen/Qwen3.8-27B',
-    readsImages: true,
-    family: 'qwen',
-    contextLength: 262_144,
-    maxOutputLength: 65_536,
-    promptDollarsPerToken: 0.00000045,
-    completionDollarsPerToken: 0.0000022,
-  },
-  'hf:moonshotai/Kimi-K3': {
-    id: 'hf:moonshotai/Kimi-K3',
-    readsImages: true,
-    family: 'moonshot',
-    contextLength: 524_288,
-    maxOutputLength: 65_536,
-    promptDollarsPerToken: 0.000003,
-    completionDollarsPerToken: 0.000015,
-  },
-  'hf:openai/gpt-oss-120b': {
-    id: 'hf:openai/gpt-oss-120b',
-    readsImages: false,
-    family: 'openai',
-    contextLength: 131_072,
-    maxOutputLength: 65_536,
-    promptDollarsPerToken: 0.0000001,
-    completionDollarsPerToken: 0.0000001,
-  },
-};
+},);
 
 /**
  Input price of one baseline request against the five-hour limit.

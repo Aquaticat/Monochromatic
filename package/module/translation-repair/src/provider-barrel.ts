@@ -105,17 +105,6 @@ export {
   scannerFor,
   type StreamWireFormat,
 } from './stream-wire-format.ts';
-export type {
-  BedrockOnlyRosterId,
-  HyperOriginRosterId,
-  OpenRouterOnlyRosterId,
-  SyntheticServedId,
-} from './roster-id.ts';
-export {
-  BEDROCK_ONLY_ROSTER_IDS,
-  HYPER_ORIGIN_ROSTER_IDS,
-  OPENROUTER_ONLY_ROSTER_IDS,
-} from './roster-id.ts';
 export {
   bedrockIdFor,
   type BedrockSpelling,

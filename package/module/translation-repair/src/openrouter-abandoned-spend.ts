@@ -3,6 +3,7 @@ import {
   OPENROUTER_MODELS,
   type OpenRouterServedId,
 } from './openrouter-catalog.ts';
+import { servedRecord, } from './model-card-derive.ts';
 import { reportSpend, } from './spend-line.ts';
 import { StreamCutShortError, } from './stream-cut.ts';
 import { StreamOverrunError, } from './stream-overrun.ts';
@@ -36,25 +37,20 @@ const UNMEASURED_RAW_CHARS_PER_TOKEN = 137;
 /**
  Raw stream characters per completion token, the 50th percentile over every
  completed OpenRouter stream of 2026-09-09 whose progress line sat beside
- its spend line (pass logs under `~/temp/agent`). Framing differs by
- endpoint, which is why one model reads three times another.
+ its spend line (pass logs under `~/temp/agent`), read off the cards.
+ Framing differs by endpoint, which is why one model reads three times
+ another.
  */
-const RAW_CHARS_PER_COMPLETION_TOKEN: Readonly<Record<OpenRouterServedId, number>> = {
-  // 340 streams.
-  'moonshotai/kimi-k3': 137,
-  // 4,015 streams.
-  'minimax/minimax-m3': 137,
-  // New version unmeasured; use the median-of-model-medians fallback, not its predecessor's ratio.
-  'deepseek/deepseek-v4.1-flash': UNMEASURED_RAW_CHARS_PER_TOKEN,
-  // 1,253 streams.
-  'z-ai/glm-5.3-flash': 297,
-  // Unmeasured on this provider; the median of the measured seats.
-  'google/gemma-4-26b-a4b-it': 137,
-  // Unmeasured on this provider; the median of the measured seats.
-  'openai/gpt-oss-120b': 137,
-  // Unmeasured; the median of the measured seats.
-  'inception/mercury-2.5': 137,
-};
+const RAW_CHARS_PER_COMPLETION_TOKEN: Readonly<Record<OpenRouterServedId, number>> = servedRecord({
+  provider: 'openrouter',
+  toRow: function ratioOf(card,): number {
+    /**
+     Ratio the card carries, or the median of the measured ones.
+     */
+    const { rawCharsPerToken, } = card.openrouter;
+    return (rawCharsPerToken === 'unmeasured') ? UNMEASURED_RAW_CHARS_PER_TOKEN : rawCharsPerToken;
+  },
+},);
 
 /**
  Request body bytes per prompt token, an order-of-magnitude figure for a

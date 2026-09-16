@@ -1,4 +1,13 @@
-import type { RosterModelId, } from './roster-id.ts';
+import {
+  holdSet,
+  servedRecord,
+} from './model-card-derive.ts';
+import type {
+  OpenRouterServedId,
+  RosterModelId,
+} from './roster-id.ts';
+
+export type { OpenRouterServedId, } from './roster-id.ts';
 
 //region OpenRouter catalog
 // What OpenRouter serves for this pipeline, and how it spells it.
@@ -107,25 +116,7 @@ export type OpenRouterProviderPreferences = typeof OPENROUTER_PROVIDER_PREFERENC
   readonly ignore: readonly string[];
 };
 
-/**
- Models this provider serves for this pipeline, under its own spellings.
- 
- A CLOSED UNION so a typo cannot reach the wire, and so widening the roster
- here is a deliberate edit rather than a string that happens to resolve.
- 
- @example
- ```ts
- const modelId: OpenRouterServedId = 'moonshotai/kimi-k3';
- ```
- */
-export type OpenRouterServedId =
-  | 'moonshotai/kimi-k3'
-  | 'minimax/minimax-m3'
-  | 'deepseek/deepseek-v4.1-flash'
-  | 'z-ai/glm-5.3-flash'
-  | 'google/gemma-4-26b-a4b-it'
-  | 'openai/gpt-oss-120b'
-  | 'inception/mercury-2.5';
+
 
 /**
  Verified per-model facts the router and the request builder read.
@@ -182,172 +173,37 @@ export type OpenRouterModelInfo = {
 };
 
 /**
- Every model this provider serves for this pipeline.
- 
+ Every model this provider serves for this pipeline, read off the cards.
+
  CONFORMANCE MEASURED OVER 20 CHAT COMPLETIONS ATTEMPTS EACH on 2026-09-03
  with `response_format` json_schema, the schema restated in the system
  prompt, zero data retention and `require_parameters`; the per-model rates
- and the endpoints that served them are in the planning record. Mercury 2.5
- joined on 2026-09-09 and its conformance is read off the fidelity probe's
- usable-ask count instead.
- 
+ and the endpoints that served them are in the planning record. Later
+ arrivals read their conformance off the fidelity probe's usable-ask count.
+
  @example
  ```ts
  const info = OPENROUTER_MODELS['deepseek/deepseek-v4.1-flash'];
  ```
  */
-export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterModelInfo>> = {
-  'moonshotai/kimi-k3': {
-    id: 'moonshotai/kimi-k3',
-    sharedWith: 'hf:moonshotai/Kimi-K3',
-    readsImages: true,
-    maxOutputLength: 943_718,
-    promptUsdPerMillion: 3,
-    completionUsdPerMillion: 15,
-    ignoredEndpoints: [],
+export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterModelInfo>> = servedRecord({
+  provider: 'openrouter',
+  toRow: function openRouterRow(card,): OpenRouterModelInfo {
+    /**
+     OpenRouter's side of the card.
+     */
+    const { openrouter, } = card;
+    return {
+      id: openrouter.id,
+      sharedWith: card.id,
+      readsImages: openrouter.readsImages,
+      maxOutputLength: openrouter.maxOutputLength,
+      promptUsdPerMillion: openrouter.promptUsdPerMillion,
+      completionUsdPerMillion: openrouter.completionUsdPerMillion,
+      ignoredEndpoints: openrouter.ignoredEndpoints,
+    };
   },
-  // PARASAIL PUTS THE WHOLE JSON ANSWER IN THE REASONING CHANNEL and closes
-  // the content channel empty with `finish_reason=stop`, measured on
-  // 2026-09-03 with a corpus-sized json_schema request under zero data
-  // retention (`~/temp/agent/openrouter-minimax-endpoints-20260903`): 0 of 2
-  // conformant there against 4 of 4 on ModelRun, and on the first
-  // all-OpenRouter keyword233 pass 16 of 31 MiniMax calls came back empty.
-  //
-  // MODELRUN TIMES OUT ONE CALL IN FIVE, OR WORSE. On 2026-09-04 it served
-  // 300 MiniMax streams across six runs and 119 came back as one 846-character
-  // chunk carrying `error.code=504`, `error_type=timeout`, no content and no
-  // `[DONE]`, each after about 10.5 s (`openrouter-stream-error.ts` names
-  // those failures now); the listing read `uptime_last_30m` 54.9 and `status`
-  // -5 for it at 05:00 UTC, at 2.5 times the price of the next endpoint.
-  //
-  // COREWEAVE TAKES ITS PLACE, MEASURED. The first probe of the day answered
-  // 404 "All providers have been ignored" for CoreWeave; the owner had never
-  // ignored it, re-saved the account's allowed providers, and the re-probe
-  // (`~/temp/agent/openrouter-minimax-endpoints-20260904b.log`) read 4 of 4
-  // conformant on the corpus-sized schema request under zero data retention,
-  // 16 to 20 s a call at a third of ModelRun's price, uptime 100. DeepInfra
-  // and Venice answer 404 "No endpoints found that can handle the requested
-  // parameters" to that request, so with Parasail and ModelRun ignored,
-  // CoreWeave serves alone; default routing without `only` still went to
-  // ModelRun 4 of 4 times, which is why the ignore is needed at all.
-  'minimax/minimax-m3': {
-    id: 'minimax/minimax-m3',
-    sharedWith: 'minimax-m3',
-    readsImages: true,
-    maxOutputLength: 512_000,
-    promptUsdPerMillion: 0.3,
-    completionUsdPerMillion: 1.2,
-    ignoredEndpoints: [
-      'parasail',
-      'modelrun',
-    ],
-  },
-  // OPENINFERENCE LOSES THE VOICE TO THE STRAGGLER GRACE. Every cut this
-  // model took on the second all-OpenRouter keyword233 pass of 2026-09-03
-  // (`~/temp/agent/openrouter-live2-20260903.log`) was the 60 s grace after
-  // quorum ending a stream still in its reasoning channel, and OpenInference
-  // finished 2 of its 6 streams (mean 58.8 s finished, cut at 67 s to 117 s
-  // with at most 1 content char over 6.7k to 14.9k reasoning chars) against
-  // Parasail's 12 of 13 (mean 42.8 s) and Inceptron's 4 of 5 (mean 29.9 s).
-  // The model reasons long on every endpoint; this one is the slowest at it.
-  //
-  // THAT IGNORE NEVER REACHED THE WIRE until 2026-09-04: it was spelled
-  // `openinference`, and the gateway's slug (`GET /api/v1/providers`) is
-  // `open-inference`, so OpenInference served 43 of the day's streams for this
-  // model before the spelling was measured. Parasail and Reka join it on the
-  // day's cut rates over every run (`~/temp/agent/*-20260904.log`): Parasail
-  // 96 of 464 streams cut at the straggler grace, Reka 12 of 41, against
-  // Makora 2 of 99 and Together 0 of 10. Rule applied here and below: an
-  // endpoint is ignored when a day's runs cut a quarter or more of at least
-  // twenty of its streams, or fail that share of them in-stream.
-  //
-  // `deepseek/deepseek-v4-flash-0731` (OpenInference, Parasail and Reka
-  // ignored by that rule) AND `deepseek/deepseek-v4-pro-0813` LEFT
-  // 2026-09-16 at the owner's instruction; `roster-blocklist.ts` carries
-  // the words.
-  // Owner-approved 2026-09-11; live strict JSON stream verified through
-  // DeepInfra after one HTTP 429. No endpoint is excluded on that single refusal.
-  // Base catalog rates price abandoned-call estimates only. Completed calls
-  // retain wire-reported cost or report it missing, including scheduled-price effects.
-  // No predecessor's calibration is inherited.
-  'deepseek/deepseek-v4.1-flash': {
-    id: 'deepseek/deepseek-v4.1-flash',
-    sharedWith: 'deepseek-v4.1-flash',
-    readsImages: true,
-    maxOutputLength: 384_000,
-    promptUsdPerMillion: 0.3,
-    completionUsdPerMillion: 1.2,
-    ignoredEndpoints: [],
-  },
-  // TWO SEATS LEFT THIS CATALOG ON 2026-09-09, on the owner's standing
-  // authorization to drop a model from a role on evidence. Between the
-  // top-up of 2026-09-08 11:27 UTC and the payment refusal of 2026-09-09
-  // 12:22 UTC, `qwen/qwen3.8-27b` (`hf:Qwen/Qwen3.8-27B`) was abandoned
-  // 120 s after quorum on 1,088 of 4,484 calls (24.3 percent), 3.0 GB of raw
-  // stream at 377 raw characters per completion token, about 8.1 million
-  // tokens at 3 USD per million that no `SPEND` line ever recorded because
-  // the stream never completed; CoreWeave, Parasail and Phala served it, none
-  // of them on the gateway's list of providers that stop billing on a
-  // cancelled stream. `z-ai/glm-5.3` (`glm-5.3`) was abandoned on 291 of
-  // 2,208 calls (13.2 percent), 4.1 million tokens at 4.4 USD per million,
-  // largely on Modal, which the gateway lists as billing the whole response.
-  // Together the two took about 105 of the 200 USD; the anchor judge
-  // `deepseek/deepseek-v4-pro-0813` was abandoned on 3.5 percent. Qwen3.8-27B
-  // stays on the roster under its Synthetic seat, where the subscription
-  // bills nothing per token; `glm-5.3` had no other provider left and holds
-  // no seat until one serves it. Measurement in the planning log of
-  // 2026-09-09, "The owner asks where 200 USD went". The endpoint ignores
-  // both rows carried (Reka and Io Net; Reka) are recorded there too.
-  'z-ai/glm-5.3-flash': {
-    id: 'z-ai/glm-5.3-flash',
-    sharedWith: 'hf:zai-org/GLM-5.3-Flash',
-    readsImages: true,
-    maxOutputLength: 131_072,
-    promptUsdPerMillion: 0.075,
-    completionUsdPerMillion: 0.25,
-    ignoredEndpoints: [],
-  },
-  // THE LISTING REPORTS IMAGE INPUT HERE AND CHARM HYPER'S CATALOG DOES NOT,
-  // the same weights on different serving stacks. NOT SEATED AS A READER on
-  // that claim alone: a picture reader is a seat in `image-reading-stage.ts`,
-  // the four current readers were each measured, and this one would be added
-  // by a listing field nobody has probed with a picture. It stays false until
-  // a measured transcription says otherwise, so the reader roster is unchanged
-  // by this provider's arrival.
-  'google/gemma-4-26b-a4b-it': {
-    id: 'google/gemma-4-26b-a4b-it',
-    sharedWith: 'gemma-4-26b-a4b-it',
-    readsImages: false,
-    maxOutputLength: 16_384,
-    promptUsdPerMillion: 0.07,
-    completionUsdPerMillion: 0.34,
-    ignoredEndpoints: [],
-  },
-  'openai/gpt-oss-120b': {
-    id: 'openai/gpt-oss-120b',
-    sharedWith: 'hf:openai/gpt-oss-120b',
-    readsImages: false,
-    maxOutputLength: 117_964,
-    promptUsdPerMillion: 0.037,
-    completionUsdPerMillion: 0.17,
-    ignoredEndpoints: [],
-  },
-  // THE ONE SEAT ONLY THIS PROVIDER SERVES, approved by the owner on
-  // 2026-09-09. The listing of that day
-  // (`~/temp/agent/openrouter-models-20260909.json`, its endpoints in
-  // `endpoints-mercury-2.5-20260909.json`): text only, 260,000 context, one
-  // endpoint (Inception), takes `response_format`, `structured_outputs` and
-  // `max_tokens`; its reasoning parameters exist and stay off the wire.
-  'inception/mercury-2.5': {
-    id: 'inception/mercury-2.5',
-    sharedWith: 'inception/mercury-2.5',
-    readsImages: false,
-    maxOutputLength: 65_536,
-    promptUsdPerMillion: 0.04,
-    completionUsdPerMillion: 0.15,
-    ignoredEndpoints: [],
-  },
-};
+},);
 
 /**
  The `provider` field for one served model.
@@ -411,10 +267,7 @@ export function openRouterServesLabel(label: string,): label is OpenRouterServed
  const dropped = OPENROUTER_DROPPED_SEATS.has('glm-5.3',);
  ```
  */
-export const OPENROUTER_DROPPED_SEATS: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  'hf:Qwen/Qwen3.8-27B',
-  'glm-5.3',
-],);
+export const OPENROUTER_DROPPED_SEATS: ReadonlySet<RosterModelId> = holdSet({ hold: 'openrouter-dropped', },);
 
 /**
  Roster seats this provider serves and the run does not buy from it, by the
@@ -436,8 +289,6 @@ export const OPENROUTER_DROPPED_SEATS: ReadonlySet<RosterModelId> = new Set<Rost
  const withheld = OPENROUTER_WITHHELD.has('hf:moonshotai/Kimi-K3',);
  ```
  */
-export const OPENROUTER_WITHHELD: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  'hf:moonshotai/Kimi-K3',
-],);
+export const OPENROUTER_WITHHELD: ReadonlySet<RosterModelId> = holdSet({ hold: 'openrouter-withheld', },);
 
 //endregion OpenRouter catalog
