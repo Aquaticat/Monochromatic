@@ -310,6 +310,14 @@ source audit,
 and representative runtime validation.
 The pipeline feature is experimental and task execution still depends on project manifest scripts.
 
+Update 2026-09-16:
+pnpm exited the monorepo manager vet at the documentation gate.
+`https://pnpm.io/cli/recursive` says "Even if `--no-bail` is used, all tasks will finish",
+while `https://pnpm.io/workspace-task-orchestration` says that after a task fails,
+dependent tasks are skipped and only independent ready tasks continue under `--no-bail`.
+Nadle is queued for the same screening.
+See `doc/audit/tech-monorepo-manager-vet-2026-09-16.md`.
+
 Parity gate:
  preserve package namespaces,
 partial invocation,
