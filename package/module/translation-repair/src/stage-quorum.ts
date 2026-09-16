@@ -131,12 +131,25 @@ export type StageGather<ValueT,> = {
    rather than the bench that was seated.
    */
   readonly unreachable: ReadonlySet<RosterModelId>;
+
+  /**
+   Seats that answered but nothing could read, still unread after the
+   recovery round: a reply the completion cap cut before its content, or a
+   shape the guard refused. They were reached and they answered, so a
+   caller telling an outage from a bench it could not read counts them as
+   answering. On 2026-09-16 Mio13 was interrupted `provider-unavailable`
+   at 4 of 12 heard with every provider wet, seven seats having spent
+   their whole completion cap reasoning about one chat translation and
+   sent no content (class thirty-one).
+   */
+  readonly unreadable: ReadonlySet<RosterModelId>;
 };
 
 /**
  What the rounds produced: the voices heard, which seats were asked at
  all, so the findings can tell a seat the window spared from one that was
- asked and stayed quiet, and which seats no provider served.
+ asked and stayed quiet, which seats no provider served, and which
+ answered in a shape nothing could read.
  */
 type RoundsOutcome<ValueT,> = {
   /**
@@ -153,6 +166,11 @@ type RoundsOutcome<ValueT,> = {
    Seats the router refused for want of a wet provider.
    */
   readonly unreachable: ReadonlySet<RosterModelId>;
+
+  /**
+   Seats whose answers stayed unreadable after the recovery round.
+   */
+  readonly unreadable: ReadonlySet<RosterModelId>;
 };
 
 /**
@@ -285,6 +303,12 @@ export async function gatherStageVoices<ValueT,>(
     const unreachableSeats = new Set<RosterModelId>();
 
     /**
+     Seats whose latest answer nothing could read, across every round: a
+     seat leaves the moment some round hears it.
+     */
+    const unreadableSeats = new Set<RosterModelId>();
+
+    /**
      Everything a round needs except who to ask and how many to wait for.
      
      Hoisted so the recovery round below cannot drift from the quorum rounds
@@ -381,6 +405,7 @@ export async function gatherStageVoices<ValueT,>(
             value: outcome.voice
               .value,
           },);
+          unreadableSeats.delete(outcome.modelId,);
           continue;
         }
         stillLost.push(outcome.modelId,);
@@ -388,8 +413,10 @@ export async function gatherStageVoices<ValueT,>(
           .unreachable)
           unreachableSeats.add(outcome.modelId,);
         if (outcome.voice
-          .answered)
+          .answered) {
           answeredBadly.push(outcome.modelId,);
+          unreadableSeats.add(outcome.modelId,);
+        }
       }
       // A SEAT THE ROUTER REFUSED IS NOT RE-ASKED. Nothing changes between
       // rounds for a seat no wet provider serves, and re-queuing it spent
@@ -465,6 +492,7 @@ export async function gatherStageVoices<ValueT,>(
             value: outcome.voice
               .value,
           },);
+          unreadableSeats.delete(outcome.modelId,);
         }
       }
 
@@ -487,6 +515,7 @@ export async function gatherStageVoices<ValueT,>(
       collected,
       asked,
       unreachable: unreachableSeats,
+      unreadable: unreadableSeats,
     };
   })();
 
@@ -497,6 +526,7 @@ export async function gatherStageVoices<ValueT,>(
     collected: voices,
     asked,
     unreachable,
+    unreadable,
   } = rounds;
 
   /**
@@ -588,6 +618,7 @@ export async function gatherStageVoices<ValueT,>(
       ],
       asked,
       unreachable,
+      unreadable,
     };
   }
   // Emitted whenever the roster ended short, not only when retries were still
@@ -605,6 +636,7 @@ export async function gatherStageVoices<ValueT,>(
       ],
       asked,
       unreachable,
+      unreadable,
     };
   }
   return {
@@ -616,6 +648,7 @@ export async function gatherStageVoices<ValueT,>(
     ],
     asked,
     unreachable,
+    unreadable,
   };
 }
 

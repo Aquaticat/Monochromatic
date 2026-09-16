@@ -220,7 +220,9 @@ export function archiveSelectionFixture(
    
    @param request - actual production role and schema
    
-   @returns Scripted schema-valid outcome or explicit unavailable voice
+   @returns Scripted schema-valid outcome
+
+   @throws Error when the fixture's review bench is unavailable past its first seat
    */
   function respond<ValueT,>(request: ChatJsonRequest<ValueT>,): ChatJsonOutcome<ValueT> {
       /**
@@ -235,12 +237,13 @@ export function archiveSelectionFixture(
          */
         const index = reviewRequests.length;
         reviewRequests.push(request.modelId,);
+        // A seat that is unavailable delivers nothing. Until 2026-09-16 this
+        // was scripted as `schema-mismatch`, which is an answer nobody could
+        // read, and class thirty-one reads that as the bench answering: Mio13
+        // was interrupted `provider-unavailable` at 4 of 12 heard with every
+        // provider wet because seven cap-cut replies were counted as silence.
         if ((review === 'unavailable') && (index > 0))
-          return {
-            kind: 'schema-mismatch',
-            rawText: '{}',
-            detail: 'Review quorum unavailable in fixture',
-          };
+          throw new Error('Review quorum unavailable in fixture',);
         /**
          Echoes remain actual revision replies but do not change the block.
          */

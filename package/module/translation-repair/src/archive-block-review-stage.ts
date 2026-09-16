@@ -29,6 +29,7 @@ import { archiveContributorNameForms, } from './contributor-name-authority.ts';
 import { findDroppedDeclaredNames, } from './declared-name-survival.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
+import { reachableQuorum, } from './stage-reachable-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
 
@@ -266,11 +267,49 @@ export async function runArchiveBlockReviewStage(
   // fewer than the exact half anchored their support in the original. The
   // no-loop design says an unresolved block is retained with its findings and
   // reviewer indecision cannot withhold the entry.
+  //
+  // AN ANSWER NOBODY COULD READ IS NOT SILENCE EITHER (class thirty-one). On
+  // 2026-09-16 Mio13 reviewed the first chat translation with every provider
+  // wet: seven of twelve seats spent their whole completion cap reasoning
+  // and sent no content, one was cut in the grace window, four were heard,
+  // and the stage read "4/12" as an outage. The seats the cap cut were
+  // reached and answered; only the shape was lost. So the outage test counts
+  // them beside the heard voices, and a bench that answered falls through
+  // to the same retention an unanchored one gets.
   if (!gather.quorumMet) {
-    throw new TranslationRepairInterruptedError({
-      reason: 'provider-unavailable',
-      findings,
+    /**
+     Voices read.
+     */
+    const heard = gather.voices
+      .length;
+    /**
+     Seats that answered in a shape nothing could read.
+     */
+    const unread = gather.unreadable
+      .size;
+    /**
+     Seats the router refused.
+     */
+    const refused = gather.unreachable
+      .size;
+    /**
+     Voices the gather needed, on the bench the router could serve.
+     */
+    const { needed, } = reachableQuorum({
+      benchSize: modelIds.length,
+      unreachable: refused,
     },);
+    if ((heard + unread) < needed) {
+      throw new TranslationRepairInterruptedError({
+        reason: 'provider-unavailable',
+        findings,
+      },);
+    }
+    reviewLog.warn(
+      `archive-block-review: ${String(heard,)} heard and ${String(unread,)} answered unreadably of ${
+        String(modelIds.length,)
+      } seats; the bench answered, so the block is reviewed on what was read`,
+    );
   }
   /**
    Participation required after unsupported anchors are removed.
