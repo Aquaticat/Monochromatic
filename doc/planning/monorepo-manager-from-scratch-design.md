@@ -109,6 +109,8 @@ Measured 2026-09-16 on the development machine:
   Suites that are heavy today only by task name,
    such as `test:container` or `test:wayland`,
    are not excluded by this rule unless their files adopt the naming.
+  The user considers expensive tests without the naming a user error:
+   the daemon runs them by default and does not add a fallback classification.
 - The user delegated the concurrency override name.
   Chosen:
    `MONOCHROMATIC_JOBS`.
