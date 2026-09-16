@@ -29,6 +29,13 @@ Background it;
 never poll or kill it;
 it may never return.
 
+The Monitor tool expires 30 minutes after each arm,
+and every re-arm wakes the main agent.
+For one wait that may run longer (a corpus pass, a long build),
+use the Bash tool with `run_in_background` and a `while kill -0 <pid>` or `until` loop that exits when the condition holds;
+it reports once on exit.
+Keep Monitor for streams of events that end within 30 minutes.
+
 # Development guidelines for AI agents
 
 ORG:
