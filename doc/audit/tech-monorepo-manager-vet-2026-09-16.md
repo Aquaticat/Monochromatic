@@ -272,11 +272,17 @@ Confusion:
 a candidate exits the moment the reader hits any confusion or frustration reading or trying to read its documentation.
 Reading stops there;
 the report records the triggering URL and what confused the reader.
-A failure of the reading tool alone,
-such as a fetcher that cannot render a JavaScript page,
-gets one switch to a real browser;
-if a human reader would still hit the problem,
-the candidate exits.
+Documentation must be readable without JavaScript and without strict bot blocking,
+per the user's stated opinion on 2026-09-16.
+Each relied-on page is fetched once with plain `curl --location` and a desktop Firefox user agent.
+The candidate exits when that first request returns a bot challenge,
+captcha,
+or 403,
+429,
+or 202 block page,
+or when the documentation text is absent from the returned HTML.
+There is no browser retry;
+an earlier browser-retry exception is withdrawn.
 
 Every structure signal is a confusion trigger and therefore an exit:
 
