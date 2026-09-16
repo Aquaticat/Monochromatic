@@ -1881,7 +1881,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `db090b955` for the code;
+  `36b79bfa0` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
@@ -1913,6 +1913,15 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`36b79bfa0` (2026-09-16,
+03:22 UTC):
+the archive block review reads one transcript per corroborated picture,
+the one the other readers carry most (`mostCarriedReading`),
+instead of every reader's;
+the owner's decision on the Mio13 overrun,
+recorded in
+[the one-transcript decision](../decision/translation-repair-archive-review-one-transcript-2026-09-16.md);
+not yet run in a pass.
 `db090b955` (2026-09-16,
 03:01 UTC):
 class thirty-one,
@@ -3513,31 +3522,21 @@ each read off the pass log and the shipped page:
     what is still wrong after it is a defect class with a fix,
     not a follow-up study.
     ALWAYS KILL AND RELAUNCH if the source moves while it runs.
-2.  DESIGN QUESTION FOR THE OWNER,
-    from Mio13:
-    seven of twelve seats cannot review the first chat translation within their measured caps
-    (Qwen3.8-27B 20,894 tokens of reasoning and no content,
-    GLM-5.3-Flash 18,316,
-    glm-5.3 22,067,
-    the others their own caps),
-    while the block before it drew 640 to 1,268 tokens from the same seats on a prompt of the same size.
-    The options,
-    ranked:
-    (a) send the archive review one transcript per corroborated picture instead of every reader's,
-    which shrinks what the seats must reconcile and changes what evidence they see
-    (there is no consensus transcript today;
-    the corroborated reading carries the readings and an overlap);
-    (b) re-ask a cap-cut reply once at twice its measured cap in the recovery round,
-    which spends up to a cap more per seat per block on the providers whose allowances the caps protect;
-    (c) leave it,
-    so a block the reasoning seats cannot answer ships as the archive wrote it with the heard findings
-    recorded.
-    Ranking:
-    a > b > c,
-    because (a) buys the review for nothing extra while (b) buys it with the quota the caps exist to
-    keep,
-    and (c) leaves the chat translations' known errors on the page.
-    None of the three is taken without the owner.
+2.  DECIDED (owner,
+    2026-09-16,
+    "I'll go with whatever you recommend"):
+    the archive review reads one transcript per corroborated picture,
+    the one the other readers carry most,
+    landed in `36b79bfa0` and recorded in
+    [the one-transcript decision](../decision/translation-repair-archive-review-one-transcript-2026-09-16.md).
+    It is a hypothesis until measured:
+    Mio14 (six transcripts) is the baseline;
+    after Mio14 is read,
+    freeze `36b79bfa0` (or the tip) and launch Mio15,
+    then read whether the seven seats that overran on Mio13 answer the first chat translation within cap
+    (grep `archive-block-review` and `finish_reason` in its log).
+    If they still overrun,
+    the lever is spent and the doubled re-ask cap is the next question for the owner.
 3.  THEN THE QUEUE AS BEFORE,
     one entry at a time,
     each read before the next is launched:
