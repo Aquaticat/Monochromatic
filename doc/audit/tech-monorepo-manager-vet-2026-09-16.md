@@ -333,6 +333,49 @@ Repository queries:
 Expansion round:
 pending taxonomy collection.
 
+### Early WR evidence recorded before the candidate ledger
+
+Collected 2026-09-16 while discovery ran;
+each tool still needs discovery provenance and full screening.
+
+- Bazel `8e90a0d`:
+   no native watch command;
+   `CommandServer` exposes `Run`,
+   `Cancel`,
+   `UpdateTerminalSize`,
+   and `Ping`;
+   one command at a time per output base.
+  `ibazel` v0.33.0 reports outward only.
+  Details in `doc/research/bazel-migration-dx.md`.
+- Tilt v0.37.7,
+   released 2026-08-15,
+   repository pushed 2026-09-14:
+   `internal/cli/` contains `trigger`,
+   `get`,
+   `describe`,
+   `enable`,
+   `disable`,
+   `wait`,
+   and `logs` commands.
+  `tilt trigger` posts to the running Tilt process's HTTP API
+   (`internal/cli/trigger.go:61-63`).
+  A GitHub code search for `cancel update` returned no files;
+   that search does not prove cancellation is absent.
+- Gradle Tooling API documentation
+   (<https://docs.gradle.org/current/userguide/tooling_api.html>)
+   covers running builds,
+   cancelling a running build,
+   and progress events,
+   but does not mention continuous build through the Tooling API
+   or connecting to a build started by another process.
+- Nx daemon reference
+   (`nrwl/nx` `astro-docs/src/content/docs/reference/nx-daemon.mdoc:9-24,60,109-110`):
+   the daemon watches workspace files to keep project graph data current,
+   clients reach it through a Unix socket,
+   `nx daemon` prints its process ID and log path,
+   and the socket is described as a remote for code execution.
+  The page documents no client protocol for outside tools and no task control through the daemon.
+
 ### Query ledger
 
 Pending.
