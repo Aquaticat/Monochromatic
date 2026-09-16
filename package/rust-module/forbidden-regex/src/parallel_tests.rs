@@ -9,7 +9,7 @@
 // });
 // ```
 
-use super::{RuleOutcome, build_rules_with};
+use super::{RuleOutcome, WORKER_STACK_BYTES, build_pattern, build_rules_with};
 use crate::RegexSet;
 
 // What:    Valid and invalid patterns interleaved, with two distinct failure kinds.
@@ -65,7 +65,7 @@ fn summary(outcomes: &[RuleOutcome]) -> Vec<(usize, Option<String>)> {
 fn threaded_outcomes_come_back_in_input_order() {
     let owned: Vec<String> = (0..24).map(|n| return format!("rule{n:02}abc[0-9]{{3}}")).collect();
     let patterns: Vec<&str> = owned.iter().map(|pattern| return pattern.as_str()).collect();
-    let outcomes = build_rules_with(&patterns, false, 4);
+    let outcomes = build_rules_with(&patterns, false, 4, WORKER_STACK_BYTES, build_pattern);
     assert_eq!(indices(&outcomes), (0..24).collect::<Vec<usize>>());
     assert!(outcomes.iter().all(|outcome| return outcome.1.is_ok()));
 }
@@ -73,8 +73,8 @@ fn threaded_outcomes_come_back_in_input_order() {
 #[test]
 fn lenient_threaded_matches_inline() {
     let patterns = mixed_patterns();
-    let inline = build_rules_with(&patterns, false, 1);
-    let threaded = build_rules_with(&patterns, false, 4);
+    let inline = build_rules_with(&patterns, false, 1, WORKER_STACK_BYTES, build_pattern);
+    let threaded = build_rules_with(&patterns, false, 4, WORKER_STACK_BYTES, build_pattern);
     // What:    every rule is attempted, failures included.
     // Why:     `compile_lenient` keeps each rule that builds, so none may be skipped.
     //
@@ -89,8 +89,8 @@ fn lenient_threaded_matches_inline() {
 #[test]
 fn strict_threaded_reports_the_lowest_index_failure() {
     let patterns = mixed_patterns();
-    let unclosed = build_rules_with(&["(?:unclosed"], true, 1);
-    let star = build_rules_with(&["star*"], true, 1);
+    let unclosed = build_rules_with(&["(?:unclosed"], true, 1, WORKER_STACK_BYTES, build_pattern);
+    let star = build_rules_with(&["star*"], true, 1, WORKER_STACK_BYTES, build_pattern);
     // What:    the two failure kinds render differently.
     // Why:     Positive control: otherwise picking the wrong failure would go unnoticed.
     //
@@ -100,7 +100,7 @@ fn strict_threaded_reports_the_lowest_index_failure() {
     // ```
     assert_ne!(summary(&unclosed)[0].1, summary(&star)[0].1);
     for _ in 0..16 {
-        let outcomes = build_rules_with(&patterns, true, 4);
+        let outcomes = build_rules_with(&patterns, true, 4, WORKER_STACK_BYTES, build_pattern);
         let first_failure = outcomes
             .iter()
             .find(|outcome| return outcome.1.is_err())
@@ -123,9 +123,63 @@ fn workers_build_deeply_nested_groups() {
     // ```
     let deep = format!("{}abcdef{}", "(?:".repeat(10_000), ")".repeat(10_000));
     let patterns = [deep.as_str(), deep.as_str()];
-    let outcomes = build_rules_with(&patterns, true, 2);
+    let outcomes = build_rules_with(&patterns, true, 2, WORKER_STACK_BYTES, build_pattern);
     assert_eq!(indices(&outcomes), vec![0, 1]);
     assert!(outcomes.iter().all(|outcome| return outcome.1.is_ok()));
+}
+
+#[test]
+fn refused_spawns_fall_back_to_the_calling_thread() {
+    // What:    a stack reservation of half the address space, which no OS can map.
+    // Why:     Every spawn then returns an error (measured on Linux: `WouldBlock`, "Resource
+    //          temporarily unavailable"), forcing the calling-thread fallback deterministically.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const impossible_stack = 2 ** 63;
+    // ```
+    let impossible_stack: usize = 1 << (usize::BITS - 1);
+    let patterns = mixed_patterns();
+    let inline = build_rules_with(&patterns, false, 1, WORKER_STACK_BYTES, build_pattern);
+    let refused = build_rules_with(&patterns, false, 4, impossible_stack, build_pattern);
+    assert_eq!(refused.len(), patterns.len());
+    assert_eq!(summary(&refused), summary(&inline));
+}
+
+// What:    A builder that panics on one marker pattern and builds every other normally.
+// Why:     Stands in for an unknown engine fault inside a worker thread.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function panicking_builder(pattern: string): BuiltRule | CompileError {
+//   if (pattern === "boom") throw new Error("worker fault marker");
+//   return build_pattern(pattern);
+// }
+// ```
+fn panicking_builder(pattern: &str) -> Result<super::BuiltRule, crate::error::CompileError> {
+    if pattern == "boom" {
+        panic!("worker fault marker");
+    }
+    return build_pattern(pattern)
+}
+
+#[test]
+fn worker_panic_reaches_the_caller_with_its_payload() {
+    let patterns = ["abcdef[0-9]{4}", "boom", "ghijkl[a-z]{3}", "mnopqr[A-Z]{2}"];
+    // What:    `catch_unwind` runs the closure and returns `Err(payload)` if it panicked;
+    //          `AssertUnwindSafe` vouches that the borrowed patterns stay valid after a panic.
+    // Why:     Mirrors the scanner's `catch_unwind` boundary around engine calls.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let caught: unknown;
+    // try { build_rules_with(patterns, false, 2, WORKER_STACK_BYTES, panicking_builder); } catch (error) { caught = error; }
+    // ```
+    let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        return build_rules_with(&patterns, false, 2, WORKER_STACK_BYTES, panicking_builder)
+    }));
+    let payload = caught.err().expect("a worker panic must propagate to the caller");
+    assert_eq!(payload.downcast_ref::<&str>(), Some(&"worker fault marker"));
 }
 
 #[test]

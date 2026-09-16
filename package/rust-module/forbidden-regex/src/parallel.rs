@@ -109,6 +109,44 @@ const WORKER_STACK_BYTES: usize = 64 * 1024 * 1024;
 /// ```
 pub(crate) type RuleOutcome = (usize, Result<BuiltRule, CompileError>);
 
+/// What:    `fn(&str) -> Result<BuiltRule, CompileError>` is a function-pointer type: any plain
+///          named function that takes a borrowed pattern string and returns a built rule or
+///          an error. Siblings: a generic closure parameter `impl Fn(&str) -> ...` and a boxed
+///          closure `Box<dyn Fn(&str) -> ...>`.
+/// Why:     Production passes [`build_pattern`]; tests pass a builder that panics, to prove a
+///          worker panic reaches the caller. A function pointer (not a closure type) needs no
+///          generic parameter and can be copied into every worker thread as-is.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type RuleBuilder = (pattern: string) => BuiltRule | CompileError;
+/// ```
+pub(crate) type RuleBuilder = fn(&str) -> Result<BuiltRule, CompileError>;
+
+/// Parses and builds one pattern into a rule.
+///
+/// What:    Runs the parser, then the rule builder on the parsed node.
+/// Why:     The production [`RuleBuilder`] every worker runs per claimed index.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function build_pattern(pattern: string): BuiltRule | CompileError {
+///   // Rust body below is the implementation.
+/// }
+/// ```
+pub(crate) fn build_pattern(pattern: &str) -> Result<BuiltRule, CompileError> {
+    // What:    `parse(...)` returns `Result<Node, CompileError>`; `.and_then(build_rule)` runs
+    //          `build_rule` on the parsed node only when parsing succeeded, else passes the
+    //          parse error through unchanged.
+    // Why:     One result per rule, whichever stage failed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { return build_rule(parse(pattern)); } catch (error) { return error; }
+    // ```
+    return parse(pattern).and_then(build_rule)
+}
+
 /// What:    A process-wide slot holding the core count once computed. `static` means one
 ///          value for the whole program; `OnceLock<usize>` starts empty and is filled at
 ///          most once, even when threads race to fill it.
@@ -182,19 +220,21 @@ pub(crate) fn build_rules(patterns: &[&str], stop_on_error: bool) -> Vec<RuleOut
     // const worker_count = Math.min(cores, patterns.length);
     // ```
     let worker_count = cores.min(patterns.len());
-    return build_rules_with(patterns, stop_on_error, worker_count)
+    return build_rules_with(patterns, stop_on_error, worker_count, WORKER_STACK_BYTES, build_pattern)
 }
 
-/// Builds every pattern into a rule with an explicit worker count, sorted by input index.
+/// Builds every pattern into a rule with explicit workers, stacks, and builder, sorted by index.
 ///
 /// What:    Runs the claim-and-build loop on the calling thread for one worker or fewer,
-///          else on spawned workers, then sorts the outcomes by index.
+///          else on spawned workers with `stack_bytes` stacks running `build`, then sorts the
+///          outcomes by index.
 /// Why:     Separated from [`build_rules`] so tests can force the threaded path on any
-///          machine, including single-core CI runners.
+///          machine, force every spawn to fail with an impossible stack size, and inject a
+///          panicking builder.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function build_rules_with(patterns: string[], stop_on_error: boolean, worker_count: number): RuleOutcome[] {
+/// function build_rules_with(patterns: string[], stop_on_error: boolean, worker_count: number, stack_bytes: number, build: RuleBuilder): RuleOutcome[] {
 ///   // Rust body below is the implementation.
 /// }
 /// ```
@@ -202,6 +242,8 @@ pub(crate) fn build_rules_with(
     patterns: &[&str],
     stop_on_error: bool,
     worker_count: usize,
+    stack_bytes: usize,
+    build: RuleBuilder,
 ) -> Vec<RuleOutcome> {
     // What:    `AtomicUsize::new(0)` creates the shared "next index to claim" counter.
     // Why:     Every worker claims rules from this one counter, so each index is built
@@ -229,13 +271,13 @@ pub(crate) fn build_rules_with(
     // In TS you'd write (pseudocode):
     // ```ts
     // let outcomes = worker_count <= 1
-    //   ? drain(patterns, stop_on_error, next, first_error)
-    //   : drain_on_workers(patterns, stop_on_error, next, first_error, worker_count);
+    //   ? drain(patterns, stop_on_error, next, first_error, build)
+    //   : drain_on_workers(patterns, stop_on_error, next, first_error, worker_count, stack_bytes, build);
     // ```
     let mut outcomes = if worker_count <= 1 {
-        drain(patterns, stop_on_error, &next, &first_error)
+        drain(patterns, stop_on_error, &next, &first_error, build)
     } else {
-        drain_on_workers(patterns, stop_on_error, &next, &first_error, worker_count)
+        drain_on_workers(patterns, stop_on_error, &next, &first_error, worker_count, stack_bytes, build)
     };
     // What:    `sort_unstable_by_key` sorts in place by the tuple's first element (`.0`,
     //          the index). `|outcome| return outcome.0` is a closure (an arrow function).
@@ -254,15 +296,15 @@ pub(crate) fn build_rules_with(
 
 /// Runs the claim-and-build loop on spawned worker threads and gathers their outcomes.
 ///
-/// What:    Spawns up to `worker_count` workers with [`WORKER_STACK_BYTES`] stacks inside
-///          a thread scope, joins them, and concatenates their outcomes. When no worker can
-///          be spawned, the calling thread runs the loop itself.
+/// What:    Spawns up to `worker_count` workers with `stack_bytes` stacks inside a thread
+///          scope, joins them, and concatenates their outcomes. When no worker can be
+///          spawned, the calling thread runs the loop itself.
 /// Why:     A scope guarantees every worker finishes before this function returns, so the
 ///          workers may borrow the caller's pattern slice and counters directly.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function drain_on_workers(patterns: string[], stop_on_error: boolean, next: Counter, first_error: Counter, worker_count: number): Promise<RuleOutcome[]> {
+/// async function drain_on_workers(patterns: string[], stop_on_error: boolean, next: Counter, first_error: Counter, worker_count: number, stack_bytes: number, build: RuleBuilder): Promise<RuleOutcome[]> {
 ///   const batches = await Promise.all(range(worker_count).map(() => runWorker(drain)));
 ///   return batches.flat();
 /// }
@@ -273,6 +315,8 @@ fn drain_on_workers(
     next: &AtomicUsize,
     first_error: &AtomicUsize,
     worker_count: usize,
+    stack_bytes: usize,
+    build: RuleBuilder,
 ) -> Vec<RuleOutcome> {
     // What:    `thread::scope(|scope| { ... })` runs the closure and waits for every thread
     //          spawned through `scope` to finish before returning the closure's value.
@@ -305,11 +349,11 @@ fn drain_on_workers(
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // const spawned = tryStartWorker(() => drain(patterns, stop_on_error, next, first_error));
+            // const spawned = tryStartWorker(() => drain(patterns, stop_on_error, next, first_error, build));
             // ```
             let spawned = thread::Builder::new()
-                .stack_size(WORKER_STACK_BYTES)
-                .spawn_scoped(scope, || return drain(patterns, stop_on_error, next, first_error));
+                .stack_size(stack_bytes)
+                .spawn_scoped(scope, || return drain(patterns, stop_on_error, next, first_error, build));
             // What:    `match spawned { Ok(handle) => ..., Err(error) => ... }` branches on
             //          whether the thread started.
             // Why:     A refused spawn leaves fewer workers, not a failure: the remaining
@@ -333,10 +377,10 @@ fn drain_on_workers(
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const outcomes = handles.length === 0 ? drain(patterns, stop_on_error, next, first_error) : [];
+        // const outcomes = handles.length === 0 ? drain(patterns, stop_on_error, next, first_error, build) : [];
         // ```
         let mut outcomes = if handles.is_empty() {
-            drain(patterns, stop_on_error, next, first_error)
+            drain(patterns, stop_on_error, next, first_error, build)
         } else {
             Vec::new()
         };
@@ -363,16 +407,16 @@ fn drain_on_workers(
 
 /// Claims rule indices from the shared counter and builds each until none remain.
 ///
-/// What:    Repeatedly takes the next unclaimed index, parses and builds that pattern,
-///          and records the outcome; in strict mode it stops once its index is past the
-///          lowest failure seen so far.
+/// What:    Repeatedly takes the next unclaimed index, runs `build` on that pattern, and
+///          records the outcome; in strict mode it stops once its index is past the lowest
+///          failure seen so far.
 /// Why:     The same loop serves the calling thread and every worker. An index below the
 ///          lowest real failure is never skipped, so that failure and every rule before it
 ///          are always built, which is what strict callers report.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function drain(patterns: string[], stop_on_error: boolean, next: Counter, first_error: Counter): RuleOutcome[] {
+/// function drain(patterns: string[], stop_on_error: boolean, next: Counter, first_error: Counter, build: RuleBuilder): RuleOutcome[] {
 ///   // Rust body below is the implementation.
 /// }
 /// ```
@@ -381,6 +425,7 @@ fn drain(
     stop_on_error: bool,
     next: &AtomicUsize,
     first_error: &AtomicUsize,
+    build: RuleBuilder,
 ) -> Vec<RuleOutcome> {
     // What:    An empty growable list of this worker's outcomes.
     // Why:     Each worker keeps its own list, so no lock is needed while building.
@@ -407,17 +452,14 @@ fn drain(
         if stop_on_error && index > first_error.load(Ordering::SeqCst) {
             return outcomes;
         }
-        // What:    `parse(...)` returns `Result<Node, CompileError>`; `.and_then(build_rule)`
-        //          runs `build_rule` on the parsed node only when parsing succeeded, else
-        //          passes the parse error through unchanged.
+        // What:    Calls the injected builder on the claimed pattern.
         // Why:     One outcome per rule, whichever stage failed.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // let result: BuiltRule | CompileError;
-        // try { result = build_rule(parse(patterns[index])); } catch (error) { result = error; }
+        // const result = build(patterns[index]);
         // ```
-        let result = parse(patterns[index]).and_then(build_rule);
+        let result = build(patterns[index]);
         if stop_on_error && result.is_err() {
             // What:    `fetch_min(index, ...)` lowers the shared marker to `index` when
             //          `index` is smaller, as one indivisible step.
