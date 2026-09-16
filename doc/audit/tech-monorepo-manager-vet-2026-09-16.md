@@ -483,8 +483,62 @@ Repository queries:
    gradle,
    nadle.
 
-Expansion round:
-pending taxonomy collection.
+Expansion round,
+frozen 2026-09-16 after collecting the "New taxonomy terms" sections of every discovery ledger.
+Terms were de-duplicated into distinct concepts;
+concepts already covered by the initial schedule were not repeated.
+Later taxonomy terms are recorded without appending queries.
+
+GitHub `search/repositories`,
+sorted by stars,
+100 per page:
+
+- E1 `"build server protocol" in:name,description`
+- E2 `"file watcher" daemon in:description`
+- E3 `"task runner" daemon in:description`
+- E4 `"json-rpc" task in:description`
+- E5 `"process manager" api in:description`
+- E6 `"continuous build" in:description`
+- E7 `"remote execution" build in:description`
+- E8 `"project graph" in:description`
+- E9 `affected monorepo in:description`
+- E10 `"persistent tasks" OR "long-running tasks" in:description`
+- E11 `"live update" watch in:description`
+- E12 `"sync generator" OR "code generation" monorepo in:description`
+
+npm registry search API,
+popularity-weighted,
+250 per page:
+
+- E13 `text=task runner daemon`
+- E14 `text=monorepo watch daemon`
+- E15 `text=build orchestrator`
+
+crates.io API,
+sorted by downloads,
+100 per page:
+
+- E16 `q=build orchestrator`
+- E17 `q=file watcher daemon`
+
+Exact repository lookups for tools the ledgers name but topic queries cannot return:
+
+- E18 Buck2,
+   Wireit,
+   Watchman,
+   just,
+   Mage,
+   batect,
+   Dagger,
+   watchexec,
+   Tilt,
+   process-compose,
+   pueue,
+   pitchfork,
+   Nadle,
+   Earthly,
+   and Aspect CLI.
+   Mise is the incumbent and Lage is already queued.
 
 ### Early WR evidence recorded before the candidate ledger
 
@@ -573,8 +627,23 @@ Full per-query and per-page ledgers are appendices in
 - Repository class:
    results in `discovery-web-repo.md`,
    section "Repository findings".
-- Registry class:
-   pending.
+- Registry class,
+   `discovery-registry.md`:
+   npm `keywords:monorepo` (4,145 results),
+   `keywords:build-system` (48),
+   `keywords:task-runner` (330),
+   crates.io `task runner` (1,771),
+   monorepo.tools `/compare`,
+   and `korfuri/awesome-monorepo` were exhausted;
+   crates.io `build system` and `monorepo` met the two-empty-page stop rule.
+  The crates.io `build system` result is dominated by general libraries under download sorting.
+  None of the npm keyword queries returned `nx`,
+   `turbo`,
+   `wireit`,
+   `lage`,
+   or `@moonrepo/cli`.
+  375 lenient survivors;
+   69 duplicate candidates already queued from other classes.
 
 The discovery pass counted plain command runners as in scope;
 section "Category fit for screening" corrects that for screening.
