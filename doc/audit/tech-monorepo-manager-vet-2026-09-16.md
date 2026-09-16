@@ -29,9 +29,12 @@ Governing skill SHA-256:
 `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
 
 Compatibility fingerprint:
-`cafbebe56ed9aa8f5ed2dc0f500fa351c79754fcdd56dd4632b38e7626fe0898`.
-It supersedes `340bcda696599b81be2d3314af769ed3c774d3914ad724a32f148d9d975eec89`,
-recorded before the user added the control requirement and before any candidate evidence was collected.
+`8f69b0cf08360061800fa6b0d8197fb8c20e22171d23d191348bc3c296cc01d4`.
+It supersedes `cafbebe56ed9aa8f5ed2dc0f500fa351c79754fcdd56dd4632b38e7626fe0898`,
+recorded before the user allowed Meta Package Manager to own OS package provisioning,
+and `340bcda696599b81be2d3314af769ed3c774d3914ad724a32f148d9d975eec89`,
+recorded before the user added the control requirement.
+Neither superseded fingerprint had candidate screening evidence.
 
 Active audit owner:
 Claude Code session `e28ad59c-f3f5-46e9-8c8c-59a61c331610`.
@@ -170,6 +173,30 @@ which predates the current source layout.
    `src/watch/watch-supervisor.ts`).
 - FE24 Tagged structured logging.
 
+### Delegation of FE18 and FE19
+
+The user allowed Meta Package Manager to replace FE18 and FE19 on 2026-09-16.
+Meta Package Manager `v7.6.1` ships adapters for every manager FE18 dispatches to:
+`apk.py`,
+`apt.py`,
+`dnf.py`,
+`homebrew.py`,
+`pacman.py`,
+`scoop.py`,
+`winget.py`,
+`zypper.py`,
+and `choco.toml`
+(`gh api 'repos/kdeldycke/meta-package-manager/contents/meta_package_manager/managers?ref=v7.6.1'`).
+
+Parity items not yet checked:
+privilege escalation,
+the binary-name to per-manager package-name mapping that FE19's index supplies,
+such as `rg` to `ripgrep`,
+and the check-before-install behavior.
+Version enforcement gaps are recorded in
+[`tech-mpm-and-pnpm-as-a-mise-replacement-vet-2026-09-12.md`](tech-mpm-and-pnpm-as-a-mise-replacement-vet-2026-09-12.md);
+FE18 records no versions either.
+
 ### Watch plus inspection pattern
 
 - WR1 A persistent watch process keeps task outputs up to date after source changes.
@@ -182,7 +209,9 @@ which predates the current source layout.
 
 ## Frozen hard constraints
 
-- HC1 Every FE item is available natively or through a documented extension mechanism.
+- HC1 Every FE item is available natively or through a documented extension mechanism,
+   except FE18 and FE19,
+   which may be delegated to Meta Package Manager.
 - HC2 WR1 is available natively or through a documented extension mechanism.
 - HC3 WR2 and WR3 are available natively or through a documented extension mechanism.
 - HC4 Inspectable open-source local execution.
@@ -217,10 +246,17 @@ Overlays:
 The user's order is lexicographic and sits outside score arithmetic:
 
 1. Tier A:
-   FE,
-   WR1,
+   every FE item except FE14,
+   FE15,
+   FE18,
+   and FE19 is native,
+   and WR1,
    WR2,
-   and WR3 all native.
+   and WR3 are native.
+   FE14 and FE15 are repository-specific policies,
+   which the user classifies as pluggable by definition;
+   Tier A still requires a documented extension mechanism that can express them.
+   FE18 and FE19 belong to Meta Package Manager when delegated.
 2. Tier B:
    some requirement is met only by plugging functionality into the tool through a documented extension mechanism.
    Each plugged item records the extension point and what must be built.
