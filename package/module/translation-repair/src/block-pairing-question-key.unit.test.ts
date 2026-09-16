@@ -49,6 +49,22 @@ function chunk(texts: readonly string[]): ContentChunk {
 }
 
 await describe({ name: '', children: [
+  describe({ name: 'picture context in the key (class thirty-four, 2026-09-16)', children: [
+    it({
+      name: 'changes the key when a picture context is given and keeps the golden bytes when none is',
+      fn: async () => {
+        const sourceBlocks = [{ index: 0, text: 'Cat' }];
+        const targetBlocks = [{ index: 0, text: 'Chat' }];
+        const bare = blockPairingQuestionKey({ sourceBlocks, targetBlocks });
+        expect(bare).toBe('eb8709c8003493de12d097d1bf1dc2e7d6fbc8da298af2d9e4e0f39af6b64e48');
+        const sighted = blockPairingQuestionKey({ sourceBlocks, targetBlocks, pictureContext: 'PICTURE nap.webp' });
+        expect(sighted).not.toBe(bare);
+        const pair = { source: chunk(['Cat']), target: chunk(['Chat']) };
+        expect(blockPairingQuestion({ pair, pictureContext: 'PICTURE nap.webp' }).key).toBe(sighted);
+        expect(blockPairingQuestion({ pair, pictureContext: '' }).key).toBe(bare);
+      },
+    }),
+  ] }),
   describe({ name: blockPairingQuestionKey.name, children: cases.map(({ name, source, target, key }) => it({
     name: `preserves pre-extraction ${name} bytes`,
     fn: async () => {

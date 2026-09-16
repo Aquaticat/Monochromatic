@@ -92,6 +92,36 @@ await describe({
       },
     },),
     it({
+      name: 'CARRIES WHAT THE PICTURES HERE SAY and tells the model a translation block rendering '
+        + 'a picture has no original counterpart (class thirty-four, 2026-09-16): Mio17 paired the '
+        + 'archive\'s chat translation with the poem standing where the picture stands',
+      fn: async () => {
+        const messages = buildBlockPairingMessages({
+          sourceBlocks: SOURCE,
+          targetBlocks: TARGET,
+          pictureContext: 'PICTURE nap.webp\nhf:cat/Whiskers:\n[left] are you asleep\n[right] nearly',
+        },);
+        const rules = String(messages[0]?.content,);
+        const sheet = String(messages[1]?.content,);
+        expect(rules,).toContain('WHAT THE PICTURES SAY',);
+        expect(rules,).toContain('translates THE PICTURE',);
+        expect(sheet,).toContain('WHAT THE PICTURES HERE SAY',);
+        expect(sheet,).toContain('[left] are you asleep',);
+      },
+    },),
+    it({
+      name: 'LEAVES THE SHEET WITHOUT A PICTURE SECTION when no picture context is given, so a '
+        + 'page without pictures asks the question it always asked',
+      fn: async () => {
+        const messages = buildBlockPairingMessages({
+          sourceBlocks: SOURCE,
+          targetBlocks: TARGET,
+        },);
+        expect(String(messages[0]?.content,),).not.toContain('WHAT THE PICTURES SAY',);
+        expect(String(messages[1]?.content,),).not.toContain('WHAT THE PICTURES HERE SAY',);
+      },
+    },),
+    it({
       name: 'CHOOSES a fence no block can close, since blocks are arbitrary prose',
       fn: async () => {
         /**
