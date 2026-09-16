@@ -1,12 +1,12 @@
 # Monorepo manager vet report
 
 Status:
-complete under the current hard constraints;
-no candidate is recommendable.
+in progress;
+re-screening after the user counted external wrappers as plugging in.
 
 Lifecycle phase:
-discovery and screening complete;
-no candidate reached serious-alternative status.
+discovery complete;
+screening reopened for candidates that exited only on the withdrawn extension-mechanism requirement.
 
 Subject:
 Monorepo manager.
@@ -30,10 +30,13 @@ Governing skill SHA-256:
 `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
 
 Compatibility fingerprint:
-`8ce05b698e00ec017f52b92abf9df17175cc7fcb8f6678dd97120ae336b290aa`.
+`4e284171b98782db0a833a8c30858ec20900e33677c8f4e53fac6f6e44665995`.
 Superseded fingerprints,
 newest first:
 
+- `8ce05b698e00ec017f52b92abf9df17175cc7fcb8f6678dd97120ae336b290aa`,
+   before the user counted an external wrapper as plugging in;
+   screening had completed with no survivor under it.
 - `93965544ecfaae75f635465fbeb32fa6ab8f19696624723bf0f71456f5586470`,
    before the user made any documentation confusion an immediate cull;
    screening agents were running and received the stricter rule mid-run,
@@ -223,11 +226,18 @@ FE18 records no versions either.
 
 ## Frozen hard constraints
 
-- HC1 Every FE item is available natively or through a documented extension mechanism,
+- HC1 Every FE item is available natively,
+   through a documented extension mechanism,
+   or through an external wrapper,
    except FE18 and FE19,
    which may be delegated to Meta Package Manager.
-- HC2 WR1 is available natively or through a documented extension mechanism.
-- HC3 WR2 and WR3 are available natively or through a documented extension mechanism.
+- HC2 WR1 is available natively,
+   through a documented extension mechanism,
+   or through an external wrapper.
+- HC3 WR2 and WR3 are available natively,
+   through a documented extension mechanism,
+   or through an external wrapper.
+   On 2026-09-16 the user chose to count wrapping a tool from outside as plugging in.
 - HC4 Inspectable open-source local execution.
 - HC5 Works on repository-supported local and CI platforms:
    Linux x64 development,
@@ -259,13 +269,11 @@ issue,
 blog post,
 or source code counts as undocumented.
 
-Why the extension mechanism is a coverage requirement:
-FE items could run as ordinary tasks,
-but WR2 and WR3 describe the running watch process itself.
-A tool without native inspection and control can meet HC3 only by accepting plugged-in behavior inside that process;
-without a documented extension mechanism,
-the only route is a wrapper around the tool,
-which is building rather than plugging in.
+Withdrawn extension-mechanism requirement:
+the first screening pass also required a documented extension mechanism,
+reasoning that a wrapper around a tool is building rather than plugging in.
+The user rejected that reading on 2026-09-16 by counting wrappers as plugging in,
+so candidates that exited only on it are re-screened.
 
 Coverage:
 a candidate exits when its official documentation lacks any of:
@@ -274,8 +282,7 @@ a candidate exits when its official documentation lacks any of:
 - a CLI or API reference for the commands this repository would run;
 - behavior-level documentation for each native surface it would supply for WR1,
    WR2,
-   or WR3;
-- documentation of the extension mechanism it would host plugged-in FE items through.
+   or WR3.
 
 Confusion:
 a candidate exits the moment the reader hits any confusion or frustration reading or trying to read its documentation.
@@ -764,13 +771,13 @@ not queried or screened:
 the omni task runner named by `@omni-oss/task-bench`,
 and PM2.
 
-## Terminal result
+## First-pass result
 
-No serious alternative.
-Every discovered candidate exited at a screening hard gate,
-so no finalist validation,
-scoring,
-or ranking applies.
+Under fingerprint `8ce05b698e00ec017f52b92abf9df17175cc7fcb8f6678dd97120ae336b290aa`:
+no serious alternative.
+Every discovered candidate exited at a screening hard gate.
+The user then counted external wrappers as plugging in,
+which reopens candidates whose only recorded exit was the extension-mechanism requirement.
 
 Evidence limits:
 
@@ -785,16 +792,14 @@ Evidence limits:
    agents read repository Markdown through `gh api` instead,
    and no verdict depended on those responses.
 
-Under the user's fallback order,
-the next step after "no tool qualifies" is plugging functionality into an existing tool,
-and after that building a Bazel replacement.
-Plugging in also requires a host that passes HC7,
-and none did.
-
-The coverage requirement for a documented extension mechanism is this report's operationalization of HC3,
+The extension-mechanism requirement was this report's operationalization of HC3,
 not a user statement.
 It decided many exits that were never checked for confusion,
 including Turborepo,
 Lerna,
 Melos,
 and Watchman.
+
+## Re-screen after counting wrappers
+
+Pending.
