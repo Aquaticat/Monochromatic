@@ -77,5 +77,29 @@ export {
   citedReferenceCandidateLines,
   citedReferenceEvidence,
 } from './cited-reference-rule.ts';
+export {
+  screenAttestedAdditions,
+  type ScreenedClaims,
+} from './reference-attest-claims.ts';
+export {
+  type AttestedDetail,
+  attestedDetailLines,
+  attestedDetailsOverlapping,
+  mergedAttestations,
+  quoteIsIn,
+  type VerifiedAttestation,
+  verifiedAttestations,
+} from './reference-attest-match.ts';
+export {
+  attestCitedReferences,
+  type ReferenceAttestation,
+} from './reference-attest-stage.ts';
+export {
+  type AttestationItemWire,
+  buildReferenceAttestMessages,
+  isReferenceAttestWire,
+  REFERENCE_ATTEST_RESPONSE_FORMAT,
+  type ReferenceAttestWire,
+} from './reference-attest-wire.ts';
 
 //endregion Context barrel

@@ -11,6 +11,7 @@ import { lookupCacheDir, } from '../lookup-cache.ts';
 import { workTitleLookupLines, } from '../work-title-lookup.ts';
 import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
 import { citedReferenceBlock, } from '../cited-reference-lookup.ts';
+import { attestCitedReferences, } from '../reference-attest-stage.ts';
 import { referenceCacheDir, } from '../reference-cache.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import {
@@ -173,7 +174,7 @@ export async function preparePassEntry(
    a detail the archive took from a cited reference is not deleted as an
    addition.
    */
-  const referenceContext = await citedReferenceBlock({
+  const referenceLines = await citedReferenceBlock({
     sourceText,
     apiKey: process.env[EXA_API_KEY_VAR] ?? '',
     dir: referenceCacheDir({ env: process.env, },),
@@ -182,6 +183,40 @@ export async function preparePassEntry(
     now: wallClock,
     logger: l,
   },);
+  /**
+   Archive details a reference states, attested by the bench with quotes
+   checked word for word (class thirty-seven, 2026-09-16): the repair lane
+   screens addition claims against them before the panel, and every sheet
+   reads them as ATTESTED lines under the references. Nothing is asked when
+   the original links nowhere.
+   */
+  const attestation = (referenceLines === '')
+    ? {
+      details: [],
+      lines: [],
+      findings: [],
+    }
+    : await attestCitedReferences({
+      client,
+      modelIds,
+      sourceText,
+      archiveText,
+      referenceContext: referenceLines,
+      signal,
+      exchangeTimeoutMs,
+      l,
+    },);
+  /**
+   Reference lines with the attested lines under them.
+   */
+  const referenceContext = [
+    referenceLines,
+    ...attestation.lines,
+  ]
+    .filter(function isLine(line,): boolean {
+      return line !== '';
+    },)
+    .join('\n',);
   /**
    Preparation over one archive text, the same roster, caches, context and
    authority each time: once over the archive as inherited, once more where
@@ -221,6 +256,9 @@ export async function preparePassEntry(
       l,
       contextLines,
       ...((referenceContext === '') ? {} : { referenceContext, }),
+      ...((attestation.details
+        .length
+        === 0) ? {} : { attestedDetails: attestation.details, }),
       frontMatterAuthority,
       sealArchiveOriginal: true,
       ...((pictureReadings === undefined) ? {} : { pictureReadings, }),
@@ -304,6 +342,7 @@ export async function preparePassEntry(
   const sightedFindings = [
     ...sightedPaired.findings,
     ...relabel.findings,
+    ...attestation.findings,
   ];
   /**
    Unclaimed blocks not already licensed unchanged.

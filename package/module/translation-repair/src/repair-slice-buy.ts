@@ -141,6 +141,9 @@ export async function buyRepairSlice(
         ...((prepared.referenceContext === undefined)
           ? {}
           : { referenceContext: prepared.referenceContext, }),
+        ...((prepared.attestedDetails === undefined)
+          ? {}
+          : { attestedDetails: prepared.attestedDetails, }),
         signal,
         perCallTimeoutMs,
         l,

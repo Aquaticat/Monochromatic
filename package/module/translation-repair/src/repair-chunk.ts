@@ -27,6 +27,8 @@ import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
 import { PRODUCTION_PRIOR_ISSUE_DISCLOSURE, } from './introduced-defect-wire.ts';
 import { runEditorStage, } from './repair-editor-stage.ts';
 import { runPanelStage, } from './repair-stages.ts';
+import { screenAttestedAdditions, } from './reference-attest-claims.ts';
+import type { AttestedDetail, } from './reference-attest-match.ts';
 import {
   describeChunkSettlement,
   settleChunkFromChecks,
@@ -67,6 +69,10 @@ import {
  @param referenceContext - what the original's cited pages say, shown to
  the critic and the panel so a detail the archive took from a reference is
  not deleted as an addition (class thirty-five)
+ 
+ @param attestedDetails - archive details a cited reference states, attested
+ word for word at preparation; an addition claim on one is rejected before
+ the panel (class thirty-seven)
  
  @param declaredNames - same declarations as strings to compare rather than
  prose to read, which is a different job: one tells a model what is true, the
@@ -109,6 +115,7 @@ export async function repairChunk(
     adjudicationConfig,
     identityContext,
     referenceContext,
+    attestedDetails = [],
     declaredNames,
     neighbouringIncumbentText,
     neighbouringSourceText,
@@ -126,6 +133,7 @@ export async function repairChunk(
     readonly adjudicationConfig?: AdjudicationConfig;
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly attestedDetails?: readonly AttestedDetail[];
     readonly declaredNames: readonly string[];
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
@@ -212,21 +220,36 @@ export async function repairChunk(
       } non-translation votes stand; proceeding, votes carried as evidence`,
     );
   }
-  if (critic.claims
+  /**
+   Claims after the reference screen (class thirty-seven): an addition claim
+   on an attested archive detail is recorded rejected here and never reaches
+   the panel or the editor.
+   */
+  const screened = screenAttestedAdditions({
+    claims: critic.claims,
+    attested: attestedDetails,
+    targetText,
+  },);
+  for (const finding of screened.findings)
+    l.info(`chunk ${String(sliceIndex,)}: ${finding}`,);
+  if (screened.claims
     .length
     === 0) {
     l.info(`chunk ${String(sliceIndex,)}: no validated claims, unchanged`,);
     return {
       ...unchangedOutcome,
-      issues: [],
-      findings: critic.findings,
+      issues: screened.issues,
+      findings: [
+        ...critic.findings,
+        ...screened.findings,
+      ],
     };
   }
 
   /**
    Merge-proposal clusters over the validated claims.
    */
-  const { clusters, } = aggregateClaims({ claims: critic.claims, },);
+  const { clusters, } = aggregateClaims({ claims: screened.claims, },);
 
   /**
    Panel decision over the clusters.
@@ -257,10 +280,20 @@ export async function repairChunk(
   const deduped = dedupeAcceptedIssues({ issues: panel.issues, },);
 
   /**
+   Every issue this chunk records: the reference screen's rejections first,
+   then the panel's.
+   */
+  const recordedIssues = [
+    ...screened.issues,
+    ...deduped.issues,
+  ];
+
+  /**
    Findings across the stages so far.
    */
   const stageFindings = [
     ...critic.findings,
+    ...screened.findings,
     ...panel.findings,
     ...deduped.findings,
     // NAMED ON THE PROCEEDING PATH, since the exit that used to name it is gone.
@@ -288,7 +321,7 @@ export async function repairChunk(
     l.info(`chunk ${String(sliceIndex,)}: nothing to edit, unchanged`,);
     return {
       ...unchangedOutcome,
-      issues: deduped.issues,
+      issues: recordedIssues,
       findings: stageFindings,
     };
   }
@@ -335,7 +368,7 @@ export async function repairChunk(
     l.info(`chunk ${String(sliceIndex,)}: no operation survived the gate, unchanged`,);
     return {
       ...unchangedOutcome,
-      issues: deduped.issues,
+      issues: recordedIssues,
       rounds: editor.rounds,
       findings: [
         ...stageFindings,
@@ -457,7 +490,7 @@ export async function repairChunk(
     sliceIndex,
     repairedText,
     changed,
-    issues: deduped.issues,
+    issues: recordedIssues,
     resolvedIssueIds: changed ? resolvedIssueIds : [],
     checkerReadings: checker.readings,
     // THE REPAIR LANE NEVER RECHECKS. Only the naturalness lane rewrites text

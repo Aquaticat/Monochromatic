@@ -16,7 +16,9 @@ export const CITED_REFERENCE_RULE: string = 'CITED REFERENCES are what the pages
   + ' never report or support it as accuracy/addition, and never as any other defect for being absent from the ORIGINAL.'
   + ' The references are evidence for judging what the TRANSLATION already says and nothing else:'
   + ' they never license adding to the TRANSLATION, never outrank the ORIGINAL where the two disagree,'
-  + ' and never license a defect elsewhere.';
+  + ' and never license a defect elsewhere.'
+  + ' Lines marked attested name TRANSLATION details a reference states, checked word for word:'
+  + ' a claim that one of them is an addition is void.';
 
 /**
  Fenced block carrying the references and the rule, or nothing at all when
@@ -68,7 +70,9 @@ export const CITED_REFERENCE_CANDIDATE_RULE: string = 'CITED REFERENCES are what
   + ' and treat it as the accurate archive detail the rules say to keep.'
   + ' The references are evidence for judging what a rendering already says and nothing else:'
   + ' they never license adding to a rendering, never outrank the ORIGINAL where the two disagree,'
-  + ' and never license a finding elsewhere.';
+  + ' and never license a finding elsewhere.'
+  + ' Lines marked attested name archive details a reference states, checked word for word:'
+  + ' a rendering is never unsupported for carrying one, and one that drops it drops accurate detail.';
 
 /**
  Fenced lines carrying the references and the candidate-sheet rule for a

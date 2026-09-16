@@ -1,6 +1,7 @@
 import type { ArchiveOriginalSpan, } from './archive-original-note.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SectionPair, } from './pair-sections-wire.ts';
+import type { AttestedDetail, } from './reference-attest-match.ts';
 import type { SectionBlockPairing, } from './section-pairing.ts';
 
 //region Prepared document pair
@@ -155,6 +156,16 @@ export type PreparedDocumentPair = {
    Absent rather than empty when the original links nowhere or no key is set.
    */
   readonly referenceContext?: string;
+
+  /**
+   Archive details a cited reference states, attested by the bench with
+   quotes checked word for word (class thirty-seven, 2026-09-16), which the
+   repair lane screens addition claims against before the panel. The sheets
+   read the same details as ATTESTED lines inside `referenceContext`.
+
+   Absent when nothing was attested.
+   */
+  readonly attestedDetails?: readonly AttestedDetail[];
 
   /**
    Declared name and contributor forms as TRANSLATION side spells them.

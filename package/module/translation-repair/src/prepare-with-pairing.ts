@@ -20,6 +20,7 @@ import type { PairedDocumentRecord, } from './pair-sections-stage.ts';
 import { parseDocument, } from './parse-document.ts';
 import { prepareBlockPairing, } from './prepare-block-pairing.ts';
 import { buySectionPairing, } from './prepare-section-round.ts';
+import type { AttestedDetail, } from './reference-attest-match.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -99,6 +100,9 @@ export type PairedPreparation = {
  @param referenceContext - what the pages the original links say, passed
  through to the prepared pair untouched (class thirty-five)
  
+ @param attestedDetails - archive details a cited reference states, passed
+ through to the prepared pair untouched (class thirty-seven)
+ 
  @param frontMatterAuthority - existing caller policy for metadata ownership
  
  @param sealArchiveOriginal - existing protection for archive wording declared English-original
@@ -128,6 +132,7 @@ export async function prepareDocumentPairWithRoster(
     sectionCache,
     contextLines,
     referenceContext,
+    attestedDetails,
     frontMatterAuthority,
     sealArchiveOriginal,
     pictureReadings,
@@ -144,6 +149,7 @@ export async function prepareDocumentPairWithRoster(
     readonly sectionCache?: SliceCache<PairedDocumentRecord>;
     readonly contextLines?: readonly string[];
     readonly referenceContext?: string;
+    readonly attestedDetails?: readonly AttestedDetail[];
     readonly frontMatterAuthority?: FrontMatterAuthority;
     readonly sealArchiveOriginal?: boolean;
     readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
@@ -244,6 +250,7 @@ export async function prepareDocumentPairWithRoster(
     ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
     ...((contextLines === undefined) ? {} : { contextLines, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    ...((attestedDetails === undefined) ? {} : { attestedDetails, }),
     ...((frontMatterAuthority === undefined) ? {} : { frontMatterAuthority, }),
     ...((sealArchiveOriginal === undefined) ? {} : { sealArchiveOriginal, }),
     blockPairings,

@@ -24,6 +24,7 @@ import {
   sectionPairingsOf,
 } from './section-pairing.ts';
 import { parseDocument, } from './parse-document.ts';
+import type { AttestedDetail, } from './reference-attest-match.ts';
 import type {
   FrontMatterAuthority,
   PreparedDocumentPair,
@@ -101,6 +102,10 @@ import { unclaimedOutsideAlignment, } from './preparation-unclaimed.ts';
  through untouched to the prepared pair for the critic and panel sheets
  (class thirty-five); empty means the original links nowhere
  
+ @param attestedDetails - archive details a cited reference states, passed
+ through untouched for the repair lane's claim screen (class thirty-seven);
+ none when nothing was attested
+ 
  @param sealArchiveOriginal - whether a span the archive's translators' note
  calls the English original is sealed out of every slice so it ships as it
  stands (the owner's rule of 2026-09-08, `archive-original-note.ts`); false
@@ -125,6 +130,7 @@ export function prepareDocumentPair(
     sectionPairing,
     contextLines = [],
     referenceContext = '',
+    attestedDetails = [],
     sealArchiveOriginal = false,
   }: {
     readonly sourceText: string;
@@ -136,6 +142,7 @@ export function prepareDocumentPair(
     readonly sectionPairing?: readonly SectionPair[];
     readonly contextLines?: readonly string[];
     readonly referenceContext?: string;
+    readonly attestedDetails?: readonly AttestedDetail[];
     readonly sealArchiveOriginal?: boolean;
   },
 ): PreparedDocumentPair {
@@ -520,6 +527,8 @@ export function prepareDocumentPair(
       : { identityContext: identityContextLines.join('\n',), }),
     // Omitted when the original links nowhere, for the same reason.
     ...((referenceContext === '') ? {} : { referenceContext, }),
+    // Omitted when nothing was attested, for the same reason.
+    ...((attestedDetails.length === 0) ? {} : { attestedDetails, }),
     declaredNames,
     alignmentFindings: [
       ...sectionFindings,
