@@ -250,6 +250,9 @@ neither answer flips the ranking.
 
 ## Next action
 
-The user chooses a route or answers the open questions that could flip the ranking.
-A design document for the chosen route follows;
-no code is written before that.
+On 2026-09-16 the user asked for design documents for both routes.
+The user has not yet hit a disqualifying problem in the Bazel route
+and expects that designing it concretely will surface one if it exists.
+Each design document records concrete integration evidence,
+and any disqualifying finding updates this ranking.
+No code is written before a route is chosen.
