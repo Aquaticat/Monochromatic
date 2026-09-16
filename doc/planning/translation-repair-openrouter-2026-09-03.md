@@ -8082,6 +8082,147 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Mio24 launches on class thirty-nine, 2026-09-16, 22:58 UTC
+
+Frozen `27109ca8b`,
+pid 2354397,
+runs `~/temp/agent/Mio24-20260916`,
+log `~/temp/agent/Mio24-20260916.log`,
+Synthetic and Hyper dry.
+Read first the `ATTESTED` lines
+(expect the sister detail again),
+then slice 2's translate lane text
+(`lanes.translate.result.sliceTexts` by index;
+expect the sister clause carried),
+then the contest ballots and what ships,
+then the first chat block,
+then the seven steps and the three checks.
+
+## Class thirty-nine, 2026-09-16, 22:55 UTC: the translate writer never sees the attested details
+
+The translate writer sheet
+(`buildTranslateMessages`)
+shows the ORIGINAL,
+the EXISTING TRANSLATION as evidence,
+the pictures and the declared names,
+and nothing about the references:
+`referenceContext` reaches the translate judge
+(class thirty-six)
+and never the writer.
+So a translate candidate is written from the ORIGINAL alone,
+and an archive detail the ORIGINAL does not state is dropped by construction,
+attested or not.
+The contest then compares whole slices:
+when the translate lane reads better elsewhere,
+it wins and the page loses the detail,
+whatever the candidate-sheet rule says about dropping it.
+
+`27109ca8b`:
+`attestedLines`
+(the `- attested:` lines of the prepared pair's `attestedDetails`)
+travel from `translateSliceInput` through `runTranslateStage`,
+`runTranslateRepairs` and `produceTranslateSlate` into the writer sheet,
+which carries them as an `ATTESTED DETAILS` block after the EXISTING TRANSLATION
+and adds `TRANSLATE_ATTESTED_RULE` above the reply rule:
+each is accurate detail the translator took from the ORIGINAL's own references,
+carry every one,
+the ORIGINAL not stating it is no reason to drop it,
+and they license nothing else.
+The lines are folded into `translateRunShape` only when there are any,
+so Mio23's cached translate slices are not served back to Mio24
+and every entry that attests nothing keeps its key.
+Guards red first at `e9f90c485`:
+the sheet carries the block,
+the line and the rule when given and nothing when not;
+the run shape separates the two.
+Build,
+lint,
+types and the unit suite green
+(`~/temp/agent/check-package-c39b-20260916.log`).
+
+## Mio23 read, 2026-09-16, 22:40 UTC: the attestation holds and the translate lane wins without the clause
+
+Frozen `887e5262c`,
+SETTLED in 94 minutes,
+18 slices,
+repair 49 issues,
+30 accepted,
+selection contested,
+page changed 12.
+Bedrock 0.43 USD,
+OpenRouter 0.67 USD by meter against 0.70 logged
+(no gap this time;
+Mio21's 0.85 gap did not recur),
+Synthetic and Hyper dry throughout.
+
+The attestation:
+`ATTESTED heard=6 answered=10 verified=9 needed=3 details=1`.
+Five of six voices
+(gpt-oss-120b,
+minimax,
+gemma-4-26b,
+deepseek-v4.1-flash,
+mercury)
+attested "She has an older sister who is also trans."
+against the blog's "Mio的姐姐也是MtF。";
+minimax's other four items
+(the university,
+the driving,
+the programming,
+the accident)
+verified word for word and fell to the quorum as one voice each.
+One item was discarded unverified.
+
+Slice 2:
+the critic filed two mistranslation claims
+("because of",
+"accepted" for 就读)
+and no addition claim on the sister,
+so the pre-panel screen had nothing to reject
+(no `reference-attested` finding anywhere in the log).
+The repair lane kept the clause.
+The translate lane rendered "Her father is a high school teacher,
+her mother is a housewife,
+and she has an older sister."
+The contest chose translate 3 to 2.
+The two repair ballots name the attested detail as their reason
+("translate leaves out the confirmed detail that Mio's older sister is also trans").
+Of the three translate ballots,
+one names the 985,
+the local university and "before she passed away" that repair dropped
+and adds "though it wrongly keeps the reference-attested 'also trans' sister";
+one names the housewife and the study context;
+one lists "who is also trans" under dropped in its raw form,
+and votes translate anyway.
+The consolidation slate was declined,
+translate stood,
+the polish gate chose neither,
+and the page reads "and she has an older sister."
+The mechanism is class thirty-nine
+(the heading dated 2026-09-16 22:55 UTC):
+the translate writer never sees the attested lines,
+so its candidate cannot carry the detail,
+and the contest is a whole-slice choice.
+
+The first chat block:
+the block review's winner drew 1.5 of 5 with two abstentions against a floor of 2.00
+and the archive block stood
+(Mio21's revision won 3.5 of 5),
+so the pat,
+the mtf question and the musculine typo stand as the archive has them
+and class thirty-eight had no revision to restore quotes on;
+the page carries no straight quote anywhere
+(`mio21-typo.mjs`:
+every slice 0/0).
+Slice 3's translate lane added "> hehe~ " for the 嘿嘿~ the archive dropped,
+with one trailing space the wrap kept;
+the closing poem's two-space hard breaks are the original's own.
+Front matter identical to the archive.
+Slice 14 declined-standing,
+slice 16 consolidated;
+the diff against Mio12 is the Mio21 diff again
+(the archive's wording kept where Mio19 rewrote it).
+
 ## Clustered panels and complete repair evidence implemented, 2026-09-10
 
 The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,

@@ -282,6 +282,24 @@ which the takeover session does not have.
   `Mio23` launched at 21:05 UTC on frozen `887e5262c` (pid 1793041,
   runs `~/temp/agent/Mio23-20260916`,
   log `~/temp/agent/Mio23-20260916.log`).
+  Mio23 read at 22:40 UTC
+  (the pass log's "Mio23 read" heading):
+  SETTLED in 94 minutes,
+  the sister detail attested by five of six voices,
+  no addition claim filed on it,
+  the repair lane kept the clause,
+  and the translate lane,
+  written from the ORIGINAL alone,
+  won the contest 3 to 2 without it,
+  one ballot calling the repair candidate wrong for keeping it:
+  class thirty-nine,
+  the translate writer never sees the attested lines,
+  fixed in `27109ca8b`
+  (the writer sheet carries an ATTESTED DETAILS block and a rule to carry each,
+  folded into the translate run shape).
+  `Mio24` launched at 22:58 UTC on frozen `27109ca8b` (pid 2354397,
+  runs `~/temp/agent/Mio24-20260916`,
+  log `~/temp/agent/Mio24-20260916.log`).
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2095,6 +2113,16 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`27109ca8b` (2026-09-16,
+22:55 UTC):
+class thirty-nine,
+the translate writer sheet carries the attested lines as an ATTESTED DETAILS block
+with `TRANSLATE_ATTESTED_RULE`,
+threaded from the prepared pair through the translate stage and folded into `translateRunShape`
+(the pass log's "Class thirty-nine" heading dated 2026-09-16 22:55 UTC;
+guards red first at `e9f90c485`;
+found by the Mio23 read).
+Running on Mio24.
 `887e5262c` (2026-09-16,
 21:04 UTC):
 class thirty-seven,
@@ -3774,32 +3802,39 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio23` by the seven steps and the three checks (frozen `887e5262c`,
-    pid 1793041,
-    runs `~/temp/agent/Mio23-20260916`,
-    log `~/temp/agent/Mio23-20260916.log`,
-    launched 21:05 UTC with Hyper dry).
-    Mio23 is the first pass on classes thirty-seven and thirty-eight
-    (the pass log's headings dated 2026-09-16 20:58 UTC and 20:46 UTC).
+1.  READ `Mio24` by the seven steps and the three checks (frozen `27109ca8b`,
+    pid 2354397,
+    runs `~/temp/agent/Mio24-20260916`,
+    log `~/temp/agent/Mio24-20260916.log`,
+    launched 22:58 UTC with Synthetic and Hyper dry).
+    Mio24 is the first pass on class thirty-nine
+    (the pass log's heading dated 2026-09-16 22:55 UTC).
     Read first the `ATTESTED` log lines
-    (`ATTESTED heard=H answered=A verified=V needed=N details=D`,
-    one `ATTESTED item <seat>` line per verified item,
-    one `- attested:` line per detail;
-    Mio22 read heard 6,
-    verified 3,
-    details 0 before the whitespace fix),
+    (`ATTESTED heard=H answered=A verified=V needed=N details=D`;
+    Mio23 read heard 6,
+    verified 9,
+    details 1,
+    the sister by five voices),
+    then slice 2's translate lane text
+    (`lanes.translate.result.sliceTexts` by index,
+    or `comparison[]` `translateText`;
+    expect `who is also trans` carried,
+    which no translate candidate has ever done),
     then slice 2's issues
     (`lanes.repair.result.issues[]` by `sliceIndex`;
-    expect one `status: rejected` issue with an all-zero tally on the sister addition claim
-    and the chunk finding `addition claim rejected before the panel, reference-attested`),
-    then whether the repair lane keeps `She has an older sister who is also trans`
-    and what the contest
-    (`laneSelection.slices` by `sliceIndex`)
-    and the consolidation do,
-    then the first chat block's quote style
-    (Mio21:
-    14 straight apostrophes inside words and 10 straight double quotes;
-    the archive has none),
+    a `status: rejected` issue with an all-zero tally appears only if the critic files the sister as an addition,
+    which Mio23's critic did not),
+    then the contest
+    (`laneSelection.slices` by `sliceIndex`;
+    Mio23 chose translate 3 to 2 on the 985,
+    the local university and "before she passed away" that repair dropped)
+    and what ships,
+    then the first chat block
+    (Mio23's block review kept the archive block at 1.5 of 5 with two abstentions,
+    Mio21's revision won 3.5 of 5;
+    if a revision wins,
+    check its quote style,
+    class thirty-eight),
     then the Mio21 reading as before:
     the archive's wording kept where Mio19 rewrote it,
     slice 16,

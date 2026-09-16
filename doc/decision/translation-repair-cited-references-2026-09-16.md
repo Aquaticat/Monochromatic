@@ -228,6 +228,29 @@ Mio22 (frozen `35e9a0785`) attested nothing because one of three sister attestat
 wrote the reference's Chinese with spaces around its Latin tokens;
 the whitespace fix landed and Mio23 is the first pass on it.
 
+## Mio23 and class thirty-nine
+
+Mio23 (frozen `887e5262c`,
+2026-09-16 22:40 UTC) attested the sister detail by five of six voices,
+the critic filed no addition claim on it,
+and the repair lane kept the clause.
+The page still lost it:
+the translate lane,
+written from the original with the archive as evidence only,
+rendered "and she has an older sister",
+and the lane contest chose translate 3 to 2 on the 985,
+the local university and "before she passed away" that the repair candidate dropped,
+one ballot adding that repair "wrongly keeps the reference-attested 'also trans' sister".
+The candidate-sheet rule says a rendering that drops an attested detail drops accurate detail,
+and the judges weighed it against the rest of the slice and chose the lane that never had it.
+The writer sheet never carried the references
+(class thirty-six reached the translate judge only),
+so no translate candidate could carry the detail.
+`27109ca8b` (class thirty-nine) shows the translate writers the attested lines
+as an ATTESTED DETAILS block with a rule to carry every one,
+folded into the translate run shape only where there are any.
+Mio24 is the first pass on it.
+
 ## Cost
 
 Exa bills per page read;

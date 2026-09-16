@@ -107,6 +107,13 @@ is recorded rejected with an empty tally before the panel and never reaches the 
 The log prints `ATTESTED heard=H answered=A verified=V needed=N details=D`,
 one `ATTESTED item <seat>` line per verified item,
 and one `- attested:` line per detail.
+The translate writers see the same lines as an `ATTESTED DETAILS` block after the existing translation,
+with a rule to carry every one
+(`TRANSLATE_ATTESTED_RULE`;
+class thirty-nine):
+a translate candidate is written from the original,
+so without the block it drops the detail by construction
+and the lane contest ships without it whenever translate wins.
 
 ### What this changes about caching
 
