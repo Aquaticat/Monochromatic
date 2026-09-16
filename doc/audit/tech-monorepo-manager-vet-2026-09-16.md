@@ -78,8 +78,11 @@ Derived from exports in `package/dev-script/file-enforcer/src/index.ts` and the 
 not from the package README,
 which predates the current source layout.
 
-- FE01 TypeScript configuration executed directly with top-level `await`;
-   the author controls sequencing and parallelism.
+- FE01 Configuration that expresses the generation and enforcement rules,
+   with author control over sequencing and parallelism.
+   The user stated on 2026-09-16 that the configuration does not have to be TypeScript;
+   file-enforcer's direct TypeScript execution is incumbent behavior,
+   not a requirement.
 - FE02 CLI discovers `file-enforcer.config.ts` upward from the working directory.
 - FE03 File and glob reads with glob provenance:
    `cat`,

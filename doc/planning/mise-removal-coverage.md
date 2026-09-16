@@ -6,7 +6,9 @@ Full removal is the intended endpoint,
 but is not yet recommended because replacement owners remain unselected and unverified.
 Keeping Mise only for tool provisioning and locking is a transitional checkpoint,
 not the target state.
-Replacement configuration should use TypeScript as its canonical authored format.
+Earlier drafts made TypeScript the canonical authored format for replacement configuration.
+On 2026-09-16 the user stated that the monorepo manager's configuration does not have to be TypeScript,
+so TypeScript is no longer a requirement for that owner.
 Whether generated tool-native adapter files are acceptable remains unresolved.
 
 ## Motivation
@@ -694,6 +696,8 @@ or treat it as the same scope-concentration problem motivating Mise removal.
   JSON,
   or other tool-native adapters from canonical TypeScript,
   or require every replacement tool to consume TypeScript directly.
+  For the monorepo manager this is settled:
+  its configuration does not have to be TypeScript.
 - Preserve floating tool requests or replace them with reviewed update automation and exact locks.
 
 Full removal of the Mise binary is the accepted endpoint assumption for candidate discovery.

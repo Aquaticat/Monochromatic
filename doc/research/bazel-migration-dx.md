@@ -112,9 +112,10 @@ and several load-bearing tools have no maintained Bazel integration.
    editing a shared module invalidates every dependent's lint and type-check action anyway.
 - A shared remote cache pays off across many developers and CI machines;
    neither exists here at a scale that would amortize it.
-- Starlark would add a configuration language,
-   against the draft direction in `doc/planning/mise-removal-coverage.md`
-   that TypeScript be the canonical authored format.
+- Starlark would add a configuration language.
+  This was first recorded as conflicting with a draft TypeScript-canonical direction;
+   the user later stated that monorepo manager configuration does not have to be TypeScript,
+   so it is no longer a conflict.
 
 ## Lighter paths to the same gap
 
