@@ -140,6 +140,20 @@ panic = "unwind"
 overflow-checks = true
 strip = true
 
+# Why `build-override` `opt-level = 3`: `build.rs` compiles the embedded baseline
+# through the forbidden-regex build-dependency, and Cargo compiles build scripts and
+# their dependencies at `opt-level = 0` unless told otherwise, in every profile. The
+# baseline compile is the build's dominant step: measured on the 259-rule baseline
+# with the engine building rules one at a time, 390.8s unoptimized vs 98.5s at
+# `opt-level = 3`, with identical serialized output. The dev override matters too,
+# because `cargo check`, clippy, and debug builds all run the build script. Codegen
+# units stay at the build-override default: 16 vs 256 measured within run-to-run noise.
+[profile.release.build-override]
+opt-level = 3
+
+[profile.dev.build-override]
+opt-level = 3
+
 # Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
 # Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
 [workspace]
