@@ -1,15 +1,9 @@
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   blockPairingProtocol,
-  blockPairingQuestion,
   buildBlockPairingMessages,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type ChatTextRequest,
   type JsonSchemaResponseFormat,
-  prepareBlockPairing,
 } from '../dist/final/node/index.mjs';
-import { qualificationFixture, } from './qualified-block-pairing.test-fixture.ts';
 
 const expectedFormat: JsonSchemaResponseFormat = {
   type: 'json_schema', json_schema: { name: 'block_pairing', schema: {
@@ -48,28 +42,5 @@ await describe({ name: blockPairingProtocol.name, children: [
     expect(later.responseFormat).toEqual(expectedFormat);
     expect(later.responseFormat).not.toBe(first.responseFormat);
     expect(later.responseFormat.json_schema.schema).not.toBe(first.responseFormat.json_schema.schema);
-  } }),
-  it({ name: 'reaches the actual preparation client and HTTP schema without parallel protocol construction', fn: async () => {
-    const f = qualificationFixture();
-    const question = blockPairingQuestion({ pair: f.input.pair });
-    const protocol = blockPairingProtocol(question);
-    const observed: { readonly messages: ChatTextRequest['messages']; readonly responseFormat?: JsonSchemaResponseFormat; }[] = [];
-    async function observe<ValueT>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> {
-      observed.push(structuredClone({ messages: request.messages,
-        ...((request.responseFormat === undefined) ? {} : { responseFormat: request.responseFormat }) }));
-      return await f.input.client.chatJson(request);
-    }
-    const result = await prepareBlockPairing({ ...f.input, client: { ...f.input.client, chatJson: observe } });
-    expect(result.kind).toBe('paired');
-    expect(observed).toHaveLength(2);
-    for (const request of observed) {
-      expect(request.messages).toEqual(protocol.messages);
-      expect(request.responseFormat).toEqual(protocol.responseFormat);
-    }
-    expect(f.calls).toHaveLength(2);
-    for (const body of f.calls) {
-      const wire = JSON.parse(body) as Record<string, unknown>;
-      expect(wire.response_format).toEqual(protocol.responseFormat);
-    }
   } }),
 ] });

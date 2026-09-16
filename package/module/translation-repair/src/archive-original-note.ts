@@ -1,9 +1,10 @@
-import type { RepairDocument, } from './parse-document.ts';
-export { sealedNodeIds, } from './sealed-node-ids.ts';
 import {
   commentBody,
   foldedLine,
 } from './entry-notes.ts';
+import type { RepairDocument, } from './parse-document.ts';
+
+export { sealedNodeIds, } from './sealed-node-ids.ts';
 
 //region Archive-original notes
 // WHERE THE ARCHIVE IS THE ORIGINAL, said by the archive's own translators in

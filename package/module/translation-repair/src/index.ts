@@ -271,7 +271,6 @@ export {
   validateIssueClaim,
 } from './validate-issue.ts';
 
-export * from './archive-naming-barrel.ts';
 export * from './fidelity-reference-barrel.ts';
 export * from './artifact-read-barrel.ts';
 export * from './stream-barrel.ts';
@@ -289,8 +288,6 @@ export * from './provider-barrel.ts';
 export * from './bedrock-barrel.ts';
 export * from './publish-barrel.ts';
 export * from './pairing-barrel.ts';
-export * from './preparation-root-barrel.ts';
-export * from './preparation-input-read-barrel.ts';
 export * from './editor-barrel.ts';
 export * from './pipeline-barrel.ts';
 export * from './probe-barrel.ts';

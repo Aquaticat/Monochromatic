@@ -14,15 +14,10 @@ import {
 } from 'node:path';
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import spawn from 'nano-spawn';
 import {
-  type ArchiveUseKind,
   type CorpusPin,
   foldCarriageReturns,
-  hashContent,
-  type InitialArchiveUse,
-  parseDocument,
   passArchiveText,
 } from '../dist/final/node/index.mjs';
 
@@ -37,10 +32,6 @@ const l = tagged({ tag: 'archive-naming-fixture', },);
  Native executable, never the current repository's command-policy wrapper.
  */
 const REAL_GIT = await resolveGit();
-/**
- Preparation electorate used to distinguish naming quorum from pair agreement.
- */
-const ROSTER_SIZE = 11;
 /**
  Exact-half quorum rounded up for this fixture's configured electorate.
  */
@@ -262,84 +253,3 @@ export async function makeNamingArchive({
 
 //region Initial use fixtures
 // Fixture observations declare syntactic use only, never correct naming or identity.
-
-/**
- Anchors an invented observation using production parsing and hashing.
- 
- @param archiveText - immutable normalized fixture archive
- 
- @param quotedText - exact occurrence to classify
- 
- @param kind - chosen use, including non-reference controls
- 
- @param startOffset - caller-known occurrence for repeated-line fixtures
- 
- @returns Observation supported by the configured preparation quorum
- 
- @example
- ```ts
- const use = namingUse({ archiveText: AFTER_ARCHIVE });
- ```
- */
-export function namingUse({
-  archiveText,
-  quotedText = NAME_QUOTE,
-  kind = 'group-reference-name',
-  startOffset = archiveText.indexOf(quotedText,),
-}: {
-  readonly archiveText: string;
-  readonly quotedText?: string;
-  readonly kind?: ArchiveUseKind;
-  readonly startOffset?: number;
-},): InitialArchiveUse {
-  /**
-   Full parsed initial archive carrying absolute offsets.
-   */
-  const document = parseDocument({ text: archiveText, },);
-  /**
-   Exclusive end of the complete occurrence.
-   */
-  const endOffset = startOffset + quotedText.length;
-  /**
-   Containing block makes the fixture satisfy production anchor identity.
-   */
-  const node = nonNullishOrThrow(document.nodes
-    .find(function contains(candidate,): boolean {
-    return (startOffset >= candidate.startOffset) && (endOffset <= candidate.endOffset);
-  },),);
-  /**
-   Original electorate, retaining silent reader identities.
-   */
-  const configuredModelIds = Array.from(
-    { length: ROSTER_SIZE, },
-    function reader(
-      _value,
-      index,
-    ): string {
-    return `reader-${String(index,)}`;
-  },
-  );
-  return {
-    archiveHash: hashContent({ content: archiveText, },),
-    anchor: {
-      nodeId: node.id,
-      nodeHash: node.contentHash,
-      startOffset,
-      endOffset,
-      quotedText,
-    },
-    configuredModelIds,
-    ballots: configuredModelIds.slice(
-      0,
-      SUPPORTING_READERS,
-    )
-      .map(function ballot(modelId,) {
-      return {
-        modelId,
-        kind,
-      };
-    },),
-  };
-}
-
-//endregion Initial use fixtures

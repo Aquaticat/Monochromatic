@@ -63,7 +63,6 @@ const BYTE_OFFSET_OR_NOTHING = "(at === OFFSET_UNSTATED) ? '' : ` at byte $"
  name is written down, which is the moment to ask what its message carries.
  */
 const MARKED_CLASSES: readonly string[] = [
-  'ArchiveNamingEvidenceError',
   'ArchiveOriginalCompletenessError',
   'ArtifactParseError',
   'AssemblyContractError',
@@ -97,7 +96,6 @@ const MARKED_CLASSES: readonly string[] = [
   'GradedSheetExistsError',
   'HardCapOverrideError',
   'InStreamProviderError',
-  'InputCliCompletionError',
   'IssueEvidenceConflictError',
   'LaneComparisonError',
   'LaneSliceCoverageError',
@@ -120,15 +118,6 @@ const MARKED_CLASSES: readonly string[] = [
   'PairingEvidenceError',
   'PipelineDigestError',
   'PlacementLayoutError',
-  'PreparationAttemptError',
-  'PreparationQualificationError',
-  'PreparationReceiptError',
-  'PreparationRequestCaptureError',
-  'PreparationRequestCapturedError',
-  'PreparationRootError',
-  'ProducerInputComparisonError',
-  'ProducerInputInterruptedError',
-  'ProducerInputRunError',
   'ProducerRosterError',
   'PromptPayloadStoreError',
   'PublishedPageDisagreesError',

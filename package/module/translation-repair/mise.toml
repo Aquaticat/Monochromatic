@@ -7,14 +7,6 @@ extends = "build:js"
 [tasks."build:js:node"]
 extends = "build:js:node"
 
-[tasks."runtime:seal"]
-description = "Build a separate Linux x64 GNU application runtime with its native parser asset and build manifest; does not approve execution"
-run = "rolldown --configLoader native --config rolldown.sealed.config.ts"
-
-[tasks."bootstrap:seal"]
-description = "Build the separate single-file preparation input bootstrap and its build identity; does not approve a launch"
-run = "rolldown --configLoader native --config rolldown.bootstrap.config.ts"
-
 [tasks."watch:build"]
 extends = "watch:build"
 
@@ -38,7 +30,6 @@ extends = "lint:types"
 
 [tasks."test:unit"]
 extends = "test:unit"
-depends = ["bootstrap:seal"]
 
 [tasks.buildAndTest]
 description = "Build the node bundle, then run unit tests against the built dist"
