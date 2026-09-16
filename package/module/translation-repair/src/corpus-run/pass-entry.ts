@@ -360,6 +360,9 @@ async function runEntryPipeline(
       ...((prepared.identityContext === undefined)
         ? {}
         : { identityContext: prepared.identityContext, }),
+      ...((prepared.referenceContext === undefined)
+        ? {}
+        : { referenceContext: prepared.referenceContext, }),
       entryCacheDir,
       pipelineDigest,
       signal: deadline.callSignal,

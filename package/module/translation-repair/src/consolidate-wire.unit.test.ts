@@ -242,6 +242,7 @@ await describe({
         const shown = shownFor({ subject: bare, },);
         expect(shown.includes('DECLARED NAMES',),).toBe(false,);
         expect(shown.includes('WHAT THE PICTURES HERE SAY',),).toBe(false,);
+        expect(shown.includes('CITED REFERENCES',),).toBe(false,);
       },
     },),
     it({
@@ -256,6 +257,24 @@ await describe({
         },);
         expect(shown,).toContain('name: Mimi',);
         expect(shown,).toContain('a photograph of a tabby on a fence',);
+      },
+    },),
+    it({
+      name: 'SHOWS the pages the original cites with the candidate rule between the candidates and the '
+        + 'findings (class thirty-six, 2026-09-16)',
+      fn: async () => {
+        // Mio20: the writer read a ballot calling the sister clause
+        // unsupported and wrote from the lane that never had it.
+        const shown = shownFor({
+          subject: {
+            ...bare,
+            referenceContext: '- reference 1 https://blog.example/mittens ("In memory of Mittens"): Mittens had an older sister who was also a tabby.',
+          },
+        },);
+        expect(shown,).toContain('CITED REFERENCES, EVIDENCE ONLY',);
+        expect(shown,).toContain('also a tabby',);
+        expect(shown,).toContain('never count it unsupported',);
+        expect(shown.indexOf('CITED REFERENCES',),).toBeGreaterThan(shown.indexOf('CANDIDATE',),);
       },
     },),
     it({

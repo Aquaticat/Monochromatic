@@ -13,6 +13,7 @@ import { contestSizeNote, } from './contest-size-note.ts';
 import { FRONT_MATTER_DECISION_RULE, } from './front-matter-translation.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
+import { citedReferenceCandidateLines, } from './cited-reference-rule.ts';
 
 //region Consolidate gate wire
 // Asks whether the rendering this run WROTE should replace the one that would
@@ -241,6 +242,12 @@ export type ConsolidateGateSubject = {
    model-facing stage.
    */
   readonly identityContext?: string;
+
+  /**
+   What the pages the original cites say, one line per page, when the
+   original links anywhere (class thirty-six, 2026-09-16).
+   */
+  readonly referenceContext?: string;
 };
 
 /**
@@ -268,6 +275,7 @@ export function buildConsolidateGateMessages(
       subject.consolidatedText,
       subject.standingText,
       subject.identityContext ?? '',
+      subject.referenceContext ?? '',
     ],
   },);
 
@@ -287,6 +295,14 @@ export function buildConsolidateGateMessages(
       fence,
       '',
     ];
+  /**
+   The pages the original cites and their rule, or nothing when it cites
+   none.
+   */
+  const referenceBlock = citedReferenceCandidateLines({
+    fence,
+    referenceContext: subject.referenceContext ?? '',
+  },);
   /**
    Size evidence, or nothing when every rendering is in proportion.
    */
@@ -392,6 +408,7 @@ export function buildConsolidateGateMessages(
         'CANDIDATE "standing":',
         `${fence}\n${subject.standingText}\n${fence}`,
         '',
+        ...referenceBlock,
         ...communityBlock,
         ...sizeBlock,
         `Return JSON: choice one of "consolidated", "standing", "${CONTEST_REFUSAL}";`,

@@ -12,6 +12,7 @@ import {
 import { contestSizeNote, } from './contest-size-note.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
+import { citedReferenceCandidateLines, } from './cited-reference-rule.ts';
 
 //region Lane contest wire
 // ASKS THE QUESTION THAT ACTUALLY SEPARATES THE TWO LANES, rather than which
@@ -324,6 +325,18 @@ export type LaneContestSubject = {
   readonly identityContext?: string;
 
   /**
+   What the pages the original cites say, one line per page, when the
+   original links anywhere (class thirty-six, 2026-09-16).
+
+   WITHOUT THIS THE JUDGE CANNOT TELL ACCURATE ARCHIVE DETAIL FROM AN
+   INVENTION. Mio20: the panel rejected "who is also trans" as an addition
+   with the blog in front of it, the repair lane kept the clause, and three
+   of five contest judges shown only the original called the repair
+   candidate unsupported for it.
+   */
+  readonly referenceContext?: string;
+
+  /**
    Corroborated added-damage claims the introduced-defect probe raised
    against the repair candidate, one line each, absent when none.
    
@@ -361,6 +374,7 @@ export function buildLaneContestMessages(
       subject.repairText,
       subject.translateText,
       subject.identityContext ?? '',
+      subject.referenceContext ?? '',
     ],
   },);
 
@@ -383,6 +397,18 @@ export function buildLaneContestMessages(
       fence,
       '',
     ];
+  /**
+   The pages the original cites and their rule, or nothing when it cites
+   none.
+
+   PLACED AFTER THE PASSAGES, like the damage claims: a judge reads the
+   texts before the evidence about what they may carry.
+   */
+  const referenceBlock = citedReferenceCandidateLines({
+    fence,
+    referenceContext: subject.referenceContext ?? '',
+  },);
+
   /**
    Size evidence, or nothing when every rendering is in proportion.
    */
@@ -531,6 +557,7 @@ export function buildLaneContestMessages(
         'CANDIDATE "translate":',
         `${fence}\n${subject.translateText}\n${fence}`,
         '',
+        ...referenceBlock,
         ...damageBlock,
         ...communityBlock,
         ...sizeBlock,

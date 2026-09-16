@@ -15,6 +15,7 @@ import {
   TRANSLATE_FRONT_MATTER_RULE,
   TRANSLATE_LINE_STRUCTURE_RULE,
 } from './translate-wire.ts';
+import { CITED_REFERENCE_CANDIDATE_RULE, } from './cited-reference-rule.ts';
 
 //region Consolidate wire
 // Asks for the rendering that ships, given the two the lanes produced and what
@@ -216,6 +217,14 @@ export type ConsolidateSubject = {
   readonly identityContext?: string;
 
   /**
+   What the pages the original cites say, one line per page, when the
+   original links anywhere (class thirty-six, 2026-09-16): the writer that
+   kept "Accurate detail the ARCHIVE RENDERING adds" as a rule had no way to
+   tell such detail from an invention and wrote from the lane that dropped it.
+   */
+  readonly referenceContext?: string;
+
+  /**
    What the pictures this slice and its neighbours show were read to say, when
    any could be.
    
@@ -350,6 +359,13 @@ export function buildConsolidateMessages(
   const pictures = subject.pictureContext ?? '';
 
   /**
+   The pages the original cites with their rule, empty when it cites none.
+   */
+  const references = ((subject.referenceContext === undefined) || (subject.referenceContext === ''))
+    ? ''
+    : `${subject.referenceContext}\n${CITED_REFERENCE_CANDIDATE_RULE}`;
+
+  /**
    Judge findings as the producer will see them, empty when none were heard.
    */
   const brief = renderConsolidationBrief({ ballots: subject.ballots, },);
@@ -373,6 +389,7 @@ export function buildConsolidateMessages(
       subject.translateText,
       declared,
       pictures,
+      references,
       brief,
       priorFailure,
     ],
@@ -453,6 +470,11 @@ export function buildConsolidateMessages(
             archiveText: subject.incumbentText,
           },),
           text: subject.translateText,
+        },),
+        ...renderBlock({
+          fence,
+          label: 'CITED REFERENCES, EVIDENCE ONLY',
+          text: references,
         },),
         ...renderBlock({
           fence,

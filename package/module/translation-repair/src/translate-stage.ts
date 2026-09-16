@@ -58,6 +58,9 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
  
  @param identityContext - declared names from both sides' front matter,
  omitted when neither declares anything
+
+ @param referenceContext - what the pages the original cites say, omitted
+ when it cites none
  
  @param neighbouringSourceText - original of the sections either side, shown as
  CONTEXT the candidates are not expected to render. Absent by default, so a
@@ -109,6 +112,7 @@ export async function runTranslateStage(
     incumbentText,
     incumbentKind,
     identityContext,
+    referenceContext,
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext,
@@ -125,6 +129,7 @@ export async function runTranslateStage(
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly pictureContext?: string;
@@ -171,6 +176,7 @@ export async function runTranslateStage(
     incumbentKind: effectiveIncumbentKind,
     incumbentEligible,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),

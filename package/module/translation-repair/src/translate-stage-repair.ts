@@ -34,6 +34,7 @@ type TranslateRoundInput = ForeignBorrowed<{
   readonly incumbentKind: IncumbentKind;
   readonly incumbentEligible: boolean;
   readonly identityContext?: string;
+  readonly referenceContext?: string;
   readonly neighbouringIncumbentText?: string;
   readonly neighbouringSourceText?: string;
   readonly pictureContext?: string;
@@ -115,6 +116,7 @@ async function produceAndJudgeOnce(
           incumbentText: input.incumbentText,
           incumbentKind: input.incumbentKind,
           ...((input.identityContext === undefined) ? {} : { identityContext: input.identityContext, }),
+          ...((input.referenceContext === undefined) ? {} : { referenceContext: input.referenceContext, }),
           ...((input.neighbouringSourceText === undefined)
             ? {}
             : { neighbouringSourceText: input.neighbouringSourceText, }),
@@ -201,6 +203,7 @@ export async function runTranslateRepairs(
     incumbentKind,
     incumbentEligible = true,
     identityContext,
+    referenceContext,
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext,
@@ -218,6 +221,7 @@ export async function runTranslateRepairs(
     readonly incumbentKind: IncumbentKind;
     readonly incumbentEligible?: boolean;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly pictureContext?: string;
@@ -240,6 +244,7 @@ export async function runTranslateRepairs(
     incumbentKind,
     incumbentEligible,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),

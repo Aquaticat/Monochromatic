@@ -37,6 +37,10 @@ export type TranslateSliceStageInput = {
    */
   readonly identityContext?: string;
   /**
+   What the pages the original cites say, when it cites any.
+   */
+  readonly referenceContext?: string;
+  /**
    Supplied source neighbors retain their context-only role.
    */
   readonly neighbouringSourceText?: string;
@@ -151,6 +155,7 @@ export function translateSliceInput(
         .has(slice.target
           .sliceIndex,),
       ...((prepared.identityContext === undefined) ? {} : { identityContext: prepared.identityContext, }),
+      ...((prepared.referenceContext === undefined) ? {} : { referenceContext: prepared.referenceContext, }),
       ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
       ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
       ...((pictureContext === undefined) ? {} : { pictureContext, }),

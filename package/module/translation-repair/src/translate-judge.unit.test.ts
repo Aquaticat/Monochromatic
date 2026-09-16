@@ -547,6 +547,73 @@ await describe({
       },
     },),
     it({
+      name: 'SHOWS THE PAGES THE ORIGINAL CITES to every judge on the arm given them and to none on the '
+        + 'arm without (class thirty-six, 2026-09-16), since the same judges decide consolidation slates',
+      fn: async () => {
+        const rig = driftingClient();
+        const produced = await produceTranslateSlate({
+          client: rig.client,
+          translatorModelIds: TRANSLATORS,
+          sourceText: SOURCE_TEXT,
+          incumbentText: INCUMBENT_TEXT,
+          lineStructured: false,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+
+        const beforeBare = rig.judgeSheets.length;
+        await judgeTranslateSlate({
+          client: rig.client,
+          produced,
+          judgeModelIds: JUDGES,
+          sourceText: SOURCE_TEXT,
+          incumbentText: INCUMBENT_TEXT,
+          incumbentKind: 'present',
+          lineStructured: false,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+        const betweenArms = rig.judgeSheets.length;
+
+        await judgeTranslateSlate({
+          client: rig.client,
+          produced,
+          judgeModelIds: JUDGES,
+          sourceText: SOURCE_TEXT,
+          incumbentText: INCUMBENT_TEXT,
+          incumbentKind: 'present',
+          referenceContext: '- reference 1 https://blog.example/mittens ("In memory of Mittens"): Mittens had an older sister who was also a tabby.',
+          lineStructured: false,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+
+        /**
+         Sheets of the arm shown no references.
+         */
+        const bare = rig.judgeSheets.slice(
+          beforeBare,
+          betweenArms,
+        );
+
+        /**
+         Sheets of the arm shown the references.
+         */
+        const cited = rig.judgeSheets.slice(betweenArms,);
+        expect(bare.filter(function carries(sheet,) {
+          return sheet.includes('CITED REFERENCES',);
+        },)
+          .length,).toBe(0,);
+        expect(cited.filter(function carries(sheet,) {
+          return sheet.includes('CITED REFERENCES, EVIDENCE ONLY',) && sheet.includes('also a tabby',);
+        },)
+          .length,).toBe(JUDGES.length,);
+      },
+    },),
+    it({
       name: 'CARRIES THE ARCHIVE EITHER SIDE when one is supplied, which is the half of the window '
         + 'that shows a relocation. The Chinese says each thing once in its own place, so wording '
         + 'this passage calls for that is already sitting next door was carried across a boundary '

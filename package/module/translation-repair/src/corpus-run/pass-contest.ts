@@ -36,6 +36,8 @@ import { readJudgeSeats, } from './run-seats-read.ts';
  @param frontMatterSlices - syntax-bearing metadata positions
  
  @param identityContext - declared names both documents carry, when any
+
+ @param referenceContext - what the pages the original cites say, when any
  
  @param entryCacheDir - per-entry cache root
  
@@ -61,6 +63,7 @@ export async function runPassContest(
     projected,
     frontMatterSlices,
     identityContext,
+    referenceContext,
     entryCacheDir,
     pipelineDigest,
     signal,
@@ -72,6 +75,7 @@ export async function runPassContest(
     readonly projected: ProjectedLanes;
     readonly frontMatterSlices: ReadonlySet<number>;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly entryCacheDir: string;
     readonly pipelineDigest: PipelineDigest;
     readonly signal: AbortSignal;
@@ -100,6 +104,7 @@ export async function runPassContest(
     // nobody (`repair-damage-evidence.ts`).
     damageClaimsBySlice: damageClaimLinesBySlice({ lane: lanes.repair, },),
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     cache: await openLaneContestCache({
       dir: entryCacheDir,
       generation: pipelineDigest,

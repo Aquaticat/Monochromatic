@@ -25,9 +25,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  CITED_REFERENCE_CANDIDATE_RULE,
   CITED_REFERENCE_RULE,
   citedReferenceBlock,
   citedReferenceBlockText,
+  citedReferenceCandidateLines,
+  citedReferenceEvidence,
   CitedReferenceFetchError,
   citedReferenceUrlsOf,
   EXA_CONTENTS_URL,
@@ -593,6 +596,58 @@ await describe({
         expect(block,).toContain(`===== ${CITED_REFERENCE_RULE} =====\n`,);
         expect(CITED_REFERENCE_RULE,).toContain('never report or support it as accuracy/addition',);
         expect(CITED_REFERENCE_RULE,).toContain('never license adding to the TRANSLATION',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: citedReferenceCandidateLines.name,
+  children: [
+    it({
+      name: 'CARRIES the lines between fences with the candidate rule, and no lines when the original links nowhere',
+      fn: async () => {
+        expect(citedReferenceCandidateLines({ fence: '=====', },),).toEqual([],);
+        expect(citedReferenceCandidateLines({
+          fence: '=====',
+          referenceContext: '',
+        },),).toEqual([],);
+        /**
+         Lines over one reference.
+         */
+        const lines = citedReferenceCandidateLines({
+          fence: '=====',
+          referenceContext: `- reference 1 ${POST_URL}: Mittens had an older sister.`,
+        },);
+        expect(lines.at(0,),).toBe('===== CITED REFERENCES, EVIDENCE ONLY =====',);
+        expect(lines.at(1,),).toContain('- reference 1',);
+        expect(lines.at(2,),).toBe(`===== ${CITED_REFERENCE_CANDIDATE_RULE} =====`,);
+        expect(lines.at(-1,),).toBe('',);
+        expect(CITED_REFERENCE_CANDIDATE_RULE,).toContain('never count it unsupported',);
+        expect(CITED_REFERENCE_CANDIDATE_RULE,).toContain('never license adding to a rendering',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: citedReferenceEvidence.name,
+  children: [
+    it({
+      name: 'RENDERS one labelled entry carrying the candidate rule, and none when the original links nowhere',
+      fn: async () => {
+        expect(citedReferenceEvidence({},),).toEqual([],);
+        expect(citedReferenceEvidence({ referenceContext: '', },),).toEqual([],);
+        /**
+         Entries over one reference.
+         */
+        const entries = citedReferenceEvidence({
+          referenceContext: `- reference 1 ${POST_URL}: Mittens had an older sister.`,
+        },);
+        expect(entries.length,).toBe(1,);
+        expect(entries.at(0,)?.label,).toContain('CITED REFERENCES, EVIDENCE ONLY.',);
+        expect(entries.at(0,)?.label,).toContain(CITED_REFERENCE_CANDIDATE_RULE,);
+        expect(entries.at(0,)?.text,).toContain('- reference 1',);
       },
     },),
   ],

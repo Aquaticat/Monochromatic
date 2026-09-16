@@ -153,6 +153,26 @@ await describe({
       },
     },),
     it({
+      name: 'SEPARATES a run shown the pages the original cites from one shown none, and keys an entry '
+        + 'that cites nothing exactly as before (class thirty-six, 2026-09-16)',
+      fn: async () => {
+        expect(laneContestSliceKey({
+          ...catInputs(),
+          runShape: laneContestRunShape({
+            modelIds: ROSTER,
+            referenceContext: '- reference 1 https://blog.example/mittens ("In memory of Mittens"): Mittens had an older sister who was also a tabby.',
+          },),
+        },),).not.toBe(laneContestSliceKey(catInputs(),),);
+        expect(laneContestSliceKey({
+          ...catInputs(),
+          runShape: laneContestRunShape({
+            modelIds: ROSTER,
+            referenceContext: '',
+          },),
+        },),).toBe(laneContestSliceKey(catInputs(),),);
+      },
+    },),
+    it({
       name: 'SEPARATES the two candidates by SIDE, so swapping which lane produced which is a different question',
       fn: async () => {
         expect(laneContestSliceKey({

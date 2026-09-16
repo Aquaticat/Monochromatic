@@ -104,6 +104,20 @@ await describe({
   name: translateSliceKey.name,
   children: [
     it({
+      name: 'SEPARATES a run shown the pages the original cites from one shown none, and keeps the run '
+        + 'shape of an entry that cites nothing (class thirty-six, 2026-09-16)',
+      fn: async () => {
+        expect(translateRunShape({
+          models: MODELS,
+          referenceContext: '- reference 1 https://blog.example/mittens ("In memory of Mittens"): Mittens had an older sister who was also a tabby.',
+        },),).not.toBe(RUN_SHAPE,);
+        expect(translateRunShape({
+          models: MODELS,
+          referenceContext: '',
+        },),).toBe(RUN_SHAPE,);
+      },
+    },),
+    it({
       name: 'SEPARATES a slice judged with the neighbouring original from the same slice judged '
         + 'without it, which is what stops the two arms of `#108` sharing a cached answer and '
         + 'reporting a window change as having made no difference',

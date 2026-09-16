@@ -175,6 +175,33 @@ await describe({
     },),
 
     it({
+      name: 'SEPARATES A PAIR SHOWN THE PAGES THE ORIGINAL CITES from one shown none, and keys an entry '
+        + 'that cites nothing exactly as before (class thirty-six, 2026-09-16)',
+      fn: async () => {
+        /**
+         The same roster over a pair whose original cites a page.
+         */
+        const cited = consolidateRunShape({
+          modelIds: ROSTER,
+          referenceContext: '- reference 1 https://blog.example/mittens ("In memory of Mittens"): Mittens had an older sister who was also a tabby.',
+        },);
+
+        expect(consolidateSliceKey(SLICE,),).not.toBe(
+          consolidateSliceKey({ ...SLICE, runShape: cited, },),
+        );
+        expect(consolidateSliceKey(SLICE,),).toBe(
+          consolidateSliceKey({
+            ...SLICE,
+            runShape: consolidateRunShape({
+              modelIds: ROSTER,
+              referenceContext: '',
+            },),
+          },),
+        );
+      },
+    },),
+
+    it({
       name: 'SEPARATES A CHANGE TO THE ARCHIVE RENDERING, which the consolidation never ships. It is '
         + 'the structural standard the guard floors on, so two slices with identical candidates and '
         + 'different pages are checked against different shapes',

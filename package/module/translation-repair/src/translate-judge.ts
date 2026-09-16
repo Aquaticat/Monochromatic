@@ -33,6 +33,7 @@ import {
   EMPTY_TALLY,
   type TranslateStageResult,
 } from './translate-stage-result.ts';
+import { citedReferenceEvidence, } from './cited-reference-rule.ts';
 
 //region Translate judge
 
@@ -78,6 +79,10 @@ export type TranslateJudgeResponsibility =
  
  @param identityContext - declared names from both sides' front matter,
  omitted when neither declares anything
+
+ @param referenceContext - what the pages the original cites say, shown as
+ evidence with its rule so accurate archive detail a candidate keeps is not
+ read as invention (class thirty-six, 2026-09-16); omitted when it cites none
  
  @param neighbouringSourceText - original of the sections either side, shown as
  CONTEXT the candidates are not expected to render. Absent by default, so a
@@ -123,6 +128,7 @@ export async function judgeTranslateSlate(
     incumbentText,
     incumbentKind,
     identityContext,
+    referenceContext,
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext,
@@ -140,6 +146,7 @@ export async function judgeTranslateSlate(
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly pictureContext?: string;
@@ -429,6 +436,10 @@ export async function judgeTranslateSlate(
             text: identityContext,
           },
         ]),
+      // The pages the original cites, after the names, so a candidate keeping
+      // a detail only a cited page states is judged on evidence rather than
+      // condemned for saying what the original does not.
+      ...citedReferenceEvidence({ referenceContext: referenceContext ?? '', },),
     ],
     signal,
     perCallTimeoutMs,

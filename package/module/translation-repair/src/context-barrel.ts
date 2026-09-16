@@ -71,8 +71,11 @@ export {
   referenceLineOf,
 } from './cited-reference-lookup.ts';
 export {
+  CITED_REFERENCE_CANDIDATE_RULE,
   CITED_REFERENCE_RULE,
   citedReferenceBlockText,
+  citedReferenceCandidateLines,
+  citedReferenceEvidence,
 } from './cited-reference-rule.ts';
 
 //endregion Context barrel

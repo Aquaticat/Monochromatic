@@ -49,6 +49,10 @@ export const LANE_CONTEST_CACHE_VERSION = 5;
  @param modelIds - roster asked to judge
  
  @param identityContext - names and handles both documents declare
+
+ @param referenceContext - what the pages the original cites say, folded in
+ only when the original cites any, so an entry that cites nothing keys as
+ before
  
  @returns Stable string for the key
  
@@ -61,14 +65,17 @@ export function laneContestRunShape(
   {
     modelIds,
     identityContext,
+    referenceContext,
   }: {
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
+    readonly referenceContext?: string;
   },
 ): string {
   return JSON.stringify([
     modelIds,
     identityContext ?? '',
+    ...(((referenceContext ?? '') === '') ? [] : [referenceContext,]),
   ],);
 }
 

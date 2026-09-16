@@ -192,6 +192,38 @@ await describe({
       },
     },),
     it({
+      name: 'SHOWS the pages the original cites with the candidate rule after the passages, and no such '
+        + 'heading when it cites none (class thirty-six, 2026-09-16)',
+      fn: async () => {
+        // THE FAILURE THIS CLOSES. Mio20: the panel had the blog and rejected
+        // the addition claim, the repair lane kept "who is also trans", and
+        // three of five contest judges shown only the original called the
+        // repair candidate unsupported for carrying it.
+        const subject = {
+          sourceText: '猫有一个姐姐。',
+          incumbentText: 'Mittens has an older sister who is also a tabby.',
+          repairText: 'Mittens has an older sister who is also a tabby.',
+          translateText: 'Mittens has an older sister.',
+        };
+        const bare = buildLaneContestMessages({ subject, },)
+          .at(1,)
+          ?.content ?? '';
+        expect(bare.includes('CITED REFERENCES',),).toBe(false,);
+        const asked = buildLaneContestMessages({
+          subject: {
+            ...subject,
+            referenceContext: '- reference 1 https://blog.example/mittens ("In memory of Mittens"): Mittens had an older sister who was also a tabby.',
+          },
+        },)
+          .at(1,)
+          ?.content ?? '';
+        expect(asked,).toContain('CITED REFERENCES, EVIDENCE ONLY',);
+        expect(asked,).toContain('also a tabby',);
+        expect(asked,).toContain('never count it unsupported',);
+        expect(asked.indexOf('CITED REFERENCES',),).toBeGreaterThan(asked.indexOf('CANDIDATE "translate":',),);
+      },
+    },),
+    it({
       name: 'NAMES THE LANE LACKING THE COMMUNITY RENDERING after the passages, and leaves the archive '
         + 'and the lane carrying it unnamed (owner, 2026-09-09)',
       fn: async () => {

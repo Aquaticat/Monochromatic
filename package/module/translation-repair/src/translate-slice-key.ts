@@ -36,6 +36,9 @@ import {
  @param models - translator and judge rosters
  
  @param identityContext - declared names travelling with every slice
+
+ @param referenceContext - what the pages the original cites say, folded in
+ only when the original cites any
  
  @returns Stable string for the key
  
@@ -48,15 +51,18 @@ export function translateRunShape(
   {
     models,
     identityContext,
+    referenceContext,
   }: {
     readonly models: TranslateModels;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
   },
 ): string {
   return JSON.stringify([
     models.translatorModelIds,
     models.judgeModelIds,
     identityContext ?? '',
+    ...(((referenceContext ?? '') === '') ? [] : [referenceContext,]),
     MIN_PROTECTED_INCUMBENT,
     MAX_INCUMBENT_TO_SOURCE_RATIO,
   ],);

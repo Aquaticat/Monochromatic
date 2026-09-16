@@ -218,10 +218,34 @@ await describe({
       },
     },),
     it({
+      name: 'SHOWS the pages the original cites with the candidate rule after the candidates '
+        + '(class thirty-six, 2026-09-16)',
+      fn: async () => {
+        const shown = buildConsolidateGateMessages({
+          subject: {
+            ...SUBJECT,
+            referenceContext: '- reference 1 https://blog.example/mittens ("In memory of Mittens"): Mittens had an older sister who was also a tabby.',
+          },
+        },)
+          .filter(function isShown(message,): boolean {
+            return message.role === 'user';
+          },)
+          .map(function contentOf(message,): string {
+            return message.content;
+          },)
+          .join('\n',);
+        expect(shown,).toContain('CITED REFERENCES, EVIDENCE ONLY',);
+        expect(shown,).toContain('also a tabby',);
+        expect(shown,).toContain('never count it unsupported',);
+        expect(shown.indexOf('CITED REFERENCES',),).toBeGreaterThan(shown.indexOf('CANDIDATE "standing":',),);
+      },
+    },),
+    it({
       name: 'REFUSES to head a declared-names block when neither side declares any',
       fn: async () => {
         const shown = shownFor({ subject: SUBJECT, },);
         expect(shown.includes('DECLARED NAMES',),).toBe(false,);
+        expect(shown.includes('CITED REFERENCES',),).toBe(false,);
       },
     },),
   ],

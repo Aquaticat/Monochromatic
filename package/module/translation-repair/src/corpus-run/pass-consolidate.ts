@@ -139,6 +139,9 @@ export async function runPassConsolidation(
     ...((prepared.identityContext === undefined)
       ? {}
       : { identityContext: prepared.identityContext, }),
+    ...((prepared.referenceContext === undefined)
+      ? {}
+      : { referenceContext: prepared.referenceContext, }),
     cache: await openConsolidateCache({
       dir: entryCacheDir,
       generation: pipelineDigest,

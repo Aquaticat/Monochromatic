@@ -41,6 +41,20 @@ export type ProposalVerdict = {
 };
 
 /**
+ Front matter identity and cited references as the slate judge and the gate
+ take them, each absent when the pair has none.
+
+ @example
+ ```ts
+ const identity: SettlementIdentity = { identityContext: 'name: Mimi', };
+ ```
+ */
+export type SettlementIdentity = {
+  readonly identityContext?: string;
+  readonly referenceContext?: string;
+};
+
+/**
  Identity and evidence as the two rounds take them.
  
  SPREAD PER FIELD RATHER THAN PASSED WHOLE. An absent identity is absent
@@ -66,7 +80,7 @@ export type ProposalVerdict = {
 export function settlementContextOf(
   { subject, }: { readonly subject: ConsolidationSubject; },
 ): {
-  readonly identity: { readonly identityContext?: string; };
+  readonly identity: SettlementIdentity;
   readonly evidence: {
     readonly pictureContext?: string;
     readonly neighbouringSourceText?: string;
@@ -76,9 +90,10 @@ export function settlementContextOf(
   /**
    Identity as the two rounds take it.
    */
-  const identity = (subject.identityContext === undefined)
-    ? {}
-    : { identityContext: subject.identityContext, };
+  const identity: SettlementIdentity = {
+    ...((subject.identityContext === undefined) ? {} : { identityContext: subject.identityContext, }),
+    ...((subject.referenceContext === undefined) ? {} : { referenceContext: subject.referenceContext, }),
+  };
 
   /**
    Words about this passage that are not the passage: what its pictures were

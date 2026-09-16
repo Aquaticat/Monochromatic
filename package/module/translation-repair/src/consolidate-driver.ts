@@ -140,6 +140,8 @@ function laneChoiceOf(
  `modelIds` when not given
  
  @param identityContext - names and handles both documents declare
+
+ @param referenceContext - what the pages the original cites say, when any
  
  @param polishConfig - final body naturalness roles and document guard facts
  
@@ -184,6 +186,7 @@ export async function consolidateDocument(
     modelIds,
     judgeModelIds = modelIds,
     identityContext,
+    referenceContext,
     polishConfig,
     frontMatterSlices,
     lineStructuredSlices,
@@ -202,6 +205,7 @@ export async function consolidateDocument(
     readonly modelIds: readonly RosterModelId[];
     readonly judgeModelIds?: readonly RosterModelId[];
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly polishConfig?: ConsolidationPolishConfig;
     readonly frontMatterSlices: ReadonlySet<number>;
     readonly lineStructuredSlices: ReadonlySet<number>;
@@ -262,6 +266,7 @@ export async function consolidateDocument(
   const runShape = consolidateRunShape({
     modelIds,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((polishConfig === undefined) ? {} : { polishConfig, }),
   },);
 
@@ -407,6 +412,7 @@ export async function consolidateDocument(
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
       ...((identityContext === undefined) ? {} : { identityContext, }),
+      ...((referenceContext === undefined) ? {} : { referenceContext, }),
       // Omitted rather than empty, matching the context above it, so a producer
       // shown no readings is shown no heading promising any.
       ...((pictureContext === '') ? {} : { pictureContext, }),

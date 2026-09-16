@@ -157,6 +157,11 @@ export type ConsolidationSubject = {
   readonly identityContext?: string;
 
   /**
+   What the pages the original cites say, absent when it cites none.
+   */
+  readonly referenceContext?: string;
+
+  /**
    What the pictures near this slice were read to say.
    
    DECLARED HERE FROM 2026-08-22, having been PASSED here since `#176`. The

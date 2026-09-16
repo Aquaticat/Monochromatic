@@ -201,6 +201,8 @@ export async function persistLaneContestOutcome(
  @param modelIds - roster to ask
  
  @param identityContext - names and handles both documents declare
+
+ @param referenceContext - what the pages the original cites say, when any
  
  @param frontMatterSlices - syntax-bearing metadata slice indexes
  
@@ -230,6 +232,7 @@ export async function contestDocumentLanes(
     projected,
     modelIds,
     identityContext,
+    referenceContext,
     frontMatterSlices,
     cache,
     damageClaimsBySlice = new Map<number, readonly string[]>(),
@@ -243,6 +246,7 @@ export async function contestDocumentLanes(
     readonly projected: ProjectedLanes;
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly frontMatterSlices: ReadonlySet<number>;
     readonly cache: SliceCache<LaneContestOutcome>;
     /**
@@ -292,6 +296,7 @@ export async function contestDocumentLanes(
   const runShape = laneContestRunShape({
     modelIds,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
   },);
 
   /**
@@ -421,6 +426,7 @@ export async function contestDocumentLanes(
                 ...((syntax === undefined) ? {} : { syntax, }),
                 ...((ineligibleCandidates.length === 0) ? {} : { ineligibleCandidates, }),
                 ...((identityContext === undefined) ? {} : { identityContext, }),
+                ...((referenceContext === undefined) ? {} : { referenceContext, }),
                 ...damageFragment,
               },
               signal,

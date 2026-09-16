@@ -129,6 +129,9 @@ const NEIGHBOURING_INCUMBENT_KEY_LABEL = 'neighbouring-incumbent';
  @param modelIds - roster asked to produce, judge and gate
  
  @param identityContext - names and handles both documents declare
+
+ @param referenceContext - what the pages the original cites say, folded in
+ only when the original cites any
  
  @param polishConfig - naturalness roles and document guard facts
  
@@ -143,16 +146,19 @@ export function consolidateRunShape(
   {
     modelIds,
     identityContext,
+    referenceContext,
     polishConfig,
   }: {
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly polishConfig?: ConsolidationPolishConfig;
   },
 ): string {
   return JSON.stringify([
     modelIds,
     identityContext ?? '',
+    ...(((referenceContext ?? '') === '') ? [] : [referenceContext,]),
     ...((polishConfig === undefined)
       ? []
       : [

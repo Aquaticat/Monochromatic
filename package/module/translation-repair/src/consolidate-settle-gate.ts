@@ -9,7 +9,10 @@ import type {
   ConsolidationSubject,
   ConsolidationTerminal,
 } from './consolidate-settle.ts';
-import type { ProposalVerdict, } from './consolidate-settle-context.ts';
+import type {
+  ProposalVerdict,
+  SettlementIdentity,
+} from './consolidate-settle-context.ts';
 import type { SlateFloor, } from './consolidate-validity-floor.ts';
 import { wrapConsolidation, } from './consolidate-wrap.ts';
 import { applyFinalPolish, } from './consolidation-polish-apply.ts';
@@ -99,7 +102,7 @@ export async function gateAndShip(
     readonly polishConfig?: ConsolidationPolishConfig;
     readonly standingMayShip: boolean;
     readonly standingEligible: boolean;
-    readonly identity: { readonly identityContext?: string; };
+    readonly identity: SettlementIdentity;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
