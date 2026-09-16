@@ -698,6 +698,7 @@ await describe({
         // The recovery round heard the voice the first round could not read.
         expect(gather.voices,).toHaveLength(3,);
         expect(gather.findings,).toHaveLength(0,);
+        expect([...gather.unreadable,],).toEqual([],);
         // Two calls: the first with the stage's prompt, the second with the
         // same prompt plus the complaint, and nothing else about it changed.
         expect(seen,).toHaveLength(2,);
@@ -708,6 +709,60 @@ await describe({
       },
     },),
 
+    it({
+      name: 'NAMES the seats whose answers stayed unreadable after the recovery round, so a stage can tell '
+        + 'a bench that answered from one that fell silent (class thirty-one: on 2026-09-16 Mio13 read '
+        + 'seven cap-cut replies as an outage)',
+      fn: async () => {
+        /** Client whose named model answers, but in a shape nothing can read, every time. */
+        const client: SyntheticClient = {
+          chatText: async () => {
+            throw new Error('chatText unused',);
+          },
+          chatJson: async <ValueT,>(
+            request: ChatJsonRequest<ValueT>,
+          ): Promise<ChatJsonOutcome<ValueT>> => {
+            if (request.modelId === 'hf:moonshotai/Kimi-K3') {
+              return {
+                kind: 'schema-mismatch',
+                rawText: '',
+                reason: 'truncated-completion',
+                detail: 'provider reported a truncating completion (model stopped with finish_reason=length)',
+              };
+            }
+            /**
+             Scripted payload for an answering call.
+             */
+            const scripted: unknown = { meow: request.modelId, };
+            if (!request.validate(scripted,))
+              throw new Error('scripted payload failed the guard',);
+            return {
+              kind: 'ok',
+              value: scripted,
+              rawText: JSON.stringify(scripted,),
+            };
+          },
+          quotas: async () => {
+            throw new Error('quotas unused',);
+          },
+        };
+        const gather = await gatherStageVoices({
+          client,
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'panel',
+          l,
+        },);
+        expect(gather.voices,).toHaveLength(2,);
+        expect(gather.quorumMet,).toBe(true,);
+        expect([...gather.unreadable,],).toEqual(['hf:moonshotai/Kimi-K3',],);
+        expect([...gather.unreachable,],).toEqual([],);
+      },
+    },),
     it({
       name: 'counts exactly half of an even roster as quorum',
       fn: async () => {

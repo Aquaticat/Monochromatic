@@ -58,10 +58,16 @@ function scriptedClient(
     replyFor,
     prompts,
     payloads,
+    unreadableFor = () => false,
   }: {
     readonly replyFor: ReplyFor;
     readonly prompts: string[];
     readonly payloads?: string[];
+    /**
+     Seats whose every reply the completion cap cut before its content, the
+     shape `chat-json-outcome.ts` reads off `finish_reason=length`.
+     */
+    readonly unreadableFor?: (modelId: string) => boolean;
   },
 ): SyntheticClient {
   return {
@@ -77,6 +83,14 @@ function scriptedClient(
       const prompt = JSON.stringify(request.messages,);
       prompts.push(prompt,);
       payloads?.push(`${request.modelId}\u0000${prompt}`,);
+      if (unreadableFor(request.modelId,)) {
+        return {
+          kind: 'schema-mismatch',
+          rawText: '',
+          reason: 'truncated-completion',
+          detail: 'provider reported a truncating completion (model stopped with finish_reason=length)',
+        };
+      }
       /** Scripted value for current role. */
       const value = replyFor({ schema, prompt, modelId: request.modelId, });
       if (!request.validate(value,))
@@ -198,6 +212,47 @@ await describe({
         expect(prompts.some(function isNaturalness(prompt,): boolean {
           return prompt.includes('publication-ready English',);
         },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'RETAINS the block when the bench answered but the cap cut most replies before their content: '
+        + 'an answer nobody could read is not silence (class thirty-one: Mio13 was interrupted '
+        + '"provider-unavailable" on 2026-09-16 at 4 of 12 heard with every provider wet, seven seats '
+        + 'having spent their whole completion cap reasoning about the first chat translation)',
+      fn: async () => {
+        const prompts: string[] = [];
+        /** Seats asked, so the case proves the whole bench was reached. */
+        const asked = new Set<string>();
+        const outcome = await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts,
+            unreadableFor: (modelId,) => {
+              asked.add(modelId,);
+              return modelId !== ROSTER[0];
+            },
+            replyFor: ({ schema, },) => schema === 'archive_block_review'
+              ? {
+                disposition: 'source-supported',
+                sourceQuote: '窗边安静地睡觉',
+                replacementText: '',
+                finding: 'Expected section supports this sentence.',
+              }
+              : ACCEPTABLE_NATURALNESS,
+          },),
+          modelIds: ROSTER,
+          sourceText: '猫在窗边安静地睡觉。',
+          targetText: 'The cat sleeps quietly by the window.',
+          blockText: 'The cat sleeps quietly by the window.',
+          priorFindings: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(asked.size,).toBe(ROSTER.length,);
+        expect(outcome.kind,).toBe('retained',);
+        expect(outcome.text,).toBe('The cat sleeps quietly by the window.',);
+        expect(outcome.findings.join('\n',),).toContain('stage-quorum-unmet (archive-block-review 1/',);
+        expect(outcome.findings.join('\n',),).toContain('archive review left the block unresolved: 1 of 1',);
       },
     },),
     it({
