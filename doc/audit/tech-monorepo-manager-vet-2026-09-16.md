@@ -1,11 +1,12 @@
 # Monorepo manager vet report
 
 Status:
-in progress.
+complete under the current hard constraints;
+no candidate is recommendable.
 
 Lifecycle phase:
-context and rubric frozen;
-discovery pending.
+discovery and screening complete;
+no candidate reached serious-alternative status.
 
 Subject:
 Monorepo manager.
@@ -690,4 +691,111 @@ section "Category fit for screening" corrects that for screening.
 
 ### Candidate ledger
 
-Pending.
+Every candidate has its own subsection,
+with evidence and final gate,
+in the screening appendices of
+[`tech-monorepo-manager-vet-2026-09-16/`](tech-monorepo-manager-vet-2026-09-16/):
+
+- `screening-primary-chunk-1.md`,
+   `screening-primary-chunk-2.md`,
+   `screening-primary-chunk-3.md`:
+   87 candidates from the GitHub and web classes.
+- `screening-registry-chunk-1.md`,
+   `screening-registry-chunk-2.md`,
+   `screening-registry-chunk-3.md`:
+   204 candidates from the registry class.
+- `screening-github-runners-category.md` and `screening-registry-runners-category.md`:
+   424 command runners checked for category fit.
+- `screening-promoted-runners.md`:
+   the 15 GitHub runners that passed category fit.
+- `discovery-expansion.md`:
+   the expansion round,
+   17 new candidates,
+   and the two registry components that passed category fit.
+
+## Screening results
+
+732 screening entries,
+counting moon and Earthly twice because two discovery classes surfaced each:
+
+- G1 category mismatch:
+   536.
+- G2 license or missing source:
+   42.
+- G3 documentation:
+   151,
+   most under the confusion rule.
+- User exclusion:
+   moon,
+   twice.
+- Duplicate skip:
+   Earthly.
+- Survivors:
+   none.
+
+Candidates that met every documentation coverage requirement and exited only on a confusion trigger:
+Bazel,
+Gradle,
+Rush,
+pnpm,
+pitchfork,
+and magus.
+Confusion triggers spot-checked with plain `curl` from the development machine on 2026-09-16:
+
+- Bazel:
+   `https://bazel.build/docs/configurable-attributes` links "Configurable Build Attributes" to both
+   `/configure/attributes` and `/docs/configurable-attributes`.
+- pnpm:
+   `https://pnpm.io/cli/recursive` and `https://pnpm.io/workspace-task-orchestration` describe `--no-bail` differently.
+- oneRepo:
+   `https://onerepo.tools/docs/config/` documents `lifecycles` under `taskConfig` while its example sets it under `tasks`.
+- Nadle:
+   `https://nadle.dev/docs/getting-started/features/` configures `CopyTask` with `to`,
+   while `https://nadle.dev/docs/guides/file-operation-tasks/` uses `into`.
+- Tilt:
+   `https://docs.tilt.dev/file_changes.html` refers to a hard-coded list of ignored editor temp files without listing it
+   and asks readers who hit an unlisted file to file a bug.
+
+No screened candidate documented both inspection and control of a running watch process from another process.
+
+Leads recorded after the frozen schedule,
+not queried or screened:
+`neptaco/mcproc`,
+the omni task runner named by `@omni-oss/task-bench`,
+and PM2.
+
+## Terminal result
+
+No serious alternative.
+Every discovered candidate exited at a screening hard gate,
+so no finalist validation,
+scoring,
+or ranking applies.
+
+Evidence limits:
+
+- The GitHub topic tails beyond the 1,000-result cap were skipped by user decision.
+- The DuckDuckGo web run was stopped by the user after W1,
+   W2,
+   and W4 saturated.
+- The confusion and no-JavaScript rules arrived while screening agents were running;
+   agents applied them retroactively to their recorded evidence.
+- Fabr's exit depends on a connection timeout from the development machine with unknown cause.
+- GitHub returned HTTP 429 for rendered pages after heavy request volume;
+   agents read repository Markdown through `gh api` instead,
+   and no verdict depended on those responses.
+
+Under the user's fallback order,
+the next step after "no tool qualifies" is plugging functionality into an existing tool,
+and after that building a Bazel replacement.
+Plugging in also requires a host that passes HC7,
+and none did.
+
+The coverage requirement for a documented extension mechanism is this report's operationalization of HC3,
+not a user statement.
+It decided many exits that were never checked for confusion,
+including Turborepo,
+Lerna,
+Melos,
+Watchman,
+and Wireit's peers in the registry chunks.
