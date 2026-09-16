@@ -331,6 +331,17 @@ category fit,
 then the HC7 documentation gate,
 then the remaining hard constraints.
 
+### Screening exits needing a note
+
+- Fabr:
+   `https://fabr.build/` resolves only to `67.205.27.5`,
+   and plain `curl` from the development machine timed out connecting on two further attempts on 2026-09-16,
+   including a forced IPv4 attempt,
+   while other documentation hosts loaded from the same machine.
+  A remote fetcher loaded the page.
+  The cause is unknown;
+   the exit stands because a reader on this machine cannot open the documentation.
+
 ### User-directed exclusions
 
 - moon:
