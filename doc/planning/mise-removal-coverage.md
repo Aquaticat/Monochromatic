@@ -35,6 +35,8 @@ Stated by the user on 2026-09-16:
 - Wildly underdocumented candidates are culled early,
    including documentation whose structure keeps readers from finding consumed behavior;
    moon is excluded on that basis.
+  Any confusion or frustration while reading or trying to read a candidate's documentation culls it immediately,
+   with no second chances.
 - Fallback order:
    first an existing tool on the market;
    if none qualifies,

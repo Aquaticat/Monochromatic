@@ -29,11 +29,14 @@ Governing skill SHA-256:
 `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
 
 Compatibility fingerprint:
-`93965544ecfaae75f635465fbeb32fa6ab8f19696624723bf0f71456f5586470`.
+`8ce05b698e00ec017f52b92abf9df17175cc7fcb8f6678dd97120ae336b290aa`.
 Superseded fingerprints,
-newest first,
-none of which had candidate screening evidence:
+newest first:
 
+- `93965544ecfaae75f635465fbeb32fa6ab8f19696624723bf0f71456f5586470`,
+   before the user made any documentation confusion an immediate cull;
+   screening agents were running and received the stricter rule mid-run,
+   and merged results apply it retroactively to every recorded signal.
 - `39dc93902e80f8a713cf55d3a0d2b6ff24651344785f88c5a75ec6fabc5d36c6`,
    before the user clarified that documentation structure is part of the documentation gate;
 - `8f69b0cf08360061800fa6b0d8197fb8c20e22171d23d191348bc3c296cc01d4`,
@@ -234,11 +237,14 @@ FE18 records no versions either.
    Rust,
    Kotlin with Gradle,
    and Zig workspace packages.
-- HC7 Official documentation covers every consumed feature in a structure a reader can navigate.
+- HC7 Official documentation covers every consumed feature,
+   and any confusion or frustration while reading or trying to read it culls the candidate immediately.
    The user added this gate on 2026-09-16:
    cull wildly underdocumented candidates early.
    The user then clarified with moon screenshots that incoherent documentation structure counts,
-   not only missing pages.
+   not only missing pages,
+   and finally directed an immediate cull on any confusion or frustration,
+   with no second chances.
 
 ### HC7 screening test
 
@@ -262,10 +268,17 @@ a candidate exits when its official documentation lacks any of:
    or WR3;
 - documentation of the extension mechanism it would host plugged-in FE items through.
 
-Structure:
-a candidate exits when a reader starting from the documentation's own navigation cannot predictably reach
-the behavior of a consumed feature.
-Signals recorded during the check:
+Confusion:
+a candidate exits the moment the reader hits any confusion or frustration reading or trying to read its documentation.
+Reading stops there;
+the report records the triggering URL and what confused the reader.
+A failure of the reading tool alone,
+such as a fetcher that cannot render a JavaScript page,
+gets one switch to a real browser;
+if a human reader would still hit the problem,
+the candidate exits.
+
+Every structure signal is a confusion trigger and therefore an exit:
 
 - index or overview pages whose entries lack usable summaries,
    such as descriptions cut off mid-sentence or entries that show only a child count;
@@ -278,8 +291,10 @@ Signals recorded during the check:
    such as Discord,
    instead of from official documentation.
 
-Signals that do not prevent reaching a consumed feature's behavior lower the weight-5 documentation quality score
-instead of removing the candidate.
+Other triggers include broken or missing pages,
+not knowing where a feature is documented,
+and needing sources outside official documentation to understand consumed behavior.
+Documentation quality among candidates that pass remains a weight-5 soft criterion.
 
 ### Category fit for screening
 
