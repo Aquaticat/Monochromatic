@@ -439,6 +439,40 @@ In the morning it dozes on the windowsill.
     },),
 
     it({
+      name: 'ACCEPTS the page\'s own paragraph followed by the original\'s block quote where the page '
+        + 'stands a paragraph of another kind in the quote\'s place (class thirty-two, 2026-09-16)',
+      fn: async () => {
+        expect(
+          validateTranslatedSlice({
+            sourceText: '> 猫猫走了。\n> ——邻居留',
+            pageText: 'Rest well, little cat.',
+            candidateText: 'Rest well, little cat.\n\n> The cat has gone.\n> — left by a neighbour',
+          },).kind,
+        ).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'STILL REFUSES the original\'s block quote alone there, since the paragraph is the '
+        + 'archive\'s and dropping it deletes it, and SAYS the quote may follow the page\'s blocks',
+      fn: async () => {
+        /**
+         Verdict where the candidate keeps the original's quote and loses the
+         page's farewell.
+         */
+        const validation = validateTranslatedSlice({
+          sourceText: '> 猫猫走了。\n> ——邻居留',
+          pageText: 'Rest well, little cat.',
+          candidateText: '> The cat has gone.\n> — left by a neighbour',
+        },);
+        expect(validation.kind,).toBe('invalid',);
+        expect(
+          (validation.kind === 'invalid') ? validation.findings.join('\n',) : '',
+        ).toContain('no block of its kind on the PAGE AS IT STANDS',);
+      },
+    },),
+
+    it({
       name: 'REFUSES a block neither the page nor the original carries, so '
         + 'restoring stays restoring rather than becoming licence to invent',
       fn: async () => {
