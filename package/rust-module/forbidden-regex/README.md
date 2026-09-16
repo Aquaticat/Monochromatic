@@ -149,6 +149,30 @@ let reloaded = RegexSet::from_bytes(&bytes).unwrap();
 assert!(reloaded.is_match(b"... AKIA0123456789ABCDEF7 ..."));
 ```
 
+## Compile-time threading
+
+`RegexSet::new` and `RegexSet::compile_lenient` build rules on worker threads,
+one per available core (capped at the pattern count);
+a one-pattern call builds on the calling thread.
+Results are identical to a one-at-a-time build:
+rule ids follow input order,
+and a failing `new` returns the lowest-index rule's error.
+
+- **Speed.**
+  The `forbidden-strings` 259-rule baseline compiles in 18.2s to 21.3s across runs on 16 threads
+  instead of 97.5s one rule at a time (opt-level 3),
+  with byte-identical `to_bytes` output.
+- **Memory.**
+  Peak resident memory for that baseline rose from 0.88 GB to 5.9 GB,
+  because rules that were built one after another now build at once.
+- **Stack.**
+  Workers get 64 MiB stacks,
+  because deeply nested groups overflow Rust's default 2 MiB thread stack
+  (see [the std thread defaults write-up](../../../doc/troubleshooting/rust-std-thread-defaults-for-compute.md)).
+- **Small sets.**
+  Thread startup adds about 40 microseconds to a two-pattern compile;
+  from 8 patterns on, the measured cost matched the one-at-a-time build.
+
 ## Batch matching
 
 For scanning many lines at once,
