@@ -29,14 +29,19 @@ Governing skill SHA-256:
 `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
 
 Compatibility fingerprint:
-`39dc93902e80f8a713cf55d3a0d2b6ff24651344785f88c5a75ec6fabc5d36c6`.
-It supersedes `8f69b0cf08360061800fa6b0d8197fb8c20e22171d23d191348bc3c296cc01d4`,
-recorded before the user added the documentation gate,
-`cafbebe56ed9aa8f5ed2dc0f500fa351c79754fcdd56dd4632b38e7626fe0898`,
-recorded before the user allowed Meta Package Manager to own OS package provisioning,
-and `340bcda696599b81be2d3314af769ed3c774d3914ad724a32f148d9d975eec89`,
-recorded before the user added the control requirement.
-Neither superseded fingerprint had candidate screening evidence.
+`93965544ecfaae75f635465fbeb32fa6ab8f19696624723bf0f71456f5586470`.
+Superseded fingerprints,
+newest first,
+none of which had candidate screening evidence:
+
+- `39dc93902e80f8a713cf55d3a0d2b6ff24651344785f88c5a75ec6fabc5d36c6`,
+   before the user clarified that documentation structure is part of the documentation gate;
+- `8f69b0cf08360061800fa6b0d8197fb8c20e22171d23d191348bc3c296cc01d4`,
+   before the user added the documentation gate;
+- `cafbebe56ed9aa8f5ed2dc0f500fa351c79754fcdd56dd4632b38e7626fe0898`,
+   before the user allowed Meta Package Manager to own OS package provisioning;
+- `340bcda696599b81be2d3314af769ed3c774d3914ad724a32f148d9d975eec89`,
+   before the user added the control requirement.
 
 Active audit owner:
 Claude Code session `e28ad59c-f3f5-46e9-8c8c-59a61c331610`.
@@ -229,19 +234,26 @@ FE18 records no versions either.
    Rust,
    Kotlin with Gradle,
    and Zig workspace packages.
-- HC7 Official documentation covers every consumed feature.
+- HC7 Official documentation covers every consumed feature in a structure a reader can navigate.
    The user added this gate on 2026-09-16:
    cull wildly underdocumented candidates early.
+   The user then clarified with moon screenshots that incoherent documentation structure counts,
+   not only missing pages.
 
 ### HC7 screening test
 
 Recorded operationalization,
 open to user correction.
-A candidate exits at screening when its official documentation,
-meaning the project's own docs site,
+Official documentation means the project's own docs site,
 reference pages,
-or repository docs,
-lacks any of:
+or repository docs.
+A feature named only in a changelog,
+issue,
+blog post,
+or source code counts as undocumented.
+
+Coverage:
+a candidate exits when its official documentation lacks any of:
 
 - a configuration reference;
 - a CLI or API reference for the commands this repository would run;
@@ -250,16 +262,47 @@ lacks any of:
    or WR3;
 - documentation of the extension mechanism it would host plugged-in FE items through.
 
-A feature named only in a changelog,
-issue,
-blog post,
-or source code counts as undocumented.
-Documentation quality among candidates that pass remains a weight-5 soft criterion.
+Structure:
+a candidate exits when a reader starting from the documentation's own navigation cannot predictably reach
+the behavior of a consumed feature.
+Signals recorded during the check:
+
+- index or overview pages whose entries lack usable summaries,
+   such as descriptions cut off mid-sentence or entries that show only a child count;
+- navigation sections that list unrelated kinds of pages as flat siblings with no grouping by purpose;
+- one consumed feature spread across several sections without a page that ties them together;
+- current documentation that depends on a separately frozen version for consumed behavior.
+
+Signals that do not prevent reaching a consumed feature's behavior lower the weight-5 documentation quality score
+instead of removing the candidate.
 
 ### User-directed exclusions
 
 - moon:
-   excluded on 2026-09-16 by the user's judgment that it is wildly underdocumented.
+   excluded on 2026-09-16 by the user's judgment that its documentation is wildly underdocumented
+   and structurally hostile to readers.
+  Evidence is the user's screenshots of `moonrepo.dev` on 2026-09-16:
+  - the Commands overview shows summaries cut off mid-sentence,
+     such as "will generate and serve a visual graph of",
+     and the `daemon`,
+     `docker`,
+     `extension`,
+     `query`,
+     and `sync` entries show only an item count;
+  - the Guides menu lists continuous integration,
+     code owners,
+     daemon,
+     Docker integration,
+     extensions,
+     MCP integration,
+     offline mode,
+     remote caching,
+     Renovate,
+     terminal notifications,
+     WASM plugins,
+     webhooks,
+     and VCS hooks as flat siblings;
+  - a banner states that the documentation is for moon v2 and that v1 documentation is frozen elsewhere.
   No further evidence was collected.
 
 ## Components and overlays
