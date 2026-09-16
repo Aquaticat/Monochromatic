@@ -250,6 +250,17 @@ A CI workflow sharing a remote cache with local runs raises the value of a matur
 The Mise content-hash cache is experimental;
  remote cache support in `pnpm pipeline` was not checked.
 
+### Hard requirements stated afterwards
+
+The user then set requirements for any monorepo manager:
+ full file-enforcer functionality,
+ and a watch mode with an RPC or IPC inspection channel.
+They are recorded in `doc/planning/mise-removal-coverage.md`,
+ section "Monorepo manager hard requirements".
+Bazel core meets neither natively:
+ it has no watch command and no status query,
+ and file generation would come from rulesets or repository-owned rules.
+
 ## Evidence limits
 
 - No Bazel build of any package was attempted.

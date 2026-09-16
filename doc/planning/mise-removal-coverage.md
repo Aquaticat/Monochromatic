@@ -18,6 +18,29 @@ would actually consume.
 Bazel was assessed as a broader alternative the same day;
 see `doc/research/bazel-migration-dx.md`.
 
+## Monorepo manager hard requirements
+
+Stated by the user on 2026-09-16:
+
+- Whatever monorepo manager is chosen must provide every functionality of `@monochromatic-dev/dev-script-file-enforcer`.
+- It must provide the watch plus RPC pattern:
+   a watch mode that keeps everything up to date,
+   plus an RPC or IPC mechanism through which people can inspect what the running watch process is doing.
+- Fallback order:
+   first an existing tool on the market;
+   if none qualifies,
+   plug these functionalities into an existing tool;
+   if that is too hard,
+   build a Bazel replacement.
+
+Recorded inferences,
+open to user correction:
+
+- Inspection means at least observing current and recent activity;
+  triggering or controlling work through the same channel is not yet required.
+- The inspection interface should be documented,
+  because insufficient documentation is the stated reason for leaving Mise.
+
 ## Trigger and correction
 
 The initial assessment recommended narrowing Mise before assigning every consumed responsibility to an owner.
