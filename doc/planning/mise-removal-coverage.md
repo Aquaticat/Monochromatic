@@ -37,6 +37,11 @@ Stated by the user on 2026-09-16:
    moon is excluded on that basis.
   Any confusion or frustration while reading or trying to read a candidate's documentation culls it immediately,
    with no second chances.
+- Result on 2026-09-16:
+   `doc/audit/tech-monorepo-manager-vet-2026-09-16.md` screened 732 entries and re-screened 21 after the user counted
+   external wrappers as plugging in;
+   no candidate passed,
+   so neither an existing tool nor a plug-in host qualifies.
 - Fallback order:
    first an existing tool on the market;
    if none qualifies,

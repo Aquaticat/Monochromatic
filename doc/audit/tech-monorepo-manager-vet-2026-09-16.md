@@ -1,12 +1,14 @@
 # Monorepo manager vet report
 
 Status:
-in progress;
-re-screening after the user counted external wrappers as plugging in.
+complete;
+no candidate is recommendable.
 
 Lifecycle phase:
-discovery complete;
-screening reopened for candidates that exited only on the withdrawn extension-mechanism requirement.
+discovery,
+screening,
+and the re-screen after counting external wrappers are complete;
+no candidate reached serious-alternative status.
 
 Subject:
 Monorepo manager.
@@ -823,5 +825,36 @@ and Please,
 stay out because the user's confusion rule applies to any documentation read,
 not only consumed features.
 
-Re-screen results:
-pending.
+Re-screen results,
+in `rescreen-result-1.md` and `rescreen-result-2.md`:
+all 21 exited on documentation confusion triggers checked against live pages.
+Examples:
+
+- Watchman:
+   `https://facebook.github.io/watchman/docs/install` says Linux binaries build on Ubuntu 20.04,
+   while the release workflow now uses `ubuntu-24.04`,
+   and keeps a section for macOS 10.6 and earlier.
+- devtooie:
+   `docs/configuration.md` says a control-API restart starts a stopped package,
+   while `docs/package-lifecycle.md` says restart applies to running packages.
+- dev-process-manager:
+   Getting Started requires Node.js 18 or later,
+   while published 4.1.0 declares `engines.node` `>=22`.
+- zinoma:
+   the README links to a nonexistent `variant.Paths.field.paths` anchor.
+
+## Terminal result
+
+No serious alternative,
+under both the original constraints and the relaxed wrapper rule.
+Every discovered candidate exited at a screening hard gate,
+so no finalist validation,
+scoring,
+or ranking applies,
+and no candidate is recommendable.
+
+Under the user's fallback order,
+plugging functionality into an existing tool needs a host that passes HC7,
+and none did;
+the remaining stated fallback is building a Bazel replacement.
+This report does not propose or evaluate a custom implementation.
