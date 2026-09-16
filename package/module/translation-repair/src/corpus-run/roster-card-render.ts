@@ -38,6 +38,11 @@ export const NOT_LISTED: unique symbol = Symbol('field the provider listing does
 export type Listed<Value> = Value | typeof NOT_LISTED;
 
 /**
+ Currency sign Synthetic writes before its per-token prices.
+ */
+const CURRENCY_SIGN = '$';
+
+/**
  Tokens in one million, the unit OpenRouter prices are converted to.
  */
 const TOKENS_PER_MILLION = 1_000_000;
@@ -146,7 +151,8 @@ function readsImagesFrom(modalities: unknown,): Listed<boolean> {
 }
 
 /**
- Number a listing field holds, whether it wrote it as a number or a string.
+ Number a listing field holds, whether it wrote it as a number, a string
+ or a dollar-prefixed string (Synthetic prices read `$0.000003`).
 
  @param value - field value
 
@@ -155,13 +161,17 @@ function readsImagesFrom(modalities: unknown,): Listed<boolean> {
 function numberFrom(value: unknown,): Listed<number> {
   if ((typeof value) === 'number')
     return value;
+  if ((typeof value) !== 'string')
+    return NOT_LISTED;
   /**
-   Whether the field is a non-empty numeric string.
+   The string without the currency sign Synthetic prefixes its prices with.
    */
-  const numeric = ((typeof value) === 'string')
-    && (value !== '')
-    && Number.isFinite(Number(value,),);
-  return numeric ? Number(value,) : NOT_LISTED;
+  const bare = value.startsWith(CURRENCY_SIGN,) ? value.slice(CURRENCY_SIGN.length,) : value;
+  /**
+   Whether what is left is a non-empty numeric string.
+   */
+  const numeric = (bare !== '') && Number.isFinite(Number(bare,),);
+  return numeric ? Number(bare,) : NOT_LISTED;
 }
 
 /**

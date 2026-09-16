@@ -107,6 +107,31 @@ await describe({
     },),
 
     it({
+      name: 'READS SYNTHETIC PRICES WRITTEN WITH A DOLLAR SIGN, as its listing writes them, into dollars per token',
+      fn: async () => {
+        expect(cardFieldsFrom({
+          provider: 'synthetic',
+          row: {
+            id: 'hf:cat/Mittens-9',
+            input_modalities: ['text',],
+            context_length: 100_000,
+            max_output_length: 8_000,
+            pricing: {
+              prompt: '$0.000003',
+              completion: '$0.000015',
+            },
+          },
+        },),).toEqual({
+          readsImages: false,
+          maxOutputLength: 8_000,
+          contextLength: 100_000,
+          promptPrice: 0.000003,
+          completionPrice: 0.000015,
+        },);
+      },
+    },),
+
+    it({
       name: 'READS HYPER FIELDS into the card and leaves the prices NOT_LISTED, since Hyper bills in credits '
         + 'the card does not carry',
       fn: async () => {
