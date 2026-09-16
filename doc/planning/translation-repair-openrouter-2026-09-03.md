@@ -7775,6 +7775,152 @@ then the addition claims that shipped an edit against Mio19's 20 of 24
 (`lanes.repair.result.issues` in `artifacts/Mio.json`),
 then the seven steps and the three checks.
 
+## Mio20 read, 2026-09-16, 18:44 UTC: the clause the panel now keeps is lost one stage later
+
+Frozen `dff8c91d2`,
+SETTLED in 121 minutes,
+18 slices,
+78 repair issues (45 accepted,
+33 rejected),
+selection contested,
+1,278 seats asked.
+Spend:
+Bedrock 184.74 to 184.63 USD,
+OpenRouter 264.37 to 263.97 USD,
+Synthetic weekly 58.3 to 47.7 percent
+(and 37.0 at the next launch twenty minutes later with nothing of mine running,
+so the weekly meter settles late),
+Hyper dry throughout.
+The log opened `REFERENCES cited=2 cached=2 bought=0`.
+
+The page still says `She has an older sister.`
+Traced through `artifacts/Mio.json`:
+
+- The panel rejected all three addition claims on the clause,
+  3 unsupported to 2 supported
+  (Qwen3.8-27B,
+  Kimi-K3 and minimax-m3 unsupported;
+  gpt-oss-120b and gemma-4-26b-a4b supported),
+  against Mio19's 4 to 1 the other way.
+  Addition claims by adjudicated status:
+  Mio20 10 rejected and 11 accepted of 21;
+  Mio19 6 rejected and 30 accepted of 36.
+  Class thirty-five did what it was built to do.
+- The repair lane's final text for slice 2 kept
+  `she has an older sister who is also trans`.
+- The lane contest lost it:
+  three of five judges named the repair candidate unsupported for the clause
+  ("incorrectly states the sister is trans"),
+  one chose translate for keeping 生前 while noting it "drops the archive's 'who is also trans' clause",
+  and one voted neither with the right reading
+  ("the archive-carried detail that the older sister is also trans,
+  which the Chinese does not contradict and so must be kept").
+  Translate won 3 to 0 with 2 neither.
+- The consolidation wrote from the translate candidate and its ballots
+  and shipped the sentence without the clause,
+  five gate judges valid.
+
+Class thirty-six:
+the lane contest,
+the consolidation writer,
+the consolidation gate and the translate judge
+(which also judges consolidation slates)
+never see the cited references;
+only the critic and panel sheets did.
+
+The rest of the reading is clean and,
+where it differs from Mio19,
+better:
+the archive's own wording survives where Mio19 rewrote it
+(`musculine`,
+`Wechat`,
+`These are the last text messages she sent:`,
+`> . . .`,
+the multi-sentence lines of the Bei Yan Yun Yi paragraph and of the last chat block are all the archive's),
+`In mainland China` stays where Mio19 deleted it as an addition
+(the archive says `In China mainland`),
+and the citation title is `Beiyan Yunyi's blog · In Memory of Mio` with no Chinese gloss.
+Front matter equals the archive;
+two headings both sides;
+six photo scrolls;
+no straight apostrophes or quotes;
+four unicode ellipses both sides;
+no footnotes;
+no forbidden runs;
+117 lines differ from the archive,
+143 from Mio12,
+188 from Mio19.
+Seats:
+wide 8,
+select 8,
+late 9,
+slate 9,
+translators 8,
+readers 6,
+writers 9 on three wet providers;
+no holds,
+no payment refusals,
+no quorum shortfall.
+Repair changed 11 slices,
+translate 12,
+the page 10.
+The repair lane dropped 生前 in slice 2
+("before her passing"),
+which the contest judges caught and the consolidation restored;
+noted,
+not a class.
+
+## Class thirty-six, 2026-09-16, 19:03 UTC: the candidate sheets read the cited references too
+
+`20a7272dc`.
+`referenceContext` from the prepared pair now reaches
+`runPassContest` and the lane contest subject
+(block after the candidates,
+before the damage claims),
+`runPassConsolidation` and the consolidation subject
+(writer sheet block between the candidates and the findings;
+the settle context's identity object carries it to the slate judge and the gate),
+and the translate slice input through the stage and the round input into `judgeTranslateSlate`
+(one labelled evidence entry after the declared names).
+A candidate-sheet rule (`CITED_REFERENCE_CANDIDATE_RULE`) sits beside the critic rule:
+a detail the archive rendering or a candidate carries that a cited page states
+is never counted unsupported and never a reason to prefer the rendering that drops it;
+the references never license adding,
+never outrank the original,
+never license a finding elsewhere.
+The three run shapes
+(`laneContestRunShape`,
+`consolidateRunShape`,
+`translateRunShape`)
+fold the block in only when non-empty,
+so the 33 entries that cite nothing key as before.
+Guards on the three sheets,
+the translate judge,
+the three keys and the rule module;
+all eight shown red with the block or the folds disabled
+(`~/temp/agent/red-c36-20260916.log`),
+green restored.
+Build,
+oxlint,
+types and the unit suite green.
+
+## Mio21 launches on class thirty-six, 2026-09-16, 19:04 UTC
+
+Frozen `20a7272dc`,
+pass pid `1635211`,
+runs `~/temp/agent/Mio21-20260916`,
+log `~/temp/agent/Mio21-20260916.log`.
+Meters at launch:
+Synthetic 37.0 percent,
+Hyper dry,
+Bedrock 184.63 USD,
+OpenRouter 263.97 USD.
+The log opens `REFERENCES cited=2 cached=2 bought=0`.
+Read first whether the sister clause ships,
+then the slice 2 contest ballots and consolidation,
+then the addition claims by status against Mio20's 10 rejected of 21,
+then the seven steps and the three checks.
+
 ## Clustered panels and complete repair evidence implemented, 2026-09-10
 
 The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,

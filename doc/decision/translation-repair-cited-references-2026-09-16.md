@@ -180,6 +180,29 @@ and the refiner reads that block as names that must survive exactly.
 - Mio20 (frozen `dff8c91d2`) is the first pass on it;
   the reading is whether the sister clause ships and how many addition claims shipped against Mio19's twenty.
 
+## Mio20 and class thirty-six
+
+Mio20 (frozen `dff8c91d2`,
+2026-09-16 18:44 UTC) showed the mechanism working where it was placed and failing one stage later.
+The panel rejected the three addition claims on the sister clause 3 to 2
+(Mio19:
+supported 4 to 1),
+addition claims accepted fell from 30 of 36 to 11 of 21,
+and the repair lane's slice kept `who is also trans`.
+Then the lane contest,
+shown only the original,
+had three of five judges call the repair candidate unsupported for the clause,
+the translate lane won the slice,
+and the consolidation wrote from it.
+`20a7272dc` (class thirty-six) threads `referenceContext` into the lane contest sheet,
+the consolidation writer and gate sheets and the translate judge
+(which judges consolidation slates too),
+with `CITED_REFERENCE_CANDIDATE_RULE`:
+a detail the archive rendering or a candidate carries that a cited page states
+is never counted unsupported and never a reason to prefer the rendering that drops it.
+The three run shapes fold it in only when non-empty.
+Mio21 is the first pass on it.
+
 ## Cost
 
 Exa bills per page read;

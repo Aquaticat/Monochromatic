@@ -61,9 +61,16 @@ the owner's decision is
 
 So every `http` link the original writes is fetched once through the Exa contents endpoint,
 4,000 characters of page text each and at most eight per entry,
-and the critic sheet and the panel sheet carry a `CITED REFERENCES, EVIDENCE ONLY` block:
+and every sheet that judges a rendering against the original carries a `CITED REFERENCES, EVIDENCE ONLY` block:
 one line per page,
-after the pair on the critic sheet and after the claims on the panel sheet,
+after the pair on the critic sheet,
+after the claims on the panel sheet,
+and after the candidates on the lane contest,
+consolidation writer,
+consolidation gate and translate judge sheets
+(class thirty-six,
+2026-09-16:
+Mio20's panel kept the sister clause and the contest voted it out),
 with the rule that a detail the translation carries that the original does not state but a cited page does
 is accurate detail the translator took from the original's own references,
 never an addition,

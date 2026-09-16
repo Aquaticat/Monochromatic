@@ -235,6 +235,26 @@ which the takeover session does not have.
   runs `~/temp/agent/Mio20-20260916`,
   log `~/temp/agent/Mio20-20260916.log`),
   its log opening `REFERENCES cited=2 cached=2 bought=0`.
+- Mio20 read at 18:44 UTC
+  (the pass log's "Mio20 read" heading dated 2026-09-16 18:44 UTC):
+  SETTLED,
+  the panel now rejects the sister addition 3 to 2
+  (Mio19:
+  supported 4 to 1),
+  the repair lane keeps the clause,
+  and the lane contest loses it:
+  three of five judges call the repair candidate unsupported for it,
+  translate wins,
+  the consolidation writes from translate.
+  Class thirty-six:
+  the contest,
+  consolidation and slate-judge sheets never saw the references.
+  Fixed in `20a7272dc`
+  (all eight guards shown red);
+  `Mio21` launched at 19:04 UTC on frozen `20a7272dc` (pid 1635211,
+  runs `~/temp/agent/Mio21-20260916`,
+  log `~/temp/agent/Mio21-20260916.log`).
+  The rest of Mio20 read clean and kept the archive's wording where Mio19 rewrote it.
 - Owner,
   2026-09-16,
   same hour:
@@ -2042,6 +2062,17 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`20a7272dc` (2026-09-16,
+19:03 UTC):
+class thirty-six,
+the lane contest,
+the consolidation writer and gate,
+and the translate judge read the cited references with a candidate-sheet rule,
+folded into the three run shapes only where the original cites a page
+(the pass log's "Class thirty-six" heading dated 2026-09-16 19:03 UTC;
+found by the Mio20 read,
+where the panel kept the sister clause and the contest voted it out).
+Running on Mio21.
 `dff8c91d2` (2026-09-16,
 16:40 UTC):
 class thirty-five,
@@ -3690,34 +3721,33 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio20` by the seven steps and the three checks (frozen `dff8c91d2`,
-    pid 1551070,
-    runs `~/temp/agent/Mio20-20260916`,
-    log `~/temp/agent/Mio20-20260916.log`,
-    launched 16:43 UTC with Hyper dry;
-    `hulicaijia5` was killed for it 45 minutes in and ships nothing).
-    Mio20 is the first pass on class thirty-five
-    (the pass log's "Class thirty-five" heading dated 2026-09-16 16:43 UTC).
+1.  READ `Mio21` by the seven steps and the three checks (frozen `20a7272dc`,
+    pid 1635211,
+    runs `~/temp/agent/Mio21-20260916`,
+    log `~/temp/agent/Mio21-20260916.log`,
+    launched 19:04 UTC with Hyper dry).
+    Mio21 is the first pass on class thirty-six
+    (the pass log's "Class thirty-six" heading dated 2026-09-16 19:03 UTC).
     Read first whether `She has an older sister who is also trans` ships in the intro paragraph,
-    then the addition claims that shipped an edit
-    (`lanes.repair.result.issues` with category `accuracy/addition` and disposition `shipped`
-    in `artifacts/Mio.json`;
-    Mio19 shipped 20 of 24),
-    then the `REFERENCE` lines in the log
-    (the blog cached at 2,729 characters,
-    the archived copy a cached failure),
-    then the Mio19 reading as before:
-    the pairing,
+    then the slice 2 lane contest ballots
+    (`laneSelection.slices` by `sliceIndex` in `artifacts/Mio.json`;
+    Mio20:
+    three of five called repair unsupported for the clause,
+    translate won)
+    and the slice 2 consolidation,
+    then the addition claims by adjudicated status
+    (`lanes.repair.result.issues[].issue.status` with any claim of category `accuracy/addition`;
+    Mio20 10 rejected and 11 accepted of 21),
+    then the Mio20 reading as before:
+    the archive's wording kept where Mio19 rewrote it,
     slice 16,
     the first chat block,
     slice 14,
     the seven checks against Mio12,
     the three checks,
     the spend.
-    The other Mio19 wording notes (the Chinese reference-link title with a gloss,
-    the trailing space on the horizontal rule,
-    the IQ quote's dropped source hard break) stand;
-    fix any of them only as a class with a mechanism.
+    The Mio19 wording notes other than the sister stand;
+    fix any only as a class with a mechanism.
     If the page reads clean,
     the queue resumes with `hulicaijia` on the frozen tip dist
     (`hulicaijia6`).
