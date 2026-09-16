@@ -32,6 +32,8 @@ Stated by the user on 2026-09-16:
    plus an RPC or IPC mechanism through which people can inspect and control what the running watch process is doing.
   The user added the control requirement on 2026-09-16,
    correcting an earlier inference that observation alone was enough.
+- Wildly underdocumented candidates are culled early;
+   moon is excluded on that basis.
 - Fallback order:
    first an existing tool on the market;
    if none qualifies,
