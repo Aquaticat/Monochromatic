@@ -431,6 +431,7 @@ await describe({
                   text: '[left] are you there\n[right] here',
                 },
               ],
+              overlap: 0.9,
             },
           ],
         ],);
@@ -442,12 +443,13 @@ await describe({
           slices: [sliceOf({
             text: `A shadow startles her off the sill.\n\n`
               + `${photoElement({ assetNames: ['startled.webp',], },)}\n`,
+            sliceIndex: 0,
           },),],
           slicePosition: 0,
           readings: chatReadings,
         },);
 
-        expect(rendered.context.startsWith(SIDE_LEGEND + '\n\n' + PICTURE_HEADING + ' startled.webp\n',),)
+        expect(rendered.context.startsWith(`${SIDE_LEGEND}\n\n${PICTURE_HEADING} startled.webp\n`,),)
           .toBe(true,);
         expect(rendered.findings,).toEqual([],);
 

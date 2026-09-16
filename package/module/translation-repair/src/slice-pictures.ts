@@ -28,6 +28,31 @@ import { photoReferences, } from './photo-reference.ts';
 const PICTURE_HEADING = 'PICTURE';
 
 /**
+ Side markers a reader writes at the head of each chat message.
+ 
+ THE VOCABULARY `READING_INSTRUCTION` ASKS FOR, matched here as text so a
+ context carrying any of them is led by the legend that says what they mean.
+ */
+const SIDE_MARKERS: readonly string[] = [
+  '[left]',
+  '[right]',
+];
+
+/**
+ What a stage shown side-marked transcripts is told the markers mean.
+ 
+ ONCE, AHEAD OF THE BLOCKS, and only when a block carries a marker (class
+ thirty-three, 2026-09-16). A chat screenshot is taken by one of its two
+ parties, so the right-hand bubbles are that party's own messages on every
+ messenger this corpus shows; the reader records the side, and this line is
+ what turns a side into a speaker for a judge or translator that never saw
+ the picture. Without it Mio16's judges guessed, and swapped the opening
+ speakers of a human translation that had them right.
+ */
+export const SIDE_LEGEND: string = 'In a chat, [right] marks messages sent from the phone that took the '
+  + 'screenshot and [left] the other party\'s; [sticker] and [image] mark a picture sent in place of words.';
+
+/**
  What one slice is shown about the pictures around it.
  
  @example
@@ -201,8 +226,23 @@ export function slicePictures(
     blocks.push(`${PICTURE_HEADING} ${assetName}\n${transcriptions.join('\n\n',)}`,);
   }
 
+  /**
+   Whether any rendered block carries a side marker, which is when the
+   legend earns its place.
+   */
+  const sided = blocks.some(function carriesMarker(block,): boolean {
+    return SIDE_MARKERS.some(function inBlock(marker,): boolean {
+      return block.includes(marker,);
+    },);
+  },);
+
   return {
-    context: blocks.join('\n\n',),
+    context: (sided
+      ? [
+        SIDE_LEGEND,
+        ...blocks,
+      ]
+      : blocks).join('\n\n',),
     findings,
   };
 }

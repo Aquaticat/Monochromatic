@@ -43,11 +43,24 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  transcript and would be refused by the screen anyway, having cost a call. The
  house policy is deliberately absent: those rules govern how this corpus is
  WRITTEN, and reading what a picture already says is not writing.
+ 
+ THE SIDE OF EACH BUBBLE IS PART OF WHAT A CHAT SAYS (class thirty-three,
+ 2026-09-16). Only the reader sees the picture; every stage after it sees
+ lines. Mio16's transcript of `photo6.webp` was bare lines, so the five judges
+ reviewing the archive's chat translation guessed that the friend opened with
+ 在嘛 when the grey left bubble was Mio's, and revised a human translation that
+ had the speakers right into one that has them swapped. A sticker went the
+ same way: not a word, so not transcribed, so a message nobody was told about.
+ The markers are a small fixed vocabulary so readers agree on them and the
+ corroboration trigrams still overlap.
  */
 export const READING_INSTRUCTION: string = 'Transcribe every word visible in this image, in the language it is '
   + 'written in, preserving line breaks and the order things appear. Include names, handles, dates, '
-  + 'numbers and addresses exactly as written. Do not translate, summarise, describe the image, or '
-  + 'add any commentary. If you cannot read the image, say so plainly and say nothing else.';
+  + 'numbers and addresses exactly as written. Where the image is a chat or message thread, begin '
+  + 'every message with [left] or [right] for the side of the screen its bubble sits on, and write '
+  + '[sticker] or [image] on its own line where a message is a picture rather than words. Do not '
+  + 'translate, summarise, describe the image, or add any commentary. If you cannot read the image, '
+  + 'say so plainly and say nothing else.';
 
 /**
  How much of a refused reply the log keeps: enough for the sentence that
