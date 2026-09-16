@@ -198,9 +198,26 @@ which the takeover session does not have.
   "Adding / removing / changing models should never be this difficult.
   And given how fast the AI space is moving,
   a reusable workflow or mise task or something should be built."
-  The unseat touched eight source files and fifty-eight test files;
-  the owner has asked for a reusable path,
-  which is the next design item after the Mio19 read.
+  The unseat touched eight source files and fifty-eight test files.
+  Asked which shape,
+  the owner delegated:
+  "Please make the decisions yourself as these aren't really design decisions."
+  Built the same afternoon
+  (`doc/decision/translation-repair-model-cards.md`,
+  runbook `doc/runbook/translation-repair-roster-change.md`):
+  one card per model in `model-cards.ts` from which every catalog,
+  cap table and seat hold derives (`ea0024e3c`),
+  the `roster-card` task that prints a card fragment off a provider's live listing
+  (`527681ba4` and `e53f4c295`),
+  and role-named fixture seats in 172 test files (`099b69787`).
+  Adding a model is now one card,
+  its spellings on the lists in `roster-id.ts`,
+  one fixture seat and the checks;
+  removing one is the reverse plus a blocklist line.
+  Hyper's listing reported `max_output_tokens` 32768 for V4.1 Flash on 2026-09-16
+  against the card's 26214 of 2026-09-11;
+  left as measured,
+  to re-read with the next Hyper reading.
 
 Everything from "### Latest checkpoint" down to "## Repository state" is those sessions' own record,
 kept as history and not as the current state.
@@ -1982,6 +1999,24 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`099b69787` (2026-09-16,
+15:25 UTC):
+role-named fixture seats (`roster-fixture.ts` and its guard test) in 172 test files and the archive fixture.
+`e53f4c295` and `527681ba4` (2026-09-16,
+15:05 UTC):
+the `roster-card` task
+(`mise run roster-card -- <provider> <served id>`),
+verified live on all three listings with a key.
+`ea0024e3c` (2026-09-16,
+14:50 UTC):
+one model card per roster model;
+every catalog,
+cap table and seat hold derives from `model-cards.ts`;
+the served-id unions stay as lists in `roster-id.ts` because declaration emit cannot infer a nested literal.
+`a88f52d5b` (2026-09-16,
+14:10 UTC):
+DeepSeek V4 Pro 0813 and V4 Flash 0731 off the roster at the owner's instruction;
+V4.1 Flash takes their editor and refiner seats on the owner's words.
 `e964d2f3a` (2026-09-16,
 13:50 UTC):
 class thirty-four,

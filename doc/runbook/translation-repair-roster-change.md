@@ -1,0 +1,110 @@
+# Translation repair: adding, removing or changing a roster model
+
+The roster is one card per model in
+`package/module/translation-repair/src/model-cards.ts`,
+keyed by the lists in `src/roster-id.ts`;
+every catalog,
+cap table and seat hold derives from the cards
+(`doc/decision/translation-repair-model-cards.md`).
+Run everything from the package directory
+`package/module/translation-repair`.
+
+## Add a model
+
+1.  For each provider that serves it,
+    print the provider side of its card off the live listing:
+
+    ```sh
+    mise run roster-card -- openrouter <served id>
+    mise run roster-card -- hyper <served id>
+    mise run roster-card -- synthetic <served id>
+    mise run roster-card -- bedrock <served id>
+    ```
+
+    The output is the fragment to paste,
+    with a `/* not in the listing: ... */` question wherever the listing does not say
+    (Bedrock lists nothing a card needs;
+    Hyper lists no price;
+    the cap and the raw-chars ratio are measured off completed calls,
+    never listed).
+2.  In `src/roster-id.ts`,
+    add each served spelling to that provider's list
+    (`SYNTHETIC_SERVED_IDS`,
+    `HYPER_SERVED_IDS`,
+    `OPENROUTER_SERVED_IDS`,
+    `BEDROCK_SERVED_IDS`)
+    and add the roster id to `ROSTER_MODEL_IDS`.
+    The roster id is the first serving provider's spelling:
+    Synthetic,
+    else Hyper,
+    else Bedrock,
+    else OpenRouter.
+3.  In `src/model-cards.ts`,
+    write the card under that roster id:
+    the pasted provider sides,
+    `completionCap: 'pooled-p99'`,
+    and the holds the seating rule requires for a new candidate:
+    `judge-unmeasured` for a single-provider candidate
+    (it holds no seat until the judge fidelity probe seats it),
+    `writer-unmeasured` until a producer calibration measures its writing,
+    `reader-unmeasured` until a transcription is measured.
+4.  In `src/roster-fixture.ts`,
+    add one `SEAT_...` constant named by the model's reach,
+    image input and holds,
+    and add its claim to `src/roster-fixture.unit.test.ts`.
+5.  Run the package checks:
+
+    ```sh
+    mise run build
+    mise run lint:oxlint
+    mise run lint:types
+    mise run test:unit
+    ```
+
+    `model-cards.unit.test.ts` holds the lists to the cards and
+    `roster-fixture.unit.test.ts` holds the seat names to the cards;
+    a type error names a list entry without a card or a card without a list entry.
+6.  Measure the model into its roles
+    (`judge-fidelity-probe`,
+    `producer-calibrate`,
+    a transcription measurement)
+    and remove each hold on the card as the measurement seats it,
+    recording the reading in
+    `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
+
+## Remove a model
+
+1.  Delete its card from `src/model-cards.ts`,
+    its spellings from the lists in `src/roster-id.ts`,
+    and its seat from `src/roster-fixture.ts`
+    (re-point the seat to another model only where a model with the same reach,
+    image input and holds exists;
+    otherwise delete the seat and its claim,
+    and the type check names every test that leaned on it).
+2.  Add every spelling both providers serve it under to `src/roster-blocklist.ts`
+    with the owner's words as the reason,
+    so a catalog refresh labels it BLOCKED instead of proposing it again.
+3.  If it held an editor,
+    refiner or checker seat in `src/corpus-run/run-config.ts`,
+    pass the seat on the evidence recorded there.
+4.  Run the package checks;
+    the remaining failures are tests that assert on that model itself,
+    and each names what it measured.
+5.  Record the removal as an addendum of the seating decision.
+
+## Change a model's facts
+
+Edit the card.
+A price,
+an ignored endpoint,
+a measured cap or a hold is one line on the card,
+and the package checks say whether anything else disagrees.
+
+## While a pass is running
+
+Kill the pass by pid,
+build,
+freeze the new dist
+(`cp -r dist/final/node node_modules/.frozen-dist-<commit>`)
+and relaunch on it,
+as the handover's always-kill-and-relaunch rule has it.
