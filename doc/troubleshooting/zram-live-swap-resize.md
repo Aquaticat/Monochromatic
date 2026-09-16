@@ -509,6 +509,80 @@ all measured on this machine:
   but do not create the file by other means (plain `fallocate`,
    `dd`) and expect it to work.
 
+#### Applied configuration on this machine
+
+The 64 GiB target was met by keeping the 16 GiB zram device and adding a 48 GiB swapfile,
+ so the split is 16 GiB of compressed RAM swap first and 48 GiB of disk swap after it.
+
+```text
+# /etc/fstab (appended; pri=10 keeps it below zram0's priority 100)
+/var/lib/swap/swapfile none swap pri=10 0 0
+```
+
+The file lives on the `var` subvolume and not on `home`,
+ because `snapper` snapshots `home`
+ (`snapper list-configs` reports `root` -> `/var/home`)
+ and an active swapfile there would make every timeline snapshot fail.
+`/var/lib/swap` is also not in any `tmpfiles.d` rule,
+ so nothing ages the file out;
+ `/var/tmp` would have been the wrong choice,
+ since `tmp.conf` carries `q /var/tmp 1777 root root 30d`.
+
+Persistence comes from the fstab entry rather than a hand-written unit,
+ and the generated unit is wired correctly:
+
+```text
+$ systemctl show var-lib-swap-swapfile.swap -p RequiredBy -p After -p SourcePath
+RequiredBy=swap.target
+Before=swap.target umount.target
+After=system.slice var.mount systemd-remount-fs.service -.mount systemd-journald.socket
+SourcePath=/etc/fstab
+
+$ ls /run/systemd/generator/swap.target.requires/
+dev-zram0.swap  var-lib-swap-swapfile.swap
+```
+
+Two details are worth knowing before copying this.
+`systemd-fstab-generator` places fstab swap entries in `swap.target.requires`,
+ not `swap.target.wants`,
+ so looking only at `swap.target.wants` makes the entry appear to be missing.
+And `After=var.mount` is the ordering that matters:
+ without it the unit would race the mount and fail on a cold boot.
+
+SELinux does not need a custom label for this.
+The file inherits `var_lib_t` from its directory,
+ Fedora's policy defines no `swapfile_t` for regular swapfiles,
+ and activation produced no `avc` denials.
+
+##### End-to-end verification
+
+Swap devices are cheap to list and expensive to trust,
+ so the file was exercised rather than merely activated.
+A bounded container (512 MiB RAM cap,
+ 4 GiB memory-plus-swap cap)
+ wrote a 2 GiB byte pattern,
+ held it resident,
+ and read it back.
+The caps force roughly 1.5 GiB of that pattern out of RAM,
+ and with the zram device already full the kernel had to place it in the swapfile.
+
+```text
+[1] wrote 2048 MiB under a 512m RAM cap, holding 40s
+[2] swap while holding:
+Filename                                Type      Size      Used      Priority
+/dev/zram0                              partition 16777212  16777124  100
+/var/lib/swap/swapfile                  file      50331644  1790728   10
+[3] read-back verification: mismatched chunks=0
+[4] exit=0
+```
+
+`Used` of 1790728 KiB on the swapfile is about 1.71 GiB arriving there under real pressure,
+ and zero mismatched chunks is the read path returning identical bytes.
+Together they show write and read both work,
+ which listing the device cannot show.
+The container was bounded on purpose:
+ the caps keep a deliberate swap-forcing test from becoming a host-wide memory event.
+
 ### What a swapfile must satisfy on btrfs
 
 The kernel checks these at activation and warns with specific strings.
@@ -683,8 +757,10 @@ The threshold is a **percentage of total swap**.
 
 That means the two possible responses are not equivalent:
 
-- Raising total swap by 64 GiB makes the 90 percent line much further away
-  (a full 16 GiB of used swap becomes 24 percent of 80 GiB),
+- Raising total swap makes the 90 percent line much further away.
+  On this machine the applied 64 GiB total puts it at 57.6 GiB of used swap,
+  where the old 16 GiB total put it at 14.4 GiB,
+  and a fully used 16 GiB zram device went from 100 percent of total to 25 percent.
   so it suppresses this specific `systemd-oomd` trigger.
   It does **not** add real memory,
   so if the pressure that filled swap continues,
