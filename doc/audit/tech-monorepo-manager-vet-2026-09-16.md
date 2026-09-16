@@ -541,6 +541,10 @@ Full per-query and per-page ledgers are appendices in
    and `topic:build-tool` (2,466) are blocked by the GitHub 1,000-result search cap,
    still adding candidates on their final pages.
   A `stars:>=50` narrowing added no new repositories.
+  The unread tails hold repositories with 13 or fewer stars.
+  On 2026-09-16 the user chose to skip enumerating them,
+   so this class is recorded as not saturated by user decision;
+   any recommendation rests on that waiver.
   `topic:task-runner` (972) was exhausted without saturating.
   `"watch mode" daemon build` returned 1 result and was exhausted.
   Topic queries cannot return Buck2,
