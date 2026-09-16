@@ -101,6 +101,9 @@ export type ChunkCriticPhase = {
  
  @param identityContext - declared names from both sides' front matter
  
+ @param referenceContext - what the original's cited pages say (class
+ thirty-five)
+ 
  @param sliceIndex - chunk position, for the dismissal warning
  
  @param signal - caller abort honored by every exchange
@@ -124,6 +127,7 @@ export async function runChunkCriticPhase(
     targetText,
     documents,
     identityContext,
+    referenceContext,
     neighbouringIncumbentText,
     neighbouringSourceText,
     sliceIndex,
@@ -141,6 +145,7 @@ export async function runChunkCriticPhase(
       readonly target: RepairDocument;
     };
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly sliceIndex: number;
@@ -160,6 +165,7 @@ export async function runChunkCriticPhase(
     targetText,
     documents,
     ...(identityContext === undefined ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     signal,

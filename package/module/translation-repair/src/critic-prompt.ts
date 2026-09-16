@@ -6,6 +6,7 @@ import {
 } from './issue-taxonomy.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
+import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
 import { ACCURACY_CATEGORY_SCOPE, } from './accuracy-category-policy.ts';
@@ -115,6 +116,9 @@ An empty issues array is a valid answer when the translation is faithful.`;
  matter; omitted when neither side declares any, so the block never appears
  empty
  
+ @param referenceContext - what the pages the original links say (class
+ thirty-five); omitted when it links nowhere
+ 
  @returns Messages ready for `chatJson`
  
  @example
@@ -127,12 +131,14 @@ export function buildCriticMessages(
     sourceText,
     targetText,
     identityContext,
+    referenceContext,
     neighbouringIncumbentText,
     neighbouringSourceText,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
   },
@@ -145,9 +151,19 @@ export function buildCriticMessages(
       sourceText,
       targetText,
       identityContext ?? '',
+      referenceContext ?? '',
       neighbouringSourceText ?? '',
       neighbouringIncumbentText ?? '',
     ],
+  },);
+
+  /**
+   What the original's cited pages say, after the pair and before the
+   neighbours: evidence about the pair, not part of it (class thirty-five).
+   */
+  const referenceBlock = citedReferenceBlockText({
+    fence,
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
   },);
 
   /**
@@ -203,7 +219,7 @@ ${fence} ${NEARBY_RULE} ${fence}
 ${sourceText}
 ${fence} TRANSLATION ${fence}
 ${targetText}
-${nearbyBlock}${fence} END ${fence}`,
+${referenceBlock}${nearbyBlock}${fence} END ${fence}`,
     },
   ];
 }

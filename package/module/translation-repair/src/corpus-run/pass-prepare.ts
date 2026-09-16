@@ -10,6 +10,8 @@ import type { RosterModelId, } from '../synthetic-catalog.ts';
 import { lookupCacheDir, } from '../lookup-cache.ts';
 import { workTitleLookupLines, } from '../work-title-lookup.ts';
 import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
+import { citedReferenceBlock, } from '../cited-reference-lookup.ts';
+import { referenceCacheDir, } from '../reference-cache.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import {
   openPairingCache,
@@ -165,6 +167,22 @@ export async function preparePassEntry(
     logger: l,
   },);
   /**
+   What the pages the original links say (class thirty-five, the owner's
+   decision of 2026-09-16), bought once per page and cached durably, the
+   same block for both preparations; the critic and panel sheets read it so
+   a detail the archive took from a cited reference is not deleted as an
+   addition.
+   */
+  const referenceContext = await citedReferenceBlock({
+    sourceText,
+    apiKey: process.env[EXA_API_KEY_VAR] ?? '',
+    dir: referenceCacheDir({ env: process.env, },),
+    signal,
+    fetchFn: fetch,
+    now: wallClock,
+    logger: l,
+  },);
+  /**
    Preparation over one archive text, the same roster, caches, context and
    authority each time: once over the archive as inherited, once more where
    the relabel rewrote it, and once more where the block correction round
@@ -202,6 +220,7 @@ export async function preparePassEntry(
       exchangeTimeoutMs,
       l,
       contextLines,
+      ...((referenceContext === '') ? {} : { referenceContext, }),
       frontMatterAuthority,
       sealArchiveOriginal: true,
       ...((pictureReadings === undefined) ? {} : { pictureReadings, }),

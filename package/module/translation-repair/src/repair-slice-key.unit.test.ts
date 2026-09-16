@@ -169,6 +169,23 @@ await describe({
           },),
         },),).not
           .toBe(settled,);
+        // THE CITED REFERENCES (class thirty-five) are evidence the critic and
+        // panel sheets read, so they move the key; an original that links
+        // nowhere keys exactly as before, so the 33 entries that cite nothing
+        // keep their settled slices.
+        expect(keyed({
+          runShape: repairRunShape({
+            models: MODELS,
+            referenceContext: '- reference 1 https://cats.example/post: the kitten has an older sister.',
+          },),
+        },),).not
+          .toBe(settled,);
+        expect(keyed({
+          runShape: repairRunShape({
+            models: MODELS,
+            referenceContext: '',
+          },),
+        },),).toBe(settled,);
 
         /**
          Same run, each slice field moved in turn.

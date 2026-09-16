@@ -96,6 +96,9 @@ export type PairedPreparation = {
  @param contextLines - evidence lines bought outside preparation, passed
  through to the identity context untouched
  
+ @param referenceContext - what the pages the original links say, passed
+ through to the prepared pair untouched (class thirty-five)
+ 
  @param frontMatterAuthority - existing caller policy for metadata ownership
  
  @param sealArchiveOriginal - existing protection for archive wording declared English-original
@@ -124,6 +127,7 @@ export async function prepareDocumentPairWithRoster(
     pairingCache,
     sectionCache,
     contextLines,
+    referenceContext,
     frontMatterAuthority,
     sealArchiveOriginal,
     pictureReadings,
@@ -139,6 +143,7 @@ export async function prepareDocumentPairWithRoster(
     readonly pairingCache?: SliceCache<PairedSectionRecord>;
     readonly sectionCache?: SliceCache<PairedDocumentRecord>;
     readonly contextLines?: readonly string[];
+    readonly referenceContext?: string;
     readonly frontMatterAuthority?: FrontMatterAuthority;
     readonly sealArchiveOriginal?: boolean;
     readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
@@ -238,6 +243,7 @@ export async function prepareDocumentPairWithRoster(
     ...((sliceCharBudget === undefined) ? {} : { sliceCharBudget, }),
     ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
     ...((contextLines === undefined) ? {} : { contextLines, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((frontMatterAuthority === undefined) ? {} : { frontMatterAuthority, }),
     ...((sealArchiveOriginal === undefined) ? {} : { sealArchiveOriginal, }),
     blockPairings,

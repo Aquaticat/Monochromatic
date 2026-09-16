@@ -147,6 +147,16 @@ export type PreparedDocumentPair = {
   readonly identityContext?: string;
 
   /**
+   What the pages the original links say, one line per page, for the critic
+   and panel sheets (class thirty-five, 2026-09-16): a detail the archive
+   carries that the original does not state but a cited reference does is
+   accurate detail the translator took from the original's own references.
+
+   Absent rather than empty when the original links nowhere or no key is set.
+   */
+  readonly referenceContext?: string;
+
+  /**
    Declared name and contributor forms as TRANSLATION side spells them.
    
    SEPARATE FROM `identityContext`, which is prose for a prompt. These are the

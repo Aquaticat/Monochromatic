@@ -43,5 +43,36 @@ export {
   lookupWorkTitle,
   workTitleLookupLines,
 } from './work-title-lookup.ts';
+export {
+  citedReferenceUrlsOf,
+  MAX_CITED_REFERENCES,
+} from './cited-reference-scan.ts';
+export {
+  CitedReferenceFetchError,
+  EXA_CONTENTS_URL,
+  fetchCitedReference,
+  fetchedOf,
+  type FetchedReference,
+  REFERENCE_TEXT_CHARACTERS,
+} from './cited-reference-fetch.ts';
+export {
+  type CachedReference,
+  isReferenceRecord,
+  readCachedReference,
+  REFERENCE_CACHE_SUBDIR,
+  referenceCacheDir,
+  referenceCachePath,
+  type ReferenceRecord,
+  writeCachedReference,
+} from './reference-cache.ts';
+export {
+  citedReferenceBlock,
+  lookupCitedReference,
+  referenceLineOf,
+} from './cited-reference-lookup.ts';
+export {
+  CITED_REFERENCE_RULE,
+  citedReferenceBlockText,
+} from './cited-reference-rule.ts';
 
 //endregion Context barrel

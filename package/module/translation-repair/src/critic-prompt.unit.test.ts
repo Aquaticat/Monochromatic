@@ -133,6 +133,25 @@ await describe({
         expect(sheet,).toContain('===== END =====',);
       },
     },),
+
+    it({
+      name: 'CARRIES the cited references after the pair with their rule (class thirty-five), and no block at all when the original links nowhere',
+      fn: async () => {
+        /**
+         Sheet built with one reference line.
+         */
+        const sheet = buildCriticMessages({
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          referenceContext: '- reference 1 https://cats.example/post: the kitten has an older sister.',
+        },)[1]?.content ?? '';
+        expect(sheet.indexOf('===== CITED REFERENCES, EVIDENCE ONLY =====',),).toBeGreaterThan(sheet.indexOf('===== TRANSLATION =====',),);
+        expect(sheet,).toContain('- reference 1 https://cats.example/post: the kitten has an older sister.',);
+        expect(sheet,).toContain('never report or support it as accuracy/addition',);
+        expect(MESSAGES[1]?.content ?? '',).not
+          .toContain('CITED REFERENCES',);
+      },
+    },),
   ],
 },);
 

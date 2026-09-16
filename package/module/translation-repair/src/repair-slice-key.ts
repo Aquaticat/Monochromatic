@@ -323,6 +323,10 @@ export const SLICE_CACHE_VERSION = 30;
  
  @param identityContext - declared names travelling with every slice
  
+ @param referenceContext - what the original's cited pages say, which the
+ critic and panel sheets read (class thirty-five), so a slice settled before
+ the references were shown keys apart from one settled after
+ 
  @returns Stable string for the key
  
  @example
@@ -335,10 +339,12 @@ export function repairRunShape(
     models,
     adjudicationConfig,
     identityContext,
+    referenceContext,
   }: {
     readonly models: RepairModels;
     readonly adjudicationConfig?: AdjudicationConfig;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
   },
 ): string {
   return JSON.stringify([
@@ -351,6 +357,9 @@ export function repairRunShape(
     models.editorRuleAddendum ?? '',
     adjudicationConfig ?? null,
     identityContext ?? '',
+    // ONLY WHERE THE ORIGINAL LINKS SOMEWHERE, so the 33 entries that cite
+    // nothing keep the keys their slices were settled under.
+    ...(((referenceContext ?? '') === '') ? [] : [referenceContext,]),
   ],);
 }
 

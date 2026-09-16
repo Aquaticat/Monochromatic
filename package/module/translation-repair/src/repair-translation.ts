@@ -179,6 +179,12 @@ export async function repairPreparedDocument(
   const identityFragment = (prepared.identityContext === undefined)
     ? {}
     : { identityContext: prepared.identityContext, };
+  /**
+   Reference block as a fragment, absent when the original links nowhere.
+   */
+  const referenceFragment = (prepared.referenceContext === undefined)
+    ? {}
+    : { referenceContext: prepared.referenceContext, };
 
   /**
    Model-facing governance folded into every repair key.
@@ -187,6 +193,7 @@ export async function repairPreparedDocument(
     models,
     ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
     ...identityFragment,
+    ...referenceFragment,
   },);
 
   /**

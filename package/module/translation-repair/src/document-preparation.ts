@@ -97,6 +97,10 @@ import { unclaimedOutsideAlignment, } from './preparation-unclaimed.ts';
  (web lookups of the works the original names), appended to the identity
  context after the notes both documents carry
  
+ @param referenceContext - what the pages the original links say, passed
+ through untouched to the prepared pair for the critic and panel sheets
+ (class thirty-five); empty means the original links nowhere
+ 
  @param sealArchiveOriginal - whether a span the archive's translators' note
  calls the English original is sealed out of every slice so it ships as it
  stands (the owner's rule of 2026-09-08, `archive-original-note.ts`); false
@@ -120,6 +124,7 @@ export function prepareDocumentPair(
     blockPairings,
     sectionPairing,
     contextLines = [],
+    referenceContext = '',
     sealArchiveOriginal = false,
   }: {
     readonly sourceText: string;
@@ -130,6 +135,7 @@ export function prepareDocumentPair(
     readonly blockPairings?: ReadonlyMap<number, readonly BlockPair[]>;
     readonly sectionPairing?: readonly SectionPair[];
     readonly contextLines?: readonly string[];
+    readonly referenceContext?: string;
     readonly sealArchiveOriginal?: boolean;
   },
 ): PreparedDocumentPair {
@@ -512,6 +518,8 @@ export function prepareDocumentPair(
     ...(identityContextLines.length === 0
       ? {}
       : { identityContext: identityContextLines.join('\n',), }),
+    // Omitted when the original links nowhere, for the same reason.
+    ...((referenceContext === '') ? {} : { referenceContext, }),
     declaredNames,
     alignmentFindings: [
       ...sectionFindings,

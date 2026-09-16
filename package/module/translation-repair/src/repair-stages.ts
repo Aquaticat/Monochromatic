@@ -102,6 +102,9 @@ export type CriticStageResult = {
  @param identityContext - declared names from both sides' front matter,
  carried whole-document because chunk text never contains front matter
  
+ @param referenceContext - what the original's cited pages say (class
+ thirty-five), carried whole-document likewise
+ 
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -123,6 +126,7 @@ export async function runCriticStage(
     targetText,
     documents,
     identityContext,
+    referenceContext,
     neighbouringIncumbentText,
     neighbouringSourceText,
     signal,
@@ -136,6 +140,7 @@ export async function runCriticStage(
     readonly targetText: string;
     readonly documents: Readonly<Record<DocumentSide, AnchorTarget>>;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly signal: AbortSignal;
@@ -151,6 +156,7 @@ export async function runCriticStage(
     sourceText,
     targetText,
     ...(identityContext === undefined ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
   },);

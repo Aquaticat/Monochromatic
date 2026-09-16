@@ -64,6 +64,10 @@ import {
  passed down from the whole document because chunk text carries no front
  matter of its own
  
+ @param referenceContext - what the original's cited pages say, shown to
+ the critic and the panel so a detail the archive took from a reference is
+ not deleted as an addition (class thirty-five)
+ 
  @param declaredNames - same declarations as strings to compare rather than
  prose to read, which is a different job: one tells a model what is true, the
  other decides whether a patch may ship
@@ -104,6 +108,7 @@ export async function repairChunk(
     models,
     adjudicationConfig,
     identityContext,
+    referenceContext,
     declaredNames,
     neighbouringIncumbentText,
     neighbouringSourceText,
@@ -120,6 +125,7 @@ export async function repairChunk(
     readonly models: RepairModels;
     readonly adjudicationConfig?: AdjudicationConfig;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly declaredNames: readonly string[];
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
@@ -168,6 +174,7 @@ export async function repairChunk(
     targetText,
     documents,
     ...(identityContext === undefined ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...windowFragment,
     sliceIndex,
     signal,
@@ -226,6 +233,7 @@ export async function repairChunk(
    */
   const panel = await runPanelStage({
     ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     client,
     panelModelIds: models.panelModelIds,
     sourceText,

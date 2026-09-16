@@ -125,6 +125,9 @@ type PanelPacketResult = {
  
  @param documentSourceText - optional complete same-entry source evidence, not extra coverage
  
+ @param referenceContext - what the original's cited pages say (class
+ thirty-five), evidence for addition claims
+ 
  @param signal - caller cancellation
  
  @param perCallTimeoutMs - deadline per exchange
@@ -149,6 +152,7 @@ export async function runPanelStage(
     neighbouringIncumbentText,
     neighbouringSourceText,
     documentSourceText,
+    referenceContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -162,6 +166,7 @@ export async function runPanelStage(
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly documentSourceText?: string;
+    readonly referenceContext?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -188,6 +193,7 @@ export async function runPanelStage(
         ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
         ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
         ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
+        ...((referenceContext === undefined) ? {} : { referenceContext, }),
       },),
     };
   },);

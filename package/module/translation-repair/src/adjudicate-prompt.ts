@@ -5,6 +5,7 @@ import type { SpanAnchor, } from './issue-model.ts';
 import { ISSUE_SEVERITIES, } from './issue-taxonomy.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
 import {
   ACCURACY_CATEGORY_SCOPE,
@@ -157,6 +158,9 @@ export type AdjudicationPromptPlan = {
  
  @param documentSourceText - optional same-entry original evidence for checking current claims
  
+ @param referenceContext - what the pages the original links say (class
+ thirty-five), evidence for judging addition claims
+ 
  @returns Messages plus index maps for ballot resolution
  
  @example
@@ -172,6 +176,7 @@ export function buildAdjudicationMessages(
     neighbouringIncumbentText,
     neighbouringSourceText,
     documentSourceText,
+    referenceContext,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
@@ -179,6 +184,7 @@ export function buildAdjudicationMessages(
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly documentSourceText?: string;
+    readonly referenceContext?: string;
   },
 ): AdjudicationPromptPlan {
   /**
@@ -247,8 +253,18 @@ ${evidence}`;
       neighbouringSourceText ?? '',
       neighbouringIncumbentText ?? '',
       documentSourceText ?? '',
+      referenceContext ?? '',
       ...groupBlocks,
     ],
+  },);
+
+  /**
+   What the original's cited pages say, after the full document and before
+   the end, so an addition claim is judged against them (class thirty-five).
+   */
+  const referenceBlock = citedReferenceBlockText({
+    fence,
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
   },);
 
   /**
@@ -294,7 +310,7 @@ ${fence} TRANSLATION ${fence}
 ${targetText}
 ${nearbyBlock}${fence} CLAIMS ${fence}
 ${groupBlocks.join('\n\n',)}
-${documentBlock}${fence} END ${fence}`,
+${documentBlock}${referenceBlock}${fence} END ${fence}`,
       },
     ],
     claimIds,

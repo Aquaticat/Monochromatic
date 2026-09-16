@@ -171,6 +171,32 @@ await describe({
     },),
 
     it({
+      name: 'CARRIES the cited references after the claims with their rule (class thirty-five), and no block at all when the original links nowhere',
+      fn: async () => {
+        /** Plan built with one reference line. */
+        const plan = buildAdjudicationMessages({
+          sourceText: '原文',
+          targetText: 'translation',
+          clusters: CLUSTERS,
+          referenceContext: '- reference 1 https://cats.example/post: the kitten has an older sister.',
+        },);
+        /** Sheet text shown to the panelist. */
+        const sheet = plan.messages[1]?.content ?? '';
+        expect(sheet.indexOf('CITED REFERENCES, EVIDENCE ONLY',),).toBeGreaterThan(sheet.indexOf('CLAIMS',),);
+        expect(sheet,).toContain('- reference 1 https://cats.example/post: the kitten has an older sister.',);
+        expect(sheet,).toContain('never report or support it as accuracy/addition',);
+        /** Sheet built without references. */
+        const bare = buildAdjudicationMessages({
+          sourceText: '原文',
+          targetText: 'translation',
+          clusters: CLUSTERS,
+        },).messages[1]?.content ?? '';
+        expect(bare,).not
+          .toContain('CITED REFERENCES',);
+      },
+    },),
+
+    it({
       name: 'keeps proposer identity out of the sheet',
       fn: async () => {
         /** Plan for the two-cluster sheet. */
