@@ -135,6 +135,17 @@ which the takeover session does not have.
   `Mio15` launched at 04:06 UTC on frozen `36b79bfa0` (pid 1089368,
   runs `~/temp/agent/Mio15-20260916`,
   log `~/temp/agent/Mio15-20260916.log`).
+- `Mio15` stopped INCOMPLETE at 06:46 UTC at slice 14,
+  class thirty-two (the page's farewell paragraph paired with the original's poem quote,
+  and the floor ceiling leaves no room for both);
+  fixed in `8d058d102` with the red guard `9c06d6d63`.
+  One-transcript verdict:
+  fewer cap cuts on ordinary blocks,
+  the first chat block unchanged (7 of 12 unreadable);
+  Hyper is billed per request and ran dry.
+  `Mio16` launched at 07:02 UTC on frozen `8d058d102` (pid 1135987,
+  runs `~/temp/agent/Mio16-20260916`,
+  log `~/temp/agent/Mio16-20260916.log`).
   Meters at launch:
   Synthetic 77.3 percent,
   Hyper 89,
@@ -1889,7 +1900,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `36b79bfa0` for the code;
+  `8d058d102` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
@@ -1921,6 +1932,15 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`8d058d102` (2026-09-16,
+07:00 UTC):
+class thirty-two,
+the block floor's ceiling also admits the page's blocks plus every original block of a kind the page has
+no block of,
+so a farewell paragraph the archive stands in a poem's place can be followed by the poem's quote;
+the finding names the allowance and the lane sheet asks for the shape;
+red guard `9c06d6d63`.
+Running on Mio16.
 `36b79bfa0` (2026-09-16,
 03:22 UTC):
 the archive block review reads one transcript per corroborated picture,
@@ -3500,15 +3520,18 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio15` by the seven steps and the three checks (frozen `36b79bfa0`,
-    pid 1089368,
-    runs `~/temp/agent/Mio15-20260916`,
-    log `~/temp/agent/Mio15-20260916.log`).
-    Mio13 wrote no page (class thirty-one,
-    read in the pass log under the "Mio13 read" heading dated 2026-09-16 02:55 UTC);
-    Mio14 was killed before its lanes when `36b79bfa0` landed
-    (the pass log's "Mio14 killed on the one-transcript landing" heading).
-    Mio15 is the first full pass since Mio12 to reach the lanes on the torn-down tree with V4.1 Flash
+1.  READ `Mio16` by the seven steps and the three checks (frozen `8d058d102`,
+    pid 1135987,
+    runs `~/temp/agent/Mio16-20260916`,
+    log `~/temp/agent/Mio16-20260916.log`).
+    Mio13 wrote no page (class thirty-one),
+    Mio14 was killed before its lanes when `36b79bfa0` landed,
+    and Mio15 stopped at slice 14 (class thirty-two,
+    the pass log's "Mio15 read" heading dated 2026-09-16 06:46 UTC).
+    On Mio16 read slice 14 first:
+    whether the farewell paragraph and the poem's block quote both ship
+    (grep `slice 14` and `no block of its kind`).
+    Mio16 is the first full pass since Mio12 to reach the lanes on the torn-down tree with V4.1 Flash
     judging;
     it decides whether the 2026-09-10 daytime changes (the name-form policy,
     the archive-review wiring) hold on a real page,
@@ -3539,16 +3562,14 @@ each read off the pass log and the shipped page:
     the one the other readers carry most,
     landed in `36b79bfa0` and recorded in
     [the one-transcript decision](../decision/translation-repair-archive-review-one-transcript-2026-09-16.md).
-    It is a hypothesis until measured:
-    Mio14's 61 minutes on six transcripts are the baseline
-    (24 cap cuts,
-    6 of 12 seats unreadable on the first chat block,
-    the Hyper completion tokens per model in the pass log);
-    Mio15 runs on `36b79bfa0`,
-    so read whether the seven seats that overran on Mio13 answer the first chat translation within cap
-    (grep `archive-block-review` and `finish_reason` in its log).
-    If they still overrun,
-    the lever is spent and the doubled re-ask cap is the next question for the owner.
+    MEASURED on Mio15 against Mio14
+    (the pass log's "Mio15 read" heading):
+    ordinary blocks cost fewer cap cuts (5 over 4 blocks against 15 over 6),
+    the first chat block is unchanged (7 of 12 seats unreadable against 6),
+    so the lever is spent on the block that matters.
+    The doubled re-ask cap is the open owner question,
+    put to the owner with the Mio15 read on 2026-09-16;
+    do not build it unasked.
 3.  THEN THE QUEUE AS BEFORE,
     one entry at a time,
     each read before the next is launched:

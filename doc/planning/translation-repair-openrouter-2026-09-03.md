@@ -7144,6 +7144,149 @@ and the per-model completion tokens on Hyper against the Mio14 numbers.
 If the overrun holds at Mio14's rate,
 the lever is spent and the doubled re-ask cap goes back to the owner.
 
+## Mio15 read, 2026-09-16, 06:46 UTC: no page, class thirty-two, and the one-transcript verdict
+
+Mio15 (frozen `36b79bfa0`,
+pid 1089368,
+launched 04:06 UTC) stopped INCOMPLETE at 06:45:58 UTC after 160 minutes,
+in the consolidation of slice 14:
+`the standing text failed the deterministic publication rule and the consolidation left nothing valid to ship (gate-kept-standing)`.
+No page was written.
+Spend:
+OpenRouter 0.74 USD over 625 calls (267.73 to 267.02),
+Bedrock 0.09 USD over 278 calls,
+Synthetic 76.44 to 73.68 percent of its week,
+Hyper 40 to 0.
+
+### The one-transcript verdict, against Mio14
+
+Read off both logs at the same stage,
+the archive block review:
+
+- Mio14 (six transcripts) reviewed 6 blocks and spent 15 review cap cuts and 8 selection cap cuts;
+  the class thirty-one warning fired once,
+  `5 heard and 6 answered unreadably of 12 seats`.
+- Mio15 (one transcript) reviewed 5 blocks and spent 12 review cap cuts and 3 selection cap cuts;
+  the warning fired once,
+  `5 heard and 7 answered unreadably of 12 seats`,
+  on the last block reviewed,
+  the first chat translation;
+  the block was reviewed on the 5 heard and retained from the archive
+  ("while prior reviews flagged it as unsupported by the provided source images,
+  the current archive...").
+- The four blocks before it cost 5 review cuts on Mio15,
+  one per Hyper reasoning seat,
+  against two to four cuts per seat on Mio14,
+  and every one reached selection with 6 or 7 heard reviews.
+
+So the lever lowers the bench's load on ordinary blocks and leaves the one block whose content drives the
+reasoning seats past cap unchanged:
+on that block v4.1-flash was cut four times across its re-asks,
+v4-flash,
+v4-pro,
+glm-5.3 and minimax twice each,
+and gemma-4-e2b failed the schema guard.
+The lever is spent there;
+the doubled re-ask cap is the open owner question.
+
+### Hyper is billed per request
+
+Hyper's balance fell 0.64 credits per call on both passes
+(84 to 42 over 66 calls on Mio14,
+40 to 12 over 44 calls on Mio15,
+then to 0 during the review),
+whatever the completion size.
+Token efficiency does not save Hyper credits;
+only fewer calls do.
+With Hyper dry the lanes ran on Synthetic,
+Bedrock and OpenRouter,
+and OpenRouter carried the five reasoning seats under the caps for 0.74 USD.
+
+### Class thirty-two: the page's substitute block leaves no room for the original's own kind
+
+Slice 14 is the closing poem,
+a block quote whose attribution line carries the bare URL
+(`——[晓炊](https://space.bilibili.com/246513889)，为 Mio 创作，献给已逝去的所有跨性别同胞`).
+The archive never translated the poem;
+its page ends with a farewell paragraph of its own,
+`May you rest in peace, Mio.`.
+The roster's block pairing set the two against each other
+(`paired 3 of 3 original and 3 of 5 translation blocks across 3 relations, from 6 usable voices of 6 heard`,
+04:57 UTC),
+though the pairing sheet says to leave a block with no counterpart out;
+a checker then flagged the pair as "too brief",
+and 2 of 6 critics voted non-translation,
+one short of the floor of 3.
+Mio12 had sliced the region differently,
+so its page carries the farewell and then the poem as a block quote,
+which is the page this entry wants.
+
+From there every stage did what it was written to do and nothing could ship:
+
+- The lane's contest winner kept the poem's block quote and dropped the farewell:
+  `The PAGE AS IT STANDS is 1 block (paragraph) and your translation is 1 (blockquote)`.
+- The consolidation's standing text was that quote,
+  so it was withheld;
+  the incumbent,
+  the farewell alone,
+  fails the link rule
+  (`The ORIGINAL or the PAGE AS IT STANDS carries link-url https://space.bilibili.com/246513889 and your translation does not`),
+  so only fresh proposals reached the slate.
+- The slate chose v4-flash's paragraph with hard breaks
+  (weight 3.5 of 6 ballots),
+  which passes the rule;
+  the semantic gate then preferred the standing
+  (`consolidate gate: 6/7 usable, settled on standing, ships standing`),
+  and a standing the rule refuses cannot ship,
+  which is the owner's 2026-09-04 rule that an ineligible standing stops.
+
+The defect is in the floor rule's ceiling.
+`compareBlocks` in `translate-validate.ts` admits at most the larger of the page block count and the original block count,
+so with one paragraph on the page and one block quote in the original a candidate may carry one block:
+the page's paragraph or a paragraph rendering of the poem,
+never the farewell followed by the quote.
+The consolidation sheet asks for exactly that
+("ADD A BLOCK ONLY to carry something the ORIGINAL has and the archive left out"),
+and the rule made it unreachable.
+The class-ten decision of 2026-09-07 covers a page with more blocks than the original;
+it did not see a page with the same count in a kind the original lacks,
+standing in for a block of a kind the page lacks.
+
+The fix,
+`8d058d102`
+(red guard `9c06d6d63`):
+the ceiling also admits the page's blocks plus every original block of a kind the page has no block of,
+the finding names the allowance
+("The ORIGINAL's blockquote has no block of its kind on the PAGE AS IT STANDS,
+so carry the PAGE AS IT STANDS's blocks and add it after them in the ORIGINAL's own kind"),
+and the lane sheet asks for that shape outright.
+The pinned cases hold:
+a page whose extra blocks are of a kind the original lacks
+(the archive's quote saying a passage was left by someone) still refuses the original's shape,
+Huasheng's stanzas still pass,
+and the block-from-nowhere case is still refused,
+since the widened ceiling counts only original blocks.
+What it does not do is undo the pairing;
+the wrong pair stands and the judges choose between the page-shaped and the both-kept renderings with both
+texts in front of them.
+
+## Mio16 launches on class thirty-two, 2026-09-16, 07:02 UTC
+
+Frozen `8d058d102`,
+pass pid `1135987`,
+runs `~/temp/agent/Mio16-20260916`,
+log `~/temp/agent/Mio16-20260916.log`.
+Meters at launch:
+Synthetic 73.7 percent,
+Hyper 0 (dry),
+Bedrock 185.25 USD,
+OpenRouter 267.02 USD.
+Read against Mio12 as before,
+plus slice 14:
+whether the lane or the consolidation ships the farewell followed by the poem's quote
+(grep `slice 14` and `no block of its kind`),
+and whether the pairing sets the poem against the farewell again.
+
 ## Clustered panels and complete repair evidence implemented, 2026-09-10
 
 The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,

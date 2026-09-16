@@ -69,3 +69,16 @@ If they do not,
 the lever is spent and the doubled re-ask cap is the next question for the owner.
 The corroboration verdict itself is still taken between the first two readings;
 this decision touches only what the archive review is shown.
+
+## Measured, 2026-09-16
+
+Mio14 (six transcripts,
+killed after its review) against Mio15 (one transcript),
+read off both logs at the archive block review
+(the pass log's "Mio15 read" heading dated 2026-09-16 06:46 UTC):
+the four ordinary blocks on Mio15 cost 5 review cap cuts against 15 over Mio14's six blocks,
+and every one reached selection with 6 or 7 heard reviews;
+the first chat translation still fired the class thirty-one warning,
+7 of 12 seats unreadable against Mio14's 6.
+The decision stands for what it bought;
+the doubled re-ask cap is the open question for the block it did not reach.
