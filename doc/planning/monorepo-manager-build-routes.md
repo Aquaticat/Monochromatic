@@ -214,16 +214,30 @@ rolldown,
 and cargo-nextest rules,
 and a conflict with `/ts` source imports.
 
-The strongest counterpoint is cache correctness:
-if sandbox-enforced inputs or a mature remote cache for the new CI become hard requirements,
-Route A gains the capability Route B would have to build,
-and the ranking can flip.
+The strongest counterpoint was cache correctness:
+sandbox-enforced inputs or a mature remote cache for CI would have given Route A a capability Route B must build.
+The user's answers,
+recorded in "Answered questions",
+accept lint-level input enforcement and a local cache,
+so the ranking holds.
+
+## Answered questions
+
+Answered by the user on 2026-09-16;
+neither answer flips the ranking.
+
+- Input enforcement:
+   OS-level sandbox enforcement is not required.
+  The user noted that file-enforcer does not force every read through `cat`,
+   and had considered an oxlint rule forbidding `readFile` and similar direct reads in `file-enforcer.config.ts`,
+   an idea not previously documented.
+  Lint-level enforcement of that kind is "okay-ish",
+   so static enforcement meets the bar.
+- Remote cache:
+   a local cache is enough for now.
 
 ## Open questions
 
-- Must the task cache enforce declared inputs,
-   or is declaration without enforcement acceptable?
-- Is a shared remote cache between local runs and CI required?
 - Which transport should the inspection and control RPC use:
    a local socket,
    HTTP on loopback,
