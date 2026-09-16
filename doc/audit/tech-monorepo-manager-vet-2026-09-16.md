@@ -281,6 +281,27 @@ Signals recorded during the check:
 Signals that do not prevent reaching a consumed feature's behavior lower the weight-5 documentation quality score
 instead of removing the candidate.
 
+### Category fit for screening
+
+Recorded 2026-09-16 after the GitHub pass counted general task runners as in scope,
+which the user's words "monorepo manager" do not support.
+
+- Monorepo manager:
+   models a workspace of multiple projects or packages and runs tasks across them using relationships between projects.
+- Component:
+   a persistent watch process with an RPC,
+   IPC,
+   or HTTP interface that can compose with a monorepo manager.
+- Category mismatch:
+   a command runner without a workspace or project model,
+   such as a Makefile-style recipe runner,
+   unless it qualifies as a component.
+
+Screening order:
+category fit,
+then the HC7 documentation gate,
+then the remaining hard constraints.
+
 ### User-directed exclusions
 
 - moon:
