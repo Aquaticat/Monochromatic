@@ -262,6 +262,63 @@ Bazel core meets neither natively:
  it has no watch command and no status query,
  and file generation would come from rulesets or repository-owned rules.
 
+### Bending Bazel to the requirements
+
+Asked after `doc/audit/tech-monorepo-manager-vet-2026-09-16.md` found no qualifying tool.
+Bazel exited that vet on a documentation confusion trigger:
+`https://bazel.build/docs/configurable-attributes` links "Configurable Build Attributes" to two different URLs.
+Clones:
+`~/temp/agent/bazel-2026-09-16` at `8e90a0d`,
+`~/temp/agent/bazel-lib-2026-09-16` at `7ca5f6d`.
+
+- Inspection:
+   the Build Event Protocol is the documented interface that "allows third-party programs to gain insight into a Bazel invocation"
+   (`docs/remote/bep.mdx:8-10`).
+  `--bes_backend=grpc://HOST:PORT` streams those events to any server implementing the public
+   `google/devtools/build/v1/publish_build_event.proto` service
+   (`docs/remote/bep.mdx:92-100`).
+  A repository-owned watch daemon could be that server and answer status queries.
+- Control:
+   one Bazel server handles at most one invocation;
+   concurrent invocations block or fail fast
+   (`docs/run/client-server.mdx:12-14`).
+  Exit code 8 documents an interrupted build with orderly shutdown
+   (`docs/run/scripts.mdx:53`),
+   so a daemon that owns the `bazel` client process can cancel it.
+  The client-to-server gRPC protocol with `Run` and `Cancel` is mentioned only in contributor docs as internal code layout
+   (`docs/contribute/codebase.mdx:87-91`),
+   not documented for users.
+- Queries during a build:
+   the scripting guide says a separate `--output_base` avoids contending for the lock used by interactive commands
+   (`docs/run/scripts.mdx:12-31`),
+   at the cost of a second server.
+- Watch:
+   Bazel has none;
+   `ibazel` reruns commands but reports outward only,
+   so the daemon would replace it.
+- File generation into the repository:
+   bazel-lib `write_source_files` updates checked-in files with `bazel run`,
+   and its generated `diff_test` fails when a file is out of date
+   (`lib/write_source_files.bzl`,
+   module docstring).
+  That detects drift;
+   reverting an external edit would still be the daemon's job.
+  File-enforcer logic would run as declared-input Bazel actions instead of reading arbitrary files at runtime.
+
+Parts that would be repository-built:
+the watch daemon,
+its documented inspection and control RPC,
+the local Build Event Service endpoint,
+file-enforcer actions,
+protected-destination reverts,
+and the ruleset gaps already recorded:
+oxlint,
+tsdown,
+rolldown,
+cargo-nextest,
+the Android app,
+and `.ts` source imports.
+
 ## Evidence limits
 
 - No Bazel build of any package was attempted.
