@@ -235,6 +235,15 @@ neither answer flips the ranking.
    so static enforcement meets the bar.
 - Remote cache:
    a local cache is enough for now.
+- Sandboxing:
+   later the same day the user made sandboxing with at least cgroups a must,
+   and made every 0.x capability Linux only.
+  Cgroup v2 provides resource control and freezing but no filesystem access control,
+   so this does not replace the input-enforcement answer.
+  Route B must build cgroup sandboxing;
+   Bazel exposes experimental cgroup startup options such as `experimental_cgroup_parent` and
+   `experimental_run_in_user_cgroup`,
+   whose per-action coverage is still being researched.
 
 ## Open questions
 

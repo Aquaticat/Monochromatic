@@ -84,21 +84,49 @@ Measured 2026-09-16 on the development machine:
    and queueing or rerunning a task by hand.
   Changing concurrency at runtime is not in the first version.
 
+### Further answers on 2026-09-16
+
+- Platforms:
+   everything in 0.x is Linux only.
+- Sandboxing is a must,
+   using at least cgroups.
+  The kernel cgroup v2 documentation lists CPU,
+   memory,
+   IO,
+   PID,
+   and cpuset controllers and a `cgroup.freeze` interface that stops every process in a cgroup and its descendants
+   (<https://docs.kernel.org/admin-guide/cgroup-v2.html>);
+   it provides no filesystem access control.
+  Cgroups therefore cover resource limits and pausing,
+   while restricting undeclared file reads needs a separate mechanism or the lint-level enforcement recorded in
+   [`monorepo-manager-build-routes.md`](monorepo-manager-build-routes.md).
+- Heavy suites are test files whose names match `*.expensive.*.test.*`.
+  Four files match today:
+  `package/dev-script/task-util/src/tsc-filter.expensive.unit.test.ts`,
+  `package/module/image-diff/src/client.expensive.unit.test.ts`,
+  `package/cli/vmsync/src/lifecycle.expensive.unit.test.ts`,
+  and `package/cli/mvm/src/backend/hetzner/provision.expensive.unit.test.ts`.
+  Suites that are heavy today only by task name,
+   such as `test:container` or `test:wayland`,
+   are not excluded by this rule unless their files adopt the naming.
+- The user delegated the concurrency override name.
+  Chosen:
+   `MONOCHROMATIC_JOBS`.
+  The prefix follows the repository's existing environment variables,
+   such as `MONOCHROMATIC_VERBOSE` and `MONOCHROMATIC_WARN`;
+   `JOBS` follows Bazel's `--jobs` option
+   (`src/main/java/com/google/devtools/build/lib/buildtool/BuildRequestOptions.java` in the Bazel source)
+   and the `--jobs` convention of Make-style build tools.
+  If the tool receives its own name,
+   the prefix follows that name.
+
 ## Open questions
 
 - Tech stack:
    undecided.
    The user corrected an earlier framing that assumed Node.
-- Which suites count as heavy?
-   Candidates from current task names include container,
-   Wayland,
-   mutation,
-   network,
-   and instrumented device suites;
-   the classification is not decided.
-- Does the Linux-only statement cover the whole 0.x daemon,
-   or only freezing running tasks?
-- What is the environment variable name for the concurrency override?
+- Does sandboxing also need to restrict file reads,
+   beyond cgroup resource control and freezing?
 
 ## Design
 
