@@ -456,6 +456,43 @@ Removing anything on the grounds that a neighbour OUGHT to hold it is not,
 because the neighbour may never produce it and the document then loses the passage entirely.
 Zero occurrences is a worse outcome than two.
 
+### The pages the original cites
+
+The archive's human translators knew things the Chinese page never wrote down,
+and wrote some of them in.
+Mio's archive says her older sister is also trans;
+the Chinese page says only 有一个姐姐,
+and the blog the page cites says 「Mio 的姐姐也是 MtF」.
+Four critics reported the clause as an addition because the original does not carry it,
+the panel supported them,
+and the editor deleted a true fact
+(class thirty-five,
+2026-09-16;
+the owner's decision is
+[the cited-references decision](../../../doc/decision/translation-repair-cited-references-2026-09-16.md)).
+
+So every `http` link the original writes is fetched once through the Exa contents endpoint,
+4,000 characters of page text each and at most eight per entry,
+and the critic sheet and the panel sheet carry a `CITED REFERENCES, EVIDENCE ONLY` block:
+one line per page,
+after the pair on the critic sheet and after the claims on the panel sheet,
+with the rule that a detail the translation carries that the original does not state but a cited page does
+is accurate detail the translator took from the original's own references,
+never an addition,
+and that the references never license adding,
+never outrank the original,
+and never license a defect elsewhere.
+The corpus's own site and people's profiles
+(a GitHub user,
+a twitter handle,
+a bilibili space,
+a zhihu person)
+are never fetched:
+they came back as repository names and page chrome.
+A page that could not be read is named on the sheet as such.
+The log prints `REFERENCE N <url>: success|error, <chars> chars, cached|bought`
+and `REFERENCES cited=N cached=K bought=M` once per entry.
+
 ### What this changes about caching
 
 The window is part of the question a slice is asked,
@@ -464,6 +501,9 @@ with each side labelled so that a source-only window
 and a translation-only window carrying the same text cannot collide.
 A slice whose neighbours change is asked a new question and is recomputed;
 a slice with no neighbours keys exactly as before and resumes.
+The cited references join the repair run shape the same way,
+only where the original links somewhere,
+so the 33 entries of the pinned corpus that cite nothing key exactly as before.
 
 ## What is folded out of candidate and archive text at intake
 
@@ -820,6 +860,18 @@ and reading one as an instruction has cost this package a defect before.
     Measured 2026-09-02:
     about 1.5 s and $0.007 a query;
     the pinned corpus's 118 spans cost about a dollar once.
+    The same key buys the pages the original cites through the Exa contents endpoint
+    (class thirty-five,
+    2026-09-16),
+    cached semi-permanently under the `reference` subdirectory of that cache,
+    one JSON record per url named by the url's digest,
+    a failure cached too so a dead link is not hit on every pass;
+    delete a record's file to refresh that page.
+    59 of the 92 pinned originals link somewhere,
+    116 links in all,
+    profiles and the corpus's own pages excluded before any is bought.
+    Unset,
+    one warning per citing entry says how many references went unread.
 
 -   `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
     Bearer token for the second provider,
@@ -928,14 +980,34 @@ Do not read a run with a dark seat as a comparison of the roster.
 
 #### Current roster changes
 
+Adding,
+removing or changing a model is one card in `src/model-cards.ts` since 2026-09-16:
+every provider catalog,
+the completion-cap table,
+the abandoned-spend ratios and every seat hold derive from the cards,
+the served-id lists in `src/roster-id.ts` type them,
+`mise run roster-card -- <provider> <served id>` prints a card fragment off the provider's live listing,
+and the unit tests sit models by role-named seats from `src/roster-fixture.ts`.
+The steps are
+[the roster-change runbook](../../../doc/runbook/translation-repair-roster-change.md)
+and the reasons
+[the model-card decision](../../../doc/decision/translation-repair-model-cards.md).
+
+DeepSeek V4 Pro 0813 and V4 Flash 0731 left the roster on 2026-09-16 at the owner's instruction
+("DeepSeek V4.1 Flash is much better than both V4 Pro and V4 Flash");
+both spellings on both providers are blocklisted,
+and V4.1 Flash took the editor and refiner seats V4 Pro held,
+unmeasured in those roles until the next editor calibration.
+The roster is eleven models.
+
 DeepSeek V4.1 Flash was approved on Hyper and OpenRouter on 2026-09-11.
 It has one distinct catalog identity,
 `deepseek-v4.1-flash`,
 served as that ID on Hyper and `deepseek/deepseek-v4.1-flash` on OpenRouter.
 Both actual compiled clients passed the streamed structured-output probe.
-V4 Flash 0731 remains a separate version;
-its ratings,
-writer exclusion and endpoint exclusions do not transfer.
+V4 Flash 0731 was a separate version whose ratings,
+writer exclusion and endpoint exclusions did not transfer,
+and it is off the roster since 2026-09-16.
 
 The new version retains the pooled completion cap of 13082.
 Its reported image capability does not itself enable a reader seat.
