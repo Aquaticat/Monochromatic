@@ -209,6 +209,34 @@ which the takeover session does not have.
   log `~/temp/agent/hulicaijia5-20260916.log`).
 - Owner,
   2026-09-16,
+  after the Mio19 report,
+  on the Mio19 wording note about "older sister who is also trans":
+  "It is true though?
+  And the Chinese source does imply that,
+  if I remember correctly?"
+  Measured:
+  the Chinese page says 有一个姐姐 in all seven revisions,
+  the cited blog says 「Mio 的姐姐也是 MtF」,
+  and four critics had filed the clause as an addition on absence alone with the panel supporting all four,
+  against the rule both sheets already carry.
+  Twenty of Mio19's 24 addition claims shipped an edit,
+  fourteen of Mio16's.
+  Class thirty-five.
+  Four options put to the owner;
+  the owner:
+  "3,
+  and we have Exa.
+  Such Exa fetched results need to be cached too to avoid hitting reference links too much",
+  then "Cache Exa results semi-permanently on disk since the reference links rarely change their content."
+  Landed in `dff8c91d2`
+  ([the cited-references decision](../decision/translation-repair-cited-references-2026-09-16.md)).
+  `hulicaijia5` killed at 16:43 UTC under always-kill-and-relaunch;
+  `Mio20` launched at 16:43 UTC on frozen `dff8c91d2` (pid 1551070,
+  runs `~/temp/agent/Mio20-20260916`,
+  log `~/temp/agent/Mio20-20260916.log`),
+  its log opening `REFERENCES cited=2 cached=2 bought=0`.
+- Owner,
+  2026-09-16,
   same hour:
   "Adding / removing / changing models should never be this difficult.
   And given how fast the AI space is moving,
@@ -2014,6 +2042,18 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`dff8c91d2` (2026-09-16,
+16:40 UTC):
+class thirty-five,
+the critic and panel sheets read the pages the original cites,
+bought once through the Exa contents endpoint and cached semi-permanently under the lookup cache,
+with the rule that a detail a cited page states is accurate detail the translator took from the original's own references
+and never an addition;
+the repair slice key folds the block in only where the original links somewhere
+(the owner's decision of 2026-09-16,
+[the cited-references decision](../decision/translation-repair-cited-references-2026-09-16.md);
+the pass log's "Class thirty-five" heading dated 2026-09-16 16:43 UTC).
+Running on Mio20.
 `099b69787` (2026-09-16,
 15:25 UTC):
 role-named fixture seats (`roster-fixture.ts` and its guard test) in 172 test files and the archive fixture.
@@ -3650,28 +3690,37 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `hulicaijia5` by the seven steps and the three checks (frozen `1cfd9d2fe`,
-    code tip `099b69787`,
-    pid 1470018,
-    runs `~/temp/agent/hulicaijia5-20260916`,
-    log `~/temp/agent/hulicaijia5-20260916.log`,
-    launched 15:58 UTC with Hyper dry).
-    `Mio19` read clean and #123 is closed
-    (the pass log's "Mio19 read" heading dated 2026-09-16 16:05 UTC).
-    On hulicaijia read first the three shapes no read page has met:
-    the inline ruby annotation,
-    the Sakura component,
-    and the footnote (its marker and definition against the archive's);
-    then the archive block review
-    (its 2026-09-09 INCOMPLETE was class twenty-six,
-    5 of 11 heard with 3 seats unreachable;
-    `glm-5.3` is unreachable again today);
-    then the seven steps and the three checks.
-    Mio19's wording notes (the Chinese reference-link title with a gloss,
+1.  READ `Mio20` by the seven steps and the three checks (frozen `dff8c91d2`,
+    pid 1551070,
+    runs `~/temp/agent/Mio20-20260916`,
+    log `~/temp/agent/Mio20-20260916.log`,
+    launched 16:43 UTC with Hyper dry;
+    `hulicaijia5` was killed for it 45 minutes in and ships nothing).
+    Mio20 is the first pass on class thirty-five
+    (the pass log's "Class thirty-five" heading dated 2026-09-16 16:43 UTC).
+    Read first whether `She has an older sister who is also trans` ships in the intro paragraph,
+    then the addition claims that shipped an edit
+    (`lanes.repair.result.issues` with category `accuracy/addition` and disposition `shipped`
+    in `artifacts/Mio.json`;
+    Mio19 shipped 20 of 24),
+    then the `REFERENCE` lines in the log
+    (the blog cached at 2,729 characters,
+    the archived copy a cached failure),
+    then the Mio19 reading as before:
+    the pairing,
+    slice 16,
+    the first chat block,
+    slice 14,
+    the seven checks against Mio12,
+    the three checks,
+    the spend.
+    The other Mio19 wording notes (the Chinese reference-link title with a gloss,
     the trailing space on the horizontal rule,
-    the IQ quote's dropped source hard break,
-    the archive's "who is also trans" dropped on source authority) are recorded there;
+    the IQ quote's dropped source hard break) stand;
     fix any of them only as a class with a mechanism.
+    If the page reads clean,
+    the queue resumes with `hulicaijia` on the frozen tip dist
+    (`hulicaijia6`).
     ALWAYS KILL AND RELAUNCH if the source moves while it runs.
 2.  DECIDED (owner,
     2026-09-16,

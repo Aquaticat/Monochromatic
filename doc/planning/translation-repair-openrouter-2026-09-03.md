@@ -7674,6 +7674,107 @@ then the archive block review
 (its 2026-09-09 INCOMPLETE was class twenty-six),
 then the seven steps and the three checks.
 
+## Class thirty-five, 2026-09-16, 16:43 UTC: the sheets delete accurate detail the translator took from a cited page
+
+The owner asked about the Mio19 wording note
+("The archive's 'older sister who is also trans' lost the clause on source authority"):
+"It is true though?
+And the Chinese source does imply that,
+if I remember correctly?"
+Measured:
+the Chinese page says 有一个姐姐 in all seven of its revisions
+(`git log --follow` on the corpus),
+the English clause arrived in the translation commit `c7cc3259`,
+and the blog the page cites
+(`stblog.penclub.club/posts/InMemoryOfMio/`,
+fetched from its archived copy)
+says 「Mio 的姐姐也是 MtF。她大我们八岁，在小学五年级时就第一次穿了女装」.
+True,
+and stated only by the reference.
+
+Four critics filed the clause as `accuracy/addition` on absence alone
+("not present in the source text"),
+the panel supported all four,
+the editor deleted it,
+against the rule both sheets already carry
+(the critic sheet:
+accurate detail a translator added is not an addition,
+report it only when wrong;
+the adjudication sheet:
+vote unsupported on a claim whose whole case is that the ORIGINAL does not carry it).
+Measured over the repair lane's shipped addition edits:
+Mio19 20 of 24,
+Mio16 14 of 24,
+Mio12 9 of 22,
+hakureico23 11 of 12,
+noname3 7 of 9;
+among Mio19's twenty the sister,
+the backpacks in `photo5`,
+"no one was hurt",
+"in mainland China",
+"lucky" and the closing farewell.
+
+Four options put to the owner
+(only what the source contradicts;
+facts stand and wording may go;
+feed the cited reference to the critics;
+keep source-only authority),
+ranked A > C > D > B.
+The owner chose the third:
+"3,
+and we have Exa.
+Such Exa fetched results need to be cached too to avoid hitting reference links too much",
+and while it was built:
+"Cache Exa results semi-permanently on disk since the reference links rarely change their content."
+Recorded in
+[the cited-references decision](../decision/translation-repair-cited-references-2026-09-16.md).
+
+The fix (`dff8c91d2`):
+every link the original writes
+(its own site and people's profiles left out,
+at most eight)
+is bought once through the Exa contents endpoint
+(4,000 characters of page text)
+into `~/.cache/translation-repair/lookup/reference/`,
+keyed by the url's digest and never expiring,
+and a `CITED REFERENCES, EVIDENCE ONLY` block with its rule rides after the pair on the critic sheet
+and after the claims on the panel sheet;
+the repair slice key folds it in only where the original links somewhere.
+Verified live on the Mio source
+(the blog carries 姐姐也是 in its block,
+the archived copy timed out and is cached as such,
+a GitHub user page and a bilibili space came back as chrome and are now excluded),
+and the three guard suites fail with the block disabled.
+Measured over the corpus:
+59 of 92 originals link somewhere,
+116 links.
+
+`hulicaijia5` was killed at 16:43 UTC under always-kill-and-relaunch,
+45 minutes in
+(Bedrock 184.95 to 184.74 USD,
+OpenRouter 264.76 to 264.37 USD);
+it had reached the lanes and shipped nothing.
+
+## Mio20 launches on class thirty-five, 2026-09-16, 16:43 UTC
+
+Frozen `dff8c91d2`,
+pass pid `1551070`,
+runs `~/temp/agent/Mio20-20260916`,
+log `~/temp/agent/Mio20-20260916.log`.
+Meters at launch:
+Synthetic 58.3 percent,
+Hyper 0 (dry until the 07:31 UTC reset),
+Bedrock 184.74 USD,
+OpenRouter 264.37 USD.
+The log opens with `REFERENCES cited=2 cached=2 bought=0`:
+the blog read back from the cache at 2,729 characters,
+the archived copy as its cached failure,
+the two profile links never asked.
+Read first whether `She has an older sister who is also trans` ships,
+then the addition claims that shipped an edit against Mio19's 20 of 24
+(`lanes.repair.result.issues` in `artifacts/Mio.json`),
+then the seven steps and the three checks.
+
 ## Clustered panels and complete repair evidence implemented, 2026-09-10
 
 The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,
