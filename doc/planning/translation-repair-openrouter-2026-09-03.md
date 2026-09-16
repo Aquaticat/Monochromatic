@@ -7287,6 +7287,123 @@ whether the lane or the consolidation ships the farewell followed by the poem's 
 (grep `slice 14` and `no block of its kind`),
 and whether the pairing sets the poem against the farewell again.
 
+## Mio16 read, 2026-09-16, 09:42 UTC: settled, the chat's speakers swapped, class thirty-three
+
+Frozen `8d058d102`,
+160 minutes,
+`TALLY Mio status=SETTLED slices=17 translateStatus=complete pageChanged=11 selection=contested`,
+no interruption,
+no INCOMPLETE,
+no hold,
+no payment refusal.
+Page 9107 bytes against Mio12's 8867,
+0 straight apostrophes in words,
+33 curly,
+26 curly double quotes,
+1 CJK run (the 澪 the archive keeps in the opening quote),
+2 `Translation:` labels (the archive's two,
+Mio12 had lost the first),
+front matter equal to the archive's.
+Spend:
+Bedrock 185.25 to 185.15 USD,
+OpenRouter 267.02 to 266.97 USD,
+Hyper 231 (the daily reset at 07:31 UTC) to 0,
+Synthetic weekly 73.7 to 69.9 percent.
+
+### Slice 14 and class thirty-two
+
+The pairing did not set the poem's quote against the farewell paragraph this time:
+slice 14 was cut the Mio12 way,
+the poem inside the region with the second chat translation,
+and no `no block of its kind` finding fired anywhere.
+Class thirty-two stays verified by its unit cases only;
+the page ships the farewell followed by the poem's quote with its five breaks
+because the slice carried both as the page stood.
+
+### The seven checks against Mio12
+
+- The 澪 versus Mio opening:
+  the page keeps 澪 (`澪? Not really.`) as the archive does;
+  Mio12 had written "Mio?".
+- The coming-out bullets:
+  the archive's three bullets ship as the page stands,
+  and the source sentence "曾在春の芽工作室 QQ 群担任管理员，还曾：" now also ships as prose before them,
+  so the paragraph says she administered the group and the third bullet says she started to manage it;
+  a redundancy,
+  not a defect class,
+  and the bullet's "Harunome Hanbai" is the archive's own rendering of 工作室.
+- The university wording:
+  `a local 985 university, one of China's top universities`.
+- The SRS expansion:
+  "SRS (sex reassignment surgery)".
+- The first chat's `Translation:` label:
+  restored.
+- The "musculine" typo the reviewers named on Mio12:
+  corrected to "masculine".
+- The poem:
+  five breaks,
+  the credit line carried,
+  under `May you rest in peace, Mio.`
+
+### The first chat block: class thirty-three
+
+The archive block review (5 heard,
+7 answered unreadably of 12,
+the one-transcript sheet) revised the archive's chat translation,
+and the revision swaps the opening speakers.
+The page reads `Me: Are you there? / Mio: I'm here.`
+The picture (`photo6.webp`) shows the grey left bubble sending 在嘛 and the green right bubble answering 在的,
+so Mio opened and the friend answered,
+which is what the archive's human translation had
+(`Mio: Do you have a moment right now? / Me: Sure.`).
+The transcript in the sheet is bare lines
+("在嘛 / 在的 / 我其实想问一下你是不是 mtf"),
+with no side and no sticker,
+so the judges guessed:
+Kimi-K3 wrote "Bei Yan Yun Yi opening with 在嘛 (Mio answers 在的)" and Qwen3.8-27B "restores the correct speaker order".
+The sticker Mio sent first is gone the same way:
+not a word,
+so never transcribed.
+Two smaller slips in the same block:
+"posting about SRS" where the picture says 搜过 (searched),
+and "(sticker)" where the friend sent a screenshot of the post.
+
+The fix (`170b6b40c`,
+red guard `605e66228`,
+wording measured in `ffd35334a`):
+`READING_INSTRUCTION` asks the readers to begin every chat message with `[left]` or `[right]`
+for the side its bubble is attached to,
+judged by colour,
+tail and the edge it hugs,
+and to write `[sticker]` or `[image]` where a message is a picture;
+`slicePictures` leads a side-marked context with one legend line
+("[right] marks messages sent from the phone that took the screenshot and [left] the other party's").
+The corroboration share is 0.3,
+so the markers cannot break reader agreement.
+Measured on `photo6.webp` and `photo7.webp` with the six seated readers
+(`~/temp/agent/probe-sides-33-20260916.log` and `probe-sides-33-r2-20260916.log`):
+under the first wording ("the side its bubble sits on") all six sided photo6 right but two of six sided photo7's wide green bubbles left,
+because their text starts at the left edge;
+under the landed wording photo6 reads right on six of six and photo7 on five of six,
+gemma-4-26b-a4b siding everything left on photo7 both times.
+The most-carried transcript therefore sides the chat the way the picture does.
+
+## Mio17 launches on class thirty-three, 2026-09-16, 10:05 UTC
+
+Frozen `ffd35334a`,
+pass pid `1197118`,
+runs `~/temp/agent/Mio17-20260916`,
+log `~/temp/agent/Mio17-20260916.log`.
+Meters at launch:
+Synthetic 69.7 percent,
+Hyper 0 (dry until the 07:31 UTC reset),
+Bedrock 185.14 USD,
+OpenRouter 266.93 USD.
+Read the first chat block first:
+whether the transcript in the archive-block-review sheet carries the side markers and the legend,
+and whether the page has Mio opening (`Are you there?` or the archive's `Do you have a moment right now?`) and the friend answering;
+then the seven checks against Mio12 as before.
+
 ## Clustered panels and complete repair evidence implemented, 2026-09-10
 
 The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,

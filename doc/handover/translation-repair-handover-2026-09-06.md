@@ -146,6 +146,19 @@ which the takeover session does not have.
   `Mio16` launched at 07:02 UTC on frozen `8d058d102` (pid 1135987,
   runs `~/temp/agent/Mio16-20260916`,
   log `~/temp/agent/Mio16-20260916.log`).
+- `Mio16` settled at 09:42 UTC (160 minutes,
+  the first settled Mio since Mio12);
+  class thirty-two not exercised (slice 14 cut the Mio12 way),
+  the seven checks against Mio12 all better or equal,
+  but the archive block review revised the first chat translation with its opening speakers swapped:
+  the transcript carried no side (class thirty-three).
+  Fixed in `170b6b40c` (red guard `605e66228`),
+  wording measured on both chat pictures in `ffd35334a`
+  (photo6 six of six readers right,
+  photo7 five of six).
+  `Mio17` launched at 10:05 UTC on frozen `ffd35334a` (pid 1197118,
+  runs `~/temp/agent/Mio17-20260916`,
+  log `~/temp/agent/Mio17-20260916.log`).
   Meters at launch:
   Synthetic 77.3 percent,
   Hyper 89,
@@ -1900,7 +1913,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `8d058d102` for the code;
+  `ffd35334a` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
@@ -1932,6 +1945,17 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`ffd35334a` (2026-09-16,
+10:03 UTC):
+class thirty-three,
+the readers begin every chat message with `[left]` or `[right]` for the side its bubble is attached to
+and write `[sticker]` or `[image]` for a picture sent in place of words,
+and the picture section leads a side-marked context with one legend line saying what the sides mean;
+`170b6b40c` is the fix,
+`605e66228` the red guard,
+`ffd35334a` the wording measured on `Mio/photo6.webp` and `photo7.webp`
+(the pass log's "Mio16 read" heading dated 2026-09-16 09:42 UTC).
+Running on Mio17.
 `8d058d102` (2026-09-16,
 07:00 UTC):
 class thirty-two,
@@ -1940,7 +1964,8 @@ no block of,
 so a farewell paragraph the archive stands in a poem's place can be followed by the poem's quote;
 the finding names the allowance and the lane sheet asks for the shape;
 red guard `9c06d6d63`.
-Running on Mio16.
+Ran on Mio16 without being exercised (slice 14 was cut the Mio12 way);
+unit-verified only.
 `36b79bfa0` (2026-09-16,
 03:22 UTC):
 the archive block review reads one transcript per corroborated picture,
@@ -3520,40 +3545,35 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio16` by the seven steps and the three checks (frozen `8d058d102`,
-    pid 1135987,
-    runs `~/temp/agent/Mio16-20260916`,
-    log `~/temp/agent/Mio16-20260916.log`).
-    Mio13 wrote no page (class thirty-one),
-    Mio14 was killed before its lanes when `36b79bfa0` landed,
-    and Mio15 stopped at slice 14 (class thirty-two,
-    the pass log's "Mio15 read" heading dated 2026-09-16 06:46 UTC).
-    On Mio16 read slice 14 first:
-    whether the farewell paragraph and the poem's block quote both ship
-    (grep `slice 14` and `no block of its kind`).
-    Mio16 is the first full pass since Mio12 to reach the lanes on the torn-down tree with V4.1 Flash
-    judging;
-    it decides whether the 2026-09-10 daytime changes (the name-form policy,
-    the archive-review wiring) hold on a real page,
-    and what the first chat translation's review does under class thirty-one:
-    grep the log for `answered unreadably`,
-    `archive review: comparing` and `left the block unresolved`,
-    and read whether the selection's judges overrun their caps on the same block.
-    If the block ships as the archive wrote it,
-    the two chat translations carry the errors the four heard reviewers named
-    (the "musculine" typo,
-    the inverted parenthetical,
-    the added dialogue,
-    the mis-attributed speakers),
-    which is the design question below,
-    not a defect class.
-    The wording concerns Mio12 left (the 澪 versus Mio opening,
-    the coming-out bullet,
-    the university wording,
-    the SRS expansion,
-    the first chat's missing `Translation:` label) are judged on Mio13 with the name-form policy in the sheets;
-    what is still wrong after it is a defect class with a fix,
-    not a follow-up study.
+1.  READ `Mio17` by the seven steps and the three checks (frozen `ffd35334a`,
+    pid 1197118,
+    runs `~/temp/agent/Mio17-20260916`,
+    log `~/temp/agent/Mio17-20260916.log`).
+    Mio16 settled (the pass log's "Mio16 read" heading dated 2026-09-16 09:42 UTC):
+    the seven checks against Mio12 all better or equal,
+    the "musculine" typo corrected,
+    the first chat's `Translation:` label restored,
+    the 澪 kept;
+    what was wrong was the first chat block's speakers (class thirty-three),
+    and Mio17 runs on the fix.
+    On Mio17 read the first chat block first:
+    grep the artifact's sheet text for `[left]` and the legend
+    ("marks messages sent from the phone"),
+    and read whether the page has Mio opening and the friend answering
+    (the picture shows the grey left bubble sending 在嘛 and the green right bubble answering 在的).
+    Then slice 14 (whether the pairing sets the poem against the farewell this time,
+    grep `no block of its kind`),
+    `answered unreadably`,
+    `archive review: comparing`,
+    `left the block unresolved`,
+    the seven checks,
+    the spend.
+    The coming-out paragraph's redundancy (the source's "曾在春の芽工作室 QQ 群担任管理员，还曾：" as prose
+    above the archive's bullet that says the same) and the chat's "posting about SRS" for 搜过 are wording,
+    read them,
+    fix them only as a class with a mechanism.
+    If the page reads clean,
+    #123 closes and the queue starts with `hulicaijia` on the frozen tip dist.
     ALWAYS KILL AND RELAUNCH if the source moves while it runs.
 2.  DECIDED (owner,
     2026-09-16,
