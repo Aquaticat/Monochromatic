@@ -255,6 +255,39 @@ which the takeover session does not have.
   runs `~/temp/agent/Mio21-20260916`,
   log `~/temp/agent/Mio21-20260916.log`).
   The rest of Mio20 read clean and kept the archive's wording where Mio19 rewrote it.
+- Mio21 read at 20:40 UTC
+  (the pass log's "Mio21 read" heading dated 2026-09-16 20:40 UTC):
+  SETTLED in 87 minutes,
+  the sister clause ships only because slice 2's slate was declined and the archive stood:
+  the panel supported the addition claim 3 to 2 with the references on the sheet,
+  the repair lane dropped the clause,
+  and four select judges wrote "true per the cited reference but not stated in the ORIGINAL".
+  Class thirty-seven:
+  the sheets' addition category outranks the rule block.
+  Fixed in `35e9a0785` and `887e5262c`:
+  reference-backed archive details attested word for word at preparation,
+  addition claims on them rejected before the panel,
+  attested lines under the references on every sheet.
+  The archive block review revised the first chat block against the transcript
+  (the pat,
+  the mtf question,
+  the musculine typo)
+  but shipped straight quotes:
+  class thirty-eight,
+  fixed in `6b853e5ce`.
+  `Mio22` (frozen `35e9a0785`,
+  21:00 UTC) attested nothing
+  (one of three sister attestations spaced the reference's Chinese)
+  and was killed at 21:01 UTC under ALWAYS KILL AND RELAUNCH;
+  `Mio23` launched at 21:05 UTC on frozen `887e5262c` (pid 1793041,
+  runs `~/temp/agent/Mio23-20260916`,
+  log `~/temp/agent/Mio23-20260916.log`).
+  Also today:
+  the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
+  (`aa73b9b22`),
+  and the Claude Code Monitor tool's 30-minute cap is written into the CLAUDE.md preamble
+  (`2901a92ba`;
+  long waits use Bash run_in_background).
 - Owner,
   2026-09-16,
   same hour:
@@ -2062,6 +2095,26 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`887e5262c` (2026-09-16,
+21:04 UTC):
+class thirty-seven,
+attestation quotes compared with whitespace removed and each verified item logged
+(Mio22 lost the sister detail on a spaced reference quote).
+Running on Mio23.
+`35e9a0785` (2026-09-16,
+20:58 UTC):
+class thirty-seven,
+reference-backed archive details attested word for word at preparation
+(`reference-attest-*.ts`),
+carried as `attestedDetails` and as attested lines in `referenceContext`,
+and `accuracy/addition` claims on them rejected before the panel
+(the pass log's "Class thirty-seven" heading dated 2026-09-16 20:58 UTC;
+found by the Mio21 read).
+`6b853e5ce` (2026-09-16,
+20:46 UTC):
+class thirty-eight,
+the archive block review restores the archive's quote style on every revision candidate
+(the pass log's "Class thirty-eight" heading dated 2026-09-16 20:46 UTC).
 `20a7272dc` (2026-09-16,
 19:03 UTC):
 class thirty-six,
@@ -3721,31 +3774,41 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio21` by the seven steps and the three checks (frozen `20a7272dc`,
-    pid 1635211,
-    runs `~/temp/agent/Mio21-20260916`,
-    log `~/temp/agent/Mio21-20260916.log`,
-    launched 19:04 UTC with Hyper dry).
-    Mio21 is the first pass on class thirty-six
-    (the pass log's "Class thirty-six" heading dated 2026-09-16 19:03 UTC).
-    Read first whether `She has an older sister who is also trans` ships in the intro paragraph,
-    then the slice 2 lane contest ballots
-    (`laneSelection.slices` by `sliceIndex` in `artifacts/Mio.json`;
-    Mio20:
-    three of five called repair unsupported for the clause,
-    translate won)
-    and the slice 2 consolidation,
-    then the addition claims by adjudicated status
-    (`lanes.repair.result.issues[].issue.status` with any claim of category `accuracy/addition`;
-    Mio20 10 rejected and 11 accepted of 21),
-    then the Mio20 reading as before:
+1.  READ `Mio23` by the seven steps and the three checks (frozen `887e5262c`,
+    pid 1793041,
+    runs `~/temp/agent/Mio23-20260916`,
+    log `~/temp/agent/Mio23-20260916.log`,
+    launched 21:05 UTC with Hyper dry).
+    Mio23 is the first pass on classes thirty-seven and thirty-eight
+    (the pass log's headings dated 2026-09-16 20:58 UTC and 20:46 UTC).
+    Read first the `ATTESTED` log lines
+    (`ATTESTED heard=H answered=A verified=V needed=N details=D`,
+    one `ATTESTED item <seat>` line per verified item,
+    one `- attested:` line per detail;
+    Mio22 read heard 6,
+    verified 3,
+    details 0 before the whitespace fix),
+    then slice 2's issues
+    (`lanes.repair.result.issues[]` by `sliceIndex`;
+    expect one `status: rejected` issue with an all-zero tally on the sister addition claim
+    and the chunk finding `addition claim rejected before the panel, reference-attested`),
+    then whether the repair lane keeps `She has an older sister who is also trans`
+    and what the contest
+    (`laneSelection.slices` by `sliceIndex`)
+    and the consolidation do,
+    then the first chat block's quote style
+    (Mio21:
+    14 straight apostrophes inside words and 10 straight double quotes;
+    the archive has none),
+    then the Mio21 reading as before:
     the archive's wording kept where Mio19 rewrote it,
     slice 16,
-    the first chat block,
     slice 14,
     the seven checks against Mio12,
     the three checks,
-    the spend.
+    the spend
+    (Mio21's OpenRouter meter moved 1.35 USD against 0.50 logged;
+    watch whether it recurs).
     The Mio19 wording notes other than the sister stand;
     fix any only as a class with a mechanism.
     If the page reads clean,

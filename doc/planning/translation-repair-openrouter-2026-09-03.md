@@ -7922,6 +7922,166 @@ then the slice 2 contest ballots and consolidation,
 then the addition claims by status against Mio20's 10 rejected of 21,
 then the seven steps and the three checks.
 
+## Mio21 read, 2026-09-16, 20:40 UTC: the clause ships by the archive standing, not by judgment
+
+Frozen `20a7272dc`,
+SETTLED in 87 minutes,
+17 slices,
+10 changed,
+1,280 seats asked,
+selection contested.
+Spend:
+Bedrock 184.63 to 184.34 USD (0.29 logged),
+OpenRouter 263.97 to 262.62 USD (0.50 logged against 1.35 on the meter;
+Mio20 logged 0.46 against 0.40,
+so 0.85 USD of this pass is unexplained),
+Hyper dry,
+Synthetic wet at launch and dry from the translate lane on
+(the owner was using it too),
+so Kimi-K3 was withheld from the translate lane,
+the lane contest and the consolidation,
+and the checker and introduced-defect-probe rounds closed on two voices sixteen times
+("short of quorum,
+reachable 1 of 3").
+
+The page carries `She has an older sister who is also trans.`,
+but not because anything judged it accurate.
+The panel supported the addition claim 3 to 2
+(minimax-m3,
+gemma-4-26b-a4b and gemma-4-e2b supported;
+deepseek-v4.1-flash and mercury-2.5 unsupported;
+Mio20 rejected it 3 to 2),
+the repair lane dropped the clause,
+the translate lane never had it,
+the contest settled on neither
+(one neither,
+two repair,
+two translate;
+one judge:
+"the archive rendering invents the sister being trans"),
+the consolidation slate was declined,
+and slice 2 shipped the archive unchanged.
+Addition claims accepted 23,
+rejected 5,
+of 28
+(Mio20:
+11 and 10 of 21).
+The references were on every sheet:
+the judges' own replies cite them,
+four select judges writing
+"this is true per the cited reference ... but is NOT stated in the ORIGINAL passage,
+so it is an addition that violates faithfulness"
+and "background context not in the ORIGINAL passage".
+The sheet's addition category outranks the rule block beside the references.
+Class thirty-seven.
+
+The first chat block was revised by the archive block review
+(candidate 4 from minimax-m3 won 3.5 of 5;
+in Mio20 the judges tied at weight 1 and the archive stood):
+the revision restores the pat and the `mtf` question the transcript carries,
+corrects the archive's `musculine`,
+and drops the "WeChat post" line the transcript does not carry.
+It shipped with 14 straight apostrophes inside words and 10 straight double quotes
+on a page whose archive has none
+(Mio20:
+none):
+the block review never called the typography restoration.
+Class thirty-eight.
+
+The rest read as Mio20 did:
+headings 2 of 2,
+no comments,
+six PhotoScroll lines,
+four unicode ellipses on four,
+no footnotes,
+no Chinese punctuation,
+the one CJK run and the one refusal-pattern hit are the archive's own
+(`春の芽工作室`,
+"I can't delay it forever"),
+no code fence,
+no errors,
+no holds,
+no payment refusals.
+202 lines differ from the archive
+(Mio20:
+117;
+the revised chat block accounts for the rise).
+The Mio20 note on `生前` in slice 2 stands
+(repair "during her lifetime",
+translate "before her death").
+
+## Class thirty-eight, 2026-09-16, 20:46 UTC: the block review restores the archive's quote style
+
+`6b853e5ce`.
+Every revision candidate the archive block review builds is restored against the block it replaces
+with the whole archive as convention before the judges read it,
+so the selection and the gate read the shipped bytes.
+Class seven restored the translate and consolidation candidates;
+the block review was added later (class twenty-five) and never called `restoreTypography`.
+Guard shown red without the fix.
+
+## Class thirty-seven, 2026-09-16, 20:58 UTC: reference-backed archive details are attested word for word and screened before the panel
+
+`35e9a0785`,
+whitespace fix `887e5262c`.
+Prose beside the references does not survive the sheets' own addition category,
+so the mechanism is now partly mechanical.
+At preparation,
+when the original cites a page,
+the bench is asked one focused question
+(`reference-attest-wire.ts`):
+which details the ARCHIVE RENDERING states that the ORIGINAL does not but a CITED REFERENCE does,
+each as a verbatim archive quote plus a verbatim reference quote.
+Both quotes are checked as substrings with every whitespace character removed
+(`reference-attest-match.ts`;
+Mio22 showed a voice spacing the reference's Chinese around its Latin tokens),
+items from distinct voices whose archive quotes overlap merge into one detail,
+and a detail is kept when at least half the heard voices gave it
+(`rosterQuorumSize`).
+The details ride the prepared pair as `attestedDetails`
+and as `- attested: ...` lines under the references in `referenceContext`,
+so every sheet and every cache key sees them;
+both rule constants name the attested lines.
+In the repair chunk
+(`reference-attest-claims.ts`)
+an `accuracy/addition` claim whose archive-side quote overlaps an attested quote
+is recorded rejected with an empty tally and never reaches the panel or the editor;
+the chunk logs `addition claim rejected before the panel, reference-attested`.
+The log prints `ATTESTED heard=H answered=A verified=V needed=N details=D`,
+one `ATTESTED item <seat>` line per verified item,
+and one `- attested:` line per detail.
+Four guards shown red with the verification,
+the quorum filter and the screen disabled.
+
+## Mio22 launches on class thirty-seven, 2026-09-16, 21:00 UTC, killed at 21:01 UTC
+
+Frozen `35e9a0785`,
+pid 1765887.
+Its attestation read `ATTESTED heard=6 answered=4 verified=3 needed=3 details=0`:
+three voices attested the sister clause against the blog
+(`Mio的姐姐也是MtF。`),
+one of them writing `Mio 的姐姐也是 MtF。`,
+which the folding check rejected,
+one voice attested the wrong archive line
+("gentle big sister"),
+two attested nothing.
+Two voices against a quorum of three,
+nothing attested.
+Killed under ALWAYS KILL AND RELAUNCH once `887e5262c` landed.
+
+## Mio23 launches on class thirty-seven, 2026-09-16, 21:05 UTC
+
+Frozen `887e5262c`,
+pid 1793041,
+runs `~/temp/agent/Mio23-20260916`,
+log `~/temp/agent/Mio23-20260916.log`.
+Read first the `ATTESTED` lines
+(expect the sister detail with three or more voices),
+then slice 2's rejected issue with the empty tally and the chunk's reference-attested finding,
+then whether the repair lane keeps the clause and what the contest and consolidation do,
+then the first chat block's quote style,
+then the seven steps and the three checks.
+
 ## Clustered panels and complete repair evidence implemented, 2026-09-10
 
 The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,

@@ -203,6 +203,31 @@ is never counted unsupported and never a reason to prefer the rendering that dro
 The three run shapes fold it in only when non-empty.
 Mio21 is the first pass on it.
 
+## Mio21, class thirty-seven and class thirty-eight
+
+Mio21 (frozen `20a7272dc`,
+2026-09-16 20:40 UTC) showed the prose rule losing to the sheets' own addition category.
+The references were on every sheet and the judges' replies cite them,
+four select judges writing that the sister's trans identity is
+"true per the cited reference but is NOT stated in the ORIGINAL passage,
+so it is an addition";
+the panel supported the addition claim 3 to 2
+(Mio20 rejected it 3 to 2),
+the repair lane dropped the clause,
+and the page kept it only because slice 2's slate was declined and the archive stood.
+`35e9a0785` and `887e5262c` (class thirty-seven) make the reading mechanical where it can be:
+at preparation the bench answers one focused question,
+which archive details absent from the original a reference states,
+each as a verbatim archive quote plus a verbatim reference quote,
+both checked as substrings with whitespace removed;
+details at least half the heard voices gave become `- attested:` lines under the references on every sheet,
+and an `accuracy/addition` claim whose quote overlaps one is rejected before the panel.
+The archive block review's revision of the first chat block shipped straight quotes into a curly page;
+`6b853e5ce` (class thirty-eight) restores the archive's quote style on every revision candidate.
+Mio22 (frozen `35e9a0785`) attested nothing because one of three sister attestations
+wrote the reference's Chinese with spaces around its Latin tokens;
+the whitespace fix landed and Mio23 is the first pass on it.
+
 ## Cost
 
 Exa bills per page read;

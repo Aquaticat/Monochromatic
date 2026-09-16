@@ -88,6 +88,26 @@ A page that could not be read is named on the sheet as such.
 The log prints `REFERENCE N <url>: success|error, <chars> chars, cached|bought`
 and `REFERENCES cited=N cached=K bought=M` once per entry.
 
+The prose rule alone does not hold (class thirty-seven,
+2026-09-16:
+Mio21's panel supported the sister addition claim 3 to 2 with the references on the sheet,
+and four select judges wrote that the detail is true per the cited reference but not stated in the original,
+so an addition).
+So when the original cites a page,
+preparation asks the bench one focused question:
+which details the archive rendering states that the original does not but a cited reference does,
+each as a verbatim archive quote plus a verbatim reference quote.
+Both quotes are checked as substrings with whitespace removed,
+items from distinct voices whose archive quotes overlap merge into one detail,
+and a detail is kept when at least half the heard voices gave it.
+Each kept detail becomes a `- attested:` line under the reference lines on every sheet,
+both rules name those lines,
+and in the repair lane an `accuracy/addition` claim whose archive-side quote overlaps an attested quote
+is recorded rejected with an empty tally before the panel and never reaches the editor.
+The log prints `ATTESTED heard=H answered=A verified=V needed=N details=D`,
+one `ATTESTED item <seat>` line per verified item,
+and one `- attested:` line per detail.
+
 ### What this changes about caching
 
 The window is part of the question a slice is asked,
