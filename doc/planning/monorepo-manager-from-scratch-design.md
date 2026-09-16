@@ -125,8 +125,14 @@ Measured 2026-09-16 on the development machine:
 - Tech stack:
    undecided.
    The user corrected an earlier framing that assumed Node.
-- Does sandboxing also need to restrict file reads,
-   beyond cgroup resource control and freezing?
+
+Resolved:
+for 0.x,
+sandboxing is cgroups only,
+without restricting file reads,
+per the user on 2026-09-16.
+Undeclared reads stay covered by lint-level enforcement;
+read restriction is left for a later version.
 
 ## Design
 
