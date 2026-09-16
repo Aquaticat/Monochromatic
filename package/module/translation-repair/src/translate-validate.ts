@@ -263,6 +263,16 @@ function splitOnly(
  a passage was left by someone) is carrying something a split cannot explain,
  and a candidate shaped as the original would drop it.
  
+ THE PAGE'S SUBSTITUTE AND THE ORIGINAL'S OWN KIND (class thirty-two,
+ 2026-09-16): Mio's archive ends with a farewell paragraph where the original
+ ends with a poem in a block quote, the pairing set the two against each
+ other, and a ceiling of max(page, original) left room for one block. The
+ consolidation sheet asks a producer to add a block to carry what the
+ original has and the archive left out, and the quote is exactly that, so
+ the ceiling also admits the page's blocks plus every original block of a
+ kind the page has no block of. What the page rendered in a kind of its own
+ is kept; what it has no block of the kind for may follow.
+ 
  @param floor - blocks the candidate has to carry, the page's where there is
  one and the original's where there is not
  
@@ -305,12 +315,36 @@ function compareBlocks(
     return [];
 
   /**
-   Most blocks any reference asks for.
+   Original blocks of a kind the floor has no block of, which the page
+   rendered as nothing of their kind and a candidate may carry beside the
+   page's blocks.
+   */
+  const substituted = source.filter(function unrenderedKind(block,): boolean {
+    return !floor.some(function sameKind(carried,): boolean {
+      return (carried.kind === block.kind)
+        && (carried.detail === block.detail);
+    },);
+  },);
+
+  /**
+   Most blocks any reference asks for: the page's, the original's, or the
+   page's with the original blocks it has no kind for.
    */
   const ceiling = Math.max(
     floor.length,
     source.length,
+    floor.length + substituted.length,
   );
+
+  /**
+   Sentence telling the author what may follow the floor's blocks, empty
+   where the page has a block of every original kind.
+   */
+  const allowance = (substituted.length === 0)
+    ? ''
+    : ` The ORIGINAL's ${describeBlocks({ blocks: substituted, },)} has no block of its kind on the ${
+      floorName
+    }, so carry the ${floorName}'s blocks and add it after them in the ORIGINAL's own kind.`;
 
   /**
    Finding for a candidate the floor is not inside.
@@ -325,8 +359,8 @@ function compareBlocks(
         floor.length === 1 ? '' : 's'
       } (${describeBlocks({ blocks: floor, },)}) and your translation is ${
         String(candidate.length,)
-      } (${describeBlocks({ blocks: candidate, },)}). Every block of the ${floorName} `
-        + 'has to appear in your translation, of the same kind and in the same order.',
+      } (${describeBlocks({ blocks: candidate, },)}). Every block of the ${floorName} has `
+        + `to appear in your translation, of the same kind and in the same order.${allowance}`,
     ];
 
   /**
