@@ -35,6 +35,16 @@ use std::num::NonZeroUsize;
 /// ```
 use std::sync::atomic::{AtomicUsize, Ordering};
 
+/// What:    Imports `OnceLock<T>`, a slot that starts empty and is written at most once, safely
+///          across threads.
+/// Why:     Caches the process's core count after the first lookup.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // No 1:1 equivalent: a module-level `let cached: T | undefined` filled on first use.
+/// ```
+use std::sync::OnceLock;
+
 /// What:    Imports the standard library thread module (spawning, scopes, core count).
 /// Why:     The workers run on OS threads created from this module.
 ///
@@ -99,6 +109,47 @@ const WORKER_STACK_BYTES: usize = 64 * 1024 * 1024;
 /// ```
 pub(crate) type RuleOutcome = (usize, Result<BuiltRule, CompileError>);
 
+/// What:    A process-wide slot holding the core count once computed. `static` means one
+///          value for the whole program; `OnceLock<usize>` starts empty and is filled at
+///          most once, even when threads race to fill it.
+/// Why:     On Linux `available_parallelism` re-reads cgroup files on every call, measured
+///          at 64 microseconds, which more than doubled a single-rule `RegexSet::new`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// let CORE_COUNT: number | undefined; // module-level cache
+/// ```
+static CORE_COUNT: OnceLock<usize> = OnceLock::new();
+
+/// Returns how many cores this process may use, computed once per process.
+///
+/// What:    Fills [`CORE_COUNT`] on the first call and reads it afterwards.
+/// Why:     Keeps the per-compile cost of choosing a worker count to one memory read.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function core_count(): number {
+///   CORE_COUNT ??= os.availableParallelism?.() ?? 1;
+///   return CORE_COUNT;
+/// }
+/// ```
+fn core_count() -> usize {
+    // What:    `get_or_init(|| ...)` runs the closure only if the slot is empty, stores its
+    //          result, and returns a reference `&usize`; the leading `*` copies the number out
+    //          of that reference. `thread::available_parallelism()` returns
+    //          `Result<NonZeroUsize, io::Error>`, and `.map_or(1, NonZeroUsize::get)` yields
+    //          the count on success or `1` when the platform cannot report it.
+    // Why:     An unknown core count degrades to building on the calling thread, which is
+    //          the pre-threading behavior.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // CORE_COUNT ??= os.availableParallelism?.() ?? 1;
+    // return CORE_COUNT;
+    // ```
+    return *CORE_COUNT.get_or_init(|| return thread::available_parallelism().map_or(1, NonZeroUsize::get))
+}
+
 /// Builds every pattern into a rule on as many threads as the machine has cores.
 ///
 /// What:    Picks the worker count (the core count, capped at the pattern count) and
@@ -114,17 +165,14 @@ pub(crate) type RuleOutcome = (usize, Result<BuiltRule, CompileError>);
 /// }
 /// ```
 pub(crate) fn build_rules(patterns: &[&str], stop_on_error: bool) -> Vec<RuleOutcome> {
-    // What:    `thread::available_parallelism()` returns `Result<NonZeroUsize, io::Error>`,
-    //          the cores this process may use. `.map_or(1, NonZeroUsize::get)` yields the
-    //          count on success and `1` when the platform cannot report it.
-    // Why:     An unknown core count degrades to building on the calling thread, which is
-    //          the pre-threading behavior.
+    // What:    The cached core count.
+    // Why:     The upper bound on useful workers.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const cores = os.availableParallelism?.() ?? 1;
+    // const cores = core_count();
     // ```
-    let cores = thread::available_parallelism().map_or(1, NonZeroUsize::get);
+    let cores = core_count();
     // What:    The smaller of the core count and the pattern count.
     // Why:     A worker with no rule to claim would only cost a thread spawn; a single
     //          pattern therefore builds on the calling thread with no spawn at all.
