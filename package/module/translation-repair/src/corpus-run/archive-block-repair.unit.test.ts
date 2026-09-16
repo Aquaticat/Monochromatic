@@ -167,7 +167,7 @@ await describe({
           targetText: `${sourceText}\n\n${blockText}`,
           blockPairings: new Map([[0, [{ source: 0, target: 0, },],],]),
         },);
-        /** Corroborated transcript with each reader's distinct wording preserved. */
+        /** Corroborated transcript; the review reads the one the other readers carry most, the fuller on a tie. */
         const supported: PairedReading = {
           kind: 'corroborated',
           readings: [
@@ -188,8 +188,11 @@ await describe({
         /** The block's exact source support. */
         const context = [...contexts.values(),].join('\n',);
         expect(prepared.unclaimedTargetBlocks.length,).toBeGreaterThan(0,);
-        expect(context,).toContain('手套猫：你好，姐姐。',);
         expect(context,).toContain('你好，姐姐。我们一起回家。',);
+        // One transcript per picture (2026-09-16): the shorter reading the
+        // fuller one carries is not sent beside it.
+        expect(context,).not.toContain('手套猫：你好，姐姐。\n',);
+        expect(context,).toContain('2 readers agree',);
         expect(context,).not.toContain('无关内容',);
         expect(context,).not.toContain('elsewhere.webp',);
         expect(context.split('CORROBORATED PICTURE SOURCE SUPPORT chat.webp',).slice(1,),).toHaveLength(1,);

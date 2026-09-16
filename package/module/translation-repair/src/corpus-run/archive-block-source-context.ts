@@ -2,6 +2,7 @@ import { alignDocumentSections, } from '../chunk-document.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { parseDocument, } from '../parse-document.ts';
 import type { PairedReading, } from '../image-reading-pair.ts';
+import { mostCarriedReading, } from '../most-carried-reading.ts';
 import { photoReferences, } from '../photo-reference.ts';
 import { archiveBlockIdentity, } from './archive-block-repair.ts';
 
@@ -69,7 +70,16 @@ export function archiveBlockSourceContexts(
         return reference.assetName;
       },),);
     /**
-     Every corroborating reader's text, never unrelated or unavailable evidence.
+     One transcript per corroborated picture, the one the other readers carry
+     most, and never unrelated or unavailable evidence.
+
+     EVERY READER'S TRANSCRIPT WENT HERE UNTIL 2026-09-16. On Mio13 seven of
+     twelve reviewers spent their whole completion cap reasoning about the
+     first chat translation against six transcripts of its screenshots and
+     sent no content, while the block before it drew 640 to 1,268 tokens
+     from the same seats on a prompt of the same size. The owner chose one
+     transcript per picture over a doubled re-ask cap
+     (`doc/decision/translation-repair-archive-review-one-transcript-2026-09-16.md`).
      */
     const support = [...names,].flatMap(function pictureSupport(assetName,): readonly string[] {
       /**
@@ -78,12 +88,19 @@ export function archiveBlockSourceContexts(
       const reading = pictureReadings.get(assetName,);
       if (reading?.kind !== 'corroborated')
         return [];
+      /**
+       Transcript the other readers carry most.
+       */
+      const chosen = mostCarriedReading({ readings: reading.readings, },);
+      /**
+       Readers that agreed on the picture.
+       */
+      const readerCount = reading.readings
+        .length;
       return [
-        `CORROBORATED PICTURE SOURCE SUPPORT ${assetName}\n${reading.readings
-          .map(function transcript(one,): string {
-          return `${one.modelId}:\n${one.text}`;
-        },)
-          .join('\n\n',)}`,
+        `CORROBORATED PICTURE SOURCE SUPPORT ${assetName} (${
+          String(readerCount,)
+        } readers agree; the transcript the others carry most)\n${chosen.text}`,
       ];
     },);
     return [

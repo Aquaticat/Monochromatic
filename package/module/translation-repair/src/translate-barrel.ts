@@ -232,6 +232,7 @@ export {
   readPastRefusal,
   REFUSAL_ASK_LIMIT,
 } from './image-reading-past-refusal.ts';
+export { mostCarriedReading, } from './most-carried-reading.ts';
 export {
   characterTrigrams,
   CORROBORATION_TRIGRAM_SHARE,
