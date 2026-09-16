@@ -258,6 +258,14 @@ issue,
 blog post,
 or source code counts as undocumented.
 
+Why the extension mechanism is a coverage requirement:
+FE items could run as ordinary tasks,
+but WR2 and WR3 describe the running watch process itself.
+A tool without native inspection and control can meet HC3 only by accepting plugged-in behavior inside that process;
+without a documented extension mechanism,
+the only route is a wrapper around the tool,
+which is building rather than plugging in.
+
 Coverage:
 a candidate exits when its official documentation lacks any of:
 
