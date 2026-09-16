@@ -25,7 +25,9 @@ Stated by the user on 2026-09-16:
 - Whatever monorepo manager is chosen must provide every functionality of `@monochromatic-dev/dev-script-file-enforcer`.
 - It must provide the watch plus RPC pattern:
    a watch mode that keeps everything up to date,
-   plus an RPC or IPC mechanism through which people can inspect what the running watch process is doing.
+   plus an RPC or IPC mechanism through which people can inspect and control what the running watch process is doing.
+  The user added the control requirement on 2026-09-16,
+   correcting an earlier inference that observation alone was enough.
 - Fallback order:
    first an existing tool on the market;
    if none qualifies,
@@ -36,8 +38,8 @@ Stated by the user on 2026-09-16:
 Recorded inferences,
 open to user correction:
 
-- Inspection means at least observing current and recent activity;
-  triggering or controlling work through the same channel is not yet required.
+- Inspection means at least observing current and recent activity.
+- Control means at least starting or rerunning work and cancelling running work through the same channel.
 - The inspection interface should be documented,
   because insufficient documentation is the stated reason for leaving Mise.
 

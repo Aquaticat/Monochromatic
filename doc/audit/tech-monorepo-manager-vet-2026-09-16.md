@@ -12,7 +12,7 @@ Monorepo manager.
 
 Decision scope:
 select a monorepo manager for Monochromatic that provides every file-enforcer functionality and a watch mode with an RPC or
-IPC inspection channel,
+IPC inspection and control channel,
 natively or through documented extension,
 before plugging functionality into a tool or building a Bazel replacement.
 
@@ -29,7 +29,9 @@ Governing skill SHA-256:
 `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
 
 Compatibility fingerprint:
-`340bcda696599b81be2d3314af769ed3c774d3914ad724a32f148d9d975eec89`.
+`cafbebe56ed9aa8f5ed2dc0f500fa351c79754fcdd56dd4632b38e7626fe0898`.
+It supersedes `340bcda696599b81be2d3314af769ed3c774d3914ad724a32f148d9d975eec89`,
+recorded before the user added the control requirement and before any candidate evidence was collected.
 
 Active audit owner:
 Claude Code session `e28ad59c-f3f5-46e9-8c8c-59a61c331610`.
@@ -174,12 +176,15 @@ which predates the current source layout.
 - WR2 Another process can ask the running watch process what it is doing,
    covering at least current and recent activity,
    through a documented RPC or IPC channel.
+- WR3 Through the same channel,
+   another process can control the running watch process,
+   at least starting or rerunning work and cancelling running work.
 
 ## Frozen hard constraints
 
 - HC1 Every FE item is available natively or through a documented extension mechanism.
 - HC2 WR1 is available natively or through a documented extension mechanism.
-- HC3 WR2 is available natively or through a documented extension mechanism.
+- HC3 WR2 and WR3 are available natively or through a documented extension mechanism.
 - HC4 Inspectable open-source local execution.
 - HC5 Works on repository-supported local and CI platforms:
    Linux x64 development,
@@ -214,7 +219,8 @@ The user's order is lexicographic and sits outside score arithmetic:
 1. Tier A:
    FE,
    WR1,
-   and WR2 all native.
+   WR2,
+   and WR3 all native.
 2. Tier B:
    some requirement is met only by plugging functionality into the tool through a documented extension mechanism.
    Each plugged item records the extension point and what must be built.
@@ -233,7 +239,7 @@ Weights are 1 unless a stated preference sets them.
   because insufficient documentation is the stated reason for leaving Mise.
 - Native requirement coverage within a tier,
   weight 1.
-- Watch inspection depth,
+- Watch inspection and control depth,
   weight 1.
 - Cache correctness and affected-only execution,
   including input enforcement,
@@ -251,8 +257,9 @@ Weights are 1 unless a stated preference sets them.
 
 ## Unresolved preferences
 
-- Whether inspection must also control work,
-  such as triggering or cancelling tasks.
+- Whether control must extend beyond starting,
+  rerunning,
+  and cancelling work.
 - Whether an undocumented but inspectable internal protocol can satisfy WR2.
 - Relative weight of community size;
   the user raised it without a magnitude.
