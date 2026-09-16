@@ -159,6 +159,15 @@ which the takeover session does not have.
   `Mio17` launched at 10:05 UTC on frozen `ffd35334a` (pid 1197118,
   runs `~/temp/agent/Mio17-20260916`,
   log `~/temp/agent/Mio17-20260916.log`).
+- `Mio17` stopped INCOMPLETE at 13:29 UTC at slice 16 (203 minutes):
+  class thirty-three held (the review's winning revision opens with Mio's sticker and 在嘛),
+  but the pairing set the archive's second chat translation (a picture's) against the poem's blockquote,
+  so the floor had room for one blockquote and the gate kept an ineligible standing (class thirty-four).
+  Fixed in `e964d2f3a` (red guards `d7e514742`):
+  the pairing sheet sees what the pictures say and the pass pairs again with them in hand.
+  `Mio18` launched at 13:52 UTC on frozen `e964d2f3a` (pid 1260175,
+  runs `~/temp/agent/Mio18-20260916`,
+  log `~/temp/agent/Mio18-20260916.log`).
   Meters at launch:
   Synthetic 77.3 percent,
   Hyper 89,
@@ -1913,7 +1922,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `ffd35334a` for the code;
+  `e964d2f3a` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
@@ -1945,6 +1954,18 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`e964d2f3a` (2026-09-16,
+13:50 UTC):
+class thirty-four,
+the block-pairing sheet carries WHAT THE PICTURES HERE SAY (one most-carried transcript per picture)
+with the rule that a translation block rendering a picture translates the picture and is left out,
+the pairing cache key folds the picture context in (bare keys keep their bytes),
+and `pass-prepare` reads the pictures before the unclaimed decision,
+pairs again with them,
+reviews on that pairing and pairs the corrected archive with them too;
+red guards `d7e514742`
+(the pass log's "Mio17 read" heading dated 2026-09-16 13:29 UTC).
+Running on Mio18.
 `ffd35334a` (2026-09-16,
 10:03 UTC):
 class thirty-three,
@@ -1955,7 +1976,7 @@ and the picture section leads a side-marked context with one legend line saying 
 `605e66228` the red guard,
 `ffd35334a` the wording measured on `Mio/photo6.webp` and `photo7.webp`
 (the pass log's "Mio16 read" heading dated 2026-09-16 09:42 UTC).
-Running on Mio17.
+Held on Mio17 (the review's winning revision has the picture's speakers and the sticker).
 `8d058d102` (2026-09-16,
 07:00 UTC):
 class thirty-two,
@@ -3545,28 +3566,26 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio17` by the seven steps and the three checks (frozen `ffd35334a`,
-    pid 1197118,
-    runs `~/temp/agent/Mio17-20260916`,
-    log `~/temp/agent/Mio17-20260916.log`).
-    Mio16 settled (the pass log's "Mio16 read" heading dated 2026-09-16 09:42 UTC):
-    the seven checks against Mio12 all better or equal,
-    the "musculine" typo corrected,
-    the first chat's `Translation:` label restored,
-    the 澪 kept;
-    what was wrong was the first chat block's speakers (class thirty-three),
-    and Mio17 runs on the fix.
-    On Mio17 read the first chat block first:
-    grep the artifact's sheet text for `[left]` and the legend
-    ("marks messages sent from the phone"),
-    and read whether the page has Mio opening and the friend answering
-    (the picture shows the grey left bubble sending 在嘛 and the green right bubble answering 在的).
-    Then slice 14 (whether the pairing sets the poem against the farewell this time,
-    grep `no block of its kind`),
+1.  READ `Mio18` by the seven steps and the three checks (frozen `e964d2f3a`,
+    pid 1260175,
+    runs `~/temp/agent/Mio18-20260916`,
+    log `~/temp/agent/Mio18-20260916.log`).
+    Mio17 stopped at slice 16 (the pass log's "Mio17 read" heading dated 2026-09-16 13:29 UTC):
+    the pairing set the archive's second chat translation against the poem (class thirty-four),
+    and Mio18 runs on the fix.
+    On Mio18 read the pairing first:
+    grep `pairs with` for the sighted rounds and `paired .* translation blocks` for the last section
+    (Mio17 paired 14 of 19;
+    the two chat quotes and their `Translation:` labels should now be unpaired),
+    then slice 16 (the chat quote and the poem both on the page,
+    no `gate-kept-standing`),
+    then the first chat block (Mio opening with the sticker,
+    the friend answering),
+    then slice 14 (`no block of its kind`),
     `answered unreadably`,
     `archive review: comparing`,
     `left the block unresolved`,
-    the seven checks,
+    the seven checks against Mio12,
     the spend.
     The coming-out paragraph's redundancy (the source's "曾在春の芽工作室 QQ 群担任管理员，还曾：" as prose
     above the archive's bullet that says the same) and the chat's "posting about SRS" for 搜过 are wording,

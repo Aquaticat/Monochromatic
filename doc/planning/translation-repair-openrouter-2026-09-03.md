@@ -7404,6 +7404,105 @@ whether the transcript in the archive-block-review sheet carries the side marker
 and whether the page has Mio opening (`Are you there?` or the archive's `Do you have a moment right now?`) and the friend answering;
 then the seven checks against Mio12 as before.
 
+## Mio17 read, 2026-09-16, 13:29 UTC: class thirty-three held, INCOMPLETE at slice 16, class thirty-four
+
+Frozen `ffd35334a`,
+203 minutes,
+`TALLY Mio status=INCOMPLETE` at slice 16:
+`the standing text failed the deterministic publication rule and the consolidation left nothing valid to ship (gate-kept-standing)`.
+No page.
+Spend:
+Bedrock 185.14 to 185.05 USD,
+OpenRouter 266.93 to 265.10 USD (Hyper dry all day,
+so its seats bought on OpenRouter),
+Synthetic weekly 69.7 to 65.8 percent.
+Preparation took 61 minutes against Mio16's 37:
+the archive block review ran 16 rounds where Mio16 ran 6.
+
+### Class thirty-three held
+
+The archive-block-review sheet carried the legend and the side-marked transcript
+(a lane candidate that echoed the sheet is in the reply cache:
+`[left] Are you there / [right] I'm here / [right] I actually wanted to ask — are you mtf`).
+The first chat block's review heard 7 of 12 (5 usable),
+and the winning revision (candidate 5,
+weight 2 across 7 ballots) opens
+`Mio: (Sticker) / Mio: Are you there? / Me: Yes. / Me: I actually wanted to ask, are you mtf?`,
+Kimi-K3 naming `correct speaker flow for the opening exchange`,
+minimax-m3 `preserves the correct speaker order (Bei Yan Yun Yi is Me), keeps the Sticker line`.
+The speakers are the picture's,
+the sticker is back.
+
+### Slice 16: class thirty-four
+
+Slice 16 is the poem alone (132 source characters,
+one blockquote).
+The pairing (both rounds,
+6 usable voices) set the archive's second chat translation,
+the blockquote rendering `photo3.webp`,
+against the poem's blockquote,
+so the PAGE AS IT STANDS for the slice was that chat quote and the floor's ceiling was one blockquote
+(same kind,
+so class thirty-two's allowance does not apply).
+The lane winner rendered chat and poem (two blockquotes) and failed the floor;
+consolidation withheld that standing;
+the slate's winner was the poem alone (candidate 4,
+weight 2.5 of 6),
+which drops the chat translation;
+the incumbent (chat alone) fails the link rule (the poem's bilibili link);
+the consolidate gate settled on the withheld standing,
+and the rule of 2026-09-09 (#134) stopped the entry.
+Every outcome was wrong because the pair was wrong:
+the chat quote translates a picture,
+not the poem.
+
+The pairing sheet had no way to know:
+it shows the two block lists and nothing about the pictures,
+and the judges pair by position when the kinds match.
+Measured over the corpus,
+2 of the 49 pages with pictures label a picture translation
+(`Translation:`,
+`Translation of the above photos:`,
+`Translation of the above suicide note:`),
+so a label rule would not carry.
+The fix (`e964d2f3a`,
+red guards `d7e514742`):
+the pairing sheet carries WHAT THE PICTURES HERE SAY,
+one most-carried transcript per picture rendered the way every other sheet has it,
+with the rule that a translation block rendering what a picture says translates THE PICTURE and is left out
+even where an original block stands in the same place;
+the pairing cache key folds the picture context in after a second separator
+(bare keys keep their golden bytes);
+`pass-prepare` reads the pictures before deciding which archive blocks are unclaimed,
+pairs again with them in the sheets,
+runs the archive block review on that pairing,
+and pairs the corrected archive with them too.
+A source naming no picture reads nothing and seats nobody for it
+(the six-seat-readings guard in `pass-entry.unit.test.ts` holds).
+Cost:
+one more pairing round per entry with pictures,
+cached per section by the sighted key.
+
+## Mio18 launches on class thirty-four, 2026-09-16, 13:52 UTC
+
+Frozen `e964d2f3a`,
+pass pid `1260175`,
+runs `~/temp/agent/Mio18-20260916`,
+log `~/temp/agent/Mio18-20260916.log`.
+Meters at launch:
+Synthetic 65.8 percent,
+Hyper 0 (dry until the 07:31 UTC reset),
+Bedrock 185.05 USD,
+OpenRouter 265.08 USD.
+Read the pairing first:
+grep `pairs with` for the sighted rounds and `paired .* translation blocks` for the last section
+(Mio17 paired 14 of 19;
+the chat quotes and their `Translation:` labels should now be unpaired),
+then slice 16 (chat quote and poem both on the page,
+no `gate-kept-standing`),
+then the first chat block's speakers,
+then the seven checks against Mio12.
+
 ## Clustered panels and complete repair evidence implemented, 2026-09-10
 
 The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,
