@@ -315,7 +315,11 @@ pnpm exited the monorepo manager vet at the documentation gate.
 `https://pnpm.io/cli/recursive` says "Even if `--no-bail` is used, all tasks will finish",
 while `https://pnpm.io/workspace-task-orchestration` says that after a task fails,
 dependent tasks are skipped and only independent ready tasks continue under `--no-bail`.
-Nadle is queued for the same screening.
+Nadle,
+the fallback,
+also exited at the documentation gate:
+`https://nadle.dev/docs/getting-started/features/` configures `CopyTask` with `to`,
+while `https://nadle.dev/docs/guides/file-operation-tasks/` uses `into`.
 See `doc/audit/tech-monorepo-manager-vet-2026-09-16.md`.
 
 Parity gate:
