@@ -1,4 +1,4 @@
-# Rust std 1.100 nightly on Linux: `available_parallelism` re-reads cgroups per call and spawned threads get 2 MiB stacks
+# Rust std 1.100 nightly on Linux: `available_parallelism` re-reads cgroups per call; spawned threads get 2 MiB
 
 Two `std::thread` defaults surfaced
 when `forbidden-regex` moved `RegexSet::new` rule construction onto worker threads
@@ -14,7 +14,8 @@ After threading landed,
 a single-pattern `RegexSet::compile_lenient` got slower even though one pattern never spawns a thread:
 
 - before threading: 45.9, 47.4, and 46.3 microseconds per call
-- after threading, calling `thread::available_parallelism()` on every call: 111.9, 110.0, and 110.0 microseconds per call
+- after threading, calling `thread::available_parallelism()` on every call:
+  111.9, 110.0, and 110.0 microseconds per call
 - after caching the core count in a `OnceLock`: 45.6 microseconds per call
 
 `forbidden-strings` validates each user rule with a one-element `RegexSet::new` call
@@ -310,7 +311,8 @@ Checked `.out-of-scope/`: no entry covers Rust std or its thread API.
 
 Duplicate search:
 `gh search issues --repo rust-lang/rust 'available_parallelism'` returned
-rust-lang/rust#98168 ("compile-time regression from switch from num_cpus to available_parallelism needs a regression test"),
+rust-lang/rust#98168
+("compile-time regression from switch from num_cpus to available_parallelism needs a regression test"),
 the closest related thread about the call's cost.
 Nothing here advances it: our finding is a consumer calling a documented-uncached function per operation.
 
