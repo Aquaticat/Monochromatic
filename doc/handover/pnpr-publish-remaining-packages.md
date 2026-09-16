@@ -331,18 +331,18 @@ Done after the rollout:
   the dependent-bump direct-fix fixture failed once with exit 0 and empty stdout,
   then passed three times on the same tarball,
   which already carried the `direct-fix` trigger.
-  Suspected cause,
-  not proven for that run:
+  Cause,
+  measured by rate:
   cli-git's private index copies and index installs got a fresh mtime,
   so Git trusted cached stat for same-size edits made in the second Git cached it
   (`doc/troubleshooting/git-racy-index-copy.md`).
-  That run needed the `1.1.0` and `1.2.0` writes in one second with the copy in a later one;
-  its timestamps were not kept.
-  A 20-iteration comparison of pre-fix and fixed builds was killed by host memory pressure
-  (swap 16,377 of 16,383 MiB used by other applications)
-  before reporting,
-  and its temporary source revert was restored after confirming it matched the reverse of `372168ae0`.
-  The defect itself is proven by the deterministic fixture and ablations.
+  Looping the fixture 20 times per build,
+  with cli-git rebuilt from the `372168ae0^` index copy and install sources,
+  failed 4 of 20 before the fix and 0 of 20 after it,
+  each failure carrying that same message.
+  A first attempt was killed by host memory pressure;
+  the owner added a 48 GiB swap file and asked for the rerun.
+  The defect itself is also proven by the deterministic fixture and ablations.
   Fix `372168ae0` carries source timestamps through `index-file-timestamps.ts`.
   Fixtures `3ac62fdeb`,
   `8a32cac4f`,

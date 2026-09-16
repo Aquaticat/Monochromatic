@@ -18,11 +18,14 @@ and rewrote no dependent manifest.
 A missed hand bump from `1.1.0` to `1.2.0` (same byte length) produces that output.
 The same tarball then passed three times,
 so a build without the `direct-fix` trigger is excluded.
-This cause is an inference for that run,
-not a measurement:
-it needed both manifest writes in one second and cli-git's index copy in a later second,
-and the run's timestamps were not kept.
-The defect itself is reproduced deterministically in "Verification".
+The rate was then measured by looping that fixture 20 times per build in one container,
+rebuilding cli-git with the index copy and install sources from `372168ae0^`:
+the pre-fix build failed 4 of 20 with the same message,
+and the fixed build failed 0 of 20.
+If the fix made no difference,
+all four failures landing in the pre-fix half has probability 0.053.
+That single original run kept no timestamps,
+so it is covered by the rate rather than by its own record.
 
 Surfaces that could miss the edit:
 
