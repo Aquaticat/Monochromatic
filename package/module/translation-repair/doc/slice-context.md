@@ -1,0 +1,121 @@
+# Evidence beside a slice
+
+Part of [the package README](../README.md).
+
+## What a slice is judged beside
+
+The repair lane works one slice at a time,
+and a slice alone is not always enough to judge itself.
+
+Where the archive carried a passage across a section boundary,
+the translation at one slice holds English no original there accounts for,
+while the original next door holds Chinese with no English.
+A critic shown that slice on its own has only two readings available,
+invention and omission,
+and both are wrong.
+Acting on either damages text that is correct where it actually sits.
+
+So the critic,
+the adjudication panel and the editor are each shown the passages on either side of the slice under review,
+in their original and in the translation as it stands,
+fenced and labelled as context they may not raise claims about or edit.
+
+### One section each way, and no more
+
+The width is measured rather than chosen.
+Over the reference corpus,
+80 of 1260 slices carry a displacement flag,
+those flags form 51 contiguous runs,
+the longest run anywhere is three,
+and every relocation pair is adjacent.
+One section each way therefore covers every case the corpus contains,
+and a wider window would cost context on every call to reach material that is not there.
+
+A slice with no neighbour,
+meaning a document of one slice,
+is shown nothing extra and is asked exactly what it was asked before this existed.
+
+### Removal is allowed only against what the neighbour already carries
+
+The window creates a second way to do harm,
+and the editor sheet names it.
+Removing a repetition that the neighbouring translation already holds is correct.
+Removing anything on the grounds that a neighbour OUGHT to hold it is not,
+because the neighbour may never produce it and the document then loses the passage entirely.
+Zero occurrences is a worse outcome than two.
+
+### The pages the original cites
+
+The archive's human translators knew things the Chinese page never wrote down,
+and wrote some of them in.
+Mio's archive says her older sister is also trans;
+the Chinese page says only 有一个姐姐,
+and the blog the page cites says 「Mio 的姐姐也是 MtF」.
+Four critics reported the clause as an addition because the original does not carry it,
+the panel supported them,
+and the editor deleted a true fact
+(class thirty-five,
+2026-09-16;
+the owner's decision is
+[the cited-references decision](../../../../doc/decision/translation-repair-cited-references-2026-09-16.md)).
+
+So every `http` link the original writes is fetched once through the Exa contents endpoint,
+4,000 characters of page text each and at most eight per entry,
+and the critic sheet and the panel sheet carry a `CITED REFERENCES, EVIDENCE ONLY` block:
+one line per page,
+after the pair on the critic sheet and after the claims on the panel sheet,
+with the rule that a detail the translation carries that the original does not state but a cited page does
+is accurate detail the translator took from the original's own references,
+never an addition,
+and that the references never license adding,
+never outrank the original,
+and never license a defect elsewhere.
+The corpus's own site and people's profiles
+(a GitHub user,
+a twitter handle,
+a bilibili space,
+a zhihu person)
+are never fetched:
+they came back as repository names and page chrome.
+A page that could not be read is named on the sheet as such.
+The log prints `REFERENCE N <url>: success|error, <chars> chars, cached|bought`
+and `REFERENCES cited=N cached=K bought=M` once per entry.
+
+### What this changes about caching
+
+The window is part of the question a slice is asked,
+so it is folded into the slice cache key,
+with each side labelled so that a source-only window
+and a translation-only window carrying the same text cannot collide.
+A slice whose neighbours change is asked a new question and is recomputed;
+a slice with no neighbours keys exactly as before and resumes.
+The cited references join the repair run shape the same way,
+only where the original links somewhere,
+so the 33 entries of the pinned corpus that cite nothing key exactly as before.
+
+## What is folded out of candidate and archive text at intake
+
+Characters a reader cannot tell from their plain counterpart are folded
+where each lane turns an answer into a candidate (`#264`).
+Corpus pass applies same fold to archive before preparation,
+so incumbent,
+candidates,
+spans,
+artifact and page share visible bytes:
+U+2011 to the hyphen,
+U+00A0 and U+202F to the space,
+and U+00AD,
+U+200B,
+U+2060 and U+FEFF dropped.
+The fold runs before any decider judges,
+so the bytes judged are the bytes that ship,
+and each fold is a finding,
+`invisible-variant-folded (U+2011 x1)`,
+in the stage's findings.
+Typographic quotes,
+dashes and the ellipsis pass through:
+measured over every archive page at the pin,
+85 of 92 carry typographic quotes and the corpus holds 1173 U+2019,
+so those are the archive's own convention.
+The 2026-08-26 output reading found the case that motivated this,
+a hyphenated word published with a non-breaking hyphen the archive never had.
