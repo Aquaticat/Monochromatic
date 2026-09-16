@@ -428,6 +428,24 @@ The actual selected entries have no original-policy spans;
 only one unselected population parent has intersections,
 and the observed population has no zero-width nodes.
 Those measurements cannot substitute for synthetic positive geometry controls.
-Geometry extraction and whole-root relationships are not yet implemented.
+Geometry extraction is now implemented.
+`sealed-node-ids.ts` owns the pure sealing geometry and re-exports it from
+`archive-original-note.ts` so existing imports are unchanged.
+`preparation-root-protection.ts` owns the complete protection projection,
+and `preparation-root-parent.ts` delegates to it.
+Pre-extraction native outputs for twelve geometry cases are retained in
+`geometry-baseline-weNIba`,
+including its deciding source bytes and consumed entry identity.
+`preparation-root-protection.unit.test.ts` compares the direct projection,
+the delegated parent constructor and the population projection against those goldens,
+covering all-sealed,
+partial,
+boundary-touching,
+zero-width-end,
+overlapping-declaration,
+empty-target and empty-anchor-overlap cases.
+That golden test file is committed but has not yet been executed through a package checkpoint;
+the next checkpoint must include it in the targeted test list before any further reader work.
+Whole-root relationships and the public byte-reader result remain unimplemented.
 No completed decoder,
 semantic qualification or plan materialization is inferred from this checkpoint.

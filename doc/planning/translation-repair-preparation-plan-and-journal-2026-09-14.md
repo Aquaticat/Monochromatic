@@ -25,8 +25,35 @@ mutation and after-state preservation checks,
 with scoped diagnostic cleanup recorded.
 Task63 continues from the corrected artifact;
 old frozen evidence remains separately retained.
+Task63 now has every DTO family decoder implemented and checkpointed
+(bytes and JSON,
+closed values,
+selection,
+references,
+raw documents,
+exclusions,
+nodes,
+parent sides,
+protection,
+complete entries and findings,
+population and selected parents,
+the shared historical question-key encoder,
+numbered questions and native protocol comparison,
+definition domains and order arrays,
+namespace and alias records,
+and complete registration variants).
+The pure protection-geometry extraction is committed with retained pre-extraction goldens.
+Its golden test file still needs its first package-checkpoint execution.
+Whole-root relationship assembly,
+the public byte-reader result,
+full-suite and mutation qualification,
+import-closure checks and exact evidence retention remain.
+See the [reader implementation record](translation-repair-persisted-input-reader-2026-09-15.md)
+and the [task63 handover](../handover/translation-repair-task63-reader-handover-2026-09-15.md).
 The changes have not been reviewed;
-GitHub issues #509 and #527 remain open.
+GitHub issues #509,
+#527,
+#541 and #542 remain open.
 Task41 remains incomplete until those owners satisfy their own acceptance boundaries.
 No paid acquisition or writer calibration is authorized by this work record.
 
