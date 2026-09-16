@@ -84,10 +84,10 @@ use crate::parse::parse;
 /// What:    Stack size, in bytes, for each worker thread: 64 MiB of address space.
 /// Why:     Parsing recurses once per group nesting level. A thread spawned with Rust's
 ///          default 2 MiB stack overflows on patterns (three thousand nested groups, measured
-///          in a release build) that compile on a default 8 MiB main thread, where rules were
-///          built before this module existed, so workers reserve more than a default main
-///          thread. The operating system commits stack pages only when touched, so unused
-///          reservation costs no memory.
+///          in a release build) that compile on a main thread, where rules were built before
+///          this module existed. A main thread's stack comes from `ulimit -s`, commonly 8 or
+///          16 MiB, so workers reserve more than that. The operating system commits stack
+///          pages only when touched, so unused reservation costs no memory.
 /// Gotcha:  A stack overflow aborts the whole process; it is not a catchable panic.
 ///
 /// In TS you'd write (pseudocode):
