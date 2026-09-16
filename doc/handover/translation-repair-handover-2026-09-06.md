@@ -200,7 +200,7 @@ which the takeover session does not have.
   a reusable workflow or mise task or something should be built."
   The unseat touched eight source files and fifty-eight test files;
   the owner has asked for a reusable path,
-  which is the next design item after the Mio18 read.
+  which is the next design item after the Mio19 read.
 
 Everything from "### Latest checkpoint" down to "## Repository state" is those sessions' own record,
 kept as history and not as the current state.
@@ -1993,7 +1993,8 @@ pairs again with them,
 reviews on that pairing and pairs the corrected archive with them too;
 red guards `d7e514742`
 (the pass log's "Mio17 read" heading dated 2026-09-16 13:29 UTC).
-Running on Mio19 (frozen `a88f52d5b`, which adds the roster change of `a88f52d5b`).
+Running on Mio19 (frozen `a88f52d5b`,
+which adds the roster change of `a88f52d5b`).
 `ffd35334a` (2026-09-16,
 10:03 UTC):
 class thirty-three,
