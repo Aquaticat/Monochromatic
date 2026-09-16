@@ -794,12 +794,34 @@ Evidence limits:
 
 The extension-mechanism requirement was this report's operationalization of HC3,
 not a user statement.
-It decided many exits that were never checked for confusion,
-including Turborepo,
-Lerna,
-Melos,
-and Watchman.
 
 ## Re-screen after counting wrappers
 
-Pending.
+`rescreen-list.md` classifies all 151 G3 exits.
+20 rested only on the withdrawn requirement,
+and devtooie is added because its only other failure was one HTTP 429 from GitHub after heavy request volume.
+The other 131 stay out on another recorded G3 failure.
+
+Correction:
+an earlier summary in this session said Turborepo,
+Lerna,
+and Melos exited only on the extension-mechanism requirement.
+Their sections also record G3 failures under the retroactive rules:
+
+- Turborepo:
+   `https://turborepo.dev/docs/reference/configuration` says the daemon still backs `turbo watch`,
+   while `https://turborepo.dev/docs/reference/watch` never mentions the daemon.
+- Lerna:
+   command options are documented in per-command GitHub READMEs.
+- Melos:
+   documentation is served as raw MDX without JavaScript.
+
+Candidates whose only confusion trigger sits in plugin documentation,
+such as Yarn,
+Pants,
+and Please,
+stay out because the user's confusion rule applies to any documentation read,
+not only consumed features.
+
+Re-screen results:
+pending.
