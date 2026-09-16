@@ -1,6 +1,6 @@
 import type { ArchiveOriginalSpan, } from './archive-original-note.ts';
 
-//region Original-language interval geometry has no note-classification dependency
+//region Original-language interval geometry has no runtime note-classification dependency
 
 /**
  What a seal needs of a block: its id and where it sits.
@@ -62,4 +62,4 @@ export function sealedNodeIds(
   );
 }
 
-//endregion Original-language interval geometry has no note-classification dependency
+//endregion Original-language interval geometry has no runtime note-classification dependency
