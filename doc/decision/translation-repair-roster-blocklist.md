@@ -39,7 +39,17 @@ and adjust without treating the written shape as ratified.
 - `deepseek-v4-flash`,
   `deepseek-v4-pro`:
   "the undated versions",
-  so dated aliases such as `deepseek-v4-pro-0813` stay eligible.
+  so dated aliases such as `deepseek-v4-pro-0813` stayed eligible
+  until 2026-09-16.
+- `deepseek-v4-pro-0813`,
+  `deepseek-v4-flash-0731`
+  and their OpenRouter spellings,
+  added 2026-09-16:
+  "DeepSeek V4.1 Flash is much better than both V4 Pro and V4 Flash,
+  so please remove V4 Pro and V4 Flash."
+  Record:
+  the 2026-09-16 addendum of
+  `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
 - Qwen 3.8 Max
   (`qwen3.8-max`):
   "absurd cost in money".

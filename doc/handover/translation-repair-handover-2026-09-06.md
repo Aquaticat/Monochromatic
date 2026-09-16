@@ -173,6 +173,25 @@ which the takeover session does not have.
   Hyper 89,
   Bedrock 185.36 USD,
   OpenRouter 267.73 USD.
+- Owner,
+  2026-09-16 (after the Mio18 launch):
+  "DeepSeek V4.1 Flash is much better than both V4 Pro and V4 Flash,
+  so please remove V4 Pro and V4 Flash."
+  Both left the roster and joined the blocklist;
+  the editor and refiner seats `deepseek-v4-pro-0813` held passed to `deepseek-v4.1-flash`
+  on the owner's words,
+  unmeasured in those roles until the next `editor-calibrate`
+  (the 2026-09-16 addendum of the seating decision).
+  `Mio18` was killed and relaunched on the new tip under always-kill-and-relaunch.
+- Owner,
+  2026-09-16,
+  same hour:
+  "Adding / removing / changing models should never be this difficult.
+  And given how fast the AI space is moving,
+  a reusable workflow or mise task or something should be built."
+  The unseat touched eight source files and fifty-eight test files;
+  the owner has asked for a reusable path,
+  which is the next design item after the Mio18 read.
 
 Everything from "### Latest checkpoint" down to "## Repository state" is those sessions' own record,
 kept as history and not as the current state.

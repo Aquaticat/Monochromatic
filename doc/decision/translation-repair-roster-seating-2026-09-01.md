@@ -871,3 +871,65 @@ and the registered plan in
 `~/temp/agent/v41-reviewed-plan-20260911-9eo8in/plan.json`.
 The plan,
 fixture and driver verification records remain under `doc/planning/`.
+
+## Addendum 2026-09-16: `deepseek-v4-pro-0813` and `deepseek-v4-flash-0731` leave the roster
+
+Taken on the owner's instruction of 2026-09-16,
+verbatim:
+"DeepSeek V4.1 Flash is much better than both V4 Pro and V4 Flash,
+so please remove V4 Pro and V4 Flash."
+The owner's standing authorization
+("drop any model from any role,
+as long as you have evidence")
+is not needed here:
+the removal is an instruction,
+not a measurement.
+
+What changed:
+
+- Both ids left `HYPER_ORIGIN_ROSTER_IDS`,
+  the Hyper catalog,
+  the OpenRouter catalog,
+  the completion-cap table and the abandoned-spend ratio table.
+  The Hyper price page keeps their rates,
+  since that table is the provider's whole page rather than the roster.
+- Both ids under both providers' spellings joined `ROSTER_BLOCKLIST`
+  with the owner's sentence as the reason,
+  so a catalog refresh labels them BLOCKED instead of proposing them again.
+- `TRANSLATOR_DROPPED` lists only `hf:openai/gpt-oss-120b` now;
+  the two DeepSeek readings below the pooled null stay in that constant's note
+  as the method's worked examples.
+- The third editor seat and the second refiner seat,
+  both held by `deepseek-v4-pro-0813` on the 2026-09-01 measurement,
+  passed to `deepseek-v4.1-flash`.
+  The owner's sentence is the evidence for the successor taking the seat;
+  no editor calibration has measured V4.1 Flash in either role,
+  and the next `editor-calibrate` re-reads both seats.
+  Keeping the seats at three was the reading that changed the least:
+  the width of the editor bench was measured on 2026-09-01,
+  and leaving a seat empty would have re-decided it.
+- `WRITER_UNMEASURED` and `READER_UNMEASURED` are unchanged:
+  V4.1 Flash still waits on its producer calibration for the translator seat
+  and on a transcription measurement for the reader seat.
+
+Unit tests followed the roster:
+fixtures that used either id as a seat name now use `deepseek-v4.1-flash`
+or `google.gemma-4-31b`,
+the OpenRouter abandoned-spend example moved to MiniMax M3
+(ratio 137 over 4,015 streams),
+the repair slice key golden literal moved a third time
+(the fixture's refiner id changed),
+and the roster count is eleven.
+Recorded evidence that names the departed ids
+(captured streams,
+false-start samples,
+the class twenty-four endpoint measurement)
+stays as written.
+
+Build,
+types,
+zero-warning lint and the unit suite pass on the commit that records this addendum.
+The pass running when the instruction arrived
+(`Mio18`,
+frozen `e964d2f3a`)
+was killed and relaunched on the new tip under the always-kill-and-relaunch rule.
