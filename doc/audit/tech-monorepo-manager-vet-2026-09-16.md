@@ -797,5 +797,4 @@ It decided many exits that were never checked for confusion,
 including Turborepo,
 Lerna,
 Melos,
-Watchman,
-and Wireit's peers in the registry chunks.
+and Watchman.
