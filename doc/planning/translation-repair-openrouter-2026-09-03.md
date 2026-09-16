@@ -6968,6 +6968,132 @@ the coming-out bullet,
 the university wording,
 the SRS expansion.
 
+### Mio13 read, 2026-09-16, 02:55 UTC: no page, class thirty-one
+
+`Mio13` ended INCOMPLETE at 02:42:43 UTC after 2,627,941 ms:
+`translation repair interrupted: provider-unavailable`,
+thrown by the archive block review of the first chat translation with every provider wet.
+No page was written,
+so the seven steps and the three checks do not apply;
+what is read is the log.
+
+- Preparation paired 6 of 6 and 7 of 7,
+  3 of 3 and 3 of 5,
+  and 13 of 13 originals against 13 of 19 translation blocks across 14 relations.
+  Mio12 had paired 12 of 13 originals in that third section,
+  and its unpaired original absorbed the unpaired translations into a slice;
+  with every original paired,
+  the chat translations and the label,
+  rule and note blocks around them are declined into the archive review,
+  which is the class twenty-five path.
+  Eight blocks went to review where Mio12 sent two.
+  The preparation code is byte-identical after whitespace between the two tips;
+  the difference is the roster's pairing.
+- Pictures:
+  10 of 10 gathered,
+  photo6 corroborated at overlap 0.941,
+  photo7 at 0.670,
+  photo4 at 1.000.
+- Archive review:
+  six blocks settled in rounds of 7 of 7,
+  5 of 7 plus 2 of 2,
+  4 of 7 plus 3 of 3,
+  6 of 7 plus a recovery,
+  and 7 of 7,
+  with cap-cut replies recovered or outvoted along the way.
+  The seventh block,
+  the first chat translation (prompt about 7,000 tokens,
+  the block before it about 9,000),
+  lost seven seats to their own reasoning:
+  Qwen3.8-27B spent its whole cap of 20,894 completion tokens (76,861 reasoning characters,
+  0 content characters),
+  GLM-5.3-Flash 18,316,
+  minimax-m3 10,822 (40,483 reasoning characters),
+  deepseek-v4-flash-0731 16,543,
+  deepseek-v4-pro-0813 9,128,
+  glm-5.3 22,067 and deepseek-v4.1-flash 13,082,
+  each ending `finish_reason=length` or `max_tokens` with no content.
+  Mercury 2.5 answered `source-supported` with an empty `sourceQuote` twice and the schema guard refused it.
+  Retry rounds 1 to 3 re-asked the cap-cut seats with the same prompt and the prompt cache answered in 1 ms
+  with the same cut reply;
+  the recovery round re-asked three with the complaint appended and heard none,
+  deepseek-v4-pro being cut in its 120 s grace window.
+  Heard:
+  gemma-4-26b-a4b-it,
+  google.gemma-4-e2b,
+  google.gemma-4-31b and Kimi-K3 (8,497 completion tokens).
+  Their findings on the block:
+  a "musculine" typo,
+  the parenthetical inverted (≠不想成为男性 means "this doesn't mean I don't want to be a man"),
+  敏感 as "sensitive",
+  WeChat casing,
+  dialogue the source does not carry ("Do you have a moment right now?",
+  "Hey~"),
+  mis-attributed speakers,
+  MTF against trans.
+  The stage read "4/12" as an outage and threw.
+- Spend:
+  164 `SPEND` lines,
+  `cost=` summing to 0.013 USD,
+  meters at the end Synthetic 77.4 percent of its week,
+  Hyper 100 credits (171 at launch),
+  Bedrock 185.36 USD,
+  OpenRouter 267.73 USD unchanged.
+- Class thirty-one:
+  a reply the completion cap cut before its content is an answer nobody could read,
+  not silence,
+  and the archive review's outage test counted it as silence.
+  `19ad9d238` adds the guards (a four-seat bench where three answer cap-cut retains the block with the
+  quorum finding;
+  the gather names the seats whose answers stayed unreadable after the recovery round),
+  both red on the unfixed dist;
+  `db090b955` fixes it:
+  `gatherStageVoices` returns `unreadable`,
+  and `runArchiveBlockReviewStage` throws `provider-unavailable` only when heard plus unreadable is below
+  the reachable quorum,
+  otherwise warning `archive-block-review: N heard and M answered unreadably of B seats` and falling
+  through to the no-loop retention with the quorum findings.
+  The archive selection fixture's "unavailable" review now throws,
+  as a transport that delivered nothing does,
+  instead of returning a schema mismatch.
+  Build,
+  oxlint,
+  types and the unit suite pass.
+- Open,
+  and not a defect class:
+  seven of twelve seats cannot review that chat block within their measured caps.
+  Under class thirty-one the block ships as the archive wrote it,
+  with the four findings above recorded,
+  unless the heard revisions win the independent selection.
+  The levers are the owner's:
+  the caps are measured,
+  not chosen,
+  and the picture support sends every corroborating reader's transcript.
+
+## The fourteenth Mio launches on class thirty-one, 2026-09-16, 03:04 UTC
+
+Frozen `db090b955`,
+pass pid `1045264`,
+runs `~/temp/agent/Mio14-20260916`,
+log `~/temp/agent/Mio14-20260916.log`.
+Meters at launch:
+`synthetic=wet bedrock=wet hyper=wet openrouter=wet`,
+Synthetic 77.3 percent of its week,
+Hyper 89 credits,
+Bedrock 185.36 USD,
+OpenRouter 267.73 USD.
+Seats as Mio13:
+roster 12,
+translators 8,
+readers 6,
+writers 11,
+withheld none.
+Read against Mio12 as Mio13 was to be,
+plus the first chat block's review outcome under class thirty-one:
+the `archive-block-review: N heard and M answered unreadably` warning if it fires,
+whether the block is retained unresolved or revised through the selection,
+and whether the selection's judges overrun their caps on the same block.
+
 ## Clustered panels and complete repair evidence implemented, 2026-09-10
 
 The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,

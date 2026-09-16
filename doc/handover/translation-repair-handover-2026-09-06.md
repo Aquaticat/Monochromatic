@@ -105,6 +105,33 @@ which the takeover session does not have.
   translators 8,
   readers 6,
   writers 11.
+- `Mio13` ended INCOMPLETE at 02:42 UTC,
+  `provider-unavailable` from the archive block review of the first chat translation with every provider
+  wet:
+  seven seats spent their whole completion cap reasoning and sent no content,
+  Mercury answered with an empty source quote,
+  deepseek-v4-pro was cut in the recovery round's grace window,
+  and the four heard were read as "4/12".
+  Class thirty-one:
+  a cap-cut reply is an answer nobody could read,
+  not silence.
+  Guards in `19ad9d238`,
+  fix in `db090b955`:
+  the gather names its `unreadable` seats and the review throws only when heard plus unreadable is below
+  the reachable quorum.
+  The reading is in the pass log under the "Mio13 read" heading dated 2026-09-16 02:55 UTC.
+  The overrun itself (seven of twelve seats cannot review that block within their measured caps) is not a
+  defect class;
+  the levers (the caps,
+  the six-transcript picture support) are design questions put to the owner in "What to do next".
+- `Mio14` launched at 03:04 UTC on frozen `db090b955` (pid 1045264,
+  runs `~/temp/agent/Mio14-20260916`,
+  log `~/temp/agent/Mio14-20260916.log`).
+  Meters at launch:
+  Synthetic 77.3 percent,
+  Hyper 89,
+  Bedrock 185.36 USD,
+  OpenRouter 267.73 USD.
 
 Everything from "### Latest checkpoint" down to "## Repository state" is those sessions' own record,
 kept as history and not as the current state.
@@ -1854,7 +1881,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `cbedea357` for the code;
+  `db090b955` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
@@ -1886,6 +1913,17 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`db090b955` (2026-09-16,
+03:01 UTC):
+class thirty-one,
+a reply the completion cap cut before its content counted as silence by the archive review's outage test,
+so Mio13 was interrupted `provider-unavailable` at 4 of 12 heard with every provider wet;
+`gatherStageVoices` names its `unreadable` seats and the review throws only when heard plus unreadable is
+below the reachable quorum;
+the selection fixture's unavailable review throws instead of answering unreadably.
+`19ad9d238` (02:57 UTC):
+the two guards,
+red on the unfixed dist.
 `cbedea357` (2026-09-16,
 01:55 UTC):
 the provider-free preparation layer of 2026-09-10 to 2026-09-15 is removed,
@@ -3445,10 +3483,28 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio13` by the seven steps and the three checks.
-    It is the first full pass since Mio12 and the first on the torn-down tree with V4.1 Flash judging;
+1.  READ `Mio14` by the seven steps and the three checks (frozen `db090b955`,
+    pid 1045264,
+    runs `~/temp/agent/Mio14-20260916`,
+    log `~/temp/agent/Mio14-20260916.log`).
+    Mio13 wrote no page (class thirty-one,
+    read in the pass log under the "Mio13 read" heading dated 2026-09-16 02:55 UTC).
+    Mio14 is the first full pass since Mio12 to reach the lanes on the torn-down tree with V4.1 Flash
+    judging;
     it decides whether the 2026-09-10 daytime changes (the name-form policy,
-    the archive-review wiring) hold on a real page.
+    the archive-review wiring) hold on a real page,
+    and what the first chat translation's review does under class thirty-one:
+    grep the log for `answered unreadably`,
+    `archive review: comparing` and `left the block unresolved`,
+    and read whether the selection's judges overrun their caps on the same block.
+    If the block ships as the archive wrote it,
+    the two chat translations carry the errors the four heard reviewers named
+    (the "musculine" typo,
+    the inverted parenthetical,
+    the added dialogue,
+    the mis-attributed speakers),
+    which is the design question below,
+    not a defect class.
     The wording concerns Mio12 left (the 澪 versus Mio opening,
     the coming-out bullet,
     the university wording,
@@ -3457,7 +3513,32 @@ each read off the pass log and the shipped page:
     what is still wrong after it is a defect class with a fix,
     not a follow-up study.
     ALWAYS KILL AND RELAUNCH if the source moves while it runs.
-2.  THEN THE QUEUE AS BEFORE,
+2.  DESIGN QUESTION FOR THE OWNER,
+    from Mio13:
+    seven of twelve seats cannot review the first chat translation within their measured caps
+    (Qwen3.8-27B 20,894 tokens of reasoning and no content,
+    GLM-5.3-Flash 18,316,
+    glm-5.3 22,067,
+    the others their own caps),
+    while the block before it drew 640 to 1,268 tokens from the same seats on a prompt of the same size.
+    The options,
+    ranked:
+    (a) send the archive review one transcript per corroborated picture instead of every reader's,
+    which shrinks what the seats must reconcile and changes what evidence they see
+    (there is no consensus transcript today;
+    the corroborated reading carries the readings and an overlap);
+    (b) re-ask a cap-cut reply once at twice its measured cap in the recovery round,
+    which spends up to a cap more per seat per block on the providers whose allowances the caps protect;
+    (c) leave it,
+    so a block the reasoning seats cannot answer ships as the archive wrote it with the heard findings
+    recorded.
+    Ranking:
+    a > b > c,
+    because (a) buys the review for nothing extra while (b) buys it with the quota the caps exist to
+    keep,
+    and (c) leaves the chat translations' known errors on the page.
+    None of the three is taken without the owner.
+3.  THEN THE QUEUE AS BEFORE,
     one entry at a time,
     each read before the next is launched:
     `hulicaijia` (the ruby,
@@ -3479,7 +3560,7 @@ each read off the pass log and the shipped page:
     its judge seat is already measured.
     Not concurrently with a pass.
 
-3.  THE ROSTER STANDS AS THE CALIBRATION LEFT IT (`028432713`,
+4.  THE ROSTER STANDS AS THE CALIBRATION LEFT IT (`028432713`,
     `a5e0efc7f`;
     both addenda in `doc/decision/translation-repair-roster-seating-2026-09-01.md`).
     Eleven seats,
@@ -3500,13 +3581,13 @@ each read off the pass log and the shipped page:
     beside Qwen's +5.25.
     Whether upward producer evidence should change weighting or seat breadth remains open;
     no weighting change has been made.
-4.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;
+5.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;
     right for any corpus pass (pages stand beside the declines),
     wrong on a decline-only dir;
     a one-line change when it matters.
-5.  Then the components no read page has met
+6.  Then the components no read page has met
     (the double-quoted path is met by `Arita`).
-6.  Synthetic's weekly meter is a ROLLING WINDOW,
+7.  Synthetic's weekly meter is a ROLLING WINDOW,
     not a calendar week (measured 2026-09-08:
     0 percent at 12:26 UTC after the ninth pass spent its 5.8 percent,
     2 percent at 13:07 with no top-up,
