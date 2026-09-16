@@ -7788,8 +7788,9 @@ Spend:
 Bedrock 184.74 to 184.63 USD,
 OpenRouter 264.37 to 263.97 USD,
 Synthetic weekly 58.3 to 47.7 percent
-(and 37.0 at the next launch twenty minutes later with nothing of mine running,
-so the weekly meter settles late),
+(and 37.0 at the next launch twenty minutes later with nothing of mine running:
+the owner was using DeepSeek V4.1 Flash on Synthetic for other work,
+so Synthetic meter moves between passes are not pipeline spend),
 Hyper dry throughout.
 The log opened `REFERENCES cited=2 cached=2 bought=0`.
 
