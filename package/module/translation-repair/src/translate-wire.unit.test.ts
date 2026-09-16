@@ -177,3 +177,59 @@ await describe({
     },),
   ],
 },);
+
+/**
+ One attested line as the sheets carry it, cat-themed.
+ */
+const ATTESTED_LINE = '- attested: the ARCHIVE\'s "She has an older sister who is also a tabby." is stated by reference 1 '
+  + '("Mittens had an older sister who was also a tabby."), 3 of 4 voices checked word for word';
+
+/**
+ Whole sheet for a slice whose entry attested one detail.
+ */
+const attestedMessages = buildTranslateMessages({
+  sourceText: SOURCE_TEXT,
+  existingText: 'She has an older sister who is also a tabby.',
+  attestedLines: [ATTESTED_LINE,],
+},)
+  .messages
+  .map(function toContent(message,): string {
+    return message.content;
+  },)
+  .join('\n',);
+
+/**
+ Whole sheet for the same slice with nothing attested.
+ */
+const unattestedMessages = buildTranslateMessages({
+  sourceText: SOURCE_TEXT,
+  existingText: 'She has an older sister who is also a tabby.',
+},)
+  .messages
+  .map(function toContent(message,): string {
+    return message.content;
+  },)
+  .join('\n',);
+
+await describe({
+  name: 'translate wire attested details (class thirty-nine, 2026-09-16)',
+  children: [
+    it({
+      name: 'CARRIES the attested lines and the rule to keep them, since a translator shown only the '
+        + 'ORIGINAL drops the archive detail the reference states and the lane contest then picks the '
+        + 'lane that never had it (Mio23 slice 2)',
+      fn: async () => {
+        expect(attestedMessages.includes('ATTESTED DETAILS',),).toBe(true,);
+        expect(attestedMessages.includes(ATTESTED_LINE,),).toBe(true,);
+        expect(attestedMessages.includes('carry every one',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'CARRIES neither the block nor the rule when nothing was attested',
+      fn: async () => {
+        expect(unattestedMessages.includes('ATTESTED DETAILS',),).toBe(false,);
+        expect(unattestedMessages.includes('carry every one',),).toBe(false,);
+      },
+    },),
+  ],
+},);

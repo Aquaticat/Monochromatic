@@ -118,6 +118,29 @@ await describe({
       },
     },),
     it({
+      name: 'SEPARATES a slice whose translators were shown an attested detail from the same slice '
+        + 'without one, so the lane written before the writer sheet carried them is not served back '
+        + '(class thirty-nine, 2026-09-16)',
+      fn: async () => {
+        /**
+         Reference line every arm shares.
+         */
+        const referenceContext = '- reference 1 https://blog.example/mittens ("In memory of Mittens"): Mittens had an older sister who was also a tabby.';
+        expect(translateRunShape({
+          models: MODELS,
+          referenceContext,
+          attestedLines: ['- attested: the ARCHIVE\'s "who is also a tabby" is stated by reference 1 ("also a tabby"), 3 of 4 voices checked word for word',],
+        },),).not.toBe(translateRunShape({
+          models: MODELS,
+          referenceContext,
+        },),);
+        expect(translateRunShape({
+          models: MODELS,
+          attestedLines: [],
+        },),).toBe(RUN_SHAPE,);
+      },
+    },),
+    it({
       name: 'SEPARATES a slice judged with the neighbouring original from the same slice judged '
         + 'without it, which is what stops the two arms of `#108` sharing a cached answer and '
         + 'reporting a window change as having made no difference',
