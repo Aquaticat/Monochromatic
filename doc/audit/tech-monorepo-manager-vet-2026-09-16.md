@@ -271,7 +271,12 @@ Signals recorded during the check:
    such as descriptions cut off mid-sentence or entries that show only a child count;
 - navigation sections that list unrelated kinds of pages as flat siblings with no grouping by purpose;
 - one consumed feature spread across several sections without a page that ties them together;
-- current documentation that depends on a separately frozen version for consumed behavior.
+- current documentation that depends on a separately frozen version for consumed behavior;
+- a page whose description of what a command does contradicts its own documented defaults,
+   so following the description produces surprising behavior;
+- consumed behavior that users can learn only by asking maintainers in chat,
+   such as Discord,
+   instead of from official documentation.
 
 Signals that do not prevent reaching a consumed feature's behavior lower the weight-5 documentation quality score
 instead of removing the candidate.
@@ -303,7 +308,18 @@ instead of removing the candidate.
      webhooks,
      and VCS hooks as flat siblings;
   - a banner states that the documentation is for moon v2 and that v1 documentation is frozen elsewhere.
-  No further evidence was collected.
+- moon,
+   user-reported experience:
+   deleting almost all caches required `moon clean` with a lifetime of 1 second,
+   the behavior was unexpected,
+   and the user had to ask the primary developer on Discord.
+  Current source `moonrepo/moon` `website/docs/commands/clean.mdx`,
+   last changed in `2ef35f144` on 2026-02-18,
+   says the command "can be used to reset the workspace entirely",
+   while its option list gives `--lifetime` a default of "7 days" without connecting the two.
+  The same page labels `--all`,
+   "Clean all cached items and reset state",
+   as added in 2.0.0.
 
 ## Components and overlays
 
