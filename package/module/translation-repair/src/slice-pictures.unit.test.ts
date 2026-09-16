@@ -35,6 +35,7 @@ import {
   slicePictureNames,
   slicePictures,
   type RosterModelId,
+  SIDE_LEGEND,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -403,6 +404,63 @@ await describe({
 
         expect(rendered.context,).toBe(expectedContext,);
         expect(rendered.findings,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'LEADS THE CONTEXT WITH THE SIDE LEGEND WHEN A READING MARKS CHAT SIDES, and with '
+        + 'nothing when none does (class thirty-three, 2026-09-16): the reader that saw the '
+        + 'picture marks which side each bubble sat on, and a judge shown bare lines guesses who '
+        + 'spoke, which is how a human translation with the speakers right was revised wrong',
+      fn: async () => {
+        /**
+         One chat picture read with side markers by both readers.
+         */
+        const chatReadings: ReadonlyMap<string, PairedReading> = new Map<string, PairedReading>([
+          [
+            'startled.webp',
+            {
+              kind: 'corroborated',
+              readings: [
+                {
+                  modelId: WHISKERS,
+                  text: '[left] are you there\n[right] here\n[left] [sticker]',
+                },
+                {
+                  modelId: MARMALADE,
+                  text: '[left] are you there\n[right] here',
+                },
+              ],
+            },
+          ],
+        ],);
+
+        /**
+         What a slice naming the chat picture is shown.
+         */
+        const rendered = slicePictures({
+          slices: [sliceOf({
+            text: `A shadow startles her off the sill.\n\n`
+              + `${photoElement({ assetNames: ['startled.webp',], },)}\n`,
+          },),],
+          slicePosition: 0,
+          readings: chatReadings,
+        },);
+
+        expect(rendered.context.startsWith(SIDE_LEGEND + '\n\n' + PICTURE_HEADING + ' startled.webp\n',),)
+          .toBe(true,);
+        expect(rendered.findings,).toEqual([],);
+
+        /**
+         Same slice shown readings with no side markers.
+         */
+        const plain = slicePictures({
+          slices: MULTI_PICTURE_SLICES,
+          slicePosition: 1,
+          readings: MULTI_PICTURE_READINGS,
+        },);
+        expect(plain.context.includes('[right]',),).toBe(false,);
+        expect(plain.context.startsWith(PICTURE_HEADING,),).toBe(true,);
       },
     },),
 
