@@ -9,6 +9,10 @@ single-file,
 all-Rust tool with file-enforcer rewritten in Rust on 2026-09-16
 ([`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md)).
 Probe installs are authorized except `rpm-ostree install`.
+Every decision made in this work applies to meow 0.x only;
+1.x and later may revisit it (user,
+2026-09-17).
+Research prompts and new decision records carry that scope.
 
 Keep this handover current when requirements,
 decisions,

@@ -7,6 +7,11 @@ answering "Do you accept the all-Rust stack for meow 0.x (Rust approved for this
  file-enforcer rewritten in Rust)?"
 with "Accept all-Rust".
 `meow` is a placeholder name.
+Every decision here applies to meow 0.x and won't necessarily apply to 1.x or later
+("Every decision we made and are going to make in this session applies to v0.x
+and won't necessarily apply to v1.x and so on.",
+user,
+2026-09-17).
 Design:
 [`doc/planning/monorepo-manager-from-scratch-design.md`](../planning/monorepo-manager-from-scratch-design.md).
 Session state:

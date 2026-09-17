@@ -24,6 +24,14 @@
    design only;
    the route is chosen,
    but implementation has not been requested.
+- Version scope,
+   stated by the user on 2026-09-17:
+   "Every decision we made and are going to make in this session applies to v0.x
+   and won't necessarily apply to v1.x and so on."
+  Every requirement,
+   decision,
+   and answer in this document and in the decision records it links is scoped to meow 0.x;
+   1.x and later may revisit any of them.
 
 ## User-stated design requirements
 
