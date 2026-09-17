@@ -419,7 +419,18 @@ which the takeover session does not have.
   guards red first at `d692d5f1d`).
   `shi_Yumiaoya3` launched at 14:56 UTC on frozen `56307dca5` (pid 3571748,
   runs `~/temp/agent/shi_Yumiaoya3`,
-  log `~/temp/agent/shi_Yumiaoya3.log`).
+  log `~/temp/agent/shi_Yumiaoya3.log`)
+  and stopped INCOMPLETE at publish after 78 minutes:
+  the translate lane defined the footnote inside the opening section,
+  the assembly withdrew both carriers,
+  and the section left the page with its film link
+  (class forty-nine,
+  fixed in `cd789763c`,
+  guard red first at `a22dcffde`).
+  Classes forty-seven and forty-eight held live.
+  `shi_Yumiaoya4` launched at 16:30 UTC on frozen `cd789763c` (pid 3610388,
+  runs `~/temp/agent/shi_Yumiaoya4`,
+  log `~/temp/agent/shi_Yumiaoya4.log`).
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2233,6 +2244,17 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`cd789763c` (2026-09-17,
+16:25 UTC):
+class forty-nine,
+the slice rule refuses a candidate defining a footnote neither its original passage nor its page slice defines
+(`translate-definition-leak.ts`),
+and the assembly attributes a doubled definition to the carrier whose original does not own it
+(`withoutOwners` in `assembly-integrity.ts`;
+the pass log's "Class forty-nine" heading dated 2026-09-17 16:25 UTC;
+guard red first at `a22dcffde`;
+found by the shi_Yumiaoya3 INCOMPLETE).
+Running on shi_Yumiaoya4.
 `56307dca5` (2026-09-17,
 14:50 UTC):
 classes forty-seven and forty-eight,
@@ -2243,7 +2265,9 @@ and a split coverage verdict with no anchored claim joins the shortfall path at 
 the pass log's "Classes forty-seven and forty-eight" heading dated 2026-09-17 14:50 UTC;
 guards red first at `d692d5f1d`;
 found by the shi_Yumiaoya2 INCOMPLETE).
-Running on shi_Yumiaoya3.
+Ran on shi_Yumiaoya3 (slice 13 admitted and written,
+the farewell floor silent,
+the slate still doubling).
 `cde09e8bc` (2026-09-17,
 13:42 UTC):
 class forty-six,
@@ -4020,23 +4044,24 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `shi_Yumiaoya3` by the seven steps and the three checks (frozen `56307dca5`,
-    pid 3571748,
-    runs `~/temp/agent/shi_Yumiaoya3`,
-    log `~/temp/agent/shi_Yumiaoya3.log`,
-    launched 14:56 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
+1.  READ `shi_Yumiaoya4` by the seven steps and the three checks (frozen `cd789763c`,
+    pid 3610388,
+    runs `~/temp/agent/shi_Yumiaoya4`,
+    log `~/temp/agent/shi_Yumiaoya4.log`,
+    launched 16:30 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry).
-    It is the first pass on classes forty-seven and forty-eight
-    (the pass log's heading dated 2026-09-17 14:50 UTC);
-    shi_Yumiaoya2 stopped INCOMPLETE on them after 48 minutes
-    (the pass log's "shi_Yumiaoya2 read" heading dated 2026-09-17 14:40 UTC).
+    It is the first pass on class forty-nine
+    (the pass log's heading dated 2026-09-17 16:25 UTC);
+    shi_Yumiaoya3 stopped INCOMPLETE at publish on it after 78 minutes
+    (the pass log's "shi_Yumiaoya3 read" heading dated 2026-09-17 16:20 UTC).
     Its archive is a skeleton of 54 lines against the original's 138,
-    so read first slice 16's farewell
-    (the film line and its attribution once each in English,
-    no `LINE-STRUCTURED` refusal of the archive's rendering,
-    and whether the slate still doubled the quote),
-    then slice 13 (the cameras and the will) admitted and on the page
-    (an `insertion-split-unanchored` finding if its round split again),
+    so read first the opening section on the page with its film link,
+    one `[^1]` definition on the page and no `assembly-footnote-reverted` line in the translate log,
+    any `defines footnote` refusal in the slate findings,
+    then slice 13 (the cameras and the will) on the page,
+    then the farewell
+    (the slate chose the doubled quote on every pass so far;
+    the floor is silent on the archive's rendering since class forty-seven),
     then the four body links and that the commented-out profile link is on nobody's page,
     then the community-term footnote,
     then the page assembly's findings
@@ -4056,7 +4081,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (shi_Yumiaoya2 to its INCOMPLETE:
+    (shi_Yumiaoya3 to its INCOMPLETE:
+    0.57 USD by the meters,
+    948 seats,
+    31 retry rounds,
+    78 minutes;
+    shi_Yumiaoya2 to its INCOMPLETE:
     0.69 USD by the meters,
     840 seats,
     39 retry rounds,

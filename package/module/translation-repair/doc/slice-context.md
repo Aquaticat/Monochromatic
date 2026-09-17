@@ -245,6 +245,20 @@ No archive at the pinned corpus renders two distinct source headings identically
 so the archive's heading is always a distinct fallback.
 The publish guard keeps the last word for a page the restoration cannot mend.
 
+## Footnote definitions a slice may carry
+
+A footnote is a relation between slices:
+the original defines a note in one slice and refers to it from others.
+Since class forty-nine (2026-09-17) the deterministic rule refuses a candidate that defines a note
+neither its original passage nor the page slice it replaces defines
+(`definitionLeakFindings`),
+because a second definition makes the assembly's footnote guard withdraw carriers;
+and that guard attributes a doubled definition to the carrier whose original does not define it,
+keeping the slice that owns the note.
+On shi_Yumiaoya3 the opening section's rendering ended with the note written out,
+both carriers were withdrawn,
+and the section left the page with its link.
+
 ## Links the page owes
 
 The publish check reads every destination the original links to and refuses a page lacking one,

@@ -8082,6 +8082,88 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya4 launches on class forty-nine, 2026-09-17, 16:30 UTC
+
+Frozen `cd789763c` (classes forty-one to forty-nine),
+pid 3610388,
+runs `~/temp/agent/shi_Yumiaoya4`,
+log `~/temp/agent/shi_Yumiaoya4.log`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch.
+Read first the opening section on the page with its film link,
+one `[^1]` definition on the page and no `assembly-footnote-reverted` line in the translate log,
+any `defines footnote` refusal in the slate findings
+(class forty-nine's first live measurement),
+then slice 13 on the page,
+the farewell quote
+(the slate has chosen the doubled rendering on every pass so far),
+then the seven steps and the three checks.
+
+## Class forty-nine, 2026-09-17, 16:25 UTC: a candidate defines a note its passage only refers to, and the assembly withdraws both carriers
+
+Found by the shi_Yumiaoya3 read.
+The original defines its one footnote in its last slice and refers to it from the opening section.
+The translate lane's rendering of the opening section ended with the note written out as a definition
+(the block floor had refused one such candidate for carrying seven blocks against six,
+and passed the chosen one);
+the last slice rendered the definition as well.
+The assembly's footnote guard found `[^1]` defined twice,
+attributed the defect to every replacement whose mention count moved,
+which on a skeleton archive is both carriers,
+and withdrew both:
+the opening section
+(with the film's Wikipedia link)
+and the definition left the page,
+the contest then saw the lanes agree on nothing there,
+and the publish check refused the page for the dropped link after 78 minutes.
+Fixed in `cd789763c`
+(guard red first at `a22dcffde`):
+the slice rule refuses a candidate defining a footnote neither the original passage nor the page slice defines
+(`translate-definition-leak.ts`,
+after the sheet-label check),
+with the finding telling the writer to keep the marker and leave the definition out;
+and the assembly attributes a doubled definition to the carriers whose original does not define it,
+keeping the slice that owns the note
+(`withoutOwners` in `assembly-integrity.ts`).
+Run over shi_Yumiaoya3's own cached rendering of the opening section,
+the rule refuses it for exactly the leaked definition and passes it once the definition is stripped.
+
+## shi_Yumiaoya3 read, 2026-09-17, 16:20 UTC: INCOMPLETE at publish, the opening section withdrawn with its link
+
+Frozen `56307dca5`,
+78 minutes
+(`ms=4692712`),
+`status=INCOMPLETE` at publish
+("would drop 1 source destination(s)"),
+no page written,
+`attempts.json` reads 1.
+Spend by the meters:
+Bedrock 178.38 to 178.17,
+OpenRouter 254.80 to 254.44,
+0.57 USD;
+`pass-spend.mjs` logs 0.64 USD over 948 seats,
+31 retry rounds,
+9 abandoned streams (0.11 USD).
+Class forty-eight live:
+slice 13's coverage round split again with no anchored claim,
+the passage was admitted,
+the translate lane wrote it in 17 minutes and the consolidation settled it.
+Class forty-seven live:
+the archive's rendering of the farewell passed the line floor,
+was offered on the consolidation slate as a lane text,
+and the slate chose Qwen's doubled rendering
+(both the Chinese line's translation and the English original,
+the attribution twice)
+over it;
+the floor no longer stops the entry,
+and the judges' preference for the doubled quote is a judge question still open.
+Then the translate lane's assembly withdrew two replacements
+(`assembly-footnote-reverted duplicate-definition gfm 1` twice),
+the opening section and the definition,
+class forty-nine.
+glm-5.3 dark for the run (83 thrown);
+Synthetic dry throughout.
+
 ## shi_Yumiaoya3 launches on classes forty-seven and forty-eight, 2026-09-17, 14:56 UTC
 
 Frozen `56307dca5` (classes forty-one to forty-eight),
