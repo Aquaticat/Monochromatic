@@ -79,8 +79,19 @@ Each step's evidence is in the linked documents.
    the all-Rust research,
    copied to `doc/planning/monorepo-manager-route-research/stack-all-rust-rewrite.md`
    and merged into "All-Rust tool" in the from-scratch design.
-  Its ranking puts TypeScript on QuickJS-ng first,
-   pending the user's answer on whether configuration edits may need the Rust toolchain.
+  Its configuration-hosting ranking is withdrawn:
+   the user dropped the Turing-complete configuration requirement
+   ("Configuration" and "Correction on 2026-09-16" in the design).
+- Running:
+   declarative configuration research,
+   writing `stack-declarative-config.md` in the session scratchpad.
+  It inventories today's configuration logic,
+   compares configuration formats with their Rust libraries,
+   and treats OpenTofu as the lead precedent;
+   it was told the hash is `gxhash128`.
+- Done on 2026-09-16 with the user's authorization:
+   `rustup target add x86_64-unknown-linux-musl`;
+   static musl daemon skeletons with XXH3 and with `gxhash` both built and ran.
 - Stopped unfinished on 2026-09-16:
    the design of a TypeScript daemon with a Rust native addon;
    no appendix was written.
@@ -95,6 +106,11 @@ Each step's evidence is in the linked documents.
    the recorded commands and outputs are the evidence.
 - Runtime and library documentation problems are recorded but do not cull options for building the tool;
    monorepo manager candidates were culled on any documentation confusion.
+- Incumbent shapes are not requirements:
+   on 2026-09-16 the configuration-hosting research treated `file-enforcer.config.ts`'s Turing-complete shape,
+   built under time constraints,
+   as something to preserve,
+   and the user corrected it.
 
 ## Commits
 
@@ -123,17 +139,18 @@ lists the rest.
    documents brought up to the all-Rust route.
 - `652c171c0`:
    all-Rust configuration-hosting research merged.
+- `2ae2c67b5`:
+   declarative configuration,
+   `gxhash`,
+   and the CPU-capability warning recorded.
 
 ## Next action
 
-1.  Ask the user the questions under "Open questions" in the from-scratch design that decide the ranking:
-    whether configuration edits may need the Rust toolchain,
-    and whether `./meow` serves other repositories.
-2.  Re-rank per the answers;
-    if the toolchain is acceptable,
-    design F,
-    G,
-    H,
-    and I against each other.
-3.  Run the design's "Next measurements" in a disposable container for the leading variants.
-4.  Write a decision record only after the user accepts a stack and host.
+1.  When the declarative configuration research lands,
+    copy it to `doc/planning/monorepo-manager-route-research/stack-declarative-config.md`,
+    verify its load-bearing claims,
+    and merge its logic placement and format ranking into the from-scratch design.
+2.  Present the ranking with pros and cons,
+    and ask the design's remaining open questions,
+    including 0.x CPU architectures.
+3.  Write a decision record only after the user accepts a stack and configuration design.
