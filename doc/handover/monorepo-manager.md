@@ -114,8 +114,10 @@ Each step's evidence is in the linked documents.
   Both change the vet's premises
    ("Cache key hash vet result" in the design).
   Before re-running the selection,
-   the user was asked how much collision resistance weighs against throughput
-   and which x86-64 levels block publishing.
+   the user was asked how much collision resistance weighs against throughput ("A",
+   speed first)
+   and which x86-64 levels block publishing ("v4 block only").
+  The re-run vet started the same day.
   Also answered:
    "Yes to HCL" (recorded in the all-Rust decision record)
    and "Merge BFQ into DRR instead" (rule `DRR` in `AGENTS.md`).

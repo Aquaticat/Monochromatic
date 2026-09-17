@@ -111,6 +111,14 @@ Stated by the user on 2026-09-16:
    2026-09-17).
   A build raised above its target's baseline needs the startup check in "Missing CPU capabilities",
    because feature detection macros evaluate to `true` at compile time for enabled target features.
+- Asked which x86-64 levels block publishing,
+   the user answered "v4 block only" on 2026-09-17:
+   among x86-64 builds only `x86-64-v4` is release-blocking,
+   while the baseline,
+   `x86-64-v2`,
+   and `x86-64-v3` builds still ship without blocking.
+  aarch64 stays release-blocking;
+   the question covered x86-64 levels only.
 
 ### Configuration
 
@@ -142,6 +150,13 @@ Stated by the user on 2026-09-16:
    "non-crypto isn't a requirement.
    I only said we don't necessarily need a crypto hash."
   Cryptographic hashes are eligible for cache keys.
+- Asked how much crafted-collision resistance weighs against throughput,
+   the user chose "Speed first" on 2026-09-17:
+   cryptographic hashes compete under the vet's existing weights,
+   with whole-file throughput at weight 5.
+  The reasoning presented was that the cache is local and rebuildable,
+   a repository able to craft collisions already runs its own tasks,
+   and changing the hash later costs one cache rebuild.
 - "We already chose a non-crypto hash fn in music-player":
    `gxhash`,
    which "benched the best";
@@ -1599,6 +1614,9 @@ and their answers to it changed two premises of the vet.
 
 The selection reopens with both changes;
 the measurements below stay valid evidence for it.
+The user then chose speed-first weights and made `x86-64-v4` the only release-blocking x86-64 build
+("Hashing" and "Platforms and builds"),
+and the re-run vet started on 2026-09-17.
 
 - Recommended:
    `twox-hash` 2.1.4,
@@ -1996,10 +2014,11 @@ kept for the reopened selection:
 
 ## Open questions
 
-User choices research raises are asked as they arise (rule `FLG`).
-Asked on 2026-09-17 before re-running the hash selection:
-how much collision resistance weighs against throughput,
-and which x86-64 levels block publishing.
+User choices research raises are asked as they arise (rule `FLG`);
+none is pending.
+Answered on 2026-09-17 before re-running the hash selection:
+speed first,
+and only `x86-64-v4` blocks publishing among x86-64 builds.
 
 Reopened on 2026-09-17:
 

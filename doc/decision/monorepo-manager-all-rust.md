@@ -67,6 +67,14 @@ Supersedes `package/dev-script/file-enforcer/DECISION.rust-migration.md` for the
 - As many builds as possible ship;
    `x86-64-v3` and `x86-64-v4` ship as separate builds (user,
    2026-09-17).
+- Among x86-64 builds,
+   only `x86-64-v4` blocks publishing;
+   the baseline,
+   `x86-64-v2`,
+   and `x86-64-v3` builds ship without blocking ("v4 block only",
+   user,
+   2026-09-17).
+  aarch64 stays release-blocking.
 - Configuration syntax is OpenTofu-shaped HCL,
    accepted after the format brief ("Yes to HCL",
    user,
@@ -78,7 +86,10 @@ the configuration language no longer needs to be Turing-complete and may be (use
 and the tool warns clearly when the CPU lacks required capabilities.
 Content hashing used `gxhash` until collision findings on 2026-09-17;
 its replacement is being selected,
-and cryptographic hashes are eligible (user,
+cryptographic hashes are eligible (user,
+ 2026-09-17),
+and they compete under speed-first weights ("A",
+ user,
  2026-09-17).
 
 ## Consequences
@@ -95,8 +106,9 @@ and cryptographic hashes are eligible (user,
    such as `x86-64-v3`,
    needs a startup check for the features it was compiled with.
 - Each shipped build comes as glibc and static musl binaries,
-   including the separate `x86-64-v3` and `x86-64-v4` builds;
-   which x86-64 levels block publishing is still open.
+   including the separate `x86-64-v3` and `x86-64-v4` builds.
+  The release-blocking binaries are `x86-64-v4` and aarch64,
+   each glibc and static musl.
 
 ## Rejected
 
