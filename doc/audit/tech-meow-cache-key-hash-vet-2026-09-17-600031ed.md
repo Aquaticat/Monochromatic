@@ -3157,7 +3157,7 @@ Reason for each adjacent pair:
    (1,533 lines on the used path against 7,496 inside a 177,154-line crate)
    and on maintenance
    (eleven years and 53.4M recent downloads against four months and 1,108),
-   while `rscrypto` leads on nothing that either holds alone.
+   while `rscrypto` ties it on every other criterion and leads on none.
   The margin is 1.5 points of 92,
    and it reverses if `twox-hash`'s aarch64 rating is one step lower than recorded,
    which is the one open measurement in this vet.
@@ -3260,7 +3260,7 @@ Under that reading the deciding evidence is throughput on the release-blocking b
 
 - Whole files, `x86-64-v4`:
    XXH3-128 at 47.0 to 47.7 GiB/s,
-   the fastest cryptographic candidate (AES-CMAC's sibling AES-PMAC) at 5.9,
+   the fastest cryptographic or AES-based candidate, AES-PMAC over AES-NI and VAES, at 5.9,
    BLAKE3 at 4.6,
    SHA-256 with the SHA extensions at 2.3.
 - aarch64, measured on published CI artifacts for the same crate versions:
