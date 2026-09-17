@@ -1350,6 +1350,77 @@ the `toml_edit` wrapper's 21 passes were recounted there.
    meow never generates `mise.toml`,
    and Mise and its file leave when meow takes over.
 
+### Repository-owned gxhash
+
+Research:
+[`gxhash-owned.md`](monorepo-manager-route-research/gxhash-owned.md),
+2026-09-17,
+with a prototype reimplementation,
+differential test,
+benchmarks,
+and collision reproducer under `gxhash/lab/` in the session scratchpad.
+
+#### Findings
+
+- A prototype reimplementation written from the algorithm notes,
+   with no raw pointer reads,
+   matched `gxhash` 3.5.0 on 97,545 input and seed pairs on x86_64,
+   on aarch64 under QEMU,
+   and against the upstream `hybrid` build.
+- Undefined behavior in 3.5.0:
+   Miri stops on inputs of 1 to 16 bytes with
+   "attempting to access 16 bytes, but got alloc311 which is only 8 bytes from the end of the allocation".
+  The music player always hashes at least 24 bytes;
+   89 git-tracked files are under 16 bytes,
+   so meow would hit it.
+  The prototype runs clean under Miri.
+- One-byte collisions in `gxhash128`,
+   reproduced independently on 2026-09-17 with the lab's `onebyte` binary
+   (`BASE=random SEEDS=0,1,987654321 onebyte 4096 gxhash128 xxh3_128`):
+   among all 1,044,480 single-byte variants of one random 4096-byte input,
+   `gxhash128` produced 1 full 128-bit collision
+   (bytes 354 and 877,
+   both in block 6 of a lane group),
+   equal under all three seeds,
+   while XXH3-128 produced 0.
+  For a content cache,
+   two different one-byte edits of the same file can share a key.
+- Issue #111 did not reproduce on aarch64 Linux in either investigation.
+- Upstream reasons against runtime detection and stable VAES are outdated:
+   safe `#[target_feature]` functions are stable since Rust 1.86 and VAES intrinsics since 1.89.
+- Upstream has had no commits since 2025-05-18 and no release since 2025-03-12;
+   #118,
+   the inline-assembly read fix,
+   is merged but unreleased.
+- Benchmarks,
+   x86_64 in `podman --memory=2g --cpus=2`,
+   with run-to-run bands of 19.3% on fingerprint material and 23.6% on files:
+   on music-player fingerprint material `gxhash128` was 31% to 37% faster than XXH3-128,
+   beyond the band;
+   on the 8,093 git-tracked files `gxhash` reached 45 to 47 GiB/s,
+   where memory access rather than the hash limits throughput;
+   `gxhash64` and `gxhash128` showed no measurable difference on file contents.
+
+#### Settled from the findings
+
+- Ownership shape:
+   dirty-room reimplementation crediting ogxd,
+   not a fork:
+   a fork starts from 56 `unsafe` uses and undocumented items that rules `MXR` and `RDC` would force rewriting anyway,
+   and upstream is idle.
+- License:
+   `LGPL-3.0-or-later`,
+   the repository's license for Rust crates
+   (`package/cli/forbidden-strings/Cargo.toml:21`),
+   plus the upstream MIT copyright notice,
+   "Copyright (c) 2023 Olivier Giniaux",
+   for the derived code.
+- API:
+   one-shot hashing;
+   `Hasher` and `HashMap` support are left out because nothing in the repository uses them.
+- The undefined behavior and the one-byte collisions go through the `troubleshooting-doc` skill,
+   whose upstream filing audit decides whether anything is offered upstream.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
