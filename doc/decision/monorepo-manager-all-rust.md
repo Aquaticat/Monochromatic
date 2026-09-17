@@ -3,7 +3,8 @@
 ## Status
 
 Accepted 2026-09-16 by the user,
-answering "Do you accept the all-Rust stack for meow 0.x (Rust approved for this tool, file-enforcer rewritten in Rust)?"
+answering "Do you accept the all-Rust stack for meow 0.x (Rust approved for this tool,
+ file-enforcer rewritten in Rust)?"
 with "Accept all-Rust".
 `meow` is a placeholder name.
 Design:
@@ -65,9 +66,13 @@ Supersedes `package/dev-script/file-enforcer/DECISION.rust-migration.md` for the
    2026-09-17).
 
 Decided the same day and recorded in the design:
-the configuration language no longer needs to be Turing-complete and may be (user, 2026-09-17),
-content hashing uses `gxhash` with no cryptographic hash,
+the configuration language no longer needs to be Turing-complete and may be (user,
+ 2026-09-17),
+content hashing uses a non-cryptographic hash,
 and the tool warns clearly when the CPU lacks required capabilities.
+The hash was `gxhash` until 2026-09-17,
+when collision findings replaced it with XXH3-128 from `twox-hash`
+([`monorepo-manager-cache-key-hash.md`](monorepo-manager-cache-key-hash.md)).
 
 ## Consequences
 
@@ -77,9 +82,11 @@ and the tool warns clearly when the CPU lacks required capabilities.
    and the `file-enforcer-perf` fixture,
    a `prefer-readonly-parameter-type` fixture read,
    and the `sync:files` tasks need migration.
-- `gxhash` requires AES on both architectures,
-   so a startup check must read capabilities without `is_x86_feature_detected!` or `is_aarch64_feature_detected!`,
-   which evaluate to `true` at compile time in a build with the `aes` target feature.
+- Superseded on 2026-09-17 with `gxhash`:
+   the AES startup check.
+  `twox-hash` selects SIMD kernels at run time,
+   so default builds need no startup check
+   ([`monorepo-manager-cache-key-hash.md`](monorepo-manager-cache-key-hash.md)).
 - The release matrix has four supported binaries.
 
 ## Rejected

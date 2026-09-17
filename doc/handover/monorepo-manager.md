@@ -100,8 +100,11 @@ Each step's evidence is in the linked documents.
    merged into "Cache key hash vet result" in the design.
   It recommends `twox-hash` 2.1.4 XXH3-128 under the SIMD reading of "hardware acceleration";
    under the dedicated-instruction reading no non-cryptographic library passes.
-  Asked the user which reading they meant;
-   adoption and the #545 update wait on that answer.
+  The user answered "SIMD counts",
+   so `twox-hash` XXH3-128 was adopted:
+   [`doc/decision/monorepo-manager-cache-key-hash.md`](../decision/monorepo-manager-cache-key-hash.md).
+  Issue #545 got a comment pointing at the result,
+   since its body named this vet as the blocker.
   Closed without asking,
    because neither answer changes the choice:
    extra quality weight,
@@ -233,17 +236,28 @@ lists the rest.
    declarative configuration,
    `gxhash`,
    and the CPU-capability warning recorded.
+- `1e55e3335` (2026-09-17):
+   JSON crate troubleshooting docs landed.
+- `4fdf58b84` (2026-09-17):
+   cache key hash vet merged into the design.
 
 ## Next action
 
-1.  As each running research file lands,
+No research is running.
+
+1.  Start the design work listed under "Design work not yet started" in the design's "Open questions",
+    beginning with the HCL evaluator,
+    function library,
+    formatter,
+    and language server.
+2.  For each research result,
     copy it into `doc/planning/monorepo-manager-route-research/`,
     verify its load-bearing claims,
     merge it into the from-scratch design,
     and commit.
-2.  Ask the user every flagged question it raises in the same turn,
+3.  Ask the user every flagged question it raises in the same turn,
     with pros,
     cons,
     and a ranking;
     the user asked on 2026-09-16 that flagged items never wait in documents.
-3.  Record accepted choices in `doc/decision/` only after the user accepts them.
+4.  Record accepted choices in `doc/decision/` only after the user accepts them.

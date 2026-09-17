@@ -1569,7 +1569,9 @@ to the repeated cache key output question:
 Vet:
 [`doc/audit/tech-meow-cache-key-hash-vet-2026-09-17.md`](../audit/tech-meow-cache-key-hash-vet-2026-09-17.md),
 finished 2026-09-17.
-Nothing is adopted yet.
+Adopted the same day,
+after the user confirmed the SIMD reading ("SIMD counts"):
+[`doc/decision/monorepo-manager-cache-key-hash.md`](../decision/monorepo-manager-cache-key-hash.md).
 
 - Recommended:
    `twox-hash` 2.1.4,
@@ -1623,8 +1625,7 @@ Nothing is adopted yet.
 - Raising quality evidence beyond the collision gate to weight 5 only ties third place,
    so it does not bear on the choice.
 
-If `twox-hash` is adopted,
- these usage rules follow from the vet's measurements and risks:
+Usage rules that follow from the vet's measurements and risks:
 
 - Dependency:
    `twox-hash = { version = "=2.1.4", default-features = false, features = ["std", "xxhash3_128"] }`,
@@ -1960,16 +1961,15 @@ If `twox-hash` is adopted,
 
 ## Open questions
 
-Research in progress;
-user choices it raises are asked as they arise (rule `FLG`):
-
-- meow's cache key hash:
-   the vet recommends `twox-hash` XXH3-128 under the SIMD reading of "hardware acceleration"
-   ("Cache key hash vet result");
-   the user was asked on 2026-09-17 which reading they meant.
+User choices research raises are asked as they arise (rule `FLG`);
+none is pending.
 
 Closed on 2026-09-17:
 
+- meow's cache key hash:
+   XXH3-128 from `twox-hash` 2.1.4,
+   adopted after the user confirmed the SIMD reading of "hardware acceleration"
+   ("Cache key hash vet result").
 - Repository-owned `gxhash` for meow,
    superseded when cache keys left `gxhash`;
    the music player's switch is issue #545.
