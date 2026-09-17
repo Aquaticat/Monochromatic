@@ -1346,7 +1346,9 @@ the `toml_edit` wrapper's 21 passes were recounted there.
   - `json-five` ends every block comment span on the closing `/`,
      so a plain parse and print drops that `/`.
   - The Biome JSON crates build with three exact pins
-     (`biome_rowan`, `biome_parser`, and `biome_unicode_table` at `=0.5.7`),
+     (`biome_rowan`,
+     `biome_parser`,
+     and `biome_unicode_table` at `=0.5.7`),
      not seven.
 
 #### JSONC wrapper rules from the troubleshooting docs

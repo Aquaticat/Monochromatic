@@ -216,7 +216,8 @@ GPU and display capability adoption for the labwc migration VM:
 Quirks found while choosing TOML,
 JSONC,
 and XML editing crates for the monorepo manager
-(`doc/planning/monorepo-manager-from-scratch-design.md`, "Managed file editing"):
+(`doc/planning/monorepo-manager-from-scratch-design.md`,
+"Managed file editing"):
 
 - [`toml_edit` 0.25.15 drops or moves comments](toml-edit-comment-loss.md)
   on index assignment,
