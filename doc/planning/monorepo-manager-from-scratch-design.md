@@ -1127,8 +1127,9 @@ Open to the user's veto:
    with `gxhash128` for cache keys
    (`src/gxhash/mod.rs:49` in `gxhash` 3.5.0;
    the music player uses `gxhash64`).
-  The 128-bit width is proposed for keys that accumulate across many entries,
-   open to the user's veto.
+  The user chose the 128-bit width on 2026-09-16;
+   a false hit needs a new key equal to a stored one,
+   so its odds scale with stored entries times lookups divided by 2 to the key width.
 - No cryptographic hash is used:
    the cache is local only,
    and file-enforcer's SHA-256 uses,
@@ -1315,8 +1316,9 @@ Open to the user's veto:
    research is running.
 - aarch64 builds and the missing-AES warning:
    probes are running now that installs are authorized.
-- Cache key width and cache eviction:
-   the user asked what "a cache that only grows" meant;
-   the design has no eviction policy yet,
-   so width and eviction are being asked together.
+- Cache contents and eviction:
+   the user asked what the local task cache would contain;
+   contents,
+   failed-run caching,
+   and eviction are being asked together.
 - How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
