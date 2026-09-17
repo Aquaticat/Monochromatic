@@ -6,6 +6,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { isInsertionChunk, } from '../chunk-placement.ts';
+import type { TargetRegion, } from '../coverage-foreign-region.ts';
 import { runCoverageStage, } from '../coverage-stage.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import type { InsertionAdmission, } from '../insertion-admission.ts';
@@ -133,6 +134,27 @@ export async function decidePassInsertionAdmission(
   const target = parseDocument({ text: prepared.targetText, },);
 
   /**
+   Target regions the pairing assigned to some source slice. Every one of
+   them is foreign to a source-only candidate, since that English renders a
+   different original; a partial claim quoting one is no evidence for the
+   candidate (class fifty-one, shi_Yumiaoya4).
+   */
+  const foreignRegions: readonly TargetRegion[] = prepared
+    .slices
+    .flatMap(function pairedRegion(slice,): readonly TargetRegion[] {
+      /**
+       Placement on target side.
+       */
+      const { target: placement, } = slice;
+      if (isInsertionChunk(placement,))
+        return [];
+      return [{
+        startOffset: placement.startOffset,
+        endOffset: placement.endOffset,
+      },];
+    },);
+
+  /**
    Logger marking admission as one stage beneath entry.
    */
   const al = tagged({
@@ -177,6 +199,7 @@ export async function decidePassInsertionAdmission(
         modelIds,
         sourcePassage: sourceText,
         translation: target,
+        foreignRegions,
         signal,
         exchangeTimeoutMs: perCallTimeoutMs,
         l: al,

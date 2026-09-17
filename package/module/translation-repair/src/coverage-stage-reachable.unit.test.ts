@@ -58,7 +58,7 @@ const ROSTER = [
 /**
  Seat no provider serves for the whole round.
  */
-const DRY_SEAT = 'hf:cat/Cat-C';
+const DRY_SEAT = 'hf:cat/Cat-C' as unknown as RosterModelId;
 
 /**
  What each reachable model answers.

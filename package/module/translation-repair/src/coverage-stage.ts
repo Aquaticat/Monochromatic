@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { TargetRegion, } from './coverage-foreign-region.ts';
 import {
   type CoverageVerdict,
   judgeCoverage,
@@ -59,7 +60,10 @@ export type CoverageAnswer = {
  @param sourcePassage - original-side text whose coverage is in question
  
  @param translation - whole translation, searched and used to anchor quotes
- 
+
+ @param foreignRegions - target regions the pairing assigned to other source
+ slices, which a partial claim cannot draw coverage from (class fifty-one)
+
  @param followupEvidence - latest unresolved placement evidence
  
  @param signal - caller abort honored by every exchange
@@ -84,6 +88,7 @@ export async function runCoverageStage(
     modelIds,
     sourcePassage,
     translation,
+    foreignRegions,
     followupEvidence,
     signal,
     exchangeTimeoutMs,
@@ -94,6 +99,7 @@ export async function runCoverageStage(
     readonly modelIds: readonly RosterModelId[];
     readonly sourcePassage: string;
     readonly translation: AnchorTarget;
+    readonly foreignRegions?: readonly TargetRegion[];
     readonly followupEvidence?: CoverageFollowupEvidence;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
@@ -126,15 +132,28 @@ export async function runCoverageStage(
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
+  /**
+   Seats asked that a provider could serve. THE REACHABLE SEATS ASKED, NOT
+   THE BENCH: since the fan-out window of 2026-09-09 a round asks quorum plus
+   one seat first, and a seat the window spared was never silent; since class
+   fifty (shi_Yumiaoya4, 2026-09-17) a seat the router refused for want of a
+   wet provider is not in the denominator either, since it was never asked
+   and withholds no vote. Four of six heard voices found the death passage
+   nowhere, two dark seats kept the majority at five of eight, and the
+   passage shipped as a recorded gap.
+   */
+  const reachableAsked = [...gather.asked,]
+    .filter(function reached(modelId,): boolean {
+      return !gather.unreachable
+        .has(modelId,);
+    },)
+    .length;
   return {
     verdict: judgeCoverage({
       voices: gather.voices,
       document: translation,
-      // THE SEATS ASKED, NOT THE BENCH: since the fan-out window of 2026-09-09
-      // a round asks quorum plus one seat first, and a seat the window spared
-      // was never silent.
-      asked: gather.asked
-        .size,
+      ...((foreignRegions === undefined) ? {} : { foreignRegions, }),
+      asked: reachableAsked,
       quorumMet: gather.quorumMet,
     },),
     findings: gather.findings,

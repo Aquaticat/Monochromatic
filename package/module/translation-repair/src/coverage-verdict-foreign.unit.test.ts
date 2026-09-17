@@ -86,7 +86,6 @@ function voiceOf(
       quote,
       reason: 'fixture',
     },
-    rawText: '',
   };
 }
 
@@ -144,6 +143,28 @@ await describe({
         expect(verdict.misattributedQuotes,).toEqual([FOREIGN_SENTENCE,],);
         expect(verdict.absent,).toBe(2,);
         expect(verdict.kind,).toBe('absent',);
+      },
+    },),
+    it({
+      name: 'KEEPS a FULL claim inside a foreign region, which is what an original merged into its '
+        + 'neighbour\'s paragraph looks like from here',
+      fn: async () => {
+        const verdict = judgeCoverage({
+          voices: [
+            voiceOf({
+              modelId: 'hf:cat/Cat-A' as RosterModelId,
+              coverage: 'full',
+              quote: FOREIGN_SENTENCE,
+            },),
+          ],
+          document: TARGET,
+          foreignRegions: [FOREIGN_REGION,],
+          asked: 1,
+          quorumMet: true,
+        },);
+        expect(verdict.anchoredFull,).toBe(1,);
+        expect(verdict.misattributed,).toBe(0,);
+        expect(verdict.kind,).toBe('carried',);
       },
     },),
     it({

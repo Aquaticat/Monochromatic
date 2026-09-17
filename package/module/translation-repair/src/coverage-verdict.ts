@@ -1,3 +1,7 @@
+import {
+  anchorsInsideForeignRegion,
+  type TargetRegion,
+} from './coverage-foreign-region.ts';
 import type {
   CoverageDegree,
   CoverageReportWire,
@@ -102,12 +106,20 @@ export type CoverageVerdict = {
   readonly unanchored: number;
 
   /**
+   Partial claims whose quote sits inside a target region the pairing
+   assigned to another source slice (class fifty-one, shi_Yumiaoya4): that
+   English renders a different original, so the claim is dropped, neither
+   coverage nor a vote for absence.
+   */
+  readonly misattributed: number;
+
+  /**
    Voices heard at all.
    */
   readonly heard: number;
 
   /**
-   Models asked, which is what the majority is taken over.
+   Models asked and reachable, which is what the majority is taken over.
    */
   readonly asked: number;
 
@@ -128,6 +140,12 @@ export type CoverageVerdict = {
    apart.
    */
   readonly unanchoredQuotes: readonly string[];
+
+  /**
+   Quotes of the partial claims dropped for pointing at another slice's
+   rendering, kept so a reading can tell a misattribution from an invention.
+   */
+  readonly misattributedQuotes: readonly string[];
 };
 
 /**
@@ -140,9 +158,15 @@ type WeighedVoice = {
   readonly degree: CoverageDegree;
 
   /**
-   Whether its quote was found in the document.
+   Whether its quote was found in the document outside every foreign region.
    */
   readonly anchored: boolean;
+
+  /**
+   Whether its quote was found, but inside a region paired to another source
+   slice, which a partial claim cannot draw coverage from.
+   */
+  readonly misattributed: boolean;
 
   /**
    Quote it offered, empty when it claimed no coverage.
@@ -213,21 +237,25 @@ function matchedRegion(
  @param voice - heard coverage reply
  
  @param document - translation the quote should occur in
- 
+
+ @param foreignRegions - target regions paired to other source slices
+
  @returns That claim with its anchoring resolved
- 
+
  @example
  ```ts
- const weighed = weighVoice({ voice, document, },);
+ const weighed = weighVoice({ voice, document, foreignRegions: [], },);
  ```
  */
 function weighVoice(
   {
     voice,
     document,
+    foreignRegions,
   }: {
     readonly voice: HeardVoice<CoverageReportWire>;
     readonly document: AnchorTarget;
+    readonly foreignRegions: readonly TargetRegion[];
   },
 ): WeighedVoice {
   /**
@@ -239,6 +267,7 @@ function weighVoice(
     return {
       degree,
       anchored: false,
+      misattributed: false,
       quote: '',
       matched: '',
     };
@@ -253,15 +282,36 @@ function weighVoice(
     quote: voice.value
       .quote,
   },);
+  if (!located.located) {
+    return {
+      degree,
+      anchored: false,
+      misattributed: false,
+      quote: voice.value
+        .quote,
+      matched: '',
+    };
+  }
+
+  /**
+   Whether a partial claim points at another slice's rendering (class
+   fifty-one); a full claim there reports an original merged into its
+   neighbour and is kept.
+   */
+  const misattributed = (degree === 'partial') && anchorsInsideForeignRegion({
+    anchors: located.anchors,
+    foreignRegions,
+  },);
   return {
     degree,
-    anchored: located.located,
+    anchored: !misattributed,
+    misattributed,
     quote: voice.value
       .quote,
-    matched: located.located ? matchedRegion({
+    matched: misattributed ? '' : matchedRegion({
       document,
       anchors: located.anchors,
-    },) : '',
+    },),
   };
 }
 
@@ -326,7 +376,25 @@ function isAbsent(claim: WeighedVoice,): boolean {
  ```
  */
 function isUnanchored(claim: WeighedVoice,): boolean {
-  return (claim.degree !== 'none') && (!claim.anchored);
+  if (claim.degree === 'none')
+    return false;
+  return (!claim.anchored) && (!claim.misattributed);
+}
+
+/**
+ Whether a partial claim pointed at another slice's rendering.
+
+ @param claim - weighed reply
+
+ @returns Whether its quote was found only inside a foreign region
+
+ @example
+ ```ts
+ const misattributed = isMisattributed(claim,);
+ ```
+ */
+function isMisattributed(claim: WeighedVoice,): boolean {
+  return claim.misattributed;
 }
 
 /**
@@ -410,13 +478,17 @@ function countVoices(
  @param voices - replies heard from the roster
  
  @param document - translation every quote is checked against
- 
- @param asked - models the question went to, which the majority is taken over
- 
+
+ @param foreignRegions - target regions the pairing assigned to other source
+ slices, which a partial claim cannot draw coverage from; none by default
+
+ @param asked - reachable models the question went to, which the majority is
+ taken over
+
  @param quorumMet - whether enough of them answered to decide at all
- 
+
  @returns Verdict plus the tallies and evidence behind it
- 
+
  @example
  ```ts
  const verdict = judgeCoverage({ voices, document, asked: 6, quorumMet: true, },);
@@ -426,15 +498,21 @@ export function judgeCoverage(
   {
     voices,
     document,
+    foreignRegions,
     asked,
     quorumMet,
   }: {
     readonly voices: readonly HeardVoice<CoverageReportWire>[];
     readonly document: AnchorTarget;
+    readonly foreignRegions?: readonly TargetRegion[];
     readonly asked: number;
     readonly quorumMet: boolean;
   },
 ): CoverageVerdict {
+  /**
+   Regions a partial claim may not point into.
+   */
+  const regions = foreignRegions ?? [];
   /**
    Every reply with its quote resolved against the document.
    */
@@ -442,6 +520,7 @@ export function judgeCoverage(
     return weighVoice({
       voice,
       document,
+      foreignRegions: regions,
     },);
   },);
 
@@ -498,6 +577,10 @@ export function judgeCoverage(
       weighed,
       matches: isUnanchored,
     },),
+    misattributed: countVoices({
+      weighed,
+      matches: isMisattributed,
+    },),
     heard: voices.length,
     asked,
     // ONLY THE FULL VOTES ARE EVIDENCE. A partial voter quotes what it found
@@ -509,6 +592,8 @@ export function judgeCoverage(
     evidence: weighed.filter(isFull,)
       .map(claimMatched,),
     unanchoredQuotes: weighed.filter(isUnanchored,)
+      .map(claimQuote,),
+    misattributedQuotes: weighed.filter(isMisattributed,)
       .map(claimQuote,),
   };
 }
