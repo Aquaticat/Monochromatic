@@ -3850,6 +3850,13 @@ so building the next fix cannot change the pass under way.
 The kill-and-relaunch rule is about the build a pass carries,
 not the files on disk:
 a fix that matters to the running entry still kills and relaunches it.
+The exit waiter (a background `while kill -0 <pid>` shell) is reaped by Claude Code on any memory stall once
+the session has idled 10 minutes,
+so the session must start with `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`
+(owner,
+2026-09-17;
+[the troubleshooting note](../troubleshooting/claude-code-background-shell-memory-pressure-reap.md)),
+and a 25-minute `CronCreate` job is the fallback wake.
 
 ## The three checks
 
