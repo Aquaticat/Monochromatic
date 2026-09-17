@@ -1,12 +1,17 @@
 # Technology vet: meow cache key hash, cryptographic hashes eligible
 
 Status:
- in progress.
+ complete.
 Lifecycle phase:
- context and rubric frozen;
- query schedule frozen.
+ Recommended.
+Recommendation:
+ `twox-hash` 2.1.4 XXH3-128
+ ("Recommendation").
 Not adopted:
- no decision record exists.
+ this vet is deliberation.
+No decision record exists,
+ no dependency or configuration changed,
+ and the design document is not updated by this vet.
 
 Subject:
  meow cache key hash.
@@ -127,7 +132,8 @@ Measured or read on 2026-09-17:
 - Development host:
    AMD Ryzen 7 8700F (Zen 4),
    8 cores and 16 hardware threads (`lscpu`),
-   CPU flags including `avx512f`, `avx512bw`, `avx512vl`, `aes`, `vaes`, `pclmulqdq`, `vpclmulqdq`, `sha_ni`, and `gfni`,
+   CPU flags including `avx512f`, `avx512bw`, `avx512vl`, `aes`, `vaes`, `pclmulqdq`, `vpclmulqdq`,
+   `sha_ni`, and `gfni`,
    no SHA-512 instructions;
    62 GiB RAM;
    btrfs on LUKS on an NVMe drive;
@@ -477,12 +483,13 @@ Its scratch root is `~/temp/agent/hashvet-2026-09-17/`,
 Reused,
  with the reason each still applies:
 
-- Discovery pages and results for CR01 to CR14, XR01 to XR04, GH01 to GH08, GC01 to GC03, XG01 to XG03, W01 to W10, and RP01 to RP06:
+- Discovery pages and results for CR01 to CR14, XR01 to XR04, GH01 to GH08, GC01 to GC03,
+   XG01 to XG03, W01 to W10, and RP01 to RP06:
    fetched between about 05:00 and 06:00 UTC on 2026-09-17;
    registry and repository state within the same day,
    spot-checked by re-running named queries ("Discovery results").
   Their screening outcomes for non-cryptographic candidates are re-examined against the changed premises
-   ("Reopened exits").
+   ("What the changed premises reopen").
 - Identity, provenance, license, upstream suites, Miri, the `highway` fuzz campaign,
    source-size and maintenance audits,
    and the SMHasher3 records for `xxhash-rust` 0.8.18, `twox-hash` 2.1.4, `hashcrew` 0.3.0, and `highway` 1.3.0:
@@ -495,7 +502,8 @@ Reused,
    HC8 one-byte results at 8 to 4,096 bytes,
    HC10 streaming results on the baseline and `x86-64-v3` builds,
    and the C reference check,
-   for those four crates and for the prior controls `blake3` 1.8.7 (default build), `sha2` 0.11.0 SHA-256, and `cmac` 0.8.0 with `aes` 0.9.3:
+   for those four crates and for the prior controls `blake3` 1.8.7 (default build),
+   `sha2` 0.11.0 SHA-256, and `cmac` 0.8.0 with `aes` 0.9.3:
    same functions and versions.
   Builds not covered there,
    `x86-64-v4` and BLAKE3's `pure` build,
@@ -590,9 +598,12 @@ Metadata screening is backed by the prior vet's source scan
  (`scripts/crates-scan.ts`, never building or running an archive),
  extended in two ways for cryptographic code:
 
-- aarch64 SHA-3 extension intrinsics (`veor3q`, `vrax1q`, `vxarq`, `vbcaxq`) and SM3 intrinsics join the dedicated-instruction patterns.
-- A crate without intrinsics of its own is marked as delegating when a runtime dependency is a crate with accelerated paths
-   (for example `aes`, `sha2`, `sha1`, `blake3`, `keccak`, `polyval`, `ghash`, `ring`, `aws-lc-rs`, `openssl`, `graviola`),
+- aarch64 SHA-3 extension intrinsics (`veor3q`, `vrax1q`, `vxarq`,
+   `vbcaxq`) and SM3 intrinsics join the dedicated-instruction patterns.
+- A crate without intrinsics of its own is marked as delegating
+   when a runtime dependency is a crate with accelerated paths
+   (for example `aes`, `sha2`, `sha1`, `blake3`, `keccak`, `polyval`, `ghash`, `ring`, `aws-lc-rs`,
+   `openssl`, `graviola`),
    and every delegating hash or MAC crate is reviewed by hand;
    the prior scan could not see acceleration held by a dependency.
 
@@ -690,7 +701,8 @@ Source-scan method,
    and C, C++, or assembly files.
 - Every crate's runtime dependencies were parsed from its manifest,
    and a crate whose dependency is itself an accelerated crate
-   (`aes`, `sha2`, `sha1`, `blake3`, `keccak`, `polyval`, `ghash`, `ring`, `aws-lc-rs`, `openssl`, `graviola`, and others)
+   (`aes`, `sha2`, `sha1`, `blake3`, `keccak`, `polyval`, `ghash`, `ring`, `aws-lc-rs`, `openssl`,
+   `graviola`, and others)
    is marked as delegating,
    because the prior scan could not see acceleration held by a dependency.
 - Totals:
@@ -716,13 +728,23 @@ Query ledger for the new queries,
    2,156 reported,
    10 page(s) and 1,000 results read,
    two-page rule met;
-   new reviewed candidates: `gxhash`, `noncrypto-digests`, `rapidhash`, `highway`, `ahash`, `wyhash`, `sha3`, `rscrypto`, `fasthash-sys`, `fasthash-sys-fork`, `crypto-hashes`, `stringzilla`, `hashkit`, `t1ha`, `sha1-checked`, `iroh-blake3`, `blake3`, `ascon-hash`, `foldhash`, `md-5`, `hmac`, `fluence-blake3`, `lib-q-keccak`, `kangarootwelve_xkcp`, `fleek-blake3`, `ripemd`, `whirlpool`, `sm3`, `groestl`, `streebog`, `skein`, `sha2`, `multihash-codetable`, `hashcrew`, `axhash-core`, `spg-crypto`, `xoodyak`, `sha1`, `sha-1`, `fast-md5`, `cryptoxide`, `museair`, `md5-many`, `gmcrypto-core`;
-   new screening survivors: `highway`, `rscrypto`, `blake3`, `sha2`, `hashcrew`, `xoodyak`, `sha1`, `cryptoxide`.
+   new reviewed candidates: `gxhash`, `noncrypto-digests`, `rapidhash`, `highway`, `ahash`,
+   `wyhash`, `sha3`, `rscrypto`, `fasthash-sys`, `fasthash-sys-fork`,
+   `crypto-hashes`, `stringzilla`, `hashkit`, `t1ha`, `sha1-checked`,
+   `iroh-blake3`, `blake3`, `ascon-hash`, `foldhash`, `md-5`, `hmac`,
+   `fluence-blake3`, `lib-q-keccak`, `kangarootwelve_xkcp`,
+   `fleek-blake3`, `ripemd`, `whirlpool`, `sm3`, `groestl`, `streebog`,
+   `skein`, `sha2`, `multihash-codetable`, `hashcrew`, `axhash-core`,
+   `spg-crypto`, `xoodyak`, `sha1`, `sha-1`, `fast-md5`, `cryptoxide`,
+   `museair`, `md5-many`, `gmcrypto-core`;
+   new screening survivors: `highway`, `rscrypto`, `blake3`, `sha2`, `hashcrew`, `xoodyak`, `sha1`,
+   `cryptoxide`.
 - CC02 `q=sha256`:
    4,020 reported,
    10 page(s) and 1,000 results read,
    two-page rule met;
-   new reviewed candidates: `sha256`, `hashtree-rs`, `purecrypto`, `graviola`, `bitcoin_hashes`, `sha2raw`;
+   new reviewed candidates: `sha256`, `hashtree-rs`, `purecrypto`, `graviola`, `bitcoin_hashes`,
+   `sha2raw`;
    new screening survivors: `purecrypto`, `graviola`, `bitcoin_hashes`.
 - CC03 `q=sha512`:
    500 reported,
@@ -746,7 +768,8 @@ Query ledger for the new queries,
    558 reported,
    3 page(s) and 300 results read,
    two-page rule met;
-   new reviewed candidates: `sha3-selkie`, `sha3-asm`, `sha3_ce`, `libcrux-sha3`, `crc-fast`, `ckb-opt-fips202`, `tiny-keccak`, `keccak`, `shake`;
+   new reviewed candidates: `sha3-selkie`, `sha3-asm`, `sha3_ce`, `libcrux-sha3`, `crc-fast`,
+   `ckb-opt-fips202`, `tiny-keccak`, `keccak`, `shake`;
    new screening survivors: none.
 - CC07 `q=keccak`:
    421 reported,
@@ -770,7 +793,8 @@ Query ledger for the new queries,
    216 reported,
    3 page(s) and 216 results read,
    exhausted;
-   new reviewed candidates: `blake2`, `blake2-rfc`, `blake2_ce`, `blake2_c`, `blake2b_simd`, `blake2s_simd`, `blake2b-rs`, `blake3-std`, `ckb-opt-blake2b`;
+   new reviewed candidates: `blake2`, `blake2-rfc`, `blake2_ce`, `blake2_c`, `blake2b_simd`,
+   `blake2s_simd`, `blake2b-rs`, `blake3-std`, `ckb-opt-blake2b`;
    new screening survivors: none.
 - CC11 `q=cmac`:
    107 reported,
@@ -1118,7 +1142,8 @@ Linkup search,
 
 - RP07 `sha256|sha-256|sha512|sha3|keccak|kangarootwelve|blake2|blake3|cmac|pmac|polyval|ghash|graviola`
    (`rg --count-matches --ignore-case` excluding `node_modules` and lockfiles):
-   TypeScript uses of Node's SHA-256 (file-enforcer, `watch-restart`, `aquati.cat`, `kv-store`, `markdown-lint` LFS object ids),
+   TypeScript uses of Node's SHA-256 (file-enforcer, `watch-restart`, `aquati.cat`, `kv-store`,
+   `markdown-lint` LFS object ids),
    pnpm SRI SHA-512 notes,
    the stack research documents,
    and `package/cli/forbidden-strings/src/runtime_cache/path.rs:73`,
@@ -1190,7 +1215,8 @@ Each prior non-cryptographic exit was re-read against the new premises,
    HC1 and usually HC2.
   `museair` is carried as the scalar non-cryptographic speed control.
 - `meowhash`: HC1 (aarch64 disabled since 0.2) and HC3.
-- C-backed crates (`umash-sys`, `xxhash-c-sys`, `stringzilla`, `fasthash`): HC4, and they enter the C toolchain branch only.
+- C-backed crates (`umash-sys`, `xxhash-c-sys`, `stringzilla`, `fasthash`): HC4,
+   and they enter the C toolchain branch only.
 
 The build premise does change one thing inside screening,
  and it helps cryptographic candidates rather than non-cryptographic ones:
@@ -2026,7 +2052,7 @@ Shared by every execution in this vet:
    (half of the host's 16 logical cores)
    with `--memory=8g`;
    each of those records states the raised bounds
-   ("S4 multi-core on one large input").
+   ("S4 multi-core hashing of one large input (weight 1)").
 - Toolchains:
    `nightly-2026-09-12` (`rustc 1.100.0-nightly`) for the lab, every lab binary, and the aarch64 builds;
    `nightly-2026-09-16` for Miri;
@@ -2105,7 +2131,7 @@ Twenty of the 23 candidate functions pass every gate:
 
 The deciding criteria are the three weight-5 ones,
  and S2 is already measured for every confirmed candidate on the release-blocking build
- ("S2 whole files").
+ ("S2 whole files, KiB to tens of MiB (weight 5)").
 Applying the frozen rating rule to the three S2 cells:
 
 - 4: `xxhash-rust` 0.997, `twox-hash` 0.979, `hashcrew` 0.963, `rscrypto` 0.944 (XXH3-128).
@@ -2123,7 +2149,7 @@ Its measured S5 evidence caps it further:
  ("S5: aarch64 evidence").
 That leaves at most 5·(S3 rating) + 32,
  and S3 is bounded by the cold and warm measurements
- ("S3 multi-GB from disk"):
+ ("S3 multi-GB from disk (weight 5)"):
  no candidate rated 0 on S2 can pass 42 of 92 points.
 The four XXH3-128 candidates already hold 20 points from S2 alone
  and score at least 45 from the weight-5 criteria,
@@ -2254,6 +2280,26 @@ Suites that ran to completion in the first pass:
    which this container does not have.
   Recorded as an omitted job with that reason;
    the musl build of the candidate itself is covered by HC4.
+
+Second pass,
+ with the mounted toolchain's `cargo` and the feature set meow would enable
+ (`std,xxh3,blake3,sha2`),
+ all exited 0 with no failed test
+ (`scripts/suites2.ts`, `data/suites.txt`):
+
+- `rs11` release library tests: 147 passed.
+- `rs12` the same with `portable-only`, which forces the portable reference kernels: 147 passed.
+- `rs13` integration tests: 204 passed across 142 test binaries.
+- `rs14` the same library tests with `-Ctarget-cpu=x86-64-v4`: 147 passed.
+- `rs15` the same with `-Ctarget-feature=-sha,-aes,-avx2`, which forces the fallback kernels: 147 passed.
+- `rs16` library tests on `aarch64-unknown-linux-gnu` under QEMU: 139 passed.
+- `rs17` `cargo miri test --lib hashes::fast` on `nightly-2026-09-16` with `-Zmiri-strict-provenance`: 7 passed.
+
+So the crate's own tests pass on the release-blocking build's target features,
+ on the portable path,
+ on the fallback path,
+ and on aarch64,
+ and its XXH3 module carries no undefined behaviour that Miri detects on the paths it reaches.
 
 ## Reference equality
 
@@ -2956,6 +3002,294 @@ By the bound in "Which confirmed candidates receive equal-depth validation",
 Allowing C would also not improve any other candidate's rank,
  because `rscrypto` already delivers BLAKE3 at C speed without it.
 
+## Scoring
+
+Criteria and weights as frozen in "Frozen soft criteria":
+ S1 1,
+ S2 5,
+ S3 5,
+ S4 1,
+ S5 5,
+ S6 1,
+ S7 1,
+ S9 1,
+ S10 1,
+ S11 1,
+ S12 1;
+ maximum 23 × 4 = 92.
+Inputs are in `~/temp/agent/hashvet2-2026-09-17/data/ratings.json`;
+ arithmetic and sensitivity by `scripts/score.ts`,
+ output `data/score.txt`.
+A range uses its midpoint as the provisional rating and both endpoints in the sensitivity matrix.
+
+Ratings, with the evidence each rests on:
+
+- S1 key composition, from the measured geometric means ("S1 key composition (weight 1)"):
+   `xxhash-rust` 4 high,
+   `rscrypto` 4 high,
+   `twox-hash` 4 medium (0.929, within 0.03 of the threshold),
+   `hashcrew` 2 medium (0.691),
+   `highway` 1 medium (0.270).
+- S2 whole files ("S2 whole files, KiB to tens of MiB (weight 5)"):
+   `xxhash-rust`, `twox-hash`, `hashcrew`, `rscrypto` 4 high (0.944 to 0.997);
+   `highway` 1 high (0.281).
+- S3 multi-GB from disk ("S3 multi-GB from disk (weight 5)"):
+   `xxhash-rust`, `hashcrew`, `twox-hash`, `rscrypto` 4 high (0.973 to 1.000);
+   `highway` 3 high (0.759).
+- S4 multi-core ("S4 multi-core hashing of one large input (weight 1)"):
+   all five 1 high;
+   no XXH3-128 or HighwayHash crate offers a parallel mode whose output equals its sequential output.
+- S5 aarch64 ("S5: aarch64 evidence"):
+   `xxhash-rust` 4 high and `rscrypto` 4 high,
+   both measured on the same aarch64 core at 24.59 and 24.53 GiB/s;
+   `twox-hash` 4 medium,
+   measured on an Apple M1 Max at 34.4 GiB/s against the C NEON reference's 34.6 on that machine,
+   which is parity on a core this vet did not measure itself;
+   `hashcrew` 2 to 4 (midpoint 3) low,
+   NEON kernel selected without dispatch on aarch64 but no published or local measurement;
+   `highway` 1 to 3 (midpoint 2) low,
+   no aarch64 measurement and an x86 ratio between 0.21 and 0.59.
+- S6 quality beyond HC8 ("SMHasher3 (S6 evidence)"):
+   the four XXH3-128 crates share one rating,
+   2 medium,
+   for 36 SMHasher3 failures with no full-width collision at any tested seed;
+   `highway` 3 medium,
+   for 238 of 238 tests passed,
+   held below 4 because HighwayHash makes no collision-resistance claim once its key is known.
+- S7 stability assurance ("Stability assurance (S7 evidence)"):
+   `twox-hash` 4 high (frozen specification, C-comparison property tests per kernel, local equality everywhere);
+   `rscrypto` 4 medium (frozen specification, portable reference path stated in its README,
+   a differential fuzz target against `xxhash-rust`, kernel tests, and local equality,
+   with four months of history);
+   `xxhash-rust` 3 medium,
+   `hashcrew` 3 medium,
+   `highway` 3 medium,
+   all as the prior vet rated them.
+- S9 auditability ("Audit surface (S9 evidence)"):
+   `hashcrew` 4 medium (1,511 lines, no runtime dependencies),
+   `twox-hash` 3 medium (1,533 lines),
+   `xxhash-rust` 3 medium (1,396 lines, no safety comments),
+   `highway` 2 medium (2,955 lines, 207 `unsafe` items),
+   `rscrypto` 2 medium (7,496 lines on the used path inside a 177,154-line crate).
+- S10 upstream verification ("Upstream suites", "Additional validation"):
+   `twox-hash` 4 high,
+   `rscrypto` 4 high (cross-target CI, a constant-time engine, a Miri job, a fuzz workflow on two architectures,
+   and the 46.8-million-execution differential fuzz run here),
+   `xxhash-rust` 3 medium,
+   `hashcrew` 3 medium,
+   `highway` 3 medium.
+- S11 maintenance ("Maintenance (S11 evidence)"):
+   `twox-hash` 3 medium,
+   `xxhash-rust` 3 medium,
+   `rscrypto` 2 to 3 (midpoint 2.5) low
+   (16 releases in four months, 112 pull requests all closed quickly, one maintainer plus dependabot,
+   no external issue history, 1,108 recent downloads),
+   `highway` 2 medium,
+   `hashcrew` 1 to 3 (midpoint 2) low.
+- S12 non-blocking builds ("S12 throughput on the non-blocking x86-64 builds (weight 1)"):
+   `twox-hash` 4 high,
+   `rscrypto` 4 high,
+   `xxhash-rust` 3 high,
+   `hashcrew` 2 high,
+   `highway` 1 high.
+
+Totals:
+
+- `twox-hash` 85 of 92 (92.4%).
+- `rscrypto` 83.5 (90.8%), range 83 to 84.
+- `xxhash-rust` 82 (89.1%).
+- `hashcrew` 74 (80.4%), range 68 to 80.
+- `highway` 46 (50.0%), range 41 to 51.
+
+## Sensitivity
+
+97 one-at-a-time tests
+ (`data/score.txt`):
+ each weight-1 criterion raised to 2, 3, 4, and 5;
+ S2, S3, and S5 lowered to 4, 3, 2, and 1;
+ S5 raised to 10 as the defined extra test;
+ every medium-confidence exact rating moved one step down and up;
+ both endpoints of every low-signal range.
+
+Six tests change the order or produce a tie,
+ and only one changes the winner:
+
+- `rating twox-hash.S5 4->3`:
+   `rscrypto` 90.8 > `xxhash-rust` 89.1 > `twox-hash` 87.0 > `hashcrew` 80.4 > `highway` 50.0.
+  This is the single input that moves the top place,
+   and it is the one aarch64 rating that rests on a measurement from a core this vet did not measure
+   ("What an `ssh m1` run would add").
+- `weight S9=3`, `S9=4`, and `S9=5`:
+   `xxhash-rust` moves ahead of `rscrypto` into second place;
+   `twox-hash` stays first.
+- `weight S11=4`:
+   `rscrypto` and `xxhash-rust` tie for second;
+   at `S11=5` `xxhash-rust` takes second.
+- No test moves `hashcrew` or `highway` out of fourth and fifth place.
+
+Closest margins:
+
+- `twox-hash` over `rscrypto`:
+   the `twox-hash` S5 step down, which reverses the pair by 3.50 points on the 92-point scale.
+- `rscrypto` over `xxhash-rust`:
+   `S9` raised to 5, which reverses the pair by 2.13 points.
+- `xxhash-rust` over `hashcrew`:
+   `hashcrew`'s S5 range at its upper endpoint, which still leaves `xxhash-rust` ahead by 3.00 points.
+- `hashcrew` over `highway`:
+   S2 lowered to 1, which still leaves `hashcrew` ahead by 19.37 points.
+
+Winners across all 97 tests:
+ `twox-hash` and `rscrypto`.
+Lowering S2, S3, or S5,
+ raising S5 to 10,
+ and every other rating step leave `twox-hash` first.
+
+## Ranking
+
+`twox-hash` > `rscrypto` > `xxhash-rust` > `hashcrew` > `highway`.
+
+Reason for each adjacent pair:
+
+- `twox-hash` over `rscrypto`:
+   they tie on all three weight-5 criteria at the recorded ratings,
+   so the pair is decided by the weight-1 criteria,
+   where `twox-hash` leads on auditability
+   (1,533 lines on the used path against 7,496 inside a 177,154-line crate)
+   and on maintenance
+   (eleven years and 53.4M recent downloads against four months and 1,108),
+   while `rscrypto` leads on nothing that either holds alone.
+  The margin is 1.5 points of 92,
+   and it reverses if `twox-hash`'s aarch64 rating is one step lower than recorded,
+   which is the one open measurement in this vet.
+- `rscrypto` over `xxhash-rust`:
+   both have measured aarch64 parity and equal S2 and S3 ratings,
+   and `rscrypto` is ahead on the non-blocking builds
+   (0.959 against 0.747, because it detects AVX2 at run time while `xxhash-rust` selects at compile time),
+   on stability assurance,
+   and on upstream verification;
+   `xxhash-rust` is ahead on auditability and maintenance.
+  The margin is 1.5 points and reverses when auditability carries weight 5.
+- `xxhash-rust` over `hashcrew`:
+   equal on S2 and S3,
+   but `xxhash-rust` is measured on aarch64 while `hashcrew` has no aarch64 measurement at all,
+   and `xxhash-rust` is nearly twice as fast on the short-input key composition workload
+   (11.47 against 6.29 GiB/s)
+   and much faster on the non-blocking builds (0.747 against 0.509).
+  The margin holds even at `hashcrew`'s most favourable aarch64 endpoint.
+- `hashcrew` over `highway`:
+   `hashcrew` computes XXH3-128 at the top of the field on whole files,
+   while `highway` reaches 0.28 of it there and 0.76 on the multi-GB cells;
+   `highway`'s only advantage is SMHasher3 quality,
+   worth one point at weight 1.
+  The margin is 28 points.
+
+Pros and cons:
+
+- `twox-hash` 2.1.4 (MIT).
+  Pros:
+   top or within band on every measured x86-64 workload;
+   run-time dispatch, so the non-blocking builds keep AVX2 speed;
+   the strongest published aarch64 evidence of the five
+   (parity with the C NEON reference on an Apple M1 Max);
+   property tests against the C library for every kernel, plus Miri in upstream CI;
+   eleven years of releases and 53.4M recent downloads;
+   `rand` and `serde` are its only dependencies and both are optional.
+  Cons:
+   its aarch64 number comes from a machine this vet did not measure;
+   one maintainer;
+   the XXH3-128 quality profile (36 SMHasher3 failures) is shared with the other XXH3 crates;
+   no library parallel mode.
+- `rscrypto` 0.9.0 (MIT OR Apache-2.0).
+  Pros:
+   measured aarch64 parity with `xxhash-rust` on the same core;
+   run-time dispatch with the best non-blocking-build behaviour;
+   the most extensive upstream verification of the five,
+   including a differential fuzz target for XXH3 against `xxhash-rust` that ran 46.8M executions here without a finding;
+   a stated portable reference path that its SIMD and assembly kernels are tested against;
+   its BLAKE3 and SHA-2 are in the same crate if meow ever needs a cryptographic key.
+  Cons:
+   four months old with 1,108 recent downloads and one maintainer;
+   the XXH3 path is 7,496 lines inside a 177,154-line cryptography suite,
+   so an audit covers much more code than a single-purpose crate;
+   an MSRV of 1.91.0;
+   a fast release cadence (16 releases in four months) means more version churn.
+- `xxhash-rust` 0.8.18 (BSL-1.0).
+  Pros:
+   fastest on the short-input and streaming workloads and measured fastest on aarch64;
+   1,396 lines on the used path with no runtime dependencies;
+   29.6M recent downloads over five years.
+  Cons:
+   compile-time kernel selection,
+   so the baseline and `x86-64-v2` builds run its SSE2 kernel at 0.64 and 0.66 of the best finalist;
+   no property tests, no fuzz target, and no Miri in upstream CI;
+   no written output-stability promise of its own beyond the XXH3 specification.
+- `hashcrew` 0.3.0 (Apache-2.0).
+  Pros:
+   top of the field on whole files and multi-GB streaming;
+   the smallest disciplined source surface of the five (1,511 lines, denied undocumented `unsafe`);
+   Miri with strict provenance in upstream CI.
+  Cons:
+   two weeks old with 202 recent downloads;
+   half the speed of `xxhash-rust` on the short-input workload;
+   0.40 and 0.34 of the best finalist on the baseline and `x86-64-v2` builds,
+   although its backend probe reports AVX2 in every build;
+   no aarch64 measurement anywhere.
+- `highway` 1.3.0 (MIT).
+  Pros:
+   the only finalist that passes every SMHasher3 test;
+   a fuzz target comparing its kernels with the C implementation;
+   a frozen algorithm with reference vectors.
+  Cons:
+   0.28 of XXH3-128 on whole files and 0.21 on the hot buffer;
+   207 `unsafe` items across 2,955 lines with no safety comments;
+   no release in the last year;
+   no aarch64 measurement.
+
+## Recommendation
+
+Adopt `twox-hash` 2.1.4 XXH3-128 for meow's 128-bit content and cache keys,
+ through its one-shot `XxHash3_128::oneshot` for whole files
+ and its `XxHash3_128` streaming state for inputs meow does not hold in memory.
+
+The reading this relies on:
+ the user's speed-first weighting,
+ with cryptographic hashes competing under the same weights,
+ and with the release-blocking builds being `x86-64-v4` on x86-64 and both aarch64 targets.
+Under that reading the deciding evidence is throughput on the release-blocking builds,
+ and the field separates by an order of magnitude before any judgement enters:
+
+- Whole files, `x86-64-v4`:
+   XXH3-128 at 47.0 to 47.7 GiB/s,
+   the fastest cryptographic candidate (AES-CMAC's sibling AES-PMAC) at 5.9,
+   BLAKE3 at 4.6,
+   SHA-256 with the SHA extensions at 2.3.
+- aarch64, measured on published CI artifacts for the same crate versions:
+   XXH3-128 at 24.5 GiB/s,
+   SHA-256 at 1.69,
+   single-threaded BLAKE3 at 1.61.
+- Multi-GB from disk, warm page cache:
+   XXH3-128 at 13.1 to 15.4 GiB/s,
+   BLAKE3 at 5.4,
+   SHA-256 at 2.0;
+   cold, storage bounds every candidate to the same 0.33 to 1.59 GiB/s.
+
+So making cryptographic hashes eligible did not change the answer's shape:
+ they lose on the weight-5 criteria by factors of 8 to 15,
+ and no weight-1 criterion can recover that.
+The open question the premise change did move is which XXH3-128 crate,
+ and there the top three are within 3 points of 92.
+
+Confidence:
+ high that the recommended function is XXH3-128;
+ moderate that the recommended crate is `twox-hash` rather than `rscrypto`,
+ because one rating step in one low-signal criterion reverses that pair
+ ("Sensitivity").
+
+If the user prefers to decide the crate on evidence rather than on the 1.5-point margin,
+ the one measurement that would settle it is an aarch64 run of all five finalists on one core
+ ("What an `ssh m1` run would add").
+Nothing else in the matrix moves the top place.
+
 ## Risks and usage rules for XXH3-128
 
 These apply to whichever XXH3-128 crate meow adopts.
@@ -3039,3 +3373,54 @@ Usage rules:
 - Two finalists are young crates with small dependent bases
    (`hashcrew` first published 2026-09-02, `rscrypto` 2026-05-02),
    so their maintenance ratings rest on weeks or months of history rather than years.
+
+## What an `ssh m1` run would add
+
+The m1 was not contacted.
+It is powered off,
+ and this vet treats it as unreachable;
+ nothing here probed it.
+By its name it is an Apple M1,
+ which would be measured through `aarch64-apple-darwin`,
+ not through the release-blocking Linux aarch64 targets.
+
+Under the new rubric S5 carries weight 5 rather than 1,
+ so the answer to whether an m1 run could change the ranking is different from the prior vet's:
+
+- It could change the top place,
+   and it is the only input in the sensitivity matrix that does.
+  `twox-hash` leads `rscrypto` by 1.5 points of 92 on the strength of an S5 rating of 4
+   that rests on upstream's Apple M1 Max table rather than on a measurement taken here;
+   one step down on that rating reverses the pair
+   ("Sensitivity").
+- It would replace three low-signal inputs with measurements:
+   `twox-hash`'s aarch64 speed on a core this vet measured itself,
+   `hashcrew`'s aarch64 speed,
+   which has no published number anywhere,
+   and `highway`'s.
+  `xxhash-rust` and `rscrypto` already have same-core aarch64 numbers
+   from rscrypto's public CI artifacts for exactly the versions measured here.
+- It would also put all five finalists on one core,
+   which is what the S5 rating rule asks for and which no current evidence provides.
+
+Recommendation on powering it on:
+ do it only if the user wants the crate choice decided by measurement rather than by the recorded margin.
+The decision does not otherwise need it:
+
+- The function (XXH3-128) is settled by factors of 8 to 15 on measured x86-64 and aarch64 evidence,
+   and no aarch64 run can overturn that.
+- Both crates in contention pass every hard gate,
+   and both produce the identical XXH3-128 digest,
+   so switching later costs one cache rebuild and no format change.
+- An Apple M1 measures `aarch64-apple-darwin`,
+   which is not a release-blocking target;
+   it is a proxy for the Linux aarch64 kernels rather than a measurement of them.
+
+If it is powered on,
+ the useful run is small:
+ build the lab crate for `aarch64-apple-darwin`,
+ run the `files`, `files-stream64k`, `hot16k`, and `keymat` workloads for the five finalists,
+ and run `onebyte` and `streamcheck` once for cross-architecture equality.
+Heavy work belongs on `/Volumes/MacData` rather than the internal SSD,
+ and the machine's 16 GiB of memory rules out the multi-GB in-memory workloads
+ (`AGENTS.md` rule `HRM`).
