@@ -95,26 +95,25 @@ Each step's evidence is in the linked documents.
 - Accepted 2026-09-16:
    [`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md).
 - Running:
-   `gxhash-owned.md` in the session scratchpad,
-   covering upstream algorithm notes,
-   reimplementation versus fork,
-   output compatibility,
-   optimizations,
-   and bounded benchmarks;
-   it was told #111 did not reproduce on aarch64 Linux.
+  - A choosing-technology vet for meow's cache key hash,
+     writing `doc/audit/*-vet-2026-09-17.md` and committing its own report,
+     after the user moved cache keys off `gxhash`
+     ("Cache key hash after the collision findings" in the design).
+  - Troubleshooting docs for the `gxhash` short-input out-of-bounds read and one-byte `gxhash128` collisions.
 - Finished and merged on 2026-09-17:
-   `probe-platforms.md` ("Platform probes" in the design)
-   and `rust-structured-edits.md` ("Managed file editing").
-- Probe artifacts left on the machine,
-   to remove once the gxhash research lands:
-   podman volume `meow-probe-qemu-src`,
-   images `localhost/meow-probe-debian-cross:bookworm` and `localhost/meow-probe-fedora-qemu:44`,
-   pulled `ubuntu:22.04`, `debian:bullseye-slim`, `ubi9/ubi-minimal`, and `fedora:34`,
+   `probe-platforms.md` ("Platform probes"),
+   `rust-structured-edits.md` ("Managed file editing"),
+   and `gxhash-owned.md` ("Repository-owned gxhash").
+- Probe artifacts removed on 2026-09-17:
+   the QEMU source volume,
+   six probe images,
    the Rust 1.84.0 toolchain,
-   `~/temp/agent/structured-edits-target-2026-09-16/`,
-   and the `aarch64-unknown-linux-muslpie/lib/self-contained` symlink in the nightly-2026-09-12 rustup sysroot.
-  Keep the aarch64 Rust targets.
-  Finished probes' Cargo build directories in the scratchpad were removed on 2026-09-17.
+   the custom-target sysroot symlink,
+   and finished probes' Cargo build directories in the scratchpad.
+  Remove `~/temp/agent/structured-edits-target-2026-09-16/` once the troubleshooting docs land.
+  The aarch64 Rust targets stay.
+- `ssh m1` is powered off;
+   ask the user to turn it on only when an aarch64 benchmark is strongly needed.
 - Stopped unfinished on 2026-09-17:
    `btrfs-pinned-bytes.md` research,
    because the user dropped reflinks and the cache now records output pointers only.
