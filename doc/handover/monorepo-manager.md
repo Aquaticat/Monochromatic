@@ -94,24 +94,27 @@ Each step's evidence is in the linked documents.
    static musl daemon skeletons with XXH3 and with `gxhash` both built and ran.
 - Accepted 2026-09-16:
    [`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md).
-- Running,
-   each writing to the session scratchpad:
-  - `probe-platforms.md`:
-     the four-target build matrix,
-     QEMU runs on aarch64,
-     no-AES behavior,
-     a startup CPU-check prototype,
-     and a reproduction of gxhash issue #111.
-  - `gxhash-owned.md`:
-     upstream algorithm notes,
-     reimplementation versus fork,
-     output compatibility,
-     optimizations,
-     and bounded benchmarks.
-  - `rust-structured-edits.md`:
-     comment-preserving JSONC,
-     TOML,
-     and XML editing in Rust against the repository's TypeScript editors.
+- Running:
+   `gxhash-owned.md` in the session scratchpad,
+   covering upstream algorithm notes,
+   reimplementation versus fork,
+   output compatibility,
+   optimizations,
+   and bounded benchmarks;
+   it was told #111 did not reproduce on aarch64 Linux.
+- Finished and merged on 2026-09-17:
+   `probe-platforms.md` ("Platform probes" in the design)
+   and `rust-structured-edits.md` ("Managed file editing").
+- Probe artifacts left on the machine,
+   to remove once the gxhash research lands:
+   podman volume `meow-probe-qemu-src`,
+   images `localhost/meow-probe-debian-cross:bookworm` and `localhost/meow-probe-fedora-qemu:44`,
+   pulled `ubuntu:22.04`, `debian:bullseye-slim`, `ubi9/ubi-minimal`, and `fedora:34`,
+   the Rust 1.84.0 toolchain,
+   `~/temp/agent/structured-edits-target-2026-09-16/`,
+   and the `aarch64-unknown-linux-muslpie/lib/self-contained` symlink in the nightly-2026-09-12 rustup sysroot.
+  Keep the aarch64 Rust targets.
+  Finished probes' Cargo build directories in the scratchpad were removed on 2026-09-17.
 - Stopped unfinished on 2026-09-17:
    `btrfs-pinned-bytes.md` research,
    because the user dropped reflinks and the cache now records output pointers only.
@@ -128,8 +131,18 @@ Each step's evidence is in the linked documents.
    HCL syntax is lightly endorsed,
    rules writing outside a repository live in a per-user configuration,
    the forbidden-strings rules compile with the published scanner,
-   the root `mise.toml` becomes hand-maintained once meow replaces file-enforcer,
+   meow never generates `mise.toml` while file-enforcer keeps generating it for now,
    and meow is built in its own git worktree.
+- Also decided 2026-09-17:
+   meow replaces Mise only once it supports the full platform matrix,
+   0.x guarantees only Linux,
+   meow does not own Meta Package Manager's lifecycle,
+   aarch64 musl ships static-pie from a custom target,
+   local glibc builds use the host while releases follow `cargo-publish.yml`,
+   new TOML inline tables use the TOML 1.1 trailing comma,
+   and edits need not keep untouched bytes or CRLF.
+- Queued:
+   `doc/troubleshooting/` entries for the tool quirks listed under "Research notes" in "Managed file editing".
 - Installs are authorized for this work,
    except `rpm-ostree install`.
 - Stopped unfinished on 2026-09-16:
