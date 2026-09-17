@@ -8082,6 +8082,84 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## yingying1 launches, 2026-09-17, 18:30 UTC
+
+Frozen `479bb011f` (classes forty-one to fifty-one),
+pid 3820813,
+runs `~/temp/agent/yingying1`,
+log `~/temp/agent/yingying1.log`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+no cron job,
+the background waiter alone reports the exit.
+The entry is 17 source lines against 22 archive lines:
+two footnote definitions,
+one of them a bare URL,
+the other a link whose text the archive renders with the name as "Sakura";
+the archive adds a `## Description` heading and a bare "References" line the original does not carry;
+the front matter is translated,
+so it ships as the archive has it.
+Read first the two definitions on the page
+(class twenty-one's orphan-definition guard and class forty-six's bare-URL scan both touch them),
+the archive-only heading and the "References" line,
+the front matter,
+the name in the farewell link,
+then the seven steps and the three checks.
+
+## shi_Yumiaoya5 read, 2026-09-17, 18:28 UTC: SETTLED, the death paragraphs on the page
+
+Frozen `479bb011f`,
+40 minutes
+(`ms=2406596`),
+`status=SETTLED` on the first attempt,
+`translateStatus=complete`,
+`pageSilent=0`,
+`attempts.json` reads 1,
+318 page lines against the archive's 55.
+Spend by the meters:
+Bedrock 177.87 to 177.53,
+OpenRouter 253.95 to 253.52,
+0.77 USD;
+`pass-spend.mjs` logs 969 seats and 45 retry rounds.
+Classes fifty and fifty-one live:
+`insertion-coverage (slice 13, verdict absent, full 0, partial 0, absent 4, heard 6 of 6)`,
+the two dark seats out of the denominator,
+the passage admitted by the shortfall and both paragraphs on the page
+(the intervention,
+the bullying,
+the rooftop).
+Class forty-nine held again:
+the opening section with its film link
+(rendered "movie",
+the original's own word),
+one `[^1]` definition at the foot.
+The farewell ships as the archive has it,
+English only,
+the film line and the attribution once;
+no Chinese line this time,
+so the slate's choice between the two shapes is a coin the judges toss.
+Four body links,
+the commented-out profile link on nobody's page,
+front matter equal to the archive.
+Three quality notes,
+none deterministic,
+recorded for the judge-preference list:
+the page renders 中山一酒店 ("a hotel in Zhongshan") as "the Zhongshan No. 1 Hotel",
+gemma-4-26b's candidate,
+chosen on the translate slate and again on the consolidation slate with ballots praising its "specificity"
+and one judge calling it "a translation of the address marker" without penalty,
+while three other candidates had it right;
+the opening line keeps 小药娘 in Han
+(the archive translator's own comment says to leave it untranslated,
+and the footnote defines it),
+while the death paragraph renders the same term "yao-niang [transfeminine person on HRT]",
+so one page carries two renderings;
+and the absolute naturalness review on the last slice closed `quorum-not-met` at 3 of 5 usable
+with `quorumOver=8` counting Qwen3.8-27B and glm-5.3,
+both refused by the router the whole run,
+the class-fifty shape in another stage,
+harmless here since the review carried no findings.
+
 ## shi_Yumiaoya5 launches on classes fifty and fifty-one, 2026-09-17, 17:38 UTC
 
 Frozen `479bb011f` (classes forty-one to fifty-one),

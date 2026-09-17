@@ -442,7 +442,14 @@ which the takeover session does not have.
   Class forty-nine held.
   `shi_Yumiaoya5` launched at 17:38 UTC on frozen `479bb011f` (pid 3740123,
   runs `~/temp/agent/shi_Yumiaoya5`,
-  log `~/temp/agent/shi_Yumiaoya5.log`);
+  log `~/temp/agent/shi_Yumiaoya5.log`)
+  and settled after 40 minutes with the death paragraphs on the page
+  (the pass log's "shi_Yumiaoya5 read" heading dated 2026-09-17 18:28 UTC;
+  three judge-quality notes there,
+  "Zhongshan No. 1 Hotel" for 一酒店 the worst).
+  `yingying1` launched at 18:30 UTC on the same frozen `479bb011f` (pid 3820813,
+  runs `~/temp/agent/yingying1`,
+  log `~/temp/agent/yingying1.log`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
   Also today:
@@ -2270,7 +2277,9 @@ the regions handed over by `pass-insertion-admission.ts`;
 the pass log's "Classes fifty and fifty-one" heading dated 2026-09-17 17:35 UTC;
 guards red first at `6f7567f7e`;
 found by the shi_Yumiaoya4 SETTLED page missing its death paragraphs).
-Running on shi_Yumiaoya5.
+Ran on shi_Yumiaoya5 (slice 13 absent 4 of 6 reachable,
+admitted,
+both paragraphs on the page).
 `cd789763c` (2026-09-17,
 16:25 UTC):
 class forty-nine,
@@ -4073,32 +4082,29 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `shi_Yumiaoya5` by the seven steps and the three checks (frozen `479bb011f`,
-    pid 3740123,
-    runs `~/temp/agent/shi_Yumiaoya5`,
-    log `~/temp/agent/shi_Yumiaoya5.log`,
-    launched 17:38 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
+1.  READ `yingying1` by the seven steps and the three checks (frozen `479bb011f`,
+    pid 3820813,
+    runs `~/temp/agent/yingying1`,
+    log `~/temp/agent/yingying1.log`,
+    launched 18:30 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    It is the first pass on classes fifty and fifty-one
-    (the pass log's heading dated 2026-09-17 17:35 UTC);
-    shi_Yumiaoya4 settled without the death paragraphs on them after 52 minutes
-    (the pass log's "shi_Yumiaoya4 read" heading dated 2026-09-17 17:30 UTC).
-    Its archive is a skeleton of 54 lines against the original's 138,
-    so read first slice 13's coverage line
-    (the suicide intervention and the death;
-    `coverage=absent` and an admission,
-    or a split whose finding carries a misattributed count),
-    the two paragraphs on the page,
-    then the opening section with its film link and one `[^1]` definition
-    (class forty-nine held on shi_Yumiaoya4),
-    then the farewell
-    (shi_Yumiaoya4 shipped it once in English with the Chinese quote line kept,
-    the corpus's shape for a quoted original beside its English;
-    the doubling is gone),
-    then the four body links and that the commented-out profile link is on nobody's page,
-    then the community-term footnote,
+    shi_Yumiaoya settled on shi_Yumiaoya5 with its death paragraphs
+    (the pass log's "shi_Yumiaoya5 read" heading dated 2026-09-17 18:28 UTC),
+    so the queue moved on.
+    yingying is 17 source lines against 22 archive lines,
+    so read first its two footnote definitions on the page
+    (one a bare URL,
+    one a link;
+    class twenty-one's orphan-definition guard and class forty-six's bare-URL scan both touch them),
+    then the archive-only `## Description` heading and bare "References" line,
+    then the front matter
+    (translated,
+    so it ships as the archive has it),
+    then the name in the farewell link
+    (the archive writes "Sakura" for 樱樱 there and "Yingying" everywhere else),
+    then the contributors line with its two links,
     then the page assembly's findings
     (`repeats another section's heading` in the log,
     `pageAssembly.trimmed` in the artifact;
@@ -4116,7 +4122,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (shi_Yumiaoya4 to its SETTLED page:
+    (shi_Yumiaoya5 to its SETTLED page:
+    0.77 USD by the meters,
+    969 seats,
+    45 retry rounds,
+    40 minutes;
+    shi_Yumiaoya4 to its SETTLED page:
     0.79 USD by the meters,
     899 seats,
     51 retry rounds,
