@@ -125,7 +125,9 @@ Each step's evidence is in the linked documents.
   Also answered:
    "Yes to HCL" (recorded in the all-Rust decision record)
    and "Merge BFQ into DRR instead" (rule `DRR` in `AGENTS.md`).
-  Issue #545 needs a follow-up comment once the selection settles.
+  Issue #545 got its follow-up comment on 2026-09-17,
+   superseding the two earlier ones,
+   with the fingerprint-sized numbers that bear on the music player's own choice.
   The vet agent reported that the Write tool refused its Markdown drafts,
    so it wrote them through Bash,
    and that some of its Bash commands broke rule `1CB`.
@@ -349,8 +351,14 @@ Spot-checked before merging:
 The C toolchain question the HCL research raised is closed by this vet's measured bound,
  so it was withdrawn from the user's question set.
 
+Running since 2026-09-17:
+ design research for the per-user `meow` configuration,
+ its discovery and precedence,
+ writing `per-user-config/per-user-config-design.md` in the session scratchpad.
+
 1.  When it lands,
-    start the remaining items under "Design work not yet started" in the design's "Open questions".
+    start the last item under "Design work not yet started" in the design's "Open questions":
+    how `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
 2.  For each research result,
     copy it into `doc/planning/monorepo-manager-route-research/`,
     verify its load-bearing claims,
