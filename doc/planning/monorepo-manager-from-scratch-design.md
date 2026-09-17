@@ -205,6 +205,9 @@ the option set omitted alternatives such as Kotlin/Native,
 and every option must be designed deeply enough to surface its disqualifying problems before ranking.
 A deeper comparison replaces this section.
 
+Excluded by the user on 2026-09-16:
+Go and Zig.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
