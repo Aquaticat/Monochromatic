@@ -99,7 +99,14 @@ which details the archive rendering states that the original does not but a cite
 each as a verbatim archive quote plus a verbatim reference quote.
 Both quotes are checked as substrings with whitespace removed,
 items from distinct voices whose archive quotes overlap merge into one detail,
-and a detail is kept when at least half the heard voices gave it.
+and every verified detail then goes back to the same bench as a numbered yes-or-no candidate
+carrying both quotes
+(class forty-three,
+2026-09-17:
+on Mio26 four of five voices answered the open question with an empty list without reading,
+and the one verified attestation fell to the quorum);
+a candidate at least half the confirming voices name is attested,
+and the open question's own quorum decides only when nobody confirms.
 Each kept detail becomes a `- attested:` line under the reference lines on every sheet,
 both rules name those lines,
 and in the repair lane an `accuracy/addition` claim whose archive-side quote overlaps an attested quote

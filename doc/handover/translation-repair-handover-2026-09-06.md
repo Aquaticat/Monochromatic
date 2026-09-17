@@ -344,6 +344,21 @@ which the takeover session does not have.
   `Mio26` launched at 03:25 UTC on frozen `052f8eea0` (pid 2838543,
   runs `~/temp/agent/Mio26-20260917`,
   log `~/temp/agent/Mio26-20260917.log`).
+  Mio26's attestation lost the sister
+  (heard 5,
+  four voices answered an empty list in 6 to 2,416 tokens,
+  one attested it,
+  deepseek cap-cut,
+  GLM-5.3-Flash a runaway):
+  class forty-three,
+  fixed in `f7aa7c675`
+  (every verified candidate goes back to the bench as a numbered yes-or-no question;
+  guard red first at `b41ff966c`;
+  the pass log's "Class forty-three" heading dated 2026-09-17 04:00 UTC).
+  Mio26 killed at 04:07 UTC in its pictures phase under ALWAYS KILL AND RELAUNCH.
+  `Mio27` launched at 04:07 UTC on frozen `f7aa7c675` (pid 3011126,
+  runs `~/temp/agent/Mio27-20260917`,
+  log `~/temp/agent/Mio27-20260917.log`).
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2157,6 +2172,17 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`f7aa7c675` (2026-09-17,
+04:05 UTC):
+class forty-three,
+the attestation confirms every verified candidate in a second yes-or-no round over the same bench
+(`reference-attest-confirm-wire.ts`,
+`confirmCandidates` in the stage,
+`ATTESTED CONFIRM` log line;
+the pass log's "Class forty-three" heading dated 2026-09-17 04:00 UTC;
+guard red first at `b41ff966c`;
+found by Mio26's attestation line).
+Running on Mio27.
 `052f8eea0` (2026-09-17,
 03:20 UTC):
 class forty-two,
@@ -2166,7 +2192,7 @@ and `untranslatedFindings` refuses a candidate that repeats a Han-carrying origi
 (the pass log's "Classes forty-one and forty-two" heading dated 2026-09-17 03:20 UTC;
 guards red first at `16f7639a1`;
 found by the Mio25 read).
-Running on Mio26.
+Running on Mio27 (Mio26 killed at 04:07 UTC before any contest).
 `836f90687` (2026-09-17,
 03:15 UTC):
 class forty-one,
@@ -2175,7 +2201,7 @@ the refine judges' evidence and the polish gate sheet,
 threaded from the repair driver and the consolidation subject and folded into `refineRunShape`
 (same heading and guards;
 found by the Mio25 read).
-Running on Mio26.
+Running on Mio27.
 `1c38e4f34` (2026-09-17,
 00:35 UTC):
 class forty,
@@ -3885,14 +3911,25 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio26` by the seven steps and the three checks (frozen `052f8eea0`,
-    pid 2838543,
-    runs `~/temp/agent/Mio26-20260917`,
-    log `~/temp/agent/Mio26-20260917.log`,
-    launched 03:25 UTC on 2026-09-17 with Synthetic and Hyper dry).
-    Mio26 is the first pass on classes forty-one and forty-two
-    (the pass log's heading dated 2026-09-17 03:20 UTC).
-    Read first slice 2's polish
+1.  READ `Mio27` by the seven steps and the three checks (frozen `f7aa7c675`,
+    pid 3011126,
+    runs `~/temp/agent/Mio27-20260917`,
+    log `~/temp/agent/Mio27-20260917.log`,
+    launched 04:07 UTC on 2026-09-17 with Synthetic and Hyper dry).
+    Mio27 is the first pass on classes forty-one,
+    forty-two and forty-three
+    (the pass log's headings dated 2026-09-17 03:20 and 04:00 UTC);
+    Mio26 was killed in its pictures phase once class forty-three landed.
+    Read first the `ATTESTED CONFIRM heard=H candidates=C needed=N confirmed=K` line and the
+    `ATTESTED` line after it
+    (Mio26:
+    heard 5,
+    answered 2,
+    details 0;
+    the sister should now be attested whenever one voice extracts it and the bench confirms it;
+    a `confirmed=0` with the sister among the candidates is the reading to chase,
+    with the confirmation replies in `prompt-payloads`),
+    then slice 2's polish
     (`consolidation.slices` by `sliceIndex`,
     `polish.baseText` against `polish.text`,
     and the polish gate ballots:
@@ -3911,11 +3948,6 @@ each read off the pass log and the shipped page:
     a second attempt again means the poem's select still cannot reach its floor and is worth its own
     reading),
     then the Mio25 reading as before:
-    the `ATTESTED` lines
-    (Mio25 heard 6,
-    verified 12,
-    details 1,
-    the sister by five voices),
     slice 2's repair text
     (Mio25's repair lane wrote "at the time of her death" for 生前,
     which cost it the contest),

@@ -8082,6 +8082,76 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Mio27 launches on class forty-three, 2026-09-17, 04:07 UTC
+
+Frozen `f7aa7c675` (classes forty-one,
+forty-two and forty-three),
+pid 3011126,
+runs `~/temp/agent/Mio27-20260917`,
+log `~/temp/agent/Mio27-20260917.log`,
+Synthetic and Hyper dry,
+Bedrock and OpenRouter wet.
+Read first the `ATTESTED CONFIRM heard=H candidates=C needed=N confirmed=K` line
+and the `ATTESTED` line after it
+(the sister should be attested whenever one voice extracts it and the bench confirms it),
+then the Mio26 reading order:
+slice 2's polish,
+the page's sentence on the sister,
+slice 16's hard breaks,
+any untranslated refusal,
+`attempts.json`,
+then the Mio25 reading.
+
+## Mio26 killed at 04:07 UTC in its pictures phase
+
+Under ALWAYS KILL AND RELAUNCH once `f7aa7c675` landed;
+42 minutes in,
+still reading pictures,
+no contest run.
+Its attestation is class forty-three's evidence and is recorded there;
+nothing else of it was read.
+
+## Class forty-three, 2026-09-17, 04:00 UTC: the attestation's open question is answered empty by voices that never looked
+
+Mio26's attestation printed `ATTESTED heard=5 answered=2 verified=1 needed=3 details=0`.
+The replies,
+read back from the payload cache:
+minimax-m3 `{"attested":[]}` in 6 completion tokens,
+gemma-4-e2b the same in 6,
+gpt-oss-120b the same in 666,
+mercury-2.5 the same in 2,416,
+gemma-4-26b-a4b the sister with both quotes verifying
+(plus one item on the QQ group that did not verify),
+deepseek-v4.1-flash cut by its completion cap at 13,082 tokens with no content
+(`finish_reason=length`,
+voice lost),
+GLM-5.3-Flash abandoned after 866,605 delivered characters,
+Qwen and glm-5.3 unreachable with Synthetic dry.
+One verified voice against a quorum of three,
+on the same bench that attested the sister five of six on Mio25,
+four of five on Mio24 and five of six on Mio23:
+the open question ("list every detail...") is one a cheap voice answers in six tokens without reading,
+and an empty list is not a vote that the detail is false.
+Fixed in `f7aa7c675`
+(guard red first at `b41ff966c`):
+extraction proposes and confirmation disposes.
+Every verified detail,
+one voice or more,
+goes back to the same bench as a numbered candidate carrying its archive quote and its reference quote
+(`buildReferenceAttestConfirmMessages` in `reference-attest-confirm-wire.ts`),
+each voice answers `{"confirmed":[n,...]}`,
+and a candidate confirmed by at least half the confirming voices is attested with the confirmation's counts
+(`confirmedDetails`).
+No candidate means no second round;
+a confirmation nobody answers leaves the extraction quorum standing.
+The log prints `ATTESTED CONFIRM heard=H candidates=C needed=N confirmed=K` before the `ATTESTED` line,
+and the findings carry
+`reference attestation confirmed K of C candidates by H voices`.
+Not fixed here:
+deepseek's cap cut and GLM-5.3-Flash's runaway on a 5,000-token sheet,
+which the confirmation's shorter question may or may not repeat;
+Mio27 measures it.
+
 ## Mio26 launches on classes forty-one and forty-two, 2026-09-17, 03:25 UTC
 
 Frozen `052f8eea0` (class forty-one,

@@ -311,7 +311,24 @@ the slate gate,
 the refiners,
 the refine judges,
 the polish gate.
-Mio26 is the first pass on it.
+
+## Mio26 and class forty-three
+
+Mio26 (frozen `052f8eea0`,
+2026-09-17 03:25 UTC) never attested the sister:
+five voices heard,
+four answered the open question with an empty list
+(two of them in six completion tokens),
+one attested it with both quotes verifying,
+and the quorum of three dropped it.
+The same bench had attested it five of six on Mio25.
+An open extraction question is one a voice can answer without reading,
+and an empty list is not a vote against the detail.
+`f7aa7c675` adds a confirmation round:
+every verified candidate goes back to the bench as a numbered yes-or-no question carrying both quotes,
+and the candidates at least half the confirming voices name are attested.
+The extraction quorum stands when nothing was extracted or nobody confirms.
+Mio26 was killed for it and Mio27 is the first pass on it.
 
 ## Cost
 
