@@ -193,6 +193,29 @@ class forty-four,
 on Mio27 four of 68 translate candidates had copied the picture transcript under the component,
 and the judges chose them as the original's own text.
 
+## Headings at page assembly
+
+A slice holds one heading and nothing in its evidence names another section's,
+so a lane can render one section under a heading the archive uses for another
+(hulicaijia6,
+2026-09-17:
+相遇 rendered `## Meeting`,
+the archive's heading for 初识),
+and every slice floor passes it.
+The publish guard refuses such a page for rendering fewer distinct headings than the original,
+which on hulicaijia6 came 205 minutes in.
+Since class forty-five the page assembly guard reads every heading the page would carry,
+and where the original and the archive have the same number of headings,
+a page heading repeats another section's,
+the original's two headings differ,
+and the rendering is not the archive's at that position,
+it puts the archive's heading back into that slice's text
+(`restoreCollidingHeadings`),
+recorded as a page assembly override with a finding.
+No archive at the pinned corpus renders two distinct source headings identically,
+so the archive's heading is always a distinct fallback.
+The publish guard keeps the last word for a page the restoration cannot mend.
+
 ## What is folded out of candidate and archive text at intake
 
 Characters a reader cannot tell from their plain counterpart are folded

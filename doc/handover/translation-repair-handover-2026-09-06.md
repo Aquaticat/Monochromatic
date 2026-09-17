@@ -377,7 +377,17 @@ which the takeover session does not have.
   the page was clean by the contest and the consolidation.
   `hulicaijia6` launched at 06:15 UTC on frozen `0986c871f` (pid 3369011,
   runs `~/temp/agent/hulicaijia6-20260917`,
-  log `~/temp/agent/hulicaijia6-20260917.log`).
+  log `~/temp/agent/hulicaijia6-20260917.log`)
+  and died at publish after 205 minutes:
+  the repair lane rendered 相遇 under the archive's heading for 初识
+  and the page carried twelve distinct headings for thirteen
+  (class forty-five,
+  fixed in `978bd7d20`,
+  guard red first at `b6bfd2b96`:
+  the page assembly restores the archive's heading into a colliding slice).
+  `hulicaijia7` launched at 10:10 UTC on frozen `978bd7d20` (pid 3491560,
+  runs `~/temp/agent/hulicaijia7`,
+  log `~/temp/agent/hulicaijia7.log`).
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2191,6 +2201,18 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`978bd7d20` (2026-09-17,
+10:05 UTC):
+class forty-five,
+`restoreCollidingHeadings` inside `guardPageAssembly` puts the archive's heading back into a slice
+whose rendered heading repeats another section's,
+recorded as a page assembly override with a finding
+(`corpus-run/heading-collision-restore.ts`;
+`guardPageAssembly` takes `sourceText`;
+the pass log's "Class forty-five" heading dated 2026-09-17 10:05 UTC;
+guard red first at `b6bfd2b96`;
+found by the hulicaijia6 ERROR).
+Running on hulicaijia7.
 `0986c871f` (2026-09-17,
 06:10 UTC):
 class forty-four,
@@ -2200,7 +2222,7 @@ wired into `validateTranslatedSlice` before any shape is read;
 the pass log's "Class forty-four" heading dated 2026-09-17 06:10 UTC;
 guard red first at `d138f456b`;
 found by the Mio27 read).
-Running on hulicaijia6.
+Ran on hulicaijia6 (no candidate of 72 slices carried a label).
 `f7aa7c675` (2026-09-17,
 04:05 UTC):
 class forty-three,
@@ -3944,15 +3966,21 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `hulicaijia6` by the seven steps and the three checks (frozen `0986c871f`,
-    pid 3369011,
-    runs `~/temp/agent/hulicaijia6-20260917`,
-    log `~/temp/agent/hulicaijia6-20260917.log`,
-    launched 06:15 UTC on 2026-09-17 with Hyper dry and the other three wet).
-    It is the first pass on class forty-four
-    (the pass log's heading dated 2026-09-17 06:10 UTC) and the queue's first entry after Mio
-    (Mio27 read clean at 06:05 UTC).
-    Read first the three shapes no read page has met:
+1.  READ `hulicaijia7` by the seven steps and the three checks (frozen `978bd7d20`,
+    pid 3491560,
+    runs `~/temp/agent/hulicaijia7`,
+    log `~/temp/agent/hulicaijia7.log`,
+    launched 10:10 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
+    Synthetic and Hyper dry).
+    It is the first pass on class forty-five
+    (the pass log's heading dated 2026-09-17 10:05 UTC);
+    hulicaijia6 died at publish on that class after 205 minutes
+    (the pass log's "hulicaijia6 read" heading dated 2026-09-17 09:54 UTC).
+    Read first the page assembly's findings
+    (`repeats another section's heading` in the log,
+    `pageAssembly.trimmed` in the artifact)
+    and count the page's level-2 headings against the original's thirteen,
+    then the three shapes no read page has met:
     the inline ruby annotation,
     the Sakura component and the footnote
     (its 2026-09-09 INCOMPLETE was class twenty-six,
@@ -3965,7 +3993,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (Mio27:
+    (hulicaijia6 to its ERROR:
+    3.71 USD,
+    5,312 seats,
+    137 retry rounds,
+    205 minutes;
+    Mio27:
     1.03 USD,
     1,314 seats,
     46 retry rounds,

@@ -8082,6 +8082,122 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia7 launches on class forty-five, 2026-09-17, 10:10 UTC
+
+Frozen `978bd7d20` (classes forty-one to forty-five),
+pid 3491560,
+runs `~/temp/agent/hulicaijia7`,
+log `~/temp/agent/hulicaijia7.log`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch
+(the launch log names glm-5.3 and Qwen3.8-27B with no provider on the attestation).
+Read first the class forty-five finding in the page assembly's findings
+(`repeats another section's heading` in the log or the artifact's `pageAssembly`)
+and the thirteen headings on the page,
+then the three shapes no read page has met
+(the inline ruby annotation,
+the Sakura component and the footnote),
+then any `carries the sheet's own` refusal,
+then the `ATTESTED` lines,
+then the seven steps and the three checks.
+
+## Class forty-five, 2026-09-17, 10:05 UTC: a lane renders one section under another section's heading and the page dies at publish
+
+Found by the hulicaijia6 read.
+The entry has thirteen level-2 headings,
+and the archive renders every one distinctly
+(初识 as `## Meeting`,
+相遇 as `## Soulmate`,
+among them).
+The repair lane rendered slice 8's 相遇 as `## Meeting`,
+which is a fair rendering of the word and the archive's heading for 初识 two sections earlier;
+every slice floor passed it,
+since a slice holds one heading and nothing in a slice's evidence names another section's;
+the consolidation wrote from it;
+and the publish guard
+(`assertHeadingsStayDistinct`,
+built for the twenty-third hakureico read)
+refused the page after 205 minutes:
+"would render 13 distinct source heading(s) as 12 distinct page heading(s)".
+The launcher's re-attempt resumed the same cached slice texts and would have died the same way,
+so it was killed at 09:54 UTC.
+The fault is the place of the check,
+not the check:
+the one stage that sees every heading the page would carry sat after the last decision.
+Fixed in `978bd7d20`
+(guard red first at `b6bfd2b96`,
+the commit before it):
+`restoreCollidingHeadings` (`corpus-run/heading-collision-restore.ts`)
+runs inside `guardPageAssembly`,
+which now takes the original's text.
+It reads the headings the page would carry slice by slice
+(the replacement where one ships,
+the archive's text where none does),
+and where the original and the archive have the same number of headings,
+a page heading repeats another section's,
+the original's two headings differ,
+and the page's rendering is not the archive's at that position,
+it puts the archive's heading back into that slice's text.
+The restored slice is recorded as a page assembly override
+(the same `trimmed` row a footnote trim writes;
+`would-ship-text.ts` reads it as the page's wording,
+`decidedBy: page-assembly`)
+with a finding naming both headings.
+Measured at pin `a41fc607` no archive renders two distinct source headings identically,
+so the archive's rendering is always a distinct fallback;
+the publish guard keeps the last word for a page the restoration cannot mend
+(a page carrying fewer headings than the original,
+which the block floor owns).
+A restoration that returns a slice to the archive's exact wording is left out of the footnote guard's input,
+whose invariant refuses an unchanged replacement,
+and still rides the override.
+
+## hulicaijia6 read, 2026-09-17, 09:54 UTC: ERROR at publish, thirteen headings rendered as twelve
+
+Frozen `0986c871f`,
+205 minutes to the TALLY
+(`ms=12288953`),
+`status=ERROR`,
+no page written
+(`fixed/` empty;
+`attempts.json` reads 2,
+the re-attempt killed by pid at 09:54 UTC before it could resume the same texts).
+Spend by `pass-spend.mjs`:
+3.71 USD logged,
+5,312 seats asked,
+137 retry rounds,
+19 abandoned OpenRouter streams (0.14 USD);
+Bedrock 1.92 (gemma-26b 650 calls,
+gemma-e2b 610,
+gpt-oss-120b 524),
+OpenRouter 1.64 (deepseek-v4.1-flash 463 calls with 1.7 M cached prompt tokens,
+mercury 569,
+minimax 449),
+Hyper 680 calls at no meter,
+Synthetic dry by the end.
+Meters at the kill:
+Bedrock 180.83 USD,
+OpenRouter 258.20 USD.
+What the log says before the error:
+the attestation bought the one cited reference
+(cq.gov.cn,
+2,525 characters)
+and answered nothing on it twice
+(`ATTESTED heard=5 answered=0 verified=0 needed=3`),
+which is the healthy reading of a government page cited for a date;
+72 slices translated with no `carries the sheet's own` refusal
+(class forty-four's first live measurement:
+zero of the pass's candidates carried a label);
+the 长夜 heading was argued at length by the slate judges
+("Long Night" against "The Long Night")
+and stayed distinct.
+The ruby annotation,
+the Sakura component and the footnote were never read,
+since no page was written;
+hulicaijia7 reads them.
+The heading collision is class forty-five,
+recorded under its own heading.
+
 ## hulicaijia6 launches on class forty-four, 2026-09-17, 06:15 UTC
 
 Frozen `0986c871f` (classes forty-one to forty-four),
