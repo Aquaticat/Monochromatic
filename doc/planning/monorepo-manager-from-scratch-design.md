@@ -202,35 +202,9 @@ Every other option is out:
 - Go and Zig:
    excluded by the user before design.
 
-Being designed:
-the all-Rust tool's configuration-hosting variants,
-byte-for-byte output parity for file-enforcer's structured edits,
-rewrite scope,
-and single-binary build and size.
-Candidate hosts include plain Rust code,
-Starlark through `starlark-rust`,
-Rhai,
-Lua through `mlua`,
-an embedded JavaScript engine such as `rquickjs`,
-`boa`,
-or `deno_core`,
-declarative formats such as TOML,
-KDL,
-Nickel,
-CUE,
-or Pkl,
-and WebAssembly plugins.
-
-Measured rewrite scope,
-2026-09-16:
-`package/dev-script/file-enforcer/src` holds 81 non-test `.ts` files with 36,381 lines,
-of which `data/packages.generated.ts` is 22,607 generated lines,
-the OS package index that Meta Package Manager may replace;
-the remaining 80 files hold 13,774 lines.
-The root `file-enforcer.config.ts` is 2,329 lines.
-Outside the package,
-`package/dev-script/vm-builder/src/import.ts` and `build-and-import.ts` import `exec` from its `/ts` subpath,
-and `package/test-fixture/file-enforcer-perf` benchmarks it.
+The all-Rust design,
+its configuration-hosting ranking,
+and the questions it leaves for the user are in "All-Rust tool".
 
 The subsections from "Findings that apply to every stack" through "Running tasks under a pseudo terminal"
 record how the stack narrowed,
@@ -697,6 +671,267 @@ The `/dev/stdout` failure is therefore specific to libuv's socketpair for `'pipe
 not to Node,
 and it does not decide the stack.
 
+### All-Rust tool
+
+Research:
+[`stack-all-rust-rewrite.md`](monorepo-manager-route-research/stack-all-rust-rewrite.md),
+2026-09-16.
+Its Cargo builds ran offline because the research agent could not reach `index.crates.io`,
+so engines missing from the local crate cache were judged from documentation,
+source,
+and release assets.
+
+#### Rewrite scope
+
+- Production code:
+   77 modules,
+   13,396 lines,
+   6,469 code lines,
+   excluding tests,
+   a fuzz budget,
+   a regression fixture,
+   a container test,
+   and the generated package index
+   (re-running the research's `allrust/fe-count.ts` reproduced these totals).
+- Leaves the port:
+   FE18 and FE19 go to Meta Package Manager
+   (10 modules,
+   943 code lines,
+   plus the generated index),
+   and FE21 to FE23 watch mode is replaced by the daemon watcher
+   (9 modules,
+   1,027 code lines).
+- Plugins compiled into the tool:
+   FE14 Cargo
+   (4 modules,
+   241 code lines)
+   and FE15 JetBrains
+   (5 modules,
+   711 code lines).
+- Core to port:
+   49 modules and 3,547 code lines,
+   including 20 staleness modules with 1,420 code lines,
+   plus the `module-toml-edit` formatting and placement rules file-enforcer reaches
+   and 56 test files with 11,126 lines.
+- The root `file-enforcer.config.ts` is 2,329 lines.
+- Consumers outside the package:
+   `package/dev-script/vm-builder` imports `exec` from the `/ts` subpath in two files;
+   `package/test-fixture/file-enforcer-perf` benchmarks the TypeScript implementation;
+   a `prefer-readonly-parameter-type` unit test reads `cargo/apply-plan.ts` as a fixture;
+   and the `sync:files` and `watch:sync:files` Mise tasks run the TypeScript CLI.
+- Recorded decision in conflict:
+   `package/dev-script/file-enforcer/DECISION.rust-migration.md`,
+   "Decision: no Rust migration for file-enforcer",
+   whose reasons do not address single-file shipping;
+   it is superseded only after the user accepts a variant.
+
+#### Byte-identical output
+
+- Crate defaults change today's bytes.
+  `toml_edit` 0.25.13 `Table::insert` resets an existing key's formatting through `entry.key_mut().fmt()`
+   (`src/table.rs:429-443` in the cached crate,
+   read 2026-09-16),
+   which deleted the comment above a key in the probe;
+   arrays,
+   inline-table trailing commas,
+   and new top-level key placement also differ.
+- `serde_json` differs from `JSON.stringify` in key order for array-index keys and in number formatting.
+- Repository-written emulation layers matched every probed TOML,
+   JSON,
+   glob-mirror,
+   and well-formed XML case.
+- Malformed XML still differs:
+   `quick-xml` and `roxmltree` fail where `@lezer/xml` recovers and today's code splices anyway.
+- A mismatch rewrites managed files,
+   including `CLAUDE.md`,
+   so a differential harness in a throwaway worktree gates the switch.
+
+#### Single binary
+
+- A no-engine daemon skeleton built stripped with LTO for glibc is 2,055,536 bytes,
+   or 3,134,664 bytes with `zbus`.
+- This host has only the `x86_64-unknown-linux-gnu` target
+   (`rustup target list --installed`,
+   checked 2026-09-16)
+   and no static glibc,
+   so no static binary was built;
+   installing the musl target was outside the research's scope.
+  C sources in QuickJS-ng,
+   vendored Lua,
+   and Wasmtime's helper need a musl-targeting C compiler for a static build.
+- The stated requirement is one file that runs directly,
+   with AppImage-style unpacking acceptable;
+   it does not say static linking,
+   and a glibc-linked binary is also one file,
+   tied to the host glibc.
+
+#### Configuration-hosting variants
+
+Worst problems per variant:
+
+- A1,
+   TypeScript on `rquickjs` (QuickJS-ng):
+   no disqualifying problem found.
+  Needs repository-written shims for the Node modules the configuration imports
+   and a `.d.ts` kept in step with them;
+   type stripping needs an unmeasured `oxc` dependency or JavaScript with JSDoc types;
+   C sources;
+   single-threaded evaluation.
+  Most of the 2,329 configuration lines stay as they are.
+- A2,
+   TypeScript on Boa:
+   A1's shim and stripping work,
+   plus a size bounded only by the 33.8 MB Boa CLI;
+   pure Rust.
+- A3,
+   TypeScript on `deno_core` (V8):
+   V8's compressed static library is 39,784,686 bytes and the host `deno` binary is 95,600,728 bytes.
+- B,
+   Starlark:
+   `async`,
+   `try`,
+   `except`,
+   `while`,
+   and `class` are reserved,
+   so the configuration is a full rewrite;
+   no released language-server binary.
+- C,
+   Rhai:
+   no async per its maintainer;
+   language server last pushed 2023-03-17;
+   full rewrite.
+- D,
+   Lua through `mlua`:
+   async support and a small engine;
+   full rewrite;
+   vendored C sources.
+- E,
+   Rune:
+   one release in the past year,
+   low adoption,
+   language server only as a 2023 nightly asset;
+   full rewrite.
+- F,
+   Rust compiled into the tool:
+   every configuration edit needs `cargo` and restarts the daemon,
+   untracked `std::fs` reads are blocked only by lint,
+   and the binary carries one repository's configuration.
+- G,
+   Rust configuration crate run as a child binary:
+   `cargo` on every fresh clone and version skew between the tool and the configuration library.
+- H,
+   WebAssembly guest on `wasmtime`:
+   `cargo` and a WebAssembly target for edits,
+   or a committed `.wasm`;
+   71 `wasmtime` releases in the past year;
+   component-model size unmeasured.
+- I,
+   declarative TOML or KDL with built-in Rust generators:
+   logic edits behave like F,
+   and each bespoke generator needs its own schema.
+- J,
+   Nickel or Jsonnet:
+   Nickel has no effects and a 19,498,430-byte static library;
+   Jsonnet's Rust evaluator has had no stable release since 2021.
+- Excluded before design:
+   Pkl needs its 101,977,360-byte binary on `PATH`,
+   CUE embedding needs Go,
+   Dhall has no host effects,
+   and dynamically loaded Rust plugins cannot load from a static musl binary.
+
+Shared by every variant:
+the byte-identical output work,
+the unexercised cgroup,
+watcher,
+and RPC risks from `stack-rust-crates.md`,
+and `browserslist-rs`,
+whose data follows crate releases instead of the pnpm lock and whose output is unprobed.
+
+#### Ranking from the research
+
+A1 > A2 > D > B > C > E > H > I > F > G > Jsonnet > Nickel > A3.
+
+- A1 over A2:
+   both keep TypeScript,
+   but QuickJS-ng has size evidence under 2.6 MB while Boa's only bound is 33.8 MB.
+- A2 over D:
+   A2 keeps most of the configuration and rule `AD2`'s TypeScript wording;
+   D rewrites everything into a language no repository rule names.
+- D over B:
+   Lua keeps async and error handling;
+   Starlark has neither.
+- B over C:
+   Starlark has a maintained language-server library;
+   Rhai's language server is stale and neither has async.
+- C over E:
+   Rhai releases and is adopted more.
+- E over H:
+   Rune needs no compiler for edits.
+- H over I:
+   WebAssembly hot-loads and sandboxes;
+   I restarts the daemon and invents schemas.
+- I over F:
+   I's data-only edits need no compiler or restart.
+- F over G:
+   an unedited F configuration runs without `cargo`.
+- G over Jsonnet:
+   G's toolchain is maintained.
+- Jsonnet over Nickel:
+   Jsonnet can read through native callbacks and its CLI is 3.3 MB.
+- Nickel over A3:
+   Nickel's size is bounded at 19.5 MB,
+   while V8 sits closer to the size that killed Node.
+
+#### Research inferences awaiting the user
+
+- F,
+   G,
+   H,
+   and I rank low because the research treated "configuration edits need the Rust toolchain" as failing the single-file requirement,
+   by extension from the Node ruling.
+  That ruling was about the file's size,
+   and the daemon already runs `cargo`,
+   pnpm,
+   and Gradle for this repository's tasks,
+   so the extension is unsettled.
+  If the user accepts a compiler for configuration edits,
+   F,
+   G,
+   H,
+   and I move above the embedded interpreters,
+   and their order among themselves needs another design pass.
+- A3's disqualification assumes a V8 embedding is too big;
+   the user's size threshold between 2.6 MB and 144 MiB is unstated.
+  It ranks last either way.
+
+#### Adopted from settled requirements
+
+Open to the user's veto:
+
+- Configuration evaluation runs as a child that re-executes the single file,
+   such as `/proc/self/exe` with an internal subcommand,
+   inside a task cgroup,
+   not in the daemon process.
+  Cgroup sandboxing is a must,
+   and pause and end act through `cgroup.freeze` and `cgroup.kill`,
+   which cannot target in-process evaluation.
+  Event types stay shared inside one binary.
+- Rule `AD2` changes only if the accepted host is not TypeScript,
+   through file-enforcer's `CLAUDE.md` generation path.
+
+#### Next measurements
+
+Each needs Cargo registry access or a musl target,
+so runs go in a disposable container:
+
+- Build A1,
+   A2,
+   B,
+   C,
+   and D embeddings against a file-enforcer host API stub and record static musl sizes.
+- Compare `browserslist-rs` output with `.browserslistrc.resolved.local.json`.
+- Run the differential output harness in a throwaway worktree.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
@@ -825,10 +1060,12 @@ and it does not decide the stack.
 
 - File-enforcer is rewritten in Rust and ships inside the single binary.
 - Configuration hosting is open;
-   "Current stack direction" lists the candidate hosts.
+   "All-Rust tool" ranks the variants.
+- Configuration evaluation runs in a re-executed child of the single file inside a task cgroup,
+   as adopted in "All-Rust tool".
 - Enforcement of undeclared reads depends on the host:
-   the lint-level enforcement the user accepted was proposed for `file-enforcer.config.ts`,
-   and a new host needs its own equivalent.
+   embedded interpreters and WebAssembly can be limited to host-provided reads,
+   while compiled Rust configuration keeps lint-level enforcement.
 - Superseded with the TypeScript route:
    running each TypeScript configuration evaluation in a child process instead of a cache-busting re-import.
 - Carried over:
@@ -867,13 +1104,18 @@ and it does not decide the stack.
 - The vet's HC5 lists macOS and Windows CI runners,
    while the user made 0.x Linux only.
 - Rewrite:
-   13,774 hand-written file-enforcer lines and the 2,329-line root configuration move to Rust and a new host,
-   and structured JSON,
-   TOML,
-   and XML edits must keep byte-identical output.
+   49 core modules,
+   the Cargo and JetBrains plugins,
+   `module-toml-edit` formatting behavior,
+   and their tests move to Rust,
+   and the 2,329-line root configuration moves to a new host.
+- Output:
+   every candidate crate changes today's bytes by default,
+   and a missed formatting rule rewrites managed files including `CLAUDE.md`.
 - Build:
    `btrfs-uapi` needs `libclang` at build time,
-   and the libc target and binary size of the single file are unmeasured.
+   this host has no musl target or static glibc,
+   and the size of the full binary with a configuration host is unmeasured.
 
 ## Decisions on 2026-09-16
 
@@ -897,16 +1139,24 @@ and it does not decide the stack.
 
 ## Open questions
 
-- Configuration hosting for the Rust file-enforcer:
-   being designed and ranked per rule `YKZ`.
-- Rewrite scope:
-   which file-enforcer features move as-is,
-   which Meta Package Manager replaces,
-   and how byte-identical output is proven.
+- Configuration hosting:
+   does needing the Rust toolchain for configuration edits fail the single-file requirement?
+  The answer decides whether A1 leads or F,
+   G,
+   H,
+   and I move up
+   ("Research inferences awaiting the user").
+- Is `./meow` meant for repositories other than this one?
+  Variant F compiles one repository's configuration into the binary.
 - Single binary:
-   libc target,
-   static linking,
-   and measured size.
+   static musl or glibc-linked,
+   and measured size with the chosen host.
+- Byte-identical output:
+   the differential harness and how malformed XML is handled.
+- Veto open:
+   A3 is out on size,
+   configuration evaluation runs in a re-executed child,
+   and `DECISION.rust-migration.md` is superseded on acceptance.
 - How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
 - Veto open:
    the Rust core with TypeScript file-enforcer children is out by the same size reason.
