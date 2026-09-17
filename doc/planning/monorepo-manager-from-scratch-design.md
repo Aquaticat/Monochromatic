@@ -159,54 +159,150 @@ Research with citations and verified or unverified labels:
 
 ### Tech stack options
 
-The stack is undecided;
-these options are ranked for the user's choice.
+The stack is undecided.
+Every option below was designed against the same requirements until its disqualifying problems surfaced,
+per rule `YKZ`;
+full designs,
+probes,
+and citations live in the `stack-*.md` appendices of
+[`monorepo-manager-route-research/`](monorepo-manager-route-research/).
+An earlier surface-level ranking was withdrawn after the user's correction on 2026-09-16.
+Go and Zig are excluded by the user.
 Approval of a language for this scope is separate,
 per `doc/planning/load-bearing-code-languages.md`.
 
-- Option A,
-   TypeScript on Node:
-  - Pros:
-     reuses file-enforcer,
-     `watch-restart`,
-     `task-util`,
-     and the JSON-RPC framing in `@monochromatic-dev/mcp-stdio` directly.
-  - Cons:
-     a task must join its cgroup before it starts children,
-     and Node's documented `child_process` API has no hook for that.
-    Each task would start through `systemd-run --user --scope`,
-     which runs the command itself inside a transient scope
-     (`man systemd-run`),
-     or through a per-task launcher process that joins the cgroup first;
-     the per-task overhead of either is unmeasured.
-- Option B,
-   Rust:
-  - Pros:
-     `std::os::unix::process::CommandExt::pre_exec` runs a closure in the child after `fork` and before `exec`
-     (<https://doc.rust-lang.org/std/os/unix/process/trait.CommandExt.html>),
-     so a task can join its cgroup before it runs anything.
-  - Cons:
-     file-enforcer is TypeScript,
-     so it would run as child processes or be rewritten.
-- Option C,
-   Rust daemon core with TypeScript file-enforcer evaluation in child processes:
-  - Pros:
-     native cgroup placement and process control,
-     plus file-enforcer reuse through the child-process evaluation the research already recommends.
-  - Cons:
-     two languages in one tool,
-     with a documented boundary between them.
+#### Findings that apply to every stack
 
-Superseded ranking:
-C > A > B was based on surface pros and cons.
-On 2026-09-16 the user rejected it:
-`systemd-run --scope` is not disqualifying for Option A,
-the option set omitted alternatives such as Kotlin/Native,
-and every option must be designed deeply enough to surface its disqualifying problems before ranking.
-A deeper comparison replaces this section.
+- glibc 2.39 and later provide `pidfd_spawn` with `posix_spawnattr_setcgroup_np`,
+   which starts a child directly inside a cgroup;
+   a probe from Python `ctypes` succeeded against the probe's own cgroup.
+  Its only documentation is the glibc NEWS file and a header.
+- The documented fallback is re-executing a launcher that joins the cgroup and then `exec`s the task,
+   or `systemd-run --user --scope --expand-environment=no` per task.
+- Writing `cgroup.procs` after start measured a 9.7-millisecond median on this host,
+   whose cgroup mount lacks `favordynmods`.
 
-Excluded by the user on 2026-09-16:
-Go and Zig.
+#### Designed options and their worst problems
+
+- TypeScript on Node
+   (`stack-typescript.md`):
+   cgroup placement before start and watch-overflow detection use `node:ffi`,
+   documented as "Stability: 1 - Experimental" since v26.1.0;
+   built-in `fs.watch` silently drops events after an inotify queue overflow;
+   recursive `fs.watch` watched 41,205 paths with 662 milliseconds of blocking setup;
+   Node's documentation has contradictions on the `fs.watch` and FFI pages the design uses.
+  A stable fallback exists:
+   `systemd-run --scope` per task and per-directory watching with periodic rescans.
+- Rust core with TypeScript file-enforcer children
+   (`stack-rust.md`):
+   task spawning into cgroups is repository-written `unsafe` code,
+   because Rust's standard library lacks `clone3` and `libc` declares `CLONE_INTO_CGROUP` as a `c_int` that overflows;
+   `notify`,
+   `jsonrpsee`,
+   and `cgroups-rs` fail the documentation rule or the requirements,
+   so the watcher and JSON-RPC framing are hand-written;
+   each file-enforcer rerun pays about 147 milliseconds of Node startup;
+   Rust and TypeScript event types need one shared schema.
+- All Rust
+   (`stack-rust.md`):
+   every Rust core problem plus a rewrite of 79 file-enforcer modules and no workable host for the 2,330-line TypeScript configuration.
+- Kotlin JVM core with TypeScript file-enforcer children
+   (`stack-kotlin.md`):
+   Kotlin documentation pages every Kotlin option needs contradict themselves or the library source;
+   `ProcessBuilder` cannot place a child in a cgroup,
+   so spawning needs JDK 25's foreign-function API beside the pinned JDK 21;
+   the JDK watcher is not recursive and can stop silently.
+- All Kotlin on the JVM
+   (`stack-kotlin.md`):
+   the Kotlin JVM core problems plus a port of about 13,774 file-enforcer lines;
+   GraalVM Native Image is discontinued for Java SE customers.
+- Kotlin/Native
+   (`stack-kotlin.md`):
+   the linker toolchain is frozen at glibc 2.19 and kernel 4.9 headers with no fix date,
+   leaving `pidfd_spawn` and 11 other needed functions unbound;
+   Ktor's native sockets fail at file descriptors 1024 and above.
+- TypeScript on Bun
+   (`stack-typescript.md`):
+   the pinned 1.3.14 silently ignores the `cgroup` spawn option,
+   so the sandbox is off without an error;
+   fixes exist only in the 1.4 rewrite that `mise.toml` distrusts;
+   the design conflicts with the repository's Bun-islands policy.
+- TypeScript on Deno
+   (`stack-typescript.md`):
+   recursive `Deno.watchFs` blocked for 131 seconds and still watched `node_modules`;
+   pending async FFI calls stalled file reads for 1.9 seconds.
+- Python
+   (`stack-others.md`):
+   named unapproved in `doc/planning/load-bearing-code-languages.md`;
+   the GIL makes threaded hashing slower than serial;
+   all kernel work goes through untyped `ctypes`.
+- OCaml
+   (`stack-others.md`):
+   Eio documents that forked-child code must be C;
+   mise provides no OCaml compiler.
+- C# on .NET NativeAOT
+   (`stack-others.md`):
+   Microsoft's own interop pages disagree on whether `DllImport` works under Native AOT,
+   and every kernel call in the design is a P/Invoke.
+
+Considered and excluded before design,
+with reasons in `stack-others.md`:
+Swift,
+Java without Kotlin,
+C++,
+Haskell,
+Nim,
+Crystal,
+and Elixir or Gleam.
+
+#### Ranking
+
+The ranking depends on a preference the user has not stated:
+whether the documentation confusion rule applies to language runtime and library documentation
+at the same strictness as it applied to monorepo manager candidates.
+The research agents applied it unevenly:
+the Kotlin research culled on contradictions,
+the TypeScript research recorded Node contradictions without culling,
+and the Rust research excluded typos.
+
+If runtime documentation problems are recorded but do not cull:
+Node > Rust core with TypeScript children > Kotlin JVM core with TypeScript children > Python > Bun > Deno > OCaml > .NET >
+all Kotlin on the JVM > all Rust > Kotlin/Native.
+
+- Node over Rust core:
+   Node has a stable fallback for each experimental dependency and stays in one language,
+   while the Rust core hand-writes unsafe spawning,
+   the watcher,
+   RPC framing,
+   and a cross-language schema.
+- Rust core over Kotlin JVM core:
+   both hand-write process control,
+   but Kotlin adds a second JDK version and a watcher that can stop silently.
+- Kotlin JVM core over Python:
+   Python is recorded as unapproved.
+- Python over Bun:
+   Bun's pinned version turns the sandbox off silently and conflicts with the Bun-islands policy.
+- Bun over Deno:
+   Deno's watcher and FFI stalls block the core loop,
+   while Bun's defects have fixes in a newer release.
+- Deno over OCaml:
+   OCaml requires C for cgroup placement and has no mise toolchain.
+- OCaml over .NET:
+   the .NET contradiction is on its own interop pages that every kernel call depends on.
+- .NET over all Kotlin on the JVM,
+   all Rust,
+   and Kotlin/Native:
+   each of those three adds a file-enforcer rewrite or port,
+   and Kotlin/Native also lacks the needed glibc bindings.
+
+If runtime documentation problems cull as strictly as for tool candidates,
+Node,
+every Kotlin option,
+Bun,
+Deno,
+and .NET exit,
+leaving Rust core with TypeScript children > Python > OCaml > all Rust,
+for the same adjacent reasons.
 
 ### Process model
 
