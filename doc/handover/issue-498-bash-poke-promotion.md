@@ -169,6 +169,46 @@ so they are cited by symbol name rather than line number.
 - `SHELL` is `/bin/bash` and `/bin/bash` exists,
   so the shell-resolution question is about correctness elsewhere rather than about this machine.
 
+### Terminal input interception
+
+- `TUI.handleTerminalInput` in `@earendil-works/pi-tui` `dist/tui.js` runs `inputListeners`
+  before the focused component,
+  and a listener returning `{ consume: true }` stops all further processing.
+  An extension can therefore preempt pi's own Escape handling.
+- `ctx.ui.onTerminalInput` maps to `addExtensionTerminalInputListener`,
+  which registers into that same listener set.
+- `StdinBuffer` in `dist/stdin-buffer.js` accumulates partial sequences
+  and holds a buffer equal to a lone ESC for `escapeTimeoutMs` before flushing it.
+  `resolveEscapeTimeoutMs` defaults to 10 ms,
+  uses 100 ms when `SSH_CONNECTION` or `SSH_TTY` is set,
+  and honors `PI_TUI_ESC_TIMEOUT`.
+- Because listeners sit downstream of that buffer,
+  a delivered chunk is already a complete sequence:
+  alt combinations arrive as one `ESC` plus byte chunk,
+  and a chunk that is only an escape is a genuine lone Escape.
+  This package needs no disambiguation timeout of its own.
+- Pi pushes the Kitty keyboard protocol,
+   so `matchesKey` in `dist/keys.js`
+  accepts a bare `\x1b`,
+  the Kitty functional form for codepoint 27 with no modifier,
+  and the modifyOtherKeys form.
+  An owned matcher must accept at least the bare and Kitty forms.
+- This retires the round 3 objection that Escape interception would need
+  a reimplemented `PI_TUI_ESC_TIMEOUT` window.
+
+### Process exit and orphaned jobs
+
+- The TUI `shutdown()` path ends in `process.exit(0)`,
+  and the signal path exits with 129 or 143,
+  so pi never waits on this package's children at quit.
+- Those paths call `killTrackedDetachedChildren()`,
+  which only covers pids pi tracked itself.
+  The tracking helpers are not exported,
+  so jobs spawned here are never killed by pi.
+- Consequence under the v0.x decision to skip lifecycle work:
+  a job still running when pi exits becomes an orphan,
+  and its poke is lost because the extension runtime is gone.
+
 ### Host tooling for verification
 
 - `tmux` 3.7c is installed at `/usr/bin/tmux`.
@@ -235,8 +275,29 @@ so they are cited by symbol name rather than line number.
   `verify:pi-runtime`,
   a committed provider-free fake-terminal check,
   and a documented manual real-provider step.
-- Settings live in a global JSON file under `~/.pi/agent/extensions/`.
-  The key set is still open.
+- Settings live in a global JSON file under `~/.pi/agent/extensions/`,
+  and every arbitrary magic number must earn a key there.
+- Cancellation emulates Claude Code:
+  a lone Escape cancels running jobs,
+  implemented through `ctx.ui.onTerminalInput`.
+  No slash command and no separate shortcut key.
+- Shell resolution is owned here and mirrors pi's documented order,
+  `/bin/bash` then `bash` on `PATH` then `sh`,
+  with no `shell` settings key.
+- Truncation is middle-out:
+  the head and the tail are kept and the middle is elided.
+- Accepted defaults from round 3:
+  `pokeInstruction` `"continue"`,
+  `maxPokeChars` 8000,
+  `maxPokeLines` 2000,
+  `cancelShortcut`,
+  and `progressWidget` true.
+  The `shell` and `cancelShortcut` keys are now superseded
+  by the two decisions recorded directly above.
+- No features or fixes are built for session-transition states in v0.x:
+  no `session_shutdown` subscription,
+  no kill-on-quit,
+  no session-switch handling.
 
 ## Rejected directions
 
@@ -248,24 +309,19 @@ so they are cited by symbol name rather than line number.
 - Pi's execution and truncation helpers.
 - A slash-command list and cancel surface.
 
-## Open questions for round 3
+## Open questions for round 4
 
-- Cancellation surface,
-   now that Escape is proven inert:
-  none plus shutdown kill,
-  a `registerShortcut` binding,
-  or raw Escape interception through `ctx.ui.onTerminalInput`.
-- Which key,
-   if a shortcut is chosen,
-   given the defaults in `docs/keybindings.md`.
-- Shell selection for this package's own spawn,
-  because pi's `shellPath` setting is unreachable.
-- Truncation direction,
-   and whether overflow is spooled to a file this package owns.
-- Settings key set and defaults.
-- Job lifecycle on `session_shutdown`,
-   session switch,
-   and pi exit.
+- Escape consumption policy:
+  when this package swallows the key instead of letting pi handle it.
+- Whether Escape cancels every running job or only the most recent.
+- Middle-out budgets,
+   elision marker,
+   and whether a line cap survives.
+- Whether overflow is still spooled to a file,
+  and where.
+- The full settings key list once every magic number is named.
+- Detached spawning,
+   given that pi never kills these children.
 ## Recorded without asking
 
 These follow from settled answers and the naming policy,
