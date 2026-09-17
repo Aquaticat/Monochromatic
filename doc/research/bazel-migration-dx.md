@@ -184,9 +184,12 @@ Clones:
    and `Ping`
    (`src/main/protobuf/command_server.proto:266-280`).
 - One output base runs one command at a time;
-   a second client prints "Another command holds the ... lock" and waits
-   (`src/main/cpp/blaze_util_posix.cc:740-743`),
+   the server makes a second command wait,
+   printing "Another command (...) is running. Waiting for it to complete on the server"
+   (`src/main/java/com/google/devtools/build/lib/runtime/BlazeCommandDispatcher.java:229-265`),
    so a separate `bazel query` cannot inspect a build in progress on the same output base.
+  An earlier version cited the client-side lock message in `src/main/cpp/blaze_util_posix.cc`;
+   the client releases that lock and the server-side wait is what blocks the second command.
 - The supported observation channel is the Build Event Protocol.
   `--build_event_json_file` writes and periodically flushes events during the invocation
    (`src/main/java/com/google/devtools/build/lib/buildeventstream/transports/FileTransport.java:130-150`);

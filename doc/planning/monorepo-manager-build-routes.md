@@ -87,7 +87,10 @@ their READMEs define current scope.
 
 - Declared-input actions with sandboxing:
    Bazel's sandbox "prevents the action from accidentally using any input files that are not declared"
-   (`docs/docs/sandboxing.mdx:70-75` in the Bazel source).
+   (`docs/docs/sandboxing.mdx:70-75` in the Bazel source),
+   but the same page says actions can still reach files "unless they know the absolute paths to them"
+   (`docs/docs/sandboxing.mdx:16`),
+   so undeclared reads by absolute path remain possible.
 - Live build events:
    the Build Event Protocol is documented for third-party insight into an invocation,
    and `--bes_backend` streams events to any server implementing the public
@@ -137,7 +140,9 @@ their READMEs define current scope.
 
 ### Pros
 
-- Sandbox-enforced inputs make affected-only lint and test caching resistant to undeclared-input stale hits.
+- Sandboxing blocks accidental undeclared reads through relative paths,
+   which makes affected-only caching more resistant to stale hits,
+   though absolute-path reads and untracked host libraries still escape it.
 - A mature local and remote cache is available as CI is added.
 - Live build events are a documented,
    public protocol.
