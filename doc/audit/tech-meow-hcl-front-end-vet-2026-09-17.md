@@ -334,7 +334,7 @@ status, signal, elapsed seconds, and log path.
 - Toolchain: host `nightly-2026-09-12-x86_64-unknown-linux-gnu` mounted read-only at `/toolchain`,
    `CARGO_HOME=/t/cargo-home`, `CARGO_NET_OFFLINE=true`.
 - Cargo target directories under `~/temp/agent/hcl-evaluator-target-2026-09-17/` with `CACHEDIR.TAG`.
-- 65 executions recorded.
+- 68 executions recorded.
 
 The reference implementation used as the oracle is a small Go program,
 `lab/go-oracle/main.go`,
