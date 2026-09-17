@@ -5,6 +5,7 @@ import {
   trimOrphanDefinitions,
 } from './assembly-orphan-trim.ts';
 import { footnoteIdentifiers, } from './footnote-mentions.ts';
+import type { FootnoteGraphFinding, } from './footnote-model.ts';
 import {
   introducedFootnoteFindings,
   introducedStructuralRegressions,
@@ -129,6 +130,90 @@ function suspectsFor(
 }
 
 /**
+ Whether a text defines a footnote identifier under either convention.
+ 
+ @param text - original text of one slice
+ 
+ @param identifier - identifier as the footnote graph keys it
+ 
+ @returns Whether the text carries a definition of it
+ 
+ @example
+ ```ts
+ const owns = definesIdentifier({ text: '[^1]: 那是它最喜欢的位置。', identifier: '1', },);
+ ```
+ */
+function definesIdentifier(
+  {
+    text,
+    identifier,
+  }: {
+    readonly text: string;
+    readonly identifier: string;
+  },
+): boolean {
+  /**
+   Every mention key the text carries.
+   */
+  const keys = [
+    ...footnoteIdentifiers({ text, },)
+      .keys(),
+  ];
+  return keys.some(function defines(key,): boolean {
+    return key.startsWith('definition ',) && key.endsWith(` ${identifier}`,);
+  },);
+}
+
+/**
+ Narrows the suspects of a doubled definition to the carriers whose original
+ does not define the note.
+ 
+ THE SLICE WHOSE ORIGINAL DEFINES THE NOTE OWNS IT (class forty-nine,
+ shi_Yumiaoya3, 2026-09-17): on a skeleton archive both the opening section,
+ which wrote the note in beside its reference, and the definitions slice
+ changed their count from nothing to one, so both were withdrawn and the
+ page lost the section and the note alike. Where every suspect's original
+ defines it, or none does, the suspects stand as found.
+ 
+ @param finding - defect under attribution
+ 
+ @param suspects - chunk indices whose mention count moved
+ 
+ @param sourceBySlice - original text of every slice, by chunk index
+ 
+ @returns Chunk indices to withdraw
+ 
+ @example
+ ```ts
+ const culprits = withoutOwners({ finding, suspects, sourceBySlice, },);
+ ```
+ */
+function withoutOwners(
+  {
+    finding,
+    suspects,
+    sourceBySlice,
+  }: {
+    readonly finding: FootnoteGraphFinding;
+    readonly suspects: readonly number[];
+    readonly sourceBySlice: ReadonlyMap<string, string>;
+  },
+): readonly number[] {
+  if (finding.kind !== 'duplicate-definition')
+    return suspects;
+  /**
+   Suspects whose original never defines the note.
+   */
+  const strangers = suspects.filter(function ownsNothing(sliceIndex,): boolean {
+    return !definesIdentifier({
+      text: sourceBySlice.get(String(sliceIndex,),) ?? '',
+      identifier: finding.identifier,
+    },);
+  },);
+  return (strangers.length === 0) ? suspects : strangers;
+}
+
+/**
  Splices replacements into a document and settles what it can carry, repeating
  until nothing is left to take back.
  
@@ -213,6 +298,19 @@ export function guardFootnoteAssembly(
       String(slice.target
         .sliceIndex,),
       slice.target
+        .text,
+    ] as const;
+  },),);
+
+  /**
+   Original text of every slice, keyed the same way, for attributing a
+   doubled definition to the carrier that does not own it.
+   */
+  const sourceBySlice = new Map(slices.map(function toSourceEntry(slice,) {
+    return [
+      String(slice.target
+        .sliceIndex,),
+      slice.source
         .text,
     ] as const;
   },),);
@@ -328,10 +426,14 @@ export function guardFootnoteAssembly(
        Slices to withdraw this round, each blamed by its own identifier.
        */
       const culprits = new Set(introduced.flatMap(function toCulprits(finding,) {
-        return suspectsFor({
-          identifierKey: `${finding.convention} ${finding.identifier}`,
-          replacements: standing,
-          incumbentBySlice,
+        return withoutOwners({
+          finding,
+          suspects: suspectsFor({
+            identifierKey: `${finding.convention} ${finding.identifier}`,
+            replacements: standing,
+            incumbentBySlice,
+          },),
+          sourceBySlice,
         },);
       },),);
       if ((culprits.size === 0) && (regressions.length > 0)) {

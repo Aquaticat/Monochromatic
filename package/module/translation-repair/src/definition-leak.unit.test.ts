@@ -67,6 +67,11 @@ await describe({
           sourceText: '[^1]: 那是它最喜欢的位置。',
           candidateText: '[^1]: That is its favourite spot.',
         },).kind,).toBe('valid',);
+        expect(validateTranslatedSlice({
+          sourceText: REFERRING,
+          pageText: LEAKED,
+          candidateText: LEAKED,
+        },).kind,).toBe('valid',);
       },
     },),
   ],

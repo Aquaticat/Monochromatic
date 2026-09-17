@@ -10,6 +10,7 @@ import {
 } from './source-only-breaks.ts';
 import { atomFindings, } from './translate-atom-rendering.ts';
 import { neutralPronounFindings, } from './translate-neutral-pronoun.ts';
+import { definitionLeakFindings, } from './translate-definition-leak.ts';
 import { sheetLeakFindings, } from './translate-sheet-leak.ts';
 import { untranslatedFindings, } from './translate-untranslated.ts';
 import {
@@ -477,6 +478,22 @@ export function validateTranslatedSlice(
     return {
       kind: 'invalid',
       findings: leakFindings,
+    };
+  }
+
+  /**
+   A footnote the candidate defines though the original passage only refers
+   to it (class forty-nine), refused before the assembly can find it twice.
+   */
+  const definitionFindings = definitionLeakFindings({
+    sourceText,
+    pageText,
+    candidateText,
+  },);
+  if (definitionFindings.length > 0) {
+    return {
+      kind: 'invalid',
+      findings: definitionFindings,
     };
   }
   /**
