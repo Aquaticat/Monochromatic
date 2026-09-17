@@ -1343,8 +1343,12 @@ the `toml_edit` wrapper's 21 passes were recounted there.
    and installs `musl-tools` for musl targets;
    the minimum glibc of binaries built there is unmeasured.
 - New TOML inline tables use the TOML 1.1 style `{ a = 1, }`,
-   matching today's Cargo manifests,
-   although `taplo` 0.14 rejects it.
+   an answer given on a false premise:
+   the question said this matches today's Cargo manifests,
+   but no tracked `Cargo.toml` contains an inline-table trailing comma
+   (`git ls-files -z '*Cargo.toml' | xargs --null rg --multiline --count ',\s*\}'` matched 0 files on 2026-09-17);
+   the form comes from `module-toml-edit` (`package/module/toml-edit/src/toml-set.unit.test.ts:484`),
+   and taplo 0.14 rejects it; the question is asked again.
 - file-enforcer keeps generating the root `mise.toml` for now.
   Read together with "hand-maintained now",
    meow never generates `mise.toml`,
