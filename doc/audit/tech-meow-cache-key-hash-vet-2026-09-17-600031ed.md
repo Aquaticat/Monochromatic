@@ -30,6 +30,18 @@ Start date:
 Last updated:
  2026-09-17.
 
+Revision:
+ the aarch64 criterion S5 is measured rather than borrowed.
+The user powered `ssh m1` on and asked for the five finalists to be measured on it,
+ so S5's ratings now come from five-run medians on one Apple M1 core
+ instead of from upstream tables and source reading,
+ and the aarch64 correctness gates were re-run on that silicon
+ ("The `ssh m1` run").
+The superseded inputs stay visible where they were used
+ ("S5: aarch64 evidence", "Scoring").
+The recommendation is unchanged;
+ third and fourth place swapped.
+
 Governing skill:
 
 - Commit `a05818ad70a40e5769a36de669697ba109891b31`
@@ -140,9 +152,15 @@ Measured or read on 2026-09-17:
    Fedora Atomic,
    kernel `7.2.0-ogc6.1.fc44.x86_64`.
 - aarch64 hardware:
-   none reachable.
-  `ssh m1` is powered off and is not contacted by this audit;
-   QEMU user mode checks output equality only.
+   one machine,
+   reachable.
+  `ssh m1` was powered off when this report was first written and was not contacted then.
+  The user powered it on later the same day for the S5 measurement,
+   and it is an Apple M1 `MacBookAir10,1` running macOS 27.0
+   ("Execution manifest", aarch64 measurement host).
+  It measures `aarch64-apple-darwin`,
+   which is not a release-blocking target;
+   the release-blocking aarch64 Linux targets are still checked for output equality under QEMU user mode.
 
 ## Premise changes
 
@@ -411,6 +429,18 @@ Weights sum to 23,
    as a ratio to the fastest candidate on the same aarch64 core;
    the rating is the range of mapped values,
    its midpoint the provisional rating.
+  Criteria and rules are frozen and are not rewritten,
+   so the clause "because no aarch64 hardware run happens here" stands as written;
+   its premise later stopped holding,
+   because the user powered the one aarch64 machine on
+   ("The `ssh m1` run").
+  The rule itself needed no change to absorb that:
+   with all five finalists measured on one aarch64 core,
+   each candidate's evidence-supported range is its five-run range,
+   the overlap rule and the geometric mean over the S5 cells give one value per candidate,
+   the ranges collapse to exact ratings,
+   and the confidence rule frozen for S1, S2, S3, and S12 applies
+   ("Scoring").
 - S4 anchors:
   - 4:
      a library-provided parallel or tree mode whose output equals the single-threaded function,
@@ -499,6 +529,8 @@ Reused,
    not what they show.
 - HC3 equality runs,
    including the `x86-64-v4` musl probe and aarch64 under QEMU,
+   the aarch64 half of which is now superseded by the Apple M1 runs
+   ("Reference equality"),
    HC8 one-byte results at 8 to 4,096 bytes,
    HC10 streaming results on the baseline and `x86-64-v3` builds,
    and the C reference check,
@@ -2090,6 +2122,80 @@ Shared by every execution in this vet:
    the affected runs are visible in `data/bench/progress-a.txt`,
    and the per-cell medians over five runs are what the ratings use.
 
+### aarch64 measurement host
+
+Added on 2026-09-17 when the user powered the machine on for the S5 measurement
+ ("The `ssh m1` run").
+
+- Host:
+   `MacBookAir10,1`,
+   Apple M1 (`T8103`),
+   four Firestorm performance cores and four Icestorm efficiency cores,
+   64 KiB L1 data cache,
+   4 MiB L2,
+   16 GiB memory (17,179,869,184 bytes),
+   macOS 27.0 build `26A428`,
+   Darwin 27.0.0 (`xnu-13432.1.9`, `RELEASE_ARM64_T8103`),
+   reached over `ssh`.
+  It is a fanless chassis,
+   which is why every run records its thermal state
+   ("S5: aarch64 evidence", thermal and load state).
+- No container:
+   macOS has no equivalent of the bounded `podman` runs used on the x86 host,
+   so the lab binaries run as ordinary processes.
+  The bounds that matter here are memory and concurrency,
+   and the workloads that could breach either are the ones this host does not run.
+- Storage,
+   per `AGENTS.md` rule `HRM`:
+   everything the measurement writes lives under
+   `/Volumes/MacData/agent/hashvet2-m1-2026-09-17`
+   (external volume, 216 GiB free at the start, 215 GiB at the end),
+   including `CARGO_HOME`, `RUSTUP_HOME`, both `CARGO_TARGET_DIR` trees, the corpus, and the probe crates.
+  `CACHEDIR.TAG` is written in the build, Cargo, and rustup directories.
+  The internal SSD had 114 GiB free at the start and hosts none of it
+   (one exception and its cleanup: "The `ssh m1` run", what was installed).
+- Memory and concurrency:
+   `CARGO_BUILD_JOBS=4` for every build and `RAYON_NUM_THREADS=4` for every benchmark run,
+   so nothing exceeds four of the eight cores;
+   the benchmark itself is single threaded,
+   and the only multi-threaded entry in the streaming table is `blake3_128_rayon`,
+   which is not a finalist.
+  The workloads that need multiple GB in memory,
+   `mem256m-stream1m` and the multi-GB `bigfile` runs,
+   are not run here:
+   S3 is frozen to the `x86-64-v4` build and the machine caps memory at 16 GiB.
+- Toolchain:
+   `nightly-2026-09-12` (`rustc 1.100.0-nightly (0fc141305 2026-09-11)`),
+   the same toolchain and the same commit as every x86 build,
+   installed into the scratch `RUSTUP_HOME` with the minimal profile.
+  The machine's own `nightly-aarch64-apple-darwin` and its default-toolchain setting are untouched.
+- Builds measured
+   (`scripts/m1-build.ts`, `m1/build.log`):
+  - `m1-generic`: `-Ctarget-cpu=generic`, `neon` and nothing above the aarch64 baseline.
+  - `m1-native`: the target default, which adds `aes`, `sha2`, `sha3`, `crc`, and `dotprod`,
+     plus the `gxref` feature for the one-byte collision control.
+  The `bigfile` binary is not built here:
+   it calls `rustix::fs::fadvise`,
+   which `rustix` 1.1.4 configures out on Apple targets
+   (`doc/troubleshooting/rustix-apple-fadvise-gate.md`).
+- Lab crate,
+   profile,
+   flags,
+   lockfile,
+   corpus,
+   rounds,
+   and run count are the x86 campaign's,
+   and the corpus bytes are byte identical on both machines
+   ("S5: aarch64 evidence").
+- Measurement discipline:
+   the run-to-run band is measured first on the unchanged build,
+   five runs per cell,
+   with load averages, thermal state, and swap recorded before and after every run
+   (`m1/bench-progress.txt`).
+  The machine was in use by its owner throughout,
+   so per-cell medians over five runs are what the ratings use,
+   as on the x86 host.
+
 ## Hard-gate confirmed
 
 Twenty of the 23 candidate functions pass every gate:
@@ -2334,9 +2440,65 @@ This is the local half of HC3:
  four independent XXH3-128 implementations agree with each other and with the published digest,
  and the same holds inside the SHA-256, SHA-512, and BLAKE3 families,
  on the release-blocking build's kernels.
-The cross-architecture half comes from the aarch64 suites under QEMU
+
+### Against the C implementations, on aarch64 silicon
+
+The prior vet's `refcheck/` crate links the C references into one binary:
+ xxHash 0.8.3 `XXH3_128bits_withSeed` through `xxhash-c-sys` 0.8.7,
+ and `HighwayHash128` from `google/highwayhash` `c/highwayhash.c` at `faca2cb`.
+This vet copied it to `refcheck-c/` and added `rscrypto` as the fifth finalist,
+ then built and ran it on the Apple M1
+ (`scripts/m1-refcheck-c.ts`, `m1/logs/refcheck-c-run.log`).
+The C sources are compiled by Apple `clang` from `/usr/bin/cc` on that machine,
+ only for this check;
+ no finalist needs a C toolchain.
+
+For every length 0 to 4,100,
+ plus 8,191 to 8,193, 65,535 to 65,537, 100,003, 1,048,583, and 16,777,219 bytes of random data,
+ it compares each finalist's one-shot output and its streaming output over random chunks of
+ 1 to 70,000 bytes with C,
+ under seeds 0 and `0x9E3779B97F4A7C15` for XXH3
+ and the all-zero key and a byte-sequence key for HighwayHash:
+
+- `aarch64-apple-darwin`:
+   4,110 lengths,
+   82,200 checks,
+   0 mismatches.
+- Positive control,
+   `REFCHECK_CONTROL=flip`,
+   which flips one input bit on the Rust side only:
+   82,200 mismatches of 82,200 checks
+   (`m1/logs/refcheck-c-control.log`).
+
+The prior vet ran the same binary without `rscrypto` on the x86_64 baseline build,
+ the `x86-64-v3` build,
+ and an aarch64 glibc build under QEMU,
+ with 0 mismatches each and its own control at 65,760 of 65,760
+ (prior report, "Reference equality").
+So all five finalists now agree with the C reference implementations on real aarch64 hardware,
+ not only under emulation.
+
+### Cross-architecture digest equality
+
+`lab/src/bin/corpusdigest.rs` prints,
+ per finalist and seed,
+ digests of 266 fixed synthetic inputs and an accumulator over every file in the benchmark corpus
+ (8,101 files, 152,231,070 bytes),
+ plus individual digests at lengths 0, 1, 63, 64, 128, 240, 241, 1,024, and 65,536.
+Run on the `x86-64-v4` build in the usual bounded container and on the `m1-generic` build
+ (`scripts/digest-run-x86.ts`, `scripts/m1-digest.ts`,
+ `m1/corpusdigest-v4.txt`, `m1/corpusdigest-m1-generic.txt`):
+
+- 60 of 60 output lines are byte identical between `x86_64-unknown-linux-gnu` and `aarch64-apple-darwin`.
+- Positive control,
+   `CORPUSDIGEST_CONTROL=flip` on the aarch64 side:
+   0 of 60 lines identical.
+
+This is HC3's cross-architecture half measured on silicon for the corpus meow would actually hash,
+ rather than inferred from emulation.
+The release-blocking aarch64 Linux targets are still covered by the QEMU suites
  ("Upstream suites")
- and from the prior vet's aarch64 and musl probes for the four reused finalists.
+ and by the prior vet's aarch64 and musl probes for the four reused finalists.
 
 ## Additional validation
 
@@ -2395,6 +2557,47 @@ The sweep ran on the `v4-gxref` build for the five finalists and `gxhash`
    under every seed,
    for example `30ecc446309af95305f3d807d3b2eec9` from two one-byte variants of the same 2,048-byte base.
   This reproduces the finding that removed it and keeps the harness honest.
+
+### Correctness gates re-run on aarch64 silicon
+
+HC8 and HC10 were re-run on the Apple M1,
+ on both builds,
+ with the same positive controls
+ (`scripts/m1-correctness.ts`, `m1/logs/`, `m1/correctness.txt`):
+
+- HC8,
+   the one-byte keyset at 4,096 bytes,
+   zero and random bases,
+   seeds 0, 1, and 987654321,
+   for the five finalists on `m1-native` and on `m1-generic`:
+   1,044,480 keys per result,
+   0 full-width, 0 low-half, and 0 high-half collisions in every one of the 60 results.
+- Positive control,
+   the same harness on `gxhash` on `m1-native`:
+   two full-width collisions on the zero base and one on the random base,
+   under every seed,
+   for example `16e7e83e37895468e6d238de457ff0c1` from positions 755 and 1,785 of the zero base.
+  So the collision harness looks on this architecture too.
+- HC10,
+   `streamcheck` over 612 input lengths,
+   14 chunkings each and 4 for the two inputs above 100,000 bytes:
+   8,548 chunkings compared with the one-shot per function,
+   0 failures for each of the five finalists,
+   on both builds.
+  The only failures in the run are Xoodyak's 5,155,
+   the same count and the same digests as on `x86-64-v4`,
+   which is the HC10 exit already recorded
+   ("Re-run of the correctness gates").
+- Positive control,
+   `STREAMCHECK_CONTROL=drop-last`,
+   which withholds the final input byte:
+   196,282 failures,
+   every function reporting 8,534 of 8,548.
+- `lab/src/bin/refcheck.rs` on both m1 builds:
+   4,261 checks,
+   0 failures,
+   with its `REFCHECK_CONTROL=flip` control at 4,261 of 4,261
+   ("Reference equality").
 
 ## Benchmarks
 
@@ -2687,14 +2890,241 @@ No finalist rating depends on this,
 
 ## S5: aarch64 evidence
 
-No aarch64 hardware ran in this vet
- (the one aarch64 machine in reach is powered off; "What an `ssh m1` run would add").
-S5 therefore rests on published third-party measurements,
- on source analysis of each candidate's aarch64 kernel,
- and on the QEMU correctness runs,
- and its ratings are ranges.
+S5 is measured.
+All five finalists ran on one aarch64 core,
+ an Apple M1,
+ on 2026-09-17 after the user powered the machine on for this measurement
+ ("The `ssh m1` run").
+The borrowed numbers the first version of this report rated S5 from are kept as superseded evidence
+ ("Measured aarch64 numbers from rscrypto's public CI", "aarch64 kernels by candidate"),
+ and they now serve as corroboration from a second aarch64 core rather than as the rating's basis.
+
+The measured core is `aarch64-apple-darwin` on an Apple Firestorm performance core,
+ not one of the release-blocking `aarch64-unknown-linux-gnu` and static-pie musl targets,
+ so what it measures is each crate's aarch64 NEON path on real hardware,
+ not the release-blocking targets themselves
+ ("Confidence and limits").
+
+### Measured on an Apple M1
+
+Host and discipline:
+ "Execution manifest", aarch64 measurement host.
+Workloads,
+ corpus,
+ harness,
+ rounds,
+ and run count are the ones the `x86-64-v4` campaign used,
+ on the identical corpus bytes
+ (`data/files.bin`, 8,101 files, 152,231,070 bytes,
+ SHA-256 `3d4a2f8f407e3dbc6e42e2ca4603f96a07ced3a121174a964492a43ff38df075` on both machines).
+
+Two builds ran,
+ five runs of two rounds each per build and workload,
+ 50 runs in all
+ (`scripts/m1-bench.ts`, `m1/bench/`, `m1/bench-summary.tsv`, `m1/bench-progress.txt`):
+
+- `m1-generic`:
+   `-Ctarget-cpu=generic`,
+   which compiles `neon` and nothing above the aarch64 baseline.
+  This is the build the S5 rating uses,
+   because the release-blocking aarch64 Linux targets enable `neon` only and leave
+   `aes`, `pmull`, `sha2`, `sha3`, and `crc` to run-time detection ("Context", target features).
+- `m1-native`:
+   the machine default for `aarch64-apple-darwin`,
+   which compiles `aes`, `sha2`, `sha3`, `crc`, and `dotprod` as well
+   (`lab/src/bin/backend.rs`, `m1/logs/`).
+
+Run-to-run band,
+ measured first on the unchanged build before anything is compared:
+ on `m1-generic` the median cell spans 0.3% between its slowest and fastest run,
+ the 90th percentile 1.9%,
+ the widest 2.5%;
+ on `m1-native` 1.9%, 3.1%, and 22.8%
+ (the widest is the `gxhash` control on `files`).
+The widest finalist bands are `twox-hash` on `files-stream64k` at 5.7% on `m1-native`
+ and `rscrypto` on `fp` at 1.7% on `m1-generic`.
+This machine is quieter than the x86 host,
+ whose median cell spans 1.9% and whose 90th percentile is 5.4% ("Run-to-run band").
+
+`m1-generic`,
+ medians of five runs, GiB/s, with the five-run range:
+
+- `files`, one call per tracked file:
+   `hashcrew` 30.910 [30.845, 30.926],
+   `twox-hash` 30.728 [30.698, 30.741],
+   `xxhash-rust` 29.859 [29.824, 29.886],
+   `rscrypto` 29.736 [29.703, 29.762],
+   (`museair` control 23.972),
+   `highway` 7.172 [7.167, 7.256],
+   AES-PMAC 3.937,
+   SHA-256 2.142 through `sha2`,
+   `blake3` 1.515,
+   `rscrypto` BLAKE3 1.454.
+- `files-stream64k`, a streaming hasher per file fed 64 KiB slices:
+   `hashcrew` 28.220 [28.171, 28.254],
+   `twox-hash` 27.508 [27.425, 27.526],
+   `rscrypto` 23.755 [23.715, 23.785],
+   `xxhash-rust` 21.273 [21.236, 21.279],
+   `highway` 7.107,
+   AES-PMAC 3.904,
+   SHA-256 2.131,
+   `blake3` 1.473.
+- `hot16k`, one cache-resident 16 KiB buffer:
+   `hashcrew` 32.952,
+   `twox-hash` 32.807,
+   `xxhash-rust` 31.923,
+   `rscrypto` 31.818,
+   (`museair` control 25.179),
+   `highway` 7.233.
+
+Geometric means of the three cells against the best finalist in each,
+ with the frozen overlap rule applied
+ (`scripts/m1-ratios.ts`):
+ `hashcrew` 1.000,
+ `twox-hash` 0.988,
+ `rscrypto` 0.921,
+ `xxhash-rust` 0.890,
+ `highway` 0.234.
+Ratings 4, 4, 4, 3, 0.
+
+`m1-native` gives the same five ratings from the same procedure:
+ `hashcrew` 1.000,
+ `twox-hash` 0.997,
+ `rscrypto` 0.901,
+ `xxhash-rust` 0.873,
+ `highway` 0.229.
+The fastest candidate in every cell is also the fastest finalist,
+ so the S5 rule's "fastest candidate on the same aarch64 core" and the S2 rule's "best finalist"
+ pick the same denominator here.
+
+Two things this measurement settles that no published number did:
+
+- `twox-hash` is at the top of the field on an aarch64 core measured here,
+   within 0.6% of `hashcrew` on whole files and within 2.6% on the streaming workload.
+- `hashcrew` and `highway`,
+   which had no published aarch64 throughput anywhere,
+   now have five-run medians:
+   `hashcrew` at the top,
+   `highway` at 0.23 of it,
+   which is below its x86 ratio of 0.28 and below the 0.25 threshold for a rating of 1.
+
+### The one large change from the x86 ordering
+
+`xxhash-rust` is fastest of the five on `files-stream64k` on the `x86-64-v4` build
+ (44.38 GiB/s, "S2 whole files, KiB to tens of MiB (weight 5)")
+ and slowest of the five on the same workload on the Apple M1
+ (21.273 against `hashcrew`'s 28.220).
+Its one-shot `files` number on the M1 is 29.859,
+ so its streaming path there runs at 0.71 of its own one-shot,
+ against 0.94 on `x86-64-v4`.
+This single cell is what moves its S5 rating from 4 to 3.
+
+What the source shows:
+ `xxhash-rust`'s streaming state re-enters its block-boundary routine every 256 bytes.
+`INTERNAL_BUFFER_SIZE` is 256 (`src/xxh3.rs:853`),
+ `INTERNAL_BUFFER_STRIPES` is therefore 4 (`src/xxh3.rs:886`),
+ and the bulk loop calls `xxh3_stateful_consume_stripes` for four stripes at a time,
+ advancing the input pointer by 256 bytes per call (`src/xxh3.rs:915-925`).
+`twox-hash` instead iterates stripes directly over the whole in-place run once its buffer is empty
+ (`src/xxhash3/streaming.rs:255-271`).
+The same two structures compile on both architectures,
+ so the difference in cost between them is not a dispatch difference;
+ this audit did not profile which part of the path accounts for it,
+ and states the structure rather than a cause.
+
+### Key composition on aarch64
+
+S1 is frozen to the `x86-64-v4` build ("Frozen soft criteria"),
+ so these numbers change no rating.
+They are recorded because they were measured and because they corroborate the S1 ordering.
+`m1-generic`, medians of five runs, GiB/s:
+
+- `fp`, fingerprint material of 70 to 242 bytes:
+   `xxhash-rust` 9.616,
+   `rscrypto` 8.601,
+   `twox-hash` 8.506,
+   `hashcrew` 5.039,
+   `highway` 2.592.
+- `keymat`, per-package key material of 50 bytes to 50 KiB:
+   `twox-hash` 31.387,
+   `hashcrew` 31.380,
+   `xxhash-rust` 31.068,
+   `rscrypto` 30.063,
+   `highway` 7.021.
+
+Geometric means against the best finalist:
+ `xxhash-rust` 0.995,
+ `twox-hash` 0.941,
+ `rscrypto` 0.926,
+ `hashcrew` 0.724,
+ `highway` 0.246,
+ which would map to 4, 4, 4, 3, 0.
+The x86 S1 means are 1.000, 0.929, 1.000, 0.691, 0.270.
+Both architectures put `xxhash-rust` first,
+ `twox-hash` and `rscrypto` close behind,
+ and `hashcrew` at about 0.7 because of its short-input scalar path.
+
+### Positive control for the build comparison
+
+The two builds give the five finalists the same ratings,
+ which is a null result,
+ so the harness is shown able to resolve a build difference in the same cells
+ (`AGENTS.md` rule `QPC`).
+On `files` it resolves these,
+ `m1-generic` against `m1-native`:
+
+- `cryptoxide` SHA-256:
+   0.205 against 2.006 GiB/s,
+   a factor of 9.8.
+- `scytale` SHA-256:
+   0.280 against 2.235,
+   a factor of 8.0.
+- AES-PMAC:
+   3.937 against 4.858.
+
+Those three select the Armv8 SHA-2 and AES extensions at compile time,
+ so the baseline build cannot reach them,
+ which is the same compile-time-selection effect the x86 builds show for `cryptoxide`
+ ("Execution manifest").
+In the same cells the five finalists move by at most 5%,
+ so the harness looked,
+ and the finalists' NEON paths really are build independent here.
+
+Absolute speeds are not comparable between the two builds:
+ the `m1-native` runs went first,
+ while the machine had more of the user's own load,
+ and the `m1-generic` runs are faster for almost every function for that reason.
+Only the within-build ratios feed a rating.
+
+### Thermal and load state
+
+The machine is a fanless `MacBookAir10,1`,
+ so a long campaign could throttle and make later runs slower.
+It did not:
+
+- `pmset -g therm` ran before and after all 50 runs,
+   100 probes,
+   and reported "No thermal warning level has been recorded" and
+   "No performance warning level has been recorded" every time,
+   with no `CPU_Speed_Limit` line in any of them
+   (`m1/bench-progress.txt`).
+- Swap in use was 0.00M at all 100 probes.
+- On `files`, the five `m1-generic` runs,
+   which came last in the campaign,
+   agree within 0.3% for every finalist
+   (`hashcrew` 30.92, 30.85, 30.93, 30.91, 30.84 GiB/s across runs 1 to 5).
+  The earlier `m1-native` runs drift by up to 4.6%
+   (`hashcrew` 31.18, 31.15, 29.75, 30.04, 30.38),
+   downward and then partly back up,
+   which is the user's own load rather than a thermal ramp:
+   a thermal ramp would not let the later build run faster and flatter than the earlier one.
+- Load averages recorded before and after each run range from 1.21 to 10.85 on this 8-core machine;
+   the machine was in use by its owner throughout.
 
 ### Measured aarch64 numbers from rscrypto's public CI
+
+Superseded as the basis for `xxhash-rust`'s and `rscrypto`'s S5 ratings,
+ kept as corroboration from a second aarch64 core of a different microarchitecture.
 
 `rscrypto` publishes criterion artifacts from its benchmark workflow.
 Run 34874736834 of 2026-09-14 was downloaded and parsed
@@ -2716,6 +3146,9 @@ Single-message throughput on aarch64, 1 MiB inputs:
    at 64 KiB both are 24.56;
    at 4 KiB `rscrypto` 24.37 and `xxhash-rust` 23.28.
   The two are the same algorithm with separate NEON kernels and land within a percent of each other.
+  The Apple M1 one-shot `files` numbers put the same pair within 0.4% of each other
+   (29.859 and 29.736),
+   so the one-shot parity of these two crates holds on both aarch64 cores measured.
 - SHA-256:
    `sha2` 1.687,
    `rscrypto` 1.687,
@@ -2743,51 +3176,77 @@ Single-message throughput on aarch64, 1 MiB inputs:
    the usable number from this source is the `blake3` crate's 1.61 GiB/s on aarch64.
 
 So on aarch64, as on `x86-64-v4`,
- XXH3-128 runs about 15 times the speed of the fastest cryptographic candidate measured there
- (24.5 against 1.69 for SHA-256 through SHA extensions, 1.61 for single-threaded BLAKE3).
+ XXH3-128 runs about 15 times the speed of the fastest cryptographic candidate.
+The Apple M1 measurement agrees:
+ XXH3-128 at 29.7 to 30.9 GiB/s on whole files against SHA-256 at 2.142 with the Armv8 SHA-2 extension,
+ `blake3` at 1.515,
+ and AES-PMAC at 3.937,
+ a factor of 8 to 20.
 
 ### aarch64 kernels by candidate
 
-Reused from the prior vet for the four crates it validated,
- and read in source for the new ones:
+Read in source,
+ and now paired with the measured number for each crate:
 
 - `xxhash-rust`:
    NEON stripe accumulator under `cfg(target_feature = "neon")`,
    which every `aarch64-unknown-linux-*` target enables
    (`src/xxh3.rs:55`, `:252-268`).
-  Now also measured: 24.59 GiB/s (above).
+  Measured: 29.859 GiB/s one-shot, 21.273 streaming.
 - `twox-hash`:
    NEON accumulate and scramble kernels (`src/xxhash3/large/neon.rs`),
    selected at run time.
-  Upstream publishes an Apple M1 Max comparison
+  Measured: 30.728 one-shot, 27.508 streaming.
+  Superseded evidence:
+   upstream's Apple M1 Max comparison
    (`comparison/README.md`, "xxHash3 (128-bit)", "Oneshot hashing"):
    Rust 34.4 GiB/s,
    C with NEON 34.6,
    C scalar 21.3,
    for 256 KiB to 4 MiB buffers.
+  That table rated S5 at 4 in the first version of this report;
+   it is now corroboration only,
+   and the local measurement agrees with its shape,
+   parity with the C NEON reference,
+   on a smaller M1 and a different workload mix.
 - `hashcrew`:
    NEON kernels (`src/xxhash/kernel/neon.rs`),
    selected at compile time because aarch64 enables NEON
    (`src/xxhash/kernel/mod.rs:98-104`),
    so the run-time dispatch it pays on x86_64 does not apply there.
-  No published aarch64 throughput.
+  The `backend` probe confirms it on both m1 builds:
+   `selected_backend=Neon`
+   (`m1/logs/`).
+  Measured: 30.910 one-shot, 28.220 streaming, the fastest finalist in every S5 cell.
 - `rscrypto`:
    NEON kernel in `src/hashes/fast/xxh3/aarch64_neon.rs` with run-time detection in `src/platform/detect`.
-  Measured above.
+  Measured: 29.736 one-shot, 23.755 streaming.
 - `highway`:
    a NEON implementation of the four-lane update with `vmull_u32` multiplies (`src/aarch64.rs`),
    used unconditionally on aarch64.
   The README claims "> 10 GB/s with SIMD (SSE 4.1 AVX 2, NEON)" without naming a machine or input size;
    `assets/highway.csv` holds x86 results only.
+  Measured: 7.172 one-shot, 7.107 streaming, 7.233 on the hot buffer,
+   so on this core it stays between 6.9 and 7.3 GiB/s whatever the workload,
+   and it sits at 0.23 of XXH3-128 there.
 - Cryptographic candidates:
    `sha2`, `rscrypto`, `graviola`, `purecrypto`, `bitcoin_hashes`, and `scytale` use the Armv8 SHA-2 extension;
    `sha2` and `rscrypto` use the Armv8.2 SHA-512 instructions;
    `aes` uses the Armv8 AES extension;
    `keccak` uses the Armv8.2 SHA-3 extension;
    `cubehash` and `xoodyak` use NEON.
-  The measured aarch64 numbers above cover SHA-256, SHA-512, SHA-3, and BLAKE3,
-   and they place every cryptographic candidate between 1 and 2 GiB/s,
-   an order of magnitude under XXH3-128 on the same core.
+  Measured on `m1-generic`, `files`:
+   SHA-256 at 2.043 to 2.142 GiB/s,
+   SHA-512 at 1.338 to 1.339,
+   `graviola` SHA-512 at 0.467,
+   CubeHash at 0.394,
+   Xoodyak at 0.124,
+   and `purecrypto` SHA-256 at 1.298.
+  `cryptoxide` and `scytale` reach 0.205 and 0.280 on that build because they select the SHA-2
+   extension at compile time,
+   and 2.006 and 2.235 on `m1-native` where the build enables it.
+  Every cryptographic candidate is an order of magnitude under XXH3-128 on the same core,
+   as the published numbers had indicated.
 
 ## Quality and stability assurance
 
@@ -3039,16 +3498,26 @@ Ratings, with the evidence each rests on:
 - S4 multi-core ("S4 multi-core hashing of one large input (weight 1)"):
    all five 1 high;
    no XXH3-128 or HighwayHash crate offers a parallel mode whose output equals its sequential output.
-- S5 aarch64 ("S5: aarch64 evidence"):
-   `xxhash-rust` 4 high and `rscrypto` 4 high,
-   both measured on the same aarch64 core at 24.59 and 24.53 GiB/s;
-   `twox-hash` 4 medium,
-   measured on an Apple M1 Max at 34.4 GiB/s against the C NEON reference's 34.6 on that machine,
-   which is parity on a core this vet did not measure itself;
-   `hashcrew` 2 to 4 (midpoint 3) low,
-   NEON kernel selected without dispatch on aarch64 but no published or local measurement;
-   `highway` 1 to 3 (midpoint 2) low,
-   no aarch64 measurement and an x86 ratio between 0.21 and 0.59.
+- S5 aarch64,
+   now measured rather than borrowed
+   ("S5: aarch64 evidence"),
+   from the geometric means of the `files`, `files-stream64k`, and `hot16k` cells on the `m1-generic` build,
+   rated by the same mechanical rule and confidence rule as S1, S2, S3, and S12:
+   `hashcrew` 4 high (1.000),
+   `twox-hash` 4 high (0.988),
+   `rscrypto` 4 medium (0.921, within 0.03 of the threshold),
+   `xxhash-rust` 3 medium (0.890),
+   `highway` 0 medium (0.234).
+  The `m1-native` build yields the same five ratings.
+  Superseded inputs,
+   kept visible:
+   `xxhash-rust` 4 high and `rscrypto` 4 high from rscrypto's public CI on an AWS `c9g.2xlarge`;
+   `twox-hash` 4 medium from upstream's Apple M1 Max table;
+   `hashcrew` 2 to 4 (midpoint 3) low and `highway` 1 to 3 (midpoint 2) low from source analysis alone.
+  The two inputs that changed rating are `xxhash-rust`,
+   from 4 to 3 on its streaming cell,
+   and `highway`,
+   from a midpoint of 2 to a measured 0.
 - S6 quality beyond HC8 ("SMHasher3 (S6 evidence)"):
    the four XXH3-128 crates share one rating,
    2 medium,
@@ -3097,153 +3566,245 @@ Totals:
 
 - `twox-hash` 85 of 92 (92.4%).
 - `rscrypto` 83.5 (90.8%), range 83 to 84.
-- `xxhash-rust` 82 (89.1%).
-- `hashcrew` 74 (80.4%), range 68 to 80.
-- `highway` 46 (50.0%), range 41 to 51.
+- `hashcrew` 79 (85.9%), range 78 to 80.
+- `xxhash-rust` 77 (83.7%).
+- `highway` 36 (39.1%).
+
+Totals before the aarch64 measurement,
+ for comparison
+ (`data/ratings-before-m1.json`, `data/score-before-m1.txt`):
+ `twox-hash` 85,
+ `rscrypto` 83.5,
+ `xxhash-rust` 82,
+ `hashcrew` 74,
+ `highway` 46.
+The measurement left the top two totals unchanged,
+ raised `hashcrew` by 5 points,
+ lowered `xxhash-rust` by 5,
+ and lowered `highway` by 10.
 
 ## Sensitivity
 
-97 one-at-a-time tests
+96 one-at-a-time tests
  (`data/score.txt`):
  each weight-1 criterion raised to 2, 3, 4, and 5;
  S2, S3, and S5 lowered to 4, 3, 2, and 1;
  S5 raised to 10 as the defined extra test;
  every medium-confidence exact rating moved one step down and up;
  both endpoints of every low-signal range.
+The count fell from 97 because the aarch64 measurement replaced two low-signal S5 ranges
+ and two medium-confidence S5 ratings with measured ones,
+ which generates fewer step tests.
 
-Six tests change the order or produce a tie,
- and only one changes the winner:
+No test changes the winner.
+Seventeen change the order below first place or produce a tie:
 
-- `rating twox-hash.S5 4->3`:
-   `rscrypto` 90.8 > `xxhash-rust` 89.1 > `twox-hash` 87.0 > `hashcrew` 80.4 > `highway` 50.0.
-  This is the single input that moves the top place,
-   and it is the one aarch64 rating that rests on a measurement from a core this vet did not measure
-   ("What an `ssh m1` run would add").
-- `weight S9=3`, `S9=4`, and `S9=5`:
-   `xxhash-rust` moves ahead of `rscrypto` into second place;
+- `rating rscrypto.S5 4->3`:
+   `twox-hash` 92.4 > `hashcrew` 85.9 > `rscrypto` 85.3 > `xxhash-rust` 83.7 > `highway` 39.1.
+- `rating xxhash-rust.S5 3->4`:
+   `twox-hash` 92.4 > `rscrypto` 90.8 > `xxhash-rust` 89.1 > `hashcrew` 85.9 > `highway` 39.1.
+- `weight S9=4` and `S9=5`:
+   `hashcrew` moves ahead of `rscrypto` into second place;
    `twox-hash` stays first.
-- `weight S11=4`:
-   `rscrypto` and `xxhash-rust` tie for second;
-   at `S11=5` `xxhash-rust` takes second.
-- No test moves `hashcrew` or `highway` out of fourth and fifth place.
+- `weight S1=2` through `S1=5`,
+   `weight S11=3` through `S11=5`,
+   `weight S12=3` through `S12=5`,
+   and `weight S5=3`, `S5=2`, `S5=1`:
+   `xxhash-rust` moves ahead of `hashcrew` into third place,
+   with an exact tie at `S1=2`, `S11=3`, `S12=3`, and `S5=3`.
 
 Closest margins:
 
 - `twox-hash` over `rscrypto`:
-   the `twox-hash` S5 step down, which reverses the pair by 3.50 points on the 92-point scale.
-- `rscrypto` over `xxhash-rust`:
-   `S9` raised to 5, which reverses the pair by 2.13 points.
-- `xxhash-rust` over `hashcrew`:
-   `hashcrew`'s S5 range at its upper endpoint, which still leaves `xxhash-rust` ahead by 3.00 points.
-- `hashcrew` over `highway`:
-   S2 lowered to 1, which still leaves `hashcrew` ahead by 19.37 points.
+   `rating twox-hash.S1 4->3`,
+   which still leaves `twox-hash` ahead by 0.50 points on the 92-point scale.
+- `rscrypto` over `hashcrew`:
+   `weight S9=5`, which reverses the pair by 2.98 points.
+- `hashcrew` over `xxhash-rust`:
+   `weight S1=5`, which reverses the pair by 5.11 points.
+- `xxhash-rust` over `highway`:
+   `weight S6=5`, which still leaves `xxhash-rust` ahead by 31.52 points.
 
-Winners across all 97 tests:
- `twox-hash` and `rscrypto`.
-Lowering S2, S3, or S5,
- raising S5 to 10,
- and every other rating step leave `twox-hash` first.
+Winners across all 96 tests:
+ `twox-hash` alone.
+Before the aarch64 measurement the winners were `twox-hash` and `rscrypto`,
+ because `rating twox-hash.S5 4->3` reversed the top pair
+ (`data/score-before-m1.txt`).
+That test no longer exists:
+ `twox-hash`'s S5 rating is now measured at 0.988 of the fastest finalist on the measured core,
+ far enough from the 0.90 threshold to be high confidence,
+ and the frozen procedure steps only medium-confidence and low-confidence ratings.
+
+### Extra defined test: transfer between aarch64 cores
+
+The frozen matrix no longer steps `twox-hash`'s or `hashcrew`'s S5 rating,
+ so it does not by itself answer what a transfer error between the measured Apple Firestorm core
+ and a release-blocking Linux aarch64 core would do.
+One extra test outside the frozen matrix answers it
+ (`scripts/score-extra.ts`):
+
+- `twox-hash.S5` stepped to 3:
+   `rscrypto` 90.8 > `twox-hash` 87.0 > `hashcrew` 85.9 > `xxhash-rust` 83.7 > `highway` 39.1.
+  The top pair reverses.
+- `twox-hash.S5` stepped to 2:
+   `rscrypto` 90.8 > `hashcrew` 85.9 > `xxhash-rust` 83.7 > `twox-hash` 81.5 > `highway` 39.1.
+- `hashcrew.S5` stepped to 3:
+   `twox-hash` 92.4 > `rscrypto` 90.8 > `xxhash-rust` 83.7 > `hashcrew` 80.4 > `highway` 39.1.
+  The winner is unchanged.
+
+So the structural fragility of the top pair did not go away;
+ what changed is what it now rests on.
+Reversing it needs `twox-hash`'s true aarch64 ratio on a release-blocking core to fall below 0.90,
+ that is a relative regression of more than 9% against the fastest finalist on that core,
+ where the measured Apple M1 figure is 0.988 and upstream's Apple M1 Max table puts it at parity
+ with the C NEON reference.
+The one aarch64 pairing with numbers from two different cores,
+ `xxhash-rust` against `rscrypto`,
+ holds its one-shot relation on both
+ (24.59 against 24.53 on an AWS `c9g.2xlarge`,
+ 29.859 against 29.736 on the Apple M1),
+ which is evidence that relative XXH3-128 ratios do transfer between aarch64 cores,
+ for the one pair that can be checked.
 
 ## Ranking
 
-`twox-hash` > `rscrypto` > `xxhash-rust` > `hashcrew` > `highway`.
+`twox-hash` > `rscrypto` > `hashcrew` > `xxhash-rust` > `highway`.
+
+The aarch64 measurement swapped third and fourth place.
+Before it,
+ the order was `twox-hash` > `rscrypto` > `xxhash-rust` > `hashcrew` > `highway`
+ ("Scoring", totals before the aarch64 measurement).
 
 Reason for each adjacent pair:
 
 - `twox-hash` over `rscrypto`:
-   they tie on all three weight-5 criteria at the recorded ratings,
+   they tie on all three weight-5 criteria,
+   now including a measured aarch64 rating of 4 each,
    so the pair is decided by the weight-1 criteria,
    where `twox-hash` leads on auditability
    (1,533 lines on the used path against 7,496 inside a 177,154-line crate)
    and on maintenance
    (eleven years and 53.4M recent downloads against four months and 1,108),
    while `rscrypto` ties it on every other criterion and leads on none.
-  The margin is 1.5 points of 92,
-   and it reverses if `twox-hash`'s aarch64 rating is one step lower than recorded,
-   which is the one open measurement in this vet.
-- `rscrypto` over `xxhash-rust`:
-   both have measured aarch64 parity and equal S2 and S3 ratings,
-   and `rscrypto` is ahead on the non-blocking builds
-   (0.959 against 0.747, because it detects AVX2 at run time while `xxhash-rust` selects at compile time),
-   on stability assurance,
-   and on upstream verification;
-   `xxhash-rust` is ahead on auditability and maintenance.
-  The margin is 1.5 points and reverses when auditability carries weight 5.
-- `xxhash-rust` over `hashcrew`:
-   equal on S2 and S3,
-   but `xxhash-rust` is measured on aarch64 while `hashcrew` has no aarch64 measurement at all,
-   and `xxhash-rust` is nearly twice as fast on the short-input key composition workload
-   (11.47 against 6.29 GiB/s)
-   and much faster on the non-blocking builds (0.747 against 0.509).
-  The margin holds even at `hashcrew`'s most favourable aarch64 endpoint.
-- `hashcrew` over `highway`:
-   `hashcrew` computes XXH3-128 at the top of the field on whole files,
-   while `highway` reaches 0.28 of it there and 0.76 on the multi-GB cells;
+  The margin is 1.5 points of 92.
+  No test in the frozen matrix reverses it;
+   the extra transfer test does,
+   if `twox-hash`'s true aarch64 ratio on a release-blocking core is a full rating step below what was
+   measured here
+   ("Sensitivity", extra defined test).
+- `rscrypto` over `hashcrew`:
+   equal on all three weight-5 criteria,
+   so again the weight-1 criteria decide.
+  `rscrypto` leads on key composition (4 against 2),
+   stability assurance (4 against 3),
+   upstream verification (4 against 3),
+   the non-blocking x86 builds (4 against 2),
+   and maintenance (2.5 against 2);
+   `hashcrew` leads only on auditability (4 against 2).
+  The margin is 4.5 points,
+   and it reverses when auditability carries weight 4.
+- `hashcrew` over `xxhash-rust`:
+   this is the pair the measurement moved.
+  `hashcrew` is the fastest finalist in all three aarch64 cells and rates 4 there,
+   while `xxhash-rust` rates 3 because its streaming path on that core runs at 0.71 of its own one-shot
+   (21.273 against 29.859 GiB/s),
+   which is worth 5 points at weight 5.
+  `xxhash-rust` takes back 4 of them on key composition (4 against 2),
+   maintenance (3 against 2),
+   and the non-blocking x86 builds (3 against 2).
+  The margin is 2 points,
+   the smallest in the ranking after the top pair.
+  It ties when key composition,
+   maintenance,
+   or the non-blocking builds carries weight 3,
+   or when aarch64 throughput is lowered to 3,
+   and reverses at weight 4 or more for the first three and at weight 2 or less for aarch64 throughput.
+- `xxhash-rust` over `highway`:
+   `xxhash-rust` computes XXH3-128 at the top of the field on whole files on both architectures,
+   while `highway` reaches 0.28 of it on `x86-64-v4` and 0.23 on the Apple M1,
+   which is now a measured 0 rather than a source-analysis range;
    `highway`'s only advantage is SMHasher3 quality,
    worth one point at weight 1.
-  The margin is 28 points.
+  The margin is 41 points.
 
 Pros and cons:
 
 - `twox-hash` 2.1.4 (MIT).
   Pros:
    top or within band on every measured x86-64 workload;
+   within 0.6% of the fastest finalist on whole files,
+   and 2.6% on streaming,
+   on the aarch64 core measured here,
+   which is the only crate-to-crate aarch64 comparison this vet ran itself;
    run-time dispatch, so the non-blocking builds keep AVX2 speed;
-   the strongest published aarch64 evidence of the five
-   (parity with the C NEON reference on an Apple M1 Max);
    property tests against the C library for every kernel, plus Miri in upstream CI;
+   agrees with the C xxHash reference in the 82,200-comparison aarch64 run;
    eleven years of releases and 53.4M recent downloads;
    `rand` and `serde` are its only dependencies and both are optional.
   Cons:
-   its aarch64 number comes from a machine this vet did not measure;
+   the aarch64 core measured is `aarch64-apple-darwin`, not a release-blocking Linux target,
+   and a full rating step of transfer error there would hand first place to `rscrypto`;
    one maintainer;
    the XXH3-128 quality profile (36 SMHasher3 failures) is shared with the other XXH3 crates;
    no library parallel mode.
 - `rscrypto` 0.9.0 (MIT OR Apache-2.0).
   Pros:
-   measured aarch64 parity with `xxhash-rust` on the same core;
+   one-shot aarch64 parity with `xxhash-rust` on two different aarch64 cores,
+   and ahead of it on the streaming workload on the core measured here;
+   rates 4 on all three weight-5 criteria;
    run-time dispatch with the best non-blocking-build behaviour;
    the most extensive upstream verification of the five,
-   including a differential fuzz target for XXH3 against `xxhash-rust` that ran 46.8M executions here without a finding;
+   including a differential fuzz target for XXH3 against `xxhash-rust` that ran 46.8M executions here
+   without a finding;
    a stated portable reference path that its SIMD and assembly kernels are tested against;
    its BLAKE3 and SHA-2 are in the same crate if meow ever needs a cryptographic key.
   Cons:
    four months old with 1,108 recent downloads and one maintainer;
    the XXH3 path is 7,496 lines inside a 177,154-line cryptography suite,
    so an audit covers much more code than a single-purpose crate;
+   its aarch64 geometric mean of 0.921 is the closest of the four XXH3 crates to a rating step down;
    an MSRV of 1.91.0;
    a fast release cadence (16 releases in four months) means more version churn.
+- `hashcrew` 0.3.0 (Apache-2.0).
+  Pros:
+   top of the field on whole files and multi-GB streaming on `x86-64-v4`,
+   and the fastest finalist in every aarch64 cell measured here;
+   its aarch64 kernel is selected at compile time, so it pays no dispatch there,
+   which the `backend` probe confirms on the machine;
+   the smallest disciplined source surface of the five (1,511 lines, denied undocumented `unsafe`);
+   Miri with strict provenance in upstream CI;
+   agrees with the C xxHash reference in the 82,200-comparison aarch64 run.
+  Cons:
+   two weeks old with 202 recent downloads;
+   half the speed of `xxhash-rust` on the short-input workload on both architectures;
+   0.40 and 0.34 of the best finalist on the baseline and `x86-64-v2` builds,
+   although its backend probe reports AVX2 in every build;
+   a maintenance rating that still rests on weeks of history.
 - `xxhash-rust` 0.8.18 (BSL-1.0).
   Pros:
-   fastest on the short-input and streaming workloads and measured fastest on aarch64;
+   fastest on the short-input workloads on both architectures;
+   within band of the fastest finalist on whole files on both;
    1,396 lines on the used path with no runtime dependencies;
    29.6M recent downloads over five years.
   Cons:
+   slowest of the five on the aarch64 streaming workload,
+   at 0.75 of the fastest finalist and 0.71 of its own one-shot on the same core,
+   which is what costs it third place;
    compile-time kernel selection,
    so the baseline and `x86-64-v2` builds run its SSE2 kernel at 0.64 and 0.66 of the best finalist;
    no property tests, no fuzz target, and no Miri in upstream CI;
    no written output-stability promise of its own beyond the XXH3 specification.
-- `hashcrew` 0.3.0 (Apache-2.0).
-  Pros:
-   top of the field on whole files and multi-GB streaming;
-   the smallest disciplined source surface of the five (1,511 lines, denied undocumented `unsafe`);
-   Miri with strict provenance in upstream CI.
-  Cons:
-   two weeks old with 202 recent downloads;
-   half the speed of `xxhash-rust` on the short-input workload;
-   0.40 and 0.34 of the best finalist on the baseline and `x86-64-v2` builds,
-   although its backend probe reports AVX2 in every build;
-   no aarch64 measurement anywhere.
 - `highway` 1.3.0 (MIT).
   Pros:
    the only finalist that passes every SMHasher3 test;
    a fuzz target comparing its kernels with the C implementation;
-   a frozen algorithm with reference vectors.
+   a frozen algorithm with reference vectors;
+   agrees with the C HighwayHash reference on aarch64 silicon.
   Cons:
-   0.28 of XXH3-128 on whole files and 0.21 on the hot buffer;
+   0.28 of XXH3-128 on whole files on `x86-64-v4` and a measured 0.23 on the Apple M1,
+   which is below the threshold for a rating of 1 on aarch64;
    207 `unsafe` items across 2,955 lines with no safety comments;
-   no release in the last year;
-   no aarch64 measurement.
+   no release in the last year.
 
 ## Recommendation
 
@@ -3263,10 +3824,11 @@ Under that reading the deciding evidence is throughput on the release-blocking b
    the fastest cryptographic or AES-based candidate, AES-PMAC over AES-NI and VAES, at 5.9,
    BLAKE3 at 4.6,
    SHA-256 with the SHA extensions at 2.3.
-- aarch64, measured on published CI artifacts for the same crate versions:
-   XXH3-128 at 24.5 GiB/s,
-   SHA-256 at 1.69,
-   single-threaded BLAKE3 at 1.61.
+- Whole files, measured on an Apple M1 aarch64 core:
+   XXH3-128 at 29.7 to 30.9 GiB/s,
+   AES-PMAC at 3.9,
+   SHA-256 with the Armv8 SHA-2 extension at 2.1,
+   BLAKE3 at 1.5.
 - Multi-GB from disk, warm page cache:
    XXH3-128 at 13.1 to 15.4 GiB/s,
    BLAKE3 at 5.4,
@@ -3274,21 +3836,39 @@ Under that reading the deciding evidence is throughput on the release-blocking b
    cold, storage bounds every candidate to the same 0.33 to 1.59 GiB/s.
 
 So making cryptographic hashes eligible did not change the answer's shape:
- they lose on the weight-5 criteria by factors of 8 to 15,
+ they lose on the weight-5 criteria by factors of 8 to 20,
  and no weight-1 criterion can recover that.
-The open question the premise change did move is which XXH3-128 crate,
- and there the top three are within 3 points of 92.
+The open question the premise change moved is which XXH3-128 crate,
+ and there the top two are within 1.5 points of 92.
 
 Confidence:
  high that the recommended function is XXH3-128;
- moderate that the recommended crate is `twox-hash` rather than `rscrypto`,
- because one rating step in one low-signal criterion reverses that pair
+ moderate that the recommended crate is `twox-hash` rather than `rscrypto`.
+The aarch64 measurement raised that confidence without settling it.
+Before it,
+ one test in the frozen sensitivity matrix reversed the top pair,
+ and that test rested on a borrowed number.
+Now no test in the matrix reverses it,
+ and `twox-hash` wins all 96
  ("Sensitivity").
+What remains is the architecture proxy:
+ the measured core is `aarch64-apple-darwin` on an Apple Firestorm core,
+ and a full rating step of transfer error to a release-blocking Linux aarch64 core would still hand
+ first place to `rscrypto`
+ ("Sensitivity", extra defined test).
 
-If the user prefers to decide the crate on evidence rather than on the 1.5-point margin,
- the one measurement that would settle it is an aarch64 run of all five finalists on one core
- ("What an `ssh m1` run would add").
-Nothing else in the matrix moves the top place.
+Both crates in contention produce the identical XXH3-128 digest,
+ which this vet now confirms on both architectures against the C reference
+ ("Reference equality"),
+ so choosing one and switching later costs one cache rebuild and no format change.
+
+The measurement that would remove the remaining proxy is a run of the same five finalists on a
+ release-blocking aarch64 Linux target,
+ on hardware rather than under QEMU.
+No such machine is in reach here;
+ the closest available substitute would be a rented Arm Linux instance,
+ which this vet did not use because renting infrastructure is not an authorized action
+ ("Confidence and limits").
 
 ## Risks and usage rules for XXH3-128
 
@@ -3342,23 +3922,47 @@ Usage rules:
 
 ## Confidence and limits
 
-- No aarch64 hardware ran.
-  S5 rests on third-party measurements
-   (rscrypto's public CI artifacts, upstream's Apple M1 Max comparison for `twox-hash`)
-   and on source analysis,
-   so its ratings are ranges and the sensitivity matrix tests both endpoints.
-  This is the largest single source of uncertainty in the ranking,
-   because S5 carries weight 5 under the changed premises.
-- The aarch64 correctness evidence is QEMU,
-   not silicon.
-  A hard-gate failure that only real NEON hardware would show cannot be excluded.
-- Another agent was building and testing on this host during part of the benchmark campaign.
+- The aarch64 hardware that ran is not a release-blocking target.
+  S5 is measured on an Apple M1 through `aarch64-apple-darwin`,
+   while the release-blocking aarch64 targets are `aarch64-unknown-linux-gnu`
+   and the static-pie musl target.
+  What transfers is each crate's aarch64 NEON path,
+   which is the same code on both operating systems;
+   what does not transfer automatically is the microarchitecture,
+   an Apple Firestorm core against the Neoverse-class cores those targets usually run on.
+  This is the largest remaining uncertainty in the ranking,
+   because S5 carries weight 5 and because a one-step transfer error on `twox-hash` reverses first place
+   ("Sensitivity", extra defined test).
+  The one pair with numbers from two different aarch64 cores,
+   `xxhash-rust` against `rscrypto`,
+   keeps its relation on both,
+   which is evidence for transfer but covers one pair only.
+- The aarch64 correctness evidence is now silicon,
+   not only QEMU:
+   82,200 comparisons with the C reference implementations,
+   the one-byte collision sweep,
+   the chunking-equality sweep,
+   and byte-identical digests against the x86 build over the whole corpus,
+   each with a positive control
+   ("Reference equality", "Additional validation").
+  What remains emulated is the release-blocking Linux aarch64 target itself,
+   including its musl static-pie link.
+- The aarch64 machine was in use by its owner during the campaign.
+  Load averages, thermal state, and swap are recorded before and after every run,
+   the ratings use per-cell medians of five runs,
+   and the run-to-run band is measured first on an unchanged build,
+   but individual runs on the `m1-native` build are noisier than the `m1-generic` ones
+   ("S5: aarch64 evidence", thermal and load state).
+- No multi-GB or multi-core workload ran on aarch64.
+  S3 and S4 stay x86-only,
+   as frozen,
+   and the 16 GiB memory cap on that machine rules out repeating them there
+   (`AGENTS.md` rule `HRM`).
+- Another agent was building and testing on the x86 host during part of the benchmark campaign.
   Load average is recorded before and after every run
    (`data/bench/progress-a.txt`),
-   the ratings use per-cell medians of five runs,
-   and the run-to-run band is measured on the unchanged release-blocking build,
-   but individual runs are noisier than they would be on an idle host.
-- The cold multi-GB numbers are storage-bound on this host,
+   and the ratings use per-cell medians of five runs.
+- The cold multi-GB numbers are storage-bound on the x86 host,
    so they separate candidates only where a candidate is slower than the storage path.
 - `rscrypto`'s published aarch64 and x86 BLAKE3 rows are multi-threaded on the rscrypto side
    and single-threaded on the `blake3` side,
@@ -3374,53 +3978,98 @@ Usage rules:
    (`hashcrew` first published 2026-09-02, `rscrypto` 2026-05-02),
    so their maintenance ratings rest on weeks or months of history rather than years.
 
-## What an `ssh m1` run would add
+## The `ssh m1` run
 
-The m1 was not contacted.
-It is powered off,
- and this vet treats it as unreachable;
- nothing here probed it.
-By its name it is an Apple M1,
- which would be measured through `aarch64-apple-darwin`,
- not through the release-blocking Linux aarch64 targets.
+The user powered the machine on for this measurement on 2026-09-17 and asked for it to be measured.
+This section records what the run did,
+ what it changed,
+ and what it left on the machine.
 
-Under the new rubric S5 carries weight 5 rather than 1,
- so the answer to whether an m1 run could change the ranking is different from the prior vet's:
+### What it changed in this report
 
-- It could change the top place,
-   and it is the only input in the sensitivity matrix that does.
-  `twox-hash` leads `rscrypto` by 1.5 points of 92 on the strength of an S5 rating of 4
-   that rests on upstream's Apple M1 Max table rather than on a measurement taken here;
-   one step down on that rating reverses the pair
+- S5 stopped being the one criterion rated from borrowed numbers and source reading.
+  All five finalists now have five-run medians on one aarch64 core,
+   on two builds,
+   with the run-to-run band measured first on an unchanged build
+   ("S5: aarch64 evidence").
+- Two S5 ratings moved:
+   `xxhash-rust` from 4 to 3,
+   because its streaming path on that core runs at 0.75 of the fastest finalist;
+   `highway` from a source-analysis midpoint of 2 to a measured 0.
+  `hashcrew`'s low-signal range of 2 to 4 collapsed to a measured 4,
+   the top of the aarch64 field.
+- The ranking's third and fourth places swapped:
+   `hashcrew` 85.9% now leads `xxhash-rust` 83.7%.
+  First and second are unchanged.
+- The sensitivity matrix no longer has a test that changes the winner.
+  Before the run,
+   `rating twox-hash.S5 4->3` handed first place to `rscrypto`,
+   and that rating rested on upstream's Apple M1 Max table.
+  `twox-hash`'s aarch64 rating is now measured at 0.988 of the fastest finalist,
+   which is high confidence under the frozen rule,
+   so the frozen procedure no longer steps it
    ("Sensitivity").
-- It would replace three low-signal inputs with measurements:
-   `twox-hash`'s aarch64 speed on a core this vet measured itself,
-   `hashcrew`'s aarch64 speed,
-   which has no published number anywhere,
-   and `highway`'s.
-  `xxhash-rust` and `rscrypto` already have same-core aarch64 numbers
-   from rscrypto's public CI artifacts for exactly the versions measured here.
-- It would also put all five finalists on one core,
-   which is what the S5 rating rule asks for and which no current evidence provides.
+- The aarch64 correctness evidence moved from emulation to silicon:
+   82,200 comparisons with the C xxHash and HighwayHash references, 0 mismatches;
+   the one-byte collision sweep and the chunking-equality sweep clean for all five finalists;
+   and byte-identical digests against the `x86-64-v4` build over the whole 152,231,070-byte corpus.
+  Each has a positive control that failed as designed
+   ("Reference equality", "Additional validation").
 
-Recommendation on powering it on:
- do it only if the user wants the crate choice decided by measurement rather than by the recorded margin.
-The decision does not otherwise need it:
+### What it did not settle
 
-- The function (XXH3-128) is settled by factors of 8 to 15 on measured x86-64 and aarch64 evidence,
-   and no aarch64 run can overturn that.
-- Both crates in contention pass every hard gate,
-   and both produce the identical XXH3-128 digest,
-   so switching later costs one cache rebuild and no format change.
-- An Apple M1 measures `aarch64-apple-darwin`,
-   which is not a release-blocking target;
-   it is a proxy for the Linux aarch64 kernels rather than a measurement of them.
+An Apple M1 measures `aarch64-apple-darwin`.
+The release-blocking aarch64 targets are `aarch64-unknown-linux-gnu` and the static-pie musl target,
+ and neither ran on hardware here.
+A full rating step of transfer error on `twox-hash` between those cores would still reverse the top pair
+ ("Sensitivity", extra defined test),
+ so the crate choice rests on a measurement plus a transfer assumption rather than on a measurement alone.
 
-If it is powered on,
- the useful run is small:
- build the lab crate for `aarch64-apple-darwin`,
- run the `files`, `files-stream64k`, `hot16k`, and `keymat` workloads for the five finalists,
- and run `onebyte` and `streamcheck` once for cross-architecture equality.
-Heavy work belongs on `/Volumes/MacData` rather than the internal SSD,
- and the machine's 16 GiB of memory rules out the multi-GB in-memory workloads
- (`AGENTS.md` rule `HRM`).
+The multi-GB and multi-core workloads did not run there:
+ S3 and S4 are frozen to the x86 host,
+ and the machine's 16 GiB cap rules them out anyway.
+
+### What was installed, and what was left behind
+
+Everything the measurement needed was installed under `/Volumes/MacData`,
+ per `AGENTS.md` rule `HRM`:
+
+- The pinned toolchain `nightly-2026-09-12` into a scratch `RUSTUP_HOME`
+   at `/Volumes/MacData/agent/hashvet2-m1-2026-09-17/rustup`,
+   minimal profile,
+   452 MiB.
+- A scratch `CARGO_HOME` (133 MiB) and the build directories (171 MiB),
+   with `CACHEDIR.TAG` in each,
+   plus the transferred corpus (146 MiB) and the probe crates;
+   921 MiB for the whole tree.
+- Crate sources fetched from `index.crates.io` into that scratch `CARGO_HOME`.
+  Registry requests carry Cargo's own user agent and no identifying information.
+- No system package manager,
+   no change to the machine's own `~/.cargo/bin` toolchain,
+   and no change to its default-toolchain setting.
+
+One unintended write to the internal SSD happened and was undone.
+A chained probe command carried `RUSTUP_HOME` on its first step only,
+ so the `rustc` proxy on its second step resolved against the machine's own `~/.rustup`
+ and auto-installed `nightly-2026-09-12` there with the default profile, 1.4 GB
+ (`doc/troubleshooting/rustup-proxy-auto-install-default-home.md`).
+It was removed with `rustup toolchain uninstall nightly-2026-09-12-aarch64-apple-darwin`;
+ `~/.rustup` is back to its own `nightly-aarch64-apple-darwin` at 1.8 GB,
+ and `~/.rustup/settings.toml` still names that toolchain as the default,
+ unchanged throughout.
+
+Disk state observed:
+ the internal volume had 114 GiB free at the start and 111 GiB at the end,
+ and `/Volumes/MacData` went from 216 GiB free to 215 GiB.
+This run's only internal-disk artifact was the 1.4 GB toolchain,
+ which was removed,
+ so it does not account for the 3 GiB difference on the internal volume.
+What does was not measured;
+ Spotlight indexing (`mdworker_shared`, `STExtractionService`) and a
+ `com.apple.MobileAsset.DownloadService` process were running on the machine at the start of the session,
+ and APFS reclaims lazily,
+ so the figure is recorded rather than explained.
+
+The scratch tree at `/Volumes/MacData/agent/hashvet2-m1-2026-09-17` is left in place,
+ because the report cites its logs.
+Deleting it removes nothing this report depends on beyond those citations.
