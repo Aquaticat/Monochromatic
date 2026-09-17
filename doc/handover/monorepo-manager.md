@@ -112,8 +112,8 @@ Each step's evidence is in the linked documents.
    six probe images,
    the Rust 1.84.0 toolchain,
    the custom-target sysroot symlink,
-   and finished probes' Cargo build directories in the scratchpad.
-  Remove `~/temp/agent/structured-edits-target-2026-09-16/` once the troubleshooting docs land.
+   finished probes' Cargo build directories in the scratchpad,
+   and `~/temp/agent/structured-edits-target-2026-09-16/`.
   The aarch64 Rust targets stay.
 - Opened issues #546 and #547 on 2026-09-17 for the user to file the prepared `xot` issue
    and post the prepared `kornelski/xml-rs#88` comment personally
@@ -149,16 +149,25 @@ Each step's evidence is in the linked documents.
    local glibc builds use the host while releases follow `cargo-publish.yml`,
    new TOML inline tables use the TOML 1.1 trailing comma,
    and edits need not keep untouched bytes or CRLF.
-- Running under the `troubleshooting-doc` skill,
-   uncommitted until each lands,
-   in `doc/troubleshooting/`:
-   `toml-edit-comment-loss.md` (committed),
-   `taplo-toml-1-1-inline-table-trailing-comma.md` (committed),
+- Finished under the `troubleshooting-doc` skill on 2026-09-17,
+   committed and indexed under "Comment-preserving structured edits in Rust" in `doc/troubleshooting/README.md`:
+   `toml-edit-comment-loss.md`,
+   `taplo-toml-1-1-inline-table-trailing-comma.md`,
+   `xml-attribute-whitespace-serialization.md`,
    `json-five-unterminated-block-comment.md`,
    `jsonc-parser-json5-defaults.md`,
-   `biome-json-crates-exact-pins.md`,
-   and `xml-attribute-whitespace-serialization.md` (committed).
-  Add README index entries after they land.
+   and `biome-json-crates-exact-pins.md`.
+  Source citations for the `json-five`,
+   `jsonc-parser`,
+   and Biome policy findings were re-read in the agent's clones.
+- Opened issues #548 and #549 on 2026-09-17,
+   following the user's reminder-issue answers for #546 and #547,
+   for the user to file the prepared `json-five` block comment issue
+   and the `jsonc-parser` `allow_comments` issue personally.
+  No Biome filing:
+   biomejs/biome#5151 already covers the exact pins,
+   and Biome's `CONTRIBUTING.md` asks that contributor communication not be AI-written.
+  The `jsonc-parser` loose defaults are documented upstream behavior and stay unfiled.
 - Installs are authorized for this work,
    except `rpm-ostree install`.
 - Stopped unfinished on 2026-09-16:
