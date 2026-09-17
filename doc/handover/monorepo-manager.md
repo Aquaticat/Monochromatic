@@ -326,7 +326,20 @@ Its one user question was whether to power on the m1 to decide `twox-hash` again
 The user answered on 2026-09-17:
  "I just powered on my m1 mac.
  Please measure.",
- so the aarch64 measurement runs there before the hash is recorded.
+ and the measurement ran there the same day
+ (`c4f5f0d3d` and `95143e348` update the report in place).
+`twox-hash` stays first at 85 of 92,
+ `rscrypto` second at 83.5,
+ while `hashcrew` and `xxhash-rust` swapped third and fourth;
+ no sensitivity test changes the winner any more.
+The remaining proxy is Darwin against Linux aarch64,
+ which a rented Arm Linux run would close.
+m1 state after the run,
+ verified from this session:
+ only the machine's own toolchain is installed
+ and no probe processes are left;
+ the agent's scratch tree stays on `/Volumes/MacData`,
+ and three macOS probe quirks are documented.
 Spot-checked before merging:
  `rscrypto` was published 2026-05-02 with about 1,100 recent downloads (crates.io API,
  2026-09-17).

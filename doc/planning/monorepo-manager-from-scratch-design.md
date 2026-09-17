@@ -1945,11 +1945,51 @@ before the choice is recorded.
   Run-to-run band on the unchanged build:
    median 1.9%,
    p90 5.4%.
-- aarch64 numbers come from `rscrypto`'s public CI artifacts on an AWS `c9g.2xlarge`,
-   not from a local run:
-   XXH3-128 24.53 to 24.59 GiB/s,
+- aarch64 was first rated from `rscrypto`'s public CI artifacts on an AWS `c9g.2xlarge`
+   (XXH3-128 24.53 to 24.59 GiB/s,
    SHA-256 1.687 to 1.957,
-   single-threaded BLAKE3 1.613.
+   single-threaded BLAKE3 1.613),
+   then measured on the user's m1 on 2026-09-17,
+   which supersedes those borrowed numbers.
+  Measured on a MacBook Air M1,
+   `-Ctarget-cpu=generic` so only NEON is used,
+   medians of five runs on the same corpus bytes,
+   one call per tracked file,
+   in GiB/s:
+   `hashcrew` 30.910,
+   `twox-hash` 30.728,
+   `xxhash-rust` 29.859,
+   `rscrypto` 29.736,
+   `highway` 7.172,
+   with SHA-256 at 2.142 and BLAKE3 at 1.515.
+  Streaming per file separates them further:
+   `hashcrew` 28.220,
+   `twox-hash` 27.508,
+   `rscrypto` 23.755,
+   `xxhash-rust` 21.273.
+  Bands were tighter than on the x86 host:
+   median 0.3% and p90 1.9% on that build,
+   with `pmset` reporting no thermal or speed limit across all 100 probes.
+- After the measurement:
+   `twox-hash` 85 of 92 > `rscrypto` 83.5 > `hashcrew` 79 > `xxhash-rust` 77 > `highway` 36.
+  `hashcrew` and `xxhash-rust` swapped third and fourth,
+   because `xxhash-rust` is fastest of the five when streaming on x86 and slowest of the four XXH3 crates
+   when streaming on the M1.
+  Of 96 sensitivity tests none changes the winner now,
+   where before the measurement one did;
+   the closest margin for the top pair is 0.50 points.
+- Remaining proxy:
+   the measurement is Apple Firestorm on Darwin,
+   while the release-blocking aarch64 targets are Linux.
+  A full rating step of transfer error would hand first place to `rscrypto`,
+   which needs `twox-hash`'s true ratio on a Linux aarch64 core to fall below 0.90.
+- Digests match across machines:
+   60 of 60 accumulated digest lines are byte identical between the `x86-64-v4` and m1 builds,
+   with a control that matched none.
+  Correctness on the m1 repeated the x86 results:
+   82,200 C-reference checks with 0 mismatches against a control that failed all of them,
+   0 collisions in 60 one-byte keyset results,
+   and 0 streaming failures against a control with 196,282.
 - Multi-GB inputs:
    warm reads resolve the finalists (XXH3 13.1 to 15.4 GiB/s,
    BLAKE3 5.4,

@@ -239,6 +239,20 @@ and XML editing crates for the monorepo manager
   object iteration order,
   and `% 0`
 
+### Hash selection and cross-machine probes
+
+Found while choosing meow's cache key hash and measuring it on a second machine:
+
+- [`gxhash` needs the `aes` target feature](gxhash-aes-target-feature.md)
+  and has no software fallback
+- [Rust hash crates hide backends behind features and cfg](rust-hash-crate-build-and-test-quirks.md),
+  and some test suites pass while testing nothing
+- [`rustup` proxies auto-install into the default home](rustup-proxy-auto-install-default-home.md)
+  when a chained remote step drops `RUSTUP_HOME`
+- [macOS `pmset -g thermlog` never returns](macos-pmset-thermlog-never-returns.md);
+  `pmset -g therm` is the one-shot form
+- [`rustix` configures `fs::fadvise` out on Apple targets](rustix-apple-fadvise-gate.md)
+
 ## Quick Links
 
 For common issues:
