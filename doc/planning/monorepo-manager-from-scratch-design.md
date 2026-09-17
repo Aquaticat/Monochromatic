@@ -500,6 +500,16 @@ single executable entry scripts were CommonJS,
 which has no top-level await.
 The Node version the tool builds with must include that change.
 
+Decision on 2026-09-16:
+the user killed the TypeScript route because Node single executables are too big;
+the minimal probe measured 144 MiB.
+By the same reason,
+every shape that ships Node inside the single file is out,
+including the Rust core with TypeScript file-enforcer children,
+unless the user says otherwise.
+The remaining route is an all-Rust tool with file-enforcer rewritten in Rust;
+its configuration-hosting variants are being designed.
+
 #### How TypeScript monorepo tools meet the same problems
 
 Checked 2026-09-16 after the user noted that many monorepo tools are written in TypeScript.
