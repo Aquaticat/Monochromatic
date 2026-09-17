@@ -521,3 +521,491 @@ After the initial schedule:
 2.  Append one de-duplicated query per applicable source class.
 3.  Freeze the schedule.
 4.  Record later terms without new queries.
+
+## Discovery results
+
+Executed 2026-09-17.
+Raw pages:
+ `~/temp/agent/hashvet-2026-09-17/data/crates/`,
+ `data/github/`,
+ and the saved web results;
+ source archives under `data/crate-src/`.
+
+### Source class 1: crates.io
+
+Every query used `per_page=100` and the User-Agent `hash-library-survey/1.0`.
+No result was filtered out before screening.
+A result counts as reviewed when it is a hash, checksum, MAC, or hash adapter crate;
+ every other result is screened by the source scan and listed in the appendix.
+
+Source-scan method and control:
+
+- Each result's newest stable `.crate` archive was downloaded from `static.crates.io` and extracted, never built.
+- Non-test Rust files were searched for x86 intrinsics (`_mm*_` calls, AES, CLMUL, CRC32, and SHA intrinsics),
+   aarch64 intrinsics (NEON `v*q` calls, `vaeseq_u8`, `vmull_p64`, `__crc32*`, SHA intrinsics),
+   SIMD abstractions (`std::simd`, `wide`, `safe_arch`, `pulp`, `multiversion`),
+   128-bit outputs,
+   build scripts,
+   and C, C++, or assembly files
+   (`scripts/crates-scan.ts`).
+- Control:
+   crates known to carry accelerated paths were flagged on both architectures
+   (`gxhash` x86 46/7 and aarch64 48/3 general/dedicated matches, `highway` 131 and 44, `twox-hash` 16 and 27, `sha2` 58/4 and 178/72),
+   and crates known to be scalar had zero matches
+   (`rapidhash`, `museair`, `komihash`, `wyhash`, `foldhash`, `seahash`, `siphasher`, `polymur-hash`).
+  `blake3` 1.8.7 matched on x86 only,
+   consistent with its NEON path being C (`c/blake3_neon.c`, compiled in `build.rs`).
+- Limit:
+   a crate that delegates acceleration to a dependency shows no matches of its own;
+   dependents of the candidate crates were listed and are adapters or applications.
+- Totals:
+   3,322 distinct crates,
+   158 with matches on both architectures,
+   85 with a SIMD abstraction,
+   47 without a downloadable stable version
+   (mostly `0.0.0` placeholders).
+
+Query ledger,
+ in schedule order,
+ with the expansion round (XR) after the initial schedule:
+
+- CR01 `q=non-cryptographic hash`:
+   170 reported,
+   2 page(s) and 170 results read,
+   exhausted;
+   new reviewed candidates: `noncrypto-digests`, `wyhash`, `gxhash`, `mwhash`, `fasthash`, `drtahash`, `ahash`, `hashkit`, `polymur-hash`, `t1ha`, `tenthash`, `hashcrew`, `rscrypto`, `axhash-core`, `foldhash`, `rapidhash`, `whasher`, `rotohash-rs`, `blazehash-core`;
+   new screening survivors: `hashcrew`.
+- CR02 `q=128-bit hash`:
+   749 reported,
+   5 page(s) and 500 results read,
+   two-page rule met;
+   new reviewed candidates: `museair`, `siphasher`, `kangarootwelve`, `rustc-stable-hash`, `polyval`, `twox-hash`, `lockstitch`, `highway`, `ghash`, `hashcodecs`, `argon2-rust`;
+   new screening survivors: `twox-hash`, `highway`.
+- CR03 `q=simd hash`:
+   724 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: `seq-hash`, `cubehash`, `crc32fast`, `thread-utilities`, `keccak-batch`, `autobahn-hash`, `gearhash`, `pocx_hashlib`, `simd-adler32`, `tape-sha256`, `blake3-std`, `adler32-simd`, `mm3h`, `halftime`, `blake3`;
+   new screening survivors: `autobahn-hash`.
+- CR04 `q=aes hash`:
+   878 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: `sponge-hash-aes256`, `purecrypto`;
+   new screening survivors: none.
+- CR05 `q=neon hash`:
+   243 reported,
+   3 page(s) and 243 results read,
+   exhausted;
+   new reviewed candidates: `sha3-selkie`, `xxh3`, `graviola`, `polyhash`, `xxhash-rust`;
+   new screening survivors: `xxhash-rust`.
+- CR06 `q=hardware accelerated hash`:
+   266 reported,
+   3 page(s) and 266 results read,
+   exhausted;
+   new reviewed candidates: `verify-beacon`, `crc32c`, `lib-q-keccak`;
+   new screening survivors: none.
+- CR07 `q=fast hash function`:
+   1,862 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: `seahash`, `umash`, `hud-slice-by-8`;
+   new screening survivors: none.
+- CR08 `q=gxhash`:
+   24 reported,
+   1 page(s) and 24 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR09 `q=fingerprint hash`:
+   1,117 reported,
+   5 page(s) and 500 results read,
+   two-page rule met;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR10 `q=crc simd checksum`:
+   83 reported,
+   1 page(s) and 83 results read,
+   exhausted;
+   new reviewed candidates: `crc64fast`, `crc-fast`, `crc64fast-nvme`, `librscrc`, `oxiarc-core`;
+   new screening survivors: none.
+- CR11 `keyword=hash&sort=downloads`:
+   919 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: `sha2`, `sha1`, `bitcoin_hashes`, `k12`, `meowhash`, `sha2ni`, `xxhash-c-sys`, `cyfs-sha2`;
+   new screening survivors: none.
+- CR12 `keyword=hasher&sort=downloads`:
+   46 reported,
+   1 page(s) and 46 results read,
+   exhausted;
+   new reviewed candidates: `slice-by-8`, `axhash`;
+   new screening survivors: none.
+- CR13 `keyword=non-cryptographic&sort=downloads`:
+   6 reported,
+   1 page(s) and 6 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR14-xxh3 `undefined`:
+   115 reported,
+   2 page(s) and 115 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR14-xxhash `undefined`:
+   143 reported,
+   2 page(s) and 143 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR14-highwayhash `undefined`:
+   7 reported,
+   1 page(s) and 7 results read,
+   exhausted;
+   new reviewed candidates: `highwayhash`;
+   new screening survivors: none.
+- CR14-museair `undefined`:
+   3 reported,
+   1 page(s) and 3 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR14-rapidhash `undefined`:
+   36 reported,
+   1 page(s) and 36 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR14-komihash `undefined`:
+   3 reported,
+   1 page(s) and 3 results read,
+   exhausted;
+   new reviewed candidates: `komihash`;
+   new screening survivors: none.
+- CR14-wyhash `undefined`:
+   35 reported,
+   1 page(s) and 35 results read,
+   exhausted;
+   new reviewed candidates: `wyhash2`;
+   new screening survivors: none.
+- CR14-t1ha `undefined`:
+   4 reported,
+   1 page(s) and 4 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR14-meowhash `undefined`:
+   1 reported,
+   1 page(s) and 1 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR14-ahash `undefined`:
+   193 reported,
+   2 page(s) and 193 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR14-foldhash `undefined`:
+   30 reported,
+   1 page(s) and 30 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR14-blake3 `undefined`:
+   1,447 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: `chacha20-blake3`, `spg-crypto`;
+   new screening survivors: none.
+- CR14-umash `undefined`:
+   2 reported,
+   1 page(s) and 2 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR14-clhash `undefined`:
+   2 reported,
+   1 page(s) and 2 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CR14-crc32c `undefined`:
+   176 reported,
+   2 page(s) and 176 results read,
+   exhausted;
+   new reviewed candidates: `bitcoin-crc32c`, `turbo_crc`;
+   new screening survivors: none.
+- CR14-crc64 `undefined`:
+   41 reported,
+   1 page(s) and 41 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- XR01 `q=incremental hash simd`:
+   144 reported,
+   2 page(s) and 144 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- XR02 `q=high-bandwidth checksum`:
+   12 reported,
+   1 page(s) and 12 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- XR03 `q=parallel tree hash`:
+   899 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- XR04 `q=universal hash`:
+   931 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: none;
+   new screening survivors: none.
+
+Pagination:
+ CR02 and CR09 had a survivor on page 3,
+ so pages 4 and 5 were fetched;
+ neither added a survivor.
+Result:
+ source class 1 is saturated.
+
+### Source class 2: GitHub
+
+`gh api search/repositories` and `search/code`,
+ best-match order,
+ `per_page=100`;
+ every query ran until GitHub reported fewer than 100 items on a page,
+ so no query reached the 1,000-result cap.
+
+- GH01 `topic:hash-function language:Rust`:
+   10 results,
+   exhausted;
+   hash libraries already in class 1 (`museair`) plus cryptographic and Murmur3 repositories;
+   no new survivor.
+- GH02 `topic:hashing language:Rust`:
+   174 results over 2 pages,
+   exhausted;
+   `aHash`,
+   `gxhash`,
+   `twox-hash`,
+   `rapidhash`,
+   `wyhash-rs`,
+   `metrohash-rs` (scalar, HC1),
+   `fastmurmur3` (scalar, HC1),
+   `autobahn-hash`,
+   `cityhash-sys` (C bindings, HC4),
+   and applications;
+   no new survivor.
+- GH03 `topic:non-cryptographic-hash-function`:
+   0 results.
+- GH04 `hash simd neon language:Rust`:
+   2 results
+   (a hash table and `keccak-batch`, cryptographic);
+   no survivor.
+- GH05 `aes hash neon language:Rust`:
+   0 results.
+- GH06 `128-bit hash language:Rust`:
+   1 result
+   (`forrus`, a fixed 128-bit-input function, category mismatch).
+- GH07 `non-cryptographic hash in:name,description`:
+   215 results over 3 pages,
+   exhausted;
+   families in other languages
+   (xxHash C, komihash, a5hash, pengyhash, SMHasher forks),
+   Rust repositories not published on crates.io
+   (`s0uthview/fernhash`, `hwadii/hache`, `yescallop/mixhash`, `AlyssaRoseDev/cmhash`, `101shaan/BlitzHash`;
+   crates.io API returned no crate for each, HC7),
+   and `meow-land/mwhash` and `cessen/tenthash` (published, scalar, HC1);
+   no new survivor.
+- GH08 `gxhash alternative`:
+   0 results.
+- GC01 code `vaeseq_u8 _mm_aesenc_si128 language:Rust`:
+   110 results in 119 repositories over 2 pages;
+   vendored `ahash` copies,
+   `haraka-rs` (fixed-length cryptographic),
+   RandomX and proof-of-space application code,
+   an AES random generator,
+   and a MeowHash attack tool;
+   no hash library with both paths beyond `ahash` (HC2, HC3) and `gxhash` (HC9).
+- GC02 code `vmull_p64 _mm_clmulepi64_si128 language:Rust`:
+   97 results;
+   carry-less multiply utilities,
+   GF(2^128) field arithmetic,
+   CRC libraries,
+   and SIMD parsers;
+   no 128-bit hash library.
+- GC03 code `__crc32cd _mm_crc32_u64 language:Rust`:
+   28 results;
+   CRC32C libraries (HC2) and application-internal hash-table hashers;
+   no 128-bit hash library.
+- XG01 `rotohash` (expansion):
+   2 results,
+   `jandrewrogers/RotoHash` (C++ reference, x86-64 only per its README, HC4 as a Rust candidate)
+   and `int08h/rotohash-rs` (already in class 1).
+- XG02 `incremental hash simd language:Rust` (expansion):
+   0 results.
+- XG03 `parallel hash tree language:Rust` (expansion):
+   1 result
+   (`dupefind`, an application).
+
+Hash-family indexes:
+
+- SMHasher3 `results/README.md`
+   (fetched 2026-09-17 from `gitlab.com/fwojcik/smhasher3/-/raw/main/results/README.md`, 546 lines).
+  Families with hardware-specific paths:
+   XXH3 (vector, both architectures),
+   HighwayHash (vector, both),
+   UMASH (CLMUL and PMULL, C),
+   MeowHash (x86 AES),
+   falkhash, aesnihash, and t1ha0.aes (x86 AES),
+   CLhash (x86 CLMUL),
+   CityHashCrc and MetroHashCrc (CRC32 instructions, C++),
+   FARSH (x86 vector),
+   HalftimeHash, VHASH, NMHASH, khashv (outputs of 64 bits or fewer),
+   gxhash (HC9),
+   and BLAKE3 (cryptographic).
+  Pure-Rust implementations with streaming exist only for XXH3 and HighwayHash;
+   UMASH, CityHashCrc, and MetroHashCrc exist for Rust only as C or C++ bindings or scalar ports (HC4 or HC1),
+   and the x86-only families fail HC1.
+- `rurban/smhasher` README
+   (fetched 2026-09-17, 486 lines):
+   adds `crc32_hw`, `crc64_hw`, and `crc32_pclmul` (32 and 64-bit, HC2),
+   `metrohash128crc` (CRC32 instructions on SSE4.2 and NEON, C++, flagged "UB"),
+   and `pearsonhash128` (SSSE3 only, HC1).
+
+Result:
+ source class 2 and the family indexes are saturated.
+
+### Source class 3: broader web
+
+Linkup search,
+ `depth` standard,
+ no domain filter,
+ no page cursor;
+ each query returned one result list of about 10 to 20 entries.
+
+- W01 `non-cryptographic 128-bit hash with hardware acceleration on x86 and ARM`:
+   `JohanLindvall/haste` (Go XXH3 with generated SSE2, AVX2, AVX-512, NEON, and SVE2 kernels; not Rust),
+   xxHash,
+   SHA extension and AES instruction references,
+   and a Cryptography Stack Exchange question "What is the fastest stable 128-bit non-cryptographic hash function?"
+   (read through the Stack Exchange API because the page returned HTTP 403;
+   it has no answers).
+- W02 `gxhash alternative`:
+   comparison-site pages and gxhash articles;
+   no new candidate.
+- W03 `fastest non-cryptographic hash NEON AVX2 128-bit output`:
+   `haste`,
+   a Go XXH3 package,
+   Ash Vardanian's post on AWS Graviton checksums
+   (StringZilla: 64-bit AES-based hashing in C, HC2 and HC4).
+- W04 `AES-NI and ARMv8 crypto extensions based non-cryptographic hash function`:
+   instruction-set references and the RustCrypto `aes` crate description;
+   no new hash library.
+- W05 `Rust hash crate stable output SIMD aarch64`:
+   `highway-rs`,
+   `crc32fast`,
+   and `xxhash-rust` ("Neon - Enabled by default on aarch64 targets");
+   no new candidate.
+- W06 `XXH3 vs HighwayHash vs MuseAir vs rapidhash comparison`:
+   MuseAir,
+   rapidhash,
+   and xxHash issue #257 comparing 128-bit hashes;
+   no new candidate.
+- W07 `CRC32 instruction based 128-bit hash function`:
+   MatrixOne's AES and CRC32 hash-table hashers in Go assembly,
+   CityHash CRC variants;
+   no Rust library.
+- W08 `SMHasher3 results hardware accelerated hash functions`:
+   SMHasher3,
+   rapidhash,
+   rainstorm (scalar);
+   no new candidate.
+- W09 `RotoHash alternative high-throughput 128-bit checksum for large files` (expansion):
+   RotoHash,
+   the XXH3 announcement ("Presenting XXH3", on UMAC's flaw for large checksums),
+   BLAKE3 articles;
+   no new library.
+- W10 `multi-core parallel non-cryptographic hash with stable output for multi-gigabyte files` (expansion):
+   Stack Overflow and Stack Exchange threads on parallel and tree hashing
+   (BLAKE3, Skein, KangarooTwelve, MD6, and chunk-then-hash constructions,
+   all cryptographic or consumer-built);
+   no new non-cryptographic library.
+
+Limit:
+ the provider exposes no pagination,
+ so this class cannot be enumerated.
+Registry and repository enumeration,
+ which are complete,
+ covered every web-found Rust library.
+
+### Source class 4: this repository
+
+`rg --count-matches --ignore-case` over the working tree,
+ excluding `node_modules` and lockfiles,
+ then reading every match in plans,
+ decisions,
+ audits,
+ manifests,
+ and lockfiles:
+
+- RP01 `gxhash`:
+   the music player's two call sites and manifests,
+   the gxhash study,
+   the design doc,
+   the troubleshooting doc,
+   and `doc/decision/monorepo-manager-all-rust.md`.
+- RP02 `xxh3|xxhash|twox`:
+   `twox-hash` 2.1.2 through `turso_core` in two music-player lockfiles;
+   the handover records that a static musl daemon skeleton with XXH3 built and ran on 2026-09-16
+   (`doc/handover/monorepo-manager.md:94`).
+- RP03 `highway`:
+   only the Highway SIMD C++ library in the package table
+   (`package/dev-script/file-enforcer/src/data/packages.generated.ts:5758`),
+   unrelated to HighwayHash.
+- RP04 `museair|rapidhash|komihash|wyhash|foldhash|ahash`:
+   the gxhash study's benchmarks;
+   `rapidhash` 4.4.x and `ahash` 0.8.12 as transitive dependencies.
+- RP05 `blake3|siphash|siphasher|crc32|crc64|fnv`:
+   an earlier all-Rust design that planned `blake3` 1.8.7 content hashes
+   (`doc/planning/monorepo-manager-route-research/stack-rust.md:201`, `:547`),
+   later replaced by gxhash;
+   a TypeScript CRC-32 in `package/module/zip-writer`;
+   and transitive `siphasher`.
+- RP06:
+   no file name in `doc/decision/` or `doc/audit/` contains `hash`
+   other than this report.
+
+No hand-rolled 128-bit hash exists in the repository.
+The gxhash reimplementation prototype lives in the session scratchpad only.
+
+### Expansion round
+
+New taxonomy terms from the ledger:
+ incremental hashing,
+ high-bandwidth checksum (RotoHash),
+ tree or parallel hashing (BLAKE3, bao),
+ universal hashing (HalftimeHash, POLYVAL).
+One de-duplicated round ran:
+ XR01 to XR04 on crates.io,
+ XG01 to XG03 on GitHub,
+ W09 and W10 on the web.
+The schedule is frozen;
+ later terms (Merkle tree, KangarooTwelve) were recorded without new queries.
+
+### Terminal discovery result
+
+Saturated with at least two survivors:
+ `xxhash-rust`,
+ `twox-hash`,
+ `hashcrew`,
+ `highway`,
+ and `autobahn-hash` passed screening.
+The broader-web class has no cursor;
+ its results were covered by the complete registry and repository classes.
