@@ -112,6 +112,9 @@ Each step's evidence is in the linked documents.
    and finished probes' Cargo build directories in the scratchpad.
   Remove `~/temp/agent/structured-edits-target-2026-09-16/` once the troubleshooting docs land.
   The aarch64 Rust targets stay.
+- Opened issue #545 on 2026-09-17,
+   "music player must switch away from gxhash";
+   the user said this session must not touch music player work.
 - `ssh m1` is powered off;
    ask the user to turn it on only when an aarch64 benchmark is strongly needed.
 - Stopped unfinished on 2026-09-17:
