@@ -90,6 +90,7 @@ export function settledPageArtifact(
   const pageAssembly = guardPageAssembly({
     artifact: composed,
     slices: prepared.slices,
+    sourceText: prepared.sourceText,
     targetText,
   },);
   for (const finding of pageAssembly.findings)

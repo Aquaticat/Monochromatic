@@ -126,6 +126,7 @@ await describe({
         const assembly = guardPageAssembly({
           artifact: consolidating({ notes: '[^1]: That is its favourite spot.\n[^2]: A sparrow.', },),
           slices: SLICES,
+          sourceText: '猫猫在窗台上打盹〔1〕。\n\n〔1〕：那是它最喜欢的位置。\n〔2〕：一只麻雀。\n',
           targetText: TARGET,
         },);
         expect(assembly.withdrawn,).toEqual([],);
@@ -144,6 +145,7 @@ await describe({
         const assembly = guardPageAssembly({
           artifact: consolidating({ notes: '[^1]: That is its favourite spot.', },),
           slices: SLICES,
+          sourceText: '猫猫在窗台上打盹〔1〕。\n\n〔1〕：那是它最喜欢的位置。\n〔2〕：一只麻雀。\n',
           targetText: TARGET,
         },);
         expect(assembly,).toEqual({ trimmed: [], withdrawn: [], findings: [], },);

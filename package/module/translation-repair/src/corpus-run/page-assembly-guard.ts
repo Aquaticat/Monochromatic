@@ -1,6 +1,7 @@
 import { guardFootnoteAssembly, } from '../assembly-integrity.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
+import { restoreCollidingHeadings, } from './heading-collision-restore.ts';
 import { shippableReplacements, } from './publish-fixed.ts';
 import type { WouldShipSource, } from './would-ship-text.ts';
 
@@ -21,23 +22,28 @@ import type { WouldShipSource, } from './would-ship-text.ts';
  
  @param slices - preparation defining replacement spans
  
+ @param sourceText - the original document, whose headings set how many
+ distinct headings the page owes (class forty-five)
+ 
  @param targetText - archive text the replacement spans address
  
  @returns What the guard trimmed, withdrew and found
  
  @example
  ```ts
- const pageAssembly = guardPageAssembly({ artifact, slices, targetText, },);
+ const pageAssembly = guardPageAssembly({ artifact, slices, sourceText, targetText, },);
  ```
  */
 export function guardPageAssembly(
   {
     artifact,
     slices,
+    sourceText,
     targetText,
   }: {
     readonly artifact: WouldShipSource;
     readonly slices: readonly ChunkPair[];
+    readonly sourceText: string;
     readonly targetText: string;
   },
 ): ArtifactPageAssembly {
@@ -62,17 +68,55 @@ export function guardPageAssembly(
       return replacement.replacementText !== incumbentBySlice.get(replacement.sliceIndex,);
     },);
   /**
+   Headings a lane rewrote into another section's, restored to the archive's
+   before the footnote guard reads the page (class forty-five).
+   */
+  const restoration = restoreCollidingHeadings({
+    sourceText,
+    targetText,
+    slices,
+    replacements,
+  },);
+  /**
    The guard's reading of the composed page.
    */
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
-    replacements,
+    replacements: restoration.replacements
+      .filter(function stillChanges(replacement,): boolean {
+        // A restoration that brings a slice back to the archive's exact wording
+        // is no change for the assembler; its override row below still says
+        // what the page carries.
+        return replacement.replacementText !== incumbentBySlice.get(replacement.sliceIndex,);
+      },),
   },);
+  /**
+   Restored slices the footnote guard neither trimmed nor withdrew, which
+   ride the same override a trimmed slice does: the page carries this text.
+   */
+  const restoredOnly = restoration.restored
+    .filter(function untouchedByGuard(row,): boolean {
+      /**
+       Whether the guard already owns this slice's override.
+       */
+      const trimmedByGuard = guarded.trimmed
+        .some(function namesIt(trimmed,): boolean {
+          return trimmed.sliceIndex === row.sliceIndex;
+        },);
+      return (!trimmedByGuard) && (!guarded.revertedChunkIndices
+        .includes(row.sliceIndex,));
+    },);
   return {
-    trimmed: guarded.trimmed,
+    trimmed: [
+      ...guarded.trimmed,
+      ...restoredOnly,
+    ],
     withdrawn: guarded.revertedChunkIndices,
-    findings: guarded.findings,
+    findings: [
+      ...restoration.findings,
+      ...guarded.findings,
+    ],
   };
 }
 
