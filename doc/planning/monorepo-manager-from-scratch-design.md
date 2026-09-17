@@ -1878,15 +1878,22 @@ to the repeated cache key output question:
 Research in progress;
 user choices it raises are asked as they arise (rule `FLG`):
 
-- Repository-owned `gxhash`:
-   dirty-room reimplementation or fork,
-   output compatibility with `gxhash` 3,
-   whether the music player moves to it,
-   and which optimizations to take.
+- meow's cache key hash,
+   selected by the running choosing-technology vet
+   ("Cache key hash after the collision findings");
+   the build target features and missing-capability warning follow the chosen hash.
+
+Closed on 2026-09-17:
+
+- Repository-owned `gxhash` for meow,
+   superseded when cache keys left `gxhash`;
+   the music player's switch is issue #545.
 - Comment-preserving JSONC,
    TOML,
-   and XML editing in Rust.
-- aarch64 builds and the missing-AES warning under QEMU.
+   and XML editing,
+   settled in "Managed file editing".
+- aarch64 builds and the CPU capability warning under QEMU,
+   settled in "Platform probes".
 
 Design work not yet started:
 
