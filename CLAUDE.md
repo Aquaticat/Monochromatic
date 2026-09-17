@@ -469,9 +469,9 @@ OPI:
 YKZ:
  Several options:
  widen to plausible alternatives,
- then design each until its disqualifying problems surface.
-Rank only after;
- surface pros and cons don't separate options.
+ each with its libraries and repo incumbents;
+ design each until disqualifying problems surface.
+Rank only after.
 
 ODM:
  Option examples must demonstrate every concept the question asks the user to compare.
