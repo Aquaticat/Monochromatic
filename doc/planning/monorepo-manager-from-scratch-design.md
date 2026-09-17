@@ -1808,7 +1808,10 @@ kept for the reopened selection:
 - Content hashing is the source of truth.
   btrfs features only accelerate it.
 - Hash:
-   `gxhash` 3,
+   superseded on 2026-09-17;
+   `gxhash` left after the collision findings,
+   and the replacement is reopened in "Cache key hash vet result".
+  Originally `gxhash` 3,
    the repository incumbent in `package/music-player/desktop-app` and `android-app/rust`,
    with `gxhash128` for cache keys
    (`src/gxhash/mod.rs:49` in `gxhash` 3.5.0;
@@ -1816,20 +1819,24 @@ kept for the reopened selection:
   The user chose the 128-bit width on 2026-09-16;
    a false hit needs a new key equal to a stored one,
    so its odds scale with stored entries times lookups divided by 2 to the key width.
-- No cryptographic hash is used:
-   the cache is local only,
-   and file-enforcer's SHA-256 uses,
+- Cryptographic hashes were first excluded,
+   reasoning that the cache is local only
+   and that file-enforcer's SHA-256 uses,
    the staleness manifest (`package/dev-script/file-enforcer/src/io/staleness-hash.ts:20`)
    and skill-mirror ownership digests (`file-enforcer.config.ts:1103`),
    detect change and ownership rather than defend against crafted input.
-  A shared or remote cache would need this revisited.
-- `gxhash` constraints,
+  The user made them eligible on 2026-09-17 ("non-crypto isn't a requirement").
+  A shared or remote cache would raise the weight of crafted-input resistance.
+- `gxhash` constraints (historical after 2026-09-17),
    from `doc/troubleshooting/gxhash-aes-target-feature.md`:
    the build needs `-C target-feature=+aes,+sse2`,
    output is stable only within a major version,
    aarch64 debug builds can panic (upstream issue #111),
    and a CPU without AES-NI crashes with SIGILL because there is no software fallback.
-- CPU check:
+- CPU check,
+   written for `gxhash`'s AES requirement;
+   after 2026-09-17 the same mechanism applies to every target feature a build is compiled with,
+   such as AVX2 in an `x86-64-v3` build:
    the tool checks for AES and SSE2 at startup,
    before any hashing,
    and exits with a diagnostic naming the missing capability,
