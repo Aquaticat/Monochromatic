@@ -2,14 +2,13 @@
 
 ## Status
 
-Design research only;
-no code,
-installs,
-or decision records.
-As of 2026-09-16 the only remaining route is a from-scratch,
+Design research;
+no product code.
+The user accepted a from-scratch,
 single-file,
-all-Rust tool with file-enforcer rewritten in Rust.
-The user has not accepted a route or stack.
+all-Rust tool with file-enforcer rewritten in Rust on 2026-09-16
+([`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md)).
+Probe installs are authorized except `rpm-ostree install`.
 
 Keep this handover current when requirements,
 decisions,
@@ -71,7 +70,7 @@ Each step's evidence is in the linked documents.
     then killed the TypeScript route because Node single executables are too big;
     a minimal probe measured 144 MiB.
     The Rust core with TypeScript children is out by the same reason,
-    open to veto.
+    closed as settled because it needs Node at run time.
 
 ## In-flight work
 
@@ -82,13 +81,14 @@ Each step's evidence is in the linked documents.
   Its configuration-hosting ranking is withdrawn:
    the user dropped the Turing-complete configuration requirement
    ("Configuration" and "Correction on 2026-09-16" in the design).
-- Running:
+- Finished on 2026-09-17:
    declarative configuration research,
-   writing `stack-declarative-config.md` in the session scratchpad.
-  It inventories today's configuration logic,
-   compares configuration formats with their Rust libraries,
-   and treats OpenTofu as the lead precedent;
-   it was told the hash is `gxhash128`.
+   copied to `doc/planning/monorepo-manager-route-research/stack-declarative-config.md`
+   and merged into "Declarative configuration" in the design.
+  It exposed a recording error:
+   the docs said the configuration is "not Turing-complete",
+   while the user only removed the requirement;
+   corrected in `6a8ea0651`.
 - Done on 2026-09-16 with the user's authorization:
    `rustup target add x86_64-unknown-linux-musl`;
    static musl daemon skeletons with XXH3 and with `gxhash` both built and ran.
