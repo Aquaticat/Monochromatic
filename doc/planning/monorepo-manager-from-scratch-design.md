@@ -238,7 +238,8 @@ including rankings later superseded.
 
 #### Selection history
 
-Every option in "Designed options and their worst problems" was designed against the same requirements until its disqualifying problems surfaced,
+Every option in "Designed options and their worst problems" was designed against the same requirements
+until its disqualifying problems surfaced,
 per rule `YKZ`;
 full designs,
 probes,
@@ -283,7 +284,8 @@ per `doc/planning/load-bearing-code-languages.md`.
    Rust and TypeScript event types need one shared schema.
 - All Rust
    (`stack-rust.md`):
-   every Rust core problem plus a rewrite of 79 file-enforcer modules and no workable host for the 2,330-line TypeScript configuration.
+   every Rust core problem plus a rewrite of 79 file-enforcer modules
+   and no workable host for the 2,330-line TypeScript configuration.
   The Rust core problems were later corrected by the crate-level research in "Library-level results",
    and configuration hosting is being redesigned as recorded in "Current stack direction".
 - Kotlin JVM core with TypeScript file-enforcer children
@@ -346,7 +348,8 @@ the TypeScript research recorded Node contradictions without culling,
 and the Rust research excluded typos.
 
 If runtime documentation problems are recorded but do not cull:
-Node > Rust core with TypeScript children > Kotlin JVM core with TypeScript children > Python > Bun > Deno > OCaml > .NET >
+Node > Rust core with TypeScript children > Kotlin JVM core with TypeScript children >
+Python > Bun > Deno > OCaml > .NET >
 all Kotlin on the JVM > all Rust > Kotlin/Native.
 
 - Node over Rust core:
@@ -507,7 +510,8 @@ Remaining Rust problems:
 - The launcher's re-exec after a rebuild replaces the daemon binary is untested.
 - `btrfs-uapi` needs `libclang` at build time.
 - Rust's piped stdio does not share Node's socket problem:
-   the same `/dev/stdout` probe spawned through `std::process::Command` with `Stdio::piped()` exited 0 and captured the output
+   the same `/dev/stdout` probe spawned through `std::process::Command` with `Stdio::piped()`
+   exited 0 and captured the output
    (measured 2026-09-16).
 
 Revised ranking of the two leading options:
@@ -560,7 +564,8 @@ as in `./meow`
 Unpacking at run time is acceptable,
 as AppImage does.
 So a Node single executable that extracts its addon is acceptable,
-while the Rust core with TypeScript file-enforcer children fails unless Node and the TypeScript sources travel inside that one file.
+while the Rust core with TypeScript file-enforcer children fails
+unless Node and the TypeScript sources travel inside that one file.
 
 Top-level await is also a hard requirement for any Node single executable,
 per the user on 2026-09-16.

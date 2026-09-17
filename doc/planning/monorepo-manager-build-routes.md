@@ -315,7 +315,8 @@ Research appendices live in [`monorepo-manager-route-research/`](monorepo-manage
 - Bazel route,
    other TypeScript findings in `bazel-typescript.md`,
    from source reading without running Bazel:
-   pnpm `overrides` shims and `.pnpmfile.mjs` stubs are expected to make rules_js reference package-store targets it never creates;
+   pnpm `overrides` shims and `.pnpmfile.mjs` stubs are expected to make rules_js
+   reference package-store targets it never creates;
    tsgo resolves real paths natively while Node is kept inside the sandbox;
    234 test files import bundled `dist` output,
    so shared-module edits rebuild and retest bundling packages;
