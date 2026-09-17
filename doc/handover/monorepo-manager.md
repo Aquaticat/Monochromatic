@@ -243,13 +243,17 @@ lists the rest.
 
 ## Next action
 
-No research is running.
+Running since 2026-09-17:
+ design research for the HCL evaluator,
+ function library,
+ formatter,
+ and language server,
+ writing `hcl-evaluator/hcl-evaluator-design.md` in the session scratchpad,
+ committing any `doc/audit/` vet report it creates,
+ and leaving troubleshooting docs uncommitted.
 
-1.  Start the design work listed under "Design work not yet started" in the design's "Open questions",
-    beginning with the HCL evaluator,
-    function library,
-    formatter,
-    and language server.
+1.  When it lands,
+    start the remaining items under "Design work not yet started" in the design's "Open questions".
 2.  For each research result,
     copy it into `doc/planning/monorepo-manager-route-research/`,
     verify its load-bearing claims,
