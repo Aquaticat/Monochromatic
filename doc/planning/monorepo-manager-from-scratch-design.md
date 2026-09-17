@@ -482,6 +482,17 @@ as AppImage does.
 So a Node single executable that extracts its addon is acceptable,
 while the Rust core with TypeScript file-enforcer children fails unless Node and the TypeScript sources travel inside that one file.
 
+Top-level await is also a hard requirement for any Node single executable,
+per the user on 2026-09-16.
+The Node single executable documentation offers `"mainFormat": "module"` for an ECMAScript module entry point,
+and its ESM entry point example uses `await import(...)` at top level.
+Probe on 2026-09-16 with Node v26.8.2:
+a `main.mjs` running `await new Promise(...)` and `await import("node:os")` at top level,
+built with `node --build-sea` and `"mainFormat": "module"`,
+ran as `./meow` and printed `top-level await ok on linux`;
+the executable was 144 MiB
+(`~/temp/agent/sea-tla-probe-2026-09-16`).
+
 #### How TypeScript monorepo tools meet the same problems
 
 Checked 2026-09-16 after the user noted that many monorepo tools are written in TypeScript.
