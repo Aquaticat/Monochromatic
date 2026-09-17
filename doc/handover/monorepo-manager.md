@@ -302,10 +302,14 @@ Answered on 2026-09-17:
  both recorded in
  [`doc/decision/monorepo-manager-hcl-front-end.md`](../decision/monorepo-manager-hcl-front-end.md);
  all three upstream defects get reminder issues.
-Still open:
- meow-only function naming,
- the diagnostic renderer,
- and acceptance of the formatter and language server recommendations.
+Answered the same day:
+ the `meow::` namespace for meow-only functions,
+ "Ship no formatter",
+ `lsp-server` for the language server,
+ and "Emit every line as a json,
+ error or warning or not.",
+ which dissolved the diagnostic-renderer question and added "Output format" to the design.
+Nothing from the HCL research is left open.
 Corrected before merging:
  the research called a C toolchain forbidden by the all-Rust decision record,
  which only says the tool is written in Rust;

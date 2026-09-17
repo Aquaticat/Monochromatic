@@ -84,6 +84,19 @@ Supersedes `package/dev-script/file-enforcer/DECISION.rust-migration.md` for the
    accepted after the format brief ("Yes to HCL",
    user,
    2026-09-17).
+  The front end,
+   function rules,
+   formatter,
+   and language server are in
+   [`monorepo-manager-hcl-front-end.md`](monorepo-manager-hcl-front-end.md).
+- Every line meow writes is a JSON object,
+   whether it is a log line,
+   a warning,
+   or an error ("Emit every line as a json,
+   error or warning or not.",
+   user,
+   2026-09-17),
+   so meow ships no human-facing renderer and clients render instead.
 
 Decided the same day and recorded in the design:
 the configuration language no longer needs to be Turing-complete and may be (user,

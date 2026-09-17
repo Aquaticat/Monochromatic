@@ -20,11 +20,11 @@ Design:
 "HCL tooling" in
 [`doc/planning/monorepo-manager-from-scratch-design.md`](../planning/monorepo-manager-from-scratch-design.md).
 
-Not decided here,
-still with the user:
-naming for meow-only functions,
-the diagnostic renderer,
-and acceptance of the formatter and language server recommendations.
+The same day the user also chose the `meow::` namespace for meow-only functions,
+"Ship no formatter",
+`lsp-server` for the language server,
+and JSON for every emitted line,
+which dissolved the diagnostic-renderer question.
 
 ## Context
 
@@ -56,6 +56,16 @@ and acceptance of the formatter and language server recommendations.
    the block it was called from,
    and the caching it disabled,
    per rules `DGT` and `DNL`.
+- meow-only functions carry the `meow::` namespace,
+   following OpenTofu's `provider::` precedent,
+   so portability is visible at the call site.
+- meow ships no formatter and no `fmt` command;
+   managed HCL keeps the style its author wrote.
+- The language server is `lsp-server` 0.10.0 with `gen-lsp-types` 0.11.0,
+   behind a hidden `meow lsp` stdio subcommand.
+- No diagnostic renderer is taken,
+   because every line meow emits is JSON
+   ("Output format" in the design).
 
 ## Consequences
 
@@ -90,3 +100,21 @@ and acceptance of the formatter and language server recommendations.
 - Forbidding functions with unpredictable results,
    or allowing them only in `task` and `check` blocks:
    the user chose uncacheable evaluations with warnings instead.
+- meow's own formatter matching `hclwrite` byte for byte,
+   `hcl-edit`'s printer as a formatter,
+   and shelling out to `tofu fmt`:
+   the user chose to ship no formatter.
+- Plain names for meow-only functions,
+   and plain names with a later rename:
+   the namespace makes portability visible now.
+- `tower-lsp-server`,
+   `async-lsp`,
+   `tower-lsp`,
+   a hand-rolled JSON-RPC loop,
+   and shipping no language server:
+   `lsp-server` is 1,224,736 bytes smaller than `tower-lsp-server`,
+   needs no async runtime,
+   and has 44 passing tests with 4 adopters against `async-lsp`'s 4 and 1,
+   while `tower-lsp` does not compile at HEAD.
+- Every measured diagnostic renderer:
+   JSON output leaves nothing for them to draw.

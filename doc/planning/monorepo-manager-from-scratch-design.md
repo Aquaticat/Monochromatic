@@ -128,6 +128,36 @@ Stated by the user on 2026-09-16:
   aarch64 stays release-blocking;
    the question covered x86-64 levels only.
 
+### Output format
+
+Stated by the user on 2026-09-17,
+answering which diagnostic renderer meow should use:
+"There is no need.
+ Emit every line as a json,
+ error or warning or not."
+
+- Every line meow writes to standard output or standard error is a JSON object:
+   logs,
+   progress,
+   task output framing,
+   warnings,
+   and errors alike.
+- meow ships no human-facing renderer and takes no diagnostic-rendering dependency,
+   so `codespan-reporting`,
+   `annotate-snippets`,
+   `ariadne`,
+   and `miette` are all out.
+- Rules `DGT`,
+   `DNL`,
+   and `WRN` still govern what a diagnostic says:
+   the JSON object carries the affected input,
+   the remediation paths,
+   and neutral wording,
+   with source spans as fields rather than as drawn carets.
+- Clients,
+   including the later TUI,
+   render for humans from these objects.
+
 ### Configuration
 
 Stated by the user on 2026-09-16,
@@ -1271,10 +1301,25 @@ the brief went to the user on 2026-09-17 and rule `DRR` requires acceptance firs
    "All three".
   Reminder issues track the user filing the two `hcl-edit` write-back defects
    and the `hcl-rs` evaluator divergences personally.
-- Still open:
-   naming for meow-only functions,
-   the diagnostic renderer,
-   and acceptance of the formatter and language server recommendations.
+- Naming:
+   "Namespaced `meow::tomldecode`".
+  meow-only functions carry the `meow::` namespace,
+   so an author can see which names are portable to OpenTofu;
+   OpenTofu's own `provider::` namespace is the precedent.
+- Formatter:
+   "Ship no formatter".
+  meow has no `fmt` command and no formatting rules of its own,
+   so managed HCL keeps whatever style its author wrote.
+  The `hclwrite` conformance corpus stays in the research as evidence,
+   unused.
+- Language server:
+   "`lsp-server`".
+  `lsp-server` 0.10.0 with `gen-lsp-types` 0.11.0,
+   behind a hidden `meow lsp` stdio subcommand.
+- Diagnostic renderer:
+   dissolved.
+  Every line meow emits is JSON ("Output format"),
+   so no renderer crate is taken.
 
 #### Recommended shape
 
