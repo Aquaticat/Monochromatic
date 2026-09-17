@@ -1,5 +1,12 @@
 # Decision: no Rust migration for file-enforcer
 
+Superseded 2026-09-16 by
+[`doc/decision/monorepo-manager-all-rust.md`](../../../doc/decision/monorepo-manager-all-rust.md):
+the monorepo manager must ship as one file,
+so file-enforcer's functionality is rewritten in Rust inside it.
+The reasons below did not consider single-file shipping;
+they still describe the TypeScript implementation until the Rust tool replaces it.
+
 Records why file-enforcer stays TypeScript and what to optimize instead.
 Prompted by a "rewrite the CPU-bound dev tooling in Rust" survey of the monorepo.
 The short answer:
