@@ -197,11 +197,13 @@ per `doc/planning/load-bearing-code-languages.md`.
      two languages in one tool,
      with a documented boundary between them.
 
-Ranking:
-C > A > B.
-C beats A because cgroup placement before `exec` is native instead of routed through an extra process per task,
-while file-enforcer reuse is the same.
-A beats B because B either duplicates file-enforcer or reaches the same child-process boundary as C without naming it.
+Superseded ranking:
+C > A > B was based on surface pros and cons.
+On 2026-09-16 the user rejected it:
+`systemd-run --scope` is not disqualifying for Option A,
+the option set omitted alternatives such as Kotlin/Native,
+and every option must be designed deeply enough to surface its disqualifying problems before ranking.
+A deeper comparison replaces this section.
 
 ### Process model
 
@@ -368,15 +370,18 @@ A beats B because B either duplicates file-enforcer or reaches the same child-pr
 - The vet's HC5 lists macOS and Windows CI runners,
    while the user made 0.x Linux only.
 
+## Decisions on 2026-09-16
+
+- Tasks run Gradle with its daemon disabled,
+   so ending or freezing a task cannot kill or stall shared Gradle state.
+- A paused running task releases its concurrency slot.
+- Affected work comes from native manifests:
+   pnpm workspace dependencies,
+   Cargo path dependencies,
+   and Gradle projects,
+   with extra rules for relationships between ecosystems.
+
 ## Open questions
 
 - Which stack,
-   given the ranked options?
-- Should tasks run Gradle with its daemon disabled,
-   so ending a task cannot kill shared state?
-- Does a frozen running task keep its concurrency slot?
-- Which manifests define affected work:
-   pnpm workspace dependencies,
-   Cargo path dependencies,
-   Gradle projects,
-   or a repository-owned graph?
+   after a deep comparison of every plausible option.
