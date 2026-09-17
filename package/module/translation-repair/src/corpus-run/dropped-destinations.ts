@@ -27,7 +27,11 @@ import {
 // itself parses (front matter split, invisible lines and HTML comments masked,
 // strict MDX with the plain-markdown downgrade), which also covers reference
 // definitions; bare runs come off a linear scan for the two web schemes, which
-// also covers front matter and HTML attributes. A destination is a string; two
+// also covers front matter and HTML attributes, over the text with its HTML
+// comments masked (class forty-six, shi_Yumiaoya1, 2026-09-17: the original
+// carried a profile link inside a comment, every stage masks comments, and the
+// page was refused for dropping a destination no reader could follow). A
+// destination is a string; two
 // spellings of one address that differ only by a trailing slash are treated as
 // the same address, because that difference changes nothing a reader can
 // follow.
@@ -397,11 +401,17 @@ export function collectDestinations(
   const parsed = markdownDestinations({ text, },);
 
   /**
+   Text with its HTML comments masked to whitespace, since a link inside a
+   comment is rendered nowhere and owed by no page.
+   */
+  const { masked: uncommented, } = maskHtmlComments({ text, },);
+
+  /**
    Both readers' output, tree first so a definition precedes its bare run.
    */
   const combined = [
     ...parsed.urls,
-    ...scanUrlRuns({ text, },),
+    ...scanUrlRuns({ text: uncommented, },),
   ];
 
   /**
