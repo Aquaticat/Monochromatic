@@ -1009,3 +1009,272 @@ Saturated with at least two survivors:
  and `autobahn-hash` passed screening.
 The broader-web class has no cursor;
  its results were covered by the complete registry and repository classes.
+
+## Screening
+
+Every result is listed with its outcome in
+ [`screening-crates.md`](tech-meow-cache-key-hash-vet-2026-09-17/screening-crates.md)
+ (3,322 crates).
+This section is the candidate ledger for every hash library reviewed by hand,
+ grouped by outcome.
+Unless stated otherwise,
+ each candidate's base category is inspectable open-source local technology
+ with all four overlays from "Classification",
+ and evidence comes from its crates.io archive under `data/crate-src/` read on 2026-09-17.
+
+### Result under each reading of hardware acceleration
+
+- R2, SIMD vectorization:
+   five screening survivors,
+   all XXH3-128 or HighwayHash implementations.
+- R1, dedicated instructions:
+   no non-cryptographic survivor.
+  The functions that meet R1 on both architectures are
+   `gxhash` (HC9),
+   `ahash` (HC2, HC3),
+   `rotohash-rs` (HC10, HC3),
+   and the cryptographic `sha2` (SHA extensions) and AES-CMAC through `aes` (AES instructions),
+   which are outside the decision scope and measured as controls.
+- R1 and R2 together:
+   only `rotohash-rs` and `gxhash`,
+   both excluded.
+
+So any recommendation relies on R2.
+
+### Screening survivors
+
+#### `xxhash-rust` 0.8.18
+
+- Discovery:
+   CR05 first,
+   also CR11, CR12, CR14, W05.
+- Function:
+   XXH3-128 one-shot `xxh3_128` and streaming `Xxh3::digest128` (`src/xxh3.rs:1228`).
+- R1:
+   no.
+- R2:
+   yes on both;
+   SSE2, AVX2, and AVX-512 paths on x86 and NEON on aarch64,
+   chosen by `cfg(target_feature)` at compile time (`src/xxh3.rs:16-55`);
+   the vector path covers inputs over 240 bytes.
+- Screening gates:
+   HC2 pass (128-bit),
+   HC3 pending targeted evidence (XXH3 output frozen upstream),
+   HC4 pending (no build script, no C),
+   HC6 pending (BSL-1.0),
+   HC10 pending (streaming API present).
+- Result:
+   serious alternative.
+
+#### `twox-hash` 2.1.4
+
+- Discovery:
+   CR02 first,
+   also CR11, CR12, CR14, GH02;
+   already a transitive dependency of two music-player lockfiles (2.1.2).
+- Function:
+   XXH3-128 `XxHash3_128::oneshot` and streaming `write`/`finish_128` (`src/xxhash3_128.rs:35`, `:132`, `:141`).
+- R1:
+   no.
+- R2:
+   yes on both;
+   run-time AVX2 or SSE2 dispatch on x86 and NEON on aarch64 with the `std` feature (`src/xxhash3/large.rs:100-120`).
+- Screening gates:
+   HC2 pass,
+   HC3 pending (README "Portability": output does not depend on the platform),
+   HC4 pending,
+   HC6 pending (MIT),
+   HC10 pending.
+- Result:
+   serious alternative.
+
+#### `hashcrew` 0.3.0
+
+- Discovery:
+   CR01 first,
+   also CR05, CR06, CR09, CR14.
+- Function:
+   XXH3-128 `xxh3_128` and streaming `Xxh3_128` (`src/xxhash/xxh3.rs:190`, `:1082-1089`).
+- R1:
+   no for XXH3
+   (its CRC family uses CRC and CLMUL instructions but outputs 32 bits).
+- R2:
+   yes on both;
+   NEON, SSE2, and AVX2 kernels for inputs over 240 bytes,
+   run-time detection with `std` (`src/xxhash/kernel/mod.rs:58-90`).
+- Screening gates:
+   HC2 pass,
+   HC3 pending,
+   HC4 pending,
+   HC6 pending (Apache-2.0),
+   HC10 pending.
+- Result:
+   serious alternative.
+
+#### `highway` 1.3.0
+
+- Discovery:
+   CR02 first,
+   also CR03, CR05, CR07, CR11, CR12, CR14, W05.
+- Function:
+   HighwayHash-128 through `HighwayHasher::hash128` and streaming `append`/`finalize128` (`src/builder.rs:119-139`).
+- R1:
+   no.
+- R2:
+   yes on both;
+   SSE4.1 and AVX2 with run-time detection and a portable fallback on x86 (`src/builder.rs:147-185`),
+   NEON on aarch64.
+- Screening gates:
+   HC2 pass,
+   HC3 pending (README: "generate consistent 64, 128, and 256bit hashes across all hardware"),
+   HC4 pending,
+   HC6 pending (MIT),
+   HC10 pending.
+- Result:
+   serious alternative.
+
+#### `autobahn-hash` 0.1.0
+
+- Discovery:
+   CR03 first,
+   also CR14, GH02.
+- Function:
+   HighwayHash `hash_128` through nightly `portable_simd` and `multiversion` (`src/lib.rs:1`, `:318`).
+- R2:
+   yes on both through `core::simd`.
+- Result at screening:
+   serious alternative;
+   exited at targeted evidence on HC4 ("Hard-gate outcomes").
+
+### Exits among named and near-miss candidates
+
+- `gxhash` 3.5.0,
+   the incumbent kept as a candidate:
+   HC9 (user decision of 2026-09-17).
+  Also HC10:
+   upstream closed #127 because `Hasher` output differs from the one-shot result and depends on write chunking
+   (`gxhash-owned.md`, "`Hasher` streaming API").
+- `rotohash-rs` 0.1.2
+   (CR01, XR02, XG01),
+   RotoHash, 128-bit,
+   AES-NI with AVX2 or VAES with AVX-512 on x86 and NEON with the AES extension on aarch64:
+   the only candidate meeting R1 and R2 on both architectures.
+  HC10:
+   the crate offers one-shot `hash` and `hash_with_seed` only (`src/lib.rs:87`, `:158`),
+   although the reference README says the algorithm "supports incremental hashing".
+  HC3 not established:
+   the reference README says "The baseline algorithm is unlikely to change but analysis and verification of hash quality is ongoing",
+   and RotoHash is absent from the SMHasher3 results list.
+  Without HC10 it would have needed targeted evidence;
+   hashing multi-GB outputs through it would require memory-mapping whole files.
+- `hashcodecs` 1.4.1 (CR02):
+   HC10 for its XXH3-128,
+   which has one-shot, prepared-seed, and batch APIs but no streaming state;
+   HC1 for its MurmurHash3 x64-128,
+   whose aarch64 body is the scalar path (`src/murmur3/x64_128.rs:175-176`).
+- `xxh3` 0.1.1 (CR05):
+   HC10,
+   one-shot `hash128_with_seed` only (`src/xxh3.rs:86`);
+   last release 2022-05-20.
+- `museair` 0.6.0 (CR02, CR14):
+   HC1,
+   scalar multiply design with no intrinsics (source scan 0 and 0);
+   it passes all SMHasher3 tests,
+   which does not offset a hard gate.
+- `rapidhash` 4.5.1,
+   `komihash` 0.5.0,
+   `wyhash` 0.6.0 and its ports,
+   `polymur-hash` 0.2.2,
+   `seahash` 4.1.0:
+   HC1 (scalar) and HC2 (64-bit).
+- `foldhash` 0.2.0:
+   HC1,
+   HC2,
+   and HC3 (output not stable by design).
+- `ahash` 0.8.12:
+   HC2 (64-bit `Hasher`)
+   and HC3 (README: output is not stable across versions or platforms).
+- `drtahash` 0.0.17:
+   HC3 (per-map keys) and HC2.
+- `t1ha` 0.1.2:
+   HC1 (x86 intrinsics only)
+   and HC3 (`t1ha0` output differs by platform).
+- `meowhash` 0.3.0:
+   HC1 ("aarch64 support has been disabled as of version 0.2", `src/arm.rs:9`)
+   and HC3 (MeowHash 0.5 not declared final).
+- `axhash-core` 1.0.0,
+   `mm3h` 0.1.3:
+   HC2 (64-bit outputs).
+- `siphasher` 1.0.3,
+   `rustc-stable-hash` 0.1.2,
+   `tenthash` 1.1.0,
+   `metrohash` 1.0.7,
+   `cityhasher` 0.1.0,
+   `cityhash-rs` 1.0.1,
+   `fastmurmur3` 0.2.0,
+   `murmur3` 0.5.2,
+   `zwohash` 0.1.2,
+   `mwhash` 0.1.1:
+   HC1 (scalar).
+- CRC and Adler crates
+   (`crc-fast` 1.10.0, `crc32fast` 1.5.2, `crc32c` 0.6.8, `crc64fast` 1.1.0, `crc64fast-nvme` 1.2.1, `librscrc`, `turbo_crc`,
+   `slice-by-8`, `hud-slice-by-8`, `bitcoin-crc32c`, `adler32-simd`, `simd-adler32`):
+   HC2,
+   outputs of 64 bits or fewer,
+   although several meet R1 on both architectures.
+- `umash` 0.6.1 through `umash-sys`,
+   `highwayhash` 0.0.14,
+   `fasthash` 0.4.0,
+   `xxhash-c-sys` 0.8.7,
+   `cityhash` 0.1.1,
+   `clhash-sys`:
+   HC4,
+   C or C++ sources compiled by build scripts.
+- `halftime` 0.1.1,
+   `polyval` 0.7.3,
+   `polyhash` 0.3.1,
+   `ghash`:
+   category mismatch,
+   universal hashes that need key material and a padding scheme chosen by the consumer.
+- `noncrypto-digests` 0.4.0,
+   `hashkit` 0.1.5,
+   `blazehash-core`,
+   `thread-utilities`,
+   `whasher`:
+   adapters over other hash crates;
+   their algorithms are screened through the underlying crates.
+- Repositories not on crates.io
+   (`fernhash`, `hache`, `mixhash`, `cmhash`, `BlitzHash`):
+   HC7.
+- Families available only in other languages or as bindings:
+   RotoHash C++ reference (x86-64 only),
+   UMASH (C),
+   MetroHash128CRC and CityHashCrc (C++),
+   MeowHash (C, x86 AES),
+   `haste` (Go),
+   StringZilla (C, 64-bit):
+   HC4,
+   with HC1 or HC2 where noted.
+
+### Cryptographic functions carried as controls
+
+- `blake3` 1.8.7:
+   outside the decision scope.
+  On aarch64 its NEON implementation is C (`c/blake3_neon.c`, built in `build.rs` unless `pure`),
+   so under HC4 its aarch64 path is portable code:
+   it fails HC1 under both readings when no C toolchain is allowed.
+  Kept as the requested control
+   and because its `update_rayon` tree mode is the one library way to hash one input on several cores.
+- `sha2` 0.11.0:
+   outside the decision scope;
+   meets R1 on both architectures through SHA extensions with run-time detection;
+   measured as the R1 control,
+   truncated to 128 bits.
+- AES-CMAC through `cmac` 0.8.0 and `aes` 0.9.3:
+   outside the decision scope;
+   meets R1 on both through AES instructions with run-time detection;
+   measured as the AES control.
+- Other cryptographic crates
+   (`sha1`, `k12`, `kangarootwelve`, `blake3-std`, `cubehash`, `keccak-batch`, `graviola`, `rscrypto`, and others in the appendix):
+   outside the decision scope,
+   not measured.
