@@ -951,8 +951,13 @@ Action verbs ("fix",
  "update"...) authorize action.
 
 DRR:
- Recommendation/review questions do not ratify a decision.
-Create/update `doc/decision/` only after user explicitly accepts or delegates final decision;
+ Recommendations,
+ even delegated:
+ brief evidence,
+ ranking,
+ risks;
+ get acceptance before `doc/decision/` or dependent work.
+Review/sub-question answers don't ratify;
  proposals use `doc/planning/`.
 
 IWT:
