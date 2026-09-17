@@ -1268,6 +1268,69 @@ and the `rustix` auxv source.
 - Probe containers that run QEMU pass `--init`:
    without it a SIGILL run hung because QEMU ran as PID 1.
 
+### Managed file editing
+
+Research:
+[`rust-structured-edits.md`](monorepo-manager-route-research/rust-structured-edits.md),
+2026-09-17.
+Scores come from `structured-edits/probe/scores.md` in the session scratchpad;
+the `toml_edit` wrapper's 21 passes were recounted there.
+
+#### Chosen editors
+
+- TOML:
+   `toml_edit` behind a repository wrapper passed all 21 cases,
+   while `toml_edit` as-is passed 12:
+   setting a value dropped its same-line comment,
+   removing an array element moved a comment onto the wrong element,
+   and deleting a key deleted a header comment separated by a blank line.
+  `taplo` 0.14.0 passed 6 and rejects TOML 1.1 forms the current editor already writes.
+- JSONC:
+   the `jsonc-parser` 0.33.2 CST behind a wrapper passed all 16 cases,
+   with no dependencies,
+   adding 134,536 bytes.
+- XML:
+   `roxmltree` with byte-range splicing passed all 9 cases,
+   fails malformed files with line and column,
+   and adds 77,072 bytes;
+   `xot`,
+   `xmltree`,
+   and `xml-rs` wrote raw tabs or newlines into attribute values.
+- The repository's TypeScript editors fall short:
+   `module-toml-edit` passed 15 of 21,
+   `module-jsonc-edit` 7 of 16,
+   and file-enforcer's XML splicing 4 of 9.
+
+#### Requirements after the user's answers
+
+- Comments must survive edits and never move to a different node
+   ("Managed file edits").
+- "'untouched bytes identical' rule and preserve CRLF per file - no need."
+  (user,
+   2026-09-17):
+   formatting outside edited nodes may change,
+   and line endings may be normalized.
+- Settled by those answers:
+  - JSONC and TOML files may be reformatted canonically on write,
+     so files `toml_edit` cannot round-trip byte for byte are rewritten, not rejected.
+  - Comments directly above a deleted node leave with it;
+     leaving them behind would attach them to a different node.
+  - Owned XML options are edited at attribute level,
+     so comments inside an entry survive.
+  - JSONC editing is a general capability,
+     since today's file-enforcer edits no JSONC and meow serves other repositories.
+
+#### Research notes
+
+- Cargo builds hit the `/tmp` quota,
+   so that research built under `~/temp/agent/structured-edits-target-2026-09-16/`.
+- The research identified tool quirks worth `doc/troubleshooting/` entries:
+   `toml_edit` comment loss,
+   `taplo` rejecting TOML 1.1,
+   `jsonc-parser` accepting JSON5 by default,
+   `json-five` writing an unterminated block comment,
+   and XML crates corrupting attribute whitespace.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
