@@ -450,7 +450,12 @@ which the takeover session does not have.
   the owner's reading of 2026-09-17).
   `yingying1` launched at 18:23 UTC on the same frozen `479bb011f` (pid 3820813,
   runs `~/temp/agent/yingying1`,
-  log `~/temp/agent/yingying1.log`);
+  log `~/temp/agent/yingying1.log`)
+  and settled clean after 15 minutes
+  (the pass log's "yingying1 read" heading dated 2026-09-17 18:42 UTC).
+  `XingZ601` launched at 18:45 UTC on the same frozen `479bb011f` (pid 3839544,
+  runs `~/temp/agent/XingZ601`,
+  log `~/temp/agent/XingZ601.log`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
   Also today:
@@ -4083,29 +4088,28 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `yingying1` by the seven steps and the three checks (frozen `479bb011f`,
-    pid 3820813,
-    runs `~/temp/agent/yingying1`,
-    log `~/temp/agent/yingying1.log`,
-    launched 18:23 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
+1.  READ `XingZ601` by the seven steps and the three checks (frozen `479bb011f`,
+    pid 3839544,
+    runs `~/temp/agent/XingZ601`,
+    log `~/temp/agent/XingZ601.log`,
+    launched 18:45 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    shi_Yumiaoya settled on shi_Yumiaoya5 with its death paragraphs
-    (the pass log's "shi_Yumiaoya5 read" heading dated 2026-09-17 18:28 UTC),
-    so the queue moved on.
-    yingying is 17 source lines against 22 archive lines,
-    so read first its two footnote definitions on the page
-    (one a bare URL,
-    one a link;
-    class twenty-one's orphan-definition guard and class forty-six's bare-URL scan both touch them),
-    then the archive-only `## Description` heading and bare "References" line,
-    then the front matter
-    (translated,
-    so it ships as the archive has it),
-    then the name in the farewell link
-    (the archive writes "Sakura" for 樱樱 there and "Yingying" everywhere else),
-    then the contributors line with its two links,
+    yingying settled clean on yingying1
+    (the pass log's "yingying1 read" heading dated 2026-09-17 18:42 UTC),
+    so the queue moved on to its last entry.
+    XingZ60 is 577 source lines against 358 archive lines,
+    nine footnote definitions in the original and none in the archive,
+    so read first the nine definitions on the page and their labels
+    (class nineteen's relabel,
+    class twenty-one's orphan guard),
+    then the `PhotoScroll`,
+    `Hexagon`,
+    `DottedNumber`,
+    `BlurBlock` and `TextRing` components as the archive has them,
+    then the `details` block whose summary carries inline HTML and a blockquote,
+    then the profile link to another entry and the two commented-out empty paragraphs on nobody's page,
     then the page assembly's findings
     (`repeats another section's heading` in the log,
     `pageAssembly.trimmed` in the artifact;
@@ -4123,7 +4127,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (shi_Yumiaoya5 to its SETTLED page:
+    (yingying1 to its SETTLED page:
+    0.18 USD by the meters,
+    345 seats,
+    12 retry rounds,
+    15 minutes;
+    shi_Yumiaoya5 to its SETTLED page:
     0.77 USD by the meters,
     969 seats,
     45 retry rounds,

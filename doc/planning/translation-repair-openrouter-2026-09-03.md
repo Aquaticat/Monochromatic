@@ -8082,6 +8082,67 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ601 launches, 2026-09-17, 18:45 UTC
+
+Frozen `479bb011f` (classes forty-one to fifty-one),
+pid 3839544,
+runs `~/temp/agent/XingZ601`,
+log `~/temp/agent/XingZ601.log`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+no cron job,
+the background waiter alone reports the exit.
+The entry is 577 source lines against 358 archive lines,
+the largest read so far:
+nine footnote definitions in the original and none in the archive,
+a `PhotoScroll`,
+`Hexagon`,
+`DottedNumber`,
+`BlurBlock` and `TextRing` components,
+a `details` block whose summary carries inline HTML and a blockquote,
+two commented-out empty paragraphs,
+and a profile link to another entry.
+Read first the nine definitions on the page and their labels
+(class nineteen's relabel,
+class twenty-one's orphan guard),
+then the components as the archive has them,
+the `details` summary,
+the profile link,
+then the seven steps and the three checks.
+
+## yingying1 read, 2026-09-17, 18:42 UTC: SETTLED, clean
+
+Frozen `479bb011f`,
+15 minutes
+(`ms=885658`),
+`status=SETTLED` on the first attempt,
+`translateStatus=complete`,
+`pageSilent=0`,
+`attempts.json` reads 1,
+35 page lines against the archive's 23.
+Spend by the meters:
+Bedrock 177.53 to 177.45,
+OpenRouter 253.52 to 253.42,
+0.18 USD;
+`pass-spend.mjs` logs 345 seats and 12 retry rounds.
+Both footnote definitions on the page under their own labels,
+the bare-URL definition byte for byte,
+the link definition with the name rendered "Yingying" where the archive wrote "Sakura"
+(the original's link text carries her name,
+so the declared name rule applies);
+the archive-only `## Description` heading and bare "References" line kept as the archive has them;
+front matter equal to the archive;
+the contributors line with its two links unchanged;
+no Han outside comments,
+no refusal.
+The closing wish ships in the second person as the original has it
+("May you still have the same cheerfulness"),
+where the archive had the third.
+The semantic wrap puts each footnote marker on its own line after its sentence,
+which renders inline;
+recorded as a shape,
+not a defect.
+
 ## yingying1 launches, 2026-09-17, 18:23 UTC
 
 Frozen `479bb011f` (classes forty-one to fifty-one),
