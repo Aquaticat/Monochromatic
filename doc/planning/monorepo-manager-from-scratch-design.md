@@ -146,6 +146,7 @@ Answered by the user on 2026-09-16:
 - Generated files may change once in a reviewed commit when the Rust tool takes over;
    today's exact bytes are not required.
 - "but we must still handle comment-preserving jsonc editing and toml editing properly."
+- "XML comments must also be properly preserved."
 - A malformed managed XML file fails with a diagnostic instead of a best-effort splice.
 
 ### Installs for probes
@@ -1310,7 +1311,7 @@ Open to the user's veto:
    whether the music player moves to it,
    and which optimizations to take;
    research is running.
-- Comment-preserving JSONC and TOML editing in Rust:
+- Comment-preserving JSONC, TOML, and XML editing in Rust:
    crates versus ports of `module-toml-edit` and the JSONC editor;
    research is running.
 - aarch64 builds and the missing-AES warning:
