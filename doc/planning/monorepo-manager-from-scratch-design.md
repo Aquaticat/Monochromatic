@@ -1108,6 +1108,20 @@ Open to the user's veto:
 ### Cache
 
 - Caching is always on.
+- Entry contents,
+   answered by the user on 2026-09-16:
+  - Every run is cached,
+     failures included:
+     "Cache everything, because a flaky task is a user error and users should know better.
+     We also provide a retry mechanism for unfixably flaky tasks."
+  - Captured stdout and stderr are stored and replayed on a hit.
+  - Outputs are recorded as pointers to their locations plus reflinks:
+     "We only record pointers and reflinks.
+     There's no need to keep 2 copies of the same thing on disk if we preserve the location of the thing."
+    Where reflinks are unavailable,
+     only pointers are recorded,
+     and a changed or missing output means the task runs again.
+  - Eviction uses a size cap plus a maximum age.
 - The cache key covers the task definition,
    argument vector,
    input file content hashes,
