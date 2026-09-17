@@ -99,7 +99,10 @@ Each step's evidence is in the linked documents.
      writing `doc/audit/*-vet-2026-09-17.md` and committing its own report,
      after the user moved cache keys off `gxhash`
      ("Cache key hash after the collision findings" in the design).
-  - Troubleshooting docs for the `gxhash` short-input out-of-bounds read and one-byte `gxhash128` collisions.
+- Stopped unfinished on 2026-09-17, with no files written:
+   troubleshooting docs for `gxhash` defects,
+   no longer useful once meow and the music player leave `gxhash`;
+   the evidence stays in `gxhash-owned.md` and issue #545.
 - Finished and merged on 2026-09-17:
    `probe-platforms.md` ("Platform probes"),
    `rust-structured-edits.md` ("Managed file editing"),
@@ -146,8 +149,8 @@ Each step's evidence is in the linked documents.
 - Running under the `troubleshooting-doc` skill,
    uncommitted until each lands,
    in `doc/troubleshooting/`:
-   `toml-edit-comment-loss.md`,
-   `taplo-toml-1-1-inline-table-trailing-comma.md`,
+   `toml-edit-comment-loss.md` (committed),
+   `taplo-toml-1-1-inline-table-trailing-comma.md` (committed),
    `json-five-unterminated-block-comment.md`,
    `jsonc-parser-json5-defaults.md`,
    `biome-json-crates-exact-pins.md`,
