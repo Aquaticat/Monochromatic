@@ -359,8 +359,90 @@ without surveying crate alternatives or the repository's existing `zbus` 5,
 `tokio`,
 and `ignore` dependencies.
 The repository also already uses `@homebridge/dbus-native` in `package/kwin/key-helper`.
-Library-level research for both leading options is being redone,
-and the ranking above is provisional until it lands.
+Library-level research for both leading options was redone:
+`stack-node-libraries.md` and `stack-rust-crates.md`.
+
+#### Library-level results
+
+Revised Node design:
+`chokidar` for watching with daemon-side re-hashing,
+`systemd-run --user --scope` per task,
+`@homebridge/dbus-native` for `FreezeUnit`,
+`ThawUnit`,
+and `KillUnit`,
+`json-rpc-2.0` with `readLines` from `@monochromatic-dev/mcp-stdio`,
+plain `child_process`,
+and `node:crypto`.
+Remaining Node problems:
+
+- `chokidar` watches every file at repository scale:
+   41,209 watches,
+   1.74 to 1.78 seconds to ready,
+   and 403 MiB resident memory (measured by the research).
+  Its open issue `paulmillr/chokidar#1455`,
+   "Event throttling discards updates",
+   drops a second change within 50 milliseconds.
+- No Node watcher library reports inotify queue overflow;
+   a worker-thread canary detected losses on a fixture,
+   unproven at repository scale.
+- `@parcel/watcher`,
+   the alternative,
+   misses directories created or moved in after start without any event.
+- Node's `'pipe'` stdio gives children a socket,
+   so a task that writes `> /dev/stdout` fails:
+   `sh -c 'echo probe > /dev/stdout'` spawned with piped stdio exited 1 with
+   "/dev/stdout: No such device or address"
+   (measured 2026-09-16).
+- Pure-JavaScript D-Bus libraries cannot pass file descriptors,
+   and systemd marks `FreezeUnit` and `ThawUnit` as not documented.
+- The systemd scope model and a daemon-owned delegated cgroup need different freeze,
+   kill,
+   and doctor logic.
+
+Revised Rust core design,
+with no `unsafe` in repository code
+(probes compiled under `#![forbid(unsafe_code)]`):
+a launcher that writes its own PID into the task cgroup and calls std's `CommandExt::exec`,
+direct cgroup file writes under a delegated cgroup,
+the `inotify` crate with a directory walk filtered by the repository's `ignore` dependency,
+`tokio-util` `LinesCodec` with `serde_json` for JSON-RPC,
+`tokio::process` and `tokio::signal`,
+`rustix` `ioctl_ficlone`,
+and `btrfs-uapi` 0.13.0 for subvolumes and snapshots.
+The development machine's systemd 259.8 user manager exposes `StartTransientUnit`,
+`FreezeUnit`,
+`ThawUnit`,
+and `KillUnit` over D-Bus
+(`busctl --user introspect`,
+measured).
+Remaining Rust problems:
+
+- Moving a task into a new cgroup,
+   freezing it,
+   and killing it are unexercised.
+- Watch correctness,
+   JSON-RPC subscriptions,
+   and backpressure are repository code by choice after the crate survey.
+- Rust and TypeScript event types can drift;
+   `yerpc` generates TypeScript types but is unchecked.
+- The launcher's re-exec after a rebuild replaces the daemon binary is untested.
+- `btrfs-uapi` needs `libclang` at build time.
+- Rust's piped stdio does not share Node's socket problem:
+   the same `/dev/stdout` probe spawned through `std::process::Command` with `Stdio::piped()` exited 0 and captured the output
+   (measured 2026-09-16).
+
+Revised ranking of the two leading options:
+Rust core with TypeScript file-enforcer children over TypeScript on Node.
+Node's remaining problems sit in two core requirements with no library fix found:
+repository-scale watching that is heavy,
+lossy,
+and silent about overflow,
+and task stdio that breaks common shell redirections.
+The Rust core's remaining problems are repository-written code chosen after a crate survey
+and a cross-language schema with a generator candidate.
+Node would regain the lead if single-language maintenance outweighs both of those Node problems.
+
+The lower-ranked stacks have not had the same library-level pass.
 
 ### Process model
 
