@@ -466,6 +466,13 @@ OPI:
  because ..." explaining each adjacent step,
  not just top pick.
 
+YKZ:
+ Several options:
+ widen to plausible alternatives,
+ then design each until its disqualifying problems surface.
+Rank only after;
+ surface pros and cons don't separate options.
+
 ODM:
  Option examples must demonstrate every concept the question asks the user to compare.
 
