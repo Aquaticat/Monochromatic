@@ -3,8 +3,17 @@
 ## Status
 
 - Status:
-   draft design;
-   the tech stack and several behaviors remain open.
+   draft design.
+  On 2026-09-16 the stack narrowed to one remaining route:
+   an all-Rust tool with file-enforcer rewritten in Rust.
+  Its configuration hosting,
+   rewrite scope,
+   and binary build remain open,
+   and no decision record exists.
+- Session state,
+   commits,
+   and next action:
+   [`doc/handover/monorepo-manager.md`](../handover/monorepo-manager.md).
 - Route comparison:
    [`monorepo-manager-build-routes.md`](monorepo-manager-build-routes.md).
 - Requirements checklist:
@@ -60,6 +69,17 @@ Stated by the user on 2026-09-16.
    end a task,
    and perform similar task controls.
 
+### Distribution
+
+- Hard requirement:
+   the tool ships as a single file that a user runs directly,
+   as in `./meow`
+   (`meow` is a placeholder name).
+- Unpacking at run time is acceptable,
+   as AppImage does.
+- A single file that carries Node is too big,
+   per the user's decision recorded in "Single-file shipping and a file-enforcer rewrite".
+
 ## Measured environment
 
 Measured 2026-09-16 on the development machine:
@@ -73,8 +93,10 @@ Measured 2026-09-16 on the development machine:
    both return 16.
   Node has no API named `availableConcurrency`,
    the term the user used.
-  The tech stack is undecided,
-   so the concurrency source depends on the chosen runtime.
+  With the all-Rust route,
+   the concurrency source is `std::thread::available_parallelism`,
+   which returned `Ok(16)` under rustc `1.100.0-nightly` (0fc141305 2026-09-11)
+   (`parallelism-probe/main.rs` in the session scratchpad).
 - 104 packages define `test:unit` and 23 define `test`;
    rarer test tasks include `test:container`,
    `test:wayland`,
@@ -138,14 +160,9 @@ Measured 2026-09-16 on the development machine:
   If the tool receives its own name,
    the prefix follows that name.
 
-## Open questions
+### Sandboxing scope answer
 
-- Tech stack:
-   undecided.
-   The user corrected an earlier framing that assumed Node.
-
-Resolved:
-for 0.x,
+For 0.x,
 sandboxing is cgroups only,
 without restricting file reads,
 per the user on 2026-09-16.
@@ -159,8 +176,69 @@ Research with citations and verified or unverified labels:
 
 ### Tech stack options
 
-The stack is undecided.
-Every option below was designed against the same requirements until its disqualifying problems surfaced,
+#### Current stack direction
+
+As of 2026-09-16,
+the only remaining route is an all-Rust tool with file-enforcer rewritten in Rust,
+shipped as one binary.
+Every other option is out:
+
+- TypeScript on Node and every shape that ships Node inside the single file,
+   including a TypeScript daemon with a Rust native addon
+   and the Rust core with TypeScript file-enforcer children:
+   Node single executables are too big,
+   per the user's decision in "Single-file shipping and a file-enforcer rewrite".
+  The Rust core with TypeScript children is out by inference from that reason,
+   open to the user's veto.
+- Kotlin JVM core,
+   all Kotlin on the JVM,
+   Kotlin/Native,
+   Bun,
+   Deno,
+   Python,
+   OCaml,
+   and .NET:
+   the user judged them not worth further research.
+- Go and Zig:
+   excluded by the user before design.
+
+Being designed:
+the all-Rust tool's configuration-hosting variants,
+byte-for-byte output parity for file-enforcer's structured edits,
+rewrite scope,
+and single-binary build and size.
+Candidate hosts include plain Rust code,
+Starlark through `starlark-rust`,
+Rhai,
+Lua through `mlua`,
+an embedded JavaScript engine such as `rquickjs`,
+`boa`,
+or `deno_core`,
+declarative formats such as TOML,
+KDL,
+Nickel,
+CUE,
+or Pkl,
+and WebAssembly plugins.
+
+Measured rewrite scope,
+2026-09-16:
+`package/dev-script/file-enforcer/src` holds 81 non-test `.ts` files with 36,381 lines,
+of which `data/packages.generated.ts` is 22,607 generated lines,
+the OS package index that Meta Package Manager may replace;
+the remaining 80 files hold 13,774 lines.
+The root `file-enforcer.config.ts` is 2,329 lines.
+Outside the package,
+`package/dev-script/vm-builder/src/import.ts` and `build-and-import.ts` import `exec` from its `/ts` subpath,
+and `package/test-fixture/file-enforcer-perf` benchmarks it.
+
+The subsections from "Findings that apply to every stack" through "Running tasks under a pseudo terminal"
+record how the stack narrowed,
+including rankings later superseded.
+
+#### Selection history
+
+Every option in "Designed options and their worst problems" was designed against the same requirements until its disqualifying problems surfaced,
 per rule `YKZ`;
 full designs,
 probes,
@@ -206,6 +284,8 @@ per `doc/planning/load-bearing-code-languages.md`.
 - All Rust
    (`stack-rust.md`):
    every Rust core problem plus a rewrite of 79 file-enforcer modules and no workable host for the 2,330-line TypeScript configuration.
+  The Rust core problems were later corrected by the crate-level research in "Library-level results",
+   and configuration hosting is being redesigned as recorded in "Current stack direction".
 - Kotlin JVM core with TypeScript file-enforcer children
    (`stack-kotlin.md`):
    Kotlin documentation pages every Kotlin option needs contradict themselves or the library source;
@@ -341,11 +421,10 @@ five runs each
 A full sequential rehash stays under one second on this machine,
 so hashing throughput does not decide the stack.
 
-Recommended stack:
+Recommended stack at that point:
 TypeScript on Node,
 following from these answers.
-This is a recommendation until the user accepts it;
-no decision record exists yet.
+Superseded by "Library-level results" and then by the single-file decision.
 
 #### Research gap found on 2026-09-16
 
@@ -452,8 +531,9 @@ Deno,
 Python,
 OCaml,
 and .NET are out of consideration.
-The stack choice is between the Rust core with TypeScript file-enforcer children and TypeScript on Node,
-with the Rust core recommended.
+The stack choice was then between the Rust core with TypeScript file-enforcer children and TypeScript on Node,
+with the Rust core recommended,
+until the single-file decision removed both.
 
 #### Single-file shipping and a file-enforcer rewrite
 
@@ -529,6 +609,9 @@ Checked 2026-09-16 after the user noted that many monorepo tools are written in 
 - So a TypeScript daemon with a Rust native addon for watching,
    task spawning,
    and hashing is a third shape that neither stack deep dive designed.
+  Its design research started on 2026-09-16 and was stopped unfinished when the user killed the TypeScript route;
+   Nx's addon also runs tasks under a pseudo terminal,
+   which "Running tasks under a pseudo terminal" records as disqualifying.
 
 #### Limits no stack removes
 
@@ -659,7 +742,7 @@ and it does not decide the stack.
    higher priority runs first,
    and priority changes apply in place.
 - Concurrency is `MONOCHROMATIC_JOBS` when set,
-   otherwise the runtime's available parallelism.
+   otherwise `std::thread::available_parallelism`.
 - Pause freezes a running task through `cgroup.freeze` and holds a queued task.
 - End kills a running task tree through `cgroup.kill`,
    which also catches children that left the task's process group,
@@ -735,12 +818,17 @@ and it does not decide the stack.
 
 ### File enforcement
 
-- File-enforcer runs as daemon tasks.
-- Each configuration evaluation runs in a child process instead of a cache-busting re-import,
-   and emits typed events,
-   because log records carry no structured fields for the activity feed.
-- The root `file-enforcer.config.ts` already reads files directly,
-   so lint-level enforcement of undeclared reads applies there too.
+- File-enforcer is rewritten in Rust and ships inside the single binary.
+- Configuration hosting is open;
+   "Current stack direction" lists the candidate hosts.
+- Enforcement of undeclared reads depends on the host:
+   the lint-level enforcement the user accepted was proposed for `file-enforcer.config.ts`,
+   and a new host needs its own equivalent.
+- Superseded with the TypeScript route:
+   running each TypeScript configuration evaluation in a child process instead of a cache-busting re-import.
+- Carried over:
+   file-enforcer emits typed events,
+   because today's log records carry no structured fields for the activity feed.
 
 ### Migration from Mise
 
@@ -773,6 +861,14 @@ and it does not decide the stack.
    lint-level enforcement leaves stale cache hits possible.
 - The vet's HC5 lists macOS and Windows CI runners,
    while the user made 0.x Linux only.
+- Rewrite:
+   13,774 hand-written file-enforcer lines and the 2,329-line root configuration move to Rust and a new host,
+   and structured JSON,
+   TOML,
+   and XML edits must keep byte-identical output.
+- Build:
+   `btrfs-uapi` needs `libclang` at build time,
+   and the libc target and binary size of the single file are unmeasured.
 
 ## Decisions on 2026-09-16
 
@@ -796,5 +892,22 @@ and it does not decide the stack.
 
 ## Open questions
 
-- Which stack,
-   after a deep comparison of every plausible option.
+- Configuration hosting for the Rust file-enforcer:
+   being designed and ranked per rule `YKZ`.
+- Rewrite scope:
+   which file-enforcer features move as-is,
+   which Meta Package Manager replaces,
+   and how byte-identical output is proven.
+- Single binary:
+   libc target,
+   static linking,
+   and measured size.
+- How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
+- Veto open:
+   the Rust core with TypeScript file-enforcer children is out by the same size reason.
+- Veto open:
+   0.x offers no pseudo-terminal opt-in.
+- Rust approval for this scope,
+   per `doc/planning/load-bearing-code-languages.md`,
+   and stack acceptance;
+   a decision record follows acceptance only.
