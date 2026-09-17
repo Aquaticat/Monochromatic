@@ -274,6 +274,15 @@ Running since 2026-09-17:
  writing `hcl-evaluator/hcl-evaluator-design.md` in the session scratchpad,
  committing any `doc/audit/` vet report it creates,
  and leaving troubleshooting docs uncommitted.
+Also running since 2026-09-17:
+ the re-run cache key hash vet with cryptographic hashes eligible,
+ speed-first weights,
+ and `x86-64-v4` plus aarch64 as the release-blocking builds,
+ writing a new same-day `doc/audit/` report.
+When it lands,
+ verify it,
+ merge it into "Cache key hash vet result",
+ and present its brief for acceptance before any decision record (rule `DRR`).
 
 1.  When it lands,
     start the remaining items under "Design work not yet started" in the design's "Open questions".
