@@ -11,6 +11,20 @@ hitting a build break,
  a runtime crash,
  or a debug-build panic.
 
+Why gxhash:
+ per the user on 2026-09-16,
+ it benchmarked best among the hashes tried;
+ the benchmark inputs and results were not recorded.
+
+Runtime guard gotcha:
+ in a build with `-C target-feature=+aes`,
+ `is_x86_feature_detected!("aes")` is `true` at compile time,
+ because std's detection macro evaluates `cfg!(target_feature = ...)` before runtime detection
+ (`library/std_detect/src/detect/macros.rs:9-10` in the nightly-2026-09-12 Rust sources).
+A guard that warns instead of crashing on a CPU without AES-NI must call `core::arch::x86_64::__cpuid(1)` directly
+ and read ECX bit 25,
+ the bit std itself uses (`std_detect/src/detect/os/x86.rs:108`).
+
 ## Symptom
 
 Three distinct failure modes,

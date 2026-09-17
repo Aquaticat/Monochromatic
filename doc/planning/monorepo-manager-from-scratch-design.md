@@ -6,7 +6,7 @@
    draft design.
   On 2026-09-16 the stack narrowed to one remaining route:
    an all-Rust tool with file-enforcer rewritten in Rust.
-  Its configuration hosting,
+  Its declarative configuration design,
    rewrite scope,
    and binary build remain open,
    and no decision record exists.
@@ -79,6 +79,39 @@ Stated by the user on 2026-09-16.
    as AppImage does.
 - A single file that carries Node is too big,
    per the user's decision recorded in "Single-file shipping and a file-enforcer rewrite".
+- `./meow` is meant for repositories other than Monochromatic too
+   (user answer,
+   2026-09-16).
+
+### Configuration
+
+Stated by the user on 2026-09-16,
+answering whether configuration edits may need the Rust toolchain:
+"What are we doing here, now that we're determined to take on this huge project,
+that implies we have no objections of writing much more code
+therefore eliminate the turing-complete requirement of the config language.
+File-enforcer was written under the constraints of time."
+
+- The configuration language does not need to be Turing-complete.
+- Logic in today's `file-enforcer.config.ts` moves into code;
+   the TypeScript configuration's shape reflects time constraints,
+   not requirements.
+- The user later pointed to OpenTofu as a precedent:
+   "I think opentofu does config files properly."
+
+### Hashing
+
+Stated by the user on 2026-09-16:
+
+- "We don't need a crypto hash. A non-crypto hash would do."
+- "We already chose a non-crypto hash fn in music-player":
+   `gxhash`,
+   which "benched the best";
+   the benchmark was not recorded at the time.
+- "We don't need to support non-modern CPUs,
+   but we do need to properly warn users when they try to use this w/o the required CPU capacities."
+
+Design detail is in "Cache".
 
 ## Measured environment
 
@@ -158,7 +191,9 @@ Measured 2026-09-16 on the development machine:
    (`src/main/java/com/google/devtools/build/lib/buildtool/BuildRequestOptions.java` in the Bazel source)
    and the `--jobs` convention of Make-style build tools.
   If the tool receives its own name,
-   the prefix follows that name.
+   the prefix follows that name;
+   since `./meow` also serves other repositories,
+   a repository-named prefix no longer fits.
 
 ### Sandboxing scope answer
 
@@ -750,15 +785,36 @@ and release assets.
 
 - A no-engine daemon skeleton built stripped with LTO for glibc is 2,055,536 bytes,
    or 3,134,664 bytes with `zbus`.
-- This host has only the `x86_64-unknown-linux-gnu` target
-   (`rustup target list --installed`,
-   checked 2026-09-16)
-   and no static glibc,
-   so no static binary was built;
-   installing the musl target was outside the research's scope.
-  C sources in QuickJS-ng,
+- When the research ran,
+   this host had only the `x86_64-unknown-linux-gnu` target and no static glibc.
+  The user then authorized installing the musl target,
+   and `rustup target add x86_64-unknown-linux-musl` installed it for the active nightly-2026-09-12 toolchain.
+- Static probe,
+   2026-09-16:
+   the same skeleton with BLAKE3 and SHA-256 replaced by `xxhash-rust` 0.8.15 XXH3-128
+   (`allrust/skeleton-musl` in the session scratchpad,
+   `cargo build --offline --release --jobs 4`)
+   measured 1,983,424 bytes for glibc and 2,098,120 bytes for `x86_64-unknown-linux-musl`,
+   which `file` reports as "static-pie linked".
+  Run as `skeleton-musl run <throwaway directory>`,
+   the static binary added inotify watches,
+   walked,
+   matched a glob,
+   hashed,
+   parsed TOML,
+   JSON,
+   and XML,
+   read the btrfs `statfs` magic `2435016766`,
+   bound a Unix socket,
+   spawned a child,
+   and exited 0.
+  Binding the socket under the long session scratchpad path failed with "path must be shorter than SUN_LEN",
+   so the daemon's socket path needs a length check.
+- C sources in QuickJS-ng,
    vendored Lua,
-   and Wasmtime's helper need a musl-targeting C compiler for a static build.
+   and Wasmtime's helper need a musl-targeting C compiler for a static build;
+   the `blake3` crate also compiles assembly through `cc` unless its `pure` feature is set
+   (`build.rs:228-229` in `blake3` 1.8.7).
 - The stated requirement is one file that runs directly,
    with AppImage-style unpacking acceptable;
    it does not say static linking,
@@ -767,6 +823,8 @@ and release assets.
 
 #### Configuration-hosting variants
 
+These variants were designed on the premise that the configuration keeps today's logic;
+the user's statement in "Configuration" removed that premise.
 Worst problems per variant:
 
 - A1,
@@ -849,6 +907,9 @@ whose data follows crate releases instead of the pnpm lock and whose output is u
 
 #### Ranking from the research
 
+Withdrawn as a recommendation by "Correction on 2026-09-16";
+kept as evidence.
+
 A1 > A2 > D > B > C > E > H > I > F > G > Jsonnet > Nickel > A3.
 
 - A1 over A2:
@@ -882,55 +943,56 @@ A1 > A2 > D > B > C > E > H > I > F > G > Jsonnet > Nickel > A3.
    Nickel's size is bounded at 19.5 MB,
    while V8 sits closer to the size that killed Node.
 
-#### Research inferences awaiting the user
+#### Correction on 2026-09-16
 
-- F,
+- The question put to the user,
+   whether configuration edits may need the Rust toolchain,
+   assumed the configuration must stay Turing-complete to host today's logic.
+  The user removed that assumption
+   ("Configuration").
+- Retracted:
+   the A1 recommendation,
+   and counting "most of the 2,329 lines stay as they are" as a benefit.
+  Keeping the time-constrained configuration's shape is not a goal.
+- Moot:
+   whether F,
    G,
    H,
-   and I rank low because the research treated "configuration edits need the Rust toolchain" as failing the single-file requirement,
-   by extension from the Node ruling.
-  That ruling was about the file's size,
-   and the daemon already runs `cargo`,
-   pnpm,
-   and Gradle for this repository's tasks,
-   so the extension is unsettled.
-  If the user accepts a compiler for configuration edits,
-   F,
-   G,
-   H,
-   and I move above the embedded interpreters,
-   and their order among themselves needs another design pass.
-- A3's disqualification assumes a V8 embedding is too big;
-   the user's size threshold between 2.6 MB and 144 MiB is unstated.
-  It ranks last either way.
+   and I fail the single-file requirement,
+   and A3's size threshold.
+- New direction:
+   a declarative configuration,
+   with today's configuration logic moved into general built-in features of the tool
+   or into ordinary repository tasks with declared inputs and outputs,
+   since `./meow` also serves other repositories.
+  Research designing the format options and placing every unit of today's logic is running,
+   with OpenTofu as the lead precedent.
+- Process gap:
+   the configuration-hosting research carried the incumbent's Turing-complete shape as a requirement
+   instead of asking whether it survives the new project scope.
 
 #### Adopted from settled requirements
 
 Open to the user's veto:
 
-- Configuration evaluation runs as a child that re-executes the single file,
+- File-enforcement work runs as a child that re-executes the single file,
    such as `/proc/self/exe` with an internal subcommand,
    inside a task cgroup,
    not in the daemon process.
   Cgroup sandboxing is a must,
    and pause and end act through `cgroup.freeze` and `cgroup.kill`,
-   which cannot target in-process evaluation.
+   which cannot target in-process work.
   Event types stay shared inside one binary.
-- Rule `AD2` changes only if the accepted host is not TypeScript,
-   through file-enforcer's `CLAUDE.md` generation path.
+- A declarative configuration stays config-as-data under rule `AD2`,
+   so `AD2` needs no change for the tool's own configuration.
 
 #### Next measurements
 
-Each needs Cargo registry access or a musl target,
-so runs go in a disposable container:
-
-- Build A1,
-   A2,
-   B,
-   C,
-   and D embeddings against a file-enforcer host API stub and record static musl sizes.
-- Compare `browserslist-rs` output with `.browserslistrc.resolved.local.json`.
+- Done 2026-09-16:
+   a static musl daemon skeleton
+   ("Single binary").
 - Run the differential output harness in a throwaway worktree.
+- Measure the chosen configuration format's parser in the static build.
 
 ### Process model
 
@@ -1019,6 +1081,51 @@ so runs go in a disposable container:
    because it checks size and modification time for sources.
 - Content hashing is the source of truth.
   btrfs features only accelerate it.
+- Hash:
+   `gxhash` 3,
+   the repository incumbent in `package/music-player/desktop-app` and `android-app/rust`,
+   with `gxhash128` for cache keys
+   (`src/gxhash/mod.rs:49` in `gxhash` 3.5.0;
+   the music player uses `gxhash64`).
+  The 128-bit width is proposed for keys that accumulate across many entries,
+   open to the user's veto.
+- No cryptographic hash is used:
+   the cache is local only,
+   and file-enforcer's SHA-256 uses,
+   the staleness manifest (`package/dev-script/file-enforcer/src/io/staleness-hash.ts:20`)
+   and skill-mirror ownership digests (`file-enforcer.config.ts:1103`),
+   detect change and ownership rather than defend against crafted input.
+  A shared or remote cache would need this revisited.
+- `gxhash` constraints,
+   from `doc/troubleshooting/gxhash-aes-target-feature.md`:
+   the build needs `-C target-feature=+aes,+sse2`,
+   output is stable only within a major version,
+   aarch64 debug builds can panic (upstream issue #111),
+   and a CPU without AES-NI crashes with SIGILL because there is no software fallback.
+- CPU check:
+   the tool checks for AES and SSE2 at startup,
+   before any hashing,
+   and exits with a diagnostic naming the missing capability,
+   explaining that the tool requires it and has no fallback;
+   `doctor` reports the same check.
+  `is_x86_feature_detected!("aes")` cannot perform this check in a `+aes` build:
+   its macro evaluates `cfg!(target_feature = ...)` before runtime detection
+   (`library/std_detect/src/detect/macros.rs:9-10` in the nightly-2026-09-12 sources,
+   with `aes` declared without the cfg-check opt-out at `std_detect/src/detect/arch/x86.rs:124`),
+   so it is `true` at compile time.
+  The check calls `core::arch::x86_64::__cpuid(1)` directly,
+   a safe function in that toolchain (`stdarch/crates/core_arch/src/x86/cpuid.rs:107`),
+   and reads ECX bit 25 for AES and EDX bit 26 for SSE2,
+   the bits std uses (`std_detect/src/detect/os/x86.rs:108`, `:118`).
+  Unexercised on a CPU without AES-NI:
+   QEMU user mode is not installed on the development machine.
+- Static probe,
+   2026-09-16:
+   the daemon skeleton with `gxhash128`,
+   built for `x86_64-unknown-linux-musl` with `RUSTFLAGS='-C target-feature=+aes,+sse2'`
+   (`allrust/skeleton-gxhash` in the session scratchpad),
+   measured 2,098,120 bytes and ran its probe to exit 0;
+   the XXH3-128 variant measured the same size.
 
 ### btrfs acceleration
 
@@ -1059,13 +1166,14 @@ so runs go in a disposable container:
 ### File enforcement
 
 - File-enforcer is rewritten in Rust and ships inside the single binary.
-- Configuration hosting is open;
-   "All-Rust tool" ranks the variants.
-- Configuration evaluation runs in a re-executed child of the single file inside a task cgroup,
+- The configuration is declarative and not Turing-complete;
+   its format and the placement of today's configuration logic are being designed
+   ("Correction on 2026-09-16").
+- File-enforcement work runs in a re-executed child of the single file inside a task cgroup,
    as adopted in "All-Rust tool".
-- Enforcement of undeclared reads depends on the host:
-   embedded interpreters and WebAssembly can be limited to host-provided reads,
-   while compiled Rust configuration keeps lint-level enforcement.
+- Reads come from the tool's own code and declared task inputs,
+   so undeclared reads are limited to repository tasks,
+   which keep the cache risk recorded under "Risks".
 - Superseded with the TypeScript route:
    running each TypeScript configuration evaluation in a child process instead of a cache-busting re-import.
 - Carried over:
@@ -1114,8 +1222,10 @@ so runs go in a disposable container:
    and a missed formatting rule rewrites managed files including `CLAUDE.md`.
 - Build:
    `btrfs-uapi` needs `libclang` at build time,
-   this host has no musl target or static glibc,
-   and the size of the full binary with a configuration host is unmeasured.
+   `gxhash` needs the `+aes,+sse2` target features,
+   and the size of the full binary is unmeasured beyond the static skeleton.
+- CPU:
+   the startup AES check is unexercised on a CPU without AES-NI.
 
 ## Decisions on 2026-09-16
 
@@ -1139,30 +1249,31 @@ so runs go in a disposable container:
 
 ## Open questions
 
-- Configuration hosting:
-   does needing the Rust toolchain for configuration edits fail the single-file requirement?
-  The answer decides whether A1 leads or F,
-   G,
-   H,
-   and I move up
-   ("Research inferences awaiting the user").
-- Is `./meow` meant for repositories other than this one?
-  Variant F compiles one repository's configuration into the binary.
+- Declarative configuration:
+   format,
+   and whether each unit of today's configuration logic becomes a general built-in feature,
+   a repository task,
+   plain data,
+   or is retired;
+   research is running with OpenTofu as the lead precedent.
+- Which CPU architectures 0.x supports:
+   `gxhash` on aarch64 needs `aes` and `neon`,
+   and its debug builds can panic there (issue #111).
 - Single binary:
-   static musl or glibc-linked,
-   and measured size with the chosen host.
+   static musl,
+   which built and ran as a skeleton,
+   or glibc-linked.
 - Byte-identical output:
-   the differential harness and how malformed XML is handled.
-- Veto open:
-   A3 is out on size,
-   configuration evaluation runs in a re-executed child,
-   and `DECISION.rust-migration.md` is superseded on acceptance.
+   whether generated files must keep today's bytes once the logic is redesigned,
+   and how malformed XML is handled.
 - How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
 - Veto open:
-   the Rust core with TypeScript file-enforcer children is out by the same size reason.
-- Veto open:
-   0.x offers no pseudo-terminal opt-in.
+   `gxhash128` for cache keys,
+   file-enforcement work in a re-executed child,
+   the Rust core with TypeScript file-enforcer children staying out,
+   and 0.x offering no pseudo-terminal opt-in.
 - Rust approval for this scope,
    per `doc/planning/load-bearing-code-languages.md`,
    and stack acceptance;
-   a decision record follows acceptance only.
+   a decision record follows acceptance only,
+   superseding `package/dev-script/file-enforcer/DECISION.rust-migration.md`.
