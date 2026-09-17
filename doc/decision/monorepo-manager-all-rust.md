@@ -57,7 +57,7 @@ Supersedes `package/dev-script/file-enforcer/DECISION.rust-migration.md` for the
 - The macOS and Windows CI runners that run `mise run` keep Mise until the tool supports those systems.
 
 Decided the same day and recorded in the design:
-the configuration is declarative and not Turing-complete,
+the configuration language no longer needs to be Turing-complete (whether it may be is still being asked),
 content hashing uses `gxhash` with no cryptographic hash,
 and the tool warns clearly when the CPU lacks required capabilities.
 

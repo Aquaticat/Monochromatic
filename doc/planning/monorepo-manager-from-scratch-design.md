@@ -1034,6 +1034,109 @@ Open to the user's veto:
 - Run the differential output harness in a throwaway worktree.
 - Measure the chosen configuration format's parser in the static build.
 
+### Declarative configuration
+
+Research:
+[`stack-declarative-config.md`](monorepo-manager-route-research/stack-declarative-config.md),
+2026-09-16.
+Cargo reached crates.io this time,
+so its sizes come from static musl builds.
+Spot-checked on 2026-09-17:
+the size table matches `declarative/sizes/out/summary.txt` in the session scratchpad,
+and the tests of `starlark` 0.14.2 expect recursion to run until "Starlark call stack overflow"
+(`src/tests/call.rs:63-65` in the cached crate).
+
+#### Correction to the research premise
+
+The research treated Turing-completeness as forbidden,
+because the decision record and this design said the configuration is "not Turing-complete".
+The user said the Turing-complete requirement is eliminated,
+not that Turing-completeness is forbidden;
+both documents were corrected on 2026-09-17,
+and the question is being asked.
+Options G (Starlark) and H (KCL) are disqualified only under the forbidding reading.
+
+#### Logic inventory
+
+Today's `file-enforcer.config.ts` splits into 27 units:
+
+- General built-in features:
+   13,
+   such as the forbidden `CONTEXT.md` check,
+   `LICENSE`,
+   `CLAUDE.md`,
+   git-policy mirrors,
+   license texts,
+   Cargo manifest keys,
+   JetBrains settings,
+   the skill mirror,
+   scheduling,
+   events,
+   and input tracking.
+- Repository tasks:
+   3,
+   the forbidden-strings rule compilation,
+   the pnpr configuration generator,
+   and resolved Browserslist targets.
+- Plain data:
+   5.
+- Retired:
+   6,
+   including `mise.toml` generation once Mise leaves CI.
+
+Awkward placements:
+per-manifest Cargo derivations,
+writes outside the repository (JetBrains settings and the scanner cache),
+license pruning broader than today's,
+and `mise.toml` while Mise stays on the macOS and Windows runners.
+
+#### Format options and ranking
+
+Static musl size added over a 385,656-byte baseline:
+`jsonc-parser` 180,224 bytes,
+`toml` 208,896,
+`toml_edit` 225,280,
+`kdl` 303,104,
+`hcl-edit` 344,064,
+`serde-saphyr` 942,216,
+`hcl-rs` with its evaluator 1,052,776,
+`serde_dhall` 1,785,992,
+`cel` 2,662,824,
+and `regorus` 7,038,952.
+
+Ranking from the research:
+A (OpenTofu-shaped HCL) > B (TOML) > F (TOML with CEL) > E (JSONC) > D (YAML) > C (KDL) > I (Dhall) > J (Rego) > G (Starlark) > H (KCL).
+
+- A over B:
+   native expressions keep per-file derivations in one general language,
+   following the user's OpenTofu pointer and the repository's OpenTofu incumbent;
+   the gaps in A are repository code the user accepted writing.
+- Worst problems of A:
+   `hcl-rs` has no built-in functions (issue #484 open)
+   and drops source locations on evaluation errors,
+   `hcl-edit` has no formatter and warns "Expect breaking changes at any time",
+   and its round trip joined a four-line `&&` condition onto one line.
+- OpenTofu 1.12.6 expressed `CLAUDE.md`,
+   the skill mirror map,
+   SPDX text mapping,
+   and pnpr entry-point selection with built-in functions only.
+- The remaining adjacent reasons are in "8. Ranking" of the appendix.
+
+#### Settled without asking
+
+Each follows from recorded decisions:
+
+- Ordering comes from declared reads,
+   writes,
+   and explicit `depends_on`,
+   which keeps author control over sequencing where it matters (FE01).
+- Skill-mirror ownership moves into the tool's state;
+   both mirror roots are gitignored.
+- The pnpr configuration and Browserslist targets become TypeScript tasks in their own packages,
+   which already hold that code.
+- The research's byte-identity question was already answered:
+   a one-time reviewed change.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
@@ -1253,7 +1356,7 @@ Open to the user's veto:
 ### File enforcement
 
 - File-enforcer is rewritten in Rust and ships inside the single binary.
-- The configuration is declarative and not Turing-complete;
+- The configuration language no longer needs to be Turing-complete;
    its format and the placement of today's configuration logic are being designed
    ("Correction on 2026-09-16").
 - File-enforcement work runs in a re-executed child of the single file inside a task cgroup,
