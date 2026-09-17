@@ -232,6 +232,12 @@ and XML editing crates for the monorepo manager
   after breaking patch releases
 - [XML serializers write literal tabs and newlines into attribute values](xml-attribute-whitespace-serialization.md),
   which reparse as spaces
+- [`hcl-edit` drops comments inside binary operations](hcl-edit-binary-operator-decor.md)
+- [`hcl-edit` rewrites `<<-` heredoc introducers and body indentation](hcl-edit-heredoc-dedent.md)
+- [`hcl-rs` evaluation diverges from the HCL reference](hcl-rs-eval-arithmetic-and-iteration-order.md)
+  on arithmetic,
+  object iteration order,
+  and `% 0`
 
 ## Quick Links
 

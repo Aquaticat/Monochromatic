@@ -270,14 +270,27 @@ lists the rest.
 
 ## Next action
 
-Running since 2026-09-17:
+Finished on 2026-09-17:
  design research for the HCL evaluator,
  function library,
  formatter,
  and language server,
- writing `hcl-evaluator/hcl-evaluator-design.md` in the session scratchpad,
- committing any `doc/audit/` vet report it creates,
- and leaving troubleshooting docs uncommitted.
+ copied to `doc/planning/monorepo-manager-route-research/hcl-tooling.md`
+ and merged into "HCL tooling" in the design,
+ with vet reports `tech-meow-hcl-front-end-vet-2026-09-17.md`
+ and `tech-meow-language-server-framework-vet-2026-09-17.md`
+ and three troubleshooting docs committed.
+It recommends a patched `hcl-edit` under meow's own evaluator,
+ a curated OpenTofu-named function set,
+ meow's own formatter,
+ and `lsp-server`.
+Its brief went to the user with five questions;
+ nothing is adopted until the user accepts (rule `DRR`).
+Corrected before merging:
+ the research called a C toolchain forbidden by the all-Rust decision record,
+ which only says the tool is written in Rust;
+ whether a dependency may compile C is an open user question,
+ also raised by the hash vet.
 Also running since 2026-09-17:
  the re-run cache key hash vet with cryptographic hashes eligible,
  speed-first weights,

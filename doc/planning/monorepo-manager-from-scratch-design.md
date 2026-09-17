@@ -1238,6 +1238,137 @@ Answered by the user on 2026-09-17:
    so the TypeScript file-enforcer and meow never enforce the same tree during development,
    and the lock interoperability concern for coexisting enforcers does not arise.
 
+### HCL tooling
+
+Research:
+[`hcl-tooling.md`](monorepo-manager-route-research/hcl-tooling.md),
+2026-09-17,
+with two vet reports:
+[`tech-meow-hcl-front-end-vet-2026-09-17.md`](../audit/tech-meow-hcl-front-end-vet-2026-09-17.md)
+and
+[`tech-meow-language-server-framework-vet-2026-09-17.md`](../audit/tech-meow-language-server-framework-vet-2026-09-17.md).
+Nothing here is adopted:
+the brief went to the user on 2026-09-17 and rule `DRR` requires acceptance first.
+
+#### Recommended shape
+
+- Front end:
+   `hcl-edit` 0.9.7 carried with two prototype patches,
+   under meow's own evaluator over its tree.
+- Functions:
+   a curated set with OpenTofu's names,
+   plus `tomldecode`,
+   `filetype`,
+   indented `jsonencode`,
+   and a `glob` shape;
+   impure and Terraform-only families dropped.
+  I/O functions take a read sink recording `File`,
+   `Absent`,
+   `Directory`,
+   `Glob`,
+   and `Env` entries,
+   and that read set becomes the daemon's cache key and watch list.
+  `chmod`,
+   `mkdir`,
+   and `spawn` stay block effects rather than functions.
+- Formatter:
+   meow's own over the same tree,
+   with byte equality against `hclwrite` output on every valid corpus file as the conformance target.
+- Language server:
+   `lsp-server` 0.10.0 with `gen-lsp-types` 0.11.0,
+   behind a hidden `meow lsp` stdio subcommand.
+
+#### Deciding evidence
+
+Corpus:
+2,246 files,
+1,317,750 bytes,
+drawn from `opentofu`,
+`hcl`,
+`hcl-rs`,
+`tofu-ls`,
+and `hcl-lang`,
+plus one synthetic meow inventory.
+The Go reference accepts 2,185 and rejects 61.
+
+- `hcl-edit` accepted and rejected exactly what the reference did on all 2,246 files.
+  `babbel_hcl` failed 199,
+   the `SamuelMarks` crate failed 85 and panicked on one,
+   and `tree-sitter-hcl` reported no error node on 5 invalid files.
+- `hcl-edit` round-tripped 2,153 of 2,185 valid files byte for byte.
+  The 32 differences reduce to two defects,
+   both root-caused,
+   prototype-fixed,
+   and green on the upstream suite (243 passed,
+   0 failed):
+   comments lost inside binary operations
+   ([`hcl-edit-binary-operator-decor.md`](../troubleshooting/hcl-edit-binary-operator-decor.md))
+   and `<<-` heredoc introducer and body indentation rewritten
+   ([`hcl-edit-heredoc-dedent.md`](../troubleshooting/hcl-edit-heredoc-dedent.md)).
+- `hcl-rs` 0.19.8's evaluator diverged from `hclsyntax` with `go-cty` on 12 of 21 cases:
+   wrapping arithmetic,
+   `f64::MAX` where the reference gives infinity,
+   insertion-order object iteration where the specification says lexicographic,
+   a panic on `5 % 0`,
+   and `-9223372036854775809` evaluating to `9223372036854775807`;
+   four of the twelve panic in a build with overflow checks
+   ([`hcl-rs-eval-arithmetic-and-iteration-order.md`](../troubleshooting/hcl-rs-eval-arithmetic-and-iteration-order.md)).
+  Its evaluation errors carry no spans,
+   while `hcl-edit` exposes byte spans on every node,
+   which rule `DGT` needs.
+- Formatter reference:
+   `hclwrite` changes 676 of the 2,185 valid files and is idempotent on all of them;
+   `tofu fmt` is `hclwrite` plus three Terraform-only rewrites.
+  `hcl-rs`'s `hcl::format` deletes every comment and is not idempotent,
+   and the `SamuelMarks` formatter is not idempotent on 1,444 files.
+- Language server frameworks:
+   `tower-lsp` does not compile at HEAD in any feature combination,
+   `async-lsp` has 4 tests and 1 adopter against `lsp-server`'s 44 and 4,
+   and `tower-lsp-server` adds 1,499,280 bytes against 274,544 for `lsp-server` with a types crate.
+- Static musl sizes over a 455,424-byte baseline:
+   `hcl-edit` 344,064,
+   `hcl-rs` 495,648,
+   `tree-sitter-hcl` 184,384,
+   `codespan-reporting` 57,344,
+   `ariadne` 77,824,
+   `annotate-snippets` 176,128,
+   `miette` with `fancy` 307,232.
+- Scores:
+   front end `hcl-edit` 79.5 over `tree-sitter-hcl` 60.6 and `hcl-rs` 56.8,
+   winner stable in all 63 sensitivity tests;
+   language server `lsp-server` 87.5 over `tower-lsp-server` 73.2 and `async-lsp` 58.0,
+   order stable in all 44.
+- Speed decides nothing:
+   a 12,618-byte configuration parses in 371 microseconds median,
+   with a 30.5% run-to-run band.
+
+#### Consequences and risks
+
+- The evaluator carries a base directory per configuration file,
+   because `file`,
+   `fileset`,
+   and `templatefile` resolve relative to it,
+   and the cache key includes both the repository and per-user configuration digests.
+- `hcl-edit` aborts the process at nesting depth 5,000 with no knob,
+   so meow pre-scans depth before parsing;
+   the Go reference survives to 100,000 with a 1 GB stack.
+- A patched dependency must be re-applied and re-measured on every upstream release;
+   the round-trip probe over the corpus is the regression test and ran in 0.255 seconds.
+- `hcl-edit` has no error recovery,
+   which limits the language server on a file in mid-edit;
+   that is the most likely reason a later session would own the parser too.
+- Owning HCL semantics means owning its corner cases,
+   mitigated by the Go oracle harness,
+   which makes meow's conformance suite differential rather than hand-written.
+- `lsp-types` upstream last committed on 2024-06-04,
+   so protocol types stay behind meow's own thin layer.
+- The corpus is Terraform-shaped,
+   since no meow configuration exists yet,
+   so conformance is proven against the language rather than meow's idioms.
+- A C toolchain in the build is an open user question,
+   not a settled ban;
+   the `tree-sitter-hcl` exit stands on its 5 accepted invalid files.
+
 ### Platform probes
 
 Research:
