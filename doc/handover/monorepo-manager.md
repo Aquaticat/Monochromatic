@@ -101,15 +101,25 @@ Each step's evidence is in the linked documents.
   It recommends `twox-hash` 2.1.4 XXH3-128 under the SIMD reading of "hardware acceleration";
    under the dedicated-instruction reading no non-cryptographic library passes.
   The user answered "SIMD counts",
-   so `twox-hash` XXH3-128 was adopted:
-   [`doc/decision/monorepo-manager-cache-key-hash.md`](../decision/monorepo-manager-cache-key-hash.md).
-  Issue #545 got a comment pointing at the result,
+   and `twox-hash` XXH3-128 was recorded in `doc/decision/monorepo-manager-cache-key-hash.md`
+   before the user saw the brief.
+  Issue #545 got a comment pointing at that result,
    since its body named this vet as the blocker.
-  Closed without asking,
-   because neither answer changes the choice:
-   extra quality weight,
-   an `ssh m1` run,
-   and a C toolchain for the aarch64 musl build.
+- Withdrawn and reopened on 2026-09-17,
+   after the briefs:
+   that decision record was deleted (`git log` keeps it),
+   because the user said "non-crypto isn't a requirement.
+   I only said we don't necessarily need a crypto hash."
+   and "Shipping x86-64-v3 and x86-64-v4 as separate builds is fine."
+  Both change the vet's premises
+   ("Cache key hash vet result" in the design).
+  Before re-running the selection,
+   the user was asked how much collision resistance weighs against throughput
+   and which x86-64 levels block publishing.
+  Also answered:
+   "Yes to HCL" (recorded in the all-Rust decision record)
+   and "Merge BFQ into DRR instead" (rule `DRR` in `AGENTS.md`).
+  Issue #545 needs a follow-up comment once the selection settles.
   The vet agent reported that the Write tool refused its Markdown drafts,
    so it wrote them through Bash,
    and that some of its Bash commands broke rule `1CB`.

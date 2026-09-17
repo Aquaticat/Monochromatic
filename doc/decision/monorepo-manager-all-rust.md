@@ -64,15 +64,22 @@ Supersedes `package/dev-script/file-enforcer/DECISION.rust-migration.md` for the
    2026-09-17).
 - The tool does not own Meta Package Manager's lifecycle (user,
    2026-09-17).
+- As many builds as possible ship;
+   `x86-64-v3` and `x86-64-v4` ship as separate builds (user,
+   2026-09-17).
+- Configuration syntax is OpenTofu-shaped HCL,
+   accepted after the format brief ("Yes to HCL",
+   user,
+   2026-09-17).
 
 Decided the same day and recorded in the design:
 the configuration language no longer needs to be Turing-complete and may be (user,
  2026-09-17),
-content hashing uses a non-cryptographic hash,
 and the tool warns clearly when the CPU lacks required capabilities.
-The hash was `gxhash` until 2026-09-17,
-when collision findings replaced it with XXH3-128 from `twox-hash`
-([`monorepo-manager-cache-key-hash.md`](monorepo-manager-cache-key-hash.md)).
+Content hashing used `gxhash` until collision findings on 2026-09-17;
+its replacement is being selected,
+and cryptographic hashes are eligible (user,
+ 2026-09-17).
 
 ## Consequences
 
@@ -83,11 +90,13 @@ when collision findings replaced it with XXH3-128 from `twox-hash`
    a `prefer-readonly-parameter-type` fixture read,
    and the `sync:files` tasks need migration.
 - Superseded on 2026-09-17 with `gxhash`:
-   the AES startup check.
-  `twox-hash` selects SIMD kernels at run time,
-   so default builds need no startup check
-   ([`monorepo-manager-cache-key-hash.md`](monorepo-manager-cache-key-hash.md)).
-- The release matrix has four supported binaries.
+   the AES-specific startup check.
+  Every build raised above its target's baseline,
+   such as `x86-64-v3`,
+   needs a startup check for the features it was compiled with.
+- Each shipped build comes as glibc and static musl binaries,
+   including the separate `x86-64-v3` and `x86-64-v4` builds;
+   which x86-64 levels block publishing is still open.
 
 ## Rejected
 

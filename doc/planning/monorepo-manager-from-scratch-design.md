@@ -105,6 +105,12 @@ Stated by the user on 2026-09-16:
    2026-09-17).
   Until then Mise keeps running the macOS and Windows jobs in `readonly-semantic-bridge.yml`;
    the user noted these two statements do not conflict.
+- "We're planning to ship as many builds as possible.
+   Shipping x86-64-v3 and x86-64-v4 as separate builds is fine."
+   (user,
+   2026-09-17).
+  A build raised above its target's baseline needs the startup check in "Missing CPU capabilities",
+   because feature detection macros evaluate to `true` at compile time for enabled target features.
 
 ### Configuration
 
@@ -122,6 +128,9 @@ File-enforcer was written under the constraints of time."
    not requirements.
 - The user later pointed to OpenTofu as a precedent:
    "I think opentofu does config files properly."
+- After the format brief
+   (ranking and pros and cons from "Format options and ranking"),
+   the user answered "Yes to HCL" on 2026-09-17.
 
 ### Hashing
 
@@ -129,6 +138,10 @@ Stated by the user on 2026-09-16:
 
 - "We don't need a crypto hash.
    A non-crypto hash would do."
+- Clarified by the user on 2026-09-17:
+   "non-crypto isn't a requirement.
+   I only said we don't necessarily need a crypto hash."
+  Cryptographic hashes are eligible for cache keys.
 - "We already chose a non-crypto hash fn in music-player":
    `gxhash`,
    which "benched the best";
@@ -1569,9 +1582,23 @@ to the repeated cache key output question:
 Vet:
 [`doc/audit/tech-meow-cache-key-hash-vet-2026-09-17.md`](../audit/tech-meow-cache-key-hash-vet-2026-09-17.md),
 finished 2026-09-17.
-Adopted the same day,
-after the user confirmed the SIMD reading ("SIMD counts"):
-[`doc/decision/monorepo-manager-cache-key-hash.md`](../decision/monorepo-manager-cache-key-hash.md).
+Recorded as adopted the same day after the user confirmed the SIMD reading ("SIMD counts"),
+then withdrawn:
+the user had not been shown the brief,
+and their answers to it changed two premises of the vet.
+
+- "non-crypto isn't a requirement":
+   the vet scoped out cryptographic hashes,
+   measuring BLAKE3,
+   SHA-256,
+   and AES-CMAC only as controls.
+- "Shipping x86-64-v3 and x86-64-v4 as separate builds is fine":
+   the vet decided `twox-hash` over `xxhash-rust` mainly on the default-build speed and run-time kernel selection,
+   while in an `x86-64-v3` build the two were within band,
+   and no `x86-64-v4` build was measured.
+
+The selection reopens with both changes;
+the measurements below stay valid evidence for it.
 
 - Recommended:
    `twox-hash` 2.1.4,
@@ -1625,7 +1652,8 @@ after the user confirmed the SIMD reading ("SIMD counts"):
 - Raising quality evidence beyond the collision gate to weight 5 only ties third place,
    so it does not bear on the choice.
 
-Usage rules that follow from the vet's measurements and risks:
+Usage rules the vet derived for `twox-hash`,
+kept for the reopened selection:
 
 - Dependency:
    `twox-hash = { version = "=2.1.4", default-features = false, features = ["std", "xxhash3_128"] }`,
@@ -1961,15 +1989,19 @@ Usage rules that follow from the vet's measurements and risks:
 
 ## Open questions
 
-User choices research raises are asked as they arise (rule `FLG`);
-none is pending.
+User choices research raises are asked as they arise (rule `FLG`).
+Asked on 2026-09-17 before re-running the hash selection:
+how much collision resistance weighs against throughput,
+and which x86-64 levels block publishing.
+
+Reopened on 2026-09-17:
+
+- meow's cache key hash,
+   with cryptographic hashes eligible and separate `x86-64-v3` and `x86-64-v4` builds
+   ("Cache key hash vet result").
 
 Closed on 2026-09-17:
 
-- meow's cache key hash:
-   XXH3-128 from `twox-hash` 2.1.4,
-   adopted after the user confirmed the SIMD reading of "hardware acceleration"
-   ("Cache key hash vet result").
 - Repository-owned `gxhash` for meow,
    superseded when cache keys left `gxhash`;
    the music player's switch is issue #545.
