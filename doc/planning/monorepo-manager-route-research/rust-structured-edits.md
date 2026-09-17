@@ -1,6 +1,11 @@
 # Comment-preserving JSONC, TOML, and XML edits in Rust
 
 Merged into "Managed file editing" in `doc/planning/monorepo-manager-from-scratch-design.md` on 2026-09-17, where the user later dropped the untouched-bytes and CRLF rules defined here.
+Later troubleshooting docs corrected these readings, listed under "Research notes" in that design section:
+`jsonc-parser` defaults are a loose set rather than JSON5,
+the `1.0` rewrite came from this research's `serde_json` equality guard,
+this research's all-`f64` number equality skips changes between integers above 2^53,
+and the Biome JSON crates need three exact pins rather than seven.
 
 ## Status and scope
 

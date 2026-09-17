@@ -1323,13 +1323,50 @@ the `toml_edit` wrapper's 21 passes were recounted there.
 #### Research notes
 
 - Cargo builds hit the `/tmp` quota,
-   so that research built under `~/temp/agent/structured-edits-target-2026-09-16/`.
-- The research identified tool quirks worth `doc/troubleshooting/` entries:
-   `toml_edit` comment loss,
-   `taplo` rejecting TOML 1.1,
-   `jsonc-parser` accepting JSON5 by default,
-   `json-five` writing an unterminated block comment,
-   and XML crates corrupting attribute whitespace.
+   so that research built under `~/temp/agent/structured-edits-target-2026-09-16/`,
+   removed on 2026-09-17.
+- The tool quirks the research found are documented in `doc/troubleshooting/`,
+   indexed under "Comment-preserving structured edits in Rust":
+   `toml-edit-comment-loss.md`,
+   `taplo-toml-1-1-inline-table-trailing-comma.md`,
+   `jsonc-parser-json5-defaults.md`,
+   `json-five-unterminated-block-comment.md`,
+   `biome-json-crates-exact-pins.md`,
+   and `xml-attribute-whitespace-serialization.md`.
+- Those docs corrected research readings:
+  - `jsonc-parser`'s default options are a documented loose set,
+     not JSON5:
+     they reject `Infinity`,
+     `NaN`,
+     `.5`,
+     and `5.`,
+     and accept missing commas and names like `a-b`.
+  - The `1.0` rewrite on an equal-value set came from the probe's `serde_json` equality guard;
+     `set_value` always replaces.
+  - `json-five` ends every block comment span on the closing `/`,
+     so a plain parse and print drops that `/`.
+  - The Biome JSON crates build with three exact pins
+     (`biome_rowan`, `biome_parser`, and `biome_unicode_table` at `=0.5.7`),
+     not seven.
+
+#### JSONC wrapper rules from the troubleshooting docs
+
+Adopted because the "Managed file edits" requirements admit one answer;
+the evidence and tradeoffs are in `doc/troubleshooting/jsonc-parser-json5-defaults.md`,
+"Verified workarounds".
+
+- Every managed JSONC file is parsed through one function holding JSONC-only options,
+   rejecting scalar and empty roots,
+   since any direct `ParseOptions::default()` reintroduces the loose set.
+- The equal-value guard compares integers exactly;
+   the research wrapper compared every number as `f64`
+   and skipped a real change between integers above 2^53.
+- Strict JSON files are validated with `parse_to_value` before building the CST,
+   because `CstRootNode::parse` ignores `allow_comments: false` in `jsonc-parser` 0.33.2
+   (upstream filing tracked in #549).
+- Container writes that change replace the whole subtree through `set_value`,
+   dropping comments inside it,
+   so the wrapper sets leaf paths.
 
 #### Build and format answers on 2026-09-17
 
