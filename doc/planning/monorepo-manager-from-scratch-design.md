@@ -482,8 +482,11 @@ Checked 2026-09-16 after the user noted that many monorepo tools are written in 
    (<https://man7.org/linux/man-pages/man7/inotify.7.html>).
   The development machine's `max_queued_events` is 16,384
    (measured).
-  A language only decides whether the daemon sees the overflow signal;
-   recovery is always a rescan.
+  Per the user on 2026-09-16,
+   the queue limit is not a con against any stack:
+   `doctor` reads `/proc/sys/fs/inotify/max_queued_events` and `max_user_watches` without root
+   and tells the user how to raise them persistently,
+   for example with a drop-in under `/etc/sysctl.d/`.
 - Cgroup delegation,
    a user systemd session on CI,
    frozen tasks holding locks and timers,
