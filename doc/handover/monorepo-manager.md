@@ -75,13 +75,12 @@ Each step's evidence is in the linked documents.
 
 ## In-flight work
 
-- A research agent is designing the all-Rust tool:
-   configuration-hosting variants,
-   byte-identical output for structured edits,
-   rewrite scope,
-   and single-binary build and size.
-  It writes `stack-all-rust-rewrite.md` in the session scratchpad,
-   which does not survive the session.
+- Finished on 2026-09-16:
+   the all-Rust research,
+   copied to `doc/planning/monorepo-manager-route-research/stack-all-rust-rewrite.md`
+   and merged into "All-Rust tool" in the from-scratch design.
+  Its ranking puts TypeScript on QuickJS-ng first,
+   pending the user's answer on whether configuration edits may need the Rust toolchain.
 - Stopped unfinished on 2026-09-16:
    the design of a TypeScript daemon with a Rust native addon;
    no appendix was written.
@@ -122,16 +121,19 @@ lists the rest.
    TypeScript route killed over single-executable size.
 - `bcf373479` and `4241732d5`:
    documents brought up to the all-Rust route.
+- `652c171c0`:
+   all-Rust configuration-hosting research merged.
 
 ## Next action
 
-When the all-Rust research lands:
-
-1.  Copy it to `doc/planning/monorepo-manager-route-research/stack-all-rust-rewrite.md`.
-2.  Merge its findings and a full ranking of the configuration-hosting variants into
-    "Current stack direction" in the from-scratch design,
-    per rule `YKZ`.
-3.  Update the design's "Open questions" and this handover,
-    then commit.
-4.  Present the ranking to the user with pros and cons;
-    write a decision record only after the user accepts.
+1.  Ask the user the questions under "Open questions" in the from-scratch design that decide the ranking:
+    whether configuration edits may need the Rust toolchain,
+    and whether `./meow` serves other repositories.
+2.  Re-rank per the answers;
+    if the toolchain is acceptable,
+    design F,
+    G,
+    H,
+    and I against each other.
+3.  Run the design's "Next measurements" in a disposable container for the leading variants.
+4.  Write a decision record only after the user accepts a stack and host.
