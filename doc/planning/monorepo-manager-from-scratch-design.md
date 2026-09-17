@@ -724,8 +724,7 @@ tasks do not run under a pseudo terminal by default,
 and any design that does,
 including Nx's `portable-pty` task runner,
 carries those problems.
-Proposed on 2026-09-16,
-open to the user's veto:
+Accepted by the user on 2026-09-16:
 0.x offers no pseudo-terminal opt-in.
 A task needs a terminal only when a person must interact with it,
 such as an editor or a terminal password prompt;
@@ -1316,7 +1315,8 @@ Open to the user's veto:
    research is running.
 - aarch64 builds and the missing-AES warning:
    probes are running now that installs are authorized.
-- Veto open:
-   `gxhash128` for cache keys
-   and 0.x offering no pseudo-terminal opt-in.
+- Cache key width and cache eviction:
+   the user asked what "a cache that only grows" meant;
+   the design has no eviction policy yet,
+   so width and eviction are being asked together.
 - How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
