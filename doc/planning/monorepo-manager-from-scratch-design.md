@@ -1480,27 +1480,25 @@ Answered by the user on 2026-09-17:
 
 ## Open questions
 
-- Declarative configuration:
-   format,
-   and whether each unit of today's configuration logic becomes a general built-in feature,
-   a repository task,
-   plain data,
-   or is retired;
-   research is running with OpenTofu as the lead precedent.
+Research in progress;
+user choices it raises are asked as they arise (rule `FLG`):
+
 - Repository-owned `gxhash`:
    dirty-room reimplementation or fork,
-   whether output must match `gxhash` 3 bit for bit,
+   output compatibility with `gxhash` 3,
    whether the music player moves to it,
-   and which optimizations to take;
-   research is running.
-- Comment-preserving JSONC, TOML, and XML editing in Rust:
-   crates versus ports of `module-toml-edit` and the JSONC editor;
-   research is running.
-- aarch64 builds and the missing-AES warning:
-   probes are running now that installs are authorized.
-- Cache contents and eviction:
-   the user asked what the local task cache would contain;
-   contents,
-   failed-run caching,
-   and eviction are being asked together.
+   and which optimizations to take.
+- Comment-preserving JSONC,
+   TOML,
+   and XML editing in Rust.
+- aarch64 builds and the missing-AES warning under QEMU.
+
+Design work not yet started:
+
+- The HCL evaluator,
+   function library,
+   formatter,
+   and language server,
+   given the gaps in `hcl-rs` and `hcl-edit`.
+- Discovery and precedence of the per-user `meow` configuration.
 - How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
