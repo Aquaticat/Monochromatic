@@ -492,6 +492,13 @@ built with `node --build-sea` and `"mainFormat": "module"`,
 ran as `./meow` and printed `top-level await ok on linux`;
 the executable was 144 MiB
 (`~/temp/agent/sea-tla-probe-2026-09-16`).
+ECMAScript module entry points landed in `nodejs/node#61813`,
+"sea: support ESM entry point in SEA",
+merged 2026-02-18 with a `backport-open-v24.x` label;
+before it,
+single executable entry scripts were CommonJS,
+which has no top-level await.
+The Node version the tool builds with must include that change.
 
 #### How TypeScript monorepo tools meet the same problems
 
