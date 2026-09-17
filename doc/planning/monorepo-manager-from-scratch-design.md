@@ -1474,8 +1474,9 @@ to the repeated cache key output question:
 - Superseded for meow:
    the `gxhash128` key choice and the `+aes`-specific build and startup check,
    whose target features and check follow the chosen hash.
-- Still open for the user:
-   whether the owned `gxhash` reimplementation continues for the music player alone.
+- Music player:
+   the user decided on 2026-09-17 that it must switch away from `gxhash`, tracked in issue #545;
+   this design work does not touch the music player.
 
 ### Process model
 
