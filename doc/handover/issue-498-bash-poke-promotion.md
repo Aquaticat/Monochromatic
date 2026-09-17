@@ -121,6 +121,28 @@ so they are cited by symbol name rather than line number.
   Recorded for completeness only,
    because the retry ladder is out of scope.
 
+### Shell resolution and unavailable pi helpers
+
+- `dist/utils/shell.d.ts` documents pi's resolution order:
+  an explicit `shellPath` setting,
+  then Git Bash or `bash` on Windows,
+  then `/bin/bash`,
+   `bash` on `PATH`,
+   and finally `sh` on Unix.
+  Pi does not consult `$SHELL`.
+- The package root exports only `getShellConfig` and `getPowerShellConfig` from that module.
+- `killProcessTree`,
+   `sanitizeBinaryOutput`,
+   `trackDetachedChildPid`,
+  and `killTrackedDetachedChildren` are declared there but not exported from `dist/index.d.ts`,
+  so an extension cannot reach them through the public entry.
+- Two consequences for this package.
+  Process-tree termination on cancel is ours to implement.
+  Output sanitization is ours too:
+  pi sanitizes chunks before its own component renders them,
+  and unsanitized control characters or lone surrogates can crash width measurement,
+  so anything this package renders into a widget or a message must be cleaned first.
+
 ### Host tooling for verification
 
 - `tmux` 3.7c is installed at `/usr/bin/tmux`.
@@ -218,10 +240,18 @@ so they are cited by symbol name rather than line number.
 - Job lifecycle on `session_shutdown`,
    session switch,
    and pi exit.
-- Names to clear against the naming policy:
-   `customType`,
-   config file name,
-   and logger tag.
+## Recorded without asking
+
+These follow from settled answers and the naming policy,
+so they are adopted rather than put to the user.
+
+- Config file `~/.pi/agent/extensions/pi-bash-poke.json`,
+  mirroring `pi-guardrail.json` and `pi-search-fetch.json`.
+- Logger tag `pi-bash-poke` through `@monochromatic-dev/module-logger`.
+- `customType` value `bash-poke`,
+  which is the renderer key and appears in session entries.
+- Neither `poke` nor `bash-poke` collides with the forbidden-strings appendices or the rule cache.
+- The pending placeholder recorded in context stays a constant rather than a setting.
 
 ## Next action
 
