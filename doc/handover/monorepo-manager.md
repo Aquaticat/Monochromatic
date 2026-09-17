@@ -152,8 +152,19 @@ Each step's evidence is in the linked documents.
 - Opened issue #545 on 2026-09-17,
    "music player must switch away from gxhash";
    the user said this session must not touch music player work.
-- `ssh m1` is powered off;
-   ask the user to turn it on only when an aarch64 benchmark is strongly needed.
+- `ssh m1` was powered on by the user on 2026-09-17 for the hash measurement:
+   Darwin arm64,
+   16 GiB,
+   8 cores,
+   macOS 27.0,
+   114 GiB free on the internal disk and 216 GiB on `/Volumes/MacData`,
+   with a Rust toolchain already in `/Users/user/.cargo/bin`.
+  Rule `HRM` still applies:
+   write-heavy work goes on `/Volumes/MacData`.
+- Opened issues #550,
+   #551,
+   and #552 on 2026-09-17 for the user to file the two `hcl-edit` defects
+   and the `hcl-rs` evaluator divergences personally.
 - Stopped unfinished on 2026-09-17:
    `btrfs-pinned-bytes.md` research,
    because the user dropped reflinks and the cache now records output pointers only.
