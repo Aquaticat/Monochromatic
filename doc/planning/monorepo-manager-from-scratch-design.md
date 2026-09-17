@@ -455,6 +455,23 @@ and .NET are out of consideration.
 The stack choice is between the Rust core with TypeScript file-enforcer children and TypeScript on Node,
 with the Rust core recommended.
 
+#### Single-file shipping and a file-enforcer rewrite
+
+Raised by the user on 2026-09-16:
+the TypeScript daemon with a Rust addon may not ship as a single file,
+and the user is willing to rewrite file-enforcer in Rust.
+
+- Node single executable applications are "Stability: 1.1 - Active development",
+   with built-in generation through `--build-sea` since v25.5.0.
+  Native addons ship as `assets` and load by writing the asset to a temporary file and calling `process.dlopen()`
+   (<https://nodejs.org/api/single-executable-applications.html>).
+  One file on disk is possible,
+   but the addon is extracted at run time.
+- The Rust core with TypeScript file-enforcer children also needs Node and the TypeScript sources at run time,
+   so it is not a single file either.
+- An all-Rust tool with file-enforcer rewritten in Rust is back under consideration;
+   its configuration-hosting options are being designed.
+
 #### How TypeScript monorepo tools meet the same problems
 
 Checked 2026-09-16 after the user noted that many monorepo tools are written in TypeScript.
