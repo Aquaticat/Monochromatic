@@ -314,5 +314,27 @@ await describe({
         );
       },
     },),
+
+    it({
+      name: 'SEPARATES A SLICE WHOSE LANE TEXTS WERE OFFERED TO THE SLATE from one whose were not, '
+        + 'and keys no lane texts and an empty list alike, so a settlement bought before the lanes '
+        + 'joined the slate is not served back to a slate that carries them (class forty, 2026-09-17)',
+      fn: async () => {
+        expect(consolidateSliceKey(SLICE,),).not.toBe(
+          consolidateSliceKey({
+            ...SLICE,
+            laneTexts: [
+              {
+                lane: 'repair',
+                text: SLICE.repairText,
+              },
+            ],
+          },),
+        );
+        expect(consolidateSliceKey({ ...SLICE, laneTexts: [], },),).toBe(
+          consolidateSliceKey(SLICE,),
+        );
+      },
+    },),
   ],
 },);
