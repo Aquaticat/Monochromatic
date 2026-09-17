@@ -1458,6 +1458,25 @@ Read 2026-09-17 with `gh issue view`:
    answered in "Upstream reports of the collisions",
    and is asked again.
 
+#### Cache key hash after the collision findings
+
+Answered by the user on 2026-09-17,
+to the repeated cache key output question:
+"Pick some other hash that has hardware acceleration on x86 and ARM instead."
+
+- meow's cache keys stop using `gxhash`;
+   the user delegated choosing a replacement with hardware acceleration on x86 and ARM.
+- The selection runs through the choosing-technology workflow,
+   carrying over the 128-bit key width,
+   stable output for persisted keys,
+   static musl builds on both architectures,
+   and a clear warning on CPUs lacking required capabilities.
+- Superseded for meow:
+   the `gxhash128` key choice and the `+aes`-specific build and startup check,
+   whose target features and check follow the chosen hash.
+- Still open for the user:
+   whether the owned `gxhash` reimplementation continues for the music player alone.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
