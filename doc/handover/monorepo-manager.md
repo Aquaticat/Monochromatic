@@ -141,8 +141,16 @@ Each step's evidence is in the linked documents.
    local glibc builds use the host while releases follow `cargo-publish.yml`,
    new TOML inline tables use the TOML 1.1 trailing comma,
    and edits need not keep untouched bytes or CRLF.
-- Running under the `troubleshooting-doc` skill, uncommitted until each lands:
-   `toml-edit-comment-loss.md`, `taplo-toml-1-1-inline-table-trailing-comma.md`, `json-five-unterminated-block-comment.md`, `jsonc-parser-json5-defaults.md`, `biome-json-crates-exact-pins.md`, and `xml-attribute-whitespace-serialization.md` in `doc/troubleshooting/`; add README index entries after they land.
+- Running under the `troubleshooting-doc` skill,
+   uncommitted until each lands,
+   in `doc/troubleshooting/`:
+   `toml-edit-comment-loss.md`,
+   `taplo-toml-1-1-inline-table-trailing-comma.md`,
+   `json-five-unterminated-block-comment.md`,
+   `jsonc-parser-json5-defaults.md`,
+   `biome-json-crates-exact-pins.md`,
+   and `xml-attribute-whitespace-serialization.md`.
+  Add README index entries after they land.
 - Installs are authorized for this work,
    except `rpm-ostree install`.
 - Stopped unfinished on 2026-09-16:
