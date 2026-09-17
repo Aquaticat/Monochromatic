@@ -1342,7 +1342,8 @@ the brief went to the user on 2026-09-17 and rule `DRR` requires acceptance firs
   `chmod`,
    `mkdir`,
    and `spawn` stay block effects rather than functions.
-- Formatter:
+- Formatter,
+   rejected by the user on 2026-09-17 in favor of shipping none:
    meow's own over the same tree,
    with byte equality against `hclwrite` output on every valid corpus file as the conformance target.
 - Language server:
