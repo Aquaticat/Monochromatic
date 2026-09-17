@@ -531,7 +531,16 @@ tasks do not run under a pseudo terminal by default,
 and any design that does,
 including Nx's `portable-pty` task runner,
 carries those problems.
-Whether a task may opt into a pseudo terminal is not decided.
+Proposed on 2026-09-16,
+open to the user's veto:
+0.x offers no pseudo-terminal opt-in.
+A task needs a terminal only when a person must interact with it,
+such as an editor or a terminal password prompt;
+the repository's interactive `mise run --raw secrets:edit` contract
+(`doc/planning/mise-removal-coverage.md`)
+is that kind of command,
+and it runs in the user's own terminal,
+outside the unattended daemon.
 
 A real pipe solves the same problem without those costs,
 in Node as well:
