@@ -388,6 +388,13 @@ Settled decisions determine one answer:
  adopt + record it unasked.
 Ask only while two paths hinge on non-measurable preference or authority.
 
+FLG:
+ Flagged user choices (veto-open adoptions,
+ open questions) get asked in the same turn with options;
+ never park them in docs.
+Choices settled requirements determine:
+ close and record.
+
 QVE:
  Visual review starts from the accepted design,
 then names consequential concerns the user did not raise.
