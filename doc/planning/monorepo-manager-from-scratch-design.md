@@ -3,8 +3,8 @@
 ## Status
 
 - Status:
-   draft;
-   research pending.
+   draft design;
+   the tech stack and several behaviors remain open.
 - Route comparison:
    [`monorepo-manager-build-routes.md`](monorepo-manager-build-routes.md).
 - Requirements checklist:
@@ -154,15 +154,229 @@ read restriction is left for a later version.
 
 ## Design
 
-Pending research from:
+Research with citations and verified or unverified labels:
+[`monorepo-manager-route-research/from-scratch-inputs.md`](monorepo-manager-route-research/from-scratch-inputs.md).
 
-- file-enforcer,
-   watch-restart,
-   task-util,
-   and JSON-RPC framing reuse;
-- prior art for build inspection and control protocols;
-- prior art for task input hashing;
-- btrfs and ZFS change detection;
-- task priority,
+### Tech stack options
+
+The stack is undecided;
+these options are ranked for the user's choice.
+Approval of a language for this scope is separate,
+per `doc/planning/load-bearing-code-languages.md`.
+
+- Option A,
+   TypeScript on Node:
+  - Pros:
+     reuses file-enforcer,
+     `watch-restart`,
+     `task-util`,
+     and the JSON-RPC framing in `@monochromatic-dev/mcp-stdio` directly.
+  - Cons:
+     a task must join its cgroup before it starts children,
+     and Node's documented `child_process` API has no hook for that.
+    Each task would start through `systemd-run --user --scope`,
+     which runs the command itself inside a transient scope
+     (`man systemd-run`),
+     or through a per-task launcher process that joins the cgroup first;
+     the per-task overhead of either is unmeasured.
+- Option B,
+   Rust:
+  - Pros:
+     `std::os::unix::process::CommandExt::pre_exec` runs a closure in the child after `fork` and before `exec`
+     (<https://doc.rust-lang.org/std/os/unix/process/trait.CommandExt.html>),
+     so a task can join its cgroup before it runs anything.
+  - Cons:
+     file-enforcer is TypeScript,
+     so it would run as child processes or be rewritten.
+- Option C,
+   Rust daemon core with TypeScript file-enforcer evaluation in child processes:
+  - Pros:
+     native cgroup placement and process control,
+     plus file-enforcer reuse through the child-process evaluation the research already recommends.
+  - Cons:
+     two languages in one tool,
+     with a documented boundary between them.
+
+Ranking:
+C > A > B.
+C beats A because cgroup placement before `exec` is native instead of routed through an extra process per task,
+while file-enforcer reuse is the same.
+A beats B because B either duplicates file-enforcer or reaches the same child-process boundary as C without naming it.
+
+### Process model
+
+- The user starts the daemon in its own terminal under a delegated cgroup,
+   such as `systemd-run --user --scope -p Delegate=yes`,
+   which keeps the terminal and Ctrl+C.
+- The daemon moves itself into a leaf cgroup,
+   then creates one cgroup per task below its delegated root.
+- The development machine's user manager delegates `cpu`,
+   `io`,
+   `memory`,
+   `pids`,
+   and `dmem`
+   (`user@1000.service/cgroup.controllers`,
+   measured).
+- 0.x logs to the terminal and handles only Ctrl+C;
+   a TUI comes later.
+
+### RPC
+
+- Transport:
+   a filesystem Unix socket under `$XDG_RUNTIME_DIR` with owner-only permissions,
+   not an abstract socket,
+   because abstract sockets carry no file permissions.
+- Framing:
+   newline-delimited JSON-RPC 2.0.
+- Methods:
+   list tasks,
+   get one task,
+   queue or rerun a task,
+   end a task,
    pause,
-   and resume prior art.
+   resume,
+   and set priority.
+- Notifications:
+   task started,
+   progress,
+   and finished events modeled on Build Server Protocol task notifications,
+   plus a per-task state snapshot modeled on Tilt's `UIResource`.
+- Clients resume subscriptions from a sequence number,
+   modeled on Watchman clocks.
+- Anyone who can connect to the socket can run tasks as the user,
+   so socket permissions are the security boundary.
+
+### Scheduler
+
+- Every task has a priority,
+   default 0;
+   higher priority runs first,
+   and priority changes apply in place.
+- Concurrency is `MONOCHROMATIC_JOBS` when set,
+   otherwise the runtime's available parallelism.
+- Pause freezes a running task through `cgroup.freeze` and holds a queued task.
+- End kills a running task tree through `cgroup.kill`,
+   which also catches children that left the task's process group,
+   such as a Gradle daemon.
+
+### Watching and affected work
+
+- The daemon watches the entire repository.
+- inotify watches are per directory:
+   99,416 directories exist when only `.git` is excluded,
+   against 5,480 when dependency and output directories are also excluded,
+   with `max_user_watches` at 524,288
+   (measured).
+  The watcher excludes dependency and output directories.
+- Change bursts,
+   such as `pnpm install` or a branch switch,
+   are coalesced before the daemon schedules affected work.
+- For each change,
+   the daemon builds everything affected and runs every test suite except files matching `*.expensive.*.test.*`.
+
+### Cache
+
+- Caching is always on.
+- The cache key covers the task definition,
+   argument vector,
+   input file content hashes,
+   declared environment,
+   tool versions,
+   the package's lockfile slice,
+   dependency outputs,
+   platform,
+   and a salt.
+- File-enforcer's staleness manifest is not reused as the task cache,
+   because it checks size and modification time for sources.
+- Content hashing is the source of truth.
+  btrfs features only accelerate it.
+
+### btrfs acceleration
+
+- Reflink copies work without root and restore cached outputs cheaply.
+- `btrfs subvolume find-new` needs privileges:
+   run without root on the `/var/home` subvolume,
+   it fails with "Operation not permitted"
+   (measured),
+   so the daemon does not rely on it.
+- Snapshots need the checkout to be its own subvolume.
+  The checkout is not one today,
+   so converting it is a one-time copy that replaces every inode
+   and can disturb editors,
+   git worktrees,
+   and running watchers.
+- Deleting subvolumes without root needs the `user_subvol_rm_allowed` mount option.
+  On this bootc host,
+   research found that `/etc/fstab` btrfs options may not reach the live mount;
+   the remediation path is unverified.
+
+### Doctor
+
+- Output follows per-capability status,
+   numbered problems and warnings,
+   a `--json` form,
+   and a non-zero exit when problems exist,
+   drawing on `flutter doctor`,
+   `mise doctor`,
+   and `brew doctor`.
+- Checks include cgroup v2 delegation and controllers,
+   the btrfs mount and `user_subvol_rm_allowed`,
+   whether the checkout is a subvolume,
+   and inotify limits,
+   each with detection,
+   the exact command or file edit,
+   and the reason.
+
+### File enforcement
+
+- File-enforcer runs as daemon tasks.
+- Each configuration evaluation runs in a child process instead of a cache-busting re-import,
+   and emits typed events,
+   because log records carry no structured fields for the activity feed.
+- The root `file-enforcer.config.ts` already reads files directly,
+   so lint-level enforcement of undeclared reads applies there too.
+
+### Migration from Mise
+
+- 25 TypeScript files reference `MISE_MONOREPO`,
+   and 41 source files reference Mise environment variables or invoke `mise`
+   (research,
+   verified).
+- Tool provisioning,
+   environment,
+   and secrets stay separate owners per `mise-removal-coverage.md`.
+
+## Risks
+
+- Scope:
+   the task graph,
+   cache,
+   watcher,
+   scheduler,
+   cgroup sandbox,
+   RPC,
+   and documentation are all repository-built.
+- CI:
+   whether GitHub runners provide a systemd user session for delegated cgroups is unverified.
+- Frozen tasks keep holding locks while timers run:
+   file-enforcer's manifest lock times out after 5 seconds for other writers,
+   and tests may time out after resume.
+- Shared daemons:
+   ending one task's cgroup can kill a Gradle daemon another task reuses.
+- Undeclared inputs:
+   lint-level enforcement leaves stale cache hits possible.
+- The vet's HC5 lists macOS and Windows CI runners,
+   while the user made 0.x Linux only.
+
+## Open questions
+
+- Which stack,
+   given the ranked options?
+- Should tasks run Gradle with its daemon disabled,
+   so ending a task cannot kill shared state?
+- Does a frozen running task keep its concurrency slot?
+- Which manifests define affected work:
+   pnpm workspace dependencies,
+   Cargo path dependencies,
+   Gradle projects,
+   or a repository-owned graph?

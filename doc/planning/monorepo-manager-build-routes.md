@@ -305,6 +305,26 @@ Research appendices live in [`monorepo-manager-route-research/`](monorepo-manage
    keeps a source-tree cache,
    and rewrites `dist` in place.
 
+## Design result
+
+- Bazel route:
+   [`monorepo-manager-bazel-route-design.md`](monorepo-manager-bazel-route-design.md)
+   concludes the route is not viable without giving up the no-workspace Rust architecture,
+   the user's documentation rule,
+   Android testing and lint parity,
+   or cgroup sandboxing that fails closed.
+- From-scratch route:
+   [`monorepo-manager-from-scratch-design.md`](monorepo-manager-from-scratch-design.md)
+   records the user's daemon requirements,
+   a design,
+   ranked stack options,
+   risks,
+   and open questions.
+- Ranking after design:
+   Route B over Route A,
+   now because Route A hits the disqualifying problems in its design document,
+   not only on documentation and tooling gaps.
+
 ## Next action
 
 On 2026-09-16 the user asked for design documents for both routes.
