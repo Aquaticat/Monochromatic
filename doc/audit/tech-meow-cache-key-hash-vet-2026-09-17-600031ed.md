@@ -1951,6 +1951,53 @@ Positive control,
 As with HC8,
  the five wrappers added later are covered by the re-run.
 
+### Re-run of the correctness gates
+
+Both gates were re-run on the current `x86-64-v4` build,
+ with the whole candidate table
+ (`scripts/correctness.ts`, `data/correctness.txt`):
+
+- HC8,
+   4,096-byte bases,
+   zero and random,
+   seeds 0, 1, and 987654321:
+   72 results per base
+   (24 functions by three seeds),
+   every one with 0 full-width, 0 low-half, and 0 high-half collisions
+   (`data/logs/onebyte-v4-zero.log`, `data/logs/onebyte-v4-random.log`).
+- HC8 positive control,
+   `gxhash` from the `v4-gxref` build:
+   2 full-width collisions on the zero base and 1 on the random base under every seed
+   (`data/logs/onebyte-v4gxref-zero.log`, `data/logs/onebyte-v4gxref-random.log`),
+   which reproduces the finding that removed `gxhash`
+   and shows the harness detects collisions when they exist.
+- HC10,
+   24 streaming functions,
+   8,548 chunkings each:
+   5,155 failures,
+   all of them `xoodyak_128`.
+  The run was repeated with a per-function counter to settle the attribution:
+   23 of the 24 functions report "0 failed" over 8,548 chunkings each,
+   and `xoodyak_128` reports 5,155
+   (`data/logs/streamcheck-v4-perfn.log`).
+  The positive control run,
+   which withholds the last input byte,
+   reported 204,816 failures,
+   so the harness detects a wrong streaming result.
+
+`xoodyak` is the one HC10 failure,
+ and the reason is in its API rather than in the permutation:
+ `XoodyakCommon::absorb` absorbs one complete message with domain separation
+ (`src/xoodyak/mod.rs:119-123`),
+ so calling it once per chunk is not the same operation as one absorb of the whole input,
+ while `absorb_more` continues an absorb only at multiples of the absorb rate
+ (`src/xoodyak/mod.rs:125-131`).
+A consumer could add its own rate-aligned buffer and obtain chunking independence,
+ so this is a limit of the crate's incremental API as published,
+ not of Xoodyak.
+Either way `xoodyak` is rated 0 on S2 and cannot affect the ranking,
+ so the gate is recorded as failed for the published API and the candidate is not carried further.
+
 ## Execution manifest
 
 Shared by every execution in this vet:
@@ -2019,7 +2066,7 @@ Shared by every execution in this vet:
 
 ## Hard-gate confirmed
 
-Twenty-one of the 23 candidate functions pass every gate:
+Twenty of the 23 candidate functions pass every gate:
 
 - Confirmed:
    `xxhash-rust` XXH3-128,
@@ -2039,14 +2086,15 @@ Twenty-one of the 23 candidate functions pass every gate:
    `cmac` with `aes` AES-CMAC,
    `pmac` with `aes` AES-PMAC,
    `k12` KangarooTwelve,
-   `cubehash` CubeHash,
-   `xoodyak` Xoodyak.
+   `cubehash` CubeHash.
 - Exited at a gate:
    `blake3` BLAKE3,
    which fails HC4 as published (no aarch64 build without a C cross compiler)
    and fails HC1 on aarch64 with its `pure` feature;
    and `graviola` SHA-512,
-   which has no aarch64 kernel (HC1).
+   which has no aarch64 kernel (HC1);
+   and `xoodyak` Xoodyak,
+   whose published incremental API is not chunking independent (HC10, "Re-run of the correctness gates").
   `scytale` SHA-512 and `purecrypto` SHA-512 had already exited at screening for the same reason,
    so they are not candidates here.
   `graviola` SHA-512 is still measured,
@@ -2167,6 +2215,83 @@ Equivalents run here,
  the library tests on `x86_64-unknown-linux-musl`,
  and Miri over the hash modules.
 
+### Suite results
+
+First attempt,
+ recorded because it shows a real property of the crate:
+ the five stable-toolchain suites exited 1 without running a test,
+ because the image's `cargo` is a rustup shim and `rust-toolchain.toml` in the clone pins 1.98.0,
+ which rustup then tried to download inside a network-less container
+ (`data/logs/rs1-test-release.log`).
+The suites were re-run with the mounted toolchain's real `cargo` first on `PATH`,
+ which ignores that file,
+ and with explicit features,
+ because `rscrypto` compiles each algorithm behind a feature and a default-feature test run compiles almost none of them
+ (the first aarch64 run passed 89 tests; the Miri run filtered out all 71 it saw).
+
+Suites that ran to completion in the first pass:
+
+- `rs6` `cargo test --release --lib --target aarch64-unknown-linux-gnu` under QEMU,
+   default features:
+   89 passed, 0 failed.
+- `rs8` `cargo miri test --lib hashes::` on `nightly-2026-09-16` with `-Zmiri-strict-provenance`:
+   exited 0 with 0 tests matching the filter under default features.
+- `rs9` build of the `fast-xxh3` fuzz target with AddressSanitizer and libFuzzer coverage:
+   exited 0.
+- `rs10` that target run for 600 seconds:
+   46,844,896 executions,
+   78,398 executions per second,
+   coverage 1,437 features,
+   139 new corpus units,
+   peak RSS 452 MB,
+   no crash and no artifact written
+   (`data/logs/rs10-fuzz-run.log`).
+  Every one of those executions asserted `rscrypto`'s XXH3-64 and XXH3-128 one-shot results,
+   and its streaming results under arbitrary partitions,
+   against `xxhash-rust` as the oracle.
+- `rs7` `cargo test --target x86_64-unknown-linux-musl` exited 101:
+   its dev-dependency `aws-lc-sys` needs a C cross compiler for musl,
+   which this container does not have.
+  Recorded as an omitted job with that reason;
+   the musl build of the candidate itself is covered by HC4.
+
+## Reference equality
+
+`lab/src/bin/refcheck.rs`,
+ run on the `x86-64-v4` build
+ (`data/logs/refcheck-v4.log`):
+ 4,261 checks,
+ 0 failures.
+
+What it checks:
+
+- Published digests,
+   truncated to the 128-bit key width:
+   SHA-256, SHA-1, and SHA-512 of `"abc"` from FIPS 180-4,
+   the BLAKE3 hash of the empty input,
+   and XXH3-128 of the empty input in its canonical form
+   (`99aa06d3014798d86001c324468d497f`).
+- Cross-implementation equality over 266 input lengths from 0 to 1,048,577 bytes:
+   the four XXH3-128 crates against each other,
+   the seven SHA-256 crates,
+   the three SHA-512 crates,
+   and the two BLAKE3 crates.
+
+Positive control:
+ the same binary with `REFCHECK_CONTROL=flip`,
+ which flips one input byte before hashing while comparing against the unflipped reference,
+ reported 4,261 failures of 4,261 checks
+ (`data/logs/refcheck-v4-control.log`),
+ so the harness detects a wrong digest.
+
+This is the local half of HC3:
+ four independent XXH3-128 implementations agree with each other and with the published digest,
+ and the same holds inside the SHA-256, SHA-512, and BLAKE3 families,
+ on the release-blocking build's kernels.
+The cross-architecture half comes from the aarch64 suites under QEMU
+ ("Upstream suites")
+ and from the prior vet's aarch64 and musl probes for the four reused finalists.
+
 ## Additional validation
 
 ### Fuzzing and property tests
@@ -2210,6 +2335,20 @@ The prior vet ran the HC8 harness at key lengths 8, 16, 64, 128, 240, 241, 1,024
  while `gxhash` collided at 1,024 and 2,048 bytes under every seed.
 This vet repeats that sweep with `rscrypto` added and `gxhash` again as the positive control
  ("Re-run of the correctness gates").
+
+### Extra keyset results
+
+The sweep ran on the `v4-gxref` build for the five finalists and `gxhash`
+ at lengths 8, 16, 64, 128, 240, 241, 1,024, and 2,048 bytes,
+ zero and random bases,
+ seeds 0, 1, and 987654321
+ (`data/logs/onebyte-len*.log`, 16 runs, 18 results each):
+
+- Every finalist result has 0 full-width, 0 low-half, and 0 high-half collisions at every length, base, and seed.
+- `gxhash` collides at 1,024 bytes on the random base and at 2,048 bytes on both bases,
+   under every seed,
+   for example `30ecc446309af95305f3d807d3b2eec9` from two one-byte variants of the same 2,048-byte base.
+  This reproduces the finding that removed it and keeps the harness honest.
 
 ## Benchmarks
 
@@ -2338,6 +2477,167 @@ Every XXH3 implementation handles inputs up to 240 bytes with scalar code and no
  so the `fp` workload compares those scalar paths,
  and `hashcrew`'s runs at about half the speed of `xxhash-rust`'s.
 This audit did not profile which part of that path costs the difference.
+
+### S12 throughput on the non-blocking x86-64 builds (weight 1)
+
+The same three workloads on the baseline, `x86-64-v2`, and `x86-64-v3` builds,
+ medians of five runs, ratios against the best finalist in each cell
+ (`scripts/s12-ratios.ts`):
+
+- Baseline build, `files`:
+   `twox-hash` 48.78,
+   `rscrypto` 48.24,
+   `xxhash-rust` 34.23,
+   `hashcrew` 20.29,
+   `highway` 15.06 GiB/s.
+- `x86-64-v2`, `files`:
+   `rscrypto` 48.08 best,
+   `twox-hash` within band,
+   `xxhash-rust` 0.656,
+   `hashcrew` 0.336 of it.
+- `x86-64-v3`, `files`:
+   `xxhash-rust` 50.48 best,
+   with `twox-hash`, `hashcrew`, and `rscrypto` between 0.94 and 0.99.
+
+Geometric means over the nine cells:
+ `twox-hash` 0.973 (rating 4),
+ `rscrypto` 0.959 (4),
+ `xxhash-rust` 0.747 (3),
+ `hashcrew` 0.509 (2),
+ `highway` 0.286 (1).
+
+The split is dispatch style.
+`twox-hash` and `rscrypto` detect AVX2 at run time,
+ so they keep their speed on a build that enables nothing above the x86-64 baseline.
+`xxhash-rust` selects at compile time,
+ so the baseline and `x86-64-v2` builds run its SSE2 kernel.
+`hashcrew` is the interesting case.
+The `backend` probe
+ (`lab/src/bin/backend.rs`, run in each build)
+ reports `selected_backend=Avx2` in every build,
+ baseline included,
+ so its deficit is not backend choice.
+What changes is the code around the annotated kernel:
+ in the baseline and `x86-64-v2` builds only the `#[target_feature(enable = "avx2")]` function is compiled with AVX2,
+ and those builds measure 0.400 and 0.336 of the best finalist,
+ against 0.981 in the `x86-64-v3` build,
+ where the whole crate is compiled with AVX2.
+The same probe records that no build enables the SHA or AES features at compile time,
+ while all of them are detected at run time on this host.
+
+### S3 multi-GB from disk (weight 5)
+
+`x86-64-v4` build,
+ single-threaded streaming with 1 MiB reads,
+ five repetitions per file, cache mode, and function,
+ 180 runs, every one parsed
+ (`scripts/bench-b.ts`, `data/bench/bigfile.jsonl`, `data/bench-b-summary.txt`).
+The read-only pass runs in the same rotation as a ceiling.
+Each function produced one digest per file across every mode and repetition
+ (18 file-function pairs, all stable),
+ and peak resident memory stayed near 3.5 MB for every function,
+ which is the bounded-memory half of HC10 measured on a 3.97 GB input.
+
+- 662,710,296-byte debug binary, page cache cold:
+   read-only 1.583,
+   `xxhash-rust` 1.586,
+   `rscrypto` 1.561,
+   `hashcrew` 1.546,
+   AES-PMAC 1.529,
+   `blake3` 1.514,
+   `twox-hash` 1.496,
+   `highway` 1.467,
+   SHA-256 1.367 GiB/s.
+  Every finalist overlaps the read-only pass;
+   only SHA-256 falls below it (ratio 0.862).
+- 662,710,296-byte debug binary, page cache warm:
+   read-only 19.777,
+   `hashcrew` 15.360,
+   `twox-hash` 15.037,
+   `xxhash-rust` 14.740,
+   `rscrypto` 13.818,
+   `highway` 8.606,
+   `blake3` 5.446,
+   AES-PMAC 4.905,
+   SHA-256 2.032 GiB/s.
+  The four XXH3 crates overlap each other;
+   `highway` resolves at 0.560,
+   `blake3` at 0.355,
+   AES-PMAC at 0.319,
+   SHA-256 at 0.132.
+- 3,966,238,720-byte image, cold:
+   0.316 to 0.351 GiB/s for everything including the read-only pass,
+   all overlapping.
+  Storage bounds this cell completely.
+- 3,966,238,720-byte image, warm:
+   read-only 16.424,
+   `xxhash-rust` 13.627,
+   `hashcrew` 13.282,
+   `twox-hash` 13.149 (0.965),
+   `rscrypto` 12.194 (0.895),
+   `highway` 8.087 (0.593),
+   `blake3` 5.377 (0.395),
+   AES-PMAC 4.594 (0.337),
+   SHA-256 2.000 (0.147).
+
+Geometric means over the four cells:
+ `xxhash-rust` 1.000,
+ `hashcrew` 1.000,
+ `twox-hash` 0.991,
+ `rscrypto` 0.973,
+ all rating 4;
+ `highway` 0.759, rating 3;
+ `blake3` 0.612 and AES-PMAC 0.573, rating 2;
+ SHA-256 0.360, rating 1.
+The cold cells tie almost everything,
+ so S3's separating power comes from the warm cells,
+ where the page cache is the source and the hash is the bottleneck.
+
+### S4 multi-core hashing of one large input (weight 1)
+
+The one campaign that raises the container bounds:
+ `--cpus` set to the thread count, at most 8 of the host's 16 logical cores,
+ with `--memory=8g`,
+ three repetitions,
+ warm page cache,
+ the 3.97 GB image,
+ 16 MiB reads
+ (`scripts/scaling.ts`, `data/bench/scaling.jsonl`).
+
+- `blake3`'s library parallel mode (`Hasher::update_rayon`):
+   3.96 GiB/s at one thread,
+   5.87 at two,
+   7.63 at four,
+   8.48 at eight,
+   a self-speedup of 2.14 at eight threads,
+   with the same digest at every thread count.
+- A lab-defined chunk composition
+   (fixed-size chunks hashed in parallel, then their digests hashed in order):
+   BLAKE3 6.88 and XXH3-128 7.31 GiB/s at eight threads.
+  Its output differs from the sequential digest by construction,
+   so it is a format meow would own rather than a library mode.
+- Single-threaded XXH3-128 on the same file and cache state:
+   13.35 GiB/s,
+   above every parallel BLAKE3 configuration measured here.
+
+Ratings:
+ every XXH3-128 finalist and `highway` rate 1,
+ because none offers a library parallel mode whose output equals its sequential output,
+ and a chunk construction would be meow's own format.
+`blake3` would rate 3 on this criterion
+ (a library mode with a 2.14 self-speedup),
+ which is one of the few places a cryptographic candidate scores above the finalists,
+ and at weight 1 it does not move the ranking.
+
+One limit of this campaign:
+ the harness routed every multi-thread run of `rscrypto_blake3_128` through the lab composition
+ rather than through `rscrypto`'s own rayon tree mode,
+ so its parallel feature was measured only at one thread (4.21 GiB/s).
+Its published CI artifacts show that mode at about six times its single-thread speed on an 8-vCPU runner
+ ("S5: aarch64 evidence"),
+ which would place it near `blake3`'s `update_rayon`.
+No finalist rating depends on this,
+ because no XXH3-128 candidate has such a mode.
 
 ## S5: aarch64 evidence
 
@@ -2604,6 +2904,57 @@ Two of the five are young crates with almost no dependent base
  and `highway` is stable but quiet:
  no release in the last year,
  while its repository still receives commits.
+
+## C toolchain branch
+
+The branch asks whether allowing a C compiler and assembler in meow's build
+ (HC4-C in "Frozen hard constraints")
+ could change the ranking.
+Only one candidate is affected:
+ `blake3` 1.8.7,
+ whose AVX-512 and NEON kernels are C and assembly compiled by `cc`.
+Every other HC4 exit is an FFI wrapper around a C library
+ (`ring`, `aws-lc-rs`, `openssl`, the `*-asm` crates, `kangarootwelve_xkcp`, and the rest),
+ and each wraps an algorithm that a Rust candidate already implements here,
+ so their speed is bounded by the same algorithms' measurements.
+
+Measured, `x86-64-v4` build, medians of five runs, GiB/s
+ (`data/bench-a-summary.tsv`):
+
+- `blake3` with its C and assembly kernels:
+   `files` 4.64,
+   `files-stream64k` 4.48,
+   `hot16k` 7.53.
+- `blake3` with the `pure` feature, Rust kernels only:
+   `files` 3.79,
+   `files-stream64k` 3.70,
+   `hot16k` 6.40.
+  So the C kernels buy it 18% to 22% on this host.
+- `rscrypto` BLAKE3, pure Rust with `global_asm!` kernels rustc assembles:
+   `files` 4.33,
+   `files-stream64k` 4.46,
+   `hot16k` 7.42,
+   within a few percent of `blake3` with C,
+   and faster than `blake3` without it.
+- On the baseline build the gap is larger
+   (`blake3` with C 4.31 against `pure` 3.07),
+   because the C build selects AVX-512 at run time while the Rust `pure` build has AVX2 at most.
+
+Decision:
+ the branch closes,
+ and no user question is raised.
+The reason is a measured bound rather than a preference:
+ BLAKE3 with its C kernels reaches 0.097 of XXH3-128's throughput on whole files
+ and 0.10 on the streaming and hot-buffer workloads,
+ which is rating 0 on S2,
+ and its measured aarch64 single-thread speed is 1.61 GiB/s against XXH3-128's 24.5
+ ("S5: aarch64 evidence"),
+ which is rating 0 on S5.
+By the bound in "Which confirmed candidates receive equal-depth validation",
+ a candidate rated 0 on S2 and S5 cannot pass 42 of 92 points,
+ while every XXH3-128 candidate scores at least 45 from the weight-5 criteria alone.
+Allowing C would also not improve any other candidate's rank,
+ because `rscrypto` already delivers BLAKE3 at C speed without it.
 
 ## Risks and usage rules for XXH3-128
 
