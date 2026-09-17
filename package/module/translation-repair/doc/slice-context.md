@@ -188,6 +188,17 @@ and the will's paragraph shipped as a silent gap twice.
 A split with an anchored claim stays unresolved;
 an unanchorable claim is still no vote for absence.
 
+## When a picture's reading may be used
+
+A picture's text reaches the sheets only once two readers agree about it
+(trigram overlap at or above the corroboration threshold).
+Since class fifty-two (2026-09-17) that agreement is looked for over every pair of readings,
+not the first two:
+the vision bench has five seats,
+and on XingZ601 the two readings the old rule compared stood just under the line
+while a third agreed with both.
+A reading no other reading vouches for stays out of the corroborated set.
+
 ## What a coverage round may count
 
 A source-only passage is admitted or refused by a coverage round,

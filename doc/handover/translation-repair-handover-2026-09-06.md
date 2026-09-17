@@ -455,7 +455,15 @@ which the takeover session does not have.
   (the pass log's "yingying1 read" heading dated 2026-09-17 18:42 UTC).
   `XingZ601` launched at 18:39 UTC on the same frozen `479bb011f` (pid 3839544,
   runs `~/temp/agent/XingZ601`,
-  log `~/temp/agent/XingZ601.log`);
+  log `~/temp/agent/XingZ601.log`)
+  and stopped INCOMPLETE at the pictures phase after 7 minutes:
+  three readers read the score screenshot and the corroboration compared only the first two
+  (class fifty-two,
+  fixed in `24372215a`,
+  guard red first at `c8d9a990c`).
+  `XingZ602` launched at 18:56 UTC on frozen `24372215a` (pid 3880778,
+  runs `~/temp/agent/XingZ602`,
+  log `~/temp/agent/XingZ602.log`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
   Also today:
@@ -2271,6 +2279,16 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`24372215a` (2026-09-17,
+18:50 UTC):
+class fifty-two,
+a picture is corroborated over every pair of readings rather than the first two
+(`reading-cluster.ts`,
+`image-reading-pair.ts`;
+the pass log's "Class fifty-two" heading dated 2026-09-17 18:50 UTC;
+guard red first at `c8d9a990c`;
+found by the XingZ601 INCOMPLETE).
+Running on XingZ602.
 `479bb011f` (2026-09-17,
 17:35 UTC):
 classes fifty and fifty-one,
@@ -4088,20 +4106,24 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ601` by the seven steps and the three checks (frozen `479bb011f`,
-    pid 3839544,
-    runs `~/temp/agent/XingZ601`,
-    log `~/temp/agent/XingZ601.log`,
-    launched 18:39 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
+1.  READ `XingZ602` by the seven steps and the three checks (frozen `24372215a`,
+    pid 3880778,
+    runs `~/temp/agent/XingZ602`,
+    log `~/temp/agent/XingZ602.log`,
+    launched 18:56 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    yingying settled clean on yingying1
-    (the pass log's "yingying1 read" heading dated 2026-09-17 18:42 UTC),
-    so the queue moved on to its last entry.
+    It is the first pass on class fifty-two
+    (the pass log's heading dated 2026-09-17 18:50 UTC);
+    XingZ601 stopped INCOMPLETE at the pictures phase on it after 7 minutes
+    (the pass log's "XingZ601 read" heading dated 2026-09-17 18:48 UTC).
     XingZ60 is 577 source lines against 358 archive lines,
     nine footnote definitions in the original and none in the archive,
-    so read first the nine definitions on the page and their labels
+    so read first the pictures phase
+    (`image0.webp` corroborated by two or three readers,
+    the closest pair named),
+    then the nine definitions on the page and their labels
     (class nineteen's relabel,
     class twenty-one's orphan guard),
     then the `PhotoScroll`,
@@ -4127,7 +4149,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (yingying1 to its SETTLED page:
+    (XingZ601 to its INCOMPLETE:
+    0.04 USD by the meters,
+    90 seats,
+    3 retry rounds,
+    7 minutes;
+    yingying1 to its SETTLED page:
     0.18 USD by the meters,
     345 seats,
     12 retry rounds,

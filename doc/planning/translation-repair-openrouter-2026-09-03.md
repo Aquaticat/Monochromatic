@@ -8082,6 +8082,70 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ602 launches on class fifty-two, 2026-09-17, 18:56 UTC
+
+Frozen `24372215a` (classes forty-one to fifty-two),
+pid 3880778,
+runs `~/temp/agent/XingZ602`,
+log `~/temp/agent/XingZ602.log`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+no cron job,
+the background waiter alone reports the exit.
+Read first the pictures phase:
+`image0.webp` corroborated by two or three of the readers with the closest pair named,
+then the nine footnote definitions and their labels,
+the components,
+the `details` summary,
+the profile link,
+then the seven steps and the three checks.
+
+## Class fifty-two, 2026-09-17, 18:50 UTC: a picture three readers read is corroborated on the first two alone
+
+Found by the XingZ601 read.
+The picture corroboration compared the first two readings and no other,
+under a comment calling the two "the whole roster today";
+the vision bench has been five seats since Bedrock's Gemma readers were seated on 2026-09-08.
+On XingZ601 three readers read the score screenshot
+(gemma-4-31b 2792 characters,
+gemma-4-26b 2501,
+minimax-m3 2092;
+GLM-5.3-Flash returned nothing after 206 seconds of reasoning,
+Qwen3.8-27B refused by the router),
+the two compared stood at overlap 0.297 against a threshold of 0.3,
+and the entry stopped INCOMPLETE at the pictures phase after seven minutes.
+Measured over the stored readings,
+gemma-26b and gemma-31b agree at 0.586 and minimax and gemma-31b at 0.326;
+the one pair the code chose was the only pair below the line.
+Fixed in `24372215a`
+(guard red first at `c8d9a990c`):
+`clusterReadings` (`reading-cluster.ts`) measures every pair,
+a reading vouched for by any other reading travels as corroborated,
+the picture is corroborated when at least one pair agrees,
+and a refusal names the closest pair.
+A reading no other reading vouches for is left out of the corroborated set,
+so the archive block review's one-transcript rule keeps choosing among readings that describe the same picture.
+
+## XingZ601 read, 2026-09-17, 18:48 UTC: INCOMPLETE at the pictures phase
+
+Frozen `479bb011f`,
+7 minutes
+(`ms=412885`),
+`status=INCOMPLETE`,
+`error=visual evidence incomplete for 1 referenced assets`,
+no page written,
+`attempts.json` reads 1.
+Spend by the meters:
+Bedrock 177.45 to 177.43,
+OpenRouter 253.39 to 253.37,
+0.04 USD;
+`pass-spend.mjs` logs 90 seats and 3 retry rounds.
+The deterministic reader found 58 characters on `image0.webp` (2400 by 2616),
+three models read it,
+and `readImagePair` refused it on the first two readings' overlap of 0.297:
+class fifty-two.
+Nothing past the pictures phase ran.
+
 ## XingZ601 launches, 2026-09-17, 18:39 UTC
 
 Frozen `479bb011f` (classes forty-one to fifty-one),
