@@ -1122,6 +1122,15 @@ Open to the user's veto:
      only pointers are recorded,
      and a changed or missing output means the task runs again.
   - Eviction uses a size cap plus a maximum age.
+- Measuring cache size with reflinks,
+   probe on 2026-09-16 in a throwaway directory on the development machine's btrfs:
+   an 8 MiB random file plus a `cp --reflink=always` clone reported
+   `Total 16.00MiB`, `Exclusive 0.00B`, `Set shared 8.00MiB` from unprivileged `btrfs filesystem du --summarize`.
+  After overwriting the original's first 1 MiB in place,
+   per-file output was `clone.bin` exclusive `0.00B` shared `8.00MiB`
+   and `original.bin` exclusive `1.00MiB` shared `7.00MiB`.
+  So apparent size double-counts reflinked data,
+   and per-file exclusive bytes miss the old extent the clone alone still pins.
 - The cache key covers the task definition,
    argument vector,
    input file content hashes,
