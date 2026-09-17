@@ -351,10 +351,25 @@ Spot-checked before merging:
 The C toolchain question the HCL research raised is closed by this vet's measured bound,
  so it was withdrawn from the user's question set.
 
-Running since 2026-09-17:
+Finished on 2026-09-17:
  design research for the per-user `meow` configuration,
- its discovery and precedence,
- writing `per-user-config/per-user-config-design.md` in the session scratchpad.
+ copied to `doc/planning/monorepo-manager-route-research/per-user-config.md`
+ and merged into "Per-user configuration" in the design.
+It recommends an XDG path with an explicit override,
+ per-attribute declared scope for layering,
+ repository proposals accepted by the per-user file for outside writes,
+ a restricted mode until a repository root is trusted,
+ two-level cache keys,
+ and one daemon per repository root.
+Its brief went to the user with four questions:
+ outside-write proposals,
+ what gates running tasks,
+ whether per-user tasks may run everywhere,
+ and whether automated runs ignore the file.
+No decision record until the user accepts (rule `DRR`).
+The research used no clones and wrote no troubleshooting docs;
+ it reported three rule `1CB` slips,
+ and it noted that `git config --list --show-origin` printed a credential URL that it did not reproduce anywhere.
 
 1.  When it lands,
     start the last item under "Design work not yet started" in the design's "Open questions":
