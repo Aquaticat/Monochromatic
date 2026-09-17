@@ -2997,6 +2997,28 @@ The fastest candidate in every cell is also the fastest finalist,
  so the S5 rule's "fastest candidate on the same aarch64 core" and the S2 rule's "best finalist"
  pick the same denominator here.
 
+Which cells S5 uses:
+ the three in-memory cells S2 defines,
+ `files`, `files-stream64k`, and `hot16k`,
+ because S5 rates "in-memory whole-file and large-stream speed"
+ and S2 is where this report operationalizes that phrase
+ ("Frozen soft criteria").
+One rating is sensitive to that choice and is disclosed rather than tuned:
+ dropping `hot16k` and rating from the two file-shaped cells alone gives
+ `hashcrew` 1.000,
+ `twox-hash` 0.984,
+ `rscrypto` 0.900,
+ `xxhash-rust` 0.853,
+ `highway` 0.242 on `m1-generic`,
+ which moves `rscrypto` from 4 to 3 and leaves the other four ratings unchanged.
+The consequence of that one step is already in the sensitivity matrix,
+ because `rscrypto`'s S5 rating is medium confidence and the frozen procedure steps it:
+ it puts `hashcrew` 85.9 ahead of `rscrypto` 85.3 for second place,
+ with `twox-hash` still first
+ ("Sensitivity").
+The three-cell set was fixed by S2 before any aarch64 number existed,
+ so it is not chosen by its result.
+
 Two things this measurement settles that no published number did:
 
 - `twox-hash` is at the top of the field on an aarch64 core measured here,
