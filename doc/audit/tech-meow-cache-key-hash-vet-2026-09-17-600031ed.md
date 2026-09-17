@@ -658,3 +658,671 @@ After the new queries:
 2.  Append one de-duplicated query per applicable source class.
 3.  Freeze the schedule.
 4.  Record later terms without new queries.
+
+## Discovery results
+
+Executed 2026-09-17.
+Raw pages:
+ `~/temp/agent/hashvet2-2026-09-17/data/crates/` and `data/github/`;
+ web results in `data/web/`;
+ crate archives under `data/crate-src/` and the prior vet's `crate-src/`.
+
+### Source class 1: crates.io
+
+Every query used `per_page=100` and the User-Agent `hash-library-survey/1.0`.
+No result was filtered out before screening.
+The prior vet's CR01 to CR14 and XR01 to XR04 results are reused ("Reuse of prior evidence");
+ the new queries are listed with their own results.
+
+Source-scan method,
+ extending the prior vet's
+ (`scripts/crates-scan.ts`, which never builds or runs an archive):
+
+- Each result's newest stable `.crate` archive was downloaded from `static.crates.io` and extracted;
+   archives the prior vet had already extracted were reused.
+- Non-test Rust files were searched for x86 intrinsics,
+   aarch64 intrinsics
+   (now including the SHA-3 extension intrinsics `veor3q`, `vrax1q`, `vxarq`, `vbcaxq` and the SM3 intrinsics),
+   SIMD abstractions,
+   `asm!` and `global_asm!` macros,
+   128-bit outputs,
+   build scripts,
+   and C, C++, or assembly files.
+- Every crate's runtime dependencies were parsed from its manifest,
+   and a crate whose dependency is itself an accelerated crate
+   (`aes`, `sha2`, `sha1`, `blake3`, `keccak`, `polyval`, `ghash`, `ring`, `aws-lc-rs`, `openssl`, `graviola`, and others)
+   is marked as delegating,
+   because the prior scan could not see acceleration held by a dependency.
+- Totals:
+   5,092 distinct crates scanned,
+   102 with intrinsics for both architectures,
+   44 with a SIMD abstraction,
+   74 with an `asm!` or `global_asm!` macro,
+   226 with C, C++, or assembly sources,
+   2,095 delegating to an accelerated dependency,
+   63 without a downloadable stable version.
+- Triage:
+   3,113 crates were listed for review because their name or description names a hash, MAC, digest, or checksum,
+   or because they carry one of those signals
+   (`scripts/triage.ts`, `data/triage.txt`);
+   623 carry a signal and a hash-like name (`data/triage-strong.txt`),
+   and every one of those was read by hand.
+
+Query ledger for the new queries,
+ in schedule order,
+ with the expansion round (XC) last:
+
+- CC01 `q=cryptographic hash`:
+   2,156 reported,
+   10 page(s) and 1,000 results read,
+   two-page rule met;
+   new reviewed candidates: `gxhash`, `noncrypto-digests`, `rapidhash`, `highway`, `ahash`, `wyhash`, `sha3`, `rscrypto`, `fasthash-sys`, `fasthash-sys-fork`, `crypto-hashes`, `stringzilla`, `hashkit`, `t1ha`, `sha1-checked`, `iroh-blake3`, `blake3`, `ascon-hash`, `foldhash`, `md-5`, `hmac`, `fluence-blake3`, `lib-q-keccak`, `kangarootwelve_xkcp`, `fleek-blake3`, `ripemd`, `whirlpool`, `sm3`, `groestl`, `streebog`, `skein`, `sha2`, `multihash-codetable`, `hashcrew`, `axhash-core`, `spg-crypto`, `xoodyak`, `sha1`, `sha-1`, `fast-md5`, `cryptoxide`, `museair`, `md5-many`, `gmcrypto-core`;
+   new screening survivors: `highway`, `rscrypto`, `blake3`, `sha2`, `hashcrew`, `xoodyak`, `sha1`, `cryptoxide`.
+- CC02 `q=sha256`:
+   4,020 reported,
+   10 page(s) and 1,000 results read,
+   two-page rule met;
+   new reviewed candidates: `sha256`, `hashtree-rs`, `purecrypto`, `graviola`, `bitcoin_hashes`, `sha2raw`;
+   new screening survivors: `purecrypto`, `graviola`, `bitcoin_hashes`.
+- CC03 `q=sha512`:
+   500 reported,
+   6 page(s) and 500 results read,
+   exhausted;
+   new reviewed candidates: `ckb-opt-sha512`, `tidecoin_hashes`, `scytale`;
+   new screening survivors: `scytale`.
+- CC04 `q=sha1`:
+   689 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: `sha1-asm`, `shaman`;
+   new screening survivors: none.
+- CC05 `q=sha-ni`:
+   30 reported,
+   1 page(s) and 30 results read,
+   exhausted;
+   new reviewed candidates: `tape-sha256`, `sha2ni`;
+   new screening survivors: none.
+- CC06 `q=sha3`:
+   558 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: `sha3-selkie`, `sha3-asm`, `sha3_ce`, `libcrux-sha3`, `crc-fast`, `ckb-opt-fips202`, `tiny-keccak`, `keccak`, `shake`;
+   new screening survivors: none.
+- CC07 `q=keccak`:
+   421 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: `keccak-batch`, `p3-keccak`, `kangarootwelve`, `turboshake`, `cshake`;
+   new screening survivors: none.
+- CC08 `q=kangarootwelve`:
+   55 reported,
+   1 page(s) and 55 results read,
+   exhausted;
+   new reviewed candidates: `k12`, `marsupial-sys`;
+   new screening survivors: `k12`.
+- CC09 `q=k12`:
+   66 reported,
+   1 page(s) and 66 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CC10 `q=blake2`:
+   216 reported,
+   3 page(s) and 216 results read,
+   exhausted;
+   new reviewed candidates: `blake2`, `blake2-rfc`, `blake2_ce`, `blake2_c`, `blake2b_simd`, `blake2s_simd`, `blake2b-rs`, `blake3-std`, `ckb-opt-blake2b`;
+   new screening survivors: none.
+- CC11 `q=cmac`:
+   107 reported,
+   2 page(s) and 107 results read,
+   exhausted;
+   new reviewed candidates: `cmac`;
+   new screening survivors: `cmac`.
+- CC12 `q=pmac`:
+   8 reported,
+   1 page(s) and 8 results read,
+   exhausted;
+   new reviewed candidates: `pmac`;
+   new screening survivors: `pmac`.
+- CC13 `q=gmac`:
+   25 reported,
+   1 page(s) and 25 results read,
+   exhausted;
+   new reviewed candidates: `polyval`;
+   new screening survivors: none.
+- CC14 `q=polyval`:
+   33 reported,
+   1 page(s) and 33 results read,
+   exhausted;
+   new reviewed candidates: `polyhash`, `ghash`;
+   new screening survivors: none.
+- CC15 `q=aes mac`:
+   283 reported,
+   3 page(s) and 283 results read,
+   exhausted;
+   new reviewed candidates: `aes`, `halftime`, `drtahash`;
+   new screening survivors: none.
+- CC16 `q=message authentication code`:
+   3,663 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CC17 `q=md5`:
+   955 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: `md5-asm`;
+   new screening survivors: none.
+- CC18 `q=digest simd`:
+   144 reported,
+   2 page(s) and 144 results read,
+   exhausted;
+   new reviewed candidates: `crc64fast`, `cubehash`, `crc64fast-nvme`, `hashcodecs`;
+   new screening survivors: `cubehash`.
+- CC19 `q=hash assembly`:
+   926 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CC20-groestl `q=groestl`:
+   19 reported,
+   1 page(s) and 19 results read,
+   exhausted;
+   new reviewed candidates: `groestl-aesni`;
+   new screening survivors: none.
+- CC20-haraka `q=haraka`:
+   4 reported,
+   1 page(s) and 4 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CC20-areion `q=areion`:
+   1 reported,
+   1 page(s) and 1 results read,
+   exhausted;
+   new reviewed candidates: `areion`;
+   new screening survivors: none.
+- CC20-skein `q=skein`:
+   20 reported,
+   1 page(s) and 20 results read,
+   exhausted;
+   new reviewed candidates: `skein-ffi`;
+   new screening survivors: none.
+- CC20-sm3 `q=sm3`:
+   106 reported,
+   2 page(s) and 106 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CC20-lsh `q=lsh hash`:
+   51 reported,
+   1 page(s) and 51 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CC20-parallelhash `q=parallelhash`:
+   7 reported,
+   1 page(s) and 7 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CC20-ascon `q=ascon hash`:
+   22 reported,
+   1 page(s) and 22 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CC21-sha2 `keyword=sha2 sorted by downloads`:
+   31 reported,
+   1 page(s) and 31 results read,
+   exhausted;
+   new reviewed candidates: `sha2-asm`, `sha2_ce`;
+   new screening survivors: none.
+- CC21-sha256 `keyword=sha256 sorted by downloads`:
+   91 reported,
+   1 page(s) and 91 results read,
+   exhausted;
+   new reviewed candidates: `lonesha256`, `ckb-opt-sha256`;
+   new screening survivors: none.
+- CC21-digest `keyword=digest sorted by downloads`:
+   176 reported,
+   2 page(s) and 176 results read,
+   exhausted;
+   new reviewed candidates: `meowhash`, `sponge-hash-aes256`, `ringpcx`;
+   new screening survivors: none.
+- CC21-mac `keyword=mac sorted by downloads`:
+   88 reported,
+   1 page(s) and 88 results read,
+   exhausted;
+   new reviewed candidates: `flatline-umac`;
+   new screening survivors: none.
+- CC21-blake3 `keyword=blake3 sorted by downloads`:
+   119 reported,
+   2 page(s) and 119 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CC21-keccak `keyword=keccak sorted by downloads`:
+   53 reported,
+   1 page(s) and 53 results read,
+   exhausted;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CC21-crypto `keyword=crypto sorted by downloads`:
+   2,660 reported,
+   6 page(s) and 600 results read,
+   two-page rule met;
+   new reviewed candidates: `ring`, `siphasher`, `openssl`, `aws-lc-rs`;
+   new screening survivors: none.
+- CC21-cryptography `keyword=cryptography sorted by downloads`:
+   2,491 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: none;
+   new screening survivors: none.
+- CC22 `category=cryptography sorted by downloads`:
+   10,152 reported,
+   3 page(s) and 300 results read,
+   two-page rule met;
+   new reviewed candidates: none;
+   new screening survivors: none.
+
+Pagination:
+ CC01, CC02, CC03, and CC21-crypto had a survivor on their third page or later,
+ so paging continued;
+ CC01 and CC02 ran to the tenth page,
+ where two consecutive complete pages added no survivor.
+No other query needed more than its first complete pages.
+Result:
+ source class 1 is saturated.
+
+### Expansion round
+
+New taxonomy terms from the ledger:
+ AES-round universal hash (LeMac, PetitMac),
+ multi-buffer and batch hashing,
+ hash chains,
+ Xoodoo and Xoodyak,
+ CubeHash,
+ sponge hash over AES.
+One de-duplicated round ran:
+ XC01 to XC04 on crates.io,
+ XG04 and XG05 on GitHub (both returned 0 results),
+ and one web query.
+It found `xoodoo` 0.1.0 (the earlier name of `xoodyak`, x86-only intrinsics),
+ `xoofff`,
+ `permutation-xoodoo`,
+ `sha3-kernel-hasher` (x86-only),
+ `oxicrypt-cmac` (over `oxicrypt-aes`, whose AES is portable software with no AES instructions),
+ and the LeMac and PetitMac artifact,
+ which ships C and Python reference implementations only
+ (`github.com/AugustinBariant/Implementations_LeMac_PetitMac`, read 2026-09-17),
+ so it has no Rust crate (HC7) and no rustc-only build (HC4).
+The schedule is frozen;
+ later terms were recorded without new queries.
+
+### Source class 2: GitHub
+
+`gh api search/repositories` and `search/code`,
+ best-match order,
+ `per_page=100`;
+ every query ran until GitHub returned fewer than 100 items on a page,
+ so none reached the 1,000-result cap
+ (`scripts/gh-query.ts`, pages in `data/github/`).
+Libraries found only here were checked against the crates.io API.
+
+- GK01 `topic:cryptographic-hash-functions language:Rust`:
+   2 results;
+   `RustCrypto/hashes` (its crates are in class 1)
+   and `ohsayan/rcrypt` (password hashing, category mismatch).
+- GK02 `topic:sha256 language:Rust`:
+   119 results over 2 pages;
+   applications, educational SHA-256 code, and libraries whose crates are in class 1
+   (`baoyachi/sha256-rs` as `sha256`, `DoumanAsh/lhash`, `jedisct1/rust-hmac-sha256`);
+   `SongXiaoXi/tachyon-rs` (SIMD cryptography) is not on crates.io
+   (API 404 for `tachyon-rs`; the crate named `tachyon` is an unrelated memory-latency tool),
+   HC7.
+- GK03 `topic:blake3 language:Rust`:
+   119 results over 2 pages;
+   `orion-rs/orion`, `skerkour/chacha20-blake3`, `loadingalias/rscrypto`, `stelar-labs/fides-rs`, `jamesgober/crypt-io`
+   (all on crates.io, class 1),
+   `TinoGuo/r_crypto` (not on crates.io, HC7),
+   and applications.
+- GK04 `topic:keccak language:Rust`:
+   20 results;
+   `debris/tiny-keccak`, `itzmeanjan/turboshake`, `itzmeanjan/kangarootwelve`, `nxm-rs/keccak-batch` (class 1),
+   educational SHA-3 code,
+   `codahale/cyclist` and `conradludgate/farfalle` (permutation modes, category mismatch).
+- GK05 `topic:message-authentication-code language:Rust`:
+   2 results;
+   `itzmeanjan/multimixer-128` (keyed universal hash, category mismatch)
+   and `KizzyCode/crypto_api` (traits only).
+- GK06 `sha256 simd neon language:Rust`:
+   1 result,
+   `tachyon-rs` (HC7).
+- GK07 `hash hardware acceleration aarch64 x86_64 language:Rust`:
+   0 results.
+- GKC1 code `_mm_sha256rnds2_epu32 vsha256hq_u32 language:Rust`:
+   12 results in 10 repositories;
+   `purecrypto` and `verify-beacon` (class 1),
+   `dong-qiu/openhitls-rs` (`hitls-crypto`, not on crates.io, HC7),
+   and application-internal SHA-256 code (makepad, iroha, CryptKeyPer, test corpora).
+- GKC2 code `vsha512hq_u64 language:Rust`:
+   156 results over 2 pages,
+   mostly vendored copies of `sha2`;
+   libraries `RustCrypto/hashes`, `typed-io/cryptoxide`, `loadingalias/rscrypto`, `KarpelesLab/purecrypto`,
+   `valkyoth/brynja` (`brynja-crypto-cpu`), `sergii-ziborov/blindplane` (`blindplane-crypto`)
+   (class 1 or checked there),
+   `tachyon-rs` and `openhitls-rs` (HC7).
+- GKC3 code `vrax1q_u64 language:Rust`:
+   69 results;
+   `RustCrypto/sponges` (`keccak`), `cryspen/libcrux` (`libcrux-sha3`), `cryptoxide`, `rscrypto`, `brynja`,
+   `Plonky3/Plonky3` (`p3-keccak`, Keccak-f and Keccak-256 for proof systems),
+   standard-library copies,
+   and vanity-address miners.
+- GKC4 code `_mm512_aesenc_epi128 language:Rust`:
+   175 results over 2 pages,
+   mostly `stdarch` and Miri copies;
+   libraries `RustCrypto/block-ciphers` (`aes` VAES backends), `ctz/graviola`, `rscrypto`, `tachyon-rs`,
+   AES-GCM and AEGIS implementations (category mismatch),
+   and `byt3forg3/Tachyon`,
+   an experimental AES-NI and AVX-512 hash with x86 and portable kernels only
+   (`algorithms/tachyon/src/kernels/{aesni,avx512,portable}`),
+   not on crates.io (HC1, HC7).
+
+Hash-family indexes:
+
+- SMHasher3 `results/README.md`
+   (saved by the prior vet at `~/temp/agent/hashvet-2026-09-17/data/smhasher3-results-readme.md`,
+   546 lines):
+   the "Passing hashes" table (hashes that pass all tests) lists these cryptographic families:
+   `blake3`,
+   `blake2s` at 128, 160, 224, and 256 bits,
+   `blake2b` at 128 to 256 bits,
+   `SHA-2-224` and `SHA-2-256`,
+   `SHA-1`,
+   `MD5`,
+   `SHA-3`,
+   and the Ascon CXOF instances.
+  Every cryptographic entry passes;
+   the AES-based non-cryptographic entries
+   (`aesnihash-peterrk` with 41 failures, `aesnihash-majek` with 64, `t1ha0.aesA` and `t1ha0.aesB` with 5)
+   are in the "Failing hashes" table,
+   which is the reason the vet treats an AES-round universal hash as needing its own quality evidence
+   rather than inheriting AES's.
+  The index reports quality and speed,
+   not which instruction sets an implementation uses,
+   so acceleration is established per crate in screening, not from this table.
+- eBACS `primitives-hash.html` (fetched 2026-09-17, 172 primitives, 1,115 implementations,
+   `data/web/ebacs-hash-impls.txt`):
+   primitives with both an x86 vector or AES implementation and an Arm NEON or ARMv8 implementation are
+   `blake3`, `blake256`, `blake512`, `blake2b`, `bmw512`, `cubehash512`, `cubehash1632`, `groestl256`, `groestl512`,
+   `k12`, `keccak` variants, `lsh256`, `lsh512`, `luffa256` to `luffa512`, `romulush`, `round3jh256`, `round3jh512`,
+   the SHA-3 and SHAKE instances, and `xoodyakv1`.
+  Each family was looked up in the class 1 results:
+   Rust crates exist for BLAKE3, BLAKE2, Grøstl, JH, CubeHash, Keccak, SHA-3, K12, LSH, Luffa, Xoodyak, and Romulus
+   and are screened there;
+   BLAKE-256 and BLAKE-512 (SHA-3 round-3 candidates) and BMW have no accelerated Rust crate.
+
+### Source class 3: broader web
+
+Linkup search,
+ `depth` standard,
+ no domain filter,
+ no page cursor
+ (`data/web/W11.txt`, `W12.txt`, `W15.txt`, `W16.txt`, `inline-results.md`):
+
+- W11 (40 results):
+   comparison sites,
+   Areion512 recommended for short inputs on AES hardware (Cryptography Stack Exchange 84450),
+   ARMv8 SHA-256 articles,
+   t1ha and komihash (non-cryptographic, prior exits);
+   new taxonomy term Areion (AES-based fixed-length hash).
+- W12 (78 results):
+   BLAKE3 and SHA-256 comparison pages,
+   AVX-512 multi-buffer SHA-256 in Go (`minio/sha256-simd`),
+   KangarooTwelve papers and `kangarootwelve_xkcp.rs` (C bindings);
+   new taxonomy term multi-buffer SHA-256.
+- W13 (17 results):
+   `sha2` backends and cfg flags,
+   `graviola` (no C compiler, SHA-256 with SHA extensions on both architectures, SHA-384 and SHA-512 AVX2 on x86_64),
+   `aes` VAES backends;
+   no new library beyond class 1.
+- W14 (18 results):
+   LeMac and PetitMac (AES-round MACs, C artifacts, FSE 2025),
+   Go PMAC and CMAC packages;
+   new taxonomy term AES-round universal hash (LeMac).
+- W15 (70 results):
+   `itzmeanjan/kangarootwelve`, XKCP K12, `kangarootwelve_xkcp`, `tiny-keccak` K12,
+   general SIMD articles;
+   no new library beyond class 1.
+- W16 (38 results):
+   SHA instruction set references,
+   Go and GnuPG SHA-512 ARMv8.2 work,
+   Botan hardware acceleration;
+   no Rust library beyond class 1.
+- W17 (18 results):
+   RustCrypto `pmac` and `cmac`,
+   Miscreant AES-PMAC,
+   PMAC specification pages;
+   no new library.
+- W18 (17 results):
+   `rscrypto` (pure Rust, BLAKE3, SHA-2, XXH3-128, no C),
+   `blake2_simd` (x86 only),
+   BLAKE3 C and Rust documentation;
+   no new library beyond class 1.
+
+### Source class 4: this repository
+
+- RP07 `sha256|sha-256|sha512|sha3|keccak|kangarootwelve|blake2|blake3|cmac|pmac|polyval|ghash|graviola`
+   (`rg --count-matches --ignore-case` excluding `node_modules` and lockfiles):
+   TypeScript uses of Node's SHA-256 (file-enforcer, `watch-restart`, `aquati.cat`, `kv-store`, `markdown-lint` LFS object ids),
+   pnpm SRI SHA-512 notes,
+   the stack research documents,
+   and `package/cli/forbidden-strings/src/runtime_cache/path.rs:73`,
+   which hashes with `gix_hash::hasher(gix_hash::Kind::Sha256)`.
+- RP08 lockfile packages
+   (every `Cargo.lock` under `package/`):
+   `sha2` 0.10.9 (`cli/forbidden-strings`, `fuzz/forbidden-strings`, `cli/nested-wayland-session`),
+   `sha2` 0.11.0 (`rust-module/forbidden-regex.bench`),
+   `sha1` 0.10.6 and 0.10.7 with `sha1-checked` 0.10.0 (through `gix-hash`),
+   `aes` 0.8.4 and `sha1_smol` 1.0.1 (music player, through `turso_core`),
+   `twox-hash` 2.1.2 (music player);
+   no `ring`, `aws-lc-rs`, `openssl`, `boring`, `blake3`, `blake2`, `sha3`, or `hmac`.
+  So `sha2` is already a repository dependency in Rust packages,
+   and `twox-hash` a transitive one.
+
+## Screening
+
+Screening applies the category definition and the hard constraints that can be settled from source,
+ licence metadata,
+ and published documentation.
+Gates that need a build or a measurement
+ (HC4 build, HC5 diagnostics, HC8 collisions, HC10 chunking independence)
+ are settled in "Hard-gate outcomes",
+ so a crate can leave screening as a serious alternative and still exit at a gate later.
+
+Every crate reviewed by hand carries its outcome in
+ `~/temp/agent/hashvet2-2026-09-17/scripts/review.json`
+ (118 entries).
+The per-crate outcome for all 5,092 scanned crates is published beside this report as
+ [`tech-meow-cache-key-hash-vet-2026-09-17-600031ed/screening-crates.md`](tech-meow-cache-key-hash-vet-2026-09-17-600031ed/screening-crates.md).
+
+### What the changed premises reopen
+
+The premise change makes cryptographic and AES-based constructions candidates rather than controls,
+ so the whole cryptographic side of the field enters screening for the first time:
+ BLAKE3,
+ SHA-256,
+ SHA-512,
+ SHA-1,
+ KangarooTwelve and the Keccak family,
+ CubeHash,
+ Xoodyak,
+ AES-CMAC,
+ and AES-PMAC,
+ across `rscrypto`, `blake3`, `sha2`, `sha1`, `graviola`, `purecrypto`, `cryptoxide`,
+ `bitcoin_hashes`, `scytale`, `k12`, `cubehash`, `xoodyak`, `cmac`, and `pmac`.
+The prior vet had carried `sha2` SHA-256 and AES-CMAC only as controls
+ ("Cryptographic functions carried as controls" in the prior report).
+
+No previously-excluded non-cryptographic candidate reopens.
+Each prior non-cryptographic exit was re-read against the new premises,
+ and every one rests on a gate the premises did not touch:
+
+- `gxhash` 3.5.0:
+   HC9 is a user decision of 2026-09-17,
+   unchanged by the weighting and build premises;
+   its `Hasher` output also still depends on write chunking (HC10).
+  It is the HC8 positive control.
+- `rotohash-rs` 0.1.2,
+   the one non-cryptographic function with dedicated-instruction paths on both architectures
+   (AES-NI with AVX2 or VAES with AVX-512, NEON with the AES extension):
+   HC10, one-shot API only,
+   and HC3, no stability statement.
+  Neither depends on which build blocks a release or on how speed is weighted.
+- `hashcodecs` 1.4.1: HC10 for XXH3-128, HC1 for its scalar aarch64 MurmurHash3.
+- `ahash`, `foldhash`, `drtahash`, `t1ha`, `axhash-core`, `mm3h`: HC2 or HC3, width and stability.
+- The CRC and Adler crates: HC2, outputs of 64 bits or fewer.
+- `museair`, `rapidhash`, `komihash`, `wyhash`, `seahash`, `siphasher`, and the other scalar 64-bit designs:
+   HC1 and usually HC2.
+  `museair` is carried as the scalar non-cryptographic speed control.
+- `meowhash`: HC1 (aarch64 disabled since 0.2) and HC3.
+- C-backed crates (`umash-sys`, `xxhash-c-sys`, `stringzilla`, `fasthash`): HC4, and they enter the C toolchain branch only.
+
+The build premise does change one thing inside screening,
+ and it helps cryptographic candidates rather than non-cryptographic ones:
+ an accelerated path that the compiler selects from raised target features
+ (AVX-512 under `-Ctarget-cpu=x86-64-v4`, `+aes`, or a `--cfg` backend)
+ now satisfies HC1 on the release-blocking `x86-64-v4` build,
+ because meow owns the startup check for a raised build.
+That is what keeps `k12` in,
+ whose x86 vector backend exists only under `--cfg keccak_backend="simd128|simd256|simd512"`.
+
+### Serious alternatives
+
+Eighteen crates leave screening;
+ `aes` enters as the block-cipher backend for two of them rather than as a hash.
+Because a candidate is a library and function pair,
+ they carry 25 candidate functions into hard-gate confirmation,
+ named here by their lab wrapper
+ (`~/temp/agent/hashvet2-2026-09-17/lab/src/lib.rs`):
+
+- XXH3-128:
+   `xxhash_rust_xxh3_128` (`xxhash-rust` 0.8.18),
+   `twox_xxh3_128` (`twox-hash` 2.1.4),
+   `hashcrew_xxh3_128` (`hashcrew` 0.3.0),
+   `rscrypto_xxh3_128` (`rscrypto` 0.9.0).
+- HighwayHash-128:
+   `highway_128` (`highway` 1.3.0).
+- BLAKE3:
+   `blake3_128` (`blake3` 1.8.7, with the C and assembly build note),
+   `rscrypto_blake3_128` (`rscrypto`, keyed, `global_asm!` kernels).
+- SHA-256:
+   `sha2_sha256_128` (`sha2` 0.11.0),
+   `rscrypto_sha256_128`,
+   `graviola_sha256_128` (`graviola` 0.4.1),
+   `purecrypto_sha256_128` (`purecrypto` 0.9.0),
+   `cryptoxide_sha256_128` (`cryptoxide` 0.6.5),
+   `bitcoin_hashes_sha256_128` (`bitcoin_hashes` 1.2.0),
+   `scytale_sha256_128` (`scytale` 0.5.0).
+- SHA-512:
+   `sha2_sha512_128`,
+   `rscrypto_sha512_128`,
+   and `graviola_sha512_128`,
+   which is measured although `graviola` has no aarch64 SHA-512 kernel (HC1 there).
+- SHA-1:
+   `sha1_128` (`sha1` 0.11.0).
+- Keccak family:
+   `k12_128` (`k12` 0.5.1 over `keccak` 0.2.2).
+- Sponges and permutations:
+   `cubehash512_128` (`cubehash` 0.4.1),
+   `xoodyak_128` (`xoodyak` 0.8.4).
+- AES-based MACs:
+   `aes_cmac_128` (`cmac` 0.8.0 with `aes` 0.9.3),
+   `aes_pmac_128` (`pmac` 0.8.0 with `aes`).
+- Controls, not candidates:
+   `museair_128` (`museair` 0.6.0, scalar non-cryptographic reference)
+   and `gxhash_128` (`gxhash` 3.5.0, HC8 positive control, built only in the `v4-gxref` variant).
+
+Screening notes that travel with a survivor into the gates:
+
+- `blake3` 1.8.7:
+   Rust SSE2, SSE4.1, and AVX2 kernels;
+   AVX-512 and NEON exist only as C and assembly compiled by `build.rs`
+   (`c/blake3_neon.c`, `c/blake3_avx512_x86-64_unix.S`).
+  A rustc-only build therefore has no aarch64 vector path,
+   which is an HC1 and HC4 question settled with measurements,
+   and it is the reason the C toolchain branch exists.
+- `k12` 0.5.1:
+   the `keccak` backends are the aarch64 SHA-3 extension (run-time detected)
+   and nightly `portable_simd` lanes under `--cfg keccak_backend`;
+   without the cfg the x86 path is scalar.
+- `graviola`, `purecrypto`, `cryptoxide`, and `scytale`:
+   accelerated on both architectures for SHA-256 only;
+   their other functions are single-architecture and exit at HC1.
+
+### Exits
+
+Grouped by reason,
+ with the full per-crate list in the published screening appendix:
+
+- HC1, no accelerated path on both architectures:
+   `blake2`, `blake2b_simd`, `blake2s_simd`, `blake2-rfc`, `blake2_ce` (x86 only or portable),
+   `tiny-keccak`, `kangarootwelve`, `turboshake`, `cshake`, `shake`, `sha3`, `sha3_ce`
+   (the `keccak` default x86 backend is scalar),
+   `libcrux-sha3` and `p3-keccak` (their SIMD modules hash several messages in parallel,
+   while a single message takes the portable or `tiny-keccak` path),
+   `lib-q-keccak`,
+   `md-5` and `fast-md5` (whose "assembly cores" are scalar unrolled rounds, `src/aarch64.rs:16-20`),
+   `shaman`,
+   `groestl`, `groestl-aesni` (AES-NI on x86 only), `skein`, `sm3`, `streebog`, `whirlpool`, `ripemd`,
+   `ascon-hash`,
+   `areion` (x86-only AES-round hash, last release 2023),
+   `blake3-std`.
+- HC2, output narrower than 128 bits:
+   `crc-fast`, `crc64fast`, `crc64fast-nvme`, `stringzilla`, `ahash`, `drtahash`, `axhash-core`,
+   and the scalar 64-bit family.
+- HC3, output stability not established:
+   `sponge-hash-aes256` (a bespoke AES-256 sponge with no published specification or stability statement),
+   `meowhash`,
+   `ahash`,
+   `foldhash`,
+   `t1ha`.
+- HC4, C or assembly compiled by a build script:
+   `ring`, `ringpcx`, `aws-lc-rs`, `openssl`,
+   `sha2-asm`, `sha1-asm`, `sha3-asm`, `md5-asm`, `sha2_ce`, `sha2raw`, `sha2ni`,
+   `blake2b-rs`, `blake2_c`,
+   `kangarootwelve_xkcp`, `marsupial-sys`,
+   `hashtree-rs`, `lonesha256`, `skein-ffi`, `flatline-umac`,
+   `fasthash-sys`, `fasthash-sys-fork`,
+   the four `ckb-opt-*` crates.
+  These are the C toolchain branch population;
+   only `blake3` among them has a Rust fallback and a plausible rank,
+   so the branch measures `blake3` and treats the rest as bounded by it.
+- HC6, licence:
+   `keccak-batch`, AGPL-3.0-or-later, which cannot be distributed inside an LGPL-3.0-or-later binary.
+- HC7, provenance:
+   `sha3-selkie` (published only as 0.0.0),
+   and the repositories with no crates.io package
+   (`tachyon-rs`, `openhitls-rs`, `byt3forg3/Tachyon`, `r_crypto`, the LeMac and PetitMac artifact).
+- HC9:
+   `gxhash`.
+- HC10, no chunking-independent streaming state:
+   `hashcodecs`, `xxh3`, `rotohash-rs`, `tape-sha256` (batch and hash-chain APIs only), `gxhash`.
+- Category mismatch:
+   universal hashes needing consumer-chosen key material and padding
+   (`polyval`, `ghash`, `polyhash`, `halftime`),
+   fixed-length AES-round compression (`haraka`),
+   batch-only designs (`md5-many`),
+   adapters and meta crates (`noncrypto-digests`, `hashkit`, `crypto-hashes`, `multihash-codetable`),
+   keyed constructions over a candidate hash (`hmac`, evaluated through `sha2`),
+   `sha1-checked` (collision detection more than doubles SHA-1's cost, evaluated through `sha1`),
+   wrappers (`sha256`, `sha-1`),
+   forks and duplicates (`iroh-blake3`, `fluence-blake3`, `fleek-blake3`, `tidecoin_hashes`),
+   and `spg-crypto`, `gmcrypto-core`.
+- Screened through another crate rather than on its own:
+   `aes` (the block cipher behind `cmac` and `pmac`),
+   `keccak` (the permutation behind `k12`).
