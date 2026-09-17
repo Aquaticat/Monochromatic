@@ -18,7 +18,7 @@ import { validateTranslatedSlice, } from '../dist/final/node/index.mjs';
 /**
  Original with a picture component and a rule below it.
  */
-const SOURCE = "<PhotoScroll photos={[\n'${path}/photos/cat1.webp'\n]} />\n\n---";
+const SOURCE = `<PhotoScroll photos={[\n'\${path}/photos/cat1.webp'\n]} />\n\n---`;
 
 /**
  Rendering that copied the sheet's transcript block after the component.
@@ -31,7 +31,7 @@ await describe({
     ...[
       'WHAT THE PICTURES HERE SAY',
       'ATTESTED DETAILS',
-      'CITED REFERENCES, EVIDENCE ONLY',
+      'CITED REFERENCES',
       'EXISTING TRANSLATION',
     ].map(function refusesLabel(label,) {
       return it({

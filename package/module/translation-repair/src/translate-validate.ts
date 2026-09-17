@@ -10,6 +10,7 @@ import {
 } from './source-only-breaks.ts';
 import { atomFindings, } from './translate-atom-rendering.ts';
 import { neutralPronounFindings, } from './translate-neutral-pronoun.ts';
+import { sheetLeakFindings, } from './translate-sheet-leak.ts';
 import { untranslatedFindings, } from './translate-untranslated.ts';
 import {
   type BlockShape,
@@ -461,6 +462,21 @@ export function validateTranslatedSlice(
     return {
       kind: 'invalid',
       findings: escapeFindings,
+    };
+  }
+  /**
+   Sheet evidence blocks copied into the candidate (class forty-four), refused
+   before any shape is read.
+   */
+  const leakFindings = sheetLeakFindings({
+    sourceText,
+    pageText,
+    candidateText,
+  },);
+  if (leakFindings.length > 0) {
+    return {
+      kind: 'invalid',
+      findings: leakFindings,
     };
   }
   /**
