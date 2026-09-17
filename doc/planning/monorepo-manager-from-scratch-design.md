@@ -472,6 +472,16 @@ and the user is willing to rewrite file-enforcer in Rust.
 - An all-Rust tool with file-enforcer rewritten in Rust is back under consideration;
    its configuration-hosting options are being designed.
 
+Hard requirement,
+stated by the user on 2026-09-16:
+the tool ships as a single file that a user runs directly,
+as in `./meow`
+(`meow` is a placeholder name).
+Unpacking at run time is acceptable,
+as AppImage does.
+So a Node single executable that extracts its addon is acceptable,
+while the Rust core with TypeScript file-enforcer children fails unless Node and the TypeScript sources travel inside that one file.
+
 #### How TypeScript monorepo tools meet the same problems
 
 Checked 2026-09-16 after the user noted that many monorepo tools are written in TypeScript.
