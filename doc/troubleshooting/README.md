@@ -211,6 +211,27 @@ GPU and display capability adoption for the labwc migration VM:
   native RADV,
   and the existing SPICE resize path
 
+### Comment-preserving structured edits in Rust
+
+Quirks found while choosing TOML,
+JSONC,
+and XML editing crates for the monorepo manager
+(`doc/planning/monorepo-manager-from-scratch-design.md`, "Managed file editing"):
+
+- [`toml_edit` 0.25.15 drops or moves comments](toml-edit-comment-loss.md)
+  on index assignment,
+  removal,
+  and `Table::insert`
+- [taplo 0.14.0 rejects TOML 1.1 inline-table trailing commas](taplo-toml-1-1-inline-table-trailing-comma.md)
+- [`json-five` 0.3.1 drops block comments' closing slash](json-five-unterminated-block-comment.md)
+  and panics on multibyte line-comment ends
+- [`jsonc-parser` 0.33.2 parses loose syntax by default](jsonc-parser-json5-defaults.md)
+  and ignores `allow_comments: false` in the CST parser
+- [Biome JSON crates 0.5.7 need exact dependency pins](biome-json-crates-exact-pins.md)
+  after breaking patch releases
+- [XML serializers write literal tabs and newlines into attribute values](xml-attribute-whitespace-serialization.md),
+  which reparse as spaces
+
 ## Quick Links
 
 For common issues:
