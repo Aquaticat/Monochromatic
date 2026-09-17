@@ -3,8 +3,9 @@
 Status:
  in progress.
 Lifecycle phase:
- context and rubric frozen;
- discovery not started.
+ context and rubric refrozen after the workload correction;
+ discovery queries executed,
+ screening in progress.
 
 Subject:
  meow cache key hash.
@@ -29,7 +30,11 @@ Governing skill:
 - SHA-256 `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
 
 Compatibility fingerprint:
- `9d52f6e06051398b78178a00ccbf917d5c64a24a9a0f061c4938362985c9ad6e`.
+ `0c09784add54f3c69ce4d734f0e5a8ffeb0322ef178e4025506c3a173c40fac1`.
+Superseded fingerprint:
+ `9d52f6e06051398b78178a00ccbf917d5c64a24a9a0f061c4938362985c9ad6e`,
+ before the user's workload corrections of 2026-09-17 added HC10 and the input-size deployment facts
+ ("Workload correction").
 Fingerprint input and lock tooling:
  `~/temp/agent/hashvet-2026-09-17/scripts/vet-fingerprint-lock.ts` and `report-write.ts`.
 
@@ -175,6 +180,69 @@ BLAKE3 (requested as a control)
  so the user can see what widening the scope would buy.
 Controls are not ranked finalists.
 
+## Workload correction
+
+Relayed by the coordinator from the user on 2026-09-17,
+ after the query schedule was frozen and before any candidate was rated.
+Two corrections:
+
+- meow hashes huge inputs:
+   the cache records every declared task output with a content hash,
+   and dependency output hashes feed downstream keys.
+  The user asked for streaming hashing whose output does not depend on chunking,
+   with memory bounded independent of file size;
+   throughput on multi-GB inputs read from disk,
+   page-cache cold and warm,
+   in the bounded container with the run-to-run band first;
+   whether a candidate can use several cores on one large input with stable output;
+   and whether I/O or the hash limits throughput at those sizes.
+- Short strings under 1 KiB are not meow's main workload,
+   and about 20 KiB files are not small inputs.
+  The user asked to weight the ranking by where hashed bytes and hashing time go:
+   whole-file hashing from KiB to multi-GB,
+   streamed;
+   short-input speed matters only for composing cache keys from already-hashed parts.
+
+Measured here on 2026-09-17:
+
+- `package/dev-script/vm-builder/output/qcow2/disk.qcow2`:
+   3,966,238,720 bytes,
+   3,954,937,856 bytes allocated (`du --block-size=1`),
+   so reading it exercises real storage rather than holes.
+- Music player debug binaries under `package/music-player/desktop-app/target/debug/`:
+   520,131,792 to 662,710,296 bytes (`find -size +400M`).
+- Git-tracked files at `88cf6c0e4`:
+   8,101 files,
+   152,231,070 bytes,
+   median 4,051 bytes,
+   90th percentile 19,301,
+   99th percentile 238,507,
+   maximum 22,908,459 (`package/music-player/design/questions/current.html`);
+   937 files are 240 bytes or shorter,
+   the lengths where XXH3 has no vector path.
+  The coordinator's byte shares for the same tree:
+   files under 1 KiB are 22.0% of files but 0.39% of bytes,
+   1 KiB to 64 KiB hold 33.46% of bytes,
+   and 64 KiB and above hold 66.15%.
+- Storage under `~/temp/agent` and the repository:
+   btrfs on LUKS on an NVMe drive (`SPCC M.2 PCIe SSD`),
+   62 GiB RAM.
+
+What changed in this report:
+
+- HC10 added ("Frozen hard constraints").
+- Soft criteria re-weighted and split,
+   so short-input speed carries weight 1
+   and whole-file streamed throughput from KiB to multi-GB carries weight 5
+   ("Frozen soft criteria").
+- The fingerprint changed;
+   the superseded one is listed in the header.
+- No ranking existed yet,
+   so no adjacent pair had been decided on fingerprint-sized inputs.
+  The earlier gxhash study ranked on 70 to 242 byte material
+   (`gxhash-owned.md`, "Benchmarks");
+   none of its fingerprint-sized orderings is reused here.
+
 ## Frozen hard constraints
 
 A candidate must satisfy every constraint.
@@ -198,8 +266,9 @@ Hard gates stay outside score arithmetic.
    builds for `x86_64-unknown-linux-gnu`,
    `x86_64-unknown-linux-musl`,
    `aarch64-unknown-linux-gnu`,
-   and the aarch64 musl static-pie target,
-   with the accelerated paths compiled by rustc alone
+   and the aarch64 musl static-pie target
+   with the repository's nightly toolchain,
+   the accelerated paths compiled by rustc alone
    and linked by `rust-lld` on aarch64 musl,
    without a C or assembly toolchain.
 - HC5 CPU capabilities:
@@ -218,59 +287,83 @@ Hard gates stay outside score arithmetic.
    under several seeds.
   An ideal 128-bit function expects about 1.6 × 10^-27 collisions among 1,044,480 keys,
    so any collision marks a structural flaw.
-  Checked during finalist validation;
+  Checked during finalist validation,
+   after a positive control shows the harness finds known collisions;
    a failure removes the finalist.
 - HC9 not gxhash:
    neither `gxhash` nor output derived from it,
    per the user on 2026-09-17.
+- HC10 streaming,
+   added after the workload correction:
+   an incremental or streaming API whose output does not depend on how the input is chunked
+   and equals the one-shot result,
+   with memory bounded independent of input size.
 
 ## Frozen soft criteria
 
-The user stated no weights,
- so every criterion has weight 1.
+Refrozen after the workload correction,
+ before any candidate rating.
 Each rating uses 0 through 4 with a confidence;
  low-signal ratings carry a range.
-Maximum score:
- 9 criteria at weight 1 and rating 4,
- 36 points.
 
-- S1 short-input speed:
-   x86_64 time per hash on fingerprint-sized material,
+Weights:
+
+- The user's statement to weight the ranking by where hashed bytes and hashing time go
+   sets S2 and S3 to weight 5
+   and S1 to weight 1.
+- Every other criterion has no stated priority and weight 1.
+
+Maximum score:
+ weights sum to 19,
+ so 76 points.
+
+- S1 key-composition speed, weight 1:
+   x86_64 time per hash on short key material
+   (70 to 242 byte fingerprint material and per-package key material of 50 bytes to 50 KiB),
    baseline x86-64 and x86-64-v3 builds,
    with differences counted only beyond the measured run-to-run band.
-- S2 bulk speed:
-   x86_64 time on the contents of the repository's git-tracked files and on a cache-resident 16 KiB buffer,
+- S2 whole-file throughput, KiB to tens of MiB, weight 5:
+   x86_64 time over the contents of every git-tracked file,
+   one-shot and streamed in 64 KiB chunks,
+   plus a cache-resident 16 KiB buffer,
    both builds,
    same band rule.
-- S3 aarch64 acceleration:
+- S3 multi-GB throughput from disk, weight 5:
+   streamed hashing of a 3.97 GB and a 663 MB file,
+   page-cache cold and warm,
+   in the bounded container,
+   against read-only throughput of the same files,
+   so the report states whether I/O or the hash limits.
+- S4 multi-core hashing of one large input with stable output, weight 1.
+- S5 aarch64 acceleration, weight 1:
    what the aarch64 path accelerates,
    from source,
    plus upstream-published aarch64 measurements;
    low-signal ranges,
    because no aarch64 hardware run happens here.
-- S4 quality evidence beyond HC8:
+- S6 quality evidence beyond HC8, weight 1:
    SMHasher3 results and their relevance to a fixed-seed local cache,
    design analysis,
-   and any additional local keysets.
-- S5 stability assurance:
+   and additional local keysets.
+- S7 stability assurance, weight 1:
    documented freeze,
    upstream golden vectors,
    tests that compare dispatch paths,
    and local cross-architecture equality.
-- S6 CPU capability handling:
+- S8 CPU capability handling, weight 1:
    what meow must add to meet HC5,
    and whether build flags or run-time dispatch are needed.
-- S7 auditability and dependency surface:
+- S9 auditability and dependency surface, weight 1:
    non-test lines on the used path,
    `unsafe` occurrences,
    runtime dependencies.
-- S8 upstream verification:
+- S10 upstream verification, weight 1:
    tests,
    CI matrix,
    fuzzing,
    mutation testing,
    reference-vector comparisons.
-- S9 maintenance:
+- S11 maintenance, weight 1:
    releases,
    issue and pull request handling in the last 12 months,
    maintainer concentration.
@@ -286,6 +379,11 @@ Criteria removed from every denominator:
 - Adversarial resistance:
    the cache is local only.
 
+Sensitivity follows the skill:
+ each weight-1 criterion is raised through 5 one at a time,
+ and S2 and S3 are also lowered to 1 one at a time,
+ because their weight is a mapping of the user's words rather than a number the user gave.
+
 ## Unresolved preferences
 
 - Which reading of hardware acceleration the user meant.
@@ -294,7 +392,9 @@ Criteria removed from every denominator:
 - Whether a C toolchain for aarch64 musl would be acceptable if it enabled a stronger candidate.
   HC4 follows today's build;
    the report names any candidate that fails only on HC4.
-- Whether cryptographic constructions are acceptable if only they meet R1.
+- Whether cryptographic constructions are acceptable,
+   now that multi-core hashing of one large input is a scored criterion
+   and BLAKE3 is the main library with a tree mode.
   Recorded as a control result,
    not as a finalist.
 
