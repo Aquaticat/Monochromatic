@@ -561,6 +561,60 @@ await describe({
     },),
 
     it({
+      name: 'WITHDRAWS ONLY THE CARRIER WHOSE ORIGINAL DOES NOT DEFINE THE NOTE when a definition is '
+        + 'doubled, keeping the rendering of the slice that owns it (class forty-nine: shi_Yumiaoya3 '
+        + 'withdrew the opening section and the definition alike, and the page lost both)',
+      fn: async () => {
+        /**
+         Archive that never rendered the note, so both carriers are changes.
+         */
+        const skeleton = TARGET_TEXT.replace("[^1]: That is its favourite spot.\n", '',);
+
+        /**
+         Slices of the pair over that archive.
+         */
+        const slices = fixtureSlices({ targetText: skeleton, },);
+
+        /**
+         Index of the slice carrying the reference.
+         */
+        const referring = sliceCarrying({
+          slices,
+          needle: 'doing the sleeping',
+        },);
+
+        /**
+         Index of the slice carrying the definition.
+         */
+        const defining = sliceCarrying({
+          slices,
+          needle: '## Notes',
+        },);
+
+        /**
+         Assembly where the referring slice wrote the definition in as well
+         and the defining slice rendered its own.
+         */
+        const guarded = guardFootnoteAssembly({
+          targetText: skeleton,
+          slices,
+          replacements: [
+            {
+              sliceIndex: referring,
+              replacementText: 'The cat naps on the windowsill[^1].\n\n[^1]: That is its favourite spot.',
+            },
+            {
+              sliceIndex: defining,
+              replacementText: '## Notes\n\n[^1]: That is its favourite spot indeed.',
+            },
+          ],
+        },);
+        expect(guarded.revertedChunkIndices,).toEqual([referring,],);
+        expect(guarded.assembledText.includes('favourite spot indeed',),).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'ITERATES TO A FIXPOINT, because one revert can orphan an '
         + 'identifier a DIFFERENT slice introduced alongside it. One pass '
         + 'reverts the slice that dropped [^1] and ships a [^2] definition '
