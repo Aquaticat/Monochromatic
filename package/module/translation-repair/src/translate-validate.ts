@@ -4,9 +4,13 @@ import { EMPTY_SLICE_SKELETON, } from './empty-slice-skeleton.ts';
 import { validateFrontMatterTranslation, } from './front-matter-translation.ts';
 import { compareLineCounts, } from './line-structure-guard.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
-import { sourceOnlyBreakFindings, } from './source-only-breaks.ts';
+import {
+  sourceOnlyBreakFindings,
+  substituteBreakFindings,
+} from './source-only-breaks.ts';
 import { atomFindings, } from './translate-atom-rendering.ts';
 import { neutralPronounFindings, } from './translate-neutral-pronoun.ts';
+import { untranslatedFindings, } from './translate-untranslated.ts';
 import {
   type BlockShape,
   readSliceSkeleton,
@@ -563,6 +567,21 @@ export function validateTranslatedSlice(
       pageText,
       source: expected.explicitBreaks,
       candidate: actual.explicitBreaks,
+    },),
+    // CLASS FORTY-TWO: a kind the page never rendered owes the original's
+    // breaks even though the page has text for the slice.
+    ...(hasPage
+      ? substituteBreakFindings({
+        pageBlocks,
+        sourceBlocks: expected.blocks,
+        sourceBreaks: expected.explicitBreaks,
+        candidateBlocks: actual.blocks,
+        candidateBreaks: actual.explicitBreaks,
+      },)
+      : []),
+    ...untranslatedFindings({
+      sourceText,
+      candidateText,
     },),
     ...compareLineCounts({
       lineStructured,

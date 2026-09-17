@@ -124,7 +124,7 @@ function isWordCharacter(character: string,): boolean {
  const isHan = isIdeograph('家',);
  ```
  */
-function isIdeograph(character: string,): boolean {
+export function isIdeograph(character: string,): boolean {
   return (character >= '㐀') && (character <= '鿿');
 }
 

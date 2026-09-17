@@ -4,6 +4,7 @@ import type {
 } from 'mdast';
 
 import type { DeepReadonlyData, } from './readonly-data.ts';
+import type { BlockShape, } from './translate-skeleton.ts';
 
 //region Explicit source line structure
 // A single-block poem can miss the blank-block verse heuristic. Its explicit
@@ -103,3 +104,112 @@ export function sourceOnlyBreakFindings(
 }
 
 //endregion Explicit source line structure
+
+//region Explicit breaks under a substitute page block
+// CLASS FORTY-TWO (Mio25 slice 16, 2026-09-17). `sourceOnlyBreakFindings`
+// keys on the whole slice's page text, and a page whose farewell paragraph is
+// paired with a verse blockquote HAS text, so the verse's five authored breaks
+// were never owed: the translate lane's rendering carried the quote with soft
+// breaks only, the rule passed it, and the poem renders as one run-on
+// paragraph. Mio23's rendering had kept them by the writer's choice, not the
+// rule's. Counted per block kind rather than per index because the candidate
+// carries the page's block beside the original's, so indexes do not align.
+
+/**
+ Refuses an explicit-break shortfall in a block kind the page never rendered,
+ where the original alone sets that kind's floor.
+ 
+ @param pageBlocks - shapes of the page as it stands, at least one
+ 
+ @param sourceBlocks - original's shapes, aligned with `sourceBreaks`
+ 
+ @param sourceBreaks - original's break counts, one per top-level block
+ 
+ @param candidateBlocks - candidate's shapes, aligned with `candidateBreaks`
+ 
+ @param candidateBreaks - candidate's break counts, one per top-level block
+ 
+ @returns Model-facing findings, one per kind short of its floor
+ 
+ @example
+ ```ts
+ substituteBreakFindings({ pageBlocks: [{ kind: 'paragraph', detail: '', },], sourceBlocks: [{ kind: 'blockquote', detail: '', },], sourceBreaks: [2,], candidateBlocks: [{ kind: 'blockquote', detail: '', },], candidateBreaks: [0,], },);
+ ```
+ */
+export function substituteBreakFindings(
+  {
+    pageBlocks,
+    sourceBlocks,
+    sourceBreaks,
+    candidateBlocks,
+    candidateBreaks,
+  }: {
+    readonly pageBlocks: readonly BlockShape[];
+    readonly sourceBlocks: readonly BlockShape[];
+    readonly sourceBreaks: readonly number[];
+    readonly candidateBlocks: readonly BlockShape[];
+    readonly candidateBreaks: readonly number[];
+  },
+): readonly string[] {
+  /**
+   Kinds the page rendered, whose breaks the page floor governs.
+   */
+  const pageKinds = new Set(pageBlocks.map(function toKind(block,): string {
+    return block.kind;
+  },),);
+  /**
+   Kinds the page never rendered whose original blocks carry breaks, each
+   once, in document order.
+   */
+  const owedKinds = [
+    ...new Set(sourceBlocks
+      .filter(function owesBreaks(
+        block,
+        index,
+      ): boolean {
+        return (!pageKinds.has(block.kind,)) && ((sourceBreaks[index] ?? 0) > 0);
+      },)
+      .map(function toKind(block,): string {
+        return block.kind;
+      },),),
+  ];
+  return owedKinds.flatMap(function compareKind(kind,): readonly string[] {
+    /**
+     Breaks the original's blocks of this kind carry together.
+     */
+    const owed = sourceBlocks.reduce(
+      function sumOwed(
+        sum,
+        block,
+        index,
+      ): number {
+        return (block.kind === kind) ? sum + (sourceBreaks[index] ?? 0) : sum;
+      },
+      0,
+    );
+    /**
+     Breaks the candidate's blocks of this kind carry together.
+     */
+    const carried = candidateBlocks.reduce(
+      function sumCarried(
+        sum,
+        block,
+        index,
+      ): number {
+        return (block.kind === kind) ? sum + (candidateBreaks[index] ?? 0) : sum;
+      },
+      0,
+    );
+    if (carried >= owed)
+      return [];
+    return [
+      `ORIGINAL ${kind} block(s) carry ${String(owed,)} explicit line break(s), `
+        + `but your ${kind} block(s) carry ${String(carried,)}. The PAGE AS IT STANDS has no ${kind} `
+        + 'block here, so the original alone sets that floor. Keep at least the original count with '
+        + 'Markdown hard breaks or intrinsic <br/> elements; soft newlines render as spaces and do not '
+        + 'preserve these lines. Keep your chosen wording.',
+    ];
+  },);
+}
+
+//endregion Explicit breaks under a substitute page block
