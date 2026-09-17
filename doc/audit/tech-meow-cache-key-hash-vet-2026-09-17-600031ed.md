@@ -1326,3 +1326,1029 @@ Grouped by reason,
 - Screened through another crate rather than on its own:
    `aes` (the block cipher behind `cmac` and `pmac`),
    `keccak` (the permutation behind `k12`).
+
+## Identity, provenance, and license
+
+Every crate was taken from its crates.io archive at the version in the lab lockfile,
+ extracted under `data/crate-src/`
+ (this vet's directory for crates the prior vet had not fetched, the prior vet's for the rest),
+ and its repository metadata read through the GitHub API on 2026-09-17
+ (`data/crate-meta.tsv`, `data/repo-meta.tsv`, `data/archive-sha256.tsv`, `data/source-audit.tsv`).
+No candidate ships a prebuilt or downloaded artifact,
+ so HC7 passes for every survivor;
+ the crates that failed HC7 exited in "Screening".
+
+Licence outcome (HC6):
+ every survivor is distributable inside an `LGPL-3.0-or-later` binary.
+The licences are BSL-1.0, MIT, Apache-2.0, MIT OR Apache-2.0, Apache-2.0 OR ISC OR MIT-0,
+ BSD-2-Clause, CC0-1.0, and for `blake3`
+ CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception.
+The one AGPL crate found in discovery, `keccak-batch`, exited at screening.
+
+- `xxhash-rust` 0.8.18 (published 2026-07-21):
+   licence BSL-1.0,
+   MSRV none,
+   edition 2018;
+   archive sha256 `aee1b19627c7c60102ab80d3a9cbe18de90bfe03bfa6c3715447681f0e8c8af6`;
+   repository https://github.com/DoumanAsh/xxhash-rust,
+   last commit 2026-07-21,
+   15 stable releases since 2021-03-08,
+   3 in the last year,
+   29,643,829 recent downloads,
+   3 open issues,
+   296 stars;
+   2,335 lines of non-test Rust code,
+   33 `unsafe` items,
+   88 intrinsic calls,
+   0 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   0 inline test items and 4 test files.
+- `twox-hash` 2.1.4 (published 2026-08-27):
+   licence MIT,
+   MSRV 1.81,
+   edition 2021;
+   archive sha256 `5283634e518fe9e82c7b20520bb4bc209009fd16c82077c802f8111ecbb0117a`;
+   repository https://github.com/shepmaster/twox-hash,
+   last commit 2026-09-17,
+   22 stable releases since 2015-05-09,
+   2 in the last year,
+   53,419,956 recent downloads,
+   25 open issues,
+   436 stars;
+   3,411 lines of non-test Rust code,
+   70 `unsafe` items,
+   39 intrinsic calls,
+   2 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   74 inline test items and 0 test files.
+- `hashcrew` 0.3.0 (published 2026-09-15):
+   licence Apache-2.0,
+   MSRV 1.89,
+   edition 2024;
+   archive sha256 `f73782af6df9e45939f4e6206b646f3cbab68c2cc5c0c375dab045800cafb018`;
+   repository https://github.com/fast/hashcrew,
+   last commit 2026-09-15,
+   5 stable releases since 2026-09-02,
+   5 in the last year,
+   202 recent downloads,
+   0 open issues,
+   4 stars;
+   4,724 lines of non-test Rust code,
+   77 `unsafe` items,
+   208 intrinsic calls,
+   1 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   31 inline test items and 0 test files.
+- `highway` 1.3.0 (published 2025-01-11):
+   licence MIT,
+   MSRV none,
+   edition 2021;
+   archive sha256 `9040319a6910b901d5d49cbada4a99db52836a1b63228a05f7e2b7f8feef89b1`;
+   repository https://github.com/nickbabcock/highway-rs,
+   last commit 2026-07-23,
+   21 stable releases since 2018-09-19,
+   0 in the last year,
+   702,710 recent downloads,
+   6 open issues,
+   183 stars;
+   2,955 lines of non-test Rust code,
+   207 `unsafe` items,
+   164 intrinsic calls,
+   0 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   21 inline test items and 1 test files.
+- `rscrypto` 0.9.0 (published 2026-08-28):
+   licence MIT OR Apache-2.0,
+   MSRV 1.91.0,
+   edition 2024;
+   archive sha256 `edeae3565e70552f033348825873950436631dee240e1cf342d27965818e7b61`;
+   repository https://github.com/loadingalias/rscrypto,
+   last commit 2026-09-17,
+   16 stable releases since 2026-05-02,
+   16 in the last year,
+   1,108 recent downloads,
+   0 open issues,
+   38 stars;
+   177,154 lines of non-test Rust code,
+   3619 `unsafe` items,
+   5714 intrinsic calls,
+   165 `asm!` or `global_asm!` macros,
+   58 C or assembly files,
+   1431 inline test items and 8 test files.
+- `blake3` 1.8.7 (published 2026-08-20):
+   licence CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception,
+   MSRV none,
+   edition 2024;
+   archive sha256 `6d9e454fc11f76977dc803893aff6304ed33d6a26efae8696573bea74baa27ae`;
+   repository https://github.com/BLAKE3-team/BLAKE3,
+   last commit 2026-09-10,
+   46 stable releases since 2019-09-17,
+   5 in the last year,
+   43,986,415 recent downloads,
+   201 open issues,
+   6439 stars;
+   6,522 lines of non-test Rust code,
+   226 `unsafe` items,
+   227 intrinsic calls,
+   0 `asm!` or `global_asm!` macros,
+   26 C or assembly files,
+   84 inline test items and 1 test files.
+- `sha2` 0.11.0 (published 2026-03-25):
+   licence MIT OR Apache-2.0,
+   MSRV 1.85,
+   edition 2024;
+   archive sha256 `446ba717509524cb3f22f17ecc096f10f4822d76ab5c0b9822c5f9c284e825f4`;
+   repository https://github.com/RustCrypto/hashes,
+   last commit 2026-09-01,
+   24 stable releases since 2017-06-12,
+   1 in the last year,
+   254,185,957 recent downloads,
+   36 open issues,
+   2264 stars;
+   2,622 lines of non-test Rust code,
+   53 `unsafe` items,
+   330 intrinsic calls,
+   11 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   0 inline test items and 2 test files.
+- `sha1` 0.11.0 (published 2026-03-27):
+   licence MIT OR Apache-2.0,
+   MSRV 1.85,
+   edition 2024;
+   archive sha256 `aacc4cc499359472b4abe1bf11d0b12e688af9a805fa5e3016f9a386dc2d0214`;
+   repository https://github.com/RustCrypto/hashes,
+   last commit 2026-09-01,
+   24 stable releases since 2014-11-21,
+   2 in the last year,
+   143,634,950 recent downloads,
+   36 open issues,
+   2264 stars;
+   806 lines of non-test Rust code,
+   7 `unsafe` items,
+   121 intrinsic calls,
+   1 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   0 inline test items and 2 test files.
+- `graviola` 0.4.1 (published 2026-06-24):
+   licence Apache-2.0 OR ISC OR MIT-0,
+   MSRV 1.89,
+   edition 2024;
+   archive sha256 `e8596c4fa98466aae2fcf4c72a665bc0e021c0aaab1e47d82044d3dc3e309a76`;
+   repository https://github.com/ctz/graviola/,
+   last commit 2026-08-24,
+   8 stable releases since 2024-09-30,
+   3 in the last year,
+   158,716 recent downloads,
+   23 open issues,
+   305 stars;
+   119,099 lines of non-test Rust code,
+   323 `unsafe` items,
+   1171 intrinsic calls,
+   149 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   230 inline test items and 3 test files.
+- `purecrypto` 0.9.0 (published 2026-09-16):
+   licence MIT,
+   MSRV 1.89,
+   edition 2024;
+   archive sha256 `f59c301760fc52960fd32d5d697126f04bca123ed105b1b1db696708375c002f`;
+   repository https://github.com/KarpelesLab/purecrypto,
+   last commit 2026-09-17,
+   55 stable releases since 2026-05-25,
+   55 in the last year,
+   12,505 recent downloads,
+   0 open issues,
+   3 stars;
+   201,541 lines of non-test Rust code,
+   1160 `unsafe` items,
+   1156 intrinsic calls,
+   16 `asm!` or `global_asm!` macros,
+   9 C or assembly files,
+   3204 inline test items and 12 test files.
+- `cryptoxide` 0.6.5 (published 2026-09-03):
+   licence MIT/Apache-2.0,
+   MSRV 1.79.0,
+   edition 2021;
+   archive sha256 `b8bb2a43afb0fd8b53101f79f153795c449ba80762361d8b868f4a75c6d03057`;
+   repository https://github.com/typed-io/cryptoxide/,
+   last commit 2026-09-17,
+   28 stable releases since 2018-09-18,
+   8 in the last year,
+   341,826 recent downloads,
+   4 open issues,
+   75 stars;
+   25,876 lines of non-test Rust code,
+   115 `unsafe` items,
+   1009 intrinsic calls,
+   0 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   217 inline test items and 2 test files.
+- `bitcoin_hashes` 1.2.0 (published 2026-08-05):
+   licence CC0-1.0,
+   MSRV 1.74.0,
+   edition 2021;
+   archive sha256 `5304e53726dbe5f93141535e102ed97b5bf4714fbecefdda8f9fb98d7fdaff0e`;
+   repository https://github.com/rust-bitcoin/rust-bitcoin,
+   last commit 2026-09-17,
+   39 stable releases since 2018-12-08,
+   11 in the last year,
+   13,887,306 recent downloads,
+   465 open issues,
+   2679 stars;
+   7,888 lines of non-test Rust code,
+   73 `unsafe` items,
+   1343 intrinsic calls,
+   0 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   68 inline test items and 0 test files.
+- `scytale` 0.5.0 (published 2026-09-13):
+   licence BSD-2-Clause,
+   MSRV 1.88,
+   edition 2024;
+   archive sha256 `321dea1bcd9851787682dde346555bf8b832785203e3fce330d3acf51f91637e`;
+   repository https://github.com/MichaelPaddon/scytale,
+   last commit 2026-09-17,
+   5 stable releases since 2024-05-09,
+   3 in the last year,
+   43 recent downloads,
+   0 open issues,
+   1 stars;
+   46,383 lines of non-test Rust code,
+   311 `unsafe` items,
+   64 intrinsic calls,
+   79 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   703 inline test items and 0 test files.
+- `cubehash` 0.4.1 (published 2026-03-08):
+   licence MIT,
+   MSRV none,
+   edition 2021;
+   archive sha256 `6afd537bb44529b01063dc0e5ef6216ac72551c94d4f1a86725c839b1d83a784`;
+   repository https://github.com/mcrepeau/cubehash,
+   last commit 2026-04-08,
+   6 stable releases since 2025-08-13,
+   1 in the last year,
+   105 recent downloads,
+   0 open issues,
+   0 stars;
+   704 lines of non-test Rust code,
+   35 `unsafe` items,
+   141 intrinsic calls,
+   0 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   0 inline test items and 0 test files.
+- `xoodyak` 0.8.4 (published 2023-07-17):
+   licence MIT,
+   MSRV none,
+   edition 2018;
+   archive sha256 `0dad761b2058d5398041155f51876fd2eb94a20db85ee1ab56c6b8f78d18f16b`;
+   repository https://github.com/jedisct1/rust-xoodyak,
+   last commit 2026-04-22,
+   26 stable releases since 2020-04-05,
+   0 in the last year,
+   26,210 recent downloads,
+   2 open issues,
+   30 stars;
+   1,136 lines of non-test Rust code,
+   2 `unsafe` items,
+   71 intrinsic calls,
+   0 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   8 inline test items and 1 test files.
+- `cmac` 0.8.0 (published 2026-04-10):
+   licence MIT OR Apache-2.0,
+   MSRV 1.85,
+   edition 2024;
+   archive sha256 `ac78aa94ce13e432b332a4d1bf2eff167d3a2520188ee05b337180a42fd2e62e`;
+   repository https://github.com/RustCrypto/MACs,
+   last commit 2026-06-23,
+   13 stable releases since 2017-07-22,
+   1 in the last year,
+   4,929,188 recent downloads,
+   5 open issues,
+   372 stars;
+   152 lines of non-test Rust code,
+   0 `unsafe` items,
+   0 intrinsic calls,
+   0 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   0 inline test items and 2 test files.
+- `pmac` 0.8.0 (published 2026-04-10):
+   licence MIT OR Apache-2.0,
+   MSRV 1.85,
+   edition 2024;
+   archive sha256 `24ceb90ade0c891295d683cc9c70a798ebdba27b574e7f80b703d40d8b2e9123`;
+   repository https://github.com/RustCrypto/MACs,
+   last commit 2026-06-23,
+   11 stable releases since 2017-07-22,
+   1 in the last year,
+   5,844 recent downloads,
+   5 open issues,
+   372 stars;
+   216 lines of non-test Rust code,
+   0 `unsafe` items,
+   0 intrinsic calls,
+   0 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   0 inline test items and 2 test files.
+- `k12` 0.5.1 (published 2026-05-15):
+   licence Apache-2.0 OR MIT,
+   MSRV 1.85,
+   edition 2024;
+   archive sha256 `38a8cc72399dffa4a445bc5f5a84d4af4d441c76604231bc52e9c529c1d47693`;
+   repository https://github.com/RustCrypto/XOFs,
+   last commit 2026-08-21,
+   9 stable releases since 2017-06-04,
+   3 in the last year,
+   334,289 recent downloads,
+   2 open issues,
+   3 stars;
+   731 lines of non-test Rust code,
+   0 `unsafe` items,
+   0 intrinsic calls,
+   0 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   7 inline test items and 2 test files.
+- `aes` 0.9.3 (published 2026-08-28):
+   licence MIT OR Apache-2.0,
+   MSRV 1.89,
+   edition 2024;
+   archive sha256 `35f0f96ce78e38c3dc6d8948aa8163d06385be74000f3c7a95bf1eef35d3ea32`;
+   repository https://github.com/RustCrypto/block-ciphers,
+   last commit 2026-09-14,
+   17 stable releases since 2020-06-05,
+   3 in the last year,
+   78,769,109 recent downloads,
+   15 open issues,
+   783 stars;
+   3,015 lines of non-test Rust code,
+   60 `unsafe` items,
+   133 intrinsic calls,
+   0 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   0 inline test items and 3 test files.
+- `keccak` 0.2.2 (published 2026-08-21):
+   licence Apache-2.0 OR MIT,
+   MSRV 1.85,
+   edition 2024;
+   archive sha256 `d8f198d1db720e4940b5a493201d199d9f24f568f8f746bd13706243a2f71598`;
+   repository https://github.com/RustCrypto/sponges,
+   last commit 2026-08-21,
+   9 stable releases since 2018-03-27,
+   4 in the last year,
+   37,905,699 recent downloads,
+   1 open issues,
+   56 stars;
+   489 lines of non-test Rust code,
+   10 `unsafe` items,
+   45 intrinsic calls,
+   0 `asm!` or `global_asm!` macros,
+   0 C or assembly files,
+   0 inline test items and 3 test files.
+
+Two notes on the counts:
+
+- `rscrypto`'s 58 assembly files are ECC bignum routines under `src/auth/asm/`,
+   included with `global_asm!(include_str!(...))` and assembled by rustc.
+  Its BLAKE3 assembly lives under `src/hashes/crypto/blake3/{x86_64,aarch64}/asm/`
+   and is assembled the same way,
+   which is why the aarch64 builds succeed without a C toolchain ("HC4 build").
+- `blake3`'s 26 C and assembly files are its AVX-512 and NEON kernels,
+   compiled by `cc` from `build.rs`,
+   which is the C toolchain question.
+
+## Hard-gate outcomes
+
+Each gate is settled for every serious alternative before any scoring.
+Source citations are file paths inside the crate archive under `data/crate-src/`;
+ build and run evidence is in `data/hc4-builds.txt`,
+ `data/build-variants.txt`,
+ `data/correctness.txt`,
+ and the container logs under `data/logs/`.
+
+### HC1 hardware acceleration
+
+Kernel inventory,
+ from a scan for architecture intrinsics and for dedicated-instruction mnemonics inside `asm!` blocks
+ (`scripts/hc1-paths.ts`, `data/hc1-paths.tsv`):
+
+- XXH3-128,
+   SIMD kernels on both architectures:
+   `xxhash-rust` (`src/xxh3.rs`: SSE2, AVX2, AVX-512, NEON),
+   `twox-hash` (`src/xxhash3/large/{sse2,avx2,neon}.rs`),
+   `hashcrew` (`src/xxhash/kernel/{x86,neon}.rs`),
+   `rscrypto` (`src/hashes/fast/xxh3/{x86_64_avx2,x86_64_avx512,aarch64_neon}.rs`).
+  Pass.
+- HighwayHash-128:
+   `highway` (`src/x86/avx.rs`, `src/x86/v4x64u.rs`, `src/aarch64.rs`).
+  Pass.
+- BLAKE3:
+   `rscrypto` has Rust AVX2, AVX-512, and SSE4.1 kernels plus NEON intrinsics in
+   `src/hashes/crypto/blake3/{x86_64/{avx2,avx512,sse41}.rs,aarch64.rs}`,
+   with assembly variants in the same tree assembled by rustc.
+  Pass.
+  `blake3` 1.8.7 has Rust SSE2, SSE4.1, and AVX2 only;
+   its AVX-512 and NEON kernels are `c/blake3_avx512_x86-64_unix.S` and `c/blake3_neon.c`,
+   compiled by `cc` in `build.rs`.
+  With the `pure` feature, or on any target without a C compiler,
+   aarch64 gets no vector path.
+  Fail on aarch64 under HC4's rustc-only rule;
+   carried in the C toolchain branch.
+- SHA-256,
+   SHA extensions on x86_64 and the Armv8 SHA-2 extension on aarch64:
+   `sha2` (`src/sha256/x86_sha.rs`, `src/sha256/aarch64_sha2.rs`),
+   `rscrypto` (`src/hashes/crypto/sha256/{x86_64,aarch64}.rs`),
+   `graviola` (`src/low/x86_64/sha256.rs`, `src/low/aarch64/sha256.rs`),
+   `purecrypto` (`src/hash/sha_hw.rs`),
+   `bitcoin_hashes` (`src/sha256/crypto/{x86_shani,avx2,sse41,arm_sha2}.rs`),
+   `scytale` (`src/hash/sha2/{x86_64,aarch64}.rs`, dedicated instructions inside `asm!`),
+   `cryptoxide` (`src/hashing/sha2/impl256/{avx,sse41,aarch64}.rs`),
+   whose x86_64 kernels are AVX and SSE4.1 message-schedule code and whose SHA-NI arm is commented out
+   (`src/hashing/sha2/impl256/mod.rs:26`),
+   and whose paths are chosen at compile time from `target_feature`,
+   so its aarch64 kernel needs a build raised with `+sha2`.
+  Pass on both architectures as SIMD, with that build condition.
+- SHA-512:
+   `sha2` (`src/sha512/x86_avx2.rs` AVX2, `src/sha512/aarch64_sha3.rs` using the Armv8.2 SHA-512 instructions)
+   and `rscrypto` (`src/hashes/crypto/sha512/{x86_64_avx2,x86_64_avx512vl,aarch64}.rs`).
+  Pass.
+  `graviola` has `src/low/x86_64/sha512.rs` and no aarch64 counterpart:
+   fail.
+  `scytale` states in `src/hash/sha2/x86_64.rs` that SHA-384 and SHA-512 stay portable on x86_64:
+   fail.
+  `purecrypto`'s SHA-512 hardware path is aarch64 only:
+   fail.
+- SHA-1:
+   `sha1` (`src/compress/x86_sha.rs`, `src/compress/aarch64_sha2.rs`).
+  Pass.
+- AES-CMAC and AES-PMAC through `aes` 0.9.3:
+   AES-NI and VAES on x86_64 (`src/backends/{x86_aes,x86_vaes256,x86_vaes512}/encdec.rs`),
+   the Armv8 AES extension on aarch64 (`src/backends/aarch64_aes/encdec.rs`).
+  Pass.
+- KangarooTwelve through `keccak` 0.2.2:
+   the Armv8.2 SHA-3 extension on aarch64 (`src/backends/aarch64_sha3.rs`, run-time detected)
+   and, on x86_64, `portable_simd` lanes selected by `--cfg keccak_backend="simd128|simd256|simd512"`.
+  Pass on the release-blocking build,
+   which sets that cfg;
+   without it the x86 path is scalar.
+- CubeHash:
+   `cubehash` (`src/avx2.rs`, `src/sse2.rs`, `src/neon.rs`).
+  Pass.
+- Xoodyak:
+   `xoodyak` (`src/xoodoo/impl_x86_64.rs`, `src/xoodoo/impl_aarch64.rs`).
+  Pass.
+
+### HC2 width
+
+Native 128-bit output:
+ XXH3-128,
+ HighwayHash-128,
+ AES-CMAC,
+ AES-PMAC.
+Truncation of a longer digest to its first 128 bits,
+ which HC2 allows:
+ BLAKE3 (256-bit digest and XOF),
+ SHA-256,
+ SHA-512,
+ SHA-1 (160 bits),
+ KangarooTwelve (XOF),
+ CubeHash-512,
+ Xoodyak (XOF squeeze).
+All pass.
+
+### HC3 stability
+
+Every candidate function is a published specification or has a documented freeze:
+
+- XXH3-128:
+   frozen in xxHash 0.8.0 and specified in the xxHash specification;
+   the four implementations agree with each other and with the reference vectors
+   ("Reference equality").
+- HighwayHash-128:
+   the HighwayHash specification and the reference implementation's vectors.
+- BLAKE3:
+   the BLAKE3 specification and reference vectors.
+- SHA-1, SHA-256, SHA-512:
+   FIPS 180-4.
+- AES-CMAC:
+   NIST SP 800-38B.
+- AES-PMAC:
+   the PMAC specification with its published vectors.
+- KangarooTwelve:
+   the KangarooTwelve specification and its XKCP vectors.
+- CubeHash:
+   the CubeHash specification (rev3 parameters `16/32/512`, as the crate names them).
+- Xoodyak:
+   the Xoodyak specification from the NIST lightweight cryptography process.
+
+`rscrypto` states the rule its accelerated kernels follow explicitly:
+ "Portable Rust implementations are the reference path; SIMD and ASM are accelerators tested against that path"
+ (`README.md`).
+All pass.
+
+### HC4 build
+
+Builds of the lab crate with the repository's nightly (`nightly-2026-09-12`),
+ rustc alone,
+ no C toolchain in the container
+ (`data/hc4-builds.txt`):
+
+- `x86_64-unknown-linux-gnu`, default features: status 0.
+- `x86_64-unknown-linux-musl`, default and `-Ctarget-cpu=x86-64-v4`: status 0.
+- `aarch64-unknown-linux-gnu`, default features: status 101.
+  The failure is `blake3`'s build script:
+   "Compiler family detection failed due to error: ToolNotFound: failed to find tool `aarch64-linux-gnu-gcc`"
+   (`data/logs/hc4-aarch64-gnu-default.log`).
+- `aarch64-unknown-linux-musl` with `rust-lld`, default features: status 101,
+   the same `blake3` build-script failure with `aarch64-linux-musl-gcc`.
+- `aarch64-unknown-linux-musl` with `rust-lld`, feature `pure` (BLAKE3 without its C kernels): status 0.
+- `aarch64-unknown-linux-gnu`, feature `pure`: the compile succeeds and the link fails in the lab harness only,
+   because the host `rust-lld` rejects `--fix-cortex-a53-843419` for a non-AArch64 host build;
+   rebuilt with `--lib`, status 0 (`data/logs/hc4-aarch64-gnu-pure-lib.log`).
+  This is a harness artifact, not a candidate defect,
+   and matches the prior vet's compile-only aarch64 evidence.
+
+So every candidate except `blake3` builds for all four targets with rustc alone.
+`blake3` fails HC4 as published and passes only with its `pure` feature,
+ which costs it HC1 on aarch64.
+`rscrypto` passes although its BLAKE3 has assembly,
+ because the assembly is inside `global_asm!` and rustc assembles it.
+
+### HC5 CPU capabilities
+
+Run-time detection with a fallback:
+ `twox-hash`,
+ `hashcrew`,
+ `sha2`,
+ `sha1`,
+ `aes`,
+ `bitcoin_hashes`,
+ `scytale`,
+ `keccak` (aarch64),
+ `graviola` (which additionally asserts its required features at construction),
+ `rscrypto` (`src/platform/detect`).
+Compile-time selection:
+ `xxhash-rust`,
+ `cryptoxide`,
+ `cubehash`,
+ `xoodyak`,
+ and `keccak`'s x86 lanes.
+Under premise 3 both are acceptable:
+ meow performs its own startup check on every raised build,
+ and the baseline features these crates select at the default target
+ (SSE2 on x86_64, NEON on aarch64) are part of both targets' baselines.
+All pass.
+
+### HC6, HC7, HC9
+
+Pass for every serious alternative ("Identity, provenance, and license").
+No candidate is `gxhash` or derived from it;
+ `gxhash` is built only as the collision-harness positive control.
+
+### HC8 one-byte collision gate
+
+Harness:
+ `lab/src/bin/onebyte.rs`,
+ every single-byte variant of a 4,096-byte base
+ (1,044,480 keys per function and seed),
+ counted for full 128-bit,
+ low 64-bit,
+ and high 64-bit equality,
+ over a zero base and a random base,
+ with seeds 0, 1, and 987654321.
+
+First pass on the `x86-64-v4` build
+ (`data/logs/onebyte-zero-v4.log`, `data/logs/onebyte-random-v4.log`):
+ 57 results per base,
+ covering the XXH3-128, HighwayHash, BLAKE3, SHA-256, SHA-512, SHA-1, AES-CMAC, and AES-PMAC candidates
+ and the `museair` control,
+ with zero collisions at every width.
+The `bitcoin_hashes`, `scytale`, `cubehash`, `xoodyak`, and `k12` wrappers were added to the lab after that pass,
+ so the gate was re-run for the full table,
+ together with the `gxhash` positive control from the `v4-gxref` build
+ (`data/correctness.txt`, "Re-run of the correctness gates").
+
+### HC10 streaming
+
+Harness:
+ `lab/src/bin/streamcheck.rs`,
+ which compares the streaming result with the one-shot result
+ for 607 input lengths from 0 to 5,000,011 bytes
+ under 14 chunk plans each
+ (1, 7, 16, 32, 63, 64, 65, 240, 241, 256, 1024, 4096, 65,536, and random chunk sizes).
+
+First pass on the `x86-64-v4` build:
+ 19 streaming functions,
+ 8,548 chunkings compared each,
+ 0 failures
+ (`data/logs/streamcheck-v4.log`).
+Positive control,
+ the same run with `STREAMCHECK_CONTROL=drop-last`,
+ which withholds the last input byte:
+ 162,146 mismatches
+ (`data/logs/streamcheck-control-v4.log`),
+ so the harness detects a wrong streaming result.
+As with HC8,
+ the five wrappers added later are covered by the re-run.
+
+## Execution manifest
+
+Shared by every execution in this vet:
+
+- Host:
+   AMD Ryzen 7 8700F,
+   8 physical cores and 16 logical,
+   62 GiB memory,
+   Linux 7.2.0-ogc6.1.fc44.x86_64,
+   `podman` 5.8.4.
+- Container:
+   `docker.io/library/rust:slim`,
+   digest `sha256:a2de23e559fd8afd260d22beb00f3987073ea0dcc2ba2646cccdaeda6a62a095`,
+   run with `--rm --init --memory=2g --cpus=2 --pids-limit=512 --ulimit nofile=4096 --network=none`
+   and `--security-opt label=disable`,
+   no credentials mounted,
+   no repository mounted.
+  The scratch tree is mounted at `/w`;
+   the toolchain and the Cargo registry are mounted read-only;
+   `CARGO_HOME` points inside the scratch tree
+   (`scripts/run-box.ts`).
+  Every run appends a record with its command, image digest, bounds, exit status, and log path to
+   `data/logs/executions.jsonl`.
+- The one exception to the standing bounds is the multi-core scaling test,
+   which raises `--cpus` to at most 8
+   (half of the host's 16 logical cores)
+   with `--memory=8g`;
+   each of those records states the raised bounds
+   ("S4 multi-core on one large input").
+- Toolchains:
+   `nightly-2026-09-12` (`rustc 1.100.0-nightly`) for the lab, every lab binary, and the aarch64 builds;
+   `nightly-2026-09-16` for Miri;
+   `1.98.1` for upstream suites that pin a stable toolchain.
+- Lab crate:
+   `lab/`,
+   `opt-level = 3`,
+   fat LTO,
+   one codegen unit,
+   `panic = "abort"`,
+   lockfile generated on 2026-09-17 with `cargo +nightly-2026-09-12 generate-lockfile`
+   and fetched on the host,
+   because only the host's Cargo may reach `index.crates.io`;
+   containers run `--offline --locked`.
+- Builds measured
+   (`scripts/build-variants.ts`, `data/build-variants.txt`, all status 0):
+  - `base`: default target features, `--cfg keccak_backend="simd128"`.
+  - `v2`: `-Ctarget-cpu=x86-64-v2`, same Keccak backend.
+  - `v3`: `-Ctarget-cpu=x86-64-v3`, `--cfg keccak_backend="simd256"`.
+  - `v4`: `-Ctarget-cpu=x86-64-v4`, `--cfg keccak_backend="simd512"`, the release-blocking build.
+  - `v4-pure` and `base-pure`: the same with `blake3/pure`, for the C toolchain branch.
+  - `v4-par`: the same as `v4` with `rscrypto/parallel`, for the scaling test.
+  - `v4-gxref`: the same as `v4` with `-Ctarget-feature=+aes` and `gxhash`, for the HC8 positive control only.
+- One fact about the release-blocking build that the measurements depend on:
+   `x86-64-v4` enables `avx512f` but not the SHA or AES instruction features.
+  Checked with the compiler:
+   `rustc --print cfg -Ctarget-cpu=x86-64-v4 --target x86_64-unknown-linux-gnu`
+   lists `target_feature="avx512f"` and lists neither `sha` nor `aes`.
+  Crates that dispatch at run time (`sha2`, `sha1`, `aes`, `bitcoin_hashes`, `scytale`, `graviola`, `rscrypto`)
+   still reach those instructions;
+   crates that select at compile time (`cryptoxide`) do not,
+   which their numbers show.
+- Measurement discipline:
+   the run-to-run band is measured first on the unchanged `x86-64-v4` build,
+   five runs per cell,
+   each run its own container,
+   load average recorded before and after every run.
+  Another agent's build work ran on this host during part of the campaign;
+   the affected runs are visible in `data/bench/progress-a.txt`,
+   and the per-cell medians over five runs are what the ratings use.
+
+## Hard-gate confirmed
+
+Every serious alternative except `blake3` and three single-architecture cryptographic functions passes every gate:
+
+- Confirmed:
+   `xxhash-rust` XXH3-128,
+   `twox-hash` XXH3-128,
+   `hashcrew` XXH3-128,
+   `rscrypto` XXH3-128,
+   `highway` HighwayHash-128,
+   `rscrypto` BLAKE3,
+   `sha2` SHA-256 and SHA-512,
+   `rscrypto` SHA-256 and SHA-512,
+   `sha1` SHA-1,
+   `graviola` SHA-256,
+   `purecrypto` SHA-256,
+   `cryptoxide` SHA-256,
+   `bitcoin_hashes` SHA-256,
+   `scytale` SHA-256,
+   `cmac` with `aes` AES-CMAC,
+   `pmac` with `aes` AES-PMAC,
+   `k12` KangarooTwelve,
+   `cubehash` CubeHash,
+   `xoodyak` Xoodyak.
+- Exited at a gate:
+   `blake3` BLAKE3 (HC4 as published, HC1 on aarch64 with `pure`),
+   `graviola` SHA-512,
+   `scytale` SHA-512,
+   `purecrypto` SHA-512 (all HC1 on one architecture).
+  `graviola` SHA-512 is still measured,
+   because it bounds what an x86_64-only SHA-512 could contribute,
+   and `blake3` is measured in both builds for the C toolchain branch.
+
+### Which confirmed candidates receive equal-depth validation
+
+The deciding criteria are the three weight-5 ones,
+ and S2 is already measured for every confirmed candidate on the release-blocking build
+ ("S2 whole files").
+Applying the frozen rating rule to the three S2 cells:
+
+- 4: `xxhash-rust` 0.997, `twox-hash` 0.979, `hashcrew` 0.963, `rscrypto` 0.944 (XXH3-128).
+- 1: `highway` 0.281.
+- 0: every other confirmed candidate,
+   from `aes_pmac` 0.113 and `rscrypto` BLAKE3 0.097 down to `xoodyak` 0.006.
+
+A candidate rated 0 on S2 scores at most
+ 0 + 5·(its S3 rating) + 5·(its S5 rating) + 8·4 points.
+Its measured S5 evidence caps it further:
+ on the one aarch64 core with published numbers,
+ SHA-256 through the SHA extensions runs at 1.69 GiB/s and single-threaded BLAKE3 at 1.61,
+ against 24.5 for XXH3-128,
+ so every cryptographic candidate rates 0 on S5 as well
+ ("S5: aarch64 evidence").
+That leaves at most 5·(S3 rating) + 32,
+ and S3 is bounded by the cold and warm measurements
+ ("S3 multi-GB from disk"):
+ no candidate rated 0 on S2 can pass 42 of 92 points.
+The four XXH3-128 candidates already hold 20 points from S2 alone
+ and score at least 45 from the weight-5 criteria,
+ so the ranking of the top places cannot include a candidate rated 0 on S2.
+
+Equal-depth validation therefore runs for the five candidates that can reach the top:
+ the four XXH3-128 implementations and `highway`.
+Every other confirmed candidate is rated from the evidence collected for all candidates alike
+ (the same benchmark runs, the same gates, the same source and maintenance audits)
+ and carries the bound shown here;
+ no rating for them is left unstated,
+ and none of them can change the recommendation.
+Four of the five validated candidates were validated to this depth in the prior vet earlier the same day,
+ on the same host,
+ toolchains,
+ and crate versions ("Reuse of prior evidence");
+ `rscrypto` is new and receives the same treatment here.
+
+## S5: aarch64 evidence
+
+No aarch64 hardware ran in this vet
+ (the one aarch64 machine in reach is powered off; "What an `ssh m1` run would add").
+S5 therefore rests on published third-party measurements,
+ on source analysis of each candidate's aarch64 kernel,
+ and on the QEMU correctness runs,
+ and its ratings are ranges.
+
+### Measured aarch64 numbers from rscrypto's public CI
+
+`rscrypto` publishes criterion artifacts from its benchmark workflow.
+Run 34874736834 of 2026-09-14 was downloaded and parsed
+ (`scripts/rscrypto-bench-extract.ts`, `data/rscrypto-bench.tsv`, 5,038 rows).
+The aarch64 measurement runner is `measure-aarch64-linux`,
+ an on-demand AWS `c9g.2xlarge` with 8 vCPUs
+ (`.github/runs-on.yml` at `main` in the rscrypto clone);
+ the artifacts do not record the CPU model beyond that.
+The comparison crates in that run are the versions this vet measures:
+ `xxhash-rust` 0.8.18,
+ `sha2` 0.11.0,
+ and `blake3` 1.8.6 (this vet uses 1.8.7).
+
+Single-message throughput on aarch64, 1 MiB inputs:
+
+- XXH3-128:
+   `xxhash-rust` 24.59 GiB/s,
+   `rscrypto` 24.53 GiB/s;
+   at 64 KiB both are 24.56;
+   at 4 KiB `rscrypto` 24.37 and `xxhash-rust` 23.28.
+  The two are the same algorithm with separate NEON kernels and land within a percent of each other.
+- SHA-256:
+   `sha2` 1.687,
+   `rscrypto` 1.687,
+   `ring` and `aws-lc-rs` 1.957.
+- SHA-512:
+   `ring` and `aws-lc-rs` 1.185,
+   `rscrypto` 1.155,
+   `sha2` 1.143.
+- SHA-3 and SHAKE through `keccak`-class code:
+   0.43 to 0.96,
+   which bounds KangarooTwelve on aarch64 in the same region.
+- BLAKE3:
+   the `blake3` crate 1.613,
+   `rscrypto` 13.31.
+  These two rows are not comparable as kernels:
+   the benchmark binary for the BLAKE3 group is built with the features
+   `["std", "blake3", "parallel"]`
+   (`.config/benchmark-matrix.json` at `main`),
+   so `rscrypto::Blake3::digest` runs its rayon tree mode across the runner's 8 vCPUs
+   while `blake3::hash` is single-threaded.
+  The same pattern appears in the x86 artifacts from the same run
+   (`blake3` 10.21, `rscrypto` 61.75 GiB/s),
+   where the ratio is again about the vCPU count.
+  Read as single-core evidence,
+   the usable number from this source is the `blake3` crate's 1.61 GiB/s on aarch64.
+
+So on aarch64, as on `x86-64-v4`,
+ XXH3-128 runs about 15 times the speed of the fastest cryptographic candidate measured there
+ (24.5 against 1.69 for SHA-256 through SHA extensions, 1.61 for single-threaded BLAKE3).
+
+### aarch64 kernels by candidate
+
+Reused from the prior vet for the four crates it validated,
+ and read in source for the new ones:
+
+- `xxhash-rust`:
+   NEON stripe accumulator under `cfg(target_feature = "neon")`,
+   which every `aarch64-unknown-linux-*` target enables
+   (`src/xxh3.rs:55`, `:252-268`).
+  Now also measured: 24.59 GiB/s (above).
+- `twox-hash`:
+   NEON accumulate and scramble kernels (`src/xxhash3/large/neon.rs`),
+   selected at run time.
+  Upstream publishes an Apple M1 Max comparison
+   (`comparison/README.md`, "xxHash3 (128-bit)", "Oneshot hashing"):
+   Rust 34.4 GiB/s,
+   C with NEON 34.6,
+   C scalar 21.3,
+   for 256 KiB to 4 MiB buffers.
+- `hashcrew`:
+   NEON kernels (`src/xxhash/kernel/neon.rs`),
+   selected at compile time because aarch64 enables NEON
+   (`src/xxhash/kernel/mod.rs:98-104`),
+   so the run-time dispatch it pays on x86_64 does not apply there.
+  No published aarch64 throughput.
+- `rscrypto`:
+   NEON kernel in `src/hashes/fast/xxh3/aarch64_neon.rs` with run-time detection in `src/platform/detect`.
+  Measured above.
+- `highway`:
+   a NEON implementation of the four-lane update with `vmull_u32` multiplies (`src/aarch64.rs`),
+   used unconditionally on aarch64.
+  The README claims "> 10 GB/s with SIMD (SSE 4.1 AVX 2, NEON)" without naming a machine or input size;
+   `assets/highway.csv` holds x86 results only.
+- Cryptographic candidates:
+   `sha2`, `rscrypto`, `graviola`, `purecrypto`, `bitcoin_hashes`, and `scytale` use the Armv8 SHA-2 extension;
+   `sha2` and `rscrypto` use the Armv8.2 SHA-512 instructions;
+   `aes` uses the Armv8 AES extension;
+   `keccak` uses the Armv8.2 SHA-3 extension;
+   `cubehash` and `xoodyak` use NEON.
+  The measured aarch64 numbers above cover SHA-256, SHA-512, SHA-3, and BLAKE3,
+   and they place every cryptographic candidate between 1 and 2 GiB/s,
+   an order of magnitude under XXH3-128 on the same core.
+
+## Quality and stability assurance
+
+### SMHasher3 (S6 evidence)
+
+The SMHasher3 results summary saved by the prior vet
+ (`~/temp/agent/hashvet-2026-09-17/data/smhasher3-results-readme.md`)
+ and the raw result files it saved for the two non-cryptographic finalist families:
+
+- `XXH3-128`:
+   in the "Failing hashes" table with 36 failures out of 250 tests.
+  The raw file (`smh3-XXH3-128.txt`) shows the failures are in reduced-width and distribution tests;
+   every "all collisions (128-bit)" line reports 0 actual against 0.0 expected,
+   so no full-width collision appears at any tested seed.
+  The `.regen` variant has 19 failures with the same pattern.
+- `HighwayHash-128`:
+   in the "Passing hashes" table,
+   238 tests, no failures.
+- Cryptographic families:
+   `blake3`, `SHA-2-224`, `SHA-2-256`, `SHA-1`, `blake2s`, `blake2b`, `MD5`, `SHA-3`, and the Ascon CXOFs
+   are all in the passing table.
+  The AES-based non-cryptographic entries fail
+   (`aesnihash-peterrk` 41, `aesnihash-majek` 64, `t1ha0.aesA` and `t1ha0.aesB` 5 each),
+   which is why an AES-round universal hash would have needed its own quality evidence rather than AES's.
+
+Crafted collisions,
+ which the changed premises make a scored question rather than a gate:
+
+- XXH3-128 and HighwayHash-128 make no collision-resistance claim once the seed or key is known.
+  For meow's cache the seed is a constant in the binary,
+   so an adversary who can run code in the repository can craft a pair of file contents with the same key.
+  The user's accepted reasoning is that such an adversary already runs meow's tasks,
+   and that the cache is local and rebuildable.
+- BLAKE3, SHA-256, SHA-512, KangarooTwelve, CubeHash, and Xoodyak have no published collision attack,
+   and a 128-bit truncation of any of them costs the generic 2^64 to collide.
+- SHA-1 truncated to 128 bits inherits the published SHA-1 collision attacks,
+   which are below that generic cost.
+- AES-CMAC and AES-PMAC with a key that ships in the binary are not collision-resistant at all:
+   their security argument assumes a secret key.
+
+### Stability assurance (S7 evidence)
+
+- Local reference equality:
+   `lab/src/bin/refcheck.rs` checks published digests
+   (FIPS 180-4 SHA-256, SHA-1, and SHA-512 of `"abc"`,
+   the BLAKE3 hash of the empty input,
+   and XXH3-128 of the empty input)
+   and cross-implementation equality inside each family
+   (four XXH3-128 crates, seven SHA-256 crates, three SHA-512 crates, two BLAKE3 crates)
+   over 266 input lengths from 0 to 1 MiB,
+   with a positive control that flips one input byte and must fail every check.
+- Cross-architecture equality:
+   the prior vet's QEMU aarch64 runs and its `x86-64-v3` musl probe showed the NEON and x86 paths agreeing
+   for the four reused finalists;
+   this vet adds the `x86-64-v4` build and the aarch64 suites for `rscrypto`.
+- Upstream vectors:
+   every candidate's own test suite carries the published vectors of its algorithm,
+   and the upstream suites that ran here executed them ("Upstream suites").
+- Documentation:
+   the XXH3 specification freeze,
+   FIPS 180-4,
+   NIST SP 800-38B,
+   the BLAKE3, KangarooTwelve, CubeHash, and Xoodyak specifications,
+   and `rscrypto`'s statement that its SIMD and assembly kernels are tested against its portable reference path.
+
+## Source quality, dependencies, and maintenance
+
+### Audit surface (S9 evidence)
+
+Non-test Rust code lines on the path that computes the used function,
+ counted over the modules that implement it
+ (`scripts/audit-surface.ts`, `data/audit-surface.tsv`):
+
+- `xxhash-rust` XXH3-128: 1,396 lines in 3 files.
+- `hashcrew` XXH3-128: 1,511 lines in 6 files.
+- `twox-hash` XXH3-128: 1,533 lines in 8 files.
+- `highway` HighwayHash-128: 2,955 lines in 16 files.
+- `rscrypto` XXH3-128: 7,496 lines in 23 files,
+   which includes its platform detection module.
+- For scale, the cryptographic candidates on the same measure:
+   `sha2` SHA-256 985 lines,
+   `graviola` SHA-256 446,
+   `sha1` 806,
+   `blake3` 6,224 plus 26 C and assembly files,
+   `rscrypto` BLAKE3 18,280 Rust lines plus 20,286 assembly lines.
+
+Whole-crate figures,
+ `unsafe` items,
+ and native files are in "Identity, provenance, and license".
+The contrast that matters for a weight-1 criterion:
+ `xxhash-rust`, `hashcrew`, and `twox-hash` are single-purpose crates of a few thousand lines,
+ `highway` is one algorithm with four architecture backends,
+ and `rscrypto` is a 177,154-line cryptography suite of which the XXH3 path is a small part,
+ so auditing its XXH3 means auditing a module inside a much larger crate
+ whose other parts compile into the same library.
+
+Runtime dependencies of the finalists:
+
+- `xxhash-rust`, `hashcrew`, `highway`: none.
+- `twox-hash`: `rand` and `serde`, both optional and off by default.
+- `rscrypto`: `getrandom`, `rayon`, and `serde`, all optional;
+   the hash paths need none of them,
+   and `rayon` is what its `parallel` feature turns on.
+
+### Maintenance (S11 evidence)
+
+From the crates.io API and the GitHub API on 2026-09-17
+ (`data/crate-meta.tsv`, `data/repo-meta.tsv`):
+
+- `xxhash-rust` 0.8.18,
+   published 2026-07-21,
+   15 stable releases since 2021-03-08,
+   3 in the last year,
+   29.6M recent downloads,
+   3 open issues,
+   last commit 2026-07-21.
+- `twox-hash` 2.1.4,
+   published 2026-08-27,
+   22 stable releases since 2015-05-09,
+   2 in the last year,
+   53.4M recent downloads,
+   25 open issues,
+   last commit 2026-09-17.
+- `hashcrew` 0.3.0,
+   published 2026-09-15,
+   5 stable releases,
+   all since 2026-09-02,
+   202 recent downloads,
+   0 open issues,
+   4 stars,
+   last commit 2026-09-15.
+- `highway` 1.3.0,
+   published 2025-01-11,
+   21 stable releases since 2018-09-19,
+   none in the last year,
+   702K recent downloads,
+   6 open issues,
+   last commit 2026-07-23.
+- `rscrypto` 0.9.0,
+   published 2026-08-28,
+   16 stable releases,
+   all since 2026-05-02,
+   1,108 recent downloads,
+   0 open issues,
+   38 stars,
+   last commit 2026-09-17,
+   and six CI workflows (`ci.yml`, `bench.yml`, `ct.yml`, `fuzz.yml`, `profile.yml`, `release.yml`).
+
+Two of the five are young crates with almost no dependent base
+ (`hashcrew` two weeks old, `rscrypto` four months old),
+ two are long-lived with millions of downloads,
+ and `highway` is stable but quiet:
+ no release in the last year,
+ while its repository still receives commits.
