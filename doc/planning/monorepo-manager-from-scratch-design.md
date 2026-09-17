@@ -526,6 +526,13 @@ then `EIO` instead of end of file.
 - `> /dev/stdout` works under a pty,
    which is the problem a pty was proposed to solve.
 
+The user classified these pseudo-terminal costs as disqualifying problems on 2026-09-16:
+tasks do not run under a pseudo terminal by default,
+and any design that does,
+including Nx's `portable-pty` task runner,
+carries those problems.
+Whether a task may opt into a pseudo terminal is not decided.
+
 A real pipe solves the same problem without those costs,
 in Node as well:
 a Node child spawned with a FIFO write descriptor as stdout
