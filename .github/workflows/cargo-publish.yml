@@ -180,6 +180,11 @@ jobs:
           runner: macos-latest
         - target: x86_64-pc-windows-msvc
           runner: windows-latest
+        # Native Windows arm64 runner, free for public repositories (GA 2025-08-07).
+        # Absent until 0.4.1 only because we believed GitHub had no hosted Windows arm64
+        # runner: doc/decision/forbidden-strings-windows-arm64-release-target.md
+        - target: aarch64-pc-windows-msvc
+          runner: windows-11-arm
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
