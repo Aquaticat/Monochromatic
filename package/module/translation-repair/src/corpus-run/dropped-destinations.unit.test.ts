@@ -161,6 +161,22 @@ await describe({
     },),
 
     it({
+      name: 'IGNORES a destination inside an HTML comment, which no reader can follow (class forty-six)',
+      fn: async () => {
+        const { urls, findings, } = collectDestinations({
+          text: `A [tabby](${HOME}).\n\n<!-- [her keeper](${ALBUM}) -->\n\nThen ${PICTURE} again.`,
+          side: 'source',
+        },);
+
+        expect(urls,).toStrictEqual([
+          HOME,
+          PICTURE,
+        ],);
+        expect(findings,).toStrictEqual([],);
+      },
+    },),
+
+    it({
       name: 'still reads a bare run on a downgraded page and names the downgrade with its side',
       fn: async () => {
         const { urls, findings, } = collectDestinations({
@@ -254,6 +270,19 @@ await describe({
 
         expect(check.dropped,).toStrictEqual([],);
         expect(check.findings,).toStrictEqual(['destinations-mdx-downgraded (archive)',],);
+      },
+    },),
+
+    it({
+      name: 'OWES nothing for a source destination that sits inside an HTML comment (class forty-six, shi_Yumiaoya1)',
+      fn: async () => {
+        const check = droppedDestinations({
+          sourceText: `她的主页：${HOME}。\n\n<!-- [饲主](${ALBUM}) -->\n`,
+          pageText: `Her home page: ${HOME}.\n`,
+        },);
+
+        expect(check.source,).toStrictEqual([HOME,],);
+        expect(check.dropped,).toStrictEqual([],);
       },
     },),
 
