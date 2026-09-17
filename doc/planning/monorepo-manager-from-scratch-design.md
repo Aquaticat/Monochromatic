@@ -1488,6 +1488,14 @@ to the repeated cache key output question:
   `package/dev-script/vm-builder/output/qcow2/disk.qcow2` is 3,966,238,720 bytes
    and music-player debug binaries are 520 to 663 MB each,
    while the largest tracked source file is 22.9 MB.
+  Tracked file sizes on 2026-09-17:
+   p50 4,043 bytes,
+   p90 19,244,
+   p99 238,057;
+   files under 1 KiB are 22.0% of files but 0.39% of bytes,
+   and files of 64 KiB and above hold 66.15% of bytes.
+  The user added that even 20 KiB files are not small inputs:
+   fingerprint-sized strings under 1 KiB are not the workload that decides the hash.
   The hash therefore needs streaming with chunking-independent output and bounded memory,
    and its throughput and multi-core scaling on multi-GB inputs matter;
    the running vet was told.
