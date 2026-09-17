@@ -1421,6 +1421,43 @@ and collision reproducer under `gxhash/lab/` in the session scratchpad.
 - The undefined behavior and the one-byte collisions go through the `troubleshooting-doc` skill,
    whose upstream filing audit decides whether anything is offered upstream.
 
+#### Upstream reports of the collisions
+
+Read 2026-09-17 with `gh issue view`:
+
+- #83,
+   opened 2024-06-02 and open,
+   "Hash has arbitrary seed-independent multicollisions, is not DoS resistant".
+  ogxd replied "Let's see if we can improve DoS resistance without compromising performance",
+   later clarified the README security section (2024-11-05),
+   and after a comment that "`compress_all` is completely independent from the seed"
+   wrote on 2024-12-10:
+   "Mixing the seed at the start instead of the end should significantly improve DoS resistance.
+   I'm currently (slowly) exploring this path."
+- #124,
+   opened 2025-11-14 and open,
+   "seems to be failing some tests on smhasher3";
+   ogxd replied "I fail to see why gxhash would have to comply to all benchmarks in the www",
+   and the reporter noted the README claims every SMHasher test passes.
+- The README still states "GxHash passes all [SMHasher](https://github.com/rurban/smhasher) tests"
+   (`README.md:19` in the 2026-09-16 clone),
+   which names the original SMHasher rather than SMHasher3.
+
+#### Answers on 2026-09-17
+
+- CPU capabilities:
+   `+aes` target-feature builds with the startup check,
+   not a runtime detection token.
+- The owned hash crate is published on crates.io;
+   the name `gxhash` is taken,
+   so naming research comes before publishing.
+- aarch64 benchmarks run on `ssh m1`,
+   once the user powers it on;
+   the user asked to be told to turn it on only when it is strongly needed.
+- The cache key output question was answered with questions about upstream reports,
+   answered in "Upstream reports of the collisions",
+   and is asked again.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
