@@ -291,15 +291,19 @@ Corrected before merging:
  which only says the tool is written in Rust;
  whether a dependency may compile C is an open user question,
  also raised by the hash vet.
-Also running since 2026-09-17:
- the re-run cache key hash vet with cryptographic hashes eligible,
- speed-first weights,
- and `x86-64-v4` plus aarch64 as the release-blocking builds,
- writing a new same-day `doc/audit/` report.
-When it lands,
- verify it,
- merge it into "Cache key hash vet result",
- and present its brief for acceptance before any decision record (rule `DRR`).
+The re-run cache key hash vet finished on 2026-09-17:
+ [`tech-meow-cache-key-hash-vet-2026-09-17-600031ed.md`](../audit/tech-meow-cache-key-hash-vet-2026-09-17-600031ed.md),
+ merged into "Cache key hash re-run vet result" in the design,
+ with `doc/troubleshooting/rust-hash-crate-build-and-test-quirks.md` committed.
+It recommends `twox-hash` 2.1.4 XXH3-128 again,
+ now over a new finalist `rscrypto` by 1.5 points,
+ with cryptographic candidates 8 to 15 times slower on the weight-5 criteria.
+Its one user question is whether to power on the m1 to decide `twox-hash` against `rscrypto` by measurement.
+Spot-checked before merging:
+ `rscrypto` was published 2026-05-02 with about 1,100 recent downloads (crates.io API,
+ 2026-09-17).
+The C toolchain question the HCL research raised is closed by this vet's measured bound,
+ so it was withdrawn from the user's question set.
 
 1.  When it lands,
     start the remaining items under "Design work not yet started" in the design's "Open questions".

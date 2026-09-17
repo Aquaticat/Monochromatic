@@ -1755,7 +1755,7 @@ The selection reopens with both changes;
 the measurements below stay valid evidence for it.
 The user then chose speed-first weights and made `x86-64-v4` the only release-blocking x86-64 build
 ("Hashing" and "Platforms and builds"),
-and the re-run vet started on 2026-09-17.
+and the re-run vet finished the same day ("Cache key hash re-run vet result").
 
 - Recommended:
    `twox-hash` 2.1.4,
@@ -1834,6 +1834,111 @@ kept for the reopened selection:
    XXH3-128 fails 36 SMHasher3 tests at partial width or with varying seeds,
    none a full-width collision at a fixed seed,
    and `twox-hash` has one maintainer.
+
+#### Cache key hash re-run vet result
+
+Vet:
+[`tech-meow-cache-key-hash-vet-2026-09-17-600031ed.md`](../audit/tech-meow-cache-key-hash-vet-2026-09-17-600031ed.md),
+finished 2026-09-17 under the changed premises,
+with a screening appendix listing every scanned crate.
+Nothing is adopted:
+the brief went to the user the same day and rule `DRR` requires acceptance first.
+
+- Recommended:
+   `twox-hash` 2.1.4 XXH3-128,
+   one-shot for in-memory files and its streaming state for larger inputs.
+- Ranking (scores out of 92):
+   `twox-hash` 85 > `rscrypto` 83.5 > `xxhash-rust` 82 > `hashcrew` 74 > `highway` 46.
+  `rscrypto` is a new finalist that the widened scope brought in.
+- Cryptographic and AES-based candidates lost the weight-5 criteria by factors of 8 to 15 on both architectures,
+   so the function is settled by measurement and only the crate is close.
+- Whole tracked-file corpus on an `x86-64-v4` build,
+   medians of five container runs in GiB/s:
+   `hashcrew` 47.74,
+   `rscrypto` 47.45,
+   `twox-hash` 47.42,
+   `xxhash-rust` 47.03,
+   `highway` 15.28,
+   AES-PMAC 5.89,
+   BLAKE3 with its C kernels 4.64,
+   pure-Rust BLAKE3 4.33,
+   SHA-256 with SHA-NI 2.24 to 2.27,
+   AES-CMAC 1.78,
+   KangarooTwelve 0.92.
+  Run-to-run band on the unchanged build:
+   median 1.9%,
+   p90 5.4%.
+- aarch64 numbers come from `rscrypto`'s public CI artifacts on an AWS `c9g.2xlarge`,
+   not from a local run:
+   XXH3-128 24.53 to 24.59 GiB/s,
+   SHA-256 1.687 to 1.957,
+   single-threaded BLAKE3 1.613.
+- Multi-GB inputs:
+   warm reads resolve the finalists (XXH3 13.1 to 15.4 GiB/s,
+   BLAKE3 5.4,
+   SHA-256 2.0),
+   cold reads are storage-bound at 0.33 to 1.59 for everything,
+   and peak memory stayed near 3.5 MB on the 3.97 GB input.
+- Adjacent pairs:
+  - `twox-hash` over `rscrypto`:
+     tied on all three weight-5 criteria,
+     decided by audit surface
+     (1,533 lines on the used path against 7,496 inside a 177,154-line crate)
+     and maintenance (11 years and 53.4M recent downloads against 4 months and about 1,100).
+    Margin 1.5 points.
+  - `rscrypto` over `xxhash-rust`:
+     run-time dispatch wins the non-blocking builds,
+     against `xxhash-rust`'s smaller audit surface and longer history.
+    Margin 1.5 points.
+  - `xxhash-rust` over `hashcrew`:
+     a measured aarch64 number,
+     1.8 times the short-input speed,
+     and better non-blocking-build behavior.
+  - `hashcrew` over `highway`:
+     `highway` reaches 0.28 of XXH3 on whole files;
+     its clean SMHasher3 pass is worth one point.
+    Margin 28 points.
+- Correctness:
+   zero one-byte collisions at every width for every finalist,
+   with `gxhash` colliding as the positive control;
+   23 of 24 functions had zero streaming failures against 204,816 in the control run;
+   4,261 reference-equality checks passed with a control that failed all of them.
+  `rscrypto` received equal-depth validation,
+   including Miri with strict provenance and a 600-second differential fuzz run
+   (46,844,896 executions,
+   no finding).
+- Discovery saturated 36 crates.io queries,
+   scanned 5,092 crates,
+   and reviewed 118 by hand.
+  Exits include `blake3` (its aarch64 build needs a C cross compiler,
+   and its `pure` build has no aarch64 vector path),
+   `graviola` SHA-512 (no aarch64 kernel),
+   and `xoodyak` (per-message absorb,
+   so 5,155 of 8,548 chunkings differ).
+- The C toolchain branch closed with a measured bound instead of a user question:
+   BLAKE3's C kernels buy 18% to 22%,
+   pure-Rust BLAKE3 matches them here,
+   and BLAKE3 still sits at about a tenth of XXH3 on whole files.
+- Sensitivity:
+   97 one-at-a-time tests,
+   of which exactly one changes the winner:
+   lowering `twox-hash`'s aarch64 rating by one step puts `rscrypto` first.
+  That rating rests on upstream's M1 Max table rather than a local measurement.
+
+Usage rules and risks if XXH3-128 is adopted:
+
+- No collision resistance once the seed is known,
+   accepted because the cache is local
+   and a repository that can craft inputs already runs meow's tasks.
+- 36 of 250 SMHasher3 tests fail,
+   none showing a full-width collision at a tested seed;
+   the practical exposure is the birthday bound at 2 to the 64th.
+- The seed is fixed as part of the key format,
+   the full 128 bits are kept,
+   and changing either costs one cache rebuild.
+- Every build raised above its target baseline runs meow's startup capability check before hashing.
+- A key that must resist an adversary who knows the seed is a different decision,
+   costing 8 to 15 times the throughput.
 
 ### Process model
 
