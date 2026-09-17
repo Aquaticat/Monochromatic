@@ -4,8 +4,9 @@ Status:
  in progress.
 Lifecycle phase:
  context and rubric refrozen after the workload correction;
- discovery queries executed,
- screening in progress.
+ discovery and screening complete;
+ targeted evidence complete with four hard-gate-confirmed finalists;
+ finalist validation in progress.
 
 Subject:
  meow cache key hash.
@@ -43,10 +44,12 @@ Active audit owner:
 
 Prior compatible report:
  none.
-No file in `doc/audit/` starts with `tech-meow-cache-key-hash-vet-`.
+When this audit started,
+ no file in `doc/audit/` started with `tech-meow-cache-key-hash-vet-`.
 Related but incompatible:
  [`tech-monorepo-manager-vet-2026-09-16.md`](tech-monorepo-manager-vet-2026-09-16.md) selects the tool itself,
- and [`gxhash-owned.md`](../planning/monorepo-manager-route-research/gxhash-owned.md) is a design study of owning gxhash,
+ and [`gxhash-owned.md`](../planning/monorepo-manager-route-research/gxhash-owned.md)
+ is a design study of owning gxhash,
  not a vet report.
 
 ## Context
@@ -550,7 +553,10 @@ Source-scan method and control:
    (`scripts/crates-scan.ts`).
 - Control:
    crates known to carry accelerated paths were flagged on both architectures
-   (`gxhash` x86 46/7 and aarch64 48/3 general/dedicated matches, `highway` 131 and 44, `twox-hash` 16 and 27, `sha2` 58/4 and 178/72),
+   (`gxhash` x86 46/7 and aarch64 48/3 general/dedicated matches,
+   `highway` 131 and 44,
+   `twox-hash` 16 and 27,
+   `sha2` 58/4 and 178/72),
    and crates known to be scalar had zero matches
    (`rapidhash`, `museair`, `komihash`, `wyhash`, `foldhash`, `seahash`, `siphasher`, `polymur-hash`).
   `blake3` 1.8.7 matched on x86 only,
@@ -573,19 +579,27 @@ Query ledger,
    170 reported,
    2 page(s) and 170 results read,
    exhausted;
-   new reviewed candidates: `noncrypto-digests`, `wyhash`, `gxhash`, `mwhash`, `fasthash`, `drtahash`, `ahash`, `hashkit`, `polymur-hash`, `t1ha`, `tenthash`, `hashcrew`, `rscrypto`, `axhash-core`, `foldhash`, `rapidhash`, `whasher`, `rotohash-rs`, `blazehash-core`;
+   new reviewed candidates:
+   `noncrypto-digests`, `wyhash`, `gxhash`, `mwhash`, `fasthash`, `drtahash`, `ahash`,
+   `hashkit`, `polymur-hash`, `t1ha`, `tenthash`, `hashcrew`, `rscrypto`, `axhash-core`,
+   `foldhash`, `rapidhash`, `whasher`, `rotohash-rs`, `blazehash-core`;
    new screening survivors: `hashcrew`.
 - CR02 `q=128-bit hash`:
    749 reported,
    5 page(s) and 500 results read,
    two-page rule met;
-   new reviewed candidates: `museair`, `siphasher`, `kangarootwelve`, `rustc-stable-hash`, `polyval`, `twox-hash`, `lockstitch`, `highway`, `ghash`, `hashcodecs`, `argon2-rust`;
+   new reviewed candidates:
+   `museair`, `siphasher`, `kangarootwelve`, `rustc-stable-hash`, `polyval`, `twox-hash`,
+   `lockstitch`, `highway`, `ghash`, `hashcodecs`, `argon2-rust`;
    new screening survivors: `twox-hash`, `highway`.
 - CR03 `q=simd hash`:
    724 reported,
    3 page(s) and 300 results read,
    two-page rule met;
-   new reviewed candidates: `seq-hash`, `cubehash`, `crc32fast`, `thread-utilities`, `keccak-batch`, `autobahn-hash`, `gearhash`, `pocx_hashlib`, `simd-adler32`, `tape-sha256`, `blake3-std`, `adler32-simd`, `mm3h`, `halftime`, `blake3`;
+   new reviewed candidates:
+   `seq-hash`, `cubehash`, `crc32fast`, `thread-utilities`, `keccak-batch`, `autobahn-hash`,
+   `gearhash`, `pocx_hashlib`, `simd-adler32`, `tape-sha256`, `blake3-std`, `adler32-simd`,
+   `mm3h`, `halftime`, `blake3`;
    new screening survivors: `autobahn-hash`.
 - CR04 `q=aes hash`:
    878 reported,
@@ -1163,7 +1177,8 @@ So any recommendation relies on R2.
    the crate offers one-shot `hash` and `hash_with_seed` only (`src/lib.rs:87`, `:158`),
    although the reference README says the algorithm "supports incremental hashing".
   HC3 not established:
-   the reference README says "The baseline algorithm is unlikely to change but analysis and verification of hash quality is ongoing",
+   the reference README says "The baseline algorithm is unlikely to change
+   but analysis and verification of hash quality is ongoing",
    and RotoHash is absent from the SMHasher3 results list.
   Without HC10 it would have needed targeted evidence;
    hashing multi-GB outputs through it would require memory-mapping whole files.
@@ -1217,8 +1232,8 @@ So any recommendation relies on R2.
    `mwhash` 0.1.1:
    HC1 (scalar).
 - CRC and Adler crates
-   (`crc-fast` 1.10.0, `crc32fast` 1.5.2, `crc32c` 0.6.8, `crc64fast` 1.1.0, `crc64fast-nvme` 1.2.1, `librscrc`, `turbo_crc`,
-   `slice-by-8`, `hud-slice-by-8`, `bitcoin-crc32c`, `adler32-simd`, `simd-adler32`):
+   (`crc-fast` 1.10.0, `crc32fast` 1.5.2, `crc32c` 0.6.8, `crc64fast` 1.1.0, `crc64fast-nvme` 1.2.1,
+   `librscrc`, `turbo_crc`, `slice-by-8`, `hud-slice-by-8`, `bitcoin-crc32c`, `adler32-simd`, `simd-adler32`):
    HC2,
    outputs of 64 bits or fewer,
    although several meet R1 on both architectures.
@@ -1275,6 +1290,869 @@ So any recommendation relies on R2.
    meets R1 on both through AES instructions with run-time detection;
    measured as the AES control.
 - Other cryptographic crates
-   (`sha1`, `k12`, `kangarootwelve`, `blake3-std`, `cubehash`, `keccak-batch`, `graviola`, `rscrypto`, and others in the appendix):
+   (`sha1`, `k12`, `kangarootwelve`, `blake3-std`, `cubehash`, `keccak-batch`, `graviola`, `rscrypto`,
+   and others in the appendix):
    outside the decision scope,
    not measured.
+
+## Targeted evidence and hard-gate outcomes
+
+### Shared evidence fields
+
+Unless a record says otherwise:
+
+- Access date:
+   2026-09-17.
+- Host:
+   Fedora Atomic,
+   kernel `7.2.0-ogc6.1.fc44.x86_64`,
+   AMD Ryzen 7 8700F (Zen 4, AVX-512, VAES, VPCLMULQDQ, SHA extensions),
+   62 GiB RAM.
+- Scratch root:
+   `~/temp/agent/hashvet-2026-09-17/`,
+   mode 700 (`scripts/`, `lab/`, `probe/`, `data/`).
+- Containers,
+   every one started by `scripts/run-box.ts` with
+   `podman run --rm --init --memory=2g --cpus=2 --pids-limit=512 --ulimit nofile=4096:4096 --network=none`:
+  - `docker.io/library/rust:slim`,
+     digest `sha256:a2de23e559fd8afd260d22beb00f3987073ea0dcc2ba2646cccdaeda6a62a095`
+     (Debian 13.6, image `cargo 1.98.1`).
+  - `localhost/hashvet-rusttest:1`,
+     digest `sha256:d06f70a8120a32de15a5e08634d84c7190a6e770a0895d6873b04cbf32f9213d`:
+     `rust:slim` plus Debian `valgrind` 3.24.0,
+     `gcc-aarch64-linux-gnu` 14.2.0,
+     `libc6-dev-arm64-cross`,
+     and `git`
+     (`containers/rusttest/Containerfile`).
+  - `localhost/hashvet-rusttest:2`,
+     digest `sha256:efe5b287e1875e44129878945b0a2cbc630bec17eec0b9b063fbf5e37822c3bf`:
+     `rusttest:1` plus Debian `g++`,
+     for libFuzzer (`containers/rusttest2/Containerfile`).
+  - `localhost/hashvet-qemu:44`,
+     digest `sha256:34174d1c6644bb4287eaeaf57f635a6dad37cdbbe3dc585a2ad5b7e0d3f4baaa`:
+     Fedora 44 with `qemu-user-static` 10.2.2 for x86_64 CPU models and aarch64.
+- Toolchains,
+   mounted read-only at `/toolchain`:
+   `nightly-2026-09-12` (`rustc 1.100.0-nightly (0fc141305 2026-09-11)`) for the lab, the probe, and aarch64 suites;
+   `nightly-2026-09-16` (`215a8af4b`) with its Miri sysroot for Miri suites.
+- Mounts:
+   the scratch root read-write at `/w`,
+   the Cargo registry read-only,
+   one finalist clone at `/src` for upstream suites,
+   no home directory,
+   no credentials,
+   no repository mount.
+- Logs:
+   `data/logs/<id>.log`,
+   with one JSON line per execution in `data/logs/executions.jsonl`
+   (command, image digest, bounds, exit status, elapsed seconds).
+
+### Identity, provenance, and license
+
+Each crates.io archive was downloaded,
+ its SHA-256 compared with the registry checksum in the lab lockfile,
+ its `.cargo_vcs_info.json` commit fetched in the clone,
+ and every archived file compared byte for byte with that commit
+ (`scripts/provenance.ts`, output `data/provenance.txt`).
+
+- `xxhash-rust` 0.8.18:
+   archive SHA-256 `aee1b19627c7c60102ab80d3a9cbe18de90bfe03bfa6c3715447681f0e8c8af6`;
+   commit `f93abc7ce036` (2026-07-21);
+   clone `~/temp/agent/xxhash-rust-2026-09-17` from `DoumanAsh/xxhash-rust`;
+   18 files identical,
+   none different.
+  License `BSL-1.0` (`LICENSE:1`, "Boost Software License - Version 1.0"):
+   pass for HC6.
+- `twox-hash` 2.1.4:
+   `5283634e518fe9e82c7b20520bb4bc209009fd16c82077c802f8111ecbb0117a`;
+   commit `6f866bffe739` (2026-08-27);
+   clone `~/temp/agent/twox-hash-2026-09-17` from `shepmaster/twox-hash`;
+   22 files identical.
+  License `MIT` (`LICENSE.txt`):
+   pass.
+- `hashcrew` 0.3.0:
+   `f73782af6df9e45939f4e6206b646f3cbab68c2cc5c0c375dab045800cafb018`;
+   commit `ff8860c72e3a` (2026-09-15), path `hashcrew/`;
+   clone `~/temp/agent/hashcrew-2026-09-17` from `fast/hashcrew`;
+   20 files identical;
+   `LICENSE` and `README.md` come from the workspace root
+   (`hashcrew/LICENSE` is a symlink, mode 120000)
+   and are identical to the root files at that commit.
+  License `Apache-2.0`,
+   with incorporated xxHash code under BSD-2-Clause and `twox-hash` code under MIT
+   (`src/xxhash/kernel/x86.rs:14-19`;
+   notices in `LICENSE:233-237` and `:286-288`):
+   pass;
+   a binary distribution carries all three notices.
+- `highway` 1.3.0:
+   `9040319a6910b901d5d49cbada4a99db52836a1b63228a05f7e2b7f8feef89b1`;
+   commit `680018dd5219` (2025-01-11);
+   clone `~/temp/agent/highway-rs-2026-09-17` from `nickbabcock/highway-rs`,
+   checked out at that commit because later commits are unreleased;
+   19 files identical.
+  License `MIT` (`Cargo.toml`);
+   the archive ships no license text (`Cargo.toml.orig:11`, `include = ["src/**/*.rs", "benches"]`),
+   so the notice must be taken from the repository:
+   pass.
+- `autobahn-hash` 0.1.0:
+   commit `f35d18565b99` (2023-06-05);
+   11 files identical.
+
+No finalist has a build script,
+ C or assembly source,
+ generated code,
+ or a runtime dependency in the feature sets meow would use
+ (`probe/Cargo.lock` lists no `dependencies` for any of the four).
+None publishes from a release workflow,
+ so provenance rests on the commit mapping and byte comparison,
+ which pass for HC7.
+
+### Hard-gate outcomes for the finalists
+
+#### HC1 hardware acceleration
+
+Every finalist passes under R2 and none under R1.
+
+- `xxhash-rust`:
+   compile-time selection among AVX-512, AVX2, SSE2, NEON, and scalar kernels
+   (`src/xxh3.rs:16-28`, `:43-55`);
+   a default x86_64 build uses SSE2,
+   and AVX2 or AVX-512 needs `-Ctarget-cpu` or `-Ctarget-feature`.
+  Upstream issue #48 "Dynamic CPU feature detection" is open since 2024-09-21.
+- `twox-hash`:
+   run-time AVX2 then SSE2 detection on x86_64 and NEON detection on aarch64
+   with the `std` feature (`src/xxhash3/large.rs:103-120`).
+- `hashcrew`:
+   compile-time selection when the target enables AVX2 or NEON,
+   otherwise run-time detection cached in a `OnceLock`
+   (`src/xxhash/kernel/mod.rs:57-115`).
+- `highway`:
+   compile-time AVX2 or SSE4.1 when enabled,
+   otherwise run-time detection with the `std` feature,
+   then the portable path on x86_64 (`src/builder.rs:147-183`);
+   NEON unconditionally on aarch64 (`src/builder.rs:185-197`).
+
+#### HC2 width
+
+Pass for all four:
+ `xxh3_128` returns `u128` (`xxhash-rust` `src/xxh3.rs:1620`, `hashcrew` `src/xxhash/xxh3.rs:190`),
+ `XxHash3_128::oneshot` returns `u128` (`twox-hash` `src/xxhash3_128.rs:35`),
+ and `hash128` returns `[u64; 2]` (`highway` `src/traits.rs:12`),
+ which meow must serialize in a fixed word and byte order.
+
+#### HC3 stability
+
+- XXH3-128 (three finalists):
+   'Starting from v0.8.0, it's also labelled "stable",
+   meaning that any future version will also generate the same hash value'
+   (`xxhash.h:1094-1095` at xxHash 0.8.3, saved as `data/xxhash.h`).
+  `twox-hash` README "Portability":
+   "The output does not depend on the platform ...
+   The Rust implementation is verified against the reference C implementation"
+   (`README.md:104-110`).
+  `hashcrew` README "Portability":
+   "Raw and streaming digests are stable across platforms for identical byte streams" (`README.md:194`).
+  `xxhash-rust` states no separate promise;
+   its tests compare with the C library.
+- HighwayHash-128:
+   "we have declared all (64/128/256 bit) variants of HighwayHash frozen, i.e. unchanging forever"
+   (`google/highwayhash` README "Versioning and stability", saved as `data/highwayhash-readme.md:146-147`);
+   `highway` README:
+   "generate consistent 64, 128, and 256bit hashes across all hardware" (`README.md:11`).
+- Local equality:
+   the probe `meowprobe corpus` (`probe/src/main.rs:53-73`) hashes 1,106 inputs
+   (every length 0 to 1,100, plus 4,095, 4,096, 4,097, 65,536, and 1,048,583 bytes)
+   one-shot and streamed in random 1 to 777 byte chunks,
+   and prints a digest of all one-shot outputs.
+  XXH3-128 printed `ac8e3fece2937b39a5de424207c9cedf` for all three crates,
+   and HighwayHash-128 printed `460c0924896da339c9e57da0ebf75500`,
+   in all of these runs,
+   each with `stream_mismatches=0`
+   (`scripts/probe-matrix.ts`, logs `probe-*.log`):
+  - x86_64 glibc native;
+  - x86_64 musl native at the baseline, `x86-64-v3`, and `x86-64-v4` builds;
+  - QEMU CPU models `qemu64` (SSE2 only), `Nehalem` (SSE4.2, no AVX2), and `Haswell` (AVX2);
+  - aarch64 musl under QEMU with CPU models `max` and `cortex-a53`.
+  The empty-input value `99aa06d3014798d86001c324468d497f` equals the upstream vector
+   asserted in `hashcrew` `tests-integration/tests/xxhash.rs:77`.
+
+Pass for all four.
+
+#### HC4 build
+
+The probe crate depends on all four finalists
+ and was built with `nightly-2026-09-12` in `rust:slim`
+ by `cargo build --release --offline --locked --jobs 4 --target <triple>`:
+
+- `x86_64-unknown-linux-gnu`:
+   exit 0 (`hc4-x86_64-gnu`).
+- `x86_64-unknown-linux-musl`:
+   exit 0,
+   also with `RUSTFLAGS=-Ctarget-cpu=x86-64-v3` and `x86-64-v4`.
+- `aarch64-unknown-linux-musl` linked by `rust-lld`
+   (`CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER` set to
+   `/toolchain/lib/rustlib/x86_64-unknown-linux-gnu/bin/rust-lld`):
+   exit 0,
+   and the static binary ran under QEMU.
+- `aarch64-unknown-linux-gnu`:
+   the four crates compiled to rlibs with rustc alone (exit 0);
+   the upstream aarch64 suites linked glibc test binaries with `aarch64-linux-gnu-gcc` as linker only.
+
+Deviation:
+ the repository's custom aarch64 musl static-pie target with `-Z build-std` was not built,
+ because its sysroot objects are not present in this environment.
+Evidence it cannot change HC4:
+ none of the four has a build script,
+ C,
+ assembly,
+ or `#[link]`,
+ so the custom target differs only in link mode and relocation model,
+ which Rust source without link directives does not observe.
+
+Pass for all four.
+
+`autobahn-hash` 0.1.0 fails HC4:
+ `cargo build --release --offline --locked --jobs 4 --bins --features autobahn` in the lab exited 101 with
+ `error[E0599]: no method named cast found for struct Simd<T, N>` at `autobahn-hash-0.1.0/src/lib.rs:87`
+ (`build-baseline-autobahn.log`);
+ rustc's help says "trait `SimdUint` which provides `cast` is implemented but not in scope",
+ so the crate no longer compiles against current nightly `portable_simd`.
+It exits before finalist validation,
+ and its source has not changed since 2023-06-06.
+
+#### HC5 CPU capabilities
+
+Measured:
+ the `x86-64-v3` musl probe run under QEMU `qemu64` died with signal 4
+ ("uncaught target signal 4 (Illegal instruction)", exit 132),
+ while the baseline build ran on the same model.
+So any build that raises `-Ctarget-cpu` needs a startup feature check in meow before any hashing,
+ whichever finalist it uses.
+
+- `xxhash-rust`:
+   at the default target features,
+   SSE2 on x86_64 and NEON on aarch64 are part of the target baseline,
+   so no CPU can lack them;
+   AVX2 speed requires a raised build and therefore meow's own startup check and diagnostic.
+  Pass.
+- `twox-hash`,
+   `hashcrew`,
+   `highway`:
+   a default build selects AVX2 at run time and falls back without crashing,
+   as the `qemu64` and `Nehalem` runs show.
+  Pass.
+
+#### HC6, HC7, HC9
+
+Pass for all four ("Identity, provenance, and license").
+None is `gxhash` or derived from it.
+
+#### HC8 one-byte collision gate
+
+Harness:
+ `lab/src/bin/onebyte.rs`,
+ every single-byte variant of a 4096-byte base
+ (1,044,480 keys),
+ sorted and counted for full 128-bit, low 64-bit, and high 64-bit equality,
+ seeds 0, 1, and 987654321,
+ zero base and xorshift random base.
+Command:
+ `BASE=<zero|random> SEEDS=0,1,987654321 /w/target-gxref/release/onebyte 4096`
+ in `rust:slim`
+ (build `RUSTFLAGS=-Ctarget-feature=+aes`, feature `gxref`).
+
+Positive control first:
+ `gxhash` 3.5.0 `gxhash128` produced 2 full-width collisions on the zero base
+ (positions 755 and 1785, 363 and 2923)
+ and 1 on the random base (positions 354 and 877)
+ under every seed,
+ matching `gxhash-owned.md`, "Quality and collision resistance".
+
+Results,
+ exit 0,
+ `onebyte-zero-4096.log` and `onebyte-random-4096.log`:
+ 0 full-width,
+ 0 low-half,
+ and 0 high-half collisions for
+ `xxhash-rust`,
+ `twox-hash`,
+ `hashcrew`,
+ and `highway`
+ under all six base and seed combinations,
+ and likewise for the controls BLAKE3, SHA-256, AES-CMAC, and the scalar MuseAir.
+
+Pass for all four.
+The three XXH3 crates produce identical outputs,
+ so their HC8 result is one algorithm result reached three times.
+
+#### HC10 streaming
+
+Harness:
+ `lab/src/bin/streamcheck.rs` compares each streaming API with its one-shot function
+ over 612 inputs
+ (every length 0 to 600, and lengths around 1 KiB, 4 KiB, 64 KiB, 1 MiB, and 5 MiB)
+ with 14 chunk plans
+ (fixed 1, 7, 16, 32, 63, 64, 65, 240, 241, 256, 1,024, 4,096, and 65,536 bytes, and random sizes;
+ inputs over 100 KiB use the first four plans):
+ 8,548 comparisons per function.
+
+Positive control first:
+ `STREAMCHECK_CONTROL=drop-last` withholds the final byte
+ and reported 68,272 mismatches,
+ exactly 8 functions × (8,548 − 14 empty-input comparisons),
+ exit 1 (`streamcheck-control-baseline.log`).
+
+Results:
+ 0 mismatches for all four finalists and the controls
+ in both the baseline and `x86-64-v3` builds
+ (`streamcheck2-baseline.log`, `streamcheck2-v3.log`).
+The consumer probe repeats the check on every platform in HC3.
+
+Bounded memory,
+ from source:
+ each streaming state is a fixed-size value
+ (`xxhash-rust` `Xxh3`, `src/xxh3.rs:1117-1125`;
+ `hashcrew` `StreamState`, `src/xxhash/xxh3.rs:701-709`;
+ `twox-hash` a fixed-size buffer plus the 192-byte default secret copied to the heap once,
+ `src/xxhash3/streaming.rs:386-391`;
+ `highway` a fixed-size union of state words, `src/builder.rs:144-198`),
+ and peak resident memory over multi-GB files is reported in "Benchmarks".
+
+Pass for all four.
+
+### Hard-gate confirmed
+
+`xxhash-rust` 0.8.18,
+ `twox-hash` 2.1.4,
+ `hashcrew` 0.3.0,
+ and `highway` 1.3.0
+ are hard-gate confirmed and become finalists.
+
+## Finalist validation
+
+Every finalist received the same validation:
+ its upstream CI-equivalent jobs and relevant non-default suites,
+ aarch64 suites under QEMU,
+ the local reference, collision, streaming, and cross-dispatch checks,
+ the consumer probe on every reachable target,
+ benchmarks on the same workloads,
+ and the same source, auditability, and maintenance audits.
+
+### Execution manifest
+
+Shared by every execution in this audit:
+
+- Pinned inputs:
+   clone commits and archive checksums in "Identity, provenance, and license";
+   lockfiles generated on 2026-09-17 with `cargo +nightly-2026-09-12 generate-lockfile`
+   where upstream ships none (`xxhash-rust`, `twox-hash`, `highway-rs`, `highway-rs/fuzz`),
+   upstream `Cargo.lock` for `hashcrew`.
+- Dependency-fetch phase:
+   `cargo +nightly-2026-09-12 fetch` on the host,
+   the one network phase,
+   run before any build;
+   it downloads crate archives into `~/.cargo/registry` and runs nothing
+   (`scripts/fetch-upstream.ts`).
+  Deviation:
+   it ran on the host rather than in a container,
+   because only the host's nightly Cargo binary is allowed to reach `index.crates.io`;
+   Cargo `fetch` executes no package code.
+- Container images:
+   "Shared evidence fields".
+  Deviation:
+   `rusttest:1` and `rusttest:2` were built with network access to Debian mirrors
+   (`podman build --memory=2g --cpu-quota=200000`),
+   installing only the Debian packages named there.
+- Bounds:
+   2 GiB memory,
+   2 CPUs,
+   512 processes,
+   4,096 file descriptors,
+   no network,
+   container removed on exit.
+  Wall-clock ceiling:
+   none beyond the container;
+   libFuzzer runs carry `-max_total_time`.
+- Mounts and policy:
+   no credentials,
+   no home directory,
+   no repository mount,
+   scratch root read-write,
+   Cargo registry and toolchains read-only.
+  Deviation:
+   the scratch root is read-write because build outputs,
+   Cargo's extracted sources (`/w/cargo-home`),
+   and logs live there;
+   the clone mounted at `/src` is also read-write,
+   because Cargo may rewrite the generated `Cargo.lock`;
+   `git -C <clone> status --short` after the suites prints nothing for any of the four clones,
+   and the generated lockfiles are ignored by each upstream `.gitignore`.
+- Expected reads:
+   the clone,
+   the registry,
+   the toolchain.
+  Expected writes:
+   `/w/targets/<repo>-<toolchain>`,
+   `/w/cargo-home`,
+   `/tmp` inside the container.
+  Expected subprocesses:
+   `cargo`, `rustc`, build scripts, test binaries, `valgrind`, `qemu-aarch64-static`, `cc`/`c++` from build scripts.
+  Network endpoints:
+   none.
+- Success:
+   exit 0 with every `test result: ok`.
+  Failure:
+   any nonzero exit,
+   failed test,
+   or valgrind error,
+   which stops and triggers diagnosis.
+  Cleanup:
+   `--rm`;
+   scratch outputs stay for audit.
+- Stop condition for undeclared behavior:
+   none observed;
+   no container attempted network access (`--network=none` would have failed it),
+   and every build script that ran is on the lists that follow.
+
+Build scripts and proc macros reachable from each upstream workspace with all features
+ (`scripts/build-surface.ts`, `data/build-surface.txt`),
+ and the ones that compiled native code in the suites (`targets/*/build/`):
+
+- `xxhash-rust`:
+   `getrandom`, `libc` (rustc cfg probes)
+   and `xxhash-c-sys` 0.8.7,
+   which compiles vendored xxHash 0.8.3 `xxhash.c` with `cc` for the reference comparison.
+- `twox-hash`:
+   30 build scripts or proc macros,
+   mostly rustc cfg probes of `serde`, `proc-macro2`, `crossbeam`, `rayon-core`, `zerocopy`, and `rustix`;
+   native code from the workspace member `xx_hash-sys`,
+   which compiles the xxHash submodule `xxhash.c` as scalar, SSE2, AVX2, and on aarch64 NEON variants
+   (`xx_hash-sys/build.rs:13-40`),
+   and from `alloca` 0.4.0 (`build.rs:2-12`, one small C file for a benchmark dependency).
+- `hashcrew`:
+   17,
+   mostly cfg probes;
+   `crc32c` and `crc32fast` build scripts only query `rustc --version`;
+   no native code in the suites run.
+- `highway-rs`:
+   27,
+   cfg probes and `no-panic`,
+   whose build script only queries `rustc --version`;
+   no native code in the suites run.
+- `highway-rs/fuzz`:
+   `libfuzzer-sys` 0.4.13 compiles bundled libFuzzer C++ (`build.rs`, `CUSTOM_LIBFUZZER_PATH` unset),
+   and the fuzz crate compiles the `google/highwayhash` submodule `c/highwayhash.c` at `faca2cb`.
+- Local reference check `refcheck/`:
+   `xxhash-c-sys` 0.8.7 and `c/highwayhash.c` copied from the same submodule commit.
+
+The wasm, Windows, and `winapi` build scripts in these graphs are cfg-gated to other targets
+ and did not run.
+
+### Upstream CI inventory and suites run
+
+Suites ran through `scripts/upstream-suites.ts` in `localhost/hashvet-rusttest:1`,
+ with the clone at `/src`,
+ image `cargo 1.98.1` unless a toolchain is named,
+ and aarch64 test binaries linked by `aarch64-linux-gnu-gcc` and run by `qemu-aarch64-static -L /usr/aarch64-linux-gnu`.
+Totals come from every `test result` line in each log (`scripts/suite-totals.ts`, `data/suite-totals.txt`).
+Every suite exited 0 with no failed test.
+
+#### `xxhash-rust` (`.github/workflows/rust.yml`)
+
+Upstream jobs:
+ `min-rust-check`,
+ `full-test` (check, test, three valgrind variants),
+ `wasm-platform-test`,
+ `cross-platform-test` (arm, i586, powerpc, aarch64 musl).
+
+- xr1 `cargo test --offline --features xxh32,const_xxh32,xxh64,const_xxh64,xxh3,const_xxh3`:
+   12 passed.
+- xr2 the same with `--release` and `CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER`
+   `valgrind --leak-check=full --error-exitcode=1 --suppressions=valgrind.supp`:
+   12 passed,
+   5 valgrind runs with 0 errors.
+- xr3 as xr2 with `RUSTFLAGS=-Ctarget-feature=+avx2`:
+   12 passed,
+   0 valgrind errors.
+- xr4 as xr2 with `RUSTFLAGS=-Ctarget-feature=-sse2`:
+   12 passed,
+   0 valgrind errors;
+   rustc warned "target feature `sse2` must be enabled to ensure that the ABI of the current target can be
+   implemented correctly";
+   the flag is upstream's way to reach the scalar kernel (`src/xxh3.rs:28`),
+   and this audit did not confirm which kernel that build selected.
+- xr5 `cargo test --offline --release --target aarch64-unknown-linux-gnu` with `nightly-2026-09-12`,
+   NEON kernel under QEMU:
+   12 passed.
+
+The XXH3 test compares one-shot and single-update streaming `xxh3_128` and `xxh3_128_with_seed`
+ with the C library for random inputs of every length 0 to 4,095
+ (`tests/assert_correctness.rs:189-260`).
+
+#### `twox-hash` (`.github/workflows/ci.yml`)
+
+Upstream jobs:
+ `library` (unit and property tests on stable, beta, nightly, MSRV, macOS, Windows),
+ `miri` (x86_64, i686, s390x),
+ `lints`,
+ `no-std`,
+ `features`,
+ `minimal-versions`.
+
+- tw1 `cargo test --offline --all-features`:
+   67 passed,
+   1 ignored.
+- tw2 `cargo test --offline -p comparison --all-features`:
+   34 passed;
+   proptests compare `XxHash3_128` one-shot, seeded, custom-secret, and chunked streaming output
+   with the C library built as scalar, SSE2, AVX2, and native variants
+   (`xx_hash-sys/build.rs:18-58`; `comparison/src/lib.rs:366-545`,
+   data up to 32 KiB, chunk vectors up to 100 × 100 bytes).
+- tw3 `cargo miri test --offline --all-features` with `nightly-2026-09-16`
+   and `MIRIFLAGS=--cfg _internal_xxhash3_force_scalar`:
+   67 passed,
+   1 ignored.
+- tw4 `cargo test --offline --all-features --target aarch64-unknown-linux-gnu` under QEMU:
+   67 passed,
+   1 ignored.
+- tw5 `cargo test --offline -p comparison --all-features --target aarch64-unknown-linux-gnu` under QEMU,
+   against the C scalar and NEON builds:
+   34 passed.
+
+The ignored test is `xxhash32::test::length_overflows_32bit` in tw1, tw3, and tw4,
+ outside XXH3.
+
+#### `hashcrew` (`.github/workflows/ci.yml`, `xtask/src/main.rs`)
+
+Upstream jobs:
+ `check` (`cargo x lint`, `cargo x check`),
+ `test` (`cargo x build`, `cargo x test` on Linux, macOS, Windows, stable and 1.89.0),
+ `miri` (`cargo x miri`),
+ `target` (check-only builds for x86_64 AVX2, aarch64 NEON, wasm32, thumbv7em).
+`cargo x test` runs three commands (`xtask/src/main.rs:201-213`),
+ run here as hc1 to hc3.
+
+- hc1 `cargo test --offline --workspace --all-features`:
+   73 passed.
+- hc2 `cargo test --offline --package hashcrew --no-default-features`
+   `--features cityhash,crc,fnv,md5,murmur,xxhash`:
+   30 passed.
+- hc3 `cargo test --offline --package tests-integration --release`:
+   43 passed;
+   XXH3-128 one-shot and seeded outputs compared with `xxhash-rust` as the reference
+   (`tests-integration/tests/xxhash.rs:38`, `:81-107`, `:263-311`),
+   for lengths around every stripe and block boundary to 16,384 bytes and seeds 0, 1, `0x0123456789abcdef`, `u64::MAX`,
+   streaming compared with one-shot for many chunk sizes, random partitions, and every two-way partition
+   (`:314-450`),
+   plus the official empty-input vectors;
+   no direct C comparison.
+- hc4 `cargo miri test --offline --package hashcrew --lib --no-default-features --release --features ...`
+   with `MIRIFLAGS=-Zmiri-strict-provenance` on `nightly-2026-09-16` (`cargo x miri`):
+   19 passed.
+- hc5 hc3 with `--target aarch64-unknown-linux-gnu` under QEMU:
+   43 passed.
+
+#### `highway-rs` (`.github/workflows/main.yml`)
+
+Upstream jobs:
+ `test` (build, docs, tests, no-std tests, release tests, `no_panic` example,
+ bench compile, Miri, fuzz compile;
+ on pinned 1.59, stable, 32-bit, big-endian, beta, nightly, macOS, Windows, aarch64 through `cross`),
+ `wasm`,
+ `instructions` (four `-sse4.1`/`+sse4.1` × `-avx2`/`+avx2` builds, tests and no-std tests).
+
+- hw1 `cargo test --offline`:
+   47 passed.
+- hw2 `cargo test --offline --no-default-features`:
+   45 passed.
+- hw3 `cargo test --offline --release`:
+   47 passed.
+- hw4 `cargo build --offline --release --example no_panic`:
+   exit 0;
+   `no_panic` makes the release build fail to link if `append`, `checkpoint`, or `finalize64` can panic
+   (`examples/no_panic.rs:6-12`);
+   `finalize128` is not covered.
+- hw5 to hw8 `cargo test --offline` with `RUSTFLAGS=-C target-feature=` each of
+   `-sse4.1,-avx2`, `-sse4.1,+avx2`, `+sse4.1,+avx2`, `+sse4.1,-avx2`:
+   47 passed each.
+- hw9 `cargo miri test --offline` on `nightly-2026-09-16`:
+   40 passed,
+   7 ignored by upstream `cfg_attr(miri, ignore)`
+   (`src/x86/v2x64u.rs` 6, `src/x86/sse.rs` 1).
+- hw10 `cargo test --offline --release --target aarch64-unknown-linux-gnu` under QEMU:
+   36 passed
+   (x86-only tests are compiled out).
+
+`tests/hash.rs:451-456` asserts reference 64, 128, and 256-bit vectors for input lengths 0 to 63;
+ longer inputs are covered by cross-implementation equality (`tests/properties.rs`, quickcheck)
+ and by the fuzz target,
+ which compares only the 64-bit output with C.
+
+### Omitted upstream jobs
+
+- Toolchain matrix entries (`xxhash-rust` MSRV 1.64 check,
+   `twox-hash` MSRV 1.81 and minimal versions,
+   `hashcrew` 1.89.0,
+   `highway-rs` pinned 1.59, beta, nightly builds):
+   purpose,
+   older or other compilers.
+  Cannot affect the consumed surface:
+   meow builds with the repository's floating nightly,
+   and the suites ran on stable 1.98.1 and nightly 2026-09-12 and 2026-09-16.
+- Non-target platforms
+   (32-bit x86, arm, powerpc, s390x, big-endian, thumb, wasm, macOS, Windows):
+   not release-blocking targets (user, 2026-09-16);
+   their code paths are cfg-gated away from x86_64 and aarch64 Linux builds.
+- Lints and docs
+   (`twox-hash` `lints`, `hashcrew` `cargo x lint` with `hawkeye`, `taplo`, `typos`, `rustfmt`, `clippy`,
+   `highway-rs` `cargo doc`):
+   style and documentation,
+   no runtime behavior.
+- Compile-only matrices
+   (`twox-hash` `features` powerset `cargo check`,
+   `hashcrew` `cargo x check` and `target`,
+   `highway-rs` bench `--no-run`):
+   the feature sets meow would use were compiled and run in the lab, probe, and suites,
+   and `hashcrew`'s x86_64 AVX2 and aarch64 NEON checks are subsumed by hc3 and hc5, which run tests.
+- `twox-hash` `no-std` on `thumbv6m-none-eabi` and `hashcrew` bare metal:
+   not targets;
+   hc2 and hw2 ran the no-std tests on x86_64.
+- `xxhash-rust` `cross-platform-test` for `aarch64-unknown-linux-musl`:
+   replaced by xr5 on aarch64 glibc under QEMU plus the probe's aarch64 musl run;
+   the crate's kernels depend on `target_feature`, not on the C library.
+
+### Source quality and human auditability
+
+Measured with `scripts/audit-size.ts` (`data/audit-size.txt`)
+ over each crates.io archive:
+ non-blank, non-comment Rust lines outside `#[cfg(test)]` modules,
+ and `unsafe` occurrences,
+ for the whole `src/` and for the modules meow's calls reach.
+
+- `xxhash-rust` 0.8.18:
+   used path 4 files,
+   1,413 code lines,
+   29 `unsafe`
+   (whole crate 11 files, 2,327 lines, 31 `unsafe`);
+   largest file `src/xxh3.rs` at 1,649 lines.
+  Lint policy:
+   `#![warn(missing_docs)]` only (`src/lib.rs:79`);
+   no `// SAFETY` comments.
+  Open issue #29 (2023-08-24, 15 comments):
+   private functions dereference raw pointers without being `unsafe fn`;
+   the maintainer answered with coverage, valgrind, and Miri runs, and the issue stays open.
+  Control flow:
+   compile-time `cfg` selection,
+   no run-time dispatch.
+- `twox-hash` 2.1.4:
+   used path 10 files,
+   1,662 lines,
+   66 `unsafe`
+   (whole crate 13 files, 2,621 lines, 72);
+   largest used file `src/xxhash3.rs` at 425 lines,
+   one file per SIMD kernel under `src/xxhash3/large/`.
+  Lint policy:
+   `#![deny(rust_2018_idioms, missing_docs, unnameable_types)]` (`src/lib.rs:2-4`),
+   denied Clippy lints in `Cargo.toml` `[lints.clippy]`,
+   `check-cfg` for the four force-kernel cfgs;
+   52 `// Safety` comments.
+- `hashcrew` 0.3.0:
+   used path 8 files,
+   1,440 lines,
+   32 `unsafe`
+   (whole crate 19 files, 4,286 lines, 72, because it also ships CityHash, CRC, FNV, MD5, and Murmur families
+   behind opt-in features);
+   largest used file `src/xxhash/xxh3.rs` at 1,429 lines.
+  Lint policy,
+   workspace `Cargo.toml`:
+   `unsafe_op_in_unsafe_fn = "forbid"`,
+   `clippy::undocumented_unsafe_blocks = "deny"`,
+   `clippy::missing_safety_doc = "deny"`,
+   `missing_debug_implementations = "deny"`;
+   45 `// SAFETY` comments;
+   an explicit `Backend` enum with `is_available` checks (`src/xxhash/kernel/mod.rs:50-95`).
+- `highway` 1.3.0:
+   16 files,
+   2,646 lines,
+   196 `unsafe`
+   (the wasm module is compiled out on Linux but counted);
+   largest file `src/builder.rs` at 412 lines.
+  Lint policy:
+   `#![deny(unsafe_code)]` with `#[allow(unsafe_code)]` on six modules (`src/lib.rs:163-164`);
+   no `// SAFETY` comments;
+   explicit per-instruction-set types (`PortableHash`, `SseHash`, `AvxHash`, `NeonHash`)
+   whose x86 SIMD constructors return `Option` (`src/x86/avx.rs:94`).
+
+Shared:
+ no runtime dependencies,
+ no same-author dependencies,
+ no filesystem, network, process, or credential access,
+ no generated code,
+ no event bus or plugin boundary.
+The only high-trust boundary is `unsafe` SIMD code on untrusted input lengths,
+ which valgrind (`xxhash-rust`), Miri on the scalar or portable paths (`twox-hash`, `hashcrew`, `highway`),
+ and the local checks exercise.
+None has error paths on the hashing calls meow would use;
+ `hashcrew` and `twox-hash` return errors only for undersized custom secrets.
+
+### Maintenance audit
+
+Sample rule:
+ issues and pull requests created or updated since 2025-09-17,
+ all when at most 20,
+ otherwise the 10 most recently updated
+ (`scripts/gh-maint.ts`, `data/maint/*.json`,
+ plus `gh pr list --json mergedBy,reviews` and `gh issue list --state open` on 2026-09-17).
+Releases from the crates.io API (`scripts/release-history.ts`, `data/release-history.txt`).
+
+- `xxhash-rust` (`DoumanAsh/xxhash-rust`):
+  - Issues in window, all 4:
+     #53 and #54 (`Xxh3Builder` ignored a seed-derived or custom secret on inputs over 240 bytes,
+     reported 2026-07-14 and 2026-07-15),
+     first maintainer responses after about 3 hours and 13 minutes,
+     4 and 2 maintainer comments,
+     closed by the maintainer on 2026-07-15 and 2026-07-21,
+     the publish dates of 0.8.17 and 0.8.18;
+     #52 (private security contact), answered in 26 minutes and closed;
+     #48 (run-time CPU detection), open since 2024-09-21 with 1 maintainer comment.
+  - Pull requests in window, all 3:
+     external #56, #55, #51,
+     merged by the maintainer after 1, 6, and 2 days,
+     1 recorded review;
+     the maintainer pushes most work directly (122 of 136 contributor commits).
+     An older external PR, #47, waited from 2024-09-21 to 2025-09-06.
+  - Releases in window:
+     0.8.16 (2026-07-01), 0.8.17 (2026-07-15), 0.8.18 (2026-07-21);
+     no git tags;
+     0.8.18's commit `f93abc7` is the repository head.
+  - Concentration:
+     one maintainer, 90% of commits.
+  - Class:
+     responsive single maintainer with fast bug turnaround;
+     #53 shows that releases before 0.8.17 returned wrong XXH3 output from a seeded `Xxh3Builder`
+     on inputs over 240 bytes,
+     a path meow would not call.
+- `twox-hash` (`shepmaster/twox-hash`):
+  - Issues in window, all 5:
+     #123 (hashes differ across 32 and 64-bit through the `Hash` trait),
+     answered in about 7 hours and closed by documentation PR #125;
+     #120 (`XxHash32` debug overflow panic), answered in about 3.5 hours,
+     fixed by #121 and released in 2.1.3;
+     #81 (reproducibility question) closed by #125;
+     #115 and #114 open feature or showcase threads with maintainer comments.
+  - 10 most recently updated pull requests:
+     4 maintainer-authored (#121, #122, #125, #126), self-merged within 2 days, no reviews;
+     external #116 merged after about 5 months with 4 maintainer comments;
+     external #124 closed unmerged after 2 maintainer comments;
+     external #127 open 10 days without response;
+     stale external #100 and #99 from 2024 closed unmerged on 2026-09-07;
+     collaborator draft #52 from 2020 closed on 2026-08-27.
+  - Releases in window:
+     2.1.3 (2026-07-19), 2.1.4 (2026-08-27);
+     tag `v2.1.4` points at the release commit,
+     with no commits after it.
+  - Older open bugs #92 and #79 concern the 1.x `xxh3` module,
+     which 2.0.0 replaced ("a complete rewrite of the crate", `CHANGELOG.md:69`).
+  - Concentration:
+     one maintainer, 400 of 428 commits.
+  - Class:
+     active releases,
+     responsive on bugs,
+     slower on external feature pull requests.
+- `hashcrew` (`fast/hashcrew`):
+  - Issues in window, all 1:
+     #17, filed and closed by the main author without comment.
+  - 10 most recently updated of 27 pull requests (#19 to #28):
+     all authored by `tisonkun`;
+     9 merged by the author after 7 minutes to 6 days,
+     #25 closed unmerged;
+     no human reviews
+     (one automated Copilot review on #22).
+  - Releases in window:
+     0.1.0 to 0.3.0 between 2026-09-02 and 2026-09-15,
+     tags signed (`v0.3.0` tag and commit `ff8860c` verified by GitHub);
+     `RELEASE.md` documents the process.
+  - Concentration:
+     2 contributors, 24 and 10 commits;
+     no external issue or pull request yet.
+  - Class:
+     low-signal tracker activity in a project two weeks old,
+     evaluated through source, tests, release, and signing evidence.
+- `highway` (`nickbabcock/highway-rs`):
+  - Issues in window, all 1:
+     #103 (naming ambiguity), answered in about 4 hours and closed.
+  - Pull requests in window, all 9:
+     4 maintainer-authored and self-merged without review (#101, #104, #105, #106);
+     maintainer draft #102 (loop unrolling) open since 2026-03-23;
+     3 Dependabot updates open since 2026-07-23;
+     Dependabot #86 from 2024 closed by the maintainer.
+  - Releases:
+     none since 1.3.0 on 2025-01-11;
+     16 commits on the default branch after tag `v1.3.0`
+     (`gh api repos/nickbabcock/highway-rs/compare/v1.3.0...HEAD`),
+     including wasm64 support,
+     so maintenance merges have not reached a release in 20 months.
+  - Concentration:
+     one maintainer, 348 of 362 commits.
+  - Class:
+     maintained,
+     slow release cadence;
+     the frozen algorithm reduces the need for releases.
+
+None of the four has an open security report or abandonment statement in the sampled trackers.
+
+### Replacement parity overlay
+
+- Incumbent paths consumed:
+   meow is unimplemented,
+   so the planned consumer is one-shot `gxhash128(bytes, seed)` for file contents and key material
+   (design doc, "Cache").
+  The music player's `gxhash64` calls belong to another package and are outside this decision.
+- Incumbent defects:
+   one-byte full-width collisions (reproduced in HC8),
+   `Hasher` output that depends on write chunking (upstream #127),
+   and no stable streaming API for multi-GB outputs.
+- Each finalist against those defects:
+   0 collisions in HC8,
+   streaming equal to one-shot in HC10,
+   and a documented or specified freeze in HC3.
+- Transitive dependencies:
+   `gxhash` 3.5.0 has one,
+   the `rustversion` proc macro (`Cargo.toml` `[dependencies.rustversion]`);
+   no finalist has any in the feature sets meow would use.
+- Native boundary:
+   `gxhash` requires AES and SSE2 or NEON at compile time and stops the build otherwise
+   (`src/gxhash/platform/x86.rs:2`, `src/gxhash/platform/arm.rs:2`, `compile_error!`);
+   `xxhash-rust` is also compile-time;
+   `twox-hash`, `hashcrew`, and `highway` dispatch at run time ("HC5 CPU capabilities").
+- Maintenance:
+   the finalists' samples are in "Maintenance audit";
+   `gxhash`'s trackers are reviewed in the gxhash study,
+   "Upstream issues and pull requests",
+   and were not resampled because HC9 excludes it.
+- Consumer boundary:
+   exercised through `probe/` on every reachable target and through the lab binaries on multi-GB files.
+- Keeping the incumbent:
+   excluded by HC9.
+
+### Native overlay
+
+- Source-to-artifact mapping:
+   byte-identical archive and commit comparison ("Identity, provenance, and license").
+- Compiler and linker flags:
+   the lab and probe used `opt-level = 3`, `lto = "fat"`, `codegen-units = 1`, `panic = "abort"`,
+   with no `RUSTFLAGS` for baseline builds and `-Ctarget-cpu=x86-64-v3` or `x86-64-v4` for raised builds;
+   aarch64 musl linked by `rust-lld`.
+- Imported and exported host functions:
+   none;
+   the crates call only `core::arch` intrinsics and `std::arch` feature detection.
+- Build scripts:
+   none in any finalist.
+- Release workflow and signing:
+   none automated;
+   `hashcrew` signs tags and commits,
+   `highway` tags are unsigned annotated tags,
+   `twox-hash` tags are lightweight,
+   `xxhash-rust` has no tags.
+- Target matrix and reproducible verification:
+   "HC3 stability" and "HC4 build".
