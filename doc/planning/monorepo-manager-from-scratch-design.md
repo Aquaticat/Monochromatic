@@ -6,10 +6,11 @@
    draft design.
   On 2026-09-16 the stack narrowed to one remaining route:
    an all-Rust tool with file-enforcer rewritten in Rust.
+  The user accepted it the same day:
+   [`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md).
   Its declarative configuration design,
    rewrite scope,
-   and binary build remain open,
-   and no decision record exists.
+   and several build details remain open.
 - Session state,
    commits,
    and next action:
@@ -21,7 +22,8 @@
    sections "Requirement checklist" and "Frozen hard constraints".
 - Scope:
    design only;
-   no code is written before a route is chosen.
+   the route is chosen,
+   but implementation has not been requested.
 
 ## User-stated design requirements
 
@@ -82,6 +84,22 @@ Stated by the user on 2026-09-16.
 - `./meow` is meant for repositories other than Monochromatic too
    (user answer,
    2026-09-16).
+
+### Platforms and builds
+
+Stated by the user on 2026-09-16:
+
+- Supported in 0.x:
+   Linux on x86_64 and aarch64
+   ("Sorry we need to support ARM too").
+- Each supported target is built both glibc-linked and as a static musl binary:
+   "build both glibc and static musl.
+   Musl has known performance problems."
+- "Not supporting other archs/OSs doesn't mean to never build paths for them;
+   it only means an issue in these paths don't block publishing."
+  So "Linux only" names the release-blocking tier,
+   not a ban on code paths or CI for other systems.
+- The macOS and Windows runners in `readonly-semantic-bridge.yml` keep using Mise for now.
 
 ### Configuration
 
@@ -1117,8 +1135,15 @@ Open to the user's veto:
    a safe function in that toolchain (`stdarch/crates/core_arch/src/x86/cpuid.rs:107`),
    and reads ECX bit 25 for AES and EDX bit 26 for SSE2,
    the bits std uses (`std_detect/src/detect/os/x86.rs:108`, `:118`).
-  Unexercised on a CPU without AES-NI:
-   QEMU user mode is not installed on the development machine.
+  On aarch64 the same short-circuit applies,
+   because `aes` is declared without the cfg-check opt-out (`std_detect/src/detect/arch/aarch64.rs:123`);
+   the check reads `AT_HWCAP` bit 3,
+   the bit std uses on Linux (`std_detect/src/detect/os/linux/aarch64.rs:147`),
+   through the safe `rustix::param::linux_hwcap` (`src/param/auxv.rs:66` in `rustix` 1.1.4),
+   and `gxhash` on aarch64 also needs `neon`.
+  Unexercised on a CPU without AES:
+   QEMU user mode is not installed on the development machine,
+   and no aarch64 target is installed.
 - Static probe,
    2026-09-16:
    the daemon skeleton with `gxhash128`,
@@ -1209,8 +1234,9 @@ Open to the user's veto:
    ending one task's cgroup can kill a Gradle daemon another task reuses.
 - Undeclared inputs:
    lint-level enforcement leaves stale cache hits possible.
-- The vet's HC5 lists macOS and Windows CI runners,
-   while the user made 0.x Linux only.
+- The vet's HC5 lists macOS and Windows CI runners;
+   the user keeps Mise on those runners for now,
+   and issues on unsupported systems do not block publishing.
 - Rewrite:
    49 core modules,
    the Cargo and JetBrains plugins,
@@ -1256,24 +1282,16 @@ Open to the user's veto:
    plain data,
    or is retired;
    research is running with OpenTofu as the lead precedent.
-- Which CPU architectures 0.x supports:
-   `gxhash` on aarch64 needs `aes` and `neon`,
-   and its debug builds can panic there (issue #111).
-- Single binary:
-   static musl,
-   which built and ran as a skeleton,
-   or glibc-linked.
+- aarch64 debug builds and tests can panic inside `gxhash` (issue #111, fix unreleased):
+   how aarch64 tests run.
+- aarch64 and no-AES verification needs installs this machine lacks:
+   aarch64 Rust targets,
+   a cross linker,
+   and QEMU user mode.
 - Byte-identical output:
    whether generated files must keep today's bytes once the logic is redesigned,
    and how malformed XML is handled.
-- How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
 - Veto open:
-   `gxhash128` for cache keys,
-   file-enforcement work in a re-executed child,
-   the Rust core with TypeScript file-enforcer children staying out,
+   `gxhash128` for cache keys
    and 0.x offering no pseudo-terminal opt-in.
-- Rust approval for this scope,
-   per `doc/planning/load-bearing-code-languages.md`,
-   and stack acceptance;
-   a decision record follows acceptance only,
-   superseding `package/dev-script/file-enforcer/DECISION.rust-migration.md`.
+- How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
