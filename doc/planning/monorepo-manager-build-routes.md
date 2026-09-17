@@ -279,6 +279,26 @@ Research appendices live in [`monorepo-manager-route-research/`](monorepo-manage
    crates.io publishing and Rust fuzzing staying on Cargo,
    host system libraries outside Bazel's input tracking,
    and a silently dropped `rustc-link-arg-bin` rpath.
+- Bazel route,
+   TypeScript lint cache,
+   verified 2026-09-16:
+   `prefer-readonly-parameter-type` stores its effect cache under the nearest `pnpm-lock.yaml` directory's
+   `node_modules/.cache/prefer-readonly-parameter-type`,
+   with an override only as a function argument used by tests
+   (`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-cache-identity.ts:223-275`).
+  Inside a sandboxed lint action that cache does not persist,
+   so every lint action starts cold;
+   repository records put cold whole-repo sweeps at 261 to 305 seconds.
+- Bazel route,
+   other TypeScript findings in `bazel-typescript.md`,
+   from source reading without running Bazel:
+   pnpm `overrides` shims and `.pnpmfile.mjs` stubs are expected to make rules_js reference package-store targets it never creates;
+   tsgo resolves real paths natively while Node is kept inside the sandbox;
+   234 test files import bundled `dist` output,
+   so shared-module edits rebuild and retest bundling packages;
+   aquati.cat reads `git log`,
+   keeps a source-tree cache,
+   and rewrites `dist` in place.
 
 ## Next action
 
