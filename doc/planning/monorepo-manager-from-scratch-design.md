@@ -377,6 +377,15 @@ Go and Zig.
 
 - Tasks run Gradle with its daemon disabled,
    so ending or freezing a task cannot kill or stall shared Gradle state.
+  Gradle's `--no-daemon` does not stop the Kotlin compile daemon:
+   `/tmp` held 43 `kotlin-daemon` logs on the development machine
+   (measured 2026-09-16).
+  Gradle projects also need `kotlin.compiler.execution.strategy=in-process`
+   (`monorepo-manager-route-research/stack-kotlin.md`).
+- Per-task spawning through `systemd-run --scope` must pass `--expand-environment=no`;
+   by default,
+   systemd-run expands `${VARIABLE}` in command arguments itself when `--scope` is used
+   (`man systemd-run`).
 - A paused running task releases its concurrency slot.
 - Affected work comes from native manifests:
    pnpm workspace dependencies,
