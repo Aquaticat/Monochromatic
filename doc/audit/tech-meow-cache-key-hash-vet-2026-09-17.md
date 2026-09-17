@@ -3193,7 +3193,7 @@ Cons:
 Pros:
 
 - Fastest finalist on fingerprint-sized material (10.8 ns per item baseline)
-   and tied for fastest on everything in the `x86-64-v3` build.
+   and fastest or within band of the fastest on every workload in the `x86-64-v3` build.
 - Smallest used path (1,413 lines, 29 `unsafe`),
    valgrind-checked C comparison on every kernel,
    and an AVX-512 kernel for `x86-64-v4` builds.
