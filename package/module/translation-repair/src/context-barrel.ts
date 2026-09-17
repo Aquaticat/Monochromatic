@@ -96,6 +96,14 @@ export {
   type ReferenceAttestation,
 } from './reference-attest-stage.ts';
 export {
+  buildReferenceAttestConfirmMessages,
+  type ConfirmationBallot,
+  confirmedDetails,
+  isReferenceAttestConfirmWire,
+  REFERENCE_ATTEST_CONFIRM_RESPONSE_FORMAT,
+  type ReferenceAttestConfirmWire,
+} from './reference-attest-confirm-wire.ts';
+export {
   type AttestationItemWire,
   buildReferenceAttestMessages,
   isReferenceAttestWire,
