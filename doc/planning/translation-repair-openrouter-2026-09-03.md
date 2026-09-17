@@ -8082,6 +8082,121 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya3 launches on classes forty-seven and forty-eight, 2026-09-17, 14:56 UTC
+
+Frozen `56307dca5` (classes forty-one to forty-eight),
+pid 3571748,
+runs `~/temp/agent/shi_Yumiaoya3`,
+log `~/temp/agent/shi_Yumiaoya3.log`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch.
+Read first slice 16's farewell:
+the Truman Show line and its attribution once each in English on the page,
+no `LINE-STRUCTURED` refusal of the archive's rendering in the consolidation log,
+and whether the slate still doubled the quote;
+then slice 13 (the cameras and the will) admitted and on the page,
+with an `insertion-split-unanchored` finding if its round split again;
+then the four body links,
+the four skeleton sections filled,
+the community-term footnote,
+then the seven steps and the three checks.
+
+## Classes forty-seven and forty-eight, 2026-09-17, 14:50 UTC: a bilingual quote fails the line floor unless doubled, and a split nobody anchored drops a passage
+
+Both found by the shi_Yumiaoya2 read.
+
+Class forty-seven.
+The original's farewell quotes a film line in Chinese with its English original beside it,
+and the attribution the same way,
+inside one blockquote whose lines are set off by bare `>` lines.
+The line-structured floor (`compareLineCounts`) counted every non-blank line of the original,
+bare markers included,
+and refused any rendering carrying fewer:
+ten owed,
+the archive's rendering (English once) carrying seven,
+the standing carrying nine.
+So the only rendering that passed the floor quoted the line twice in two wordings,
+which is what both translate slate candidates did;
+on shi_Yumiaoya1 that doubled text shipped through the consolidation,
+and on shi_Yumiaoya2 the consolidation withheld the standing and the incumbent alike
+and stopped the entry (`gate-kept-standing`) at 48 minutes.
+Fixed in `56307dca5`
+(guard red first at `d692d5f1d`):
+a line carrying only quote markers is not content,
+and a Han line adjacent to an English line of the original
+(a line with Latin letters and no ideograph)
+is owed no line of its own,
+since the English line beside it is its rendering;
+the floor stays a shortfall check,
+a longer rendering still passes.
+Run over the entry's own slice 16,
+the archive's rendering now passes the floor and a rendering that merges the two prose lines still fails.
+Whether the slate still prefers the doubled quote is a judge question the floor cannot settle;
+the archive's rendering is at least eligible again.
+
+Class forty-eight.
+Slice 13
+(the cameras,
+the skirt,
+the flowers and the will)
+is source-only on a skeleton archive.
+Its coverage round asked two seats
+(the checkers bench is three and glm-5.3 has been dark since the morning),
+one voted absent,
+one claimed partial coverage and quoted the Chinese passage itself,
+which anchors nowhere on an English page.
+A majority needs two of two,
+so the verdict was `split`,
+the single admission round left the passage unadmitted,
+and the page shipped without it as a recorded gap
+(`source-passage-unfilled (slice 13, not-corroborated)`),
+on shi_Yumiaoya1 and shi_Yumiaoya2 alike.
+Fixed in `56307dca5`
+(guard red first at `d692d5f1d`):
+a split verdict carrying no anchored claim of coverage and at least one absent vote
+joins the absent rows before the whole-page shortfall corroboration,
+which decides as it does for a majority;
+an unanchorable claim is still no vote for absence,
+and a split with an anchored claim stays unresolved.
+The old split-roster fixture in `pass-insertion-admission.unit.test.ts`
+quoted a sentence that occurs twenty times in its target and never anchored
+(`ambiguous-quote`),
+so it was the class-forty-eight shape by accident;
+its quote now carries the heading and anchors,
+and the test keeps its meaning.
+The no-loop design's premise that an insertion is supplementary content
+(its section on insertion placement in a single round)
+does not hold on a skeleton archive,
+where every body passage is an insertion;
+this is the evidence that section asked for,
+applied as the smallest change and open to veto.
+
+## shi_Yumiaoya2 read, 2026-09-17, 14:40 UTC: INCOMPLETE at the farewell, the will's paragraph a silent gap
+
+Frozen `cde09e8bc`,
+48 minutes
+(`ms=2904901`),
+`status=INCOMPLETE` at slice 16
+("the standing text failed the deterministic publication rule and the consolidation left nothing valid to ship"),
+no page written,
+`attempts.json` reads 1.
+Spend by the meters:
+Bedrock 178.66 to 178.38,
+OpenRouter 255.22 to 254.81,
+0.69 USD;
+`pass-spend.mjs` logs 0.70 USD over 840 seats,
+39 retry rounds,
+13 abandoned streams (0.05 USD).
+Class forty-six held:
+no destination refusal.
+Two dark seats (glm-5.3 76 thrown,
+Qwen3.8-27B 108 thrown,
+Synthetic dry the whole run).
+Slice 13 unadmitted again on `coverage=split`,
+recorded as a gap (class forty-eight);
+slice 16's standing and incumbent both refused by the line floor (class forty-seven).
+The rest of the lanes ran as on shi_Yumiaoya1.
+
 ## shi_Yumiaoya2 launches on class forty-six, 2026-09-17, 13:45 UTC
 
 Frozen `cde09e8bc` (classes forty-one to forty-six),

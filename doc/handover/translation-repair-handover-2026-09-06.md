@@ -409,7 +409,17 @@ which the takeover session does not have.
   every lane text carried its links).
   `shi_Yumiaoya2` launched at 13:45 UTC on frozen `cde09e8bc` (pid 3531497,
   runs `~/temp/agent/shi_Yumiaoya2`,
-  log `~/temp/agent/shi_Yumiaoya2.log`).
+  log `~/temp/agent/shi_Yumiaoya2.log`)
+  and stopped INCOMPLETE at 48 minutes:
+  the bilingual farewell quote failed the line floor unless quoted twice
+  (class forty-seven)
+  and the will's paragraph shipped as a silent gap on a split coverage round nobody anchored
+  (class forty-eight;
+  both fixed in `56307dca5`,
+  guards red first at `d692d5f1d`).
+  `shi_Yumiaoya3` launched at 14:56 UTC on frozen `56307dca5` (pid 3571748,
+  runs `~/temp/agent/shi_Yumiaoya3`,
+  log `~/temp/agent/shi_Yumiaoya3.log`).
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2223,6 +2233,17 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`56307dca5` (2026-09-17,
+14:50 UTC):
+classes forty-seven and forty-eight,
+the line floor ignores bare quote markers and owes one line for a Han line beside its own English
+(`line-structure-guard.ts`),
+and a split coverage verdict with no anchored claim joins the shortfall path at admission
+(`corpus-run/insertion-coverage-model.ts`;
+the pass log's "Classes forty-seven and forty-eight" heading dated 2026-09-17 14:50 UTC;
+guards red first at `d692d5f1d`;
+found by the shi_Yumiaoya2 INCOMPLETE).
+Running on shi_Yumiaoya3.
 `cde09e8bc` (2026-09-17,
 13:42 UTC):
 class forty-six,
@@ -2232,7 +2253,7 @@ so a link inside an HTML comment is a destination no page owes
 the pass log's "Class forty-six" heading dated 2026-09-17 13:42 UTC;
 guard red first at `9ba9520ab`;
 found by the shi_Yumiaoya1 INCOMPLETE).
-Running on shi_Yumiaoya2.
+Ran on shi_Yumiaoya2 (no destination refusal).
 `978bd7d20` (2026-09-17,
 10:05 UTC):
 class forty-five,
@@ -3999,20 +4020,24 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `shi_Yumiaoya2` by the seven steps and the three checks (frozen `cde09e8bc`,
-    pid 3531497,
-    runs `~/temp/agent/shi_Yumiaoya2`,
-    log `~/temp/agent/shi_Yumiaoya2.log`,
-    launched 13:45 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
+1.  READ `shi_Yumiaoya3` by the seven steps and the three checks (frozen `56307dca5`,
+    pid 3571748,
+    runs `~/temp/agent/shi_Yumiaoya3`,
+    log `~/temp/agent/shi_Yumiaoya3.log`,
+    launched 14:56 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry).
-    It is the first pass on class forty-six
-    (the pass log's heading dated 2026-09-17 13:42 UTC);
-    shi_Yumiaoya1 stopped INCOMPLETE at publish on that class after 53 minutes
-    (the pass log's "shi_Yumiaoya1 read" heading dated 2026-09-17 13:40 UTC).
+    It is the first pass on classes forty-seven and forty-eight
+    (the pass log's heading dated 2026-09-17 14:50 UTC);
+    shi_Yumiaoya2 stopped INCOMPLETE on them after 48 minutes
+    (the pass log's "shi_Yumiaoya2 read" heading dated 2026-09-17 14:40 UTC).
     Its archive is a skeleton of 54 lines against the original's 138,
-    so read first the four body links on the page and that the commented-out profile link is on nobody's page,
-    then how the four sections were filled and what became of slice 13
-    (unadmitted on a split coverage verdict in shi_Yumiaoya1),
+    so read first slice 16's farewell
+    (the film line and its attribution once each in English,
+    no `LINE-STRUCTURED` refusal of the archive's rendering,
+    and whether the slate still doubled the quote),
+    then slice 13 (the cameras and the will) admitted and on the page
+    (an `insertion-split-unanchored` finding if its round split again),
+    then the four body links and that the commented-out profile link is on nobody's page,
     then the community-term footnote,
     then the page assembly's findings
     (`repeats another section's heading` in the log,
@@ -4031,7 +4056,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (shi_Yumiaoya1 to its INCOMPLETE:
+    (shi_Yumiaoya2 to its INCOMPLETE:
+    0.69 USD by the meters,
+    840 seats,
+    39 retry rounds,
+    48 minutes;
+    shi_Yumiaoya1 to its INCOMPLETE:
     0.67 USD by the meters plus Synthetic,
     923 seats,
     37 retry rounds,

@@ -159,6 +159,35 @@ The cited references join the repair run shape the same way,
 only where the original links somewhere,
 so the 33 entries of the pinned corpus that cite nothing key exactly as before.
 
+## Lines a line-structured slice owes
+
+A line-structured slice owes one content line per content line of the original,
+a shortfall check only,
+since English verse legitimately expands.
+Since class forty-seven (2026-09-17) a line carrying nothing but quote markers is not content,
+and a Han line adjacent to an English line of the original
+(Latin letters,
+no ideograph)
+is owed no line of its own,
+because that English line is its rendering:
+shi_Yumiaoya's farewell quotes a film line in Chinese with its English beside it,
+the archive carries the English once,
+and the old count refused every rendering that did not quote it twice.
+
+## Source-only passages and the single admission round
+
+A source-only passage is admitted for insertion after one coverage round,
+absent votes corroborated by the whole-page shortfall,
+and a passage left unresolved ships as a recorded gap.
+Since class forty-eight (2026-09-17) a split verdict carrying no anchored claim of coverage
+and at least one absent vote joins the absent rows before the shortfall corroboration:
+on shi_Yumiaoya's skeleton archive two seats were asked,
+one voted absent,
+one quoted the Chinese passage itself,
+and the will's paragraph shipped as a silent gap twice.
+A split with an anchored claim stays unresolved;
+an unanchorable claim is still no vote for absence.
+
 ## Explicit breaks under a substitute page block
 
 The deterministic rule owes a candidate the original's explicit line breaks
