@@ -99,7 +99,8 @@ Each step's evidence is in the linked documents.
      writing `doc/audit/*-vet-2026-09-17.md` and committing its own report,
      after the user moved cache keys off `gxhash`
      ("Cache key hash after the collision findings" in the design).
-- Stopped unfinished on 2026-09-17, with no files written:
+- Stopped unfinished on 2026-09-17,
+   with no files written:
    troubleshooting docs for `gxhash` defects,
    no longer useful once meow and the music player leave `gxhash`;
    the evidence stays in `gxhash-owned.md` and issue #545.

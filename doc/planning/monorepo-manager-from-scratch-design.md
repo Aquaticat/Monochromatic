@@ -110,7 +110,8 @@ Stated by the user on 2026-09-16:
 
 Stated by the user on 2026-09-16,
 answering whether configuration edits may need the Rust toolchain:
-"What are we doing here, now that we're determined to take on this huge project,
+"What are we doing here,
+ now that we're determined to take on this huge project,
 that implies we have no objections of writing much more code
 therefore eliminate the turing-complete requirement of the config language.
 File-enforcer was written under the constraints of time."
@@ -126,7 +127,8 @@ File-enforcer was written under the constraints of time."
 
 Stated by the user on 2026-09-16:
 
-- "We don't need a crypto hash. A non-crypto hash would do."
+- "We don't need a crypto hash.
+   A non-crypto hash would do."
 - "We already chose a non-crypto hash fn in music-player":
    `gxhash`,
    which "benched the best";
@@ -134,8 +136,10 @@ Stated by the user on 2026-09-16:
 - "We don't need to support non-modern CPUs,
    but we do need to properly warn users when they try to use this w/o the required CPU capacities."
 - Asked how aarch64 tests should avoid the `gxhash` debug-build panic (issue #111):
-   "Dirty room (crediting ogxd) reimplement gxhash ourselves. Or forking it.
-   Also, there are many optimization opportunities the original seemingly didn't have time to take,
+   "Dirty room (crediting ogxd) reimplement gxhash ourselves.
+   Or forking it.
+   Also,
+   there are many optimization opportunities the original seemingly didn't have time to take,
    so we are doing it."
   `gxhash` 3.5.0 is MIT-licensed,
    by Olivier Giniaux,
@@ -321,7 +325,8 @@ per `doc/planning/load-bearing-code-languages.md`.
 - TypeScript on Node
    (`stack-typescript.md`):
    cgroup placement before start and watch-overflow detection use `node:ffi`,
-   documented as "Stability: 1 - Experimental" since v26.1.0;
+   documented as "Stability:
+   1 - Experimental" since v26.1.0;
    built-in `fs.watch` silently drops events after an inotify queue overflow;
    recursive `fs.watch` watched 41,205 paths with 662 milliseconds of blocking setup;
    Node's documentation has contradictions on the `fs.watch` and FFI pages the design uses.
@@ -528,7 +533,8 @@ Remaining Node problems:
 - Node's `'pipe'` stdio gives children a socket,
    so a task that writes `> /dev/stdout` fails:
    `sh -c 'echo probe > /dev/stdout'` spawned with piped stdio exited 1 with
-   "/dev/stdout: No such device or address"
+   "/dev/stdout:
+   No such device or address"
    (measured 2026-09-16).
 - Pure-JavaScript D-Bus libraries cannot pass file descriptors,
    and systemd marks `FreezeUnit` and `ThawUnit` as not documented.
@@ -600,7 +606,8 @@ Raised by the user on 2026-09-16:
 the TypeScript daemon with a Rust addon may not ship as a single file,
 and the user is willing to rewrite file-enforcer in Rust.
 
-- Node single executable applications are "Stability: 1.1 - Active development",
+- Node single executable applications are "Stability:
+   1.1 - Active development",
    with built-in generation through `--build-sea` since v25.5.0.
   Native addons ship as `assets` and load by writing the asset to a temporary file and calling `process.dlopen()`
    (<https://nodejs.org/api/single-executable-applications.html>).
@@ -633,7 +640,8 @@ ran as `./meow` and printed `top-level await ok on linux`;
 the executable was 144 MiB
 (`~/temp/agent/sea-tla-probe-2026-09-16`).
 ECMAScript module entry points landed in `nodejs/node#61813`,
-"sea: support ESM entry point in SEA",
+"sea:
+ support ESM entry point in SEA",
 merged 2026-02-18 with a `backport-open-v24.x` label;
 before it,
 single executable entry scripts were CommonJS,
@@ -801,7 +809,8 @@ and release assets.
    and the `sync:files` and `watch:sync:files` Mise tasks run the TypeScript CLI.
 - Recorded decision in conflict:
    `package/dev-script/file-enforcer/DECISION.rust-migration.md`,
-   "Decision: no Rust migration for file-enforcer",
+   "Decision:
+   no Rust migration for file-enforcer",
    whose reasons do not address single-file shipping;
    it is superseded only after the user accepts a variant.
 
@@ -1125,7 +1134,8 @@ A (OpenTofu-shaped HCL) > B (TOML) > F (TOML with CEL) > E (JSONC) > D (YAML) > 
    the skill mirror map,
    SPDX text mapping,
    and pnpr entry-point selection with built-in functions only.
-- The remaining adjacent reasons are in "8. Ranking" of the appendix.
+- The remaining adjacent reasons are in "8.
+   Ranking" of the appendix.
 
 #### Settled without asking
 
@@ -1154,7 +1164,8 @@ Each follows from recorded decisions:
    and KCL is not published on crates.io.
   Author-defined functions and recursion are allowed within the chosen syntax.
 - Syntax:
-   "HCL syntax is fine. This is only a light endorsement."
+   "HCL syntax is fine.
+   This is only a light endorsement."
 - Rules that write outside the repository,
    such as the JetBrains settings,
    live in a per-user `meow` configuration.
@@ -1172,10 +1183,14 @@ Each follows from recorded decisions:
 #### Root `mise.toml` and where meow is built
 
 Answered by the user on 2026-09-17:
-"Hand-maintained file, and we're obviously going to build meow in a new worktree."
+"Hand-maintained file,
+ and we're obviously going to build meow in a new worktree."
 
 - Clarified by the user the same day:
-   "mise.toml: hand-maintained now, once meow takes over, mise is out."
+   "mise.toml:
+   hand-maintained now,
+   once meow takes over,
+   mise is out."
   The root `mise.toml` is hand-maintained from now on,
    meow gets no Mise-specific rule,
    and Mise is removed entirely when meow takes over,
@@ -1312,7 +1327,8 @@ the `toml_edit` wrapper's 21 passes were recounted there.
    and line endings may be normalized.
 - Settled by those answers:
   - JSONC and TOML files may be reformatted canonically on write,
-     so files `toml_edit` cannot round-trip byte for byte are rewritten, not rejected.
+     so files `toml_edit` cannot round-trip byte for byte are rewritten,
+     not rejected.
   - Comments directly above a deleted node leave with it;
      leaving them behind would attach them to a different node.
   - Owned XML options are edited at attribute level,
@@ -1414,7 +1430,8 @@ and collision reproducer under `gxhash/lab/` in the session scratchpad.
    and against the upstream `hybrid` build.
 - Undefined behavior in 3.5.0:
    Miri stops on inputs of 1 to 16 bytes with
-   "attempting to access 16 bytes, but got alloc311 which is only 8 bytes from the end of the allocation".
+   "attempting to access 16 bytes,
+   but got alloc311 which is only 8 bytes from the end of the allocation".
   The music player always hashes at least 24 bytes;
    89 git-tracked files are under 16 bytes,
    so meow would hit it.
@@ -1475,7 +1492,8 @@ Read 2026-09-17 with `gh issue view`:
 
 - #83,
    opened 2024-06-02 and open,
-   "Hash has arbitrary seed-independent multicollisions, is not DoS resistant".
+   "Hash has arbitrary seed-independent multicollisions,
+   is not DoS resistant".
   ogxd replied "Let's see if we can improve DoS resistance without compromising performance",
    later clarified the README security section (2024-11-05),
    and after a comment that "`compress_all` is completely independent from the seed"
@@ -1542,7 +1560,8 @@ to the repeated cache key output question:
    the `gxhash128` key choice and the `+aes`-specific build and startup check,
    whose target features and check follow the chosen hash.
 - Music player:
-   the user decided on 2026-09-17 that it must switch away from `gxhash`, tracked in issue #545;
+   the user decided on 2026-09-17 that it must switch away from `gxhash`,
+   tracked in issue #545;
    this design work does not touch the music player.
 
 ### Process model
@@ -1623,7 +1642,8 @@ to the repeated cache key output question:
    answered by the user on 2026-09-16:
   - Every run is cached,
      failures included:
-     "Cache everything, because a flaky task is a user error and users should know better.
+     "Cache everything,
+     because a flaky task is a user error and users should know better.
      We also provide a retry mechanism for unfixably flaky tasks."
   - Captured stdout and stderr are stored and replayed on a hit.
   - Outputs are recorded only as pointers to their locations with content hashes;
@@ -1631,7 +1651,8 @@ to the repeated cache key output question:
     The user first answered "We only record pointers and reflinks",
      then on 2026-09-17 dropped reflinks:
      "There's no need to restore an earlier build because builds are by definition ephermal.
-     In addition, we consider switching git branches in place a user error."
+     In addition,
+     we consider switching git branches in place a user error."
   - Eviction uses a size cap plus a maximum age.
   - The size cap counts bytes only the cache pins (user,
      2026-09-16).
@@ -1641,7 +1662,9 @@ to the repeated cache key output question:
      the pinned-bytes research started for reflinks was stopped unfinished on 2026-09-17.
   - The default maximum age is 30 days since an entry was last used,
      matching Cargo's one-month threshold for regenerable global-cache files
-     (`doc/book/src/reference/config.md`, "Global caches", in `rust-lang/cargo`).
+     (`doc/book/src/reference/config.md`,
+     "Global caches",
+     in `rust-lang/cargo`).
   - Retries are declared for unfixably flaky tasks;
      a pass after a failed attempt is recorded as a pass marked flaky,
      with every attempt's logs kept.
@@ -1649,7 +1672,9 @@ to the repeated cache key output question:
    kept as evidence for the dropped reflink design,
    probe on 2026-09-16 in a throwaway directory on the development machine's btrfs:
    an 8 MiB random file plus a `cp --reflink=always` clone reported
-   `Total 16.00MiB`, `Exclusive 0.00B`, `Set shared 8.00MiB` from unprivileged `btrfs filesystem du --summarize`.
+   `Total 16.00MiB`,
+   `Exclusive 0.00B`,
+   `Set shared 8.00MiB` from unprivileged `btrfs filesystem du --summarize`.
   After overwriting the original's first 1 MiB in place,
    per-file output was `clone.bin` exclusive `0.00B` shared `8.00MiB`
    and `original.bin` exclusive `1.00MiB` shared `7.00MiB`.
@@ -1704,7 +1729,8 @@ to the repeated cache key output question:
   The check calls `core::arch::x86_64::__cpuid(1)` directly,
    a safe function in that toolchain (`stdarch/crates/core_arch/src/x86/cpuid.rs:107`),
    and reads ECX bit 25 for AES and EDX bit 26 for SSE2,
-   the bits std uses (`std_detect/src/detect/os/x86.rs:108`, `:118`).
+   the bits std uses (`std_detect/src/detect/os/x86.rs:108`,
+   `:118`).
   On aarch64 the same short-circuit applies,
    because `aes` is declared without the cfg-check opt-out (`std_detect/src/detect/arch/aarch64.rs:123`);
    the check reads `AT_HWCAP` bit 3,
