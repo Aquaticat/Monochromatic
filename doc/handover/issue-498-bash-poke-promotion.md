@@ -143,6 +143,32 @@ so they are cited by symbol name rather than line number.
   and unsanitized control characters or lone surrogates can crash width measurement,
   so anything this package renders into a widget or a message must be cleaned first.
 
+### Stale contexts and job lifecycle
+
+- `SessionShutdownEvent.reason` in `dist/core/extensions/types.d.ts` is
+  `"quit" | "reload" | "new" | "resume" | "fork"`,
+  so every lifecycle transition that can orphan a background job is observable.
+- `AgentSession.reload()` in `dist/core/agent-session.js` emits `session_shutdown` with reason `reload`,
+  then calls `oldRunner.invalidate()` before building a new runtime.
+  The dispose path invalidates the runner the same way.
+- `assertActive()` in `dist/core/extensions/runner.js` throws `new Error(this.staleMessage)` once invalidated,
+  and the stale message names `ctx.newSession()`,
+   `ctx.fork()`,
+   `ctx.switchSession()`,
+   and `ctx.reload()`.
+- Consequence:
+   a job that finishes after any of those transitions throws when it calls `pi.sendMessage`
+  or touches a captured `ctx.ui`.
+  Delivery must be guarded,
+   logged through the tagged logger,
+   and treated as undeliverable,
+  and the job registry must be cleared on `session_shutdown`.
+- This machine reports `TERM_PROGRAM=ghostty` at version 1.3.1,
+  which implements the Kitty keyboard protocol,
+  so `ctrl+shift+<key>` bindings registered through `pi.registerShortcut` are deliverable here.
+- `SHELL` is `/bin/bash` and `/bin/bash` exists,
+  so the shell-resolution question is about correctness elsewhere rather than about this machine.
+
 ### Host tooling for verification
 
 - `tmux` 3.7c is installed at `/usr/bin/tmux`.
