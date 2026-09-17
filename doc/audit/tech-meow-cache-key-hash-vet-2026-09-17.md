@@ -1,13 +1,16 @@
 # Technology vet: meow cache key hash
 
 Status:
- in progress.
+ complete.
 Lifecycle phase:
- context and rubric refrozen after the workload correction;
- discovery and screening complete;
- targeted evidence complete with four hard-gate-confirmed finalists;
- finalist validation and benchmarks complete except the `highway` fuzz run;
- scoring in progress.
+ recommended;
+ discovery saturated,
+ four finalists validated and scored,
+ sensitivity stable for the winner,
+ recommendation `twox-hash` 2.1.4 (XXH3-128) relying on the SIMD reading of hardware acceleration
+ ("Recommendation").
+Not adopted:
+ no decision record exists.
 
 Subject:
  meow cache key hash.
@@ -1159,7 +1162,7 @@ So any recommendation relies on R2.
    yes on both through `core::simd`.
 - Result at screening:
    serious alternative;
-   exited at targeted evidence on HC4 ("Hard-gate outcomes").
+   exited at targeted evidence on HC4 ("Hard-gate outcomes for the finalists").
 
 ### Exits among named and near-miss candidates
 
@@ -1426,7 +1429,7 @@ Every finalist passes under R2 and none under R1.
 - `hashcrew`:
    compile-time selection when the target enables AVX2 or NEON,
    otherwise run-time detection cached in a `OnceLock`
-   (`src/xxhash/kernel/mod.rs:57-115`).
+   (`src/xxhash/kernel/mod.rs:98-132`).
 - `highway`:
    compile-time AVX2 or SSE4.1 when enabled,
    otherwise run-time detection with the `std` feature,
@@ -1743,6 +1746,8 @@ Build scripts and proc macros reachable from each upstream workspace with all fe
 - `highway-rs/fuzz`:
    `libfuzzer-sys` 0.4.13 compiles bundled libFuzzer C++ (`build.rs`, `CUSTOM_LIBFUZZER_PATH` unset),
    and the fuzz crate compiles the `google/highwayhash` submodule `c/highwayhash.c` at `faca2cb`.
+  `fuzz-control/` is a copy with one changed line for the positive control,
+   built against the clone mounted read-only.
 - Local reference check `refcheck/`:
    `xxhash-c-sys` 0.8.7 and `c/highwayhash.c` copied from the same submodule commit.
 
@@ -1971,7 +1976,7 @@ Measured with `scripts/audit-size.ts` (`data/audit-size.txt`)
    `clippy::missing_safety_doc = "deny"`,
    `missing_debug_implementations = "deny"`;
    45 `// SAFETY` comments;
-   an explicit `Backend` enum with `is_available` checks (`src/xxhash/kernel/mod.rs:50-95`).
+   an explicit `Backend` enum with `is_available` checks (`src/xxhash/kernel/mod.rs:41-96`).
 - `highway` 1.3.0:
    16 files,
    2,646 lines,
@@ -2216,6 +2221,66 @@ Every finalist result has 0 full-width, 0 low-half, and 0 high-half collisions.
  1 full-width collision at 2,048 bytes on the zero base,
  and 1 each at 1,024 and 2,048 bytes on the random base,
  under every seed.
+
+### Fuzzing and mutation
+
+Search:
+ `rg --files-with-matches --ignore-case --hidden` over the four clones
+ (vendored C submodules excluded)
+ for `cargo-mutants`, `mutants.toml`, `mutagen`, `proptest`, `quickcheck`, `libfuzzer`, `afl`, `honggfuzz`, and `bolero`
+ matched only `highway-rs` (`Cargo.toml`, `tests/properties.rs`, `fuzz/`)
+ and `twox-hash` (`comparison/Cargo.toml`, `comparison/src/lib.rs`).
+
+- `xxhash-rust`:
+   no fuzz target,
+   no property tests;
+   random-input comparison with C in `tests/assert_correctness.rs`.
+- `twox-hash`:
+   no Rust fuzz target
+   (the vendored xxHash submodule's `fuzz/fuzzer.c` targets the C library);
+   `proptest` comparison with C in `comparison/`,
+   run as tw2 and tw5.
+- `hashcrew`:
+   no fuzz target,
+   no property-test crate;
+   seeded random partitions in `tests-integration`,
+   run as hc3 and hc5.
+- `highway`:
+   `fuzz/fuzz_targets/fuzz_highway.rs` asserts that `PortableHash::hash64` equals the C `HighwayHash64`
+   and that the builder, SSE4.1, and AVX2 hashers equal `PortableHash` for 64, 128, and 256-bit output;
+   upstream CI only compiles it (`cargo fuzz build fuzz_highway`, nightly job);
+   `tests/properties.rs` holds `quickcheck` properties.
+- Mutation testing:
+   none in any finalist.
+
+The `highway` fuzz target was run here,
+ because it is the only fuzz suite and covers dispatch equality:
+
+- Build:
+   `cargo build --manifest-path /src/fuzz/Cargo.toml --target x86_64-unknown-linux-gnu --release`
+   `--config profile.release.debug="line-tables-only" --bin fuzz_highway --offline --locked --jobs 4`
+   with the `RUSTFLAGS` that `cargo fuzz build` sets by default
+   (sanitizer coverage, `--cfg fuzzing`, `-Zsanitizer=address`, `-Cdebug-assertions`, `-Ccodegen-units=1`,
+   read from `rust-fuzz/cargo-fuzz` `src/project.rs:150-300` at `bf2fc66`),
+   in `localhost/hashvet-rusttest:2`;
+   exit 0 (`fuzz-highway-build.log`).
+- Positive control,
+   run after the campaign on a copy of the target whose C call receives a key with one bit flipped
+   (`fuzz-control/fuzz_targets/fuzz_highway.rs`, built the same way):
+   the assertion failed after 3,086 executions
+   ("assertion `left == right` failed" at `fuzz_targets/fuzz_highway.rs:33:9`, exit 77, `fuzzcontrol-run.log`).
+- Campaign:
+   `fuzz_highway -max_total_time=600 -rss_limit_mb=1536` from an empty corpus:
+   23,513,644 executions in 601 seconds,
+   coverage 333 edges,
+   39 corpus entries,
+   inputs up to libFuzzer's default 4,096 bytes,
+   0 crashes,
+   no artifacts
+   (`fuzz-highway-run.log`).
+
+The target compares 128-bit output only across Rust implementations;
+ 128-bit equality with C is covered by "Reference equality".
 
 ## Benchmarks
 
@@ -2835,3 +2900,503 @@ They are not ranked.
 
 Every control produced 0 streaming mismatches in HC10 except `gxhash` and MuseAir,
  which were not given streaming wrappers.
+
+## Ratings for S4 to S11
+
+- S4 multi-core hashing of one large input, weight 1:
+   no finalist offers a parallel or tree mode;
+   any of them can sit under a meow-defined chunk tree,
+   which is a new output format meow would own ("Benchmarks", S4 results).
+  All four:
+   1,
+   high confidence,
+   because the structure is identical and the measured two-thread composition did not beat one thread
+   on warm or cold reads on this host.
+- S5 aarch64 acceleration, weight 1,
+   low-signal ranges ("aarch64 and the m1 question"):
+   `twox-hash` 3 to 4 (midpoint 3.5),
+   `xxhash-rust` 2 to 4 (3),
+   `hashcrew` 2 to 4 (3),
+   `highway` 1 to 3 (2).
+- S6 quality beyond HC8, weight 1 ("Quality evidence"):
+   the three XXH3 crates compute one function,
+   so they share one rating:
+   2,
+   medium confidence,
+   for 36 SMHasher3 failures that do not predict full-width collisions at a fixed seed
+   but narrow the quality margin.
+  `highway`:
+   4,
+   medium confidence,
+   for 238 of 238 SMHasher3 tests and no local collision.
+- S7 stability assurance, weight 1:
+  - `twox-hash` 4, high:
+     frozen XXH3 specification,
+     README portability promise,
+     CI proptests against the C library for scalar, SSE2, AVX2, and NEON kernels (tw2, tw5),
+     and local equality across every dispatch path, aarch64, and the C reference.
+  - `xxhash-rust` 3, medium:
+     frozen specification and C comparison for lengths 0 to 4,095 on every kernel it compiles,
+     local equality everywhere;
+     but no written stability promise of its own,
+     and #53 shipped wrong seeded-builder output until 0.8.17.
+  - `hashcrew` 3, medium:
+     frozen specification,
+     README stability promise,
+     tests against `xxhash-rust` rather than C,
+     local equality everywhere and against C;
+     two weeks of release history.
+  - `highway` 3, medium:
+     the algorithm is frozen "unchanging forever",
+     README promise,
+     reference 128-bit vectors only up to 63 bytes upstream,
+     64-bit fuzzing against C;
+     local 128-bit equality against C on long inputs ("Reference equality") closes most of that gap.
+- S8 CPU capability handling, weight 1 ("HC5 CPU capabilities"):
+  - `twox-hash`, `hashcrew`, `highway` 4, high:
+     run-time selection in a default build;
+     meow adds nothing.
+  - `xxhash-rust` 2, high:
+     compile-time only;
+     AVX2 requires meow to ship a raised build with its own startup check and diagnostic,
+     and upstream's run-time detection request (#48) is open.
+  Speed differences between dispatch styles count under S2 and S3 only.
+- S9 auditability and dependency surface, weight 1 ("Source quality and human auditability"):
+  - `hashcrew` 4, medium:
+     1,440 used-path lines,
+     32 `unsafe`,
+     forbidden `unsafe_op_in_unsafe_fn` and denied undocumented `unsafe` blocks.
+  - `twox-hash` 3, medium:
+     1,662 lines,
+     66 `unsafe`,
+     52 safety comments,
+     strict lints.
+  - `xxhash-rust` 3, medium:
+     1,413 lines,
+     29 `unsafe`,
+     but no safety comments and an open report of raw-pointer functions not marked `unsafe` (#29).
+  - `highway` 2, medium:
+     2,646 lines,
+     196 `unsafe`,
+     no safety comments.
+  All four have zero runtime dependencies.
+- S10 upstream verification, weight 1 ("Upstream CI inventory and suites run"):
+  - `twox-hash` 4, high:
+     C comparison proptests for every kernel,
+     Miri,
+     CI on x86_64 and macOS aarch64.
+  - `hashcrew` 3, medium:
+     broad boundary and partition tests,
+     Miri with strict provenance,
+     CI on three operating systems;
+     reference is another Rust crate.
+  - `xxhash-rust` 3, medium:
+     C comparison with valgrind on three kernels and cross-architecture tests;
+     no Miri or property tests in CI.
+  - `highway` 3, medium:
+     reference vectors,
+     quickcheck cross-implementation properties,
+     an instruction-set matrix,
+     Miri,
+     a fuzz target that CI only compiles ("Fuzzing and mutation").
+  No finalist has mutation testing.
+- S11 maintenance, weight 1 ("Maintenance audit"):
+  - `twox-hash` 3, medium:
+     releases in the last 2 months,
+     bugs answered within hours,
+     one maintainer.
+  - `xxhash-rust` 3, medium:
+     three releases in July 2026,
+     bugs fixed within a week,
+     one maintainer,
+     slow external pull requests in the past.
+  - `highway` 2, medium:
+     responsive to its one issue,
+     but no release for 20 months with 16 unreleased commits.
+  - `hashcrew` 1 to 3 (midpoint 2), low:
+     active and signed releases,
+     but two weeks old,
+     self-merged,
+     with no external tracker history.
+
+## Scoring
+
+Criteria and weights as frozen in "Frozen soft criteria":
+ S1 1,
+ S2 5,
+ S3 5,
+ S4 to S11 1 each;
+ maximum 19 × 4 = 76.
+Inputs are in `data/ratings.json`
+ (built by `scripts/make-ratings.ts` from "Mechanical speed ratings" and "Ratings for S4 to S11");
+ arithmetic and sensitivity by `scripts/score.ts`,
+ output `data/score.txt`.
+
+Ratings (value, confidence):
+
+- `twox-hash`:
+   S1 4 medium,
+   S2 4 high,
+   S3 4 high,
+   S4 1 high,
+   S5 3 to 4 low,
+   S6 2 medium,
+   S7 4 high,
+   S8 4 high,
+   S9 3 medium,
+   S10 4 high,
+   S11 3 medium.
+- `xxhash-rust`:
+   S1 3 medium,
+   S2 3 high,
+   S3 4 high,
+   S4 1 high,
+   S5 2 to 4 low,
+   S6 2 medium,
+   S7 3 medium,
+   S8 2 high,
+   S9 3 medium,
+   S10 3 medium,
+   S11 3 medium.
+- `hashcrew`:
+   S1 2 high,
+   S2 2 high,
+   S3 3 medium,
+   S4 1 high,
+   S5 2 to 4 low,
+   S6 2 medium,
+   S7 3 medium,
+   S8 4 high,
+   S9 4 medium,
+   S10 3 medium,
+   S11 1 to 3 low.
+- `highway`:
+   S1 0 medium,
+   S2 1 medium,
+   S3 3 high,
+   S4 1 high,
+   S5 1 to 3 low,
+   S6 4 medium,
+   S7 3 medium,
+   S8 4 high,
+   S9 2 medium,
+   S10 3 medium,
+   S11 2 medium.
+
+Arithmetic in criterion order S1 to S11,
+ low-signal ranges at their midpoints:
+
+```text
+# data/score.txt
+twox-hash:   1×4 + 5×4 + 5×4 + 1×1 + 1×3.5 + 1×2 + 1×4 + 1×4 + 1×3 + 1×4 + 1×3 = 68.5 / 76 = 90.1
+xxhash-rust: 1×3 + 5×3 + 5×4 + 1×1 + 1×3   + 1×2 + 1×3 + 1×2 + 1×3 + 1×3 + 1×3 = 58   / 76 = 76.3
+hashcrew:    1×2 + 5×2 + 5×3 + 1×1 + 1×3   + 1×2 + 1×3 + 1×4 + 1×4 + 1×3 + 1×2 = 49   / 76 = 64.5
+highway:     1×0 + 5×1 + 5×3 + 1×1 + 1×2   + 1×4 + 1×3 + 1×4 + 1×2 + 1×3 + 1×2 = 41   / 76 = 53.9
+```
+
+Totals across the low-signal ranges:
+
+- `twox-hash` 68 to 69 (89.5 to 90.8);
+- `xxhash-rust` 57 to 59 (75.0 to 77.6);
+- `hashcrew` 47 to 51 (61.8 to 67.1);
+- `highway` 40 to 42 (52.6 to 55.3).
+
+No two adjacent ranges overlap.
+
+Provisional order:
+ `twox-hash` > `xxhash-rust` > `hashcrew` > `highway`.
+
+### Fingerprint-sized inputs
+
+S1 is the only criterion measured on fingerprint-sized material,
+ and it carries weight 1.
+With S1 removed from every total,
+ the scores are 64.5, 55, 47, and 41 of 72:
+ the same order.
+No adjacent pair is decided by fingerprint-sized or key-material benchmarks;
+ each is decided on file-sized and multi-GB inputs ("Ranking").
+
+## Sensitivity
+
+One input at a time,
+ 94 tests:
+
+- each weight-1 criterion (S1, S4 to S11) raised to 2, 3, 4, and 5;
+- S2 and S3 each lowered to 4, 3, 2, and 1;
+- every medium-confidence exact rating moved one step down and one step up within 0 to 4;
+- both endpoints of every low-signal range.
+
+Results:
+
+- The winner is `twox-hash` in all 94 tests.
+- 93 tests keep the full order `twox-hash` > `xxhash-rust` > `hashcrew` > `highway` strictly.
+- One test,
+   S6 quality at weight 5,
+   ties `hashcrew` and `highway` at 62.0
+   (`twox-hash` 83.2, `xxhash-rust` 71.7),
+   and no test puts `highway` above `hashcrew`.
+- Closest margin per adjacent pair across all tests,
+   normalized to the 76-point scale:
+  - `twox-hash` over `xxhash-rust`:
+     8.23 points, with S2 lowered to weight 1.
+  - `xxhash-rust` over `hashcrew`:
+     0.83 points, with S8 CPU capability handling raised to weight 5;
+     the order holds,
+     but a user who weighs run-time dispatch heavily is close to indifferent between them.
+  - `hashcrew` over `highway`:
+     0.00 points, the S6 tie.
+
+Treatment of the tie:
+ it concerns only the order of third and fourth place,
+ no evidence this audit can gather changes a weight,
+ and the weight of S6 is a user preference,
+ so it is recorded as a conditional ranking and a question for the user
+ ("Questions for the user").
+Under S6 weight 5 the ranking is
+ `twox-hash` > `xxhash-rust` > `hashcrew` = `highway`.
+The recommendation does not depend on it.
+
+Stability covers one-at-a-time changes only,
+ not simultaneous changes to several weights or ratings.
+
+## Pros and cons
+
+### `twox-hash` 2.1.4 (XXH3-128)
+
+Pros:
+
+- Fastest finalist on file contents in the default build:
+   49.3 GiB/s on the tracked tree and 56.5 GiB/s on a hot 16 KiB buffer,
+   because it selects AVX2 at run time around the whole long-input loop.
+- No build flag and no startup check needed for full speed or for older CPUs.
+- The strongest upstream verification:
+   CI proptests against the C library for scalar, SSE2, AVX2, and NEON,
+   Miri,
+   and a written portability promise.
+- Published NEON parity with C on Apple silicon.
+- Already a transitive dependency of two music-player lockfiles.
+
+Cons:
+
+- `XxHash3_128::new` copies the 192-byte default secret into a heap allocation
+   (`src/xxhash3/streaming.rs:386-391`),
+   one small allocation per streamed file.
+- Single maintainer (400 of 428 commits);
+   external feature pull requests can wait months.
+- In the `x86-64-v3` build it is slightly slower than `xxhash-rust` on file contents
+   (46.9 against 49.3 GiB/s, beyond the band).
+- XXH3-128 fails 36 SMHasher3 tests,
+   and its seed must not be used for domain separation.
+
+### `xxhash-rust` 0.8.18 (XXH3-128)
+
+Pros:
+
+- Fastest finalist on fingerprint-sized material (10.8 ns per item baseline)
+   and tied for fastest on everything in the `x86-64-v3` build.
+- Smallest used path (1,413 lines, 29 `unsafe`),
+   valgrind-checked C comparison on every kernel,
+   and an AVX-512 kernel for `x86-64-v4` builds.
+- Responsive maintainer with three releases in July 2026.
+
+Cons:
+
+- Compile-time kernel selection only:
+   the default build runs SSE2 at 0.59 of `twox-hash` on file contents,
+   and AVX2 needs a raised build plus a meow-owned startup check.
+- No safety comments,
+   and an open report about raw-pointer functions not marked `unsafe`.
+- Releases before 0.8.17 returned wrong seeded-builder output on long inputs.
+- No git tags;
+   provenance rests on `.cargo_vcs_info.json`.
+- Same XXH3 quality caveats.
+
+### `hashcrew` 0.3.0 (XXH3-128)
+
+Pros:
+
+- Strictest `unsafe` policy of the four,
+   with documented safety for every block,
+   and a small used path (1,440 lines, 32 `unsafe`).
+- Signed tags and commits.
+- Run-time dispatch with a public backend API,
+   and full AVX2 speed in the `x86-64-v3` build (47.2 GiB/s on file contents).
+- Extensive boundary, partition, and streaming tests,
+   and Miri with strict provenance.
+
+Cons:
+
+- Its run-time-dispatched AVX2 path is slow:
+   16.0 GiB/s on file contents in the default build,
+   below `xxhash-rust`'s SSE2 path,
+   because the dispatch sits at each 64-byte stripe (`#[target_feature]` per-stripe kernels,
+   `src/xxhash/kernel/x86.rs:117`, `:139`) and cannot inline into the loop.
+- Two weeks old,
+   one main author who self-merges,
+   no external users on the tracker.
+- Tests compare with another Rust crate, not C.
+- Same XXH3 quality caveats.
+
+### `highway` 1.3.0 (HighwayHash-128)
+
+Pros:
+
+- Passes every SMHasher3 test,
+   with an algorithm frozen "unchanging forever" and a keyed design.
+- Run-time dispatch to AVX2 or SSE4.1 at full speed in the default build.
+- Instruction-set CI matrix, Miri, quickcheck properties, and a fuzz target against C.
+
+Cons:
+
+- About a quarter of XXH3's speed on file contents (12.4 GiB/s)
+   and a fifth on fingerprint material (46.6 ns per item baseline).
+- Largest `unsafe` surface (196 occurrences) with no safety comments.
+- No release for 20 months,
+   16 unreleased commits,
+   single maintainer.
+- Upstream reference 128-bit vectors only cover inputs shorter than 64 bytes,
+   and the crate archive omits its license text.
+
+## Ranking
+
+Ranking:
+ `twox-hash` 2.1.4 > `xxhash-rust` 0.8.18 > `hashcrew` 0.3.0 > `highway` 1.3.0.
+
+- `twox-hash` over `xxhash-rust` (68.5 against 58):
+   decided by S2 whole-file throughput (5 points)
+   and S8 CPU capability handling (2 points),
+   with S7, S10, S1, and S5 adding 3.5.
+  In the default build `twox-hash` selects AVX2 at run time and hashes the tracked tree at 49.3 GiB/s,
+   against `xxhash-rust`'s compile-time SSE2 path at 29.1,
+   and streams warm multi-GB files at 11.2 to 11.5 against 8.5 to 8.6;
+   in the `x86-64-v3` build they are within band of each other,
+   but reaching it with `xxhash-rust` requires a raised build and a startup check in meow.
+  The S1 point is not needed:
+   without S1 the margin is 9.5 points,
+   and the closest sensitivity test leaves 8.2.
+- `xxhash-rust` over `hashcrew` (58 against 49):
+   decided by S2 and S3 at weight 5 (10 points for `xxhash-rust`),
+   against S8 and S9 (3 points for `hashcrew`),
+   with S1 and S11 adding 2 for `xxhash-rust`.
+  On the default build `xxhash-rust`'s SSE2 path hashes file contents at 1.8× `hashcrew`'s run-time-selected AVX2 path
+   (29.1 against 16.0 GiB/s),
+   because `hashcrew` calls its AVX2 kernel once per 64-byte stripe;
+   on the raised build both are near 47 to 49.
+  This pair is the least stable:
+   with S8 at weight 5 the margin shrinks to 0.83 points of 76.
+- `hashcrew` over `highway` (49 against 41):
+   decided by S2 (5 points),
+   S1 (2 points),
+   S9 (2 points),
+   and S5 (1 point),
+   against S6 quality (2 points for `highway`).
+  HighwayHash-128 hashes file contents at about 12.4 GiB/s in both builds,
+   below `hashcrew`'s slowest path (16.0) and far below its raised-build path (47.2),
+   and warm multi-GB streaming shows the same order in both builds
+   (within band only on the image in the baseline build).
+  `highway`'s full SMHasher3 pass is its one decisive advantage;
+   if the user weighs quality beyond HC8 at 5,
+   the two tie.
+
+## Confidence and evidence limits
+
+- One x86_64 host (Zen 4 with AVX-512) measured every speed;
+   CPUs without AVX2,
+   or with slower memory,
+   would change absolute numbers and could change the SSE2 against AVX2 gaps.
+- No aarch64 speed was measured;
+   S5 is a low-signal range ("aarch64 and the m1 question").
+- Cold-read results depend on this btrfs-on-LUKS NVMe volume and on the 2 GiB container's page-cache limit;
+   on other storage the point where the hash rather than I/O limits throughput moves.
+- The multi-core composition was measured with 16 MiB chunks against 1 MiB single-thread reads,
+   so its result mixes thread count with chunk size.
+- No finalist was fuzzed for 128-bit output against C except through the local reference check,
+   and no mutation testing exists upstream.
+- SMHasher3 results test the algorithms through SMHasher3's own implementations,
+   tied to the crates by output equality rather than by running SMHasher3 on the crates.
+- Stability promises are statements by upstream authors;
+   the local tests show equality today,
+   not a guarantee for future releases,
+   so meow should pin versions and keep golden vectors in its own tests.
+- The custom aarch64 musl static-pie target was not built ("HC4 build").
+- Sensitivity covers one input at a time,
+   not simultaneous changes of several weights or ratings.
+
+## Recommendation
+
+Recommended:
+ `twox-hash` 2.1.4,
+ `XxHash3_128` (XXH3-128),
+ archive SHA-256 `5283634e518fe9e82c7b20520bb4bc209009fd16c82077c802f8111ecbb0117a`,
+ commit `6f866bffe73900c63df2650be4eed41e3ed9b500`.
+
+This relies on reading R2,
+ SIMD vectorization:
+ AVX2 or SSE2 on x86_64 and NEON on aarch64.
+Under R1,
+ dedicated instructions,
+ no non-cryptographic candidate passes the hard gates
+ ("Result under each reading of hardware acceleration").
+
+Material risks,
+ stated with the recommendation:
+
+- XXH3's seed is not a safe domain separator
+   (SMHasher3 full-width collisions when seeds vary, "Quality evidence").
+  meow must hash with the default seed and put its salt and any domain tags into the hashed bytes.
+- XXH3-128 fails 36 SMHasher3 tests at partial width or with varying seeds;
+   `highway` is the only finalist that passes all,
+   at about a quarter of the speed on file contents.
+- Output stability rests on the frozen XXH3 specification and upstream promises;
+   meow should pin `=2.1.4`
+   and keep golden vectors in its own tests
+   (for example the empty input `99aa06d3014798d86001c324468d497f`
+   and the file digests in "S3 multi-GB from disk (weight 5)"),
+   so an upgrade that changes output fails its tests.
+- One maintainer.
+
+How meow would use it,
+ from the measurements:
+
+- Dependency features:
+   `default-features = false, features = ["std", "xxhash3_128"]`;
+   `std` enables run-time AVX2 and NEON detection (`std = ["alloc"]`),
+   and the default feature set would add `rand`.
+- A default build needs no `-Ctarget-cpu` flag and no startup CPU check to reach AVX2 speed;
+   a raised build still needs meow's own startup check ("HC5 CPU capabilities").
+- Stream files with a fresh `XxHash3_128::new()` per file and reads of 64 KiB to 1 MiB;
+   memory stays near 3 MiB for a 3.97 GB file.
+- Serialize the `u128` in one fixed byte order in the cache format.
+- Parallelize across files rather than within one file;
+   within a file,
+   reading limits throughput on this host ("S4 multi-core on one large input (weight 1)").
+
+Recommendation is not adoption:
+ no product code,
+ dependency,
+ configuration,
+ or decision record was changed.
+
+## Questions for the user
+
+- Which reading of "hardware acceleration" did you mean?
+  This report relies on R2 (SIMD vectors).
+  If you meant dedicated instructions (R1),
+   no non-cryptographic library passes,
+   and the choices are to accept SIMD,
+   to widen the scope to cryptographic R1 functions such as SHA-256 with SHA extensions
+   (1.86 GiB/s on file contents against 49.3 for `twox-hash`),
+   or to drop the streaming requirement for `rotohash-rs`
+   (which also has no stability statement).
+- Should quality evidence beyond the one-byte gate (S6) weigh more than the default 1?
+  At weight 5 `hashcrew` and `highway` tie for third place;
+   the recommendation does not change.
+- Do you want `ssh m1` powered on to measure NEON speed and output equality on real silicon?
+  Under the frozen rubric it cannot change the ranking:
+   S5 at both range endpoints and at weight 5 keeps the order,
+   and so does S5 at 0 for any finalist with 4 for the one ranked below it;
+   it could only surface a hard-gate failure that QEMU missed.
+- Would a C toolchain for the aarch64 musl build be acceptable?
+  It changes no finalist,
+   because none uses C;
+   it would only give the BLAKE3 control its NEON path if cryptographic functions ever enter scope.
