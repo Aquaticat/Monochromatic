@@ -92,6 +92,26 @@ Each step's evidence is in the linked documents.
 - Done on 2026-09-16 with the user's authorization:
    `rustup target add x86_64-unknown-linux-musl`;
    static musl daemon skeletons with XXH3 and with `gxhash` both built and ran.
+- Accepted 2026-09-16:
+   [`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md).
+- Running,
+   each writing to the session scratchpad:
+  - `probe-platforms.md`:
+     the four-target build matrix,
+     QEMU runs on aarch64,
+     no-AES behavior,
+     a startup CPU-check prototype,
+     and a reproduction of gxhash issue #111.
+  - `gxhash-owned.md`:
+     upstream algorithm notes,
+     reimplementation versus fork,
+     output compatibility,
+     optimizations,
+     and bounded benchmarks.
+  - `rust-structured-edits.md`:
+     comment-preserving JSONC and TOML editing in Rust against the repository's TypeScript editors.
+- Installs are authorized for this work,
+   except `rpm-ostree install`.
 - Stopped unfinished on 2026-09-16:
    the design of a TypeScript daemon with a Rust native addon;
    no appendix was written.
@@ -146,11 +166,14 @@ lists the rest.
 
 ## Next action
 
-1.  When the declarative configuration research lands,
-    copy it to `doc/planning/monorepo-manager-route-research/stack-declarative-config.md`,
+1.  As each running research file lands,
+    copy it into `doc/planning/monorepo-manager-route-research/`,
     verify its load-bearing claims,
-    and merge its logic placement and format ranking into the from-scratch design.
-2.  Present the ranking with pros and cons,
-    and ask the design's remaining open questions,
-    including 0.x CPU architectures.
-3.  Write a decision record only after the user accepts a stack and configuration design.
+    merge it into the from-scratch design,
+    and commit.
+2.  Ask the user every flagged question it raises in the same turn,
+    with pros,
+    cons,
+    and a ranking;
+    the user asked on 2026-09-16 that flagged items never wait in documents.
+3.  Record accepted choices in `doc/decision/` only after the user accepts them.
