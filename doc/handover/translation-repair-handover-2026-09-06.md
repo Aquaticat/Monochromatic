@@ -447,7 +447,7 @@ which the takeover session does not have.
   (the pass log's "shi_Yumiaoya5 read" heading dated 2026-09-17 18:28 UTC;
   three judge-quality notes there,
   "Zhongshan No. 1 Hotel" for 一酒店 the worst).
-  `yingying1` launched at 18:30 UTC on the same frozen `479bb011f` (pid 3820813,
+  `yingying1` launched at 18:23 UTC on the same frozen `479bb011f` (pid 3820813,
   runs `~/temp/agent/yingying1`,
   log `~/temp/agent/yingying1.log`);
   no cron job on the owner's word,
@@ -4086,7 +4086,7 @@ each read off the pass log and the shipped page:
     pid 3820813,
     runs `~/temp/agent/yingying1`,
     log `~/temp/agent/yingying1.log`,
-    launched 18:30 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
+    launched 18:23 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
