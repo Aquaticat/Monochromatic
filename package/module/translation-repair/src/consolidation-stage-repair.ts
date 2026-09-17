@@ -85,6 +85,19 @@ function anonymizeProducer(
       },),
     };
   }
+  if (producer.kind === 'lane') {
+    return {
+      kind: 'lane',
+      lane: producer.lane,
+      matchedAliases: producer.matched
+        .map(function toAlias(modelId,): string {
+        return roleAlias({
+          aliases,
+          modelId,
+        });
+      },),
+    };
+  }
   return {
     kind: 'composite',
     aliases: producer.contributors

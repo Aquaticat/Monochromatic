@@ -16,6 +16,7 @@ export {
 } from './translate-alignment.ts';
 export {
   buildTranslateCandidates,
+  type LaneText,
   type TranslateCandidateSet,
   type TranslateCandidateValue,
   type TranslateOrigin,

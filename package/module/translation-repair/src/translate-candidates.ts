@@ -66,8 +66,31 @@ export type TranslateCandidateValue = {
 };
 
 /**
+ One lane's text offered to a consolidation slate: what the repair lane or
+ the translate lane would ship, put before the judges when the contest
+ endorsed neither or the standing failed the deterministic rule (class
+ forty, 2026-09-17).
+
+ @example
+ ```ts
+ const offered: LaneText = { lane: 'repair', text: '> The cat naps.', };
+ ```
+ */
+export type LaneText = {
+  /**
+   Which lane would ship it.
+   */
+  readonly lane: 'repair' | 'translate';
+
+  /**
+   Text that lane would ship, as it would ship.
+   */
+  readonly text: string;
+};
+
+/**
  Slate judges compare, plus what building it revealed.
- 
+
  @example
  ```ts
  const { candidates, collapsed, } = buildTranslateCandidates({ voices, ... },);
@@ -75,8 +98,8 @@ export type TranslateCandidateValue = {
  */
 export type TranslateCandidateSet = {
   /**
-   Distinct proposals, incumbent first when it has text, then fresh
-   translations in roster order.
+   Distinct proposals, incumbent first when it has text, then any lane texts
+   in lane order, then fresh translations in roster order.
    */
   readonly candidates: readonly Candidate<TranslateCandidateValue>[];
 
@@ -186,9 +209,13 @@ export function collapseKey({ text, }: { readonly text: string; },): string {
  
  @param incumbentText - translation as it stands, blank when this slice has
  none
- 
+
+ @param laneTexts - what the repair and translate lanes would ship, offered
+ to a consolidation slate whose standing is neither contest-endorsed nor
+ eligible (class forty, 2026-09-17); none on a translate slate
+
  @returns Distinct candidates, how many collapsed, and what that revealed
- 
+
  @example
  ```ts
  const set = buildTranslateCandidates({ voices, translatorModelIds, incumbentText, },);
@@ -199,10 +226,12 @@ export function buildTranslateCandidates(
     voices,
     translatorModelIds,
     incumbentText,
+    laneTexts = [],
   }: {
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
     readonly translatorModelIds: readonly RosterModelId[];
     readonly incumbentText: string;
+    readonly laneTexts?: readonly LaneText[];
   },
 ): TranslateCandidateSet {
   /**
@@ -246,12 +275,18 @@ export function buildTranslateCandidates(
     },);
 
   /**
-   Every proposal worth judging: the incumbent when it has text, then each
-   translator's own rendering.
-   
+   Every proposal worth judging: the incumbent when it has text, then any
+   lane texts, then each translator's own rendering.
+
    A blank incumbent is the case this lane exists for, a passage nobody has
    translated, and offering it as a candidate would put "leave it untranslated"
    on the ballot.
+
+   LANE TEXTS SIT BETWEEN, so the incumbent's bytes win a collapse against a
+   lane that reproduces them and a lane's bytes win one against a fresh
+   proposal that reproduces the lane: what was already there stays what was
+   already there, and what a lane would ship stays the lane's (class forty,
+   2026-09-17).
    */
   const offered: readonly Candidate<TranslateCandidateValue>[] = [
     ...(proposesText({ text: incumbentText, },)
@@ -269,6 +304,24 @@ export function buildTranslateCandidates(
         } satisfies Candidate<TranslateCandidateValue>,
       ]
       : []),
+    ...laneTexts
+      .filter(function isUsable(laneText,): boolean {
+        return proposesText({ text: laneText.text, },);
+      },)
+      .map(function toLaneCandidate(laneText,): Candidate<TranslateCandidateValue> {
+        return {
+          producer: {
+            kind: 'lane',
+            lane: laneText.lane,
+            matched: [],
+          },
+          value: {
+            text: laneText.text,
+            origin: 'fresh',
+          },
+          rendered: laneText.text,
+        };
+      },),
     ...folded.map(function toCandidate({
       voice,
       fold,

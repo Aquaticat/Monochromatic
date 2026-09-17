@@ -27,6 +27,15 @@ const PRODUCER_KINDS = [
   'model',
   'composite',
   'incumbent',
+  'lane',
+] as const;
+
+/**
+ Lanes a lane candidate can name (class forty, 2026-09-17).
+ */
+const LANE_NAMES = [
+  'repair',
+  'translate',
 ] as const;
 
 /**
@@ -220,6 +229,20 @@ export function requireProducer(
       contributors: requireRosterModelIds({
         value: record.contributors,
         path: `${path}.contributors`,
+      },),
+    };
+
+  if (kind === 'lane')
+    return {
+      kind,
+      lane: requireOneOf({
+        value: record.lane,
+        path: `${path}.lane`,
+        allowed: LANE_NAMES,
+      },),
+      matched: requireRosterModelIds({
+        value: record.matched,
+        path: `${path}.matched`,
       },),
     };
 

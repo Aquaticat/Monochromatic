@@ -33,7 +33,10 @@ import type {
 import type { SliceValidation, } from './translate-validate.ts';
 import { wrapConsolidationProposals, } from './consolidate-wrap.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
-import { buildTranslateCandidates, } from './translate-candidates.ts';
+import {
+  buildTranslateCandidates,
+  type LaneText,
+} from './translate-candidates.ts';
 import { judgeTranslateSlate, } from './translate-judge.ts';
 import type {
   TranslateDecision,
@@ -296,17 +299,21 @@ export type ConsolidationSettlement = {
  @param standingEligible - whether the standing text passed the deterministic
  publication gate; when it did not, it is withheld from the slate and a
  settlement that would keep it throws instead of shipping it
- 
+
+ @param laneTexts - what the repair and translate lanes would ship, offered
+ on the slate beside the proposals when the standing is neither endorsed nor
+ eligible (`consolidate-lane-offer.ts`, class forty, 2026-09-17)
+
  @param signal - cancellation for the whole settlement
- 
+
  @param perCallTimeoutMs - bound on any single exchange
- 
+
  @param l - stage logger
- 
+
  @returns What ships, and every round that decided it
- 
+
  @throws BlankSelectionError - when the slate judges settle on nothing at all
- 
+
  @example
  ```ts
  const settled = await settleConsolidation({ client, roster, subject, voices, validity, producedFindings, standingText, lineStructured, signal, perCallTimeoutMs, l, },);
@@ -327,6 +334,7 @@ export async function settleConsolidation(
     polishConfig,
     standingMayShip = true,
     standingEligible = true,
+    laneTexts = [],
     signal,
     perCallTimeoutMs,
     l,
@@ -344,6 +352,7 @@ export async function settleConsolidation(
     readonly polishConfig?: ConsolidationPolishConfig;
     readonly standingMayShip?: boolean;
     readonly standingEligible?: boolean;
+    readonly laneTexts?: readonly LaneText[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -404,8 +413,10 @@ export async function settleConsolidation(
 
   // A SLATE WITH NOTHING VALID ON IT ENDS HERE, before either round is bought.
   // The gate's question is which rendering is more faithful, and that has no
-  // meaning when the only proposals are structurally not the page.
-  if (floor.kind === 'incumbent-only') {
+  // meaning when the only proposals are structurally not the page. A slate
+  // with lane texts to offer is not that slate: the lanes passed the rule
+  // (class forty, 2026-09-17), so the judges are asked.
+  if ((floor.kind === 'incumbent-only') && (laneTexts.length === 0)) {
     requireShippableTerminal({
       standingEligible,
       terminal: 'incumbent-only',
@@ -435,9 +446,10 @@ export async function settleConsolidation(
 
   /**
    Model ids the floor passed, read off the floor so the filter below takes
-   one member step rather than two.
+   one member step rather than two; none where the floor refused every
+   proposal and only lane texts carry the slate on.
    */
-  const { validModelIds, } = floor;
+  const validModelIds: readonly string[] = (floor.kind === 'incumbent-only') ? [] : floor.validModelIds;
 
   /**
    Voices the floor passed, which is what the slate may carry.
@@ -477,14 +489,30 @@ export async function settleConsolidation(
   if (!standingEligible)
     sl.warn(`slice ${String(sliceIndex,)}: ${INELIGIBLE_STANDING_WITHHELD_FINDING}`,);
 
+  if (laneTexts.length > 0) {
+    /**
+     Lane names, for the log.
+     */
+    const laneNames = laneTexts.map(function laneOf(laneText,): string {
+      return laneText.lane;
+    },);
+    sl.info(
+      `slice ${String(sliceIndex,)}: lane texts offered on the slate beside the proposals: ${
+        laneNames.join(', ',)
+      }`,
+    );
+  }
+
   /**
    Distinct proposals the judges will see, incumbent among them when it may
-   ship.
+   ship, and the lane texts when the standing is neither endorsed nor
+   eligible (class forty, 2026-09-17).
    */
   const built = buildTranslateCandidates({
     voices: shippableVoices,
     translatorModelIds: roster,
     incumbentText: incumbent.incumbentText,
+    laneTexts,
   },);
 
   /**

@@ -3,6 +3,7 @@ import type { ConsolidationPolishConfig, } from './consolidation-polish-model.ts
 import { hashContent, } from './document-node.ts';
 import type { LaneContestBallot, } from './lane-contest-wire.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { LaneText, } from './translate-candidates.ts';
 
 //region Consolidate key
 // What makes two runs' consolidations the SAME consolidation, for cache
@@ -115,6 +116,13 @@ const NEIGHBOURING_SOURCE_KEY_LABEL = 'neighbouring';
 const NEIGHBOURING_INCUMBENT_KEY_LABEL = 'neighbouring-incumbent';
 
 /**
+ What a slice whose lane texts were offered on the slate labels them with
+ (class forty, 2026-09-17). Appended only when any were, so every slice
+ whose standing was an endorsed eligible lane keys as it always did.
+ */
+const LANE_TEXTS_KEY_LABEL = 'lane-texts';
+
+/**
  Everything about this run that changes what the voices are ASKED.
  
  Without it a resumed slice could return a settlement reached by a different
@@ -216,9 +224,13 @@ export function consolidateRunShape(
  
  @param neighbouringIncumbentText - archive rendering of the passages either
  side, absent for the same reason
- 
+
+ @param laneTexts - lane texts offered on the slate beside the proposals,
+ absent or empty where the standing was an endorsed eligible lane (class
+ forty, 2026-09-17)
+
  @returns Hash keying this slice's settlement
- 
+
  @example
  ```ts
  const key = consolidateSliceKey({ runShape, sourceText, incumbentText, repairText, translateText, standingText, ballots, lineStructured, },);
@@ -238,6 +250,7 @@ export function consolidateSliceKey(
     pictureContext,
     neighbouringSourceText,
     neighbouringIncumbentText,
+    laneTexts = [],
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -251,6 +264,7 @@ export function consolidateSliceKey(
     readonly pictureContext?: string;
     readonly neighbouringSourceText?: string;
     readonly neighbouringIncumbentText?: string;
+    readonly laneTexts?: readonly LaneText[];
   },
 ): string {
   return hashContent({
@@ -314,6 +328,15 @@ export function consolidateSliceKey(
         : [
           NEIGHBOURING_INCUMBENT_KEY_LABEL,
           neighbouringIncumbentText,
+        ]),
+      // THE LANE TEXTS OFFERED, appended only when any were, so a slate that
+      // carries them is never served a settlement bought by one that did not
+      // and every other slice keys as before (class forty, 2026-09-17).
+      ...((laneTexts.length === 0)
+        ? []
+        : [
+          LANE_TEXTS_KEY_LABEL,
+          laneTexts,
         ]),
     ],),
   },);

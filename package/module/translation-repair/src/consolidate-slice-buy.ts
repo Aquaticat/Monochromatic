@@ -12,6 +12,7 @@ import {
 } from './consolidate-settle.ts';
 import type { ConsolidateSubject, } from './consolidate-wire.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { LaneText, } from './translate-candidates.ts';
 import { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
 
 //region Consolidate slice buy
@@ -31,6 +32,11 @@ type ConsolidationBuyInput = {
   readonly standingMayShip?: boolean;
   readonly standingEligible?: boolean;
   readonly standingFindings?: readonly string[];
+  /**
+   Lane texts the slate offers beside the proposals (class forty,
+   2026-09-17).
+   */
+  readonly laneTexts?: readonly LaneText[];
   readonly signal: AbortSignal;
   readonly perCallTimeoutMs: number;
   readonly l: Logger;
@@ -108,6 +114,7 @@ async function buyConsolidationAttempt(
     standingMayShip = true,
     standingEligible = true,
     standingFindings = [],
+    laneTexts = [],
     signal,
     perCallTimeoutMs,
     l,
@@ -133,6 +140,7 @@ async function buyConsolidationAttempt(
       ...((polishConfig === undefined) ? {} : { polishConfig, }),
       standingMayShip,
       standingEligible,
+      laneTexts,
       signal,
       perCallTimeoutMs,
       l,
@@ -151,6 +159,10 @@ async function buyConsolidationAttempt(
     perCallTimeoutMs,
     l,
   },);
+  // SILENT PRODUCERS ARE THE HOUR, not the passage, lane texts or none: a
+  // slate the judges would be as silent about must not settle as unjudged
+  // and persist (`PAUSES provider-silent unsafe standing` in the driver
+  // tests), so the lane texts of class forty change nothing here.
   if ((!standingMayShip) && (produced.voices
     .length
     === 0)) {
@@ -179,6 +191,7 @@ async function buyConsolidationAttempt(
     ...((polishConfig === undefined) ? {} : { polishConfig, }),
     standingMayShip,
     standingEligible,
+    laneTexts,
     signal,
     perCallTimeoutMs,
     l,

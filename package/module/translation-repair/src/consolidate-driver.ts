@@ -8,6 +8,7 @@ import {
   consolidateRunShape,
   consolidateSliceKey,
 } from './consolidate-key.ts';
+import { laneTextsForSlate, } from './consolidate-lane-offer.ts';
 import { persistConsolidationSettlement, } from './consolidate-persistence.ts';
 import type { ConsolidationSettlement, } from './consolidate-settle.ts';
 import { buyConsolidationSlice, } from './consolidate-slice-buy.ts';
@@ -378,6 +379,23 @@ export async function consolidateDocument(
     },);
 
     /**
+     Lane texts the slate offers beside the proposals: each lane's rendering
+     that passes the deterministic rule and is not the standing, whenever
+     the standing is neither contest-endorsed nor eligible (class forty,
+     2026-09-17, `consolidate-lane-offer.ts`).
+     */
+    const laneTexts = laneTextsForSlate({
+      sourceText,
+      incumbentText: row.incumbentText,
+      repairText: row.repairText,
+      translateText: row.translateText,
+      standingText,
+      standingMayShip,
+      standingEligible: standingValid,
+      ...((syntax === undefined) ? {} : { syntax, }),
+    },);
+
+    /**
      What the pictures near this slice were read to say, empty where none
      were.
      
@@ -443,6 +461,7 @@ export async function consolidateDocument(
       pictureContext,
       neighbouringSourceText: neighbours.sourceText,
       neighbouringIncumbentText: neighbours.incumbentText,
+      laneTexts,
     },);
 
     /**
@@ -488,6 +507,7 @@ export async function consolidateDocument(
             standingMayShip,
             standingEligible: standingValid,
             standingFindings,
+            laneTexts,
             signal,
             perCallTimeoutMs,
             l: dl,

@@ -116,6 +116,24 @@ export type CandidateProducer =
      their work. Empty in the ordinary case, where the incumbent stands alone.
      */
     readonly matched: readonly RosterModelId[];
+  }
+  | {
+    readonly kind: 'lane';
+
+    /**
+     Which lane's text this is: what the repair lane or the translate lane
+     would ship, offered to a consolidation slate when the contest endorsed
+     neither or the standing failed the deterministic rule (class forty,
+     2026-09-17). Nobody on the roster owns it as a whole, exactly as with
+     the incumbent.
+     */
+    readonly lane: 'repair' | 'translate';
+
+    /**
+     Models whose proposals reproduced this lane's text and were collapsed
+     into it, discounted when they judge it. Empty in the ordinary case.
+     */
+    readonly matched: readonly RosterModelId[];
   };
 
 /**
@@ -134,7 +152,7 @@ export type CandidateProducer =
 export function producerModelIds(producer: CandidateProducer,): readonly RosterModelId[] {
   if (producer.kind === 'model')
     return [producer.modelId,];
-  if (producer.kind === 'incumbent')
+  if ((producer.kind === 'incumbent') || (producer.kind === 'lane'))
     return producer.matched;
   return producer.contributors;
 }
@@ -162,6 +180,15 @@ export function describeProducer(producer: CandidateProducer,): string {
     if (matched.length === 0)
       return 'incumbent';
     return `incumbent(matched by ${matched.join(' + ',)})`;
+  }
+  if (producer.kind === 'lane') {
+    /**
+     Models that independently reproduced this lane's text.
+     */
+    const { matched, } = producer;
+    if (matched.length === 0)
+      return `lane(${producer.lane})`;
+    return `lane(${producer.lane}, matched by ${matched.join(' + ',)})`;
   }
   return `composite(${producer.contributors
     .join(' + ',)})`;
@@ -217,6 +244,24 @@ export function mergeProducers(
   if ((left.kind === 'incumbent') || (right.kind === 'incumbent'))
     return {
       kind: 'incumbent',
+      matched: united,
+    };
+
+  // A LANE'S TEXT SURVIVES THE SAME WAY, for the same reason: a model
+  // reproducing what the repair lane would ship gains a stake in it, and the
+  // text is still the lane's rendering, not that model's fresh proposal.
+  // Where both sides are lanes the first-seen lane keeps its name, since the
+  // two lanes shipping one text is one text on the slate.
+  if (left.kind === 'lane')
+    return {
+      kind: 'lane',
+      lane: left.lane,
+      matched: united,
+    };
+  if (right.kind === 'lane')
+    return {
+      kind: 'lane',
+      lane: right.lane,
       matched: united,
     };
 

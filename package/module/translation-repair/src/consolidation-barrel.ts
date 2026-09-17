@@ -94,6 +94,7 @@ export {
   readStandingVerdict,
   type StandingVerdict,
 } from './consolidate-standing-verdict.ts';
+export { laneTextsForSlate, } from './consolidate-lane-offer.ts';
 export {
   CONSOLIDATE_CACHE_VERSION,
   consolidateRunShape,

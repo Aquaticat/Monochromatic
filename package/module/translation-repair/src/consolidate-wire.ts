@@ -106,6 +106,11 @@ export type ConsolidationFailureProducer =
   | {
     readonly kind: 'incumbent';
     readonly matchedAliases: readonly string[]
+  }
+  | {
+    readonly kind: 'lane';
+    readonly lane: 'repair' | 'translate';
+    readonly matchedAliases: readonly string[]
   };
 
 /**
