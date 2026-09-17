@@ -1,5 +1,11 @@
 # Daemon stack deep dive: languages beyond TypeScript, Rust, Kotlin, Go, and Zig
 
+Outcome on 2026-09-16:
+the user judged Python,
+OCaml,
+and .NET not worth further research.
+This file is kept as evidence.
+
 Date: 2026-09-16.
 Scope: read-only design research for the daemon in
 `doc/planning/monorepo-manager-from-scratch-design.md`.

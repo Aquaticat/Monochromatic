@@ -1,5 +1,12 @@
 # Rust crate survey for the from-scratch monorepo manager
 
+Outcome on 2026-09-16:
+the option this survey served,
+a Rust core with TypeScript file-enforcer children,
+is out over single-file size.
+Its crate findings for the daemon core carry over to the remaining all-Rust route;
+see "Current stack direction" in `doc/planning/monorepo-manager-from-scratch-design.md`.
+
 Research date: 2026-09-16.
 Scope: library-level redo of the Rust daemon core research in
 `doc/planning/monorepo-manager-route-research/stack-rust.md`,

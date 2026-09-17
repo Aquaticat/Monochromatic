@@ -1,5 +1,11 @@
 # Node library options for the from-scratch monorepo manager
 
+Outcome on 2026-09-16:
+the Node design here is out.
+The user killed the TypeScript route because Node single executables are too big;
+see "Current stack direction" in `doc/planning/monorepo-manager-from-scratch-design.md`.
+This file is kept as evidence.
+
 Research date: 2026-09-16.
 Input design: `doc/planning/monorepo-manager-from-scratch-design.md`.
 Prior research this corrects: `doc/planning/monorepo-manager-route-research/stack-typescript.md`.

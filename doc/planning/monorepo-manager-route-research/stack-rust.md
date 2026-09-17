@@ -1,5 +1,17 @@
 # Rust stack options for the from-scratch monorepo manager
 
+Outcome on 2026-09-16:
+
+- Option 2 is out:
+   its TypeScript file-enforcer children need Node inside the single file,
+   which the user ruled too big.
+- Option 1 is the remaining route.
+- This file's conclusions that task spawning must be repository-written `unsafe` code
+   and that the watcher and JSON-RPC framing must be hand-written
+   are corrected by `stack-rust-crates.md`.
+- Configuration hosting for Option 1 is being redesigned;
+   see "Current stack direction" in `doc/planning/monorepo-manager-from-scratch-design.md`.
+
 Research date: 2026-09-16.
 Scope: read-only design deep dive for two options from
 `doc/planning/monorepo-manager-from-scratch-design.md`,

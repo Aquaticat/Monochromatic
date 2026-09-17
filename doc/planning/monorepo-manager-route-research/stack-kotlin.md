@@ -1,5 +1,9 @@
 # Kotlin stacks for the from-scratch monorepo manager
 
+Outcome on 2026-09-16:
+the user judged every Kotlin option not worth further research.
+This file is kept as evidence.
+
 ## Status and scope
 
 - Date:

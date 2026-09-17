@@ -4,7 +4,9 @@
 
 - Status:
    proposal;
-   no route is chosen.
+   Route B is recommended after both designs,
+   and the user's later requirements and stack decisions all address Route B,
+   but no decision record exists.
 - Requested 2026-09-16:
    compare extending Bazel against building a replacement from scratch.
 - Scope:
@@ -163,6 +165,12 @@ their READMEs define current scope.
 
 - File-enforcer as-is for FE01 to FE24,
    including its watch loop and staleness manifest.
+  Superseded on 2026-09-16:
+   the tool must ship as one file,
+   a file carrying Node is too big,
+   so file-enforcer is rewritten in Rust
+   (`monorepo-manager-from-scratch-design.md`,
+   "Current stack direction").
 - Native tool invocation as Mise tasks use today:
    Cargo,
    Gradle,
@@ -170,7 +178,9 @@ their READMEs define current scope.
    tsdown,
    and oxlint through `task-util`,
    with no rulesets.
-- `watch-restart` for long-running child processes.
+- `watch-restart` for long-running child processes,
+   as a task the daemon runs;
+   TypeScript packages do not ship inside the single file.
 - Meta Package Manager for FE18 and FE19.
 
 ### Built by the repository
@@ -190,7 +200,8 @@ their READMEs define current scope.
 - No Bazel ruleset gaps:
    tools keep their native build systems,
    including Gradle for Android.
-- `/ts` source imports and file-enforcer's model stay unchanged.
+- `/ts` source imports stay unchanged.
+  File-enforcer's model was also listed as unchanged until the Rust rewrite superseded that.
 
 ### Cons
 
@@ -229,7 +240,7 @@ so the ranking holds.
 ## Answered questions
 
 Answered by the user on 2026-09-16;
-neither answer flips the ranking.
+no answer flips the ranking.
 
 - Input enforcement:
    OS-level sandbox enforcement is not required.
@@ -247,20 +258,27 @@ neither answer flips the ranking.
    so this does not replace the input-enforcement answer.
   Route B must build cgroup sandboxing;
    Bazel exposes experimental cgroup startup options such as `experimental_cgroup_parent` and
-   `experimental_run_in_user_cgroup`,
-   whose per-action coverage is still being researched.
+   `experimental_run_in_user_cgroup`.
+  The Bazel design found per-action cgroups only for `linux-sandbox` actions with limit flags,
+   and a silent fallback when cgroups cannot be created
+   ([`monorepo-manager-bazel-route-design.md`](monorepo-manager-bazel-route-design.md),
+   "Sandboxing").
+- Platforms:
+   everything in 0.x is Linux only,
+   per the user on 2026-09-16.
+  The vet's HC5 still lists macOS and Windows CI runners,
+   a conflict recorded under "Risks" in the from-scratch design.
 
-## Open questions
+## Questions resolved by the designs
 
-- Which transport should the inspection and control RPC use:
-   a local socket,
-   HTTP on loopback,
-   or both?
-- Which platforms must the daemon support under HC5,
-   given Fedora development and macOS and Windows CI runners?
-- Does the Mise removal ledger keep tool provisioning,
+- RPC transport:
+   the from-scratch design proposes a filesystem Unix socket under `$XDG_RUNTIME_DIR`
+   with newline-delimited JSON-RPC 2.0;
+   HTTP on loopback is not proposed.
+- Mise removal ledger:
+   the from-scratch design keeps tool provisioning,
    environment,
-   and secrets outside the monorepo manager in both routes?
+   and secrets as separate owners per `mise-removal-coverage.md`.
 
 ## Design findings so far
 
@@ -327,9 +345,10 @@ Research appendices live in [`monorepo-manager-route-research/`](monorepo-manage
 
 ## Next action
 
-On 2026-09-16 the user asked for design documents for both routes.
-The user has not yet hit a disqualifying problem in the Bazel route
-and expects that designing it concretely will surface one if it exists.
-Each design document records concrete integration evidence,
-and any disqualifying finding updates this ranking.
+On 2026-09-16 the user asked for design documents for both routes,
+expecting a concrete Bazel design to surface any disqualifying problem;
+both documents now exist,
+and the Bazel design records disqualifying problems.
+Current work and the next action are tracked in
+[`doc/handover/monorepo-manager.md`](../handover/monorepo-manager.md).
 No code is written before a route is chosen.

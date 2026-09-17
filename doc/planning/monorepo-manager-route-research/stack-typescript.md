@@ -1,5 +1,12 @@
 # TypeScript runtime options for the from-scratch monorepo manager
 
+Outcome on 2026-09-16:
+every option here is out.
+The user killed the TypeScript route because Node single executables are too big,
+and judged Bun and Deno not worth further research;
+see "Current stack direction" in `doc/planning/monorepo-manager-from-scratch-design.md`.
+This file is kept as evidence.
+
 Research date: 2026-09-16.
 Input design: `doc/planning/monorepo-manager-from-scratch-design.md`
 and `doc/planning/monorepo-manager-route-research/from-scratch-inputs.md`.

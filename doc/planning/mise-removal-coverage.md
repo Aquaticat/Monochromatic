@@ -11,6 +11,17 @@ On 2026-09-16 the user stated that the monorepo manager's configuration does not
 so TypeScript is no longer a requirement for that owner.
 Whether generated tool-native adapter files are acceptable remains unresolved.
 
+Later on 2026-09-16 the monorepo manager narrowed to one remaining route:
+a single-file all-Rust tool with file-enforcer rewritten in Rust,
+because a single file carrying Node is too big
+([`monorepo-manager-from-scratch-design.md`](monorepo-manager-from-scratch-design.md),
+"Current stack direction").
+The route is not yet accepted.
+Sections that name file-enforcer the canonical TypeScript configuration compiler,
+or that require provisioning Node before file-enforcer can execute,
+describe today's TypeScript implementation
+and need revision once the Rust tool's configuration host is chosen.
+
 ## Motivation
 
 On 2026-09-16 the user stated that Mise must be migrated away from because it is not documented well enough,
