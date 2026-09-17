@@ -13,7 +13,7 @@ import {
   type ImageReading,
   isTransientReadingReason,
 } from './image-reading-stage.ts';
-import { readingsCorroborate, } from './reading-corroboration.ts';
+import { clusterReadings, } from './reading-cluster.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Image reading pair
@@ -556,57 +556,53 @@ export async function readImagePair(
   }
 
   /**
-   First two readings, which is the whole roster today and the first two of a
-   larger one.
+   Which readings vouch for each other, over EVERY PAIR rather than the first
+   two (class fifty-two, XingZ601, 2026-09-17: the first two stood at 0.297
+   while the third agreed with both, and the entry stopped on a picture three
+   readers had read).
    */
-  const [
-    left,
-    right,
-  ] = readings;
-  if ((left === undefined) || (right === undefined)) {
-    throw new Error(
-      `readImagePair counted ${String(readings.length,)} readings for ${assetName} `
-        + `and then could not index two of them`,
-    );
-  }
+  const {
+    vouched,
+    closest,
+  } = clusterReadings({ readings, },);
 
   /**
-   Whether they describe the same picture.
+   Readers of the closest pair, named in the log either way.
    */
-  const verdict = readingsCorroborate({
-    left: left.text,
-    right: right.text,
-  },);
-  if (verdict.kind === 'disagree') {
+  const {
+    left: closestLeft,
+    right: closestRight,
+  } = closest;
+  if (vouched.length < 2) {
     rl.warn(
-      `${assetName}: ${left.modelId} and ${right.modelId} disagree about what it says, `
-        + `overlap ${verdict
+      `${assetName}: no two of ${String(readings.length,)} readers agree about what it says, `
+        + `closest ${closestLeft.modelId} and ${closestRight.modelId} at overlap ${closest
           .overlap
           .toFixed(LOGGED_OVERLAP_PLACES,)}`,
     );
-    // BOTH READERS ANSWERED, so the disagreement is about the picture and the
+    // EVERY READER ANSWERED, so the disagreement is about the picture and the
     // roster, not about the call, and it is remembered like a corroboration.
     return {
       kind: 'unavailable',
       reason: 'readers-disagree',
       perReader,
       transient: false,
-      overlap: verdict.overlap,
+      overlap: closest.overlap,
       readings,
     };
   }
 
   rl.info(
-    `${assetName}: corroborated by ${String(readings.length,)} readers at overlap ${
-      verdict
-        .overlap
-        .toFixed(LOGGED_OVERLAP_PLACES,)
-    }`,
+    `${assetName}: corroborated by ${String(vouched.length,)} of ${
+      String(readings.length,)
+    } readers at overlap ${closest
+      .overlap
+      .toFixed(LOGGED_OVERLAP_PLACES,)}`,
   );
   return {
     kind: 'corroborated',
-    readings,
-    overlap: verdict.overlap,
+    readings: vouched,
+    overlap: closest.overlap,
   };
 }
 
