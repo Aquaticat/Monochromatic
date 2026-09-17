@@ -103,12 +103,10 @@ the configuration language no longer needs to be Turing-complete and may be (use
  2026-09-17),
 and the tool warns clearly when the CPU lacks required capabilities.
 Content hashing used `gxhash` until collision findings on 2026-09-17;
-its replacement is being selected,
-cryptographic hashes are eligible (user,
- 2026-09-17),
-and they compete under speed-first weights ("A",
- user,
- 2026-09-17).
+its replacement is XXH3-128 from `twox-hash` 2.1.4,
+accepted on 2026-09-17 after cryptographic hashes were made eligible
+and ranked under speed-first weights
+([`monorepo-manager-cache-key-hash.md`](monorepo-manager-cache-key-hash.md)).
 
 ## Consequences
 

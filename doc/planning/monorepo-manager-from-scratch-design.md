@@ -1913,13 +1913,12 @@ Vet:
 [`tech-meow-cache-key-hash-vet-2026-09-17-600031ed.md`](../audit/tech-meow-cache-key-hash-vet-2026-09-17-600031ed.md),
 finished 2026-09-17 under the changed premises,
 with a screening appendix listing every scanned crate.
-Nothing is adopted:
-the brief went to the user the same day and rule `DRR` requires acceptance first.
-Answering it,
+Answering the brief,
 the user said "I just powered on my m1 mac.
 Please measure.",
-so the aarch64 numbers that decide `twox-hash` against `rscrypto` are being measured on that machine
-before the choice is recorded.
+so the aarch64 numbers that decide `twox-hash` against `rscrypto` were measured there,
+and the user then answered "Accept twox-hash":
+[`doc/decision/monorepo-manager-cache-key-hash.md`](../decision/monorepo-manager-cache-key-hash.md).
 
 - Recommended:
    `twox-hash` 2.1.4 XXH3-128,
@@ -2381,13 +2380,12 @@ Answered on 2026-09-17 before re-running the hash selection:
 speed first,
 and only `x86-64-v4` blocks publishing among x86-64 builds.
 
-Reopened on 2026-09-17:
-
-- meow's cache key hash,
-   with cryptographic hashes eligible and separate `x86-64-v3` and `x86-64-v4` builds
-   ("Cache key hash vet result").
-
 Closed on 2026-09-17:
+
+- meow's cache key hash:
+   XXH3-128 from `twox-hash` 2.1.4,
+   accepted after the re-run vet and the m1 measurement
+   ("Cache key hash re-run vet result").
 
 - Repository-owned `gxhash` for meow,
    superseded when cache keys left `gxhash`;

@@ -333,7 +333,10 @@ The user answered on 2026-09-17:
  while `hashcrew` and `xxhash-rust` swapped third and fourth;
  no sensitivity test changes the winner any more.
 The remaining proxy is Darwin against Linux aarch64,
- which a rented Arm Linux run would close.
+ which a rented Arm Linux run would close;
+ the user declined that and answered "Accept twox-hash",
+ recorded in
+ [`doc/decision/monorepo-manager-cache-key-hash.md`](../decision/monorepo-manager-cache-key-hash.md).
 m1 state after the run,
  verified from this session:
  only the machine's own toolchain is installed
