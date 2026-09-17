@@ -453,7 +453,7 @@ which the takeover session does not have.
   log `~/temp/agent/yingying1.log`)
   and settled clean after 15 minutes
   (the pass log's "yingying1 read" heading dated 2026-09-17 18:42 UTC).
-  `XingZ601` launched at 18:45 UTC on the same frozen `479bb011f` (pid 3839544,
+  `XingZ601` launched at 18:39 UTC on the same frozen `479bb011f` (pid 3839544,
   runs `~/temp/agent/XingZ601`,
   log `~/temp/agent/XingZ601.log`);
   no cron job on the owner's word,
@@ -4092,7 +4092,7 @@ each read off the pass log and the shipped page:
     pid 3839544,
     runs `~/temp/agent/XingZ601`,
     log `~/temp/agent/XingZ601.log`,
-    launched 18:45 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
+    launched 18:39 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
