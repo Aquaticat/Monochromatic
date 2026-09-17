@@ -99,7 +99,9 @@ Stated by the user on 2026-09-16:
    it only means an issue in these paths don't block publishing."
   So "Linux only" names the release-blocking tier,
    not a ban on code paths or CI for other systems.
-- The macOS and Windows runners in `readonly-semantic-bridge.yml` keep using Mise for now.
+- The macOS and Windows runners in `readonly-semantic-bridge.yml` keep using Mise only until meow takes over;
+   then Mise is out
+   ("Root `mise.toml` and where meow is built").
 
 ### Configuration
 
@@ -1169,13 +1171,99 @@ Each follows from recorded decisions:
 Answered by the user on 2026-09-17:
 "Hand-maintained file, and we're obviously going to build meow in a new worktree."
 
-- Once meow replaces file-enforcer,
-   the root `mise.toml` stops being generated and is maintained by hand
-   until Mise leaves the macOS and Windows runners;
-   meow gets no Mise-specific rule.
+- Clarified by the user the same day:
+   "mise.toml: hand-maintained now, once meow takes over, mise is out."
+  The root `mise.toml` is hand-maintained from now on,
+   meow gets no Mise-specific rule,
+   and Mise is removed entirely when meow takes over,
+   including from the macOS and Windows runners;
+   what those runners run instead is being asked.
+- "`meow` doesn't need to own the MPM lifecycle":
+   installing and updating Meta Package Manager stays outside meow.
 - meow is built in a separate git worktree,
    so the TypeScript file-enforcer and meow never enforce the same tree during development,
    and the lock interoperability concern for coexisting enforcers does not arise.
+
+### Platform probes
+
+Research:
+[`probe-platforms.md`](monorepo-manager-route-research/probe-platforms.md),
+2026-09-17,
+using the daemon skeleton with `gxhash` 3.5.0 on nightly-2026-09-12.
+Spot-checked the same day:
+`file` output for every built binary,
+the aarch64 musl target spec,
+the installed `qemu-user-static-aarch64` 10.2.2 package,
+and the `rustix` auxv source.
+
+#### Build matrix
+
+- `x86_64-unknown-linux-gnu`:
+   1,983,504 bytes on the host,
+   1,980,536 bytes in a Debian bookworm container,
+   PIE.
+- `x86_64-unknown-linux-musl`:
+   2,098,120 bytes,
+   static-pie.
+- `aarch64-unknown-linux-gnu`:
+   1,709,080 bytes,
+   PIE,
+   built in Debian bookworm with `aarch64-linux-gnu-gcc` and the `libc6-dev-arm64-cross` 2.36 sysroot.
+- `aarch64-unknown-linux-musl`:
+   1,744,728 bytes,
+   statically linked but not position-independent,
+   because the built-in target spec lacks `static-position-independent-executables`
+   (checked with `rustc -Z unstable-options --print target-spec-json`),
+   so the binary gets no ASLR.
+  A custom target spec copying that target with `static-position-independent-executables` set,
+   built with `-Z build-std=std,panic_abort -Z json-target-spec` and `rust-lld`,
+   produced a static-pie binary (`readelf` type `DYN`)
+   that passed the CPU check and hashed under QEMU;
+   it needed musl's self-contained startup objects linked under the custom target name in the rustup sysroot.
+- Both glibc builds need glibc 2.34:
+   they ran on UBI 9 (2.34) and failed on Fedora 34 (2.33) with "version `GLIBC_2.34' not found".
+  The host-built binary also carries weak `GLIBC_2.39` references (`pidfd_spawnp`, `pidfd_getpid`)
+   and prints "weak version `GLIBC_2.39' not found" on glibc 2.34 and 2.35;
+   the bookworm-built binaries print nothing.
+- Every aarch64 skeleton exited 0 under QEMU with the same `gxhash128` output as x86_64.
+
+#### Missing CPU capabilities
+
+- Without the check,
+   the skeleton exits 132 (SIGILL) on x86_64 `Nehalem` and `qemu64`
+   and on a `cortex-a72` patched to drop the crypto extension,
+   for musl and glibc builds.
+- The prototype check,
+   compiled under `#![forbid(unsafe_code)]`,
+   prints a diagnostic naming the missing capability and stating there is no fallback,
+   then exits 3;
+   with AES present it hashes and exits 0.
+- `is_x86_feature_detected!("aes")` and `is_aarch64_feature_detected!("aes")` printed `true` on CPUs without AES,
+   confirming they cannot perform the check.
+
+#### gxhash issue #111
+
+- Not reproduced on aarch64 Linux under QEMU:
+   no panic for `gxhash64`,
+   `gxhash128`,
+   or `GxHasher` over input lengths 0 to 67,
+   or the issue's reproducer,
+   in debug-assertion builds on nightly and Rust 1.84.0,
+   while a deliberate overlapping `copy_nonoverlapping` did panic with the issue's message.
+- `gxhash` still reads past the end of short inputs.
+
+#### Settled from the probes
+
+- The aarch64 check also requires `HWCAP_PMULL`,
+   because Rust's aarch64 `aes` target feature implies PMULL,
+   so a `+aes` build may use it
+   (`std_detect/src/detect/arch/aarch64.rs:117-118`).
+- `rustix` is built with `use-libc-auxv`:
+   its default auxv reader unwraps and aborts when both `PR_GET_AUXV` and `/proc/self/auxv` fail
+   (`src/backend/linux_raw/param/auxv.rs:267-316` in `rustix` 1.1.4),
+   while `use-libc-auxv` reads libc's `getauxval`.
+- Probe containers that run QEMU pass `--init`:
+   without it a SIGILL run hung because QEMU ran as PID 1.
 
 ### Process model
 
@@ -1343,9 +1431,10 @@ Answered by the user on 2026-09-17:
    the bit std uses on Linux (`std_detect/src/detect/os/linux/aarch64.rs:147`),
    through the safe `rustix::param::linux_hwcap` (`src/param/auxv.rs:66` in `rustix` 1.1.4),
    and `gxhash` on aarch64 also needs `neon`.
-  Unexercised on a CPU without AES:
-   QEMU user mode is not installed on the development machine,
-   and no aarch64 target is installed.
+  Exercised on 2026-09-17 under QEMU user mode
+   ("Platform probes");
+   an earlier note here that QEMU user mode was absent came from checking only the x86_64 binary names,
+   while `qemu-user-static-aarch64` 10.2.2 was installed.
 - Static probe,
    2026-09-16:
    the daemon skeleton with `gxhash128`,

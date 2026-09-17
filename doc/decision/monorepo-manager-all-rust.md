@@ -54,7 +54,12 @@ Supersedes `package/dev-script/file-enforcer/DECISION.rust-migration.md` for the
 - Unsupported operating systems and architectures may still have built code paths;
    issues in those paths do not block publishing (user,
    2026-09-16).
-- The macOS and Windows CI runners that run `mise run` keep Mise until the tool supports those systems.
+- The root `mise.toml` is hand-maintained,
+   and Mise is removed entirely once the tool takes over,
+   including from the macOS and Windows CI runners (user,
+   2026-09-17).
+- The tool does not own Meta Package Manager's lifecycle (user,
+   2026-09-17).
 
 Decided the same day and recorded in the design:
 the configuration language no longer needs to be Turing-complete and may be (user, 2026-09-17),
