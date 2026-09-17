@@ -123,6 +123,13 @@ Each step's evidence is in the linked documents.
    eviction by a size cap plus 30-day age,
    flaky retry reporting,
    and rule `FLG` in `AGENTS.md`.
+- Decided 2026-09-17 and recorded in "Declarative configuration" in the design:
+   the configuration may be Turing-complete,
+   HCL syntax is lightly endorsed,
+   rules writing outside a repository live in a per-user configuration,
+   the forbidden-strings rules compile with the published scanner,
+   the root `mise.toml` becomes hand-maintained once meow replaces file-enforcer,
+   and meow is built in its own git worktree.
 - Installs are authorized for this work,
    except `rpm-ostree install`.
 - Stopped unfinished on 2026-09-16:
