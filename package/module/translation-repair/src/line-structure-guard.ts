@@ -1,3 +1,5 @@
+import { isIdeograph, } from './preservation-tokens.ts';
+
 //region Line structure guard
 // WHY THIS IS NOT IN `translate-validate.ts`, where it was first written and
 // where the obvious tidying would put it back: that file compares BLOCKS and
@@ -8,28 +10,147 @@
 // slices inherit that from their chunk, and this refuses a rendering that
 // merged the lines the rule protects.
 /**
- Counts lines of one passage that carry content.
+ Whether a line carries text, as against a blank line or a bare quote marker.
+ 
+ A LINE OF NOTHING BUT `>` SEPARATES QUOTED BLOCKS the way a blank line
+ separates plain ones (class forty-seven, shi_Yumiaoya2, 2026-09-17: the
+ original wrote three of them inside one farewell quote and the archive one,
+ and the count read that as two merged lines).
+ 
+ @param line - one line of a passage
+ 
+ @returns Whether the line carries content
+ 
+ @example
+ ```ts
+ const counted = carriesContent({ line: '> 猫醒了。', },);
+ ```
+ */
+function carriesContent({ line, }: { readonly line: string; },): boolean {
+  for (const character of line) {
+    if ((character !== '>') && (character.trim() !== ''))
+      return true;
+  }
+  return false;
+}
+
+/**
+ Lines of one passage that carry content, in order.
  
  BLANK LINES ARE NOT COUNTED. They separate blocks rather than carry text,
  and a rendering that writes a different number of them has not merged
  anything.
  
- @param text - passage to count
+ @param text - passage to read
  
- @returns How many lines carry content
+ @returns Lines carrying content
  
  @example
  ```ts
- const lines = contentLineCount({ text: candidateText, },);
+ const lines = contentLines({ text: candidateText, },);
  ```
  */
-function contentLineCount({ text, }: { readonly text: string; },): number {
+function contentLines({ text, }: { readonly text: string; },): readonly string[] {
   return text
     .split('\n',)
-    .filter(function carriesContent(line,): boolean {
-    return line.trim() !== '';
-  },)
-    .length;
+    .filter(function kept(line,): boolean {
+      return carriesContent({ line, },);
+    },);
+}
+
+/**
+ Whether a line carries a Han character.
+ 
+ @param line - one line
+ 
+ @returns Whether any character is an ideograph
+ 
+ @example
+ ```ts
+ const han = carriesHan({ line: '猫醒了。', },);
+ ```
+ */
+function carriesHan({ line, }: { readonly line: string; },): boolean {
+  for (const character of line) {
+    if (isIdeograph(character,))
+      return true;
+  }
+  return false;
+}
+
+/**
+ Whether a line carries a Latin letter and no Han character: an English line
+ the original itself wrote.
+ 
+ @param line - one line
+ 
+ @returns Whether the line is the original's own English
+ 
+ @example
+ ```ts
+ const english = isOwnEnglish({ line: 'From *The Cat Show*', },);
+ ```
+ */
+function isOwnEnglish({ line, }: { readonly line: string; },): boolean {
+  if (carriesHan({ line, },))
+    return false;
+  for (const character of line) {
+    if (((character >= 'a') && (character <= 'z')) || ((character >= 'A') && (character <= 'Z')))
+      return true;
+  }
+  return false;
+}
+
+/**
+ Counts adjacent pairs of a Han line and an English line in the original,
+ which an English rendering owes one line, not two.
+ 
+ THE ENGLISH LINE IS THE RENDERING OF ITS NEIGHBOUR (class forty-seven,
+ shi_Yumiaoya2, 2026-09-17): the original quoted a film line in Chinese with
+ its English beside it, the archive carried the English once, and the floor
+ refused every rendering that did not quote it twice. Each line joins at
+ most one pair, taken in order.
+ 
+ @param lines - content lines of the original
+ 
+ @returns How many such pairs the original carries
+ 
+ @example
+ ```ts
+ const pairs = bilingualPairCount({ lines: contentLines({ text: sourceText, },), },);
+ ```
+ */
+function bilingualPairCount({ lines, }: { readonly lines: readonly string[]; },): number {
+  /**
+   Pairs found so far.
+   */
+  let pairs = 0;
+  /**
+   Cursor over the lines.
+   */
+  let at = 0;
+  while ((at + 1) < lines.length) {
+    /**
+     Line at the cursor.
+     */
+    const here = lines[at] ?? '';
+    /**
+     Line after it.
+     */
+    const next = lines[at + 1] ?? '';
+    /**
+     Whether the two are a Han line and its English, either way round.
+     */
+    const paired = (carriesHan({ line: here, },) && isOwnEnglish({ line: next, },))
+      || (isOwnEnglish({ line: here, },) && carriesHan({ line: next, },));
+    if (paired) {
+      pairs += 1;
+      at += 2;
+      continue;
+    }
+    at += 1;
+  }
+  return pairs;
 }
 
 /**
@@ -82,14 +203,20 @@ export function compareLineCounts(
     return [];
 
   /**
-   Lines the original keeps apart.
+   Content lines of the original.
    */
-  const owed = contentLineCount({ text: sourceText, },);
+  const sourceLines = contentLines({ text: sourceText, },);
+
+  /**
+   Lines the original keeps apart, a Han line beside its own English owed once.
+   */
+  const owed = sourceLines.length - bilingualPairCount({ lines: sourceLines, },);
 
   /**
    Lines the rendering carries.
    */
-  const carried = contentLineCount({ text: candidateText, },);
+  const carried = contentLines({ text: candidateText, },)
+    .length;
 
   if (carried >= owed)
     return [];

@@ -345,11 +345,16 @@ await describe({
       fn: async () => {
         // The scripted follow-up would prove absence, but no follow-up may be
         // asked: the single round records the split and moves on.
+        // THE FULL QUOTE MUST ANCHOR: the bare sentence occurs twenty times in
+        // the target and locates nowhere (ambiguous-quote), which left this
+        // fixture split between an absence and an unanchorable claim, the shape
+        // class forty-eight now admits by the shortfall; the heading makes it
+        // unique, so the split here is between two anchored, opposite votes.
         const admission = await runAdmission({
           sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
           targetText: LONG_TARGET,
           replies: [
-            { coverage: 'full', quote: 'The cat sleeps in warm sunlight.', },
+            { coverage: 'full', quote: '## Cats\n\nThe cat sleeps in warm sunlight.', },
             { coverage: 'none', quote: '', },
             COVERAGE_VOICE_LOST,
           ],

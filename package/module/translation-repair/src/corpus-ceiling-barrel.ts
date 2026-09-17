@@ -24,3 +24,7 @@ export {
 export { stopBeforeNextEntry, } from './corpus-run/pass-stop-before-next.ts';
 
 //endregion Corpus ceiling barrel
+export {
+  classifyInsertionCoverage,
+  type InsertionCoverageRow,
+} from './corpus-run/insertion-coverage-model.ts';

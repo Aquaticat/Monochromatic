@@ -143,10 +143,24 @@ export function classifyInsertionCoverage(
   },
 ): InsertionCoverageClassification {
   /**
-   Rows latest roster found wholly absent.
+   Rows latest roster found wholly absent, and rows whose split carried no
+   anchored claim of coverage at all.
+   
+   A SPLIT NOBODY ANCHORED IS ABSENCE SHORT OF A MAJORITY (class forty-eight,
+   shi_Yumiaoya2, 2026-09-17): two seats asked on a skeleton archive, one
+   voted absent, one claimed partial coverage and quoted the Chinese passage
+   itself, which anchors nowhere on the page; the passage shipped as a silent
+   gap. An unanchorable claim is still no vote for absence, but where the only
+   votes are absent ones, the whole-page shortfall corroboration below is what
+   decides, as it does for a majority.
    */
   const absent = rows.filter(function absentVerdict(row,): boolean {
-    return row.verdictKind === 'absent';
+    if (row.verdictKind === 'absent')
+      return true;
+    return (row.verdictKind === 'split')
+      && (row.anchoredFull === 0)
+      && (row.anchoredPartial === 0)
+      && (row.absentCount > 0);
   },);
   /**
    Rows proven fully rendered elsewhere.
@@ -224,6 +238,11 @@ export function classifyInsertionCoverage(
     ...rows.flatMap(function evidence(row,): readonly string[] {
       return [
         row.coverageFinding,
+        ...((row.verdictKind === 'split') && absent.includes(row,)
+          ? [`insertion-split-unanchored (slice ${String(row.sliceIndex,)}, absent ${String(row.absentCount,)} of ${
+            String(row.asked,)
+          } asked, no anchored claim; read as absent for the shortfall)`,]
+          : []),
         `insertion-corroboration (slice ${String(row.sliceIndex,)}, shortfall ${
           shortfallAdmitted.has(row.position,) ? 'admitted' : 'refused'
         }, missing destinations ${String(row.missingDestinationCount,)}, admission ${
