@@ -1122,6 +1122,16 @@ Open to the user's veto:
      only pointers are recorded,
      and a changed or missing output means the task runs again.
   - Eviction uses a size cap plus a maximum age.
+  - The size cap counts bytes only the cache pins,
+     not apparent size or free space (user,
+     2026-09-16);
+     unprivileged accounting for it is being researched.
+  - The default maximum age is 30 days since an entry was last used,
+     matching Cargo's one-month threshold for regenerable global-cache files
+     (`doc/book/src/reference/config.md`, "Global caches", in `rust-lang/cargo`).
+  - Retries are declared for unfixably flaky tasks;
+     a pass after a failed attempt is recorded as a pass marked flaky,
+     with every attempt's logs kept.
 - Measuring cache size with reflinks,
    probe on 2026-09-16 in a throwaway directory on the development machine's btrfs:
    an 8 MiB random file plus a `cp --reflink=always` clone reported
