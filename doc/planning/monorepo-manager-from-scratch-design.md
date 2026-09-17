@@ -1963,10 +1963,10 @@ If `twox-hash` is adopted,
 Research in progress;
 user choices it raises are asked as they arise (rule `FLG`):
 
-- meow's cache key hash,
-   selected by the running choosing-technology vet
-   ("Cache key hash after the collision findings");
-   the build target features and missing-capability warning follow the chosen hash.
+- meow's cache key hash:
+   the vet recommends `twox-hash` XXH3-128 under the SIMD reading of "hardware acceleration"
+   ("Cache key hash vet result");
+   the user was asked on 2026-09-17 which reading they meant.
 
 Closed on 2026-09-17:
 

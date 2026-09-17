@@ -94,11 +94,22 @@ Each step's evidence is in the linked documents.
    static musl daemon skeletons with XXH3 and with `gxhash` both built and ran.
 - Accepted 2026-09-16:
    [`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md).
-- Running:
-  - A choosing-technology vet for meow's cache key hash,
-     writing `doc/audit/*-vet-2026-09-17.md` and committing its own report,
-     after the user moved cache keys off `gxhash`
-     ("Cache key hash after the collision findings" in the design).
+- Finished on 2026-09-17:
+   the choosing-technology vet for meow's cache key hash,
+   [`doc/audit/tech-meow-cache-key-hash-vet-2026-09-17.md`](../audit/tech-meow-cache-key-hash-vet-2026-09-17.md),
+   merged into "Cache key hash vet result" in the design.
+  It recommends `twox-hash` 2.1.4 XXH3-128 under the SIMD reading of "hardware acceleration";
+   under the dedicated-instruction reading no non-cryptographic library passes.
+  Asked the user which reading they meant;
+   adoption and the #545 update wait on that answer.
+  Closed without asking,
+   because neither answer changes the choice:
+   extra quality weight,
+   an `ssh m1` run,
+   and a C toolchain for the aarch64 musl build.
+  The vet agent reported that the Write tool refused its Markdown drafts,
+   so it wrote them through Bash,
+   and that some of its Bash commands broke rule `1CB`.
 - Stopped unfinished on 2026-09-17,
    with no files written:
    troubleshooting docs for `gxhash` defects,
