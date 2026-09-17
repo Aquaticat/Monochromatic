@@ -114,6 +114,10 @@ export {
 export * from './corpus-entry-barrel.ts';
 export * from './corpus-readiness-barrel.ts';
 export { decidePassInsertionAdmission, } from './corpus-run/pass-insertion-admission.ts';
+export {
+  classifyInsertionCoverage,
+  type InsertionCoverageRow,
+} from './corpus-run/insertion-coverage-model.ts';
 export { gatherEntryPictures, } from './corpus-run/entry-pictures.ts';
 export * from './corpus-ceiling-barrel.ts';
 export { runAttemptQueue, } from './corpus-run/entry-attempt-queue.ts';

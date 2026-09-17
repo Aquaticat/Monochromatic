@@ -162,6 +162,69 @@ await describe({
 
     it({
       name:
+        'IGNORES A LINE THAT CARRIES ONLY A QUOTE MARKER, since a bare \'>\' separates quoted blocks '
+        + 'rather than carrying text; an original writing three of them and a rendering writing one '
+        + 'have merged nothing (class forty-seven)',
+      fn: async () => {
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: '> 猫醒了。\n>\n> 太阳很暖。\n>\n> 它数鸟。',
+          candidateText: '> The cat wakes.\n> The sun is warm.\n> She counts birds.',
+        },).length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name:
+        'OWES NO SEPARATE LINE FOR A HAN LINE WHOSE ENGLISH STANDS BESIDE IT in the original, since '
+        + 'that line is already rendered by its neighbour and carrying both would quote it twice; '
+        + 'the prose lines around the pair are still owed one each (class forty-seven, shi_Yumiaoya2)',
+      fn: async () => {
+        /**
+         Bilingual farewell: each Chinese line stands beside its English original.
+         */
+        const bilingual = [
+          '> 如果再也不能见到你，祝你早安。',
+          '>',
+          '> And in case I never see you again, good morning.',
+          '>',
+          '> 出自《猫的世界》',
+          '>',
+          '> From *The Cat Show*',
+          '',
+          '好了，猫，睡吧。',
+          '',
+          '条目贡献：[Tabby](https://example.org/tabby)',
+        ].join('\n',);
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: bilingual,
+          candidateText: [
+            '> And in case I never see you again, good morning.',
+            '>',
+            '> From *The Cat Show*',
+            '',
+            'All right, cat, sleep now.',
+            '',
+            'Contributor for this entry: [Tabby](https://example.org/tabby)',
+          ].join('\n',),
+        },).length,).toBe(0,);
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: bilingual,
+          candidateText: [
+            '> And in case I never see you again, good morning.',
+            '>',
+            '> From *The Cat Show*',
+            '',
+            'All right, cat, sleep now. Contributor for this entry: [Tabby](https://example.org/tabby)',
+          ].join('\n',),
+        },).length,).toBe(1,);
+      },
+    },),
+
+    it({
+      name:
         'ACCEPTS A RENDERING THAT MERGED IN ONE BLOCK AND SPLIT IN ANOTHER, which is this check\'s '
         + 'one blind spot, pinned here rather than left in a comment. The count is over the whole '
         + 'slice, so the two cancel. Closing it needs per-block alignment, a larger instrument than '
