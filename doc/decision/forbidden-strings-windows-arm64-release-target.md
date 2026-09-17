@@ -54,13 +54,32 @@ Evidence checked on 2026-09-16 before the change:
   and similar);
   its only Windows binding crate is `windows-sys` 0.61.2.
 - The build itself was not reproduced locally;
-  the 0.4.1 release run is the first real build for this target.
+  the 0.4.1 release run was the first real build for this target.
 
 The `forbidden-regex` bump exists because `cargo package` resolves the path dependency from crates.io.
 Published `forbidden-regex` 0.1.0 (checksum `ef4a63a5`) predates the multithreaded rule compile,
 so a `forbidden-strings` crate built against it would differ from the release binaries.
 The source diff against the published crate adds only private items,
 so a patch version is semver-compatible.
+
+## Outcome
+
+Verified 2026-09-17:
+
+- Commit `43404709a` published `forbidden-regex` 0.1.1 to crates.io
+  (sparse index checksum `2df22dea`)
+  after `mise run //package/rust-module/forbidden-regex:test` passed.
+- Commit `207bed93f` published `forbidden-strings` 0.4.1 to crates.io
+  (sparse index checksum `724eb91c`,
+  `forbidden-regex` requirement `^0.1.1` for normal and build dependencies)
+  after `mise run //package/cli/forbidden-strings:test` passed.
+- Workflow run 35178616343 succeeded on every job,
+  including `build-binary (aarch64-pc-windows-msvc, windows-11-arm)`.
+- Release `forbidden-strings-v0.4.1` carries eight archives,
+  including `forbidden-strings-0.4.1-aarch64-pc-windows-msvc.zip`.
+- `gh attestation verify` binds that archive to `cargo-publish.yml` at `207bed93f`,
+  and `file` reports its `forbidden-strings.exe` as a PE32+ ARM64 console executable.
+- The binary has not been executed on Windows arm64 hardware.
 
 ## Alternatives considered
 
