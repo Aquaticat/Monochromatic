@@ -294,6 +294,7 @@ export async function repairPreparedDocument(
     models,
     declaredNames: prepared.declaredNames,
     ...identityFragment,
+    ...referenceFragment,
     ...((refineCache === undefined) ? {} : { refineCache, }),
     signal,
     perCallTimeoutMs,

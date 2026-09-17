@@ -64,6 +64,9 @@ import { UnpreparedSliceError, } from './unprepared-slice.ts';
  
  @param identityContext - declared names and handles, when any
  
+ @param referenceContext - what the pages the original cites say, with
+ their rule, when the original cites any (class forty-one)
+ 
  @param signal - caller abort, honored by both rules
  
  @param perCallTimeoutMs - deadline per exchange
@@ -92,6 +95,7 @@ export async function refineSettledSlices(
     outcomes,
     models,
     identityContext,
+    referenceContext,
     declaredNames,
     refineCache,
     signal,
@@ -105,6 +109,7 @@ export async function refineSettledSlices(
     readonly outcomes: readonly ChunkRepairOutcome[];
     readonly models: RepairModels;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly declaredNames: readonly string[];
     readonly refineCache?: SliceCache<RefinedSliceSettlement>;
     readonly signal: AbortSignal;
@@ -127,6 +132,7 @@ export async function refineSettledSlices(
         models,
         declaredNames,
         ...(identityContext === undefined ? {} : { identityContext, }),
+        ...(referenceContext === undefined ? {} : { referenceContext, }),
         ...(refineCache === undefined ? {} : { refineCache, }),
         signal,
         perCallTimeoutMs,

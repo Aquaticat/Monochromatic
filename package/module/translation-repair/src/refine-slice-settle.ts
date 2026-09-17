@@ -112,6 +112,9 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
  
  @param identityContext - declared names and handles, when any
  
+ @param referenceContext - what the pages the original cites say, with
+ their rule, when the original cites any (class forty-one)
+ 
  @param declaredNames - same declarations as strings a guard compares
  
  @param signal - caller abort honored by every exchange
@@ -144,6 +147,7 @@ export async function settleRefinedSlice(
     models,
     refinerModelIds,
     identityContext,
+    referenceContext,
     declaredNames,
     neighbouringSourceText,
     neighbouringIncumbentText,
@@ -159,6 +163,7 @@ export async function settleRefinedSlice(
     readonly models: RepairModels;
     readonly refinerModelIds: readonly RosterModelId[];
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly declaredNames: readonly string[];
     readonly neighbouringSourceText?: string;
     readonly neighbouringIncumbentText?: string;
@@ -205,6 +210,7 @@ export async function settleRefinedSlice(
     envelopes: slice.envelopes,
     definitions,
     ...(identityContext === undefined ? {} : { identityContext, }),
+    ...(referenceContext === undefined ? {} : { referenceContext, }),
     declaredNames,
     mode: { kind: 'comparative', },
     sliceIndex: outcome.sliceIndex,

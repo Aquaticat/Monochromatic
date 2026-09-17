@@ -1,5 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import { citedReferenceCandidateLines, } from './cited-reference-rule.ts';
 import {
   CONTEST_REFUSAL,
   isStringList,
@@ -81,6 +82,13 @@ export type ConsolidationPolishGateSubject = {
    Declared names and handles, when documents provide them.
    */
   readonly identityContext?: string;
+
+  /**
+   What the pages the original cites say, when it cites any, so the gate
+   reads the attested details under the same rule the slate gate read them
+   (class forty-one).
+   */
+  readonly referenceContext?: string;
 };
 
 /**
@@ -263,7 +271,15 @@ export function buildConsolidationPolishGateMessages(
       ...requiredFindings,
       ...priorCorrections,
       ...((subject.identityContext === undefined) ? [] : [subject.identityContext,]),
+      ...((subject.referenceContext === undefined) ? [] : [subject.referenceContext,]),
     ],
+  },);
+  /**
+   The references and their rule, or nothing when the original cites nowhere.
+   */
+  const referenceBlock = citedReferenceCandidateLines({
+    fence,
+    ...((subject.referenceContext === undefined) ? {} : { referenceContext: subject.referenceContext, }),
   },);
   /**
    Required findings block, absent while approved base remains available.
@@ -315,6 +331,7 @@ export function buildConsolidationPolishGateMessages(
         'CANDIDATE "polished":',
         `${fence}\n${subject.polishedText}\n${fence}`,
         '',
+        ...referenceBlock,
         ...correctionEvidence,
         ...priorEvidence,
         `Return JSON: choice one of "polished", "base", "${CONTEST_REFUSAL}";`,

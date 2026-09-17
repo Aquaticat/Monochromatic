@@ -161,6 +161,9 @@ export function reviewParagraphsOf(
  
  @param identityContext - declared identities and contributor forms
  
+ @param referenceContext - what the pages the original cites say, with
+ their rule, when the original cites any (class forty-one)
+ 
  @param mode - comparative polish or required correction findings
  
  @param sliceIndex - prepared slice position
@@ -189,6 +192,7 @@ export async function runConsolidationPolishRound(
     syntax,
     lineStructured,
     identityContext,
+    referenceContext,
     mode,
     sliceIndex,
     config,
@@ -203,6 +207,7 @@ export async function runConsolidationPolishRound(
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly mode: RefineStageMode;
     readonly sliceIndex: number;
     readonly config: ConsolidationPolishConfig;
@@ -244,6 +249,7 @@ export async function runConsolidationPolishRound(
     envelopes,
     definitions,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     declaredNames: config.declaredNames,
     mode,
     sliceIndex,
@@ -363,6 +369,7 @@ export async function runConsolidationPolishRound(
       polishedText: polished,
       mode,
       ...((identityContext === undefined) ? {} : { identityContext, }),
+      ...((referenceContext === undefined) ? {} : { referenceContext, }),
     },
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,

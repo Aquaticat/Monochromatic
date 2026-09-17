@@ -144,6 +144,9 @@ export async function persistRefinePhaseSlice(
  
  @param identityContext - declared identities model prompts preserve
  
+ @param referenceContext - what the pages the original cites say, with
+ their rule, when the original cites any (class forty-one)
+ 
  @param declaredNames - exact declarations deterministic guard preserves
  
  @param refineCache - prior settlements and persistence boundary
@@ -189,6 +192,7 @@ export async function settleRefinePhaseSlice(
     runShape,
     definitions,
     identityContext,
+    referenceContext,
     declaredNames,
     refineCache,
     signal,
@@ -203,6 +207,7 @@ export async function settleRefinePhaseSlice(
     readonly runShape: ReturnType<typeof refineRunShape>;
     readonly definitions: string;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly declaredNames: readonly string[];
     readonly refineCache?: SliceCache<RefinedSliceSettlement>;
     readonly signal: AbortSignal;
@@ -291,6 +296,7 @@ export async function settleRefinePhaseSlice(
     models,
     refinerModelIds,
     ...(identityContext === undefined ? {} : { identityContext, }),
+    ...(referenceContext === undefined ? {} : { referenceContext, }),
     declaredNames,
     ...windowFragment,
     signal,

@@ -1,5 +1,6 @@
 import type { AbsoluteNaturalnessFinding, } from './absolute-naturalness-review-wire.ts';
 import type { SelectEvidence, } from './candidate-select-wire.ts';
+import { citedReferenceEvidence, } from './cited-reference-rule.ts';
 
 //region Refinement selection context
 // Keeps exploratory refinement and required correction from asking selectors
@@ -99,6 +100,9 @@ export type RefineSelectionContext = {
  
  @param repairedText - exact current English wording
  
+ @param referenceContext - what the pages the original cites say, with
+ their rule, when the original cites any (class forty-one)
+ 
  @returns Candidate-ranking context with review findings fenced as evidence
  
  @example
@@ -111,12 +115,21 @@ export function buildRefineSelectionContext(
     mode,
     sourceText,
     repairedText,
+    referenceContext,
   }: {
     readonly mode: RefineStageMode;
     readonly sourceText: string;
     readonly repairedText: string;
+    readonly referenceContext?: string;
   },
 ): RefineSelectionContext {
+  /**
+   The references as evidence the judges read beside the texts, none when
+   the original cites nowhere (class forty-one).
+   */
+  const referenceEvidence = citedReferenceEvidence(
+    (referenceContext === undefined) ? {} : { referenceContext, },
+  );
   if (mode.kind === 'comparative') {
     return {
       task: 'Each candidate is a revision of the CURRENT English translation below, meant to read more naturally without changing what it says.',
@@ -134,6 +147,7 @@ export function buildRefineSelectionContext(
           label: 'CURRENT English translation, which ships unchanged unless a candidate clearly beats it',
           text: repairedText,
         },
+        ...referenceEvidence,
       ],
     };
   }
@@ -183,6 +197,7 @@ export function buildRefineSelectionContext(
         label: 'CURRENT English translation, which cannot ship unchanged',
         text: repairedText,
       },
+      ...referenceEvidence,
       {
         label: 'REQUIRED FINDINGS from independent absolute-quality review',
         text: selectionFindings,

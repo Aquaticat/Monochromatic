@@ -45,6 +45,9 @@ export type {
  
  @param identityContext - names and handles prompts preserve
  
+ @param referenceContext - what the pages the original cites say, with
+ their rule, when the original cites any (class forty-one)
+ 
  @param sliceIndex - prepared slice position
  
  @param config - model roles and document-wide guard facts
@@ -73,6 +76,7 @@ export async function polishConsolidation(
     syntax,
     lineStructured,
     identityContext,
+    referenceContext,
     sliceIndex,
     config,
     eligible = true,
@@ -87,6 +91,7 @@ export async function polishConsolidation(
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly sliceIndex: number;
     readonly config?: ConsolidationPolishConfig;
     readonly eligible?: boolean;
@@ -124,6 +129,7 @@ export async function polishConsolidation(
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     mode: { kind: 'comparative', },
     sliceIndex,
     config,

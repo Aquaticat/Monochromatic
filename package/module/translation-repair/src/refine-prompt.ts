@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { AbsoluteNaturalnessFinding, } from './absolute-naturalness-review-wire.ts';
+import { citedReferenceCandidateLines, } from './cited-reference-rule.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
@@ -56,6 +57,9 @@ export type RefinePromptPlan = {
  @param identityContext - declared names and handles from front matter, when
  the document declares any
  
+ @param referenceContext - what the pages the original cites say, with
+ their rule, when the original cites any (class forty-one)
+ 
  @param naturalnessFindings - independent whole-passage defects correction must resolve
  
  @param priorNaturalnessCorrections - failed strategies next rewrite must not repeat
@@ -72,12 +76,14 @@ export function buildRefineMessages(
     sourceText,
     envelopes,
     identityContext,
+    referenceContext,
     naturalnessFindings = [],
     priorNaturalnessCorrections = [],
   }: {
     readonly sourceText: string;
     readonly envelopes: readonly EditableEnvelope[];
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly naturalnessFindings?: readonly AbsoluteNaturalnessFinding[];
     readonly priorNaturalnessCorrections?: readonly PriorNaturalnessCorrection[];
   },
@@ -115,6 +121,7 @@ export function buildRefineMessages(
         return envelope.baseText;
       },),
       ...(identityContext === undefined ? [] : [identityContext,]),
+      ...(referenceContext === undefined ? [] : [referenceContext,]),
       ...renderedFindings,
       ...renderedPriorCorrections,
     ],
@@ -138,6 +145,22 @@ export function buildRefineMessages(
   const identityBlock = identityContext === undefined
     ? ''
     : `\n\nDECLARED NAMES AND HANDLES, which must survive exactly:\n${identityContext}`;
+  /**
+   The pages the original cites and their rule as fenced lines, none when it
+   cites nowhere. CLASS FORTY-ONE (Mio25 slice 2, 2026-09-17): a refiner that
+   never saw them removed an attested archive detail as unsupported, and its
+   gate, equally blind, confirmed the removal.
+   */
+  const referenceLines = citedReferenceCandidateLines({
+    fence,
+    ...(referenceContext === undefined ? {} : { referenceContext, }),
+  },);
+  /**
+   Reference block, empty when there are no lines to show.
+   */
+  const referenceBlock = (referenceLines.length === 0)
+    ? ''
+    : `\n\n${referenceLines.join('\n',)}`;
   /**
    Independent defects this dedicated correction round must resolve.
    */
@@ -187,7 +210,7 @@ Reply with ONLY a JSON object of shape {"rewrites": [{"paragraph": 1, "newText":
       {
         role: 'user',
         content:
-          `ORIGINAL (Chinese), for checking that meaning survives\n${fence}\n${sourceText}\n${fence}${identityBlock}${findingBlock}${priorCorrectionBlock}\n\n${blocks}`,
+          `ORIGINAL (Chinese), for checking that meaning survives\n${fence}\n${sourceText}\n${fence}${identityBlock}${referenceBlock}${findingBlock}${priorCorrectionBlock}\n\n${blocks}`,
       },
     ],
   };

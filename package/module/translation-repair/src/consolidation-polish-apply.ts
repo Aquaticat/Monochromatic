@@ -100,6 +100,9 @@ export async function applyFinalPolish(
     ...((subject.identityContext === undefined)
       ? {}
       : { identityContext: subject.identityContext, }),
+    ...((subject.referenceContext === undefined)
+      ? {}
+      : { referenceContext: subject.referenceContext, }),
     sliceIndex,
     ...((polishConfig === undefined) ? {} : { config: polishConfig, }),
     eligible,

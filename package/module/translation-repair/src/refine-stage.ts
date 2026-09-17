@@ -136,6 +136,9 @@ export type RefineStageResult = {
  
  @param identityContext - declared names and handles, when any
  
+ @param referenceContext - what the pages the original cites say, with
+ their rule, when the original cites any (class forty-one)
+ 
  @param declaredNames - same declarations as strings to compare, since a
  rewrite for naturalness is exactly the edit that drops one
  
@@ -170,6 +173,7 @@ export async function runRefineStage(
     envelopes,
     definitions,
     identityContext,
+    referenceContext,
     declaredNames,
     mode,
     sliceIndex,
@@ -185,6 +189,7 @@ export async function runRefineStage(
     readonly envelopes: readonly EditableEnvelope[];
     readonly definitions: string;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly declaredNames: readonly string[];
     readonly mode: RefineStageMode;
     readonly sliceIndex: number;
@@ -229,6 +234,7 @@ export async function runRefineStage(
     sourceText,
     envelopes,
     ...(identityContext === undefined ? {} : { identityContext, }),
+    ...(referenceContext === undefined ? {} : { referenceContext, }),
     ...((mode.kind === 'comparative')
       ? {}
       : {
@@ -401,6 +407,7 @@ export async function runRefineStage(
     mode,
     sourceText,
     repairedText,
+    ...(referenceContext === undefined ? {} : { referenceContext, }),
   },);
   /**
    Candidate decision over structurally admissible rewrites.

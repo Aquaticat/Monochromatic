@@ -73,6 +73,9 @@ export const REFINE_CACHE_VERSION = 4;
  
  @param identityContext - names and handles both documents declare
  
+ @param referenceContext - what the pages the original cites say, with
+ their rule, when the original cites any (class forty-one)
+ 
  @returns Stable string for the key
  
  @example
@@ -86,11 +89,13 @@ export function refineRunShape(
     judgeModelIds,
     checkerModelIds,
     identityContext,
+    referenceContext,
   }: {
     readonly refinerModelIds: readonly RosterModelId[];
     readonly judgeModelIds: readonly RosterModelId[];
     readonly checkerModelIds: readonly RosterModelId[];
     readonly identityContext?: string;
+    readonly referenceContext?: string;
   },
 ): string {
   return JSON.stringify([
@@ -98,6 +103,9 @@ export function refineRunShape(
     judgeModelIds,
     checkerModelIds,
     identityContext ?? '',
+    // AFTER THE IDENTITY, so a key written before class forty-one and one
+    // written without references differ only when references exist.
+    ...(((referenceContext ?? '') === '') ? [] : [referenceContext,]),
   ],);
 }
 

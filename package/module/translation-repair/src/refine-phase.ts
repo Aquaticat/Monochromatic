@@ -82,6 +82,9 @@ export type RefinePhaseResult = {
  
  @param identityContext - declared names and handles model prompts preserve
  
+ @param referenceContext - what the pages the original cites say, with
+ their rule, when the original cites any (class forty-one)
+ 
  @param declaredNames - exact declarations deterministic guard preserves
  
  @param refineCache - naturalness namespace for resume and persistence
@@ -127,6 +130,7 @@ export async function runRefinePhase(
     outcomes,
     models,
     identityContext,
+    referenceContext,
     declaredNames,
     refineCache,
     signal,
@@ -140,6 +144,7 @@ export async function runRefinePhase(
     readonly outcomes: readonly ChunkRepairOutcome[];
     readonly models: RepairModels;
     readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly declaredNames: readonly string[];
     readonly refineCache?: SliceCache<RefinedSliceSettlement>;
     readonly signal: AbortSignal;
@@ -192,6 +197,7 @@ export async function runRefinePhase(
     judgeModelIds: models.judgeModelIds,
     checkerModelIds: models.checkerModelIds,
     ...(identityContext === undefined ? {} : { identityContext, }),
+    ...(referenceContext === undefined ? {} : { referenceContext, }),
   },);
 
   /**
@@ -210,6 +216,7 @@ export async function runRefinePhase(
         runShape,
         definitions,
         ...(identityContext === undefined ? {} : { identityContext, }),
+        ...(referenceContext === undefined ? {} : { referenceContext, }),
         declaredNames,
         ...((refineCache === undefined) ? {} : { refineCache, }),
         signal,
