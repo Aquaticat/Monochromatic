@@ -455,6 +455,26 @@ and .NET are out of consideration.
 The stack choice is between the Rust core with TypeScript file-enforcer children and TypeScript on Node,
 with the Rust core recommended.
 
+#### How TypeScript monorepo tools meet the same problems
+
+Checked 2026-09-16 after the user noted that many monorepo tools are written in TypeScript.
+
+- The `/dev/stdout` failure comes from libuv:
+   `UV_CREATE_PIPE` creates child stdio with `uv_socketpair`
+   (`deps/uv/src/unix/process.c:202-207` in the Node v26.8.2 source clone).
+  A pseudo terminal or a real pipe avoids it.
+- Nx keeps its orchestration in TypeScript but implements these parts in its Rust native addon:
+   `packages/nx/Cargo.toml` in `nrwl/nx` depends on `notify = "=9.0.0-rc.5"` for watching,
+   `portable-pty` for running tasks in a pseudo terminal,
+   `ignore = '0.4'` for walking,
+   and `xxhash-rust` for hashing,
+   and `packages/nx/src/native/` contains `watch/`,
+   `pseudo_terminal/`,
+   and `hasher.rs`.
+- So a TypeScript daemon with a Rust native addon for watching,
+   task spawning,
+   and hashing is a third shape that neither stack deep dive designed.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
