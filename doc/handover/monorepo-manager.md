@@ -112,14 +112,15 @@ Each step's evidence is in the linked documents.
      comment-preserving JSONC,
      TOML,
      and XML editing in Rust against the repository's TypeScript editors.
-  - `btrfs-pinned-bytes.md`:
-     unprivileged accounting of bytes only the cache's reflinks pin,
-     checked against free-space ground truth.
+- Stopped unfinished on 2026-09-17:
+   `btrfs-pinned-bytes.md` research,
+   because the user dropped reflinks and the cache now records output pointers only.
 - Also decided 2026-09-16 and recorded in the design:
    no pty opt-in,
    `gxhash128` keys,
    cache contents and failure caching,
-   eviction by pinned-bytes cap plus 30-day age,
+   pointer-only outputs,
+   eviction by a size cap plus 30-day age,
    flaky retry reporting,
    and rule `FLG` in `AGENTS.md`.
 - Installs are authorized for this work,

@@ -1115,17 +1115,19 @@ Open to the user's veto:
      "Cache everything, because a flaky task is a user error and users should know better.
      We also provide a retry mechanism for unfixably flaky tasks."
   - Captured stdout and stderr are stored and replayed on a hit.
-  - Outputs are recorded as pointers to their locations plus reflinks:
-     "We only record pointers and reflinks.
-     There's no need to keep 2 copies of the same thing on disk if we preserve the location of the thing."
-    Where reflinks are unavailable,
-     only pointers are recorded,
-     and a changed or missing output means the task runs again.
+  - Outputs are recorded only as pointers to their locations with content hashes;
+     a changed or missing output means the task runs again.
+    The user first answered "We only record pointers and reflinks",
+     then on 2026-09-17 dropped reflinks:
+     "There's no need to restore an earlier build because builds are by definition ephermal.
+     In addition, we consider switching git branches in place a user error."
   - Eviction uses a size cap plus a maximum age.
-  - The size cap counts bytes only the cache pins,
-     not apparent size or free space (user,
-     2026-09-16);
-     unprivileged accounting for it is being researched.
+  - The size cap counts bytes only the cache pins (user,
+     2026-09-16).
+    With pointers only,
+     the cache holds no output data,
+     so those bytes are the plain size of its records and logs;
+     the pinned-bytes research started for reflinks was stopped unfinished on 2026-09-17.
   - The default maximum age is 30 days since an entry was last used,
      matching Cargo's one-month threshold for regenerable global-cache files
      (`doc/book/src/reference/config.md`, "Global caches", in `rust-lang/cargo`).
@@ -1133,6 +1135,7 @@ Open to the user's veto:
      a pass after a failed attempt is recorded as a pass marked flaky,
      with every attempt's logs kept.
 - Measuring cache size with reflinks,
+   kept as evidence for the dropped reflink design,
    probe on 2026-09-16 in a throwaway directory on the development machine's btrfs:
    an 8 MiB random file plus a `cp --reflink=always` clone reported
    `Total 16.00MiB`, `Exclusive 0.00B`, `Set shared 8.00MiB` from unprivileged `btrfs filesystem du --summarize`.
@@ -1210,7 +1213,10 @@ Open to the user's veto:
 
 ### btrfs acceleration
 
-- Reflink copies work without root and restore cached outputs cheaply.
+- Reflink copies work without root,
+   but the cache does not use them:
+   outputs are pointers only
+   ("Cache").
 - `btrfs subvolume find-new` needs privileges:
    run without root on the `/var/home` subvolume,
    it fails with "Operation not permitted"
