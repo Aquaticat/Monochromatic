@@ -8082,6 +8082,114 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya2 launches on class forty-six, 2026-09-17, 13:45 UTC
+
+Frozen `cde09e8bc` (classes forty-one to forty-six),
+pid 3531497,
+runs `~/temp/agent/shi_Yumiaoya2`,
+log `~/temp/agent/shi_Yumiaoya2.log`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch.
+A fresh run,
+not the launcher's re-attempt,
+since shi_Yumiaoya1's caches would reproduce the same page
+and the fix sits in the publish check,
+not in a stage.
+Read first the four body links on the page
+(the film's Wikipedia page,
+two profile pages,
+the contributor's account)
+and that the commented-out profile link is neither on the page nor refused,
+then the archive's four skeleton sections filled from the original,
+then the community-term footnote,
+then the seven steps and the three checks.
+
+## Class forty-six, 2026-09-17, 13:42 UTC: a link inside the original's HTML comment is a destination the page owes
+
+Found by the shi_Yumiaoya1 read.
+The original carries five body links and one more inside an HTML comment
+(a profile link the author commented out).
+The publish check `droppedDestinations` unions two readers:
+the tree reader,
+which parses the body the way the pipeline does
+(front matter split,
+invisible lines and HTML comments masked),
+and the bare-run scanner,
+which walked the raw text so that front matter and HTML attributes count.
+The raw walk counted the commented-out link as a source destination;
+every stage masks comments
+(class five),
+so no lane text carried it,
+and the page was refused after 53 minutes:
+"would drop 1 source destination(s)".
+The error names counts only,
+so the log did not say which;
+the ledger showed every lane and slate candidate carrying its link,
+and the check run over the original against the original with its comments stripped named the commented-out one.
+Fixed in `cde09e8bc`
+(guard red first at `9ba9520ab`):
+the bare-run scanner reads the comment-masked text on every side,
+so a link no reader can follow is owed by no page;
+front matter and HTML attributes still count.
+Run over shi_Yumiaoya's original against the same text with its comments stripped,
+the fixed check drops nothing,
+and drops the contributor's link when that is removed
+(the positive control).
+
+## shi_Yumiaoya1 read, 2026-09-17, 13:40 UTC: INCOMPLETE at publish over a commented-out link, the lanes' page whole
+
+Frozen `978bd7d20`,
+53 minutes
+(`ms=3197795`),
+`status=INCOMPLETE`,
+no page written,
+`attempts.json` reads 1.
+Spend by the meters:
+Bedrock 178.91 to 178.66,
+OpenRouter 255.65 to 255.23,
+0.67 USD,
+plus Synthetic
+(wet at launch,
+dry by the end);
+`pass-spend.mjs` logs 0.72 USD over 923 seats,
+37 retry rounds,
+5 abandoned streams (0.07 USD).
+The entry's archive is a skeleton:
+the banner,
+four headings,
+the translator's own HTML comments
+(camera and car names,
+a note that 小药娘 needs no translation),
+the closing Truman Show quote and the credit line,
+against an original of 138 lines.
+So eighteen slices,
+of which the lanes translated the whole body:
+the repair lane exited `no-translation` on every source-only slice,
+the translate lane wrote them,
+the contest chose translate on eleven of fourteen differing slices,
+repair on the banner and one heading
+("About Yumiao's Passing" over the archive's "Departure",
+three of four for 离世 saying she died),
+neither once.
+Insertion admission read four source-only slices as `coverage=absent`
+with their links counted as missing from the archive,
+which is the healthy reading of a skeleton,
+and left slice 13 unadmitted on a split verdict
+(to be read on shi_Yumiaoya2).
+The consolidation declined on both linked paragraphs
+(every candidate carried the link;
+the slates could not agree on wording,
+one minimax ballot refusing all four for naming the sedative against the reader-protection rule),
+so the lane texts stood.
+Every lane and slate candidate carried its link;
+what the page lacked was the commented-out one,
+class forty-six.
+The attestation bought the film's Wikipedia page (2,230 characters) and answered nothing on it
+(`ATTESTED heard=6 answered=0`).
+glm-5.3 dark for the run (76 calls thrown,
+no wet provider);
+Kimi-K3 withheld.
+
 ## shi_Yumiaoya1 launches, 2026-09-17, 12:42 UTC
 
 Frozen `978bd7d20` (unchanged since hulicaijia7),

@@ -216,6 +216,20 @@ No archive at the pinned corpus renders two distinct source headings identically
 so the archive's heading is always a distinct fallback.
 The publish guard keeps the last word for a page the restoration cannot mend.
 
+## Links the page owes
+
+The publish check reads every destination the original links to and refuses a page lacking one,
+the archive's rendering of it accepted in its place.
+Two readers feed it:
+the tree reader parses the body as the pipeline does
+(front matter split,
+invisible lines and HTML comments masked),
+and a bare-run scanner walks the text for the two web schemes so front matter and HTML attributes count.
+Since class forty-six (2026-09-17) the scanner walks the comment-masked text too:
+a link inside an HTML comment is rendered nowhere,
+every stage masks comments,
+and shi_Yumiaoya1 was refused for a profile link the author had commented out.
+
 ## What is folded out of candidate and archive text at intake
 
 Characters a reader cannot tell from their plain counterpart are folded

@@ -400,7 +400,16 @@ which the takeover session does not have.
   the archive's two translator-added notes dropped by the additions rule.
   `shi_Yumiaoya1` launched at 12:42 UTC on the same dist (pid 3508311,
   runs `~/temp/agent/shi_Yumiaoya1`,
-  log `~/temp/agent/shi_Yumiaoya1.log`).
+  log `~/temp/agent/shi_Yumiaoya1.log`)
+  and stopped INCOMPLETE at publish after 53 minutes:
+  the bare-URL scan counted a profile link inside the original's HTML comment as a destination the page owed
+  (class forty-six,
+  fixed in `cde09e8bc`,
+  guard red first at `9ba9520ab`;
+  every lane text carried its links).
+  `shi_Yumiaoya2` launched at 13:45 UTC on frozen `cde09e8bc` (pid 3531497,
+  runs `~/temp/agent/shi_Yumiaoya2`,
+  log `~/temp/agent/shi_Yumiaoya2.log`).
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2214,6 +2223,16 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`cde09e8bc` (2026-09-17,
+13:42 UTC):
+class forty-six,
+the bare-URL scanner in `droppedDestinations` reads the comment-masked text,
+so a link inside an HTML comment is a destination no page owes
+(`corpus-run/dropped-destinations.ts`;
+the pass log's "Class forty-six" heading dated 2026-09-17 13:42 UTC;
+guard red first at `9ba9520ab`;
+found by the shi_Yumiaoya1 INCOMPLETE).
+Running on shi_Yumiaoya2.
 `978bd7d20` (2026-09-17,
 10:05 UTC):
 class forty-five,
@@ -2226,8 +2245,7 @@ the pass log's "Class forty-five" heading dated 2026-09-17 10:05 UTC;
 guard red first at `b6bfd2b96`;
 found by the hulicaijia6 ERROR).
 Ran on hulicaijia7 (no collision arose,
-so the restoration never fired).
-Running on shi_Yumiaoya1.
+so the restoration never fired) and shi_Yumiaoya1 (no collision).
 `0986c871f` (2026-09-17,
 06:10 UTC):
 class forty-four,
@@ -3981,18 +3999,20 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `shi_Yumiaoya1` by the seven steps and the three checks (frozen `978bd7d20`,
-    pid 3508311,
-    runs `~/temp/agent/shi_Yumiaoya1`,
-    log `~/temp/agent/shi_Yumiaoya1.log`,
-    launched 12:42 UTC on 2026-09-17 with Synthetic,
-    Bedrock and OpenRouter wet,
-    Hyper dry).
-    It is the queue's second entry after Mio
-    (hulicaijia7 read clean at 12:50 UTC,
-    the pass log's "hulicaijia7 read" heading dated 2026-09-17 12:50 UTC).
-    Its archive is 54 lines against the original's 138,
-    so read first how much of the original the archive renders and what the lanes did with the rest,
+1.  READ `shi_Yumiaoya2` by the seven steps and the three checks (frozen `cde09e8bc`,
+    pid 3531497,
+    runs `~/temp/agent/shi_Yumiaoya2`,
+    log `~/temp/agent/shi_Yumiaoya2.log`,
+    launched 13:45 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
+    Synthetic and Hyper dry).
+    It is the first pass on class forty-six
+    (the pass log's heading dated 2026-09-17 13:42 UTC);
+    shi_Yumiaoya1 stopped INCOMPLETE at publish on that class after 53 minutes
+    (the pass log's "shi_Yumiaoya1 read" heading dated 2026-09-17 13:40 UTC).
+    Its archive is a skeleton of 54 lines against the original's 138,
+    so read first the four body links on the page and that the commented-out profile link is on nobody's page,
+    then how the four sections were filled and what became of slice 13
+    (unadmitted on a split coverage verdict in shi_Yumiaoya1),
     then the community-term footnote,
     then the page assembly's findings
     (`repeats another section's heading` in the log,
@@ -4011,7 +4031,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (hulicaijia7:
+    (shi_Yumiaoya1 to its INCOMPLETE:
+    0.67 USD by the meters plus Synthetic,
+    923 seats,
+    37 retry rounds,
+    53 minutes;
+    hulicaijia7:
     4.41 USD by the meters,
     4,694 seats,
     146 retry rounds,
