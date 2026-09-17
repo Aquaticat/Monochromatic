@@ -6,7 +6,8 @@ Lifecycle phase:
  context and rubric refrozen after the workload correction;
  discovery and screening complete;
  targeted evidence complete with four hard-gate-confirmed finalists;
- finalist validation in progress.
+ finalist validation and benchmarks complete except the `highway` fuzz run;
+ scoring in progress.
 
 Subject:
  meow cache key hash.
@@ -2156,3 +2157,681 @@ None of the four has an open security report or abandonment statement in the sam
    `xxhash-rust` has no tags.
 - Target matrix and reproducible verification:
    "HC3 stability" and "HC4 build".
+
+### Reference equality
+
+`refcheck/` (`src/main.rs`, `build.rs`) links the C references into one binary:
+ xxHash 0.8.3 `XXH3_128bits_withSeed` through `xxhash-c-sys` 0.8.7,
+ and `HighwayHash128` from `google/highwayhash` `c/highwayhash.c` at `faca2cb`.
+For every length 0 to 4,100,
+ plus 8,191 to 8,193, 65,535 to 65,537, 100,003, 1,048,583, and 16,777,219 bytes of random data,
+ it compares each finalist's one-shot output
+ and its streaming output over random chunks of 1 to 70,000 bytes
+ with C,
+ under seeds 0 and `0x9E3779B97F4A7C15` for XXH3
+ and the all-zero key and a byte-sequence key for HighwayHash:
+ 65,760 comparisons per run.
+
+- Positive control,
+   `REFCHECK_CONTROL=flip` (one input bit flipped on the Rust side only):
+   65,760 mismatches,
+   exit 1 (`refcheck-control.log`).
+- x86_64 baseline build:
+   0 mismatches (`refcheck-x86_64-baseline.log`).
+- x86_64 `x86-64-v3` build:
+   0 mismatches (`refcheck-x86_64-v3.log`).
+- aarch64 glibc build under QEMU (`qemu-aarch64-static -L /usr/aarch64-linux-gnu`):
+   0 mismatches (`refcheck-aarch64-qemu.log`).
+
+The C code was compiled by `cc` in `localhost/hashvet-rusttest:1`
+ (Debian GCC 14 for x86_64, `aarch64-linux-gnu-gcc` 14.2.0 for aarch64),
+ only for this check;
+ no finalist needs it.
+
+This closes the gap left by upstream `highway` tests,
+ whose 128-bit reference vectors stop at 63 bytes,
+ and by `hashcrew`,
+ whose tests compare with `xxhash-rust` rather than C.
+
+### Backend selection check
+
+`refcheck/src/bin/backend.rs` prints `hashcrew::xxhash::kernel::selected_backend()`:
+ `Avx2` in both the baseline and the `x86-64-v3` build on this host
+ (`hashcrew-backend-baseline.log`, `hashcrew-backend-v3.log`).
+So `hashcrew`'s slow baseline results are not a fallback to SSE2 or scalar code:
+ the baseline build reaches its AVX2 kernel through a call per 64-byte stripe
+ into a `#[target_feature(enable = "avx2")]` function
+ (`src/xxhash/kernel/x86.rs:117`, `:139`),
+ which the compiler cannot inline into a loop built without AVX2.
+
+### Additional one-byte keysets
+
+The HC8 harness ran again at key lengths 8, 16, 64, 128, 240, 241, 1,024, and 2,048 bytes,
+ zero and random bases,
+ seeds 0, 1, and 987654321,
+ for the four finalists and `gxhash`
+ (`onebyte-lengths-zero.log`, `onebyte-lengths-random.log`, 120 results each).
+Every finalist result has 0 full-width, 0 low-half, and 0 high-half collisions.
+`gxhash` collided again:
+ 1 full-width collision at 2,048 bytes on the zero base,
+ and 1 each at 1,024 and 2,048 bytes on the random base,
+ under every seed.
+
+## Benchmarks
+
+All benchmarks ran on the x86_64 host inside
+ `podman run --rm --init --memory=2g --cpus=2 --pids-limit=512 --ulimit nofile=4096:4096 --network=none`
+ in `docker.io/library/rust:slim`,
+ with no credentials and no repository mount.
+No aarch64 benchmark ran:
+ QEMU user mode would measure the emulator,
+ and `ssh m1` is powered off ("aarch64 and the m1 question").
+
+Builds of the lab crate (`lab/`, `nightly-2026-09-12`, `opt-level = 3`, fat LTO, one codegen unit):
+
+- baseline:
+   no `RUSTFLAGS`,
+   so the x86-64 baseline (SSE2) at compile time;
+   `twox-hash`, `hashcrew`, and `highway` may still select AVX2 at run time.
+- `x86-64-v3`:
+   `RUSTFLAGS=-Ctarget-cpu=x86-64-v3` (AVX2, BMI2).
+
+Method:
+
+- Each benchmark is a separate container run;
+   five container runs per build and workload,
+   baseline build first.
+- The run-to-run band is `(max − min) / median` of the five per-run medians
+   for one algorithm on one unchanged build.
+- A difference between two results counts only when their five-run ranges do not overlap;
+   otherwise the report says "within band".
+- Inside a run,
+   algorithm order rotates every round,
+   each measurement warms for a quarter of its time budget,
+   and calls go through non-inlined wrappers with `black_box` inputs
+   (`lab/src/bin/bench.rs`).
+- Host load average during the runs was 1.4 to 2.9 on 16 hardware threads
+   (`data/bench/progress-a.txt`),
+   from other processes this audit does not control;
+   the band includes that noise.
+
+Workloads,
+ in the order of the frozen criteria:
+
+- S1 key composition:
+  - `fp`:
+     2,226 synthetic items of 70 to 242 bytes
+     (a random path of the music player's measured path lengths, 46 to 218 bytes, plus 24 bytes of numbers;
+     `data/fp-lengths.txt`, `lab/src/bin/bench.rs` `load_fp`).
+  - `keymat`:
+     222 key-material records of 50 to 50,206 bytes (median 1,349),
+     one per package directory,
+     concatenating for each tracked file its path, a NUL, its 64-bit size, and a 16-byte content digest
+     (`scripts/pack-data.ts`).
+- S2 whole files:
+  - `files`:
+     the contents of all 8,101 git-tracked files at `88cf6c0e4` (152,231,070 bytes),
+     one call per file.
+  - `files-stream64k`:
+     the same files,
+     a fresh streaming hasher per file fed 64 KiB slices.
+  - `hot16k`:
+     one cache-resident 16 KiB buffer.
+  - `mem256m-stream1m`:
+     one 256 MiB buffer fed in 1 MiB slices,
+     the in-memory ceiling for large outputs (supporting S3).
+- S3 multi-GB from disk (`lab/src/bin/bigfile.rs`, `scripts/bench-b.ts`):
+   reflink copies of `disk.qcow2` (3,966,238,720 bytes)
+   and the 662,710,296-byte music player debug binary
+   in `~/temp/agent/hashvet-2026-09-17/big/`,
+   read in 1 MiB `read` calls and streamed into each hasher,
+   five repetitions per build, file, and cache mode,
+   with a read-only pass leading every rotation.
+  - Cold:
+     the container calls `posix_fadvise(POSIX_FADV_DONTNEED)` on the file before reading.
+    Positive control first (`scripts/cache-control.ts`, `data/bench/cache-control.txt`):
+     host `fincore` showed 0% resident,
+     100% after a host `cat`,
+     and 0% after the container's `fadvise`,
+     for both files.
+  - Warm:
+     the host reads the file first,
+     and `fincore` confirms at least 99.9% residency before every run.
+  - Storage:
+     btrfs (crc32c checksums, no compression, 588 and 114 extents) on LUKS on the NVMe drive.
+  - The container's 2 GiB limit also bounds its page cache,
+     so a cold read of the 3.97 GB image runs under memory-cgroup reclaim.
+- S4 multi-core,
+   same files and modes with 2 threads:
+  - `blake3_128_rayon`:
+     BLAKE3 `update_rayon`,
+     the control's built-in tree mode,
+     output identical to single-threaded BLAKE3.
+  - `twox_xxh3_128` and `highway_128` with 2 threads:
+     a lab-only composition that hashes consecutive 16 MiB chunks in parallel
+     and then hashes the ordered chunk digests and lengths;
+     its output is a different function from the one-shot hash and would be a meow-defined format.
+
+### Run-to-run band
+
+Measured first on the unchanged baseline build (five container runs),
+ then on the `x86-64-v3` build
+ (`data/bench/summary-a.txt`, `scripts/bench-a-summary.ts`).
+Finalist bands on the baseline build:
+ 0.2% to 2.6% for `twox-hash`, `xxhash-rust`, and `highway` on every in-memory workload,
+ and 0.8% to 8.3% for `hashcrew`,
+ whose baseline results have one slow outlier run in `files`, `files-stream64k`, `keymat`, and `mem256m-stream1m`.
+On the `x86-64-v3` build the finalist bands are 0.3% to 4.5%.
+Multi-GB results have wider bands,
+ given with each result.
+
+Values are the median of five runs in GiB/s with the [minimum, maximum] of the per-run medians.
+
+### S2 whole files, KiB to tens of MiB (weight 5)
+
+- `files`, one call per tracked file:
+  - baseline:
+     `twox-hash` 49.3 [49.0, 50.3],
+     `xxhash-rust` 29.1 [29.0, 29.3],
+     `hashcrew` 16.0 [15.9, 17.1],
+     `highway` 12.4 [12.4, 12.5];
+     every adjacent pair resolved beyond band.
+  - `x86-64-v3`:
+     `xxhash-rust` 49.3 [48.8, 50.0],
+     `hashcrew` 47.2 [46.9, 48.2],
+     `twox-hash` 46.9 [45.8, 48.0],
+     `highway` 12.5 [12.5, 12.6];
+     `xxhash-rust` over `hashcrew` resolved (1.04×),
+     `hashcrew` and `twox-hash` within band.
+- `files-stream64k`, a streaming hasher per file:
+  - baseline:
+     `twox-hash` 43.4 [43.0, 43.7],
+     `xxhash-rust` 26.2 [25.8, 26.4],
+     `hashcrew` 16.7 [15.4, 16.8],
+     `highway` 12.4 [12.4, 12.4];
+     all pairs resolved.
+  - `x86-64-v3`:
+     `xxhash-rust` 45.5 [45.2, 46.0],
+     `twox-hash` 45.3 [45.1, 45.9],
+     `hashcrew` 43.9 [43.5, 44.6],
+     `highway` 12.6 [12.5, 12.6];
+     `xxhash-rust` and `twox-hash` within band,
+     `twox-hash` over `hashcrew` resolved (1.03×).
+  Against one-shot `files`,
+   streaming costs `twox-hash` 12% and `xxhash-rust` 10% in the baseline build
+   and 3% and 8% in the raised build;
+   `hashcrew` streams 4% faster in the baseline build and 7% slower in the raised build;
+   `highway` is unchanged.
+- `hot16k`, one cache-resident 16 KiB buffer:
+  - baseline:
+     `twox-hash` 56.5 [56.1, 56.9],
+     `xxhash-rust` 29.5 [29.2, 29.6],
+     `hashcrew` 16.0 [15.9, 16.0],
+     `highway` 12.4 [12.3, 12.4].
+  - `x86-64-v3`:
+     `xxhash-rust` 55.3 [55.2, 55.8],
+     `twox-hash` 54.5 [53.9, 54.7],
+     `hashcrew` 54.1 [54.0, 54.5],
+     `highway` 12.5 [12.4, 12.5];
+     `xxhash-rust` over `twox-hash` resolved (1.01×),
+     `twox-hash` and `hashcrew` within band.
+
+### In-memory ceiling for large inputs
+
+`mem256m-stream1m`,
+ one 256 MiB buffer in 1 MiB slices:
+
+- baseline:
+   `twox-hash` 52.8 [50.5, 52.9],
+   `xxhash-rust` 28.2 [28.1, 28.4],
+   `hashcrew` 17.7 [16.4, 17.7],
+   `highway` 12.9 [12.9, 12.9].
+- `x86-64-v3`:
+   `hashcrew` 52.6 [52.1, 53.0],
+   `xxhash-rust` 52.4 [51.4, 52.6],
+   `twox-hash` 51.8 [51.4, 52.2]
+   (all within band of each other),
+   `highway` 12.9 [12.8, 12.9].
+
+### S3 multi-GB from disk (weight 5)
+
+Every run exited 0;
+ 400 runs,
+ 5 per build, file, mode, and algorithm
+ (`data/bench/bigfile.jsonl`, `data/bench/summary-b.txt`).
+Every algorithm produced one digest per file across builds, modes, and repetitions,
+ and the three XXH3 crates produced the same digest
+ (`47e66eee4ae2143c1071a33f1f301dbd` for the debug binary,
+ `da7085172f72b431cb3efca3af95eb7e` for the image).
+
+- Page-cache cold,
+   662,710,296-byte debug binary:
+  - read only:
+     baseline 1.42 [0.17, 1.48],
+     `x86-64-v3` 1.58 [0.80, 1.59].
+  - finalists,
+     baseline:
+     `xxhash-rust` 1.45 [1.29, 1.48],
+     `highway` 1.42 [1.02, 1.43],
+     `hashcrew` 1.41 [1.25, 1.44],
+     `twox-hash` 1.28 [1.19, 1.49];
+     `x86-64-v3`:
+     1.53 to 1.57,
+     all within band of each other and of the read-only pass.
+  - SHA-256 control:
+     0.96 baseline and 1.06 `x86-64-v3`,
+     below the read ceiling.
+- Page-cache cold,
+   3,966,238,720-byte image:
+  - read only:
+     baseline 0.30 [0.26, 0.37],
+     `x86-64-v3` 0.39 [0.29, 0.40].
+  - finalists,
+     both builds:
+     0.36 to 0.39,
+     bands 7% to 54%,
+     all within band of each other and of the read-only pass.
+  - The single host `cat` of the same file in the eviction control took 14 seconds (about 0.26 GiB/s)
+     outside any container,
+     which points at the storage path rather than the container's memory limit
+     (one unbanded host measurement, taken while upstream suites were running).
+- Page-cache warm,
+   debug binary:
+  - read only:
+     baseline 15.3 [15.1, 15.6],
+     `x86-64-v3` 15.3 [14.5, 15.7].
+  - baseline:
+     `twox-hash` 11.2 [11.0, 11.4],
+     `xxhash-rust` 8.6 [8.3, 8.7],
+     `hashcrew` 6.8 [6.8, 7.1],
+     `highway` 6.0 [5.9, 6.4];
+     all pairs resolved.
+  - `x86-64-v3`:
+     `hashcrew` 11.3 [10.8, 11.4],
+     `twox-hash` 11.2 [11.0, 11.3],
+     `xxhash-rust` 11.0 [10.5, 11.9]
+     (within band of each other),
+     `highway` 5.9 [5.9, 6.1].
+- Page-cache warm,
+   image:
+  - read only:
+     baseline 13.7 [13.6, 14.7],
+     `x86-64-v3` 15.0 [14.0, 15.7].
+  - baseline:
+     `twox-hash` 11.5 [10.4, 12.4],
+     `xxhash-rust` 8.5 [8.4, 9.5],
+     `hashcrew` 7.2 [6.9, 8.3],
+     `highway` 6.8 [6.5, 7.1];
+     `twox-hash` over `xxhash-rust` and `xxhash-rust` over `hashcrew` resolved,
+     `hashcrew` and `highway` within band.
+  - `x86-64-v3`:
+     `twox-hash` 11.7 [10.7, 13.0],
+     `xxhash-rust` 11.3 [10.6, 12.8],
+     `hashcrew` 11.3 [11.2, 13.2]
+     (within band),
+     `highway` 6.4 [6.2, 7.4].
+- Peak resident memory:
+   3.2 to 3.4 MiB for every single-threaded run on both files
+   (the harness's 1 MiB buffer included),
+   so memory does not grow with a 3.97 GB input.
+
+Whether I/O or the hash limits throughput:
+
+- Cold reads:
+   I/O limits.
+  Every finalist runs within the read-only band on both files and both builds;
+   the image reads at about 0.3 to 0.4 GiB/s and the debug binary at about 1.4 to 1.6 GiB/s,
+   roughly an order of magnitude below the slowest finalist's in-memory speed.
+  Only SHA-256 (0.96 GiB/s against a 1.42 read ceiling) is hash-limited cold.
+- Warm reads:
+   both limit.
+  Copying from the page cache runs at 13.7 to 15.3 GiB/s;
+   the XXH3 crates' AVX2 paths hash at about 52 GiB/s,
+   so the copy dominates and the combined rate lands near 11 GiB/s,
+   matching `1 / (1/15.3 + 1/52)`.
+  `highway` hashes at 12.9 GiB/s in memory,
+   so the hash and the copy limit it about equally (about 6 GiB/s combined).
+  The SSE2 and per-stripe-dispatch baseline paths of `xxhash-rust` and `hashcrew` are hash-limited enough to show.
+- Every result is from this host's storage;
+   faster storage moves cold reads toward the warm case.
+
+### S4 multi-core on one large input (weight 1)
+
+- `twox-hash` and `highway` in the lab's two-thread chunk composition (16 MiB chunks):
+   warm debug binary 6.9 and 5.4 GiB/s against 11.2 and 6.0 in one thread;
+   warm image 7.9 and 5.8 against 11.5 and 6.8;
+   cold within the read band.
+  Two threads were slower,
+   because reading stays sequential and the copy into chunk buffers is the limit;
+   peak memory rose to 34 MiB.
+  The composition's digests differ from the one-shot digests,
+   as expected for a different construction.
+- BLAKE3 control,
+   `update_rayon` with 2 threads:
+   warm debug binary 4.6 against 3.7 in one thread,
+   warm image 5.4 against 4.5,
+   same digest as single-threaded BLAKE3,
+   peak memory 18.9 MiB.
+
+No finalist offers a library tree mode,
+ and on this host no two-thread construction reaches a single-threaded XXH3 finalist.
+
+### S1 key composition (weight 1)
+
+- `keymat`, 50 bytes to 50 KiB:
+  - baseline:
+     `twox-hash` 60.5 ns per record [60.3, 61.8],
+     `xxhash-rust` 101.1,
+     `hashcrew` 173.3,
+     `highway` 259.7;
+     all pairs resolved.
+  - `x86-64-v3`:
+     `xxhash-rust` 57.4,
+     `twox-hash` 58.0,
+     `hashcrew` 58.6
+     (within band of each other),
+     `highway` 243.5.
+- `fp`, 70 to 242 bytes:
+  - baseline:
+     `xxhash-rust` 10.8 ns per item,
+     `twox-hash` 11.9,
+     `hashcrew` 24.0,
+     `highway` 46.6;
+     all pairs resolved.
+  - `x86-64-v3`:
+     `xxhash-rust` 9.7,
+     `twox-hash` 11.9,
+     `hashcrew` 18.6,
+     `highway` 32.7;
+     all pairs resolved.
+
+### `x86-64-v3` against baseline
+
+Beyond band for the finalists on file contents (`files`):
+ `hashcrew` 2.95×,
+ `xxhash-rust` 1.69×,
+ `highway` 1.01×,
+ and `twox-hash` 0.95× (slower in the raised build, also on `hot16k` at 0.96×).
+On `mem256m-stream1m`,
+ `twox-hash` and `highway` are within band,
+ `xxhash-rust` 1.86× and `hashcrew` 2.98×.
+On `fp`,
+ `highway` 1.43×,
+ `hashcrew` 1.29×,
+ `xxhash-rust` 1.12×,
+ `twox-hash` within band.
+BLAKE3,
+ SHA-256,
+ and AES-CMAC stay within band on every file-sized workload,
+ because they dispatch at run time already.
+
+### Mechanical speed ratings
+
+S1,
+ S2,
+ and S3 ratings follow one rule for every finalist
+ (`scripts/speed-ratings.ts`, `data/speed-ratings.txt`):
+ in each workload and build cell (and file and cache mode for S3),
+ a finalist's ratio is its median over the best finalist's median,
+ or 1 when its five-run range overlaps the best finalist's range;
+ the criterion's value is the geometric mean of its cells,
+ mapped to 4 at 0.90 or more,
+ 3 at 0.70,
+ 2 at 0.50,
+ 1 at 0.25,
+ else 0.
+A value within 0.03 of a threshold gets medium confidence,
+ otherwise high.
+The rule was fixed after the in-memory results and before the multi-GB results were complete,
+ and it applies the same way to every finalist.
+
+- S1 (4 cells):
+   `twox-hash` 0.927 → 4 (medium),
+   `xxhash-rust` 0.880 → 3 (medium),
+   `hashcrew` 0.535 → 2 (high),
+   `highway` 0.248 → 0 (medium).
+- S2 (6 cells):
+   `twox-hash` 0.989 → 4,
+   `xxhash-rust` 0.756 → 3,
+   `hashcrew` 0.564 → 2,
+   `highway` 0.251 → 1 (medium).
+- S3 (8 cells, 4 of them cold and within band for everyone):
+   `twox-hash` 1.000 → 4,
+   `xxhash-rust` 0.932 → 4,
+   `hashcrew` 0.887 → 3 (medium),
+   `highway` 0.740 → 3.
+
+## Quality evidence
+
+### SMHasher3
+
+Source:
+ SMHasher3 results summary and raw logs
+ (`https://gitlab.com/fwojcik/smhasher3/-/blob/main/results/README.md` and `results/raw/`),
+ accessed 2026-09-17,
+ saved as `data/smhasher3-results-readme.md`, `data/smh3-XXH3-128.txt`, `data/smh3-XXH3-128.regen.txt`,
+ and `data/smh3-HighwayHash-128.txt`.
+SMHasher3 tests the algorithms through its own C and C++ implementations,
+ not through the Rust crates;
+ HC3 equality ties the crates to the same outputs.
+
+- HighwayHash-128:
+   "Overall result: pass ( 238 / 238 passed)" (`smh3-HighwayHash-128.txt:3733`),
+   listed among passing hashes (`smhasher3-results-readme.md:63`).
+  SMHasher3 applies 238 tests to it and 250 to XXH3-128.
+- XXH3-128:
+   "Overall result: FAIL ( 214 / 250 passed)" (`smh3-XXH3-128.txt:3820`),
+   listed among failing hashes with 36 failed tests (`smhasher3-results-readme.md:209`).
+  The failures split into two groups:
+  - Tests that vary the seed
+     (`SeedZeroes`, `SeedSparse`, `SeedBlockLen`, `SeedBlockOffset`, `SeedBIC`).
+    Full-width 128-bit collisions appear only here:
+     for example 534,343 among 2,196,480 hashes of 8-byte keys
+     when seeds and one 4-byte block each have up to 2 set bits
+     (`smh3-XXH3-128.txt:2804-2805`),
+     and in every `SeedBlockLen` and `SeedBlockOffset` keyset (lines 2805 to 3303).
+    Different seeds with related keys collide,
+     so XXH3's seed is not a safe domain separator for short inputs.
+  - Tests at a fixed seed
+     (`BIC` for 3 to 15-byte keys, `Sparse` 3-byte keys with up to 20 set bits,
+     `PerlinNoise`, `Bitflip` for 3, 4, and 8-byte keys).
+    These report bias or collisions in 40-bit or narrower slices
+     (for example "high 40-bit ... actual 470 (3.673x)" at `smh3-XXH3-128.txt:606`),
+     with no nonzero 128-bit collision count.
+- XXH3-128 with the secret regenerated per seed (`XXH3-128.regen`):
+   231 of 250,
+   with the `SeedBlockLen` and `SeedBlockOffset` failures gone,
+   other seed tests still failing (`SeedZeroes`, `SeedSparse`, `Seed`, `SeedBitflip`),
+   and the fixed-seed failures the same except one more `BIC` length (11 bytes)
+   (`smh3-XXH3-128.regen.txt:3818-3827`).
+  None of the Rust finalists exposes this variant as its default.
+- For comparison:
+   `gxhash` (128-bit) fails 25 tests,
+   BLAKE3 passes 235 of 235,
+   and MuseAir-128 passes all 250 (`smhasher3-results-readme.md`).
+
+Relevance to meow:
+
+- meow's cache is local and uses one fixed seed,
+   so the seed-varying collisions do not arise
+   if meow puts its salt and domain tags in the hashed bytes
+   instead of the XXH3 seed.
+  That is a usage rule meow must follow with any XXH3 finalist.
+- The fixed-seed failures are bias or partial-width collisions,
+   and every one except `PerlinNoise` uses keys of 15 bytes or shorter.
+  The measured per-package key material is 50 bytes or longer,
+   but 89 tracked files are shorter than 16 bytes ("Workload correction").
+  No fixed-seed test reports a full-width collision,
+   so these failures do not predict colliding cache keys;
+   they do lower the quality margin compared with a function that passes every test.
+- HighwayHash-128 has no known SMHasher3 failure.
+
+### Local keysets
+
+- HC8 one-byte keysets at 4,096 bytes:
+   0 full-width,
+   0 low-half,
+   and 0 high-half collisions for every finalist ("HC8 one-byte collision gate").
+
+## aarch64 and the m1 question
+
+### What the aarch64 paths accelerate (S5 evidence)
+
+- `xxhash-rust`:
+   a NEON stripe accumulator selected by `cfg(target_feature = "neon")`,
+   which every `aarch64-unknown-linux-*` target enables (`src/xxh3.rs:55`, `:252-268`).
+  No published aarch64 throughput.
+  xr5 ran its C comparison on the NEON kernel under QEMU.
+- `twox-hash`:
+   NEON accumulate and scramble kernels (`src/xxhash3/large/neon.rs`, 210 lines),
+   selected at run time with `std`.
+  Published by upstream on an Apple M1 Max
+   (`comparison/README.md`, "xxHash3 (128-bit)", "Oneshot hashing"):
+   Rust 34.4 GiB/s,
+   C with NEON 34.6 GiB/s,
+   C scalar 21.3 GiB/s,
+   for 256 KiB to 4 MiB buffers.
+  tw5 compared the NEON kernel with the C NEON and scalar builds under QEMU.
+- `hashcrew`:
+   NEON kernels (`src/xxhash/kernel/neon.rs`, 130 lines),
+   selected at compile time on aarch64 because the target enables NEON
+   (`src/xxhash/kernel/mod.rs:98-104`),
+   so the run-time dispatch cost measured on x86_64 ("Benchmarks") does not apply there.
+  No published aarch64 throughput.
+- `highway`:
+   a NEON implementation of the four-lane update with `vmull_u32` multiplies (`src/aarch64.rs`, 551 lines),
+   used unconditionally on aarch64.
+  The README claims "> 10 GB/s with SIMD (SSE 4.1 AVX 2, NEON)" without naming a machine or input size (`README.md:12`);
+   `assets/highway.csv` has x86 results only.
+
+Ratings for S5 are ranges,
+ because no aarch64 hardware ran:
+ `twox-hash` 3 to 4 (published NEON parity with C),
+ `xxhash-rust` and `hashcrew` 2 to 4 (same algorithm and NEON kernels, no published numbers),
+ `highway` 1 to 3 (its x86 vector paths run at about a quarter of XXH3's speed on this host,
+ and nothing published shows a different ratio on aarch64).
+
+### What an m1 run would add
+
+`ssh m1` is a macOS machine
+ (`AGENTS.md` rule `HRM` points write-heavy work at `/Volumes/MacData` on it),
+ by its name an Apple M1 (inferred, not probed, because it is powered off),
+ so a run there would cover the NEON kernels on real silicon
+ through `aarch64-apple-darwin`,
+ not the Linux aarch64 targets themselves.
+It would add:
+
+- real NEON throughput for the four finalists on the in-memory workloads and on files,
+   replacing the S5 ranges with measured ratings;
+- confirmation on hardware that NEON outputs equal the x86 outputs,
+   which QEMU already showed for the probe corpus and the reference check;
+- the relative cost of the 128-bit finalization and of `highway`'s NEON update on a core with a different
+   multiply and memory profile.
+
+Could it change the ranking:
+ only through S5,
+ whose weight is 1,
+ or through a hard-gate failure on real hardware.
+The sensitivity matrix tests both S5 range endpoints for every finalist
+ and S5 weights up to 5,
+ and none of those tests changes the order ("Sensitivity").
+Even outside the evidence ranges,
+ S5 at 0 for one finalist and 4 for the finalist ranked below it
+ leaves every adjacent pair in order
+ (`twox-hash` 65 against `xxhash-rust` 59,
+ `xxhash-rust` 55 against `hashcrew` 50,
+ `hashcrew` 46 against `highway` 43).
+So an m1 run cannot change the ranking through measured speed under the frozen rubric.
+A hard-gate failure would require QEMU's NEON emulation to differ from silicon on these kernels;
+ no evidence suggests that,
+ but this audit cannot exclude it.
+
+## Reliance on the readings
+
+- R1, dedicated instructions:
+   no non-cryptographic library passes every hard gate
+   ("Result under each reading of hardware acceleration" in "Screening").
+  Under R1 alone the terminal result would be "No serious alternative":
+   the candidates that meet R1 on both architectures fail HC9 (`gxhash`),
+   HC2 and HC3 (`ahash`, CRC crates),
+   or HC10 and HC3 (`rotohash-rs`),
+   and SHA-256 and AES-CMAC,
+   which meet R1,
+   are outside the non-cryptographic scope.
+  The R1 controls are also far slower than every finalist on file contents
+   ("Benchmarks"),
+   so dedicated instructions buy no speed for this workload on this host.
+- R2, SIMD vectorization:
+   four finalists,
+   all with designed vector kernels on x86_64 and aarch64.
+
+The ranking and recommendation rely on R2.
+If the user meant R1,
+ the only change to a hard constraint that admits a candidate is dropping HC10 streaming for `rotohash-rs`
+ (which also lacks a stability statement)
+ or widening the scope to cryptographic functions;
+ both are questions for the user,
+ not assumptions of this report.
+
+## Key width
+
+HC2 carried the 128-bit width over from the `gxhash128` decision.
+Evidence checked for another width:
+
+- Birthday bound:
+   the probability of any collision among n random keys is about n² / 2^(b+1).
+  For a cache holding 10^7 keys that is about 2.7 × 10^-6 at 64 bits
+   and 1.5 × 10^-25 at 128 bits.
+  A 64-bit key is therefore not negligible for a long-lived cache that silently reuses outputs on collision;
+   128 bits is.
+- Cost:
+   XXH3-128 and XXH3-64 share the long-input kernels,
+   so the width costs nothing measurable on file contents;
+   on short key material the 128-bit finalization costs more,
+   and short inputs carry weight 1 here.
+- SMHasher3 full-width XXH3-128 collisions occur only when the seed varies ("Quality evidence"),
+   which is an argument about seeding,
+   not width.
+
+No evidence argues for a different width;
+ 128 bits is retained.
+
+## Controls
+
+Controls are measured to show what leaving the decision scope or the hard gates would buy.
+They are not ranked.
+
+- `gxhash` 3.5.0 `gxhash128`:
+   the HC8 positive control,
+   2 full-width collisions on the zero base and 1 on the random base under every seed.
+- MuseAir-128 (`museair` 0.6.0),
+   a scalar design that fails HC1:
+   0 collisions in HC8,
+   passes all 250 SMHasher3 tests,
+   and hashes file contents at 26.1 GiB/s on the baseline build,
+   faster than every finalist on fingerprint material on the baseline build
+   (9.8 ns per item against 10.8 ns for `xxhash-rust`,
+   where XXH3 has no vector path at 240 bytes or less),
+   but about half as fast as AVX2 XXH3 on files.
+  So under R2 the vector kernels,
+   not the multiply design,
+   carry the whole-file advantage on this host.
+- BLAKE3 (`blake3` 1.8.7),
+   cryptographic:
+   3.9 GiB/s on file contents and 5.6 GiB/s on the 256 MiB buffer in one thread;
+   warm multi-GB streaming 3.7 to 4.5 GiB/s in one thread and 4.6 to 5.4 with `update_rayon` on 2 threads.
+  The lab build compiled BLAKE3's upstream x86 assembly
+   (build script output `blake3_sse2_ffi`, `blake3_sse41_ffi`, `blake3_avx2_ffi`, `blake3_avx512_ffi`),
+   which needs a C toolchain;
+   a rustc-only build (`pure` feature) was not measured.
+- SHA-256 (`sha2` 0.11.0, SHA extensions),
+   the R1 control:
+   1.86 GiB/s on file contents,
+   1.4 to 1.7 GiB/s warm multi-GB,
+   and the only algorithm below the read ceiling on the cold debug binary (0.96 against 1.42).
+- AES-CMAC (`cmac` 0.8.0 with `aes` 0.9.3, AES-NI),
+   the AES control:
+   1.43 GiB/s on file contents.
+
+Every control produced 0 streaming mismatches in HC10 except `gxhash` and MuseAir,
+ which were not given streaming wrappers.
