@@ -523,6 +523,18 @@ then `EIO` instead of end of file.
 - `> /dev/stdout` works under a pty,
    which is the problem a pty was proposed to solve.
 
+A real pipe solves the same problem without those costs,
+in Node as well:
+a Node child spawned with a FIFO write descriptor as stdout
+(`real-pipe-stdio-probe.ts` in the session scratchpad)
+passed `test -p /dev/stdout`,
+wrote `> /dev/stdout` successfully,
+and produced `stdout-is-pipe\nredirect\n` with plain newlines and exit code 0
+(measured 2026-09-16).
+The `/dev/stdout` failure is therefore specific to libuv's socketpair for `'pipe'` stdio,
+not to Node,
+and it does not decide the stack.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
