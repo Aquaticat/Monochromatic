@@ -251,6 +251,31 @@ as an ATTESTED DETAILS block with a rule to carry every one,
 folded into the translate run shape only where there are any.
 Mio24 is the first pass on it.
 
+## Mio24 and class forty
+
+Mio24 (frozen `27109ca8b`,
+2026-09-17 00:15 UTC) is the first pass where the mechanism held end to end on slice 2:
+the sister attested by four of five voices,
+both addition claims on it rejected before the panel with the attestation as the reason,
+the repair lane kept "who is also trans",
+and the contest chose repair 3 to 2.
+The translate writers,
+shown the ATTESTED DETAILS block for the first time,
+put the clause in one candidate of five;
+the translate judges,
+who have the candidate-sheet rule,
+chose a dropper 3 of 5.
+That is recorded and not fixed:
+the page would have carried the clause through the repair lane.
+The entry stopped instead at slice 17 on class forty,
+unrelated to the references
+(the pass log's "Class forty" heading dated 2026-09-17 00:35 UTC):
+a declined contest left the archive's one-line rendering standing,
+the deterministic rule withheld it,
+and the slate never saw the two valid lane texts.
+`1c38e4f34` offers them.
+Mio25 is the first pass on it.
+
 ## Cost
 
 Exa bills per page read;

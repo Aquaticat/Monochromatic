@@ -300,6 +300,29 @@ which the takeover session does not have.
   `Mio24` launched at 22:58 UTC on frozen `27109ca8b` (pid 2354397,
   runs `~/temp/agent/Mio24-20260916`,
   log `~/temp/agent/Mio24-20260916.log`).
+  Mio24 read at 00:15 UTC on 2026-09-17
+  (the pass log's "Mio24 read" heading):
+  INCOMPLETE after 76.7 minutes at slice 17,
+  the sister attested four of five,
+  both addition claims on it rejected before the panel,
+  the repair lane kept the clause and won the contest 3 to 2,
+  the translate lane's writers heard the rule and one candidate of five carried the clause while the
+  judges chose a dropper 3 of 5;
+  slice 17 is class forty:
+  the contest settled neither with the archive flawed on every ballot,
+  the archive's one-line rendering stood,
+  the deterministic rule withheld it (the poem's link),
+  the writers' proposals flattened the blockquote,
+  three of five slate judges abstained,
+  the two who voted tied,
+  and the two valid lane texts were on no slate.
+  Fixed in `1c38e4f34`
+  (lane texts that pass the rule join the slate whenever the standing is neither endorsed nor eligible,
+  under a `lane` producer kind;
+  guards red first at `341a540bf`).
+  `Mio25` launched at 00:40 UTC on frozen `1c38e4f34` (pid 2590736,
+  runs `~/temp/agent/Mio25-20260917`,
+  log `~/temp/agent/Mio25-20260917.log`).
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2113,6 +2136,18 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`1c38e4f34` (2026-09-17,
+00:35 UTC):
+class forty,
+the consolidation slate offers each lane text that passes the deterministic rule and is not the standing
+whenever the standing is neither contest-endorsed nor eligible
+(`laneTextsForSlate`,
+a `lane` producer kind,
+the settle key carrying the offered texts only when any were;
+the pass log's "Class forty" heading dated 2026-09-17 00:35 UTC;
+guards red first at `341a540bf`;
+found by the Mio24 read).
+Running on Mio25.
 `27109ca8b` (2026-09-16,
 22:55 UTC):
 class thirty-nine,
@@ -3802,33 +3837,38 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio24` by the seven steps and the three checks (frozen `27109ca8b`,
-    pid 2354397,
-    runs `~/temp/agent/Mio24-20260916`,
-    log `~/temp/agent/Mio24-20260916.log`,
-    launched 22:58 UTC with Synthetic and Hyper dry).
-    Mio24 is the first pass on class thirty-nine
-    (the pass log's heading dated 2026-09-16 22:55 UTC).
-    Read first the `ATTESTED` log lines
-    (`ATTESTED heard=H answered=A verified=V needed=N details=D`;
-    Mio23 read heard 6,
-    verified 9,
+1.  READ `Mio25` by the seven steps and the three checks (frozen `1c38e4f34`,
+    pid 2590736,
+    runs `~/temp/agent/Mio25-20260917`,
+    log `~/temp/agent/Mio25-20260917.log`,
+    launched 00:40 UTC on 2026-09-17 with Synthetic and Hyper dry).
+    Mio25 is the first pass on class forty
+    (the pass log's heading dated 2026-09-17 00:35 UTC).
+    Read first any `lane texts offered on the slate` log line
+    (one per slice whose standing was neither contest-endorsed nor eligible;
+    Mio24 had one such slice,
+    17,
+    and stopped on it),
+    then slice 17's settlement
+    (`consolidation.slices` by `sliceIndex`;
+    which candidate won,
+    whether `decided.producer.kind` is `lane`,
+    and whether the page carries the poem as a blockquote with its five line breaks and
+    `https://space.bilibili.com/246513889`;
+    Mio23 shipped the translate lane's rendering with the archive's farewell line above it),
+    then the `ATTESTED` log lines
+    (Mio24 heard 5,
+    verified 6,
     details 1,
-    the sister by five voices),
+    the sister by four voices),
+    then slice 2's repair text and issues
+    (expect the two addition claims on the sister rejected before the panel and the clause kept,
+    as Mio24 did),
     then slice 2's translate lane text
-    (`lanes.translate.result.sliceTexts` by index,
-    or `comparison[]` `translateText`;
-    expect `who is also trans` carried,
-    which no translate candidate has ever done),
-    then slice 2's issues
-    (`lanes.repair.result.issues[]` by `sliceIndex`;
-    a `status: rejected` issue with an all-zero tally appears only if the critic files the sister as an addition,
-    which Mio23's critic did not),
-    then the contest
-    (`laneSelection.slices` by `sliceIndex`;
-    Mio23 chose translate 3 to 2 on the 985,
-    the local university and "before she passed away" that repair dropped)
-    and what ships,
+    (Mio24's writers put the clause in one candidate of five and the judges chose a dropper 3 of 5;
+    a carrier winning would be new),
+    then the contest and what ships
+    (Mio24 chose repair 3 to 2),
     then the first chat block
     (Mio23's block review kept the archive block at 1.5 of 5 with two abstentions,
     Mio21's revision won 3.5 of 5;

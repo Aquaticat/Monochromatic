@@ -115,6 +115,21 @@ a translate candidate is written from the original,
 so without the block it drops the detail by construction
 and the lane contest ships without it whenever translate wins.
 
+## Lane texts on the consolidation slate
+
+The consolidation is the retry of a declined contest,
+and until class forty (2026-09-17) the retry never saw the two texts the contest was about.
+Whenever the standing text is neither contest-endorsed nor admitted by the deterministic publication rule,
+each lane's text that passes the rule and is not the standing joins the slate beside the writers' proposals
+(`laneTextsForSlate` in `consolidate-lane-offer.ts`).
+A lane text carries a `lane` producer,
+nobody on the roster owns it as a whole,
+and a proposal reproducing it collapses into it with the reproducing model discounted,
+as with the incumbent.
+The settle key carries the offered lane texts only when any were,
+so every other slice keys as before.
+The log prints `slice N: lane texts offered on the slate beside the proposals: repair, translate`.
+
 ### What this changes about caching
 
 The window is part of the question a slice is asked,

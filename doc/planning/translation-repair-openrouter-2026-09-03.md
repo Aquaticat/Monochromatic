@@ -8082,6 +8082,174 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Mio25 launches on class forty, 2026-09-17, 00:40 UTC
+
+Frozen `1c38e4f34` (class forty,
+the lane texts on the consolidation slate),
+pid 2590736,
+runs `~/temp/agent/Mio25-20260917`,
+log `~/temp/agent/Mio25-20260917.log`,
+Synthetic and Hyper dry,
+Bedrock and OpenRouter wet.
+Read first any `lane texts offered on the slate` line
+(one per slice whose standing was neither contest-endorsed nor eligible),
+then slice 17's settlement:
+which candidate won,
+whether the page carries the poem as a blockquote with its line breaks and
+`https://space.bilibili.com/246513889`,
+then slice 2's sister clause and the contest,
+then the first chat block,
+then the Mio21 reading and the spend.
+
+## Class forty, 2026-09-17, 00:35 UTC: a declined contest leaves the slate blind to the lane texts
+
+Mio24 stopped INCOMPLETE at slice 17,
+the closing poem.
+The archive never translated the poem;
+its page ends on the farewell line the Mio pages close with,
+which the pairing set against the poem's blockquote,
+so the slice's incumbent is that one line and the original carries a link the line does not.
+The contest heard four ballots,
+every one judging the archive flawed,
+and settled `neither` three to one:
+two ballots called both lanes unsupported for "gendered pronouns" and for the translate lane's
+"May you rest in peace" line,
+one said the lanes differ only in wording,
+one chose translate.
+A declined contest leaves the archive's rendering standing,
+the deterministic publication rule refused it
+(the log line names the bilibili link the original carries and the translation does not),
+and the consolidation withheld it from the slate under the owner's decision of 2026-09-04.
+The slate then carried only the writers' fresh proposals,
+which flattened the poem's blockquote and its line breaks,
+and the slate judges said so:
+three of five abstained
+("none of the candidates reproduce the block quote structure",
+"the passage being replaced is a single line"),
+the two who voted tied one to one,
+the fallback was the withheld standing,
+and the entry stopped after 76.7 minutes with `slate-declined-standing`.
+The repair lane's text
+(`> Lament for Autumn`,
+five lines,
+the attribution with the link)
+and the translate lane's
+(the same with the farewell line kept above it)
+both passed the rule,
+both carried the blockquote,
+the line breaks and the link,
+and neither was on any slate.
+Mio23 never met this because its contest chose translate on slice 17.
+
+The fix,
+`1c38e4f34`:
+the consolidation slate offers each lane text that passes the deterministic rule and is not the standing,
+whenever the standing is neither contest-endorsed nor eligible
+(`laneTextsForSlate` in `consolidate-lane-offer.ts`).
+A lane text joins the slate under a new `lane` producer kind,
+between the incumbent and the fresh proposals,
+so the incumbent's bytes win a collapse against a lane that reproduces them and a lane's bytes win one
+against a proposal that reproduces the lane,
+with the reproducing model discounted as it is for the incumbent.
+The settle key carries the offered lane texts only when any were,
+so every other slice keys as before;
+a floor that refuses every proposal no longer ends the settlement when lane texts remain.
+A silent producer round still interrupts the entry as before,
+lane texts or none.
+Guards red first at `341a540bf`
+(lane candidates,
+the offer rule,
+the settle key,
+the artifact producer reader),
+all four checks green at `1c38e4f34`.
+Not changed:
+the contest's `neither` still leaves the archive standing,
+which is the consolidation's retry by design;
+the slate judges' reading of the one-line standing as the scope of the passage
+("the task is to replace only the current English passage")
+is noted,
+not fixed.
+
+## Mio24 read, 2026-09-17, 00:15 UTC: the attestation and the repair lane hold, the entry stops at slice 17
+
+Mio24 (frozen `27109ca8b`,
+launched 22:58 UTC,
+Synthetic and Hyper dry) ended INCOMPLETE after 76.7 minutes at slice 17,
+class forty,
+so no page was written and the seven checks,
+the three checks and the first chat block could not be read.
+What could be read:
+
+- `ATTESTED heard=5 answered=6 verified=6 needed=3 details=1`;
+  the sister detail by four of five voices
+  (gemma-4-26b-a4b,
+  deepseek-v4.1-flash,
+  mercury-2.5,
+  Kimi-K3),
+  mercury's two extra items
+  (the depression hospitalisation,
+  the graduation certificate)
+  verified but fell to quorum.
+- Slice 2,
+  the repair lane:
+  both addition claims on the sister
+  ("Translation adds that the sister is trans",
+  "adds that the older sister is also trans")
+  rejected before the panel with the reference-attested finding,
+  the mistranslation claim on "handles everything at home" rejected by the panel,
+  the omission of 当地 accepted,
+  and the lane kept "She has an older sister who is also trans."
+- Slice 2,
+  the translate lane,
+  the first pass with the ATTESTED DETAILS block on the writer sheet:
+  one candidate of the slate carried the clause
+  (candidate 3,
+  which mercury voted for,
+  "incorporates the cited-reference detail about the sister"),
+  and gemma-4-26b-a4b's candidate 4,
+  "and she has an older sister",
+  won three ballots of five
+  (minimax,
+  deepseek-v4.1-flash,
+  gemma-4-e2b,
+  each praising it for adding nothing).
+  The writers now hear the rule and one followed it;
+  the translate judges have the candidate-sheet rule and three of five still preferred the dropper.
+  Recorded,
+  not fixed:
+  the repair lane carries the clause and the contest chose it.
+- Slice 2,
+  the contest:
+  repair 3 to 2,
+  the translate ballots citing "before she passed away" as the qualifier repair lacks,
+  one repair ballot noting that repair
+  "does drop the archive's accurate attested detail" in its reason while choosing repair.
+  Had the page assembled,
+  it would have carried the clause.
+- Slice 17:
+  class forty,
+  read in full under its own heading.
+- The other contests:
+  fourteen settled,
+  ten repair,
+  three translate,
+  one neither
+  (slice 17);
+  the archive judged flawed on most ballots of most slices.
+- Spend:
+  select 107 rounds,
+  474 seats asked,
+  392 heard;
+  translate 43 rounds,
+  157 asked,
+  75 heard;
+  1,450 seats asked in all with 66 retry rounds.
+  METERS at exit:
+  Bedrock 183.59 USD,
+  OpenRouter 261.52 USD,
+  Synthetic and Hyper dry.
+  Read the meter deltas at the Mio25 read together with Mio25's own.
+
 ## Mio24 launches on class thirty-nine, 2026-09-16, 22:58 UTC
 
 Frozen `27109ca8b`,
