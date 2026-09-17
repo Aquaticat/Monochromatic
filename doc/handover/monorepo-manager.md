@@ -284,8 +284,17 @@ It recommends a patched `hcl-edit` under meow's own evaluator,
  a curated OpenTofu-named function set,
  meow's own formatter,
  and `lsp-server`.
-Its brief went to the user with five questions;
- nothing is adopted until the user accepts (rule `DRR`).
+Its brief went to the user with five questions.
+Answered on 2026-09-17:
+ patched `hcl-edit` under meow's own evaluator,
+ and functions with unpredictable results allowed but making their evaluation uncacheable with detailed warnings,
+ both recorded in
+ [`doc/decision/monorepo-manager-hcl-front-end.md`](../decision/monorepo-manager-hcl-front-end.md);
+ all three upstream defects get reminder issues.
+Still open:
+ meow-only function naming,
+ the diagnostic renderer,
+ and acceptance of the formatter and language server recommendations.
 Corrected before merging:
  the research called a C toolchain forbidden by the all-Rust decision record,
  which only says the tool is written in Rust;
@@ -298,7 +307,11 @@ The re-run cache key hash vet finished on 2026-09-17:
 It recommends `twox-hash` 2.1.4 XXH3-128 again,
  now over a new finalist `rscrypto` by 1.5 points,
  with cryptographic candidates 8 to 15 times slower on the weight-5 criteria.
-Its one user question is whether to power on the m1 to decide `twox-hash` against `rscrypto` by measurement.
+Its one user question was whether to power on the m1 to decide `twox-hash` against `rscrypto` by measurement.
+The user answered on 2026-09-17:
+ "I just powered on my m1 mac.
+ Please measure.",
+ so the aarch64 measurement runs there before the hash is recorded.
 Spot-checked before merging:
  `rscrypto` was published 2026-05-02 with about 1,100 recent downloads (crates.io API,
  2026-09-17).

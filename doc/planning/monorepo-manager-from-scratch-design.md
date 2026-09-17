@@ -1250,6 +1250,32 @@ and
 Nothing here is adopted:
 the brief went to the user on 2026-09-17 and rule `DRR` requires acceptance first.
 
+#### Answers on 2026-09-17
+
+- Front end accepted:
+   "Patched `hcl-edit`".
+  meow depends on `hcl-edit` 0.9.7 with the two prototype patches carried,
+   under its own evaluator over that tree.
+- Functions with unpredictable results:
+   "Allow,
+   mark evaluations uncacheable for stuff that used them,
+   and warn user with detailed messages."
+  `timestamp`,
+   `uuid`,
+   and `bcrypt` exist with OpenTofu's names.
+  An evaluation that calls one is recorded as uncacheable,
+   and meow warns with a diagnostic naming the function,
+   the block it was called from,
+   and what caching it disabled (rule `DGT`).
+- Upstream defects:
+   "All three".
+  Reminder issues track the user filing the two `hcl-edit` write-back defects
+   and the `hcl-rs` evaluator divergences personally.
+- Still open:
+   naming for meow-only functions,
+   the diagnostic renderer,
+   and acceptance of the formatter and language server recommendations.
+
 #### Recommended shape
 
 - Front end:
@@ -1843,6 +1869,11 @@ finished 2026-09-17 under the changed premises,
 with a screening appendix listing every scanned crate.
 Nothing is adopted:
 the brief went to the user the same day and rule `DRR` requires acceptance first.
+Answering it,
+the user said "I just powered on my m1 mac.
+Please measure.",
+so the aarch64 numbers that decide `twox-hash` against `rscrypto` are being measured on that machine
+before the choice is recorded.
 
 - Recommended:
    `twox-hash` 2.1.4 XXH3-128,
