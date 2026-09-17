@@ -387,7 +387,20 @@ which the takeover session does not have.
   the page assembly restores the archive's heading into a colliding slice).
   `hulicaijia7` launched at 10:10 UTC on frozen `978bd7d20` (pid 3491560,
   runs `~/temp/agent/hulicaijia7`,
-  log `~/temp/agent/hulicaijia7.log`).
+  log `~/temp/agent/hulicaijia7.log`)
+  and read clean at 12:50 UTC:
+  SETTLED first attempt,
+  150 minutes,
+  4.41 USD,
+  thirteen distinct headings with nothing restored
+  (the lanes rendered the two sections apart this time,
+  so class forty-five's restoration is still unmeasured live),
+  ruby and Sakura as the archive,
+  the original's eight footnotes relabelled,
+  the archive's two translator-added notes dropped by the additions rule.
+  `shi_Yumiaoya1` launched at 12:42 UTC on the same dist (pid 3508311,
+  runs `~/temp/agent/shi_Yumiaoya1`,
+  log `~/temp/agent/shi_Yumiaoya1.log`).
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2212,7 +2225,9 @@ recorded as a page assembly override with a finding
 the pass log's "Class forty-five" heading dated 2026-09-17 10:05 UTC;
 guard red first at `b6bfd2b96`;
 found by the hulicaijia6 ERROR).
-Running on hulicaijia7.
+Ran on hulicaijia7 (no collision arose,
+so the restoration never fired).
+Running on shi_Yumiaoya1.
 `0986c871f` (2026-09-17,
 06:10 UTC):
 class forty-four,
@@ -3966,21 +3981,24 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `hulicaijia7` by the seven steps and the three checks (frozen `978bd7d20`,
-    pid 3491560,
-    runs `~/temp/agent/hulicaijia7`,
-    log `~/temp/agent/hulicaijia7.log`,
-    launched 10:10 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
-    Synthetic and Hyper dry).
-    It is the first pass on class forty-five
-    (the pass log's heading dated 2026-09-17 10:05 UTC);
-    hulicaijia6 died at publish on that class after 205 minutes
-    (the pass log's "hulicaijia6 read" heading dated 2026-09-17 09:54 UTC).
-    Read first the page assembly's findings
+1.  READ `shi_Yumiaoya1` by the seven steps and the three checks (frozen `978bd7d20`,
+    pid 3508311,
+    runs `~/temp/agent/shi_Yumiaoya1`,
+    log `~/temp/agent/shi_Yumiaoya1.log`,
+    launched 12:42 UTC on 2026-09-17 with Synthetic,
+    Bedrock and OpenRouter wet,
+    Hyper dry).
+    It is the queue's second entry after Mio
+    (hulicaijia7 read clean at 12:50 UTC,
+    the pass log's "hulicaijia7 read" heading dated 2026-09-17 12:50 UTC).
+    Its archive is 54 lines against the original's 138,
+    so read first how much of the original the archive renders and what the lanes did with the rest,
+    then the community-term footnote,
+    then the page assembly's findings
     (`repeats another section's heading` in the log,
-    `pageAssembly.trimmed` in the artifact)
-    and count the page's level-2 headings against the original's thirteen,
-    then the three shapes no read page has met:
+    `pageAssembly.trimmed` in the artifact;
+    class forty-five's restoration has not fired live yet),
+    then the shapes hulicaijia7 met:
     the inline ruby annotation,
     the Sakura component and the footnote
     (its 2026-09-09 INCOMPLETE was class twenty-six,
@@ -3993,19 +4011,18 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (hulicaijia6 to its ERROR:
-    3.71 USD,
-    5,312 seats,
-    137 retry rounds,
-    205 minutes;
+    (hulicaijia7:
+    4.41 USD by the meters,
+    4,694 seats,
+    146 retry rounds,
+    150 minutes;
     Mio27:
     1.03 USD,
     1,314 seats,
     46 retry rounds,
     117 minutes).
     If the page reads clean,
-    the queue continues with `shi_Yumiaoya`,
-    `yingying` and `XingZ60` on the same frozen dist.
+    the queue continues with `yingying` and `XingZ60` on the same frozen dist.
     ALWAYS KILL AND RELAUNCH if the source moves while it runs.
 2.  DECIDED (owner,
     2026-09-16,

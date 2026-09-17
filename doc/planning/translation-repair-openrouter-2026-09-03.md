@@ -8082,6 +8082,142 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya1 launches, 2026-09-17, 12:42 UTC
+
+Frozen `978bd7d20` (unchanged since hulicaijia7),
+pid 3508311,
+runs `~/temp/agent/shi_Yumiaoya1`,
+log `~/temp/agent/shi_Yumiaoya1.log`,
+Synthetic,
+Bedrock and OpenRouter wet,
+Hyper dry.
+The queue's second entry after Mio,
+on the hulicaijia7 page reading clean.
+The original has four level-2 headings,
+one footnote defining a community term,
+and a picture component;
+the archive is 54 lines against the original's 138,
+so read first how much of the original the archive renders
+(the lanes' slice count and any `declined` line),
+then the footnote,
+then the seven steps and the three checks.
+The attestation bought its one cited reference and answered nothing on it
+(`ATTESTED heard=6 answered=0`),
+the same shape as hulicaijia's government page.
+
+## hulicaijia7 read, 2026-09-17, 12:50 UTC: the page is whole, the headings distinct, nothing restored
+
+Frozen `978bd7d20`,
+SETTLED on the first attempt
+(`attempts.json` reads 1),
+150 minutes
+(`ms=8977922`),
+72 slices,
+page changed on 36,
+selection contested.
+Spend by the meters:
+Bedrock 180.82 to 178.91,
+OpenRouter 258.16 to 255.66,
+4.41 USD;
+`pass-spend.mjs` logs 4.47 USD over 4,694 seats,
+146 retry rounds,
+20 abandoned streams (0.16 USD).
+Synthetic came back wet during the run (weekly 1.12 percent at the end).
+
+Class forty-five,
+the reason for the relaunch:
+the page carries thirteen level-2 headings for the original's thirteen,
+all distinct,
+and the artifact's `pageAssembly` is empty
+(nothing trimmed,
+withdrawn or restored).
+The lanes rendered 初识 as `First Meeting` and 相遇 as `The Encounter`
+where hulicaijia6 had rendered 相遇 as the archive's `Meeting`,
+so the collision never arose and the restoration is still unmeasured live;
+the unit guard remains its only evidence.
+Four headings differ from the archive:
+初识 `Meeting` to `First Meeting`,
+相遇 `Soulmate` to `The Encounter`,
+左右 `Conflict` to `Left and Right`,
+长夜 `Insomnia` to `The Long Night`.
+On 左右 the consolidation slate chose the literal three of three,
+mercury writing that `Conflict` "substitutes an interpretation not explicit in the original";
+the archive's interpretive headings lose to literal renderings whenever the slate reads them,
+which is the heading-wording note already open,
+now with a fourth example.
+
+The three shapes no read page had met:
+the inline ruby annotation
+(`<ruby>コネクト<rt>Connect</rt></ruby>` in the original)
+is rendered by the archive as `*Connect*` and the page keeps the archive's line byte for byte,
+so the shape never reached a lane;
+the Sakura component ships as the archive has it,
+the last line of the page;
+the footnotes are the original's eight,
+relabelled in order
+(class nineteen),
+every marker in place.
+The archive carried ten notes;
+its two translator-added notes are gone from the page:
+the Naixue rename note
+(the note reads Formerly Nayuki,
+renamed Naìsnow in 2025;
+the marker on At Naixue dropped with it)
+and the goodnight-amantadine homophone gloss,
+whose place the original's own note takes
+(which reads That is,
+the amantadine mentioned earlier).
+Both are additions with no counterpart in the original and no cited reference,
+so the standing rule drops them;
+recorded here because the homophone gloss is what made the quoted line readable in English,
+and a reader of the page now meets "the hallucinations from goodnight" with only the pointer.
+Any reversal of that is the owner's call
+(a translator's gloss as a kind of note the review keeps),
+not a class.
+
+The seven steps and the three checks:
+front matter equals the archive byte for byte
+(`FRONT MATTER ... authority=archive`);
+47 `json false start` lines,
+all read past
+(gpt-oss-120b's two-character opening,
+mercury's 36);
+no `finish_reason=error`;
+four cap cuts
+(`finish_reason=length`,
+one each in archive-block-review select,
+translate-repair GLM-5.3-Flash,
+consolidate-gate gemma-26b and slate select gpt-oss),
+none fatal;
+no `carries the sheet's own` refusal
+(class forty-four's second live pass with nothing to catch);
+no Chinese punctuation,
+no CJK run,
+no refusal text,
+no code fence on the page;
+apostrophes curly (94 against the archive's 100),
+straight double quotes 14 against the archive's 14,
+all inside `<p style="text-align: center;">` captions;
+three-dot ellipses 27 against 27.
+The reader's note at the top now says "drug abuse" where the archive said "drug overdose"
+(the original's 滥用;
+a slate ballot names the distinction).
+Paragraphs:
+137 on the page against the archive's 138,
+97 identical to an archive paragraph,
+the rest rewrapped one clause per line or reworded.
+Seats:
+glm-5.3 dark for the whole run
+(326 calls thrown,
+no provider serving it wet;
+the SEATS DARK line says so),
+Kimi-K3 withheld as always;
+GLM-5.3-Flash on OpenRouter ran to the 360 s cut twice
+(2.6 M raw characters once),
+the runaway noted on Mio26.
+The attestation bought nothing (the cq.gov.cn page cached from hulicaijia6) and answered nothing twice,
+as on hulicaijia6.
+
 ## hulicaijia7 launches on class forty-five, 2026-09-17, 10:10 UTC
 
 Frozen `978bd7d20` (classes forty-one to forty-five),
