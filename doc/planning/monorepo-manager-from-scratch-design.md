@@ -1164,6 +1164,19 @@ Each follows from recorded decisions:
    the cache has a magic header (`package/cli/forbidden-strings/src/runtime_cache/envelope.rs:20`)
    and the scanner reports "compile-from-text" recovery on a mismatch (`src/runtime_cache/warning.rs:78`).
 
+#### Root `mise.toml` and where meow is built
+
+Answered by the user on 2026-09-17:
+"Hand-maintained file, and we're obviously going to build meow in a new worktree."
+
+- Once meow replaces file-enforcer,
+   the root `mise.toml` stops being generated and is maintained by hand
+   until Mise leaves the macOS and Windows runners;
+   meow gets no Mise-specific rule.
+- meow is built in a separate git worktree,
+   so the TypeScript file-enforcer and meow never enforce the same tree during development,
+   and the lock interoperability concern for coexisting enforcers does not arise.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
