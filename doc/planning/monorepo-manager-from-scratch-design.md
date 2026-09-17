@@ -1422,7 +1422,10 @@ and collision reproducer under `gxhash/lab/` in the session scratchpad.
    "Copyright (c) 2023 Olivier Giniaux",
    for the derived code.
 - API:
-   one-shot hashing;
+   one-shot hashing,
+   later corrected on 2026-09-17 (see "Cache key hash after the collision findings"):
+   meow hashes multi-GB outputs,
+   so it needs streaming hashing;
    `Hasher` and `HashMap` support are left out because nothing in the repository uses them.
 - The undefined behavior and the one-byte collisions go through the `troubleshooting-doc` skill,
    whose upstream filing audit decides whether anything is offered upstream.
@@ -1477,6 +1480,17 @@ to the repeated cache key output question:
    stable output for persisted keys,
    static musl builds on both architectures,
    and a clear warning on CPUs lacking required capabilities.
+- Workload correction,
+   raised by the user and measured on 2026-09-17:
+   meow hashes huge inputs,
+   because every declared output gets a content hash
+   and dependency output hashes feed downstream keys.
+  `package/dev-script/vm-builder/output/qcow2/disk.qcow2` is 3,966,238,720 bytes
+   and music-player debug binaries are 520 to 663 MB each,
+   while the largest tracked source file is 22.9 MB.
+  The hash therefore needs streaming with chunking-independent output and bounded memory,
+   and its throughput and multi-core scaling on multi-GB inputs matter;
+   the running vet was told.
 - Superseded for meow:
    the `gxhash128` key choice and the `+aes`-specific build and startup check,
    whose target features and check follow the chosen hash.
