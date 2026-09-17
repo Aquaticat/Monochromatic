@@ -257,6 +257,29 @@ neither answer flips the ranking.
    environment,
    and secrets outside the monorepo manager in both routes?
 
+## Design findings so far
+
+Research appendices live in [`monorepo-manager-route-research/`](monorepo-manager-route-research/).
+
+- Bazel route,
+   Rust dependencies,
+   verified 2026-09-16:
+   all 19 `Cargo.toml` files carry an explicit `[workspace]` table,
+   and `doc/planning/cargo-toml-file-enforcer.md` records the no-workspace architecture as deliberate.
+  rules_rust `crate_universe` refuses to splice manifests from more than one workspace root
+   (`crate_universe/src/splicing/splicer.rs:58-60` at the rules_rust clone).
+  Bazel would need one dependency resolution per crate
+   or a Bazel-only resolution that diverges from the Cargo lockfiles Cargo keeps using.
+- Bazel route,
+   other native-language findings in `bazel-native-languages.md`:
+   no Android instrumentation test rule,
+   no Android Lint support,
+   no Bazel Android support in the IntelliJ IDEA setup the repo uses,
+   no build rule for the Ghostty Zig build,
+   crates.io publishing and Rust fuzzing staying on Cargo,
+   host system libraries outside Bazel's input tracking,
+   and a silently dropped `rustc-link-arg-bin` rpath.
+
 ## Next action
 
 On 2026-09-16 the user asked for design documents for both routes.
