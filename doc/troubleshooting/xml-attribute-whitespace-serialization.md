@@ -1347,6 +1347,9 @@ with no change to xmltree.
 
 ### Draft new issue for faassen/xot (fileable)
 
+The user chose to file this personally;
+tracked in issue #546 (2026-09-17).
+
 Title and labels:
 
 ```text
@@ -1448,6 +1451,9 @@ the reproduction and the test runs in this report were executed against the v0.3
 ~~~
 
 ### Draft comment for kornelski/xml-rs#88 (additive)
+
+The user chose to post this personally;
+tracked in issue #547 (2026-09-17).
 
 ~~~md
 The attribute half has a one-line fix:

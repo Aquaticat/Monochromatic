@@ -115,6 +115,9 @@ Each step's evidence is in the linked documents.
    and finished probes' Cargo build directories in the scratchpad.
   Remove `~/temp/agent/structured-edits-target-2026-09-16/` once the troubleshooting docs land.
   The aarch64 Rust targets stay.
+- Opened issues #546 and #547 on 2026-09-17 for the user to file the prepared `xot` issue
+   and post the prepared `kornelski/xml-rs#88` comment personally
+   (drafts in `doc/troubleshooting/xml-attribute-whitespace-serialization.md`).
 - Opened issue #545 on 2026-09-17,
    "music player must switch away from gxhash";
    the user said this session must not touch music player work.
@@ -154,7 +157,7 @@ Each step's evidence is in the linked documents.
    `json-five-unterminated-block-comment.md`,
    `jsonc-parser-json5-defaults.md`,
    `biome-json-crates-exact-pins.md`,
-   and `xml-attribute-whitespace-serialization.md`.
+   and `xml-attribute-whitespace-serialization.md` (committed).
   Add README index entries after they land.
 - Installs are authorized for this work,
    except `rpm-ostree install`.
