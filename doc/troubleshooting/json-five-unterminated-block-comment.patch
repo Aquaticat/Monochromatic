@@ -1,0 +1,108 @@
+diff --git a/src/rt/parser.rs b/src/rt/parser.rs
+index 948a3b6..3e36781 100644
+--- a/src/rt/parser.rs
++++ b/src/rt/parser.rs
+@@ -893,6 +893,25 @@ true"#;
+         let _res = from_str(sample).unwrap();
+     }
+ 
++    #[test]
++    fn test_comments_round_trip() {
++        let samples = [
++            "{ /* block */ \"a\": 1 }",
++            "/* top */ {\"a\": 1}",
++            "{\"a\": 1} /* tail */",
++            "[1, /* x */ 2]",
++            "/** doc **/ {}",
++            "{\n  \"compilerOptions\": {\n    /* strictness */\n    \"strict\": false, // todo\n  },\n}\n",
++            "{\"a\": 1} // caf\u{e9}",
++            "{\"a\": 1 // x\u{2028}}",
++            "{\"a\": 1 // x\u{2029}}",
++        ];
++        for sample in samples {
++            let res = from_str(sample).unwrap();
++            assert_eq!(res.to_string(), sample);
++        }
++    }
++
+ 
+ 
+     #[test]
+diff --git a/src/rt/tokenize.rs b/src/rt/tokenize.rs
+index 21ee78d..7faf467 100644
+--- a/src/rt/tokenize.rs
++++ b/src/rt/tokenize.rs
+@@ -215,4 +215,15 @@ mod tests {
+         assert_eq!(text, tokens_to_source(&tokens));
+ 
+     }
++
++    #[test]
++    fn test_rt_comments() {
++        for text in ["{ /* block */ \"a\": 1 }", "{\"a\": 1} /* tail */", "{\"a\": 1} // caf\u{e9}", "{\"a\": 1 // x\u{2028}}"] {
++            let tokens = source_to_tokens(text).unwrap();
++            assert_eq!(text, tokens_to_source(&tokens));
++        }
++        let tokens = source_to_tokens("{ /* block */ \"a\": 1 }").unwrap();
++        let comment = tokens.iter().find(|tok| tok.tok_type == TokType::BlockComment).unwrap();
++        assert_eq!(comment.lexeme, "/* block */");
++    }
+ }
+\ No newline at end of file
+diff --git a/src/tokenize.rs b/src/tokenize.rs
+index 66b4ffc..2e985d0 100644
+--- a/src/tokenize.rs
++++ b/src/tokenize.rs
+@@ -488,19 +488,21 @@ impl <'input> Tokenizer<'input> {
+         match star_or_slash {
+             '/' => {
+                 // line comment
++                let mut last_char = star_or_slash;
+                 loop {
+                     match self.chars.peek() {
+                         None => {
+-                            return Ok((start_idx, TokType::LineComment, last_idx+1))
++                            return Ok((start_idx, TokType::LineComment, last_idx + last_char.len_utf8()))
+                         },
+                         Some((peeked_idx, peeked_char)) => {
+                             match peeked_char {
+                                 '\n' | '\r' | '\u{2028}' | '\u{2029}' => {
+-                                    (last_idx, _) = self.advance().unwrap();
+-                                    return Ok((start_idx, TokType::LineComment, last_idx+1))
++                                    (last_idx, last_char) = self.advance().unwrap();
++                                    return Ok((start_idx, TokType::LineComment, last_idx + last_char.len_utf8()))
+                                 }
+                                 _ => {
+                                     last_idx = *peeked_idx;
++                                    last_char = *peeked_char;
+                                     self.advance();
+                                 }
+                             }
+@@ -528,7 +530,7 @@ impl <'input> Tokenizer<'input> {
+                                             match next_peeked_char {
+                                                 '/' => {
+                                                     (last_idx, _) = self.advance().unwrap();
+-                                                    return Ok((start_idx, TokType::BlockComment, last_idx))
++                                                    return Ok((start_idx, TokType::BlockComment, last_idx + 1))
+                                                 }
+                                                 _ => {
+                                                     continue
+@@ -747,6 +749,18 @@ mod test {
+         assert_eq!(toks, expected);
+     }
+ 
++    #[test]
++    fn test_comment_spans_are_noninclusive() {
++        let text = "/* a */ // b\u{e9}";
++        let toks = tokenize_rt_str(text).unwrap();
++        let expected = Tokens{ tok_spans: vec![(0, BlockComment, 7), (7, Whitespace, 8), (8, LineComment, 14), (14, EOF, 14)], source: text};
++        assert_eq!(toks, expected);
++        let text = "// a\u{2028}1";
++        let toks = tokenize_rt_str(text).unwrap();
++        let expected = Tokens{ tok_spans: vec![(0, LineComment, 7), (7, Integer, 8), (8, EOF, 8)], source: text};
++        assert_eq!(toks, expected);
++    }
++
+     #[test]
+     fn test_array() {
+         let text = "[1,2,3]";

@@ -1,0 +1,69 @@
+diff --git a/src/cst/mod.rs b/src/cst/mod.rs
+index 3dcd728..d196c10 100644
+--- a/src/cst/mod.rs
++++ b/src/cst/mod.rs
+@@ -4804,6 +4804,26 @@ value3: true
+     CstRootNode::parse("[1, 2]", &options).unwrap();
+   }
+ 
++  #[test]
++  fn comments_when_not_allowed() {
++    build_cst("[1] // 1");
++
++    // but is strict when strict
++    let options = crate::ParseOptions {
++      allow_comments: false,
++      ..Default::default()
++    };
++    assert_eq!(
++      CstRootNode::parse("[1] // 1", &options).err().unwrap().to_string(),
++      "Comments are not allowed on line 1 column 5"
++    );
++    assert_eq!(
++      CstRootNode::parse("[1 /* 1 */]", &options).err().unwrap().to_string(),
++      "Comments are not allowed on line 1 column 4"
++    );
++    CstRootNode::parse("[1]", &options).unwrap();
++  }
++
+   #[test]
+   fn sort_properties() {
+     #[track_caller]
+diff --git a/src/parse_to_ast.rs b/src/parse_to_ast.rs
+index 3a8d8af..e73e300 100644
+--- a/src/parse_to_ast.rs
++++ b/src/parse_to_ast.rs
+@@ -179,6 +179,9 @@ impl<'a> Context<'a> {
+       let token = self.scanner.scan()?;
+       match token {
+         Some(token @ Token::CommentLine(_) | token @ Token::CommentBlock(_)) if self.collect_comments_as_tokens => {
++          if !self.allow_comments {
++            return Err(self.create_error(ParseErrorKind::CommentsNotAllowed));
++          }
+           self.capture_token(token);
+         }
+         Some(Token::CommentLine(text)) => {
+@@ -559,6 +562,23 @@ mod tests {
+     assert_has_strict_error(r#"[ "test" /* 1 */]"#, "Comments are not allowed on line 1 column 10");
+   }
+ 
++  #[test]
++  fn strict_should_error_comments_collected_as_tokens() {
++    let collect_options = CollectOptions {
++      comments: CommentCollectionStrategy::AsTokens,
++      tokens: true,
++    };
++    for (text, message) in [
++      (r#"[ "test" ] // 1"#, "Comments are not allowed on line 1 column 12"),
++      (r#"[ "test" /* 1 */]"#, "Comments are not allowed on line 1 column 10"),
++    ] {
++      match parse_to_ast(text, &collect_options, &strict_options()) {
++        Ok(_) => panic!("Expected error, but did not find one."),
++        Err(err) => assert_eq!(err.to_string(), message),
++      }
++    }
++  }
++
+   #[test]
+   fn strict_should_error_word_property() {
+     assert_has_strict_error(
