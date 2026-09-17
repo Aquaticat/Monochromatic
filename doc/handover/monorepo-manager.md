@@ -205,6 +205,17 @@ Each step's evidence is in the linked documents.
    as something to preserve,
    and the user corrected it.
 
+- Corrected by the user on 2026-09-17:
+   "I haven't been presented with the brief on how you recommend XXH3-128 from twox-hash,
+   nor HCL."
+  The `twox-hash` adoption followed only a short summary above the reading question,
+   treating the "SIMD counts" answer as acceptance,
+   and the HCL evaluator research started without an HCL brief.
+  Both briefs were then presented,
+   with questions on keeping the `twox-hash` adoption,
+   keeping HCL with its running research,
+   and a proposed `AGENTS.md` rule `BFQ`.
+
 ## Commits
 
 Milestones,
