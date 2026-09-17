@@ -179,6 +179,19 @@ and the select missed its floor on them twice.
 A slice with nothing to translate,
 such as a bare link,
 returned as it stands still passes.
+The same rule refuses a candidate carrying any of the sheets' fence labels
+(`WHAT THE PICTURES HERE SAY`,
+`EXISTING TRANSLATION`,
+`ATTESTED DETAILS`,
+`DECLARED NAMES`,
+`CITED REFERENCES`,
+`LATEST REJECTION`,
+`ARCHIVE RENDERING`) that neither the original nor the page carries
+(`sheetLeakFindings`,
+class forty-four,
+2026-09-17):
+on Mio27 four of 68 translate candidates had copied the picture transcript under the component,
+and the judges chose them as the original's own text.
 
 ## What is folded out of candidate and archive text at intake
 

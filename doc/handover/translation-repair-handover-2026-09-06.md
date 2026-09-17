@@ -359,6 +359,25 @@ which the takeover session does not have.
   `Mio27` launched at 04:07 UTC on frozen `f7aa7c675` (pid 3011126,
   runs `~/temp/agent/Mio27-20260917`,
   log `~/temp/agent/Mio27-20260917.log`).
+  Mio27 read at 06:05 UTC
+  (the pass log's "Mio27 read" heading):
+  SETTLED in one attempt after 117 minutes,
+  the sister attested four of five and confirmed five of five,
+  the repair lane kept the clause and won the contest five of six,
+  the polish kept it with its gate five of five,
+  and the page carries the sister clause (class forty-one verified);
+  the poem ships with five `<br/>` breaks and its link;
+  class forty fired on slice 4 and the slate declined;
+  the seven checks and the three checks clean.
+  Found:
+  four of 68 translate candidates carried the sheet's picture-transcript block,
+  and both slices that had one chose it (class forty-four,
+  fixed in `0986c871f`,
+  guard red first at `d138f456b`);
+  the page was clean by the contest and the consolidation.
+  `hulicaijia6` launched at 06:15 UTC on frozen `0986c871f` (pid 3369011,
+  runs `~/temp/agent/hulicaijia6-20260917`,
+  log `~/temp/agent/hulicaijia6-20260917.log`).
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2172,6 +2191,16 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`0986c871f` (2026-09-17,
+06:10 UTC):
+class forty-four,
+`sheetLeakFindings` refuses a candidate carrying one of the sheets' fence labels
+(`translate-sheet-leak.ts`,
+wired into `validateTranslatedSlice` before any shape is read;
+the pass log's "Class forty-four" heading dated 2026-09-17 06:10 UTC;
+guard red first at `d138f456b`;
+found by the Mio27 read).
+Running on hulicaijia6.
 `f7aa7c675` (2026-09-17,
 04:05 UTC):
 class forty-three,
@@ -2182,7 +2211,7 @@ the attestation confirms every verified candidate in a second yes-or-no round ov
 the pass log's "Class forty-three" heading dated 2026-09-17 04:00 UTC;
 guard red first at `b41ff966c`;
 found by Mio26's attestation line).
-Running on Mio27.
+Ran on Mio27 (confirmation ratified the sister five of five).
 `052f8eea0` (2026-09-17,
 03:20 UTC):
 class forty-two,
@@ -2192,7 +2221,9 @@ and `untranslatedFindings` refuses a candidate that repeats a Han-carrying origi
 (the pass log's "Classes forty-one and forty-two" heading dated 2026-09-17 03:20 UTC;
 guards red first at `16f7639a1`;
 found by the Mio25 read).
-Running on Mio27 (Mio26 killed at 04:07 UTC before any contest).
+Ran on Mio27,
+not exercised:
+the poem was unpaired and the source-only floor held.
 `836f90687` (2026-09-17,
 03:15 UTC):
 class forty-one,
@@ -2201,7 +2232,9 @@ the refine judges' evidence and the polish gate sheet,
 threaded from the repair driver and the consolidation subject and folded into `refineRunShape`
 (same heading and guards;
 found by the Mio25 read).
-Running on Mio27.
+Ran on Mio27,
+verified:
+the polish kept the clause and its gate said so.
 `1c38e4f34` (2026-09-17,
 00:35 UTC):
 class forty,
@@ -3911,60 +3944,35 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio27` by the seven steps and the three checks (frozen `f7aa7c675`,
-    pid 3011126,
-    runs `~/temp/agent/Mio27-20260917`,
-    log `~/temp/agent/Mio27-20260917.log`,
-    launched 04:07 UTC on 2026-09-17 with Synthetic and Hyper dry).
-    Mio27 is the first pass on classes forty-one,
-    forty-two and forty-three
-    (the pass log's headings dated 2026-09-17 03:20 and 04:00 UTC);
-    Mio26 was killed in its pictures phase once class forty-three landed.
-    Read first the `ATTESTED CONFIRM heard=H candidates=C needed=N confirmed=K` line and the
-    `ATTESTED` line after it
-    (Mio26:
-    heard 5,
-    answered 2,
-    details 0;
-    the sister should now be attested whenever one voice extracts it and the bench confirms it;
-    a `confirmed=0` with the sister among the candidates is the reading to chase,
-    with the confirmation replies in `prompt-payloads`),
-    then slice 2's polish
-    (`consolidation.slices` by `sliceIndex`,
-    `polish.baseText` against `polish.text`,
-    and the polish gate ballots:
-    Mio25's polish removed "who is also trans" and its gate confirmed four of six as unsupported;
-    with the references on those sheets the clause should survive,
-    and a ballot still calling it unsupported is the class thirty-seven reading to chase),
-    then the page's sentence on the sister,
-    then slice 16's rendering
-    (`cat -A` on the page's last lines:
-    each verse line ends in two spaces when the breaks survived;
-    any flat candidate leaves
-    `ORIGINAL blockquote block(s) carry 5 explicit line break(s)` in the translate log),
-    then any `repeats the ORIGINAL untranslated` finding,
-    then `attempts.json`
-    (Mio25 needed two;
-    a second attempt again means the poem's select still cannot reach its floor and is worth its own
-    reading),
-    then the Mio25 reading as before:
-    slice 2's repair text
-    (Mio25's repair lane wrote "at the time of her death" for 生前,
-    which cost it the contest),
-    the contest,
-    the first chat block and its quote style,
-    the seven checks against Mio12,
-    the three checks,
-    the spend
-    (Mio25:
-    1.23 USD over two attempts,
-    2,148 seats,
-    77 retry rounds).
-    The Mio19 wording notes other than the sister stand;
-    fix any only as a class with a mechanism.
+1.  READ `hulicaijia6` by the seven steps and the three checks (frozen `0986c871f`,
+    pid 3369011,
+    runs `~/temp/agent/hulicaijia6-20260917`,
+    log `~/temp/agent/hulicaijia6-20260917.log`,
+    launched 06:15 UTC on 2026-09-17 with Hyper dry and the other three wet).
+    It is the first pass on class forty-four
+    (the pass log's heading dated 2026-09-17 06:10 UTC) and the queue's first entry after Mio
+    (Mio27 read clean at 06:05 UTC).
+    Read first the three shapes no read page has met:
+    the inline ruby annotation,
+    the Sakura component and the footnote
+    (its 2026-09-09 INCOMPLETE was class twenty-six,
+    fixed in `40aba2fdb`;
+    hulicaijia5 was killed on 2026-09-16 before its page),
+    then any `carries the sheet's own` refusal in the translate log
+    (class forty-four's first live measurement;
+    Mio27 had four such candidates of 68),
+    then the `ATTESTED` and `ATTESTED CONFIRM` lines if the entry cites a page,
+    then the archive block review,
+    then the seven steps and the three checks,
+    then the spend
+    (Mio27:
+    1.03 USD,
+    1,314 seats,
+    46 retry rounds,
+    117 minutes).
     If the page reads clean,
-    the queue resumes with `hulicaijia` on the frozen tip dist
-    (`hulicaijia6`).
+    the queue continues with `shi_Yumiaoya`,
+    `yingying` and `XingZ60` on the same frozen dist.
     ALWAYS KILL AND RELAUNCH if the source moves while it runs.
 2.  DECIDED (owner,
     2026-09-16,

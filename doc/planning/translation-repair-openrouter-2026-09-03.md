@@ -8082,6 +8082,192 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia6 launches on class forty-four, 2026-09-17, 06:15 UTC
+
+Frozen `0986c871f` (classes forty-one to forty-four),
+pid 3369011,
+runs `~/temp/agent/hulicaijia6-20260917`,
+log `~/temp/agent/hulicaijia6-20260917.log`,
+Synthetic back wet since 05:30 UTC,
+Hyper dry,
+Bedrock and OpenRouter wet.
+The queue resumes here on the Mio27 page reading clean.
+Read first the three shapes no read page has met:
+the inline ruby annotation,
+the Sakura component and the footnote;
+then any `carries the sheet's own` refusal in the translate log
+(class forty-four's first live measurement),
+then the `ATTESTED` lines
+(hulicaijia cites pages or it does not;
+`REFERENCE` lines in the preparation say which),
+then the seven steps and the three checks.
+
+## Class forty-four, 2026-09-17, 06:10 UTC: the writers copy the sheet's picture transcript into their candidates
+
+Found by the Mio27 read.
+Of the pass's 68 translate slate candidates,
+four carried the writer sheet's own `WHAT THE PICTURES HERE SAY` block,
+copied under the picture component with the readers' transcript inside,
+and both slices that had one chose it:
+slice 11 (photo4 and the rule) three of four candidates carried it and the judges chose one three of four,
+gpt-oss-120b for "the full PhotoScroll component,
+the heading,
+and all transcribed text exactly as in the ORIGINAL",
+deepseek and gemma-26b alike,
+minimax abstaining because a candidate "changes the original heading";
+slice 17 (the poem,
+unpaired this time) one of four carried it,
+the judges chose it,
+the contest chose translate five of five without a ballot naming the block,
+and the consolidation replaced it three of five because the standing was "10.9x" the original,
+not because anyone named the block.
+The judge sheet labels the transcript
+"WHAT THE PICTURES HERE SAY,
+transcribed by two readers that agreed",
+which the judges read as a heading of the original.
+The deterministic rule had no opinion:
+a candidate carrying the sheet's evidence was as valid as one without.
+Fixed in `0986c871f`
+(guard red first at `d138f456b`):
+`sheetLeakFindings` refuses a candidate carrying any of the sheets' fence labels
+(`WHAT THE PICTURES HERE SAY`,
+`EXISTING TRANSLATION`,
+`ATTESTED DETAILS`,
+`DECLARED NAMES`,
+`CITED REFERENCES`,
+`LATEST REJECTION`,
+`ARCHIVE RENDERING`) that neither the original nor the page carries,
+before any shape is read,
+so such a candidate never reaches a judge;
+run on Mio27's two chosen lane texts it refuses both.
+The page was clean because slice 11's contest settled neither with the archive endorsed
+and slice 17's consolidation wrote its own text.
+
+## Mio27 read, 2026-09-17, 06:05 UTC: the sister clause ships end to end, the poem keeps its five breaks
+
+`TALLY Mio status=SETTLED slices=18` in 116.9 minutes,
+one attempt
+(`attempts.json` reads 1).
+The pairing gave 18 slices this time and left the poem unpaired
+(slice 17,
+incumbent empty),
+where Mio25's pairing had set the farewell paragraph against it.
+
+The attestation
+(class forty-three's first pass):
+`ATTESTED heard=5 answered=7 verified=6 needed=3 details=1` after
+`ATTESTED CONFIRM heard=5 candidates=2 needed=3 confirmed=1`.
+Four voices extracted the sister
+(minimax-m3,
+gemma-4-26b-a4b,
+gpt-oss-120b,
+mercury-2.5),
+the confirmation ratified it five of five,
+and minimax's other candidate,
+pairing "she became a gentle big sister to many people" with the reference's sentence on Mio's sister,
+was confirmed by one voice and dropped.
+So the confirmation ratified rather than rescued;
+its rescue path is still unmeasured on a live entry.
+
+Slice 2.
+The repair lane kept the sister clause and wrote
+"With her brilliant mind and clever hands,
+she was studying at a local 985 (one of China's elite universities)"
+with an em dash before the gloss;
+the translate lane dropped the clause.
+The contest chose repair five of six,
+four ballots naming the attestation
+("keeps the attested archive detail that Mio's older sister is also trans"),
+one ballot for translate on the class thirty-seven reading
+("while attested in the references,
+is not in the provided Chinese original").
+The consolidation gate split two consolidated,
+two standing,
+one neither
+("both candidates add the unsupported detail"),
+so the standing repair text stood
+(`gate-kept-standing`).
+The polish
+(class forty-one's first pass):
+deepseek-v4.1-flash's proposal changed "handles everything at home" to "homemaker" and "clever hands" to
+"deft hands",
+kept the clause,
+and the polish gate chose it five of five,
+two ballots saying so in words
+("retain the attested sister detail").
+The page's line 20 reads "She has an older sister who is also trans.",
+the first Mio page to carry the clause through every stage since class thirty-five was found.
+The naturalness review's one finding on the clause
+("'also' lacks an antecedent") is recorded as evidence.
+
+Slice 17,
+the poem:
+the translate lane wrote it with five `<br/>` breaks,
+the title as "Lamenting Autumn",
+the credit as `——[Xiao Chui](https://space.bilibili.com/246513889)`;
+the contest chose translate five of five
+(the repair lane was empty,
+the poem being unpaired);
+the consolidation wrote its own rendering
+("a final sigh of regret",
+"created for Mio") and the gate chose it three of five;
+the page ends `May you rest in peace, Mio.`,
+a blank line,
+then the poem as a blockquote with five `<br/>` and the link.
+Class forty-two's substitute floor was not exercised
+(no page block stood against the poem);
+the source-only floor held as before.
+No `repeats the ORIGINAL untranslated` refusal fired.
+Class forty fired once:
+slice 4's contest tied three to three and settled neither,
+the standing was the archive's paragraph,
+the repair lane's text was offered on the slate,
+the slate declined it,
+and the archive's wording shipped.
+
+The first chat block ships with the archive's translation,
+its `Translation:` label and its speakers;
+"masculine" corrected;
+0 straight double quotes,
+31 curly apostrophes against the archive's 29.
+The opening quote is the archive's own line
+("Does my name mean 澪,
+you ask?"),
+which Mio25 had rewritten.
+The three checks:
+front matter equals the archive's,
+one `json false start` kept,
+no `finish_reason=error`,
+no `InStreamProviderError`.
+The seven checks against Mio12:
+澪 kept in the archive's own sentence;
+the coming-out paragraph and its three bullets as the archive has them
+(no prose duplication this time);
+the university as "a local 985 (one of China's elite universities)" with the dash;
+SRS unexpanded;
+the `Translation:` label;
+"masculine";
+the poem with five breaks and the credit line under the farewell.
+Wording notes,
+not fixed:
+"## Found a Best Friend" in title case;
+"Beiyan Yunyi" where Mio25 wrote "Bei Yan Yun Yi";
+the dash in the 985 gloss.
+
+Spend:
+1,314 seats asked,
+46 retry rounds,
+1,202 SPEND lines,
+26 abandoned streams at 0.07 USD;
+Bedrock 183.06 to 182.74,
+OpenRouter 260.63 to 259.92 against 0.99 logged
+(the meter moved less than the log),
+1.03 USD in all.
+Synthetic came back wet at 05:30 UTC
+(weekly 0.14 percent),
+so the Kimi,
+Qwen and GLM seats were reachable for the lanes and the contest.
+
 ## Mio27 launches on class forty-three, 2026-09-17, 04:07 UTC
 
 Frozen `f7aa7c675` (classes forty-one,

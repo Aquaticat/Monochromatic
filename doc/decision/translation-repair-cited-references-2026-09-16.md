@@ -330,6 +330,24 @@ and the candidates at least half the confirming voices name are attested.
 The extraction quorum stands when nothing was extracted or nobody confirms.
 Mio26 was killed for it and Mio27 is the first pass on it.
 
+## Mio27: the clause ships
+
+Mio27 (frozen `f7aa7c675`,
+2026-09-17 06:05 UTC) is the first Mio page since class thirty-five was found that carries
+"She has an older sister who is also trans." through every stage:
+four of five voices extracted the sister and the confirmation ratified it five of five,
+the repair lane kept the clause,
+the contest chose repair five of six with four ballots naming the attestation,
+the consolidation gate kept the standing,
+and the polish kept the clause with its gate five of five,
+two ballots saying "retain the attested sister detail" where Mio25's had said "unsupported".
+One contest ballot and one slate-gate ballot still called the clause unsupported on the
+class thirty-seven reading;
+they were outvoted.
+The confirmation round's rescue path,
+a detail one voice extracted and the bench confirmed,
+has not yet been measured on a live entry.
+
 ## Cost
 
 Exa bills per page read;
