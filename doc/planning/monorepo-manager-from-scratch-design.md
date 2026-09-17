@@ -1137,6 +1137,33 @@ Each follows from recorded decisions:
 - The research's byte-identity question was already answered:
    a one-time reviewed change.
 
+#### Answers on 2026-09-17
+
+- Expression power:
+   "Full language allowed".
+  Turing-completeness is permitted,
+   so G (Starlark) and H (KCL) lose their only disqualifier.
+  A stays first:
+   the user endorsed HCL,
+   while `starlark` 0.14.2 fails to build on the repository nightly and pulls a C compiler,
+   and KCL is not published on crates.io.
+  Author-defined functions and recursion are allowed within the chosen syntax.
+- Syntax:
+   "HCL syntax is fine. This is only a light endorsement."
+- Rules that write outside the repository,
+   such as the JetBrains settings,
+   live in a per-user `meow` configuration.
+- Forbidden-strings rule compilation uses the published scanner,
+   not a repository build:
+   the user noted "We already publish it to crates.io and GitHub releases and cargo-binstall should discover it fine."
+  `forbidden-strings` 0.4.1 is on crates.io (API read 2026-09-17).
+  The research carried over today's local path,
+   `package/cli/forbidden-strings/target/release/forbidden-strings` (`file-enforcer.config.ts:182-184`),
+   and asked whether to build it first.
+  A released scanner older than the repository cannot corrupt the compiled cache:
+   the cache has a magic header (`package/cli/forbidden-strings/src/runtime_cache/envelope.rs:20`)
+   and the scanner reports "compile-from-text" recovery on a mismatch (`src/runtime_cache/warning.rs:78`).
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
