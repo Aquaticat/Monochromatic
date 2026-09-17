@@ -347,6 +347,21 @@ following from these answers.
 This is a recommendation until the user accepts it;
 no decision record exists yet.
 
+#### Research gap found on 2026-09-16
+
+The user challenged the ranking's basis:
+the Node research evaluated built-in `fs.watch` although the repository already uses `chokidar`
+in `package/dev-script/file-enforcer` and `package/dev-script/watch-restart`,
+and the Rust research concluded that cgroup placement,
+the watcher,
+and JSON-RPC must be hand-written and `unsafe`
+without surveying crate alternatives or the repository's existing `zbus` 5,
+`tokio`,
+and `ignore` dependencies.
+The repository also already uses `@homebridge/dbus-native` in `package/kwin/key-helper`.
+Library-level research for both leading options is being redone,
+and the ranking above is provisional until it lands.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
