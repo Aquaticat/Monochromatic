@@ -1564,6 +1564,91 @@ to the repeated cache key output question:
    tracked in issue #545;
    this design work does not touch the music player.
 
+#### Cache key hash vet result
+
+Vet:
+[`doc/audit/tech-meow-cache-key-hash-vet-2026-09-17.md`](../audit/tech-meow-cache-key-hash-vet-2026-09-17.md),
+finished 2026-09-17.
+Nothing is adopted yet.
+
+- Recommended:
+   `twox-hash` 2.1.4,
+   `XxHash3_128` (XXH3-128).
+- The user's phrase "hardware acceleration" has two readings,
+   and the recommendation relies on the second:
+  - R1,
+     dedicated instructions such as AES-NI,
+     SHA extensions,
+     or the Arm Cryptography Extension:
+     no non-cryptographic library passes the hard gates.
+    `rotohash-rs` meets R1 but has no streaming API and no stability statement,
+     and the R1 controls are slow on file contents:
+     SHA-256 1.86 GiB/s,
+     AES-CMAC 1.43 GiB/s.
+  - R2,
+     designed SIMD kernels
+     (AVX2 or SSE2 on x86_64 and NEON on aarch64):
+     four finalists.
+- Ranking under R2:
+   `twox-hash` (68.5 of 76) > `xxhash-rust` 0.8.18 (58) > `hashcrew` 0.3.0 (49) > `highway` 1.3.0 (41);
+   `twox-hash` led all 94 one-at-a-time sensitivity tests.
+- Deciding evidence,
+   medians of five container runs on one Zen 4 host:
+  - One call per tracked file in a default build:
+     `twox-hash` 49.3 GiB/s,
+     `xxhash-rust` 29.1,
+     `hashcrew` 16.0,
+     `highway` 12.4.
+    `twox-hash` picks AVX2 at run time (`src/xxhash3/large.rs:105-116` at `v2.1.4`),
+     while `xxhash-rust` picks its kernel with compile-time `cfg(target_feature)` (`src/xxh3.rs:16-28`),
+     so it runs SSE2 unless meow raises the build target.
+  - In an `x86-64-v3` build the three XXH3 crates are within 5% of each other.
+  - Cold multi-GB reads are I/O-limited for every finalist;
+     warm multi-GB streaming is limited by the page-cache copy (13.7 to 15.3 GiB/s),
+     where `twox-hash` streams at 11.2 to 11.5 GiB/s.
+  - Peak memory stayed near 3.3 MiB for the 3.97 GB image;
+     splitting one file across two threads was slower than one thread.
+  - Fingerprint-sized inputs decided no adjacent pair.
+- Correctness checks:
+   0 one-byte collisions for every finalist at 8 to 4,096 bytes under three seeds,
+   with `gxhash` colliding as the positive control;
+   0 mismatches against the C reference implementations on x86_64 and on aarch64 under QEMU;
+   0 streaming against one-shot mismatches over 8,548 chunkings;
+   each check's control failed as expected.
+- An `ssh m1` run could not change the ranking:
+   aarch64 speed carries weight 1,
+   and the order holds at both ends of its range and at weight 5.
+  Per the user's instruction to recommend powering on the m1 only when strongly needed,
+   it is not recommended for this choice.
+- Raising quality evidence beyond the collision gate to weight 5 only ties third place,
+   so it does not bear on the choice.
+
+If `twox-hash` is adopted,
+ these usage rules follow from the vet's measurements and risks:
+
+- Dependency:
+   `twox-hash = { version = "=2.1.4", default-features = false, features = ["std", "xxhash3_128"] }`,
+   pinned because persisted keys need identical output across upgrades;
+   `std` enables run-time AVX2 and NEON detection,
+   and the default features add `rand`.
+- Golden output vectors in meow's own tests,
+   such as the empty input `99aa06d3014798d86001c324468d497f`,
+   so an output change fails a test.
+- Default seed only,
+   with salts and domain tags in the hashed bytes,
+   because SMHasher3 finds full-width XXH3 collisions when seeds vary.
+- A fresh `XxHash3_128::new()` per file,
+   reads of 64 KiB to 1 MiB,
+   files hashed in parallel rather than one file split across threads,
+   and the `u128` serialized in one fixed byte order.
+- The default x86_64 and aarch64 targets already guarantee SSE2 and NEON,
+   so the default build needs no startup CPU check;
+   a raised target such as `x86-64-v3` would bring back the check from "Missing CPU capabilities".
+- Known risks:
+   XXH3-128 fails 36 SMHasher3 tests at partial width or with varying seeds,
+   none a full-width collision at a fixed seed,
+   and `twox-hash` has one maintainer.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
