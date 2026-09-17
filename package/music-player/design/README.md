@@ -26,21 +26,24 @@ Read these files in order:
 
 ## Design questionnaire
 
-The active design round applies the standing true-black dark requirement while following
-Android dynamic color.
- It preserves accepted option 3B,
+The most recent design round applied the standing true-black dark requirement while
+following Android dynamic color.
+ It preserved accepted option 3B,
  transport 1B,
- strict adaptive
-mode behavior,
+ strict
+adaptive mode behavior,
  and the completed accessibility decisions.
- The native Compose matrix
-separates three structural surface reaches from two current-row neutral sources across
-six representative Android palette environments at the target's opaque 2076 × 2152px
-panel resolution.
- Wallpaper rows are uncontrolled stress inputs,
+ The native Compose
+matrix separated three structural surface reaches from two current-row neutral sources
+across six representative Android palette environments at the target's opaque 2076 ×
+2152px panel resolution.
+ Wallpaper rows were uncontrolled stress inputs,
  not choices.
+The user settled the round with R1 stable black structure and C2 generated
+`surfaceContainerLow` current row;
+ decisions D41 and D42 record the choices.
  The form
-prepares a visible answer and directs the user to reply in chat;
+prepared a visible answer and directed the user to reply in chat;
  it intentionally has no
 clipboard API or copy button.
 

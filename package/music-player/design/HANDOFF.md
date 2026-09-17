@@ -3945,16 +3945,20 @@ device.
  Unrelated libvirt QEMU guests remain untouched.
  The isolated verifier is closed.
 
-The normal Helium matrix is open at KWin ID
-`{eeeba7bf-2c12-4ca4-8f67-83eef0fb51c3}` on `DP-2`,
- 1080 × 1880.
- It is
-non-minimized but was not active at the last inspection.
- KDE uses `VaporBlack` and the XDG
-appearance portal returned color-scheme value 1,
- which the portal specification defines
-as prefer dark.
- The isolated Chromium probe verified this form's dark media query separately.
-Activate the exact normal Helium window as the final operation,
- then wait for the user's
-R1/R2/R3 and C1/C2 selections.
+The user answered in chat:
+ R1 and C2.
+ Decisions D41 and D42 record the settled dark
+policy:
+ structural surfaces remain stable black while component roles follow Android
+dynamic color,
+ and the current-row soft neutral resolves from Android's
+`surfaceContainerLow`.
+ The captured `stable-dynamic` column is the accepted appearance
+across all six palette environments.
+ The review window is closed and the form remains as
+the round's record.
+ No design question remains open on the unfolded screen.
+ Production
+implementation remains unauthorized:
+ issue #508 tracks the proposed rule that design
+acceptance alone does not authorize production source changes.

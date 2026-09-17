@@ -656,7 +656,7 @@ the screen adds no autonomous or decorative motion.
  No accessibility design question
 remains on the unfolded screen.
 
-## 14. Unfolded dark dynamic color, active review
+## 14. Unfolded dark dynamic color, settled (D41 and D42)
 
 The next design-only round applies the standing true-black dark requirement while
 following Android dynamic color.
@@ -703,3 +703,17 @@ gold Vibrant,
 contrast.
  These environment rows are evidence,
  not user options.
+
+Resolution (2026-09-09):
+ the user answered R1 and C2 in chat.
+ Decisions D41 and D42 record
+the settled policy and the rejected alternatives.
+ The accepted appearance is the captured
+`stable-dynamic` column across all six palette environments.
+ No dark-color design question
+remains on the unfolded screen.
+ Production implementation stays unauthorized:
+ design
+acceptance alone does not authorize production source changes,
+ and issue #508 tracks the
+proposed durable rule.

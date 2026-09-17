@@ -633,6 +633,31 @@ line,
  or overlaid boundary;
  every title keeps the full common width.
 
+## 5m. Prepared output outlived its inputs, and embedded rasters were checked as files
+
+The dark matrix form kept a prepared answer visible after the user changed a radio choice
+or the correction text,
+ so a stale answer could be copied as if current.
+ Prepared output
+now hides on any input change until regenerated.
+ Separately,
+ the validator proved each
+source PNG existed but not that the bytes displayed in the form matched it;
+ a swapped
+data URL would have passed.
+ Validation now compares every displayed data URL with its
+named raster byte-for-byte and samples disclosed folder,
+ rail,
+ deck,
+ and current-row
+pixels against resolved role values.
+
+**The rule.**
+ A prepared answer must die with its inputs,
+ and a generated artifact's
+checks must cover the bytes the viewer sees,
+ not only the files on disk.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field.
@@ -797,3 +822,10 @@ line,
      boundary,
      or container while titles retain full row
     width.
+14. **Prepared answers invalidate with their inputs.**
+     Changing any radio group or the
+    free-text correction hides prepared output until it is regenerated.
+15. **Embedded evidence is validated as displayed bytes.**
+     Questionnaire validators
+    compare each data URL with its named source raster and sample disclosed role mappings
+    pixel by pixel.

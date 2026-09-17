@@ -1087,6 +1087,54 @@ component structure and deriving speech from visible content.
  `Selected. Current track: Another Xronixle, 4:35, −1.2 dBTP. Button.`,
 because its single hand-composed label duplicates visible strings in code.
 
+### D41. Dark structural surfaces remain stable black
+The folder canvas and navigation rail stay true black,
+ the playback deck stays the fixed
+`#0A0A0D` neutral,
+ and only component roles follow Android's generated dynamic color.
+This is structural reach R1 from the native 2 × 3 dark matrix.
+**Why.**
+ The user selected R1.
+ Structural surfaces then read identically under every wallpaper,
+color style,
+ and contrast setting while buttons,
+ chips,
+ seekbar,
+ and text still honor
+Android's resolved roles.
+ The true-black spacer and track canvas keep the screen identity.
+**Rejected.**
+ R2 generated rail and deck,
+ and R3 generated folder canvas,
+ rail,
+ and deck.
+Both let uncontrolled wallpaper hue occupy structural surfaces and move the structural
+contrast boundary with the palette.
+
+### D42. The current row neutral follows Android surfaceContainerLow
+The current track's soft neutral container resolves from Android's generated
+`surfaceContainerLow` role per environment instead of a fixed hex,
+ keeping D36's soft
+container plus bold title with no icon,
+ ordinal,
+ or reserved column.
+ This is current-row
+source C2.
+**Why.**
+ The user selected C2,
+ overriding the C1 > C2 ranking.
+ The row then belongs to
+Android's generated container ramp under every wallpaper,
+ and the captured role evidence
+shows its text pairs meeting the recorded contrast minima in all six environments.
+Combined with D41,
+ the accepted appearance is the captured `stable-dynamic` column:
+fixed black structure carrying a generated current-row neutral.
+**Rejected.**
+ C1 fixed `#0A0A0D` current row,
+ which stays palette-independent but detaches the
+row from the generated container ramp its surrounding text roles follow.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
