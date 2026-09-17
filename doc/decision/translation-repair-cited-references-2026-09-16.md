@@ -276,6 +276,43 @@ and the slate never saw the two valid lane texts.
 `1c38e4f34` offers them.
 Mio25 is the first pass on it.
 
+## Mio25 and class forty-one
+
+Mio25 (frozen `1c38e4f34`,
+2026-09-17 03:00 UTC) settled,
+and the clause was lost at the last stage that touches the text.
+The sister attested five of six,
+the repair lane kept the clause,
+the contest chose translate four of six because the repair lane had also written an unsupported
+"at the time of her death",
+the consolidation slate gate restored the clause four of five with three ballots naming the
+attestation,
+and the consolidation polish removed it:
+the refiner's proposal dropped "who is also trans",
+and the polish gate chose it four of six as "removing the unsupported 'also trans' detail".
+The refine stage,
+shared by the repair lane's refiners and the consolidation polish,
+and the polish gate had never been given the references or the attested lines;
+class thirty-six had closed the contest,
+the slate and its gate,
+not these.
+`836f90687` puts the same block on the refiner sheet,
+in the refine judges' evidence and on the polish gate sheet,
+and folds the references into the refine cache key.
+Every sheet that can add,
+keep or remove a detail now carries the references:
+the critics,
+the adjudication panel,
+the translate writers and judges,
+the lane contest,
+the consolidation producers,
+the slate judges,
+the slate gate,
+the refiners,
+the refine judges,
+the polish gate.
+Mio26 is the first pass on it.
+
 ## Cost
 
 Exa bills per page read;

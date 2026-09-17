@@ -323,6 +323,27 @@ which the takeover session does not have.
   `Mio25` launched at 00:40 UTC on frozen `1c38e4f34` (pid 2590736,
   runs `~/temp/agent/Mio25-20260917`,
   log `~/temp/agent/Mio25-20260917.log`).
+  Mio25 read at 03:00 UTC
+  (the pass log's "Mio25 read" heading):
+  SETTLED on the second attempt after 136 minutes
+  (the first attempt died on the poem slice's translate select,
+  two of four candidates the Chinese untranslated,
+  the launcher re-attempted from the cache);
+  class forty not exercised (the contest chose translate six of six on slice 16);
+  the sister attested five of six,
+  the repair lane kept the clause,
+  the contest chose translate four of six over an unsupported repair-lane phrase,
+  the slate gate restored the clause four of five,
+  and the polish removed it with its gate confirming four of six (class forty-one);
+  the poem ships as a blockquote with its link and none of its five hard breaks (class forty-two).
+  Fixed in `836f90687` (the references on the refiner,
+  refine-judge and polish-gate sheets and in the refine key) and `052f8eea0`
+  (the break floor per block kind the page never rendered,
+  plus the untranslated refusal);
+  guards red first at `16f7639a1`.
+  `Mio26` launched at 03:25 UTC on frozen `052f8eea0` (pid 2838543,
+  runs `~/temp/agent/Mio26-20260917`,
+  log `~/temp/agent/Mio26-20260917.log`).
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2136,6 +2157,25 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`052f8eea0` (2026-09-17,
+03:20 UTC):
+class forty-two,
+`substituteBreakFindings` owes the original's explicit breaks per block kind the page never rendered
+(the poem under the archive's farewell paragraph),
+and `untranslatedFindings` refuses a candidate that repeats a Han-carrying original
+(the pass log's "Classes forty-one and forty-two" heading dated 2026-09-17 03:20 UTC;
+guards red first at `16f7639a1`;
+found by the Mio25 read).
+Running on Mio26.
+`836f90687` (2026-09-17,
+03:15 UTC):
+class forty-one,
+the cited references and their rule on the refiner sheet,
+the refine judges' evidence and the polish gate sheet,
+threaded from the repair driver and the consolidation subject and folded into `refineRunShape`
+(same heading and guards;
+found by the Mio25 read).
+Running on Mio26.
 `1c38e4f34` (2026-09-17,
 00:35 UTC):
 class forty,
@@ -2147,7 +2187,8 @@ the settle key carrying the offered texts only when any were;
 the pass log's "Class forty" heading dated 2026-09-17 00:35 UTC;
 guards red first at `341a540bf`;
 found by the Mio24 read).
-Running on Mio25.
+Ran on Mio25 without being exercised
+(the contest chose translate six of six on the poem slice).
 `27109ca8b` (2026-09-16,
 22:55 UTC):
 class thirty-nine,
@@ -3837,53 +3878,49 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `Mio25` by the seven steps and the three checks (frozen `1c38e4f34`,
-    pid 2590736,
-    runs `~/temp/agent/Mio25-20260917`,
-    log `~/temp/agent/Mio25-20260917.log`,
-    launched 00:40 UTC on 2026-09-17 with Synthetic and Hyper dry).
-    Mio25 is the first pass on class forty
-    (the pass log's heading dated 2026-09-17 00:35 UTC).
-    Read first any `lane texts offered on the slate` log line
-    (one per slice whose standing was neither contest-endorsed nor eligible;
-    Mio24 had one such slice,
-    17,
-    and stopped on it),
-    then slice 17's settlement
-    (`consolidation.slices` by `sliceIndex`;
-    which candidate won,
-    whether `decided.producer.kind` is `lane`,
-    and whether the page carries the poem as a blockquote with its five line breaks and
-    `https://space.bilibili.com/246513889`;
-    Mio23 shipped the translate lane's rendering with the archive's farewell line above it),
-    then the `ATTESTED` log lines
-    (Mio24 heard 5,
-    verified 6,
+1.  READ `Mio26` by the seven steps and the three checks (frozen `052f8eea0`,
+    pid 2838543,
+    runs `~/temp/agent/Mio26-20260917`,
+    log `~/temp/agent/Mio26-20260917.log`,
+    launched 03:25 UTC on 2026-09-17 with Synthetic and Hyper dry).
+    Mio26 is the first pass on classes forty-one and forty-two
+    (the pass log's heading dated 2026-09-17 03:20 UTC).
+    Read first slice 2's polish
+    (`consolidation.slices` by `sliceIndex`,
+    `polish.baseText` against `polish.text`,
+    and the polish gate ballots:
+    Mio25's polish removed "who is also trans" and its gate confirmed four of six as unsupported;
+    with the references on those sheets the clause should survive,
+    and a ballot still calling it unsupported is the class thirty-seven reading to chase),
+    then the page's sentence on the sister,
+    then slice 16's rendering
+    (`cat -A` on the page's last lines:
+    each verse line ends in two spaces when the breaks survived;
+    any flat candidate leaves
+    `ORIGINAL blockquote block(s) carry 5 explicit line break(s)` in the translate log),
+    then any `repeats the ORIGINAL untranslated` finding,
+    then `attempts.json`
+    (Mio25 needed two;
+    a second attempt again means the poem's select still cannot reach its floor and is worth its own
+    reading),
+    then the Mio25 reading as before:
+    the `ATTESTED` lines
+    (Mio25 heard 6,
+    verified 12,
     details 1,
-    the sister by four voices),
-    then slice 2's repair text and issues
-    (expect the two addition claims on the sister rejected before the panel and the clause kept,
-    as Mio24 did),
-    then slice 2's translate lane text
-    (Mio24's writers put the clause in one candidate of five and the judges chose a dropper 3 of 5;
-    a carrier winning would be new),
-    then the contest and what ships
-    (Mio24 chose repair 3 to 2),
-    then the first chat block
-    (Mio23's block review kept the archive block at 1.5 of 5 with two abstentions,
-    Mio21's revision won 3.5 of 5;
-    if a revision wins,
-    check its quote style,
-    class thirty-eight),
-    then the Mio21 reading as before:
-    the archive's wording kept where Mio19 rewrote it,
-    slice 16,
-    slice 14,
+    the sister by five voices),
+    slice 2's repair text
+    (Mio25's repair lane wrote "at the time of her death" for 生前,
+    which cost it the contest),
+    the contest,
+    the first chat block and its quote style,
     the seven checks against Mio12,
     the three checks,
     the spend
-    (Mio21's OpenRouter meter moved 1.35 USD against 0.50 logged;
-    watch whether it recurs).
+    (Mio25:
+    1.23 USD over two attempts,
+    2,148 seats,
+    77 retry rounds).
     The Mio19 wording notes other than the sister stand;
     fix any only as a class with a mechanism.
     If the page reads clean,

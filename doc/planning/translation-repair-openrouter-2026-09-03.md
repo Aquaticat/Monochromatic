@@ -8082,6 +8082,242 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Mio26 launches on classes forty-one and forty-two, 2026-09-17, 03:25 UTC
+
+Frozen `052f8eea0` (class forty-one,
+the references on the refine sheets;
+class forty-two,
+the break floor under a substitute block and the untranslated refusal),
+pid 2838543,
+runs `~/temp/agent/Mio26-20260917`,
+log `~/temp/agent/Mio26-20260917.log`,
+Synthetic and Hyper dry,
+Bedrock and OpenRouter wet.
+Read first slice 2's polish
+(`consolidation.slices` by `sliceIndex`,
+`polish.baseText` against `polish.text`,
+and the polish gate ballots,
+which should now cite the attested line rather than call the clause unsupported),
+then the page's sentence on the sister,
+then slice 16's rendering
+(`cat -A` on the page's last lines:
+the poem's quote lines end in two spaces when the breaks survived,
+and the translate log carries
+`ORIGINAL blockquote block(s) carry 5 explicit line break(s)` on any flat candidate),
+then any `repeats the ORIGINAL untranslated` finding in the log,
+then `attempts.json`
+(Mio25 needed two),
+then the Mio25 reading.
+
+## Classes forty-one and forty-two, 2026-09-17, 03:20 UTC: the polish strips the attested clause, the verse loses its breaks under a substitute paragraph
+
+Class forty-one.
+On Mio25's slice 2 the consolidation slate gate kept the consolidated text with
+the sister clause four ballots to one
+(three of the four name the attestation),
+and the consolidation polish then removed the clause:
+three refiners heard,
+three proposing,
+minimax-m3's proposal selected at weight 2 of 5 ballots
+(the record notes a deepseek-v4.1-flash self-vote),
+and the polish gate chose the polished text four ballots of six
+("removes the unsupported 'also trans' detail",
+"the original says only 有一个姐姐,
+so base's unsupported addition must go"),
+one ballot for the base
+("drops the information about the sister being trans,
+which is present in the base and the archive rendering"),
+one neither.
+The page shipped "She has an older sister."
+The mechanism is the same blindness class thirty-six closed for the contest and the slate:
+`runRefineStage`,
+`buildRefineMessages`,
+`buildRefineSelectionContext` and `ConsolidationPolishGateSubject` carried no `referenceContext`
+(the only files naming the reference block were the critic,
+the adjudication,
+the lane contest,
+the slate and its gate,
+and the attestation),
+so the repair lane's refiners and their judges,
+and the consolidation polish and its gate,
+had never seen the references or the attested lines.
+Fixed in `836f90687`
+(guards red first at `16f7639a1`):
+the reference lines and their rule go on the refiner sheet after the declared names
+(`citedReferenceCandidateLines`),
+the refine judges read them as labelled evidence in both modes
+(`citedReferenceEvidence`),
+the polish gate sheet carries the same block after the two candidates,
+the repair driver hands `prepared.referenceContext` down through `refineSettledSlices`,
+`runRefinePhase`,
+`settleRefinePhaseSlice` and `settleRefinedSlice`,
+the polish reads it off the consolidation subject,
+and `refineRunShape` folds it into the refine cache key only where it exists,
+so the 33 entries that cite nothing key exactly as before.
+
+Class forty-two.
+Mio25's page carries the poem as a blockquote with the bilibili link and none of its five hard breaks:
+the translate lane's rendering wrote each verse line as two soft-broken lines,
+Markdown renders soft breaks in a quote as spaces,
+and the poem reads as one paragraph.
+Mio23's rendering had kept the breaks by the writer's choice.
+The rule that owes explicit breaks
+(`sourceOnlyBreakFindings`) returns nothing whenever the slice's page text is non-empty,
+and this slice's page text is the archive's farewell paragraph paired with the poem quote
+(class thirty-two's substitute),
+so the verse's breaks were never owed.
+Fixed in `052f8eea0`
+(same guards):
+`substituteBreakFindings` owes,
+per block kind the page never rendered,
+the original's break count for that kind,
+counted per kind because the candidate carries the page's paragraph beside the original's quote and
+indexes do not align;
+run on Mio25's own rendering it refuses with
+"ORIGINAL blockquote block(s) carry 5 explicit line break(s),
+but your blockquote block(s) carry 0",
+and it passes Mio23's.
+The same commit refuses a candidate that repeats a Han-carrying original character for character
+(`untranslatedFindings`,
+a bare link or component returned as it stands still passes):
+on Mio25's first attempt two of the four poem candidates were the Chinese returned as it stood,
+one judge chose one of them as "the most faithful rendering",
+and the select missed its weight floor twice.
+
+## Mio25 read, 2026-09-17, 03:00 UTC: settled on the second attempt, the sister clause lost at the polish, the poem without its breaks
+
+`TALLY Mio status=ERROR` at 73.3 minutes,
+then `REATTEMPT Mio queued: 61 more cache records than it had`,
+then `TALLY Mio status=SETTLED slices=17` at 65.2 minutes on the second attempt:
+136 minutes wall,
+two attempts,
+`attempts.json` reads 2.
+
+The first attempt died on slice 16,
+the poem,
+in the translate lane
+(`SLICE-COST lane=translate chunk=16 sourceChars=132 ms=689571`).
+The select's first round heard four of five judges,
+three abstained,
+and the one vote drew weight 1 against the 2.00 floor
+("keeping the fallback"),
+so the stage ran its one follow-up round:
+three of five writers heard
+(Qwen3.8-27B unreachable with Synthetic dry,
+GLM-5.3-Flash cut at the 360 s deadline after 1.9 MB of raw stream,
+59,468 reasoning characters and no content),
+a retry round asked two more,
+and the follow-up select split:
+gpt-oss-120b candidate 1,
+gemma-4-26b candidate 1 at weight 0.5,
+deepseek-v4.1-flash candidate 3,
+gemma-4-e2b candidate 4
+("preserves the original Chinese text exactly,
+including the title '惋秋'"),
+with three ballots naming candidates 2 and 4 as the Chinese left untranslated;
+weight 1.5 against 2.00,
+and the slice has no archive translation to fall back on,
+so `TranslateAbsenceError` ended the attempt.
+The launcher's re-attempt resumed from the cache and the second select settled the poem.
+Class forty-two's untranslated refusal takes such candidates off the slate before any judge reads them;
+the absence error itself stands as designed
+(nothing honest to ship),
+and the re-attempt is the recovery.
+
+Class forty was not exercised:
+no `lane texts offered on the slate` line,
+because the second attempt's contest on slice 16 chose translate six of six with the archive flawed on
+every ballot,
+the consolidation terminal is `slate-endorsed-standing` and the translate text shipped unchanged.
+The page ends on `May you rest in peace, Mio.`,
+then the poem as a blockquote,
+`Autumn Lament` as its title,
+the credit line with `https://space.bilibili.com/246513889`,
+and no hard break on any line
+(`cat -A` shows no `  $`;
+Mio23's page had them on every verse line):
+class forty-two.
+
+`ATTESTED heard=6 answered=13 verified=12 needed=3 details=1`
+on the second attempt
+(heard 5,
+verified 11 on the first):
+the sister by five of six voices
+(minimax-m3,
+gemma-4-26b-a4b,
+deepseek-v4.1-flash,
+mercury-2.5,
+GLM-5.3-Flash),
+minimax's graduation-certificate and surgery-money items and deepseek's five other items verified but short of the quorum.
+
+Slice 2.
+The repair lane kept the sister clause and wrote
+"she attended a local 985 (a top-tier university) at the time of her death"
+for 生前;
+the translate lane wrote "and she has an older sister" and "during her lifetime".
+The contest chose translate four of six with two `neither`,
+every ballot weighing the repair lane's unsupported "at the time of her death" against the translate
+lane's dropped attested detail
+("although it drops the archive's attested detail that Mio's older sister is also trans").
+The consolidation gate chose the consolidated text four of five,
+with the clause,
+three ballots naming the attestation and one calling the clause fabricated.
+The polish removed it and its gate confirmed the removal four of six:
+class forty-one.
+The independent naturalness review then read the polished text unacceptable four of six
+(the "Guangdong,
+Foshan" order,
+"during her lifetime" for 生前,
+"a local 985" as jargon),
+recorded as evidence with the gated text shipping,
+as designed.
+The page reads "Her father is a high school teacher,
+and her mother is a housewife.
+She has an older sister.
+Brilliant and dexterous,
+she attended a local 985 (a top-tier university) during her lifetime."
+
+The first chat block ships with the archive's wording and speakers,
+the `Translation:` label,
+"masculine" and "WeChat" corrected,
+curly quotes throughout
+(`read-page.mjs`:
+30 curly apostrophes against the archive's 29,
+0 straight double quotes,
+the 20 straight apostrophes all inside the JSX photo paths).
+
+The three checks:
+front matter equals the archive's;
+one `json false start` kept;
+46 `schema-mismatch` lines,
+none naming `finish_reason=error`,
+and four `InStreamProviderError` lines with `code unnamed`,
+retried.
+The seven checks against Mio12:
+澪 kept;
+the coming-out sentence ships as prose
+("She once served as an administrator of the 春の芽工作室 (Harunome Studio) QQ group,
+and she also:")
+above the archive's three bullets,
+the redundancy as before;
+the university as "a local 985 (a top-tier university) during her lifetime";
+SRS unexpanded,
+as the archive has it;
+the `Translation:` label restored;
+"masculine";
+the poem with its credit line under the farewell but without its five breaks
+(class forty-two).
+
+Spend:
+2,148 seats asked,
+77 retry rounds,
+1,737 SPEND lines,
+39 abandoned streams at 0.07 USD;
+Bedrock 183.59 to 183.09,
+OpenRouter 261.51 to 260.77 against 0.73 logged,
+1.23 USD for the two attempts.
+Synthetic served 222 calls at no cost while its meter read dry.
+
 ## Mio25 launches on class forty, 2026-09-17, 00:40 UTC
 
 Frozen `1c38e4f34` (class forty,

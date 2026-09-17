@@ -114,6 +114,16 @@ class thirty-nine):
 a translate candidate is written from the original,
 so without the block it drops the detail by construction
 and the lane contest ships without it whenever translate wins.
+The refiners,
+their judges,
+the consolidation polish and its gate see the reference lines and the attested lines too
+(class forty-one,
+2026-09-17):
+the refine stage is the last stage that rewrites a passage,
+and on Mio25 it removed a clause the slate gate had just kept,
+with its gate calling the clause unsupported,
+because neither sheet had the references.
+The refine cache key folds them in only where the original cites somewhere.
 
 ## Lane texts on the consolidation slate
 
@@ -141,6 +151,27 @@ a slice with no neighbours keys exactly as before and resumes.
 The cited references join the repair run shape the same way,
 only where the original links somewhere,
 so the 33 entries of the pinned corpus that cite nothing key exactly as before.
+
+## Explicit breaks under a substitute page block
+
+The deterministic rule owes a candidate the original's explicit line breaks
+(Markdown hard breaks or `<br/>`)
+where no archive rendering exists to choose otherwise,
+since soft newlines render as spaces and a verse without its breaks reads as one paragraph.
+Until class forty-two (2026-09-17) that floor keyed on the whole slice's page text,
+and a page whose farewell paragraph stands where the original's poem quote stands has text,
+so the poem's five breaks were never owed and Mio25 shipped the poem flat.
+Now a block kind the page never rendered owes the original's break count for that kind
+(`substituteBreakFindings` in `source-only-breaks.ts`),
+counted per kind because the candidate carries the page's block beside the original's.
+A kind the page did render stays under the page floor.
+The same rule refuses a candidate that repeats a Han-carrying original character for character
+(`untranslatedFindings`):
+on Mio25's first attempt two of four poem candidates were the Chinese returned as it stood,
+and the select missed its floor on them twice.
+A slice with nothing to translate,
+such as a bare link,
+returned as it stands still passes.
 
 ## What is folded out of candidate and archive text at intake
 
