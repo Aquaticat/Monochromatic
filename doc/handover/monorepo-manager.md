@@ -109,7 +109,19 @@ Each step's evidence is in the linked documents.
      optimizations,
      and bounded benchmarks.
   - `rust-structured-edits.md`:
-     comment-preserving JSONC and TOML editing in Rust against the repository's TypeScript editors.
+     comment-preserving JSONC,
+     TOML,
+     and XML editing in Rust against the repository's TypeScript editors.
+  - `btrfs-pinned-bytes.md`:
+     unprivileged accounting of bytes only the cache's reflinks pin,
+     checked against free-space ground truth.
+- Also decided 2026-09-16 and recorded in the design:
+   no pty opt-in,
+   `gxhash128` keys,
+   cache contents and failure caching,
+   eviction by pinned-bytes cap plus 30-day age,
+   flaky retry reporting,
+   and rule `FLG` in `AGENTS.md`.
 - Installs are authorized for this work,
    except `rpm-ostree install`.
 - Stopped unfinished on 2026-09-16:
