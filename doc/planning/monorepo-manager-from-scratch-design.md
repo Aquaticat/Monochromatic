@@ -99,9 +99,12 @@ Stated by the user on 2026-09-16:
    it only means an issue in these paths don't block publishing."
   So "Linux only" names the release-blocking tier,
    not a ban on code paths or CI for other systems.
-- The macOS and Windows runners in `readonly-semantic-bridge.yml` keep using Mise only until meow takes over;
-   then Mise is out
-   ("Root `mise.toml` and where meow is built").
+- "Meow takes over only when it supports the full matrix.
+   Meow 0.x doesn't need to guarantee good support for platforms other than Linux."
+   (user,
+   2026-09-17).
+  Until then Mise keeps running the macOS and Windows jobs in `readonly-semantic-bridge.yml`;
+   the user noted these two statements do not conflict.
 
 ### Configuration
 
@@ -1176,8 +1179,8 @@ Answered by the user on 2026-09-17:
   The root `mise.toml` is hand-maintained from now on,
    meow gets no Mise-specific rule,
    and Mise is removed entirely when meow takes over,
-   including from the macOS and Windows runners;
-   what those runners run instead is being asked.
+   which happens only once meow supports the full platform matrix
+   ("Platforms and builds").
 - "`meow` doesn't need to own the MPM lifecycle":
    installing and updating Meta Package Manager stays outside meow.
 - meow is built in a separate git worktree,
