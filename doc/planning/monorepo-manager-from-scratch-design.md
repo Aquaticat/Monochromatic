@@ -317,6 +317,30 @@ for the same adjacent reasons.
    the repository currently resolves Node v26.8.2,
    so the minimum Node version or flag is an implementation detail to pin.
 
+Node hashing measurement,
+2026-09-16,
+Node v26.8.2,
+sequential `readFile` plus one hash per git-tracked file,
+8,087 files and 144.5 MiB,
+five runs each
+(`node-hash-bench.ts` in the session scratchpad):
+
+- SHA-256:
+   minimum 417 milliseconds,
+   median 437,
+   maximum 843,
+   the maximum from the first run.
+- BLAKE2b-512:
+   minimum 486 milliseconds,
+   median 494,
+   maximum 502.
+- Resident memory after both series:
+   224.0 MiB,
+   which includes read buffers and is not a daemon footprint measurement.
+
+A full sequential rehash stays under one second on this machine,
+so hashing throughput does not decide the stack.
+
 Recommended stack:
 TypeScript on Node,
 following from these answers.
