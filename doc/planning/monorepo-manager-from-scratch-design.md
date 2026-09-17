@@ -1441,6 +1441,104 @@ The Go reference accepts 2,185 and rejects 61.
    not a settled ban;
    the `tree-sitter-hcl` exit stands on its 5 accepted invalid files.
 
+### Per-user configuration
+
+Research:
+[`per-user-config.md`](monorepo-manager-route-research/per-user-config.md),
+2026-09-17.
+The brief went to the user the same day;
+rule `DRR` requires acceptance before any of it becomes a decision.
+
+#### Recommended shape
+
+- Discovery,
+   in order:
+   `--user-config <path>`,
+   then `MEOW_CONFIG`,
+   then `$XDG_CONFIG_HOME/meow/meow.hcl` when that value is absolute,
+   then `$HOME/.config/meow/meow.hcl`.
+  `--no-user-config` and `MEOW_NO_USER_CONFIG` skip all four and record an `Absent` read-set entry.
+  No `XDG_CONFIG_DIRS` search list.
+- Resolution is hand-written over `std::env::var_os`,
+   following the policy already in `package/cli/forbidden-strings/src/runtime_cache/path.rs:116-140`,
+   so no dependency is added (rule `RCI`).
+- Layering:
+   every schema attribute declares its scope as `user_only`,
+   `repository_only`,
+   or `both` with a stated winner.
+  A value in a layer that may not set it is ignored,
+   with a JSON diagnostic naming the file,
+   the byte span,
+   the attribute,
+   and the reason.
+- Outside-the-repository writes:
+   a repository declares content and names no outside destination,
+   while the per-user file supplies the destination and the consent,
+   optionally by path prefix.
+  An unmatched proposal is reported rather than silently skipped.
+  For the JetBrains Harper case this keeps the rule names in the repository
+   and the options directory in the per-user file.
+- Trust:
+   an unseen repository starts in a restricted mode where meow parses,
+   reports its task graph,
+   and answers queries,
+   but refuses to run tasks,
+   write outside the tree,
+   or evaluate impure functions.
+  Trust is keyed by canonical repository root and recorded under `$XDG_STATE_HOME/meow`,
+   never written back into the user's HCL.
+- Cache and watching:
+   the whole per-user file digest keys configuration evaluation,
+   while task entries carry consumed-subset fingerprints naming block address,
+   attribute,
+   and value digest.
+  The per-user configuration's containing directory is watched,
+   never the file inode.
+- Daemons:
+   one per canonical repository root,
+   with a socket under `$XDG_RUNTIME_DIR` named by a digest of that root;
+   reload carries a configuration generation number and pins in-flight tasks;
+   a malformed per-user file keeps the last good snapshot and emits a span diagnostic.
+
+#### Measured evidence
+
+- This machine:
+   `XDG_CONFIG_HOME` is unset,
+   `XDG_CONFIG_DIRS` holds three entries of which two are root-owned,
+   `/home` is a symlink to `var/home`,
+   and `.config` holds 159 entries against three home dotfiles.
+  Verified again from this session before merging.
+- OpenTofu 1.12.6 never reaches `$HOME/.config/opentofu/tofurc` when `XDG_CONFIG_HOME` is unset,
+   which is this machine's state,
+   so copying its dotfile-first shape would make the obvious location a silent no-op.
+- dprint 0.57.4 finds both `$XDG_CONFIG_HOME` and the `$HOME/.config` fallback,
+   the opposite behavior,
+   and treats its global configuration as a fallback rather than a merge layer.
+- mise merges environment values per key with the repository winning a shared key,
+   lists and runs per-user tasks inside a repository,
+   and refuses `trusted_config_paths` from a non-global configuration.
+- A malformed per-user file gives git exit 128 and blocks even `git init`,
+   gives mise exit 1 with a span,
+   and is never read by dprint.
+- Watching the file inode dies after one same-directory temp-plus-rename save,
+   which is this repository's own write pattern,
+   while watching the directory survives through `MOVED_TO`;
+   an in-place append was the positive control that reached both.
+- The repository owns no `dirs`,
+   `etcetera`,
+   or `directories` crate in any manifest,
+   and its only home-directory use in file-enforcer is a `??` fallback with no absolute or empty check
+   (`package/dev-script/file-enforcer/src/jetbrains/options-dir.ts:334-338`).
+
+#### Correction this research forces
+
+"Cache key hash after the collision findings" and "HCL tooling" record that the cache key includes both the
+repository and per-user configuration digests.
+Under the recommended two-level shape that holds for the configuration evaluation key,
+while a task entry's key carries only the per-user values that task consumed.
+The wording is corrected here rather than in those sections,
+which describe the coarser shape the research replaced.
+
 ### Platform probes
 
 Research:
@@ -2399,10 +2497,15 @@ Closed on 2026-09-17:
 
 Design work not yet started:
 
+- How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
+
+Design work finished on 2026-09-17:
+
 - The HCL evaluator,
    function library,
    formatter,
-   and language server,
-   given the gaps in `hcl-rs` and `hcl-edit`.
-- Discovery and precedence of the per-user `meow` configuration.
-- How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
+   and language server ("HCL tooling"),
+   accepted in
+   [`doc/decision/monorepo-manager-hcl-front-end.md`](../decision/monorepo-manager-hcl-front-end.md).
+- The per-user configuration's discovery and precedence ("Per-user configuration"),
+   whose brief is with the user.
