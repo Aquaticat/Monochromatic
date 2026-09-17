@@ -128,8 +128,30 @@ Stated by the user on 2026-09-16:
    the benchmark was not recorded at the time.
 - "We don't need to support non-modern CPUs,
    but we do need to properly warn users when they try to use this w/o the required CPU capacities."
+- Asked how aarch64 tests should avoid the `gxhash` debug-build panic (issue #111):
+   "Dirty room (crediting ogxd) reimplement gxhash ourselves. Or forking it.
+   Also, there are many optimization opportunities the original seemingly didn't have time to take,
+   so we are doing it."
+  `gxhash` 3.5.0 is MIT-licensed,
+   by Olivier Giniaux,
+   with 979 lines under `src/` and 58 `unsafe` occurrences
+   (measured in the cached crate).
 
 Design detail is in "Cache".
+
+### Managed file edits
+
+Answered by the user on 2026-09-16:
+
+- Generated files may change once in a reviewed commit when the Rust tool takes over;
+   today's exact bytes are not required.
+- "but we must still handle comment-preserving jsonc editing and toml editing properly."
+- A malformed managed XML file fails with a diagnostic instead of a best-effort splice.
+
+### Installs for probes
+
+Authorized by the user on 2026-09-16:
+"You may install anything and everything except invoking rpm-ostree install."
 
 ## Measured environment
 
@@ -1282,15 +1304,17 @@ Open to the user's veto:
    plain data,
    or is retired;
    research is running with OpenTofu as the lead precedent.
-- aarch64 debug builds and tests can panic inside `gxhash` (issue #111, fix unreleased):
-   how aarch64 tests run.
-- aarch64 and no-AES verification needs installs this machine lacks:
-   aarch64 Rust targets,
-   a cross linker,
-   and QEMU user mode.
-- Byte-identical output:
-   whether generated files must keep today's bytes once the logic is redesigned,
-   and how malformed XML is handled.
+- Repository-owned `gxhash`:
+   dirty-room reimplementation or fork,
+   whether output must match `gxhash` 3 bit for bit,
+   whether the music player moves to it,
+   and which optimizations to take;
+   research is running.
+- Comment-preserving JSONC and TOML editing in Rust:
+   crates versus ports of `module-toml-edit` and the JSONC editor;
+   research is running.
+- aarch64 builds and the missing-AES warning:
+   probes are running now that installs are authorized.
 - Veto open:
    `gxhash128` for cache keys
    and 0.x offering no pseudo-terminal opt-in.
