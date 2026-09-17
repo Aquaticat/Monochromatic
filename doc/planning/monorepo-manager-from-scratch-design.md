@@ -475,6 +475,54 @@ Checked 2026-09-16 after the user noted that many monorepo tools are written in 
    task spawning,
    and hashing is a third shape that neither stack deep dive designed.
 
+#### Limits no stack removes
+
+- inotify is per directory and not recursive,
+   and a full queue drops events and generates `IN_Q_OVERFLOW`
+   (<https://man7.org/linux/man-pages/man7/inotify.7.html>).
+  The development machine's `max_queued_events` is 16,384
+   (measured).
+  A language only decides whether the daemon sees the overflow signal;
+   recovery is always a rescan.
+- Cgroup delegation,
+   a user systemd session on CI,
+   frozen tasks holding locks and timers,
+   daemons that escape task cgroups,
+   watcher correctness logic,
+   and JSON-RPC subscription logic are the same work in every stack.
+
+#### Running tasks under a pseudo terminal
+
+Probe on 2026-09-16:
+Python `pty.openpty` with the slave as a child's stdout and stderr,
+running `sh` that printed to stdout,
+to stderr,
+tested `test -t 1`,
+and wrote `> /dev/stdout`.
+The master read returned `b'out\r\nerr\r\nstdout-is-tty\r\nredirect\r\n'`,
+then `EIO` instead of end of file.
+
+- Stdout and stderr arrive as one stream,
+   so the daemon cannot tell them apart.
+- Output newlines become `\r\n`:
+   termios `ONLCR` "Map NL to CR-NL on output"
+   (<https://man7.org/linux/man-pages/man3/termios.3.html>).
+- Tasks see a terminal,
+   so tools switch to colors,
+   progress bars,
+   pagers,
+   or interactive prompts,
+   and logs differ from non-terminal CI runs.
+- Terminal control characters generate signals under `ISIG`,
+   and the task's input side needs an explicit policy.
+- After the child exits,
+   reading the master fails with `EIO` rather than returning end of file.
+- Ptys are a bounded resource:
+   `/proc/sys/kernel/pty/max` is 4,096 with 15 in use
+   (measured).
+- `> /dev/stdout` works under a pty,
+   which is the problem a pty was proposed to solve.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
