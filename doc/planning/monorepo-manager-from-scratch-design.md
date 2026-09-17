@@ -1331,6 +1331,25 @@ the `toml_edit` wrapper's 21 passes were recounted there.
    `json-five` writing an unterminated block comment,
    and XML crates corrupting attribute whitespace.
 
+#### Build and format answers on 2026-09-17
+
+- aarch64 musl ships from the custom static-pie target,
+   so all four binaries get ASLR.
+- Local glibc builds use the host (Fedora 44):
+   "we don't directly ship the build outputs on local dev machines to GitHub Releases."
+  Release binaries follow the repository's existing pipeline,
+   `.github/workflows/cargo-publish.yml`,
+   which builds natively on `ubuntu-latest` and `ubuntu-24.04-arm`
+   and installs `musl-tools` for musl targets;
+   the minimum glibc of binaries built there is unmeasured.
+- New TOML inline tables use the TOML 1.1 style `{ a = 1, }`,
+   matching today's Cargo manifests,
+   although `taplo` 0.14 rejects it.
+- file-enforcer keeps generating the root `mise.toml` for now.
+  Read together with "hand-maintained now",
+   meow never generates `mise.toml`,
+   and Mise and its file leave when meow takes over.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
