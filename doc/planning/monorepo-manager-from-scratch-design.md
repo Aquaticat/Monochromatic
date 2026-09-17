@@ -443,6 +443,17 @@ and a cross-language schema with a generator candidate.
 Node would regain the lead if single-language maintenance outweighs both of those Node problems.
 
 The lower-ranked stacks have not had the same library-level pass.
+On 2026-09-16 the user judged none of them worth further research,
+so Kotlin JVM core,
+all Kotlin,
+Kotlin/Native,
+Bun,
+Deno,
+Python,
+OCaml,
+and .NET are out of consideration.
+The stack choice is between the Rust core with TypeScript file-enforcer children and TypeScript on Node,
+with the Rust core recommended.
 
 ### Process model
 
