@@ -446,7 +446,8 @@ which the takeover session does not have.
   and settled after 40 minutes with the death paragraphs on the page
   (the pass log's "shi_Yumiaoya5 read" heading dated 2026-09-17 18:28 UTC;
   three judge-quality notes there,
-  "Zhongshan No. 1 Hotel" for 一酒店 the worst).
+  "Zhongshan No. 1 Hotel" for 中山一酒店 a world-knowledge miss on an ambiguous 一,
+  the owner's reading of 2026-09-17).
   `yingying1` launched at 18:23 UTC on the same frozen `479bb011f` (pid 3820813,
   runs `~/temp/agent/yingying1`,
   log `~/temp/agent/yingying1.log`);

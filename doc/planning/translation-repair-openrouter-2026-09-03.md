@@ -8144,7 +8144,11 @@ front matter equal to the archive.
 Three quality notes,
 none deterministic,
 recorded for the judge-preference list:
-the page renders 中山一酒店 ("a hotel in Zhongshan") as "the Zhongshan No. 1 Hotel",
+the page renders 中山一酒店 as "the Zhongshan No. 1 Hotel",
+where the 一 reads either way on the page and only world knowledge settles it
+(hotels are not named No. 1 outside academic practice materials;
+the owner, 2026-09-17),
+so this is a world-knowledge miss rather than a grammar miss:
 gemma-4-26b's candidate,
 chosen on the translate slate and again on the consolidation slate with ballots praising its "specificity"
 and one judge calling it "a translation of the address marker" without penalty,
