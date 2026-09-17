@@ -304,6 +304,25 @@ and .NET exit,
 leaving Rust core with TypeScript children > Python > OCaml > all Rust,
 for the same adjacent reasons.
 
+#### Resolved preferences on 2026-09-16
+
+- The documentation confusion rule records runtime and library documentation problems for building the tool
+   but does not cull on them.
+  The first ranking applies,
+   so TypeScript on Node leads.
+- The design may depend on experimental `node:ffi` for placing tasks into cgroups before they start
+   and for detecting inotify queue overflow.
+  Node's FFI documentation says the module can be disabled with `--no-experimental-ffi`,
+   and the TypeScript research reports it enabled by default from v26.9.0;
+   the repository currently resolves Node v26.8.2,
+   so the minimum Node version or flag is an implementation detail to pin.
+
+Recommended stack:
+TypeScript on Node,
+following from these answers.
+This is a recommendation until the user accepts it;
+no decision record exists yet.
+
 ### Process model
 
 - The user starts the daemon in its own terminal under a delegated cgroup,
