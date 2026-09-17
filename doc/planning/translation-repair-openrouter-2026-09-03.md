@@ -8082,6 +8082,119 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya5 launches on classes fifty and fifty-one, 2026-09-17, 17:38 UTC
+
+Frozen `479bb011f` (classes forty-one to fifty-one),
+pid 3740123,
+runs `~/temp/agent/shi_Yumiaoya5`,
+log `~/temp/agent/shi_Yumiaoya5.log`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch.
+Read first slice 13's coverage line
+(the death paragraphs;
+`coverage=absent` and an admission,
+or a split carrying a misattributed count),
+the two paragraphs on the page,
+then the opening section with its film link,
+one `[^1]` definition,
+the farewell,
+then the seven steps and the three checks.
+The owner asked for no cron job on this pass;
+the background waiter alone reports the exit.
+
+## Classes fifty and fifty-one, 2026-09-17, 17:35 UTC: dark seats in the coverage denominator, and a partial claim pointing at another slice's rendering
+
+Both found by the shi_Yumiaoya4 read.
+
+Class fifty.
+Slice 13's coverage round asked eight seats
+(six in the first window,
+two more when the round re-asked its pending voices),
+the router refused glm-5.3 and Qwen3.8-27B for want of a wet provider,
+six voices were heard,
+four found the passage nowhere,
+and the majority was still taken over eight,
+so four of eight was a split.
+The gather has tracked the seats the router refused since class twenty-six
+(`unreachable`),
+and the owner's decision of 2026-09-09 sizes a deciding bench by its reachable seats;
+the coverage stage now takes its majority over the seats asked that a provider could serve
+(`coverage-stage.ts`),
+so a dark seat withholds no vote.
+Fixed in `479bb011f`
+(guard red first at `6f7567f7e`).
+
+Class fifty-one.
+The one anchored partial claim on that round was gpt-oss quoting "girl's last tour ended",
+the archive's farewell line,
+as partial coverage of the death paragraphs because it "states that Yumiao's life came to an end";
+the pairing had assigned that line to the original's own farewell slice.
+The verdict file's own header recorded this gap in 2026-08
+("two of six voices claimed coverage and quoted a real sentence belonging to a different passage").
+The admission now hands the coverage stage every target region the pairing assigned to some source slice
+(`foreignRegions`,
+all of them foreign to a source-only candidate),
+and a partial claim whose quote overlaps one is dropped as misattributed,
+neither coverage nor a vote for absence
+(`coverage-foreign-region.ts`,
+`judgeCoverage`'s `misattributed` count and `misattributedQuotes`);
+a full claim there is kept,
+since an archive that merged two originals into one paragraph carries the second inside the first's region,
+and that is what a full claim there reports.
+Fixed in `479bb011f`
+(guard red first at `6f7567f7e`).
+With both,
+shi_Yumiaoya4's round reads four absent of six reachable,
+an absent verdict,
+and the shortfall corroboration admits the passage.
+
+## shi_Yumiaoya4 read, 2026-09-17, 17:30 UTC: SETTLED, but the death paragraphs shipped as a recorded gap
+
+Frozen `cd789763c`,
+52 minutes
+(`ms=3105288`),
+`status=SETTLED` on the first attempt,
+`attempts.json` reads 1,
+page written,
+294 lines against the archive's 55.
+Spend by the meters:
+Bedrock 178.17 to 177.87,
+OpenRouter 254.44 to 253.95,
+0.79 USD;
+`pass-spend.mjs` logs 899 seats and 51 retry rounds.
+Class forty-nine held:
+no `defines footnote` refusal,
+no `assembly-footnote-reverted` line,
+the opening section on the page with its film link
+(rendered as the film's title read off the Wikipedia URL,
+where the original writes "movie name"),
+the marker on the opening line and one `[^1]` definition at the foot.
+The farewell ships once in English with the Chinese quote line kept above it and the attribution once,
+the corpus's own shape for a quoted original beside its English
+(hakureico's lyrics,
+shihai4h's Camus),
+and the archive's rendering,
+which dropped the Chinese line,
+lost the slate to GLM-5.3-Flash's
+(Mercury and gpt-oss voted for Mercury's candidate,
+which left the closing prose in Chinese);
+the doubled quote of the earlier passes is gone.
+Four body links on the page,
+the commented-out profile link on nobody's page,
+the community-term footnote at the foot with a parenthetical gloss added on the opening line.
+The page's one Han line outside comments is that quote line.
+But slice 13,
+the two paragraphs on the suicide intervention and Yumiao's death,
+is not on the page:
+`insertion-coverage (slice 13, verdict split, full 0, partial 1, absent 4, heard 6 of 8)`,
+`source-passage-unfilled (slice 13, not-corroborated)`,
+both lanes `gap-remains`,
+on a SETTLED page.
+Classes fifty and fifty-one.
+Two dark seats the whole run
+(glm-5.3 and Qwen3.8-27B refused by the router),
+Synthetic dry throughout.
+
 ## shi_Yumiaoya4 launches on class forty-nine, 2026-09-17, 16:30 UTC
 
 Frozen `cd789763c` (classes forty-one to forty-nine),

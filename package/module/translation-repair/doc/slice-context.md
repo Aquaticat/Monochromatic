@@ -188,6 +188,22 @@ and the will's paragraph shipped as a silent gap twice.
 A split with an anchored claim stays unresolved;
 an unanchorable claim is still no vote for absence.
 
+## What a coverage round may count
+
+A source-only passage is admitted or refused by a coverage round,
+and since classes fifty and fifty-one (2026-09-17) two things no longer count in it.
+A seat the router refused for want of a wet provider is not in the majority's denominator,
+since it was never asked and withholds no vote:
+shi_Yumiaoya4's round on the death paragraphs read four absent of eight asked with two dark seats
+and shipped the passage as a recorded gap on a settled page.
+A partial claim whose quote overlaps a target region the pairing assigned to another source slice
+is dropped as misattributed,
+neither coverage nor a vote for absence,
+because that English renders a different original:
+the same round's one anchored partial claim quoted the archive's farewell line.
+A full claim inside such a region is kept,
+since an archive that merged two originals into one paragraph carries the second inside the first's region.
+
 ## Explicit breaks under a substitute page block
 
 The deterministic rule owes a candidate the original's explicit line breaks

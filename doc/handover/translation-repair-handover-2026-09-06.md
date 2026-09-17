@@ -430,7 +430,21 @@ which the takeover session does not have.
   Classes forty-seven and forty-eight held live.
   `shi_Yumiaoya4` launched at 16:30 UTC on frozen `cd789763c` (pid 3610388,
   runs `~/temp/agent/shi_Yumiaoya4`,
-  log `~/temp/agent/shi_Yumiaoya4.log`).
+  log `~/temp/agent/shi_Yumiaoya4.log`)
+  and settled after 52 minutes with the death paragraphs shipped as a recorded gap:
+  the coverage majority counted two router-refused seats
+  (class fifty)
+  and one partial claim quoted the archive's farewell line,
+  another slice's paired rendering
+  (class fifty-one;
+  both fixed in `479bb011f`,
+  guards red first at `6f7567f7e`).
+  Class forty-nine held.
+  `shi_Yumiaoya5` launched at 17:38 UTC on frozen `479bb011f` (pid 3740123,
+  runs `~/temp/agent/shi_Yumiaoya5`,
+  log `~/temp/agent/shi_Yumiaoya5.log`);
+  no cron job on the owner's word,
+  the background waiter alone reports the exit.
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2244,6 +2258,19 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`479bb011f` (2026-09-17,
+17:35 UTC):
+classes fifty and fifty-one,
+the coverage majority is taken over the seats asked that a provider could serve
+(`coverage-stage.ts`),
+and a partial coverage claim whose quote overlaps a target region the pairing assigned to another source slice is dropped as misattributed
+(`coverage-foreign-region.ts`,
+`judgeCoverage`,
+the regions handed over by `pass-insertion-admission.ts`;
+the pass log's "Classes fifty and fifty-one" heading dated 2026-09-17 17:35 UTC;
+guards red first at `6f7567f7e`;
+found by the shi_Yumiaoya4 SETTLED page missing its death paragraphs).
+Running on shi_Yumiaoya5.
 `cd789763c` (2026-09-17,
 16:25 UTC):
 class forty-nine,
@@ -2254,7 +2281,9 @@ and the assembly attributes a doubled definition to the carrier whose original d
 the pass log's "Class forty-nine" heading dated 2026-09-17 16:25 UTC;
 guard red first at `a22dcffde`;
 found by the shi_Yumiaoya3 INCOMPLETE).
-Running on shi_Yumiaoya4.
+Ran on shi_Yumiaoya4 (no leak,
+no withdrawal,
+the section and its link on the page).
 `56307dca5` (2026-09-17,
 14:50 UTC):
 classes forty-seven and forty-eight,
@@ -4044,24 +4073,30 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `shi_Yumiaoya4` by the seven steps and the three checks (frozen `cd789763c`,
-    pid 3610388,
-    runs `~/temp/agent/shi_Yumiaoya4`,
-    log `~/temp/agent/shi_Yumiaoya4.log`,
-    launched 16:30 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
-    Synthetic and Hyper dry).
-    It is the first pass on class forty-nine
-    (the pass log's heading dated 2026-09-17 16:25 UTC);
-    shi_Yumiaoya3 stopped INCOMPLETE at publish on it after 78 minutes
-    (the pass log's "shi_Yumiaoya3 read" heading dated 2026-09-17 16:20 UTC).
+1.  READ `shi_Yumiaoya5` by the seven steps and the three checks (frozen `479bb011f`,
+    pid 3740123,
+    runs `~/temp/agent/shi_Yumiaoya5`,
+    log `~/temp/agent/shi_Yumiaoya5.log`,
+    launched 17:38 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
+    Synthetic and Hyper dry;
+    no cron job on the owner's word,
+    the background waiter alone reports the exit).
+    It is the first pass on classes fifty and fifty-one
+    (the pass log's heading dated 2026-09-17 17:35 UTC);
+    shi_Yumiaoya4 settled without the death paragraphs on them after 52 minutes
+    (the pass log's "shi_Yumiaoya4 read" heading dated 2026-09-17 17:30 UTC).
     Its archive is a skeleton of 54 lines against the original's 138,
-    so read first the opening section on the page with its film link,
-    one `[^1]` definition on the page and no `assembly-footnote-reverted` line in the translate log,
-    any `defines footnote` refusal in the slate findings,
-    then slice 13 (the cameras and the will) on the page,
+    so read first slice 13's coverage line
+    (the suicide intervention and the death;
+    `coverage=absent` and an admission,
+    or a split whose finding carries a misattributed count),
+    the two paragraphs on the page,
+    then the opening section with its film link and one `[^1]` definition
+    (class forty-nine held on shi_Yumiaoya4),
     then the farewell
-    (the slate chose the doubled quote on every pass so far;
-    the floor is silent on the archive's rendering since class forty-seven),
+    (shi_Yumiaoya4 shipped it once in English with the Chinese quote line kept,
+    the corpus's shape for a quoted original beside its English;
+    the doubling is gone),
     then the four body links and that the commented-out profile link is on nobody's page,
     then the community-term footnote,
     then the page assembly's findings
@@ -4081,7 +4116,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (shi_Yumiaoya3 to its INCOMPLETE:
+    (shi_Yumiaoya4 to its SETTLED page:
+    0.79 USD by the meters,
+    899 seats,
+    51 retry rounds,
+    52 minutes;
+    shi_Yumiaoya3 to its INCOMPLETE:
     0.57 USD by the meters,
     948 seats,
     31 retry rounds,
