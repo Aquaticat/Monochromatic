@@ -381,9 +381,16 @@ The research used no clones and wrote no troubleshooting docs;
  it reported three rule `1CB` slips,
  and it noted that `git config --list --show-origin` printed a credential URL that it did not reproduce anywhere.
 
+Running since 2026-09-17:
+ design research for how `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath,
+ with the other three migration items from the all-Rust decision record,
+ writing `vm-builder-exec/vm-builder-exec-design.md` in the session scratchpad.
+It is the last item under "Design work not yet started" in the design's "Open questions".
+
 1.  When it lands,
-    start the last item under "Design work not yet started" in the design's "Open questions":
-    how `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
+    merge it,
+    present its brief,
+    and ask whatever it flags.
 2.  For each research result,
     copy it into `doc/planning/monorepo-manager-route-research/`,
     verify its load-bearing claims,
