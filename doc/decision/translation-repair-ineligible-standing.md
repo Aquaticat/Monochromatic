@@ -100,3 +100,37 @@ and the entry stopped under the rule above.
     `consolidate-driver.unit.test.ts` ("KEEPS A VALID INCUMBENT",
     beside the 2026-09-04 case whose incumbent fails too and still stops),
     `artifact-two-lane-read-consolidate.unit.test.ts` and `would-ship-text.unit.test.ts` for the shipped kind.
+
+## Addendum 2026-09-18: a gate that settles on neither over an ineligible standing ships the slate's choice
+
+Taken under the rule of 2026-09-04 itself
+("prefer the best valid proposal,
+else fail the slice at once"),
+after XingZ604 stopped INCOMPLETE at 4h53m on its slice 13.
+
+- The archive's funeral paragraph and the contest winner both carried the original's neutral pronoun
+    untranslated,
+    so the standing was ineligible and no incumbent could stand in
+    (the 2026-09-09 addendum's "both are ineligible" case).
+- The slate,
+    with the standing withheld,
+    chose a valid proposal 3 of 4.
+    The consolidate gate went 5 of 7 usable with neither rendering at quorum over the other,
+    and the gate's tie rule kept the standing;
+    `requireShippableTerminal` refused `gate-kept-standing` and the entry stopped.
+- The gate's indecision is not a refusal.
+    Its fallback to the standing is a conservative default,
+    and an ineligible standing offers nothing conservative to keep;
+    stopping there discards a valid text the judges endorsed,
+    which is the opposite of the rule's first clause.
+- `shipPastUndecidedGate` (`consolidate-ineligible-standing.ts`) now resolves a `neither` verdict toward
+    the consolidation when the standing is ineligible,
+    recording `undecided-gate-ships-proposal` on the settlement,
+    and `gateAndShip` wraps and ships that outcome.
+    A gate that refuses the consolidation at quorum still keeps the standing and still stops the slice;
+    an eligible standing keeps the slice on indecision exactly as before.
+- Guard shown to fail first (`b8b32e28d`):
+    `consolidate-settle.unit.test.ts`
+    ("SHIPS THE PROPOSAL THE SLATE CHOSE when the standing is ineligible and the gate settles on neither",
+    with the eligible-standing contrast in the same case).
+    Fixed in `0d0747200`.

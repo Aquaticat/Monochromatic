@@ -8082,6 +8082,125 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ605 launches on class fifty-four, 2026-09-18, 07:03 UTC
+
+Frozen `0d0747200` (classes forty-one to fifty-four plus the decision seat),
+pid 474604,
+runs `~/temp/agent/XingZ605`,
+log `~/temp/agent/XingZ605.log`,
+providers at launch `synthetic=dry bedrock=wet hyper=wet openrouter=wet`,
+meters Bedrock 169.57 and OpenRouter 242.13,
+no cron job,
+the background waiter alone reports the exit.
+It resumes from XingZ604's slice cache
+(slice 13's consolidation was not cached,
+its settlement threw).
+Read first slice 13's consolidation
+(the `undecided-gate-ships-proposal` finding,
+or a gate at quorum either way,
+never a stop),
+then the page's rendering of the funeral paragraph
+(singular they or the name where the original writes TA,
+no TA left standing),
+then the nine footnote definitions and their labels,
+the components,
+the `details` summary,
+the profile link,
+then the seven steps and the three checks.
+
+## Class fifty-four, 2026-09-18, 06:58 UTC: the consolidate gate's indecision keeps an ineligible standing over the proposal the slate chose
+
+Found by the XingZ604 read.
+The archive's funeral paragraph carries the original's neutral pronoun untranslated
+("in the eyes of TA's parents"),
+which the deterministic publication rule refuses,
+and the lane contest settled 5 of 7 on the translate lane's text,
+which carries it too;
+so the consolidation's standing was ineligible and,
+under the 2026-09-09 addendum,
+the incumbent could not stand in.
+The slate offered the writers' proposals and the repair lane's text
+(which had rendered TA as "their"),
+the slate judges chose GPT-OSS's proposal 3 of 4
+("her parents",
+"gender expression"),
+and the consolidate gate went 5 of 7 usable with neither rendering at its quorum of two over the other.
+The gate's rule that indecision keeps the standing text fell back to the ineligible standing,
+`requireShippableTerminal` refused `gate-kept-standing`,
+and the entry stopped INCOMPLETE at 4h53m over a text the judges had already endorsed.
+Fixed in `0d0747200`
+(guard red first at `b8b32e28d`):
+`shipPastUndecidedGate` (`consolidate-ineligible-standing.ts`) resolves a `neither` verdict over an ineligible standing toward the consolidation,
+recording `undecided-gate-ships-proposal`,
+under the owner's 2026-09-04 rule that the best valid proposal is preferred.
+A gate that refuses the consolidation at quorum still keeps the standing and still stops the slice;
+an eligible standing keeps the slice on the same indecision as before.
+Addendum in `doc/decision/translation-repair-ineligible-standing.md`.
+
+## XingZ604 read, 2026-09-18, 06:55 UTC: INCOMPLETE at 4h53m on slice 13, the first pass with a typed-decision judge
+
+Frozen `c14c7f176`,
+4 hours and 53 minutes
+(`ms=17589011`),
+`status=INCOMPLETE`,
+`error=slice 13: the standing text failed the deterministic publication rule and the consolidation left nothing valid to ship (gate-kept-standing)`,
+no page written,
+`attempts.json` reads 1.
+Spend by the meters:
+Bedrock 172.62 to 169.57,
+OpenRouter 247.06 to 242.14,
+7.97 USD;
+`pass-spend.mjs` logs 6655 seats and 401 retry rounds
+(select 480 rounds,
+2266 asked,
+1854 heard;
+translate 189 rounds,
+731 asked,
+489 heard).
+Phases:
+preparation 01:56,
+lanes 02:10,
+translate lane 05:19,
+lane contest 06:33,
+consolidation 06:38,
+stop 06:47;
+Synthetic went dry during the lanes and the contest and consolidation ran `wide=7 select=8`.
+The stop is class fifty-four
+(the heading dated 2026-09-18 06:58 UTC).
+
+What held:
+`image0.webp` corroborated by 5 of 6 readers at overlap 0.870
+(class fifty-two live on a wider bench);
+slice 14 translated on its first rounds
+(GLM-5.3-Flash's candidates at weight 3 and 5 of 6,
+one `declined-indecision` challenge elsewhere in the lane),
+so class fifty-three's run-off was never needed and stays untested live;
+no `translate-runoff` finding anywhere.
+
+Jev live:
+`SEAT typesafe/jev-1.13 asked=221 usable=221 unusable=0 threw=0`,
+217 ballots logged
+(130 repair-lane select rounds,
+82 translate-lane slates,
+5 consolidation slates),
+every call on the decisions route.
+Measured against the round's winner
+(`jev-agree.mjs` over the log):
+repair select 110 of 124 agree,
+translate slate 53 of 76,
+consolidation 4 of 5.
+Its probabilities ranged from split
+(0.49 against 0.41 on its first ballot,
+confidence 0.24)
+to decisive
+(0.98,
+confidence 0.97);
+the log line carries them.
+The nine footnote definitions,
+the components,
+the `details` summary and the profile link could not be read:
+no page.
+
 ## XingZ604 launches on the Jev seat, 2026-09-18, 01:56 UTC
 
 Frozen `c14c7f176` (classes forty-one to fifty-three plus the decision seat),

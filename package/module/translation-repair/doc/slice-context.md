@@ -188,6 +188,18 @@ and the will's paragraph shipped as a silent gap twice.
 A split with an anchored claim stays unresolved;
 an unanchorable claim is still no vote for absence.
 
+## When the consolidate gate cannot decide over an ineligible standing
+
+The consolidate gate asks whether the consolidation the slate chose replaces the standing text,
+and a round at quorum for neither keeps the standing.
+Since class fifty-four (2026-09-18) that fallback applies only to a standing the deterministic publication rule accepts:
+over an ineligible standing
+(XingZ604's funeral paragraph,
+where the archive and the contest winner both left the original's neutral pronoun untranslated)
+the consolidation ships with `undecided-gate-ships-proposal` recorded,
+because the owner's rule prefers the best valid proposal and the gate refused nothing.
+A gate that refuses the consolidation at quorum still stops the slice.
+
 ## When a tied slate is challenged as a run-off
 
 A translate slate the judges decline is put to the same panel once more under a distinct responsibility.

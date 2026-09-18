@@ -491,7 +491,19 @@ which the takeover session does not have.
   `XingZ604` launched at 01:56 UTC on frozen `c14c7f176` (pid 211894,
   runs `~/temp/agent/XingZ604`,
   log `~/temp/agent/XingZ604.log`),
-  JUDGE SEATS `wide=8 select=9`;
+  JUDGE SEATS `wide=8 select=9`,
+  and stopped INCOMPLETE at 4h53m on slice 13
+  (class fifty-four,
+  the consolidate gate's indecision keeping an ineligible standing over the proposal the slate chose;
+  fixed in `0d0747200`,
+  guard red first at `b8b32e28d`;
+  the pass log's "XingZ604 read" heading dated 2026-09-18 06:55 UTC;
+  7.97 USD).
+  Jev voted live on 221 rounds,
+  every call on the decisions route.
+  `XingZ605` launched at 07:03 UTC on frozen `0d0747200` (pid 474604,
+  runs `~/temp/agent/XingZ605`,
+  log `~/temp/agent/XingZ605.log`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
   Also today:
@@ -2307,6 +2319,16 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`0d0747200` (2026-09-18,
+06:58 UTC):
+class fifty-four,
+a consolidate gate that settles on neither over an ineligible standing ships the proposal the slate chose
+(`consolidate-ineligible-standing.ts`,
+`consolidate-settle-gate.ts`;
+the pass log's "Class fifty-four" heading dated 2026-09-18 06:58 UTC;
+guard red first at `b8b32e28d`;
+found by the XingZ604 INCOMPLETE).
+Running on XingZ605.
 `c14c7f176` (2026-09-18,
 01:55 UTC):
 `typesafe/jev-1.13` seated as a select judge,
@@ -4174,24 +4196,24 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ604` by the seven steps and the three checks (frozen `c14c7f176`,
-    pid 211894,
-    runs `~/temp/agent/XingZ604`,
-    log `~/temp/agent/XingZ604.log`,
-    launched 01:56 UTC on 2026-09-18 with Synthetic,
-    Bedrock and OpenRouter wet,
-    Hyper dry;
+1.  READ `XingZ605` by the seven steps and the three checks (frozen `0d0747200`,
+    pid 474604,
+    runs `~/temp/agent/XingZ605`,
+    log `~/temp/agent/XingZ605.log`,
+    launched 07:03 UTC on 2026-09-18,
+    providers at launch `synthetic=dry bedrock=wet hyper=wet openrouter=wet`;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    It is the first pass with the decision seat on the select benches
-    (JUDGE SEATS `wide=8 select=9`;
-    the pass log's "Jev 1.13 seated" heading dated 2026-09-18 01:47 UTC)
-    and the first to reach class fifty-three's translate rounds
-    (the pass log's heading dated 2026-09-18 00:45 UTC);
-    XingZ602 stopped ERROR on it after 2h38m and its reattempt was killed at 5h57m,
-    XingZ603 was killed at 60 minutes in the repair lane
-    (the pass log's "XingZ602 read" and "XingZ603 killed" headings).
-    Read Jev's select ballots
+    It is the first pass on class fifty-four
+    (the pass log's heading dated 2026-09-18 06:58 UTC);
+    XingZ604 stopped INCOMPLETE on it at 4h53m in the consolidation of slice 13
+    (the pass log's "XingZ604 read" heading dated 2026-09-18 06:55 UTC).
+    Read first slice 13's consolidation
+    (the `undecided-gate-ships-proposal` finding or a gate at quorum,
+    never a stop)
+    and the funeral paragraph on the page
+    (no TA left standing),
+    then Jev's select ballots
     (reason prefix `typed decision`)
     against the chat judges' on the same rounds.
     XingZ60 is 577 source lines against 358 archive lines,
@@ -4228,7 +4250,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (XingZ603 to its kill in the repair lane:
+    (XingZ604 to its INCOMPLETE at slice 13:
+    7.97 USD by the meters,
+    6655 seats,
+    401 retry rounds,
+    4 hours and 53 minutes;
+    XingZ603 to its kill in the repair lane:
     1.24 USD by the meters,
     1238 seats,
     28 retry rounds,
