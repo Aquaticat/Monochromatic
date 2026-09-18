@@ -1616,6 +1616,113 @@ while a task entry's key carries only the per-user values that task consumed.
 The wording is corrected here rather than in those sections,
 which describe the coarser shape the research replaced.
 
+### vm-builder migration
+
+Research:
+[`vm-builder-exec.md`](monorepo-manager-route-research/vm-builder-exec.md),
+2026-09-17,
+covering the four migration items the all-Rust decision record lists as consequences.
+The brief went to the user the same day;
+rule `DRR` requires acceptance before any of it becomes a decision.
+
+#### Recommended shape
+
+- `exec`:
+   vm-builder owns a private `package/dev-script/vm-builder/src/process.ts`
+   exporting `runInherited`,
+   which is the inherit-stdio helper it already duplicates three times,
+   and `runCaptured` over `nano-spawn`.
+  Its manifest drops `@monochromatic-dev/dev-script-file-enforcer` and gains `nano-spawn` from the catalog,
+   so the dependency count is unchanged
+   and 72 file-enforcer source files leave vm-builder's type-check program.
+- `nano-spawn` rather than `node:util.promisify(execFile)`,
+   because it reproduces today's thrown message including exit code and stderr,
+   which four probe `catch` blocks render to the user.
+- `file-enforcer-perf`:
+   keep the corpus generator and write a Rust benchmark in meow's worktree,
+   following `package/rust-module/forbidden-regex.bench`.
+- The `prefer-readonly-parameter-type` fixture read:
+   vendor `apply-plan.ts` into a new `package/test-fixture/prefer-readonly-parameter-type`
+   that really depends on `@monochromatic-dev/module-toml-edit`,
+   because after file-enforcer is deleted that module has no other non-fuzz TypeScript consumer.
+- `sync:files`:
+   both tasks disappear with `mise.toml` when Mise is removed,
+   and watch mode is already assigned to the daemon watcher.
+
+#### Deciding evidence
+
+- The platform-aware `exec` form has no callers:
+   every call site passes `{ cmd, args }`,
+   and `platformCommands` appears only in `exec.ts`,
+   its unit test,
+   and the README (verified again on merging).
+  So `exec.ts` and `platform/evaluate-predicate.ts` are mostly retired behavior rather than behavior to port.
+- `exec` has no successor inside meow:
+   its two internal callers leave the port to Meta Package Manager and to the daemon watcher,
+   so vm-builder is the only consumer needing a replacement.
+- vm-builder already owns three identical `run()` helpers
+   (`sign-and-push.ts:63`,
+   `build-and-import.ts:137`,
+   `import.ts:98`),
+   which is why rule `RCI` puts the owner there rather than in a new shared package.
+- Direct spawning is the incumbent pattern:
+   123 TypeScript files import `nano-spawn` directly,
+   63 of them outside tests,
+   and the root `file-enforcer.config.ts` spawns directly rather than through `exec`.
+- Of 14 `exec` calls,
+   one consumes stdout and four are probes whose only signal is the thrown error.
+- vm-builder has no tests and no CI job,
+   so the parity tests in the ledger are new work rather than existing coverage.
+
+#### Ranking
+
+`vm-builder owns it` > a new shared process module > relocating `exec.ts` verbatim >
+attaching it to `task-util` > shelling out to meow's CLI > meow's RPC.
+
+- Owning it over a shared module:
+   rule `RCI` says extend a present boundary,
+   and a new published package plus a workspace edge for one consumer is the larger change.
+- A shared module over relocating `exec.ts`:
+   both add a package,
+   but the relocation carries 358 lines of platform dispatch no call site uses.
+- Relocating over `task-util`:
+   `task-util`'s declared scope is Mise orchestration,
+   and its `command.ts` runs an argument parser at module scope.
+- `task-util` over meow's CLI:
+   shelling out makes a Node dev script depend on a Rust binary,
+   its trust registry,
+   and JSON line framing.
+- meow's CLI over meow's RPC:
+   RPC also needs the daemon running and has no method for an ad-hoc command.
+  Both are disqualified rather than merely last.
+
+#### Defects this research found
+
+- `package/dev-script/file-enforcer/README.md:134-197` documents `exec([...])` and
+   `exec('mise', ['use', 'git'])`,
+   neither of which the implementation accepts,
+   and `README.md:290` imports a subpath the manifest does not export.
+- `workspace-source-effect.unit.test.ts:67-70` locates functions by searching source text for
+   `function <name>`,
+   so an unrelated rename breaks it silently,
+   today,
+   before any migration.
+- The root `mise.toml` is recorded as hand-maintained in the all-Rust decision record,
+   while `file-enforcer.config.ts:718-721` still generates it and `mise.toml:1` carries the generated header.
+  Verified on merging;
+   asked as a question rather than corrected unilaterally,
+   because the user's two answers on 2026-09-17 pull in different directions.
+
+#### Transition
+
+- The `exec` replacement and the fixture read depend on nothing from meow and can land at any time;
+   landing the `exec` one early removes a public export from the rewrite's parity surface.
+- The performance fixture keeps running against the TypeScript implementation,
+   because it is the only speed baseline that exists.
+- `sync:files` stays untouched until Mise goes.
+- No coexistence protocol is needed,
+   because meow is built in its own worktree.
+
 ### Platform probes
 
 Research:
@@ -2572,12 +2679,11 @@ Closed on 2026-09-17:
 - aarch64 builds and the CPU capability warning under QEMU,
    settled in "Platform probes".
 
-Design work not yet started:
-
-- How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath.
-
 Design work finished on 2026-09-17:
 
+- How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath
+   ("vm-builder migration"),
+   whose brief is with the user.
 - The HCL evaluator,
    function library,
    formatter,
