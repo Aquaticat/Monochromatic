@@ -81,6 +81,7 @@ import androidx.activity.enableEdgeToEdge
 // import { icons } from '@material-design-icons/svg';
 // ```
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Pause
@@ -88,6 +89,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.VolumeUp
 
 // What:     `background` paints a Compose layout node with one color.
 // Why:      Candidate A, B, and C differ in their surface hierarchy.
@@ -200,6 +202,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -388,7 +391,7 @@ private data class PrototypeTrack(
  * ```
  */
 private fun String.usesAcceptedUnfoldedTreatment(): Boolean {
-    return startsWith("cue-") || startsWith("a11y-") || startsWith("dark-")
+    return startsWith("cue-") || startsWith("a11y-") || startsWith("dark-") || startsWith("cover-")
 }
 
 /** Debug-only Android window used to capture native candidate screenshots. */
@@ -401,7 +404,7 @@ class DesignCandidateActivity : ComponentActivity() {
         if (requestedCandidate != null) {
             candidate = requestedCandidate
         }
-        if (candidate.startsWith("dark-")) {
+        if (candidate.startsWith("dark-") || candidate.startsWith("cover-dark")) {
             enableEdgeToEdge(
                 statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
                 navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
@@ -463,6 +466,66 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             paneDivider = false,
             railDivider = true,
             railDividerColor = scheme.outline,
+            rowDividers = false,
+        )
+    }
+    if (candidate.startsWith("cover-dark")) {
+        return CandidatePalette(
+            window = TrueBlack,
+            picker = TrueBlack,
+            rail = TrueBlack,
+            transport = StableDarkContainerLow,
+            tracks = TrueBlack,
+            spacer = TrueBlack,
+            sectionDivider = TrueBlack,
+            paneDivider = false,
+            railDivider = false,
+            railDividerColor = scheme.outline,
+            rowDividers = false,
+        )
+    }
+    if (candidate == "cover-light-l1") {
+        return CandidatePalette(
+            window = scheme.surfaceDim,
+            picker = scheme.surfaceContainerLowest,
+            rail = scheme.surfaceContainerLow,
+            transport = scheme.surfaceContainerLow,
+            tracks = scheme.surfaceContainerLowest,
+            spacer = Color.White,
+            sectionDivider = scheme.outlineVariant,
+            paneDivider = false,
+            railDivider = false,
+            railDividerColor = scheme.outlineVariant,
+            rowDividers = false,
+        )
+    }
+    if (candidate == "cover-light-l2") {
+        return CandidatePalette(
+            window = scheme.surfaceDim,
+            picker = scheme.surfaceContainerLowest,
+            rail = scheme.surfaceContainerLow,
+            transport = scheme.surfaceContainerLow,
+            tracks = scheme.surfaceContainerLowest,
+            spacer = Color.White,
+            sectionDivider = scheme.surfaceContainerLow,
+            paneDivider = false,
+            railDivider = false,
+            railDividerColor = scheme.outlineVariant,
+            rowDividers = false,
+        )
+    }
+    if (candidate == "cover-light-l3") {
+        return CandidatePalette(
+            window = scheme.surfaceContainerLowest,
+            picker = scheme.surfaceContainerLowest,
+            rail = scheme.surfaceContainerLowest,
+            transport = scheme.surfaceContainerLowest,
+            tracks = scheme.surfaceContainerLowest,
+            spacer = Color.White,
+            sectionDivider = scheme.outlineVariant,
+            paneDivider = false,
+            railDivider = true,
+            railDividerColor = scheme.outlineVariant,
             rowDividers = false,
         )
     }
@@ -560,7 +623,12 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
 @Composable
 private fun DesignCandidatePrototype(candidate: String) {
     val context = LocalContext.current
-    val scheme = if (candidate.startsWith("dark-")) {
+    val scheme = if (candidate.startsWith("cover-dark")) {
+        darkDynamicSchemeFor(
+            context = context,
+            candidate = candidate.replaceFirst(oldValue = "cover-dark", newValue = "dark-stable") + "-dynamic",
+        )
+    } else if (candidate.startsWith("dark-")) {
         darkDynamicSchemeFor(context = context, candidate = candidate)
     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         dynamicLightColorScheme(context)
@@ -573,7 +641,9 @@ private fun DesignCandidatePrototype(candidate: String) {
             modifier = Modifier.fillMaxSize(),
             color = palette.window,
         ) {
-            if (candidate.startsWith("dbtp-")) {
+            if (candidate.startsWith("cover-")) {
+                CoverStudy(candidate = candidate, palette = palette)
+            } else if (candidate.startsWith("dbtp-")) {
                 RightHalfStudy(candidate = candidate, palette = palette)
             } else {
                 FullUnfoldedStudy(candidate = candidate, palette = palette)
@@ -656,6 +726,106 @@ private fun RightHalfStudy(candidate: String, palette: CandidatePalette) {
     }
 }
 
+/** Renders the settled cover player: folder chip row, track list, and thumb-reach deck. */
+@Composable
+private fun CoverStudy(candidate: String, palette: CandidatePalette) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 56.dp)
+                .background(palette.rail)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(start = 16.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            CoverFolderChip()
+            OpenAction(candidate = candidate)
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.CenterEnd,
+            ) {
+                IconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Settings",
+                    )
+                }
+            }
+        }
+        if (palette.railDivider) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(palette.railDividerColor),
+            )
+        }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .background(palette.tracks)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            val tracks = listOf(
+                PrototypeTrack("Another Xronixle", "4:35", "−1.2 dBTP"),
+                PrototypeTrack("Burning Aquamarine", "5:12", "−0.8 dBTP"),
+                PrototypeTrack("Dokuhebi", "4:01", "−1.4 dBTP"),
+                PrototypeTrack("ENÛMA∇ELIŠ", "9:47", "−0.3 dBTP"),
+                PrototypeTrack("Ghost", "3:22", "−1.1 dBTP"),
+                PrototypeTrack("Hyperflux", "4:44", "−0.9 dBTP"),
+                PrototypeTrack("Idol Corruption", "5:31", "−0.6 dBTP"),
+                PrototypeTrack("KillerToy", "4:12", "−1.0 dBTP"),
+                PrototypeTrack("Nacreous Snowmelt", "6:03", "−0.7 dBTP"),
+            )
+            for (index in tracks.indices) {
+                TrackRow(
+                    index = index,
+                    track = tracks[index],
+                    candidate = candidate,
+                    palette = palette,
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(palette.sectionDivider),
+        )
+        TransportBlock(
+            modifier = Modifier.fillMaxWidth(),
+            candidate = candidate,
+            palette = palette,
+            volumeTrailing = true,
+        )
+    }
+}
+
+/** Draws the cover's settled folder switcher as one outlined dropdown-style target. */
+@Composable
+private fun CoverFolderChip() {
+    OutlinedButton(
+        onClick = {},
+        shape = RoundedCornerShape(20.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        modifier = Modifier.heightIn(min = 40.dp),
+    ) {
+        Text(
+            text = CURRENT_SUBDIRECTORY,
+            style = MaterialTheme.typography.labelLarge,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Icon(
+            imageVector = Icons.Filled.ArrowDropDown,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+        )
+    }
+}
+
 /** Builds the settled picker-over-transport left pane. */
 @Composable
 private fun FolderAndTransportPane(
@@ -709,7 +879,7 @@ private fun OpenAction(candidate: String) {
         }
         return
     }
-    if (style == "tonal" || candidate.startsWith("a11y-") || candidate.startsWith("dark-")) {
+    if (style == "tonal" || candidate.startsWith("a11y-") || candidate.startsWith("dark-") || candidate.startsWith("cover-")) {
         FilledTonalButton(onClick = {}) {
             OpenActionContent()
         }
@@ -896,6 +1066,7 @@ private fun TransportBlock(
     modifier: Modifier,
     candidate: String,
     palette: CandidatePalette,
+    volumeTrailing: Boolean = false,
 ) {
     // What:     Kotlin's `if` can return a value, unlike a TypeScript `if` statement.
     // Why:      Every candidate keeps one immutable Material spacing value for its complete deck.
@@ -959,7 +1130,28 @@ private fun TransportBlock(
                     style = timeStyle,
                 )
             }
-            TransportControls(candidate = candidate)
+            if (volumeTrailing) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(modifier = Modifier.weight(1f))
+                    TransportControls(candidate = candidate)
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.CenterEnd,
+                    ) {
+                        IconButton(onClick = {}) {
+                            Icon(
+                                imageVector = Icons.Filled.VolumeUp,
+                                contentDescription = "Volume",
+                            )
+                        }
+                    }
+                }
+            } else {
+                TransportControls(candidate = candidate)
+            }
         }
         ModeControl()
     }
@@ -1447,7 +1639,7 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
 @Composable
 private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette) {
     val playing = index == 0
-    val currentTrackCue = if (candidate.startsWith("a11y-") || candidate.startsWith("dark-")) {
+    val currentTrackCue = if (candidate.startsWith("a11y-") || candidate.startsWith("dark-") || candidate.startsWith("cover-dark")) {
         "container"
     } else if (candidate.contains("cue-label-")) {
         "label"
@@ -1489,7 +1681,7 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
     } else {
         Modifier.semantics {
             selected = playing
-            if (playing && (candidate.endsWith("-state") || candidate.startsWith("dark-"))) {
+            if (playing && (candidate.endsWith("-state") || candidate.startsWith("dark-") || candidate.startsWith("cover-dark"))) {
                 stateDescription = "Current track"
             } else if (playing && candidate.startsWith("cue-")) {
                 contentDescription = "Current track: ${track.title}"
