@@ -26,6 +26,7 @@ import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
+  SEAT_OPENROUTER_DECISIONS,
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_EDITOR,
@@ -144,6 +145,16 @@ const CLAIMS: readonly {
     reach: ['openrouter',],
     reads: false,
     holds: [],
+  },
+  {
+    seat: SEAT_OPENROUTER_DECISIONS,
+    reach: [],
+    reads: false,
+    holds: [
+      'judge-unmeasured',
+      'writer-unmeasured',
+      'reader-unmeasured',
+    ],
   },
 ];
 

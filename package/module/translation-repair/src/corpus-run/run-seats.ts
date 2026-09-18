@@ -21,6 +21,7 @@ import { reachOf, } from '../roster-reach.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { TranslateModels, } from '../translate-document-contract.ts';
 import {
+  RUN_DECISION_JUDGES,
   RUN_LATE_JUDGES,
   RUN_MODELS,
   RUN_READER_MODELS,
@@ -273,7 +274,14 @@ export function judgeSeatsFor(
   /**
    Both lanes' select judges for this reading.
    */
-  const selectJudges = wideSeats.filter(seatedForSelect,);
+  const selectJudges = [
+    ...wideSeats.filter(seatedForSelect,),
+    // A DECISION-ONLY SEAT IS SERVED BY OPENROUTER ALONE, off the chat
+    // reach, so it is seated by that one meter and nothing else.
+    ...RUN_DECISION_JUDGES.filter(function decisionSeated(): boolean {
+      return !dry.openrouter;
+    },),
+  ];
   /**
    Late bench for this reading.
    */

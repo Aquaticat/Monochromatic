@@ -29,6 +29,7 @@ import {
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import {
   BEDROCK_ONLY_ROSTER_IDS,
+  DECISION_ONLY_ROSTER_IDS,
   holdSet,
   OPENROUTER_ONLY_ROSTER_IDS,
 } from '../model-card-derive.ts';
@@ -192,6 +193,12 @@ export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'wr
 export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS
   .filter(function measured(modelId,): boolean {
     return !UNMEASURED_UNTIL_SEATED.has(modelId,);
+  },)
+  // A DECISION-ONLY SEAT TAKES NO COMPLETION, so it is on no chat bench
+  // however it measures; it reaches the select judges through
+  // `RUN_DECISION_JUDGES` alone.
+  .filter(function chatSeat(modelId,): boolean {
+    return !DECISION_ONLY_ROSTER_IDS.includes(modelId,);
   },);
 
 /**
@@ -333,6 +340,27 @@ export const RUN_LATE_JUDGES: readonly RosterModelId[] = RUN_ROSTER
   .filter(function stillJudges(modelId,): boolean {
     return !LATE_JUDGE_DROPPED.has(modelId,);
   },);
+
+/**
+ Decision-only seats the judge fidelity probe has seated: they judge slates
+ through the select stage's decision adapter and nothing else, since a
+ typed-decision model takes no completion. Empty until a probe removes a
+ card's `judge-unmeasured` hold.
+ */
+export const RUN_DECISION_JUDGES: readonly RosterModelId[] = DECISION_ONLY_ROSTER_IDS
+  .filter(function measured(modelId,): boolean {
+    return !JUDGE_UNMEASURED.has(modelId,);
+  },);
+
+/**
+ Judges for both lanes' slates: the wide seats, then the seated
+ decision-only seats, in that order so a ballot index reads the same
+ whichever bench a reader has in mind.
+ */
+export const RUN_SELECT_JUDGES: readonly RosterModelId[] = [
+  ...RUN_WIDE_SEATS,
+  ...RUN_DECISION_JUDGES,
+];
 
 /**
  Role roster for a corpus run: SEVEN of the nine critique and adjudicate (six while Synthetic is dry), THREE edit
@@ -546,7 +574,7 @@ export const RUN_MODELS: RepairModels = {
   ],
   // An editor still judges a slate holding its own text at half weight for
   // that candidate alone.
-  judgeModelIds: RUN_WIDE_SEATS,
+  judgeModelIds: RUN_SELECT_JUDGES,
   // MEASURED ON THE REFINER'S OWN JOB, NOT TRANSFERRED FROM THE EDITORS.
   // `editor-calibrate` runs the naturalness lane after the accuracy lane and
   // reports the refiner standing off the same spend: 25 judged refiner rounds
@@ -669,7 +697,7 @@ assertCheckerQuorumReachable({
  */
 export const RUN_TRANSLATE_MODELS: TranslateModels = {
   translatorModelIds: RUN_TRANSLATORS,
-  judgeModelIds: RUN_WIDE_SEATS,
+  judgeModelIds: RUN_SELECT_JUDGES,
 };
 
 /**

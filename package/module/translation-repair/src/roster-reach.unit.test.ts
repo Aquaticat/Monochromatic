@@ -25,6 +25,7 @@ import {
   HYPER_ORIGIN_ROSTER_IDS,
   hyperIdFor,
   hyperServesLabel,
+  isDecisionSeat,
   openRouterServesLabel,
   reachOf,
   readsImages,
@@ -65,6 +66,10 @@ await describe({
          Roster ids no catalog has a row for under the roster's own spelling.
          */
         const unserved = ROSTER_MODEL_IDS.filter(function nobodyServes(modelId,): boolean {
+          // A decision-only seat is served by the decisions endpoint, which
+          // has no chat catalog row by design.
+          if (isDecisionSeat({ modelId, },))
+            return false;
           return (!syntheticServes(modelId,)) && (!hyperServesLabel(modelId,)) && (!bedrockServesLabel(modelId,))
             && (!openRouterServesLabel(modelId,));
         },);
@@ -97,7 +102,7 @@ await describe({
   name: 'ROSTER_MODEL_IDS',
   children: [
     it({
-      name: 'registers eleven distinct approved models without duplicating identities across providers',
+      name: 'registers twelve distinct approved models without duplicating identities across providers',
       fn: async () => {
         // Eight until 2026-09-01, when the post-blocklist candidate refresh
         // admitted glm-5.3 and the same-day conformance probe culled the
@@ -107,8 +112,10 @@ await describe({
         // when the owner approved Mercury 2.5, which only OpenRouter serves.
         // V4.1 Flash adds one approved identity on 2026-09-11, not one per serving provider.
         // Eleven since 2026-09-16, when the owner removed the two dated DeepSeek V4 models.
-        expect(ROSTER_MODEL_IDS.length,).toBe(11,);
-        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(11,);
+        // Twelve since 2026-09-18, when the owner approved Jev 1.13, a
+        // decision-only seat served by OpenRouter's decisions endpoint alone.
+        expect(ROSTER_MODEL_IDS.length,).toBe(12,);
+        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(12,);
       },
     },),
 
@@ -275,6 +282,10 @@ await describe({
         + 'never be filled',
       fn: async () => {
         for (const modelId of ROSTER_MODEL_IDS) {
+          // A decision-only seat is reached through the decisions endpoint,
+          // off every chat provider by design.
+          if (isDecisionSeat({ modelId, },))
+            continue;
           /**
            Where this model can be reached at all.
            */

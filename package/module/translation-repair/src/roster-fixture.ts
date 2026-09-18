@@ -74,4 +74,10 @@ export const SEAT_BEDROCK_ONLY_VISION_UNSEATED = 'google.gemma-4-31b' as const;
  */
 export const SEAT_OPENROUTER_ONLY = 'inception/mercury-2.5' as const;
 
+/**
+ Only OpenRouter's decisions endpoint serves it; no chat reach, no
+ pictures; held out of every seat until measured.
+ */
+export const SEAT_OPENROUTER_DECISIONS = 'typesafe/jev-1.13' as const;
+
 //endregion Roster fixture

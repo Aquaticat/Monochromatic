@@ -298,6 +298,25 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     completionCap: 'pooled-p90',
     holds: [],
   },
+  'typesafe/jev-1.13': {
+    decisions: {
+      id: 'typesafe/jev-1.13',
+      contextLength: 32_000,
+      promptUsdPerMillion: 0.042,
+      completionUsdPerMillion: 0,
+    },
+    // Answers are typed decisions, never a completion; the cap table needs
+    // a row for every roster id and this one is never sent.
+    completionCap: 'pooled-p90',
+    // Owner, 2026-09-18: approved on OpenRouter. 28 of 28 on the reviewed
+    // fidelity matrix by a scratch measurement that night (the pass log's
+    // "Jev 1.13 approved" heading); the production probe seats it or not.
+    holds: [
+      'judge-unmeasured',
+      'writer-unmeasured',
+      'reader-unmeasured',
+    ],
+  },
 };
 
 //endregion Model cards

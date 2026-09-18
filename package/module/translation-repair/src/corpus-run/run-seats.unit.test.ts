@@ -36,6 +36,7 @@ import {
   RUN_WRITERS,
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_OPENROUTER_DECISIONS,
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_EDITOR,
@@ -181,7 +182,8 @@ await describe({
           return !RUN_ROSTER.includes(modelId,);
         },).toSorted(),).toEqual([
           SEAT_BEDROCK_ONLY_VISION_UNSEATED,
-        ],);
+          SEAT_OPENROUTER_DECISIONS,
+        ].toSorted(),);
         expect(wet.writers,).toEqual(RUN_WRITERS,);
         expect(RUN_WRITERS,).toEqual(RUN_ROSTER.filter(function measuredWriter(modelId,): boolean {
           return !WRITER_UNMEASURED.has(modelId,);

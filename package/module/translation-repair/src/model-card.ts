@@ -1,6 +1,7 @@
 import type {
   BedrockServedId,
   HyperServedId,
+  OpenRouterDecisionId,
   OpenRouterServedId,
   SyntheticServedId,
 } from './roster-id.ts';
@@ -241,6 +242,41 @@ export type BedrockCard = ServedCard<BedrockServedId> & {
 };
 
 /**
+ The decisions endpoint's side of a card: a typed-decision model reached
+ through OpenRouter's `/api/alpha/decisions`, which answers a choice, a
+ yes-probability or a score and never a completion. A card carrying this
+ side and no chat side is a decision-only seat: no chat catalog lists it,
+ no chat bench seats it, and only the stages with a decision adapter ask it.
+
+ @example
+ ```ts
+ const card: DecisionsCard = { id: 'typesafe/jev-1.13', contextLength: 32_000, promptUsdPerMillion: 0.042, completionUsdPerMillion: 0, };
+ ```
+ */
+export type DecisionsCard = {
+  /**
+   Identifier sent in the request body's `model` field.
+   */
+  readonly id: OpenRouterDecisionId;
+
+  /**
+   Tokens of state plus the longest question one request may carry, as the
+   vendor's models page states it.
+   */
+  readonly contextLength: number;
+
+  /**
+   USD per million input tokens as the listing priced it.
+   */
+  readonly promptUsdPerMillion: number;
+
+  /**
+   USD per million output tokens, zero where the listing charges none.
+   */
+  readonly completionUsdPerMillion: number;
+};
+
+/**
  One roster model: every provider's view of it, its measured completion
  cap and the roles it is held out of. Its identity is the key it sits under
  in `MODEL_CARDS`.
@@ -270,6 +306,12 @@ export type ModelCard = {
    Amazon Bedrock's entry, where it serves the model.
    */
   readonly bedrock?: BedrockCard;
+
+  /**
+   OpenRouter's decisions endpoint's entry, where it serves the model as a
+   typed-decision model rather than a chat one.
+   */
+  readonly decisions?: DecisionsCard;
 
   /**
    Completion token ceiling every client sends as `max_tokens`: the highest

@@ -21,7 +21,8 @@
 // happen.
 //
 // SHARED MODELS ARE NAMED THE SYNTHETIC WAY, else the Hyper way, else
-// Bedrock's, else OpenRouter's, in the order the providers joined.
+// Bedrock's, else OpenRouter's, else the decisions endpoint's, in the order
+// the providers joined.
 // `hf:moonshotai/Kimi-K3` and `kimi-k3` are one model with two spellings,
 // and the roster needs one of them; Synthetic was here first, its ids are
 // already written into settled artifacts, and `roster-reach.ts` translates
@@ -49,6 +50,7 @@ export const ROSTER_MODEL_IDS = [
   'google.gemma-4-e2b',
   'google.gemma-4-31b',
   'inception/mercury-2.5',
+  'typesafe/jev-1.13',
 ] as const;
 
 /**
@@ -202,5 +204,39 @@ export type BedrockOnlyRosterId = Extract<RosterModelId, BedrockServedId>;
  ```
  */
 export type OpenRouterOnlyRosterId = Extract<RosterModelId, OpenRouterServedId>;
+
+/**
+ Spellings OpenRouter's decisions endpoint serves: typed-decision models
+ that take no chat completion (`decisions-client.ts`), listed apart from
+ the chat spellings so no chat catalog, cap table or reach ever names them.
+ Jev 1.13 joined on 2026-09-18 on the owner's approval.
+
+ @example
+ ```ts
+ const everyone = OPENROUTER_DECISION_IDS;
+ ```
+ */
+export const OPENROUTER_DECISION_IDS = ['typesafe/jev-1.13',] as const;
+
+/**
+ Model identifier the decisions endpoint accepts on the wire.
+
+ @example
+ ```ts
+ const modelId: OpenRouterDecisionId = 'typesafe/jev-1.13';
+ ```
+ */
+export type OpenRouterDecisionId = typeof OPENROUTER_DECISION_IDS[number];
+
+/**
+ Roster models only the decisions endpoint serves: by the naming rule, the
+ roster ids that are decisions spellings.
+
+ @example
+ ```ts
+ const modelId: DecisionOnlyRosterId = 'typesafe/jev-1.13';
+ ```
+ */
+export type DecisionOnlyRosterId = Extract<RosterModelId, OpenRouterDecisionId>;
 
 //endregion Roster identity

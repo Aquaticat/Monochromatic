@@ -28,6 +28,7 @@ import {
   MODEL_CARDS,
   OPENROUTER_MODELS,
   OPENROUTER_ONLY_ROSTER_IDS,
+  OPENROUTER_DECISION_IDS,
   OPENROUTER_SERVED_IDS,
   ROSTER_CARDS,
   ROSTER_MODEL_IDS,
@@ -74,6 +75,9 @@ await describe({
         expect(carried.hyper.toSorted(),).toEqual([...HYPER_SERVED_IDS,].toSorted(),);
         expect(carried.openrouter.toSorted(),).toEqual([...OPENROUTER_SERVED_IDS,].toSorted(),);
         expect(carried.bedrock.toSorted(),).toEqual([...BEDROCK_SERVED_IDS,].toSorted(),);
+        expect(ROSTER_CARDS.flatMap(function decisionId(card,): readonly string[] {
+          return (card.decisions === undefined) ? [] : [card.decisions.id,];
+        },).toSorted(),).toEqual([...OPENROUTER_DECISION_IDS,].toSorted(),);
       },
     },),
 
@@ -85,7 +89,11 @@ await describe({
           /**
            Spelling the naming rule demands.
            */
-          const expected = card.synthetic?.id ?? card.hyper?.id ?? card.bedrock?.id ?? card.openrouter?.id;
+          const expected = card.synthetic?.id
+            ?? card.hyper?.id
+            ?? card.bedrock?.id
+            ?? card.openrouter?.id
+            ?? card.decisions?.id;
           expect(card.id,).toBe(expected,);
         }
       },

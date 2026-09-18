@@ -1,5 +1,6 @@
 import type {
   BedrockCard,
+  DecisionsCard,
   ModelCard,
   OpenRouterCard,
   SeatHold,
@@ -198,6 +199,104 @@ export function holdSet(
     .map(function toId(card,): RosterModelId {
       return card.id;
     },),);
+}
+
+/**
+ Roster models only the decisions endpoint serves, in roster order: cards
+ carrying a decisions side, which by construction carry no chat side.
+
+ @example
+ ```ts
+ const seats = DECISION_ONLY_ROSTER_IDS;
+ ```
+ */
+export const DECISION_ONLY_ROSTER_IDS: readonly RosterModelId[] = ROSTER_CARDS
+  .filter(function decides(card,): boolean {
+    return card.decisions !== undefined;
+  },)
+  .map(function toId(card,): RosterModelId {
+    return card.id;
+  },);
+
+/**
+ Whether one roster model is a decision-only seat, which no chat client can
+ take and only a stage with a decision adapter asks.
+
+ @param modelId - roster model to look up
+
+ @returns Whether its card carries a decisions side
+
+ @example
+ ```ts
+ const decides = isDecisionSeat({ modelId: 'typesafe/jev-1.13', },);
+ ```
+ */
+export function isDecisionSeat(
+  { modelId, }: { readonly modelId: RosterModelId; },
+): boolean {
+  /**
+   Side as the card carries it, or nothing.
+   */
+  const side = MODEL_CARDS[modelId]
+    .decisions;
+  return side !== undefined;
+}
+
+/**
+ Raised when a decisions side is read off a card that carries none.
+
+ @example
+ ```ts
+ throw new DecisionsCardMissingError({ modelId: 'minimax-m3', },);
+ ```
+ */
+export class DecisionsCardMissingError extends Error {
+  /**
+   Declares this message safe to forward: it names a roster model and nothing else.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Builds the refusal naming the model.
+
+   @param modelId - roster model whose card carries no decisions side
+
+   @example
+   ```ts
+   new DecisionsCardMissingError({ modelId: 'minimax-m3', },);
+   ```
+   */
+  public constructor({ modelId, }: { readonly modelId: RosterModelId; },) {
+    super(`${modelId} is not a decision seat: its card carries no decisions side`,);
+    this.name = 'DecisionsCardMissingError';
+  }
+}
+
+/**
+ The decisions side of one roster model's card.
+
+ @param modelId - roster model to look up
+
+ @returns Its decisions side
+
+ @throws {@link DecisionsCardMissingError} when the card carries none
+
+ @example
+ ```ts
+ const side = decisionsCardOf({ modelId: 'typesafe/jev-1.13', },);
+ ```
+ */
+export function decisionsCardOf(
+  { modelId, }: { readonly modelId: RosterModelId; },
+): DecisionsCard {
+  /**
+   Side as the card carries it, or nothing.
+   */
+  const side = MODEL_CARDS[modelId]
+    .decisions;
+  if (side === undefined)
+    throw new DecisionsCardMissingError({ modelId, },);
+  return side;
 }
 
 /**

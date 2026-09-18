@@ -14,6 +14,7 @@ import {
 
 import {
   BEDROCK_ONLY_ROSTER_IDS,
+  DECISION_ONLY_ROSTER_IDS,
   OPENROUTER_DROPPED_SEATS,
   OPENROUTER_MODELS,
   OPENROUTER_PROVIDER_PREFERENCES,
@@ -54,6 +55,10 @@ await describe({
         const reachable = ROSTER_MODEL_IDS.filter(function stillServed(modelId,): boolean {
           if (OPENROUTER_DROPPED_SEATS.has(modelId,))
             return false;
+          // A decision-only seat is served by the decisions endpoint, which
+          // is not this catalog.
+          if (DECISION_ONLY_ROSTER_IDS.includes(modelId,))
+            return false;
           return !BEDROCK_ONLY_ROSTER_IDS.some(function isBedrockOnly(id,): boolean {
             return id === modelId;
           },);
@@ -73,6 +78,8 @@ await describe({
           if (BEDROCK_ONLY_ROSTER_IDS.some(function isBedrockOnly(id,): boolean {
             return id === modelId;
           },))
+            continue;
+          if (DECISION_ONLY_ROSTER_IDS.includes(modelId,))
             continue;
           expect(reachOf({ modelId, },).openrouter,).toBe(
             (!OPENROUTER_DROPPED_SEATS.has(modelId,)) && (!OPENROUTER_WITHHELD.has(modelId,)),
