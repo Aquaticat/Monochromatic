@@ -1694,6 +1694,95 @@ task "test" {
 }
 ```
 
+#### What using Mise for tasks is actually like
+
+Study:
+[`mise-task-usage.md`](monorepo-manager-route-research/mise-task-usage.md),
+2026-09-17,
+requested by the user as "the good and the bad and the ugly".
+It supplies what the design was missing:
+evidence from the incumbent rather than from what meow should be.
+
+Worth keeping:
+
+- One vocabulary across 179 packages:
+   `mise run //package/<path>:lint:types` works for all 145 packages that declare it,
+   from one definition at `mise.toml:606-612`,
+   which is what makes the rule in `AGENTS.md` workable.
+- Bazel labels are already universal:
+   1,836 of 1,836 tasks are namespaced.
+- Standing inside a package narrows a listing to 56 tasks against 1,807,
+   and 174 distinct working directories come from file placement,
+   with only 35 explicit `dir` lines.
+
+What the decided meow design already fixes:
+
+- Tag selection removes 2,632 lines of header-plus-`extends`,
+   since 1,341 of 1,898 task blocks (70.7%) are a bare `extends`.
+- Explicit `overridden` and `override` markers address 96 blocks that silently shadow a template name
+   with different behavior,
+   plus 21 partial overrides.
+- Argv-list commands remove 112 `&&` and 26 `;` entries
+   and the hand-written shell-word parser at `mise.toml:426-451`.
+- A real expression language replaces textual interpolation:
+   1,159 of 1,836 tasks (63.1%) have a `run` containing `{{vars.`,
+   and `mise task info` prints the template unexpanded,
+   so a task's real behavior is invisible from both its definition and the inspection command.
+- The daemon-held cache answers the freshness gap:
+   no task declares `sources` or `outputs`,
+   so nothing is ever skipped as fresh.
+
+Costs the study found in decisions already made:
+
+- One root file survives better than expected on content:
+   package configuration files contain only `[tasks.*]`,
+   five `[vars]`,
+   and three `[env]`,
+   and none declares `[tools]`,
+   `[settings]`,
+   or `[hooks]`,
+   so nothing has to be relocated.
+- It costs size and listing:
+   removing bare `extends` still leaves 5,831 substantive package lines plus 1,240 root source lines,
+   so one `meow.hcl` lands near 7,000 lines,
+   which is where `hcl-edit`'s missing formatter starts to matter;
+   and the design says nothing about what narrows a listing when a person stands in a directory,
+   which today is 56 tasks against 1,807.
+- Argv-only commands leave the non-fan-out half of 1,155 inline TypeScript lines without an owner:
+   built-versus-source selection,
+   test discovery,
+   and platform branching.
+- Tag inference must reproduce a graph currently encoded in task names,
+   whose only written-down exceptions are two comments.
+- Three incumbent behaviors have no counterpart in the design:
+   Windows run variants,
+   interactive tasks such as `secrets:edit` needing `--raw`,
+   and worktree trust,
+   which bites hardest because rule `IWT` sends agents into a fresh worktree
+   and an agent cannot answer an interactive trust prompt.
+
+Defects in today's repository,
+verified before merging and filed for repair:
+
+- `mise run test` at the root does not run 15 packages' tests.
+  `mise.toml:681-698` spawns only the root `test:unit`,
+   `test:browser`,
+   and `test:e2e`;
+   root `test:unit` globs `**/*.unit.test.ts`,
+   so the 15 package `test` tasks that run `cargo nextest` or `./gradlew` are unreachable.
+  `//:lint` does fan out,
+   so lint reaches those packages and test does not,
+   and `//:validate` and `//:buildAndTest` inherit the gap.
+- Three active tasks still use the `mise watch ... -- node ...` form
+   that `doc/troubleshooting/mise-watch-runs-tasks-not-commands.md` documented:
+   `package/kwin/key-helper/mise.toml:40`,
+   `package/desktop-daemon/hall-monitor/mise.toml:11`,
+   and `package/webapp-productivity/rss/mise.toml:21`.
+- `mise.toml:308-312` justifies 85 lines of hand-written orchestration by citing an observation
+   that `doc/handover/lint-fix-2026-06.md` does not contain;
+   the claim is repeated in `doc/research/bazel-migration-dx.md:47` with no primary evidence,
+   while `doc/decision/desktop-app-podman-build.md:84-87` still tells readers to use the native glob.
+
 #### Consequences of one root file
 
 - Target labels cannot come from a file's directory,
