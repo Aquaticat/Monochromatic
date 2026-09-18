@@ -3293,8 +3293,61 @@ and the socket is "Private plumbing for now".
 
 ## Open questions
 
-User choices research raises are asked as they arise (rule `FLG`);
-none is pending.
+User choices research raises are asked as they arise (rule `FLG`).
+
+Pending on 2026-09-17,
+drafted and about to be asked when the session was interrupted for a Claude Code update.
+The user's words framing them:
+"We need to settle on 'what is a task' first too.
+ In my opinion 'build' and 'test' should be builtin to `meow` and not mixed in with lesser tasks."
+and
+"`meow build` and `meow test` are not dedicated commands.
+ They still run with the `run` syntax.
+ Let's say some tasks are more than others."
+
+- Which task names are built in.
+  Drafted options:
+   `build`,
+   `test`,
+   `lint`,
+   and `format`;
+   or `build` and `test` alone;
+   or everything the root templates define today.
+  Measured context:
+   145 packages declare `lint:types` and 166 declare `lint` from single definitions,
+   23 declare `test`,
+   and `buildAndTest` appears 56 times with 47 copies byte-identical.
+  My ranking:
+   the four verbs,
+   because stopping at two leaves `lint` declared 166 times,
+   which is the duplication tags exist to remove.
+- How a package changes what a built-in does.
+  Drafted options:
+   a `task` block with `override = true`,
+   reusing the marker pair already chosen;
+   dedicated knobs on the `package` block;
+   or not customizable.
+  My ranking:
+   the override marker,
+   so built-ins and user tasks specialize the same way.
+- Whether built-in and user-defined tasks share one namespace.
+  Drafted options:
+   one namespace where only a marked override may shadow a built-in;
+   one namespace with built-in names reserved outright;
+   or built-ins under a `meow::` prefix.
+  My ranking:
+   one namespace with shadowing only by override.
+
+Also pending,
+and blocked on the above:
+what makes one task run before another.
+The unapproved `depends_on` entry was retracted on 2026-09-17
+("Settled without asking" in "Declarative configuration"),
+and the drafted options were declared reads and writes alone,
+those plus an explicit edge,
+explicit edges alone,
+or sequencing inside a task's own command.
+
 Answered on 2026-09-17 before re-running the hash selection:
 speed first,
 and only `x86-64-v4` blocks publishing among x86-64 builds.

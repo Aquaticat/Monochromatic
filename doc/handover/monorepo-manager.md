@@ -407,7 +407,7 @@ Both defects were filed as issue #554 on 2026-09-17,
 
 The design's "Open questions" now lists no unstarted design work and no pending user choice.
 
-## Next action
+## UX alignment on 2026-09-17
 
 Done on 2026-09-17,
 answering "Fix/update all docs first then write the implementation plan":
@@ -500,21 +500,59 @@ Configuration authoring,
    root `mise run test` skips 15 packages,
    three stale `mise watch ... -- node ...` tasks remain,
    and `mise.toml:308-312` cites evidence that `doc/handover/lint-fix-2026-06.md` does not contain.
-  Its four questions are with the user.
+  Of its four questions,
+   three are answered:
+   the working directory scopes every command ("Infer everywhere"),
+   the inline logic becomes meow built-ins,
+   and an agent in a disposable worktree uses `meow trust --yes`.
+- Retracted on 2026-09-17:
+   "Ordering comes from declared reads,
+   writes,
+   and explicit `depends_on`",
+   which this session had recorded under "Settled without asking" and the user never approved:
+   "I never approved 'depends' or 'depends on'.
+   Let's align on that.
+   Grill me."
+  Task ordering is open again.
+  Answered while grilling:
+   cross-package edges come from the native manifests,
+   and freshness comes from hashing a task's declared reads.
+- Session interrupted on 2026-09-17 for a Claude Code update,
+   with one question set drafted but unasked.
+  The user's framing:
+   `build` and `test` should be built into meow rather than mixed in with lesser tasks,
+   while still being reached through `meow run //package/cow:test` rather than dedicated commands,
+   because "some tasks are more than others".
+  The drafted options,
+   their measured context,
+   and my rankings are in "Open questions" in the design.
 
-1.  Implementation itself is unstarted and unrequested (rule `VRB`).
-    The plan's M1 is the entry point.
-2.  Repository follow-ups this design produced:
-    issues #545 through #552 and #554,
+## Next action
+
+1.  Ask the pending "what is a task" question set recorded in the design's "Open questions":
+    which names are built in,
+    how a package changes one,
+    and whether built-ins share a namespace with user tasks.
+2.  Then ask what makes one task run before another,
+    which that answer unblocks.
+3.  Implementation is unstarted and unrequested (rule `VRB`);
+    the plan's M1 is the entry point once the language settles.
+4.  Repository follow-ups this design produced:
+    issues #545 through #552,
+    #554,
+    and #555,
     all for the user to act on personally.
-2.  For each research result,
-    copy it into `doc/planning/monorepo-manager-route-research/`,
-    verify its load-bearing claims,
-    merge it into the from-scratch design,
-    and commit.
-3.  Ask the user every flagged question it raises in the same turn,
-    with pros,
-    cons,
-    and a ranking;
-    the user asked on 2026-09-16 that flagged items never wait in documents.
-4.  Record accepted choices in `doc/decision/` only after the user accepts them.
+## Working rules this session followed
+
+- Copy each research result into `doc/planning/monorepo-manager-route-research/`,
+   verify its load-bearing claims,
+   merge it into the from-scratch design,
+   and commit.
+- Ask every flagged question in the same turn,
+   with pros,
+   cons,
+   and a ranking;
+   the user asked on 2026-09-16 that flagged items never wait in documents.
+- Record accepted choices in `doc/decision/` only after the user accepts them,
+   and present a brief first (rule `DRR`).
+- Lint every Markdown change with `mise run lint:markdown -- --fix <paths>` before committing.
