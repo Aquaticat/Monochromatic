@@ -345,6 +345,19 @@ a link inside an HTML comment is rendered nowhere,
 every stage masks comments,
 and shi_Yumiaoya1 was refused for a profile link the author had commented out.
 
+## One container's halves
+
+A container whose blocks fall in different slices puts its opening tag at the head of one slice and its closing tag at the foot of another
+(`container-extents.ts`;
+class nine masks the lone tag so each slice reads on its own).
+Since class fifty-seven (2026-09-18) the two slices are known to each other:
+`container-half-pairs.ts` reads every slice's source for lone tags and pairs each opening with its closing.
+At the insertion admission both halves are admitted once any slice of the container is admitted on its own evidence.
+At the translate lane's assembly and at the composed page's,
+a half whose partner ships nothing is withheld and named,
+so the assembly guard never reads a closing tag with no opening.
+On XingZ607 two lone closing tags made the strict parse fail and the guard withdrew all 88 of the lane's slices.
+
 ## What is folded out of candidate and archive text at intake
 
 Characters a reader cannot tell from their plain counterpart are folded

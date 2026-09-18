@@ -8082,6 +8082,88 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Class fifty-seven, 2026-09-18, 23:55 UTC: a container half ships without its partner and the translate lane withdraws every slice
+
+Found by the XingZ607 read.
+The archive carries six of the original's eleven disclosure blocks.
+Two of the five it never carried
+(the vampire-poem block at source line 452 and 锦心's block at line 509)
+had their opening halves,
+the `<details>` tag with its `<summary>`,
+left unfilled at the insertion admission:
+`slice 99: coverage=split` and `slice 102: coverage=split`,
+`placement unresolved after the single round (verdict split); not admitted`,
+one voice having anchored the poem's title in the archive's other summary.
+Their bodies and closing halves were admitted `absent`,
+translated,
+and assembled:
+the lane's page carried two `</details>` with no opening,
+the strict grammar refused it at the first
+(`mdast-util-mdx-jsx/unexpected-closing-slash`,
+reproduced offline from the slice cache with the frozen parser),
+the guard's one-slice counterfactual could not repair a page with two,
+and it withdrew all 88 replacements:
+`assembly-structure-unattributable mdx-downgraded`,
+`assembly-withdrew-every-replacement (88 slices)`,
+then `translate changed 0/120 slices`.
+The same withdrawal stands in the XingZ602,
+XingZ604 and XingZ605 logs,
+masked by the earlier stops;
+XingZ606 downgraded twice and blamed a slice each time.
+Fixed in `6036e6618`
+(guards red first at `55cd8f7e7`,
+the pair reader's own cases at `caac6e3a0`):
+`container-half-pairs.ts` reads the source of every slice for lone container tags and pairs each opening half with its closing half;
+`insertion-container-halves.ts` admits the unadmitted half of any container one of whose slices was admitted on its own evidence
+(`insertion-container-half-admitted (slice 99 beside slice 100: one container's halves ship together, and slice 100 is admitted)`);
+`assembly-container-halves.ts` withholds,
+at the translate lane's assembly and at the composed page's,
+a half whose partner ships nothing
+(`assembly-container-half-withheld (slice N beside slice M: ..., and slice M ships nothing)`).
+Measured over XingZ607's own slice records:
+with the two lone closing halves withheld the lane's page parses as MDX.
+Recorded as an addendum to the absence-verdict decision.
+
+## XingZ607 attempt 2 read, 2026-09-18, 23:20 UTC: INCOMPLETE at 1h41m, one source destination dropped, the translate lane empty
+
+Frozen `139a7f99a`,
+attempt 2 from 21:39 to 23:20 UTC
+(`ms=6064867`),
+`status=INCOMPLETE`,
+`error=entry XingZ60 would drop 1 source destination(s)`,
+no page written,
+`attempts.json` reads 2.
+Spend by the meters over both attempts:
+Bedrock 163.38 to 158.98,
+OpenRouter 235.95 to 227.93,
+12.42 USD.
+The dropped destination is the bilibili link in the poem attribution
+(source line 435,
+slice 95),
+which only the translate lane rendered
+(gemma-26b's candidate,
+`[Bird in a Cage](https://www.bilibili.com/video/BV17Q4y1s7j1)`);
+the lane had withdrawn every replacement at its assembly
+(class fifty-seven),
+so the page carried none of the five archive-absent disclosure blocks and the destination floor was the first floor to say so.
+Slice 113
+(a paragraph inside 盖棺定论's block,
+which the archive does carry)
+also split and stays a recorded gap;
+it opens no container.
+Classes fifty-four to fifty-six held
+(the attempt 1 heading);
+the page-level checks
+(the nine definitions,
+the components,
+the `details` summary,
+the profile link)
+wait for a page.
+The 1h41m of attempt 2 were consolidation
+(slices 70 to 84 bought,
+the rest replayed),
+so the entry's whole work was 8h41m and two attempts.
+
 ## XingZ607 attempt 1, 2026-09-18, 21:39 UTC: the seven-hour entry deadline in consolidation, both pronoun paragraphs shipped
 
 Attempt 1 ran the whole seven hours

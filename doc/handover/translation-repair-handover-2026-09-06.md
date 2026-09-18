@@ -529,8 +529,17 @@ which the takeover session does not have.
   the background waiter alone reports the exit.
   Its attempt 1 ran to the seven-hour entry deadline at 21:39 UTC in consolidation with no slice stopped,
   both pronoun paragraphs shipped through informed gates three to one
-  (the pass log's "XingZ607 attempt 1" heading dated 2026-09-18 21:39 UTC),
-  and attempt 2 replays from cache under the same pid.
+  (the pass log's "XingZ607 attempt 1" heading dated 2026-09-18 21:39 UTC);
+  attempt 2 stopped INCOMPLETE at 23:20 UTC,
+  one source destination dropped,
+  because the translate lane had withdrawn all 88 of its slices at assembly over two lone closing tags
+  (class fifty-seven,
+  fixed in `6036e6618`,
+  guards red first at `55cd8f7e7`;
+  the pass log's "XingZ607 attempt 2 read" and "Class fifty-seven" headings;
+  12.42 USD over both attempts).
+  No pass is running:
+  the next launch waits on the run-time work below.
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2344,6 +2353,20 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`6036e6618` (2026-09-18,
+23:55 UTC):
+class fifty-seven,
+one container's halves ship together
+(`container-half-pairs.ts`,
+`insertion-container-halves.ts`,
+`assembly-container-halves.ts`,
+wired into the insertion admission,
+the translate lane's assembly and the composed page's guard;
+guards red first at `55cd8f7e7`,
+the pair reader's cases at `caac6e3a0`;
+the absence-verdict decision's addendum dated 2026-09-18;
+found by the XingZ607 read).
+Not yet run live.
 `139a7f99a` (2026-09-18,
 14:38 UTC):
 class fifty-six,
@@ -4246,57 +4269,32 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ607` by the seven steps and the three checks (frozen `139a7f99a`,
-    pid 571308,
-    runs `~/temp/agent/XingZ607`,
-    log `~/temp/agent/XingZ607.log`,
-    launched 14:40 UTC on 2026-09-18,
-    providers at launch `synthetic=dry bedrock=wet hyper=dry openrouter=wet`;
-    no cron job on the owner's word,
-    the background waiter alone reports the exit).
-    Attempt 1 hit the seven-hour entry deadline at 21:39 UTC in consolidation
-    (the pass log's "XingZ607 attempt 1" heading dated 2026-09-18 21:39 UTC):
-    no slice stopped,
-    the funeral and teachers paragraphs both went through gates told the standing cannot ship and shipped the consolidation three to one,
-    and attempt 2 replays the cached slices under the same pid.
-    The seven hours are the entry's size
-    (119 chunks through repair,
-    translate,
-    contest and consolidation in turn)
-    and the slow seat deepseek-v4.1-flash
-    (13 calls at the 360 s timeout,
-    93 abandoned,
-    2.52 USD);
-    the owner's ceiling stands
-    ("A 7h run is pretty unacceptable").
-    It is the first pass on class fifty-six
-    (the pass log's heading dated 2026-09-18 14:36 UTC);
-    XingZ604,
-    XingZ605 and XingZ606 all stopped INCOMPLETE in the consolidation of a paragraph whose archive carries the untranslated pronoun,
-    the gate's indecision,
-    the slate's tie,
-    then the gate refusing at quorum uninformed
-    (the pass log's "XingZ604 read",
-    "XingZ605 read" and "XingZ606 read" headings).
-    Read first the consolidation of the teachers paragraph
-    (its `CANNOT SHIP` gate sheet,
-    the `consolidate gate ballot` lines with their reasons,
-    a gate at quorum for the consolidation or `undecided-gate-ships-proposal`,
-    never a stop)
-    and the funeral paragraph on the page
-    (no TA left standing),
+1.  BEFORE THE NEXT XingZ60 LAUNCH (no pass is running;
+    XingZ607 stopped INCOMPLETE at 23:20 UTC on 2026-09-18 after 8h41m and two attempts,
+    the pass log's "XingZ607 attempt 2 read" heading):
+    class fifty-seven is fixed and checked (`6036e6618`) but the next launch on this entry costs about nine hours and twelve dollars as things stand,
+    so first bring the run time down (task #196):
+    measure the lane widths (consolidation ran about four slices wide at 7.1 minutes of work a slice),
+    the grace the refiners spent after quorum (37 of 68 minutes in the consolidation phase),
+    whether deepseek-v4.1-flash's 360 s timeouts ever held a quorum open and whether the completion cap bounds its reasoning on the endpoint the price sort picks
+    (15 streams cut between 450 thousand and 1.4 million characters),
+    and only then launch `XingZ608` on a frozen build of the result.
+    Read it by the seven steps and the three checks:
+    first the admission lines for slices 99 and 102
+    (`insertion-container-half-admitted (slice 99 beside slice 100...`),
+    the translate lane's assembly
+    (no `assembly-withdrew-every-replacement`,
+    `translated 116 slices ... 9x changed`),
+    the five archive-absent disclosure blocks on the page with the bilibili link in the poem attribution,
+    then the funeral and teachers paragraphs
+    (no TA left standing,
+    the `consolidate gate ballot` lines with their reasons),
     then Jev's select ballots
     (reason prefix `typed decision`)
-    against the chat judges' on the same rounds.
-    XingZ60 is 577 source lines against 358 archive lines,
-    nine footnote definitions in the original and none in the archive,
-    so read first slice 14's translate rounds
-    (a winner,
-    or a `translate-runoff (finalists N of M)` finding,
-    never an ERROR),
+    against the chat judges' on the same rounds,
     then the pictures line
     (`image0.webp` corroborated by 4 of 4 readers at 0.570 on XingZ602),
-    then the nine definitions on the page and their labels
+    then the nine definitions on the page and their labels    then the nine definitions on the page and their labels
     (class nineteen's relabel,
     class twenty-one's orphan guard),
     then the `PhotoScroll`,

@@ -113,6 +113,38 @@ The omission and invisible-byte blocker is closed.
 Page remains outside strict readiness for separate inherited person error that contest tied on;
 see `doc/audit/translation-repair-output-reading-20260826.md`.
 
+## Addendum 2026-09-18: one container's halves are admitted together
+
+The coverage round reads each source-only slice on its own,
+and the slicer gives a container's opening tag to the first block inside it and its closing tag to the last
+(`container-extents.ts`),
+so a disclosure block the archive never carried is two or more source-only slices:
+the opening half with its summary,
+the body,
+the closing half.
+On XingZ607 the round split on the summary of two such blocks
+(one voice anchored a poem's title in another summary the archive does carry)
+while every voice found their bodies absent and the page short of them.
+The bodies and closing halves were admitted,
+the opening halves were not,
+and the translate lane assembled a page with two closing tags and no opening,
+which the strict grammar refused and the guard answered by withdrawing every slice of the lane.
+
+A container is one element.
+Once any slice of it is admitted on its own evidence,
+the page is short of the element,
+and both halves are admitted with it
+(`insertion-container-halves.ts`,
+finding `insertion-container-half-admitted`).
+The two signatures this decision requires are read at the container:
+the roster left its body unplaced and the page is measurably short of it.
+A container none of whose slices is admitted stays unfilled whole.
+Independently,
+both assemblies withhold a half whose partner ships nothing
+(`assembly-container-halves.ts`,
+finding `assembly-container-half-withheld`),
+so no later refusal of one half can put the other on the page alone.
+
 ## What this supersedes
 
 `doc/planning/translation-repair-open-decisions.md` question 28, whose ranking was A > C > B > D
