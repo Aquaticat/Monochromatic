@@ -4107,9 +4107,33 @@ metadata.
 The capture script now folds and unlocks the emulator itself and restores the original
 device state and settings in its finally block; the device was returned to the unfolded
 state after the round.
- The questionnaire is presented in normal Helium in the current
-system color scheme; the reply is one light code (L1, L2, or L3) plus any correction in
-chat.
+
+## Picker opened state and the D44 deck correction
+
+User correction one: the first cover form omitted the subdirectory picker's opened state.
+The round now asks a second decision, K, with three native candidates that all reuse the
+D28 rail and D31 name presentation: K1 full-screen picker page, K2 dropdown panel under
+the chip, K3 modal bottom sheet with scrim.
+ Ranking K1 > K3 > K2: the full page gives the
+name wall its settled room with one scroll region; the sheet is the Material-blessed
+modal container; the dropdown panel leaves neither surface calm.
+ Five more captures
+carry the picker states, including K1 at 200% and K1 in light under L1.
+
+User correction two: the 200% cover capture clipped the segmented mode group's bottom
+border because the deck kept the unfolded 440dp scroll cap.
+ D44 removes the cap on the
+cover only: the deck takes its content height and the list absorbs the remainder, so no
+control clips at any preset while the unfolded deck keeps its accepted cap.
+
+The extended form embeds fourteen opaque rasters with six radios in two fieldsets.
+Re-verification: no page overflow at desktop or 390 × 500 in either scheme, Axe zero
+violations and zero incomplete (twenty page passes per scheme, twelve dialog passes),
+offline reload keeps all fourteen rasters with zero network resources, and the
+twelve-fault mutation harness fails every fault with its intended diagnostic before
+restoring.
+ The questionnaire is re-presented in normal Helium in the current system color
+scheme; the reply is one K code and one L code plus any correction in chat.
 
 ## Issue tracking moves to Linear for this session
 
