@@ -292,9 +292,11 @@ and "We don't need specifically a socket or a separate client,
    `:all` and `:*`,
    relative forms,
    and `-` to negate.
-  Patterns are for the commands that take lists;
-   meow has none in 0.x,
-   which is the open question below.
+  Asked whether 0.x needs a list-taking command,
+   the user answered "No list command,
+   but we accept glob patterns" (2026-09-17).
+  So `meow run` stays the only way to ask for work,
+   and its single argument may be a glob that matches more than one target.
 - `meow status`:
    shows only what needs attention in 0.x.
   Asked to choose a full status layout on 2026-09-17,
