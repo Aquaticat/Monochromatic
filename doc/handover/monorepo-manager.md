@@ -422,6 +422,22 @@ answering "Fix/update all docs first then write the implementation plan":
  [`doc/planning/monorepo-manager-implementation-plan.md`](../planning/monorepo-manager-implementation-plan.md)
  lays out milestones M1 to M9 with the evidence each must produce.
 
+Asked on 2026-09-17 whether to start M1,
+ the user stopped the question:
+ "the existence of this question means we are not clear/aligned on what meow's UI/UX is yet".
+Four proposed output models were all rejected,
+ and the user stated the model instead,
+ now recorded as "User interface" in the design:
+ `meow watch` runs in a second terminal as the JSON stream,
+ kept open but minimized and not meant to be read;
+ `meow run <target>` runs in the working terminal,
+ queues at interactive priority,
+ holds the terminal,
+ forwards the task's bytes as-is on a miss,
+ prints the stored result on a hit,
+ and prompts for a `meow watch` terminal when no daemon is live.
+The rejected comparison page is at `meow-ux/meow-ux-options.html` in the session scratchpad.
+
 1.  Implementation itself is unstarted and unrequested (rule `VRB`).
     The plan's M1 is the entry point.
 2.  Repository follow-ups this design produced:

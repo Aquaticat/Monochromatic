@@ -50,10 +50,13 @@ Every milestone carries a parity or conformance target measured against somethin
    plus aarch64,
    each glibc-linked and static musl,
    with aarch64 musl as static-pie from the custom target.
-- Every line written to standard output or standard error is a JSON object,
+- Every line the daemon writes to standard output or standard error is a JSON object,
    including logs,
    warnings,
    and errors.
+  A task's own bytes are not meow's messages:
+   `meow run` forwards them as-is to the terminal that asked
+   ("User interface" in the design).
 - The startup capability check runs before any hashing in builds raised above their target baseline,
    printing a JSON diagnostic and exiting non-zero rather than dying with SIGILL.
 - Evidence:
@@ -153,13 +156,21 @@ Every milestone carries a parity or conformance target measured against somethin
 - Reload carries a generation number,
    in-flight tasks stay pinned,
    and a malformed configuration keeps the last good snapshot.
+- `meow run` against the daemon:
+   queued at interactive priority,
+   holding the terminal,
+   forwarding the task's bytes as-is on a miss,
+   replaying the stored result on a hit,
+   and prompting for a `meow watch` terminal when no daemon is live.
 - Evidence:
    a watch session that rebuilds affected work on a change;
-   a cache hit and a forced miss with their keys recorded;
+   a cache hit and a forced miss with their keys recorded,
+   the hit replaying without executing anything;
    a task frozen,
    resumed,
    and ended through RPC;
-   and an eviction run against a filled cache.
+   an eviction run against a filled cache;
+   and a `meow run` whose forwarded bytes match the task's own output exactly.
 
 ### M8: the language server and `doctor`
 

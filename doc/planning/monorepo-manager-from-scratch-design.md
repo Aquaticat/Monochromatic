@@ -157,6 +157,74 @@ answering which diagnostic renderer meow should use:
 - Clients,
    including the later TUI,
    render for humans from these objects.
+- Exception,
+   stated by the user on 2026-09-17 ("User interface"):
+   `meow run` forwards a task's own standard output and standard error as-is,
+   byte for byte,
+   to the terminal that asked for the task.
+  That path carries the task's bytes,
+   not meow's messages,
+   so it is not JSON and is not framed.
+
+### User interface
+
+Stated by the user on 2026-09-17,
+after four proposed output models were all rejected:
+the surfaces are split by audience,
+and neither one renders the other's content.
+
+#### The watch terminal
+
+```sh
+$ meow watch
+{...}
+{...}
+```
+
+- The user runs `meow watch` in a second terminal and keeps it open but minimized.
+- Its output does not need to be human-readable:
+   it is the JSON stream from "Output format",
+   and nobody is expected to read it while working.
+- This is the daemon:
+   the watcher,
+   the scheduler,
+   and the cache all live behind it.
+
+#### The working terminal
+
+```sh
+meow run //package/cow:test
+```
+
+- The user works in their own terminal and asks for a task by target.
+- Not cached:
+   meow queues the task at interactive priority,
+   holds the terminal until the task has run,
+   and forwards the task's own standard output and standard error as-is.
+- Cached:
+   meow does not execute the task,
+   and prints the result of the last run instead,
+   which the cache already stores for replay ("Cache").
+- Interactive priority is a named class,
+   borrowed from Windows Task Manager's terminology,
+   for work a person is waiting on;
+   the scheduler's numeric priorities are for everything else.
+
+#### When the daemon is not running
+
+- If `meow run` finds no live `meow watch`,
+   it prompts the user to open another terminal and run `meow watch` there.
+- `meow run` does not silently start a daemon of its own.
+
+#### What this settles
+
+- The JSON rule covers meow's own messages,
+   not a task's bytes:
+   `meow run` is a pass-through for those.
+- meow needs no human-readable renderer for the watch stream,
+   which is why no diagnostic renderer crate was taken.
+- The later TUI is another client of the same socket,
+   not a replacement for either terminal.
 
 ### Configuration
 
@@ -2391,6 +2459,10 @@ Usage rules and risks if XXH3-128 is adopted:
    measured).
 - 0.x logs to the terminal and handles only Ctrl+C;
    a TUI comes later.
+- That terminal is the one running `meow watch`,
+   which the user keeps open but minimized;
+   the working terminal runs `meow run` against the same daemon
+   ("User interface").
 
 ### RPC
 
@@ -2424,6 +2496,12 @@ Usage rules and risks if XXH3-128 is adopted:
    default 0;
    higher priority runs first,
    and priority changes apply in place.
+- Work a person is waiting on,
+   which today means anything `meow run` queues,
+   carries the interactive class and outranks every numeric priority
+   ("User interface",
+   user,
+   2026-09-17).
 - Concurrency is `MONOCHROMATIC_JOBS` when set,
    otherwise `std::thread::available_parallelism`.
 - Pause freezes a running task through `cgroup.freeze` and holds a queued task.
