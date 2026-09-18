@@ -285,7 +285,17 @@ and "We don't need specifically a socket or a separate client,
    let it just only show what needs attention for now."
   So the full inspection view is the TUI's design problem,
    not a command layout to settle now,
-   and 0.x prints the short attention list instead.
+   and 0.x prints the attention list instead.
+  Its content,
+   given by the user the same day:
+   failed,
+   paused,
+   blocked,
+   flaky retries,
+   in queue,
+   and running.
+  Finished-and-passed work is not in that list,
+   and the layout stays deliberately unchosen.
 - `meow pause`,
    `meow resume`,
    `meow end`,
@@ -334,11 +344,14 @@ Answered by the user on 2026-09-17:
    exact bytes,
    a snapshot evaluated in place of the live file,
    and a later byte change blocking until re-trust.
+- The review covers every file that would be evaluated (user,
+   2026-09-17),
+   each under its path,
+   not only the root `meow.hcl`,
+   because a one-line import would otherwise bring in code nobody read.
 - My reading,
    not separately stated:
-   the review shows every file that would be evaluated,
-   which for a directory of HCL modules is more than one file,
-   and it pages when the content is longer than the terminal.
+   the review pages when the content is longer than the terminal.
 
 #### Where the JSON stream goes
 
