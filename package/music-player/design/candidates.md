@@ -680,7 +680,7 @@ the visible dynamic rail line.
 <tr>
 <td>**cover-c**</td>
 <td>411×923</td>
-<td>CHOSEN (D14). Reframed at fixed device size. HTML-era baseline; the native cover round of 2026-09-17 re-verifies it at folded geometry, font scales, and the D41/D42 dark policy.</td>
+<td>CHOSEN (D14). Reframed at fixed device size. HTML-era baseline; the native cover round of 2026-09-17 re-verifies it at folded geometry, font scales, and the D41/D42 dark policy. Its inline volume element is gone per D43.</td>
 </tr>
 </tbody>
 </table>

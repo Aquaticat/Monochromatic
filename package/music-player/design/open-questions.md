@@ -329,11 +329,11 @@ which will move more than the two bindings above,
  and should be brought back as a
 single revised map rather than binding-by-binding questions.
  Also still open:
- ↑/↓ now
-control a popover slider (D20),
- not an inline one — decide whether they open it;
- and
-the Android media notification has never been designed.
+ the ↑/↓ popover question dissolved when D43 removed in-app
+volume;
+ decide what ↑/↓ does instead (system volume session, or nothing);
+ and the
+Android media notification has never been designed.
 **Status (2026-09-17):**
  the design deliverable is a single revised map brought back as a
 whole;

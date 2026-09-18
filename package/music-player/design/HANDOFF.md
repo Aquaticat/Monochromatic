@@ -4036,7 +4036,13 @@ Previous/Next around a filled Pause,
  trailing volume icon,
  and the first-fitting mode
 arrangement.
- Candidates: `cover-dark-wallpaper`, `cover-dark-coral`, `cover-light-l1`,
+ D43 (2026-09-17) then removed in-app volume control
+entirely,
+ superseding D20 in-app and D14's cover volume icon,
+ so the cover deck carries no
+volume element and the capture markers no longer expect one.
+ Candidates:
+`cover-dark-wallpaper`, `cover-dark-coral`, `cover-light-l1`,
 `cover-light-l2`, `cover-light-l3`.
  The light trio is the round's open user choice:
  ramp with a

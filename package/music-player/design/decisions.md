@@ -612,7 +612,7 @@ called "un-balanced."
  The earlier 24dp button gaps and full-width segmented control
 were replaced by the supplied Material component and target-spacing guidance.
 
-### D14. Cover screen = full player (candidate cover-c), volume kept — as an icon since D20
+### D14. Cover screen = full player (candidate cover-c); volume kept until D43 removed it
 Chip + Open on top,
  track list,
  deck at the bottom for thumb reach,
@@ -701,7 +701,7 @@ row treatment,
  deck and visual system stay as built.
  Do not propose artwork again.
 
-### D20. Volume = icon button + vertical popover slider, everywhere
+### D20. Volume = icon button + vertical popover slider, everywhere — superseded in-app by D43
 The YouTube model,
  chosen over the inline full-width slider row.
  Spec:
@@ -1134,6 +1134,29 @@ fixed black structure carrying a generated current-row neutral.
  C1 fixed `#0A0A0D` current row,
  which stays palette-independent but detaches the
 row from the generated container ramp its surrounding text roles follow.
+
+### D43. No in-app volume control (2026-09-17)
+The user removed the in-app volume control functionality.
+ No volume icon,
+ slider,
+ or
+popover remains on any in-app surface:
+ unfolded deck,
+ cover deck,
+ or desktop pane.
+D20's icon plus popover treatment and D14's cover volume icon are superseded.
+ Volume
+adjustment belongs to the system:
+ hardware keys,
+ the system media session,
+ and whatever
+the future media notification round settles for the notification surface.
+**Why.**
+ The user's instruction of 2026-09-17.
+ It removes a control the system already owns and
+frees a deck element on both Android surfaces.
+**Rejected.**
+ Keeping D20's icon button and popover in-app.
 
 ---
 
