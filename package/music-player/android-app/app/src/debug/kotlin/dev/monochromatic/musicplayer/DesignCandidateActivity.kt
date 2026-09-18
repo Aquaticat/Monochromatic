@@ -81,7 +81,6 @@ import androidx.activity.enableEdgeToEdge
 // import { icons } from '@material-design-icons/svg';
 // ```
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FolderOpen
@@ -203,6 +202,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
@@ -471,21 +471,6 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
         )
     }
     if (candidate.startsWith("cover-picker") && !candidate.endsWith("-light")) {
-        if (candidate.contains("-k1")) {
-            return CandidatePalette(
-                window = TrueBlack,
-                picker = TrueBlack,
-                rail = TrueBlack,
-                transport = StableDarkContainerLow,
-                tracks = TrueBlack,
-                spacer = TrueBlack,
-                sectionDivider = TrueBlack,
-                paneDivider = false,
-                railDivider = true,
-                railDividerColor = scheme.outline,
-                rowDividers = false,
-            )
-        }
         return CandidatePalette(
             window = TrueBlack,
             picker = TrueBlack,
@@ -500,27 +485,12 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             rowDividers = false,
         )
     }
-    if (candidate == "cover-picker-k1-light") {
-        return CandidatePalette(
-            window = scheme.surfaceDim,
-            picker = scheme.surfaceContainerLowest,
-            rail = scheme.surfaceContainerLowest,
-            transport = scheme.surfaceContainerLow,
-            tracks = scheme.surfaceContainerLowest,
-            spacer = Color.White,
-            sectionDivider = scheme.outlineVariant,
-            paneDivider = false,
-            railDivider = true,
-            railDividerColor = scheme.outlineVariant,
-            rowDividers = false,
-        )
-    }
     if (candidate.startsWith("cover-picker") && candidate.endsWith("-light")) {
         return CandidatePalette(
-            window = scheme.surfaceDim,
+            window = scheme.surfaceContainerLowest,
             picker = scheme.surfaceContainerLowest,
             rail = scheme.surfaceContainerLowest,
-            transport = scheme.surfaceContainerLow,
+            transport = scheme.surfaceContainerLowest,
             tracks = scheme.surfaceContainerLowest,
             spacer = Color.White,
             sectionDivider = scheme.outlineVariant,
@@ -868,104 +838,152 @@ private fun CoverStudy(candidate: String, palette: CandidatePalette) {
     }
 }
 
-/** Renders the cover subdirectory picker opened state as one of three container candidates. */
+/** Renders the cover subdirectory picker opened state as one of four prototypes. */
 @Composable
 private fun CoverPickerStudy(candidate: String, palette: CandidatePalette) {
     val variant = candidate
         .removePrefix("cover-picker-")
         .removeSuffix("-light")
         .substringBefore("-s")
-    if (variant == "k1") {
-        Column(modifier = Modifier.fillMaxSize().background(palette.window)) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 56.dp)
-                    .background(palette.rail)
-                    .windowInsetsPadding(WindowInsets.statusBars)
-                    .padding(start = 4.dp, end = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                IconButton(onClick = {}) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Navigate up",
-                    )
-                }
-                Text(text = "Folders", style = MaterialTheme.typography.titleMedium)
-            }
-            Row(modifier = Modifier.weight(1f)) {
-                LetterRail(palette = palette)
-                if (palette.railDivider) {
-                    Box(
-                        modifier = Modifier
-                            .width(1.dp)
-                            .fillMaxSize()
-                            .background(palette.railDividerColor),
-                    )
-                }
-                FolderNames(background = palette.tracks)
-            }
-        }
-        return
-    }
-    val panelSurface = if (variant == "k1") {
-        Color.Unspecified
-    } else if (candidate.endsWith("-light")) {
+    val triggerIsField = variant == "p1" || variant == "p2"
+    val containerIsMenu = variant == "p1" || variant == "p3"
+    val panelSurface = if (candidate.endsWith("-light")) {
         MaterialTheme.colorScheme.surfaceContainerHigh
     } else {
         StableDarkContainerHigh
     }
-    Box(modifier = Modifier.fillMaxSize()) {
-        CoverStudy(candidate = candidate, palette = palette)
-        if (variant == "k2") {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
-                Box(modifier = Modifier.fillMaxWidth().height(56.dp))
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.66f)
-                        .background(panelSurface),
-                ) {
-                    Row(modifier = Modifier.weight(1f)) {
-                        LetterRail(palette = palette, background = panelSurface)
-                        FolderNames(background = panelSurface)
-                    }
-                }
-            }
-            return@Box
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)),
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .fillMaxHeight(0.72f)
-                .background(panelSurface),
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+    if (!containerIsMenu) {
+        Column(modifier = Modifier.fillMaxSize().background(palette.window)) {
+            CoverPickerTopRow(
+                palette = palette,
+                triggerIsField = triggerIsField,
+            )
+            if (palette.railDivider) {
                 Box(
                     modifier = Modifier
-                        .padding(top = 8.dp)
-                        .align(Alignment.CenterHorizontally)
-                        .width(32.dp)
-                        .height(4.dp)
-                        .background(
-                            MaterialTheme.colorScheme.onSurfaceVariant,
-                            CircleShape,
-                        ),
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(palette.railDividerColor),
                 )
-                Row(modifier = Modifier.weight(1f)) {
+            }
+            Row(modifier = Modifier.weight(1f)) {
+                LetterRail(palette = palette)
+                FolderNames(background = palette.tracks)
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(palette.sectionDivider),
+            )
+            TransportBlock(
+                modifier = Modifier.fillMaxWidth(),
+                candidate = candidate,
+                palette = palette,
+                deckHeightCap = false,
+            )
+        }
+        return
+    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        CoverStudy(candidate = candidate, palette = palette)
+        Column(modifier = Modifier.fillMaxSize()) {
+            CoverPickerTopRow(
+                palette = palette,
+                triggerIsField = triggerIsField,
+            )
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.62f)
+                    .background(panelSurface, RoundedCornerShape(4.dp)),
+            ) {
+                Row(modifier = Modifier.fillMaxSize()) {
                     LetterRail(palette = palette, background = panelSurface)
                     FolderNames(background = panelSurface)
                 }
             }
+        }
+    }
+}
+
+/** Draws the opened picker's trigger row as a dropdown field or an app-bar title. */
+@Composable
+private fun CoverPickerTopRow(palette: CandidatePalette, triggerIsField: Boolean) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .background(palette.rail)
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .padding(start = 16.dp, end = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        if (triggerIsField) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(4.dp),
+                    ),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = CURRENT_SUBDIRECTORY,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Box(modifier = Modifier.width(16.dp))
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDropDown,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Box(modifier = Modifier.width(12.dp))
+                }
+                Text(
+                    text = "Folder",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .offset(y = (-8).dp)
+                        .padding(horizontal = 4.dp)
+                        .background(palette.rail),
+                )
+            }
+        } else {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = CURRENT_SUBDIRECTORY,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Icon(
+                    imageVector = Icons.Filled.ArrowDropDown,
+                    contentDescription = null,
+                )
+            }
+        }
+        OpenAction(candidate = "cover-tonal")
+        IconButton(onClick = {}) {
+            Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings")
         }
     }
 }
