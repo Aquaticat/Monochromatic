@@ -17,10 +17,18 @@ const adbText = (args) => execFileSync(adb, ['-s', serial, ...args], { encoding:
 const remote = (command) => adbText(['shell', command]);
 const sleep = (milliseconds) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
 
+const originalDeviceState = remote('cmd device_state print-state').trim();
+if (originalDeviceState !== '0') {
+  remote('cmd device_state base-state 0');
+  sleep(6000);
+}
 const foldedState = remote('cmd device_state print-state').trim();
 if (foldedState !== '0') {
   throw new Error(`The emulator must be folded (device state 0) for cover captures; print-state reported ${foldedState}.`);
 }
+remote('input keyevent 224');
+remote('cmd window dismiss-keyguard');
+sleep(1500);
 const coverSize = remote('wm size').trim();
 if (!coverSize.includes('1080x2424')) {
   throw new Error(`The folded default display must measure 1080x2424; wm size reported ${coverSize}.`);
@@ -72,7 +80,7 @@ const original = {
   contrast: remote('settings get secure contrast_level').trim(),
   fontScale: remote('settings get system font_scale').trim(),
   night: remote('cmd uimode night').trim(),
-  deviceState: foldedState,
+  deviceState: originalDeviceState,
 };
 
 mkdirSync(renderDirectory, { recursive: true });
@@ -182,7 +190,7 @@ try {
     restoreSetting({ namespace: 'secure', key: 'contrast_level', value: original.contrast });
     remote(`settings put system font_scale ${original.fontScale}`);
     remote(`cmd uimode night ${original.night.endsWith('yes') ? 'yes' : 'no'}`);
-    remote('cmd device_state base-state 2');
+    remote(`cmd device_state base-state ${original.deviceState}`);
     remote('rm -f /sdcard/cover-round-ready.xml');
   } catch (error) {
     console.error(`Failed to restore emulator settings: ${String(error)}`);
