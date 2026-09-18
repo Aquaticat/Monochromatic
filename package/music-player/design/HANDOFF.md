@@ -4055,30 +4055,29 @@ prototype worktree;
  the emulator is folded (`cmd device_state base-state 0`) and the
 cover panel is HWC display 1 at opaque 1080 × 2424px.
 
-Every Gradle build on this host currently fails at daemon messaging because the host
-SNATs IPv4 loopback connections to the Wi-Fi address;
- the daemon accepts loopback peers
-only.
- Evidence: `/home/user/temp/agent/loopback-peer-probe.mjs` prints peer
-192.168.253.108 for a 127.0.0.1 connection while the ::1 probe stays clean.
- Linear
-AQU-532 tracks the eventual host fix with acceptance criteria.
- `gh` still cannot reach
-the GitHub API after the opensnitch allowlist,
- so this session keeps Linear as its tracker.
-
-The bridge builds inside `unshare --user --map-root-user --net` where loopback is clean.
-Pitfalls already paid:
- the mapped-root UID makes JVMs resolve `user.home` to /root, so
-export `HOME` and `GRADLE_USER_HOME` inside the namespace;
- a bare `gradlew` inherits a
-shell `ANDROID_HOME` that points at a cmdline-tools-only SDK install (23.0),
- while the
-mise task exports the install that carries `platforms/android-37.0` (22.0);
- and mise's
-rust backend tries to sync the nightly channel over a network the namespace does not have.
-Next attempt: direct `gradlew` inside the namespace with `ANDROID_HOME` and PATH pinned to
-the 22.0 install, `--offline`, then host `adb install` of the produced APK.
+Every Gradle build on this host failed at daemon messaging while marked sockets were
+source-NATed on IPv4 loopback:
+ the daemon accepts loopback peers only,
+ and the accepted
+socket reported the Wi-Fi address.
+ The rewrite came from netavark's unrestricted
+`meta mark & 0x2000` masquerade colliding with wg-quicker's then recommended
+`ExemptMark = 8888`,
+ not from a VPN NAT rule as first suspected;
+ the corrected trace,
+the `SO_MARK` probe table,
+ and the retired namespace bridge live in
+`doc/troubleshooting/netavark-masquerade-mask-exempt-mark.md`.
+ Linear AQU-532 and GitHub
+#553 track it;
+ commit `129435218` fixed it by moving `ExemptMark` to 100 with a
+collision guard.
+ After the fix the IPv4 loopback probe prints peer 127.0.0.1 and plain
+`./gradlew help --no-daemon` succeeds,
+ so the namespace bridge is retired.
+ `gh` still
+cannot reach the GitHub API from this session,
+ so Linear remains the tracker here.
 
 ## Issue tracking moves to Linear for this session
 

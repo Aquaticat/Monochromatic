@@ -290,6 +290,24 @@ and every invocation needs the wrapper.
 This was the workaround issue 553 asked to retire;
 the `ExemptMark` change retires it.
 
+Pitfalls paid while the bridge was live,
+recorded so a rebuild does not pay them again:
+
+- Without `ip link set lo up` the namespace has no interface at all and Gradle
+  fails with `Could not determine a usable wildcard IP for this machine.`
+- The mapped-root UID makes JVMs resolve `user.home` to `/root`;
+  export `HOME` and `GRADLE_USER_HOME`,
+  and `ANDROID_SDK_HOME` plus `ANDROID_USER_HOME` for the debug keystore lookup.
+  Gradle strips `-Duser.home` from `org.gradle.jvmargs`,
+  so the env vars are the only lever.
+- A bare `gradlew` inherits whatever `ANDROID_HOME` the shell exports;
+  pin the install that carries `platforms/<compileSdk>` or the build fails with
+  `Failed to find target with hash string`.
+- mise's rust backend syncs the nightly channel over the network;
+  bypass mise inside the namespace and call `gradlew` directly with `--offline`.
+- Device-facing steps (`adb install`, captures) must run outside the namespace
+  because the adb server socket lives in the host namespace.
+
 ## What does not work
 
 - **Inspecting the VPN's rules for a masquerade.**
