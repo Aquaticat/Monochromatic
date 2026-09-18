@@ -81,6 +81,7 @@ import androidx.activity.enableEdgeToEdge
 // import { icons } from '@material-design-icons/svg';
 // ```
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FolderOpen
@@ -89,7 +90,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material.icons.filled.VolumeUp
 
 // What:     `background` paints a Compose layout node with one color.
 // Why:      Candidate A, B, and C differ in their surface hierarchy.
@@ -1143,7 +1143,7 @@ private fun TransportBlock(
                     ) {
                         IconButton(onClick = {}) {
                             Icon(
-                                imageVector = Icons.Filled.VolumeUp,
+                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                 contentDescription = "Volume",
                             )
                         }
