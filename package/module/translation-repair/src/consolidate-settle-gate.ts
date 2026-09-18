@@ -3,7 +3,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import { gateConsolidatedSlice, } from './consolidate-gate-stage.ts';
-import { requireShippableTerminal, } from './consolidate-ineligible-standing.ts';
+import {
+  requireShippableTerminal,
+  shipPastUndecidedGate,
+} from './consolidate-ineligible-standing.ts';
 import type {
   ConsolidationSettlement,
   ConsolidationSubject,
@@ -51,7 +54,8 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
  @param standingMayShip - whether unchanged baseline has prior endorsement
  
  @param standingEligible - whether the standing passed the deterministic
- gate; a gate that keeps an ineligible standing ends the slice
+ gate; a gate that keeps an ineligible standing ends the slice, and one
+ that settles on neither over it ships the proposal the slate chose
  
  @param identity - front matter identity as the gate takes it
  
@@ -128,10 +132,20 @@ export async function gateAndShip(
   },);
 
   /**
+   Gate outcome as it ships, the neither verdict over an ineligible
+   standing resolved toward the slate's choice.
+   */
+  const gated = shipPastUndecidedGate({
+    outcome: gate,
+    standingEligible,
+    l,
+  },);
+
+  /**
    What ships once the semantic wrap has been applied and demotion re-derived.
    */
   const wrapped = wrapConsolidation({
-    outcome: gate,
+    outcome: gated,
     consolidatedText: decided.text,
     standingText,
     lineStructured,
@@ -159,7 +173,7 @@ export async function gateAndShip(
       floor,
       verdicts,
       decided,
-      gate,
+      gate: gated,
       rewrapped: wrapped.rewrapped,
       demoted: wrapped.demoted,
 
@@ -167,7 +181,7 @@ export async function gateAndShip(
       // adding them again here would report one voice loss twice.
       findings: [
         ...decided.findings,
-        ...gate.findings,
+        ...gated.findings,
       ],
     },
     subject,

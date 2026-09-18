@@ -1,3 +1,5 @@
+import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { ConsolidateGateOutcome, } from './consolidate-gate-stage.ts';
 import type { ConsolidationTerminal, } from './consolidate-settle.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
 import type { SliceValidation, } from './translate-validate.ts';
@@ -199,6 +201,63 @@ export function requireShippableTerminal(
     sliceIndex,
     terminal,
   },);
+}
+
+/**
+ Ships the proposal the slate chose past a gate that settled on neither
+ rendering, when the standing it would otherwise keep is ineligible.
+
+ CLASS FIFTY-FOUR (XingZ604 slice 13, 2026-09-18): the archive's paragraph
+ and the contest winner both carried the original's neutral pronoun
+ untranslated, the standing was withheld from the slate, the slate judges
+ chose a valid proposal 3 of 4, and the gate went 5 of 7 usable with neither
+ rendering at quorum. The gate's rule that indecision keeps the standing
+ text is a conservative default, and with an ineligible standing there is
+ nothing conservative to keep: the entry stopped at 4h53m over a text the
+ judges had already endorsed. The owner's 2026-09-04 rule prefers the best
+ valid proposal; a gate that REFUSES the consolidation by quorum still
+ keeps the standing and still stops the slice.
+
+ @param outcome - what the gate settled
+
+ @param standingEligible - whether the standing passed the deterministic gate
+
+ @param l - stage logger, told when the rule applies
+
+ @returns Outcome as settled, or one shipping the consolidation with the
+ finding recorded
+
+ @example
+ ```ts
+ const gated = shipPastUndecidedGate({ outcome, standingEligible, l, },);
+ ```
+ */
+export function shipPastUndecidedGate(
+  {
+    outcome,
+    standingEligible,
+    l,
+  }: {
+    readonly outcome: ConsolidateGateOutcome;
+    readonly standingEligible: boolean;
+    readonly l: Logger;
+  },
+): ConsolidateGateOutcome {
+  if (standingEligible || (outcome.choice !== 'neither'))
+    return outcome;
+  l.warn(
+    `consolidate gate: settled on neither over an ineligible standing, so the proposal the slate chose ships (${
+      String(outcome.usable,)
+    } usable ballots)`,
+  );
+  return {
+    ...outcome,
+    ships: 'consolidated',
+    findings: [
+      ...outcome.findings,
+      UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING,
+    ],
+  };
 }
 
 /**
