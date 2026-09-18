@@ -39,7 +39,7 @@ await describe({
   name: 'a decision-only seat',
   children: [
     it({
-      name: 'IS ON THE ROSTER with a decisions side, no chat reach, no pictures and the three unmeasured holds',
+      name: 'IS ON THE ROSTER with a decisions side, no chat reach, no pictures and the writer and reader holds',
       fn: async () => {
         expect(ROSTER_MODEL_IDS.includes(SEAT_OPENROUTER_DECISIONS,),).toBe(true,);
         expect([...DECISION_ONLY_ROSTER_IDS,],).toEqual([SEAT_OPENROUTER_DECISIONS,],);
@@ -60,7 +60,6 @@ await describe({
         expect(card.decisions?.id,).toBe(SEAT_OPENROUTER_DECISIONS,);
         expect(card.openrouter,).toBeUndefined();
         expect([...card.holds,].toSorted(),).toEqual([
-          'judge-unmeasured',
           'reader-unmeasured',
           'writer-unmeasured',
         ],);
@@ -85,10 +84,11 @@ await describe({
     },),
 
     it({
-      name: 'JOINS THE SELECT JUDGES ONLY ONCE MEASURED: held judge-unmeasured it is on no select list, '
-        + 'and the select judges are the wide seats plus the measured decision seats',
+      name: 'JOINS THE SELECT JUDGES ONCE MEASURED (12 of 12 on the reviewed matrix, 2026-09-18): '
+        + 'a measured decision seat is on the select list after every wide seat, '
+        + 'seated when OpenRouter is wet and unseated when it is dry',
       fn: async () => {
-        expect(RUN_DECISION_JUDGES.includes(SEAT_OPENROUTER_DECISIONS,),).toBe(false,);
+        expect(RUN_DECISION_JUDGES.includes(SEAT_OPENROUTER_DECISIONS,),).toBe(true,);
         expect([...RUN_SELECT_JUDGES,],).toEqual([
           ...RUN_WIDE_SEATS,
           ...RUN_DECISION_JUDGES,
@@ -104,9 +104,21 @@ await describe({
             openrouter: false,
           },
         },);
-        expect(seats.selectJudges.includes(SEAT_OPENROUTER_DECISIONS,),).toBe(false,);
+        expect(seats.selectJudges.at(-1,),).toBe(SEAT_OPENROUTER_DECISIONS,);
         expect(seats.repairModels.judgeModelIds,).toEqual(seats.selectJudges,);
         expect(seats.translateModels.judgeModelIds,).toEqual(seats.selectJudges,);
+        /**
+         Seats on a day OpenRouter is dry and every other provider wet.
+         */
+        const dryDay = judgeSeatsFor({
+          dry: {
+            synthetic: false,
+            hyper: false,
+            bedrock: false,
+            openrouter: true,
+          },
+        },);
+        expect(dryDay.selectJudges.includes(SEAT_OPENROUTER_DECISIONS,),).toBe(false,);
       },
     },),
   ],

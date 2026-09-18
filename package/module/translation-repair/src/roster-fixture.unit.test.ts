@@ -151,7 +151,6 @@ const CLAIMS: readonly {
     reach: [],
     reads: false,
     holds: [
-      'judge-unmeasured',
       'writer-unmeasured',
       'reader-unmeasured',
     ],
