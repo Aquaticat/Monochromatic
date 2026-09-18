@@ -1644,9 +1644,34 @@ after the research's per-package proposal was put to them.
    `command = ["node", "--test", "src"]`.
   This matches how file-enforcer's `exec` and the repository's other spawners already run programs,
    and keeps quoting and word splitting out of the language.
-- Block shape is OpenTofu's,
+- Block shape is OpenTofu's one-label form,
+   as `variable`,
+   `module`,
+   and `output` use,
    without the `resource` keyword,
-   which in OpenTofu exists to namespace provider types meow does not have.
+   which in OpenTofu exists to namespace provider types meow does not have:
+   `task "test" { }` (user,
+   2026-09-17).
+- Tags are inferred and then adjusted:
+   meow derives the obvious ones from manifests and layout,
+   and `package` blocks add or remove the rest.
+  A `package` block's selector accepts globs,
+   so one block can tag a subtree (user,
+   2026-09-17).
+- Specialization is by tag:
+   several `task` blocks may share a name with different tag sets,
+   and the most specific matching set wins.
+- Overriding is explicit on both sides (user,
+   2026-09-17):
+   the specialization is marked as overriding,
+   and the task it overrides is marked as overridden,
+   in the spirit of Kotlin's `override` and `open`.
+  A specialization without a marked base,
+   or a marked base nothing overrides,
+   is an error rather than a silent win.
+  The user allowed bending the syntax to express it;
+   rule `SYB` rules out a comment-based marker,
+   because HCL attributes can carry the relation directly.
 
 #### Consequences of one root file
 
