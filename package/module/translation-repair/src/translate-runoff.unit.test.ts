@@ -1,0 +1,388 @@
+/**
+ Guards class fifty-three (XingZ602 attempt 1, 2026-09-18): a slate judged
+ at a slice with nothing to fall back on, whose judges split three ways at
+ weight one, is challenged as a RUN-OFF over the candidates that drew a
+ ballot rather than over the whole slate again. Slice 14 of XingZ60 carried
+ an archive text the deterministic floor refused ("TA once said"), so the
+ stage ran it as absent; five candidates, three ballots, three different
+ picks, twice; the entry stopped ERROR after two hours and thirty-eight
+ minutes and re-bought its translate lane. Cat-themed invention throughout;
+ no corpus content appears here.
+
+ @module
+ */
+
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  judgeSlateWithRetry,
+  messageText,
+  produceTranslateSlate,
+  type RosterModelId,
+  type SyntheticClient,
+  TranslateAbsenceError,
+  type TranslateStageResult,
+} from '../dist/final/node/index.mjs';
+
+/**
+ Logger for the judgings under test.
+ */
+const l = tagged({ tag: 'translate-runoff-test', },);
+
+/**
+ Schema name the producing half asks translators for; every other structured
+ ask is a judge sheet.
+ */
+const TRANSLATE_SCHEMA = 'translation_report';
+
+/**
+ Original slice the archive never translated.
+ */
+const SOURCE_TEXT = '猫猫在窗台上打盹，尾巴垂在暖气片旁边。';
+
+/**
+ Translators, four so the slate is wider than the bench.
+ */
+const TRANSLATORS: readonly RosterModelId[] = [
+  'hf:cat/Cat-A',
+  'hf:cat/Cat-B',
+  'hf:cat/Cat-C',
+  'hf:cat/Cat-D',
+].map(function toId(id,) {
+  return id as unknown as RosterModelId;
+},);
+
+/**
+ Judges with no stake in any candidate, three so a split is one ballot each.
+ */
+const JUDGES: readonly RosterModelId[] = [
+  'hf:cat/Judge-A',
+  'hf:cat/Judge-B',
+  'hf:cat/Judge-C',
+].map(function toId(id,) {
+  return id as unknown as RosterModelId;
+},);
+
+/**
+ What the translators render, one each in call order; the fourth draws no
+ ballot in either round.
+ */
+const RENDERINGS: readonly string[] = [
+  'The cat dozes on the windowsill, tail draped beside the radiator.',
+  'A cat naps on the sill, its tail hanging near the heater.',
+  'The cat sleeps on the ledge, tail beside the radiator.',
+  'The cat rests on the window ledge with its tail by the heater.',
+];
+
+/**
+ Needle each judge looks for in the first round, one candidate each.
+ */
+const FIRST_ROUND_NEEDLES: Readonly<Record<string, string>> = {
+  'hf:cat/Judge-A': 'dozes',
+  'hf:cat/Judge-B': 'naps',
+  'hf:cat/Judge-C': 'sleeps',
+};
+
+/**
+ Candidate number on a judge sheet whose block carries the needle, zero when
+ none does.
+
+ @param content - judge sheet as sent
+
+ @param needle - text the wanted candidate carries
+
+ @returns Candidate number, or zero
+
+ @example
+ ```ts
+ const best = pickCandidate({ content, needle: 'dozes', },);
+ ```
+ */
+function pickCandidate(
+  {
+    content,
+    needle,
+  }: {
+    readonly content: string;
+    readonly needle: string;
+  },
+): number {
+  /**
+   Candidate blocks, each opening with its number.
+   */
+  const [, ...blocks] = content.split('CANDIDATE ',);
+  for (const block of blocks) {
+    /**
+     Number the block opens with.
+     */
+    const [heading = '',] = block.split('\n',);
+    const index = Math.trunc(Number(heading,),);
+    if (Number.isInteger(index,) && block.includes(needle,))
+      return index;
+  }
+  return 0;
+}
+
+/**
+ How many candidates a judge sheet offers.
+
+ @param content - judge sheet as sent
+
+ @returns Count of candidate blocks
+
+ @example
+ ```ts
+ const offered = candidatesOffered({ content, },);
+ ```
+ */
+function candidatesOffered({ content, }: { readonly content: string; },): number {
+  return content.split('CANDIDATE ',).length - 1;
+}
+
+/**
+ Client whose translators render in call order and whose judges split in the
+ first round and answer per the script in the second.
+
+ @param secondRound - what every judge says in the second judging
+
+ @returns Client plus every judge sheet it was shown, by round
+
+ @example
+ ```ts
+ const rig = scriptedRig({ secondRound: 'converge', },);
+ ```
+ */
+function scriptedRig(
+  { secondRound, }: { readonly secondRound: 'converge' | 'split'; },
+): {
+  readonly client: SyntheticClient;
+  readonly sheetsByRound: readonly string[][];
+} {
+  /**
+   Translator calls served so far.
+   */
+  const served = { count: 0, };
+
+  /**
+   Judge sheets seen, grouped by judging round.
+   */
+  const sheetsByRound: string[][] = [
+    [],
+    [],
+  ];
+
+  return {
+    sheetsByRound,
+    client: {
+      chatText: async () => {
+        throw new Error('chatText unused by the translate lane',);
+      },
+      quotas: async () => {
+        throw new Error('quotas unused by the translate lane',);
+      },
+      chatJson: async <ValueT,>(
+        request: ChatJsonRequest<ValueT>,
+      ): Promise<ChatJsonOutcome<ValueT>> => {
+        /**
+         Which sheet this is.
+         */
+        const schema = request.responseFormat
+          ?.json_schema
+          .name;
+        if (schema === TRANSLATE_SCHEMA) {
+          /**
+           Rendering this call gets.
+           */
+          const translation = RENDERINGS[served.count % RENDERINGS.length] ?? '';
+          served.count += 1;
+          /**
+           Reply as the wire expects it.
+           */
+          const value: unknown = { translation, };
+          if (!request.validate(value,))
+            throw new Error('the fixture translation failed the wire guard',);
+          return {
+            kind: 'ok',
+            value,
+            rawText: JSON.stringify(value,),
+          };
+        }
+
+        /**
+         Sheet text, for finding the wanted candidate.
+         */
+        const content = request.messages
+          .map(function toContent(message,) {
+            return messageText({ message, },);
+          },)
+          .join('\n',);
+
+        /**
+         Which judging this call belongs to: the first while every judge has
+         not yet answered once.
+         */
+        const round = ((sheetsByRound[0] ?? []).length < JUDGES.length) ? 0 : 1;
+        sheetsByRound[round]?.push(content,);
+
+        /**
+         Needle this judge votes by in this round.
+         */
+        const needle = ((round === 0) || (secondRound === 'split'))
+          ? (FIRST_ROUND_NEEDLES[request.modelId] ?? '')
+          : 'dozes';
+
+        /**
+         Ballot for this judging.
+         */
+        const ballot: unknown = {
+          best: pickCandidate({
+            content,
+            needle,
+          },),
+          reason: 'fixture',
+        };
+        if (!request.validate(ballot,))
+          throw new Error('the fixture ballot failed the wire guard',);
+        return {
+          kind: 'ok',
+          value: ballot as ValueT,
+          rawText: JSON.stringify(ballot,),
+        };
+      },
+    },
+  };
+}
+
+/**
+ Judges one freshly produced slate through the retry at an absent slice.
+
+ @param secondRound - what the judges do the second time
+
+ @returns Stage result plus the sheets by round
+
+ @example
+ ```ts
+ const { result, } = await judgedUnder({ secondRound: 'converge', },);
+ ```
+ */
+async function judgedUnder(
+  { secondRound, }: { readonly secondRound: 'converge' | 'split'; },
+): Promise<{
+  readonly result: TranslateStageResult;
+  readonly sheetsByRound: readonly string[][];
+}> {
+  /**
+   Scripted client and its sheets.
+   */
+  const rig = scriptedRig({ secondRound, },);
+
+  /**
+   Slate the translators produced.
+   */
+  const produced = await produceTranslateSlate({
+    client: rig.client,
+    translatorModelIds: TRANSLATORS,
+    sourceText: SOURCE_TEXT,
+    incumbentText: '',
+    lineStructured: false,
+    signal: AbortSignal.timeout(30_000,),
+    perCallTimeoutMs: 5_000,
+    l,
+  },);
+
+  /**
+   What the retry settled on.
+   */
+  const result = await judgeSlateWithRetry({
+    judging: {
+      client: rig.client,
+      produced,
+      judgeModelIds: JUDGES,
+      sourceText: SOURCE_TEXT,
+      incumbentText: '',
+      incumbentKind: 'absent',
+      lineStructured: false,
+      signal: AbortSignal.timeout(30_000,),
+      perCallTimeoutMs: 5_000,
+      l,
+    },
+  },);
+  return {
+    result,
+    sheetsByRound: rig.sheetsByRound,
+  };
+}
+
+/**
+ Finding the retry writes when the second round is a run-off.
+ */
+const RUNOFF_FINDING = 'translate-runoff (finalists 3 of 4)';
+
+await describe({
+  name: 'a tied slate at a slice with nothing to fall back on (class fifty-three)',
+  children: [
+    it({
+      name: 'CHALLENGES the tie as a run-off over the three candidates that drew a ballot, '
+        + 'leaving the unbacked fourth off the second sheet, and keeps the second round\'s decision',
+      fn: async () => {
+        const { result, sheetsByRound, } = await judgedUnder({ secondRound: 'converge', },);
+
+        expect(result.origin,).toBe('fresh',);
+        expect(result.text.includes('dozes',),).toBe(true,);
+        expect(result.findings.includes(RUNOFF_FINDING,),).toBe(true,);
+
+        /**
+         Candidates each round's sheets offered.
+         */
+        const offered = sheetsByRound.map(function perRound(sheets,): readonly number[] {
+          return sheets.map(function count(content,): number {
+            return candidatesOffered({ content, },);
+          },);
+        },);
+        expect(offered[0],).toEqual([
+          4,
+          4,
+          4,
+        ],);
+        expect(offered[1],).toEqual([
+          3,
+          3,
+          3,
+        ],);
+        expect((sheetsByRound[1] ?? []).some(function carriesUnbacked(content,): boolean {
+          return content.includes('rests on the window ledge',);
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'STILL RAISES no-candidate-backed when the run-off ties too, carrying the run-off finding',
+      fn: async () => {
+        /**
+         What the retry raised, or nothing.
+         */
+        const raised = await (async function attempt(): Promise<unknown> {
+          try {
+            await judgedUnder({ secondRound: 'split', },);
+            return undefined;
+          }
+          catch (error) {
+            return error;
+          }
+        })();
+        expect(raised instanceof TranslateAbsenceError,).toBe(true,);
+        if (!(raised instanceof TranslateAbsenceError))
+          throw new Error('raised by construction',);
+        expect(raised.reason,).toBe('no-candidate-backed',);
+        expect(raised.findings.includes(RUNOFF_FINDING,),).toBe(true,);
+      },
+    },),
+  ],
+},);
