@@ -59,6 +59,15 @@ export const INELIGIBLE_STANDING_REPLACED_FINDING: string = 'ineligible-standing
   + 'in as the wording the slate judges may keep';
 
 /**
+ Finding recorded on a settlement whose gate settled on neither rendering
+ while the standing was ineligible, so the proposal the slate chose shipped
+ (class fifty-four, XingZ604 slice 13, 2026-09-18).
+ */
+export const UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING: string = 'undecided-gate-ships-proposal: the gate settled '
+  + 'on neither rendering and the standing text failed the deterministic publication rule, so the proposal the '
+  + 'slate judges chose ships as the best valid text';
+
+/**
  Raised when a slice's standing text has failed the deterministic gate and
  the settlement still ends with nothing valid to ship.
  */

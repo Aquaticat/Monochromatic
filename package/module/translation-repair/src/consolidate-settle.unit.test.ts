@@ -32,6 +32,7 @@ import {
   createSyntheticClient,
   describeSlate,
   INELIGIBLE_STANDING_WITHHELD_FINDING,
+  UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING,
   rotateCandidates,
   SEAT_SYNTHETIC_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -892,6 +893,42 @@ await describe({
       },
     },),
 
+    it({
+      name: 'SHIPS THE PROPOSAL THE SLATE CHOSE when the standing is ineligible and the gate settles on '
+        + 'neither (class fifty-four, XingZ604 slice 13, 2026-09-18): the gate\'s indecision is not a '
+        + 'refusal, and with nothing eligible to keep the owner\'s 2026-09-04 rule prefers the best valid '
+        + 'proposal; an eligible standing still keeps the slice on the same indecision',
+      fn: async () => {
+        const { settled, served, } = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({
+            best: positionOfText({
+              texts: [FRESH,],
+              wanted: FRESH,
+              incumbentText: '',
+            },),
+          },),
+          gateReply: gateBallot({ choice: 'neither', },),
+          standingEligible: false,
+        },);
+        expect(settled.terminal,).toBe('consolidated',);
+        expect(settled.text.replaceAll('\n', ' ',),).toBe(FRESH,);
+        expect(settled.findings.includes(UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING,),).toBe(true,);
+        expect(settled.gate?.choice,).toBe('neither',);
+        expect(served.gate,).toBeGreaterThan(0,);
+
+        const eligible = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
+          gateReply: gateBallot({ choice: 'neither', },),
+        },);
+        expect(eligible.settled.terminal,).toBe('gate-kept-standing',);
+        expect(eligible.settled.text,).toBe(STANDING,);
+        expect(eligible.settled.findings.includes(UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING,),).toBe(false,);
+      },
+    },),
     it({
       name: 'FAILS THE SLICE AT ONCE when the standing is ineligible and every judge declines the slate, '
         + 'under the ineligible standing\'s own name with the judges\' refusal as the cause, rather than '

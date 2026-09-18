@@ -87,6 +87,7 @@ export {
   describeStandingVerdict,
   INELIGIBLE_STANDING_REPLACED_FINDING,
   INELIGIBLE_STANDING_WITHHELD_FINDING,
+  UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING,
   requireShippableTerminal,
   slateIncumbentFor,
 } from './consolidate-ineligible-standing.ts';
