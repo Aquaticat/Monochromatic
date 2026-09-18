@@ -2,16 +2,16 @@
 
 ## Authority and state
 
-The user asked to resolve Aquaticat/Monochromatic#498 and invoked the grilling skill,
-so design is being settled in rounds before any code is written.
-Round 3 is pending.
+The user asked to resolve Aquaticat/Monochromatic#498 and invoked the grilling skill.
+Four rounds settled the design,
+and the user accepted the round 4 proposals as written,
+so implementation is authorized.
 No package files exist yet and the working tree is untouched,
 apart from a pre-existing unrelated `mise.lock` modification that this task must not revert or stage.
 
 The issue carries `ready-for-agent`,
-which authorizes fix and commit under the issue-tracker skill,
-but the grilling skill forbids acting before shared understanding,
-so the commit waits for the user's confirmation.
+which authorizes fix and commit under the issue-tracker skill.
+The commit body carries `Closes #498`.
 
 ## Cross-model caution
 
@@ -309,19 +309,113 @@ so they are cited by symbol name rather than line number.
 - Pi's execution and truncation helpers.
 - A slash-command list and cancel surface.
 
-## Open questions for round 4
+## Round 4 answers
 
-- Escape consumption policy:
-  when this package swallows the key instead of letting pi handle it.
-- Whether Escape cancels every running job or only the most recent.
-- Middle-out budgets,
-   elision marker,
-   and whether a line cap survives.
-- Whether overflow is still spooled to a file,
-  and where.
-- The full settings key list once every magic number is named.
-- Detached spawning,
-   given that pi never kills these children.
+The user accepted every round 4 proposal as written.
+
+- Escape is observed,
+   never consumed,
+  and cancels only when the agent is idle
+  and `ctx.ui.getEditorText()` does not start with `!`.
+- Escape cancels every running job.
+- Middle-out keeps head and tail with `pokeHeadChars` 2000 and `pokeTailChars` 6000,
+  an elision marker stating the elided character count,
+  and no separate line cap.
+  This retracts the round 3 `maxPokeChars` and `maxPokeLines` proposal.
+- Overflow is spooled to `<os.tmpdir()>/pi-bash-poke/`,
+  the path is cited in the poke content and carried in `details`,
+  and there is no retention policy in v0.x.
+- Settings keys are `pokeInstruction`,
+  `pokeHeadChars`,
+  `pokeTailChars`,
+  `progressWidget`,
+  `progressTailLines`,
+  `progressRefreshMs`,
+  and `killGraceMs`,
+  with unknown keys rejected.
+- Spawning is detached,
+  and cancel signals the child's process group,
+  which is safe precisely because the child leads that group.
+
+## Accepted design
+
+Package `package/pi-plugin/bash-poke`,
+named `@monochromatic-dev/pi-plugin-bash-poke`,
+private,
+with `pi.extensions` pointing at `./dist/final/node/index.mjs`
+and `exports["./ts"]` pointing at source,
+mirroring `package/pi-plugin/agent-settled-notification`.
+
+Runtime behavior:
+
+- `user_bash` with `excludeFromContext` false is taken over.
+  A detached job starts and the handler immediately returns
+  `{ result: { output: PENDING_NOTE, exitCode: undefined, cancelled: false, truncated: false } }`.
+- `user_bash` with `excludeFromContext` true returns undefined,
+  leaving `!!` to native pi handling.
+- Each job spawns through this package's own shell resolution,
+  `/bin/bash` then `bash` on `PATH` then `sh`,
+  with `detached: true`,
+  captures stdout and stderr,
+  sanitizes control characters and lone surrogates,
+  and spools the complete output to `<os.tmpdir()>/pi-bash-poke/`.
+- Concurrency is unrestricted and each finished job produces exactly one poke.
+- While `progressWidget` is true,
+  a widget above the editor shows one line per running job,
+  throttled to `progressRefreshMs`,
+  carrying at most `progressTailLines` output lines,
+  and is cleared when no jobs remain.
+- On exit the output is middle-out truncated,
+  then sent as a custom message with `customType` `bash-poke`,
+  `display: true`,
+  content shaped `[bash finished] $ cmd (exit N)` plus the fenced output plus `pokeInstruction`,
+  `details` carrying command,
+  exit code,
+  cancelled flag,
+  truncation state,
+  elided character count,
+  and spool path,
+  and options `{ triggerTurn: true, deliverAs: "followUp" }`.
+- A renderer registered for `bash-poke` draws the labelled card from `details` and content.
+- Cancellation comes from a `ctx.ui.onTerminalInput` listener
+  that matches a lone Escape as a bare `\x1b` or the Kitty form `\x1b[27u`,
+  never consumes it,
+  and cancels every running job when the agent is idle
+  and the editor text does not start with `!`.
+  Cancel signals the process group with SIGTERM,
+  then SIGKILL after `killGraceMs`.
+  Cancelled jobs do not poke.
+- Message delivery is wrapped so a stale-context throw is logged
+  through the tagged logger rather than escaping as an unhandled rejection.
+- There are no slash commands,
+  no registered shortcuts,
+  no retry ladder,
+  no usage-limit awareness,
+  and no session-lifecycle handling in v0.x.
+- Settings load from `~/.pi/agent/extensions/pi-bash-poke.json`
+  with the defaults recorded in the round 4 answers,
+  and unknown keys are rejected with a diagnostic.
+- Logging uses a tagged logger named `pi-bash-poke`
+  with per-function inner tags.
+
+Verification:
+
+- Unit tests over every exported code path.
+- `verify:extension` drives the built bundle through a fake `ExtensionAPI`.
+- `verify:pi-runtime` loads the built package through pi discovery.
+- A committed provider-free check drives a real pi TUI inside `tmux`
+  against an isolated `PI_CODING_AGENT_DIR`
+  with `--no-extensions -e`,
+  guarded by an environment flag so it cannot recurse.
+- The README documents the manual real-provider step.
+
+Activation,
+ which the user performs:
+
+- Delete `~/.pi/agent/extensions/bash-poke.ts`.
+- Add the package directory to `~/.pi/agent/settings.json` under `packages`.
+- Run `/reload`,
+  which the agent cannot invoke from inside a turn.
 ## Recorded without asking
 
 These follow from settled answers and the naming policy,
@@ -337,15 +431,12 @@ so they are adopted rather than put to the user.
 
 ## Next action
 
-- Present round 3,
-   including the Escape finding and the message-delivery correction.
-- After shared understanding,
-   create `package/pi-plugin/bash-poke`,
+- Create `package/pi-plugin/bash-poke`,
+  determine which generated root files a new package touches,
   then build,
-   lint,
-   type-check,
-   test,
-   and verify.
+  lint,
+  type-check,
+  test,
+  and verify.
 - Commit with `Closes #498`,
-   then hand the user the `~/.pi/agent/settings.json` edit and the `/reload` step,
-  because the agent cannot invoke `/reload` from inside a turn.
+  then make the two activation edits and hand the user the `/reload` step.
