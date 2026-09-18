@@ -280,6 +280,17 @@ lists the rest.
    JSON crate troubleshooting docs landed.
 - `4fdf58b84` (2026-09-17):
    cache key hash vet merged into the design.
+- `d96af77a6`,
+   `b1736b8bb`,
+   and `1e2f55e2d` (2026-09-17):
+   the pending question set,
+   the plan's command surface and language blockers,
+   and the Mise ledger's task-discovery owner.
+- `84100d255` and `d237f3ce0` (2026-09-17):
+   the final doc sweep.
+  The Bazel route design is marked not taken,
+   `doc/research/bazel-migration-dx.md` now flags the mid-flight glob abort as unfounded (issue #555),
+   and the from-scratch design's status no longer calls itself a draft with the configuration design open.
 
 ## Research results on 2026-09-17
 
