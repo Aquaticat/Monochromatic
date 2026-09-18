@@ -36,9 +36,11 @@ Its content is:
 ```
 FAILED tests/foo.test.ts
 ```
-
-continue
 `````
+
+No trailing instruction is appended.
+The delivery options trigger the turn on their own,
+so the card ends at its output and the transcript carries no machine-written imperative.
 
 The transcript renders the same text behind a labelled card,
 so a poke never looks like something you typed.
@@ -111,8 +113,9 @@ and an unknown key is rejected with a diagnostic rather than ignored.
 
 - `pokeInstruction`:
    instruction appended to each poke.
-  Default `continue`.
-  An empty string omits it.
+  Default empty,
+   which appends nothing.
+  Set a value such as `continue` to restore one.
 - `pokeHeadChars`:
    characters kept from the start of output.
   Default `2000`.

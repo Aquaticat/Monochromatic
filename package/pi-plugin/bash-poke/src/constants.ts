@@ -46,9 +46,13 @@ const FILE_NOT_FOUND_CODE = 'ENOENT';
 //region Settings defaults
 
 /**
- Instruction appended to a poke so the model resumes the interrupted task.
+ Instruction appended to a poke, empty by default so the card ends at its output.
+ 
+ A poke already triggers a turn through Pi's delivery options, so no imperative
+ is needed to make the model respond. The default keeps a machine-written
+ instruction out of the transcript; setting a value restores one.
  */
-const DEFAULT_POKE_INSTRUCTION = 'continue';
+const DEFAULT_POKE_INSTRUCTION = '';
 
 /**
  Characters kept from the start of command output, where a run's setup usually is.

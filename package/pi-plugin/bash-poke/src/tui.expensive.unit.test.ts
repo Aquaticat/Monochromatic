@@ -393,7 +393,16 @@ await describe({
         expect(pane.includes(constants.PENDING_NOTE, ), ).toBe(true);
         expect(pane.includes('bash-poke exit 0', ), ).toBe(true);
         expect(pane.includes(marker, ), ).toBe(true);
-        expect(pane.includes(constants.DEFAULT_POKE_INSTRUCTION, ), ).toBe(true);
+        // The default instruction is empty, so the card must end at its closing
+        // fence instead of trailing a machine-written imperative. Checking the
+        // constant here would be vacuous once it is the empty string.
+        expect(
+          pane.split('\n', )
+            .map(function trimLine(line: string, ): string {
+              return line.trim();
+            }, )
+            .includes('continue', ),
+        ).toBe(false);
       },
     }, ),
     it({
