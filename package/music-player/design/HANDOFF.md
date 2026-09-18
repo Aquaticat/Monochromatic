@@ -4135,6 +4135,36 @@ restoring.
  The questionnaire is re-presented in normal Helium in the current system color
 scheme; the reply is one K code and one L code plus any correction in chat.
 
+## P prototype iteration and D45
+
+The user rejected K1's back navigation as discouraging and K3's sheet as non-local, asked
+for a refined K2 and more prototypes, and pointed at the Material 3 archive.
+ The archive
+confirms the lone pill chip was the wrong trigger: M3 chips are rounded rectangles that
+appear in sets, menus are the specified temporary surface opening from fields or buttons,
+and sheets are for secondary content only.
+ The round now crosses two triggers (outlined
+exposed-dropdown field versus app-bar title) with two containers (inset floating menu
+panel versus in-slot picker that replaces the list slot while the deck stays visible):
+P1 field plus menu panel, P2 field plus in-slot, P3 title plus menu panel, P4 title plus
+in-slot.
+ Ranking P2 > P4 > P1 > P3: P2's field states the selection semantics a bare title only
+implies; in-slot keeps one calm surface with the deck visible; the floating panel at least
+pairs with a control-like trigger in P1.
+ D45 records the settled light surface: L3 flat
+with hairlines at both seams, chosen because L1's ramp plus deck-seam hairline can make a
+selected first track read as detached from the list.
+
+Capture plumbing learned two emulator facts: the display sleeps mid-run unless woken per
+capture (`input keyevent 224` plus `cmd window dismiss-keyguard`, with
+`stay_on_while_plugged_in` pinned and restored), and uiautomator omits scrolled-out nodes,
+so 200% markers must name visible nodes and 200% pixel samples move into the visible slot
+band.
+ The form embeds eleven rasters with four radios in one fieldset; verification repeats
+the standing battery (overflow, Axe both schemes, eleven preview paths, form invalidation
+and whitespace rejection, offline) and the eleven-fault mutation harness fails every fault
+with its intended diagnostic.
+
 ## Issue tracking moves to Linear for this session
 
 `gh` cannot reach the GitHub API this session:
