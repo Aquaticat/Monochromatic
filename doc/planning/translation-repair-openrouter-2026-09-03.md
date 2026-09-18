@@ -8082,6 +8082,114 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ606 launches on class fifty-five, 2026-09-18, 11:20 UTC
+
+Frozen `adca69d4e` (classes forty-one to fifty-five plus the decision seat),
+pid 512931,
+runs `~/temp/agent/XingZ606`,
+log `~/temp/agent/XingZ606.log`,
+providers at launch `synthetic=dry bedrock=wet hyper=dry openrouter=wet`,
+meters Bedrock 166.41 and OpenRouter 239.86,
+no cron job,
+the background waiter alone reports the exit.
+It resumes from XingZ605's slice cache
+(slice 13's consolidation was not cached,
+its settlement threw).
+Read first slice 13's consolidation
+(a `translate-declined-retried` finding with a run-off,
+or a slate at quorum on the first ask,
+then a gate at quorum or `undecided-gate-ships-proposal`,
+never a stop),
+then the page's rendering of the funeral paragraph
+(no TA left standing),
+then the nine footnote definitions and their labels,
+the components,
+the `details` summary,
+the profile link,
+then the seven steps and the three checks.
+
+## Class fifty-five, 2026-09-18, 11:15 UTC: a tied consolidation slate over an ineligible standing declines without the challenge round
+
+Found by the XingZ605 read.
+Slice 13 again:
+the standing withheld as ineligible
+(the translate lane won the contest 4 of 5 with the untranslated pronoun still in its text),
+the slate offered three writers' proposals and the repair lane's text,
+all four valid,
+and the judges split 2 to 2
+(DeepSeek and Mercury for one "her" rendering,
+Gemma E2B and GPT-OSS for the repair lane's).
+`judgeTranslateSlate` declined `declined-indecision`,
+the consolidation named it `slate-declined-standing`,
+and the entry stopped INCOMPLETE at 4h08m,
+before class fifty-four's gate path was ever reached.
+The translate lane has re-asked a declined slate once under `decline-challenge` since class fifty-three,
+narrowing a tie to the candidates that drew a ballot;
+the consolidation called the judge directly and had no second ask.
+Fixed in `adca69d4e`
+(guard red first at `c6ec06788`):
+`settleConsolidation` routes the slate through `judgeSlateWithRetry` when the standing is ineligible,
+so a tie or rejection is challenged once with the run-off before the slice is given up;
+an eligible standing keeps the single round,
+since there a decline keeps text the contest endorsed.
+The guard's fixture now takes a scripted judge reply
+(a function over the sheet and the call count)
+so one round can tie and the challenge round can settle.
+
+## XingZ605 read, 2026-09-18, 11:12 UTC: INCOMPLETE at 4h08m on slice 13, the slate tied
+
+Frozen `0d0747200`,
+4 hours and 8 minutes
+(`ms=14889531`),
+`status=INCOMPLETE`,
+`error=slice 13: the standing text failed the deterministic publication rule and the consolidation left nothing valid to ship (slate-declined-standing)`,
+no page written,
+`attempts.json` reads 1.
+Spend by the meters:
+Bedrock 169.57 to 166.42,
+OpenRouter 242.13 to 239.87,
+5.41 USD;
+`pass-spend.mjs` logs 6220 seats and 108 retry rounds
+(select 412 rounds,
+2001 asked,
+1889 heard;
+translate 179 rounds,
+706 asked,
+511 heard).
+Phases:
+preparation 07:01,
+pictures 07:05,
+lanes 07:13,
+translate lane 09:47,
+lane contest 10:50,
+consolidation 10:55,
+stop 11:08;
+Synthetic dry throughout,
+Hyper wet at launch and dry by the consolidation
+(`wide=7 select=8`).
+The stop is class fifty-five
+(the heading dated 2026-09-18 11:15 UTC);
+class fifty-four's gate path was never reached.
+
+What held:
+`image0.webp` corroborated by 4 of 4 readers at overlap 0.603;
+no `translate-runoff` finding
+(class fifty-three still untested live).
+Jev live:
+`SEAT typesafe/jev-1.13 asked=254 usable=254 unusable=0 threw=0`,
+245 ballots logged,
+agreeing with the round's winner on 117 of 156 repair select rounds,
+46 of 62 translate slates and 3 of 4 consolidation slates
+(`jev-agree.mjs`).
+The nine footnote definitions,
+the components,
+the `details` summary and the profile link could not be read:
+no page.
+Elsewhere in the consolidation a slate over an eligible standing
+(the rescue-work paragraph)
+drew only weight 1.5 across 5 ballots with MiniMax declining all four candidates over the declared name of a linked person,
+and kept its standing as designed.
+
 ## XingZ605 launches on class fifty-four, 2026-09-18, 07:03 UTC
 
 Frozen `0d0747200` (classes forty-one to fifty-four plus the decision seat),

@@ -188,6 +188,15 @@ and the will's paragraph shipped as a silent gap twice.
 A split with an anchored claim stays unresolved;
 an unanchorable claim is still no vote for absence.
 
+## When the consolidation slate ties over an ineligible standing
+
+A consolidation slate whose standing was withheld as ineligible has nothing to keep on a decline,
+so since class fifty-five (2026-09-18) it is judged through the translate lane's challenge:
+a tie or rejection is re-asked once under `decline-challenge`,
+narrowed to the candidates that drew a ballot,
+with `translate-declined-retried` and the run-off finding recorded.
+A slate over an eligible standing keeps its single round and its standing on a decline.
+
 ## When the consolidate gate cannot decide over an ineligible standing
 
 The consolidate gate asks whether the consolidation the slate chose replaces the standing text,

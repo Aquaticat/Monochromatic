@@ -134,3 +134,22 @@ after XingZ604 stopped INCOMPLETE at 4h53m on its slice 13.
     ("SHIPS THE PROPOSAL THE SLATE CHOSE when the standing is ineligible and the gate settles on neither",
     with the eligible-standing contrast in the same case).
     Fixed in `0d0747200`.
+
+## Addendum 2026-09-18, second: a tied slate over an ineligible standing is challenged once
+
+Taken under the same rule after XingZ605 stopped INCOMPLETE at 4h08m on the same slice 13,
+this time at the slate:
+four valid proposals,
+the judges 2 to 2,
+and the decline named `slate-declined-standing`.
+
+- The translate lane has challenged a declined slate once under `decline-challenge` since class fifty-three,
+    narrowing a tie to the candidates that drew a ballot (`judgeSlateWithRetry`).
+    The consolidation called the judge directly and gave the slice up on the first decline.
+- `settleConsolidation` now routes the slate through the same challenge when the standing is ineligible,
+    because there a decline stops the entry;
+    an eligible standing keeps its single round,
+    because there a decline keeps text the contest endorsed.
+- A slate declined twice still ends the slice as before.
+- Guard shown to fail first (`c6ec06788`),
+    fixed in `adca69d4e`.

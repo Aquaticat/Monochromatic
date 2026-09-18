@@ -503,7 +503,17 @@ which the takeover session does not have.
   every call on the decisions route.
   `XingZ605` launched at 07:03 UTC on frozen `0d0747200` (pid 474604,
   runs `~/temp/agent/XingZ605`,
-  log `~/temp/agent/XingZ605.log`);
+  log `~/temp/agent/XingZ605.log`)
+  and stopped INCOMPLETE at 4h08m on slice 13 again,
+  this time a tied slate over the withheld standing with no challenge round
+  (class fifty-five,
+  fixed in `adca69d4e`,
+  guard red first at `c6ec06788`;
+  the pass log's "XingZ605 read" heading dated 2026-09-18 11:12 UTC;
+  5.41 USD).
+  `XingZ606` launched at 11:20 UTC on frozen `adca69d4e` (pid 512931,
+  runs `~/temp/agent/XingZ606`,
+  log `~/temp/agent/XingZ606.log`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
   Also today:
@@ -2319,6 +2329,15 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`adca69d4e` (2026-09-18,
+11:18 UTC):
+class fifty-five,
+a tied consolidation slate over an ineligible standing is challenged once through `judgeSlateWithRetry`
+(`consolidate-settle.ts`;
+the pass log's "Class fifty-five" heading dated 2026-09-18 11:15 UTC;
+guard red first at `c6ec06788`;
+found by the XingZ605 INCOMPLETE).
+Running on XingZ606.
 `0d0747200` (2026-09-18,
 06:58 UTC):
 class fifty-four,
@@ -4196,20 +4215,24 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ605` by the seven steps and the three checks (frozen `0d0747200`,
-    pid 474604,
-    runs `~/temp/agent/XingZ605`,
-    log `~/temp/agent/XingZ605.log`,
-    launched 07:03 UTC on 2026-09-18,
-    providers at launch `synthetic=dry bedrock=wet hyper=wet openrouter=wet`;
+1.  READ `XingZ606` by the seven steps and the three checks (frozen `adca69d4e`,
+    pid 512931,
+    runs `~/temp/agent/XingZ606`,
+    log `~/temp/agent/XingZ606.log`,
+    launched 11:20 UTC on 2026-09-18,
+    providers at launch `synthetic=dry bedrock=wet hyper=dry openrouter=wet`;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    It is the first pass on class fifty-four
-    (the pass log's heading dated 2026-09-18 06:58 UTC);
-    XingZ604 stopped INCOMPLETE on it at 4h53m in the consolidation of slice 13
-    (the pass log's "XingZ604 read" heading dated 2026-09-18 06:55 UTC).
+    It is the first pass on class fifty-five
+    (the pass log's heading dated 2026-09-18 11:15 UTC)
+    and the second on class fifty-four
+    (heading dated 06:58 UTC);
+    XingZ604 and XingZ605 both stopped INCOMPLETE in the consolidation of slice 13,
+    the gate's indecision then the slate's tie
+    (the pass log's "XingZ604 read" and "XingZ605 read" headings).
     Read first slice 13's consolidation
-    (the `undecided-gate-ships-proposal` finding or a gate at quorum,
+    (a `translate-declined-retried` finding with a run-off or a slate at quorum,
+    then `undecided-gate-ships-proposal` or a gate at quorum,
     never a stop)
     and the funeral paragraph on the page
     (no TA left standing),
@@ -4250,7 +4273,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (XingZ604 to its INCOMPLETE at slice 13:
+    (XingZ605 to its INCOMPLETE at slice 13:
+    5.41 USD by the meters,
+    6220 seats,
+    108 retry rounds,
+    4 hours and 8 minutes;
+    XingZ604 to its INCOMPLETE at slice 13:
     7.97 USD by the meters,
     6655 seats,
     401 retry rounds,
