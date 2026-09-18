@@ -463,9 +463,24 @@ which the takeover session does not have.
   guard red first at `c8d9a990c`).
   `XingZ602` launched at 18:56 UTC on frozen `24372215a` (pid 3880778,
   runs `~/temp/agent/XingZ602`,
-  log `~/temp/agent/XingZ602.log`);
+  log `~/temp/agent/XingZ602.log`):
+  its first attempt stopped ERROR after 2h38m on slice 14,
+  an archive text the deterministic floor refuses and two tied judge rounds
+  (class fifty-three,
+  fixed in `012b9ccc3`,
+  guard red first at `5ae2e79ad`),
+  and its second attempt was killed at 5h57m in the consolidation once the fix landed.
+  `XingZ603` launched at 00:55 UTC on 2026-09-18 on frozen `012b9ccc3` (pid 4181820,
+  runs `~/temp/agent/XingZ603`,
+  log `~/temp/agent/XingZ603.log`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
+  The owner approved `typesafe/jev-1.13` on OpenRouter at 00:29 UTC
+  (the pass log's "Jev 1.13 approved" heading dated 2026-09-18 00:29 UTC):
+  a typed-decision model on a decisions endpoint,
+  probed live,
+  not yet wired;
+  task 185.
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2279,6 +2294,18 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`012b9ccc3` (2026-09-18,
+00:45 UTC):
+class fifty-three,
+a tied slate with nothing to fall back on is challenged as a run-off over the candidates that drew a ballot
+(`translate-runoff.ts`,
+`translate-judge.ts`,
+`translate-retry.ts`,
+`translate-absence.ts`;
+the pass log's "Class fifty-three" heading dated 2026-09-18 00:45 UTC;
+guard red first at `5ae2e79ad`;
+found by the XingZ602 ERROR).
+Running on XingZ603.
 `24372215a` (2026-09-17,
 18:50 UTC):
 class fifty-two,
@@ -4106,23 +4133,26 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ602` by the seven steps and the three checks (frozen `24372215a`,
-    pid 3880778,
-    runs `~/temp/agent/XingZ602`,
-    log `~/temp/agent/XingZ602.log`,
-    launched 18:56 UTC on 2026-09-17 with Bedrock and OpenRouter wet,
+1.  READ `XingZ603` by the seven steps and the three checks (frozen `012b9ccc3`,
+    pid 4181820,
+    runs `~/temp/agent/XingZ603`,
+    log `~/temp/agent/XingZ603.log`,
+    launched 00:55 UTC on 2026-09-18 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    It is the first pass on class fifty-two
-    (the pass log's heading dated 2026-09-17 18:50 UTC);
-    XingZ601 stopped INCOMPLETE at the pictures phase on it after 7 minutes
-    (the pass log's "XingZ601 read" heading dated 2026-09-17 18:48 UTC).
+    It is the first pass on class fifty-three
+    (the pass log's heading dated 2026-09-18 00:45 UTC);
+    XingZ602 stopped ERROR on it after 2h38m and its reattempt was killed at 5h57m
+    (the pass log's "XingZ602 read" heading dated 2026-09-18 00:56 UTC).
     XingZ60 is 577 source lines against 358 archive lines,
     nine footnote definitions in the original and none in the archive,
-    so read first the pictures phase
-    (`image0.webp` corroborated by two or three readers,
-    the closest pair named),
+    so read first slice 14's translate rounds
+    (a winner,
+    or a `translate-runoff (finalists N of M)` finding,
+    never an ERROR),
+    then the pictures line
+    (`image0.webp` corroborated by 4 of 4 readers at 0.570 on XingZ602),
     then the nine definitions on the page and their labels
     (class nineteen's relabel,
     class twenty-one's orphan guard),
@@ -4149,7 +4179,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (XingZ601 to its INCOMPLETE:
+    (XingZ602 to its ERROR and the killed reattempt:
+    9.76 USD by the meters,
+    10034 seats,
+    348 retry rounds,
+    5 hours and 57 minutes;
+    XingZ601 to its INCOMPLETE:
     0.04 USD by the meters,
     90 seats,
     3 retry rounds,

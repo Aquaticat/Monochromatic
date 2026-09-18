@@ -8082,6 +8082,130 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ603 launches on class fifty-three, 2026-09-18, 00:55 UTC
+
+Frozen `012b9ccc3` (classes forty-one to fifty-three),
+pid 4181820,
+runs `~/temp/agent/XingZ603`,
+log `~/temp/agent/XingZ603.log`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+meters Bedrock 173.08 and OpenRouter 247.86,
+no cron job,
+the background waiter alone reports the exit.
+It resumes from XingZ602's slice cache.
+Read first slice 14's translate rounds
+(a winner,
+or a `translate-runoff (finalists N of M)` finding,
+never an ERROR),
+then the pictures line,
+then the nine footnote definitions and their labels,
+the components,
+the `details` summary,
+the profile link,
+then the seven steps and the three checks.
+
+## Jev 1.13 approved on OpenRouter, 2026-09-18, 00:29 UTC: a typed-decision model, probed live
+
+The owner:
+"<https://openrouter.ai/typesafe/jev-1.13> is now up and approved on openrouter."
+Jev is TypeSafe's System One model:
+text in,
+typed answers out
+(a choice with a probability per option,
+a yes-probability the docs call a noul,
+a score over ordered levels),
+no prose and no reason.
+It is served through `POST https://openrouter.ai/api/alpha/decisions`
+with `{model, state, questions}`,
+each question `{type: 'choice' | 'noul' | 'score', instructions, criteria}`,
+answering `{answers, usage: {input_tokens, output_tokens, cost}, model, provider}`
+(OpenRouter's OpenAPI document,
+schemas `DecisionsRequest` and `DecisionsResponse`;
+TypeSafe's models page:
+32k tokens of state plus the longest question,
+0.042 USD per million input tokens,
+output free).
+A cat-themed live probe at 00:32 UTC answered in 1216 ms for 0.000023 USD:
+the faithful candidate chosen at probability 1,
+the detail-dropping candidate flagged at 0.98,
+the meaning-changing candidate scored "changes the meaning" at 0.99.
+It cannot take a chat completion,
+so it fits only the seats whose ballot is a choice
+(the select and slate judges,
+the lane contest,
+the panel's votes,
+the polish gate,
+the attestation confirm round),
+through a decisions transport beside the chat clients
+and a per-stage question the stage builds from the same sheet;
+the judge fidelity probe seats it or not,
+as for every candidate.
+Open as task 185;
+nothing is wired yet.
+
+## Class fifty-three, 2026-09-18, 00:45 UTC: a tied slate with nothing to fall back on is challenged over the same slate and stops the entry
+
+Found by the XingZ602 read.
+Slice 14 of XingZ60 is a content slice whose archive text carries the pronoun untranslated
+("TA once said"),
+which `validateTranslatedSlice` refuses
+(measured with the frozen build on 2026-09-18),
+so the translate stage ran it with `effectiveIncumbentKind` absent.
+Five candidates went to the judges,
+four of five were heard,
+three named three different candidates at weight one against a minimum of two,
+and the decline challenge put the identical slate to the same panel,
+which split the same way.
+The retry settled the slate as `no-candidate-backed` and raised the absence error;
+the backstop in `translate-slice-attempt.ts` refuses to record a content chunk as unfilled and rethrew it;
+the entry stopped `status=ERROR` at `ms=9459888`
+(2 hours and 38 minutes)
+and the REATTEMPT re-bought the translate lane,
+where the same slice found a winner on the second try.
+Fixed in `012b9ccc3`
+(guard red first at `5ae2e79ad`,
+shown red against the frozen `24372215a` build):
+the judge records on the absence error which candidates a tie backed
+(`runoffFinalists` in `translate-runoff.ts`,
+a tie's finalists when fewer than the slate drew a ballot),
+and the retry's challenge round offers only those,
+naming the run-off in the findings
+(`translate-runoff (finalists N of M)`).
+A second tie still settles as before;
+a rejection,
+fewer than two backed candidates or a fully backed slate leave the whole slate on the second sheet.
+
+## XingZ602 read, 2026-09-18, 00:56 UTC: ERROR at 2h38m on slice 14, the reattempt killed at 5h57m in consolidation
+
+Frozen `24372215a`.
+Attempt 1 ran from 18:56 to 21:34 UTC and stopped
+`status=ERROR ms=9459888 error=slice has no translation in the archive and produced none (no-candidate-backed)`
+on slice 14:
+class fifty-three.
+Before that,
+the pictures phase corroborated `image0.webp` by 4 of 4 readers at overlap 0.570,
+so class fifty-two held on the picture that stopped XingZ601 at 0.297.
+Attempt 2 ran from 21:34 UTC,
+resumed 143 cache records,
+re-bought slice 14 with a winner,
+reached the lane contest at 00:24 and the consolidation at 00:47,
+and was killed by pid at 00:56 UTC under always-kill-and-relaunch once `012b9ccc3` landed,
+5 hours and 57 minutes after launch,
+three consolidation slices in.
+Spend by the meters:
+Bedrock 177.43 to 173.08,
+OpenRouter 253.32 to 247.91,
+9.76 USD;
+`pass-spend.mjs` logs 10034 seats and 348 retry rounds
+(translate stage alone 173 rounds,
+703 asked,
+518 heard).
+No page was written.
+The run time is the open concern:
+attempt 2 alone took 3 hours and 22 minutes to reach the consolidation on a 577-line entry,
+against the owner's 7-hour ceiling.
+
 ## XingZ602 launches on class fifty-two, 2026-09-17, 18:56 UTC
 
 Frozen `24372215a` (classes forty-one to fifty-two),

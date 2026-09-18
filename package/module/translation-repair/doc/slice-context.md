@@ -188,6 +188,20 @@ and the will's paragraph shipped as a silent gap twice.
 A split with an anchored claim stays unresolved;
 an unanchorable claim is still no vote for absence.
 
+## When a tied slate is challenged as a run-off
+
+A translate slate the judges decline is put to the same panel once more under a distinct responsibility.
+Since class fifty-three (2026-09-18) that second round is a run-off when the first was a tie at a slice with nothing to fall back on
+(an anchor,
+or a content slice whose archive text the deterministic floor refuses):
+only the candidates that drew a ballot are offered,
+when that is fewer than the slate,
+and the findings say so
+(`translate-runoff (finalists N of M)`).
+A rejection,
+fewer than two backed candidates or a fully backed slate leave the whole slate on the second sheet,
+and a second tie settles as `no-candidate-backed` as before.
+
 ## When a picture's reading may be used
 
 A picture's text reaches the sheets only once two readers agree about it
