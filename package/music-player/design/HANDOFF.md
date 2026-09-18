@@ -3986,16 +3986,31 @@ explicit request.
 - Command bar surface (D21):
   hotkey settled,
   surface never designed.
-- Keyboard map and IntelliJ alignment pass (D25).
+- Keyboard map (D25):
+  one revised IntelliJ-aligned map is the design deliverable.
 - Android media notification:
   never designed.
+- Light theme:
+  unfolded separation settled (D34);
+  the undrawn light surfaces are listed in
+ `open-questions.md` 11d.
+- D10 empty state redrawn for the no-system-library case (8b).
+- Desktop window default size (11c).
+- Custom display templating round (11e).
 - MD3-on-Slint feasibility (A4):
-  which components genuinely port to the desktop app.
-- Light-theme pass (8b):
-  nothing drawn.
-- Fast-scroller drag bubble (section 9):
-  probably moot per D17;
-  confirm and delete.
+  developer-owned per user instruction 2026-09-17;
+  not a
+ design round.
+- Fast-scroller drag bubble:
+  confirmed moot per D17 and deleted from section 9.
+
+The active round is the cover screen native round:
+ D14 cover-c is the HTML-era baseline,
+ and the round faces native folded geometry (411 × 923dp,
+ 1080 × 2424px),
+ font scales,
+ the D41/D42 dark inheritance,
+ and the undrawn light cover surface.
 
 ## Issue tracking moves to Linear for this session
 

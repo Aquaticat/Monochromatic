@@ -47,6 +47,13 @@ prepared a visible answer and directed the user to reply in chat;
  it intentionally has no
 clipboard API or copy button.
 
+The active round re-verifies the cover screen natively with D14 cover-c as the HTML-era
+baseline.
+ The live design backlog,
+ its order,
+ and the developer-owned items live in
+`open-questions.md` section 0b.
+
 The preceding accessibility review settled pane-by-pane TalkBack traversal (F1) and
 structured current-track speech (S1).
  The prototype repairs the adaptive mode control as

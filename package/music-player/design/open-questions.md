@@ -5,7 +5,55 @@ Each entry gives the background,
  why it failed,
  what to build,
 and how to know it is right.
- Nothing here has been settled.
+
+## 0. How to read this file (2026-09-17)
+
+Section headings carry the status:
+ **SETTLED** cites the decision that closed it,
+**DISSOLVED** means the question disappeared,
+ and an unmarked heading is still open.
+ Settled
+sections are history for the next round,
+ not live questions.
+ Rejected patterns live
+only in the NO lists of `decisions.md`;
+ they never reappear here as candidates.
+**DEVELOPER-OWNED** marks work the user assigned to developers instead of design rounds
+(2026-09-17):
+ feasibility and porting studies,
+ and implementation of settled designs.
+
+## 0b. Live design backlog (2026-09-17)
+
+- **ACTIVE: cover screen native round.**
+  D14 cover-c is the HTML-era baseline;
+  native folded
+ geometry (411 × 923dp,
+  1080 × 2424px),
+  font scales,
+  the D41/D42 dark inheritance,
+ and the undrawn light surface (11d) are what this round faces.
+- **OPEN: command bar surface (D21) plus reserved search / type-to-narrow (D25).**
+- **OPEN: keyboard map revision (section 6):**
+  one revised IntelliJ-aligned map,
+  plus the
+ ↑/↓ popover question.
+- **OPEN: Android media notification.**
+- **OPEN: light surfaces never drawn (11d):**
+  cover,
+  error bar,
+  undo toast,
+  settings pane,
+ context menu,
+  first-run prompt,
+  scan bar.
+- **OPEN: D10 empty state redrawn for the no-system-library case (8b).**
+- **OPEN: desktop window default size (11c).**
+- **OPEN: custom display templating round (11e).**
+- **DEVELOPER-OWNED: MD3-on-Slint feasibility (A4).**
+  The user assigned feasibility and
+ porting studies to developers on 2026-09-17;
+  design rounds settle user-facing treatments.
 
 ---
 
@@ -286,6 +334,12 @@ control a popover slider (D20),
  not an inline one — decide whether they open it;
  and
 the Android media notification has never been designed.
+**Status (2026-09-17):**
+ the design deliverable is a single revised map brought back as a
+whole;
+ implementing it is developer work.
+ The media notification is tracked in the
+0b backlog.
 
 ---
 
@@ -333,14 +387,14 @@ of decisions.md.
    built in pk-d.
 - **Light theme.**
    SETTLED:
-   follow the OS (B1 revised) — but **no light surface has
-  ever been drawn**.
-   The true-black scheme leans on outlines for separation,
-   which does
-  not translate;
-   every candidate in this project is dark-only.
-   This is now the largest
-  unbuilt area in the project.
+   follow the OS (B1 revised);
+   the unfolded separation is
+  D34,
+   and the unfolded light surface has been drawn and settled.
+   Every other
+  surface still hard-codes dark values (11d),
+   which is now the largest unbuilt area
+  in the project.
 - **Small and huge libraries.**
    SETTLED as "degrade gracefully,
    undrawn" (D30).
@@ -360,13 +414,6 @@ of decisions.md.
 
 ## 9. Smaller loose ends
 
-- **Fast-scroller drag bubble.**
-   Probably moot:
-   the picker is a filter,
-   not a scrolling
-  list (D17),
-   so there is nothing to fast-scroll.
-   Confirm and delete.
 - **Undo vs error bar collision.**
    SETTLED:
    toast floats above the bar (D29).
@@ -384,9 +431,9 @@ of decisions.md.
 
 ## 10. Open after round 4 (2026-09-03)
 
-- **Light-theme pass.**
-   See 8b.
-   Nothing drawn.
+- **Light-theme pass — SETTLED for the unfolded separation (D34).**
+   The undrawn light
+  surfaces are listed in 11d.
 - **Picker presentation within a letter — SETTLED (D31,
    candidate pk-g).**
   Plain-text
@@ -407,12 +454,18 @@ of decisions.md.
    not live candidates.
 - **Command bar surface** (D21) — hotkey settled,
    the surface itself never designed.
-- **Keyboard map / IntelliJ alignment pass** (D25).
-- **Accessibility pass** — focus order,
-   screen-reader labels,
-   reduced motion.
+- **Keyboard map / IntelliJ alignment pass** (D25):
+   see section 6;
+   one revised map is the
+  design deliverable.
+- **Accessibility pass — SETTLED for the unfolded screen (D39, D40).**
+   Other surfaces
+  get their accessibility treatment inside their own rounds.
 - **Android media notification** — never designed.
-- **MD3-on-Slint feasibility** — which components genuinely port (A4).
+- **MD3-on-Slint feasibility (A4) — DEVELOPER-OWNED.**
+   Feasibility and porting studies are
+  developer work per user instruction 2026-09-17;
+   not a design round.
 
 
 ---
