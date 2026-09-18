@@ -274,17 +274,33 @@ and "We don't need specifically a socket or a separate client,
 - `meow run <target>`:
    the working terminal's blocking run.
 - `meow status`:
-   what the daemon is doing now,
-   printed for a person from the per-task snapshot the daemon already keeps.
+   shows only what needs attention in 0.x.
+  Asked to choose a full status layout on 2026-09-17,
+   the user declined:
+   "I haven't decided yet.
+   I think there is an extremely good opportunity for good UI/UX here.
+   Your 'grouped by state' proposal is a step in the right direction but it's not good enough.
+   I think we might want to use a TUI here.
+   But since TUI is deferred,
+   let it just only show what needs attention for now."
+  So the full inspection view is the TUI's design problem,
+   not a command layout to settle now,
+   and 0.x prints the short attention list instead.
 - `meow pause`,
    `meow resume`,
    `meow end`,
    and `meow priority`:
    the task controls,
    reaching the daemon the same way `meow run` does.
-- `meow doctor`,
-   `meow lsp`,
-   and the trust commands from "Per-user configuration".
+- `meow doctor`:
+   prints problems only (user,
+   2026-09-17),
+   each naming what is wrong,
+   the exact change,
+   and why it matters.
+  A healthy machine prints nothing,
+   so any output is worth reading.
+- `meow lsp` and the trust commands from "Per-user configuration".
   Trust state reads through `meow trust status`,
    keeping bare `meow status` about tasks.
 - meow ships no separate client application,
@@ -298,6 +314,31 @@ and "We don't need specifically a socket or a separate client,
    rendering its own stream for a person and accepting control there,
    rather than a second program.
   The JSONL sink keeps recording either way.
+
+#### Trusting a repository
+
+Answered by the user on 2026-09-17:
+"Prompt inline with the full contents of the .hcl file.
+ Like how AUR helpers do it."
+
+- Running a command that loads an untrusted configuration shows that configuration in full,
+   then asks whether to trust it,
+   in the same terminal.
+- The model is an AUR helper's `PKGBUILD` review:
+   the person reads what would run before anything runs.
+- Declining,
+   or Ctrl+C,
+   leaves the configuration untrusted and runs nothing.
+- Once trusted,
+   the cli-git rules from "Per-user configuration" take over:
+   exact bytes,
+   a snapshot evaluated in place of the live file,
+   and a later byte change blocking until re-trust.
+- My reading,
+   not separately stated:
+   the review shows every file that would be evaluated,
+   which for a directory of HCL modules is more than one file,
+   and it pages when the content is longer than the terminal.
 
 #### Where the JSON stream goes
 
