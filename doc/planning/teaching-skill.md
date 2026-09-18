@@ -20,6 +20,14 @@ requested `util.inspect` where JSON is insufficient, and supplied `showify` thro
 Contextual value snapshots are implemented and verified in the updated lesson,
 including browser, Firefox ESR, print, and export checks.
 [The value-representation handover](../handover/promises-value-representations.md) records the boundaries and evidence.
+The user then critiqued the settlement experiment's UI/UX across seven rounds:
+confusing layout, silent buttons, disabled-when-no-effect plus numbered one-shot buttons,
+the Rhythm Heaven Groove Yum-Bot Simulator model, a drawn factory scene with the controls
+inside it, the game-faithful remap where the pudding is the Promise,
+and the restored resolver-bundle snapshots.
+A matrix of layout-by-cue-color cells awaits the user's choice;
+[the settlement-UX handover](../handover/promises-settlement-ux.md) records the measured
+defects, the research, superseded models, and the next actions.
 Earlier critiques rejected a detached opening and forced chat turn-taking.
 The shop opening, reference chat, and reading backgrounds have since been corrected and operationally checked.
 The quick scan is not learner-performance evidence or approval of the final skill.
