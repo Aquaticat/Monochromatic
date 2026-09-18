@@ -81,7 +81,6 @@ import androidx.activity.enableEdgeToEdge
 // import { icons } from '@material-design-icons/svg';
 // ```
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FolderOpen
@@ -798,7 +797,6 @@ private fun CoverStudy(candidate: String, palette: CandidatePalette) {
             modifier = Modifier.fillMaxWidth(),
             candidate = candidate,
             palette = palette,
-            volumeTrailing = true,
         )
     }
 }
@@ -1066,7 +1064,6 @@ private fun TransportBlock(
     modifier: Modifier,
     candidate: String,
     palette: CandidatePalette,
-    volumeTrailing: Boolean = false,
 ) {
     // What:     Kotlin's `if` can return a value, unlike a TypeScript `if` statement.
     // Why:      Every candidate keeps one immutable Material spacing value for its complete deck.
@@ -1130,28 +1127,7 @@ private fun TransportBlock(
                     style = timeStyle,
                 )
             }
-            if (volumeTrailing) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(modifier = Modifier.weight(1f))
-                    TransportControls(candidate = candidate)
-                    Box(
-                        modifier = Modifier.weight(1f),
-                        contentAlignment = Alignment.CenterEnd,
-                    ) {
-                        IconButton(onClick = {}) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                contentDescription = "Volume",
-                            )
-                        }
-                    }
-                }
-            } else {
-                TransportControls(candidate = candidate)
-            }
+            TransportControls(candidate = candidate)
         }
         ModeControl()
     }

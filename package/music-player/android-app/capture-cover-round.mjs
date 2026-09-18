@@ -124,7 +124,7 @@ const waitForCompose = () => {
       if (
         hierarchy.includes('text="Camellia"')
         && hierarchy.includes('content-desc="Repeat track"')
-        && hierarchy.includes('content-desc="Volume"')
+        && hierarchy.includes('content-desc="Pause"')
       ) {
         return hierarchy;
       }
