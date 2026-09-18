@@ -201,6 +201,17 @@ meow run //package/cow:test
    meow queues the task at interactive priority,
    holds the terminal until the task has run,
    and forwards the task's own standard output and standard error as-is.
+  While it waits for a slot,
+   it shows the queue position and what is ahead,
+   updated as that changes (user,
+   2026-09-17),
+   so a wait is never mistaken for a hang.
+- Failure adds nothing:
+   meow exits with the task's own exit code and prints none of its own text
+   (user,
+   2026-09-17).
+  The task has already explained itself,
+   and its exit code is what a script reads.
 - Cached:
    meow does not execute the task,
    and prints the result of the last run instead,
@@ -258,6 +269,15 @@ and "We don't need specifically a socket or a separate client,
    keeping bare `meow status` about tasks.
 - meow ships no separate client application,
    and the transport behind these commands is private ("RPC").
+- The TUI,
+   when it arrives,
+   is "just `meow watch` displayed differently while adding some interactivity"
+   (user,
+   2026-09-17):
+   the same command and the same process,
+   rendering its own stream for a person and accepting control there,
+   rather than a second program.
+  The JSONL sink keeps recording either way.
 
 #### Where the JSON stream goes
 
@@ -2581,8 +2601,10 @@ Usage rules and risks if XXH3-128 is adopted:
    and `dmem`
    (`user@1000.service/cgroup.controllers`,
    measured).
-- 0.x logs to the terminal and handles only Ctrl+C;
-   a TUI comes later.
+- 0.x logs to the terminal and handles only Ctrl+C.
+  The TUI that comes later is that same `meow watch` process rendering itself differently,
+   with interactivity added,
+   not a second program ("User interface").
 - That terminal is the one running `meow watch`,
    which the user keeps open but minimized;
    the working terminal runs `meow run` against the same daemon
