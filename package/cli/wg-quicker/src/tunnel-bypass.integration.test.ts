@@ -18,7 +18,7 @@ import { createBypassFixture, } from './tunnel-bypass.integration-fixture.ts';
 /**
  Exempt socket mark used by all routing checks.
  */
-const EXEMPT_MARK = 8_888;
+const EXEMPT_MARK = 100;
 
 /**
  Maximum bounded route-watcher readiness probes.

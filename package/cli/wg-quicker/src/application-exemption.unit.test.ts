@@ -18,12 +18,12 @@ await describe({
       fn: async () => {
         expect(applicationWatchStartArgs({
           interfaceName: 'wg0',
-          mark: 8_888,
+          mark: 100,
           uid: 1_000,
         },),).toEqual([
           'watch-start',
           'wg0',
-          '8888',
+          '100',
           '1000',
         ],);
       },

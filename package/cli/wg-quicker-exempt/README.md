@@ -62,7 +62,7 @@ wg-quicker-exempt watch-stop <key>
 Example:
 
 ```sh
-wg-quicker-exempt attach 8888 \
+wg-quicker-exempt attach 100 \
   /sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/app-com.mitchellh.ghostty@id.service \
   /sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/app-ghostty-surface-transient-123.scope
 ```

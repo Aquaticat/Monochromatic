@@ -131,7 +131,7 @@ export function resolveApplicationUid(
  
  @example
  ```ts
- applicationWatchStartArgs({ interfaceName: 'wg0', mark: 8888, uid: 1000 });
+ applicationWatchStartArgs({ interfaceName: 'wg0', mark: 100, uid: 1000 });
  ```
  */
 export function applicationWatchStartArgs(
@@ -183,7 +183,7 @@ export function applicationWatchStopArgs(
  
  @example
  ```ts
- await startApplicationExemptions({ interfaceName: 'wg0', mark: 8888 });
+ await startApplicationExemptions({ interfaceName: 'wg0', mark: 100 });
  ```
  */
 export async function startApplicationExemptions(

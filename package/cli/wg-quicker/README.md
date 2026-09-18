@@ -192,10 +192,21 @@ it warns that Ghostty,
  Helium,
  Pale Moon,
  and Firefox Nightly will use the tunnel and instructs the user to add
-`ExemptMark = 8888` under `[Interface]`,
+`ExemptMark = 100` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 The warning is non-fatal;
 tunnel activation continues.
+
+Config parsing rejects an `ExemptMark` sharing any bit with a mask another
+subsystem matches on,
+listed in `src/exempt-mark-reservation.ts`.
+`0x2000` is netavark's `MASK`:
+its `table inet netavark` postrouting rule
+`meta mark & 0x2000 == 0x2000 masquerade` source-NATs every matching packet,
+including IPv4 loopback,
+so a server bound to `127.0.0.1` reads the outbound interface address as its peer.
+The earlier recommended value `8888` is `0x22b8` and carries that bit;
+`doc/troubleshooting/netavark-masquerade-mask-exempt-mark.md` records the symptom it produced.
 The companion attaches cgroup-BPF programs to selected application cgroups.
 The tunnel lifecycle does not move Ghostty into another systemd slice.
 

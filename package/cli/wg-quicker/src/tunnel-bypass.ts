@@ -197,7 +197,7 @@ async function cleanupBypassState(
  
  @example
  ```ts
- await addExemptRule({ interfaceName: 'wg0', mark: 8888, watchRouteChanges: true });
+ await addExemptRule({ interfaceName: 'wg0', mark: 100, watchRouteChanges: true });
  ```
  */
 export async function addExemptRule(

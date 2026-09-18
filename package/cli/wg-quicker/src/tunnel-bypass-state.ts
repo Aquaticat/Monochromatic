@@ -168,7 +168,7 @@ async function ensureRuntimeDirectory(): Promise<void> {
  
  @example
  ```ts
- await claimBypassState({ interfaceName: 'wg0', mark: 8888 });
+ await claimBypassState({ interfaceName: 'wg0', mark: 100 });
  ```
  */
 export async function claimBypassState(

@@ -10,6 +10,7 @@ import {
 import type { ParseAcc, } from './config-parse-types.ts';
 import type { WireguardConfig, } from './config-types.ts';
 import { ConfigError, } from './errors.ts';
+import { assertUnreservedExemptMark, } from './exempt-mark-reservation.ts';
 import { trimLinear, } from './text.ts';
 
 /**
@@ -141,10 +142,18 @@ function consumeInterfaceKey(
     return true;
   }
   if (key === 'exemptmark') {
-    acc.exemptMark = parsePositiveInt({
+    /**
+     Positive mark, still unchecked against masks other subsystems match on.
+     */
+    const mark = parsePositiveInt({
       key,
       value,
     },);
+    assertUnreservedExemptMark({
+      key,
+      mark,
+    },);
+    acc.exemptMark = mark;
     return true;
   }
   if (key === 'preup') {

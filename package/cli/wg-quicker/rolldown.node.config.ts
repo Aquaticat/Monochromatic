@@ -13,6 +13,7 @@ const config: NodeFlavorConfigs = perEntryNodeConfig({
     './src/application-exemption-command.ts',
     './src/privilege-context-data.ts',
     './src/policy-routing-conflict.ts',
+    './src/exempt-mark-reservation.ts',
     './src/opensnitch.ts',
     './src/opensnitch-config-tree.ts',
     './src/opensnitch-live.ts',
