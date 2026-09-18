@@ -1556,10 +1556,18 @@ A (OpenTofu-shaped HCL) > B (TOML) > F (TOML with CEL) > E (JSONC) > D (YAML) > 
 
 Each follows from recorded decisions:
 
-- Ordering comes from declared reads,
+- Retracted on 2026-09-17.
+  This entry read "Ordering comes from declared reads,
    writes,
    and explicit `depends_on`,
-   which keeps author control over sequencing where it matters (FE01).
+   which keeps author control over sequencing where it matters (FE01)",
+   recorded as following from earlier decisions.
+  The user said:
+   "I never approved 'depends' or 'depends on'.
+   Let's align on that.
+   Grill me."
+  Nothing about task ordering is decided;
+   it is being asked instead.
 - Skill-mirror ownership moves into the tool's state;
    both mirror roots are gitignored.
 - The pnpr configuration and Browserslist targets become TypeScript tasks in their own packages,
@@ -1652,6 +1660,23 @@ after the research's per-package proposal was put to them.
    which in OpenTofu exists to namespace provider types meow does not have:
    `task "test" { }` (user,
    2026-09-17).
+- The working directory scopes every command (user,
+   2026-09-17):
+   "Infer everywhere",
+   so `meow run test` inside a package means that package's task,
+   and listings narrow the way standing in a directory narrows them today
+   (56 tasks against 1,807).
+- The logic that today lives inline in TOML strings,
+   for built-versus-source selection,
+   test discovery,
+   and platform branching,
+   becomes meow built-ins (user,
+   2026-09-17),
+   not repository bins and not filesystem probing from HCL expressions.
+- An agent in a disposable worktree gets past the trust prompt with `meow trust --yes` (user,
+   2026-09-17),
+   the non-interactive form cli-git already defines,
+   rather than a new flag.
 - Tags are inferred and then adjusted:
    meow derives the obvious ones from manifests and layout,
    and `package` blocks add or remove the rest.
