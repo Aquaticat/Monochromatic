@@ -125,6 +125,8 @@ and ranked under speed-first weights
    vm-builder owns a private process runner over `nano-spawn` rather than a shared package,
    the replacement lands with the rewrite rather than ahead of it,
    the rewrite keeps only its byte-identical gate and the performance fixture retires unmeasured,
+   the `prefer-readonly-parameter-type` read moves to a new fixture package
+   that really depends on `@monochromatic-dev/module-toml-edit`,
    and the `sync:files` tasks leave with Mise.
 - Superseded on 2026-09-17 with `gxhash`:
    the AES-specific startup check.

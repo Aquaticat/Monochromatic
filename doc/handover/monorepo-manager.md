@@ -381,16 +381,27 @@ The research used no clones and wrote no troubleshooting docs;
  it reported three rule `1CB` slips,
  and it noted that `git config --list --show-origin` printed a credential URL that it did not reproduce anywhere.
 
-Running since 2026-09-17:
+Finished on 2026-09-17:
  design research for how `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath,
- with the other three migration items from the all-Rust decision record,
- writing `vm-builder-exec/vm-builder-exec-design.md` in the session scratchpad.
-It is the last item under "Design work not yet started" in the design's "Open questions".
+ copied to `doc/planning/monorepo-manager-route-research/vm-builder-exec.md`
+ and merged into "vm-builder migration" in the design.
+The user answered all five of its questions the same day:
+ no shared process owner,
+ the replacement lands with the rewrite,
+ no speed gate so the performance fixture retires unmeasured,
+ a new fixture package for the `prefer-readonly-parameter-type` read,
+ and "Correct the record" for the root `mise.toml`,
+ which stays generated until Mise is removed.
+That research also found two defects worth separate work:
+ `package/dev-script/file-enforcer/README.md:134-197` documents `exec` forms the implementation rejects
+ and `README.md:290` imports an unexported subpath,
+ and `workspace-source-effect.unit.test.ts:67-70` finds functions by searching source text,
+ so an unrelated rename breaks it silently today.
 
-1.  When it lands,
-    merge it,
-    present its brief,
-    and ask whatever it flags.
+The design's "Open questions" now lists no unstarted design work and no pending user choice.
+
+1.  Consider the two defects above,
+    which are repository work rather than meow design.
 2.  For each research result,
     copy it into `doc/planning/monorepo-manager-route-research/`,
     verify its load-bearing claims,

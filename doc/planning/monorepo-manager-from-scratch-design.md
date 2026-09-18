@@ -1652,8 +1652,15 @@ covering the four migration items the all-Rust decision record lists as conseque
 - Root `mise.toml`:
    "Correct the record",
    so file-enforcer keeps generating it until Mise is removed.
-- Still open:
-   where the `prefer-readonly-parameter-type` fixture lives.
+- The `prefer-readonly-parameter-type` fixture:
+   "New fixture package".
+  A new `package/test-fixture/prefer-readonly-parameter-type` holds a frozen copy of `apply-plan.ts`
+   and really depends on `@monochromatic-dev/module-toml-edit`,
+   which keeps a genuine cross-package chain for the analyzer
+   and keeps that module a dependency target after file-enforcer leaves.
+  It also removes a fragility that exists today,
+   since `workspace-source-effect.unit.test.ts:67-70` finds functions by searching source text.
+- Nothing from this research is left open.
 
 #### Recommended shape
 
@@ -2713,7 +2720,8 @@ Design work finished on 2026-09-17:
 
 - How `vm-builder` replaces its `exec` import from file-enforcer's `/ts` subpath
    ("vm-builder migration"),
-   whose brief is with the user.
+   answered by the user on 2026-09-17
+   and recorded there and in the all-Rust decision record.
 - The HCL evaluator,
    function library,
    formatter,
