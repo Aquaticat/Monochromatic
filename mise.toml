@@ -1283,6 +1283,7 @@ _.path = [
   "package/pi-plugin/agent-settled-notification/node_modules/.bin",
   "package/pi-plugin/ask-user-question/node_modules/.bin",
   "package/pi-plugin/auto-mode/node_modules/.bin",
+  "package/pi-plugin/bash-poke/node_modules/.bin",
   "package/pi-plugin/current-time-context/node_modules/.bin",
   "package/pi-plugin/goal/node_modules/.bin",
   "package/pi-plugin/guardrail/node_modules/.bin",
