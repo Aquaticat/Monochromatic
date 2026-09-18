@@ -229,6 +229,42 @@ meow run //package/cow:test
 - Ctrl+C at that prompt leaves nothing started.
 - `meow run` never starts a daemon without being told to at that prompt.
 
+#### Where the JSON stream goes
+
+Asked where a detached daemon's stream should go,
+the user pointed at the repository's own logger:
+"In ts,
+we use our module/logger which logs to every available sink simultaneously."
+Recommended,
+not yet accepted:
+meow writes a small Rust equivalent rather than choosing one destination.
+
+- Read from `@monochromatic-dev/module-logger` on 2026-09-17:
+   each sink carries a `verify` that probes its backend,
+   the file sink writing a record and reading it back before it counts as available
+   (`package/module/logger/src/sink/file.ts:219-227`);
+   the logger keeps every sink that verifies and fans each record out to all of them
+   (`src/default-sinks.node.ts`);
+   and a logger whose sinks all fail verification raises "No logging backends available"
+   rather than discarding silently.
+- meow mirrors that shape:
+   verify,
+   fan out,
+   and fail loudly when nothing verifies.
+- Sinks for 0.x:
+   the terminal stream that `meow watch` prints,
+   and a timestamped JSONL file in meow's state directory,
+   one per daemon start,
+   as the TypeScript file sink already does under `node_modules/.monochromatic/`.
+- This answers the detached case without a separate rule:
+   a detached daemon has no terminal,
+   the file sink still verifies,
+   so the stream is recorded either way.
+- Rule `RCI`:
+   no Rust package in this repository owns logging yet,
+   so meow owns it,
+   and the tag discipline rule `TLG` states for TypeScript carries over.
+
 #### Which terminal speaks which language
 
 Derived from the answers above,
