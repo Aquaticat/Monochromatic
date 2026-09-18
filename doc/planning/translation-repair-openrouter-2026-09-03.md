@@ -8082,6 +8082,70 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ607 attempt 1, 2026-09-18, 21:39 UTC: the seven-hour entry deadline in consolidation, both pronoun paragraphs shipped
+
+Attempt 1 ran the whole seven hours
+(`TALLY XingZ60 status=ERROR ms=25200004 aborted=true error=refused by StreamCutShortError`,
+the per-entry deadline in `pass-entry.ts`)
+and the attempt queue re-queued the entry at once
+(`REATTEMPT XingZ60 queued: 444 more cache records than it had`,
+`attempts.json` reads 2);
+attempt 2 replays the cached slices under the same pid and was into the lane contests within four minutes.
+Classes fifty-four to fifty-six held:
+the funeral paragraph
+(slice 13,
+standing withheld at 20:13 UTC)
+went through its gate at 20:16 UTC told the standing cannot ship,
+three ballots for the consolidation
+(GPT-OSS,
+minimax,
+gemma-26b,
+each naming the untranslated TA)
+against gemma-e2b's "correctly preserves the pronoun 'TA' as dictated by the corpus rules",
+`settled on consolidated, ships consolidated`;
+the teachers paragraph
+(slice 33,
+withheld at 20:44 UTC)
+the same at 20:47 UTC,
+three to one with gemma-e2b again the one,
+`exit=computed` at 20:52 UTC.
+No slice stopped.
+Where the seven hours went,
+phase by phase:
+pictures and preparation 14:40 to 14:55,
+repair lane 14:55 to 17:50,
+translate lane 17:50 to about 19:20,
+lane contests to 20:00,
+consolidation 20:00 to the deadline at 21:39 with 56 of the slices started and chunk 69 the furthest.
+Slice time by lane
+(`SLICE-COST`,
+concurrent):
+repair 2.0 minutes a slice over 240,
+translate 1.5 over 232,
+consolidation 7.1 over 56.
+Inside the consolidation phase the select rounds took 147 minutes of wall time
+(116 to quorum),
+the refiners 68
+(37 of it grace),
+the naturalness review 50,
+the gates 33 and 25.
+deepseek-v4.1-flash is the slow seat:
+93 of its 845 calls abandoned,
+13 calls at the 360 s timeout
+(6 select,
+5 lane-contest,
+2 consolidate-gate),
+15 streams cut between 450 thousand and 1.4 million characters,
+2.52 USD of the 9.52 logged,
+the most of any seat.
+GLM-5.3-Flash on Synthetic ran one coverage stream to 10.5 million characters.
+Spend by the meters at the deadline:
+Bedrock 163.38 to 160.08,
+OpenRouter 235.95 to 230.05,
+9.20 USD;
+`pass-spend.mjs` logs 7594 seats and 227 retry rounds.
+The page read waits on attempt 2.
+
 ## XingZ607 launches on class fifty-six, 2026-09-18, 14:40 UTC
 
 Frozen `139a7f99a` (classes forty-one to fifty-six plus the decision seat),

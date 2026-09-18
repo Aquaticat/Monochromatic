@@ -527,6 +527,10 @@ which the takeover session does not have.
   log `~/temp/agent/XingZ607.log`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
+  Its attempt 1 ran to the seven-hour entry deadline at 21:39 UTC in consolidation with no slice stopped,
+  both pronoun paragraphs shipped through informed gates three to one
+  (the pass log's "XingZ607 attempt 1" heading dated 2026-09-18 21:39 UTC),
+  and attempt 2 replays from cache under the same pid.
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -4250,6 +4254,21 @@ each read off the pass log and the shipped page:
     providers at launch `synthetic=dry bedrock=wet hyper=dry openrouter=wet`;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
+    Attempt 1 hit the seven-hour entry deadline at 21:39 UTC in consolidation
+    (the pass log's "XingZ607 attempt 1" heading dated 2026-09-18 21:39 UTC):
+    no slice stopped,
+    the funeral and teachers paragraphs both went through gates told the standing cannot ship and shipped the consolidation three to one,
+    and attempt 2 replays the cached slices under the same pid.
+    The seven hours are the entry's size
+    (119 chunks through repair,
+    translate,
+    contest and consolidation in turn)
+    and the slow seat deepseek-v4.1-flash
+    (13 calls at the 360 s timeout,
+    93 abandoned,
+    2.52 USD);
+    the owner's ceiling stands
+    ("A 7h run is pretty unacceptable").
     It is the first pass on class fifty-six
     (the pass log's heading dated 2026-09-18 14:36 UTC);
     XingZ604,
