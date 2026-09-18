@@ -23,11 +23,21 @@ Do not bring tunnel up,
 restart it,
 or mutate live routing without explicit authorization.
 IVPN Desktop split tunneling is currently disabled after its supported `ivpn splittun -off` recovery.
-`/etc/wireguard/mx-que-mx1.conf` now contains `ExemptMark = 8888` under `[Interface]`.
+`/etc/wireguard/mx-que-mx1.conf` now contains `ExemptMark = 100` under `[Interface]`.
 The atomic edit preserved root ownership,
 mode `0600`,
 single-link status,
 and the down physical endpoint route.
+`8888` was the earlier value;
+it carries netavark's masquerade mask `0x2000`,
+which source-NATed every exempted socket including IPv4 loopback,
+and config parsing now rejects it.
+`/etc/wireguard/gb-lon-gb2.conf` carries the same `ExemptMark = 100`,
+and that tunnel was cycled so its watcher and `ip rule` selector use the new mark.
+That file is mode `0644` owned `root:user`,
+unlike `mx-que-mx1.conf`;
+nothing here changed it.
+See `doc/troubleshooting/netavark-masquerade-mask-exempt-mark.md`.
 
 ## Completed tasks
 

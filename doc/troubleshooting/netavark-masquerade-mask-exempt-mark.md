@@ -1,4 +1,4 @@
-# netavark 1.17.2 masquerades IPv4 loopback for any packet carrying mask `0x2000`, so a `wg-quicker` `ExemptMark` of `8888` breaks every Gradle build
+# netavark 1.17.2 masquerades any packet marked `0x2000`, so `ExemptMark = 8888` breaks IPv4 loopback
 
 `netavark`, the podman network backend, installs one unconditional postrouting
 masquerade rule keyed on the mark bit `0x2000`.
@@ -355,3 +355,24 @@ naming the value, the mask, its owner, and the replacement.
 `RECOMMENDED_EXEMPT_MARK` is `100`,
 and the `up` warning, `package/cli/wg-quicker/README.md`,
 and `doc/handover/wg-quicker.md` recommend it in place of `8888`.
+
+Loading a config that still carries `8888` now fails with:
+
+```text
+ConfigError: Invalid `ExemptMark' value `8888' (0x22b8): it shares bits with a packet mask another subsystem matches on.
+
+Bit range 0x2000 belongs to netavark, the podman network backend (`MASK`, `src/firewall/nft.rs:32`): its `table inet netavark` postrouting rule `meta mark & 0x2000 == 0x2000 masquerade` carries no interface or address restriction, so it source-NATs every matching packet, IPv4 loopback included, and a server bound to `127.0.0.1` then reads the outbound interface address as its peer.
+
+Pick a mark sharing no bit with those masks, such as `ExemptMark = 100' (0x64), then bring this interface down and up again so the watcher and policy rule carry the new mark. Keeping the current value requires removing the other subsystem instead: the collision is in its rules, not in this config file.
+```
+
+On this host `/etc/wireguard/gb-lon-gb2.conf` and `/etc/wireguard/mx-que-mx1.conf`
+were changed to `ExemptMark = 100` in place, preserving inode, owner, mode, and
+link count,
+and `gb-lon-gb2` was cycled.
+`ip rule` then shows `50: from all fwmark 0x64 lookup 52000 proto 201`,
+the watcher runs as `wg-quicker-exempt __watch gb-lon-gb2 100 1000`,
+the marked probe at `100` reports `127.0.0.1`,
+the same probe at `8888` still reports `192.168.253.108`,
+and `./gradlew help --no-daemon` succeeds in
+`package/music-player/android-app` on the host.

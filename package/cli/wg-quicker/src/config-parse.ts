@@ -150,7 +150,7 @@ function consumeInterfaceKey(
       value,
     },);
     assertUnreservedExemptMark({
-      key,
+      key: 'ExemptMark',
       mark,
     },);
     acc.exemptMark = mark;
