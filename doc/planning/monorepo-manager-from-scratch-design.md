@@ -229,6 +229,36 @@ meow run //package/cow:test
 - Ctrl+C at that prompt leaves nothing started.
 - `meow run` never starts a daemon without being told to at that prompt.
 
+#### The commands
+
+Answered by the user on 2026-09-17:
+inspection is "A `meow status` command",
+task controls are "CLI commands now",
+and "We don't need specifically a socket or a separate client,
+ ever."
+
+- `meow watch`:
+   the daemon,
+   in its own minimized terminal.
+- `meow run <target>`:
+   the working terminal's blocking run.
+- `meow status`:
+   what the daemon is doing now,
+   printed for a person from the per-task snapshot the daemon already keeps.
+- `meow pause`,
+   `meow resume`,
+   `meow end`,
+   and `meow priority`:
+   the task controls,
+   reaching the daemon the same way `meow run` does.
+- `meow doctor`,
+   `meow lsp`,
+   and the trust commands from "Per-user configuration".
+  Trust state reads through `meow trust status`,
+   keeping bare `meow status` about tasks.
+- meow ships no separate client application,
+   and the transport behind these commands is private ("RPC").
+
 #### Where the JSON stream goes
 
 Asked where a detached daemon's stream should go,
@@ -2560,6 +2590,17 @@ Usage rules and risks if XXH3-128 is adopted:
 
 ### RPC
 
+Reframed on 2026-09-17 by the user:
+"We don't need specifically a socket or a separate client,
+ ever."
+and the socket is "Private plumbing for now".
+
+- The user interface is meow's own commands ("User interface");
+   the transport below is how they reach the daemon,
+   not a product surface.
+- Nothing about it is documented or promised to outside callers in 0.x,
+   and no separate client application ships.
+- It may be replaced wholesale as long as the commands keep working.
 - Transport:
    a filesystem Unix socket under `$XDG_RUNTIME_DIR` with owner-only permissions,
    not an abstract socket,
@@ -2579,8 +2620,9 @@ Usage rules and risks if XXH3-128 is adopted:
    progress,
    and finished events modeled on Build Server Protocol task notifications,
    plus a per-task state snapshot modeled on Tilt's `UIResource`.
-- Clients resume subscriptions from a sequence number,
-   modeled on Watchman clocks.
+- A subscriber resumes from a sequence number,
+   modeled on Watchman clocks;
+   in 0.x the only subscribers are meow's own commands.
 - Anyone who can connect to the socket can run tasks as the user,
    so socket permissions are the security boundary.
 
