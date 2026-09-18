@@ -387,23 +387,24 @@ of decisions.md.
 - **Light-theme pass.**
    See 8b.
    Nothing drawn.
-- **Picker presentation within a letter — STILL OPEN,
-   and the constraint box is tight.**
-  Ruled out so far:
-   wrapped chips (unf-f/g/h/i),
-   one name per 48dp row in one column
-  (pk-a,
-   pk-c),
-   two columns of chips (pk-b),
-   and any sub-letter segmentation including
-  pk-d's rail accordion.
-   What is left to satisfy simultaneously:
-   plain-text names,
-  48dp targets,
+- **Picker presentation within a letter — SETTLED (D31,
+   candidate pk-g).**
+  Plain-text
+  names at natural width,
+   several per 48dp line,
    no segmentation,
-   and a scroll extent that stays modest for a letter
-  holding 70–100 names.
-   Candidates pk-e and pk-f attack it two different ways.
+   nothing truncated;
+  selection is primary colour plus a 2dp bottom-edge indicator on the whole target.
+  Measured extent at 100% text:
+   2.2 screens for a 72-name letter,
+   2.5 for the worst
+  90-name letter.
+   The native unfolded captures show the same wrapping presentation at
+  48dp row pitch (four names share the y=883 row in the dark evidence hierarchies),
+  so the Android target carries D31.
+   pk-e and pk-f are rejected rows-again patterns
+  (review-notes 5d),
+   not live candidates.
 - **Command bar surface** (D21) — hotkey settled,
    the surface itself never designed.
 - **Keyboard map / IntelliJ alignment pass** (D25).

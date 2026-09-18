@@ -3975,15 +3975,14 @@ Production implementation is not the current track and stays unauthorized pendin
 explicit request.
  Open design frontiers from `open-questions.md`:
 
-- Picker presentation within a letter (section 10):
-  plain-text names,
-  48dp targets,
-  no
- segmentation,
-  modest scroll extent for 70 to 100 names per letter;
-  pk-e and pk-f
- remain live.
-  This is the active round.
+- Picker presentation within a letter:
+  settled by D31 (pk-g) and carried natively at 48dp
+ row pitch;
+  `open-questions.md` section 10 carried a stale STILL OPEN entry listing
+ pk-e and pk-f,
+  now closed with the D31 citation and native evidence.
+  The next active
+ round is the frontier the user picks next.
 - Command bar surface (D21):
   hotkey settled,
   surface never designed.
