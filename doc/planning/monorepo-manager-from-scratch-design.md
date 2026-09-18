@@ -288,6 +288,38 @@ not separately stated:
 - The later TUI is another client of the same socket,
    not a replacement for either terminal.
 
+### Modularity
+
+Stated by the user on 2026-09-17,
+answering whether meow should mirror `@monochromatic-dev/module-logger` inside its own binary
+or port it as a package:
+"Everything that could possibly be modular should be reusable package/library.
+ This includes not just the ported logger."
+
+- meow is composed of reusable repository packages,
+   not one crate with private modules.
+  Anything that could stand alone becomes its own package:
+   the logger,
+   the HCL front end and evaluator,
+   the hasher wrapper,
+   the cache,
+   the watcher,
+   the scheduler,
+   the RPC layer,
+   the structured editors,
+   and the file-enforcement rules.
+- The single-file requirement is unaffected:
+   `./meow` is one binary that composes those packages
+   ("Distribution").
+- This supersedes the implementation plan's line that package layout is undecided,
+   and it makes the plan's milestones deliver packages rather than modules.
+- Open tension,
+   flagged for the user:
+   on 2026-09-17 the same day,
+   answering the vm-builder question,
+   the user chose "No shared owner" for TypeScript process execution,
+   which points the other way for that case.
+
 ### Configuration
 
 Stated by the user on 2026-09-16,

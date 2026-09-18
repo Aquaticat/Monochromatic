@@ -244,11 +244,25 @@ and each needs an owner when its milestone starts:
 - The aarch64 speed evidence behind the hash choice is Apple silicon on Darwin,
    not a release-blocking Linux target.
 
+## Modularity
+
+Stated by the user on 2026-09-17:
+"Everything that could possibly be modular should be reusable package/library."
+
+- Each milestone delivers reusable repository packages rather than private modules,
+   and `./meow` composes them into the single binary.
+- M1 therefore includes the logger package,
+   not a logging module inside meow.
+- The sink model is the repository logger's:
+   verify each backend,
+   fan out to every verified sink,
+   and refuse to start when none verify.
+  0.x ships the terminal stream and a timestamped JSONL file in meow's state directory.
+
 ## What this plan does not decide
 
-- Package layout,
-   crate boundaries,
-   and module names inside meow's worktree.
+- The names and boundaries of those packages,
+   beyond the subsystem list in the design's "Modularity".
 - The wording of user-facing diagnostics,
    which waits on meow's CLI naming.
 - Whether the repository ever gains a shared process-execution owner;
