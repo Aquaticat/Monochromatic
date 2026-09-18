@@ -55,6 +55,11 @@ const captures = [
   { candidate: 'cover-light-l3', scale: '1.0', scaleKey: 's100', night: false, environment: 'wallpaper' },
   { candidate: 'cover-light-l1', scale: '2.0', scaleKey: 's200', night: false, environment: 'wallpaper' },
   { candidate: 'cover-dark-coral', scale: '1.0', scaleKey: 's100', night: true, environment: 'coral' },
+  { candidate: 'cover-picker-k1', scale: '1.0', scaleKey: 's100', night: true, environment: 'wallpaper', markers: ['text="Cult of Luna"', 'content-desc="Navigate up"'] },
+  { candidate: 'cover-picker-k2', scale: '1.0', scaleKey: 's100', night: true, environment: 'wallpaper', markers: ['text="Cult of Luna"', 'text="Open"'] },
+  { candidate: 'cover-picker-k3', scale: '1.0', scaleKey: 's100', night: true, environment: 'wallpaper', markers: ['text="Cult of Luna"', 'text="Open"'] },
+  { candidate: 'cover-picker-k1', scale: '2.0', scaleKey: 's200', night: true, environment: 'wallpaper', markers: ['text="Cult of Luna"', 'content-desc="Navigate up"'] },
+  { candidate: 'cover-picker-k1-light', scale: '1.0', scaleKey: 's100', night: false, environment: 'wallpaper', markers: ['text="Cult of Luna"', 'content-desc="Navigate up"'] },
 ];
 const coverMappings = {
   dark: {
@@ -136,16 +141,12 @@ const settleNightRoles = (mode) => {
   throw new Error(`Android ${mode} roles did not settle: ${JSON.stringify(roles)}`);
 };
 
-const waitForCompose = () => {
+const waitForCompose = (markers) => {
   for (let attempt = 0; attempt < 16; attempt += 1) {
     try {
       adbText(['shell', 'uiautomator', 'dump', '/sdcard/cover-round-ready.xml']);
       const hierarchy = adbText(['exec-out', 'cat', '/sdcard/cover-round-ready.xml']);
-      if (
-        hierarchy.includes('text="Camellia"')
-        && hierarchy.includes('content-desc="Repeat track"')
-        && hierarchy.includes('content-desc="Pause"')
-      ) {
+      if (markers.every((marker) => hierarchy.includes(marker))) {
         return hierarchy;
       }
     } catch (error) {
@@ -189,7 +190,7 @@ try {
         sleep(800);
       adbText(['shell', 'am', 'force-stop', packageName]);
       adbText(['shell', 'am', 'start', '-W', '-n', activity, '--es', 'candidate', capture.candidate]);
-      const hierarchy = waitForCompose();
+      const hierarchy = waitForCompose(capture.markers ?? ['text="Camellia"', 'content-desc="Repeat track"', 'content-desc="Pause"']);
       const png = execFileSync(adb, ['-s', serial, 'exec-out', 'screencap', '-d', displayId, '-p']);
       const basename = `cover-round-${capture.candidate}-${capture.scaleKey}`;
       const pngPath = join(renderDirectory, `${basename}.png`);

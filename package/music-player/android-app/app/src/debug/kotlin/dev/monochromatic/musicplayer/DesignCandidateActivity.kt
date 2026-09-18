@@ -81,6 +81,7 @@ import androidx.activity.enableEdgeToEdge
 // import { icons } from '@material-design-icons/svg';
 // ```
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FolderOpen
@@ -196,6 +197,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 // ```ts
 // import { fillMaxSize, fillMaxWidth, height, padding, size, weight, width } from 'compose/layout';
 // ```
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -468,6 +470,66 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             rowDividers = false,
         )
     }
+    if (candidate.startsWith("cover-picker") && !candidate.endsWith("-light")) {
+        if (candidate.contains("-k1")) {
+            return CandidatePalette(
+                window = TrueBlack,
+                picker = TrueBlack,
+                rail = TrueBlack,
+                transport = StableDarkContainerLow,
+                tracks = TrueBlack,
+                spacer = TrueBlack,
+                sectionDivider = TrueBlack,
+                paneDivider = false,
+                railDivider = true,
+                railDividerColor = scheme.outline,
+                rowDividers = false,
+            )
+        }
+        return CandidatePalette(
+            window = TrueBlack,
+            picker = TrueBlack,
+            rail = TrueBlack,
+            transport = StableDarkContainerLow,
+            tracks = TrueBlack,
+            spacer = TrueBlack,
+            sectionDivider = TrueBlack,
+            paneDivider = false,
+            railDivider = false,
+            railDividerColor = scheme.outline,
+            rowDividers = false,
+        )
+    }
+    if (candidate == "cover-picker-k1-light") {
+        return CandidatePalette(
+            window = scheme.surfaceDim,
+            picker = scheme.surfaceContainerLowest,
+            rail = scheme.surfaceContainerLowest,
+            transport = scheme.surfaceContainerLow,
+            tracks = scheme.surfaceContainerLowest,
+            spacer = Color.White,
+            sectionDivider = scheme.outlineVariant,
+            paneDivider = false,
+            railDivider = true,
+            railDividerColor = scheme.outlineVariant,
+            rowDividers = false,
+        )
+    }
+    if (candidate.startsWith("cover-picker") && candidate.endsWith("-light")) {
+        return CandidatePalette(
+            window = scheme.surfaceDim,
+            picker = scheme.surfaceContainerLowest,
+            rail = scheme.surfaceContainerLowest,
+            transport = scheme.surfaceContainerLow,
+            tracks = scheme.surfaceContainerLowest,
+            spacer = Color.White,
+            sectionDivider = scheme.outlineVariant,
+            paneDivider = false,
+            railDivider = true,
+            railDividerColor = scheme.outlineVariant,
+            rowDividers = false,
+        )
+    }
     if (candidate.startsWith("cover-dark")) {
         return CandidatePalette(
             window = TrueBlack,
@@ -622,7 +684,9 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
 @Composable
 private fun DesignCandidatePrototype(candidate: String) {
     val context = LocalContext.current
-    val scheme = if (candidate.startsWith("cover-dark")) {
+    val scheme = if (candidate.startsWith("cover-picker") && !candidate.endsWith("-light")) {
+        darkDynamicSchemeFor(context = context, candidate = "dark-stable-wallpaper-dynamic")
+    } else if (candidate.startsWith("cover-dark")) {
         darkDynamicSchemeFor(
             context = context,
             candidate = candidate.replaceFirst(oldValue = "cover-dark", newValue = "dark-stable") + "-dynamic",
@@ -640,7 +704,9 @@ private fun DesignCandidatePrototype(candidate: String) {
             modifier = Modifier.fillMaxSize(),
             color = palette.window,
         ) {
-            if (candidate.startsWith("cover-")) {
+            if (candidate.startsWith("cover-picker")) {
+                CoverPickerStudy(candidate = candidate, palette = palette)
+            } else if (candidate.startsWith("cover-")) {
                 CoverStudy(candidate = candidate, palette = palette)
             } else if (candidate.startsWith("dbtp-")) {
                 RightHalfStudy(candidate = candidate, palette = palette)
@@ -797,7 +863,110 @@ private fun CoverStudy(candidate: String, palette: CandidatePalette) {
             modifier = Modifier.fillMaxWidth(),
             candidate = candidate,
             palette = palette,
+            deckHeightCap = false,
         )
+    }
+}
+
+/** Renders the cover subdirectory picker opened state as one of three container candidates. */
+@Composable
+private fun CoverPickerStudy(candidate: String, palette: CandidatePalette) {
+    val variant = candidate
+        .removePrefix("cover-picker-")
+        .removeSuffix("-light")
+        .substringBefore("-s")
+    if (variant == "k1") {
+        Column(modifier = Modifier.fillMaxSize().background(palette.window)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp)
+                    .background(palette.rail)
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .padding(start = 4.dp, end = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                IconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Navigate up",
+                    )
+                }
+                Text(text = "Folders", style = MaterialTheme.typography.titleMedium)
+            }
+            Row(modifier = Modifier.weight(1f)) {
+                LetterRail(palette = palette)
+                if (palette.railDivider) {
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .fillMaxSize()
+                            .background(palette.railDividerColor),
+                    )
+                }
+                FolderNames(background = palette.tracks)
+            }
+        }
+        return
+    }
+    val panelSurface = if (variant == "k1") {
+        Color.Unspecified
+    } else if (candidate.endsWith("-light")) {
+        MaterialTheme.colorScheme.surfaceContainerHigh
+    } else {
+        StableDarkContainerHigh
+    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        CoverStudy(candidate = candidate, palette = palette)
+        if (variant == "k2") {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+                Box(modifier = Modifier.fillMaxWidth().height(56.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.66f)
+                        .background(panelSurface),
+                ) {
+                    Row(modifier = Modifier.weight(1f)) {
+                        LetterRail(palette = palette, background = panelSurface)
+                        FolderNames(background = panelSurface)
+                    }
+                }
+            }
+            return@Box
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)),
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .fillMaxHeight(0.72f)
+                .background(panelSurface),
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .width(32.dp)
+                        .height(4.dp)
+                        .background(
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                            CircleShape,
+                        ),
+                )
+                Row(modifier = Modifier.weight(1f)) {
+                    LetterRail(palette = palette, background = panelSurface)
+                    FolderNames(background = panelSurface)
+                }
+            }
+        }
     }
 }
 
@@ -942,13 +1111,13 @@ private fun FolderPicker(modifier: Modifier, candidate: String, palette: Candida
 
 /** Draws one independently scrolling single-select column of writing-system targets. */
 @Composable
-private fun LetterRail(palette: CandidatePalette) {
+private fun LetterRail(palette: CandidatePalette, background: Color = palette.rail) {
     val letters = listOf("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q")
     Column(
         modifier = Modifier
             .width(48.dp)
             .fillMaxSize()
-            .background(palette.rail)
+            .background(background)
             .verticalScroll(rememberScrollState())
             .selectableGroup(),
     ) {
@@ -993,14 +1162,14 @@ private fun LetterRail(palette: CandidatePalette) {
 /** Packs filtered folder names as plain selectable 48dp text targets with no chip styling. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun RowScope.FolderNames() {
+private fun RowScope.FolderNames(background: Color = Color.Transparent) {
     val folders = listOf(
         CURRENT_SUBDIRECTORY, "C418", "Carpenter Brut", "Casiopea", "Celldweller", "Chicane",
         "CHON", "Clark", "Clown Core", "Coaltar of the Deepers", "Com Truise", "Cornelius",
         "Covet", "Crumb", "Crystal Castles", "Cult of Luna", "Current Value", "Cynic",
         "Cö shu Nie", "capsule", "Charisma.com", "Cornelius Live", "Cytus Sound Team",
     )
-    Column(modifier = Modifier.weight(1f)) {
+    Column(modifier = Modifier.weight(1f).background(background)) {
         Text(
             text = "C",
             modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 2.dp),
@@ -1064,6 +1233,7 @@ private fun TransportBlock(
     modifier: Modifier,
     candidate: String,
     palette: CandidatePalette,
+    deckHeightCap: Boolean = true,
 ) {
     // What:     Kotlin's `if` can return a value, unlike a TypeScript `if` statement.
     // Why:      Every candidate keeps one immutable Material spacing value for its complete deck.
@@ -1083,7 +1253,7 @@ private fun TransportBlock(
     }
     Column(
         modifier = modifier
-            .heightIn(max = 440.dp)
+            .then(if (deckHeightCap) Modifier.heightIn(max = 440.dp) else Modifier)
             .background(color = palette.transport)
             .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Horizontal))
             .windowInsetsPadding(WindowInsets.navigationBars)

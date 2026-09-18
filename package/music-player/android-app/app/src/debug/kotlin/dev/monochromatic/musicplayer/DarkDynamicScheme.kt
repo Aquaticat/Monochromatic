@@ -76,7 +76,7 @@ internal val StableDarkContainerLow: Color = Color(0xFF0A0A0D)
 private val StableDarkContainer: Color = Color(0xFF121216)
 
 /** Later color declaration for the higher stable project-owned container step. */
-private val StableDarkContainerHigh: Color = Color(0xFF1A1A1F)
+internal val StableDarkContainerHigh: Color = Color(0xFF1A1A1F)
 
 /** Later color declaration for the highest stable project-owned container step. */
 private val StableDarkContainerHighest: Color = Color(0xFF22222A)
