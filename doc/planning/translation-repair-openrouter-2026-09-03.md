@@ -8082,6 +8082,120 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ604 launches on the Jev seat, 2026-09-18, 01:56 UTC
+
+Frozen `c14c7f176` (classes forty-one to fifty-three plus the decision seat),
+pid 211894,
+runs `~/temp/agent/XingZ604`,
+log `~/temp/agent/XingZ604.log`,
+Synthetic,
+Bedrock and OpenRouter wet,
+Hyper dry at launch,
+meters Bedrock 172.63 and OpenRouter 247.07,
+no cron job,
+the background waiter alone reports the exit.
+The JUDGE SEATS line at 01:56 UTC reads `wide=8 select=9`:
+the ninth select seat is `typesafe/jev-1.13`,
+the first pass with a typed-decision judge on the select benches.
+It resumes from XingZ602's slice cache.
+Read first slice 14's translate rounds
+(a winner,
+or a `translate-runoff (finalists N of M)` finding,
+never an ERROR),
+then Jev's ballots in the select rounds
+(reason prefix `typed decision`,
+the probabilities on the line),
+then the pictures line,
+then the nine footnote definitions and their labels,
+the components,
+the `details` summary,
+the profile link,
+then the seven steps and the three checks.
+
+## XingZ603 killed, 2026-09-18, 01:56 UTC: 60 minutes into the repair lane, the seat landed
+
+Frozen `012b9ccc3`,
+killed by pid at 01:56 UTC under always-kill-and-relaunch once `c14c7f176` seated Jev.
+It had reached repair chunk 18 of the repair lane
+(chunks 14 to 18 repaired,
+chunk 10 unchanged)
+and never entered the translate lane,
+so class fifty-three is still untested live.
+Spend by the meters:
+Bedrock 173.08 to 172.63,
+OpenRouter 247.86 to 247.07,
+1.24 USD;
+`pass-spend.mjs` logs 1238 seats and 28 retry rounds
+(select 40 rounds,
+196 asked,
+179 heard).
+
+## Jev 1.13 seated as a select judge, 2026-09-18, 01:47 UTC: 12 of 12 through the production probe
+
+`ad20acc84` put `typesafe/jev-1.13` on the roster as a decision-only seat
+(a `decisions` side on the card,
+no chat catalog,
+held `judge-unmeasured`,
+`writer-unmeasured`,
+`reader-unmeasured`),
+`bc6fdc9b9` built the transport
+(`decisions-client.ts` posting `{model, state, questions}` to the decisions endpoint through the retry policy,
+`decision-contract.ts` reading the typed answers,
+`stage-decision-call.ts` turning one into a stage voice,
+`candidate-select-decision.ts` asking the select question as one `choice` over the candidate numbers with `0` for none)
+and threaded it from `decideBestCandidate` through `gatherStageVoices` to `attemptStageCall`,
+which routes a decision seat to `client.decide` instead of `chatJson`.
+The router refuses `decide` while OpenRouter is dry and marks its refusals on the budgets.
+
+The production probe ran at 01:40 UTC
+(`mise run judge-fidelity-probe -- --candidates typesafe/jev-1.13`,
+runs `~/temp/agent/jev-probe`,
+log `~/temp/agent/jev-probe.log`)
+over the 16 reviewed rows of `gqt` and `MTF_0615`
+(the probe itself warned the matrix partial,
+16 of 28,
+the `Y1Ran` reference not on disk here),
+Jev beside the ten seated judges.
+Every one of Jev's 12 calls went through `provider=openrouter model=typesafe/jev-1.13` on the decisions route
+(1173 to 1211 prompt tokens,
+38 output tokens,
+338 to 685 ms,
+0.000049 to 0.000051 USD each),
+the fan-out window spared it on the four `gqt` insertion rounds.
+It chose the reviewed reference 12 of 12 times,
+no damaged pick,
+no decline,
+probabilities 0.75 to 0.96 on the reference
+(least sure on gqt's deletion rows at 0.75 to 0.81,
+as the scratch measurement had found).
+Peers on the same rows:
+DeepSeek V4.1 Flash 12 of 12,
+Mercury 12 of 12,
+Qwen 10 of 10,
+GLM-5.3-Flash 10 of 10,
+Kimi,
+GPT-OSS and MiniMax 8 of 8,
+Gemma 26B 8 clean and 2 declined of 10,
+Gemma E2B 8 clean and 2 damaged of 10;
+glm-5.3 unreachable throughout
+(Hyper dry).
+Jev meets the admission bar
+(clean count at the peer median,
+damaged count below the peer maximum),
+so `c14c7f176` removes `judge-unmeasured` from its card
+(guards red first at `1e2c18de4`)
+and `RUN_DECISION_JUDGES` seats it after every wide seat on `RUN_SELECT_JUDGES`,
+seated when OpenRouter is wet and unseated when it is dry.
+Only the candidate-select stage has a typed question for it;
+consolidation slates,
+lane contests,
+panels and gates still call chat,
+so a decision seat there is a lost voice,
+never a vote.
+Writer and reader holds stay:
+a typed decision writes and reads nothing.
+Runbook section "Add a decision-only model" in `882e4f8c2`.
+
 ## XingZ603 launches on class fifty-three, 2026-09-18, 00:55 UTC
 
 Frozen `012b9ccc3` (classes forty-one to fifty-three),

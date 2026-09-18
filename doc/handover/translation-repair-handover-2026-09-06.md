@@ -472,16 +472,28 @@ which the takeover session does not have.
   and its second attempt was killed at 5h57m in the consolidation once the fix landed.
   `XingZ603` launched at 00:55 UTC on 2026-09-18 on frozen `012b9ccc3` (pid 4181820,
   runs `~/temp/agent/XingZ603`,
-  log `~/temp/agent/XingZ603.log`);
-  no cron job on the owner's word,
-  the background waiter alone reports the exit.
+  log `~/temp/agent/XingZ603.log`)
+  and was killed at 01:56 UTC 60 minutes into the repair lane,
+  before the translate lane,
+  once the Jev seat landed
+  (the pass log's "XingZ603 killed" heading dated 2026-09-18 01:56 UTC;
+  1.24 USD).
   The owner approved `typesafe/jev-1.13` on OpenRouter at 00:29 UTC
   (the pass log's "Jev 1.13 approved" heading dated 2026-09-18 00:29 UTC):
   a typed-decision model on a decisions endpoint,
-  probed live and measured 28 of 28 on the reviewed fidelity matrix at 01:05 UTC
-  (the same heading),
-  not yet wired;
-  task 185.
+  measured 28 of 28 by scratch at 01:05 UTC,
+  put on the roster as a decision-only seat (`ad20acc84`),
+  wired through a decisions transport into the candidate-select stage (`bc6fdc9b9`),
+  measured 12 of 12 through the production probe at 01:40 UTC
+  and seated as a select judge (`c14c7f176`;
+  the pass log's "Jev 1.13 seated" heading dated 2026-09-18 01:47 UTC;
+  the seating decision's 2026-09-18 addendum).
+  `XingZ604` launched at 01:56 UTC on frozen `c14c7f176` (pid 211894,
+  runs `~/temp/agent/XingZ604`,
+  log `~/temp/agent/XingZ604.log`),
+  JUDGE SEATS `wide=8 select=9`;
+  no cron job on the owner's word,
+  the background waiter alone reports the exit.
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2295,6 +2307,34 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`c14c7f176` (2026-09-18,
+01:55 UTC):
+`typesafe/jev-1.13` seated as a select judge,
+12 of 12 through the production probe
+(`model-cards.ts`;
+the pass log's "Jev 1.13 seated" heading dated 2026-09-18 01:47 UTC;
+guards red first at `1e2c18de4`;
+runbook section in `882e4f8c2`).
+Running on XingZ604.
+`bc6fdc9b9` (2026-09-18,
+01:30 UTC):
+the decisions transport and the select-stage typed question
+(`decisions-client.ts`,
+`decision-contract.ts`,
+`stage-decision-call.ts`,
+`candidate-select-decision.ts`,
+`provider-router.ts`,
+`stage-call.ts`).
+`ad20acc84` (2026-09-18,
+01:15 UTC):
+the decision-only roster seat
+(`roster-id.ts`,
+`model-card.ts`,
+`model-cards.ts`,
+`model-card-derive.ts`,
+`run-config.ts`,
+`run-seats.ts`;
+guard red first at `a2d0b3b8d`).
 `012b9ccc3` (2026-09-18,
 00:45 UTC):
 class fifty-three,
@@ -4134,18 +4174,26 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ603` by the seven steps and the three checks (frozen `012b9ccc3`,
-    pid 4181820,
-    runs `~/temp/agent/XingZ603`,
-    log `~/temp/agent/XingZ603.log`,
-    launched 00:55 UTC on 2026-09-18 with Bedrock and OpenRouter wet,
-    Synthetic and Hyper dry;
+1.  READ `XingZ604` by the seven steps and the three checks (frozen `c14c7f176`,
+    pid 211894,
+    runs `~/temp/agent/XingZ604`,
+    log `~/temp/agent/XingZ604.log`,
+    launched 01:56 UTC on 2026-09-18 with Synthetic,
+    Bedrock and OpenRouter wet,
+    Hyper dry;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    It is the first pass on class fifty-three
+    It is the first pass with the decision seat on the select benches
+    (JUDGE SEATS `wide=8 select=9`;
+    the pass log's "Jev 1.13 seated" heading dated 2026-09-18 01:47 UTC)
+    and the first to reach class fifty-three's translate rounds
     (the pass log's heading dated 2026-09-18 00:45 UTC);
-    XingZ602 stopped ERROR on it after 2h38m and its reattempt was killed at 5h57m
-    (the pass log's "XingZ602 read" heading dated 2026-09-18 00:56 UTC).
+    XingZ602 stopped ERROR on it after 2h38m and its reattempt was killed at 5h57m,
+    XingZ603 was killed at 60 minutes in the repair lane
+    (the pass log's "XingZ602 read" and "XingZ603 killed" headings).
+    Read Jev's select ballots
+    (reason prefix `typed decision`)
+    against the chat judges' on the same rounds.
     XingZ60 is 577 source lines against 358 archive lines,
     nine footnote definitions in the original and none in the archive,
     so read first slice 14's translate rounds
@@ -4180,7 +4228,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (XingZ602 to its ERROR and the killed reattempt:
+    (XingZ603 to its kill in the repair lane:
+    1.24 USD by the meters,
+    1238 seats,
+    28 retry rounds,
+    60 minutes;
+    XingZ602 to its ERROR and the killed reattempt:
     9.76 USD by the meters,
     10034 seats,
     348 retry rounds,

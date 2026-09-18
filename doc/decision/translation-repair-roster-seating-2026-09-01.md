@@ -933,3 +933,86 @@ The pass running when the instruction arrived
 (`Mio18`,
 frozen `e964d2f3a`)
 was killed and relaunched on the new tip under the always-kill-and-relaunch rule.
+
+## Addendum 2026-09-18: `typesafe/jev-1.13` joins the select judges as a decision-only seat
+
+Taken under the owner's delegated calibration-then-seat rule after the owner's approval of the model on OpenRouter
+(2026-09-18,
+00:29 UTC).
+Jev 1.13 answers typed questions over a state on OpenRouter's decisions endpoint
+and has no chat completion,
+so it is the first roster model with a `decisions` side and no provider side:
+`OPENROUTER_DECISION_IDS` in `src/roster-id.ts`,
+`DECISION_ONLY_ROSTER_IDS` in `src/model-card-derive.ts`,
+off `RUN_ROSTER` and every chat bench,
+on `RUN_SELECT_JUDGES` through `RUN_DECISION_JUDGES` once measured.
+
+The instrument was the production judge fidelity probe on the compiled package at `bc6fdc9b9`
+(`mise run judge-fidelity-probe -- --candidates typesafe/jev-1.13`,
+01:40:41 to 01:47:09 UTC),
+the source-reviewed references for `gqt` and `MTF_0615`,
+16 reviewed rows
+(deletion and insertion,
+preserve and replace,
+both candidate orders),
+the candidate beside the ten seated judges,
+the same select question every peer answered as chat asked of Jev as one `choice` over the candidate numbers.
+The probe warned the matrix partial,
+16 of 28,
+because the locally corrected `Y1Ran` reference was not on disk in this worktree;
+a scratch measurement at 01:05 UTC over all 28 rows,
+outside the package,
+had chosen the reference 28 of 28 times
+(the pass log's "Jev 1.13 approved" heading).
+
+Results on the 16 rows:
+
+- Jev was asked 12 times
+  (the fan-out window of quorum plus one spare left it out of the four `gqt` insertion rounds)
+  and chose the reviewed reference 12 times,
+  no damaged pick,
+  no decline,
+  probabilities 0.75 to 0.96 on the reference.
+- DeepSeek V4.1 Flash and Mercury each chose the reference on all 12 of their rows.
+- Qwen and GLM-5.3-Flash chose it on all 10 of theirs;
+  Kimi,
+  GPT-OSS and MiniMax on all 8.
+- Gemma 26B chose it 8 times and declined twice of 10.
+- Gemma E2B chose it 8 times and a damaged candidate twice of 10.
+- glm-5.3 was unreachable on every row
+  (Hyper dry).
+
+Jev meets both clauses of the admission rule:
+its clean count equals the peer median on the rows it was asked,
+and its damaged count is below the peer maximum.
+Every call went through the decisions route
+(`SPEND provider=openrouter model=typesafe/jev-1.13`,
+1173 to 1211 prompt tokens,
+38 output tokens,
+338 to 685 ms,
+0.000049 to 0.000051 USD each);
+`SEAT typesafe/jev-1.13 asked=12 usable=12 unusable=0 threw=0`.
+
+`c14c7f176` removes only `judge-unmeasured` from the card
+(guards red first at `1e2c18de4`:
+`decision-seat.unit.test.ts`,
+`roster-fixture.unit.test.ts`;
+`run-seats.unit.test.ts` now expects the select bench one seat wider than the wide bench).
+It votes only where a typed question is threaded,
+which today is the candidate-select stage of the repair and translate lanes
+(`selectDecision` in `src/candidate-select-decision.ts`);
+consolidation slates,
+lane contests,
+panels and gates call chat and leave it a lost voice.
+`writer-unmeasured` and `reader-unmeasured` stay on the card as a matter of kind,
+not of measurement:
+a typed decision writes and reads nothing.
+Build,
+types,
+zero-warning lint and the unit suite pass on `c14c7f176`
+(`~/temp/agent/jev-seat-check2.log`).
+XingZ604 launched at 01:56 UTC on the frozen build and its JUDGE SEATS line reads `wide=8 select=9`.
+
+Evidence:
+`~/temp/agent/jev-probe.log`,
+`~/temp/agent/jev-probe/judge-fidelity-PzAXzN/judge-fidelity-probe/2026-09-18T01-40-41.110Z-7d877967.json`.

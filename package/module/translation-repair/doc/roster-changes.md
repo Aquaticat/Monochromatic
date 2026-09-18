@@ -20,7 +20,24 @@ DeepSeek V4 Pro 0813 and V4 Flash 0731 left the roster on 2026-09-16 at the owne
 both spellings on both providers are blocklisted,
 and V4.1 Flash took the editor and refiner seats V4 Pro held,
 unmeasured in those roles until the next editor calibration.
-The roster is eleven models.
+The roster is twelve models.
+
+`typesafe/jev-1.13` joined on 2026-09-18 as the first decision-only seat:
+a model OpenRouter serves through its decisions endpoint
+(typed `choice`,
+`noul` and `score` answers over a state)
+and not through chat.
+Its card has a `decisions` side and no provider side,
+it is off `RUN_ROSTER` and every chat bench,
+and it sits on `RUN_SELECT_JUDGES` after every wide seat once measured.
+The production judge fidelity probe on 2026-09-18 chose the reviewed reference on all 12 rows it was asked,
+no damaged pick or decline,
+level with DeepSeek V4.1 Flash and Mercury on the same rows,
+so the judge hold came off in `c14c7f176`.
+It votes only in the candidate-select stage,
+the one stage with a typed question;
+writer and reader holds stay because a typed decision writes and reads nothing.
+The steps are the runbook's "Add a decision-only model" section.
 
 DeepSeek V4.1 Flash was approved on Hyper and OpenRouter on 2026-09-11.
 It has one distinct catalog identity,
