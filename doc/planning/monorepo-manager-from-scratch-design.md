@@ -1257,8 +1257,15 @@ Answered by the user on 2026-09-17:
    hand-maintained now,
    once meow takes over,
    mise is out."
-  The root `mise.toml` is hand-maintained from now on,
-   meow gets no Mise-specific rule,
+  Corrected on 2026-09-17,
+   after the vm-builder research found that `file-enforcer.config.ts:718-721` still writes the file
+   and `mise.toml:1` still carries its generated header:
+   asked which record stands,
+   the user chose "Correct the record",
+   so file-enforcer keeps generating the root `mise.toml` until Mise is removed,
+   and the hand-maintained wording applied to `mise.no-env.toml`,
+   the source it is generated from.
+  meow gets no Mise-specific rule,
    and Mise is removed entirely when meow takes over,
    which happens only once meow supports the full platform matrix
    ("Platforms and builds").
@@ -1622,8 +1629,31 @@ Research:
 [`vm-builder-exec.md`](monorepo-manager-route-research/vm-builder-exec.md),
 2026-09-17,
 covering the four migration items the all-Rust decision record lists as consequences.
-The brief went to the user the same day;
-rule `DRR` requires acceptance before any of it becomes a decision.
+
+#### Answers on 2026-09-17
+
+- Shared process owner:
+   "No shared owner".
+  vm-builder owns its runner,
+   direct spawning stays the repository's pattern,
+   and no `module-process-run` package is created.
+- Timing:
+   "With the rewrite".
+  The `exec` replacement lands as part of file-enforcer's deletion rather than ahead of it,
+   so the rewrite's parity surface keeps that export until then.
+- Speed gate:
+   "No speed gate".
+  The rewrite keeps its byte-identical output gate only,
+   and the `file-enforcer-perf` fixture retires with the TypeScript implementation;
+   no Rust benchmark is written for it.
+  Recorded consequence:
+   the rewrite ships without speed evidence,
+   so any claim that it is faster stays unmeasured.
+- Root `mise.toml`:
+   "Correct the record",
+   so file-enforcer keeps generating it until Mise is removed.
+- Still open:
+   where the `prefer-readonly-parameter-type` fixture lives.
 
 #### Recommended shape
 
@@ -1707,11 +1737,11 @@ attaching it to `task-util` > shelling out to meow's CLI > meow's RPC.
    so an unrelated rename breaks it silently,
    today,
    before any migration.
-- The root `mise.toml` is recorded as hand-maintained in the all-Rust decision record,
+- The root `mise.toml` was recorded as hand-maintained in the all-Rust decision record,
    while `file-enforcer.config.ts:718-721` still generates it and `mise.toml:1` carries the generated header.
-  Verified on merging;
-   asked as a question rather than corrected unilaterally,
-   because the user's two answers on 2026-09-17 pull in different directions.
+  Verified on merging and asked rather than corrected unilaterally;
+   the user answered "Correct the record" on 2026-09-17,
+   so generation stands until Mise is removed.
 
 #### Transition
 
