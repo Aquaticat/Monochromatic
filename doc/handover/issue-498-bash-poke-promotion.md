@@ -554,6 +554,11 @@ the user asked for the trailing `continue` instruction to be eliminated.
   With an empty default that check is vacuously true,
   since every string contains the empty string,
   so the case now asserts that no trimmed pane line equals `continue`.
+- Poke output is also trimmed of surrounding whitespace before fencing.
+  The user's first live poke showed a blank line inside the fence,
+  which was the command's own trailing newline,
+  and a whitespace-only run now reports `(no output)` instead of an empty block.
+  The spool file keeps the exact captured bytes.
 
 ## Next action
 
