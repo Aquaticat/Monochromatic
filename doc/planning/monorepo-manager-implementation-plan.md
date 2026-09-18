@@ -157,11 +157,14 @@ Every milestone carries a parity or conformance target measured against somethin
    in-flight tasks stay pinned,
    and a malformed configuration keeps the last good snapshot.
 - `meow run` against the daemon:
-   queued at interactive priority,
-   holding the terminal,
-   forwarding the task's bytes as-is on a miss,
-   replaying the stored result on a hit,
-   and prompting for a `meow watch` terminal when no daemon is live.
+   queued at an integer priority above background work,
+   with the newest such task holding the highest priority and pausing others as needed;
+   holding the terminal;
+   forwarding the task's bytes as-is on a miss;
+   replaying the stored result on a hit behind a one-line marker;
+   and prompting,
+   when no daemon is live,
+   to spawn a `meow watch` terminal or start one detached.
 - Evidence:
    a watch session that rebuilds affected work on a change;
    a cache hit and a forced miss with their keys recorded,

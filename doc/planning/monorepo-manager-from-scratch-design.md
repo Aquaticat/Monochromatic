@@ -205,16 +205,42 @@ meow run //package/cow:test
    meow does not execute the task,
    and prints the result of the last run instead,
    which the cache already stores for replay ("Cache").
-- Interactive priority is a named class,
-   borrowed from Windows Task Manager's terminology,
-   for work a person is waiting on;
-   the scheduler's numeric priorities are for everything else.
+  One line marks the replay,
+   naming that the result is cached and when the original ran,
+   so an instant return is never unexplained (user,
+   2026-09-17).
+- "Interactive" is the user's stand-in word,
+   borrowed from Windows Task Manager;
+   the implementation uses an integer priority like every other task (user,
+   2026-09-17).
+- The newest task a person is waiting on always holds the highest priority,
+   so a later `meow run` outranks an earlier one,
+   and other tasks may be paused to give it the machine.
 
 #### When the daemon is not running
 
 - If `meow run` finds no live `meow watch`,
-   it prompts the user to open another terminal and run `meow watch` there.
-- `meow run` does not silently start a daemon of its own.
+   it prompts,
+   and waits for the user to choose (user,
+   2026-09-17):
+  - spawn a terminal running `meow watch`,
+     or
+  - start a daemon detached in the background.
+- Ctrl+C at that prompt leaves nothing started.
+- `meow run` never starts a daemon without being told to at that prompt.
+
+#### Which terminal speaks which language
+
+Derived from the answers above,
+not separately stated:
+
+- The `meow watch` stream is JSON,
+   as "Output format" requires.
+- The working terminal is for a person:
+   the replay marker,
+   the daemon prompt,
+   and `meow run`'s own errors are human-readable there,
+   and the task's bytes pass through untouched.
 
 #### What this settles
 
@@ -2498,10 +2524,15 @@ Usage rules and risks if XXH3-128 is adopted:
    and priority changes apply in place.
 - Work a person is waiting on,
    which today means anything `meow run` queues,
-   carries the interactive class and outranks every numeric priority
+   takes an integer priority above background work,
+   and the newest such task holds the highest priority of all
    ("User interface",
    user,
    2026-09-17).
+  Giving it the machine may pause other tasks,
+   including an earlier `meow run`,
+   through `cgroup.freeze`,
+   which carries the frozen-task risks already recorded under "Risks".
 - Concurrency is `MONOCHROMATIC_JOBS` when set,
    otherwise `std::thread::available_parallelism`.
 - Pause freezes a running task through `cgroup.freeze` and holds a queued task.
