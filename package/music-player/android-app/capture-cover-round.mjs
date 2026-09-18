@@ -86,10 +86,10 @@ const original = {
 mkdirSync(renderDirectory, { recursive: true });
 mkdirSync(evidenceDirectory, { recursive: true });
 
-const readDynamicRoles = () => {
+const readDynamicRoles = (mode) => {
   const dump = adbText(['shell', 'cmd', 'overlay', 'dump', 'com.android.systemui:dynamic']);
   return Object.fromEntries(
-    [...dump.matchAll(/-> color 0x([0-9a-f]{8}) \(color\/system_([a-z0-9_]+)_(dark|light)\)/g)]
+    [...dump.matchAll(new RegExp(`-> color 0x([0-9a-f]{8}) \\(color/system_([a-z0-9_]+)_${mode}\\)`, 'g'))]
       .map((match) => [match[2], `#${match[1].slice(2).toUpperCase()}`]),
   );
 };
@@ -113,7 +113,7 @@ const applyEnvironment = (environment) => {
       const contrastReady = service.includes(`mContrast=${environment.contrast}`);
       const styleReady = service.includes(`mThemeStyle=${environment.styleNumber}`);
       const paletteReady = logs.includes('Writing boot animation colors 1:');
-      roles = readDynamicRoles();
+      roles = readDynamicRoles('dark');
       if (contrastReady && styleReady && paletteReady && (roles.primary || roles.surface_container_low)) {
         return roles;
       }
@@ -122,6 +122,18 @@ const applyEnvironment = (environment) => {
     }
   }
   throw new Error(`Android dynamic roles did not settle for ${environment.key}: ${JSON.stringify(roles)}`);
+};
+
+const settleNightRoles = (mode) => {
+  let roles = {};
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    sleep(400);
+    roles = readDynamicRoles(mode);
+    if (roles.primary && roles.surface_container_low && roles.outline_variant) {
+      return roles;
+    }
+  }
+  throw new Error(`Android ${mode} roles did not settle: ${JSON.stringify(roles)}`);
 };
 
 const waitForCompose = () => {
@@ -155,11 +167,26 @@ const restoreSetting = ({ namespace, key, value }) => {
 try {
   for (const environmentKey of ['wallpaper', 'coral']) {
     const environment = environments[environmentKey];
-    const roles = applyEnvironment(environment);
-    for (const capture of captures.filter((entry) => entry.environment === environmentKey)) {
-      remote(`settings put system font_scale ${capture.scale}`);
-      remote(`cmd uimode night ${capture.night ? 'yes' : 'no'}`);
+    applyEnvironment(environment);
+    for (const night of [true, false]) {
+      remote(`cmd uimode night ${night ? 'yes' : 'no'}`);
       sleep(800);
+      const mode = night ? 'dark' : 'light';
+      const roles = settleNightRoles(mode);
+      writeFileSync(
+        join(evidenceDirectory, `cover-round-${environment.key}-roles-${mode}.json`),
+        `${JSON.stringify({
+          android: { api: 37, displayPixels: [1080, 2424], foldedDeviceState: 0, night },
+          composeMaterial3: '1.5.0-alpha27',
+          request: environment,
+          settledSetting: remote('settings get secure theme_customization_overlay_packages').trim(),
+          resolvedRoles: roles,
+          coverMappings,
+        }, null, 2)}\n`,
+      );
+      for (const capture of captures.filter((entry) => entry.environment === environmentKey && entry.night === night)) {
+        remote(`settings put system font_scale ${capture.scale}`);
+        sleep(800);
       adbText(['shell', 'am', 'force-stop', packageName]);
       adbText(['shell', 'am', 'start', '-W', '-n', activity, '--es', 'candidate', capture.candidate]);
       const hierarchy = waitForCompose();
@@ -171,18 +198,10 @@ try {
       if (dimensions !== '1080x2424') {
         throw new Error(`${basename}.png measured ${dimensions}; expected the opaque cover panel 1080x2424.`);
       }
-      writeFileSync(join(evidenceDirectory, `${basename}.xml`), `${hierarchy}\n`);
-      console.log(`${basename}.png ${png.length} bytes ${dimensions}`);
+        writeFileSync(join(evidenceDirectory, `${basename}.xml`), `${hierarchy}\n`);
+        console.log(`${basename}.png ${png.length} bytes ${dimensions}`);
+      }
     }
-    const evidence = {
-      android: { api: 37, displayPixels: [1080, 2424], foldedDeviceState: 0 },
-      composeMaterial3: '1.5.0-alpha27',
-      request: environment,
-      settledSetting: remote('settings get secure theme_customization_overlay_packages').trim(),
-      resolvedRoles: roles,
-      coverMappings,
-    };
-    writeFileSync(join(evidenceDirectory, `cover-round-${environment.key}-roles.json`), `${JSON.stringify(evidence, null, 2)}\n`);
   }
 } finally {
   try {
