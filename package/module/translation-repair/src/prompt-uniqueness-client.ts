@@ -277,6 +277,10 @@ export function promptUniqueClient(
       }
     },
     quotas: inner.quotas,
+    // A TYPED EXCHANGE IS NEITHER CLAIMED NOR STORED: its state is the
+    // chat sheet's evidence restated, and the endpoint answers in under a
+    // second for a fraction of a cent, so there is nothing to reuse.
+    ...((inner.decide === undefined) ? {} : { decide: inner.decide, }),
   };
 }
 

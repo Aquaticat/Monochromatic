@@ -15,6 +15,7 @@ import {
   reachableQuorum,
   shortBenchStageFinding,
 } from './stage-reachable-quorum.ts';
+import type { StageDecision, } from './stage-decision-call.ts';
 import { runGatherRound, } from './stage-round.ts';
 import { stageQuorumUnmetFinding, } from './stage-silence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -234,6 +235,7 @@ export async function gatherStageVoices<ValueT,>(
     maxRetryRounds = STAGE_RETRY_ROUNDS,
     graceMs,
     fanOut = 'window',
+    decision,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -248,6 +250,7 @@ export async function gatherStageVoices<ValueT,>(
     readonly maxRetryRounds?: number;
     readonly graceMs?: number;
     readonly fanOut?: FanOutMode;
+    readonly decision?: StageDecision;
   }>,
 ): Promise<StageGather<ValueT>> {
   /**
@@ -326,6 +329,8 @@ export async function gatherStageVoices<ValueT,>(
       stage,
       l,
       ...((graceMs === undefined) ? {} : { graceMs, }),
+      // Conditional spread keeps the question absent instead of undefined.
+      ...((decision === undefined) ? {} : { decision, }),
     };
 
     /**

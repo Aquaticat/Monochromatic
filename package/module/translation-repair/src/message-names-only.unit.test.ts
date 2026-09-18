@@ -79,6 +79,7 @@ const MARKED_CLASSES: readonly string[] = [
   'ContributorCompletenessError',
   'CorpusReadError',
   'CreditsShapeError',
+  'DecisionReplyShapeError',
   'DecisionsCardMissingError',
   'DeliveryCoherenceError',
   'DeliveryInvariantError',

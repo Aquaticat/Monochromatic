@@ -85,4 +85,8 @@ export {
   type TwinStored,
 } from './twin-memo.ts';
 
+export {
+  attemptDecisionCall,
+  type StageDecision,
+} from './stage-decision-call.ts';
 //endregion Stage barrel

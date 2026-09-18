@@ -10,6 +10,11 @@ import {
   type ModelReach,
   routeProviderFor,
 } from './budget-routing.ts';
+import type {
+  Decider,
+  DecisionReply,
+  DecisionRequest,
+} from './decision-contract.ts';
 import {
   carriesPicture,
   type ChatJsonOutcome,
@@ -164,6 +169,9 @@ function reachFor(
  
  @param holdPollMs - how often a call waiting out a hold checks for abort;
  injectable so a test waits milliseconds rather than a second
+
+ @param decider - client of OpenRouter's decisions endpoint, when the run
+ has the OpenRouter key; a decision seat is served by that one meter
  
  @returns Client surface a stage calls without naming a provider
  
@@ -178,11 +186,13 @@ export function createRoutingClient(
     budgets,
     slotLimits = DEFAULT_SLOT_LIMITS,
     holdPollMs = HOLD_POLL_MS,
+    decider,
   }: {
     readonly callers: ProviderRecord<Pick<ModelCaller, 'chatText'>>;
     readonly budgets: ProviderBudgets;
     readonly slotLimits?: SlotLimits;
     readonly holdPollMs?: number;
+    readonly decider?: Decider;
   },
 ): ModelCaller {
   /**
@@ -467,9 +477,61 @@ export function createRoutingClient(
     },);
   }
 
+  /**
+   Typed-decision exchange, served by OpenRouter alone: refused when the
+   OpenRouter meter reads dry, and a budget refusal marks that meter as a
+   chat refusal would.
+
+   @param request - state and questions to decide
+
+   @returns Answers as the endpoint gave them
+
+   @throws {@link NoProviderForModelError} when no decisions client is
+   configured or the OpenRouter meter reads dry
+
+   @example
+   ```ts
+   const reply = await client.decide({ modelId, state, questions, signal, },);
+   ```
+   */
+  async function decide(request: ForeignBorrowed<DecisionRequest>,): Promise<DecisionReply> {
+    if (decider === undefined) {
+      throw new NoProviderForModelError({
+        modelId: request.modelId,
+        reason: 'no decisions client is configured',
+      },);
+    }
+
+    /**
+     Every meter as it reads now.
+     */
+    const dry = await budgets.read({ signal: request.signal, },);
+    if (dry.openrouter) {
+      throw new NoProviderForModelError({
+        modelId: request.modelId,
+        reason: 'the decisions endpoint reads dry',
+      },);
+    }
+    try {
+      return await decider.decide(request,);
+    }
+    catch (error) {
+      if (isBudgetRefusal({ error, },)) {
+        await budgets.markRefused({
+          provider: 'openrouter',
+          signal: request.signal,
+          statedWaitMs: statedWaitMsOf({ error, },),
+          paymentRequired: isPaymentRefusal({ error, },),
+        },);
+      }
+      throw error;
+    }
+  }
+
   return {
     chatText,
     chatJson,
+    decide,
   };
 }
 

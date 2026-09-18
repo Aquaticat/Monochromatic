@@ -219,6 +219,11 @@ export const DECISION_ONLY_ROSTER_IDS: readonly RosterModelId[] = ROSTER_CARDS
   },);
 
 /**
+ The decision-only seats, keyed for the per-call lookup.
+ */
+const DECISION_SEATS: ReadonlySet<RosterModelId> = new Set(DECISION_ONLY_ROSTER_IDS,);
+
+/**
  Whether one roster model is a decision-only seat, which no chat client can
  take and only a stage with a decision adapter asks.
 
@@ -234,12 +239,9 @@ export const DECISION_ONLY_ROSTER_IDS: readonly RosterModelId[] = ROSTER_CARDS
 export function isDecisionSeat(
   { modelId, }: { readonly modelId: RosterModelId; },
 ): boolean {
-  /**
-   Side as the card carries it, or nothing.
-   */
-  const side = MODEL_CARDS[modelId]
-    .decisions;
-  return side !== undefined;
+  // A SET LOOKUP RATHER THAN A CARD READ, because the stage call asks this
+  // of every seat it is handed and unit tests hand it seats with no card.
+  return DECISION_SEATS.has(modelId,);
 }
 
 /**

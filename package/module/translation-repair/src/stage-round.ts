@@ -7,6 +7,7 @@ import type {
   JsonSchemaResponseFormat,
   SyntheticClient,
 } from './chat-contract.ts';
+import type { StageDecision, } from './stage-decision-call.ts';
 import {
   attemptStageCall,
   type StageVoice,
@@ -224,6 +225,7 @@ export async function runGatherRound<ValueT,>(
     l,
     heardNeeded,
     graceMs = resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
+    decision,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -237,6 +239,7 @@ export async function runGatherRound<ValueT,>(
     readonly l: Logger;
     readonly heardNeeded: number;
     readonly graceMs?: number;
+    readonly decision?: StageDecision;
   }>,
 ): Promise<readonly RoundOutcome<ValueT>[]> {
   /**
@@ -304,6 +307,8 @@ export async function runGatherRound<ValueT,>(
           validate,
           stage,
           l,
+          // Conditional spread keeps the question absent instead of undefined.
+          ...((decision === undefined) ? {} : { decision, }),
         },),
       };
       arrived.set(

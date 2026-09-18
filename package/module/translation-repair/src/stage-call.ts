@@ -8,7 +8,12 @@ import type {
   SyntheticClient,
 } from './chat-contract.ts';
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
+import { isDecisionSeat, } from './model-card-derive.ts';
 import { NoProviderForModelError, } from './provider-router.ts';
+import {
+  attemptDecisionCall,
+  type StageDecision,
+} from './stage-decision-call.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Stage call
@@ -194,6 +199,10 @@ function lostVoiceCause(
  @param stage - stage label for logging
  
  @param l - logger of the calling stage
+
+ @param decision - the stage's ballot as a typed question, for a decision
+ seat on the bench; absent on a stage that has none, which loses that
+ seat's voice rather than asking it for prose
  
  @returns Voice as data; a lost voice never throws unless the caller aborted
  
@@ -214,6 +223,7 @@ export async function attemptStageCall<ValueT,>(
     validate,
     stage,
     l,
+    decision,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelId: RosterModelId;
@@ -225,8 +235,24 @@ export async function attemptStageCall<ValueT,>(
     readonly validate: (value: unknown,) => value is ValueT;
     readonly stage: string;
     readonly l: Logger;
+    readonly decision?: StageDecision;
   }>,
 ): Promise<StageVoice<ValueT>> {
+  // A DECISION SEAT NEVER SEES THE SHEET: it is asked the stage's typed
+  // question, or loses its voice where the stage has none (2026-09-18).
+  if (isDecisionSeat({ modelId, },)) {
+    return await attemptDecisionCall({
+      client,
+      modelId,
+      // Conditional spread keeps the question absent instead of undefined.
+      ...((decision === undefined) ? {} : { decision, }),
+      signal,
+      exchangeTimeoutMs,
+      validate,
+      stage,
+      l,
+    },);
+  }
   try {
     /**
      Outcome of the exchange.

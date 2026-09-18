@@ -1080,6 +1080,7 @@ export function createRunClient(
     hyper,
     bedrock,
     openrouter,
+    decisions,
     budgets,
   } = configureProviders((transport === undefined) ? {} : { transport, },);
 
@@ -1095,6 +1096,9 @@ export function createRunClient(
         openrouter: openrouter ?? unconfiguredProviderCaller({ provider: 'openrouter', },),
       },
       budgets,
+      // Conditional spread keeps the decisions transport absent where the
+      // OpenRouter key is unset.
+      ...((decisions === undefined) ? {} : { decider: decisions, }),
     },),
     quotas: synthetic?.quotas ?? unconfiguredSyntheticQuota,
   };

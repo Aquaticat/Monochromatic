@@ -272,6 +272,7 @@ export {
 } from './validate-issue.ts';
 
 export * from './fidelity-reference-barrel.ts';
+export * from './decision-barrel.ts';
 export * from './artifact-read-barrel.ts';
 export * from './stream-barrel.ts';
 export * from './assembly-barrel.ts';

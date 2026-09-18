@@ -7,6 +7,10 @@ import type {
   ChatTextRequest,
   SyntheticClient,
 } from './chat-contract.ts';
+import type {
+  DecisionReply,
+  DecisionRequest,
+} from './decision-contract.ts';
 import type { RosterModelId, } from './roster-id.ts';
 
 //region Seat tally
@@ -269,6 +273,11 @@ export function seatTallyClient(
     readonly tally: SeatTally;
   },
 ): SyntheticClient {
+  /**
+   Typed exchange the wrapped client offers, bound once so the closure
+   below keeps the narrowing.
+   */
+  const innerDecide = inner.decide;
   return {
     async chatText(request: ForeignBorrowed<ChatTextRequest>,): Promise<ChatTextReply> {
       try {
@@ -313,6 +322,32 @@ export function seatTallyClient(
       }
     },
     quotas: inner.quotas,
+    // THE TYPED EXCHANGE IS A SEAT ASKED TOO, tallied under the same three
+    // outcomes so `pass-spend.mjs` counts a decision seat beside the rest.
+    ...((innerDecide === undefined)
+      ? {}
+      : {
+        decide: async function talliedDecide(request: ForeignBorrowed<DecisionRequest>,): Promise<DecisionReply> {
+          try {
+            /**
+             Reply from the wrapped client.
+             */
+            const reply = await innerDecide(request,);
+            tally.record({
+              modelId: request.modelId,
+              outcome: 'usable',
+            },);
+            return reply;
+          }
+          catch (error) {
+            tally.record({
+              modelId: request.modelId,
+              outcome: 'threw',
+            },);
+            throw error;
+          }
+        },
+      }),
   };
 }
 

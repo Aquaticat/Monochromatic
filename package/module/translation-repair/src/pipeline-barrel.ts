@@ -299,4 +299,9 @@ export {
   tallyVotes,
 } from './tally-votes.ts';
 
+export {
+  NO_TYPED_ANSWER,
+  selectDecision,
+  TYPED_BALLOT_REASON,
+} from './candidate-select-decision.ts';
 //endregion Pipeline barrel

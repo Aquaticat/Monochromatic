@@ -19,6 +19,8 @@ import { hyperRequestsPerHour, } from '../request-pace.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
 import type { ModelTransport, } from '../synthetic-transport.ts';
+import type { Decider, } from '../decision-contract.ts';
+import { createDecisionsClient, } from '../decisions-client.ts';
 import { RunConfigError, } from './run-config-error.ts';
 
 //region Run providers
@@ -58,6 +60,12 @@ export type ConfiguredProviders = {
    Third provider client, when its key is set.
    */
   readonly openrouter?: OpenRouterClient;
+
+  /**
+   Client of OpenRouter's decisions endpoint, on the same key, for the
+   decision-only seats.
+   */
+  readonly decisions?: Decider;
 
   /**
    Shared budget view every provider is routed by.
@@ -161,6 +169,17 @@ export function configureProviders(
     },);
 
   /**
+   Decisions client on the OpenRouter key when configured; the endpoint
+   draws on the same credit balance.
+   */
+  const decisions = (openRouterKey === '')
+    ? undefined
+    : createDecisionsClient({
+      apiKey: openRouterKey,
+      ...seam,
+    },);
+
+  /**
    Fourth provider client when configured, over the durable spend ledger
    the environment names.
    */
@@ -187,6 +206,7 @@ export function configureProviders(
     ...((hyper === undefined) ? {} : { hyper, }),
     ...((bedrock === undefined) ? {} : { bedrock, }),
     ...((openrouter === undefined) ? {} : { openrouter, }),
+    ...((decisions === undefined) ? {} : { decisions, }),
     budgets,
   };
 }

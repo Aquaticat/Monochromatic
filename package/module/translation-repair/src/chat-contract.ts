@@ -5,6 +5,7 @@ import type {
 } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import type { Decider, } from './decision-contract.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { QuotaSnapshot, } from './synthetic-quota.ts';
 
@@ -412,6 +413,14 @@ export type ModelCaller = {
   readonly chatJson: <ValueT,>(
     request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
   ) => Promise<ChatJsonOutcome<ValueT>>;
+
+  /**
+   Typed-decision exchange for a decision seat, present on a client that
+   carries the decisions transport (`decisions-client.ts`, 2026-09-18) and
+   absent on one that does not, so a stage asking a decision seat through a
+   client without it records a lost voice rather than a chat call.
+   */
+  readonly decide?: Decider['decide'];
 };
 
 /**

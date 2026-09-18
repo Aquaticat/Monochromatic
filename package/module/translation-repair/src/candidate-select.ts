@@ -25,6 +25,7 @@ import {
   isCandidateBallotAsSent,
   type SelectEvidence,
 } from './candidate-select-wire.ts';
+import { selectDecision, } from './candidate-select-decision.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { ProducerRosterError, } from './repair-contract.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
@@ -249,6 +250,17 @@ export async function decideBestCandidate<ValueT,>(
     exchangeTimeoutMs: perCallTimeoutMs,
     responseFormat: CANDIDATE_SELECT_RESPONSE_FORMAT,
     validate: isCandidateBallotAsSent,
+    // THE SAME BALLOT AS A TYPED QUESTION, for a decision seat on the bench
+    // (2026-09-18); a chat seat never sees it.
+    decision: selectDecision({
+      task,
+      criteria,
+      evidence,
+      rendered: candidates.map(function toRendered(candidate,) {
+        return candidate.rendered;
+      },),
+      ...((declineConsequence === undefined) ? {} : { declineConsequence, }),
+    },),
     stage: 'select',
     l,
     fanOut: selectionFanOut({
