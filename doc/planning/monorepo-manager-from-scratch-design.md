@@ -362,6 +362,15 @@ and "We don't need specifically a socket or a separate client,
    and why it matters.
   A healthy machine prints nothing,
    so any output is worth reading.
+- `meow stop`:
+   stops the daemon from any terminal,
+   alongside Ctrl+C in the watch terminal (user,
+   2026-09-17),
+   because the watch terminal is the one a person keeps minimized.
+  Either way,
+   running tasks are ended through their cgroups before the daemon exits,
+   which is what Ctrl+C already means under `meow run`,
+   and leaves no task outliving the daemon that started it.
 - `meow lsp` and the trust commands from "Per-user configuration".
   Trust state reads through `meow trust status`,
    keeping bare `meow status` about tasks.
@@ -401,9 +410,11 @@ Answered by the user on 2026-09-17:
    each under its path,
    not only the root `meow.hcl`,
    because a one-line import would otherwise bring in code nobody read.
-- My reading,
-   not separately stated:
-   the review pages when the content is longer than the terminal.
+- The review does not page (user,
+   2026-09-17):
+   it prints every file and then the prompt,
+   composing with whatever the output is piped into,
+   rather than handing a security decision to an arbitrary `$PAGER`.
 
 #### Where the JSON stream goes
 
