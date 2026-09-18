@@ -1615,7 +1615,7 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
 @Composable
 private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette) {
     val playing = index == 0
-    val currentTrackCue = if (candidate.startsWith("a11y-") || candidate.startsWith("dark-") || candidate.startsWith("cover-dark")) {
+    val currentTrackCue = if (candidate.startsWith("a11y-") || candidate.startsWith("dark-") || candidate.startsWith("cover-")) {
         "container"
     } else if (candidate.contains("cue-label-")) {
         "label"
@@ -1657,7 +1657,7 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
     } else {
         Modifier.semantics {
             selected = playing
-            if (playing && (candidate.endsWith("-state") || candidate.startsWith("dark-") || candidate.startsWith("cover-dark"))) {
+            if (playing && (candidate.endsWith("-state") || candidate.startsWith("dark-") || candidate.startsWith("cover-"))) {
                 stateDescription = "Current track"
             } else if (playing && candidate.startsWith("cue-")) {
                 contentDescription = "Current track: ${track.title}"
