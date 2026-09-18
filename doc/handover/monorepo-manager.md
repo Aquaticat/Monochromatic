@@ -437,6 +437,32 @@ Four proposed output models were all rejected,
  prints the stored result on a hit,
  and prompts for a `meow watch` terminal when no daemon is live.
 The rejected comparison page is at `meow-ux/meow-ux-options.html` in the session scratchpad.
+Answered the same day,
+ all recorded in "User interface",
+ "RPC",
+ "Scheduler",
+ and "Modularity":
+ `meow status` for inspection;
+ `meow pause`,
+ `meow resume`,
+ `meow end`,
+ and `meow priority` as commands now,
+ because "We don't need specifically a socket or a separate client,
+ ever";
+ the socket demoted to private plumbing;
+ the TUI redefined as "just `meow watch` displayed differently while adding some interactivity";
+ queue position shown while `meow run` waits;
+ nothing added on failure beyond the task's exit code;
+ Ctrl+C ending the task;
+ `meow run` attaching to work already running;
+ unbuilt dependencies ruled out because the daemon keeps everything current;
+ and every modular piece,
+ the logger included,
+ becoming a reusable package.
+Still in my words rather than the user's:
+ `meow status` output,
+ `meow doctor` output,
+ and the trust prompt.
 
 1.  Implementation itself is unstarted and unrequested (rule `VRB`).
     The plan's M1 is the entry point.
