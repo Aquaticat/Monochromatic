@@ -302,6 +302,7 @@ function routedClient(
     gateReply,
     served,
     judgeSheets,
+    gateSheets,
   }: {
     readonly judgeReply: JudgeReply;
     readonly gateReply: string;
@@ -312,6 +313,11 @@ function routedClient(
      the judges were shown rather than what they answered.
      */
     readonly judgeSheets?: string[];
+    /**
+     Where to record each gate voice's request, for the cases that read what
+     the gate was shown.
+     */
+    readonly gateSheets?: string[];
   },
 ) {
   return createSyntheticClient({
@@ -330,8 +336,10 @@ function routedClient(
        Judge calls before this one, which a scripted reply may read.
        */
       const judgeCall = served.judge;
-      if (isGate)
+      if (isGate) {
         served.gate += 1;
+        gateSheets?.push(sent,);
+      }
       else {
         served.judge += 1;
         judgeSheets?.push(sent,);
@@ -515,6 +523,7 @@ async function settleWith(
     producedFindings = [],
     lineStructured = false,
     standingEligible = true,
+    standingRefusal,
   }: {
     readonly voices: readonly {
       readonly modelId: FixtureModelId;
@@ -537,6 +546,10 @@ async function settleWith(
      it from the slate.
      */
     readonly standingEligible?: boolean;
+    /**
+     Why the deterministic rule refused the standing, shown to the gate.
+     */
+    readonly standingRefusal?: string;
   },
 ) {
   /**
@@ -551,6 +564,10 @@ async function settleWith(
    Every slate judge's request, for the cases reading what was shown.
    */
   const judgeSheets: string[] = [];
+  /**
+   Every gate voice's request, for the cases reading what the gate was shown.
+   */
+  const gateSheets: string[] = [];
 
   const settled = await settleConsolidation({
     client: routedClient({
@@ -558,6 +575,7 @@ async function settleWith(
       gateReply,
       served,
       judgeSheets,
+      gateSheets,
     },),
     roster: ROSTER,
     subject: SUBJECT,
@@ -569,6 +587,7 @@ async function settleWith(
     perCallTimeoutMs: CALL_TIMEOUT_MS,
     lineStructured,
     standingEligible,
+    ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
     l,
   },);
 
@@ -576,6 +595,7 @@ async function settleWith(
     settled,
     served,
     judgeSheets,
+    gateSheets,
   };
 }
 
@@ -1039,6 +1059,46 @@ await describe({
         expect(eligible.settled.terminal,).toBe('slate-declined-standing',);
         expect(eligible.judgeSheets.some(function challenged(sheet,): boolean {
           return sheet.includes(CHALLENGE_MARKER,);
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'SHOWS THE GATE WHY THE STANDING CANNOT SHIP when it is ineligible (class fifty-six, XingZ606 '
+        + 'slice 33, 2026-09-18), and shows nothing of the kind over an eligible standing',
+      fn: async () => {
+        /**
+         Why the deterministic rule refused the standing, as the run log words it.
+         */
+        const refusal = 'Your translation carries the pronoun untranslated as "Ta" (1 time)';
+        const { settled, gateSheets, } = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({
+            best: positionOfText({
+              texts: [FRESH,],
+              wanted: FRESH,
+              incumbentText: '',
+            },),
+          },),
+          gateReply: gateBallot({ choice: 'consolidated', },),
+          standingEligible: false,
+          standingRefusal: refusal,
+        },);
+        expect(settled.terminal,).toBe('consolidated',);
+        expect(gateSheets.length,).toBeGreaterThan(0,);
+        expect(gateSheets.every(function toldWhy(sheet,): boolean {
+          return sheet.includes(refusal,);
+        },),).toBe(true,);
+
+        const eligible = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
+          gateReply: gateBallot({ choice: 'consolidated', },),
+        },);
+        expect(eligible.gateSheets.length,).toBeGreaterThan(0,);
+        expect(eligible.gateSheets.some(function saysCannotShip(sheet,): boolean {
+          return sheet.includes('CANNOT SHIP',);
         },),).toBe(false,);
       },
     },),

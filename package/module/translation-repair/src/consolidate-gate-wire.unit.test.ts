@@ -24,9 +24,14 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
+ What the sheet builder takes, so a case may add the optional evidence.
+ */
+type GateSubject = Parameters<typeof buildConsolidateGateMessages>[0]['subject'];
+
+/**
  One gated slice, standing in for a corpus passage.
  */
-const SUBJECT = {
+const SUBJECT: GateSubject = {
   sourceText: '猫在窗台上睡觉。',
   incumbentText: 'The cat sleeps on the sill, purring.',
   consolidatedText: 'The cat sleeps on the window sill.',
@@ -46,7 +51,7 @@ const SUBJECT = {
  ```
  */
 function exchangeFor(
-  { subject, }: { readonly subject: typeof SUBJECT; },
+  { subject, }: { readonly subject: GateSubject; },
 ): string {
   return buildConsolidateGateMessages({ subject, },)
     .map(function contentOf(message,): string {
@@ -72,7 +77,7 @@ function exchangeFor(
  ```
  */
 function shownFor(
-  { subject, }: { readonly subject: typeof SUBJECT; },
+  { subject, }: { readonly subject: GateSubject; },
 ): string {
   return buildConsolidateGateMessages({ subject, },)
     .filter(function isShown(message,): boolean {
@@ -184,6 +189,27 @@ await describe({
         const shown = shownFor({ subject: SUBJECT, },);
         expect(shown,).toContain('CANDIDATE "consolidated"',);
         expect(shown,).toContain('CANDIDATE "standing"',);
+      },
+    },),
+    it({
+      name: 'TELLS THE JUDGE WHEN THE STANDING CANNOT SHIP, naming the deterministic refusal (class '
+        + 'fifty-six, XingZ606 slice 33, 2026-09-18): a gate that kept an untranslated pronoun over a valid '
+        + 'consolidation was never told the text it kept would stop the entry; and says nothing of it when '
+        + 'the standing is eligible',
+      fn: async () => {
+        /**
+         Why the deterministic rule refused the standing, as the run log words it.
+         */
+        const refusal = 'Your translation carries the pronoun untranslated as "Ta" (1 time)';
+        const shown = shownFor({
+          subject: {
+            ...SUBJECT,
+            standingRefusal: refusal,
+          },
+        },);
+        expect(shown,).toContain('CANDIDATE "standing" CANNOT SHIP',);
+        expect(shown,).toContain(refusal,);
+        expect(shownFor({ subject: SUBJECT, },),).not.toContain('CANNOT SHIP',);
       },
     },),
     it({
