@@ -456,7 +456,12 @@ await describe({
           perCallTimeoutMs: 1_000,
           l,
         },);
-        expect([...admission.positions,].toSorted(),).toEqual([0, 1,],);
+        expect([...admission.positions,].toSorted(function ascending(
+          left,
+          right,
+        ): number {
+          return left - right;
+        },),).toEqual([0, 1,],);
         expect(
           admission.findings
             .some(function namesTheHalf(finding,): boolean {

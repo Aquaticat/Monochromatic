@@ -22,6 +22,15 @@ export {
 } from './assembly-contract-fault.ts';
 export { singleStructuralWithdrawal, } from './assembly-structural-withdrawal.ts';
 export {
+  CONTAINER_HALF_WITHHELD_FINDING,
+  withholdLoneContainerHalves,
+} from './assembly-container-halves.ts';
+export {
+  type ContainerHalf,
+  type ContainerHalfPair,
+  containerHalfPairs,
+} from './container-half-pairs.ts';
+export {
   guardFootnoteAssembly,
   type GuardedAssembly,
   introducedFootnoteFindings,

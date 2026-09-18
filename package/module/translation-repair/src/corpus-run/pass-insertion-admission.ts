@@ -15,6 +15,7 @@ import { parseDocument, } from '../parse-document.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import { TranslationRepairInterruptedError, } from '../translation-repair-interrupted-error.ts';
 import { droppedDestinations, } from './dropped-destinations.ts';
+import { admitContainerHalves, } from './insertion-container-halves.ts';
 import {
   classifyInsertionCoverage,
   type InsertionCandidate,
@@ -254,18 +255,30 @@ export async function decidePassInsertionAdmission(
     sourceText: prepared.sourceText,
     targetText: prepared.targetText,
   },);
-  for (const row of classification.unresolvedRows) {
+  /**
+   Classification with each container's halves admitted together (class
+   fifty-seven, XingZ607, 2026-09-18).
+   */
+  const halves = admitContainerHalves({
+    slices: prepared.slices,
+    positions: classification.positions,
+    unresolvedRows: classification.unresolvedRows,
+  },);
+  for (const finding of halves.findings)
+    al.info(finding,);
+  for (const row of halves.unresolvedRows) {
     al.info(
       `slice ${String(row.sliceIndex,)}: placement unresolved after the single round `
         + `(verdict ${row.verdictKind}); not admitted, recorded as findings`,
     );
   }
   return {
-    positions: classification.positions,
+    positions: halves.positions,
     carried: classification.carried,
     findings: [
       ...classification.findings,
-      ...classification.unresolvedRows
+      ...halves.findings,
+      ...halves.unresolvedRows
         .map(function unresolvedFinding(row,): string {
           return `insertion-unresolved-after-single-round (slice ${String(row.sliceIndex,)}, `
             + `verdict ${row.verdictKind}); passage not admitted`;

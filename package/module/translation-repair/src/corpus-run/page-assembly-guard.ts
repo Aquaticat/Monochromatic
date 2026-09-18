@@ -1,3 +1,4 @@
+import { withholdLoneContainerHalves, } from '../assembly-container-halves.ts';
 import { guardFootnoteAssembly, } from '../assembly-integrity.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
@@ -68,6 +69,14 @@ export function guardPageAssembly(
       return replacement.replacementText !== incumbentBySlice.get(replacement.sliceIndex,);
     },);
   /**
+   Replacements less any container half whose partner ships nothing (class
+   fifty-seven), so the guard never reads a closing tag with no opening.
+   */
+  const halves = withholdLoneContainerHalves({
+    slices,
+    replacements,
+  },);
+  /**
    Headings a lane rewrote into another section's, restored to the archive's
    before the footnote guard reads the page (class forty-five).
    */
@@ -75,7 +84,7 @@ export function guardPageAssembly(
     sourceText,
     targetText,
     slices,
-    replacements,
+    replacements: halves.replacements,
   },);
   /**
    The guard's reading of the composed page.
@@ -112,8 +121,12 @@ export function guardPageAssembly(
       ...guarded.trimmed,
       ...restoredOnly,
     ],
-    withdrawn: guarded.revertedChunkIndices,
+    withdrawn: [
+      ...halves.withheld,
+      ...guarded.revertedChunkIndices,
+    ],
     findings: [
+      ...halves.findings,
       ...restoration.findings,
       ...guarded.findings,
     ],

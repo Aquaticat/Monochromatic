@@ -28,3 +28,7 @@ export {
   classifyInsertionCoverage,
   type InsertionCoverageRow,
 } from './corpus-run/insertion-coverage-model.ts';
+export {
+  admitContainerHalves,
+  CONTAINER_HALF_ADMITTED_FINDING,
+} from './corpus-run/insertion-container-halves.ts';

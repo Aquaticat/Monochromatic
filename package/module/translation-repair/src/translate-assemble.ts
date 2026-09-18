@@ -1,5 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
+import { withholdLoneContainerHalves, } from './assembly-container-halves.ts';
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
 import {
   adjacentRepetitionFindings,
@@ -140,6 +141,16 @@ export function assembleTranslation(
     slices: prepared.slices,
     replacements,
   },);
+  /**
+   Replacements less any container half whose partner ships nothing (class
+   fifty-seven), so the guard never reads a closing tag with no opening.
+   */
+  const halves = withholdLoneContainerHalves({
+    slices: prepared.slices,
+    replacements,
+  },);
+  for (const finding of halves.findings)
+    l.warn(finding,);
 
   /**
    Assembly with any replacement withdrawn that the whole document refuses.
@@ -153,8 +164,15 @@ export function assembleTranslation(
   const guarded = guardFootnoteAssembly({
     targetText: prepared.targetText,
     slices: prepared.slices,
-    replacements,
+    replacements: halves.replacements,
   },);
+  /**
+   Every slice the assembly took back: the halves first, then the guard's.
+   */
+  const withdrawn = [
+    ...halves.withheld,
+    ...guarded.revertedChunkIndices,
+  ];
   if (guarded.revertedChunkIndices
     .length
     > 0) {
@@ -233,7 +251,7 @@ export function assembleTranslation(
     sliceCount: prepared.slices
       .length,
     shipped,
-    withdrawn: guarded.revertedChunkIndices,
+    withdrawn,
   },);
 
   return {
@@ -245,8 +263,7 @@ export function assembleTranslation(
     changedSliceCount: guarded.replacements
       .length,
     refusedSliceCount: refused.length,
-    withdrawnSliceCount: guarded.revertedChunkIndices
-      .length,
+    withdrawnSliceCount: withdrawn.length,
     // The same surviving replacements the count above is the size of, named,
     // and checked against the withdrawn set before either is reported.
     changedSliceIndices: ordered.shipped,
@@ -288,6 +305,7 @@ export function assembleTranslation(
       // record was FIRST settled for. Every refusal still reaches this list;
       // only where the sentence is built moved.
       ...alignmentRefusals({ records: settled, },),
+      ...halves.findings,
       ...guarded.findings,
       // BOTH LANES, not only the one whose damage was found first. `#66`
       // established the repetition in `lintong`'s repair lane, and reading the
