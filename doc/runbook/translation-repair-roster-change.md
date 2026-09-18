@@ -72,6 +72,51 @@ Run everything from the package directory
     recording the reading in
     `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
 
+## Add a decision-only model
+
+A model OpenRouter serves only through its decisions endpoint
+(`POST /api/alpha/decisions`,
+typed answers to `choice`,
+`noul` and `score` questions over a state,
+no chat completion)
+gets a card with a `decisions` side instead of provider sides.
+
+1.  In `src/roster-id.ts`,
+    add the served spelling to `OPENROUTER_DECISION_IDS`
+    and the roster id to `ROSTER_MODEL_IDS`;
+    the roster id is the decisions spelling.
+    No chat catalog lists it,
+    so `roster-card` prints nothing for it;
+    read the context length and prices off its OpenRouter model page.
+2.  In `src/model-cards.ts`,
+    write the card with
+    `decisions: { id, contextLength, promptUsdPerMillion, completionUsdPerMillion }`,
+    `completionCap: 'pooled-p90'`
+    (typed answers carry no completion text)
+    and the three holds.
+3.  In `src/roster-fixture.ts`,
+    add its `SEAT_...` constant with an empty reach and no image input,
+    and its claim in `src/roster-fixture.unit.test.ts`.
+4.  `DECISION_ONLY_ROSTER_IDS` (`src/model-card-derive.ts`) then lists it,
+    `RUN_ROSTER` leaves it out,
+    `RUN_DECISION_JUDGES` seats it once `judge-unmeasured` is gone,
+    and `RUN_SELECT_JUDGES` adds it to every candidate-select bench
+    (`src/decision-seat.unit.test.ts` holds these).
+    The router's `decide` refuses it while OpenRouter is dry.
+5.  Only the candidate-select stage has a typed question for it
+    (`selectDecision` in `src/candidate-select-decision.ts`);
+    every other stage a judge sits on
+    (consolidation slates,
+    lane contests,
+    panels,
+    gates)
+    calls chat and leaves a decision seat unheard as a lost voice,
+    so a decision seat votes only where a `StageDecision` is threaded.
+6.  Measure it with `judge-fidelity-probe -- --candidates <id>`
+    as for any judge;
+    its ballots carry the reason prefix `typed decision`
+    with the probabilities the endpoint returned.
+
 ## Remove a model
 
 1.  Delete its card from `src/model-cards.ts`,
