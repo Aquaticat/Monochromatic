@@ -478,7 +478,8 @@ which the takeover session does not have.
   The owner approved `typesafe/jev-1.13` on OpenRouter at 00:29 UTC
   (the pass log's "Jev 1.13 approved" heading dated 2026-09-18 00:29 UTC):
   a typed-decision model on a decisions endpoint,
-  probed live,
+  probed live and measured 28 of 28 on the reviewed fidelity matrix at 01:05 UTC
+  (the same heading),
   not yet wired;
   task 185.
   Also today:

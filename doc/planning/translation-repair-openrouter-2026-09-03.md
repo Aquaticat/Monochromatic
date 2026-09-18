@@ -8144,6 +8144,26 @@ as for every candidate.
 Open as task 185;
 nothing is wired yet.
 
+Measured at 01:05 UTC on the source-reviewed fidelity matrix
+(`reviewedFidelityTrials` over the three reviewed references,
+28 rows:
+deletion and insertion in both directions and both positions,
+alteration on the one reference that reviews it),
+asked as one choice per row with the ungoverned translate criteria in the state
+(the same task and criteria `runFidelityTrial` puts on the sheet,
+a scratch script outside the package):
+28 of 28 chose the reviewed reference,
+no decline,
+probabilities from 0.83 to 0.99 on the clean side,
+mean 600 ms per row,
+0.00137 USD for the matrix.
+The one bench where it read least surely was gqt's deletion pair
+(0.83 to 0.89 for the clean text,
+0.09 to 0.12 for declining).
+That is the bar DeepSeek V4.1 Flash and Mercury met on admission,
+so the transport and the select-seat adapter are worth building;
+the production probe re-measures it through the selector once wired.
+
 ## Class fifty-three, 2026-09-18, 00:45 UTC: a tied slate with nothing to fall back on is challenged over the same slate and stops the entry
 
 Found by the XingZ602 read.
