@@ -297,6 +297,22 @@ and "We don't need specifically a socket or a separate client,
    but we accept glob patterns" (2026-09-17).
   So `meow run` stays the only way to ask for work,
    and its single argument may be a glob that matches more than one target.
+  Answered the same day:
+  - Syntax is shell-style globs,
+     `*` and `**` as they behave elsewhere in this repository,
+     not Bazel's `...` and `:all`.
+  - meow warns properly about quoting,
+     because an unquoted glob is expanded by the shell before meow sees it.
+    The tell is more than one argument arriving where one target belongs,
+     or an argument naming an existing path;
+     the diagnostic names the quoting fix.
+  - Every matched task runs concurrently,
+     and each forwarded line carries its target as a prefix.
+    Byte-exact forwarding therefore holds for a single target,
+     which is the common case,
+     and not for a multi-match run.
+  - `meow run` waits for every matched task,
+     then exits with the code of the one that failed first.
 - `meow status`:
    shows only what needs attention in 0.x.
   Asked to choose a full status layout on 2026-09-17,
