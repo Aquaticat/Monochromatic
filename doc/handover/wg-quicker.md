@@ -34,9 +34,9 @@ which source-NATed every exempted socket including IPv4 loopback,
 and config parsing now rejects it.
 `/etc/wireguard/gb-lon-gb2.conf` carries the same `ExemptMark = 100`,
 and that tunnel was cycled so its watcher and `ip rule` selector use the new mark.
-That file is mode `0644` owned `root:user`,
-unlike `mx-que-mx1.conf`;
-nothing here changed it.
+That file was mode `0644` owned `root:user`;
+both configs are now mode `0600` owned `root:root`,
+matching the `0700 root:root` directory that already blocked other users.
 See `doc/troubleshooting/netavark-masquerade-mask-exempt-mark.md`.
 
 ## Completed tasks
