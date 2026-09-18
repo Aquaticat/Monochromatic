@@ -51,7 +51,7 @@ type OutputRecorder = {
   readonly snapshot: () => OutputSnapshot;
 
   /**
-   Reads the most recent output lines for progress display.
+   Reads the most recent non-blank output lines for progress display.
    */
   readonly tailLines: (count: number) => readonly string[];
 };
@@ -270,10 +270,27 @@ function createOutputRecorder(
         return [];
 
       /**
-       Rolling window split into lines, the freshest last.
+       Rolling window text, empty until the job prints something.
        */
-      const lines = rollingChunks.join('', )
-        .split('\n', );
+      const rolling = rollingChunks.join('', );
+      // Splitting an empty buffer would report one blank line, which the
+      // progress display would draw as a gap below a job that has not printed.
+      if (rolling.length === 0)
+        return [];
+
+      /**
+       Rolling window split into lines, blank ones dropped because a progress
+       row carrying only whitespace adds noise and a trailing newline would
+       otherwise always contribute one.
+       */
+      const lines = rolling.split('\n', )
+        .filter(function isNotBlank(line: string, ): boolean {
+          return line.trim()
+            .length
+            > 0;
+        }, );
+      if (lines.length === 0)
+        return [];
       return lines.slice(Math.max(
         lines.length - count,
         0,
