@@ -21,6 +21,7 @@ import {
   TranslateAbsenceError,
 } from './translate-absence.ts';
 import type { TranslateCandidateValue, } from './translate-candidates.ts';
+import { runoffFinalists, } from './translate-runoff.ts';
 import type { ProducedSlate, } from './translate-produce.ts';
 import { TRANSLATE_SELECTION_TASK, } from './translate-selection-sheet.ts';
 import {
@@ -523,9 +524,20 @@ export async function judgeTranslateSlate(
   // is right; where the archive has no wording, the same silence would ship the
   // empty string as though the judges had chosen it.
   if (incumbentKind === 'absent') {
+    /**
+     Candidates a tie backed when some of the slate drew nothing, so the
+     challenge round can be a run-off over them (class fifty-three).
+     */
+    const runoff = runoffFinalists({
+      candidates: rotated,
+      perCandidate: outcome.perCandidate,
+      disposition: outcome.disposition,
+    },);
     throw new TranslateAbsenceError({
       reason: declined,
       findings: declineFindings,
+      // Conditional spread keeps the field absent where the whole slate stands.
+      ...((runoff.kind === 'narrowed') ? { finalists: runoff.finalists, } : {}),
     },);
   }
   tl.info(`translate stage: ${outcome.reason}; keeping the incumbent`,);

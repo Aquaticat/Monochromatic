@@ -3,6 +3,7 @@ import {
   TranslateAbsenceError,
   type TranslateAbsenceReason,
 } from './translate-absence.ts';
+import { runoffFinding, } from './translate-runoff.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 
 //region Translate retry
@@ -13,6 +14,12 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 // Second judging challenges prior decline under distinct responsibility rather
 // than pretending identical prompt is independent evidence.
 // `#109` split stage into produce and judge halves so this is expressible.
+//
+// EXCEPT A RUN-OFF AFTER A TIE WITH NOTHING TO FALL BACK ON (class
+// fifty-three, `translate-runoff.ts`): a tie has already ranked the
+// candidates nobody named below the rest, so the challenge round offers only
+// the candidates that drew a ballot when that is fewer than the slate. The
+// question is narrower, not a fresh slate.
 //
 // WHY ONCE AND NOT UNTIL IT AGREES: a panel that declines initial selection and
 // distinct challenge has exhausted these responsibilities.
@@ -189,15 +196,47 @@ export async function judgeSlateWithRetry(
   l.info(`translate stage: ${firstReport.reason}; challenging same panel under distinct responsibility`,);
 
   /**
-   Findings the first round gathered, which the second must not lose.
+   Candidates the tied first round backed, when a run-off narrows the second.
    */
-  const firstFindings = firstReport.findings;
+  const finalists = (first.kind === 'raised')
+    ? first.error
+      .finalists
+    : undefined;
+
+  /**
+   Findings the first round gathered, which the second must not lose, with
+   the run-off named after the retry marker when the second round is one.
+   */
+  const firstFindings = [
+    ...firstReport.findings,
+    RETRY_FINDING,
+    ...((finalists === undefined)
+      ? []
+      : [
+        runoffFinding({
+          finalists: finalists.length,
+          offered: judging.produced
+            .candidates
+            .length,
+        },),
+      ]),
+  ];
   try {
     /**
-     What the same panel said about the same candidates, second time.
+     What the same panel said the second time, about the same candidates or
+     about the finalists of a tie.
      */
     const second = await judgeTranslateSlate({
       ...judging,
+      // Conditional spread keeps the whole slate where there is no run-off.
+      ...((finalists === undefined)
+        ? {}
+        : {
+          produced: {
+            ...judging.produced,
+            candidates: finalists,
+          },
+        }),
       responsibility: 'decline-challenge',
     },);
 
@@ -211,7 +250,6 @@ export async function judgeSlateWithRetry(
         : {}),
       findings: [
         ...firstFindings,
-        RETRY_FINDING,
         ...second.findings,
       ],
     };
@@ -224,7 +262,6 @@ export async function judgeSlateWithRetry(
       reason: isRetriedDecline({ reason: error.reason, },) ? SETTLED_DECLINE : error.reason,
       findings: [
         ...firstFindings,
-        RETRY_FINDING,
         ...error.findings,
       ],
     },);

@@ -5,7 +5,7 @@
  ballot rather than over the whole slate again. Slice 14 of XingZ60 carried
  an archive text the deterministic floor refused ("TA once said"), so the
  stage ran it as absent; five candidates, three ballots, three different
- picks, twice; the entry stopped ERROR after two hours and thirty-eight
+ picks, twice (here: three candidates, two named once each, one decline); the entry stopped ERROR after two hours and thirty-eight
  minutes and re-bought its translate lane. Cat-themed invention throughout;
  no corpus content appears here.
 
@@ -48,13 +48,12 @@ const TRANSLATE_SCHEMA = 'translation_report';
 const SOURCE_TEXT = '猫猫在窗台上打盹，尾巴垂在暖气片旁边。';
 
 /**
- Translators, four so the slate is wider than the bench.
+ Translators, three, which is the producing window.
  */
 const TRANSLATORS: readonly RosterModelId[] = [
   'hf:cat/Cat-A',
   'hf:cat/Cat-B',
   'hf:cat/Cat-C',
-  'hf:cat/Cat-D',
 ].map(function toId(id,) {
   return id as unknown as RosterModelId;
 },);
@@ -71,23 +70,23 @@ const JUDGES: readonly RosterModelId[] = [
 },);
 
 /**
- What the translators render, one each in call order; the fourth draws no
+ What the translators render, one each in call order; the third draws no
  ballot in either round.
  */
 const RENDERINGS: readonly string[] = [
   'The cat dozes on the windowsill, tail draped beside the radiator.',
   'A cat naps on the sill, its tail hanging near the heater.',
   'The cat sleeps on the ledge, tail beside the radiator.',
-  'The cat rests on the window ledge with its tail by the heater.',
 ];
 
 /**
- Needle each judge looks for in the first round, one candidate each.
+ Needle each judge looks for in a split round: two candidates named once
+ each and one judge declining, which no candidate can win at weight two.
  */
 const FIRST_ROUND_NEEDLES: Readonly<Record<string, string>> = {
   'hf:cat/Judge-A': 'dozes',
   'hf:cat/Judge-B': 'naps',
-  'hf:cat/Judge-C': 'sleeps',
+  'hf:cat/Judge-C': 'purrs',
 };
 
 /**
@@ -323,14 +322,14 @@ async function judgedUnder(
 /**
  Finding the retry writes when the second round is a run-off.
  */
-const RUNOFF_FINDING = 'translate-runoff (finalists 3 of 4)';
+const RUNOFF_FINDING = 'translate-runoff (finalists 2 of 3)';
 
 await describe({
   name: 'a tied slate at a slice with nothing to fall back on (class fifty-three)',
   children: [
     it({
-      name: 'CHALLENGES the tie as a run-off over the three candidates that drew a ballot, '
-        + 'leaving the unbacked fourth off the second sheet, and keeps the second round\'s decision',
+      name: 'CHALLENGES the tie as a run-off over the two candidates that drew a ballot, '
+        + 'leaving the unbacked third off the second sheet, and keeps the second round\'s decision',
       fn: async () => {
         const { result, sheetsByRound, } = await judgedUnder({ secondRound: 'converge', },);
 
@@ -347,17 +346,17 @@ await describe({
           },);
         },);
         expect(offered[0],).toEqual([
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
         ],);
         expect(offered[1],).toEqual([
-          3,
-          3,
-          3,
+          2,
+          2,
+          2,
         ],);
         expect((sheetsByRound[1] ?? []).some(function carriesUnbacked(content,): boolean {
-          return content.includes('rests on the window ledge',);
+          return content.includes('sleeps on the ledge',);
         },),).toBe(false,);
       },
     },),

@@ -1,3 +1,6 @@
+import type { Candidate, } from './candidate-select-model.ts';
+import type { TranslateCandidateValue, } from './translate-candidates.ts';
+
 //region Translate absence
 // What the translate lane does when there is no incumbent to fall back on.
 //
@@ -200,11 +203,20 @@ export class TranslateAbsenceError extends Error {
   public readonly findings: readonly string[];
 
   /**
+   Candidates that drew a ballot in a tied round, when some of the slate drew
+   none, so the challenge round can be a run-off over them (class
+   fifty-three, `translate-runoff.ts`).
+   */
+  public readonly finalists?: readonly Candidate<TranslateCandidateValue>[];
+
+  /**
    Builds the refusal with the evidence the stage had collected.
    
    @param reason - why nothing could be written
    
    @param findings - stage findings up to this point, kept for the record
+   
+   @param finalists - candidates a tied round backed, when fewer than the slate
    
    @example
    ```ts
@@ -215,9 +227,11 @@ export class TranslateAbsenceError extends Error {
     {
       reason,
       findings,
+      finalists,
     }: {
       readonly reason: TranslateAbsenceReason;
       readonly findings: readonly string[];
+      readonly finalists?: readonly Candidate<TranslateCandidateValue>[];
     },
   ) {
     super(
@@ -227,6 +241,8 @@ export class TranslateAbsenceError extends Error {
     this.name = 'TranslateAbsenceError';
     this.reason = reason;
     this.findings = findings;
+    if (finalists !== undefined)
+      this.finalists = finalists;
   }
 }
 
