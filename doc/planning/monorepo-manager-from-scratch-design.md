@@ -1624,6 +1624,45 @@ Answered by the user on 2026-09-17:
    so the TypeScript file-enforcer and meow never enforce the same tree during development,
    and the lock interoperability concern for coexisting enforcers does not arise.
 
+### Configuration authoring
+
+Answered by the user on 2026-09-17,
+after the research's per-package proposal was put to them.
+
+- One root `meow.hcl` holds everything:
+   "One root file for everything,
+   with tags per pkg and inherince."
+  There is no per-package configuration file,
+   which is a deliberate break from today's 178 Mise files
+   and from the research's `task_template` plus per-package `project` block sketch.
+- Packages carry tags,
+   and tasks reach packages through those tags rather than through file placement.
+- Inheritance composes task definitions,
+   so a task written once applies to every package its tags select.
+- A task's command is an argv list,
+   spawned directly with no shell:
+   `command = ["node", "--test", "src"]`.
+  This matches how file-enforcer's `exec` and the repository's other spawners already run programs,
+   and keeps quoting and word splitting out of the language.
+- Block shape is OpenTofu's,
+   without the `resource` keyword,
+   which in OpenTofu exists to namespace provider types meow does not have.
+
+#### Consequences of one root file
+
+- Target labels cannot come from a file's directory,
+   because there is one file;
+   they come from the package a tag selected,
+   as in `//package/cli/fy:test`.
+- A change to the root file re-evaluates everything,
+   so the read set and the cache key for configuration evaluation cover one file rather than many
+   ("Per-user configuration").
+- The language server works in one large file,
+   which makes its outline and go-to-definition more load-bearing than they would be per package.
+- The file is large by construction:
+   today's root `mise.toml` is generated and already long,
+   and every package's tasks now live beside it.
+
 ### HCL tooling
 
 Research:
