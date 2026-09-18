@@ -534,14 +534,34 @@ was at risk.
    `(2s)` then
   `(7s)` across an eight second window.
 
+## Post-acceptance change
+
+After using the reloaded extension,
+the user asked for the trailing `continue` instruction to be eliminated.
+
+- `DEFAULT_POKE_INSTRUCTION` is now the empty string,
+  so `buildPokeContent` appends no instruction line and the card ends at its
+  closing fence.
+- The `pokeInstruction` setting key is retained,
+  because deleting an accepted key is a wider change than the request and an
+  empty default already removes the instruction from every poke.
+- Rationale for future readers:
+   a poke triggers its turn through `triggerTurn`
+  and `deliverAs`,
+  so no imperative is needed to make the model respond.
+- The fake-terminal assertion that checked the pane contained
+  `constants.DEFAULT_POKE_INSTRUCTION` was replaced.
+  With an empty default that check is vacuously true,
+  since every string contains the empty string,
+  so the case now asserts that no trimmed pane line equals `continue`.
+
 ## Next action
 
-- Move the stopgap `~/.pi/agent/extensions/bash-poke.ts` aside,
-   so Pi's
-  auto-discovery stops loading a second copy of the same interception.
-- Add `/var/home/user/Monochromatic/package/pi-plugin/bash-poke` to the
-  `packages` array in `~/.pi/agent/settings.json`.
-- Hand the user the `/reload` step,
-   which the agent cannot perform from inside a
-  turn,
-   and the README's manual real-model check.
+- Run `/reload` in Pi after any further change to this package,
+  because the agent cannot reload from inside a turn.
+- The activation edits are done:
+   the stopgap moved to
+  `~/temp/agent/bash-poke-stopgap-2026-09-18.ts`,
+  and the package path added to `packages` in `~/.pi/agent/settings.json`.
+- The README's manual real-model check remains the only step no automated suite
+  covers.
