@@ -243,9 +243,15 @@ function positionOfText(
 }
 
 /**
+ Reply body for one slate judge, fixed or scripted from the sheet it was
+ shown and how many judge calls came before it.
+ */
+type JudgeReply = string | ((sent: string, call: number,) => string);
+
+/**
  Builds a client that answers each round from its own script.
  
- @param judgeReply - body every slate judge returns
+ @param judgeReply - body every slate judge returns, or a script over the sheet
  
  @param gateReply - body every gate voice returns
  
@@ -265,7 +271,7 @@ function routedClient(
     served,
     judgeSheets,
   }: {
-    readonly judgeReply: string;
+    readonly judgeReply: JudgeReply;
     readonly gateReply: string;
     readonly served: { judge: number; gate: number; };
 
@@ -288,6 +294,10 @@ function routedClient(
        Whether this call carries the gate's sheet rather than the selector's.
        */
       const isGate = sent.includes(GATE_MARKER,);
+      /**
+       Judge calls before this one, which a scripted reply may read.
+       */
+      const judgeCall = served.judge;
       if (isGate)
         served.gate += 1;
       else {
@@ -295,6 +305,12 @@ function routedClient(
         judgeSheets?.push(sent,);
       }
 
+      /**
+       Body this voice returns.
+       */
+      const content = isGate
+        ? gateReply
+        : ((typeof judgeReply === 'string') ? judgeReply : judgeReply(sent, judgeCall,));
       return {
         status: 200,
         bodyText: `data: ${
@@ -302,7 +318,7 @@ function routedClient(
             choices: [
               {
                 index: 0,
-                delta: { content: isGate ? gateReply : judgeReply, },
+                delta: { content, },
               },
             ],
           },)
@@ -470,7 +486,7 @@ async function settleWith(
     }[];
     readonly validity: readonly ProposalValidity[];
     readonly standingText?: string;
-    readonly judgeReply?: string;
+    readonly judgeReply?: JudgeReply;
     readonly gateReply?: string;
     readonly producedFindings?: readonly string[];
 
@@ -927,6 +943,67 @@ await describe({
         expect(eligible.settled.terminal,).toBe('gate-kept-standing',);
         expect(eligible.settled.text,).toBe(STANDING,);
         expect(eligible.settled.findings.includes(UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING,),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'CHALLENGES A TIED SLATE ONCE when the standing is ineligible (class fifty-five, XingZ605 '
+        + 'slice 13, 2026-09-18): the translate lane\'s run-off challenge of class fifty-three reaches the '
+        + 'consolidation, whose tie over a withheld standing otherwise stops the entry; an eligible '
+        + 'standing keeps the slice on the same tie without a second round',
+      fn: async () => {
+        /**
+         Second proposal, so a slate of two can tie.
+         */
+        const OTHER = 'The cat naps on the sill each afternoon.';
+        /**
+         Wording the challenge round's task carries and the first round's does not.
+         */
+        const CHALLENGE_MARKER = 'A prior panel declined this exact slate';
+        /**
+         Ballots: the first round splits one voice each way and a third declines,
+         the challenge round backs candidate 1 unanimously.
+         */
+        const tiedThenSettled = function scripted(sent: string, call: number,): string {
+          if (sent.includes(CHALLENGE_MARKER,))
+            return judgeBallot({ best: 1, },);
+          return judgeBallot({ best: [1, 2, 0,][call % 3] ?? 0, },);
+        };
+        const { settled, served, judgeSheets, } = await settleWith({
+          voices: [
+            voiceOf({ modelId: ROSTER[0], translation: FRESH, },),
+            voiceOf({ modelId: ROSTER[1], translation: OTHER, },),
+          ],
+          validity: [
+            validityOf({ modelId: ROSTER[0], valid: true, },),
+            validityOf({ modelId: ROSTER[1], valid: true, },),
+          ],
+          judgeReply: tiedThenSettled,
+          gateReply: gateBallot({ choice: 'consolidated', },),
+          standingEligible: false,
+        },);
+        expect(settled.terminal,).toBe('consolidated',);
+        expect(settled.findings.includes('translate-declined-retried',),).toBe(true,);
+        expect(judgeSheets.some(function challenged(sheet,): boolean {
+          return sheet.includes(CHALLENGE_MARKER,);
+        },),).toBe(true,);
+        expect(served.gate,).toBeGreaterThan(0,);
+
+        const eligible = await settleWith({
+          voices: [
+            voiceOf({ modelId: ROSTER[0], translation: FRESH, },),
+            voiceOf({ modelId: ROSTER[1], translation: OTHER, },),
+          ],
+          validity: [
+            validityOf({ modelId: ROSTER[0], valid: true, },),
+            validityOf({ modelId: ROSTER[1], valid: true, },),
+          ],
+          judgeReply: tiedThenSettled,
+          gateReply: gateBallot({ choice: 'consolidated', },),
+        },);
+        expect(eligible.settled.terminal,).toBe('slate-declined-standing',);
+        expect(eligible.judgeSheets.some(function challenged(sheet,): boolean {
+          return sheet.includes(CHALLENGE_MARKER,);
+        },),).toBe(false,);
       },
     },),
     it({
