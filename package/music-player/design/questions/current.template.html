@@ -516,7 +516,7 @@
         <article class="strategy-card">
           <span class="code">P1</span>
           <h3>Dropdown field plus floating menu panel</h3>
-          <p>An exposed-dropdown style outlined field carries the folder name and caret; the picker opens as an inset menu container with 4dp corners over the list, ending above the deck.</p>
+          <p>An outlined text field in exposed-dropdown form (56dp container, floating Folder label on the outline, 4dp corners, trailing dropdown icon, 12dp side and 16dp icon padding per the text-field specs) carries the folder name; the picker opens as an inset menu container with 4dp corners over the list, ending above the deck. The menu keeps the baseline 4dp corner but exceeds the 280dp menu width cap because the D31 name wall needs the full panel.</p>
           <ul class="role-list">
             <li><strong>Pros:</strong> the field shape says choose one of many, matching the exposed dropdown lineage; the menu container is the specified temporary surface; the panel stays local to its trigger.</li>
             <li><strong>Cons:</strong> a second surface floats over the list; the list itself disappears behind the panel.</li>
@@ -525,7 +525,7 @@
         <article class="strategy-card" data-recommended>
           <span class="code">P2 · recommended</span>
           <h3>Dropdown field plus in-slot picker</h3>
-          <p>The same field trigger, but the picker replaces the list slot in place: rail and names occupy the list region while the deck stays visible; the caret flips to close.</p>
+          <p>The same outlined text-field trigger, but the picker replaces the list slot in place: rail and names occupy the list region while the deck stays visible; the caret flips to close.</p>
           <ul class="role-list">
             <li><strong>Pros:</strong> one calm surface with no floating layer; the trigger never moves; the deck and its state stay visible; no back step and no scrim.</li>
             <li><strong>Cons:</strong> the track list is not visible while choosing.</li>
