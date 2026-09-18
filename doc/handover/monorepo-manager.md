@@ -459,10 +459,48 @@ Answered the same day,
  and every modular piece,
  the logger included,
  becoming a reusable package.
-Still in my words rather than the user's:
- `meow status` output,
- `meow doctor` output,
- and the trust prompt.
+Then answered too:
+ `meow status` shows failed,
+ paused,
+ blocked,
+ flaky,
+ queued and running work but never successes,
+ with its layout left for the TUI;
+ `meow doctor` prints problems only;
+ the trust review shows every file that would be evaluated,
+ unpaged,
+ AUR-style;
+ `meow stop` joins Ctrl+C and tasks never outlive the daemon;
+ `meow run` takes one target or a shell-style glob,
+ warns about quoting,
+ prefixes each line with its target on a multi-match run,
+ and exits with the first failure's code.
+Configuration authoring,
+ answered the same day:
+ one root `meow.hcl` with tags per package and inheritance,
+ tags inferred then adjusted by glob-selecting `package` blocks,
+ one-label `task "test"` blocks,
+ argv commands with no shell,
+ most-specific-tag-wins specialization,
+ and mandatory `overridden` and `override` meta-arguments.
+- Finished on 2026-09-17:
+   the Mise task usage study the user asked for,
+   copied to `doc/planning/monorepo-manager-route-research/mise-task-usage.md`
+   and merged into "What using Mise for tasks is actually like" in the design.
+  It confirms tag selection (2,632 lines of bare `extends` removed),
+   the override markers (96 silent shadows),
+   argv commands,
+   and a real expression language (63.1% of tasks interpolate `{{vars.`).
+  It also costs the one-root-file decision:
+   about 7,000 lines in one file,
+   no answer for what narrows a listing when standing in a directory,
+   and inline logic with no owner.
+  Three defects it found are filed as issue #555,
+   each re-verified here:
+   root `mise run test` skips 15 packages,
+   three stale `mise watch ... -- node ...` tasks remain,
+   and `mise.toml:308-312` cites evidence that `doc/handover/lint-fix-2026-06.md` does not contain.
+  Its four questions are with the user.
 
 1.  Implementation itself is unstarted and unrequested (rule `VRB`).
     The plan's M1 is the entry point.
