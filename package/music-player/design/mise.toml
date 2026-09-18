@@ -12,18 +12,15 @@ const darkCards = [
   { basename: "cover-round-cover-dark-wallpaper-s200", code: "D200", title: "Dark cover · wallpaper seed · 200% text", alt: "folded cover in dark mode under the measured wallpaper seed at 200 percent text with the four-row mode arrangement" },
   { basename: "cover-round-cover-dark-coral-s100", code: "DCOR", title: "Dark cover · coral seed · 100% text", alt: "folded cover in dark mode under an uncontrolled warm coral palette at default text size" },
 ]
-const lightCards = [
-  { basename: "cover-round-cover-light-l1-s100", code: "L1", title: "Light cover · L1 ramp with deck-seam hairline · 100% text", alt: "folded cover in light mode with a tonal ramp and one hairline at the deck seam" },
-  { basename: "cover-round-cover-light-l2-s100", code: "L2", title: "Light cover · L2 pure ramp · 100% text", alt: "folded cover in light mode with a tonal ramp and no hairlines" },
-  { basename: "cover-round-cover-light-l3-s100", code: "L3", title: "Light cover · L3 flat surface with hairlines · 100% text", alt: "folded cover in light mode with one flat surface and hairlines at both seams" },
-  { basename: "cover-round-cover-light-l1-s200", code: "L1-200", title: "Light cover · L1 ramp with deck-seam hairline · 200% text", alt: "folded cover in light mode with the recommended ramp at 200 percent text and the four-row mode arrangement" },
-]
 const pickerCards = [
-  { basename: "cover-round-cover-picker-k1-s100", code: "K1", title: "Picker opened · K1 full-screen page · 100% text", alt: "cover swapped to a full-screen picker page with app bar, letter rail, and wrapped names" },
-  { basename: "cover-round-cover-picker-k2-s100", code: "K2", title: "Picker opened · K2 dropdown panel · 100% text", alt: "cover with a dropdown picker panel under the top row over the player deck" },
-  { basename: "cover-round-cover-picker-k3-s100", code: "K3", title: "Picker opened · K3 modal bottom sheet · 100% text", alt: "cover with a modal bottom sheet picker over a scrimmed player" },
-  { basename: "cover-round-cover-picker-k1-s200", code: "K1-200", title: "Picker opened · K1 full-screen page · 200% text", alt: "full-screen picker page at 200 percent text" },
-  { basename: "cover-round-cover-picker-k1-light-s100", code: "K1-L", title: "Picker opened · K1 full-screen page · light L1 · 100% text", alt: "full-screen picker page in light mode under the L1 ramp surface" },
+  { basename: "cover-round-cover-picker-p1-s100", code: "P1", title: "Picker opened · P1 dropdown field plus floating menu panel · 100% text", alt: "outlined dropdown field trigger with an inset menu container panel over the list" },
+  { basename: "cover-round-cover-picker-p2-s100", code: "P2", title: "Picker opened · P2 dropdown field plus in-slot picker · 100% text", alt: "outlined dropdown field trigger with the picker replacing the list slot above the visible deck" },
+  { basename: "cover-round-cover-picker-p3-s100", code: "P3", title: "Picker opened · P3 app-bar title plus floating menu panel · 100% text", alt: "app-bar title trigger with an inset menu container panel over the list" },
+  { basename: "cover-round-cover-picker-p4-s100", code: "P4", title: "Picker opened · P4 app-bar title plus in-slot picker · 100% text", alt: "app-bar title trigger with the picker replacing the list slot above the visible deck" },
+  { basename: "cover-round-cover-picker-p2-s200", code: "P2-200", title: "Picker opened · P2 in-slot picker · 200% text", alt: "in-slot picker at 200 percent text with the deck still visible" },
+]
+const lightCards = [
+  { basename: "cover-round-cover-picker-p2-light-s100", code: "L3", title: "Settled light (D45) · P2 in-slot picker · 100% text", alt: "in-slot picker in light mode on the settled flat surface with hairlines at both seams" },
 ]
 const cardHtml = (card) => {
   const relativePath = join("questions", "render", `${card.basename}.png`)
@@ -56,12 +53,12 @@ if (/<script\s+[^>]*src=|<link\s+[^>]*href=/i.test(html)) {
   throw new Error("Cover questionnaire depends on an external script or stylesheet.")
 }
 const dataUrls = [...html.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/g)]
-if (dataUrls.length !== 28) {
-  throw new Error(`Cover questionnaire embeds ${dataUrls.length} image references; expected 28.`)
+if (dataUrls.length !== 22) {
+  throw new Error(`Cover questionnaire embeds ${dataUrls.length} image references; expected 22.`)
 }
 const uniqueImages = new Map(dataUrls.map((match) => [match[1], Buffer.from(match[1], "base64")]))
-if (uniqueImages.size !== 14) {
-  throw new Error(`Cover questionnaire embeds ${uniqueImages.size} distinct captures; expected 14.`)
+if (uniqueImages.size !== 11) {
+  throw new Error(`Cover questionnaire embeds ${uniqueImages.size} distinct captures; expected 11.`)
 }
 const pngSignature = "89504e470d0a1a0a"
 for (const [encoded, image] of uniqueImages) {
@@ -82,16 +79,13 @@ const required = [
   "One row at 85% and 100%",
   "2 × 2 at 150%",
   "four rows at 200%",
-  "L1 · recommended",
-  "L2",
-  "L3",
-  "Ranking: L1 &gt; L3 &gt; L2.",
-  "name=\"lightCoverSurface\"",
+  "Light surface: settled (D45)",
   "Decision: cover subdirectory picker opened state",
-  "K1 · recommended",
-  "K2",
-  "K3",
-  "Ranking: K1 &gt; K3 &gt; K2.",
+  "P1",
+  "P2 · recommended",
+  "P3",
+  "P4",
+  "Ranking: P2 &gt; P4 &gt; P1 &gt; P3.",
   "name=\"pickerOpenedState\"",
   "spaces alone do not complete this field",
   "Native pixels",
@@ -108,8 +102,8 @@ for (const fragment of required) {
   }
 }
 const radioCount = (html.match(/type="radio"/g) ?? []).length
-if (radioCount !== 6) {
-  throw new Error(`Cover questionnaire has ${radioCount} radio choices; expected 6.`)
+if (radioCount !== 4) {
+  throw new Error(`Cover questionnaire has ${radioCount} radio choices; expected 4.`)
 }
 if (html.includes('id="copy-answer"') || html.includes("navigator.clipboard") || html.includes("execCommand('copy')")) {
   throw new Error("Cover questionnaire includes an unnecessary clipboard control or API.")
@@ -120,15 +114,12 @@ const basenames = [
   "cover-round-cover-dark-wallpaper-s150",
   "cover-round-cover-dark-wallpaper-s200",
   "cover-round-cover-dark-coral-s100",
-  "cover-round-cover-picker-k1-s100",
-  "cover-round-cover-picker-k2-s100",
-  "cover-round-cover-picker-k3-s100",
-  "cover-round-cover-picker-k1-s200",
-  "cover-round-cover-picker-k1-light-s100",
-  "cover-round-cover-light-l1-s100",
-  "cover-round-cover-light-l2-s100",
-  "cover-round-cover-light-l3-s100",
-  "cover-round-cover-light-l1-s200",
+  "cover-round-cover-picker-p1-s100",
+  "cover-round-cover-picker-p2-s100",
+  "cover-round-cover-picker-p3-s100",
+  "cover-round-cover-picker-p4-s100",
+  "cover-round-cover-picker-p2-s200",
+  "cover-round-cover-picker-p2-light-s100",
 ]
 const hexToRgb = (hex) => [1, 3, 5].map((start) => Number.parseInt(hex.slice(start, start + 2), 16))
 const toPixel = (hex) => `srgba(${hexToRgb(hex).join(",")},1)`
@@ -185,22 +176,27 @@ const seamRowCount = (basename, outlineHex) => {
 for (const [index, basename] of basenames.entries()) {
   const hierarchyPath = join(root, "questions", "evidence", `${basename}.xml`)
   const hierarchy = readFileSync(hierarchyPath, "utf8")
-  const markers = basename.includes("-picker-k1")
+  const markers = (basename.includes("-picker-p1") || basename.includes("-picker-p3"))
     ? [
       'bounds="[0,0][1080,2424]"',
       'text="Camellia"',
       'text="Cult of Luna"',
-      'text="Folders"',
-      'content-desc="Navigate up"',
+      'text="Open"',
     ]
-    : basename.includes("-picker-")
+    : basename.includes("-picker-") && !basename.includes("-s200")
       ? [
         'bounds="[0,0][1080,2424]"',
         'text="Camellia"',
         'text="Cult of Luna"',
-        'text="Open"',
+        'content-desc="Pause"',
       ]
-      : [
+      : basename.includes("-picker-")
+        ? [
+          'bounds="[0,0][1080,2424]"',
+          'text="Camellia"',
+          'content-desc="Pause"',
+        ]
+        : [
         'bounds="[0,0][1080,2424]"',
         'text="Camellia"',
         'text="Open"',
@@ -235,33 +231,41 @@ for (const [index, basename] of basenames.entries()) {
     "info:",
   ], { encoding: "utf8" }).trim().split("|")
   if (basename.includes("-picker-")) {
-    const pickerPixels = sample([900, 200], [60, 1200], [1040, 1200], [600, 1200], [540, 2300], [540, 400])
+    const yMid = basename.includes("-s200") ? 600 : 1200
+    const pickerPixels = sample([540, 60], [20, yMid], [1040, yMid], [600, 1200], [540, 2300], [540, 400])
     if (pickerPixels[0] !== "1" || pickerPixels[1] !== "1") {
       throw new Error(`${basename}.png is not fully opaque.`)
     }
-    const [barTop, rail, names, floating, behindDeck, scrimArea] = pickerPixels.slice(2)
-    if (basename.includes("-k1-light")) {
+    const [barTop, rail, names, floating, behindDeck] = pickerPixels.slice(2)
+    if (basename.includes("-light")) {
       const roles = readRoles("wallpaper", "light")
       const lowest = toPixel(roles.surface_container_lowest)
-      if (rail !== lowest || names !== lowest || barTop !== lowest) {
-        throw new Error(`${basename}.png does not match the L1 picker page mapping.`)
+      if (rail !== lowest || names !== lowest || barTop !== lowest || behindDeck !== lowest) {
+        throw new Error(`${basename}.png does not match the D45 flat light mapping.`)
       }
-    } else if (basename.includes("-k1")) {
-      if (barTop !== "srgba(0,0,0,1)" || rail !== "srgba(0,0,0,1)" || names !== "srgba(0,0,0,1)") {
-        throw new Error(`${basename}.png lost its true-black picker page surfaces.`)
+      const seams = seamRowCount(basename, roles.outline_variant)
+      if (seams < 3 || seams > 5) {
+        throw new Error(`${basename}.png shows ${seams} hairline rows; D45 expects two 1dp seams.`)
       }
-    } else {
+    } else if (basename.includes("-p1") || basename.includes("-p3")) {
       // D32 fixed ladder: the stable strategy substitutes container roles, so the
       // floating picker surface is the fixed high step, not the generated role.
       const high = "srgba(26,26,31,1)"
       if (floating !== high || rail !== high) {
         throw new Error(`${basename}.png does not match its disclosed floating picker surface.`)
       }
-      if (basename.includes("-k2") && behindDeck !== "srgba(10,10,13,1)") {
+      if (behindDeck !== "srgba(10,10,13,1)") {
         throw new Error(`${basename}.png lost the player deck behind the picker panel.`)
       }
-      if (basename.includes("-k3") && (scrimArea === "srgba(0,0,0,1)" || scrimArea === high)) {
-        throw new Error(`${basename}.png lost its scrim over the player.`)
+      if (barTop !== "srgba(0,0,0,1)") {
+        throw new Error(`${basename}.png lost its true-black top row.`)
+      }
+    } else {
+      if (barTop !== "srgba(0,0,0,1)" || rail !== "srgba(0,0,0,1)" || names !== "srgba(0,0,0,1)") {
+        throw new Error(`${basename}.png lost its true-black in-slot picker surfaces.`)
+      }
+      if (behindDeck !== "srgba(10,10,13,1)") {
+        throw new Error(`${basename}.png lost its fixed D41 deck neutral.`)
       }
     }
     const expectedEncoded = readFileSync(imagePath).toString("base64")

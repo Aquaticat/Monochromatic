@@ -17,7 +17,7 @@
     "styleNumber": "1",
     "contrast": "0.0"
   },
-  "settledSetting": "{\"android.theme.customization.system_palette\":\"45588C\",\"android.theme.customization.accent_color\":\"45588C\",\"android.theme.customization.theme_style\":\"TONAL_SPOT\",\"_applied_timestamp\":1789696814043}",
+  "settledSetting": "{\"android.theme.customization.system_palette\":\"45588C\",\"android.theme.customization.accent_color\":\"45588C\",\"android.theme.customization.theme_style\":\"TONAL_SPOT\",\"_applied_timestamp\":1789699547965}",
   "resolvedRoles": {
     "primary_container": "#AFC0F4",
     "on_primary_container": "#2A3B66",

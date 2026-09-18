@@ -1173,6 +1173,21 @@ border mid-target.
  Keeping the 440dp cap on the cover,
  which clips controls at 200% text.
 
+### D45. Cover light surface = flat with hairlines at both seams (L3, 2026-09-17)
+The cover light scheme uses one flat `surfaceContainerLowest` surface with
+`outlineVariant` hairlines at the top-row and deck seams.
+**Why.**
+ The user selected L3.
+ L1's deck-seam hairline plus ramp can make a selected first
+track read as detached from the list,
+ because the current row's generated low container sits
+between two separation cues.
+ L3 keeps every row on one surface and separates structure only at
+the seams.
+**Rejected.**
+ L1 ramp with a deck-seam hairline,
+ and L2 pure ramp without hairlines.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)

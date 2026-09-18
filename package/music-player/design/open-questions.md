@@ -25,12 +25,14 @@ only in the NO lists of `decisions.md`;
 
 ## 0b. Live design backlog (2026-09-17)
 
-- **ACTIVE: cover screen native round, two open axes.**
+- **ACTIVE: cover screen native round, one open axis.**
   K: the subdirectory picker's
-  opened state (K1 full-screen page,
-  K2 dropdown panel,
-  K3 modal bottom sheet).
-  L: the cover light surface.
+  opened state,
+  now iterating as four prototypes (dropdown-field or app-bar-title trigger,
+  crossed with floating menu panel or in-slot picker) after the user rejected K1's back
+  navigation and K3's non-local sheet and asked for a refined K2.
+  L is settled: D45 chose
+  L3 flat with hairlines at both seams.
   D14 cover-c is the HTML-era baseline;
   native folded
  geometry (411 × 923dp,
