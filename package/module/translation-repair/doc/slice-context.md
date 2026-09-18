@@ -188,6 +188,16 @@ and the will's paragraph shipped as a silent gap twice.
 A split with an anchored claim stays unresolved;
 an unanchorable claim is still no vote for absence.
 
+## What the consolidate gate is told about an ineligible standing
+
+Since class fifty-six (2026-09-18) a gate over a standing the deterministic publication rule refused is told so on its sheet,
+with the rule's finding and the consequence
+(choosing the standing stops the entry with no page),
+so that keeping it is not taken for the safe choice.
+Every gate ballot is logged with its model,
+choice and reason.
+A gate that refuses the consolidation at quorum still stops the slice.
+
 ## When the consolidation slate ties over an ineligible standing
 
 A consolidation slate whose standing was withheld as ineligible has nothing to keep on a decline,

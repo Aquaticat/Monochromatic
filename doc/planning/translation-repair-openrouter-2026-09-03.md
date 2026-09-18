@@ -8082,6 +8082,116 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ607 launches on class fifty-six, 2026-09-18, 14:40 UTC
+
+Frozen `139a7f99a` (classes forty-one to fifty-six plus the decision seat),
+pid 571308,
+runs `~/temp/agent/XingZ607`,
+log `~/temp/agent/XingZ607.log`,
+providers at launch `synthetic=dry bedrock=wet hyper=dry openrouter=wet`,
+meters Bedrock 163.38 and OpenRouter 235.95,
+no cron job,
+the background waiter alone reports the exit.
+It resumes from XingZ606's slice cache.
+Read first the consolidation of the teachers paragraph
+(the slice whose standing carries the untranslated pronoun;
+its gate sheet now says the standing cannot ship,
+and every gate ballot is logged with its reason:
+`consolidate gate ballot <model>: <choice>: <reason>`),
+then any other `CANNOT SHIP` gate and how it went,
+then the page's teachers and funeral paragraphs
+(no TA left standing),
+then the nine footnote definitions and their labels,
+the components,
+the `details` summary,
+the profile link,
+then the seven steps and the three checks.
+
+## Class fifty-six, 2026-09-18, 14:36 UTC: the gate keeps an ineligible standing it was never told cannot ship, and logs no reasons
+
+Found by the XingZ606 read.
+A third paragraph of the entry,
+the one on the parents being teachers,
+carries the untranslated pronoun in the archive and in the contest winner,
+so its consolidation ran with the standing withheld:
+the slate chose GPT-OSS's valid proposal 2 to 1.5
+(the challenge of class fifty-five was not needed),
+and the consolidate gate went 4 of 5 usable for the standing.
+A gate refusing at quorum stops the slice under the 2026-09-04 rule,
+and the log carried only the tally,
+so why four judges preferred a text the rule refuses could not be read afterwards.
+The gate sheet showed the judges the standing as a rendering to keep,
+with nothing saying it fails the deterministic publication rule or that keeping it stops the entry,
+and the comparison they were asked for was against a text that was never going to ship.
+Fixed in `139a7f99a`
+(guards red first at `90e5e2a19`):
+`readStandingVerdict` returns the refusal it already logged
+(`standingRefusal`),
+the driver,
+the buy and the settlement carry it to the gate subject,
+and the gate sheet says
+`CANDIDATE "standing" CANNOT SHIP: the deterministic publication rule refused it (...)`,
+that choosing it stops the entry with no page,
+and that a rendering the rule refuses is not the safer choice.
+Every gate ballot is now logged with its model,
+choice and reason.
+A gate that still refuses at quorum still stops the slice;
+whether the sheet changes the ballots is what XingZ607 measures.
+
+## XingZ606 read, 2026-09-18, 14:30 UTC: INCOMPLETE at 3h04m on slice 33, the gate keeping the teachers paragraph's standing
+
+Frozen `adca69d4e`,
+3 hours and 4 minutes
+(`ms=11050301`),
+`status=INCOMPLETE`,
+`error=slice 33: the standing text failed the deterministic publication rule and the consolidation left nothing valid to ship (gate-kept-standing)`,
+no page written,
+`attempts.json` reads 1.
+Spend by the meters:
+Bedrock 166.41 to 163.38,
+OpenRouter 239.86 to 235.97,
+6.92 USD;
+`pass-spend.mjs` logs 6446 seats and 155 retry rounds
+(select 411 rounds,
+1971 asked,
+1737 heard;
+translate 168 rounds,
+676 asked,
+497 heard).
+Phases:
+preparation 11:18,
+pictures 11:25,
+lanes 11:31,
+translate lane 13:05,
+lane contest 13:56,
+consolidation 14:03,
+stop 14:22;
+Synthetic and Hyper dry throughout
+(`wide=7 select=8`),
+the fastest of the three XingZ60 consolidations to be reached.
+The stop is class fifty-six
+(the heading dated 2026-09-18 14:36 UTC).
+The funeral paragraph raised no warning in this consolidation,
+so classes fifty-four and fifty-five were not exercised on it;
+the gate over the whole consolidation went
+6 consolidated,
+4 neither and 4 standing across 14 slices.
+
+What held:
+`image0.webp` corroborated by 3 of 3 readers at overlap 0.590;
+eleven `declined-indecision` challenges in the translate lane,
+none a run-off.
+Jev live:
+`SEAT typesafe/jev-1.13 asked=224 usable=223 unusable=0 threw=1`
+(one HTTP 520 from OpenRouter at 14:13 UTC,
+the voice lost),
+agreeing with the round's winner on 100 of 119 repair select rounds,
+56 of 70 translate slates and 14 of 18 consolidation slates.
+No page,
+so the definitions,
+components,
+`details` summary and profile link could not be read.
+
 ## XingZ606 launches on class fifty-five, 2026-09-18, 11:20 UTC
 
 Frozen `adca69d4e` (classes forty-one to fifty-five plus the decision seat),

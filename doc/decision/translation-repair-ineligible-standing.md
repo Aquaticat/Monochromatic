@@ -153,3 +153,32 @@ and the decline named `slate-declined-standing`.
 - A slate declined twice still ends the slice as before.
 - Guard shown to fail first (`c6ec06788`),
     fixed in `adca69d4e`.
+
+## Addendum 2026-09-18, third: the gate is told when the standing cannot ship
+
+Taken under the same rule after XingZ606 stopped INCOMPLETE at 3h04m on its slice 33,
+this time at the gate:
+the slate chose a valid proposal,
+the gate kept the ineligible standing 4 of 5,
+and the log said nothing of why.
+
+- The gate sheet showed the ineligible standing as a rendering to keep and asked which of the two the
+    original supports better,
+    a comparison against a text that was never going to ship.
+- `readStandingVerdict` now returns the refusal it logs (`standingRefusal`),
+    threaded through `consolidate-driver.ts`,
+    `consolidate-slice-buy.ts`,
+    `consolidate-settle.ts` and `consolidate-settle-gate.ts` to the gate subject,
+    and `buildConsolidateGateMessages` says the standing cannot ship,
+    why,
+    and that choosing it stops the entry.
+- `gateConsolidatedSlice` logs every ballot with its model,
+    choice and reason.
+- A gate that refuses at quorum still stops the slice:
+    the rule of 2026-09-04 is unchanged,
+    the judges are informed.
+- Guards shown to fail first (`90e5e2a19`):
+    `consolidate-gate-wire.unit.test.ts` (the block on the sheet,
+    absent over an eligible standing)
+    and `consolidate-settle.unit.test.ts` (the refusal reaches every gate sheet).
+    Fixed in `139a7f99a`.
