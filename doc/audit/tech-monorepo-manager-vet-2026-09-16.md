@@ -3,6 +3,11 @@
 Status:
 complete;
 no candidate is recommendable.
+What followed:
+the user accepted a from-scratch all-Rust tool on 2026-09-16
+([`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md)),
+designed in
+[`doc/planning/monorepo-manager-from-scratch-design.md`](../planning/monorepo-manager-from-scratch-design.md).
 
 Lifecycle phase:
 discovery,

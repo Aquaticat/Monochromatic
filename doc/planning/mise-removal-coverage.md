@@ -1,9 +1,12 @@
 # Mise removal coverage
 
 Status:
- draft.
-Full removal is the intended endpoint,
-but is not yet recommended because replacement owners remain unselected and unverified.
+ the replacement is chosen,
+ its design is complete,
+ and no code exists yet.
+Full removal is the endpoint,
+and it happens only when meow supports the full platform matrix,
+at which point Mise is removed entirely rather than kept for provisioning.
 Keeping Mise only for tool provisioning and locking is a transitional checkpoint,
 not the target state.
 Earlier drafts made TypeScript the canonical authored format for replacement configuration.
@@ -13,14 +16,28 @@ Whether generated tool-native adapter files are acceptable remains unresolved.
 
 Later on 2026-09-16 the monorepo manager narrowed to one remaining route:
 a single-file all-Rust tool with file-enforcer rewritten in Rust,
-because a single file carrying Node is too big
-([`monorepo-manager-from-scratch-design.md`](monorepo-manager-from-scratch-design.md),
-"Current stack direction").
-The route is not yet accepted.
+because a single file carrying Node is too big.
+The user accepted it the same day
+([`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md)),
+and the replacement owners were chosen on 2026-09-17:
+
+- Configuration is OpenTofu-shaped HCL,
+   parsed by a patched `hcl-edit` under meow's own evaluator
+   ([`doc/decision/monorepo-manager-hcl-front-end.md`](../decision/monorepo-manager-hcl-front-end.md)).
+- Rules that write outside a repository move to a per-user configuration,
+   with repository proposals the user accepts
+   ([`doc/decision/monorepo-manager-per-user-config.md`](../decision/monorepo-manager-per-user-config.md)).
+- Content hashing is XXH3-128
+   ([`doc/decision/monorepo-manager-cache-key-hash.md`](../decision/monorepo-manager-cache-key-hash.md)).
+- The root `mise.toml` stays generated from `mise.no-env.toml` until Mise is removed,
+   and meow never generates it.
+- Every line meow writes is a JSON object,
+   so consumers of these tasks parse rather than scrape.
+
 Sections that name file-enforcer the canonical TypeScript configuration compiler,
 or that require provisioning Node before file-enforcer can execute,
-describe today's TypeScript implementation
-and need revision once the Rust tool's configuration host is chosen.
+describe today's TypeScript implementation,
+which keeps running until meow replaces it.
 
 ## Motivation
 
@@ -328,7 +345,8 @@ The pipeline feature is experimental and task execution still depends on project
 
 Update 2026-09-16:
 pnpm exited the monorepo manager vet at the documentation gate.
-`https://pnpm.io/cli/recursive` says "Even if `--no-bail` is used, all tasks will finish",
+`https://pnpm.io/cli/recursive` says "Even if `--no-bail` is used,
+ all tasks will finish",
 while `https://pnpm.io/workspace-task-orchestration` says that after a task fails,
 dependent tasks are skipped and only independent ready tasks continue under `--no-bail`.
 Nadle,

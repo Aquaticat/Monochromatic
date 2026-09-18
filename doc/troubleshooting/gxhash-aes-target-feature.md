@@ -1,5 +1,15 @@
 # gxhash 3.5.0 requires the `aes` CPU target-feature at build time, has no software fallback, and panics on aarch64 debug builds
 
+Update on 2026-09-17:
+the monorepo manager left `gxhash` after collision findings and now uses XXH3-128
+([`doc/decision/monorepo-manager-cache-key-hash.md`](../decision/monorepo-manager-cache-key-hash.md)),
+so the `+aes` build and its startup check no longer apply there.
+The music player still uses `gxhash`;
+its switch is issue #545,
+and the collision evidence is in
+[`doc/planning/monorepo-manager-route-research/gxhash-owned.md`](../planning/monorepo-manager-route-research/gxhash-owned.md).
+The constraints below still describe `gxhash` itself.
+
 The music-player peak-cache fingerprint hash migrated from hand-written FNV-1a to the
 `gxhash` crate (both flavors:
  `desktop-app/src/peakcache.rs` and the Android native

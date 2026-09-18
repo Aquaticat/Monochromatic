@@ -3,10 +3,16 @@
 ## Status and scope
 
 - Status:
-   proposal;
-   Route B is recommended after both designs,
-   and the user's later requirements and stack decisions all address Route B,
-   but no decision record exists.
+   decided.
+  Route B was taken:
+   the user accepted an all-Rust from-scratch tool on 2026-09-16
+   ([`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md)),
+   and its design is in
+   [`monorepo-manager-from-scratch-design.md`](monorepo-manager-from-scratch-design.md).
+  Three further decision records followed on 2026-09-17:
+   the cache key hash,
+   the HCL front end,
+   and the per-user configuration.
 - Requested 2026-09-16:
    compare extending Bazel against building a replacement from scratch.
 - Scope:
