@@ -230,6 +230,29 @@ await describe({
           },
         }, ),
         it({
+          name: 'treats whitespace-only output as no output',
+          fn: async () => {
+            const content = buildPokeContent({
+              details: pokeDetails(),
+              output: '\n  \n',
+              instruction: '',
+            }, );
+            expect(content, ).toContain('(no output)');
+            expect(content, ).not.toContain('```');
+          },
+        }, ),
+        it({
+          name: 'leaves no blank line inside the fence for a trailing newline',
+          fn: async () => {
+            const content = buildPokeContent({
+              details: pokeDetails({ command: 'echo hi', }, ),
+              output: 'hi\n',
+              instruction: '',
+            }, );
+            expect(content, ).toBe('[bash finished] $ echo hi (exit 0)\n```\nhi\n```');
+          },
+        }, ),
+        it({
           name: 'omits the instruction when it is empty',
           fn: async () => {
             const content = buildPokeContent({

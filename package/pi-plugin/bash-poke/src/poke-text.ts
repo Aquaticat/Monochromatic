@@ -235,7 +235,7 @@ function jobOutputText(
  
  @param details - structured outcome being reported
  
- @param output - truncated, sanitized output to embed
+ @param output - truncated, sanitized output to embed, trimmed of surrounding whitespace
  
  @param instruction - trailing instruction, omitted when empty
  
@@ -270,18 +270,25 @@ function buildPokeContent(
   }, )})`;
 
   /**
+   Output without surrounding whitespace, so a command's final newline cannot
+   leave a blank line inside the fence and a whitespace-only run still reads as
+   having produced nothing.
+   */
+  const trimmed = output.trim();
+
+  /**
    Fence long enough that output cannot terminate its own block.
    */
-  const fence = fenceFor({ text: output, }, );
+  const fence = fenceFor({ text: trimmed, }, );
 
   /**
    Body lines: fenced output, or an explicit note that there was none.
    */
-  const body: string[] = output.length === 0
+  const body: string[] = trimmed.length === 0
     ? [EMPTY_OUTPUT_NOTE, ]
     : [
       fence,
-      output,
+      trimmed,
       fence,
     ];
 
