@@ -85,7 +85,10 @@ await describe({
         + 'carried the passage and so offers nothing to stand in',
       fn: async () => {
         const { l, warnings, } = capturing();
-        expect(readStandingVerdict({
+        /**
+         Verdict beside the refusal the gate sheet will carry.
+         */
+        const { standingRefusal, ...verdict } = readStandingVerdict({
           sourceText: SOURCE,
           standingText: LINK_DROPPED,
           incumbentText: '',
@@ -97,7 +100,8 @@ await describe({
           },
           sliceIndex: 1,
           l,
-        },),).toEqual({
+        },);
+        expect(verdict,).toEqual({
           standingValid: false,
           standingMayShip: false,
           settlementText: LINK_DROPPED,
@@ -105,6 +109,7 @@ await describe({
           incumbentStandsIn: false,
         },);
         expect(warnings.length,).toBe(1,);
+        expect(warnings[0],).toContain(standingRefusal ?? 'refusal missing',);
         expect(warnings[0],).toContain('slice 1: consolidation standing text fails the deterministic publication rule',);
         expect(warnings[0],).toContain('The ORIGINAL carries link-url https://twitter.com/cat and your translation does not',);
         expect(warnings[0]?.includes('the incumbent fails it too',),).toBe(false,);
@@ -147,7 +152,10 @@ await describe({
         + 'rule of 2026-09-04 still stops the entry',
       fn: async () => {
         const { l, warnings, } = capturing();
-        expect(readStandingVerdict({
+        /**
+         Verdict beside the refusal the gate sheet will carry.
+         */
+        const { standingRefusal, ...verdict } = readStandingVerdict({
           sourceText: SOURCE,
           standingText: LINK_DROPPED,
           incumbentText: 'The artist drew it.',
@@ -159,7 +167,8 @@ await describe({
           },
           sliceIndex: 4,
           l,
-        },),).toEqual({
+        },);
+        expect(verdict,).toEqual({
           standingValid: false,
           standingMayShip: false,
           settlementText: LINK_DROPPED,
@@ -167,6 +176,7 @@ await describe({
           incumbentStandsIn: false,
         },);
         expect(warnings.length,).toBe(1,);
+        expect(warnings[0],).toContain(standingRefusal ?? 'refusal missing',);
         expect(warnings[0],).toContain('withheld from the slate',);
         expect(warnings[0],).toContain('the incumbent fails it too',);
       },
@@ -177,7 +187,10 @@ await describe({
         + 'refused text is not offered as its own replacement',
       fn: async () => {
         const { l, warnings, } = capturing();
-        expect(readStandingVerdict({
+        /**
+         Verdict beside the refusal the gate sheet will carry.
+         */
+        const { standingRefusal, ...verdict } = readStandingVerdict({
           sourceText: SOURCE,
           standingText: LINK_DROPPED,
           incumbentText: LINK_DROPPED,
@@ -189,7 +202,8 @@ await describe({
           },
           sliceIndex: 5,
           l,
-        },),).toEqual({
+        },);
+        expect(verdict,).toEqual({
           standingValid: false,
           standingMayShip: false,
           settlementText: LINK_DROPPED,
@@ -197,6 +211,7 @@ await describe({
           incumbentStandsIn: false,
         },);
         expect(warnings.length,).toBe(1,);
+        expect(warnings[0],).toContain(standingRefusal ?? 'refusal missing',);
         expect(warnings[0],).toContain('withheld from the slate',);
         expect(warnings.some(function namesIncumbent(warning,): boolean {
           return warning.includes('the incumbent fails it too',);

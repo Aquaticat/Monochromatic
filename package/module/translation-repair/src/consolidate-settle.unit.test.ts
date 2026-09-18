@@ -1069,7 +1069,7 @@ await describe({
         /**
          Why the deterministic rule refused the standing, as the run log words it.
          */
-        const refusal = 'Your translation carries the pronoun untranslated as "Ta" (1 time)';
+        const refusal = 'Your translation carries the pronoun untranslated as Ta (1 time)';
         const { settled, gateSheets, } = await settleWith({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],

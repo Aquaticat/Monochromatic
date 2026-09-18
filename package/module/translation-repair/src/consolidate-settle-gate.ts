@@ -56,6 +56,9 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
  @param standingEligible - whether the standing passed the deterministic
  gate; a gate that keeps an ineligible standing ends the slice, and one
  that settles on neither over it ships the proposal the slate chose
+
+ @param standingRefusal - why the deterministic gate refused the standing,
+ shown to the gate judges so keeping it is not taken for the safe choice
  
  @param identity - front matter identity as the gate takes it
  
@@ -89,6 +92,7 @@ export async function gateAndShip(
     polishConfig,
     standingMayShip,
     standingEligible,
+    standingRefusal,
     identity,
     signal,
     perCallTimeoutMs,
@@ -106,6 +110,7 @@ export async function gateAndShip(
     readonly polishConfig?: ConsolidationPolishConfig;
     readonly standingMayShip: boolean;
     readonly standingEligible: boolean;
+    readonly standingRefusal?: string;
     readonly identity: SettlementIdentity;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -124,6 +129,7 @@ export async function gateAndShip(
       consolidatedText: decided.text,
       standingText,
       ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+      ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
       ...identity,
     },
     signal,

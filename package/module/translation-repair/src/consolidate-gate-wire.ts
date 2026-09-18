@@ -235,6 +235,14 @@ export type ConsolidateGateSubject = {
   readonly standingText: string;
 
   /**
+   Why the deterministic publication rule refused the standing, when it
+   did: a standing that cannot ship is shown as such, so refusing the
+   consolidation is not mistaken for keeping something (class fifty-six,
+   XingZ606 slice 33, 2026-09-18).
+   */
+  readonly standingRefusal?: string;
+
+  /**
    Names and handles both documents' front matter declares, when either does.
    
    WITHOUT THIS THE JUDGE CANNOT TELL AN ATTESTED NAME FROM AN INVENTION,
@@ -276,8 +284,22 @@ export function buildConsolidateGateMessages(
       subject.standingText,
       subject.identityContext ?? '',
       subject.referenceContext ?? '',
+      subject.standingRefusal ?? '',
     ],
   },);
+  /**
+   What the judge is told when the standing cannot ship, or nothing.
+   */
+  const refusalBlock = (subject.standingRefusal === undefined)
+    ? []
+    : [
+      `CANDIDATE "standing" CANNOT SHIP: the deterministic publication rule refused it (${
+        subject.standingRefusal
+      }).`,
+      'Choosing "standing" stops this entry with no page. Choose it only when "consolidated" misrepresents '
+        + 'the ORIGINAL; a rendering the rule refuses is not the safer choice.',
+      '',
+    ];
 
   /**
    Declared names as one block, empty when neither side declares any.
@@ -408,6 +430,7 @@ export function buildConsolidateGateMessages(
         'CANDIDATE "standing":',
         `${fence}\n${subject.standingText}\n${fence}`,
         '',
+        ...refusalBlock,
         ...referenceBlock,
         ...communityBlock,
         ...sizeBlock,

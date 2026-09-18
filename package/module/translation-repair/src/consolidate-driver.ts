@@ -366,6 +366,7 @@ export async function consolidateDocument(
       settlementText: standingText,
       findings: standingFindings,
       incumbentStandsIn,
+      standingRefusal,
     } = readStandingVerdict({
       sourceText,
       standingText: laneStanding,
@@ -506,6 +507,7 @@ export async function consolidateDocument(
             ...((polishConfig === undefined) ? {} : { polishConfig, }),
             standingMayShip,
             standingEligible: standingValid,
+            ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
             standingFindings,
             laneTexts,
             signal,

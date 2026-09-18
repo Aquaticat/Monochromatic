@@ -248,9 +248,18 @@ export async function gateConsolidatedSlice(
      This voice, heard or lost.
      */
     const { voice, } = outcome;
-    return voice.heard
-      ? [ readConsolidateGateBallot({ wire: voice.value, },), ]
-      : [];
+    if (!voice.heard)
+      return [];
+    /**
+     This voice's ballot, read off the wire.
+     */
+    const ballot = readConsolidateGateBallot({ wire: voice.value, },);
+    // EVERY BALLOT IS LOGGED WITH ITS REASON (class fifty-six, 2026-09-18):
+    // XingZ606's gate kept an ineligible standing 4 of 5 and the log carried
+    // only the tally, so why four judges preferred a text the rule refuses
+    // could not be read afterwards.
+    gl.info(`consolidate gate ballot ${outcome.modelId}: ${ballot.choice}: ${ballot.reason}`,);
+    return [ballot,];
   },);
 
   /**

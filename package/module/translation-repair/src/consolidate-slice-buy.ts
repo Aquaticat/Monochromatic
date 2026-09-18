@@ -31,6 +31,11 @@ type ConsolidationBuyInput = {
   readonly polishConfig?: ConsolidationPolishConfig;
   readonly standingMayShip?: boolean;
   readonly standingEligible?: boolean;
+  /**
+   Why the deterministic gate refused the standing, for the gate sheet
+   (class fifty-six, 2026-09-18).
+   */
+  readonly standingRefusal?: string;
   readonly standingFindings?: readonly string[];
   /**
    Lane texts the slate offers beside the proposals (class forty,
@@ -73,6 +78,9 @@ type ConsolidationBuyInput = {
  
  @param standingEligible - whether the baseline passed the deterministic
  publication gate; a baseline that did not is withheld from the slate
+
+ @param standingRefusal - why the deterministic gate refused the baseline,
+ shown to the gate judges
  
  @param signal - caller abort honored by every exchange
  
@@ -113,6 +121,7 @@ async function buyConsolidationAttempt(
     polishConfig,
     standingMayShip = true,
     standingEligible = true,
+    standingRefusal,
     standingFindings = [],
     laneTexts = [],
     signal,
@@ -140,6 +149,7 @@ async function buyConsolidationAttempt(
       ...((polishConfig === undefined) ? {} : { polishConfig, }),
       standingMayShip,
       standingEligible,
+      ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
       laneTexts,
       signal,
       perCallTimeoutMs,
@@ -191,6 +201,7 @@ async function buyConsolidationAttempt(
     ...((polishConfig === undefined) ? {} : { polishConfig, }),
     standingMayShip,
     standingEligible,
+    ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
     laneTexts,
     signal,
     perCallTimeoutMs,

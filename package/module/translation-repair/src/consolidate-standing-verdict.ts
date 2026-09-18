@@ -57,6 +57,12 @@ export type StandingVerdict = {
    is text to write.
    */
   readonly incumbentStandsIn: boolean;
+
+  /**
+   Why the deterministic gate refused the standing, present only where the
+   settlement runs against an ineligible text (class fifty-six, 2026-09-18).
+   */
+  readonly standingRefusal?: string;
 };
 
 /**
@@ -198,6 +204,7 @@ export function readStandingVerdict(
     settlementText: standingText,
     findings: [],
     incumbentStandsIn: false,
+    standingRefusal: refusal,
   };
 }
 

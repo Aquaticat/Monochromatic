@@ -301,6 +301,9 @@ export type ConsolidationSettlement = {
  publication gate; when it did not, it is withheld from the slate and a
  settlement that would keep it throws instead of shipping it
 
+ @param standingRefusal - why the deterministic gate refused the standing,
+ forwarded to the gate judges (class fifty-six, 2026-09-18)
+
  @param laneTexts - what the repair and translate lanes would ship, offered
  on the slate beside the proposals when the standing is neither endorsed nor
  eligible (`consolidate-lane-offer.ts`, class forty, 2026-09-17)
@@ -335,6 +338,7 @@ export async function settleConsolidation(
     polishConfig,
     standingMayShip = true,
     standingEligible = true,
+    standingRefusal,
     laneTexts = [],
     signal,
     perCallTimeoutMs,
@@ -353,6 +357,7 @@ export async function settleConsolidation(
     readonly polishConfig?: ConsolidationPolishConfig;
     readonly standingMayShip?: boolean;
     readonly standingEligible?: boolean;
+    readonly standingRefusal?: string;
     readonly laneTexts?: readonly LaneText[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -651,6 +656,7 @@ export async function settleConsolidation(
     ...((polishConfig === undefined) ? {} : { polishConfig, }),
     standingMayShip,
     standingEligible,
+    ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
     identity,
     signal,
     perCallTimeoutMs,
