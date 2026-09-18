@@ -3612,15 +3612,18 @@ importers:
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
         version: link:../../module/caught-value
+      '@monochromatic-dev/module-const':
+        specifier: workspace:*
+        version: link:../../module/const
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/module-numeric-format':
+        specifier: workspace:*
+        version: link:../../module/numeric-format
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-marker/foreign-borrowed
-      nano-spawn:
-        specifier: 'catalog:'
-        version: 2.1.0
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
