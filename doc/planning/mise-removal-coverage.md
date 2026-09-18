@@ -329,13 +329,39 @@ and `doc/decision/mise-task-node-invocations.md`.
 bounded fanout,
 and failure collection inside Node scripts that invoke Mise recursively.
 
-Proposed owner:
- pnpm 12.4+ workspace task orchestration and `pnpm pipeline` are the primary surface candidates.
-File-enforcer can compile canonical TypeScript task definitions into `pnpm-workspace.yaml` relationships and project manifest
-scripts.
-Executable logic should remain TypeScript entry points with ordinary argument-vector and exit-status contracts.
-Nadle or a focused repository task runner remains a fallback if pnpm cannot preserve required semantics.
-Thin Mise adapters may remain during migration.
+Owner,
+selected 2026-09-17:
+ meow.
+Tasks are declared in one root `meow.hcl`,
+packages are selected by tags meow infers from manifests and `package` blocks adjust,
+specialization is most-specific-tag-wins with mandatory `overridden` and `override` markers,
+and a command is an argv list with no shell
+("Configuration authoring" in `monorepo-manager-from-scratch-design.md`).
+Execution reaches a task through `meow run //package/<path>:<task>`,
+which holds the terminal,
+forwards the task's bytes,
+and exits with its code;
+`meow status`,
+`meow pause`,
+`meow resume`,
+`meow end`,
+and `meow priority` control work already scheduled
+("User interface").
+Cross-package edges come from the native manifests,
+and freshness comes from hashing a task's declared reads.
+
+Still open on 2026-09-17,
+so this entry cannot be marked verified:
+which task names meow builds in,
+how a package changes one,
+whether built-ins share a namespace with user-defined tasks,
+and what makes one task run before another
+("Open questions" in the design).
+
+Superseded proposals:
+ pnpm 12.4+ workspace orchestration with `pnpm pipeline`,
+file-enforcer compiling TypeScript task definitions into `pnpm-workspace.yaml` and manifest scripts,
+and Nadle as the fallback.
 
 Selection status:
  blocked on a disposable pnpm 12.4+ pilot,
