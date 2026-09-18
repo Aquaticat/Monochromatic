@@ -249,6 +249,38 @@ function positionOfText(
 type JudgeReply = string | ((sent: string, call: number,) => string);
 
 /**
+ Reads one judge's reply body off a fixed string or a script.
+ 
+ @param judgeReply - fixed body or script over the sheet
+ 
+ @param sent - sheet this judge was shown
+ 
+ @param call - judge calls before this one
+ 
+ @returns Body this judge returns
+ 
+ @example
+ ```ts
+ const body = judgeBodyOf({ judgeReply, sent, call: 0, },);
+ ```
+ */
+function judgeBodyOf(
+  {
+    judgeReply,
+    sent,
+    call,
+  }: {
+    readonly judgeReply: JudgeReply;
+    readonly sent: string;
+    readonly call: number;
+  },
+): string {
+  if ((typeof judgeReply) === 'string')
+    return judgeReply;
+  return judgeReply(sent, call,);
+}
+
+/**
  Builds a client that answers each round from its own script.
  
  @param judgeReply - body every slate judge returns, or a script over the sheet
@@ -310,7 +342,11 @@ function routedClient(
        */
       const content = isGate
         ? gateReply
-        : ((typeof judgeReply === 'string') ? judgeReply : judgeReply(sent, judgeCall,));
+        : judgeBodyOf({
+          judgeReply,
+          sent,
+          call: judgeCall,
+        },);
       return {
         status: 200,
         bodyText: `data: ${
@@ -963,11 +999,11 @@ await describe({
          Ballots: the first round splits one voice each way and a third declines,
          the challenge round backs candidate 1 unanimously.
          */
-        const tiedThenSettled = function scripted(sent: string, call: number,): string {
+        function tiedThenSettled(sent: string, call: number,): string {
           if (sent.includes(CHALLENGE_MARKER,))
             return judgeBallot({ best: 1, },);
           return judgeBallot({ best: [1, 2, 0,][call % 3] ?? 0, },);
-        };
+        }
         const { settled, served, judgeSheets, } = await settleWith({
           voices: [
             voiceOf({ modelId: ROSTER[0], translation: FRESH, },),

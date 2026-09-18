@@ -38,6 +38,7 @@ import {
   type LaneText,
 } from './translate-candidates.ts';
 import { judgeTranslateSlate, } from './translate-judge.ts';
+import { judgeSlateWithRetry, } from './translate-retry.ts';
 import type {
   TranslateDecision,
   TranslateStageResult,
@@ -522,10 +523,23 @@ export async function settleConsolidation(
    reports an absent incumbent as a passage the archive never carried; here
    the passage exists and failed the gate, so that error is re-raised under
    the ineligible standing's own name with the judge's refusal as its cause.
+   
+   A TIE WITH THE STANDING WITHHELD IS CHALLENGED ONCE (class fifty-five,
+   XingZ605 slice 13, 2026-09-18): four valid proposals, the judges 2 to 2
+   between two renderings, and the decline stopped the entry at 4h08m over
+   a slate that had nothing wrong with it. The translate lane has re-asked a
+   declined slate under `decline-challenge` since class fifty-three, with a
+   run-off over the candidates the tie backed; the consolidation gets the
+   same second round only where a decline would stop the entry. An eligible
+   standing keeps the single round, because there a decline keeps text the
+   contest already endorsed.
    */
   const decided = await (async function judged(): Promise<TranslateStageResult> {
-    try {
-      return await judgeTranslateSlate({
+    /**
+     Everything one slate judging takes, built once so the challenged and
+     the single-round asks cannot drift apart.
+     */
+    const judging: Parameters<typeof judgeTranslateSlate>[0] = {
         client,
         produced: {
           candidates: built.candidates,
@@ -574,7 +588,11 @@ export async function settleConsolidation(
         signal,
         perCallTimeoutMs,
         l: sl,
-      },);
+      };
+    try {
+      return standingEligible
+        ? await judgeTranslateSlate(judging,)
+        : await judgeSlateWithRetry({ judging, },);
     }
     catch (error) {
       if ((standingEligible) || (!(error instanceof TranslateAbsenceError)))
