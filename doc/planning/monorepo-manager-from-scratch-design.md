@@ -273,6 +273,28 @@ and "We don't need specifically a socket or a separate client,
    in its own minimized terminal.
 - `meow run <target>`:
    the working terminal's blocking run.
+  "Follow Bazel" (user,
+   2026-09-17),
+   read against Bazel's user manual on the same day:
+   `bazel run` "is used to build and run a single target",
+   while `bazel build` and `bazel test` take lists.
+  So `meow run` takes exactly one target,
+   for the same reason:
+   it forwards one task's standard output,
+   standard error,
+   and exit code.
+  Arguments after `--` go to the task,
+   as Bazel does it.
+  Target syntax follows Bazel's patterns:
+   `//package/cow:test`,
+   `//package/cow` for the same-named target,
+   `//package/...` for a tree,
+   `:all` and `:*`,
+   relative forms,
+   and `-` to negate.
+  Patterns are for the commands that take lists;
+   meow has none in 0.x,
+   which is the open question below.
 - `meow status`:
    shows only what needs attention in 0.x.
   Asked to choose a full status layout on 2026-09-17,
@@ -294,7 +316,9 @@ and "We don't need specifically a socket or a separate client,
    flaky retries,
    in queue,
    and running.
-  Finished-and-passed work is not in that list,
+  `meow status` never shows successes (user,
+   2026-09-17),
+   so finished-and-passed work is absent from that list,
    and the layout stays deliberately unchosen.
 - `meow pause`,
    `meow resume`,
@@ -302,6 +326,16 @@ and "We don't need specifically a socket or a separate client,
    and `meow priority`:
    the task controls,
    reaching the daemon the same way `meow run` does.
+  They name a task by its target label (user,
+   2026-09-17),
+   the same label `meow run` takes,
+   so there is one naming scheme.
+  Invariant stated by the user:
+   the same target running twice is a bug,
+   which is why `meow run` attaches to an existing run instead of starting a second.
+  `meow priority` takes either an absolute integer or a signed bump (user,
+   2026-09-17);
+   the parser must keep `-1` from reading as a flag.
 - `meow doctor`:
    prints problems only (user,
    2026-09-17),
