@@ -71,7 +71,7 @@ await describe({
   children: [
     it({
       name: 'PAIRS the slice opening a block with the slice closing it, across the slices between them',
-      fn: () => {
+      fn: async () => {
         const pairs = containerHalfPairs({
           slices: [
             sliceOf({ sliceIndex: 0, text: '猫猫在窗台上打盹。', insertion: false, },),
@@ -88,7 +88,7 @@ await describe({
     },),
     it({
       name: 'PAIRS nested blocks of one name innermost first, as the grammar closes them',
-      fn: () => {
+      fn: async () => {
         const pairs = containerHalfPairs({
           slices: [
             sliceOf({ sliceIndex: 0, text: '<details>\n<summary>外层</summary>', insertion: true, },),
@@ -114,7 +114,7 @@ await describe({
     },),
     it({
       name: 'LEAVES a closing tag with no opening, and a block whole inside one slice, out of the pairs',
-      fn: () => {
+      fn: async () => {
         const pairs = containerHalfPairs({
           slices: [
             sliceOf({ sliceIndex: 0, text: '猫。\n\n</details>', insertion: true, },),
