@@ -4012,6 +4012,68 @@ The active round is the cover screen native round:
  the D41/D42 dark inheritance,
  and the undrawn light cover surface.
 
+## Cover round state and the host loopback SNAT blocker
+
+Research corrected the round's premise before any build:
+ cover-c predates most settled
+decisions.
+ It still shows the rejected ordinal and play glyph (D36),
+ the inline volume slider
+(D20 revised it to icon plus popover),
+ an icon-only Open (D38 requires the explicit label),
+16% seek (settled at 24%),
+ and pre-1B transport circles.
+ The native cover study therefore
+rebuilds the cover in the settled language:
+ outlined dropdown folder chip,
+ tonal labeled
+Open,
+ Settings action,
+ 72dp two-line rows with the D42 generated current row,
+ 24% seek,
+ outlined
+Previous/Next around a filled Pause,
+ trailing volume icon,
+ and the first-fitting mode
+arrangement.
+ Candidates: `cover-dark-wallpaper`, `cover-dark-coral`, `cover-light-l1`,
+`cover-light-l2`, `cover-light-l3`.
+ The light trio is the round's open user choice:
+ ramp with a
+deck-seam hairline,
+ ramp with no hairlines,
+ or one flat surface with hairlines at both
+seams.
+ `capture-cover-round.mjs` and mise task `prototype:capture:cover` exist in the
+prototype worktree;
+ the emulator is folded (`cmd device_state base-state 0`) and the
+cover panel is HWC display 1 at opaque 1080 × 2424px.
+
+Every Gradle build on this host currently fails at daemon messaging because the host
+SNATs IPv4 loopback connections to the Wi-Fi address;
+ the daemon accepts loopback peers
+only.
+ Evidence: `/home/user/temp/agent/loopback-peer-probe.mjs` prints peer
+192.168.253.108 for a 127.0.0.1 connection while the ::1 probe stays clean.
+ Linear
+AQU-532 tracks the eventual host fix with acceptance criteria.
+ `gh` still cannot reach
+the GitHub API after the opensnitch allowlist,
+ so this session keeps Linear as its tracker.
+
+The bridge builds inside `unshare --user --map-root-user --net` where loopback is clean.
+Pitfalls already paid:
+ the mapped-root UID makes JVMs resolve `user.home` to /root, so
+export `HOME` and `GRADLE_USER_HOME` inside the namespace;
+ a bare `gradlew` inherits a
+shell `ANDROID_HOME` that points at a cmdline-tools-only SDK install (23.0),
+ while the
+mise task exports the install that carries `platforms/android-37.0` (22.0);
+ and mise's
+rust backend tries to sync the nightly channel over a network the namespace does not have.
+Next attempt: direct `gradlew` inside the namespace with `ANDROID_HOME` and PATH pinned to
+the 22.0 install, `--offline`, then host `adb install` of the produced APK.
+
 ## Issue tracking moves to Linear for this session
 
 `gh` cannot reach the GitHub API this session:
