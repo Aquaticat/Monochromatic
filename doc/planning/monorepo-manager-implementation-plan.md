@@ -175,6 +175,38 @@ Every milestone carries a parity or conformance target measured against somethin
    an eviction run against a filled cache;
    and a `meow run` whose forwarded bytes match the task's own output exactly.
 
+### M7a: the rest of the command surface
+
+Settled during the UX alignment on 2026-09-17
+("User interface" in the design),
+after this plan was first written:
+
+- `meow status`,
+   listing failed,
+   paused,
+   blocked,
+   flaky,
+   queued and running work,
+   never successes,
+   with its layout deliberately unchosen because it is the TUI's design problem.
+- `meow stop`,
+   beside Ctrl+C in the watch terminal,
+   ending running tasks through their cgroups before the daemon exits.
+- `meow pause`,
+   `meow resume`,
+   `meow end`,
+   and `meow priority`,
+   naming tasks by target label,
+   with `priority` taking an absolute integer or a signed bump.
+- The trust commands,
+   whose review prints every file that would be evaluated,
+   unpaged,
+   before asking;
+   `meow trust --yes` is the non-interactive path an agent in a disposable worktree uses.
+- Evidence:
+   each command driven against a live daemon,
+   plus a blocked command whose JSON diagnostic names both recovery commands.
+
 ### M8: the language server and `doctor`
 
 - `lsp-server` 0.10.0 with `gen-lsp-types` behind a hidden `meow lsp` stdio subcommand,
@@ -201,6 +233,26 @@ Every milestone carries a parity or conformance target measured against somethin
 - Evidence:
    the Mise removal ledger with every consumed responsibility marked owned and verified,
    and a release that publishes the six binaries.
+
+## What the language questions still block
+
+The configuration language is not finished.
+As of 2026-09-17 the design's "Open questions" holds a drafted,
+unasked question set on what a task is:
+which names meow builds in,
+how a package changes one,
+and whether built-ins share a namespace with user-defined tasks.
+Task ordering waits on that answer,
+after the unapproved `depends_on` entry was retracted.
+
+- M4 and M6 cannot be finished without those answers,
+   because the function library and file-enforcement parity both express tasks.
+- M3 is unaffected:
+   the front end parses and evaluates HCL whatever the task schema turns out to be.
+- M7's scheduler needs the ordering answer before it can order anything,
+   though its watching,
+   cgroups,
+   and cache do not.
 
 ## Ordering and what blocks what
 
