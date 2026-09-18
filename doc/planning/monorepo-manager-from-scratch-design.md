@@ -1568,6 +1568,29 @@ Each follows from recorded decisions:
    Grill me."
   Nothing about task ordering is decided;
    it is being asked instead.
+  Asked what creates ordering,
+   the user reframed the question:
+   "We need to settle on 'what is a task' first too.
+   In my opinion 'build' and 'test' should be builtin to `meow` and not mixed in with lesser tasks."
+  Clarified immediately after:
+   "`meow build` and `meow test` are not dedicated commands.
+   They still run with the `run` syntax.
+   Let's say some tasks are more than others."
+  So `build` and `test` are task names meow knows how to perform for a package,
+   reached as `meow run //package/cow:test` like any other task,
+   while user-defined tasks are the lesser kind.
+  What each kind is,
+   and how they relate,
+   is being asked before ordering is.
+- Settled the same day:
+   cross-package edges are read from the native manifests,
+   the pnpm workspace links,
+   Cargo path dependencies,
+   and Gradle project references that already exist and are maintained by the tools that need them.
+- Settled the same day:
+   freshness comes from hashing a task's declared reads,
+   so unchanged hashes mean a cache hit and no execution,
+   with undeclared reads remaining the recorded staleness risk.
 - Skill-mirror ownership moves into the tool's state;
    both mirror roots are gitignored.
 - The pnpr configuration and Browserslist targets become TypeScript tasks in their own packages,
