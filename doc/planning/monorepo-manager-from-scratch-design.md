@@ -1449,6 +1449,83 @@ Research:
 The brief went to the user the same day;
 rule `DRR` requires acceptance before any of it becomes a decision.
 
+#### Answers on 2026-09-17
+
+- Outside-the-repository writes:
+   "Repo proposes,
+   you accept".
+  A repository declares content and no outside destination;
+   the per-user file supplies destination and consent,
+   matchable by path prefix,
+   and an unmatched proposal is reported.
+- Per-user tasks:
+   "Yes,
+   in a separate non-shadowing kind".
+  The per-user file may define tasks that run in any repository,
+   in a kind that cannot collide with a repository task name
+   and does not join a repository's task graph or its cache keys.
+- Automated runs:
+   "Switch,
+   default on everywhere".
+  `--no-user-config` and `MEOW_NO_USER_CONFIG` exist,
+   the per-user file is read unless one of them is given,
+   and no CI detection changes that.
+- Trust:
+   "Go with the logic in our cli-git",
+   which replaces the restricted-mode design proposed by the research.
+
+#### Trust, following cli-git
+
+Read from `doc/decision/cli-git-policies-platform.md` and
+`package/git-policy/cli/src/allowed-worktree-dirs.ts` on 2026-09-17.
+
+- First evaluation of a repository configuration always requires explicit trust.
+  meow gets `trust`,
+   `trust --yes`,
+   `untrust`,
+   and `status` subcommands,
+   and they inspect or recover trust without evaluating the configuration first.
+- An untrusted or changed configuration blocks every command that loads configuration,
+   and meow does not fall back to a built-in subset.
+  Commands that need no configuration keep working.
+  This is stricter than the restricted mode the research recommended:
+   listing a task graph loads configuration,
+   so it blocks until the configuration is trusted.
+- The blocking diagnostic names the affected path and both recovery commands,
+   the interactive one and the noninteractive `--yes` form,
+   as a JSON object like every other line meow writes.
+- Trust identity is the complete pair of filesystem ID and canonical configuration path,
+   and the registry path encodes that identity reversibly rather than hashing it.
+- Trust compares exact bytes,
+   never a content hash,
+   and meow evaluates the stored snapshot rather than the live file,
+   which closes the compare-then-swap window between checking and evaluating.
+  This is the one place meow does not use its cache key hash.
+- A later byte change blocks until re-trust.
+- The trust registry lives under the operating-system account home,
+   not under a path derived from `HOME`,
+   `XDG_STATE_HOME`,
+   or `APPDATA`,
+   because those are environment values a repository can influence.
+  Per-user configuration discovery still uses the XDG variables,
+   since that file is the user's own and is not a trust record.
+  This supersedes the research's `$XDG_STATE_HOME/meow` proposal.
+- Registry replacement is atomic,
+   rejects symlinks in its ancestry,
+   requires current-account ownership,
+   and uses private modes.
+- Trusted configuration is not sandboxed:
+   it evaluates with meow's full authority,
+   which is why trust is explicit.
+- A baked-in allowlist exempts third-party tool caches,
+   resolved through `realpath` with segment-aware containment
+   so `/a/b` never matches `/a/bc`,
+   and entries missing from the machine drop out of the check.
+  meow reuses that shape for the prefix acceptances in the per-user file.
+- `--no-user-config` skips the per-user file only.
+  It is not a kill switch for repository configuration discovery,
+   which cli-git deliberately does not have.
+
 #### Recommended shape
 
 - Discovery,
@@ -2508,4 +2585,5 @@ Design work finished on 2026-09-17:
    accepted in
    [`doc/decision/monorepo-manager-hcl-front-end.md`](../decision/monorepo-manager-hcl-front-end.md).
 - The per-user configuration's discovery and precedence ("Per-user configuration"),
-   whose brief is with the user.
+   accepted in
+   [`doc/decision/monorepo-manager-per-user-config.md`](../decision/monorepo-manager-per-user-config.md).

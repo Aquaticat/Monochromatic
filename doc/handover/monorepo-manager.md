@@ -361,12 +361,22 @@ It recommends an XDG path with an explicit override,
  a restricted mode until a repository root is trusted,
  two-level cache keys,
  and one daemon per repository root.
-Its brief went to the user with four questions:
- outside-write proposals,
- what gates running tasks,
- whether per-user tasks may run everywhere,
- and whether automated runs ignore the file.
-No decision record until the user accepts (rule `DRR`).
+Its brief went to the user with four questions,
+ all answered on 2026-09-17 and recorded in
+ [`doc/decision/monorepo-manager-per-user-config.md`](../decision/monorepo-manager-per-user-config.md):
+ repository proposals accepted by the per-user file,
+ trust "Go with the logic in our cli-git",
+ per-user tasks in a separate non-shadowing kind,
+ and a switch that defaults to reading the file everywhere.
+The trust answer replaced the research's restricted mode:
+ `doc/decision/cli-git-policies-platform.md` and
+ `package/git-policy/cli/src/allowed-worktree-dirs.ts` were read,
+ so meow gets explicit `trust`,
+ `untrust`,
+ and `status` subcommands,
+ exact-byte snapshots rather than a content hash,
+ a registry under the account home rather than an XDG path,
+ and blocking of every configuration-loading command until trust exists.
 The research used no clones and wrote no troubleshooting docs;
  it reported three rule `1CB` slips,
  and it noted that `git config --list --show-origin` printed a credential URL that it did not reproduce anywhere.
