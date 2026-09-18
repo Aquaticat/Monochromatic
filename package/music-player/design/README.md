@@ -48,11 +48,22 @@ prepared a visible answer and directed the user to reply in chat;
 clipboard API or copy button.
 
 The active round re-verifies the cover screen natively with D14 cover-c as the HTML-era
-baseline.
- The live design backlog,
+baseline and iterates the subdirectory picker's opened state as four prototypes: P1
+outlined text-field trigger plus floating menu panel, P2 the same field with an in-slot
+picker that keeps the deck visible, P3 app-bar title trigger plus menu panel, P4 title
+plus in-slot picker.
+ The trigger is an MD3 outlined text field in exposed-dropdown form
+(56dp container, floating Folder label, 4dp corners, spec paddings); the menu panel keeps
+the baseline 4dp corner but exceeds the 280dp menu width cap because the D31 name wall
+needs the full panel, a deviation disclosed in the form.
+ The light surface is settled by
+D45 (L3 flat with hairlines at both seams).
+ The round awaits one P code.
+ The live
+design backlog,
  its order,
- and the developer-owned items live in
-`open-questions.md` section 0b.
+ and the developer-owned items live in `open-questions.md`
+section 0b.
 
 The preceding accessibility review settled pane-by-pane TalkBack traversal (F1) and
 structured current-track speech (S1).

@@ -25,15 +25,20 @@ only in the NO lists of `decisions.md`;
 
 ## 0b. Live design backlog (2026-09-17)
 
-- **ACTIVE: cover screen native round, one open axis.**
-  K: the subdirectory picker's
-  opened state,
-  now iterating as four prototypes (dropdown-field or app-bar-title trigger,
-  crossed with floating menu panel or in-slot picker) after the user rejected K1's back
-  navigation and K3's non-local sheet and asked for a refined K2.
-  L is settled: D45 chose
-  L3 flat with hairlines at both seams.
-  D14 cover-c is the HTML-era baseline;
+- **ACTIVE: cover screen native round, one open axis, awaiting one P code.**
+  The picker
+  opened state iterates as P1 to P4: an MD3 outlined text-field trigger (56dp container,
+  floating Folder label, 4dp corners, spec paddings) or an app-bar title trigger, crossed
+  with a floating menu panel or an in-slot picker that keeps the deck visible.
+  The user
+  rejected K1's back navigation as discouraging and K3's sheet as non-local, and caught the
+  first field as not MD3 before the text-field specs were read.
+  The menu panel keeps the
+  baseline 4dp corner but exceeds the 280dp menu width cap for the D31 name wall, disclosed
+  in the form.
+  L is settled: D45 chose L3 flat with hairlines at both seams.
+  D14 cover-c
+  is the HTML-era baseline;
   native folded
  geometry (411 × 923dp,
   1080 × 2424px),

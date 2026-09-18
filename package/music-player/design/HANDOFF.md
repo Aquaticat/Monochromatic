@@ -4133,7 +4133,9 @@ offline reload keeps all fourteen rasters with zero network resources, and the
 twelve-fault mutation harness fails every fault with its intended diagnostic before
 restoring.
  The questionnaire is re-presented in normal Helium in the current system color
-scheme; the reply is one K code and one L code plus any correction in chat.
+scheme.
+ That K-round form was superseded: L settled by D45 and K replaced by the P
+prototypes below, so the reply is now one P code plus any correction in chat.
 
 ## P prototype iteration and D45
 
@@ -4164,6 +4166,51 @@ band.
 the standing battery (overflow, Axe both schemes, eleven preview paths, form invalidation
 and whitespace rejection, offline) and the eleven-fault mutation harness fails every fault
 with its intended diagnostic.
+
+## MD3 text-field correction to the picker trigger
+
+The user challenged the dropdown field as not MD3, correctly: the first pass had read the
+chips, menus, and sheets pages but not the text-field specs where the exposed dropdown
+lives.
+ Against those specs the field deviated in four ways: 48dp instead of the 56dp
+container and target height, no floating label on the outline, uniform 16dp padding
+instead of 12dp sides with icons plus 16dp between icon and text, and an untinted
+trailing icon.
+ The trigger is now an outlined text field in exposed-dropdown form: 56dp container,
+floating Folder label notched into the 1dp outline, 4dp corners, bodyLarge value,
+onSurfaceVariant trailing dropdown icon, spec paddings.
+ The 4dp corners and 1dp outline
+were already correct.
+ One deviation remains by necessity and is disclosed in the form prose: the menu panel
+keeps the baseline 4dp corner but exceeds the 112 to 280dp menu width cap because the D31
+name wall needs the full panel.
+ All picker captures were retaken with the corrected
+field and the standing verification battery plus the eleven-fault harness pass again.
+
+## Current state: awaiting the P decision
+
+The presented form is the P-only round: four radios (P1 field plus floating menu panel,
+P2 field plus in-slot picker, P3 title plus floating menu panel, P4 title plus in-slot
+picker), eleven embedded rasters (five dark inheritance captures, the four prototypes at
+100%, P2 at 200%, and P2 in light under the settled L3), and the settled-light panel as
+context rather than a question.
+ Ranking on offer: P2 > P4 > P1 > P3.
+ Verification after the
+MD3 field correction: no overflow at desktop or 390 × 500 in either scheme, Axe zero
+violations and zero incomplete (twenty page passes per scheme, twelve dialog passes),
+eleven preview paths exact, offline reload keeps all eleven rasters with zero network
+resources, and the eleven-fault mutation harness fails every fault with its intended
+diagnostic.
+ Commits: prototype `4ff352c1b` for the MD3 text-field trigger and main
+`406663175` for the recapture.
+
+After compaction: refresh the presented window before asking again (the open Helium window
+predates the field recapture): close it with the KWin close script after pointing that
+script at the current window id from the window-list script, `gtk-launch helium` on
+`questions/current.html`, activate via the KWin activate script, and confirm active and
+non-minimized.
+ Then wait for one P code plus any correction in chat and record it as the
+next decision (D46).
 
 ## Issue tracking moves to Linear for this session
 

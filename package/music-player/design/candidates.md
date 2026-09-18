@@ -918,3 +918,24 @@ subfolders (unconfirmed — see open-questions.md #3).
 5. **uploads/music-player-mockup.html** — the user’s original proposal,
     which is the
    baseline this all started from.
+
+## Cover picker opened-state prototypes (P round, native captures)
+
+Supersedes the K round: K1 (full-screen page with Navigate up) rejected as discouraging,
+K3 (modal bottom sheet) rejected as non-local, K2 refined into the P set after reading the
+chips, menus, sheets, and text-field specs.
+
+- **P1** — outlined MD3 text-field trigger (56dp, floating Folder label, 4dp corners) plus
+  an inset floating menu container (4dp corners, fixed high step in dark) over the list,
+  ending above the deck. Awaiting decision.
+- **P2** — same field trigger; the picker replaces the list slot in place while the deck
+  stays visible; caret flips to close. Recommended. Awaiting decision.
+- **P3** — app-bar title plus caret trigger with the P1 floating menu container. Awaiting
+  decision.
+- **P4** — app-bar title trigger with the P2 in-slot container. Awaiting decision.
+
+All four reuse the D28 adaptive rail and the D31 wrapped plain-text names at 48dp with
+primary plus 2dp indicator on the current folder. Captures: `cover-round-cover-picker-*`
+in `questions/render`, dark at 100%, P2 at 200%, and P2 in light under the settled L3
+(D45). Documented deviation: the menu panel exceeds the baseline menu's 112 to 280dp
+width cap because the D31 name wall needs the full panel.

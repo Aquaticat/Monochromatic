@@ -658,6 +658,24 @@ pixels against resolved role values.
 checks must cover the bytes the viewer sees,
  not only the files on disk.
 
+## 5n. A component was improvised without reading the spec page that owns it
+
+The picker trigger shipped as a 48dp outlined pill-ish box with a caret because the chips,
+menus, and sheets pages had been read but the text-field specs had not.
+ The user asked
+plainly whether the archive had really been read.
+ Against the text-field specs the field
+was wrong in four ways: container height 48dp instead of 56dp, no floating label on the
+outline, uniform 16dp padding instead of 12dp sides with icons plus 16dp between icon and
+text, and an untinted trailing icon.
+
+**The rule.**
+ Before drawing any Material component, read that component's own specs and
+guidelines pages in the local archive (`~/Downloads/m3.material.io`, mirrored in
+`md3-tokens.md`), and list every deviation from the measured values in the form prose with
+its reason.
+ Adjacent component pages are not evidence for the component being drawn.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field.
