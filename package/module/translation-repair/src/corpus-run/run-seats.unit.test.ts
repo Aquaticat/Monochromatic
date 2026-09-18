@@ -30,7 +30,9 @@ import {
   RUN_LATE_JUDGES,
   RUN_MODELS,
   RUN_READER_MODELS,
+  RUN_DECISION_JUDGES,
   RUN_ROSTER,
+  RUN_SELECT_JUDGES,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   RUN_WRITERS,
@@ -116,7 +118,7 @@ await describe({
         const wet = judgeSeatsFor({ dry: ALL_WET, },);
         expect(wet.wideSeats,).toEqual(RUN_WIDE_SEATS,);
         expect(wet.lateJudges,).toEqual(RUN_LATE_JUDGES,);
-        expect(wet.selectJudges,).toEqual(RUN_WIDE_SEATS,);
+        expect(wet.selectJudges,).toEqual(RUN_SELECT_JUDGES,);
         expect(wet.slateJudges,).toEqual(RUN_LATE_JUDGES,);
         expect(wet.checkers,).toEqual(RUN_MODELS.checkerModelIds,);
         expect(wet.translators,).toEqual(RUN_TRANSLATORS,);
@@ -235,7 +237,11 @@ await describe({
         expect(dry.wideSeats.includes(KIMI,),).toBe(true,);
         expect(dry.lateJudges.includes(KIMI,),).toBe(true,);
         expect(dry.checkers.includes(KIMI,),).toBe(true,);
-        expect(dry.selectJudges.length,).toBe(dry.wideSeats.length - 1,);
+        /**
+         Select bench short of the withheld Kimi, plus the decision seats.
+         */
+        const selectSeatsExpected = (dry.wideSeats.length - 1) + RUN_DECISION_JUDGES.length;
+        expect(dry.selectJudges.length,).toBe(selectSeatsExpected,);
         expect(dry.slateJudges.length,).toBe(dry.lateJudges.length - 1,);
         expect(dry.repairModels.criticModelIds.includes(KIMI,),).toBe(true,);
         expect(dry.repairModels.panelModelIds.includes(KIMI,),).toBe(true,);

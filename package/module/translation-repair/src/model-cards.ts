@@ -309,10 +309,12 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     // a row for every roster id and this one is never sent.
     completionCap: 'pooled-p90',
     // Owner, 2026-09-18: approved on OpenRouter. 28 of 28 on the reviewed
-    // fidelity matrix by a scratch measurement that night (the pass log's
-    // "Jev 1.13 approved" heading); the production probe seats it or not.
+    // fidelity matrix by a scratch measurement that night, then 12 of 12
+    // through the production probe's decisions route beside the seated
+    // roster at 01:40 UTC (the seating decision's 2026-09-18 addendum):
+    // seated as a select judge. Writing and reading are never its roles;
+    // the holds stay because a typed decision writes and reads nothing.
     holds: [
-      'judge-unmeasured',
       'writer-unmeasured',
       'reader-unmeasured',
     ],
