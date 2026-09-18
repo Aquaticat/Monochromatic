@@ -409,9 +409,21 @@ The design's "Open questions" now lists no unstarted design work and no pending 
 
 ## Next action
 
-1.  Nothing in the meow design queue is waiting.
-    The remaining meow work is implementation,
-    which no one has requested (rule `VRB`).
+Done on 2026-09-17,
+answering "Fix/update all docs first then write the implementation plan":
+ the route comparison,
+ the Mise removal ledger,
+ the market vet,
+ the superseded 2026-06-02 audit,
+ the `gxhash` troubleshooting doc,
+ and two research appendices now state the accepted decisions,
+ the file-enforcer README documents the `exec` and package APIs that exist,
+ and
+ [`doc/planning/monorepo-manager-implementation-plan.md`](../planning/monorepo-manager-implementation-plan.md)
+ lays out milestones M1 to M9 with the evidence each must produce.
+
+1.  Implementation itself is unstarted and unrequested (rule `VRB`).
+    The plan's M1 is the entry point.
 2.  Repository follow-ups this design produced:
     issues #545 through #552 and #554,
     all for the user to act on personally.

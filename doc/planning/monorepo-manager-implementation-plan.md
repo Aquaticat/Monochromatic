@@ -1,0 +1,242 @@
+# meow 0.x implementation plan
+
+## Status
+
+Plan only,
+written 2026-09-17 after the design queue closed;
+no code exists and none is authorized yet (rule `VRB`).
+Design:
+[`monorepo-manager-from-scratch-design.md`](monorepo-manager-from-scratch-design.md).
+Decisions this plan implements:
+[`monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md),
+[`monorepo-manager-cache-key-hash.md`](../decision/monorepo-manager-cache-key-hash.md),
+[`monorepo-manager-hcl-front-end.md`](../decision/monorepo-manager-hcl-front-end.md),
+and
+[`monorepo-manager-per-user-config.md`](../decision/monorepo-manager-per-user-config.md).
+Session state:
+[`doc/handover/monorepo-manager.md`](../handover/monorepo-manager.md).
+
+Everything here is scoped to meow 0.x;
+1.x and later may revisit any of it (user,
+ 2026-09-17).
+No estimate of effort or duration appears anywhere in this plan (rule `CK3`).
+
+## Where the work happens
+
+- meow is built in its own git worktree,
+   so the TypeScript file-enforcer and meow never enforce the same tree during development.
+- The TypeScript file-enforcer keeps running until meow replaces it,
+   and the root `mise.toml` stays generated from `mise.no-env.toml` until Mise is removed.
+- Mise is removed entirely,
+   in one step,
+   only when meow supports the full platform matrix including macOS and Windows.
+- Rules `MXR` and `RDC` apply to every `.rs` file:
+   300 code lines per file,
+   rustdoc on every documentable item,
+   with tests and fuzz targets exempt.
+
+## What each milestone must prove
+
+A milestone is done when its named evidence exists and is committed,
+not when its code compiles (rule `VB6`).
+Every milestone carries a parity or conformance target measured against something that exists today.
+
+### M1: the binary and its output contract
+
+- A single Rust binary that builds for the six shipped targets:
+   x86-64 baseline,
+   `x86-64-v3`,
+   and `x86-64-v4`,
+   plus aarch64,
+   each glibc-linked and static musl,
+   with aarch64 musl as static-pie from the custom target.
+- Every line written to standard output or standard error is a JSON object,
+   including logs,
+   warnings,
+   and errors.
+- The startup capability check runs before any hashing in builds raised above their target baseline,
+   printing a JSON diagnostic and exiting non-zero rather than dying with SIGILL.
+- Evidence:
+   the four-target matrix probe repeated for six builds,
+   plus a run on a CPU model lacking the raised build's features that exits with the diagnostic.
+
+### M2: content hashing and the cache key format
+
+- XXH3-128 through `twox-hash` pinned at `=2.1.4`,
+   default seed,
+   full 128 bits,
+   one-shot for in-memory files and streaming for larger inputs.
+- The key format fixes the seed and the byte order of the `u128`.
+- Evidence:
+   golden vectors in meow's own tests,
+   including the empty input `99aa06d3014798d86001c324468d497f`;
+   a streaming-against-one-shot equality test over many chunkings;
+   and a digest comparison across two of the shipped builds.
+
+### M3: the HCL front end
+
+- `hcl-edit` 0.9.7 vendored with the two prototype patches,
+   under meow's own evaluator over its tree,
+   with byte spans on every diagnostic.
+- A nesting-depth pre-scan before parsing,
+   because `hcl-edit` aborts the process at depth 5,000 with no knob.
+- Evidence:
+   the 2,246-file corpus accepted and rejected exactly as the Go reference does;
+   the round-trip probe byte-identical on all 2,185 valid files with the patches applied;
+   and the evaluator's differential suite against the Go oracle covering the 21 cases where `hcl-rs` diverged.
+
+### M4: the function library and the read set
+
+- The curated OpenTofu-named set plus `meow::` namespaced additions.
+- I/O functions record `File`,
+   `Absent`,
+   `Directory`,
+   `Glob`,
+   and `Env` reads into a read set that becomes both the cache key input and the watch list.
+- `timestamp`,
+   `uuid`,
+   and `bcrypt` exist,
+   mark their evaluation uncacheable,
+   and emit a diagnostic naming the function,
+   the block,
+   and the caching it disabled.
+- Evidence:
+   every logic unit in the inventory (LI01 to LI22) expressed in HCL and evaluated,
+   with the read set for each compared against what the TypeScript implementation reads today.
+
+### M5: configuration discovery, layering, and trust
+
+- Discovery order,
+   the `--no-user-config` switch,
+   per-attribute declared scope,
+   and outside-write proposals matched by per-user acceptances.
+- Trust as cli-git does it:
+   explicit `trust`,
+   `trust --yes`,
+   `untrust`,
+   and `status`;
+   configuration-loading commands blocked until trust exists;
+   identity as the filesystem ID paired with the canonical path;
+   exact-byte snapshots evaluated in place of the live file;
+   the registry under the account home with atomic replacement and private modes.
+- Evidence:
+   a disposable-fixture suite covering each discovery branch,
+   a blocked command whose JSON diagnostic names both recovery commands,
+   and a compare-then-swap attempt that the snapshot evaluation defeats.
+
+### M6: file enforcement parity
+
+- The 27 logic units re-expressed and executed,
+   with managed edits preserving comments in TOML,
+   JSONC,
+   and XML through the chosen editors.
+- Evidence:
+   the differential edit harness's 21 TOML,
+   16 JSONC,
+   and 9 XML cases passing;
+   a full run over this repository whose only output differences are the one-time reviewed reformatting;
+   and the corpus round trips for each editor.
+
+### M7: the daemon
+
+- One daemon per canonical repository root,
+   socket under `$XDG_RUNTIME_DIR`,
+   watching the repository and the per-user configuration's directory.
+- The scheduler,
+   priorities,
+   concurrency,
+   task control,
+   cgroup sandboxing,
+   and the cache with pointer-only outputs,
+   failure caching,
+   and eviction by pinned bytes plus 30-day age.
+- Reload carries a generation number,
+   in-flight tasks stay pinned,
+   and a malformed configuration keeps the last good snapshot.
+- Evidence:
+   a watch session that rebuilds affected work on a change;
+   a cache hit and a forced miss with their keys recorded;
+   a task frozen,
+   resumed,
+   and ended through RPC;
+   and an eviction run against a filled cache.
+
+### M8: the language server and `doctor`
+
+- `lsp-server` 0.10.0 with `gen-lsp-types` behind a hidden `meow lsp` stdio subcommand,
+   offering diagnostics,
+   completion,
+   hover,
+   and go-to-definition over the configuration.
+- `doctor` reporting the environment problems it can name,
+   with the exact change and its reason.
+- Evidence:
+   an editor session driven end to end against a real configuration,
+   and a `doctor` run on a deliberately broken environment.
+
+### M9: cutover
+
+- The `exec` replacement lands with the rewrite:
+   `package/dev-script/vm-builder/src/process.ts` over `nano-spawn`,
+   and vm-builder's dependency on file-enforcer removed.
+- The `prefer-readonly-parameter-type` read moves to its own fixture package.
+- The performance fixture retires with the TypeScript implementation,
+   with no speed gate on the rewrite.
+- Mise and its configuration leave once the full matrix is supported,
+   and `sync:files` goes with them.
+- Evidence:
+   the Mise removal ledger with every consumed responsibility marked owned and verified,
+   and a release that publishes the six binaries.
+
+## Ordering and what blocks what
+
+- M1 blocks everything,
+   because the output contract and the build matrix decide how every later diagnostic and test is written.
+- M2 blocks M6 and M7,
+   since both key their work by content hash.
+- M3 blocks M4 and M5;
+   M4 and M5 together block M6.
+- M7 depends on M6 for the work it schedules,
+   and on M2 for its cache.
+- M8 depends on M3 for spans and on M5 for what a query may answer before trust.
+- M9 depends on M6 and M7 reaching parity,
+   and its Mise removal step additionally waits for macOS and Windows support.
+- M9's `exec` replacement is the one piece with no dependency on meow;
+   the user chose to land it with the rewrite rather than earlier.
+
+## Risks carried into implementation
+
+These come from the design's "Risks" section and the decisions,
+and each needs an owner when its milestone starts:
+
+- Every subsystem is repository-built:
+   task graph,
+   cache,
+   watcher,
+   scheduler,
+   cgroup sandbox,
+   RPC,
+   and their documentation.
+- Whether GitHub runners give a systemd user session for delegated cgroups is unverified.
+- Frozen tasks hold locks while timers run,
+   and ending a task's cgroup can kill a daemon another task reuses.
+- Undeclared reads in repository tasks leave stale cache hits possible.
+- The vendored `hcl-edit` patches must be re-applied and re-measured on every upstream release;
+   the corpus round-trip probe is that regression test.
+- meow owns HCL semantics,
+   and the Go oracle harness is what keeps its corner cases honest.
+- The rewrite ships without speed evidence,
+   because the user chose no speed gate.
+- The aarch64 speed evidence behind the hash choice is Apple silicon on Darwin,
+   not a release-blocking Linux target.
+
+## What this plan does not decide
+
+- Package layout,
+   crate boundaries,
+   and module names inside meow's worktree.
+- The wording of user-facing diagnostics,
+   which waits on meow's CLI naming.
+- Whether the repository ever gains a shared process-execution owner;
+   the user answered no for now.
+- Anything for 1.x.
