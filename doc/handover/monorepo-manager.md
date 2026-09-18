@@ -281,7 +281,7 @@ lists the rest.
 - `4fdf58b84` (2026-09-17):
    cache key hash vet merged into the design.
 
-## Next action
+## Research results on 2026-09-17
 
 Finished on 2026-09-17:
  design research for the HCL evaluator,
@@ -398,10 +398,23 @@ That research also found two defects worth separate work:
  and `workspace-source-effect.unit.test.ts:67-70` finds functions by searching source text,
  so an unrelated rename breaks it silently today.
 
+Both defects were filed as issue #554 on 2026-09-17,
+ with the exact locations and the correct `exec` shapes,
+ rather than fixed here:
+ the README fix is mechanical,
+ but the unexported subpath needs an API choice,
+ and this session's scope is meow's design.
+
 The design's "Open questions" now lists no unstarted design work and no pending user choice.
 
-1.  Consider the two defects above,
-    which are repository work rather than meow design.
+## Next action
+
+1.  Nothing in the meow design queue is waiting.
+    The remaining meow work is implementation,
+    which no one has requested (rule `VRB`).
+2.  Repository follow-ups this design produced:
+    issues #545 through #552 and #554,
+    all for the user to act on personally.
 2.  For each research result,
     copy it into `doc/planning/monorepo-manager-route-research/`,
     verify its load-bearing claims,
