@@ -3,14 +3,26 @@
 ## Status
 
 - Status:
-   draft design.
-  On 2026-09-16 the stack narrowed to one remaining route:
-   an all-Rust tool with file-enforcer rewritten in Rust.
-  The user accepted it the same day:
+   accepted route,
+   design in progress.
+  On 2026-09-16 the stack narrowed to one remaining route,
+   an all-Rust tool with file-enforcer rewritten in Rust,
+   and the user accepted it the same day:
    [`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md).
-  Its declarative configuration design,
-   rewrite scope,
-   and several build details remain open.
+  Three more decision records followed on 2026-09-17:
+   the cache key hash,
+   the HCL front end,
+   and the per-user configuration.
+  The build matrix,
+   output format,
+   command surface,
+   and configuration authoring settled the same day.
+  What a task is,
+   and what makes one task run before another,
+   are the open questions in "Open questions".
+- Implementation plan:
+   [`monorepo-manager-implementation-plan.md`](monorepo-manager-implementation-plan.md).
+  No code exists and none is authorized yet.
 - Session state,
    commits,
    and next action:
