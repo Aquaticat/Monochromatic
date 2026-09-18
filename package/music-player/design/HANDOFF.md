@@ -4079,6 +4079,38 @@ collision guard.
 cannot reach the GitHub API from this session,
  so Linear remains the tracker here.
 
+## Cover round verification and presentation
+
+The cover questionnaire embeds nine opaque 1080 × 2424 rasters, byte-bound to their
+source files, and shows no page overflow at 1920 × 1080 or 390 × 500 in either color
+scheme.
+ Axe reports zero violations and zero incomplete checks: twenty page passes in each
+scheme and twelve open-dialog passes.
+ The preview settles Fit at 22% on the mobile
+viewport without scrolling, renders native pixels as exactly 1080 × 2424 CSS px inside a
+1225 × 2566 frame with scrolling disclosed, resets to 411 × 923 inside 466 × 977, restores
+focus on Escape, and every one of the nine preview paths matches its title, source, alt
+text, and natural dimensions.
+ The form requires the single radio group, rejects
+whitespace corrections with the "spaces alone" validity message while keeping the previous
+prepared answer, invalidates prepared output on radio change and on correction input, and
+clears on reset.
+ Offline reload keeps all nine rasters with zero network resources.
+
+The cover mutation harness genuinely rejects ten faults: removed ranking, duplicated
+raster, swapped embedded references, clipboard control, painted-over true-black top row,
+fixed-color current row replacing the D42 neutral, an added hairline on L2, a restored
+volume content-desc, a collapsed 200% mode arrangement, and mismatched role-environment
+metadata.
+ Its disposable worktree is removed.
+
+The capture script now folds and unlocks the emulator itself and restores the original
+device state and settings in its finally block; the device was returned to the unfolded
+state after the round.
+ The questionnaire is presented in normal Helium in the current
+system color scheme; the reply is one light code (L1, L2, or L3) plus any correction in
+chat.
+
 ## Issue tracking moves to Linear for this session
 
 `gh` cannot reach the GitHub API this session:
