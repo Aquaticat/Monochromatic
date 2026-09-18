@@ -1669,9 +1669,30 @@ after the research's per-package proposal was put to them.
   A specialization without a marked base,
    or a marked base nothing overrides,
    is an error rather than a silent win.
-  The user allowed bending the syntax to express it;
-   rule `SYB` rules out a comment-based marker,
-   because HCL attributes can carry the relation directly.
+  The markers are meta-argument attributes (user,
+   2026-09-17),
+   the form OpenTofu already uses for `count`,
+   `for_each`,
+   and `depends_on`:
+   `overridden = true` on the base,
+   `override = true` on the specialization,
+   validated as a pair.
+  Rule `SYB` ruled out a comment-based marker,
+   because an attribute carries the relation directly.
+
+```hcl
+task "test" {
+  tags       = ["pnpm"]
+  overridden = true
+  command    = ["node", "--test", "src"]
+}
+
+task "test" {
+  tags     = ["pnpm", "serial"]
+  override = true
+  command  = ["node", "--test", "--concurrency=1", "src"]
+}
+```
 
 #### Consequences of one root file
 
