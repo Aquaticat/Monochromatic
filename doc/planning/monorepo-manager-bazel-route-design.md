@@ -3,8 +3,12 @@
 ## Status
 
 - Status:
-   draft design;
-   no route is chosen.
+   not taken.
+  The user chose the from-scratch all-Rust route on 2026-09-16
+   ([`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md)),
+   whose design is in
+   [`monorepo-manager-from-scratch-design.md`](monorepo-manager-from-scratch-design.md).
+  This document stays as the evidence for why Bazel was rejected.
 - Route comparison:
    [`monorepo-manager-build-routes.md`](monorepo-manager-build-routes.md).
 - Evidence:

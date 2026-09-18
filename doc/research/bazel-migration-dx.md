@@ -43,8 +43,16 @@ and several load-bearing tools have no maintained Bazel integration.
    41 declare `depends`.
   Every invocation re-executes;
    nothing is skipped as fresh.
-- Root fanout in `mise.no-env.toml` is repository-owned Node code,
-   because the native Mise monorepo glob aborted aggregates mid-flight.
+- Root fanout in `mise.no-env.toml` is repository-owned Node code.
+  The reason given for it,
+   that the native Mise monorepo glob aborted aggregates mid-flight,
+   has no primary evidence:
+   `mise.toml:308-312` attributes the observation to `doc/handover/lint-fix-2026-06.md`,
+   which does not contain it
+   (checked 2026-09-17,
+   `rg 'glob'` over its 199 lines returns nothing),
+   and `doc/decision/desktop-app-podman-build.md:84-87` still tells readers to use the native glob.
+  Tracked in issue #555.
 - `git shortlog --since=2025-09-16` attributes 8,699 commits to one author,
    36 to a test fixture identity,
    and 6 to `github-actions[bot]`.
