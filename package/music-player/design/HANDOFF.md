@@ -3962,3 +3962,57 @@ the round's record.
 implementation remains unauthorized:
  issue #508 tracks the proposed rule that design
 acceptance alone does not authorize production source changes.
+
+## Design-only continuation with a large open backlog
+
+User instruction (2026-09-17):
+ this project remains design-only,
+ and tons of design work
+are still undone.
+ The settled unfolded screen is one settled surface,
+ not a settled product.
+Production implementation is not the current track and stays unauthorized pending an
+explicit request.
+ Open design frontiers from `open-questions.md`:
+
+- Picker presentation within a letter (section 10):
+  plain-text names,
+  48dp targets,
+  no
+ segmentation,
+  modest scroll extent for 70 to 100 names per letter;
+  pk-e and pk-f
+ remain live.
+  This is the active round.
+- Command bar surface (D21):
+  hotkey settled,
+  surface never designed.
+- Keyboard map and IntelliJ alignment pass (D25).
+- Android media notification:
+  never designed.
+- MD3-on-Slint feasibility (A4):
+  which components genuinely port to the desktop app.
+- Light-theme pass (8b):
+  nothing drawn.
+- Fast-scroller drag bubble (section 9):
+  probably moot per D17;
+  confirm and delete.
+
+## Issue tracking moves to Linear for this session
+
+`gh` cannot reach the GitHub API this session:
+ `gh issue view` and `gh api` fail with
+"error connecting to api.github.com" while `curl https://api.github.com/rate_limit`
+returns 200,
+ and `gh auth status` reports a keyring login timeout.
+ The user will inspect
+GitHub themselves later.
+ For the remainder of this session,
+ issue tracking uses Linear
+instead of GitHub.
+
+Option C, codifying the design-acceptance gate in `AGENTS.md`,
+ is already tracked in
+Linear as AQU-487 "docs(agents): gate production work after design acceptance" in Triage,
+with GitHub #508 attached.
+ No duplicate issue was opened.
