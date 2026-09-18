@@ -115,9 +115,162 @@ function consolidating({ notes, }: { readonly notes: string; },): WouldShipSourc
   } as unknown as WouldShipSource;
 }
 
+/**
+ Archive carrying one paragraph and none of the disclosure block after it.
+ */
+const HALVES_TARGET = 'The cat naps on the windowsill.\n\n';
+
+/**
+ Opening half of the block the archive never carried.
+ */
+const OPEN_HALF_SOURCE = '<details style="margin-top: 0.5rem;">\n<summary>猫的故事</summary>';
+
+/**
+ Closing half of that block.
+ */
+const CLOSE_HALF_SOURCE = '猫在夜里回家了。\n\n</details>';
+
+/**
+ Rendering of the closing half.
+ */
+const CLOSE_HALF_TEXT = 'The cat came home at night.\n\n</details>\n';
+
+/**
+ One content slice and the two halves of the block, both anchored after it.
+ */
+const HALVES_SLICES: readonly ChunkPair[] = [
+  {
+    source: {
+      kind: 'content',
+      sliceIndex: 0,
+      nodes: [],
+      startOffset: 0,
+      endOffset: 9,
+      text: '猫猫在窗台上打盹。',
+    },
+    target: {
+      kind: 'content',
+      sliceIndex: 0,
+      nodes: [],
+      startOffset: 0,
+      endOffset: HALVES_TARGET.length,
+      text: HALVES_TARGET,
+    },
+  },
+  {
+    source: {
+      kind: 'content',
+      sliceIndex: 1,
+      nodes: [],
+      startOffset: 11,
+      endOffset: 11 + OPEN_HALF_SOURCE.length,
+      text: OPEN_HALF_SOURCE,
+    },
+    target: makeInsertionChunk({ sliceIndex: 1, offset: HALVES_TARGET.length, },),
+  },
+  {
+    source: {
+      kind: 'content',
+      sliceIndex: 2,
+      nodes: [],
+      startOffset: 13 + OPEN_HALF_SOURCE.length,
+      endOffset: 13 + OPEN_HALF_SOURCE.length + CLOSE_HALF_SOURCE.length,
+      text: CLOSE_HALF_SOURCE,
+    },
+    target: makeInsertionChunk({ sliceIndex: 2, offset: HALVES_TARGET.length, },),
+  },
+];
+
+/**
+ Builds a source whose translate lane filled the closing half alone.
+
+ @returns Narrow artifact source read by the publication assembler
+
+ @example
+ ```ts
+ const artifact = closingHalfAlone();
+ ```
+ */
+function closingHalfAlone(): WouldShipSource {
+  return {
+    comparison: [
+      {
+        sliceIndex: 0,
+        incumbentKind: 'present',
+        incumbentText: HALVES_TARGET,
+        repairText: HALVES_TARGET,
+        translateText: HALVES_TARGET,
+        laneRelation: 'both-kept',
+        repairOutcome: { kind: 'decided', acceptedText: HALVES_TARGET, },
+        translateOutcome: { kind: 'decided', acceptedText: HALVES_TARGET, },
+        decisionComparison: { kind: 'comparable', verdict: 'same', },
+        repairDelivery: { kind: 'incumbent-retained', },
+        translateDelivery: { kind: 'incumbent-retained', },
+      },
+      {
+        sliceIndex: 1,
+        incumbentKind: 'absent',
+        incumbentText: '',
+        repairText: '',
+        translateText: '',
+        laneRelation: 'both-kept',
+        repairOutcome: { kind: 'not-evaluated', },
+        translateOutcome: { kind: 'not-evaluated', },
+        decisionComparison: { kind: 'comparable', verdict: 'same', },
+        repairDelivery: { kind: 'gap-remains', },
+        translateDelivery: { kind: 'gap-remains', },
+      },
+      {
+        sliceIndex: 2,
+        incumbentKind: 'absent',
+        incumbentText: '',
+        repairText: '',
+        translateText: CLOSE_HALF_TEXT,
+        laneRelation: 'both-kept',
+        repairOutcome: { kind: 'not-evaluated', },
+        translateOutcome: { kind: 'decided', acceptedText: CLOSE_HALF_TEXT, },
+        decisionComparison: { kind: 'comparable', verdict: 'same', },
+        repairDelivery: { kind: 'gap-remains', },
+        translateDelivery: { kind: 'gap-remains', },
+      },
+    ],
+    consolidation: {
+      kind: 'settled',
+      slices: [{
+        sliceIndex: 2,
+        terminal: 'consolidated',
+        shipped: { kind: 'consolidated', text: CLOSE_HALF_TEXT, },
+        rewrapped: false,
+        demoted: false,
+        verdicts: [],
+        gate: { kind: 'not-asked', },
+      },],
+    },
+    laneSelection: { kind: 'contested', slices: [], },
+  } as unknown as WouldShipSource;
+}
+
 await describe({
   name: guardPageAssembly.name,
   children: [
+    it({
+      name: 'WITHHOLDS A CONTAINER HALF WHOSE PARTNER SHIPS NOTHING on the composed page, naming the partner '
+        + '(class fifty-seven, XingZ607)',
+      fn: async () => {
+        const assembly = guardPageAssembly({
+          artifact: closingHalfAlone(),
+          slices: HALVES_SLICES,
+          sourceText: `猫猫在窗台上打盹。\n\n${OPEN_HALF_SOURCE}\n\n${CLOSE_HALF_SOURCE}\n`,
+          targetText: HALVES_TARGET,
+        },);
+        expect(assembly.withdrawn,).toEqual([2,],);
+        expect(assembly.trimmed,).toEqual([],);
+        expect(assembly.findings,).toEqual([
+          'assembly-container-half-withheld (slice 2 beside slice 1: one container\'s halves ship together, and '
+          + 'slice 1 ships nothing)',
+        ],);
+      },
+    },),
     it({
       name: 'TRIMS the orphan out of the consolidation\'s two notes one line apart and records the text the '
         + 'page carries (the twenty-second hakureico pass of 2026-09-09 shipped the consolidation\'s fresh '

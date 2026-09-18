@@ -21,6 +21,8 @@ import {
 
 import {
   assembleTranslation,
+  makeInsertionChunk,
+  type PreparedDocumentPair,
   prepareDocumentPair,
   type TranslateSliceRecord,
 } from '../dist/final/node/index.mjs';
@@ -57,6 +59,102 @@ Whiskers chases butterflies.
  Wording of the referencing slice with its marker dropped.
  */
 const DROPS_THE_MARKER = 'The cat sleeps on the windowsill.';
+
+/**
+ Archive carrying one paragraph and none of the disclosure block that follows it.
+ */
+const HALVES_TARGET = 'The cat naps on the windowsill.\n\n';
+
+/**
+ Opening half of the block the archive never carried: the slicer gives a
+ container's opening tag to the first block inside it.
+ */
+const OPEN_HALF_SOURCE = '<details style="margin-top: 0.5rem;">\n<summary>猫的故事</summary>';
+
+/**
+ Closing half: the block's last paragraph and the closing tag.
+ */
+const CLOSE_HALF_SOURCE = '猫在夜里回家了。\n\n</details>';
+
+/**
+ Rendering of the opening half.
+ */
+const OPEN_HALF_TEXT = '<details style="margin-top: 0.5rem;">\n<summary>The cat\'s story</summary>\n\n';
+
+/**
+ Rendering of the closing half.
+ */
+const CLOSE_HALF_TEXT = 'The cat came home at night.\n\n</details>\n';
+
+/**
+ Preparation whose slice 0 is the archive paragraph and whose slices 1 and 2
+ are the two halves of a block the archive never carried, both anchored
+ after the paragraph.
+
+ @returns Prepared pair with one content slice and two insertion slices
+
+ @example
+ ```ts
+ const prepared = preparedWithHalves();
+ ```
+ */
+function preparedWithHalves(): PreparedDocumentPair {
+  /**
+   Offset of the closing half in the source.
+   */
+  const closeStart = 20 + OPEN_HALF_SOURCE.length + 2;
+  return {
+    sourceText: `猫猫在窗台上打盹。\n\n${OPEN_HALF_SOURCE}\n\n${CLOSE_HALF_SOURCE}\n`,
+    targetText: HALVES_TARGET,
+    slices: [
+      {
+        source: {
+          kind: 'content',
+          sliceIndex: 0,
+          nodes: [],
+          startOffset: 0,
+          endOffset: 9,
+          text: '猫猫在窗台上打盹。',
+        },
+        target: {
+          kind: 'content',
+          sliceIndex: 0,
+          nodes: [],
+          startOffset: 0,
+          endOffset: HALVES_TARGET.length,
+          text: HALVES_TARGET,
+        },
+      },
+      {
+        source: {
+          kind: 'content',
+          sliceIndex: 1,
+          nodes: [],
+          startOffset: 20,
+          endOffset: 20 + OPEN_HALF_SOURCE.length,
+          text: OPEN_HALF_SOURCE,
+        },
+        target: makeInsertionChunk({ sliceIndex: 1, offset: HALVES_TARGET.length, },),
+      },
+      {
+        source: {
+          kind: 'content',
+          sliceIndex: 2,
+          nodes: [],
+          startOffset: closeStart,
+          endOffset: closeStart + CLOSE_HALF_SOURCE.length,
+          text: CLOSE_HALF_SOURCE,
+        },
+        target: makeInsertionChunk({ sliceIndex: 2, offset: HALVES_TARGET.length, },),
+      },
+    ],
+    lineStructuredSliceIndices: new Set(),
+    declaredNames: [],
+    alignmentFindings: [],
+    unclaimedTargetBlocks: [],
+    alignmentPairCount: 3,
+  };
+}
 
 /**
  Record for one slice, changed or kept.
@@ -151,6 +249,59 @@ function capturingLogger({ said, }: { readonly said: string[]; },): Logger {
 await describe({
   name: assembleTranslation.name,
   children: [
+    it({
+      name: 'WITHHOLDS A CONTAINER HALF WHOSE PARTNER SHIPS NOTHING, naming the partner, instead of handing '
+        + 'the guard a page with a closing tag and no opening (class fifty-seven, XingZ607: two blocks lost '
+        + 'their summaries at admission, two closing tags shipped alone, and the guard withdrew all 88 slices)',
+      fn: async () => {
+        const prepared = preparedWithHalves();
+        const said: string[] = [];
+        const result = assembleTranslation({
+          prepared,
+          settled: [
+            recordFor({ sliceIndex: 0, incumbentText: HALVES_TARGET, outputText: HALVES_TARGET, },),
+            recordFor({ sliceIndex: 2, incumbentText: '', outputText: CLOSE_HALF_TEXT, },),
+          ],
+          unfilled: [{ sliceIndex: 1, reason: 'not-corroborated', findings: [], },],
+          carriedChunkIndices: [],
+          resumedSliceCount: 0,
+          findings: [],
+          l: capturingLogger({ said, },),
+        },);
+        expect(result.withdrawnSliceIndices,).toEqual([2,],);
+        expect(result.changedSliceIndices,).toEqual([],);
+        expect(result.translatedText,).toBe(HALVES_TARGET,);
+        expect(result.findings.some(function namesTheHalf(finding,): boolean {
+          return finding.startsWith('assembly-container-half-withheld (slice 2 beside slice 1',);
+        },),).toBe(true,);
+        expect(result.findings.some(function blanket(finding,): boolean {
+          return finding.startsWith('assembly-withdrew-every-replacement',);
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'SHIPS BOTH HALVES when both settle, the page parsing as one block',
+      fn: async () => {
+        const prepared = preparedWithHalves();
+        const said: string[] = [];
+        const result = assembleTranslation({
+          prepared,
+          settled: [
+            recordFor({ sliceIndex: 0, incumbentText: HALVES_TARGET, outputText: HALVES_TARGET, },),
+            recordFor({ sliceIndex: 1, incumbentText: '', outputText: OPEN_HALF_TEXT, },),
+            recordFor({ sliceIndex: 2, incumbentText: '', outputText: CLOSE_HALF_TEXT, },),
+          ],
+          unfilled: [],
+          carriedChunkIndices: [],
+          resumedSliceCount: 0,
+          findings: [],
+          l: capturingLogger({ said, },),
+        },);
+        expect(result.withdrawnSliceIndices,).toEqual([],);
+        expect(result.changedSliceIndices,).toEqual([1, 2,],);
+        expect(result.translatedText,).toBe(`${HALVES_TARGET}${OPEN_HALF_TEXT}${CLOSE_HALF_TEXT}`,);
+      },
+    },),
     it({
       name: 'WITHDRAWS a replacement that drops a footnote marker at assembly and lists it as withdrawn, not '
         + 'changed, so the document that ships is the archive and the index sets say why',

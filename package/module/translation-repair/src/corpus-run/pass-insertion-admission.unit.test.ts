@@ -237,6 +237,69 @@ async function runAdmission(
 }
 
 /**
+ Opening half of a disclosure block the archive never carried: the tag and
+ its summary, which the slicer gives to the first block inside the container.
+ */
+const OPEN_HALF = '<details style="margin-top: 0.5rem;">\n<summary>猫的故事</summary>';
+
+/**
+ Closing half of the same block: its last paragraph and the closing tag.
+ */
+const CLOSE_HALF = '猫在夜里回家了。\n\n</details>';
+
+/**
+ Builds a preparation whose two source-only slices own one container's halves.
+
+ @param targetText - whole translation searched by coverage
+
+ @returns Preparation holding the opening half at slice 0 and the closing half at slice 1
+
+ @example
+ ```ts
+ const prepared = preparedHalves({ targetText: 'Cat.', },);
+ ```
+ */
+function preparedHalves({ targetText, }: { readonly targetText: string; },): PreparedDocumentPair {
+  /**
+   Offset of the closing half in the source.
+   */
+  const closeStart = OPEN_HALF.length + 2;
+  return {
+    sourceText: `${OPEN_HALF}\n\n${CLOSE_HALF}\n${'猫在窗台晒太阳。'.repeat(20,)}`,
+    targetText,
+    slices: [
+      {
+        source: {
+          kind: 'content',
+          sliceIndex: 0,
+          nodes: [],
+          startOffset: 0,
+          endOffset: OPEN_HALF.length,
+          text: OPEN_HALF,
+        },
+        target: makeInsertionChunk({ sliceIndex: 0, offset: 0, },),
+      },
+      {
+        source: {
+          kind: 'content',
+          sliceIndex: 1,
+          nodes: [],
+          startOffset: closeStart,
+          endOffset: closeStart + CLOSE_HALF.length,
+          text: CLOSE_HALF,
+        },
+        target: makeInsertionChunk({ sliceIndex: 1, offset: 0, },),
+      },
+    ],
+    lineStructuredSliceIndices: new Set(),
+    declaredNames: [],
+    alignmentFindings: [],
+    unclaimedTargetBlocks: [],
+    alignmentPairCount: 2,
+  };
+}
+
+/**
  Repeats one reply across whole roster.
  
  @param reply - answer every seat gives
@@ -367,6 +430,70 @@ await describe({
               return finding.includes('insertion-unresolved-after-single-round',);
             },),
         ).toBe(true,);
+      },
+    },),
+    it({
+      name: 'ADMITS THE OPENING HALF OF A CONTAINER BESIDE ITS ADMITTED CLOSING HALF when the roster split on '
+        + 'the summary alone (class fifty-seven, XingZ607: two disclosure blocks lost their opening halves, '
+        + 'the closing tags shipped alone, and the translate lane withdrew every slice)',
+      fn: async () => {
+        // Slice 0, the summary, splits one full against one partial against one
+        // absent, all anchored, so on its own it stays unresolved; slice 1, the
+        // block's end, is absent by every voice and the page is short of it.
+        const admission = await decidePassInsertionAdmission({
+          client: coverageClient({
+            replies: [
+              { coverage: 'full', quote: 'Cat.', },
+              { coverage: 'partial', quote: 'Cat.', },
+              { coverage: 'none', quote: '', },
+              ...unanimous({ coverage: 'none', quote: '', },),
+            ],
+          },),
+          prepared: preparedHalves({ targetText: 'Cat.', },),
+          modelIds: ROSTER,
+          overlap: 1,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },);
+        expect([...admission.positions,].toSorted(),).toEqual([0, 1,],);
+        expect(
+          admission.findings
+            .some(function namesTheHalf(finding,): boolean {
+              return finding.startsWith('insertion-container-half-admitted (slice 0 beside slice 1',);
+            },),
+        ).toBe(true,);
+      },
+    },),
+    it({
+      name: 'LEAVES BOTH HALVES UNFILLED when neither is admitted on its own evidence, so the rule widens '
+        + 'nothing without a corroborated half',
+      fn: async () => {
+        const admission = await decidePassInsertionAdmission({
+          client: coverageClient({
+            replies: [
+              { coverage: 'full', quote: 'Cat.', },
+              { coverage: 'partial', quote: 'Cat.', },
+              { coverage: 'none', quote: '', },
+              { coverage: 'full', quote: 'Cat.', },
+              { coverage: 'partial', quote: 'Cat.', },
+              { coverage: 'none', quote: '', },
+            ],
+          },),
+          prepared: preparedHalves({ targetText: 'Cat.', },),
+          modelIds: ROSTER,
+          overlap: 1,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },);
+        expect([...admission.positions,],).toEqual([],);
+        expect(
+          admission.findings
+            .some(function namesTheHalf(finding,): boolean {
+              return finding.startsWith('insertion-container-half-admitted',);
+            },),
+        ).toBe(false,);
       },
     },),
     it({
