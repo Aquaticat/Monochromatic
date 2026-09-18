@@ -18,6 +18,13 @@ const lightCards = [
   { basename: "cover-round-cover-light-l3-s100", code: "L3", title: "Light cover · L3 flat surface with hairlines · 100% text", alt: "folded cover in light mode with one flat surface and hairlines at both seams" },
   { basename: "cover-round-cover-light-l1-s200", code: "L1-200", title: "Light cover · L1 ramp with deck-seam hairline · 200% text", alt: "folded cover in light mode with the recommended ramp at 200 percent text and the four-row mode arrangement" },
 ]
+const pickerCards = [
+  { basename: "cover-round-cover-picker-k1-s100", code: "K1", title: "Picker opened · K1 full-screen page · 100% text", alt: "cover swapped to a full-screen picker page with app bar, letter rail, and wrapped names" },
+  { basename: "cover-round-cover-picker-k2-s100", code: "K2", title: "Picker opened · K2 dropdown panel · 100% text", alt: "cover with a dropdown picker panel under the top row over the player deck" },
+  { basename: "cover-round-cover-picker-k3-s100", code: "K3", title: "Picker opened · K3 modal bottom sheet · 100% text", alt: "cover with a modal bottom sheet picker over a scrimmed player" },
+  { basename: "cover-round-cover-picker-k1-s200", code: "K1-200", title: "Picker opened · K1 full-screen page · 200% text", alt: "full-screen picker page at 200 percent text" },
+  { basename: "cover-round-cover-picker-k1-light-s100", code: "K1-L", title: "Picker opened · K1 full-screen page · light L1 · 100% text", alt: "full-screen picker page in light mode under the L1 ramp surface" },
+]
 const cardHtml = (card) => {
   const relativePath = join("questions", "render", `${card.basename}.png`)
   const encoded = readFileSync(join(root, relativePath)).toString("base64")
@@ -27,7 +34,8 @@ const cardHtml = (card) => {
 let html = readFileSync(templatePath, "utf8")
 html = html.replace("@@DARK_CARDS@@", darkCards.map(cardHtml).join("\n"))
 html = html.replace("@@LIGHT_CARDS@@", lightCards.map(cardHtml).join("\n"))
-if (html.includes("@@DARK_CARDS@@") || html.includes("@@LIGHT_CARDS@@")) {
+html = html.replace("@@PICKER_CARDS@@", pickerCards.map(cardHtml).join("\n"))
+if (html.includes("@@DARK_CARDS@@") || html.includes("@@LIGHT_CARDS@@") || html.includes("@@PICKER_CARDS@@")) {
   throw new Error("Cover questionnaire still contains a card placeholder.")
 }
 writeFileSync(outputPath, html)
@@ -41,19 +49,19 @@ const { join } = await import("node:path")
 const root = process.cwd()
 const htmlPath = join(root, "questions", "current.html")
 const html = readFileSync(htmlPath, "utf8")
-if (html.includes("@@DARK_CARDS@@") || html.includes("@@LIGHT_CARDS@@")) {
+if (html.includes("@@DARK_CARDS@@") || html.includes("@@LIGHT_CARDS@@") || html.includes("@@PICKER_CARDS@@")) {
   throw new Error("Cover questionnaire contains an unresolved card placeholder.")
 }
 if (/<script\s+[^>]*src=|<link\s+[^>]*href=/i.test(html)) {
   throw new Error("Cover questionnaire depends on an external script or stylesheet.")
 }
 const dataUrls = [...html.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/g)]
-if (dataUrls.length !== 18) {
-  throw new Error(`Cover questionnaire embeds ${dataUrls.length} image references; expected 18.`)
+if (dataUrls.length !== 28) {
+  throw new Error(`Cover questionnaire embeds ${dataUrls.length} image references; expected 28.`)
 }
 const uniqueImages = new Map(dataUrls.map((match) => [match[1], Buffer.from(match[1], "base64")]))
-if (uniqueImages.size !== 9) {
-  throw new Error(`Cover questionnaire embeds ${uniqueImages.size} distinct captures; expected 9.`)
+if (uniqueImages.size !== 14) {
+  throw new Error(`Cover questionnaire embeds ${uniqueImages.size} distinct captures; expected 14.`)
 }
 const pngSignature = "89504e470d0a1a0a"
 for (const [encoded, image] of uniqueImages) {
@@ -79,6 +87,12 @@ const required = [
   "L3",
   "Ranking: L1 &gt; L3 &gt; L2.",
   "name=\"lightCoverSurface\"",
+  "Decision: cover subdirectory picker opened state",
+  "K1 · recommended",
+  "K2",
+  "K3",
+  "Ranking: K1 &gt; K3 &gt; K2.",
+  "name=\"pickerOpenedState\"",
   "spaces alone do not complete this field",
   "Native pixels",
   "Reset 100%",
@@ -94,8 +108,8 @@ for (const fragment of required) {
   }
 }
 const radioCount = (html.match(/type="radio"/g) ?? []).length
-if (radioCount !== 3) {
-  throw new Error(`Cover questionnaire has ${radioCount} radio choices; expected 3.`)
+if (radioCount !== 6) {
+  throw new Error(`Cover questionnaire has ${radioCount} radio choices; expected 6.`)
 }
 if (html.includes('id="copy-answer"') || html.includes("navigator.clipboard") || html.includes("execCommand('copy')")) {
   throw new Error("Cover questionnaire includes an unnecessary clipboard control or API.")
@@ -106,6 +120,11 @@ const basenames = [
   "cover-round-cover-dark-wallpaper-s150",
   "cover-round-cover-dark-wallpaper-s200",
   "cover-round-cover-dark-coral-s100",
+  "cover-round-cover-picker-k1-s100",
+  "cover-round-cover-picker-k2-s100",
+  "cover-round-cover-picker-k3-s100",
+  "cover-round-cover-picker-k1-s200",
+  "cover-round-cover-picker-k1-light-s100",
   "cover-round-cover-light-l1-s100",
   "cover-round-cover-light-l2-s100",
   "cover-round-cover-light-l3-s100",
@@ -166,17 +185,32 @@ const seamRowCount = (basename, outlineHex) => {
 for (const [index, basename] of basenames.entries()) {
   const hierarchyPath = join(root, "questions", "evidence", `${basename}.xml`)
   const hierarchy = readFileSync(hierarchyPath, "utf8")
-  const markers = [
-    'bounds="[0,0][1080,2424]"',
-    'text="Camellia"',
-    'text="Open"',
-    'text="Another Xronixle"',
-    'content-desc="Pause"',
-    'content-desc="Previous track"',
-    'content-desc="Next track"',
-    'content-desc="Repeat track"',
-    'content-desc="Settings"',
-  ]
+  const markers = basename.includes("-picker-k1")
+    ? [
+      'bounds="[0,0][1080,2424]"',
+      'text="Camellia"',
+      'text="Cult of Luna"',
+      'text="Folders"',
+      'content-desc="Navigate up"',
+    ]
+    : basename.includes("-picker-")
+      ? [
+        'bounds="[0,0][1080,2424]"',
+        'text="Camellia"',
+        'text="Cult of Luna"',
+        'text="Open"',
+      ]
+      : [
+        'bounds="[0,0][1080,2424]"',
+        'text="Camellia"',
+        'text="Open"',
+        'text="Another Xronixle"',
+        'content-desc="Pause"',
+        'content-desc="Previous track"',
+        'content-desc="Next track"',
+        'content-desc="Repeat track"',
+        'content-desc="Settings"',
+      ]
   const missing = markers.filter((marker) => !hierarchy.includes(marker))
   if (missing.length > 0) {
     throw new Error(`${basename} hierarchy is missing accepted markers: ${missing.join(", ")}.`)
@@ -194,6 +228,50 @@ for (const [index, basename] of basenames.entries()) {
     }
     return match.slice(1).map(Number)
   }
+  const imagePath = join(root, "questions", "render", `${basename}.png`)
+  const sample = (...points) => execFileSync("magick", [
+    imagePath, "-format",
+    ["%[fx:minima.a]", "%[fx:maxima.a]", ...points.map(([x, y]) => `%[pixel:p{${x},${y}}]`)].join("|"),
+    "info:",
+  ], { encoding: "utf8" }).trim().split("|")
+  if (basename.includes("-picker-")) {
+    const pickerPixels = sample([900, 200], [60, 1200], [1040, 1200], [600, 1200], [540, 2300], [540, 400])
+    if (pickerPixels[0] !== "1" || pickerPixels[1] !== "1") {
+      throw new Error(`${basename}.png is not fully opaque.`)
+    }
+    const [barTop, rail, names, floating, behindDeck, scrimArea] = pickerPixels.slice(2)
+    if (basename.includes("-k1-light")) {
+      const roles = readRoles("wallpaper", "light")
+      const lowest = toPixel(roles.surface_container_lowest)
+      if (rail !== lowest || names !== lowest || barTop !== lowest) {
+        throw new Error(`${basename}.png does not match the L1 picker page mapping.`)
+      }
+    } else if (basename.includes("-k1")) {
+      if (barTop !== "srgba(0,0,0,1)" || rail !== "srgba(0,0,0,1)" || names !== "srgba(0,0,0,1)") {
+        throw new Error(`${basename}.png lost its true-black picker page surfaces.`)
+      }
+    } else {
+      // D32 fixed ladder: the stable strategy substitutes container roles, so the
+      // floating picker surface is the fixed high step, not the generated role.
+      const high = "srgba(26,26,31,1)"
+      if (floating !== high || rail !== high) {
+        throw new Error(`${basename}.png does not match its disclosed floating picker surface.`)
+      }
+      if (basename.includes("-k2") && behindDeck !== "srgba(10,10,13,1)") {
+        throw new Error(`${basename}.png lost the player deck behind the picker panel.`)
+      }
+      if (basename.includes("-k3") && (scrimArea === "srgba(0,0,0,1)" || scrimArea === high)) {
+        throw new Error(`${basename}.png lost its scrim over the player.`)
+      }
+    }
+    const expectedEncoded = readFileSync(imagePath).toString("base64")
+    const firstEmbedded = dataUrls[index * 2]?.[1]
+    const secondEmbedded = dataUrls[index * 2 + 1]?.[1]
+    if (firstEmbedded !== expectedEncoded || secondEmbedded !== expectedEncoded) {
+      throw new Error(`${basename}.png does not match its two displayed embedded references.`)
+    }
+    continue
+  }
   const chip = boundsOf("Camellia")
   const currentRow = boundsOf("Another Xronixle")
   const secondRow = boundsOf("Burning Aquamarine")
@@ -201,12 +279,7 @@ for (const [index, basename] of basenames.entries()) {
   const currentPoint = [Math.min(1060, currentRow[2] + 30), Math.round((currentRow[1] + currentRow[3]) / 2)]
   const listPoint = [Math.min(1060, secondRow[2] + 30), Math.round((secondRow[1] + secondRow[3]) / 2)]
   const deckPoint = [540, 2414]
-  const imagePath = join(root, "questions", "render", `${basename}.png`)
-  const pixels = execFileSync("magick", [
-    imagePath, "-format",
-    `%[fx:minima.a]|%[fx:maxima.a]|%[pixel:p{${topPoint[0]},${topPoint[1]}}]|%[pixel:p{${listPoint[0]},${listPoint[1]}}]|%[pixel:p{${deckPoint[0]},${deckPoint[1]}}]|%[pixel:p{${currentPoint[0]},${currentPoint[1]}}]`,
-    "info:",
-  ], { encoding: "utf8" }).trim().split("|")
+  const pixels = sample(topPoint, listPoint, deckPoint, currentPoint)
   if (pixels[0] !== "1" || pixels[1] !== "1") {
     throw new Error(`${basename}.png is not fully opaque.`)
   }

@@ -25,7 +25,12 @@ only in the NO lists of `decisions.md`;
 
 ## 0b. Live design backlog (2026-09-17)
 
-- **ACTIVE: cover screen native round.**
+- **ACTIVE: cover screen native round, two open axes.**
+  K: the subdirectory picker's
+  opened state (K1 full-screen page,
+  K2 dropdown panel,
+  K3 modal bottom sheet).
+  L: the cover light surface.
   D14 cover-c is the HTML-era baseline;
   native folded
  geometry (411 × 923dp,

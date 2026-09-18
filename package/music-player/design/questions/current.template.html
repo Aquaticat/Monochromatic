@@ -509,6 +509,44 @@
       </div>
     </section>
 
+    <section class="panel" aria-labelledby="picker-decision-title">
+      <h2 id="picker-decision-title">Decision: cover subdirectory picker opened state</h2>
+      <p>Tapping the folder chip opens the subdirectory picker. All three candidates reuse the settled picker presentation: D28 adaptive letter rail, D31 wrapped plain-text names at 48dp with primary plus 2dp indicator on the current folder, no segmentation, nothing truncated. Dark surfaces follow D41 and D42; the light picker surface follows the light decision below and is shown with L1.</p>
+      <div class="strategy-grid">
+        <article class="strategy-card" data-recommended>
+          <span class="code">K1 · recommended</span>
+          <h3>Full-screen picker page</h3>
+          <p>The cover swaps to a dedicated picker page: app bar with Navigate up plus Folders title, letter rail, and the wrapped names filling the panel.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> maximum room for 70 to 100 names; reuses the unfolded picker component unchanged; no nested scroll regions for TalkBack or switch access.</li>
+            <li><strong>Cons:</strong> hides the player while choosing; needs one back step to return.</li>
+          </ul>
+        </article>
+        <article class="strategy-card">
+          <span class="code">K2</span>
+          <h3>Dropdown panel under the chip</h3>
+          <p>An exposed dropdown panel opens below the top row over the player, holding rail and names in a floating surface.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> keeps deck and list context visible; matches the chip's dropdown affordance.</li>
+            <li><strong>Cons:</strong> the panel competes with the player for a 923dp column; floating surface over content adds a second scroll region.</li>
+          </ul>
+        </article>
+        <article class="strategy-card">
+          <span class="code">K3</span>
+          <h3>Modal bottom sheet</h3>
+          <p>A modal bottom sheet with drag handle and scrim rises over the player, holding rail and names.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> thumb reach on the cover; standard Material modal semantics; scrim states modality without hiding the deck.</li>
+            <li><strong>Cons:</strong> sheet height caps the visible names; scrim plus sheet adds two surfaces to maintain in both schemes.</li>
+          </ul>
+        </article>
+      </div>
+      <p class="ranking"><strong>Ranking: K1 &gt; K3 &gt; K2.</strong> K1 beats K3 because the full panel gives the name wall its settled room and keeps one scroll region per axis. K3 beats K2 because a modal sheet is the Material-blessed container for a long selection list, while a dropdown panel over the player leaves neither surface calm.</p>
+      <div class="evidence-grid">
+        @@PICKER_CARDS@@
+      </div>
+    </section>
+
     <section class="panel" aria-labelledby="light-decision-title">
       <h2 id="light-decision-title">Decision: cover light surface</h2>
       <div class="strategy-grid">
@@ -559,6 +597,12 @@
     <section class="panel" aria-labelledby="answer-title">
       <h2 id="answer-title">Your decision</h2>
       <form id="review-form">
+        <fieldset>
+          <legend>Choose the cover picker opened state</legend>
+          <label class="review-choice" data-recommended><input type="radio" name="pickerOpenedState" value="K1 Full-screen picker page" required><span><strong>K1 Full-screen picker page (Recommended).</strong> Pros: settled picker component at full panel size, one scroll region. Cons: hides the player while choosing.</span></label>
+          <label class="review-choice"><input type="radio" name="pickerOpenedState" value="K2 Dropdown panel under the chip" required><span><strong>K2 Dropdown panel under the chip.</strong> Pros: keeps player context, matches the chip affordance. Cons: two competing surfaces in one narrow column.</span></label>
+          <label class="review-choice"><input type="radio" name="pickerOpenedState" value="K3 Modal bottom sheet" required><span><strong>K3 Modal bottom sheet.</strong> Pros: thumb reach, standard modal semantics. Cons: caps visible names, two extra surfaces per scheme.</span></label>
+        </fieldset>
         <fieldset>
           <legend>Choose the cover light surface</legend>
           <label class="review-choice" data-recommended><input type="radio" name="lightCoverSurface" value="L1 Ramp with a deck-seam hairline" required><span><strong>L1 Ramp with a deck-seam hairline (Recommended).</strong> Pros: tonal with a hairline exactly where tone fails; mirrors unfolded 1c. Cons: two separation mechanisms.</span></label>
@@ -737,6 +781,7 @@
       corrections.setCustomValidity('');
       const data = new FormData(form);
       const preparedAnswer = [
+        `Cover picker opened state: ${data.get('pickerOpenedState')}`,
         `Cover light surface: ${data.get('lightCoverSurface')}`,
         `Corrections: ${corrections.value.trim()}`,
       ].join('\n');

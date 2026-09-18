@@ -1158,6 +1158,21 @@ frees a deck element on both Android surfaces.
 **Rejected.**
  Keeping D20's icon button and popover in-app.
 
+### D44. The cover deck takes its content height (2026-09-17)
+The cover deck carries no 440dp height cap:
+ at 200% text the deck takes its content height and
+the track list absorbs the remainder.
+ The unfolded deck keeps its cap and internal scroll.
+**Why.**
+ User correction:
+ the 200% cover capture clipped the segmented mode group's bottom
+border mid-target.
+ On the single-pane cover a nested deck scroll hides control state,
+ while a shrinking list keeps every control visible.
+**Rejected.**
+ Keeping the 440dp cap on the cover,
+ which clips controls at 200% text.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
