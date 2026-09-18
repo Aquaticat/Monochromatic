@@ -238,7 +238,7 @@ function registerBashPoke(
       .refresh();
 
     if (outcome.cancelled) {
-      l.info(`job ${job.id} was cancelled; no poke sent`, );
+      l.debug(`job ${job.id} was cancelled; no poke sent`, );
       return;
     }
 
@@ -341,7 +341,7 @@ function registerBashPoke(
       registry.add(job, );
       binding.progress
         .refresh();
-      l.info(`job ${job.id} started for: ${event.command}`, );
+      l.debug(`job ${job.id} started for: ${event.command}`, );
       // Completion is deliberately not awaited: awaiting it would block the
       // editor until the command exits, which is the behavior being replaced.
       void reportCompletion({

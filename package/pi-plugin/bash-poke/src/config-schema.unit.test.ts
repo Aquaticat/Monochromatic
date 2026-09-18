@@ -276,8 +276,8 @@ await describe({
         it({
           name: 'lists every documented key exactly once',
           fn: async () => {
-            expect(SETTING_KEYS, ).toHaveLength(7);
-            expect(new Set(SETTING_KEYS, ).size, ).toBe(7);
+            expect(SETTING_KEYS, ).toHaveLength(8);
+            expect(new Set(SETTING_KEYS, ).size, ).toBe(8);
             expect(SETTING_KEY_SET.has('killGraceMs', ), ).toBe(true);
             expect(SETTING_KEY_SET.has('shell', ), ).toBe(false);
           },

@@ -63,6 +63,11 @@ type ThrottleState = {
    Pending coalesced redraw, absent when none is scheduled.
    */
   timer?: NodeJS.Timeout;
+
+  /**
+   Elapsed-time ticker, armed only while at least one job is displayed.
+   */
+  ticker?: NodeJS.Timeout;
 };
 
 //endregion Types
@@ -142,6 +147,8 @@ function renderProgressLines(
  
  @param refreshMs - minimum milliseconds between draws
  
+ @param tickMs - milliseconds between elapsed-time redraws, zero to disable them
+ 
  @param jobs - reads the tracked jobs at draw time
  
  @param now - clock, injectable so throttling is deterministic in tests
@@ -155,6 +162,7 @@ function renderProgressLines(
    enabled: true,
    tailLines: 3,
    refreshMs: 250,
+   tickMs: 1000,
    jobs: () => [],
  },);
  view.refresh();
@@ -167,6 +175,7 @@ function createProgressView(
     enabled,
     tailLines,
     refreshMs,
+    tickMs,
     jobs,
     now = Date.now,
   }: {
@@ -174,6 +183,7 @@ function createProgressView(
     readonly enabled: boolean;
     readonly tailLines: number;
     readonly refreshMs: number;
+    readonly tickMs: number;
     readonly jobs: () => readonly RunningJob[];
     readonly now?: () => number;
   },
@@ -192,6 +202,34 @@ function createProgressView(
   const state: ThrottleState = { lastDraw: 0, };
 
   /**
+   Arms the elapsed-time ticker, which a silent job such as a long sleep needs
+   because output-driven redraws never arrive for it.
+   */
+  function armTicker(): void {
+    if ((state.ticker !== undefined) || (tickMs <= 0))
+      return;
+    state.ticker = setInterval(
+      function onTick(): void {
+      draw();
+    },
+      tickMs,
+    );
+    // A ticking clock must never be the reason a process stays alive.
+    state.ticker
+      .unref();
+  }
+
+  /**
+   Disarms the ticker once nothing is displayed.
+   */
+  function disarmTicker(): void {
+    if (state.ticker === undefined)
+      return;
+    clearInterval(state.ticker, );
+    delete state.ticker;
+  }
+
+  /**
    Paints the current job list, or clears the display when nothing is running.
    */
   function draw(): void {
@@ -205,10 +243,14 @@ function createProgressView(
       tailLines,
       now: state.lastDraw,
     }, );
-    if (lines.length === 0)
+    if (lines.length === 0) {
+      disarmTicker();
       surface.clear();
-    else
+    }
+    else {
+      armTicker();
       surface.draw(lines, );
+    }
     l.debug(`drew progress with ${String(lines.length)} lines`, );
   }
 
@@ -253,6 +295,7 @@ function createProgressView(
         clearTimeout(state.timer, );
         delete state.timer;
       }
+      disarmTicker();
       if (!enabled)
         return;
       surface.clear();

@@ -12,6 +12,7 @@ import {
   DEFAULT_POKE_INSTRUCTION,
   DEFAULT_POKE_TAIL_CHARS,
   DEFAULT_PROGRESS_REFRESH_MS,
+  DEFAULT_PROGRESS_TICK_MS,
   DEFAULT_PROGRESS_TAIL_LINES,
   DEFAULT_PROGRESS_WIDGET,
 } from './constants.ts';
@@ -28,6 +29,7 @@ const SETTING_KEYS = [
   'progressWidget',
   'progressTailLines',
   'progressRefreshMs',
+  'progressTickMs',
   'killGraceMs',
 ] as const;
 
@@ -57,6 +59,7 @@ const DEFAULT_SETTINGS: BashPokeSettings = {
   progressWidget: DEFAULT_PROGRESS_WIDGET,
   progressTailLines: DEFAULT_PROGRESS_TAIL_LINES,
   progressRefreshMs: DEFAULT_PROGRESS_REFRESH_MS,
+  progressTickMs: DEFAULT_PROGRESS_TICK_MS,
   killGraceMs: DEFAULT_KILL_GRACE_MS,
 };
 
@@ -309,6 +312,12 @@ function parseSettings(
       record: decoded,
       key: 'progressRefreshMs',
       fallback: DEFAULT_SETTINGS.progressRefreshMs,
+      fileName,
+    }, ),
+    progressTickMs: readNumberSetting({
+      record: decoded,
+      key: 'progressTickMs',
+      fallback: DEFAULT_SETTINGS.progressTickMs,
       fileName,
     }, ),
     killGraceMs: readNumberSetting({

@@ -118,6 +118,7 @@ function createSessionBinding(
     enabled: settings.progressWidget && ctx.hasUI,
     tailLines: settings.progressTailLines,
     refreshMs: settings.progressRefreshMs,
+    tickMs: settings.progressTickMs,
     jobs: function listJobs(): readonly RunningJob[] {
       return registry.list();
     },
@@ -148,7 +149,7 @@ function createSessionBinding(
          Jobs this keystroke cancelled, reported so the effect is visible.
          */
         const cancelled = registry.cancelAll();
-        l.info(`escape cancelled ${String(cancelled)} background job(s)`, );
+        l.debug(`escape cancelled ${String(cancelled)} background job(s)`, );
         ctx.ui
           .notify(
           `Cancelled ${String(cancelled)} background command(s)`,

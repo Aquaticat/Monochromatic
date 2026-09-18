@@ -455,7 +455,7 @@ async function startJob(
     if (cancellation.cancelled)
       return;
     cancellation.cancelled = true;
-    l.info(`cancelling job ${id}: ${command}`, );
+    l.debug(`cancelling job ${id}: ${command}`, );
     signalGroup(CANCEL_SIGNAL, );
     if (killGraceMs <= 0) {
       signalGroup(FORCE_SIGNAL, );
@@ -512,7 +512,7 @@ async function startJob(
     }
   }
 
-  l.info(`started job ${id} in ${cwd}: ${command}`, );
+  l.debug(`started job ${id} in ${cwd}: ${command}`, );
   return {
     id,
     command,

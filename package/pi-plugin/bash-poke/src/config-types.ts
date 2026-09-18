@@ -49,6 +49,11 @@ type BashPokeSettings = {
   readonly progressRefreshMs: number;
 
   /**
+   Milliseconds between elapsed-time redraws while a job runs.
+   */
+  readonly progressTickMs: number;
+
+  /**
    Milliseconds a cancelled job gets to exit before its group is force-killed.
    */
   readonly killGraceMs: number;

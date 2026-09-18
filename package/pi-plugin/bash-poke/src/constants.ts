@@ -76,6 +76,12 @@ const DEFAULT_PROGRESS_TAIL_LINES = 3;
 const DEFAULT_PROGRESS_REFRESH_MS = 250;
 
 /**
+ Milliseconds between elapsed-time redraws while a job runs, so a silent command
+ such as a long sleep still shows its clock advancing.
+ */
+const DEFAULT_PROGRESS_TICK_MS = 1_000;
+
+/**
  Milliseconds a cancelled job gets to exit on SIGTERM before SIGKILL reaches its group.
  */
 const DEFAULT_KILL_GRACE_MS = 2_000;
@@ -310,6 +316,7 @@ export {
   DEFAULT_POKE_INSTRUCTION,
   DEFAULT_POKE_TAIL_CHARS,
   DEFAULT_PROGRESS_REFRESH_MS,
+  DEFAULT_PROGRESS_TICK_MS,
   DEFAULT_PROGRESS_TAIL_LINES,
   DEFAULT_PROGRESS_WIDGET,
   DELETE_CODE,

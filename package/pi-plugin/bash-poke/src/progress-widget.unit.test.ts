@@ -185,6 +185,7 @@ await describe({
               enabled: false,
               tailLines: 3,
               refreshMs: 10,
+              tickMs: 0,
               jobs: function noJobs(): readonly RunningJob[] {
                 return [];
               },
@@ -205,6 +206,7 @@ await describe({
               enabled: true,
               tailLines: 3,
               refreshMs: 10,
+              tickMs: 0,
               jobs: function noJobs(): readonly RunningJob[] {
                 return [];
               },
@@ -223,6 +225,7 @@ await describe({
               enabled: true,
               tailLines: 1,
               refreshMs: 10,
+              tickMs: 0,
               jobs: function oneJob(): readonly RunningJob[] {
                 return [fakeJob({ command: 'make', startedAt: 0, lines: ['out', ], }, ), ];
               },
@@ -244,6 +247,7 @@ await describe({
               enabled: true,
               tailLines: 1,
               refreshMs: 40,
+              tickMs: 0,
               jobs: function oneJob(): readonly RunningJob[] {
                 return [fakeJob({ command: 'make', startedAt: 0, lines: [], }, ), ];
               },
@@ -265,6 +269,7 @@ await describe({
               enabled: true,
               tailLines: 1,
               refreshMs: 40,
+              tickMs: 0,
               jobs: function oneJob(): readonly RunningJob[] {
                 return [fakeJob({ command: 'make', startedAt: 0, lines: [], }, ), ];
               },
@@ -275,6 +280,85 @@ await describe({
             await wait(REDRAW_WAIT_MS, );
             expect(fake.draws, ).toHaveLength(1);
             expect(fake.clears, ).toHaveLength(1);
+          },
+        }, ),
+        it({
+          name: 'redraws on a tick while a silent job runs',
+          fn: async () => {
+            const fake = createRecordingSurface();
+            const view = createProgressView({
+              surface: fake.surface,
+              enabled: true,
+              tailLines: 1,
+              refreshMs: 10,
+              tickMs: 25,
+              jobs: function oneJob(): readonly RunningJob[] {
+                return [fakeJob({ command: 'sleep', startedAt: 0, lines: [], }, ), ];
+              },
+            }, );
+            view.refresh();
+            expect(fake.draws, ).toHaveLength(1);
+            await wait(REDRAW_WAIT_MS, );
+            // A job that prints nothing still has to show its clock advancing,
+            // which only a ticker can deliver.
+            expect(fake.draws.length > 1, ).toBe(true);
+            view.clear();
+          },
+        }, ),
+        it({
+          name: 'stops ticking once no job remains',
+          fn: async () => {
+            const fake = createRecordingSurface();
+
+            /**
+             Job list the view reads, emptied mid-case to model a finishing job.
+             */
+            const tracked: { jobs: RunningJob[]; } = {
+              jobs: [fakeJob({ command: 'make', startedAt: 0, lines: [], }, ), ],
+            };
+            const view = createProgressView({
+              surface: fake.surface,
+              enabled: true,
+              tailLines: 1,
+              refreshMs: 10,
+              tickMs: 25,
+              jobs: function currentJobs(): readonly RunningJob[] {
+                return tracked.jobs;
+              },
+            }, );
+            view.refresh();
+            tracked.jobs = [];
+            await wait(REDRAW_WAIT_MS, );
+            expect(fake.clears.length > 0, ).toBe(true);
+
+            /**
+             Draw count after the ticker had its chance to disarm.
+             */
+            const settled = fake.draws.length;
+            await wait(REDRAW_WAIT_MS, );
+            expect(fake.draws, ).toHaveLength(settled);
+            view.clear();
+          },
+        }, ),
+        it({
+          name: 'does not tick when the tick interval is zero',
+          fn: async () => {
+            const fake = createRecordingSurface();
+            const view = createProgressView({
+              surface: fake.surface,
+              enabled: true,
+              tailLines: 1,
+              refreshMs: 10,
+              tickMs: 0,
+              jobs: function oneJob(): readonly RunningJob[] {
+                return [fakeJob({ command: 'sleep', startedAt: 0, lines: [], }, ), ];
+              },
+            }, );
+            view.refresh();
+            expect(fake.draws, ).toHaveLength(1);
+            await wait(REDRAW_WAIT_MS, );
+            expect(fake.draws, ).toHaveLength(1);
+            view.clear();
           },
         }, ),
       ],
