@@ -5,13 +5,29 @@
 The user asked to resolve Aquaticat/Monochromatic#498 and invoked the grilling skill.
 Four rounds settled the design,
 and the user accepted the round 4 proposals as written,
-so implementation is authorized.
-No package files exist yet and the working tree is untouched,
-apart from a pre-existing unrelated `mise.lock` modification that this task must not revert or stage.
+so implementation proceeded.
+The package is implemented,
+ linted,
+ type-checked,
+ tested,
+ and verified through a
+real Pi TUI;
+ see "Verification evidence".
+
+The working tree also carries unrelated concurrent changes that this task must
+not stage or revert:
+ `mise.lock`,
+ several `doc/audit`,
+ `doc/planning`,
+ and
+`doc/troubleshooting` files,
+ `package/dev-script/file-enforcer/README.md`,
+ and
+untracked `package/music-player/design/questions` evidence.
 
 The issue carries `ready-for-agent`,
 which authorizes fix and commit under the issue-tracker skill.
-The commit body carries `Closes #498`.
+The closing commit body carries `Closes #498`.
 
 ## Cross-model caution
 
@@ -331,8 +347,12 @@ The user accepted every round 4 proposal as written.
   `progressWidget`,
   `progressTailLines`,
   `progressRefreshMs`,
+  `progressTickMs`,
   and `killGraceMs`,
   with unknown keys rejected.
+  `progressTickMs` was added during implementation,
+   because a silent job never
+  produced the output chunks that drove redraws and its elapsed clock froze.
 - Spawning is detached,
   and cancel signals the child's process group,
   which is safe precisely because the child leads that group.
@@ -429,14 +449,99 @@ so they are adopted rather than put to the user.
 - Neither `poke` nor `bash-poke` collides with the forbidden-strings appendices or the rule cache.
 - The pending placeholder recorded in context stays a constant rather than a setting.
 
+## Verification evidence
+
+Every claim below was observed,
+ not inferred.
+
+### Automated suites
+
+- `mise run //package/pi-plugin/bash-poke:lint` passes with zero oxlint findings
+  and a clean type check.
+- `mise run //package/pi-plugin/bash-poke:test:unit` passes.
+- The same task with `--all` adds the fake-terminal suite,
+   which also passes:
+  a nested Pi inside `tmux` shows the placeholder,
+  the `bash-poke exit 0` card,
+  the fenced output,
+  and the instruction;
+  `!!` produces Pi's own output with no card;
+  and a lone Escape cancels a `sleep 300` with the notice and no poke.
+- `src/discovery.unit.test.ts` loads the built package through Pi's own
+  `discoverAndLoadExtensions`,
+  confirms one extension with no errors,
+  the two event handlers,
+  the renderer,
+  and zero commands or shortcuts,
+  and shows the unbound-runtime poke being caught and logged rather than escaping.
+- The process-group claim is guarded by a real grandchild:
+   a job runs
+  `sleep 300 & printf %s "$!"; wait`,
+  and after cancel the printed pid no longer exists.
+
+### Positive control
+
+The `!!` passthrough guard in `src/register.ts` was temporarily disabled,
+the package rebuilt,
+and the suites rerun.
+All three layers failed as intended:
+the wiring unit case,
+the discovery case,
+and the fake-terminal case,
+ which reported that a poke card appeared for a hidden
+command.
+The guard was committed before the mutation was reverted,
+ so no uncommitted work
+was at risk.
+
+### Live probes
+
+- A nested Pi started with `-e <built bundle>` and an isolated
+  `PI_CODING_AGENT_DIR` showed the placeholder,
+  the card,
+  Pi's own `!!` execution,
+  the progress row,
+  the cancellation notice,
+  and no surviving `sleep` process.
+- A second nested Pi loaded the package through `packages` in a temporary
+  `settings.json` instead of `-e`,
+  which is the real activation path,
+  and produced the same card.
+- Both probes were provider-free,
+   so each poke turn ended with
+  `Error: Unknown provider: unknown` after the card had already rendered.
+
+### Defects the probes found
+
+- The progress row froze at `(0s)` for a silent job,
+   because redraws were driven
+  only by output chunks.
+  Fixed by an elapsed-time ticker armed while jobs are displayed and disarmed
+  when none remain,
+   configured by `progressTickMs`.
+- The progress row survived cancellation,
+   because nothing refreshed after the
+  job left the registry.
+  The same ticker fixes it;
+   a re-probe showed the row gone after Escape.
+- Routine lifecycle records were logged at info,
+   and the logger's console sink
+  prints info into the TUI transcript.
+  They moved to debug,
+   which the sink hides unless verbose logging is requested.
+  A re-probe showed a clean transcript.
+- After the fixes a re-probe showed the elapsed clock advancing,
+   `(2s)` then
+  `(7s)` across an eight second window.
+
 ## Next action
 
-- Create `package/pi-plugin/bash-poke`,
-  determine which generated root files a new package touches,
-  then build,
-  lint,
-  type-check,
-  test,
-  and verify.
-- Commit with `Closes #498`,
-  then make the two activation edits and hand the user the `/reload` step.
+- Move the stopgap `~/.pi/agent/extensions/bash-poke.ts` aside,
+   so Pi's
+  auto-discovery stops loading a second copy of the same interception.
+- Add `/var/home/user/Monochromatic/package/pi-plugin/bash-poke` to the
+  `packages` array in `~/.pi/agent/settings.json`.
+- Hand the user the `/reload` step,
+   which the agent cannot perform from inside a
+  turn,
+   and the README's manual real-model check.
