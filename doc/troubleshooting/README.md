@@ -46,14 +46,6 @@ Performance-related issues and optimizations:
 - WSL performance improvements
 - File system vs binary execution trade-offs
 
-### [Configuration Snippets](configuration.md)
-
-Useful configuration examples and snippets:
-
-- GitHub MCP server configuration
-- Caddy build commands with extensions
-- Other tool configurations
-
 ### [Configuration Format Issues](toml.md)
 
 Problems with configuration file formats and why TOML can be problematic:
