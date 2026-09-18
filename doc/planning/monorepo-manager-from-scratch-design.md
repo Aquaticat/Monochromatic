@@ -212,6 +212,26 @@ meow run //package/cow:test
    2026-09-17).
   The task has already explained itself,
    and its exit code is what a script reads.
+- Ctrl+C ends the task,
+   killing its tree through the task cgroup and returning the terminal (user,
+   2026-09-17).
+- Already running as background work:
+   `meow run` attaches to that run rather than starting a second one (user,
+   2026-09-17).
+  It raises that task's priority,
+   replays the output already produced from the cache's stored log,
+   streams the rest,
+   and exits with its code.
+- Unbuilt dependencies do not arise.
+  Asked what `meow run` does when a dependency is not built,
+   the user answered that this should never happen:
+   `meow watch` is expected to always keep everything up to date,
+   so dependency work has already run,
+   is running,
+   or is queued.
+  `meow run` therefore waits on that work rather than discovering it,
+   and raises its priority along with the target's,
+   since the newest task a person waits on holds the highest priority.
 - Cached:
    meow does not execute the task,
    and prints the result of the last run instead,
