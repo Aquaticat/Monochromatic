@@ -8082,6 +8082,77 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Class seventy-one, 2026-09-19, 21:30 UTC: a page's names as the archive renders them reach every sheet; mikaela2 killed, mikaela3 launched
+
+The "Quan" observation of the 21:25 UTC entry is a class,
+not a judge's taste:
+nothing on any sheet said how this page renders 铨铨,
+so one line of dialogue got a transliteration
+while the archive's stylised `𝓠𝓾𝓪𝓷` stood in the link text and in every other line.
+Class sixty-seven cannot reach it
+(a name inside a paragraph has no aligned signature or heading to read the page's rendering off),
+so the bench has to know before it writes.
+
+Measured over the pinned corpus first
+(scratch probe,
+21:05 UTC):
+43 of the 92 archive pages carry a link under the same href as the source's
+whose Han text the archive renders otherwise,
+85 pairs in all,
+names and titles alike
+(`末影猫` to "Ender Cat",
+`K酱` to "Kristall Wang",
+`无形之毒` to "Invisible Poison"),
+and a few whole quoted sentences,
+which a 24-code-point ceiling leaves out.
+
+Built in `cc088bc4b`,
+guard red first at `3f88a6841`:
+`page-name-glossary.ts` reads two kinds of pair off the whole documents at preparation,
+a link both carry under one href
+(source text Han,
+at most 24 code points,
+archive text differing)
+and the signature lines in order where both documents carry the same count
+(a differing count is a section the archive never carried,
+and the order is then no alignment),
+one line per distinct source text,
+and `document-preparation.ts` folds them into the identity context after the community glossary,
+so every sheet that carries the declared names carries them:
+
+```text
+NAMES AND LINKED TEXT THE ARCHIVE RENDERS ON THIS PAGE (render the same person or title the same way everywhere):
+- 铨 (link text, https://twitter.com/yqua_): "𝓠𝓾𝓪𝓷"
+```
+
+Probed through the built dist on real pages:
+`mikaela_khara` the line above;
+`zheermao101` `悼文` to "epitaph";
+`XingZ60` `仓山静叶` to "Shizuha";
+`hulicaijia` `櫻崎詩月` to "Poetry Luna";
+`Futajuhuacha` six lines,
+five of them cited article titles;
+`CuspariaKLSY` none.
+Evidence to weigh,
+not a floor:
+no candidate is refused by it.
+
+`mikaela2` (frozen `f664e1165`) killed at 21:29 UTC under always-kill-and-relaunch,
+nine minutes into the repair lane
+(546 seats,
+0.05 USD on Bedrock and 0.14 by the OpenRouter spend lines);
+its meters read Synthetic wet again
+(`syntheticWeekly=2%`),
+the first wet reading since the 2026-09-03 dry-out.
+`mikaela3` launched at 21:29 UTC on frozen `cc088bc4b`
+(pid 1211637,
+`~/temp/agent/mikaela3`).
+To read first:
+the identity context of any sheet carrying the 铨 line,
+the dialogue line `「铨铨，其实咱很想为社群出一份力」` rendered with `𝓠𝓾𝓪𝓷`,
+the closing excerpt line with its curled `’s` (class seventy),
+then the seven steps and the three checks against `mikaela1`.
+
 ## The three shapes read and class seventy, 2026-09-19, 21:25 UTC
 
 All three SETTLED on their first attempt on frozen `bb4bb7556`,

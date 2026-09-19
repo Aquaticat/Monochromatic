@@ -4647,7 +4647,22 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  THE THREE SHAPES ARE READ AND CLASS SEVENTY IS FIXED
+1.  CLASS SEVENTY-ONE IS BUILT
+    (the pass log's heading dated 2026-09-19 21:30 UTC,
+    `cc088bc4b`,
+    guard `3f88a6841`):
+    every sheet carries the page's own renderings of its people and linked titles,
+    read off same-href links and aligned signatures at preparation.
+    `mikaela2` was killed for it at 21:29 UTC;
+    `mikaela3` (frozen `cc088bc4b`,
+    pid 1211637,
+    launched 21:29 UTC) runs to read classes seventy and seventy-one live:
+    the 铨 line in a sheet's identity context,
+    the dialogue line rendered with `𝓠𝓾𝓪𝓷`,
+    the closing excerpt line with its curled `’s`,
+    then the seven steps and the three checks against `mikaela1`.
+    Its meters read Synthetic wet again (`syntheticWeekly=2%`).
+    THE THREE SHAPES ARE READ AND CLASS SEVENTY IS FIXED
     (the pass log's heading dated 2026-09-19 21:25 UTC):
     `CuspariaKLSY`,
     `zheermao101` and `mikaela_khara` SETTLED on frozen `bb4bb7556` on their first attempts,
@@ -4660,11 +4675,8 @@ each read off the pass log and the shipped page:
     an emphasis span or a tag stays straight)
     is fixed in `f664e1165`,
     guard `5599f4752`.
-    `mikaela2` (frozen `f664e1165`,
-    pid 1201939,
-    launched 21:20 UTC) runs to read it live:
-    read the closing `Excerpt from [𝓠𝓾𝓪𝓷](...)’s` line first,
-    then the seven steps and the three checks.
+    `mikaela2` (frozen `f664e1165`) was launched at 21:20 UTC to read it live and killed at 21:29 UTC for class seventy-one;
+    `mikaela3` reads both.
     Three observations are open in that pass log entry,
     none built:
     tense drift across slices (Cusparia),
