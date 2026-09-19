@@ -7,7 +7,10 @@
  @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -47,6 +50,37 @@ import {
  Logger for the stages under test.
  */
 const l = tagged({ tag: 'candidate-select-test', },);
+
+/**
+ Logger that keeps every message a round emits.
+
+ @param messages - list the messages land in
+
+ @returns Logger whose every level appends to the list
+
+ @example
+ ```ts
+ const messages: string[] = [];
+ const logger = capturingLogger({ messages, },);
+ ```
+ */
+function capturingLogger({ messages, }: { readonly messages: string[]; },): Logger {
+  /**
+   Retains one emitted message.
+   */
+  function keep(message: string,): void {
+    messages.push(message,);
+  }
+  return {
+    debug: keep,
+    error: keep,
+    fatal: keep,
+    info: keep,
+    trace: keep,
+    warn: keep,
+    flush: async function flush(): Promise<void> {},
+  };
+}
 
 /**
  Original the judges compare against.
@@ -231,11 +265,13 @@ async function runSelection(
     judgeModelIds = JUDGES,
     fanOut = 'whole-bench',
     runoff = false,
+    logger = l,
   }: {
     readonly ballots: BallotScript;
     readonly judgeModelIds?: readonly RosterModelId[];
     readonly fanOut?: FanOutMode;
     readonly runoff?: boolean;
+    readonly logger?: Logger;
   },
 ) {
   /**
@@ -268,7 +304,7 @@ async function runSelection(
     ],
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
-    l,
+    l: logger,
   },);
   return {
     outcome,
@@ -1098,6 +1134,30 @@ await describe({
         expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(1.5,);
         expect(outcome.tally.abstentions,).toBe(2,);
         expect(outcome.findings,).toContain('select-runoff-under-minimum',);
+      },
+    },),
+    it({
+      name: 'LOGS an abstaining ballot with its reason beside the choosing ballots, since a run-off lost to two '
+        + 'abstentions whose grounds were readable only off the cached replies (mikaela4 slice 28)',
+      fn: async () => {
+        /** Every line the round logged. */
+        const messages: string[] = [];
+        await runSelection({
+          ballots: {
+            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 9,
+          },
+          logger: capturingLogger({ messages, },),
+        },);
+        expect(messages.some(function namesTheAbstention(message,): boolean {
+          return message.includes(`${SEAT_HYPER_OPENROUTER_UNMEASURED} declined every candidate: scripted`,);
+        },),).toBe(true,);
+        expect(messages.some(function namesTheStray(message,): boolean {
+          return message.includes(`${SEAT_SYNTHETIC_VISION_NO_OPENROUTER} named candidate 9, which is not on the slate of 2: scripted`,);
+        },),).toBe(true,);
       },
     },),
     it({
