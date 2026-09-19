@@ -29,6 +29,10 @@ export {
   type InsertionCoverageRow,
 } from './corpus-run/insertion-coverage-model.ts';
 export {
+  admitReferencedDefinitions,
+  DEFINITION_ADMITTED_FINDING,
+} from './corpus-run/insertion-referenced-definitions.ts';
+export {
   admitContainerHalves,
   CONTAINER_HALF_ADMITTED_FINDING,
 } from './corpus-run/insertion-container-halves.ts';

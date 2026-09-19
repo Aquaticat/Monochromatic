@@ -16,6 +16,7 @@ import type { RosterModelId, } from '../synthetic-catalog.ts';
 import { TranslationRepairInterruptedError, } from '../translation-repair-interrupted-error.ts';
 import { droppedDestinations, } from './dropped-destinations.ts';
 import { admitContainerHalves, } from './insertion-container-halves.ts';
+import { admitReferencedDefinitions, } from './insertion-referenced-definitions.ts';
 import {
   classifyInsertionCoverage,
   type InsertionCandidate,
@@ -266,19 +267,32 @@ export async function decidePassInsertionAdmission(
   },);
   for (const finding of halves.findings)
     al.info(finding,);
-  for (const row of halves.unresolvedRows) {
+  /**
+   Admission with every definition a shipping marker references admitted
+   beside it (class fifty-nine, XingZ608, 2026-09-19).
+   */
+  const definitions = admitReferencedDefinitions({
+    slices: prepared.slices,
+    positions: halves.positions,
+    unresolvedRows: halves.unresolvedRows,
+    targetText: prepared.targetText,
+  },);
+  for (const finding of definitions.findings)
+    al.info(finding,);
+  for (const row of definitions.unresolvedRows) {
     al.info(
       `slice ${String(row.sliceIndex,)}: placement unresolved after the single round `
         + `(verdict ${row.verdictKind}); not admitted, recorded as findings`,
     );
   }
   return {
-    positions: halves.positions,
+    positions: definitions.positions,
     carried: classification.carried,
     findings: [
       ...classification.findings,
       ...halves.findings,
-      ...halves.unresolvedRows
+      ...definitions.findings,
+      ...definitions.unresolvedRows
         .map(function unresolvedFinding(row,): string {
           return `insertion-unresolved-after-single-round (slice ${String(row.sliceIndex,)}, `
             + `verdict ${row.verdictKind}); passage not admitted`;
