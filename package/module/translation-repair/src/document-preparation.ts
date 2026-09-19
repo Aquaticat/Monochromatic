@@ -6,6 +6,7 @@ import {
 import { archiveContributorNameForms, } from './contributor-name-authority.ts';
 import { declaredNameForms, } from './declared-name-survival.ts';
 import { communityTermLines, } from './community-glossary.ts';
+import { pageNameLines, } from './page-name-glossary.ts';
 import { entryNoteLines, } from './entry-notes.ts';
 import {
   collectIdentityLines,
@@ -216,6 +217,14 @@ export function prepareDocumentPair(
     // 2026-09-09, `community-glossary.ts`), so every sheet that carries the
     // declared names knows how the archive and the community render them.
     ...communityTermLines({ text: sourceText, },),
+    // HOW THIS PAGE RENDERS ITS PEOPLE AND LINKED TITLES (class seventy-one,
+    // `page-name-glossary.ts`): the archive's link text under a shared href
+    // and its signature spellings, so a name inside a paragraph is written
+    // as the page writes it everywhere else.
+    ...pageNameLines({
+      sourceText,
+      targetText,
+    },),
     ...contextLines,
   ];
 
