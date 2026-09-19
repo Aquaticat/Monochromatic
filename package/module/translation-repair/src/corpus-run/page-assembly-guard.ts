@@ -2,8 +2,11 @@ import { withholdLoneContainerHalves, } from '../assembly-container-halves.ts';
 import { guardFootnoteAssembly, } from '../assembly-integrity.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
+import { restoreContributorNames, } from './contributor-name-restore.ts';
 import { restoreCollidingHeadings, } from './heading-collision-restore.ts';
+import { unifyHeadingSeries, } from './heading-series-unify.ts';
 import { shippableReplacements, } from './publish-fixed.ts';
+import type { SliceReplacement, } from '../splice-slices.ts';
 import type { WouldShipSource, } from './would-ship-text.ts';
 
 //region Page assembly guard
@@ -87,12 +90,44 @@ export function guardPageAssembly(
     replacements: halves.replacements,
   },);
   /**
+   Contributor names rendered one way across headings and signatures (class
+   sixty-seven).
+   */
+  const names = restoreContributorNames({
+    slices,
+    replacements: restoration.replacements,
+  },);
+  /**
+   The original's numbered heading series rendered in one style (class
+   sixty-eight).
+   */
+  const series = unifyHeadingSeries({
+    slices,
+    replacements: names.replacements,
+  },);
+  /**
+   Rows the page-assembly passes rewrote, the latest pass's text per slice.
+   */
+  const restoredRows = new Map<number, SliceReplacement>([
+    ...restoration.restored,
+    ...names.restored,
+    ...series.restored,
+  ].map(function bySlice(row,): readonly [
+    number,
+    SliceReplacement,
+  ] {
+    return [
+      row.sliceIndex,
+      row,
+    ];
+  },),);
+  /**
    The guard's reading of the composed page.
    */
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
-    replacements: restoration.replacements
+    replacements: series.replacements
       .filter(function stillChanges(replacement,): boolean {
         // A restoration that brings a slice back to the archive's exact wording
         // is no change for the assembler; its override row below still says
@@ -104,7 +139,7 @@ export function guardPageAssembly(
    Restored slices the footnote guard neither trimmed nor withdrew, which
    ride the same override a trimmed slice does: the page carries this text.
    */
-  const restoredOnly = restoration.restored
+  const restoredOnly = [...restoredRows.values(),]
     .filter(function untouchedByGuard(row,): boolean {
       /**
        Whether the guard already owns this slice's override.
@@ -128,6 +163,8 @@ export function guardPageAssembly(
     findings: [
       ...halves.findings,
       ...restoration.findings,
+      ...names.findings,
+      ...series.findings,
       ...guarded.findings,
     ],
   };
