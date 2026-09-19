@@ -8093,11 +8093,18 @@ Bedrock and OpenRouter wet,
 Synthetic and Hyper dry at launch,
 no cron job,
 the background waiter alone reports the exit.
-Read first the admission:
-the `untranslated tail:` line,
-then `insertion-container-deficit-admitted (slice 70 inside details of slices ...`
-and no `placement unresolved` at all,
-then the translate assembly,
+Admission read at 06:00 UTC,
+21 minutes in:
+class sixty-one live,
+`insertion-container-deficit-admitted (slice 70 inside details of slices 67 to 71: the original writes 5 blocks there, the archive 4)`;
+the tail admitted on the bound
+(31 slices,
+5,144 source code points at expansion 2.98,
+expected 15,318,
+last pair renders 173);
+no `placement unresolved` on any slice,
+the first pass with none.
+Read next the translate assembly,
 the memorial disclosure block on the page with its four paragraphs,
 the bilibili link,
 the nine definitions,

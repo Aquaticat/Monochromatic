@@ -596,6 +596,12 @@ which the takeover session does not have.
   `TRANSLATION_REPAIR_SLICE_OVERLAP=8`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
+  Its admission at 06:00 UTC confirmed class sixty-one live
+  (slice 70 admitted inside details of slices 67 to 71,
+  the original writing 5 blocks there,
+  the archive 4),
+  the tail admitted on the bound,
+  and no `placement unresolved` on any slice.
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2418,7 +2424,9 @@ wired before the container halves in `pass-insertion-admission.ts`;
 guard red first at `1083b9163`;
 the absence-verdict decision's addendum dated 2026-09-19 on the container deficit;
 found by XingZ611's admission).
-Running on XingZ612.
+Confirmed live on XingZ612's admission
+(slice 70 admitted on a deficit of one block);
+no slice left unresolved on that pass.
 `de25b4ed8` (2026-09-19,
 03:50 UTC):
 class sixty,
@@ -4459,12 +4467,12 @@ each read off the pass log and the shipped page:
     five splits among them);
     XingZ608 ran the whole pipeline in 2h16m and stopped INCOMPLETE at publish
     (the pass log's "XingZ608 read" heading dated 2026-09-19 02:35 UTC).
-    Read first the admission's `untranslated tail:` line
-    (31 slices,
-    "admitted on that bound"),
-    then `insertion-container-deficit-admitted (slice 70 inside details of slices ...`
-    and no `placement unresolved` at all,
-    then the memorial disclosure block on the page with all four of the original's paragraphs,
+    Its admission is read
+    (06:00 UTC:
+    the tail admitted on the bound,
+    slice 70 admitted on the container deficit,
+    no `placement unresolved` on any slice).
+    Read next the memorial disclosure block on the page with all four of the original's paragraphs,
     then the translate lane's assembly
     (no `assembly-footnote-reverted unresolved-reference`,
     no `assembly-withdrew-every-replacement`),
