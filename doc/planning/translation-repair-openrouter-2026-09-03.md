@@ -8099,7 +8099,16 @@ still in preparation
 (no admission,
 no Mercury pass-on yet),
 0.04 USD by the meters.
-Read first the repair lane's pace against XingZ613's
+Admission read at 10:05 UTC,
+15 minutes in:
+the tail admitted on the bound
+(31 slices of 120,
+5,144 source code points at expansion 2.93,
+expected 15,083),
+no `placement unresolved`,
+no Mercury pass-on and no hold yet
+(Inception's limit had lifted by launch).
+Read next the repair lane's pace against XingZ613's
 (`SLICE-COST lane=repair` mean 295 s there,
 62 s on XingZ608)
 and the `held out for another` refusals where Inception limits Mercury
