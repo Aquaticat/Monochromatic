@@ -381,8 +381,14 @@ Since the owner's decision of 2026-09-19 it is budgeted from the pairing
 (`coverage-tail.ts`):
 its expectation is its source at the page's own expansion over the paired slices,
 and when that expectation exceeds the last agreed pair's whole rendering
-the tail cannot have been merged there and every absent-voted slice in it is admitted on that bound,
+the tail cannot have been merged there and every slice in it no majority found carried is admitted on that bound,
 `insertion-corroboration (slice N, tail admitted, ...)`.
+A split inside the tail is admitted too,
+with `insertion-split-in-tail` naming its tallies
+(class sixty,
+2026-09-19:
+three tail slices stayed unresolved on one minority anchored claim);
+a verdict a majority carried stays out.
 A smaller tail stays with the whole-page budget,
 which leaves an admitted tail's source out.
 On XingZ60 the tail is slices 89 to 119,

@@ -207,6 +207,27 @@ The roster-free `admitInsertions` path,
 which has no coverage verdict as its first signal,
 is unchanged.
 
+## Addendum 2026-09-19: inside the admitted tail the bound decides a split
+
+Class sixty,
+XingZ610.
+The tail rule first admitted absent verdicts and unanchored splits alone,
+the pool the whole-page budget spends from.
+Three tail slices,
+two paragraphs and the second footnote definition
+(split on every run of the entry),
+stayed unresolved because one voice anchored a claim of coverage on an archive line the pairing had assigned to nobody,
+and shipped as gaps.
+A split is no majority for coverage;
+where the bound has already said the tail cannot be on the page,
+a minority claim does not stand it down,
+and the slice is admitted with `insertion-split-in-tail` naming the tallies.
+A verdict a majority carried
+(`carried` or `partly-carried`)
+still stays out of the admission,
+as does a split outside the tail,
+which the whole-page budget never spends on.
+
 ## What this supersedes
 
 `doc/planning/translation-repair-open-decisions.md` question 28, whose ranking was A > C > B > D

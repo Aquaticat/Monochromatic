@@ -565,9 +565,21 @@ which the takeover session does not have.
   guards red first at `c6c869267`,
   the pass log's heading dated 2026-09-19 03:20 UTC;
   "The shortfall budget question" is answered).
-  `XingZ610` launched at 03:24 UTC on frozen `5bda732de` (pid 834115,
-  runs `~/temp/agent/XingZ610`,
-  log `~/temp/agent/XingZ610.log`,
+  `XingZ610` (frozen `5bda732de`) confirmed the tail bound live at its admission
+  (31 slices,
+  "admitted on that bound",
+  28 admitted)
+  and showed class sixty:
+  three tail slices split on one minority anchored claim stayed unresolved
+  (the pass log's heading dated 2026-09-19 03:50 UTC;
+  fixed in `de25b4ed8`,
+  guard red first at `6420d96e8`);
+  killed at 03:53 UTC,
+  29 minutes in,
+  2.08 USD by the meters.
+  `XingZ611` launched at 03:55 UTC on frozen `de25b4ed8` (pid 856143,
+  runs `~/temp/agent/XingZ611`,
+  log `~/temp/agent/XingZ611.log`,
   `TRANSLATION_REPAIR_SLICE_OVERLAP=8`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
@@ -2384,6 +2396,15 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`de25b4ed8` (2026-09-19,
+03:50 UTC):
+class sixty,
+a split verdict inside the admitted tail is decided by the bound
+(`insertion-coverage-model.ts`,
+the finding `insertion-split-in-tail`;
+guard red first at `6420d96e8`;
+found by XingZ610's admission).
+Running on XingZ611.
 `5bda732de` (2026-09-19,
 03:20 UTC):
 the untranslated tail budgeted from the pairing on the owner's "Do #1"
@@ -2394,7 +2415,11 @@ guards red first at `c6c869267`;
 the absence-verdict decision's addendum dated 2026-09-19 on the tail;
 measured first on every run with an artifact and a log,
 the pass log's heading dated 2026-09-19 03:20 UTC).
-Running on XingZ610.
+Confirmed live on XingZ610's admission
+(31 slices after the last agreed pair,
+expected 15,455 against the last pair's 173,
+admitted on that bound);
+running on XingZ611.
 `06b395ac7` (2026-09-19,
 02:45 UTC):
 class fifty-nine,
@@ -2406,7 +2431,7 @@ the absence-verdict decision's addendum dated 2026-09-19;
 found by the XingZ608 read).
 Confirmed live on XingZ609's admission
 (definitions 117 and 118 admitted beside their markers);
-running on XingZ610.
+running on XingZ611.
 `eaaf39ec3` (2026-09-19,
 00:10 UTC):
 class fifty-eight,
@@ -4391,25 +4416,29 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ610` (frozen `5bda732de`,
-    pid 834115,
-    runs `~/temp/agent/XingZ610`,
-    log `~/temp/agent/XingZ610.log`,
-    launched 03:24 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
+1.  READ `XingZ611` (frozen `de25b4ed8`,
+    pid 856143,
+    runs `~/temp/agent/XingZ611`,
+    log `~/temp/agent/XingZ611.log`,
+    launched 03:55 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry,
     `TRANSLATION_REPAIR_SLICE_OVERLAP=8` on the launch line;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    It is the first pass on the tail budget
-    (the pass log's heading dated 2026-09-19 03:20 UTC)
-    and the second on class fifty-nine
-    (confirmed live on XingZ609's admission before the kill);
+    It is the first pass on class sixty
+    (the pass log's heading dated 2026-09-19 03:50 UTC)
+    and the second on the tail budget
+    (confirmed live on XingZ610's admission before the kill:
+    31 slices,
+    28 admitted,
+    three left on a split);
     XingZ608 ran the whole pipeline in 2h16m and stopped INCOMPLETE at publish
     (the pass log's "XingZ608 read" heading dated 2026-09-19 02:35 UTC).
     Read first the admission's `untranslated tail:` line
     (31 slices,
     "admitted on that bound")
-    and every tail slice's `tail admitted` corroboration with no `placement unresolved` on slices 89 to 119,
+    and no `placement unresolved` on slices 89 to 119
+    (a split there carries `insertion-split-in-tail` and `tail admitted`),
     then the translate lane's assembly
     (no `assembly-footnote-reverted unresolved-reference`,
     no `assembly-withdrew-every-replacement`),
@@ -4453,7 +4482,11 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (XingZ609 to its kill 35 minutes into the repair lane:
+    (XingZ610 to its kill 29 minutes into the repair lane:
+    2.08 USD by the meters,
+    2,074 seats,
+    26 retry rounds;
+    XingZ609 to its kill 35 minutes into the repair lane:
     3.25 USD by the meters;
     XingZ608 to its INCOMPLETE at publish:
     10.08 USD by the meters,

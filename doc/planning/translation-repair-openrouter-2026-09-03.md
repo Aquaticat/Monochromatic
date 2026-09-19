@@ -8082,6 +8082,66 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ611 launches on class sixty, 2026-09-19, 03:55 UTC
+
+Frozen `de25b4ed8` (classes forty-one to sixty and the tail budget),
+pid 856143,
+runs `~/temp/agent/XingZ611`,
+log `~/temp/agent/XingZ611.log`,
+`TRANSLATION_REPAIR_SLICE_OVERLAP=8`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+no cron job,
+the background waiter alone reports the exit.
+Read first the admission:
+the `untranslated tail:` line,
+then no `placement unresolved` on slices 89 to 119
+(a split there now carries `insertion-split-in-tail` and is admitted on the bound),
+then the translate assembly,
+the bilibili link,
+the nine definitions,
+the run time,
+then the seven steps and the three checks.
+
+## Class sixty, 2026-09-19, 03:50 UTC: a split verdict inside the admitted tail stays unresolved
+
+Found by XingZ610's admission,
+19 minutes after launch.
+The tail line read as designed:
+"31 slice(s) after the last agreed pair,
+5175 source code points at expansion 2.99,
+expected 15455,
+last pair renders 173:
+admitted on that bound".
+Twenty-eight of the 31 were admitted;
+slices 102,
+108 and 113 were left "placement unresolved after the single round (verdict split)",
+since the tail rule admitted absent verdicts and unanchored splits alone,
+and each of the three had one voice anchor a claim of coverage on the page
+(the cached replies quote archive lines the pairing assigned to nobody,
+the archive's own "This version is NOT the formal version" note among them).
+Slice 113 is the second footnote definition,
+which split on XingZ608,
+XingZ609 and XingZ610 alike;
+on XingZ608 it shipped as a recorded gap.
+Slices 102 and 108 were absent on both earlier runs.
+Fixed in `de25b4ed8`
+(guard red first at `6420d96e8`,
+`insertion-tail-split.unit.test.ts`):
+inside a tail the bound admits,
+a split is no majority and the bound decides it;
+a verdict a majority carried still stays out.
+The finding `insertion-split-in-tail (slice N, full F, partial P, absent A of K asked; no majority, the tail bound decides)`
+names the tallies beside the corroboration.
+XingZ610 was killed at 03:53 UTC,
+29 minutes in,
+69 repair chunks started,
+2.08 USD by the meters
+(Bedrock 152.96 to 151.85,
+OpenRouter 220.62 to 219.65),
+2,074 seats,
+26 retry rounds.
+
 ## XingZ610 launches on the tail budget, 2026-09-19, 03:24 UTC
 
 Frozen `5bda732de` (classes forty-one to fifty-nine,
