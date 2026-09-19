@@ -602,6 +602,23 @@ which the takeover session does not have.
   the archive 4),
   the tail admitted on the bound,
   and no `placement unresolved` on any slice.
+  It stopped ERROR at 06:13 UTC,
+  34 minutes in,
+  three attempts "writing bench unreachable at lanes":
+  Inception rate-limited Mercury 2.5,
+  OpenRouter passed each 429 on as "Provider returned error",
+  and the router held the whole provider out 60 s on every one
+  (class sixty-two,
+  the pass log's heading dated 2026-09-19 06:15 UTC;
+  fixed in `c340b496b`,
+  guard red first at `79b3ee845`);
+  2.19 USD by the meters.
+  `XingZ613` launched at 06:22 UTC on frozen `c340b496b` (pid 919708,
+  runs `~/temp/agent/XingZ613`,
+  log `~/temp/agent/XingZ613.log`,
+  `TRANSLATION_REPAIR_SLICE_OVERLAP=8`);
+  no cron job on the owner's word,
+  the background waiter alone reports the exit.
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2415,6 +2432,18 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`c340b496b` (2026-09-19,
+06:15 UTC):
+class sixty-two,
+a 429 OpenRouter passes on from one model's upstream endpoint is that seat's loss for the round,
+not the provider's budget refusal
+(`isUpstreamModelRefusal` in `provider-budget-refusal.ts`,
+excluded from `isBudgetRefusal`,
+the router logs the pass-on and rethrows;
+guard red first at `79b3ee845`;
+the provider-concurrency troubleshooting doc's section dated 2026-09-19;
+found by XingZ612's lanes).
+Running on XingZ613.
 `75f67fbd4` (2026-09-19,
 05:30 UTC):
 class sixty-one,
@@ -4450,29 +4479,33 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ612` (frozen `75f67fbd4`,
-    pid 895538,
-    runs `~/temp/agent/XingZ612`,
-    log `~/temp/agent/XingZ612.log`,
-    launched 05:39 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
+1.  READ `XingZ613` (frozen `c340b496b`,
+    pid 919708,
+    runs `~/temp/agent/XingZ613`,
+    log `~/temp/agent/XingZ613.log`,
+    launched 06:22 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry,
     `TRANSLATION_REPAIR_SLICE_OVERLAP=8` on the launch line;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    It is the first pass on class sixty-one
-    (the pass log's heading dated 2026-09-19 05:30 UTC)
-    and the second on class sixty and the third on the tail budget
-    (both confirmed live on XingZ611's admission before the kill:
-    all 31 tail slices admitted,
-    five splits among them);
+    It is the first pass on class sixty-two
+    (the pass log's heading dated 2026-09-19 06:15 UTC)
+    and the second on class sixty-one
+    (confirmed live on XingZ612's admission:
+    slice 70 admitted inside details of slices 67 to 71,
+    the tail on the bound,
+    no slice unresolved);
     XingZ608 ran the whole pipeline in 2h16m and stopped INCOMPLETE at publish
     (the pass log's "XingZ608 read" heading dated 2026-09-19 02:35 UTC).
-    Its admission is read
-    (06:00 UTC:
-    the tail admitted on the bound,
-    slice 70 admitted on the container deficit,
-    no `placement unresolved` on any slice).
-    Read next the memorial disclosure block on the page with all four of the original's paragraphs,
+    Read first the admission
+    (the tail admitted on the bound,
+    slice 70 on the container deficit,
+    no `placement unresolved`),
+    then the lanes:
+    `passed on its upstream endpoint's rate limit` lines against Mercury 2.5
+    with no `markRefused] openrouter` beside them and no `writing bench unreachable`
+    (Inception's pool may or may not still be limiting it),
+    then the memorial disclosure block on the page with all four of the original's paragraphs,
     then the translate lane's assembly
     (no `assembly-footnote-reverted unresolved-reference`,
     no `assembly-withdrew-every-replacement`),
@@ -4516,7 +4549,12 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (XingZ611 to its kill 1 hour and 42 minutes in,
+    (XingZ612 to its ERROR at 34 minutes,
+    three attempts:
+    2.19 USD by the meters,
+    3,010 seats,
+    146 retry rounds;
+    XingZ611 to its kill 1 hour and 42 minutes in,
     both lanes over:
     6.91 USD by the meters,
     5,675 seats,

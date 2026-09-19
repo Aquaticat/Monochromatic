@@ -8082,6 +8082,78 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ613 launches on class sixty-two, 2026-09-19, 06:22 UTC
+
+Frozen `c340b496b` (classes forty-one to sixty-two and the tail budget),
+pid 919708,
+runs `~/temp/agent/XingZ613`,
+log `~/temp/agent/XingZ613.log`,
+`TRANSLATION_REPAIR_SLICE_OVERLAP=8`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+no cron job,
+the background waiter alone reports the exit.
+Read first the admission
+(the tail on the bound,
+slice 70 on the container deficit,
+no `placement unresolved`),
+then the lanes:
+`passed on its upstream endpoint's rate limit` lines against Mercury 2.5 with no `markRefused] openrouter` beside them,
+no `writing bench unreachable`,
+then the translate assembly,
+the memorial disclosure block with its four paragraphs,
+the bilibili link,
+the nine definitions,
+the run time against XingZ608's 2h16m,
+then the seven steps and the three checks.
+
+## Class sixty-two, 2026-09-19, 06:15 UTC: one model's upstream rate limit holds the whole provider out
+
+Found by XingZ612's lanes.
+Inception's shared pool rate-limited Mercury 2.5 from 06:06 UTC,
+and OpenRouter passed each refusal on as
+`429 {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"inception/mercury-2.5 is temporarily rate-limited upstream. ...","provider_name":"Inception","provider_error_code":"rate_limit_exceeded","limit_source":"upstream_provider_shared_pool",...}}}`.
+The transport ladder rode five attempts in 10 s and handed the reply to the router,
+which read every 429 as the provider's budget refusal
+(`isBudgetRefusal`)
+and held the whole of OpenRouter out for 60 s
+(`markRefused`,
+"refused us while its meter reads wet",
+16 holds between 06:06 and 06:12).
+Every OpenRouter seat read unreachable for the minute,
+the editors and refiners have no seat elsewhere while Synthetic and Hyper are dry,
+and the seat wait stopped the entry at the hold's end:
+"writing bench unreachable at lanes: editors 0 of 3 reachable, floor 2; refiners 0 of 3 reachable, floor 2; no provider has named its return".
+Three attempts,
+31 minutes,
+2.4 minutes and 1.7 minutes,
+the same wall each time;
+the meters never moved off wet
+(Bedrock 149.20 to 148.02,
+OpenRouter 215.18 to 214.17,
+2.19 USD).
+Mercury was asked 262 times and threw 89.
+Fixed in `c340b496b`
+(guard red first at `79b3ee845`,
+`provider-budget-refusal.unit.test.ts`):
+a 429 whose body opens with `"message":"Provider returned error"` is one model's upstream endpoint refusing,
+not the account's budget
+(`isUpstreamModelRefusal`);
+`isBudgetRefusal` excludes it,
+the router logs
+"passed on its upstream endpoint's rate limit for this model; the seat is lost this round and the provider stays where its meter puts it"
+and rethrows,
+so the seat is dark for that round and the provider stays where its meter puts it.
+A bare 429 and a 402 stay budget refusals.
+The OpenRouter error page could not be fetched
+(client-rendered);
+the shape is taken from the live body.
+XingZ612's admission at 06:00 UTC had confirmed class sixty-one live
+(slice 70 admitted inside details of slices 67 to 71,
+5 blocks against 4)
+with no slice unresolved,
+the first pass with none.
+
 ## XingZ612 launches on class sixty-one, 2026-09-19, 05:39 UTC
 
 Frozen `75f67fbd4` (classes forty-one to sixty-one and the tail budget),

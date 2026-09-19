@@ -201,6 +201,32 @@ not a provider guarantee.
 The 1,000 requests-per-hour account limit must be implemented as a rate budget,
 not by lowering simultaneous in-flight work to 8.
 
+## An aggregator's passed-on 429 is one model's, not the account's (2026-09-19)
+
+OpenRouter answers an upstream endpoint's rate limit with the endpoint's own error wrapped
+(XingZ612,
+Mercury 2.5 on Inception,
+06:06 to 06:12 UTC):
+
+```json
+// HTTP 429 body, abridged
+{"error":{"message":"Provider returned error","code":429,"metadata":{
+  "raw":"<model> is temporarily rate-limited upstream. ...",
+  "provider_name":"<endpoint>","provider_error_code":"rate_limit_exceeded",
+  "limit_source":"upstream_provider_shared_pool"}}}
+```
+
+That is a statement about one model's shared pool,
+not about the account's minute,
+and every other model on the aggregator is still served.
+Reading it as the provider's refusal held the whole provider out 60 s per reply
+and stopped an entry whose editors and refiners sit on that provider alone
+(class sixty-two).
+`isUpstreamModelRefusal` in `provider-budget-refusal.ts` reads the body's opening
+and the router lets the seat go dark for the round instead of holding the provider.
+The OpenRouter error reference is client-rendered and could not be fetched with a plain request;
+the shape above is the live body.
+
 ## Hyper's daily limit is not its hourly one (2026-09-07)
 
 Hyper has a second limit the pacer cannot see.
