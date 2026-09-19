@@ -8082,6 +8082,89 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ608 launches on classes fifty-seven and fifty-eight with the endpoint routed, 2026-09-19, 00:15 UTC
+
+Frozen `eaaf39ec3`,
+pid 725364,
+runs `~/temp/agent/XingZ608`,
+log `~/temp/agent/XingZ608.log`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+`TRANSLATION_REPAIR_SLICE_OVERLAP=8` on the launch line
+(the pass-overlap decision's variable,
+which overrides the four in either direction;
+XingZ607 met 5 HTTP 429 refusals in 6,289 calls at four and no Bedrock throttle),
+no cron job,
+the background waiter alone reports the exit.
+Read first the run time against XingZ607's 8h41m
+(one attempt,
+under the seven-hour deadline,
+the phase boundaries),
+the endpoints serving deepseek-v4.1-flash
+(`served by "Morph"`,
+never DeepInfra or Wafer)
+and the 429 count at eight,
+then the admission lines for slices 99 and 102
+(`insertion-container-half-admitted`),
+the translate lane's assembly
+(no `assembly-withdrew-every-replacement`),
+the five archive-absent disclosure blocks on the page with the bilibili link,
+then the seven steps and the three checks.
+
+## deepseek-v4.1-flash routed off DeepInfra and Wafer, 2026-09-19, 00:05 UTC: the endpoint was the slow seat
+
+Measured on XingZ607 for the run-time work
+(the task the seven-hour deadline opened).
+Every judge seat but one answers under 14 s at the ninetieth percentile
+(minimax 4 s,
+gpt-oss 14,
+gemma-26b 3,
+mercury 8,
+jev 0);
+deepseek-v4.1-flash answered at 30 s median and 129 s at the ninetieth,
+set the quorum time in 553 of the run's 2,320 rounds
+(689 of the 1,173 minutes of quorum wait,
+249 of them in select rounds,
+165 in lane contests,
+70 at the consolidate gates),
+held 15 rounds to the full 360 s timeout,
+and was abandoned 93 times after the 120 s grace.
+The completion cap held it:
+its longest completed reasoning was 56 thousand characters and every cut stream sat at the 13,082-token pooled ceiling
+(the "1.4 million characters" of the attempt 1 heading were raw stream bytes,
+not reasoning).
+By endpoint the picture splits:
+Morph served 262 calls at 11 s median and 25 s at the ninetieth,
+DeepInfra 701 at 45 s and 158 s with 89 of the 97 cut streams,
+Wafer 27 at 26 s and 122 s with the other 8.
+XingZ605,
+served by Morph alone,
+was the fastest XingZ60 run at 4h08m;
+XingZ604 and XingZ607 ran on DeepInfra.
+Fixed in `ac93f7978` by the class twenty-four route:
+`ignoredEndpoints: ['deepinfra', 'wafer']` on the card,
+slugs from the gateway's providers listing of 2026-09-18,
+the catalog and client tests updated
+(`4cd9bf5c1`).
+The other levers stay measured and unpulled:
+the refiners' 37 minutes of grace after quorum were deepseek's stragglers,
+and the lane width moves by the launch variable.
+
+## Class fifty-eight, 2026-09-19, 00:10 UTC: two structural breaks defeat the single-withdrawal proof and empty the lane
+
+The second half of the XingZ607 withdrawal.
+The assembly guard's counterfactual withdraws one replacement at a time and keeps the first that leaves the page whole;
+a page with two breaks fails every single withdrawal and the guard withdrew all 88 replacements.
+Fixed in `eaaf39ec3`
+(guards red first at `35b2125d2`):
+`MdxParseError` carries the line and column the parser named,
+`strict-refusal-offset.ts` reads them as an offset into the whole text,
+and `advancingStructuralWithdrawal` withdraws the replacement that moves the first refusal furthest later
+(`assembly-structure-advancing-withdrawal slice N: reverting this replacement moves the first strict-parse refusal from offset A to B`),
+so the next round reads what is left,
+one break at a time.
+The blanket withdrawal remains for a defect no withdrawal moves.
+
 ## Class fifty-seven, 2026-09-18, 23:55 UTC: a container half ships without its partner and the translate lane withdraws every slice
 
 Found by the XingZ607 read.

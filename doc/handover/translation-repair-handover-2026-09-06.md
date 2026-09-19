@@ -538,8 +538,20 @@ which the takeover session does not have.
   guards red first at `55cd8f7e7`;
   the pass log's "XingZ607 attempt 2 read" and "Class fifty-seven" headings;
   12.42 USD over both attempts).
-  No pass is running:
-  the next launch waits on the run-time work below.
+  The run-time work followed
+  (the pass log's "deepseek-v4.1-flash routed off DeepInfra and Wafer" heading dated 2026-09-19 00:05 UTC:
+  the endpoint was the slow seat,
+  `ac93f7978`)
+  and class fifty-eight
+  (two structural breaks emptied the lane;
+  `eaaf39ec3`,
+  guards red first at `35b2125d2`).
+  `XingZ608` launched at 00:15 UTC on 2026-09-19 on frozen `eaaf39ec3` (pid 725364,
+  runs `~/temp/agent/XingZ608`,
+  log `~/temp/agent/XingZ608.log`,
+  `TRANSLATION_REPAIR_SLICE_OVERLAP=8`);
+  no cron job on the owner's word,
+  the background waiter alone reports the exit.
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2353,6 +2365,22 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`eaaf39ec3` (2026-09-19,
+00:10 UTC):
+class fifty-eight,
+a structural break blamed by the parser's position one slice a round
+(`strict-refusal-offset.ts`,
+`advancingStructuralWithdrawal` in `assembly-structural-withdrawal.ts`,
+`MdxParseError` carrying line and column;
+guards red first at `35b2125d2`).
+Running on XingZ608.
+`ac93f7978` (2026-09-19,
+00:05 UTC):
+deepseek-v4.1-flash routed off DeepInfra and Wafer
+(`ignoredEndpoints` on its card;
+the pass log's heading dated 2026-09-19 00:05 UTC;
+tests `4cd9bf5c1`).
+Running on XingZ608.
 `6036e6618` (2026-09-18,
 23:55 UTC):
 class fifty-seven,
@@ -2366,7 +2394,7 @@ guards red first at `55cd8f7e7`,
 the pair reader's cases at `caac6e3a0`;
 the absence-verdict decision's addendum dated 2026-09-18;
 found by the XingZ607 read).
-Not yet run live.
+Running on XingZ608.
 `139a7f99a` (2026-09-18,
 14:38 UTC):
 class fifty-six,
@@ -4269,17 +4297,31 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  BEFORE THE NEXT XingZ60 LAUNCH (no pass is running;
-    XingZ607 stopped INCOMPLETE at 23:20 UTC on 2026-09-18 after 8h41m and two attempts,
-    the pass log's "XingZ607 attempt 2 read" heading):
-    class fifty-seven is fixed and checked (`6036e6618`) but the next launch on this entry costs about nine hours and twelve dollars as things stand,
-    so first bring the run time down (task #196):
-    measure the lane widths (consolidation ran about four slices wide at 7.1 minutes of work a slice),
-    the grace the refiners spent after quorum (37 of 68 minutes in the consolidation phase),
-    whether deepseek-v4.1-flash's 360 s timeouts ever held a quorum open and whether the completion cap bounds its reasoning on the endpoint the price sort picks
-    (15 streams cut between 450 thousand and 1.4 million characters),
-    and only then launch `XingZ608` on a frozen build of the result.
-    Read it by the seven steps and the three checks:
+1.  READ `XingZ608` (frozen `eaaf39ec3`,
+    pid 725364,
+    runs `~/temp/agent/XingZ608`,
+    log `~/temp/agent/XingZ608.log`,
+    launched 00:15 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
+    Synthetic and Hyper dry,
+    `TRANSLATION_REPAIR_SLICE_OVERLAP=8` on the launch line;
+    no cron job on the owner's word,
+    the background waiter alone reports the exit).
+    It is the first pass on classes fifty-seven and fifty-eight and on the deepseek endpoint route
+    (the pass log's headings dated 2026-09-18 23:55 UTC and 2026-09-19 00:05 and 00:10 UTC);
+    XingZ607 took 8h41m and two attempts
+    (the pass log's "XingZ607 attempt 1" and "attempt 2 read" headings).
+    Read first the run time
+    (one attempt under the seven-hour deadline,
+    the phase boundaries against XingZ607's:
+    repair 14:55,
+    translate 17:50,
+    contests 19:20,
+    consolidation 20:00),
+    the endpoints serving deepseek-v4.1-flash
+    (`served by "Morph"`,
+    never DeepInfra or Wafer)
+    and the HTTP 429 count at eight in flight.
+        Read it by the seven steps and the three checks:
     first the admission lines for slices 99 and 102
     (`insertion-container-half-admitted (slice 99 beside slice 100...`),
     the translate lane's assembly

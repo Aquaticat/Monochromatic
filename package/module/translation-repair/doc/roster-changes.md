@@ -22,6 +22,14 @@ and V4.1 Flash took the editor and refiner seats V4 Pro held,
 unmeasured in those roles until the next editor calibration.
 The roster is twelve models.
 
+`deepseek-v4.1-flash` is routed off DeepInfra and Wafer since 2026-09-19
+(`ignoredEndpoints` on its card):
+on XingZ607 Morph answered its judge calls at 11 s median,
+DeepInfra at 45 s with 89 of the 97 cut streams,
+Wafer at 26 s with the rest,
+and on DeepInfra the seat set the quorum time in 553 of 2,320 rounds
+(the pass log's "deepseek-v4.1-flash routed off DeepInfra and Wafer" heading dated 2026-09-19).
+
 `typesafe/jev-1.13` joined on 2026-09-18 as the first decision-only seat:
 a model OpenRouter serves through its decisions endpoint
 (typed `choice`,
