@@ -8082,6 +8082,61 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela5 read and the abstention log, 2026-09-19, 23:20 UTC: class seventy-two on the page, the slate settled slice 28 on its first round
+
+`mikaela5` (frozen `6a9a7ce27`) SETTLED at 23:15 UTC on its first attempt:
+27 min (22:48:46 to 23:15:37),
+33 slices,
+2,118 seats,
+54 retry rounds,
+1.13 USD by the spend lines and by the meters
+(Bedrock 127.54 to 126.95,
+OpenRouter 189.69 to 189.15),
+attempts 1,
+Synthetic dry throughout.
+
+Class seventy-two is on the page:
+`Mika was outed against her will.`
+where the archive has "tried coming out" and `mikaela3` shipped "came out";
+18 select ballots argue from the glossary's reading.
+Classes seventy and seventy-one hold
+(the dialogue line `“𝓠𝓾𝓪𝓷, I really want to contribute to the community.”`,
+the closing excerpt curled).
+
+Slice 28 again:
+the contest standing merged two lines and was withheld,
+this time only the translate lane text stood beside the proposals,
+and the slate chose it at weight 2 across 4 ballots on its first round,
+so the run-off path of class seventy-three was not exercised live;
+the guards of `49b9dccca` cover it.
+
+The seven steps and the three checks against `mikaela3`:
+four headings,
+front matter equal,
+4 footnote markers as the archive,
+the archive's four translator-note comments kept,
+one `gate-kept-standing`,
+five `final-selection-unendorsed`
+(slices 0,
+5,
+12,
+13 and 25,
+against one on `mikaela3`),
+no error finish,
+no untranslated pronoun,
+attempts 1;
+234 lines differ from `mikaela3`'s page.
+
+The open item of the 22:50 UTC entry is built:
+an abstaining ballot now logs its reason
+(`<seat> declined every candidate: <reason>`)
+and a stray one names the index it gave against the slate's size,
+beside the choosing ballots,
+in `candidate-select-count.ts`
+(`155c6aa65`,
+guard red first at `9f7218396`);
+no pass has run on it yet.
+
 ## mikaela4 read and class seventy-three, 2026-09-19, 22:50 UTC: the glossary reading lands in the lane, the entry stops at a run-off two judges decided, mikaela5 launched
 
 `mikaela4` (frozen `c807572ca`) stopped INCOMPLETE at 22:32 UTC:

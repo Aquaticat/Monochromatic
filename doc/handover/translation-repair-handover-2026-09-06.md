@@ -4647,23 +4647,24 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS SEVENTY-THREE IS BUILT AND MIKAELA5 RUNS
+1.  MIKAELA5 IS READ AND THE ABSTENTION LOG IS BUILT
+    (the pass log's heading dated 2026-09-19 23:20 UTC):
+    SETTLED at 23:15 UTC in 27 min on one attempt,
+    1.13 USD by the meters;
+    class seventy-two on the page ("Mika was outed against her will."),
+    classes seventy and seventy-one holding,
+    slice 28 settled by the slate on its first round so class seventy-three's run-off path is covered by its guards alone.
+    An abstaining or stray ballot now logs its reason beside the choosing ballots
+    (`155c6aa65`,
+    guard `9f7218396`);
+    the next pass on any entry reads it live.
+    CLASS SEVENTY-THREE IS BUILT
     (the pass log's heading dated 2026-09-19 22:50 UTC,
     `6a9a7ce27`,
     guards `49b9dccca`,
     the sixth ineligible-standing addendum):
     a run-off between valid finalists is decided on the two-ballot floor under the weight minimum,
     because `mikaela4` stopped at slice 28 with two judges agreeing on a finalist and two abstaining on grounds the rule had answered.
-    `mikaela5` (frozen `6a9a7ce27`,
-    pid 1249923,
-    launched 22:48 UTC) runs to read it live:
-    slice 28's consolidation
-    (the standing,
-    the slate,
-    any run-off and its `select-runoff-under-minimum` finding),
-    the 炸柜 line on the page,
-    classes seventy and seventy-one holding,
-    then the seven steps and the three checks against `mikaela3`.
     MIKAELA4 IS READ
     (same heading):
     INCOMPLETE at 22:32 UTC in 24 min,
