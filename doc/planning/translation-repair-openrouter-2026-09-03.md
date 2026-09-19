@@ -8169,7 +8169,9 @@ the three passes sharing both providers.
     4 footnote markers as the archive,
     the archive's four Chinese translator-note comments kept,
     two `gate-kept-standing` (slices 5 and 13),
-    three `final-selection-unendorsed` (slices 5, 13 and 31),
+    three `final-selection-unendorsed`
+    (slices 5,
+    13 and 31),
     attempts 1.
     Accuracy over the archive:
     炸柜 rendered `got blown out of the closet (炸柜, involuntarily outed)`
