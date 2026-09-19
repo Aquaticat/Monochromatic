@@ -358,6 +358,22 @@ a half whose partner ships nothing is withheld and named,
 so the assembly guard never reads a closing tag with no opening.
 On XingZ607 two lone closing tags made the strict parse fail and the guard withdrew all 88 of the lane's slices.
 
+## A definition and its marker
+
+A source-only slice holding footnote definitions is admitted by the whole-page shortfall budget like any other,
+and the definitions stand last on a page,
+so they are the first passages a spent budget refuses.
+Since class fifty-nine (2026-09-19) a definition whose label the standing page or an admitted slice references,
+and which nothing on the shipping page defines,
+is admitted beside that marker
+(`insertion-referenced-definitions.ts`,
+finding `insertion-definition-admitted`).
+On XingZ608 the budget ran out 80 code points before the definitions
+and the translate lane's assembly reverted every carrier of the four markers left without one,
+the poem attribution with its link among them.
+A definition the admitted slice brings in that no marker on the page references
+is trimmed at assembly by class twenty-one's orphan guard.
+
 ## What is folded out of candidate and archive text at intake
 
 Characters a reader cannot tell from their plain counterpart are folded

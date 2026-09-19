@@ -8082,7 +8082,152 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
-## XingZ608 launches on classes fifty-seven and fifty-eight with the endpoint routed, 2026-09-19, 00:15 UTC
+## XingZ609 launches on class fifty-nine, 2026-09-19, 02:49 UTC
+
+Frozen `06b395ac7` (classes forty-one to fifty-nine,
+the deepseek route),
+pid 775640,
+runs `~/temp/agent/XingZ609`,
+log `~/temp/agent/XingZ609.log`,
+`TRANSLATION_REPAIR_SLICE_OVERLAP=8` on the launch line,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+no cron job,
+the background waiter alone reports the exit.
+Read first the admission's `insertion-definition-admitted` lines for the definition slices 112 to 119
+(each names the label and the referencing slice),
+then the translate lane's assembly
+(no `assembly-footnote-reverted unresolved-reference`,
+no `assembly-withdrew-every-replacement`),
+then the bilibili link in the poem attribution on the page,
+then the nine definitions on the page under the original's labels
+with the orphan trim's findings for any definition no marker on the page references,
+then the run time against XingZ608's 2h16m,
+then the seven steps and the three checks.
+
+## Class fifty-nine, 2026-09-19, 02:45 UTC: the shortfall budget refuses the definitions the shipped markers reference
+
+Found by the XingZ608 read.
+The whole-page shortfall budget
+(`coverage-corroboration.ts`;
+expected English at the corpus median of 2.65 code points per source code point,
+less what the page carries)
+is spent over the absent-voted passages in document order,
+and a page's footnote definitions stand last.
+XingZ60's budget is 10,794 code points
+(16,650 source code points against 33,329 on the archive page);
+the passages at slices 89 to 111,
+4,043 source code points,
+spent 10,714 of it,
+and none of the eight definition slices
+(112 to 119,
+63 to 192 source code points each)
+fitted the 80 that remained.
+Every one was refused,
+"the page has no room to be missing it",
+while the translate lane wrote slices carrying `[^3]`,
+`[^7]`,
+`[^8]` and `[^9]`.
+The lane's assembly then reverted every carrier of a marker with no definition
+(`assembly-footnote-reverted unresolved-reference gfm 3`,
+`7`,
+`8`,
+`9`),
+slice 95 among them,
+the poem attribution holding the page's only rendering of the bilibili link,
+and the entry stopped INCOMPLETE at publish on the dropped destination.
+XingZ605 refused the same tail
+(112 to 117);
+XingZ607 attempt 1 refused slices 99 and 102 instead,
+1,953 code points that left the tail room.
+
+Fixed in `06b395ac7`
+(guards red first at `db5f0124e`):
+`admitReferencedDefinitions` (`insertion-referenced-definitions.ts`) runs after the container halves
+and admits every unresolved definition whose label the standing page or an admitted slice's source references
+and nothing on the shipping page defines,
+finding `insertion-definition-admitted (slice N defines L, referenced by slice M ...)`.
+A marker the page will carry with no definition under its label is the page's own graph saying the definition is absent,
+the same kind of independent signal as a missing destination,
+which the admission already reads past the budget.
+A definition nothing references stays with the budget,
+and a definition the page already carries under that label is left alone.
+Definitions a slice brings in beside the referenced one that no marker on the page references
+are trimmed by class twenty-one's orphan guard at assembly.
+
+An open question stands beside the fix,
+recorded in the handover's "The shortfall budget question":
+the budget under-reads a page whose archive stops early and runs long.
+XingZ60's archive ends at "Under Construction" with the source's second half untranslated,
+and its translated half runs at about 3.3 English code points per source code point against the corpus median of 2.65,
+so the whole-page shortfall reads 10,794 where the untranslated half alone
+(slices 89 to 119,
+about 5,100 source code points)
+expects about 13,600.
+The budget refused nothing on XingZ608 that class fifty-nine does not now admit,
+but a longer untranslated tail would run out of budget on prose,
+which no structural rule admits.
+
+## XingZ608 read, 2026-09-19, 02:35 UTC: INCOMPLETE at 2h16m at publish, the run time verified
+
+Frozen `eaaf39ec3`,
+2 hours and 16 minutes
+(`ms=8153159`),
+`status=INCOMPLETE`,
+`error=entry XingZ60 would drop 1 source destination(s)`,
+one attempt,
+no page written.
+Spend by the meters:
+Bedrock 158.98 to 154.76,
+OpenRouter 227.93 to 222.07,
+10.08 USD;
+`pass-spend.mjs` logs 7,958 seats and 284 retry rounds.
+
+The run time first.
+Preparation 00:16,
+pictures 00:24,
+repair lane 00:33,
+translate lane 01:10,
+lane contest 01:41,
+consolidation 01:45,
+publish 02:31:
+the whole pipeline in 2h15m where XingZ607 attempt 1 reached consolidation at 5h05m and the deadline at 7h.
+deepseek-v4.1-flash was served by Morph 680 times,
+Krea 291 and Makora 4,
+never DeepInfra or Wafer,
+at a median of 11.1 s,
+11.0 s and 17.9 s;
+no HTTP 429 at eight in flight.
+The endpoint route and the overlap of 8 are kept.
+
+Then the stop.
+The admission admitted slices 89 to 111 and refused 112 to 119,
+the footnote definitions,
+on the whole-page shortfall budget
+(class fifty-nine,
+the heading dated 2026-09-19 02:45 UTC);
+no `insertion-container-half-admitted` line was needed
+(slice 99 was admitted on its own split verdict with no anchored claim,
+slice 102 on an absent one),
+and no half shipped alone.
+The translate lane wrote 112 slices and its assembly reverted the four marker carriers,
+nothing else:
+class fifty-eight's advancing withdrawal was not exercised
+(no structural break),
+and no blanket withdrawal fired.
+Jev's select ballots:
+agreed with the round winner 87 of 106 in repair,
+44 of 65 in translate,
+31 of 39 in consolidation.
+Two consolidation slices shipped the archive's wording without contest endorsement
+(slices 53 and 66,
+`final-selection-unendorsed`),
+and slice 14's standing was withheld from the slate for the untranslated pronoun and a valid proposal shipped
+(class fifty-four's path).
+The page's footnotes,
+components,
+summary and profile link are read on XingZ609.
+
 
 Frozen `eaaf39ec3`,
 pid 725364,

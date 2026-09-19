@@ -546,9 +546,19 @@ which the takeover session does not have.
   (two structural breaks emptied the lane;
   `eaaf39ec3`,
   guards red first at `35b2125d2`).
-  `XingZ608` launched at 00:15 UTC on 2026-09-19 on frozen `eaaf39ec3` (pid 725364,
-  runs `~/temp/agent/XingZ608`,
-  log `~/temp/agent/XingZ608.log`,
+  `XingZ608` (frozen `eaaf39ec3`,
+  overlap 8) ran the whole pipeline in 2h16m,
+  the run time verified,
+  and stopped INCOMPLETE at publish on the dropped bilibili link:
+  the whole-page shortfall budget refused the footnote definitions at the page's tail
+  and the translate assembly reverted every carrier of their markers
+  (class fifty-nine,
+  the pass log's headings dated 2026-09-19 02:35 and 02:45 UTC;
+  fixed in `06b395ac7`,
+  guards red first at `db5f0124e`).
+  `XingZ609` launched at 02:49 UTC on frozen `06b395ac7` (pid 775640,
+  runs `~/temp/agent/XingZ609`,
+  log `~/temp/agent/XingZ609.log`,
   `TRANSLATION_REPAIR_SLICE_OVERLAP=8`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
@@ -2365,6 +2375,16 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`06b395ac7` (2026-09-19,
+02:45 UTC):
+class fifty-nine,
+a footnote definition admitted beside the marker that references it
+(`insertion-referenced-definitions.ts`,
+wired after the container halves in `pass-insertion-admission.ts`;
+guards red first at `db5f0124e`;
+the absence-verdict decision's addendum dated 2026-09-19;
+found by the XingZ608 read).
+Running on XingZ609.
 `eaaf39ec3` (2026-09-19,
 00:10 UTC):
 class fifty-eight,
@@ -2373,14 +2393,20 @@ a structural break blamed by the parser's position one slice a round
 `advancingStructuralWithdrawal` in `assembly-structural-withdrawal.ts`,
 `MdxParseError` carrying line and column;
 guards red first at `35b2125d2`).
-Running on XingZ608.
+Not exercised on XingZ608
+(no structural break;
+the lane's assembly reverted only the four marker carriers of class fifty-nine).
 `ac93f7978` (2026-09-19,
 00:05 UTC):
 deepseek-v4.1-flash routed off DeepInfra and Wafer
 (`ignoredEndpoints` on its card;
 the pass log's heading dated 2026-09-19 00:05 UTC;
 tests `4cd9bf5c1`).
-Running on XingZ608.
+Verified on XingZ608:
+the whole pipeline in 2h16m,
+Morph,
+Krea and Makora at a median of 11 to 18 s,
+no HTTP 429 at overlap 8.
 `6036e6618` (2026-09-18,
 23:55 UTC):
 class fifty-seven,
@@ -2394,7 +2420,10 @@ guards red first at `55cd8f7e7`,
 the pair reader's cases at `caac6e3a0`;
 the absence-verdict decision's addendum dated 2026-09-18;
 found by the XingZ607 read).
-Running on XingZ608.
+Held on XingZ608:
+no half shipped alone,
+and the admission rule had nothing to add
+(slice 99 admitted on its own split verdict).
 `139a7f99a` (2026-09-18,
 14:38 UTC):
 class fifty-six,
@@ -4043,6 +4072,39 @@ and the community's own words ship wrong on a memorial).
 Nothing is landed;
 the owner decides.
 
+## The shortfall budget question
+
+OPEN,
+raised by the XingZ608 read on 2026-09-19
+(the pass log's "Class fifty-nine" heading dated 2026-09-19 02:45 UTC).
+The whole-page shortfall budget
+(`doc/decision/translation-repair-absence-verdict.md`,
+`coverage-corroboration.ts`)
+reads how much English the page lacks against the corpus median of 2.65 code points per source code point,
+and spends that over the absent-voted passages in document order.
+XingZ60's archive stops at "Under Construction" with the source's second half untranslated,
+and its translated half runs long
+(about 3.3 code points per source code point),
+so the budget reads 10,794 where the untranslated half alone expects about 13,600.
+On XingZ608 that shortfall admitted the prose and refused the footnote definitions,
+which class fifty-nine now admits by the page's own graph;
+a longer untranslated tail would run out of budget on prose,
+which no structural rule admits,
+and the page would ship with a recorded gap.
+The design says the budget is measured,
+not tuned,
+and the corpus median is used as is;
+the options,
+ranked,
+are in the session's report of 2026-09-19:
+a budget per aligned region
+(the untranslated tail's own expectation,
+read off the pairing's last agreed pair)
+ahead of a whole-page budget that treats a page the archive left unfinished as one whose translated part is complete,
+ahead of leaving the budget as it stands and reading the recorded gaps.
+Not built;
+the owner decides.
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -4297,37 +4359,30 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ608` (frozen `eaaf39ec3`,
-    pid 725364,
-    runs `~/temp/agent/XingZ608`,
-    log `~/temp/agent/XingZ608.log`,
-    launched 00:15 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
+1.  READ `XingZ609` (frozen `06b395ac7`,
+    pid 775640,
+    runs `~/temp/agent/XingZ609`,
+    log `~/temp/agent/XingZ609.log`,
+    launched 02:49 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry,
     `TRANSLATION_REPAIR_SLICE_OVERLAP=8` on the launch line;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    It is the first pass on classes fifty-seven and fifty-eight and on the deepseek endpoint route
-    (the pass log's headings dated 2026-09-18 23:55 UTC and 2026-09-19 00:05 and 00:10 UTC);
-    XingZ607 took 8h41m and two attempts
-    (the pass log's "XingZ607 attempt 1" and "attempt 2 read" headings).
-    Read first the run time
-    (one attempt under the seven-hour deadline,
-    the phase boundaries against XingZ607's:
-    repair 14:55,
-    translate 17:50,
-    contests 19:20,
-    consolidation 20:00),
-    the endpoints serving deepseek-v4.1-flash
-    (`served by "Morph"`,
-    never DeepInfra or Wafer)
-    and the HTTP 429 count at eight in flight.
-        Read it by the seven steps and the three checks:
-    first the admission lines for slices 99 and 102
-    (`insertion-container-half-admitted (slice 99 beside slice 100...`),
-    the translate lane's assembly
-    (no `assembly-withdrew-every-replacement`,
-    `translated 116 slices ... 9x changed`),
-    the five archive-absent disclosure blocks on the page with the bilibili link in the poem attribution,
+    It is the first pass on class fifty-nine
+    (the pass log's heading dated 2026-09-19 02:45 UTC);
+    XingZ608 ran the whole pipeline in 2h16m and stopped INCOMPLETE at publish
+    (the pass log's "XingZ608 read" heading dated 2026-09-19 02:35 UTC).
+    Read first the admission's `insertion-definition-admitted` lines for slices 112 to 119
+    (each naming the label and the referencing slice),
+    then the translate lane's assembly
+    (no `assembly-footnote-reverted unresolved-reference`,
+    no `assembly-withdrew-every-replacement`),
+    then the bilibili link in the poem attribution on the page,
+    then the nine definitions on the page under the original's labels
+    and the orphan trim's findings for any definition no marker references,
+    then the run time against XingZ608's 2h16m.
+    Then the rest by the seven steps and the three checks:
+    the five archive-absent disclosure blocks on the page,
     then the funeral and teachers paragraphs
     (no TA left standing,
     the `consolidate gate ballot` lines with their reasons),
@@ -4336,7 +4391,7 @@ each read off the pass log and the shipped page:
     against the chat judges' on the same rounds,
     then the pictures line
     (`image0.webp` corroborated by 4 of 4 readers at 0.570 on XingZ602),
-    then the nine definitions on the page and their labels    then the nine definitions on the page and their labels
+    then the nine definitions' labels
     (class nineteen's relabel,
     class twenty-one's orphan guard),
     then the `PhotoScroll`,
@@ -4362,7 +4417,15 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (XingZ606 to its INCOMPLETE at slice 33:
+    (XingZ608 to its INCOMPLETE at publish:
+    10.08 USD by the meters,
+    7,958 seats,
+    284 retry rounds,
+    2 hours and 16 minutes;
+    XingZ607 over two attempts to the deadline and its INCOMPLETE:
+    12.42 USD by the meters,
+    8 hours and 41 minutes;
+    XingZ606 to its INCOMPLETE at slice 33:
     6.92 USD by the meters,
     6446 seats,
     155 retry rounds,

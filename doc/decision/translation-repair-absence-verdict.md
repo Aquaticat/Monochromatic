@@ -145,6 +145,32 @@ both assemblies withhold a half whose partner ships nothing
 finding `assembly-container-half-withheld`),
 so no later refusal of one half can put the other on the page alone.
 
+## Addendum 2026-09-19: a definition ships with the marker that references it
+
+The whole-page shortfall budget is spent over the absent-voted passages in document order,
+and a page's footnote definitions stand last.
+On XingZ608 the passages before them spent 10,714 of a budget of 10,794 code points,
+the eight definition slices were refused,
+and the translate lane's assembly then reverted every slice carrying a marker with no definition,
+one of them holding the page's only rendering of a source link;
+the entry stopped at publish.
+
+A marker the page will carry with no definition under its label is the page's own footnote graph saying the definition is absent.
+That is an independent signal of the same kind as a missing destination,
+which this decision's first addendum already reads past the budget,
+so a definition whose label the standing page or an admitted slice references,
+and which nothing on the shipping page defines,
+is admitted with the marker
+(`insertion-referenced-definitions.ts`,
+finding `insertion-definition-admitted`).
+The two signatures are still read:
+the roster left the definition unplaced,
+and the page's graph is measurably short of it.
+A definition nothing references stays with the budget.
+
+The budget's own reading of a page whose archive stops early and runs long is an open question,
+recorded in the handover's "The shortfall budget question".
+
 ## What this supersedes
 
 `doc/planning/translation-repair-open-decisions.md` question 28, whose ranking was A > C > B > D
