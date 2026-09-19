@@ -135,7 +135,7 @@ function pickCandidate(
  ```
  */
 function scriptedRig(
-  { ballotFor, }: { readonly ballotFor: (judging: number) => 'reject' | 'dozes'; },
+  { ballotFor, }: { readonly ballotFor: (judging: number, seat: RosterModelId) => 'reject' | 'dozes' | 'naps'; },
 ): {
   readonly client: SyntheticClient;
   readonly judgeCalls: { count: number; };
@@ -216,12 +216,20 @@ function scriptedRig(
         /**
          Ballot for this judging.
          */
+        /**
+         What this seat says this judging: a rejection, or the rendering it
+         wants by a word only that rendering carries.
+         */
+        const wanted = ballotFor(
+          judging,
+          request.modelId,
+        );
         const ballot: unknown = {
-          best: (ballotFor(judging,) === 'reject')
+          best: (wanted === 'reject')
             ? 0
             : pickCandidate({
               content,
-              needle: 'dozes',
+              needle: wanted,
             },),
           reason: 'fixture',
         };
@@ -250,7 +258,13 @@ function scriptedRig(
  ```
  */
 async function judgedUnder(
-  { ballotFor, }: { readonly ballotFor: (judging: number) => 'reject' | 'dozes'; },
+  {
+    ballotFor,
+    incumbentKind = 'present',
+  }: {
+    readonly ballotFor: (judging: number, seat: RosterModelId) => 'reject' | 'dozes' | 'naps';
+    readonly incumbentKind?: 'present' | 'absent';
+  },
 ): Promise<{
   readonly result: TranslateStageResult;
   readonly judgeCalls: number;
@@ -284,8 +298,8 @@ async function judgedUnder(
       produced,
       judgeModelIds: JUDGES,
       sourceText: SOURCE_TEXT,
-      incumbentText: INCUMBENT_TEXT,
-      incumbentKind: 'present',
+      incumbentText: (incumbentKind === 'present') ? INCUMBENT_TEXT : '',
+      incumbentKind,
       lineStructured: false,
       signal: AbortSignal.timeout(30_000,),
       perCallTimeoutMs: 5_000,
@@ -326,6 +340,36 @@ await describe({
       },
     },),
 
+    it({
+      name: 'SEATS the run-off leader named by two ballots under the weight minimum where the slice has no '
+        + 'incumbent (class seventy-three, mikaela4 slice 28, 2026-09-19): a tie between two valid finalists, '
+        + 'then Cat-A and Cat-C name the same one while Cat-B abstains',
+      fn: async () => {
+        // Judging 1: Cat-A names its own rendering (half), Cat-B its own
+        // (half), Cat-C rejects: a tie, so the challenge is a run-off over
+        // both. Judging 2: Cat-A names its own again (half), Cat-C names it
+        // (full), Cat-B rejects: 1.5 from two ballots against a minimum of 2.
+        const { result, judgeCalls, } = await judgedUnder({
+          incumbentKind: 'absent',
+          ballotFor: function splitThenLean(
+            judging,
+            seat,
+          ): 'reject' | 'dozes' | 'naps' {
+            if (judging === 1) {
+              if (seat === 'hf:cat/Cat-A')
+                return 'dozes';
+              return (seat === 'hf:cat/Cat-B') ? 'naps' : 'reject';
+            }
+            return (seat === 'hf:cat/Cat-B') ? 'reject' : 'dozes';
+          },
+        },);
+        expect(result.origin,).toBe('fresh',);
+        expect(result.text.includes('dozes',),).toBe(true,);
+        expect(result.findings.includes(RETRY_FINDING,),).toBe(true,);
+        expect(result.findings.includes('select-runoff-under-minimum',),).toBe(true,);
+        expect(judgeCalls,).toBe(JUDGES.length * 2,);
+      },
+    },),
     it({
       name: 'asks ONCE when the first judging decides, and writes no retry marker',
       fn: async () => {

@@ -230,10 +230,12 @@ async function runSelection(
     ballots,
     judgeModelIds = JUDGES,
     fanOut = 'whole-bench',
+    runoff = false,
   }: {
     readonly ballots: BallotScript;
     readonly judgeModelIds?: readonly RosterModelId[];
     readonly fanOut?: FanOutMode;
+    readonly runoff?: boolean;
   },
 ) {
   /**
@@ -255,6 +257,7 @@ async function runSelection(
     // ballot and read the tally over the bench they wrote; production asks the
     // window of quorum plus one (`stage-fanout-window.ts`), pinned below.
     fanOut,
+    runoff,
     task: 'Pick one.',
     criteria: ['Faithful.',],
     evidence: [
@@ -1059,6 +1062,59 @@ await describe({
         },);
         expect(counter.calls,).toBe(0,);
         expect(patch.patchedText,).toContain('The cat chases butterflies.',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'a run-off over valid finalists (class seventy-three, mikaela4, 2026-09-19)',
+  children: [
+    it({
+      name: 'SEATS the run-off leader named by two ballots under the weight minimum, since the finalists '
+        + 'were valid and abstentions answer neither; the same ballots decline outside a run-off',
+      fn: async () => {
+        // GLM-5.3-Flash wrote candidate 1 and names it at half weight, one
+        // disinterested judge names it at full weight, one names candidate 2,
+        // two abstain: 1.5 against 1 with two ballots behind the leader, under
+        // the absolute minimum of 2. That is mikaela4's slice 28 run-off.
+        /** Ballots the run-off heard. */
+        const ballots = {
+          [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+          [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+          [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
+          [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
+          [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 0,
+        };
+        const { outcome: first, } = await runSelection({ ballots, },);
+        expect(first.kind,).toBe('declined',);
+        expect(first.kind === 'declined' ? first.reason : '',).toBe('winner short of the minimum vote weight',);
+        const { outcome, } = await runSelection({
+          ballots,
+          runoff: true,
+        },);
+        expect(outcome.kind,).toBe('selected',);
+        expect(outcome.kind === 'selected' ? outcome.value : '',).toBe('first',);
+        expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(1.5,);
+        expect(outcome.tally.abstentions,).toBe(2,);
+        expect(outcome.findings,).toContain('select-runoff-under-minimum',);
+      },
+    },),
+    it({
+      name: 'still DECLINES a run-off whose leader one judge alone named, so the ballot floor holds',
+      fn: async () => {
+        const { outcome, } = await runSelection({
+          ballots: {
+            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 0,
+            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 0,
+          },
+          runoff: true,
+        },);
+        expect(outcome.kind,).toBe('declined',);
+        expect(outcome.kind === 'declined' ? outcome.disposition : '',).toBe('indecision',);
       },
     },),
   ],
