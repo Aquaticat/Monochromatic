@@ -154,6 +154,32 @@ and the decline named `slate-declined-standing`.
 - Guard shown to fail first (`c6ec06788`),
     fixed in `adca69d4e`.
 
+## Addendum 2026-09-19, fourth: the run-off is over the leaders
+
+Taken under the same rule after XingZ613 stopped INCOMPLETE at 3h02m on slice 84,
+the `其九：空白` heading,
+whose archive rendering drops a line:
+four valid proposals,
+the judges at 1.5 to 1 to 1 against the minimum of 2,
+the challenge round the same three-way question,
+the same split,
+`slate-declined-standing`.
+
+- The class fifty-three run-off offered every candidate that drew a ballot,
+    which on a plurality is the slate less the unnamed;
+    the candidates below the leaders have lost the ranking as surely as the unnamed ones.
+- `runoffFinalists` now offers the leaders alone:
+    the candidates tied at the top on a tie,
+    the leader and its runner-up on a plurality under the minimum,
+    the runner-up by weight,
+    then ballots,
+    then slate position.
+    Two candidates is a question a bench of whole and half ballots settles unless it abstains.
+- The minimum and the two-ballot floor are unchanged;
+    a run-off short of them still ends the slice as before.
+- Guard shown to fail first (`9176c9819`),
+    fixed in `4193495fa`.
+
 ## Addendum 2026-09-18, third: the gate is told when the standing cannot ship
 
 Taken under the same rule after XingZ606 stopped INCOMPLETE at 3h04m on its slice 33,

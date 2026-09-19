@@ -613,9 +613,30 @@ which the takeover session does not have.
   fixed in `c340b496b`,
   guard red first at `79b3ee845`);
   2.19 USD by the meters.
-  `XingZ613` launched at 06:22 UTC on frozen `c340b496b` (pid 919708,
-  runs `~/temp/agent/XingZ613`,
-  log `~/temp/agent/XingZ613.log`,
+  `XingZ613` (frozen `c340b496b`) confirmed class sixty-two live
+  (54 pass-on lines against Mercury 2.5,
+  no provider hold,
+  no bench stop)
+  and stopped INCOMPLETE at 09:24 UTC,
+  3h02m in,
+  at the consolidation of slice 84
+  (the `其九：空白` heading):
+  the standing ineligible on the line rule,
+  four valid proposals split 1.5 to 1 to 1 against the minimum of 2,
+  the run-off over every backed candidate the same question,
+  split the same way
+  (class sixty-three,
+  the pass log's heading dated 2026-09-19 09:30 UTC;
+  fixed in `4193495fa`,
+  guard red first at `9176c9819`);
+  7.81 USD by the meters.
+  Its repair lane ran 1h39m against XingZ608's 35m because every round a rate-limited Mercury sat on waited its ladder out in grace
+  (class sixty-four,
+  open,
+  under the same heading).
+  `XingZ614` launched at 09:38 UTC on frozen `4193495fa` (pid 966877,
+  runs `~/temp/agent/XingZ614`,
+  log `~/temp/agent/XingZ614.log`,
   `TRANSLATION_REPAIR_SLICE_OVERLAP=8`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
@@ -2432,6 +2453,17 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`4193495fa` (2026-09-19,
+09:30 UTC):
+class sixty-three,
+the run-off narrows to the leaders,
+the tied leaders on a tie and the leader with its runner-up on a plurality under the minimum
+(`runoffFinalists` in `translate-runoff.ts`,
+exported through the translate barrel;
+guard red first at `9176c9819`;
+the ineligible-standing decision's fourth addendum dated 2026-09-19;
+found by XingZ613's consolidation).
+Running on XingZ614.
 `c340b496b` (2026-09-19,
 06:15 UTC):
 class sixty-two,
@@ -4479,32 +4511,30 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ613` (frozen `c340b496b`,
-    pid 919708,
-    runs `~/temp/agent/XingZ613`,
-    log `~/temp/agent/XingZ613.log`,
-    launched 06:22 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
+1.  READ `XingZ614` (frozen `4193495fa`,
+    pid 966877,
+    runs `~/temp/agent/XingZ614`,
+    log `~/temp/agent/XingZ614.log`,
+    launched 09:38 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry,
     `TRANSLATION_REPAIR_SLICE_OVERLAP=8` on the launch line;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    It is the first pass on class sixty-two
-    (the pass log's heading dated 2026-09-19 06:15 UTC)
-    and the second on class sixty-one
-    (confirmed live on XingZ612's admission:
-    slice 70 admitted inside details of slices 67 to 71,
-    the tail on the bound,
-    no slice unresolved);
+    It is the first pass on class sixty-three
+    (the pass log's heading dated 2026-09-19 09:30 UTC)
+    and the second on class sixty-two
+    (confirmed live on XingZ613's lanes);
     XingZ608 ran the whole pipeline in 2h16m and stopped INCOMPLETE at publish
-    (the pass log's "XingZ608 read" heading dated 2026-09-19 02:35 UTC).
-    Read first the admission
+    (the pass log's "XingZ608 read" heading dated 2026-09-19 02:35 UTC),
+    XingZ613 stopped INCOMPLETE at 3h02m in consolidation.
+    Read first the consolidation of the `其九：空白` slice
+    (84 on XingZ613's roster):
+    `translate-runoff (finalists 2 of N)` where the first round splits,
+    a run-off that decides,
+    no `slate-declined-standing`;
+    then the admission
     (the tail admitted on the bound,
-    slice 70 on the container deficit,
     no `placement unresolved`),
-    then the lanes:
-    `passed on its upstream endpoint's rate limit` lines against Mercury 2.5
-    with no `markRefused] openrouter` beside them and no `writing bench unreachable`
-    (Inception's pool may or may not still be limiting it),
     then the memorial disclosure block on the page with all four of the original's paragraphs,
     then the translate lane's assembly
     (no `assembly-footnote-reverted unresolved-reference`,
@@ -4549,7 +4579,11 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (XingZ612 to its ERROR at 34 minutes,
+    (XingZ613 to its INCOMPLETE at 3h02m in consolidation:
+    7.81 USD by the meters,
+    8,025 seats,
+    262 retry rounds;
+    XingZ612 to its ERROR at 34 minutes,
     three attempts:
     2.19 USD by the meters,
     3,010 seats,

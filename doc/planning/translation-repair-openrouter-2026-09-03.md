@@ -8082,6 +8082,114 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ614 launches on class sixty-three, 2026-09-19, 09:38 UTC
+
+Frozen `4193495fa` (classes forty-one to sixty-three and the tail budget),
+pid 966877,
+runs `~/temp/agent/XingZ614`,
+log `~/temp/agent/XingZ614.log`,
+`TRANSLATION_REPAIR_SLICE_OVERLAP=8`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+no cron job,
+the background waiter alone reports the exit.
+Read first the consolidation of the `其九：空白` slice
+(84 on XingZ613's roster):
+`translate-runoff (finalists 2 of N)` where the first round splits,
+a run-off that decides,
+no `slate-declined-standing`;
+then the admission,
+the lanes,
+the translate assembly,
+the memorial disclosure block with its four paragraphs,
+the bilibili link,
+the nine definitions,
+the run time against XingZ608's 2h16m,
+then the seven steps and the three checks.
+
+## Class sixty-three, 2026-09-19, 09:30 UTC: the run-off over every backed candidate is the same question
+
+Found by XingZ613's consolidation.
+Slice 84 is the `### 其九：空白` heading with the greeting line and the centred h3,
+three content lines the archive renders as `### __` and the h3 alone,
+so the standing failed the line rule
+("2 lines of content where the ORIGINAL has 3")
+and was withheld from the slate
+(the third ineligible-standing addendum).
+Four valid proposals went to a bench at quorum
+(4 of 5 reachable,
+glm-5.3 dry;
+gemma-26b at half weight):
+gemma-26b and Mercury for candidate 4,
+deepseek for 1,
+gemma-e2b for 3,
+the leader at 1.5 against the absolute minimum of 2.
+The class fifty-three challenge narrowed the run-off to the candidates that drew a ballot,
+which was three of the four,
+and the same panel split the same way
+(1.5,
+1,
+1,
+one abstention),
+so the slate settled `slate-declined-standing` and the entry stopped INCOMPLETE at 3h02m over a heading whose every rendering was valid
+("Part Nine",
+"The Ninth",
+the heading kept in Han).
+Fixed in `4193495fa`
+(guard red first at `9176c9819`,
+`translate-runoff-leaders.unit.test.ts`):
+`runoffFinalists` offers the leaders alone,
+the candidates tied at the top on a tie,
+the leader and its runner-up on a plurality under the minimum
+(runner-up by weight,
+then ballots,
+then slate position),
+so the challenge is a two-candidate question a bench of whole and half ballots settles unless it abstains.
+The class fifty-three shape
+(two candidates named once each of three)
+narrows as before;
+every candidate tied at the top,
+a rejection,
+or fewer than two backed still offer the whole slate.
+XingZ613 otherwise:
+class sixty-two live
+(54 pass-on lines against Mercury 2.5,
+no provider hold,
+no bench stop),
+Mercury asked 935 and threw 147;
+Jev 276 asked,
+276 usable;
+no footnote revert or withdrawal on the translate assembly;
+lane contest 112 of 119 slices differ;
+7.81 USD by the meters
+(Bedrock 148.02 to 143.85,
+OpenRouter 214.16 to 210.52),
+8,025 seats,
+262 retry rounds.
+
+### The rate-limited seat slows every round (class sixty-four, open)
+
+XingZ613's repair lane took 1h39m against XingZ608's 35m
+(119 slices at a mean of 295 s against 120 at 62 s).
+Measured over the round lines,
+the stages Mercury sits on waited in grace for its rate-limited ladder after quorum:
+select 14.1 s mean grace against 5.8,
+panel 22.5 against 1.0,
+critic 25.0 against 4.1,
+editor 32.2 against 0.0,
+introduced-defect-probe 30.0 against 0.3,
+checker 17.8;
+the stages without it
+(lane contest,
+naturalness review,
+coverage)
+ran as before.
+Class sixty-two lets the seat go dark for the round,
+but the next round asks it again and waits its five-attempt ladder out.
+The remedy is the class sixty-two hold scoped to the model:
+a model whose upstream endpoint rate-limited it is held out for the rate-limit backoff and refused at call time as unreachable,
+so rounds neither ask nor wait for it until the hold ends.
+
 ## XingZ613 launches on class sixty-two, 2026-09-19, 06:22 UTC
 
 Frozen `c340b496b` (classes forty-one to sixty-two and the tail budget),

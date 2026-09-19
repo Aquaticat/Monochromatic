@@ -229,9 +229,13 @@ only the candidates that drew a ballot are offered,
 when that is fewer than the slate,
 and the findings say so
 (`translate-runoff (finalists N of M)`).
+Since class sixty-three (2026-09-19) the run-off is over the leaders alone:
+the candidates tied at the top on a tie,
+the leader and its runner-up on a plurality under the minimum,
+so a three-way split is put to the panel as a two-candidate question.
 A rejection,
-fewer than two backed candidates or a fully backed slate leave the whole slate on the second sheet,
-and a second tie settles as `no-candidate-backed` as before.
+fewer than two backed candidates or a slate whose every candidate is a leader leave the whole slate on the second sheet,
+and a second decline settles as before.
 
 ## When a picture's reading may be used
 
