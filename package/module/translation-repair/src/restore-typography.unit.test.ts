@@ -240,6 +240,28 @@ await describe({
       },
     },),
     it({
+      name: 'RESTORES a possessive apostrophe after a link or an emphasis span, which the archive '
+        + 'curls, and leaves an opening quote after a span alone (class seventy, mikaela_khara, 2026-09-19)',
+      fn: async () => {
+        const convention = `Every other line here reads didn${APOSTROPHE}t.`;
+        expect(restoreTypography({
+          replacement: "Excerpt from [Whiskers](https://example.invalid/whiskers)'s diary, issue 3",
+          replaced: 'Excerpt from the diary',
+          convention,
+        },),).toBe(`Excerpt from [Whiskers](https://example.invalid/whiskers)${APOSTROPHE}s diary, issue 3`,);
+        expect(restoreTypography({
+          replacement: "She hummed *Cat Chorus*'s opening.",
+          replaced: 'She hummed the opening.',
+          convention,
+        },),).toBe(`She hummed *Cat Chorus*${APOSTROPHE}s opening.`,);
+        expect(restoreTypography({
+          replacement: "She hummed *Cat Chorus*'sad tune' twice.",
+          replaced: 'She hummed twice.',
+          convention,
+        },),).toBe("She hummed *Cat Chorus*'sad tune' twice.",);
+      },
+    },),
+    it({
       name: 'RESTORES three dots where the document writes three dots, collapsing the doubled '
         + 'U+2026 Chinese carries, and leaves a tag alone (yulianNyanner, 2026-09-07)',
       fn: async () => {
