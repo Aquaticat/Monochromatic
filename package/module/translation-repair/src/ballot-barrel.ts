@@ -36,6 +36,7 @@ export {
 export type {
   Candidate,
   CandidateProducer,
+  CandidateWeight,
   SelectionBallot,
 } from './candidate-select-model.ts';
 export { countCandidateWeights, } from './candidate-weights.ts';

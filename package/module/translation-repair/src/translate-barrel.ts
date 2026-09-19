@@ -76,6 +76,10 @@ export {
 } from './translate-produce.ts';
 export { judgeSlateWithRetry, } from './translate-retry.ts';
 export {
+  type Runoff,
+  runoffFinalists,
+} from './translate-runoff.ts';
+export {
   attemptTranslateSlice,
   type SliceAttempt,
 } from './translate-slice-attempt.ts';

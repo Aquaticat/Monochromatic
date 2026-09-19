@@ -20,6 +20,18 @@ import type {
 // ballot, when that is fewer than the whole slate: the judges are asked a
 // narrower question rather than the identical one, and a second tie is still
 // a settled decline.
+//
+// NARROWED TO THE LEADERS ON XINGZ613 (2026-09-19, class sixty-three): slice
+// 84's standing was ineligible, four valid proposals went to a bench at
+// quorum, and the ballots split 1.5, 1 and 1 against the absolute minimum of
+// 2. Every candidate but one had drawn a ballot, so the run-off over the
+// backed candidates was the same three-way question, and it split the same
+// way; the entry stopped over a heading whose every rendering was valid.
+// The candidates below the leaders have lost the ranking as surely as the
+// unnamed ones, so the run-off offers the leaders alone: the tied leaders
+// on a tie, the leader and its runner-up on a plurality under the minimum.
+// Two candidates is a question a bench of whole and half ballots settles
+// unless it abstains, which is a decline this should keep.
 
 /**
  Whether a declined round's challenge is a run-off, and over which candidates.
@@ -49,7 +61,7 @@ export type Runoff<ValueT,> =
 
     /**
      Why nothing was narrowed: the judges rejected rather than tied, fewer
-     than two candidates drew a ballot, or every candidate did.
+     than two candidates drew a ballot, or every candidate is a leader.
      */
     readonly because:
       | 'rejection'
@@ -58,8 +70,8 @@ export type Runoff<ValueT,> =
   };
 
 /**
- Candidates that drew a ballot in a tied round, when that leaves some of the
- slate behind.
+ Leaders of an undecided round, when that leaves some of the slate behind:
+ the candidates tied at the top, or the leader and its runner-up.
 
  @param candidates - slate in the order the judges saw it
 
@@ -92,32 +104,66 @@ export function runoffFinalists<ValueT,>(
     };
 
   /**
-   One-based indices of the candidates some ballot named.
+   Candidates some ballot named, highest standing first.
    */
-  const backed = new Set(perCandidate
+  const ranked = perCandidate
     .filter(function drewWeight(drawn,): boolean {
       return drawn.weight > 0;
     },)
-    .map(function toIndex(drawn,): number {
-      return drawn.index;
-    },),);
-  if (backed.size < 2)
+    .toSorted(function byStanding(
+      left,
+      right,
+    ): number {
+      // Heavier first, then more ballots, then the earlier slate position.
+      if (left.weight !== right.weight)
+        return right.weight - left.weight;
+      if (left.ballots !== right.ballots)
+        return right.ballots - left.ballots;
+      return left.index - right.index;
+    },);
+  /**
+   Highest draw, absent when fewer than two candidates drew anything.
+   */
+  const [leader,] = ranked;
+  if ((leader === undefined) || (ranked.length < 2))
     return {
       kind: 'whole-slate',
       because: 'fewer-than-two-backed',
     };
-  if (backed.size >= candidates.length)
+  /**
+   Candidates tied at the top.
+   */
+  const leaders = ranked.filter(function tiedAtTop(drawn,): boolean {
+    return drawn.weight === leader.weight;
+  },);
+  /**
+   Who the run-off is over: the tied leaders, or the leader and its
+   runner-up.
+   */
+  const offered = (leaders.length >= 2)
+    ? leaders
+    : ranked.slice(
+      0,
+      2,
+    );
+  if (offered.length >= candidates.length)
     return {
       kind: 'whole-slate',
       because: 'every-candidate-backed',
     };
+  /**
+   One-based indices of the finalists.
+   */
+  const finalists = new Set(offered.map(function toIndex(drawn,): number {
+    return drawn.index;
+  },),);
   return {
     kind: 'narrowed',
-    finalists: candidates.filter(function isBacked(
+    finalists: candidates.filter(function isFinalist(
       _candidate,
       position,
     ): boolean {
-      return backed.has(position + 1,);
+      return finalists.has(position + 1,);
     },),
   };
 }
