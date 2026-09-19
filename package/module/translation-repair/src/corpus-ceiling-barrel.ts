@@ -36,3 +36,7 @@ export {
   admitContainerHalves,
   CONTAINER_HALF_ADMITTED_FINDING,
 } from './corpus-run/insertion-container-halves.ts';
+export {
+  admitContainerDeficit,
+  CONTAINER_DEFICIT_ADMITTED_FINDING,
+} from './corpus-run/insertion-container-deficit.ts';

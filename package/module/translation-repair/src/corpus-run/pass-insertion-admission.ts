@@ -16,6 +16,7 @@ import type { RosterModelId, } from '../synthetic-catalog.ts';
 import { TranslationRepairInterruptedError, } from '../translation-repair-interrupted-error.ts';
 import { droppedDestinations, } from './dropped-destinations.ts';
 import { readUntranslatedTail, } from '../coverage-tail.ts';
+import { admitContainerDeficit, } from './insertion-container-deficit.ts';
 import { admitContainerHalves, } from './insertion-container-halves.ts';
 import { admitReferencedDefinitions, } from './insertion-referenced-definitions.ts';
 import {
@@ -286,13 +287,25 @@ export async function decidePassInsertionAdmission(
     tail,
   },);
   /**
+   Classification with every absent passage inside a container the archive
+   carries short of blocks admitted on that deficit (class sixty-one,
+   XingZ611, 2026-09-19).
+   */
+  const deficit = admitContainerDeficit({
+    slices: prepared.slices,
+    positions: classification.positions,
+    unresolvedRows: classification.unresolvedRows,
+  },);
+  for (const finding of deficit.findings)
+    al.info(finding,);
+  /**
    Classification with each container's halves admitted together (class
    fifty-seven, XingZ607, 2026-09-18).
    */
   const halves = admitContainerHalves({
     slices: prepared.slices,
-    positions: classification.positions,
-    unresolvedRows: classification.unresolvedRows,
+    positions: deficit.positions,
+    unresolvedRows: deficit.unresolvedRows,
   },);
   for (const finding of halves.findings)
     al.info(finding,);
@@ -319,6 +332,7 @@ export async function decidePassInsertionAdmission(
     carried: classification.carried,
     findings: [
       ...classification.findings,
+      ...deficit.findings,
       ...halves.findings,
       ...definitions.findings,
       ...definitions.unresolvedRows
