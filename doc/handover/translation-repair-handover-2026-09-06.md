@@ -660,12 +660,22 @@ which the takeover session does not have.
   both fixed in `6eada935a`,
   guards red first at `636d56a8c`);
   10.34 USD by the meters.
-  `XingZ616` launched at 12:46 UTC on frozen `6eada935a` (pid 1017938,
-  runs `~/temp/agent/XingZ616`,
-  log `~/temp/agent/XingZ616.log`,
-  `TRANSLATION_REPAIR_SLICE_OVERLAP=8`);
-  no cron job on the owner's word,
-  the background waiter alone reports the exit.
+  `XingZ616` (frozen `6eada935a`) SETTLED at 14:50 UTC,
+  2h04m,
+  the first settled XingZ60 page
+  (the pass log's "XingZ616 read" heading dated 2026-09-19 14:55 UTC):
+  the poem with its attribution inside the quote,
+  the four memorial paragraphs,
+  both links,
+  nine definitions,
+  front matter equal;
+  two quality observations open
+  (the section ordinals in seven styles,
+  two handles translated literally).
+  9.19 USD by the meters.
+  The V4.1 Flash producer calibration was launched detached at 14:53 UTC
+  (pid 1031770,
+  log `~/temp/agent/producer-calibrate-v41flash-20260919.log`).
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -4560,21 +4570,23 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ616` (frozen `6eada935a`,
-    pid 1017938,
-    runs `~/temp/agent/XingZ616`,
-    log `~/temp/agent/XingZ616.log`,
-    launched 12:46 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
-    Synthetic and Hyper dry,
-    `TRANSLATION_REPAIR_SLICE_OVERLAP=8` on the launch line;
-    no cron job on the owner's word,
-    the background waiter alone reports the exit).
-    It is the first pass on classes sixty-five and sixty-six
-    (the pass log's heading dated 2026-09-19 12:40 UTC),
-    the second on classes sixty-three and sixty-four
-    (neither exercised on XingZ615),
-    and the third on class sixty-two.
-    Read first the closing poem's slice
+1.  READ the V4.1 Flash producer calibration
+    (`producer-calibrate 40 --candidates deepseek-v4.1-flash`,
+    detached 14:53 UTC on 2026-09-19,
+    pid 1031770,
+    frozen `6eada935a`,
+    runs `~/temp/agent/calibrate-v41flash-20260919`,
+    log `~/temp/agent/producer-calibrate-v41flash-20260919.log`,
+    about three hours by precedent)
+    with the scratch `read-standing.mjs` against the pooled null,
+    and seat or not by that rule.
+    XingZ60 is read
+    (XingZ616 SETTLED,
+    the pass log's "XingZ616 read" heading dated 2026-09-19 14:55 UTC);
+    the four queued entries are all read.
+    Then step 6,
+    the components no read page has met.
+    XingZ616 was to be read for the closing poem's slice
     (91 on XingZ615's roster):
     its contest winner passing the invariants,
     no `slate-declined-standing`,
@@ -4635,7 +4647,11 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (XingZ615 to its INCOMPLETE at 2h41m in consolidation:
+    (XingZ616 to its SETTLED publish at 2h04m:
+    9.19 USD by the meters,
+    8,216 seats,
+    225 retry rounds;
+    XingZ615 to its INCOMPLETE at 2h41m in consolidation:
     10.34 USD by the meters,
     8,070 seats,
     246 retry rounds;

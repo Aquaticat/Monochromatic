@@ -8082,6 +8082,98 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ616 read, 2026-09-19, 14:55 UTC: XingZ60 SETTLED
+
+The first settled XingZ60 page.
+`TALLY XingZ60 status=SETTLED slices=119`,
+published at 14:50 UTC,
+2h04m from launch
+(admission 13:04,
+repair lane to 13:40 at 82 s a slice,
+translate lane to 14:03,
+lane contest 113 of 119 differ to 14:07,
+consolidation to 14:50),
+against XingZ608's 2h16m to an INCOMPLETE publish.
+9.19 USD by the meters
+(Bedrock 139.52 to 135.20,
+OpenRouter 204.39 to 199.52),
+8,216 seats,
+225 retry rounds;
+Mercury 1,018 of 1,018,
+Jev 262 of 262.
+The page `~/temp/agent/XingZ616/fixed/people/XingZ60/page.en.md`,
+48,853 characters.
+
+The seven steps and the three checks:
+
+- Front matter equal to the archive's.
+- The closing poem
+  (slice 91 on XingZ615's roster)
+  with all five verses quoted and the attribution inside the quote;
+  classes sixty-five and sixty-six live:
+  183 `translate-candidate-refused` findings in the artifact
+  (gemma-4-e2b most,
+  for untranslated pronouns,
+  parse failures and merged blocks),
+  no `slate-declined-standing` stop.
+- The memorial disclosure block with all four of the original's paragraphs
+  (the fourth,
+  "May her soul find peace in another world",
+  at line 636).
+- The bilibili link and the profile link,
+  the two links the original carries.
+- Nine definitions under the original's labels,
+  each marker used once in the body.
+- Three `TextRing` components as the original;
+  fourteen headings as the original.
+- The pronoun paragraphs:
+  the parents' quoted `"him"` kept as the original's 『他』,
+  the poem's `his sorrow` beside `her solitude` as the original contrasts them,
+  no `TA` on the page.
+- `### IX: Blank` with the greeting line and the centred h3 as three lines.
+- No `finish_reason=error` schema mismatch;
+  22 `InStreamProviderError` retries;
+  108 JSON false starts read past.
+- Three slices shipped a standing without contest endorsement
+  (10,
+  24,
+  70),
+  recorded findings,
+  not stops.
+
+Two quality observations,
+open,
+neither a stop:
+
+- The ten section headings `其一` to `其十` are rendered in seven ordinal styles
+  (`One:`,
+  none,
+  `Three:`,
+  `IV:`,
+  `The Fifth:`,
+  `Part Six:`,
+  none,
+  none,
+  `IX:`,
+  `Ten:`);
+  the archive drops the ordinals throughout.
+  Slices are judged one at a time,
+  so a parallel series has no one style.
+- `其三：绘都` and `其四：无常` are rendered `Painted Capital` and `Impermanence`
+  where the archive has `HiYku` and `Ann`,
+  the handles the human translator knew;
+  the archive's rendering was on the slate and lost.
+  The same shape as class forty-five's heading on hulicaijia.
+
+Between passes,
+as the handover's step 3 asks,
+`producer-calibrate 40 --candidates deepseek-v4.1-flash` was launched detached at 14:53 UTC
+(pid 1031770,
+frozen `6eada935a`,
+runs `~/temp/agent/calibrate-v41flash-20260919`,
+log `~/temp/agent/producer-calibrate-v41flash-20260919.log`),
+to be read with `read-standing.mjs` against the pooled null.
+
 ## XingZ616 launches on classes sixty-five and sixty-six, 2026-09-19, 12:46 UTC
 
 Frozen `6eada935a` (classes forty-one to sixty-six and the tail budget),
