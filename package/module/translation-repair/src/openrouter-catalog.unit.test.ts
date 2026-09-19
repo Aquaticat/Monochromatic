@@ -122,19 +122,25 @@ await describe({
 
     it({
       name: 'IGNORES the measured endpoints and no others: Parasail and ModelRun for MiniMax M3 '
-        + '(2026-09-03 and 2026-09-04 measurements beside the row), while every other row ignores no '
-        + 'endpoint; Qwen3.8-27B and GLM-5.3 left the catalog on 2026-09-09, DeepSeek V4 Flash and V4 Pro '
-        + 'on 2026-09-16',
+        + '(2026-09-03 and 2026-09-04 measurements beside the row), DeepInfra and Wafer for DeepSeek V4.1 '
+        + 'Flash (XingZ607, 2026-09-18: 45 s and 26 s median against Morph\'s 11 s, 97 of 97 cut streams), '
+        + 'while every other row ignores no endpoint; Qwen3.8-27B and GLM-5.3 left the catalog on '
+        + '2026-09-09, DeepSeek V4 Flash and V4 Pro on 2026-09-16',
       fn: async () => {
         expect(OPENROUTER_MODELS['minimax/minimax-m3'].ignoredEndpoints,).toEqual([
           'parasail',
           'modelrun',
+        ],);
+        expect(OPENROUTER_MODELS['deepseek/deepseek-v4.1-flash'].ignoredEndpoints,).toEqual([
+          'deepinfra',
+          'wafer',
         ],);
         /**
          Rows with a measured endpoint on them.
          */
         const measured: ReadonlySet<string> = new Set([
           'minimax/minimax-m3',
+          'deepseek/deepseek-v4.1-flash',
         ],);
         /**
          Rows other than the one with a measured endpoint.
@@ -158,7 +164,8 @@ await describe({
          Provider slugs from `GET https://openrouter.ai/api/v1/providers`, read
          2026-09-04 (`~/temp/agent/providers-20260904.json`), for every
          upstream a run log of that day named for a roster model. Extend it
-         from the same listing when a new slug is ignored.
+         from the same listing when a new slug is ignored: `wafer` read from
+         the listing on 2026-09-18 for deepseek-v4.1-flash.
          */
         const listed: ReadonlySet<string> = new Set([
           'akashml',
@@ -175,6 +182,7 @@ await describe({
           'reka',
           'together',
           'venice',
+          'wafer',
         ],);
         for (const info of Object.values(OPENROUTER_MODELS,)) {
           for (const slug of info.ignoredEndpoints)

@@ -240,7 +240,21 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       maxOutputLength: 384_000,
       promptUsdPerMillion: 0.3,
       completionUsdPerMillion: 1.2,
-      ignoredEndpoints: [],
+      // THE ENDPOINT WAS THE SLOW SEAT, NOT THE MODEL (XingZ607, 2026-09-18).
+      // Over 990 completed judge calls the price sort spread across three
+      // upstreams: Morph answered at 11 s median and 25 s at the ninetieth
+      // percentile, DeepInfra at 45 s and 158 s with 89 of the 97 cut streams,
+      // Wafer at 26 s and 122 s with the other 8. Every other judge seat
+      // answers under 14 s at the ninetieth percentile, so on DeepInfra this
+      // seat set the quorum time in 553 of 2,320 rounds (689 of 1,173 minutes
+      // of quorum wait) and held 15 rounds to the 360 s timeout. XingZ605,
+      // served by Morph alone, was the fastest XingZ60 run at 4h08m. Same
+      // shape as class twenty-four (2026-09-10): route by the measured
+      // endpoint. Slugs from the gateway's providers listing of 2026-09-18.
+      ignoredEndpoints: [
+        'deepinfra',
+        'wafer',
+      ],
       rawCharsPerToken: 'unmeasured',
     },
     // Approved 2026-09-11; no completed-call distribution of its own yet.
