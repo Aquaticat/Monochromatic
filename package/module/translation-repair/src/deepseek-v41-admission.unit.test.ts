@@ -69,13 +69,13 @@ await describe({
       },
     }),
     it({
-      name: 'seats independently measured judging while retaining writer and reader holds',
+      name: 'seats independently measured judging and writing while retaining the reader hold',
       fn: async () => {
-        // The source-reviewed 2026-09-11 comparison measured judging, not writing or image reading.
-        for (const ids of [RUN_ROSTER, RUN_WIDE_SEATS, RUN_LATE_JUDGES])
+        // The source-reviewed 2026-09-11 comparison measured judging, not writing or image reading;
+        // the 40-round producer calibration of 2026-09-19 measured writing (z +0.79 at the pooled null).
+        for (const ids of [RUN_ROSTER, RUN_WIDE_SEATS, RUN_LATE_JUDGES, RUN_TRANSLATORS, RUN_WRITERS])
           expect(ids.filter(id => id === MODEL)).toHaveLength(1);
-        for (const ids of [RUN_TRANSLATORS, RUN_WRITERS, RUN_READER_MODELS])
-          expect(ids.some(id => id === MODEL)).toBe(false);
+        expect(RUN_READER_MODELS.some(id => id === MODEL)).toBe(false);
         // An existing measured reader must not disappear merely because it lacks a judge seat.
         expect(RUN_READER_MODELS.includes(SEAT_BEDROCK_ONLY_VISION_UNSEATED)).toBe(true);
         expect(RUN_ROSTER.includes(SEAT_BEDROCK_ONLY_VISION_UNSEATED)).toBe(false);

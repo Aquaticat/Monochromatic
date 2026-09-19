@@ -259,12 +259,12 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     },
     // Approved 2026-09-11; no completed-call distribution of its own yet.
     completionCap: 'pooled-p99',
-    // Judge seats on the fidelity probe of 2026-09-11; no producer
-    // calibration and no transcription measurement yet.
-    holds: [
-      'writer-unmeasured',
-      'reader-unmeasured',
-    ],
+    // Judge seats on the fidelity probe of 2026-09-11. Writes since the
+    // 40-round producer calibration of 2026-09-19 (29 of 121 disinterested
+    // ballots over 27 candidates, z +0.79 against a 21.0 percent pooled
+    // null, not separated from it; 55 of 55 asks usable; the most round wins
+    // of the bench at 8.3 of 35). No transcription measurement yet.
+    holds: ['reader-unmeasured',],
   },
   'google.gemma-4-e2b': {
     bedrock: {
@@ -310,7 +310,13 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     },
     // Own p99 3,063 over 136 OpenRouter calls, under the pooled 90th.
     completionCap: 'pooled-p90',
-    holds: [],
+    // Seated as a writer by the calibration of 2026-09-09 (z -0.43); the
+    // calibration of 2026-09-19 read it below the pooled null (10 of 108
+    // disinterested ballots over 28 candidates, adjusted 9.3 percent,
+    // z -3.00 against 21.0, across the Bonferroni threshold of 2.77), so
+    // by the seating rule it leaves the translator seat and keeps the
+    // consolidation seat, the shape of deepseek-v4-pro-0813's exit.
+    holds: ['translator-dropped',],
   },
   'typesafe/jev-1.13': {
     decisions: {

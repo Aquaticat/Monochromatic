@@ -181,12 +181,14 @@ export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'wr
  and the judge fidelity probe of 17:00 UTC read it at 14 of 14
  ({@link SEATED_OPENROUTER_JUDGES}); it wrote nothing until the producer
  calibration read at 20:02 UTC the same day seated it as a writer
- ({@link WRITER_UNMEASURED}).
+ ({@link WRITER_UNMEASURED}); the calibration of 2026-09-19 read it below
+ the pooled null and took the translator seat back ({@link TRANSLATOR_DROPPED}).
  
  DeepSeek V4.1 Flash joins on 2026-09-11 after choosing the source-reviewed
  reference on all fourteen distinct comparisons, with no damaged pick or abstention.
  All nine peers answered every question; their median clean count was fourteen
- and maximum damaged count one. Its writing and image-reading holds remain separate.
+ and maximum damaged count one. Its image-reading hold remains; the producer
+ calibration of 2026-09-19 seated it as a writer.
  Record: the 2026-09-11 addendum in
  `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
  */
@@ -307,8 +309,10 @@ const LATE_JUDGE_DROPPED: ReadonlySet<RosterModelId> = holdSet({ hold: 'late-jud
  Translators for the translate lane: the roster less
  {@link TRANSLATOR_DROPPED} and less {@link WRITER_UNMEASURED}. Eight since
  2026-09-08 (seven from 2026-09-01): `google.gemma-4-e2b` was measured in
- that day, and on 2026-09-09 `inception/mercury-2.5` was measured in and
- `deepseek-v4-pro-0813` out the same evening, so the stage quorum stays 4
+ that day, on 2026-09-09 `inception/mercury-2.5` was measured in and
+ `deepseek-v4-pro-0813` out the same evening, and on 2026-09-19
+ `deepseek-v4.1-flash` was measured in and `inception/mercury-2.5` out by
+ the same calibration, so the stage quorum stays 4
  and every slate keeps at least two disinterested judges under
  `assertJudgeableProducerRoster`.
  */

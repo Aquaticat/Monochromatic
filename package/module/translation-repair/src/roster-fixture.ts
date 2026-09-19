@@ -54,8 +54,9 @@ export const SEAT_HYPER_TEXT_BEDROCK = 'gemma-4-26b-a4b-it' as const;
 export const SEAT_HYPER_ONLY = 'glm-5.3' as const;
 
 /**
- Hyper and OpenRouter serve it; reads pictures; its writing and its
- picture reading are unmeasured.
+ Hyper and OpenRouter serve it; reads pictures; its picture reading is
+ unmeasured (the name dates from before the producer calibration of
+ 2026-09-19 measured its writing in).
  */
 export const SEAT_HYPER_OPENROUTER_UNMEASURED = 'deepseek-v4.1-flash' as const;
 
@@ -70,7 +71,8 @@ export const SEAT_BEDROCK_ONLY_TEXT = 'google.gemma-4-e2b' as const;
 export const SEAT_BEDROCK_ONLY_VISION_UNSEATED = 'google.gemma-4-31b' as const;
 
 /**
- Only OpenRouter serves it; text only; a seated judge and measured writer.
+ Only OpenRouter serves it; text only; a seated judge and consolidation
+ writer, out of the translator seat since the calibration of 2026-09-19.
  */
 export const SEAT_OPENROUTER_ONLY = 'inception/mercury-2.5' as const;
 
