@@ -31,6 +31,14 @@ import { rosterQuorumSize, } from './roster-quorum-size.ts';
 export const MIN_SELECTION_BALLOTS = 2;
 
 /**
+ Finding a run-off carries when its leader won under the weight minimum on
+ the ballot floor alone (class seventy-three, mikaela4, 2026-09-19): the
+ finalists were valid, so the judges who chose decided and the abstentions
+ answered neither.
+ */
+export const RUNOFF_UNDER_MINIMUM_FINDING = 'select-runoff-under-minimum';
+
+/**
  What a selection round must see before its leader wins, sized to the bench
  that could answer.
  

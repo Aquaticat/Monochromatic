@@ -24,6 +24,7 @@ import {
   type ChatJsonRequest,
   judgeSlateWithRetry,
   messageText,
+  producerModelIds,
   produceTranslateSlate,
   type RosterModelId,
   type SyntheticClient,
@@ -71,6 +72,11 @@ const JUDGES: readonly RosterModelId[] = [
 ].map(function toId(id,) {
   return id as unknown as RosterModelId;
 },);
+
+/**
+ Seat no judge holds, standing for an author before the slate exists.
+ */
+const NOBODY = 'hf:cat/nobody' as unknown as RosterModelId;
 
 /**
  What the translators render, one each in call order.
@@ -262,7 +268,11 @@ async function judgedUnder(
     ballotFor,
     incumbentKind = 'present',
   }: {
-    readonly ballotFor: (judging: number, seat: RosterModelId) => 'reject' | 'dozes' | 'naps';
+    readonly ballotFor: (
+      judging: number,
+      seat: RosterModelId,
+      dozesAuthor: RosterModelId,
+    ) => 'reject' | 'dozes' | 'naps';
     readonly incumbentKind?: 'present' | 'absent';
   },
 ): Promise<{
@@ -273,7 +283,23 @@ async function judgedUnder(
   /**
    Scripted client and its counter.
    */
-  const rig = scriptedRig({ ballotFor, },);
+  /**
+   Translator whose rendering carries the word the scripts ask for, known
+   only once the slate is produced, since the rig renders in call order.
+   */
+  const author = { dozes: NOBODY, };
+  const rig = scriptedRig({
+    ballotFor: function withAuthor(
+      judging,
+      seat,
+    ): 'reject' | 'dozes' | 'naps' {
+      return ballotFor(
+        judging,
+        seat,
+        author.dozes,
+      );
+    },
+  },);
 
   /**
    Slate the translators produced.
@@ -288,6 +314,18 @@ async function judgedUnder(
     perCallTimeoutMs: 5_000,
     l,
   },);
+
+  /**
+   Translator credited first for the rendering that carries the word.
+   */
+  const [dozesAuthor = NOBODY,] = produced.candidates
+    .filter(function carriesDozes(candidate,): boolean {
+      return candidate.rendered.includes('dozes',);
+    },)
+    .flatMap(function toAuthors(candidate,): readonly RosterModelId[] {
+      return producerModelIds(candidate.producer,);
+    },);
+  author.dozes = dozesAuthor;
 
   /**
    What the retry settled on.
@@ -354,13 +392,18 @@ await describe({
           ballotFor: function splitThenLean(
             judging,
             seat,
+            dozesAuthor,
           ): 'reject' | 'dozes' | 'naps' {
+            /** Whether this seat rendered a candidate. */
+            const wrote = TRANSLATORS.includes(seat,);
             if (judging === 1) {
-              if (seat === 'hf:cat/Cat-A')
-                return 'dozes';
-              return (seat === 'hf:cat/Cat-B') ? 'naps' : 'reject';
+              if (!wrote)
+                return 'reject';
+              return (seat === dozesAuthor) ? 'dozes' : 'naps';
             }
-            return (seat === 'hf:cat/Cat-B') ? 'reject' : 'dozes';
+            if (!wrote)
+              return 'dozes';
+            return (seat === dozesAuthor) ? 'dozes' : 'reject';
           },
         },);
         expect(result.origin,).toBe('fresh',);

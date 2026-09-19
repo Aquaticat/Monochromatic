@@ -7,6 +7,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { selectionFanOut, } from './candidate-select-fanout.ts';
 import {
   MIN_SELECTION_BALLOTS,
+  RUNOFF_UNDER_MINIMUM_FINDING,
   selectionMinimum,
   shortBenchFinding,
 } from './candidate-select-minimum.ts';
@@ -93,6 +94,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  
  @param l - logger of the calling stage
  
+ @param runoff - whether this round is the challenge round's run-off over
+ finalists a prior round backed and the floor found valid; the leader then
+ wins on the ballot floor under the weight minimum, since abstentions on a
+ question between valid finalists answer neither (class seventy-three)
+
  @returns Winner with the ballot weight it drew, or a decline carrying its
  reason; either way the round's tally and every ballot cast
  
@@ -119,6 +125,7 @@ export async function decideBestCandidate<ValueT,>(
     l,
     fanOut,
     sourceText,
+    runoff = false,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly candidates: readonly Candidate<ValueT>[];
@@ -132,6 +139,7 @@ export async function decideBestCandidate<ValueT,>(
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
     readonly sourceText?: string;
+    readonly runoff?: boolean;
   }>,
 ): Promise<SelectionOutcome<ValueT>> {
   /**
@@ -379,7 +387,35 @@ export async function decideBestCandidate<ValueT,>(
       perCandidate,
     };
   }
-  if (leader[1] < minimum.weight) {
+  /**
+   What the leader drew, absent only if the tally and the per-candidate
+   count disagree.
+   */
+  const leaderDrawn = perCandidate.find(function isLeader(drawn,): boolean {
+    return drawn.index === leader[0];
+  },);
+
+  /**
+   Ballots naming the leader, self-votes included.
+   */
+  const leaderBallots = leaderDrawn?.ballots ?? 0;
+
+  /**
+   Whether the leader stands under the weight minimum.
+   */
+  const underMinimum = leader[1] < minimum.weight;
+
+  /**
+   Whether a run-off's leader wins under the weight minimum on the ballot
+   floor alone (class seventy-three, mikaela4 slice 28): the finalists were
+   valid and the question was which, so the judges who chose decide and the
+   abstentions answer neither. Two ballots still keep one model from
+   deciding.
+   */
+  const runoffDecides = runoff
+    && underMinimum
+    && (leaderBallots >= MIN_SELECTION_BALLOTS);
+  if (underMinimum && (!runoffDecides)) {
     // A plurality of one is not agreement. Lost voices and abstentions can
     // leave a single judge as the only one who named anything, and letting
     // that judge decide would put one model back in control of the stage.
@@ -398,18 +434,6 @@ export async function decideBestCandidate<ValueT,>(
     };
   }
 
-  /**
-   What the leader drew, absent only if the tally and the per-candidate
-   count disagree.
-   */
-  const leaderDrawn = perCandidate.find(function isLeader(drawn,): boolean {
-    return drawn.index === leader[0];
-  },);
-
-  /**
-   Ballots naming the leader, self-votes included.
-   */
-  const leaderBallots = leaderDrawn?.ballots ?? 0;
   if (leaderBallots < MIN_SELECTION_BALLOTS) {
     // THE FLOOR UNDER THE SCALED MINIMUM. On a bench short of quorum the
     // weight can fall to what one full ballot carries; two ballots is what
@@ -445,6 +469,12 @@ export async function decideBestCandidate<ValueT,>(
       perCandidate,
     };
   }
+  if (runoffDecides) {
+    sl.info(
+      `run-off: candidate ${String(leader[0],)} named by ${String(leaderBallots,)} ballots at weight `
+        + `${String(leader[1],)} under the minimum of ${minimumLabel}; the finalists were valid, so the ballots decide`,
+    );
+  }
   sl.info(
     `candidate ${String(leader[0],)} from ${describeProducer(winner.producer,)} won `
     + `weight ${String(leader[1],)} across ${String(counted.ballots,)} ballots`,
@@ -456,7 +486,12 @@ export async function decideBestCandidate<ValueT,>(
     voteWeight: leader[1],
     selectedIndex: leader[0],
     tally: counted,
-    findings: roundFindings,
+    findings: runoffDecides
+      ? [
+        ...roundFindings,
+        RUNOFF_UNDER_MINIMUM_FINDING,
+      ]
+      : roundFindings,
     ballots,
     perCandidate,
   };

@@ -98,6 +98,10 @@ export type TranslateJudgeResponsibility =
  read as one the archive never had
  
  @param responsibility - initial selection or prior-decline challenge
+
+ @param runoff - whether this judging is the challenge round's run-off over
+ finalists the prior round backed, which the ballot floor then decides under
+ the weight minimum (class seventy-three)
  
  @param signal - caller abort honored by every exchange
  
@@ -136,6 +140,7 @@ export async function judgeTranslateSlate(
     syntax,
     lineStructured,
     responsibility = 'initial-selection',
+    runoff = false,
     signal,
     perCallTimeoutMs,
     l,
@@ -165,6 +170,7 @@ export async function judgeTranslateSlate(
      */
     readonly lineStructured: boolean;
     readonly responsibility?: TranslateJudgeResponsibility;
+    readonly runoff?: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -368,6 +374,7 @@ export async function judgeTranslateSlate(
       ? LEAVES_PASSAGE_UNTRANSLATED
       : KEEPS_TRUSTED_TEXT,
     task,
+    runoff,
     criteria: translatedSlateCriteria({
       sourceText,
       archiveText: incumbentText,
@@ -528,7 +535,7 @@ export async function judgeTranslateSlate(
      Candidates a tie backed when some of the slate drew nothing, so the
      challenge round can be a run-off over them (class fifty-three).
      */
-    const runoff = runoffFinalists({
+    const narrowed = runoffFinalists({
       candidates: rotated,
       perCandidate: outcome.perCandidate,
       disposition: outcome.disposition,
@@ -537,7 +544,7 @@ export async function judgeTranslateSlate(
       reason: declined,
       findings: declineFindings,
       // Conditional spread keeps the field absent where the whole slate stands.
-      ...((runoff.kind === 'narrowed') ? { finalists: runoff.finalists, } : {}),
+      ...((narrowed.kind === 'narrowed') ? { finalists: narrowed.finalists, } : {}),
     },);
   }
   tl.info(`translate stage: ${outcome.reason}; keeping the incumbent`,);

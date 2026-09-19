@@ -236,6 +236,9 @@ export async function judgeSlateWithRetry(
             ...judging.produced,
             candidates: finalists,
           },
+          // The ballot floor decides a run-off between valid finalists
+          // (class seventy-three).
+          runoff: true,
         }),
       responsibility: 'decline-challenge',
     },);
