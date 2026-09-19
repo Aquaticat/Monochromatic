@@ -63,6 +63,60 @@ function mdxRefusalSite({ cause, }: { readonly cause: unknown; },): string {
 }
 
 /**
+ Where a parser message says the grammar stopped, each part present only
+ when the message names it.
+ */
+type RefusalPlace = {
+  /**
+   One-based line.
+   */
+  readonly line?: number;
+
+  /**
+   One-based column.
+   */
+  readonly column?: number;
+};
+
+/**
+ Reads the line and column a parser message names, when it names them.
+
+ A micromark message carries `line` and `column` as numbers; anything else
+ names no place.
+
+ @param cause - caught value, of unknown type by construction
+
+ @returns Line and column, each absent when unstated
+
+ @example
+ ```ts
+ const { line, column, } = refusalPlace({ cause, },);
+ ```
+ */
+function refusalPlace(
+  { cause, }: { readonly cause: unknown; },
+): RefusalPlace {
+  if (!Error.isError(cause,))
+    return {};
+  /**
+   Line the message names, when numeric.
+   */
+  const line: RefusalPlace = (('line' in cause) && ((typeof cause.line) === 'number'))
+    ? { line: cause.line, }
+    : {};
+  /**
+   Column the message names, when numeric.
+   */
+  const column: RefusalPlace = (('column' in cause) && ((typeof cause.column) === 'number'))
+    ? { column: cause.column, }
+    : {};
+  return {
+    ...line,
+    ...column,
+  };
+}
+
+/**
  Signals MDX source that refuses to parse.
  
  Corpus documents compile upstream, so a refusal indicates corruption or a
@@ -79,6 +133,16 @@ export class MdxParseError extends Error {
    and which rule it broke, and repeats no document text.
    */
   readonly messageNamesOnly: true = true;
+
+  /**
+   One-based line the grammar stopped on, absent when the parser named none.
+   */
+  readonly line?: number;
+
+  /**
+   One-based column the grammar stopped at, absent when the parser named none.
+   */
+  readonly column?: number;
 
   /**
    Builds failure stating where the grammar stopped, never what it read.
@@ -102,6 +166,14 @@ export class MdxParseError extends Error {
         + ' unsupported construct.',
     );
     this.name = 'MdxParseError';
+    /**
+     Where the grammar stopped, as the parser's message carries it.
+     */
+    const place = refusalPlace({ cause, },);
+    if (place.line !== undefined)
+      this.line = place.line;
+    if (place.column !== undefined)
+      this.column = place.column;
   }
 }
 

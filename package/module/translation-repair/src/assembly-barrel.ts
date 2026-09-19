@@ -20,7 +20,15 @@ export {
   assemblySentence,
   type ChangeSetName,
 } from './assembly-contract-fault.ts';
-export { singleStructuralWithdrawal, } from './assembly-structural-withdrawal.ts';
+export {
+  type AdvancingWithdrawal,
+  advancingStructuralWithdrawal,
+  singleStructuralWithdrawal,
+} from './assembly-structural-withdrawal.ts';
+export {
+  type StrictParseReading,
+  strictRefusalOffset,
+} from './strict-refusal-offset.ts';
 export {
   CONTAINER_HALF_WITHHELD_FINDING,
   withholdLoneContainerHalves,

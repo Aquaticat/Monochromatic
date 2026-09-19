@@ -37,7 +37,8 @@ await describe({
       },
     },),
     it({
-      name: 'FALLS BACK when two malformed replacements cannot be repaired by a single withdrawal',
+      name: 'WITHDRAWS TWO MALFORMED REPLACEMENTS ONE ROUND AT A TIME by the parser\'s position when no '
+        + 'single withdrawal repairs the page, and never gives the whole page up (class fifty-eight)',
       fn: async () => {
         /** Distinct sections force separate slices without a character-budget dial. */
         const targetText = '## Cats\n\nCats rest.\n\n## Birds\n\nBirds sing.';
@@ -48,13 +49,17 @@ await describe({
           return { sliceIndex: slice.target.sliceIndex, replacementText: BROKEN_COMPONENT, };
         },);
         expect(replacements.length,).toBeGreaterThan(1,);
-        /** No single reversion can remove both grammar failures. */
+        /** No single reversion removes both grammar failures; the advancing step takes the first, the proof the second. */
         const guarded = guardFootnoteAssembly({ targetText, slices: prepared.slices, replacements, },);
         expect(guarded.assembledText,).toBe(targetText,);
         expect(guarded.replacements,).toEqual([],);
+        expect(guarded.revertedChunkIndices.length,).toBe(replacements.length,);
+        expect(guarded.findings.some(function advancing(finding,): boolean {
+          return finding.startsWith('assembly-structure-advancing-withdrawal',);
+        },),).toBe(true,);
         expect(guarded.findings.some(function blanket(finding,): boolean {
           return finding.startsWith('assembly-withdrew-every-replacement',);
-        },),).toBe(true,);
+        },),).toBe(false,);
       },
     },),
     it({

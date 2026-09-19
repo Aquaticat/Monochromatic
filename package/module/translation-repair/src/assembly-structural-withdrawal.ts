@@ -7,6 +7,7 @@ import {
   type SliceReplacement,
   spliceSlices,
 } from './splice-slices.ts';
+import { strictRefusalOffset, } from './strict-refusal-offset.ts';
 
 //region Structural withdrawal proof
 // Before blanket withdrawal, test whether reverting one replacement repairs the
@@ -82,6 +83,133 @@ export function singleStructuralWithdrawal(
     return [replacement.sliceIndex,];
   }
   return [];
+}
+
+/**
+ One withdrawal that moves the first strict-grammar refusal later.
+
+ @example
+ ```ts
+ const step: AdvancingWithdrawal = { sliceIndex: 4, from: 120, to: 980, };
+ ```
+ */
+export type AdvancingWithdrawal = {
+  /**
+   Slice whose replacement is withdrawn.
+   */
+  readonly sliceIndex: number;
+
+  /**
+   Offset of the first refusal before the withdrawal.
+   */
+  readonly from: number;
+
+  /**
+   Offset of the first refusal after it, later than `from`.
+   */
+  readonly to: number;
+};
+
+/**
+ Finds the withdrawal that moves the first strict-grammar refusal furthest
+ later, when no single withdrawal repairs the page (class fifty-eight).
+
+ The parser names where it stopped; a withdrawal after which it stops later
+ removed the break it named, and the guard's next round reads what is left.
+ Nothing is chosen when the page parses already or when no withdrawal moves
+ the refusal.
+
+ @param targetText - inherited document the replacements are spliced over
+
+ @param slices - prepared locations for every replacement
+
+ @param replacements - current assembly, before any speculative withdrawal
+
+ @returns Withdrawal that advances the refusal furthest, at most one, or none
+
+ @example
+ ```ts
+ const [step,] = advancingStructuralWithdrawal({ targetText, slices, replacements, },);
+ ```
+ */
+export function advancingStructuralWithdrawal(
+  {
+    targetText,
+    slices,
+    replacements,
+  }: {
+    readonly targetText: string;
+    readonly slices: readonly ChunkPair[];
+    readonly replacements: readonly SliceReplacement[];
+  },
+): readonly AdvancingWithdrawal[] {
+  /**
+   What the grammar makes of the page as it stands.
+   */
+  const standing = strictRefusalOffset({
+    text: spliceSlices({
+      targetText,
+      slices,
+      replacements,
+    },),
+  },);
+  if (!standing.refused)
+    return [];
+  /**
+   Where the grammar stops before any withdrawal.
+   */
+  const from = standing.offset;
+  /**
+   Every withdrawal that moves the refusal later.
+   */
+  const advancing = replacements.flatMap(function advances(replacement,): readonly AdvancingWithdrawal[] {
+    /**
+     Page with this one replacement withdrawn.
+     */
+    const withdrawnText = spliceSlices({
+      targetText,
+      slices,
+      replacements: replacements.filter(function other(candidate,): boolean {
+        return candidate.sliceIndex !== replacement.sliceIndex;
+      },),
+    },);
+    /**
+     What the grammar makes of it then.
+     */
+    const reading = strictRefusalOffset({ text: withdrawnText, },);
+    /**
+     Where it stops then; the page's end when it no longer stops.
+     */
+    const to = reading.refused
+      ? reading.offset
+      : withdrawnText.length;
+    if (to <= from)
+      return [];
+    return [{
+      sliceIndex: replacement.sliceIndex,
+      from,
+      to,
+    },];
+  },);
+  /**
+   First candidate, absent when nothing advances the refusal.
+   */
+  const [first, ...rest] = advancing;
+  if (first === undefined)
+    return [];
+  /**
+   Candidate that moves the refusal furthest.
+   */
+  const furthest = rest.reduce(
+    function later(
+      best: AdvancingWithdrawal,
+      candidate: AdvancingWithdrawal,
+    ): AdvancingWithdrawal {
+      return (candidate.to > best.to) ? candidate : best;
+    },
+    first,
+  );
+  return [furthest,];
 }
 
 //endregion Structural withdrawal proof

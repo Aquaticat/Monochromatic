@@ -29,7 +29,7 @@ await describe({
     it({
       name: 'ANSWERS NOTHING for a document the strict grammar accepts',
       fn: async () => {
-        expect(strictRefusalOffset({ text: WHOLE, },),).toBeUndefined();
+        expect(strictRefusalOffset({ text: WHOLE, },),).toEqual({ refused: false, },);
       },
     },),
     it({
@@ -38,12 +38,12 @@ await describe({
         /**
          Where the refusal is read.
          */
-        const offset = strictRefusalOffset({ text: BROKEN, },);
-        expect(offset,).toBeDefined();
-        if (offset === undefined)
-          throw new Error('defined by the assertion above',);
-        expect(offset,).toBeGreaterThanOrEqual(BROKEN.indexOf('A bird',),);
-        expect(offset,).toBeLessThanOrEqual(BROKEN.length,);
+        const reading = strictRefusalOffset({ text: BROKEN, },);
+        expect(reading.refused,).toBe(true,);
+        if (!reading.refused)
+          throw new Error('refused by the assertion above',);
+        expect(reading.offset,).toBeGreaterThanOrEqual(BROKEN.indexOf('A bird',),);
+        expect(reading.offset,).toBeLessThanOrEqual(BROKEN.length,);
       },
     },),
     it({
@@ -58,9 +58,9 @@ await describe({
          */
         const bare = strictRefusalOffset({ text: BROKEN, },);
         const withFence = strictRefusalOffset({ text: fenced, },);
-        if ((bare === undefined) || (withFence === undefined))
+        if ((!bare.refused) || (!withFence.refused))
           throw new Error('both documents carry the break',);
-        expect(withFence - bare,).toBe(fenced.length - BROKEN.length,);
+        expect(withFence.offset - bare.offset,).toBe(fenced.length - BROKEN.length,);
       },
     },),
   ],

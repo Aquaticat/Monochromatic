@@ -1,5 +1,8 @@
 import { assertReplacementsChange, } from './assembly-invariant.ts';
-import { singleStructuralWithdrawal, } from './assembly-structural-withdrawal.ts';
+import {
+  advancingStructuralWithdrawal,
+  singleStructuralWithdrawal,
+} from './assembly-structural-withdrawal.ts';
 import {
   definitionBlockCount,
   trimOrphanDefinitions,
@@ -449,6 +452,26 @@ export function guardFootnoteAssembly(
           culprits.add(sliceIndex,);
           findings.push(
             `assembly-structure-single-withdrawal slice ${String(sliceIndex,)}: reverting this replacement leaves no introduced structural or footnote defect`,
+          );
+        }
+        /**
+         With no single repair, the withdrawal that moves the first strict
+         refusal furthest later (class fifty-eight): the next round reads what
+         is left, one break at a time, instead of giving the page up.
+         */
+        const advancing = (proven.length === 0)
+          ? advancingStructuralWithdrawal({
+            targetText,
+            slices,
+            replacements: standing,
+          },)
+          : [];
+        for (const step of advancing) {
+          culprits.add(step.sliceIndex,);
+          findings.push(
+            `assembly-structure-advancing-withdrawal slice ${String(step.sliceIndex,)}: reverting this replacement moves the first strict-parse refusal from offset ${
+              String(step.from,)
+            } to ${String(step.to,)}`,
           );
         }
       }
