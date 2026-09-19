@@ -154,6 +154,31 @@ and the decline named `slate-declined-standing`.
 - Guard shown to fail first (`c6ec06788`),
     fixed in `adca69d4e`.
 
+## Addendum 2026-09-19, fifth: the translate slate carries only what the rule accepts
+
+Taken under the same rule after XingZ615 stopped INCOMPLETE at 2h41m on slice 91,
+the closing poem,
+`slate-declined-standing` with one floor-valid candidate,
+the Chinese original respaced.
+
+- The standing was ineligible because the translate lane's judges chose a candidate the deterministic rule had refused
+    (the attribution moved out of the quote)
+    over two valid renderings;
+    the lane keeps a refused candidate on its slate after its repair turn
+    (the decision of 2026-08-14),
+    and the judges do not apply the rule.
+- `translate-floor.ts` now withholds from the translate slate every candidate the rule still refuses after that turn,
+    recorded as `translate-candidate-refused`;
+    the repair turn and the model's defence are unchanged,
+    and a rule that cannot say keeps the candidate.
+    This is "prefer the best valid proposal" applied one stage earlier,
+    and it narrows the 2026-08-14 reading;
+    the owner may veto it.
+- The untranslated check compares in all but whitespace,
+    so a copy of the original with respaced quote lines is refused at every floor.
+- Guards shown to fail first (`636d56a8c`),
+    fixed in `6eada935a`.
+
 ## Addendum 2026-09-19, fourth: the run-off is over the leaders
 
 Taken under the same rule after XingZ613 stopped INCOMPLETE at 3h02m on slice 84,

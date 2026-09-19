@@ -8082,6 +8082,118 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ616 launches on classes sixty-five and sixty-six, 2026-09-19, 12:46 UTC
+
+Frozen `6eada935a` (classes forty-one to sixty-six and the tail budget),
+pid 1017938,
+runs `~/temp/agent/XingZ616`,
+log `~/temp/agent/XingZ616.log`,
+`TRANSLATION_REPAIR_SLICE_OVERLAP=8`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+no cron job,
+the background waiter alone reports the exit.
+Read first the translate lane's `translate-candidate-refused` findings in the artifact
+(the withheld shapes)
+and the closing poem's slice
+(91 on XingZ615's roster,
+the `> 热情的仿佛炽热的骄阳` quote with its attribution and the `</details>`):
+its contest winner passing the invariants,
+no `slate-declined-standing`,
+the poem on the page with the attribution inside the quote;
+then the admission,
+the translate assembly,
+the memorial disclosure block with its four paragraphs,
+the bilibili link,
+the nine definitions,
+the run time against XingZ608's 2h16m,
+then the seven steps and the three checks.
+
+## Classes sixty-five and sixty-six, 2026-09-19, 12:40 UTC: a respaced copy of the original, and a refused candidate on the translate slate
+
+Found by XingZ615's consolidation.
+The pass stopped INCOMPLETE at 12:24 UTC,
+2h41m in,
+at the consolidation of slice 91,
+the closing poem of the `七句破题` block
+(five quoted verses,
+the attribution `<p>` inside the quote,
+then `</details>`;
+two blocks by the rule).
+Two defects,
+one behind the other.
+
+Class sixty-six is why the standing was ineligible:
+the translate lane's slate carried a candidate that moved the attribution line out of the quote
+(three blocks,
+`blockquote, paragraph, paragraph`,
+against the original's two),
+which the deterministic rule had refused and its author's repair turn had not resolved;
+the lane keeps such a candidate on the slate
+(the repair turn of 2026-08-14),
+the judges do not apply the rule,
+and they chose it over two renderings that kept the attribution inside the quote.
+The lane contest chose translate 6 of 8 and its guard wrote
+`contest winner fails publication invariants and remains retryable`
+and moved on;
+the consolidation withheld the standing.
+
+Class sixty-five is why the slate then had nothing:
+the repair lane ships nothing for an insertion slice,
+the translate text was the withheld standing,
+and of the consolidation proposals the floor accepted exactly one,
+the Chinese original returned with a space after each bare `>` line
+(payload `c0ed84346b`,
+12:21:27 UTC).
+`untranslatedFindings` compared the candidate to the original character for character after trimming the ends,
+so the respaced copy passed.
+Three of four judges abstained
+(`not a translation; a verbatim copy of the Chinese original`),
+gemma-4-e2b chose it twice,
+weight 1 against the minimum of 2,
+`slate-declined-standing`.
+(The judges' abstention reasons are not logged;
+they were read from the payload cache.)
+
+Fixed in `6eada935a`
+(guards red first at `636d56a8c`,
+`translate-untranslated.unit.test.ts` and `translate-floor.unit.test.ts`):
+the untranslated check compares in all but whitespace
+(`translate-untranslated.ts`,
+the finding now reads "in all but whitespace"),
+and `translate-floor.ts` withholds from the translate slate every candidate the rule still refuses after its repair turn,
+recorded as `translate-candidate-refused (model): reasons`;
+a rule that cannot say keeps the candidate,
+and the repair turn and the model's own defence are unchanged.
+The 2026-08-14 decision that an invalid candidate goes back to its author once is kept;
+what changes is that after that turn a text the page cannot carry no longer reaches the judges.
+The owner may veto this reading.
+
+XingZ615 otherwise:
+class sixty-four not exercised
+(Inception served Mercury 952 of 952,
+no pass-on,
+no hold);
+the repair lane 41 minutes at a mean of 91 s a slice
+(XingZ613 295 s,
+XingZ608 62 s),
+the translate lane 45 minutes at 137 s,
+the lane contest 113 of 120 differ,
+consolidation from 11:40;
+the `其九：空白` slice settled on its first slate round
+(gpt-oss's proposal,
+weight 2 of 4),
+so class sixty-three was not exercised either;
+the admission at 10:05 UTC with the tail on the bound and nothing unresolved;
+no footnote revert or withdrawal at the translate assembly;
+Jev 252 asked,
+252 usable;
+10.34 USD by the meters
+(Bedrock 143.81 to 139.53,
+OpenRouter 210.46 to 204.40),
+8,070 seats,
+246 retry rounds.
+
 ## XingZ615 launches on class sixty-four, 2026-09-19, 09:50 UTC
 
 Frozen `fc428eaee` (classes forty-one to sixty-four and the tail budget),

@@ -641,9 +641,28 @@ which the takeover session does not have.
   guard red first at `17084ca5e`:
   a model its upstream endpoint rate-limited is held out 60 s and refused at call time as unreachable);
   0.04 USD by the meters.
-  `XingZ615` launched at 09:50 UTC on frozen `fc428eaee` (pid 985599,
-  runs `~/temp/agent/XingZ615`,
-  log `~/temp/agent/XingZ615.log`,
+  `XingZ615` (frozen `fc428eaee`) ran its repair lane at 91 s a slice
+  (XingZ613 295 s,
+  XingZ608 62 s;
+  Mercury unlimited this run,
+  so class sixty-four was not exercised)
+  and stopped INCOMPLETE at 12:24 UTC,
+  2h41m in,
+  at the consolidation of slice 91,
+  the closing poem:
+  the translate slate had carried a candidate the rule refused
+  (the attribution moved out of the quote)
+  and the judges chose it
+  (class sixty-six),
+  and the consolidation's only floor-valid proposal was the Chinese original respaced
+  (class sixty-five;
+  the pass log's heading dated 2026-09-19 12:40 UTC;
+  both fixed in `6eada935a`,
+  guards red first at `636d56a8c`);
+  10.34 USD by the meters.
+  `XingZ616` launched at 12:46 UTC on frozen `6eada935a` (pid 1017938,
+  runs `~/temp/agent/XingZ616`,
+  log `~/temp/agent/XingZ616.log`,
   `TRANSLATION_REPAIR_SLICE_OVERLAP=8`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
@@ -2460,6 +2479,19 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`6eada935a` (2026-09-19,
+12:40 UTC):
+classes sixty-five and sixty-six,
+the untranslated check compares in all but whitespace
+(`translate-untranslated.ts`)
+and the translate slate withholds every candidate the rule still refuses after its repair turn
+(`translate-floor.ts`,
+wired in `translate-produce.ts`,
+finding `translate-candidate-refused`;
+guards red first at `636d56a8c`;
+the ineligible-standing decision's fifth addendum dated 2026-09-19;
+found by XingZ615's consolidation).
+Running on XingZ616.
 `fc428eaee` (2026-09-19,
 09:45 UTC):
 class sixty-four,
@@ -4528,22 +4560,26 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ615` (frozen `fc428eaee`,
-    pid 985599,
-    runs `~/temp/agent/XingZ615`,
-    log `~/temp/agent/XingZ615.log`,
-    launched 09:50 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
+1.  READ `XingZ616` (frozen `6eada935a`,
+    pid 1017938,
+    runs `~/temp/agent/XingZ616`,
+    log `~/temp/agent/XingZ616.log`,
+    launched 12:46 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry,
     `TRANSLATION_REPAIR_SLICE_OVERLAP=8` on the launch line;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    It is the first pass on classes sixty-three and sixty-four
-    (the pass log's headings dated 2026-09-19 09:30 and 09:45 UTC)
-    and the second on class sixty-two
-    (confirmed live on XingZ613's lanes).
-    Read first the repair lane's pace
-    (`SLICE-COST lane=repair` mean against XingZ613's 295 s and XingZ608's 62 s)
-    and the `held out for another` refusals where Inception limits Mercury;
+    It is the first pass on classes sixty-five and sixty-six
+    (the pass log's heading dated 2026-09-19 12:40 UTC),
+    the second on classes sixty-three and sixty-four
+    (neither exercised on XingZ615),
+    and the third on class sixty-two.
+    Read first the closing poem's slice
+    (91 on XingZ615's roster):
+    its contest winner passing the invariants,
+    no `slate-declined-standing`,
+    the poem on the page with the attribution inside the quote,
+    and the `translate-candidate-refused` findings in the artifact;
     XingZ608 ran the whole pipeline in 2h16m and stopped INCOMPLETE at publish
     (the pass log's "XingZ608 read" heading dated 2026-09-19 02:35 UTC),
     XingZ613 stopped INCOMPLETE at 3h02m in consolidation.
@@ -4599,7 +4635,11 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (XingZ614 to its kill 12 minutes in,
+    (XingZ615 to its INCOMPLETE at 2h41m in consolidation:
+    10.34 USD by the meters,
+    8,070 seats,
+    246 retry rounds;
+    XingZ614 to its kill 12 minutes in,
     in preparation:
     0.04 USD by the meters;
     XingZ613 to its INCOMPLETE at 3h02m in consolidation:

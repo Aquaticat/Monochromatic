@@ -219,6 +219,17 @@ the consolidation ships with `undecided-gate-ships-proposal` recorded,
 because the owner's rule prefers the best valid proposal and the gate refused nothing.
 A gate that refuses the consolidation at quorum still stops the slice.
 
+## What the translate slate carries
+
+A translate candidate the deterministic publication rule refuses goes back to its author once
+(the decision of 2026-08-14).
+Since class sixty-six (2026-09-19) a candidate the rule still refuses after that turn is withheld from the judges
+and recorded as `translate-candidate-refused (model): reasons`;
+a rule that cannot say keeps the candidate.
+A candidate that repeats the original in all but whitespace is refused by the rule itself
+(class sixty-five,
+2026-09-19).
+
 ## When a tied slate is challenged as a run-off
 
 A translate slate the judges decline is put to the same panel once more under a distinct responsibility.
