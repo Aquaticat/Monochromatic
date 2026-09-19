@@ -195,7 +195,11 @@ await describe({
             zdr: true,
             require_parameters: true,
             sort: 'price',
-            ignore: [],
+            // DeepInfra and Wafer ignored for this seat since 2026-09-18 (XingZ607).
+            ignore: [
+              'deepinfra',
+              'wafer',
+            ],
           },
           response_format: {
             type: 'json_schema',
