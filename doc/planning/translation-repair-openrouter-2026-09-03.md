@@ -8082,6 +8082,39 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## The last three unmet shapes launch together, 2026-09-19, 20:23 UTC
+
+The census (scratch `unmet-shapes.mjs`,
+trimmed to the shapes no read page has carried since XingZ619 met the rule,
+the deep heading,
+the list and the four components)
+leaves three shapes:
+an ordered list (`CuspariaKLSY`,
+1,329 characters,
+photos),
+an inline code span (`zheermao101`,
+2,323 characters,
+photos)
+and the `CapDownQuote` component
+(`mikaela_khara`,
+8,391 characters,
+photos;
+also on `NIGHT81473140` and `interrgned`).
+All three launched at 20:23 UTC on frozen `bb4bb7556`,
+`TRANSLATION_REPAIR_SLICE_OVERLAP=8`,
+Bedrock and OpenRouter wet,
+three passes sharing the two providers as on the Arita night:
+`Cusparia1` pid 1141894,
+`zheermao1` pid 1142202,
+`mikaela1` pid 1142489
+(runs and logs under `~/temp/agent/<name>` and `<name>.log`).
+To read first on each:
+the new shape on the page as the archive has it
+(the list's markers and order;
+the code span verbatim;
+the component and its `messages` prop),
+then the seven steps and the three checks.
+
 ## XingZ619 read, 2026-09-19, 20:40 UTC: XingZ60 SETTLED with classes sixty-seven to sixty-nine live
 
 `TALLY XingZ60 status=SETTLED slices=120`,
