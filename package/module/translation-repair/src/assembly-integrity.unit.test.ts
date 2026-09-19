@@ -975,6 +975,67 @@ On the windowsill there is being a bird.
 },);
 
 await describe({
+  name: 'two structural breaks in two slices (class fifty-eight, XingZ607)',
+  children: [
+    it({
+      name: 'WITHDRAWS THE BROKEN SLICES ONE ROUND AT A TIME BY THE PARSER\'S POSITION and keeps the rest, '
+        + 'instead of withdrawing every replacement because no single withdrawal repairs a page with two breaks '
+        + '(XingZ607: two lone closing tags, 88 slices withdrawn)',
+      fn: async () => {
+        /**
+         Slices of the fixture pair.
+         */
+        const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
+        /**
+         Slice carrying the cat sentence, broken by an unclosed expression.
+         */
+        const cat = sliceCarrying({ slices, needle: 'doing the sleeping', },);
+        /**
+         Slice carrying the bird sentence, broken the same way.
+         */
+        const bird = sliceCarrying({ slices, needle: 'there is being a bird', },);
+        /**
+         Slice carrying the note, reworded and whole.
+         */
+        const note = sliceCarrying({ slices, needle: '[^1]:', },);
+        const guarded = guardFootnoteAssembly({
+          targetText: TARGET_TEXT,
+          slices,
+          replacements: [
+            {
+              sliceIndex: cat,
+              replacementText: 'The cat naps on the windowsill[^1]. {\'unclosed',
+            },
+            {
+              sliceIndex: bird,
+              replacementText: 'A bird sits on the windowsill. {\'unclosed',
+            },
+            {
+              sliceIndex: note,
+              replacementText: '[^1]: That is the spot it likes best.',
+            },
+          ],
+        },);
+        expect(byIndex({ indices: guarded.revertedChunkIndices, },),).toEqual(byIndex({ indices: [cat, bird,], },),);
+        expect(guarded.replacements
+          .map(function toIndex(replacement,): number {
+            return replacement.sliceIndex;
+          },),).toEqual([note,],);
+        expect(guarded.assembledText,).toContain('the spot it likes best',);
+        expect(guarded.findings
+          .some(function namesAdvance(finding,): boolean {
+            return finding.startsWith(`assembly-structure-advancing-withdrawal slice ${String(cat,)}`,);
+          },),).toBe(true,);
+        expect(guarded.findings
+          .some(function namesBlanketWithdrawal(finding,): boolean {
+            return finding.startsWith('assembly-withdrew-every-replacement',);
+          },),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
   name: introducedFootnoteFindings.name,
   children: [
     it({
