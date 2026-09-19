@@ -65,6 +65,20 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
     why: 'the community\'s nickname for KAngel, the streamer character of the game Needy Streamer Overload; '
       + 'the archive names the character or the game, never a transliteration',
   },
+  {
+    // CLASS SEVENTY-TWO (mikaela_khara, 2026-09-19). The archive rendered 炸柜
+    // as "tried coming out", one pass shipped "got blown out of the closet"
+    // and the next "came out", a judge calling the community reading risky
+    // and the literal one a display cabinet; nothing on any sheet said which.
+    term: '炸柜',
+    renderings: [
+      'outed',
+      'blown out of the closet',
+    ],
+    why: 'the community\'s word for being outed against one\'s will, the closet blowing up, not for coming out; '
+      + 'the source pairs it with the family finding and throwing away the medication, and "came out" or '
+      + '"tried coming out" reads the outing as her choice',
+  },
 ];
 
 /**
