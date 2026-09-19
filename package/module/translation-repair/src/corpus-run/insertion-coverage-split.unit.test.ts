@@ -18,6 +18,7 @@ import {
 import {
   classifyInsertionCoverage,
   type InsertionCoverageRow,
+  readUntranslatedTail,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -70,6 +71,7 @@ function classify({ row, }: { readonly row: InsertionCoverageRow; },) {
     frontMatterPositions: new Set(),
     sourceText: `## 猫\n\n${PASSAGE}\n`,
     targetText: '## Cat\n',
+    tail: readUntranslatedTail({ slices: [], },),
   },);
 }
 

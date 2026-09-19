@@ -15,6 +15,7 @@ import { parseDocument, } from '../parse-document.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import { TranslationRepairInterruptedError, } from '../translation-repair-interrupted-error.ts';
 import { droppedDestinations, } from './dropped-destinations.ts';
+import { readUntranslatedTail, } from '../coverage-tail.ts';
 import { admitContainerHalves, } from './insertion-container-halves.ts';
 import { admitReferencedDefinitions, } from './insertion-referenced-definitions.ts';
 import {
@@ -247,6 +248,33 @@ export async function decidePassInsertionAdmission(
     }
   }
   /**
+   Untranslated tail read off the pairing, budgeted on its own (owner,
+   2026-09-19; XingZ608).
+   */
+  const tail = readUntranslatedTail({ slices: prepared.slices, },);
+  /**
+   Slices after the last agreed pair.
+   */
+  const tailCount = tail.positions
+    .size;
+  /**
+   Expected English of the tail, rounded for the log.
+   */
+  const tailExpected = Math.round(tail.expected,);
+  /**
+   The page's own expansion, two decimals for the log.
+   */
+  const tailExpansion = tail.expansion
+    .toFixed(2,);
+  al.info(
+    `untranslated tail: ${String(tailCount,)} slice(s) after the last agreed pair, ${
+      String(tail.sourceCodePoints,)
+    } source code points at expansion ${tailExpansion}, expected ${String(tailExpected,)}, `
+      + `last pair renders ${String(tail.lastPairTargetCodePoints,)}: ${
+        tail.exceedsLastPair ? 'admitted on that bound' : 'left with the whole-page budget'
+      }`,
+  );
+  /**
    Single-round resolution of every candidate.
    */
   const classification = classifyInsertionCoverage({
@@ -255,6 +283,7 @@ export async function decidePassInsertionAdmission(
     frontMatterPositions,
     sourceText: prepared.sourceText,
     targetText: prepared.targetText,
+    tail,
   },);
   /**
    Classification with each container's halves admitted together (class

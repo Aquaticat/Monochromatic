@@ -685,9 +685,11 @@ const TRANSLATED_TARGET = 'The orange cat slept on the windowsill all afternoon 
   .repeat(3,);
 
 /**
- Source paragraph after the archive's last agreed pair, never translated.
+ Source paragraph after the archive's last agreed pair, never translated,
+ larger than the last pair's rendering could have absorbed.
  */
-const TAIL_SOURCE = '猫在夜里回家了，蜷在暖炉旁边睡着了。';
+const TAIL_SOURCE = '猫在夜里回家了，蜷在暖炉旁边睡着了。它梦见了窗台上的阳光，梦见了院子里的麻雀，梦见了那只总在墙头等它的白猫。'
+  + '天亮以后，它会再一次出门，沿着老路走到河边去。';
 
 /**
  Builds a preparation whose archive stops after one agreed pair.

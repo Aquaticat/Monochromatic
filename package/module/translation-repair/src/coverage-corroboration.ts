@@ -155,6 +155,10 @@ export function pageShortfall(
  
  @param passages - candidates the roster already voted absent on, in document
  order
+
+ @param shortfall - English the page is missing, when a caller has read it
+ off more than the whole page (the untranslated tail's own budget,
+ `coverage-tail.ts`); the whole-page shortfall otherwise
  
  @returns Names of the passages the shortfall has room for, in the order given
  
@@ -168,19 +172,17 @@ export function admitWithinShortfall(
     sourceText,
     targetText,
     passages,
+    shortfall = pageShortfall({
+      sourceText,
+      targetText,
+    },),
   }: {
     readonly sourceText: string;
     readonly targetText: string;
     readonly passages: readonly CandidatePassage[];
+    readonly shortfall?: number;
   },
 ): readonly string[] {
-  /**
-   English the page is missing.
-   */
-  const shortfall = pageShortfall({
-    sourceText,
-    targetText,
-  },);
 
   /**
    Each passage with what admitting it would be expected to add, and the

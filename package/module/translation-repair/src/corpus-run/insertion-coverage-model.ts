@@ -1,4 +1,8 @@
 import { admitWithinShortfall, } from '../coverage-corroboration.ts';
+import {
+  interiorShortfall,
+  type UntranslatedTail,
+} from '../coverage-tail.ts';
 import type { CarriedInsertion, } from '../insertion-admission.ts';
 
 //region Insertion coverage model
@@ -113,6 +117,9 @@ export type InsertionCoverageClassification = {
  @param sourceText - whole original for shortfall calculation
  
  @param targetText - whole target for shortfall calculation
+
+ @param tail - untranslated tail read off the pairing, admitted on its own
+ budget (owner, 2026-09-19)
  
  @returns Current insertion resolution and findings
  
@@ -124,6 +131,7 @@ export type InsertionCoverageClassification = {
    frontMatterPositions: new Set(),
    sourceText: '',
    targetText: '',
+   tail: readUntranslatedTail({ slices: [], }),
  });
  ```
  */
@@ -134,12 +142,14 @@ export function classifyInsertionCoverage(
     frontMatterPositions,
     sourceText,
     targetText,
+    tail,
   }: {
     readonly candidates: readonly InsertionCandidate[];
     readonly rows: readonly InsertionCoverageRow[];
     readonly frontMatterPositions: ReadonlySet<number>;
     readonly sourceText: string;
     readonly targetText: string;
+    readonly tail: UntranslatedTail;
   },
 ): InsertionCoverageClassification {
   /**
@@ -178,11 +188,28 @@ export function classifyInsertionCoverage(
       };
     },);
   /**
+   Absent passages standing in an untranslated tail too large for the last
+   agreed pair to have absorbed, admitted on that bound (owner, 2026-09-19;
+   XingZ608).
+   */
+  const tailAdmitted = new Set(absent
+    .filter(function inTail(row,): boolean {
+      /**
+       Whether this row stands in the tail.
+       */
+      const inTailRun = tail.positions
+        .has(row.position,);
+      return tail.exceedsLastPair && inTailRun;
+    },)
+    .map(function toPosition(row,): number {
+      return row.position;
+    },),);
+  /**
    Absent passages requiring whole-page shortfall corroboration.
    */
   const shortfallPassages = absent
     .filter(function needsShortfall(row,): boolean {
-      return row.missingDestinationCount === 0;
+      return (row.missingDestinationCount === 0) && (!tailAdmitted.has(row.position,));
     },)
     .map(function toPassage(row,) {
       return {
@@ -197,6 +224,11 @@ export function classifyInsertionCoverage(
     sourceText,
     targetText,
     passages: shortfallPassages,
+    shortfall: interiorShortfall({
+      sourceText,
+      targetText,
+      tail,
+    },),
   },)
     .map(Number,),);
   /**
@@ -206,7 +238,9 @@ export function classifyInsertionCoverage(
     ...frontMatterPositions,
     ...absent
       .filter(function corroborated(row,): boolean {
-        return (row.missingDestinationCount > 0) || shortfallAdmitted.has(row.position,);
+        return (row.missingDestinationCount > 0)
+          || tailAdmitted.has(row.position,)
+          || shortfallAdmitted.has(row.position,);
       },)
       .map(function toPosition(row,): number {
         return row.position;
@@ -243,8 +277,10 @@ export function classifyInsertionCoverage(
             String(row.asked,)
           } asked, no anchored claim; read as absent for the shortfall)`,]
           : []),
-        `insertion-corroboration (slice ${String(row.sliceIndex,)}, shortfall ${
-          shortfallAdmitted.has(row.position,) ? 'admitted' : 'refused'
+        `insertion-corroboration (slice ${String(row.sliceIndex,)}, ${
+          tailAdmitted.has(row.position,)
+            ? 'tail admitted'
+            : `shortfall ${shortfallAdmitted.has(row.position,) ? 'admitted' : 'refused'}`
         }, missing destinations ${String(row.missingDestinationCount,)}, admission ${
           positions.has(row.position,) ? 'admitted' : 'refused'
         })`,

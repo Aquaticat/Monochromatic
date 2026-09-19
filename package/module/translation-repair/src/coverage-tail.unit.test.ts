@@ -123,6 +123,33 @@ await describe({
         expect(tail.expansion,).toBe(3,);
         expect(tail.sourceCodePoints,).toBe(TAIL_SOURCE.length * 2,);
         expect(tail.expected,).toBe(TAIL_SOURCE.length * 2 * 3,);
+        expect(tail.lastPairTargetCodePoints,).toBe(PAIRED_TARGET.length,);
+        expect(tail.exceedsLastPair,).toBe(true,);
+      },
+    },),
+    it({
+      name: 'LEAVES A TAIL THE LAST PAIR COULD HAVE ABSORBED with the whole-page budget, '
+        + 'since size is the one model-free reading of a merge',
+      fn: async () => {
+        /**
+         One short source-only slice after a pair whose rendering is larger than its expectation.
+         */
+        const tail = readUntranslatedTail({
+          slices: [
+            pairedSlice({ sliceIndex: 0, },),
+            insertionSlice({ sliceIndex: 1, },),
+          ],
+        },);
+        expect([...tail.positions,],).toEqual([1,],);
+        expect(tail.exceedsLastPair,).toBe(false,);
+        expect(interiorShortfall({
+          sourceText: `${PAIRED_SOURCE}\n\n${TAIL_SOURCE}\n`,
+          targetText: PAIRED_TARGET,
+          tail,
+        },),).toBe(Math.max(
+          0,
+          ((PAIRED_SOURCE.length + TAIL_SOURCE.length + 2) * CORPUS_EXPANSION) - PAIRED_TARGET.length,
+        ),);
       },
     },),
     it({
@@ -151,25 +178,27 @@ await describe({
       name: 'TAKES THE TAIL OUT OF THE INTERIOR BUDGET, so the interior reads what the translated part is missing',
       fn: async () => {
         /**
-         Tail of one source-only slice after one agreed pair.
+         Tail of two source-only slices after one agreed pair, larger than its rendering.
          */
         const tail = readUntranslatedTail({
           slices: [
             pairedSlice({ sliceIndex: 0, },),
             insertionSlice({ sliceIndex: 1, },),
+            insertionSlice({ sliceIndex: 2, },),
           ],
         },);
         /**
-         Whole page: the translated paragraph and the tail.
+         Whole page: the translated paragraph and the tail; the trailing
+         newline is trimmed before counting, the separators are not.
          */
-        const sourceText = `${PAIRED_SOURCE}\n\n${TAIL_SOURCE}\n`;
+        const sourceText = `${PAIRED_SOURCE}\n\n${TAIL_SOURCE}\n\n${TAIL_SOURCE}\n`;
         expect(interiorShortfall({
           sourceText,
           targetText: PAIRED_TARGET,
           tail,
         },),).toBe(Math.max(
           0,
-          (PAIRED_SOURCE.length + 2) * CORPUS_EXPANSION - PAIRED_TARGET.length,
+          ((PAIRED_SOURCE.length + 4) * CORPUS_EXPANSION) - PAIRED_TARGET.length,
         ),);
       },
     },),

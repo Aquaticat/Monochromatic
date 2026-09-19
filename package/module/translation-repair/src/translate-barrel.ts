@@ -170,6 +170,11 @@ export {
   pageShortfall,
 } from './coverage-corroboration.ts';
 export {
+  interiorShortfall,
+  readUntranslatedTail,
+  type UntranslatedTail,
+} from './coverage-tail.ts';
+export {
   buildCoverageMessages,
   COVERAGE_RESPONSE_FORMAT,
   type CoverageDegree,
