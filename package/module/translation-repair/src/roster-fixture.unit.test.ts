@@ -123,10 +123,7 @@ const CLAIMS: readonly {
       'openrouter',
     ],
     reads: true,
-    holds: [
-      'writer-unmeasured',
-      'reader-unmeasured',
-    ],
+    holds: ['reader-unmeasured',],
   },
   {
     seat: SEAT_BEDROCK_ONLY_TEXT,
@@ -144,7 +141,7 @@ const CLAIMS: readonly {
     seat: SEAT_OPENROUTER_ONLY,
     reach: ['openrouter',],
     reads: false,
-    holds: [],
+    holds: ['translator-dropped',],
   },
   {
     seat: SEAT_OPENROUTER_DECISIONS,

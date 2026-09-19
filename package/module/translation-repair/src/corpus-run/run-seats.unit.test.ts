@@ -39,6 +39,7 @@ import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_OPENROUTER_DECISIONS,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_EDITOR,
@@ -136,9 +137,10 @@ await describe({
         + 'pictures (two readings no seated reader corroborated, 2026-09-08) and writes in both lanes (30 of '
         + '298 disinterested ballots in the producer calibration of 2026-09-08, not separated from the pooled '
         + 'null); google.gemma-4-31b reads pictures (8 of 8 corroborated), judges nothing and writes nothing; '
-        + 'inception/mercury-2.5 judges (14 of 14 on the fidelity probe of 2026-09-09) and writes in both lanes '
-        + '(18 of 101 disinterested ballots in the producer calibration of the same day, z -0.43, not separated '
-        + 'from the pooled null)',
+        + 'inception/mercury-2.5 judges (14 of 14 on the fidelity probe of 2026-09-09) and writes the '
+        + 'consolidation alone since the producer calibration of 2026-09-19 read it below the pooled null '
+        + '(10 of 108 disinterested ballots, z -3.00 across the threshold of 2.77); deepseek-v4.1-flash writes '
+        + 'in both lanes since that calibration (29 of 121, z +0.79, not separated from the null)',
       fn: async function seatsByMeasurement(): Promise<void> {
         const wet = judgeSeatsFor({ dry: ALL_WET, },);
         for (const candidate of BEDROCK_ONLY_ROSTER_IDS) {
@@ -173,9 +175,16 @@ await describe({
           expect(wet.readers.includes(seated,),).toBe(false,);
         }
         // The calibration read at 20:02 UTC on 2026-09-09 seated the one
-        // OpenRouter-only model as a writer; the build before it fails here.
-        expect(wet.translators.includes(SEAT_OPENROUTER_ONLY,),).toBe(true,);
+        // OpenRouter-only model as a writer; the one read at 16:45 UTC on
+        // 2026-09-19 took its translator seat back (z -3.00 below the pooled
+        // null, across the Bonferroni threshold of 2.77) and left it the
+        // consolidation seat, the same shape as deepseek-v4-pro-0813's exit.
+        expect(wet.translators.includes(SEAT_OPENROUTER_ONLY,),).toBe(false,);
         expect(wet.writers.includes(SEAT_OPENROUTER_ONLY,),).toBe(true,);
+        // The same calibration read deepseek-v4.1-flash at the null (z +0.79),
+        // so by the rule it takes the translator and the consolidation seat.
+        expect(wet.translators.includes(SEAT_HYPER_OPENROUTER_UNMEASURED,),).toBe(true,);
+        expect(wet.writers.includes(SEAT_HYPER_OPENROUTER_UNMEASURED,),).toBe(true,);
         for (const unmeasured of WRITER_UNMEASURED) {
           expect(wet.writers.includes(unmeasured,),).toBe(false,);
           expect(wet.translators.includes(unmeasured,),).toBe(false,);
