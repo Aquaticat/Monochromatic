@@ -26,6 +26,7 @@ import {
   TranslationRepairInterruptedError,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  type ChunkPair,
   type InsertionAdmission,
   type PreparedDocumentPair,
   type RosterModelId,
@@ -667,6 +668,136 @@ await describe({
               return finding.startsWith('insertion-unresolved-after-single-round (slice 1',);
             },),
         ).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+/**
+ Source paragraph the archive translated, standing before the tail.
+ */
+const TRANSLATED_SOURCE = '橘猫在窗台上睡了整个下午，阳光把它的毛烤得暖烘烘的。';
+
+/**
+ Its archive rendering, running long enough that the whole-page budget reads the page as complete.
+ */
+const TRANSLATED_TARGET = 'The orange cat slept on the windowsill all afternoon while the sun warmed its fur through. '
+  .repeat(3,);
+
+/**
+ Source paragraph after the archive's last agreed pair, never translated.
+ */
+const TAIL_SOURCE = '猫在夜里回家了，蜷在暖炉旁边睡着了。';
+
+/**
+ Builds a preparation whose archive stops after one agreed pair.
+
+ @param tailLast - whether the source-only slice stands after the pair (the tail) or before it (interior)
+
+ @returns Preparation holding one paired slice and one source-only slice
+
+ @example
+ ```ts
+ const prepared = preparedStoppedArchive({ tailLast: true, },);
+ ```
+ */
+function preparedStoppedArchive({ tailLast, }: { readonly tailLast: boolean; },): PreparedDocumentPair {
+  /**
+   Slice the archive translated.
+   */
+  const paired: ChunkPair = {
+    source: {
+      kind: 'content',
+      sliceIndex: tailLast ? 0 : 1,
+      nodes: [],
+      startOffset: 0,
+      endOffset: TRANSLATED_SOURCE.length,
+      text: TRANSLATED_SOURCE,
+    },
+    target: {
+      kind: 'content',
+      sliceIndex: tailLast ? 0 : 1,
+      nodes: [],
+      startOffset: 0,
+      endOffset: TRANSLATED_TARGET.length,
+      text: TRANSLATED_TARGET,
+    },
+  };
+  /**
+   Slice the archive never reached.
+   */
+  const missing: ChunkPair = {
+    source: {
+      kind: 'content',
+      sliceIndex: tailLast ? 1 : 0,
+      nodes: [],
+      startOffset: 0,
+      endOffset: TAIL_SOURCE.length,
+      text: TAIL_SOURCE,
+    },
+    target: makeInsertionChunk({ sliceIndex: tailLast ? 1 : 0, offset: 0, },),
+  };
+  return {
+    sourceText: tailLast
+      ? `${TRANSLATED_SOURCE}\n\n${TAIL_SOURCE}\n`
+      : `${TAIL_SOURCE}\n\n${TRANSLATED_SOURCE}\n`,
+    targetText: TRANSLATED_TARGET,
+    slices: tailLast
+      ? [
+        paired,
+        missing,
+      ]
+      : [
+        missing,
+        paired,
+      ],
+    lineStructuredSliceIndices: new Set(),
+    declaredNames: [],
+    alignmentFindings: [],
+    unclaimedTargetBlocks: [],
+    alignmentPairCount: 1,
+  };
+}
+
+await describe({
+  name: 'an archive that stops before the source does (owner, 2026-09-19; XingZ608)',
+  children: [
+    it({
+      name: 'ADMITS THE UNTRANSLATED TAIL on the pairing\'s evidence when the translated part runs long enough '
+        + 'to spend the whole-page budget',
+      fn: async () => {
+        const admission = await decidePassInsertionAdmission({
+          client: coverageClient({ replies: unanimous({ coverage: 'none', quote: '', },), },),
+          prepared: preparedStoppedArchive({ tailLast: true, },),
+          modelIds: ROSTER,
+          overlap: 1,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },);
+        expect([...admission.positions,],).toEqual([1,],);
+        expect(
+          admission.findings
+            .some(function namesTail(finding,): boolean {
+              return finding.includes('insertion-corroboration (slice 1, tail admitted',);
+            },),
+        ).toBe(true,);
+      },
+    },),
+    it({
+      name: 'STILL REFUSES an interior passage on the same long page, since the tail is read off the pairing '
+        + 'and the interior keeps the whole-page budget',
+      fn: async () => {
+        const admission = await decidePassInsertionAdmission({
+          client: coverageClient({ replies: unanimous({ coverage: 'none', quote: '', },), },),
+          prepared: preparedStoppedArchive({ tailLast: false, },),
+          modelIds: ROSTER,
+          overlap: 1,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },);
+        expect([...admission.positions,],).toEqual([],);
       },
     },),
   ],
