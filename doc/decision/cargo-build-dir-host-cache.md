@@ -126,12 +126,13 @@ cargo config get build.target-dir --show-origin -Zunstable-options
 ### Final artifacts stay local, intermediates do not
 
 After one build of a throwaway `bin` crate,
- `<crate>/target/debug/` held only final artifacts:
+ `<crate>/target/` held `CACHEDIR.TAG` and nothing else at its root,
+ and `<crate>/target/debug/` held only final artifacts:
 the executable,
  its `.d` dep-info file,
  `examples/`,
- `CACHEDIR.TAG`,
- and the two Cargo lock files.
+ and the two Cargo lock files,
+ `.cargo-lock` and `.cargo-artifact-lock`.
 It held no `deps/`,
  `build/`,
  `incremental/`,
