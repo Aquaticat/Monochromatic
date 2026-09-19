@@ -374,6 +374,20 @@ the poem attribution with its link among them.
 A definition the admitted slice brings in that no marker on the page references
 is trimmed at assembly by class twenty-one's orphan guard.
 
+## The untranslated tail
+
+Every source-only slice after the pairing's last agreed pair is the untranslated tail.
+Since the owner's decision of 2026-09-19 it is budgeted from the pairing
+(`coverage-tail.ts`):
+its expectation is its source at the page's own expansion over the paired slices,
+and when that expectation exceeds the last agreed pair's whole rendering
+the tail cannot have been merged there and every absent-voted slice in it is admitted on that bound,
+`insertion-corroboration (slice N, tail admitted, ...)`.
+A smaller tail stays with the whole-page budget,
+which leaves an admitted tail's source out.
+On XingZ60 the tail is slices 89 to 119,
+about 5,100 source code points where the whole-page budget had 10,794 for the whole page.
+
 ## What is folded out of candidate and archive text at intake
 
 Characters a reader cannot tell from their plain counterpart are folded

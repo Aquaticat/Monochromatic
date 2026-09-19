@@ -556,9 +556,18 @@ which the takeover session does not have.
   the pass log's headings dated 2026-09-19 02:35 and 02:45 UTC;
   fixed in `06b395ac7`,
   guards red first at `db5f0124e`).
-  `XingZ609` launched at 02:49 UTC on frozen `06b395ac7` (pid 775640,
-  runs `~/temp/agent/XingZ609`,
-  log `~/temp/agent/XingZ609.log`,
+  `XingZ609` (frozen `06b395ac7`) confirmed class fifty-nine live at its admission
+  and was killed at 03:24 UTC,
+  35 minutes in,
+  once the owner's "Do #1" landed:
+  the untranslated tail after the pairing's last agreed pair is budgeted from the pairing
+  (`5bda732de`,
+  guards red first at `c6c869267`,
+  the pass log's heading dated 2026-09-19 03:20 UTC;
+  "The shortfall budget question" is answered).
+  `XingZ610` launched at 03:24 UTC on frozen `5bda732de` (pid 834115,
+  runs `~/temp/agent/XingZ610`,
+  log `~/temp/agent/XingZ610.log`,
   `TRANSLATION_REPAIR_SLICE_OVERLAP=8`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
@@ -2375,6 +2384,17 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`5bda732de` (2026-09-19,
+03:20 UTC):
+the untranslated tail budgeted from the pairing on the owner's "Do #1"
+(`coverage-tail.ts`,
+`readUntranslatedTail` and `interiorShortfall`,
+wired into `classifyInsertionCoverage` and the pass admission;
+guards red first at `c6c869267`;
+the absence-verdict decision's addendum dated 2026-09-19 on the tail;
+measured first on every run with an artifact and a log,
+the pass log's heading dated 2026-09-19 03:20 UTC).
+Running on XingZ610.
 `06b395ac7` (2026-09-19,
 02:45 UTC):
 class fifty-nine,
@@ -2384,7 +2404,9 @@ wired after the container halves in `pass-insertion-admission.ts`;
 guards red first at `db5f0124e`;
 the absence-verdict decision's addendum dated 2026-09-19;
 found by the XingZ608 read).
-Running on XingZ609.
+Confirmed live on XingZ609's admission
+(definitions 117 and 118 admitted beside their markers);
+running on XingZ610.
 `eaaf39ec3` (2026-09-19,
 00:10 UTC):
 class fifty-eight,
@@ -4074,8 +4096,19 @@ the owner decides.
 
 ## The shortfall budget question
 
-OPEN,
-raised by the XingZ608 read on 2026-09-19
+ANSWERED AT 02:55 UTC ON 2026-09-19:
+"Do #1",
+the untranslated tail's own budget read off the pairing's last agreed pair
+(`5bda732de`,
+the pass log's heading dated 2026-09-19 03:20 UTC,
+the absence-verdict decision's addendum on the tail).
+Measured before building:
+a neighbour-sized window refuses real omissions,
+so the region is the tail alone,
+admitted when its expectation exceeds the last agreed pair's whole rendering.
+The question as it was asked:
+
+Raised by the XingZ608 read on 2026-09-19
 (the pass log's "Class fifty-nine" heading dated 2026-09-19 02:45 UTC).
 The whole-page shortfall budget
 (`doc/decision/translation-repair-absence-verdict.md`,
@@ -4102,8 +4135,7 @@ a budget per aligned region
 read off the pairing's last agreed pair)
 ahead of a whole-page budget that treats a page the archive left unfinished as one whose translated part is complete,
 ahead of leaving the budget as it stands and reading the recorded gaps.
-Not built;
-the owner decides.
+Built as `5bda732de`.
 
 ## The two defaults and the rule
 
@@ -4359,21 +4391,25 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ609` (frozen `06b395ac7`,
-    pid 775640,
-    runs `~/temp/agent/XingZ609`,
-    log `~/temp/agent/XingZ609.log`,
-    launched 02:49 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
+1.  READ `XingZ610` (frozen `5bda732de`,
+    pid 834115,
+    runs `~/temp/agent/XingZ610`,
+    log `~/temp/agent/XingZ610.log`,
+    launched 03:24 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry,
     `TRANSLATION_REPAIR_SLICE_OVERLAP=8` on the launch line;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    It is the first pass on class fifty-nine
-    (the pass log's heading dated 2026-09-19 02:45 UTC);
+    It is the first pass on the tail budget
+    (the pass log's heading dated 2026-09-19 03:20 UTC)
+    and the second on class fifty-nine
+    (confirmed live on XingZ609's admission before the kill);
     XingZ608 ran the whole pipeline in 2h16m and stopped INCOMPLETE at publish
     (the pass log's "XingZ608 read" heading dated 2026-09-19 02:35 UTC).
-    Read first the admission's `insertion-definition-admitted` lines for slices 112 to 119
-    (each naming the label and the referencing slice),
+    Read first the admission's `untranslated tail:` line
+    (31 slices,
+    "admitted on that bound")
+    and every tail slice's `tail admitted` corroboration with no `placement unresolved` on slices 89 to 119,
     then the translate lane's assembly
     (no `assembly-footnote-reverted unresolved-reference`,
     no `assembly-withdrew-every-replacement`),
@@ -4417,7 +4453,9 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (XingZ608 to its INCOMPLETE at publish:
+    (XingZ609 to its kill 35 minutes into the repair lane:
+    3.25 USD by the meters;
+    XingZ608 to its INCOMPLETE at publish:
     10.08 USD by the meters,
     7,958 seats,
     284 retry rounds,

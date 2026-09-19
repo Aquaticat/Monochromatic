@@ -168,8 +168,44 @@ the roster left the definition unplaced,
 and the page's graph is measurably short of it.
 A definition nothing references stays with the budget.
 
-The budget's own reading of a page whose archive stops early and runs long is an open question,
-recorded in the handover's "The shortfall budget question".
+The budget's own reading of a page whose archive stops early and runs long was an open question,
+answered in the next addendum.
+
+## Addendum 2026-09-19: the untranslated tail is budgeted from the pairing
+
+Owner,
+2026-09-19,
+"Do #1".
+The whole-page budget treats a page the archive left unfinished as one whose translated part is complete:
+XingZ60's archive ends at "Under Construction" with the source's second half untranslated,
+its translated half runs at about 3.3 code points per source code point against the median of 2.65,
+and the budget read 10,794 where the untranslated half alone expects about 14,900 at the page's own rate.
+
+The region that gets its own budget is the untranslated tail:
+every source-only slice after the pairing's last agreed pair,
+expected at the page's own expansion over its paired slices
+(`coverage-tail.ts`).
+Not a neighbour-sized window:
+measured over every run that left an artifact and a log,
+a window of one paired neighbour each side refused passages the pages needed
+(hakureico's last line,
+8 of xiept2's 25 interior passages,
+shi_Yumiaoya's slice 4),
+because one paragraph's expansion is noisy by more than a small passage's size.
+The whole-page budget stays for the interior,
+with an admitted tail's source left out.
+
+The second signature stays model-free.
+The pairing is a roster's work,
+so "nothing after the last pair" is not the deterministic reading this decision requires;
+size is.
+A tail whose expectation exceeds the last agreed pair's whole rendering cannot have been merged into it,
+the one place a tail could hide,
+and is admitted on that bound;
+a smaller tail stays with the whole-page budget.
+The roster-free `admitInsertions` path,
+which has no coverage verdict as its first signal,
+is unchanged.
 
 ## What this supersedes
 

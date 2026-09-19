@@ -8082,7 +8082,104 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
-## XingZ609 launches on class fifty-nine, 2026-09-19, 02:49 UTC
+## XingZ610 launches on the tail budget, 2026-09-19, 03:24 UTC
+
+Frozen `5bda732de` (classes forty-one to fifty-nine,
+the deepseek route,
+the untranslated tail's own budget),
+pid 834115,
+runs `~/temp/agent/XingZ610`,
+log `~/temp/agent/XingZ610.log`,
+`TRANSLATION_REPAIR_SLICE_OVERLAP=8` on the launch line,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+no cron job,
+the background waiter alone reports the exit.
+Read first the admission's `untranslated tail:` line
+(31 slices after the last agreed pair,
+about 5,100 source code points at the page's own expansion of about 2.9,
+expected about 14,900 against the last pair's rendering,
+"admitted on that bound"),
+then every tail slice's `insertion-corroboration (slice N, tail admitted, ...)` finding
+and no `placement unresolved` on slices 89 to 119,
+then the translate lane's assembly
+(no `assembly-footnote-reverted unresolved-reference`,
+no `assembly-withdrew-every-replacement`),
+then the bilibili link in the poem attribution on the page,
+then the nine definitions on the page under the original's labels,
+then the run time against XingZ608's 2h16m,
+then the seven steps and the three checks.
+
+## The untranslated tail is budgeted from the pairing, 2026-09-19, 03:20 UTC: the owner's "Do #1"
+
+The owner answered the shortfall budget question at 02:55 UTC with "Do #1":
+a budget per aligned region,
+the untranslated tail's own expectation read off the pairing's last agreed pair.
+Built in `5bda732de`
+(guards red first at `c6c869267`),
+after a measurement that narrowed the region to the tail.
+
+The measurement,
+over every run that left both an artifact and a log
+(the artifact's comparison rows give each slice's archive text,
+the repair lane's `SLICE-START` lines its source size,
+the admission's `coverage=` lines the roster's verdict):
+a window of one paired neighbour each side of an insertion run,
+read at the page's own paired expansion,
+refused passages the pages needed.
+hakureico's last line
+(73 source code points,
+wanting 172 at the page's 2.36)
+was refused on a neighbour 44 code points over its expectation;
+xiept2 lost 8 of 25 interior passages the same way;
+shi_Yumiaoya's slice 4 and noname's opening heading likewise.
+One paragraph's expansion is noisy by more than a small passage's size,
+so a neighbour-sized window cannot read a merge at that scale.
+The whole-page budget averages that noise away,
+which is why the decision of 2026-08-23 measured clean on 92 pairs;
+its blind spot is the page whose archive stops early and runs long.
+
+The tail is the one region the pairing makes exact.
+`readUntranslatedTail` (`coverage-tail.ts`) takes every source-only slice after the last agreed pair,
+the page's own expansion over its paired slices
+(the corpus median when nothing was paired),
+and the tail's expectation as its source at that expansion.
+The second signature stays model-free,
+as the decision requires:
+the pairing is a roster's work,
+so "nothing after the last pair" is not the deterministic reading;
+size is.
+A tail whose expectation exceeds the last agreed pair's whole rendering cannot have been merged into it,
+the one place a tail could hide,
+and is admitted on that bound
+(`insertion-corroboration (slice N, tail admitted, ...)`).
+A smaller tail stays with the whole-page budget,
+where it was.
+The interior's whole-page budget leaves an admitted tail's source out,
+so the tail's absence is not counted twice.
+The roster-free `admitInsertions` path,
+which has no coverage verdict as a first signal,
+is unchanged.
+On XingZ60 the tail is slices 89 to 119,
+about 5,100 source code points at the page's own 2.9,
+expected about 14,900 against slice 88's rendering of a few hundred:
+admitted whole,
+where the whole-page budget had 10,794 for everything.
+
+XingZ609 (frozen `06b395ac7`) was killed at 03:24 UTC under always-kill-and-relaunch,
+35 minutes in,
+118 repair chunks done,
+the translate lane not entered.
+Its admission had confirmed class fifty-nine live:
+`insertion-definition-admitted (slice 117 defines 4, referenced by the page ...)`
+and `(slice 118 defines 9, referenced by slice 94 ...)`,
+with slice 112 still unresolved on the budget,
+which the tail rule now covers.
+Spend by the meters:
+Bedrock 154.76 to 152.96,
+OpenRouter 222.07 to 220.62,
+3.25 USD.
+
 
 Frozen `06b395ac7` (classes forty-one to fifty-nine,
 the deepseek route),
