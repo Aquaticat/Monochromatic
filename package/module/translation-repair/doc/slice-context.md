@@ -332,6 +332,52 @@ No archive at the pinned corpus renders two distinct source headings identically
 so the archive's heading is always a distinct fallback.
 The publish guard keeps the last word for a page the restoration cannot mend.
 
+## Contributor names at page assembly
+
+A slice holds one heading or one signature,
+and nothing on its sheets says that `其三：绘都` and `——绘都, 2024 年 12 月 17 日` name one person,
+so a lane can translate the heading word for word
+(XingZ616,
+2026-09-19:
+`Painted Capital`,
+`Impermanence`)
+while the archive signs the same person `HiYku` and `Ann`,
+or respell the archive's handle in the signature itself
+(`Huidu`).
+Since class sixty-seven the page assembly guard reads every heading and signature the page would carry
+(`restoreContributorNames`):
+a name the original both heads a section with and signs is a person,
+and the page renders it one way everywhere.
+The archive's signature rendering is the authority where the archive carries the signature,
+else the page's own signature rendering,
+else the name stays as rendered.
+Only slices a lane replaced are rewritten;
+the archive's own text stands.
+Each rewrite is a page assembly override with a finding.
+
+## A numbered heading series at page assembly
+
+The original's `其一` to `其十` headings reach the page one slice at a time,
+and each slice's judges settle on their own spelling of the number
+(XingZ616:
+`One:`,
+none,
+`Three:`,
+`IV:`,
+`The Fifth:`,
+`Part Six:`,
+none,
+none,
+`IX:`,
+`Ten:`).
+Since class sixty-eight the page assembly guard renders the series in one style
+(`unifyHeadingSeries`):
+the style most of its headings took,
+the earliest on a tie,
+and no number at all where most headings carried none,
+which is the archive's convention on that page.
+A slice the archive alone carried gains a replacement when its heading changes.
+
 ## Footnote definitions a slice may carry
 
 A footnote is a relation between slices:

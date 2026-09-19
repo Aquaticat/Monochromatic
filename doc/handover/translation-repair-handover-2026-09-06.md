@@ -669,9 +669,16 @@ which the takeover session does not have.
   both links,
   nine definitions,
   front matter equal;
-  two quality observations open
-  (the section ordinals in seven styles,
-  two handles translated literally).
+  two quality observations,
+  the section ordinals in seven styles and two handles translated literally,
+  named classes sixty-seven and sixty-eight by the owner
+  ("Fix these quality observations")
+  and fixed in `c26648e2a`
+  (guards red first at `034d52b42`;
+  the pass log's heading dated 2026-09-19 15:35 UTC):
+  the page assembly renders a signer's name one way across headings and signatures,
+  the archive's signature rendering first,
+  and a numbered heading series in the one style most of its headings took.
   9.19 USD by the meters.
   The V4.1 Flash producer calibration was launched detached at 14:53 UTC
   (pid 1031770,
@@ -2489,6 +2496,26 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`c26648e2a` (2026-09-19,
+15:30 UTC):
+classes sixty-seven and sixty-eight,
+two page-assembly passes after the class forty-five restore:
+`restoreContributorNames`
+(`corpus-run/contributor-name-restore.ts`,
+a name the original both heads a section with and signs is rendered everywhere as the archive's signature renders it,
+else as the page's own signature does;
+only slices a lane replaced are rewritten)
+and `unifyHeadingSeries`
+(`corpus-run/heading-series-unify.ts`,
+the original's `其一` to `其十` series rendered in the style most page headings took,
+the earliest on a tie,
+ordinals dropped where most dropped them);
+readers in `corpus-run/assembly-page-text.ts`,
+`corpus-run/attribution-line.ts` and `corpus-run/ordinal-style.ts`;
+guards red first at `034d52b42`;
+replayed offline over XingZ616's page
+(the pass log's heading dated 2026-09-19 15:35 UTC).
+To run on XingZ617 once the V4.1 Flash calibration exits.
 `6eada935a` (2026-09-19,
 12:40 UTC):
 classes sixty-five and sixty-six,

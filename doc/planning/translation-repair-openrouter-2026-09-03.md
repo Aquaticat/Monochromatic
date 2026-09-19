@@ -8082,6 +8082,94 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Classes sixty-seven and sixty-eight, 2026-09-19, 15:35 UTC: one name one way, one series one style
+
+Owner,
+on the two quality observations of the XingZ616 read:
+"Fix these quality observations.
+If already fixed,
+tell me."
+Neither was fixed;
+both are classes of the same shape as class forty-five:
+each slice's judges see one heading or one signature,
+and nothing on any sheet says that two slices name one person or one series.
+So the page decides once,
+at page assembly,
+where every heading and signature is in view.
+Fixed in `c26648e2a`,
+guards red first at `034d52b42`
+(`contributor-name-restore.unit.test.ts`,
+`heading-series-unify.unit.test.ts`;
+cat-themed invention).
+
+Class sixty-seven,
+`restoreContributorNames` (`corpus-run/contributor-name-restore.ts`):
+a name the original both heads a section with
+(`其三：绘都`,
+the title equal to the name or ending with a colon and the name)
+and signs
+(a line opening with em dashes,
+the name,
+then a comma:
+`——绘都, 2024 年 12 月 17 日`)
+is a person.
+The authority for that person's rendering is the archive's signature at the same position
+when the archive signs as often as the original in that slice,
+else the page's own signature rendering,
+else the name stays as rendered.
+Every heading and signature naming that person in a slice a lane replaced is rewritten to the authority;
+the archive's own text is never rewritten.
+Findings `contributor-name-restored (slice N: "old" to "new" in a heading|a signature; the archive's|the page's signature rendering)`.
+
+Class sixty-eight,
+`unifyHeadingSeries` (`corpus-run/heading-series-unify.ts`):
+the original's headings whose title opens with `其`,
+a Han numeral and a colon are one series.
+Each page heading at the same position is read for the style its number took
+(`corpus-run/ordinal-style.ts`:
+cardinal,
+ordinal,
+roman or arabic,
+with or without a leader word such as `Part` or `The`,
+or no number).
+The series takes the style most headings took,
+the earliest on a tie,
+and every heading is rendered in it;
+where most headings carry no number,
+the archive's convention on this page,
+the ordinals are dropped.
+A slice the archive alone carried gains a replacement when its heading changes.
+Findings `heading-series-unified (slice N: "old" to "new"; K numbered headings in the style of "cardinal")`.
+
+Both run in `page-assembly-guard.ts` after the class forty-five restore and before the footnote guard;
+their rewritten rows ride the same override a restored heading does.
+The shared readers are `corpus-run/assembly-page-text.ts`
+(page text per slice with the archive as fallback,
+replacements folded in)
+and `corpus-run/attribution-line.ts`
+(the signature line).
+
+Replayed offline over XingZ616's settled page split at its level-3 headings
+(`~/temp/agent/replay-c67.mjs`,
+eleven sections against the original and the archive):
+the names pass rewrote `### Three: Painted Capital` to `### Three: HiYku`,
+`—Huidu` to `—HiYku`,
+`### IV: Impermanence` to `### IV: Ann`,
+`### Ten: Brocade Heart` to `### Ten: Jinxin`
+(the page's own signature,
+since the archive never carried the tenth section),
+and `### Baimao suki` to `### Baimao Suki`
+(the archive's own signature spells the handle so);
+the series pass then read three cardinal renderings against three with no number,
+took the earliest
+(`One:`),
+and rendered all ten `One:` to `Ten:`.
+The fourteen distinct headings stay fourteen.
+The whole unit suite passes on `c26648e2a`;
+the four package checks are clean.
+XingZ617 launches on a frozen `c26648e2a` once the V4.1 Flash calibration exits
+(no pass runs beside a calibration).
+
 ## XingZ616 read, 2026-09-19, 14:55 UTC: XingZ60 SETTLED
 
 The first settled XingZ60 page.
