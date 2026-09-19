@@ -160,6 +160,16 @@ export function countBallots(
   for (const ballot of ballots) {
     if (ballot.weight === 0) {
       counters.abstained += 1;
+      // AN ABSTENTION IS LOGGED WITH ITS REASON like a choice is. mikaela4
+      // (2026-09-19) lost a run-off to two abstentions whose grounds were
+      // readable only off the cached replies; a judge that declines has said
+      // something about the slate, and the record has to carry it.
+      l.info(
+        (ballot.best === CANDIDATE_NONE)
+          ? `${ballot.modelId} declined every candidate: ${ballot.reason}`
+          : `${ballot.modelId} named candidate ${String(ballot.best,)}, which is not on the slate of `
+            + `${String(candidateCount,)}: ${ballot.reason}`,
+      );
       continue;
     }
     if (ballot.weight === SELF_VOTE_WEIGHT)
