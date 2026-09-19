@@ -8093,11 +8093,26 @@ Bedrock and OpenRouter wet,
 Synthetic and Hyper dry at launch,
 no cron job,
 the background waiter alone reports the exit.
-Read first the admission
-(the tail on the bound,
-slice 70 on the container deficit,
-no `placement unresolved`),
-then the lanes:
+Admission read at 06:51 UTC,
+29 minutes in:
+class sixty-two live,
+54 "passed on its upstream endpoint's rate limit" lines against Mercury 2.5,
+no `markRefused] openrouter`,
+no `writing bench unreachable`;
+the tail admitted on the bound
+(31 slices,
+88 to 118 of 119,
+5,175 source code points at expansion 2.94,
+expected 15,215);
+no `placement unresolved` on any slice.
+No container deficit this run:
+the roster paired the memorial block's third and fourth paragraphs together with the archive's one
+(section 8,
+"paired 7 of 7 original and 6 of 6 translation blocks across 7 relations",
+relation `4>3`),
+so the block has no source-only slice and the repair lane carries both paragraphs as one content slice;
+read the block on the page for all four paragraphs.
+Read next the lanes:
 `passed on its upstream endpoint's rate limit` lines against Mercury 2.5 with no `markRefused] openrouter` beside them,
 no `writing bench unreachable`,
 then the translate assembly,
