@@ -695,8 +695,22 @@ which the takeover session does not have.
   (class sixty-nine,
   fixed in `bb4bb7556`,
   the pass log's heading dated 2026-09-19 17:20 UTC)
-  and was killed at 17:20 UTC;
-  XingZ619 runs on frozen `bb4bb7556` since 17:20 UTC.
+  and was killed at 17:20 UTC.
+  `XingZ619` (frozen `bb4bb7556`) SETTLED at 20:17 UTC,
+  2h57m,
+  one attempt
+  (the pass log's "XingZ619 read" heading dated 2026-09-19 20:40 UTC):
+  classes sixty-seven to sixty-nine live
+  (four names restored,
+  five headings unified into `Part One` to `Part Ten`,
+  slice 70 admitted on the block deficit and the memorial's four paragraphs on the page),
+  fourteen headings,
+  both links,
+  front matter equal,
+  Jev 240 of 240,
+  V4.1 Flash writing in both lanes and Mercury judging only in the translate lane;
+  one open observation (the Bird in a Cage attribution keeps its Chinese link text);
+  10.95 USD by the meters.
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -4633,19 +4647,13 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ XingZ619
+1.  XingZ619 IS READ
     (frozen `bb4bb7556`,
-    pid 1120922,
-    launched 17:20 UTC on 2026-09-19,
-    log `~/temp/agent/XingZ619.log`):
-    at its admission slice 70 admitted on the block deficit with no placement unresolved
-    (class sixty-nine),
-    then the page assembly findings `contributor-name-restored` and `heading-series-unified`
-    (classes sixty-seven and sixty-eight,
-    `c26648e2a`),
-    then V4.1 Flash's candidates on the translate slates and Mercury absent from them
-    (the seating of `9f8dcccd2`),
-    then the seven steps and the three checks.
+    SETTLED at 20:17 UTC on 2026-09-19,
+    the pass log's "XingZ619 read" heading dated 2026-09-19 20:40 UTC):
+    classes sixty-seven to sixty-nine live,
+    the seating of `9f8dcccd2` live,
+    the seven steps and the three checks clean.
     The V4.1 Flash producer calibration is read
     (the pass log's heading dated 2026-09-19 16:55 UTC):
     V4.1 Flash writes,
