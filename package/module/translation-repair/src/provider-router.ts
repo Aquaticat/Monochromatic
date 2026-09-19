@@ -46,6 +46,10 @@ import {
 } from './provider-router-slots.ts';
 import { SYNTHETIC_PER_MODEL_CONCURRENCY, } from './synthetic-client.ts';
 import {
+  createUpstreamModelHolds,
+  UPSTREAM_MODEL_HOLD_MS,
+} from './upstream-model-hold.ts';
+import {
   reachOf,
   visionReachOf,
 } from './roster-reach.ts';
@@ -173,6 +177,11 @@ function reachFor(
 
  @param decider - client of OpenRouter's decisions endpoint, when the run
  has the OpenRouter key; a decision seat is served by that one meter
+
+ @param modelHoldMs - how long a model whose upstream endpoint rate-limited
+ it is held out before it is asked again (class sixty-four)
+
+ @param now - clock the model holds are read by, injectable for tests
  
  @returns Client surface a stage calls without naming a provider
  
@@ -188,18 +197,30 @@ export function createRoutingClient(
     slotLimits = DEFAULT_SLOT_LIMITS,
     holdPollMs = HOLD_POLL_MS,
     decider,
+    modelHoldMs = UPSTREAM_MODEL_HOLD_MS,
+    now = Date.now,
   }: {
     readonly callers: ProviderRecord<Pick<ModelCaller, 'chatText'>>;
     readonly budgets: ProviderBudgets;
     readonly slotLimits?: SlotLimits;
     readonly holdPollMs?: number;
     readonly decider?: Decider;
+    readonly modelHoldMs?: number;
+    readonly now?: () => number;
   },
 ): ModelCaller {
   /**
    In-flight slots on the providers that limit them.
    */
   const ledger = createSlotLedger({ limits: slotLimits, },);
+
+  /**
+   Models held out because their upstream endpoint rate-limited them.
+   */
+  const modelHolds = createUpstreamModelHolds({
+    holdMs: modelHoldMs,
+    now,
+  },);
 
   /**
    Decides which provider takes one call, given what is known right now.
@@ -360,6 +381,19 @@ export function createRoutingClient(
     const last: { refused: ProviderName | typeof NOBODY_REFUSED; } = { refused: NOBODY_REFUSED, };
 
     /**
+     What is left of this model's own hold, zero when it is free.
+     */
+    const heldMs = modelHolds.remainingMs({ modelId: request.modelId, },);
+    if (heldMs > 0) {
+      // REFUSED WITHOUT A CALL, so a round counts the seat unreachable and
+      // neither asks nor waits for it (class sixty-four).
+      throw new NoProviderForModelError({
+        modelId: request.modelId,
+        reason: `its upstream endpoint rate-limited this model; held out for another ${String(heldMs,)}ms`,
+      },);
+    }
+
+    /**
      Which providers serve this call at all. COUNTED OVER THE REACH RATHER
      THAN THE ORDER since 2026-09-07, when a fourth provider that serves
      few of the roster's models joined: a loop bounded by the order would
@@ -401,9 +435,11 @@ export function createRoutingClient(
         };
       } catch (error) {
         if (isUpstreamModelRefusal({ error, },)) {
+          modelHolds.hold({ modelId: request.modelId, },);
           rl.warn(
             `${request.modelId}: ${provider} passed on its upstream endpoint's rate limit for this model; `
-              + 'the seat is lost this round and the provider stays where its meter puts it',
+              + `the seat is lost this round, the model is held out for ${String(modelHoldMs,)}ms `
+              + 'and the provider stays where its meter puts it',
           );
           throw error;
         }

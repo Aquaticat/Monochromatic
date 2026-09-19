@@ -73,7 +73,9 @@ const SIGNAL = new AbortController().signal;
  ```
  */
 function stubProviders(): {
-  readonly callers: ProviderRecord<{ readonly chatText: () => Promise<{ readonly text: string; }>; }>;
+  readonly callers: ProviderRecord<{
+    readonly chatText: (request: { readonly modelId: string; },) => Promise<{ readonly text: string; }>;
+  }>;
   readonly asked: string[];
 } {
   /**

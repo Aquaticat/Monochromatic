@@ -301,3 +301,8 @@ export {
   isUpstreamModelRefusal,
   statedWaitMsOf,
 } from './provider-budget-refusal.ts';
+export {
+  createUpstreamModelHolds,
+  UPSTREAM_MODEL_HOLD_MS,
+  type UpstreamModelHolds,
+} from './upstream-model-hold.ts';
