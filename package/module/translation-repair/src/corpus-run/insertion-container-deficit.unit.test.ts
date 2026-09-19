@@ -251,12 +251,37 @@ await describe({
       },
     },),
     it({
-      name: 'LEAVES a split with an anchored claim unresolved whatever the deficit',
+      name: 'ADMITS a split with a minority anchored claim on the deficit and names the split (class sixty-nine, XingZ618)',
       fn: async () => {
         const deficit = admitContainerDeficit({
           slices: containerSlices({ closeTarget: CLOSE_TARGET, },),
           positions: new Set(),
           unresolvedRows: [missingRow({ verdict: 'anchored-split', },),],
+        },);
+        expect([...deficit.positions,],).toEqual([2,],);
+        expect(deficit.unresolvedRows,).toEqual([],);
+        expect(deficit.findings
+          .some(function named(finding,): boolean {
+            return finding.startsWith('insertion-split-in-container-deficit (slice 2, full 0, partial 1, absent 1 of 2 asked',);
+          },),).toBe(true,);
+        expect(deficit.findings
+          .some(function named(finding,): boolean {
+            return finding.startsWith('insertion-container-deficit-admitted (slice 2 inside details of slices 0 to 3',);
+          },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'LEAVES a split with a majority carried verdict out whatever the deficit',
+      fn: async () => {
+        const deficit = admitContainerDeficit({
+          slices: containerSlices({ closeTarget: CLOSE_TARGET, },),
+          positions: new Set(),
+          unresolvedRows: [{
+            ...missingRow({ verdict: 'anchored-split', },),
+            verdictKind: 'carried',
+            anchoredFull: 2,
+            absentCount: 0,
+          },],
         },);
         expect([...deficit.positions,],).toEqual([],);
         expect(deficit.unresolvedRows.length,).toBe(1,);
