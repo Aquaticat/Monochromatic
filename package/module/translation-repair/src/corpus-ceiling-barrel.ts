@@ -39,4 +39,5 @@ export {
 export {
   admitContainerDeficit,
   CONTAINER_DEFICIT_ADMITTED_FINDING,
+  SPLIT_IN_CONTAINER_DEFICIT_FINDING,
 } from './corpus-run/insertion-container-deficit.ts';

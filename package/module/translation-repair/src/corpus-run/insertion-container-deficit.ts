@@ -23,6 +23,13 @@ import type { InsertionCoverageRow, } from './insertion-coverage-model.ts';
 // deficit lasts, in document order. A container the archive carries with as
 // many blocks as the original admits nothing here: a merged rendering is
 // what the roster's carried verdicts are for.
+// THE DEFICIT DECIDES A SPLIT TOO (class sixty-nine, XingZ618, 2026-09-19):
+// the rule first admitted absent verdicts alone, and the same third
+// paragraph split on its next run, one voice anchoring a claim on an
+// archive sentence the pairing never assigned, and stayed unresolved. A
+// minority anchored claim is no majority, and a block the archive
+// measurably lacks is the second signal; where a majority found the
+// passage carried, the row stays out. The shape of class sixty in the tail.
 
 /**
  Finding prefix an admitted passage is recorded under.
@@ -33,6 +40,16 @@ import type { InsertionCoverageRow, } from './insertion-coverage-model.ts';
  ```
  */
 export const CONTAINER_DEFICIT_ADMITTED_FINDING: string = 'insertion-container-deficit-admitted';
+
+/**
+ Finding prefix a split verdict the deficit decided is recorded under.
+
+ @example
+ ```ts
+ findings.some((finding) => finding.startsWith(SPLIT_IN_CONTAINER_DEFICIT_FINDING));
+ ```
+ */
+export const SPLIT_IN_CONTAINER_DEFICIT_FINDING: string = 'insertion-split-in-container-deficit';
 
 /**
  Not found, as `indexOf` reports it.
@@ -323,36 +340,59 @@ function carriedContainers(
 }
 
 /**
- Whether a row's roster verdict is absence: an absent majority, or a split
- with no anchored claim of coverage at all (class forty-eight).
+ Whether no majority found the passage carried: an absent majority, or a
+ split (class sixty-nine; class forty-eight's unanchored split among them).
 
  @param row - unresolved coverage row
 
- @returns True when no voice anchored coverage and some voted absent
+ @returns True when the verdict is absent or split
 
  @example
  ```ts
- const absent = unresolvedRows.filter(votedAbsent);
+ const undecided = unresolvedRows.filter(noMajorityCarried);
  ```
  */
-function votedAbsent(row: InsertionCoverageRow,): boolean {
-  if (row.verdictKind === 'absent')
-    return true;
-  return (row.verdictKind === 'split')
-    && (row.anchoredFull === 0)
-    && (row.anchoredPartial === 0)
-    && (row.absentCount > 0);
+function noMajorityCarried(row: InsertionCoverageRow,): boolean {
+  return (row.verdictKind === 'absent') || (row.verdictKind === 'split');
 }
 
 /**
- Admits absent passages inside one carried container while its block
- deficit lasts, in document order.
+ Finding naming a split the deficit decided, when the row is one with an
+ anchored claim; an unanchored split is read as absent already (class
+ forty-eight) and needs no second line.
+
+ @param row - row the deficit admitted
+
+ @returns One finding, or none
+
+ @example
+ ```ts
+ const lines = splitFinding({ row, },);
+ ```
+ */
+function splitFinding({ row, }: { readonly row: InsertionCoverageRow; },): readonly string[] {
+  /**
+   Whether any voice anchored a claim of coverage.
+   */
+  const anchored = (row.anchoredFull > 0) || (row.anchoredPartial > 0);
+  if ((row.verdictKind !== 'split') || (!anchored))
+    return [];
+  return [
+    `${SPLIT_IN_CONTAINER_DEFICIT_FINDING} (slice ${String(row.sliceIndex,)}, full ${String(row.anchoredFull,)}, partial ${
+      String(row.anchoredPartial,)
+    }, absent ${String(row.absentCount,)} of ${String(row.asked,)} asked; no majority, the block deficit decides)`,
+  ];
+}
+
+/**
+ Admits passages no majority found carried inside one carried container
+ while its block deficit lasts, in document order.
 
  @param container - carried container with its block counts
 
  @param unresolvedRows - rows neither admitted nor proven carried
 
- @returns Finding per admitted position
+ @returns Findings per admitted position
 
  @example
  ```ts
@@ -367,7 +407,7 @@ function spendDeficit(
     readonly container: CarriedContainer;
     readonly unresolvedRows: readonly InsertionCoverageRow[];
   },
-): ReadonlyMap<number, string> {
+): ReadonlyMap<number, readonly string[]> {
   /**
    Halves of the container.
    */
@@ -382,12 +422,12 @@ function spendDeficit(
   /**
    Positions admitted here, with their findings.
    */
-  const admitted = new Map<number, string>();
+  const admitted = new Map<number, readonly string[]>();
   /**
-   Absent rows inside this container in document order.
+   Rows no majority found carried inside this container, in document order.
    */
   const inside = unresolvedRows
-    .filter(votedAbsent,)
+    .filter(noMajorityCarried,)
     .filter(function within(row,): boolean {
       return (row.position >= open.position) && (row.position <= close.position);
     },)
@@ -417,18 +457,22 @@ function spendDeficit(
     deficit -= blocks;
     admitted.set(
       row.position,
-      `${CONTAINER_DEFICIT_ADMITTED_FINDING} (slice ${String(row.sliceIndex,)} inside ${open.name} of slices ${
-        String(open.sliceIndex,)
-      } to ${String(close.sliceIndex,)}: the original writes ${String(container.sourceBlocks,)} blocks there, `
-        + `the archive ${String(container.targetBlocks,)})`,
+      [
+        ...splitFinding({ row, },),
+        `${CONTAINER_DEFICIT_ADMITTED_FINDING} (slice ${String(row.sliceIndex,)} inside ${open.name} of slices ${
+          String(open.sliceIndex,)
+        } to ${String(close.sliceIndex,)}: the original writes ${String(container.sourceBlocks,)} blocks there, `
+          + `the archive ${String(container.targetBlocks,)})`,
+      ],
     );
   }
   return admitted;
 }
 
 /**
- Admits absent passages inside a container the archive carries with fewer
- blocks than the original writes there, while the deficit lasts.
+ Admits passages no majority found carried inside a container the archive
+ carries with fewer blocks than the original writes there, while the
+ deficit lasts.
 
  @param slices - prepared slices, whose source names the containers
 
@@ -461,12 +505,12 @@ export function admitContainerDeficit(
   /**
    Positions admitted over every carried container, with their findings.
    */
-  const admitted = new Map<number, string>();
+  const admitted = new Map<number, readonly string[]>();
   for (const container of carriedContainers({ slices, },)) {
     for (
       const [
         position,
-        finding,
+        findings,
       ] of spendDeficit({
         container,
         unresolvedRows,
@@ -474,7 +518,7 @@ export function admitContainerDeficit(
     )
       admitted.set(
         position,
-        finding,
+        findings,
       );
   }
   return {
@@ -485,7 +529,7 @@ export function admitContainerDeficit(
     unresolvedRows: unresolvedRows.filter(function stillUnresolved(row,): boolean {
       return !admitted.has(row.position,);
     },),
-    findings: [...admitted.values(),],
+    findings: [...admitted.values(),].flat(),
   };
 }
 
