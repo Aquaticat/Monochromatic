@@ -1016,3 +1016,123 @@ XingZ604 launched at 01:56 UTC on the frozen build and its JUDGE SEATS line read
 Evidence:
 `~/temp/agent/jev-probe.log`,
 `~/temp/agent/jev-probe/judge-fidelity-PzAXzN/judge-fidelity-probe/2026-09-18T01-40-41.110Z-7d877967.json`.
+
+## Addendum 2026-09-19: `deepseek-v4.1-flash` takes the writer seats and `inception/mercury-2.5` leaves the translator seat
+
+Taken on the delegation of 2026-09-01,
+by the rule of that day:
+a writer leaves the translator seat when its z crosses the Bonferroni threshold below the pooled null,
+and a candidate not separated from the null takes it.
+Instrument:
+`producer-calibrate 40 --candidates deepseek-v4.1-flash` on frozen `6eada935a`,
+launched detached at 14:53 UTC and printing `STANDING over 40 rounds` at 16:45,
+log `~/temp/agent/producer-calibrate-v41flash-20260919.log`,
+read with the scratch `read-standing.mjs`.
+About 0.24 USD by the OpenRouter spend lines,
+1h52m.
+
+Standing as printed,
+170 disinterested wins over 808 ballots,
+pooled null 21.0 percent,
+Bonferroni threshold for nine comparisons z 2.77:
+
+-   `gemma-4-26b-a4b-it`:
+    35.0 percent (36 of 103 disinterested ballots,
+    over 25 candidates),
+    adjusted 31.2,
+    z +3.46,
+    ABOVE the null.
+-   `hf:zai-org/GLM-5.3-Flash`:
+    32.5 (26 of 80,
+    over 22),
+    adjusted 25.5,
+    z +2.51.
+-   `deepseek-v4.1-flash`:
+    24.0 (29 of 121,
+    over 27),
+    adjusted 23.1,
+    z +0.79.
+-   `hf:Qwen/Qwen3.8-27B`:
+    22.1 (15 of 68,
+    over 18),
+    adjusted 14.2,
+    z +0.21.
+-   `hf:moonshotai/Kimi-K3`:
+    19.6 (10 of 51,
+    over 15),
+    adjusted 10.5,
+    z -0.25.
+-   `minimax-m3`:
+    18.2 (18 of 99,
+    over 27),
+    adjusted 17.5,
+    z -0.70.
+-   `google.gemma-4-e2b`:
+    16.7 (14 of 84,
+    over 19),
+    adjusted 11.3,
+    z -0.98.
+-   `hf:openai/gpt-oss-120b`:
+    12.8 (12 of 94,
+    over 26),
+    adjusted 11.9,
+    z -1.97.
+-   `inception/mercury-2.5`:
+    9.3 (10 of 108,
+    over 28),
+    adjusted 9.3,
+    z -3.00,
+    BELOW the null.
+
+The candidate is not separated from the null (z +0.79 against a threshold of 2.77),
+wrote 27 of 40 candidates,
+threw none of its 55 asks (`SEAT deepseek-v4.1-flash asked=55 usable=55 unusable=0 threw=0`),
+took the most round wins of the bench (8.3 of 35 winner-bearing slices,
+`gemma-4-26b-a4b-it` next at 6.8)
+and sat in the resampled top three 90.7 percent of the time.
+By the rule it takes the translator seat and,
+as a measured writer,
+the consolidation seat:
+`writer-unmeasured` leaves its card;
+`reader-unmeasured` stays,
+since no transcription has been measured.
+
+Mercury crossed the threshold below the null on this reading
+(z -3.00 against 2.77;
+its own calibration of 2026-09-09 read it at z -0.43,
+"a seat that does not lose,
+not a seat that wins").
+By the rule it leaves the translator seat and keeps the consolidation seat,
+the shape of `deepseek-v4-pro-0813`'s exit of 2026-09-09:
+`translator-dropped` goes on its card.
+It keeps every judge seat
+(14 of 14 on the fidelity probe of 2026-09-09;
+nothing here measures judging).
+Translators stay eight
+(V4.1 Flash in,
+Mercury out),
+consolidation writers eleven,
+stage quorum 4.
+
+Landed as `9f8dcccd2`,
+tests red first at `abcc4368c`
+(`roster-fixture.unit.test.ts`,
+`run-seats.unit.test.ts`,
+`deepseek-v41-admission.unit.test.ts`).
+XingZ617 (frozen `c26648e2a`,
+launched 16:45 UTC by the waiter on the calibration's exit)
+was killed at 16:54 UTC under always-kill-and-relaunch;
+XingZ618 runs on frozen `9f8dcccd2`.
+
+WHAT THIS STANDING DOES NOT SAY.
+The bench that judged it sat without Hyper
+(its balance 0,
+so `glm-5.3` threw 54 of 54 and no candidate of its reached any slate)
+and without Synthetic from 16:45 UTC
+(`Qwen3.8-27B` threw 17 of 46,
+`Kimi-K3` 25 of 59).
+Every candidate was compared under the same judges,
+so the standing among them holds.
+Mercury's ten wins over 108 ballots are a reading of one calibration;
+the v4-pro exit waited for a second reading because its first fell short of the threshold,
+and this one does not.

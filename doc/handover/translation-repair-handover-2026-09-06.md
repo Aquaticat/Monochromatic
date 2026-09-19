@@ -680,9 +680,16 @@ which the takeover session does not have.
   the archive's signature rendering first,
   and a numbered heading series in the one style most of its headings took.
   9.19 USD by the meters.
-  The V4.1 Flash producer calibration was launched detached at 14:53 UTC
+  The V4.1 Flash producer calibration ran detached from 14:53 to 16:45 UTC
   (pid 1031770,
-  log `~/temp/agent/producer-calibrate-v41flash-20260919.log`).
+  log `~/temp/agent/producer-calibrate-v41flash-20260919.log`)
+  and was read at once:
+  V4.1 Flash at the pooled null (z +0.79) takes the translator and consolidation seats,
+  Mercury 2.5 below it across the threshold (z -3.00) leaves the translator seat
+  (`9f8dcccd2`,
+  the seating decision's addendum dated 2026-09-19).
+  XingZ617 (frozen `c26648e2a`) was killed nine minutes in for the seating;
+  XingZ618 runs on frozen `9f8dcccd2` since 16:54 UTC.
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2496,6 +2503,16 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`9f8dcccd2` (2026-09-19,
+16:53 UTC):
+the seating the V4.1 Flash producer calibration decides,
+`deepseek-v4.1-flash` a translator and consolidation writer
+(`writer-unmeasured` off its card),
+`inception/mercury-2.5` out of the translator seat and still a consolidation writer
+(`translator-dropped` on its card);
+tests red first at `abcc4368c`;
+the seating decision's addendum dated 2026-09-19 and the pass log's heading dated 2026-09-19 16:55 UTC.
+Running on XingZ618.
 `c26648e2a` (2026-09-19,
 15:30 UTC):
 classes sixty-seven and sixty-eight,
@@ -4539,8 +4556,9 @@ and the naturalness confirmation challenges exactly the seats the discovery aske
 at the discovery's quorum.
 A fixture that scripts every seat says `fanOut: 'whole-bench'`;
 a fixture that counts calls counts `firstRoundWindow({ benchSize, })`.
-Mercury 2.5 judges since `fcc8ca197` (14 of 14 on the fidelity probe of 17:00 UTC)
-and writes nothing until its producer calibration is read (see "What to do next").
+Mercury 2.5 judges since `fcc8ca197` (14 of 14 on the fidelity probe of 17:00 UTC),
+wrote in both lanes from its calibration of 2026-09-09,
+and writes the consolidation alone since the calibration of 2026-09-19 read it below the pooled null.
 
 ## How a pass is launched now
 
@@ -4597,16 +4615,21 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ the V4.1 Flash producer calibration
-    (`producer-calibrate 40 --candidates deepseek-v4.1-flash`,
-    detached 14:53 UTC on 2026-09-19,
-    pid 1031770,
-    frozen `6eada935a`,
-    runs `~/temp/agent/calibrate-v41flash-20260919`,
-    log `~/temp/agent/producer-calibrate-v41flash-20260919.log`,
-    about three hours by precedent)
-    with the scratch `read-standing.mjs` against the pooled null,
-    and seat or not by that rule.
+1.  READ XingZ618
+    (frozen `9f8dcccd2`,
+    pid 1101029,
+    launched 16:54 UTC on 2026-09-19,
+    log `~/temp/agent/XingZ618.log`):
+    the page assembly findings `contributor-name-restored` and `heading-series-unified` first
+    (classes sixty-seven and sixty-eight,
+    `c26648e2a`),
+    then V4.1 Flash's candidates on the translate slates and Mercury absent from them
+    (the seating of `9f8dcccd2`),
+    then the seven steps and the three checks.
+    The V4.1 Flash producer calibration is read
+    (the pass log's heading dated 2026-09-19 16:55 UTC):
+    V4.1 Flash writes,
+    Mercury leaves the translator seat.
     XingZ60 is read
     (XingZ616 SETTLED,
     the pass log's "XingZ616 read" heading dated 2026-09-19 14:55 UTC);
@@ -4813,22 +4836,21 @@ each read off the pass log and the shipped page:
     `yingying` and `XingZ60`.
     Freeze the dist under `node_modules/.frozen-dist-<commit>` and launch with
     `launch-pass.mjs <runs-dir> <entry> <frozen-dir>`.
-    Between passes,
-    seat V4.1 Flash as a writer by measurement,
-    not by plan:
-    one `producer-calibrate 40 --candidates deepseek-v4.1-flash` run (the Mercury run of 2026-09-09 cost 1.82 USD
-    over 176 minutes),
+    V4.1 Flash was seated as a writer by measurement on 2026-09-19
+    (one `producer-calibrate 40 --candidates deepseek-v4.1-flash` run,
+    1h52m,
+    about 0.24 USD,
     read with `read-standing.mjs`,
-    seated by the pooled-null rule;
-    its judge seat is already measured.
-    Not concurrently with a pass.
+    seated by the pooled-null rule).
+    A calibration never runs concurrently with a pass.
 
-4.  THE ROSTER STANDS AS THE CALIBRATION LEFT IT (`028432713`,
-    `a5e0efc7f`;
-    both addenda in `doc/decision/translation-repair-roster-seating-2026-09-01.md`).
+4.  THE ROSTER STANDS AS THE CALIBRATIONS LEFT IT (`028432713`,
+    `a5e0efc7f`,
+    `9f8dcccd2`;
+    the addenda in `doc/decision/translation-repair-roster-seating-2026-09-01.md`).
     Eleven seats,
-    eight translators (Mercury in,
-    the anchor judge out),
+    eight translators (V4.1 Flash in,
+    Mercury and the anchor judge out),
     eleven consolidation writers,
     stage quorum 4.
     The owner curates additions to the community glossary,

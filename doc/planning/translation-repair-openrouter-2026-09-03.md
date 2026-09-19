@@ -8082,6 +8082,75 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## The V4.1 Flash calibration is read, V4.1 Flash writes, Mercury leaves the translator seat, 2026-09-19, 16:55 UTC
+
+`producer-calibrate 40 --candidates deepseek-v4.1-flash` (frozen `6eada935a`,
+pid 1031770,
+14:53 to 16:45 UTC,
+about 0.24 USD by the OpenRouter spend lines)
+printed `STANDING over 40 rounds`:
+170 disinterested wins over 808 ballots,
+pooled null 21.0 percent,
+Bonferroni threshold z 2.77 over nine comparisons.
+`deepseek-v4.1-flash` 29 of 121 disinterested ballots over 27 candidates,
+adjusted 23.1 percent,
+z +0.79,
+not separated from the null,
+55 of 55 asks usable,
+the most round wins of the bench (8.3 of 35) and 90.7 percent top-three inclusion over 4,000 resamples.
+`inception/mercury-2.5` 10 of 108 over 28,
+adjusted 9.3 percent,
+z -3.00,
+below the null across the threshold.
+`gemma-4-26b-a4b-it` above the null again (z +3.46).
+`glm-5.3` threw 54 of 54 (Hyper balance 0),
+so the table covers nine of ten seats.
+
+By the seating rule of 2026-09-01
+(a writer leaves the translator seat when its z crosses the threshold below the null;
+a candidate not separated from the null takes it):
+V4.1 Flash takes the translator and consolidation seats
+(`writer-unmeasured` off its card,
+`reader-unmeasured` stays),
+Mercury leaves the translator seat and keeps the consolidation seat
+(`translator-dropped` on its card,
+the shape of `deepseek-v4-pro-0813`'s exit).
+Translators stay eight,
+consolidation writers eleven,
+stage quorum 4.
+Landed as `9f8dcccd2`,
+tests red first at `abcc4368c`;
+the seating decision's addendum dated 2026-09-19.
+
+XingZ617 (frozen `c26648e2a`,
+launched at 16:45 UTC by the waiter the moment the calibration exited)
+was killed at 16:54 UTC nine minutes in,
+in its pictures phase
+(318 seats,
+0.22 USD by the OpenRouter spend lines),
+under always-kill-and-relaunch.
+XingZ618 launched at 16:54 UTC:
+frozen `9f8dcccd2`
+(classes sixty-seven and sixty-eight plus the seating),
+pid 1101029,
+runs `~/temp/agent/XingZ618`,
+log `~/temp/agent/XingZ618.log`,
+`TRANSLATION_REPAIR_SLICE_OVERLAP=8`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry.
+Meters at the calibration's end:
+Bedrock 135.12 USD,
+OpenRouter 199.35 USD,
+Hyper 0.
+To read first:
+the page assembly findings `contributor-name-restored` and `heading-series-unified`
+(HiYku in the third heading and its signature,
+Ann in the fourth,
+Jinxin in the tenth,
+the ten headings in one style,
+fourteen distinct headings),
+then V4.1 Flash's candidates on the translate slates and Mercury absent from them.
+
 ## Classes sixty-seven and sixty-eight, 2026-09-19, 15:35 UTC: one name one way, one series one style
 
 Owner,
