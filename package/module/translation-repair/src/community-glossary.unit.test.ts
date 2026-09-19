@@ -41,13 +41,14 @@ await describe({
   name: communityTermsIn.name,
   children: [
     it({
-      name: 'SEEDS THE TWO TERMS the archive had right and two pages lost, each with the archive\'s rendering first',
+      name: 'SEEDS THE THREE TERMS the bench lost (two the archive had right, one the archive misread too), each with the accepted rendering first',
       fn: async () => {
         expect(COMMUNITY_GLOSSARY.map(function termOf(entry,): string {
           return entry.term;
-        },),).toEqual(['自切', '超天酱',],);
+        },),).toEqual(['自切', '超天酱', '炸柜',],);
         expect(COMMUNITY_GLOSSARY[0]?.renderings[0],).toBe('self-surgery',);
         expect(COMMUNITY_GLOSSARY[1]?.renderings[0],).toBe('KAngel',);
+        expect(COMMUNITY_GLOSSARY[2]?.renderings[0],).toBe('outed',);
       },
     },),
 
