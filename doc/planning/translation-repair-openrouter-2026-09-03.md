@@ -8082,6 +8082,93 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela3 read and class seventy-two, 2026-09-19, 22:10 UTC: classes seventy and seventy-one live, 炸柜 seeded in the community glossary, mikaela4 launched
+
+`mikaela3` (frozen `cc088bc4b`) SETTLED at 22:03 UTC on its first attempt:
+34 min (21:29:38 to 22:03:31),
+33 slices,
+2,644 seats,
+129 retry rounds,
+1.18 USD by the spend lines and by the meters
+(Bedrock 128.82 to 128.20,
+OpenRouter 190.80 to 190.24),
+attempts 1.
+
+Class seventy-one is live.
+The block probed off the frozen dist over the entry's own documents reads
+`- 铨 (link text, https://twitter.com/yqua_): "𝓠𝓾𝓪𝓷"` under its heading,
+two judge reasons cite "the DECLARED NAMES block" and "the DECLARED NAMES section"
+(Mercury at 21:44 UTC on a repair slice,
+Gemma E2B at 21:48 UTC on a translate slate),
+and the dialogue line ships as `“𝓠𝓾𝓪𝓷, I really want to contribute to the community.”`
+where `mikaela1` shipped "Quan";
+every rendering of the handle on the page is the stylised form
+(the opening dialogue,
+the classmate parenthesis,
+the ride invitation,
+the closing excerpt and the first footnote).
+A reading-method correction:
+`prompt-payloads/` holds cached REPLIES keyed by request hash,
+not the sheets,
+so the block is not greppable there;
+the frozen dist probe and the judges' reasons are the evidence.
+
+Class seventy is live:
+the closing line ships `[𝓠𝓾𝓪𝓷](https://twitter.com/yqua_)’s Tea Dwelling` curled.
+
+The seven steps and the three checks against `mikaela1`:
+four headings,
+front matter equal,
+4 footnote markers as the archive,
+the archive's four translator-note comments kept,
+one `gate-kept-standing` and one `final-selection-unendorsed`
+(slice 16,
+against slices 5 and 13 and slices 5,
+13 and 31 on `mikaela1`),
+no error finish,
+no untranslated pronoun,
+attempts 1.
+Synthetic was wet at launch and read dry again at 22:01 UTC with its five-hour window spent
+(`syntheticFiveHour=2750/2750`)
+after 77 calls on four seats;
+the pass finished on Bedrock and OpenRouter.
+
+One regression against `mikaela1`,
+class seventy-two.
+The line `8 月下旬的某天，Mika 炸柜了。` shipped as
+`Mika came out (炸柜, literally “blew up the closet”).`
+where `mikaela1` shipped
+`Mika got blown out of the closet (炸柜, involuntarily outed).`
+and the archive has "tried coming out".
+The select reasons at 21:37 UTC show why:
+Gemma 26B called the community reading "risky" and offered "exploding a display cabinet" as the literal meaning,
+DeepSeek V4.1 Flash preferred "coming out without adding an interpretive clause",
+and nothing on any sheet said which reading the community's word carries,
+because `COMMUNITY_GLOSSARY` seeded only 自切 and 超天酱.
+炸柜 is the community's word for being outed against one's will,
+the closet blowing up;
+the pinned corpus carries it on 2 of 92 source pages
+(`mikaela_khara` and `XIEPT2`,
+whose line pairs it with the mother finding and throwing away the medication the same day).
+Seeded in `c807572ca` with the renderings "outed" and "blown out of the closet",
+guard red first at `7582175c8`,
+lint and types clean,
+the glossary and preparation suites green.
+The 21:25 UTC entry's second accuracy claim
+(a 连夜 line rendered "sent her a reply overnight")
+is retracted:
+neither 连夜 nor any reply line is on the source,
+the archive or either page.
+
+`mikaela4` launched at 22:09 UTC on frozen `c807572ca`
+(pid 1223668,
+`~/temp/agent/mikaela4`).
+To read first:
+the 炸柜 line,
+a judge reason citing the COMMUNITY TERMS line,
+classes seventy and seventy-one holding,
+then the seven steps and the three checks against `mikaela3`.
+
 ## Class seventy-one, 2026-09-19, 21:30 UTC: a page's names as the archive renders them reach every sheet; mikaela2 killed, mikaela3 launched
 
 The "Quan" observation of the 21:25 UTC entry is a class,

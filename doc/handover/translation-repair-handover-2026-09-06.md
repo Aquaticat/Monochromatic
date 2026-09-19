@@ -4647,21 +4647,41 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS SEVENTY-ONE IS BUILT
+1.  CLASS SEVENTY-TWO IS BUILT AND MIKAELA4 RUNS
+    (the pass log's heading dated 2026-09-19 22:10 UTC,
+    `c807572ca`,
+    guard `7582175c8`):
+    炸柜 (being outed against one's will) is seeded in the community glossary,
+    because `mikaela3` shipped it as "came out" where `mikaela1` had "blown out of the closet"
+    and no sheet said which reading the word carries.
+    `mikaela4` (frozen `c807572ca`,
+    pid 1223668,
+    launched 22:09 UTC) runs to read it live:
+    the 炸柜 line,
+    a judge reason citing the COMMUNITY TERMS line,
+    classes seventy and seventy-one holding,
+    then the seven steps and the three checks against `mikaela3`.
+    MIKAELA3 IS READ
+    (same heading):
+    SETTLED at 22:03 UTC in 34 min on one attempt,
+    1.18 USD by the meters;
+    class seventy-one live
+    (the 铨 line probed off the frozen dist,
+    two judge reasons cite the DECLARED NAMES block,
+    the dialogue line renders `𝓠𝓾𝓪𝓷`),
+    class seventy live
+    (the closing excerpt curled),
+    one gate-kept and one unendorsed standing (slice 16).
+    `prompt-payloads/` holds replies,
+    not sheets,
+    so a sheet block is read off the frozen dist and the judges' reasons.
+    Synthetic read dry again at 22:01 UTC with its five-hour window spent.
+    CLASS SEVENTY-ONE IS BUILT
     (the pass log's heading dated 2026-09-19 21:30 UTC,
     `cc088bc4b`,
     guard `3f88a6841`):
     every sheet carries the page's own renderings of its people and linked titles,
     read off same-href links and aligned signatures at preparation.
-    `mikaela2` was killed for it at 21:29 UTC;
-    `mikaela3` (frozen `cc088bc4b`,
-    pid 1211637,
-    launched 21:29 UTC) runs to read classes seventy and seventy-one live:
-    the 铨 line in a sheet's identity context,
-    the dialogue line rendered with `𝓠𝓾𝓪𝓷`,
-    the closing excerpt line with its curled `’s`,
-    then the seven steps and the three checks against `mikaela1`.
-    Its meters read Synthetic wet again (`syntheticWeekly=2%`).
     THE THREE SHAPES ARE READ AND CLASS SEVENTY IS FIXED
     (the pass log's heading dated 2026-09-19 21:25 UTC):
     `CuspariaKLSY`,
