@@ -634,9 +634,16 @@ which the takeover session does not have.
   (class sixty-four,
   open,
   under the same heading).
-  `XingZ614` launched at 09:38 UTC on frozen `4193495fa` (pid 966877,
-  runs `~/temp/agent/XingZ614`,
-  log `~/temp/agent/XingZ614.log`,
+  `XingZ614` (frozen `4193495fa`) was killed at 09:50 UTC,
+  12 minutes in and still in preparation,
+  once class sixty-four landed
+  (fixed in `fc428eaee`,
+  guard red first at `17084ca5e`:
+  a model its upstream endpoint rate-limited is held out 60 s and refused at call time as unreachable);
+  0.04 USD by the meters.
+  `XingZ615` launched at 09:50 UTC on frozen `fc428eaee` (pid 985599,
+  runs `~/temp/agent/XingZ615`,
+  log `~/temp/agent/XingZ615.log`,
   `TRANSLATION_REPAIR_SLICE_OVERLAP=8`);
   no cron job on the owner's word,
   the background waiter alone reports the exit.
@@ -2453,6 +2460,16 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`fc428eaee` (2026-09-19,
+09:45 UTC):
+class sixty-four,
+a model its upstream endpoint rate-limited is held out for the backoff and refused at call time as unreachable
+(`upstream-model-hold.ts`,
+wired in the router's text path with `modelHoldMs` and `now` injectable;
+guard red first at `17084ca5e`;
+the provider-concurrency troubleshooting doc's section dated 2026-09-19 extended;
+measured on XingZ613's lanes).
+Running on XingZ615.
 `4193495fa` (2026-09-19,
 09:30 UTC):
 class sixty-three,
@@ -4511,19 +4528,22 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ `XingZ614` (frozen `4193495fa`,
-    pid 966877,
-    runs `~/temp/agent/XingZ614`,
-    log `~/temp/agent/XingZ614.log`,
-    launched 09:38 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
+1.  READ `XingZ615` (frozen `fc428eaee`,
+    pid 985599,
+    runs `~/temp/agent/XingZ615`,
+    log `~/temp/agent/XingZ615.log`,
+    launched 09:50 UTC on 2026-09-19 with Bedrock and OpenRouter wet,
     Synthetic and Hyper dry,
     `TRANSLATION_REPAIR_SLICE_OVERLAP=8` on the launch line;
     no cron job on the owner's word,
     the background waiter alone reports the exit).
-    It is the first pass on class sixty-three
-    (the pass log's heading dated 2026-09-19 09:30 UTC)
+    It is the first pass on classes sixty-three and sixty-four
+    (the pass log's headings dated 2026-09-19 09:30 and 09:45 UTC)
     and the second on class sixty-two
-    (confirmed live on XingZ613's lanes);
+    (confirmed live on XingZ613's lanes).
+    Read first the repair lane's pace
+    (`SLICE-COST lane=repair` mean against XingZ613's 295 s and XingZ608's 62 s)
+    and the `held out for another` refusals where Inception limits Mercury;
     XingZ608 ran the whole pipeline in 2h16m and stopped INCOMPLETE at publish
     (the pass log's "XingZ608 read" heading dated 2026-09-19 02:35 UTC),
     XingZ613 stopped INCOMPLETE at 3h02m in consolidation.
@@ -4579,7 +4599,10 @@ each read off the pass log and the shipped page:
     then the archive block review,
     then the seven steps and the three checks,
     then the spend
-    (XingZ613 to its INCOMPLETE at 3h02m in consolidation:
+    (XingZ614 to its kill 12 minutes in,
+    in preparation:
+    0.04 USD by the meters;
+    XingZ613 to its INCOMPLETE at 3h02m in consolidation:
     7.81 USD by the meters,
     8,025 seats,
     262 retry rounds;

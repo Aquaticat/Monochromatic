@@ -8082,6 +8082,62 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ615 launches on class sixty-four, 2026-09-19, 09:50 UTC
+
+Frozen `fc428eaee` (classes forty-one to sixty-four and the tail budget),
+pid 985599,
+runs `~/temp/agent/XingZ615`,
+log `~/temp/agent/XingZ615.log`,
+`TRANSLATION_REPAIR_SLICE_OVERLAP=8`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+no cron job,
+the background waiter alone reports the exit.
+XingZ614 was killed at 09:50 UTC,
+12 minutes in,
+still in preparation
+(no admission,
+no Mercury pass-on yet),
+0.04 USD by the meters.
+Read first the repair lane's pace against XingZ613's
+(`SLICE-COST lane=repair` mean 295 s there,
+62 s on XingZ608)
+and the `held out for another` refusals where Inception limits Mercury
+(a `passed on` line,
+then held refusals for 60 s,
+then one more ask);
+then the consolidation of the `其九：空白` slice
+(`translate-runoff (finalists 2 of N)` where the first round splits,
+no `slate-declined-standing`);
+then the admission,
+the translate assembly,
+the memorial disclosure block with its four paragraphs,
+the bilibili link,
+the nine definitions,
+the run time against XingZ608's 2h16m,
+then the seven steps and the three checks.
+
+## Class sixty-four, 2026-09-19, 09:45 UTC: the rate-limited seat is asked again on every round
+
+Measured on XingZ613's lanes
+(the subsection under the class sixty-three heading).
+Fixed in `fc428eaee`
+(guard red first at `17084ca5e`,
+`provider-router-model-hold.unit.test.ts`):
+`upstream-model-hold.ts` keeps a hold per model,
+the router starts it on an upstream-model refusal
+(class sixty-two's passed-on 429)
+for `UPSTREAM_MODEL_HOLD_MS`,
+60 s,
+the provider hold's own backoff,
+and refuses the model at call time as `NoProviderForModelError`
+(`its upstream endpoint rate-limited this model; held out for another Nms`)
+until it ends,
+so a round counts the seat unreachable and neither asks nor waits for it;
+the provider and its other models are untouched,
+and the hold restarts on the next refusal.
+The router's pass-on line now names the hold.
+
 ## XingZ614 launches on class sixty-three, 2026-09-19, 09:38 UTC
 
 Frozen `4193495fa` (classes forty-one to sixty-three and the tail budget),

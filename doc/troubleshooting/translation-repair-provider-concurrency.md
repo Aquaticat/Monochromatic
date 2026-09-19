@@ -224,6 +224,16 @@ and stopped an entry whose editors and refiners sit on that provider alone
 (class sixty-two).
 `isUpstreamModelRefusal` in `provider-budget-refusal.ts` reads the body's opening
 and the router lets the seat go dark for the round instead of holding the provider.
+Letting it go dark for the round alone was not enough
+(class sixty-four,
+XingZ613):
+every later round asked the model again and waited its five-attempt ladder out in grace,
+14 to 32 s mean on the stages the model sat on against 0 to 6 s,
+and the repair lane took 1h39m against 35m.
+`upstream-model-hold.ts` now holds that one model out for 60 s after such a reply,
+and the router refuses it at call time as `NoProviderForModelError` until the hold ends,
+so a round counts the seat unreachable and neither asks nor waits;
+the provider's other models are served throughout.
 The OpenRouter error reference is client-rendered and could not be fetched with a plain request;
 the shape above is the live body.
 
