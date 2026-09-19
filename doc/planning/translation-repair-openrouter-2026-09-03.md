@@ -8082,6 +8082,81 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ612 launches on class sixty-one, 2026-09-19, 05:39 UTC
+
+Frozen `75f67fbd4` (classes forty-one to sixty-one and the tail budget),
+pid 895538,
+runs `~/temp/agent/XingZ612`,
+log `~/temp/agent/XingZ612.log`,
+`TRANSLATION_REPAIR_SLICE_OVERLAP=8`,
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry at launch,
+no cron job,
+the background waiter alone reports the exit.
+Read first the admission:
+the `untranslated tail:` line,
+then `insertion-container-deficit-admitted (slice 70 inside details of slices ...`
+and no `placement unresolved` at all,
+then the translate assembly,
+the memorial disclosure block on the page with its four paragraphs,
+the bilibili link,
+the nine definitions,
+the run time,
+then the seven steps and the three checks.
+
+## Class sixty-one, 2026-09-19, 05:30 UTC: the interior budget refuses a paragraph the archive's block is short of
+
+Found by XingZ611's admission,
+17 minutes after launch,
+and named a class by the owner.
+Class sixty read as designed:
+all 31 tail slices admitted on the bound,
+the five splits among them
+(95,
+106,
+107,
+113 and 118)
+included,
+nothing unresolved in the tail.
+Slice 70 was found absent
+(split on XingZ608 and XingZ610)
+and left "placement unresolved after the single round (verdict absent)":
+the interior keeps the whole-page budget,
+and on this page that budget is zero,
+since the archive's translated half runs at 2.99 code points per source code point against the median's 2.65.
+Slice 70 is the third paragraph of the memorial disclosure block
+(172 source characters,
+"her departure is an indictment of society and a call to each of us").
+The archive's block is a translation of another revision of that memorial,
+the Metal Gear Solid one,
+three paragraphs where the original writes four and a summary none of whose sentences the current original carries;
+the roster paired what it could and left the third paragraph source-only.
+The translate lane bought nothing for it
+("the page has no room to be missing it")
+and it would have shipped as a recorded gap.
+Fixed in `75f67fbd4`
+(guard red first at `1083b9163`,
+`insertion-container-deficit.unit.test.ts`):
+inside a container both of whose halves the archive carries,
+the original's block count against the archive's is the deterministic second signal the budget could not give,
+and absent verdicts inside are admitted while the deficit lasts,
+in document order,
+before the container halves
+(`insertion-container-deficit.ts`,
+the finding `insertion-container-deficit-admitted (slice N inside details of slices A to B: the original writes S blocks there, the archive T)`).
+A container the archive carries with as many blocks as the original admits nothing,
+and a split with an anchored claim is not an absent verdict.
+XingZ611 was killed at 05:37 UTC,
+1 hour and 42 minutes in,
+both lanes over
+(no withdrawal,
+no footnote revert on the translate assembly),
+6.91 USD by the meters
+(Bedrock 151.81 to 149.25,
+OpenRouter 219.58 to 215.23),
+5,675 seats,
+111 retry rounds.
+
 ## XingZ611 launches on class sixty, 2026-09-19, 03:55 UTC
 
 Frozen `de25b4ed8` (classes forty-one to sixty and the tail budget),

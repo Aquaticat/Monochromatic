@@ -228,6 +228,36 @@ still stays out of the admission,
 as does a split outside the tail,
 which the whole-page budget never spends on.
 
+## Addendum 2026-09-19: a container the archive carries short of blocks
+
+Class sixty-one,
+XingZ611,
+named a class by the owner.
+The interior keeps the whole-page budget,
+and on a page whose translated part runs longer than the median expansion that budget is zero,
+so no interior absent verdict can be corroborated by size.
+XingZ60's memorial disclosure block is the case:
+the archive renders another revision of the memorial in three paragraphs where the original writes four,
+the roster found the third paragraph absent,
+and the budget had nothing to spend.
+
+The second signature is the container's own shape,
+which is deterministic.
+Inside a container both of whose halves the archive carries,
+the original's blocks are counted against the archive's
+(blank-line separated,
+lone tags and comments blanked,
+the halves cut at their tags),
+and at least the difference has no rendering of its own.
+Absent verdicts inside are admitted while that deficit lasts,
+in document order,
+before the container halves and the definitions.
+A container the archive carries with as many blocks as the original admits nothing:
+a rendering that merges paragraphs is what the roster's carried verdicts are for.
+A split with an anchored claim is not an absent verdict here either.
+Sections between headings are not counted this way yet;
+no read page has needed it.
+
 ## What this supersedes
 
 `doc/planning/translation-repair-open-decisions.md` question 28, whose ranking was A > C > B > D

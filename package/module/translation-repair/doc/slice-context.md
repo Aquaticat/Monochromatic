@@ -374,6 +374,22 @@ the poem attribution with its link among them.
 A definition the admitted slice brings in that no marker on the page references
 is trimmed at assembly by class twenty-one's orphan guard.
 
+## A container the archive carries short of blocks
+
+Inside a container both of whose halves the archive carries,
+the original's blank-line separated blocks are counted against the archive's
+(class sixty-one,
+2026-09-19).
+When the original writes more,
+at least that many of its blocks have no rendering of their own,
+and a source-only slice inside the roster found absent is admitted on that deficit,
+`insertion-container-deficit-admitted (slice N inside details of slices A to B: the original writes S blocks there, the archive T)`,
+in document order while the deficit lasts.
+This is what admits an interior omission on a page whose translated part runs long,
+where the whole-page budget has nothing to spend.
+Equal block counts admit nothing;
+a split with an anchored claim is not an absent verdict.
+
 ## The untranslated tail
 
 Every source-only slice after the pairing's last agreed pair is the untranslated tail.
