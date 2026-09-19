@@ -8138,7 +8138,7 @@ and held the whole of OpenRouter out for 60 s
 Every OpenRouter seat read unreachable for the minute,
 the editors and refiners have no seat elsewhere while Synthetic and Hyper are dry,
 and the seat wait stopped the entry at the hold's end:
-"writing bench unreachable at lanes: editors 0 of 3 reachable, floor 2; refiners 0 of 3 reachable, floor 2; no provider has named its return".
+`writing bench unreachable at lanes: editors 0 of 3 reachable, floor 2; refiners 0 of 3 reachable, floor 2; no provider has named its return`.
 Three attempts,
 31 minutes,
 2.4 minutes and 1.7 minutes,
@@ -8156,7 +8156,7 @@ not the account's budget
 (`isUpstreamModelRefusal`);
 `isBudgetRefusal` excludes it,
 the router logs
-"passed on its upstream endpoint's rate limit for this model; the seat is lost this round and the provider stays where its meter puts it"
+`passed on its upstream endpoint's rate limit for this model; the seat is lost this round and the provider stays where its meter puts it`
 and rethrows,
 so the seat is dark for that round and the provider stays where its meter puts it.
 A bare 429 and a 402 stay budget refusals.
