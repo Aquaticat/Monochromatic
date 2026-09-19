@@ -63,6 +63,78 @@ function bindsWord({ character, }: { readonly character: string; },): boolean {
 }
 
 /**
+ Characters that close an inline span the prose mask leaves in place: a
+ link's `)`, a reference's `]`, an emphasis or strong `*` and `_`, a
+ strikethrough `~`, a code span's backtick and a tag's `>`.
+
+ CLASS SEVENTY (mikaela_khara, 2026-09-19). The archive's closing line reads
+ `[name](url)’s chronicle`; the page shipped `)'s` straight on a curly page
+ because only a letter or digit before the quote bound it into a word, and a
+ possessive after a link, an emphasis span or a tag has a delimiter there.
+ */
+const SPAN_CLOSERS: ReadonlySet<string> = new Set([
+  ')',
+  ']',
+  '*',
+  '_',
+  '~',
+  '`',
+  '>',
+],);
+
+/**
+ Whether a character closes an inline span, so a possessive quote after it
+ belongs to the word the span carries.
+
+ @param character - character before the quote, empty at a text boundary
+
+ @returns Whether a span ends there
+
+ @example
+ ```ts
+ const closes = closesSpan({ character: ')', },);
+ ```
+ */
+function closesSpan({ character, }: { readonly character: string; },): boolean {
+  return SPAN_CLOSERS.has(character,);
+}
+
+/**
+ Whether the text from an offset is the possessive clitic `s` and no more of
+ a word, which is the one reading a straight quote after a closed span has as
+ an apostrophe rather than as an opening quote.
+
+ @param text - replacement being scanned
+
+ @param at - offset just past the quote
+
+ @returns Whether `'s` ends a word there
+
+ @example
+ ```ts
+ const clitic = possessiveClitic({ text: "*Chorus*'s opening", at: 9, },);
+ ```
+ */
+function possessiveClitic(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): boolean {
+  /**
+   Character right after the quote, lowered.
+   */
+  const clitic = text.charAt(at,)
+    .toLowerCase();
+  if (clitic !== 's')
+    return false;
+  return !bindsWord({ character: text.charAt(at + 1,), },);
+}
+
+/**
  Counts straight double quotes without building a character array.
  
  @param text - text to scan
@@ -293,10 +365,42 @@ export function restoreTypography(
         const boundAfter = bindsWord({ character: replacement.charAt(index + 1,), },);
 
         /**
-         Whether the quote reads as an apostrophe: inside a word, or trailing
-         a word with nothing that could pair with it.
+         Whether a closed inline span stands before the quote.
          */
-        const apostrophe = boundBefore && (boundAfter || convertTrailing);
+        const spanBefore = closesSpan({ character: replacement.charAt(index - 1,), },);
+
+        /**
+         Whether the quote reads as an apostrophe inside or trailing a word:
+         inside a word, or trailing a word with nothing that could pair
+         with it.
+         */
+        const wordApostrophe = boundBefore && (boundAfter || convertTrailing);
+
+        /**
+         Whether the quote reads as a possessive after a closed span: the
+         `s` clitic follows, or nothing word-like follows and nothing could
+         pair with it.
+         */
+        const clitic = possessiveClitic({
+          text: replacement,
+          at: index + 1,
+        },);
+
+        /**
+         Whether the quote trails the span with nothing that could pair
+         with it.
+         */
+        const trailsSpan = (!boundAfter) && convertTrailing;
+
+        /**
+         Whether the quote reads as a possessive after a closed span.
+         */
+        const spanApostrophe = spanBefore && (clitic || trailsSpan);
+
+        /**
+         Whether the quote reads as an apostrophe either way.
+         */
+        const apostrophe = wordApostrophe || spanApostrophe;
         rebuilt.push(apostrophe ? CURLY_APOSTROPHE : character,);
         continue;
       }
