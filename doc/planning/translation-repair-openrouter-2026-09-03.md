@@ -8082,6 +8082,151 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## The three shapes read and class seventy, 2026-09-19, 21:25 UTC
+
+All three SETTLED on their first attempt on frozen `bb4bb7556`,
+the last exit at 20:57 UTC;
+1.95 USD together by the meters
+(Bedrock 129.81 to 128.87,
+OpenRouter 191.91 to 190.90),
+the three passes sharing both providers.
+
+-   `CuspariaKLSY` (`Cusparia1`):
+    SETTLED in 16 min,
+    4 slices,
+    377 seats,
+    9 retry rounds,
+    0.18 USD by the OpenRouter spend lines.
+    The ordered list ships with its four markers `1.` to `4.` in order,
+    one item per line,
+    a blank line between as the original;
+    the archive's `1.  ` double space is normalised.
+    Front matter equal,
+    one heading,
+    the contributor comment kept with its fullwidth colon as the archive has it.
+    The page follows the original where the archive did not:
+    the archive's "means fish in clear water" (a translator's addition) is gone,
+    the death paragraph is one paragraph as the original.
+    Observation,
+    recorded and not built:
+    tense.
+    Lines 11 to 25,
+    the archive's and unchanged,
+    read in the present ("She loves sunflowers",
+    "She thinks she doesn't have many friends");
+    lines 27 to 35,
+    the lanes' slices,
+    read in the past ("She did not place much value on her own life",
+    "She was an Eastern Orthodox Christian").
+    The original has no tense and the archive was present throughout.
+    No judge sees two slices at once,
+    the shape of class sixty-eight,
+    but a tense has no majority style to unify by.
+-   `zheermao101` (`zheermao1`):
+    SETTLED in 29 min,
+    15 slices,
+    924 seats,
+    37 retry rounds,
+    0.62 USD by the spend lines,
+    20 streams abandoned for 0.05.
+    The inline code span `` `-` `` at the head of the quote line ships verbatim.
+    Two headings,
+    front matter equal,
+    one `gate-kept-standing` (slice 13) shipped as `final-selection-unendorsed`,
+    attempts 1;
+    the read script's `refusal: 1` is the dialogue line "I can't wait that long",
+    not a refusal.
+    The archive's JSX comment `{/* 可以避开黑暗的锋芒... 这句不知道如何翻译 */}`
+    inside the reply-email transcription
+    (photo3;
+    an archive-only block,
+    `alignment target-unclaimed (pair 2: 4 translation blocks no original claims)`)
+    ships as a translated line,
+    "You can dodge the sharp edge of the darkness and hide for a while in those places where light remains":
+    the sentence is in the picture transcript
+    (the prompt payloads carry 锋芒),
+    so the review translated what the human translator left in a comment.
+    Page 150 lines against the archive's 139 by the semantic wrap.
+    Observation,
+    recorded and not built:
+    two spaced em-dashes in the last paragraph
+    on an archive page that carries none;
+    14 of the 92 archive pages use one,
+    so it is a page convention and not a corpus one.
+-   `mikaela_khara` (`mikaela1`):
+    SETTLED in 34 min,
+    33 slices,
+    2,239 seats,
+    55 retry rounds,
+    1.16 USD by the spend lines.
+    The `CapDownQuote` component:
+    the original carries it with five message pairs,
+    the archive rendered it as a plain blockquote of ten quoted lines,
+    and the page ships the archive's rendering,
+    untouched but for the wrap.
+    Four headings,
+    front matter equal,
+    4 footnote markers as the archive,
+    the archive's four Chinese translator-note comments kept,
+    two `gate-kept-standing` (slices 5 and 13),
+    three `final-selection-unendorsed` (slices 5, 13 and 31),
+    attempts 1.
+    Accuracy over the archive:
+    炸柜 rendered `got blown out of the closet (炸柜, involuntarily outed)`
+    where the archive had "tried coming out";
+    "the members of One Among Us sent her a reply overnight" (连夜)
+    where the archive had "one member sent her a reply immediately".
+
+Class seventy,
+found on that page's closing line.
+`Excerpt from [𝓠𝓾𝓪𝓷](https://twitter.com/yqua_)'s Mingju...` ships a straight apostrophe
+on a page whose archive curls it (`)’s`).
+`bindsWord` in `restore-typography.ts` accepted only a letter or digit before the quote,
+so `)'s`,
+`*'s` and `>'s` stayed straight while `Mika's` and `girls'` curled
+(probed through the frozen dist at 21:10 UTC).
+Fixed in `f664e1165`:
+a span closer
+(`)`,
+`]`,
+`*`,
+`_`,
+`~`,
+the backtick,
+`>`)
+before the quote binds it when the `s` clitic follows,
+or when it trails with no opener in the replacement;
+`*Note*'quoted words'` stays straight.
+Guard red first at `5599f4752`;
+the full unit suite green at `f664e1165`.
+`mikaela2` launched at 21:20 UTC on frozen `f664e1165`
+(pid 1201939,
+`~/temp/agent/mikaela2`)
+to read the class live on that line.
+
+Two more observations from the mikaela page,
+recorded and not built.
+The author's handle 铨铨 is rendered "Quan" once (line 238)
+against the archive's stylised `𝓠𝓾𝓪𝓷` five times on the page;
+the source's `[铨](https://twitter.com/yqua_)` and the archive's `[𝓠𝓾𝓪𝓷](...)` share an href,
+so the pair is readable at preparation.
+Class sixty-seven's restore reads signatures and headings only
+and cannot know that "Quan" stands for 铨铨 in dialogue;
+a per-page name glossary
+(aligned signatures and same-href links)
+read into every sheet is the mechanism,
+the shape of the owner's glossary decision of 2026-09-09.
+And the wrap breaks inside a parenthetical
+(`(炸柜,` then `involuntarily outed)`)
+and between short list items
+(`Mika,` then `Spring and I`):
+raised as repo issue #556 against `cli-markdown-lint`'s `semantic-line-breaks`
+and closed the same hour on the owner's word
+that Markdown soft breaks do not change what is displayed.
+
+The shape census is exhausted:
+every shape the corpus carries has a read page.
+
 ## The last three unmet shapes launch together, 2026-09-19, 20:23 UTC
 
 The census (scratch `unmet-shapes.mjs`,

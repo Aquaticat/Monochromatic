@@ -4647,7 +4647,32 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XingZ619 IS READ
+1.  THE THREE SHAPES ARE READ AND CLASS SEVENTY IS FIXED
+    (the pass log's heading dated 2026-09-19 21:25 UTC):
+    `CuspariaKLSY`,
+    `zheermao101` and `mikaela_khara` SETTLED on frozen `bb4bb7556` on their first attempts,
+    1.95 USD together;
+    the ordered list,
+    the inline code span and the `CapDownQuote` component ship as the archive has them;
+    the shape census is exhausted.
+    Class seventy
+    (a possessive apostrophe after a link,
+    an emphasis span or a tag stays straight)
+    is fixed in `f664e1165`,
+    guard `5599f4752`.
+    `mikaela2` (frozen `f664e1165`,
+    pid 1201939,
+    launched 21:20 UTC) runs to read it live:
+    read the closing `Excerpt from [𝓠𝓾𝓪𝓷](...)’s` line first,
+    then the seven steps and the three checks.
+    Three observations are open in that pass log entry,
+    none built:
+    tense drift across slices (Cusparia),
+    the author's handle rendered "Quan" once against `𝓠𝓾𝓪𝓷`
+    (mikaela;
+    a per-page name glossary into the sheets is the mechanism),
+    spaced em-dashes on an archive page without them (zheermao).
+    XingZ619 IS READ
     (frozen `bb4bb7556`,
     SETTLED at 20:17 UTC on 2026-09-19,
     the pass log's "XingZ619 read" heading dated 2026-09-19 20:40 UTC):
