@@ -188,18 +188,29 @@ export function classifyInsertionCoverage(
       };
     },);
   /**
-   Absent passages standing in an untranslated tail too large for the last
-   agreed pair to have absorbed, admitted on that bound (owner, 2026-09-19;
-   XingZ608).
+   Passages standing in an untranslated tail too large for the last agreed
+   pair to have absorbed, admitted on that bound (owner, 2026-09-19;
+   XingZ608). THE BOUND DECIDES A SPLIT TOO (class sixty, XingZ610,
+   2026-09-19): the rule first admitted absent verdicts alone, and three
+   tail slices, two paragraphs and a footnote definition split on every
+   run, stayed unresolved on one voice quoting an archive line the pairing
+   never assigned, and shipped as gaps. A minority anchored claim is no
+   majority; where a majority found the passage carried, the row stays out.
    */
-  const tailAdmitted = new Set(absent
+  const tailAdmitted = new Set(rows
     .filter(function inTail(row,): boolean {
       /**
        Whether this row stands in the tail.
        */
       const inTailRun = tail.positions
         .has(row.position,);
-      return tail.exceedsLastPair && inTailRun;
+      /**
+       Whether no majority found the passage carried.
+       */
+      const noMajorityCarried = (row.verdictKind === 'absent') || (row.verdictKind === 'split');
+      return tail.exceedsLastPair
+        && inTailRun
+        && noMajorityCarried;
     },)
     .map(function toPosition(row,): number {
       return row.position;
@@ -236,11 +247,12 @@ export function classifyInsertionCoverage(
    */
   const positions = new Set([
     ...frontMatterPositions,
-    ...absent
+    ...rows
       .filter(function corroborated(row,): boolean {
-        return (row.missingDestinationCount > 0)
-          || tailAdmitted.has(row.position,)
-          || shortfallAdmitted.has(row.position,);
+        if (tailAdmitted.has(row.position,))
+          return true;
+        return absent.includes(row,)
+          && ((row.missingDestinationCount > 0) || shortfallAdmitted.has(row.position,));
       },)
       .map(function toPosition(row,): number {
         return row.position;
@@ -270,12 +282,23 @@ export function classifyInsertionCoverage(
         return `insertion-front-matter-admitted (slice ${String(candidate.sliceIndex,)})`;
       },),
     ...rows.flatMap(function evidence(row,): readonly string[] {
+      /**
+       Whether the tail bound admitted this row over a minority anchored claim.
+       */
+      const splitInTail = (row.verdictKind === 'split')
+        && tailAdmitted.has(row.position,)
+        && (!absent.includes(row,));
       return [
         row.coverageFinding,
         ...((row.verdictKind === 'split') && absent.includes(row,)
           ? [`insertion-split-unanchored (slice ${String(row.sliceIndex,)}, absent ${String(row.absentCount,)} of ${
             String(row.asked,)
           } asked, no anchored claim; read as absent for the shortfall)`,]
+          : []),
+        ...(splitInTail
+          ? [`insertion-split-in-tail (slice ${String(row.sliceIndex,)}, full ${String(row.anchoredFull,)}, partial ${
+            String(row.anchoredPartial,)
+          }, absent ${String(row.absentCount,)} of ${String(row.asked,)} asked; no majority, the tail bound decides)`,]
           : []),
         `insertion-corroboration (slice ${String(row.sliceIndex,)}, ${
           tailAdmitted.has(row.position,)
