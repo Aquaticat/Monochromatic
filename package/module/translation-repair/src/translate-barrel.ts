@@ -79,6 +79,8 @@ export {
   type Runoff,
   runoffFinalists,
 } from './translate-runoff.ts';
+export { floorTranslateVoices, } from './translate-floor.ts';
+export { untranslatedFindings, } from './translate-untranslated.ts';
 export {
   attemptTranslateSlice,
   type SliceAttempt,

@@ -10,15 +10,48 @@ import { isIdeograph, } from './preservation-tokens.ts';
 // that repeats a Han-carrying original is not a rendering of it and never
 // belongs on a slate.
 //
-// EXACT REPETITION ONLY, after trimming. A slice that carries nothing to
-// translate (a bare link, a component) is returned as it stands and must
-// pass; the ideograph test is what separates the two.
+// REPETITION IN ALL BUT WHITESPACE. Exact repetition after trimming the
+// ends was the first reading; on XingZ615 (2026-09-19, class sixty-five) a
+// consolidation writer returned the closing poem's original with a space
+// after each bare quote line, it passed the floor as the slate's only valid
+// candidate, three of four judges abstained on "a verbatim copy of the
+// Chinese original" and the entry stopped. A copy that differs only in
+// whitespace is the original. A slice that carries nothing to translate (a
+// bare link, a component) is returned as it stands and must pass; the
+// ideograph test is what separates the two.
 
 /**
  Finding text for the repeated original.
  */
-const UNTRANSLATED_FINDING = 'Your translation repeats the ORIGINAL untranslated, character for character. '
+const UNTRANSLATED_FINDING = 'Your translation repeats the ORIGINAL untranslated, in all but whitespace. '
   + 'Write the passage in English; keep only the names, handles, links and code the original carries.';
+
+/**
+ Text with every whitespace character removed, so two spellings of the same
+ characters compare equal whatever their line breaks and spacing.
+
+ @param text - text to strip
+
+ @returns Its non-whitespace characters in order
+
+ @example
+ ```ts
+ const bare = withoutWhitespace({ text: '> 猫 \r\n>\n', },); // '>猫>'
+ ```
+ */
+function withoutWhitespace({ text, }: { readonly text: string; },): string {
+  /**
+   Characters kept, in order.
+   */
+  const kept: string[] = [];
+  // ONE LINEAR PASS over code points; a character that trims to nothing is
+  // whitespace by the same definition `trim` uses.
+  for (const character of text) {
+    if (character.trim() !== '')
+      kept.push(character,);
+  }
+  return kept.join('',);
+}
 
 /**
  Finding for a candidate that repeats a Han-carrying original untranslated.
@@ -27,8 +60,8 @@ const UNTRANSLATED_FINDING = 'Your translation repeats the ORIGINAL untranslated
 
  @param candidateText - candidate under validation
 
- @returns One finding when the candidate is the original, character for
- character, and the original carries an ideograph; none otherwise
+ @returns One finding when the candidate is the original in all but
+ whitespace and the original carries an ideograph; none otherwise
 
  @example
  ```ts
@@ -45,13 +78,13 @@ export function untranslatedFindings(
   },
 ): readonly string[] {
   /**
-   Original without its surrounding whitespace.
+   Original without any whitespace.
    */
-  const source = sourceText.trim();
+  const source = withoutWhitespace({ text: sourceText, },);
   /**
-   Candidate without its surrounding whitespace.
+   Candidate without any whitespace.
    */
-  const candidate = candidateText.trim();
+  const candidate = withoutWhitespace({ text: candidateText, },);
   if (source !== candidate)
     return [];
   // ONE LINEAR PASS over code points; a character in the ideograph range is

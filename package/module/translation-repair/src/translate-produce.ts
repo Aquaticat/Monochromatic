@@ -14,6 +14,7 @@ import {
   buildTranslateCandidates,
   type TranslateCandidateValue,
 } from './translate-candidates.ts';
+import { floorTranslateVoices, } from './translate-floor.ts';
 import { repairInvalidCandidates, } from './translate-repair.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import { writerRoundGraceMs, } from './writer-grace-override.ts';
@@ -218,10 +219,22 @@ export async function produceTranslateSlate(
   },);
 
   /**
+   Candidates the deterministic publication rule accepts after the repair
+   turn; a text the rule refuses cannot reach the page and is withheld from
+   the judges (class sixty-six, XingZ615, 2026-09-19).
+   */
+  const floored = floorTranslateVoices({
+    voices: repaired.voices,
+    sourceText,
+    incumbentText,
+    ...((syntax === undefined) ? {} : { syntax, }),
+    lineStructured,
+  },);
+  /**
    Slate of distinct proposals with the incumbent among them.
    */
   const built = buildTranslateCandidates({
-    voices: repaired.voices,
+    voices: floored.voices,
     translatorModelIds,
     incumbentText: incumbentEligible ? incumbentText : '',
   },);
@@ -236,6 +249,7 @@ export async function produceTranslateSlate(
     findings: [
       ...gather.findings,
       ...repaired.findings,
+      ...floored.findings,
       ...built.findings,
       ...(incumbentEligible ? [] : ['translate incumbent excluded by deterministic source floor',]),
       `translate-candidates (${String(gather.voices
