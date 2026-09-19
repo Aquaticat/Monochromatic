@@ -543,3 +543,131 @@ await describe({
     },),
   ],
 },);
+
+/**
+ Paragraph the archive never carried, holding a source link and a marker:
+ the link admits it on destination evidence whatever the budget has left.
+ */
+const MARKER_PASSAGE = '猫的记录见[备忘](https://example.test/cat-record)[^1]。';
+
+/**
+ Builds a preparation whose two source-only slices are a marker's paragraph and a definition.
+
+ @param definition - definition block standing last, as definitions do
+
+ @returns Preparation holding the paragraph at slice 0 and the definition at slice 1
+
+ @example
+ ```ts
+ const prepared = preparedDefinition({ definition: '[^1]: 猫。', },);
+ ```
+ */
+function preparedDefinition({ definition, }: { readonly definition: string; },): PreparedDocumentPair {
+  /**
+   Offset of the definition in the source.
+   */
+  const definitionStart = MARKER_PASSAGE.length + 2;
+  return {
+    sourceText: `${MARKER_PASSAGE}\n\n${definition}\n`,
+    targetText: LONG_TARGET,
+    slices: [
+      {
+        source: {
+          kind: 'content',
+          sliceIndex: 0,
+          nodes: [],
+          startOffset: 0,
+          endOffset: MARKER_PASSAGE.length,
+          text: MARKER_PASSAGE,
+        },
+        target: makeInsertionChunk({ sliceIndex: 0, offset: 0, },),
+      },
+      {
+        source: {
+          kind: 'content',
+          sliceIndex: 1,
+          nodes: [],
+          startOffset: definitionStart,
+          endOffset: definitionStart + definition.length,
+          text: definition,
+        },
+        target: makeInsertionChunk({ sliceIndex: 1, offset: 0, },),
+      },
+    ],
+    lineStructuredSliceIndices: new Set(),
+    declaredNames: [],
+    alignmentFindings: [],
+    unclaimedTargetBlocks: [],
+    alignmentPairCount: 2,
+  };
+}
+
+await describe({
+  name: 'a definition the budget refused beside the marker that references it (class fifty-nine, XingZ608)',
+  children: [
+    it({
+      name: 'ADMITS THE DEFINITION BESIDE THE ADMITTED MARKER when the whole-page budget has no room left '
+        + '(XingZ608: the budget ran out 80 code points before the definitions and the assembly withdrew '
+        + 'every marker carrier)',
+      fn: async () => {
+        // Both slices are absent by every voice; the page is long, so only the
+        // link admits slice 0, and slice 1 is admitted by slice 0's marker.
+        const admission = await decidePassInsertionAdmission({
+          client: coverageClient({
+            replies: [
+              ...unanimous({ coverage: 'none', quote: '', },),
+              ...unanimous({ coverage: 'none', quote: '', },),
+            ],
+          },),
+          prepared: preparedDefinition({ definition: '[^1]: 猫在夜里回家了。', },),
+          modelIds: ROSTER,
+          overlap: 1,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },);
+        expect([...admission.positions,].toSorted(function ascending(
+          left,
+          right,
+        ): number {
+          return left - right;
+        },),).toEqual([
+          0,
+          1,
+        ],);
+        expect(
+          admission.findings
+            .some(function namesDefinition(finding,): boolean {
+              return finding.startsWith('insertion-definition-admitted (slice 1 defines 1, referenced by slice 0',);
+            },),
+        ).toBe(true,);
+      },
+    },),
+    it({
+      name: 'LEAVES A DEFINITION NOTHING REFERENCES unresolved under the same budget',
+      fn: async () => {
+        const admission = await decidePassInsertionAdmission({
+          client: coverageClient({
+            replies: [
+              ...unanimous({ coverage: 'none', quote: '', },),
+              ...unanimous({ coverage: 'none', quote: '', },),
+            ],
+          },),
+          prepared: preparedDefinition({ definition: '[^2]: 猫不喜欢洗澡。', },),
+          modelIds: ROSTER,
+          overlap: 1,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },);
+        expect([...admission.positions,],).toEqual([0,],);
+        expect(
+          admission.findings
+            .some(function namesUnresolved(finding,): boolean {
+              return finding.startsWith('insertion-unresolved-after-single-round (slice 1',);
+            },),
+        ).toBe(true,);
+      },
+    },),
+  ],
+},);
