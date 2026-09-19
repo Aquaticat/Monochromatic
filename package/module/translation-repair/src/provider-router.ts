@@ -26,6 +26,7 @@ import {
 import {
   isBudgetRefusal,
   isPaymentRefusal,
+  isUpstreamModelRefusal,
   statedWaitMsOf,
 } from './provider-budget-refusal.ts';
 import type { ProviderBudgets, } from './provider-budget.ts';
@@ -399,6 +400,13 @@ export function createRoutingClient(
           },),
         };
       } catch (error) {
+        if (isUpstreamModelRefusal({ error, },)) {
+          rl.warn(
+            `${request.modelId}: ${provider} passed on its upstream endpoint's rate limit for this model; `
+              + 'the seat is lost this round and the provider stays where its meter puts it',
+          );
+          throw error;
+        }
         if (!isBudgetRefusal({ error, },))
           throw error;
 

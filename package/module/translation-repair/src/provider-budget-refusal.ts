@@ -20,12 +20,58 @@ const BUDGET_REFUSAL_STATUSES: ReadonlySet<number> = new Set([
 ],);
 
 /**
+ How OpenRouter opens a reply body that carries one upstream endpoint's own
+ error instead of a verdict on our account.
+ */
+const UPSTREAM_ERROR_OPENING = '"message":"Provider returned error"';
+
+/**
+ Whether thrown failure is one model's upstream endpoint refusing the call,
+ passed on by the aggregator with our account untouched.
+ THE SIXTY-SECOND CLASS (XingZ612, 2026-09-19): Inception's shared pool
+ rate-limited Mercury 2.5 and OpenRouter answered
+ `429 {"error":{"message":"Provider returned error","code":429,"metadata":
+ {"raw":"inception/mercury-2.5 is temporarily rate-limited upstream. ...",
+ "provider_name":"Inception","provider_error_code":"rate_limit_exceeded",
+ "limit_source":"upstream_provider_shared_pool", ...}}}`; read as the
+ provider's budget refusal, every such reply held the whole of OpenRouter
+ out for 60 s, the editors and refiners (OpenRouter-only seats) read
+ unreachable, and the entry stopped three attempts running inside 34
+ minutes with every meter wet. The limit is that one model's, so the seat
+ is lost for the round and the provider stays where its meter puts it.
+ 
+ @param error - whatever call threw
+ 
+ @returns Whether one model's upstream endpoint, not the provider, refused
+ 
+ @example
+ ```ts
+ if (isUpstreamModelRefusal({ error, },)) rl.warn(`${modelId}: upstream rate limit, seat lost this round`,);
+ ```
+ */
+export function isUpstreamModelRefusal(
+  { error, }: { readonly error: unknown; },
+): boolean {
+  if (!(error instanceof SyntheticHttpError))
+    return false;
+  if (error.status !== HTTP_TOO_MANY_REQUESTS)
+    return false;
+  /**
+   Body opening the reply carried.
+   */
+  const { bodyExcerpt, } = error;
+  return bodyExcerpt.includes(UPSTREAM_ERROR_OPENING,);
+}
+
+/**
  Whether thrown failure says provider is out of budget.
  
  A subscription reports exhaustion as rate limit,
  while credit balance reports it as payment due.
  Retry ladder already rides transient 429 responses;
  reaching router means ladder exhausted.
+ A 429 the aggregator passes on from one model's upstream endpoint is that
+ model's refusal, not the provider's (`isUpstreamModelRefusal`).
  
  @param error - whatever call threw
  
@@ -40,6 +86,8 @@ export function isBudgetRefusal(
   { error, }: { readonly error: unknown; },
 ): boolean {
   if (!(error instanceof SyntheticHttpError))
+    return false;
+  if (isUpstreamModelRefusal({ error, },))
     return false;
   return BUDGET_REFUSAL_STATUSES.has(error.status,);
 }

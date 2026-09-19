@@ -298,5 +298,6 @@ export {
 export {
   isBudgetRefusal,
   isPaymentRefusal,
+  isUpstreamModelRefusal,
   statedWaitMsOf,
 } from './provider-budget-refusal.ts';
