@@ -8082,6 +8082,94 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela4 read and class seventy-three, 2026-09-19, 22:50 UTC: the glossary reading lands in the lane, the entry stops at a run-off two judges decided, mikaela5 launched
+
+`mikaela4` (frozen `c807572ca`) stopped INCOMPLETE at 22:32 UTC:
+24 min (22:09:14 to 22:32:49),
+2,392 seats,
+64 retry rounds,
+1.17 USD by the meters
+(Bedrock 128.20 to 127.54,
+OpenRouter 190.22 to 189.71),
+attempts 1,
+no page.
+
+Class seventy-two reached the lane.
+The repair select over the 炸柜 line at 22:14 UTC chose "Mika was outed":
+Mercury wrote that both candidates "convey the meaning of 炸柜 (outed) more accurately than the current text",
+Gemma E2B preferred "was outed" to "got outed" for the narrative's tense,
+DeepSeek called "got outed" the more idiomatic of the two.
+The page never assembled,
+so the line is read off the ballots rather than the page.
+
+The stop is class seventy-three.
+Slice 28 is the Epilogue,
+line-structured,
+nine lines.
+The contest's standing merged two of them,
+so the rule withheld it;
+the slate over the proposals and the two lane texts split 1.5 to 1 to 1 to 1
+(four heard,
+no abstention)
+against the minimum of 2;
+the run-off over the two leaders
+(the fourth addendum's narrowing)
+heard five:
+Gemma 26B named candidate 2 at half weight,
+its own,
+Gemma E2B named it,
+DeepSeek named candidate 1,
+and MiniMax and Mercury abstained,
+both declaring the finalists ineligible on grounds the rule had answered
+(咱 in 「咱很想为社群出一份力」 read as "we",
+where the archive renders "I";
+"both candidates merge lines",
+where the rule had counted nine in each).
+1.5 from two ballots against the minimum of 2,
+`slate-declined-standing`,
+the entry stopped.
+`mikaela3` had shipped the same slice as `slate-declined-standing` too,
+with a valid standing kept unchanged;
+the difference was one merged line in the contest winner.
+
+The fourth addendum left this case to end the slice.
+The owner's rule prefers the best valid proposal and fails the slice only where there is none;
+two finalists the rule and the slate's own verdicts found valid,
+and two judges agreeing on one,
+is a best valid proposal.
+Fixed in `6a9a7ce27`,
+guards red first at `49b9dccca`:
+the retry passes `runoff` with the finalists through `judgeTranslateSlate` to `decideBestCandidate`,
+and in a run-off the leader wins on the two-ballot floor under the weight minimum,
+carrying the finding `select-runoff-under-minimum`;
+the floor against one judge deciding is unchanged,
+and a run-off whose leader one judge alone named,
+or that ties,
+still ends the slice.
+Lint,
+types and the full suite green;
+the sixth ineligible-standing addendum records it.
+The retry suite's rig now scripts ballots per seat and learns which translator rendered which,
+since a self-vote is what puts two ballots under the minimum.
+
+Open,
+not built:
+an abstaining ballot's reason is not logged
+(only a choosing ballot's is),
+so the two reasons were read off the cached replies in `prompt-payloads/` by file time.
+
+`mikaela5` launched at 22:48 UTC on frozen `6a9a7ce27`
+(pid 1249923,
+`~/temp/agent/mikaela5`).
+To read first:
+slice 28's consolidation
+(whether the standing is withheld again,
+the slate,
+any run-off and its finding),
+the 炸柜 line on the page,
+classes seventy and seventy-one holding,
+then the seven steps and the three checks against `mikaela3`.
+
 ## mikaela3 read and class seventy-two, 2026-09-19, 22:10 UTC: classes seventy and seventy-one live, 炸柜 seeded in the community glossary, mikaela4 launched
 
 `mikaela3` (frozen `cc088bc4b`) SETTLED at 22:03 UTC on its first attempt:
