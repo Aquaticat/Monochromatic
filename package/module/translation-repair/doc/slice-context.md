@@ -448,8 +448,13 @@ and a source-only slice inside the roster found absent is admitted on that defic
 in document order while the deficit lasts.
 This is what admits an interior omission on a page whose translated part runs long,
 where the whole-page budget has nothing to spend.
-Equal block counts admit nothing;
-a split with an anchored claim is not an absent verdict.
+Equal block counts admit nothing.
+Since class sixty-nine (XingZ618,
+2026-09-19) the deficit decides a split verdict too:
+a minority anchored claim is no majority,
+the missing block is the second signal,
+and the row is admitted with `insertion-split-in-container-deficit (slice N, full F, partial P, absent A of K asked; no majority, the block deficit decides)` beside the deficit finding;
+a verdict a majority carried stays out.
 
 ## The untranslated tail
 

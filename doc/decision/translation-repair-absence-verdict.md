@@ -254,9 +254,32 @@ in document order,
 before the container halves and the definitions.
 A container the archive carries with as many blocks as the original admits nothing:
 a rendering that merges paragraphs is what the roster's carried verdicts are for.
-A split with an anchored claim is not an absent verdict here either.
+A split with an anchored claim was not an absent verdict here either,
+until class sixty-nine.
 Sections between headings are not counted this way yet;
 no read page has needed it.
+
+## Addendum 2026-09-19: inside a container's block deficit the deficit decides a split
+
+Class sixty-nine,
+XingZ618.
+The same third paragraph the deficit admitted on XingZ612 came back a split verdict on XingZ618
+(one voice anchoring a claim on an archive sentence,
+the rest absent)
+and stayed unresolved,
+because the deficit spent itself on absent verdicts and unanchored splits alone,
+the clause the class sixty-one addendum wrote.
+That is the class sixty shape inside a container instead of the tail:
+a split is no majority for coverage,
+and a block the archive measurably lacks is the second signal the deficit was adopted for.
+So inside a container the archive carries short of blocks,
+every row no majority found carried
+(absent or split)
+is admitted while the deficit lasts,
+in document order,
+a split with an anchored claim named by `insertion-split-in-container-deficit` with its tallies.
+A verdict a majority carried still stays out,
+and equal block counts still admit nothing.
 
 ## What this supersedes
 

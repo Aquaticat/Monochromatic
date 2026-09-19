@@ -689,7 +689,14 @@ which the takeover session does not have.
   (`9f8dcccd2`,
   the seating decision's addendum dated 2026-09-19).
   XingZ617 (frozen `c26648e2a`) was killed nine minutes in for the seating;
-  XingZ618 runs on frozen `9f8dcccd2` since 16:54 UTC.
+  XingZ618 (frozen `9f8dcccd2`) reached its admission at 17:13 UTC with slice 70,
+  the memorial's third paragraph,
+  unresolved on a split verdict inside the block deficit
+  (class sixty-nine,
+  fixed in `bb4bb7556`,
+  the pass log's heading dated 2026-09-19 17:20 UTC)
+  and was killed at 17:20 UTC;
+  XingZ619 runs on frozen `bb4bb7556` since 17:20 UTC.
   Also today:
   the Synthetic meter move between Mio20 and Mio21 was the owner's own DeepSeek V4.1 Flash use
   (`aa73b9b22`),
@@ -2503,6 +2510,17 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+`bb4bb7556` (2026-09-19,
+17:20 UTC):
+class sixty-nine,
+a container's block deficit decides a split verdict inside it
+(`insertion-container-deficit.ts`,
+finding `insertion-split-in-container-deficit`;
+guard red first at `280b99696`;
+the absence-verdict decision's seventh addendum dated 2026-09-19;
+found at XingZ618's admission on slice 70 again).
+XingZ618 killed at 17:20 UTC,
+running on XingZ619.
 `9f8dcccd2` (2026-09-19,
 16:53 UTC):
 the seating the V4.1 Flash producer calibration decides,
@@ -4615,12 +4633,14 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  READ XingZ618
-    (frozen `9f8dcccd2`,
-    pid 1101029,
-    launched 16:54 UTC on 2026-09-19,
-    log `~/temp/agent/XingZ618.log`):
-    the page assembly findings `contributor-name-restored` and `heading-series-unified` first
+1.  READ XingZ619
+    (frozen `bb4bb7556`,
+    pid 1120922,
+    launched 17:20 UTC on 2026-09-19,
+    log `~/temp/agent/XingZ619.log`):
+    at its admission slice 70 admitted on the block deficit with no placement unresolved
+    (class sixty-nine),
+    then the page assembly findings `contributor-name-restored` and `heading-series-unified`
     (classes sixty-seven and sixty-eight,
     `c26648e2a`),
     then V4.1 Flash's candidates on the translate slates and Mercury absent from them

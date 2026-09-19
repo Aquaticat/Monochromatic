@@ -8082,6 +8082,64 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Class sixty-nine, 2026-09-19, 17:20 UTC: the block deficit decides a split; XingZ618 killed, XingZ619 launched
+
+XingZ618's admission (17:13 UTC) left one slice unresolved:
+`slice 70: coverage=split` then `placement unresolved after the single round (verdict split); not admitted`.
+Slice 70 is the memorial disclosure block's third paragraph,
+the one XingZ611 read absent and refused on a zero interior budget (class sixty-one)
+and XingZ612 admitted on the block deficit (5 blocks against 4).
+This run the coverage round split on it
+(one voice anchoring a claim of coverage,
+the rest absent;
+the row's tallies are not on the log line,
+a gap the new finding closes),
+and `admitContainerDeficit` spent the deficit on absent verdicts and unanchored splits alone,
+so the paragraph would have shipped as a recorded gap on a page whose archive is measurably one block short there.
+The class sixty shape (a split inside the admitted tail decided by the bound) inside a container.
+
+Fixed in `bb4bb7556`,
+guard red first at `280b99696`:
+inside a container the archive carries short of blocks,
+every row no majority found carried (absent or split) is admitted while the deficit lasts,
+in document order,
+a split with an anchored claim named by
+`insertion-split-in-container-deficit (slice N, full F, partial P, absent A of K asked; no majority, the block deficit decides)`
+beside `insertion-container-deficit-admitted`;
+a majority carried verdict stays out.
+The absence-verdict decision's seventh addendum dated 2026-09-19;
+slice-context updated.
+The whole unit suite passes;
+oxlint and tsc clean.
+
+XingZ618 (frozen `9f8dcccd2`) was killed at 17:20 UTC,
+26 minutes in and 7 minutes into its repair lane,
+under always-kill-and-relaunch
+(1,519 seats,
+1.49 USD by the OpenRouter spend lines;
+meters Bedrock 134.29,
+OpenRouter 198.54).
+Its admission otherwise:
+the tail admitted on the bound (31 slices,
+expected 15,318 against the last pair's 173),
+no other placement unresolved,
+`translators=7 writers=9` with Synthetic and Hyper dry
+(V4.1 Flash in on OpenRouter,
+Mercury out).
+XingZ619 launched at 17:20 UTC:
+frozen `bb4bb7556`
+(classes sixty-seven to sixty-nine plus the seating),
+pid 1120922,
+runs `~/temp/agent/XingZ619`,
+log `~/temp/agent/XingZ619.log`,
+`TRANSLATION_REPAIR_SLICE_OVERLAP=8`.
+To read first at its admission:
+slice 70 admitted on the deficit
+(absent,
+or split with the new finding),
+no placement unresolved;
+then the page assembly findings and the translate slates as the XingZ618 heading says.
+
 ## The V4.1 Flash calibration is read, V4.1 Flash writes, Mercury leaves the translator seat, 2026-09-19, 16:55 UTC
 
 `producer-calibrate 40 --candidates deepseek-v4.1-flash` (frozen `6eada935a`,
