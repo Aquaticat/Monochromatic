@@ -8133,12 +8133,20 @@ pid 1120922,
 runs `~/temp/agent/XingZ619`,
 log `~/temp/agent/XingZ619.log`,
 `TRANSLATION_REPAIR_SLICE_OVERLAP=8`.
-To read first at its admission:
-slice 70 admitted on the deficit
-(absent,
-or split with the new finding),
-no placement unresolved;
-then the page assembly findings and the translate slates as the XingZ618 heading says.
+Its admission at 17:39 UTC:
+slice 70 split again at the coverage round
+(`coverage=split`,
+this time with no anchored claim,
+so the deficit finding stands alone)
+and was admitted,
+`insertion-container-deficit-admitted (slice 70 inside details of slices 67 to 71: the original writes 5 blocks there, the archive 4)`;
+the tail admitted on the bound
+(31 slices,
+expected 15,455 against the last pair's 173);
+no placement unresolved.
+Class sixty-nine's path ran with the class forty-eight shape;
+the anchored-split shape XingZ618 showed waits for another run.
+Then the page assembly findings and the translate slates as the XingZ618 heading says.
 
 ## The V4.1 Flash calibration is read, V4.1 Flash writes, Mercury leaves the translator seat, 2026-09-19, 16:55 UTC
 
