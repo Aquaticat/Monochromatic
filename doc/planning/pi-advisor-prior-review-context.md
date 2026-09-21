@@ -31,6 +31,28 @@ Neither setting has a demonstrated review-quality advantage in the issue's cited
 
 ## Evidence
 
+### Repository records include iterative review and a preference against guessed evidence selection
+
+`doc/handover/pi-advisor-413-grilling.md:273` records an initial Advisor review
+followed by another review checking the user's correction and withdrawal of a recommendation at line 282.
+This is a related review sequence,
+not evidence that every prior review is unrelated.
+It does not prove that the second review required the original tool result.
+
+`doc/planning/pi-advisor-recovery-policy.md:140` records rejection of task-scoped evidence selection:
+
+> Its possible relevance and input savings do not outweigh the risk of omitting a requirement,
+> earlier decision,
+> or cross-task dependency.
+
+That decision concerns inferred task boundaries,
+not this specific prior-review toggle.
+It nevertheless argues against introducing selective context as an assumed improvement without evidence.
+The unaccepted answer-substitution proposal also ranks full context ahead of selected or blind context in
+`doc/handover/pi-advisor-answer-substitution.md:854`.
+It is supporting design analysis,
+not an accepted decision about #407.
+
 ### The current switch removes original reviews but keeps their possible restatements
 
 `package/pi-plugin/advisor/src/config.ts:44` still sets:
