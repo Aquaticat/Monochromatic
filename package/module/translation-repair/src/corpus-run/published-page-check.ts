@@ -4,6 +4,7 @@ import {
   type WouldShipSource,
   wouldShipTextPerSlice,
 } from './would-ship-text.ts';
+import { matchSpanEdges, } from '../span-edge-match.ts';
 import { PublishedPageDisagreesError, } from './published-page-disagreement.ts';
 
 //region Published page check
@@ -185,9 +186,15 @@ function sliceDelta(
     return -held;
 
   /**
-   Characters this slice publishes in its place.
+   Characters this slice publishes in its place: the text as the splice writes
+   it, with the archive span's own line-ending edges rather than the lane's
+   (class seventy-five), so a lane's trailing newline is not counted as a
+   character the page then lost.
    */
-  const ships = reading.text
+  const ships = matchSpanEdges({
+    replaced: incumbentBySlice.get(slice.sliceIndex,) ?? '',
+    text: reading.text,
+  },)
     .length;
 
   return ships - held;
