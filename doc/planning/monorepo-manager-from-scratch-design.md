@@ -24,10 +24,10 @@
    keep building,
    correctness checks,
    and publication-related work current.
-  Automatic publication on a version bump is accepted for packages already present in the target registry;
-   an already-present version needs no publication,
-   and a never-published package is not automatically enrolled.
-  The publication source and trigger boundary remain to be designed.
+  The active discussion remains the non-task model of package maintenance.
+  Publication is explicitly deferred to 1.x,
+   with push to `main` recorded as its trigger boundary;
+   no publication question blocks 0.x.
   Configuration schema and ordering remain open,
    rather than following the withdrawn task-name questionnaire.
 - Implementation plan:
@@ -54,6 +54,10 @@
    decision,
    and answer in this document and in the decision records it links is scoped to meow 0.x;
    1.x and later may revisit any of them.
+  Later explicit exception:
+   the user deferred the entire publishing subsystem to 1.x during the non-task-model discussion.
+  Publication statements record that future direction,
+   not 0.x requirements.
 
 ## User-stated design requirements
 
@@ -82,6 +86,12 @@ Stated by the user on 2026-09-16.
 
 ### Automatic publication
 
+Deferred to 1.x by the user:
+"The publishing subsystem won't exist until 1.x".
+The agent's publication-policy detour did not resolve the active non-task-model question.
+This section records future direction only;
+publication adds no 0.x implementation work or blocker.
+
 Accepted during the software-model clarification:
 "Publication is automatic too.
 On version bump + target registry already has it".
@@ -94,14 +104,12 @@ not the newly bumped version:
 - A package never published to that registry does not receive automatic first publication.
 - No separate release request is required for an eligible update.
 
-The source and trigger boundary are not yet settled:
-a saved working-tree change,
-a commit,
-or a push to a release branch could establish eligibility.
-The identities of required correctness checks also remain to be designed;
-automatic publication does not imply that failed checks are ignored.
-This is a design decision,
-not authorization to publish anything during this session.
+The user chose push to `main` as the publication trigger boundary.
+Further publication design waits for 1.x;
+do not pursue its checks,
+registry protocol,
+or release machinery during the current model discussion.
+These answers do not authorize publishing anything during this session.
 
 ### Doctor command
 
@@ -3377,10 +3385,20 @@ The user then answered:
 On version bump + target registry already has it".
 The user confirmed the package reading,
 recorded in "Automatic publication".
-The next question establishes when a bumped version becomes eligible:
-on save,
-on commit,
-or on push to a release branch.
+The user then deferred the entire publication subsystem to 1.x,
+chose push to `main`,
+and instructed the agent to return to the model of non-tasks.
+No publication question remains in the active frontier.
+
+The current working proposal is package maintenance:
+meow intrinsically understands affected build outputs,
+current correctness results,
+and managed-file requirements.
+Executions are how it maintains them,
+not their common definition.
+Explain that model concretely before asking further schema or subsystem questions.
+The [software model exploration](monorepo-manager-software-model.md)
+records the repository example and the unresolved conceptual boundary with explicit one-off operations.
 It does not ask which task names get special treatment.
 
 Ordering remains open.

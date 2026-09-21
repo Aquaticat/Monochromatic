@@ -1,373 +1,199 @@
 # meow software model exploration
 
-## Status
+## Status and active scope
 
-Proposal for meow 0.x,
-not an accepted model or an implementation authorization.
-This continues the [from-scratch design](monorepo-manager-from-scratch-design.md)
-after the user rejected carrying forward Claude's definition of a task.
+Design only.
+No implementation is authorized.
+The active question is the model of development concerns that are not generic tasks.
+The [from-scratch design](monorepo-manager-from-scratch-design.md)
+remains the requirements record.
 
-The user's instruction:
+The user rejected Claude's framing:
 
 > Do not accept Claude's framing of what a "task" even is.
 > I believe better UX can be had by not thinking of stages that software must go through
 > in development as "build task" and so on.
 
-The previous inference,
-"build and test are special task names",
-is withdrawn.
-The user's earlier acceptance of `meow run` syntax does not establish that everything addressed by it is a task.
-The name,
-override,
-and namespace questionnaire assumed precisely the model now being challenged.
+The subsequent state-versus-stages questionnaire was also unhelpful.
+The user tentatively preferred state first but emphasized a coherent model of automatically keeping everything
+up to date across build,
+correctness,
+and publication.
+That answer did not adopt a new glossary or configuration schema.
 
-## Current clarification
+The agent then pursued publication-policy questions instead of resolving the non-task model.
+The user corrected that detour:
 
-The user answered the first question:
+> Do not get off-tracked.
+> The publishing subsystem won't exist until 1.x.
+> We're still talking about the model of "non-tasks".
+>
+> Answer:
+> push to main.
 
-> I'm not sure I can follow this reasoning.
-> I would say A but I would also say the inherent model of
-> "auto keeping everything up to date,
-> build correctness publish everything" does point at a pretty coherent model.
+Publication is absent from 0.x.
+Its deferral to 1.x explicitly overrides the earlier session-wide 0.x scope for that subsystem only.
+The recorded future trigger is push to `main`.
+No publication question blocks the current design.
 
-The state-versus-stages choice obscured that coherent responsibility.
-It is withdrawn as the question driving this design,
-not treated as blanket adoption of the proposed vocabulary.
-The user's preference for A was tentative.
+## Working proposal: package maintenance
 
-Working interpretation:
-meow continuously maintains the repository across building,
-correctness checks,
-and publication-related work.
-These are intrinsic responsibilities,
-not privileged commands in a generic task runner.
-One responsibility can require another's result without making users author a task sequence.
-The scheduling mechanism and configuration schema remain undecided.
+Meow continuously maintains the repository rather than waiting for the user to orchestrate recipes.
+Its intrinsic responsibilities describe software and what must stay current about it.
+They are not generic commands with privileged names.
 
-For example,
-a source edit makes some products and check results outdated.
-Meow does the affected work and reports what prevents reaching the intended state.
-A failing correctness check is an informative result,
-not an instruction to retry unchanged inputs until green.
-This formulation keeps the accepted watch and failure-cache behavior.
+For 0.x,
+that model must explain the already-required behavior:
 
-Publication is automatic too,
-per the user's subsequent answer:
-"Publication is automatic too.
-On version bump + target registry already has it".
-This supersedes the recommendation to await separate release intent.
-The user confirmed that the registry must already contain the package,
-not the newly bumped version.
-An already-present version needs no publication;
-a never-published package does not receive automatic first publication.
-The authoritative requirement is "Automatic publication" in the
-[from-scratch design](monorepo-manager-from-scratch-design.md#automatic-publication).
-No implementation or actual publication is authorized by this design answer.
+- Maintain affected build outputs.
+- Maintain current results for the default correctness checks,
+  including the accepted default test set.
+- Maintain managed-file requirements through the file-enforcer replacement.
 
-Independent review of this correction agreed that publication authority should be clarified before trigger timing.
-Commit,
-tag,
-version,
-and per-edit trigger choices are therefore not being proposed now.
+This is a coherent responsibility,
+not a choice between state and stages.
+It can have necessary ordering without making authors specify a universal sequence of tasks.
+A check that consumes a bundle needs that bundle;
+a source consumer need not wait for an unrelated bundle.
+The mechanism for expressing those relationships remains undecided.
 
-## Start from software rather than commands
+### Why these are not just tasks with new names
 
-Recommended direction:
-meow maintains knowledge about software and the work needed to keep that knowledge and its products current.
-A command execution is one means of doing that,
-not the common definition of everything the user cares about.
+An arbitrary task primarily tells meow how to execute an operation.
+An intrinsic responsibility tells meow what that operation means for the package.
 
-Working distinctions,
-not finalized configuration keywords:
+- For a build output,
+  meow knows which product is expected and whether it describes current inputs.
+  A successful old build does not make a missing or changed output current.
+- For a check,
+  meow knows what is being examined and whether the result still applies.
+  A current failing result is meaningful evidence,
+  not an instruction to rerun unchanged inputs until success.
+- For a managed file,
+  meow knows the required content or structure,
+  rather than merely remembering that a generator command once exited successfully.
 
-- Subject:
-  the package or other software being discussed.
-  Platform and output kind distinguish products when relevant;
-  they do not imply a single global package revision.
-- Product:
-  something usable,
-  such as a Node bundle or an executable for a particular platform.
-  Record whether it is present and whether its recorded inputs still match.
-- Evidence:
-  an observation about the software,
-  such as the result of a particular test suite.
-  Record its input provenance separately from whether the result passed.
-- Readiness for a use:
-  an answer assembled from the products and evidence that use requires.
-  Being usable for debugging need not mean being acceptable for release.
-  Neither use is proposed as a new command here.
-- Execution:
-  an attempt to produce a product,
-  obtain evidence,
-  or perform an imperative operation.
-  It still has identity,
-  output,
-  priority,
-  and process controls.
+Executions still exist and remain inspectable and controllable.
+They are how these responsibilities are maintained,
+not their definition.
+A custom command does not become an intrinsic responsibility merely because its name is `build` or `test`.
 
-These are distinctions to test,
-not five new block types to implement.
-In particular,
-a single opaque command renamed to a goal would retain the rejected model.
+Different responsibilities retain different meanings.
+A failed production attempt may leave an old product stale.
+A completed check may yield current failing evidence.
+Cancellation does not establish a passing or failing assertion result.
+There need not be one package-wide success state that erases these distinctions.
 
-Freshness,
-outcome,
-and activity answer different questions:
+### Concrete repository case
 
-- Freshness:
-  does this record describe the relevant current inputs?
-- Outcome:
-  what did the check or production attempt establish?
-- Activity:
-  what is queued,
-  running,
-  paused,
-  or blocked while obtaining a current result?
+Read directly from the repository:
 
-A current failing test is current evidence of failure.
-An interrupted test establishes no passing or failing assertion result.
-A current failed bundle-production attempt does not make the previous bundle current.
-Failure caching still applies;
-this distinction does not authorize retrying unchanged failures until they pass.
-
-## Repository scenario
-
-Read directly from the repository when preparing this proposal:
-
-- `package/module/jsonc-edit/package.json` exports `/ts` from `src/index.ts`,
+- `package/module/jsonc-edit/package.json` exposes source through `/ts`,
   plus Node and neutral bundles under `dist/final`.
-  These are distinct consumption paths,
-  not consecutive steps every consumer must follow.
-- `package/module/jsonc-edit/src/parse.unit.test.ts:14-22` imports the neutral bundle.
-  That check needs its actual product to be current;
-  naming a generic package build would not explain which product it consumes.
-- `package/module/jsonc-edit/mise.toml` defines `buildAndTest` by explicitly running `build`
-  and then `test:unit`.
-  This is evidence of incumbent orchestration,
-  not a requirement for meow's ontology.
-- `AGENTS.md`,
-  rule `ST3`,
-  directs cross-package workspace imports to TypeScript source through `/ts`.
-  Such an import does not consume the built bundle merely because its package can also produce one.
+- `package/module/jsonc-edit/src/parse.unit.test.ts:14-22` consumes the neutral bundle.
+- `AGENTS.md` rule `ST3` directs cross-package workspace consumers to source through `/ts`.
+- `package/module/jsonc-edit/mise.toml` currently expresses `buildAndTest` as a sequence of commands.
+  That is incumbent orchestration,
+  not meow's required domain model.
 
-Illustrative state,
-not a measured build result:
-a package's source may be available,
-its neutral bundle current,
-its latest unit-test evidence current and failing,
-and another platform's executable absent.
-Calling the whole package either built or failed loses distinctions a person needs.
+Under the proposal,
+meow understands that the bundle and the checks consuming it must be kept current.
+The person should not need to discover and arrange the command sequence to achieve that.
+Meow should also avoid inventing a bundle prerequisite for a consumer that reads source instead.
 
-A stage view could summarize these facts.
-It should not erase them or invent a universal progression from source through build through test.
-Independently tracked evidence does not imply independently executable checks:
-the neutral-bundle test genuinely needs that bundle.
-The rule that establishes such relationships remains undecided;
-no `depends_on` mechanism is adopted here.
+A source edit makes the affected products or results outdated.
+Meow rebuilds the products and refreshes the relevant checks.
+If a check fails,
+that is what meow currently knows about the package;
+it does not mean the maintenance loop should retry until green.
 
-## Primary-source precedents
+### How the accepted command surface fits
 
-These are source-verified conceptual precedents,
-not runtime probes or technology selections.
-The implications for meow are proposals.
+For maintained concerns,
+`meow run //package/cow:test` brings their current result to the foreground:
+it attaches,
+raises priority,
+waits when necessary,
+and replays or streams output under the accepted contract.
+The spelling `run` does not require a task-shaped domain model.
+
+One-off operations can remain available without defining the development lifecycle.
+Their precise relationship to maintained concerns is not yet settled.
+The current discussion should establish that conceptual boundary before asking for block names,
+namespace rules,
+or override mechanics.
+
+Configuration should augment native package metadata with meow-specific intent,
+not duplicate native manifests merely to feed a generic task graph.
+No new HCL block schema is adopted here.
+The recorded tag,
+inheritance,
+and explicit-override preferences remain constraints,
+not proof that every concern must be represented by a `task` block.
+
+## Preserved contracts
+
+- The watch daemon keeps affected builds and the default test set current.
+- Native manifests provide cross-package relationships.
+- Content hashes determine freshness.
+- Failures are cached;
+  unchanged failing inputs do not trigger retry-until-green.
+- Output replay,
+  forwarding,
+  priority,
+  attachment,
+  and process controls retain their accepted behavior.
+- `meow status` remains attention-only in 0.x,
+  not a new success dashboard.
+- No unapproved `depends_on` mechanism or universal linear lifecycle is introduced.
+
+Correct applicability is necessary under any eventual model:
+a result finishing after an edit must not certify inputs it never consumed.
+Completion order is not freshness order.
+The consistency mechanism is separate implementation design,
+not the current user question.
+
+## Precedents and their limits
+
+Source-verified conceptual precedents,
+not technology selections or runtime probes:
 
 - [OpenTofu's language documentation](https://opentofu.org/docs/v1.12/language/)
-  calls the language its primary interface and describes intended goals rather than steps.
-  This supports questioning command-shaped configuration,
-  not importing OpenTofu's dependency syntax or plan/apply workflow.
+  describes intended goals rather than steps.
+  This supports questioning recipe-shaped configuration,
+  not importing its dependency syntax or plan/apply workflow.
 - Kubernetes' [`metav1.Condition` definition][condition-source]
-  separates `True`,
-  `False`,
-  or `Unknown` from `observedGeneration`.
-  Its source explicitly describes an observation of an older generation as out of date.
-  This supplies precedent for distinguishing the result from its applicability.
-  meow's accepted content hashes need not become whole-package generation counters.
-- Kubernetes' [Pod lifecycle documentation][pod-lifecycle]
-  explicitly calls a phase a high-level summary,
-  not a comprehensive observation rollup or state machine.
-  This is evidence for allowing stage summaries alongside independent facts,
-  not an argument that stages must disappear.
+  distinguishes a result from the generation it observes.
+  This supports separating freshness from outcome without replacing meow's accepted content hashes.
+- Kubernetes' [Pod phase documentation][pod-phase]
+  calls phases high-level summaries rather than comprehensive state machines.
+  Stage summaries can coexist with the coherent maintenance model.
 
-The analogy stops where producing an artifact differs from discovering a defect.
-Meow can rebuild an absent bundle;
-it cannot make deterministic failing assertions pass merely by rerunning them.
-
-A further validity requirement for the proposed model:
-a check finishing after an edit must not certify newer inputs that it never consumed.
-Completion order is not freshness order.
-Recording an input fingerprint alone also does not prevent mixed-version reads during execution.
-The consistency mechanism needs a separate design;
-no snapshot requirement or implementation is selected here.
+The analogy stops where creating a product differs from discovering a defect.
+Re-executing a failing check is not equivalent to repairing an absent artifact.
 
 [condition-source]: https://raw.githubusercontent.com/kubernetes/apimachinery/master/pkg/apis/meta/v1/types.go
-[pod-lifecycle]: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase
+[pod-phase]: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase
 
-## Prior comparison
+## Deferred publication record
 
-Retained as design history,
-not a pending choice.
-The user's clarification in "Current clarification" supersedes this comparison as the framing of the next question.
-Both descriptions can belong to the same continuous-maintenance model.
+For 1.x only,
+not current design work:
 
-### Software state first (initial recommendation)
+- Publication is automatic on a version bump pushed to `main`.
+- The target registry must already contain the package.
+- An already-present version needs no publication.
+- A never-published package does not receive automatic first publication.
 
-The person navigates software and asks what is available,
-what is known about it,
-and what prevents the intended use.
-A development-stage view can summarize those answers without owning their meaning.
+Do not ask further publication-policy questions during the non-task discussion.
 
-- Pros:
-  exposes the distinction between current artifacts and failing checks;
-  handles source consumers and bundle consumers without pretending they traverse the same stages;
-  fits a daemon already keeping affected work current.
-- Cons:
-  meow must explain which evidence belongs to which product or input set;
-  a single ready label is insufficient without naming a use;
-  custom operations still need a separate explanation.
+## Process-rule proposals
 
-### Development stages first
+Not applied to `AGENTS.md`.
+Merge the lessons into existing rules rather than adding overlapping rules.
 
-The person navigates meaningful milestones such as prepared,
-built,
-and verified.
-A stage has explicit completion criteria rather than being an alias for one command.
-Stages could branch by ecosystem or intended use instead of forming one fixed linear pipeline.
-
-- Pros:
-  foregrounds progress and completion criteria;
-  gives teams a place to express lifecycle policy without exposing process orchestration.
-- Cons:
-  parallel product and evidence states still need representation;
-  source consumption,
-  debugging a failing application,
-  and target-specific results resist a single package-stage answer;
-  stage definitions can become task lists under another name.
-
-Ranking:
-software state first > development stages first,
-because both can expose milestones,
-but the former makes the mixed state in the repository scenario primary rather than an exception.
-This ranks the primary experience,
-not mutually exclusive storage architectures.
-
-The rejected special-task questionnaire is not a third live option.
-Useful commands and process controls remain available under either candidate.
-
-## Existing contracts and limits
-
-This proposal preserves the recorded behavior unless the user explicitly revisits it:
-
-- `meow watch` keeps affected builds and default tests current.
-  Failure is reported and cached,
-  not repaired by rerunning forever.
-- `meow run` keeps its entry syntax,
-  attachment,
-  priority,
-  output replay,
-  byte forwarding for one target,
-  and exit behavior.
-  The referent of a label is not thereby required to be an argv definition.
-- Native manifests remain the source of cross-package relationships.
-- Content hashes remain the freshness source of truth.
-- `meow status` remains attention-only in 0.x;
-  this is not a proposal to print all successful products there.
-- Imperative operations remain real:
-  editing secrets,
-  publishing,
-  and changing source are not automatically repeatable checks.
-  No new permission to perform them on a file change follows from this proposal.
-- The prior tag,
-  inheritance,
-  and explicit-override choices remain recorded.
-  Applying their `task` block shape to every development concept is no longer assumed.
-
-## Next question
-
-When does a version bump become eligible for publication:
-a saved manifest change,
-a committed change,
-or a push to a release branch?
-
-Concrete case:
-the package exists in the registry,
-the developer saves a new version,
-and relevant outputs and checks are ready,
-but the work is not committed yet.
-Does meow publish that state?
-
-Repository evidence:
-`.github/workflows/cargo-publish.yml:17-22` triggers on selected manifest paths pushed to `main`,
-and its detection step compares the version against the preceding revision.
-That is an incumbent publication boundary,
-not proof that meow must retain it.
-
-Candidate ranking:
-push to a configured release branch > commit > save.
-
-- Push to a release branch:
-  pro,
-  distinguishes release-eligible work from unrelated local work;
-  con,
-  publication waits for a push to that branch.
-- Commit:
-  pro,
-  gives the publication a recorded source revision without requiring a push;
-  con,
-  a work-in-progress commit could still initiate publication.
-- Save:
-  pro,
-  most directly follows the continuously maintained working tree;
-  con,
-  saving the version before finishing related edits can initiate publication of unfinished work.
-
-The release branch ranks ahead of any commit because not every commit is intended for release.
-A commit ranks ahead of a save because it provides a recorded revision boundary.
-All options preserve automatic publication;
-none reintroduces a manual publish request.
-
-## Publication-policy discussion history
-
-Answered:
-publication is automatic too,
-on a version bump with the registry condition quoted in "Current clarification".
-The recommendation and ranking in this section are superseded by that answer.
-
-The question was whether automatic maintenance includes external publication
-or keeps everything publication-ready until release intent.
-
-- Publication-ready until release intent (recommended):
-  automatic work keeps outputs and checks current,
-  while release intent permits the external action.
-  Pro:
-  editing unfinished work does not itself authorize publication.
-  Con:
-  release intent remains something the user must express.
-- Automatic publication:
-  external publication is also part of the maintained state,
-  with its triggering conditions to be designed after this answer.
-  Pro:
-  publication can follow repository policy without repeated release requests.
-  Con:
-  that policy must distinguish changes suitable for publication from work in progress.
-
-Ranking:
-publication-ready until release intent > automatic publication,
-because keeping outputs current does not by itself establish an intention to expose them externally.
-This is a recommendation about intent,
-not a claim that automatic publication cannot be designed safely.
-
-Do not ask about trigger timing,
-built-in names,
-HCL block shape,
-overrides,
-or sequencing before the corresponding intent is understood.
-An answer does not authorize implementation.
-
-## Process-rule proposal
-
-The existing `AGENTS.md` rule `QPM` questions mechanisms but does not explicitly question inherited nouns.
-Proposed replacement,
-not applied:
+For `QPM`,
+question inherited nouns as well as mechanisms:
 
 > Every option set asserts a premise,
 > including inherited nouns.
@@ -375,4 +201,11 @@ not applied:
 > test whether the domain needs the concept before offering mechanisms.
 > Dissolving beats choosing.
 
-This merges the lesson into the existing premise-checking rule instead of adding an overlapping rule.
+For `VR2`,
+keep the active design layer when a feature is mentioned:
+
+> Verb or scope ambiguous:
+> keep narrower reading.
+> Mentioning a feature does not authorize its subsystem design;
+> record it and return to active question.
+> Propose expansion explicitly.

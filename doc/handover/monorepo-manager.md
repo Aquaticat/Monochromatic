@@ -10,21 +10,24 @@ The user rejected Claude's task-centric framing,
 then clarified a coherent continuous-maintenance model across build,
 correctness,
 and publication.
-The user accepted automatic publication of bumped versions for packages already in the target registry,
-confirmed that an already-present version needs no publication,
-and excluded automatic first publication.
-The current question is whether the bump becomes eligible on save,
-commit,
-or push to a release branch.
+The agent followed a publication-policy detour;
+the user explicitly returned the discussion to the model of non-tasks.
+Publication is deferred entirely to 1.x,
+with push to `main` recorded for that future subsystem.
+Current work:
+explain package maintenance concretely,
+not another subsystem questionnaire.
 The user accepted a from-scratch,
 single-file,
 all-Rust tool with file-enforcer rewritten in Rust on 2026-09-16
 ([`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md)).
 Probe installs are authorized except `rpm-ostree install`.
-Every decision made in this work applies to meow 0.x only;
-1.x and later may revisit it (user,
+The initial scope was meow 0.x only;
+1.x and later may revisit those decisions (user,
 2026-09-17).
-Research prompts and new decision records carry that scope.
+The user later explicitly deferred the publishing subsystem to 1.x.
+That exception does not move the rest of the design out of 0.x.
+Research prompts and new decision records carry the applicable scope.
 
 Keep this handover current when requirements,
 decisions,
@@ -635,23 +638,37 @@ automatically publish its new version,
 do nothing if that version is already there,
 and do not automatically publish a never-published package.
 This is recorded in "Automatic publication" in the from-scratch design.
-The source and trigger boundary remain open.
-The current Cargo workflow is push-to-main based,
-verified from `.github/workflows/cargo-publish.yml`,
-but that incumbent boundary is not automatically adopted for meow.
+The agent then asked about the source and trigger boundary,
+citing `.github/workflows/cargo-publish.yml` as incumbent evidence.
+The user corrected the scope:
+"Do not get off-tracked.
+The publishing subsystem won't exist until 1.x.
+We're still talking about the model of 'non-tasks'.
+Answer:
+push to main."
+
+Publication is absent from 0.x,
+and push to `main` is recorded for 1.x only.
+No publication question blocks the current design.
+Independent review of the correction recommended a concrete explanation before more menus:
+meow maintains products,
+current check results,
+and managed-file requirements;
+executions implement those responsibilities.
+The rewritten exploration preserves the source evidence and prior corrections without treating its glossary as adopted.
+A proposed `VR2` amendment records that mentioning a feature does not authorize a subsystem-design detour;
+`AGENTS.md` remains unchanged.
 
 ## Next action
 
-1.  Establish when a version bump becomes eligible for automatic publication:
-    on save,
-    on commit,
-    or on push to a release branch.
-    The registry-existence rule and automatic publication itself are settled;
-    do not reopen them.
-2.  Then continue the coherent maintenance model's unsettled questions about authoring,
-    label meaning,
-    and ordering.
-    Do not resume the withdrawn task-name or state-versus-stages questionnaires.
+1.  Explain the package-maintenance model using the concrete source-versus-bundle example,
+    then let the user respond before another option menu.
+    The distinction is intrinsic software responsibilities versus explicit one-off operations,
+    not special names for generic tasks.
+2.  Keep the discussion at that model level until aligned.
+    Do not ask further publication questions,
+    resume the withdrawn questionnaires,
+    or jump to HCL schema and scheduling mechanisms.
     Do not treat the proposal or an answer to one question as approval of all of it.
 3.  Implementation is unstarted and unrequested (rule `VRB`).
     The implementation plan is provisional where it assumes the unsettled model.

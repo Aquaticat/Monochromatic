@@ -25,6 +25,9 @@ Session state:
 Everything here is scoped to meow 0.x;
 1.x and later may revisit any of it (user,
  2026-09-17).
+The user explicitly deferred the publishing subsystem to 1.x during the non-task-model discussion.
+Its future push-to-`main` trigger is recorded in the design,
+not an addition to this implementation plan or a 0.x blocker.
 No estimate of effort or duration appears anywhere in this plan (rule `CK3`).
 
 ## Where the work happens
@@ -251,11 +254,12 @@ The user emphasized a coherent continuous-maintenance model across build,
 correctness,
 and publication rather than choosing between state and stages.
 The [software model exploration](monorepo-manager-software-model.md)
-records that clarification and the user's inclusion of automatic publication on a version bump.
-The user confirmed that the target registry must already contain the package,
-while an already-present version needs no publication.
-Automatic first publication is excluded;
-the publication source and trigger boundary remain to be designed.
+records the current package-maintenance proposal and the user's correction of the publication detour.
+Publication is absent from 0.x;
+its future eligibility rules do not block this plan.
+The active model needs to explain intrinsic build outputs,
+correctness checks,
+and managed-file requirements without reducing them to privileged generic tasks.
 Ordering remains undecided,
 and the unapproved `depends_on` entry stays retracted.
 
