@@ -212,7 +212,8 @@ The existing `AGENTS.md` rule `QPM` questions mechanisms but does not explicitly
 Proposed replacement,
 not applied:
 
-> Every option set asserts a premise, including inherited nouns.
+> Every option set asserts a premise,
+> including inherited nouns.
 > Treat incumbent labels as hypotheses:
 > test whether the domain needs the concept before offering mechanisms.
 > Dissolving beats choosing.
