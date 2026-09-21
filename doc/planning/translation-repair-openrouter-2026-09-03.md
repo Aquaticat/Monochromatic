@@ -8082,6 +8082,73 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya6 read and class seventy-four, 2026-09-21, 13:25 UTC: a repeated line on a line-structured slice, shi_Yumiaoya7 launched
+
+`shi_Yumiaoya6` (frozen `155c6aa65`) SETTLED at 13:10 UTC on its first attempt:
+58 min (12:12:05 to 13:10:06) against `shi_Yumiaoya5`'s 40,
+18 slices,
+1,051 seats,
+5 retry rounds,
+0.18 USD by the spend lines and by the meters
+(Bedrock 124.91 to 124.80,
+OpenRouter 186.27 to 186.20),
+attempts 1.
+Synthetic and Hyper were wet again for the whole pass
+(440 and 330 calls against 220 on Bedrock and 130 on OpenRouter),
+which is where the extra minutes went:
+the Synthetic streams averaged 27.8 s against the pass's 19.7 and `shi_Yumiaoya5`'s 8.0 with those seats dry.
+
+The seven steps and the three checks against `shi_Yumiaoya5`:
+the death paragraphs on the page,
+4 of 4 headings,
+the source's one footnote as the source
+(the archive has none),
+front matter equal,
+no untranslated pronoun,
+no error finish,
+no gate-kept or unendorsed standing,
+12 abstention lines with their reasons;
+389 lines differ from `shi_Yumiaoya5`'s page.
+
+One regression,
+class seventy-four.
+The closing farewell quote is bilingual in the source
+(the Chinese line,
+its own English beside it,
+then 出自《楚门的世界》 and `From *The Truman Show*`),
+the archive carries the English line and the attribution once,
+and the page shipped four quoted lines with `From *The Truman Show*` twice:
+the Chinese attribution rendered into the very words of the English one beside it,
+both kept.
+`shi_Yumiaoya3` doubled it,
+`shi_Yumiaoya4` kept the Chinese line and the attribution once,
+`shi_Yumiaoya5` shipped the archive's two lines,
+so the bench has shipped this quote three ways;
+class forty-seven's guard counts a Han line and its English as one line owed and names a shortfall only,
+so a surplus with a repeat passed it.
+Fixed in `364b83557`,
+guard red first at `f97250977`:
+`line-structure-guard.ts` now also names a wording the rendering carries more often than the original repeats any line of its own
+(a refrain the original repeats is owed its repeats,
+and a rendering's wording cannot be matched to the original's across languages,
+so the bound is the original's own highest repeat),
+with the quote markers and surrounding whitespace off the comparison.
+The finding reaches the writers' repair turn,
+the translate floor and the consolidation standing through `translate-validate.ts` as the shortfall does.
+Lint,
+types and the full suite green.
+
+`shi_Yumiaoya7` launched at 13:17 UTC on frozen `364b83557`
+(pid 1557601,
+`~/temp/agent/shi_Yumiaoya7`);
+its frozen dir is `node_modules/.frozen-dist-` with no suffix,
+because the launch chain read the commit from the package dir and the git policy refused it there;
+the same dist is also copied to `.frozen-dist-364b83557` for the launches after it.
+To read:
+the closing quote with the attribution once,
+any `repeats the line` findings,
+then the seven steps and the three checks against `shi_Yumiaoya6`.
+
 ## hulicaijia8 read, 2026-09-21, 12:15 UTC: the queue resumes on the current build, shi_Yumiaoya6 launched
 
 `hulicaijia8` (frozen `155c6aa65`,

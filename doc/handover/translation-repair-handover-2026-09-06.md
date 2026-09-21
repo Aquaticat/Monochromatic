@@ -4647,7 +4647,24 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA8 IS READ AND SHI_YUMIAOYA6 RUNS
+1.  CLASS SEVENTY-FOUR IS BUILT AND SHI_YUMIAOYA7 RUNS
+    (the pass log's heading dated 2026-09-21 13:25 UTC,
+    `364b83557`,
+    guard `f97250977`):
+    the line guard refuses a rendering that repeats a line more often than the original repeats any,
+    because `shi_Yumiaoya6` shipped the farewell quote's attribution twice.
+    `shi_Yumiaoya7` (frozen `364b83557` at `node_modules/.frozen-dist-`,
+    pid 1557601,
+    launched 2026-09-21 13:17 UTC) runs to read it live;
+    then `yingying` and `XingZ60` on `.frozen-dist-364b83557`,
+    one at a time.
+    SHI_YUMIAOYA6 IS READ
+    (same heading):
+    SETTLED in 58 min on one attempt,
+    0.18 USD by the meters,
+    every other check as the archive,
+    Synthetic and Hyper wet again and slower.
+    HULICAIJIA8 IS READ
     (the pass log's heading dated 2026-09-21 12:15 UTC):
     `hulicaijia8` (frozen `155c6aa65`) SETTLED in 59 min on one attempt,
     4.90 USD by the meters,
