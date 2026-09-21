@@ -8155,8 +8155,14 @@ and keep the passage's own tense only for what is still true as the page is read
 Guard red first at `20f344da3`
 (the select sheet and `CONTEST_POLICY` both refuse the old sentence and carry the new);
 lint and types clean;
-the full suite green at `d70087757` (exit 0,
-no FAIL line).
+the full suite was RED at `d70087757` (exit 1,
+three FAIL lines,
+all in `tense-authority-reaches-every-sheet.unit.test.ts`,
+which still asserted the removed sentence);
+the commit `e7307d304` recording this read wrongly called it green,
+which this paragraph corrects;
+that guard now asserts the class seventy-six wording (`03cc8e448`),
+and the full suite reruns at `03cc8e448` (`scratchpad/full-suite-03cc8e448.log`).
 `CuspariaKLSY2` had the past tense by the bench's luck:
 its repair lane moved the lines itself and its contest chose translate 4 of 4.
 

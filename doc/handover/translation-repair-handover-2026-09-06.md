@@ -4664,8 +4664,10 @@ each read off the pass log and the shipped page:
     fixed in `d70087757` (both tails in `house-policy.ts` put the house rule's past tense first),
     guard red first at `20f344da3`,
     lint and types clean,
-    the full suite green at `d70087757` (exit 0,
-    no FAIL line).
+    the full suite red at `d70087757` on the older tense-authority guard,
+    which asserted the removed sentence and now asserts the new one (`03cc8e448`);
+    the full suite rerunning at `03cc8e448` (`scratchpad/full-suite-03cc8e448.log`;
+    read it before the next fix).
     `CuspariaKLSY5` (frozen `d70087757`,
     pid 1687485,
     launched 22:28 UTC)
