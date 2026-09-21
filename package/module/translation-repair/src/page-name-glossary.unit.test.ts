@@ -48,6 +48,24 @@ await describe({
       },
     },),
     it({
+      name: 'READS a heading the archive renders otherwise, aligned by order when both documents carry the same '
+        + 'count, as evidence the judges weigh (owner, 2026-09-21: the judges keep deciding headings; the literal '
+        + 'reading winning is a world-knowledge gap to close another way)',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: '## 左右\n\n猫在门口犹豫。\n\n## 回见\n\n猫走了。\n',
+          targetText: '## Conflict\n\nThe cat hesitates at the door.\n\n## Farewell\n\nThe cat leaves.\n',
+        },);
+        expect(lines,).toContain('- 左右 (heading): "Conflict"',);
+        expect(lines,).toContain('- 回见 (heading): "Farewell"',);
+        expect(lines.length,).toBe(3,);
+        expect(pageNameLines({
+          sourceText: '## 左右\n\n猫在门口犹豫。\n\n## 回见\n\n猫走了。\n',
+          targetText: '## Conflict\n\nThe cat hesitates at the door.\n',
+        },),).toEqual([],);
+      },
+    },),
+    it({
       name: 'LEAVES OUT a link the archive keeps in the same words, a sentence-long link text, an href only one side '
         + 'carries, and signatures whose counts differ between the documents',
       fn: async () => {
