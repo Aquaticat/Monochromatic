@@ -144,12 +144,71 @@ Consequences to specify:
 Do not invent an answer merely to complete a state diagram.
 Write the concrete transition and identify whether it follows from an accepted rule or requires a user decision.
 
+## Ownership sketch: first attempt
+
+Candidate rule:
+a recognized repository package owns its native projects,
+except where another recognized package boundary takes ownership.
+Native workspace boundaries and repository-package boundaries are not necessarily identical.
+
+Apply it to the observed Android case:
+
+- Repository package:
+  `package/music-player/android-app`.
+- Gradle part:
+  the `:app` project declared by its settings file.
+- Cargo part:
+  `rust/`,
+  despite its separate Cargo workspace boundary.
+- Package-wide lint:
+  gathers the applicable checks of both parts,
+  as Q11 requires.
+
+Stress cases to resolve before adopting the rule:
+
+- A nested manifest used only as test data must not become maintained software merely because its filename matches.
+- An independently owned nested repository package must not be silently absorbed into its parent.
+- A dependency outside the package is a dependency,
+  not an owned part;
+  the Android Rust manifest's path reference to `../../truepeak-core` is a concrete example.
+
+Evidence checkpoint:
+a repository scan for visible `Cargo.toml` files,
+excluding `target` and `node_modules`,
+found the Android nested crate but did not provide the desired nested-fixture counterexample.
+Inspect comparable nested Node manifests before claiming this repository demonstrates that case.
+The fixture case currently remains a design stress case,
+not an observed repository fact.
+
+## Parking lot: do not branch into these yet
+
+These issues surfaced while sketching the model.
+Recording them here is preferable to pursuing them all before resolving ownership.
+
+- Gate prerequisites:
+  a product needed to run a source gate differs from a product needed by a downstream artifact test.
+  The latter must not justify bypassing failed source gates.
+- Shared writes:
+  different invocations may run concurrently under the priority model,
+  but output collisions and shared tool-cache locks still need a correctness contract.
+  A label-wide mutex is not the answer.
+- Aggregate output:
+  one package-wide label can select multiple check executions.
+  The terminal contract must explain that case without assuming one label equals one process.
+- Input completeness:
+  native metadata may omit cross-ecosystem relationships,
+  as the JNI output path currently supplied by Mise illustrates.
+  Root configuration must be able to provide missing intent.
+- Volatile input binding:
+  define activation and sampling boundaries before promising how `currentDateTime` behaves.
+- Native applicability:
+  do not equate every discoverable build variant with the set the repository intends to maintain automatically.
+
 ## Immediate next working step
 
-Sketch the package-to-native-part ownership rule against the Android example.
-Then sketch a nested fixture or independently owned package as a counterexample.
-Determine which facts native metadata supplies and what must be declared in the root configuration.
-Only then formulate the next authoring question.
+Inspect nested Node-manifest examples to challenge the ownership sketch.
+Then write a revised rule and only the user choice that surviving evidence cannot decide.
+Do not investigate the parking-lot branches during this step.
 
 Publication remains outside 0.x.
 No product code is authorized.
