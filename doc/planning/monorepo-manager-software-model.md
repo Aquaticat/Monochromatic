@@ -39,7 +39,9 @@ No publication question blocks the current design.
 ## Working proposal: package maintenance
 
 Meow continuously maintains the repository rather than waiting for the user to orchestrate recipes.
-Its intrinsic responsibilities describe software and what must stay current about it.
+Its intrinsic responsibilities describe software and what should stay current about it.
+They also need eligibility rules:
+maintaining the repository does not mean eagerly executing every concern despite blocking failures.
 They are not generic commands with privileged names.
 
 For 0.x,
@@ -76,6 +78,8 @@ linting is not an explicit one-off operation merely because it produces no build
 A package can have current build outputs and passing tests while still having current lint findings.
 Those findings belong in its attention state,
 without pretending its outputs were never built.
+This is a statement about representing results,
+not a recommendation to build eagerly after a blocking lint failure.
 
 Lint checking and lint autofixing have different purposes.
 Checking maintains findings;
@@ -91,6 +95,58 @@ Repository evidence:
 and `lint:types`.
 This confirms distinct consumed responsibilities,
 not a requirement to preserve task-shaped definitions in meow.
+
+### Resource-aware progression
+
+The user asked whether a package should proceed to building when linting fails,
+from a resource-saving standpoint.
+The previous explanation separated result states but left execution eligibility unspecified.
+
+Proposed automatic-upkeep policy,
+not yet accepted:
+
+- Applicable blocking checks that can examine source run before downstream production.
+- A current failure stops that progression for the affected inputs.
+  Meow does not start downstream builds merely to make every result current.
+- Work genuinely needed to perform the check still runs.
+  This is not a global rule that all lint must finish before any build can happen.
+- The package reports the failing check and the work blocked by it.
+  Blocked downstream tests are not reported as failed.
+  Earlier outputs and results retain their actual freshness;
+  skipping work does not magically make outdated results current.
+- Unrelated packages and independent work are not blocked merely because this package failed.
+- Priority and foreground attachment do not imply permission to bypass a blocking check.
+  This proposal selects no manual-bypass policy.
+
+Repository prerequisite example:
+`mise.toml:350-420` defines `ensureOxlintConfig`,
+which builds `package/config/oxlint` when its outputs are absent or outdated;
+`lint:oxlint` calls it before invoking the lint wrapper.
+Gating that prerequisite on the lint invocation it enables would create a cycle.
+This does not authorize speculative builds unrelated to the check's needs.
+
+Alternatives for automatic upkeep:
+
+- Gated progression (recommended):
+  pro,
+  avoids starting downstream work for inputs already rejected by a blocking check;
+  con,
+  downstream build or test diagnostics wait until the gate passes.
+- Independent concurrent upkeep:
+  pro,
+  downstream results can arrive without waiting for an independent lint result;
+  con,
+  starts work that a failing gate would have skipped.
+
+Ranking:
+gated progression > independent concurrent upkeep for the user's resource-saving concern.
+This does not claim that lint is cheaper than a build;
+no comparative timing was measured.
+It changes the interpretation of automatically keeping everything current,
+so it is a proposal rather than an inferred prior decision.
+
+The model therefore needs intrinsic progression as well as meaningful result states.
+Neither part requires authors to express generic task edges or an unapproved `depends_on` field.
 
 ### Why these are not just tasks with new names
 
@@ -239,14 +295,16 @@ question inherited nouns as well as mechanisms:
 For `RCO`,
 apply its responsibility coverage requirement to model redesign as well as incumbent removal:
 
-> Incumbent removal or model redesign:
-> map each responsibility to its owner,
+> Removal or model redesign:
+> map each responsibility to owner,
+> eligibility,
 > selection status,
 > parity test,
 > and retired behavior.
-> Recommend replacement only when every responsibility has a viable owner.
+> Recommend replacement only after all have viable owners.
 
-This addresses the omission of linting from the explanation without inventing another overlapping rule.
+This addresses both the omission of linting and the missing execution-eligibility policy
+without inventing another overlapping rule.
 
 For `VR2`,
 keep the active design layer when a feature is mentioned:

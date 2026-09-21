@@ -679,13 +679,31 @@ and `lint:types` are separate definitions.
 A proposed amendment to `RCO` extends its responsibility-coverage rule to model redesign;
 `AGENTS.md` remains unchanged.
 
+## Resource-saving clarification
+
+The user asked whether a package should proceed to building when linting fails.
+The proposed answer is no for automatic downstream work blocked by an applicable source check.
+The model must describe intrinsic execution eligibility,
+not merely keep independent results eagerly refreshed.
+This gating policy is a recommendation,
+not an accepted replacement of the watch contract.
+
+Checks may require generated or built prerequisites.
+The current `ensureOxlintConfig` in `mise.toml:350-420` builds linter configuration before `lint:oxlint`;
+a global all-lint-before-all-build rule would therefore be insufficient.
+The distinction is necessary prerequisite production versus work blocked by the check's result.
+No relative speed claim was made,
+and no manual bypass was chosen.
+Independent review confirmed those limits and the tradeoff:
+gating skips downstream work after failure but delays downstream diagnostics.
+
 ## Next action
 
-1.  Continue the non-task model discussion from the explicit placement of linting,
-    types,
-    and tests as maintained checks.
-    The distinction is intrinsic software responsibilities versus explicit one-off operations,
-    not special names for generic tasks.
+1.  Continue the model discussion from resource-aware progression:
+    meaningful checks determine whether affected downstream work is eligible,
+    rather than merely adding concurrently refreshed result categories.
+    The gating recommendation still needs the user's response.
+    Keep necessary check prerequisites distinct from the work a failure blocks.
 2.  Keep the discussion at that model level until aligned.
     Do not ask further publication questions,
     resume the withdrawn questionnaires,
