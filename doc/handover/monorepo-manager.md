@@ -701,24 +701,66 @@ and no manual bypass was chosen.
 Independent review confirmed those limits and the tradeoff:
 gating skips downstream work after failure but delays downstream diagnostics.
 
+## First implementation-plan interview
+
+User answers:
+Q1 A,
+Q2 A,
+Q3 A,
+Q4 A,
+Q6 A.
+For Q5 the user rejected both end-lifetime options:
+"Let's forbid `meow end` for automatic work for 0.x."
+
+Accepted:
+finish independent source checks after a failure;
+foreground requests honor gates;
+cancel superseded ordinary background work;
+foreground maintenance follows current inputs;
+autofixing ordinary source requires explicit intent;
+`meow end` cannot end automatic work.
+"Maintenance and foreground lifecycle" in the design is the authoritative record.
+
+The read-only audits returned:
+
+- `meow-schema-frontier` reached its turn limit and returned a partial investigation.
+  Important evidence pointers:
+  nested Gradle/Cargo identities,
+  cross-ecosystem output relationships absent from native manifests,
+  HCL selector conflicts,
+  managed metadata changing discovery,
+  and explicit operations whose effects cannot be replaced by cached logs.
+- `meow-runtime-frontier` returned runtime contract gaps:
+  distinct argument vectors under one label,
+  trust revocation,
+  environment ownership,
+  log-storage failure,
+  output validity,
+  working-terminal output contradictions,
+  and the stale shipped-build count.
+- Findings about unaccepted progression were already stale when the reports arrived.
+  Q3 and Q4 resolve their input-supersession questions;
+  the user's Q5 overrides their suggested end-lifetime policy.
+- Verified locally before use:
+  `package/desktop-app/file-manager-qt/mise.toml:40-53` builds and launches a GUI,
+  illustrating why repeated explicit intent cannot be defined only as output replay.
+  The plan's shipped-build enumeration now includes the accepted x86-64-v2 variant and drops the incorrect count.
+  Other evidence pointers still need direct verification before their dependent questions.
+
 ## Next action
 
-1.  Ask the implementation plan's first interview round,
-    R1Q1 through R1Q6:
-    remaining source diagnostics after failure,
-    foreground gate behavior,
-    superseded background work,
-    foreground input identity,
-    `end` persistence,
-    and source autofixing.
-    Record answers and recompute the frontier before asking dependent questions.
-2.  Read-only audits are in flight:
-    `meow-schema-frontier` checks native coverage and authoring contracts;
-    `meow-runtime-frontier` checks runtime,
-    cache,
-    command,
-    and environment gaps.
-    Verify their findings before merging.
+1.  Ask the implementation plan's next round,
+    Q7 through Q10:
+    Ctrl+C on maintained work,
+    foreground blocked outcomes,
+    repeating explicit operations,
+    and differing argument vectors under a target label.
+    Record answers and recompute the frontier before dependent questions.
+2.  Verify remaining audit evidence before asking its dependent native-identity,
+    authoring,
+    trust,
+    logging,
+    and environment questions.
     Do not ask further publication questions or resume withdrawn model questionnaires.
 3.  Implementation is unstarted and unrequested (rule `VRB`).
     The requested outcome is a concrete 0.x implementation plan,

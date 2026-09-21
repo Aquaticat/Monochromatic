@@ -148,12 +148,33 @@ no comparative timing was measured.
 It clarifies the accepted interpretation of automatically keeping everything current:
 advance as far as the current inputs permit,
 rather than eagerly execute every concern.
-Foreground bypass,
+The first follow-up interview settled source-check continuation,
+foreground gate behavior,
 supersession,
-and stop-control consequences still need explicit decisions.
+foreground input identity,
+ordinary-source autofixing,
+and the prohibition of `meow end` for automatic work.
+Their accepted behavior is recorded in "Maintenance and foreground lifecycle" in the from-scratch design.
 
 The model therefore needs intrinsic progression as well as meaningful result states.
 Neither part requires authors to express generic task edges or an unapproved `depends_on` field.
+
+### Accepted lifecycle refinements
+
+- Finish independent source checks after one fails,
+  while downstream production remains blocked.
+- Foreground requests honor the same gates.
+- Cancel superseded ordinary background builds and read-only checks.
+- A waiting foreground maintenance request follows the latest relevant inputs.
+- `meow end` cannot end automatic work in 0.x.
+  The user rejected both proposed restart-lifetime policies rather than selecting one.
+- Check ordinary source automatically;
+  lint autofixing requires an explicit request.
+  Managed-file enforcement retains its declared write authority.
+
+Internal cancellation of obsolete work is distinct from a user asking to end maintained work.
+The previous Ctrl+C kill contract still needs reconciliation with the new `end` restriction.
+Repeated explicit operations also need a contract distinct from merely replaying maintained results.
 
 ### Why these are not just tasks with new names
 

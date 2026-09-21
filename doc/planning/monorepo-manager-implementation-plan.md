@@ -82,31 +82,42 @@ The design tree has these major areas:
   milestone dependencies,
   and executable acceptance criteria.
 
-Current interview round,
-not adopted defaults:
+First interview round,
+accepted:
 
-- R1Q1:
-  after one source check fails,
-  finish independent source checks or stop them too?
-- R1Q2:
-  does an explicit foreground build request honor a failed check gate or bypass it?
-- R1Q3:
-  cancel superseded background builds and checks or let them finish?
-- R1Q4:
-  does a waiting foreground request follow new edits or stay tied to the input state it requested?
-- R1Q5:
-  after `end`,
-  can a relevant edit reactivate automatic maintenance or must the user explicitly reactivate it?
-- R1Q6:
-  are ordinary-source lint autofixes explicit operations or part of automatic maintenance?
+- Q1:
+  finish independent source checks after a failure.
+- Q2:
+  foreground requests honor check gates.
+- Q3:
+  cancel superseded ordinary background builds and read-only checks.
+- Q4:
+  waiting foreground maintenance requests follow the latest relevant inputs.
+- Q5:
+  `meow end` is forbidden for automatic work in 0.x.
+  The user rejected both proposed restart-lifetime choices.
+- Q6:
+  ordinary-source lint autofixes require explicit intent.
 
-The questions are separable:
-R1Q3 covers background work only,
-while R1Q4 concerns what a foreground request means.
+Current interview frontier:
+
+- Q7:
+  reconcile Ctrl+C for an attached maintenance request with the prohibition on ending automatic work.
+- Q8:
+  when a foreground request is blocked by a current failing check,
+  return that outcome or remain attached awaiting a fix?
+- Q9:
+  does repeating an explicit operation request a new effect,
+  rather than only replaying the previous invocation's output?
+- Q10:
+  how should different argument vectors for one target interact with the single-execution invariant?
+
 Exact cache,
 output,
 and command consequences follow the answers rather than being silently bundled with them.
-Read-only audits of the authoring and runtime records are gathering the remaining factual prerequisites.
+The authoring and runtime audits returned evidence pointers;
+findings must be checked against the current records before becoming decisions.
+Their stale report that progression was unaccepted was already resolved before the reports arrived.
 Publication is excluded entirely from this frontier.
 
 ## Where the work happens
@@ -131,8 +142,9 @@ Every milestone carries a parity or conformance target measured against somethin
 
 ### M1: the binary and its output contract
 
-- A single Rust binary that builds for the six shipped targets:
+- A single Rust binary built for every shipped target:
    x86-64 baseline,
+   `x86-64-v2`,
    `x86-64-v3`,
    and `x86-64-v4`,
    plus aarch64,
@@ -148,7 +160,7 @@ Every milestone carries a parity or conformance target measured against somethin
 - The startup capability check runs before any hashing in builds raised above their target baseline,
    printing a JSON diagnostic and exiting non-zero rather than dying with SIGILL.
 - Evidence:
-   the four-target matrix probe repeated for six builds,
+   the matrix probe repeated for every shipped build,
    plus a run on a CPU model lacking the raised build's features that exits with the diagnostic.
 
 ### M2: content hashing and the cache key format
@@ -320,7 +332,9 @@ after this plan was first written:
    and `sync:files` goes with them.
 - Evidence:
    the Mise removal ledger with every consumed responsibility marked owned and verified,
-   and a release that publishes the six binaries.
+   and a release containing the shipped build matrix.
+  Releasing meow through the existing release infrastructure is distinct from implementing
+   the publishing subsystem deferred to 1.x.
 
 ## What the language questions still block
 

@@ -268,9 +268,14 @@ meow run //package/cow:test
    2026-09-17).
   The task has already explained itself,
    and its exit code is what a script reads.
-- Ctrl+C ends the task,
-   killing its tree through the task cgroup and returning the terminal (user,
+- Earlier Ctrl+C contract:
+   end the task,
+   kill its tree through the task cgroup,
+   and return the terminal (user,
    2026-09-17).
+  The later prohibition of `meow end` for automatic work leaves this behavior awaiting explicit reconciliation
+   for foreground clients attached to maintained concerns.
+  Do not silently treat attachment as turning automatic maintenance into a one-off operation.
 - Already running as background work:
    `meow run` attaches to that run rather than starting a second one (user,
    2026-09-17).
@@ -400,6 +405,8 @@ and "We don't need specifically a socket or a separate client,
    and `meow priority`:
    the task controls,
    reaching the daemon the same way `meow run` does.
+  `meow end` is later restricted to non-automatic work in 0.x:
+   the user forbids ending automatic maintenance rather than choosing a restart policy.
   They name a task by its target label (user,
    2026-09-17),
    the same label `meow run` takes,
@@ -3088,9 +3095,45 @@ and the socket is "Private plumbing for now".
 - Concurrency is `MONOCHROMATIC_JOBS` when set,
    otherwise `std::thread::available_parallelism`.
 - Pause freezes a running task through `cgroup.freeze` and holds a queued task.
-- End kills a running task tree through `cgroup.kill`,
-   which also catches children that left the task's process group,
-   such as a Gradle daemon.
+- For non-automatic work,
+   end kills its running process tree through `cgroup.kill`,
+   which also catches children that left the process group.
+  `meow end` rejects automatic work in 0.x,
+   without killing or changing it.
+  Internal cancellation of superseded maintenance remains allowed.
+
+### Maintenance and foreground lifecycle
+
+Accepted in the first implementation-plan interview:
+
+- Q1:
+  finish the remaining independent source checks after one fails.
+  Downstream production stays blocked;
+  unrelated maintenance continues.
+- Q2:
+  an explicit foreground build request honors the failed check gate.
+  It reports the blocker rather than implicitly bypassing it.
+  Whether the foreground request returns or waits through a blocked state is still to be decided.
+- Q3:
+  cancel superseded ordinary background builds and read-only checks,
+  then pursue the latest relevant inputs.
+  Cancellation is not a failing assertion result.
+- Q4:
+  a waiting foreground maintenance request follows the latest relevant inputs,
+  rather than promising a historical input state.
+- Q5:
+  "Let's forbid `meow end` for automatic work for 0.x."
+  The user rejected choosing a lifetime for an ended automatic concern.
+  Foreground attachment does not change the maintained concern's class.
+  Ctrl+C's earlier kill behavior needs reconciliation with this restriction;
+  daemon shutdown still ends all of its children as already required.
+- Q6:
+  ordinary-source lint autofixing is explicit only.
+  Automatic checking and managed-file enforcement retain their respective responsibilities.
+
+No foreground bypass feature is introduced by these answers.
+Exact identities for different argument vectors and repeated one-off operations remain open.
+The implementation plan records the next interview round.
 
 ### Watching and affected work
 
