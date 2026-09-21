@@ -20,10 +20,13 @@
   The software-development model is open:
    the user rejected treating development stages as special tasks.
   The [software model exploration](monorepo-manager-software-model.md)
-   compares software state first with development stages first.
-  Neither is adopted;
-   configuration schema and ordering follow that discussion,
-   not the withdrawn task-name questionnaire.
+   records the user's continuous-maintenance direction:
+   keep building,
+   correctness checks,
+   and publication-related work current.
+  Whether that includes automatic external publication needs clarification.
+  Configuration schema and ordering remain open,
+   rather than following the withdrawn task-name questionnaire.
 - Implementation plan:
    [`monorepo-manager-implementation-plan.md`](monorepo-manager-implementation-plan.md).
   No code exists and none is authorized yet.
@@ -3337,12 +3340,15 @@ evidence,
 readiness for a use,
 and execution,
 using the repository's source-import and built-bundle-test paths as a concrete case.
-It compares software state as the primary experience against first-class development stages,
-with pros,
-cons,
-and a ranking.
-The next question asks which experience the user intends;
-it does not ask which task names get special treatment.
+The user found the software-state-versus-stages comparison difficult to follow,
+tentatively preferred software state,
+and emphasized the coherent model of automatically keeping everything up to date across build,
+correctness,
+and publication.
+The comparison is withdrawn as a decision the user needs to make.
+The next question clarifies whether automatic maintenance includes external publication
+or keeps outputs publication-ready until release intent.
+It does not ask which task names get special treatment.
 
 Ordering remains open.
 The unapproved `depends_on` entry stays retracted

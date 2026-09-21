@@ -6,9 +6,11 @@ Design research;
 no product code.
 Current discussion:
 [software model exploration](../planning/monorepo-manager-software-model.md).
-The user rejected Claude's task-centric framing;
-software state versus first-class development stages is the current UX question,
-not which task names are built in.
+The user rejected Claude's task-centric framing,
+then clarified a coherent continuous-maintenance model across build,
+correctness,
+and publication.
+Whether automatic maintenance includes external publication is the current question.
 The user accepted a from-scratch,
 single-file,
 all-Rust tool with file-enforcer rewritten in Rust on 2026-09-16
@@ -606,17 +608,34 @@ stages of software development need not be treated as build tasks and similar co
   `git diff --check` also passed.
   No product code changed.
 
+## Continuous-maintenance clarification
+
+The user found the state-versus-stages question difficult to follow,
+said "I would say A",
+and emphasized the coherent model of "auto keeping everything up to date,
+build correctness publish everything".
+The tentative A answer is not blanket acceptance of the proposed ontology.
+The artificial choice is withdrawn as the driving question.
+
+Working interpretation:
+meow intrinsically maintains building,
+correctness checks,
+and publication-related work rather than presenting privileged generic tasks.
+The phrase does not yet settle whether publishing itself is automatic.
+Independent review recommended clarifying that authority before asking about trigger timing.
+The exploration records the answer and that narrower next question.
+
 ## Next action
 
-1.  Discuss the exploration's concrete mixed-state case:
-    should the primary experience be software with independently tracked products and evidence,
-    or development stages with explicit completion criteria?
-    Do not resume the withdrawn task-name questionnaire.
-2.  After that direction is discussed,
-    ask its unsettled questions about readiness,
-    authoring,
+1.  Ask whether automatic maintenance performs external publication,
+    or keeps everything publication-ready until explicit release intent.
+    Do not ask about commit,
+    tag,
+    or other triggers until that intent is understood.
+2.  Then continue the coherent maintenance model's unsettled questions about authoring,
     label meaning,
     and ordering.
+    Do not resume the withdrawn task-name or state-versus-stages questionnaires.
     Do not treat the proposal or an answer to one question as approval of all of it.
 3.  Implementation is unstarted and unrequested (rule `VRB`).
     The implementation plan is provisional where it assumes the unsettled model.

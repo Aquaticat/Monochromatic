@@ -247,9 +247,11 @@ The built-in-name,
 override,
 and namespace questionnaire is withdrawn:
 it assumed that development concepts are special tasks.
-The design's "Open questions" now starts with software state versus development stages as the primary experience.
+The user emphasized a coherent continuous-maintenance model across build,
+correctness,
+and publication rather than choosing between state and stages.
 The [software model exploration](monorepo-manager-software-model.md)
-contains the concrete case and candidate models.
+records that clarification and the unsettled extent of automatic publication.
 Ordering remains undecided,
 and the unapproved `depends_on` entry stays retracted.
 

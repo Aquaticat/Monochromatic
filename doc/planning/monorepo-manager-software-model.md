@@ -21,6 +21,46 @@ The name,
 override,
 and namespace questionnaire assumed precisely the model now being challenged.
 
+## Current clarification
+
+The user answered the first question:
+
+> I'm not sure I can follow this reasoning.
+> I would say A but I would also say the inherent model of
+> "auto keeping everything up to date,
+> build correctness publish everything" does point at a pretty coherent model.
+
+The state-versus-stages choice obscured that coherent responsibility.
+It is withdrawn as the question driving this design,
+not treated as blanket adoption of the proposed vocabulary.
+The user's preference for A was tentative.
+
+Working interpretation:
+meow continuously maintains the repository across building,
+correctness checks,
+and publication-related work.
+These are intrinsic responsibilities,
+not privileged commands in a generic task runner.
+One responsibility can require another's result without making users author a task sequence.
+The scheduling mechanism and configuration schema remain undecided.
+
+For example,
+a source edit makes some products and check results outdated.
+Meow does the affected work and reports what prevents reaching the intended state.
+A failing correctness check is an informative result,
+not an instruction to retry unchanged inputs until green.
+This formulation keeps the accepted watch and failure-cache behavior.
+
+Publication needs clarification before this interpretation is extended:
+the user's phrase could mean maintaining publication-ready outputs or actually performing external publication.
+No automatic external publication policy is inferred from it.
+
+Independent review of this correction agreed that publication authority should be clarified before trigger timing.
+Commit,
+tag,
+version,
+and per-edit trigger choices are therefore not being proposed now.
+
 ## Start from software rather than commands
 
 Recommended direction:
@@ -153,9 +193,14 @@ no snapshot requirement or implementation is selected here.
 [condition-source]: https://raw.githubusercontent.com/kubernetes/apimachinery/master/pkg/apis/meta/v1/types.go
 [pod-lifecycle]: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase
 
-## Candidate primary experiences
+## Prior comparison
 
-### Software state first (recommended)
+Retained as design history,
+not a pending choice.
+The user's clarification in "Current clarification" supersedes this comparison as the framing of the next question.
+Both descriptions can belong to the same continuous-maintenance model.
+
+### Software state first (initial recommendation)
 
 The person navigates software and asks what is available,
 what is known about it,
@@ -229,18 +274,35 @@ This proposal preserves the recorded behavior unless the user explicitly revisit
 
 ## Next question
 
-Which should be the primary experience:
-software with separately tracked products and evidence,
-with stages as views,
-or first-class development stages with explicit completion criteria?
-Use the mixed-state repository scenario to distinguish them,
-not preferences about the words task or goal.
+Does automatic maintenance include performing external publication,
+or does it keep everything publication-ready until the user expresses release intent?
 
-Do not ask about built-in names,
+- Publication-ready until release intent (recommended):
+  automatic work keeps outputs and checks current,
+  while release intent permits the external action.
+  Pro:
+  editing unfinished work does not itself authorize publication.
+  Con:
+  release intent remains something the user must express.
+- Automatic publication:
+  external publication is also part of the maintained state,
+  with its triggering conditions to be designed after this answer.
+  Pro:
+  publication can follow repository policy without repeated release requests.
+  Con:
+  that policy must distinguish changes suitable for publication from work in progress.
+
+Ranking:
+publication-ready until release intent > automatic publication,
+because keeping outputs current does not by itself establish an intention to expose them externally.
+This is a recommendation about intent,
+not a claim that automatic publication cannot be designed safely.
+
+Do not ask about trigger timing,
+built-in names,
 HCL block shape,
 overrides,
-readiness-contract ownership,
-or sequencing until this direction has been discussed.
+or sequencing before the corresponding intent is understood.
 An answer does not authorize implementation.
 
 ## Process-rule proposal
