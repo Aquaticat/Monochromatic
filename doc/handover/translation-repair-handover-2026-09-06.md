@@ -4647,7 +4647,20 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA5 IS READ AND THE ABSTENTION LOG IS BUILT
+1.  HULICAIJIA8 IS READ AND SHI_YUMIAOYA6 RUNS
+    (the pass log's heading dated 2026-09-21 12:15 UTC):
+    `hulicaijia8` (frozen `155c6aa65`) SETTLED in 59 min on one attempt,
+    4.90 USD by the meters,
+    every check as the archive,
+    class seventy-one and the abstention log live,
+    the 左右 heading still literal (observation).
+    `shi_Yumiaoya6` (frozen `155c6aa65`,
+    pid 1546977,
+    launched 2026-09-21 12:11 UTC) runs as the queue's next entry;
+    read it against `shi_Yumiaoya5`,
+    then launch `yingying` and `XingZ60` on the same dist,
+    one at a time.
+    MIKAELA5 IS READ AND THE ABSTENTION LOG IS BUILT
     (the pass log's heading dated 2026-09-19 23:20 UTC):
     SETTLED at 23:15 UTC in 27 min on one attempt,
     1.13 USD by the meters;

@@ -8082,6 +8082,65 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia8 read, 2026-09-21, 12:15 UTC: the queue resumes on the current build, shi_Yumiaoya6 launched
+
+`hulicaijia8` (frozen `155c6aa65`,
+launched 2026-09-19 23:18 UTC as the queue's next entry once `mikaela5` was read)
+SETTLED at 00:17 UTC on 2026-09-20 on its first attempt:
+59 min (23:18:57 to 00:17:39) against `hulicaijia7`'s 150,
+72 slices,
+4,550 seats,
+151 retry rounds,
+4.90 USD by the spend lines and by the meters
+(Bedrock 126.95 to 124.91,
+OpenRouter 189.14 to 186.28),
+attempts 1,
+Synthetic dry throughout.
+Read on 2026-09-21 at 12:11 UTC;
+no pass ran in between.
+
+The seven steps and the three checks against `hulicaijia7`:
+13 of 13 headings,
+all distinct
+(class forty-five holds),
+18 of 18 footnote markers and 9 of 9 definitions as the archive,
+3 of 3 Sakura lines,
+front matter equal,
+no untranslated pronoun,
+no error finish,
+one `final-selection-unendorsed` (slice 64),
+no gate-kept standing;
+364 lines differ from `hulicaijia7`'s page.
+Class seventy-one is live on a second entry:
+the contributor line reads `[Poetry Luna](https://twitter.com/Poetry_Luna)` for 櫻崎詩月.
+The abstention log of `155c6aa65` is live:
+139 `declined every candidate` lines carry their reasons
+(one refuses two candidates for dropping a footnote the body references,
+one refuses both for adding "pharmaceutical sales representative" to 做药代);
+no stray index,
+no run-off.
+The 左右 heading ships as "Left and Right" where the archive has "Conflict",
+as on `hulicaijia7`;
+still an observation,
+not a class,
+since the archive's heading is an interpretation no rule can derive.
+One spaced em-dash on the page
+("for ages — so many cute figurines"),
+the zheermao observation again.
+
+`shi_Yumiaoya6` launched at 12:11 UTC on frozen `155c6aa65`
+(pid 1546977,
+`~/temp/agent/shi_Yumiaoya6`),
+the queue's next entry;
+its last read was `shi_Yumiaoya5` on `479bb011f`
+(40 min,
+0.77 USD).
+To read:
+the death paragraphs (slice 13) on the page,
+the farewell as the archive,
+the abstention log,
+then the seven steps and the three checks against `shi_Yumiaoya5`.
+
 ## mikaela5 read and the abstention log, 2026-09-19, 23:20 UTC: class seventy-two on the page, the slate settled slice 28 on its first round
 
 `mikaela5` (frozen `6a9a7ce27`) SETTLED at 23:15 UTC on its first attempt:
