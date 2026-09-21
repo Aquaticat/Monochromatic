@@ -795,11 +795,13 @@ not a cache bypass.
     and the next membership-default question.
     Q12 A is accepted:
     require the missing declaration rather than enroll a nested project by default.
-    The user accepts the extra effort and says the example should use separate packages.
-    Clarify whether that means the Android Gradle/Rust projects,
-    the fixture cases,
-    or both before revising ownership further.
-    Keep the remaining branches in the workpad's parking lot until this referent is clear.
+    The user clarified "Both":
+    the Android Gradle application and Rust engine should be separate packages,
+    and the fixture cases should also be separate packages.
+    Do not preserve those incumbent groupings or move source files during this design session.
+    The workpad now separates ownership from cross-package consumption.
+    Ask Q13 about propagation of a dependency's failed source gate to a source-consuming package's production.
+    Keep dependency runtime-test gating separate from that question.
     The user's correction is about using writing to solve the problem,
     not merely preserving conclusions or session history.
     A `DCK` amendment is proposed in the workpad;

@@ -3503,9 +3503,16 @@ Q11 A additionally settles package-wide scope:
 a maintained concern covers all applicable native parts owned by the package,
 not only the native project at its root.
 Narrower addresses remain possible;
-ownership inference and address syntax are still open.
+address syntax is still open.
+Q12 A requires an explicit connection when native declarations do not establish nested membership.
+The user then clarified that both example groups should use separate packages:
+the Android Gradle application and Rust engine,
+and the fixture cases.
+Do not absorb independent packages merely because they are nested,
+or preserve those incumbent groupings as requirements.
+A cross-package connection is distinct from ownership.
 The [design workpad](monorepo-manager-design-workpad.md)
-works through the Android composition and nested fixture-manifest counterexample before further questions.
+now examines whether an upstream source-check failure blocks a source-consuming package's production.
 
 The conceptual model is aligned enough to resolve its concrete 0.x contracts.
 Do not reopen the task-name or state-versus-stages questionnaires.

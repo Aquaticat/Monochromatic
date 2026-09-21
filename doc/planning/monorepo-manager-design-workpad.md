@@ -12,9 +12,10 @@ The deliverable remains an implementation-ready 0.x plan.
 
 Q11 A is accepted:
 a package-wide concern includes all applicable native parts owned by that package.
-For the Android example,
-package-wide lint includes the applicable Kotlin and Rust checks,
-not just the native tool at the root.
+The original Android example grouped the Kotlin application and Rust engine together.
+The user's Q12 correction requires separate package identities for them.
+A package-wide label covers its owned parts;
+containment or a dependency does not automatically make another package owned code.
 Narrower addresses remain possible;
 their syntax is undecided.
 
@@ -27,11 +28,12 @@ The user also said:
 > they should always be separate packages,
 > so it's fine to ask the user to provide additional effort.
 
-The referent of "they" needs clarification:
-the Android Gradle application and Rust engine,
-the nested fixture cases,
-or both.
-Do not silently generalize this into a ban on native subprojects or rewrite repository packages.
+The user clarified:
+"Both".
+The Android Gradle application and Rust engine should be separate packages;
+the fixture cases should also be separate packages.
+Do not optimize the model around preserving either incumbent grouping.
+No source move or repository reorganization is authorized by this design answer.
 
 ## Model on paper
 
@@ -58,7 +60,32 @@ Different resolved inputs can require distinct executions even when the label is
 Those executions use the ordinary priority scheduler.
 There is no label-wide scheduling lane.
 
-## Worked case: Android lint
+## Ownership correction after Q12
+
+The original Android example grouped two things the user says should be separate packages.
+Revise the model rather than preserving that grouping:
+
+- The Gradle application is one package.
+- The Rust engine is another package.
+- The application's use of the Rust product is a cross-package relationship,
+  not an excuse to absorb the engine into the application's identity.
+- The nested fixture cases likewise receive separate package identities rather than becoming native parts
+  of a wrapper merely through containment.
+
+Q11 still means all applicable checks within the selected package.
+It does not mean recursively treating every nested package or dependency as owned code.
+Physical relocation is outside this design session;
+separate identity and the required relationship must be expressible independently of that migration.
+
+Consequence for the next case:
+package ownership and dependency eligibility are different questions.
+An upstream check may block a consumer without becoming one of the consumer's own checks.
+
+## Worked case: Android lint (original grouping)
+
+This case motivated Q11.
+Its grouping is superseded by the ownership correction;
+retain its check-aggregation behavior for parts genuinely owned by one package.
 
 Source facts:
 
@@ -262,9 +289,55 @@ A over B.
 Require the missing declared connection rather than enrolling merely from manifest presence.
 The user explicitly accepts the additional authoring effort.
 
-The additional statement that these should be separate packages needs its subject clarified
-before changing the package model.
+The user confirmed that both example groups should instead use separate packages.
+A required connection can therefore be a cross-package dependency,
+not necessarily nested membership.
 Configuration attribute names remain a later step.
+
+## Next worked case: source consumption across package boundaries
+
+Illustrative case,
+not a claim about current build results:
+
+- Package B consumes package A's source,
+  rather than A's compiled output.
+- A's source lint fails.
+- B's own source checks pass.
+- Building B would consume A's source.
+
+Already settled:
+A's ordinary build is blocked,
+and source consumption must not invent an unrelated compiled-output prerequisite.
+
+Still to decide:
+does A's failed source gate also block B's production,
+even though the source files themselves are available?
+
+Candidate A (recommended):
+propagate applicable source gates across package-consumption relationships.
+B's build waits for A's source checks,
+not for an unnecessary build of A.
+B's independent source checks can still finish.
+Benefit:
+skips downstream production that incorporates an upstream package with a blocking source failure.
+Cost:
+withholds consumer build diagnostics until that failure is fixed.
+
+Candidate B:
+only the selected package's own source gates and actual input availability block its production.
+B can therefore build while A has lint findings.
+Benefit:
+obtains additional consumer results.
+Cost:
+continues production involving a package already rejected by a source gate.
+
+Ranking:
+A > B for consistency with the accepted resource-saving progression.
+This remains a proposal until the user answers Q13.
+
+Keep dependency runtime tests separate from this question.
+Whether they also gate consumers is not decided by the source-lint case.
+Do not fold an entire package-wide success state into every dependency edge by accident.
 
 ## Parking lot: do not branch into these yet
 
@@ -312,10 +385,12 @@ not applied:
 
 ## Immediate next working step
 
-Clarify which projects the user's separate-packages statement covers.
-Then revise the ownership sketch with that constraint.
-Q12's explicit-membership policy is settled;
-do not ask it again or investigate the parking-lot branches meanwhile.
+Complete the source-consumption case and ask only its unresolved eligibility question.
+Q11,
+Q12,
+and the separate-package interpretation are settled;
+do not reopen them.
+Keep dependency runtime-test gating and the parking-lot branches separate.
 
 Publication remains outside 0.x.
 No product code is authorized.

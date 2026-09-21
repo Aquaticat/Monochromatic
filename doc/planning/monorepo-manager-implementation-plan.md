@@ -158,9 +158,19 @@ and automatic variant selection are not settled by this answer.
 Q12 A is also accepted:
 when native declarations do not establish membership for a nested project,
 the root configuration must provide the missing connection.
-The user accepts the extra authoring effort and says the example should use separate packages.
-Which projects that statement covers needs clarification before changing the ownership model.
-The workpad records this distinction rather than treating it as a blanket ban on native subprojects.
+The user accepts the extra authoring effort and clarified that both example groups need separate packages:
+the Android Gradle application and Rust engine,
+and the nested fixture cases.
+Do not preserve their incumbent grouping as a requirement.
+Q11 covers owned parts within one package,
+not automatic absorption of independent packages or dependencies.
+No directory relocation or source migration is authorized here.
+
+The next worked question,
+Q13,
+is whether a dependency's failing source checks block production in a consumer that reads its source directly.
+The [workpad](monorepo-manager-design-workpad.md) separates that gate from an unnecessary dependency build
+and from the still-unsettled role of dependency runtime tests.
 
 Exact cache,
 output,
