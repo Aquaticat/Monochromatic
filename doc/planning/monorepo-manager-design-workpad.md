@@ -18,6 +18,21 @@ not just the native tool at the root.
 Narrower addresses remain possible;
 their syntax is undecided.
 
+Q12 A is accepted:
+when native declarations do not establish nested membership,
+the root configuration must provide the missing connection.
+The user also said:
+
+> that one was actually a bad setup of the repo
+> they should always be separate packages,
+> so it's fine to ask the user to provide additional effort.
+
+The referent of "they" needs clarification:
+the Android Gradle application and Rust engine,
+the nested fixture cases,
+or both.
+Do not silently generalize this into a ban on native subprojects or rewrite repository packages.
+
 ## Model on paper
 
 The following distinctions are a working model,
@@ -242,16 +257,14 @@ include nested native manifests by default and let configuration exclude data or
 - Cost:
   a newly added test fixture can change the maintained project set unless excluded.
 
-Current recommendation:
-A over B,
-because the fixture counterexample defeats manifest presence as sufficient evidence of membership.
-This is a recommendation about the default,
-not a ban on discovery hints or configurable include/exclude rules.
+Accepted:
+A over B.
+Require the missing declared connection rather than enrolling merely from manifest presence.
+The user explicitly accepts the additional authoring effort.
 
-The user choice is now concrete:
-when native declarations do not establish membership,
-require the missing relationship or enroll by default until excluded?
-Do not ask about HCL attribute names until that policy is settled.
+The additional statement that these should be separate packages needs its subject clarified
+before changing the package model.
+Configuration attribute names remain a later step.
 
 ## Parking lot: do not branch into these yet
 
@@ -299,10 +312,10 @@ not applied:
 
 ## Immediate next working step
 
-Ask the membership-default question using the Android and fixture cases.
-The question concerns only gaps in native declarations;
-it must not reopen Q11's accepted package-wide scope.
-Do not investigate the parking-lot branches during this step.
+Clarify which projects the user's separate-packages statement covers.
+Then revise the ownership sketch with that constraint.
+Q12's explicit-membership policy is settled;
+do not ask it again or investigate the parking-lot branches meanwhile.
 
 Publication remains outside 0.x.
 No product code is authorized.

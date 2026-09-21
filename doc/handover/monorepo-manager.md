@@ -793,9 +793,13 @@ not a cache bypass.
     the verified nested pseudo-package counterexample from `oxlint-test-import`,
     a revised discovery/membership/applicability distinction,
     and the next membership-default question.
-    Ask whether an otherwise unconnected nested project needs an explicit membership declaration
-    or is enrolled by default until excluded.
-    Keep the remaining branches in the workpad's parking lot until this case is resolved.
+    Q12 A is accepted:
+    require the missing declaration rather than enroll a nested project by default.
+    The user accepts the extra effort and says the example should use separate packages.
+    Clarify whether that means the Android Gradle/Rust projects,
+    the fixture cases,
+    or both before revising ownership further.
+    Keep the remaining branches in the workpad's parking lot until this referent is clear.
     The user's correction is about using writing to solve the problem,
     not merely preserving conclusions or session history.
     A `DCK` amendment is proposed in the workpad;
