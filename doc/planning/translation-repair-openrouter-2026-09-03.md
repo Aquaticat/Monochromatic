@@ -8173,7 +8173,8 @@ the same edges the splice writes,
 so the accounting and the page agree;
 guard red first at `01b54f2a9`;
 lint and types clean;
-the full suite reruns at `c5470163d` (`scratchpad/full-suite-c5470163d.log`).
+the full suite green at `c5470163d` (exit 0,
+no FAIL line).
 `CuspariaKLSY3` (frozen `c9e267d3a`,
 pid 1651207,
 launched 21:39 UTC)

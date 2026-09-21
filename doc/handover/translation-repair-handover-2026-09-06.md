@@ -4665,8 +4665,8 @@ each read off the pass log and the shipped page:
     fixed in `c5470163d` (`sliceDelta` weighs through `matchSpanEdges`),
     guard red first at `01b54f2a9`,
     lint and types clean,
-    the full suite rerunning at `c5470163d` (`scratchpad/full-suite-c5470163d.log`;
-    read it before the next fix).
+    the full suite green at `c5470163d` (exit 0,
+    no FAIL line).
     `CuspariaKLSY3` (frozen `c9e267d3a`) was killed at 21:45 UTC six minutes in.
     `CuspariaKLSY4` (frozen `c5470163d`,
     pid 1668324,
