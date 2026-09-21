@@ -138,7 +138,10 @@ await describe({
         },);
 
         expect(system,).toContain(TENSE_AUTHORITY,);
-        expect(system,).toContain('the tense the text being replaced had already chosen',);
+        // The replaced text's own tense is no longer the authority (class
+        // seventy-six, owner 2026-09-21): the house rule's past tense comes first.
+        expect(system,).toContain('the past tense the house rule sets for a life that has ended',);
+        expect(system,).toContain('the text being replaced had it so has kept the wrong tense',);
       },
     },),
 
@@ -173,7 +176,9 @@ await describe({
         },);
 
         expect(system,).toContain(TENSE_AUTHORITY,);
-        expect(system,).toContain('the tense the text under review had before the edit',);
+        // The before-edit tense is no longer the authority (class seventy-six).
+        expect(system,).toContain('the past tense the house rule sets for a life that has ended',);
+        expect(system,).toContain('the tense the text had before the edit is no authority',);
       },
     },),
 
