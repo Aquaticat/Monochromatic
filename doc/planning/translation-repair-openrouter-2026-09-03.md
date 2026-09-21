@@ -8082,6 +8082,83 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ620 read, 2026-09-21, 19:00 UTC: the queue is run through on the current build; three observations put to the owner
+
+`XingZ620` (frozen `364b83557`) SETTLED at 18:47 UTC on its first attempt:
+3h59m (14:48:09 to 18:47:48) against `XingZ619`'s 2h57m and `XingZ616`'s 2h04m,
+119 slices,
+8,990 seats,
+309 retry rounds,
+10.38 USD by the spend lines and 10.24 by the meters
+(Bedrock 124.65 to 121.08,
+OpenRouter 186.11 to 179.44),
+75 abandoned streams for 0.45 USD against 33 for 0.17 on `XingZ619`
+(DeepSeek V4.1 Flash 39,
+GLM-5.3-Flash 33),
+attempts 1.
+Synthetic and Hyper were wet throughout:
+1,687 Synthetic streams at a 22.0 s mean against the pass's 11.4,
+which is the extra hour,
+as on every pass since the weekly window came back on 2026-09-21.
+
+The seven steps and the three checks against `XingZ619`:
+fourteen headings,
+both links,
+nine definitions and eighteen markers as the source,
+three TextRing,
+all eleven details blocks with the source's paragraph counts
+(57,
+18,
+5,
+18,
+7,
+11,
+2,
+25,
+3,
+9,
+9;
+the archive carries six),
+the closing poem with its attribution inside the quote,
+front matter equal,
+no untranslated pronoun,
+no error finish,
+three `final-selection-unendorsed` (slices 36,
+73 and 81) against five,
+no gate-kept standing,
+251 abstention lines with their reasons,
+no repeat or run-off finding;
+1,166 lines differ from `XingZ619`'s page.
+Three readings on names,
+none a class:
+the Bird in the Cage attribution now reads
+`From *[The Bird in the Cage](https://www.bilibili.com/video/BV17Q4y1s7j1)*[^9], by 洁澄天奏Official`,
+so `XingZ619`'s Chinese link text is gone by the bench's own choice;
+Part Ten's author is "Jin Xin" in heading and signature where `XingZ619` wrote "Jinxin",
+and the archive's tenth heading is the placeholder `### __` with no signature,
+so class sixty-seven had no form to restore and the bench's spelling stands;
+"Baimao suki" in the heading beside "Baimao Suki" in the signature is the archive's own pair,
+kept as the archive has it.
+
+With this read every entry the queue names has run on the current build
+(`hulicaijia8`,
+`shi_Yumiaoya7`,
+`yingying2`,
+`XingZ620`,
+and the mikaela reads before them),
+each SETTLED on its first attempt.
+No class is open.
+Three observations stand,
+each a question of who decides rather than a mechanism,
+put to the owner in the handover:
+the archive's heading wording where the bench renders the source heading otherwise
+(`左右` as "Left and Right" over the archive's "Conflict" on two hulicaijia passes),
+a spaced em-dash on pages whose archive carries none
+(zheermao,
+hulicaijia),
+and a tense that drifts between the archive's present and a lane's past across slices
+(Cusparia).
+
 ## yingying2 read, 2026-09-21, 14:50 UTC: clean, XingZ620 launched as the queue's last entry
 
 `yingying2` (frozen `364b83557`) SETTLED at 14:47 UTC on its first attempt:

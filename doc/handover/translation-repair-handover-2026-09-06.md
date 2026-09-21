@@ -4647,7 +4647,39 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  YINGYING2 IS READ AND XINGZ620 RUNS
+1.  THE QUEUE IS RUN THROUGH ON THE CURRENT BUILD
+    (the pass log's heading dated 2026-09-21 19:00 UTC):
+    `XingZ620` (frozen `364b83557`) SETTLED in 3h59m on one attempt,
+    10.24 USD by the meters,
+    every check as the source or the archive,
+    slower than `XingZ619` only because Synthetic and Hyper are wet and slow.
+    No pass is running and no class is open.
+    THREE OBSERVATIONS ARE OWNER QUESTIONS,
+    each about who decides,
+    with a recommendation:
+    (a) the archive's heading wording:
+    `左右` ships as "Left and Right" over the archive's "Conflict" on `hulicaijia7` and `hulicaijia8`;
+    the judges weigh the archive's rendering as a candidate and choose the literal one;
+    recommendation:
+    restore a heading to the archive's wording wherever the pairing aligns a source heading with an archive heading,
+    the way class sixty-seven restores contributor names,
+    since a heading is a title the human translator chose;
+    (b) a spaced em-dash on a page whose archive carries none
+    (`zheermao101`,
+    `hulicaijia8`);
+    recommendation:
+    a house-policy line that the page's own dash convention is kept,
+    judge-enforced,
+    since replacing a dash deterministically picks a comma or a colon nobody chose;
+    (c) tense drift across slices on `CuspariaKLSY`
+    (the archive's present against a lane's past);
+    recommendation:
+    leave it,
+    the house policy already binds tense per passage and no rule can pick the page's tense.
+    Until the owner answers,
+    the next work is whatever a new read surfaces;
+    the four-entry queue can be rerun on any later build the same way.
+    YINGYING2 IS READ AND XINGZ620 RAN
     (the pass log's heading dated 2026-09-21 14:50 UTC):
     `yingying2` SETTLED in 25 min on one attempt,
     0.04 USD,
