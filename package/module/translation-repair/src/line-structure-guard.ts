@@ -154,6 +154,147 @@ function bilingualPairCount({ lines, }: { readonly lines: readonly string[]; },)
 }
 
 /**
+ Content of a line as a key for counting repeats: the quote markers and the
+ surrounding whitespace off, the wording kept as written.
+
+ @param line - one content line
+
+ @returns Wording the line carries
+
+ @example
+ ```ts
+ const key = lineKey({ line: '> From *The Cat Show*', },);
+ ```
+ */
+function lineKey({ line, }: { readonly line: string; },): string {
+  for (let start = 0; start < line.length; start += 1) {
+    /**
+     Character at the cursor.
+     */
+    const character = line.charAt(start,);
+    if ((character !== '>') && (character.trim() !== '')) {
+      /**
+       Wording from the first content character on.
+       */
+      const wording = line.slice(start,);
+      return wording.trim();
+    }
+  }
+  return '';
+}
+
+/**
+ How many times each wording occurs among some lines.
+
+ @param lines - content lines of one passage
+
+ @returns Occurrences by wording
+
+ @example
+ ```ts
+ const counts = lineCounts({ lines: contentLines({ text, },), },);
+ ```
+ */
+function lineCounts({ lines, }: { readonly lines: readonly string[]; },): ReadonlyMap<string, number> {
+  /**
+   Occurrences seen so far.
+   */
+  const counts = new Map<string, number>();
+  for (const line of lines) {
+    /**
+     Wording of this line.
+     */
+    const key = lineKey({ line, },);
+    counts.set(
+      key,
+      (counts.get(key,) ?? 0) + 1,
+    );
+  }
+  return counts;
+}
+
+/**
+ Most often any one wording occurs among some lines.
+
+ @param lines - content lines of one passage
+
+ @returns Highest occurrence count, zero for no lines
+
+ @example
+ ```ts
+ const refrain = maxRepeat({ lines: contentLines({ text, },), },);
+ ```
+ */
+function maxRepeat({ lines, }: { readonly lines: readonly string[]; },): number {
+  return Math.max(
+    0,
+    ...lineCounts({ lines, },)
+      .values(),
+  );
+}
+
+/**
+ Names a governed rendering that carries a line more often than its original
+ carries any line.
+
+ CLASS SEVENTY-FOUR (shi_Yumiaoya6, 2026-09-21). The original quoted a film
+ line in Chinese with its English beside it and attributed it the same way,
+ Chinese line then English line; the page rendered the Chinese attribution
+ into the very words of the English one beside it and kept both, so the
+ attribution stood twice. The shortfall check never sees a surplus. A refrain
+ the original itself repeats is owed its repeats, and a rendering's wording
+ cannot be matched to the original's across languages, so the bound is how
+ often the original repeats any line of its own.
+
+ @param sourceLines - content lines of the original
+
+ @param candidateLines - content lines of the rendering
+
+ @returns One finding per wording carried more often than the original
+ carries it
+
+ @example
+ ```ts
+ const found = repeatedLines({ sourceLines, candidateLines, },);
+ ```
+ */
+function repeatedLines(
+  {
+    sourceLines,
+    candidateLines,
+  }: {
+    readonly sourceLines: readonly string[];
+    readonly candidateLines: readonly string[];
+  },
+): readonly string[] {
+  /**
+   Most often the original repeats any one line.
+   */
+  const allowed = maxRepeat({ lines: sourceLines, },);
+  /**
+   Occurrences in the rendering, by wording.
+   */
+  const carried = lineCounts({ lines: candidateLines, },);
+  /**
+   Wordings and their counts, for the scan.
+   */
+  const entries = [...carried.entries(),];
+  return entries.flatMap(function toFinding([
+    wording,
+    times,
+  ],): readonly string[] {
+    if ((times < 2) || (times <= allowed))
+      return [];
+    return [
+      `This slice is LINE-STRUCTURED and your rendering repeats the line \`${wording}\` `
+        + `${String(times,)} times where the ORIGINAL repeats no line more than ${String(allowed,)} times. A Chinese line `
+        + `and its own English beside it are one line to render, not two. Drop the repeat, keeping `
+        + `the wording you chose.`,
+    ];
+  },);
+}
+
+/**
  Names a governed rendering that merged lines its original kept apart.
  
  AGAINST THE ORIGINAL, NEVER THE PAGE. A governed slice's page may itself be
@@ -213,13 +354,25 @@ export function compareLineCounts(
   const owed = sourceLines.length - bilingualPairCount({ lines: sourceLines, },);
 
   /**
+   Content lines of the rendering.
+   */
+  const candidateLines = contentLines({ text: candidateText, },);
+
+  /**
    Lines the rendering carries.
    */
-  const carried = contentLines({ text: candidateText, },)
-    .length;
+  const carried = candidateLines.length;
 
+  /**
+   Wordings the rendering repeats beyond the original's own repeats (class
+   seventy-four).
+   */
+  const repeats = repeatedLines({
+    sourceLines,
+    candidateLines,
+  },);
   if (carried >= owed)
-    return [];
+    return repeats;
 
   return [
     `This slice is LINE-STRUCTURED: every line stands as its own unit, so your `
@@ -227,6 +380,7 @@ export function compareLineCounts(
       + `into one. Yours carries ${String(carried,)} lines of content where the `
       + `ORIGINAL has ${String(owed,)}. Put back the line breaks you merged, keeping `
       + `the wording you chose.`,
+    ...repeats,
   ];
 }
 //endregion Line structure guard
