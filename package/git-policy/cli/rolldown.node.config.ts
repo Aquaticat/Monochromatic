@@ -151,7 +151,7 @@ const baseConfig: NodeFlavorConfig = nodeConfig({
  Node build configuration for shadow bin and authoring API.
 
  Transform target comes from same manifest range used by package managers and
- minimum-runtime CI. Unminified single-chunk output keeps trust diagnostics,
+ supported-runtime CI. Unminified single-chunk output keeps trust diagnostics,
  stack traces,
  and dynamic imports in one auditable file.
  */
