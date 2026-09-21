@@ -321,6 +321,35 @@ await describe({
 
     it({
       name:
+        'WEIGHS A SHIPPED TEXT BY THE EDGES ITS SPAN KEEPS, not by the line endings its lane wrapped '
+        + 'it in (class seventy-five, CuspariaKLSY2): the splice writes a replacement with the '
+        + 'replaced span\'s own leading and trailing line endings, so a lane\'s trailing newline '
+        + 'never reaches the page and must not be counted as a character the page then lost',
+      fn: async () => {
+        const weight = pageWeighsWhatItShould({
+          artifact: artifactOver([{
+            incumbent: OLD_NAP,
+            ships: `\n${FIRST_NAP}\n`,
+          },],),
+          archive: {
+            kind: 'stored',
+            text: ARCHIVE_PAGE,
+          },
+          pageText: SWAPPED_PAGE,
+        },);
+
+        expect(weight,).toEqual({
+          kind: 'weighed',
+          expected: SWAPPED_PAGE.length,
+          actual: SWAPPED_PAGE.length,
+          exact: true,
+        },);
+        expect(pageWeightRefutes({ weight, },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name:
         'REFUTES A PAGE THAT LOST TEXT NO SLICE DECIDED ON, which the wording scan cannot: this is the '
         + 'case that failed as a live control before the arithmetic existed. Two hundred characters cut '
         + 'from a real page left every wording in place and in order, because the wordings cover the '
