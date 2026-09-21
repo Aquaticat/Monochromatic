@@ -5,12 +5,12 @@
 Plan only,
 initially written 2026-09-17 after the research queue closed;
 no code exists and none is authorized yet (rule `VRB`).
-The UX discussion reopened the software-development model.
-The user rejects treating development stages as special tasks;
-[software model exploration](monorepo-manager-software-model.md)
-records proposals,
-not a replacement implementation specification.
-Milestones that assume a task-centric schema or lifecycle remain provisional.
+The user accepted resource-aware package maintenance rather than treating development stages as special tasks.
+The [software model exploration](monorepo-manager-software-model.md)
+records that accepted direction and the distinctions it preserves.
+The user requested continued grilling with an implementation-ready 0.x plan as the session's deliverable.
+Milestones that assume a task-centric schema or an unsettled lifecycle remain provisional
+until the concrete contracts in the decision frontier are resolved.
 Design:
 [`monorepo-manager-from-scratch-design.md`](monorepo-manager-from-scratch-design.md).
 Decisions this plan implements:
@@ -29,6 +29,85 @@ The user explicitly deferred the publishing subsystem to 1.x during the non-task
 Its future push-to-`main` trigger is recorded in the design,
 not an addition to this implementation plan or a 0.x blocker.
 No estimate of effort or duration appears anywhere in this plan (rule `CK3`).
+
+## Completion contract and decision frontier
+
+This plan is ready for implementation only when its 0.x requirements have concrete owners,
+interfaces,
+configuration examples,
+state transitions,
+and acceptance tests,
+with no unresolved implementation-blocking user choice.
+The user then confirms alignment.
+Product implementation is not part of this design session.
+
+The design tree has these major areas:
+
+- Maintained concerns and authoring:
+  native-tool coverage,
+  discovery,
+  build outputs,
+  checks,
+  managed-file rules,
+  one-off operations,
+  labels,
+  and HCL selection and inheritance semantics.
+- Freshness and lifecycle:
+  eligible progression,
+  input changes,
+  result applicability,
+  output ownership,
+  cache behavior,
+  priorities,
+  pause,
+  end,
+  and retry.
+- Commands and environment:
+  foreground behavior,
+  blocked requests,
+  output and errors,
+  concurrent clients,
+  trust and reload,
+  daemon startup and shutdown,
+  cgroup prerequisites,
+  and doctor.
+- Enforcement and migration:
+  responsibility coverage,
+  parity tests,
+  external configuration owners,
+  and the distinction between a 0.x deliverable and eventual full-platform cutover.
+- Implementation structure:
+  reusable package ownership,
+  interfaces,
+  milestone dependencies,
+  and executable acceptance criteria.
+
+Current interview round,
+not adopted defaults:
+
+- R1Q1:
+  after one source check fails,
+  finish independent source checks or stop them too?
+- R1Q2:
+  does an explicit foreground build request honor a failed check gate or bypass it?
+- R1Q3:
+  cancel superseded background builds and checks or let them finish?
+- R1Q4:
+  does a waiting foreground request follow new edits or stay tied to the input state it requested?
+- R1Q5:
+  after `end`,
+  can a relevant edit reactivate automatic maintenance or must the user explicitly reactivate it?
+- R1Q6:
+  are ordinary-source lint autofixes explicit operations or part of automatic maintenance?
+
+The questions are separable:
+R1Q3 covers background work only,
+while R1Q4 concerns what a foreground request means.
+Exact cache,
+output,
+and command consequences follow the answers rather than being silently bundled with them.
+Read-only audits of the authoring and runtime records are gathering the remaining factual prerequisites.
+Publication is excluded entirely from this frontier.
 
 ## Where the work happens
 

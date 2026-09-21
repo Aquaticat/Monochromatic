@@ -4,7 +4,9 @@
 
 Design only.
 No implementation is authorized.
-The active question is the model of development concerns that are not generic tasks.
+The user accepted the resource-aware non-task model and requested continued grilling,
+with an implementation-ready 0.x plan as the session's deliverable.
+The remaining discussion makes that model's contracts concrete.
 The [from-scratch design](monorepo-manager-from-scratch-design.md)
 remains the requirements record.
 
@@ -102,8 +104,9 @@ The user asked whether a package should proceed to building when linting fails,
 from a resource-saving standpoint.
 The previous explanation separated result states but left execution eligibility unspecified.
 
-Proposed automatic-upkeep policy,
-not yet accepted:
+Accepted automatic-upkeep policy,
+after the user answered "Okay,
+I'm satisfied with what we have here" and requested continued grilling:
 
 - Applicable blocking checks that can examine source run before downstream production.
 - A current failure stops that progression for the affected inputs.
@@ -125,9 +128,9 @@ which builds `package/config/oxlint` when its outputs are absent or outdated;
 Gating that prerequisite on the lint invocation it enables would create a cycle.
 This does not authorize speculative builds unrelated to the check's needs.
 
-Alternatives for automatic upkeep:
+Rationale for the accepted automatic-upkeep policy:
 
-- Gated progression (recommended):
+- Gated progression (accepted):
   pro,
   avoids starting downstream work for inputs already rejected by a blocking check;
   con,
@@ -142,8 +145,12 @@ Ranking:
 gated progression > independent concurrent upkeep for the user's resource-saving concern.
 This does not claim that lint is cheaper than a build;
 no comparative timing was measured.
-It changes the interpretation of automatically keeping everything current,
-so it is a proposal rather than an inferred prior decision.
+It clarifies the accepted interpretation of automatically keeping everything current:
+advance as far as the current inputs permit,
+rather than eagerly execute every concern.
+Foreground bypass,
+supersession,
+and stop-control consequences still need explicit decisions.
 
 The model therefore needs intrinsic progression as well as meaningful result states.
 Neither part requires authors to express generic task edges or an unapproved `depends_on` field.

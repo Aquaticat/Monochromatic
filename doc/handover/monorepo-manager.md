@@ -14,9 +14,12 @@ The agent followed a publication-policy detour;
 the user explicitly returned the discussion to the model of non-tasks.
 Publication is deferred entirely to 1.x,
 with push to `main` recorded for that future subsystem.
+The user accepted resource-aware package maintenance and requested continued grilling.
+Expected session result:
+a plan concrete enough to implement 0.x,
+not product code.
 Current work:
-explain package maintenance concretely,
-not another subsystem questionnaire.
+resolve the concrete contracts in the implementation plan's decision frontier.
 The user accepted a from-scratch,
 single-file,
 all-Rust tool with file-enforcer rewritten in Rust on 2026-09-16
@@ -682,11 +685,12 @@ A proposed amendment to `RCO` extends its responsibility-coverage rule to model 
 ## Resource-saving clarification
 
 The user asked whether a package should proceed to building when linting fails.
-The proposed answer is no for automatic downstream work blocked by an applicable source check.
-The model must describe intrinsic execution eligibility,
-not merely keep independent results eagerly refreshed.
-This gating policy is a recommendation,
-not an accepted replacement of the watch contract.
+The accepted answer is no for automatic downstream work blocked by an applicable source check.
+The model describes intrinsic execution eligibility,
+not merely independently refreshed results.
+The user accepted it with "Okay,
+I'm satisfied with what we have here",
+then asked to continue grilling until the plan is concrete enough to implement 0.x.
 
 Checks may require generated or built prerequisites.
 The current `ensureOxlintConfig` in `mise.toml:350-420` builds linter configuration before `lint:oxlint`;
@@ -699,18 +703,32 @@ gating skips downstream work after failure but delays downstream diagnostics.
 
 ## Next action
 
-1.  Continue the model discussion from resource-aware progression:
-    meaningful checks determine whether affected downstream work is eligible,
-    rather than merely adding concurrently refreshed result categories.
-    The gating recommendation still needs the user's response.
-    Keep necessary check prerequisites distinct from the work a failure blocks.
-2.  Keep the discussion at that model level until aligned.
-    Do not ask further publication questions,
-    resume the withdrawn questionnaires,
-    or jump to HCL schema and scheduling mechanisms.
-    Do not treat the proposal or an answer to one question as approval of all of it.
+1.  Ask the implementation plan's first interview round,
+    R1Q1 through R1Q6:
+    remaining source diagnostics after failure,
+    foreground gate behavior,
+    superseded background work,
+    foreground input identity,
+    `end` persistence,
+    and source autofixing.
+    Record answers and recompute the frontier before asking dependent questions.
+2.  Read-only audits are in flight:
+    `meow-schema-frontier` checks native coverage and authoring contracts;
+    `meow-runtime-frontier` checks runtime,
+    cache,
+    command,
+    and environment gaps.
+    Verify their findings before merging.
+    Do not ask further publication questions or resume withdrawn model questionnaires.
 3.  Implementation is unstarted and unrequested (rule `VRB`).
-    The implementation plan is provisional where it assumes the unsettled model.
+    The requested outcome is a concrete 0.x implementation plan,
+    with package ownership,
+    interfaces,
+    state transitions,
+    configuration examples,
+    migration coverage,
+    and acceptance tests.
+    The implementation plan's completion contract is the stop condition.
 4.  Repository follow-ups this design produced:
     issues #545 through #552,
     #554,

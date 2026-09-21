@@ -32,6 +32,9 @@
    rather than following the withdrawn task-name questionnaire.
 - Implementation plan:
    [`monorepo-manager-implementation-plan.md`](monorepo-manager-implementation-plan.md).
+  The user accepted resource-aware package maintenance and requested continued grilling.
+  Session deliverable:
+   a plan concrete enough to implement 0.x.
   No code exists and none is authorized yet.
 - Session state,
    commits,
@@ -3404,15 +3407,16 @@ Lint autofixing is a source-changing operation,
 not an implied permission granted by automatic checking.
 The user then asked whether a package should build after lint fails,
 from a resource-saving standpoint.
-The current recommendation is gated automatic progression:
+The user accepted gated automatic progression:
 applicable blocking source checks precede downstream production,
 and a current failure blocks that work.
 Actual build prerequisites of a check must still be available.
-This recommendation is not yet adopted;
-keeping independent result states does not itself justify eager concurrent execution.
+Independent result states do not justify eager concurrent execution.
+Acceptance was followed by a request to continue grilling until the 0.x plan is concrete enough to implement.
 Executions are how meow maintains these responsibilities,
 not their common definition.
-Explain that model concretely before asking further schema or subsystem questions.
+The conceptual model is aligned enough to resolve its concrete 0.x contracts.
+Do not reopen the task-name or state-versus-stages questionnaires.
 The [software model exploration](monorepo-manager-software-model.md)
 records the repository example and the unresolved conceptual boundary with explicit one-off operations.
 It does not ask which task names get special treatment.
