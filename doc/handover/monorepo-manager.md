@@ -596,9 +596,15 @@ stages of software development need not be treated as build tasks and similar co
 - Commits:
   `ab3455894` records the initial proposal;
   `bddf3a3df` withdraws the questionnaire and updates plan blockers;
-  `4d4b81f48` fixes the proposal's semantic line break.
-  The first Markdown check reported that line break;
-  final verification follows inclusion of the source precedents.
+  `4d4b81f48` fixes the proposal's semantic line break;
+  `bd32a02cd` records the primary-source precedents.
+- Verification:
+  `mise run lint:markdown --` with the exploration,
+  design,
+  implementation plan,
+  and this handover passed after the line-break fix and source additions.
+  `git diff --check` also passed.
+  No product code changed.
 
 ## Next action
 
