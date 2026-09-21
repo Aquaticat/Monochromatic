@@ -4666,8 +4666,8 @@ each read off the pass log and the shipped page:
     lint and types clean,
     the full suite red at `d70087757` on the older tense-authority guard,
     which asserted the removed sentence and now asserts the new one (`03cc8e448`);
-    the full suite rerunning at `03cc8e448` (`scratchpad/full-suite-03cc8e448.log`;
-    read it before the next fix).
+    the full suite green at `03cc8e448` (exit 0,
+    no FAIL line).
     `CuspariaKLSY5` (frozen `d70087757`,
     pid 1687485,
     launched 22:28 UTC)

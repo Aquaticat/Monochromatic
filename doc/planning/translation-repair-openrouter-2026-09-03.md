@@ -8162,7 +8162,8 @@ which still asserted the removed sentence);
 the commit `e7307d304` recording this read wrongly called it green,
 which this paragraph corrects;
 that guard now asserts the class seventy-six wording (`03cc8e448`),
-and the full suite reruns at `03cc8e448` (`scratchpad/full-suite-03cc8e448.log`).
+and the full suite is green at `03cc8e448` (exit 0,
+no FAIL line).
 `CuspariaKLSY2` had the past tense by the bench's luck:
 its repair lane moved the lines itself and its contest chose translate 4 of 4.
 
