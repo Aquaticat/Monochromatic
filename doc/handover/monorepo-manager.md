@@ -782,12 +782,19 @@ not a cache bypass.
 
 1.  Q9 is settled;
     do not reopen cache-off choices or target-wide scheduling lanes.
-    Verify the native-identity audit's repository examples,
-    then clarify the scope of a package label when native ecosystems or subprojects share its directory tree.
+    The native-identity example is now verified:
+    Android's `settings.gradle.kts` declares `:app`,
+    its `rust/Cargo.toml` declares a standalone crate,
+    and its `mise.toml` separates Android Lint from Rust checks while naming the JNI output destination.
+    Ask Q11:
+    does the package-wide concern cover all its owned native parts or only the root native project?
+    Both can retain narrower component addresses.
     This precedes concrete authoring,
     control selection,
     and input/output relationships.
-    Lifecycle work remains incomplete rather than being marked finished.
+    Task #8 is active;
+    #9 remains incomplete and is blocked on #8,
+    rather than being marked finished.
 2.  Verify remaining audit evidence before asking its dependent native-identity,
     authoring,
     trust,

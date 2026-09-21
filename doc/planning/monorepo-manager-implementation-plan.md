@@ -129,6 +129,23 @@ control selection,
 and actual input/output relationships.
 The lifecycle work remains incomplete while these prerequisites are resolved.
 
+Native-scope evidence verified directly:
+
+- `package/music-player/android-app/settings.gradle.kts` declares the Gradle `:app` project.
+- `package/music-player/android-app/rust/Cargo.toml` declares the standalone `musicplayer-native` crate
+  with a `cdylib` product and its own workspace boundary.
+- `package/music-player/android-app/mise.toml` names `app/src/main/jniLibs` as the native output destination.
+  Its current `lint` selects Android Lint,
+  while `lint:clippy` and `lint:rust` separately examine the Rust part.
+
+Q11 asks the default scope of a package-wide maintained concern such as
+`meow run //package/music-player/android-app:lint`:
+all native parts owned by that package,
+or only the native project at the selected root?
+Both readings can retain narrower addresses for individual native parts.
+This is a scope question,
+not a proposal for new label syntax or for building every possible variant.
+
 Exact cache,
 output,
 and command consequences follow the answers rather than being silently bundled with them.
