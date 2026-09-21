@@ -659,10 +659,31 @@ The rewritten exploration preserves the source evidence and prior corrections wi
 A proposed `VR2` amendment records that mentioning a feature does not authorize a subsystem-design detour;
 `AGENTS.md` remains unchanged.
 
+## Linting clarification
+
+The user found the package-maintenance explanation almost right and asked where linting fits.
+The exploration now explicitly groups linting,
+type checking,
+and tests as intrinsic maintained checks.
+The previous word correctness hid repository policy and style checks inside an unspecified umbrella.
+Current build outputs and current lint findings can coexist;
+linting is not a lesser arbitrary operation.
+
+Lint checking maintains findings;
+lint autofixing changes source.
+Including automatic lint checks does not settle automatic source-rewrite policy.
+The incumbent distinction is visible in `mise.toml:590-612`:
+`lint:oxlint`,
+`format:oxlint` with `--fix`,
+and `lint:types` are separate definitions.
+A proposed amendment to `RCO` extends its responsibility-coverage rule to model redesign;
+`AGENTS.md` remains unchanged.
+
 ## Next action
 
-1.  Explain the package-maintenance model using the concrete source-versus-bundle example,
-    then let the user respond before another option menu.
+1.  Continue the non-task model discussion from the explicit placement of linting,
+    types,
+    and tests as maintained checks.
     The distinction is intrinsic software responsibilities versus explicit one-off operations,
     not special names for generic tasks.
 2.  Keep the discussion at that model level until aligned.

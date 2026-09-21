@@ -46,8 +46,10 @@ For 0.x,
 that model must explain the already-required behavior:
 
 - Maintain affected build outputs.
-- Maintain current results for the default correctness checks,
-  including the accepted default test set.
+- Maintain current results for checks.
+  The accepted default test set is already required;
+  the clarified model places linting and type checking alongside tests as intrinsic maintained checks,
+  not lesser arbitrary operations.
 - Maintain managed-file requirements through the file-enforcer replacement.
 
 This is a coherent responsibility,
@@ -56,6 +58,39 @@ It can have necessary ordering without making authors specify a universal sequen
 A check that consumes a bundle needs that bundle;
 a source consumer need not wait for an unrelated bundle.
 The mechanism for expressing those relationships remains undecided.
+
+### Where linting fits
+
+The user found the package-maintenance explanation almost right and asked where linting fits.
+The term correctness left that responsibility implicit.
+In this proposal,
+checks cover repository policy and style as well as functional correctness:
+
+- Tests establish their runtime assertions.
+- Type checking establishes whether the relevant type constraints hold.
+- Linting establishes whether the applicable static-analysis and repository-policy rules hold.
+
+All are intrinsic maintained checks.
+Meow keeps their results current for affected inputs;
+linting is not an explicit one-off operation merely because it produces no build artifact.
+A package can have current build outputs and passing tests while still having current lint findings.
+Those findings belong in its attention state,
+without pretending its outputs were never built.
+
+Lint checking and lint autofixing have different purposes.
+Checking maintains findings;
+autofixing changes source.
+Including lint in automatically maintained checks does not itself authorize automatic source rewrites.
+This distinction does not select an autofix policy.
+Managed-file enforcement already owns its declared writes;
+it is not blanket permission to rewrite all source files.
+
+Repository evidence:
+`mise.toml:590-612` separately defines `lint:oxlint`,
+`format:oxlint` with `--fix`,
+and `lint:types`.
+This confirms distinct consumed responsibilities,
+not a requirement to preserve task-shaped definitions in meow.
 
 ### Why these are not just tasks with new names
 
@@ -200,6 +235,18 @@ question inherited nouns as well as mechanisms:
 > Treat incumbent labels as hypotheses:
 > test whether the domain needs the concept before offering mechanisms.
 > Dissolving beats choosing.
+
+For `RCO`,
+apply its responsibility coverage requirement to model redesign as well as incumbent removal:
+
+> Incumbent removal or model redesign:
+> map each responsibility to its owner,
+> selection status,
+> parity test,
+> and retired behavior.
+> Recommend replacement only when every responsibility has a viable owner.
+
+This addresses the omission of linting from the explanation without inventing another overlapping rule.
 
 For `VR2`,
 keep the active design layer when a feature is mentioned:

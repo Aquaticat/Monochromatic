@@ -3392,8 +3392,16 @@ No publication question remains in the active frontier.
 
 The current working proposal is package maintenance:
 meow intrinsically understands affected build outputs,
-current correctness results,
+current check results,
 and managed-file requirements.
+Asked where linting fits,
+the model explicitly places lint,
+type checking,
+and tests together as maintained checks.
+The word correctness includes repository policy and style here,
+not only functional correctness.
+Lint autofixing is a source-changing operation,
+not an implied permission granted by automatic checking.
 Executions are how it maintains them,
 not their common definition.
 Explain that model concretely before asking further schema or subsystem questions.
