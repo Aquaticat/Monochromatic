@@ -65,17 +65,32 @@ jobs:
           const version = part.slice(rangePrefix.length)
           const components = version.split('.')
           const isCanonical = components.length === semanticVersionComponentCount
-            && components.every((component) => component !== '' && String(Number(component)) === component)
+            && components.every((component) => {
+              const numericComponent = Number(component)
+              return component !== ''
+                && Number.isSafeInteger(numericComponent)
+                && numericComponent >= 0
+                && String(numericComponent) === component
+            })
           if (!isCanonical)
             throw new Error(`${manifestPath} engines.node must contain canonical versions, received ${range}`)
           return version
         })
-        if (versions.length === 0 || versions.some((version, index) => versions.indexOf(version) !== index))
+        if (versions.some((version, index) => versions.indexOf(version) !== index))
           throw new Error(`${manifestPath} engines.node must contain unique runtime ranges, received ${range}`)
         if (outputPath === undefined)
           throw new Error('GitHub did not provide GITHUB_OUTPUT')
 
-        const minimumVersion = versions[0]
+        const minimumVersion = versions.reduce((minimum, version) => {
+          const minimumComponents = minimum.split('.').map(Number)
+          const versionComponents = version.split('.').map(Number)
+          const minimumIsEarlier = versionComponents[0] < minimumComponents[0]
+            || (versionComponents[0] === minimumComponents[0]
+              && (versionComponents[1] < minimumComponents[1]
+                || (versionComponents[1] === minimumComponents[1]
+                  && versionComponents[2] < minimumComponents[2])))
+          return minimumIsEarlier ? version : minimum
+        })
         console.log(`cli-git supported Node ranges: ${range}`)
         appendFileSync(outputPath, `minimum_node_version=${minimumVersion}\n`)
         appendFileSync(outputPath, `supported_node_versions=${JSON.stringify(versions)}\n`)
@@ -87,7 +102,7 @@ jobs:
     steps:
     - name: Compare declared floor with published latest LTS line
       env:
-        DECLARED_NODE_VERSIONS: ${{ needs.runtime-policy.outputs.supported_node_versions }}
+        DECLARED_MINIMUM_NODE_VERSION: ${{ needs.runtime-policy.outputs.minimum_node_version }}
       shell: node {0}
       run: |
         const response = await fetch('https://nodejs.org/dist/index.json')
@@ -115,10 +130,10 @@ jobs:
           throw new Error(`Node release index contains no floor for LTS ${latestLtsMajor}`)
 
         const expectedMinimum = firstLtsRelease.version.slice(1)
-        const declaredVersions = JSON.parse(process.env.DECLARED_NODE_VERSIONS ?? '')
-        if (!Array.isArray(declaredVersions) || !declaredVersions.includes(expectedMinimum)) {
+        const declaredMinimum = process.env.DECLARED_MINIMUM_NODE_VERSION
+        if (declaredMinimum !== expectedMinimum) {
           throw new Error(
-            `cli-git must add ^${expectedMinimum} for latest Node ${latestLtsMajor} LTS; received ${JSON.stringify(declaredVersions)}`,
+            `cli-git must replace its maintained minimum range with ^${expectedMinimum}; received ^${declaredMinimum}`,
           )
         }
         console.log(

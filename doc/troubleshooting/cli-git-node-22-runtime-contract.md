@@ -6,14 +6,14 @@ Issue #429 aligned cli-git's declared floor with the latest published Node LTS l
 Issue #475 keeps that exact floor and adds the verified newer Node line.
 `package/git-policy/cli/package.json` is the source of truth and carries one caret branch per supported line,
 currently `^24.11.0 || ^26.0.0`.
-The first branch is the minimum supported runtime and the build derives its `node24.11.0` transform target from it.
+The lowest branch is the maintained minimum supported runtime and the build derives its `node24.11.0` transform target from it.
 
 `package/git-policy/cli/src/runtime-contract.host-evidence.ts` requires execution at the exact floor of any declared line,
 imports the built public MJS without extra output,
 and checks successful help plus invalid-usage behavior.
 `.github/workflows/cli-git-trust.yml` builds and runs unit and host evidence at every declared floor.
-A separate CI check compares the declared branches with Node's official release index each day,
-so a newly published LTS line without a corresponding branch fails visibly.
+A separate CI check compares the lowest declared branch with Node's official release index each day,
+so a newly published LTS line that should advance the maintained minimum fails visibly.
 
 ### Landed verification
 

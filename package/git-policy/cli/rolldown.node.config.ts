@@ -41,7 +41,13 @@ const nodeEngineRanges = nodeEngineRange.split(NODE_ENGINE_RANGE_SEPARATOR,);
 function isCanonicalVersionComponent(component: string,): boolean {
   if (component === '')
     return false;
-  return String(Number(component,)) === component;
+  /**
+   Numeric value used to reject unsafe and noncanonical components.
+   */
+  const numericComponent = Number(component,);
+  return Number.isSafeInteger(numericComponent,)
+    && (numericComponent >= 0)
+    && (String(numericComponent,) === component);
 }
 
 /**
@@ -75,16 +81,45 @@ function extractNodeVersion(runtimeRange: string,): string {
 }
 
 /**
+ Compares two exact Node runtime versions.
+
+ @param leftVersion - First exact runtime version.
+
+ @param rightVersion - Second exact runtime version.
+
+ @returns Numeric ordering of runtime versions.
+
+ @example
+ ```ts
+ compareNodeVersions('24.11.0', '26.0.0');
+ ```
+ */
+function compareNodeVersions(leftVersion: string, rightVersion: string,): number {
+  /**
+   Numeric components from first runtime version.
+   */
+  const [leftMajor, leftMinor, leftPatch,] = leftVersion.split('.',).map(Number,);
+  /**
+   Numeric components from second runtime version.
+   */
+  const [rightMajor, rightMinor, rightPatch,] = rightVersion.split('.',).map(Number,);
+  return (leftMajor - rightMajor)
+    || (leftMinor - rightMinor)
+    || (leftPatch - rightPatch);
+}
+
+/**
  Exact runtime versions supported by the package.
  */
 const supportedNodeVersions = nodeEngineRanges.map(extractNodeVersion,);
 /**
  Exact minimum runtime used as the build transform target.
  */
-const [minimumNodeVersion,] = supportedNodeVersions;
-
-if (minimumNodeVersion === undefined)
-  throw new Error(`cli-git Node engine contains no runtime ranges, received ${nodeEngineRange}`,);
+const minimumNodeVersion = supportedNodeVersions.reduce(
+  (currentMinimum: string, candidate: string,): string => (
+    compareNodeVersions(candidate, currentMinimum,) < 0 ? candidate : currentMinimum
+  ),
+);
 
 /**
  Shared Node flavor before cli-git's package-specific runtime target.
