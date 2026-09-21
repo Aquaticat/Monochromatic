@@ -312,6 +312,31 @@ await describe({
     },),
 
     it({
+      name: 'writes a replacement whose lane left a trailing line ending with the '
+        + 'span\'s own edges, so the page keeps one block separator where the '
+        + 'archive had one (class seventy-five, CuspariaKLSY2: a list-intro '
+        + 'slice shipped "…transitioning:\\n" into a span the archive separator '
+        + 'already followed, and the page carried a double blank line the '
+        + 'archive never had)',
+      fn: async () => {
+        expect(
+          spliceSlices({
+            targetText: TARGET_TEXT,
+            slices: SLICES,
+            replacements: [
+              write({
+                sliceIndex: 1,
+                replacementText: '\nShe chases butterflies all afternoon.\n',
+              },),
+            ],
+          },),
+        ).toBe(
+          'The cat sleeps.\n\nShe chases butterflies all afternoon.\n\nShe purrs.',
+        );
+      },
+    },),
+
+    it({
       name: 'applies MULTIPLE slices correctly even though each replacement '
         + 'changes the length of the text: this is the case that breaks if '
         + 'splicing runs in ascending order, because the first replacement '
