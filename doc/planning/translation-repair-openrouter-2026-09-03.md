@@ -8082,6 +8082,121 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY5 read, 2026-09-21, 23:20 UTC: class seventy-six live, the life in the past on every line, the slice 0 contest won by the translate lane 3 of 5 with two ballots citing the house rule
+
+`CuspariaKLSY5` (frozen `d70087757`,
+pid 1687485,
+overlap 8,
+launched 22:28 UTC on Bedrock and OpenRouter,
+Synthetic and Hyper dry)
+SETTLED at 23:08 UTC on one attempt,
+41 minutes.
+
+Class seventy-six is live.
+The seven lines of the life the archive holds in the present
+(archive lines 11 to 23)
+ship in the past:
+"She loved sunflowers",
+"She was devoted to her art",
+"She liked drinking Monster Energy",
+"She often told me she could not afford a meal",
+"She felt she had very few friends",
+"Her first language was Russian",
+"She could play the guitar".
+The artifact says how.
+Slice 0 was rewritten by both lanes;
+the contest verdict is `lane-won` for translate on three ballots of five,
+two `neither`.
+Two of the three translate ballots cite the rule
+("correctly applies the house rule to use the past tense for the life of the deceased,
+whereas 'repair' maintains the present tense of the archive"),
+and no ballot names a rule holding narrative in the present,
+which is what `CuspariaKLSY4`'s ballot had read out of the old tail.
+The other ground the ballots give against repair is
+"can't afford to eat" for 吃不上饭,
+which they call an unsupported financial reading;
+the translate text's "could not afford a meal" carries the same reading in milder words,
+and one ballot says so
+("keeps the neutral 'could not afford a meal' only as a mild wording").
+That is a judge-quality observation,
+not a class:
+吃不上饭 is idiomatically going without meals,
+and the archive's "cannot have a good meal" is no closer.
+The slice 0 gate then kept the standing
+(`gate-kept-standing`,
+both gate proposals declined on the same 吃不上饭 ground),
+so the translate text ships as the contest chose it.
+
+The rest of the page.
+Slice 1 (the eleven lines from her view of her own life to the hormones intro)
+settled neither in the contest
+(2 repair,
+2 translate)
+and consolidated;
+the consolidated text ships,
+with the gate choosing it.
+Two lines there are worth a note.
+"She did not value her own life very much"
+renders 她不怎么看重自己的生命 where the archive had
+"She didn't consider her life more valuable than others'",
+a correction.
+"Her circle name,
+“Ling Shui Yu Yu Zi,”
+was given to her while she was feeding fish"
+renders 她圈名「泠水鱼鱼子」是在喂鱼的时候起的,
+whose 起 names no giver;
+`CuspariaKLSY4` had "She came up with her circle name",
+the reading the archive ("She coined her nickname") and the idiom favour.
+The archive's following line,
+"“Ling Shui Yu Yu Zi” means fish in clear water",
+is a translator's gloss the original does not carry,
+and it left the page on this run as it had on `CuspariaKLSY4`.
+Both are bench choices inside the rules,
+recorded as observations,
+not classes.
+Slices 2 and 3 (the numbered reasons and the death paragraph)
+were lane-won (repair 3 of 5,
+translate 3 of 4)
+and gate-kept.
+The death paragraph ships without the archive's "swallowed lots of her meds",
+which the original does not state,
+and with "news was subsequently received confirming her brain death",
+the original's 再次得到消息.
+
+The seven steps and the three checks.
+1 heading and 1 comment marker as the archive,
+no footnotes or links on this page,
+front matter equal,
+the contributor comment on line 51 against the archive's 53
+(the archive's two two-line paragraphs at lines 37 to 38 and 50 to 51 ship as one line each,
+the same paragraphs,
+a line-break style the owner has said does not matter),
+no `TA`,
+no `finish_reason=error`,
+no double blank line,
+no `PublishedPageDisagrees` or weight-off line,
+attempts 1,
+no unendorsed standing
+(the 2 to 2 to 1 split of `CuspariaKLSY4` became 3 to 0 to 2),
+three gate-kept standings (slices 0,
+2 and 3),
+9 abstention lines with reasons,
+no repeat or run-off finding.
+Seats asked 369,
+17 retry rounds,
+333 calls,
+4 abandoned streams (0.0016 USD),
+glm-5.3 and Qwen3.8-27B dark all run
+(every call threw,
+Synthetic dry);
+Jev 13 asked,
+13 usable.
+Meters:
+Bedrock 119.23 to 119.13,
+OpenRouter 176.65 to 176.51,
+0.24 USD;
+the spend lines say 0.23 USD on OpenRouter.
+
 ## CuspariaKLSY4 read, 2026-09-21, 22:40 UTC: class seventy-five live, but the archive's present tense shipped on a split contest; class seventy-six (the judge tail named the replaced text's tense as the authority) fixed in d70087757; CuspariaKLSY5 launched
 
 `CuspariaKLSY4` (frozen `c5470163d`,

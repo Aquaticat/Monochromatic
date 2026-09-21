@@ -4647,7 +4647,41 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS SEVENTY-SIX IS FIXED AND CUSPARIAKLSY5 RUNS
+1.  CLASS SEVENTY-SIX IS LIVE ON CUSPARIAKLSY5
+    (the pass log's heading dated 2026-09-21 23:20 UTC):
+    `CuspariaKLSY5` (frozen `d70087757`) SETTLED at 23:08 UTC in 41 minutes,
+    0.24 USD by the meters,
+    one attempt,
+    369 seats,
+    17 retry rounds;
+    the seven lines of the life ship in the past,
+    the slice 0 contest went to the translate lane 3 of 5
+    (two ballots cite the house rule's past tense,
+    none names a rule holding narrative in the present),
+    no unendorsed standing,
+    three gate-kept (slices 0,
+    2,
+    3),
+    1 heading,
+    1 marker,
+    front matter equal,
+    no TA,
+    no error finish,
+    no double blank line,
+    the publish weight check silent,
+    9 abstention lines.
+    Two bench choices recorded as observations,
+    not classes:
+    吃不上饭 ships as "could not afford a meal"
+    (the ballots faulted repair's "can't afford to eat" on the same reading),
+    and 起的 on the circle name ships as "was given to her"
+    where `CuspariaKLSY4` and the archive have her coining it;
+    the archive's translator gloss
+    ("means fish in clear water",
+    not in the original)
+    is dropped as on `CuspariaKLSY4`.
+    Nothing runs.
+    CLASS SEVENTY-SIX WAS FOUND ON CUSPARIAKLSY4
     (the pass log's heading dated 2026-09-21 22:40 UTC):
     `CuspariaKLSY4` (frozen `c5470163d`) SETTLED at 22:24 UTC in 38 minutes,
     0.22 USD by the meters,
@@ -4668,14 +4702,6 @@ each read off the pass log and the shipped page:
     which asserted the removed sentence and now asserts the new one (`03cc8e448`);
     the full suite green at `03cc8e448` (exit 0,
     no FAIL line).
-    `CuspariaKLSY5` (frozen `d70087757`,
-    pid 1687485,
-    launched 22:28 UTC)
-    runs to read it live:
-    the seven lines in the past on the page first,
-    the slice 0 contest ballots and their reasons,
-    then the seven steps and three checks,
-    and record it.
     CLASS SEVENTY-FIVE IS FIXED
     (the pass log's heading dated 2026-09-21 21:50 UTC):
     `CuspariaKLSY2` (frozen `574fce2d1`) SETTLED at 21:32 UTC in 36 minutes,
