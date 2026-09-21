@@ -495,8 +495,9 @@ Terminal provider errors and caller cancellation still fail immediately.
    not `getBranch()`.
 - Historical proposal:
    default `includePriorAdvisorResults` to `false`.
-  This remains unimplemented and is contested in issue `#407`;
-   the [policy reassessment](../planning/pi-advisor-prior-review-context.md) recommends against the blanket flip.
+  Withdrawn at the user's request;
+   issue `#407` is closed as not planned.
+  The [policy reassessment](../planning/pi-advisor-prior-review-context.md) records why the current default remains.
 - Check `stopReason` before checking text.
   Treat `error` as provider failure,
    distinguish caller cancellation from the plugin deadline for `aborted`,
@@ -606,8 +607,8 @@ The user-level `~/.pi/agent/extensions/pi-advisor.json` now carries the same val
 This addresses the Luna wait policy only;
  it does not reinterpret Spark's empty terminal responses or Qwen's transient provider 400 as local timeout failures.
 
-Follow-up findings remain tracked in issues `#407` to `#411`:
- prior-review context defaults,
+The prior-review default proposal in issue `#407` was withdrawn and closed as not planned.
+Other follow-up findings were tracked in issues `#408` to `#411`:
  nested usage accounting,
  model selection,
  input budgeting,

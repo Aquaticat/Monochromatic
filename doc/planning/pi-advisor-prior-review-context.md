@@ -2,12 +2,11 @@
 
 ## Status and scope
 
-Assessment of [issue #407][issue],
-not an accepted design or authorization to change Advisor behavior.
-The user questioned whether excluding prior Advisor outputs by default is desirable.
-No implementation,
-configuration,
-or issue changes are part of this assessment.
+[Issue #407][issue] was withdrawn at the user's explicit request and closed as not planned.
+The user initially questioned whether excluding prior Advisor outputs by default is desirable.
+The assessment did not change implementation or configuration;
+the subsequent withdrawal preserves the current default and existing opt-out.
+No replacement design has been accepted.
 
 ## Recommendation
 
@@ -164,7 +163,9 @@ This ranking does not claim the present default is empirically optimal.
 
 ## Next decision
 
-The immediate recommendation is to withdraw or reframe #407 rather than execute its acceptance criteria.
+The user selected withdrawal,
+and #407 is closed as not planned.
+Its acceptance criteria are not implementation work.
 If evaluating a fresh-assessment facility,
 compare the same evidence under blind and informed review,
 including follow-ups and mistaken earlier findings.
