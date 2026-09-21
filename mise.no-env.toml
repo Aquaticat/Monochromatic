@@ -87,10 +87,12 @@ age = "latest"
 # mise applies components only when it installs the toolchain, so an
 # already-installed nightly needs a one-time
 # `rustup component add <comp> --toolchain nightly`:
-#   rust-src           -- std sources for IDE code insight (RustRover / IntelliJ Rust).
-#   llvm-tools-preview -- llvm-cov / llvm-profdata for `cargo fuzz coverage`.
+#   rust-src    -- std sources for IDE code insight (RustRover / IntelliJ Rust).
+#   llvm-tools  -- rustup alias for llvm-tools-preview; provides llvm-cov / llvm-profdata for fuzz coverage.
+# The alias prevents Mise's false missing-component loop; see
+# doc/troubleshooting/mise-rust-preview-component-reinstall.md.
 # ASAN backtrace symbolization uses the system llvm-symbolizer (not a rustup component).
-rust = { version = "nightly", components = "clippy,rust-src,llvm-tools-preview" }
+rust = { version = "nightly", components = "clippy,rust-src,llvm-tools" }
 cargo-binstall = "latest"
 "cargo:timeout-cli" = "latest"
 
