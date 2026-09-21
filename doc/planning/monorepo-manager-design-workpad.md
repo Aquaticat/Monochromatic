@@ -180,6 +180,75 @@ Inspect comparable nested Node manifests before claiming this repository demonst
 The fixture case currently remains a design stress case,
 not an observed repository fact.
 
+## Counterexample found: nested pseudo-packages
+
+The comparable Node scan found nested manifests under
+`package/test-fixture/oxlint-test-import/case/`.
+
+Evidence:
+
+- The outer `package.json` describes these files as manifest shapes and import forms for testing a lint rule.
+- `case/standard/package.json` looks like an ordinary package:
+  a name,
+  version,
+  module type,
+  and source and built exports.
+- `package/oxlint-plugin/test-import/src/owning-package.unit.test.ts:13-17`
+  explicitly calls these nested pseudo-packages and uses their paths as test inputs.
+
+The first ownership sketch is therefore incomplete.
+Directory containment plus a recognized manifest cannot establish that a nested project should be maintained.
+It can be data used to test package discovery itself.
+
+Revised working distinction:
+
+1.  Discovery finds candidate native projects and their metadata.
+2.  Membership determines which candidates belong to maintained software.
+3.  Applicability determines which concerns and variants apply to those members.
+
+Collapsing these steps would register test data as software merely because it has convincing metadata.
+
+## Membership alternatives, worked against both cases
+
+Candidate A:
+use native project and workspace declarations to establish membership;
+let the root HCL supply relationships those declarations do not express.
+
+- Android:
+  Gradle declares `:app`;
+  the Cargo/JNI relationship currently expressed by Mise must be supplied during migration.
+  Do not pretend Gradle's settings already declare the Rust part.
+- Fixture:
+  a nested manifest is not sufficient to enroll another maintained part.
+  Its files can remain inputs to the owning fixture package and its consumers.
+- Benefit:
+  membership follows declared intent rather than filename recognition alone.
+- Cost:
+  cross-ecosystem composition can require an explicit declaration.
+
+Candidate B:
+include nested native manifests by default and let configuration exclude data or unwanted projects.
+
+- Android:
+  finds the Rust part without an explicit membership declaration.
+- Fixture:
+  needs exclusions or a reliable fixture convention before those manifests become active.
+- Benefit:
+  less membership configuration for otherwise unconnected native parts.
+- Cost:
+  a newly added test fixture can change the maintained project set unless excluded.
+
+Current recommendation:
+A over B,
+because the fixture counterexample defeats manifest presence as sufficient evidence of membership.
+This is a recommendation about the default,
+not a ban on discovery hints or configurable include/exclude rules.
+
+The user choice is now concrete:
+when native declarations do not establish membership,
+require the missing relationship or enroll by default until excluded?
+Do not ask about HCL attribute names until that policy is settled.
+
 ## Parking lot: do not branch into these yet
 
 These issues surfaced while sketching the model.
@@ -206,8 +275,9 @@ Recording them here is preferable to pursuing them all before resolving ownershi
 
 ## Immediate next working step
 
-Inspect nested Node-manifest examples to challenge the ownership sketch.
-Then write a revised rule and only the user choice that surviving evidence cannot decide.
+Ask the membership-default question using the Android and fixture cases.
+The question concerns only gaps in native declarations;
+it must not reopen Q11's accepted package-wide scope.
 Do not investigate the parking-lot branches during this step.
 
 Publication remains outside 0.x.
