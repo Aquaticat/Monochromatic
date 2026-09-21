@@ -3,8 +3,14 @@
 ## Status
 
 Plan only,
-written 2026-09-17 after the design queue closed;
+initially written 2026-09-17 after the research queue closed;
 no code exists and none is authorized yet (rule `VRB`).
+The UX discussion reopened the software-development model.
+The user rejects treating development stages as special tasks;
+[software model exploration](monorepo-manager-software-model.md)
+records proposals,
+not a replacement implementation specification.
+Milestones that assume a task-centric schema or lifecycle remain provisional.
 Design:
 [`monorepo-manager-from-scratch-design.md`](monorepo-manager-from-scratch-design.md).
 Decisions this plan implements:
@@ -237,22 +243,28 @@ after this plan was first written:
 ## What the language questions still block
 
 The configuration language is not finished.
-As of 2026-09-17 the design's "Open questions" holds a drafted,
-unasked question set on what a task is:
-which names meow builds in,
-how a package changes one,
-and whether built-ins share a namespace with user-defined tasks.
-Task ordering waits on that answer,
-after the unapproved `depends_on` entry was retracted.
+The built-in-name,
+override,
+and namespace questionnaire is withdrawn:
+it assumed that development concepts are special tasks.
+The design's "Open questions" now starts with software state versus development stages as the primary experience.
+The [software model exploration](monorepo-manager-software-model.md)
+contains the concrete case and candidate models.
+Ordering remains undecided,
+and the unapproved `depends_on` entry stays retracted.
 
-- M4 and M6 cannot be finished without those answers,
-   because the function library and file-enforcement parity both express tasks.
-- M3 is unaffected:
-   the front end parses and evaluates HCL whatever the task schema turns out to be.
-- M7's scheduler needs the ordering answer before it can order anything,
-   though its watching,
-   cgroups,
-   and cache do not.
+- M4 and M6 remain provisional where configuration schema and file-enforcement scheduling
+  assume the unaccepted task model.
+- M3's HCL syntax and expression semantics do not depend on selecting a task schema.
+- M7 and M7a need the accepted model before defining identity,
+  readiness,
+  label resolution,
+  and ordering.
+  Their existing watch,
+  cache,
+  process-control,
+  and command behavior requirements remain constraints,
+  not evidence that a task must be the primary domain object.
 
 ## Ordering and what blocks what
 

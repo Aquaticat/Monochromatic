@@ -4,6 +4,11 @@
 
 Design research;
 no product code.
+Current discussion:
+[software model exploration](../planning/monorepo-manager-software-model.md).
+The user rejected Claude's task-centric framing;
+software state versus first-class development stages is the current UX question,
+not which task names are built in.
 The user accepted a from-scratch,
 single-file,
 all-Rust tool with file-enforcer rewritten in Rust on 2026-09-16
@@ -416,7 +421,9 @@ Both defects were filed as issue #554 on 2026-09-17,
  but the unexported subpath needs an API choice,
  and this session's scope is meow's design.
 
-The design's "Open questions" now lists no unstarted design work and no pending user choice.
+At that point the research queue was closed.
+The subsequent UX discussion reopened the software model;
+see "Software-model correction" for the current frontier.
 
 ## UX alignment on 2026-09-17
 
@@ -534,20 +541,68 @@ Configuration authoring,
    `build` and `test` should be built into meow rather than mixed in with lesser tasks,
    while still being reached through `meow run //package/cow:test` rather than dedicated commands,
    because "some tasks are more than others".
-  The drafted options,
-   their measured context,
-   and my rankings are in "Open questions" in the design.
+  The drafted options are now withdrawn:
+   they assumed the special-task model the user subsequently challenged.
+
+## Software-model correction
+
+The user resumed with an explicit instruction not to accept Claude's framing of a task:
+stages of software development need not be treated as build tasks and similar commands.
+
+- Retracted:
+  the inference that build and test are privileged task names,
+  and the built-in-name,
+  override,
+  and namespace questionnaire derived from it.
+- Proposal only:
+  [software model exploration](../planning/monorepo-manager-software-model.md)
+  distinguishes products,
+  evidence,
+  readiness for a use,
+  and executions.
+  It recommends software state as the primary experience over development stages,
+  without forbidding a stage view or changing accepted CLI behavior.
+- Direct evidence:
+  `package/module/jsonc-edit/package.json` exports source and built bundles;
+  its `src/parse.unit.test.ts` consumes the neutral bundle;
+  `AGENTS.md` rule `ST3` directs workspace consumers to source.
+  Consumer requirements therefore need more precision than a package-wide built label.
+- Independent review:
+  Advisor emphasized separate product freshness and production outcome,
+  distinct unavailable versus failing evidence,
+  per-record input provenance,
+  and imperative operations outside the product/evidence model.
+- Preserved:
+  automatic affected builds and default tests,
+  failure caching,
+  native-manifest relationships,
+  content hashing,
+  the working-terminal contract,
+  and attention-only status.
+  No new auto-publish,
+  retry-until-green,
+  or dependency mechanism is proposed.
+- Process-rule proposal:
+  extend `AGENTS.md` rule `QPM` to question inherited nouns as well as mechanisms.
+  Exact proposed wording is in the exploration;
+  `AGENTS.md` is not changed.
+- Commit `ab3455894` records the initial proposal.
+  Later scoped commits update the design and implementation-plan blockers.
 
 ## Next action
 
-1.  Ask the pending "what is a task" question set recorded in the design's "Open questions":
-    which names are built in,
-    how a package changes one,
-    and whether built-ins share a namespace with user tasks.
-2.  Then ask what makes one task run before another,
-    which that answer unblocks.
-3.  Implementation is unstarted and unrequested (rule `VRB`);
-    the plan's M1 is the entry point once the language settles.
+1.  Discuss the exploration's concrete mixed-state case:
+    should the primary experience be software with independently tracked products and evidence,
+    or development stages with explicit completion criteria?
+    Do not resume the withdrawn task-name questionnaire.
+2.  After that direction is discussed,
+    ask its unsettled questions about readiness,
+    authoring,
+    label meaning,
+    and ordering.
+    Do not treat the proposal or an answer to one question as approval of all of it.
+3.  Implementation is unstarted and unrequested (rule `VRB`).
+    The implementation plan is provisional where it assumes the unsettled model.
 4.  Repository follow-ups this design produced:
     issues #545 through #552,
     #554,

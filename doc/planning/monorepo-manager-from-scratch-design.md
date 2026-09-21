@@ -17,9 +17,13 @@
    output format,
    command surface,
    and configuration authoring settled the same day.
-  What a task is,
-   and what makes one task run before another,
-   are the open questions in "Open questions".
+  The software-development model is open:
+   the user rejected treating development stages as special tasks.
+  The [software model exploration](monorepo-manager-software-model.md)
+   compares software state first with development stages first.
+  Neither is adopted;
+   configuration schema and ordering follow that discussion,
+   not the withdrawn task-name questionnaire.
 - Implementation plan:
    [`monorepo-manager-implementation-plan.md`](monorepo-manager-implementation-plan.md).
   No code exists and none is authorized yet.
@@ -1588,12 +1592,12 @@ Each follows from recorded decisions:
    "`meow build` and `meow test` are not dedicated commands.
    They still run with the `run` syntax.
    Let's say some tasks are more than others."
-  So `build` and `test` are task names meow knows how to perform for a package,
-   reached as `meow run //package/cow:test` like any other task,
-   while user-defined tasks are the lesser kind.
-  What each kind is,
-   and how they relate,
-   is being asked before ordering is.
+  The earlier conclusion that `build` and `test` are special task names is withdrawn.
+  The user subsequently rejected Claude's task framing:
+   development stages need not be modeled as build tasks and similar commands.
+  Keeping `meow run //package/cow:test` syntax does not decide what its label refers to.
+  The [software model exploration](monorepo-manager-software-model.md)
+   starts from software state and lifecycle meaning before choosing execution or ordering mechanisms.
 - Settled the same day:
    cross-package edges are read from the native manifests,
    the pnpm workspace links,
@@ -1668,6 +1672,11 @@ Answered by the user on 2026-09-17:
    and the lock interoperability concern for coexisting enforcers does not arise.
 
 ### Configuration authoring
+
+The software-model correction in "Open questions" limits how this section is read:
+these answers remain the record of configuration preferences,
+not proof that every development concept must be represented by a `task` block.
+The built-in schema awaits that discussion.
 
 Answered by the user on 2026-09-17,
 after the research's per-package proposal was put to them.
@@ -3307,58 +3316,40 @@ and the socket is "Private plumbing for now".
 
 User choices research raises are asked as they arise (rule `FLG`).
 
-Pending on 2026-09-17,
-drafted and about to be asked when the session was interrupted for a Claude Code update.
-The user's words framing them:
-"We need to settle on 'what is a task' first too.
- In my opinion 'build' and 'test' should be builtin to `meow` and not mixed in with lesser tasks."
-and
-"`meow build` and `meow test` are not dedicated commands.
- They still run with the `run` syntax.
- Let's say some tasks are more than others."
+The pending task-name,
+override,
+and namespace questionnaire is withdrawn.
+It narrowed the user's statement that build and test are built in to an unaccepted conclusion:
+that they are privileged instances of a generic task.
+Its duplication counts describe Mise configuration,
+not the right domain model for meow.
 
-- Which task names are built in.
-  Drafted options:
-   `build`,
-   `test`,
-   `lint`,
-   and `format`;
-   or `build` and `test` alone;
-   or everything the root templates define today.
-  Measured context:
-   145 packages declare `lint:types` and 166 declare `lint` from single definitions,
-   23 declare `test`,
-   and `buildAndTest` appears 56 times with 47 copies byte-identical.
-  My ranking:
-   the four verbs,
-   because stopping at two leaves `lint` declared 166 times,
-   which is the duplication tags exist to remove.
-- How a package changes what a built-in does.
-  Drafted options:
-   a `task` block with `override = true`,
-   reusing the marker pair already chosen;
-   dedicated knobs on the `package` block;
-   or not customizable.
-  My ranking:
-   the override marker,
-   so built-ins and user tasks specialize the same way.
-- Whether built-in and user-defined tasks share one namespace.
-  Drafted options:
-   one namespace where only a marked override may shadow a built-in;
-   one namespace with built-in names reserved outright;
-   or built-ins under a `meow::` prefix.
-  My ranking:
-   one namespace with shadowing only by override.
+The user resumed with:
+"Do not accept Claude's framing of what a 'task' even is.
+I believe better UX can be had by not thinking of stages that software must go through
+in development as 'build task' and so on."
 
-Also pending,
-and blocked on the above:
-what makes one task run before another.
-The unapproved `depends_on` entry was retracted on 2026-09-17
-("Settled without asking" in "Declarative configuration"),
-and the drafted options were declared reads and writes alone,
-those plus an explicit edge,
-explicit edges alone,
-or sequencing inside a task's own command.
+Current proposal,
+not adopted:
+[software model exploration](monorepo-manager-software-model.md).
+It distinguishes products,
+evidence,
+readiness for a use,
+and execution,
+using the repository's source-import and built-bundle-test paths as a concrete case.
+It compares software state as the primary experience against first-class development stages,
+with pros,
+cons,
+and a ranking.
+The next question asks which experience the user intends;
+it does not ask which task names get special treatment.
+
+Ordering remains open.
+The unapproved `depends_on` entry stays retracted
+("Settled without asking" in "Declarative configuration").
+Native-manifest relationships and content-hash freshness remain accepted,
+but neither settles how the new domain concepts relate.
+No implementation is authorized.
 
 Answered on 2026-09-17 before re-running the hash selection:
 speed first,
