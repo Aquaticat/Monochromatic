@@ -135,6 +135,15 @@ await describe({
       },
     },),
     it({
+      name: 'TELLS a judge that a life on these pages is told in the past tense, and that an archive line left in '
+        + 'the present is not the tense to keep (owner, 2026-09-21, on CuspariaKLSY\'s drift: "these people are '
+        + 'already dead and obviously past tense is better English here")',
+      fn: async () => {
+        expect(system.includes('told in the past tense',),).toBe(true,);
+        expect(system.includes('not the tense to keep',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'KEEPS the criteria ahead of the policy in the sheet',
       fn: async () => {
         // The criteria decide; the policy qualifies them. A block arriving
