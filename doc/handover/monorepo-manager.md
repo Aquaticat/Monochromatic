@@ -10,9 +10,12 @@ The user rejected Claude's task-centric framing,
 then clarified a coherent continuous-maintenance model across build,
 correctness,
 and publication.
-The user included automatic publication on a version bump,
-conditional on the target registry already having "it".
-The current question clarifies whether "it" means the package or its newly bumped version.
+The user accepted automatic publication of bumped versions for packages already in the target registry,
+confirmed that an already-present version needs no publication,
+and excluded automatic first publication.
+The current question is whether the bump becomes eligible on save,
+commit,
+or push to a release branch.
 The user accepted a from-scratch,
 single-file,
 all-Rust tool with file-enforcer rewritten in Rust on 2026-09-16
@@ -627,18 +630,24 @@ Independent review recommended clarifying publication authority before asking ab
 The user then answered:
 "Publication is automatic too.
 On version bump + target registry already has it".
-Automatic publication on a version bump is accepted,
-while the registry condition's referent remains ambiguous.
-The exploration records that answer;
-it does not infer permission for first publication or repeat publication of an existing version.
+The user confirmed that the registry condition refers to an existing package:
+automatically publish its new version,
+do nothing if that version is already there,
+and do not automatically publish a never-published package.
+This is recorded in "Automatic publication" in the from-scratch design.
+The source and trigger boundary remain open.
+The current Cargo workflow is push-to-main based,
+verified from `.github/workflows/cargo-publish.yml`,
+but that incumbent boundary is not automatically adopted for meow.
 
 ## Next action
 
-1.  Clarify whether "target registry already has it" means the package already exists there,
-    rather than the newly bumped version.
-    Do not silently assume either reading.
-    Automatic publication itself is settled;
-    do not reopen that choice.
+1.  Establish when a version bump becomes eligible for automatic publication:
+    on save,
+    on commit,
+    or on push to a release branch.
+    The registry-existence rule and automatic publication itself are settled;
+    do not reopen them.
 2.  Then continue the coherent maintenance model's unsettled questions about authoring,
     label meaning,
     and ordering.

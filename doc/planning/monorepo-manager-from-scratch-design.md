@@ -24,9 +24,10 @@
    keep building,
    correctness checks,
    and publication-related work current.
-  The user included automatic publication on a version bump,
-   conditional on the target registry already having "it".
-  Whether "it" means the package or its newly bumped version needs clarification.
+  Automatic publication on a version bump is accepted for packages already present in the target registry;
+   an already-present version needs no publication,
+   and a never-published package is not automatically enrolled.
+  The publication source and trigger boundary remain to be designed.
   Configuration schema and ordering remain open,
    rather than following the withdrawn task-name questionnaire.
 - Implementation plan:
@@ -78,6 +79,29 @@ Stated by the user on 2026-09-16.
    btrfs is the only supported filesystem for this,
    per the user's correction on 2026-09-16 that dropped ZFS.
 - The process may create btrfs subvolumes and snapshots whenever it wishes.
+
+### Automatic publication
+
+Accepted during the software-model clarification:
+"Publication is automatic too.
+On version bump + target registry already has it".
+The user confirmed that "it" means the package,
+not the newly bumped version:
+
+- A package already published to the target registry receives automatic publication of a newly bumped version.
+- If that version is already present,
+  there is nothing to publish.
+- A package never published to that registry does not receive automatic first publication.
+- No separate release request is required for an eligible update.
+
+The source and trigger boundary are not yet settled:
+a saved working-tree change,
+a commit,
+or a push to a release branch could establish eligibility.
+The identities of required correctness checks also remain to be designed;
+automatic publication does not imply that failed checks are ignored.
+This is a design decision,
+not authorization to publish anything during this session.
 
 ### Doctor command
 
@@ -3351,8 +3375,12 @@ The comparison is withdrawn as a decision the user needs to make.
 The user then answered:
 "Publication is automatic too.
 On version bump + target registry already has it".
-Automatic publication is therefore included;
-the next question clarifies whether "it" refers to the package or its newly bumped version.
+The user confirmed the package reading,
+recorded in "Automatic publication".
+The next question establishes when a bumped version becomes eligible:
+on save,
+on commit,
+or on push to a release branch.
 It does not ask which task names get special treatment.
 
 Ordering remains open.

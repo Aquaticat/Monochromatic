@@ -252,7 +252,10 @@ correctness,
 and publication rather than choosing between state and stages.
 The [software model exploration](monorepo-manager-software-model.md)
 records that clarification and the user's inclusion of automatic publication on a version bump.
-The condition "target registry already has it" still needs its referent clarified.
+The user confirmed that the target registry must already contain the package,
+while an already-present version needs no publication.
+Automatic first publication is excluded;
+the publication source and trigger boundary remain to be designed.
 Ordering remains undecided,
 and the unapproved `depends_on` entry stays retracted.
 

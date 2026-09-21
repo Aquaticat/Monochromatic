@@ -56,9 +56,12 @@ per the user's subsequent answer:
 "Publication is automatic too.
 On version bump + target registry already has it".
 This supersedes the recommendation to await separate release intent.
-A version bump is a trigger;
-the referent of "already has it" needs clarification before defining registry eligibility.
-It could refer to the package or the newly bumped version.
+The user confirmed that the registry must already contain the package,
+not the newly bumped version.
+An already-present version needs no publication;
+a never-published package does not receive automatic first publication.
+The authoritative requirement is "Automatic publication" in the
+[from-scratch design](monorepo-manager-from-scratch-design.md#automatic-publication).
 No implementation or actual publication is authorized by this design answer.
 
 Independent review of this correction agreed that publication authority should be clarified before trigger timing.
@@ -280,11 +283,47 @@ This proposal preserves the recorded behavior unless the user explicitly revisit
 
 ## Next question
 
-Does "target registry already has it" mean the package already exists there,
-rather than that its newly bumped version is already present?
-The candidate reading is automatic updates of already-published packages,
-with an already-present version requiring no publication and a never-published package outside automatic enrollment.
-That reading awaits confirmation.
+When does a version bump become eligible for publication:
+a saved manifest change,
+a committed change,
+or a push to a release branch?
+
+Concrete case:
+the package exists in the registry,
+the developer saves a new version,
+and relevant outputs and checks are ready,
+but the work is not committed yet.
+Does meow publish that state?
+
+Repository evidence:
+`.github/workflows/cargo-publish.yml:17-22` triggers on selected manifest paths pushed to `main`,
+and its detection step compares the version against the preceding revision.
+That is an incumbent publication boundary,
+not proof that meow must retain it.
+
+Candidate ranking:
+push to a configured release branch > commit > save.
+
+- Push to a release branch:
+  pro,
+  distinguishes release-eligible work from unrelated local work;
+  con,
+  publication waits for a push to that branch.
+- Commit:
+  pro,
+  gives the publication a recorded source revision without requiring a push;
+  con,
+  a work-in-progress commit could still initiate publication.
+- Save:
+  pro,
+  most directly follows the continuously maintained working tree;
+  con,
+  saving the version before finishing related edits can initiate publication of unfinished work.
+
+The release branch ranks ahead of any commit because not every commit is intended for release.
+A commit ranks ahead of a save because it provides a recorded revision boundary.
+All options preserve automatic publication;
+none reintroduces a manual publish request.
 
 ## Publication-policy discussion history
 
