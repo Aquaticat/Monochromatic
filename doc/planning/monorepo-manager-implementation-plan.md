@@ -106,20 +106,28 @@ Second interview round:
   which continues.
 - Q8 accepted:
   a currently blocked foreground request reports the blocker and returns nonzero.
-- Q9 qualified answer:
-  perform an explicit operation's intended effect,
-  with appropriate caching or non-caching configuration.
-  Clarify whether configuration may disable result reuse while attempts remain recorded.
-  Do not infer unconditional fresh execution for every explicit operation.
+- Q9 clarified:
+  every execution has defined inputs and outputs.
+  To obtain re-execution,
+  an author can add an intentionally varying input such as `currentDateTime`.
+  The per-definition reuse-toggle proposal is rejected;
+  ordinary cache identity still governs explicit operations.
 - Q10 correction:
   distinct invocations use the ordinary priority queue.
   Concurrency and pausing follow that scheduler,
   not a special target-wide serialization rule.
   The earlier same-target-duplicate wording must not be interpreted as label-based exclusivity.
 
-Current frontier:
-the Q9 interpretation of recording versus configurable result reuse.
-Controls over multiple distinct invocations become a subsequent question once identity and reuse are clear.
+Q9 is settled:
+there is no configurable execution-cache bypass.
+Concrete input binding must define volatile-value sampling and preserve a resolved input set during a computation.
+
+The next model prerequisite is native package and concern identity:
+what a package-scoped label covers when a package combines ecosystems or native subprojects.
+That answer informs authoring,
+control selection,
+and actual input/output relationships.
+The lifecycle work remains incomplete while these prerequisites are resolved.
 
 Exact cache,
 output,

@@ -3142,11 +3142,15 @@ No foreground bypass feature is introduced by these answers.
 Further answers:
 
 - Q9:
-  the user chose the behavior where an explicit launch request launches again,
-  but rejected contrasting this with a properly configured cache:
-  "with good caching / non-caching config A is functionaly equivlent".
-  Whether per-definition configuration controls result reuse is being clarified.
-  Do not infer an unconditional fresh-execution rule for every explicit operation.
+  after rejecting the replay-versus-effect contrast,
+  the user also rejected a proposed per-definition reuse toggle:
+  "Every execution has a defined set of inputs and outputs.
+  If something must always re-execute,
+  they can add a input of currentDateTime to the set."
+  Execution caching remains universal.
+  An intentionally varying declared input produces a different computation identity;
+  there is no per-definition cache-off policy.
+  Do not make every explicit operation unconditionally fresh or silently inject an undeclared input.
 - Q10:
   "Follow priority and queue everything.
   The active invocation might be ran simutanously,
@@ -3159,9 +3163,11 @@ Further answers:
   Actual conflicting writes still need correctness protection,
   not a blanket scheduling restriction based on label equality.
 
-The next question separates recording attempts from reusing their outcomes.
-It must reconcile Q9 with the earlier statement that caching cannot be disabled.
-The implementation plan tracks that clarification.
+Q9 leaves the earlier always-on cache requirement intact.
+Every execution has defined inputs and outputs;
+its resolved inputs determine computation identity.
+Volatile-input evaluation still needs a concrete binding and sampling contract in the implementation plan,
+not an execution-cache bypass.
 
 ### Watching and affected work
 
@@ -3180,14 +3186,14 @@ The implementation plan tracks that clarification.
 
 ### Cache
 
-The earlier always-on requirement must be read alongside the unresolved Q9 clarification
-in "Maintenance and foreground lifecycle":
-the user referred to appropriate caching and non-caching configuration for explicit operations.
-Recording an attempt and reusing a prior outcome are distinct;
-the permitted configuration boundary is not yet settled.
+Q9 confirms rather than weakens the always-on requirement:
+every execution declares inputs and outputs.
+An operation intended to re-execute can include an intentionally varying input,
+such as `currentDateTime`.
+The resolved value participates in the normal key;
+there is no cache-off flag or per-definition result-reuse toggle.
 
-- Caching is always on under the earlier requirement,
-   pending that clarification.
+- Caching is always on.
 - Entry contents,
    answered by the user on 2026-09-16:
   - Every run is cached,

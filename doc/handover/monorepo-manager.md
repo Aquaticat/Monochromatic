@@ -755,10 +755,13 @@ The read-only audits returned:
 - Q8 A:
   a currently blocked foreground request reports the blocker and returns nonzero.
 - Q9 A,
-  qualified:
-  the user says appropriate caching and non-caching configuration makes the intended behavior equivalent,
-  and invites clarification of their wording.
-  Do not record all explicit operations as unconditionally fresh.
+  then clarified after rejecting the proposed per-definition reuse toggle:
+  "Every execution has a defined set of inputs and outputs.
+  If something must always re-execute,
+  they can add a input of currentDateTime to the set."
+  Always-on execution caching remains intact.
+  An intentionally varying input changes computation identity;
+  there is no cache-off policy or blanket fresh-execution rule for explicit operations.
 - Q10 rejected the proposed target-wide scheduling lane:
   "Follow priority and queue everything";
   invocations may run simultaneously or pause under the existing priority model.
@@ -769,20 +772,22 @@ recording an attempt is separate from reusing its outcome.
 Keep coalescing equivalent reusable computations,
 not arbitrary invocations sharing a label.
 Actual overlapping writes still need correctness protection.
-The next clarification must reconcile per-definition reuse configuration with the earlier always-on cache statement.
+The user's subsequent clarification rejected per-definition reuse configuration.
+The normal cache key includes every resolved declared input,
+including an intentionally varying value such as `currentDateTime`.
+Input binding and volatile sampling need concrete engineering contracts,
+not a cache bypass.
 
 ## Next action
 
-1.  Ask one interpretation check for Q9:
-    may definitions control result reuse,
-    while output and outcomes remain recorded for all invocations?
-    Builds and checks can reuse appropriate results;
-    launching an application must not be replaced by an old log.
-    Do not offer another target-wide scheduling menu.
-    After the answer,
-    recompute the frontier for invocation identity,
+1.  Q9 is settled;
+    do not reopen cache-off choices or target-wide scheduling lanes.
+    Verify the native-identity audit's repository examples,
+    then clarify the scope of a package label when native ecosystems or subprojects share its directory tree.
+    This precedes concrete authoring,
     control selection,
-    and the remaining lifecycle contracts.
+    and input/output relationships.
+    Lifecycle work remains incomplete rather than being marked finished.
 2.  Verify remaining audit evidence before asking its dependent native-identity,
     authoring,
     trust,

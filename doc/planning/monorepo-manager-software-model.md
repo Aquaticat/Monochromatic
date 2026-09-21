@@ -181,10 +181,14 @@ which decides concurrency and pausing.
 Equivalent reusable computations still share work;
 label equality alone is insufficient.
 
-The user wants an explicit launch request to perform its intended effect,
-but notes that appropriate caching and non-caching configuration can already express this.
-The configuration boundary between attempt recording and result reuse needs clarification;
-do not classify every explicit operation as unconditionally non-reusable.
+The user clarified the execution contract:
+every execution has defined inputs and outputs.
+An operation intended to re-execute can include `currentDateTime` as an input.
+Its resolved value participates in the ordinary cache key.
+The proposed per-definition reuse toggle is rejected;
+there is no cache-off policy and no unconditional freshness rule for explicit operations.
+Input binding must eventually specify volatile-value sampling,
+without turning mere cache lookup into a new activation.
 
 ### Why these are not just tasks with new names
 
