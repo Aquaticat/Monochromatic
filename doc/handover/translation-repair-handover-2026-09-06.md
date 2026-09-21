@@ -4647,7 +4647,21 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS SEVENTY-FOUR IS BUILT AND SHI_YUMIAOYA7 RUNS
+1.  SHI_YUMIAOYA7 IS READ AND YINGYING2 RUNS
+    (the pass log's heading dated 2026-09-21 14:25 UTC):
+    SETTLED in 62 min on one attempt,
+    0.19 USD by the meters,
+    the attribution once,
+    the source's 小药娘 footnote glossed inline under the house rule and its definition withdrawn as an orphan,
+    which matches the archive;
+    class seventy-four stands on its guards,
+    no live refusal yet.
+    `yingying2` (frozen `364b83557`,
+    pid 1571244,
+    launched 2026-09-21 14:21 UTC) runs as the queue's next entry;
+    read it against `yingying1`,
+    then launch `XingZ620` on `.frozen-dist-364b83557`.
+    CLASS SEVENTY-FOUR IS BUILT AND SHI_YUMIAOYA7 RAN
     (the pass log's heading dated 2026-09-21 13:25 UTC,
     `364b83557`,
     guard `f97250977`):

@@ -8082,6 +8082,64 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya7 read, 2026-09-21, 14:25 UTC: the attribution once, the source footnote glossed inline under the house rule, yingying2 launched
+
+`shi_Yumiaoya7` (frozen `364b83557`) SETTLED at 14:19 UTC on its first attempt:
+62 min (13:17:23 to 14:19:54),
+18 slices,
+1,053 seats,
+2 retry rounds,
+0.19 USD by the spend lines and by the meters
+(Bedrock 124.80 to 124.67,
+OpenRouter 186.20 to 186.14),
+attempts 1,
+Synthetic and Hyper wet throughout.
+
+The closing quote ships its attribution once,
+but no `repeats the line` finding fired:
+the bench wrote it once this time,
+so class seventy-four stands on its guards rather than on a live refusal.
+The seven steps and the three checks against `shi_Yumiaoya6`:
+the death paragraphs on the page,
+4 of 4 headings,
+front matter equal,
+no untranslated pronoun,
+no error finish,
+no gate-kept or unendorsed standing,
+9 abstention lines with their reasons;
+380 lines differ from `shi_Yumiaoya6`'s page.
+
+One difference from `shi_Yumiaoya6` that is the house rule working,
+recorded so the next reader does not call it a class.
+The source glosses 小药娘 in its one footnote;
+the archive carries no footnote,
+its translator's comment on the page saying the term needs neither translation nor note.
+`shi_Yumiaoya6` kept the marker and the definition;
+`shi_Yumiaoya7`'s consolidate gate chose the proposal that renders the note's content as an inline gloss after the term and drops the marker,
+3 of 4 citing the house policy's line that a community term with no English equivalent is
+"glossed inline the first time it appears on the page ... not in a footnote",
+and the assembly withdrew the definition slice as an orphan
+(`assembly-footnote-reverted orphan-definition gfm 1`).
+The page reads
+`Yumiao was a very ordinary 小药娘, a community term used here in its narrow sense for a transgender person on feminizing hormone replacement therapy`,
+which is what the policy asks for and what the archive chose.
+The two passes disagree because the writers may do either and the judges decide;
+the 13:25 UTC reading of `shi_Yumiaoya6` calling its footnote "as the source" was the looser outcome,
+not the conformant one.
+
+`yingying2` launched at 14:21 UTC on frozen `364b83557`
+(pid 1571244,
+`~/temp/agent/yingying2`),
+the queue's next entry;
+its last read was `yingying1` on `479bb011f`
+(15 min,
+0.18 USD).
+To read:
+both definitions on the page,
+the archive-only heading and References line kept,
+"Yingying" for the archive's "Sakura",
+then the seven steps and the three checks against `yingying1`.
+
 ## shi_Yumiaoya6 read and class seventy-four, 2026-09-21, 13:25 UTC: a repeated line on a line-structured slice, shi_Yumiaoya7 launched
 
 `shi_Yumiaoya6` (frozen `155c6aa65`) SETTLED at 13:10 UTC on its first attempt:
