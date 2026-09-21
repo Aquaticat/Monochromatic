@@ -91,18 +91,28 @@ function extractNodeVersion(runtimeRange: string,): string {
 
  @example
  ```ts
- compareNodeVersions('24.11.0', '26.0.0');
+ compareNodeVersions({ leftVersion: '24.11.0', rightVersion: '26.0.0', });
  ```
  */
-function compareNodeVersions(leftVersion: string, rightVersion: string,): number {
+function compareNodeVersions({
+  leftVersion,
+  rightVersion,
+}: {
+  readonly leftVersion: string;
+  readonly rightVersion: string;
+},): number {
   /**
    Numeric components from first runtime version.
    */
-  const [leftMajor, leftMinor, leftPatch,] = leftVersion.split('.',).map(Number,);
+  const [leftMajor = 0, leftMinor = 0, leftPatch = 0,] = leftVersion
+    .split('.',)
+    .map(Number,);
   /**
    Numeric components from second runtime version.
    */
-  const [rightMajor, rightMinor, rightPatch,] = rightVersion.split('.',).map(Number,);
+  const [rightMajor = 0, rightMinor = 0, rightPatch = 0,] = rightVersion
+    .split('.',)
+    .map(Number,);
   return (leftMajor - rightMajor)
     || (leftMinor - rightMinor)
     || (leftPatch - rightPatch);
@@ -116,9 +126,12 @@ const supportedNodeVersions = nodeEngineRanges.map(extractNodeVersion,);
  Exact minimum runtime used as the build transform target.
  */
 const minimumNodeVersion = supportedNodeVersions.reduce(
-  (currentMinimum: string, candidate: string,): string => (
-    compareNodeVersions(candidate, currentMinimum,) < 0 ? candidate : currentMinimum
-  ),
+  function selectMinimum(currentMinimum: string, candidate: string,): string {
+    return compareNodeVersions({
+      leftVersion: candidate,
+      rightVersion: currentMinimum,
+    }) < 0 ? candidate : currentMinimum;
+  },
 );
 
 /**
