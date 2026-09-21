@@ -8082,6 +8082,52 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## yingying2 read, 2026-09-21, 14:50 UTC: clean, XingZ620 launched as the queue's last entry
+
+`yingying2` (frozen `364b83557`) SETTLED at 14:47 UTC on its first attempt:
+25 min (14:22:03 to 14:47:18) against `yingying1`'s 15,
+5 slices,
+364 seats,
+no retry round,
+0.04 USD by the spend lines
+(the meters moved 0.03:
+Bedrock 124.67 to 124.65,
+OpenRouter 186.13 to 186.12),
+attempts 1,
+Synthetic and Hyper wet.
+
+The seven steps and the three checks against `yingying1`:
+1 of 1 heading,
+4 of 4 markers and 2 of 2 definitions,
+front matter equal,
+the References line kept,
+"Yingying" three times for the archive's "Sakura",
+no untranslated pronoun,
+no error finish,
+no gate-kept or unendorsed standing,
+5 abstention lines with their reasons,
+no repeat finding;
+27 lines differ from `yingying1`'s page.
+
+`XingZ620` launched at 14:48 UTC on frozen `364b83557`
+(pid 1573994,
+`~/temp/agent/XingZ620`),
+the queue's last entry;
+its last read was `XingZ619` on `bb4bb7556`
+(2h57m,
+10.95 USD),
+before classes seventy to seventy-four.
+To read:
+fourteen headings,
+both links,
+nine definitions,
+the closing poem,
+the memorial's four paragraphs,
+the Bird in a Cage attribution
+(open observation),
+any repeat or run-off finding,
+then the seven steps and the three checks against `XingZ619`.
+
 ## shi_Yumiaoya7 read, 2026-09-21, 14:25 UTC: the attribution once, the source footnote glossed inline under the house rule, yingying2 launched
 
 `shi_Yumiaoya7` (frozen `364b83557`) SETTLED at 14:19 UTC on its first attempt:

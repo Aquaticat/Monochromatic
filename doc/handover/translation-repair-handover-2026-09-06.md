@@ -4647,7 +4647,23 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA7 IS READ AND YINGYING2 RUNS
+1.  YINGYING2 IS READ AND XINGZ620 RUNS
+    (the pass log's heading dated 2026-09-21 14:50 UTC):
+    `yingying2` SETTLED in 25 min on one attempt,
+    0.04 USD,
+    every check as the archive.
+    `XingZ620` (frozen `364b83557`,
+    pid 1573994,
+    launched 2026-09-21 14:48 UTC) runs as the queue's last entry;
+    read it against `XingZ619`.
+    After it every entry the queue names has run on the current build;
+    the next work is whatever its read surfaces,
+    else the open observations
+    (Cusparia's tense drift,
+    the spaced em-dashes,
+    the 左右 heading,
+    the Bird in a Cage attribution).
+    SHI_YUMIAOYA7 IS READ AND YINGYING2 RAN
     (the pass log's heading dated 2026-09-21 14:25 UTC):
     SETTLED in 62 min on one attempt,
     0.19 USD by the meters,
