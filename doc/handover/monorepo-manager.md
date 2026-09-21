@@ -786,12 +786,14 @@ not a cache bypass.
     Android's `settings.gradle.kts` declares `:app`,
     its `rust/Cargo.toml` declares a standalone crate,
     and its `mise.toml` separates Android Lint from Rust checks while naming the JNI output destination.
-    Ask Q11:
-    does the package-wide concern cover all its owned native parts or only the root native project?
-    Both can retain narrower component addresses.
-    This precedes concrete authoring,
-    control selection,
-    and input/output relationships.
+    Q11 A is accepted:
+    package-wide concerns cover all applicable owned native parts;
+    narrower addresses remain possible.
+    Work through ownership and counterexamples in
+    `doc/planning/monorepo-manager-design-workpad.md`
+    before drafting the next question.
+    The user's correction is about using writing to solve the problem,
+    not merely preserving conclusions or session history.
     Task #8 is active;
     #9 remains incomplete and is blocked on #8,
     rather than being marked finished.

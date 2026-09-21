@@ -30,6 +30,15 @@ Its future push-to-`main` trigger is recorded in the design,
 not an addition to this implementation plan or a 0.x blocker.
 No estimate of effort or duration appears anywhere in this plan (rule `CK3`).
 
+## Active design work
+
+Use the [design workpad](monorepo-manager-design-workpad.md) to work through concrete cases,
+transitions,
+and counterexamples in writing before pursuing another reasoning branch.
+It contains unfinished reasoning,
+not merely conclusions recorded afterward.
+Accepted decisions stay in this plan and the main design.
+
 ## Completion contract and decision frontier
 
 This plan is ready for implementation only when its 0.x requirements have concrete owners,
@@ -138,13 +147,15 @@ Native-scope evidence verified directly:
   Its current `lint` selects Android Lint,
   while `lint:clippy` and `lint:rust` separately examine the Rust part.
 
-Q11 asks the default scope of a package-wide maintained concern such as
-`meow run //package/music-player/android-app:lint`:
-all native parts owned by that package,
-or only the native project at the selected root?
-Both readings can retain narrower addresses for individual native parts.
-This is a scope question,
-not a proposal for new label syntax or for building every possible variant.
+Q11 A is accepted:
+a package-wide maintained concern such as
+`meow run //package/music-player/android-app:lint`
+covers all applicable native parts owned by that package.
+Narrower addresses remain possible.
+Ownership inference,
+address syntax,
+and automatic variant selection are not settled by this answer.
+The workpad is developing those distinctions through concrete cases.
 
 Exact cache,
 output,
