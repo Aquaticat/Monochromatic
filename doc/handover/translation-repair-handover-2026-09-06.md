@@ -4680,7 +4680,19 @@ each read off the pass log and the shipped page:
     ("means fish in clear water",
     not in the original)
     is dropped as on `CuspariaKLSY4`.
-    Nothing runs.
+    `zheermao2` (frozen `d70087757`,
+    pid 1717905,
+    launched 23:27 UTC on Bedrock and OpenRouter)
+    runs next in the one-at-a-time queue:
+    `zheermao101` has run once (`zheermao1`,
+    frozen `bb4bb7556`),
+    before the tense tails and the splice fix,
+    so read the tense of the life on the page,
+    the em-dashes (the owner's "Leave as is"),
+    no double blank line,
+    no publish disagreement,
+    then the seven steps and three checks,
+    and record it.
     CLASS SEVENTY-SIX WAS FOUND ON CUSPARIAKLSY4
     (the pass log's heading dated 2026-09-21 22:40 UTC):
     `CuspariaKLSY4` (frozen `c5470163d`) SETTLED at 22:24 UTC in 38 minutes,
