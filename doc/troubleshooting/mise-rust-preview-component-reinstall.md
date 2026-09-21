@@ -545,7 +545,7 @@ Apply the test-only
 then run the bounded command:
 
 ```bash
-git -C "$PROTO" apply "$RED_PATCH"
+git -C "$PROTO" apply --unidiff-zero "$RED_PATCH"
 ```
 
 The red run contained the new assertions but not the matcher fix:
@@ -559,8 +559,8 @@ Restore the tag and apply the complete fix patch,
  then repeat the bounded command:
 
 ```bash
-git -C "$PROTO" apply --reverse "$RED_PATCH"
-git -C "$PROTO" apply "$FIX_PATCH"
+git -C "$PROTO" apply --reverse --unidiff-zero "$RED_PATCH"
+git -C "$PROTO" apply --unidiff-zero "$FIX_PATCH"
 ```
 
 The green run used the recorded complete patch:

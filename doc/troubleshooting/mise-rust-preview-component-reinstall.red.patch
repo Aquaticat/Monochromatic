@@ -2,10 +2,7 @@ diff --git a/src/plugins/core/rust.rs b/src/plugins/core/rust.rs
 index 7693e5a49..a04f0379b 100644
 --- a/src/plugins/core/rust.rs
 +++ b/src/plugins/core/rust.rs
-@@ -1286,6 +1286,26 @@ mod tests {
- 
-         assert!(rustup_component_installed(&installed, "rust-src"));
-         assert!(rustup_component_installed(&installed, "llvm-tools"));
+@@ -1288,0 +1289,20 @@ mod tests {
 +        assert!(rustup_component_installed(&installed, "llvm-tools-preview"));
 +
 +        let canonical = BTreeSet::from(["llvm-tools-preview-x86_64-unknown-linux-gnu".to_string()]);
@@ -26,6 +23,3 @@ index 7693e5a49..a04f0379b 100644
 +            "llvm-tools-preview"
 +        ));
 +
-         assert!(!rustup_component_installed(&installed, "rustfmt"));
-         assert!(!rustup_component_installed(&installed, "rust"));
-         assert!(!rustup_component_installed(&installed, "llvm"));

@@ -2,33 +2,19 @@ diff --git a/src/plugins/core/rust.rs b/src/plugins/core/rust.rs
 index 7693e5a49..9f8998d90 100644
 --- a/src/plugins/core/rust.rs
 +++ b/src/plugins/core/rust.rs
-@@ -1091,12 +1091,22 @@ fn rustup_path_env(runtime: &RustRuntime) -> Result<OsString> {
- }
- 
- fn rustup_component_installed(installed: &BTreeSet<String>, component: &str) -> bool {
+@@ -1093,0 +1094,5 @@ fn rustup_component_installed(installed: &BTreeSet<String>, component: &str) ->
 +    let listed_component = if component == "llvm-tools-preview" {
 +        "llvm-tools"
 +    } else {
 +        component
 +    };
-     installed.iter().any(|item| {
-         item == component
-             || item
-                 .strip_prefix(component)
-                 .and_then(|suffix| suffix.strip_prefix('-'))
-                 .is_some_and(rustup_component_suffix_is_host_triple)
+@@ -1099,0 +1105,5 @@ fn rustup_component_installed(installed: &BTreeSet<String>, component: &str) ->
 +            || item == listed_component
 +            || item
 +                .strip_prefix(listed_component)
 +                .and_then(|suffix| suffix.strip_prefix('-'))
 +                .is_some_and(rustup_component_suffix_is_host_triple)
-     })
- }
- 
-@@ -1286,6 +1296,26 @@ mod tests {
- 
-         assert!(rustup_component_installed(&installed, "rust-src"));
-         assert!(rustup_component_installed(&installed, "llvm-tools"));
+@@ -1288,0 +1299,20 @@ mod tests {
 +        assert!(rustup_component_installed(&installed, "llvm-tools-preview"));
 +
 +        let canonical = BTreeSet::from(["llvm-tools-preview-x86_64-unknown-linux-gnu".to_string()]);
@@ -49,6 +35,3 @@ index 7693e5a49..9f8998d90 100644
 +            "llvm-tools-preview"
 +        ));
 +
-         assert!(!rustup_component_installed(&installed, "rustfmt"));
-         assert!(!rustup_component_installed(&installed, "rust"));
-         assert!(!rustup_component_installed(&installed, "llvm"));
