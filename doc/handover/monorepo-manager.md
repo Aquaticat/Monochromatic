@@ -10,7 +10,9 @@ The user rejected Claude's task-centric framing,
 then clarified a coherent continuous-maintenance model across build,
 correctness,
 and publication.
-Whether automatic maintenance includes external publication is the current question.
+The user included automatic publication on a version bump,
+conditional on the target registry already having "it".
+The current question clarifies whether "it" means the package or its newly bumped version.
 The user accepted a from-scratch,
 single-file,
 all-Rust tool with file-enforcer rewritten in Rust on 2026-09-16
@@ -621,17 +623,22 @@ Working interpretation:
 meow intrinsically maintains building,
 correctness checks,
 and publication-related work rather than presenting privileged generic tasks.
-The phrase does not yet settle whether publishing itself is automatic.
-Independent review recommended clarifying that authority before asking about trigger timing.
-The exploration records the answer and that narrower next question.
+Independent review recommended clarifying publication authority before asking about trigger timing.
+The user then answered:
+"Publication is automatic too.
+On version bump + target registry already has it".
+Automatic publication on a version bump is accepted,
+while the registry condition's referent remains ambiguous.
+The exploration records that answer;
+it does not infer permission for first publication or repeat publication of an existing version.
 
 ## Next action
 
-1.  Ask whether automatic maintenance performs external publication,
-    or keeps everything publication-ready until explicit release intent.
-    Do not ask about commit,
-    tag,
-    or other triggers until that intent is understood.
+1.  Clarify whether "target registry already has it" means the package already exists there,
+    rather than the newly bumped version.
+    Do not silently assume either reading.
+    Automatic publication itself is settled;
+    do not reopen that choice.
 2.  Then continue the coherent maintenance model's unsettled questions about authoring,
     label meaning,
     and ordering.

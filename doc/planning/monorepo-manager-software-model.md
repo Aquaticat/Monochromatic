@@ -51,9 +51,15 @@ A failing correctness check is an informative result,
 not an instruction to retry unchanged inputs until green.
 This formulation keeps the accepted watch and failure-cache behavior.
 
-Publication needs clarification before this interpretation is extended:
-the user's phrase could mean maintaining publication-ready outputs or actually performing external publication.
-No automatic external publication policy is inferred from it.
+Publication is automatic too,
+per the user's subsequent answer:
+"Publication is automatic too.
+On version bump + target registry already has it".
+This supersedes the recommendation to await separate release intent.
+A version bump is a trigger;
+the referent of "already has it" needs clarification before defining registry eligibility.
+It could refer to the package or the newly bumped version.
+No implementation or actual publication is authorized by this design answer.
 
 Independent review of this correction agreed that publication authority should be clarified before trigger timing.
 Commit,
@@ -274,8 +280,21 @@ This proposal preserves the recorded behavior unless the user explicitly revisit
 
 ## Next question
 
-Does automatic maintenance include performing external publication,
-or does it keep everything publication-ready until the user expresses release intent?
+Does "target registry already has it" mean the package already exists there,
+rather than that its newly bumped version is already present?
+The candidate reading is automatic updates of already-published packages,
+with an already-present version requiring no publication and a never-published package outside automatic enrollment.
+That reading awaits confirmation.
+
+## Publication-policy discussion history
+
+Answered:
+publication is automatic too,
+on a version bump with the registry condition quoted in "Current clarification".
+The recommendation and ranking in this section are superseded by that answer.
+
+The question was whether automatic maintenance includes external publication
+or keeps everything publication-ready until release intent.
 
 - Publication-ready until release intent (recommended):
   automatic work keeps outputs and checks current,

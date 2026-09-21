@@ -251,7 +251,8 @@ The user emphasized a coherent continuous-maintenance model across build,
 correctness,
 and publication rather than choosing between state and stages.
 The [software model exploration](monorepo-manager-software-model.md)
-records that clarification and the unsettled extent of automatic publication.
+records that clarification and the user's inclusion of automatic publication on a version bump.
+The condition "target registry already has it" still needs its referent clarified.
 Ordering remains undecided,
 and the unapproved `depends_on` entry stays retracted.
 

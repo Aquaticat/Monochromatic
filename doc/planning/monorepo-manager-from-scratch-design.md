@@ -24,7 +24,9 @@
    keep building,
    correctness checks,
    and publication-related work current.
-  Whether that includes automatic external publication needs clarification.
+  The user included automatic publication on a version bump,
+   conditional on the target registry already having "it".
+  Whether "it" means the package or its newly bumped version needs clarification.
   Configuration schema and ordering remain open,
    rather than following the withdrawn task-name questionnaire.
 - Implementation plan:
@@ -3346,8 +3348,11 @@ and emphasized the coherent model of automatically keeping everything up to date
 correctness,
 and publication.
 The comparison is withdrawn as a decision the user needs to make.
-The next question clarifies whether automatic maintenance includes external publication
-or keeps outputs publication-ready until release intent.
+The user then answered:
+"Publication is automatic too.
+On version bump + target registry already has it".
+Automatic publication is therefore included;
+the next question clarifies whether "it" refers to the package or its newly bumped version.
 It does not ask which task names get special treatment.
 
 Ordering remains open.
