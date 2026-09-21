@@ -137,7 +137,10 @@ const supportedNodeVersions = nodeEngineRanges.map(extractNodeVersion,);
  Exact minimum runtime in the declared range.
  */
 const minimumNodeVersion = supportedNodeVersions.reduce(
-  function selectMinimum(currentMinimum: string, candidate: string,): string {
+  function selectMinimum(
+    currentMinimum: string,
+    candidate: string,
+  ): string {
     return compareNodeVersions({
       leftVersion: candidate,
       rightVersion: currentMinimum,

@@ -126,7 +126,10 @@ const supportedNodeVersions = nodeEngineRanges.map(extractNodeVersion,);
  Exact minimum runtime used as the build transform target.
  */
 const minimumNodeVersion = supportedNodeVersions.reduce(
-  function selectMinimum(currentMinimum: string, candidate: string,): string {
+  function selectMinimum(
+    currentMinimum: string,
+    candidate: string,
+  ): string {
     return compareNodeVersions({
       leftVersion: candidate,
       rightVersion: currentMinimum,
