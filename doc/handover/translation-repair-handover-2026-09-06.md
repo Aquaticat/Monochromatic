@@ -4647,7 +4647,31 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  THE QUEUE IS RUN THROUGH ON THE CURRENT BUILD
+1.  THE OWNER ANSWERED THE THREE OBSERVATIONS AND HULICAIJIA9 RUNS
+    (the pass log's heading dated 2026-09-21 19:35 UTC):
+    headings stay with the judges
+    ("Keep the judges deciding"),
+    and the archive's heading renderings reach every sheet's identity block as evidence,
+    aligned by order where both documents carry the same heading count
+    (`574fce2d1`,
+    guard `351e68ef8`,
+    fixtures rekeyed on the marked heading in `8e2b06bc9`);
+    the em-dashes are left as they are,
+    observation closed;
+    the house policy tells the life on these memorial pages in the past tense
+    ("these people are already dead and obviously past tense is better English here";
+    `574fce2d1`,
+    guard `0262bf031`).
+    `hulicaijia9` (frozen `574fce2d1`,
+    pid 1612708,
+    launched 2026-09-21 19:31 UTC)
+    runs to read the heading evidence live;
+    read it against `hulicaijia8`,
+    the 左右 heading and the judge reasons citing the heading line first,
+    then launch `CuspariaKLSY` on `.frozen-dist-574fce2d1` to read the tense line against `Cusparia1`.
+    The full suite is rerun at `8e2b06bc9`;
+    read its log before the next fix.
+    THE QUEUE WAS RUN THROUGH ON THE CURRENT BUILD
     (the pass log's heading dated 2026-09-21 19:00 UTC):
     `XingZ620` (frozen `364b83557`) SETTLED in 3h59m on one attempt,
     10.24 USD by the meters,

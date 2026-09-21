@@ -8082,6 +8082,92 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## The owner answers the three observations, 2026-09-21, 19:35 UTC: the judges keep the headings with the archive's wording as evidence, the em-dashes stay, the life is told in the past tense; hulicaijia9 launched
+
+The owner answered the three questions the XingZ620 read put.
+
+On the headings:
+"Keep the judges deciding.
+The literal reading winning here is just a world knowledge problem of the judges and could be fixed another way."
+So no restore.
+The other way is evidence:
+the archive's heading renderings now reach every sheet's identity block
+beside the linked titles and signatures of class seventy-one
+(`574fce2d1`,
+guard red first at `351e68ef8`,
+`headingPairs` in `src/page-name-glossary.ts`).
+A pair is read by order when both documents carry the same heading count,
+since a differing count is a section one side never carried and the order is then no alignment;
+81 of the 92 corpus pages carry equal counts,
+225 pairs among them where the archive renders a Han heading otherwise.
+Probed off the frozen dist:
+hulicaijia gets thirteen heading lines
+(序章 Prologue,
+初识 Meeting,
+相遇 Soulmate,
+薄荷 Mint,
+左右 Conflict,
+陪伴 Companionship,
+玩偶 Plushies,
+群虫 Swarm,
+长夜 Insomnia,
+梦碎 Shattered,
+缺失 Absence,
+渝北 Yubei,
+终章 Last Chapter),
+CuspariaKLSY one
+(简介 Description),
+XingZ60 none
+(its counts differ).
+The empty-identity fixture in `document-preparation.unit.test.ts` drops its heading,
+since a heading pair is identity now.
+Four scripted writers keyed a rendering on the bare heading text in the prompt
+(`translate-document`,
+`pass-entry`,
+`document-lanes`,
+and the audit's bare pair),
+and with every heading in every sheet the first branch matched every slice;
+they key on the marked heading now and the bare pair carries no heading
+(`8e2b06bc9`).
+The full suite was red on those four fixtures at `574fce2d1` and is rerun at `8e2b06bc9`.
+
+On the em-dashes:
+"Leave as is."
+The observation is closed;
+no house-policy line.
+
+On the tense:
+"Huh,
+these people are already dead and obviously past tense is better English here."
+The house policy's tense line now says it
+(`574fce2d1`,
+guard red first at `0262bf031`):
+these are memorial pages about people who have died,
+so the narrative of a life is told in the past tense;
+the present is kept only for what is still true as the page is read;
+where the English already on the page tells the life in the present,
+that line is not the tense to keep,
+and bringing it to the past is a correction,
+never a change to the time.
+The line the judges used to read,
+that the tense already on the page is the tense,
+is gone;
+it was what let Cusparia's archive present stand against a lane's past.
+
+`hulicaijia9` (frozen `574fce2d1` at `node_modules/.frozen-dist-574fce2d1`,
+pid 1612708,
+launched 2026-09-21 19:31 UTC,
+overlap 8)
+runs to read the heading evidence live:
+whether 左右 ships as Conflict,
+and the judge reasons citing the heading line.
+Synthetic read dry again at launch
+(five-hour window 2750 of 2750)
+and Hyper dry,
+so the pass runs on Bedrock and OpenRouter.
+After it,
+`CuspariaKLSY` on the same build to read the tense line.
+
 ## XingZ620 read, 2026-09-21, 19:00 UTC: the queue is run through on the current build; three observations put to the owner
 
 `XingZ620` (frozen `364b83557`) SETTLED at 18:47 UTC on its first attempt:
