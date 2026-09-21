@@ -268,14 +268,12 @@ meow run //package/cow:test
    2026-09-17).
   The task has already explained itself,
    and its exit code is what a script reads.
-- Earlier Ctrl+C contract:
-   end the task,
-   kill its tree through the task cgroup,
-   and return the terminal (user,
-   2026-09-17).
-  The later prohibition of `meow end` for automatic work leaves this behavior awaiting explicit reconciliation
-   for foreground clients attached to maintained concerns.
-  Do not silently treat attachment as turning automatic maintenance into a one-off operation.
+- For a foreground request attached to automatic maintenance,
+   Ctrl+C detaches that request and returns the terminal;
+   the maintenance and other waiters continue (Q7).
+  This supersedes the earlier kill-on-Ctrl+C contract for maintained work.
+  Attachment does not turn automatic maintenance into a one-off operation.
+  The earlier process-tree kill contract remains for explicit non-automatic executions.
 - Already running as background work:
    `meow run` attaches to that run rather than starting a second one (user,
    2026-09-17).
@@ -411,9 +409,14 @@ and "We don't need specifically a socket or a separate client,
    2026-09-17),
    the same label `meow run` takes,
    so there is one naming scheme.
-  Invariant stated by the user:
-   the same target running twice is a bug,
-   which is why `meow run` attaches to an existing run instead of starting a second.
+  Earlier wording called the same target running twice a bug.
+  The user's Q10 correction rejects interpreting that as a mutex on the target label:
+   distinct invocations enter the ordinary priority queue and may run concurrently,
+   be paused,
+   or remain queued under that scheduler.
+  Equivalent reusable computations still share existing work;
+   a common label alone does not establish equivalence.
+  Control selection when a label has distinct invocations remains to be specified.
   `meow priority` takes either an absolute integer or a signed bump (user,
    2026-09-17);
    the parser must keep `-1` from reading as a flag.
@@ -3113,7 +3116,9 @@ Accepted in the first implementation-plan interview:
 - Q2:
   an explicit foreground build request honors the failed check gate.
   It reports the blocker rather than implicitly bypassing it.
-  Whether the foreground request returns or waits through a blocked state is still to be decided.
+  Q8 settles the blocked outcome:
+   report the current blocker and return nonzero,
+   rather than wait for an edit to fix it.
 - Q3:
   cancel superseded ordinary background builds and read-only checks,
   then pursue the latest relevant inputs.
@@ -3125,15 +3130,38 @@ Accepted in the first implementation-plan interview:
   "Let's forbid `meow end` for automatic work for 0.x."
   The user rejected choosing a lifetime for an ended automatic concern.
   Foreground attachment does not change the maintained concern's class.
-  Ctrl+C's earlier kill behavior needs reconciliation with this restriction;
-  daemon shutdown still ends all of its children as already required.
+  Q7 settles Ctrl+C for an attached maintenance request:
+   detach the requester while automatic work continues.
+  Daemon shutdown still ends all of its children as already required.
 - Q6:
   ordinary-source lint autofixing is explicit only.
   Automatic checking and managed-file enforcement retain their respective responsibilities.
 
 No foreground bypass feature is introduced by these answers.
-Exact identities for different argument vectors and repeated one-off operations remain open.
-The implementation plan records the next interview round.
+
+Further answers:
+
+- Q9:
+  the user chose the behavior where an explicit launch request launches again,
+  but rejected contrasting this with a properly configured cache:
+  "with good caching / non-caching config A is functionaly equivlent".
+  Whether per-definition configuration controls result reuse is being clarified.
+  Do not infer an unconditional fresh-execution rule for every explicit operation.
+- Q10:
+  "Follow priority and queue everything.
+  The active invocation might be ran simutanously,
+  paused,
+  or whatever."
+  The proposed target-wide serialization,
+  forced replacement,
+  and rejection policies are withdrawn.
+  The ordinary priority scheduler owns distinct invocations.
+  Actual conflicting writes still need correctness protection,
+  not a blanket scheduling restriction based on label equality.
+
+The next question separates recording attempts from reusing their outcomes.
+It must reconcile Q9 with the earlier statement that caching cannot be disabled.
+The implementation plan tracks that clarification.
 
 ### Watching and affected work
 
@@ -3152,7 +3180,14 @@ The implementation plan records the next interview round.
 
 ### Cache
 
-- Caching is always on.
+The earlier always-on requirement must be read alongside the unresolved Q9 clarification
+in "Maintenance and foreground lifecycle":
+the user referred to appropriate caching and non-caching configuration for explicit operations.
+Recording an attempt and reusing a prior outcome are distinct;
+the permitted configuration boundary is not yet settled.
+
+- Caching is always on under the earlier requirement,
+   pending that clarification.
 - Entry contents,
    answered by the user on 2026-09-16:
   - Every run is cached,

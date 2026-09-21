@@ -747,15 +747,42 @@ The read-only audits returned:
   The plan's shipped-build enumeration now includes the accepted x86-64-v2 variant and drops the incorrect count.
   Other evidence pointers still need direct verification before their dependent questions.
 
+## Second implementation-plan interview
+
+- Q7 A:
+  Ctrl+C detaches a foreground request from automatic maintenance;
+  the work continues.
+- Q8 A:
+  a currently blocked foreground request reports the blocker and returns nonzero.
+- Q9 A,
+  qualified:
+  the user says appropriate caching and non-caching configuration makes the intended behavior equivalent,
+  and invites clarification of their wording.
+  Do not record all explicit operations as unconditionally fresh.
+- Q10 rejected the proposed target-wide scheduling lane:
+  "Follow priority and queue everything";
+  invocations may run simultaneously or pause under the existing priority model.
+  The earlier same-target-duplicate wording is not a mutex by label.
+
+Independent correction review confirmed the distinction:
+recording an attempt is separate from reusing its outcome.
+Keep coalescing equivalent reusable computations,
+not arbitrary invocations sharing a label.
+Actual overlapping writes still need correctness protection.
+The next clarification must reconcile per-definition reuse configuration with the earlier always-on cache statement.
+
 ## Next action
 
-1.  Ask the implementation plan's next round,
-    Q7 through Q10:
-    Ctrl+C on maintained work,
-    foreground blocked outcomes,
-    repeating explicit operations,
-    and differing argument vectors under a target label.
-    Record answers and recompute the frontier before dependent questions.
+1.  Ask one interpretation check for Q9:
+    may definitions control result reuse,
+    while output and outcomes remain recorded for all invocations?
+    Builds and checks can reuse appropriate results;
+    launching an application must not be replaced by an old log.
+    Do not offer another target-wide scheduling menu.
+    After the answer,
+    recompute the frontier for invocation identity,
+    control selection,
+    and the remaining lifecycle contracts.
 2.  Verify remaining audit evidence before asking its dependent native-identity,
     authoring,
     trust,

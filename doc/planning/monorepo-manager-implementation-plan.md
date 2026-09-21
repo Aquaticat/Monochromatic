@@ -99,18 +99,27 @@ accepted:
 - Q6:
   ordinary-source lint autofixes require explicit intent.
 
-Current interview frontier:
+Second interview round:
 
-- Q7:
-  reconcile Ctrl+C for an attached maintenance request with the prohibition on ending automatic work.
-- Q8:
-  when a foreground request is blocked by a current failing check,
-  return that outcome or remain attached awaiting a fix?
-- Q9:
-  does repeating an explicit operation request a new effect,
-  rather than only replaying the previous invocation's output?
-- Q10:
-  how should different argument vectors for one target interact with the single-execution invariant?
+- Q7 accepted:
+  Ctrl+C detaches the foreground request from automatic maintenance,
+  which continues.
+- Q8 accepted:
+  a currently blocked foreground request reports the blocker and returns nonzero.
+- Q9 qualified answer:
+  perform an explicit operation's intended effect,
+  with appropriate caching or non-caching configuration.
+  Clarify whether configuration may disable result reuse while attempts remain recorded.
+  Do not infer unconditional fresh execution for every explicit operation.
+- Q10 correction:
+  distinct invocations use the ordinary priority queue.
+  Concurrency and pausing follow that scheduler,
+  not a special target-wide serialization rule.
+  The earlier same-target-duplicate wording must not be interpreted as label-based exclusivity.
+
+Current frontier:
+the Q9 interpretation of recording versus configurable result reuse.
+Controls over multiple distinct invocations become a subsequent question once identity and reuse are clear.
 
 Exact cache,
 output,

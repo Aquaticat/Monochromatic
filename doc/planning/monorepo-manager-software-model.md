@@ -173,8 +173,18 @@ Neither part requires authors to express generic task edges or an unapproved `de
   Managed-file enforcement retains its declared write authority.
 
 Internal cancellation of obsolete work is distinct from a user asking to end maintained work.
-The previous Ctrl+C kill contract still needs reconciliation with the new `end` restriction.
-Repeated explicit operations also need a contract distinct from merely replaying maintained results.
+The next answers settle Ctrl+C as detaching a foreground request from automatic maintenance,
+and a currently blocked foreground request as reporting its blocker and returning nonzero.
+The user rejected a special scheduling lane for a target label:
+distinct invocations join the ordinary priority queue,
+which decides concurrency and pausing.
+Equivalent reusable computations still share work;
+label equality alone is insufficient.
+
+The user wants an explicit launch request to perform its intended effect,
+but notes that appropriate caching and non-caching configuration can already express this.
+The configuration boundary between attempt recording and result reuse needs clarification;
+do not classify every explicit operation as unconditionally non-reusable.
 
 ### Why these are not just tasks with new names
 
@@ -324,14 +334,17 @@ For `RCO`,
 apply its responsibility coverage requirement to model redesign as well as incumbent removal:
 
 > Removal or model redesign:
-> map each responsibility to owner,
+> map responsibilities to identity,
+> owner,
 > eligibility,
 > selection status,
-> parity test,
+> parity tests,
 > and retired behavior.
 > Recommend replacement only after all have viable owners.
 
-This addresses both the omission of linting and the missing execution-eligibility policy
+This covers omitted responsibilities,
+execution eligibility,
+and the distinction between a target label and a computation's identity
 without inventing another overlapping rule.
 
 For `VR2`,
