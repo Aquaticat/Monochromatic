@@ -116,6 +116,43 @@ the neutral-bundle test genuinely needs that bundle.
 The rule that establishes such relationships remains undecided;
 no `depends_on` mechanism is adopted here.
 
+## Primary-source precedents
+
+These are source-verified conceptual precedents,
+not runtime probes or technology selections.
+The implications for meow are proposals.
+
+- [OpenTofu's language documentation](https://opentofu.org/docs/v1.12/language/)
+  calls the language its primary interface and describes intended goals rather than steps.
+  This supports questioning command-shaped configuration,
+  not importing OpenTofu's dependency syntax or plan/apply workflow.
+- Kubernetes' [`metav1.Condition` definition][condition-source]
+  separates `True`,
+  `False`,
+  or `Unknown` from `observedGeneration`.
+  Its source explicitly describes an observation of an older generation as out of date.
+  This supplies precedent for distinguishing the result from its applicability.
+  meow's accepted content hashes need not become whole-package generation counters.
+- Kubernetes' [Pod lifecycle documentation][pod-lifecycle]
+  explicitly calls a phase a high-level summary,
+  not a comprehensive observation rollup or state machine.
+  This is evidence for allowing stage summaries alongside independent facts,
+  not an argument that stages must disappear.
+
+The analogy stops where producing an artifact differs from discovering a defect.
+Meow can rebuild an absent bundle;
+it cannot make deterministic failing assertions pass merely by rerunning them.
+
+A further validity requirement for the proposed model:
+a check finishing after an edit must not certify newer inputs that it never consumed.
+Completion order is not freshness order.
+Recording an input fingerprint alone also does not prevent mixed-version reads during execution.
+The consistency mechanism needs a separate design;
+no snapshot requirement or implementation is selected here.
+
+[condition-source]: https://raw.githubusercontent.com/kubernetes/apimachinery/master/pkg/apis/meta/v1/types.go
+[pod-lifecycle]: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase
+
 ## Candidate primary experiences
 
 ### Software state first (recommended)

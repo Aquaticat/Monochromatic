@@ -586,8 +586,19 @@ stages of software development need not be treated as build tasks and similar co
   extend `AGENTS.md` rule `QPM` to question inherited nouns as well as mechanisms.
   Exact proposed wording is in the exploration;
   `AGENTS.md` is not changed.
-- Commit `ab3455894` records the initial proposal.
-  Later scoped commits update the design and implementation-plan blockers.
+- Precedent research:
+  source-verified OpenTofu declarative goals and Kubernetes conditions and phase summaries
+  are cited in the exploration.
+  These are conceptual precedents,
+  not technologies being adopted or runtime-tested guarantees.
+  The research agent's scratch-file write was denied;
+  its inline findings were checked against the cited primary sources before inclusion.
+- Commits:
+  `ab3455894` records the initial proposal;
+  `bddf3a3df` withdraws the questionnaire and updates plan blockers;
+  `4d4b81f48` fixes the proposal's semantic line break.
+  The first Markdown check reported that line break;
+  final verification follows inclusion of the source precedents.
 
 ## Next action
 
