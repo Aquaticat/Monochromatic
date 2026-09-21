@@ -148,6 +148,38 @@ await describe({
 
     it({
       name:
+        'REFUSES A RENDERING THAT REPEATS A LINE the original carries once, and accepts a refrain the '
+        + 'original itself repeats (class seventy-four, shi_Yumiaoya6, 2026-09-21): a bilingual attribution '
+        + 'rendered once from its Chinese and once from its own English is the same line twice',
+      fn: async () => {
+        /** Original quoting a film line in Chinese with its English beside it, attribution likewise. */
+        const bilingual = '> 如果再也见不到猫，祝你早安。\n>\n> And in case I don’t see the cat, good morning.\n>\n'
+          + '> 出自《猫的世界》\n>\n> From *The Cat Show*';
+        /** Findings on a rendering carrying the attribution twice. */
+        const doubled = compareLineCounts({
+          lineStructured: true,
+          sourceText: bilingual,
+          candidateText: '> If I never see the cat again, good morning.\n>\n'
+            + '> And in case I don’t see the cat, good morning.\n>\n> From *The Cat Show*\n>\n> From *The Cat Show*',
+        },);
+        expect(doubled.length,).toBe(1,);
+        expect(doubled[0],).toContain('repeats the line',);
+        expect(doubled[0],).toContain('From *The Cat Show*',);
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: '猫醒了。\n太阳很暖。\n猫醒了。',
+          candidateText: 'The cat wakes.\nThe sun is warm.\nThe cat wakes.',
+        },).length,).toBe(0,);
+        expect(compareLineCounts({
+          lineStructured: false,
+          sourceText: bilingual,
+          candidateText: '> From *The Cat Show*\n>\n> From *The Cat Show*',
+        },).length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name:
         'IGNORES BLANK LINES ON BOTH SIDES, since they separate blocks rather than carry text. A '
         + 'rendering that writes a different number of them has merged nothing, and faulting it would '
         + 'name a difference the line rule never spoke about',
