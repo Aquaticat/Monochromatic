@@ -8082,6 +8082,88 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia9 read, 2026-09-21, 21:00 UTC: 左右 ships as the archive's Conflict, no candidate proposed the literal heading, SETTLED in 82 minutes; CuspariaKLSY2 launched for the tense line
+
+`hulicaijia9` (frozen `574fce2d1`,
+pid 1612708,
+overlap 8,
+launched 19:31 UTC on Bedrock and OpenRouter with Synthetic's five-hour window spent and Hyper dry)
+SETTLED at 20:53 UTC on one attempt,
+82 minutes against `hulicaijia8`'s 59.
+
+The heading evidence is live.
+The page's fifth heading reads `## Conflict`,
+the archive's wording,
+where `hulicaijia7` and `hulicaijia8` both shipped `## Left and Right`.
+The artifact shows how:
+`hulicaijia8`'s artifact carries 34 mentions of "Left and Right" across its candidates and ballots,
+`hulicaijia9`'s carries none,
+so no writer proposed the literal heading once the identity block listed
+`左右 (heading): "Conflict"`.
+One critic (`google.gemma-4-e2b`) still filed the heading as a major mistranslation
+("conveys the section-title sense while dropping the literal left/right hinge");
+the panel voted it down 1 to 3
+(Mercury 2.5,
+GPT-OSS-120B and MiniMax-M3 unsupported),
+and the slice decided on `## Conflict` with no change.
+The ballots in the artifact carry votes without reasons,
+and the run log prints no panel reasons,
+so the judges' citation of the heading line is inferred from the outcome and the candidate census,
+not read in their words;
+the DECLARED NAMES citations `mikaela3` showed came from select-judge reasons,
+which this heading never reached because no candidate contested it.
+
+The seven steps and three checks against `hulicaijia8` and the archive:
+13 of 13 headings,
+17 of 17 tag markers,
+18 of 18 footnote markers,
+9 of 9 definitions,
+2 of 2 links,
+3 of 3 Sakura,
+front matter equal,
+no `TA`,
+no `finish_reason=error`,
+`attempts.json` reads 1,
+no gate-kept standing,
+two standings shipped without contest endorsement (slices 39 and 58;
+`hulicaijia8` had one),
+142 abstention lines with reasons (`hulicaijia8` 139),
+no repeat finding,
+no run-off.
+The page differs from `hulicaijia8`'s on 325 diff lines,
+all of the bench-variance kind on a sample of the first 24
+("The owner knew me well and would recognize me" against "and she recognized me";
+"my old haunts in Yubei" against "Yubei";
+"But she was gone."
+against "But the person who once sat beside me was gone.";
+the sample is bench variance).
+
+Time and spend:
+preparation 19:31 to 19:37,
+repair lane to 19:58,
+translate lane to 20:12,
+contest to 20:14,
+consolidation to 20:53 (39 minutes against `hulicaijia8`'s 25).
+3,851 calls,
+4,398 seats asked,
+92 retry rounds,
+51 abandoned streams (0.04 USD).
+By the meters Bedrock moved from 121.06 to 119.45 USD and OpenRouter from 179.39 to 176.90,
+so 4.10 USD.
+Seats:
+`glm-5.3` dark (309 asked,
+309 refused `NoProviderForModelError`,
+Synthetic dry;
+the same on `hulicaijia8`),
+`hf:Qwen/Qwen3.8-27B` 139 usable of 576 (the rest refused for want of a wet provider),
+every other seat whole,
+Jev 130 of 130.
+
+`CuspariaKLSY2` (frozen `574fce2d1`,
+pid 1637234,
+overlap 8)
+launched at 20:56 UTC to read the tense line against `Cusparia1`.
+
 ## The owner answers the three observations, 2026-09-21, 19:35 UTC: the judges keep the headings with the archive's wording as evidence, the em-dashes stay, the life is told in the past tense; hulicaijia9 launched
 
 The owner answered the three questions the XingZ620 read put.

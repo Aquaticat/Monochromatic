@@ -4647,7 +4647,25 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  THE OWNER ANSWERED THE THREE OBSERVATIONS AND HULICAIJIA9 RUNS
+1.  HULICAIJIA9 CONFIRMED THE HEADING EVIDENCE AND CUSPARIAKLSY2 RUNS
+    (the pass log's heading dated 2026-09-21 21:00 UTC):
+    `hulicaijia9` (frozen `574fce2d1`) SETTLED at 20:53 UTC in 82 minutes on one attempt,
+    4.10 USD by the meters,
+    every check as the archive,
+    and the fifth heading ships as the archive's "Conflict"
+    where `hulicaijia7` and `hulicaijia8` shipped "Left and Right":
+    no candidate proposed the literal heading once the identity block listed
+    `左右 (heading): "Conflict"`,
+    and the one critic claim against it lost 1 to 3.
+    `CuspariaKLSY2` (frozen `574fce2d1`,
+    pid 1637234,
+    launched 20:56 UTC)
+    runs to read the tense line against `Cusparia1`:
+    read the life narrative's tense first
+    (the archive's present-tense lines that `Cusparia1` kept),
+    then the seven steps and three checks,
+    and record it.
+    THE OWNER ANSWERED THE THREE OBSERVATIONS
     (the pass log's heading dated 2026-09-21 19:35 UTC):
     headings stay with the judges
     ("Keep the judges deciding"),
