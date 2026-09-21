@@ -26,7 +26,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { buildCandidateSelectMessages, } from '../dist/final/node/index.mjs';
+import {
+  buildCandidateSelectMessages,
+  CONTEST_POLICY,
+} from '../dist/final/node/index.mjs';
 
 /**
  System half of one judge exchange, which is where standing rules live.
@@ -143,6 +146,20 @@ await describe({
         expect(system.includes('not the tense to keep',),).toBe(true,);
       },
     },),
+    it({
+      name: 'NEVER names the replaced text\'s own tense as the authority over the past-tense rule (class '
+        + 'seventy-six, CuspariaKLSY4 slice 0: a contest judge kept the archive\'s present-tense life citing '
+        + '"the tense rule that holds narrative in the present", reading the judge tail\'s "the tense the '
+        + 'text being replaced had already chosen" over the house rule; the contest split 2 to 2 to 1 and the '
+        + 'present tense shipped unendorsed)',
+      fn: async () => {
+        expect(system.includes('the text being replaced had already chosen',),).toBe(false,);
+        expect(system.includes('the past tense the house rule sets for a life',),).toBe(true,);
+        expect(CONTEST_POLICY.includes('the text being replaced had already chosen',),).toBe(false,);
+        expect(CONTEST_POLICY.includes('the past tense the house rule sets for a life',),).toBe(true,);
+      },
+    },),
+
     it({
       name: 'KEEPS the criteria ahead of the policy in the sheet',
       fn: async () => {
