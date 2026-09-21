@@ -151,11 +151,11 @@ function renderingFor({ content, }: { readonly content: string; },): string {
   // pair that vanished together.
   if (content.includes('〔1〕：',))
     return '## Notes\n\n[^1]: The spot it likes best.';
-  if (content.includes('第一节',))
+  if (content.includes('## 第一节',))
     return `## Section one\n\n${FRESH}`;
-  if (content.includes('第二节',))
+  if (content.includes('## 第二节',))
     return '## Section two\n\nA bird sits on the windowsill.';
-  if (content.includes('第三节',))
+  if (content.includes('## 第三节',))
     return MISSING_FRESH;
   return FRESH;
 }

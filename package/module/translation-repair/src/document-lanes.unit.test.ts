@@ -325,9 +325,9 @@ function replyFor(
  ```
  */
 function renderingFor({ content, }: { readonly content: string; },): string {
-  if (content.includes('第一节',))
+  if (content.includes('## 第一节',))
     return `## Section one\n\n${FRESH}`;
-  if (content.includes('第二节',))
+  if (content.includes('## 第二节',))
     return '## Section two\n\nA bird sits on the windowsill.';
   return FRESH;
 }

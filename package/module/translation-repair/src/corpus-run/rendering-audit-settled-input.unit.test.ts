@@ -114,12 +114,12 @@ The cat has a bowl.
  A second pair with no front matter at all, for the entry that declares
  nothing.
  */
-const BARE_SOURCE_PAGE = '## 第一节\n\n猫猫在门口等着。\n\n## 第二节\n\n猫猫喜欢晒太阳。\n';
+const BARE_SOURCE_PAGE = '猫猫在门口等着。\n\n猫猫喜欢晒太阳。\n';
 
 /**
  Archive translation of the bare pair.
  */
-const BARE_TARGET_PAGE = '## Section one\n\nThe cat waits at the door.\n\n## Section two\n\nThe cat likes the sun.\n';
+const BARE_TARGET_PAGE = 'The cat waits at the door.\n\nThe cat likes the sun.\n';
 
 /**
  Runs one git command inside a fixture repository.

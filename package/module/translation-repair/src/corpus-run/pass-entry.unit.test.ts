@@ -381,9 +381,9 @@ type CoverageScript = 'lost' | 'absent' | 'full';
 function renderingFor({ content, }: { readonly content: string; },): string {
   if (content.includes('name: 猫猫',))
     return FRONT_MATTER_FRESH;
-  if (content.includes('第一节',))
+  if (content.includes('## 第一节',))
     return `## Section one\n\n${FRESH}`;
-  if (content.includes('第二节',))
+  if (content.includes('## 第二节',))
     return `## Section two\n\n${BIRD_FRESH}`;
   if (content.includes('missing.webp',))
     return MISSING_VISUAL;
@@ -531,7 +531,7 @@ function replyFor(
   if (schema === 'translation_report') {
     if (polishScript
       && (consolidation || content.includes('CANDIDATE "repair"',))
-      && content.includes('第一节',))
+      && content.includes('## 第一节',))
       return { translation: POLISH_BASE, };
     return { translation: renderingFor({ content, },), };
   }
